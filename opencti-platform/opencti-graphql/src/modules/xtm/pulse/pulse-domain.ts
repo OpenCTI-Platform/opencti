@@ -236,7 +236,7 @@ const runPulseCleanup = async (cleanup: PulseCleanup, scope: PulseClearScope) =>
 
 // Whether the cleanup succeeded: a failure is logged and left to the next manager cycle. A pending cleanup of the
 // registration covers any other; otherwise the latest one decides the state to reach, and a partial cleanup joins a
-// pending partial one or is covered by a pending full one.
+// pending partial one or is covered by a pending full one. Runs under the push lock, like every cleanup.
 const cleanupPulseData = async (cleanup: PulseCleanup, scope: PulseClearScope = { entityTypes: [], markingIds: [] }) => {
   let pending: PulseCleanup = cleanup;
   try {
@@ -261,12 +261,20 @@ const cleanupPulseData = async (cleanup: PulseCleanup, scope: PulseClearScope = 
   }
 };
 
+const findPendingCleanup = (state: PulseOperationalState) => PULSE_CLEANUPS.find((value) => value === state.cleanup_pending);
+
 export const runPulsePendingCleanup = async () => {
-  const state = await redisGetPulseState();
-  const pending = PULSE_CLEANUPS.find((value) => value === state.cleanup_pending);
-  if (pending) {
-    await withPulsePushLock(() => runPulseCleanup(pending, readPendingScope(state)));
+  if (!findPendingCleanup(await redisGetPulseState())) {
+    return;
   }
+  await withPulsePushLock(async () => {
+    // Read again under the lock: a configuration change may have replaced the pending cleanup in the meantime.
+    const state = await redisGetPulseState();
+    const pending = findPendingCleanup(state);
+    if (pending) {
+      await runPulseCleanup(pending, readPendingScope(state));
+    }
+  });
 };
 // endregion
 
@@ -274,24 +282,31 @@ export const runPulsePendingCleanup = async () => {
 // falls back to the preview until its next accepted contribution, whether a read answered contribution_required or the
 // status of XTM Hub reported the lapse. The full statistics it held are removed first, so nothing stale passes for
 // current: until they are, the platform is not marked lapsed and the next answer retries, like the next manager cycle.
+// Serialized with the pages of the refresh, which stop once the access changed: none writes full statistics after it.
 // Whether the platform is marked lapsed.
 const markPulseContributionLapsed = async () => {
-  const state = await redisGetPulseState();
-  if (state.contribution_lapsed === 'true') {
+  if ((await redisGetPulseState()).contribution_lapsed === 'true') {
     return true;
   }
-  if (!(await cleanupPulseData('network'))) {
-    return false;
-  }
-  await redisSetPulseState({ contribution_lapsed: 'true', preview_refresh_at: undefined });
-  logApp.info('[THREAT PULSE] XTM Hub requires a contribution, falling back to the preview until the next accepted contribution');
-  return true;
+  return withPulsePushLock(async () => {
+    if ((await redisGetPulseState()).contribution_lapsed === 'true') {
+      return true;
+    }
+    if (!(await cleanupPulseData('network'))) {
+      return false;
+    }
+    await redisSetPulseState({ contribution_lapsed: 'true', preview_refresh_at: undefined });
+    logApp.info('[THREAT PULSE] XTM Hub requires a contribution, falling back to the preview until the next accepted contribution');
+    return true;
+  });
 };
 
-const handlePulseReadError = async (values: PulseSettingsValues, error: unknown) => {
+// Whether the answer was a lapse, now recorded.
+export const handlePulseReadError = async (values: PulseSettingsValues, error: unknown) => {
   if (error instanceof PulseHubError && error.code === 'contribution_required' && isPulseContributing(values)) {
-    await markPulseContributionLapsed();
+    return markPulseContributionLapsed();
   }
+  return false;
 };
 
 export const toPulseUnavailableReason = (error: unknown): PulseUnavailableReason => {
@@ -325,6 +340,15 @@ export const getPulseSalt = async (platform: PulseHubPlatform, day: string): Pro
 };
 
 // region status and settings
+// Only preview documents carry a prevalence on a platform in preview.
+const PULSE_PREVIEW_SIGNAL_FILTERS = {
+  mode: FilterMode.And,
+  filters: [{ key: ['pulse_prevalence'], values: [], operator: FilterOperator.NotNil }],
+  filterGroups: [],
+};
+
+// preview_entities and preview_since hold what the preview pass found on every object, whatever its markings: the
+// PulseStatus fields resolve them for the user who asks (resolvePulseStatusPreview).
 export const getPulseStatus = async (context: AuthContext) => {
   const { values, state, access } = await loadPulseContext(context);
   const previewEntities = access === PulseAccess.Preview ? Number(state.preview_matched ?? 0) : 0;
@@ -340,6 +364,31 @@ export const getPulseStatus = async (context: AuthContext) => {
     region_bucket: values.regionBucket ?? null,
     scopes: values.scopes,
   };
+};
+
+interface PulseStatusPreview {
+  preview_entities: number;
+  preview_since?: string | null;
+  scopes: string[];
+}
+const statusPreviews = new WeakMap<PulseStatusPreview, Promise<{ entities: number; since: string | null }>>();
+
+// The objects carrying the preview signal among those the user can read, and since when the preview matched objects
+// of the platform: counted once per status, and only when asked.
+export const resolvePulseStatusPreview = (context: AuthContext, user: AuthUser, status: PulseStatusPreview) => {
+  const known = statusPreviews.get(status);
+  if (known) {
+    return known;
+  }
+  const preview = (async () => {
+    if (status.preview_entities <= 0) {
+      return { entities: 0, since: null };
+    }
+    const entities = await elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, { types: status.scopes, filters: PULSE_PREVIEW_SIGNAL_FILTERS });
+    return { entities, since: entities > 0 ? status.preview_since ?? null : null };
+  })();
+  statusPreviews.set(status, preview);
+  return preview;
 };
 
 const pulseStatusCacheKey = (platform: PulseHubPlatform) => `status:${platform.platformId}`;
@@ -675,7 +724,7 @@ const recordAcceptedContribution = async (platform: PulseHubPlatform, state: Pul
   await redisSetPulseState({ last_push_at: now.toISOString() });
   // The preview signal goes before the full experience opens; a failed cleanup is replayed by the next manager cycle,
   // which opens it then.
-  if (await cleanupPulseData('opening')) {
+  if (await withPulsePushLock(() => cleanupPulseData('opening'))) {
     logApp.info('[THREAT PULSE] Contribution accepted, the full experience is open');
   }
 };
@@ -837,6 +886,15 @@ export const refreshPulseEntities = async (context: AuthContext, platform: Pulse
   return updates.length;
 };
 
+// A page of the nightly refresh or of the preview writes under the configuration and the access its pass started with:
+// a configuration stored since, a lapse or the opening of the full experience stops the pass. Read under the lock.
+const isPulsePassCurrent = async (generation: string, values: PulseSettingsValues, access: PulseAccess) => {
+  if ((await redisGetPulseConfigGeneration()) !== generation) {
+    return false;
+  }
+  return getPulseAccess(values, true, hasPulseReadAccess(await redisGetPulseState())) === access;
+};
+
 // Nightly refresh of the network information of every object in scope: the keys of an object that never contributed,
 // matched or was read are computed here. A run handles up to REFRESH_MAX_ENTITIES objects and the next one goes on
 // after them, starting over once the scope is covered, so that no object waits for ever on a large platform.
@@ -865,8 +923,7 @@ export const runPulseRefresh = async (context: AuthContext, force = false) => {
     await fullEntitiesList<BasicStorePulseEntity>(context, PULSE_MANAGER_USER, values.scopes, {
       noFiltersChecking: true,
       callback: async (entities) => withPulsePushLock(async () => {
-        // A configuration stored since the run started stops it before it looks anything more up.
-        if ((await redisGetPulseConfigGeneration()) !== generation) {
+        if (!(await isPulsePassCurrent(generation, values, access))) {
           stopped = true;
           return false;
         }
@@ -891,7 +948,7 @@ export const runPulseRefresh = async (context: AuthContext, force = false) => {
     throw error;
   }
   if (stopped) {
-    logApp.info('[THREAT PULSE] Configuration changed during the network refresh, the next run reads under the new one');
+    logApp.info('[THREAT PULSE] Configuration or access changed during the network refresh, the next run reads under the new one');
     return processed;
   }
   const covered = !remaining;
@@ -947,7 +1004,7 @@ const sameKeys = (stored: string[] | undefined, keys: string[]) => {
  * request ever leaves the platform here; nothing leaves, so every object in scope is matched, whatever its markings.
  */
 export const runPulsePreview = async (context: AuthContext, force = false) => {
-  // As in the nightly refresh: each page checks the configuration generation under the lock of the configuration.
+  // As in the nightly refresh: each page checks the configuration generation and the access under the lock.
   const generation = await redisGetPulseConfigGeneration();
   const { values, platform, state, access } = await loadPulseContext(context, { fresh: true });
   if (access !== PulseAccess.Preview || !platform) {
@@ -977,8 +1034,7 @@ export const runPulsePreview = async (context: AuthContext, force = false) => {
   await fullEntitiesList<BasicStorePulseEntity>(context, PULSE_MANAGER_USER, values.scopes, {
     noFiltersChecking: true,
     callback: async (entities) => withPulsePushLock(async () => {
-      // A configuration stored since the pass started stops it before it writes anything more.
-      if ((await redisGetPulseConfigGeneration()) !== generation) {
+      if (!(await isPulsePassCurrent(generation, values, access))) {
         stopped = true;
         return false;
       }
@@ -1012,14 +1068,14 @@ export const runPulsePreview = async (context: AuthContext, force = false) => {
     }),
   });
   if (stopped) {
-    logApp.info('[THREAT PULSE] Configuration changed during the preview pass, the next pass reads under the new one');
+    logApp.info('[THREAT PULSE] Configuration or access changed during the preview pass, the next pass reads under the new one');
     return matched;
   }
   const covered = !remaining;
-  // Every object the preview signal is on, whichever pass wrote it: only preview documents carry a prevalence here.
+  // Every object the preview signal is on, whichever pass wrote it.
   const matchedTotal = await elCount(context, PULSE_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
     types: values.scopes,
-    filters: { mode: FilterMode.And, filters: [{ key: ['pulse_prevalence'], values: [], operator: FilterOperator.NotNil }], filterGroups: [] },
+    filters: PULSE_PREVIEW_SIGNAL_FILTERS,
     noFiltersChecking: true,
   });
   await redisSetPulseState({

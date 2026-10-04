@@ -14,6 +14,7 @@ import {
   getPulseTrending,
   purgePulseContributions,
   recordPulseTelemetry,
+  resolvePulseStatusPreview,
 } from './pulse-domain';
 import { toPulseInformationOutput } from './pulse-information';
 import type { BasicStorePulseEntity, PulsePeriodValue, PulseRegionBucketValue, PulseSectorBucketValue } from './pulse-types';
@@ -49,6 +50,10 @@ const pulseResolvers: Resolvers = {
     pulseConfigure: (_, { input }, context) => configurePulse(context, context.user, input),
     pulsePurge: (_, __, context) => purgePulseContributions(context, context.user),
     pulseTelemetry: (_, { event, surface }, context) => recordPulseTelemetry(context, event, surface),
+  },
+  PulseStatus: {
+    preview_entities: async (status, _, context) => (await resolvePulseStatusPreview(context, context.user, status)).entities,
+    preview_since: async (status, _, context) => (await resolvePulseStatusPreview(context, context.user, status)).since,
   },
   Indicator: pulseField,
   AttackPattern: pulseField,

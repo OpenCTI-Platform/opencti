@@ -18,7 +18,7 @@ import {
 } from '../../../manager/notificationManager';
 import { ENTITY_TYPE_TRIGGER } from '../../notification/notification-types';
 import { PulseAccess, PulsePeriod, PulseSectorBucket, PulseTrend, TriggerEventType } from '../../../generated/graphql';
-import { getHubTrending, resolveTrendingEntries } from './pulse-domain';
+import { getHubTrending, handlePulseReadError, resolveTrendingEntries } from './pulse-domain';
 import { buildPulseMarkingPolicy, getPulseAccess, getPulseHubPlatform, hasPulseReadAccess, isPulseContributable, readPulseSettings } from './pulse-settings';
 import { redisFilterNewlyTrending, redisGetPulseState, redisMarkTrendingNotified } from './pulse-cache';
 import { PULSE_OBJECT_TYPE_BY_ENTITY_TYPE } from './pulse-types';
@@ -55,7 +55,17 @@ export const runPulseTrendingNotifications = async (context: AuthContext) => {
     region_bucket: null,
     object_types: values.scopes.map((scope) => PULSE_OBJECT_TYPE_BY_ENTITY_TYPE[scope]),
     first: TRENDING_NOTIFICATION_SIZE,
+  }).catch(async (error) => {
+    // A lapse XTM Hub answers here falls back to the preview like the answer to any other read, where no trending
+    // trigger fires.
+    if (await handlePulseReadError(values, error)) {
+      return null;
+    }
+    throw error;
   });
+  if (!result) {
+    return 0;
+  }
   const policy = await buildPulseMarkingPolicy(context, values);
   const rising = (await resolveTrendingEntries(context, PULSE_MANAGER_USER, platform, result, values.scopes))
     .filter((entry) => entry.trend === PulseTrend.Rising && isPulseContributable(entry.entity, policy, values.scopes));

@@ -1,8 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import conf from '../../../src/config/conf';
-import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { queryAsAdmin, queryAsAdminWithSuccess } from '../../utils/testQueryHelper';
+import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../utils/testQuery';
+import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { getClientBase } from '../../../src/database/redis';
 import { getSettings, settingsEditField } from '../../../src/domain/settings';
 import { updateAttribute, deleteElementById } from '../../../src/database/middleware';
 import { storeLoadById } from '../../../src/database/middleware-loader';
@@ -250,6 +251,9 @@ describe('Threat Pulse manager and API', () => {
       const status = await queryAsAdminWithSuccess({ query: PULSE_STATUS });
       expect(status.data?.pulseStatus).toMatchObject({ mode: 'preview', access: 'preview', readable: false, preview_entities: 2 });
       expect(status.data?.pulseStatus.preview_since).toBeTruthy();
+      // The preview matches every object whatever its markings: a user counts only the objects they can read
+      const restricted = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: PULSE_STATUS });
+      expect(restricted.data?.pulseStatus).toMatchObject({ access: 'preview', preview_entities: 1 });
     });
 
     it('should name the first trending ranks only when the caller asks for the preview', async () => {
@@ -657,6 +661,21 @@ describe('Threat Pulse manager and API', () => {
     expect(await runPulseTrendingNotifications(testContext)).toBe(0);
     await deleteElementById(testContext, ADMIN_USER, laterTriggerId, ENTITY_TYPE_TRIGGER);
     resetCacheForEntity(ENTITY_TYPE_TRIGGER);
+  });
+
+  it('should fall back to the preview when the trending notifications read a lapse', async () => {
+    // The answers of XTM Hub are cached: the notification run asks again
+    const cached = await getClientBase().keys('{pulse}:response:trending:*');
+    if (cached.length > 0) {
+      await getClientBase().del(...cached);
+    }
+    hub.failNext('pulseTrending', 'PULSE_CONTRIBUTION_REQUIRED');
+    expect(await runPulseTrendingNotifications(testContext)).toBe(0);
+    expect((await redisGetPulseState()).contribution_lapsed).toBe('true');
+    const entity = await storeLoadById<BasicStorePulseEntity>(testContext, ADMIN_USER, sharedIndicatorId, ENTITY_TYPE_INDICATOR);
+    expect(entity.pulse_information).toBeUndefined();
+    // Back to the full experience for the next tests, as an accepted contribution does
+    await redisSetPulseState({ contribution_lapsed: undefined });
   });
 
   it('should fall back to the preview when XTM Hub requires a contribution, and recover with the next accepted one', async () => {
