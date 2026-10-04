@@ -403,9 +403,10 @@
       "guards": [
         "imported-from-library"
       ],
-      "reason": "graph experience: the More actions menu closing the graph toolbar, toggles as checkable items and lists as submenus",
+      "reason": "graph experience: the More actions menu closing the graph toolbar, toggles as checkable items and lists as submenus; the lists of the toolbar (select by type, filters) as menus anchored to their tool, the same items in both",
       "files": [
-        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarMoreActions.tsx"
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarMoreActions.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarItem.tsx"
       ]
     },
     {

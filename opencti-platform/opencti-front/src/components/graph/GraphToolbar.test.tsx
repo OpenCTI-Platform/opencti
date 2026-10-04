@@ -5,6 +5,8 @@ import testRender from '../../utils/tests/test-render';
 import { GraphProvider } from './GraphContext';
 import { type GraphViewActions, GraphViewContext } from './GraphViewContext';
 import GraphToolbar from './GraphToolbar';
+import GraphToolbarItem from './components/GraphToolbarItem';
+import GraphToolbarOptionsList from './components/GraphToolbarOptionsList';
 
 // The search field of the platform needs the assistant context; a plain field stands for it.
 vi.mock('../SearchInput', () => ({ default: () => <input aria-label="Search" /> }));
@@ -110,5 +112,50 @@ describe('GraphToolbar', () => {
     expect(document.activeElement).toHaveAttribute('tabindex', '0');
     await user.keyboard('{ArrowLeft}');
     expect(document.activeElement).toBe(first);
+  });
+});
+
+describe('GraphToolbarItem with a list', () => {
+  const renderList = (multiple: boolean) => {
+    const onSelect = vi.fn();
+    const options = {
+      multiple,
+      onSelect,
+      items: [
+        { key: 'entity:Malware', label: 'Malware', section: 'Entities', selected: true },
+        { key: 'entity:Report', label: 'Report', section: 'Entities', selected: false },
+        { key: 'relationship:uses', label: 'uses', section: 'Relationships', selected: true },
+      ],
+    };
+    const rendered = testRender(
+      <GraphToolbarItem title="Filter by type" Icon={<span />} badge={1} menu={<GraphToolbarOptionsList options={options} />} />,
+    );
+    return { onSelect, ...rendered };
+  };
+
+  it('opens its choices in a menu anchored to the tool, by part, a multiple list staying open', async () => {
+    const { user, onSelect } = renderList(true);
+    const tool = screen.getByRole('button', { name: 'Filter by type' });
+    expect(tool).toHaveAttribute('aria-haspopup', 'menu');
+    await user.click(tool);
+    const menu = await screen.findByRole('menu', { name: 'Filter by type' });
+    expect(within(menu).getByText('Entities')).toBeInTheDocument();
+    expect(within(menu).getByText('Relationships')).toBeInTheDocument();
+    expect(within(menu).getByRole('menuitemcheckbox', { name: 'Malware' })).toHaveAttribute('aria-checked', 'true');
+    await user.click(within(menu).getByRole('menuitemcheckbox', { name: 'Report' }));
+    expect(onSelect).toHaveBeenCalledWith('entity:Report');
+    expect(screen.getByRole('menu', { name: 'Filter by type' })).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('menu')).toBeNull();
+    expect(tool).toHaveFocus();
+  });
+
+  it('closes a single-choice list on pick', async () => {
+    const { user, onSelect } = renderList(false);
+    await user.click(screen.getByRole('button', { name: 'Filter by type' }));
+    const menu = await screen.findByRole('menu', { name: 'Filter by type' });
+    await user.click(within(menu).getByRole('menuitem', { name: 'uses' }));
+    expect(onSelect).toHaveBeenCalledWith('relationship:uses');
+    expect(screen.queryByRole('menu')).toBeNull();
   });
 });

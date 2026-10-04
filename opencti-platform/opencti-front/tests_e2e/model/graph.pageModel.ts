@@ -395,11 +395,11 @@ export default class GraphPage {
       return;
     }
     await this.getToolbarButton(actionName).click();
-    const list = this.page.getByRole('presentation').last();
-    await list.getByRole('button', { name: option }).first().click();
+    const list = this.page.getByRole('menu', { name: actionName });
+    await GraphPage.menuItem(list, option, true).first().click();
     // A single-choice list closes itself on pick; a multiple-choice one stays open.
     await this.page.waitForTimeout(300);
     if (await list.isVisible()) await this.page.keyboard.press('Escape');
-    await expect(this.page.locator('.MuiPopover-root')).toHaveCount(0);
+    await expect(this.page.getByRole('menu')).toHaveCount(0);
   }
 }

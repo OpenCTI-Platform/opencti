@@ -21,17 +21,12 @@ import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../i18n';
 import type { Theme } from '../../Theme';
 import { GRAPH_TOOLBAR_GROUPS, type GraphToolbarAction, useGraphToolbarGroupLabels } from './useGraphToolbarActions';
+import GraphToolbarOptionsList, { checkable } from './GraphToolbarOptionsList';
 
 /** The toolbar glyphs, brought down to the size of a menu item. */
 const MenuGlyph = ({ children }: { children: React.ReactNode }) => (
   <Box component="span" sx={{ display: 'inline-flex', '& svg': { fontSize: 18 } }}>{children}</Box>
 );
-
-/**
- * A toggle or a choice of a list is a checkable item. The attributes are only spread when they
- * apply: an explicit `role={undefined}` would erase the `menuitem` role of the item.
- */
-const checkable = (checked: boolean | undefined) => (checked === undefined ? {} : { role: 'menuitemcheckbox', 'aria-checked': checked });
 
 const ActionLabel = ({ action }: { action: GraphToolbarAction }) => {
   const theme = useTheme<Theme>();
@@ -48,33 +43,13 @@ const ActionLabel = ({ action }: { action: GraphToolbarAction }) => {
 const MoreActionItem = ({ action }: { action: GraphToolbarAction }) => {
   const { options } = action;
   if (options && !action.disabledReason) {
-    let section: string | undefined;
     return (
       <MenuSub>
         <MenuSubTrigger startIcon={<MenuGlyph>{action.icon}</MenuGlyph>}>
           <ActionLabel action={action} />
         </MenuSubTrigger>
         <MenuSubContent>
-          {options.items.map((option) => {
-            const heading = option.section && option.section !== section ? option.section : undefined;
-            section = option.section;
-            return (
-              <Fragment key={option.key}>
-                {heading && <MenuLabel>{heading}</MenuLabel>}
-                <MenuItem
-                  {...checkable(options.multiple ? !!option.selected : undefined)}
-                  selected={!!option.selected}
-                  onSelect={(event) => {
-                    // A filter list stays open so that several choices can be made in a row.
-                    if (options.multiple) event.preventDefault();
-                    options.onSelect(option.key);
-                  }}
-                >
-                  {option.label}
-                </MenuItem>
-              </Fragment>
-            );
-          })}
+          <GraphToolbarOptionsList options={options} />
         </MenuSubContent>
       </MenuSub>
     );

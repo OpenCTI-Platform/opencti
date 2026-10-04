@@ -74,7 +74,7 @@ export interface GraphToolbarAction extends ToolbarOverflowCandidate {
   /** Number of filters or choices in use. */
   badge?: number;
   onSelect?: () => void;
-  /** A list to choose from: a popover from the toolbar, a submenu from "More actions". */
+  /** A list to choose from: a menu from the toolbar, a submenu from "More actions". */
   options?: {
     items: GraphToolbarOption[];
     multiple?: boolean;

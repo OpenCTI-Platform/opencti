@@ -1,5 +1,5 @@
 import React, { MouseEvent, ReactNode, useId } from 'react';
-import { Badge, IconButton, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { Badge, IconButton, Menu, MenuContent, MenuTrigger, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useFormatter } from '../../i18n';
 
 interface GraphToolbarItemProps {
@@ -11,7 +11,9 @@ interface GraphToolbarItemProps {
   /** Key or chord shown in the tooltip, for example `Shift+F`. */
   shortcut?: string;
   Icon: ReactNode;
-  onClick: (event: MouseEvent<HTMLButtonElement>) => void;
+  onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
+  /** Menu items the tool opens, in a menu anchored to it, instead of running an action. */
+  menu?: ReactNode;
   disabled?: boolean;
   /** Why the tool is not available now; disables it and says so in its tooltip. */
   disabledReason?: string;
@@ -26,6 +28,7 @@ const GraphToolbarItem = ({
   shortcut,
   Icon,
   onClick,
+  menu,
   disabled,
   disabledReason,
   badge,
@@ -33,6 +36,7 @@ const GraphToolbarItem = ({
   const { t_i18n } = useFormatter();
   const reasonId = useId();
   const isDisabled = disabled || !!disabledReason;
+  const opensMenu = !!menu && !isDisabled;
   // The icon button announces `active` as pressed: a plain action leaves it unset.
   const active = pressed ?? (color === 'secondary' ? true : undefined);
   let control: ReactNode = (
@@ -49,6 +53,7 @@ const GraphToolbarItem = ({
       style={isDisabled ? { pointerEvents: 'none' } : undefined}
     />
   );
+  if (opensMenu) control = <MenuTrigger asChild>{control}</MenuTrigger>;
   if (badge) {
     control = (
       <Badge content={badge} tone="brand" accessibleText={t_i18n('{count, plural, one {# in use} other {# in use}}', { values: { count: badge } })}>
@@ -56,7 +61,7 @@ const GraphToolbarItem = ({
       </Badge>
     );
   }
-  return (
+  const item = (
     <Tooltip>
       <TooltipTrigger asChild>
         {isDisabled ? (
@@ -86,6 +91,20 @@ const GraphToolbarItem = ({
         )}
       </TooltipContent>
     </Tooltip>
+  );
+  if (!opensMenu) return item;
+  return (
+    <Menu modal={false}>
+      {item}
+      <MenuContent
+        side="top"
+        align="start"
+        aria-label={title}
+        style={{ maxHeight: 'min(60vh, var(--radix-dropdown-menu-content-available-height))', overflowY: 'auto' }}
+      >
+        {menu}
+      </MenuContent>
+    </Menu>
   );
 };
 

@@ -108,9 +108,7 @@ const GraphToolbar = ({
 
   const roving = useToolbarRovingFocus(rowRef);
 
-  // --- Lists opened from the toolbar (select by type, filters).
-  const [openList, setOpenList] = useState<{ id: string; anchor: Element }>();
-  const listAction = openList ? actions.find((action) => action.id === openList.id) : undefined;
+  // A list (select by type, filters) opens as a menu anchored to its tool.
   const renderAction = (action: GraphToolbarAction) => (
     <GraphToolbarItem
       key={action.id}
@@ -120,10 +118,8 @@ const GraphToolbar = ({
       pressed={action.pressed}
       disabledReason={action.disabledReason}
       badge={action.badge}
-      onClick={(event) => {
-        if (action.options) setOpenList({ id: action.id, anchor: event.currentTarget });
-        else action.onSelect?.();
-      }}
+      menu={action.options ? <GraphToolbarOptionsList options={action.options} /> : undefined}
+      onClick={action.options ? undefined : () => action.onSelect?.()}
     />
   );
   const group = (name: GraphToolbarGroup, first = false) => {
@@ -239,23 +235,6 @@ const GraphToolbar = ({
           <GraphToolbarMoreActions actions={overflowed} />
         </Pinned>
       </div>
-
-      {listAction?.options && openList && (
-        <GraphToolbarOptionsList
-          isMultiple={listAction.options.multiple}
-          anchorEl={openList.anchor}
-          onClose={() => setOpenList(undefined)}
-          options={listAction.options.items}
-          getOptionKey={(option) => option.key}
-          getOptionText={(option) => option.label}
-          getOptionSection={(option) => option.section}
-          isOptionSelected={(option) => !!option.selected}
-          onSelect={(option) => {
-            listAction.options?.onSelect(option.key);
-            if (!listAction.options?.multiple) setOpenList(undefined);
-          }}
-        />
-      )}
 
       {/* Only mounted while shown: the closed toolbar clips it, and its handles would stay reachable from the keyboard. */}
       {showTimeRange && <GraphToolbarTimeRange />}
