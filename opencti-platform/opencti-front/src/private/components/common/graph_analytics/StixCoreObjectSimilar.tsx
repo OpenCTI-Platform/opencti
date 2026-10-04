@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { Link } from 'react-router';
 import {
+  Alert,
   Chip,
   IconButton,
   ProgressBar,
@@ -18,7 +19,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@filigran/design-system';
-import { Alert, Box } from '@mui/material';
+import { Box } from '@mui/material';
 import { CompareArrowsOutlined, OpenInNewOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import Card from '@common/card/Card';
@@ -117,9 +118,13 @@ const StixCoreObjectSimilarComponent = ({ queryRef, actionsSlot }: StixCoreObjec
 
   if (nodes.length === 0) {
     return (
-      <Alert severity="info" variant="outlined" data-testid="graph-similar-empty">
-        {t_i18n('No similar entity found yet. Similarity is computed in the background from the shared techniques, tools, malware, infrastructure, victims or co-occurrences, and refreshed when the knowledge changes.')}
-      </Alert>
+      <Alert
+        severity="info"
+        elevation={1}
+        data-testid="graph-similar-empty"
+        title={t_i18n('No similar entity found yet.')}
+        description={t_i18n('Similarity is computed in the background from the shared techniques, tools, malware, infrastructure, victims or co-occurrences, and refreshed when the knowledge changes.')}
+      />
     );
   }
 

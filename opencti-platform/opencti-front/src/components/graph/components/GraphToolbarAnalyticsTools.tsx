@@ -1,8 +1,8 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
 import { CompareArrowsOutlined, GridOnOutlined, RouteOutlined } from '@mui/icons-material';
-import { Checkbox, Chip, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, Text } from '@filigran/design-system';
-import { Alert, Box } from '@mui/material';
+import { Alert, Checkbox, Chip, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, Text } from '@filigran/design-system';
+import { Box } from '@mui/material';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import StixPathFinder, { type StixPathResult } from '@components/common/graph_analytics/StixPathFinder';
@@ -450,12 +450,10 @@ const GraphToolbarAnalyticsTools = ({ onInvestigationExpand }: GraphToolbarAnaly
               </Select>
             </Box>
             {selectedNodes.length > SIMILAR_MAX_SOURCES && (
-              <Alert severity="info" variant="outlined">
-                {t_i18n('Only the first five selected entities are used.')}
-              </Alert>
+              <Alert severity="info" elevation={1} title={t_i18n('Only the first five selected entities are used.')} />
             )}
             {similarFailed && (
-              <Alert severity="error" variant="outlined">{t_i18n('The similar entities could not be loaded.')}</Alert>
+              <Alert severity="error" elevation={1} title={t_i18n('The similar entities could not be loaded.')} />
             )}
             {!similarFailed && similarGroups === null && <Loader variant={LoaderVariant.inElement} />}
             {(similarGroups ?? []).map((group) => (
@@ -502,13 +500,13 @@ const GraphToolbarAnalyticsTools = ({ onInvestigationExpand }: GraphToolbarAnaly
         <Dialog open onClose={() => setMatrixOpen(false)} size="large" title={t_i18n('Similarity matrix')} showCloseButton>
           <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
             {matrixFailed && (
-              <Alert severity="error" variant="outlined">{t_i18n('The similarity matrix could not be loaded.')}</Alert>
+              <Alert severity="error" elevation={1} title={t_i18n('The similarity matrix could not be loaded.')} />
             )}
             {!matrixFailed && matrix === null && <Loader variant={LoaderVariant.inElement} />}
             {matrix !== null && (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {selectedNodes.length > MATRIX_MAX_ENTITIES && (
-                  <Alert severity="info" variant="outlined">{t_i18n('Only the first 25 selected entities are compared.')}</Alert>
+                  <Alert severity="info" elevation={1} title={t_i18n('Only the first 25 selected entities are compared.')} />
                 )}
                 <GraphSimilarityMatrix entities={matrix.entities} cells={matrix.cells} />
               </Box>
