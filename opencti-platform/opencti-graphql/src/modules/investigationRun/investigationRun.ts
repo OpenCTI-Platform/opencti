@@ -70,6 +70,7 @@ const INVESTIGATION_RUN_DEFINITION: ModuleDefinition<StoreEntityInvestigationRun
     { name: 'case_id', label: 'Case', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'case_ids', label: 'Case identifiers', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
     { name: 'create_case', label: 'Create a case', type: 'boolean', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'context_ids', label: 'Context sent to the engine', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'workspace_id', label: 'Investigation graph', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_WORKSPACE], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'draft_id', label: 'Draft', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_DRAFT_WORKSPACE], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'policy_id', label: 'Policy', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_INVESTIGATION_POLICY], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },

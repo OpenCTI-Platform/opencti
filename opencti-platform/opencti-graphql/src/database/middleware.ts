@@ -256,7 +256,8 @@ import { modules } from '../schema/module';
 import { doYield } from '../utils/eventloop-utils';
 import { ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
 import { findById as findDraftById } from '../modules/draftWorkspace/draftWorkspace-domain';
-import { isEnterpriseEditionFromSettings } from '../../src/enterprise-edition/ee';
+import { isEnterpriseEdition, isEnterpriseEditionFromSettings } from '../../src/enterprise-edition/ee';
+import { INVESTIGATION_ENTERPRISE_EDITION_TYPES } from '../modules/investigationRun/investigationRun-types';
 import { pushAll } from '../utils/arrayUtil';
 import type { AuthContext, AuthUser } from '../types/user';
 import type {
@@ -713,8 +714,17 @@ export const stixLoadByIdStringify = async (
   opts: { version?: Version } = {},
 ): Promise<string> => {
   const { version = Version.Stix_2_1 } = opts;
-  const data = await stixLoadById(context, user, id, { version });
-  return data ? JSON.stringify(data) : '';
+  if (!id) {
+    return '';
+  }
+  const instance = await storeLoadByIdWithRefs(context, user, id);
+  if (!instance) {
+    return '';
+  }
+  if (INVESTIGATION_ENTERPRISE_EDITION_TYPES.includes(instance.entity_type) && !(await isEnterpriseEdition(context))) {
+    return '';
+  }
+  return JSON.stringify(convertStoreToStix(instance, version));
 };
 export const stixLoadByFilters = async (
   context: AuthContext,

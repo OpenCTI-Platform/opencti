@@ -674,6 +674,8 @@ const startEngine = async (exec: RunExecution) => {
     return {
       objectMarking: R.uniq([...markingIdsOf(current), ...carried.flatMap((element) => markingIdsOf(element))]),
       objectOrganization: intersectOrganizationIds(organizationIdsOf(current), carried),
+      context_ids: R.uniq([...collected.contextElements.map((element) => element.internal_id), ...(current.context_ids ?? [])])
+        .slice(0, INVESTIGATION_LIMITS.contextSources),
       agent_slug: agentSlug,
       pack_id: body.pack,
       xtm_investigation_id: engine.id,
@@ -864,25 +866,27 @@ const withLiveVersions = async (elements: BasicStoreCommon[], extraIds: string[]
   return [...elements, ...await findElements(managerContext, INVESTIGATION_MANAGER_USER, ids)];
 };
 
-// What a mirrored revision carries the access of: what it cites, its subject and its case.
+// What a mirrored revision carries the access of: what it cites, its subject,
+// its case and the context the engine received.
 const citedElements = async (exec: RunExecution, evidence: InvestigationEvidence[], conclusion: Record<string, unknown> | null | undefined): Promise<BasicStoreCommon[]> => {
   const ids = revisionCitedIds(evidence, conclusion);
   const cited = ids.length === 0 ? [] : withoutMemberRestricted(await findElements(exec.draftContext, exec.runUser, ids));
-  return withLiveVersions(cited, [exec.run.subject_id, exec.run.case_id].filter((id): id is string => !!id));
+  return withLiveVersions(cited, [exec.run.subject_id, exec.run.case_id, ...(exec.run.context_ids ?? [])].filter((id): id is string => !!id));
 };
 
 // A run and its outputs carry markings and organization sharing, never a member
 // restriction, and its markings were copied from what its identity read. The
 // run stops before anything more is sent to the engine or mirrored once its
 // subject or its case is no longer readable by that identity, or once one of
-// them, or an object the engine cites, is restricted to authorized members.
+// them, an object the engine received as context or an object it cites is
+// restricted to authorized members.
 // Restrictions are read on the live objects by the manager, whoever they hide
 // the object from: the copy a draft holds of a live object keeps the
 // restrictions it had when it was copied, and a restriction that excludes the
 // run identity would hide the object from it.
 const findCarryBoundary = async (exec: RunExecution, citedIds: string[]): Promise<{ reason: string; code: string } | null> => {
   const { run } = exec;
-  const ids = R.uniq([run.subject_id, run.case_id, ...citedIds].filter((id): id is string => !!id));
+  const ids = R.uniq([run.subject_id, run.case_id, ...(run.context_ids ?? []), ...citedIds].filter((id): id is string => !!id));
   const managerContext = await userContext(INVESTIGATION_MANAGER_USER);
   const [allLive, readableLive, inDraft] = await Promise.all([
     findElements(managerContext, INVESTIGATION_MANAGER_USER, ids),

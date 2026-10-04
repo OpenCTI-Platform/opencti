@@ -16,6 +16,7 @@ import {
   updateInvestigationRun,
 } from '../../../../src/modules/investigationRun/investigationRun-domain';
 import { statusTransition } from '../../../../src/modules/investigationRun/investigationRun-state';
+import { runCitedIds } from '../../../../src/modules/investigationRun/investigationRun-utils';
 import type { BasicStoreEntityInvestigationRun } from '../../../../src/modules/investigationRun/investigationRun-types';
 import * as entrepriseEdition from '../../../../src/enterprise-edition/ee';
 import * as aiAgentShared from '../../../../src/modules/playbook/components/ai-agent-shared';
@@ -436,10 +437,18 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
     const query = gql`query GenericRunLookup($id: String!) { stixObjectOrStixRelationship(id: $id) { ... on InvestigationRun { id } } }`;
     const withEdition = await queryAsAdminWithSuccess({ query, variables: { id: runId } });
     expect(withEdition.data.stixObjectOrStixRelationship).toMatchObject({ id: runId });
+    // The raw STIX serialization of any object, by id.
+    const raw = gql`query GenericRunRaw($id: String!) { stix(id: $id) stixCoreObjectRaw(id: $id) }`;
+    const rawWithEdition = await queryAsAdminWithSuccess({ query: raw, variables: { id: runId } });
+    expect(rawWithEdition.data.stix).toContain(runId);
+    expect(rawWithEdition.data.stixCoreObjectRaw).toContain(runId);
     const edition = vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(false);
     try {
       const withoutEdition = await queryAsAdminWithSuccess({ query, variables: { id: runId } });
       expect(withoutEdition.data.stixObjectOrStixRelationship).toBeNull();
+      const rawWithoutEdition = await queryAsAdminWithSuccess({ query: raw, variables: { id: runId } });
+      expect(rawWithoutEdition.data.stix || null).toBeNull();
+      expect(rawWithoutEdition.data.stixCoreObjectRaw || null).toBeNull();
       // The generic listing reads STIX objects and relationships only: never these internal types.
       const listing = gql`
         query GenericRunList($filters: FilterGroup) {
@@ -778,6 +787,39 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       });
       const draft = await queryAsAdmin({ query: gql`query Draft($id: String!) { draftWorkspace(id: $id) { id } }`, variables: { id: awaiting.draft_id } });
       expect(draft.data?.draftWorkspace ?? null).toBeNull();
+    } finally {
+      if (runId) await queryAsAdmin({ query: RUN_CANCEL, variables: { id: runId } });
+      await queryAsAdmin({ query: DELETE_CASE, variables: { id: caseId } });
+    }
+  });
+
+  it('stops an investigation once an object the engine received as context, without citing it, becomes restricted to authorized members', async () => {
+    // The second case of the suite, inside this case, reaches the engine as context; the engine never cites it.
+    const created = await queryAsAdminWithSuccess({
+      query: CREATE_CASE,
+      variables: { input: { name: 'Case Autopilot e2e context case', objects: [fixture.ipId, otherCase.id] } },
+    });
+    const caseId = created.data.caseIncidentAdd.id;
+    let runId = '';
+    try {
+      engineStage = 'planning';
+      const { data } = await queryAsAdminWithSuccess({ query: RUN_ADD, variables: { subjectId: caseId } });
+      runId = data.investigationRunAdd.id;
+      createdRuns.push({ id: runId });
+      await tickUntil(runId, (current) => current.run_phase === 'investigating');
+      const started = await loadInvestigationRun(testContext, runId) as BasicStoreEntityInvestigationRun;
+      expect(started.context_ids).toContain(otherCase.id);
+      expect(runCitedIds(started)).not.toContain(otherCase.id);
+      await queryAsAdminWithSuccess({ query: RESTRICT_CONTAINER, variables: { id: otherCase.id, input: [{ id: ADMIN_USER.id, access_right: 'admin' }] } });
+      await processInvestigationRun(testContext, runId);
+      expect(await readRun(runId)).toMatchObject({
+        run_status: 'failed',
+        end_reason_code: 'member_restricted',
+        evidence: [],
+        summary: null,
+        draft_id: null,
+        workspace_id: null,
+      });
     } finally {
       if (runId) await queryAsAdmin({ query: RUN_CANCEL, variables: { id: runId } });
       await queryAsAdmin({ query: DELETE_CASE, variables: { id: caseId } });

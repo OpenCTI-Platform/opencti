@@ -37,6 +37,9 @@ import {
 
 export const ENTITY_TYPE_INVESTIGATION_RUN = 'InvestigationRun';
 export const ENTITY_TYPE_INVESTIGATION_POLICY = 'InvestigationPolicy';
+// Internal types that exist only under the Enterprise Edition: their own
+// queries check it, and so does every generic read of them.
+export const INVESTIGATION_ENTERPRISE_EDITION_TYPES = [ENTITY_TYPE_INVESTIGATION_RUN, ENTITY_TYPE_INVESTIGATION_POLICY];
 
 // The XTM One intent the investigation engine answers OpenCTI case runs on
 // (declared in xtm-one.ts), and the engine contract (XTM One dev-docs/investigations.md).
@@ -107,6 +110,8 @@ export const INVESTIGATION_LIMITS = {
   contextRelationships: 300,
   candidates: 40,
   coursesOfAction: 40,
+  // The context of the latest engine runs (continuations included) a run keeps reading.
+  contextSources: 1200,
   approvals: 200,
   enrichmentEntities: 300,
   feedback: 500,
@@ -325,6 +330,10 @@ interface InvestigationRunAttributes {
   // A new Case-Incident is created in the run Draft for an indicator or an
   // observable investigated without an existing case.
   create_case: boolean;
+  // What the engine received as context, cited or not: entities, relationships,
+  // candidates, courses of action and PIRs. Empty on runs started before the
+  // context was recorded.
+  context_ids?: string[];
   workspace_id?: string | null;
   draft_id?: string | null;
   policy_id?: string | null;
