@@ -5560,6 +5560,7 @@
   "Unable to connect. Please check the configuration.": "No se puede establecer conexión. Comprueba la configuración.",
   "Unable to validate remote OpenCTI URL": "No se ha podido validar la URL remota de OpenCTI",
   "Unauthorized action, please refresh your browser": "Acción no autorizada, refresca tu navegador",
+  "Unavailable security platform": "Plataforma de seguridad no disponible",
   "Unfix the nodes and re-apply forces": "Liberar los nodos y reaplicar las fuerzas",
   "Unique identifier": "Identificador único",
   "Unique values": "Valores únicos",

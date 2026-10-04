@@ -5560,6 +5560,7 @@
   "Unable to connect. Please check the configuration.": "无法连接。请检查配置。",
   "Unable to validate remote OpenCTI URL": "无法验证远程 OpenCTI URL",
   "Unauthorized action, please refresh your browser": "未授权的操作，请刷新浏览器",
+  "Unavailable security platform": "不可用的安全平台",
   "Unfix the nodes and re-apply forces": "取消固定节点并重新应用强制",
   "Unique identifier": "唯一标识",
   "Unique values": "唯一值",

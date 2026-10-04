@@ -5560,6 +5560,7 @@
   "Unable to connect. Please check the configuration.": "연결할 수 없습니다. 구성을 확인해 주십시오.",
   "Unable to validate remote OpenCTI URL": "원격 OpenCTI URL을 확인할 수 없습니다",
   "Unauthorized action, please refresh your browser": "권한 없는 작업입니다. 브라우저를 새로고침하십시오",
+  "Unavailable security platform": "사용할 수 없는 보안 플랫폼",
   "Unfix the nodes and re-apply forces": "노드를 고정 해제하고 힘을 다시 적용하십시오",
   "Unique identifier": "고유 식별자",
   "Unique values": "고유한 가치",

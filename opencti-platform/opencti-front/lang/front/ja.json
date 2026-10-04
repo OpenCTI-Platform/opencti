@@ -5560,6 +5560,7 @@
   "Unable to connect. Please check the configuration.": "接続できません。設定を確認してください。",
   "Unable to validate remote OpenCTI URL": "リモートの OpenCTI URL を検証できませんでした",
   "Unauthorized action, please refresh your browser": "不正な操作です。ブラウザを更新してください",
+  "Unavailable security platform": "利用できないセキュリティプラットフォーム",
   "Unfix the nodes and re-apply forces": "ノードの固定を解除し、強制モードを再適用する",
   "Unique identifier": "一意な識別子",
   "Unique values": "固定値",
