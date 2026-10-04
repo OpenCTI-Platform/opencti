@@ -267,7 +267,6 @@ interface ContainerTimelineEventsViewProps {
   state: TimelineViewState;
   domain: TimelineDomain | null;
   lanes: readonly (typeof TIMELINE_LANES)[number][];
-  svgRef: React.RefObject<SVGSVGElement | null>;
   onDomainChange: (domain: TimelineDomain | null) => void;
   onSelect: (eventId: string | null) => void;
   onEdit: (event: TimelineEventDetails) => void;
@@ -287,7 +286,6 @@ const ContainerTimelineEventsView = ({
   state,
   domain,
   lanes,
-  svgRef,
   onDomainChange,
   onSelect,
   onEdit,
@@ -355,7 +353,6 @@ const ContainerTimelineEventsView = ({
               onFit={() => onDomainChange(null)}
               onSelect={onSelect}
               onClusterSelect={(clusterDomain) => onDomainChange(zoomDomain(clusterDomain, 1.2))}
-              svgRef={svgRef}
               ariaLabel={t_i18n('Timeline of {count} events', { values: { count: events.length } })}
             />
           ) : (
@@ -419,7 +416,6 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
   // Pan and zoom move the domain continuously: it lives here and reaches the URL once settled
   const [domain, setDomain] = useState<TimelineDomain | null>(state.domain);
   const urlTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const svgRef = useRef<SVGSVGElement>(null);
   const [liveUpdates, setLiveUpdates] = useState(0);
   const [formEvent, setFormEvent] = useState<TimelineEventDetails | null>(null);
   const [formOpen, setFormOpen] = useState(false);
@@ -562,7 +558,6 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
       from: exportWindow ? new Date(exportWindow[0]).toISOString() : null,
       to: exportWindow ? new Date(exportWindow[1]).toISOString() : null,
     },
-    svgRef,
   });
 
   if (!summary || !settings) {
@@ -622,7 +617,6 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
               state={state}
               domain={domain}
               lanes={lanes}
-              svgRef={svgRef}
               onDomainChange={onDomainChange}
               onSelect={(eventId) => updateState({ event: eventId })}
               onEdit={(event) => {

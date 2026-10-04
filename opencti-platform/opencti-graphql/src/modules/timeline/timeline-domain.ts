@@ -368,14 +368,6 @@ export const recordTimelineView = async (context: AuthContext, user: AuthUser, c
   addTimelineViewCount();
   return true;
 };
-
-/** Exports rendered in the browser never reach the export queries: they are counted here, like the server ones. */
-export const recordTimelineExport = async (context: AuthContext, user: AuthUser, containerId: string): Promise<boolean> => {
-  await loadTimelineContainer(context, user, containerId);
-  addTimelineExportCount();
-  return true;
-};
-
 export const listTimelineRules = (): TimelineRuleDefinition[] => {
   return getTimelineRules().map((rule) => ({
     id: rule.id,

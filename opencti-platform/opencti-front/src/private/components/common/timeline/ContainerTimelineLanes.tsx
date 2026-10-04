@@ -420,7 +420,6 @@ const ContainerTimelineLanes = ({
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerCancel={onPointerUp}
-            data-export-ignore="true"
           />
         )}
         <g clipPath={`url(#${clipId})`}>

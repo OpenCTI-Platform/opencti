@@ -191,11 +191,6 @@ const TIMELINE_VIEWED = gql`
     timelineViewed(containerId: $containerId)
   }
 `;
-const TIMELINE_EXPORTED = gql`
-  mutation TimelineExported($containerId: ID!) {
-    timelineExported(containerId: $containerId)
-  }
-`;
 const MARKING_DEFINITION = gql`
   query TimelineMarkingDefinition($id: String!) {
     markingDefinition(id: $id) { id }
@@ -724,10 +719,6 @@ describe('Incident and case timeline', () => {
       const viewed = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: TIMELINE_VIEWED, variables: { containerId: caseIncident.id } });
       expect(viewed.data.timelineViewed).toBe(true);
       await queryAsAdminWithError({ query: TIMELINE_VIEWED, variables: { containerId: 'unknown-container' } }, 'Timeline container cannot be found');
-      // Downloads rendered in the browser are counted like the server exports
-      const exported = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: TIMELINE_EXPORTED, variables: { containerId: caseIncident.id } });
-      expect(exported.data.timelineExported).toBe(true);
-      await queryAsAdminWithError({ query: TIMELINE_EXPORTED, variables: { containerId: 'unknown-container' } }, 'Timeline container cannot be found');
     });
 
     it('should update the settings of the timeline', async () => {

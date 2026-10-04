@@ -1,9 +1,9 @@
-import { RefObject, useState } from 'react';
-import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
+import { useState } from 'react';
+import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { htmlToPdf } from '../../../../utils/htmlToPdf/htmlToPdf';
 import { MAX_WIDTH_PORTRAIT } from '../../../../utils/htmlToPdf/utils/constants';
-import { containerTimelineExportFileQuery, containerTimelineExportQuery, timelineExportedMutation } from './ContainerTimelineMutations';
+import { containerTimelineExportFileQuery, containerTimelineExportQuery } from './ContainerTimelineMutations';
 import type { ContainerTimelineMutationsExportFileQuery } from './__generated__/ContainerTimelineMutationsExportFileQuery.graphql';
 import type {
   ContainerTimelineMutationsExportQuery,
@@ -15,7 +15,6 @@ import type {
 import {
   buildTimelineFileName,
   fitSvgToWidth,
-  serializeSvgElement,
   TIMELINE_ANCHOR_KEYS,
   TIMELINE_ANCHOR_LABELS,
   TIMELINE_KIND_LABELS,
@@ -115,8 +114,6 @@ export interface TimelineExportFilters {
 export interface TimelineFileOptions extends TimelineExportFilters {
   containerId: string;
   format: TimelineExportFormat;
-  // The rendered lanes chart, exported as is for SVG and PNG; the server rendering is used otherwise
-  svgElement?: SVGSVGElement | null;
 }
 
 /** Renders a timeline export as a file content, from the events the current user can see. */
@@ -163,18 +160,10 @@ export const useTimelineFileRenderer = () => {
     return result?.containerTimelineExport ?? '';
   };
 
+  // Every format comes from the server export snapshot (max shareable markings, content ceiling, anchors of the exported
+  // events); PNG is the server SVG rasterized in the browser
   const renderTimelineFile = async (options: TimelineFileOptions): Promise<Blob> => {
-    const { format, svgElement } = options;
-    // The rendered lanes chart is exported as is for SVG and PNG; the export is counted like the server ones
-    if (svgElement && (format === 'svg' || format === 'png')) {
-      commitMutation({ mutation: timelineExportedMutation, variables: { containerId: options.containerId } });
-      const svg = serializeSvgElement(svgElement);
-      if (format === 'svg') {
-        return new Blob([svg], { type: `${TIMELINE_EXPORT_MIME_TYPES.svg};charset=utf-8` });
-      }
-      return svgToPngBlob(svg, Number(svgElement.getAttribute('width')), Number(svgElement.getAttribute('height')));
-    }
-    return serverContentToBlob(format, await fetchServerExport(options, serverFormatOf(format)));
+    return serverContentToBlob(options.format, await fetchServerExport(options, serverFormatOf(options.format)));
   };
 
   /**
@@ -222,11 +211,10 @@ interface TimelineExportOptions {
   containerId: string;
   containerName: string;
   filters: TimelineExportFilters;
-  svgRef: RefObject<SVGSVGElement | null>;
 }
 
 /** Download of the timeline from the tab toolbar, with the filters and the time window of the current view. */
-const useContainerTimelineExport = ({ containerId, containerName, filters, svgRef }: TimelineExportOptions) => {
+const useContainerTimelineExport = ({ containerId, containerName, filters }: TimelineExportOptions) => {
   const { t_i18n } = useFormatter();
   const { renderTimelineFile } = useTimelineFileRenderer();
   const [exporting, setExporting] = useState(false);
@@ -234,7 +222,7 @@ const useContainerTimelineExport = ({ containerId, containerName, filters, svgRe
   const exportTimeline = async (format: TimelineExportFormat) => {
     setExporting(true);
     try {
-      const blob = await renderTimelineFile({ containerId, format, ...filters, svgElement: svgRef.current });
+      const blob = await renderTimelineFile({ containerId, format, ...filters });
       downloadBlob(blob, buildTimelineFileName(containerName, format));
     } catch {
       MESSAGING$.notifyError(t_i18n('The timeline export failed'));

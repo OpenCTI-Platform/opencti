@@ -18265,8 +18265,6 @@ export type Mutation = {
   timelineEventEdit?: Maybe<TimelineEvent>;
   timelineEventHide?: Maybe<TimelineEvent>;
   timelineEventPin?: Maybe<TimelineEvent>;
-  /** Record a download of the timeline rendered in the browser (SVG or PNG of the lanes as displayed; usage telemetry, no data change) */
-  timelineExported?: Maybe<Scalars['Boolean']['output']>;
   /** Import the analyst contributions carried by the timeline STIX extension of a container (used by the worker) */
   timelineImport?: Maybe<TimelineRegenerationResult>;
   timelineRegenerate?: Maybe<TimelineRegenerationResult>;
@@ -20906,11 +20904,6 @@ export type MutationTimelineEventHideArgs = {
 export type MutationTimelineEventPinArgs = {
   id: Scalars['ID']['input'];
   pinned: Scalars['Boolean']['input'];
-};
-
-
-export type MutationTimelineExportedArgs = {
-  containerId: Scalars['ID']['input'];
 };
 
 
@@ -51258,7 +51251,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   timelineEventEdit?: Resolver<Maybe<ResolversTypes['TimelineEvent']>, ParentType, ContextType, RequireFields<MutationTimelineEventEditArgs, 'id' | 'input'>>;
   timelineEventHide?: Resolver<Maybe<ResolversTypes['TimelineEvent']>, ParentType, ContextType, RequireFields<MutationTimelineEventHideArgs, 'hidden' | 'id'>>;
   timelineEventPin?: Resolver<Maybe<ResolversTypes['TimelineEvent']>, ParentType, ContextType, RequireFields<MutationTimelineEventPinArgs, 'id' | 'pinned'>>;
-  timelineExported?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationTimelineExportedArgs, 'containerId'>>;
   timelineImport?: Resolver<Maybe<ResolversTypes['TimelineRegenerationResult']>, ParentType, ContextType, RequireFields<MutationTimelineImportArgs, 'containerId' | 'extension'>>;
   timelineRegenerate?: Resolver<Maybe<ResolversTypes['TimelineRegenerationResult']>, ParentType, ContextType, RequireFields<MutationTimelineRegenerateArgs, 'containerId'>>;
   timelineSettingsUpdate?: Resolver<Maybe<ResolversTypes['TimelineSettings']>, ParentType, ContextType, RequireFields<MutationTimelineSettingsUpdateArgs, 'containerId' | 'input'>>;

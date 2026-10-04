@@ -431,15 +431,6 @@ export const fitSvgToWidth = (html: string, maxWidth: number): string => {
     return `<svg${before} width="${maxWidth}" height="${scaledHeight}"`;
   });
 };
-
-/** Standalone SVG document from a rendered SVG element (namespaces added, ready to download). */
-export const serializeSvgElement = (svg: SVGSVGElement): string => {
-  const clone = svg.cloneNode(true) as SVGSVGElement;
-  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-  clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
-  clone.querySelectorAll('[data-export-ignore="true"]').forEach((node) => node.remove());
-  return `<?xml version="1.0" encoding="UTF-8"?>\n${new XMLSerializer().serializeToString(clone)}`;
-};
 // endregion
 
 // region filters
