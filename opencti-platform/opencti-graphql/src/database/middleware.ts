@@ -2401,7 +2401,8 @@ const prepareAttributesForUpdate = async (
     if (input.key === ATTRIBUTE_ALIASES || input.key === ATTRIBUTE_ALIASES_OPENCTI) {
       const filteredValues = input.value.filter((e) => normalizeName(e) !== normalizeName((instance as BasicStoreEntity).name));
       const uniqAliases = R.uniqBy((e) => normalizeName(e), filteredValues);
-      return { key: input.key, value: uniqAliases };
+      // The operation is kept: a removal must not become a replacement by the removed aliases.
+      return { key: input.key, value: uniqAliases, operation: input.operation };
     }
     // For upsert or update, workflow cant be reset or setup on un-existing workflow
     if (input.key === X_WORKFLOW_ID) {
@@ -2521,14 +2522,17 @@ const updateAttributeRaw = async (
     const aliasField = resolveAliasesField(instanceType).name;
     const nameInput = R.find((e) => e.key === NAME_FIELD, preparedElements);
     const aliasesInput = R.find((e) => e.key === aliasField, preparedElements);
-    // A removal is resolved against the current aliases: the input becomes the aliases that remain, so the internal
-    // alias ids follow the result, and an upsert never cumulates the removed aliases back.
+    // An addition or a removal is resolved against the current aliases: the input becomes the resulting aliases, so the
+    // internal alias ids follow the result, and an upsert never cumulates removed aliases back.
     const isAliasesRemoval = aliasesInput?.operation === UPDATE_OPERATION_REMOVE;
-    if (aliasesInput && isAliasesRemoval) {
-      const removedAliases = (aliasesInput.value ?? []).map((a) => normalizeName(a));
+    if (aliasesInput && (isAliasesRemoval || aliasesInput.operation === EditOperation.Add)) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      aliasesInput.value = (aliasedInstance[aliasField] ?? []).filter((a: string) => !removedAliases.includes(normalizeName(a)));
+      const currentAliases: string[] = aliasedInstance[aliasField] ?? [];
+      const inputAliases = (aliasesInput.value ?? []).map((a) => normalizeName(a));
+      aliasesInput.value = isAliasesRemoval
+        ? currentAliases.filter((a) => !inputAliases.includes(normalizeName(a)))
+        : R.uniqBy((a: string) => normalizeName(a), [...currentAliases, ...aliasesInput.value]);
       aliasesInput.operation = EditOperation.Replace;
     }
     if (nameInput || aliasesInput) {

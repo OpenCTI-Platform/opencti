@@ -116,7 +116,7 @@ export const curationFieldAuthorityResolver: FieldAuthorityResolver = {
     if (rules.length === 0) return decisions;
     const ruled = rules.filter((rule) => rule.attribute in patch);
     if (ruled.length === 0) return decisions;
-    const connectors = await getEntitiesListFromCache<ConnectorUser>(context, SYSTEM_USER, ENTITY_TYPE_CONNECTOR);
+    const connectors = await getEntitiesListFromCache<BasicStoreEntity & { connector_user_id?: string }>(context, SYSTEM_USER, ENTITY_TYPE_CONNECTOR);
     const incoming = incomingSources(user, patch, connectors);
     ruled.forEach((rule) => {
       const decision = decideFieldAuthority(rule, incoming, currentSources(element, rule.attribute, connectors));
@@ -127,7 +127,7 @@ export const curationFieldAuthorityResolver: FieldAuthorityResolver = {
   recordApplied: async (context, user, element, type, patch, appliedKeys) => {
     try {
       const rules = await rulesFor(context, type);
-      const connectors = await getEntitiesListFromCache<ConnectorUser>(context, SYSTEM_USER, ENTITY_TYPE_CONNECTOR);
+      const connectors = await getEntitiesListFromCache<BasicStoreEntity & { connector_user_id?: string }>(context, SYSTEM_USER, ENTITY_TYPE_CONNECTOR);
       const incoming = incomingSources(user, patch, connectors);
       const entries: FieldAuthorityEntry[] = [];
       rules.filter((rule) => appliedKeys.includes(rule.attribute)).forEach((rule) => {
