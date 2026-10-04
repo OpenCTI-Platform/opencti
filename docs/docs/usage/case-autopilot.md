@@ -14,9 +14,7 @@ Case Autopilot is the OpenCTI face of the XTM One investigation engine (Deep Inv
 - XTM One connected to the platform (see the [XTM Suite configuration](../deployment/configuration.md#xtm-suite)), in a version that provides the investigation engine. When XTM One is not connected or does not run investigations, the Autopilot tab and the launch dialog say so and no investigation starts.
 - To start or continue an investigation: the capability to update knowledge, and the capability to enrich knowledge when the policy of the investigation runs enrichments. Without the latter, the launch dialog explains why a policy with enrichments cannot be picked. An investigation started by a playbook or for a new request for information acts as the identity configured there, which needs the same capabilities.
 - To manage investigation policies: the capability to manage customization.
-- The investigated entity and its case must not be restricted to authorized members: an investigation carries the markings and the organization sharing of what it reads and cites, but not a member restriction. When the investigated entity, its case or an object the engine cites becomes restricted to authorized members while the investigation runs, or the identity of the investigation can no longer read the entity or its case, the investigation stops before it records anything more, its engine run is stopped, what it had found (goal plan, evidence, hypotheses, recommendations, summary and report) is withheld from the investigation, the approvals it was waiting for are rejected and its draft is deleted with what it wrote there.
-
-![An investigation stopped because an entity became restricted to authorized members](assets/case-autopilot/member-restricted-dark.png)
+- The investigated entity and its case must not be restricted to authorized members (see [Entities restricted to authorized members](#entities-restricted-to-authorized-members)).
 
 ## Run Case Autopilot
 
@@ -63,6 +61,14 @@ The tab shows, from top to bottom:
 A step that failed, found nothing, was cut or was never reached always says why and what to do next: "Web research: APT28 could not be queried." with **Run again**, "No enrichment connector of the policy accepts IPv4 address." with **Choose connectors in the policy**, "Stopped before this step: the budget of 10 iterations was used." with **Continue the investigation**, "No conclusion - 3 of 6 steps failed, too little evidence to weigh the hypotheses." with **Run again**. Every reason the engine reports has its own sentence; **Show details** gives the technical code for your administrator.
 
 ![Failed steps with their reason and next action](assets/case-autopilot-failed-step.png)
+
+### Entities restricted to authorized members
+
+An investigation carries the markings and the organization sharing of what it reads and cites, but not a member restriction. Case Autopilot therefore does not investigate an entity restricted to authorized members, and leaves the objects restricted to authorized members out of what it reads and cites.
+
+When the investigated entity, its case or an object the engine cites becomes restricted to authorized members while the investigation runs, or the identity of the investigation can no longer read the entity or its case, the investigation stops before it records anything more: its engine run is stopped, what it had found (goal plan, evidence, hypotheses, recommendations, summary and report) is withheld, the approvals it was waiting for are rejected and its draft is deleted with what it wrote there.
+
+![An investigation stopped because an entity became restricted to authorized members](assets/case-autopilot/member-restricted-dark.png)
 
 ### Hypotheses
 
