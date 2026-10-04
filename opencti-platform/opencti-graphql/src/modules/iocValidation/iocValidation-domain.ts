@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Promise as BluePromise } from 'bluebird';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicStoreBase } from '../../types/store';
+import type { BasicStoreBase, BasicStoreRelation } from '../../types/store';
 import type { StixId } from '../../types/stix-2-1-common';
 import conf, { BUS_TOPICS, logApp } from '../../config/conf';
 import { ForbiddenAccess, FunctionalError, ValidationError } from '../../config/errors';
@@ -12,6 +12,8 @@ import { isEmptyField, isNotEmptyField } from '../../database/utils';
 import { lockResources } from '../../lock/master-lock';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_GRANTED_REFS, INPUT_MARKINGS } from '../../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
+import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
+import { cleanMarkings } from '../../utils/markingDefinition-utils';
 import { fullRelationsList, internalLoadById, pageEntitiesConnection, storeLoadById, storeLoadByIds } from '../../database/middleware-loader';
 import { connectorsForEnrichment } from '../../database/repository';
 import { pushToConnector } from '../../database/rabbitmq';
@@ -725,6 +727,29 @@ const toObservedAt = (value: unknown, now: Date) => {
 };
 
 /**
+ * Whether an existing sighting carrying the deterministic id of a validation result records that result: the
+ * indicator sighted by the platform, negative for a miss only, at least as restricted as both ends and shared with
+ * their organizations only. Generic sighting creation accepts a supplied STIX id, so the id alone proves nothing.
+ */
+const recordsValidationResult = async (
+  context: AuthContext,
+  sighting: BasicStoreRelation,
+  indicator: BasicStoreEntityIndicator,
+  platform: BasicStoreEntitySecurityPlatform,
+  status: string,
+) => {
+  const markings = (sighting[RELATION_OBJECT_MARKING] ?? []) as string[];
+  const granted = (sighting[RELATION_GRANTED_TO] ?? []) as string[];
+  const organizations = new Set(pairOrganizations(indicator, platform));
+  const cleaned = await cleanMarkings(context, [...markings, ...pairMarkings(indicator, platform)]);
+  return sighting.fromId === indicator.internal_id
+    && sighting.toId === platform.internal_id
+    && Boolean(sighting.x_opencti_negative) === (status === VALIDATION_STATUS_MISSED)
+    && cleaned.every((marking: { internal_id?: string } | string) => markings.includes(typeof marking === 'string' ? marking : marking.internal_id ?? ''))
+    && granted.every((id) => organizations.has(id));
+};
+
+/**
  * Validation results proven by a security platform from its own data (for example a SIEM that saw the benign test
  * of a request). Only the pairs of the request on that platform still waiting for an answer are updated, so an
  * OpenAEV verdict is never overwritten. Each result is recorded as a sighting of the indicator by the platform
@@ -785,6 +810,14 @@ export const reportIocValidationResults = async (context: AuthContext, user: Aut
       if (!waiting && deployment.validation_status !== result.status) {
         return;
       }
+      const sightingStixId = validationResultSightingStixId(request.internal_id, indicator.internal_id, platform.internal_id);
+      const sighting = await internalLoadById<BasicStoreRelation>(context, SYSTEM_USER, sightingStixId, { type: STIX_SIGHTING_RELATIONSHIP });
+      if (sighting && !await recordsValidationResult(context, sighting, indicator, platform, result.status)) {
+        throw FunctionalError('A sighting with the identifier of this validation result exists and does not record it', {
+          id: request.internal_id,
+          sightingId: sighting.internal_id,
+        });
+      }
       if (waiting) {
         const { element } = await patchAttribute(context, user, deployment.internal_id, RELATION_DEPLOYED_ON, {
           validation_status: result.status,
@@ -792,8 +825,6 @@ export const reportIocValidationResults = async (context: AuthContext, user: Aut
         });
         await notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, element, user);
       }
-      const sightingStixId = validationResultSightingStixId(request.internal_id, indicator.internal_id, platform.internal_id);
-      const sighting = await internalLoadById(context, SYSTEM_USER, sightingStixId, { type: STIX_SIGHTING_RELATIONSHIP });
       if (!sighting) {
         await createRelation(context, user, {
           fromId: indicator.internal_id,

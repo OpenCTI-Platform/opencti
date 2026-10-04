@@ -1,5 +1,6 @@
 import gql from 'graphql-tag';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import * as streamHandler from '../../../../src/database/stream/stream-handler';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
 import { ADMIN_USER, getUserIdByEmail, testContext, USER_CONNECTOR, USER_EDITOR } from '../../../utils/testQuery';
 import { connectorDelete, registerConnector } from '../../../../src/domain/connector';
@@ -9,7 +10,7 @@ import { ConnectorType } from '../../../../src/generated/graphql';
 import { IOC_VALIDATION_INACCESSIBLE_REASON, maintainIocValidationRequests, validationResultSightingStixId } from '../../../../src/modules/iocValidation/iocValidation-domain';
 import { ENTITY_TYPE_IOC_VALIDATION_REQUEST, IOC_VALIDATION_CONNECTOR_SCOPE } from '../../../../src/modules/iocValidation/iocValidation-types';
 import { internalLoadById, storeLoadById } from '../../../../src/database/middleware-loader';
-import { patchAttribute } from '../../../../src/database/middleware';
+import { createRelation, patchAttribute } from '../../../../src/database/middleware';
 import { elDeleteElements, elUpdate } from '../../../../src/database/engine';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
 import type { BasicStoreEntity, BasicStoreRelation } from '../../../../src/types/store';
@@ -609,6 +610,43 @@ describe('IOC validation requests', () => {
     await queryAsAdminWithSuccess({ query: REQUEST_DELETE, variables: { id } });
     const deletedSighting = await storeLoadById(testContext, ADMIN_USER, validationResultSightingStixId(id, liveIndicatorId, platformId), STIX_SIGHTING_RELATIONSHIP);
     expect(deletedSighting).toBeFalsy();
+  });
+
+  it('should refuse a result whose sighting identifier is taken by a sighting that does not record it', async () => {
+    // Writes outside the dataset: kept out of the raw stream the synchronization tests count
+    const streamed = [
+      vi.spyOn(streamHandler, 'storeCreateEntityEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeCreateRelationEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeUpdateEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeDeleteEvent').mockResolvedValue(undefined as never),
+    ];
+    let id: string | undefined;
+    try {
+      const created = await queryAsAdminWithSuccess({
+        query: REQUEST_VALIDATION,
+        variables: { platformIds: [platformId], indicatorIds: [liveIndicatorId], testKinds: ['dns_resolution'], name: 'Collision' },
+      });
+      id = created.data?.indicatorsRequestValidation.id as string;
+      // A positive sighting created beforehand under the deterministic id of the result
+      await createRelation(testContext, ADMIN_USER, {
+        fromId: liveIndicatorId,
+        toId: platformId,
+        relationship_type: STIX_SIGHTING_RELATIONSHIP,
+        stix_id: validationResultSightingStixId(id, liveIndicatorId, platformId),
+        x_opencti_negative: false,
+      });
+      await queryAsUserIsExpectedError(USER_CONNECTOR, {
+        query: REPORT_RESULTS,
+        variables: { id, platformId, results: [{ indicatorId: liveIndicatorId, status: 'missed' }] },
+      });
+      const deployment = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: liveDeploymentId } });
+      expect(deployment.data?.stixCoreRelationship.validation_status).toEqual('requested');
+    } finally {
+      if (id) {
+        await queryAsAdminWithSuccess({ query: REQUEST_DELETE, variables: { id } });
+      }
+      streamed.forEach((spy) => spy.mockRestore());
+    }
   });
 
   it('should leave the expired status to the deployment manager on every write path', async () => {
