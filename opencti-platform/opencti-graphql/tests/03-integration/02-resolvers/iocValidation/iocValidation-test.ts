@@ -18,6 +18,8 @@ import { MARKING_TLP_AMBER } from '../../../../src/schema/identifier';
 
 const IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202020';
 const WAITING_IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202021';
+// The platform refuses to recreate an id deleted moments earlier, so each offline connector test registers its own
+const UNREADABLE_IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202022';
 
 const INDICATOR_ADD = gql`
   mutation IndicatorAdd($input: IndicatorAddInput!) {
@@ -514,15 +516,15 @@ describe('IOC validation requests', () => {
   it('should leave out before dispatch the pairs the OpenAEV service account can no longer read', async () => {
     const connectorUserId = await getUserIdByEmail(USER_CONNECTOR.email);
     const waitingConnector = {
-      id: WAITING_IOC_VALIDATION_CONNECTOR,
-      name: 'OpenAEV IOC validation (offline)',
+      id: UNREADABLE_IOC_VALIDATION_CONNECTOR,
+      name: 'OpenAEV IOC validation (offline, markings changed)',
       type: ConnectorType.InternalEnrichment,
       scope: [IOC_VALIDATION_CONNECTOR_SCOPE],
       auto: false,
       auto_update: false,
     };
     await registerConnector(testContext, ADMIN_USER, waitingConnector, { connector_user_id: connectorUserId });
-    const offline = await storeLoadById<BasicStoreEntity>(testContext, ADMIN_USER, WAITING_IOC_VALIDATION_CONNECTOR, ENTITY_TYPE_CONNECTOR);
+    const offline = await storeLoadById<BasicStoreEntity>(testContext, ADMIN_USER, UNREADABLE_IOC_VALIDATION_CONNECTOR, ENTITY_TYPE_CONNECTOR);
     await elUpdate(testContext, offline._index, offline.internal_id, { doc: { updated_at: new Date(Date.now() - 10 * 60 * 1000).toISOString() } });
     resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
     const hidden = await queryAsAdminWithSuccess({
@@ -540,7 +542,7 @@ describe('IOC validation requests', () => {
           platformIds: [platformId],
           indicatorIds: [liveIndicatorId, hiddenId],
           testKinds: ['dns_resolution'],
-          connectorId: WAITING_IOC_VALIDATION_CONNECTOR,
+          connectorId: UNREADABLE_IOC_VALIDATION_CONNECTOR,
           name: 'Partly readable by OpenAEV',
         },
       });
@@ -568,7 +570,7 @@ describe('IOC validation requests', () => {
         await queryAsAdminWithSuccess({ query: REQUEST_DELETE, variables: { id: partialRequestId } });
       }
       await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: hiddenId } });
-      await connectorDelete(testContext, ADMIN_USER, WAITING_IOC_VALIDATION_CONNECTOR);
+      await connectorDelete(testContext, ADMIN_USER, UNREADABLE_IOC_VALIDATION_CONNECTOR);
       resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
     }
   });
