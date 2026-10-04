@@ -223,8 +223,9 @@ const resultDate = (result: BasicStoreEntity | undefined, relation: BasicStoreRe
 };
 
 const resultCoverageId = (result: BasicStoreEntity | undefined) => {
-  const refs = (result as unknown as Record<string, string[] | undefined> | undefined)?.[RELATION_RESULT_OF];
-  return refs?.[0];
+  // result-of is a single ref: a loaded result holds the id itself, not a list
+  const ref = (result as unknown as Record<string, string | string[] | undefined> | undefined)?.[RELATION_RESULT_OF];
+  return Array.isArray(ref) ? ref[0] : ref;
 };
 
 export const buildTechniqueCoverage = (attackPatternId: string, graph: ComputationGraph, computedAt: string): DefenseCoverage => {

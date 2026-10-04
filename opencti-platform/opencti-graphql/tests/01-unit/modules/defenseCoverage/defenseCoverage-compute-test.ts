@@ -21,7 +21,8 @@ const buildGraph = (): ComputationGraph => {
     pattern_type: 'sigma',
     x_opencti_rule_logsource: { category: 'process_creation', product: 'windows' },
   } as unknown as BasicStoreEntityIndicator;
-  const result = { internal_id: 'scr-1', coverage_last_result: '2026-09-01T00:00:00.000Z', 'result-of': ['coverage-1'] } as unknown as BasicStoreEntity;
+  // A loaded result holds its single result-of ref as an id, as the engine data converter rebuilds it
+  const result = { internal_id: 'scr-1', coverage_last_result: '2026-09-01T00:00:00.000Z', 'result-of': 'coverage-1' } as unknown as BasicStoreEntity;
   return {
     platforms: [
       { id: SIEM, name: 'SIEM', entity_type: 'SecurityPlatform', stix_ids: ['identity--siem'] },
