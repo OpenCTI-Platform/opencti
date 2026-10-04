@@ -244,6 +244,27 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
     };
   }
 
+  // The raw cause stays behind a toggle, for a failed recommendation and for one whose outcome is unknown
+  const errorDetails = recommendation.error_message ? (
+    <>
+      <Button
+        variant="tertiary"
+        size="small"
+        onClick={() => setErrorDetailsOpen(!errorDetailsOpen)}
+        startIcon={errorDetailsOpen ? <ExpandLessOutlined /> : <ExpandMoreOutlined />}
+        aria-expanded={errorDetailsOpen}
+        data-testid="source-recommendation-error-details"
+      >
+        {errorDetailsOpen ? t_i18n('Hide details') : t_i18n('Show details')}
+      </Button>
+      <Collapse in={errorDetailsOpen}>
+        <Typography variant="caption" component="pre" sx={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'monospace' }}>
+          {recommendation.error_message}
+        </Typography>
+      </Collapse>
+    </>
+  ) : null;
+
   return (
     <Card padding="small" data-testid={`source-recommendation-${recommendation.id}`}>
       <Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={2}>
@@ -292,6 +313,7 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
                 title={t_i18n('The change is being applied')}
                 description={t_i18n('If this lasts, its outcome could not be recorded: check the target of the recommendation. It stays listed as applying and is never applied a second time.')}
               />
+              {errorDetails}
             </Box>
           )}
           {recommendation.status === 'failed' && (
@@ -315,25 +337,7 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
                   </Stack>
                 ) : undefined}
               />
-              {recommendation.error_message && (
-                <>
-                  <Button
-                    variant="tertiary"
-                    size="small"
-                    onClick={() => setErrorDetailsOpen(!errorDetailsOpen)}
-                    startIcon={errorDetailsOpen ? <ExpandLessOutlined /> : <ExpandMoreOutlined />}
-                    aria-expanded={errorDetailsOpen}
-                    data-testid="source-recommendation-error-details"
-                  >
-                    {errorDetailsOpen ? t_i18n('Hide details') : t_i18n('Show details')}
-                  </Button>
-                  <Collapse in={errorDetailsOpen}>
-                    <Typography variant="caption" component="pre" sx={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'monospace' }}>
-                      {recommendation.error_message}
-                    </Typography>
-                  </Collapse>
-                </>
-              )}
+              {errorDetails}
             </Box>
           )}
           {details.length > 0 && (
