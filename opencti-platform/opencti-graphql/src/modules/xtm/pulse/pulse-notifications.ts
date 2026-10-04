@@ -28,6 +28,23 @@ export const PULSE_TRENDING_EVENT_TYPE = TriggerEventType.PulseTrending;
 const TRENDING_NOTIFICATION_MEMORY_DAYS = 7;
 const TRENDING_NOTIFICATION_SIZE = 200;
 
+// The platform buckets of XTM Hub ('<5', '25-49', '250+') in words, as the Threat Pulse screens show them.
+export const pulsePlatformsBucketText = (bucket: string | null | undefined): string | null => {
+  const below = /^<(\d+)$/.exec(bucket ?? '');
+  if (below) {
+    return `fewer than ${below[1]} platforms`;
+  }
+  const range = /^(\d+)-(\d+)$/.exec(bucket ?? '');
+  if (range) {
+    return `${range[1]} to ${range[2]} platforms`;
+  }
+  const atLeast = /^(\d+)\+$/.exec(bucket ?? '');
+  if (atLeast) {
+    return `${atLeast[1]} platforms or more`;
+  }
+  return null;
+};
+
 // Only the triggers stored by users: the triggers the platform generates for every user have no entity type.
 export const isPulseTrendingTrigger = ({ trigger }: ResolvedLive) => {
   return trigger.entity_type === ENTITY_TYPE_TRIGGER && (trigger.event_types ?? []).includes(PULSE_TRENDING_EVENT_TYPE);
@@ -88,6 +105,7 @@ export const runPulseTrendingNotifications = async (context: AuthContext) => {
     if (!stix) {
       continue;
     }
+    const platforms = pulsePlatformsBucketText(entry.platforms_bucket);
     for (let triggerIndex = 0; triggerIndex < pendingTriggers.length; triggerIndex += 1) {
       const { users, trigger } = pendingTriggers[triggerIndex];
       const filters = trigger.filters ? JSON.parse(trigger.filters) : undefined;
@@ -100,7 +118,7 @@ export const runPulseTrendingNotifications = async (context: AuthContext) => {
           targets.push({
             user: convertToNotificationUser(user, trigger.notifiers),
             type: PULSE_TRENDING_EVENT_TYPE,
-            message: `${instanceMessage} is trending in your sector (${entry.platforms_bucket} platforms)`,
+            message: platforms ? `${instanceMessage} is trending in your sector (${platforms})` : `${instanceMessage} is trending in your sector`,
           });
         }
       }
