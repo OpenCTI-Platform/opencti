@@ -875,9 +875,10 @@ export const filterReadableSkipped = async (context: AuthContext, user: AuthUser
 };
 
 export const readableResultsSummary = async (context: AuthContext, user: AuthUser, request: BasicStoreEntityIocValidationRequest) => {
-  const [readableIndicators, readablePlatforms] = await Promise.all([
+  const [readableIndicators, readablePlatforms, skipped] = await Promise.all([
     findReaderIndicatorIds(context, user, request.indicator_ids ?? []),
     filterReadablePlatformIds(context, user, request),
+    filterReadableSkipped(context, user, request),
   ]);
   const platforms = new Set(readablePlatforms);
   // A deployment carries the markings of both ends: a reader of the indicator and of the platform may still not read it.
@@ -885,14 +886,14 @@ export const readableResultsSummary = async (context: AuthContext, user: AuthUse
   const readableDeploymentIds = new Set(readableDeployments.map((d) => d.internal_id));
   const fullyReadable = (request.indicator_ids ?? []).every((id) => readableIndicators.has(id))
     && (request.platform_ids ?? []).every((id) => platforms.has(id))
-    && (request.pairs ?? []).every((pair) => readableDeploymentIds.has(pair.deployed_on_id));
+    && (request.pairs ?? []).every((pair) => readableDeploymentIds.has(pair.deployed_on_id))
+    && skipped.length === (request.skipped ?? []).length;
   if (fullyReadable) {
     return request.results_summary ?? emptyResultsSummary();
   }
   const pairs = (request.pairs ?? []).filter((pair) => readableIndicators.has(pair.indicator_id)
     && platforms.has(pair.platform_id)
     && readableDeploymentIds.has(pair.deployed_on_id));
-  const skipped = await filterReadableSkipped(context, user, request);
   // Outcomes of this request only: a pair taken over by a newer request keeps the outcome recorded for this one
   const bound = readableDeployments.filter((d) => d.validation_run_id === request.internal_id);
   return summarizeRequestPairs(withPairOutcomes(pairs, bound), skipped.length);

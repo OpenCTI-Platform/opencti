@@ -74,7 +74,7 @@ with deployments; it also rechecks them continuously in bounded batches.
 A deployment, its hits sighting and its validation results carry the markings of both the indicator and the
 security platform, so only the users who can read both can read them. Creating or importing a `deployed-on`
 relationship without these markings is refused, a deployment whose indicator or security platform gets a new
-marking receives it at once, and the counters follow every change of markings, sharing or authorized members of
+marking receives it at once, and the counters follow every change of markings, sharing, authorized members or author of
 either end. An indicator has one deployment per security
 platform: a `deployed-on` relationship has no start or stop time (its dates are the deployment, synchronization and
 removal dates), so creating or importing it again updates the existing one. The counters stored on an indicator are visible to every
@@ -182,7 +182,7 @@ following parameters:
 
 | Parameter                                           | Environment variable                                 | Default value | Description                                                     |
 |:----------------------------------------------------|:-----------------------------------------------------|:--------------|:----------------------------------------------------------------|
-| indicator_deployment_manager:enabled                | INDICATOR_DEPLOYMENT_MANAGER__ENABLED                | true          | Enable the indicator deployment manager: expiry of deployments, counters, maintenance of validation requests, and the markings of deployments after a change of markings, sharing or authorized members of their indicator or security platform. Keep it enabled. |
+| indicator_deployment_manager:enabled                | INDICATOR_DEPLOYMENT_MANAGER__ENABLED                | true          | Enable the indicator deployment manager: expiry of deployments, counters, maintenance of validation requests, and the markings of deployments after a change of markings, sharing, authorized members or author of their indicator or security platform. Keep it enabled. |
 | indicator_deployment_manager:interval               | INDICATOR_DEPLOYMENT_MANAGER__INTERVAL               | 60000         | Interval between two runs of the manager, in milliseconds.      |
 | indicator_deployment_manager:removal_grace_period   | INDICATOR_DEPLOYMENT_MANAGER__REMOVAL_GRACE_PERIOD   | 86400000      | Time given to a connector to confirm a removal, in milliseconds. |
 | indicator_deployment_manager:reconciliation_max_pages | INDICATOR_DEPLOYMENT_MANAGER__RECONCILIATION_MAX_PAGES | 1000        | Pages of 1,000 indicators whose counters are recomputed right after a security platform is deleted or merged. |

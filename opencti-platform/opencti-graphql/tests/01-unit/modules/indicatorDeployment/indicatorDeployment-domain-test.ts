@@ -201,8 +201,10 @@ describe('deployment manager stream extraction', () => {
       update({ type: 'identity', extensions: { [ext]: { id: 'organization-1', type: 'Organization' } } }, '/object_marking_refs/0'),
       update({ type: 'indicator', extensions: { [ext]: { id: 'indicator-4', type: 'Indicator' } } }, '/extensions/' + ext + '/authorized_members/0'),
       update({ type: 'relationship', relationship_type: 'deployed-on', extensions: { [ext]: { id: 'deployment-1', source_ref: 'indicator-5' } } }, '/object_marking_refs/0'),
+      // With organization sharing enforced, an individual creator reads the deployments it created
+      update({ type: 'indicator', extensions: { [ext]: { id: 'indicator-6', type: 'Indicator' } } }, '/created_by_ref'),
     ]);
-    expect(changes).toEqual({ indicatorIds: ['indicator-1', 'indicator-3', 'indicator-4', 'indicator-5'], platformIds: ['platform-1', 'platform-2'] });
+    expect(changes).toEqual({ indicatorIds: ['indicator-1', 'indicator-3', 'indicator-4', 'indicator-5', 'indicator-6'], platformIds: ['platform-1', 'platform-2'] });
     expect(extractAccessChangedEndpoints([])).toEqual({ indicatorIds: [], platformIds: [] });
   });
 });
