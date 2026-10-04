@@ -134,6 +134,8 @@ The result contains:
 | New relationships by type | All relationships created in the period, by relationship type. |
 | Top changed entities | The changed entities, ranked by a change score that weighs new, removed and revoked relationships, confidence changes on relationships, changed attributes, creation and revocation in the period, and confidence and score shifts. |
 
+![Top changed entities, with the confidence changes on their relationships](assets/landscape-changes-top-entities.png)
+
 Click an entity in **Top changed entities** to open its **Changes** tab on the same period. Click **Export** to download the landscape changes in JSON, CSV or PDF.
 
 Every figure is computed with your rights: a relationship whose change you cannot see, or that was removed from an entity you cannot access, is not counted. A stored result is only shown again while you can still access everything it counts.
