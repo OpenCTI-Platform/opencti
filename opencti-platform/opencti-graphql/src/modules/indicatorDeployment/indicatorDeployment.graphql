@@ -154,12 +154,13 @@ type Mutation {
     metadata: IndicatorDeploymentMetadataInput
   ): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE, CONNECTORAPI], and: true)
   indicatorReportDeployments(platformId: StixRef!, reports: [IndicatorDeploymentReportInput!]!): IndicatorDeploymentBatchResult @auth(for: [KNOWLEDGE_KNUPDATE, CONNECTORAPI], and: true)
-  # lastHit is the replay watermark of the report: a retry carries the same lastHit and is never counted twice.
+  # lastHit is required (refused when empty; nullable in the schema so that clients declaring it nullable keep
+  # validating): it is the replay watermark of the report, a retry carries the same lastHit and is never counted twice.
   indicatorReportHits(
     indicatorId: StixRef!
     platformId: StixRef!
     count: Int!
-    lastHit: DateTime!
+    lastHit: DateTime
     firstHit: DateTime
   ): StixSightingRelationship @auth(for: [KNOWLEDGE_KNUPDATE, CONNECTORAPI], and: true)
   indicatorDeploymentRetry(id: ID!): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE])

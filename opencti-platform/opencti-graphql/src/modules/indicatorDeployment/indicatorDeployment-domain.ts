@@ -613,8 +613,8 @@ export interface ReportHitsArgs {
   indicatorId: string;
   platformId: string;
   count: number;
-  // Replay watermark: a report whose last hit is not after the last known hit is already counted.
-  lastHit: DateInput;
+  // Required replay watermark: a report whose last hit is not after the last known hit is already counted.
+  lastHit?: DateInput;
   firstHit?: DateInput;
 }
 

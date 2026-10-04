@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
+import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
 import { ADMIN_USER, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext, USER_CONNECTOR, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
 import {
   backfillIndicatorDeploymentCounters,
@@ -99,7 +99,7 @@ const REPORT_DEPLOYMENTS = gql`
   }
 `;
 const REPORT_HITS = gql`
-  mutation IndicatorReportHits($indicatorId: StixRef!, $platformId: StixRef!, $count: Int!, $lastHit: DateTime!, $firstHit: DateTime) {
+  mutation IndicatorReportHits($indicatorId: StixRef!, $platformId: StixRef!, $count: Int!, $lastHit: DateTime, $firstHit: DateTime) {
     indicatorReportHits(indicatorId: $indicatorId, platformId: $platformId, count: $count, lastHit: $lastHit, firstHit: $firstHit) {
       id
       attribute_count
@@ -404,6 +404,14 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
       query: REPORT_HITS,
       variables: { indicatorId, platformId, count: 50, lastHit: '2026-10-03T10:00:00.000Z' },
     });
+  });
+
+  it('should refuse a hits report without the time of its last hit, which keeps a retried report from being counted twice', async () => {
+    await queryAsUserIsExpectedError(
+      USER_CONNECTOR,
+      { query: REPORT_HITS, variables: { indicatorId, platformId, count: 1 } },
+      'The time of the last hit is required: it keeps a retried report from being counted twice',
+    );
   });
 
   it('should refuse deployment state written by a regular editor through the generic relationship creation', async () => {
