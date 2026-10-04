@@ -185,7 +185,7 @@ const SourceIntelligenceSettingsForm = ({ queryRef }: SettingsFormProps) => {
       enableReinitialize
       initialValues={initialValues}
       validationSchema={buildValidation(t_i18n)}
-      onSubmit={(values, { setSubmitting, resetForm }) => {
+      onSubmit={(values, { setSubmitting }) => {
         const input = {
           ...toNumbers({
             recompute_hour_utc: values.recompute_hour_utc,
@@ -214,12 +214,15 @@ const SourceIntelligenceSettingsForm = ({ queryRef }: SettingsFormProps) => {
         };
         commit({
           variables: { input },
+          // The settings have no Relay identity: the saved ones replace those the page reads, and the form reinitializes
+          updater: (store) => {
+            const saved = store.getRootField('sourceIntelligenceSettingsEdit');
+            if (saved) {
+              store.getRoot().setLinkedRecord(saved, 'sourceIntelligenceSettings');
+            }
+          },
           onCompleted: (_, errors) => {
             setSubmitting(false);
-            // The settings have no Relay identity: the saved values become the form's initial state
-            if (!errors?.length) {
-              resetForm({ values });
-            }
             notifyMutationOutcome(errors, { success: t_i18n('Source intelligence settings saved') });
           },
           onError: () => setSubmitting(false),
