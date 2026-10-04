@@ -3,7 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router';
 import { Box, Collapse, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { Chip, type ChipSeverity, Textarea, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { Alert, Chip, type ChipSeverity, Textarea, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { CheckOutlined, CloseOutlined, ExpandLessOutlined, ExpandMoreOutlined, UndoOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import Card from '@common/card/Card';
@@ -11,7 +11,6 @@ import Dialog from '@common/dialog/Dialog';
 import FormButtonContainer from '@common/form/FormButtonContainer';
 import { useFormatter } from '../../../../components/i18n';
 import { useSourceMetricFormat } from './SourceMetricValue';
-import SourceIntelligenceAlert from './SourceIntelligenceAlert';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useGranted, { INGESTION_SETINGESTIONS, MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
 import type { Theme } from '../../../../components/Theme';
@@ -316,7 +315,7 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
           )}
           {recommendation.status === 'applying' && (
             <Box sx={{ marginTop: 1 }}>
-              <SourceIntelligenceAlert
+              <Alert
                 severity="info"
                 title={t_i18n('The change is being applied')}
                 description={t_i18n('If this lasts, its outcome could not be recorded: check the target of the recommendation. It stays listed as applying and is never applied a second time.')}
@@ -326,7 +325,7 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
           )}
           {recommendation.status === 'reverting' && (
             <Box sx={{ marginTop: 1 }}>
-              <SourceIntelligenceAlert
+              <Alert
                 severity={recommendation.error_message ? 'error' : 'info'}
                 title={recommendation.error_message ? t_i18n('The recommendation could not be reverted') : t_i18n('The change is being reverted')}
                 description={t_i18n('Part of the change may already be reverted. Retry to finish: every step of a revert can run again safely.')}
@@ -341,7 +340,7 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
           )}
           {recommendation.status === 'failed' && (
             <Box sx={{ marginTop: 1 }}>
-              <SourceIntelligenceAlert
+              <Alert
                 severity="error"
                 title={t_i18n('The recommendation could not be applied')}
                 description={failedConnectorId

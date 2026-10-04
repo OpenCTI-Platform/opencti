@@ -4,18 +4,16 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { Box, Skeleton, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
+  Alert,
   Chip,
   type ChipSeverity,
+  Hero,
+  HeroBody,
+  HeroHeader,
   ProgressBar,
   Tabs,
   TabsList,
   TabsTrigger,
-  Text,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
@@ -30,7 +28,6 @@ import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDo
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import notifyMutationOutcome from './notifyMutationOutcome';
-import SourceIntelligenceAlert from './SourceIntelligenceAlert';
 import useGranted, { EXPLORE_EXUPDATE, INGESTION_SETINGESTIONS, MODULES_MODMANAGE, SETTINGS_SETCUSTOMIZATION } from '../../../../utils/hooks/useGranted';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import type { Theme } from '../../../../components/Theme';
@@ -257,7 +254,7 @@ const SourceIntelligenceHeader = ({ queryRef }: SourceIntelligenceHeaderProps) =
       )}
       {runState === 'failed' && (
         <Box sx={{ marginTop: 2 }}>
-          <SourceIntelligenceAlert
+          <Alert
             severity="error"
             title={t_i18n('The scorecards could not be computed.')}
             description={status.last_run_message ?? t_i18n('The platform logs of the source intelligence manager give the cause.')}
@@ -266,7 +263,7 @@ const SourceIntelligenceHeader = ({ queryRef }: SourceIntelligenceHeaderProps) =
       )}
       {status.last_scan_truncated && (
         <Box sx={{ marginTop: 2 }}>
-          <SourceIntelligenceAlert
+          <Alert
             severity="warning"
             title={t_i18n('The scorecards cover the first {count, plural, one {# object} other {# objects}} only.', { values: { count: status.last_scanned_objects ?? 0 } })}
             description={status.enterprise_edition
@@ -296,21 +293,22 @@ const SourceIntelligenceFirstUse = ({ queryRef }: SourceIntelligenceHeaderProps)
     return null;
   }
   return (
-    <Card data-testid="source-intelligence-first-use">
-      <CardHeader>
-        <CardTitle>{t_i18n('No source scored yet')}</CardTitle>
-      </CardHeader>
-      <CardContent clamp={0}>
-        <Text variant="content-base">
+    <Hero data-testid="source-intelligence-first-use">
+      <HeroHeader
+        action={(
+          <Button variant="secondary" component="a" href={SOURCE_INTELLIGENCE_DOCUMENTATION_URL} target="_blank" rel="noopener noreferrer">
+            {t_i18n('Read the documentation')}
+          </Button>
+        )}
+      >
+        <Typography variant="h2" sx={{ margin: 0 }}>{t_i18n('No source scored yet')}</Typography>
+      </HeroHeader>
+      <HeroBody>
+        <Typography variant="body2">
           {t_i18n('Every connector, ingestion feed, significant author and analyst writing knowledge becomes a source. Its scorecard appears after the first computation, once it has written knowledge.')}
-        </Text>
-      </CardContent>
-      <CardFooter>
-        <Button variant="tertiary" size="small" component="a" href={SOURCE_INTELLIGENCE_DOCUMENTATION_URL} target="_blank" rel="noopener noreferrer">
-          {t_i18n('Read the documentation')}
-        </Button>
-      </CardFooter>
-    </Card>
+        </Typography>
+      </HeroBody>
+    </Hero>
   );
 };
 
