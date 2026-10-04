@@ -12,7 +12,9 @@ import { STIX_EXT_OCTI_PROVENANCE } from '../../../../src/types/stix-2-1-extensi
 import { ENTITY_TYPE_DECAY_RULE } from '../../../../src/modules/decayRule/decayRule-types';
 import { ENTITY_TYPE_TRIGGER } from '../../../../src/modules/notification/notification-types';
 import { applyKnowledgeDecayRules } from '../../../../src/modules/provenance/provenance-freshness';
-import { runProvenanceBackfillBatch } from '../../../../src/modules/provenance/provenance-backfill';
+import { PROVENANCE_BACKFILL_LOCK_KEY, restartProvenanceBackfill, runProvenanceBackfillBatch } from '../../../../src/modules/provenance/provenance-backfill';
+import { lockResources } from '../../../../src/lock/master-lock';
+import { wait } from '../../../../src/database/utils';
 import { notifyProvenanceChange } from '../../../../src/modules/provenance/provenance-notification';
 import { PROVENANCE_SIDE_CHANNEL_FIELDS, SOURCE_KIND_FEED, type StoreAssertion } from '../../../../src/modules/provenance/provenance-types';
 import { buildProvenanceScriptParams, PROVENANCE_UPDATE_SCRIPT } from '../../../../src/modules/provenance/provenance-write';
@@ -385,6 +387,20 @@ describe('Provenance: every fact knows who said it', () => {
       { query: DECAY_RULE_PATCH, variables: { id, input: [{ key: 'stale_after_days', value: ['1'] }] } },
       `Built-in knowledge decay rule ${id} can only be activated or deactivated`,
     );
+  });
+
+  it('should restart the backfill only once the batch in progress released its lock', async () => {
+    const batchLock = await lockResources([PROVENANCE_BACKFILL_LOCK_KEY], { retryCount: 0 });
+    let restartedAt = 0;
+    const restart = restartProvenanceBackfill(testContext).then((state) => {
+      restartedAt = Date.now();
+      return state;
+    });
+    await wait(1000);
+    const releasedAt = Date.now();
+    await batchLock.unlock();
+    expect((await restart).status).toEqual('pending');
+    expect(restartedAt).toBeGreaterThanOrEqual(releasedAt);
   });
 
   it('should rebuild the provenance of existing knowledge with the backfill', async () => {
