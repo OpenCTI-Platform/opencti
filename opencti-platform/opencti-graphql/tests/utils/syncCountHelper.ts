@@ -36,8 +36,8 @@ testCreatedCounter.imsi = 1;
 testCreatedCounter.incident = 7;
 testCreatedCounter.indicator = 57;
 testCreatedCounter.infrastructure = 1;
-// + 3 created by timeMachine-test
-testCreatedCounter['intrusion-set'] = 9;
+// + 4 created by timeMachine-test
+testCreatedCounter['intrusion-set'] = 10;
 testCreatedCounter['ipv4-addr'] = 1;
 testCreatedCounter['kill-chain-phase'] = 3;
 testCreatedCounter.label = 15;
@@ -145,8 +145,8 @@ testDeletedCounter.identity = 37;
 testDeletedCounter.incident = 6;
 testDeletedCounter.indicator = 29;
 testDeletedCounter.infrastructure = 1;
-// + 3 deleted by timeMachine-test
-testDeletedCounter['intrusion-set'] = 8;
+// + 4 deleted by timeMachine-test
+testDeletedCounter['intrusion-set'] = 9;
 testDeletedCounter['ipv4-addr'] = 1;
 testDeletedCounter.label = 2;
 testDeletedCounter.language = 1;
