@@ -376,7 +376,7 @@ export const keptConflictAdditions = (response: any, additions: ConflictAddition
 
 export interface ProvenanceWriteResult {
   response: any;
-  /** Conflict values created by this write: counted by exactly one write, even under concurrent writes. */
+  /** Conflict values created by this write: never counted by two writes, even under concurrent writes. */
   newConflicts: ConflictAddition[];
   /** Provenance stored right after the write, when requested: exact without waiting for a refresh. */
   current: Partial<StoreProvenanceFields> | null;
@@ -385,7 +385,8 @@ export interface ProvenanceWriteResult {
 /**
  * Apply a provenance update and report what it created. An update adding conflict values reads the
  * conflicts in real time with the document version and applies only on that same version, re-reading
- * after a concurrent write: a conflict value is reported as new by the one write that created it.
+ * after a concurrent write: a conflict value is reported as new by the one write that created it, or by
+ * none when the element stays contended after every attempt.
  */
 export const writeProvenanceUpdate = async (
   context: AuthContext,
@@ -406,10 +407,9 @@ export const writeProvenanceUpdate = async (
   const id = target._id ?? target.internal_id;
   // The stored conflicts come back with the write, to tell the additions it kept from the ones the caps dropped
   const conflictUpdateOpts = { refresh: opts.refresh, returnFields: [...new Set([...(updateOpts.returnFields ?? []), ATTRIBUTE_CONFLICTS])] };
-  let newConflicts = conflictsAdd;
   for (let attempt = 0; attempt < CONDITIONAL_WRITE_ATTEMPTS; attempt += 1) {
     const snapshot = await elRawGet({ id, index: target._index, _source_includes: [ATTRIBUTE_CONFLICTS] } as { id: string; index: string });
-    newConflicts = newConflictAdditions((snapshot?._source ?? {}) as Partial<StoreProvenanceFields>, conflictsAdd);
+    const newConflicts = newConflictAdditions((snapshot?._source ?? {}) as Partial<StoreProvenanceFields>, conflictsAdd);
     try {
       const response = await elUpdate(context, target._index, id, { script: buildProvenanceScript(update) }, undefined, {
         refresh: opts.refresh ?? PROVENANCE_REFRESH_ON_WRITE,
@@ -424,10 +424,11 @@ export const writeProvenanceUpdate = async (
       }
     }
   }
-  // Still contended after every attempt: the update is applied anyway, judged against the last read
-  logApp.warn('[PROVENANCE] Element under contention, conflicts judged against the last read', { id: target.internal_id });
+  // Still contended after every attempt: the update is applied anyway, but without a version this write cannot
+  // tell its conflict values from the ones a concurrent write added, so it reports none rather than one twice.
+  logApp.warn('[PROVENANCE] Element under contention, conflict values recorded without being reported as new', { id: target.internal_id });
   const response = await applyProvenanceUpdate(context, target, update, conflictUpdateOpts);
-  return result(response, keptConflictAdditions(response, newConflicts));
+  return result(response, []);
 };
 
 /**
