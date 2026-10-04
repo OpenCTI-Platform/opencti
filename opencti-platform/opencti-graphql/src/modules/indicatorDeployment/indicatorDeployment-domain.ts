@@ -1,4 +1,3 @@
-import { v5 as uuidv5 } from 'uuid';
 import { Promise as BluePromise } from 'bluebird';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity, BasicStoreRelation } from '../../types/store';
@@ -36,7 +35,7 @@ import { lockResources } from '../../lock/master-lock';
 import { notify, redisGetManagerEventState, redisSetManagerEventState } from '../../database/redis';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { FunctionalError, ValidationError } from '../../config/errors';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, INPUT_GRANTED_REFS, INPUT_MARKINGS, OPENCTI_NAMESPACE } from '../../schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, INPUT_GRANTED_REFS, INPUT_MARKINGS } from '../../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { ENTITY_TYPE_INDICATOR, type BasicStoreEntityIndicator } from '../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type BasicStoreEntitySecurityPlatform } from '../securityPlatform/securityPlatform-types';
@@ -69,6 +68,7 @@ import {
   type StoreRelationDeployedOn,
 } from './indicatorDeployment-types';
 import {
+  hitsSightingStixId,
   isDeploymentStatus,
   isPairReadableByReporter,
   isReadableWithIndicator,
@@ -82,8 +82,6 @@ export const DEPLOYMENT_BATCH_MAX_SIZE = 500;
 const EXTERNAL_ID_MAX_LENGTH = 1000;
 const ERROR_MESSAGE_MAX_LENGTH = 5000;
 const BATCH_CONCURRENCY = 5;
-// Namespace of the stable hits sighting identifier (one sighting per indicator and security platform).
-const HITS_SIGHTING_NAMESPACE = uuidv5('opencti-indicator-deployment-hits', OPENCTI_NAMESPACE);
 
 type DateInput = Date | string | null | undefined;
 
@@ -202,10 +200,6 @@ export const computeIndicatorDeploymentCounters = (relations: Array<Partial<Depl
     [INDICATOR_VALIDATED_PLATFORMS_COUNT]: relations.filter((r) => PROVEN_VALIDATION_STATUSES.includes(r.validation_status as never)).length,
     [INDICATOR_HIT_PLATFORMS_COUNT]: relations.filter((r) => (r.hit_count ?? 0) > 0).length,
   };
-};
-
-export const hitsSightingStixId = (indicatorInternalId: string, platformInternalId: string) => {
-  return `sighting--${uuidv5(`${indicatorInternalId}|${platformInternalId}`, HITS_SIGHTING_NAMESPACE)}`;
 };
 
 export type HitsDeploymentState = Partial<Pick<DeployedOnAttributes, 'hit_count' | 'first_hit_at' | 'last_hit_at'>>;

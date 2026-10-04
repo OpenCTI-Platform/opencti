@@ -1,8 +1,16 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import '../../../../src/modules/index';
-import { expectedPairMarkings, hitsSightingStixId } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-domain';
-import { isGeneratedPairSighting, keepsPairMarkings, keepsPairSharing, markingsAfterEdits } from '../../../../src/modules/iocValidation/iocValidation-validator';
+import { expectedPairMarkings } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-domain';
+import { hitsSightingStixId } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-utils';
+import {
+  isGeneratedPairSighting,
+  isIndividualAuthor,
+  keepsPairMarkings,
+  keepsPairSharing,
+  markingsAfterEdits,
+} from '../../../../src/modules/iocValidation/iocValidation-validator';
+import { internalFindByIds, internalLoadById } from '../../../../src/database/middleware-loader';
 import { getEntityValidatorCreation, getEntityValidatorUpdate, type ValidatorFn } from '../../../../src/schema/validator-register';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
 import { RELATION_DEPLOYED_ON } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-types';
@@ -21,6 +29,12 @@ const MARKINGS = [
 vi.mock('../../../../src/database/cache', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/cache')>()),
   getEntitiesMapFromCache: async () => new Map(MARKINGS.flatMap((marking) => [[marking.internal_id, marking], [marking.standard_id, marking]])),
+}));
+// Stored elements: none unless a test gives some (a stored sighting, the author of an edit).
+vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/database/middleware-loader')>()),
+  internalFindByIds: vi.fn(async () => []),
+  internalLoadById: vi.fn(async () => undefined),
 }));
 
 const ends = (indicator: string[], platform: string[]) => [{ 'object-marking': indicator }, { 'object-marking': platform }] as const;
@@ -112,13 +126,62 @@ describe('marking edits of a deployment', () => {
     await expect(validatorSighting(testContext, editor, { objectLabel: ['triage'] }, hitsSighting, [{ key: 'objectLabel', value: ['triage'] }])).resolves.toEqual(true);
     // Nor can its deterministic id be taken by a sighting someone else creates
     const validatorSightingCreation = getEntityValidatorCreation(STIX_SIGHTING_RELATIONSHIP) as ValidatorFn;
-    const squat = { from: indicator, to: platform, stix_id: hitsSighting.standard_id };
+    const squat = { from: indicator, to: platform, stix_id: hitsSighting.standard_id, objectMarking: ['tlp-amber', 'pap-red'] };
     await expect(validatorSightingCreation(testContext, editor, squat)).rejects.toThrow('deployment state');
     await expect(validatorSightingCreation(testContext, administrator, squat)).resolves.toEqual(true);
     // A sighting of another kind of entity is never one of the pair sightings
     const malwareSighting = { ...hitsSighting, from: { ...indicator, entity_type: 'Malware' } };
     expect(await isGeneratedPairSighting(testContext, malwareSighting)).toEqual(false);
     await expect(validatorSighting(testContext, editor, { objectMarking: ['pap-red'] }, malwareSighting, removal)).resolves.toEqual(true);
+  });
+
+  it('should create a generated sighting with the markings of its pair only, for administrators too', async () => {
+    const indicator = { ...from, entity_type: 'Indicator', internal_id: 'indicator-1' };
+    const platform = { ...to, entity_type: 'SecurityPlatform', internal_id: 'platform-1' };
+    const administrator = { id: 'admin', capabilities: [{ name: 'BYPASS' }] } as unknown as AuthUser;
+    const validatorSightingCreation = getEntityValidatorCreation(STIX_SIGHTING_RELATIONSHIP) as ValidatorFn;
+    const unmarked = { from: indicator, to: platform, stix_id: hitsSightingStixId('indicator-1', 'platform-1'), objectMarking: ['tlp-amber'] };
+    await expect(validatorSightingCreation(testContext, administrator, unmarked)).rejects.toThrow('markings of its indicator');
+    // The upsert of the stored sighting keeps its markings: the input does not need to repeat them
+    vi.mocked(internalFindByIds).mockResolvedValueOnce([{ 'object-marking': ['tlp-amber', 'pap-red'] }] as never);
+    await expect(validatorSightingCreation(testContext, administrator, unmarked)).resolves.toEqual(true);
+  });
+
+  it('should refuse an individual as author of a deployment or of a generated sighting, for administrators too', async () => {
+    const indicator = { ...from, entity_type: 'Indicator', internal_id: 'indicator-1' };
+    const platform = { ...to, entity_type: 'SecurityPlatform', internal_id: 'platform-1' };
+    const administrator = { id: 'admin', capabilities: [{ name: 'BYPASS' }] } as unknown as AuthUser;
+    const individual = { entity_type: 'Individual', internal_id: 'individual-1' };
+    const organization = { entity_type: 'Organization', internal_id: 'organization-1' };
+    const markings = ['tlp-amber', 'pap-red'];
+    expect(await isIndividualAuthor(testContext, [individual])).toEqual(true);
+    expect(await isIndividualAuthor(testContext, organization)).toEqual(false);
+    expect(await isIndividualAuthor(testContext, undefined)).toEqual(false);
+    // Creation and upsert of a deployment, author resolved or given by id
+    const deploymentCreation = getEntityValidatorCreation(RELATION_DEPLOYED_ON) as ValidatorFn;
+    await expect(deploymentCreation(testContext, administrator, { from: indicator, to: platform, objectMarking: markings, createdBy: individual }))
+      .rejects.toThrow('not authored by an individual');
+    await expect(deploymentCreation(testContext, administrator, { from: indicator, to: platform, objectMarking: markings, createdBy: organization }))
+      .resolves.toEqual(true);
+    vi.mocked(internalLoadById).mockResolvedValueOnce(individual as never);
+    await expect(deploymentCreation(testContext, administrator, { from: indicator, to: platform, objectMarking: markings, createdBy: 'individual-1' }))
+      .rejects.toThrow('not authored by an individual');
+    // Field edit or reference added
+    const deploymentUpdate = getEntityValidatorUpdate(RELATION_DEPLOYED_ON) as ValidatorFn;
+    const authorEdit = [{ key: 'createdBy', value: ['individual-1'], operation: EditOperation.Add }];
+    vi.mocked(internalLoadById).mockResolvedValueOnce(individual as never);
+    await expect(deploymentUpdate(testContext, administrator, { createdBy: ['individual-1'] }, initial, authorEdit)).rejects.toThrow('not authored by an individual');
+    const authorRemoval = [{ key: 'createdBy', value: ['individual-1'], operation: EditOperation.Remove }];
+    await expect(deploymentUpdate(testContext, administrator, { createdBy: ['individual-1'] }, initial, authorRemoval)).resolves.toEqual(true);
+    // The hits sighting of the pair, created or edited
+    const hitsId = hitsSightingStixId('indicator-1', 'platform-1');
+    const sightingCreation = getEntityValidatorCreation(STIX_SIGHTING_RELATIONSHIP) as ValidatorFn;
+    await expect(sightingCreation(testContext, administrator, { from: indicator, to: platform, stix_id: hitsId, objectMarking: markings, createdBy: individual }))
+      .rejects.toThrow('not authored by an individual');
+    const sightingUpdate = getEntityValidatorUpdate(STIX_SIGHTING_RELATIONSHIP) as ValidatorFn;
+    const hitsSighting = { from: indicator, to: platform, standard_id: hitsId, 'object-marking': markings };
+    vi.mocked(internalLoadById).mockResolvedValueOnce(individual as never);
+    await expect(sightingUpdate(testContext, administrator, { createdBy: ['individual-1'] }, hitsSighting, authorEdit)).rejects.toThrow('not authored by an individual');
   });
 
   it('should accept raising a marking, adding one, or removing a marking of the deployment itself', async () => {

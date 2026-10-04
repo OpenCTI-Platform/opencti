@@ -2,19 +2,21 @@ import { ForbiddenAccess, ValidationError } from '../../config/errors';
 import { isEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../../database/utils';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { FROM_START_STR, UNTIL_END_STR } from '../../utils/format';
-import { INPUT_GRANTED_REFS, INPUT_MARKINGS } from '../../schema/general';
+import { INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_MARKINGS } from '../../schema/general';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
+import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../../schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import type { BasicStoreEntity, BasicStoreIdentifier } from '../../types/store';
 import type { EditInput } from '../../generated/graphql';
-import { fullEntitiesList, internalFindByIds, internalLoadById } from '../../database/middleware-loader';
+import { internalFindByIds, internalLoadById } from '../../database/middleware-loader';
 import { cleanMarkings } from '../../utils/markingDefinition-utils';
-import { pairMarkings, pairOrganizations, validationResultSightingStixId } from '../indicatorDeployment/indicatorDeployment-utils';
+import { hitsSightingStixId, pairMarkings, pairOrganizations, validationResultSightingStixId } from '../indicatorDeployment/indicatorDeployment-utils';
+import { claimedGeneratedPairSighting, generatedPairSightingKindOf, sightingPair, suppliedStixIds } from '../indicatorDeployment/indicatorDeployment-sightings';
 import { registerEntityValidator, type ValidatorFn } from '../../schema/validator-register';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { isBypassUser, SYSTEM_USER } from '../../utils/access';
-import { findDeployedOn, hitsSightingStixId } from '../indicatorDeployment/indicatorDeployment-domain';
+import { findDeployedOn } from '../indicatorDeployment/indicatorDeployment-domain';
 import {
   DEPLOYMENT_STATUS_EXPIRED,
   DEPLOYMENT_STATUS_PENDING,
@@ -23,8 +25,6 @@ import {
   VALIDATION_STATUS_NOT_REQUESTED,
   VALIDATION_STATUSES,
 } from '../indicatorDeployment/indicatorDeployment-types';
-import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
-import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { findIocValidationConnectors } from './iocValidation-domain';
 import { ENTITY_TYPE_IOC_VALIDATION_REQUEST } from './iocValidation-types';
@@ -250,53 +250,58 @@ const refuseSharing = (user: AuthUser) => {
   throw ForbiddenAccess('A deployment and its sightings are shared with the organizations of both its indicator and its security platform only', { user_id: user.id });
 };
 
-type PairEnd = { entity_type?: string; internal_id?: string };
-
-// The (indicator, security platform) pair of a sighting or of a sighting input, when it is one.
-const sightingPair = (instance: Record<string, unknown> | undefined) => {
-  const from = instance?.from as PairEnd | undefined;
-  const to = instance?.to as PairEnd | undefined;
-  if (from?.entity_type !== ENTITY_TYPE_INDICATOR || to?.entity_type !== ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM || !from.internal_id || !to.internal_id) {
-    return undefined;
-  }
-  return { indicatorId: from.internal_id, platformId: to.internal_id };
-};
-
-/**
- * Which sighting the platform generates for an (indicator, security platform) pair a sighting is: the hits sighting of
- * the pair, or the result sighting of a validation request that included it (both identified by their deterministic
- * id), or undefined for any other sighting.
- */
-export const generatedPairSightingKind = async (context: AuthContext, initial: Record<string, unknown> | undefined): Promise<'hits' | 'validation_result' | undefined> => {
-  const pair = sightingPair(initial);
-  if (!pair) {
-    return undefined;
-  }
-  const { indicatorId, platformId } = pair;
-  const ids = new Set([initial?.standard_id, ...((initial?.x_opencti_stix_ids as string[] | undefined) ?? [])].filter((id): id is string => typeof id === 'string'));
-  if (ids.has(hitsSightingStixId(indicatorId, platformId))) {
-    return 'hits';
-  }
-  let generated = false;
-  await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [ENTITY_TYPE_IOC_VALIDATION_REQUEST], {
-    filters: { mode: 'and', filters: [{ key: ['indicator_ids'], values: [indicatorId] }, { key: ['platform_ids'], values: [platformId] }], filterGroups: [] },
-    noFiltersChecking: true,
-    baseData: true,
-    first: 500,
-    callback: async (requests: BasicStoreEntity[]) => {
-      generated = requests.some((request) => ids.has(validationResultSightingStixId(request.internal_id, indicatorId, platformId)));
-      return !generated;
-    },
-  } as never);
-  return generated ? 'validation_result' : undefined;
+/** Which generated sighting of its pair a stored sighting is, by the STIX ids it holds (see generatedPairSightingKindOf). */
+export const generatedPairSightingKind = async (context: AuthContext, initial: Record<string, unknown> | undefined) => {
+  const ids = [initial?.standard_id, ...((initial?.x_opencti_stix_ids as string[] | undefined) ?? [])].filter((id): id is string => typeof id === 'string');
+  return generatedPairSightingKindOf(context, initial, ids);
 };
 
 export const isGeneratedPairSighting = async (context: AuthContext, initial: Record<string, unknown> | undefined) => {
   return (await generatedPairSightingKind(context, initial)) !== undefined;
 };
 
-const suppliedStixIds = (instance: Record<string, unknown>) => [instance.stix_id, ...((instance.x_opencti_stix_ids as string[] | undefined) ?? [])]
-  .filter((id): id is string => typeof id === 'string');
+/**
+ * Whether an author value (an identity, its id, or a list of either) is an individual. When a platform organization is
+ * set, the users of an individual read what it authored whatever the organizations it is shared with, so a pair
+ * relationship authored by an individual would be read by users who cannot read its indicator or its security platform.
+ */
+export const isIndividualAuthor = async (context: AuthContext, value: unknown) => {
+  const values = (Array.isArray(value) ? value : [value]).filter((author) => !isEmptyField(author));
+  const types = await Promise.all(values.map(async (author) => {
+    if (typeof author === 'string') {
+      return (await internalLoadById<BasicStoreEntity>(context, SYSTEM_USER, author))?.entity_type;
+    }
+    return (author as { entity_type?: string }).entity_type;
+  }));
+  return types.includes(ENTITY_TYPE_IDENTITY_INDIVIDUAL);
+};
+
+// Whether edits give a pair relationship an individual as author (a field edit or a reference added).
+const addsIndividualAuthor = async (context: AuthContext, editInputs: EditInput[]) => {
+  const authorEdits = editInputs.filter((input) => input.key === INPUT_CREATED_BY && input.operation !== UPDATE_OPERATION_REMOVE);
+  return authorEdits.length > 0 && isIndividualAuthor(context, authorEdits.flatMap((input) => input.value));
+};
+
+const refuseIndividualAuthor = (user: AuthUser) => {
+  throw ForbiddenAccess('A deployment, like its hits and validation result sightings, is not authored by an individual: the users of an individual read what it authored, whatever its organizations', {
+    user_id: user.id,
+  });
+};
+
+/**
+ * Whether a creation or upsert of a generated sighting leaves it with the markings of its indicator and of its security
+ * platform, as the reporting mutations give it: a new sighting takes the markings of its input, an existing one keeps
+ * the stored markings its upsert does not remove.
+ */
+const sightingInputCoversPairMarkings = async (context: AuthContext, instance: Record<string, unknown>) => {
+  const inputCoversMarkings = await coversPairMarkings(context, instance);
+  if (inputCoversMarkings && upsertMarkingOperations(instance).length === 0) {
+    return true;
+  }
+  const stored = await internalFindByIds<BasicStoreEntity>(context, SYSTEM_USER, suppliedStixIds(instance), { type: STIX_SIGHTING_RELATIONSHIP }) as BasicStoreEntity[];
+  const existing = stored.find((sighting) => sighting) as MarkedEnd | undefined;
+  return existing ? coversUpsertPairMarkings(context, instance, existing) : inputCoversMarkings;
+};
 
 /**
  * Whether a sighting creation or upsert carries the deterministic id of the hits sighting of its pair, which only the
@@ -328,7 +333,17 @@ export const claimsValidationResultSightingId = async (context: AuthContext, ins
   return ids.includes(validationResultSightingStixId(deployment.validation_run_id, pair.indicatorId, pair.platformId)) ? deployment : undefined;
 };
 
+// Generated sightings keep the markings of their pair and are never authored by an individual, for administrators too;
+// the platform gives them the sharing of their pair (createRelation).
 const validatorSightingCreation: ValidatorFn = async (context, user, instance) => {
+  if (await claimedGeneratedPairSighting(context, instance)) {
+    if (!await sightingInputCoversPairMarkings(context, instance)) {
+      return refuseMarkings(user);
+    }
+    if (await isIndividualAuthor(context, instance[INPUT_CREATED_BY])) {
+      return refuseIndividualAuthor(user);
+    }
+  }
   if (isBypassUser(user)) {
     return true;
   }
@@ -348,7 +363,7 @@ const GENERATED_SIGHTING_CONTENT_FIELDS = ['attribute_count', 'x_opencti_negativ
 // Hits and validation result sightings keep the markings and the sharing of their pair, as deployments do, for
 // administrators too; what they record is written by the accounts reporting it (or an administrator).
 const validatorSightingUpdate: ValidatorFn = async (context, user, _instance, initial, editInputs = []) => {
-  const touchesAccess = editInputs.some((input) => input.key === INPUT_MARKINGS || input.key === INPUT_GRANTED_REFS);
+  const touchesAccess = editInputs.some((input) => [INPUT_MARKINGS, INPUT_GRANTED_REFS, INPUT_CREATED_BY].includes(input.key));
   const touchesContent = editInputs.some((input) => GENERATED_SIGHTING_CONTENT_FIELDS.includes(input.key));
   if (!touchesAccess && !touchesContent) {
     return true;
@@ -362,6 +377,9 @@ const validatorSightingUpdate: ValidatorFn = async (context, user, _instance, in
   }
   if (touchesAccess && !await keepsPairSharing(context, initial, editInputs)) {
     return refuseSharing(user);
+  }
+  if (touchesAccess && await addsIndividualAuthor(context, editInputs)) {
+    return refuseIndividualAuthor(user);
   }
   if (!touchesContent || isBypassUser(user)) {
     return true;
@@ -438,6 +456,10 @@ const validatorCreation: ValidatorFn = async (context, user, instance) => {
       return refuseMarkings(user);
     }
   }
+  // An upsert can fill an empty author, so the author of an upsert input is checked as on a creation
+  if (await isIndividualAuthor(context, instance[INPUT_CREATED_BY])) {
+    return refuseIndividualAuthor(user);
+  }
   if (isBypassUser(user)) {
     return true;
   }
@@ -486,6 +508,9 @@ const validatorUpdate: ValidatorFn = async (context, user, instance, initial, ed
   }
   if (!await keepsPairSharing(context, initial, editInputs)) {
     return refuseSharing(user);
+  }
+  if (await addsIndividualAuthor(context, editInputs)) {
+    return refuseIndividualAuthor(user);
   }
   if (isBypassUser(user)) {
     return true;

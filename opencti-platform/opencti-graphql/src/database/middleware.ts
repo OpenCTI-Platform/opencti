@@ -148,6 +148,8 @@ import {
 } from '../schema/fieldDataAdapter';
 import { isStixCoreRelationship, RELATION_DEPLOYED_ON, RELATION_REVOKED_BY, RELATION_TARGETS, RELATION_USES } from '../schema/stixCoreRelationship';
 import { pairOrganizations } from '../modules/indicatorDeployment/indicatorDeployment-utils';
+import { claimedGeneratedPairSighting, generatedPairSightingKindOf, suppliedStixIds } from '../modules/indicatorDeployment/indicatorDeployment-sightings';
+import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import {
   ATTRIBUTE_ADDITIONAL_NAMES,
   ATTRIBUTE_ALIASES,
@@ -3548,9 +3550,12 @@ export const createRelationRaw = async (
       if (fromRule) {
         return await upsertRelationRule(context, user, existingRelationship, input, { ...opts, fromRule, locks: participantIds });
       }
-      // The sharing of a deployment is the platform's (the organizations of both its ends): an upsert never changes it,
-      // neither through its sharing field nor through a sharing operation
-      const upsertInput = relationshipType === RELATION_DEPLOYED_ON ? {
+      // The sharing of a deployment and of a generated sighting of its pair is the platform's (the organizations of both
+      // its ends): an upsert never changes it, neither through its sharing field nor through a sharing operation
+      const existingIds = [existingRelationship.standard_id, ...(existingRelationship.x_opencti_stix_ids ?? [])];
+      const sharedByPair = relationshipType === RELATION_DEPLOYED_ON || (relationshipType === STIX_SIGHTING_RELATIONSHIP
+        && !!await generatedPairSightingKindOf(context, resolvedInput, [...existingIds, ...suppliedStixIds(resolvedInput)]));
+      const upsertInput = sharedByPair ? {
         ...R.dissoc(INPUT_GRANTED_REFS, resolvedInput),
         ...(Array.isArray(resolvedInput.upsertOperations) ? {
           upsertOperations: resolvedInput.upsertOperations.filter((operation: { key?: string }) => operation.key !== INPUT_GRANTED_REFS),
@@ -3569,10 +3574,13 @@ export const createRelationRaw = async (
         throw FunctionalError('You cant create a cyclic relation', { from: from.standard_id, to: to.standard_id });
       }
     }
-    // A new deployment is shared with exactly the organizations both its ends are shared with, whatever creates it
-    // (generic relationship creation, bundle ingestion): never with the organizations of the user or of the input.
+    // A new deployment, like a new hits or validation result sighting of a pair, is shared with exactly the organizations
+    // both its ends are shared with, whatever creates it (generic creation, bundle ingestion): never with the
+    // organizations of the user or of the input.
     let buildOpts = opts;
-    if (relationshipType === RELATION_DEPLOYED_ON && !opts.grantedRefsFromInput) {
+    const sharedByPair = relationshipType === RELATION_DEPLOYED_ON
+      || (relationshipType === STIX_SIGHTING_RELATIONSHIP && !opts.grantedRefsFromInput && !!await claimedGeneratedPairSighting(context, resolvedInput));
+    if (sharedByPair && !opts.grantedRefsFromInput) {
       const organizationIds = pairOrganizations(from, to);
       const organizations = organizationIds.length > 0
         ? await internalFindByIds(context, SYSTEM_USER, organizationIds, { type: ENTITY_TYPE_IDENTITY_ORGANIZATION }) as BasicStoreObject[]

@@ -85,8 +85,10 @@ with deployments; it also rechecks them continuously in bounded batches.
 A deployment, its hits sighting and its validation results carry the markings of both the indicator and the
 security platform, so only the users who can read both can read them: for every marking type the indicator or the
 security platform carries (TLP, PAP, statements...), they carry the highest marking of that type among the two.
-Creating or importing a `deployed-on` relationship without these markings is refused, and so is an edit that removes
-one of them or replaces it with a lower one; raising a marking or adding a marking of another type stays possible.
+Creating or importing a `deployed-on` relationship without these markings is refused, and so is a sighting created
+under the identifier of a hits sighting or of a validation result, or an edit that removes one of them or replaces it
+with a lower one; raising a marking or adding a marking of another type stays possible. These rules apply to
+administrators too.
 When a marking of the indicator or of the security platform is added or raised, its deployments, hits sightings and
 validation results follow at once, and the counters follow every change of markings, sharing, authorized members or
 author of either end. A marking stricter than those of the indicator and of the security platform is kept when an end
@@ -99,10 +101,13 @@ shared with every organization the indicator is shared with and have no authoriz
 deployment a reader of the indicator cannot read.
 On a platform with organization segregation, these relationships are shared with the organizations that both the
 indicator and the security platform are shared with, never with the other organizations of the connector account,
-and they follow every later sharing change of either end. This holds whoever creates the deployment: one created by
-hand or imported in a bundle gets the same organizations, whatever organizations the request names. A connector account outside the platform organization
-reports only on the pairs it can read back: the indicator and the security platform must both be shared with one of
-its organizations.
+and they follow every later sharing change of either end. This holds whoever creates the deployment or its hits and
+validation result sightings: one created by hand or imported in a bundle gets the same organizations, whatever
+organizations the request names. Since the users of an individual read what this individual authored, whatever its
+organizations, these relationships are never authored by an individual: creating, importing or editing one with an
+individual as author is refused (an organization or a system can author them). A connector account outside the
+platform organization reports only on the pairs it can read back: the indicator and the security platform must both
+be shared with one of its organizations.
 
 ## Viewing deployments
 

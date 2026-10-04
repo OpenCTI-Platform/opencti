@@ -6,13 +6,13 @@ import {
   backfillIndicatorDeploymentCounters,
   COUNTER_FIELDS,
   flagExpiredDeployments,
-  hitsSightingStixId,
   reconcileAllIndicatorDeploymentCounters,
   reconcileDeployedIndicatorCounters,
   reconcileIndicatorDeploymentCounters,
   refreshIndicatorDeploymentCounters,
   repairPairMarkings,
 } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-domain';
+import { hitsSightingStixId } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-utils';
 import { createRelation, deleteElementById, stixLoadById } from '../../../../src/database/middleware';
 import { internalLoadById } from '../../../../src/database/middleware-loader';
 import { elDeleteElements, elUpdate } from '../../../../src/database/engine';
@@ -544,6 +544,55 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     } finally {
       if (hitIndicatorId) {
         await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: hitIndicatorId } });
+      }
+      streamed.forEach((spy) => spy.mockRestore());
+    }
+  });
+
+  it('should share a hits sighting created by the generic path with the organizations of its pair only', async () => {
+    // Neither streamed nor kept: the raw stream counts of the suite are unchanged
+    const streamed = [
+      vi.spyOn(streamHandler, 'storeCreateEntityEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeCreateRelationEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeUpdateEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeDeleteEvent').mockResolvedValue(undefined as never),
+    ];
+    let sharedIndicatorId: string | undefined;
+    try {
+      const created = await queryAsAdminWithSuccess({
+        query: INDICATOR_ADD,
+        variables: { input: { name: 'shared-pair.evil.example', pattern: "[domain-name:value = 'shared-pair.evil.example']", pattern_type: 'stix', x_opencti_main_observable_type: 'Domain-Name' } },
+      });
+      sharedIndicatorId = created.data?.indicatorAdd.id as string;
+      await setOrganizations(sharedIndicatorId, [testOrganizationId, platformOrganizationId]);
+      const sighting = await createRelation(testContext, ADMIN_USER, {
+        fromId: sharedIndicatorId,
+        toId: platformId,
+        relationship_type: STIX_SIGHTING_RELATIONSHIP,
+        stix_id: hitsSightingStixId(sharedIndicatorId, platformId),
+        objectOrganization: [testOrganizationId],
+        attribute_count: 1,
+        x_opencti_negative: false,
+      }) as unknown as { internal_id: string };
+      const stored = await internalLoadById(testContext, ADMIN_USER, sighting.internal_id, { type: STIX_SIGHTING_RELATIONSHIP }) as unknown as Record<string, string[] | undefined>;
+      // The platform is shared with the platform organization only: so is the sighting, whatever the input says
+      expect(stored[RELATION_GRANTED_TO]).toEqual([platformOrganizationId]);
+      // Nor does an upsert of the sighting widen it
+      await createRelation(testContext, ADMIN_USER, {
+        fromId: sharedIndicatorId,
+        toId: platformId,
+        relationship_type: STIX_SIGHTING_RELATIONSHIP,
+        stix_id: hitsSightingStixId(sharedIndicatorId, platformId),
+        objectOrganization: [testOrganizationId],
+        attribute_count: 1,
+        x_opencti_negative: false,
+        update: true,
+      });
+      const upserted = await internalLoadById(testContext, ADMIN_USER, sighting.internal_id, { type: STIX_SIGHTING_RELATIONSHIP });
+      expect((upserted as unknown as Record<string, string[] | undefined>)[RELATION_GRANTED_TO]).toEqual([platformOrganizationId]);
+    } finally {
+      if (sharedIndicatorId) {
+        await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: sharedIndicatorId } });
       }
       streamed.forEach((spy) => spy.mockRestore());
     }

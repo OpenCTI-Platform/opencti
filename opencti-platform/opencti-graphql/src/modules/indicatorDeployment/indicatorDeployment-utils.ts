@@ -128,6 +128,13 @@ export const buildDeployedOnCreationData = (input: Partial<Record<keyof Deployed
   return data;
 };
 
+// Namespace of the stable hits sighting identifier (one sighting per indicator and security platform).
+const HITS_SIGHTING_NAMESPACE = uuidv5('opencti-indicator-deployment-hits', OPENCTI_NAMESPACE);
+
+export const hitsSightingStixId = (indicatorInternalId: string, platformInternalId: string) => {
+  return `sighting--${uuidv5(`${indicatorInternalId}|${platformInternalId}`, HITS_SIGHTING_NAMESPACE)}`;
+};
+
 const VALIDATION_RESULT_SIGHTING_NAMESPACE = uuidv5('opencti-ioc-validation-result', OPENCTI_NAMESPACE);
 
 // One sighting per request and pair: a replayed result never records the outcome twice.

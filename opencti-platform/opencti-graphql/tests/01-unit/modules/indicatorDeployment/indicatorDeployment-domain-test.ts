@@ -7,7 +7,6 @@ import {
   computeProvenShare,
   HIT_REPORT_IDS_MAX,
   hitReportIdsAfter,
-  hitsSightingStixId,
   isExpiredForRemoval,
   isHitsReplay,
   isHitsSightingUpToDate,
@@ -20,7 +19,7 @@ import {
   extractStreamedDeploymentLive,
   hasSecurityPlatformRemoval,
 } from '../../../../src/manager/indicatorDeploymentManager';
-import { isPairReadableByReporter, pairOrganizations } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-utils';
+import { hitsSightingStixId, isPairReadableByReporter, pairOrganizations } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-utils';
 import type { DataEvent, SseEvent } from '../../../../src/types/event';
 
 const NOW = new Date('2026-10-03T12:00:00.000Z');
