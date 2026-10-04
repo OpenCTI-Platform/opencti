@@ -10624,6 +10624,7 @@ type EntitySetting implements InternalObject & BasicObject {
   updated_at: DateTime!
   refreshed_at: DateTime
   overview_layout_customization: [OverviewWidgetCustomization!]
+  defaultOverviewLayoutCustomization: [OverviewWidgetCustomization!]
   fintelTemplates(first: Int, after: ID, orderBy: FintelTemplateOrdering, orderMode: OrderingMode, search: String): FintelTemplateConnection
   requestAccessConfiguration: RequestAccessConfiguration
 }

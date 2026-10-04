@@ -150,3 +150,27 @@ export const deleteTimelineCase = async (request: APIRequestContext, timelineCas
     await graphqlQuery(request, `mutation { stixCoreObjectEdit(id: ${JSON.stringify(ids[index])}) { delete } }`);
   }
 };
+
+/** Back to the default overview layout of an entity type, as if no administrator had customized it. */
+export const resetOverviewLayout = async (request: APIRequestContext, targetType: string) => {
+  const setting = await mutate<{ id: string }>(request, `query { entitySettingByType(targetType: ${JSON.stringify(targetType)}) { id } }`, 'entitySettingByType');
+  return mutate<{ id: string }[]>(request, `
+    mutation {
+      entitySettingsFieldPatch(ids: [${JSON.stringify(setting.id)}], input: [{ key: "overview_layout_customization", value: [] }]) { id }
+    }
+  `, 'entitySettingsFieldPatch');
+};
+
+/** Theme of the current user: the name of a platform theme, or the platform default. */
+export const setUserTheme = async (request: APIRequestContext, themeName: string | null) => {
+  let themeId = 'default';
+  if (themeName) {
+    const themes = await mutate<{ edges: { node: { id: string; name: string } }[] }>(request, `
+      query { themes(search: ${JSON.stringify(themeName)}) { edges { node { id name } } } }
+    `, 'themes');
+    const theme = themes.edges.find(({ node }) => node.name === themeName);
+    if (!theme) throw new Error(`Theme ${themeName} not found`);
+    themeId = theme.node.id;
+  }
+  return mutate<{ id: string }>(request, `mutation { meEdit(input: [{ key: "theme", value: [${JSON.stringify(themeId)}] }]) { id } }`, 'meEdit');
+};

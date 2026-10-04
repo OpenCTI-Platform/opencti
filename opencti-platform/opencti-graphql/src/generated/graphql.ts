@@ -8926,6 +8926,7 @@ export type EntitySetting = BasicObject & InternalObject & {
   attributes_configuration?: Maybe<Scalars['String']['output']>;
   availableSettings: Array<Scalars['String']['output']>;
   created_at: Scalars['DateTime']['output'];
+  defaultOverviewLayoutCustomization?: Maybe<Array<OverviewWidgetCustomization>>;
   defaultValuesAttributes: Array<DefaultValueAttribute>;
   enforce_reference?: Maybe<Scalars['Boolean']['output']>;
   entity_type: Scalars['String']['output'];
@@ -46298,6 +46299,7 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
   attributes_configuration?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   availableSettings?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  defaultOverviewLayoutCustomization?: Resolver<Maybe<Array<ResolversTypes['OverviewWidgetCustomization']>>, ParentType, ContextType>;
   defaultValuesAttributes?: Resolver<Array<ResolversTypes['DefaultValueAttribute']>, ParentType, ContextType>;
   enforce_reference?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

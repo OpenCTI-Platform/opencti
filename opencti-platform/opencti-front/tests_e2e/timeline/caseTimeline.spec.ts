@@ -7,8 +7,11 @@ import {
   deleteEntity,
   deleteTimelineCase,
   deleteWorkspace,
+  setUserTheme,
   type TimelineCase,
 } from '../dataForTesting/timeline.data';
+
+const LIGHT_THEME = 'Filigran Light';
 
 // Captures follow the screenshot conventions of the user documentation (docs/docs/usage/assets/case-timeline-*.png)
 test.use({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 });
@@ -30,6 +33,7 @@ const timelineCodename = () => {
  * Record a containment and check the containment anchor.
  * Export the timeline as CSV.
  * Open the timeline settings.
+ * Capture the lanes view in the light theme.
  * Each surface is captured in the test results, the source of the screenshots of the user documentation.
  */
 test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, request }, testInfo) => {
@@ -42,6 +46,7 @@ test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, r
   const milestoneTitle = 'Regulator notified';
   const capture = (name: string) => page.screenshot({ path: testInfo.outputPath(`case-timeline-${name}.png`) });
   let timelineCase: TimelineCase | undefined;
+  let lightTheme = false;
 
   try {
     timelineCase = await addTimelineCase(request, caseName, malwareName, taskName, codename);
@@ -134,7 +139,16 @@ test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, r
     await expect(page.getByTestId('timeline-settings-drawer')).toBeVisible();
     await capture('settings-drawer');
     // endregion
+
+    // region Lanes view in the light theme
+    lightTheme = true;
+    await setUserTheme(request, LIGHT_THEME);
+    await page.goto(timelineUrl);
+    await expect(page.getByTestId('timeline-lanes')).toBeVisible();
+    await capture('lanes-populated-light');
+    // endregion
   } finally {
+    if (lightTheme) await setUserTheme(request, null);
     if (timelineCase) {
       await deleteTimelineCase(request, timelineCase);
     }
@@ -145,7 +159,7 @@ test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, r
  * Content of the test
  * -------------------
  * Open the timeline of an incident without dated knowledge: first-use state with its primary action.
- * Show the timeline of a case in a custom dashboard widget titled with the case.
+ * Show the timeline of a case in a custom dashboard widget titled with the case, in the dark and light themes.
  */
 test('Incident timeline first use and timeline widget', { tag: ['@ce', '@group1'] }, async ({ page, request }, testInfo) => {
   const codename = timelineCodename();
@@ -153,6 +167,7 @@ test('Incident timeline first use and timeline widget', { tag: ['@ce', '@group1'
   let incidentId: string | undefined;
   let dashboardId: string | undefined;
   let timelineCase: TimelineCase | undefined;
+  let lightTheme = false;
 
   try {
     // region First use
@@ -175,7 +190,16 @@ test('Incident timeline first use and timeline widget', { tag: ['@ce', '@group1'
     await expect(page.getByTestId('timeline-lanes').first()).toBeVisible();
     await capture('widget-populated');
     // endregion
+
+    // region Widget in the light theme
+    lightTheme = true;
+    await setUserTheme(request, LIGHT_THEME);
+    await page.goto(`/dashboard/workspaces/dashboards/${dashboard.id}`);
+    await expect(page.getByTestId('timeline-lanes').first()).toBeVisible();
+    await capture('widget-populated-light');
+    // endregion
   } finally {
+    if (lightTheme) await setUserTheme(request, null);
     if (dashboardId) await deleteWorkspace(request, dashboardId);
     if (timelineCase) await deleteTimelineCase(request, timelineCase);
     if (incidentId) await deleteEntity(request, incidentId);

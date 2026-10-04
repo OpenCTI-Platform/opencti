@@ -166,12 +166,12 @@ const ContainerTimelineEventForm = ({ containerId, open, event, onClose, onSaved
               component={DateTimePickerField}
               name="event_time"
               required
-              textFieldProps={{ label: t_i18n('Start date'), variant: 'outlined', fullWidth: true, style: { marginTop: 20 } }}
+              textFieldProps={{ label: t_i18n('Start date'), variant: 'outlined', fullWidth: true, style: fieldSpacingContainerStyle }}
             />
             <Field
               component={DateTimePickerField}
               name="event_end_time"
-              textFieldProps={{ label: t_i18n('End date'), variant: 'outlined', fullWidth: true, style: { marginTop: 20 } }}
+              textFieldProps={{ label: t_i18n('End date'), variant: 'outlined', fullWidth: true, style: fieldSpacingContainerStyle }}
             />
             <Field component={SelectFieldFds} name="precision" label={t_i18n('Precision')} fullWidth={true} containerstyle={fieldSpacingContainerStyle}>
               {TIMELINE_PRECISIONS.map((precision) => (
@@ -188,7 +188,7 @@ const ContainerTimelineEventForm = ({ containerId, open, event, onClose, onSaved
                 <SelectItem key={kind} value={kind}>{t_i18n(TIMELINE_KIND_LABELS[kind])}</SelectItem>
               ))}
             </Field>
-            <Field component={MarkdownField} name="description" label={t_i18n('Description')} fullWidth={true} multiline={true} rows="4" style={{ marginTop: 20 }} />
+            <Field component={MarkdownField} name="description" label={t_i18n('Description')} fullWidth={true} multiline={true} rows="4" style={fieldSpacingContainerStyle} />
             <Field component={TextareaField} name="annotation" label={t_i18n('Annotation')} className="mt-5" rows={3} />
             <ObjectMarkingField
               name="objectMarking"

@@ -148,9 +148,6 @@ const CaseRfi: React.FC<CaseRfiProps> = ({ caseRfiData, enableReferences }) => {
 
   return (
     <div data-testid="rfi-page">
-      <div style={{ marginBottom: 24 }}>
-        <ContainerTimelineStrip containerId={caseRfi.id} basePath={`${resolveLink(caseRfi.entity_type)}/${caseRfi.id}`} />
-      </div>
       <Grid
         container={true}
         spacing={3}
@@ -159,6 +156,12 @@ const CaseRfi: React.FC<CaseRfiProps> = ({ caseRfiData, enableReferences }) => {
         {
           overviewLayoutCustomization.map(({ key, width }) => {
             switch (key) {
+              case 'timeline':
+                return (
+                  <Grid key={key} size={{ xs: width }}>
+                    <ContainerTimelineStrip containerId={caseRfi.id} basePath={`${resolveLink(caseRfi.entity_type)}/${caseRfi.id}`} />
+                  </Grid>
+                );
               case 'details':
                 return (
                   <Grid key={key} size={{ xs: width }}>

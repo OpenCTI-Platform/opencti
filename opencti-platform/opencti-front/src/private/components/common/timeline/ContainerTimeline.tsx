@@ -18,7 +18,7 @@ import ContainerTimelineEventForm from './ContainerTimelineEventForm';
 import ContainerTimelineLanes from './ContainerTimelineLanes';
 import ContainerTimelineList from './ContainerTimelineList';
 import ContainerTimelineSettingsDrawer from './ContainerTimelineSettingsDrawer';
-import { ContainerTimelineEmptyState, ContainerTimelineSkeleton } from './ContainerTimelineStates';
+import { ContainerTimelineEmptyState, ContainerTimelineErrorBoundary, ContainerTimelineSkeleton } from './ContainerTimelineStates';
 import ContainerTimelineToolbar from './ContainerTimelineToolbar';
 import useContainerTimelineExport from './useContainerTimelineExport';
 import {
@@ -613,32 +613,34 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
           visibleDomain={visibleDomain}
         />
         {eventsRef ? (
-          <Suspense fallback={<ContainerTimelineSkeleton />}>
-            <ContainerTimelineEventsView
-              queryRef={eventsRef}
-              linkedEventId={linkedEventId}
-              onLinkedEventResolved={() => setLinkedEventId(null)}
-              summary={summary}
-              state={state}
-              domain={domain}
-              lanes={lanes}
-              onDomainChange={onDomainChange}
-              onSelect={(eventId) => updateState({ event: eventId })}
-              onEdit={(event) => {
-                setFormEvent(event);
-                setFormOpen(true);
-              }}
-              onAdd={() => {
-                setFormEvent(null);
-                setFormOpen(true);
-              }}
-              onRegenerate={regenerate}
-              onClearFilters={() => updateState({ lanes: [], kinds: [], sources: [], search: '', includeHidden: false, pinnedOnly: false })}
-              onVisibleDomainChange={setVisibleDomain}
-              regenerating={regenerating}
-              actions={actions}
-            />
-          </Suspense>
+          <ContainerTimelineErrorBoundary onRetry={refresh}>
+            <Suspense fallback={<ContainerTimelineSkeleton />}>
+              <ContainerTimelineEventsView
+                queryRef={eventsRef}
+                linkedEventId={linkedEventId}
+                onLinkedEventResolved={() => setLinkedEventId(null)}
+                summary={summary}
+                state={state}
+                domain={domain}
+                lanes={lanes}
+                onDomainChange={onDomainChange}
+                onSelect={(eventId) => updateState({ event: eventId })}
+                onEdit={(event) => {
+                  setFormEvent(event);
+                  setFormOpen(true);
+                }}
+                onAdd={() => {
+                  setFormEvent(null);
+                  setFormOpen(true);
+                }}
+                onRegenerate={regenerate}
+                onClearFilters={() => updateState({ lanes: [], kinds: [], sources: [], search: '', includeHidden: false, pinnedOnly: false })}
+                onVisibleDomainChange={setVisibleDomain}
+                regenerating={regenerating}
+                actions={actions}
+              />
+            </Suspense>
+          </ContainerTimelineErrorBoundary>
         ) : (
           <ContainerTimelineSkeleton />
         )}
