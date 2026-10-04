@@ -66,7 +66,8 @@ export const breakCycles = (nodeIds: readonly string[], links: readonly LinkEnds
     else outgoing.set(link.sourceId, [link]);
   });
   const state = new Map<string, 'open' | 'done'>();
-  const reversed = new Set<string>();
+  // The links themselves, not their ids: the two connectors of a nested relationship share its id.
+  const reversed = new Set<LinkEnds>();
   [...nodeIds].sort().forEach((root) => {
     if (state.has(root)) return;
     const stack: { nodeId: string; index: number }[] = [{ nodeId: root, index: 0 }];
@@ -82,7 +83,7 @@ export const breakCycles = (nodeIds: readonly string[], links: readonly LinkEnds
         frame.index += 1;
         const status = state.get(edge.targetId);
         if (status === 'open') {
-          reversed.add(edge.id);
+          reversed.add(edge);
         } else if (!status) {
           state.set(edge.targetId, 'open');
           stack.push({ nodeId: edge.targetId, index: 0 });
@@ -90,7 +91,7 @@ export const breakCycles = (nodeIds: readonly string[], links: readonly LinkEnds
       }
     }
   });
-  return links.map((link) => (reversed.has(link.id)
+  return links.map((link) => (reversed.has(link)
     ? { id: link.id, sourceId: link.targetId, targetId: link.sourceId }
     : link));
 };

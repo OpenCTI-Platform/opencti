@@ -15,6 +15,20 @@ describe('breakCycles', () => {
     expect(acyclic.find((l) => l.id === 'ca')).toEqual({ id: 'ca', sourceId: 'a', targetId: 'c' });
     expect(acyclic.find((l) => l.id === 'ab')).toEqual(chain[0]);
   });
+
+  it('reverses only the connector of a nested relationship that closes a cycle', () => {
+    // The nested relationship `rel` is drawn as the node `r` between two connectors sharing its id.
+    const links = [
+      { id: 'rel', sourceId: 'x', targetId: 'r' },
+      { id: 'rel', sourceId: 'r', targetId: 'y' },
+      { id: 'yx', sourceId: 'y', targetId: 'x' },
+    ];
+    expect(breakCycles(['r', 'x', 'y'], links)).toEqual([
+      { id: 'rel', sourceId: 'r', targetId: 'x' },
+      { id: 'rel', sourceId: 'r', targetId: 'y' },
+      { id: 'yx', sourceId: 'y', targetId: 'x' },
+    ]);
+  });
 });
 
 describe('layeredLayout', () => {
