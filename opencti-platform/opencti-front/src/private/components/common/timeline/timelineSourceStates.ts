@@ -1,8 +1,10 @@
 /**
  * States of the runs, steps and deployments that timeline events come from. The timeline only carries the raw state:
  * each family reads through the vocabulary of its owner, registered below, and an unknown state shows nothing rather
- * than a raw value. Owners add their family here: hunt runs (`hunt_run`, verdict chips of the hunts), deployments
- * (`deployment`, deployment states of the indicators) and Case Autopilot runs (`investigation_run`, run states).
+ * than a raw value. The `hunt_run`, `deployment` and `investigation_run` families are only emitted when the hunts,
+ * the indicator deployments and Case Autopilot are installed on the platform (soft checks on their types); their
+ * label maps belong to those features, which register their resolver here next to them instead of the timeline
+ * copying their vocabularies.
  */
 
 export type TimelineStateSeverity = 'neutral' | 'info' | 'low' | 'medium' | 'high' | 'critical';

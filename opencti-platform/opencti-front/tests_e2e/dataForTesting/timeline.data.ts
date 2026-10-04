@@ -42,7 +42,7 @@ export const addTimelineCase = async (request: APIRequestContext, name: string, 
         pattern_type: "stix",
         x_opencti_main_observable_type: "IPv4-Addr",
         valid_from: "2026-02-02T08:00:00.000Z",
-        valid_until: "2026-05-02T08:00:00.000Z"
+        valid_until: "2026-02-06T08:00:00.000Z"
       }) { id }
     }
   `, 'indicatorAdd');

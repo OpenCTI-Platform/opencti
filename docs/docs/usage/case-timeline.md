@@ -98,7 +98,7 @@ The timeline listens to the changes of the case. When events are added or update
 
 Click an event to open its details. The header shows the title of the event and its kind, with **Edit** (milestones) and **Pin**; centering the timeline on the event, hiding it and deleting a milestone (with a confirmation) are under **More actions**. The details list the time and precision, the lane, the source, the author, the confidence, the element the event comes from (open it to pivot) and the markings. An event without annotation offers **Add an annotation**.
 
-Events that come from a run, a step or a deployment show its state in the vocabulary of the feature it comes from: the seven step states of Case Autopilot investigations (Planned step, Querying, Found, Nothing found, Partial, Failed, Not reached), the verdict of a hunt run, the state of an indicator deployment. An investigation event opens the run on its step in the **Autopilot** tab of the case when the platform has it.
+Events that come from an investigation step show its state with the seven step states of Case Autopilot investigations (Planned step, Querying, Found, Nothing found, Partial, Failed, Not reached), and open the run on that step in the **Autopilot** tab of the case. Hunt runs and indicator deployments appear on the timeline when those features are available on the platform; their verdicts and deployment states are shown with the labels of the feature they come from, and a state the platform does not know is never displayed as a raw value.
 
 ### Pin, hide and annotate
 

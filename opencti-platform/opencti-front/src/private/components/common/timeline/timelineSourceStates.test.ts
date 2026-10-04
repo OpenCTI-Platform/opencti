@@ -23,6 +23,7 @@ describe('Timeline source states', () => {
 
   it('should show nothing for a state no owner labels, never the raw value', () => {
     expect(resolveTimelineSourceState({ family: 'investigation_step', state: 'mystery' })).toBeNull();
+    // A family whose owner registered no labels on this platform
     expect(resolveTimelineSourceState({ family: 'hunt_run', state: 'completed', verdict: 'true_positive' })).toBeNull();
     expect(resolveTimelineSourceState(null)).toBeNull();
   });
