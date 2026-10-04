@@ -24,6 +24,8 @@ import {
   countLabel,
   type LandscapeDiffData,
   landscapeFailureReason,
+  LANDSCAPE_POLL_INTERVAL_MS,
+  landscapePollRetryDelay,
   landscapeGroupBuckets,
   landscapeGroupTitle,
   presetLabel,
@@ -414,5 +416,13 @@ describe('Landscape changes failures', () => {
       .toEqual('Access to part of this knowledge changed since the computation, so its result can no longer be shown.');
     expect(landscapeFailureReason('Cannot read properties of undefined')).toEqual('An unexpected error stopped the computation.');
     expect(landscapeFailureReason(null)).toEqual('An unexpected error stopped the computation.');
+  });
+
+  it('should read a running landscape diff again after a failed read, less and less often', () => {
+    expect(landscapePollRetryDelay(1)).toEqual(2 * LANDSCAPE_POLL_INTERVAL_MS);
+    expect(landscapePollRetryDelay(2)).toEqual(4 * LANDSCAPE_POLL_INTERVAL_MS);
+    expect(landscapePollRetryDelay(3)).toEqual(8 * LANDSCAPE_POLL_INTERVAL_MS);
+    // Capped, so a long outage is still followed by a read within half a minute
+    expect(landscapePollRetryDelay(20)).toEqual(30000);
   });
 });

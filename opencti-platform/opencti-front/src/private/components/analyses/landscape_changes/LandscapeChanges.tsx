@@ -28,6 +28,8 @@ import {
   landscapeDiffToJson,
   LandscapeDiffData,
   landscapeFailureReason,
+  LANDSCAPE_POLL_INTERVAL_MS,
+  landscapePollRetryDelay,
   presetRange,
 } from '../../common/time_machine/timeMachineUtils';
 import { LandscapeChangesRunMutation } from './__generated__/LandscapeChangesRunMutation.graphql';
@@ -157,7 +159,6 @@ const LANDSCAPE_ENTITY_TYPES = [
   'Country',
 ];
 type LandscapeGroupBy = 'entity_type' | 'relationship_type' | 'tactic';
-const POLL_INTERVAL_MS = 2000;
 export const DIFF_SEARCH_PARAM = 'diff';
 
 interface ScopeSelectorProps {
@@ -265,23 +266,27 @@ const LandscapeChanges = () => {
   // Poll the background computation until it completes (the diff id is kept in the URL)
   useEffect(() => {
     let cancelled = false;
+    let failures = 0;
     const poll = () => {
       if (!diffId) return;
       fetchQuery<LandscapeChangesPollQuery>(landscapeChangesPollQuery, { id: diffId })
         .toPromise()
         .then((data) => {
           if (cancelled) return;
+          failures = 0;
           const result = data?.landscapeDiff ?? null;
           setDiff(result);
           setLoadingDiff(false);
           if (result && (result.status === 'pending' || result.status === 'running')) {
-            pollTimer.current = setTimeout(poll, POLL_INTERVAL_MS);
+            pollTimer.current = setTimeout(poll, LANDSCAPE_POLL_INTERVAL_MS);
           }
         })
         .catch(() => {
           if (cancelled) return;
-          setLoadingDiff(false);
-          MESSAGING$.notifyError(t_i18n('Unable to read the landscape diff'));
+          // A failed read says nothing about the computation: only a successful answer can end the polling
+          if (failures === 0) MESSAGING$.notifyError(t_i18n('Unable to read the landscape diff'));
+          failures += 1;
+          pollTimer.current = setTimeout(poll, landscapePollRetryDelay(failures));
         });
     };
     setDiff(null);

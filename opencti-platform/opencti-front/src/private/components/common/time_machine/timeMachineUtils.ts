@@ -530,6 +530,12 @@ export const landscapeFailureReason = (error: string | null | undefined) => {
   return 'An unexpected error stopped the computation.';
 };
 
+export const LANDSCAPE_POLL_INTERVAL_MS = 2000;
+const LANDSCAPE_POLL_MAX_DELAY_MS = 30000;
+
+// Delay before reading a running landscape diff again after `failures` failed reads in a row: doubled each time, capped
+export const landscapePollRetryDelay = (failures: number) => Math.min(LANDSCAPE_POLL_INTERVAL_MS * 2 ** Math.max(0, failures), LANDSCAPE_POLL_MAX_DELAY_MS);
+
 export const exportFileName = (base: string, from: string, to: string, extension: string) => {
   const day = (date: string) => date.substring(0, 10);
   const safeBase = base.replace(/[^\p{L}\p{N}_-]+/gu, '_').replace(/_+/g, '_').replace(/^_|_$/g, '') || 'diff';
