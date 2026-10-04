@@ -276,6 +276,12 @@ describe('GraphAccessibleList', () => {
     expect(screen.getByRole('option', { name: 'Malware Qakbot, 0 relationships, Low confidence (20), TLP:AMBER' })).toBeInTheDocument();
   });
 
+  it('counts a self-loop once in the relationships of its entity', () => {
+    const loop = graphLink(malware, malware, { id: 'loop', relationship_type: 'variant-of', entity_type: 'variant-of' });
+    testRender(<GraphAccessibleList nodes={[malware]} links={[loop]} selectedIds={new Set()} onSelectNode={vi.fn()} onSelectLink={vi.fn()} />);
+    expect(screen.getByRole('option', { name: /^Malware Emotet, 1 relationship$/ })).toBeInTheDocument();
+  });
+
   it('mirrors the drawing as options a keyboard can select', () => {
     const onSelectNode = vi.fn();
     const onSelectLink = vi.fn();
