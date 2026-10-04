@@ -25,9 +25,12 @@ import DraftsMultiLineChart from '@components/common/drafts/DraftsMultiLineChart
 import DraftsMultiAreaChart from '@components/common/drafts/DraftsMultiAreaChart';
 import ProvenanceFreshnessWidget from '@components/common/provenance/ProvenanceFreshnessWidget';
 import ProvenanceSingleSourcedWidget from '@components/common/provenance/ProvenanceSingleSourcedWidget';
+import ProvenanceWidgetDisabled from '@components/common/provenance/ProvenanceWidgetDisabled';
+import { isProvenanceWidget } from '@components/common/provenance/provenanceWidgetUtils';
 import type { Widget, WidgetHost } from '../../utils/widget/widget';
 import type { DashboardConfig } from './dashboard-types';
 import { isDraftWorkspaceFilterGroup } from '../../utils/filters/filtersUtils';
+import useHelper from '../../utils/hooks/useHelper';
 import WidgetNotImplemented from './WidgetNotImplemented';
 
 interface DashboardEntitiesVizProps {
@@ -50,8 +53,12 @@ const DashboardEntitiesViz = ({
   host,
   refreshRate,
 }: DashboardEntitiesVizProps) => {
+  const { isProvenanceEnabled } = useHelper();
   const isDraftWidget = isDraftWorkspaceWidget(widget);
 
+  if (isProvenanceWidget(widget.type) && !isProvenanceEnabled()) {
+    return <ProvenanceWidgetDisabled widget={widget} popover={popover} />;
+  }
   switch (widget.type) {
     case 'bookmark':
       return (

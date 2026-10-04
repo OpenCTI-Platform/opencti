@@ -12,17 +12,21 @@ import {
   clearFreshnessFlagsOfElements,
   getActiveKnowledgeDecayRules,
   getDecayRuleScope,
+  hasSameFreshnessConfiguration,
   KNOWLEDGE_FRESHNESS_INDICES,
+  knowledgeDecayRuleLockKey,
   parseKnowledgeDecayFilters,
   resolveKnowledgeDecayRuleTypes,
 } from '../decayRule/decayRule-knowledge';
 import {
   type BasicStoreEntityDecayRule,
   DEFAULT_FRESHNESS_CONFIDENCE_STEP,
+  ENTITY_TYPE_DECAY_RULE,
   FRESHNESS_POLICY_FLAG,
   FRESHNESS_POLICY_LOWER_CONFIDENCE,
   FRESHNESS_POLICY_REVOKE,
 } from '../decayRule/decayRule-types';
+import { SYSTEM_USER } from '../../utils/access';
 import { ATTRIBUTE_FRESHNESS_RULE_ID, ATTRIBUTE_FRESHNESS_STALE, ATTRIBUTE_FRESHNESS_STALE_AT, ATTRIBUTE_LAST_ASSERTED_AT } from './provenance-types';
 import { applyProvenanceUpdate, isNoopUpdate } from './provenance-write';
 import { listProvenanceTrackedTypes, restrictToTrackedTypes } from './provenance-tracking';
@@ -194,10 +198,42 @@ const applyFreshnessPolicy = async (context: AuthContext, user: AuthUser, rule: 
   return true;
 };
 
+/**
+ * Apply the policy of a rule under the lock its changes hold (see knowledgeDecayRuleLockKey), with the configuration
+ * the run loaded only if the rule still has it. Returns null when the rule changed, was deleted or is being changed:
+ * the run stops applying it and the next run loads it again.
+ */
+const applyFreshnessPolicyOfCurrentRule = async (
+  context: AuthContext,
+  user: AuthUser,
+  rule: BasicStoreEntityDecayRule,
+  element: FreshnessCandidate,
+  result: KnowledgeFreshnessRunResult,
+): Promise<boolean | null> => {
+  let lock: { unlock: () => Promise<void> };
+  try {
+    lock = await lockResources([knowledgeDecayRuleLockKey(rule.id)]);
+  } catch (err) {
+    logApp.warn('[PROVENANCE] Knowledge decay rule being changed, its policy is applied by the next run', { cause: err, rule_id: rule.id });
+    return null;
+  }
+  try {
+    const stored = await elLoadById<BasicStoreEntityDecayRule>(context, SYSTEM_USER, rule.id, { type: ENTITY_TYPE_DECAY_RULE });
+    if (!hasSameFreshnessConfiguration(rule, stored)) {
+      return null;
+    }
+    return await applyFreshnessPolicy(context, user, rule, element, result);
+  } finally {
+    await lock.unlock();
+  }
+};
+
 export interface RuleScan {
   applied: number;
   scanned: number;
   lastExamined?: BasicStoreBase['sort'];
+  // The rule changed since the run loaded it: the scan stopped
+  ruleChanged?: boolean;
 }
 
 // Where the scan of each rule resumes on the next run (kept in memory: a restart scans from the first candidate)
@@ -235,12 +271,14 @@ const scanRuleCandidates = async (
       const shadowed = filteredHigherRules.length > 0
         ? await findIdsMatchingRules(context, user, candidates.map((candidate) => candidate.internal_id), filteredHigherRules)
         : new Set<string>();
-      for (let index = 0; index < candidates.length && scan.applied < scope.budget; index += 1) {
+      for (let index = 0; index < candidates.length && scan.applied < scope.budget && !scan.ruleChanged; index += 1) {
         const candidate = candidates[index];
-        scan.lastExamined = candidate.sort;
         if (!shadowed.has(candidate.internal_id)) {
           try {
-            if (await applyFreshnessPolicy(context, user, rule, candidate, result)) {
+            const applied = await applyFreshnessPolicyOfCurrentRule(context, user, rule, candidate, result);
+            if (applied === null) {
+              scan.ruleChanged = true;
+            } else if (applied) {
               scan.applied += 1;
             }
           } catch (err) {
@@ -248,8 +286,11 @@ const scanRuleCandidates = async (
             logApp.error('[PROVENANCE] Unable to apply the knowledge freshness policy', { cause: err, id: candidate.internal_id, rule_id: rule.id });
           }
         }
+        if (!scan.ruleChanged) {
+          scan.lastExamined = candidate.sort;
+        }
       }
-      return scan.applied < scope.budget;
+      return scan.applied < scope.budget && !scan.ruleChanged;
     },
   });
   return scan;
@@ -272,13 +313,18 @@ const applyKnowledgeDecayRule = async (
   const resumed = scanCursors.get(ruleId);
   const scan = await scanRuleCandidates(context, user, { ...current, types }, filteredHigherRules, { budget, maxScanned, after: resumed }, result);
   let { applied } = scan;
+  if (scan.ruleChanged) {
+    // The next run scans the rule from its first candidate, with its new configuration
+    scanCursors.delete(ruleId);
+    return applied;
+  }
   let lastExamined = resumeAfterScan(scan, budget, maxScanned);
   if (!lastExamined && resumed) {
     // The last candidate was reached from where the previous run stopped: the rest of the run starts over
     const scope = { budget: budget - applied, maxScanned: maxScanned - scan.scanned };
     const wrapped = await scanRuleCandidates(context, user, { ...current, types }, filteredHigherRules, scope, result);
     applied += wrapped.applied;
-    lastExamined = resumeAfterScan(wrapped, scope.budget, scope.maxScanned);
+    lastExamined = wrapped.ruleChanged ? undefined : resumeAfterScan(wrapped, scope.budget, scope.maxScanned);
   }
   if (lastExamined) {
     scanCursors.set(ruleId, offsetToCursor(lastExamined));

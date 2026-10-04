@@ -455,7 +455,14 @@ export const computeCreationProvenance = async (
     }
     return restored as StoreProvenanceFields;
   }
-  const source = await resolveAssertionSource(context, user, input, { fromRule: opts.fromRule });
+  let source: AssertionSource;
+  try {
+    source = await resolveAssertionSource(context, user, input, { fromRule: opts.fromRule });
+  } catch (err) {
+    // The element is created without provenance: the next assertion of its source records it
+    logApp.warn('[PROVENANCE] Unable to resolve the source of a created element', { cause: err, type });
+    return null;
+  }
   const at = now();
   const provenance = buildCreationProvenance(source, input.confidence, at);
   const procedures = opts.procedures?.(source, at) ?? [];

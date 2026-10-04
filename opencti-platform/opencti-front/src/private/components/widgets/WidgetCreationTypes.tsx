@@ -14,8 +14,7 @@ import {
 import Card from '../../../components/common/card/Card';
 import type { WidgetHost } from '../../../utils/widget/widget';
 import useHelper from '../../../utils/hooks/useHelper';
-
-const PROVENANCE_VISUALIZATION_TYPES: string[] = ['provenance-freshness', 'provenance-single-sourced'];
+import { isProvenanceWidget } from '../common/provenance/provenanceWidgetUtils';
 
 export const getVisualizationTypes = (host: WidgetHost, provenanceEnabled = true) => {
   const types = host.kind === 'workspace'
@@ -25,7 +24,7 @@ export const getVisualizationTypes = (host: WidgetHost, provenanceEnabled = true
       : host.kind === 'custom-view'
         ? customViewsWidgetVisualizationTypes
         : [];
-  return provenanceEnabled ? types : types.filter(({ key }) => !PROVENANCE_VISUALIZATION_TYPES.includes(key));
+  return provenanceEnabled ? types : types.filter(({ key }) => !isProvenanceWidget(key));
 };
 
 const WidgetCreationTypes = () => {

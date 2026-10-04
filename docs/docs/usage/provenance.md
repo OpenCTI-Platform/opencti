@@ -174,6 +174,14 @@ Both only count the types on which provenance is tracked: the knowledge of an un
 
     ![The provenance widgets in the light theme](assets/provenance-widgets-light.png)
 
+While provenance is disabled (see [Configuration](#configuration)), a provenance widget already saved on a dashboard keeps its place and runs no query: it states that provenance is disabled, that an administrator enables it in the platform configuration, and links to this documentation.
+
+![The same dashboard while provenance is disabled: each provenance widget keeps its title and reads "Provenance is disabled on this platform.", the next step and a "Learn more" link](assets/provenance-widget-disabled.png)
+
+??? example "The same dashboard in the light theme"
+
+    ![The provenance widgets of a dashboard while provenance is disabled, in the light theme](assets/provenance-widget-disabled-light.png)
+
 ## Notifications
 
 Two trigger event types are dedicated to provenance in [live triggers](notifications.md#triggers):
@@ -222,4 +230,4 @@ In the Python client, `OpenCTIApiClient.get_provenance_extension(stix_object)` r
 | provenance:max_conflict_values_per_field | PROVENANCE__MAX_CONFLICT_VALUES_PER_FIELD  | 10            | Maximum number of alternative values kept for a conflicting field  |
 | provenance:refresh_on_write              | PROVENANCE__REFRESH_ON_WRITE               | `false`       | Refresh the index after each provenance update, slows down writes   |
 
-When provenance is disabled, nothing is recorded, no provenance extension is exported, and the provenance backfill and knowledge freshness managers do not run. The provenance surfaces are hidden as well: the Sources card and the sources panel, the Conflicts and Stale knowledge tabs of the Curation hub and their counts, the provenance widgets of the widget catalog and the provenance events of the notification triggers (an existing trigger keeps the provenance events it already had, so they can be removed). The provenance backfill and the knowledge freshness managers are described in the [managers](../deployment/advanced/managers.md) page.
+When provenance is disabled, nothing is recorded, no provenance extension is exported, and the provenance backfill and knowledge freshness managers do not run. The provenance surfaces are hidden as well: the Sources card and the sources panel, the Conflicts and Stale knowledge tabs of the Curation hub and their counts, the provenance widgets of the widget catalog (a provenance widget already saved on a dashboard keeps its place, states that provenance is disabled and that an administrator enables it with `provenance:enabled`, without querying anything) and the provenance events of the notification triggers (an existing trigger keeps the provenance events it already had, so they can be removed). The provenance backfill and the knowledge freshness managers are described in the [managers](../deployment/advanced/managers.md) page.
