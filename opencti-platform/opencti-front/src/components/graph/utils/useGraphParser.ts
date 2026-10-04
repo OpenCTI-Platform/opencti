@@ -63,11 +63,27 @@ export const graphNodeTitle = (node: Pick<GraphNode, 'label' | 'raw' | 'relation
   return getMainRepresentative(node.raw) || node.label;
 };
 
-/** Name the platform gives to an entity the reader may not see, keeping only its id and type. */
+/** Name the platform gives to an entity the reader may not see; it keeps only its id and types. */
 const RESTRICTED_NAME = 'Restricted';
+
+/**
+ * Whether the object is the placeholder the platform returns for an entity the reader may not see:
+ * named "Restricted", with every other value emptied (no author, no marking, dates at the start of
+ * time). A readable entity that happens to be named "Restricted" keeps its author, its markings or
+ * its real dates, and is not taken for one.
+ */
 export const isRestrictedObject = (data: ObjectToParse) => {
-  const { name, representative } = data as ObjectToParse & { name?: string | null; representative?: { main?: string | null } | null };
-  return !data.parent_types.includes('basic-relationship') && (name === RESTRICTED_NAME || representative?.main === RESTRICTED_NAME);
+  if (data.parent_types.includes('basic-relationship')) return false;
+  const { name, representative, created_at: createdAt } = data as ObjectToParse & {
+    name?: string | null;
+    representative?: { main?: string | null } | null;
+    created_at?: string | null;
+  };
+  if (name !== RESTRICTED_NAME && representative?.main !== RESTRICTED_NAME) return false;
+  const dates = [data.created, createdAt].filter((date): date is string => !!date);
+  return !data.createdBy?.id
+    && (data.objectMarking ?? []).length === 0
+    && dates.every((date) => new Date(date).getTime() === 0);
 };
 
 /** Id of the placeholder marking of unmarked elements, which the marking filter lists as "None". */
