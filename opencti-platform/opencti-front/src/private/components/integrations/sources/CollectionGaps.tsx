@@ -50,6 +50,9 @@ const collectionGapsFragment = graphql`
           pir {
             id
             name
+            pir_criteria {
+              weight
+            }
           }
           criterion_label
           criterion_weight
@@ -236,8 +239,6 @@ const CollectionGapsList = ({ queryRef }: CollectionGapsListProps) => {
     queryData,
   );
   const gaps = (data.collectionGaps?.edges ?? []).flatMap((edge) => (edge?.node ? [edge.node] : []));
-  const weightsByPir = new Map<string, number[]>();
-  gaps.forEach((gap) => weightsByPir.set(gap.pir_id, [...(weightsByPir.get(gap.pir_id) ?? []), gap.criterion_weight]));
   if (gaps.length === 0) {
     return (
       <Typography variant="body2" sx={{ color: theme.palette.text.secondary, padding: 2 }} data-testid="collection-gaps-empty">
@@ -259,7 +260,8 @@ const CollectionGapsList = ({ queryRef }: CollectionGapsListProps) => {
                 )}
                 <Chip severity={gap.is_gap ? 'medium' : 'low'} size="sm" label={gap.is_gap ? t_i18n('Collection gap') : t_i18n('Covered')} />
                 {(() => {
-                  const pirWeights = weightsByPir.get(gap.pir_id) ?? [];
+                  // Ranked against every criterion of the PIR, whatever the page and the filters show
+                  const pirWeights = (gap.pir?.pir_criteria ?? []).map((criterion) => criterion.weight);
                   const priority = criterionPriority(gap.criterion_weight, pirWeights);
                   return priority ? (
                     <Tooltip>
