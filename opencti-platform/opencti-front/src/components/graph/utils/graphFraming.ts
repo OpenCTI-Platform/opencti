@@ -30,6 +30,13 @@ export interface Frame {
 const NO_INSETS: FrameInsets = { left: 0, top: 0, right: 0, bottom: 0 };
 const GAP = 8;
 
+/**
+ * Height of the toolbar docked under the graph, closed and with the time range selector open: the
+ * selector grows the toolbar over the bottom of the canvas.
+ */
+export const GRAPH_TOOLBAR_HEIGHT = 54;
+export const GRAPH_TOOLBAR_HEIGHT_WITH_TIME_RANGE = 134;
+
 /** Floating panels over the canvas: view controls, legend, details panel. */
 export const GRAPH_PANEL_SELECTOR = '[data-graph-panel], .MuiDrawer-paperAnchorRight';
 

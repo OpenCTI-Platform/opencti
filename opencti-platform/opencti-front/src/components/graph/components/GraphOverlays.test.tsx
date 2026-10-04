@@ -64,6 +64,11 @@ describe('GraphLegend', () => {
     testRender(<GraphLegend {...props} />);
     expect(screen.queryByText('Badges')).toBeNull();
   });
+
+  it('stays above the time range selector of the toolbar when it is open', () => {
+    testRender(<GraphLegend {...props} bottomOffset={80} />);
+    expect(screen.getByRole('region', { name: 'Legend' }).style.marginBottom).toBe('80px');
+  });
 });
 
 describe('GraphCounters', () => {

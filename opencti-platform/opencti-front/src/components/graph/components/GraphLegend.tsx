@@ -29,6 +29,8 @@ export interface GraphLegendProps {
   hiddenCount: number;
   /** Only the badges present in the graph. */
   badges?: readonly GraphLegendBadge[];
+  /** Pixels the toolbar under the graph covers at the bottom of the canvas, which the legend stays above. */
+  bottomOffset?: number;
   onToggleEntityType: (type: string) => void;
   onToggleRelationshipType: (type: string) => void;
   onToggleCollapsed: (type: string) => void;
@@ -58,6 +60,7 @@ const GraphLegend = ({
   collapsedEntityTypes,
   hiddenCount,
   badges = [],
+  bottomOffset = 0,
   onToggleEntityType,
   onToggleRelationshipType,
   onToggleCollapsed,
@@ -130,6 +133,7 @@ const GraphLegend = ({
         position: 'absolute',
         left: theme.spacing(1.5),
         bottom: theme.spacing(1.5),
+        marginBottom: bottomOffset,
         zIndex: 2,
         width: 248,
       }}

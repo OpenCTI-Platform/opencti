@@ -18,6 +18,7 @@ import useAuth from '../../utils/hooks/useAuth';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
 import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../utils/hooks/useDraftContext';
 import { RIGHT_BAR_LAYER, fdsLayerClass, layerInputVars } from '../../utils/fdsLayer';
+import { GRAPH_TOOLBAR_HEIGHT, GRAPH_TOOLBAR_HEIGHT_WITH_TIME_RANGE } from './utils/graphFraming';
 
 export type GraphToolbarProps = GraphToolbarContentToolsProps & GraphToolbarExpandToolsProps & GraphToolbarDisplayToolsProps & {
   warning?: React.ReactNode;
@@ -68,7 +69,7 @@ const GraphToolbar = ({
           paddingLeft,
           right: 'var(--chatbot-sidebar-width, 0px)',
           transition: 'right 225ms cubic-bezier(0.4, 0, 0.2, 1), height 0.2s ease',
-          height: showTimeRange ? 134 : 54,
+          height: showTimeRange ? GRAPH_TOOLBAR_HEIGHT_WITH_TIME_RANGE : GRAPH_TOOLBAR_HEIGHT,
           overflow: 'hidden',
           marginBottom: bannerHeightNumber,
           bottom: posBottom,
@@ -143,7 +144,8 @@ const GraphToolbar = ({
         {context !== 'analyses' && <GraphToolbarContentTools {...props} />}
       </div>
 
-      <GraphToolbarTimeRange />
+      {/* Only mounted while shown: the closed toolbar clips it, and its handles would stay reachable from the keyboard. */}
+      {showTimeRange && <GraphToolbarTimeRange />}
     </Drawer>
   );
 };

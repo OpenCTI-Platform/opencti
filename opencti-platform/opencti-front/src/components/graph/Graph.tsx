@@ -28,6 +28,7 @@ import useGraphLayoutEngine, { type GraphLayoutRequest } from './utils/useGraphL
 import useGraphKeyboardShortcuts from './utils/useGraphKeyboardShortcuts';
 import useGraphFullscreen from './utils/useGraphFullscreen';
 import { isPathDrawable, relationshipCounts } from './utils/graphFocus';
+import { GRAPH_TOOLBAR_HEIGHT, GRAPH_TOOLBAR_HEIGHT_WITH_TIME_RANGE } from './utils/graphFraming';
 import { badgesOfNode, useGraphBadgeRegistryVersion } from './badges';
 import { downloadCanvasAsPng, renderGraphImage } from './utils/graphExport';
 import { MESSAGING$ } from '../../relay/environment';
@@ -129,6 +130,7 @@ const Graph = ({
       disabledEntityTypes,
       disabledRelationshipTypes = [],
       showLegend = true,
+      showTimeRange,
       highlightedPath,
     },
   } = useGraphContext();
@@ -650,6 +652,7 @@ const Graph = ({
             collapsedEntityTypes={collapsedEntityTypes}
             hiddenCount={hiddenNodeIds.length}
             badges={legendBadges}
+            bottomOffset={showTimeRange ? GRAPH_TOOLBAR_HEIGHT_WITH_TIME_RANGE - GRAPH_TOOLBAR_HEIGHT : 0}
             onToggleEntityType={toggleEntityType}
             onToggleRelationshipType={toggleRelationshipType}
             onToggleCollapsed={toggleCollapsedEntityType}
