@@ -273,6 +273,16 @@ describe('GraphHoverCard', () => {
     expect(handlers.onExpandGroup).toHaveBeenCalledWith('Malware');
   });
 
+  it('offers only the expansion on a collapsed group node, no fact or action of one of its entities', () => {
+    // The group node carries the fields of its first member under a synthetic id.
+    const group = graphNode({ ...actor, id: 'group:Intrusion-Set', label: '2 x Intrusion set', groupOf: { entityType: 'Intrusion-Set', memberIds: ['actor', 'other-actor'] } });
+    testRender(<GraphHoverCard {...common} target={{ kind: 'node', node: group }} badges={[]} relationshipCounts={[]} actions={actions()} />);
+    expect(screen.getByText('Collapsed group')).toBeInTheDocument();
+    expect(screen.getAllByRole('button').map((button) => button.getAttribute('aria-label'))).toEqual(['Expand the group']);
+    expect(screen.queryByText('APT-X')).toBeNull();
+    expect(screen.queryByText('Date')).toBeNull();
+  });
+
   it('offers no fact or action of a single relationship on a link drawn towards a group', () => {
     const groupLink = { ...uses, id: `${GROUP_LINK_PREFIX}actor|group:Malware|uses`, confidence: 15 };
     testRender(<GraphHoverCard {...common} target={{ kind: 'link', link: groupLink }} badges={[]} relationshipCounts={[]} actions={actions()} />);
