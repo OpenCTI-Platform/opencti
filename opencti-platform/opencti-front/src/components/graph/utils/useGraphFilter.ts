@@ -23,6 +23,8 @@ const useGraphFilter = (): object => {
   const filterNodes = (disabledTargets: string[]) => {
     graphData?.nodes.forEach((node) => {
       node.disabled = disabledEntityTypes.includes(node.entity_type)
+        // A nested relationship, drawn as a node, fades with its relationship type.
+        || (!!node.relationship_type && disabledRelationshipTypes.includes(node.relationship_type))
         || disabledCreators.includes(node.createdBy.id)
         || disabledTargets.includes(node.id)
         || node.markedBy.some((marking) => disabledMarkings.includes(marking.id));

@@ -183,6 +183,9 @@ const Graph = ({
   const linkShown = (link: GraphLink) => shownNodeIds.has(endpointId(link.source) ?? link.source_id)
     && shownNodeIds.has(endpointId(link.target) ?? link.target_id);
   const shownLinks = useMemo(() => (displayData?.links ?? []).filter(linkShown), [displayData, shownNodeIds]);
+  // Only what is drawn is simulated: hidden entities and the members of collapsed groups exert no
+  // force, and their positions stay on their objects for when they are drawn again.
+  const drawnData = useMemo(() => ({ nodes: shownNodes, links: shownLinks }), [shownNodes, shownLinks]);
 
   // --- Nothing drawn: no data yet, everything hidden, or everything filtered out. Shown after a
   // short delay so that a graph still receiving its data never flashes it.
@@ -440,6 +443,9 @@ const Graph = ({
     const entityNodes = shownNodes.filter((node) => !node.groupOf && !node.relationship_type);
     const entityCount = entityNodes.length;
     const relationshipLinks = shownLinks.filter((link) => !!link.label && !isGroupLink(link));
+    // A nested relationship is drawn as a node between two unlabelled connector links.
+    const relationshipNodes = shownNodes.filter((node) => !!node.relationship_type && !node.groupOf);
+    const relationshipCount = relationshipLinks.length + relationshipNodes.length;
     const restrictedNodes = entityNodes.filter((node) => node.isRestricted);
     const attentionNodes = entityNodes.filter((node) => attentionIds.has(node.id));
     const all: (GraphCounter & { count: number })[] = [
@@ -452,11 +458,11 @@ const Graph = ({
       },
       {
         key: 'relationships',
-        count: relationshipLinks.length,
-        label: t_i18n('{count, plural, one {# relationship} other {# relationships}}', { values: { count: relationshipLinks.length } }),
+        count: relationshipCount,
+        label: t_i18n('{count, plural, one {# relationship} other {# relationships}}', { values: { count: relationshipCount } }),
         action: t_i18n('Select the relationships'),
         onSelect: () => {
-          setSelectedNodes([]);
+          setSelectedNodes(relationshipNodes);
           setSelectedLinks(relationshipLinks);
         },
       },
@@ -506,14 +512,17 @@ const Graph = ({
       entry.count += node.groupOf ? node.groupOf.memberIds.length : 1;
       families.set(type, entry);
     });
+    const relationshipCount = shownLinks.filter((l) => !!l.label).length
+      + shownNodes.filter((node) => !!node.relationship_type && !node.groupOf).length;
     const canvas = renderGraphImage({
       nodes: shownNodes,
       links: shownLinks,
       palette,
       curvatureOf,
       title: imageTitle,
-      // The totals of the legend: members of collapsed groups included, relationship nodes left out.
-      subtitle: `${t_i18n('{count, plural, one {# entity} other {# entities}}', { values: { count: [...families.values()].reduce((sum, family) => sum + family.count, 0) } })}, ${t_i18n('{count, plural, one {# relationship} other {# relationships}}', { values: { count: shownLinks.filter((l) => !!l.label).length } })}`,
+      // The totals of the legend: members of collapsed groups included, nested relationships counted
+      // as relationships.
+      subtitle: `${t_i18n('{count, plural, one {# entity} other {# entities}}', { values: { count: [...families.values()].reduce((sum, family) => sum + family.count, 0) } })}, ${t_i18n('{count, plural, one {# relationship} other {# relationships}}', { values: { count: relationshipCount } })}`,
       typeLabel: (node) => (node.relationship_type ? t_i18n(`relationship_${node.relationship_type}`) : t_i18n(`entity_${node.entity_type}`)),
       badgesOf: (node) => badgesOfNode(node, { t_i18n }),
       linkColor: linkColorPaint,
@@ -629,8 +638,10 @@ const Graph = ({
             width={width}
             height={height}
             backgroundColor={theme.palette.background.default}
-            graphData={displayData}
+            graphData={drawnData}
             dagMode={modeTree ?? undefined}
+            // A cycle is laid out as it is, its links not forced along the tree, instead of breaking the graph.
+            onDagError={() => {}}
             cooldownTicks={(!withForces || isLoadingData) ? 0 : 100}
             linkDirectionalArrowLength={3}
             linkDirectionalArrowRelPos={0.99}
@@ -640,8 +651,6 @@ const Graph = ({
             linkThreeObject={linkThreePaint}
             linkPositionUpdate={linkThreeLabelPosition}
             linkColor={linkColorPaint}
-            linkVisibility={linkShown}
-            nodeVisibility={nodeShown}
             nodeColor={(node) => (node.disabled ? palette.disabled : node.color)}
             nodeOpacity={0.8}
             nodeThreeObjectExtend
@@ -679,7 +688,7 @@ const Graph = ({
               ref={graphRef2D}
               width={width}
               height={height}
-              graphData={displayData}
+              graphData={drawnData}
               nodeRelSize={4}
               maxZoom={24}
               warmupTicks={hasNoSavedPosition ? WARMUP_TICKS : 0}
@@ -688,8 +697,6 @@ const Graph = ({
               enablePanInteraction={!selectFree && !selectFreeRectangle}
               nodeLabel={() => ''}
               linkLabel={() => ''}
-              nodeVisibility={nodeShown}
-              linkVisibility={linkShown}
               linkCurvature={linkCurvature}
               linkWidth={2}
               linkDirectionalArrowLength={0}

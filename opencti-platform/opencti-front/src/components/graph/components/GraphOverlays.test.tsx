@@ -41,6 +41,14 @@ describe('GraphLegend', () => {
     expect(screen.getByText('Line styles')).toBeInTheDocument();
   });
 
+  it('counts a nested relationship, drawn as a node, with the relationships of its type', () => {
+    const nested = graphNode({ id: 'nested', entity_type: 'uses', relationship_type: 'uses', label: 'uses' });
+    const connectors = [graphLink(actor, nested, { id: 'nested', label: '' }), graphLink(nested, malware, { id: 'nested', label: '' })];
+    testRender(<GraphLegend {...props} nodes={[...props.nodes, nested]} links={[uses, ...connectors]} />);
+    expect(screen.getByRole('button', { name: /uses: 2/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^uses: \d+.*entit/i })).toBeNull();
+  });
+
   it('collapses a type and shows the hidden entities', async () => {
     const { user } = testRender(<GraphLegend {...props} hiddenCount={2} collapsedEntityTypes={['Malware']} />);
     await user.click(screen.getByRole('button', { name: 'Expand the group' }));
@@ -224,6 +232,8 @@ describe('GraphHoverCard', () => {
     testRender(<GraphHoverCard {...common} target={{ kind: 'node', node }} badges={[]} relationshipCounts={[]} actions={actions()} />);
     expect(screen.getByText('Restricted')).toBeInTheDocument();
     expect(screen.getByText('You do not have access to this entity.')).toBeInTheDocument();
+    // Its date is a placeholder of the platform, not a fact.
+    expect(screen.queryByText('Date')).toBeNull();
   });
 
   it('describes a relationship and a collapsed group', async () => {

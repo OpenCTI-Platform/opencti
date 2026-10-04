@@ -186,8 +186,9 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
   let shortestPathReason = in3D;
   if (!shortestPathReason && !highlightedPath && selectedNodes.length !== 2) shortestPathReason = t_i18n('Select exactly two entities first');
 
+  // A nested relationship drawn as a node is filtered with the relationships, as in the legend.
   const typeOptions = [
-    ...stixCoreObjectTypes.map((type) => ({
+    ...stixCoreObjectTypes.filter((type) => !relationshipTypes.includes(type)).map((type) => ({
       key: `entity:${type}`,
       label: t_i18n(`entity_${type}`),
       section: t_i18n('Entities'),

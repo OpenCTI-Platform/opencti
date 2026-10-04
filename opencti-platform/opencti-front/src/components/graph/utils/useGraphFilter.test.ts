@@ -55,4 +55,12 @@ describe('useGraphFilter', () => {
     expect(variant.disabled).toBe(true);
     expect(m2.disabled).toBe(false);
   });
+
+  it('fades a nested relationship, drawn as a node, with its relationship type', () => {
+    const nested = graphNode({ id: 'nested', entity_type: 'variant-of', relationship_type: 'variant-of' });
+    context.current = { graphData: { nodes: [...graphData.nodes, nested], links: graphData.links }, graphState: filters({ disabledRelationshipTypes: ['variant-of'] }) };
+    renderHook(() => useGraphFilter());
+    expect(nested.disabled).toBe(true);
+    expect(m1.disabled).toBe(false);
+  });
 });

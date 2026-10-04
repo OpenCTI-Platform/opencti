@@ -192,15 +192,18 @@ export const GraphProvider = ({
       .filter((v, i, a) => a.indexOf(v) === i);
   }, [graphData?.nodes]);
 
-  // Dynamically compute all relationship types drawn as links, from the labelled links the legend
-  // counts: the unlabelled connectors of nested and correlation links are not relationships to filter.
+  // Dynamically compute all relationship types drawn, as the legend counts them: the labelled links
+  // and the nested relationships drawn as nodes, not the unlabelled connectors of nested and
+  // correlation links.
   const relationshipTypes = useMemo(() => {
-    return [...new Set((graphData?.links ?? [])
-      .filter(({ label }) => !!label)
-      .map(({ relationship_type, entity_type }) => relationship_type || entity_type)
-      .filter((type) => !!type))]
+    return [...new Set([
+      ...(graphData?.links ?? [])
+        .filter(({ label }) => !!label)
+        .map(({ relationship_type, entity_type }) => relationship_type || entity_type),
+      ...(graphData?.nodes ?? []).map(({ relationship_type }) => relationship_type),
+    ].filter((type) => !!type))]
       .sort((a, b) => t_i18n(`relationship_${a}`).localeCompare(t_i18n(`relationship_${b}`)));
-  }, [graphData?.links]);
+  }, [graphData?.links, graphData?.nodes]);
 
   // Dynamically compute all marking definitions in graphData.
   const markingDefinitions = useMemo(() => {

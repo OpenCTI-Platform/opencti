@@ -157,10 +157,13 @@ const GraphHoverCard = ({
             {t_i18n('You do not have access to this entity.')}
           </div>
         )}
-        <div style={fact}>
-          <span style={factLabel}>{t_i18n('Date')}</span>
-          {dateFact(node.defaultDate)}
-        </div>
+        {/* The date of an entity the reader may not see is a placeholder of the platform, not a fact. */}
+        {!node.isRestricted && (
+          <div style={fact}>
+            <span style={factLabel}>{t_i18n('Date')}</span>
+            {dateFact(node.defaultDate)}
+          </div>
+        )}
         {node.createdBy?.name && node.createdBy.id !== NO_AUTHOR_ID && (
           <div style={fact}>
             <span style={factLabel}>{t_i18n('Author')}</span>

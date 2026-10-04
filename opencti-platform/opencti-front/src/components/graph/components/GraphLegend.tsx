@@ -143,11 +143,18 @@ const GraphLegend = ({
   }, [nodes]);
 
   const relationshipCounts = useMemo(() => {
-    const counts = countBy(links.filter((link) => !!link.label), (link) => link.relationship_type || link.entity_type);
+    const counts = countBy(
+      [
+        ...links.filter((link) => !!link.label).map((link) => link.relationship_type || link.entity_type),
+        // A nested relationship is drawn as a node between two unlabelled connector links.
+        ...nodes.filter((node) => !!node.relationship_type && !node.groupOf).map((node) => node.relationship_type),
+      ],
+      (type) => type,
+    );
     return [...counts.entries()]
       .map(([type, count]) => ({ type, count, label: t_i18n(`relationship_${type}`) }))
       .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
-  }, [links]);
+  }, [links, nodes]);
 
   const row: CSSProperties = {
     display: 'flex',
