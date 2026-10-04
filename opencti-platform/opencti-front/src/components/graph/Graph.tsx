@@ -23,7 +23,7 @@ import GraphAccessibleList from './components/GraphAccessibleList';
 import GraphShortcutsDialog from './components/GraphShortcutsDialog';
 import { useFormatter } from '../i18n';
 import { itemFamily } from '../../utils/Colors';
-import { createCollapseCache, isCollapsedMember, withCollapsedGroups } from './utils/graphCollapse';
+import { createCollapseCache, isCollapsedMember, isGroupLink, withCollapsedGroups } from './utils/graphCollapse';
 import { entityTier, layeredLayout, radialLayout, tierLayout } from './utils/graphLayouts';
 import useGraphLayoutEngine, { type GraphLayoutRequest } from './utils/useGraphLayoutEngine';
 import useGraphKeyboardShortcuts from './utils/useGraphKeyboardShortcuts';
@@ -433,13 +433,13 @@ const Graph = ({
     if (carriers) selectNodes(shownNodes.filter((node) => carriers.has(node.id)));
   };
 
-  // --- Counter row: the entities drawn one by one, the relationships, the restricted entities and
-  // those needing attention, each selecting exactly what it counts. Members of collapsed groups are
-  // counted by the legend, where their group is expanded.
+  // --- Counter row: the entities and the relationships drawn one by one, the restricted entities
+  // and those needing attention, each selecting exactly what it counts. Members of collapsed groups
+  // and the links drawn towards their group are counted by the legend, where the group is expanded.
   const counters = useMemo<GraphCounter[]>(() => {
     const entityNodes = shownNodes.filter((node) => !node.groupOf && !node.relationship_type);
     const entityCount = entityNodes.length;
-    const relationshipLinks = shownLinks.filter((link) => !!link.label);
+    const relationshipLinks = shownLinks.filter((link) => !!link.label && !isGroupLink(link));
     const restrictedNodes = entityNodes.filter((node) => node.isRestricted);
     const attentionNodes = entityNodes.filter((node) => attentionIds.has(node.id));
     const all: (GraphCounter & { count: number })[] = [
