@@ -118,6 +118,10 @@ const GraphToolbarContentTools = ({
   }
 
   const canAddRelation = objectsFrom.length > 0 && objectsTo.length > 0;
+  const linkDisabledReason = canAddRelation ? undefined : t_i18n('Select the entities to link first');
+  let removeDisabledReason: string | undefined;
+  if (selectionContainsInferred) removeDisabledReason = t_i18n('Inferred knowledge cannot be removed');
+  else if (!canDelete) removeDisabledReason = t_i18n('Select the elements to remove first');
 
   const removeFromAddPanel = (node: { id: string }) => {
     // Remove links associated to removed node
@@ -178,7 +182,7 @@ const GraphToolbarContentTools = ({
         <>
           <GraphToolbarItem
             Icon={<LinkOutlined />}
-            disabled={!canAddRelation}
+            disabledReason={linkDisabledReason}
             color="primary"
             onClick={() => setIsAddRelationOpen(true)}
             title={t_i18n('Create a relationship')}
@@ -230,7 +234,7 @@ const GraphToolbarContentTools = ({
         <>
           <GraphToolbarItem
             Icon={<VisibilityOutlined />}
-            disabled={!canAddRelation}
+            disabledReason={linkDisabledReason}
             color="primary"
             onClick={() => setAddSightingOpen(true)}
             title={t_i18n('Create a sighting')}
@@ -258,7 +262,7 @@ const GraphToolbarContentTools = ({
         <>
           <GraphToolbarItem
             Icon={<DeleteOutlined />}
-            disabled={!canDelete}
+            disabledReason={removeDisabledReason}
             color="primary"
             onClick={() => setRemoveDialogOpen(true)}
             title={t_i18n('Remove selected items')}

@@ -45,6 +45,12 @@ const GraphToolbarEditObject = ({
   } else if (selectedLinks.length === 1 && (!selectedLinks[0].inferred || !selectedLinks[0].isNestedInferred)) {
     [objectToEdit] = selectedLinks;
   }
+  let editDisabledReason: string | undefined;
+  if (!objectToEdit) {
+    editDisabledReason = selectedNodes.length + selectedLinks.length === 1
+      ? t_i18n('Inferred knowledge cannot be edited')
+      : t_i18n('Select one entity or relationship first');
+  }
 
   const openEditionForm = () => {
     if (!objectToEdit) return;
@@ -83,7 +89,7 @@ const GraphToolbarEditObject = ({
     <>
       <GraphToolbarItem
         Icon={<EditOutlined />}
-        disabled={!objectToEdit}
+        disabledReason={editDisabledReason}
         color="primary"
         onClick={openEditionForm}
         title={t_i18n('Edit the selected item')}

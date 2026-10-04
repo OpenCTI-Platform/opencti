@@ -659,7 +659,7 @@ const GraphToolbarExpandTools = ({
         color="primary"
         onClick={() => setRollBackOpen(true)}
         title={t_i18n('Restore the state of the graphic before the last expansion')}
-        disabled={!containsExpandOp()}
+        disabledReason={containsExpandOp() ? undefined : t_i18n('No expansion to roll back yet')}
       />
 
       <InvestigationRollBackExpandDialog
@@ -673,7 +673,7 @@ const GraphToolbarExpandTools = ({
         color="primary"
         onClick={() => setIsExpandOpen(true)}
         title={t_i18n('Expand')}
-        disabled={selectedNodes.length === 0}
+        disabledReason={selectedNodes.length === 0 ? t_i18n('Select entities first') : undefined}
       />
 
       <Dialog

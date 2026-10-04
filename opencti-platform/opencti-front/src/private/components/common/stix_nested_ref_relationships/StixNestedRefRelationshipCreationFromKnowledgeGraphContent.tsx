@@ -40,7 +40,7 @@ const StixNestedRefRelationshipCreationFromKnowledgeGraphContent: FunctionCompon
       color="primary"
       Icon={<ReadMoreOutlined />}
       onClick={() => handleOpenCreateNested()}
-      disabled={!nestedRelationExist}
+      disabledReason={nestedRelationExist ? undefined : t_i18n('No nested relationship links these two elements')}
     />
   );
 };

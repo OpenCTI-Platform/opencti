@@ -22,7 +22,7 @@ interface StixNestedRefRelationshipCreationFromKnowledgeGraphProps {
   handleOpenCreateNested: () => void;
 }
 
-const DisabledNestedRelationshipButton = () => {
+const DisabledNestedRelationshipButton = ({ needsSelection = false }: { needsSelection?: boolean }) => {
   const { t_i18n } = useFormatter();
   return (
     <GraphToolbarItem
@@ -31,6 +31,7 @@ const DisabledNestedRelationshipButton = () => {
       Icon={<ReadMoreOutlined />}
       onClick={() => undefined}
       disabled
+      disabledReason={needsSelection ? t_i18n('Select the entities to link first') : undefined}
     />
   );
 };
@@ -79,7 +80,8 @@ const StixNestedRefRelationshipCreationFromKnowledgeGraph = ({
 }: StixNestedRefRelationshipCreationFromKnowledgeGraphProps) => {
   const from = relationFromObjects[0];
   const to = relationToObjects[0];
-  if (!nestedEnabled || !from || !to || openCreateNested) return <DisabledNestedRelationshipButton />;
+  if (!nestedEnabled || !from || !to) return <DisabledNestedRelationshipButton needsSelection />;
+  if (openCreateNested) return <DisabledNestedRelationshipButton />;
   const fromId = from.id as string;
   const toType = to.entity_type as string;
   return (
