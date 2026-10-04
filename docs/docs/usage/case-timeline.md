@@ -12,6 +12,8 @@ The timeline answers questions that lists cannot: when did the adversary act, wh
 - **Overview strip**: a compact view on the overview of the same pages, with the case anchors and an **Open the timeline** link.
 - **Widget**: the **Incident and case timeline** visualization in custom dashboards and custom views (see [Dashboards and custom views](#dashboards-and-custom-views)).
 
+![Timeline tab of an incident response: anchors, toolbar and the events of the case in their lanes](assets/case-timeline-lanes-populated.png)
+
 ## What the timeline shows
 
 ### Lanes
@@ -70,6 +72,12 @@ The timeline computes per-case anchors, displayed on the overview strip and at t
 | Containment | First containment milestone, or completion of a task labelled containment |
 | Closure | Last transition to the final workflow status, while the case stays closed |
 
+![Anchors of an incident response once the containment is recorded](assets/case-timeline-anchors-containment.png)
+
+The overview of incidents and cases shows the same anchors with a miniature of the lanes:
+
+![Timeline strip on the overview of an incident response](assets/case-timeline-overview-strip.png)
+
 Hidden events never move an anchor. Every reader of the case sees the same anchors, so they are computed only from the events every reader can see: an event marked more strictly than the case, or about an element marked more strictly, restricted to authorized members or shared with fewer organizations than the case, never moves an anchor. Click an anchor to center the timeline on it.
 
 The anchors are stored on the container in the `x_opencti_timeline_anchors` attribute, with two technical dates: `computed_at` (last computation) and `changed_at` (last change of one of the anchor values). They can be used to filter and sort the lists of incidents and cases (for example "Containment" before a date), and `changed_at` lets integrations fetch only the containers whose anchors changed since their last synchronization. OpenCTI does not aggregate them into metrics.
@@ -79,6 +87,8 @@ The anchors are stored on the container in the `x_opencti_timeline_anchors` attr
 ### First use
 
 When the case holds no dated knowledge yet, the Timeline tab explains what fills it (the knowledge of the case, Case Autopilot steps, hunt runs, deployments and the milestones you add) and offers **Add an event**, a link to this documentation and **Regenerate the timeline**. When filters hide every event, the tab says so and offers **Clear filters**.
+
+![Timeline tab of an incident without dated knowledge yet](assets/case-timeline-first-use-empty.png)
 
 ### Views and navigation
 
@@ -90,6 +100,8 @@ When the case holds no dated knowledge yet, the Timeline tab explains what fills
 - The latest 500 events matching the filters are loaded first and displayed in chronological order; **Show earlier events** loads the previous ones. A link to an older event loads the earlier events until it is reached.
 - In the list view, use the up and down arrows to move between events, `Enter` to open an event, `P` to pin and `H` to hide it.
 
+![List view of the timeline, events grouped by day](assets/case-timeline-list-populated.png)
+
 ### Live updates
 
 The timeline listens to the changes of the case. When events are added or updated while you are looking at it, a **New updates** badge appears in the toolbar: click **Refresh** to load them. The platform regenerates the timeline of a case a few seconds after any change of the case or of its objects. A nightly consistency pass also regenerates the timelines of the cases changed since the previous pass, and of those not regenerated for 30 days. Users who can update the case can also use **Regenerate the timeline**.
@@ -97,6 +109,8 @@ The timeline listens to the changes of the case. When events are added or update
 ### Event details
 
 Click an event to open its details. The header shows the title of the event and its kind, with **Edit** (milestones) and **Pin**; centering the timeline on the event, hiding it and deleting a milestone (with a confirmation) are under **More actions**. The details list the time and precision, the lane, the source, the author, the confidence, the element the event comes from (open it to pivot) and the markings. An event without annotation offers **Add an annotation**.
+
+![Details of a timeline event: header actions and metadata grid](assets/case-timeline-drawer-event.png)
 
 Events that come from an investigation step show its state with the seven step states of Case Autopilot investigations (Planned step, Querying, Found, Nothing found, Partial, Failed, Not reached), and open the run on that step in the **Autopilot** tab of the case. Hunt runs and indicator deployments appear on the timeline when those features are available on the platform; their verdicts and deployment states are shown with the labels of the feature they come from, and a state the platform does not know is never displayed as a raw value.
 
@@ -114,13 +128,20 @@ Use **Add an event** to record a milestone, what the knowledge cannot tell: "con
 
 Milestones can be edited and deleted by the users who can update the case.
 
+![Form of a new timeline milestone](assets/case-timeline-form-milestone.png)
+
 ### Timeline settings
 
 **Timeline settings** (under **More actions** in the toolbar of the tab, next to **Regenerate the timeline**) opens a drawer with the settings of the case timeline: enabled lanes, default grouping, default zoom window and kinds hidden by default. These settings apply to every user of the case timeline.
 
+![Timeline settings drawer of a case](assets/case-timeline-settings-drawer.png)
+
 ## Exports
 
 - From the toolbar of the Timeline tab, **Export the timeline** downloads the current view as **CSV**, **PDF**, **SVG** or **PNG**.
+
+    ![Export menu of the Timeline tab](assets/case-timeline-toolbar-export-menu.png)
+
 - From the export menu of the container, the **Incident and case timeline** export generates the timeline as PDF, CSV, PNG or SVG and stores it in the files of the entity, like the other exports (see [Manual export](export.md)).
 
 The CSV contains one line per event with its time, end time, lane, kind, precision, title, element, source and annotation. The PDF contains the timeline drawing, the anchors and the list of events. The anchors of an export are computed from the exported events only, so an event left out by a filter or a marking ceiling never shows through an anchor.
@@ -137,6 +158,8 @@ The **Incident and case timeline** visualization is available in the widget cata
 
 - in custom dashboards, select the incident or case, the lanes to display (all when none is selected) and the time window;
 - in the custom views of incidents and cases, the widget shows the timeline of the displayed entity.
+
+![Timeline widget of an incident response in a custom dashboard](assets/case-timeline-widget-populated.png)
 
 Incident and case timelines are not available in public dashboards.
 
