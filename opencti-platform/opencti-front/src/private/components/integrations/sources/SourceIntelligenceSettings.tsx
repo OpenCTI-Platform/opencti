@@ -23,6 +23,7 @@ import { SourceIntelligenceSettingsEditMutation, SourceRecommendationKind } from
 export const sourceIntelligenceSettingsFragment = graphql`
   fragment SourceIntelligenceSettings_settings on SourceIntelligenceSettings {
     manager_running
+    manager_enabled
     recompute_hour_utc
     backfill_days
     snapshot_retention_days
@@ -233,7 +234,16 @@ const SourceIntelligenceSettingsForm = ({ queryRef }: SettingsFormProps) => {
         <Form data-testid="source-intelligence-settings-form">
           <Stack gap={2}>
             <Card title={t_i18n('Computation')}>
-              <Field component={SwitchField} type="checkbox" name="manager_running" label={t_i18n('Compute the source scorecards')} />
+              <Field
+                component={SwitchField}
+                type="checkbox"
+                name="manager_running"
+                label={t_i18n('Compute the source scorecards')}
+                disabled={!settings.manager_enabled}
+                helpertext={settings.manager_enabled
+                  ? undefined
+                  : t_i18n('The source intelligence manager is disabled in the platform configuration: the scorecards are not computed whatever this setting.')}
+              />
               {renderFields(GENERAL_FIELDS)}
               <Field
                 component={TextField}

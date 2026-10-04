@@ -15,6 +15,7 @@ import {
   findSourcesPaginated,
   getSourceIntelligenceSettings,
   getSourceIntelligenceStatus,
+  isSourceIntelligenceEnabled,
   isSourceIntelligenceRunning,
   maskRestrictedNames,
   maskRestrictedNamesInJson,
@@ -64,6 +65,7 @@ const sourceIntelligenceResolvers: Resolvers = {
     sourceIntelligenceSettings: async (_, __, context) => ({
       ...(await getSourceIntelligenceSettings(context)),
       manager_running: await isSourceIntelligenceRunning(context),
+      manager_enabled: await isSourceIntelligenceEnabled(),
     }) as any,
     sourceIntelligenceStatus: (_, __, context) => getSourceIntelligenceStatus(context) as any,
     sourceScorecardMetrics: () => SCORECARD_METRICS,

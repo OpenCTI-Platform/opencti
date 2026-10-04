@@ -11,6 +11,7 @@ import {
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
 } from '../../database/utils';
 import { notify, publishCacheResetEvent, redisGetSourceIntelligenceState, redisPatchSourceIntelligenceState } from '../../database/redis';
+import { isModuleActivated } from '../../database/cluster-module';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { DatabaseError, ForbiddenAccess, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../../config/errors';
 import { lockResources } from '../../lock/master-lock';
@@ -40,7 +41,12 @@ import {
 } from './sourceIntelligence-settings';
 import {
   type BasicStoreEntitySource,
+  type BasicStoreEntitySourceRecommendation,
   ENTITY_TYPE_SOURCE,
+  ENTITY_TYPE_SOURCE_RECOMMENDATION,
+  RECOMMENDATION_STATUS_APPLIED,
+  RECOMMENDATION_STATUS_APPLYING,
+  RECOMMENDATION_STATUS_REVERTING,
   REFERENCE_SCORECARD_PERIOD,
   SCORECARD_PERIOD_DAYS,
   SCORECARD_PERIODS,
@@ -112,9 +118,15 @@ export const getSourceIntelligenceSettings = async (context: AuthContext): Promi
   return resolveSourceIntelligenceSettings(configuration?.manager_setting ?? DEFAULT_SOURCE_INTELLIGENCE_SETTINGS);
 };
 
+/** The setting of the platform, saved from the settings page: the manager computes only when its deployment enables it. */
 export const isSourceIntelligenceRunning = async (context: AuthContext) => {
   const configuration = await getSourceIntelligenceManagerConfiguration(context);
   return configuration?.manager_running !== false;
+};
+
+/** Whether the deployment configuration enables the manager on at least one node of the cluster. */
+export const isSourceIntelligenceEnabled = async () => {
+  return isModuleActivated(SOURCE_INTELLIGENCE_MANAGER_ID);
 };
 
 export const editSourceIntelligenceSettings = async (context: AuthContext, user: AuthUser, input: Record<string, any>) => {
@@ -142,10 +154,17 @@ export const editSourceIntelligenceSettings = async (context: AuthContext, user:
     context_data: { id: configuration.id, entity_type: ENTITY_TYPE_MANAGER_CONFIGURATION, input: patch },
   });
   await notify(BUS_TOPICS[ENTITY_TYPE_MANAGER_CONFIGURATION].EDIT_TOPIC, element, user);
-  return { ...settings, manager_running: (element as unknown as BasicStoreEntityManagerConfiguration).manager_running !== false };
+  return {
+    ...settings,
+    manager_running: (element as unknown as BasicStoreEntityManagerConfiguration).manager_running !== false,
+    manager_enabled: await isSourceIntelligenceEnabled(),
+  };
 };
 
 export const requestSourceIntelligenceRecompute = async (context: AuthContext, user: AuthUser) => {
+  if (!(await isSourceIntelligenceEnabled())) {
+    throw FunctionalError('The source intelligence manager is disabled in the platform configuration');
+  }
   const requestedAt = new Date().toISOString();
   await updateSourceIntelligenceState({ recompute_requested_at: requestedAt });
   await publishUserAction({
@@ -427,25 +446,39 @@ const referenceCostPerActionable = async (context: AuthContext, source: BasicSto
   return reference ? computeCostPerActionable(cost, SCORECARD_PERIOD_DAYS[REFERENCE_SCORECARD_PERIOD], reference.actionable_count) : null;
 };
 
+const liveScorecardWindowCosts = (cost: SourceCost | null) => {
+  return new Map(SCORECARD_PERIODS.map((period) => [period, normalizeCostToDays(cost, SCORECARD_PERIOD_DAYS[period])]));
+};
+
+const sameSourceCost = (a: SourceCost | null | undefined, b: SourceCost | null | undefined) => {
+  return (a?.amount ?? null) === (b?.amount ?? null) && (a?.currency ?? null) === (b?.currency ?? null) && (a?.period ?? null) === (b?.period ?? null);
+};
+
+const sourceCostLockKey = (id: string) => `source-cost:${id}`;
+
 /**
- * Cost changes of one source run one at a time. The source holds the cost and is written first; its live scorecards
- * derive from it and are written last: if that write fails, the next full computation rewrites them from the source.
+ * Cost changes of one source run one at a time, and never while a full computation writes its latest KPIs (same lock,
+ * on the internal id). The source holds the cost and is written first; its live scorecards derive from it and are
+ * written last: if that write fails, the next full computation rewrites them from the source.
  */
 export const sourceSetCost = async (context: AuthContext, user: AuthUser, id: string, input: { amount: number; currency: string; period: string } | null | undefined) => {
   const cost = validateSourceCost(input);
+  const target = await storeLoadById<BasicStoreEntitySource>(context, user, id, ENTITY_TYPE_SOURCE);
+  if (!target) {
+    throw FunctionalError('Source not found', { id });
+  }
   let lock;
   let element;
   let source: BasicStoreEntitySource | undefined;
   try {
-    lock = await lockResources([`source-cost:${id}`]);
-    source = await storeLoadById<BasicStoreEntitySource>(context, user, id, ENTITY_TYPE_SOURCE);
+    lock = await lockResources([sourceCostLockKey(target.internal_id)]);
+    source = await storeLoadById<BasicStoreEntitySource>(context, user, target.internal_id, ENTITY_TYPE_SOURCE);
     if (!source) {
       throw FunctionalError('Source not found', { id });
     }
     const costPerActionable = await referenceCostPerActionable(context, source, cost);
     ({ element } = await patchAttribute(context, user, source.internal_id, ENTITY_TYPE_SOURCE, { source_cost: cost, latest_cost_per_actionable: costPerActionable }));
-    const windowCosts = new Map(SCORECARD_PERIODS.map((period) => [period, normalizeCostToDays(cost, SCORECARD_PERIOD_DAYS[period])]));
-    await applyLiveScorecardCost(context, source.internal_id, cost?.currency ?? null, windowCosts);
+    await applyLiveScorecardCost(context, source.internal_id, cost?.currency ?? null, liveScorecardWindowCosts(cost));
   } catch (err: any) {
     if (err?.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds: [id] });
@@ -523,6 +556,38 @@ export const updateSourceLatestKpis = async (context: AuthContext, source: Basic
   const params = { kpis };
   const script = 'for (entry in params.kpis.entrySet()) { ctx._source[entry.getKey()] = entry.getValue(); }';
   await elUpdate(context, source._index, source.internal_id, { script: { source: script, lang: 'painless', params } });
+};
+
+/**
+ * Latest KPIs of a source after a full computation, written under the lock of its cost changes from the source as it
+ * is now: a cost set while the scorecards were computed or written is written again on its live scorecards, and the
+ * cost per actionable object of the source derives from that cost. Returns false for a source deleted meanwhile.
+ */
+export const writeComputedSourceKpis = async (
+  context: AuthContext,
+  computed: BasicStoreEntitySource,
+  reference: Pick<StoreSourceScorecard, 'actionable_count'>,
+  kpis: Record<string, unknown>,
+) => {
+  let lock;
+  try {
+    lock = await lockResources([sourceCostLockKey(computed.internal_id)]);
+    const current = await storeLoadById<BasicStoreEntitySource>(context, SYSTEM_USER, computed.internal_id, ENTITY_TYPE_SOURCE);
+    if (!current) {
+      return false;
+    }
+    const cost = current.source_cost ?? null;
+    if (!sameSourceCost(cost, computed.source_cost)) {
+      await applyLiveScorecardCost(context, current.internal_id, cost?.currency ?? null, liveScorecardWindowCosts(cost));
+    }
+    const costPerActionable = computeCostPerActionable(cost, SCORECARD_PERIOD_DAYS[REFERENCE_SCORECARD_PERIOD], reference.actionable_count);
+    await updateSourceLatestKpis(context, current, { ...kpis, latest_cost_per_actionable: costPerActionable });
+    return true;
+  } finally {
+    if (lock) {
+      await lock.unlock();
+    }
+  }
 };
 
 const CLEARED_LATEST_KPIS = {
@@ -641,9 +706,45 @@ const collectSourceCandidates = async (context: AuthContext, settings: SourceInt
   return candidates;
 };
 
+const REVERTABLE_RECOMMENDATION_STATUSES = [RECOMMENDATION_STATUS_APPLYING, RECOMMENDATION_STATUS_APPLIED, RECOMMENDATION_STATUS_REVERTING];
+
+const loadSourceIdsWithRevertableChanges = async (context: AuthContext, sourceIds: string[]) => {
+  if (sourceIds.length === 0) {
+    return new Set<string>();
+  }
+  const recommendations = await fullEntitiesList<BasicStoreEntitySourceRecommendation>(context, SYSTEM_USER, [ENTITY_TYPE_SOURCE_RECOMMENDATION], {
+    filters: {
+      mode: 'and',
+      filters: [
+        { key: ['source_id'], values: sourceIds, operator: 'eq', mode: 'or' },
+        { key: ['recommendation_status'], values: REVERTABLE_RECOMMENDATION_STATUSES, operator: 'eq', mode: 'or' },
+      ],
+      filterGroups: [],
+    },
+  } as any);
+  return new Set(recommendations.map((recommendation) => recommendation.source_id).filter((sourceId): sourceId is string => !!sourceId));
+};
+
+/**
+ * Authors and analysts are the top contributors of the longest window: one that left them stops being a source,
+ * unless someone curated it (cost, description, tags, owner, disabled, quarantined) or a change applied to it can
+ * still be reverted. The scored authors and analysts are therefore bounded by the discovery and by what people curate.
+ */
+export const isKeptOutsideDiscovery = (source: BasicStoreEntitySource & { description?: string | null }, revertableSourceIds: Set<string>) => {
+  return !!source.source_cost
+    || !!source.description
+    || (source.tags ?? []).length > 0
+    || !!source.owner_id
+    || source.enabled === false
+    || source.quarantined === true
+    || !!source.quarantine_draft_id
+    || revertableSourceIds.has(source.internal_id);
+};
+
 /**
  * Materialize one Source per connector, ingestion feed, significant author and analyst, keeping user edits (cost,
- * tags, owner, enabled) and removing sources whose connector or feed no longer exists.
+ * tags, owner, enabled), removing sources whose connector or feed no longer exists and the authors and analysts that
+ * left the discovery without being curated.
  */
 export const syncSources = async (context: AuthContext, settings: SourceIntelligenceSettings) => {
   const candidates = await collectSourceCandidates(context, settings);
@@ -685,12 +786,14 @@ export const syncSources = async (context: AuthContext, settings: SourceIntellig
       }
     }
   }
+  const undiscovered = Array.from(existingByKey.values()).filter((source) => !candidateKeys.has(`${source.source_kind}|${source.ref_id}`));
   // Connectors and feeds deleted from the platform or no longer sources: their sources and scorecards are removed
-  const orphans = Array.from(existingByKey.values()).filter((source) => {
-    const key = `${source.source_kind}|${source.ref_id}`;
-    return !candidateKeys.has(key) && (source.source_kind === SOURCE_KIND_CONNECTOR || source.source_kind === SOURCE_KIND_INGESTION_FEED);
-  });
-  const removed = [...orphans, ...duplicates];
+  const orphans = undiscovered.filter((source) => source.source_kind === SOURCE_KIND_CONNECTOR || source.source_kind === SOURCE_KIND_INGESTION_FEED);
+  // Authors and analysts out of the discovery: removed with their scorecards, unless they are kept
+  const departed = undiscovered.filter((source) => source.source_kind === SOURCE_KIND_AUTHOR || source.source_kind === SOURCE_KIND_MANUAL);
+  const revertable = await loadSourceIdsWithRevertableChanges(context, departed.map((source) => source.internal_id));
+  const dropped = departed.filter((source) => !isKeptOutsideDiscovery(source, revertable));
+  const removed = [...orphans, ...dropped, ...duplicates];
   for (let i = 0; i < removed.length; i += 1) {
     await deleteElementById(context, SOURCE_INTELLIGENCE_MANAGER_USER, removed[i].internal_id, ENTITY_TYPE_SOURCE);
   }
@@ -722,16 +825,18 @@ export const backfillProgress = (state: SourceIntelligenceState): { done: number
 };
 
 export const getSourceIntelligenceStatus = async (context: AuthContext) => {
-  const [state, sources, running, enterprise] = await Promise.all([
+  const [state, sources, running, enabled, enterprise] = await Promise.all([
     getSourceIntelligenceState(),
     listAllSources(context),
     isSourceIntelligenceRunning(context),
+    isSourceIntelligenceEnabled(),
     isEnterpriseEdition(context),
   ]);
   const availability = resolveSoftJoinAvailability();
   const backfill = backfillProgress(state);
   return {
-    manager_running: running,
+    manager_enabled: enabled,
+    manager_running: enabled && running,
     enterprise_edition: enterprise,
     provenance_mode: availability.provenance,
     pulse_available: availability.pulse,

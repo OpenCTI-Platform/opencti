@@ -36,7 +36,7 @@ import {
   type SourceIntelligenceState,
   syncSources,
   updateSourceIntelligenceState,
-  updateSourceLatestKpis,
+  writeComputedSourceKpis,
   clearDisabledSourcesLiveData,
 } from '../modules/sourceIntelligence/sourceIntelligence-domain';
 import {
@@ -569,11 +569,12 @@ export const runFullComputation = async (context: AuthContext, settings: SourceI
     const references = new Map(documents
       .filter((doc) => doc.is_live && doc.scorecard_period === REFERENCE_SCORECARD_PERIOD)
       .map((doc) => [doc.source_id, doc]));
+    // The scorecards were built from the costs read before the scan: each source is written with its cost of now
     for (let i = 0; i < tracked.length; i += 1) {
       const source = tracked[i];
       const reference = references.get(source.internal_id);
       if (reference) {
-        await updateSourceLatestKpis(context, source, {
+        await writeComputedSourceKpis(context, source, reference, {
           last_computed_at: computedAt,
           latest_value_score: reference.value_score,
           latest_volume: reference.volume_total,
@@ -585,7 +586,6 @@ export const runFullComputation = async (context: AuthContext, settings: SourceI
           latest_impact_score: reference.impact_score,
           latest_noise: reference.noise,
           latest_freshness_hours: reference.freshness_hours,
-          latest_cost_per_actionable: reference.cost_per_actionable_object,
           latest_community_uniqueness: reference.community_uniqueness,
         });
       }

@@ -17154,6 +17154,7 @@ type SourceIntelligenceGapSettings {
 
 type SourceIntelligenceSettings {
   manager_running: Boolean!
+  manager_enabled: Boolean!
   recompute_hour_utc: Int!
   backfill_days: Int!
   snapshot_retention_days: Int!
@@ -17174,6 +17175,7 @@ type SourceIntelligenceSettings {
 
 type SourceIntelligenceStatus {
   manager_running: Boolean!
+  manager_enabled: Boolean!
   enterprise_edition: Boolean!
   provenance_mode: SourceProvenanceMode!
   pulse_available: Boolean!

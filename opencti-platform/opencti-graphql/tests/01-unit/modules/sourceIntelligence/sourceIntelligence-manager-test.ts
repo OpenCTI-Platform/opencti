@@ -11,7 +11,7 @@ import {
   planStreamBatch,
   streamBoundaryOf,
 } from '../../../../src/manager/sourceIntelligenceManager';
-import { backfillProgress, buildResolverFromSources } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-domain';
+import { backfillProgress, buildResolverFromSources, isKeptOutsideDiscovery } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-domain';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
 import { RELATION_IN_PIR } from '../../../../src/schema/internalRelationship';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../../src/modules/securityPlatform/securityPlatform-types';
@@ -441,6 +441,37 @@ describe('Source intelligence history backfill', () => {
     expect(backfillProgress(state)).toEqual({ done: 6, total: 14 });
     expect(backfillProgress({ ...state, backfill_next_day: null, backfill_done: true })).toEqual({ done: 14, total: 14 });
     expect(backfillProgress({})).toBeNull();
+  });
+});
+
+describe('Source intelligence author and analyst discovery', () => {
+  const departed = {
+    internal_id: 'source-author-1',
+    source_kind: 'author',
+    ref_id: 'identity-1',
+    name: 'Former top author',
+    enabled: true,
+    tags: [],
+  } as unknown as BasicStoreEntitySource;
+
+  it('should stop scoring an author or analyst that left the top contributors without being curated', () => {
+    expect(isKeptOutsideDiscovery(departed, new Set())).toBe(false);
+    expect(isKeptOutsideDiscovery({ ...departed, source_kind: 'manual', quarantined: false, quarantine_draft_id: null } as BasicStoreEntitySource, new Set())).toBe(false);
+  });
+
+  it('should keep scoring a departed source someone curated', () => {
+    expect(isKeptOutsideDiscovery({ ...departed, source_cost: { amount: 100, currency: 'EUR', period: 'month' } }, new Set())).toBe(true);
+    expect(isKeptOutsideDiscovery({ ...departed, description: 'Reviewed every quarter' }, new Set())).toBe(true);
+    expect(isKeptOutsideDiscovery({ ...departed, tags: ['paid'] }, new Set())).toBe(true);
+    expect(isKeptOutsideDiscovery({ ...departed, owner_id: 'user-1' }, new Set())).toBe(true);
+    expect(isKeptOutsideDiscovery({ ...departed, enabled: false }, new Set())).toBe(true);
+    expect(isKeptOutsideDiscovery({ ...departed, quarantined: true }, new Set())).toBe(true);
+    expect(isKeptOutsideDiscovery({ ...departed, quarantine_draft_id: 'draft-1' }, new Set())).toBe(true);
+  });
+
+  it('should keep a departed source while a change applied to it can still be reverted', () => {
+    expect(isKeptOutsideDiscovery(departed, new Set(['source-author-1']))).toBe(true);
+    expect(isKeptOutsideDiscovery(departed, new Set(['another-source']))).toBe(false);
   });
 });
 

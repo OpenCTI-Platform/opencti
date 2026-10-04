@@ -17,7 +17,7 @@ A source is created automatically by the source intelligence manager for:
 - each **author** (`created_by`) with a significant volume of knowledge over the last 90 days,
 - each **analyst** writing knowledge directly, outside of any connector or feed.
 
-The built-in platform connectors (background tasks, playbooks, synchronization, draft validation and file mapping) are not sources: they run work on behalf of analysts, and what they write is attributed to its authors and analysts. The minimum volume and the maximum number of author and analyst sources are configurable. When a connector or a feed is deleted, its source and its scorecards are removed. What you set on a source (cost, description, tags, owner, enabled) is kept across computations.
+The built-in platform connectors (background tasks, playbooks, synchronization, draft validation and file mapping) are not sources: they run work on behalf of analysts, and what they write is attributed to its authors and analysts. The minimum volume and the maximum number of author and analyst sources are configurable. When a connector or a feed is deleted, its source and its scorecards are removed. Authors and analysts are the top contributors over the last 90 days: one that is no longer among them is removed with its scorecards at the next computation, unless you curated it (a cost, a description, tags, an owner, disabled or quarantined) or a change a recommendation applied to it can still be reverted; such a source stays and keeps being scored. The number of scored authors and analysts therefore never exceeds the configured maximums plus the sources you curated. What you set on a source (cost, description, tags, owner, enabled) is kept across computations.
 
 Connector health (status, queue, errors) is not duplicated here: the scorecard page links to the connector or feed in the integrations monitoring screens.
 
@@ -60,7 +60,8 @@ The top of the Sources area tells you whether the scorecards are current:
 | Recompute requested | A computation starts in the next minutes. | None |
 | Failed | The last computation failed; the reason is shown below the header. | **Retry the computation** |
 | Not computed yet | No computation has run on this platform; the first one runs at the daily recompute hour. | **Compute now** |
-| Manager stopped | The source intelligence manager is not running. | **Open settings** |
+| Manager stopped | The computation is turned off in the source intelligence settings. | **Open settings** |
+| Manager disabled | The source intelligence manager is disabled in the platform configuration (`source_intelligence_manager:enabled` set to `false` on every platform node), so nothing is computed whatever the settings say; the computation switch of the settings is greyed out and **Recompute** is not offered. | None, an administrator of the platform deployment enables the manager. |
 
 When the scan stops at the maximum number of objects set in the settings, a warning says how many objects the scorecards cover, with **Raise the limit**. The limit is exact: the scorecards never cover more objects than it allows. In Enterprise Edition, such a computation proposes no new recommendation and applies none autonomously: tuning a source from part of the knowledge could quarantine or retire it on incomplete data, so recommendations wait for a computation that covers every object (collection gaps are still computed). While the history is backfilled, a progress bar shows how many days are computed ("Backfilling history - 6 of 14 days"); a larger backfill range set later computes the missing older days only, and a range of 0 days stops a backfill in progress. Below the header, counters show the number of sources, quarantined sources, recommendations to review and collection gaps (the last two in Enterprise Edition). Each counter opens the list it counts.
 
@@ -89,7 +90,7 @@ The **Sources** card of an entity, an observable or a relationship (see [Provena
 
 ### Cost
 
-Set a cost on a source (amount, ISO 4217 currency, per month, quarter or year) from its scorecard page, or with **Set a cost** in the cost column of the leaderboard, which opens the same editor. Costs are shown in the currency format of your language, for example "€12,000 per year". The cost is normalized to each window to compute the cost per actionable object.
+Set a cost on a source (amount, ISO 4217 currency, per month, quarter or year) from its scorecard page, or with **Set a cost** in the cost column of the leaderboard, which opens the same editor. Costs are shown in the currency format of your language, for example "€12,000 per year". The cost is normalized to each window to compute the cost per actionable object. A cost set while the daily computation runs is never lost: the computation writes each source with the cost it has when its scorecards are saved.
 
 ![Cost editor of a source](assets/source-intelligence-cost-editor.png)
 

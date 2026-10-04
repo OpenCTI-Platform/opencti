@@ -3,14 +3,17 @@ import gql from 'graphql-tag';
 import { ADMIN_USER, getUserIdByEmail, testContext, USER_CONNECTOR, USER_DISINFORMATION_ANALYST, USER_EDITOR } from '../../../utils/testQuery';
 import { queryAsAdmin, queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
 import { runFullComputation } from '../../../../src/manager/sourceIntelligenceManager';
-import { getSourceIntelligenceSettings, listAllSources } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-domain';
+import { getSourceIntelligenceSettings, listAllSources, syncSources, writeComputedSourceKpis } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-domain';
 import { upsertProposals } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-recommendations';
-import { deleteScorecardsOfSources, findLiveScorecards } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-store';
+import { applyLiveScorecardCost, deleteScorecardsOfSources, findLiveScorecards } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-store';
+import { computeCostPerActionable } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-scoring';
 import {
   type BasicStoreEntitySource,
   ENTITY_TYPE_SOURCE,
   ENTITY_TYPE_SOURCE_RECOMMENDATION,
   REFERENCE_SCORECARD_PERIOD,
+  SCORECARD_PERIOD_DAYS,
+  SCORECARD_PERIODS,
 } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-types';
 import type { SourceIntelligenceSettings } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-settings';
 import { v4 as uuidv4 } from 'uuid';
@@ -435,6 +438,46 @@ describe('Source intelligence', () => {
     );
     const cleared = await queryAsAdminWithSuccess({ query: SET_COST_MUTATION, variables: { id: sourceId, input: null } });
     expect(cleared.data.sourceSetCost.cost).toBeNull();
+  });
+
+  it('should write the latest KPIs of a source with the cost it has when they are saved', async () => {
+    const computed = await storeLoadById<BasicStoreEntitySource>(testContext, ADMIN_USER, sourceId, ENTITY_TYPE_SOURCE) as BasicStoreEntitySource;
+    expect(computed.source_cost ?? null).toBeNull();
+    const [reference] = await findLiveScorecards(testContext, REFERENCE_SCORECARD_PERIOD, [sourceId]);
+    expect(reference).toBeDefined();
+    // A cost is set while the computation runs, then the computation writes the scorecards it built without a cost
+    await queryAsAdminWithSuccess({ query: SET_COST_MUTATION, variables: { id: sourceId, input: { amount: 3000, currency: 'USD', period: 'month' } } });
+    await applyLiveScorecardCost(testContext, sourceId, null, new Map(SCORECARD_PERIODS.map((period) => [period, null])));
+    expect(await writeComputedSourceKpis(testContext, computed, reference, { latest_value_score: reference.value_score })).toBe(true);
+    const [rewritten] = await findLiveScorecards(testContext, REFERENCE_SCORECARD_PERIOD, [sourceId]);
+    expect(rewritten.cost_currency).toBe('USD');
+    const source = await storeLoadById<BasicStoreEntitySource>(testContext, ADMIN_USER, sourceId, ENTITY_TYPE_SOURCE) as BasicStoreEntitySource;
+    const expected = computeCostPerActionable({ amount: 3000, currency: 'USD', period: 'month' }, SCORECARD_PERIOD_DAYS[REFERENCE_SCORECARD_PERIOD], reference.actionable_count);
+    expect(source.latest_cost_per_actionable ?? null).toBe(expected);
+    expect(rewritten.cost_per_actionable_object ?? null).toBe(expected);
+    await queryAsAdminWithSuccess({ query: SET_COST_MUTATION, variables: { id: sourceId, input: null } });
+  });
+
+  it('should remove the authors and analysts that left the discovery unless they are curated', async () => {
+    const createAuthorSource = (name: string, extra: Record<string, unknown> = {}) => createEntity(testContext, ADMIN_USER, {
+      source_kind: 'author',
+      ref_id: uuidv4(),
+      ref_type: 'Organization',
+      name,
+      source_user_ids: [],
+      enabled: true,
+      quarantined: false,
+      ...extra,
+    }, ENTITY_TYPE_SOURCE);
+    // Neither author wrote anything: both are out of the discovery
+    const departed = await createAuthorSource('Source intelligence departed author');
+    const curated = await createAuthorSource('Source intelligence curated author', { tags: ['reviewed'] });
+    await syncSources(testContext, { ...settings, min_author_volume: 1, min_manual_volume: 1 });
+    expect(await storeLoadById(testContext, ADMIN_USER, departed.internal_id, ENTITY_TYPE_SOURCE)).toBeFalsy();
+    expect(await storeLoadById(testContext, ADMIN_USER, curated.internal_id, ENTITY_TYPE_SOURCE)).toBeTruthy();
+    // The discovered sources are untouched
+    expect(await storeLoadById(testContext, ADMIN_USER, sourceId, ENTITY_TYPE_SOURCE)).toBeTruthy();
+    await deleteElementById(testContext, ADMIN_USER, curated.internal_id, ENTITY_TYPE_SOURCE);
   });
 
   it('should validate and persist the settings', async () => {

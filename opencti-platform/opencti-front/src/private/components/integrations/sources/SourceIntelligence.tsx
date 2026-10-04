@@ -44,6 +44,7 @@ import { SourceIntelligenceKpisQuery } from './__generated__/SourceIntelligenceK
 export const sourceIntelligenceStatusQuery = graphql`
   query SourceIntelligenceStatusQuery {
     sourceIntelligenceStatus {
+      manager_enabled
       manager_running
       enterprise_edition
       provenance_mode
@@ -82,9 +83,10 @@ const sourceIntelligenceDashboardCreateMutation = graphql`
 export type SourceIntelligenceView = 'leaderboard' | 'overlap' | 'gaps' | 'recommendations';
 const SOURCE_INTELLIGENCE_VIEWS: SourceIntelligenceView[] = ['leaderboard', 'overlap', 'gaps', 'recommendations'];
 
-type RunState = 'stopped' | 'requested' | 'running' | 'failed' | 'never' | 'ok';
+type RunState = 'disabled' | 'stopped' | 'requested' | 'running' | 'failed' | 'never' | 'ok';
 
 const RUN_STATES: Record<RunState, { label: string; severity: ChipSeverity }> = {
+  disabled: { label: 'Manager disabled', severity: 'medium' },
   stopped: { label: 'Manager stopped', severity: 'medium' },
   requested: { label: 'Recompute requested', severity: 'info' },
   running: { label: 'Computing', severity: 'info' },
@@ -94,9 +96,10 @@ const RUN_STATES: Record<RunState, { label: string; severity: ChipSeverity }> = 
 };
 
 export const sourceIntelligenceRunState = (
-  status: Pick<SourceIntelligenceStatusQuery['response']['sourceIntelligenceStatus'], 'manager_running' | 'last_full_run_start' | 'last_full_run_end' | 'last_run_success'>,
+  status: Pick<SourceIntelligenceStatusQuery['response']['sourceIntelligenceStatus'], 'manager_enabled' | 'manager_running' | 'last_full_run_start' | 'last_full_run_end' | 'last_run_success'>,
   recomputePending: boolean,
 ): RunState => {
+  if (!status.manager_enabled) return 'disabled';
   if (!status.manager_running) return 'stopped';
   if (status.last_full_run_start && (!status.last_full_run_end || status.last_full_run_start > status.last_full_run_end)) return 'running';
   if (recomputePending) return 'requested';
@@ -149,6 +152,7 @@ const SourceIntelligenceHeader = ({ queryRef }: SourceIntelligenceHeaderProps) =
   const runState = sourceIntelligenceRunState(status, isPending);
   const { label: stateLabel, severity: stateSeverity } = RUN_STATES[runState];
   const statusSentence = {
+    disabled: t_i18n('The source intelligence manager is disabled in the platform configuration, so the scorecards are not computed. An administrator of the platform deployment can enable it.'),
     stopped: t_i18n('The source intelligence manager is not running, so the scorecards are not refreshed.'),
     requested: t_i18n('A computation of the scorecards starts in the next minutes.'),
     running: t_i18n('The scorecards are being computed, started {time}.', { values: { time: rd(status.last_full_run_start) } }),

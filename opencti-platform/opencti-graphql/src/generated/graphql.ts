@@ -32854,6 +32854,7 @@ export type SourceIntelligenceSettings = {
   corroboration_min_other_sources: Scalars['Int']['output'];
   false_positive_labels: Array<Scalars['String']['output']>;
   gaps: SourceIntelligenceGapSettings;
+  manager_enabled: Scalars['Boolean']['output'];
   manager_running: Scalars['Boolean']['output'];
   max_author_sources: Scalars['Int']['output'];
   max_manual_sources: Scalars['Int']['output'];
@@ -32902,6 +32903,7 @@ export type SourceIntelligenceStatus = {
   last_run_success?: Maybe<Scalars['Boolean']['output']>;
   last_scan_truncated: Scalars['Boolean']['output'];
   last_scanned_objects?: Maybe<Scalars['Int']['output']>;
+  manager_enabled: Scalars['Boolean']['output'];
   manager_running: Scalars['Boolean']['output'];
   provenance_mode: SourceProvenanceMode;
   pulse_available: Scalars['Boolean']['output'];
@@ -54963,6 +54965,7 @@ export type SourceIntelligenceSettingsResolvers<ContextType = any, ParentType ex
   corroboration_min_other_sources?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   false_positive_labels?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   gaps?: Resolver<ResolversTypes['SourceIntelligenceGapSettings'], ParentType, ContextType>;
+  manager_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   manager_running?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   max_author_sources?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   max_manual_sources?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -54990,6 +54993,7 @@ export type SourceIntelligenceStatusResolvers<ContextType = any, ParentType exte
   last_run_success?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   last_scan_truncated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   last_scanned_objects?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  manager_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   manager_running?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   provenance_mode?: Resolver<ResolversTypes['SourceProvenanceMode'], ParentType, ContextType>;
   pulse_available?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
