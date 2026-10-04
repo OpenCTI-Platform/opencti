@@ -1,4 +1,4 @@
-import React, { Component, type ReactNode, Suspense, useCallback, useEffect, useState } from 'react';
+import React, { Component, type ReactNode, Suspense, useCallback, useLayoutEffect, useState } from 'react';
 import { Badge } from '@filigran/design-system';
 import { useFormatter } from '../../../../components/i18n';
 
@@ -54,28 +54,46 @@ const HubCountBadge = ({ useCount }: HubCountBadgeProps) => (
   </SilentBoundary>
 );
 
-const CountReporter = ({ useCount, index, onCount }: HubCountBadgeProps & {
-  index: number;
-  onCount: (index: number, count: number) => void;
+/** One entry's count in a hub total, identified by the entry's stable id (its path). */
+export interface HubCountSource {
+  id: string;
+  useCount: HubBadgeCount;
+}
+
+const CountReporter = ({ id, useCount, onCount }: HubCountSource & {
+  onCount: (id: string, count: number | null) => void;
 }) => {
   const count = useCount() ?? 0;
-  useEffect(() => onCount(index, count), [index, count, onCount]);
+  // A layout effect: its cleanup also runs when Suspense hides a count that suspends again, so an
+  // entry that unmounts, fails or suspends takes its contribution out of the total.
+  useLayoutEffect(() => {
+    onCount(id, count);
+    return () => onCount(id, null);
+  }, [id, count, onCount]);
   return null;
 };
 
 /** The pending work of a whole hub, the sum of its entries' counts: the badge of its menu item. */
-export const HubTotalBadge = ({ counts }: { counts: HubBadgeCount[] }) => {
-  const [values, setValues] = useState<Record<number, number>>({});
-  const onCount = useCallback((index: number, count: number) => {
-    setValues((current) => (current[index] === count ? current : { ...current, [index]: count }));
+export const HubTotalBadge = ({ counts }: { counts: HubCountSource[] }) => {
+  const [values, setValues] = useState<Record<string, number>>({});
+  const onCount = useCallback((id: string, count: number | null) => {
+    setValues((current) => {
+      if (count === null) {
+        if (!(id in current)) return current;
+        const next = { ...current };
+        delete next[id];
+        return next;
+      }
+      return current[id] === count ? current : { ...current, [id]: count };
+    });
   }, []);
   const total = Object.values(values).reduce((sum, count) => sum + count, 0);
   return (
     <>
-      {counts.map((useCount, index) => (
-        <SilentBoundary key={index}>
+      {counts.map(({ id, useCount }) => (
+        <SilentBoundary key={id}>
           <Suspense fallback={null}>
-            <CountReporter useCount={useCount} index={index} onCount={onCount} />
+            <CountReporter id={id} useCount={useCount} onCount={onCount} />
           </Suspense>
         </SilentBoundary>
       ))}
