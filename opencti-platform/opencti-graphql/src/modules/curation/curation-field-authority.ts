@@ -113,6 +113,11 @@ const EL_FIELD_AUTHORITY_SCRIPT = `
   }`;
 
 export const curationFieldAuthorityResolver: FieldAuthorityResolver = {
+  governs: async (context, type, patch) => {
+    if (context.synchronizedUpsert) return false;
+    const rules = await rulesFor(context, type);
+    return rules.some((rule) => rule.attribute in patch);
+  },
   resolve: async (context, user, element, type, patch) => {
     const decisions = new Map<string, FieldAuthorityDecision>();
     if (context.synchronizedUpsert) return decisions;

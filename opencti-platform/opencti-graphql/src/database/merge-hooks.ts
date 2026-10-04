@@ -66,6 +66,8 @@ export const getMergeRecorder = (): MergeRecorder<any> | undefined => mergeRecor
  */
 export type FieldAuthorityDecision = 'allow' | 'deny';
 export interface FieldAuthorityResolver {
+  // Whether a rule covers an attribute of the patch: the upsert then decides and writes under the element lock.
+  governs: (context: AuthContext, type: string, patch: Record<string, unknown>) => Promise<boolean>;
   resolve: (
     context: AuthContext,
     user: AuthUser,

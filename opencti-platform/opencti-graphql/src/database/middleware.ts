@@ -3586,7 +3586,7 @@ const buildRelationDeduplicationFilters = (input: Record<string, any>) => {
   return filters;
 };
 
-const upsertElement = async (
+const upsertResolvedElement = async (
   context: AuthContext,
   user: AuthUser,
   element: BasicStoreBase,
@@ -3690,6 +3690,36 @@ const upsertElement = async (
     await recordUpsertProvenance(context, user, resolvedElement, preparedProvenance.record);
   }
   return upsertResult;
+};
+
+const upsertElement = async (
+  context: AuthContext,
+  user: AuthUser,
+  element: BasicStoreBase,
+  type: string,
+  basePatch: Record<string, any>,
+  opts: { elementAlreadyResolved?: boolean } & UpdateAttributeMetaResolvedOpts = {},
+) => {
+  // Field authority compares the writing source with the recorded writer of each field. Callers lock the ids of their
+  // input, which two sources reaching the element through different ids do not share: the element lock is taken here,
+  // and the element read again under it, so the decision always sees the writes committed before it.
+  const authorityResolver = getFieldAuthorityResolver();
+  if (!authorityResolver || !(await authorityResolver.governs(context, type, basePatch))) {
+    return upsertResolvedElement(context, user, element, type, basePatch, opts);
+  }
+  const heldLocks = opts.locks ?? [];
+  const lockIds = (getInstanceIds(element) as string[]).filter((id) => !heldLocks.includes(id));
+  let lock;
+  try {
+    if (lockIds.length > 0) {
+      lock = await lockResources(lockIds, { draftId: getDraftContext(context, user) });
+    }
+    return await upsertResolvedElement(context, user, element, type, basePatch, { ...opts, elementAlreadyResolved: false, locks: [...heldLocks, ...lockIds] });
+  } finally {
+    if (lock) {
+      await lock.unlock();
+    }
+  }
 };
 
 export const getExistingRelations = async (
