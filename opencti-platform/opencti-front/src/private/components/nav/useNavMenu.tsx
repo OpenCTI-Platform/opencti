@@ -64,6 +64,7 @@ import {
 import React from 'react';
 import { DEFENSE_AREAS, PATH_DEFENSE, visibleDefenseAreas } from '@components/defense/defenseAreas';
 import { CURATION_TABS, grantedCurationTabs, PATH_CURATION } from '@components/data/curation/curationTabs';
+import HubCountBadge, { HubTotalBadge } from '@components/common/hub/HubCountBadge';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useHiddenEntities, useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
@@ -110,6 +111,8 @@ export interface NavSubItem {
   exact?: boolean;
   type?: string;
   granted?: boolean;
+  /** Pending work behind the item, rendered after its label. */
+  badge?: React.ReactNode;
 }
 
 export interface NavItem {
@@ -203,6 +206,7 @@ const useNavMenu = (): NavGroup[] => {
   const isGrantedToNeeds = (needs: string[]) => isGrantedTo(me, needs);
   const defenseAreas = visibleDefenseAreas(DEFENSE_AREAS, hiddenEntities.filter((e): e is string => !!e), isGrantedToNeeds);
   const curationTabs = grantedCurationTabs(CURATION_TABS, isGrantedToNeeds);
+  const curationCounts = curationTabs.flatMap((tab) => (tab.useBadgeCount ? [{ id: tab.path, useCount: tab.useBadgeCount }] : []));
 
   const groups: (RawNavGroup | false)[] = [
     {
@@ -300,6 +304,7 @@ const useNavMenu = (): NavGroup[] => {
             link: `${PATH_DEFENSE}/${area.path}`,
             label: t_i18n(area.label),
             icon: area.icon,
+            badge: area.useBadgeCount ? <HubCountBadge useCount={area.useBadgeCount} /> : undefined,
           })),
         },
       ] : [],
@@ -387,7 +392,12 @@ const useNavMenu = (): NavGroup[] => {
           subItems: [
             { granted: isGrantedToKnowledge, link: '/dashboard/data/entities', label: t_i18n('Entities') },
             { granted: isGrantedToKnowledge, link: '/dashboard/data/relationships', label: t_i18n('Relationships') },
-            { granted: curationTabs.length > 0 && isGrantedToKnowledge && !inDraft, link: PATH_CURATION, label: t_i18n('Curation') },
+            {
+              granted: curationTabs.length > 0 && isGrantedToKnowledge && !inDraft,
+              link: PATH_CURATION,
+              label: t_i18n('Curation'),
+              badge: curationCounts.length > 0 ? <HubTotalBadge counts={curationCounts} /> : undefined,
+            },
             { granted: isGrantedToImport && !inDraft, link: '/dashboard/data/import', label: t_i18n('Import') },
             { granted: isGrantedToProcessing && !inDraft, link: '/dashboard/data/processing', label: t_i18n('Processing') },
             { granted: isGrantedToSharing && !inDraft, link: '/dashboard/data/sharing', label: t_i18n('Data sharing') },

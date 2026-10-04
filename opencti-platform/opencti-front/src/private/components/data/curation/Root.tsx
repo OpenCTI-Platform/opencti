@@ -1,41 +1,31 @@
-import React, { Suspense } from 'react';
-import { Link, Navigate, Route, Routes, useParams } from 'react-router';
-import { Tabs, TabsList, TabsTrigger } from '@filigran/design-system';
+import React, { Suspense, useMemo } from 'react';
+import { Navigate, Route, Routes, useParams } from 'react-router';
 import { boundaryWrapper } from '../../Error';
-import Loader from '../../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import PageContainer from '../../../../components/PageContainer';
 import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { isGrantedTo } from '../../../../utils/hooks/useGranted';
+import { HubEntryContext } from '../../common/hub/HubEntryContext';
+import HubNoAccess from '../../common/hub/HubNoAccess';
+import HubTabBar from '../../common/hub/HubTabBar';
 import { CURATION_TABS, type CurationTab, grantedCurationTabs, PATH_CURATION } from './curationTabs';
 
 interface CurationRootProps {
   tabs?: CurationTab[];
 }
 
-const CurationTabBar = ({ tabs }: { tabs: CurationTab[] }) => {
-  const { t_i18n } = useFormatter();
-  const { tab } = useParams();
-  return (
-    <Tabs value={tab} panels="external">
-      <TabsList aria-label={t_i18n('Curation')}>
-        {tabs.map((entry) => (
-          <TabsTrigger key={entry.path} value={entry.path} asChild>
-            <Link to={`${PATH_CURATION}/${entry.path}`} data-testid={`curation-tab-${entry.path}`}>
-              {t_i18n(entry.label)}
-            </Link>
-          </TabsTrigger>
-        ))}
-      </TabsList>
-    </Tabs>
-  );
-};
-
+// The breadcrumb and the tab bar stay on screen while a tab's code loads: the tab suspends inside
+// the page, never up to the router.
 const CurationTabPage = ({ tabs }: { tabs: CurationTab[] }) => {
   const { t_i18n } = useFormatter();
   const { tab } = useParams();
   const current = tabs.find((entry) => entry.path === tab);
+  const entry = useMemo(
+    () => (current ? { label: current.label, description: current.description } : null),
+    [current],
+  );
   if (!current) {
     return <Navigate to={`${PATH_CURATION}/${tabs[0].path}`} replace={true} />;
   }
@@ -48,8 +38,22 @@ const CurationTabPage = ({ tabs }: { tabs: CurationTab[] }) => {
           { label: t_i18n(current.label), current: true },
         ]}
       />
-      <CurationTabBar tabs={tabs} />
-      {boundaryWrapper(current.component)}
+      <HubTabBar
+        label={t_i18n('Curation')}
+        value={current.path}
+        tabs={tabs.map((entryTab) => ({
+          path: entryTab.path,
+          label: entryTab.label,
+          link: `${PATH_CURATION}/${entryTab.path}`,
+          useBadgeCount: entryTab.useBadgeCount,
+        }))}
+        testIdPrefix="curation-tab"
+      />
+      <HubEntryContext.Provider value={entry}>
+        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          {boundaryWrapper(current.component)}
+        </Suspense>
+      </HubEntryContext.Provider>
     </PageContainer>
   );
 };
@@ -58,15 +62,13 @@ const Root = ({ tabs: registered = CURATION_TABS }: CurationRootProps) => {
   const { me } = useAuth();
   const tabs = grantedCurationTabs(registered, (needs) => isGrantedTo(me, needs));
   if (tabs.length === 0) {
-    return <Navigate to="/dashboard/data" replace={true} />;
+    return <HubNoAccess hub="Curation" parents={['Data']} back={{ link: '/dashboard/data', label: 'Back to Data' }} />;
   }
   return (
-    <Suspense fallback={<Loader />}>
-      <Routes>
-        <Route path="/" element={<Navigate to={`${PATH_CURATION}/${tabs[0].path}`} replace={true} />} />
-        <Route path="/:tab/*" element={<CurationTabPage tabs={tabs} />} />
-      </Routes>
-    </Suspense>
+    <Routes>
+      <Route path="/" element={<Navigate to={`${PATH_CURATION}/${tabs[0].path}`} replace={true} />} />
+      <Route path="/:tab/*" element={<CurationTabPage tabs={tabs} />} />
+    </Routes>
   );
 };
 
