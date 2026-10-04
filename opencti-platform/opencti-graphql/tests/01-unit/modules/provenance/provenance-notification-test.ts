@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/index';
 import { computeListeningTriggers, describeProvenanceChange } from '../../../../src/modules/provenance/provenance-notification';
-import { computeProvenanceChange, newConflictAdditions } from '../../../../src/modules/provenance/provenance-write';
+import { computeProvenanceChange, keptConflictAdditions, newConflictAdditions } from '../../../../src/modules/provenance/provenance-write';
 import { resolveCorroborationThreshold } from '../../../../src/modules/notification/notification-domain';
 import type { BasicStoreEntityTrigger } from '../../../../src/modules/notification/notification-types';
 import type { StoreAssertion } from '../../../../src/modules/provenance/provenance-types';
@@ -78,6 +78,24 @@ describe('Provenance triggers', () => {
     const conflicts = computeProvenanceChange(element, ['a'], newConflicts);
     expect(conflicts.conflictFields).toEqual(['description', 'name']);
     expect(conflicts.newConflictValues).toEqual(2);
+  });
+
+  it('should only report the conflict values a write kept, never the ones dropped by the caps', () => {
+    const additions = [
+      { field: 'description', value: conflictValue('kept') },
+      { field: 'description', value: conflictValue('evicted') },
+      { field: 'name', value: conflictValue('over-the-fields-cap') },
+    ];
+    const stored = (conflicts: { field: string; values: ReturnType<typeof conflictValue>[] }[]) => ({
+      result: 'updated',
+      get: { _source: { x_opencti_conflicts: conflicts } },
+    });
+    const kept = keptConflictAdditions(stored([{ field: 'description', values: [conflictValue('kept'), conflictValue('older')] }]), additions);
+    expect(kept.map((addition) => addition.value.value_hash)).toEqual([conflictValue('kept').value_hash]);
+    // Proposed again, a dropped value is still not stored, so it is still not a new conflict
+    expect(keptConflictAdditions(stored([{ field: 'description', values: [conflictValue('kept')] }]), [additions[1]])).toEqual([]);
+    expect(keptConflictAdditions({ result: 'noop' }, additions)).toEqual([]);
+    expect(keptConflictAdditions(stored([]), [])).toEqual([]);
   });
 
   it('should count every source, including the ones no longer detailed in the bounded assertions', () => {

@@ -1,5 +1,6 @@
 import * as R from 'ramda';
 import { elList, elLoadById, elPaginate } from '../../database/engine';
+import { offsetToCursor } from '../../database/utils';
 import { patchAttribute } from '../../database/middleware';
 import { lockResources } from '../../lock/master-lock';
 import { logApp } from '../../config/conf';
@@ -193,6 +194,67 @@ const applyFreshnessPolicy = async (context: AuthContext, user: AuthUser, rule: 
   return true;
 };
 
+export interface RuleScan {
+  applied: number;
+  scanned: number;
+  lastExamined?: BasicStoreBase['sort'];
+}
+
+// Where the scan of each rule resumes on the next run (kept in memory: a restart scans from the first candidate)
+const scanCursors = new Map<string, string>();
+
+/**
+ * Candidates are listed in a stable order. A scan stopped by the budget or by the scan bound resumes after the last
+ * candidate it examined, so the candidates a run cannot act on (shadowed by a higher priority rule, failing) never
+ * hold back the ones after them; a scan that reached the last candidate starts over from the first one.
+ */
+export const resumeAfterScan = (scan: RuleScan, budget: number, maxScanned: number) => {
+  return scan.applied >= budget || scan.scanned >= maxScanned ? scan.lastExamined : undefined;
+};
+
+const scanRuleCandidates = async (
+  context: AuthContext,
+  user: AuthUser,
+  current: PreparedRule,
+  filteredHigherRules: PreparedRule[],
+  scope: { budget: number; maxScanned: number; after?: string },
+  result: KnowledgeFreshnessRunResult,
+): Promise<RuleScan> => {
+  const { rule } = current;
+  const scan: RuleScan = { applied: 0, scanned: 0 };
+  await elList<FreshnessCandidate>(context, user, KNOWLEDGE_FRESHNESS_INDICES, {
+    types: current.types,
+    filters: buildStaleCandidatesFilters(computeStaleCutoff(rule.stale_after_days ?? 0), current.filters),
+    baseData: true,
+    baseFields: ['confidence', 'revoked', ATTRIBUTE_LAST_ASSERTED_AT],
+    first: FRESHNESS_SCAN_PAGE_SIZE,
+    maxSize: scope.maxScanned,
+    after: scope.after,
+    callback: async (candidates) => {
+      scan.scanned += candidates.length;
+      const shadowed = filteredHigherRules.length > 0
+        ? await findIdsMatchingRules(context, user, candidates.map((candidate) => candidate.internal_id), filteredHigherRules)
+        : new Set<string>();
+      for (let index = 0; index < candidates.length && scan.applied < scope.budget; index += 1) {
+        const candidate = candidates[index];
+        scan.lastExamined = candidate.sort;
+        if (!shadowed.has(candidate.internal_id)) {
+          try {
+            if (await applyFreshnessPolicy(context, user, rule, candidate, result)) {
+              scan.applied += 1;
+            }
+          } catch (err) {
+            result.errors += 1;
+            logApp.error('[PROVENANCE] Unable to apply the knowledge freshness policy', { cause: err, id: candidate.internal_id, rule_id: rule.id });
+          }
+        }
+      }
+      return scan.applied < scope.budget;
+    },
+  });
+  return scan;
+};
+
 const applyKnowledgeDecayRule = async (
   context: AuthContext,
   user: AuthUser,
@@ -205,36 +267,24 @@ const applyKnowledgeDecayRule = async (
   if (types.length === 0 || budget <= 0) {
     return 0;
   }
-  const { rule } = current;
-  const cutoff = computeStaleCutoff(rule.stale_after_days ?? 0);
-  let applied = 0;
-  await elList<FreshnessCandidate>(context, user, KNOWLEDGE_FRESHNESS_INDICES, {
-    types,
-    filters: buildStaleCandidatesFilters(cutoff, current.filters),
-    baseData: true,
-    baseFields: ['confidence', 'revoked', ATTRIBUTE_LAST_ASSERTED_AT],
-    first: FRESHNESS_SCAN_PAGE_SIZE,
-    maxSize: budget * FRESHNESS_SCAN_FACTOR,
-    callback: async (candidates) => {
-      const shadowed = filteredHigherRules.length > 0
-        ? await findIdsMatchingRules(context, user, candidates.map((candidate) => candidate.internal_id), filteredHigherRules)
-        : new Set<string>();
-      for (let index = 0; index < candidates.length && applied < budget; index += 1) {
-        const candidate = candidates[index];
-        if (!shadowed.has(candidate.internal_id)) {
-          try {
-            if (await applyFreshnessPolicy(context, user, rule, candidate, result)) {
-              applied += 1;
-            }
-          } catch (err) {
-            result.errors += 1;
-            logApp.error('[PROVENANCE] Unable to apply the knowledge freshness policy', { cause: err, id: candidate.internal_id, rule_id: rule.id });
-          }
-        }
-      }
-      return applied < budget;
-    },
-  });
+  const ruleId = current.rule.id;
+  const maxScanned = budget * FRESHNESS_SCAN_FACTOR;
+  const resumed = scanCursors.get(ruleId);
+  const scan = await scanRuleCandidates(context, user, { ...current, types }, filteredHigherRules, { budget, maxScanned, after: resumed }, result);
+  let { applied } = scan;
+  let lastExamined = resumeAfterScan(scan, budget, maxScanned);
+  if (!lastExamined && resumed) {
+    // The last candidate was reached from where the previous run stopped: the rest of the run starts over
+    const scope = { budget: budget - applied, maxScanned: maxScanned - scan.scanned };
+    const wrapped = await scanRuleCandidates(context, user, { ...current, types }, filteredHigherRules, scope, result);
+    applied += wrapped.applied;
+    lastExamined = resumeAfterScan(wrapped, scope.budget, scope.maxScanned);
+  }
+  if (lastExamined) {
+    scanCursors.set(ruleId, offsetToCursor(lastExamined));
+  } else {
+    scanCursors.delete(ruleId);
+  }
   return applied;
 };
 
@@ -307,6 +357,7 @@ export const releaseFlagsTakenOverByRule = async (context: AuthContext, user: Au
 export const applyKnowledgeDecayRules = async (context: AuthContext, user: AuthUser, opts: { batchSize: number }): Promise<KnowledgeFreshnessRunResult> => {
   const result: KnowledgeFreshnessRunResult = { flagged: 0, lowered: 0, revoked: 0, errors: 0 };
   const rules = prepareRules(await getActiveKnowledgeDecayRules(context), await listProvenanceTrackedTypes(context));
+  [...scanCursors.keys()].filter((ruleId) => !rules.some(({ rule }) => rule.id === ruleId)).forEach((ruleId) => scanCursors.delete(ruleId));
   let budget = opts.batchSize;
   for (let index = 0; index < rules.length && budget > 0; index += 1) {
     budget -= await applyKnowledgeDecayRule(context, user, rules[index], rules.slice(0, index), budget, result);

@@ -13,7 +13,7 @@ import {
 import type { BasicStoreEntityDecayRule } from '../../../../src/modules/decayRule/decayRule-types';
 import { STIX_CORE_RELATIONSHIPS } from '../../../../src/schema/stixCoreRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
-import { buildStaleCandidatesFilters, computeRuleShadowing, computeStaleCutoff, isFreshAfterMerge } from '../../../../src/modules/provenance/provenance-freshness';
+import { buildStaleCandidatesFilters, computeRuleShadowing, computeStaleCutoff, isFreshAfterMerge, resumeAfterScan } from '../../../../src/modules/provenance/provenance-freshness';
 
 const relationshipRule = (overrides: Partial<KnowledgeDecayRuleDefinition> = {}): KnowledgeDecayRuleDefinition => ({
   name: 'Stale C2',
@@ -165,5 +165,16 @@ describe('Knowledge freshness manager', () => {
     // Rules of other scopes never shadow
     expect(computeRuleShadowing(entities, [allRelationships]).types).toEqual(['Infrastructure']);
     expect(computeRuleShadowing(uses, [prepared(storedRule({ id: 'other', target_types: ['uses'] }))]).types).toEqual([]);
+  });
+
+  it('should resume the scan of a rule after the last candidate it examined, and start over once the end is reached', () => {
+    const lastExamined = ['indicator--examined'];
+    // Stopped by the budget
+    expect(resumeAfterScan({ applied: 10, scanned: 40, lastExamined }, 10, 100)).toEqual(lastExamined);
+    // Stopped by the scan bound: candidates the run could not act on never hold back the ones after them
+    expect(resumeAfterScan({ applied: 0, scanned: 100, lastExamined }, 10, 100)).toEqual(lastExamined);
+    // The last candidate was reached
+    expect(resumeAfterScan({ applied: 3, scanned: 40, lastExamined }, 10, 100)).toBeUndefined();
+    expect(resumeAfterScan({ applied: 0, scanned: 0 }, 10, 100)).toBeUndefined();
   });
 });
