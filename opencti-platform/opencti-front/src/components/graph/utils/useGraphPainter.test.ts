@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createTheme, ThemeOptions } from '@mui/material/styles';
-import useGraphPainter from './useGraphPainter';
+import useGraphPainter, { isHoveredLink, linkHoverTarget } from './useGraphPainter';
 import { testRenderHook } from '../../../utils/tests/test-render';
 import { createRecordingContext } from '../../../utils/tests/recordingCanvasContext';
 import ThemeDark from '../../ThemeDark';
@@ -50,6 +50,20 @@ const link = (overrides: Partial<GraphLink> = {}): GraphLink => ({
   target_id: 'b',
   inferred: false,
   ...overrides,
+});
+
+describe('link hover targets', () => {
+  it('tells apart the two connectors of a nested relationship, which share its id', () => {
+    const toNested = link({ id: 'nested', target: node({ id: 'nested' }), target_id: 'nested' });
+    const fromNested = link({ id: 'nested', source: 'nested', source_id: 'nested', target: 'b' } as Partial<GraphLink>);
+    const hovered = linkHoverTarget(fromNested);
+    expect(hovered).toEqual({ kind: 'link', id: 'nested', sourceId: 'nested', targetId: 'b' });
+    expect(isHoveredLink(hovered, linkHoverTarget(fromNested))).toBe(true);
+    expect(isHoveredLink(hovered, linkHoverTarget(toNested))).toBe(false);
+    // A target known by its id alone designates every link of that id.
+    expect(isHoveredLink({ kind: 'link', id: 'nested' }, linkHoverTarget(toNested))).toBe(true);
+    expect(isHoveredLink({ kind: 'node', id: 'nested' }, linkHoverTarget(toNested))).toBe(false);
+  });
 });
 
 describe('useGraphPainter', () => {

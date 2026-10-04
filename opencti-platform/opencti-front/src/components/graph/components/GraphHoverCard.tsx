@@ -1,4 +1,4 @@
-import React, { CSSProperties, ReactNode } from 'react';
+import React, { CSSProperties, ReactNode, useLayoutEffect, useRef, useState } from 'react';
 import { IconButton, Paper, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import {
   AccountTreeOutlined,
@@ -57,6 +57,8 @@ export interface GraphHoverCardProps {
 
 const CARD_WIDTH = 300;
 const OFFSET = 16;
+/** The height a card is placed for until it is measured. */
+const ESTIMATED_CARD_HEIGHT = 260;
 
 const Action = ({ label, icon, onClick }: { label: string; icon: ReactNode; onClick: () => void }) => (
   <Tooltip>
@@ -88,8 +90,16 @@ const GraphHoverCard = ({
   const palette = buildGraphPalette(theme);
   useGraphNodeActionRegistryVersion();
 
+  // Placed for its rendered height, and never taller than the graph: its content scrolls, so the
+  // last quick actions stay within reach on a short graph.
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [cardHeight, setCardHeight] = useState(ESTIMATED_CARD_HEIGHT);
+  useLayoutEffect(() => {
+    const measured = cardRef.current?.offsetHeight;
+    if (measured && measured !== cardHeight) setCardHeight(measured);
+  });
   const left = anchor.x + OFFSET + CARD_WIDTH > bounds.width ? Math.max(0, anchor.x - OFFSET - CARD_WIDTH) : anchor.x + OFFSET;
-  const top = Math.max(0, Math.min(anchor.y + OFFSET, bounds.height - 260));
+  const top = Math.max(0, Math.min(anchor.y + OFFSET, bounds.height - Math.min(cardHeight, bounds.height)));
   const fact: CSSProperties = { display: 'flex', gap: theme.spacing(1) };
   const factLabel: CSSProperties = { color: theme.palette.text.secondary, minWidth: 92 };
   // How long ago, the exact date in the tooltip.
@@ -337,13 +347,14 @@ const GraphHoverCard = ({
 
   return (
     <Paper
+      ref={cardRef}
       elevation={3}
       padding={16}
       className={EXPORT_REMOVE_CLASS}
       role="group"
       aria-label={t_i18n('Details on hover')}
       data-testid="graph-hover-card"
-      style={{ position: 'absolute', left, top, width: CARD_WIDTH, zIndex: 3 }}
+      style={{ position: 'absolute', left, top, width: CARD_WIDTH, maxHeight: bounds.height, overflowY: 'auto', zIndex: 3 }}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       onMouseDown={(event) => event.stopPropagation()}

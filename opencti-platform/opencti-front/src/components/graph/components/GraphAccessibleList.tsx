@@ -14,12 +14,21 @@ export const ACCESSIBLE_LIST_WINDOW_RADIUS = 100;
 export interface GraphAccessibleListProps {
   nodes: readonly GraphNode[];
   links: readonly GraphLink[];
-  selectedIds: ReadonlySet<string>;
+  /** The selected elements, by their `graphElementKey`. */
+  selectedKeys: ReadonlySet<string>;
   onSelectNode: (node: GraphNode, additive: boolean) => void;
   onSelectLink: (link: GraphLink, additive: boolean) => void;
 }
 
 const endpoint = (end: GraphLink['source']) => (typeof end === 'object' && end !== null ? end : null);
+
+/**
+ * One key per element drawn: a nested relationship is drawn as a node and two connector links
+ * that share its id, so a link is also told apart by its two ends.
+ */
+export const graphElementKey = (element: { kind: 'node'; node: GraphNode } | { kind: 'link'; link: GraphLink }) => (element.kind === 'node'
+  ? `node:${element.node.id}`
+  : `link:${element.link.id}:${endpoint(element.link.source)?.id ?? element.link.source_id}:${endpoint(element.link.target)?.id ?? element.link.target_id}`);
 
 type Entry = { kind: 'node'; node: GraphNode; text: string } | { kind: 'link'; link: GraphLink; text: string };
 
@@ -29,7 +38,7 @@ type Entry = { kind: 'node'; node: GraphNode; text: string } | { kind: 'link'; l
  * only a keyboard or a screen reader reaches: arrows move, Enter or Space selects like a click on
  * the canvas, with Shift to add to the selection.
  */
-const GraphAccessibleList = ({ nodes, links, selectedIds, onSelectNode, onSelectLink }: GraphAccessibleListProps) => {
+const GraphAccessibleList = ({ nodes, links, selectedKeys, onSelectNode, onSelectLink }: GraphAccessibleListProps) => {
   const { t_i18n } = useFormatter();
   const badgeRegistryVersion = useGraphBadgeRegistryVersion();
   const listId = useId();
@@ -70,11 +79,6 @@ const GraphAccessibleList = ({ nodes, links, selectedIds, onSelectNode, onSelect
   const activeIndex = Math.min(active, Math.max(0, entries.length - 1));
   const windowStart = Math.max(0, activeIndex - ACCESSIBLE_LIST_WINDOW_RADIUS);
   const windowEnd = Math.min(entries.length, activeIndex + ACCESSIBLE_LIST_WINDOW_RADIUS + 1);
-  const idOf = (entry: Entry) => (entry.kind === 'node' ? entry.node.id : entry.link.id);
-  // A nested relationship is drawn as a node and two connector links that share its id.
-  const keyOf = (entry: Entry) => (entry.kind === 'node'
-    ? `node:${entry.node.id}`
-    : `link:${entry.link.id}:${endpoint(entry.link.source)?.id ?? entry.link.source_id}:${endpoint(entry.link.target)?.id ?? entry.link.target_id}`);
   const choose = (entry: Entry, additive: boolean) => {
     if (entry.kind === 'node') onSelectNode(entry.node, additive);
     else onSelectLink(entry.link, additive);
@@ -109,10 +113,10 @@ const GraphAccessibleList = ({ nodes, links, selectedIds, onSelectNode, onSelect
     >
       {entries.slice(windowStart, windowEnd).map((entry, offset) => (
         <div
-          key={keyOf(entry)}
+          key={graphElementKey(entry)}
           id={`${listId}-${windowStart + offset}`}
           role="option"
-          aria-selected={selectedIds.has(idOf(entry))}
+          aria-selected={selectedKeys.has(graphElementKey(entry))}
           aria-posinset={windowStart + offset + 1}
           aria-setsize={entries.length}
           onClick={(event) => choose(entry, event.shiftKey)}

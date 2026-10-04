@@ -2,7 +2,7 @@ import React, { MutableRefObject, useRef, useState } from 'react';
 import ForceGraph2D, { ForceGraphProps } from 'react-force-graph-2d';
 import { GraphLink, GraphNode } from './graph.types';
 import useResizeObserver from '../../utils/hooks/useResizeObserver';
-import useGraphPainter, { type GraphHoverTarget } from './utils/useGraphPainter';
+import useGraphPainter, { type GraphHoverTarget, linkHoverTarget } from './utils/useGraphPainter';
 import { GraphRef2D } from './GraphContext';
 import GraphAccessibleList from './components/GraphAccessibleList';
 
@@ -81,13 +81,13 @@ const SimpleGraph2D = ({
         onRenderFramePre={framePrePaint}
         onRenderFramePost={framePostPaint}
         onNodeHover={(node) => setHovered(node ? { kind: 'node', id: node.id } : null)}
-        onLinkHover={(link) => setHovered(link ? { kind: 'link', id: link.id } : null)}
+        onLinkHover={(link) => setHovered(link ? linkHoverTarget(link) : null)}
         {...graphProps}
       />
       <GraphAccessibleList
         nodes={graphProps.graphData?.nodes ?? []}
         links={graphProps.graphData?.links ?? []}
-        selectedIds={NO_SELECTION}
+        selectedKeys={NO_SELECTION}
         onSelectNode={(node) => onNodeClick?.(node, new MouseEvent('click'))}
         onSelectLink={(link) => onLinkClick?.(link, new MouseEvent('click'))}
       />

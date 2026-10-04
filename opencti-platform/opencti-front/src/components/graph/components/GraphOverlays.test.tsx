@@ -7,7 +7,7 @@ import GraphLegend, { GraphLegendPill } from './GraphLegend';
 import GraphCounters from './GraphCounters';
 import GraphEmptyState from './GraphEmptyState';
 import GraphHoverCard, { GraphHoverCardActions } from './GraphHoverCard';
-import GraphAccessibleList, { ACCESSIBLE_LIST_WINDOW_RADIUS } from './GraphAccessibleList';
+import GraphAccessibleList, { ACCESSIBLE_LIST_WINDOW_RADIUS, graphElementKey } from './GraphAccessibleList';
 import GraphShortcutsDialog from './GraphShortcutsDialog';
 import { GROUP_LINK_PREFIX } from '../utils/graphCollapse';
 
@@ -206,6 +206,21 @@ describe('GraphHoverCard', () => {
     expect(handlers.onPathFromSelection).toHaveBeenCalled();
   });
 
+  it('stays within a short graph and scrolls, so its last quick actions stay reachable', () => {
+    testRender(
+      <GraphHoverCard
+        {...common}
+        anchor={{ x: 10, y: 100 }}
+        bounds={{ width: 1000, height: 150 }}
+        target={{ kind: 'node', node: actor }}
+        badges={[]}
+        relationshipCounts={[]}
+        actions={actions()}
+      />,
+    );
+    expect(screen.getByRole('group', { name: 'Details on hover' })).toHaveStyle({ top: '0px', maxHeight: '150px', overflowY: 'auto' });
+  });
+
   it('starts an investigation from an entity, never from a relationship node', async () => {
     const handlers = { ...actions(), onStartInvestigation: vi.fn() };
     const node = graphNode({ ...actor });
@@ -268,21 +283,21 @@ describe('GraphAccessibleList', () => {
       confidence: 20,
       markedBy: [{ id: 'tlp-amber', definition: 'TLP:AMBER', x_opencti_color: '#ffc000' }] as never,
     });
-    testRender(<GraphAccessibleList nodes={[marked]} links={[]} selectedIds={new Set()} onSelectNode={vi.fn()} onSelectLink={vi.fn()} />);
+    testRender(<GraphAccessibleList nodes={[marked]} links={[]} selectedKeys={new Set()} onSelectNode={vi.fn()} onSelectLink={vi.fn()} />);
     // The most severe badge first, as on the canvas.
     expect(screen.getByRole('option', { name: 'Malware Qakbot, 0 relationships, Low confidence (20), TLP:AMBER' })).toBeInTheDocument();
   });
 
   it('counts a self-loop once in the relationships of its entity', () => {
     const loop = graphLink(malware, malware, { id: 'loop', relationship_type: 'variant-of', entity_type: 'variant-of' });
-    testRender(<GraphAccessibleList nodes={[malware]} links={[loop]} selectedIds={new Set()} onSelectNode={vi.fn()} onSelectLink={vi.fn()} />);
+    testRender(<GraphAccessibleList nodes={[malware]} links={[loop]} selectedKeys={new Set()} onSelectNode={vi.fn()} onSelectLink={vi.fn()} />);
     expect(screen.getByRole('option', { name: /^Malware Emotet, 1 relationship$/ })).toBeInTheDocument();
   });
 
   it('names the entities of a relationship whose endpoints are still ids', () => {
     // Links arrive with the ids of their endpoints; the renderer replaces them by nodes later.
     const pending = { ...uses, source: 'actor', target: 'malware' } as unknown as typeof uses;
-    testRender(<GraphAccessibleList nodes={[actor, malware]} links={[pending]} selectedIds={new Set()} onSelectNode={vi.fn()} onSelectLink={vi.fn()} />);
+    testRender(<GraphAccessibleList nodes={[actor, malware]} links={[pending]} selectedKeys={new Set()} onSelectNode={vi.fn()} onSelectLink={vi.fn()} />);
     expect(screen.getByRole('option', { name: 'APT-X uses Emotet' })).toBeInTheDocument();
   });
 
@@ -291,10 +306,28 @@ describe('GraphAccessibleList', () => {
     const nested = graphNode({ id: 'nested', label: 'related to', relationship_type: 'related-to', entity_type: 'related-to' });
     const links = [graphLink(actor, nested, { id: 'nested' }), graphLink(nested, malware, { id: 'nested' })];
     const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
-    testRender(<GraphAccessibleList nodes={[actor, nested, malware]} links={links} selectedIds={new Set()} onSelectNode={vi.fn()} onSelectLink={vi.fn()} />);
+    testRender(<GraphAccessibleList nodes={[actor, nested, malware]} links={links} selectedKeys={new Set()} onSelectNode={vi.fn()} onSelectLink={vi.fn()} />);
     expect(screen.getAllByRole('option')).toHaveLength(5);
     expect(errors.mock.calls.some((call) => String(call[0]).includes('same key'))).toBe(false);
     errors.mockRestore();
+  });
+
+  it('announces only the selected part of a nested relationship as selected', () => {
+    const nested = graphNode({ id: 'nested', label: 'related to', relationship_type: 'related-to', entity_type: 'related-to' });
+    const [toNested, fromNested] = [graphLink(actor, nested, { id: 'nested' }), graphLink(nested, malware, { id: 'nested' })];
+    testRender(
+      <GraphAccessibleList
+        nodes={[actor, nested, malware]}
+        links={[toNested, fromNested]}
+        selectedKeys={new Set([graphElementKey({ kind: 'link', link: fromNested })])}
+        onSelectNode={vi.fn()}
+        onSelectLink={vi.fn()}
+      />,
+    );
+    const selected = screen.getAllByRole('option').filter((option) => option.getAttribute('aria-selected') === 'true');
+    // The connector towards Emotet, neither the other connector nor the node sharing its id.
+    expect(selected).toHaveLength(1);
+    expect(selected[0]).toHaveTextContent(/Emotet$/);
   });
 
   it('mirrors the drawing as options a keyboard can select', () => {
@@ -304,7 +337,7 @@ describe('GraphAccessibleList', () => {
       <GraphAccessibleList
         nodes={[actor, malware]}
         links={[uses]}
-        selectedIds={new Set(['malware'])}
+        selectedKeys={new Set([graphElementKey({ kind: 'node', node: malware })])}
         onSelectNode={onSelectNode}
         onSelectLink={onSelectLink}
       />,
@@ -326,7 +359,7 @@ describe('GraphAccessibleList', () => {
       <GraphAccessibleList
         nodes={[actor, malware]}
         links={many}
-        selectedIds={new Set()}
+        selectedKeys={new Set()}
         onSelectNode={vi.fn()}
         onSelectLink={onSelectLink}
       />,

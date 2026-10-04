@@ -21,6 +21,9 @@ interface PaintOptions {
 export interface GraphHoverTarget {
   kind: 'node' | 'link';
   id: string;
+  /** The ends of a link: the two connectors of a nested relationship share its id. */
+  sourceId?: string;
+  targetId?: string;
 }
 
 interface UseGraphPainterArgs {
@@ -44,6 +47,23 @@ const OBSTACLE_CLEARANCE = NODE_RADIUS + 5;
 const DEFAULT_SCALE = 3;
 
 const endpointId = (end: GraphLink['source']) => (typeof end === 'object' && end !== null ? end.id : end);
+
+/** The hover target of a link, telling apart the connectors that share the id of their relationship. */
+export const linkHoverTarget = (link: GraphLink): GraphHoverTarget => ({
+  kind: 'link',
+  id: link.id,
+  sourceId: endpointId(link.source) ?? link.source_id,
+  targetId: endpointId(link.target) ?? link.target_id,
+});
+
+/** Whether the hover target designates this link, by its id and, when the target has them, its ends. */
+export const isHoveredLink = (
+  hovered: GraphHoverTarget | null | undefined,
+  link: { id: string; sourceId?: string; targetId?: string },
+) => hovered?.kind === 'link'
+  && hovered.id === link.id
+  && (hovered.sourceId === undefined || hovered.sourceId === link.sourceId)
+  && (hovered.targetId === undefined || hovered.targetId === link.targetId);
 
 const useGraphPainter = (args?: UseGraphPainterArgs) => {
   const theme = useTheme<Theme>();
@@ -99,7 +119,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     });
     if (hovered?.kind === 'node') centres.add(hovered.id);
     if (hovered?.kind === 'link') {
-      const link = linkEnds.find(({ id }) => id === hovered.id);
+      const link = linkEnds.find((ends) => isHoveredLink(hovered, ends));
       if (link) {
         centres.add(link.sourceId);
         centres.add(link.targetId);
@@ -233,7 +253,11 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
       confidence: link.confidence,
       visual: {
         selected,
-        hovered: hovered?.kind === 'link' && hovered.id === link.id,
+        hovered: isHoveredLink(hovered, {
+          id: link.id,
+          sourceId: endpointId(link.source) ?? link.source_id,
+          targetId: endpointId(link.target) ?? link.target_id,
+        }),
         faded: focus ? !focus.linkIds.has(link.id) : false,
         onPath: pathLinkIds.has(link.id),
       },

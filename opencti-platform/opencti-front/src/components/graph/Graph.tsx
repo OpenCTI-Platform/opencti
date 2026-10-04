@@ -6,7 +6,7 @@ import RectangleSelection from './components/RectangleSelection';
 import { useGraphContext } from './GraphContext';
 import useResizeObserver from '../../utils/hooks/useResizeObserver';
 import { GraphLink, GraphNode, LibGraphProps, OctiGraphPositions } from './graph.types';
-import useGraphPainter, { type GraphHoverTarget } from './utils/useGraphPainter';
+import useGraphPainter, { type GraphHoverTarget, isHoveredLink, linkHoverTarget } from './utils/useGraphPainter';
 import useGraphInteractions from './utils/useGraphInteractions';
 import LassoSelection from './components/LassoSelection';
 import useGraphFilter from './utils/useGraphFilter';
@@ -19,7 +19,7 @@ import GraphEmptyState, { type GraphEmptyKind } from './components/GraphEmptySta
 import GraphLegend, { type GraphLegendBadge, GraphLegendPill } from './components/GraphLegend';
 import { type GraphViewActions, GraphViewContext } from './GraphViewContext';
 import GraphHoverCard, { type GraphHoverCardTarget } from './components/GraphHoverCard';
-import GraphAccessibleList from './components/GraphAccessibleList';
+import GraphAccessibleList, { graphElementKey } from './components/GraphAccessibleList';
 import GraphShortcutsDialog from './components/GraphShortcutsDialog';
 import { useFormatter } from '../i18n';
 import { itemFamily } from '../../utils/Colors';
@@ -168,6 +168,11 @@ const Graph = ({
   // --- What is drawn: groups for collapsed types, hidden entities left out.
   const collapseCache = useRef(createCollapseCache());
   const hiddenIds = useMemo(() => new Set(hiddenNodeIds), [hiddenNodeIds]);
+  // The hidden entities still in the graph: one removed or gone with a refresh has nothing to show back.
+  const hiddenCount = useMemo(
+    () => (graphData?.nodes ?? []).filter((node) => hiddenIds.has(node.id)).length,
+    [graphData, hiddenIds],
+  );
   const displayData = useMemo(() => (graphData
     ? withCollapsedGroups(
         graphData,
@@ -383,7 +388,10 @@ const Graph = ({
   }, [mode3D, isLoadingData]);
 
   const selectedEntities = [...selectedLinks, ...selectedNodes];
-  const selectedIds = useMemo(() => new Set(selectedEntities.map((e) => e.id)), [selectedLinks, selectedNodes]);
+  const selectedKeys = useMemo(() => new Set([
+    ...selectedNodes.map((node) => graphElementKey({ kind: 'node', node })),
+    ...selectedLinks.map((link) => graphElementKey({ kind: 'link', link })),
+  ]), [selectedLinks, selectedNodes]);
   const hasNoSavedPosition = Object.keys(rawPositions).length === 0;
 
   const persistPositions = () => {
@@ -614,7 +622,7 @@ const Graph = ({
       const node = (displayData?.nodes ?? []).find((n) => n.id === card.target.id);
       return node && nodeShown(node) ? { kind: 'node', node } : null;
     }
-    const link = (displayData?.links ?? []).find((l) => l.id === card.target.id);
+    const link = (displayData?.links ?? []).find((l) => isHoveredLink(card.target, linkHoverTarget(l)));
     return link && linkShown(link) ? { kind: 'link', link } : null;
   }, [card, displayData, shownNodeIds]);
 
@@ -718,7 +726,7 @@ const Graph = ({
               onRenderFramePost={framePostPaint}
               onEngineStop={onEngineStop}
               onNodeHover={(node) => onHover(node ? { kind: 'node', id: node.id } : null)}
-              onLinkHover={(link) => onHover(link ? { kind: 'link', id: link.id } : null)}
+              onLinkHover={(link) => onHover(link ? linkHoverTarget(link) : null)}
               onZoomEnd={saveZoom}
               onLinkClick={toggleLink}
               onBackgroundClick={onBackgroundClick}
@@ -741,7 +749,7 @@ const Graph = ({
             disabledEntityTypes={disabledEntityTypes}
             disabledRelationshipTypes={disabledRelationshipTypes}
             collapsedEntityTypes={collapsedEntityTypes}
-            hiddenCount={hiddenNodeIds.length}
+            hiddenCount={hiddenCount}
             badges={legendBadges}
             bottomOffset={toolbarOverlap}
             onToggleEntityType={toggleEntityType}
@@ -758,7 +766,8 @@ const Graph = ({
           <GraphHoverCard
             target={cardTarget}
             anchor={card.anchor}
-            bounds={{ width, height }}
+            // The part of the canvas above the toolbar docked under the graph.
+            bounds={{ width, height: Math.max(0, height - toolbarOverlap) }}
             context={context}
             badges={cardTarget.kind === 'node' ? badgesOfNode(cardTarget.node, { t_i18n }) : []}
             relationshipCounts={cardTarget.kind === 'node'
@@ -833,18 +842,25 @@ const Graph = ({
         <GraphAccessibleList
           nodes={shownNodes}
           links={shownLinks}
-          selectedIds={selectedIds}
+          selectedKeys={selectedKeys}
           onSelectNode={(node, additive) => {
             if (node.groupOf) {
               toggleCollapsedEntityType(node.groupOf.entityType);
               return;
             }
-            if (additive) setSelectedNodes(selectedIds.has(node.id) ? selectedNodes.filter((n) => n.id !== node.id) : [...selectedNodes, node]);
-            else selectNodes([node]);
+            if (additive) {
+              setSelectedNodes(selectedKeys.has(graphElementKey({ kind: 'node', node }))
+                ? selectedNodes.filter((n) => n.id !== node.id)
+                : [...selectedNodes, node]);
+            } else selectNodes([node]);
           }}
           onSelectLink={(link, additive) => {
-            if (additive) setSelectedLinks(selectedIds.has(link.id) ? selectedLinks.filter((l) => l.id !== link.id) : [...selectedLinks, link]);
-            else {
+            const key = graphElementKey({ kind: 'link', link });
+            if (additive) {
+              setSelectedLinks(selectedKeys.has(key)
+                ? selectedLinks.filter((l) => graphElementKey({ kind: 'link', link: l }) !== key)
+                : [...selectedLinks, link]);
+            } else {
               setSelectedNodes([]);
               setSelectedLinks([link]);
             }
