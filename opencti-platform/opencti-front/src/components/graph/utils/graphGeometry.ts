@@ -169,10 +169,16 @@ export interface LinkEnds {
 }
 
 /**
- * Curvature and loop rotation of every link, so that several links between the same two nodes
- * fan out symmetrically instead of being drawn on top of each other. The curvature of a link is
- * read in its own direction, so links going opposite ways between the same nodes are mirrored
- * to land on distinct sides. Deterministic: links are ordered by id within a pair.
+ * The key of a link in the curvature and bend maps: the two connector links of a nested
+ * relationship share its id, so a link is told apart by its id and its two ends.
+ */
+export const linkEndsKey = (link: LinkEnds) => `${link.id}|${link.sourceId}|${link.targetId}`;
+
+/**
+ * Curvature and loop rotation of every link, keyed by `linkEndsKey`, so that several links between
+ * the same two nodes fan out symmetrically instead of being drawn on top of each other. The
+ * curvature of a link is read in its own direction, so links going opposite ways between the same
+ * nodes are mirrored to land on distinct sides. Deterministic: links are ordered by id within a pair.
  */
 export const computeLinkCurvatures = (links: readonly LinkEnds[]): Map<string, { curvature: number; rotation: number }> => {
   const groups = new Map<string, LinkEnds[]>();
@@ -188,17 +194,17 @@ export const computeLinkCurvatures = (links: readonly LinkEnds[]): Map<string, {
     sorted.forEach((link, index) => {
       if (link.sourceId === link.targetId) {
         // Loops on one node nest, each one wider than the previous.
-        result.set(link.id, { curvature: 0.5 + index * 0.3, rotation: 0 });
+        result.set(linkEndsKey(link), { curvature: 0.5 + index * 0.3, rotation: 0 });
         return;
       }
       if (sorted.length === 1) {
-        result.set(link.id, { curvature: 0, rotation: 0 });
+        result.set(linkEndsKey(link), { curvature: 0, rotation: 0 });
         return;
       }
       const offset = (index - (sorted.length - 1) / 2) * PARALLEL_CURVATURE_STEP;
       // Expressed for the canonical direction, then flipped for a link going the other way.
       const canonical = link.sourceId < link.targetId;
-      result.set(link.id, { curvature: canonical ? offset : -offset, rotation: 0 });
+      result.set(linkEndsKey(link), { curvature: canonical ? offset : -offset, rotation: 0 });
     });
   });
   return result;
@@ -215,7 +221,7 @@ const END_ZONE = 0.08;
  * otherwise run through the second one and read as two links. Only links drawn straight (no
  * parallel link) are bent, away from the obstacle closest to their line and just enough to clear
  * every obstacle on that side by `clearance`. Nodes are indexed in a grid so that long links
- * across large graphs stay cheap; deterministic.
+ * across large graphs stay cheap; deterministic. Bends and curvatures are keyed by `linkEndsKey`.
  */
 export const computeObstacleBends = (
   links: readonly LinkEnds[],
@@ -235,7 +241,7 @@ export const computeObstacleBends = (
   });
   const bends = new Map<string, number>();
   links.forEach((link) => {
-    if (link.sourceId === link.targetId || (curvatures?.get(link.id)?.curvature ?? 0) !== 0) return;
+    if (link.sourceId === link.targetId || (curvatures?.get(linkEndsKey(link))?.curvature ?? 0) !== 0) return;
     const start = positions.get(link.sourceId);
     const end = positions.get(link.targetId);
     if (!start || !end) return;
@@ -274,7 +280,7 @@ export const computeObstacleBends = (
     const positive = neededTowards(1);
     const negative = neededTowards(-1);
     // An obstacle right on the line is passed on the positive side.
-    bends.set(link.id, negative < positive ? -Math.min(MAX_BEND, negative) : Math.min(MAX_BEND, positive));
+    bends.set(linkEndsKey(link), negative < positive ? -Math.min(MAX_BEND, negative) : Math.min(MAX_BEND, positive));
   });
   return bends;
 };

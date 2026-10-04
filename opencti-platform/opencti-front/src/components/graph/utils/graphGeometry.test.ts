@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { boundsOf, computeLinkCurvatures, computeObstacleBends, createBoxIndex, fitText, linkPath, pointAt, subPath, tangentAt, trimToNodes } from './graphGeometry';
+import { boundsOf, computeLinkCurvatures, computeObstacleBends, createBoxIndex, fitText, linkEndsKey, linkPath, pointAt, subPath, tangentAt, trimToNodes } from './graphGeometry';
 
 const distance = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.hypot(a.x - b.x, a.y - b.y);
+const key = (id: string, sourceId: string, targetId: string) => linkEndsKey({ id, sourceId, targetId });
 
 describe('linkPath', () => {
   it('is a straight line without curvature', () => {
@@ -86,7 +87,18 @@ describe('trimToNodes', () => {
 
 describe('computeLinkCurvatures', () => {
   it('keeps a single link straight', () => {
-    expect(computeLinkCurvatures([{ id: 'l1', sourceId: 'a', targetId: 'b' }]).get('l1')).toEqual({ curvature: 0, rotation: 0 });
+    expect(computeLinkCurvatures([{ id: 'l1', sourceId: 'a', targetId: 'b' }]).get(key('l1', 'a', 'b'))).toEqual({ curvature: 0, rotation: 0 });
+  });
+
+  it('tells apart the two connectors of a nested relationship, which share its id', () => {
+    const curvatures = computeLinkCurvatures([
+      { id: 'nested', sourceId: 'a', targetId: 'n' },
+      { id: 'nested', sourceId: 'n', targetId: 'b' },
+      { id: 'other', sourceId: 'n', targetId: 'b' },
+    ]);
+    expect(curvatures.get(key('nested', 'a', 'n'))).toEqual({ curvature: 0, rotation: 0 });
+    expect(curvatures.get(key('nested', 'n', 'b'))?.curvature).not.toBe(0);
+    expect(curvatures.get(key('nested', 'n', 'b'))?.curvature).toBeCloseTo(-(curvatures.get(key('other', 'n', 'b'))?.curvature ?? 0));
   });
 
   it('fans parallel links out symmetrically', () => {
@@ -94,8 +106,8 @@ describe('computeLinkCurvatures', () => {
       { id: 'l1', sourceId: 'a', targetId: 'b' },
       { id: 'l2', sourceId: 'a', targetId: 'b' },
     ]);
-    const first = curvatures.get('l1')?.curvature ?? 0;
-    const second = curvatures.get('l2')?.curvature ?? 0;
+    const first = curvatures.get(key('l1', 'a', 'b'))?.curvature ?? 0;
+    const second = curvatures.get(key('l2', 'a', 'b'))?.curvature ?? 0;
     expect(first).toBeCloseTo(-second);
     expect(first).not.toBe(0);
   });
@@ -107,8 +119,8 @@ describe('computeLinkCurvatures', () => {
     ]);
     const a = { x: 0, y: 0 };
     const b = { x: 100, y: 0 };
-    const forward = linkPath(a, b, curvatures.get('l1')?.curvature ?? 0);
-    const backward = linkPath(b, a, curvatures.get('l2')?.curvature ?? 0);
+    const forward = linkPath(a, b, curvatures.get(key('l1', 'a', 'b'))?.curvature ?? 0);
+    const backward = linkPath(b, a, curvatures.get(key('l2', 'b', 'a'))?.curvature ?? 0);
     const sideOf = (path: ReturnType<typeof linkPath>) => Math.sign(pointAt(path, 0.5).y);
     expect(sideOf(forward)).not.toBe(sideOf(backward));
   });
@@ -119,7 +131,7 @@ describe('computeLinkCurvatures', () => {
       { id: 'l1', sourceId: 'a', targetId: 'a' },
     ];
     const curvatures = computeLinkCurvatures(links);
-    expect(curvatures.get('l1')?.curvature).toBeLessThan(curvatures.get('l2')?.curvature ?? 0);
+    expect(curvatures.get(key('l1', 'a', 'a'))?.curvature).toBeLessThan(curvatures.get(key('l2', 'a', 'a'))?.curvature ?? 0);
     expect(computeLinkCurvatures([...links].reverse())).toEqual(curvatures);
   });
 });
@@ -136,24 +148,24 @@ describe('computeObstacleBends', () => {
 
   it('bends a link running through a node of the same row, and only that one', () => {
     const bends = computeObstacleBends([ends('ab', 'a', 'b'), ends('bc', 'b', 'c'), ends('ac', 'a', 'c')], row, clearance);
-    expect([...bends.keys()]).toEqual(['ac']);
-    expect(gap(row.get('a')!, row.get('c')!, bends.get('ac')!, row.get('b')!)).toBeGreaterThanOrEqual(clearance - 0.01);
+    expect([...bends.keys()]).toEqual([key('ac', 'a', 'c')]);
+    expect(gap(row.get('a')!, row.get('c')!, bends.get(key('ac', 'a', 'c'))!, row.get('b')!)).toBeGreaterThanOrEqual(clearance - 0.01);
   });
 
   it('bends away from an obstacle off the line, and is deterministic', () => {
     const above = new Map(row);
     above.set('b', { x: 60, y: -4 });
     const links = [ends('ac', 'a', 'c')];
-    const bend = computeObstacleBends(links, above, clearance).get('ac')!;
+    const bend = computeObstacleBends(links, above, clearance).get(key('ac', 'a', 'c'))!;
     expect(gap(above.get('a')!, above.get('c')!, bend, above.get('b')!)).toBeGreaterThanOrEqual(clearance - 0.01);
     // The curve passes below the obstacle (positive y here), the shorter way round.
     const middle = pointAt(linkPath(above.get('a')!, above.get('c')!, bend), 0.5);
     expect(middle.y).toBeGreaterThan(0);
-    expect(computeObstacleBends(links, above, clearance).get('ac')).toBe(bend);
+    expect(computeObstacleBends(links, above, clearance).get(key('ac', 'a', 'c'))).toBe(bend);
   });
 
   it('leaves alone parallel links, loops, links too short to bend and clear links', () => {
-    const fanned = new Map([['ac', { curvature: 0.24 }]]);
+    const fanned = new Map([[key('ac', 'a', 'c'), { curvature: 0.24 }]]);
     expect(computeObstacleBends([ends('ac', 'a', 'c')], row, clearance, fanned).size).toBe(0);
     expect(computeObstacleBends([ends('aa', 'a', 'a')], row, clearance).size).toBe(0);
     const far = new Map([['a', { x: 0, y: 0 }], ['b', { x: 60, y: 40 }], ['c', { x: 120, y: 0 }]]);

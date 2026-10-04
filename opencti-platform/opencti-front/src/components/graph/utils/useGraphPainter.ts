@@ -6,7 +6,7 @@ import type { Theme } from '../../Theme';
 import type { GraphLink, GraphNode } from '../graph.types';
 import { useFormatter } from '../../i18n';
 import { buildGraphPalette } from './graphPalette';
-import { type Box, computeLinkCurvatures, computeObstacleBends } from './graphGeometry';
+import { type Box, computeLinkCurvatures, computeObstacleBends, type LinkEnds, linkEndsKey } from './graphGeometry';
 import type { LayoutPositions } from './graphLayouts';
 import { type GraphFocus, neighbourhood } from './graphFocus';
 import { type LevelOfDetail, levelOfDetail, type LinkLabel, NODE_RADIUS, paintGraphLink, paintGraphNode, paintGraphNodeHitArea, paintLinkLabels } from './graphPainting';
@@ -48,13 +48,14 @@ const DEFAULT_SCALE = 3;
 
 const endpointId = (end: GraphLink['source']) => (typeof end === 'object' && end !== null ? end.id : end);
 
-/** The hover target of a link, telling apart the connectors that share the id of their relationship. */
-export const linkHoverTarget = (link: GraphLink): GraphHoverTarget => ({
-  kind: 'link',
+const linkEndsOf = (link: GraphLink): LinkEnds => ({
   id: link.id,
   sourceId: endpointId(link.source) ?? link.source_id,
   targetId: endpointId(link.target) ?? link.target_id,
 });
+
+/** The hover target of a link, telling apart the connectors that share the id of their relationship. */
+export const linkHoverTarget = (link: GraphLink): GraphHoverTarget => ({ kind: 'link', ...linkEndsOf(link) });
 
 /** Whether the hover target designates this link, by its id and, when the target has them, its ends. */
 export const isHoveredLink = (
@@ -88,11 +89,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     disabled: palette.disabled,
   };
 
-  const linkEnds = useMemo(() => links.map((link) => ({
-    id: link.id,
-    sourceId: endpointId(link.source) ?? link.source_id,
-    targetId: endpointId(link.target) ?? link.target_id,
-  })), [links]);
+  const linkEnds = useMemo(() => links.map(linkEndsOf), [links]);
   const curvatures = useMemo(() => computeLinkCurvatures(linkEnds), [linkEnds]);
   const bends = useMemo(
     () => (layoutTargets ? computeObstacleBends(linkEnds, layoutTargets, OBSTACLE_CLEARANCE, curvatures) : null),
@@ -222,9 +219,10 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
   };
 
   const curvatureOf = (link: GraphLink) => {
-    const bend = bends?.get(link.id);
+    const key = linkEndsKey(linkEndsOf(link));
+    const bend = bends?.get(key);
     if (bend !== undefined) return { curvature: bend, rotation: 0 };
-    return curvatures.get(link.id) ?? { curvature: 0, rotation: 0 };
+    return curvatures.get(key) ?? { curvature: 0, rotation: 0 };
   };
   const linkCurvature = (link: GraphLink) => curvatureOf(link).curvature;
 
@@ -253,11 +251,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
       confidence: link.confidence,
       visual: {
         selected,
-        hovered: isHoveredLink(hovered, {
-          id: link.id,
-          sourceId: endpointId(link.source) ?? link.source_id,
-          targetId: endpointId(link.target) ?? link.target_id,
-        }),
+        hovered: isHoveredLink(hovered, linkEndsOf(link)),
         faded: focus ? !focus.linkIds.has(link.id) : false,
         onPath: pathLinkIds.has(link.id),
       },

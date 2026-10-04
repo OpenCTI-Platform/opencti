@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { createTheme, ThemeOptions } from '@mui/material/styles';
 import ThemeDark from '../../ThemeDark';
 import { buildGraphPalette } from './graphPalette';
-import { computeLinkCurvatures } from './graphGeometry';
+import { computeLinkCurvatures, linkEndsKey } from './graphGeometry';
 import { layeredLayout, radialLayout, tierLayout } from './graphLayouts';
 import { levelOfDetail, paintGraphLink, paintGraphNode } from './graphPainting';
 import { renderGraphImage } from './graphExport';
@@ -53,6 +53,7 @@ beforeAll(installPath2DStub);
 describe('performance on 2,000 nodes and 4,000 links', () => {
   const { nodes, links } = largeGraph(2000, 4000);
   const ends = links.map((link) => ({ id: link.id, sourceId: link.source_id, targetId: link.target_id }));
+  const curvatureKey = (link: (typeof links)[number]) => linkEndsKey({ id: link.id, sourceId: link.source_id, targetId: link.target_id });
 
   it('computes every layout within a fraction of a second', () => {
     expect(elapsed(() => layeredLayout(nodes, ends, 'lr'))).toBeLessThan(1500);
@@ -69,7 +70,7 @@ describe('performance on 2,000 nodes and 4,000 links', () => {
     nodes.slice(0, TYPES.length).forEach((node) => paintGraphNode(ctx, node, { palette, globalScale: 4, detail, visual }));
     const time = elapsed(() => {
       links.forEach((link) => paintGraphLink(ctx, link, {
-        palette, globalScale: 4, detail, visual, color: palette.link, curvature: curvatures.get(link.id)?.curvature ?? 0, rotation: 0,
+        palette, globalScale: 4, detail, visual, color: palette.link, curvature: curvatures.get(curvatureKey(link))?.curvature ?? 0, rotation: 0,
       }));
       nodes.forEach((node) => paintGraphNode(ctx, node, { palette, globalScale: 4, detail, visual }));
     });

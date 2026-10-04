@@ -1,7 +1,7 @@
 import type { GraphLink, GraphNode } from '../graph.types';
 import type { GraphPalette } from './graphPalette';
 import type { GraphBadge } from '../badges/graphBadgeRegistry';
-import { boundsOf, computeLinkCurvatures, linkPath } from './graphGeometry';
+import { boundsOf, computeLinkCurvatures, type LinkEnds, linkEndsKey, linkPath } from './graphGeometry';
 import { type LinkLabel, levelOfDetail, linkDash, paintGraphLink, paintGraphNode, paintLinkLabels } from './graphPainting';
 
 export interface GraphExportLegendEntry {
@@ -53,12 +53,13 @@ export const renderGraphImage = (
   createCanvas: () => HTMLCanvasElement = () => document.createElement('canvas'),
 ): HTMLCanvasElement | null => {
   const { nodes, links, palette, legend } = input;
-  const curvatures = computeLinkCurvatures(links.map((link) => ({
+  const endsOf = (link: GraphLink): LinkEnds => ({
     id: link.id,
     sourceId: endpoint(link.source)?.id ?? link.source_id,
     targetId: endpoint(link.target)?.id ?? link.target_id,
-  })));
-  const curvatureOf = (link: GraphLink) => input.curvatureOf?.(link) ?? curvatures.get(link.id) ?? { curvature: 0, rotation: 0 };
+  });
+  const curvatures = computeLinkCurvatures(links.map(endsOf));
+  const curvatureOf = (link: GraphLink) => input.curvatureOf?.(link) ?? curvatures.get(linkEndsKey(endsOf(link))) ?? { curvature: 0, rotation: 0 };
   const drawable = nodes.filter((n) => Number.isFinite(n.x) && Number.isFinite(n.y));
   // Curves and self-loops reach beyond the nodes: their control points bound them.
   const positions = new Map(drawable.map((n) => [n.id, { x: n.x as number, y: n.y as number }]));
