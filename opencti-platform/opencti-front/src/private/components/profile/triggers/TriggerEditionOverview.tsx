@@ -32,6 +32,7 @@ import { TriggersLinesPaginationQuery$variables } from './__generated__/Triggers
 import TriggersField from './TriggersField';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useHelper from '../../../../utils/hooks/useHelper';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { useTheme } from '@mui/material/styles';
 
@@ -100,6 +101,11 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
     filters: [getDefaultFilterObject('connectedToId', useFilterDefinition('connectedToId', ['Instance']))],
   };
   const trigger = useFragment(triggerEditionOverviewFragment, data);
+  const { isProvenanceEnabled } = useHelper();
+  // While provenance is disabled, a trigger only lists the provenance events it already has, so they can be removed
+  const triggerProvenanceEventTypesOptions = isProvenanceEnabled()
+    ? provenanceEventTypesOptions
+    : provenanceEventTypesOptions.filter((option) => (trigger.event_types ?? []).some((eventType) => eventType === option.value));
   const [commitFieldPatch] = useApiMutation(triggerMutationFieldPatch);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(trigger.filters) ?? undefined);
   const [instanceTriggerFilters, instanceTriggerFiltersHelpers] = useFiltersState(deserializeFilterGroupForFrontend(trigger.filters)
@@ -364,7 +370,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
               multiple={true}
               label={t_i18n('Triggering on')}
               options={
-                [...(trigger.instance_trigger ? instanceEventTypesOptions : filterEventTypesOptions), ...provenanceEventTypesOptions]
+                [...(trigger.instance_trigger ? instanceEventTypesOptions : filterEventTypesOptions), ...triggerProvenanceEventTypesOptions]
                   .map((option) => ({ ...option, label: t_i18n(option.label) }))
               }
               onChange={asMultiValue<{ value: string; label: string }>((

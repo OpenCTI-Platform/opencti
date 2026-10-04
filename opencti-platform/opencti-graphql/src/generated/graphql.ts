@@ -32080,6 +32080,7 @@ export type Settings = BasicObject & InternalObject & IntlSettings & ThemeSettin
   platform_opengrc_url?: Maybe<Scalars['String']['output']>;
   platform_organization?: Maybe<Organization>;
   platform_protected_sensitive_config: PlatformProtectedSensitiveConfig;
+  platform_provenance_enabled: Scalars['Boolean']['output'];
   platform_providers: Array<Provider>;
   platform_reference_attachment?: Maybe<Scalars['Boolean']['output']>;
   platform_session_idle_timeout?: Maybe<Scalars['Int']['output']>;
@@ -53813,6 +53814,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_opengrc_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   platform_protected_sensitive_config?: Resolver<ResolversTypes['PlatformProtectedSensitiveConfig'], ParentType, ContextType>;
+  platform_provenance_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   platform_providers?: Resolver<Array<ResolversTypes['Provider']>, ParentType, ContextType>;
   platform_reference_attachment?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_session_idle_timeout?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;

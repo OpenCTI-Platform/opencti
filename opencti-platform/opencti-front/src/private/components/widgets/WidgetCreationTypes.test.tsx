@@ -47,6 +47,15 @@ describe('getVisualizationTypes', () => {
     });
   });
 
+  describe('when provenance is disabled on the platform', () => {
+    it('the provenance widgets are not offered', () => {
+      const keys = getVisualizationTypes({ kind: 'workspace' }, false).map(({ key }) => key);
+      expect(keys).not.toContain('provenance-freshness');
+      expect(keys).not.toContain('provenance-single-sourced');
+      expect(keys).toContain('list');
+    });
+  });
+
   describe('when host is a custom view', () => {
     it('all visualization types but attribute are available (custom-attributes always included)', () => {
       expect(getVisualizationTypes({

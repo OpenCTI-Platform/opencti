@@ -25,6 +25,7 @@ import { TriggerEventType, TriggerLiveCreationKnowledgeMutation, TriggerLiveCrea
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useHelper from '../../../../utils/hooks/useHelper';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import { useTheme } from '@mui/material/styles';
 
@@ -82,6 +83,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
+  const { isProvenanceEnabled } = useHelper();
   const defaultInstanceTriggerFilters = {
     ...emptyFilterGroup,
     filters: [getDefaultFilterObject('connectedToId', useFilterDefinition('connectedToId', ['Instance']))],
@@ -101,11 +103,11 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
     { value: 'update', label: t_i18n('Modification') },
     { value: 'delete', label: t_i18n('Deletion') },
   ];
-  // Provenance events are opt-in: available, never selected by default
-  const provenanceEventTypesOptions: { value: TriggerEventType; label: string }[] = [
+  // Provenance events are opt-in: available while provenance is enabled, never selected by default
+  const provenanceEventTypesOptions: { value: TriggerEventType; label: string }[] = isProvenanceEnabled() ? [
     { value: 'corroboration', label: t_i18n('Corroboration reached') },
     { value: 'conflict', label: t_i18n('Source conflict detected') },
-  ];
+  ] : [];
   const onReset = () => {
     handleClose?.();
     setInstanceTrigger(false);
