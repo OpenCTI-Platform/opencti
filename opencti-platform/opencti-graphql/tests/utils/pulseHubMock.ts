@@ -534,7 +534,8 @@ export class PulseHubMock {
       return {
         object_type: objectType,
         event_kind: eventKind,
-        platform_count: sectorSums.get(platformId) ?? networkSums.get(platformId) ?? 0,
+        platform_count: networkSums.get(platformId) ?? 0,
+        sector_platform_count: sectorSums.get(platformId) ?? 0,
         sector_median: sectorSums.size >= this.k ? median(Array.from(sectorSums.values())) : null,
         network_median: networkSums.size >= this.k ? median(Array.from(networkSums.values())) : null,
       };

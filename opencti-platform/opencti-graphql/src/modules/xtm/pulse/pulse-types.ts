@@ -163,7 +163,10 @@ export interface PulseHubTrendingResult {
 export interface PulseHubBenchmarkMetric {
   object_type: PulseObjectType;
   event_kind: PulseEventKind;
+  // Every sector the platform reported under in the period: compared with network_median.
   platform_count: number;
+  // The platform's current sector only: compared with sector_median.
+  sector_platform_count: number;
   sector_median: number | null;
   network_median: number | null;
 }

@@ -1121,7 +1121,8 @@ export const getPulseBenchmark = async (context: AuthContext, user: AuthUser, ar
         platform_count: metric.platform_count,
         sector_median: metric.sector_median,
         network_median: metric.network_median,
-        ratio: metric.sector_median && metric.sector_median > 0 ? metric.platform_count / metric.sector_median : null,
+        // Against the sector median, the activity of the platform in that sector only.
+        ratio: metric.sector_median && metric.sector_median > 0 ? metric.sector_platform_count / metric.sector_median : null,
       })),
       entries,
     };

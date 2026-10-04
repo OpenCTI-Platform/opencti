@@ -155,7 +155,7 @@ export const xtmHubPulseClient = {
     const query = `query PulseBenchmark($input: PulseBenchmarkInput!) {
       pulseBenchmark(input: $input) {
         period sector_bucket region_bucket sector_platforms_bucket
-        metrics { object_type event_kind platform_count sector_median network_median }
+        metrics { object_type event_kind platform_count sector_platform_count sector_median network_median }
         top_items { hash object_type platform_count sector_median ratio }
       }
     }`;
