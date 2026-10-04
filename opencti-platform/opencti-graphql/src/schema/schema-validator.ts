@@ -20,8 +20,9 @@ import { isUserHasCapability, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS, KNOWLEDGE_KNUPD
 
 const ajv = new Ajv();
 
-// Observed data counters are consolidated by accumulation or max on upsert, a negative value would break their semantics
-const NON_NEGATIVE_COUNTER_ATTRIBUTES = ['number_seen', 'max_distinct_count'];
+// Counters consolidated by accumulation or max (observed data number_seen / max_distinct_count, the hit_count of
+// indicator deployments, which each hit report adds to): a negative value would break their semantics
+const NON_NEGATIVE_COUNTER_ATTRIBUTES = ['number_seen', 'max_distinct_count', 'hit_count'];
 
 // -- VALIDATE ATTRIBUTE AVAILABILITY AND FORMAT --
 export const validateAndFormatSchemaAttribute = (
