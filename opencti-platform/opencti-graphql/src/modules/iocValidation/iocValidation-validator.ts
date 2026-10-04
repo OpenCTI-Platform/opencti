@@ -119,21 +119,23 @@ const validatorCreation: ValidatorFn = async (context, user, instance) => {
     return refuseLifecycle(user);
   }
   const recordsProof = carriesValidationProof(instance);
-  if (recordsProof && !await isIocValidationConnectorUser(context, user)) {
-    return refuseValidation(user);
-  }
   const resetsLifecycle = touchesLifecycleFields(instance) && !lifecycleWriter;
-  const resetsValidation = touchesValidationFields(instance) && !recordsProof;
-  if (!resetsLifecycle && !resetsValidation) {
+  const changesValidation = touchesValidationFields(instance);
+  if (!resetsLifecycle && !changesValidation) {
     return true;
   }
   const existing = await findExistingDeployment(context, user, instance);
   if (!existing) {
+    // A new deployment that already records an outcome comes from an IOC validation connector only.
+    if (recordsProof && !await isIocValidationConnectorUser(context, user)) {
+      return refuseValidation(user);
+    }
     return true;
   }
   if (resetsLifecycle) {
     return refuseLifecycle(user);
   }
+  // An existing deployment is changed under the edition rules: its reporting connector included, resets included.
   if (!await canChangeValidation(context, user, existing)) {
     return refuseValidation(user);
   }

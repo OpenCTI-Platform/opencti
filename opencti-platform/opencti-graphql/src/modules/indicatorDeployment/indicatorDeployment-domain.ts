@@ -11,6 +11,7 @@ import {
   pageEntitiesConnection,
   pageRelationsConnection,
   storeLoadById,
+  storeLoadByIds,
   topRelationsList,
 } from '../../database/middleware-loader';
 import { buildReplaceScriptParams, EL_REPLACE_SCRIPT_SOURCE, elAggregationCount, elCount, elRawUpdateByQuery, elUpdate } from '../../database/engine';
@@ -57,7 +58,7 @@ import {
   RELATION_DEPLOYED_ON,
   type StoreRelationDeployedOn,
 } from './indicatorDeployment-types';
-import { isDeploymentStatus, isReadableWithIndicator, pairMarkings } from './indicatorDeployment-utils';
+import { isDeploymentStatus, isReadableWithIndicator, pairMarkings, validationResultSightingStixId } from './indicatorDeployment-utils';
 import { consumeDeploymentRateLimit, DEPLOYMENT_RATE_LIMIT_BATCH, DEPLOYMENT_RATE_LIMIT_HITS, DEPLOYMENT_RATE_LIMIT_SINGLE } from './indicatorDeployment-rate-limit';
 
 export const DEPLOYMENT_BATCH_MAX_SIZE = 500;
@@ -301,6 +302,46 @@ const ensurePairMarkings = async (
 // Serializes every write on one (indicator, platform) pair. Never an entity id: createRelation locks the ids
 // of the elements it writes, and locking one of them here would make the nested creation wait on this lock.
 export const pairLockKey = (indicatorInternalId: string, platformInternalId: string) => `deployed-on-${indicatorInternalId}-${platformInternalId}`;
+
+/**
+ * After a marking change of indicators or security platforms, the deployments of their pairs, the hits sightings and
+ * the sightings of their latest validation result get the markings they now lack, and the counters of the indicators
+ * are recomputed against the new markings. Bounded by the deployments of the changed endpoints.
+ */
+export const repairPairMarkings = async (context: AuthContext, user: AuthUser, changes: { indicatorIds: string[]; platformIds: string[] }) => {
+  const [fromIndicators, toPlatforms] = await Promise.all([
+    changes.indicatorIds.length === 0 ? [] : fullRelationsList<BasicStoreRelationDeployedOn>(context, SYSTEM_USER, RELATION_DEPLOYED_ON, { fromId: changes.indicatorIds }),
+    changes.platformIds.length === 0 ? [] : fullRelationsList<BasicStoreRelationDeployedOn>(context, SYSTEM_USER, RELATION_DEPLOYED_ON, { toId: changes.platformIds }),
+  ]);
+  const deployments = new Map<string, BasicStoreRelationDeployedOn>();
+  [...fromIndicators, ...toPlatforms].forEach((deployment) => deployments.set(deployment.internal_id, deployment));
+  if (deployments.size === 0) {
+    return 0;
+  }
+  const endpointIds = [...new Set([...deployments.values()].flatMap((deployment) => [deployment.fromId, deployment.toId]))];
+  const endpoints = await storeLoadByIds<BasicStoreEntityIndicator | BasicStoreEntitySecurityPlatform>(context, SYSTEM_USER, endpointIds, ABSTRACT_STIX_DOMAIN_OBJECT);
+  const endpointsById = new Map(endpoints.filter((endpoint) => endpoint).map((endpoint) => [endpoint.internal_id, endpoint]));
+  await BluePromise.map([...deployments.values()], async (deployment) => {
+    const indicator = endpointsById.get(deployment.fromId) as BasicStoreEntityIndicator | undefined;
+    const platform = endpointsById.get(deployment.toId) as BasicStoreEntitySecurityPlatform | undefined;
+    if (!indicator || !platform) {
+      return;
+    }
+    await ensurePairMarkings(context, user, deployment, indicator, platform);
+    const sightingIds = [hitsSightingStixId(indicator.internal_id, platform.internal_id)];
+    if (deployment.validation_run_id) {
+      sightingIds.push(validationResultSightingStixId(deployment.validation_run_id, indicator.internal_id, platform.internal_id));
+    }
+    await BluePromise.map(sightingIds, async (sightingId) => {
+      const sighting = await internalLoadById<BasicStoreRelation>(context, SYSTEM_USER, sightingId, { type: STIX_SIGHTING_RELATIONSHIP });
+      if (sighting) {
+        await ensurePairMarkings(context, user, sighting, indicator, platform);
+      }
+    });
+  }, { concurrency: BATCH_CONCURRENCY });
+  await refreshIndicatorDeploymentCounters(context, [...new Set([...deployments.values()].map((deployment) => deployment.fromId))]);
+  return deployments.size;
+};
 
 const applyDeploymentReport = async (
   context: AuthContext,
