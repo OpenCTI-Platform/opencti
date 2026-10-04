@@ -27,6 +27,7 @@ While the analytics process wrote results in the last `analytics_process_grace_h
 |---|---|---|---|
 | `graph_analytics_manager:enabled` | `GRAPH_ANALYTICS_MANAGER__ENABLED` | `true` | Enable the graph analytics manager |
 | `graph_analytics_manager:interval` | `GRAPH_ANALYTICS_MANAGER__INTERVAL` | `30000` | Delay between two runs, in milliseconds |
+| `graph_analytics_manager:stream_batch_size` | `GRAPH_ANALYTICS_MANAGER__STREAM_BATCH_SIZE` | `5000` | Stream events read per batch when looking for the entities whose relationships changed |
 | `graph_analytics_manager:debounce_ms` | `GRAPH_ANALYTICS_MANAGER__DEBOUNCE_MS` | `60000` | Quiet delay before an entity that changed is recomputed, in milliseconds |
 | `graph_analytics_manager:max_entities_per_tick` | `GRAPH_ANALYTICS_MANAGER__MAX_ENTITIES_PER_TICK` | `200` | Entities recomputed per run |
 | `graph_analytics_manager:full_pass_hour` | `GRAPH_ANALYTICS_MANAGER__FULL_PASS_HOUR` | `2` | Hour (UTC) of the nightly full pass |
@@ -44,10 +45,12 @@ While the analytics process wrote results in the last `analytics_process_grace_h
 | `graph_analytics_manager:analytics_process_grace_hours` | `GRAPH_ANALYTICS_MANAGER__ANALYTICS_PROCESS_GRACE_HOURS` | `48` | Hours during which the analytics process owns the clusters after its last run |
 | `graph_analytics:path_default_depth` | `GRAPH_ANALYTICS__PATH_DEFAULT_DEPTH` | `4` | Default maximum path length |
 | `graph_analytics:path_max_depth` | `GRAPH_ANALYTICS__PATH_MAX_DEPTH` | `6` | Highest maximum path length a user can request |
+| `graph_analytics:path_default_paths` | `GRAPH_ANALYTICS__PATH_DEFAULT_PATHS` | `5` | Number of paths returned when the request does not set it |
 | `graph_analytics:path_max_paths` | `GRAPH_ANALYTICS__PATH_MAX_PATHS` | `20` | Highest number of paths a user can request |
 | `graph_analytics:path_timeout_ms` | `GRAPH_ANALYTICS__PATH_TIMEOUT_MS` | `15000` | Time limit of a path search, in milliseconds |
 | `graph_analytics:path_max_expanded_nodes` | `GRAPH_ANALYTICS__PATH_MAX_EXPANDED_NODES` | `20000` | Entities explored by a path search |
 | `graph_analytics:path_max_relationships_per_level` | `GRAPH_ANALYTICS__PATH_MAX_RELATIONSHIPS_PER_LEVEL` | `20000` | Relationships read per step of a path search |
+| `graph_analytics:path_max_parents_per_node` | `GRAPH_ANALYTICS__PATH_MAX_PARENTS_PER_NODE` | `8` | Relationships kept per entity reached by a path search, among those reaching it at its shortest distance; a higher value returns more alternative paths through the same entities, at the cost of memory and time |
 | `graph_analytics:similarity_max_results` | `GRAPH_ANALYTICS__SIMILARITY_MAX_RESULTS` | `100` | Similar entities returned per query |
 | `graph_analytics:matrix_max_entities` | `GRAPH_ANALYTICS__MATRIX_MAX_ENTITIES` | `25` | Entities of a similarity matrix |
 
