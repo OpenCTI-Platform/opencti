@@ -15,6 +15,7 @@ vi.mock('../../../../src/database/middleware', () => ({
 }));
 
 import { buildChangeDigestData } from '../../../../src/modules/timeMachine/timeMachine-changeDigest';
+import { resolveChangeDigestLocale } from '../../../../src/modules/timeMachine/timeMachine-changeDigest-messages';
 import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
 
 const summary = (id: string, input: Partial<LandscapeDiffEntitySummary> = {}): LandscapeDiffEntitySummary => ({
@@ -77,9 +78,16 @@ describe('buildChangeDigestData', () => {
     const data = await buildChangeDigestData(context, user, trigger, '2026-01-05T09:00:00.000Z', '2026-01-12T09:00:00.000Z');
     expect(data).toHaveLength(3);
     expect(data[0].instance.id).toBe('intrusion-set--a');
-    expect(data[0].message).toBe('`1` new relationship(s) | `3` of `3` entities changed, `3` new relationship(s), `0` removed, `0` revocation(s)');
-    expect(data[1].message).toBe('`1` new relationship(s)');
+    expect(data[0].message).toBe('`1` new relationship | `3` of `3` entities changed, `3` new relationships, `0` removed relationships, and `0` revocations');
+    expect(data[1].message).toBe('`1` new relationship');
     expect(isLandscapeResultAccessibleMock).toHaveBeenCalledWith(context, user, ['a', 'b', 'c'], expect.anything(), expect.anything());
+  });
+
+  it('writes the digest in the language of the recipient', async () => {
+    computeLandscapeDiffMock.mockResolvedValue(computation(['a']));
+    stixLoadByIdsMock.mockResolvedValue([stix('a')]);
+    const data = await buildChangeDigestData(context, user, trigger, '2026-01-05T09:00:00.000Z', '2026-01-12T09:00:00.000Z', resolveChangeDigestLocale('fr-fr'));
+    expect(data[0].message).toBe('`1` nouvelle relation | `1` entité modifiée sur `1`, `1` nouvelle relation, `0` relation supprimée et `0` révocation');
   });
 
   it('computes the digest again when a listed entity is not readable anymore, so its counts never leak', async () => {
@@ -100,7 +108,7 @@ describe('buildChangeDigestData', () => {
     isLandscapeResultAccessibleMock.mockResolvedValueOnce(false).mockResolvedValueOnce(true);
     const data = await buildChangeDigestData(context, user, trigger, '2026-01-05T09:00:00.000Z', '2026-01-12T09:00:00.000Z');
     expect(computeLandscapeDiffMock).toHaveBeenCalledTimes(2);
-    expect(data[0].message).toContain('`2` new relationship(s), `0` removed');
+    expect(data[0].message).toContain('`2` new relationships, `0` removed relationships');
     expect(data[0].message).not.toContain('`5`');
   });
 
