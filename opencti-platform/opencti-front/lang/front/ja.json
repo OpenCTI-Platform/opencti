@@ -79,7 +79,7 @@
   "{percent}% full": "{percent} % 使用中",
   "{processed} of {expected} elements processed, {updated} updated, {errors} errors": "{expected} 件中 {processed} 件の要素を処理、{updated} 件更新、{errors} 件のエラー",
   "{quota} (shared across all users)": "{quota}（全ユーザーで共有）",
-  "{rate} of {count} decisions": "{count} 件の判断のうち {rate}",
+  "{rate} of {count, plural, one {# decision} other {# decisions}}": "{count, plural, other {# 件の判断}}のうち {rate}",
   "{resolved} of {seeds} names resolved to {ips} addresses; {pivoted} pivots followed.": "名前 {seeds} 件中 {resolved} 件が {ips} 件のアドレスに解決されました。ピボット {pivoted} 件を追跡しました。",
   "{resolved} of {seeds} names resolved to {ips} addresses; {set_aside} set aside.": "名前 {seeds} 件中 {resolved} 件が {ips} 件のアドレスに解決されました。{set_aside} 件を除外しました。",
   "{seconds} s": "{seconds} 秒",

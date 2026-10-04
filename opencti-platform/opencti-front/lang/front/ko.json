@@ -79,7 +79,7 @@
   "{percent}% full": "{percent}% 사용됨",
   "{processed} of {expected} elements processed, {updated} updated, {errors} errors": "{expected}개 중 {processed}개 요소 처리, {updated}개 업데이트, 오류 {errors}개",
   "{quota} (shared across all users)": "{quota} (모든 사용자 공유)",
-  "{rate} of {count} decisions": "결정 {count}건 중 {rate}",
+  "{rate} of {count, plural, one {# decision} other {# decisions}}": "결정 {count, plural, other {#건}} 중 {rate}",
   "{resolved} of {seeds} names resolved to {ips} addresses; {pivoted} pivots followed.": "이름 {seeds}개 중 {resolved}개가 주소 {ips}개로 확인되었습니다. 피벗 {pivoted}개를 추적했습니다.",
   "{resolved} of {seeds} names resolved to {ips} addresses; {set_aside} set aside.": "이름 {seeds}개 중 {resolved}개가 주소 {ips}개로 확인되었습니다. {set_aside}개를 제외했습니다.",
   "{seconds} s": "{seconds}초",

@@ -79,7 +79,7 @@
   "{percent}% full": "Заполнено {percent} %",
   "{processed} of {expected} elements processed, {updated} updated, {errors} errors": "Обработано элементов: {processed} из {expected}, обновлено: {updated}, ошибок: {errors}",
   "{quota} (shared across all users)": "{quota} (общий лимит для всех пользователей)",
-  "{rate} of {count} decisions": "{rate} из решений: {count}",
+  "{rate} of {count, plural, one {# decision} other {# decisions}}": "{rate} из {count, plural, one {# решения} few {# решений} many {# решений} other {# решения}}",
   "{resolved} of {seeds} names resolved to {ips} addresses; {pivoted} pivots followed.": "Разрешено имен: {resolved} из {seeds}, адресов: {ips}; пройдено переходов: {pivoted}.",
   "{resolved} of {seeds} names resolved to {ips} addresses; {set_aside} set aside.": "Разрешено имен: {resolved} из {seeds}, адресов: {ips}; отложено: {set_aside}.",
   "{seconds} s": "{seconds} с",

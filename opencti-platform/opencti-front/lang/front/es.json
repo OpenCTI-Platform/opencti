@@ -79,7 +79,7 @@
   "{percent}% full": "{percent} % completo",
   "{processed} of {expected} elements processed, {updated} updated, {errors} errors": "{processed} de {expected} elementos procesados, {updated} actualizados, {errors} errores",
   "{quota} (shared across all users)": "{quota} (compartido entre todos los usuarios)",
-  "{rate} of {count} decisions": "{rate} de {count} decisiones",
+  "{rate} of {count, plural, one {# decision} other {# decisions}}": "{rate} de {count, plural, one {# decisión} other {# decisiones}}",
   "{resolved} of {seeds} names resolved to {ips} addresses; {pivoted} pivots followed.": "{resolved} de {seeds} nombres resueltos a {ips} direcciones; {pivoted} pivotes seguidos.",
   "{resolved} of {seeds} names resolved to {ips} addresses; {set_aside} set aside.": "{resolved} de {seeds} nombres resueltos a {ips} direcciones; {set_aside} descartados.",
   "{seconds} s": "{seconds} s",

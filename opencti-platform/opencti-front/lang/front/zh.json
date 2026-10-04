@@ -79,7 +79,7 @@
   "{percent}% full": "已用 {percent}%",
   "{processed} of {expected} elements processed, {updated} updated, {errors} errors": "已处理 {processed}/{expected} 个元素，已更新 {updated} 个，错误 {errors} 个",
   "{quota} (shared across all users)": "{quota}（所有用户共享）",
-  "{rate} of {count} decisions": "{count} 项决定中的 {rate}",
+  "{rate} of {count, plural, one {# decision} other {# decisions}}": "{count, plural, other {# 项决定}}中的 {rate}",
   "{resolved} of {seeds} names resolved to {ips} addresses; {pivoted} pivots followed.": "{seeds} 个名称中有 {resolved} 个解析为 {ips} 个地址；跟进了 {pivoted} 个枢轴。",
   "{resolved} of {seeds} names resolved to {ips} addresses; {set_aside} set aside.": "{seeds} 个名称中有 {resolved} 个解析为 {ips} 个地址；搁置了 {set_aside} 个。",
   "{seconds} s": "{seconds} 秒",

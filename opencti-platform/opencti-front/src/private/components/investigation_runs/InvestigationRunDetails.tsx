@@ -85,7 +85,7 @@ interface InvestigationRunDetailsProps {
 
 /** The facts of an investigation, without placeholders: what it investigates, under which policy and pack, as whom, for how long. */
 const InvestigationRunDetails = ({ run, currentEntityId }: InvestigationRunDetailsProps) => {
-  const { t_i18n, n, rd, fldt } = useFormatter();
+  const { t_i18n, rd, fldt } = useFormatter();
   const canCustomize = useGranted([SETTINGS_SETCUSTOMIZATION]);
   const active = isRunActive(run.run_status);
   const sameCase = !!run.case && run.subject?.id === run.case.id;
@@ -135,7 +135,7 @@ const InvestigationRunDetails = ({ run, currentEntityId }: InvestigationRunDetai
         <Row label={t_i18n('Duration')}>{durationText}</Row>
         {decisions > 0 && acceptance.rate !== null && acceptance.rate !== undefined && (
           <Row label={t_i18n('Analyst acceptance')}>
-            {t_i18n('{rate} of {count} decisions', { values: { rate: formatProbability(acceptance.rate), count: n(decisions) } })}
+            {t_i18n('{rate} of {count, plural, one {# decision} other {# decisions}}', { values: { rate: formatProbability(acceptance.rate), count: decisions } })}
           </Row>
         )}
       </Box>
