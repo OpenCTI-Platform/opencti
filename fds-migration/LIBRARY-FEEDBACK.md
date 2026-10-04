@@ -2321,3 +2321,21 @@ navigating chip renders a real anchor with the interactive chip's states.
 **Removal test.** At a pin where `Chip` can render an anchor: give the creator
 chip the link, delete its `navigationClickHandlers` spread and the marker, and
 confirm the chip is a `link` role whose `href` carries the base path.
+
+## 63. No `Alert` and no `Hero` at the pinned version, so status messages and first-use states stay on MUI
+
+**Raised** while applying the UX directive of the knowledge time machine (Changes tab,
+Landscape changes): the info, warning and error messages of a comparison or an as-of
+view, and the first-use state of Landscape changes, are meant to be a library `Alert`
+with a `title` and an action, and a `Hero` with a primary action.
+
+**Today.** The pinned version (1.1.0) ships neither. These surfaces use MUI `Alert`
+with its `action` slot holding a library `Button`, so the next action of every empty
+or failed state is still offered.
+
+**Ask.** An `Alert` (tone, title, description, one action) and a `Hero` (illustration,
+title, description, primary and secondary action) in the library.
+
+**Removal test.** Convert `EntityDiffTab`, `EntityAsOfView`, `EntityAsOfSection`,
+`LandscapeChanges` and `LandscapeChangesResults`: an empty period still offers
+"Compare the last 90 days" and a scope without saved filter still offers "Choose a scope".
