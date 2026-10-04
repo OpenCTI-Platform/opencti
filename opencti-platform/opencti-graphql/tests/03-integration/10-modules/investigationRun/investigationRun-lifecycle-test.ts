@@ -330,6 +330,20 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
     expect(investigationXtm.pushInvestigationFeedback).toHaveBeenCalled();
   });
 
+  it('keeps runs and policies out of the generic object lookup without the Enterprise Edition', async () => {
+    const runId = createdRuns[0].id;
+    const query = gql`query GenericRunLookup($id: String!) { stixObjectOrStixRelationship(id: $id) { ... on InvestigationRun { id } } }`;
+    const withEdition = await queryAsAdminWithSuccess({ query, variables: { id: runId } });
+    expect(withEdition.data.stixObjectOrStixRelationship).toMatchObject({ id: runId });
+    const edition = vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(false);
+    try {
+      const withoutEdition = await queryAsAdminWithSuccess({ query, variables: { id: runId } });
+      expect(withoutEdition.data.stixObjectOrStixRelationship).toBeNull();
+    } finally {
+      edition.mockResolvedValue(true);
+    }
+  });
+
   it('cancels the engine run when an analyst cancels the investigation', async () => {
     const { data } = await queryAsAdminWithSuccess({ query: RUN_ADD, variables: { subjectId: otherCase.id } });
     const runId = data.investigationRunAdd.id;
