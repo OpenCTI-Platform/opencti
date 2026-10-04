@@ -1,5 +1,6 @@
 import React, { Suspense, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { useIntl } from 'react-intl';
 import { Box, Stack } from '@mui/material';
 import { ArrowDownwardOutlined, ArrowUpwardOutlined, FileDownloadOutlined } from '@mui/icons-material';
 import {
@@ -36,6 +37,7 @@ import useDefenseScope from './useDefenseScope';
 import {
   DEFENSE_ACTION_LABELS,
   DEFENSE_ACTIONS,
+  DEFENSE_GAPS_EXPORT_MAX,
   DEFENSE_LEVELS,
   type DefenseAction,
   defenseGapsExportFileName,
@@ -98,7 +100,9 @@ const PlatformsToolbar = ({ queryRef, scope, onScopeChange }: {
 
 const DefenseGaps = () => {
   const { t_i18n } = useFormatter();
+  const intl = useIntl();
   const [scope, setScope] = useDefenseScope();
+  const [total, setTotal] = useState(0);
   const [levels, setLevels] = useState<number[]>([]);
   const [actions, setActions] = useState<DefenseAction[]>([]);
   const [onlyUsedByThreats, setOnlyUsedByThreats] = useState(false);
@@ -137,6 +141,11 @@ const DefenseGaps = () => {
         const csv = (data as DefenseGapsExportQuery$data | undefined)?.defenseGapExport;
         if (csv) {
           downloadCsv(csv, defenseGapsExportFileName(new Date()));
+          if (total > DEFENSE_GAPS_EXPORT_MAX) {
+            MESSAGING$.notifySuccess(t_i18n('The export holds the first {count} gaps in the current order: narrow the filters to export the others', {
+              values: { count: intl.formatNumber(DEFENSE_GAPS_EXPORT_MAX) },
+            }));
+          }
         }
       })
       .catch(() => MESSAGING$.notifyError(t_i18n('The defense gaps export failed')))
@@ -239,7 +248,7 @@ const DefenseGaps = () => {
       </Box>
       {gapsQueryRef && (
         <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <DefenseGapsLines queryRef={gapsQueryRef} scope={scope} />
+          <DefenseGapsLines queryRef={gapsQueryRef} scope={scope} onTotalChange={setTotal} />
         </Suspense>
       )}
     </Stack>

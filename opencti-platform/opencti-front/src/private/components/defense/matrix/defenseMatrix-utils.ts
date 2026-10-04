@@ -255,6 +255,9 @@ export const parseDefenseScope = (raw: string | null): DefenseScopeState => {
 // endregion
 
 // region export
+// Maximum number of gaps in an export, the one the API applies
+export const DEFENSE_GAPS_EXPORT_MAX = 10000;
+
 export const defenseGapsExportFileName = (date: Date) => `defense_gaps_${date.toISOString().substring(0, 10)}.csv`;
 
 export const downloadCsv = (content: string, fileName: string) => {

@@ -5249,6 +5249,7 @@
   "The disconnection process is still in progress. Closing this dialog will terminate the disconnection. Are you sure you want to close?": "Процесс отключения ещё не завершён. Закрытие этого диалогового окна приведёт к прерыванию отключения. Вы действительно хотите закрыть окно?",
   "the draft processes tab": "вкладка \"Черновые процессы",
   "The evaluation of the threat activity cannot be provided (lack of data).": "Оценка активности угрозы не может быть предоставлена (отсутствие данных).",
+  "The export holds the first {count} gaps in the current order: narrow the filters to export the others": "Экспорт содержит первые {count} пробелов в текущем порядке: уточните фильтры, чтобы экспортировать остальные",
   "The following groups require your attention:": "Следующие группы требуют вашего внимания:",
   "The following TTPs are not covered in your OpenBAS catalog : ": "Следующие TTP не включены в каталог OpenBAS:",
   "The graph is currently loading data.": "График в настоящее время загружает данные.",

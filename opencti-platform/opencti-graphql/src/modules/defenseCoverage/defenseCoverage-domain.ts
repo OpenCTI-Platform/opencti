@@ -79,6 +79,7 @@ import {
 const DEFAULT_GAPS_PAGE_SIZE = 50;
 const MAX_GAPS_PAGE_SIZE = 500;
 const EXPORT_BATCH_SIZE = 2000;
+export const DEFENSE_GAPS_EXPORT_MAX = 10000;
 const MAX_VALIDATION_TECHNIQUES = 200;
 // Attempts to track a created validation request on its gaps, and the delay between them (grows with the attempt)
 const TRACKING_ATTEMPTS = 3;
@@ -633,18 +634,29 @@ interface GapsArgs {
   orderMode?: OrderingMode | null;
 }
 
-const computeGapViews = async (context: AuthContext, user: AuthUser, args: GapsArgs) => {
+/**
+ * The first `limit` gaps of the backlog in the requested order, and the number of gaps matching the filter. At most
+ * twice `limit` views are held at once: the list is sorted and cut back to `limit` whenever it reaches that size, which
+ * keeps exactly the first gaps of a full (stable) sort.
+ */
+const computeGapViews = async (context: AuthContext, user: AuthUser, args: GapsArgs, limit: number) => {
   const evaluation = await prepareEvaluation(context, user, args.platformIds, args.threatScope);
   const platformKeys = evaluation.selected ?? [DEFENSE_AGGREGATE_PLATFORM];
-  const gaps: DefenseGapView[] = [];
+  const keepFirst = (list: DefenseGapView[]) => sortGaps(list, args.orderBy, args.orderMode).slice(0, limit);
+  let gaps: DefenseGapView[] = [];
+  let total = 0;
   evaluation.snapshot.techniques.filter((t) => evaluation.can(t.id)).forEach((technique) => {
     const cell = evaluateCoverage(technique.id, technique.coverage, evaluation.can, evaluation.selected);
     platformKeys.forEach((platformId) => {
       const gap = buildGapView(technique, cell, platformId, evaluation);
-      if (matchGapFilter(gap, args.filter)) gaps.push(gap);
+      if (matchGapFilter(gap, args.filter)) {
+        total += 1;
+        gaps.push(gap);
+        if (gaps.length >= limit * 2) gaps = keepFirst(gaps);
+      }
     });
   });
-  return { gaps: sortGaps(gaps, args.orderBy, args.orderMode), evaluation };
+  return { gaps: keepFirst(gaps), total, evaluation };
 };
 
 const attachGapRecords = async (context: AuthContext, user: AuthUser, gaps: DefenseGapView[]) => {
@@ -688,7 +700,7 @@ const decodeOffset = (cursor: string | null | undefined) => {
 export const findDefenseGaps = async (context: AuthContext, user: AuthUser, args: GapsArgs & { first?: number | null; after?: string | null }) => {
   const first = Math.min(Math.max(args.first ?? DEFAULT_GAPS_PAGE_SIZE, 1), MAX_GAPS_PAGE_SIZE);
   const start = decodeOffset(args.after);
-  const { gaps } = await computeGapViews(context, user, args);
+  const { gaps, total } = await computeGapViews(context, user, args, start + first);
   const page = await attachGapRecords(context, user, gaps.slice(start, start + first));
   const edges = page.map((node, index) => ({ cursor: encodeOffset(start + index), node }));
   return {
@@ -696,9 +708,9 @@ export const findDefenseGaps = async (context: AuthContext, user: AuthUser, args
     pageInfo: {
       startCursor: edges.length > 0 ? edges[0].cursor : '',
       endCursor: edges.length > 0 ? edges[edges.length - 1].cursor : '',
-      hasNextPage: start + first < gaps.length,
+      hasNextPage: start + first < total,
       hasPreviousPage: start > 0,
-      globalCount: gaps.length,
+      globalCount: total,
     },
   };
 };
@@ -844,11 +856,12 @@ const EXPORT_HEADERS = [
 ];
 
 export const exportDefenseGaps = async (context: AuthContext, user: AuthUser, args: GapsArgs) => {
-  const { gaps } = await computeGapViews(context, user, args);
-  // Every gap of the backlog is exported; records and rule candidates are loaded by bounded batches
+  // The first DEFENSE_GAPS_EXPORT_MAX gaps in the requested order are exported, records and rule candidates loaded by
+  // bounded batches; the interface tells when the backlog holds more
+  const { gaps: exported } = await computeGapViews(context, user, args, DEFENSE_GAPS_EXPORT_MAX);
   const lines: unknown[][] = [];
-  for (let start = 0; start < gaps.length; start += EXPORT_BATCH_SIZE) {
-    const rows = await attachGapRecords(context, user, gaps.slice(start, start + EXPORT_BATCH_SIZE));
+  for (let start = 0; start < exported.length; start += EXPORT_BATCH_SIZE) {
+    const rows = await attachGapRecords(context, user, exported.slice(start, start + EXPORT_BATCH_SIZE));
     const candidates = await loadRuleCandidates(context, user, rows);
     rows.forEach((gap) => lines.push([
       gap.x_mitre_id ?? '',

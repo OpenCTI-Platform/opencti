@@ -5249,6 +5249,7 @@
   "The disconnection process is still in progress. Closing this dialog will terminate the disconnection. Are you sure you want to close?": "Il processo di disconnessione è ancora in corso. Chiudendo questa finestra di dialogo si interromperà la disconnessione. Sei sicuro di voler chiudere?",
   "the draft processes tab": "la scheda dei processi di bozza",
   "The evaluation of the threat activity cannot be provided (lack of data).": "La valutazione dell'attività di minaccia non può essere fornita (mancanza di dati).",
+  "The export holds the first {count} gaps in the current order: narrow the filters to export the others": "L'esportazione contiene le prime {count} lacune nell'ordine attuale: restringi i filtri per esportare le altre",
   "The following groups require your attention:": "I seguenti gruppi richiedono la tua attenzione:",
   "The following TTPs are not covered in your OpenBAS catalog : ": "I seguenti TTP non sono coperti nel tuo catalogo OpenBAS : ",
   "The graph is currently loading data.": "Il grafico sta caricando i dati.",

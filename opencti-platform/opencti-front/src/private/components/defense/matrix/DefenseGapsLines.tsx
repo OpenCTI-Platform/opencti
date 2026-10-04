@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePaginationFragment, usePreloadedQuery } from 'react-relay';
 import { Link } from 'react-router';
 import { Box, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
@@ -116,9 +116,10 @@ const defenseGapsLinesFragment = graphql`
 interface DefenseGapsLinesProps {
   queryRef: PreloadedQuery<DefenseGapsLinesPaginationQuery>;
   scope: DefenseScopeState;
+  onTotalChange?: (total: number) => void;
 }
 
-const DefenseGapsLines = ({ queryRef, scope }: DefenseGapsLinesProps) => {
+const DefenseGapsLines = ({ queryRef, scope, onTotalChange }: DefenseGapsLinesProps) => {
   const { t_i18n, fldt, rd } = useFormatter();
   const theme = useTheme<Theme>();
   const queryData = usePreloadedQuery(defenseGapsLinesQuery, queryRef);
@@ -128,6 +129,7 @@ const DefenseGapsLines = ({ queryRef, scope }: DefenseGapsLinesProps) => {
   );
   const gaps = useMemo(() => (data.defenseGaps?.edges ?? []).map(({ node }) => node), [data.defenseGaps?.edges]);
   const total = data.defenseGaps?.pageInfo.globalCount ?? 0;
+  useEffect(() => onTotalChange?.(total), [total, onTotalChange]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [validating, setValidating] = useState(false);
   const [technique, setTechnique] = useState<{ id: string; title: string } | null>(null);

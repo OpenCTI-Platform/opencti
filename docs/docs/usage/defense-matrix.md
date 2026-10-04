@@ -104,7 +104,7 @@ The **Gaps** section lists every technique and platform pair below level 4, with
 * its **priority**, based on the threats using the technique (weighted by the confidence of their relationships) and on its level;
 * the **rule candidates**: rules indicating the technique that are not deployed yet, ranked by the compatibility of their log source with the telemetry of the platform.
 
-The backlog shares the scope of the matrix (platforms and threats). It can be filtered (levels, recommended actions, techniques used by the threats only, search), sorted, and exported to CSV with **Export CSV**: the export holds the filtered backlog, in its order.
+The backlog shares the scope of the matrix (platforms and threats). It can be filtered (levels, recommended actions, techniques used by the threats only, search), sorted, and exported to CSV with **Export CSV**: the export holds the filtered backlog, in its order, up to 10,000 gaps. When the backlog holds more, a message says so after the download: narrow the filters to export the others.
 
 ![Gaps backlog](assets/defense-matrix-gaps.png)
 
