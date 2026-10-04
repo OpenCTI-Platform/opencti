@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Client as ElkClient } from '@elastic/elasticsearch';
+// The platform registers every module before generating its mapping: the budget applies to that full mapping
+import '../../../src/modules/index';
 import { computeMappingFieldsLimit, countMappingFields, ES_MAPPING_FIELDS_HEADROOM, ES_MAX_MAPPINGS } from '../../../src/database/engine';
 import { engineMappingGenerator } from '../../../src/database/engine-mapping-generator';
 
@@ -11,7 +13,10 @@ const LEGACY_FIELDS_OF_A_LONG_LIVED_PLATFORM = 800;
 // long-lived index (current schema + legacy fields) keeps room under the default limit as long as possible, and the
 // limit raise stays the exception. When the schema legitimately grows past it, raise the budget in the same change
 // and check the warning "Index mapping above the default fields limit" on a long-lived test platform.
-const GENERATED_MAPPING_FIELDS_BUDGET = ES_MAX_MAPPINGS - ES_MAPPING_FIELDS_HEADROOM;
+// Raised from ES_MAX_MAPPINGS - ES_MAPPING_FIELDS_HEADROOM (2500) with the source intelligence types: their sortable
+// latest values, scorecard metrics and recommendation fields bring the full mapping to about 2600 fields, still under
+// the default limit of a new index, while a long-lived index raises its own limit (last test of this file).
+const GENERATED_MAPPING_FIELDS_BUDGET = 2650;
 
 const engine = new ElkClient({ node: 'http://localhost:9200' });
 
