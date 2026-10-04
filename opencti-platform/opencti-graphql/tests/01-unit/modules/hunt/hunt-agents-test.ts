@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extractJsonObject, validateHuntPlanSpec, validateHuntTriageResult } from '../../../../src/modules/hunt/hunt-agents';
+import { extractJsonObject, huntAgentRefusalErrors, validateHuntPlanSpec, validateHuntTriageResult } from '../../../../src/modules/hunt/hunt-agents';
 
 const SIGMA = 'title: Suspicious rundll32\nlogsource:\n  product: windows\n  category: process_creation\ndetection:\n  selection:\n    Image|endswith: rundll32.exe\n  condition: selection\n';
 
@@ -26,6 +26,19 @@ describe('Hunt planner answers', () => {
     expect(extractJsonObject('no json')).toBeNull();
     expect(extractJsonObject('{broken')).toBeNull();
     expect(extractJsonObject(null)).toBeNull();
+  });
+
+  it('should read the reasons of an agent that refused its own answer', () => {
+    expect(huntAgentRefusalErrors({ valid: false, errors: ['target_ids: at most 50 ids', ' ', 3, 'x'.repeat(400)] }))
+      .toEqual(['target_ids: at most 50 ids', 'x'.repeat(300)]);
+    expect(huntAgentRefusalErrors({ valid: false, errors: Array.from({ length: 30 }, (_, index) => `error ${index}`) })).toHaveLength(10);
+    expect(huntAgentRefusalErrors({ valid: false, errors: [] })).toEqual([]);
+    // An answer is not a refusal
+    expect(huntAgentRefusalErrors(planAnswer())).toBeNull();
+    expect(huntAgentRefusalErrors({ valid: true, errors: [] })).toBeNull();
+    expect(huntAgentRefusalErrors({ valid: false })).toBeNull();
+    expect(huntAgentRefusalErrors([{ valid: false, errors: [] }])).toBeNull();
+    expect(huntAgentRefusalErrors(null)).toBeNull();
   });
 
   it('should normalize a valid plan and ground the targets on the input', () => {

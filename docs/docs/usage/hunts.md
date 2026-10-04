@@ -119,6 +119,8 @@ Analysts set the final verdict from the run, with an optional feedback. Hunt sta
 - **Plan a hunt**: from the **Ask AI** menu of a threat, a report or an indicator, the hunt planner agent of XTM One designs a hunt (hypothesis, Sigma rule, native queries, benign patterns, threshold) from the knowledge about the entity and the security platforms available. The hunt is created in a draft workspace for review: it never runs before an analyst validates it.
 - **Triage**: runs with hits can be sent to the hunt triage agent. Its answer is stored as a **proposed verdict** with a confidence from 0 to 100 (shown as "Confidence not assessed" when the agent cannot weigh the evidence, never replaced by a number) and a rationale; it is never applied automatically, the analyst decides.
 
+Both answers are checked by XTM One against the hunt contract before they are returned, and again by OpenCTI. When an agent cannot produce an answer that passes its own check, OpenCTI reports the reasons the agent listed instead of an answer.
+
 ## Validation with OpenAEV
 
 When OpenAEV executes an attack simulation for a technique, it asks OpenCTI to run the hunts covering that technique on the security platform of the targeted asset, over the execution window. When those runs complete, the detection result is written on the security coverage of the simulation as the `hunt_detected` coverage, next to the coverages computed by OpenAEV. See [Security coverage](security-coverage.md).

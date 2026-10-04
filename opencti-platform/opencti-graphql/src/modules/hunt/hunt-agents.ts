@@ -145,6 +145,27 @@ export const extractJsonObject = (content: string | null): unknown => {
   }
 };
 
+const AGENT_REFUSAL_MAX_ERRORS = 10;
+const AGENT_REFUSAL_MAX_ERROR_LENGTH = 300;
+
+/**
+ * Reasons of an agent whose own contract check refused its answer: XTM One then answers `{"valid": false, "errors":
+ * [...]}` instead of the result. Null for any other answer.
+ */
+export const huntAgentRefusalErrors = (answer: unknown): string[] | null => {
+  if (!answer || typeof answer !== 'object' || Array.isArray(answer)) {
+    return null;
+  }
+  const { valid, errors } = answer as { valid?: unknown; errors?: unknown };
+  if (valid !== false || !Array.isArray(errors)) {
+    return null;
+  }
+  return errors
+    .filter((error): error is string => typeof error === 'string' && error.trim().length > 0)
+    .slice(0, AGENT_REFUSAL_MAX_ERRORS)
+    .map((error) => error.trim().substring(0, AGENT_REFUSAL_MAX_ERROR_LENGTH));
+};
+
 /**
  * Deterministic validation of a planner answer, the platform never trusts the model output:
  * strict schema, Sigma structure, bounded numbers, ATT&CK ids format and targets grounded on the input.
@@ -241,6 +262,12 @@ export const callHuntAgent = async (intent: string, jwtUser: AgentJwtUser | null
   if (parsed === null) {
     logApp.warn('[OPENCTI-MODULE] Hunt agent answer is not JSON', { intent, slug });
     throw FunctionalError(`The XTM One agent ${slug} did not answer with a JSON object`, { intent });
+  }
+  const refusal = huntAgentRefusalErrors(parsed);
+  if (refusal) {
+    logApp.warn('[OPENCTI-MODULE] Hunt agent refused its own answer', { intent, slug, errors: refusal });
+    const reasons = refusal.length > 0 ? refusal.join('; ') : 'no reason given';
+    throw FunctionalError(`The XTM One agent ${slug} could not produce a valid answer: ${reasons}`, { intent, errors: refusal });
   }
   return { slug, answer: parsed };
 };
