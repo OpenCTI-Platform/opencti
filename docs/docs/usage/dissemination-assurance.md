@@ -147,7 +147,8 @@ When the IOC validation connector is not running, the request waits and is sent 
 Before it is sent, every deployment is checked again: a deployment that is no longer live, whose removal was
 requested, or that no longer waits for this request is left out, listed with the reason, and can be validated again by
 another request; the indicators and platforms without any deployment left are not sent. Deleting a request releases
-its deployments that are still waiting for results; a request being sent is deleted once the sending is recorded.
+its deployments that are still waiting for results and deletes the sightings that recorded its results; a request
+being sent is deleted once the sending is recorded.
 
 ![Validate live deployments dialog listing the indicators and the security platform to test](assets/dissemination-assurance-validate-live.png)
 

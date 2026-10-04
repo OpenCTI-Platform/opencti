@@ -536,7 +536,10 @@ describe('IOC validation requests', () => {
     });
     const kept = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: liveDeploymentId } });
     expect(kept.data?.stixCoreRelationship.validation_status).toEqual('detected');
+    // The result sightings go with their request: none is left outside the access repair of the pair
     await queryAsAdminWithSuccess({ query: REQUEST_DELETE, variables: { id } });
+    const deletedSighting = await storeLoadById(testContext, ADMIN_USER, validationResultSightingStixId(id, liveIndicatorId, platformId), STIX_SIGHTING_RELATIONSHIP);
+    expect(deletedSighting).toBeFalsy();
   });
 
   it('should leave the expired status to the deployment manager on every write path', async () => {

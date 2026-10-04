@@ -6,7 +6,7 @@ import type { StixId } from '../../types/stix-2-1-common';
 import conf, { BUS_TOPICS, logApp } from '../../config/conf';
 import { ForbiddenAccess, FunctionalError, ValidationError } from '../../config/errors';
 import { buildReplaceScriptParams, EL_REPLACE_SCRIPT_SOURCE, elUpdate } from '../../database/engine';
-import { createRelation, patchAttribute, stixLoadByIds } from '../../database/middleware';
+import { createRelation, deleteElementById, patchAttribute, stixLoadByIds } from '../../database/middleware';
 import { notify, redisGetManagerEventState, redisSetManagerEventState } from '../../database/redis';
 import { isEmptyField, isNotEmptyField } from '../../database/utils';
 import { lockResources } from '../../lock/master-lock';
@@ -789,6 +789,14 @@ export const deleteIocValidationRequest = async (context: AuthContext, user: Aut
     if (current) {
       // Unanswered pairs return to not requested so they are not left waiting forever
       await resolvePendingPairs(context, current.internal_id, VALIDATION_STATUS_NOT_REQUESTED);
+      // The access repair of the result sightings goes through their request: they go with it.
+      await BluePromise.map(current.pairs ?? [], async (pair) => {
+        const sightingId = validationResultSightingStixId(current.internal_id, pair.indicator_id, pair.platform_id);
+        const sighting = await internalLoadById(context, SYSTEM_USER, sightingId, { type: STIX_SIGHTING_RELATIONSHIP });
+        if (sighting) {
+          await deleteElementById(context, SYSTEM_USER, sighting.internal_id, STIX_SIGHTING_RELATIONSHIP);
+        }
+      }, { concurrency: CONCURRENCY });
       await deleteInternalObject(context, user, current.internal_id, ENTITY_TYPE_IOC_VALIDATION_REQUEST);
     }
   } finally {

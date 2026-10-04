@@ -373,16 +373,25 @@ const ensurePairOrganizations = async (
 // of the elements it writes, and locking one of them here would make the nested creation wait on this lock.
 export const pairLockKey = (indicatorInternalId: string, platformInternalId: string) => `deployed-on-${indicatorInternalId}-${platformInternalId}`;
 
-// Validation requests that included a pair, whose result sightings are repaired with the deployment.
-const PAIR_REQUESTS_MAX = 500;
-const pairValidationRequestIds = async (context: AuthContext, indicatorId: string, platformId: string) => {
-  const requests = await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [ENTITY_TYPE_IOC_VALIDATION_REQUEST], {
+// Validation requests that included a pair, whose result sightings are repaired with the deployment: every request,
+// read one page at a time.
+const PAIR_REQUESTS_PAGE_SIZE = 500;
+const forEachPairValidationRequestPage = async (
+  context: AuthContext,
+  indicatorId: string,
+  platformId: string,
+  callback: (requestIds: string[]) => Promise<void>,
+) => {
+  await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [ENTITY_TYPE_IOC_VALIDATION_REQUEST], {
     filters: { mode: 'and', filters: [{ key: ['indicator_ids'], values: [indicatorId] }, { key: ['platform_ids'], values: [platformId] }], filterGroups: [] },
     noFiltersChecking: true,
     baseData: true,
-    maxSize: PAIR_REQUESTS_MAX,
+    first: PAIR_REQUESTS_PAGE_SIZE,
+    callback: async (requests: BasicStoreEntity[]) => {
+      await callback(requests.map((request) => request.internal_id));
+      return true;
+    },
   } as never);
-  return requests.map((request) => request.internal_id);
 };
 
 /**
@@ -390,7 +399,8 @@ const pairValidationRequestIds = async (context: AuthContext, indicatorId: strin
  * sightings and the validation result sightings of every request that included the pair get the markings they now
  * lack and the organizations both ends are now shared with, and the counters of the indicators are recomputed.
  * Sharing is only repaired with the Enterprise Edition, without which it never changes nor restricts reads. Bounded by
- * the deployments of the changed endpoints and by PAIR_REQUESTS_MAX requests per pair.
+ * the deployments of the changed endpoints; the requests of a pair are read in pages of PAIR_REQUESTS_PAGE_SIZE.
+ * A deleted request takes its result sightings with it, so no result sighting is left outside this repair.
  */
 export const repairPairMarkings = async (context: AuthContext, user: AuthUser, changes: { indicatorIds: string[]; platformIds: string[] }) => {
   const [fromIndicators, toPlatforms] = await Promise.all([
@@ -424,16 +434,17 @@ export const repairPairMarkings = async (context: AuthContext, user: AuthUser, c
       return;
     }
     await ensurePairAccess(deployment, indicator, platform);
-    const requestIds = await pairValidationRequestIds(context, indicator.internal_id, platform.internal_id);
-    const sightingIds = [
-      hitsSightingStixId(indicator.internal_id, platform.internal_id),
-      ...requestIds.map((requestId) => validationResultSightingStixId(requestId, indicator.internal_id, platform.internal_id)),
-    ];
-    await BluePromise.map(sightingIds, async (sightingId) => {
+    const repairSighting = async (sightingId: string) => {
       const sighting = await internalLoadById<BasicStoreRelation>(context, SYSTEM_USER, sightingId, { type: STIX_SIGHTING_RELATIONSHIP });
       if (sighting) {
         await ensurePairAccess(sighting, indicator, platform);
       }
+    };
+    await repairSighting(hitsSightingStixId(indicator.internal_id, platform.internal_id));
+    await forEachPairValidationRequestPage(context, indicator.internal_id, platform.internal_id, async (requestIds) => {
+      await BluePromise.map(requestIds, (requestId) => {
+        return repairSighting(validationResultSightingStixId(requestId, indicator.internal_id, platform.internal_id));
+      }, { concurrency: BATCH_CONCURRENCY });
     });
   }, { concurrency: BATCH_CONCURRENCY });
   await refreshIndicatorDeploymentCounters(context, [...new Set([...deployments.values()].map((deployment) => deployment.fromId))]);
