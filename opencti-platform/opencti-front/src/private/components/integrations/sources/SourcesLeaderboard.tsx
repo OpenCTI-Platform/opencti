@@ -185,7 +185,7 @@ const SourcesLeaderboard = () => {
     name: {
       id: 'name',
       label: 'Name',
-      percentWidth: 18,
+      percentWidth: 16,
       isSortable: true,
       render: ({ name, enabled, quarantined }: SourcesLeaderboard_source$data) => (
         <Stack direction="row" alignItems="center" gap={1} sx={{ overflow: 'hidden' }}>
@@ -205,7 +205,7 @@ const SourcesLeaderboard = () => {
     latest_value_score: {
       id: 'latest_value_score',
       label: 'Value',
-      percentWidth: 12,
+      percentWidth: 11,
       isSortable: true,
       render: ({ latest_value_score }: SourcesLeaderboard_source$data) => <ValueScoreBar value={latest_value_score} />,
     },
@@ -252,7 +252,7 @@ const SourcesLeaderboard = () => {
       latest_relevance: {
         id: 'latest_relevance',
         label: 'Relevance',
-        percentWidth: 7,
+        percentWidth: 9,
         isSortable: true,
         render: ({ latest_relevance }: SourcesLeaderboard_source$data) => ratioCell(latest_relevance),
       },
@@ -282,7 +282,7 @@ const SourcesLeaderboard = () => {
     latest_cost_per_actionable: {
       id: 'latest_cost_per_actionable',
       label: 'Cost / actionable',
-      percentWidth: 10,
+      percentWidth: 11,
       isSortable: true,
       render: ({ id, latest_cost_per_actionable, cost }: SourcesLeaderboard_source$data) => {
         if (!cost && canManage) {

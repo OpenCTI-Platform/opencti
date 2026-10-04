@@ -543,7 +543,14 @@ const SourceDetailComponent = ({ queryRef, period, onPeriodChange }: SourceDetai
                       ? t_i18n(DECLARED_AMOUNT_LABELS[source.cost.period] ?? DECLARED_AMOUNT_LABELS.month, {
                           values: { amount: format.cost(source.cost.amount, source.cost.currency) },
                         })
-                      : value(null, t_i18n('No cost declared for this source. Set it with the cost editor above.'))],
+                      : (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Box component="span" tabIndex={0} sx={{ color: 'text.disabled' }}>{t_i18n('Not set')}</Box>
+                            </TooltipTrigger>
+                            <TooltipContent>{t_i18n('No cost declared for this source. Set it with the cost editor above.')}</TooltipContent>
+                          </Tooltip>
+                        )],
                     [t_i18n('Actionable objects'), value(format.count(scorecard.actionable_count))],
                     [t_i18n('Cost per actionable object'), value(format.cost(scorecard.cost_per_actionable_object, currency), t_i18n('Needs a declared cost and at least one actionable object.'))],
                     [t_i18n('Last assertion'), scorecard.last_asserted_at ? <RelativeTime date={scorecard.last_asserted_at} /> : t_i18n('Not recorded')],
