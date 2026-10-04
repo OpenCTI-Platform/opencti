@@ -89,13 +89,17 @@ allowed to see the security platforms it reports on.
 - On a security platform, the **Deployments** tab lists the indicators deployed on the platform, with the same
   information and the assurance metrics of the platform.
 
+![Deployments tab of an indicator, with its live deployment on a security platform and a missed validation](assets/dissemination-assurance-indicator-deployments.png)
+
+![Deployments tab of a security platform, with a failed deployment and the reason its connector reported](assets/dissemination-assurance-platform-deployments.png)
+
 From both tabs, an analyst with the *Update knowledge* capability can:
 
-- **Retry deployment**: available on a failed, removed or expired deployment. The connector deploys the indicator
+- **Deploy again**: available on a failed, removed or expired deployment. The connector deploys the indicator
   again.
-- **Remove from this platform**: withdraws the indicator from this platform only. The connector removes it and
-  reports it as removed. If the removal is not confirmed within the grace period, the deployment is flagged as
-  expired.
+- **Remove from this platform**: withdraws the indicator from this platform only, after a confirmation naming the
+  indicator and the platform. The connector removes it and reports it as removed. If the removal is not confirmed
+  within the grace period, the deployment is flagged as expired.
 
 ## Dissemination assurance pages
 
@@ -114,15 +118,24 @@ Go to **Defense > Dissemination assurance**.
   past their validity while still live on a platform, or flagged expired because their removal was never confirmed).
 - **Validation requests** lists the IOC validation requests sent to OpenAEV and their results.
 
+![Dissemination assurance overview with its key figures, the deployments they filter and the lifecycle funnel](assets/dissemination-assurance-overview.png)
+
+Until a stream connector reports its first deployment, the overview explains what it measures and links to the
+connectors and to this page:
+
+![Dissemination assurance overview before any deployment was reported](assets/dissemination-assurance-first-use.png)
+
 ## Validating deployments with OpenAEV
 
 An IOC validation request asks OpenAEV to prove that deployed indicators are detected or prevented by the
-security platforms. Use the **Request validation** button on the deployments of an indicator or a platform: the
-request covers the live deployments, up to 200 indicators, never validated first (deployments without proof, or
+security platforms. Use the **Validate live deployments** button on the deployments of an indicator or a platform:
+the request covers the live deployments, up to 200 indicators, never validated first (deployments without proof, or
 whose last validation missed or failed, then the proven ones). Deployments already waiting for the results of
-another request are left out. Choose the benign test kinds, then send the request. It is delivered to OpenAEV by
-the IOC validation connector. A deployment that starts waiting for another request in the meantime is skipped, and
-listed with the reason in the new request.
+another request are left out. The dialog shows what will be tested (the indicators, the security platforms and the
+test kinds) before you send the request. It is delivered to OpenAEV by the IOC validation connector. A deployment
+that starts waiting for another request in the meantime is skipped, and listed with the reason in the new request.
+
+![Validate live deployments dialog listing the indicators and the security platform to test](assets/dissemination-assurance-validate-live.png)
 
 OpenAEV never runs anything without an explicit approval by one of its operators, and only runs the benign test
 kinds allowed in its settings. By default, the validation never contacts adversary infrastructure: DNS resolution
@@ -131,7 +144,10 @@ egress proxy. See the [OpenAEV documentation](https://docs.openaev.io/latest/usa
 for the approval workflow and the safety settings.
 
 When OpenAEV sends the results, the validation status of each deployment is updated to `detected`, `prevented`,
-`missed` or `error`, and the request shows the outcome of every indicator and platform pair.
+`missed` or `error`, and the request shows the outcome of every indicator and platform pair. A missed indicator
+links to its deployment, and a completed request can be validated again in one action.
+
+![Completed validation request with one detected and one missed indicator](assets/dissemination-assurance-validation-missed.png)
 
 ## Dashboard template
 
