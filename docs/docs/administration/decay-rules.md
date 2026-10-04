@@ -134,6 +134,10 @@ Knowledge decay rules are configured in the "Knowledge decay rules" tab of the "
     - *Revoke*: the knowledge is flagged and revoked. This policy is only available for types supporting revocation.
 - **Order**: when several rules match the same knowledge, the rule with the highest order applies. A rule that is created, activated, reordered or retargeted above other rules takes over the knowledge they already flagged: it is evaluated again under the new rule.
 
+A rule only applies to the types whose [provenance is tracked](../usage/provenance.md#entity-types-tracked): the knowledge of a type whose tracking is switched off is never flagged, lowered or revoked.
+
+![The Knowledge decay rules tab listing a custom rule on Malware that currently flags two elements, and the three built-in rules, disabled](./assets/knowledge-decay-rules.png)
+
 Stale knowledge is listed in the "Stale knowledge" tab of "Data > Curation", can be filtered with the "Stale knowledge" filter in every list, and each rule shows the number of elements it currently flags. As soon as any source asserts the knowledge again, or a user confirms it from the sources panel, the stale flag is cleared. Deactivating, deleting or changing the targets of a rule clears the flags it set.
 
 Three built-in knowledge decay rules are shipped **disabled**: `communicates-with` relationships after 180 days, `uses` relationships after 24 months and infrastructures after one year. They can only be activated or deactivated: create your own rule to change their configuration.
