@@ -52,6 +52,22 @@ describe('useGraphFullscreen', () => {
     expect(container.style.cssText).toBe('height: 400px;');
   });
 
+  it('leaves the full screen it asked for once it is entered, when the graph unmounted meanwhile', async () => {
+    let enter = () => {};
+    requestFullscreen.mockImplementationOnce(() => new Promise<void>((resolve) => {
+      enter = () => {
+        fullscreenElement = document.documentElement;
+        resolve();
+      };
+    }));
+    const { result, unmount } = renderFullscreen();
+    act(() => result.current.toggle());
+    unmount();
+    expect(exitFullscreen).not.toHaveBeenCalled();
+    await act(async () => enter());
+    expect(exitFullscreen).toHaveBeenCalledTimes(1);
+  });
+
   it('leaves alone a full screen the graph did not ask for', async () => {
     fullscreenElement = document.body;
     const { result, unmount } = renderFullscreen();

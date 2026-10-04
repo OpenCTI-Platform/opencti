@@ -56,7 +56,14 @@ const useGraphFullscreen = (
     setIsFullscreen(true);
     if (document.fullscreenEnabled && !document.fullscreenElement) {
       ownsDocumentFullscreen.current = true;
-      document.documentElement.requestFullscreen().catch(() => {
+      document.documentElement.requestFullscreen().then(() => {
+        // Left (exit or another page) while the browser was still entering: leave now that it has.
+        if (!ownsDocumentFullscreen.current && document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {
+            // Already left by the browser itself.
+          });
+        }
+      }).catch(() => {
         // Refused by the browser (for example outside a user gesture): the overlay alone is kept.
         ownsDocumentFullscreen.current = false;
       });
