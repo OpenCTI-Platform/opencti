@@ -100,7 +100,8 @@ const DAY_MS = 24 * 3600 * 1000;
 const MODULES_MODMANAGE = 'MODULES_MODMANAGE';
 type ManagedConnector = BasicStoreEntityConnector & { manager_requested_status?: string | null; title?: string };
 const STOPPED_STATUSES = ['stopping', 'stopped'];
-const ACTIVE_STATUSES = [RECOMMENDATION_STATUS_PROPOSED, RECOMMENDATION_STATUS_APPLYING, RECOMMENDATION_STATUS_APPLIED];
+// A failed recommendation stays the live entry of its fingerprint, to be retried, never proposed again beside it
+const ACTIVE_STATUSES = [RECOMMENDATION_STATUS_PROPOSED, RECOMMENDATION_STATUS_APPLYING, RECOMMENDATION_STATUS_APPLIED, RECOMMENDATION_STATUS_FAILED];
 const FEED_EDIT_FUNCTIONS: Record<string, (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => Promise<unknown>> = {
   [ENTITY_TYPE_INGESTION_RSS]: ingestionRssEditField,
   [ENTITY_TYPE_INGESTION_TAXII]: ingestionTaxiiEditField,
