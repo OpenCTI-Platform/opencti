@@ -136,6 +136,28 @@ export const sortAssertionsByRecency = (assertions: ReadonlyArray<ProvenanceAsse
   return [...(assertions ?? [])].sort((a, b) => b.last_asserted_at.localeCompare(a.last_asserted_at));
 };
 
+export interface ConflictValueGroup {
+  readonly value_hash: string;
+  readonly display: string;
+  readonly adoptable: boolean;
+  readonly proposals: ProvenanceConflictValue[];
+}
+
+/**
+ * Conflicting values are kept per source: the same value proposed by several sources is shown once, with every
+ * proposal (source, date, confidence). Adopting or dismissing the value acts on all of them.
+ */
+export const groupConflictValues = (values: ReadonlyArray<ProvenanceConflictValue>): ConflictValueGroup[] => {
+  const groups = new Map<string, { value_hash: string; display: string; adoptable: boolean; proposals: ProvenanceConflictValue[] }>();
+  values.forEach((value) => {
+    const group = groups.get(value.value_hash) ?? { value_hash: value.value_hash, display: value.display, adoptable: false, proposals: [] };
+    group.adoptable = group.adoptable || value.adoptable;
+    group.proposals.push(value);
+    groups.set(value.value_hash, group);
+  });
+  return [...groups.values()];
+};
+
 export interface ProcedureGroup {
   readonly text: string;
   readonly sourceNames: string[];

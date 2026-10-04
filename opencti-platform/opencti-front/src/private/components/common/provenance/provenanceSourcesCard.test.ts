@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildSourcesCardModel, groupProceduresByText, type ProvenanceAssertion, type ProvenanceConflict } from './provenanceUtils';
+import { buildSourcesCardModel, groupConflictValues, groupProceduresByText, type ProvenanceAssertion, type ProvenanceConflict } from './provenanceUtils';
 import { PROVENANCE_SOURCE_LINK_RESOLVERS, type ProvenanceSourceLinkResolver, resolveProvenanceSourceLink } from './provenanceSourceLinks';
 
 const assertion = (source_id: string, last_asserted_at: string, source_kind = 'connector'): ProvenanceAssertion => ({
@@ -48,6 +48,19 @@ describe('buildSourcesCardModel', () => {
       { field: 'x_custom_field', values: [value] },
     ];
     expect(buildSourcesCardModel([assertion('a', '2026-09-01T00:00:00.000Z')], conflicts)?.conflictingFields).toEqual(['Description', 'x_custom_field']);
+  });
+});
+
+describe('groupConflictValues', () => {
+  it('shows a value proposed by several sources once, with every proposal', () => {
+    const proposal = (value_hash: string, source_id: string, adoptable = true) => ({
+      value_hash, display: `Value ${value_hash}`, adoptable, source_id, source_name: `Source ${source_id}`, last_asserted_at: '2026-09-01T00:00:00.000Z',
+    });
+    const groups = groupConflictValues([proposal('h1', 'a', false), proposal('h2', 'a'), proposal('h1', 'b')]);
+    expect(groups.map((group) => [group.value_hash, group.adoptable, group.proposals.map((value) => value.source_id)])).toEqual([
+      ['h1', true, ['a', 'b']],
+      ['h2', true, ['a']],
+    ]);
   });
 });
 

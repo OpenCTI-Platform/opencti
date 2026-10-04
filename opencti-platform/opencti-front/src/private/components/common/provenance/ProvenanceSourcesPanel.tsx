@@ -23,7 +23,16 @@ import type { Theme } from '../../../../components/Theme';
 import ProvenanceBadge from './ProvenanceBadge';
 import ProvenanceSourceKindIcon from './ProvenanceSourceKindIcon';
 import { MESSAGING$ } from '../../../../relay/environment';
-import { freshnessColor, groupProceduresByText, notifyPayloadErrors, type ProvenanceData, sortAssertionsByRecency, sourceKindLabel, warningColor } from './provenanceUtils';
+import {
+  freshnessColor,
+  groupConflictValues,
+  groupProceduresByText,
+  notifyPayloadErrors,
+  type ProvenanceData,
+  sortAssertionsByRecency,
+  sourceKindLabel,
+  warningColor,
+} from './provenanceUtils';
 import { ProvenanceSourcesPanelQuery } from './__generated__/ProvenanceSourcesPanelQuery.graphql';
 
 export const provenanceSourcesPanelQuery = graphql`
@@ -238,7 +247,7 @@ const ProvenanceSourcesContent = ({ queryRef, onChange }: ProvenanceSourcesConte
             {conflicts.map((conflict) => (
               <Stack key={conflict.field} gap={1}>
                 <Typography variant="h4">{t_i18n(conflict.field_label ?? conflict.field)}</Typography>
-                {conflict.values.map((value) => (
+                {groupConflictValues(conflict.values).map((value) => (
                   <Stack
                     key={value.value_hash}
                     direction="row"
@@ -250,13 +259,17 @@ const ProvenanceSourcesContent = ({ queryRef, onChange }: ProvenanceSourcesConte
                   >
                     <Stack gap={0.5} sx={{ minWidth: 0 }}>
                       <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>{value.display}</Typography>
-                      <Stack direction="row" alignItems="center" gap={1}>
-                        <ProvenanceSourceKindIcon kind={value.source_kind} />
-                        <Typography variant="caption">
-                          {t_i18n('Proposed by {source} on {date}', { values: { source: value.source_name ?? value.source_id, date: nsdt(value.last_asserted_at) } })}
-                          {value.confidence !== null && value.confidence !== undefined ? ` - ${t_i18n('Confidence')} ${value.confidence}` : ''}
-                        </Typography>
-                      </Stack>
+                      {value.proposals.map((proposal) => (
+                        <Stack key={proposal.source_id} direction="row" alignItems="center" gap={1} data-testid="provenance-conflict-proposal">
+                          <ProvenanceSourceKindIcon kind={proposal.source_kind} />
+                          <Typography variant="caption">
+                            {t_i18n('Proposed by {source} on {date}', { values: { source: proposal.source_name ?? proposal.source_id, date: nsdt(proposal.last_asserted_at) } })}
+                            {proposal.confidence !== null && proposal.confidence !== undefined
+                              ? ` - ${t_i18n('Confidence {confidence}', { values: { confidence: proposal.confidence } })}`
+                              : ''}
+                          </Typography>
+                        </Stack>
+                      ))}
                     </Stack>
                     <Security needs={[KNOWLEDGE_KNUPDATE]}>
                       <Stack direction="row" gap={1} flexShrink={0}>
