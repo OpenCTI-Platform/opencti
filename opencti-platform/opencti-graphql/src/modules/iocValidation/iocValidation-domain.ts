@@ -88,6 +88,7 @@ const IOC_VALIDATION_TIMEOUT_MS = toPositiveInteger(conf.get('ioc_validation:tim
 // Completed requests keep their summary refreshed for this window, absorbing late bundle ingestion.
 const SUMMARY_REFRESH_WINDOW_MS = 24 * 3600 * 1000;
 const CONCURRENCY = 5;
+const SKIP_REASON_NOT_DEPLOYED = 'Not deployed on this security platform';
 const MAINTENANCE_PAGE_SIZE = 100;
 const MAINTENANCE_CURSOR_STATE = 'ioc_validation_requests_maintenance';
 const NAME_MAX_LENGTH = 250;
@@ -313,7 +314,7 @@ export const requestIndicatorsValidation = async (context: AuthContext, user: Au
       // A deployment the requester cannot read is reported like a missing one, so its existence is not revealed
       const deployment = deployments.find((d) => d.fromId === ioc.indicator_id && d.toId === platform.internal_id && requesterReadable.has(d.internal_id));
       if (!deployment) {
-        skipped.push({ indicator_id: ioc.indicator_id, platform_id: platform.internal_id, reason: 'Not deployed on this security platform' });
+        skipped.push({ indicator_id: ioc.indicator_id, platform_id: platform.internal_id, reason: SKIP_REASON_NOT_DEPLOYED });
       } else if (!LIVE_DEPLOYMENT_STATUSES.includes(deployment.deployment_status)) {
         skipped.push({ indicator_id: ioc.indicator_id, platform_id: platform.internal_id, reason: 'Not live on this security platform' });
       } else if (deployment.revoked === true) {
@@ -1045,9 +1046,16 @@ export const loadRequestPlatforms = (context: AuthContext, user: AuthUser, reque
   return loadReadableByIds<BasicStoreEntitySecurityPlatform>(context, user, request.platform_ids ?? [], ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM);
 };
 
-export const loadRequestDeployments = (context: AuthContext, user: AuthUser, request: BasicStoreEntityIocValidationRequest) => {
+// A deployment is read with both of its ends: an end restricted since (authorized members, sharing) hides it.
+export const loadRequestDeployments = async (context: AuthContext, user: AuthUser, request: BasicStoreEntityIocValidationRequest) => {
   const ids = (request.pairs ?? []).map((pair) => pair.deployed_on_id);
-  return loadReadableByIds<BasicStoreRelationDeployedOn>(context, user, ids, RELATION_DEPLOYED_ON);
+  const [deployments, readableIndicators, readablePlatforms] = await Promise.all([
+    loadReadableByIds<BasicStoreRelationDeployedOn>(context, user, ids, RELATION_DEPLOYED_ON),
+    findReaderIndicatorIds(context, user, request.indicator_ids ?? []),
+    filterReadablePlatformIds(context, user, request),
+  ]);
+  const platforms = new Set(readablePlatforms);
+  return deployments.filter((deployment) => readableIndicators.has(deployment.fromId) && platforms.has(deployment.toId));
 };
 
 // The outcome of each readable pair for this request, never the verdict of a newer request on the same deployment
@@ -1084,6 +1092,11 @@ export const filterReadablePlatformIds = async (context: AuthContext, user: Auth
   return (request.platform_ids ?? []).filter((id) => readable.has(id));
 };
 
+/**
+ * The skipped tests the reader may see. A skip on a security platform tells the state of a deployment: it keeps its
+ * reason only while the reader can read a deployment of the pair, otherwise it reads as not deployed, so a deployment
+ * the reader cannot read is never told apart from a missing one.
+ */
 export const filterReadableSkipped = async (context: AuthContext, user: AuthUser, request: BasicStoreEntityIocValidationRequest) => {
   const ids = [...new Set((request.skipped ?? []).map((s) => s.indicator_id))];
   const [readable, readablePlatforms] = await Promise.all([
@@ -1091,7 +1104,18 @@ export const filterReadableSkipped = async (context: AuthContext, user: AuthUser
     filterReadablePlatformIds(context, user, request),
   ]);
   const platforms = new Set(readablePlatforms);
-  return (request.skipped ?? []).filter((s) => readable.has(s.indicator_id) && (!s.platform_id || platforms.has(s.platform_id)));
+  const visible = (request.skipped ?? []).filter((s) => readable.has(s.indicator_id) && (!s.platform_id || platforms.has(s.platform_id)));
+  const onPlatforms = visible.filter((s) => s.platform_id);
+  if (onPlatforms.length === 0) {
+    return visible;
+  }
+  const deployments = await fullRelationsList<BasicStoreRelationDeployedOn>(context, user, RELATION_DEPLOYED_ON, {
+    fromId: [...new Set(onPlatforms.map((s) => s.indicator_id))],
+    toId: [...new Set(onPlatforms.map((s) => s.platform_id as string))],
+    baseData: true,
+  } as never);
+  const readablePairs = new Set(deployments.map((deployment) => `${deployment.fromId}|${deployment.toId}`));
+  return visible.map((s) => (!s.platform_id || readablePairs.has(`${s.indicator_id}|${s.platform_id}`) ? s : { ...s, reason: SKIP_REASON_NOT_DEPLOYED }));
 };
 
 export const readableResultsSummary = async (context: AuthContext, user: AuthUser, request: BasicStoreEntityIocValidationRequest) => {

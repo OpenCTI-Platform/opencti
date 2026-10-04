@@ -267,12 +267,24 @@ export const isHitsReplay = (deployment: HitsReplayState | undefined, lastHit: D
   return isEmptyField(reportId) || (deployment.last_hit_report_ids ?? []).includes(reportId as string);
 };
 
-/** The report ids counted at the last hit once a report is counted (only called for a report that is not a replay). */
+/**
+ * The report ids counted at the last hit once a report is counted (only called for a report that is not a replay,
+ * before any count changes). An id is never evicted while its instant is the watermark, or its retry would be counted
+ * again: a report beyond the limit at the same instant is refused instead.
+ */
 export const hitReportIdsAfter = (deployment: HitsReplayState | undefined, lastHit: Date, reportId?: string | null) => {
   const sameInstant = !!deployment && isNotEmptyField(deployment.last_hit_at)
     && toDate(deployment.last_hit_at, lastHit).getTime() === lastHit.getTime();
   const kept = sameInstant ? (deployment?.last_hit_report_ids ?? []) : [];
-  return (isEmptyField(reportId) ? kept : [...kept, reportId as string]).slice(-HIT_REPORT_IDS_MAX);
+  if (isEmptyField(reportId)) {
+    return kept;
+  }
+  if (kept.length >= HIT_REPORT_IDS_MAX) {
+    throw ValidationError(`At most ${HIT_REPORT_IDS_MAX} distinct hit reports can end at the same instant`, 'reportId', {
+      last_hit: lastHit.toISOString(),
+    });
+  }
+  return [...kept, reportId as string];
 };
 
 export const isHitsSightingUpToDate = (sighting: HitsSightingState, values: HitsSightingValues) => {
@@ -341,10 +353,10 @@ const notifyRelationEdit = async (user: AuthUser, element: unknown) => {
 type ReportOutcome = 'created' | 'updated' | 'unchanged';
 
 /**
- * Markings of a pair relationship (deployment, hits sighting, validation result sighting): for every marking type its
- * indicator or its security platform carries, the highest marking of that type among its ends, so an end that gets,
- * raises, relaxes or replaces a marking is followed; a marking of a type neither end carries was set on the
- * relationship itself and is kept (a type both ends dropped cannot be told from it and stays, the stricter way).
+ * Markings of a pair relationship (deployment, hits sighting, validation result sighting): its own markings and those of
+ * its indicator and of its security platform, the highest of each type kept. An end that gets or raises a marking is
+ * followed at once; a marking stricter than the ends is kept, since a marking set on the relationship on purpose
+ * cannot be told from one an end has since relaxed (an editor can lower it to the level of the ends).
  */
 export const expectedPairMarkings = async (
   context: AuthContext,
@@ -352,16 +364,10 @@ export const expectedPairMarkings = async (
   indicator: { [RELATION_OBJECT_MARKING]?: string[] | null },
   platform: { [RELATION_OBJECT_MARKING]?: string[] | null },
 ) => {
-  const markingsMap = await getEntitiesMapFromCache<BasicStoreEntity & { definition_type?: string }>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  const inherited = (await cleanMarkings(context, pairMarkings(indicator, platform)))
+  const cleaned = await cleanMarkings(context, [...current, ...pairMarkings(indicator, platform)]);
+  return [...new Set(cleaned
     .map((marking: { internal_id?: string } | string) => (typeof marking === 'string' ? marking : marking.internal_id))
-    .filter((id: string | undefined): id is string => !!id);
-  const inheritedTypes = new Set(inherited.map((id: string) => markingsMap.get(id)?.definition_type));
-  const own = current.filter((id) => {
-    const type = markingsMap.get(id)?.definition_type;
-    return type !== undefined && !inheritedTypes.has(type);
-  });
-  return [...new Set([...inherited, ...own])];
+    .filter((id: string | undefined): id is string => !!id))];
 };
 
 const ensurePairMarkings = async (
@@ -688,12 +694,26 @@ export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, 
   const lock = await lockResources([pairLockKey(indicator.internal_id, platform.internal_id)]);
   try {
     const existing = await findDeployedOn(context, user, indicator.internal_id, platform.internal_id);
-    const existingSighting = await internalLoadById<BasicStoreRelation & { attribute_count?: number; first_seen?: string; last_seen?: string }>(
+    const existingSighting = await internalLoadById<BasicStoreRelation & {
+      attribute_count?: number;
+      first_seen?: string;
+      last_seen?: string;
+      x_opencti_negative?: boolean;
+    }>(
       context,
       user,
       sightingStixId,
       { type: STIX_SIGHTING_RELATIONSHIP },
     );
+    // Only the positive sighting of this very pair records its hits: anything else holding the id is left untouched.
+    if (existingSighting && (existingSighting.fromId !== indicator.internal_id || existingSighting.toId !== platform.internal_id
+      || existingSighting.x_opencti_negative === true)) {
+      throw FunctionalError('The hits sighting identifier of this indicator and security platform is held by another sighting', {
+        indicator_id: indicator.internal_id,
+        platform_id: platform.internal_id,
+        sighting_id: existingSighting.internal_id,
+      });
+    }
     if (existing) {
       await ensurePairMarkings(context, user, existing, indicator, platform);
     }

@@ -210,10 +210,12 @@ describe('hits report replay', () => {
     expect(hitReportIdsAfter(deployment, AT, 'report-b')).toEqual(['report-a', 'report-b']);
     expect(hitReportIdsAfter(deployment, AFTER, 'report-c')).toEqual(['report-c']);
     expect(hitReportIdsAfter(deployment, AFTER)).toEqual([]);
+    // An id is never evicted while its instant is the watermark: a report beyond the limit is refused instead
     const full = { last_hit_at: AT, last_hit_report_ids: Array.from({ length: HIT_REPORT_IDS_MAX }, (_, i) => `report-${i}`) };
-    const kept = hitReportIdsAfter(full, AT, 'report-new');
-    expect(kept).toHaveLength(HIT_REPORT_IDS_MAX);
-    expect(kept[kept.length - 1]).toEqual('report-new');
+    expect(() => hitReportIdsAfter(full, AT, 'report-new')).toThrow(`At most ${HIT_REPORT_IDS_MAX} distinct hit reports`);
+    expect(isHitsReplay(full, AT, 'report-0')).toEqual(true);
+    // A later instant starts again
+    expect(hitReportIdsAfter(full, AFTER, 'report-new')).toEqual(['report-new']);
   });
 });
 

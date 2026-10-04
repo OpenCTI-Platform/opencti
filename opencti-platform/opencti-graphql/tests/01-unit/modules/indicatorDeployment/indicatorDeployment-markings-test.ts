@@ -27,9 +27,14 @@ const ends = (indicator: string[], platform: string[]) => [{ 'object-marking': i
 const sorted = (ids: string[]) => [...ids].sort();
 
 describe('markings of a pair relationship', () => {
-  it('should follow an end that relaxes its marking', async () => {
+  it('should keep a marking stricter than the ends, which may have been set on purpose', async () => {
     const [indicator, platform] = ends(['tlp-green'], ['tlp-green']);
-    expect(await expectedPairMarkings(testContext, ['tlp-red'], indicator, platform)).toEqual(['tlp-green']);
+    expect(await expectedPairMarkings(testContext, ['tlp-red'], indicator, platform)).toEqual(['tlp-red']);
+  });
+
+  it('should follow an end that raises its marking', async () => {
+    const [indicator, platform] = ends(['tlp-red'], ['tlp-green']);
+    expect(await expectedPairMarkings(testContext, ['tlp-green'], indicator, platform)).toEqual(['tlp-red']);
   });
 
   it('should keep the highest marking of a type among the ends', async () => {
@@ -40,7 +45,7 @@ describe('markings of a pair relationship', () => {
 
   it('should keep a marking of a type neither end carries, set on the relationship itself', async () => {
     const [indicator, platform] = ends(['tlp-green'], ['tlp-green']);
-    expect(sorted(await expectedPairMarkings(testContext, ['tlp-red', 'statement-1'], indicator, platform))).toEqual(['statement-1', 'tlp-green']);
+    expect(sorted(await expectedPairMarkings(testContext, ['tlp-amber', 'statement-1'], indicator, platform))).toEqual(['statement-1', 'tlp-amber']);
     // A type both ends dropped cannot be told from it: it stays, the stricter way
     expect(sorted(await expectedPairMarkings(testContext, ['pap-red'], indicator, platform))).toEqual(['pap-red', 'tlp-green']);
   });

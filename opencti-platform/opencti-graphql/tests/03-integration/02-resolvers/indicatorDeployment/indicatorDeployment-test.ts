@@ -13,7 +13,7 @@ import {
   refreshIndicatorDeploymentCounters,
   repairPairMarkings,
 } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-domain';
-import { deleteElementById, stixLoadById } from '../../../../src/database/middleware';
+import { createRelation, deleteElementById, stixLoadById } from '../../../../src/database/middleware';
 import { internalLoadById } from '../../../../src/database/middleware-loader';
 import { elDeleteElements, elUpdate } from '../../../../src/database/engine';
 import * as streamHandler from '../../../../src/database/stream/stream-handler';
@@ -544,6 +544,46 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     } finally {
       if (hitIndicatorId) {
         await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: hitIndicatorId } });
+      }
+      streamed.forEach((spy) => spy.mockRestore());
+    }
+  });
+
+  it('should never count hits on a sighting holding the hits sighting id that is not the positive sighting of the pair', async () => {
+    // Neither streamed nor kept: the raw stream counts of the suite are unchanged
+    const streamed = [
+      vi.spyOn(streamHandler, 'storeCreateEntityEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeCreateRelationEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeUpdateEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeDeleteEvent').mockResolvedValue(undefined as never),
+    ];
+    let heldIndicatorId: string | undefined;
+    try {
+      const created = await queryAsAdminWithSuccess({
+        query: INDICATOR_ADD,
+        variables: { input: { name: 'held-id.evil.example', pattern: "[domain-name:value = 'held-id.evil.example']", pattern_type: 'stix', x_opencti_main_observable_type: 'Domain-Name' } },
+      });
+      heldIndicatorId = created.data?.indicatorAdd.id as string;
+      await setOrganizations(heldIndicatorId, [testOrganizationId, platformOrganizationId]);
+      // A negative sighting created beforehand under the deterministic id of the hits sighting (administrators can)
+      const held = await createRelation(testContext, ADMIN_USER, {
+        fromId: heldIndicatorId,
+        toId: platformId,
+        relationship_type: STIX_SIGHTING_RELATIONSHIP,
+        stix_id: hitsSightingStixId(heldIndicatorId, platformId),
+        attribute_count: 1,
+        x_opencti_negative: true,
+      }) as unknown as { internal_id: string };
+      await queryAsUserIsExpectedError(
+        USER_CONNECTOR,
+        { query: REPORT_HITS, variables: { indicatorId: heldIndicatorId, platformId, count: 4, lastHit: '2026-10-03T10:00:00.000Z' } },
+        'The hits sighting identifier of this indicator and security platform is held by another sighting',
+      );
+      const after = await internalLoadById(testContext, ADMIN_USER, held.internal_id, { type: STIX_SIGHTING_RELATIONSHIP }) as unknown as { attribute_count: number };
+      expect(after.attribute_count).toEqual(1);
+    } finally {
+      if (heldIndicatorId) {
+        await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: heldIndicatorId } });
       }
       streamed.forEach((spy) => spy.mockRestore());
     }

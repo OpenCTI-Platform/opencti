@@ -87,10 +87,11 @@ security platform, so only the users who can read both can read them: for every 
 security platform carries (TLP, PAP, statements...), they carry the highest marking of that type among the two.
 Creating or importing a `deployed-on` relationship without these markings is refused, and so is an edit that removes
 one of them or replaces it with a lower one; raising a marking or adding a marking of another type stays possible.
-When a marking of the indicator or of the security platform is added, raised, lowered or replaced, its deployments,
-hits sightings and validation results follow at once, and the counters follow every change of markings, sharing,
-authorized members or author of either end. A marking of a type that neither end carries is kept, as it may have been
-set on the deployment itself. An indicator has one deployment per security
+When a marking of the indicator or of the security platform is added or raised, its deployments, hits sightings and
+validation results follow at once, and the counters follow every change of markings, sharing, authorized members or
+author of either end. A marking stricter than those of the indicator and of the security platform is kept when an end
+lowers or removes its own, as it may have been set on the deployment on purpose: an editor can lower it to the level of
+the indicator and of the security platform. An indicator has one deployment per security
 platform: a `deployed-on` relationship has no start or stop time (its dates are the deployment, synchronization and
 removal dates), so creating or importing it again updates the existing one. The counters stored on an indicator are visible to every
 reader of the indicator: they only count the deployments that carry no marking beyond the indicator's own, are
