@@ -12,6 +12,7 @@ import {
   WidgetVisualizationTypes,
   workspacesWidgetVisualizationTypes,
   fintelTemplatesWidgetVisualizationTypes,
+  isParametersOnlyWidget,
   getWidgetInterval,
   useGetNumberWidgetTitle,
   checkIfDateAttributeValid,
@@ -301,6 +302,19 @@ describe('widgetUtils', () => {
       expect(hasText).toBe(true);
       expect(hasList).toBe(true);
       expect(hasDonut).toBe(true);
+    });
+  });
+
+  describe('Threat Pulse widgets', () => {
+    it('should only be offered on dashboards and be configured with parameters only', () => {
+      const workspaceKeys = workspacesWidgetVisualizationTypes.map((w) => w.key);
+      expect(workspaceKeys).toEqual(expect.arrayContaining(['pulse-trending', 'pulse-benchmark']));
+      expect(fintelTemplatesWidgetVisualizationTypes.map((w) => w.key)).not.toContain('pulse-trending');
+      expect(getCurrentCategory('pulse-trending')).toBe('pulse');
+      expect(getCurrentDataSelectionLimit('pulse-benchmark')).toBe(0);
+      expect(isParametersOnlyWidget('pulse-trending')).toBe(true);
+      expect(isParametersOnlyWidget('text')).toBe(true);
+      expect(isParametersOnlyWidget('list')).toBe(false);
     });
   });
 

@@ -140,6 +140,16 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 - The number of PIRs
 - The number of decay rules created
 
+### Threat Pulse
+
+- The Threat Pulse mode of the platform: whether it contributes, runs in preview (registered on XTM Hub, not contributing, not turned off) or neither
+- The number of Threat Pulse records (keyed hash and count) contributed to XTM Hub
+- The number of Threat Pulse lookups (keyed hashes) sent to XTM Hub
+- The number of Threat Pulse preview impressions and calls to action, broken down by event (`impression`, `cta_click`) and surface (`entity_card`, `trending_widget`, `benchmark_template`, `notifications`, `banner`)
+- The number of Threat Pulse mode changes, broken down by the mode chosen (`preview`, `contribute_and_read`, `off`)
+
+No hash, no object and no knowledge content is ever collected, only counts.
+
 ### Retention and activity
 
 - Whether the history retention rule is active on the platform

@@ -1,0 +1,61 @@
+import { PulseMode, type Resolvers } from '../../../generated/graphql';
+import type { AuthContext } from '../../../types/user';
+import type { BasicStoreSettings } from '../../../types/settings';
+import { getEntityFromCache } from '../../../database/cache';
+import { SYSTEM_USER } from '../../../utils/access';
+import { ENTITY_TYPE_SETTINGS } from '../../../schema/internalObject';
+import { getPulseHubPlatform, readPulseSettings } from './pulse-settings';
+import {
+  configurePulse,
+  getPulseBenchmark,
+  getPulseEntityInformation,
+  getPulseSettings,
+  getPulseStatus,
+  getPulseTrending,
+  purgePulseContributions,
+  recordPulseTelemetry,
+} from './pulse-domain';
+import { toPulseInformationOutput } from './pulse-information';
+import type { BasicStorePulseEntity, PulsePeriodValue, PulseRegionBucketValue, PulseSectorBucketValue } from './pulse-types';
+
+// Nothing while the platform is not registered on XTM Hub or Threat Pulse is off, whatever an object still stores.
+// The settings come from the in-memory cache: no cost per object of a list.
+const pulseField = {
+  pulse: async (entity: unknown, _: unknown, context: AuthContext) => {
+    const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+    if (!getPulseHubPlatform(settings) || readPulseSettings(settings).mode === PulseMode.Off) {
+      return null;
+    }
+    return toPulseInformationOutput(entity as BasicStorePulseEntity);
+  },
+};
+
+const pulseResolvers: Resolvers = {
+  Query: {
+    pulseStatus: (_, __, context) => getPulseStatus(context),
+    pulseSettings: (_, __, context) => getPulseSettings(context),
+    pulseEntity: (_, { id }, context) => getPulseEntityInformation(context, context.user, id),
+    pulseTrending: (_, args, context) => getPulseTrending(context, context.user, {
+      period: args.period as PulsePeriodValue,
+      sector_bucket: args.sector_bucket as PulseSectorBucketValue | null | undefined,
+      region_bucket: args.region_bucket as PulseRegionBucketValue | null | undefined,
+      entity_types: args.entity_types,
+      first: args.first,
+      include_preview: args.include_preview,
+    }),
+    pulseBenchmark: (_, args, context) => getPulseBenchmark(context, context.user, { period: args.period as PulsePeriodValue }),
+  },
+  Mutation: {
+    pulseConfigure: (_, { input }, context) => configurePulse(context, context.user, input),
+    pulsePurge: (_, __, context) => purgePulseContributions(context, context.user),
+    pulseTelemetry: (_, { event, surface }, context) => recordPulseTelemetry(context, event, surface),
+  },
+  Indicator: pulseField,
+  AttackPattern: pulseField,
+  Vulnerability: pulseField,
+  IntrusionSet: pulseField,
+  Malware: pulseField,
+  Tool: pulseField,
+};
+
+export default pulseResolvers;

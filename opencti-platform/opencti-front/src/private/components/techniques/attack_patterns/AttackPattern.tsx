@@ -11,6 +11,7 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import ThreatPulseOverviewColumn from '@components/common/threat_pulse/ThreatPulseOverviewColumn';
 
 export const attackPatternFragment = graphql`
   fragment AttackPattern_attackPattern on AttackPattern {
@@ -95,7 +96,9 @@ const AttackPattern: React.FC<AttackPatternProps> = ({
               case 'basicInformation':
                 return (
                   <Grid key={key} item xs={width}>
-                    <StixDomainObjectOverview stixDomainObject={attackPattern} />
+                    <ThreatPulseOverviewColumn entityId={attackPattern.id}>
+                      <StixDomainObjectOverview stixDomainObject={attackPattern} />
+                    </ThreatPulseOverviewColumn>
                   </Grid>
                 );
               case 'latestCreatedRelationships':

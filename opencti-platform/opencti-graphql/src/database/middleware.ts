@@ -215,6 +215,7 @@ import { validateInputCreation, validateInputUpdate } from '../schema/schema-val
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
+import { recordPulseSightingIncrease } from '../modules/xtm/pulse/pulse-sighting-activity';
 import { buildChanges, generateCreateMessage, generateRestoreMessage } from './data-changes';
 import { authorizedMembers, authorizedMembersActivationDate, confidence, iAliasedIds, iAttributes, modified, type RefAttribute, updatedAt } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
@@ -3336,7 +3337,14 @@ const upsertElement = async (
   if (inputs.length > 0) {
     // Update the attribute and return the result
     const updateOpts = { ...opts, upsert: context.synchronizedUpsert !== true };
-    return await updateAttributeMetaResolved(context, user, resolvedElement, inputs, updateOpts);
+    const upsertResult = await updateAttributeMetaResolved(context, user, resolvedElement, inputs, updateOpts);
+    if (isStixSightingRelationship(type)) {
+      const sighting = resolvedElement as unknown as BasicStoreRelation & { attribute_count?: number };
+      const updated = upsertResult.element as unknown as { attribute_count?: number };
+      const increase = Number(updated?.attribute_count ?? 0) - Number(sighting.attribute_count ?? 0);
+      await recordPulseSightingIncrease(context, sighting, increase);
+    }
+    return upsertResult;
   }
   // -- No modification applied
   return { element: resolvedElement, event: null, isCreation: false };

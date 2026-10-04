@@ -1,7 +1,7 @@
 import React, { createContext, Dispatch, ReactNode, useContext, useEffect, useState } from 'react';
 import type { Widget, WidgetHost, WidgetDataSelection, WidgetParameters, WidgetPerspective } from '../../../utils/widget/widget';
 import { emptyFilterGroup, SELF_ID } from '../../../utils/filters/filtersUtils';
-import { getCurrentDataSelectionLimit } from '../../../utils/widget/widgetUtils';
+import { getCurrentDataSelectionLimit, isParametersOnlyWidget } from '../../../utils/widget/widgetUtils';
 import type { WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
 
 export interface WidgetConfigType {
@@ -96,7 +96,7 @@ export const WidgetConfigProvider = ({
     setConfig(buildConfig(host, initialWidget, initialVariableName));
     let initialStep = 0;
     if (initialWidget) {
-      if (initialWidget?.type === 'text' || initialWidget?.type === 'attribute' || initialWidget?.type === 'custom-attributes') {
+      if (isParametersOnlyWidget(initialWidget?.type)) {
         initialStep = 3;
       } else if (initialWidget?.dataSelection) {
         initialStep = 2;

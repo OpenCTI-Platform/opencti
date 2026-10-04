@@ -57,7 +57,7 @@ import {
   ENTITY_TYPE_INGESTION_TAXII_COLLECTION,
 } from '../modules/ingestion/ingestion-types';
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
-import { FilterMode } from '../generated/graphql';
+import { FilterMode, PulseMode, PulseSurface, PulseTelemetryEvent } from '../generated/graphql';
 import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../database/redis';
 import { countOffloadedStreamEvents, rawFetchStreamInfo } from '../database/redis-stream';
 import type { AuthUser } from '../types/user';
@@ -65,6 +65,7 @@ import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../modules/securityCoverage/securityCoverage-types';
 import { findRolesWithCapabilityInDraft } from '../modules/user/user-domain';
 import { isEnterpriseEditionFromSettings } from '../enterprise-edition/ee';
+import { isPulseContributing, readPulseSettings } from '../modules/xtm/pulse/pulse-settings';
 import { EnvStrategyType, isStrategyActivated } from '../modules/authenticationProvider/providers-configuration';
 import { listRules } from '../modules/retentionRules/retentionRules-domain';
 import { fullEntitiesList } from '../database/middleware-loader';
@@ -155,6 +156,10 @@ export const TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED = 'customViewCreatedCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED = 'customViewEnabledCount';
 export const TELEMETRY_GAUGE_SAVED_FILTER_PERMISSION_CHANGES = 'sharedSavedFiltersPermissionChangesCount';
 export const TELEMETRY_GAUGE_WORKFLOW_PUBLISH = 'workflowPublishCount';
+export const TELEMETRY_GAUGE_THREAT_PULSE_RECORDS = 'threatPulseRecordsCount';
+export const TELEMETRY_GAUGE_THREAT_PULSE_LOOKUPS = 'threatPulseLookupsCount';
+export const TELEMETRY_GAUGE_THREAT_PULSE_PREVIEW_EVENT = 'threatPulsePreviewEventCount';
+export const TELEMETRY_GAUGE_THREAT_PULSE_MODE_CHANGE = 'threatPulseModeChangeCount';
 // AI usage counters. Backend-agnostic by design: a chatbot message or an Ask AI
 // call is the SAME feature whether it is served by the legacy path or by
 // XTM One, so no counter carries a legacy/xtm_one dimension. The before/after
@@ -208,6 +213,27 @@ export const addDisseminationCount = async () => {
 export const addNlqQueryCount = () => {
   redisSetTelemetryAdd(TELEMETRY_GAUGE_NLQ, 1)
     .catch((reason) => logApp.warn('Error adding NLQ query count to telemetry', { reason }));
+};
+// Fire-and-forget: a telemetry failure must never break a Threat Pulse contribution or lookup.
+export const addThreatPulseRecordsCount = (count: number) => {
+  if (count <= 0) return;
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_THREAT_PULSE_RECORDS, count)
+    .catch((reason) => logApp.warn('Error adding Threat Pulse records count to telemetry', { reason }));
+};
+export const addThreatPulseLookupsCount = (count: number) => {
+  if (count <= 0) return;
+  redisSetTelemetryAdd(TELEMETRY_GAUGE_THREAT_PULSE_LOOKUPS, count)
+    .catch((reason) => logApp.warn('Error adding Threat Pulse lookups count to telemetry', { reason }));
+};
+export const THREAT_PULSE_TELEMETRY_EVENTS = Object.values(PulseTelemetryEvent);
+export const THREAT_PULSE_TELEMETRY_SURFACES = Object.values(PulseSurface);
+export const addThreatPulsePreviewEventCount = (event: PulseTelemetryEvent, surface: PulseSurface) => {
+  redisSetTelemetryAdd(`${TELEMETRY_GAUGE_THREAT_PULSE_PREVIEW_EVENT}:${event}:${surface}`, 1)
+    .catch((reason) => logApp.warn('Error adding Threat Pulse preview event count to telemetry', { reason }));
+};
+export const addThreatPulseModeChangeCount = (mode: PulseMode) => {
+  redisSetTelemetryAdd(`${TELEMETRY_GAUGE_THREAT_PULSE_MODE_CHANGE}:${mode}`, 1)
+    .catch((reason) => logApp.warn('Error adding Threat Pulse mode change count to telemetry', { reason }));
 };
 export const addRequestAccessCreationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_REQUEST_ACCESS, 1);
@@ -472,6 +498,9 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setIsChatbotCguAccepted(settings.filigran_chatbot_ai_cgu_status === 'enabled' ? 1 : 0);
     manager.setIsOrganizationSegregationEnabled(settings.platform_organization ? 1 : 0);
     manager.setIsXtmHubRegistered(settings.xtm_hub_registration_status === 'registered' ? 1 : 0);
+    const pulseValues = readPulseSettings(settings);
+    manager.setIsThreatPulseEnabled(isPulseContributing(pulseValues) ? 1 : 0);
+    manager.setIsThreatPulsePreview(pulseValues.mode === PulseMode.Preview && !!settings.xtm_hub_token ? 1 : 0);
     // endregion
 
     // region Cluster information
@@ -726,6 +755,28 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setDisseminationCount(disseminationCountInRedis);
     const nlqQueryCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_NLQ);
     manager.setNlqQueryCount(nlqQueryCountInRedis);
+    const threatPulseRecordsCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_THREAT_PULSE_RECORDS);
+    manager.setThreatPulseRecordsCount(threatPulseRecordsCountInRedis);
+    const threatPulseLookupsCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_THREAT_PULSE_LOOKUPS);
+    manager.setThreatPulseLookupsCount(threatPulseLookupsCountInRedis);
+    const threatPulseEventItems: DimensionalGaugeItem[] = [];
+    for (let eventIndex = 0; eventIndex < THREAT_PULSE_TELEMETRY_EVENTS.length; eventIndex += 1) {
+      const event = THREAT_PULSE_TELEMETRY_EVENTS[eventIndex];
+      for (let surfaceIndex = 0; surfaceIndex < THREAT_PULSE_TELEMETRY_SURFACES.length; surfaceIndex += 1) {
+        const surface = THREAT_PULSE_TELEMETRY_SURFACES[surfaceIndex];
+        const value = await redisGetTelemetry(`${TELEMETRY_GAUGE_THREAT_PULSE_PREVIEW_EVENT}:${event}:${surface}`);
+        threatPulseEventItems.push({ value, attributes: { event, surface } });
+      }
+    }
+    manager.setThreatPulsePreviewEventItems(threatPulseEventItems);
+    const threatPulseModeItems: DimensionalGaugeItem[] = [];
+    const threatPulseModes = Object.values(PulseMode);
+    for (let modeIndex = 0; modeIndex < threatPulseModes.length; modeIndex += 1) {
+      const mode = threatPulseModes[modeIndex];
+      const value = await redisGetTelemetry(`${TELEMETRY_GAUGE_THREAT_PULSE_MODE_CHANGE}:${mode}`);
+      threatPulseModeItems.push({ value, attributes: { mode } });
+    }
+    manager.setThreatPulseModeChangeItems(threatPulseModeItems);
     const requestAccessCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_REQUEST_ACCESS);
     manager.setRequestAccessCreatedCount(requestAccessCountInRedis);
     const draftCreationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DRAFT_CREATION);
