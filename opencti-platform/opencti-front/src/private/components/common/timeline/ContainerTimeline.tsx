@@ -448,8 +448,8 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
   }, [updateState]);
 
   const lanes = useMemo(() => {
-    const enabled = TIMELINE_LANES.filter((lane) => (settings?.enabled_lanes ?? TIMELINE_LANES).includes(lane));
-    return state.lanes.length > 0 ? TIMELINE_LANES.filter((lane) => state.lanes.includes(lane)) : enabled;
+    // A selection kept in the URL stays within the lanes enabled in the settings, which apply to every user
+    return effectiveLanes(state.lanes, settings?.enabled_lanes ?? []) ?? [...TIMELINE_LANES];
   }, [state.lanes, settings?.enabled_lanes]);
   const apiLanes = effectiveLanes(state.lanes, settings?.enabled_lanes ?? []);
   const apiKinds = effectiveKinds(state.kinds, settings?.hidden_kinds ?? []);

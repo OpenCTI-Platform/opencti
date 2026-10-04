@@ -208,7 +208,10 @@ describe('Timeline filters', () => {
     const kinds = effectiveKinds([], ['relation_created', 'object_added']);
     expect(kinds).toHaveLength(TIMELINE_KINDS.length - 2);
     expect(kinds).not.toContain('relation_created');
-    expect(effectiveLanes(['response'], ['adversary'])).toEqual(['response']);
+    // A selection outside the enabled lanes (a bookmarked URL) never brings a disabled lane back
+    expect(effectiveLanes(['response'], ['adversary'])).toEqual(['adversary']);
+    expect(effectiveLanes(['response', 'adversary'], ['adversary', 'detection'])).toEqual(['adversary']);
+    expect(effectiveLanes(['response'], [])).toEqual(['response']);
     expect(effectiveLanes([], ['adversary', 'detection', 'response', 'evidence', 'knowledge', 'custom'])).toBeNull();
     expect(effectiveLanes([], ['response', 'adversary'])).toEqual(['adversary', 'response']);
   });

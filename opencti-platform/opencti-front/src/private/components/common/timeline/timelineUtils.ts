@@ -458,10 +458,20 @@ export const effectiveKinds = (selected: string[], hiddenKinds: readonly string[
   return TIMELINE_KINDS.filter((kind) => !hiddenKinds.includes(kind));
 };
 
-/** Lanes sent to the API: the explicit selection, else the lanes enabled by the settings. */
-export const effectiveLanes = (selected: TimelineLane[], enabledLanes: readonly string[]): TimelineLane[] | null => {
-  if (selected.length > 0) return selected;
+/** Lanes enabled by the settings of the case; no setting yet means every lane. */
+export const enabledTimelineLanes = (enabledLanes: readonly string[]): TimelineLane[] => {
   const enabled = TIMELINE_LANES.filter((lane) => enabledLanes.includes(lane));
-  return enabled.length === TIMELINE_LANES.length || enabled.length === 0 ? null : enabled;
+  return enabled.length > 0 ? enabled : [...TIMELINE_LANES];
+};
+
+/**
+ * Lanes sent to the API: the selection within the lanes enabled by the settings (a bookmarked selection never shows a
+ * lane disabled since), else the enabled lanes; null when every lane applies.
+ */
+export const effectiveLanes = (selected: readonly string[], enabledLanes: readonly string[]): TimelineLane[] | null => {
+  const enabled = enabledTimelineLanes(enabledLanes);
+  const chosen = enabled.filter((lane) => selected.includes(lane));
+  if (chosen.length > 0) return chosen;
+  return enabled.length === TIMELINE_LANES.length ? null : enabled;
 };
 // endregion
