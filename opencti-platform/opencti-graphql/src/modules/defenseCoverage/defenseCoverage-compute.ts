@@ -3,9 +3,9 @@ import conf, { logApp } from '../../config/conf';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity, BasicStoreRelation } from '../../types/store';
 import { fullEntitiesList, fullRelationsList, internalFindByIds } from '../../database/middleware-loader';
-import { elBulk, elIndexElements, elRawDeleteByQuery, elUpdate } from '../../database/engine';
+import { elBulk, elRawDeleteByQuery, elUpdate, prepareElementForIndexing } from '../../database/engine';
 import { buildEntityData } from '../../database/data-builder';
-import { READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_META_OBJECTS } from '../../database/utils';
+import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_META_OBJECTS } from '../../database/utils';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION, ENTITY_TYPE_DATA_COMPONENT, ENTITY_TYPE_IDENTITY_SYSTEM } from '../../schema/stixDomainObject';
 import { RELATION_DEPLOYED_ON, RELATION_DETECTS, RELATION_HAS_COVERED, RELATION_INDICATES, RELATION_MITIGATES, RELATION_PROVIDES } from '../../schema/stixCoreRelationship';
 import { ENTITY_TYPE_INDICATOR, type BasicStoreEntityIndicator } from '../indicator/indicator-types';
@@ -396,6 +396,15 @@ export const defenseGapId = (attackPatternId: string, platformId: string) => {
   return { standardId, internalId: standardId.split('--')[1] };
 };
 
+// Fields of a gap written by the validation requests, never by the computation of an existing gap
+const GAP_LIFECYCLE_FIELDS = ['validation_requests', 'last_validation_requested_at'];
+// Computed fields a gap may lose (a reopened gap has no closed_at any more)
+const GAP_OPTIONAL_COMPUTED_FIELDS = ['closed_at', 'x_mitre_id'];
+const GAP_REFRESH_SCRIPT = `
+  for (entry in params.computed.entrySet()) { ctx._source[entry.getKey()] = entry.getValue(); }
+  for (field in params.removed) { ctx._source.remove(field); }
+`;
+
 const storeGaps = async (
   context: AuthContext,
   user: AuthUser,
@@ -420,7 +429,7 @@ const storeGaps = async (
   });
   const existingById = new Map(existing.map((e) => [e.internal_id, e]));
   let closed = 0;
-  const docs = [];
+  const docs: Array<{ element: Record<string, unknown>; previousIndex?: string }> = [];
   for (let index = 0; index < wanted.length; index += 1) {
     await doYield();
     const { attackPattern, platformId, cellPlatform, standardId, internalId } = wanted[index];
@@ -449,11 +458,22 @@ const storeGaps = async (
       updated_at: computedAt,
     };
     const { element } = await buildEntityData(context, user, R.reject(R.isNil, input), ENTITY_TYPE_DEFENSE_GAP);
-    docs.push(element);
+    docs.push({ element: await prepareElementForIndexing(element), previousIndex: previous?._index });
   }
+  // A validation request is appended to its gaps without the computation lock: an existing gap gets the computed
+  // fields only, so that a request appended since it was read is never replaced by the copy taken above
   const groups = R.splitEvery(BULK_SIZE, docs);
   for (let index = 0; index < groups.length; index += 1) {
-    await elIndexElements(context, user, ENTITY_TYPE_DEFENSE_GAP, groups[index]);
+    const body = groups[index].flatMap(({ element, previousIndex }) => {
+      const { _index: _ignored, ...upsert } = element;
+      const computed = R.omit(GAP_LIFECYCLE_FIELDS, upsert);
+      const removed = GAP_OPTIONAL_COMPUTED_FIELDS.filter((field) => !(field in computed));
+      return [
+        { update: { _index: previousIndex ?? INDEX_INTERNAL_OBJECTS, _id: upsert.internal_id, retry_on_conflict: 5 } },
+        { script: { source: GAP_REFRESH_SCRIPT, lang: 'painless', params: { computed, removed } }, upsert },
+      ];
+    });
+    await elBulk(context, { refresh: true, body });
   }
   return { gaps: docs.length, closed };
 };

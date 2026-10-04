@@ -392,6 +392,12 @@ describe('Threat-informed defense matrix', () => {
     const technique = await queryAsAdminWithSuccess({ query: DEFENSE_TECHNIQUE, variables: { id: created.attackPattern, platformIds: [created.platform] } });
     const platformGap = technique.data?.defenseTechnique.gaps.find((g: { platform_id: string }) => g.platform_id === created.platform);
     expect(platformGap.validation_requests).toEqual([{ security_coverage_id: securityCoverageId, grouping_id: groupingId, threat_id: created.threat }]);
+    // A recomputation refreshes the computed fields of the gap and keeps its validation requests
+    await computeDefenseCoverage(testContext, SYSTEM_USER, { attackPatternIds: [created.attackPattern] });
+    const recomputed = await queryAsAdminWithSuccess({ query: DEFENSE_TECHNIQUE, variables: { id: created.attackPattern, platformIds: [created.platform] } });
+    const recomputedGap = recomputed.data?.defenseTechnique.gaps.find((g: { platform_id: string }) => g.platform_id === created.platform);
+    expect(recomputedGap.level).toEqual(platformGap.level);
+    expect(recomputedGap.validation_requests).toEqual([{ security_coverage_id: securityCoverageId, grouping_id: groupingId, threat_id: created.threat }]);
   });
 
   it('should reject an empty or unknown validation request', async () => {

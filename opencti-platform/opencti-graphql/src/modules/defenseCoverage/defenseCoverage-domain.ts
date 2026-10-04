@@ -21,7 +21,8 @@ import { addSecurityCoverage } from '../securityCoverage/securityCoverage-domain
 import { addGrouping } from '../grouping/grouping-domain';
 import { addExternalReference } from '../../domain/externalReference';
 import { addDefenseGapExportCount, addDefenseValidationRequestCount } from '../../manager/telemetryManager';
-import { INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS, wait } from '../../database/utils';
+import { logApp } from '../../config/conf';
 import type { DefenseGapsFilter, DefenseGapsOrdering, DefenseLogsourceInput, DefenseValidationInput, OrderingMode } from '../../generated/graphql';
 import {
   DEFENSE_AGGREGATE_PLATFORM,
@@ -68,6 +69,9 @@ const DEFAULT_GAPS_PAGE_SIZE = 50;
 const MAX_GAPS_PAGE_SIZE = 500;
 const EXPORT_BATCH_SIZE = 2000;
 const MAX_VALIDATION_TECHNIQUES = 200;
+// Attempts to track a created validation request on its gaps, and the delay between them (grows with the attempt)
+const TRACKING_ATTEMPTS = 3;
+const TRACKING_RETRY_DELAY = 500;
 const MAX_LOGSOURCES = 200;
 const DEFAULT_RULE_CANDIDATES = 5;
 const IDS_CHUNK_SIZE = 5000;
@@ -820,10 +824,19 @@ export const exportDefenseGaps = async (context: AuthContext, user: AuthUser, ar
 // endregion
 
 // region validation
+// Idempotent: a retried tracking never appends the same request twice to a gap
 const GAP_TRACKING_SCRIPT = `
   if (ctx._source.validation_requests == null) { ctx._source.validation_requests = []; }
-  ctx._source.validation_requests.add(params.request);
-  ctx._source.last_validation_requested_at = params.request.requested_at;
+  boolean tracked = false;
+  for (existing in ctx._source.validation_requests) {
+    if (existing.security_coverage_id == params.request.security_coverage_id) { tracked = true; }
+  }
+  if (tracked) {
+    ctx.op = 'noop';
+  } else {
+    ctx._source.validation_requests.add(params.request);
+    ctx._source.last_validation_requested_at = params.request.requested_at;
+  }
 `;
 
 const trackValidationRequest = async (
@@ -833,6 +846,12 @@ const trackValidationRequest = async (
   request: DefenseGapValidationRequest,
 ) => {
   const attackPatternById = new Map(attackPatterns.map((attackPattern) => [attackPattern.internal_id, attackPattern]));
+  // An existing gap is updated in its own index (the write alias may point to a newer one after a rollover)
+  const gapIds = targets
+    .filter((target) => attackPatternById.has(target.attackPatternId))
+    .map((target) => defenseGapId(target.attackPatternId, target.platformId).internalId);
+  const existingGaps = await findByIdsChunked<BasicStoreEntity>(context, SYSTEM_USER, gapIds, { type: ENTITY_TYPE_DEFENSE_GAP, indices: [READ_INDEX_INTERNAL_OBJECTS] });
+  const gapIndexById = new Map(existingGaps.map((gap) => [gap.internal_id, gap._index]));
   const operations = [];
   for (let index = 0; index < targets.length; index += 1) {
     const { attackPatternId, platformId } = targets[index];
@@ -857,7 +876,7 @@ const trackValidationRequest = async (
       }, ENTITY_TYPE_DEFENSE_GAP);
       const { _index: _ignored, ...upsertDoc } = element as Record<string, unknown>;
       operations.push(
-        { update: { _index: INDEX_INTERNAL_OBJECTS, _id: internalId, retry_on_conflict: 5 } },
+        { update: { _index: gapIndexById.get(internalId) ?? INDEX_INTERNAL_OBJECTS, _id: internalId, retry_on_conflict: 5 } },
         { script: { source: GAP_TRACKING_SCRIPT, lang: 'painless', params: { request } }, upsert: upsertDoc },
       );
     }
@@ -961,7 +980,20 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
     requestedPlatforms,
     gapRefs.map((gap) => ({ attackPatternId: internalIdOf.get(gap.attackPatternId) ?? gap.attackPatternId, platformId: gap.platformId })),
   );
-  const gapsCount = await trackValidationRequest(context, attackPatterns, targets, request);
+  // The validation exists from here: a tracking failure must not report a failed request that a retry would duplicate
+  let gapsCount = 0;
+  for (let attempt = 1; attempt <= TRACKING_ATTEMPTS; attempt += 1) {
+    try {
+      gapsCount = await trackValidationRequest(context, attackPatterns, targets, request);
+      break;
+    } catch (error) {
+      if (attempt === TRACKING_ATTEMPTS) {
+        logApp.error('[DEFENSE-COVERAGE] Validation request created but not tracked on its gaps', { cause: error, security_coverage_id: securityCoverage.id });
+      } else {
+        await wait(TRACKING_RETRY_DELAY * attempt);
+      }
+    }
+  }
   await addDefenseValidationRequestCount();
   return { securityCoverage, grouping, gaps_count: gapsCount };
 };
