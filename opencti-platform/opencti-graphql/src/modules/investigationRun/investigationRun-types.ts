@@ -218,6 +218,8 @@ export interface InvestigationBudget {
   used_iterations: number;
   used_enrichment_jobs: number;
   used_minutes: number;
+  // Iterations used before the current engine run started (continuations).
+  iterations_base?: number;
 }
 
 export interface InvestigationApproval {

@@ -9,6 +9,7 @@ import {
 } from '../../../../src/generated/graphql';
 import {
   acceptanceRate,
+  boundApprovals,
   buildTimeline,
   canAutoApproveDraft,
   computeAcceptance,
@@ -202,5 +203,17 @@ describe('Case Autopilot feedback accounting', () => {
     expect(Object.values(same).every((value) => value === 0)).toBe(true);
     expect(acceptanceRate({ hypotheses_accepted: 3, hypotheses_rejected: 1, recommendations_accepted: 0, recommendations_rejected: 0 })).toBe(0.75);
     expect(acceptanceRate({ hypotheses_accepted: 0, hypotheses_rejected: 0, recommendations_accepted: 0, recommendations_rejected: 0 })).toBeNull();
+  });
+});
+
+describe('Case Autopilot approval history', () => {
+  it('drops decided approvals first, oldest first, and never a pending gate', () => {
+    const approval = (id: string, status: 'pending' | 'approved' | 'rejected') => ({
+      id, kind: 'enrichment', status, description: id, reason: null, connector_id: 'c', entity_id: 'e', recommendation_id: null, created_at: '2026-10-04T00:00:00.000Z',
+    }) as never;
+    const approvals = [approval('a', 'approved'), approval('b', 'pending'), approval('c', 'rejected'), approval('d', 'pending'), approval('e', 'approved')];
+    expect(boundApprovals(approvals, 5)).toBe(approvals);
+    expect(boundApprovals(approvals, 3).map((item: { id: string }) => item.id)).toEqual(['b', 'd', 'e']);
+    expect(boundApprovals(approvals, 1).map((item: { id: string }) => item.id)).toEqual(['b', 'd']);
   });
 });

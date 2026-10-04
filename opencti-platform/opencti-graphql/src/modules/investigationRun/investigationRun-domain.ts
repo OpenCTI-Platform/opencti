@@ -79,6 +79,7 @@ import {
 } from './investigationRun-types';
 import { applyInvestigationPolicyAcceptanceDelta, getDefaultInvestigationPolicy, loadInvestigationPolicy, policyUsageLockKey } from './investigationPolicy-domain';
 import {
+  boundApprovals,
   buildBudget,
   computeWaveStatus,
   evaluateEnrichmentRequest,
@@ -413,6 +414,11 @@ export const cancelInvestigationRun = async (context: AuthContext, user: AuthUse
       approvals: current.approvals.map((approval) => (approval.status === InvestigationApprovalStatus.Pending
         ? { ...approval, status: InvestigationApprovalStatus.Rejected, decided_at: now.toISOString(), decided_by: user.id, rejection_reason: 'Run cancelled' }
         : approval)),
+      // Jobs not started yet never start: the dispatch checks them again just before.
+      enrichment_requests: current.enrichment_requests.map((request) => (request.status === InvestigationEnrichmentRequestStatus.Queued
+        || request.status === InvestigationEnrichmentRequestStatus.AwaitingApproval
+        ? { ...request, status: InvestigationEnrichmentRequestStatus.Skipped, error: 'Run cancelled', completed_at: now.toISOString() }
+        : request)),
     };
   }));
   await publishUserAction({
@@ -969,7 +975,7 @@ export const requestInvestigationEnrichment = async (context: AuthContext, user:
     return {
       enrichment_requests: allRequests,
       enrichment_waves: [...(current.enrichment_waves ?? []), wave].slice(-INVESTIGATION_LIMITS.enrichmentWaves),
-      approvals: [...current.approvals, ...newApprovals].slice(-INVESTIGATION_LIMITS.approvals),
+      approvals: boundApprovals([...current.approvals, ...newApprovals]),
     };
   });
   return { wave_id: waveId, accepted, rejected };

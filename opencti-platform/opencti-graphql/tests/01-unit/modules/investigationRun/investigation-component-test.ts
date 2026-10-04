@@ -49,7 +49,7 @@ describe('Run Case Autopilot playbook component', () => {
 
   it('offers the investigation policies by name', async () => {
     mocks.policies = [{ internal_id: 'policy-b', name: 'Ransomware' }, { internal_id: 'policy-a', name: 'Phishing' }];
-    const schema = await PLAYBOOK_INVESTIGATION_COMPONENT.schema?.() as { properties: { policy_id: { oneOf: unknown[] } } };
+    const schema = await PLAYBOOK_INVESTIGATION_COMPONENT.schema?.() as unknown as { properties: { policy_id: { oneOf: unknown[] } } };
     expect(schema.properties.policy_id.oneOf).toEqual([{ const: 'policy-a', title: 'Phishing' }, { const: 'policy-b', title: 'Ransomware' }]);
   });
 

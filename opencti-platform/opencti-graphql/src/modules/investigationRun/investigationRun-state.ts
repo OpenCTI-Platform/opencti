@@ -18,6 +18,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // The manager and the domain apply them; nothing here touches the database.
 
 import {
+  InvestigationApprovalStatus,
   InvestigationAutonomousAction,
   InvestigationEnrichmentRequestStatus,
   InvestigationFeedbackDecision,
@@ -31,6 +32,7 @@ import {
   type BasicStoreEntityInvestigationPolicy,
   type BasicStoreEntityInvestigationRun,
   type InvestigationAcceptance,
+  type InvestigationApproval,
   type InvestigationBudget,
   type InvestigationEnrichmentRequest,
   type InvestigationFeedback,
@@ -231,6 +233,22 @@ export const buildTimeline = (sources: TimelineSource[]): InvestigationTimelineE
   });
   events.sort((a, b) => (a.ts === b.ts ? a.entity_id.localeCompare(b.entity_id) : a.ts.localeCompare(b.ts)));
   return events.length > INVESTIGATION_LIMITS.timeline ? events.slice(events.length - INVESTIGATION_LIMITS.timeline) : events;
+};
+
+/**
+ * The approval history of a run, bounded: decided approvals go first, oldest
+ * first; a pending gate is never dropped, or nobody could decide it.
+ */
+export const boundApprovals = (approvals: InvestigationApproval[], limit = INVESTIGATION_LIMITS.approvals): InvestigationApproval[] => {
+  let excess = approvals.length - limit;
+  if (excess <= 0) return approvals;
+  return approvals.filter((approval) => {
+    if (excess > 0 && approval.status !== InvestigationApprovalStatus.Pending) {
+      excess -= 1;
+      return false;
+    }
+    return true;
+  });
 };
 
 export const isLowRiskDraft = (draftTypes: string[]): boolean => {
