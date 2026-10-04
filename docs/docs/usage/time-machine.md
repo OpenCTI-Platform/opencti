@@ -168,7 +168,7 @@ To start from a ready-made dashboard, go to **Dashboards > Custom dashboards**, 
 
 ## New since your last visit
 
-When you open the overview of an entity, the platform records your visit. These markers are private: only you can see them.
+When you open the overview of an entity, the platform records your visit. These markers are private: only you can see them. Opening an entity while you work in a draft does not record a visit, so the markers always follow the knowledge they are compared with.
 
 - On the overview, one chip says whether the entity changed since your previous visit. Hover it to see what changed (new relationships, updates by other users and, for containers, new contained objects) and when you last visited the entity. Click it to open **Compare dates** on the period since that visit, with the **Since your last visit** period selected.
 - In lists, a small dot appears on the rows of the entities that changed since your last visit. Hover it to see the details.

@@ -16,6 +16,7 @@ import type { AttributeDefinition, RefAttribute } from '../../schema/attribute-d
 import { isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER } from '../../utils/access';
 import { now, utcDate } from '../../utils/format';
 import { DefaultFormating } from '../../utils/humanize';
+import { getDraftContext } from '../../utils/draftContext';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreCommon, BasicStoreEntity, BasicStoreObject, BasicStoreRelation } from '../../types/store';
 import { OrderingMode } from '../../generated/graphql';
@@ -1060,10 +1061,10 @@ export const recordEntityVisit = async (context: AuthContext, user: AuthUser, id
   const existing = visits.get(element.internal_id);
   const currentDate = now();
   const elapsedSeconds = existing ? utcDate(currentDate).diff(utcDate(existing.last_seen_at), 'seconds') : Number.POSITIVE_INFINITY;
-  let visit: BasicStoreEntityUserVisit;
-  if (existing && elapsedSeconds < VISIT_WRITE_DEBOUNCE_SECONDS) {
-    visit = existing;
-  } else {
+  // Visits follow the main knowledge the markers are compared with: browsing a draft records none
+  const isDraft = !!getDraftContext(context, user);
+  let visit: BasicStoreEntityUserVisit | undefined = existing;
+  if (!isDraft && !(existing && elapsedSeconds < VISIT_WRITE_DEBOUNCE_SECONDS)) {
     // A new visit session starts when the previous visit is older than the session duration:
     // the previous visit becomes the reference date of the "new since your last visit" counters.
     const isSameSession = existing && elapsedSeconds < VISIT_SESSION_MINUTES * 60;
@@ -1078,7 +1079,7 @@ export const recordEntityVisit = async (context: AuthContext, user: AuthUser, id
     }
     visit = document as unknown as BasicStoreEntityUserVisit;
   }
-  const [result] = await computeSinceLastVisit(context, user, [element], new Map([[element.internal_id, visit]]), 'previous_seen_at');
+  const [result] = await computeSinceLastVisit(context, user, [element], new Map(visit ? [[element.internal_id, visit]] : []), 'previous_seen_at');
   return result;
 };
 
