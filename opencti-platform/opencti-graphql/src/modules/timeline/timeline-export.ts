@@ -24,6 +24,8 @@ export interface TimelineExportInput {
   anchors: TimelineAnchors | null;
   generatedAt: string;
   labels?: Record<string, string>;
+  /** Lanes of the view the export was made from; none means every lane. */
+  lanes?: readonly string[] | null;
 }
 
 // Fixed palette: an export is a standalone document and must render the same in every theme.
@@ -140,7 +142,9 @@ const niceTicks = (from: number, to: number, count: number): number[] => {
 
 /** Render the timeline as a standalone SVG (lanes, events, windows, anchors). */
 export const renderTimelineSvg = (input: TimelineExportInput): string => {
-  const lanes = TIMELINE_LANES.filter((lane) => lane !== 'custom' || input.events.some((e) => e.lane === 'custom'));
+  // The lanes selected in the view, empty ones included; without a selection, the core lanes and the custom lane when it is used
+  const selected = input.lanes && input.lanes.length > 0 ? new Set(input.lanes) : null;
+  const lanes = TIMELINE_LANES.filter((lane) => (selected ? selected.has(lane) : lane !== 'custom' || input.events.some((e) => e.lane === 'custom')));
   const height = AXIS_HEIGHT + lanes.length * LANE_HEIGHT + PADDING * 2;
   const plotLeft = LABEL_WIDTH + PADDING;
   const plotRight = SVG_WIDTH - PADDING;

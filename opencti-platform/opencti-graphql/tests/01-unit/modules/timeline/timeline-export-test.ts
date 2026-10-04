@@ -66,6 +66,16 @@ describe('Timeline exports', () => {
     expect(svg).not.toContain('Custom');
   });
 
+  it('should render the lanes selected in the view only, empty ones included', () => {
+    const laneLabels = (svg: string) => ['Adversary', 'Detection', 'Response', 'Evidence', 'Knowledge', 'Custom'].filter((name) => svg.includes(`>${name}</text>`));
+    expect(laneLabels(renderTimelineSvg(input))).toEqual(['Adversary', 'Detection', 'Response', 'Evidence', 'Knowledge', 'Custom']);
+    const filtered = renderTimelineSvg({ ...input, events: input.events.filter((event) => event.lane === 'adversary'), lanes: ['adversary', 'response'] });
+    expect(laneLabels(filtered)).toEqual(['Adversary', 'Response']);
+    // A selected lane without events is still drawn, the other lanes are not
+    const empty = renderTimelineSvg({ ...input, events: [], anchors: null, lanes: ['detection'] });
+    expect(laneLabels(empty)).toEqual(['Detection']);
+  });
+
   it('should render an escaped HTML document for the PDF export', () => {
     const html = renderTimelineHtml(input);
     expect(html).toContain('<h1>Timeline - Ransomware &lt;case&gt;</h1>');

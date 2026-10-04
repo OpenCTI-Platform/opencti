@@ -511,6 +511,7 @@ const renderTimelineExport = (snapshot: TimelineExportSnapshot, args: TimelineEx
     anchors: snapshot.anchors,
     generatedAt: now(),
     labels,
+    lanes: args.lanes,
   };
   switch (args.format) {
     case 'csv':
