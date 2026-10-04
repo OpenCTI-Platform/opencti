@@ -49,6 +49,7 @@ export const isReadableWithIndicator = (
   indicator: RestrictedElement,
   platform?: RestrictedElement,
   organizationSharing: { enforced: boolean; individualIds: Set<string> } = { enforced: false, individualIds: new Set() },
+  markingRanks: Map<string, { type: string; order: number }> = new Map(),
 ) => {
   if ((indicator.restricted_members ?? []).length > 0) {
     return false;
@@ -56,8 +57,14 @@ export const isReadableWithIndicator = (
   const indicatorMarkings = indicator[RELATION_OBJECT_MARKING] ?? [];
   const indicatorOrganizations = indicator[RELATION_GRANTED_TO] ?? [];
   const indicatorCreator = indicator[RELATION_CREATED_BY];
+  // A reader cleared for a marking is cleared for the lower ones of the same type (TLP:RED covers TLP:GREEN)
+  const isCovered = (marking: string) => indicatorMarkings.includes(marking) || indicatorMarkings.some((indicatorMarking) => {
+    const covering = markingRanks.get(indicatorMarking);
+    const covered = markingRanks.get(marking);
+    return !!covering && !!covered && covering.type === covered.type && covering.order >= covered.order;
+  });
   const readableByIndicatorReaders = (element: RestrictedElement) => {
-    if (!(element[RELATION_OBJECT_MARKING] ?? []).every((marking) => indicatorMarkings.includes(marking))) return false;
+    if (!(element[RELATION_OBJECT_MARKING] ?? []).every(isCovered)) return false;
     if ((element.restricted_members ?? []).length > 0) return false;
     if (!organizationSharing.enforced) return true;
     const elementOrganizations = element[RELATION_GRANTED_TO] ?? [];
