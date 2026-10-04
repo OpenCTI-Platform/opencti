@@ -12,7 +12,8 @@ import {
 } from '../../database/utils';
 import { notify, publishCacheResetEvent, redisGetSourceIntelligenceState, redisPatchSourceIntelligenceState } from '../../database/redis';
 import { BUS_TOPICS, logApp } from '../../config/conf';
-import { DatabaseError, ForbiddenAccess, FunctionalError } from '../../config/errors';
+import { DatabaseError, ForbiddenAccess, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../../config/errors';
+import { lockResources } from '../../lock/master-lock';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { INTERNAL_USERS, isUserHasCapability, SOURCE_INTELLIGENCE_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
@@ -420,7 +421,8 @@ export const validateSourceCost = (input: { amount: number; currency: string; pe
   return { amount: input.amount, currency, period: input.period as SourceCost['period'] };
 };
 
-const refreshCostOnLiveScorecards = async (context: AuthContext, source: BasicStoreEntitySource, cost: SourceCost | null) => {
+// The live scorecards of a source with a new cost, not written yet
+const costedLiveScorecards = async (context: AuthContext, source: BasicStoreEntitySource, cost: SourceCost | null) => {
   const scorecards = await Promise.all(SCORECARD_PERIODS.map((period) => findLiveScorecards(context, period, [source.internal_id])));
   const updated = scorecards
     .flat()
@@ -429,25 +431,44 @@ const refreshCostOnLiveScorecards = async (context: AuthContext, source: BasicSt
       cost_currency: cost?.currency ?? null,
       cost_per_actionable_object: computeCostPerActionable(cost, SCORECARD_PERIOD_DAYS[scorecard.scorecard_period], scorecard.actionable_count),
     }));
-  await writeScorecards(context, updated);
   const reference = updated.find((scorecard) => scorecard.scorecard_period === REFERENCE_SCORECARD_PERIOD);
-  return reference?.cost_per_actionable_object ?? null;
+  return { updated, costPerActionable: reference?.cost_per_actionable_object ?? null };
 };
 
+/**
+ * Cost changes of one source run one at a time. The source holds the cost and is written first; its live scorecards
+ * derive from it and are written last: if that write fails, the next full computation rewrites them from the source.
+ */
 export const sourceSetCost = async (context: AuthContext, user: AuthUser, id: string, input: { amount: number; currency: string; period: string } | null | undefined) => {
-  const source = await storeLoadById<BasicStoreEntitySource>(context, user, id, ENTITY_TYPE_SOURCE);
-  if (!source) {
-    throw FunctionalError('Source not found', { id });
-  }
   const cost = validateSourceCost(input);
-  const costPerActionable = await refreshCostOnLiveScorecards(context, source, cost);
-  const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_SOURCE, { source_cost: cost, latest_cost_per_actionable: costPerActionable });
+  let lock;
+  let element;
+  let source: BasicStoreEntitySource | undefined;
+  try {
+    lock = await lockResources([`source-cost:${id}`]);
+    source = await storeLoadById<BasicStoreEntitySource>(context, user, id, ENTITY_TYPE_SOURCE);
+    if (!source) {
+      throw FunctionalError('Source not found', { id });
+    }
+    const { updated, costPerActionable } = await costedLiveScorecards(context, source, cost);
+    ({ element } = await patchAttribute(context, user, source.internal_id, ENTITY_TYPE_SOURCE, { source_cost: cost, latest_cost_per_actionable: costPerActionable }));
+    await writeScorecards(context, updated);
+  } catch (err: any) {
+    if (err?.name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ participantIds: [id] });
+    }
+    throw err;
+  } finally {
+    if (lock) {
+      await lock.unlock();
+    }
+  }
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: cost ? `sets the cost of source \`${source.name}\` to ${cost.amount} ${cost.currency} per ${cost.period}` : `clears the cost of source \`${source.name}\``,
+    message: cost ? `sets the cost of source \`${source?.name}\` to ${cost.amount} ${cost.currency} per ${cost.period}` : `clears the cost of source \`${source?.name}\``,
     context_data: { id, entity_type: ENTITY_TYPE_SOURCE, input: { source_cost: cost } },
   });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
