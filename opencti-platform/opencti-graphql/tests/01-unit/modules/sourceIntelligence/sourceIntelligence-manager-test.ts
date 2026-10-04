@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/index';
-import { computeEventIncrements, deletionDecrements, isFullComputationDue, planBackfill } from '../../../../src/manager/sourceIntelligenceManager';
+import {
+  computeEventIncrements,
+  deletionDecrements,
+  isFullComputationDue,
+  laterStreamEventId,
+  planBackfill,
+  streamBoundaryOf,
+} from '../../../../src/manager/sourceIntelligenceManager';
 import { backfillProgress, buildResolverFromSources } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-domain';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
 import { RELATION_IN_PIR } from '../../../../src/schema/internalRelationship';
@@ -291,6 +298,19 @@ describe('Source intelligence live signal accounting', () => {
     expect(periodIncrements.get('LAST_7_DAYS')?.get('source-feed')).toEqual({
       sightings_count: -1, security_platform_sightings_count: -1, hunt_true_positives_count: -1,
     });
+  });
+});
+
+describe('Source intelligence stream cursor', () => {
+  it('should resume the stream after every event the full computation counted', () => {
+    const boundary = streamBoundaryOf(1759500000000);
+    expect(boundary).toEqual('1759500000000-18446744073709551615');
+    // A cursor before the computation time moves to it, events of the same millisecond included
+    expect(laterStreamEventId('1759499999000-3', boundary)).toEqual(boundary);
+    expect(laterStreamEventId('1759500000000-42', boundary)).toEqual(boundary);
+    expect(laterStreamEventId(null, boundary)).toEqual(boundary);
+    // A cursor already past it is kept, so later events are never skipped
+    expect(laterStreamEventId('1759500000001-0', boundary)).toEqual('1759500000001-0');
   });
 });
 
