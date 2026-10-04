@@ -6,6 +6,7 @@ import {
   carriesValidationProof,
   coversPairMarkings,
   setsValidityWindow,
+  invalidStatusField,
   isLifecycleWriter,
   touchesLifecycleFields,
   touchesValidationFields,
@@ -154,6 +155,18 @@ describe('Deployment identity guard', () => {
     const administrator = { id: 'admin', capabilities: [{ name: 'BYPASS' }] } as unknown as AuthUser;
     await expect(validatorCreation(testContext, administrator, { start_time: '2026-10-01T00:00:00.000Z' })).rejects.toThrow('no start or stop time');
     await expect(validatorUpdate(testContext, administrator, { stop_time: ['2026-12-31T00:00:00.000Z'] }, {})).rejects.toThrow('no start or stop time');
+  });
+
+  it('should refuse a status outside the statuses of its field, for administrators too', async () => {
+    expect(invalidStatusField({ deployment_status: 'active', validation_status: ['detected'] })).toBeUndefined();
+    expect(invalidStatusField({ hit_count: 2 })).toBeUndefined();
+    expect(invalidStatusField({ deployment_status: 'invalid-status' })).toEqual('deployment_status');
+    expect(invalidStatusField({ validation_status: ['invalid-status'] })).toEqual('validation_status');
+    const validatorCreation = getEntityValidatorCreation(RELATION_DEPLOYED_ON) as ValidatorFn;
+    const validatorUpdate = getEntityValidatorUpdate(RELATION_DEPLOYED_ON) as ValidatorFn;
+    const administrator = { id: 'admin', capabilities: [{ name: 'BYPASS' }] } as unknown as AuthUser;
+    await expect(validatorCreation(testContext, administrator, { deployment_status: 'invalid-status' })).rejects.toThrow('Status is not one of the statuses');
+    await expect(validatorUpdate(testContext, administrator, { validation_status: ['invalid-status'] }, {})).rejects.toThrow('Status is not one of the statuses');
   });
 });
 

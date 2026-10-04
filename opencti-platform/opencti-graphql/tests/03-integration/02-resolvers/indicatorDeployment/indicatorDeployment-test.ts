@@ -474,6 +474,22 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     expect(deployment.hit_count).toEqual(5);
   });
 
+  it('should refuse a status outside the statuses of its field on the generic edit path, administrators included', async () => {
+    await queryAsUserIsExpectedError(
+      USER_CONNECTOR,
+      { query: DEPLOYMENT_FIELD_PATCH, variables: { id: deploymentId, input: [{ key: 'deployment_status', value: ['invalid-status'], operation: 'replace' }] } },
+      'Status is not one of the statuses of the field',
+    );
+    await queryAsAdminWithError(
+      { query: DEPLOYMENT_FIELD_PATCH, variables: { id: deploymentId, input: [{ key: 'validation_status', value: ['invalid-status'], operation: 'replace' }] } },
+      'Status is not one of the statuses of the field',
+    );
+    const list = await queryAsAdminWithSuccess({ query: DEPLOYMENTS_LIST, variables: { toId: [platformId] } });
+    const deployment = list.data?.stixCoreRelationships.edges.map((e: { node: { id: string } }) => e.node).find((n: { id: string }) => n.id === deploymentId);
+    expect(deployment.deployment_status).not.toEqual('invalid-status');
+    expect(deployment.validation_status).not.toEqual('invalid-status');
+  });
+
   it('should add the reporting connector to the creators of a deployment someone else created, heartbeats included', async () => {
     const connectorUserId = await getUserIdByEmail(USER_CONNECTOR.email);
     // Neither streamed nor kept: the raw stream counts of the suite are unchanged

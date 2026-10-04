@@ -15,7 +15,14 @@ import { registerEntityValidator, type ValidatorFn } from '../../schema/validato
 import type { AuthContext, AuthUser } from '../../types/user';
 import { isBypassUser, SYSTEM_USER } from '../../utils/access';
 import { findDeployedOn, hitsSightingStixId } from '../indicatorDeployment/indicatorDeployment-domain';
-import { DEPLOYMENT_STATUS_EXPIRED, DEPLOYMENT_STATUS_PENDING, RELATION_DEPLOYED_ON, VALIDATION_STATUS_NOT_REQUESTED } from '../indicatorDeployment/indicatorDeployment-types';
+import {
+  DEPLOYMENT_STATUS_EXPIRED,
+  DEPLOYMENT_STATUS_PENDING,
+  DEPLOYMENT_STATUSES,
+  RELATION_DEPLOYED_ON,
+  VALIDATION_STATUS_NOT_REQUESTED,
+  VALIDATION_STATUSES,
+} from '../indicatorDeployment/indicatorDeployment-types';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
@@ -263,6 +270,19 @@ const refuseValidityWindow = () => {
   throw ValidationError('A deployment has no start or stop time: one deployment exists per indicator and security platform', 'start_time');
 };
 
+// The generic paths store any string in an enum attribute; a status outside its list breaks every read of the field.
+const STATUS_ALLOW_LISTS: Array<[string, readonly string[]]> = [['deployment_status', DEPLOYMENT_STATUSES], ['validation_status', VALIDATION_STATUSES]];
+
+/** The status field of an input whose value is not one of the statuses of that field, if any. */
+export const invalidStatusField = (instance: Record<string, unknown>) => STATUS_ALLOW_LISTS.find(([field, allowed]) => {
+  const value = firstValue(instance[field]);
+  return !isEmptyField(value) && !allowed.includes(value as string);
+})?.[0];
+
+const refuseInvalidStatus = (instance: Record<string, unknown>, field: string) => {
+  throw ValidationError('Status is not one of the statuses of the field', field, { value: firstValue(instance[field]) });
+};
+
 // `expired` is the deployment manager's decision when no removal confirmation arrives in time, never a report.
 const setsReservedStatus = (instance: Record<string, unknown>) => firstValue(instance.deployment_status) === DEPLOYMENT_STATUS_EXPIRED;
 
@@ -282,6 +302,10 @@ const refuseMarkings = (user: AuthUser) => {
 const validatorCreation: ValidatorFn = async (context, user, instance) => {
   if (setsValidityWindow(instance)) {
     return refuseValidityWindow();
+  }
+  const invalidStatus = invalidStatusField(instance);
+  if (invalidStatus) {
+    return refuseInvalidStatus(instance, invalidStatus);
   }
   if (!await coversPairMarkings(context, instance)) {
     return refuseMarkings(user);
@@ -323,6 +347,10 @@ const validatorCreation: ValidatorFn = async (context, user, instance) => {
 const validatorUpdate: ValidatorFn = async (context, user, instance, initial, editInputs = []) => {
   if (setsValidityWindow(instance)) {
     return refuseValidityWindow();
+  }
+  const invalidStatus = invalidStatusField(instance);
+  if (invalidStatus) {
+    return refuseInvalidStatus(instance, invalidStatus);
   }
   // The pair access rules bind administrators too, as on creation; the bypass only lifts the lifecycle permissions.
   if (!await keepsPairMarkings(context, initial, editInputs)) {
