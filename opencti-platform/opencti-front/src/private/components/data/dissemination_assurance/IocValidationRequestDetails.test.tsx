@@ -3,7 +3,7 @@ import { MockPayloadGenerator } from 'relay-test-utils';
 import type { RelayMockEnvironment } from 'relay-test-utils/lib/RelayModernMockEnvironment';
 import { describe, expect, it } from 'vitest';
 import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
-import IocValidationRequestDetails from './IocValidationRequestDetails';
+import IocValidationRequestDetails, { OPENAEV_IOC_VALIDATION_DOCUMENTATION_URL } from './IocValidationRequestDetails';
 
 const deployment = (id: string, indicator: string) => ({
   id,
@@ -37,9 +37,9 @@ const request = (status: string) => ({
   deployments: [deployment('d1', 'login-portal.example'), deployment('d2', 'update-service.example')],
 });
 
-const renderDetails = async (status: string, overrides: Record<string, unknown> = {}) => {
+const renderDetails = async (status: string, overrides: Record<string, unknown> = {}, capabilities = [{ name: 'BYPASS' }]) => {
   const rendered = testRender(<IocValidationRequestDetails requestId="request-1" title="Weekly validation of live indicators" onClose={() => {}} />, {
-    userContext: createMockUserContext({ me: { id: 'user-1', name: 'admin', capabilities: [{ name: 'BYPASS' }], userSubscriptions: { edges: [] } } }),
+    userContext: createMockUserContext({ me: { id: 'user-1', name: 'admin', capabilities, userSubscriptions: { edges: [] } } }),
   });
   await waitFor(() => {
     (rendered.relayEnv as RelayMockEnvironment).mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
@@ -75,6 +75,33 @@ describe('IOC validation request details', () => {
     const header = await screen.findByTestId('ioc-validation-status-header');
     expect(within(header).getByText('Partially completed - 1 of 2 detected or prevented, 1 test could not run')).toBeTruthy();
     expect(within(header).queryByText('Completed - 1 of 2 detected or prevented')).toBeNull();
+  });
+
+  it('gives the next step while the request waits for an active IOC validation connector', async () => {
+    await renderDetails('pending', { status_message: 'Waiting for an active OpenAEV IOC validation connector' });
+
+    const nextStep = await screen.findByTestId('ioc-validation-pending-next-step');
+    expect(within(nextStep).getByText('No OpenAEV IOC validation connector is active')).toBeTruthy();
+    expect(within(nextStep).getByText('Configure OpenCTI in OpenAEV, then check that its IOC validation connector is running.')).toBeTruthy();
+    expect(within(nextStep).getByText('Open connector settings').closest('a')?.getAttribute('href')).toEqual('/dashboard/integrations');
+    expect(within(nextStep).getByText('Read the documentation').closest('a')?.getAttribute('href')).toEqual(OPENAEV_IOC_VALIDATION_DOCUMENTATION_URL);
+  });
+
+  it('asks the administrator when the reader cannot manage connectors', async () => {
+    await renderDetails('pending', { status_message: 'Waiting for an active OpenAEV IOC validation connector' }, [{ name: 'KNOWLEDGE' }]);
+
+    const nextStep = await screen.findByTestId('ioc-validation-pending-next-step');
+    expect(within(nextStep).getByText('Ask an administrator to configure OpenCTI in OpenAEV and start its IOC validation connector.')).toBeTruthy();
+    expect(within(nextStep).queryByText('Open connector settings')).toBeNull();
+  });
+
+  it('names the capability the connector account is missing', async () => {
+    const message = 'The account of the OpenAEV IOC validation connector needs the "Connectors API usage" capabilities (Connector role)';
+    await renderDetails('pending', { status_message: message });
+
+    const nextStep = await screen.findByTestId('ioc-validation-pending-next-step');
+    expect(within(nextStep).getByText('The OpenAEV IOC validation connector cannot report results')).toBeTruthy();
+    expect(within(nextStep).getByText((content) => content.startsWith(message))).toBeTruthy();
   });
 
   it('points to OpenAEV while the request waits for its approval', async () => {

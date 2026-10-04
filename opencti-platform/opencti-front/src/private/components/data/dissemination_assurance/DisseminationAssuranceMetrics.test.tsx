@@ -72,7 +72,11 @@ describe('Dissemination assurance key figures', () => {
     const firstUse = await screen.findByTestId('hub-first-use');
     expect(within(firstUse).getByText('Dissemination assurance')).toBeTruthy();
     expect(within(firstUse).getByText('Do the indicators you share reach your security platforms, and do they still work there?')).toBeTruthy();
-    expect(within(firstUse).getByText('Configure a stream connector').closest('a')?.getAttribute('href')).toEqual('/dashboard/integrations');
+    // The connectors that report deployments, the role of their account, and the catalog of stream connectors
+    expect(within(firstUse).getByTestId('deployment-reporting-connectors').textContent).toContain('Microsoft Sentinel Intel');
+    expect(within(firstUse).getByTestId('deployment-reporting-connectors').textContent).toContain('Cloudflare Rules List');
+    expect(within(firstUse).getByText('Their OpenCTI account needs the Connector role, with the Update knowledge and Connectors API usage capabilities.')).toBeTruthy();
+    expect(within(firstUse).getByText('Configure a stream connector').closest('a')?.getAttribute('href')).toEqual('/dashboard/integrations/available?type=STREAM');
     expect(within(firstUse).getByText('Read the documentation').closest('a')?.getAttribute('href')).toEqual(DISSEMINATION_ASSURANCE_DOCUMENTATION_URL);
     expect(screen.queryByTestId('dissemination-assurance-metrics')).toBeNull();
   });

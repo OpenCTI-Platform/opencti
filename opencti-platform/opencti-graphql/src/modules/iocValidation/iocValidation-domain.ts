@@ -21,7 +21,7 @@ import { createWork } from '../../domain/work';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { CONNECTOR_INTERNAL_ENRICHMENT } from '../../schema/general';
 import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
-import { isBypassUser, SYSTEM_USER } from '../../utils/access';
+import { isBypassUser, isUserHasCapability, SYSTEM_USER } from '../../utils/access';
 import type { BasicStoreEntityConnector } from '../../types/connector';
 import { resolveUserByIdFromCache } from '../user/user-domain';
 import { addIocValidationPlatformResultCount, addIocValidationRequestCreationCount } from '../../manager/telemetryManager';
@@ -250,6 +250,13 @@ const resolveConnectorUser = async (context: AuthContext, connector: { connector
   }
   return connectorUser;
 };
+
+// Capabilities the connector account needs to report results, with their names in the role settings.
+const IOC_VALIDATION_CONNECTOR_CAPABILITIES: Array<[string, string]> = [['KNOWLEDGE_KNUPDATE', 'Update knowledge'], ['CONNECTORAPI', 'Connectors API usage']];
+
+export const missingConnectorCapabilities = (connectorUser: AuthUser) => IOC_VALIDATION_CONNECTOR_CAPABILITIES
+  .filter(([capability]) => !isUserHasCapability(connectorUser, capability))
+  .map(([, label]) => `"${label}"`);
 
 export const requestIndicatorsValidation = async (context: AuthContext, user: AuthUser, args: MutationIndicatorsRequestValidationArgs) => {
   const indicatorIds = [...new Set(args.indicatorIds)];
@@ -544,6 +551,13 @@ const dispatchClaimedIocValidationRequest = async (context: AuthContext, claimed
     }
     return claimed;
   }
+  // The connector reports the results with its own account: the request waits while that account cannot.
+  const connectorUser = await resolveConnectorUser(context, connector);
+  const missingCapabilities = missingConnectorCapabilities(connectorUser);
+  if (missingCapabilities.length > 0) {
+    const message = `The account of the OpenAEV IOC validation connector needs the ${missingCapabilities.join(' and ')} capabilities (Connector role)`;
+    return claimed.status_message === message ? claimed : patchRequest(context, SYSTEM_USER, claimed.internal_id, { status_message: message });
+  }
   const request = await recheckPairsBeforeDispatch(context, claimed);
   if (request.pairs.length === 0) {
     return patchRequest(context, SYSTEM_USER, request.internal_id, {
@@ -552,7 +566,6 @@ const dispatchClaimedIocValidationRequest = async (context: AuthContext, claimed
       completed_at: new Date(),
     });
   }
-  const connectorUser = await resolveConnectorUser(context, connector);
   const requesterId = requesterIdOf(request);
   const requester = requesterId ? await resolveUserByIdFromCache(context, requesterId) as AuthUser | undefined : undefined;
   // The IOC list and the bundle are built from the pairs kept: an indicator or a platform without pair is not sent.

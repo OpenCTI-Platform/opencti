@@ -158,6 +158,9 @@ test kinds) before you send the request. It is delivered to OpenAEV by the IOC v
 that starts waiting for another request in the meantime is skipped, and listed with the reason in the new request.
 
 When the IOC validation connector is not running, the request waits and is sent as soon as the connector is back.
+The request page then tells what to do: configure OpenCTI in OpenAEV and start its IOC validation connector, or ask an
+administrator when you cannot manage connectors. The request also waits while the OpenCTI account of the connector
+misses the "Update knowledge" or "Connectors API usage" capability of the Connector role, and names the missing one.
 Before it is sent, every deployment is checked again: a deployment that is no longer live, whose removal was
 requested, or that no longer waits for this request is left out, listed with the reason, and can be validated again by
 another request; the indicators and platforms without any deployment left are not sent. A deployment whose indicator,

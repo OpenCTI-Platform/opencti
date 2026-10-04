@@ -3,7 +3,7 @@ import { graphql, useLazyLoadQuery } from 'react-relay';
 import { Link } from 'react-router';
 import { Grid, Stack, Typography } from '@mui/material';
 import { OpenInNewOutlined, ReplayOutlined } from '@mui/icons-material';
-import { ProgressBar, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { Alert, ProgressBar, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Card from '@common/card/Card';
 import Drawer from '@components/common/drawer/Drawer';
@@ -12,7 +12,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE, MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
 import { DeploymentStatusChip, RequestStatusChip, ValidationStatusChip } from './DisseminationStatusChips';
 import IocValidationRequestDialog from './IocValidationRequestDialog';
 import { isHttpUrl, isOpenRequest, TEST_KINDS } from './disseminationAssuranceUtils';
@@ -128,6 +128,47 @@ const useStatusSentence = () => {
   };
 };
 
+export const OPENAEV_IOC_VALIDATION_DOCUMENTATION_URL = 'https://docs.openaev.io/latest/usage/build/scenario/ioc-validation/';
+// Start of the status message of a request whose connector account cannot report results (back end, plain words).
+const MISSING_CAPABILITIES_MESSAGE = 'The account of the OpenAEV IOC validation connector needs';
+
+/** What to do while a request waits for the OpenAEV IOC validation connector: set it up, or ask who can. */
+const PendingNextStep = ({ statusMessage }: { statusMessage: string | null | undefined }) => {
+  const { t_i18n } = useFormatter();
+  const canManageConnectors = useGranted([MODULES_MODMANAGE]);
+  const missingCapabilities = !!statusMessage?.startsWith(MISSING_CAPABILITIES_MESSAGE);
+  let description: string;
+  if (missingCapabilities) {
+    description = canManageConnectors
+      ? t_i18n('Give the OpenCTI account of the connector the Connector role, with the Update knowledge and Connectors API usage capabilities.')
+      : t_i18n('Ask your administrator to give the OpenCTI account of the connector the Connector role.');
+  } else {
+    description = canManageConnectors
+      ? t_i18n('Configure OpenCTI in OpenAEV, then check that its IOC validation connector is running.')
+      : t_i18n('Ask an administrator to configure OpenCTI in OpenAEV and start its IOC validation connector.');
+  }
+  return (
+    <Alert
+      severity="warning"
+      data-testid="ioc-validation-pending-next-step"
+      title={missingCapabilities ? t_i18n('The OpenAEV IOC validation connector cannot report results') : t_i18n('No OpenAEV IOC validation connector is active')}
+      description={missingCapabilities && statusMessage ? `${statusMessage}. ${description}` : description}
+      action={(
+        <Stack direction="row" gap={1}>
+          {canManageConnectors && (
+            <Button variant="secondary" size="small" component={Link} to="/dashboard/integrations">
+              {t_i18n('Open connector settings')}
+            </Button>
+          )}
+          <Button variant="tertiary" size="small" href={OPENAEV_IOC_VALIDATION_DOCUMENTATION_URL} target="_blank" rel="noopener noreferrer">
+            {t_i18n('Read the documentation')}
+          </Button>
+        </Stack>
+      )}
+    />
+  );
+};
+
 const IocValidationRequestDetailsContent = ({ requestId }: { requestId: string }) => {
   const { t_i18n, nsdt, rd, n } = useFormatter();
   const statusSentence = useStatusSentence();
@@ -185,12 +226,13 @@ const IocValidationRequestDetailsContent = ({ requestId }: { requestId: string }
             </TooltipTrigger>
             <TooltipContent>{nsdt(request.created_at)}</TooltipContent>
           </Tooltip>
-          {request.status_message && !['completed', 'awaiting_approval', 'running'].includes(request.status) && (
+          {request.status_message && !['completed', 'awaiting_approval', 'running', 'pending'].includes(request.status) && (
             <Typography variant="caption" color="text.secondary">{request.status_message}</Typography>
           )}
         </Stack>
         {primaryAction}
       </Stack>
+      {request.status === 'pending' && <PendingNextStep statusMessage={request.status_message} />}
       <Grid container spacing={2}>
         {request.requested_by && (
           <Grid item xs={6}>

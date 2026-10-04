@@ -13,7 +13,7 @@ import {
   touchesValidationFields,
 } from '../../../../src/modules/iocValidation/iocValidation-validator';
 import { isTrustedDeploymentReporter } from '../../../../src/modules/iocValidation/iocValidation-utils';
-import { summarizeRequestPairs, withPairOutcomes } from '../../../../src/modules/iocValidation/iocValidation-domain';
+import { missingConnectorCapabilities, summarizeRequestPairs, withPairOutcomes } from '../../../../src/modules/iocValidation/iocValidation-domain';
 import { getEntityValidatorCreation, getEntityValidatorUpdate, type ValidatorFn } from '../../../../src/schema/validator-register';
 import { RELATION_DEPLOYED_ON } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-types';
 import type { AuthUser } from '../../../../src/types/user';
@@ -80,6 +80,13 @@ describe('Deployment lifecycle fields guard', () => {
     expect(isLifecycleWriter(editor)).toEqual(false);
     expect(isLifecycleWriter(connector)).toEqual(true);
     expect(isLifecycleWriter(administrator)).toEqual(true);
+  });
+
+  it('should name, in plain words, the capabilities an IOC validation connector account misses', () => {
+    expect(missingConnectorCapabilities(connector)).toEqual([]);
+    expect(missingConnectorCapabilities(administrator)).toEqual([]);
+    expect(missingConnectorCapabilities(editor)).toEqual(['"Connectors API usage"']);
+    expect(missingConnectorCapabilities(user([]))).toEqual(['"Update knowledge"', '"Connectors API usage"']);
   });
 
   it('should refuse a regular editor writing deployment state on creation or edition', async () => {

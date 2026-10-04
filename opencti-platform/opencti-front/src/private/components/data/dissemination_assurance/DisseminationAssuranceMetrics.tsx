@@ -2,7 +2,7 @@ import { ReactNode, Suspense, useMemo, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { Link } from 'react-router';
 import { Box, Grid, Stack, Typography } from '@mui/material';
-import { Badge } from '@filigran/design-system';
+import { Badge, Text } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Card from '@common/card/Card';
 import { useFormatter } from '../../../../components/i18n';
@@ -112,17 +112,40 @@ const KpiCounter = ({ id, label, value, caption, badge, actionable, selected, on
   );
 };
 
+// The stream connectors that report their deployments (product names, never translated).
+export const DEPLOYMENT_REPORTING_CONNECTORS = [
+  'Microsoft Sentinel Intel',
+  'Microsoft Defender Intel',
+  'CrowdStrike Endpoint Security',
+  'Splunk',
+  'Elastic Security Intel',
+  'Google SecOps SIEM',
+  'SentinelOne Intel',
+  'Palo Alto Cortex XDR Intel',
+  'Zscaler',
+  'Cloudflare Rules List',
+];
+
 const FirstUse = () => {
   const { t_i18n } = useFormatter();
   return (
     <HubFirstUse
       action={(
-        <Button variant="primary" component={Link} to="/dashboard/integrations">
+        <Button variant="primary" component={Link} to="/dashboard/integrations/available?type=STREAM">
           {t_i18n('Configure a stream connector')}
         </Button>
       )}
       documentationUrl={DISSEMINATION_ASSURANCE_DOCUMENTATION_URL}
-    />
+    >
+      <Text variant="content-base" data-testid="deployment-reporting-connectors">
+        {t_i18n('These stream connectors report their deployments: {connectors}.', {
+          values: { connectors: DEPLOYMENT_REPORTING_CONNECTORS.join(', ') },
+        })}
+      </Text>
+      <Text variant="content-base">
+        {t_i18n('Their OpenCTI account needs the Connector role, with the Update knowledge and Connectors API usage capabilities.')}
+      </Text>
+    </HubFirstUse>
   );
 };
 
