@@ -1,6 +1,13 @@
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
-import { REFERENCE_SCORECARD_PERIOD, SCORECARD_PERIOD_DAYS, ScorecardPeriod, type SourceWidgetMetric } from '../../integrations/sources/sourceIntelligenceUtils';
+import {
+  findSourceWidgetMetric,
+  REFERENCE_SCORECARD_PERIOD,
+  SCORECARD_PERIOD_DAYS,
+  SOURCE_WIDGET_METRICS,
+  ScorecardPeriod,
+  type SourceWidgetMetric,
+} from '../../integrations/sources/sourceIntelligenceUtils';
 
 const DAY_MS = 24 * 3600 * 1000;
 
@@ -51,4 +58,18 @@ export type SourcesAggregation = 'avg' | 'sum' | 'min' | 'max';
 
 export const toAggregation = (value: string | null | undefined, fallback: SourcesAggregation): SourcesAggregation => {
   return value === 'avg' || value === 'sum' || value === 'min' || value === 'max' ? value : fallback;
+};
+
+// `count` counts the scored sources instead of aggregating the metric
+export const SOURCES_NUMBER_COUNT_MODE = 'count';
+
+/**
+ * Metric a number widget queries. A count reads no metric: it queries a Community Edition one, so a widget saved with an
+ * Enterprise Edition metric keeps counting after a downgrade.
+ */
+export const numberWidgetMetricKey = (selection: { attribute?: string | null; sort_mode?: string | null }): string => {
+  if (selection.sort_mode === SOURCES_NUMBER_COUNT_MODE) {
+    return (SOURCE_WIDGET_METRICS.find((metric) => !metric.enterprise) ?? SOURCE_WIDGET_METRICS[0]).key;
+  }
+  return findSourceWidgetMetric(selection.attribute).key;
 };

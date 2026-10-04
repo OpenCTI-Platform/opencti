@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { metricAxisTitle, periodFromRange, toAggregation } from './sourcesWidgetUtils';
+import { SOURCE_WIDGET_METRICS } from '../../integrations/sources/sourceIntelligenceUtils';
+import { metricAxisTitle, numberWidgetMetricKey, periodFromRange, toAggregation } from './sourcesWidgetUtils';
 
 const NOW = new Date('2026-10-03T12:00:00.000Z').getTime();
 const daysAgo = (days: number) => new Date(NOW - days * 24 * 3600 * 1000).toISOString();
@@ -51,6 +52,19 @@ describe('Sources widget utils', () => {
       expect(toAggregation('median', 'avg')).toBe('avg');
       expect(toAggregation(null, 'sum')).toBe('sum');
       expect(toAggregation(undefined, 'max')).toBe('max');
+    });
+  });
+
+  describe('numberWidgetMetricKey', () => {
+    it('should query the selected metric of an aggregated number', () => {
+      expect(numberWidgetMetricKey({ attribute: 'relevance', sort_mode: 'avg' })).toBe('relevance');
+      expect(numberWidgetMetricKey({ attribute: 'accuracy', sort_mode: 'max' })).toBe('accuracy');
+    });
+
+    it('should query a Community Edition metric for a count, whatever metric the widget was saved with', () => {
+      const key = numberWidgetMetricKey({ attribute: 'relevance', sort_mode: 'count' });
+      expect(key).not.toBe('relevance');
+      expect(SOURCE_WIDGET_METRICS.find((metric) => metric.key === key)?.enterprise).toBe(false);
     });
   });
 });

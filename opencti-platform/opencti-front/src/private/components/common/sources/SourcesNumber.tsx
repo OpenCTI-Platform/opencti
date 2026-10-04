@@ -10,7 +10,16 @@ import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../..
 import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import { findSourceWidgetMetric, toWidgetValue } from '../../integrations/sources/sourceIntelligenceUtils';
 import SourcesWidgetRenderContent from './SourcesWidgetRenderContent';
-import { metricAxisTitle, NO_SOURCE_SCORED_MESSAGE, periodDaysFromDashboardConfig, periodFromDashboardConfig, type SourcesAggregation, toAggregation } from './sourcesWidgetUtils';
+import {
+  metricAxisTitle,
+  NO_SOURCE_SCORED_MESSAGE,
+  numberWidgetMetricKey,
+  periodDaysFromDashboardConfig,
+  periodFromDashboardConfig,
+  SOURCES_NUMBER_COUNT_MODE as COUNT_MODE,
+  type SourcesAggregation,
+  toAggregation,
+} from './sourcesWidgetUtils';
 import { SourcesNumberQuery } from './__generated__/SourcesNumberQuery.graphql';
 
 const sourcesNumberQuery = graphql`
@@ -28,8 +37,6 @@ const sourcesNumberQuery = graphql`
   }
 `;
 
-// `count` counts the scored sources instead of aggregating the metric
-const COUNT_MODE = 'count';
 const NUMBER_TITLES: Record<SourcesAggregation, string> = {
   avg: '{measure}, average over the last {days} days',
   sum: '{measure}, total over the last {days} days',
@@ -71,7 +78,7 @@ const SourcesNumber = ({ variant, height, dataSelection, parameters = {}, popove
   const buildQueryVariables = useCallback((resolved: WidgetDataSelection[], dashboardConfig: DashboardConfig): SourcesNumberQuery['variables'] => {
     const selection = resolved[0];
     return {
-      metric: findSourceWidgetMetric(selection.attribute).key,
+      metric: numberWidgetMetricKey(selection),
       period: periodFromDashboardConfig(dashboardConfig),
       filters: normalizeFilterGroupForBackend(selection.filters),
       aggregation: selection.sort_mode === COUNT_MODE ? 'sum' : toAggregation(selection.sort_mode, 'avg'),
