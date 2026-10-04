@@ -134,7 +134,7 @@ const SourcesBubble = ({ variant, height, dataSelection, parameters = {}, popove
     return {
       xMetric: findSourceWidgetMetric(selection.attribute ?? DEFAULT_X).key,
       yMetric: findSourceWidgetMetric(selection.field ?? DEFAULT_Y).key,
-      sizeMetric: findSourceWidgetMetric(selection.sort_by ?? DEFAULT_SIZE).key,
+      sizeMetric: findSourceWidgetMetric(selection.sort_by ?? DEFAULT_SIZE, 'bubble-size').key,
       period: periodFromDashboardConfig(dashboardConfig),
       filters: normalizeFilterGroupForBackend(selection.filters),
       first: selection.number ?? DEFAULT_POINTS,

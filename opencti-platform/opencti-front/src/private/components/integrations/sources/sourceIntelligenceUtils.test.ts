@@ -58,6 +58,9 @@ describe('Source widget metrics', () => {
     expect(findSourceWidgetMetric('lead_time_hours', 'horizontal-bar').key).toEqual('lead_time_hours');
     expect(findSourceWidgetMetric('noise_count', 'donut').key).toEqual('noise_count');
     expect(findSourceWidgetMetric('unknown_metric').key).toEqual('value_score');
+    // Nor as the size of a bubble, while it stays available on the bubble axes
+    expect(sourceWidgetMetricsFor('bubble-size').map((metric) => metric.key)).not.toContain('lead_time_hours');
+    expect(sourceWidgetMetricsFor('bubble').map((metric) => metric.key)).toContain('lead_time_hours');
   });
 });
 
