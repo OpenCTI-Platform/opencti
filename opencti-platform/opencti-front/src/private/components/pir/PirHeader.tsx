@@ -18,6 +18,7 @@ import { useState } from 'react';
 import { Stack } from '@mui/material';
 import Button from '@common/button/Button';
 import FormAuthorizedMembersDialog from '@components/common/form/FormAuthorizedMembersDialog';
+import HuntThisMenu from '@components/hunts/HuntThisMenu';
 import PirPopover from './PirPopover';
 import PirEdition from './pir_form/PirEdition';
 import { PirHeaderFragment$key } from './__generated__/PirHeaderFragment.graphql';
@@ -88,6 +89,8 @@ const PirHeader = ({ data, editionData }: PirHeaderProps) => {
         <TitleMainEntity sx={{ flex: 1 }}>
           {name}
         </TitleMainEntity>
+
+        <HuntThisMenu entity={{ id, name, entity_type: 'Pir' }} />
 
         <Security needs={[PIRAPI_PIRUPDATE]} hasAccess={canEdit}>
           <>

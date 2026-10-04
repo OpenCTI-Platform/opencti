@@ -182,6 +182,7 @@
     "winston-daily-rotate-file": "5.0.0",
     "ws": "8.22.0",
     "xml2js": "0.6.2",
+    "yaml": "2.9.1",
     "zod": "4.6.5"
   },
   "devDependencies": {

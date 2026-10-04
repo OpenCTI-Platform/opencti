@@ -5,6 +5,7 @@ import StixCoreObjectsCustomAttributes from '@components/common/stix_core_object
 import type { DashboardConfig } from './dashboard-types';
 import { computeStartEndDates } from 'src/components/dashboard/dashboardVizUtils';
 import WidgetNotImplemented from './WidgetNotImplemented';
+import WidgetHuntStatistics from '@components/hunts/widgets/WidgetHuntStatistics';
 
 interface DashboardRawVizProps {
   widget: Widget;
@@ -26,6 +27,18 @@ const DashboardRawViz = ({
       return (
         <WidgetText
           parameters={widget.parameters}
+          popover={popover}
+        />
+      );
+    case 'hunt-hits-over-time':
+    case 'hunt-runs-per-platform':
+    case 'hunt-verdict-distribution':
+      return (
+        <WidgetHuntStatistics
+          type={widget.type}
+          title={widget.parameters?.title}
+          startDate={startDate}
+          endDate={endDate}
           popover={popover}
         />
       );

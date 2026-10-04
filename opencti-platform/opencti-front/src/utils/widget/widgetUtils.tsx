@@ -12,8 +12,11 @@ import {
   ChartTimeline,
   ChartTree,
   Counter,
+  Crosshairs,
   FormatListNumberedRtl,
   Radar,
+  ScaleBalance,
+  ServerNetwork,
   StarSettingsOutline,
   TagTextOutline,
   ViewListOutline,
@@ -226,6 +229,36 @@ const widgetVisualizationTypes = [
     isEntities: true,
     isAudits: true,
   },
+  {
+    key: 'hunt-hits-over-time',
+    name: 'Hunt hits over time',
+    dataSelectionLimit: undefined,
+    category: 'hunt',
+    availableParameters: [],
+    isRelationships: false,
+    isEntities: false,
+    isAudits: false,
+  },
+  {
+    key: 'hunt-runs-per-platform',
+    name: 'Hunt runs per platform',
+    dataSelectionLimit: undefined,
+    category: 'hunt',
+    availableParameters: [],
+    isRelationships: false,
+    isEntities: false,
+    isAudits: false,
+  },
+  {
+    key: 'hunt-verdict-distribution',
+    name: 'Hunt verdict distribution',
+    dataSelectionLimit: undefined,
+    category: 'hunt',
+    availableParameters: [],
+    isRelationships: false,
+    isEntities: false,
+    isAudits: false,
+  },
 ] as const;
 
 const customAttributesVisualizationType = {
@@ -249,9 +282,12 @@ export const workspacesWidgetVisualizationTypes = widgetVisualizationTypes.filte
 
 export const fintelTemplatesWidgetVisualizationTypes = widgetVisualizationTypes.filter((w) => ['list'].includes(w.key));
 
+// Platform-wide widgets that do not depend on the entity of a custom view
+const GLOBAL_WIDGET_CATEGORIES: string[] = ['hunt'];
+
 export const customViewsWidgetVisualizationTypes = [
   customAttributesVisualizationType,
-  ...workspacesWidgetVisualizationTypes,
+  ...workspacesWidgetVisualizationTypes.filter((w) => !GLOBAL_WIDGET_CATEGORIES.includes(w.category)),
 ];
 
 const allVisualizationTypes = [
@@ -264,6 +300,13 @@ export const indexedVisualizationTypes = R.indexBy(R.prop('key'), allVisualizati
 export const getCurrentCategory = (type: string | null) => {
   if (!type) return 'none';
   return indexedVisualizationTypes[type as WidgetVisualizationTypes]?.category ?? 'none';
+};
+
+/**
+ * Widgets configured with parameters only: no perspective and no data selection step.
+ */
+export const isWidgetWithoutDataSelection = (type: string | null) => {
+  return ['text', 'attribute', 'custom-attributes', 'hunt'].includes(getCurrentCategory(type));
 };
 
 export const getCurrentAvailableParameters = (type: string | null): string[] => {
@@ -337,6 +380,12 @@ export const renderWidgetIcon = (key: string, fontSize: 'large' | 'small' | 'med
       return <StarSettingsOutline fontSize={fontSize} color="primary" />;
     case 'wordcloud':
       return <ViewQuiltOutlined fontSize={fontSize} color="primary" />;
+    case 'hunt-hits-over-time':
+      return <Crosshairs fontSize={fontSize} color="primary" />;
+    case 'hunt-runs-per-platform':
+      return <ServerNetwork fontSize={fontSize} color="primary" />;
+    case 'hunt-verdict-distribution':
+      return <ScaleBalance fontSize={fontSize} color="primary" />;
     default:
       return <div />;
   }

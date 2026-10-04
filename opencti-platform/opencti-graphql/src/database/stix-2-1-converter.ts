@@ -622,6 +622,7 @@ const convertObservedDataToStix = (instance: StoreEntity, type: string): SDO.Sti
         content_mapping: instance.content_mapping,
         number_seen: instance.number_seen,
         max_distinct_count: instance.max_distinct_count,
+        hunt_run_id: instance.x_opencti_hunt_run_id,
         object_refs_inferred: convertObjectReferences(instance, true),
       }),
     },
@@ -1334,6 +1335,7 @@ const convertSightingToStix = (instance: StoreRelation): SRO.StixSighting => {
         where_sighted_refs_object_marking_refs: resolvedTo[RELATION_OBJECT_MARKING] ?? [],
         where_sighted_refs_granted_refs: resolvedTo[RELATION_GRANTED_TO] ?? [],
         negative: instance.x_opencti_negative,
+        hunt_run_id: instance.x_opencti_hunt_run_id,
       }),
     },
   };

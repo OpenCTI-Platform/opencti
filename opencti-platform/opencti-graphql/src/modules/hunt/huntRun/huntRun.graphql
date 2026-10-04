@@ -1,0 +1,214 @@
+enum HuntRunStatus {
+  queued
+  running
+  completed
+  failed
+  timeout
+}
+enum HuntRunTrigger {
+  manual
+  schedule
+  standing
+  playbook
+  emulation
+  preview
+  retry
+}
+enum HuntRunMode {
+  execute
+  preview
+}
+enum HuntRunVerdict {
+  pending
+  true_positive
+  benign
+  inconclusive
+}
+enum HuntVerdictSource {
+  auto
+  analyst
+  agent
+}
+
+# Program-wide evidence shape (kind, label, href, quote, opencti_id, entity_type) on top of the hunt fields:
+# a telemetry hit is a tool_result labelled by its field, quoting its truncated preview
+type HuntEvidence {
+  kind: String!
+  label: String!
+  href: String
+  quote: String
+  opencti_id: String
+  entity_type: String
+  field: String!
+  value_hash: String!
+  value_preview: String
+  count: Int!
+}
+
+type HuntRun implements BasicObject & InternalObject {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  representative: Representative!
+  metrics:[Metric]
+  creators: [Creator!]
+  created_at: DateTime
+  updated_at: DateTime
+  # Hunt run
+  hunt_id: String!
+  hunt: Hunt
+  hunt_run_status: HuntRunStatus!
+  hunt_run_trigger: HuntRunTrigger!
+  hunt_run_mode: HuntRunMode!
+  security_platform_id: String
+  securityPlatform: SecurityPlatform
+  connector_id: String
+  connector_name: String
+  work_id: String
+  time_window_start: DateTime
+  time_window_end: DateTime
+  translated_query: String
+  query_language: String
+  hits_count: Int
+  distinct_entities: Int
+  evidence_sample: [HuntEvidence!]
+  result_ids: [String!]
+  results(first: Int, after: ID): StixObjectOrStixRelationshipConnection
+  verdict: HuntRunVerdict!
+  verdict_source: HuntVerdictSource
+  verdict_rationale: String
+  analyst_feedback: String
+  verdict_proposal: HuntRunVerdict
+  verdict_proposal_confidence: Int
+  verdict_proposal_rationale: String
+  verdict_proposal_agent: String
+  incident_proposal: String
+  incident_id: String
+  draft_id: String
+  aev_inject_id: String
+  security_coverage_id: String
+  technique_id: String
+  technique: AttackPattern
+  triggered_by: String
+  triggeredBy: Creator
+  attempt: Int!
+  next_retry_at: DateTime
+  dispatched_at: DateTime
+  started_at: DateTime
+  completed_at: DateTime
+  cost_ms: Int
+  error_message: String
+  playbook_id: String
+  playbook_execution_id: String
+  evidence_sources: [String!]
+  last_evidence_at: DateTime
+  objectMarking: [MarkingDefinition!]
+}
+
+enum HuntRunsOrdering {
+  created_at
+  updated_at
+  completed_at
+  started_at
+  hits_count
+  verdict
+  hunt_run_status
+  hunt_run_trigger
+  _score
+}
+
+type HuntRunConnection {
+  pageInfo: PageInfo!
+  edges: [HuntRunEdge!]!
+}
+type HuntRunEdge {
+  cursor: String!
+  node: HuntRun!
+}
+
+type HuntConnector {
+  id: ID!
+  name: String!
+  active: Boolean!
+  platform: String!
+  languages: [String!]!
+  supports_preview: Boolean!
+  max_concurrent_runs: Int
+  securityPlatform: SecurityPlatform
+  updated_at: DateTime
+}
+
+extend type Connector {
+  "Hunted platform of an INTERNAL_HUNT connector, null for every other connector type"
+  hunt: HuntConnector
+}
+
+# Queries
+type Query {
+  huntRun(id: String!): HuntRun @auth(for: [KNOWLEDGE])
+  huntRuns(
+    first: Int
+    after: ID
+    orderBy: HuntRunsOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): HuntRunConnection @auth(for: [KNOWLEDGE])
+  huntConnectors(onlyAlive: Boolean): [HuntConnector!]! @auth(for: [KNOWLEDGE])
+}
+
+# Mutations
+input HuntRunVerdictInput {
+  verdict: HuntRunVerdict!
+  analyst_feedback: String
+  source: HuntVerdictSource
+}
+
+input HuntEvidenceInput {
+  field: String!
+  value_hash: String!
+  value_preview: String
+  count: Int!
+}
+
+input HuntRunReportInput {
+  status: HuntRunStatus!
+  translated_query: String
+  query_language: String
+  hits_count: Int
+  distinct_entities: Int
+  evidence_sample: [HuntEvidenceInput!]
+  result_ids: [String!]
+  cost_ms: Int
+  error: String
+}
+
+# Evidence found outside the run dispatch (a SIEM alert action, a follow-up search), attached to any run status
+input HuntRunEvidenceAddInput {
+  security_platform_id: StixRef
+  result_ids: [String!]!
+  hits_count: Int
+  evidence_sample: [HuntEvidenceInput!]
+  observed_at: DateTime
+  source: String @constraint(maxLength: 128)
+}
+
+input HuntConnectorRegisterInput {
+  connector_id: ID!
+  platform: String!
+  languages: [String!]!
+  security_platform_name: String
+  security_platform_type: String
+  supports_preview: Boolean
+  max_concurrent_runs: Int
+}
+
+type Mutation {
+  huntRunRetry(id: ID!): HuntRun @auth(for: [KNOWLEDGE_KNUPDATE])
+  huntRunSetVerdict(id: ID!, input: HuntRunVerdictInput!): HuntRun @auth(for: [KNOWLEDGE_KNUPDATE])
+  huntRunTriage(id: ID!): HuntRun @auth(for: [KNOWLEDGE_KNUPDATE])
+  huntRunReport(id: ID!, input: HuntRunReportInput!): HuntRun @auth(for: [CONNECTORAPI])
+  huntRunEvidenceAdd(id: ID!, input: HuntRunEvidenceAddInput!): HuntRun @auth(for: [KNOWLEDGE_KNUPDATE])
+  huntConnectorRegister(input: HuntConnectorRegisterInput!): HuntConnector @auth(for: [CONNECTORAPI])
+}

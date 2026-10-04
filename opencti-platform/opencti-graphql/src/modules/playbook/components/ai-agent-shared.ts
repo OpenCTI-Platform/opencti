@@ -400,7 +400,9 @@ export const callXtmAgent = async (
   agentSlug: string,
   content: string,
   jwtUser: AgentJwtUser | null,
+  opts: { countAsPlaybookRun?: boolean } = {},
 ): Promise<string | null> => {
+  const { countAsPlaybookRun = true } = opts;
   const xtmOneUrl = nconf.get('xtm:xtm_one_url');
   if (!xtmOneUrl || !xtmOneClient.isConfigured()) {
     logApp.warn('[PLAYBOOK AI AGENT] XTM One is not configured, skipping agent call');
@@ -412,8 +414,10 @@ export const callXtmAgent = async (
   }
   // Telemetry: one playbook AI agent run (attempts semantics, counted before
   // the upstream call). Fire-and-forget so a telemetry failure never breaks
-  // the playbook execution.
-  addPlaybookAiAgentRunCount();
+  // the playbook execution. Other features calling agents count their own usage.
+  if (countAsPlaybookRun) {
+    addPlaybookAiAgentRunCount();
+  }
   try {
     const jwt = await issueXtmJwt(jwtUser, xtmOneUrl);
     const httpClient = getHttpClient({

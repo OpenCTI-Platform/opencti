@@ -1792,6 +1792,7 @@ enum ConnectorType {
   INTERNAL_ENRICHMENT
   INTERNAL_ANALYSIS
   INTERNAL_EXPORT_FILE
+  INTERNAL_HUNT
   STREAM
 }
 
@@ -2140,6 +2141,11 @@ type Connector implements BasicObject & InternalObject {
   version: String
   slug: String
   jwks: String!
+
+  """
+  Hunted platform of an INTERNAL_HUNT connector, null for every other connector type
+  """
+  hunt: HuntConnector
 }
 
 type ManagedConnector implements BasicObject & InternalObject {
@@ -3488,6 +3494,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   number_observed: Int!
   number_seen: Int
   max_distinct_count: Int
+  x_opencti_hunt_run_id: String
   name: String!
   creators: [Creator!]
   toStix(version: Version): String
@@ -3511,6 +3518,7 @@ input ObservedDataAddInput {
   number_observed: Int!
   number_seen: Int
   max_distinct_count: Int
+  x_opencti_hunt_run_id: String
   revoked: Boolean
   lang: String
   confidence: Int
@@ -9251,9 +9259,9 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | SecurityCoverage | SecurityCoverageResult | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir | Theme | CustomView | IMEI | ICCID | IMSI | SavedFilter | Vocabulary | DraftWorkspace
+union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | SecurityCoverage | SecurityCoverageResult | Hunt | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir | Theme | CustomView | IMEI | ICCID | IMSI | SavedFilter | Vocabulary | DraftWorkspace
 
-union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | PublicDashboard | Pir | SecurityCoverage | SecurityCoverageResult | CustomView | IMEI | ICCID | IMSI | SavedFilter
+union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | PublicDashboard | Pir | SecurityCoverage | SecurityCoverageResult | Hunt | CustomView | IMEI | ICCID | IMSI | SavedFilter
 
 union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | Narrative | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | PublicDashboard | Theme | CustomView | IMEI | ICCID | IMSI
 
@@ -9553,6 +9561,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   last_seen: DateTime
   attribute_count: Int!
   x_opencti_negative: Boolean!
+  x_opencti_hunt_run_id: String
   objectLabel: [Label!]
   objectOrganization: [Organization!]
   externalReferences(first: Int): ExternalReferenceConnection
@@ -9586,6 +9595,7 @@ input StixSightingRelationshipAddInput {
   last_seen: DateTime
   attribute_count: Int!
   x_opencti_negative: Boolean
+  x_opencti_hunt_run_id: String
   objectLabel: [String]
   objectOrganization: [String]
   externalReferences: [String]
@@ -10111,6 +10121,15 @@ type Query {
   securityCoverages(first: Int, after: ID, orderBy: SecurityCoverageOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): SecurityCoverageConnection
   securityCoverageResult(id: String!): SecurityCoverageResult
   securityCoverageResults(first: Int, after: ID, orderBy: SecurityCoverageResultOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): SecurityCoverageResultConnection
+  hunt(id: String!): Hunt
+  hunts(first: Int, after: ID, orderBy: HuntsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): HuntConnection
+  huntSigmaValidate(sigma_rule: String!): HuntSigmaValidation!
+  huntConfiguration: HuntConfiguration!
+  huntStatistics(huntId: ID, startDate: DateTime, endDate: DateTime, interval: String): HuntStatistics!
+  huntPackExport(ids: [ID!]!): String
+  huntRun(id: String!): HuntRun
+  huntRuns(first: Int, after: ID, orderBy: HuntRunsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): HuntRunConnection
+  huntConnectors(onlyAlive: Boolean): [HuntConnector!]!
   emailTemplate(id: ID!): EmailTemplate
   emailTemplates(first: Int, after: ID, orderBy: EmailTemplateOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): EmailTemplateConnection
   form(id: ID!): Form
@@ -10177,6 +10196,7 @@ type Subscription {
   managerConfiguration(id: ID!): ManagerConfiguration
   aiBus(id: ID!): AIBus
   securityCoverage(id: ID!): SecurityCoverage
+  hunt(id: ID!): Hunt
   newsFeedItemAdded: NewsFeedItem
   newsFeedItem: NewsFeedItem
   newsFeedItemDeleted: ID
@@ -11056,6 +11076,25 @@ type Mutation {
   securityCoverageResultDelete(id: ID!): ID
   securityCoverageResultRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   securityCoverageResultRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityCoverage
+  huntAdd(input: HuntAddInput!): Hunt
+  huntProposalAdd(input: HuntAddInput!, draftName: String): HuntProposal
+  huntDelete(id: ID!): ID
+  huntFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Hunt
+  huntContextPatch(id: ID!, input: EditContext!): Hunt
+  huntContextClean(id: ID!): Hunt
+  huntRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
+  huntRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Hunt
+  huntRunStart(id: ID!, input: HuntRunStartInput): [HuntRun!]!
+  huntTestQuery(id: ID!, securityPlatformId: ID): HuntRun
+  huntPlan(input: HuntPlanInput!): HuntProposal
+  huntValidateFromEmulation(input: HuntValidateFromEmulationInput!): HuntValidation
+  huntPackImport(file: Upload!): HuntPackImportResult
+  huntRunRetry(id: ID!): HuntRun
+  huntRunSetVerdict(id: ID!, input: HuntRunVerdictInput!): HuntRun
+  huntRunTriage(id: ID!): HuntRun
+  huntRunReport(id: ID!, input: HuntRunReportInput!): HuntRun
+  huntRunEvidenceAdd(id: ID!, input: HuntRunEvidenceAddInput!): HuntRun
+  huntConnectorRegister(input: HuntConnectorRegisterInput!): HuntConnector
   askSendOtp(input: AskSendOtpInput!): String
   verifyOtp(input: VerifyOtpInput!): VerifyOtp
   verifyMfa(input: VerifyMfaInput!): Boolean
@@ -17247,6 +17286,510 @@ input SecurityCoverageResultAddInput {
   coverage_valid_to: DateTime
   coverage_information: [SecurityCoverageExpectation!]
   resultOf: String!
+}
+
+enum HuntType {
+  telemetry
+  infrastructure
+}
+
+enum HuntStatus {
+  draft
+  active
+  paused
+  retired
+}
+
+enum HuntSourceKind {
+  analyst
+  agent
+  hub
+}
+
+type HuntNativeQuery {
+  platform: String!
+  language: String!
+  query: String!
+  pipeline: String
+}
+
+input HuntNativeQueryInput {
+  platform: String!
+  language: String!
+  query: String!
+  pipeline: String
+}
+
+type HuntStatisticsPoint {
+  date: DateTime!
+  value: Int!
+}
+
+type HuntStatisticsBucket {
+  label: String!
+  value: Int!
+}
+
+type HuntStatistics {
+  runs_count: Int!
+  completed_runs_count: Int!
+  failed_runs_count: Int!
+  autonomous_runs_count: Int!
+  hits_total: Int!
+  true_positive_count: Int!
+  benign_count: Int!
+  inconclusive_count: Int!
+  pending_count: Int!
+  last_run_at: DateTime
+  hits_over_time: [HuntStatisticsPoint!]!
+  runs_over_time: [HuntStatisticsPoint!]!
+  runs_per_platform: [HuntStatisticsBucket!]!
+  verdict_distribution: [HuntStatisticsBucket!]!
+}
+
+type HuntConfiguration {
+  min_schedule_interval_minutes: Int!
+}
+
+enum HuntTechniqueValidationStatus {
+  validated
+  not_detected
+  in_progress
+  not_validated
+}
+
+type HuntTechniqueValidation {
+  technique_id: String!
+  status: HuntTechniqueValidationStatus!
+  emulation_runs_count: Int!
+  detected_runs_count: Int!
+}
+
+type HuntSigmaValidation {
+  valid: Boolean!
+  errors: [String!]!
+  title: String
+  level: String
+  logsource_product: String
+  logsource_category: String
+  logsource_service: String
+  detection_fields: [String!]!
+  attack_techniques: [String!]!
+}
+
+type Hunt implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  representative: Representative!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  x_opencti_modified_at: DateTime
+  refreshed_at: DateTime
+  draftVersion: DraftVersion
+  x_opencti_inferences: [Inference]
+  createdBy: Identity
+  x_opencti_assertions: [Assertion!]
+  corroboration_count: Int
+  last_asserted_at: DateTime
+  freshness_days: Int
+  single_sourced: Boolean
+  has_conflicts: Boolean
+  x_opencti_conflicts: [SourceConflict!]
+  freshness_stale: Boolean
+  freshness_stale_at: DateTime
+  currentUserAccessRight: String
+  numberOfConnectedElement: Int!
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
+  externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
+  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
+  avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  name: String!
+  description: String
+  hypothesis: String
+  hunt_type: HuntType!
+  hunt_status: HuntStatus!
+  hunt_source_kind: HuntSourceKind!
+  sigma_rule: String
+  sigmaValidation: HuntSigmaValidation
+  native_queries: [HuntNativeQuery!]
+  hunt_scope: String
+  scopePlatforms: [SecurityPlatform!]
+  techniqueValidations: [HuntTechniqueValidation!]!
+  hunt_schedule: String!
+  trigger_filters: String
+  hunt_pir_activation: Boolean
+  time_window_hours: Int!
+  expected_observables: [String!]
+  benign_patterns: [String!]
+  escalation_threshold: Int!
+  hunt_max_results: Int
+  last_run_at: DateTime
+  last_run_status: String
+  last_hits_count: Int
+  next_run_at: DateTime
+  hunt_pir_armed: Boolean
+  hunt_pir_armed_at: DateTime
+  huntTargets: [StixDomainObject!]
+  huntTechniques: [AttackPattern!]
+  huntSources: [StixDomainObject!]
+  runs(first: Int, after: ID, orderBy: HuntRunsOrdering, orderMode: OrderingMode, filters: FilterGroup): HuntRunConnection
+  statistics(startDate: DateTime, endDate: DateTime, interval: String): HuntStatistics
+  toStixBundle: String
+  creators: [Creator!]
+  toStix(version: Version): String
+  importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
+  pirInformation(pirId: ID!): PirInformation
+}
+
+enum HuntsOrdering {
+  name
+  hunt_type
+  hunt_status
+  hunt_source_kind
+  hunt_schedule
+  last_run_at
+  last_run_status
+  last_hits_count
+  next_run_at
+  escalation_threshold
+  created
+  modified
+  created_at
+  updated_at
+  creator
+  objectMarking
+  objectLabel
+  x_opencti_workflow_id
+  _score
+}
+
+type HuntConnection {
+  pageInfo: PageInfo!
+  edges: [HuntEdge!]!
+}
+
+type HuntEdge {
+  cursor: String!
+  node: Hunt!
+}
+
+type HuntProposal {
+  draft_id: ID!
+  hunt: Hunt
+}
+
+type HuntPackImportResult {
+  hunts: [Hunt!]!
+  unresolved_refs: [String!]!
+
+  """Hunts of the pack created as drafts"""
+  created_count: Int!
+
+  """
+  Hunts of the pack that already existed, their definition updated and how they run here kept
+  """
+  updated_count: Int!
+}
+
+type HuntValidation {
+  hunts_count: Int!
+  runs: [HuntRun!]!
+}
+
+input HuntAddInput {
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  description: String
+  hypothesis: String
+  hunt_type: HuntType
+  hunt_status: HuntStatus
+  hunt_source_kind: HuntSourceKind
+  sigma_rule: String
+  native_queries: [HuntNativeQueryInput!]
+  hunt_scope: String
+  hunt_schedule: String
+  trigger_filters: String
+  hunt_pir_activation: Boolean
+  time_window_hours: Int
+  expected_observables: [String!]
+  benign_patterns: [String!]
+  escalation_threshold: Int
+  hunt_max_results: Int
+  huntTargets: [String!]
+  huntTechniques: [String!]
+  huntSources: [String!]
+  confidence: Int
+  revoked: Boolean
+  lang: String
+  createdBy: String
+  objectMarking: [String]
+  objectOrganization: [String]
+  objectLabel: [String]
+  externalReferences: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+  update: Boolean
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  noTriggerImport: [Boolean]
+  embedded: [Boolean]
+  x_opencti_modified_at: DateTime
+  x_opencti_workflow_id: String
+  upsertOperations: [EditInput!]
+}
+
+input HuntRunStartInput {
+  security_platform_ids: [ID!]
+  time_window_hours: Int
+}
+
+input HuntPlanInput {
+  entity_ids: [ID!]!
+  security_platform_ids: [ID!]
+  agent_slug: String
+  benign_patterns: [String!]
+}
+
+input HuntValidateFromEmulationInput {
+  technique_id: String!
+  security_platform_id: String
+  security_platform_name: String
+  inject_id: String!
+  window_start: DateTime!
+  window_end: DateTime!
+  security_coverage_id: String
+}
+
+enum HuntRunStatus {
+  queued
+  running
+  completed
+  failed
+  timeout
+}
+
+enum HuntRunTrigger {
+  manual
+  schedule
+  standing
+  playbook
+  emulation
+  preview
+  retry
+}
+
+enum HuntRunMode {
+  execute
+  preview
+}
+
+enum HuntRunVerdict {
+  pending
+  true_positive
+  benign
+  inconclusive
+}
+
+enum HuntVerdictSource {
+  auto
+  analyst
+  agent
+}
+
+type HuntEvidence {
+  kind: String!
+  label: String!
+  href: String
+  quote: String
+  opencti_id: String
+  entity_type: String
+  field: String!
+  value_hash: String!
+  value_preview: String
+  count: Int!
+}
+
+type HuntRun implements BasicObject & InternalObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  representative: Representative!
+  metrics: [Metric]
+  creators: [Creator!]
+  created_at: DateTime
+  updated_at: DateTime
+  hunt_id: String!
+  hunt: Hunt
+  hunt_run_status: HuntRunStatus!
+  hunt_run_trigger: HuntRunTrigger!
+  hunt_run_mode: HuntRunMode!
+  security_platform_id: String
+  securityPlatform: SecurityPlatform
+  connector_id: String
+  connector_name: String
+  work_id: String
+  time_window_start: DateTime
+  time_window_end: DateTime
+  translated_query: String
+  query_language: String
+  hits_count: Int
+  distinct_entities: Int
+  evidence_sample: [HuntEvidence!]
+  result_ids: [String!]
+  results(first: Int, after: ID): StixObjectOrStixRelationshipConnection
+  verdict: HuntRunVerdict!
+  verdict_source: HuntVerdictSource
+  verdict_rationale: String
+  analyst_feedback: String
+  verdict_proposal: HuntRunVerdict
+  verdict_proposal_confidence: Int
+  verdict_proposal_rationale: String
+  verdict_proposal_agent: String
+  incident_proposal: String
+  incident_id: String
+  draft_id: String
+  aev_inject_id: String
+  security_coverage_id: String
+  technique_id: String
+  technique: AttackPattern
+  triggered_by: String
+  triggeredBy: Creator
+  attempt: Int!
+  next_retry_at: DateTime
+  dispatched_at: DateTime
+  started_at: DateTime
+  completed_at: DateTime
+  cost_ms: Int
+  error_message: String
+  playbook_id: String
+  playbook_execution_id: String
+  evidence_sources: [String!]
+  last_evidence_at: DateTime
+  objectMarking: [MarkingDefinition!]
+}
+
+enum HuntRunsOrdering {
+  created_at
+  updated_at
+  completed_at
+  started_at
+  hits_count
+  verdict
+  hunt_run_status
+  hunt_run_trigger
+  _score
+}
+
+type HuntRunConnection {
+  pageInfo: PageInfo!
+  edges: [HuntRunEdge!]!
+}
+
+type HuntRunEdge {
+  cursor: String!
+  node: HuntRun!
+}
+
+type HuntConnector {
+  id: ID!
+  name: String!
+  active: Boolean!
+  platform: String!
+  languages: [String!]!
+  supports_preview: Boolean!
+  max_concurrent_runs: Int
+  securityPlatform: SecurityPlatform
+  updated_at: DateTime
+}
+
+input HuntRunVerdictInput {
+  verdict: HuntRunVerdict!
+  analyst_feedback: String
+  source: HuntVerdictSource
+}
+
+input HuntEvidenceInput {
+  field: String!
+  value_hash: String!
+  value_preview: String
+  count: Int!
+}
+
+input HuntRunReportInput {
+  status: HuntRunStatus!
+  translated_query: String
+  query_language: String
+  hits_count: Int
+  distinct_entities: Int
+  evidence_sample: [HuntEvidenceInput!]
+  result_ids: [String!]
+  cost_ms: Int
+  error: String
+}
+
+input HuntRunEvidenceAddInput {
+  security_platform_id: StixRef
+  result_ids: [String!]!
+  hits_count: Int
+  evidence_sample: [HuntEvidenceInput!]
+  observed_at: DateTime
+
+  "*Constraints:*\n* Maximal length: `128`\n"
+  source: String
+}
+
+input HuntConnectorRegisterInput {
+  connector_id: ID!
+  platform: String!
+  languages: [String!]!
+  security_platform_name: String
+  security_platform_type: String
+  supports_preview: Boolean
+  max_concurrent_runs: Int
 }
 
 input AskSendOtpInput {

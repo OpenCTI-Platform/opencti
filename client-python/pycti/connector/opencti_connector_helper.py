@@ -53,7 +53,7 @@ from pydantic import TypeAdapter
 
 from pycti.api.opencti_api_client import OpenCTIApiClient
 from pycti.connector import opencti_connector_build
-from pycti.connector.opencti_connector import OpenCTIConnector
+from pycti.connector.opencti_connector import ConnectorType, OpenCTIConnector
 from pycti.connector.opencti_metric_handler import OpenCTIMetricHandler
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 
@@ -3247,6 +3247,139 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         )
         self.listen_queue.start()
         self.listen_queue.join()
+
+    def register_hunt_platform(
+        self,
+        platform: str,
+        languages: List[str],
+        security_platform_name: Optional[str] = None,
+        security_platform_type: str = "SIEM",
+        supports_preview: bool = True,
+        max_concurrent_runs: Optional[int] = None,
+    ) -> Dict:
+        """Register the hunt platform an INTERNAL_HUNT connector executes on.
+
+        Call it right after the helper initialisation. The Security Platform
+        identity is created in OpenCTI when it does not exist; the ``internet``
+        platform (outside-in hunts) has none.
+
+        :param platform: the platform slug (splunk, microsoft-sentinel, ..., internet)
+        :type platform: str
+        :param languages: the query languages the connector executes
+        :type languages: List[str]
+        :param security_platform_name: the Security Platform the connector executes against
+        :type security_platform_name: Optional[str]
+        :param security_platform_type: SIEM, EDR, XDR, SOAR, NDR or ISPM
+        :type security_platform_type: str
+        :param supports_preview: whether translation previews are supported
+        :type supports_preview: bool
+        :param max_concurrent_runs: connector-side concurrency limit
+        :type max_concurrent_runs: Optional[int]
+        :return: the hunt connector, with its ``securityPlatform``
+        :rtype: Dict
+        :raises ValueError: if the connector is not of type INTERNAL_HUNT
+        """
+        if self.connect_type != ConnectorType.INTERNAL_HUNT.value:
+            raise ValueError(
+                "Only INTERNAL_HUNT connectors can register a hunt platform"
+            )
+        return self.api.hunt_run.register_connector(
+            connector_id=self.connect_id,
+            platform=platform,
+            languages=languages,
+            security_platform_name=security_platform_name,
+            security_platform_type=security_platform_type,
+            supports_preview=supports_preview,
+            max_concurrent_runs=max_concurrent_runs,
+        )
+
+    def report_hunt_run(
+        self,
+        run_id: str,
+        status: str,
+        hits_count: Optional[int] = None,
+        distinct_entities: Optional[int] = None,
+        evidence_sample: Optional[List[Dict]] = None,
+        translated_query: Optional[str] = None,
+        query_language: Optional[str] = None,
+        cost_ms: Optional[int] = None,
+        result_ids: Optional[List[str]] = None,
+        error: Optional[str] = None,
+    ) -> Dict:
+        """Report the outcome of a hunt run to OpenCTI (huntRunReport).
+
+        :param run_id: the id of the hunt run
+        :type run_id: str
+        :param status: running, completed, failed or timeout (the run exceeded its deadline)
+        :type status: str
+        :param hits_count: number of hits
+        :param distinct_entities: number of distinct entities in the hits
+        :param evidence_sample: list of {field, value_hash, value_preview, count}, values hashed and truncated
+        :param translated_query: the query executed on the platform
+        :param query_language: the language of the query
+        :param cost_ms: execution duration in milliseconds
+        :param result_ids: STIX ids of the result bundle objects
+        :param error: the error of a failed run
+        :return: the hunt run
+        :rtype: Dict
+        """
+        return self.api.hunt_run.report(
+            id=run_id,
+            status=status,
+            hits_count=hits_count,
+            distinct_entities=distinct_entities,
+            evidence_sample=evidence_sample,
+            translated_query=translated_query,
+            query_language=query_language,
+            cost_ms=cost_ms,
+            result_ids=result_ids,
+            error=error,
+        )
+
+    def listen_hunt(self, message_callback: Callable[[Dict], str]) -> None:
+        """Listen for hunt runs dispatched to this INTERNAL_HUNT connector.
+
+        Like :meth:`listen`, for the ``INTERNAL_HUNT`` messages: the run is
+        reported ``running`` before the callback, and ``failed`` (with the
+        error) when the callback raises, before the error is raised again so
+        that the work is marked in error. A callback that already reported the
+        failure itself (as ``timeout`` for instance) sets the
+        ``hunt_run_reported`` attribute of the error to ``True``: the run is
+        then not reported again. The callback receives the ``event`` of the
+        message (hunt, time window, limits, security platform).
+
+        :param message_callback: function processing a hunt run event
+        :type message_callback: Callable[[Dict], str]
+        :raises ValueError: if the connector is not of type INTERNAL_HUNT
+        """
+        if self.connect_type != ConnectorType.INTERNAL_HUNT.value:
+            raise ValueError("Only INTERNAL_HUNT connectors can listen to hunt runs")
+
+        def _hunt_callback(event_data: Dict) -> str:
+            if event_data.get("event_type") != ConnectorType.INTERNAL_HUNT.value:
+                raise ValueError(
+                    "The message is not a hunt run (event_type INTERNAL_HUNT expected)"
+                )
+            run_id = (event_data.get("hunt_run") or {}).get("id")
+            if not run_id:
+                raise ValueError("The hunt run message has no hunt_run.id")
+            self.report_hunt_run(run_id, "running")
+            try:
+                return message_callback(event_data)
+            except Exception as err:
+                if getattr(err, "hunt_run_reported", False) is True:
+                    raise
+                try:
+                    self.report_hunt_run(run_id, "failed", error=str(err))
+                except Exception as report_error:  # pylint: disable=broad-except
+                    # The callback may have reported the failure itself
+                    self.connector_logger.debug(
+                        "Hunt run failure not reported again",
+                        {"hunt_run_id": run_id, "reason": str(report_error)},
+                    )
+                raise
+
+        self.listen(message_callback=_hunt_callback)
 
     def listen_stream(
         self,
