@@ -95,15 +95,17 @@ Narrowing the scopes or excluding a new marking removes the community statistics
 
 ## Where Threat Pulse appears
 
-### Threat Pulse card
+### Threat Pulse widget
 
-The overview of indicators, attack patterns, vulnerabilities, intrusion sets, malware and tools shows a "Threat Pulse" card in the right column, after the Basic information card:
+The overview of indicators, attack patterns, vulnerabilities, intrusion sets, malware and tools shows a "Threat Pulse" widget, half width, right after Basic information. It is a widget of the overview layout like the others: administrators move it or make it full width in "Settings > Customization > <entity type> > Overview layout", where it is listed as "Threat Pulse" (indicators get this tab with the widget). A layout customized before Threat Pulse existed receives the widget at the same place, after Basic information, with its default width; the rest of the customization is kept.
+
+The widget shows:
 
 - **Full**: the community prevalence gauge (rare, uncommon, common, widespread), the range of contributing platforms (for example "25 to 49 platforms"), the network first and last seen dates (the first and last days of the weeks in which enough platforms reported the object, never the day a single platform reported it), the 12-week trend sparkline, the sector trend and the community uniqueness. An object below the anonymity threshold is reported as such, without any count; a value XTM Hub did not publish is left out rather than shown empty.
 - **Preview**: the prevalence and trend when the object is in the digest, otherwise a short note, then the locked rows "Contributing platforms", "Network first seen", "Community trend over 12 weeks" and "Sector trend", and the unlock step.
 - **Not connected**: what Threat Pulse would add and the "Connect to XTM Hub" button.
 
-With the full experience, an object without community data yet shows why instead: XTM Hub could not be reached, its rate limit is reached, or the markings or restricted access of the object keep it on the platform. The card is not displayed when Threat Pulse is off.
+The widget always shows a card, so the overview never has a gap. With the full experience, an object without community data yet shows why instead: XTM Hub could not be reached, its rate limit is reached, the markings or restricted access of the object keep it on the platform, or the object has no name, identifier or supported pattern to compare with other platforms. When Threat Pulse is off, when the entity type is left out of its scope, or when the platform cannot reach XTM Hub, the card says so in one sentence, and administrators get the way to the Threat Pulse settings.
 
 | Not connected | Preview | Full |
 |:--------------|:--------|:-----|

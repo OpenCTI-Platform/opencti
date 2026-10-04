@@ -129,6 +129,7 @@ Once you have customized your scale, click on "Update" to save your configuratio
 ### Overview layout customization
 At the platform level, the Overview layout tab of the containers can be rearranged to fit the users needs.
 The widgets can be reordered or extended to their full width.
+A widget added to the default layout of an entity type in a new version, such as the [Threat Pulse](../usage/threat-pulse.md) widget, also appears in a layout customized earlier, right after the widget it follows in the default layout.
 
 ![Overview layout customization settings](assets/overview-layout-customization.png)
 

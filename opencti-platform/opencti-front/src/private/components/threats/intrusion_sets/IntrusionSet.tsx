@@ -11,7 +11,7 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import { IntrusionSet_intrusionSet$key } from './__generated__/IntrusionSet_intrusionSet.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
-import ThreatPulseOverviewColumn from '@components/common/threat_pulse/ThreatPulseOverviewColumn';
+import ThreatPulseCard from '@components/common/threat_pulse/ThreatPulseCard';
 
 const intrusionSetFragment = graphql`
   fragment IntrusionSet_intrusionSet on IntrusionSet {
@@ -92,9 +92,13 @@ const IntrusionSet: React.FC<IntrusionSetProps> = ({ intrusionSetData }) => {
               case 'basicInformation':
                 return (
                   <Grid key={key} item xs={width}>
-                    <ThreatPulseOverviewColumn entityId={intrusionSet.id}>
-                      <StixDomainObjectOverview stixDomainObject={intrusionSet} />
-                    </ThreatPulseOverviewColumn>
+                    <StixDomainObjectOverview stixDomainObject={intrusionSet} />
+                  </Grid>
+                );
+              case 'threatPulse':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ThreatPulseCard entityId={intrusionSet.id} />
                   </Grid>
                 );
               case 'latestCreatedRelationships':

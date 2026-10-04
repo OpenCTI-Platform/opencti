@@ -4,7 +4,6 @@ import { act, screen } from '@testing-library/react';
 import { MockPayloadGenerator } from 'relay-test-utils';
 import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
 import ThreatPulseCard from './ThreatPulseCard';
-import ThreatPulseOverviewColumn from './ThreatPulseOverviewColumn';
 
 type RelayEnv = ReturnType<typeof testRender>['relayEnv'];
 
@@ -64,15 +63,28 @@ const PREVIEW = {
 const FULL = { access: 'full', readable: true, unavailable_reason: null, sector_bucket: 'finance' };
 const IN_PREVIEW = { access: 'preview', readable: false, unavailable_reason: 'contribution_required', sector_bucket: 'finance' };
 
+const OFF = { access: 'off', readable: false, unavailable_reason: 'not_enabled', sector_bucket: null };
+const OUT_OF_SCOPE = { access: 'preview', readable: false, unavailable_reason: 'out_of_scope', sector_bucket: null };
+
 describe('ThreatPulseCard', () => {
-  it('should render nothing when an administrator turned Threat Pulse off', () => {
-    renderCard({ access: 'off', readable: false, unavailable_reason: 'not_enabled', sector_bucket: null }, null);
+  it('should say that Threat Pulse is turned off and lead an administrator to its settings', async () => {
+    renderCard(OFF, null);
+    expect((await screen.findByTestId('threat-pulse-off')).textContent).toContain('Threat Pulse is turned off on this platform.');
+    expect(screen.getByTestId('threat-pulse-settings-cta').textContent).toBe('Open Threat Pulse settings');
     expect(screen.queryByTestId('threat-pulse-card')).toBeNull();
     expect(screen.queryByTestId('threat-pulse-preview')).toBeNull();
   });
 
-  it('should render nothing for an entity type outside the scope', () => {
-    renderCard({ access: 'preview', readable: false, unavailable_reason: 'out_of_scope', sector_bucket: null }, null);
+  it('should say that Threat Pulse is turned off without an action a non-administrator cannot take', async () => {
+    renderCard(OFF, null, analyst);
+    expect(await screen.findByTestId('threat-pulse-off')).toBeDefined();
+    expect(screen.queryByTestId('threat-pulse-settings-cta')).toBeNull();
+  });
+
+  it('should say that the entity type is outside the scope of Threat Pulse on this platform', async () => {
+    renderCard(OUT_OF_SCOPE, null);
+    expect((await screen.findByTestId('threat-pulse-out-of-scope')).textContent).toContain('Threat Pulse does not cover this entity type on this platform.');
+    expect(screen.getByTestId('threat-pulse-settings-cta')).toBeDefined();
     expect(screen.queryByTestId('threat-pulse-preview')).toBeNull();
   });
 
@@ -132,8 +144,9 @@ describe('ThreatPulseCard', () => {
     expect(screen.queryByText(reason)).toBeNull();
   });
 
-  it('should render nothing in the full experience without community data nor a reason', () => {
+  it('should say why an object without anything to match has no community data', async () => {
     renderCard(FULL, null);
+    expect((await screen.findByTestId('threat-pulse-no-match')).textContent).toContain('it has no name, identifier or supported pattern to match.');
     expect(screen.queryByTestId('threat-pulse-card')).toBeNull();
   });
 
@@ -168,36 +181,17 @@ describe('ThreatPulseCard', () => {
     expect(screen.getByTestId('threat-pulse-connect-cta')).toBeDefined();
   });
 
-  it('should never ask an isolated platform to connect', () => {
+  it('should never ask an isolated platform to connect, and say why there is nothing to show', async () => {
     const isolated = createMockUserContext({ me: { id: 'admin', capabilities: [{ name: 'BYPASS' }] }, settings: { xtm_hub_backend_is_reachable: false } });
     renderCard({ access: 'not_connected', readable: false, unavailable_reason: 'not_registered', sector_bucket: null }, null, isolated);
+    expect((await screen.findByTestId('threat-pulse-hub-unreachable')).textContent).toContain('which this platform cannot reach');
     expect(screen.queryByTestId('threat-pulse-not-connected')).toBeNull();
-  });
-});
-
-describe('ThreatPulseOverviewColumn', () => {
-  it('should place the Threat Pulse card after the Basic information card', async () => {
-    const { relayEnv } = testRender(
-      <ThreatPulseOverviewColumn entityId="indicator-1">
-        <div data-testid="basic-information">Basic information</div>
-      </ThreatPulseOverviewColumn>,
-      { userContext: administrator },
-    );
-    resolvePulseEntity(relayEnv, FULL, PUBLISHED);
-    const card = await screen.findByTestId('threat-pulse-card');
-    const basicInformation = screen.getByTestId('basic-information');
-    expect(basicInformation.compareDocumentPosition(card) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.queryByTestId('threat-pulse-connect-cta')).toBeNull();
   });
 
-  it('should keep only the Basic information card when Threat Pulse is turned off', () => {
-    const { relayEnv } = testRender(
-      <ThreatPulseOverviewColumn entityId="indicator-1">
-        <div data-testid="basic-information">Basic information</div>
-      </ThreatPulseOverviewColumn>,
-      { userContext: administrator },
-    );
-    resolvePulseEntity(relayEnv, { access: 'off', readable: false, unavailable_reason: 'not_enabled', sector_bucket: null }, null);
-    expect(screen.getByTestId('basic-information')).toBeDefined();
-    expect(screen.queryByTestId('threat-pulse-card')).toBeNull();
+  it('should hold its place in the overview layout while the community data loads', () => {
+    testRender(<ThreatPulseCard entityId="indicator-1" />, { userContext: administrator });
+    expect(screen.getByTestId('threat-pulse-card-container')).toBeDefined();
+    expect(screen.getByText('Threat Pulse')).toBeDefined();
   });
 });

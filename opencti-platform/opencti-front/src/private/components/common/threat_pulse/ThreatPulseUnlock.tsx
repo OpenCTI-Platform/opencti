@@ -145,6 +145,25 @@ export const ThreatPulseUnlockCta = ({ surface }: ThreatPulseCtaProps) => {
   );
 };
 
+// The Threat Pulse settings, for the administrators who can change them: the others have nothing to act on.
+export const ThreatPulseSettingsCta = () => {
+  const { t_i18n } = useFormatter();
+  const navigate = useNavigate();
+  const isAdministrator = useGranted([SETTINGS_SETMANAGEXTMHUB]);
+  if (!isAdministrator) {
+    return null;
+  }
+  return (
+    <Button
+      variant="secondary"
+      onClick={() => navigate(THREAT_PULSE_SETTINGS_PATH)}
+      data-testid="threat-pulse-settings-cta"
+    >
+      {t_i18n('Open Threat Pulse settings')}
+    </Button>
+  );
+};
+
 export const ThreatPulseConnectCta = ({ surface }: ThreatPulseCtaProps) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();

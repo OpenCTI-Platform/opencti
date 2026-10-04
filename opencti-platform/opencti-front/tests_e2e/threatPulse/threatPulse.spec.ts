@@ -147,13 +147,38 @@ test('Show the Threat Pulse card in its preview, full and not connected states',
   await expect(page.getByTestId('threat-pulse-not-connected')).toBeVisible();
   await expect(page.getByTestId('threat-pulse-connect-cta')).toBeVisible();
 
-  // Off: no card at all
+  // Off: the widget keeps its place and says so, with the way to the settings for an administrator
   await mockThreatPulse(page, { ThreatPulseCardQuery: pulseEntity('off', null, 'not_enabled'), ...pulseStatusAnswers('off') });
   await page.goto(overviewUrl);
   await expect(new IntrusionSetDetailsPage(page).getIntrusionSetDetailsPage()).toBeVisible();
+  await expect(page.getByTestId('threat-pulse-off')).toBeVisible();
+  await expect(page.getByTestId('threat-pulse-settings-cta')).toBeVisible();
   await expect(page.getByTestId('threat-pulse-not-connected')).toHaveCount(0);
   await expect(page.getByTestId('threat-pulse-preview')).toHaveCount(0);
   await expect(page.getByTestId('threat-pulse-card')).toHaveCount(0);
+});
+
+// The overview grid holding a widget, and the widgets listed by the Overview layout tab of an entity type.
+const overviewGridOf = (widget: Locator) => widget.locator('xpath=ancestor::div[contains(concat(" ", normalize-space(@class), " "), " MuiGrid-container ")][1]');
+const overviewLayoutTable = (page: Page) => page.getByRole('table', { name: 'Overview layout customization configuration table' });
+const overviewLayoutWidgets = (page: Page) => overviewLayoutTable(page).locator('tbody tr td:nth-child(2)');
+
+test('Place the Threat Pulse widget right after Basic information in the overview layout of every scoped type', { tag: ['@ce'] }, async ({ page }) => {
+  for (const entityType of ['Intrusion-Set', 'Malware', 'Tool', 'Vulnerability', 'Attack-Pattern', 'Indicator']) {
+    await page.goto(`/dashboard/settings/customization/entity_types/${entityType}/overview-layout`);
+    await expect(overviewLayoutWidgets(page).filter({ hasText: 'Threat Pulse' })).toHaveCount(1);
+    const widgets = await overviewLayoutWidgets(page).allTextContents();
+    expect(widgets.indexOf('Threat Pulse')).toBe(widgets.indexOf('Basic information') + 1);
+  }
+
+  // On the overview, the widget is a cell of the layout grid of its own, never inside the Basic information cell
+  await mockThreatPulse(page, { ThreatPulseCardQuery: pulseEntity('full', FULL_INFORMATION, null), ...pulseStatusAnswers('full') });
+  await openNewIntrusionSet(page);
+  const widget = page.getByTestId('threat-pulse-card-container');
+  await expect(widget).toBeVisible();
+  const cell = widget.locator('xpath=..');
+  await expect(cell).toHaveClass(/MuiGrid-grid-xs-6/);
+  await expect(cell.getByText('Basic information', { exact: true })).toHaveCount(0);
 });
 
 test('Lead an administrator from the Threat Pulse preview to the contribution settings', { tag: ['@ce'] }, async ({ page }) => {
@@ -389,6 +414,12 @@ test.describe('Threat Pulse documentation images', () => {
         hubReachable: false,
         loaded: 'threat-pulse-card',
       },
+      {
+        name: 'off',
+        answers: { ThreatPulseCardQuery: pulseEntity('off', null, 'not_enabled'), ...pulseStatusAnswers('off') },
+        hubReachable: false,
+        loaded: 'threat-pulse-off',
+      },
     ];
     await mockThreatPulse(page, cardStates[1].answers);
     await openNewIntrusionSet(page);
@@ -404,6 +435,24 @@ test.describe('Threat Pulse documentation images', () => {
         await shoot(page.getByTestId('threat-pulse-card-container'), `threat-pulse-card-${state.name}${theme ? '-light' : ''}`, testInfo);
       }
     }
+
+    // The overview of an intrusion set with the widget in the second row, then the Overview layout tab listing it, in
+    // a window tall enough for the whole overview
+    await page.setViewportSize({ width: 1440, height: 1800 });
+    for (const theme of [undefined, LIGHT_THEME]) {
+      const overviewThemeApplied = await mockThreatPulse(page, cardStates[1].answers, { theme });
+      await page.goto(overviewUrl);
+      if (theme) {
+        await expect.poll(overviewThemeApplied).toBe(true);
+      }
+      await expect(page.getByTestId('threat-pulse-preview')).toBeVisible();
+      await shoot(overviewGridOf(page.getByTestId('threat-pulse-card-container')), `threat-pulse-overview${theme ? '-light' : ''}`, testInfo);
+      await page.goto('/dashboard/settings/customization/entity_types/Intrusion-Set/overview-layout');
+      await expect(overviewLayoutWidgets(page).filter({ hasText: 'Threat Pulse' })).toHaveCount(1);
+      const layoutCard = overviewLayoutTable(page).locator('xpath=ancestor::div[contains(concat(" ", normalize-space(@class), " "), " MuiStack-root ")][1]');
+      await shoot(layoutCard, `threat-pulse-overview-layout${theme ? '-light' : ''}`, testInfo);
+    }
+    await page.setViewportSize({ width: 1440, height: 900 });
 
     // The template card, then the trending and benchmark widgets of the dashboard it creates: preview, then full
     const dashboardAnswers = (mode: 'preview' | 'full') => ({
