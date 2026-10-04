@@ -136,18 +136,18 @@ export default class GraphPage {
   }
 
   /**
-   * Waits for at least `minNodes` nodes and for their layout to stand still, in graph units so that
-   * the framing animation does not count; returns the time (`Date.now()`) of the first sample of
-   * the still layout, to measure how long laying it out took.
+   * Waits for at least `minNodes` nodes and `minLinks` links and for their layout to stand still, in
+   * graph units so that the framing animation does not count; returns the time (`Date.now()`) of the
+   * first sample of the still layout, to measure how long loading and laying it out took.
    */
-  async waitForStableLayout(minNodes: number): Promise<number> {
+  async waitForStableLayout(minNodes: number, minLinks = 0): Promise<number> {
     await expect(this.getCanvas()).toBeVisible();
     let previous = { at: 0, positions: '' };
     let stableAt = 0;
     await expect.poll(async () => {
       const state = await this.page.evaluate(readGraphSnapshot);
       const at = Date.now();
-      if (!state || state.nodes.length < minNodes) return false;
+      if (!state || state.nodes.length < minNodes || state.links.length < minLinks) return false;
       const positions = JSON.stringify(state.nodes.map(({ gx, gy }) => [Math.round(gx), Math.round(gy)]));
       if (positions === previous.positions) {
         stableAt = previous.at;
@@ -219,8 +219,12 @@ export default class GraphPage {
     const to = await this.pagePoint(toId);
     await this.page.mouse.move(from.x, from.y);
     await this.page.mouse.down({ button: 'right' });
+    // The gesture picks the nodes the pointer moves over: a first move on the source, as a hand
+    // does, whatever the zoom; the same on the target before the release.
+    await this.page.mouse.move(from.x + 1, from.y + 1);
     await this.page.mouse.move((from.x + to.x) / 2, (from.y + to.y) / 2, { steps: 8 });
     await this.page.mouse.move(to.x, to.y, { steps: 8 });
+    await this.page.mouse.move(to.x + 1, to.y + 1);
     await this.page.mouse.up({ button: 'right' });
   }
 

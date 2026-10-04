@@ -202,7 +202,10 @@ test.describe('Container knowledge graph', { tag: ['@ce'] }, () => {
     await page.keyboard.press('Escape');
     await expect(page.getByText('Update an observable', { exact: true })).toBeHidden();
 
-    await graph.clickBackground();
+    // The edition panel resized the page while open: both entities are placed in the middle again,
+    // clear of the details panel the selection opens.
+    await graph.arrangeInMiddle([fixture.domain.id, fixture.ipv4.id]);
+    await graph.waitForGraph(5);
     await graph.clickNode(fixture.domain.id);
     await graph.clickNode(fixture.ipv4.id, ['Shift']);
     await expect(graph.getSelectionSummary(2)).toBeVisible();

@@ -52,7 +52,7 @@ test.describe('Graph performance', { tag: ['@ce'] }, () => {
     const graph = new GraphPage(page);
     const start = Date.now();
     await page.goto(`/dashboard/workspaces/investigations/${fixture.investigationId}`);
-    const stableAfterMs = await graph.waitForStableLayout(NODES);
+    const stableAfterMs = await graph.waitForStableLayout(NODES, LINKS);
     const snapshot = await graph.snapshot();
     expect(snapshot.nodes.length).toBe(NODES);
     expect(snapshot.links.length).toBeGreaterThanOrEqual(LINKS);
@@ -62,7 +62,7 @@ test.describe('Graph performance', { tag: ['@ce'] }, () => {
     const intervals = await page.evaluate(sampleFrameIntervals, SAMPLE_MS);
     const median = percentile(intervals, 50);
     const p90 = percentile(intervals, 90);
-    const measures = `${snapshot.nodes.length} nodes, ${snapshot.links.length} links: first stable layout ${(layoutMs / 1000).toFixed(1)} s after navigation; `
+    const measures = `${snapshot.nodes.length} nodes, ${snapshot.links.length} links: loaded and laid out in ${(layoutMs / 1000).toFixed(1)} s after navigation; `
       + `frame time while the forces run median ${median.toFixed(1)} ms, p90 ${p90.toFixed(1)} ms over ${intervals.length} frames`;
     test.info().annotations.push({ type: 'graph performance', description: measures });
     // eslint-disable-next-line no-console
