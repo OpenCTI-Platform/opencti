@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { elapsedMs, formatDuration, runReasonNext, runStatusSentence, STEP_OUTCOME_CODES, stepOutcome, type Translate } from './investigationRunOutcomes';
-import { draftChangeOperation, draftChangeSummary } from './investigationRunDraftChanges';
+import { draftChangeCount, draftChangeOperation, draftChangeSummary } from './investigationRunDraftChanges';
 
 // Fills the placeholders like the platform formatter does, so the tests read the final sentence.
 const t: Translate = (message, options) => {
@@ -136,5 +136,10 @@ describe('Case Autopilot draft changes', () => {
   it('summarises the changes from the draft counts, with plurals and without empty groups', () => {
     expect(draftChangeSummary({ entitiesCount: 3, observablesCount: 0, relationshipsCount: 1, sightingsCount: 0, containersCount: 1 }, t))
       .toBe('3 entities, 1 relationship, 1 container');
+  });
+
+  it('counts the changes an analyst reviews, never the references the draft total adds', () => {
+    expect(draftChangeCount({ entitiesCount: 3, observablesCount: 3, relationshipsCount: 3, sightingsCount: 0, containersCount: 3 })).toBe(12);
+    expect(draftChangeCount(null)).toBe(0);
   });
 });

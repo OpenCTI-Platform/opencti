@@ -31,6 +31,7 @@ import InvestigationRunStatusChip from './InvestigationRunStatusChip';
 import { NextAction, type StepActionHandlers } from './InvestigationRunStepNextAction';
 import { budgetPercent, buildGoalPlanView, engineReasonLabel, investigationGraphPath, isEngineRunOver, isRunActive, reportMutationOutcome } from './investigationRunUtils';
 import { CASE_AUTOPILOT_DOCS_URL, formatDuration, POLICIES_PATH, runReasonNext, runStatusSentence } from './investigationRunOutcomes';
+import { draftChangeCount } from './investigationRunDraftChanges';
 import type { InvestigationRunView_run$data } from './__generated__/InvestigationRunView_run.graphql';
 import { InvestigationRunHeaderCancelMutation } from './__generated__/InvestigationRunHeaderCancelMutation.graphql';
 import { InvestigationRunHeaderDeleteMutation } from './__generated__/InvestigationRunHeaderDeleteMutation.graphql';
@@ -87,7 +88,7 @@ const InvestigationRunHeader = ({ run, handlers, onOpenReport, onGiveFeedback, l
   const pending = run.approvals.filter((approval) => approval.status === 'pending');
   const draftGate = pending.find((approval) => approval.kind === 'draft_validation');
   const draftOpen = !!run.draft && run.draft.draft_status !== 'validated';
-  const draftChanges = draftGate ? (run.draft?.objectsCount.totalCount ?? 0) : null;
+  const draftChanges = draftGate ? draftChangeCount(run.draft?.objectsCount) : null;
   const view = buildGoalPlanView(run.goal_plan, run.steps, isEngineRunOver(run));
   const currentIndex = view.actions.findIndex((action) => action.status === 'active');
   const nextIndex = currentIndex >= 0 ? currentIndex : view.actions.findIndex((action) => action.status === 'pending');

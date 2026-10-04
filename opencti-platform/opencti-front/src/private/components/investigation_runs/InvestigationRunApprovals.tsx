@@ -29,7 +29,7 @@ import { useFormatter } from '../../../components/i18n';
 import { MESSAGING$ } from '../../../relay/environment';
 import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../utils/hooks/useGranted';
 import InvestigationRunDraftPreview from './InvestigationRunDraftPreview';
-import { draftChangeSummary } from './investigationRunDraftChanges';
+import { draftChangeCount, draftChangeSummary } from './investigationRunDraftChanges';
 import { APPROVAL_KIND_LABELS, decideInvestigationApprovals, type InvestigationApprovalDecision, SEVERITY_LABELS } from './investigationRunUtils';
 import type { InvestigationRunView_run$data } from './__generated__/InvestigationRunView_run.graphql';
 
@@ -156,7 +156,7 @@ const DecisionControls = ({ run, approval, approveLabel, onDecided }: DecisionCo
 const DraftApproval = ({ run, approval, onDecided }: { run: Run; approval: Approval; onDecided: () => void }) => {
   const { t_i18n, n } = useFormatter();
   const counts = run.draft?.objectsCount;
-  const total = counts?.totalCount ?? 0;
+  const total = draftChangeCount(counts);
   const summary = counts ? draftChangeSummary(counts, t_i18n) : '';
   let title = t_i18n('Approve the investigation draft');
   if (total > 0) title = t_i18n(run.case ? 'Approve {count} changes to this case' : 'Approve {count} changes', { values: { count: n(total) } });

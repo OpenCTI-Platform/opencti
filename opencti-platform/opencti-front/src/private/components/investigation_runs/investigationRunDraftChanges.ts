@@ -43,6 +43,15 @@ export interface DraftCounts {
   containersCount: number;
 }
 
+/**
+ * The changes an analyst reviews in a draft: entities, observables,
+ * relationships, sightings and containers. The draft's total also counts the
+ * references between them, which the draft pages never list.
+ */
+export const draftChangeCount = (counts: DraftCounts | null | undefined) => (counts
+  ? counts.entitiesCount + counts.observablesCount + counts.relationshipsCount + counts.sightingsCount + counts.containersCount
+  : 0);
+
 /** One line naming what a draft writes, from its counts: "3 entities, 2 relationships, 1 container". */
 export const draftChangeSummary = (counts: DraftCounts, t: Translate) => [
   counts.entitiesCount > 0 ? t('{count, plural, one {# entity} other {# entities}}', { values: { count: counts.entitiesCount } }) : null,
