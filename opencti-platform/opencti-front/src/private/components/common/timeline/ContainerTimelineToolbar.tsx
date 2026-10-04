@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import {
   Badge,
@@ -109,7 +109,12 @@ const ContainerTimelineToolbar = ({
   const colors = useTimelineColors();
   const visibleSpan = visibleDomain ? describeTimelineSpan(visibleDomain) : null;
   const lanes = TIMELINE_LANES.filter((lane) => enabledLanes.includes(lane));
-  const selectedLanes = state.lanes.length > 0 ? state.lanes : lanes;
+  // A lane kept in the URL but disabled in the settings since is left out, as it is for the events shown
+  const requestedLanes = state.lanes.filter((lane) => lanes.includes(lane));
+  const selectedLanes = requestedLanes.length > 0 ? requestedLanes : lanes;
+  // The search field follows the URL (for example after "Clear filters") and keeps what is typed until it is submitted
+  const [searchText, setSearchText] = useState(state.search ?? '');
+  useEffect(() => setSearchText(state.search ?? ''), [state.search]);
 
   const toggleLane = (lane: TimelineLane) => {
     const next = selectedLanes.includes(lane) ? selectedLanes.filter((l) => l !== lane) : [...selectedLanes, lane];
@@ -180,11 +185,15 @@ const ContainerTimelineToolbar = ({
         </Select>
         <div style={{ minWidth: 200, flex: '0 1 260px' }}>
           <SearchField
-            defaultValue={state.search}
+            value={searchText}
+            onChange={(event) => setSearchText(event.target.value)}
             placeholder={t_i18n('Search the timeline')}
             aria-label={t_i18n('Search the timeline')}
             onSubmit={(value) => onChange({ search: value.trim() })}
-            onClear={() => onChange({ search: '' })}
+            onClear={() => {
+              setSearchText('');
+              onChange({ search: '' });
+            }}
           />
         </div>
         <div style={{ flex: 1 }} />
