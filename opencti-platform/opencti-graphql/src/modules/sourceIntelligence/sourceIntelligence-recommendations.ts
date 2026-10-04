@@ -847,10 +847,6 @@ const createProposal = async (context: AuthContext, proposal: RecommendationProp
   return recommendation as BasicStoreEntitySourceRecommendation;
 };
 
-/**
- * Live recommendation (proposed, or failed and retryable) of the proposal fingerprint, created when there is none.
- * Unlike upsertProposals, it never withdraws the other proposals of the same kind.
- */
 export const findRecommendationsByFingerprint = async (context: AuthContext, fingerprint: string, statuses: string[]) => {
   return fullEntitiesList<BasicStoreEntitySourceRecommendation>(context, SYSTEM_USER, [ENTITY_TYPE_SOURCE_RECOMMENDATION], {
     filters: {
@@ -864,13 +860,41 @@ export const findRecommendationsByFingerprint = async (context: AuthContext, fin
   } as any);
 };
 
+/**
+ * Looking a fingerprint up and creating its recommendation run one at a time per fingerprint: the manager proposing
+ * recommendations and a one-click deployment can never create two live recommendations of the same change, each of
+ * which could then be applied.
+ */
+const withFingerprintLock = async <T>(fingerprint: string, action: () => Promise<T>): Promise<T> => {
+  let lock;
+  try {
+    lock = await lockResources([`source-recommendation-fingerprint:${fingerprint}`]);
+    return await action();
+  } catch (err: any) {
+    if (err?.name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ participantIds: [fingerprint] });
+    }
+    throw err;
+  } finally {
+    if (lock) {
+      await lock.unlock();
+    }
+  }
+};
+
+/**
+ * Live recommendation (proposed, or failed and retryable) of the proposal fingerprint, created when there is none.
+ * Unlike upsertProposals, it never withdraws the other proposals of the same kind.
+ */
 export const findOrCreateProposal = async (context: AuthContext, proposal: RecommendationProposal) => {
   const openStatuses = [RECOMMENDATION_STATUS_PROPOSED, RECOMMENDATION_STATUS_APPLYING, RECOMMENDATION_STATUS_FAILED];
-  const existing = await findRecommendationsByFingerprint(context, proposal.fingerprint, openStatuses);
-  if (existing.length > 0) {
-    return existing[0];
-  }
-  return createProposal(context, proposal, new Date().toISOString());
+  return withFingerprintLock(proposal.fingerprint, async () => {
+    const existing = await findRecommendationsByFingerprint(context, proposal.fingerprint, openStatuses);
+    if (existing.length > 0) {
+      return existing[0];
+    }
+    return createProposal(context, proposal, new Date().toISOString());
+  });
 };
 
 /**
@@ -911,7 +935,14 @@ export const upsertProposals = async (
       const cooldownEnd = new Date(current.dismissed_at).getTime() + settings.tuning.dismiss_cooldown_days * DAY_MS;
       if (cooldownEnd > now) continue;
     }
-    created.push(await createProposal(context, proposal, nowIso));
+    // A one-click deployment may have created the recommendation of this fingerprint since the list was read
+    const recommendation = await withFingerprintLock(proposal.fingerprint, async () => {
+      const live = await findRecommendationsByFingerprint(context, proposal.fingerprint, [...ACTIVE_STATUSES]);
+      return live.length > 0 ? null : createProposal(context, proposal, nowIso);
+    });
+    if (recommendation) {
+      created.push(recommendation);
+    }
   }
   // Withdraw the proposals the rules do not produce anymore (the situation improved)
   const withdrawn = existing.filter((recommendation) => recommendation.recommendation_status === RECOMMENDATION_STATUS_PROPOSED

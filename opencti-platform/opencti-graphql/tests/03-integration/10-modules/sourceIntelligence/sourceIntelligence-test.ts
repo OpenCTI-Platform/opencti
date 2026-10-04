@@ -4,7 +4,7 @@ import { ADMIN_USER, getUserIdByEmail, testContext, USER_CONNECTOR, USER_DISINFO
 import { queryAsAdmin, queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
 import { runFullComputation } from '../../../../src/manager/sourceIntelligenceManager';
 import { getSourceIntelligenceSettings, listAllSources, syncSources, writeComputedSourceKpis } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-domain';
-import { upsertProposals } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-recommendations';
+import { findOrCreateProposal, findRecommendationsByFingerprint, upsertProposals } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-recommendations';
 import { applyLiveScorecardCost, deleteScorecardsOfSources, findLiveScorecards } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-store';
 import { computeCostPerActionable } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-scoring';
 import {
@@ -111,6 +111,7 @@ const STATUS_QUERY = gql`
     sourceIntelligenceStatus {
       enterprise_edition
       sources_count
+      scored_sources_count
       last_run_success
       last_scanned_objects
       last_scan_truncated
@@ -387,6 +388,9 @@ describe('Source intelligence', () => {
     const status = data.sourceIntelligenceStatus;
     expect(status.last_run_success).toBe(true);
     expect(status.sources_count).toBeGreaterThan(0);
+    // Only the sources whose scorecards count knowledge are scored, never more than the sources tracked
+    expect(status.scored_sources_count).toBeGreaterThan(0);
+    expect(status.scored_sources_count).toBeLessThanOrEqual(status.sources_count);
     expect(status.last_scanned_objects).toBeGreaterThan(0);
     expect(['assertions', 'creators']).toContain(status.provenance_mode);
   });
@@ -707,6 +711,25 @@ describe('Source intelligence', () => {
     });
     const reverted = await queryAsAdminWithSuccess({ query: REVERT_MUTATION, variables: { id: linked.internal_id } });
     expect(reverted.data.revertSourceRecommendation.status).toBe('reverted');
+  });
+
+  it('should create one live recommendation per fingerprint when a deployment and a computation propose it together', async () => {
+    const proposal = {
+      kind: 'add_connector' as const,
+      source_id: null,
+      fingerprint: `${TEST_FINGERPRINT_PREFIX}-deploy-concurrent`,
+      name: 'Deploy a connector proposed twice at once',
+      rationale: 'Integration test',
+      payload: { slug: 'concurrent-connector', title: 'Concurrent test connector', catalog_id: uuidv4() },
+      evidence: {},
+    };
+    const [deployed] = await Promise.all([
+      findOrCreateProposal(testContext, proposal),
+      upsertProposals(testContext, [proposal], settings, { kinds: [] }),
+      upsertProposals(testContext, [proposal], settings, { kinds: [] }),
+    ]);
+    const live = await findRecommendationsByFingerprint(testContext, proposal.fingerprint, ['proposed', 'applying', 'failed', 'applied']);
+    expect(live.map((recommendation) => recommendation.internal_id)).toEqual([deployed.internal_id]);
   });
 
   it('should dismiss a recommendation and not propose it again during the cooldown', async () => {
