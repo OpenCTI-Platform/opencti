@@ -131,7 +131,7 @@ The playbook component **Run Case Autopilot** starts an investigation for each i
 
 ## Notifications
 
-Live triggers and digests can listen to three investigation events, delivered on the case of the investigation: **Investigation awaiting approval**, **Investigation completed** and **Investigation failed**. Assignees and participants of a case receive them without any setup. See [notifications and alerting](notifications.md).
+Live triggers and digests can listen to three investigation events, delivered on the case of the investigation: **Investigation awaiting approval**, **Investigation completed** and **Investigation failed**. Assignees and participants of a case receive them without any setup. A user receives an event only while they can read the case, the investigation and every source it cites, with the markings those sources carry now. See [notifications and alerting](notifications.md).
 
 ## Feedback and report template
 

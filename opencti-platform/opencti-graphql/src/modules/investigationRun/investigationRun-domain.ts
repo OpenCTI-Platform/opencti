@@ -215,6 +215,11 @@ export const findServedInvestigationRuns = async (context: AuthContext, user: Au
   });
 };
 
+const serveInvestigationRun = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityInvestigationRun) => {
+  const [served] = await findServedInvestigationRuns(context, user, [run]);
+  return served;
+};
+
 // Batch loader behind the run resolvers: one read for the runs of a page.
 export const batchServedInvestigationRuns = async (context: AuthContext, user: AuthUser, runs: BasicStoreEntityInvestigationRun[]) => {
   return await findServedInvestigationRuns(context, user, runs) as unknown as BasicStoreCommon[];
@@ -360,7 +365,7 @@ export const updateInvestigationRun = async (
     await lock.unlock();
   }
   // Outside the lock: delivering to the live triggers reads every listening user.
-  await notifyInvestigationRunStatus(outOfDraft(context), previous, updated);
+  await notifyInvestigationRunStatus(outOfDraft(context), previous, updated, serveInvestigationRun);
   return updated;
 };
 
