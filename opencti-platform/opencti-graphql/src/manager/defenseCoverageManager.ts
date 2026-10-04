@@ -4,7 +4,7 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { lockResources } from '../lock/master-lock';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import type { DataEvent, SseEvent } from '../types/event';
-import { RELATION_DETECTS, RELATION_INDICATES } from '../schema/stixCoreRelationship';
+import { RELATION_DETECTS, RELATION_HAS_COVERED, RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { computeDefenseCoverage, findTechniquesOfSources } from '../modules/defenseCoverage/defenseCoverage-compute';
 import { collectDefenseImpact } from '../modules/defenseCoverage/defenseCoverage-impact';
 import {
@@ -86,12 +86,14 @@ export const defenseCoverageStreamHandler = async (streamEvents: Array<SseEvent<
     return;
   }
   const techniqueIds = new Set(impact.techniqueIds);
-  const [fromDataComponents, fromRules] = await Promise.all([
+  const [fromDataComponents, fromRules, fromResults] = await Promise.all([
     findTechniquesOfSources(context, SYSTEM_USER, RELATION_DETECTS, Array.from(impact.dataComponentIds)),
     findTechniquesOfSources(context, SYSTEM_USER, RELATION_INDICATES, Array.from(impact.ruleIds)),
+    findTechniquesOfSources(context, SYSTEM_USER, RELATION_HAS_COVERED, Array.from(impact.resultIds)),
   ]);
   fromDataComponents.forEach((id) => techniqueIds.add(id));
   fromRules.forEach((id) => techniqueIds.add(id));
+  fromResults.forEach((id) => techniqueIds.add(id));
   if (techniqueIds.size === 0) {
     // A new version drops the per-reader access cache built on the previous one
     if (impact.accessChanged) await bumpDefenseCoverageVersion();

@@ -45,6 +45,8 @@ export interface DefenseImpact {
   techniqueIds: Set<string>;
   dataComponentIds: Set<string>;
   ruleIds: Set<string>;
+  // Security coverage results whose covered techniques must be recomputed
+  resultIds: Set<string>;
   accessChanged: boolean;
   // The threat usages of the overlays changed: a uses relationship, or a threat created, removed or with a new access
   overlayChanged: boolean;
@@ -68,7 +70,15 @@ interface StixEventData {
  * data components and rules whose techniques must be recomputed, or a full recomputation.
  */
 export const collectDefenseImpact = (events: Array<SseEvent<DataEvent>>): DefenseImpact => {
-  const impact: DefenseImpact = { full: false, techniqueIds: new Set(), dataComponentIds: new Set(), ruleIds: new Set(), accessChanged: false, overlayChanged: false };
+  const impact: DefenseImpact = {
+    full: false,
+    techniqueIds: new Set(),
+    dataComponentIds: new Set(),
+    ruleIds: new Set(),
+    resultIds: new Set(),
+    accessChanged: false,
+    overlayChanged: false,
+  };
   events.forEach((event) => {
     const eventType = event.data.type;
     const data = event.data.data as unknown as StixEventData;
@@ -118,6 +128,8 @@ export const collectDefenseImpact = (events: Array<SseEvent<DataEvent>>): Defens
       // A marking or organization change on an evidence changes who may see it: readers re-evaluate their access
       impact.accessChanged = true;
       if (extension.type === ENTITY_TYPE_DATA_COMPONENT) impact.dataComponentIds.add(extension.id);
+      // A connector upsert of a result can change its date or its security coverage without touching has-covered
+      if (extension.type === ENTITY_TYPE_SECURITY_COVERAGE_RESULT) impact.resultIds.add(extension.id);
     }
   });
   return impact;

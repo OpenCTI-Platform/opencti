@@ -99,6 +99,8 @@ export const defenseKeyboardProps = (defense: DefenseMatrixMode, attackPatternId
   role: 'button',
   tabIndex: 0,
   onKeyDown: (event: React.KeyboardEvent) => {
+    // Keys pressed on a nested control (the expand button of an accordion summary) belong to that control
+    if (event.target !== event.currentTarget) return;
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       event.stopPropagation();

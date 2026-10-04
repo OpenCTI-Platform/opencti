@@ -117,6 +117,14 @@ describe('Defense coverage stream impact', () => {
     expect(platform.full).toEqual(false);
     expect(collectDefenseImpact([event('update', { type: 'report', extensions: { [STIX_EXT_OCTI]: { id: 'r', type: 'Report' } } })]).accessChanged).toEqual(false);
   });
+  it('should recompute the techniques covered by an updated security coverage result', () => {
+    const result = collectDefenseImpact([event('update', { type: 'x-security-coverage-result', extensions: { [STIX_EXT_OCTI]: { id: 'res-1', type: 'Security-Coverage-Result' } } })]);
+    expect(Array.from(result.resultIds)).toEqual(['res-1']);
+    expect(result.accessChanged).toEqual(true);
+    expect(result.full).toEqual(false);
+    const coverage = collectDefenseImpact([event('update', { type: 'security-coverage', extensions: { [STIX_EXT_OCTI]: { id: 'sc-1', type: 'Security-Coverage' } } })]);
+    expect(Array.from(coverage.resultIds)).toEqual([]);
+  });
   it('should invalidate the threat overlays when the usages or the access to a threat change', () => {
     const threat = { type: 'intrusion-set', extensions: { [STIX_EXT_OCTI]: { id: 'is-1', type: 'Intrusion-Set' } } };
     const updateWith = (path: string) => ({ id: '1-0', event: 'update', data: { type: 'update', data: threat, context: { patch: [{ op: 'add', path, value: 'x' }] } } } as never);
