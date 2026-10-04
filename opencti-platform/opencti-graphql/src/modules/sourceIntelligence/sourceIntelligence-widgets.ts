@@ -154,10 +154,12 @@ export const sourceScorecardsNumber = async (
   args: { metric: string; period?: ScorecardPeriodValue | null; filters?: FilterGroup | null; aggregation?: string | null },
 ) => {
   const metric = assertMetric(args.metric);
-  const { data } = restrictToCostCurrency(await loadWidgetData(context, user, args.period ?? REFERENCE_SCORECARD_PERIOD, args.filters), [metric]);
+  const loaded = await loadWidgetData(context, user, args.period ?? REFERENCE_SCORECARD_PERIOD, args.filters);
+  const { data } = restrictToCostCurrency(loaded, [metric]);
   const values = data.map(({ scorecard }) => metricValue(scorecard, metric)).filter((value): value is number => value !== null);
   const value = aggregateValues(values, assertAggregation(args.aggregation, 'sum'));
-  return { value: value === null ? null : Math.round(value * 100) / 100, sources_count: data.length };
+  // The number of sources counts every scored source, whatever the currency of its cost
+  return { value: value === null ? null : Math.round(value * 100) / 100, sources_count: loaded.length };
 };
 
 export const sourceScorecardsTimeSeries = async (

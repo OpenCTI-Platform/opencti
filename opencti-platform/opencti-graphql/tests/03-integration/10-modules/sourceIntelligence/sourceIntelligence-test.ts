@@ -72,6 +72,7 @@ const SOURCE_SCORECARDS_QUERY = gql`
       source_id
       period
       snapshot_date
+      is_live
       value_score
     }
   }
@@ -335,6 +336,10 @@ describe('Source intelligence', () => {
     const history = await queryAsAdminWithSuccess({ query: SOURCE_SCORECARDS_QUERY, variables: { sourceId, period: 'LAST_30_DAYS' } });
     expect(history.data.sourceScorecards.length).toBeGreaterThan(0);
     history.data.sourceScorecards.forEach((point: { source_id: string }) => expect(point.source_id).toBe(sourceId));
+    // The snapshots, then the live scorecard carrying the increments since the last snapshot
+    const points = history.data.sourceScorecards as Array<{ is_live: boolean }>;
+    expect(points.filter((point) => point.is_live)).toHaveLength(1);
+    expect(points[points.length - 1].is_live).toBe(true);
   });
 
   it('should return no scorecard for an unknown source', async () => {
