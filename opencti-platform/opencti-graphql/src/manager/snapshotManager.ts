@@ -21,7 +21,7 @@ import { extractAttributeValues, replayBackward } from '../modules/timeMachine/t
 import { fetchElementsHistoryEvents, fetchRelationshipsHistoryEvents } from '../modules/timeMachine/timeMachine-history';
 import { deleteSnapshotsBefore, indexSnapshots, type SnapshotInput } from '../modules/timeMachine/timeMachine-store';
 import { TIME_MACHINE_RELATIONSHIP_TYPES } from '../modules/timeMachine/timeMachine-relationships';
-import { countRelationshipsByType } from '../modules/timeMachine/timeMachine-domain';
+import { countRelationshipsByTypeForElements } from '../modules/timeMachine/timeMachine-counters';
 import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
 
 const SNAPSHOT_MANAGER_ID = 'SNAPSHOT_MANAGER';
@@ -249,14 +249,14 @@ export const buildCompactDocuments = async (context: AuthContext, entities: Basi
     if (relation.toId !== relation.fromId) register(relation.toId, relation.internal_id, relation.entity_type, allRead);
   });
   if (!allRead) {
-    // Too many relationships to read them all: the exact counts come from an aggregation per entity
-    for (let index = 0; index < ids.length; index += 1) {
-      const counts = await countRelationshipsByType(context, SYSTEM_USER, ids[index], { endDate: snapshotDate });
-      const document = documents.get(ids[index]) as CompactDocument;
+    // Too many relationships to read them all: the exact counts come from one aggregation for the whole batch
+    const countsById = await countRelationshipsByTypeForElements(context, SYSTEM_USER, ids, snapshotDate);
+    countsById.forEach((counts, id) => {
+      const document = documents.get(id) as CompactDocument;
       counts.forEach((count, type) => {
         document.relationships_count[type] = count;
       });
-    }
+    });
   }
   // Deleted relationships are no longer indexed: they are added on top of the counts of the present ones
   deletedSince.filter((event) => !listedIds.has(event.context_id)).forEach((event) => {

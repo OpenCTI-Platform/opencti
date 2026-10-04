@@ -54,6 +54,52 @@ const runFiltersAggregation = async (
   return counts;
 };
 
+const RELATIONSHIP_TYPES_CLAUSE = {
+  bool: {
+    should: [
+      { terms: { 'parent_types.keyword': [ABSTRACT_STIX_CORE_RELATIONSHIP] } },
+      { terms: { 'entity_type.keyword': [STIX_SIGHTING_RELATIONSHIP] } },
+    ],
+    minimum_should_match: 1,
+  },
+};
+// Upper bound of the relationship types of one element (core relationship types and sightings)
+const MAX_RELATIONSHIP_TYPES = 100;
+
+/**
+ * Relationships of each element by relationship type, created before `endDate`: one aggregation for all the elements,
+ * whatever their number of relationships.
+ */
+export const countRelationshipsByTypeForElements = async (
+  context: AuthContext,
+  user: AuthUser,
+  ids: string[],
+  endDate: string,
+): Promise<Map<string, Map<string, number>>> => {
+  const result = new Map<string, Map<string, number>>();
+  if (ids.length === 0) return result;
+  const restrictions = await buildDataRestrictions(context, user);
+  const filters: Record<string, any> = {};
+  ids.forEach((id) => {
+    filters[id] = connectionClause(id);
+  });
+  const body = {
+    size: 0,
+    query: { bool: { must: [RELATIONSHIP_TYPES_CLAUSE, { range: { created_at: { lt: endDate } } }, ...restrictions.must], must_not: restrictions.must_not } },
+    aggs: { per_element: { filters: { filters }, aggs: { per_type: { terms: { field: 'entity_type.keyword', size: MAX_RELATIONSHIP_TYPES } } } } },
+  };
+  const data = await elRawSearch(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, { index: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, body }).catch((err: unknown) => {
+    throw DatabaseError('Time machine relationship counts aggregation fail', { cause: err });
+  });
+  const buckets: Record<string, { per_type?: { buckets?: Array<{ key: string; doc_count: number }> } }> = data.aggregations?.per_element?.buckets ?? {};
+  ids.forEach((id) => {
+    const counts = new Map<string, number>();
+    (buckets[id]?.per_type?.buckets ?? []).forEach((bucket) => counts.set(bucket.key, bucket.doc_count));
+    result.set(id, counts);
+  });
+  return result;
+};
+
 // Relationships created after the reference date, by someone else than the user
 const countNewRelationships = async (context: AuthContext, user: AuthUser, references: ReferenceDates) => {
   const restrictions = await buildDataRestrictions(context, user);
@@ -61,19 +107,7 @@ const countNewRelationships = async (context: AuthContext, user: AuthUser, refer
   references.forEach((reference, id) => {
     filters[id] = { bool: { must: [connectionClause(id), { range: { created_at: { gt: reference } } }] } };
   });
-  const must = [
-    {
-      bool: {
-        should: [
-          { terms: { 'parent_types.keyword': [ABSTRACT_STIX_CORE_RELATIONSHIP] } },
-          { terms: { 'entity_type.keyword': [STIX_SIGHTING_RELATIONSHIP] } },
-        ],
-        minimum_should_match: 1,
-      },
-    },
-    { range: { created_at: { gt: minDate(references) } } },
-    ...restrictions.must,
-  ];
+  const must = [RELATIONSHIP_TYPES_CLAUSE, { range: { created_at: { gt: minDate(references) } } }, ...restrictions.must];
   const mustNot = [{ term: { 'creator_id.keyword': user.id } }, ...restrictions.must_not];
   return runFiltersAggregation(context, user, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, ABSTRACT_STIX_CORE_RELATIONSHIP, must, mustNot, filters);
 };

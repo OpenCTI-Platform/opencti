@@ -24,7 +24,7 @@ It is designed to help users audit and understand the evolution of their CTI dat
 
 This manager supports the [knowledge time machine](../../usage/time-machine.md). Once a week, it takes a compact snapshot of every entity changed since the previous snapshot, including the entities whose only change is a relationship created, updated or deleted: its attribute values and the identifiers of its relationships by type, as they were at the snapshot date. Rebuilding an entity at a past date then starts from the closest snapshot instead of replaying the whole history.
 
-The manager also deletes the snapshots older than the shortest active History retention rule. The "new since your last visit" markers are not handled here: the [retention manager](#retention-manager) expires them after one year and removes them when their user is deleted, so it must stay enabled for that cleanup to run.
+The manager also deletes, at every hourly run, the snapshots older than the shortest active History retention rule. The "new since your last visit" markers are not handled here: the [retention manager](#retention-manager) expires them after one year and removes them when their user is deleted, so it must stay enabled for that cleanup to run.
 
 ## Activity manager
 
