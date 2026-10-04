@@ -313,6 +313,18 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     paintLinkLabels(ctx, [{ text: link.label, x: middle.x, y: middle.y, angle, priority: 0, emphasised: false }], { palette, globalScale });
   };
 
+  /** The sphere of a node in 3D: the selection accent when selected, as in 2D. */
+  const nodeThreeColor = (node: GraphNode) => {
+    if (selectedNodeIds.has(node.id)) return colors.selected;
+    return node.disabled ? palette.disabled : node.color;
+  };
+
+  /** The label of a node in 3D, in the selection accent when selected. */
+  const nodeThreeLabelColor = (node: GraphNode) => {
+    if (selectedNodeIds.has(node.id)) return colors.selected;
+    return node.disabled ? palette.disabled : palette.textSecondary;
+  };
+
   /**
    * Draws a node for 3D mode.
    *
@@ -320,7 +332,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
    */
   const nodeThreePaint = (node: GraphNode) => {
     const sprite = new SpriteText(node.label);
-    sprite.color = node.disabled ? palette.disabled : palette.textSecondary;
+    sprite.color = nodeThreeLabelColor(node);
     sprite.textHeight = 1.5;
     return sprite;
   };
@@ -365,6 +377,8 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     curvatureOf,
     framePrePaint,
     framePostPaint,
+    nodeThreeColor,
+    nodeThreeLabelColor,
     nodeThreePaint,
     linkThreePaint,
     linkThreeLabelPosition,

@@ -1,4 +1,5 @@
-import { mkdir, rm, stat } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
+import { mkdir, readFile, rm, stat, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { APIRequestContext } from '@playwright/test';
@@ -80,19 +81,17 @@ export const getThemeIdByName = async (request: APIRequestContext, name: string)
 };
 
 const PLATFORM_THEME_LOCK = join(tmpdir(), 'opencti-e2e-platform-theme.lock');
-// Longer than any holder needs: a lock this old was left by a run that was killed.
-const PLATFORM_THEME_LOCK_STALE_MS = 5 * 60 * 1000;
+const PLATFORM_THEME_LOCK_OWNER = join(PLATFORM_THEME_LOCK, 'owner');
+// The holder renews its lease this often, however long it holds the lock.
+const PLATFORM_THEME_LOCK_HEARTBEAT_MS = 5 * 1000;
+// A lease not renewed for this long belongs to a run that was killed.
+const PLATFORM_THEME_LOCK_STALE_MS = 60 * 1000;
 const PLATFORM_THEME_LOCK_RETRY_MS = 250;
 
-/**
- * Waits until no other test file holds the platform theme, takes it, and returns the function
- * that gives it back. The platform theme colours every page of every test: a file that changes
- * it, or that compares screenshots, holds it so that local runs, which execute several files at
- * once, never overlap them. The lock is a directory, created atomically by one worker only.
- */
-export const acquirePlatformThemeLock = async (): Promise<() => Promise<void>> => {
+const takePlatformThemeLock = async (owner: string): Promise<void> => {
   try {
     await mkdir(PLATFORM_THEME_LOCK);
+    await writeFile(PLATFORM_THEME_LOCK_OWNER, owner);
   } catch (error) {
     if ((error as { code?: string }).code !== 'EEXIST') throw error;
     const age = await stat(PLATFORM_THEME_LOCK).then((info) => Date.now() - info.mtimeMs, () => 0);
@@ -103,7 +102,28 @@ export const acquirePlatformThemeLock = async (): Promise<() => Promise<void>> =
         setTimeout(resolve, PLATFORM_THEME_LOCK_RETRY_MS);
       });
     }
-    return acquirePlatformThemeLock();
+    await takePlatformThemeLock(owner);
   }
-  return () => rm(PLATFORM_THEME_LOCK, { recursive: true, force: true });
+};
+
+/**
+ * Waits until no other test file holds the platform theme, takes it, and returns the function
+ * that gives it back. The platform theme colours every page of every test: a file that changes
+ * it, or that compares screenshots, holds it so that local runs, which execute several files at
+ * once, never overlap them. The lock is a directory, created atomically by one worker only; its
+ * holder renews the lease while it holds it, so only a lock left by a killed run expires, and the
+ * lock is removed by its owner only.
+ */
+export const acquirePlatformThemeLock = async (): Promise<() => Promise<void>> => {
+  const owner = `${process.pid}-${randomUUID()}`;
+  await takePlatformThemeLock(owner);
+  const heartbeat = setInterval(() => {
+    const now = new Date();
+    utimes(PLATFORM_THEME_LOCK, now, now).catch(() => undefined);
+  }, PLATFORM_THEME_LOCK_HEARTBEAT_MS);
+  return async () => {
+    clearInterval(heartbeat);
+    const holder = await readFile(PLATFORM_THEME_LOCK_OWNER, 'utf8').catch(() => null);
+    if (holder === owner) await rm(PLATFORM_THEME_LOCK, { recursive: true, force: true });
+  };
 };

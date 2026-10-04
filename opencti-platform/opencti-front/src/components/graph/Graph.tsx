@@ -327,6 +327,7 @@ const Graph = ({
     palette,
     nodePaint,
     nodePointerAreaPaint,
+    nodeThreeColor,
     nodeThreePaint,
     linkColorPaint,
     linkBaseColor,
@@ -672,7 +673,7 @@ const Graph = ({
             linkThreeObject={linkThreePaint}
             linkPositionUpdate={linkThreeLabelPosition}
             linkColor={linkColorPaint}
-            nodeColor={(node) => (node.disabled ? palette.disabled : node.color)}
+            nodeColor={nodeThreeColor}
             nodeOpacity={0.8}
             nodeThreeObjectExtend
             nodeThreeObject={nodeThreePaint}

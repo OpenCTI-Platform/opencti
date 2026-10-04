@@ -26,8 +26,16 @@ describe('graph badge registry', () => {
     cleanups.push(registerGraphBadgeProvider({ id: 'pulse', badgesFor: () => [{ key: 'v1', tone: 'info', label: 'v1' }] }));
     cleanups.push(registerGraphBadgeProvider({ id: 'pulse', badgesFor: () => [{ key: 'v2', tone: 'info', label: 'v2' }] }));
     const keys = badgesOfNode(graphNode(), helpers).map((b) => b.key);
-    expect(keys).toContain('v2');
-    expect(keys).not.toContain('v1');
+    expect(keys).toContain('pulse:v2');
+    expect(keys).not.toContain('pulse:v1');
+  });
+
+  it('keeps apart two providers using the same key', () => {
+    cleanups.push(registerGraphBadgeProvider({ id: 'hunts', badgesFor: () => [{ key: 'warning', tone: 'warning', label: 'Hunt' }] }));
+    cleanups.push(registerGraphBadgeProvider({ id: 'curation', badgesFor: () => [{ key: 'warning', tone: 'warning', label: 'Curation' }] }));
+    const keys = badgesOfNode(graphNode(), helpers).map((b) => b.key);
+    expect(keys).toEqual(expect.arrayContaining(['hunts:warning', 'curation:warning']));
+    expect(new Set(keys).size).toBe(keys.length);
   });
 
   it('skips a provider that throws instead of breaking the graph', () => {
@@ -48,9 +56,9 @@ describe('graph badge registry', () => {
         return verdict ? [{ key: 'hunt', tone: 'error', label: verdict }] : [];
       },
     }));
-    expect(badgesOfNode(graphNode(), helpers).find((b) => b.key === 'hunt')).toBeUndefined();
+    expect(badgesOfNode(graphNode(), helpers).find((b) => b.key === 'soft-check:hunt')).toBeUndefined();
     const raw = { hunt_verdict: 'Malicious' } as unknown as NonNullable<ReturnType<typeof graphNode>['raw']>;
-    expect(badgesOfNode(graphNode({ raw }), helpers).find((b) => b.key === 'hunt')?.label).toBe('Malicious');
+    expect(badgesOfNode(graphNode({ raw }), helpers).find((b) => b.key === 'soft-check:hunt')?.label).toBe('Malicious');
   });
 
   it('keeps one badge per provider, the most severe, and puts the most severe badges first', () => {
@@ -61,8 +69,8 @@ describe('graph badge registry', () => {
     }));
     cleanups.push(registerGraphBadgeProvider({ id: 'late-error', order: 900, badgesFor: () => [{ key: 'late-error', tone: 'error', label: 'error' }] }));
     const keys = badgesOfNode(graphNode(), helpers).map((b) => b.key);
-    expect(keys).not.toContain('two-info');
-    expect(keys.slice(0, 2)).toEqual(['late-error', 'two-warning']);
+    expect(keys).not.toContain('two-badges:two-info');
+    expect(keys.slice(0, 2)).toEqual(['late-error:late-error', 'two-badges:two-warning']);
   });
 
   it('draws at most three badges and counts the others', () => {

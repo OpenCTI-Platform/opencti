@@ -37,7 +37,7 @@ export const threatPulseGraphBadgeProvider: GraphBadgeProvider = {
 | Field | Rule |
 |---|---|
 | `id`, `order` | One provider per state family. Built-in providers (markings 10, confidence 20, inferred 30) come first. |
-| `key` | Stable for the state, not for the node: the legend counts and selects the nodes by key. |
+| `key` | Stable for the state, not for the node: the legend counts and selects the nodes by key. The registry prefixes it with the provider `id`, so it only has to be unique among the badges of your provider. |
 | `tone` | By meaning, the same as the chips of the product: `success` done or positive, `info` in progress or informational, `warning` partial or needs attention, `error` failed or blocking, `neutral` not applicable. The colour comes from the theme; `color` is only for a colour carried by the data (a marking). |
 | `label` | Translated, sentence case, no raw enum value or identifier. A label specific to the node (for example with a score) sets `legendLabel` to the generic name shown in the legend. |
 | `tooltip` | Translated sentence saying what the badge means; the hover card and the legend show it. |

@@ -6,7 +6,7 @@ import type { GraphNode } from '../graph.types';
 export type GraphBadgeTone = 'neutral' | 'info' | 'success' | 'warning' | 'error' | 'accent';
 
 export interface GraphBadge {
-  /** Stable and unique for the node. */
+  /** Stable among the badges of its provider; `badgesOfNode` prefixes it with the provider id. */
   key: string;
   /** Drawn on the canvas; a badge without icon is drawn as a dot. */
   icon?: GraphCanvasIcon;
@@ -73,14 +73,15 @@ export const graphBadgeProviders = (): GraphBadgeProvider[] => [...providers.val
 
 /**
  * Every badge of a node, one per provider, the most severe first and in provider order within a
- * tone. A provider that throws is skipped for that node rather than breaking the drawing of the
- * whole graph.
+ * tone. Its key is prefixed with the provider id, so two providers using the same key stay apart
+ * in the legend and the hover card. A provider that throws is skipped for that node rather than
+ * breaking the drawing of the whole graph.
  */
 export const badgesOfNode = (node: GraphNode, helpers: GraphBadgeHelpers): GraphBadge[] => graphBadgeProviders()
   .flatMap((provider) => {
     try {
       const [mostSevere] = [...provider.badgesFor(node, helpers)].sort(bySeverity);
-      return mostSevere ? [mostSevere] : [];
+      return mostSevere ? [{ ...mostSevere, key: `${provider.id}:${mostSevere.key}` }] : [];
     } catch {
       return [];
     }

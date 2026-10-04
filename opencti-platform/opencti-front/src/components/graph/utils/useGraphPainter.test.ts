@@ -96,6 +96,21 @@ describe('useGraphPainter', () => {
       expect(searching.result.current.linkColorPaint(link())).toBe(theme.palette.background.paper);
     });
 
+    it('marks a selected node in 3D with the selection accent, its sphere and its label', () => {
+      const chosen = { id: 'chosen', color: '#123456', disabled: false } as GraphNode;
+      const other = { id: 'other', color: '#654321', disabled: false } as GraphNode;
+      const faded = { id: 'faded', color: '#654321', disabled: true } as GraphNode;
+      const { hook } = testRenderHook(() => useGraphPainter({
+        selectedLinks: [], selectedNodes: [chosen], detailsPreviewSelected: undefined, search: undefined,
+      }));
+      const painter = hook.result.current;
+      expect(painter.nodeThreeColor(chosen)).toBe(theme.palette.secondary.main);
+      expect(painter.nodeThreeLabelColor(chosen)).toBe(theme.palette.secondary.main);
+      expect(painter.nodeThreeColor(other)).toBe('#654321');
+      expect(painter.nodeThreeLabelColor(other)).not.toBe(theme.palette.secondary.main);
+      expect(painter.nodeThreeColor(faded)).toBe(painter.nodeThreeLabelColor(faded));
+    });
+
     it('colours the relationship itself for the image export, whatever is selected or searched', () => {
       const selected = link();
       const { hook } = testRenderHook(() => useGraphPainter({
