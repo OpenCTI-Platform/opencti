@@ -9,6 +9,7 @@ import useGraphParser, { ObjectToParse } from './utils/useGraphParser';
 import { computeTimeRangeInterval, computeTimeRangeValues, GraphTimeRange } from './utils/graphTimeRange';
 import { graphStateToLocalStorage, normalizeGraphStateParams } from './utils/graphUtils';
 import { readLegendOpen, writeLegendOpen } from './utils/graphLegendPreference';
+import { readHiddenNodeIds, writeHiddenNodeIds } from './utils/graphHiddenNodes';
 import { UserContext } from '../../utils/hooks/useAuth';
 
 type Setter<T> = Dispatch<SetStateAction<T>>;
@@ -112,7 +113,11 @@ export const GraphProvider = ({
     const params = localStorageKey
       ? buildViewParamsFromUrlAndStorage(navigate, location, localStorageKey)
       : {};
-    return { ...DEFAULT_STATE, ...normalizeGraphStateParams(params) };
+    return {
+      ...DEFAULT_STATE,
+      ...normalizeGraphStateParams(params),
+      hiddenNodeIds: localStorageKey ? readHiddenNodeIds(localStorageKey) : [],
+    };
   });
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -123,6 +128,10 @@ export const GraphProvider = ({
       saveViewParameters(navigate, location, localStorageKey, stateToSave);
     }
   }, [graphState]);
+
+  useEffect(() => {
+    if (localStorageKey) writeHiddenNodeIds(localStorageKey, graphState.hiddenNodeIds ?? []);
+  }, [graphState.hiddenNodeIds]);
 
   useEffect(() => {
     writeLegendOpen(userId, graphState.showLegend !== false);

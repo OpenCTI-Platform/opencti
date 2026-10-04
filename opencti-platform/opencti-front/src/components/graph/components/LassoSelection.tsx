@@ -88,17 +88,17 @@ const LassoSelection: FunctionComponent<LassoSelectionProps> = ({
       ctx.beginPath();
     };
 
-    const onUp = (event: MouseEvent) => {
-      const ctx = lassoContext();
-      if ((event.target as HTMLElement | null)?.tagName !== 'CANVAS' || !ctx) {
-        return;
-      }
+    // The path is followed over the whole document: the gesture ends wherever the button is released.
+    const onUp = () => {
+      if (!gesture.current.freeHand) return;
       document.removeEventListener('mousemove', onMove);
       gesture.current.freeHand = false;
-      ctx.closePath();
       const { path } = gesture.current;
-      const selectedNodes = new Set(latest.current.graphDataNodes.filter((node) => pointInPolygon(path, [node.x, node.y])));
       gesture.current.path = [];
+      const ctx = lassoContext();
+      if (!ctx) return;
+      ctx.closePath();
+      const selectedNodes = new Set(latest.current.graphDataNodes.filter((node) => pointInPolygon(path, [node.x, node.y])));
       ctx.setLineDash([]);
       ctx.reset();
       latest.current.setSelectedNodes(selectedNodes);

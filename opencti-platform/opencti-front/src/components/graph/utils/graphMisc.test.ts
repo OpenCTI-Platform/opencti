@@ -7,6 +7,7 @@ import { collisionForce } from './collisionForce';
 import { isOverlayOpen, shortcutOf } from './useGraphKeyboardShortcuts';
 import { graphStateToLocalStorage, normalizeGraphStateParams } from './graphUtils';
 import { readLegendOpen, writeLegendOpen } from './graphLegendPreference';
+import { readHiddenNodeIds, writeHiddenNodeIds } from './graphHiddenNodes';
 import { graphNodeTitle } from './useGraphParser';
 import { graphNode } from '../../../utils/tests/graphTestData';
 import { glyphFromMarkup } from './graphIcons';
@@ -109,12 +110,13 @@ describe('graph view state persistence', () => {
     expect(saved).toMatchObject({
       layoutMode: 'radial',
       layoutCentreId: 'node-1',
-      hiddenNodeIds: ['node-2'],
       collapsedEntityTypes: ['Malware'],
       disabledRelationshipTypes: ['uses'],
     });
     expect(saved).not.toHaveProperty('highlightedPath');
     expect(saved).not.toHaveProperty('showLegend');
+    // Saved apart, in local storage only: the list is unbounded, a URL is not.
+    expect(saved).not.toHaveProperty('hiddenNodeIds');
   });
 
   it('reads them back from the strings of the URL, leaving the legend state to the user preference', () => {
@@ -124,8 +126,28 @@ describe('graph view state persistence', () => {
       showLegend: 'false',
       layoutMode: 'unknown',
       layoutCentreId: '',
-    })).toEqual({ hiddenNodeIds: ['a', 'b'], collapsedEntityTypes: [], layoutMode: null, layoutCentreId: null });
+    })).toEqual({ collapsedEntityTypes: [], layoutMode: null, layoutCentreId: null });
     expect(normalizeGraphStateParams({ layoutMode: 'tiers', showLegend: true })).toEqual({ layoutMode: 'tiers' });
+  });
+});
+
+describe('hidden entities storage', () => {
+  afterEach(() => window.localStorage.clear());
+
+  it('keeps the hidden entities of each graph apart, out of the URL', () => {
+    const ids = Array.from({ length: 2000 }, (_, index) => `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`);
+    writeHiddenNodeIds('view-graph-a', ids);
+    expect(readHiddenNodeIds('view-graph-a')).toEqual(ids);
+    expect(readHiddenNodeIds('view-graph-b')).toEqual([]);
+    writeHiddenNodeIds('view-graph-a', []);
+    expect(window.localStorage.getItem('view-graph-a-hidden-nodes')).toBeNull();
+  });
+
+  it('reads nothing hidden from an unreadable entry', () => {
+    window.localStorage.setItem('view-graph-a-hidden-nodes', '{not json');
+    expect(readHiddenNodeIds('view-graph-a')).toEqual([]);
+    window.localStorage.setItem('view-graph-a-hidden-nodes', '{"a":1}');
+    expect(readHiddenNodeIds('view-graph-a')).toEqual([]);
   });
 });
 

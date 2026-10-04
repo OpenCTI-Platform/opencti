@@ -98,19 +98,16 @@ const RelationSelection: FunctionComponent<RelationSelectionProps> = ({
       ctx.beginPath();
     };
 
+    // Only the release of a right-button drag in progress is this gesture's, wherever it happens;
+    // every other release on the page goes on untouched.
     const onUp = (event: MouseEvent) => {
+      if (!gesture.current.freeHand || event.button !== 2) return;
       event.stopPropagation();
       event.preventDefault();
-      const ctx = lineContext();
-      if ((event.target as HTMLElement | null)?.tagName !== 'CANVAS' || !ctx) {
-        return;
-      }
-      if (event.button !== 2) {
-        document.removeEventListener('mousemove', onMove);
-        return;
-      }
       document.removeEventListener('mousemove', onMove);
       gesture.current.freeHand = false;
+      const ctx = lineContext();
+      if (!ctx) return;
       ctx.closePath();
       ctx.setLineDash([]);
       ctx.reset();

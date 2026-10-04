@@ -91,7 +91,6 @@ export const graphStateToLocalStorage = (state: GraphState) => {
     zoom,
     layoutMode,
     layoutCentreId,
-    hiddenNodeIds,
     collapsedEntityTypes,
     disabledRelationshipTypes,
   } = state;
@@ -105,7 +104,6 @@ export const graphStateToLocalStorage = (state: GraphState) => {
     withForces,
     layoutMode: layoutMode ?? null,
     layoutCentreId: layoutCentreId ?? null,
-    hiddenNodeIds: hiddenNodeIds ?? [],
     collapsedEntityTypes: collapsedEntityTypes ?? [],
     disabledRelationshipTypes: disabledRelationshipTypes ?? [],
   };
@@ -131,11 +129,13 @@ const asList = (value: unknown): string[] => {
  */
 export const normalizeGraphStateParams = (params: Record<string, unknown>): Partial<GraphState> => {
   const normalized: Record<string, unknown> = { ...params };
-  ['hiddenNodeIds', 'collapsedEntityTypes', 'disabledRelationshipTypes'].forEach((key) => {
+  ['collapsedEntityTypes', 'disabledRelationshipTypes'].forEach((key) => {
     if (key in normalized) normalized[key] = asList(normalized[key]);
   });
   // The legend state is a preference of the user (graphLegendPreference), never one of a graph.
   delete normalized.showLegend;
+  // The hidden entities have their own storage entry (graphHiddenNodes), never the URL.
+  delete normalized.hiddenNodeIds;
   if ('layoutMode' in normalized && !['tiers', 'radial'].includes(String(normalized.layoutMode))) normalized.layoutMode = null;
   if ('layoutCentreId' in normalized && !normalized.layoutCentreId) normalized.layoutCentreId = null;
   return normalized as Partial<GraphState>;
