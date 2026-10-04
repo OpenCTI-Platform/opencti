@@ -84,11 +84,17 @@ The anchors are stored on the container in the `x_opencti_timeline_anchors` attr
 
 ## Overview layout
 
-On the overview of incidents and cases, the strip is the **Timeline** widget of the overview layout, a card like the other widgets of the overview. By default it takes half of the row, right after **Basic information**. Administrators arrange it like the other widgets in **Settings > Customization > Entity types**, on the **Overview layout** tab of Incident, Incident Response, Request for Information or Request for Takedown:
+On the overview of incidents and cases, the strip is the **Timeline** widget of the overview layout, a card like the other widgets of the overview. By default it takes half of the row, right after **Basic information**:
+
+![Timeline widget on the overview of an incident response, next to Tasks](assets/case-timeline-overview-widget.png)
+
+Administrators arrange it like the other widgets in **Settings > Customization > Entity types**, on the **Overview layout** tab of Incident, Incident Response, Request for Information or Request for Takedown:
 
 - drag the **Timeline** row to move the strip among the other widgets;
 - switch on **Full width** to give it the whole row;
 - switch off **Displayed** to remove it from the overview, and switch it on again to bring it back at its default width, half of the row.
+
+![Overview layout of incident responses: the Timeline row after Basic information, External references hidden](assets/case-timeline-overview-layout.png)
 
 An overview layout customized before the timeline existed shows the strip right after **Basic information**, on half of the row, until an administrator moves, resizes or hides it.
 
@@ -104,6 +110,10 @@ When the case holds no dated knowledge yet, the Timeline tab explains what fills
 
 ![Timeline tab of an incident without dated knowledge yet](assets/case-timeline-first-use-empty.png)
 
+When the events cannot be loaded, the tab says so, suggests checking the connection, and offers **Retry**; the anchors and the toolbar stay available.
+
+![Timeline tab when its events cannot be loaded](assets/case-timeline-error-state.png)
+
 ### Views and navigation
 
 - **Lanes** and **List**: the view switch is always visible in the toolbar, next to the primary action **Add an event**. The list view is a vertical, accessible list of events.
@@ -113,6 +123,8 @@ When the case holds no dated knowledge yet, the Timeline tab explains what fills
 - The current view (filters, zoom, grouping, mode) is kept in the URL, so that a view can be shared with a link.
 - The latest 500 events matching the filters are loaded first and displayed in chronological order; **Show earlier events** loads the previous ones. A link to an older event loads the earlier events until it is reached.
 - In the list view, use the up and down arrows to move between events, `Enter` to open an event, `P` to pin and `H` to hide it.
+
+![Filters of the timeline: the Evidence lane switched off and the event kinds menu open](assets/case-timeline-filters.png)
 
 ![List view of the timeline, events grouped by day](assets/case-timeline-list-populated.png)
 
