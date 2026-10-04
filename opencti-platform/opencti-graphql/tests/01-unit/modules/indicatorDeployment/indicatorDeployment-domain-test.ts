@@ -5,8 +5,11 @@ import {
   computeIndicatorDeploymentCounters,
   computeHitsSightingValues,
   computeProvenShare,
+  HIT_REPORT_IDS_MAX,
+  hitReportIdsAfter,
   hitsSightingStixId,
   isExpiredForRemoval,
+  isHitsReplay,
   isHitsSightingUpToDate,
   resolveEffectiveStatus,
 } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-domain';
@@ -182,6 +185,35 @@ describe('hits sighting values', () => {
   it('should fall back to the report dates for a deployment without first hit', () => {
     const values = computeHitsSightingValues(undefined, { hit_count: 2 }, 2, REPORT_FIRST, LAST);
     expect(values).toEqual({ attribute_count: 2, first_seen: REPORT_FIRST, last_seen: LAST });
+  });
+});
+
+describe('hits report replay', () => {
+  const AT = new Date('2026-10-01T10:00:00.000Z');
+  const BEFORE = new Date('2026-10-01T09:00:00.000Z');
+  const AFTER = new Date('2026-10-01T11:00:00.000Z');
+  it('should use the last hit as the watermark', () => {
+    expect(isHitsReplay(undefined, AT)).toEqual(false);
+    expect(isHitsReplay({ last_hit_at: null }, AT)).toEqual(false);
+    expect(isHitsReplay({ last_hit_at: AT }, BEFORE, 'report-b')).toEqual(true);
+    expect(isHitsReplay({ last_hit_at: AT }, AFTER)).toEqual(false);
+  });
+  it('should tell apart the reports ending at the last known hit by their report id', () => {
+    const deployment = { last_hit_at: AT.toISOString(), last_hit_report_ids: ['report-a'] };
+    expect(isHitsReplay(deployment, AT)).toEqual(true);
+    expect(isHitsReplay(deployment, AT, 'report-a')).toEqual(true);
+    expect(isHitsReplay(deployment, AT, 'report-b')).toEqual(false);
+  });
+  it('should keep the report ids counted at the last hit only', () => {
+    const deployment = { last_hit_at: AT, last_hit_report_ids: ['report-a'] };
+    expect(hitReportIdsAfter(undefined, AT, 'report-a')).toEqual(['report-a']);
+    expect(hitReportIdsAfter(deployment, AT, 'report-b')).toEqual(['report-a', 'report-b']);
+    expect(hitReportIdsAfter(deployment, AFTER, 'report-c')).toEqual(['report-c']);
+    expect(hitReportIdsAfter(deployment, AFTER)).toEqual([]);
+    const full = { last_hit_at: AT, last_hit_report_ids: Array.from({ length: HIT_REPORT_IDS_MAX }, (_, i) => `report-${i}`) };
+    const kept = hitReportIdsAfter(full, AT, 'report-new');
+    expect(kept).toHaveLength(HIT_REPORT_IDS_MAX);
+    expect(kept[kept.length - 1]).toEqual('report-new');
   });
 });
 

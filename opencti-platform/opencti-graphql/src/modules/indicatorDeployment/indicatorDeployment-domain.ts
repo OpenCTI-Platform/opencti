@@ -247,6 +247,34 @@ export const computeHitsSightingValues = (
   };
 };
 
+export const HIT_REPORT_IDS_MAX = 100;
+export const HIT_REPORT_ID_MAX_LENGTH = 256;
+type HitsReplayState = Partial<Pick<DeployedOnAttributes, 'last_hit_at' | 'last_hit_report_ids'>>;
+
+/**
+ * Whether a hits report was already counted. The last hit is the watermark: a report ending before the last known
+ * hit is a replay, one ending after it is new. Reports ending at the last known hit are told apart by their report
+ * id: the ids counted at that instant are kept, so a retry is a replay and another report is counted.
+ */
+export const isHitsReplay = (deployment: HitsReplayState | undefined, lastHit: Date, reportId?: string | null) => {
+  if (!deployment || isEmptyField(deployment.last_hit_at)) {
+    return false;
+  }
+  const lastKnownHit = toDate(deployment.last_hit_at, lastHit).getTime();
+  if (lastHit.getTime() !== lastKnownHit) {
+    return lastHit.getTime() < lastKnownHit;
+  }
+  return isEmptyField(reportId) || (deployment.last_hit_report_ids ?? []).includes(reportId as string);
+};
+
+/** The report ids counted at the last hit once a report is counted (only called for a report that is not a replay). */
+export const hitReportIdsAfter = (deployment: HitsReplayState | undefined, lastHit: Date, reportId?: string | null) => {
+  const sameInstant = !!deployment && isNotEmptyField(deployment.last_hit_at)
+    && toDate(deployment.last_hit_at, lastHit).getTime() === lastHit.getTime();
+  const kept = sameInstant ? (deployment?.last_hit_report_ids ?? []) : [];
+  return (isEmptyField(reportId) ? kept : [...kept, reportId as string]).slice(-HIT_REPORT_IDS_MAX);
+};
+
 export const isHitsSightingUpToDate = (sighting: HitsSightingState, values: HitsSightingValues) => {
   const sameTime = (current: DateInput, expected: Date) => isNotEmptyField(current) && toDate(current, expected).getTime() === expected.getTime();
   return (sighting.attribute_count ?? 0) === values.attribute_count
@@ -632,6 +660,7 @@ export interface ReportHitsArgs {
   // Required replay watermark: a report whose last hit is not after the last known hit is already counted.
   lastHit?: DateInput;
   firstHit?: DateInput;
+  reportId?: string | null;
 }
 
 export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, args: ReportHitsArgs) => {
@@ -641,6 +670,9 @@ export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, 
   }
   if (isEmptyField(args.lastHit)) {
     throw ValidationError('The time of the last hit is required: it keeps a retried report from being counted twice', 'lastHit');
+  }
+  if (isNotEmptyField(args.reportId) && (args.reportId as string).length > HIT_REPORT_ID_MAX_LENGTH) {
+    throw ValidationError(`A report id cannot exceed ${HIT_REPORT_ID_MAX_LENGTH} characters`, 'reportId');
   }
   const now = new Date();
   const lastHit = toDate(args.lastHit, now);
@@ -681,9 +713,9 @@ export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, 
       x_opencti_negative: false,
       description: `Hits reported by the ${platform.name} integration`,
     }, { grantedRefsFromInput: true });
-    const lastKnownHit = existing?.last_hit_at ? new Date(existing.last_hit_at).getTime() : undefined;
     // Replay of an already counted report: the hits are never counted twice.
-    const replay = existing !== undefined && lastKnownHit !== undefined && lastHit.getTime() <= lastKnownHit;
+    const replay = isHitsReplay(existing, lastHit, args.reportId);
+    const reportIds = replay ? undefined : hitReportIdsAfter(existing, lastHit, args.reportId);
     let deployment: HitsDeploymentState | undefined = existing;
     // 01. Deployment state, the durable record of the hits: hits prove the indicator is live on the platform
     if (!existing) {
@@ -699,9 +731,15 @@ export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, 
         hit_count: args.count,
         first_hit_at: firstHit,
         last_hit_at: lastHit,
+        last_hit_report_ids: reportIds,
       }, { grantedRefsFromInput: true }) as unknown as HitsDeploymentState;
     } else if (!replay) {
-      const patch: Record<string, unknown> = { hit_count: (existing.hit_count ?? 0) + args.count, last_hit_at: lastHit, last_sync_at: now };
+      const patch: Record<string, unknown> = {
+        hit_count: (existing.hit_count ?? 0) + args.count,
+        last_hit_at: lastHit,
+        last_hit_report_ids: reportIds,
+        last_sync_at: now,
+      };
       if (isEmptyField(existing.first_hit_at) || firstHit.getTime() < new Date(existing.first_hit_at as Date | string).getTime()) {
         patch.first_hit_at = firstHit;
       }

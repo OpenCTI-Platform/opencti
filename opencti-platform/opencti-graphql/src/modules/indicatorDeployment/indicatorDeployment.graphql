@@ -156,12 +156,15 @@ type Mutation {
   indicatorReportDeployments(platformId: StixRef!, reports: [IndicatorDeploymentReportInput!]!): IndicatorDeploymentBatchResult @auth(for: [KNOWLEDGE_KNUPDATE, CONNECTORAPI], and: true)
   # lastHit is required (refused when empty; nullable in the schema so that clients declaring it nullable keep
   # validating): it is the replay watermark of the report, a retry carries the same lastHit and is never counted twice.
+  # reportId tells apart distinct reports sharing the same lastHit: a report with a new reportId is counted, a retry
+  # carries the same reportId. Without a reportId, a report whose lastHit equals the last known hit is a replay.
   indicatorReportHits(
     indicatorId: StixRef!
     platformId: StixRef!
     count: Int!
     lastHit: DateTime
     firstHit: DateTime
+    reportId: String
   ): StixSightingRelationship @auth(for: [KNOWLEDGE_KNUPDATE, CONNECTORAPI], and: true)
   indicatorDeploymentRetry(id: ID!): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   indicatorDeploymentRemove(id: ID!): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE])

@@ -51,6 +51,7 @@ export interface DeployedOnAttributes {
   hit_count: number;
   first_hit_at?: Date | string | null;
   last_hit_at?: Date | string | null;
+  last_hit_report_ids?: string[] | null;
   validation_status: ValidationStatus;
   last_validation_at?: Date | string | null;
   validation_run_id?: string | null;

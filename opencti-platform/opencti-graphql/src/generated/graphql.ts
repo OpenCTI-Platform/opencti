@@ -19597,6 +19597,7 @@ export type MutationIndicatorReportHitsArgs = {
   indicatorId: Scalars['StixRef']['input'];
   lastHit?: InputMaybe<Scalars['DateTime']['input']>;
   platformId: Scalars['StixRef']['input'];
+  reportId?: InputMaybe<Scalars['String']['input']>;
 };
 
 

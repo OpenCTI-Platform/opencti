@@ -127,6 +127,11 @@ const RELATION_ADD = gql`
     stixCoreRelationshipAdd(input: $input) { id }
   }
 `;
+const SIGHTING_ADD = gql`
+  mutation SightingAdd($input: StixSightingRelationshipAddInput!) {
+    stixSightingRelationshipAdd(input: $input) { id }
+  }
+`;
 const REQUEST_DELETE = gql`
   mutation RequestDelete($id: ID!) {
     iocValidationRequestDelete(id: $id)
@@ -646,6 +651,32 @@ describe('IOC validation requests', () => {
         await queryAsAdminWithSuccess({ query: REQUEST_DELETE, variables: { id } });
       }
       streamed.forEach((spy) => spy.mockRestore());
+    }
+  });
+
+  it('should reserve the result sighting identifier of a running validation to the accounts reporting it', async () => {
+    let id: string | undefined;
+    try {
+      const created = await queryAsAdminWithSuccess({
+        query: REQUEST_VALIDATION,
+        variables: { platformIds: [platformId], indicatorIds: [liveIndicatorId], testKinds: ['dns_resolution'], name: 'Reserved' },
+      });
+      id = created.data?.indicatorsRequestValidation.id as string;
+      const reservedId = validationResultSightingStixId(id, liveIndicatorId, platformId);
+      await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+        query: SIGHTING_ADD,
+        variables: { input: { fromId: liveIndicatorId, toId: platformId, stix_id: reservedId, x_opencti_negative: false } },
+      });
+      await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+        query: SIGHTING_ADD,
+        variables: { input: { fromId: liveIndicatorId, toId: platformId, x_opencti_stix_ids: [reservedId], x_opencti_negative: false } },
+      });
+      const squatted = await storeLoadById(testContext, ADMIN_USER, reservedId, STIX_SIGHTING_RELATIONSHIP);
+      expect(squatted).toBeFalsy();
+    } finally {
+      if (id) {
+        await queryAsAdminWithSuccess({ query: REQUEST_DELETE, variables: { id } });
+      }
     }
   });
 

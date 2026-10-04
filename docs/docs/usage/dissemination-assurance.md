@@ -41,7 +41,9 @@ rebuilt from its hit count, first hit and last hit on every report, so a sightin
 report, or deleted by mistake, is repaired by the next report of the platform without counting any hit twice.
 Every hit report carries the time of its most recent hit, as the security platform recorded it: a report whose last
 hit is not after the last hit already known is a retry and adds nothing, so a report sent again after a lost answer
-is never counted twice.
+is never counted twice. An integration that can send several reports ending at the same time (for example with
+timestamps rounded to the second) gives each report its own report identifier: a report ending at the last known hit
+is then counted when its identifier is new, and a retry, which carries the same identifier, still adds nothing.
 
 ### Supported connectors
 
@@ -229,7 +231,8 @@ Connectors use the following GraphQL mutations, also available in the Python cli
 - `indicatorReportDeployment`: reports the deployment status of one indicator on one platform.
 - `indicatorReportDeployments`: reports the deployment status of a batch of indicators on one platform.
 - `indicatorReportHits`: reports the hits of one indicator on one platform; `lastHit`, the time of the most recent
-  hit, is required and makes a retried report harmless.
+  hit, is required and makes a retried report harmless; the optional `reportId` tells apart distinct reports ending
+  at the same time.
 
 These mutations require both the "Update knowledge" and the "Connectors API usage" (`CONNECTORAPI`) capabilities, as
 granted by the default *Connector* role: the account of a stream connector or of any other integration writing the
@@ -249,7 +252,8 @@ benign test of a request) reports the outcome with `iocValidationReportResults(i
 gives an indicator, `detected`, `prevented` or `missed`, and optionally the observation date, a hit count and the
 evidence. Only the pairs of the request on that platform still waiting for an answer, or closed by the timeout of the
 request, are updated, so a result already received is never overwritten. Each result is recorded as a sighting of the indicator by the platform,
-negative for a miss.
+negative for a miss. The identifier of that sighting is reserved: while the request runs, only the accounts allowed
+to report its results can create a sighting carrying it.
 
 A validation result is proof attributed to the platform, so it is accepted only from the connector account that
 recorded the deployments of the pairs on that platform (the integration reporting its deployment statuses), from the

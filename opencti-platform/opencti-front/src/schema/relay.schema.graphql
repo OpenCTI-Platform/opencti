@@ -10983,7 +10983,7 @@ type Mutation {
   indicatorRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Indicator
   indicatorReportDeployment(indicatorId: StixRef!, platformId: StixRef!, status: IndicatorDeploymentStatus!, externalId: String, metadata: IndicatorDeploymentMetadataInput): StixCoreRelationship
   indicatorReportDeployments(platformId: StixRef!, reports: [IndicatorDeploymentReportInput!]!): IndicatorDeploymentBatchResult
-  indicatorReportHits(indicatorId: StixRef!, platformId: StixRef!, count: Int!, lastHit: DateTime, firstHit: DateTime): StixSightingRelationship
+  indicatorReportHits(indicatorId: StixRef!, platformId: StixRef!, count: Int!, lastHit: DateTime, firstHit: DateTime, reportId: String): StixSightingRelationship
   indicatorDeploymentRetry(id: ID!): StixCoreRelationship
   indicatorDeploymentRemove(id: ID!): StixCoreRelationship
   indicatorsRequestValidation(platformIds: [StixRef!]!, indicatorIds: [StixRef!]!, testKinds: [IocValidationTestKind!]!, connectorId: ID, name: String, description: String): IocValidationRequest

@@ -31,7 +31,7 @@ import { ENTITY_TYPE_IOC_VALIDATION_REQUEST } from './iocValidation-types';
 import { isLifecycleWriter, isTrustedDeploymentReporter } from './iocValidation-utils';
 
 const VALIDATION_FIELDS = ['validation_status', 'last_validation_at', 'validation_run_id'];
-const LIFECYCLE_FIELDS = ['deployment_status', 'external_id', 'deployed_at', 'last_sync_at', 'removed_at', 'hit_count', 'first_hit_at', 'last_hit_at', 'error_message'];
+const LIFECYCLE_FIELDS = ['deployment_status', 'external_id', 'deployed_at', 'last_sync_at', 'removed_at', 'hit_count', 'first_hit_at', 'last_hit_at', 'last_hit_report_ids', 'error_message'];
 // Values of a deployment that records nothing yet, which any editor may give a new relationship.
 const LIFECYCLE_DEFAULTS: Record<string, unknown> = { deployment_status: DEPLOYMENT_STATUS_PENDING, hit_count: 0 };
 
@@ -235,6 +235,36 @@ export const isGeneratedPairSighting = async (context: AuthContext, initial: Rec
   return generated;
 };
 
+/**
+ * Whether a sighting creation or upsert carries the deterministic id of the result sighting of the validation run
+ * bound to its pair. Generic creation accepts a supplied STIX id, so without this check anyone able to create a
+ * sighting could take the id before the result is reported.
+ */
+export const claimsValidationResultSightingId = async (context: AuthContext, instance: Record<string, unknown>) => {
+  const from = instance.from as { entity_type?: string; internal_id?: string } | undefined;
+  const to = instance.to as { entity_type?: string; internal_id?: string } | undefined;
+  if (from?.entity_type !== ENTITY_TYPE_INDICATOR || to?.entity_type !== ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM || !from.internal_id || !to.internal_id) {
+    return undefined;
+  }
+  const ids = [instance.stix_id, ...((instance.x_opencti_stix_ids as string[] | undefined) ?? [])].filter((id): id is string => typeof id === 'string');
+  if (ids.length === 0) {
+    return undefined;
+  }
+  const deployment = await findDeployedOn(context, SYSTEM_USER, from.internal_id, to.internal_id);
+  if (!deployment?.validation_run_id) {
+    return undefined;
+  }
+  return ids.includes(validationResultSightingStixId(deployment.validation_run_id, from.internal_id, to.internal_id)) ? deployment : undefined;
+};
+
+const validatorSightingCreation: ValidatorFn = async (context, user, instance) => {
+  const deployment = await claimsValidationResultSightingId(context, instance);
+  if (deployment && !isBypassUser(user) && !await canChangeValidation(context, user, deployment)) {
+    return refuseValidation(user);
+  }
+  return true;
+};
+
 // Hits and validation result sightings keep the markings and the sharing of their pair, as deployments do, for
 // administrators too.
 const validatorSightingUpdate: ValidatorFn = async (context, user, _instance, initial, editInputs = []) => {
@@ -375,4 +405,4 @@ const validatorUpdate: ValidatorFn = async (context, user, instance, initial, ed
 };
 
 registerEntityValidator(RELATION_DEPLOYED_ON, { validatorCreation, validatorUpdate });
-registerEntityValidator(STIX_SIGHTING_RELATIONSHIP, { validatorUpdate: validatorSightingUpdate });
+registerEntityValidator(STIX_SIGHTING_RELATIONSHIP, { validatorCreation: validatorSightingCreation, validatorUpdate: validatorSightingUpdate });
