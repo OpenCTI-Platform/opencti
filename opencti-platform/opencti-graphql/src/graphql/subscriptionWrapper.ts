@@ -6,7 +6,7 @@ import { ForbiddenAccess } from '../config/errors';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEntityFromCache } from '../database/cache';
-import { SYSTEM_USER } from '../utils/access';
+import { isUserCanAccessStoreElement, SYSTEM_USER } from '../utils/access';
 import { getMessagesFilteredByRecipients } from '../domain/settings';
 import type { BasicStoreSettingsMessage } from '../types/settings';
 
@@ -62,27 +62,35 @@ export const subscribeToInstanceEvents = async (
     cleanFn?: () => void;
     notifySelf?: boolean;
     type?: string | string[];
+    // Check the subscriber's access on every event, for an instance whose markings can change while it is listened to.
+    recheckAccess?: boolean;
   } = {},
 ): Promise<AsyncIterable<any>> => {
-  const { preFn, cleanFn, notifySelf = false, type } = opts;
+  const { preFn, cleanFn, notifySelf = false, type, recheckAccess = false } = opts;
   if (preFn) preFn();
   const item = await internalLoadById(context, context.user, id, { baseData: true, type });
   if (!item) throw ForbiddenAccess('You are not allowed to listen this.');
-  const filtering = await withFilter(
-    () => pubSubAsyncIterator(topics),
-    (payload) => {
-      // A throw here closes the socket (4500) and orphans the redis sub; guard before deref.
-      if (!payload || !payload.instance) {
+  const isEventOfInstance = (payload: any) => {
+    // A throw here closes the socket (4500) and orphans the redis sub; guard before deref.
+    if (!payload || !payload.instance) {
+      return false;
+    }
+    if (!notifySelf) {
+      // Only this branch needs the event user; a user-less (system) event must still reach notifySelf subs.
+      if (!payload.user) {
         return false;
       }
-      if (!notifySelf) {
-        // Only this branch needs the event user; a user-less (system) event must still reach notifySelf subs.
-        if (!payload.user) {
-          return false;
-        }
-        return payload.user.id !== context.user.id && payload.instance.id === id;
+      return payload.user.id !== context.user.id && payload.instance.id === id;
+    }
+    return payload.instance.id === id;
+  };
+  const filtering = await withFilter(
+    () => pubSubAsyncIterator(topics),
+    async (payload) => {
+      if (!isEventOfInstance(payload)) {
+        return false;
       }
-      return payload.instance.id === id;
+      return !recheckAccess || isUserCanAccessStoreElement(context, context.user, payload.instance);
     },
   )(parent, { id }, context);
   if (cleanFn) {

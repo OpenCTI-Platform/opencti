@@ -17,6 +17,7 @@ import { initManagerConfigurations } from './modules/managerConfiguration/manage
 import { initializeData, patchPlatformId } from './database/data-initialization';
 import { initExclusionListCache } from './database/exclusionListCache';
 import { initFintelTemplates } from './modules/fintelTemplate/fintelTemplate-domain';
+import { getDefaultInvestigationPolicy } from './modules/investigationRun/investigationPolicy-domain';
 import { lockResources } from './lock/master-lock';
 import { loadEntityMetricsConfiguration } from './modules/metrics/metrics-utils';
 import { initializeStreamStack } from './database/stream/stream-handler';
@@ -89,6 +90,7 @@ const platformInit = async (withMarkings = true) => {
       await initializeAdminUser(context);
       await initDefaultNotifiers(context);
       await initFintelTemplates(context, SYSTEM_USER);
+      await getDefaultInvestigationPolicy(context);
     } else {
       logApp.info('[INIT] Existing platform detected, initialization...');
       if (ES_IS_INIT_MIGRATION) {

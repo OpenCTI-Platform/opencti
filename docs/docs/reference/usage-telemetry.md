@@ -140,6 +140,14 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 - The number of PIRs
 - The number of decay rules created
 
+### Case Autopilot
+
+- The number of investigations started, by trigger (manual, playbook, request for information creation)
+- The number of investigations ended, by outcome (completed, failed, cancelled)
+- The number of analyst decisions on investigation results, by item (hypothesis, recommendation) and decision (accepted, rejected)
+- The number of enrichment jobs dispatched by investigations
+- The number of investigation policies
+
 ### Retention and activity
 
 - Whether the history retention rule is active on the platform

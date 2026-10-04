@@ -21,6 +21,7 @@ import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { fullEntitiesList, storeLoadById } from '../../database/middleware-loader';
 import { generateFintelTemplateExecutiveSummary } from '../../utils/fintelTemplate/__executiveSummary.template';
 import { fintelTemplateIncidentResponse } from '../../utils/fintelTemplate/__incidentCase.template';
+import { generateFintelTemplateInvestigationSummary, INVESTIGATION_SUMMARY_TEMPLATE_TYPES } from '../../utils/fintelTemplate/__investigationSummary.template';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
@@ -345,6 +346,7 @@ export const initFintelTemplates = async (context: AuthContext, user: AuthUser) 
     generateFintelTemplateExecutiveSummary('Case-Incident'),
     generateFintelTemplateExecutiveSummary('Case-Rfi'),
     generateFintelTemplateExecutiveSummary('Case-Rft'),
+    ...INVESTIGATION_SUMMARY_TEMPLATE_TYPES.map((type) => generateFintelTemplateInvestigationSummary(type)),
   ];
   // add id to fintel template widgets
   const finalInputs: FintelTemplateAddInput[] = builtInTemplatesInputs.map((input) => ({

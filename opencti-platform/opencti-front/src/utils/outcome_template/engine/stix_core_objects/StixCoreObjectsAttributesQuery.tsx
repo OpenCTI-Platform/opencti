@@ -265,6 +265,18 @@ const stixCoreObjectsAttributesQuery = graphql`
             ... on Case {
                 name
                 description
+                latestInvestigationRun {
+                    run_status
+                    completed_at
+                    report_sections {
+                        executive_summary
+                        report
+                        timeline
+                        hypotheses
+                        recommendations
+                        iocs
+                    }
+                }
             }
             ... on Task {
                 name
