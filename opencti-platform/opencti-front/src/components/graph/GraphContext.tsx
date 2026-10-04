@@ -20,6 +20,8 @@ interface GraphContextValue {
   graphRef3D: MutableRefObject<GraphRef3D | undefined>;
   /** Element holding the canvas and the panels floating over it. */
   viewportRef: MutableRefObject<HTMLDivElement | null>;
+  /** The toolbar docked under the graph, which can cover the bottom of the canvas. */
+  toolbarRef: MutableRefObject<HTMLDivElement | null>;
   // --- data of the graph pass as props
   graphData: LibGraphProps['graphData'];
   setGraphData: Setter<LibGraphProps['graphData']>;
@@ -74,6 +76,7 @@ export const GraphProvider = ({
   const graphRef2D = useRef<GraphRef2D | undefined>(undefined);
   const graphRef3D = useRef<GraphRef3D | undefined>(undefined);
   const viewportRef = useRef<HTMLDivElement | null>(null);
+  const toolbarRef = useRef<HTMLDivElement | null>(null);
 
   const DEFAULT_STATE: GraphState = {
     mode3D: false,
@@ -210,6 +213,7 @@ export const GraphProvider = ({
     graphRef2D,
     graphRef3D,
     viewportRef,
+    toolbarRef,
     graphData,
     stixCoreObjectTypes,
     relationshipTypes,

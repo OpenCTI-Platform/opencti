@@ -95,10 +95,14 @@ export const frameBox = (
     .reduce((best, frame) => (frame.k > best.k ? frame : best));
 };
 
-/** The panels floating over a canvas, relative to it. */
-export const measureGraphPanels = (viewport: HTMLElement, canvas: HTMLCanvasElement): ScreenRect[] => {
+/**
+ * The panels floating over a canvas, relative to it, and the `outside` elements covering it from
+ * elsewhere in the page (the toolbar docked under the graph).
+ */
+export const measureGraphPanels = (viewport: HTMLElement, canvas: HTMLCanvasElement, outside: readonly (HTMLElement | null)[] = []): ScreenRect[] => {
   const origin = canvas.getBoundingClientRect();
-  return Array.from(viewport.querySelectorAll<HTMLElement>(GRAPH_PANEL_SELECTOR)).map((panel) => {
+  const panels = [...Array.from(viewport.querySelectorAll<HTMLElement>(GRAPH_PANEL_SELECTOR)), ...outside.filter((element): element is HTMLElement => !!element)];
+  return panels.map((panel) => {
     const rect = panel.getBoundingClientRect();
     return { left: rect.left - origin.left, top: rect.top - origin.top, right: rect.right - origin.left, bottom: rect.bottom - origin.top };
   });

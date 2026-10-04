@@ -67,5 +67,18 @@ describe('measureGraphPanels', () => {
       { left: 12, top: 12, right: 52, bottom: 162 },
       { left: 760, top: 0, right: 1000, bottom: 600 },
     ]);
+    // The toolbar docked under the graph lives elsewhere in the page and covers the bottom of the canvas.
+    const toolbar = document.createElement('div');
+    toolbar.getBoundingClientRect = rect(100, 570, 1000, 80);
+    expect(measureGraphPanels(viewport, canvas, [toolbar, null])).toHaveLength(3);
+    expect(measureGraphPanels(viewport, canvas, [toolbar])[2]).toEqual({ left: 0, top: 520, right: 1000, bottom: 600 });
+  });
+
+  it('frames the nodes above a toolbar covering the bottom of the canvas', () => {
+    const toolbar: ScreenRect = { left: 0, top: 520, right: 1000, bottom: 600 };
+    const frame = frameBox({ x: [-100, 100], y: [-100, 100] }, { width: 1000, height: 600 }, [toolbar], { padding: 0, maxZoom: 10 });
+    // 512 free pixels (the 80 covered and a gap of 8) for 200 graph units, the centre moved by half of them.
+    expect(frame.k).toBeCloseTo(2.56);
+    expect(frame.y).toBeCloseTo(44 / 2.56);
   });
 });

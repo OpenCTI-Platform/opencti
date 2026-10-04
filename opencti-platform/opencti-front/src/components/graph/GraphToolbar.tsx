@@ -49,6 +49,7 @@ const GraphToolbar = ({
     },
     context,
     isFullscreen,
+    toolbarRef,
   } = useGraphContext();
 
   const isLoadingData = (loadingCurrent ?? 0) < (loadingTotal ?? 0);
@@ -61,6 +62,7 @@ const GraphToolbar = ({
       anchor="bottom"
       variant="permanent"
       slotProps={{ paper: {
+        ref: toolbarRef,
         elevation: 1,
         className: fdsLayerClass(RIGHT_BAR_LAYER),
         sx: { ...layerInputVars },

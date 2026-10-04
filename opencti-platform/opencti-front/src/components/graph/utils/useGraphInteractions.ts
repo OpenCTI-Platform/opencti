@@ -35,6 +35,7 @@ const useGraphInteractions = () => {
     graphRef2D,
     graphRef3D,
     viewportRef,
+    toolbarRef,
     graphData,
     graphState,
     rawPositions,
@@ -202,7 +203,7 @@ const useGraphInteractions = () => {
     const box = graph.getGraphBbox(filter);
     if (!box || !Number.isFinite(box.x[0]) || !Number.isFinite(box.y[0])) return false;
     const { width, height } = canvas.getBoundingClientRect();
-    const frame = frameBox(box, { width, height }, measureGraphPanels(viewport, canvas), { padding, maxZoom: MAX_FIT_ZOOM });
+    const frame = frameBox(box, { width, height }, measureGraphPanels(viewport, canvas, [toolbarRef.current]), { padding, maxZoom: MAX_FIT_ZOOM });
     graph.centerAt(frame.x, frame.y, duration);
     graph.zoom(frame.k, duration);
     return true;

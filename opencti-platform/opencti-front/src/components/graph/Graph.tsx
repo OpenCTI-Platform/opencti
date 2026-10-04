@@ -28,7 +28,6 @@ import useGraphLayoutEngine, { type GraphLayoutRequest } from './utils/useGraphL
 import useGraphKeyboardShortcuts from './utils/useGraphKeyboardShortcuts';
 import useGraphFullscreen from './utils/useGraphFullscreen';
 import { isPathDrawable, relationshipCounts } from './utils/graphFocus';
-import { GRAPH_TOOLBAR_HEIGHT, GRAPH_TOOLBAR_HEIGHT_WITH_TIME_RANGE } from './utils/graphFraming';
 import { badgesOfNode, useGraphBadgeRegistryVersion } from './badges';
 import { downloadCanvasAsPng, renderGraphImage } from './utils/graphExport';
 import { MESSAGING$ } from '../../relay/environment';
@@ -102,6 +101,7 @@ const Graph = ({
     graphRef2D,
     graphRef3D,
     viewportRef: containerRef,
+    toolbarRef,
     graphData,
     context,
     title,
@@ -138,6 +138,28 @@ const Graph = ({
   const filterToken = useGraphFilter();
 
   const isLoadingData = (loadingCurrent ?? 0) < (loadingTotal ?? 0);
+
+  // --- Height of the canvas the toolbar docked under the graph covers, which the legend stays above:
+  // some pages let the canvas run under the toolbar, and the time range selector grows it.
+  const [toolbarOverlap, setToolbarOverlap] = useState(0);
+  useEffect(() => {
+    const measure = () => {
+      const canvasBox = containerRef.current?.getBoundingClientRect();
+      const toolbarBox = toolbarRef.current?.getBoundingClientRect();
+      const overlap = canvasBox && toolbarBox ? Math.max(0, Math.round(canvasBox.bottom - toolbarBox.top)) : 0;
+      setToolbarOverlap((current) => (current === overlap ? current : overlap));
+    };
+    measure();
+    // The toolbar grows in a short transition when the time range selector opens.
+    const settled = setTimeout(measure, 300);
+    window.addEventListener('scroll', measure, true);
+    window.addEventListener('resize', measure);
+    return () => {
+      clearTimeout(settled);
+      window.removeEventListener('scroll', measure, true);
+      window.removeEventListener('resize', measure);
+    };
+  }, [width, height, showTimeRange, isFullscreen]);
 
   // --- What is drawn: groups for collapsed types, hidden entities left out.
   const collapseCache = useRef(createCollapseCache());
@@ -199,10 +221,26 @@ const Graph = ({
     clearTimeout(closeTimer.current);
     closeTimer.current = setTimeout(() => setCard(null), HOVER_CLOSE_MS);
   };
+  // No card opens while a button is held on the canvas: a drag (moving a node, drawing a
+  // relationship with the right button) is under way and the card would cover its target.
+  const pressing = useRef(false);
+  useEffect(() => {
+    const release = () => {
+      pressing.current = false;
+    };
+    window.addEventListener('pointerup', release, true);
+    return () => window.removeEventListener('pointerup', release, true);
+  }, []);
+  const onCanvasPointerDown = (event: React.PointerEvent) => {
+    if (!(event.target instanceof HTMLCanvasElement)) return;
+    pressing.current = true;
+    clearTimeout(openTimer.current);
+    setCard(null);
+  };
   const onHover = (target: GraphHoverTarget | null) => {
     setHovered(target);
     clearTimeout(openTimer.current);
-    if (!target || selectFree || selectFreeRectangle || isExpandOpen || isAddRelationOpen) {
+    if (!target || pressing.current || selectFree || selectFreeRectangle || isExpandOpen || isAddRelationOpen) {
       scheduleClose();
       return;
     }
@@ -270,7 +308,29 @@ const Graph = ({
     layoutTargets: mode3D ? null : layoutTargets,
   });
 
+  // A graph opened without a saved view is framed once more when its first layout settles: the
+  // forces keep moving the nodes after the first framing. Anything the reader does meanwhile (a
+  // click, a key, a zoom, in the graph or in its toolbar) cancels it, so the view never moves
+  // under the pointer.
+  const frameWhenSettled = useRef(false);
+  const readerMoved = useRef(false);
   useEffect(() => {
+    const onReaderAction = () => {
+      readerMoved.current = true;
+      frameWhenSettled.current = false;
+    };
+    const events = ['pointerdown', 'wheel', 'keydown'] as const;
+    events.forEach((event) => window.addEventListener(event, onReaderAction, true));
+    return () => events.forEach((event) => window.removeEventListener(event, onReaderAction, true));
+  }, []);
+  const onEngineStop = () => {
+    if (!frameWhenSettled.current) return;
+    frameWhenSettled.current = false;
+    zoomToFit();
+  };
+
+  useEffect(() => {
+    readerMoved.current = false;
     // A short timeout to be sure graph is ready.
     setTimeout(() => {
       if (!isLoadingData) {
@@ -280,7 +340,10 @@ const Graph = ({
         // Another short timeout to wait forces to be applied
         setTimeout(() => {
           if (zoom) setZoom(zoom);
-          else zoomToFit();
+          else {
+            zoomToFit();
+            frameWhenSettled.current = withForces && !readerMoved.current;
+          }
         }, 1000);
       }
     }, 100);
@@ -514,6 +577,7 @@ const Graph = ({
         }}
         // The canvas reports no hover change when the pointer leaves it fast, for the toolbar for example.
         onMouseLeave={() => onHover(null)}
+        onPointerDownCapture={onCanvasPointerDown}
       >
         <GraphLoadingAlert />
         {selectedEntities.length > 0 && <EntitiesDetailsRightsBar />}
@@ -545,6 +609,7 @@ const Graph = ({
             onNodeClick={onNodeClick}
             onNodeDrag={moveSelection}
             onNodeDragEnd={onNodeDragEnd}
+            onEngineStop={onEngineStop}
           />
         ) : (
           <>
@@ -596,6 +661,7 @@ const Graph = ({
               })}
               onRenderFramePre={framePrePaint}
               onRenderFramePost={framePostPaint}
+              onEngineStop={onEngineStop}
               onNodeHover={(node) => onHover(node ? { kind: 'node', id: node.id } : null)}
               onLinkHover={(link) => onHover(link ? { kind: 'link', id: link.id } : null)}
               onZoomEnd={saveZoom}
@@ -652,7 +718,7 @@ const Graph = ({
             collapsedEntityTypes={collapsedEntityTypes}
             hiddenCount={hiddenNodeIds.length}
             badges={legendBadges}
-            bottomOffset={showTimeRange ? GRAPH_TOOLBAR_HEIGHT_WITH_TIME_RANGE - GRAPH_TOOLBAR_HEIGHT : 0}
+            bottomOffset={toolbarOverlap}
             onToggleEntityType={toggleEntityType}
             onToggleRelationshipType={toggleRelationshipType}
             onToggleCollapsed={toggleCollapsedEntityType}
