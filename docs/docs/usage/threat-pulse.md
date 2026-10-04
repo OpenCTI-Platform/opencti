@@ -94,9 +94,9 @@ Narrowing the scopes or excluding a new marking removes the community statistics
 
 ### Threat Pulse card
 
-The overview of indicators, attack patterns, vulnerabilities, intrusion sets, malware and tools shows a "Threat Pulse" card in the right column, after the Basic information and Sources cards:
+The overview of indicators, attack patterns, vulnerabilities, intrusion sets, malware and tools shows a "Threat Pulse" card in the right column, after the Basic information card:
 
-- **Full**: the community prevalence gauge (rare, uncommon, common, widespread), the range of contributing platforms (for example "25 to 49 platforms"), the network first and last seen dates, the 12-week trend sparkline, the sector trend and the community uniqueness. An object below the anonymity threshold is reported as such, without any count; a value XTM Hub did not publish is left out rather than shown empty.
+- **Full**: the community prevalence gauge (rare, uncommon, common, widespread), the range of contributing platforms (for example "25 to 49 platforms"), the network first and last seen dates (the first and last days of the weeks in which enough platforms reported the object, never the day a single platform reported it), the 12-week trend sparkline, the sector trend and the community uniqueness. An object below the anonymity threshold is reported as such, without any count; a value XTM Hub did not publish is left out rather than shown empty.
 - **Preview**: the prevalence and trend when the object is in the digest, otherwise a short note, then the locked rows "Contributing platforms", "Network first seen", "Community trend over 12 weeks" and "Sector trend", and the unlock step.
 - **Not connected**: what Threat Pulse would add and the "Connect to XTM Hub" button.
 
