@@ -6214,5 +6214,8 @@
   "Rejected by {user} {time}": "Отклонена пользователем {user} {time}",
   "Rejected {time}": "Отклонена {time}",
   "A rejected recommendation is not proposed again during the cooldown period configured in the settings.": "Отклонённая рекомендация не предлагается повторно в течение периода ожидания, заданного в настройках.",
-  "Cooldown after a rejection (days)": "Период ожидания после отклонения (дни)"
+  "Cooldown after a rejection (days)": "Период ожидания после отклонения (дни)",
+  "Applying": "Применяется",
+  "The change is being applied": "Изменение применяется",
+  "If this lasts, its outcome could not be recorded: check the target of the recommendation, then reject it to close it. It is never applied a second time.": "Если это продолжается, результат не удалось записать: проверьте цель рекомендации, затем отклоните её, чтобы закрыть. Повторно она никогда не применяется."
 }

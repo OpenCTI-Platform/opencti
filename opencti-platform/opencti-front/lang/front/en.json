@@ -6214,5 +6214,8 @@
   "Rejected by {user} {time}": "Rejected by {user} {time}",
   "Rejected {time}": "Rejected {time}",
   "A rejected recommendation is not proposed again during the cooldown period configured in the settings.": "A rejected recommendation is not proposed again during the cooldown period configured in the settings.",
-  "Cooldown after a rejection (days)": "Cooldown after a rejection (days)"
+  "Cooldown after a rejection (days)": "Cooldown after a rejection (days)",
+  "Applying": "Applying",
+  "The change is being applied": "The change is being applied",
+  "If this lasts, its outcome could not be recorded: check the target of the recommendation, then reject it to close it. It is never applied a second time.": "If this lasts, its outcome could not be recorded: check the target of the recommendation, then reject it to close it. It is never applied a second time."
 }

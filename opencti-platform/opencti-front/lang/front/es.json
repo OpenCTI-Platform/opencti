@@ -6214,5 +6214,8 @@
   "Rejected by {user} {time}": "Rechazada por {user} {time}",
   "Rejected {time}": "Rechazada {time}",
   "A rejected recommendation is not proposed again during the cooldown period configured in the settings.": "Una recomendación rechazada no se vuelve a proponer durante el periodo de espera configurado en los ajustes.",
-  "Cooldown after a rejection (days)": "Periodo de espera tras un rechazo (días)"
+  "Cooldown after a rejection (days)": "Periodo de espera tras un rechazo (días)",
+  "Applying": "Aplicando",
+  "The change is being applied": "El cambio se está aplicando",
+  "If this lasts, its outcome could not be recorded: check the target of the recommendation, then reject it to close it. It is never applied a second time.": "Si se prolonga, no se pudo registrar el resultado: compruebe el destino de la recomendación y, a continuación, recházela para cerrarla. Nunca se aplica una segunda vez."
 }

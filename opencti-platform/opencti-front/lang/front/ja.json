@@ -6214,5 +6214,8 @@
   "Rejected by {user} {time}": "{user} が却下 {time}",
   "Rejected {time}": "却下 {time}",
   "A rejected recommendation is not proposed again during the cooldown period configured in the settings.": "却下された推奨事項は、設定で構成した待機期間中は再提案されません。",
-  "Cooldown after a rejection (days)": "却下後の待機期間 (日)"
+  "Cooldown after a rejection (days)": "却下後の待機期間 (日)",
+  "Applying": "適用中",
+  "The change is being applied": "変更を適用しています",
+  "If this lasts, its outcome could not be recorded: check the target of the recommendation, then reject it to close it. It is never applied a second time.": "この状態が続く場合、結果を記録できませんでした。推奨事項の対象を確認してから、却下して閉じてください。2 回適用されることはありません。"
 }

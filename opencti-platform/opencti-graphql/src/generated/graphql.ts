@@ -33070,6 +33070,7 @@ export enum SourceRecommendationKind {
 
 export enum SourceRecommendationStatus {
   Applied = 'applied',
+  Applying = 'applying',
   Dismissed = 'dismissed',
   Failed = 'failed',
   Proposed = 'proposed',

@@ -119,6 +119,7 @@ const APPLY_ACTION_LABELS: Record<string, string> = {
 
 const STATUS_SEVERITIES: Record<string, ChipSeverity> = {
   proposed: 'info',
+  applying: 'info',
   applied: 'low',
   failed: 'high',
   dismissed: 'neutral',
@@ -284,6 +285,15 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
           {recommendation.apply_result && recommendation.status === 'applied' && (
             <Typography variant="caption" component="div" sx={{ color: theme.palette.text.secondary }}>{recommendation.apply_result}</Typography>
           )}
+          {recommendation.status === 'applying' && (
+            <Box sx={{ marginTop: 1 }}>
+              <Alert
+                severity="info"
+                title={t_i18n('The change is being applied')}
+                description={t_i18n('If this lasts, its outcome could not be recorded: check the target of the recommendation, then reject it to close it. It is never applied a second time.')}
+              />
+            </Box>
+          )}
           {recommendation.status === 'failed' && (
             <Box sx={{ marginTop: 1 }}>
               <Alert
@@ -369,7 +379,7 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
                 {applyLabel}
               </Button>
             )}
-            {recommendation.status === 'proposed' && (
+            {(recommendation.status === 'proposed' || recommendation.status === 'applying') && (
               <Button variant="secondary" size="small" startIcon={<CloseOutlined />} onClick={() => setDismissOpen(true)} disabled={busy} data-testid="source-recommendation-dismiss">
                 {t_i18n('Reject')}
               </Button>
