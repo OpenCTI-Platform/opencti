@@ -104,6 +104,7 @@ const STATUS_QUERY = gql`
       sources_count
       last_run_success
       last_scanned_objects
+      last_scan_truncated
       provenance_mode
     }
   }
@@ -603,4 +604,30 @@ describe('Source intelligence', () => {
     const unknownGap = await queryAsAdmin({ query: DEPLOY_MUTATION, variables: { id: sourceId, slug: 'any-connector' } });
     expect(unknownGap.errors?.[0]?.message).toEqual('Collection gap not found');
   });
+
+  it('should not propose any tuning from a truncated scan', async () => {
+    const listRecommendations = () => fullEntitiesList<BasicStoreEntity>(testContext, ADMIN_USER, [ENTITY_TYPE_SOURCE_RECOMMENDATION]);
+    const existing = await listRecommendations();
+    for (let i = 0; i < existing.length; i += 1) {
+      await deleteElementById(testContext, ADMIN_USER, existing[i].internal_id, ENTITY_TYPE_SOURCE_RECOMMENDATION);
+    }
+    // These thresholds propose a decay rule for every source that creates indicators
+    const eagerSettings: SourceIntelligenceSettings = {
+      ...settings,
+      min_author_volume: 1,
+      min_manual_volume: 1,
+      backfill_days: 0,
+      thresholds: { ...settings.thresholds, min_volume: 0, high_noise: 0 },
+      autonomy: { ...settings.autonomy, auto_apply_kinds: [] },
+    };
+    await runFullComputation(testContext, { ...eagerSettings, max_scan_objects: 1 });
+    const truncated = await queryAsAdminWithSuccess({ query: STATUS_QUERY });
+    expect(truncated.data.sourceIntelligenceStatus.last_scan_truncated).toBe(true);
+    expect(await listRecommendations()).toHaveLength(0);
+    // The same thresholds over the whole knowledge do propose tuning
+    await runFullComputation(testContext, eagerSettings);
+    const complete = await queryAsAdminWithSuccess({ query: STATUS_QUERY });
+    expect(complete.data.sourceIntelligenceStatus.last_scan_truncated).toBe(false);
+    expect((await listRecommendations()).length).toBeGreaterThan(0);
+  }, 480000);
 });

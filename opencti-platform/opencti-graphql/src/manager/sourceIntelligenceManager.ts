@@ -559,11 +559,19 @@ export const runFullComputation = async (context: AuthContext, settings: SourceI
     await clearDisabledSourcesLiveData(context, latestSources.filter((source) => source.enabled === false));
     await purgeScorecardSnapshots(context, settings.snapshot_retention_days, now);
     if (enterprise) {
-      await generateSourceRecommendations(context, tracked, settings);
+      // A truncated scan scored the sources on part of the knowledge only: tuning them from it could quarantine or
+      // retire a source on incomplete data, so recommendations and autonomy wait for a complete computation
+      if (state.truncated) {
+        logApp.warn('[OPENCTI-MODULE] Source intelligence recommendations skipped, the scan was truncated', { scanned: state.scanned });
+      } else {
+        await generateSourceRecommendations(context, tracked, settings);
+      }
       await computeCollectionGaps(context, sources, settings);
-      const autonomous = await applyAutonomousRecommendations(context, settings);
-      if (autonomous > 0) {
-        logApp.info('[OPENCTI-MODULE] Source intelligence autonomy applied recommendations', { autonomous });
+      if (!state.truncated) {
+        const autonomous = await applyAutonomousRecommendations(context, settings);
+        if (autonomous > 0) {
+          logApp.info('[OPENCTI-MODULE] Source intelligence autonomy applied recommendations', { autonomous });
+        }
       }
     }
     await updateSourceIntelligenceState({

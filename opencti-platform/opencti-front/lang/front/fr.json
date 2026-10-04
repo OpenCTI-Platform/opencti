@@ -6262,5 +6262,6 @@
   "Cooldown after a rejection (days)": "Délai après un rejet (jours)",
   "Applying": "Application en cours",
   "The change is being applied": "La modification est en cours d'application",
-  "If this lasts, its outcome could not be recorded: check the target of the recommendation. It stays listed as applying and is never applied a second time.": "Si cela dure, son résultat n'a pas pu être enregistré : vérifiez la cible de la recommandation. Elle reste affichée « Application en cours » et n'est jamais appliquée une seconde fois."
+  "If this lasts, its outcome could not be recorded: check the target of the recommendation. It stays listed as applying and is never applied a second time.": "Si cela dure, son résultat n'a pas pu être enregistré : vérifiez la cible de la recommandation. Elle reste affichée « Application en cours » et n'est jamais appliquée une seconde fois.",
+  "The scan reached the maximum number of objects set in the settings. Recommendations are not refreshed until a computation covers every object.": "L'analyse a atteint le nombre maximal d'objets défini dans les paramètres. Les recommandations ne sont pas actualisées tant qu'un calcul ne couvre pas tous les objets."
 }

@@ -266,7 +266,9 @@ const SourceIntelligenceHeader = ({ queryRef }: SourceIntelligenceHeaderProps) =
           <Alert
             severity="warning"
             title={t_i18n('The scorecards cover the first {count, plural, one {# object} other {# objects}} only.', { values: { count: status.last_scanned_objects ?? 0 } })}
-            description={t_i18n('The scan reached the maximum number of objects set in the settings.')}
+            description={status.enterprise_edition
+              ? t_i18n('The scan reached the maximum number of objects set in the settings. Recommendations are not refreshed until a computation covers every object.')
+              : t_i18n('The scan reached the maximum number of objects set in the settings.')}
             action={canCustomize ? (
               <Button variant="secondary" size="small" component={Link} to={SOURCE_INTELLIGENCE_SETTINGS_PATH}>
                 {t_i18n('Raise the limit')}
