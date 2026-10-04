@@ -55,7 +55,7 @@ import {
   type StoreSourceScorecard,
 } from './sourceIntelligence-types';
 import { deleteLiveScorecardsOfSources, deleteScorecardsOfSources, findLiveScorecards, searchScorecards, writeScorecards } from './sourceIntelligence-store';
-import { computeCostPerActionable } from './sourceIntelligence-scoring';
+import { computeCostPerActionable, toSnapshotDate } from './sourceIntelligence-scoring';
 import { buildSourceResolver, type SourceResolver } from './sourceIntelligence-provenance';
 import { resolveSoftJoinAvailability } from './sourceIntelligence-compute';
 
@@ -323,16 +323,22 @@ export const findSourceScorecards = async (
   if (!source) {
     return [];
   }
-  const scorecards = await searchScorecards(context, {
-    sourceIds: [args.sourceId],
-    period: args.period ?? REFERENCE_SCORECARD_PERIOD,
-    live: false,
-    startDate: args.startDate ?? null,
-    endDate: args.endDate ?? null,
-    first: args.first ?? 365,
-    orderMode: 'asc',
-  });
-  return maskRestrictedScorecards(context, user, scorecards);
+  const period = args.period ?? REFERENCE_SCORECARD_PERIOD;
+  // The live scorecard carries the streaming increments since the last snapshot: it ends a range that reaches today
+  const reachesToday = !args.endDate || toSnapshotDate(new Date(args.endDate).getTime()) >= toSnapshotDate(Date.now());
+  const [snapshots, live] = await Promise.all([
+    searchScorecards(context, {
+      sourceIds: [args.sourceId],
+      period,
+      live: false,
+      startDate: args.startDate ?? null,
+      endDate: args.endDate ?? null,
+      first: args.first ?? 365,
+      orderMode: 'asc',
+    }),
+    reachesToday ? findLiveScorecards(context, period, [args.sourceId]) : Promise.resolve([]),
+  ]);
+  return maskRestrictedScorecards(context, user, [...snapshots, ...live]);
 };
 
 export const findLatestScorecard = async (context: AuthContext, user: AuthUser, sourceId: string, period?: ScorecardPeriodValue | null) => {
