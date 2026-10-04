@@ -118,15 +118,18 @@ const buildPaths = (forward: SearchSide, backward: SearchSide, meetingNodes: str
  * Bidirectional breadth-first search between two nodes.
  * Levels are expanded completely, always on the smallest frontier, so every shortest path is found first;
  * the search then continues with longer paths until `maxPaths` paths are found or a cap is reached.
- * Each node keeps up to `maxParentsPerNode` parents at its minimal depth, which bounds the enumeration: a longer
- * path is only found when each of its nodes is at its minimal depth from one side, so a detour rejoining a node
- * already reached by a shorter route is never returned (not a k shortest simple paths enumeration).
+ * Each node keeps up to `maxParentsPerNode` parents at its minimal depth, and never fewer than `maxPaths`, which bounds
+ * the enumeration without trading a shorter path for a longer one: a node whose parents are left out already leads
+ * to `maxPaths` paths of its length. A longer path is only found when each of its nodes is at its minimal depth from
+ * one side, so a detour rejoining a node already reached by a shorter route is never returned (not a k shortest
+ * simple paths enumeration).
  * The deadline is checked before each level and again before the access check of the nodes a level discovers;
  * `timed_out` is reported whenever it leaves a level of the search unexplored.
  */
 export const searchPaths = async (opts: PathSearchOptions): Promise<StixPathsSearchResult> => {
   const now = opts.now ?? (() => Date.now());
   const start = now();
+  const maxParentsPerNode = Math.max(opts.maxParentsPerNode, opts.maxPaths);
   const forward = createSide(opts.fromId);
   const backward = createSide(opts.toId);
   let exploredRelationships = 0;
@@ -188,7 +191,7 @@ export const searchPaths = async (opts: PathSearchOptions): Promise<StixPathsSea
           newFrontier.add(neighbor);
         }
         const links = side.parents.get(neighbor) ?? [];
-        if (links.length < opts.maxParentsPerNode && !links.some((l) => l.relationship_id === edge.relationship_id)) {
+        if (links.length < maxParentsPerNode && !links.some((l) => l.relationship_id === edge.relationship_id)) {
           links.push({ parent: nodeId, relationship_id: edge.relationship_id, relationship_type: edge.relationship_type });
           side.parents.set(neighbor, links);
         }

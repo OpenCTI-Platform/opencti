@@ -81,6 +81,21 @@ describe('graph analytics path finder', () => {
     expect(result.paths.map((p) => p.node_ids)).toEqual([['a', 'd', 'z'], ['a', 'd', 'c', 'z'], ['a', 'f', 'c', 'z']]);
   });
 
+  it('should not return a longer path while the parent cap leaves shortest paths out', async () => {
+    const edges: Edge[] = [['r-ab', 'uses', 'a', 'b'], ['r-bc', 'uses', 'b', 'c'], ['r-ce', 'uses', 'c', 'e'], ['r-ez', 'uses', 'e', 'z'], ['r-xz', 'uses', 'x', 'z']];
+    for (let i = 1; i <= 9; i += 1) {
+      edges.push([`r-ap${i}`, 'uses', 'a', `p${i}`], [`r-px${i}`, 'uses', `p${i}`, 'x']);
+    }
+    // the dead ends around z make the side of a reach x from its nine parents
+    for (let i = 1; i <= 20; i += 1) {
+      edges.push([`r-zd${i}`, 'related-to', 'z', `d${i}`]);
+    }
+    const { expand } = buildGraph(edges);
+    const result = await searchPaths(options(expand, { maxPaths: 5, maxParentsPerNode: 2 }));
+    // nine shortest paths go through x: five of them are returned, never a-b-c-e-z
+    expect(result.paths.map((p) => p.node_ids)).toEqual([1, 2, 3, 4, 5].map((i) => ['a', `p${i}`, 'x', 'z']));
+  });
+
   it('should respect the maximum depth', async () => {
     const { expand } = buildGraph([
       ['r1', 'uses', 'a', 'b'],
