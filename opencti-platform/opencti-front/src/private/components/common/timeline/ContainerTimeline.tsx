@@ -292,6 +292,8 @@ interface ContainerTimelineEventsViewProps {
   onRegenerate: () => void;
   onClearFilters: () => void;
   onVisibleDomainChange: (domain: TimelineDomain | null) => void;
+  // Number of events matching the filters of the view, loaded or not
+  onTotalChange: (total: number) => void;
   // Centering an event shows it in the lanes view, whatever the current view
   onCenter: (domain: TimelineDomain) => void;
   regenerating: boolean;
@@ -313,6 +315,7 @@ const ContainerTimelineEventsView = ({
   onRegenerate,
   onClearFilters,
   onVisibleDomainChange,
+  onTotalChange,
   onCenter,
   regenerating,
   actions,
@@ -355,6 +358,9 @@ const ContainerTimelineEventsView = ({
   }, [showsLanes, visibleDomain[0], visibleDomain[1]]);
   const selected = state.event ? events.find((event) => event.id === state.event) ?? null : null;
   const total = data.containerTimeline?.pageInfo.globalCount ?? events.length;
+  useEffect(() => {
+    onTotalChange(total);
+  }, [total]);
 
   return (
     <>
@@ -452,6 +458,8 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
   const [visibleDomain, setVisibleDomain] = useState<TimelineDomain | null>(null);
+  // The status names the events of the current view (filters included) once they are loaded
+  const [viewTotal, setViewTotal] = useState<number | null>(null);
   // Only the event of the opening link is searched in earlier pages, never a later selection
   const [linkedEventId, setLinkedEventId] = useState<string | null>(state.event);
 
@@ -603,7 +611,7 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
         }}
       />
       <Text variant="content-caption" as="div" style={{ marginTop: theme.spacing(1) }} data-testid="timeline-status">
-        {t_i18n('{count} events', { values: { count: n(summary.total) } })}
+        {t_i18n('{count} events', { values: { count: n(viewTotal ?? summary.total) } })}
         {summary.generated_at && ` - ${t_i18n('Last update')} ${nsdt(summary.generated_at)}`}
       </Text>
       {summary.truncated && (
@@ -658,6 +666,7 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
                 onRegenerate={regenerate}
                 onClearFilters={() => updateState({ lanes: [], kinds: [], sources: [], search: '', includeHidden: false, pinnedOnly: false })}
                 onVisibleDomainChange={setVisibleDomain}
+                onTotalChange={setViewTotal}
                 onCenter={(centered) => {
                   clearTimeout(urlTimer.current);
                   setDomain(centered);
