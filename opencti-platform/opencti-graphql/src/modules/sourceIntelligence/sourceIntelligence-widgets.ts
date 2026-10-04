@@ -139,10 +139,10 @@ export const sourceScorecardsDistribution = async (
   args: { metric: string; period?: ScorecardPeriodValue | null; filters?: FilterGroup | null; first?: number | null; orderMode?: string | null },
 ) => {
   const metric = assertMetric(args.metric);
-  const { data } = restrictToCostCurrency(await loadWidgetData(context, user, args.period ?? REFERENCE_SCORECARD_PERIOD, args.filters), [metric]);
+  const { data, currency } = restrictToCostCurrency(await loadWidgetData(context, user, args.period ?? REFERENCE_SCORECARD_PERIOD, args.filters), [metric]);
   const direction = args.orderMode === 'asc' ? 1 : -1;
   return data
-    .map(({ source, scorecard }) => ({ label: source.name, value: metricValue(scorecard, metric), entity: source }))
+    .map(({ source, scorecard }) => ({ label: source.name, value: metricValue(scorecard, metric), currency, entity: source }))
     .filter((item) => item.value !== null)
     .sort((a, b) => direction * ((a.value as number) - (b.value as number)) || a.label.localeCompare(b.label))
     .slice(0, Math.min(Math.max(args.first ?? 10, 1), 100));
@@ -155,11 +155,11 @@ export const sourceScorecardsNumber = async (
 ) => {
   const metric = assertMetric(args.metric);
   const loaded = await loadWidgetData(context, user, args.period ?? REFERENCE_SCORECARD_PERIOD, args.filters);
-  const { data } = restrictToCostCurrency(loaded, [metric]);
+  const { data, currency } = restrictToCostCurrency(loaded, [metric]);
   const values = data.map(({ scorecard }) => metricValue(scorecard, metric)).filter((value): value is number => value !== null);
   const value = aggregateValues(values, assertAggregation(args.aggregation, 'sum'));
   // The number of sources counts every scored source, whatever the currency of its cost
-  return { value: value === null ? null : Math.round(value * 100) / 100, sources_count: loaded.length };
+  return { value: value === null ? null : Math.round(value * 100) / 100, sources_count: loaded.length, currency };
 };
 
 export const sourceScorecardsTimeSeries = async (
@@ -179,7 +179,7 @@ export const sourceScorecardsTimeSeries = async (
     startDate: args.startDate ?? null,
     endDate: args.endDate ?? null,
   });
-  return points.map(({ day, value }) => ({ date: `${day}T00:00:00.000Z`, value: Math.round(value * 100) / 100 }));
+  return points.map(({ day, value }) => ({ date: `${day}T00:00:00.000Z`, value: Math.round(value * 100) / 100, currency }));
 };
 
 export const sourceScorecardsScatter = async (
@@ -191,7 +191,7 @@ export const sourceScorecardsScatter = async (
   const yMetric = assertMetric(args.yMetric);
   const sizeMetric = args.sizeMetric ? assertMetric(args.sizeMetric) : null;
   const loaded = await loadWidgetData(context, user, args.period ?? REFERENCE_SCORECARD_PERIOD, args.filters);
-  const { data } = restrictToCostCurrency(loaded, [xMetric, yMetric, sizeMetric]);
+  const { data, currency } = restrictToCostCurrency(loaded, [xMetric, yMetric, sizeMetric]);
   return data
     .map(({ source, scorecard }) => ({
       entity: source,
@@ -199,8 +199,10 @@ export const sourceScorecardsScatter = async (
       x: metricValue(scorecard, xMetric),
       y: metricValue(scorecard, yMetric),
       size: sizeMetric ? metricValue(scorecard, sizeMetric) : null,
+      currency,
     }))
-    .filter((point) => point.x !== null && point.y !== null)
+    // An unmeasured value is never drawn as a zero: the point is left out
+    .filter((point) => point.x !== null && point.y !== null && (sizeMetric === null || point.size !== null))
     .sort((a, b) => (b.size ?? 0) - (a.size ?? 0))
     .slice(0, Math.min(Math.max(args.first ?? 50, 1), 200));
 };

@@ -23,6 +23,7 @@ const sourcesNumberQuery = graphql`
     sourceScorecardsNumber(metric: $metric, period: $period, filters: $filters, aggregation: $aggregation) {
       value
       sources_count
+      currency
     }
   }
 `;
@@ -50,7 +51,8 @@ const SourcesNumberComponent = ({ queryRef, selection, label }: {
   if (value === null || value === undefined || sourceScorecardsNumber.sources_count === 0) {
     return <WidgetNoData message={t_i18n(NO_SOURCE_SCORED_MESSAGE)} />;
   }
-  return <WidgetNumber label={label} value={value} />;
+  const currency = selection.sort_mode !== COUNT_MODE && metric.type === 'cost' ? sourceScorecardsNumber.currency : null;
+  return <WidgetNumber label={currency ? t_i18n('{measure} ({currency})', { values: { measure: label, currency } }) : label} value={value} />;
 };
 
 interface SourcesNumberProps {

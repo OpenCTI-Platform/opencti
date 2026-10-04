@@ -121,6 +121,7 @@ const WIDGETS_QUERY = gql`
     sourceScorecardsNumber(metric: $metric, period: LAST_30_DAYS, aggregation: avg) {
       value
       sources_count
+      currency
     }
     sourceScorecardsDistribution(metric: $metric, period: LAST_30_DAYS, first: 5, orderMode: desc) {
       label
@@ -377,6 +378,8 @@ describe('Source intelligence', () => {
     const { data } = await queryAsAdminWithSuccess({ query: WIDGETS_QUERY, variables: { metric: 'value_score' } });
     expect(data.sourceScorecardMetrics.map((metric: { key: string }) => metric.key)).toContain('value_score');
     expect(data.sourceScorecardsNumber.sources_count).toBeGreaterThan(0);
+    // Only cost metrics carry a currency
+    expect(data.sourceScorecardsNumber.currency).toBeNull();
     expect(data.sourceScorecardsNumber.value).toBeGreaterThanOrEqual(0);
     expect(data.sourceScorecardsNumber.value).toBeLessThanOrEqual(100);
     const distribution = data.sourceScorecardsDistribution;

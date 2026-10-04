@@ -6249,5 +6249,7 @@
   "{measure}, total over the last {days} days": "{measure}, 최근 {days}일 합계",
   "{measure}, lowest over the last {days} days": "{measure}, 최근 {days}일 최솟값",
   "{measure}, highest over the last {days} days": "{measure}, 최근 {days}일 최댓값",
-  "{measure} per day, scored over {days} days": "일별 {measure} ({days}일 기준 평가)"
+  "{measure} per day, scored over {days} days": "일별 {measure} ({days}일 기준 평가)",
+  "{measure} ({currency})": "{measure} ({currency})",
+  "Values in {currency}": "{currency} 기준 값"
 }

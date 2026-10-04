@@ -36,13 +36,14 @@ export const NO_SOURCE_SCORED_MESSAGE = 'No source scored in this period';
 type Translate = (message: string, options?: { values?: Record<string, string | number> }) => string;
 
 /**
- * Axis title of a metric with its unit: ratios are plotted as percents and scores range from 0 to 100; durations and
- * costs carry their unit in their label or values.
+ * Axis title of a metric with its unit: ratios are plotted as percents, scores range from 0 to 100 and costs are in the
+ * currency the widget aggregated; durations carry their unit in their label.
  */
-export const metricAxisTitle = (t: Translate, metric: Pick<SourceWidgetMetric, 'label' | 'type'>): string => {
+export const metricAxisTitle = (t: Translate, metric: Pick<SourceWidgetMetric, 'label' | 'type'>, currency?: string | null): string => {
   const measure = t(metric.label);
   if (metric.type === 'ratio') return t('{measure} (%)', { values: { measure } });
   if (metric.type === 'score') return t('{measure} (0 to 100)', { values: { measure } });
+  if (metric.type === 'cost' && currency) return t('{measure} ({currency})', { values: { measure, currency } });
   return measure;
 };
 

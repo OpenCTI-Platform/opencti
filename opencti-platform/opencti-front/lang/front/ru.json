@@ -6249,5 +6249,7 @@
   "{measure}, total over the last {days} days": "{measure}, всего за последние {days} дн.",
   "{measure}, lowest over the last {days} days": "{measure}, минимум за последние {days} дн.",
   "{measure}, highest over the last {days} days": "{measure}, максимум за последние {days} дн.",
-  "{measure} per day, scored over {days} days": "{measure} по дням, оценка за {days} дн."
+  "{measure} per day, scored over {days} days": "{measure} по дням, оценка за {days} дн.",
+  "{measure} ({currency})": "{measure} ({currency})",
+  "Values in {currency}": "Значения в {currency}"
 }

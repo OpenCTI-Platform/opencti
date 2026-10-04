@@ -6249,5 +6249,7 @@
   "{measure}, total over the last {days} days": "{measure}、過去 {days} 日間の合計",
   "{measure}, lowest over the last {days} days": "{measure}、過去 {days} 日間の最小値",
   "{measure}, highest over the last {days} days": "{measure}、過去 {days} 日間の最大値",
-  "{measure} per day, scored over {days} days": "日ごとの{measure} ({days} 日間で算出)"
+  "{measure} per day, scored over {days} days": "日ごとの{measure} ({days} 日間で算出)",
+  "{measure} ({currency})": "{measure} ({currency})",
+  "Values in {currency}": "{currency} 建ての値"
 }

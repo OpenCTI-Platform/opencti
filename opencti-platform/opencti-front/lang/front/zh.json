@@ -6249,5 +6249,7 @@
   "{measure}, total over the last {days} days": "{measure}，过去 {days} 天的总计",
   "{measure}, lowest over the last {days} days": "{measure}，过去 {days} 天的最小值",
   "{measure}, highest over the last {days} days": "{measure}，过去 {days} 天的最大值",
-  "{measure} per day, scored over {days} days": "每日{measure}（按 {days} 天评分）"
+  "{measure} per day, scored over {days} days": "每日{measure}（按 {days} 天评分）",
+  "{measure} ({currency})": "{measure}（{currency}）",
+  "Values in {currency}": "以 {currency} 计的数值"
 }

@@ -17201,17 +17201,20 @@ type SourceScorecardMetric {
 type SourceScorecardDistributionItem {
   label: String!
   value: Float
+  currency: String
   entity: Source
 }
 
 type SourceScorecardNumber {
   value: Float
   sources_count: Int!
+  currency: String
 }
 
 type SourceScorecardTimePoint {
   date: DateTime!
   value: Float
+  currency: String
 }
 
 type SourceScorecardScatterPoint {
@@ -17219,6 +17222,7 @@ type SourceScorecardScatterPoint {
   x: Float
   y: Float
   size: Float
+  currency: String
   entity: Source
 }
 

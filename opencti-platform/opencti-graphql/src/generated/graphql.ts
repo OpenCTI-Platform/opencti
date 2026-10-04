@@ -33157,6 +33157,7 @@ export enum SourceScorecardAggregation {
 
 export type SourceScorecardDistributionItem = {
   __typename?: 'SourceScorecardDistributionItem';
+  currency?: Maybe<Scalars['String']['output']>;
   entity?: Maybe<Source>;
   label: Scalars['String']['output'];
   value?: Maybe<Scalars['Float']['output']>;
@@ -33173,6 +33174,7 @@ export type SourceScorecardMetric = {
 
 export type SourceScorecardNumber = {
   __typename?: 'SourceScorecardNumber';
+  currency?: Maybe<Scalars['String']['output']>;
   sources_count: Scalars['Int']['output'];
   value?: Maybe<Scalars['Float']['output']>;
 };
@@ -33185,6 +33187,7 @@ export enum SourceScorecardPeriod {
 
 export type SourceScorecardScatterPoint = {
   __typename?: 'SourceScorecardScatterPoint';
+  currency?: Maybe<Scalars['String']['output']>;
   entity?: Maybe<Source>;
   label: Scalars['String']['output'];
   size?: Maybe<Scalars['Float']['output']>;
@@ -33194,6 +33197,7 @@ export type SourceScorecardScatterPoint = {
 
 export type SourceScorecardTimePoint = {
   __typename?: 'SourceScorecardTimePoint';
+  currency?: Maybe<Scalars['String']['output']>;
   date: Scalars['DateTime']['output'];
   value?: Maybe<Scalars['Float']['output']>;
 };
@@ -55146,6 +55150,7 @@ export type SourceScorecardResolvers<ContextType = any, ParentType extends Resol
 }>;
 
 export type SourceScorecardDistributionItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceScorecardDistributionItem'] = ResolversParentTypes['SourceScorecardDistributionItem']> = ResolversObject<{
+  currency?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity?: Resolver<Maybe<ResolversTypes['Source']>, ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
@@ -55160,11 +55165,13 @@ export type SourceScorecardMetricResolvers<ContextType = any, ParentType extends
 }>;
 
 export type SourceScorecardNumberResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceScorecardNumber'] = ResolversParentTypes['SourceScorecardNumber']> = ResolversObject<{
+  currency?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   sources_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
 }>;
 
 export type SourceScorecardScatterPointResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceScorecardScatterPoint'] = ResolversParentTypes['SourceScorecardScatterPoint']> = ResolversObject<{
+  currency?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity?: Resolver<Maybe<ResolversTypes['Source']>, ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   size?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
@@ -55173,6 +55180,7 @@ export type SourceScorecardScatterPointResolvers<ContextType = any, ParentType e
 }>;
 
 export type SourceScorecardTimePointResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceScorecardTimePoint'] = ResolversParentTypes['SourceScorecardTimePoint']> = ResolversObject<{
+  currency?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
 }>;
