@@ -61,6 +61,8 @@ import { addInvestigationFeedbackCount, addInvestigationRunCount, addInvestigati
 import {
   ACTIVE_RUN_STATUSES,
   EMPTY_OUTPUTS,
+  ENGINE_CANCEL_FAILED,
+  ENGINE_CANCEL_PENDING,
   ENGINE_NOT_CONFIGURED,
   ENTITY_TYPE_INVESTIGATION_RUN,
   INVESTIGATION_CASE_SUBJECT_TYPES,
@@ -399,6 +401,25 @@ export const addInvestigationRun = async (
 
 // region analyst actions
 
+/**
+ * Stop the engine run of a cancelled run, as the identity of the run. Until
+ * XTM One confirms it, the cancellation stays pending and the manager asks
+ * again, a bounded number of times.
+ */
+export const stopCancelledEngineRun = async (context: AuthContext, runId: string, fallbackUser: AuthUser | null = null) => {
+  const run = await loadInvestigationRun(outOfDraft(context), runId);
+  if (!run || run.xtm_status !== ENGINE_CANCEL_PENDING || !run.xtm_investigation_id) return;
+  const runUser = (await resolveUserByIdFromCache(context, run.run_as_id)) ?? fallbackUser;
+  const result = runUser ? await cancelInvestigation({ id: runUser.id, user_email: runUser.user_email }, run.xtm_investigation_id) : null;
+  await updateInvestigationRun(context, runId, (current) => {
+    if (current.xtm_status !== ENGINE_CANCEL_PENDING) return null;
+    if (result?.ok) return { xtm_status: 'cancelled', engine_failures: 0 };
+    const attempts = (current.engine_failures ?? 0) + 1;
+    logApp.warn('[CASE AUTOPILOT] Engine run not cancelled yet', { runId, attempts, failure: result?.failure ?? 'no identity' });
+    return { engine_failures: attempts, ...(attempts >= INVESTIGATION_LIMITS.engineFailures ? { xtm_status: ENGINE_CANCEL_FAILED } : {}) };
+  });
+};
+
 export const cancelInvestigationRun = async (context: AuthContext, user: AuthUser, id: string) => {
   const run = await findAccessibleRun(context, user, id);
   if (TERMINAL_RUN_STATUSES.includes(run.run_status)) {
@@ -415,6 +436,7 @@ export const cancelInvestigationRun = async (context: AuthContext, user: AuthUse
     const now = new Date();
     return {
       ...statusTransition(current, InvestigationRunStatus.Cancelled, InvestigationRunPhase.Done, now, `Cancelled by ${user.name}`),
+      ...(cancellation.engineId ? { xtm_status: ENGINE_CANCEL_PENDING, engine_failures: 0 } : {}),
       pending_work_ids: [],
       approvals: current.approvals.map((approval) => (approval.status === InvestigationApprovalStatus.Pending
         ? { ...approval, status: InvestigationApprovalStatus.Rejected, decided_at: now.toISOString(), decided_by: user.id, rejection_reason: 'Run cancelled' }
@@ -437,8 +459,7 @@ export const cancelInvestigationRun = async (context: AuthContext, user: AuthUse
   if (cancellation.done) {
     addInvestigationRunOutcomeCount(InvestigationRunStatus.Cancelled);
     if (cancellation.engineId) {
-      const result = await cancelInvestigation({ id: user.id, user_email: user.user_email }, cancellation.engineId);
-      if (!result.ok) logApp.warn('[CASE AUTOPILOT] Engine run not cancelled', { runId: id, failure: result.failure });
+      await stopCancelledEngineRun(context, id, user);
     }
   }
   return updated;

@@ -78,6 +78,11 @@ export const ENGINE_UNAVAILABLE = 'engine_unavailable';
 export const ENGINE_NO_AGENT = 'engine_no_agent';
 export const ENGINE_UNREACHABLE = 'engine_unreachable';
 
+// Engine status of a cancelled run whose engine run XTM One has not confirmed
+// stopping yet (asked again by the manager), then given up on.
+export const ENGINE_CANCEL_PENDING = 'cancel_pending';
+export const ENGINE_CANCEL_FAILED = 'cancel_failed';
+
 // Hard caps applied to every list stored on a run, whatever the policy says,
 // so a run document stays bounded.
 export const INVESTIGATION_LIMITS = {

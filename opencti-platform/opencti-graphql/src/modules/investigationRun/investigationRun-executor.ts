@@ -81,6 +81,7 @@ import { addInvestigationEnrichmentJobCount, addInvestigationRunOutcomeCount } f
 import { isXtmOneConfigured } from '../playbook/components/ai-agent-shared';
 import {
   EMPTY_OUTPUTS,
+  ENGINE_CANCEL_PENDING,
   ENGINE_NO_AGENT,
   ENGINE_NOT_CONFIGURED,
   ENGINE_UNAVAILABLE,
@@ -100,7 +101,7 @@ import {
   type InvestigationOutputs,
   type InvestigationRecommendation,
 } from './investigationRun-types';
-import { listPolicyEnrichmentConnectors, loadInvestigationRun, updateInvestigationRun, withRunActions } from './investigationRun-domain';
+import { listPolicyEnrichmentConnectors, loadInvestigationRun, stopCancelledEngineRun, updateInvestigationRun, withRunActions } from './investigationRun-domain';
 import { loadInvestigationPolicy } from './investigationPolicy-domain';
 import {
   boundApprovals,
@@ -584,7 +585,12 @@ const startEngine = async (exec: RunExecution) => {
     if (TERMINAL_RUN_STATUSES.includes(current.run_status)) {
       // Cancelled while the engine was starting: its run is kept in the history and stopped below.
       outcome.endedMeanwhile = true;
-      return { xtm_investigation_ids: R.uniq([...(current.xtm_investigation_ids ?? []), engine.id]) };
+      return {
+        xtm_investigation_id: engine.id,
+        xtm_investigation_ids: R.uniq([...(current.xtm_investigation_ids ?? []), engine.id]),
+        xtm_status: ENGINE_CANCEL_PENDING,
+        engine_failures: 0,
+      };
     }
     return {
       agent_slug: agentSlug,
@@ -606,10 +612,7 @@ const startEngine = async (exec: RunExecution) => {
     };
   });
   if (outcome.endedMeanwhile) {
-    const cancelled = await cancelInvestigation(jwtUserOf(runUser), engine.id);
-    if (!cancelled.ok) {
-      logApp.warn('[CASE AUTOPILOT] Engine run started during a cancellation not cancelled', { runId: run.internal_id, investigationId: engine.id, failure: cancelled.failure });
-    }
+    await stopCancelledEngineRun(exec.liveContext, run.internal_id);
   }
 };
 
@@ -984,7 +987,8 @@ const writeOutputs = async (
       const created = await addCaseIncident(draftContext, runUser, {
         name: `Investigation - ${subjectName}`.slice(0, 250),
         description: run.summary?.slice(0, INVESTIGATION_LIMITS.textLength) ?? 'Case opened by a Case Autopilot investigation.',
-        objects: objectIds,
+        // The evidence goes into the new case only when the policy also allows adding to a case.
+        objects: allowedAction(InvestigationAutonomousAction.AddToCase) ? objectIds : [subject.internal_id],
         objectMarking: markings,
         objectOrganization: organizations,
       });
@@ -1324,6 +1328,10 @@ const completeValidation = async (exec: RunExecution) => {
  */
 export const processInvestigationRun = async (context: AuthContext, runId: string) => {
   const run = await loadInvestigationRun(context, runId);
+  if (run?.run_status === InvestigationRunStatus.Cancelled && run.xtm_status === ENGINE_CANCEL_PENDING) {
+    await stopCancelledEngineRun(context, runId);
+    return;
+  }
   if (!run || TERMINAL_RUN_STATUSES.includes(run.run_status) || run.run_status === InvestigationRunStatus.AwaitingApproval) {
     return;
   }
@@ -1381,14 +1389,26 @@ export const processInvestigationRun = async (context: AuthContext, runId: strin
 
 const nextRunsWindow = createRunWindow<BasicStoreEntityInvestigationRun>();
 
-/** The next active runs to advance, oldest first, resuming where the previous tick stopped. */
+/**
+ * The next runs to advance, oldest first, resuming where the previous tick
+ * stopped: the active runs, and the cancelled runs whose engine run is not
+ * confirmed stopped yet.
+ */
 export const listInvestigationRunsToProcess = (context: AuthContext, limit: number) => nextRunsWindow(async (after) => {
   const connection = await pageEntitiesConnection<BasicStoreEntityInvestigationRun>(context, INVESTIGATION_MANAGER_USER, [ENTITY_TYPE_INVESTIGATION_RUN], {
     filters: {
-      mode: FilterMode.And,
+      mode: FilterMode.Or,
       filters: [{ key: ['run_status'], values: [InvestigationRunStatus.Planned, InvestigationRunStatus.Running] }],
-      filterGroups: [],
+      filterGroups: [{
+        mode: FilterMode.And,
+        filters: [
+          { key: ['run_status'], values: [InvestigationRunStatus.Cancelled] },
+          { key: ['xtm_status'], values: [ENGINE_CANCEL_PENDING] },
+        ],
+        filterGroups: [],
+      }],
     },
+    noFiltersChecking: true,
     orderBy: 'created_at',
     orderMode: 'asc' as never,
     first: limit,

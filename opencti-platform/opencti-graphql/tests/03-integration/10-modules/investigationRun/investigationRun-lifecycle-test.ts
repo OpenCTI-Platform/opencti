@@ -6,12 +6,12 @@ import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../../utils/testQu
 import { connectorDelete, registerConnector } from '../../../../src/domain/connector';
 import { updateProcessedTime } from '../../../../src/domain/work';
 import { ConnectorType } from '../../../../src/generated/graphql';
-import { decideInvestigationApprovals } from '../../../../src/modules/investigationRun/investigationRun-domain';
+import { decideInvestigationApprovals, loadInvestigationRun } from '../../../../src/modules/investigationRun/investigationRun-domain';
 import * as entrepriseEdition from '../../../../src/enterprise-edition/ee';
 import * as aiAgentShared from '../../../../src/modules/playbook/components/ai-agent-shared';
 import * as investigationXtm from '../../../../src/modules/investigationRun/investigationRun-xtm';
 import { parseEngineInvestigation } from '../../../../src/modules/investigationRun/investigationRun-engine';
-import { processInvestigationRun } from '../../../../src/modules/investigationRun/investigationRun-executor';
+import { listInvestigationRunsToProcess, processInvestigationRun } from '../../../../src/modules/investigationRun/investigationRun-executor';
 
 // A faithful stand-in for the XTM One investigation engine: raw answers in the
 // shape of `GET /api/v1/platform/investigations/{id}` (dev-docs/investigations.md
@@ -511,14 +511,22 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
     }
   });
 
-  it('cancels the engine run when an analyst cancels the investigation', async () => {
+  it('cancels the engine run when an analyst cancels the investigation, until XTM One confirms it', async () => {
     const { data } = await queryAsAdminWithSuccess({ query: RUN_ADD, variables: { subjectId: otherCase.id } });
     const runId = data.investigationRunAdd.id;
     createdRuns.push({ id: runId });
     await tickUntil(runId, (current) => current.run_phase === 'investigating');
+    vi.mocked(investigationXtm.cancelInvestigation).mockResolvedValueOnce({ ok: false, failure: 'engine_unreachable', status: 503, message: 'XTM One is unreachable' });
     const cancelled = await queryAsAdminWithSuccess({ query: RUN_CANCEL, variables: { id: runId } });
     expect(cancelled.data.investigationRunCancel).toMatchObject({ run_status: 'cancelled', run_phase: 'done' });
     expect(investigationXtm.cancelInvestigation).toHaveBeenCalledWith(expect.anything(), ENGINE_ID);
+    expect((await loadInvestigationRun(testContext, runId))?.xtm_status).toBe('cancel_pending');
+    // Not confirmed by XTM One: the manager lists the run again and asks again.
+    const toProcess = await listInvestigationRunsToProcess(testContext, 50);
+    expect(toProcess.map((run) => run.internal_id)).toContain(runId);
+    await processInvestigationRun(testContext, runId);
+    expect((await loadInvestigationRun(testContext, runId))?.xtm_status).toBe('cancelled');
+    expect((await listInvestigationRunsToProcess(testContext, 50)).map((run) => run.internal_id)).not.toContain(runId);
   });
 
   it('ends with the engine reason, and no fallback loop, when XTM One does not run investigations', async () => {
