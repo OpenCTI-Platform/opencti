@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { computeHuntPlaybookOutcome, isHuntRunGroupSettled } from '../../../../src/modules/hunt/hunt-playbook';
+import { isHuntRunFinalized } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
 import { matchHuntResultFilter } from '../../../../src/modules/playbook/components/hunt-result-filter-component';
 import { eventTouchedRefs, isStandingHuntTriggered } from '../../../../src/modules/hunt/hunt-automation';
 import { huntExtensionDefinition, toPackHunt } from '../../../../src/modules/hunt/hunt-pack';
@@ -24,6 +25,17 @@ const run = (overrides: Partial<BasicStoreEntityHuntRun>): BasicStoreEntityHuntR
 
 const filterConfiguration = { verdicts: ['true_positive', 'pending'], use_triage_proposals: true, min_hits: 1, require_incident: false };
 
+describe('Hunt run finalization', () => {
+  it('should finalize again a terminated executed run whose verdict was never recorded', () => {
+    expect(isHuntRunFinalized({ hunt_run_mode: 'execute', hunt_run_status: 'completed', verdict_source: undefined })).toBe(false);
+    expect(isHuntRunFinalized({ hunt_run_mode: 'execute', hunt_run_status: 'timeout', verdict_source: undefined })).toBe(false);
+    expect(isHuntRunFinalized({ hunt_run_mode: 'execute', hunt_run_status: 'completed', verdict_source: 'auto' })).toBe(true);
+    expect(isHuntRunFinalized({ hunt_run_mode: 'execute', hunt_run_status: 'failed', verdict_source: 'analyst' })).toBe(true);
+    expect(isHuntRunFinalized({ hunt_run_mode: 'execute', hunt_run_status: 'running', verdict_source: undefined })).toBe(true);
+    expect(isHuntRunFinalized({ hunt_run_mode: 'preview', hunt_run_status: 'completed', verdict_source: undefined })).toBe(true);
+  });
+});
+
 describe('Hunt playbook outcome', () => {
   it('should only count the last attempt of a retried run', () => {
     const outcome = computeHuntPlaybookOutcome([
@@ -36,6 +48,17 @@ describe('Hunt playbook outcome', () => {
     expect(outcome.hits_total).toBe(7);
     expect(outcome.verdicts.sort()).toEqual(['benign', 'pending']);
     expect(outcome.incident_ids).toEqual(['incident-1']);
+  });
+
+  it('should count the runs of two steps executing the same hunt on the same connector separately', () => {
+    const outcome = computeHuntPlaybookOutcome([
+      run({ playbook_step_id: 'step-1', hits_count: 4 }),
+      run({ playbook_step_id: 'step-2', hits_count: 3 }),
+      run({ playbook_step_id: 'step-2', hunt_run_status: 'failed', attempt: 1, time_window_start: '2026-10-01T00:00:00Z' }),
+      run({ playbook_step_id: 'step-2', attempt: 2, hits_count: 5, time_window_start: '2026-10-01T00:00:00Z' }),
+    ]);
+    expect(outcome.runs_count).toBe(3);
+    expect(outcome.hits_total).toBe(12);
   });
 
   it('should use the triage proposals of pending runs', () => {

@@ -48,14 +48,20 @@ export interface HuntPlaybookOutcome {
   incident_ids: string[];
 }
 
+// A retry is the next attempt of the same hunt, step, connector and window: anything else is a distinct run
+const huntRunRetryChainKey = (run: BasicStoreEntityHuntRun) => {
+  const windowStart = run.time_window_start ? new Date(run.time_window_start).toISOString() : '';
+  return [run.hunt_id, run.playbook_step_id ?? '', run.connector_id ?? '', windowStart].join(':');
+};
+
 /**
  * Outcome of the hunt runs of a playbook execution. A retried run only counts through its last attempt: superseded
- * failed attempts are ignored when a later attempt exists for the same connector.
+ * failed attempts are ignored when a later attempt exists in the same retry chain.
  */
 export const computeHuntPlaybookOutcome = (runs: BasicStoreEntityHuntRun[]): HuntPlaybookOutcome => {
   const latest = new Map<string, BasicStoreEntityHuntRun>();
   runs.forEach((run) => {
-    const key = `${run.hunt_id}:${run.connector_id ?? ''}`;
+    const key = huntRunRetryChainKey(run);
     const current = latest.get(key);
     if (!current || (run.attempt ?? 1) > (current.attempt ?? 1)) {
       latest.set(key, run);
