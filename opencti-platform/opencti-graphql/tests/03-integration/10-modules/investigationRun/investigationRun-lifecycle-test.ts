@@ -586,6 +586,23 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
     expect((await listInvestigationRunsToProcess(testContext, 50)).map((run) => run.internal_id)).not.toContain(runId);
   });
 
+  it('cancels the engine run when the investigation fails while the engine runs it', async () => {
+    const { data } = await queryAsAdminWithSuccess({ query: RUN_ADD, variables: { subjectId: otherCase.id } });
+    const runId = data.investigationRunAdd.id;
+    createdRuns.push({ id: runId });
+    await tickUntil(runId, (current) => current.run_phase === 'investigating');
+    vi.mocked(investigationXtm.cancelInvestigation).mockClear();
+    vi.mocked(investigationXtm.getInvestigation).mockRejectedValue(new Error('Unexpected engine answer'));
+    try {
+      const failed = await tickUntil(runId, (current) => current.run_status === 'failed');
+      expect(failed.run_status).toBe('failed');
+    } finally {
+      vi.mocked(investigationXtm.getInvestigation).mockImplementation(async () => engineAnswer(engineState(fixture, engineStage)));
+    }
+    expect(investigationXtm.cancelInvestigation).toHaveBeenCalledWith(expect.anything(), ENGINE_ID);
+    expect((await loadInvestigationRun(testContext, runId))?.xtm_status).toBe('cancelled');
+  });
+
   it('ends with the engine reason, and no fallback loop, when XTM One does not run investigations', async () => {
     vi.mocked(investigationXtm.startInvestigation).mockResolvedValueOnce({ ok: false, failure: 'engine_disabled', status: 403, message: 'Deep Investigation is not enabled' });
     const { data } = await queryAsAdminWithSuccess({ query: RUN_ADD, variables: { subjectId: otherCase.id } });

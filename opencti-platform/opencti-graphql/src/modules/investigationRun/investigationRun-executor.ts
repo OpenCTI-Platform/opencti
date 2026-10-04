@@ -299,21 +299,30 @@ const closeOpenGates = (current: BasicStoreEntityInvestigationRun, now: Date, re
     : request)),
 });
 
+// An engine run still going when its run fails is stopped as well, and retried
+// on later passes until the engine confirms.
 const failRun = async (context: AuthContext, runId: string, reason: string, code?: string | null) => {
   const now = new Date();
-  const updated = await updateInvestigationRun(context, runId, (current) => {
+  let failed = false;
+  let engineRunning = false;
+  await updateInvestigationRun(context, runId, (current) => {
     if (TERMINAL_RUN_STATUSES.includes(current.run_status)) return null;
+    failed = true;
+    engineRunning = current.run_phase === InvestigationRunPhase.Investigating && !!current.xtm_investigation_id && !current.budget_cancelled;
     return {
       ...statusTransition(current, InvestigationRunStatus.Failed, InvestigationRunPhase.Done, now, reason),
       end_reason_code: code ?? current.end_reason_code ?? null,
       pending_work_ids: [],
       ...closeOpenGates(current, now, 'Investigation failed'),
+      ...(engineRunning ? { xtm_status: ENGINE_CANCEL_PENDING, engine_failures: 0 } : {}),
     };
   });
-  if (updated.run_status === InvestigationRunStatus.Failed) {
-    addInvestigationRunOutcomeCount(InvestigationRunStatus.Failed);
-  }
+  if (!failed) return;
+  addInvestigationRunOutcomeCount(InvestigationRunStatus.Failed);
   logApp.warn('[CASE AUTOPILOT] Investigation failed', { runId, reason, code });
+  if (engineRunning) {
+    await stopCancelledEngineRun(context, runId);
+  }
 };
 
 // A cancellation ends a run under the same run lock as these updates: a phase
