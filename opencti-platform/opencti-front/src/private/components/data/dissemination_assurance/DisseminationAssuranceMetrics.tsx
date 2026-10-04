@@ -102,7 +102,7 @@ const KpiCounter = ({ id, label, value, caption, badge, actionable, selected, on
         <Typography
           variant="h1"
           component="span"
-          sx={{ fontSize: 28, color: actionable ? 'var(--color-feedback-error-primary)' : undefined }}
+          sx={actionable ? { color: 'var(--color-feedback-error-primary)' } : undefined}
         >
           {value}
         </Typography>

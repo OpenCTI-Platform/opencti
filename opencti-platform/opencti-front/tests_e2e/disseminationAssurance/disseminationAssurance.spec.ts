@@ -77,7 +77,7 @@ test('Dissemination assurance', { tag: ['@disseminationAssurance', '@mutation'] 
   }
 });
 
-// The screenshots of the user documentation (docs/docs/usage/assets/dissemination-assurance-<surface>-<state>.png)
+// The screenshots of the user documentation (docs/docs/usage/assets/dissemination-assurance-<surface>.png)
 // are the captures of the test below, taken at the documented size and kept with the test results.
 const capture = async (page: Page, testInfo: TestInfo, name: string) => {
   await page.screenshot({ path: testInfo.outputPath(`dissemination-assurance-${name}.png`) });
@@ -136,12 +136,12 @@ test.describe('Dissemination assurance documentation', () => {
       await expect(page.getByTestId('dissemination-assurance-metrics')).toBeVisible();
       await expect(page.getByTestId('kpi-missed')).toBeVisible();
       await expect(page.getByTestId('dissemination-funnel')).toBeVisible();
-      await capture(page, testInfo, 'area-kpi-strip');
+      await capture(page, testInfo, 'overview');
 
       await withoutAnyDeployment(page);
       await page.reload();
       await expect(page.getByTestId('dissemination-assurance-first-use')).toBeVisible();
-      await capture(page, testInfo, 'area-first-use');
+      await capture(page, testInfo, 'first-use');
       await page.unroute('**/graphql');
       // endregion
 
@@ -150,20 +150,20 @@ test.describe('Dissemination assurance documentation', () => {
       const indicatorDeployments = page.getByTestId('deployed-on-indicator');
       await expect(indicatorDeployments.getByText('Contoso SIEM')).toBeVisible();
       await expect(indicatorDeployments.getByTestId('deployment-status-active')).toBeVisible();
-      await capture(page, testInfo, 'indicator-deployments-live');
+      await capture(page, testInfo, 'indicator-deployments');
 
       await page.goto(`/dashboard/entities/security_platforms/${platformId}/deployments`);
       const platformDeployments = page.getByTestId('deployed-on-platform');
       await expect(platformDeployments.getByText('cdn-assets.example')).toBeVisible();
       await expect(platformDeployments.getByTestId('deployment-error')).toBeVisible();
-      await capture(page, testInfo, 'platform-deployments-failed');
+      await capture(page, testInfo, 'platform-deployments');
       // endregion
 
       // region Validate live deployments, with what will be tested
       await page.getByTestId('request-validation-button').click();
       await expect(page.getByTestId('ioc-validation-tested-indicators')).toBeVisible();
       await expect(page.getByTestId('ioc-validation-request-submit')).toBeEnabled();
-      await capture(page, testInfo, 'validate-live-deployments-preview');
+      await capture(page, testInfo, 'validate-live');
       await page.keyboard.press('Escape');
       // endregion
 
@@ -174,7 +174,7 @@ test.describe('Dissemination assurance documentation', () => {
       await expect(details.getByTestId('ioc-validation-status-header')).toBeVisible();
       await expect(details.getByTestId('ioc-validation-results-summary')).toHaveText('1 of 2 tests detected or prevented');
       await expect(details.getByRole('link', { name: 'Open the deployment' })).toBeVisible();
-      await capture(page, testInfo, 'validation-request-completed-missed');
+      await capture(page, testInfo, 'validation-missed');
       // endregion
     } finally {
       if (requestId) {
