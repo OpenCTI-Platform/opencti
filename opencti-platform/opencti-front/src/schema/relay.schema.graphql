@@ -11218,6 +11218,11 @@ type Mutation {
   Record that the Timeline tab of a container was opened (usage telemetry, no data change)
   """
   timelineViewed(containerId: ID!): Boolean
+
+  """
+  Record a download of the timeline rendered in the browser (SVG or PNG of the lanes as displayed; usage telemetry, no data change)
+  """
+  timelineExported(containerId: ID!): Boolean
 }
 
 enum WorkflowExecutionStatus {

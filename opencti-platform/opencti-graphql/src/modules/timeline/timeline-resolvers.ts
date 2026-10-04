@@ -22,6 +22,7 @@ import {
   importTimelineExtension,
   listTimelineRules,
   pinTimelineEvent,
+  recordTimelineExport,
   recordTimelineView,
   regenerateTimeline,
   updateTimelineSettings,
@@ -75,6 +76,7 @@ const timelineResolvers: Resolvers = {
     timelineRegenerate: (_, { containerId }, context) => regenerateTimeline(context, context.user, containerId),
     timelineImport: (_, { containerId, extension }, context) => importTimelineExtension(context, context.user, containerId, extension),
     timelineViewed: (_, { containerId }, context) => recordTimelineView(context, context.user, containerId),
+    timelineExported: (_, { containerId }, context) => recordTimelineExport(context, context.user, containerId),
   },
   Subscription: {
     containerTimelineUpdated: {

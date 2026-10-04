@@ -171,3 +171,9 @@ export const timelineViewedMutation = graphql`
     timelineViewed(containerId: $containerId)
   }
 `;
+
+export const timelineExportedMutation = graphql`
+  mutation ContainerTimelineMutationsExportedMutation($containerId: ID!) {
+    timelineExported(containerId: $containerId)
+  }
+`;

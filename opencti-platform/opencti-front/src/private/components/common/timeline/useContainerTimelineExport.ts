@@ -1,9 +1,9 @@
 import { RefObject, useState } from 'react';
-import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
+import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { htmlToPdf } from '../../../../utils/htmlToPdf/htmlToPdf';
 import { MAX_WIDTH_PORTRAIT } from '../../../../utils/htmlToPdf/utils/constants';
-import { containerTimelineExportFileQuery, containerTimelineExportQuery } from './ContainerTimelineMutations';
+import { containerTimelineExportFileQuery, containerTimelineExportQuery, timelineExportedMutation } from './ContainerTimelineMutations';
 import type { ContainerTimelineMutationsExportFileQuery } from './__generated__/ContainerTimelineMutationsExportFileQuery.graphql';
 import type {
   ContainerTimelineMutationsExportQuery,
@@ -165,8 +165,9 @@ export const useTimelineFileRenderer = () => {
 
   const renderTimelineFile = async (options: TimelineFileOptions): Promise<Blob> => {
     const { format, svgElement } = options;
-    // The rendered lanes chart is exported as is for SVG and PNG
+    // The rendered lanes chart is exported as is for SVG and PNG; the export is counted like the server ones
     if (svgElement && (format === 'svg' || format === 'png')) {
+      commitMutation({ mutation: timelineExportedMutation, variables: { containerId: options.containerId } });
       const svg = serializeSvgElement(svgElement);
       if (format === 'svg') {
         return new Blob([svg], { type: `${TIMELINE_EXPORT_MIME_TYPES.svg};charset=utf-8` });

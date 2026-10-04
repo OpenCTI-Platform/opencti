@@ -191,6 +191,11 @@ const TIMELINE_VIEWED = gql`
     timelineViewed(containerId: $containerId)
   }
 `;
+const TIMELINE_EXPORTED = gql`
+  mutation TimelineExported($containerId: ID!) {
+    timelineExported(containerId: $containerId)
+  }
+`;
 const MARKING_DEFINITION = gql`
   query TimelineMarkingDefinition($id: String!) {
     markingDefinition(id: $id) { id }
@@ -698,8 +703,8 @@ describe('Incident and case timeline', () => {
     it('should name the referenced elements in the exports', async () => {
       const csv = await queryAsAdminWithSuccess({ query: CONTAINER_TIMELINE_EXPORT, variables: { id: caseIncident.id, format: 'csv' } });
       const rows = (csv.data.containerTimelineExport as string).split('\r\n').filter((row) => row.length > 0);
-      // The element and element_type columns carry the name and the type of the attack pattern, never an identifier
-      expect(rows.some((row) => row.includes(',Timeline spearphishing,Attack-Pattern,'))).toBe(true);
+      // The element and element_type columns carry the representative name (MITRE id and name) and the type of the attack pattern, never an internal id
+      expect(rows.some((row) => row.includes(',[T9991] Timeline spearphishing,Attack-Pattern,'))).toBe(true);
     });
 
     it('should only mark as editable the manual events of users who can update the container', async () => {
@@ -719,6 +724,10 @@ describe('Incident and case timeline', () => {
       const viewed = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: TIMELINE_VIEWED, variables: { containerId: caseIncident.id } });
       expect(viewed.data.timelineViewed).toBe(true);
       await queryAsAdminWithError({ query: TIMELINE_VIEWED, variables: { containerId: 'unknown-container' } }, 'Timeline container cannot be found');
+      // Downloads rendered in the browser are counted like the server exports
+      const exported = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: TIMELINE_EXPORTED, variables: { containerId: caseIncident.id } });
+      expect(exported.data.timelineExported).toBe(true);
+      await queryAsAdminWithError({ query: TIMELINE_EXPORTED, variables: { containerId: 'unknown-container' } }, 'Timeline container cannot be found');
     });
 
     it('should update the settings of the timeline', async () => {
