@@ -60,10 +60,13 @@ export const RECOMMENDATION_STATUS_REVERTED = 'reverted';
 export const RECOMMENDATION_STATUS_FAILED = 'failed';
 // Recorded before the side effect of an apply runs: a recommendation whose outcome could not be recorded stays in it
 export const RECOMMENDATION_STATUS_APPLYING = 'applying';
+// Recorded before the side effect of a revert runs: a revert whose outcome could not be recorded stays in it
+export const RECOMMENDATION_STATUS_REVERTING = 'reverting';
 export const RECOMMENDATION_STATUSES = [
   RECOMMENDATION_STATUS_PROPOSED,
   RECOMMENDATION_STATUS_APPLYING,
   RECOMMENDATION_STATUS_APPLIED,
+  RECOMMENDATION_STATUS_REVERTING,
   RECOMMENDATION_STATUS_DISMISSED,
   RECOMMENDATION_STATUS_REVERTED,
   RECOMMENDATION_STATUS_FAILED,

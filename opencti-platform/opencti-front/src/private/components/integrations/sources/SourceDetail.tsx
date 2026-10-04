@@ -225,7 +225,7 @@ const SourceRecommendationsSection = ({ sourceId }: { sourceId: string }) => {
   const { t_i18n } = useFormatter();
   const queryRef = useQueryLoading<SourceRecommendationsQuery>(
     sourceRecommendationsQuery,
-    { count: 10, sourceId, status: ['proposed', 'applied', 'failed'] },
+    { count: 10, sourceId, status: ['proposed', 'applying', 'applied', 'reverting', 'failed'] },
   );
   if (!queryRef) {
     return <Skeleton variant="rounded" height={96} aria-hidden />;

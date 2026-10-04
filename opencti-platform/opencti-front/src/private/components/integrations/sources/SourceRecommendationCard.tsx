@@ -74,6 +74,8 @@ const applyMutation = graphql`
 const revertMutation = graphql`
   mutation SourceRecommendationCardRevertMutation($id: ID!) {
     revertSourceRecommendation(id: $id) {
+      status
+      error_message
       ...SourceRecommendationCard_recommendation
     }
   }
@@ -122,6 +124,7 @@ const STATUS_SEVERITIES: Record<string, ChipSeverity> = {
   proposed: 'info',
   applying: 'info',
   applied: 'low',
+  reverting: 'info',
   failed: 'high',
   dismissed: 'neutral',
   reverted: 'neutral',
@@ -165,9 +168,12 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
   });
   const handleRevert = () => commitRevert({
     variables: { id: recommendation.id },
-    onCompleted: (_, errors) => {
+    onCompleted: (response, errors) => {
       setRevertOpen(false);
-      if (notifyMutationOutcome(errors, { success: t_i18n('Recommendation reverted') })) onChange?.();
+      // The cause is shown on the card, behind Show details
+      const failure = !errors?.length && response.revertSourceRecommendation?.status !== 'reverted' ? t_i18n('The recommendation could not be reverted.') : null;
+      notifyMutationOutcome(errors, { success: t_i18n('Recommendation reverted'), failure });
+      onChange?.();
     },
   });
   const handleDismiss = () => commitDismiss({
@@ -314,6 +320,21 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
                 severity="info"
                 title={t_i18n('The change is being applied')}
                 description={t_i18n('If this lasts, its outcome could not be recorded: check the target of the recommendation. It stays listed as applying and is never applied a second time.')}
+              />
+              {errorDetails}
+            </Box>
+          )}
+          {recommendation.status === 'reverting' && (
+            <Box sx={{ marginTop: 1 }}>
+              <SourceIntelligenceAlert
+                severity={recommendation.error_message ? 'error' : 'info'}
+                title={recommendation.error_message ? t_i18n('The recommendation could not be reverted') : t_i18n('The change is being reverted')}
+                description={t_i18n('Part of the change may already be reverted. Retry to finish: every step of a revert can run again safely.')}
+                action={canAct ? (
+                  <Button variant="secondary" size="small" onClick={handleRevert} disabled={busy} data-testid="source-recommendation-revert-retry">
+                    {t_i18n('Retry')}
+                  </Button>
+                ) : undefined}
               />
               {errorDetails}
             </Box>

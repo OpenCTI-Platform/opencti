@@ -6264,5 +6264,10 @@
   "Applying": "正在应用",
   "The change is being applied": "正在应用更改",
   "If this lasts, its outcome could not be recorded: check the target of the recommendation. It stays listed as applying and is never applied a second time.": "如果持续出现此状态，说明无法记录结果：请检查该建议的目标。它会保持“正在应用”状态，且绝不会被再次应用。",
-  "The scan reached the maximum number of objects set in the settings. Recommendations are not refreshed until a computation covers every object.": "扫描已达到设置中规定的最大对象数。在计算覆盖所有对象之前，建议不会更新。"
+  "The scan reached the maximum number of objects set in the settings. Recommendations are not refreshed until a computation covers every object.": "扫描已达到设置中规定的最大对象数。在计算覆盖所有对象之前，建议不会更新。",
+  "Part of the change may already be reverted. Retry to finish: every step of a revert can run again safely.": "部分更改可能已被撤销。请重试以完成：撤销的每个步骤都可以安全地再次运行。",
+  "Reverting": "正在撤销",
+  "The change is being reverted": "正在撤销更改",
+  "The recommendation could not be reverted": "无法撤销该建议",
+  "The recommendation could not be reverted.": "无法撤销该建议。"
 }

@@ -38,6 +38,7 @@ import { managedConnectorAdd, managedConnectorEdit, updateConnectorRequestedStat
 import { addDecayRule, deleteDecayRule } from '../decayRule/decayRule-domain';
 import { type BasicStoreEntityDecayRule, ENTITY_TYPE_DECAY_RULE } from '../decayRule/decayRule-types';
 import { addExclusionListFile, deleteExclusionList } from '../exclusionList/exclusionList-domain';
+import { ENTITY_TYPE_EXCLUSION_LIST } from '../exclusionList/exclusionList-types';
 import { addDraftWorkspace, deleteDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import { userEditField } from '../user/user-domain';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
@@ -75,6 +76,7 @@ import {
   RECOMMENDATION_STATUS_FAILED,
   RECOMMENDATION_STATUS_PROPOSED,
   RECOMMENDATION_STATUS_REVERTED,
+  RECOMMENDATION_STATUS_REVERTING,
   type RecommendationKindValue,
   REFERENCE_SCORECARD_PERIOD,
   SCORECARD_PERIOD_90D,
@@ -101,7 +103,13 @@ const MODULES_MODMANAGE = 'MODULES_MODMANAGE';
 type ManagedConnector = BasicStoreEntityConnector & { manager_requested_status?: string | null; title?: string };
 const STOPPED_STATUSES = ['stopping', 'stopped'];
 // A failed recommendation stays the live entry of its fingerprint, to be retried, never proposed again beside it
-const ACTIVE_STATUSES = [RECOMMENDATION_STATUS_PROPOSED, RECOMMENDATION_STATUS_APPLYING, RECOMMENDATION_STATUS_APPLIED, RECOMMENDATION_STATUS_FAILED];
+const ACTIVE_STATUSES = [
+  RECOMMENDATION_STATUS_PROPOSED,
+  RECOMMENDATION_STATUS_APPLYING,
+  RECOMMENDATION_STATUS_APPLIED,
+  RECOMMENDATION_STATUS_REVERTING,
+  RECOMMENDATION_STATUS_FAILED,
+];
 const FEED_EDIT_FUNCTIONS: Record<string, (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => Promise<unknown>> = {
   [ENTITY_TYPE_INGESTION_RSS]: ingestionRssEditField,
   [ENTITY_TYPE_INGESTION_TAXII]: ingestionTaxiiEditField,
@@ -495,10 +503,12 @@ const executeRevert = async (context: AuthContext, user: AuthUser, recommendatio
       if (rule) await deleteDecayRule(context, user, revert.decay_rule_id);
       return 'Decay rule removed';
     }
-    case RECOMMENDATION_ADD_DENY_LIST:
+    case RECOMMENDATION_ADD_DENY_LIST: {
       requireCapability(user, false, SETTINGS_SETCUSTOMIZATION);
-      await deleteExclusionList(context, user, revert.exclusion_list_id);
+      const exclusionList = await storeLoadById<BasicStoreEntity>(context, SYSTEM_USER, revert.exclusion_list_id, ENTITY_TYPE_EXCLUSION_LIST);
+      if (exclusionList) await deleteExclusionList(context, user, revert.exclusion_list_id);
       return 'Exclusion list removed';
+    }
     case RECOMMENDATION_RETIRE:
       if (revert.target === 'ingestion_feed') {
         requireCapability(user, false, INGESTION_SETINGESTIONS);
@@ -678,27 +688,51 @@ export const applySourceRecommendation = async (
 
 const revertLockedRecommendation = async (context: AuthContext, user: AuthUser, recommendation: BasicStoreEntitySourceRecommendation) => {
   const id = recommendation.internal_id;
-  if (recommendation.recommendation_status !== RECOMMENDATION_STATUS_APPLIED) {
+  const revertable: string[] = [RECOMMENDATION_STATUS_APPLIED, RECOMMENDATION_STATUS_REVERTING];
+  if (!revertable.includes(recommendation.recommendation_status)) {
     throw FunctionalError('Only applied recommendations can be reverted', { id, status: recommendation.recommendation_status });
   }
   const source = await loadSourceOf(context, recommendation);
-  const result = await executeRevert(context, user, recommendation, source);
-  const patch = {
-    recommendation_status: RECOMMENDATION_STATUS_REVERTED,
-    reverted_by_id: user.id,
-    reverted_at: new Date().toISOString(),
-    apply_result: `${recommendation.apply_result ?? ''}\nReverted: ${result}`.trim(),
-  };
+  // The side effect only runs once the recommendation is recorded as reverting: when its outcome cannot be recorded,
+  // the recommendation stays reverting and a retry runs the revert again, every revert action being idempotent
+  if (recommendation.recommendation_status === RECOMMENDATION_STATUS_APPLIED) {
+    await patchAttribute(context, user, id, ENTITY_TYPE_SOURCE_RECOMMENDATION, { recommendation_status: RECOMMENDATION_STATUS_REVERTING });
+  }
+  let patch: Record<string, unknown>;
+  try {
+    const result = await executeRevert(context, user, recommendation, source);
+    patch = {
+      recommendation_status: RECOMMENDATION_STATUS_REVERTED,
+      reverted_by_id: user.id,
+      reverted_at: new Date().toISOString(),
+      apply_result: `${recommendation.apply_result ?? ''}\nReverted: ${result}`.trim(),
+      error_message: null,
+    };
+  } catch (err: any) {
+    // A missing capability refuses the request before anything changed: the previous status comes back. Any other
+    // failure may have reverted part of the change: the recommendation stays reverting, with the cause, to be retried
+    if (err?.extensions?.code === FORBIDDEN_ACCESS) {
+      await patchAttribute(context, user, id, ENTITY_TYPE_SOURCE_RECOMMENDATION, { recommendation_status: recommendation.recommendation_status });
+      throw err;
+    }
+    logApp.warn('[OPENCTI-MODULE] Source intelligence recommendation revert failed', { cause: err, id, kind: recommendation.recommendation_kind });
+    patch = { recommendation_status: RECOMMENDATION_STATUS_REVERTING, error_message: err?.message ?? String(err) };
+  }
   const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_SOURCE_RECOMMENDATION, patch);
+  const reverted = patch.recommendation_status === RECOMMENDATION_STATUS_REVERTED;
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `reverts the source recommendation \`${recommendation.name}\``,
+    message: reverted
+      ? `reverts the source recommendation \`${recommendation.name}\``
+      : `fails to revert the source recommendation \`${recommendation.name}\``,
     context_data: { id, entity_type: ENTITY_TYPE_SOURCE_RECOMMENDATION, input: { kind: recommendation.recommendation_kind, ...patch } },
   });
-  await addSourceRecommendationOutcome('reverted');
+  if (reverted) {
+    await addSourceRecommendationOutcome('reverted');
+  }
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
 };
 

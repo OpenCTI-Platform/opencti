@@ -6264,5 +6264,10 @@
   "Applying": "Applying",
   "The change is being applied": "The change is being applied",
   "If this lasts, its outcome could not be recorded: check the target of the recommendation. It stays listed as applying and is never applied a second time.": "If this lasts, its outcome could not be recorded: check the target of the recommendation. It stays listed as applying and is never applied a second time.",
-  "The scan reached the maximum number of objects set in the settings. Recommendations are not refreshed until a computation covers every object.": "The scan reached the maximum number of objects set in the settings. Recommendations are not refreshed until a computation covers every object."
+  "The scan reached the maximum number of objects set in the settings. Recommendations are not refreshed until a computation covers every object.": "The scan reached the maximum number of objects set in the settings. Recommendations are not refreshed until a computation covers every object.",
+  "Part of the change may already be reverted. Retry to finish: every step of a revert can run again safely.": "Part of the change may already be reverted. Retry to finish: every step of a revert can run again safely.",
+  "Reverting": "Reverting",
+  "The change is being reverted": "The change is being reverted",
+  "The recommendation could not be reverted": "The recommendation could not be reverted",
+  "The recommendation could not be reverted.": "The recommendation could not be reverted."
 }

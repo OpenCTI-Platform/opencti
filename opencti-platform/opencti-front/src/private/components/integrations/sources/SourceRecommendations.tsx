@@ -70,7 +70,7 @@ export const sourceRecommendationsQuery = graphql`
 
 const PAGE_SIZE = 25;
 const ALL = 'all';
-const STATUS_FILTERS: Array<SourceRecommendationStatus | typeof ALL> = ['proposed', 'applied', 'failed', 'reverted', 'dismissed', ALL];
+const STATUS_FILTERS: Array<SourceRecommendationStatus | typeof ALL> = ['proposed', 'applying', 'applied', 'reverting', 'failed', 'reverted', 'dismissed', ALL];
 const KIND_FILTERS = [ALL, ...Object.keys(RECOMMENDATION_KIND_LABELS)];
 
 interface SourceRecommendationsListProps {

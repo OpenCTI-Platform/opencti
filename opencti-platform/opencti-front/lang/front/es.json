@@ -6264,5 +6264,10 @@
   "Applying": "Aplicando",
   "The change is being applied": "El cambio se está aplicando",
   "If this lasts, its outcome could not be recorded: check the target of the recommendation. It stays listed as applying and is never applied a second time.": "Si se prolonga, no se pudo registrar el resultado: compruebe el destino de la recomendación. Sigue figurando como «Aplicando» y nunca se aplica una segunda vez.",
-  "The scan reached the maximum number of objects set in the settings. Recommendations are not refreshed until a computation covers every object.": "El análisis alcanzó el número máximo de objetos definido en los ajustes. Las recomendaciones no se actualizan hasta que un cálculo cubra todos los objetos."
+  "The scan reached the maximum number of objects set in the settings. Recommendations are not refreshed until a computation covers every object.": "El análisis alcanzó el número máximo de objetos definido en los ajustes. Las recomendaciones no se actualizan hasta que un cálculo cubra todos los objetos.",
+  "Part of the change may already be reverted. Retry to finish: every step of a revert can run again safely.": "Es posible que parte del cambio ya se haya revertido. Vuelva a intentarlo para terminar: cada paso de una reversión puede ejecutarse de nuevo con seguridad.",
+  "Reverting": "Revirtiendo",
+  "The change is being reverted": "El cambio se está revirtiendo",
+  "The recommendation could not be reverted": "No se pudo revertir la recomendación",
+  "The recommendation could not be reverted.": "No se pudo revertir la recomendación."
 }

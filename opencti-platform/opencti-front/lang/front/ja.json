@@ -6264,5 +6264,10 @@
   "Applying": "適用中",
   "The change is being applied": "変更を適用しています",
   "If this lasts, its outcome could not be recorded: check the target of the recommendation. It stays listed as applying and is never applied a second time.": "この状態が続く場合、結果を記録できませんでした。推奨事項の対象を確認してください。「適用中」のまま表示され、2 回適用されることはありません。",
-  "The scan reached the maximum number of objects set in the settings. Recommendations are not refreshed until a computation covers every object.": "スキャンが設定で定めたオブジェクトの最大数に達しました。すべてのオブジェクトを対象とする計算が完了するまで、推奨事項は更新されません。"
+  "The scan reached the maximum number of objects set in the settings. Recommendations are not refreshed until a computation covers every object.": "スキャンが設定で定めたオブジェクトの最大数に達しました。すべてのオブジェクトを対象とする計算が完了するまで、推奨事項は更新されません。",
+  "Part of the change may already be reverted. Retry to finish: every step of a revert can run again safely.": "変更の一部はすでに元に戻されている可能性があります。完了するには再試行してください。元に戻す各手順は安全に再実行できます。",
+  "Reverting": "元に戻しています",
+  "The change is being reverted": "変更を元に戻しています",
+  "The recommendation could not be reverted": "推奨事項を元に戻せませんでした",
+  "The recommendation could not be reverted.": "推奨事項を元に戻せませんでした。"
 }

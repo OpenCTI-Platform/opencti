@@ -99,6 +99,7 @@ export const RECOMMENDATION_STATUS_LABELS: Record<string, string> = {
   proposed: 'Proposed',
   applying: 'Applying',
   applied: 'Applied',
+  reverting: 'Reverting',
   dismissed: 'Rejected',
   reverted: 'Reverted',
   failed: 'Failed',

@@ -549,6 +549,48 @@ describe('Source intelligence', () => {
     await deleteDraftWorkspace(testContext, ADMIN_USER, renewedDraftId);
   });
 
+  it('should keep a failed revert as reverting and complete a retried one', async () => {
+    const { created } = await upsertProposals(testContext, [{
+      kind: 'change_schedule',
+      source_id: sourceId,
+      fingerprint: `${TEST_FINGERPRINT_PREFIX}-revert-failure`,
+      name: 'Change the schedule of a connector deleted since',
+      rationale: 'Integration test',
+      payload: { target: 'connector', connector_id: uuidv4(), key: 'CONNECTOR_DURATION_PERIOD', proposed_value: 'PT2H', current_value: 'PT1H' },
+      evidence: {},
+    }, {
+      kind: 'add_deny_list',
+      source_id: sourceId,
+      fingerprint: `${TEST_FINGERPRINT_PREFIX}-revert-retry`,
+      name: 'Remove an exclusion list already removed',
+      rationale: 'Integration test',
+      payload: {},
+      evidence: {},
+    }], settings, { kinds: [] });
+    expect(created.length).toBe(2);
+    const [failing, retried] = created;
+
+    // The connector was deleted after the apply: the revert cannot complete, says why and stays reverting
+    await patchAttribute(testContext, ADMIN_USER, failing.internal_id, ENTITY_TYPE_SOURCE_RECOMMENDATION, {
+      recommendation_status: 'applied',
+      revert_payload: JSON.stringify({ target: 'connector', connector_id: uuidv4(), key: 'CONNECTOR_DURATION_PERIOD', previous_value: 'PT1H' }),
+    });
+    const failed = await queryAsAdminWithSuccess({ query: REVERT_MUTATION, variables: { id: failing.internal_id } });
+    expect(failed.data.revertSourceRecommendation.status).toBe('reverting');
+    const kept = await storeLoadById<BasicStoreEntity & { error_message?: string }>(testContext, ADMIN_USER, failing.internal_id, ENTITY_TYPE_SOURCE_RECOMMENDATION);
+    expect(kept?.error_message).toContain('Managed connector not found');
+    await queryAsAdminWithError({ query: APPLY_MUTATION, variables: { id: failing.internal_id } }, 'Only proposed recommendations can be applied');
+    await queryAsAdminWithError({ query: DISMISS_MUTATION, variables: { id: failing.internal_id } }, 'Only proposed recommendations can be dismissed');
+
+    // A revert interrupted after its action ran is retried: the exclusion list it already removed is not needed again
+    await patchAttribute(testContext, ADMIN_USER, retried.internal_id, ENTITY_TYPE_SOURCE_RECOMMENDATION, {
+      recommendation_status: 'reverting',
+      revert_payload: JSON.stringify({ exclusion_list_id: uuidv4() }),
+    });
+    const completed = await queryAsAdminWithSuccess({ query: REVERT_MUTATION, variables: { id: retried.internal_id } });
+    expect(completed.data.revertSourceRecommendation.status).toBe('reverted');
+  });
+
   it('should dismiss a recommendation and not propose it again during the cooldown', async () => {
     const proposal = {
       kind: 'raise_confidence' as const,

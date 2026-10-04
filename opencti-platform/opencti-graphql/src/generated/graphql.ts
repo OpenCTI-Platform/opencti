@@ -33080,7 +33080,8 @@ export enum SourceRecommendationStatus {
   Dismissed = 'dismissed',
   Failed = 'failed',
   Proposed = 'proposed',
-  Reverted = 'reverted'
+  Reverted = 'reverted',
+  Reverting = 'reverting'
 }
 
 export enum SourceRecommendationsOrdering {

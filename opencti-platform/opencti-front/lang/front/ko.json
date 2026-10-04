@@ -6264,5 +6264,10 @@
   "Applying": "적용 중",
   "The change is being applied": "변경 사항을 적용하는 중입니다",
   "If this lasts, its outcome could not be recorded: check the target of the recommendation. It stays listed as applying and is never applied a second time.": "이 상태가 계속되면 결과를 기록하지 못한 것입니다. 권장 사항의 대상을 확인하십시오. '적용 중'으로 계속 표시되며 두 번 적용되지 않습니다.",
-  "The scan reached the maximum number of objects set in the settings. Recommendations are not refreshed until a computation covers every object.": "스캔이 설정에 지정된 최대 개체 수에 도달했습니다. 모든 개체를 포함하는 계산이 완료될 때까지 권장 사항은 갱신되지 않습니다."
+  "The scan reached the maximum number of objects set in the settings. Recommendations are not refreshed until a computation covers every object.": "스캔이 설정에 지정된 최대 개체 수에 도달했습니다. 모든 개체를 포함하는 계산이 완료될 때까지 권장 사항은 갱신되지 않습니다.",
+  "Part of the change may already be reverted. Retry to finish: every step of a revert can run again safely.": "변경 사항의 일부가 이미 되돌려졌을 수 있습니다. 완료하려면 다시 시도하세요. 되돌리기의 각 단계는 안전하게 다시 실행할 수 있습니다.",
+  "Reverting": "되돌리는 중",
+  "The change is being reverted": "변경 사항을 되돌리는 중입니다",
+  "The recommendation could not be reverted": "권장 사항을 되돌릴 수 없습니다",
+  "The recommendation could not be reverted.": "권장 사항을 되돌릴 수 없습니다."
 }

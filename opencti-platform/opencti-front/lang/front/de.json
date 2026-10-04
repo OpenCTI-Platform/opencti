@@ -6264,5 +6264,10 @@
   "Applying": "Wird angewendet",
   "The change is being applied": "Die Änderung wird angewendet",
   "If this lasts, its outcome could not be recorded: check the target of the recommendation. It stays listed as applying and is never applied a second time.": "Wenn dies anhält, konnte das Ergebnis nicht erfasst werden: Prüfen Sie das Ziel der Empfehlung. Sie bleibt als „Wird angewendet“ aufgeführt und wird nie ein zweites Mal angewendet.",
-  "The scan reached the maximum number of objects set in the settings. Recommendations are not refreshed until a computation covers every object.": "Der Scan hat die in den Einstellungen festgelegte maximale Objektanzahl erreicht. Empfehlungen werden erst aktualisiert, wenn eine Berechnung alle Objekte abdeckt."
+  "The scan reached the maximum number of objects set in the settings. Recommendations are not refreshed until a computation covers every object.": "Der Scan hat die in den Einstellungen festgelegte maximale Objektanzahl erreicht. Empfehlungen werden erst aktualisiert, wenn eine Berechnung alle Objekte abdeckt.",
+  "Part of the change may already be reverted. Retry to finish: every step of a revert can run again safely.": "Ein Teil der Änderung ist möglicherweise bereits rückgängig gemacht. Wiederholen Sie den Vorgang, um ihn abzuschließen: Jeder Schritt einer Rücknahme kann gefahrlos erneut ausgeführt werden.",
+  "Reverting": "Wird rückgängig gemacht",
+  "The change is being reverted": "Die Änderung wird rückgängig gemacht",
+  "The recommendation could not be reverted": "Die Empfehlung konnte nicht rückgängig gemacht werden",
+  "The recommendation could not be reverted.": "Die Empfehlung konnte nicht rückgängig gemacht werden."
 }

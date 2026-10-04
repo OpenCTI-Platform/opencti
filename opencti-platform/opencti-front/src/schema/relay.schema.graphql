@@ -16814,6 +16814,7 @@ enum SourceRecommendationStatus {
   proposed
   applying
   applied
+  reverting
   dismissed
   reverted
   failed

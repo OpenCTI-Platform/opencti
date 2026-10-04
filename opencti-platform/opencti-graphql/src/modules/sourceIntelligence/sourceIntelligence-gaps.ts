@@ -60,6 +60,7 @@ import {
   type HubCatalogStatus,
   RECOMMENDATION_ADD_CONNECTOR,
   RECOMMENDATION_STATUS_APPLIED,
+  RECOMMENDATION_STATUS_REVERTING,
 } from './sourceIntelligence-types';
 import { buildResolverFromSources } from './sourceIntelligence-domain';
 import { ASSERTION_KIND_TO_SOURCE_KIND, isProvenanceAttributeAvailable, type SourceResolver, sourceRefKey } from './sourceIntelligence-provenance';
@@ -660,7 +661,7 @@ export const deployCollectionGapConnector = async (
   try {
     lock = await lockResources([`collection-gap-deploy:${gap.internal_id}:${slug}`]);
     const connectors = await fullEntitiesList<BasicStoreEntityConnector>(context, SYSTEM_USER, [ENTITY_TYPE_CONNECTOR]);
-    const applied = await findRecommendationsByFingerprint(context, proposal.fingerprint, [RECOMMENDATION_STATUS_APPLIED]);
+    const applied = await findRecommendationsByFingerprint(context, proposal.fingerprint, [RECOMMENDATION_STATUS_APPLIED, RECOMMENDATION_STATUS_REVERTING]);
     if (applied.length > 0 || connectors.some((deployed) => deployed.manager_contract_image === contractImage)) {
       throw FunctionalError('This connector is already deployed', { id: gapId, slug });
     }
