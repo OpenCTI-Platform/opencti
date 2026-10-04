@@ -310,16 +310,16 @@ const Relationships = () => {
         return (<ItemIcon type={entity_type} />);
       },
     },
-    fromType: {},
-    fromName: {},
+    fromType: { percentWidth: 9 },
+    fromName: { percentWidth: 15 },
     relationship_type: {},
-    toType: {},
-    toName: {},
+    toType: { percentWidth: 9 },
+    toName: { percentWidth: 15 },
     createdBy: { percentWidth: 7, isSortable: isRuntimeSort },
     creator: { percentWidth: 7, isSortable: isRuntimeSort },
-    corroboration_count: { percentWidth: 8 },
+    corroboration_count: { percentWidth: 11 },
     created_at: { percentWidth: 10 },
-    objectMarking: { isSortable: isRuntimeSort },
+    objectMarking: { percentWidth: 7, isSortable: isRuntimeSort },
   };
 
   const preloadedPaginationProps = {

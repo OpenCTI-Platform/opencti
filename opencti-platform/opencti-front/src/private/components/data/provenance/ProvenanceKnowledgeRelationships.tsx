@@ -174,14 +174,14 @@ const ProvenanceKnowledgeRelationships = ({ storageKey, fixedFilters, withConfli
 
   const dataColumns: DataTableProps['dataColumns'] = {
     fromType: { percentWidth: 8 },
-    fromName: { percentWidth: withConflicts ? 11 : 15 },
+    fromName: { percentWidth: withConflicts ? 10 : 14 },
     relationship_type: { percentWidth: 9 },
     toType: { percentWidth: 8 },
-    toName: { percentWidth: withConflicts ? 11 : 15 },
+    toName: { percentWidth: withConflicts ? 10 : 14 },
     ...(withConflicts ? { conflict_fields: { ...conflictingFieldsColumn, percentWidth: 11 } } : {}),
     corroboration_count: { percentWidth: 11 },
-    freshness_days: { percentWidth: 8 },
-    last_asserted_at: { percentWidth: withConflicts ? 9 : 10 },
+    freshness_days: { percentWidth: 9 },
+    last_asserted_at: { percentWidth: withConflicts ? 10 : 11 },
     objectMarking: { percentWidth: withConflicts ? 7 : 9, isSortable: false },
   };
 

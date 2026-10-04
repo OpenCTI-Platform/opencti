@@ -540,7 +540,7 @@ const defaultColumns: DataTableProps['dataColumns'] = {
       const state = t_i18n(freshness_stale ? 'Stale' : 'Fresh');
       const age = t_i18n('{days, plural, =0 {Last asserted today} one {Last asserted # day ago} other {Last asserted # days ago}}', { values: { days: freshness_days } });
       return (
-        <Tooltip title={`${state}. ${age}`}>
+        <Tooltip title={`${state} - ${age}`}>
           <span data-testid="freshness-state"><Truncate>{state}</Truncate></span>
         </Tooltip>
       );
