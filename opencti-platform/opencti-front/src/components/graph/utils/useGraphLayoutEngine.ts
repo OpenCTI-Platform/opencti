@@ -48,8 +48,13 @@ const useGraphLayoutEngine = ({ graphRef, nodes, shapeSignature, layout, enabled
   // Applied again when the node objects change too: the graph data can replace them under the
   // same ids (an edited entity), and the replacements must take the positions and pins.
   useEffect(() => {
-    if (!enabled) return undefined;
+    // Turned off or without a layout during a transition: the frame is cancelled, so is the repaint.
+    if (!enabled) {
+      setAnimating(false);
+      return undefined;
+    }
     if (!layout) {
+      setAnimating(false);
       setTargets(null);
       if (appliedKey.current !== null) {
         appliedKey.current = null;
