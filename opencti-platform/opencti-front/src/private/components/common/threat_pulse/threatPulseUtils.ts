@@ -126,8 +126,13 @@ export const PULSE_UNAVAILABLE_MESSAGES: Record<string, string> = {
   excluded: 'This object never leaves the platform: its markings or its restricted access exclude it from Threat Pulse.',
 };
 
-// The last error of the hourly contribution, as the codes of the XTM Hub client.
+// The last error of the hourly Threat Pulse cycle: the code a step of the cycle leaves when it fails, then the codes of
+// the XTM Hub client for the contribution.
 export const PULSE_PUSH_ERROR_MESSAGES: Record<string, string> = {
+  contribution_failed: 'The last contribution failed on this platform: the next hourly run tries again with the pending records.',
+  network_refresh_failed: 'The refresh of the community data of your objects failed: the next hourly run tries again.',
+  trending_notifications_failed: 'The notifications of objects trending in your sector failed: the next hourly run tries again.',
+  preview_refresh_failed: 'The preview refresh failed: the next hourly run tries again.',
   hub_unreachable: 'XTM Hub could not be reached: the pending records are sent with the next hourly run.',
   rate_limited: 'XTM Hub limited the requests of this platform: the pending records are sent with the next hourly run.',
   contribution_required: 'XTM Hub requires a recent contribution: the next accepted one restores the full experience.',

@@ -129,6 +129,22 @@ describe('ThreatPulseSettings', () => {
     expect(screen.queryByText('hub_unreachable')).toBeNull();
   });
 
+  it.each([
+    ['network_refresh_failed', 'The refresh of the community data of your objects failed: the next hourly run tries again.'],
+    ['trending_notifications_failed', 'The notifications of objects trending in your sector failed: the next hourly run tries again.'],
+    ['preview_refresh_failed', 'The preview refresh failed: the next hourly run tries again.'],
+    ['contribution_failed', 'The last contribution failed on this platform: the next hourly run tries again with the pending records.'],
+  ])('should name the step of the hourly cycle that failed (%s)', async (lastError, message) => {
+    renderSettings({
+      mode: 'contribute_and_read',
+      access: 'full',
+      enabled: true,
+      contribution: { ...SETTINGS.contribution, last_error: lastError },
+      network: { ...SETTINGS.network, contribution_status: 'active', read_access: true },
+    });
+    expect((await screen.findByTestId('threat-pulse-last-error')).textContent).toBe(message);
+  });
+
   it('should keep the consent open when the contribution is not enabled', async () => {
     const relayEnv = renderSettings(IN_PREVIEW);
     fireEvent.click(await screen.findByTestId('threat-pulse-enable-button'));

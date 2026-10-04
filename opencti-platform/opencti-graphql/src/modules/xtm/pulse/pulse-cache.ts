@@ -264,7 +264,7 @@ export const redisClearPulseContributionState = async (days: string[]) => {
 };
 // endregion
 
-// region external activity (hunts and other integrations), kept per UTC day
+// region activity the database cannot rebuild (sightings seen again), kept per UTC day
 export interface PulseExternalActivity {
   entityId: string;
   eventKind: PulseEventKind;
@@ -278,31 +278,43 @@ export const redisAddPulseActivity = async (day: string, entityId: string, event
   await client.expire(key, ACTIVITY_TTL_SECONDS);
 };
 
-// Atomically moves the activity of a day into its taken set, adding it to what a run that failed before its
-// acknowledgement left there, and returns the whole taken set (RENAME keeps the expiry of the activity key).
+// Atomically moves entries of the activity of a day into its taken set until the taken set holds *limit* entries -
+// what a run that failed before its acknowledgement left there counts - and returns the whole taken set. The entries
+// left in the activity wait for the next runs.
 const TAKE_ACTIVITY_SCRIPT = `
 local activity = KEYS[1]
 local taken = KEYS[2]
-if redis.call('EXISTS', activity) == 1 then
-  if redis.call('EXISTS', taken) == 1 then
-    local values = redis.call('HGETALL', activity)
-    for index = 1, #values, 2 do
+local missing = tonumber(ARGV[1]) - redis.call('HLEN', taken)
+local cursor = '0'
+while missing > 0 do
+  local scan = redis.call('HSCAN', activity, cursor, 'COUNT', math.max(missing, 10))
+  cursor = scan[1]
+  local values = scan[2]
+  for index = 1, #values, 2 do
+    if missing > 0 then
       redis.call('HINCRBY', taken, values[index], values[index + 1])
+      redis.call('HDEL', activity, values[index])
+      missing = missing - 1
     end
-    redis.call('DEL', activity)
-  else
-    redis.call('RENAME', activity, taken)
   end
+  if cursor == '0' then
+    break
+  end
+end
+if redis.call('EXISTS', taken) == 1 then
+  redis.call('EXPIRE', taken, tonumber(ARGV[2]))
 end
 return redis.call('HGETALL', taken)
 `;
 
-// The activity recorded on *day* and not acknowledged yet. It stays in Redis until redisCommitPulseWindow writes the
-// batches built from it to the outbox: hunts and detections cannot be rebuilt from the database, so a run that stops
+// The activity recorded on *day* and not acknowledged yet, at most *limit* entries (more only when a run that failed
+// before its acknowledgement left more under a larger limit). It stays in Redis until redisCommitPulseWindow writes the
+// batches built from it to the outbox: sightings seen again cannot be rebuilt from the database, so a run that stops
 // before hands them to the next run.
-export const redisTakePulseActivity = async (day: string): Promise<PulseExternalActivity[]> => {
+export const redisTakePulseActivity = async (day: string, limit: number): Promise<PulseExternalActivity[]> => {
   const key = `${ACTIVITY_PREFIX}${day}`;
-  const flat = ((await getClientBase().eval(TAKE_ACTIVITY_SCRIPT, 2, key, `${key}${TAKEN_SUFFIX}`)) as string[] | null) ?? [];
+  const script = await getClientBase().eval(TAKE_ACTIVITY_SCRIPT, 2, key, `${key}${TAKEN_SUFFIX}`, Math.max(0, Math.floor(limit)), ACTIVITY_TTL_SECONDS);
+  const flat = (script as string[] | null) ?? [];
   const activity: PulseExternalActivity[] = [];
   for (let index = 0; index + 1 < flat.length; index += 2) {
     const [entityId, eventKind] = flat[index].split('|');

@@ -72,7 +72,6 @@ import {
   suggestPulseBuckets,
 } from './pulse-settings';
 import {
-  redisAddPulseActivity,
   redisClaimPulseOutbox,
   redisBumpPulseConfigGeneration,
   redisBumpPulsePolicyGeneration,
@@ -95,13 +94,13 @@ import {
   redisSetPulseSalt,
   redisSetPulseState,
   redisTakePulseActivity,
+  type PulseExternalActivity,
   type PulseOperationalState,
 } from './pulse-cache';
 import {
   type BasicStorePulseEntity,
   PULSE_CONSENT_VERSION,
   PULSE_ENTITY_TYPE_BY_OBJECT_TYPE,
-  PULSE_EVENT_KINDS,
   PULSE_MAX_LOOKUP_HASHES,
   PULSE_MODE_VALUES,
   PULSE_OBJECT_TYPE_BY_ENTITY_TYPE,
@@ -116,7 +115,6 @@ import {
   PULSE_SETTINGS_SCOPES,
   PULSE_SETTINGS_SECTOR,
   PULSE_STATUS_ID,
-  type PulseEventKind,
   type PulseHubDigest,
   type PulseHubLookupResult,
   type PulseHubStatus,
@@ -406,8 +404,8 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
     // A contribution cycle running under the former configuration records and sends nothing more from now on.
     await redisBumpPulseConfigGeneration();
     if (enabling && !wasContributing) {
-    // The contribution starts now: activity recorded before (a node whose settings cache had not seen the opt-out yet,
-    // a hunt) is never sent.
+    // The contribution starts now: activity recorded before (a node whose settings cache had not seen the opt-out yet)
+    // is never sent.
       await redisSetPulseCursor(new Date().toISOString());
       await redisDiscardPulseActivity(lastUtcDays(ACTIVITY_DAYS));
     }
@@ -605,7 +603,20 @@ export const runPulseContribution = async (context: AuthContext) => {
   if (until.getTime() <= since.getTime()) {
     return { pushedRecords };
   }
-  until = await boundPulseWindow(since, until, MAX_EVENTS_PER_RUN, (end) => countPulseActivity(context, PULSE_MANAGER_USER, values.scopes, since, end));
+  // One budget of events per run for both sources: the activity kept in Redis (sightings seen again) is claimed first,
+  // within half of it so that neither source starves the other, and the database window is bounded by the rest. Every
+  // accepted day is taken, even with no budget left, so that what a failed run claimed is acknowledged with its batches.
+  const acceptedDays = [yesterday, today];
+  const externalByDay = new Map<string, PulseExternalActivity[]>();
+  let externalEntries = 0;
+  for (let index = 0; index < acceptedDays.length; index += 1) {
+    const day = acceptedDays[index];
+    const external = await redisTakePulseActivity(day, Math.ceil(MAX_EVENTS_PER_RUN / 2) - externalEntries);
+    externalEntries += external.length;
+    externalByDay.set(day, external);
+  }
+  const databaseBudget = Math.max(1, MAX_EVENTS_PER_RUN - externalEntries);
+  until = await boundPulseWindow(since, until, databaseBudget, (end) => countPulseActivity(context, PULSE_MANAGER_USER, values.scopes, since, end));
   // Each record carries the UTC day of its activity and is hashed with the salt of that day.
   const activityByDay = new Map<string, PulseActivity>();
   const segments = utcDaySegments(since, until);
@@ -613,14 +624,11 @@ export const runPulseContribution = async (context: AuthContext) => {
     const segment = segments[index];
     activityByDay.set(segment.day, await collectPulseActivity(context, PULSE_MANAGER_USER, values.scopes, segment.since, segment.until));
   }
-  const acceptedDays = [yesterday, today];
-  for (let index = 0; index < acceptedDays.length; index += 1) {
-    const day = acceptedDays[index];
-    const external = await redisTakePulseActivity(day);
+  externalByDay.forEach((external, day) => {
     if (external.length > 0) {
       activityByDay.set(day, mergePulseActivity(activityByDay.get(day) ?? new Map(), external));
     }
-  }
+  });
   const policy = await buildPulseMarkingPolicy(context, values);
   const buckets = getPulseBuckets(values);
   let records = 0;
@@ -667,17 +675,6 @@ export const runPulseContribution = async (context: AuthContext) => {
   return { pushedRecords };
 };
 
-export const recordPulseActivity = async (context: AuthContext, entityId: string, eventKind: PulseEventKind, count = 1) => {
-  if (!PULSE_EVENT_KINDS.includes(eventKind)) {
-    throw FunctionalError('Unsupported Threat Pulse event kind', { eventKind });
-  }
-  const { values } = await loadPulseContext(context);
-  if (!isPulseContributing(values)) {
-    return false;
-  }
-  await redisAddPulseActivity(utcDay(), entityId, eventKind, Math.max(1, Math.floor(count)));
-  return true;
-};
 // endregion
 
 // region read path
@@ -970,10 +967,11 @@ export const getPulseEntityInformation = async (context: AuthContext, user: Auth
     }
     return { ...base, readable: false, unavailable_reason: PulseUnavailableReason.Excluded };
   }
-  if (entity.pulse_information?.updated_at && await redisGetPulseEntityLookup(entity.internal_id)) {
+  const keys = computeStableKeys(entity);
+  // The marker only vouches for the values looked up last: a pattern, name or alias changed since then is looked up again.
+  if (entity.pulse_information?.updated_at && sameKeys(entity.pulse_keys, keys) && await redisGetPulseEntityLookup(entity.internal_id)) {
     return { ...base, readable: true, unavailable_reason: null, information: toPulseInformationOutput(entity) };
   }
-  const keys = computeStableKeys(entity);
   if (keys.length === 0) {
     return { ...base, readable: true, unavailable_reason: null };
   }

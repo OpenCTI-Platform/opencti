@@ -55,7 +55,7 @@ Every hour, a contributing platform sends to XTM Hub one record per object, acti
 |:------|:--------|
 | `hash` | 32 hexadecimal characters derived from the object, encrypted under the salt of the day. Never a value, a name or an identifier. |
 | `object_type` | `indicator`, `attack_pattern`, `vulnerability`, `intrusion_set`, `malware` or `tool` |
-| `event_kind` | `created`, `sighted`, `detected`, `hunted` or `referenced` |
+| `event_kind` | `created`, `sighted`, `detected` (sighted by a security platform) or `referenced` |
 | `count` | How many such events the platform recorded that day; a sighting seen again counts again |
 | `sector_bucket`, `region_bucket` | The coarse sector and region chosen by the administrator, or `undisclosed` |
 | `batch_id` | A random identifier drawn for each batch of records and sent again when the batch is retried, so that XTM Hub counts it once |
@@ -83,7 +83,7 @@ In "Settings > Filigran Experience", the Threat Pulse card shows its status ("Pr
 - **Sector** and **Region**: the coarse categories used for sector trends and benchmarks, suggested from the platform organization; they are shared as a coarse category, never as the name of the organization. Choose "Undisclosed" to share none.
 - **Scopes**: the object types that contribute (all six by default).
 - **Excluded markings**: markings whose objects never contribute, in addition to the ones always excluded.
-- **Statistics**: in preview, the number of local objects found in the community digest and the last refresh; when contributing, the records contributed per type, the contribution status (active, grace period, lapsed), the range of contributing platforms in the network, the anonymity threshold and the last error, in words, when XTM Hub could not record a contribution.
+- **Statistics**: in preview, the number of local objects found in the community digest and the last refresh; when contributing, the records contributed per type, the contribution status (active, grace period, lapsed), the range of contributing platforms in the network, the anonymity threshold and the last error, in words, naming what failed: XTM Hub could not record a contribution, or a step of the hourly cycle (the contribution, the refresh of the community data, the trending notifications or the preview refresh) failed on the platform. The message disappears once that step succeeds again.
 - **Purge my contributions**: deletes every contribution of the platform from XTM Hub, which recomputes its statistics. It is available in every mode while the platform is registered: stopping the contribution does not delete what XTM Hub already holds. This is the right to purge; it is recorded in the audit logs. The purge waits for a contribution being sent and drops what was collected and not sent yet, so nothing from before it reaches XTM Hub after it. XTM Hub then holds no contribution of the platform, so a contributing platform falls back to the preview until its next contribution is accepted. When XTM Hub does not confirm the purge, nothing changes on the platform and the page says so.
 
 Narrowing the scopes or excluding a new marking removes the community statistics from the objects it takes out and drops the batches not sent yet, built under the former settings; the next hourly run contributes under the new ones. A change of the settings also stops an hourly run in progress before it records or sends anything more. Changing the Threat Pulse settings and purging require the "Manage XTM Hub" capability.

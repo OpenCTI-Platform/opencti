@@ -17,6 +17,7 @@ import {
 
 // Wire values of the Threat Pulse contract shared with the XTM Hub platform API: changing one breaks the Hub API.
 export type PulseObjectType = 'indicator' | 'attack_pattern' | 'vulnerability' | 'intrusion_set' | 'malware' | 'tool';
+// XTM Hub also accepts 'hunted', which no activity source of this platform produces.
 export type PulseEventKind = 'created' | 'sighted' | 'detected' | 'hunted' | 'referenced';
 export type PulseModeValue = PulseMode;
 export type PulsePrevalenceValue = PulsePrevalence;

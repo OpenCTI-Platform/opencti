@@ -16,7 +16,7 @@ interface SightingSides {
 
 // A sighting seen again raises the count of the existing relationship instead of creating one, so the collector, which
 // reads the relationships created in its window, never meets it again. The increase is kept as activity of the sighted
-// object, contributed by the next hourly run like a hunt: a detection when a security platform saw it.
+// object, contributed by the next hourly run: a detection when a security platform saw it.
 export const recordPulseSightingIncrease = async (context: AuthContext, sighting: SightingSides, increase: number) => {
   if (increase <= 0) {
     return;

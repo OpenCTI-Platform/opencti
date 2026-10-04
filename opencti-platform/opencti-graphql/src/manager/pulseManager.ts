@@ -3,18 +3,27 @@ import conf, { booleanConf, logApp } from '../config/conf';
 import { executionContext } from '../utils/access';
 import { runPulseContribution, runPulsePreview, runPulseRefresh } from '../modules/xtm/pulse/pulse-domain';
 import { runPulseTrendingNotifications } from '../modules/xtm/pulse/pulse-notifications';
-import { redisSetPulseState } from '../modules/xtm/pulse/pulse-cache';
+import { redisGetPulseState, redisSetPulseState } from '../modules/xtm/pulse/pulse-cache';
 
 const PULSE_MANAGER_ENABLED = booleanConf('pulse_manager:enabled', true);
 const PULSE_MANAGER_KEY = conf.get('pulse_manager:lock_key') || 'pulse_manager_lock';
 const SCHEDULE_TIME = conf.get('pulse_manager:interval') || 60 * 60 * 1000; // 1 hour
 
+// A step that throws leaves its own code ("network_refresh_failed", ...), so that Settings names the operation that
+// failed, and clears it once it succeeds again.
+const pulseStepErrorCode = (step: string) => `${step.toLowerCase().replaceAll(' ', '_')}_failed`;
+
 const runStep = async (step: string, run: () => Promise<unknown>) => {
+  const errorCode = pulseStepErrorCode(step);
   try {
     await run();
+    const { last_error: lastError } = await redisGetPulseState();
+    if (lastError === errorCode) {
+      await redisSetPulseState({ last_error: undefined });
+    }
   } catch (error) {
     logApp.error(`[THREAT PULSE] ${step} failed`, { cause: error, manager: 'PULSE_MANAGER' });
-    await redisSetPulseState({ last_error: `${step.toLowerCase().replaceAll(' ', '_')}_failed` });
+    await redisSetPulseState({ last_error: errorCode });
   }
 };
 

@@ -12,8 +12,17 @@ import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
 import { ENTITY_TYPE_TRIGGER } from '../../../src/modules/notification/notification-types';
 import { MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
-import { recordPulseActivity, runPulseContribution, runPulsePreview, runPulseRefresh, unregisterFromPulse, utcDay } from '../../../src/modules/xtm/pulse/pulse-domain';
-import { redisBumpPulsePolicyGeneration, redisClaimPulseOutbox, redisGetPulseState, redisSetPulseState, redisTakePulseActivity } from '../../../src/modules/xtm/pulse/pulse-cache';
+import { runPulseContribution, runPulsePreview, runPulseRefresh, unregisterFromPulse, utcDay } from '../../../src/modules/xtm/pulse/pulse-domain';
+import {
+  redisAddPulseActivity,
+  redisBumpPulsePolicyGeneration,
+  redisClaimPulseOutbox,
+  redisDiscardPulseActivity,
+  redisGetPulseState,
+  redisSetPulseState,
+  redisTakePulseActivity,
+} from '../../../src/modules/xtm/pulse/pulse-cache';
+import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../src/modules/securityPlatform/securityPlatform-types';
 import { recordPulseSightingIncrease } from '../../../src/modules/xtm/pulse/pulse-sighting-activity';
 import { runPulseTrendingNotifications } from '../../../src/modules/xtm/pulse/pulse-notifications';
 import { computeStableKeys } from '../../../src/modules/xtm/pulse/pulse-hashing';
@@ -345,24 +354,49 @@ describe('Threat Pulse manager and API', () => {
     expect(redEntity.pulse_keys).toBeUndefined();
   });
 
-  it('should keep the hunt activity of a run that failed before pushing it, and contribute it with the next run', async () => {
+  it('should keep the detections of a run that failed before pushing them, and contribute them with the next run', async () => {
     const today = utcDay();
     const malwareEntity = await storeLoadById<BasicStorePulseEntity>(testContext, ADMIN_USER, malwareId, ENTITY_TYPE_MALWARE);
     const malwareKeys = computeStableKeys(malwareEntity);
-    const huntedCount = () => hub.ledger
-      .filter((row) => row.platformId === settingsId && row.eventKind === 'hunted' && row.day === today && malwareKeys.includes(row.key))
+    const detectedCount = () => hub.ledger
+      .filter((row) => row.platformId === settingsId && row.eventKind === 'detected' && row.day === today && malwareKeys.includes(row.key))
       .reduce((total, row) => total + row.count, 0);
-    expect(await recordPulseActivity(testContext, malwareId, 'hunted', 2)).toBe(true);
+    const before = detectedCount();
+    const seenAgainBySecurityPlatform = { fromId: malwareId, fromType: ENTITY_TYPE_MALWARE, toType: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM };
+    await recordPulseSightingIncrease(testContext, seenAgainBySecurityPlatform, 2);
     // A run takes the activity, then fails before its batches are pushed or kept in the outbox
-    expect(await redisTakePulseActivity(today)).toEqual([{ entityId: malwareId, eventKind: 'hunted', count: 2 }]);
-    expect(await recordPulseActivity(testContext, malwareId, 'hunted', 1)).toBe(true);
+    expect(await redisTakePulseActivity(today, 100)).toEqual([{ entityId: malwareId, eventKind: 'detected', count: 2 }]);
+    await recordPulseSightingIncrease(testContext, seenAgainBySecurityPlatform, 1);
 
     await runPulseContribution(testContext);
-    // Both hunts are contributed once, the activity is acknowledged
-    expect(huntedCount()).toBe(3 * malwareKeys.length);
-    expect(await redisTakePulseActivity(today)).toEqual([]);
+    // Both detections are contributed once, the activity is acknowledged
+    expect(detectedCount()).toBe(before + 3 * malwareKeys.length);
+    expect(await redisTakePulseActivity(today, 100)).toEqual([]);
     await runPulseContribution(testContext);
-    expect(huntedCount()).toBe(3 * malwareKeys.length);
+    expect(detectedCount()).toBe(before + 3 * malwareKeys.length);
+  });
+
+  it('should claim the activity kept in Redis in bounded chunks, counting what a failed run left', async () => {
+    const day = '2000-01-01';
+    const entries = 5;
+    for (let index = 0; index < entries; index += 1) {
+      await redisAddPulseActivity(day, `pulse-claim-${index}`, 'sighted', index + 1);
+    }
+    // A run claims two entries, then stops before its acknowledgement
+    const first = await redisTakePulseActivity(day, 2);
+    expect(first).toHaveLength(2);
+    // The next run gets them again, plus one more within a limit of three
+    const second = await redisTakePulseActivity(day, 3);
+    expect(second).toHaveLength(3);
+    expect(second).toEqual(expect.arrayContaining(first));
+    // Without any budget left, only what is already claimed comes back
+    expect(await redisTakePulseActivity(day, 0)).toHaveLength(3);
+    // Everything is claimed once, with its count
+    const all = await redisTakePulseActivity(day, entries);
+    expect(all.map(({ entityId, count }) => `${entityId}:${count}`).sort())
+      .toEqual(Array.from({ length: entries }, (_, index) => `pulse-claim-${index}:${index + 1}`).sort());
+    await redisDiscardPulseActivity([day]);
+    expect(await redisTakePulseActivity(day, entries)).toEqual([]);
   });
 
   it('should contribute the sightings of an object seen again, not only its first one', async () => {
@@ -475,6 +509,22 @@ describe('Threat Pulse manager and API', () => {
     const entityIds = trending.entries.map((entry: { entity: { id: string } }) => entry.entity.id);
     expect(entityIds).toEqual(expect.arrayContaining([sharedIndicatorId, malwareId]));
     expect(entityIds).not.toContain(redIndicatorId);
+  });
+
+  it('should look an object up again once the values it is matched on changed, whatever the cached lookup', async () => {
+    const lookups = () => hub.requests.filter((request) => request.operation === 'pulseLookup').length;
+    // Looked up once, then served from the cache
+    await queryAsAdminWithSuccess({ query: PULSE_ENTITY, variables: { id: malwareId } });
+    const afterFirst = lookups();
+    await queryAsAdminWithSuccess({ query: PULSE_ENTITY, variables: { id: malwareId } });
+    expect(lookups()).toBe(afterFirst);
+    // A new alias changes the keys: the cached community data no longer applies
+    await updateAttribute(testContext, ADMIN_USER, malwareId, ENTITY_TYPE_MALWARE, [{ key: 'aliases', value: ['PulseIntegrationAlias'] }]);
+    await queryAsAdminWithSuccess({ query: PULSE_ENTITY, variables: { id: malwareId } });
+    expect(lookups()).toBe(afterFirst + 1);
+    const looked = await storeLoadById<BasicStorePulseEntity>(testContext, ADMIN_USER, malwareId, ENTITY_TYPE_MALWARE);
+    expect(looked.pulse_keys).toEqual(computeStableKeys(looked));
+    await updateAttribute(testContext, ADMIN_USER, malwareId, ENTITY_TYPE_MALWARE, [{ key: 'aliases', value: [] }]);
   });
 
   it('should never send the batches built under a scope the administrator narrowed since', async () => {
