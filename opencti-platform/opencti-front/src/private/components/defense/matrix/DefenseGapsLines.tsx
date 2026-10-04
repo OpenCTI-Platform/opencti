@@ -161,7 +161,9 @@ const DefenseGapsLines = ({ queryRef, scope }: DefenseGapsLinesProps) => {
             onClick={() => setValidating(true)}
             data-testid="defense-gaps-validate"
           >
-            {t_i18n('{count, plural, one {Validate # technique} other {Validate # techniques}}', { values: { count: selectedTechniques.length } })}
+            {selectedTechniques.length === 0
+              ? t_i18n('Select gaps to validate')
+              : t_i18n('{count, plural, one {Validate # technique} other {Validate # techniques}}', { values: { count: selectedTechniques.length } })}
           </Button>
         </Security>
       )}

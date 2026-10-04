@@ -2736,6 +2736,7 @@
   "Import from date (empty = all Csv possible items)": "날짜 기준으로 가져오기 (비어 있음 = 모든 CSV 가능한 항목)",
   "Import from Hub": "허브에서 가져오기",
   "Import knowledge": "지식 가져오기",
+  "Import MITRE ATT&CK": "MITRE ATT&CK 가져오기",
   "Import mode": "가져오기 모드",
   "Import options": "가져오기 옵션",
   "Import playbook": "플레이북 가져오기",

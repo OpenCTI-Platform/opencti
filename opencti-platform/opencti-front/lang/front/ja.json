@@ -2736,6 +2736,7 @@
   "Import from date (empty = all Csv possible items)": "日付からインポート (空 = すべてのCsv可能項目)",
   "Import from Hub": "Hubからインポート",
   "Import knowledge": "知識をインポート",
+  "Import MITRE ATT&CK": "MITRE ATT&CK をインポート",
   "Import mode": "インポートモード",
   "Import options": "インポートオプション",
   "Import playbook": "プレイブックのインポート",

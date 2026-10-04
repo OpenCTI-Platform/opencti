@@ -2736,6 +2736,7 @@
   "Import from date (empty = all Csv possible items)": "Importer à partir de la date (vide = tous les éléments Csv possibles)",
   "Import from Hub": "Importer depuis le Hub",
   "Import knowledge": "Importer des connaissances",
+  "Import MITRE ATT&CK": "Importer MITRE ATT&CK",
   "Import mode": "Mode d'importation",
   "Import options": "Importer des options",
   "Import playbook": "Importer un playbook",

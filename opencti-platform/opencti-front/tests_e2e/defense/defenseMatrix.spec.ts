@@ -41,7 +41,9 @@ test.describe('Defense matrix', { tag: ['@ce'] }, () => {
     await expect(page.getByTestId('defense-logsource-mappings-page')).toBeVisible();
     await expect(page.getByTestId('defense-logsource-mappings-first-use')).toBeVisible();
     await expect(page.getByTestId('defense-logsource-mappings-table')).toBeVisible();
-    await expect(page.getByTestId('defense-logsource-mappings-create')).toBeVisible();
+    // On first use the creation action lives in the first-use card only
+    await expect(page.getByTestId('defense-logsource-mappings-first-use-create')).toBeVisible();
+    await expect(page.getByTestId('defense-logsource-mappings-create')).toBeHidden();
     await expect(page.getByTestId('defense-logsource-mappings-reset')).toBeVisible();
   });
 });

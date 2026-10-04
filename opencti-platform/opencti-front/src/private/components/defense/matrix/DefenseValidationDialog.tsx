@@ -2,7 +2,7 @@ import React from 'react';
 import { graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import { Box, DialogActions, List, ListItem, Typography } from '@mui/material';
+import { Box, DialogActions, List, ListItem, Stack, Typography } from '@mui/material';
 import { Chip } from '@filigran/design-system';
 import { useNavigate } from 'react-router';
 import Button from '@common/button/Button';
@@ -146,8 +146,14 @@ const DefenseValidationDialog = ({ open, onClose, onValidated, techniques, platf
               sx={{ marginTop: 2, padding: 1.5, borderRadius: 1, border: 1, borderColor: 'divider' }}
               data-testid="defense-validation-preview"
             >
-              <Typography variant="h4" gutterBottom>{t_i18n('What will be validated')}</Typography>
-              <List dense disablePadding data-testid="defense-validation-techniques">
+              <Stack direction="row" spacing={1} alignItems="baseline" sx={{ marginBottom: 1 }}>
+                <Typography variant="h4" sx={{ margin: 0 }}>{t_i18n('What will be validated')}</Typography>
+                <Typography variant="body2" color="text.secondary" data-testid="defense-validation-count">
+                  {t_i18n('{count, plural, one {# technique} other {# techniques}}', { values: { count: techniques.length } })}
+                </Typography>
+              </Stack>
+              {/* A long selection scrolls in place so the scenario and the confirmation stay in view */}
+              <List dense disablePadding data-testid="defense-validation-techniques" sx={{ maxHeight: 220, overflowY: 'auto' }}>
                 {techniques.map((technique) => {
                   const targets = platformsOf(technique.id);
                   return (

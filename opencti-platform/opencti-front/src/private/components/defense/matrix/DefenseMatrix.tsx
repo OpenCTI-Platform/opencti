@@ -1,4 +1,5 @@
 import React, { Suspense, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { Box, Stack, Typography } from '@mui/material';
 import { FilterCenterFocusOutlined, RefreshOutlined } from '@mui/icons-material';
@@ -8,6 +9,7 @@ import AttackPatternsMatrix from '@components/techniques/attack_patterns/attack_
 import type { DefenseMatrixMode } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixDefense';
 import Card from '../../../../components/common/card/Card';
 import Alert from '../../../../components/Alert';
+import HubFirstUse from '../../common/hub/HubFirstUse';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import SearchInput from '../../../../components/SearchInput';
 import { useFormatter } from '../../../../components/i18n';
@@ -107,6 +109,7 @@ const defenseMatrixRecomputeMutation = graphql`
 `;
 
 const DEFAULT_KILL_CHAIN = 'mitre-attack';
+const DEFENSE_MATRIX_DOCUMENTATION_URL = 'https://docs.opencti.io/latest/usage/defense-matrix/';
 const RECOMPUTE_POLL_INTERVAL = 10000;
 
 const killChainLabel = (chain: string) => {
@@ -170,6 +173,18 @@ export const DefenseMatrixContent = ({ queryRef, scope, layers }: DefenseMatrixC
 
   if (!defenseMatrix) {
     return <Alert severity="warning" content={t_i18n('The defense matrix is not available.')} />;
+  }
+  if (defenseMatrix.computed_at && defenseMatrix.techniques_count === 0) {
+    return (
+      <HubFirstUse
+        action={(
+          <Button component={Link} to="/dashboard/integrations/available" data-testid="defense-matrix-first-use-import">
+            {t_i18n('Import MITRE ATT&CK')}
+          </Button>
+        )}
+        documentationUrl={DEFENSE_MATRIX_DOCUMENTATION_URL}
+      />
+    );
   }
 
   const overall = summarizeLevels(defenseMatrix.levels);

@@ -118,14 +118,15 @@ const MappingsFirstUse = ({ onCreate }: { onCreate: () => void }) => {
   );
 };
 
-const MappingsTable = ({ queryRef, onEdit, onCreate, searching, refreshKey }: {
+const MappingsTable = ({ queryRef, onEdit, onCreate, onFirstUseChange, searching, refreshKey }: {
   queryRef: PreloadedQuery<DefenseLogsourceMappingsLinesPaginationQuery>;
   onEdit: (mapping: DefenseLogsourceMappingFormData) => void;
   onCreate: () => void;
+  onFirstUseChange: (firstUse: boolean) => void;
   searching: boolean;
   refreshKey: number;
 }) => {
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n, nsdt } = useFormatter();
   const queryData = usePreloadedQuery(defenseLogsourceMappingsLinesQuery, queryRef);
   const { data, hasNext, loadNext, isLoadingNext, refetch } = usePaginationFragment<DefenseLogsourceMappingsLinesRefetchQuery, DefenseLogsourceMappingsLines_data$key>(
     defenseLogsourceMappingsLinesFragment,
@@ -139,6 +140,8 @@ const MappingsTable = ({ queryRef, onEdit, onCreate, searching, refreshKey }: {
   }, [refreshKey]);
   const mappings = (data.defenseLogsourceMappings?.edges ?? []).map(({ node }) => node);
   const firstUse = !searching && mappings.every((mapping) => mapping.built_in);
+  // The first-use card carries the creation action: the page header does not repeat it
+  React.useEffect(() => onFirstUseChange(firstUse), [firstUse]);
 
   return (
     <>
@@ -180,7 +183,7 @@ const MappingsTable = ({ queryRef, onEdit, onCreate, searching, refreshKey }: {
                       </TableCell>
                       <TableCell>{mapping.description ?? '-'}</TableCell>
                       <TableCell>{mapping.built_in ? t_i18n('Built-in') : t_i18n('Custom')}</TableCell>
-                      <TableCell>{fldt(mapping.updated_at)}</TableCell>
+                      <TableCell sx={{ whiteSpace: 'nowrap' }}>{nsdt(mapping.updated_at)}</TableCell>
                       <TableCell>
                         <Switch
                           aria-label={t_i18n('Active')}
@@ -258,6 +261,7 @@ const DefenseLogsourceMappings = () => {
   const [edited, setEdited] = useState<DefenseLogsourceMappingFormData | null>(null);
   const [resetOpen, setResetOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [firstUse, setFirstUse] = useState(false);
   const queryRef = useQueryLoading<DefenseLogsourceMappingsLinesPaginationQuery>(defenseLogsourceMappingsLinesQuery, {
     search: search.length > 0 ? search : null,
     count: PAGE_SIZE,
@@ -278,15 +282,17 @@ const DefenseLogsourceMappings = () => {
             <Button variant="secondary" onClick={() => setResetOpen(true)} data-testid="defense-logsource-mappings-reset">
               {t_i18n('Restore built-in mappings')}
             </Button>
-            <Button
-              onClick={() => {
-                setEdited(null);
-                setFormOpen(true);
-              }}
-              data-testid="defense-logsource-mappings-create"
-            >
-              {t_i18n('Add a mapping')}
-            </Button>
+            {!firstUse && (
+              <Button
+                onClick={() => {
+                  setEdited(null);
+                  setFormOpen(true);
+                }}
+                data-testid="defense-logsource-mappings-create"
+              >
+                {t_i18n('Add a mapping')}
+              </Button>
+            )}
           </Stack>
         </Box>
         {queryRef && (
@@ -295,6 +301,7 @@ const DefenseLogsourceMappings = () => {
               queryRef={queryRef}
               refreshKey={refreshKey}
               searching={search.length > 0}
+              onFirstUseChange={setFirstUse}
               onCreate={() => {
                 setEdited(null);
                 setFormOpen(true);

@@ -287,7 +287,9 @@ const AttackPatternsMatrixColumns = ({
                   <Box key={col.kill_chain_id} sx={{ mr: 1.5, display: 'flex', flexDirection: 'column', minWidth: 150 }}>
                     <Box sx={{ textAlign: 'center', mb: 1, textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       <Typography sx={{ fontSize: 15, fontWeight: 600 }}>{truncate(col.phase_name, 18)}</Typography>
-                      <Typography variant="caption">{`${col.attackPatterns?.length} techniques`}</Typography>
+                      <Typography variant="caption">
+                        {t_i18n('{count, plural, one {# technique} other {# techniques}}', { values: { count: col.attackPatterns?.length ?? 0 } })}
+                      </Typography>
                       {columnCoverage !== null && (
                         <Typography variant="caption" component="div" data-testid={`defense-tactic-coverage-${col.phase_name}`}>
                           {t_i18n('{percent}% covered', { values: { percent: columnCoverage } })}

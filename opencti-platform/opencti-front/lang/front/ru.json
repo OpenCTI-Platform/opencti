@@ -2736,6 +2736,7 @@
   "Import from date (empty = all Csv possible items)": "Импорт с даты (пусто = все возможные элементы Csv)",
   "Import from Hub": "Импорт из Хаба",
   "Import knowledge": "Знание импорта",
+  "Import MITRE ATT&CK": "Импортировать MITRE ATT&CK",
   "Import mode": "Режим импорта",
   "Import options": "Параметры импорта",
   "Import playbook": "Импортируйте сборник пьес",

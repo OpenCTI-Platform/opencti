@@ -2736,6 +2736,7 @@
   "Import from date (empty = all Csv possible items)": "从日期导入（空 = 所有可能的 Csv 项目）",
   "Import from Hub": "从 Hub 导入",
   "Import knowledge": "导入知识",
+  "Import MITRE ATT&CK": "导入 MITRE ATT&CK",
   "Import mode": "导入模式",
   "Import options": "导入选项",
   "Import playbook": "导入游戏手册",
