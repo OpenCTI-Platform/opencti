@@ -162,13 +162,10 @@ export const timelineStreamEventsHandler = async (context: AuthContext, streamEv
 const resolveStreamStart = async (): Promise<string> => {
   const state = await redisGetManagerEventState(TIMELINE_MANAGER_STATE);
   if (state) return state;
-  // First start: listen from now on, the existing containers are backfilled by migration and consistency pass
-  try {
-    const info = await fetchStreamInfo();
-    return info.lastEventId ?? '0-0';
-  } catch {
-    return '0-0';
-  }
+  // First start: listen from now on, the existing containers are backfilled by migration and consistency pass. When the
+  // stream position cannot be read, the error stops this run and the next run retries: never replay the whole stream
+  const info = await fetchStreamInfo();
+  return info.lastEventId ?? '0-0';
 };
 
 const consumeStream = async (context: AuthContext) => {
