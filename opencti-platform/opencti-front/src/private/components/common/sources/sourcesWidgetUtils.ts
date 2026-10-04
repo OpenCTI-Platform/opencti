@@ -1,6 +1,6 @@
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
-import { REFERENCE_SCORECARD_PERIOD, ScorecardPeriod } from '../../integrations/sources/sourceIntelligenceUtils';
+import { REFERENCE_SCORECARD_PERIOD, SCORECARD_PERIOD_DAYS, ScorecardPeriod, type SourceWidgetMetric } from '../../integrations/sources/sourceIntelligenceUtils';
 
 const DAY_MS = 24 * 3600 * 1000;
 
@@ -26,6 +26,24 @@ export const periodFromRange = (startDate: string | null | undefined, endDate: s
 export const periodFromDashboardConfig = (config: DashboardConfig): ScorecardPeriod => {
   const { startDate, endDate } = computeStartEndDates(config);
   return periodFromRange(startDate, endDate);
+};
+
+export const periodDaysFromDashboardConfig = (config: DashboardConfig): number => SCORECARD_PERIOD_DAYS[periodFromDashboardConfig(config)];
+
+// Empty widgets say why they are empty
+export const NO_SOURCE_SCORED_MESSAGE = 'No source scored in this period';
+
+type Translate = (message: string, options?: { values?: Record<string, string | number> }) => string;
+
+/**
+ * Axis title of a metric with its unit: ratios are plotted as percents and scores range from 0 to 100; durations and
+ * costs carry their unit in their label or values.
+ */
+export const metricAxisTitle = (t: Translate, metric: Pick<SourceWidgetMetric, 'label' | 'type'>): string => {
+  const measure = t(metric.label);
+  if (metric.type === 'ratio') return t('{measure} (%)', { values: { measure } });
+  if (metric.type === 'score') return t('{measure} (0 to 100)', { values: { measure } });
+  return measure;
 };
 
 export type SourcesAggregation = 'avg' | 'sum' | 'min' | 'max';

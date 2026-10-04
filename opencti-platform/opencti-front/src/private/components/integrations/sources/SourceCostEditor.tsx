@@ -38,6 +38,8 @@ interface SourceCost {
 interface SourceCostEditorProps {
   sourceId: string;
   cost: SourceCost | null | undefined;
+  primary?: boolean;
+  initialOpen?: boolean;
 }
 
 interface CostFormValues {
@@ -46,9 +48,9 @@ interface CostFormValues {
   period: string;
 }
 
-const SourceCostEditor = ({ sourceId, cost }: SourceCostEditorProps) => {
+const SourceCostEditor = ({ sourceId, cost, primary = false, initialOpen = false }: SourceCostEditorProps) => {
   const { t_i18n } = useFormatter();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(initialOpen);
   const [commit, inFlight] = useApiMutation<SourceCostEditorMutation>(sourceCostEditorMutation);
   const validation = Yup.object().shape({
     amount: Yup.number().typeError(t_i18n('This field must be a number')).required(t_i18n('This field is required')).min(0, t_i18n('The minimum is {min}', { values: { min: 0 } })),
@@ -70,8 +72,8 @@ const SourceCostEditor = ({ sourceId, cost }: SourceCostEditorProps) => {
 
   return (
     <>
-      <Button variant="secondary" startIcon={<EditOutlined />} onClick={() => setOpen(true)} data-testid="source-cost-edit">
-        {cost ? t_i18n('Edit the cost') : t_i18n('Declare a cost')}
+      <Button variant={primary ? undefined : 'secondary'} startIcon={<EditOutlined />} onClick={() => setOpen(true)} data-testid="source-cost-edit">
+        {cost ? t_i18n('Edit the cost') : t_i18n('Set a cost')}
       </Button>
       <Dialog open={open} onClose={close} title={t_i18n('Cost of the source')} size="small">
         <Typography variant="body2" sx={{ marginBottom: 2 }}>

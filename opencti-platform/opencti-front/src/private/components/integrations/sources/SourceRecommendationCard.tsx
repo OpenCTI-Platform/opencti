@@ -105,6 +105,17 @@ const PAYLOAD_VALUE_LABELS: Record<string, Record<string, string>> = {
   origin: { hub: 'XTM Hub', local: 'Local catalog' },
 };
 
+// The primary action names what applying does; {value} is the proposed value when the kind has one
+const APPLY_ACTION_LABELS: Record<string, string> = {
+  raise_confidence: 'Apply - raise the confidence to {value}',
+  lower_confidence: 'Apply - lower the confidence to {value}',
+  add_decay_rule: 'Apply - add the decay rule',
+  change_schedule: 'Apply - change the schedule',
+  add_deny_list: 'Apply - add the deny list',
+  quarantine: 'Apply - quarantine the new knowledge',
+  retire: 'Apply - retire the source',
+};
+
 const STATUS_SEVERITIES: Record<string, ChipSeverity> = {
   proposed: 'info',
   applied: 'low',
@@ -126,6 +137,7 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
   const recommendation = useFragment(recommendationFragment, data);
   const canManage = useGranted([MODULES_MODMANAGE, INGESTION_SETINGESTIONS]);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [errorDetailsOpen, setErrorDetailsOpen] = useState(false);
   const [dismissOpen, setDismissOpen] = useState(false);
   const [revertOpen, setRevertOpen] = useState(false);
   const [dismissReason, setDismissReason] = useState('');
@@ -141,12 +153,8 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
     variables: { id: recommendation.id, input: {} },
     onCompleted: (response, errors) => {
       const applied = response.applySourceRecommendation;
-      let failure: string | null = null;
-      if (!errors?.length && applied?.status !== 'applied') {
-        failure = applied?.error_message
-          ? t_i18n('The recommendation could not be applied: {reason}', { values: { reason: applied.error_message } })
-          : t_i18n('The recommendation could not be applied.');
-      }
+      // The cause is shown on the card, behind Show details
+      const failure = !errors?.length && applied?.status !== 'applied' ? t_i18n('The recommendation could not be applied.') : null;
       notifyMutationOutcome(errors, { success: t_i18n('Recommendation applied'), failure });
       onChange?.();
     },
@@ -168,11 +176,32 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
     },
   });
 
+  const valueOrNotSet = (value: unknown) => (value === undefined || value === null || value === '' ? t_i18n('Not set') : String(value));
   const changes = CHANGE_PAIRS
     .filter(([, after]) => payload[after] !== undefined && payload[after] !== null)
-    .map(([before, after, label]) => t_i18n('{label}: {before} -> {after}', {
-      values: { label: t_i18n(label), before: payload[before] === undefined || payload[before] === null ? t_i18n('Not set') : String(payload[before]), after: String(payload[after]) },
-    }));
+    .map(([before, after, label]) => ({ label: t_i18n(label), before: valueOrNotSet(payload[before]), after: valueOrNotSet(payload[after]) }));
+  const applyLabel = catalogSlug
+    ? t_i18n('Deploy {name}', { values: { name: typeof payload.title === 'string' ? payload.title : catalogSlug } })
+    : t_i18n(APPLY_ACTION_LABELS[recommendation.kind] ?? 'Apply', { values: { value: valueOrNotSet(payload.proposed_max_confidence) } });
+  const failedConnectorId = typeof payload.connector_id === 'string' ? payload.connector_id : null;
+  const changePreview = changes.length > 0 && (
+    <Box
+      component="dl"
+      aria-label={t_i18n('Change preview')}
+      sx={{ margin: 0, marginTop: 1, display: 'grid', gridTemplateColumns: 'max-content max-content max-content', columnGap: 2, rowGap: 0.5 }}
+    >
+      <Typography component="dt" variant="caption" sx={{ color: theme.palette.text.secondary }}>{t_i18n('Setting')}</Typography>
+      <Typography component="dd" variant="caption" sx={{ margin: 0, color: theme.palette.text.secondary }}>{t_i18n('Current')}</Typography>
+      <Typography component="dd" variant="caption" sx={{ margin: 0, color: theme.palette.text.secondary }}>{t_i18n('After applying')}</Typography>
+      {changes.map(({ label, before, after }) => (
+        <React.Fragment key={label}>
+          <Typography component="dt" variant="body2">{label}</Typography>
+          <Typography component="dd" variant="body2" sx={{ margin: 0 }}>{before}</Typography>
+          <Typography component="dd" variant="body2" sx={{ margin: 0, fontWeight: 'fontWeightMedium' }}>{after}</Typography>
+        </React.Fragment>
+      ))}
+    </Box>
+  );
   const formatDetail = (key: string, value: unknown) => {
     if (key === 'overlap_share' && typeof value === 'number') return format.ratio(value, 0) ?? String(value);
     const valueLabel = PAYLOAD_VALUE_LABELS[key]?.[String(value)];
@@ -229,9 +258,7 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
             </Tooltip>
           </Stack>
           <Typography variant="body2">{recommendation.rationale}</Typography>
-          {changes.map((change) => (
-            <Typography key={change} variant="body2" sx={{ marginTop: 0.5, color: theme.palette.text.secondary }}>{change}</Typography>
-          ))}
+          {changePreview}
           {history && (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -254,14 +281,42 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
             <Box sx={{ marginTop: 1 }}>
               <Alert
                 severity="error"
-                title={t_i18n('The recommendation could not be applied.')}
-                description={recommendation.error_message ?? t_i18n('The activity logs give the cause of the failure.')}
+                title={t_i18n('The recommendation could not be applied')}
+                description={failedConnectorId
+                  ? t_i18n('Nothing was changed. The connector refused the change: open it to check its state, then retry.')
+                  : t_i18n('Nothing was changed. Retry, or read the details to fix the cause first.')}
                 action={canManage ? (
-                  <Button variant="secondary" size="small" onClick={handleApply} disabled={busy} data-testid="source-recommendation-retry">
-                    {catalogSlug ? t_i18n('Deploy again') : t_i18n('Apply again')}
-                  </Button>
+                  <Stack direction="row" gap={1}>
+                    {failedConnectorId && (
+                      <Button variant="secondary" size="small" component={Link} to={`/dashboard/integrations/connectors/${failedConnectorId}`}>
+                        {t_i18n('Open the connector')}
+                      </Button>
+                    )}
+                    <Button variant="secondary" size="small" onClick={handleApply} disabled={busy} data-testid="source-recommendation-retry">
+                      {t_i18n('Retry')}
+                    </Button>
+                  </Stack>
                 ) : undefined}
               />
+              {recommendation.error_message && (
+                <>
+                  <Button
+                    variant="tertiary"
+                    size="small"
+                    onClick={() => setErrorDetailsOpen(!errorDetailsOpen)}
+                    startIcon={errorDetailsOpen ? <ExpandLessOutlined /> : <ExpandMoreOutlined />}
+                    aria-expanded={errorDetailsOpen}
+                    data-testid="source-recommendation-error-details"
+                  >
+                    {errorDetailsOpen ? t_i18n('Hide details') : t_i18n('Show details')}
+                  </Button>
+                  <Collapse in={errorDetailsOpen}>
+                    <Typography variant="caption" component="pre" sx={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'monospace' }}>
+                      {recommendation.error_message}
+                    </Typography>
+                  </Collapse>
+                </>
+              )}
             </Box>
           )}
           {details.length > 0 && (
@@ -304,7 +359,7 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
             )}
             {recommendation.status === 'proposed' && (
               <Button size="small" startIcon={<CheckOutlined />} onClick={handleApply} disabled={busy} data-testid="source-recommendation-apply">
-                {catalogSlug ? t_i18n('Deploy') : t_i18n('Apply')}
+                {applyLabel}
               </Button>
             )}
             {recommendation.status === 'proposed' && (
@@ -324,8 +379,10 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
         <Typography variant="body2" sx={{ marginBottom: 1 }}>
           {t_i18n('Reverting restores the state before the recommendation was applied and removes what it created. A quarantine draft is kept for review.')}
         </Typography>
-        {changes.map((change) => (
-          <Typography key={change} variant="body2" sx={{ color: theme.palette.text.secondary }}>{change}</Typography>
+        {changes.map(({ label, before, after }) => (
+          <Typography key={label} variant="body2" sx={{ color: theme.palette.text.secondary }}>
+            {t_i18n('{label}: back to {before} (now {after})', { values: { label, before, after } })}
+          </Typography>
         ))}
         <FormButtonContainer>
           <Button variant="secondary" onClick={() => setRevertOpen(false)} disabled={reverting}>{t_i18n('Cancel')}</Button>
@@ -337,7 +394,7 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
           {t_i18n('A dismissed recommendation is not proposed again during the cooldown period configured in the settings.')}
         </Typography>
         <Textarea
-          label={t_i18n('Reason')}
+          label={t_i18n('Reason (optional)')}
           value={dismissReason}
           onChange={(event) => setDismissReason(event.target.value)}
           maxLength={500}

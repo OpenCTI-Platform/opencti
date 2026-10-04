@@ -13,8 +13,10 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useGranted, { INGESTION_SETINGESTIONS, MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
 import type { Theme } from '../../../../components/Theme';
+import useAuth from '../../../../utils/hooks/useAuth';
 import { ValueScoreBar } from './SourcesLeaderboard';
 import { useSourceMetricFormat } from './SourceMetricValue';
+import { buildHubCoverageSearchUrl, criterionPriority } from './sourceIntelligenceUtils';
 import notifyMutationOutcome from './notifyMutationOutcome';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { CollectionGapsQuery } from './__generated__/CollectionGapsQuery.graphql';
@@ -113,6 +115,12 @@ export const collectionGapsQuery = graphql`
 
 const PAGE_SIZE = 20;
 
+const CRITERION_PRIORITY_LABELS: Record<'high' | 'medium' | 'low', string> = {
+  high: 'High priority criterion',
+  medium: 'Medium priority criterion',
+  low: 'Low priority criterion',
+};
+
 // Why the ranking does not come from XTM Hub alone, and whether trying again can help
 const HUB_STATUS_ALERTS: Record<string, { title: string; description: string; retry: boolean }> = {
   partial: {
@@ -153,6 +161,8 @@ const CollectionGapsList = ({ queryRef }: CollectionGapsListProps) => {
   const format = useSourceMetricFormat();
   const canDeploy = useGranted([MODULES_MODMANAGE]);
   const canRecompute = useGranted([MODULES_MODMANAGE, INGESTION_SETINGESTIONS]);
+  const { settings } = useAuth();
+  const hubUrl = settings.platform_xtmhub_url;
   const [commitRecompute, recomputing] = useApiMutation(sourceIntelligenceRecomputeMutation);
   const handleRetry = () => commitRecompute({
     variables: {},
@@ -184,6 +194,8 @@ const CollectionGapsList = ({ queryRef }: CollectionGapsListProps) => {
     queryData,
   );
   const gaps = (data.collectionGaps?.edges ?? []).flatMap((edge) => (edge?.node ? [edge.node] : []));
+  const weightsByPir = new Map<string, number[]>();
+  gaps.forEach((gap) => weightsByPir.set(gap.pir_id, [...(weightsByPir.get(gap.pir_id) ?? []), gap.criterion_weight]));
   if (gaps.length === 0) {
     return (
       <Typography variant="body2" sx={{ color: theme.palette.text.secondary, padding: 2 }} data-testid="collection-gaps-empty">
@@ -204,19 +216,33 @@ const CollectionGapsList = ({ queryRef }: CollectionGapsListProps) => {
                   <Typography variant="body2">{t_i18n('Restricted PIR')}</Typography>
                 )}
                 <Chip severity={gap.is_gap ? 'medium' : 'low'} size="sm" label={gap.is_gap ? t_i18n('Collection gap') : t_i18n('Covered')} />
-                {gap.computed_at ? (
+                {(() => {
+                  const pirWeights = weightsByPir.get(gap.pir_id) ?? [];
+                  const priority = criterionPriority(gap.criterion_weight, pirWeights);
+                  return priority ? (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span tabIndex={0}>
+                          <Tag label={t_i18n(CRITERION_PRIORITY_LABELS[priority])} size="small" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {t_i18n('Weight {weight} in this PIR, where the criteria weigh from {min} to {max}', {
+                          values: { weight: gap.criterion_weight, min: Math.min(...pirWeights), max: Math.max(...pirWeights) },
+                        })}
+                      </TooltipContent>
+                    </Tooltip>
+                  ) : null;
+                })()}
+                {gap.computed_at && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Typography variant="caption" tabIndex={0} sx={{ color: theme.palette.text.secondary }}>
-                        {t_i18n('Criterion weight {weight}, computed {time}', { values: { weight: gap.criterion_weight, time: rd(gap.computed_at) } })}
+                        {t_i18n('Computed {time}', { values: { time: rd(gap.computed_at) } })}
                       </Typography>
                     </TooltipTrigger>
                     <TooltipContent>{fldt(gap.computed_at)}</TooltipContent>
                   </Tooltip>
-                ) : (
-                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
-                    {t_i18n('Criterion weight {weight}', { values: { weight: gap.criterion_weight } })}
-                  </Typography>
                 )}
               </Stack>
               <Typography variant="body2" sx={{ fontWeight: 'fontWeightMedium' }}>{gap.criterion_label}</Typography>
@@ -260,9 +286,28 @@ const CollectionGapsList = ({ queryRef }: CollectionGapsListProps) => {
                 </Box>
               )}
               {gap.recommended_connectors.length === 0 ? (
-                <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
-                  {t_i18n('No integration of the catalog covers this criterion yet.')}
-                </Typography>
+                <Stack direction="row" gap={2} alignItems="center" flexWrap="wrap">
+                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                    {t_i18n('No integration of the catalog covers this criterion yet.')}
+                  </Typography>
+                  {hubUrl ? (
+                    <Button
+                      variant="secondary"
+                      size="small"
+                      component="a"
+                      href={buildHubCoverageSearchUrl(hubUrl, settings.id, gap)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      data-testid="collection-gap-browse-hub"
+                    >
+                      {t_i18n('Browse the XTM Hub catalog')}
+                    </Button>
+                  ) : (
+                    <Button variant="secondary" size="small" component={Link} to="/dashboard/integrations/available">
+                      {t_i18n('Browse the catalog')}
+                    </Button>
+                  )}
+                </Stack>
               ) : (
                 <Stack gap={1}>
                   {gap.recommended_connectors.map((connector) => {

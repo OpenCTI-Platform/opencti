@@ -3,7 +3,21 @@ import { Link, Navigate, useNavigate, useParams } from 'react-router';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { Box, Skeleton, Stack, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { Alert, Chip, type ChipSeverity, Hero, HeroBody, HeroHeader, Tabs, TabsList, TabsTrigger, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import {
+  Alert,
+  Chip,
+  type ChipSeverity,
+  Hero,
+  HeroBody,
+  HeroHeader,
+  ProgressBar,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@filigran/design-system';
 import { DashboardOutlined, RefreshOutlined, SettingsOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import EEChip from '@components/common/entreprise_edition/EEChip';
@@ -44,6 +58,8 @@ export const sourceIntelligenceStatusQuery = graphql`
       last_scan_truncated
       backfill_done
       backfill_next_day
+      backfill_days_done
+      backfill_days_total
       recompute_requested_at
     }
   }
@@ -93,7 +109,7 @@ interface SourceIntelligenceHeaderProps {
 }
 
 const SourceIntelligenceHeader = ({ queryRef }: SourceIntelligenceHeaderProps) => {
-  const { t_i18n, rd, fldt, fsd } = useFormatter();
+  const { t_i18n, rd, fldt } = useFormatter();
   const theme = useTheme<Theme>();
   const surfaceTheme = useTheme();
   const navigate = useNavigate();
@@ -152,11 +168,12 @@ const SourceIntelligenceHeader = ({ queryRef }: SourceIntelligenceHeaderProps) =
     status.provenance_mode === 'assertions'
       ? t_i18n('Attribution from the sources recorded on every fact')
       : t_i18n('Attribution from creators and authors, lead time approximated'),
-    !status.backfill_done && status.backfill_next_day
-      ? t_i18n('History backfill in progress, next day {day}', { values: { day: fsd(status.backfill_next_day) } })
-      : null,
     status.pulse_available ? t_i18n('Community uniqueness from Threat Pulse') : null,
   ].filter((caption): caption is string => !!caption);
+  const backfillTotal = status.backfill_days_total ?? 0;
+  const backfillLabel = !status.backfill_done && backfillTotal > 0
+    ? t_i18n('Backfilling history - {done} of {total, plural, one {# day} other {# days}}', { values: { done: status.backfill_days_done ?? 0, total: backfillTotal } })
+    : null;
 
   return (
     <Box
@@ -229,6 +246,12 @@ const SourceIntelligenceHeader = ({ queryRef }: SourceIntelligenceHeaderProps) =
       <Typography variant="caption" component="p" sx={{ color: theme.palette.text.secondary, marginTop: 0.5, marginBottom: 0 }}>
         {captions.join(' - ')}
       </Typography>
+      {backfillLabel && (
+        <Stack gap={0.5} sx={{ marginTop: 1.5, maxWidth: 420 }} data-testid="source-intelligence-backfill">
+          <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>{backfillLabel}</Typography>
+          <ProgressBar value={Math.round(((status.backfill_days_done ?? 0) / backfillTotal) * 100)} aria-label={backfillLabel} />
+        </Stack>
+      )}
       {runState === 'failed' && (
         <Box sx={{ marginTop: 2 }}>
           <Alert

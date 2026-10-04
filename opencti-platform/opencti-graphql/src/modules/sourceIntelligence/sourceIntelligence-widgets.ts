@@ -208,14 +208,15 @@ export const sourceScorecardsScatter = async (
 // region Intelligence ROI dashboard template
 const SOURCES_PERSPECTIVE = 'sources';
 
-const widget = (type: string, title: string, layout: { x: number; y: number; w: number; h: number }, selection: Record<string, unknown>) => {
+// No stored title: each widget names its measure, aggregation and scorecard period in the reader's language, and
+// follows the time range of the dashboard
+const widget = (type: string, layout: { x: number; y: number; w: number; h: number }, selection: Record<string, unknown>) => {
   const id = uuidv4();
   return {
     id,
     type,
     perspective: SOURCES_PERSPECTIVE,
     dataSelection: [{
-      label: title,
       attribute: selection.attribute ?? 'value_score',
       perspective: SOURCES_PERSPECTIVE,
       filters: { mode: 'and', filters: [], filterGroups: [] },
@@ -223,7 +224,7 @@ const widget = (type: string, title: string, layout: { x: number; y: number; w: 
       dynamicTo: { mode: 'and', filters: [], filterGroups: [] },
       ...selection,
     }],
-    parameters: { title },
+    parameters: {},
     layout: { ...layout, i: id, moved: false, static: false },
   };
 };
@@ -233,15 +234,15 @@ const widget = (type: string, title: string, layout: { x: number; y: number; w: 
  */
 export const buildIntelligenceRoiManifest = () => {
   const widgets = [
-    widget('number', 'Sources with a scorecard', { x: 0, y: 0, w: 3, h: 2 }, { attribute: 'volume_total', sort_mode: 'count' }),
-    widget('number', 'Average operational value score', { x: 3, y: 0, w: 3, h: 2 }, { attribute: 'value_score', sort_mode: 'avg' }),
-    widget('number', 'Average cost per actionable object', { x: 6, y: 0, w: 3, h: 2 }, { attribute: 'cost_per_actionable_object', sort_mode: 'avg' }),
-    widget('number', 'Actionable objects', { x: 9, y: 0, w: 3, h: 2 }, { attribute: 'actionable_count', sort_mode: 'sum' }),
-    widget('bubble', 'Cost versus impact', { x: 0, y: 2, w: 6, h: 5 }, { attribute: 'cost_per_actionable_object', field: 'impact_score', sort_by: 'volume_total' }),
-    widget('horizontal-bar', 'Lead time ranking (hours)', { x: 6, y: 2, w: 6, h: 5 }, { attribute: 'lead_time_hours', sort_mode: 'desc', number: 10 }),
-    widget('donut', 'Noise share', { x: 0, y: 7, w: 4, h: 5 }, { attribute: 'noise_count', sort_mode: 'desc', number: 8 }),
-    widget('list', 'Top unique sources', { x: 4, y: 7, w: 4, h: 5 }, { attribute: 'unique_contribution', sort_mode: 'desc', number: 10 }),
-    widget('line', 'Operational value score trend', { x: 8, y: 7, w: 4, h: 5 }, { attribute: 'value_score', sort_mode: 'avg' }),
+    widget('number', { x: 0, y: 0, w: 3, h: 2 }, { attribute: 'volume_total', sort_mode: 'count' }),
+    widget('number', { x: 3, y: 0, w: 3, h: 2 }, { attribute: 'value_score', sort_mode: 'avg' }),
+    widget('number', { x: 6, y: 0, w: 3, h: 2 }, { attribute: 'cost_per_actionable_object', sort_mode: 'avg' }),
+    widget('number', { x: 9, y: 0, w: 3, h: 2 }, { attribute: 'actionable_count', sort_mode: 'sum' }),
+    widget('bubble', { x: 0, y: 2, w: 6, h: 5 }, { attribute: 'cost_per_actionable_object', field: 'impact_score', sort_by: 'volume_total' }),
+    widget('horizontal-bar', { x: 6, y: 2, w: 6, h: 5 }, { attribute: 'lead_time_hours', sort_mode: 'desc', number: 10 }),
+    widget('donut', { x: 0, y: 7, w: 4, h: 5 }, { attribute: 'noise_count', sort_mode: 'desc', number: 8 }),
+    widget('list', { x: 4, y: 7, w: 4, h: 5 }, { attribute: 'unique_contribution', sort_mode: 'desc', number: 10 }),
+    widget('line', { x: 8, y: 7, w: 4, h: 5 }, { attribute: 'value_score', sort_mode: 'avg' }),
   ];
   const manifest = {
     widgets: Object.fromEntries(widgets.map((w) => [w.id, w])),

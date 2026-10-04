@@ -12,7 +12,7 @@ import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../..
 import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import { findSourceWidgetMetric, toWidgetValue } from '../../integrations/sources/sourceIntelligenceUtils';
 import SourcesWidgetRenderContent from './SourcesWidgetRenderContent';
-import { periodFromRange, toAggregation } from './sourcesWidgetUtils';
+import { metricAxisTitle, NO_SOURCE_SCORED_MESSAGE, periodDaysFromDashboardConfig, periodFromRange, toAggregation } from './sourcesWidgetUtils';
 import { SourcesTimeSeriesQuery } from './__generated__/SourcesTimeSeriesQuery.graphql';
 
 const sourcesTimeSeriesQuery = graphql`
@@ -51,11 +51,11 @@ const SourcesTimeSeriesComponent = ({ queryRef, selection, hasLegend, onMounted 
     .map((point) => ({ x: point.date, y: toWidgetValue(point.value, metric.type) }))
     .filter((point) => point.y !== null);
   if (points.length === 0) {
-    return <WidgetNoData />;
+    return <WidgetNoData message={t_i18n(NO_SOURCE_SCORED_MESSAGE)} />;
   }
   return (
     <WidgetMultiLines
-      series={[{ name: selection.label || t_i18n(metric.label), data: points }]}
+      series={[{ name: selection.label || metricAxisTitle(t_i18n, metric), data: points }]}
       interval="day"
       hasLegend={hasLegend}
       onMounted={onMounted}
@@ -109,7 +109,9 @@ const SourcesTimeSeries = ({ variant, height, dataSelection, parameters = {}, po
     <WidgetContainer
       padding="small"
       height={height}
-      title={parameters.title || t_i18n(metric.label)}
+      title={parameters.title || t_i18n('{measure} per day, scored over {days} days', {
+        values: { measure: t_i18n(metric.label), days: periodDaysFromDashboardConfig(config) },
+      })}
       variant={variant}
       chart={chart}
       action={popover}

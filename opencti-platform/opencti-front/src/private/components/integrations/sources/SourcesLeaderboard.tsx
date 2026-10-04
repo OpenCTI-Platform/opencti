@@ -1,5 +1,6 @@
 import React from 'react';
 import { graphql } from 'react-relay';
+import { useNavigate } from 'react-router';
 import { Box, Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
@@ -11,8 +12,9 @@ import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../..
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import useGranted, { INGESTION_SETINGESTIONS, MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
 import type { Theme } from '../../../../components/Theme';
-import { DECLARED_COST_LABELS, scoreLevel, SOURCE_KIND_LABELS } from './sourceIntelligenceUtils';
+import { DECLARED_COST_LABELS, scoreLevel, SOURCE_KIND_LABELS, sourceEditCostLink } from './sourceIntelligenceUtils';
 import SourceMetricValue, { useSourceMetricFormat } from './SourceMetricValue';
 import { SourcesLeaderboardLinesQuery, SourcesLeaderboardLinesQuery$variables } from './__generated__/SourcesLeaderboardLinesQuery.graphql';
 import { SourcesLeaderboard_sources$data } from './__generated__/SourcesLeaderboard_sources.graphql';
@@ -151,6 +153,14 @@ const SourcesLeaderboard = () => {
   const { t_i18n } = useFormatter();
   const format = useSourceMetricFormat();
   const isEnterpriseEdition = useEnterpriseEdition();
+  const canManage = useGranted([MODULES_MODMANAGE, INGESTION_SETINGESTIONS]);
+  const navigate = useNavigate();
+  // The row is a link to the source: this action opens its cost editor instead
+  const openCostEditor = (event: React.SyntheticEvent, sourceId: string) => {
+    event.preventDefault();
+    event.stopPropagation();
+    navigate(sourceEditCostLink(sourceId));
+  };
 
   const initialValues = {
     searchTerm: '',
@@ -274,7 +284,24 @@ const SourcesLeaderboard = () => {
       label: 'Cost / actionable',
       percentWidth: 10,
       isSortable: true,
-      render: ({ latest_cost_per_actionable, cost }: SourcesLeaderboard_source$data) => {
+      render: ({ id, latest_cost_per_actionable, cost }: SourcesLeaderboard_source$data) => {
+        if (!cost && canManage) {
+          return (
+            <Box
+              component="span"
+              role="button"
+              tabIndex={0}
+              onClick={(event: React.MouseEvent) => openCostEditor(event, id)}
+              onKeyDown={(event: React.KeyboardEvent) => {
+                if (event.key === 'Enter' || event.key === ' ') openCostEditor(event, id);
+              }}
+              sx={{ color: 'primary.main', cursor: 'pointer', '&:hover, &:focus-visible': { textDecoration: 'underline' } }}
+              data-testid="source-set-cost"
+            >
+              {t_i18n('Set a cost')}
+            </Box>
+          );
+        }
         if (!cost) {
           return <SourceMetricValue value={null} reason={t_i18n('No cost declared for this source. Set it on its scorecard page.')} />;
         }

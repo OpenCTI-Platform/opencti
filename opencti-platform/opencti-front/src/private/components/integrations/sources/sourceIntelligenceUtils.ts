@@ -27,6 +27,42 @@ export const SOURCE_INTELLIGENCE_SETTINGS_PATH = '/dashboard/settings/customizat
 
 export const SOURCE_INTELLIGENCE_DOCUMENTATION_URL = 'https://docs.opencti.io/latest/usage/source-intelligence/';
 
+export const sourceDetailLink = (sourceId: string) => `/dashboard/integrations/sources/source/${sourceId}`;
+// Deep link opening the cost editor of a source
+export const SOURCE_EDIT_PARAM = 'edit';
+export const SOURCE_EDIT_COST = 'cost';
+export const sourceEditCostLink = (sourceId: string) => `${sourceDetailLink(sourceId)}?${SOURCE_EDIT_PARAM}=${SOURCE_EDIT_COST}`;
+
+/**
+ * Coverage search of the OpenCTI integrations on XTM Hub, through the redirection the platform uses for its other XTM
+ * Hub links; the filters use the URL parameters of the XTM Hub integration list.
+ */
+export const buildHubCoverageSearchUrl = (
+  hubUrl: string,
+  platformId: string,
+  coverage: { readonly object_types: readonly string[]; readonly sectors: readonly string[]; readonly regions: readonly string[] },
+) => {
+  const params = new URLSearchParams({ platform_id: platformId });
+  if (coverage.object_types.length > 0) params.set('objectType', [...coverage.object_types].sort().join(','));
+  // Sectors and regions are free text: a JSON array keeps values containing commas intact
+  if (coverage.sectors.length > 0) params.set('sector', JSON.stringify([...coverage.sectors].sort()));
+  if (coverage.regions.length > 0) params.set('region', JSON.stringify([...coverage.regions].sort()));
+  return `${hubUrl.replace(/\/+$/, '')}/redirect/opencti_integrations?${params.toString()}`;
+};
+
+/**
+ * Priority of a PIR criterion relative to the other criteria of its PIR, or null when they all weigh the same.
+ */
+export const criterionPriority = (weight: number, pirWeights: readonly number[]): 'high' | 'medium' | 'low' | null => {
+  if (pirWeights.length === 0) return null;
+  const max = Math.max(...pirWeights);
+  const min = Math.min(...pirWeights);
+  if (max === min) return null;
+  if (weight >= max) return 'high';
+  if (weight <= min) return 'low';
+  return 'medium';
+};
+
 // Provenance assertion kinds and the source kind scoring them, as the backend joins them (inference and emulation are not sources)
 export const ASSERTION_KIND_TO_SOURCE_KIND: Record<string, string> = {
   connector: 'connector',
