@@ -229,6 +229,7 @@ test('Keep the Sector benchmark template and the trending widget discoverable in
 // The images of docs/docs/usage/threat-pulse.md: every surface in each of its states, on the answers below, cropped to
 // the surface with a 16 px margin. A surface taller than the window is captured whole, without the margin.
 const SHOT_MARGIN = 16;
+const LIGHT_THEME = 'Filigran Light';
 const shoot = async (target: Locator, name: string, testInfo: TestInfo) => {
   await expect(target).toBeVisible();
   // A dashboard widget renders again while its content loads: the scroll is retried until the surface stays attached.
@@ -366,16 +367,43 @@ test.describe('Threat Pulse documentation images', () => {
   test.use({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 });
 
   test('Capture the Threat Pulse surfaces of the documentation in each of their states', { tag: ['@ce'] }, async ({ page }, testInfo) => {
-  // Overview card: preview, then contribution
-    await mockThreatPulse(page, { ThreatPulseCardQuery: pulseEntity('preview', PREVIEW_INFORMATION, 'contribution_required'), ...pulseStatusAnswers('preview') });
+    // Every surface in two themes: more page loads than any functional test of this file.
+    test.slow();
+    // Overview card in its three states (not connected, preview, contribution), in the dark then the light theme
+    const cardStates = [
+      {
+        name: 'not-connected',
+        answers: { ThreatPulseCardQuery: pulseEntity('not_connected', null, 'not_registered'), ...pulseStatusAnswers('not_connected') },
+        hubReachable: true,
+        loaded: 'threat-pulse-not-connected',
+      },
+      {
+        name: 'preview',
+        answers: { ThreatPulseCardQuery: pulseEntity('preview', PREVIEW_INFORMATION, 'contribution_required'), ...pulseStatusAnswers('preview') },
+        hubReachable: false,
+        loaded: 'threat-pulse-preview',
+      },
+      {
+        name: 'contributing',
+        answers: { ThreatPulseCardQuery: pulseEntity('full', FULL_INFORMATION, null), ...pulseStatusAnswers('full') },
+        hubReachable: false,
+        loaded: 'threat-pulse-card',
+      },
+    ];
+    await mockThreatPulse(page, cardStates[1].answers);
     await openNewIntrusionSet(page);
     const overviewUrl = page.url();
-    await expect(page.getByTestId('threat-pulse-preview')).toBeVisible();
-    await shoot(page.getByTestId('threat-pulse-card-container'), 'threat-pulse-card-preview', testInfo);
-    await mockThreatPulse(page, { ThreatPulseCardQuery: pulseEntity('full', FULL_INFORMATION, null), ...pulseStatusAnswers('full') });
-    await page.goto(overviewUrl);
-    await expect(page.getByTestId('threat-pulse-card')).toBeVisible();
-    await shoot(page.getByTestId('threat-pulse-card-container'), 'threat-pulse-card-contributing', testInfo);
+    for (const theme of [undefined, LIGHT_THEME]) {
+      for (const state of cardStates) {
+        const themeApplied = await mockThreatPulse(page, state.answers, { hubReachable: state.hubReachable, theme });
+        await page.goto(overviewUrl);
+        if (theme) {
+          await expect.poll(themeApplied).toBe(true);
+        }
+        await expect(page.getByTestId(state.loaded)).toBeVisible();
+        await shoot(page.getByTestId('threat-pulse-card-container'), `threat-pulse-card-${state.name}${theme ? '-light' : ''}`, testInfo);
+      }
+    }
 
     // The template card, then the trending and benchmark widgets of the dashboard it creates: preview, then full
     const dashboardAnswers = (mode: 'preview' | 'full') => ({
@@ -385,7 +413,7 @@ test.describe('Threat Pulse documentation images', () => {
     });
     const trendingOf = (mode: 'preview' | 'full') => page.getByTestId(mode === 'preview' ? 'threat-pulse-trending-preview' : 'threat-pulse-trending-list');
     const benchmarkOf = (mode: 'preview' | 'full') => page.getByTestId(mode === 'preview' ? 'threat-pulse-benchmark-locked' : 'threat-pulse-benchmark');
-    let fullDashboardUrl = '';
+    const dashboardUrls: Record<'preview' | 'full', string> = { preview: '', full: '' };
     for (const mode of ['preview', 'full'] as const) {
       await mockThreatPulse(page, dashboardAnswers(mode));
       await page.goto('/dashboard/workspaces/dashboards');
@@ -397,24 +425,33 @@ test.describe('Threat Pulse documentation images', () => {
       await expect(page).toHaveURL(/\/dashboard\/workspaces\/dashboards\/[0-9a-f-]+$/);
       await shoot(await widgetOf(trendingOf(mode)), `threat-pulse-trending-${mode}`, testInfo);
       await shoot(await widgetOf(benchmarkOf(mode)), `threat-pulse-benchmark-${mode}`, testInfo);
-      fullDashboardUrl = page.url();
+      dashboardUrls[mode] = page.url();
     }
 
-    // The widgets draw their own colours: the same dashboard in the light theme
-    const lightThemeApplied = await mockThreatPulse(page, dashboardAnswers('full'), { theme: 'Filigran Light' });
-    await page.goto(fullDashboardUrl);
-    await expect.poll(lightThemeApplied).toBe(true);
-    await shoot(await widgetOf(trendingOf('full')), 'threat-pulse-trending-full-light', testInfo);
-    await shoot(await widgetOf(benchmarkOf('full')), 'threat-pulse-benchmark-full-light', testInfo);
+    // The widgets draw their own colours: the same dashboards in the light theme
+    for (const mode of ['preview', 'full'] as const) {
+      const lightThemeApplied = await mockThreatPulse(page, dashboardAnswers(mode), { theme: LIGHT_THEME });
+      await page.goto(dashboardUrls[mode]);
+      await expect.poll(lightThemeApplied).toBe(true);
+      await shoot(await widgetOf(trendingOf(mode)), `threat-pulse-trending-${mode}-light`, testInfo);
+      if (mode === 'full') {
+        await shoot(await widgetOf(benchmarkOf(mode)), 'threat-pulse-benchmark-full-light', testInfo);
+      }
+    }
 
-    // The banner of the first day of the preview
-    await mockThreatPulse(page, {
-      ...pulseStatusAnswers('preview', { preview_entities: 42, preview_since: new Date(Date.now() - 60 * 60 * 1000).toISOString() }),
-    });
-    await page.goto('/dashboard');
-    const banner = page.getByText('Threat Pulse preview: 42 of your objects are seen across the community.');
-    await expect(banner).toBeVisible();
-    await shoot(banner.locator('xpath=ancestor::div[1]'), 'threat-pulse-banner', testInfo);
+    // The banner of the first day of the preview, in the dark then the light theme
+    for (const theme of [undefined, LIGHT_THEME]) {
+      const bannerThemeApplied = await mockThreatPulse(page, {
+        ...pulseStatusAnswers('preview', { preview_entities: 42, preview_since: new Date(Date.now() - 60 * 60 * 1000).toISOString() }),
+      }, { theme });
+      await page.goto('/dashboard');
+      if (theme) {
+        await expect.poll(bannerThemeApplied).toBe(true);
+      }
+      const banner = page.getByText('Threat Pulse preview: 42 of your objects are seen across the community.');
+      await expect(banner).toBeVisible();
+      await shoot(banner.locator('xpath=ancestor::div[1]'), `threat-pulse-banner${theme ? '-light' : ''}`, testInfo);
+    }
 
     // Settings > Filigran Experience in each mode, and the consent, in a window tall enough for the whole card and the
     // whole dialog: each capture waits for what only that state shows
@@ -443,11 +480,20 @@ test.describe('Threat Pulse documentation images', () => {
       }, 'threat-pulse-total-records'],
       ['off', { mode: 'off', access: 'off' }, 'threat-pulse-preview-button'],
     ];
-    for (const [state, overrides, loaded] of settingsStates) {
-      await mockThreatPulse(page, { ThreatPulseSettingsQuery: docsSettings(overrides), ...pulseStatusAnswers(String(overrides.access ?? 'preview')) });
-      await page.goto('/dashboard/settings/experience');
-      await expect(page.getByTestId(loaded)).toBeVisible();
-      await shoot(page.getByTestId('experience-threat-pulse-card'), `threat-pulse-settings-${state}`, testInfo);
+    for (const theme of [undefined, LIGHT_THEME]) {
+      for (const [state, overrides, loaded] of settingsStates) {
+        const settingsThemeApplied = await mockThreatPulse(
+          page,
+          { ThreatPulseSettingsQuery: docsSettings(overrides), ...pulseStatusAnswers(String(overrides.access ?? 'preview')) },
+          { theme },
+        );
+        await page.goto('/dashboard/settings/experience');
+        if (theme) {
+          await expect.poll(settingsThemeApplied).toBe(true);
+        }
+        await expect(page.getByTestId(loaded)).toBeVisible();
+        await shoot(page.getByTestId('experience-threat-pulse-card'), `threat-pulse-settings-${state}${theme ? '-light' : ''}`, testInfo);
+      }
     }
     await mockThreatPulse(page, { ThreatPulseSettingsQuery: docsSettings({}), ...pulseStatusAnswers('preview') });
     await page.goto('/dashboard/settings/experience');
