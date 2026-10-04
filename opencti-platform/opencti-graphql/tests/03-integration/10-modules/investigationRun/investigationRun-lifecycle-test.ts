@@ -821,9 +821,14 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       expect(await runFields.hypotheses(stored, {}, editorContext)).toEqual([]);
       expect(await runFields.analyst_feedback(stored, {}, editorContext)).toEqual([]);
       expect(await runFields.end_reason_code(stored, {}, editorContext)).toBe('source_inaccessible');
+      expect(await runFields.name(stored, {}, editorContext)).toBe('Case Autopilot');
+      expect(await runFields.name(stored, {}, { ...testContext, user: ADMIN_USER, batch: computeLoaders(testContext, ADMIN_USER) })).toBe(stored.name);
       const adminContext = { ...testContext, user: ADMIN_USER, batch: computeLoaders(testContext, ADMIN_USER) };
       expect((await runFields.evidence(stored, {}, adminContext)) as unknown[]).not.toEqual([]);
       expect(await runFields.end_reason_code(stored, {}, adminContext)).toBeNull();
+      // The run copied the markings of what it read; it is served with those its sources carry now.
+      const servedMarkings = await runFields.objectMarking(stored, {}, adminContext) as Array<{ standard_id: string }>;
+      expect(servedMarkings.map((marking) => marking.standard_id)).toContain(MARKING_TLP_RED);
       // The stored run is unchanged: the findings are withheld when served, not erased.
       expect((await readRun(runId)).summary).toContain('most likely operates the infrastructure');
     } finally {

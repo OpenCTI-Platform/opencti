@@ -22,7 +22,7 @@ import { batchIsSubAttackPattern, batchCoursesOfAction, batchSubAttackPatterns }
 import { executionContext, isBypassUser, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
 import { getEnterpriseEditionInfo, IS_LTS_PLATFORM } from '../modules/settings/licensing';
 import { batchContextDataForLog } from '../database/data-changes';
-import { batchInvestigationRunsWithheldReasons, batchLatestInvestigationRuns } from '../modules/investigationRun/investigationRun-domain';
+import { batchLatestInvestigationRuns, batchServedInvestigationRuns } from '../modules/investigationRun/investigationRun-domain';
 
 export const computeLoaders = (executeContext, user) => {
   // Generic loaders
@@ -48,7 +48,7 @@ export const computeLoaders = (executeContext, user) => {
     subAttackPatternsBatchLoader: batchLoader(batchSubAttackPatterns, executeContext, user),
     coursesOfActionBatchLoader: batchLoader(batchCoursesOfAction, executeContext, user),
     latestInvestigationRunBatchLoader: batchLoader(batchLatestInvestigationRuns, executeContext, user),
-    investigationRunWithheldBatchLoader: batchLoader(batchInvestigationRunsWithheldReasons, executeContext, user),
+    investigationRunServedBatchLoader: batchLoader(batchServedInvestigationRuns, executeContext, user),
   };
 };
 

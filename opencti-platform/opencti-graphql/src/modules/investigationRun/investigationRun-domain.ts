@@ -50,7 +50,8 @@ import { addFilter } from '../../utils/filtering/filtering-utils';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 import { INVESTIGATION_MANAGER_USER, isUserHasCapability, KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../utils/access';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
-import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
+import { RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
+import { buildRefRelationKey } from '../../schema/general';
 import { stixDomainObjectAddRelation, stixDomainObjectEditField } from '../../domain/stixDomainObject';
 import { taskAdd } from '../task/task-domain';
 import { findById as findDraftById, validateDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
@@ -143,44 +144,43 @@ const WITHHELD_CODES = [...CARRY_BOUNDARY_CODES, SOURCE_INACCESSIBLE_CODE];
  *   them after the run read it withholds the findings from those it excludes.
  * Read on every read and action, whatever the run status: the manager stops an
  * active run at an access boundary only on its next pass and never revisits an
- * ended one. Gives, for each run, why its findings are withheld from the
- * reader, or null; the sources of every run are read at once.
+ * ended one. Its markings are served the same way: those it copied, plus those
+ * its sources carry now, so an export ceiling or a reader weighs what its
+ * findings describe today. The sources of every run are read at once.
  */
-export const findInvestigationRunsWithheldReasons = async (
+const readRunSources = async (
   context: AuthContext,
   user: AuthUser,
   runs: BasicStoreEntityInvestigationRun[],
-): Promise<Array<string | null>> => {
+): Promise<Array<{ reason: string | null; markingIds: string[] }>> => {
   const isWithheld = (run: BasicStoreEntityInvestigationRun) => !!run.end_reason_code && WITHHELD_CODES.includes(run.end_reason_code);
   const ids = Array.from(new Set(runs.filter((run) => !isWithheld(run)).flatMap((run) => runSourceIds(run))));
-  if (ids.length === 0) return runs.map(() => null);
+  if (ids.length === 0) return runs.map(() => ({ reason: null, markingIds: [] }));
   const liveContext = outOfDraft(context);
   const opts = { indices: READ_DATA_INDICES_WITHOUT_INTERNAL, baseData: true };
+  const liveOpts = { ...opts, baseFields: [buildRefRelationKey(RELATION_OBJECT_MARKING)] };
   const [live, readable] = await Promise.all([
-    elFindByIds<BasicStoreEntity>(liveContext, INVESTIGATION_MANAGER_USER, ids, opts) as Promise<BasicStoreEntity[]>,
+    elFindByIds<BasicStoreEntity>(liveContext, INVESTIGATION_MANAGER_USER, ids, liveOpts) as Promise<BasicStoreEntity[]>,
     elFindByIds<BasicStoreEntity>(liveContext, user, ids, opts) as Promise<BasicStoreEntity[]>,
   ]);
   const idsOf = (elements: BasicStoreEntity[]) => elements.flatMap((element) => [element.internal_id, element.standard_id]);
   const readableIds = new Set(readable.map((element) => element.internal_id));
   const restricted = new Set(idsOf(live.filter((element) => isMemberRestricted(element))));
   const unreadable = new Set(idsOf(live.filter((element) => !readableIds.has(element.internal_id))));
+  const markingsOf = new Map(live.flatMap((element) => idsOf([element]).map((id) => [id, markingIdsOf(element)] as const)));
   return runs.map((run) => {
-    if (isWithheld(run)) return null;
+    if (isWithheld(run)) return { reason: null, markingIds: [] };
     const sources = runSourceIds(run);
-    if (sources.some((id) => restricted.has(id))) return MEMBER_RESTRICTED_CODE;
-    if (sources.some((id) => unreadable.has(id))) return SOURCE_INACCESSIBLE_CODE;
-    return null;
+    const markingIds = Array.from(new Set(sources.flatMap((id) => markingsOf.get(id) ?? [])));
+    if (sources.some((id) => restricted.has(id))) return { reason: MEMBER_RESTRICTED_CODE, markingIds };
+    if (sources.some((id) => unreadable.has(id))) return { reason: SOURCE_INACCESSIBLE_CODE, markingIds };
+    return { reason: null, markingIds };
   });
 };
 
-const findInvestigationRunWithheldReason = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityInvestigationRun) => {
-  const [reason] = await findInvestigationRunsWithheldReasons(context, user, [run]);
-  return reason;
-};
-
-// Batch loader behind the run resolvers: one read for the runs of a page.
-export const batchInvestigationRunsWithheldReasons = async (context: AuthContext, user: AuthUser, runs: BasicStoreEntityInvestigationRun[]) => {
-  return await findInvestigationRunsWithheldReasons(context, user, runs) as unknown as BasicStoreCommon[];
+/** For each run, why its findings are withheld from the reader, or null. */
+export const findInvestigationRunsWithheldReasons = async (context: AuthContext, user: AuthUser, runs: BasicStoreEntityInvestigationRun[]) => {
+  return (await readRunSources(context, user, runs)).map(({ reason }) => reason);
 };
 
 /** A run as it is served while its findings are withheld from the reader: emptied, with the reason. */
@@ -190,12 +190,30 @@ export const withholdInvestigationRunFindings = (run: BasicStoreEntityInvestigat
   end_reason_code: reason,
 });
 
+/** The runs as they are served to the reader: findings withheld or not, markings of their sources added. */
+export const findServedInvestigationRuns = async (context: AuthContext, user: AuthUser, runs: BasicStoreEntityInvestigationRun[]) => {
+  const reads = await readRunSources(context, user, runs);
+  return runs.map((run, index) => {
+    const { reason, markingIds } = reads[index];
+    const view = reason ? withholdInvestigationRunFindings(run, reason) : run;
+    const stored = markingIdsOf(run);
+    const added = markingIds.filter((id) => !stored.includes(id));
+    return added.length > 0 ? { ...view, [RELATION_OBJECT_MARKING]: [...stored, ...added] } : view;
+  });
+};
+
+// Batch loader behind the run resolvers: one read for the runs of a page.
+export const batchServedInvestigationRuns = async (context: AuthContext, user: AuthUser, runs: BasicStoreEntityInvestigationRun[]) => {
+  return await findServedInvestigationRuns(context, user, runs) as unknown as BasicStoreCommon[];
+};
+
 const loadServedRun = async (context: AuthContext, user: AuthUser, id: string) => {
   await checkEnterpriseEdition(context);
   const run = await storeLoadById<BasicStoreEntityInvestigationRun>(outOfDraft(context), user, id, ENTITY_TYPE_INVESTIGATION_RUN);
   if (!run) return null;
-  const withheld = await findInvestigationRunWithheldReason(context, user, run);
-  return { run: withheld ? withholdInvestigationRunFindings(run, withheld) : run, withheld };
+  const [served] = await findServedInvestigationRuns(context, user, [run]);
+  const withheld = served.end_reason_code !== run.end_reason_code ? served.end_reason_code ?? null : null;
+  return { run: served, withheld };
 };
 
 // The markings and organizations of the investigated entity are copied on
@@ -221,7 +239,7 @@ const findAccessibleRun = async (context: AuthContext, user: AuthUser, id: strin
 
 // The same refusal, read again on the fresh run an action executes on.
 const assertFindingsServed = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityInvestigationRun) => {
-  const withheld = await findInvestigationRunWithheldReason(context, user, run);
+  const [withheld] = await findInvestigationRunsWithheldReasons(context, user, [run]);
   if (withheld) {
     throw FunctionalError(FINDINGS_WITHHELD[withheld], { id: run.internal_id });
   }
@@ -876,24 +894,34 @@ const decideApprovalsOf = async (
     throw ForbiddenAccess('You are not allowed to decide this approval', { kind: missing.approval.kind });
   }
   // Side effects run with the approver's identity: an approval is their consent.
+  // When one fails, the decisions already carried out are recorded before the
+  // error is returned, so that a retry never carries them out twice.
   const recommendationPatches = new Map<string, Partial<InvestigationRecommendation>>();
   let validationWorkId: string | null = null;
-  for (let index = 0; index < decided.length; index += 1) {
+  const applied: typeof decided = [];
+  let failure: unknown = null;
+  for (let index = 0; index < decided.length && !failure; index += 1) {
     const { approval, approved } = decided[index];
-    if (approval.kind === InvestigationApprovalKind.Recommendation && approval.recommendation_id) {
-      const recommendation = run.recommendations.find((r) => r.id === approval.recommendation_id);
-      if (recommendation) {
-        recommendationPatches.set(recommendation.id, approved
-          ? await executeApprovedRecommendation(context, user, run, recommendation)
-          : { status: InvestigationRecommendationStatus.Dismissed });
+    try {
+      if (approval.kind === InvestigationApprovalKind.Recommendation && approval.recommendation_id) {
+        const recommendation = run.recommendations.find((r) => r.id === approval.recommendation_id);
+        if (recommendation) {
+          recommendationPatches.set(recommendation.id, approved
+            ? await executeApprovedRecommendation(context, user, run, recommendation)
+            : { status: InvestigationRecommendationStatus.Dismissed });
+        }
       }
-    }
-    if (approval.kind === InvestigationApprovalKind.DraftValidation && approved && run.draft_id) {
-      const work = await validateDraftWorkspace(outOfDraft(context), user, run.draft_id);
-      validationWorkId = work?.id ?? null;
+      if (approval.kind === InvestigationApprovalKind.DraftValidation && approved && run.draft_id) {
+        const work = await validateDraftWorkspace(outOfDraft(context), user, run.draft_id);
+        validationWorkId = work?.id ?? null;
+      }
+      applied.push(decided[index]);
+    } catch (error) {
+      failure = error;
     }
   }
-  const decidedIds = new Map(decided.map((d) => [d.approval.id, d]));
+  if (failure && applied.length === 0) throw failure;
+  const decidedIds = new Map(applied.map((d) => [d.approval.id, d]));
   const updated = await updateInvestigationRun(context, runId, (current) => {
     const approvals = current.approvals.map((approval) => {
       const decision = decidedIds.get(approval.id);
@@ -915,7 +943,7 @@ const decideApprovalsOf = async (
     });
     const recommendations = current.recommendations.map((r) => (recommendationPatches.has(r.id) ? { ...r, ...recommendationPatches.get(r.id) } : r));
     const patch: Record<string, unknown> = { approvals, enrichment_requests: enrichmentRequests, recommendations };
-    const draftDecision = decided.find(({ approval }) => approval.kind === InvestigationApprovalKind.DraftValidation);
+    const draftDecision = applied.find(({ approval }) => approval.kind === InvestigationApprovalKind.DraftValidation);
     if (draftDecision && current.run_status === InvestigationRunStatus.AwaitingApproval) {
       if (draftDecision.approved) {
         Object.assign(patch, statusTransition(current, InvestigationRunStatus.Running, InvestigationRunPhase.Validating, now), {
@@ -941,14 +969,15 @@ const decideApprovalsOf = async (
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'extended',
-    message: `decides ${decided.length} Case Autopilot approval(s) of \`${run.name}\``,
+    message: `decides ${applied.length} Case Autopilot approval(s) of \`${run.name}\``,
     context_data: {
       id: run.subject_id,
       entity_type: run.subject_type,
-      input: { run_id: runId, decisions: decided.map(({ approval, approved }) => ({ id: approval.id, kind: approval.kind, approved })) },
+      input: { run_id: runId, decisions: applied.map(({ approval, approved }) => ({ id: approval.id, kind: approval.kind, approved })) },
     },
   });
-  return { decided: decided.length, run: updated };
+  if (failure) throw failure;
+  return { decided: applied.length, run: updated };
 };
 
 export const decideInvestigationApprovals = async (

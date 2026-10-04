@@ -181,6 +181,8 @@ const ENGINE_FAILURE_REASONS: Record<string, string> = {
 };
 const SUBJECT_INACCESSIBLE_REASON = 'The investigated entity is no longer accessible to the identity of the run';
 const SUBJECT_INACCESSIBLE = { reason: SUBJECT_INACCESSIBLE_REASON, code: SUBJECT_INACCESSIBLE_CODE };
+// A deleted identity reads nothing any more: the same boundary as a subject it can no longer read.
+const IDENTITY_DELETED = { reason: 'The identity of the run no longer exists', code: SUBJECT_INACCESSIBLE_CODE };
 const MEMBER_RESTRICTED_REASON = 'An entity of the investigation is now restricted to authorized members: Case Autopilot stopped and withheld what it had found';
 // Runs whose engine run is stopped after them: cancelled by an analyst, or stopped at a member restriction.
 const STOPPED_RUN_STATUSES: string[] = [InvestigationRunStatus.Cancelled, InvestigationRunStatus.Failed];
@@ -929,7 +931,7 @@ const deleteStoppedRunArtifacts = async (context: AuthContext, runId: string, ar
 // scored from it, the references to its outputs, its draft, deleted with what
 // it wrote there, and its investigation graph, which holds what it read. Gates
 // still waiting are rejected, jobs not started skipped.
-const stopAtCarryBoundary = async (exec: RunExecution, boundary: { reason: string; code: string }) => {
+const stopRunAtCarryBoundary = async (context: AuthContext, runId: string, boundary: { reason: string; code: string }) => {
   const now = new Date();
   const stop: { done: boolean; engineRunning: boolean; draftId: string | null; workspaceId: string | null } = {
     done: false,
@@ -937,7 +939,7 @@ const stopAtCarryBoundary = async (exec: RunExecution, boundary: { reason: strin
     draftId: null,
     workspaceId: null,
   };
-  await updateInvestigationRun(exec.liveContext, exec.run.internal_id, (current) => {
+  await updateInvestigationRun(context, runId, (current) => {
     if (TERMINAL_RUN_STATUSES.includes(current.run_status)) return null;
     stop.done = true;
     stop.engineRunning = current.run_phase === InvestigationRunPhase.Investigating && !!current.xtm_investigation_id && !current.budget_cancelled;
@@ -956,12 +958,14 @@ const stopAtCarryBoundary = async (exec: RunExecution, boundary: { reason: strin
   if (!stop.done) return;
   addInvestigationRunOutcomeCount(InvestigationRunStatus.Failed);
   if (stop.draftId || stop.workspaceId) {
-    await deleteStoppedRunArtifacts(exec.liveContext, exec.run.internal_id, { draftId: stop.draftId, workspaceId: stop.workspaceId });
+    await deleteStoppedRunArtifacts(context, runId, { draftId: stop.draftId, workspaceId: stop.workspaceId });
   }
   if (stop.engineRunning) {
-    await stopCancelledEngineRun(exec.liveContext, exec.run.internal_id);
+    await stopCancelledEngineRun(context, runId);
   }
 };
+
+const stopAtCarryBoundary = (exec: RunExecution, boundary: { reason: string; code: string }) => stopRunAtCarryBoundary(exec.liveContext, exec.run.internal_id, boundary);
 
 // The OpenCTI objects of a revision the run may cite: those its identity sees,
 // without a member restriction (the run cannot carry one).
@@ -1575,7 +1579,7 @@ export const processInvestigationRun = async (context: AuthContext, runId: strin
   try {
     const runUser = await resolveUserByIdFromCache(context, run.run_as_id);
     if (!runUser) {
-      await failRun(context, runId, 'The identity of the run no longer exists');
+      await stopRunAtCarryBoundary(context, runId, IDENTITY_DELETED);
       return;
     }
     const policy = run.policy_id ? await loadInvestigationPolicy(context, run.policy_id) : null;
@@ -1637,8 +1641,12 @@ export const revalidateAwaitingInvestigationRun = async (context: AuthContext, r
     await withRunActions(context, runId, async (run) => {
       if (run.run_status !== InvestigationRunStatus.AwaitingApproval) return;
       const runUser = await resolveUserByIdFromCache(context, run.run_as_id);
+      if (!runUser) {
+        await stopRunAtCarryBoundary(context, runId, IDENTITY_DELETED);
+        return;
+      }
       const policy = run.policy_id ? await loadInvestigationPolicy(context, run.policy_id) : null;
-      if (!runUser || !policy) return;
+      if (!policy) return;
       const exec: RunExecution = {
         run,
         runUser,

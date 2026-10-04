@@ -105,6 +105,7 @@ describe('Case Autopilot access boundary of a run', () => {
     } as never);
     const withheld = withheldRunContent(run);
     expect(withheld).toMatchObject({
+      name: 'Case Autopilot',
       goal_plan: null,
       evidence: [],
       hypotheses: [],

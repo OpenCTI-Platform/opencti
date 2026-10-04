@@ -109,9 +109,11 @@ export const runSourceIds = (run: BasicStoreEntityInvestigationRun): string[] =>
   ...runCitedIds(run),
 ].filter((id): id is string => !!id)));
 
+export const WITHHELD_RUN_NAME = 'Case Autopilot';
+
 /**
- * Everything a run derived from what it read, emptied: the engine's text, the
- * conclusion OpenCTI scored from it, the references to its outputs, what its
+ * Everything a run derived from what it read, emptied: its name, which quotes
+ * its subject, the engine's text, the conclusion OpenCTI scored from it, the references to its outputs, what its
  * enrichment waves brought, the analyst feedback on its findings, and the
  * approvals and requests quoting any of it (a recommendation approval quotes
  * its recommendation; the other records keep their decision, not their
@@ -119,6 +121,7 @@ export const runSourceIds = (run: BasicStoreEntityInvestigationRun): string[] =>
  * reader while one of its sources is beyond that reader's access.
  */
 export const withheldRunContent = (run: BasicStoreEntityInvestigationRun) => ({
+  name: WITHHELD_RUN_NAME,
   goal_plan: null,
   steps: (run.steps ?? []).map((step) => ({ ...step, action: null, detail_params: null })),
   evidence: [],

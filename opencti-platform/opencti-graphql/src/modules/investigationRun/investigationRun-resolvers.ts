@@ -41,7 +41,6 @@ import {
   findInvestigationRunsPaginated,
   filterReadableRunRecords,
   requestInvestigationEnrichment,
-  withholdInvestigationRunFindings,
 } from './investigationRun-domain';
 import {
   addInvestigationPolicy,
@@ -54,6 +53,7 @@ import {
 } from './investigationPolicy-domain';
 import { acceptanceRate, computeAcceptance, computeUsedMinutes } from './investigationRun-state';
 import { buildInvestigationReportSections } from './investigationRun-report';
+import { extractRepresentative } from '../../database/entity-representative';
 import { ENTITY_TYPE_INVESTIGATION_POLICY, ENTITY_TYPE_INVESTIGATION_RUN, type BasicStoreEntityInvestigationRun } from './investigationRun-types';
 
 const loadElement = (context: any, id: string | null | undefined, type: string | null | undefined) => {
@@ -66,8 +66,10 @@ const latestRun = (entity: { id: string }, context: any) => context.batch.latest
 // What a run derived is served to a reader only while each of its live sources
 // is readable by that reader and none is restricted to authorized members,
 // whichever path resolved the run: a query, a list, a case badge, the generic
-// object lookup, a mutation or a subscription event. Read once per resolved
-// run and reader, batched across the runs of a page.
+// object lookup, a mutation or a subscription event. Its name quotes its
+// subject, so it is withheld with the findings; its markings add those its
+// sources carry now. Read once per resolved run and reader, batched across the
+// runs of a page.
 const servedRuns = new WeakMap<BasicStoreEntityInvestigationRun, Map<string, Promise<BasicStoreEntityInvestigationRun>>>();
 const served = (run: BasicStoreEntityInvestigationRun, context: any) => {
   let byReader = servedRuns.get(run);
@@ -77,8 +79,7 @@ const served = (run: BasicStoreEntityInvestigationRun, context: any) => {
   }
   let view = byReader.get(context.user.id);
   if (!view) {
-    const withheld: Promise<string | null> = context.batch.investigationRunWithheldBatchLoader.load(run);
-    view = withheld.then((reason) => (reason ? withholdInvestigationRunFindings(run, reason) : run));
+    view = context.batch.investigationRunServedBatchLoader.load(run) as Promise<BasicStoreEntityInvestigationRun>;
     byReader.set(context.user.id, view);
   }
   return view;
@@ -96,7 +97,7 @@ const investigationRunResolvers: Resolvers = {
   },
   InvestigationRun: {
     creators: (run, _, context) => loadCreators(context, context.user, run),
-    objectMarking: (run, _, context) => context.batch.markingsBatchLoader.load(run),
+    objectMarking: async (run, _, context) => context.batch.markingsBatchLoader.load(await served(run, context)),
     subject: (run, _, context) => loadElement(context, run.subject_id, run.subject_type),
     case: async (run, _, context) => {
       const caseIds = run.case_ids ?? [];
@@ -110,6 +111,8 @@ const investigationRunResolvers: Resolvers = {
     runAs: (run, _, context) => context.batch.creatorBatchLoader.load(run.run_as_id),
     xtm_investigation_ids: (run) => run.xtm_investigation_ids ?? [],
     xtm_revision: (run) => run.xtm_revision ?? -1,
+    name: async (run, _, context) => (await served(run, context)).name,
+    representative: async (run, _, context) => extractRepresentative(await served(run, context)),
     end_reason_code: async (run, _, context) => (await served(run, context)).end_reason_code ?? null,
     goal_plan: async (run, _, context) => (await served(run, context)).goal_plan ?? null,
     steps: async (run, _, context) => (await served(run, context)).steps ?? [],
