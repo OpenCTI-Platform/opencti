@@ -14,28 +14,60 @@ export interface TimelineCase {
   caseId: string;
   malwareId: string;
   taskId: string;
+  indicatorId: string;
+  platformId: string;
 }
 
 /**
- * An incident response holding a malware seen over three days and a task due two days after the opening,
- * with its timeline derived once.
+ * An incident response holding a malware seen over three days, an indicator sighted by a security platform
+ * (a detection) and a task due two days after the opening, with its timeline derived once. Demo values only.
  */
-export const addTimelineCase = async (request: APIRequestContext, name: string, taskName: string): Promise<TimelineCase> => {
+export const addTimelineCase = async (request: APIRequestContext, name: string, malwareName: string, taskName: string, codename: string): Promise<TimelineCase> => {
+  // Documentation range (RFC 5737), one address per run so that concurrent runs never share the indicator
+  const address = `198.51.100.${1 + Math.floor(Math.random() * 254)}`;
   const malware = await mutate<{ id: string }>(request, `
     mutation {
       malwareAdd(input: {
-        name: ${JSON.stringify(`${name} malware`)},
+        name: ${JSON.stringify(malwareName)},
         first_seen: "2026-02-01T09:00:00.000Z",
         last_seen: "2026-02-04T09:00:00.000Z"
       }) { id }
     }
   `, 'malwareAdd');
+  const indicator = await mutate<{ id: string }>(request, `
+    mutation {
+      indicatorAdd(input: {
+        name: ${JSON.stringify(address)},
+        pattern: ${JSON.stringify(`[ipv4-addr:value = '${address}']`)},
+        pattern_type: "stix",
+        x_opencti_main_observable_type: "IPv4-Addr",
+        valid_from: "2026-02-02T08:00:00.000Z",
+        valid_until: "2026-05-02T08:00:00.000Z"
+      }) { id }
+    }
+  `, 'indicatorAdd');
+  const platform = await mutate<{ id: string }>(request, `
+    mutation {
+      securityPlatformAdd(input: { name: ${JSON.stringify(`${codename} SIEM`)}, security_platform_type: "SIEM" }) { id }
+    }
+  `, 'securityPlatformAdd');
+  const sighting = await mutate<{ id: string }>(request, `
+    mutation {
+      stixSightingRelationshipAdd(input: {
+        fromId: ${JSON.stringify(indicator.id)},
+        toId: ${JSON.stringify(platform.id)},
+        first_seen: "2026-02-03T07:30:00.000Z",
+        last_seen: "2026-02-03T09:00:00.000Z",
+        attribute_count: 3
+      }) { id }
+    }
+  `, 'stixSightingRelationshipAdd');
   const caseIncident = await mutate<{ id: string }>(request, `
     mutation {
       caseIncidentAdd(input: {
         name: ${JSON.stringify(name)},
         created: "2026-02-04T12:00:00.000Z",
-        objects: [${JSON.stringify(malware.id)}]
+        objects: [${[malware.id, indicator.id, sighting.id].map((id) => JSON.stringify(id)).join(', ')}]
       }) { id }
     }
   `, 'caseIncidentAdd');
@@ -50,7 +82,44 @@ export const addTimelineCase = async (request: APIRequestContext, name: string, 
     }
   `, 'taskAdd');
   await regenerateTimeline(request, caseIncident.id);
-  return { caseId: caseIncident.id, malwareId: malware.id, taskId: task.id };
+  return { caseId: caseIncident.id, malwareId: malware.id, taskId: task.id, indicatorId: indicator.id, platformId: platform.id };
+};
+
+/** An incident without any dated knowledge yet: its timeline is in the first-use state. */
+export const addEmptyIncident = async (request: APIRequestContext, name: string) => {
+  return mutate<{ id: string }>(request, `mutation { incidentAdd(input: { name: ${JSON.stringify(name)} }) { id } }`, 'incidentAdd');
+};
+
+/** A custom dashboard showing the timeline widget of a case. */
+export const addTimelineDashboard = async (request: APIRequestContext, name: string, containerId: string) => {
+  const dashboard = await mutate<{ id: string }>(request, `mutation { workspaceAdd(input: { type: "dashboard", name: ${JSON.stringify(name)} }) { id } }`, 'workspaceAdd');
+  const widgetId = 'case-timeline-widget';
+  const manifest = {
+    widgets: {
+      [widgetId]: {
+        id: widgetId,
+        type: 'case-timeline',
+        perspective: null,
+        dataSelection: [],
+        parameters: { container_id: containerId, timeline_window: 'fit' },
+        layout: { i: widgetId, x: 0, y: 0, w: 12, h: 4, moved: false, static: false },
+      },
+    },
+    config: {},
+  };
+  const encoded = Buffer.from(JSON.stringify(manifest)).toString('base64');
+  await mutate(request, `
+    mutation { workspaceFieldPatch(id: ${JSON.stringify(dashboard.id)}, input: [{ key: "manifest", value: [${JSON.stringify(encoded)}] }]) { id } }
+  `, 'workspaceFieldPatch');
+  return dashboard;
+};
+
+export const deleteWorkspace = async (request: APIRequestContext, id: string) => {
+  await graphqlQuery(request, `mutation { workspaceDelete(id: ${JSON.stringify(id)}) }`);
+};
+
+export const deleteEntity = async (request: APIRequestContext, id: string) => {
+  await graphqlQuery(request, `mutation { stixCoreObjectEdit(id: ${JSON.stringify(id)}) { delete } }`);
 };
 
 export const regenerateTimeline = async (request: APIRequestContext, containerId: string) => {
@@ -76,7 +145,7 @@ export const addTimelineContainment = async (request: APIRequestContext, contain
 };
 
 export const deleteTimelineCase = async (request: APIRequestContext, timelineCase: TimelineCase) => {
-  const ids = [timelineCase.taskId, timelineCase.caseId, timelineCase.malwareId];
+  const ids = [timelineCase.taskId, timelineCase.caseId, timelineCase.indicatorId, timelineCase.platformId, timelineCase.malwareId];
   for (let index = 0; index < ids.length; index += 1) {
     await graphqlQuery(request, `mutation { stixCoreObjectEdit(id: ${JSON.stringify(ids[index])}) { delete } }`);
   }
