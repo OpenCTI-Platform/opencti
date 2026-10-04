@@ -68,7 +68,8 @@ class PageBoundary extends Component<{ children: ReactNode }, { failed: boolean 
   }
 }
 
-const requestError = (code: string) => Object.assign(new Error('request failed'), { res: { errors: [{ extensions: { code } }] } });
+const requestError = (code: string) => Object.assign(new Error('request failed'), { res: { status: 200, errors: [{ extensions: { code } }] } });
+const httpError = (status: number) => Object.assign(new Error('request failed'), { res: { status } });
 
 describe('ContainerTimelineErrorBoundary', () => {
   let failure: Error | null = null;
@@ -104,12 +105,24 @@ describe('ContainerTimelineErrorBoundary', () => {
     expect(screen.getByText('events')).toBeInTheDocument();
   });
 
-  it('leaves session errors and errors of the code to the page error boundary', () => {
-    failure = requestError('AUTH_REQUIRED');
-    const { unmount } = renderBoundary();
-    expect(screen.getByText('page error')).toBeInTheDocument();
-    unmount();
-    failure = new Error('rendering failed');
+  it.each([
+    ['a lock of the server', requestError('LOCK_ERROR')],
+    ['an unavailable server', httpError(503)],
+  ])('offers a retry after %s', (_, error) => {
+    failure = error;
+    renderBoundary();
+    expect(screen.getByTestId('timeline-error')).toBeInTheDocument();
+  });
+
+  it.each([
+    ['a session error', requestError('AUTH_REQUIRED')],
+    ['a second factor to provide', requestError('OTP_REQUIRED')],
+    ['a revoked access', requestError('FORBIDDEN_ACCESS')],
+    ['a container that no longer exists', requestError('RESOURCE_NOT_FOUND')],
+    ['a rejected request', httpError(403)],
+    ['an error of the code', new Error('rendering failed')],
+  ])('leaves %s to the page error boundaries', (_, error) => {
+    failure = error;
     renderBoundary();
     expect(screen.getByText('page error')).toBeInTheDocument();
     expect(screen.queryByTestId('timeline-error')).toBeNull();

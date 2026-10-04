@@ -95,14 +95,22 @@ export const ContainerTimelineErrorState = ({ onRetry }: ContainerTimelineErrorS
   );
 };
 
-type ErrorResponse = { errors?: readonly { extensions?: { code?: string } }[] };
+type ErrorResponse = { status?: number; errors?: readonly { extensions?: { code?: string } }[] };
 type RequestError = { res?: ErrorResponse; data?: { res?: ErrorResponse } };
-const SESSION_ERROR_CODES = ['AUTH_REQUIRED', 'IP_FORBIDDEN'];
+const TRANSIENT_ERROR_CODES = ['DATABASE_ERROR', 'LOCK_ERROR', 'UNKNOWN_ERROR'];
 
-// Only a failed request is worth a retry: a session error or an error of the code goes to the page error boundary
+// Only a transient failure of the server is worth a retry. Any other error (session, access, not found, code)
+// goes on to the authentication and page error boundaries, which handle each of them.
 const isRetryableError = (error: unknown) => {
   const response = (error as RequestError | null)?.res ?? (error as RequestError | null)?.data?.res;
-  return !!response && !(response.errors ?? []).some(({ extensions }) => SESSION_ERROR_CODES.includes(extensions?.code ?? ''));
+  if (!response) {
+    return false;
+  }
+  const codes = (response.errors ?? []).map(({ extensions }) => extensions?.code ?? '');
+  if (codes.length > 0) {
+    return codes.every((code) => TRANSIENT_ERROR_CODES.includes(code));
+  }
+  return (response.status ?? 0) >= 500;
 };
 
 interface ContainerTimelineErrorBoundaryProps {
@@ -110,7 +118,7 @@ interface ContainerTimelineErrorBoundaryProps {
   onRetry: () => void;
 }
 
-/** Keeps a failed load of the events inside the timeline, with a retry. */
+/** Keeps a transient failure to load the events inside the timeline, with a retry. */
 export class ContainerTimelineErrorBoundary extends Component<ContainerTimelineErrorBoundaryProps, { error: unknown }> {
   state = { error: null as unknown };
 
