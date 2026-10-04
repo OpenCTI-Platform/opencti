@@ -230,7 +230,6 @@ const DisseminationAssuranceMetricsContent = ({ platformId, startDate, renderDep
               <WidgetHorizontalBars
                 series={[{ name: t_i18n('Count'), data: funnelStages.map((stage) => stage.value) }]}
                 categories={funnelStages.map((stage) => stage.label)}
-                distributed
               />
             </Box>
           </Card>
