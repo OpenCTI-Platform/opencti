@@ -311,7 +311,13 @@ const DeployedOnRelationships = ({ side, entityId, kpiFilters, startDate }: Depl
             return node.from?.id ? PATH_INDICATOR(node.from.id) : undefined;
           }}
           actions={canUpdate ? (node: DeployedOnRelationships_node$data) => (
-            <DeployedOnActions id={node.id} deploymentStatus={node.deployment_status} revoked={node.revoked} />
+            <DeployedOnActions
+              id={node.id}
+              deploymentStatus={node.deployment_status}
+              revoked={node.revoked}
+              indicatorName={node.from?.name}
+              platformName={node.to?.name}
+            />
           ) : undefined}
         />
       )}

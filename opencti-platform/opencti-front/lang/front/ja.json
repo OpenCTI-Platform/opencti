@@ -4276,6 +4276,7 @@
   "Removal requested on this security platform": "このセキュリティプラットフォームで削除がリクエストされています",
   "REMOVE": "削除",
   "Remove": "解除",
+  "Remove {indicator} from {platform}": "{platform} から {indicator} を削除",
   "Remove access restrictions to the STIX bundle": "STIXバンドルへのアクセス制限を解除する",
   "Remove attribute": "属性の削除",
   "Remove bookmark": "ブックマークを削除する",

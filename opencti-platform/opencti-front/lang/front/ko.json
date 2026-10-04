@@ -4276,6 +4276,7 @@
   "Removal requested on this security platform": "이 보안 플랫폼에서 제거가 요청됨",
   "REMOVE": "REMOVE",
   "Remove": "제거",
+  "Remove {indicator} from {platform}": "{platform}에서 {indicator} 제거",
   "Remove access restrictions to the STIX bundle": "STIX 번들에 대한 액세스 제한 제거",
   "Remove attribute": "속성 제거",
   "Remove bookmark": "북마크 삭제",

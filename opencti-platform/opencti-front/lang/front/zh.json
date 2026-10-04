@@ -4276,6 +4276,7 @@
   "Removal requested on this security platform": "已请求从此安全平台移除",
   "REMOVE": "删除",
   "Remove": "移除",
+  "Remove {indicator} from {platform}": "从 {platform} 移除 {indicator}",
   "Remove access restrictions to the STIX bundle": "删除对 STIX 捆绑程序的访问限制",
   "Remove attribute": "删除属性",
   "Remove bookmark": "删除收藏",

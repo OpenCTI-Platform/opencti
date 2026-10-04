@@ -4276,6 +4276,7 @@
   "Removal requested on this security platform": "Removal requested on this security platform",
   "REMOVE": "REMOVE",
   "Remove": "Remove",
+  "Remove {indicator} from {platform}": "Remove {indicator} from {platform}",
   "Remove access restrictions to the STIX bundle": "Remove access restrictions to the STIX bundle",
   "Remove attribute": "Remove attribute",
   "Remove bookmark": "Remove bookmark",
