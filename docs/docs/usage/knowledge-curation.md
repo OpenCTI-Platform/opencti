@@ -45,7 +45,7 @@ Knowledge curation addresses these problems on the stored graph:
 The curation manager detects findings in two ways:
 
 - **Live detection.** The manager listens to the platform stream. When an entity of a curated type is created, merged, or has its name, aliases or description updated, the manager compares it with the similar entities found by a full text search on its names. Inverted dates are detected on every created or updated object, procedure conflicts on every updated `uses` relationship towards an Attack Pattern, and fields overwritten by another source on every updated entity of a curated type.
-- **Scheduled scans.** A full scan runs every 24 hours, or at the next manager cycle (every minute) after an administrator clicks **Run a scan now** in the settings. For each curated entity type, a scan reads the most recently updated entities, up to the configured scan size (5,000 per type by default).
+- **Scheduled scans.** A full scan runs every 24 hours, or at the next manager cycle (every minute) after an administrator clicks **Run a scan now** in the settings. For each curated entity type, a scan compares the most recently updated entities with a rotating slice of the others, within the configured scan size (5,000 per type by default, half for each): each scan takes the next slice in creation order, so successive scans go through every entity. Entities that change are compared with the whole graph by the live detection.
 
 A finding detected again refreshes the open proposal (its confidence and evidence) instead of creating a new one. A finding that was rejected or reverted is never proposed again. For duplicates, a pair of entities decided distinct (rejected or reverted) is never proposed again, whatever the detector that compares them later.
 
@@ -145,7 +145,7 @@ The agent receives the proposal kind, confidence, detector and evidence, and for
 | `distinct` | The subjects are different objects.                                                     | The proposal is rejected and the pair is never proposed again.                                |
 | `skip`     | The evidence supports no decision.                                                      | The proposal stays open for an analyst.                                                       |
 
-An answer that is not a valid decision is recorded as `skip`, and so is an answer whose `target_id` is not a subject of the proposal, whatever agent is bound to the intent. The adjudication is **advisory**: OpenCTI records the decision, the rationale, the agent, the model when the adjudicator provides it, and the date on the proposal, but does not apply it. A decision is applied by an analyst who accepts the proposal, by a curation policy that [requires adjudication agreement](#curation-policies-and-auto-apply), or by the XTM One `decide_opencti_curation_proposal` tool when its user approves the action. Decisions resolve duplicates: only `merge` and `alias` proposals take one, through the adjudication or the API, and the other kinds are accepted or rejected in the inbox.
+An answer that is not a valid decision is recorded as `skip`, and so is an answer whose `target_id` is not a subject of the proposal, whatever agent is bound to the intent. The adjudication is **advisory**: OpenCTI records the decision, the rationale, the agent, the model when the adjudicator provides it, and the date on the proposal, but does not apply it. A decision is applied by an analyst who accepts the proposal, by a curation policy that [requires adjudication agreement](#curation-policies-and-auto-apply), or by the XTM One `decide_opencti_curation_proposal` tool when its user approves the action. Decisions resolve duplicates: only `merge` and `alias` proposals take one, through the adjudication or the API, and the other kinds are accepted or rejected in the inbox. A decision applied through the API makes the change it states, whatever the proposal recommended (an `alias` decision on a merge proposal adds the aliases and keeps the entities apart, a `merge` decision on an alias proposal merges them and needs the `Merge knowledge` capability), on the target it names. Accepts, rejections, decisions and reverts of the same proposal run one at a time, so a proposal changes the graph only once.
 
 The **Ask the Curator** action of a proposal requests an adjudication on demand, for an open duplicate proposal (`merge` or `alias` kind) of the ambiguous band. The other kinds (contradictions, staleness, relationship conflicts) stay with the analysts: the Curator resolves entities. It requires the `Create / Update knowledge` capability and counts towards the daily limit.
 
@@ -311,7 +311,7 @@ When incoming data matches an existing entity, for each attribute that has a rul
 - if it ranks lower, the current value is kept, whatever the incoming confidence;
 - if both rank the same, or neither is listed, the usual confidence comparison applies.
 
-The incoming source is the author of the incoming data and the connector that sends it. The source of the current value is recorded each time a listed source writes the attribute; until then, the author of the entity is considered as its source. Empty fields are always filled, attributes without a rule keep the confidence behavior, and requests in synchronized upsert mode (used to mirror another platform) bypass field authority.
+The incoming source is the author of the incoming data and the connector that sends it. The source of the current value is recorded each time a listed source writes the attribute; until then, the author of the entity and the connector that created it are considered as its sources. Empty fields are always filled, attributes without a rule keep the confidence behavior, and requests in synchronized upsert mode (used to mirror another platform) bypass field authority.
 
 When a value written by a more authoritative connector is overwritten outside of this resolution (for example by a manual edit), the curation manager raises a `field_precedence` proposal to restore it. Every field overwritten by another source also counts in the source conflict rate of the Knowledge health score.
 
@@ -358,7 +358,7 @@ The [ImportDocumentAI connector](https://github.com/OpenCTI-Platform/connectors/
 
 ### Configure curation
 
-Go to **Settings > Customization > Curation**, tab **Settings** (changing the settings requires the `Manage customization` capability):
+Go to **Settings > Customization > Curation**, tab **Settings** (reading and changing the settings and the policies requires the `Manage customization` capability):
 
 ![Settings tab of Settings > Customization > Curation](assets/curation-settings.png)
 
@@ -378,7 +378,7 @@ Go to **Settings > Customization > Curation**, tab **Settings** (changing the se
 | Merge record retention          | 365 days                                                                                                                                 | How long a merge stays reversible (1 to 3,650 days).                                                                                                                                                              |
 | Weekly digest                   | Off, Monday                                                                                                                              | Enables the digest, its day of the week (UTC) and its recipients.                                                                                                                                                 |
 | Field authority                 | Off                                                                                                                                      | Enables [field authority](#field-authority) and its rules.                                                                                                                                                        |
-| Scan size                       | 5,000                                                                                                                                    | The most recently updated entities read per entity type at each scan (100 to 100,000).                                                                                                                            |
+| Scan size                       | 5,000                                                                                                                                    | The entities read per entity type at each scan (100 to 100,000): half the most recently updated ones, half a rotating slice of the others.                                                                        |
 
 **Run a scan now** requests a full scan at the next manager cycle. The settings also show the dates of the last scan, snapshot and digest, and the version of the vendor taxonomy.
 
@@ -397,11 +397,11 @@ Platform administrators can tune the manager schedules and the merge record limi
 
 | Action                                                                                           | Required capability                                    |
 |:-------------------------------------------------------------------------------------------------|:-------------------------------------------------------|
-| See the proposals, the merges, the policies and the Knowledge health                             | `Access knowledge`                                     |
+| See the proposals, the merges and the Knowledge health                                           | `Access knowledge`                                     |
 | Accept, reject or revert a proposal, bulk accept or reject, Ask the Curator                      | `Create / Update knowledge`                            |
-| Accept or revert a `merge` or `split` proposal, unmerge from a merge record                      | `Merge knowledge`                                      |
+| Accept or revert a `merge` or `split` proposal, apply a `merge` decision, unmerge from a merge record | `Merge knowledge`                                  |
 | Accept an attribution conflict (deletes the attributions not kept)                               | `Delete knowledge`                                     |
-| Change the settings, run a scan now, refresh the Knowledge health, manage and apply policies     | `Manage customization`                                 |
+| See and change the settings, run a scan now, refresh the Knowledge health, see, manage and apply policies | `Manage customization`                         |
 
 See [Users and RBAC](../administration/users.md) for the capabilities.
 
