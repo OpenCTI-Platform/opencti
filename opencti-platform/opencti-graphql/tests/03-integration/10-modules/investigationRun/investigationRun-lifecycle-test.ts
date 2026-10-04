@@ -4,6 +4,7 @@ import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden }
 import { v4 as uuid } from 'uuid';
 import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { connectorDelete, registerConnector } from '../../../../src/domain/connector';
+import { updateProcessedTime } from '../../../../src/domain/work';
 import { ConnectorType } from '../../../../src/generated/graphql';
 import { decideInvestigationApprovals } from '../../../../src/modules/investigationRun/investigationRun-domain';
 import * as entrepriseEdition from '../../../../src/enterprise-edition/ee';
@@ -132,6 +133,11 @@ const DELETE_WORKSPACE = gql`mutation WorkspaceDelete($id: ID!) { workspaceDelet
 const RUN_ADD = gql`
   mutation RunAdd($subjectId: ID!) { investigationRunAdd(subjectId: $subjectId) { id run_status run_phase run_trigger case_id } }
 `;
+const RUN_ADD_WITH_POLICY = gql`
+  mutation RunAddWithPolicy($subjectId: ID!, $policyId: ID) { investigationRunAdd(subjectId: $subjectId, policyId: $policyId) { id } }
+`;
+const POLICY_ADD = gql`mutation PolicyAdd($input: InvestigationPolicyAddInput!) { investigationPolicyAdd(input: $input) { id } }`;
+const POLICY_DELETE = gql`mutation PolicyDelete($id: ID!) { investigationPolicyDelete(id: $id) }`;
 const RUN_DELETE = gql`mutation RunDelete($id: ID!) { investigationRunDelete(id: $id) }`;
 const RUN_CANCEL = gql`mutation RunCancel($id: ID!) { investigationRunCancel(id: $id) { id run_status run_phase } }`;
 const RUN_FEEDBACK = gql`
@@ -197,6 +203,11 @@ const RUN_ENRICH = gql`
 const RUN_WAVE = gql`
   query RunWave($id: ID!, $waveId: ID!) {
     investigationRunEnrichmentWave(id: $id, waveId: $waveId) { id status jobs { entity_id connector_id status } delta { id } }
+  }
+`;
+const RUN_ENRICHMENT_STATE = gql`
+  query RunEnrichmentState($id: ID!) {
+    investigationRun(id: $id) { id enrichment_requests { id entity_id status work_id } budget { used_enrichment_jobs } }
   }
 `;
 const CASE_LATEST_RUN = gql`
@@ -272,6 +283,18 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
 
   it('refuses to start a run for a user who cannot enrich knowledge', async () => {
     await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, { query: RUN_ADD, variables: { subjectId: fixture.caseId } });
+  });
+
+  it('refuses a new case the investigation policy does not allow', async () => {
+    const { data } = await queryAsAdminWithSuccess({ query: POLICY_ADD, variables: { input: { name: 'Case Autopilot e2e without cases', allowed_actions: ['enrichment'] } } });
+    const policyId = data.investigationPolicyAdd.id;
+    try {
+      // An observable is investigated inside a case: without a picked case, a new one is needed.
+      const refused = await queryAsAdmin({ query: RUN_ADD_WITH_POLICY, variables: { subjectId: fixture.ipId, policyId } });
+      expect(refused.errors?.[0]?.message).toContain('does not allow creating a case');
+    } finally {
+      await queryAsAdmin({ query: POLICY_DELETE, variables: { id: policyId } });
+    }
   });
 
   it('plans a run on the case and dedupes a second launch on the same subject', async () => {
@@ -467,6 +490,21 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       const records = await queryAsAdminWithSuccess({ query: RUN_RECORDS, variables: { id: runId } });
       expect(records.data.investigationRun.enrichment_requests).toEqual([expect.objectContaining({ entity_id: fixture.ipId })]);
       expect(records.data.investigationRun.enrichment_entities).toEqual([expect.objectContaining({ id: fixture.ipId, entity_type: 'IPv4-Addr' })]);
+      // The next tick dispatches the job to the connector, within the enrichment budget.
+      await processInvestigationRun(testContext, runId);
+      const dispatched = await queryAsAdminWithSuccess({ query: RUN_ENRICHMENT_STATE, variables: { id: runId } });
+      const [job] = dispatched.data.investigationRun.enrichment_requests;
+      expect(job).toMatchObject({ entity_id: fixture.ipId, status: 'dispatched' });
+      expect(job.work_id).toBeTruthy();
+      expect(dispatched.data.investigationRun.budget.used_enrichment_jobs).toBe(1);
+      // Once the connector ends its work, the wave records what it brought into the draft.
+      await updateProcessedTime(testContext, ADMIN_USER, job.work_id, 'Enrichment done');
+      await processInvestigationRun(testContext, runId);
+      const ended = await queryAsAdminWithSuccess({ query: RUN_ENRICHMENT_STATE, variables: { id: runId } });
+      expect(ended.data.investigationRun.enrichment_requests).toEqual([expect.objectContaining({ id: job.id, status: 'completed' })]);
+      const endedWave = await queryAsAdminWithSuccess({ query: RUN_WAVE, variables: { id: runId, waveId: result.wave_id } });
+      expect(endedWave.data.investigationRunEnrichmentWave).toMatchObject({ status: 'completed', jobs: [expect.objectContaining({ status: 'completed' })] });
+      expect(endedWave.data.investigationRunEnrichmentWave.delta).toEqual([]);
       await queryAsAdminWithSuccess({ query: RUN_CANCEL, variables: { id: runId } });
     } finally {
       await connectorDelete(testContext, ADMIN_USER, connectorId);

@@ -24,7 +24,7 @@ Open the **Ask AI** menu in the header of an incident, a case (incident response
 In the dialog:
 
 - pick the **investigation policy** (the default policy is preselected);
-- for an indicator or an observable, choose the **case of the investigation**: an existing case (the cases that contain the entity are listed first), or a new incident response case created in the investigation draft. The results of an investigation always live in the Autopilot tab of a case;
+- for an indicator or an observable, choose the **case of the investigation**: an existing case (the cases that contain the entity are listed first), or a new incident response case created in the investigation draft, when the investigation policy allows creating a case. The results of an investigation always live in the Autopilot tab of a case;
 - choose whether the investigation graph opens when the investigation completes.
 
 The dialog also lists the previous investigations of the entity, each with its state and when it started.

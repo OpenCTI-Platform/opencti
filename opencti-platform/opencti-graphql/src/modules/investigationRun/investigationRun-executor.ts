@@ -100,7 +100,7 @@ import {
   type InvestigationOutputs,
   type InvestigationRecommendation,
 } from './investigationRun-types';
-import { listPolicyEnrichmentConnectors, loadInvestigationRun, updateInvestigationRun } from './investigationRun-domain';
+import { listPolicyEnrichmentConnectors, loadInvestigationRun, updateInvestigationRun, withRunActions } from './investigationRun-domain';
 import { loadInvestigationPolicy } from './investigationPolicy-domain';
 import {
   boundApprovals,
@@ -470,6 +470,10 @@ const initializeRun = async (exec: RunExecution) => {
   const subject = await storeLoadByIdWithRefs<StoreEntity>(liveContext, runUser, run.subject_id);
   if (!subject) {
     await failRun(liveContext, run.internal_id, 'The investigated entity is no longer accessible to the identity of the run');
+    return;
+  }
+  if (!run.case_id && run.create_case && !exec.policy.allowed_actions.includes(InvestigationAutonomousAction.CreateCase)) {
+    await failRun(liveContext, run.internal_id, 'The policy of the run no longer allows creating its case');
     return;
   }
   const patch: Record<string, unknown> = {};
@@ -1108,7 +1112,7 @@ const collectRunRestrictions = async (exec: RunExecution, subject: BasicStoreEnt
   };
 };
 
-const ingest = async (exec: RunExecution) => {
+const ingestRun = async (exec: RunExecution) => {
   const { run, runUser, now, policy } = exec;
   const subject = await loadSubject(exec);
   if (!subject) {
@@ -1222,7 +1226,7 @@ const ingest = async (exec: RunExecution) => {
       created_at: now.toISOString(),
     });
   }
-  await updateInvestigationRun(exec.liveContext, run.internal_id, (current) => ({
+  const finalized = await updateInvestigationRun(exec.liveContext, run.internal_id, (current) => (TERMINAL_RUN_STATUSES.includes(current.run_status) ? null : {
     ...(engine ? mirrorPatch(current, engine, []) : {}),
     ...statusTransition(current, nextStatus, nextPhase, now, reasons.join('. ') || null),
     evidence,
@@ -1239,10 +1243,17 @@ const ingest = async (exec: RunExecution) => {
     wave_started_at: now.toISOString(),
     approvals: boundApprovals([...current.approvals, ...recommendationApprovals, ...draftApproval]),
   }));
-  if (nextStatus === InvestigationRunStatus.Completed) {
+  if (nextStatus === InvestigationRunStatus.Completed && finalized.run_status === InvestigationRunStatus.Completed) {
     addInvestigationRunOutcomeCount(InvestigationRunStatus.Completed);
   }
 };
+
+// Ingestion writes the draft and may approve it: it runs under the lock of the
+// run actions, as a cancellation or a decision does, against a fresh run.
+const ingest = async (exec: RunExecution) => withRunActions(exec.liveContext, exec.run.internal_id, async (run) => {
+  if (run.run_status !== InvestigationRunStatus.Running || run.run_phase !== InvestigationRunPhase.Ingesting) return;
+  await ingestRun({ ...exec, run });
+});
 
 // endregion
 
@@ -1291,7 +1302,8 @@ const completeValidation = async (exec: RunExecution) => {
       reasons.push(`Investigation graph not updated (${errorMessage(error)})`);
     }
   }
-  await updateInvestigationRun(exec.liveContext, run.internal_id, (current) => ({
+  // A cancellation during the validation stays: the run is only completed while still active.
+  const finalized = await updateInvestigationRun(exec.liveContext, run.internal_id, (current) => (TERMINAL_RUN_STATUSES.includes(current.run_status) ? null : {
     ...statusTransition(current, InvestigationRunStatus.Completed, InvestigationRunPhase.Done, now, reasons.length > 0 ? reasons.join('. ') : null),
     evidence,
     hypotheses,
@@ -1299,7 +1311,9 @@ const completeValidation = async (exec: RunExecution) => {
     case_id: liveCase?.internal_id ?? current.case_id ?? null,
     case_ids: R.uniq([...(current.case_ids ?? []), ...(liveCase ? [liveCase.internal_id] : [])]),
   }));
-  addInvestigationRunOutcomeCount(InvestigationRunStatus.Completed);
+  if (finalized.run_status === InvestigationRunStatus.Completed) {
+    addInvestigationRunOutcomeCount(InvestigationRunStatus.Completed);
+  }
 };
 
 // endregion

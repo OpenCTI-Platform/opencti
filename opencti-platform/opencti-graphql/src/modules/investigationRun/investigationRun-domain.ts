@@ -20,6 +20,7 @@ import {
   FilterMode,
   InvestigationApprovalKind,
   InvestigationApprovalStatus,
+  InvestigationAutonomousAction,
   InvestigationEnrichmentRequestStatus,
   InvestigationFeedbackDecision,
   InvestigationFeedbackItemType,
@@ -313,6 +314,10 @@ export const addInvestigationRun = async (
     throw FunctionalError('Case Autopilot does not investigate an entity restricted to authorized members', { id: memberRestricted.internal_id });
   }
   const needsCase = !INVESTIGATION_TAB_SUBJECT_TYPES.includes(subject.entity_type);
+  const createCase = needsCase && !targetCase;
+  if (createCase && !policy.allowed_actions.includes(InvestigationAutonomousAction.CreateCase)) {
+    throw FunctionalError('The investigation policy does not allow creating a case: pick the case of the investigation', { policyId: policy.internal_id });
+  }
   let caseIds: string[] = [];
   if (isCase) {
     caseIds = [subject.internal_id, subject.standard_id];
@@ -325,7 +330,7 @@ export const addInvestigationRun = async (
     subject_type: subject.entity_type,
     case_id: (isCase ? subject.internal_id : targetCase?.internal_id) ?? null,
     case_ids: caseIds,
-    create_case: needsCase && !targetCase,
+    create_case: createCase,
     policy_id: policy.internal_id,
     agent_slug: policy.agent_slug || INVESTIGATION_DEFAULT_AGENT_SLUG,
     pack_id: policy.pack_id || null,
@@ -558,7 +563,7 @@ export const resolveLiveCase = async (context: AuthContext, user: AuthUser, run:
  * a repeated click or a concurrent approval never applies an action twice.
  * Taken before the run lock, never while holding it.
  */
-const withRunActions = async <T>(
+export const withRunActions = async <T>(
   context: AuthContext,
   runId: string,
   execute: (run: BasicStoreEntityInvestigationRun) => Promise<T>,
