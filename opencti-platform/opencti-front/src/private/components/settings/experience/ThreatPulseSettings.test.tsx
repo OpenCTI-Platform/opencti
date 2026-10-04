@@ -154,6 +154,14 @@ describe('ThreatPulseSettings', () => {
     expect(screen.queryByText(/contributions purged from XTM Hub/)).toBeNull();
   });
 
+  it.each([
+    ['in preview', IN_PREVIEW],
+    ['turned off', { mode: 'off', access: 'off', enabled: false }],
+  ])('should keep the right to purge %s, without contributing again', async (_, state) => {
+    renderSettings(state);
+    expect(await screen.findByTestId('threat-pulse-purge-button')).toBeDefined();
+  });
+
   it('should turn the preview off', async () => {
     const relayEnv = renderSettings(IN_PREVIEW);
     fireEvent.click(await screen.findByTestId('threat-pulse-disable-button'));

@@ -12,8 +12,8 @@ import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
 import { ENTITY_TYPE_TRIGGER } from '../../../src/modules/notification/notification-types';
 import { MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
-import { recordPulseActivity, runPulseContribution, runPulsePreview, runPulseRefresh, utcDay } from '../../../src/modules/xtm/pulse/pulse-domain';
-import { redisBumpPulsePolicyGeneration, redisClaimPulseOutbox, redisTakePulseActivity } from '../../../src/modules/xtm/pulse/pulse-cache';
+import { recordPulseActivity, resetPulseOnUnregistration, runPulseContribution, runPulsePreview, runPulseRefresh, utcDay } from '../../../src/modules/xtm/pulse/pulse-domain';
+import { redisBumpPulsePolicyGeneration, redisClaimPulseOutbox, redisGetPulseState, redisSetPulseState, redisTakePulseActivity } from '../../../src/modules/xtm/pulse/pulse-cache';
 import { recordPulseSightingIncrease } from '../../../src/modules/xtm/pulse/pulse-sighting-activity';
 import { runPulseTrendingNotifications } from '../../../src/modules/xtm/pulse/pulse-notifications';
 import { computeStableKeys } from '../../../src/modules/xtm/pulse/pulse-hashing';
@@ -660,5 +660,15 @@ describe('Threat Pulse manager and API', () => {
     expect(hub.requests.length).toBe(before);
     const result = await queryAsAdminWithSuccess({ query: PULSE_ENTITY, variables: { id: sharedIndicatorId } });
     expect(result.data?.pulseEntity).toMatchObject({ access: 'off', readable: false, unavailable_reason: 'not_enabled' });
+  });
+
+  it('should keep neither community data nor contribution state once the platform leaves XTM Hub', async () => {
+    await redisSetPulseState({ contribution_accepted: 'true', preview_matched: '3' });
+    await resetPulseOnUnregistration();
+    const state = await redisGetPulseState();
+    expect({ accepted: state.contribution_accepted, matched: state.preview_matched }).toEqual({ accepted: undefined, matched: undefined });
+    expect(await redisClaimPulseOutbox()).toEqual([]);
+    const entity = await storeLoadById<BasicStorePulseEntity>(testContext, ADMIN_USER, sharedIndicatorId, ENTITY_TYPE_INDICATOR);
+    expect(entity.pulse_prevalence).toBeUndefined();
   });
 });

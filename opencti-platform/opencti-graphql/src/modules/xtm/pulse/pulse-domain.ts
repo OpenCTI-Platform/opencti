@@ -1237,6 +1237,26 @@ export const recordPulseTelemetry = async (context: AuthContext, event: PulseTel
 };
 // endregion
 
+// The platform left XTM Hub: the community data written for it and the state of its contribution go with the
+// registration, so nothing stale passes for current and a later registration starts from the preview.
+export const resetPulseOnUnregistration = async () => {
+  await redisBumpPulsePolicyGeneration();
+  await redisBumpPulseConfigGeneration();
+  await redisDiscardPulseOutbox();
+  await redisDiscardPulseActivity(lastUtcDays(ACTIVITY_DAYS));
+  await redisSetPulseState({
+    contribution_accepted: undefined,
+    contribution_lapsed: undefined,
+    last_refresh_at: undefined,
+    refresh_offset: undefined,
+    preview_refresh_at: undefined,
+    preview_offset: undefined,
+    preview_matched: undefined,
+    preview_since: undefined,
+  });
+  await clearPulseNetworkInformation();
+};
+
 // region purge
 export const purgePulseContributions = async (context: AuthContext, user: AuthUser) => {
   const { settings, platform, access } = await loadPulseContext(context);

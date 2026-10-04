@@ -461,7 +461,8 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
 
   const footer = isGranted ? (
     <>
-      {settings.enabled && (
+      {/* The right to purge does not depend on the mode: what XTM Hub holds stays there after a stop */}
+      {settings.hub_registered && (
         <Button variant="secondary" color="error" onClick={() => setOpenPurge(true)} disabled={purging} data-testid="threat-pulse-purge-button">
           {t_i18n('Purge my contributions')}
         </Button>

@@ -168,7 +168,7 @@ export const redisClaimPulseOutbox = async (): Promise<PulseOutboxEntry[]> => {
   for (let index = 0; index < raw.length; index += 1) {
     const item = parseJson<PulseOutboxItem>(raw[index], OUTBOX_KEY);
     if (isPulseOutboxItem(item)) {
-      entries.push({ raw: raw[index], batch: item.batch, stats: item.stats });
+      entries.push({ raw: raw[index], batch: item.batch, stats: item.stats, policy: item.policy });
     } else {
       await getClientBase().lrem(OUTBOX_INFLIGHT_KEY, 1, raw[index]);
     }
