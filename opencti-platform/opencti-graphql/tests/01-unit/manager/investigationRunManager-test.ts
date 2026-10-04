@@ -81,6 +81,14 @@ describe('Case Autopilot manager - request for information hook', () => {
     expect(progress).toEqual({ handledEventId: '1-0', retry: true });
   });
 
+  it('keeps the requests for the next run while the identity of the policy does not resolve', async () => {
+    vi.mocked(resolveUserByIdFromCache).mockResolvedValueOnce(undefined as never);
+    const progress: CaseRfiHookProgress = { handledEventId: null, retry: false };
+    await caseRfiCreationHandler(context, policy, progress)([otherEvent('1-0'), rfiCreation('2-0', 'rfi-1'), otherEvent('3-0')]);
+    expect(addInvestigationRun).not.toHaveBeenCalled();
+    expect(progress).toEqual({ handledEventId: '1-0', retry: true });
+  });
+
   it('keeps the cursor in place when the first request already fails', async () => {
     vi.mocked(addInvestigationRun).mockRejectedValueOnce(LockTimeoutError({ participantIds: ['rfi-1'] }));
     const progress: CaseRfiHookProgress = { handledEventId: null, retry: false };

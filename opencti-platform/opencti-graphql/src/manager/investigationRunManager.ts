@@ -76,11 +76,14 @@ export const caseRfiCreationHandler = (context: AuthContext, policy: BasicStoreE
       && event.data?.extensions?.[STIX_EXT_OCTI]?.type === ENTITY_TYPE_CONTAINER_CASE_RFI;
     const hasRfiCreation = streamEvents.some(isRfiCreation);
     const runUser = hasRfiCreation ? await resolveHookUser(context, policy) : null;
-    if (hasRfiCreation && !runUser) {
-      logApp.warn('[CASE AUTOPILOT] No identity to investigate new requests for information', { policyId: policy.internal_id });
-    }
     for (let index = 0; index < streamEvents.length && !progress.retry; index += 1) {
       const streamEvent = streamEvents[index];
+      if (isRfiCreation(streamEvent) && !runUser) {
+        // Retried once the identity of the policy resolves again: the cursor stays before this request.
+        logApp.warn('[CASE AUTOPILOT] No identity to investigate new requests for information, retried on the next run', { policyId: policy.internal_id });
+        progress.retry = true;
+        return;
+      }
       if (runUser && isRfiCreation(streamEvent)) {
         const rfiId = streamEvent.data.data.extensions[STIX_EXT_OCTI].id;
         try {
