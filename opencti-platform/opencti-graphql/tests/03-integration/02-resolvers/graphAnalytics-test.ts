@@ -23,7 +23,7 @@ import {
   loadGraphClusters,
   replaceSimilarityRows,
 } from '../../../src/modules/graphAnalytics/graphAnalytics-store';
-import { redisGraphAnalyticsDeleteState, redisGraphAnalyticsGetState, redisGraphAnalyticsPopReady } from '../../../src/database/redis';
+import { redisGraphAnalyticsDeleteState, redisGraphAnalyticsGetState, redisGraphAnalyticsMarkDirty, redisGraphAnalyticsPopReady } from '../../../src/database/redis';
 import {
   GRAPH_STATE_ANALYTICS_LAST_RUN_AT,
   GRAPH_STATE_FULL_PASS_COMPLETED_AT,
@@ -620,6 +620,18 @@ describe('Graph analytics resolvers', () => {
     expect(pendingData.graphAnalyticsPendingEntities.map((entity: { id: string }) => entity.id)).toContain(ids.isA);
     // listing the queue does not consume it
     expect(await redisGraphAnalyticsPopReady(0, 10)).toContain(ids.isA);
+    // an explicit request moves a debounced entity to the priority queue instead of queuing it twice
+    await redisGraphAnalyticsMarkDirty([ids.isA]);
+    await queryAsAdminWithSuccess({ query: mutation, variables: { ids: [ids.isA] } });
+    expect(await redisGraphAnalyticsPopReady(0, 10)).toContain(ids.isA);
+    expect(await redisGraphAnalyticsPopReady(Date.now() + 3600 * 1000, 100)).not.toContain(ids.isA);
+    // queued entities a restricted user cannot access are skipped, the next accessible ones are listed
+    const queuedAt = Date.now() - 1000;
+    await redisGraphAnalyticsMarkDirty([ids.malware], queuedAt);
+    await redisGraphAnalyticsMarkDirty([ids.isB], queuedAt + 1);
+    const restrictedPending = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: gql`query pendingOne { graphAnalyticsPendingEntities(first: 1) { id } }`, variables: {} });
+    expect(restrictedPending.data.graphAnalyticsPendingEntities.map((entity: { id: string }) => entity.id)).toEqual([ids.isB]);
+    await redisGraphAnalyticsPopReady(Date.now() + 3600 * 1000, 100);
     const pivot = gql`mutation pivot { graphAnalyticsRecordPivot(kind: similar_open) }`;
     const pivotResult = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: pivot, variables: {} });
     expect(pivotResult.data.graphAnalyticsRecordPivot).toBe(true);

@@ -266,8 +266,9 @@ const loadMatrixEntities = async (context: AuthContext, user: AuthUser, args: Gr
     maxSize: MATRIX_MAX_CANDIDATES,
   });
   const degrees = await computeVisibleDegreeMetrics(context, user, candidates.map((candidate) => candidate.internal_id));
+  // an entity whose visible degree is not computed (too many relationships) ranks last: its rank must not reveal anything
   return candidates
-    .map((entity, index) => ({ entity, index, degree: degrees.get(entity.internal_id)?.degree ?? 0 }))
+    .map((entity, index) => ({ entity, index, degree: degrees.get(entity.internal_id)?.degree ?? -1 }))
     .sort((a, b) => (b.degree - a.degree) || (a.index - b.index))
     .slice(0, limit)
     .map(({ entity }) => entity);
@@ -383,11 +384,12 @@ export const batchGraphMetrics = async (context: AuthContext, user: AuthUser, el
   return elements.map((element, index) => {
     const metrics = stored[index];
     if (!metrics) return null;
-    const visibleDegree = degrees.get(element.internal_id) ?? { degree: 0, degree_by_type: [] };
+    // null: more relationships than can be counted for this reader, never a partial count
+    const visibleDegree = degrees.get(element.internal_id) ?? null;
     return {
       ...metrics,
-      degree: visibleDegree.degree,
-      degree_by_type: visibleDegree.degree_by_type,
+      degree: visibleDegree?.degree ?? null,
+      degree_by_type: visibleDegree?.degree_by_type ?? null,
       betweenness_approx: null,
       cluster_size: metrics.cluster_id ? (clusterSizes.get(metrics.cluster_id.toLowerCase()) ?? 0) : null,
     };
@@ -853,18 +855,27 @@ export const getGraphAnalyticsStatus = async (context: AuthContext, user: AuthUs
 };
 
 const PENDING_ENTITIES_MAX = 100;
+// queued entities the caller cannot access are skipped: the scan reads this many queued ids at most
+const PENDING_SCAN_MAX = 2000;
+const PENDING_SCAN_CHUNK = 200;
 
 /** Next entities waiting for a recompute, in processing order, restricted to the ones the caller can access. */
 export const findGraphAnalyticsPendingEntities = async (context: AuthContext, user: AuthUser, first?: number | null) => {
-  const ids = await redisGraphAnalyticsPendingIds(clamp(first, 25, 1, PENDING_ENTITIES_MAX));
-  const accessible = await accessibleMap<StoreEntity>(context, user, ids);
+  const limit = clamp(first, 25, 1, PENDING_ENTITIES_MAX);
+  const ids = await redisGraphAnalyticsPendingIds(PENDING_SCAN_MAX);
+  const found: StoreEntity[] = [];
   const seen = new Set<string>();
-  return ids.flatMap((id) => {
-    const entity = accessible[id];
-    if (!entity || seen.has(entity.internal_id)) return [];
-    seen.add(entity.internal_id);
-    return [entity];
-  });
+  for (let start = 0; start < ids.length && found.length < limit; start += PENDING_SCAN_CHUNK) {
+    const chunk = ids.slice(start, start + PENDING_SCAN_CHUNK);
+    const accessible = await accessibleMap<StoreEntity>(context, user, chunk);
+    chunk.forEach((id) => {
+      const entity = accessible[id];
+      if (!entity || seen.has(entity.internal_id) || found.length >= limit) return;
+      seen.add(entity.internal_id);
+      found.push(entity);
+    });
+  }
+  return found;
 };
 
 /** Queue entities for a recompute at the next manager tick, ahead of the backlog (only the ones the caller can access). */
