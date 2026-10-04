@@ -4673,7 +4673,6 @@
   "Scenario generation in progress...": "Génération de scénario en cours...",
   "Scenario: {type} targets on {platforms}, emulating {threat}": "Scénario : cibles {type} sous {platforms}, en émulant {threat}",
   "Scenario: {type} targets on {platforms}, no threat emulated": "Scénario : cibles {type} sous {platforms}, aucune menace émulée",
-  "Scenario: {type} targets on {platforms}, threat emulated: {threat}": "Scénario : cibles {type} sur {platforms}, menace émulée : {threat}",
   "Schedule": "Planification",
   "Schedule a run": "Planifier une exécution",
   "Schedule period": "Période de programmation",

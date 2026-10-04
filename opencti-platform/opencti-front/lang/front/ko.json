@@ -4673,7 +4673,6 @@
   "Scenario generation in progress...": "시나리오 생성 진행 중...",
   "Scenario: {type} targets on {platforms}, emulating {threat}": "시나리오: {platforms}의 {type} 대상, {threat} 에뮬레이션",
   "Scenario: {type} targets on {platforms}, no threat emulated": "시나리오: {platforms}의 {type} 대상, 에뮬레이션할 위협 없음",
-  "Scenario: {type} targets on {platforms}, threat emulated: {threat}": "시나리오: {platforms}의 {type} 대상, 에뮬레이션할 위협: {threat}",
   "Schedule": "일정",
   "Schedule a run": "실행 일정 설정",
   "Schedule period": "스케줄 기간",

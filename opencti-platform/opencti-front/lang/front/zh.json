@@ -4673,7 +4673,6 @@
   "Scenario generation in progress...": "场景生成中...",
   "Scenario: {type} targets on {platforms}, emulating {threat}": "场景：{platforms} 上的{type}目标，模拟 {threat}",
   "Scenario: {type} targets on {platforms}, no threat emulated": "场景：{platforms} 上的{type}目标，不模拟威胁",
-  "Scenario: {type} targets on {platforms}, threat emulated: {threat}": "场景：{platforms} 上的 {type} 目标，模拟的威胁：{threat}",
   "Schedule": "计划",
   "Schedule a run": "安排运行",
   "Schedule period": "计划周期",

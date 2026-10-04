@@ -4673,7 +4673,6 @@
   "Scenario generation in progress...": "Генерация сценария продолжается...",
   "Scenario: {type} targets on {platforms}, emulating {threat}": "Сценарий: цели {type} на {platforms}, эмуляция {threat}",
   "Scenario: {type} targets on {platforms}, no threat emulated": "Сценарий: цели {type} на {platforms}, без эмуляции угрозы",
-  "Scenario: {type} targets on {platforms}, threat emulated: {threat}": "Сценарий: цели типа {type} на {platforms}, эмулируемая угроза: {threat}",
   "Schedule": "Расписание",
   "Schedule a run": "Запланировать выполнение",
   "Schedule period": "Период расписания",

@@ -4673,7 +4673,6 @@
   "Scenario generation in progress...": "シナリオ生成中...",
   "Scenario: {type} targets on {platforms}, emulating {threat}": "シナリオ: {platforms} 上の {type} ターゲット、{threat} をエミュレート",
   "Scenario: {type} targets on {platforms}, no threat emulated": "シナリオ: {platforms} 上の {type} ターゲット、エミュレートする脅威なし",
-  "Scenario: {type} targets on {platforms}, threat emulated: {threat}": "シナリオ: {platforms} 上の {type} ターゲット、エミュレートする脅威: {threat}",
   "Schedule": "スケジュール",
   "Schedule a run": "実行をスケジュール",
   "Schedule period": "スケジュール期間",
