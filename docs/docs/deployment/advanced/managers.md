@@ -106,7 +106,7 @@ There is no UI yet, but some GraphQL operations can be found in the dedicated pa
 
 ## Curation manager
 
-The curation manager runs the knowledge curation detectors, on stream events and in a daily scan, and turns their findings into curation proposals. It also takes the daily Knowledge Health snapshot and sends the weekly digest, sends ambiguous proposals to XTM One for adjudication, runs the enabled curation policies, and closes the merge records whose retention window is over.
+The curation manager runs the knowledge curation detectors, on stream events and in a daily scan, and turns their findings into curation proposals. It also takes the daily Knowledge health snapshot and sends the weekly digest, sends ambiguous proposals to XTM One for adjudication, runs the enabled curation policies, and closes the merge records whose retention window is over.
 
 More information can be found [here](../../usage/knowledge-curation.md).
 

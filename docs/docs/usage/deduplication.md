@@ -95,3 +95,9 @@ To understand in details how the deduplication mechanism works in context of the
 !!! note "Field authority and knowledge curation"
 
     When [field authority](knowledge-curation.md#field-authority) rules are configured, a more authoritative source wins on the attributes it rules, before the confidence comparison. [Knowledge curation](knowledge-curation.md) also finds the duplicates that identifiers cannot reveal, such as entities named differently by different sources.
+
+When knowledge curation finds a possible duplicate, the header of the entity shows a **Possible duplicate** chip that links to the proposal, where the two entities are compared side by side with the evidence behind the confidence.
+
+![Possible duplicate chip in the header of an intrusion set](assets/curation-possible-duplicate-chip.png)
+
+![Side-by-side comparison of a duplicate proposal](assets/curation-proposal-compare.png)

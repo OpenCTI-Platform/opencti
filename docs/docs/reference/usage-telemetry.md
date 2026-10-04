@@ -182,7 +182,7 @@ No source and no knowledge content is ever collected, only counts.
 - Whether the knowledge curation detectors are enabled
 - The number of open curation proposals
 - The number of enabled curation policies
-- The latest Knowledge Health score (from 0 to 100)
+- The latest Knowledge health score (from 0 to 100)
 - The number of curation proposals created by the detectors
 - The number of curation proposals accepted (from the curation inbox, a bulk accept or an applied adjudication decision)
 - The number of curation proposals rejected

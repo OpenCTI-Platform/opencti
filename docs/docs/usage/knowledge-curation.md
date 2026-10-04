@@ -1,12 +1,12 @@
 # Knowledge curation
 
-Knowledge curation keeps the knowledge graph clean after ingestion. Detectors continuously look for duplicates across vendor naming, contradictions, stale knowledge and conflicting relationships, and turn each finding into a proposal that explains its confidence with evidence. Analysts work these proposals in a curation inbox, policies can apply the safest ones automatically, every merge stays reversible, and a Knowledge Health score tracks the quality of the graph over time.
+Knowledge curation keeps the knowledge graph clean after ingestion. Detectors continuously look for duplicates across vendor naming, contradictions, stale knowledge and conflicting relationships, and turn each finding into a proposal that explains its confidence with evidence. Analysts work these proposals in a curation inbox, policies can apply the safest ones automatically, every merge stays reversible, and a Knowledge health score tracks the quality of the graph over time.
 
-This page explains what the detectors find, how a proposal is scored, how to review and apply proposals, how merges are reverted, how policies and adjudication by an XTM One agent work, and how to read the Knowledge Health score.
+This page explains what the detectors find, how a proposal is scored, how to review and apply proposals, how merges are reverted, how policies and adjudication by an XTM One agent work, and how to read the Knowledge health score.
 
 !!! tip "Enterprise edition"
 
-    The detectors, the curation inbox, reversible merges, the Knowledge Health score and its weekly digest, field authority and the `curationResolve` query are available in the Community Edition. Adjudication by an XTM One agent and curation policies (automatic apply) require the **OpenCTI Enterprise Edition**. Please read the [dedicated page](../administration/enterprise.md) for full details.
+    The detectors, the curation inbox, reversible merges, the Knowledge health score and its weekly digest, field authority and the `curationResolve` query are available in the Community Edition. Adjudication by an XTM One agent and curation policies (automatic apply) require the **OpenCTI Enterprise Edition**. Please read the [dedicated page](../administration/enterprise.md) for full details.
 
 ## What is knowledge curation?
 
@@ -20,7 +20,7 @@ Knowledge curation lives in three places: **Data > Curation**, the data-quality 
 | Ambiguous band   | The confidence range in which a proposal can be sent to an XTM One agent for adjudication (Enterprise Edition).                                                                    |
 | Merge record     | A snapshot taken around every merge, which makes the merge reversible (unmerge) during a retention window.                                                                        |
 | Curation policy  | A rule that applies eligible proposals automatically, through background tasks (Enterprise Edition).                                                                              |
-| Knowledge Health | A daily snapshot of the quality of the graph, summarized as a score from 0 to 100.                                                                                                |
+| Knowledge health | A daily snapshot of the quality of the graph, summarized as a score from 0 to 100.                                                                                                |
 
 ## Why use it?
 
@@ -31,7 +31,7 @@ Knowledge curation addresses these problems on the stored graph:
 - **Analysts work an inbox instead of hunting duplicates.** Each proposal explains why it exists, with the evidence that produced its confidence.
 - **Merges are no longer final.** Every merge is recorded and can be reverted, entirely or for some of the merged entities, during a retention window.
 - **Automation stays safe.** Policies only apply proposals above their thresholds, never merge across markings or organizations, and every automatic action is reversible.
-- **Managers get a measure.** The Knowledge Health score and its trend show whether the graph gets cleaner.
+- **Managers get a measure.** The Knowledge health score and its trend show whether the graph gets cleaner.
 - **Agents get a graph they can reason over.** XTM One agents and importers bind names to existing entities instead of creating new duplicates.
 
 !!! note "Curation, deduplication and data consistency"
@@ -153,16 +153,30 @@ The **Ask the Curator** action of a proposal requests an adjudication on demand,
 
 ### Work the curation inbox
 
-1. Go to **Data > Curation > Inbox**. The list shows the proposals with their kind, confidence, subjects and recommended action. Filter by status, kind, detector, or ambiguous band.
-2. Open a proposal. The comparison shows its subjects side by side (type, name, aliases, description, author, markings, creation and modification dates), with the suggested surviving entity highlighted. Select another subject to keep it instead.
-3. Read the evidence: each line gives its score, its weight and its description, which together explain the confidence. When the proposal was adjudicated, the adjudication shows the decision, the rationale, the agent, the model and the date. Use **Ask the Curator** to request one (Enterprise Edition).
+1. Go to **Data > Curation > Inbox**. The counters at the top give the open proposals, the proposals that **need your decision** (the open proposals of the ambiguous band), the reversible merges, the Knowledge health score out of 100 and the time of the last scan (hover it for the exact date). Click **Open proposals** or **Needs your decision** to filter the list; the other two open their tabs. The list shows the proposals with their kind, confidence, subjects and recommended action. Filter by status, kind, detector, or ambiguous band; when no proposal matches, **Clear filters** brings the full list back.
+2. Open a proposal. Its header states the recommendation and its confidence, and holds the primary action: **Review the merge** (or **Review the change**) while the proposal is open, **Open the merge record** once a merge is applied. Below come the recommendation, the comparison, the evidence, the decision and the adjudication. The comparison shows the subjects side by side (type, name, aliases, description, author, markings, creation and modification dates), with the suggested surviving entity highlighted; select another subject to keep it instead. A subject or relationship end you cannot read shows as **Restricted**.
+3. Read the evidence: each signal gives its score, its share of the decision (hover it for its weight) and its description, which together explain the confidence. A signal with a negative weight lowers the confidence. When the proposal was adjudicated, the adjudication shows the decision, the rationale, the agent, the model and the date. Use **Ask the Curator** to request one (Enterprise Edition).
 4. Decide:
-    - **Accept** executes the recommended action, with the surviving entity you selected for a merge.
-    - **Reject** records your rationale. The finding is never proposed again.
+    - **Review the merge** opens the approval of the change: what it does (for example **Merge 2 objects into APT28**), what moves to the surviving entity (relationships, new aliases, external references) and, for a merge, that you can undo it from **Data > Curation > Merges**. Confirm to execute the recommended action.
+    - **Reject** closes the proposal; the optional reason helps calibrate the next proposals. The finding is never proposed again.
     - **Revert** undoes an accepted or auto-applied proposal (see below).
-5. To process many proposals at once, select rows and use **bulk accept** or **bulk reject** (up to 500 proposals at a time). Bulk accept runs as a [background task](background-tasks.md) with your rights, and is refused upfront when one of the selected proposals needs a capability you do not have (merge knowledge for a merge or a split, delete knowledge for an attribution conflict); bulk reject is immediate and can carry a rationale.
+5. To process many proposals at once, select rows and use **bulk accept** or **bulk reject** (up to 500 proposals at a time; the toolbar warns when the selection is larger or holds proposals that are already decided). Bulk accept runs as a [background task](background-tasks.md) with your rights, and is refused upfront when one of the selected proposals needs a capability you do not have (merge knowledge for a merge or a split, delete knowledge for an attribution conflict); bulk reject is immediate and can carry a rationale.
 
-On an entity, a **Possible duplicate** chip in the header signals an open `merge` or `alias` proposal and links to it.
+![Inbox of the Curation hub with its counters](assets/curation-inbox-kpis.png)
+
+Before the first scan has raised any proposal, the Inbox explains what fills it and when the next scan runs, and links to the curation settings (users without the `Manage customization` capability are invited to ask their administrator).
+
+![Inbox before the first proposal](assets/curation-inbox-first-use.png)
+
+![Proposal page with its recommendation, confidence and side-by-side comparison](assets/curation-proposal-compare.png)
+
+![Evidence of a proposal: each signal with its score and its share of the decision](assets/curation-proposal-evidence.png)
+
+![Approval of a merge, with what moves to the surviving entity and the undo line](assets/curation-proposal-accept-dialog.png)
+
+On an entity, a **Possible duplicate** chip in the header signals an open `merge` or `alias` proposal, names the other entity (or the number of possible duplicates when there are several) and links to the proposal; its tooltip gives the confidence and the date of the proposal.
+
+![Possible duplicate chip in the header of an intrusion set](assets/curation-possible-duplicate-chip.png)
 
 !!! note "Visibility and rights"
 
@@ -181,14 +195,22 @@ Every merge is recorded in a **merge record**, whatever triggered it: the Merge 
 
 Before the merge runs, the merge record snapshots the surviving entity and every merged entity (attributes, references such as markings, labels or author, relationships and files), along with what each merged entity brings to the survivor. Go to **Data > Curation > Merges** to see every merge record, or open the **Changes** tab of an entity and its **Merges** view to see the merges the entity took part in, as the surviving entity or as a merged one. A merge record shows: merged entity, merged sources, status, merged by, date, reversible until, and number of relationships redirected. Opening a record shows each source with its aliases and its relationship counts, and the alias provenance: for each source, its name, its aliases and the relationships it brought to the merged entity.
 
-| Status               | Meaning                                                                                                   |
-|:---------------------|:----------------------------------------------------------------------------------------------------------|
-| `active`             | The merge can be reverted until the **reversible until** date.                                            |
-| `partially_reverted` | Some sources were restored; the other ones can still be restored.                                         |
-| `reverted`           | Every source was restored.                                                                                |
-| `irreversible`       | The merge can no longer be reverted, because the retention window is over or the merge exceeded the snapshot limits. |
+![Merges tab of the Curation hub listing the merge records](assets/curation-merges-list.png)
 
-To revert a merge, open its record and click **Unmerge**, for all the sources or only the ones you select. Unmerge requires the `Merge knowledge` capability. It:
+![Merges view of the Changes tab of the surviving intrusion set](assets/curation-entity-merges.png)
+
+| Status (API value)                      | Meaning                                                                                                   |
+|:----------------------------------------|:----------------------------------------------------------------------------------------------------------|
+| **Applied** (`active`)                  | The merge can be undone until the **reversible until** date.                                              |
+| **Partially undone** (`partially_reverted`) | Some sources were restored; the other ones can still be restored.                                     |
+| **Undone** (`reverted`)                 | Every source was restored.                                                                                |
+| **Expired** or **Not reversible** (`irreversible`) | The merge can no longer be undone: **Expired** when the retention window is over, **Not reversible** when the merge exceeded the snapshot limits or could not be recorded completely. The record says until when it could be undone. |
+
+The header of a merge record shows its status, the surviving entity and, while the merge can be undone, **Undo the merge**. To revert a merge, open its record and click **Undo the merge**, for all the sources or only the ones you select; the confirmation names the entities that come back. Undoing a merge requires the `Merge knowledge` capability. It:
+
+![Merge record with its status, the surviving entity and Undo the merge](assets/curation-merge-record-undo.png)
+
+
 
 1. removes from the merged entity what the restored sources brought (their names, aliases, identifiers and references), without touching the values that were there before the merge, the values that other merged sources still contribute, or the values changed by users after the merge;
 2. recreates each restored source with its original internal identifier, standard identifier and STIX identifiers, attributes and references, so that external references to it resolve again;
@@ -213,6 +235,8 @@ Each of these changes is published in the stream like any other change, so platf
     Curation policies are available under the **OpenCTI Enterprise Edition** licence. Creating, editing, deleting, testing and applying a policy requires the `Manage customization` capability.
 
 A curation policy applies eligible proposals automatically. Create policies in **Settings > Customization > Curation**, tab **Policies**:
+
+![Policies tab of Settings > Customization > Curation](assets/curation-policies.png)
 
 | Field                                  | Description                                                                                                                                                                                          |
 |:---------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -251,9 +275,11 @@ The enabled policies run automatically every 15 minutes, with the rights of the 
     - Choices that need a human are never applied automatically: which attribution to keep in an attribution conflict, and split (unmerge) proposals.
     - Every automatic apply is recorded in the activity log and reversible like any accepted proposal: revert it from the inbox, or unmerge it from its merge record (**Data > Curation > Merges**).
 
-### Read the Knowledge Health score
+### Read the Knowledge health score
 
-Go to **Data > Curation > Knowledge health**. The page shows the score from 0 to 100, its trend (the difference with the previous snapshot), the score breakdown per component, the counters and the score history. To follow the score on a dashboard, create one from the built-in template (**Dashboards**, **Create from template**, **Knowledge health**), or add the **Knowledge Health score**, **Knowledge Health trend** and **Open curation proposals by kind** widgets to an existing dashboard. These widgets take no filters: the score covers every curated entity of the platform.
+Go to **Data > Curation > Knowledge health**. The page shows the score from 0 to 100, its trend (the difference with the previous snapshot), the score breakdown per component, the counters and the score history. To follow the score on a dashboard, create one from the built-in template (**Dashboards**, **Create from template**, **Knowledge health**), or add the **Knowledge health score**, **Knowledge health trend** and **Open curation proposals by kind** widgets to an existing dashboard. These widgets take no filters: the score covers every curated entity of the platform. A widget without data says why: no snapshot yet, or a user who cannot access knowledge. Before the first snapshot, the Knowledge health tab says when the curation manager computes it.
+
+![Dashboard created from the Knowledge health template](assets/curation-dashboard-template.png)
 
 The curation manager takes a snapshot once a day. Click **Refresh now** to take one immediately (this requires the `Manage customization` capability). The score is the weighted average of five components, each scored from 100 (healthy) to 0:
 
@@ -269,7 +295,7 @@ The **duplicate estimate** is the number of entities that would disappear if eve
 
 #### Weekly digest
 
-Enable the **weekly digest** in the settings to send the latest snapshot to a list of recipients (users, groups or organizations) on the chosen day of the week (UTC), at most once every six days. Each recipient receives a platform [notification](notifications.md), and an email with a link to the Knowledge Health page when [SMTP is configured](../administration/smtp-configuration.md).
+Enable the **weekly digest** in the settings to send the latest snapshot to a list of recipients (users, groups or organizations) on the chosen day of the week (UTC), at most once every six days. Each recipient receives a platform [notification](notifications.md), and an email with a link to the Knowledge health page when [SMTP is configured](../administration/smtp-configuration.md).
 
 With the Enterprise Edition and XTM One, the **OpenCTI Knowledge Health Analyst** agent of XTM One can also write a commented digest, with the components that weigh on the score and recommended next actions, through its **Weekly Knowledge Health digest** assignment.
 
@@ -287,7 +313,7 @@ When incoming data matches an existing entity, for each attribute that has a rul
 
 The incoming source is the author of the incoming data and the connector that sends it. The source of the current value is recorded each time a listed source writes the attribute; until then, the author of the entity is considered as its source. Empty fields are always filled, attributes without a rule keep the confidence behavior, and requests in synchronized upsert mode (used to mirror another platform) bypass field authority.
 
-When a value written by a more authoritative connector is overwritten outside of this resolution (for example by a manual edit), the curation manager raises a `field_precedence` proposal to restore it. Every field overwritten by another source also counts in the source conflict rate of the Knowledge Health score.
+When a value written by a more authoritative connector is overwritten outside of this resolution (for example by a manual edit), the curation manager raises a `field_precedence` proposal to restore it. Every field overwritten by another source also counts in the source conflict rate of the Knowledge health score.
 
 You can define up to 200 rules, one per entity type and attribute, each listing between 1 and 20 sources. Rules only apply to business attributes of knowledge entity types.
 
@@ -334,6 +360,8 @@ The [ImportDocumentAI connector](https://github.com/OpenCTI-Platform/connectors/
 
 Go to **Settings > Customization > Curation**, tab **Settings** (changing the settings requires the `Manage customization` capability):
 
+![Settings tab of Settings > Customization > Curation](assets/curation-settings.png)
+
 | Setting                         | Default                                                                                                                                  | Description                                                                                                                                                                                                       |
 |:--------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Enable curation                 | On                                                                                                                                       | Runs the detectors (scheduled scans and live detection).                                                                                                                                                          |
@@ -362,18 +390,18 @@ Platform administrators can tune the manager schedules and the merge record limi
 |:--------------------------------------------------------------------------------|:------------------|:-------------------|
 | Detectors, curation inbox, bulk accept and reject, revert                       | Yes               | Yes                |
 | Reversible merges and unmerge                                                   | Yes               | Yes                |
-| Knowledge Health score and weekly digest (notification and email)               | Yes               | Yes                |
+| Knowledge health score and weekly digest (notification and email)               | Yes               | Yes                |
 | Field authority and `curationResolve`                                           | Yes               | Yes                |
 | Adjudication by an XTM One agent (automatic and Ask the Curator)                | No                | Yes                |
 | Curation policies (dry run, apply now, automatic apply)                         | No                | Yes                |
 
 | Action                                                                                           | Required capability                                    |
 |:-------------------------------------------------------------------------------------------------|:-------------------------------------------------------|
-| See the proposals, the merges, the policies and the Knowledge Health                             | `Access knowledge`                                     |
+| See the proposals, the merges, the policies and the Knowledge health                             | `Access knowledge`                                     |
 | Accept, reject or revert a proposal, bulk accept or reject, Ask the Curator                      | `Create / Update knowledge`                            |
 | Accept or revert a `merge` or `split` proposal, unmerge from a merge record                      | `Merge knowledge`                                      |
 | Accept an attribution conflict (deletes the attributions not kept)                               | `Delete knowledge`                                     |
-| Change the settings, run a scan now, refresh the Knowledge Health, manage and apply policies     | `Manage customization`                                 |
+| Change the settings, run a scan now, refresh the Knowledge health, manage and apply policies     | `Manage customization`                                 |
 
 See [Users and RBAC](../administration/users.md) for the capabilities.
 
@@ -388,8 +416,8 @@ Two connectors import the same ransomware: the first one creates the Malware `Cl
     Its confidence is `1 - (1 - 0.75) x (1 - 0.15) = 0.79`, inside the default ambiguous band. Had the second connector named it `Clop`, both names would have had the same full canonical form (weight 0.92) and the confidence would have reached `1 - (1 - 0.92) x (1 - 0.15) = 0.93`, above the band.
 2. With the Enterprise Edition and adjudication enabled, the OpenCTI Curator receives the proposal and answers `merge`, with a rationale citing the evidence and naming `Cl0p` as the entity to keep. The adjudication appears on the proposal.
 3. An analyst opens the proposal, compares the two entities side by side, keeps `Cl0p` as the surviving entity and clicks **Accept**. `Clop Ransomware` becomes an alias of `Cl0p`, and its relationships move to `Cl0p`.
-4. The merge record appears in **Data > Curation > Merges** and in the **Merges** view of the **Changes** tab of `Cl0p`, reversible for 365 days. If a later report shows that the two names designated different families, the analyst clicks **Unmerge**: `Clop Ransomware` comes back with its original identifiers, aliases and relationships, and the proposal becomes `reverted`, so it is never proposed again.
-5. The next Knowledge Health snapshot counts one accepted proposal and one merge, and the duplicate estimate decreases.
+4. The merge record appears in **Data > Curation > Merges** and in the **Merges** view of the **Changes** tab of `Cl0p`, reversible for 365 days. If a later report shows that the two names designated different families, the analyst clicks **Undo the merge**: `Clop Ransomware` comes back with its original identifiers, aliases and relationships, and the proposal becomes `reverted`, so it is never proposed again.
+5. The next Knowledge health snapshot counts one accepted proposal and one merge, and the duplicate estimate decreases.
 
 To let such merges happen without an analyst, an administrator creates a policy covering `merge` proposals for `Malware` and `Tool`, with a threshold of 0.9 and **Require adjudication agreement** enabled, runs a **Dry run** to check the eligible proposals and the exclusion reasons, then enables it.
 
