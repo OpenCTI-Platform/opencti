@@ -108,9 +108,11 @@ const curationResolvers: Resolvers = {
       const subjects = await loadSubjects(context, typed);
       return typed.subject_ids.length - subjects.length;
     },
+    // Policies are read under Settings > Customization only, like the curationPolicy query.
     policy: (proposal, _, context) => {
       const { policy_id } = proposal as unknown as BasicStoreEntityCurationProposal;
-      return policy_id ? findPolicyById(context, context.user, policy_id) as any : null;
+      if (!policy_id || !isUserHasCapability(context.user!, SETTINGS_SETCUSTOMIZATION)) return null;
+      return findPolicyById(context, context.user, policy_id) as any;
     },
     decidedBy: (proposal, _, context) => {
       const { decided_by_id } = proposal as unknown as BasicStoreEntityCurationProposal;

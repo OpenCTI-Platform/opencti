@@ -2,12 +2,14 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import * as entrepriseEdition from '../../../../src/enterprise-edition/ee';
 import { ADMIN_USER, testContext, USER_PARTICIPATE } from '../../../utils/testQuery';
-import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../utils/testQueryHelper';
+import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
 import { addIntrusionSet } from '../../../../src/domain/intrusionSet';
 import { addMalware } from '../../../../src/domain/malware';
-import { createRelation, deleteElementById, repointRelationships } from '../../../../src/database/middleware';
+import { createRelation, deleteElementById, repointRelationships, updateAttribute } from '../../../../src/database/middleware';
 import { elRawGet, elUpdate } from '../../../../src/database/engine';
-import { buildRefRelationKey, ID_INTERNAL } from '../../../../src/schema/general';
+import { EditOperation } from '../../../../src/generated/graphql';
+import { buildRefRelationKey, ID_INTERNAL, INPUT_MARKINGS } from '../../../../src/schema/general';
+import { MARKING_TLP_RED } from '../../../../src/schema/identifier';
 import { fullEntitiesList, storeLoadById } from '../../../../src/database/middleware-loader';
 import { ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
 import { RELATION_USES } from '../../../../src/schema/stixCoreRelationship';
@@ -396,6 +398,17 @@ describe('Knowledge curation', () => {
     expect(record.data?.mergeRecord.relationships_redirected_count).toBeGreaterThanOrEqual(1);
     const movedRelation = await storeLoadById(testContext, ADMIN_USER, usesFromB, RELATION_USES) as unknown as { fromId: string };
     expect(movedRelation.fromId).toBe(entityA.id);
+
+    // The record follows a later reclassification of the merged entity.
+    const readable = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: MERGE_RECORD_QUERY, variables: { id: mergeRecordId } });
+    expect(readable.data?.mergeRecord.id).toBe(mergeRecordId);
+    const reclassify = (operation: EditOperation) => updateAttribute(testContext, ADMIN_USER, entityA.id, ENTITY_TYPE_INTRUSION_SET, [
+      { key: INPUT_MARKINGS, value: [MARKING_TLP_RED], operation },
+    ]);
+    await reclassify(EditOperation.Add);
+    const hidden = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: MERGE_RECORD_QUERY, variables: { id: mergeRecordId } });
+    expect(hidden.data?.mergeRecord).toBeNull();
+    await reclassify(EditOperation.Remove);
 
     await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, { query: UNMERGE_MUTATION, variables: { mergeRecordId } });
     const unmerged = await queryAsAdminWithSuccess({ query: UNMERGE_MUTATION, variables: { mergeRecordId } });

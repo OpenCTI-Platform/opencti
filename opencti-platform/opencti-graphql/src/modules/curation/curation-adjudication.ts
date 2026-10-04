@@ -5,6 +5,7 @@ import { logApp } from '../../config/conf';
 import { checkEnterpriseEdition, isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { AUTOMATION_MANAGER_USER } from '../../utils/access';
 import { storeLoadByIdsWithRefs, patchAttribute } from '../../database/middleware';
+import { storeLoadById } from '../../database/middleware-loader';
 import { redisCurationIncrementCounter } from '../../database/redis';
 import { publishUserAction } from '../../listener/UserActionListener';
 import xtmOneClient from '../xtm/one/xtm-one-client';
@@ -23,7 +24,9 @@ import {
   ENTITY_TYPE_CURATION_PROPOSAL,
   PROPOSAL_KIND_ALIAS,
   PROPOSAL_KIND_MERGE,
+  PROPOSAL_STATUS_OPEN,
 } from './curation-types';
+import { withProposalAdjudicationLock, withProposalTransitionLock } from './curation-locks';
 
 const MAX_DESCRIPTION_LENGTH = 1500;
 const MAX_RATIONALE_LENGTH = 2000;
@@ -171,39 +174,64 @@ export const adjudicateProposal = async (
   if (!agentSlug) {
     throw FunctionalError('No XTM One agent is bound to the curation adjudication intent', { intent: CURATION_ADJUDICATE_INTENT });
   }
-  const subjects = await storeLoadByIdsWithRefs(context, user, proposal.subject_ids);
-  const content = buildAdjudicationContent(proposal, subjects as unknown as Array<BasicStoreEntity & Record<string, any>>);
-  if (!(await reserveDailyBudget(settings))) {
-    throw FunctionalError('The daily adjudication budget is exhausted', { limit: settings.adjudication_daily_limit });
-  }
-  await patchAttribute(context, user, proposal.internal_id, ENTITY_TYPE_CURATION_PROPOSAL, { adjudication_requested_at: now() });
-  addCurationAdjudicationCount();
-  const answer = await callXtmAgent(agentSlug, content, jwtUser);
-  const parsed = parseAdjudicationResponse(answer, proposal.subject_ids);
-  if (!parsed) {
-    logApp.warn('[CURATION] Adjudication answer is not a valid decision, recorded as skip', { proposal_id: proposal.internal_id, agentSlug });
-  }
-  const adjudication: CurationAdjudication = {
-    decision: parsed?.decision ?? DECISION_SKIP,
-    rationale: parsed?.rationale ?? 'The agent answer was not a valid adjudication (expected one JSON object with a decision, a rationale and, when it names one, a target among the proposal subjects).',
-    agent_slug: agentSlug,
-    model: null,
-    adjudicated_at: now(),
-    applied: false,
-    verified: true,
+  const loadProposal = (id: string) => storeLoadById<BasicStoreEntityCurationProposal>(context, user, id, ENTITY_TYPE_CURATION_PROPOSAL);
+  const findOpenProposal = async (id: string) => {
+    const loaded = await loadProposal(id);
+    return loaded?.proposal_status === PROPOSAL_STATUS_OPEN ? loaded : null;
   };
-  const patch: Record<string, unknown> = { curation_adjudication: adjudication };
-  if (parsed?.target_id) {
-    patch.target_id = parsed.target_id;
-  }
-  const { element } = await patchAttribute(context, user, proposal.internal_id, ENTITY_TYPE_CURATION_PROPOSAL, patch);
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'extended',
-    message: `adjudicates curation proposal \`${proposal.name}\` with XTM One agent \`${agentSlug}\`: ${adjudication.decision}`,
-    context_data: { id: proposal.internal_id, entity_type: ENTITY_TYPE_CURATION_PROPOSAL, input: { decision: adjudication.decision, agent_slug: agentSlug } },
+  const requestedAt = Date.now();
+  return withProposalAdjudicationLock(proposal.internal_id, async () => {
+    // A concurrent request may have adjudicated or decided the proposal while this one waited for the lock.
+    const current = await findOpenProposal(proposal.internal_id);
+    if (!current) {
+      throw FunctionalError('This curation proposal is already decided', { id: proposal.internal_id });
+    }
+    const adjudicatedAt = current.curation_adjudication?.adjudicated_at;
+    if (adjudicatedAt && new Date(adjudicatedAt).getTime() >= requestedAt) {
+      return current;
+    }
+    const subjects = await storeLoadByIdsWithRefs(context, user, current.subject_ids);
+    const content = buildAdjudicationContent(current, subjects as unknown as Array<BasicStoreEntity & Record<string, any>>);
+    if (!(await reserveDailyBudget(settings))) {
+      throw FunctionalError('The daily adjudication budget is exhausted', { limit: settings.adjudication_daily_limit });
+    }
+    await patchAttribute(context, user, current.internal_id, ENTITY_TYPE_CURATION_PROPOSAL, { adjudication_requested_at: now() });
+    addCurationAdjudicationCount();
+    const answer = await callXtmAgent(agentSlug, content, jwtUser);
+    const parsed = parseAdjudicationResponse(answer, current.subject_ids);
+    if (!parsed) {
+      logApp.warn('[CURATION] Adjudication answer is not a valid decision, recorded as skip', { proposal_id: current.internal_id, agentSlug });
+    }
+    const adjudication: CurationAdjudication = {
+      decision: parsed?.decision ?? DECISION_SKIP,
+      rationale: parsed?.rationale ?? 'The agent answer was not a valid adjudication (expected one JSON object with a decision, a rationale and, when it names one, a target among the proposal subjects).',
+      agent_slug: agentSlug,
+      model: null,
+      adjudicated_at: now(),
+      applied: false,
+      verified: true,
+    };
+    const patch: Record<string, unknown> = { curation_adjudication: adjudication };
+    if (parsed?.target_id) {
+      patch.target_id = parsed.target_id;
+    }
+    // The answer is recorded only on a proposal still open: a decision taken during the call stands as it is.
+    return withProposalTransitionLock(current.internal_id, async () => {
+      const latest = await findOpenProposal(current.internal_id);
+      if (!latest) {
+        logApp.info('[CURATION] Proposal decided during its adjudication, answer discarded', { proposal_id: current.internal_id, agentSlug });
+        return (await loadProposal(current.internal_id)) ?? current;
+      }
+      const { element } = await patchAttribute(context, user, current.internal_id, ENTITY_TYPE_CURATION_PROPOSAL, patch);
+      await publishUserAction({
+        user,
+        event_type: 'mutation',
+        event_scope: 'update',
+        event_access: 'extended',
+        message: `adjudicates curation proposal \`${current.name}\` with XTM One agent \`${agentSlug}\`: ${adjudication.decision}`,
+        context_data: { id: current.internal_id, entity_type: ENTITY_TYPE_CURATION_PROPOSAL, input: { decision: adjudication.decision, agent_slug: agentSlug } },
+      });
+      return element as unknown as BasicStoreEntityCurationProposal;
+    });
   });
-  return element as unknown as BasicStoreEntityCurationProposal;
 };

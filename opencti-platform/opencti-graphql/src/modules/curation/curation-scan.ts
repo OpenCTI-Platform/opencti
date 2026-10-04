@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import type { AuthContext } from '../../types/user';
 import type { BasicStoreEntity, BasicStoreRelation } from '../../types/store';
-import { fullEntitiesList, fullRelationsList, internalFindByIds, pageEntitiesConnection } from '../../database/middleware-loader';
+import { fullEntitiesList, fullRelationsList, internalFindByIds, pageEntitiesConnection, pageRelationsConnection } from '../../database/middleware-loader';
 import { redisGetManagerEventState, redisSetManagerEventState } from '../../database/redis';
 import { elCount, elIndexExists, elRawSearch } from '../../database/engine';
 import { ES_INDEX_PREFIX, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/utils';
@@ -126,21 +126,38 @@ export const toCandidate = (raw: BasicStoreEntity & Record<string, any>): Curati
 const SCAN_ROTATION_STATE = 'curation_scan_rotation_';
 const MAX_ROTATING_SLICE = 5000;
 
+interface RotatingPage<T> {
+  edges: Array<{ node: T }>;
+  pageInfo: { hasNextPage: boolean; endCursor?: string | null };
+}
+
 /**
- * The next slice of the entities of a type in creation order, from where the previous scan stopped; the cursor goes
- * back to the first entity once the last slice is read, so successive scans go through the whole type.
+ * The next page of a scan larger than one run, from where the previous scan stopped: the cursor goes back to the
+ * start once the last page is read, so successive scans cover every matching element instead of the same window.
  */
-const loadRotatingSlice = async (context: AuthContext, type: string, size: number) => {
-  const stateKey = `${SCAN_ROTATION_STATE}${type}`;
+const loadRotatingPage = async <T>(name: string, loadPage: (after: string | undefined) => Promise<RotatingPage<T>>) => {
+  const stateKey = `${SCAN_ROTATION_STATE}${name}`;
   const after = (await redisGetManagerEventState(stateKey)) || undefined;
-  const page = await pageEntitiesConnection<BasicStoreEntity>(context, CURATION_MANAGER_USER, [type], {
+  let page: RotatingPage<T>;
+  try {
+    page = await loadPage(after);
+  } catch (error) {
+    if (!after) throw error;
+    logApp.warn('[CURATION] Cannot resume a scan from its cursor, starting over', { cause: error, scan: name });
+    page = await loadPage(undefined);
+  }
+  await redisSetManagerEventState(stateKey, page.pageInfo.hasNextPage ? (page.pageInfo.endCursor ?? '') : '');
+  return page.edges.map((edge) => edge.node);
+};
+
+/** The next slice of the entities of a type in creation order (see loadRotatingPage). */
+const loadRotatingSlice = async (context: AuthContext, type: string, size: number) => {
+  return loadRotatingPage(type, (after) => pageEntitiesConnection<BasicStoreEntity>(context, CURATION_MANAGER_USER, [type], {
     first: size,
     after,
     orderBy: 'created_at',
     orderMode: 'asc',
-  } as any);
-  await redisSetManagerEventState(stateKey, page.pageInfo.hasNextPage ? (page.pageInfo.endCursor ?? '') : '');
-  return page.edges.map((edge) => edge.node);
+  } as any));
 };
 
 /**
@@ -402,10 +419,13 @@ export const findDateInversionDrafts = async (context: AuthContext): Promise<Pro
   const drafts: ProposalDraft[] = [];
   for (let index = 0; index < DATED_FIELDS.length; index += 1) {
     const { types, start, stop } = DATED_FIELDS[index];
-    const elements = await fullEntitiesList<BasicStoreEntity>(context, CURATION_MANAGER_USER, types, {
-      maxSize: MAX_CONTRADICTIONS_PER_TYPE,
+    const elements = await loadRotatingPage(`contradiction_${start}_${stop}`, (after) => pageEntitiesConnection<BasicStoreEntity>(context, CURATION_MANAGER_USER, types, {
+      first: MAX_CONTRADICTIONS_PER_TYPE,
+      after,
+      orderBy: 'created_at',
+      orderMode: 'asc',
       internalScriptFilters: [inversionScript(start, stop)],
-    } as any);
+    } as any));
     elements.forEach((element) => {
       const record = element as Record<string, any>;
       drafts.push(buildDateInversionDraft({
@@ -419,11 +439,14 @@ export const findDateInversionDrafts = async (context: AuthContext): Promise<Pro
       }));
     });
   }
-  const relationships = await fullRelationsList<BasicStoreRelation>(context, CURATION_MANAGER_USER, ABSTRACT_STIX_CORE_RELATIONSHIP, {
-    maxSize: MAX_CONTRADICTIONS_PER_TYPE,
+  const relationships = await loadRotatingPage('contradiction_relationships', (after) => pageRelationsConnection<BasicStoreRelation>(context, CURATION_MANAGER_USER, ABSTRACT_STIX_CORE_RELATIONSHIP, {
+    first: MAX_CONTRADICTIONS_PER_TYPE,
+    after,
+    orderBy: 'created_at',
+    orderMode: 'asc',
     internalScriptFilters: [inversionScript('start_time', 'stop_time')],
     indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
-  } as any);
+  } as any));
   relationships.forEach((relationship) => {
     const record = relationship as Record<string, any>;
     drafts.push(buildDateInversionDraft({
@@ -500,12 +523,13 @@ export const findAttributionConflictDrafts = async (context: AuthContext): Promi
 };
 
 export const findRevokedIndicatorDrafts = async (context: AuthContext): Promise<ProposalDraft[]> => {
-  const indicators = await fullEntitiesList<BasicStoreEntity>(context, CURATION_MANAGER_USER, [ENTITY_TYPE_INDICATOR], {
+  const indicators = await loadRotatingPage('contradiction_revoked_indicators', (after) => pageEntitiesConnection<BasicStoreEntity>(context, CURATION_MANAGER_USER, [ENTITY_TYPE_INDICATOR], {
     filters: { mode: FilterMode.And, filters: [{ key: ['revoked'], values: ['true'], operator: FilterOperator.Eq }], filterGroups: [] },
-    maxSize: MAX_REVOKED_INDICATORS,
-    orderBy: 'updated_at',
-    orderMode: 'desc',
-  } as any);
+    first: MAX_REVOKED_INDICATORS,
+    after,
+    orderBy: 'created_at',
+    orderMode: 'asc',
+  } as any));
   if (indicators.length === 0) return [];
   const basedOn = new Map<string, string[]>();
   const chunks = R.splitEvery(ID_CHUNK, indicators.map((indicator) => indicator.internal_id));
@@ -594,7 +618,7 @@ export const runStalenessScan = async (context: AuthContext, settings: CurationS
     const type = types[index];
     const months = getStalenessMonths(settings, type);
     const cutoff = new Date(Date.now() - months * 30 * 24 * 3600 * 1000).toISOString();
-    const candidates = await fullEntitiesList<BasicStoreEntity>(context, CURATION_MANAGER_USER, [type], {
+    const candidates = await loadRotatingPage(`staleness_${type}`, (after) => pageEntitiesConnection<BasicStoreEntity>(context, CURATION_MANAGER_USER, [type], {
       filters: {
         mode: FilterMode.And,
         filters: [
@@ -603,10 +627,11 @@ export const runStalenessScan = async (context: AuthContext, settings: CurationS
         ],
         filterGroups: [],
       },
-      maxSize: MAX_STALE_PER_TYPE,
+      first: MAX_STALE_PER_TYPE,
+      after,
       orderBy: 'updated_at',
       orderMode: 'asc',
-    } as any);
+    } as any));
     stats.scanned += candidates.length;
     if (candidates.length === 0) continue;
     // Entities with a relationship created or updated after the cutoff are still alive.
@@ -640,8 +665,8 @@ export const runStalenessScan = async (context: AuthContext, settings: CurationS
     });
   }
   // Decayed indicators: live score below the revoke score of their decay rule, still not revoked. The decay rule is a
-  // flattened attribute, so the comparison is done here on the lowest live scores.
-  const decayCandidates = await fullEntitiesList<BasicStoreEntity>(context, CURATION_MANAGER_USER, [ENTITY_TYPE_INDICATOR], {
+  // flattened attribute, so the comparison is done here, page by page over successive scans.
+  const decayCandidates = await loadRotatingPage('staleness_decayed_indicators', (after) => pageEntitiesConnection<BasicStoreEntity>(context, CURATION_MANAGER_USER, [ENTITY_TYPE_INDICATOR], {
     filters: {
       mode: FilterMode.And,
       filters: [
@@ -650,11 +675,12 @@ export const runStalenessScan = async (context: AuthContext, settings: CurationS
       ],
       filterGroups: [],
     },
-    maxSize: MAX_STALE_PER_TYPE,
-    orderBy: 'x_opencti_score',
+    first: MAX_STALE_PER_TYPE,
+    after,
+    orderBy: 'created_at',
     orderMode: 'asc',
     noFiltersChecking: true,
-  } as any);
+  } as any));
   const decayed = decayCandidates.filter((indicator) => {
     const record = indicator as Record<string, any>;
     const revokeScore = Number(record.decay_applied_rule?.decay_revoke_score);

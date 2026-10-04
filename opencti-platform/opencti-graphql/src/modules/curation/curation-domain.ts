@@ -8,7 +8,6 @@ import { internalFindByIds, pageEntitiesConnection, storeLoadById, type EntityOp
 import { elAggregationCount, elCount, elUpdate } from '../../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { SYSTEM_USER } from '../../utils/access';
-import { lockResources } from '../../lock/master-lock';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { createListTask, ACTION_TYPE_CURATION_APPLY } from '../../domain/backgroundTask-common';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
@@ -52,6 +51,7 @@ import { createHealthSnapshot, findLatestHealthSnapshot } from './curation-healt
 import { isGraphSimilarityAvailable } from './curation-scan';
 import { getTaxonomyMetadata } from './curation-taxonomy';
 import { CURATION_MANAGER_ENABLED, CURATION_SCAN_INTERVAL_MS, CURATION_SNAPSHOT_INTERVAL_MS, nextRunDate } from './curation-schedule';
+import { withProposalTransitionLock } from './curation-locks';
 
 const MAX_BULK = 500;
 
@@ -131,22 +131,7 @@ const loadOpenProposal = async (context: AuthContext, user: AuthUser, id: string
   return proposal;
 };
 
-/**
- * Runs one status transition of a proposal at a time: the proposal is read again under its lock, so two decisions
- * never both see it open and both change the graph. The lock key is not an element id, so the locks the merge and
- * the unmerge take on their participants never collide with it.
- */
-const withProposalLock = async <T>(id: string, fn: () => Promise<T>): Promise<T> => {
-  let lock;
-  try {
-    lock = await lockResources([`curation-proposal-transition-${id}`]);
-    return await fn();
-  } finally {
-    if (lock) {
-      await lock.unlock();
-    }
-  }
-};
+const withProposalLock = withProposalTransitionLock;
 
 const parseJsonPayload = (payload?: string | null): Record<string, unknown> | null => {
   if (!payload) return null;

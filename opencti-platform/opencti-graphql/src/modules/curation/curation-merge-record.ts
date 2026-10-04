@@ -352,12 +352,34 @@ export const completePendingMergeRecords = async (context: AuthContext) => {
 // endregion
 
 // region queries
+/**
+ * A record carries the restrictions its participants had at merge time, and the surviving entity can be
+ * reclassified afterwards: a record is shown only to users who can still read that entity. A record whose entity
+ * no longer exists (deleted, or merged away later) keeps its own restrictions only.
+ */
+const withReadableTargets = async (context: AuthContext, user: AuthUser, records: BasicStoreEntityMergeRecord[]) => {
+  const targetIds = R.uniq(records.map((record) => record.merge_target_id).filter(isNotEmptyField));
+  if (targetIds.length === 0) return records;
+  const readable = await internalFindByIds(context, user, targetIds, { baseData: true }) as BasicStoreBase[];
+  const readableIds = new Set(readable.map((element) => element.internal_id));
+  const unreadableIds = targetIds.filter((id) => !readableIds.has(id));
+  if (unreadableIds.length === 0) return records;
+  const existing = await internalFindByIds(context, SYSTEM_USER, unreadableIds, { baseData: true }) as BasicStoreBase[];
+  const hiddenIds = new Set(existing.map((element) => element.internal_id));
+  return records.filter((record) => !hiddenIds.has(record.merge_target_id));
+};
+
 export const findMergeRecordById = async (context: AuthContext, user: AuthUser, id: string) => {
-  return storeLoadById<BasicStoreEntityMergeRecord>(context, user, id, ENTITY_TYPE_MERGE_RECORD);
+  const record = await storeLoadById<BasicStoreEntityMergeRecord>(context, user, id, ENTITY_TYPE_MERGE_RECORD);
+  if (!record) return record;
+  const [readable] = await withReadableTargets(context, user, [record]);
+  return readable;
 };
 
 export const findMergeRecordsPaginated = async (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityMergeRecord>) => {
-  return pageEntitiesConnection<BasicStoreEntityMergeRecord>(context, user, [ENTITY_TYPE_MERGE_RECORD], opts);
+  const connection = await pageEntitiesConnection<BasicStoreEntityMergeRecord>(context, user, [ENTITY_TYPE_MERGE_RECORD], opts);
+  const readable = new Set(await withReadableTargets(context, user, connection.edges.map((edge) => edge.node)));
+  return { ...connection, edges: connection.edges.filter((edge) => readable.has(edge.node)) };
 };
 
 const hasInterruptedUnmerge = (record: BasicStoreEntityMergeRecord) => (record.unmerge_pending_source_ids ?? []).length > 0;
