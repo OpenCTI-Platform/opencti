@@ -55,7 +55,15 @@ import {
 } from './defenseCoverage-utils';
 import { type DefensePlatform, defenseGapId, loadDefensePlatforms } from './defenseCoverage-compute';
 import { type DefenseSnapshot, type DefenseTechniqueEntry, type DefenseThreatScope, getAccessPredicate, getDefenseSnapshot, getThreatOverlay } from './defenseCoverage-reader';
-import { getLastFullComputation, isFullComputationRequested, isFullComputationRunning, requestFullDefenseCoverageComputation } from './defenseCoverage-state';
+import {
+  clearPendingValidationTracking,
+  getLastFullComputation,
+  isFullComputationRequested,
+  isFullComputationRunning,
+  listPendingValidationTrackings,
+  queuePendingValidationTracking,
+  requestFullDefenseCoverageComputation,
+} from './defenseCoverage-state';
 import { listAllDefenseLogsourceMappings } from './defenseLogsourceMapping/defenseLogsourceMapping-domain';
 import {
   DEFENSE_GAP_STATUS_CLOSED,
@@ -72,6 +80,7 @@ const MAX_VALIDATION_TECHNIQUES = 200;
 // Attempts to track a created validation request on its gaps, and the delay between them (grows with the attempt)
 const TRACKING_ATTEMPTS = 3;
 const TRACKING_RETRY_DELAY = 500;
+const MAX_PENDING_TRACKINGS_PER_RUN = 100;
 const MAX_LOGSOURCES = 200;
 const DEFAULT_RULE_CANDIDATES = 5;
 const IDS_CHUNK_SIZE = 5000;
@@ -887,6 +896,60 @@ const trackValidationRequest = async (
   return operations.length / 2;
 };
 
+/**
+ * Keep a validation request that could not be tracked on its gaps for the defense coverage manager, which tracks it
+ * at its next run. Returns the number of gaps it will be tracked on.
+ */
+const queueValidationTracking = async (
+  attackPatterns: BasicStoreEntity[],
+  targets: DefenseValidationTarget[],
+  request: DefenseGapValidationRequest,
+  cause: unknown,
+) => {
+  const attackPatternIds = new Set(attackPatterns.map((attackPattern) => attackPattern.internal_id));
+  const trackedTargets = targets.filter((target) => attackPatternIds.has(target.attackPatternId));
+  try {
+    await queuePendingValidationTracking({ request, targets: trackedTargets });
+    logApp.warn('[DEFENSE-COVERAGE] Validation request created, its tracking on the gaps is queued', { cause, security_coverage_id: request.security_coverage_id });
+    return trackedTargets.length;
+  } catch (queueError) {
+    logApp.error('[DEFENSE-COVERAGE] Validation request created but neither tracked on its gaps nor queued', {
+      cause,
+      queue_cause: queueError,
+      request,
+      targets: trackedTargets,
+    });
+    return 0;
+  }
+};
+
+/**
+ * Track the validation requests queued when their tracking failed at creation. Run by the defense coverage manager;
+ * an entry stays queued until its tracking succeeds, and tracking it twice never appends the request twice.
+ */
+export const trackPendingValidationRequests = async (context: AuthContext) => {
+  const queued = (await listPendingValidationTrackings()).slice(0, MAX_PENDING_TRACKINGS_PER_RUN);
+  let tracked = 0;
+  for (let index = 0; index < queued.length; index += 1) {
+    const { id, pending } = queued[index];
+    if (!pending) {
+      logApp.error('[DEFENSE-COVERAGE] Unreadable queued validation tracking dropped', { security_coverage_id: id });
+      await clearPendingValidationTracking(id);
+    } else {
+      try {
+        const attackPatternIds = uniq(pending.targets.map((target) => target.attackPatternId));
+        const attackPatterns = await findByIdsChunked<BasicStoreEntity>(context, SYSTEM_USER, attackPatternIds, { type: ENTITY_TYPE_ATTACK_PATTERN });
+        await trackValidationRequest(context, attackPatterns, pending.targets, pending.request);
+        await clearPendingValidationTracking(id);
+        tracked += 1;
+      } catch (error) {
+        logApp.warn('[DEFENSE-COVERAGE] Queued validation request still not tracked on its gaps', { cause: error, security_coverage_id: id });
+      }
+    }
+  }
+  return tracked;
+};
+
 const parseValidationReferenceUrl = (value: string | null | undefined): URL | undefined => {
   const trimmed = value?.trim();
   if (!trimmed) return undefined;
@@ -988,7 +1051,7 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
       break;
     } catch (error) {
       if (attempt === TRACKING_ATTEMPTS) {
-        logApp.error('[DEFENSE-COVERAGE] Validation request created but not tracked on its gaps', { cause: error, security_coverage_id: securityCoverage.id });
+        gapsCount = await queueValidationTracking(attackPatterns, targets, request, error);
       } else {
         await wait(TRACKING_RETRY_DELAY * attempt);
       }

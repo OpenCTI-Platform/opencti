@@ -7,6 +7,7 @@ import type { DataEvent, SseEvent } from '../types/event';
 import { RELATION_DETECTS, RELATION_HAS_COVERED, RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { computeDefenseCoverage, findTechniquesOfSources } from '../modules/defenseCoverage/defenseCoverage-compute';
 import { collectDefenseImpact } from '../modules/defenseCoverage/defenseCoverage-impact';
+import { trackPendingValidationRequests } from '../modules/defenseCoverage/defenseCoverage-domain';
 import {
   bumpDefenseCoverageVersion,
   bumpDefenseOverlayVersion,
@@ -52,6 +53,11 @@ const runComputation = async (context: AuthContext, attackPatternIds?: string[])
  */
 export const defenseCoverageCronHandler = async () => {
   const context = executionContext(DEFENSE_COVERAGE_MANAGER_CONTEXT);
+  try {
+    await trackPendingValidationRequests(context);
+  } catch (e) {
+    logApp.error('[OPENCTI-MODULE] Defense coverage queued validation tracking error', { cause: e });
+  }
   const lastFull = await getLastFullComputation();
   const requested = await consumeFullComputationRequest();
   const isDue = !lastFull || Date.now() - new Date(lastFull).getTime() >= FULL_COMPUTATION_INTERVAL;

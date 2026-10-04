@@ -4,7 +4,12 @@ import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedFo
 import { ADMIN_USER, getAuthUser, testContext, USER_CONNECTOR, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 import { MARKING_TLP_RED } from '../../../../src/schema/identifier';
-import { computeDefenseCoverage } from '../../../../src/modules/defenseCoverage/defenseCoverage-compute';
+import { computeDefenseCoverage, defenseGapId } from '../../../../src/modules/defenseCoverage/defenseCoverage-compute';
+import { trackPendingValidationRequests } from '../../../../src/modules/defenseCoverage/defenseCoverage-domain';
+import { listPendingValidationTrackings, queuePendingValidationTracking } from '../../../../src/modules/defenseCoverage/defenseCoverage-state';
+import { type BasicStoreEntityDefenseGap, ENTITY_TYPE_DEFENSE_GAP } from '../../../../src/modules/defenseCoverage/defenseGap/defenseGap-types';
+import { redisSetDefensePendingValidationTracking } from '../../../../src/database/redis';
+import { internalFindByIds } from '../../../../src/database/middleware-loader';
 import { notifyDefenseLevelChanges } from '../../../../src/modules/defenseCoverage/defenseCoverage-notification';
 import { addTrigger, triggerDelete } from '../../../../src/modules/notification/notification-domain';
 import { ENTITY_TYPE_TRIGGER } from '../../../../src/modules/notification/notification-types';
@@ -398,6 +403,30 @@ describe('Threat-informed defense matrix', () => {
     const recomputedGap = recomputed.data?.defenseTechnique.gaps.find((g: { platform_id: string }) => g.platform_id === created.platform);
     expect(recomputedGap.level).toEqual(platformGap.level);
     expect(recomputedGap.validation_requests).toEqual([{ security_coverage_id: securityCoverageId, grouping_id: groupingId, threat_id: created.threat }]);
+  });
+
+  it('should track a validation request queued after a failed tracking at the next manager run', async () => {
+    const queuedCoverageId = 'defense-matrix-test-queued-coverage';
+    const unreadableId = 'defense-matrix-test-unreadable-tracking';
+    const request = { security_coverage_id: queuedCoverageId, grouping_id: groupingId as string, requested_at: new Date().toISOString(), requested_by: ADMIN_USER.id };
+    const targets = [{ attackPatternId: created.attackPattern, platformId: created.platform }];
+    await queuePendingValidationTracking({ request, targets });
+    await redisSetDefensePendingValidationTracking(unreadableId, 'not a tracking');
+    await trackPendingValidationRequests(testContext);
+    // Tracking the same request again never appends it twice
+    await queuePendingValidationTracking({ request, targets });
+    await trackPendingValidationRequests(testContext);
+    const queuedIds = (await listPendingValidationTrackings()).map((entry) => entry.id);
+    expect(queuedIds).not.toContain(queuedCoverageId);
+    expect(queuedIds).not.toContain(unreadableId);
+    const gapId = defenseGapId(created.attackPattern, created.platform).internalId;
+    const records = await internalFindByIds<BasicStoreEntityDefenseGap>(testContext, SYSTEM_USER, [gapId], { type: ENTITY_TYPE_DEFENSE_GAP }) as BasicStoreEntityDefenseGap[];
+    const requests = (records[0]?.validation_requests ?? []).filter((tracked) => tracked.security_coverage_id === queuedCoverageId);
+    expect(requests).toEqual([request]);
+    // A reader never sees a tracked request whose Security Coverage he cannot access
+    const technique = await queryAsAdminWithSuccess({ query: DEFENSE_TECHNIQUE, variables: { id: created.attackPattern, platformIds: [created.platform] } });
+    const platformGap = technique.data?.defenseTechnique.gaps.find((g: { platform_id: string }) => g.platform_id === created.platform);
+    expect(platformGap.validation_requests).toEqual([{ security_coverage_id: securityCoverageId, grouping_id: groupingId, threat_id: created.threat }]);
   });
 
   it('should reject an empty or unknown validation request', async () => {

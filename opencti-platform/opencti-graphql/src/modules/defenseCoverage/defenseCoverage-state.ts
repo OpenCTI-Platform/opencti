@@ -1,5 +1,13 @@
-import { redisGetManagerEventState, redisSetManagerEventState } from '../../database/redis';
+import {
+  redisDeleteDefensePendingValidationTracking,
+  redisGetDefensePendingValidationTrackings,
+  redisGetManagerEventState,
+  redisSetDefensePendingValidationTracking,
+  redisSetManagerEventState,
+} from '../../database/redis';
 import { now } from '../../utils/format';
+import type { DefenseGapValidationRequest } from './defenseGap/defenseGap-types';
+import type { DefenseValidationTarget } from './defenseCoverage-utils';
 
 // Cluster-wide state of the defense coverage computation, shared through Redis between the API nodes.
 const STATE_VERSION = 'DEFENSE_COVERAGE_VERSION';
@@ -80,4 +88,36 @@ export const isFullComputationRunning = async (): Promise<boolean> => {
   if (!since) return false;
   const elapsed = Date.now() - new Date(since).getTime();
   return Number.isFinite(elapsed) && elapsed < FULL_RUNNING_MAX_DURATION;
+};
+
+/**
+ * A created validation request whose tracking on its gaps failed, kept until the manager tracks it.
+ */
+export interface DefensePendingValidationTracking {
+  request: DefenseGapValidationRequest;
+  targets: DefenseValidationTarget[];
+}
+
+export const queuePendingValidationTracking = async (pending: DefensePendingValidationTracking) => {
+  await redisSetDefensePendingValidationTracking(pending.request.security_coverage_id, JSON.stringify(pending));
+};
+
+/**
+ * Queued trackings by Security Coverage id; an entry that cannot be read has no `pending` so the caller drops it.
+ */
+export const listPendingValidationTrackings = async (): Promise<Array<{ id: string; pending?: DefensePendingValidationTracking }>> => {
+  const entries = await redisGetDefensePendingValidationTrackings();
+  return Object.entries(entries ?? {}).map(([id, value]) => {
+    try {
+      const pending = JSON.parse(value) as DefensePendingValidationTracking;
+      const readable = pending?.request?.security_coverage_id === id && Array.isArray(pending.targets);
+      return readable ? { id, pending } : { id };
+    } catch {
+      return { id };
+    }
+  });
+};
+
+export const clearPendingValidationTracking = async (securityCoverageId: string) => {
+  await redisDeleteDefensePendingValidationTracking(securityCoverageId);
 };

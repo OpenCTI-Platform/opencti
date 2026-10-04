@@ -837,6 +837,20 @@ export const redisGetManagerEventState = async (managerName: string) => {
 };
 // endregion
 
+// region - defense coverage pending validation tracking
+// One field per Security Coverage: concurrent API nodes queue and clear their entries without a read-modify-write
+const DEFENSE_PENDING_VALIDATION_TRACKING_KEY = 'defense_coverage_pending_validation_tracking';
+export const redisSetDefensePendingValidationTracking = async (securityCoverageId: string, pending: string) => {
+  await getClientBase().hset(DEFENSE_PENDING_VALIDATION_TRACKING_KEY, securityCoverageId, pending);
+};
+export const redisGetDefensePendingValidationTrackings = async (): Promise<Record<string, string>> => {
+  return getClientBase().hgetall(DEFENSE_PENDING_VALIDATION_TRACKING_KEY);
+};
+export const redisDeleteDefensePendingValidationTracking = async (securityCoverageId: string) => {
+  await getClientBase().hdel(DEFENSE_PENDING_VALIDATION_TRACKING_KEY, securityCoverageId);
+};
+// endregion
+
 // region connector logs
 export interface FeedLog {
   timestamp: string;
