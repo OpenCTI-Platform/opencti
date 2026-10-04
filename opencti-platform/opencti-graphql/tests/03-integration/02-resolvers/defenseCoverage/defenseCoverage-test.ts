@@ -184,6 +184,7 @@ const PROVIDES_FROM_LOGSOURCES = gql`
   mutation ProvidesFromLogsources($id: ID!, $logsources: [DefenseLogsourceInput!]!) {
     defensePlatformProvidesFromLogsources(id: $id, logsources: $logsources) {
       created_count
+      existing_count
       unmatched_data_components
       dataComponents { id }
     }
@@ -196,7 +197,7 @@ const RECOMPUTE = gql`
 `;
 const STATUS = gql`
   query Status {
-    defenseCoverageStatus { computed_at full_computation_requested }
+    defenseCoverageStatus { computed_at full_computation_requested validation_available }
   }
 `;
 
@@ -439,8 +440,17 @@ describe('Threat-informed defense matrix', () => {
     });
     const provides = result.data?.defensePlatformProvidesFromLogsources;
     expect(provides.created_count).toEqual(1);
+    expect(provides.existing_count).toEqual(0);
     expect(provides.dataComponents).toEqual([{ id: created.mappedComponent }]);
     expect(provides.unmatched_data_components).toEqual([]);
+    // Declaring the same log source again creates nothing and says so
+    const again = await queryAsAdminWithSuccess({
+      query: PROVIDES_FROM_LOGSOURCES,
+      variables: { id: created.platform, logsources: [{ product: 'defense-matrix-test' }] },
+    });
+    expect(again.data?.defensePlatformProvidesFromLogsources.created_count).toEqual(0);
+    expect(again.data?.defensePlatformProvidesFromLogsources.existing_count).toEqual(1);
+    expect(again.data?.defensePlatformProvidesFromLogsources.dataComponents).toEqual([{ id: created.mappedComponent }]);
     await queryAsAdminWithError({ query: PROVIDES_FROM_LOGSOURCES, variables: { id: created.platform, logsources: [] } }, 'Provide between 1 and 200 log sources');
   });
 
@@ -449,6 +459,7 @@ describe('Threat-informed defense matrix', () => {
     expect(result.data?.defenseCoverageRecompute).toBe(true);
     const status = await queryAsAdminWithSuccess({ query: STATUS });
     expect(status.data?.defenseCoverageStatus.full_computation_requested).toBe(true);
+    expect(typeof status.data?.defenseCoverageStatus.validation_available).toBe('boolean');
   });
 
   const triggerFilters = JSON.stringify({ mode: 'and', filters: [{ key: ['entity_type'], values: ['Attack-Pattern'], operator: 'eq', mode: 'or' }], filterGroups: [] });

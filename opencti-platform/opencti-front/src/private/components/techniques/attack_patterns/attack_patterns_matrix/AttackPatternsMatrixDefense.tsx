@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { ErrorOutlineOutlined, ShieldOutlined } from '@mui/icons-material';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import type { Theme } from '../../../../../components/Theme';
@@ -7,13 +8,14 @@ import { hexToRGB } from '../../../../../utils/Colors';
 import { useFormatter } from '../../../../../components/i18n';
 import {
   computeLayerLevel,
-  DEFENSE_FAILED_COLOR,
-  DEFENSE_LEVEL_LABELS,
   DEFENSE_LEVEL_NONE,
-  DEFENSE_THREAT_COLOR,
   type DefenseCellLike,
+  defenseFailedColor,
   type DefenseLayersState,
   defenseLevelColor,
+  defenseLevelLabel,
+  defenseLevelTextColor,
+  defenseThreatColor,
   isValidationFailed,
 } from '../../../defense/matrix/defenseMatrix-utils';
 
@@ -28,6 +30,8 @@ export interface DefenseMatrixMode {
   layers: DefenseLayersState;
   // Techniques used by the threats of the overlay are outlined
   threatOverlay: boolean;
+  // Levels the matrix is restricted to (status header counters), null for every level
+  levelFilter?: ReadonlyArray<number> | null;
   selectedId?: string | null;
   onSelect: (attackPatternId: string) => void;
 }
@@ -54,7 +58,7 @@ export const getDefenseBoxStyles = ({
   isHovered: boolean;
   theme: Theme;
 }) => {
-  const color = defenseLevelColor(level);
+  const color = defenseLevelColor(theme, level);
   const usedByThreats = isUsedByThreats(defense, attackPatternId);
   const isSelected = defense.selectedId === attackPatternId;
   let backgroundColor = isHovered ? hexToRGB(theme.palette.common.white, 0.1) : 'transparent';
@@ -65,7 +69,7 @@ export const getDefenseBoxStyles = ({
   if (isSelected) {
     outline = `2px solid ${theme.palette.primary.main}`;
   } else if (usedByThreats) {
-    outline = `2px solid ${DEFENSE_THREAT_COLOR}`;
+    outline = `2px solid ${defenseThreatColor(theme)}`;
   }
   return {
     border: `1px solid ${level > DEFENSE_LEVEL_NONE ? color : theme.palette.background.accent}`,
@@ -80,9 +84,9 @@ export const useDefenseCellLabel = () => {
   return (defense: DefenseMatrixMode, attackPatternId: string, name: string) => {
     const cell = defense.cells.get(attackPatternId);
     const level = defenseCellLevel(defense, attackPatternId);
-    const parts = [name, `${t_i18n('Defense level')} ${level}`, t_i18n(DEFENSE_LEVEL_LABELS[level])];
+    const parts = [name, defenseLevelLabel(t_i18n, level)];
     if (cell && isUsedByThreats(defense, attackPatternId)) {
-      parts.push(t_i18n('Used by {count} threats', { values: { count: cell.threats_count } }));
+      parts.push(t_i18n('{count, plural, one {Used by # threat} other {Used by # threats}}', { values: { count: cell.threats_count } }));
     }
     return parts.join(' - ');
   };
@@ -110,19 +114,33 @@ const MarkerTooltip = ({ title, children }: { title: string; children: React.Rea
   </Tooltip>
 );
 
+const badgeSx = {
+  fontSize: 9,
+  fontWeight: 600,
+  lineHeight: '14px',
+  minWidth: 14,
+  paddingInline: 0.5,
+  borderRadius: '7px',
+  textAlign: 'center',
+} as const;
+
 const AttackPatternsMatrixDefenseMarkers = ({ defense, attackPatternId }: { defense: DefenseMatrixMode; attackPatternId: string }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const cell = defense.cells.get(attackPatternId);
   if (!cell) return null;
+  const level = defenseCellLevel(defense, attackPatternId);
   const failed = isValidationFailed(cell, defense.layers);
   const mitigated = defense.layers.mitigations && cell.mitigated;
   const usedByThreats = isUsedByThreats(defense, attackPatternId);
-  if (!failed && !mitigated && !usedByThreats) return null;
+  if (level === DEFENSE_LEVEL_NONE && !failed && !mitigated && !usedByThreats) return null;
+  const levelColor = defenseLevelColor(theme, level);
+  const threatColor = defenseThreatColor(theme);
   return (
     <Box sx={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 0.25, flexShrink: 0 }}>
       {failed && (
         <MarkerTooltip title={t_i18n('The latest OpenAEV validation failed')}>
-          <ErrorOutlineOutlined aria-label={t_i18n('Validation failed')} sx={{ fontSize: 14, color: DEFENSE_FAILED_COLOR }} />
+          <ErrorOutlineOutlined aria-label={t_i18n('Validation failed')} sx={{ fontSize: 14, color: defenseFailedColor(theme) }} />
         </MarkerTooltip>
       )}
       {mitigated && (
@@ -131,22 +149,17 @@ const AttackPatternsMatrixDefenseMarkers = ({ defense, attackPatternId }: { defe
         </MarkerTooltip>
       )}
       {usedByThreats && (
-        <MarkerTooltip title={t_i18n('Used by {count} threats', { values: { count: cell.threats_count } })}>
-          <Box
-            component="span"
-            sx={{
-              fontSize: 9,
-              fontWeight: 600,
-              lineHeight: '14px',
-              minWidth: 14,
-              paddingInline: 0.5,
-              borderRadius: '7px',
-              textAlign: 'center',
-              color: '#ffffff',
-              backgroundColor: DEFENSE_THREAT_COLOR,
-            }}
-          >
+        <MarkerTooltip title={t_i18n('{count, plural, one {Used by # threat} other {Used by # threats}}', { values: { count: cell.threats_count } })}>
+          <Box component="span" sx={{ ...badgeSx, color: defenseLevelTextColor(theme, threatColor), backgroundColor: threatColor }}>
             {cell.threats_count}
+          </Box>
+        </MarkerTooltip>
+      )}
+      {level > DEFENSE_LEVEL_NONE && (
+        // The level is also written, so that it never depends on the colour alone
+        <MarkerTooltip title={defenseLevelLabel(t_i18n, level)}>
+          <Box component="span" data-testid={`defense-cell-level-${attackPatternId}`} sx={{ ...badgeSx, color: defenseLevelTextColor(theme, levelColor), backgroundColor: levelColor }}>
+            {level}
           </Box>
         </MarkerTooltip>
       )}

@@ -7,7 +7,7 @@ import { addVocabulary } from '../modules/vocabulary/vocabulary-domain';
 const message = '[MIGRATION] Add defense matrix vocabularies (detection rule pattern types, defense validation grouping context)';
 
 const NEW_VOCABULARIES: Array<{ category: VocabularyCategory; keys: string[] }> = [
-  { category: VocabularyCategory.PatternTypeOv, keys: ['kql', 'esql', 'kuery', 'lucene', 'yara-l', 'crowdstrike-ioa'] },
+  { category: VocabularyCategory.PatternTypeOv, keys: ['kql', 'esql', 'kuery', 'lucene', 'yara-l', 'crowdstrike-ioa', 'elastic-rule', 'sentinel-rule', 'splunk-rule'] },
   { category: VocabularyCategory.GroupingContextOv, keys: ['defense-validation'] },
 ];
 

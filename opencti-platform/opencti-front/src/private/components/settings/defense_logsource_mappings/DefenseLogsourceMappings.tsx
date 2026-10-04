@@ -1,13 +1,12 @@
 import React, { Suspense, useState } from 'react';
 import { graphql, PreloadedQuery, usePaginationFragment, usePreloadedQuery } from 'react-relay';
 import { Box, DialogActions, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
-import { DeleteOutlined, EditOutlined } from '@mui/icons-material';
-import { Chip, IconButton, Switch } from '@filigran/design-system';
+import { DeleteOutlined, DeviceHubOutlined, EditOutlined } from '@mui/icons-material';
+import { Button as DsButton, Card as DsCard, CardContent, CardFooter, CardHeader, CardTitle, Chip, IconButton, Switch, Text, Thumbnail } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import PageContainer from '../../../../components/PageContainer';
-import Alert from '../../../../components/Alert';
 import Card from '../../../../components/common/card/Card';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import SearchInput from '../../../../components/SearchInput';
@@ -89,9 +88,41 @@ const defenseLogsourceMappingsActiveMutation = graphql`
   }
 `;
 
-const MappingsTable = ({ queryRef, onEdit, refreshKey }: {
+const DOCUMENTATION_URL = 'https://docs.opencti.io/latest/usage/defense-matrix/';
+
+/**
+ * First-use state of the page, until a mapping of the organization is added: what a mapping does, with
+ * the action that adds one.
+ */
+const MappingsFirstUse = ({ onCreate }: { onCreate: () => void }) => {
+  const { t_i18n } = useFormatter();
+  return (
+    <DsCard data-testid="defense-logsource-mappings-first-use">
+      <CardHeader
+        icon={<Thumbnail><DeviceHubOutlined /></Thumbnail>}
+        action={<Button onClick={onCreate} data-testid="defense-logsource-mappings-first-use-create">{t_i18n('Add a mapping')}</Button>}
+      >
+        <CardTitle>{t_i18n('Tell the defense matrix what your telemetry covers')}</CardTitle>
+      </CardHeader>
+      <CardContent clamp={0}>
+        <Text variant="content-base">
+          {t_i18n('A mapping links a log source (for example Windows process creation events collected by Sysmon) to the MITRE data sources it feeds. The defense matrix uses the mappings to know which techniques a security platform can see, from the log sources of its deployed rules or the ones you declare. Built-in mappings cover the Sigma taxonomy; add yours for the log sources of your organization.')}
+        </Text>
+      </CardContent>
+      <CardFooter>
+        <DsButton priority="tertiary" size="sm" asChild>
+          <a href={DOCUMENTATION_URL} target="_blank" rel="noreferrer">{t_i18n('Read the documentation')}</a>
+        </DsButton>
+      </CardFooter>
+    </DsCard>
+  );
+};
+
+const MappingsTable = ({ queryRef, onEdit, onCreate, searching, refreshKey }: {
   queryRef: PreloadedQuery<DefenseLogsourceMappingsLinesPaginationQuery>;
   onEdit: (mapping: DefenseLogsourceMappingFormData) => void;
+  onCreate: () => void;
+  searching: boolean;
   refreshKey: number;
 }) => {
   const { t_i18n, fldt } = useFormatter();
@@ -107,112 +138,116 @@ const MappingsTable = ({ queryRef, onEdit, refreshKey }: {
     if (refreshKey > 0) refetch({}, { fetchPolicy: 'network-only' });
   }, [refreshKey]);
   const mappings = (data.defenseLogsourceMappings?.edges ?? []).map(({ node }) => node);
+  const firstUse = !searching && mappings.every((mapping) => mapping.built_in);
 
   return (
-    <Card title={t_i18n('{count} telemetry mappings', { values: { count: data.defenseLogsourceMappings?.pageInfo.globalCount ?? 0 } })}>
-      {mappings.length === 0 ? (
-        <Typography variant="body2" color="text.secondary">{t_i18n('No telemetry mapping matches the search.')}</Typography>
-      ) : (
-        <TableContainer>
-          <Table size="small" aria-label={t_i18n('Telemetry mappings')} data-testid="defense-logsource-mappings-table">
-            <TableHead>
-              <TableRow>
-                <TableCell>{t_i18n('Log source')}</TableCell>
-                <TableCell>{t_i18n('Data components')}</TableCell>
-                <TableCell>{t_i18n('Description')}</TableCell>
-                <TableCell>{t_i18n('Origin')}</TableCell>
-                <TableCell>{t_i18n('Modification date')}</TableCell>
-                <TableCell>{t_i18n('Active')}</TableCell>
-                <TableCell align="right">{t_i18n('Actions')}</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {mappings.map((mapping) => {
-                const resolved = new Set(mapping.resolvedDataComponents.map((dc) => dc.name.toLowerCase()));
-                return (
-                  <TableRow key={mapping.id} hover data-testid={`defense-logsource-mapping-${mapping.name}`}>
-                    <TableCell sx={{ fontFamily: 'monospace' }}>{mapping.name}</TableCell>
-                    <TableCell>
-                      <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
-                        {mapping.data_components.map((name) => (
-                          <Chip
-                            key={name}
-                            label={name}
-                            severity={resolved.has(name.toLowerCase()) ? 'neutral' : 'medium'}
-                            title={resolved.has(name.toLowerCase()) ? undefined : t_i18n('This data component is not present in the platform')}
-                          />
-                        ))}
-                      </Stack>
-                    </TableCell>
-                    <TableCell>{mapping.description ?? '-'}</TableCell>
-                    <TableCell>{mapping.built_in ? t_i18n('Built-in') : t_i18n('Custom')}</TableCell>
-                    <TableCell>{fldt(mapping.updated_at)}</TableCell>
-                    <TableCell>
-                      <Switch
-                        aria-label={t_i18n('Active')}
-                        checked={mapping.active}
-                        onCheckedChange={(checked) => commitActive({
-                          variables: { id: mapping.id, input: [{ key: 'active', value: [checked] }] },
-                          onCompleted: (_, errors) => {
-                            notifyPayloadErrors(errors);
-                          },
-                        })}
-                      />
-                    </TableCell>
-                    <TableCell align="right">
-                      <Stack direction="row" spacing={0.5} justifyContent="flex-end">
-                        <IconButton
-                          size="sm"
-                          priority="tertiary"
-                          aria-label={t_i18n('Update')}
-                          icon={<EditOutlined fontSize="small" />}
-                          onClick={() => onEdit(mapping)}
+    <>
+      {firstUse && <MappingsFirstUse onCreate={onCreate} />}
+      <Card title={t_i18n('{count, plural, one {# telemetry mapping} other {# telemetry mappings}}', { values: { count: data.defenseLogsourceMappings?.pageInfo.globalCount ?? 0 } })}>
+        {mappings.length === 0 ? (
+          <Typography variant="body2" color="text.secondary">{t_i18n('No telemetry mapping matches the search.')}</Typography>
+        ) : (
+          <TableContainer>
+            <Table size="small" aria-label={t_i18n('Telemetry mappings')} data-testid="defense-logsource-mappings-table">
+              <TableHead>
+                <TableRow>
+                  <TableCell>{t_i18n('Log source')}</TableCell>
+                  <TableCell>{t_i18n('Data components')}</TableCell>
+                  <TableCell>{t_i18n('Description')}</TableCell>
+                  <TableCell>{t_i18n('Origin')}</TableCell>
+                  <TableCell>{t_i18n('Modification date')}</TableCell>
+                  <TableCell>{t_i18n('Active')}</TableCell>
+                  <TableCell align="right">{t_i18n('Actions')}</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {mappings.map((mapping) => {
+                  const resolved = new Set(mapping.resolvedDataComponents.map((dc) => dc.name.toLowerCase()));
+                  return (
+                    <TableRow key={mapping.id} hover data-testid={`defense-logsource-mapping-${mapping.name}`}>
+                      <TableCell sx={{ fontFamily: 'monospace' }}>{mapping.name}</TableCell>
+                      <TableCell>
+                        <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
+                          {mapping.data_components.map((name) => (
+                            <Chip
+                              key={name}
+                              label={name}
+                              severity={resolved.has(name.toLowerCase()) ? 'neutral' : 'medium'}
+                              title={resolved.has(name.toLowerCase()) ? undefined : t_i18n('This data component is not present in the platform')}
+                            />
+                          ))}
+                        </Stack>
+                      </TableCell>
+                      <TableCell>{mapping.description ?? '-'}</TableCell>
+                      <TableCell>{mapping.built_in ? t_i18n('Built-in') : t_i18n('Custom')}</TableCell>
+                      <TableCell>{fldt(mapping.updated_at)}</TableCell>
+                      <TableCell>
+                        <Switch
+                          aria-label={t_i18n('Active')}
+                          checked={mapping.active}
+                          onCheckedChange={(checked) => commitActive({
+                            variables: { id: mapping.id, input: [{ key: 'active', value: [checked] }] },
+                            onCompleted: (_, errors) => {
+                              notifyPayloadErrors(errors);
+                            },
+                          })}
                         />
-                        {!mapping.built_in && (
+                      </TableCell>
+                      <TableCell align="right">
+                        <Stack direction="row" spacing={0.5} justifyContent="flex-end">
                           <IconButton
                             size="sm"
                             priority="tertiary"
-                            aria-label={t_i18n('Delete')}
-                            icon={<DeleteOutlined fontSize="small" />}
-                            onClick={() => setToDelete({ id: mapping.id, name: mapping.name })}
+                            aria-label={t_i18n('Update')}
+                            icon={<EditOutlined fontSize="small" />}
+                            onClick={() => onEdit(mapping)}
                           />
-                        )}
-                      </Stack>
-                    </TableCell>
-                  </TableRow>
-                );
+                          {!mapping.built_in && (
+                            <IconButton
+                              size="sm"
+                              priority="tertiary"
+                              aria-label={t_i18n('Delete')}
+                              icon={<DeleteOutlined fontSize="small" />}
+                              onClick={() => setToDelete({ id: mapping.id, name: mapping.name })}
+                            />
+                          )}
+                        </Stack>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+        {hasNext && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}>
+            <Button variant="secondary" disabled={isLoadingNext} onClick={() => loadNext(PAGE_SIZE)}>{t_i18n('Load more')}</Button>
+          </Box>
+        )}
+        <Dialog open={!!toDelete} onClose={() => setToDelete(null)} title={t_i18n('Are you sure?')} size="small">
+          <Typography>{t_i18n('Do you want to delete the telemetry mapping {name}?', { values: { name: toDelete?.name ?? '' } })}</Typography>
+          <DialogActions>
+            <Button variant="secondary" onClick={() => setToDelete(null)} disabled={deleting}>{t_i18n('Cancel')}</Button>
+            <Button
+              intent="destructive"
+              disabled={deleting}
+              onClick={() => toDelete && commitDelete({
+                variables: { id: toDelete.id },
+                onCompleted: (_, errors) => {
+                  if (notifyPayloadErrors(errors)) return;
+                  MESSAGING$.notifySuccess(t_i18n('Telemetry mapping deleted'));
+                  setToDelete(null);
+                  refetch({}, { fetchPolicy: 'network-only' });
+                },
               })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
-      {hasNext && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', marginTop: 2 }}>
-          <Button variant="secondary" disabled={isLoadingNext} onClick={() => loadNext(PAGE_SIZE)}>{t_i18n('Load more')}</Button>
-        </Box>
-      )}
-      <Dialog open={!!toDelete} onClose={() => setToDelete(null)} title={t_i18n('Are you sure?')} size="small">
-        <Typography>{t_i18n('Do you want to delete the telemetry mapping {name}?', { values: { name: toDelete?.name ?? '' } })}</Typography>
-        <DialogActions>
-          <Button variant="secondary" onClick={() => setToDelete(null)} disabled={deleting}>{t_i18n('Cancel')}</Button>
-          <Button
-            intent="destructive"
-            disabled={deleting}
-            onClick={() => toDelete && commitDelete({
-              variables: { id: toDelete.id },
-              onCompleted: (_, errors) => {
-                if (notifyPayloadErrors(errors)) return;
-                MESSAGING$.notifySuccess(t_i18n('Telemetry mapping deleted'));
-                setToDelete(null);
-                refetch({}, { fetchPolicy: 'network-only' });
-              },
-            })}
-          >
-            {t_i18n('Delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Card>
+            >
+              {t_i18n('Delete')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Card>
+    </>
   );
 };
 
@@ -237,9 +272,6 @@ const DefenseLogsourceMappings = () => {
           noMargin
           elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Customization') }, { label: t_i18n('Telemetry mappings'), current: true }]}
         />
-        <Alert
-          content={t_i18n('Telemetry mappings turn the log sources of detection rules and security platforms (Sigma taxonomy) into MITRE data components. The defense matrix uses them to infer the telemetry of a platform from its deployed rules and to declare telemetry from log sources.')}
-        />
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
           <SearchInput variant="thin" onSubmit={setSearch} />
           <Stack direction="row" spacing={1} sx={{ marginLeft: 'auto' }}>
@@ -253,7 +285,7 @@ const DefenseLogsourceMappings = () => {
               }}
               data-testid="defense-logsource-mappings-create"
             >
-              {t_i18n('Create a telemetry mapping')}
+              {t_i18n('Add a mapping')}
             </Button>
           </Stack>
         </Box>
@@ -262,6 +294,11 @@ const DefenseLogsourceMappings = () => {
             <MappingsTable
               queryRef={queryRef}
               refreshKey={refreshKey}
+              searching={search.length > 0}
+              onCreate={() => {
+                setEdited(null);
+                setFormOpen(true);
+              }}
               onEdit={(mapping) => {
                 setEdited(mapping);
                 setFormOpen(true);

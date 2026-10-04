@@ -197,10 +197,12 @@ const AttackPatternsMatrixColumns = ({
 
   const isAttackPatternCovered = (ap: AttackPattern | SubAttackPattern) => {
     if (defense) {
+      const level = defenseCellLevel(defense, ap.attack_pattern_id);
+      if (defense.levelFilter) {
+        return defense.levelFilter.includes(level);
+      }
       // Without threat overlay, the defense mode highlights the techniques with any coverage
-      return defense.threatOverlay
-        ? isUsedByThreats(defense, ap.attack_pattern_id)
-        : defenseCellLevel(defense, ap.attack_pattern_id) > DEFENSE_LEVEL_NONE;
+      return defense.threatOverlay ? isUsedByThreats(defense, ap.attack_pattern_id) : level > DEFENSE_LEVEL_NONE;
     }
     return attackPatterns.filter((n) => n.id === ap.attack_pattern_id).length > 0;
   };
@@ -303,7 +305,7 @@ const AttackPatternsMatrixColumns = ({
 
                             if (defense) {
                               const levels = defenseTechniqueIds(ap).map((id) => defenseCellLevel(defense, id));
-                              badgeColor = defenseLevelColor(Math.max(...levels));
+                              badgeColor = defenseLevelColor(theme, Math.max(...levels));
                               badgeCount = levels.filter((level) => level >= DEFENSE_COVERED_LEVEL).length;
                             } else if (isCoverage && coverageMap) {
                             // Check if parent or any sub-technique is covered

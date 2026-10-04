@@ -14,6 +14,7 @@ export const PATH_COURSE_OF_ACTION = (courseOfActionId: string) => `${PATH_COURS
 
 // DEFENSE
 export const PATH_DEFENSE_MATRIX = `${PATH_DASHBOARD}/defense/matrix`;
+export const PATH_DEFENSE_COVERAGE = `${PATH_DEFENSE_MATRIX}/coverage`;
 export const PATH_DEFENSE_GAPS = `${PATH_DEFENSE_MATRIX}/gaps`;
 
 // ANALYSES

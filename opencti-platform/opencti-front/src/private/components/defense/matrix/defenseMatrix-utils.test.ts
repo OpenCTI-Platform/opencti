@@ -1,11 +1,17 @@
 import { describe, expect, it } from 'vitest';
+import { createTheme, getContrastRatio, type ThemeOptions } from '@mui/material/styles';
+import ThemeDark from '../../../../components/ThemeDark';
+import ThemeLight from '../../../../components/ThemeLight';
+import type { Theme } from '../../../../components/Theme';
 import {
   ALL_DEFENSE_LAYERS,
   computeLayerLevel,
   DEFAULT_DEFENSE_SCOPE,
-  DEFENSE_LEVEL_COLORS,
+  defenseFailedColor,
   defenseGapsExportFileName,
   defenseLevelColor,
+  defenseLevelTextColor,
+  defenseThreatColor,
   isValidationFailed,
   parseDefenseScope,
   summarizeLevels,
@@ -67,10 +73,24 @@ describe('defenseMatrix-utils', () => {
     });
   });
 
-  describe('defenseLevelColor', () => {
-    it('returns the color of the level and falls back to no coverage', () => {
-      expect(defenseLevelColor(4)).toBe(DEFENSE_LEVEL_COLORS[4]);
-      expect(defenseLevelColor(12)).toBe(DEFENSE_LEVEL_COLORS[0]);
+  describe('defense colours', () => {
+    const themes = [
+      ['dark', createTheme(ThemeDark() as ThemeOptions) as unknown as Theme],
+      ['light', createTheme(ThemeLight() as ThemeOptions) as unknown as Theme],
+    ] as const;
+    it.each(themes)('resolves five distinct level colours from the %s theme tokens', (_, theme) => {
+      const colors = [0, 1, 2, 3, 4].map((level) => defenseLevelColor(theme, level));
+      expect(new Set(colors).size).toBe(5);
+      colors.forEach((color) => expect(color).toMatch(/^#|^rgb/));
+      expect(defenseLevelColor(theme, 12)).toBe(colors[0]);
+      expect(defenseFailedColor(theme)).not.toBe(colors[4]);
+      expect(defenseThreatColor(theme)).not.toBe(colors[0]);
+    });
+    it.each(themes)('keeps every level label readable (WCAG AA) on the %s theme', (_, theme) => {
+      [0, 1, 2, 3, 4].forEach((level) => {
+        const background = defenseLevelColor(theme, level);
+        expect(getContrastRatio(background, defenseLevelTextColor(theme, background))).toBeGreaterThanOrEqual(4.5);
+      });
     });
   });
 

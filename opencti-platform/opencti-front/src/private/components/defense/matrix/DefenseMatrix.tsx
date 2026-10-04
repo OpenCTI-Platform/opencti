@@ -2,7 +2,7 @@ import React, { Suspense, useEffect, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { Box, Stack, Typography } from '@mui/material';
 import { FilterCenterFocusOutlined, RefreshOutlined } from '@mui/icons-material';
-import { IconButton, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { Chip, IconButton, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import AttackPatternsMatrix from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrix';
 import type { DefenseMatrixMode } from '@components/techniques/attack_patterns/attack_patterns_matrix/AttackPatternsMatrixDefense';
@@ -14,7 +14,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import Security from '../../../../utils/Security';
-import { SETTINGS_SETCUSTOMIZATION } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, SETTINGS_SETCUSTOMIZATION } from '../../../../utils/hooks/useGranted';
 import { capitalizeFirstLetter } from '../../../../utils/String';
 import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { notifyPayloadErrors } from './defenseMutation-utils';
@@ -24,9 +24,23 @@ import { DefenseMatrixRecomputeMutation } from './__generated__/DefenseMatrixRec
 import DefenseScopeToolbar from './DefenseScopeToolbar';
 import DefenseTechniqueDrawer from './DefenseTechniqueDrawer';
 import DefenseTacticsCoverage from './DefenseTacticsCoverage';
+import DefenseValidationDialog from './DefenseValidationDialog';
+import DefenseCoverageDashboardButton from './DefenseCoverageDashboardButton';
 import { DefenseLevelsBar, DefenseLevelsLegend } from './DefenseLevelsBar';
 import useDefenseScope from './useDefenseScope';
-import { ALL_DEFENSE_LAYERS, type DefenseLayersState, type DefenseScopeState, summarizeLevels, toThreatScopeInput } from './defenseMatrix-utils';
+import {
+  ALL_DEFENSE_LAYERS,
+  DEFENSE_LEVEL_DETECTION_AVAILABLE,
+  DEFENSE_LEVEL_DETECTION_DEPLOYED,
+  DEFENSE_LEVEL_NONE,
+  DEFENSE_LEVEL_TELEMETRY,
+  DEFENSE_LEVEL_VALIDATED,
+  DEFENSE_THREAT_SCOPE_LABELS,
+  type DefenseLayersState,
+  type DefenseScopeState,
+  summarizeLevels,
+  toThreatScopeInput,
+} from './defenseMatrix-utils';
 
 export const defenseMatrixPlatformsQuery = graphql`
   query DefenseMatrixPlatformsQuery {
@@ -40,12 +54,20 @@ export const defenseMatrixPlatformsQuery = graphql`
       computed_at
       last_full_computation
       full_computation_requested
+      validation_available
     }
   }
 `;
 
 export const defenseMatrixQuery = graphql`
   query DefenseMatrixQuery($platformIds: [String!], $threatScope: DefenseThreatScope) {
+    defensePlatforms {
+      id
+      name
+    }
+    defenseCoverageStatus {
+      validation_available
+    }
     defenseMatrix(platformIds: $platformIds, threatScope: $threatScope) {
       computed_at
       threats_count
@@ -100,13 +122,25 @@ interface DefenseMatrixContentProps {
   layers: DefenseLayersState;
 }
 
+type DefenseCounter = 'validated' | 'deployed' | 'gaps';
+const COUNTER_LEVELS: Record<DefenseCounter, number[]> = {
+  validated: [DEFENSE_LEVEL_VALIDATED],
+  deployed: [DEFENSE_LEVEL_DETECTION_DEPLOYED],
+  gaps: [DEFENSE_LEVEL_NONE, DEFENSE_LEVEL_TELEMETRY, DEFENSE_LEVEL_DETECTION_AVAILABLE],
+};
+// Techniques per validation request accepted by the platform
+const MAX_VALIDATION_TECHNIQUES = 200;
+
 export const DefenseMatrixContent = ({ queryRef, scope, layers }: DefenseMatrixContentProps) => {
   const { t_i18n } = useFormatter();
-  const { defenseMatrix } = usePreloadedQuery(defenseMatrixQuery, queryRef);
+  const { defenseMatrix, defensePlatforms, defenseCoverageStatus } = usePreloadedQuery(defenseMatrixQuery, queryRef);
   const [selected, setSelected] = useState<{ id: string; title: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [onlyFocus, setOnlyFocus] = useState(false);
   const [killChain, setKillChain] = useState(DEFAULT_KILL_CHAIN);
+  const [counter, setCounter] = useState<DefenseCounter | null>(null);
+  const [validating, setValidating] = useState(false);
+  const levelFilter = counter ? COUNTER_LEVELS[counter] : null;
 
   const cells = defenseMatrix?.cells ?? [];
   const cellsById = useMemo(() => new Map(cells.map((cell) => [cell.attack_pattern_id, cell])), [cells]);
@@ -125,13 +159,14 @@ export const DefenseMatrixContent = ({ queryRef, scope, layers }: DefenseMatrixC
     cells: cellsById,
     layers,
     threatOverlay,
+    levelFilter,
     selectedId: selected?.id,
     onSelect: (id: string) => {
       const cell = cellsById.get(id);
       const title = cell ? `${cell.x_mitre_id ? `[${cell.x_mitre_id}] ` : ''}${cell.name}` : t_i18n('Technique');
       setSelected({ id, title });
     },
-  }), [cellsById, layers, threatOverlay, selected?.id]);
+  }), [cellsById, layers, threatOverlay, levelFilter, selected?.id]);
 
   if (!defenseMatrix) {
     return <Alert severity="warning" content={t_i18n('The defense matrix is not available.')} />;
@@ -140,6 +175,27 @@ export const DefenseMatrixContent = ({ queryRef, scope, layers }: DefenseMatrixC
   const overall = summarizeLevels(defenseMatrix.levels);
   const threats = summarizeLevels(defenseMatrix.threat_levels);
   const focusLabel = threatOverlay ? t_i18n('Display only techniques used by threats') : t_i18n('Display only techniques with coverage');
+  const levels = defenseMatrix.levels;
+  const counts: Record<DefenseCounter, number> = {
+    validated: levels[DEFENSE_LEVEL_VALIDATED] ?? 0,
+    deployed: levels[DEFENSE_LEVEL_DETECTION_DEPLOYED] ?? 0,
+    gaps: COUNTER_LEVELS.gaps.reduce((sum, level) => sum + (levels[level] ?? 0), 0),
+  };
+  const counterLabels: Record<DefenseCounter, string> = {
+    validated: t_i18n('{count, plural, one {# validated} other {# validated}}', { values: { count: counts.validated } }),
+    deployed: t_i18n('{count, plural, one {# deployed} other {# deployed}}', { values: { count: counts.deployed } }),
+    gaps: t_i18n('{count, plural, one {# gap} other {# gaps}}', { values: { count: counts.gaps } }),
+  };
+  const platformNames = scope.platformIds.map((id) => defensePlatforms.find((platform) => platform.id === id)?.name ?? id);
+  const threatScopeLabel = scope.threatMode === 'SELECTED'
+    ? t_i18n('{count, plural, one {# selected threat} other {# selected threats}}', { values: { count: scope.threats.length } })
+    : t_i18n(DEFENSE_THREAT_SCOPE_LABELS[scope.threatMode]);
+  // The techniques the threats use (every technique without overlay) that no validation proved yet
+  const validationTargets = cells
+    .filter((cell) => cell.level < DEFENSE_LEVEL_VALIDATED && (!threatOverlay || cell.threats_count > 0))
+    .sort((a, b) => b.threats_count - a.threats_count || b.level - a.level)
+    .slice(0, MAX_VALIDATION_TECHNIQUES)
+    .map((cell) => ({ id: cell.attack_pattern_id, name: cell.name, x_mitre_id: cell.x_mitre_id }));
 
   return (
     <>
@@ -149,6 +205,48 @@ export const DefenseMatrixContent = ({ queryRef, scope, layers }: DefenseMatrixC
           content={t_i18n('The defense coverage has not been computed yet. It is computed every night and after relevant changes; an administrator can request a computation now.')}
         />
       )}
+      <Card>
+        <Stack direction="row" alignItems="center" justifyContent="space-between" flexWrap="wrap" useFlexGap spacing={2} data-testid="defense-matrix-header">
+          <Stack spacing={1}>
+            <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap aria-label={t_i18n('Scope')}>
+              {platformNames.length === 0
+                ? <Chip label={t_i18n('All security platforms')} />
+                : platformNames.map((name) => <Chip key={name} label={name} />)}
+              <Chip label={threatScopeLabel} />
+            </Stack>
+            <Stack direction="row" spacing={0.5} alignItems="center" flexWrap="wrap" useFlexGap role="group" aria-label={t_i18n('Filter the matrix by defense level')}>
+              {(Object.keys(COUNTER_LEVELS) as DefenseCounter[]).map((key, index) => (
+                <React.Fragment key={key}>
+                  {index > 0 && <Typography variant="body2" color="text.secondary" aria-hidden>-</Typography>}
+                  <Button
+                    variant={counter === key ? 'primary' : 'tertiary'}
+                    size="small"
+                    aria-pressed={counter === key}
+                    data-testid={`defense-matrix-counter-${key}`}
+                    onClick={() => setCounter(counter === key ? null : key)}
+                  >
+                    {counterLabels[key]}
+                  </Button>
+                </React.Fragment>
+              ))}
+            </Stack>
+          </Stack>
+          {defenseCoverageStatus?.validation_available && (
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <Button disabled={validationTargets.length === 0} onClick={() => setValidating(true)} data-testid="defense-matrix-validate-gaps">
+                {t_i18n('Validate the gaps')}
+              </Button>
+            </Security>
+          )}
+        </Stack>
+      </Card>
+      <DefenseValidationDialog
+        open={validating}
+        onClose={() => setValidating(false)}
+        techniques={validationTargets}
+        platforms={scope.platformIds.map((id, index) => ({ id, name: platformNames[index] }))}
+        threats={scope.threatMode === 'SELECTED' ? scope.threats : []}
+      />
       <Card title={t_i18n('Defense coverage')}>
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 2fr' }, gap: 4 }}>
           <Stack spacing={2}>
@@ -221,7 +319,7 @@ export const DefenseMatrixContent = ({ queryRef, scope, layers }: DefenseMatrixC
           entityType="Defense-Matrix"
           searchTerm={searchTerm}
           selectedKillChain={killChain}
-          isModeOnlyActive={onlyFocus}
+          isModeOnlyActive={onlyFocus || levelFilter !== null}
           inPaper
           defense={defense}
         />
@@ -243,7 +341,7 @@ const DefenseMatrixStatus = ({ queryRef, scope, onScopeChange, layers, onLayersC
   layers: DefenseLayersState;
   onLayersChange: (layers: DefenseLayersState) => void;
 }) => {
-  const { t_i18n, nsdt } = useFormatter();
+  const { t_i18n, fldt, rd } = useFormatter();
   const { defensePlatforms, defenseCoverageStatus } = usePreloadedQuery(defenseMatrixPlatformsQuery, queryRef);
   const [recomputeRequested, setRecomputeRequested] = useState(false);
   const [commitRecompute, recomputing] = useApiMutation<DefenseMatrixRecomputeMutation>(defenseMatrixRecomputeMutation);
@@ -279,13 +377,23 @@ const DefenseMatrixStatus = ({ queryRef, scope, onScopeChange, layers, onLayersC
   return (
     <Stack spacing={2}>
       <Stack direction="row" alignItems="center" justifyContent="space-between" flexWrap="wrap" useFlexGap spacing={1}>
-        <Typography variant="body2" color="text.secondary" data-testid="defense-matrix-status">
-          {defenseCoverageStatus?.computed_at
-            ? `${t_i18n('Computed at')} ${nsdt(defenseCoverageStatus.computed_at)}`
-            : t_i18n('Not computed yet')}
-          {pending ? ` - ${t_i18n('Recomputation requested')}` : ''}
-        </Typography>
+        <Stack direction="row" spacing={1} alignItems="center" data-testid="defense-matrix-status">
+          {defenseCoverageStatus?.computed_at ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Typography variant="body2" color="text.secondary" tabIndex={0} sx={{ cursor: 'help' }}>
+                  {t_i18n('Computed {date}', { values: { date: rd(defenseCoverageStatus.computed_at) } })}
+                </Typography>
+              </TooltipTrigger>
+              <TooltipContent>{fldt(defenseCoverageStatus.computed_at)}</TooltipContent>
+            </Tooltip>
+          ) : (
+            <Typography variant="body2" color="text.secondary">{t_i18n('Not computed yet')}</Typography>
+          )}
+          {pending && <Chip label={t_i18n('Recomputation requested')} severity="info" data-testid="defense-matrix-recompute-pending" />}
+        </Stack>
         <Stack direction="row" spacing={1}>
+          <DefenseCoverageDashboardButton />
           <Security needs={[SETTINGS_SETCUSTOMIZATION]}>
             <Button
               variant="secondary"

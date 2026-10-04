@@ -36,6 +36,10 @@ export const DEFENSE_RULE_PATTERN_TYPES = [
   'kql',
   'yara-l',
   'crowdstrike-ioa',
+  // Rules whose logic is not their query alone: canonical JSON of the query and its conditions
+  'elastic-rule',
+  'sentinel-rule',
+  'splunk-rule',
   'tanium-signal',
   'nova',
 ];
@@ -62,6 +66,7 @@ export interface DefenseEvidence {
 export interface DefenseTelemetryEvidence extends DefenseEvidence {
   detects: string; // detects relationship id (data component -> attack pattern)
   inferred_from?: string; // indicator id when the telemetry is inferred from a deployed rule log source
+  indicates?: string; // indicates relationship id (indicator -> attack pattern) of an inferred telemetry
 }
 
 export interface DefenseDeploymentEvidence extends DefenseEvidence {

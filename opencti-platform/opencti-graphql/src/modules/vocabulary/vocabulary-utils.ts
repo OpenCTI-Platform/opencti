@@ -835,6 +835,9 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string; d
     { key: 'lucene', description: 'Lucene query syntax' },
     { key: 'yara-l', description: 'YARA-L 2.0 (Google SecOps)' },
     { key: 'crowdstrike-ioa', description: 'CrowdStrike Falcon custom indicator of attack rule' },
+    { key: 'elastic-rule', description: 'Elastic Security detection rule with conditions outside its query (threshold, new terms, indicator match, filters)' },
+    { key: 'sentinel-rule', description: 'Microsoft Sentinel scheduled analytics rule with a trigger condition outside its query' },
+    { key: 'splunk-rule', description: 'Splunk saved search with a trigger condition outside its search' },
   ],
   processor_architecture_ov: [
     {

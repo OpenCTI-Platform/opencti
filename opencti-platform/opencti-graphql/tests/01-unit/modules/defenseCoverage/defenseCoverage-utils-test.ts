@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildCsv,
   buildLogsourceMappingKey,
+  buildValidationTargets,
   capEvidences,
   cellForPlatform,
   collectCoverageIds,
@@ -19,6 +20,7 @@ import {
   latestValidation,
   mapLogsourceToDataComponents,
   rankRuleCandidates,
+  visibleParentId,
 } from '../../../../src/modules/defenseCoverage/defenseCoverage-utils';
 import type { DefenseCoverage, DefenseValidationEvidence } from '../../../../src/modules/defenseCoverage/defenseCoverage-types';
 
@@ -148,6 +150,25 @@ describe('Defense coverage evaluation for a reader', () => {
     expect(cell.level).toEqual(2);
     expect(cell.coverage_result_ids).toEqual([]);
   });
+  it('should drop an inferred telemetry when only its indicates relationship is hidden', () => {
+    const base = buildCoverage();
+    const inferred = { id: 'dc-process', rel: 'deployed-1', detects: 'detects-1', inferred_from: 'rule-1', indicates: 'indicates-1' };
+    const coverage: DefenseCoverage = {
+      ...base,
+      platforms: [{ ...base.platforms[0], telemetry: [inferred], deployments: [], validations: [], level: 1 }],
+      validations: [],
+    };
+    const visible = cellForPlatform(evaluateCoverage('ap-1', coverage, () => true), PLATFORM);
+    expect(visible.telemetry).toEqual(true);
+    const hidden = cellForPlatform(evaluateCoverage('ap-1', coverage, (id) => !!id && id !== 'indicates-1'), PLATFORM);
+    expect(hidden.telemetry).toEqual(false);
+    expect(hidden.inferred_data_component_ids).toEqual([]);
+    // A stored inferred telemetry without its indicates relationship is never trusted
+    const withoutIndicates = { id: 'dc-process', rel: 'deployed-1', detects: 'detects-1', inferred_from: 'rule-1' };
+    const legacy: DefenseCoverage = { ...coverage, platforms: [{ ...coverage.platforms[0], telemetry: [withoutIndicates] }] };
+    expect(cellForPlatform(evaluateCoverage('ap-1', legacy, () => true), PLATFORM).telemetry).toEqual(false);
+    expect(collectCoverageIds(coverage)).toContain('indicates-1');
+  });
   it('should hide a platform the reader cannot access', () => {
     const cell = evaluateCoverage('ap-1', buildCoverage(), (id) => !!id && id !== PLATFORM);
     expect(cell.platforms.map((p) => p.platform_id)).toEqual([OTHER_PLATFORM]);
@@ -215,6 +236,41 @@ describe('Defense coverage evaluation for a reader', () => {
     });
     expect(new Set(ids).size).toEqual(ids.length);
     expect(collectCoverageIds(undefined)).toEqual([]);
+  });
+});
+
+describe('Defense validation targets', () => {
+  const pairs = (targets: { attackPatternId: string; platformId: string }[]) => targets.map((t) => `${t.attackPatternId}|${t.platformId}`).sort();
+  it('should track every technique on its aggregate gap and on every requested platform', () => {
+    expect(pairs(buildValidationTargets(['ap-a', 'ap-b'], ['p1'], []))).toEqual(['ap-a|all', 'ap-a|p1', 'ap-b|all', 'ap-b|p1']);
+  });
+  it('should track the selected gaps as pairs, never crossing techniques and platforms', () => {
+    const targets = buildValidationTargets(['ap-a', 'ap-b'], [], [
+      { attackPatternId: 'ap-a', platformId: 'p1' },
+      { attackPatternId: 'ap-b', platformId: 'p2' },
+    ]);
+    expect(pairs(targets)).toEqual(['ap-a|all', 'ap-a|p1', 'ap-b|all', 'ap-b|p2']);
+  });
+  it('should track a pair once', () => {
+    const targets = buildValidationTargets(['ap-a'], ['p1'], [{ attackPatternId: 'ap-a', platformId: 'p1' }, { attackPatternId: 'ap-a', platformId: 'all' }]);
+    expect(pairs(targets)).toEqual(['ap-a|all', 'ap-a|p1']);
+  });
+});
+
+describe('Defense matrix parent techniques', () => {
+  const sub = { parent_id: 'parent', parent_rel_id: 'subtechnique-of-1' };
+  it('should show the parent to a reader of the parent and of the relationship', () => {
+    expect(visibleParentId(sub, () => true)).toEqual('parent');
+  });
+  it('should hide the parent when the subtechnique-of relationship is restricted', () => {
+    expect(visibleParentId(sub, (id) => id !== 'subtechnique-of-1')).toBeUndefined();
+  });
+  it('should hide the parent when the parent technique is restricted', () => {
+    expect(visibleParentId(sub, (id) => id !== 'parent')).toBeUndefined();
+  });
+  it('should never expose a parent without its relationship', () => {
+    expect(visibleParentId({ parent_id: 'parent' }, () => true)).toBeUndefined();
+    expect(visibleParentId({}, () => true)).toBeUndefined();
   });
 });
 

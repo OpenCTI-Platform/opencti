@@ -49,7 +49,7 @@ const defenseCoverageResolvers: Resolvers = {
       ...args,
       threatScope: args.threatScope as DefenseThreatScope | null | undefined,
     }),
-    defenseCoverageStatus: (_, __, context) => getDefenseCoverageStatus(context),
+    defenseCoverageStatus: (_, __, context) => getDefenseCoverageStatus(context, context.user),
     defenseLogsourceMapping: (_, { id }, context) => findLogsourceMappingById(context, context.user, id),
     defenseLogsourceMappings: (_, args, context) => findDefenseLogsourceMappingPaginated(context, context.user, args),
   },

@@ -17802,9 +17802,15 @@ input DefenseGapsFilter {
   search: String
 }
 
+input DefenseGapRefInput {
+  attackPatternId: String!
+  platformId: String!
+}
+
 input DefenseValidationInput {
   attackPatternIds: [String!]!
   platformIds: [String!]
+  gaps: [DefenseGapRefInput!]
   threatId: String
 
   "*Constraints:*\n* Minimal length: `2`\n* Maximal length: `250`\n* Must match format: `not-blank`\n"
@@ -17832,7 +17838,11 @@ input DefenseLogsourceInput {
 }
 
 type DefenseProvidesResult {
+  """Data components newly declared as provided by the platform"""
   created_count: Int!
+
+  """Data components of the log sources the platform already provided"""
+  existing_count: Int!
   dataComponents: [DataComponent!]!
   unmatched_data_components: [String!]!
 }
@@ -17841,6 +17851,11 @@ type DefenseCoverageStatus {
   computed_at: DateTime
   last_full_computation: DateTime
   full_computation_requested: Boolean!
+
+  """
+  An enrichment connector (OpenAEV) is alive for security coverages: gaps can be validated
+  """
+  validation_available: Boolean!
 }
 
 type DefenseLogsourceMapping implements InternalObject & BasicObject {

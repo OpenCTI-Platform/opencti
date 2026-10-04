@@ -213,9 +213,16 @@ input DefenseGapsFilter {
   search: String
 }
 
+input DefenseGapRefInput {
+  attackPatternId: String!
+  platformId: String!
+}
 input DefenseValidationInput {
   attackPatternIds: [String!]!
+  # every technique is tracked on every platform of platformIds
   platformIds: [String!]
+  # exact technique and platform pairs, tracked as selected
+  gaps: [DefenseGapRefInput!]
   threatId: String
   name: String @constraint(minLength: 2, maxLength: 250, format: "not-blank")
   description: String
@@ -238,7 +245,10 @@ input DefenseLogsourceInput {
   service: String
 }
 type DefenseProvidesResult {
+  "Data components newly declared as provided by the platform"
   created_count: Int!
+  "Data components of the log sources the platform already provided"
+  existing_count: Int!
   dataComponents: [DataComponent!]!
   unmatched_data_components: [String!]!
 }
@@ -247,6 +257,8 @@ type DefenseCoverageStatus {
   computed_at: DateTime
   last_full_computation: DateTime
   full_computation_requested: Boolean!
+  "An enrichment connector (OpenAEV) is alive for security coverages: gaps can be validated"
+  validation_available: Boolean!
 }
 
 # Log source -> MITRE data component mapping (Sigma logsource taxonomy)

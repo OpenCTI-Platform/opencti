@@ -8,6 +8,7 @@ import {
   ComboboxContent,
   ComboboxControls,
   ComboboxField,
+  ComboboxHelperText,
   ComboboxInput,
   ComboboxLabel,
   ComboboxTrigger,
@@ -173,36 +174,41 @@ const DefenseLogsourceMappingForm = ({ open, onClose, onSaved, mapping }: Defens
     <Drawer
       open={open}
       onClose={onClose}
-      title={isEdition ? t_i18n('Update a telemetry mapping') : t_i18n('Create a telemetry mapping')}
+      title={isEdition ? t_i18n('Update a telemetry mapping') : t_i18n('Add a mapping')}
     >
       <Stack spacing={2.5} data-testid="defense-logsource-mapping-form">
         <Typography variant="body2" color="text.secondary">
-          {t_i18n('A log source uses the Sigma taxonomy. A telemetry mapping applies to every log source matching all its defined fields.')}
+          {t_i18n('A mapping says which MITRE data source a log source feeds. It applies to every log source matching all the fields you fill in.')}
         </Typography>
+        <Typography variant="h4">{t_i18n('Log source')}</Typography>
         <Input
-          label={t_i18n('Category')}
+          label={t_i18n('Log source category')}
           value={category}
           disabled={isEdition}
           onChange={(e) => setCategory(e.target.value)}
           placeholder="process_creation"
+          helperText={t_i18n('What the events describe, for example process_creation')}
           data-testid="defense-logsource-mapping-category"
         />
         <Input
-          label={t_i18n('Product')}
+          label={t_i18n('Log source product')}
           value={product}
           disabled={isEdition}
           onChange={(e) => setProduct(e.target.value)}
           placeholder="windows"
+          helperText={t_i18n('The system the events come from, for example windows')}
           data-testid="defense-logsource-mapping-product"
         />
         <Input
-          label={t_i18n('Service')}
+          label={t_i18n('Log source service')}
           value={service}
           disabled={isEdition}
           onChange={(e) => setService(e.target.value)}
           placeholder="sysmon"
+          helperText={t_i18n('The tool or channel that collects them, for example sysmon')}
           data-testid="defense-logsource-mapping-service"
         />
+        <Typography variant="h4">{t_i18n('Data source')}</Typography>
         <Combobox<NameOption>
           multiple
           className="w-full"
@@ -229,6 +235,7 @@ const DefenseLogsourceMappingForm = ({ open, onClose, onSaved, mapping }: Defens
               <ComboboxTrigger />
             </ComboboxControls>
           </ComboboxField>
+          <ComboboxHelperText>{t_i18n('The MITRE ATT&CK data components these events provide, for example Process Creation')}</ComboboxHelperText>
           <ComboboxContent emptyMessage={t_i18n('No available options')} listAriaLabel={t_i18n('Data components')} />
         </Combobox>
         <Textarea

@@ -283,7 +283,7 @@ export const buildTechniqueCoverage = (attackPatternId: string, graph: Computati
       if (!LIVE_DEPLOYMENT_STATUSES.includes(status as DeploymentStatus)) return;
       requiredIds.forEach((dataComponentId) => {
         (detectsByDataComponent.get(dataComponentId) ?? []).forEach((detect) => {
-          vector.telemetry.push({ id: dataComponentId, rel: deployment.id, detects: detect.id, inferred_from: indicate.fromId });
+          vector.telemetry.push({ id: dataComponentId, rel: deployment.id, detects: detect.id, inferred_from: indicate.fromId, indicates: indicate.id });
         });
       });
     });

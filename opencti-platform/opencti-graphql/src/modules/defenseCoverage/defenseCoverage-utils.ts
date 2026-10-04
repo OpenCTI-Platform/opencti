@@ -194,12 +194,52 @@ const uniq = (values: string[]) => Array.from(new Set(values));
 
 const isEvidenceAccessible = (evidence: DefenseEvidence, can: AccessPredicate) => can(evidence.id) && can(evidence.rel);
 
+// An inferred telemetry derives from a deployed rule and the indicates relationship that links it to
+// the technique: the reader needs access to both, as for the deployment itself
 const isTelemetryAccessible = (evidence: DefenseTelemetryEvidence, can: AccessPredicate) => {
-  return isEvidenceAccessible(evidence, can) && can(evidence.detects) && (!evidence.inferred_from || can(evidence.inferred_from));
+  if (!isEvidenceAccessible(evidence, can) || !can(evidence.detects)) return false;
+  if (!evidence.inferred_from) return true;
+  return !!evidence.indicates && can(evidence.inferred_from) && can(evidence.indicates);
 };
 
 const isDeploymentAccessible = (evidence: DefenseDeploymentEvidence, can: AccessPredicate) => {
   return isEvidenceAccessible(evidence, can) && can(evidence.indicates);
+};
+
+export interface DefenseValidationTarget {
+  attackPatternId: string;
+  platformId: string;
+}
+
+/**
+ * The gaps a validation request is tracked on: the aggregate gap of every technique, every technique on
+ * every requested platform, and the exact technique and platform pairs selected in the gap backlog (a pair
+ * never extends to the other techniques or platforms of the selection).
+ */
+export const buildValidationTargets = (
+  attackPatternIds: ReadonlyArray<string>,
+  platformIds: ReadonlyArray<string>,
+  gaps: ReadonlyArray<DefenseValidationTarget>,
+): DefenseValidationTarget[] => {
+  const targets = new Map<string, DefenseValidationTarget>();
+  const add = (attackPatternId: string, platformId: string) => {
+    targets.set(`${attackPatternId}|${platformId}`, { attackPatternId, platformId });
+  };
+  attackPatternIds.forEach((attackPatternId) => {
+    add(attackPatternId, DEFENSE_AGGREGATE_PLATFORM);
+    platformIds.forEach((platformId) => add(attackPatternId, platformId));
+  });
+  gaps.forEach((gap) => add(gap.attackPatternId, gap.platformId));
+  return Array.from(targets.values());
+};
+
+/**
+ * Parent technique of a sub-technique as a reader may see it: only when he can access both the parent
+ * and the subtechnique-of relationship that links them.
+ */
+export const visibleParentId = (technique: { parent_id?: string; parent_rel_id?: string }, can: AccessPredicate) => {
+  if (!technique.parent_id || !technique.parent_rel_id) return undefined;
+  return can(technique.parent_id) && can(technique.parent_rel_id) ? technique.parent_id : undefined;
 };
 
 /**
@@ -221,6 +261,7 @@ export const collectCoverageIds = (coverage: DefenseCoverage | undefined): strin
       pushEvidence(t);
       ids.push(t.detects);
       if (t.inferred_from) ids.push(t.inferred_from);
+      if (t.indicates) ids.push(t.indicates);
     });
     p.deployments.forEach((d) => {
       pushEvidence(d);

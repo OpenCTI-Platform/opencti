@@ -64,7 +64,7 @@ describe('Defense coverage vector building', () => {
   it('should infer the telemetry of a deployed rule from its log source', () => {
     const edr = vectorOf(EDR);
     expect(edr?.deployments).toEqual([{ id: 'rule-1', rel: 'deployed-1', status: 'active', indicates: 'indicates-1' }]);
-    expect(edr?.telemetry).toEqual([{ id: 'dc-process', rel: 'deployed-1', detects: 'detects-1', inferred_from: 'rule-1' }]);
+    expect(edr?.telemetry).toEqual([{ id: 'dc-process', rel: 'deployed-1', detects: 'detects-1', inferred_from: 'rule-1', indicates: 'indicates-1' }]);
   });
   it.each(['pending', 'failed', 'removed', 'expired'])('should not infer telemetry from a %s deployment', (status) => {
     const graph = buildGraph();

@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicStoreEntity } from '../../types/store';
-import { fullEntitiesList, internalFindByIds, storeLoadById } from '../../database/middleware-loader';
+import type { BasicStoreEntity, BasicStoreRelation } from '../../types/store';
+import { fullEntitiesList, fullRelationsList, internalFindByIds, storeLoadById } from '../../database/middleware-loader';
 import { elBulk } from '../../database/engine';
 import { buildEntityData } from '../../database/data-builder';
 import { FunctionalError } from '../../config/errors';
@@ -15,6 +15,7 @@ import { addStixCoreRelationship } from '../../domain/stixCoreRelationship';
 import { ENTITY_TYPE_INDICATOR, type BasicStoreEntityIndicator } from '../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
 import { type BasicStoreEntitySecurityCoverage, ENTITY_TYPE_SECURITY_COVERAGE } from '../securityCoverage/securityCoverage-types';
+import { connectorsForEnrichment } from '../../database/repository';
 import type { BasicStoreEntityDataComponent } from '../dataComponent/dataComponent-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../securityCoverage/securityCoverageResult/securityCoverageResult-types';
 import { addSecurityCoverage } from '../securityCoverage/securityCoverage-domain';
@@ -40,6 +41,8 @@ import {
 import {
   type AccessPredicate,
   buildCsv,
+  buildValidationTargets,
+  type DefenseValidationTarget,
   cellForPlatform,
   computeGapPriority,
   computeThreatWeight,
@@ -47,6 +50,7 @@ import {
   evaluateCoverage,
   mapLogsourceToDataComponents,
   rankRuleCandidates,
+  visibleParentId,
 } from './defenseCoverage-utils';
 import { type DefensePlatform, defenseGapId, loadDefensePlatforms } from './defenseCoverage-compute';
 import { type DefenseSnapshot, type DefenseTechniqueEntry, type DefenseThreatScope, getAccessPredicate, getDefenseSnapshot, getThreatOverlay } from './defenseCoverage-reader';
@@ -179,6 +183,7 @@ export interface DefenseThreatEvidenceView {
 
 export interface DefenseProvidesResultView {
   created_count: number;
+  existing_count: number;
   dataComponents: BasicStoreEntity[];
   unmatched_data_components: string[];
 }
@@ -304,11 +309,11 @@ const threatFigures = (overlay: DefenseThreatOverlay, attackPatternId: string) =
   return { threat_weight: computeThreatWeight(usages), threats_count: uniq(usages.map((u) => u.threat_id)).length };
 };
 
-const toCellView = (technique: DefenseTechniqueEntry, cell: DefenseCell, overlay: DefenseThreatOverlay): DefenseMatrixCellView => ({
+const toCellView = (technique: DefenseTechniqueEntry, cell: DefenseCell, overlay: DefenseThreatOverlay, can: AccessPredicate): DefenseMatrixCellView => ({
   attack_pattern_id: technique.id,
   x_mitre_id: technique.x_mitre_id,
   name: technique.name,
-  parent_attack_pattern_id: technique.parent_id,
+  parent_attack_pattern_id: visibleParentId(technique, can),
   kill_chain_phase_ids: technique.kill_chain_phase_ids,
   level: cell.level,
   telemetry: cell.telemetry,
@@ -339,7 +344,7 @@ export const buildDefenseMatrix = async (
   const evaluation = await prepareEvaluation(context, user, args.platformIds, args.threatScope);
   const { snapshot, can, overlay, selected } = evaluation;
   const techniques = snapshot.techniques.filter((t) => can(t.id));
-  const cells = techniques.map((technique) => toCellView(technique, evaluateCoverage(technique.id, technique.coverage, can, selected), overlay));
+  const cells = techniques.map((technique) => toCellView(technique, evaluateCoverage(technique.id, technique.coverage, can, selected), overlay, can));
   const cellsById = new Map(cells.map((c) => [c.attack_pattern_id, c]));
   const effective = countEffectiveTechniques(cells);
   const levels = emptyLevels();
@@ -410,7 +415,7 @@ export const findDefenseTechnique = async (
   return {
     attackPattern,
     computed_at: technique.coverage?.computed_at,
-    cell: toCellView(technique, evaluated, evaluation.overlay),
+    cell: toCellView(technique, evaluated, evaluation.overlay, evaluation.can),
     evaluated,
     coverage: technique.coverage,
     technique,
@@ -823,14 +828,15 @@ const GAP_TRACKING_SCRIPT = `
 const trackValidationRequest = async (
   context: AuthContext,
   attackPatterns: BasicStoreEntity[],
-  platformIds: string[],
+  targets: DefenseValidationTarget[],
   request: DefenseGapValidationRequest,
 ) => {
+  const attackPatternById = new Map(attackPatterns.map((attackPattern) => [attackPattern.internal_id, attackPattern]));
   const operations = [];
-  for (let index = 0; index < attackPatterns.length; index += 1) {
-    const attackPattern = attackPatterns[index];
-    for (let platformIndex = 0; platformIndex < platformIds.length; platformIndex += 1) {
-      const platformId = platformIds[platformIndex];
+  for (let index = 0; index < targets.length; index += 1) {
+    const { attackPatternId, platformId } = targets[index];
+    const attackPattern = attackPatternById.get(attackPatternId);
+    if (attackPattern) {
       const { standardId, internalId } = defenseGapId(attackPattern.internal_id, platformId);
       const { element } = await buildEntityData(context, SYSTEM_USER, {
         internal_id: internalId,
@@ -883,7 +889,8 @@ const parseValidationReferenceUrl = (value: string | null | undefined): URL | un
  * An optional external reference URL links the Security Coverage back to what asked for the validation.
  */
 export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, input: DefenseValidationInput): Promise<DefenseValidationResultView> => {
-  const attackPatternIds = uniq(input.attackPatternIds ?? []);
+  const gapRefs = input.gaps ?? [];
+  const attackPatternIds = uniq([...(input.attackPatternIds ?? []), ...gapRefs.map((gap) => gap.attackPatternId)]);
   if (attackPatternIds.length === 0) {
     throw FunctionalError('Select at least one technique to validate');
   }
@@ -908,7 +915,8 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
   }
   const platforms = await findDefensePlatforms(context, user);
   const requestedPlatforms = uniq(input.platformIds ?? []);
-  const unknownPlatforms = requestedPlatforms.filter((id) => !platforms.some((p) => p.id === id));
+  const gapPlatforms = gapRefs.map((gap) => gap.platformId).filter((id) => id !== DEFENSE_AGGREGATE_PLATFORM);
+  const unknownPlatforms = uniq([...requestedPlatforms, ...gapPlatforms]).filter((id) => !platforms.some((p) => p.id === id));
   if (unknownPlatforms.length > 0) {
     throw FunctionalError('Some security platforms of the validation request cannot be found', { platformIds: unknownPlatforms });
   }
@@ -941,7 +949,18 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
     requested_at: requestedAt,
     requested_by: user.id,
   };
-  const gapsCount = await trackValidationRequest(context, attackPatterns, [DEFENSE_AGGREGATE_PLATFORM, ...requestedPlatforms], request);
+  // The gaps of the backlog may designate their technique by any of its ids
+  const internalIdOf = new Map<string, string>();
+  attackPatterns.forEach((attackPattern) => {
+    const stixIds = (attackPattern as unknown as { x_opencti_stix_ids?: string[] }).x_opencti_stix_ids ?? [];
+    [attackPattern.internal_id, attackPattern.standard_id, ...stixIds].forEach((id) => internalIdOf.set(id, attackPattern.internal_id));
+  });
+  const targets = buildValidationTargets(
+    attackPatterns.map((attackPattern) => attackPattern.internal_id),
+    requestedPlatforms,
+    gapRefs.map((gap) => ({ attackPatternId: internalIdOf.get(gap.attackPatternId) ?? gap.attackPatternId, platformId: gap.platformId })),
+  );
+  const gapsCount = await trackValidationRequest(context, attackPatterns, targets, request);
   await addDefenseValidationRequestCount();
   return { securityCoverage, grouping, gaps_count: gapsCount };
 };
@@ -969,18 +988,30 @@ export const addPlatformProvidesFromLogsources = async (
     const key = (dc.name ?? '').toLowerCase();
     byName.set(key, [...(byName.get(key) ?? []), dc]);
   });
-  const matched = names.flatMap((name) => byName.get(name.toLowerCase()) ?? []);
+  const matchedIds = uniq(names.flatMap((name) => byName.get(name.toLowerCase()) ?? []).map((dc) => dc.internal_id));
   const unmatched = names.filter((name) => !byName.has(name.toLowerCase()));
-  for (let index = 0; index < matched.length; index += 1) {
+  const existing = matchedIds.length === 0 ? [] : await fullRelationsList<BasicStoreRelation>(context, user, RELATION_PROVIDES, {
+    fromId: platform.internal_id,
+    toId: matchedIds,
+    baseData: true,
+  });
+  const declaredIds = new Set(existing.map((relation) => relation.toId));
+  const missingIds = matchedIds.filter((id) => !declaredIds.has(id));
+  for (let index = 0; index < missingIds.length; index += 1) {
     await addStixCoreRelationship(context, user, {
       fromId: platform.internal_id,
-      toId: matched[index].internal_id,
+      toId: missingIds[index],
       relationship_type: RELATION_PROVIDES,
       description: 'Declared from log sources through the defense matrix log source mapping',
     });
   }
-  const created = await findByIdsChunked<BasicStoreEntity>(context, user, matched.map((m) => m.internal_id), { type: ENTITY_TYPE_DATA_COMPONENT });
-  return { created_count: matched.length, dataComponents: created, unmatched_data_components: unmatched };
+  const dataComponentsOfLogsources = await findByIdsChunked<BasicStoreEntity>(context, user, matchedIds, { type: ENTITY_TYPE_DATA_COMPONENT });
+  return {
+    created_count: missingIds.length,
+    existing_count: matchedIds.length - missingIds.length,
+    dataComponents: dataComponentsOfLogsources,
+    unmatched_data_components: unmatched,
+  };
 };
 // endregion
 
@@ -990,13 +1021,15 @@ export const requestDefenseCoverageRecompute = async () => {
   return true;
 };
 
-export const getDefenseCoverageStatus = async (context: AuthContext) => {
+export const getDefenseCoverageStatus = async (context: AuthContext, user: AuthUser) => {
   const snapshot = await getDefenseSnapshot(context);
+  const validationConnectors = await connectorsForEnrichment(context, user, ENTITY_TYPE_SECURITY_COVERAGE, true);
   return {
     computed_at: computedAtOf(snapshot),
     last_full_computation: await getLastFullComputation(),
     // Pending until the requested computation is done, not only until the manager picks the request up
     full_computation_requested: (await isFullComputationRequested()) || (await isFullComputationRunning()),
+    validation_available: validationConnectors.length > 0,
   };
 };
 // endregion

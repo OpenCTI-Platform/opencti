@@ -2,7 +2,9 @@ import React, { Suspense, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { Link } from 'react-router';
 import { Box, List, ListItem, ListItemIcon, ListItemText, Stack, Typography } from '@mui/material';
-import { Chip } from '@filigran/design-system';
+import { useTheme } from '@mui/material/styles';
+import { Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import type { Theme } from '../../../../components/Theme';
 import Button from '@common/button/Button';
 import Drawer from '@components/common/drawer/Drawer';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -10,7 +12,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE, SETTINGS_SETCUSTOMIZATION } from '../../../../utils/hooks/useGranted';
 import { resolveLink } from '../../../../utils/Entity';
 import { DefenseTechniqueDrawerQuery } from './__generated__/DefenseTechniqueDrawerQuery.graphql';
 import DefenseValidationDialog from './DefenseValidationDialog';
@@ -18,13 +20,19 @@ import {
   DEFENSE_ACTION_LABELS,
   DEFENSE_DEPLOYMENT_STATUS_LABELS,
   DEFENSE_DETECTION_LABELS,
-  DEFENSE_LEVEL_LABELS,
+  DEFENSE_LEVEL_DESCRIPTIONS,
+  DEFENSE_LEVEL_DETECTION_AVAILABLE,
+  DEFENSE_LEVEL_DETECTION_DEPLOYED,
+  DEFENSE_LEVEL_NONE,
+  DEFENSE_LEVEL_TELEMETRY,
+  DEFENSE_LEVEL_VALIDATED,
   DEFENSE_VALIDATION_LABELS,
   type DefenseAction,
   type DefenseDetection,
   type DefenseScopeState,
   type DefenseValidation,
   defenseLevelColor,
+  defenseLevelLabel,
   toThreatScopeInput,
 } from './defenseMatrix-utils';
 
@@ -156,8 +164,13 @@ export const defenseTechniqueDrawerQuery = graphql`
 
 const LevelChip = ({ level }: { level: number }) => {
   const { t_i18n } = useFormatter();
-  return <Chip label={`${level} - ${t_i18n(DEFENSE_LEVEL_LABELS[level])}`} color={defenseLevelColor(level)} />;
+  const theme = useTheme<Theme>();
+  return <Chip label={defenseLevelLabel(t_i18n, level)} color={defenseLevelColor(theme, level)} />;
 };
+
+// Deployment statuses of a rule running on its security platform
+const LIVE_DEPLOYMENT_STATUSES = ['active', 'deployed'];
+const uniq = (values: string[]) => Array.from(new Set(values));
 
 const Section = ({ title, count, children }: { title: string; count?: number; children: React.ReactNode }) => (
   <Box component="section" sx={{ marginTop: 3 }}>
@@ -179,7 +192,7 @@ interface DefenseTechniqueContentProps {
 }
 
 const DefenseTechniqueContent = ({ queryRef, scope, allowValidation }: DefenseTechniqueContentProps) => {
-  const { t_i18n, fldt, nsdt } = useFormatter();
+  const { t_i18n, fld, fldt, rd } = useFormatter();
   const { defenseTechnique, defensePlatforms } = usePreloadedQuery(defenseTechniqueDrawerQuery, queryRef);
   const [validating, setValidating] = useState(false);
   if (!defenseTechnique) {
@@ -187,7 +200,89 @@ const DefenseTechniqueContent = ({ queryRef, scope, allowValidation }: DefenseTe
   }
   const { attackPattern, cell } = defenseTechnique;
   const platformName = (id: string) => (id === 'all' ? t_i18n('All platforms') : defensePlatforms.find((p) => p.id === id)?.name ?? id);
-  const validationPlatformIds = scope.platformIds.length > 0 ? scope.platformIds : [];
+  const validationPlatforms = scope.platformIds.map((id) => ({ id, name: platformName(id) }));
+
+  // The evidence behind the level, said in one sentence
+  const liveDeployments = defenseTechnique.rules.flatMap(({ indicator, deployments }) => deployments
+    .filter((deployment) => LIVE_DEPLOYMENT_STATUSES.includes(deployment.status))
+    .map((deployment) => ({ ruleId: indicator.id, platform: deployment.platform.name })));
+  const liveRulesCount = uniq(liveDeployments.map((deployment) => deployment.ruleId)).length;
+  const livePlatforms = uniq(liveDeployments.map((deployment) => deployment.platform)).join(', ');
+  const collected = defenseTechnique.dataComponents.filter((dc) => dc.providedBy.length + dc.inferredBy.length > 0);
+  const collectingPlatforms = uniq(collected.flatMap((dc) => [...dc.providedBy, ...dc.inferredBy].map((platform) => platform.name))).join(', ');
+  const resultDate = cell.last_result_at ? fld(cell.last_result_at) : t_i18n('an unknown date');
+  const failed = cell.validated === 'failed';
+  const latestValidation = [...defenseTechnique.validations]
+    .filter((validation) => (failed ? validation.status === 'failed' : true) && !!validation.securityCoverage)
+    .sort((a, b) => (b.last_result_at ?? '').localeCompare(a.last_result_at ?? ''))[0];
+  const explanation = (): string => {
+    if (failed) {
+      return t_i18n('The latest OpenAEV validation failed on {date}: the detection needs a fix.', { values: { date: resultDate } });
+    }
+    if (cell.level === DEFENSE_LEVEL_VALIDATED) {
+      return liveRulesCount > 0
+        ? t_i18n('Detected by {count, plural, one {# rule} other {# rules}} deployed on {platforms}, validated on {date}.', { values: { count: liveRulesCount, platforms: livePlatforms, date: resultDate } })
+        : t_i18n('Validated by OpenAEV on {date}.', { values: { date: resultDate } });
+    }
+    if (cell.level === DEFENSE_LEVEL_DETECTION_DEPLOYED) {
+      return t_i18n('Detected by {count, plural, one {# rule} other {# rules}} deployed on {platforms}, not validated yet.', { values: { count: liveRulesCount, platforms: livePlatforms } });
+    }
+    if (cell.level === DEFENSE_LEVEL_DETECTION_AVAILABLE) {
+      return t_i18n('{count, plural, one {# detection rule is available} other {# detection rules are available}}, deployed on no security platform yet.', { values: { count: defenseTechnique.rules.length } });
+    }
+    if (cell.level === DEFENSE_LEVEL_TELEMETRY) {
+      return t_i18n('Collected by {platforms} through {count, plural, one {# data component} other {# data components}}, no detection rule yet.', { values: { count: collected.length, platforms: collectingPlatforms } });
+    }
+    return t_i18n(DEFENSE_LEVEL_DESCRIPTIONS[DEFENSE_LEVEL_NONE]);
+  };
+
+  // The next action of the level
+  const firstRule = defenseTechnique.rules[0]?.indicator;
+  const nextAction = (): React.ReactNode => {
+    if (failed) {
+      return latestValidation?.securityCoverage ? (
+        <Button component={Link} to={`/dashboard/analyses/security_coverages/${latestValidation.securityCoverage.id}`} data-testid="defense-technique-next-action">
+          {t_i18n('Open the validation')}
+        </Button>
+      ) : null;
+    }
+    if (cell.level === DEFENSE_LEVEL_DETECTION_DEPLOYED) {
+      return (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <Button onClick={() => setValidating(true)} data-testid="defense-technique-validate">{t_i18n('Validate in OpenAEV')}</Button>
+        </Security>
+      );
+    }
+    if (cell.level === DEFENSE_LEVEL_DETECTION_AVAILABLE && firstRule) {
+      return (
+        <Button component={Link} to={`/dashboard/observations/indicators/${firstRule.id}`} data-testid="defense-technique-next-action">
+          {t_i18n('Deploy the rule')}
+        </Button>
+      );
+    }
+    if (cell.level === DEFENSE_LEVEL_TELEMETRY) {
+      return (
+        <Button component={Link} to={`/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge/indicators`} data-testid="defense-technique-next-action">
+          {t_i18n('Find a detection rule')}
+        </Button>
+      );
+    }
+    if (cell.level === DEFENSE_LEVEL_NONE) {
+      const platformsButton = (
+        <Button component={Link} to="/dashboard/entities/security_platforms" data-testid="defense-technique-next-action">
+          {t_i18n('Map telemetry')}
+        </Button>
+      );
+      return (
+        <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={platformsButton}>
+          <Button component={Link} to="/dashboard/settings/customization/telemetry_mappings" data-testid="defense-technique-next-action">
+            {t_i18n('Map telemetry')}
+          </Button>
+        </Security>
+      );
+    }
+    return null;
+  };
   return (
     <Box data-testid="defense-technique-drawer-content">
       <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
@@ -195,19 +290,25 @@ const DefenseTechniqueContent = ({ queryRef, scope, allowValidation }: DefenseTe
         <Chip label={t_i18n(DEFENSE_DETECTION_LABELS[cell.detection as DefenseDetection])} />
         <Chip
           label={t_i18n(DEFENSE_VALIDATION_LABELS[cell.validated as DefenseValidation])}
-          severity={cell.validated === 'failed' ? 'critical' : 'neutral'}
+          severity={failed ? 'critical' : 'neutral'}
         />
         {cell.mitigated && <Chip label={t_i18n('Mitigated')} />}
       </Stack>
-      <Typography variant="body2" sx={{ marginTop: 2 }}>
-        {`${t_i18n('Recommended action')}: ${t_i18n(DEFENSE_ACTION_LABELS[cell.recommended_action as DefenseAction])}`}
+      <Typography variant="body1" sx={{ marginTop: 2 }} data-testid="defense-technique-explanation">
+        {explanation()}
       </Typography>
       {defenseTechnique.computed_at && (
-        <Typography variant="caption" color="text.secondary">
-          {`${t_i18n('Computed at')} ${nsdt(defenseTechnique.computed_at)}`}
-        </Typography>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Typography variant="caption" color="text.secondary" tabIndex={0} sx={{ cursor: 'help' }}>
+              {t_i18n('Computed {date}', { values: { date: rd(defenseTechnique.computed_at) } })}
+            </Typography>
+          </TooltipTrigger>
+          <TooltipContent>{fldt(defenseTechnique.computed_at)}</TooltipContent>
+        </Tooltip>
       )}
       <Stack direction="row" spacing={1} sx={{ marginTop: 2 }}>
+        {nextAction()}
         <Button
           variant="secondary"
           component={Link}
@@ -215,9 +316,9 @@ const DefenseTechniqueContent = ({ queryRef, scope, allowValidation }: DefenseTe
         >
           {t_i18n('Open the attack pattern')}
         </Button>
-        {allowValidation && (
+        {allowValidation && cell.level !== DEFENSE_LEVEL_DETECTION_DEPLOYED && (
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <Button onClick={() => setValidating(true)} data-testid="defense-technique-validate">
+            <Button variant="secondary" onClick={() => setValidating(true)} data-testid="defense-technique-validate">
               {t_i18n('Validate in OpenAEV')}
             </Button>
           </Security>
@@ -364,15 +465,13 @@ const DefenseTechniqueContent = ({ queryRef, scope, allowValidation }: DefenseTe
         )}
       </Section>
 
-      {allowValidation && (
-        <DefenseValidationDialog
-          open={validating}
-          onClose={() => setValidating(false)}
-          techniques={[{ id: attackPattern.id, name: attackPattern.name, x_mitre_id: attackPattern.x_mitre_id }]}
-          platformIds={validationPlatformIds}
-          threats={scope.threatMode === 'SELECTED' ? scope.threats : []}
-        />
-      )}
+      <DefenseValidationDialog
+        open={validating}
+        onClose={() => setValidating(false)}
+        techniques={[{ id: attackPattern.id, name: attackPattern.name, x_mitre_id: attackPattern.x_mitre_id }]}
+        platforms={validationPlatforms}
+        threats={scope.threatMode === 'SELECTED' ? scope.threats : []}
+      />
     </Box>
   );
 };

@@ -135,7 +135,7 @@ const AccordionAttackPattern = ({
     return {
       ...defenseStyles,
       // The frame shows the best level among the technique and its sub-techniques
-      border: `1px solid ${defenseLevelColor(Math.max(level, ...subLevels))}`,
+      border: `1px solid ${defenseLevelColor(theme, Math.max(level, ...subLevels))}`,
     };
   };
 

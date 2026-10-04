@@ -2,7 +2,9 @@ import React, { useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePaginationFragment, usePreloadedQuery } from 'react-relay';
 import { Link } from 'react-router';
 import { Box, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { Checkbox, Chip } from '@filigran/design-system';
+import type { Theme } from '../../../../components/Theme';
 import Button from '@common/button/Button';
 import Card from '../../../../components/common/card/Card';
 import { useFormatter } from '../../../../components/i18n';
@@ -16,13 +18,13 @@ import DefenseTechniqueDrawer from './DefenseTechniqueDrawer';
 import {
   DEFENSE_ACTION_LABELS,
   DEFENSE_DETECTION_LABELS,
-  DEFENSE_LEVEL_LABELS,
   DEFENSE_VALIDATION_LABELS,
   type DefenseAction,
   type DefenseDetection,
   type DefenseScopeState,
   type DefenseValidation,
   defenseLevelColor,
+  defenseLevelLabel,
 } from './defenseMatrix-utils';
 
 const AGGREGATE_PLATFORM = 'all';
@@ -118,6 +120,7 @@ interface DefenseGapsLinesProps {
 
 const DefenseGapsLines = ({ queryRef, scope }: DefenseGapsLinesProps) => {
   const { t_i18n, fldt } = useFormatter();
+  const theme = useTheme<Theme>();
   const queryData = usePreloadedQuery(defenseGapsLinesQuery, queryRef);
   const { data, hasNext, loadNext, isLoadingNext, refetch } = usePaginationFragment<DefenseGapsLinesRefetchQuery, DefenseGapsLines_data$key>(
     defenseGapsLinesFragment,
@@ -135,7 +138,10 @@ const DefenseGapsLines = ({ queryRef, scope }: DefenseGapsLinesProps) => {
     name: gap.attack_pattern_name,
     x_mitre_id: gap.x_mitre_id,
   }])).values());
-  const selectedPlatformIds = Array.from(new Set(selectedGaps.map((gap) => gap.platform_id).filter((id) => id !== AGGREGATE_PLATFORM)));
+  // Each selected gap is validated on its own platform only, never on the platform of another selected gap
+  const selectedGapTargets = selectedGaps
+    .filter((gap) => gap.platform_id !== AGGREGATE_PLATFORM)
+    .map((gap) => ({ attackPatternId: gap.attack_pattern_id, platformId: gap.platform_id, platformName: gap.platform?.name ?? gap.platform_id }));
   const allSelected = gaps.length > 0 && gaps.every((gap) => selectedIds.has(gap.id));
 
   const toggle = (id: string, checked: boolean) => {
@@ -147,7 +153,7 @@ const DefenseGapsLines = ({ queryRef, scope }: DefenseGapsLinesProps) => {
 
   return (
     <Card
-      title={t_i18n('{count} defense gaps', { values: { count: total } })}
+      title={t_i18n('{count, plural, one {# defense gap} other {# defense gaps}}', { values: { count: total } })}
       action={(
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <Button
@@ -155,7 +161,7 @@ const DefenseGapsLines = ({ queryRef, scope }: DefenseGapsLinesProps) => {
             onClick={() => setValidating(true)}
             data-testid="defense-gaps-validate"
           >
-            {t_i18n('Validate {count} techniques', { values: { count: selectedTechniques.length } })}
+            {t_i18n('{count, plural, one {Validate # technique} other {Validate # techniques}}', { values: { count: selectedTechniques.length } })}
           </Button>
         </Security>
       )}
@@ -212,7 +218,7 @@ const DefenseGapsLines = ({ queryRef, scope }: DefenseGapsLinesProps) => {
                     </TableCell>
                     <TableCell>{gap.platform?.name ?? t_i18n('All platforms')}</TableCell>
                     <TableCell>
-                      <Chip label={`${gap.level} - ${t_i18n(DEFENSE_LEVEL_LABELS[gap.level])}`} color={defenseLevelColor(gap.level)} />
+                      <Chip label={defenseLevelLabel(t_i18n, gap.level)} color={defenseLevelColor(theme, gap.level)} />
                     </TableCell>
                     <TableCell>
                       <Stack spacing={0.25}>
@@ -269,7 +275,7 @@ const DefenseGapsLines = ({ queryRef, scope }: DefenseGapsLinesProps) => {
           refetch({}, { fetchPolicy: 'network-only' });
         }}
         techniques={selectedTechniques}
-        platformIds={selectedPlatformIds}
+        gaps={selectedGapTargets}
         threats={scope.threatMode === 'SELECTED' ? scope.threats : []}
       />
       <DefenseTechniqueDrawer

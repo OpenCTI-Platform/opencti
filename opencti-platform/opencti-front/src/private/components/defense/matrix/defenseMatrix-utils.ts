@@ -1,3 +1,5 @@
+import { getContrastRatio } from '@mui/material/styles';
+import type { Theme } from '../../../../components/Theme';
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { isFilterGroupNotEmpty, serializeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 
@@ -24,6 +26,13 @@ export const DEFENSE_LEVEL_LABELS: Record<number, string> = {
   [DEFENSE_LEVEL_VALIDATED]: 'Detection validated',
 };
 
+type Translate = (message: string, options?: { values?: Record<string, string | number> }) => string;
+
+// The one wording of a level, used by every chip, legend, filter option and caption
+export const defenseLevelLabel = (t_i18n: Translate, level: number) => t_i18n('Level {level} - {label}', {
+  values: { level, label: t_i18n(DEFENSE_LEVEL_LABELS[level] ?? DEFENSE_LEVEL_LABELS[DEFENSE_LEVEL_NONE]) },
+});
+
 export const DEFENSE_LEVEL_DESCRIPTIONS: Record<number, string> = {
   [DEFENSE_LEVEL_NONE]: 'No telemetry, detection rule or validation is known for this technique.',
   [DEFENSE_LEVEL_TELEMETRY]: 'A security platform collects a data component that detects this technique.',
@@ -32,16 +41,37 @@ export const DEFENSE_LEVEL_DESCRIPTIONS: Record<number, string> = {
   [DEFENSE_LEVEL_VALIDATED]: 'OpenAEV proved the detection or the prevention of this technique.',
 };
 
-// Data colors of the five levels, from nothing to proven, readable on both themes.
-export const DEFENSE_LEVEL_COLORS: Record<number, string> = {
-  [DEFENSE_LEVEL_NONE]: '#78909c',
-  [DEFENSE_LEVEL_TELEMETRY]: '#ff9800',
-  [DEFENSE_LEVEL_DETECTION_AVAILABLE]: '#fdd835',
-  [DEFENSE_LEVEL_DETECTION_DEPLOYED]: '#7cb342',
-  [DEFENSE_LEVEL_VALIDATED]: '#2e7d32',
+// Data colours of the five levels, from nothing to proven, of a failed validation and of the threat outline.
+// The design system has no sequential data scale yet (see fds-migration/TOKEN-MAPPING.md): the closest
+// design-system hues bridged into the theme are used, identical in both themes.
+const levelColorOf = (theme: Theme): Record<number, string> => {
+  const { tertiary, alert } = theme.palette.designSystem;
+  return {
+    [DEFENSE_LEVEL_NONE]: tertiary.grey?.[400] ?? alert.info.secondary,
+    [DEFENSE_LEVEL_TELEMETRY]: tertiary.orange?.[400] ?? alert.warning.primary,
+    [DEFENSE_LEVEL_DETECTION_AVAILABLE]: tertiary.yellow?.[400] ?? alert.alert.primary,
+    [DEFENSE_LEVEL_DETECTION_DEPLOYED]: tertiary.green?.[400] ?? alert.success.secondary,
+    [DEFENSE_LEVEL_VALIDATED]: tertiary.green?.[600] ?? alert.success.primary,
+  };
 };
-export const DEFENSE_FAILED_COLOR = '#e53935';
-export const DEFENSE_THREAT_COLOR = '#ab47bc';
+
+export const defenseLevelColor = (theme: Theme, level: number): string => {
+  const colors = levelColorOf(theme);
+  return colors[level] ?? colors[DEFENSE_LEVEL_NONE];
+};
+
+export const defenseFailedColor = (theme: Theme): string => theme.palette.designSystem.tertiary.red?.[500] ?? theme.palette.designSystem.alert.error.primary;
+
+export const defenseThreatColor = (theme: Theme): string => theme.palette.designSystem.tertiary.darkBlue?.[300] ?? theme.palette.designSystem.secondary.main;
+
+/**
+ * Text colour of a label drawn on a level colour: the one of black and white with the highest contrast,
+ * at least 4.5:1 (WCAG AA) on every level colour of both themes.
+ */
+export const defenseLevelTextColor = (theme: Theme, background: string): string => {
+  const { black = 'black', white = 'white' } = theme.palette.common;
+  return getContrastRatio(background, black) >= getContrastRatio(background, white) ? black : white;
+};
 
 export type DefenseDetection = 'none' | 'available' | 'deployed' | 'active';
 export type DefenseValidation = 'none' | 'prevented' | 'detected' | 'failed';
@@ -134,8 +164,6 @@ export const computeLayerLevel = (cell: DefenseCellLike, layers: DefenseLayersSt
   }
   return level;
 };
-
-export const defenseLevelColor = (level: number) => DEFENSE_LEVEL_COLORS[level] ?? DEFENSE_LEVEL_COLORS[DEFENSE_LEVEL_NONE];
 
 export const isValidationFailed = (cell: DefenseCellLike, layers: DefenseLayersState) => layers.validated && cell.validated === 'failed';
 

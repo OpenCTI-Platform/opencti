@@ -1,13 +1,15 @@
 import React, { ReactNode, Suspense } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { Box, Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import type { Theme } from '../../../../../components/Theme';
 import WidgetContainer from '../../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../../components/dashboard/WidgetNoData';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import { useFormatter } from '../../../../../components/i18n';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import { DefenseLevelsBar } from '../DefenseLevelsBar';
-import { DEFENSE_COVERED_LEVEL, DEFENSE_LEVEL_LABELS, DEFENSE_LEVEL_VALIDATED, DEFENSE_LEVELS, defenseLevelColor } from '../defenseMatrix-utils';
+import { DEFENSE_COVERED_LEVEL, DEFENSE_LEVEL_VALIDATED, DEFENSE_LEVELS, defenseLevelColor, defenseLevelLabel } from '../defenseMatrix-utils';
 import { WidgetDefenseLevelsQuery } from './__generated__/WidgetDefenseLevelsQuery.graphql';
 
 // Levels computed for the reader, from the evidences they can access
@@ -31,6 +33,7 @@ const Figure = ({ value, label, testId }: { value: number; label: string; testId
 
 const Content = ({ queryRef }: { queryRef: PreloadedQuery<WidgetDefenseLevelsQuery> }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const { defenseMatrix } = usePreloadedQuery(widgetDefenseLevelsQuery, queryRef);
   if (!defenseMatrix || defenseMatrix.techniques_count === 0) {
     return <WidgetNoData />;
@@ -46,8 +49,8 @@ const Content = ({ queryRef }: { queryRef: PreloadedQuery<WidgetDefenseLevelsQue
       <Box component="ul" aria-label={t_i18n('Defense levels')} sx={{ margin: 0, padding: 0, listStyle: 'none' }}>
         {DEFENSE_LEVELS.map((level) => (
           <Box component="li" key={level} sx={{ display: 'flex', alignItems: 'center', gap: 1, paddingBlock: 0.25 }}>
-            <Box sx={{ width: 12, height: 12, borderRadius: '2px', flexShrink: 0, backgroundColor: defenseLevelColor(level), opacity: level === 0 ? 0.45 : 1 }} />
-            <Typography variant="body2" sx={{ flex: 1 }}>{`${level} - ${t_i18n(DEFENSE_LEVEL_LABELS[level])}`}</Typography>
+            <Box sx={{ width: 12, height: 12, borderRadius: '2px', flexShrink: 0, backgroundColor: defenseLevelColor(theme, level) }} />
+            <Typography variant="body2" sx={{ flex: 1 }}>{defenseLevelLabel(t_i18n, level)}</Typography>
             <Typography variant="body2" data-testid={`widget-defense-levels-count-${level}`}>{levels[level] ?? 0}</Typography>
           </Box>
         ))}

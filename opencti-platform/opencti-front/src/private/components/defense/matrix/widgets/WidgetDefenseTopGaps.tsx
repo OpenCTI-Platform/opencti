@@ -2,13 +2,15 @@ import React, { ReactNode, Suspense } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { Link } from 'react-router';
 import { Box, List, ListItem, ListItemText } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { Chip } from '@filigran/design-system';
+import type { Theme } from '../../../../../components/Theme';
 import WidgetContainer from '../../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../../components/dashboard/WidgetNoData';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import { useFormatter } from '../../../../../components/i18n';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
-import { DEFENSE_ACTION_LABELS, DEFENSE_LEVEL_LABELS, type DefenseAction, defenseLevelColor } from '../defenseMatrix-utils';
+import { DEFENSE_ACTION_LABELS, type DefenseAction, defenseLevelColor, defenseLevelLabel } from '../defenseMatrix-utils';
 import { WidgetDefenseTopGapsQuery } from './__generated__/WidgetDefenseTopGapsQuery.graphql';
 
 const TOP_GAPS = 10;
@@ -33,6 +35,7 @@ const widgetDefenseTopGapsQuery = graphql`
 
 const Content = ({ queryRef }: { queryRef: PreloadedQuery<WidgetDefenseTopGapsQuery> }) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const { defenseGaps } = usePreloadedQuery(widgetDefenseTopGapsQuery, queryRef);
   const gaps = (defenseGaps?.edges ?? []).map(({ node }) => node);
   if (gaps.length === 0) {
@@ -41,14 +44,16 @@ const Content = ({ queryRef }: { queryRef: PreloadedQuery<WidgetDefenseTopGapsQu
   return (
     <List dense disablePadding data-testid="widget-defense-top-gaps">
       {gaps.map((gap) => (
-        <ListItem key={gap.id} divider disableGutters secondaryAction={<Chip label={`${gap.level}`} color={defenseLevelColor(gap.level)} title={t_i18n(DEFENSE_LEVEL_LABELS[gap.level])} />}>
+        <ListItem key={gap.id} divider disableGutters secondaryAction={<Chip label={`${gap.level}`} color={defenseLevelColor(theme, gap.level)} title={defenseLevelLabel(t_i18n, gap.level)} />}>
           <ListItemText
             primary={(
               <Link to={`/dashboard/techniques/attack_patterns/${gap.attack_pattern_id}`}>
                 {gap.x_mitre_id ? `[${gap.x_mitre_id}] ${gap.attack_pattern_name}` : gap.attack_pattern_name}
               </Link>
             )}
-            secondary={`${t_i18n('Used by {count} threats', { values: { count: gap.threats_count } })} - ${t_i18n(DEFENSE_ACTION_LABELS[gap.recommended_action as DefenseAction])}`}
+            secondary={t_i18n('{count, plural, one {Used by # threat} other {Used by # threats}} - {action}', {
+              values: { count: gap.threats_count, action: t_i18n(DEFENSE_ACTION_LABELS[gap.recommended_action as DefenseAction]) },
+            })}
           />
         </ListItem>
       ))}

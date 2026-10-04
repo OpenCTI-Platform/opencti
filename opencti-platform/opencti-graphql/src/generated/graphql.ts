@@ -7673,6 +7673,8 @@ export type DefenseCoverageStatus = {
   computed_at?: Maybe<Scalars['DateTime']['output']>;
   full_computation_requested: Scalars['Boolean']['output'];
   last_full_computation?: Maybe<Scalars['DateTime']['output']>;
+  /** An enrichment connector (OpenAEV) is alive for security coverages: gaps can be validated */
+  validation_available: Scalars['Boolean']['output'];
 };
 
 export type DefenseDataComponentEvidence = {
@@ -7737,6 +7739,11 @@ export type DefenseGapEdge = {
   __typename?: 'DefenseGapEdge';
   cursor: Scalars['String']['output'];
   node: DefenseGap;
+};
+
+export type DefenseGapRefInput = {
+  attackPatternId: Scalars['String']['input'];
+  platformId: Scalars['String']['input'];
 };
 
 export type DefenseGapsFilter = {
@@ -7861,8 +7868,11 @@ export type DefensePlatform = {
 
 export type DefenseProvidesResult = {
   __typename?: 'DefenseProvidesResult';
+  /** Data components newly declared as provided by the platform */
   created_count: Scalars['Int']['output'];
   dataComponents: Array<DataComponent>;
+  /** Data components of the log sources the platform already provided */
+  existing_count: Scalars['Int']['output'];
   unmatched_data_components: Array<Scalars['String']['output']>;
 };
 
@@ -7949,6 +7959,7 @@ export type DefenseValidationInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   duration?: InputMaybe<Scalars['String']['input']>;
   external_reference_url?: InputMaybe<Scalars['String']['input']>;
+  gaps?: InputMaybe<Array<DefenseGapRefInput>>;
   name?: InputMaybe<Scalars['String']['input']>;
   periodicity?: InputMaybe<Scalars['String']['input']>;
   platformIds?: InputMaybe<Array<Scalars['String']['input']>>;
@@ -42779,6 +42790,7 @@ export type ResolversTypes = ResolversObject<{
   DefenseGap: ResolverTypeWrapper<DefenseGapView>;
   DefenseGapConnection: ResolverTypeWrapper<Omit<DefenseGapConnection, 'edges'> & { edges: Array<ResolversTypes['DefenseGapEdge']> }>;
   DefenseGapEdge: ResolverTypeWrapper<Omit<DefenseGapEdge, 'node'> & { node: ResolversTypes['DefenseGap'] }>;
+  DefenseGapRefInput: DefenseGapRefInput;
   DefenseGapsFilter: DefenseGapsFilter;
   DefenseGapsOrdering: DefenseGapsOrdering;
   DefenseLogsourceInput: DefenseLogsourceInput;
@@ -44007,6 +44019,7 @@ export type ResolversParentTypes = ResolversObject<{
   DefenseGap: DefenseGapView;
   DefenseGapConnection: Omit<DefenseGapConnection, 'edges'> & { edges: Array<ResolversParentTypes['DefenseGapEdge']> };
   DefenseGapEdge: Omit<DefenseGapEdge, 'node'> & { node: ResolversParentTypes['DefenseGap'] };
+  DefenseGapRefInput: DefenseGapRefInput;
   DefenseGapsFilter: DefenseGapsFilter;
   DefenseLogsourceInput: DefenseLogsourceInput;
   DefenseLogsourceMapping: BasicStoreEntityDefenseLogsourceMapping;
@@ -47564,6 +47577,7 @@ export type DefenseCoverageStatusResolvers<ContextType = any, ParentType extends
   computed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   full_computation_requested?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   last_full_computation?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  validation_available?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 
 export type DefenseDataComponentEvidenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefenseDataComponentEvidence'] = ResolversParentTypes['DefenseDataComponentEvidence']> = ResolversObject<{
@@ -47689,6 +47703,7 @@ export type DefensePlatformResolvers<ContextType = any, ParentType extends Resol
 export type DefenseProvidesResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefenseProvidesResult'] = ResolversParentTypes['DefenseProvidesResult']> = ResolversObject<{
   created_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   dataComponents?: Resolver<Array<ResolversTypes['DataComponent']>, ParentType, ContextType>;
+  existing_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   unmatched_data_components?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
 }>;
 

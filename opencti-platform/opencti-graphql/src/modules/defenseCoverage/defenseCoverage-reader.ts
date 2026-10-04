@@ -22,7 +22,6 @@ import { getDefenseCoverageVersion, getDefenseOverlayVersion } from './defenseCo
 
 const READER_CACHE_TTL = conf.get('defense_coverage_manager:reader_cache_ttl') ?? 300000; // 5 minutes
 const MAX_SELECTED_THREATS = 500;
-const MAX_FILTERED_THREATS = 5000;
 const IDS_CHUNK_SIZE = 5000;
 
 export type DefenseThreatScopeMode = 'ALL' | 'SELECTED' | 'FILTERED' | 'NONE';
@@ -40,6 +39,7 @@ export interface DefenseTechniqueEntry {
   description?: string;
   kill_chain_phase_ids: string[];
   parent_id?: string;
+  parent_rel_id?: string; // subtechnique-of relationship id, the parent is shown only to readers of both
   coverage?: DefenseCoverage;
 }
 
@@ -71,7 +71,7 @@ const loadSnapshot = async (context: AuthContext, version: string): Promise<Defe
     toTypes: [ENTITY_TYPE_ATTACK_PATTERN],
     baseData: true,
   });
-  const parentBySub = new Map(subTechniques.map((s) => [s.fromId, s.toId]));
+  const parentBySub = new Map(subTechniques.map((s) => [s.fromId, { id: s.toId, rel: s.internal_id }]));
   const phases = await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [ENTITY_TYPE_KILL_CHAIN_PHASE], { indices: [READ_INDEX_STIX_META_OBJECTS] });
   const techniques: DefenseTechniqueEntry[] = attackPatterns.map((ap) => {
     const record = ap as unknown as Record<string, unknown>;
@@ -81,11 +81,12 @@ const loadSnapshot = async (context: AuthContext, version: string): Promise<Defe
       x_mitre_id: record.x_mitre_id as string | undefined,
       description: ap.description,
       kill_chain_phase_ids: (record[RELATION_KILL_CHAIN_PHASE] as string[] | undefined) ?? [],
-      parent_id: parentBySub.get(ap.internal_id),
+      parent_id: parentBySub.get(ap.internal_id)?.id,
+      parent_rel_id: parentBySub.get(ap.internal_id)?.rel,
       coverage: record.x_opencti_defense_coverage as DefenseCoverage | undefined,
     };
   });
-  const evidenceIds = R.uniq(techniques.flatMap((t) => [t.id, ...collectCoverageIds(t.coverage)]));
+  const evidenceIds = R.uniq(techniques.flatMap((t) => [t.id, ...(t.parent_rel_id ? [t.parent_rel_id] : []), ...collectCoverageIds(t.coverage)]));
   return {
     version,
     techniques,
@@ -234,12 +235,13 @@ const resolveScopeThreatIds = async (context: AuthContext, user: AuthUser, scope
     return found.map((f) => f.internal_id);
   }
   if (scope.mode === 'FILTERED') {
+    // Every matching threat counts: the listing is paginated to the end, as the uses relationships of the
+    // ALL scope are, and their usages are then loaded by chunks of ids
     const threats = await fullEntitiesList<BasicStoreEntity>(context, user, DEFENSE_THREAT_TYPES, {
       filters: scope.filters as never,
       baseData: true,
-      maxSize: MAX_FILTERED_THREATS,
     } as never);
-    return threats.slice(0, MAX_FILTERED_THREATS).map((t) => t.internal_id);
+    return threats.map((t) => t.internal_id);
   }
   return undefined;
 };

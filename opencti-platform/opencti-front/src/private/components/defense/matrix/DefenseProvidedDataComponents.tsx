@@ -54,6 +54,7 @@ const defenseProvidedDataComponentsLogsourcesMutation = graphql`
   mutation DefenseProvidedDataComponentsLogsourcesMutation($id: ID!, $logsources: [DefenseLogsourceInput!]!) {
     defensePlatformProvidesFromLogsources(id: $id, logsources: $logsources) {
       created_count
+      existing_count
       unmatched_data_components
       dataComponents {
         id
@@ -78,7 +79,7 @@ const LogsourcesDialog = ({ entityId, open, onClose, onDone }: { entityId: strin
   const { t_i18n } = useFormatter();
   const [current, setCurrent] = useState<Logsource>({ category: '', product: '', service: '' });
   const [logsources, setLogsources] = useState<Logsource[]>([]);
-  const [result, setResult] = useState<{ created: number; unmatched: readonly string[] } | null>(null);
+  const [result, setResult] = useState<{ created: number; existing: number; unmatched: readonly string[] } | null>(null);
   const [commit, inFlight] = useApiMutation<DefenseProvidedDataComponentsLogsourcesMutation>(defenseProvidedDataComponentsLogsourcesMutation);
   const canAdd = current.category.trim() || current.product.trim() || current.service.trim();
 
@@ -101,7 +102,7 @@ const LogsourcesDialog = ({ entityId, open, onClose, onDone }: { entityId: strin
       onCompleted: (response, errors) => {
         const payload = response.defensePlatformProvidesFromLogsources;
         if (notifyPayloadErrors(errors) || !payload) return;
-        setResult({ created: payload?.created_count ?? 0, unmatched: payload?.unmatched_data_components ?? [] });
+        setResult({ created: payload.created_count, existing: payload.existing_count, unmatched: payload.unmatched_data_components });
         setLogsources([]);
         onDone();
       },
@@ -142,7 +143,14 @@ const LogsourcesDialog = ({ entityId, open, onClose, onDone }: { entityId: strin
       )}
       {result && (
         <Box sx={{ marginTop: 2 }} data-testid="defense-logsource-result">
-          <Typography variant="body2">{t_i18n('{count} data components declared', { values: { count: result.created } })}</Typography>
+          <Typography variant="body2">
+            {t_i18n('{count, plural, =0 {No new data component declared} one {# data component declared} other {# data components declared}}', { values: { count: result.created } })}
+          </Typography>
+          {result.existing > 0 && (
+            <Typography variant="body2" color="text.secondary">
+              {t_i18n('{count, plural, one {# data component was already declared} other {# data components were already declared}}', { values: { count: result.existing } })}
+            </Typography>
+          )}
           {result.unmatched.length > 0 && (
             <Typography variant="body2" color="warning.main">
               {`${t_i18n('Data components not found in the platform')}: ${result.unmatched.join(', ')}`}
