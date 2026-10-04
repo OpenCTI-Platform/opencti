@@ -275,7 +275,7 @@ export const validateInputUpdate = async (
     // Functional validator
     const validator = getEntityValidatorUpdate(instanceType);
     if (validator) {
-      const validate = await validator(context, user, instanceFromInputs, initial);
+      const validate = await validator(context, user, instanceFromInputs, initial, editInputs);
       if (!validate) {
         throw UnsupportedError('The input is not valid', { inputs: instanceFromInputs });
       }

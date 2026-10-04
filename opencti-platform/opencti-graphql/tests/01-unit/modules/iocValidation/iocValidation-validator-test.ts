@@ -23,6 +23,10 @@ vi.mock('../../../../src/utils/markingDefinition-utils', async (importOriginal) 
   ...(await importOriginal<typeof import('../../../../src/utils/markingDefinition-utils')>()),
   cleanMarkings: async (_context: unknown, values: string[]) => [...new Set(values)].map((id) => ({ internal_id: id })),
 }));
+vi.mock('../../../../src/database/cache', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/database/cache')>()),
+  getEntitiesMapFromCache: async () => new Map(['tlp-amber', 'pap-red'].map((id) => [id, { internal_id: id }])),
+}));
 
 describe('Deployment validation fields guard', () => {
   it('should be registered for creation and update of deployed-on relationships', () => {

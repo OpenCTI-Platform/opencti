@@ -6,6 +6,7 @@ import { createRelation, distributionRelations, patchAttribute, patchAttributeFr
 import {
   fullEntitiesList,
   fullRelationsList,
+  internalFindByIds,
   internalLoadById,
   pageEntitiesConnection,
   pageRegardingEntitiesConnection,
@@ -21,7 +22,6 @@ import {
   READ_INDEX_STIX_CORE_RELATIONSHIPS,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_RELATIONSHIPS_INDICES,
-  UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REPLACE,
 } from '../../database/utils';
 import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
@@ -303,9 +303,29 @@ const notifyRelationEdit = async (user: AuthUser, element: unknown) => {
 type ReportOutcome = 'created' | 'updated' | 'unchanged';
 
 /**
- * A pair relationship that lacks a marking of its indicator or of its security platform (created before the end got
- * it) gets it on the next report, as a new one would: a report never leaves it less restricted than its ends.
+ * Markings of a pair relationship (deployment, hits sighting, validation result sighting): for every marking type its
+ * indicator or its security platform carries, the highest marking of that type among its ends, so an end that gets,
+ * raises, relaxes or replaces a marking is followed; a marking of a type neither end carries was set on the
+ * relationship itself and is kept (a type both ends dropped cannot be told from it and stays, the stricter way).
  */
+export const expectedPairMarkings = async (
+  context: AuthContext,
+  current: string[],
+  indicator: { [RELATION_OBJECT_MARKING]?: string[] | null },
+  platform: { [RELATION_OBJECT_MARKING]?: string[] | null },
+) => {
+  const markingsMap = await getEntitiesMapFromCache<BasicStoreEntity & { definition_type?: string }>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const inherited = (await cleanMarkings(context, pairMarkings(indicator, platform)))
+    .map((marking: { internal_id?: string } | string) => (typeof marking === 'string' ? marking : marking.internal_id))
+    .filter((id: string | undefined): id is string => !!id);
+  const inheritedTypes = new Set(inherited.map((id: string) => markingsMap.get(id)?.definition_type));
+  const own = current.filter((id) => {
+    const type = markingsMap.get(id)?.definition_type;
+    return type !== undefined && !inheritedTypes.has(type);
+  });
+  return [...new Set([...inherited, ...own])];
+};
+
 const ensurePairMarkings = async (
   context: AuthContext,
   user: AuthUser,
@@ -314,12 +334,11 @@ const ensurePairMarkings = async (
   platform: BasicStoreEntitySecurityPlatform,
 ) => {
   const current = relation[RELATION_OBJECT_MARKING] ?? [];
-  const cleaned = await cleanMarkings(context, [...current, ...pairMarkings(indicator, platform)]);
-  const missing = cleaned
-    .map((marking: { internal_id?: string } | string) => (typeof marking === 'string' ? marking : marking.internal_id))
-    .filter((id: string | undefined): id is string => !!id && !current.includes(id));
-  if (missing.length > 0) {
-    await patchAttribute(context, user, relation.internal_id, relation.entity_type, { [INPUT_MARKINGS]: missing }, { operations: { [INPUT_MARKINGS]: UPDATE_OPERATION_ADD } });
+  const expected = await expectedPairMarkings(context, current, indicator, platform);
+  if (current.length !== expected.length || expected.some((id) => !current.includes(id))) {
+    await patchAttribute(context, user, relation.internal_id, relation.entity_type, { [INPUT_MARKINGS]: expected }, {
+      operations: { [INPUT_MARKINGS]: UPDATE_OPERATION_REPLACE },
+    });
   }
 };
 
@@ -373,22 +392,47 @@ const ensurePairOrganizations = async (
 // of the elements it writes, and locking one of them here would make the nested creation wait on this lock.
 export const pairLockKey = (indicatorInternalId: string, platformInternalId: string) => `deployed-on-${indicatorInternalId}-${platformInternalId}`;
 
-// Validation requests that included a pair, whose result sightings are repaired with the deployment: every request,
-// read one page at a time.
+// The deployments of the changed endpoints are repaired one page at a time, with every lookup of a page batched.
+const PAIR_REPAIR_PAGE_SIZE = 500;
 const PAIR_REQUESTS_PAGE_SIZE = 500;
-const forEachPairValidationRequestPage = async (
+const SIGHTINGS_LOAD_CHUNK_SIZE = 500;
+const pairKey = (indicatorId: string, platformId: string) => `${indicatorId}|${platformId}`;
+
+type RepairPair = { deployment: BasicStoreRelationDeployedOn; indicator: BasicStoreEntityIndicator; platform: BasicStoreEntitySecurityPlatform };
+
+// Sightings of the pairs of a page, loaded in chunks: hits sightings and validation result sightings alike.
+const forEachPairSighting = async (
   context: AuthContext,
-  indicatorId: string,
-  platformId: string,
-  callback: (requestIds: string[]) => Promise<void>,
+  sightingIds: string[],
+  callback: (sighting: BasicStoreRelation) => Promise<void>,
 ) => {
-  await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [ENTITY_TYPE_IOC_VALIDATION_REQUEST], {
-    filters: { mode: 'and', filters: [{ key: ['indicator_ids'], values: [indicatorId] }, { key: ['platform_ids'], values: [platformId] }], filterGroups: [] },
+  for (let index = 0; index < sightingIds.length; index += SIGHTINGS_LOAD_CHUNK_SIZE) {
+    const chunk = sightingIds.slice(index, index + SIGHTINGS_LOAD_CHUNK_SIZE);
+    const sightings = await internalFindByIds<BasicStoreRelation>(context, SYSTEM_USER, chunk, { type: STIX_SIGHTING_RELATIONSHIP }) as BasicStoreRelation[];
+    await BluePromise.map(sightings.filter((sighting) => sighting), callback, { concurrency: BATCH_CONCURRENCY });
+  }
+};
+
+// Validation requests that included pairs of a page, read one page of requests at a time: the result sightings they may
+// have written for these pairs. A deleted request takes its result sightings with it.
+const forEachPageValidationRequests = async (
+  context: AuthContext,
+  pairs: RepairPair[],
+  callback: (sightingIds: string[]) => Promise<void>,
+) => {
+  const indicatorIds = [...new Set(pairs.map((pair) => pair.indicator.internal_id))];
+  const platformIds = [...new Set(pairs.map((pair) => pair.platform.internal_id))];
+  await fullEntitiesList<BasicStoreEntity & { indicator_ids?: string[]; platform_ids?: string[] }>(context, SYSTEM_USER, [ENTITY_TYPE_IOC_VALIDATION_REQUEST], {
+    filters: { mode: 'and', filters: [{ key: ['indicator_ids'], values: indicatorIds }, { key: ['platform_ids'], values: platformIds }], filterGroups: [] },
     noFiltersChecking: true,
     baseData: true,
+    baseFields: ['indicator_ids', 'platform_ids'],
     first: PAIR_REQUESTS_PAGE_SIZE,
-    callback: async (requests: BasicStoreEntity[]) => {
-      await callback(requests.map((request) => request.internal_id));
+    callback: async (requests: Array<BasicStoreEntity & { indicator_ids?: string[]; platform_ids?: string[] }>) => {
+      const sightingIds = requests.flatMap((request) => pairs
+        .filter((pair) => (request.indicator_ids ?? []).includes(pair.indicator.internal_id) && (request.platform_ids ?? []).includes(pair.platform.internal_id))
+        .map((pair) => validationResultSightingStixId(request.internal_id, pair.indicator.internal_id, pair.platform.internal_id)));
+      await callback(sightingIds);
       return true;
     },
   } as never);
@@ -396,59 +440,67 @@ const forEachPairValidationRequestPage = async (
 
 /**
  * After a marking or sharing change of indicators or security platforms, the deployments of their pairs, the hits
- * sightings and the validation result sightings of every request that included the pair get the markings they now
- * lack and the organizations both ends are now shared with, and the counters of the indicators are recomputed.
- * Sharing is only repaired with the Enterprise Edition, without which it never changes nor restricts reads. Bounded by
- * the deployments of the changed endpoints; the requests of a pair are read in pages of PAIR_REQUESTS_PAGE_SIZE.
- * A deleted request takes its result sightings with it, so no result sighting is left outside this repair.
+ * sightings and the validation result sightings of every request that included the pair take the markings of both ends
+ * (see expectedPairMarkings) and the organizations both ends are now shared with, and the counters of the indicators
+ * are recomputed. Sharing is only repaired with the Enterprise Edition, without which it never changes nor restricts
+ * reads. Memory is bounded by one page: PAIR_REPAIR_PAGE_SIZE deployments, their ends and their sightings loaded in
+ * batches, the requests of the page read PAIR_REQUESTS_PAGE_SIZE at a time.
  */
 export const repairPairMarkings = async (context: AuthContext, user: AuthUser, changes: { indicatorIds: string[]; platformIds: string[] }) => {
-  const [fromIndicators, toPlatforms] = await Promise.all([
-    changes.indicatorIds.length === 0 ? [] : fullRelationsList<BasicStoreRelationDeployedOn>(context, SYSTEM_USER, RELATION_DEPLOYED_ON, { fromId: changes.indicatorIds }),
-    changes.platformIds.length === 0 ? [] : fullRelationsList<BasicStoreRelationDeployedOn>(context, SYSTEM_USER, RELATION_DEPLOYED_ON, { toId: changes.platformIds }),
-  ]);
-  const deployments = new Map<string, BasicStoreRelationDeployedOn>();
-  [...fromIndicators, ...toPlatforms].forEach((deployment) => deployments.set(deployment.internal_id, deployment));
-  if (deployments.size === 0) {
-    return 0;
-  }
-  const endpointIds = [...new Set([...deployments.values()].flatMap((deployment) => [deployment.fromId, deployment.toId]))];
-  const endpoints = await storeLoadByIds<BasicStoreEntityIndicator | BasicStoreEntitySecurityPlatform>(context, SYSTEM_USER, endpointIds, ABSTRACT_STIX_DOMAIN_OBJECT);
-  const endpointsById = new Map(endpoints.filter((endpoint) => endpoint).map((endpoint) => [endpoint.internal_id, endpoint]));
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const repairSharing = isEnterpriseEditionFromSettings(settings);
-  const ensurePairAccess = async (
-    relation: BasicStoreRelation,
-    indicator: BasicStoreEntityIndicator,
-    platform: BasicStoreEntitySecurityPlatform,
-  ) => {
-    await ensurePairMarkings(context, user, relation, indicator, platform);
+  const ensurePairAccess = async (relation: BasicStoreRelation, pair: RepairPair) => {
+    await ensurePairMarkings(context, user, relation, pair.indicator, pair.platform);
     if (repairSharing) {
-      await ensurePairOrganizations(context, user, relation, indicator, platform);
+      await ensurePairOrganizations(context, user, relation, pair.indicator, pair.platform);
     }
   };
-  await BluePromise.map([...deployments.values()], async (deployment) => {
-    const indicator = endpointsById.get(deployment.fromId) as BasicStoreEntityIndicator | undefined;
-    const platform = endpointsById.get(deployment.toId) as BasicStoreEntitySecurityPlatform | undefined;
-    if (!indicator || !platform) {
+  const changedIndicatorIds = new Set(changes.indicatorIds);
+  let repaired = 0;
+  const repairPage = async (page: BasicStoreRelationDeployedOn[]) => {
+    const endpointIds = [...new Set(page.flatMap((deployment) => [deployment.fromId, deployment.toId]))];
+    const endpoints = await storeLoadByIds<BasicStoreEntityIndicator | BasicStoreEntitySecurityPlatform>(context, SYSTEM_USER, endpointIds, ABSTRACT_STIX_DOMAIN_OBJECT);
+    const endpointsById = new Map(endpoints.filter((endpoint) => endpoint).map((endpoint) => [endpoint.internal_id, endpoint]));
+    const pairs = page.map((deployment) => ({
+      deployment,
+      indicator: endpointsById.get(deployment.fromId) as BasicStoreEntityIndicator | undefined,
+      platform: endpointsById.get(deployment.toId) as BasicStoreEntitySecurityPlatform | undefined,
+    })).filter((pair): pair is RepairPair => !!pair.indicator && !!pair.platform);
+    if (pairs.length === 0) {
       return;
     }
-    await ensurePairAccess(deployment, indicator, platform);
-    const repairSighting = async (sightingId: string) => {
-      const sighting = await internalLoadById<BasicStoreRelation>(context, SYSTEM_USER, sightingId, { type: STIX_SIGHTING_RELATIONSHIP });
-      if (sighting) {
-        await ensurePairAccess(sighting, indicator, platform);
+    const pairsByKey = new Map(pairs.map((pair) => [pairKey(pair.indicator.internal_id, pair.platform.internal_id), pair]));
+    const repairSighting = async (sighting: BasicStoreRelation) => {
+      const pair = pairsByKey.get(pairKey(sighting.fromId, sighting.toId));
+      if (pair) {
+        await ensurePairAccess(sighting, pair);
       }
     };
-    await repairSighting(hitsSightingStixId(indicator.internal_id, platform.internal_id));
-    await forEachPairValidationRequestPage(context, indicator.internal_id, platform.internal_id, async (requestIds) => {
-      await BluePromise.map(requestIds, (requestId) => {
-        return repairSighting(validationResultSightingStixId(requestId, indicator.internal_id, platform.internal_id));
-      }, { concurrency: BATCH_CONCURRENCY });
-    });
-  }, { concurrency: BATCH_CONCURRENCY });
-  await refreshIndicatorDeploymentCounters(context, [...new Set([...deployments.values()].map((deployment) => deployment.fromId))]);
-  return deployments.size;
+    await BluePromise.map(pairs, (pair) => ensurePairAccess(pair.deployment, pair), { concurrency: BATCH_CONCURRENCY });
+    await forEachPairSighting(context, pairs.map((pair) => hitsSightingStixId(pair.indicator.internal_id, pair.platform.internal_id)), repairSighting);
+    await forEachPageValidationRequests(context, pairs, (sightingIds) => forEachPairSighting(context, sightingIds, repairSighting));
+    await refreshIndicatorDeploymentCounters(context, [...new Set(pairs.map((pair) => pair.indicator.internal_id))]);
+    repaired += pairs.length;
+  };
+  const listOpts = { first: PAIR_REPAIR_PAGE_SIZE, callback: async (page: BasicStoreRelationDeployedOn[]) => {
+    await repairPage(page);
+    return true;
+  } };
+  if (changes.indicatorIds.length > 0) {
+    await fullRelationsList<BasicStoreRelationDeployedOn>(context, SYSTEM_USER, RELATION_DEPLOYED_ON, { ...listOpts, fromId: changes.indicatorIds } as never);
+  }
+  if (changes.platformIds.length > 0) {
+    // A deployment whose indicator changed too was repaired with the indicators
+    await fullRelationsList<BasicStoreRelationDeployedOn>(context, SYSTEM_USER, RELATION_DEPLOYED_ON, {
+      ...listOpts,
+      toId: changes.platformIds,
+      callback: async (page: BasicStoreRelationDeployedOn[]) => {
+        await repairPage(page.filter((deployment) => !changedIndicatorIds.has(deployment.fromId)));
+        return true;
+      },
+    } as never);
+  }
+  return repaired;
 };
 
 const applyDeploymentReport = async (
@@ -561,7 +613,8 @@ export interface ReportHitsArgs {
   indicatorId: string;
   platformId: string;
   count: number;
-  lastHit?: DateInput;
+  // Replay watermark: a report whose last hit is not after the last known hit is already counted.
+  lastHit: DateInput;
   firstHit?: DateInput;
 }
 
@@ -569,6 +622,9 @@ export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, 
   await consumeDeploymentRateLimit(DEPLOYMENT_RATE_LIMIT_HITS, user);
   if (!Number.isInteger(args.count) || args.count < 1) {
     throw ValidationError('Hit count must be a positive integer', 'count', { count: args.count });
+  }
+  if (isEmptyField(args.lastHit)) {
+    throw ValidationError('The time of the last hit is required: it keeps a retried report from being counted twice', 'lastHit');
   }
   const now = new Date();
   const lastHit = toDate(args.lastHit, now);

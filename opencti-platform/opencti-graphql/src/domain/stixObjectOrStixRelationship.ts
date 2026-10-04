@@ -13,6 +13,7 @@ import type { BasicStoreCommon, BasicStoreObject, BasicConnection } from '../typ
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { buildRelationData } from '../database/data-builder';
 import { validateMarking } from '../utils/access';
+import { getEntityValidatorUpdate } from '../schema/validator-register';
 
 type BusTopicsKeyType = keyof typeof BUS_TOPICS;
 
@@ -44,6 +45,11 @@ const patchElementWithRefRelationships = async (
     throw UnsupportedError('This relationship type is not supported', { relationship_type });
   }
   const inputs = transformPatchToInput({ [fieldName]: targets }, { [fieldName]: operation });
+  // A reference edit passes the functional validator of the type, as a field edit does
+  const validator = getEntityValidatorUpdate(initial.entity_type);
+  if (validator && !await validator(context, user, { [fieldName]: targets }, initial as unknown as Record<string, unknown>, inputs)) {
+    throw UnsupportedError('The input is not valid', { inputs });
+  }
   const { element: patchedFrom } = await updateAttributeFromLoadedWithRefs(context, user, initial, inputs, opts);
   return patchedFrom;
 };

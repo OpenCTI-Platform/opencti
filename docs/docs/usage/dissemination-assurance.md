@@ -39,6 +39,9 @@ Hits reported by a security platform are also recorded as a sighting of the indi
 up with the other sightings of the indicator. The deployment is the reference record of the hits: the sighting is
 rebuilt from its hit count, first hit and last hit on every report, so a sighting left behind by an interrupted
 report, or deleted by mistake, is repaired by the next report of the platform without counting any hit twice.
+Every hit report carries the time of its most recent hit, as the security platform recorded it: a report whose last
+hit is not after the last hit already known is a retry and adds nothing, so a report sent again after a lost answer
+is never counted twice.
 
 ### Supported connectors
 
@@ -75,10 +78,14 @@ deployments without individual events, so the platform manager then recomputes t
 with deployments; it also rechecks them continuously in bounded batches.
 
 A deployment, its hits sighting and its validation results carry the markings of both the indicator and the
-security platform, so only the users who can read both can read them. Creating or importing a `deployed-on`
-relationship without these markings is refused, a deployment whose indicator or security platform gets a new
-marking receives it at once, and the counters follow every change of markings, sharing, authorized members or author of
-either end. An indicator has one deployment per security
+security platform, so only the users who can read both can read them: for every marking type the indicator or the
+security platform carries (TLP, PAP, statements...), they carry the highest marking of that type among the two.
+Creating or importing a `deployed-on` relationship without these markings is refused, and so is an edit that removes
+one of them or replaces it with a lower one; raising a marking or adding a marking of another type stays possible.
+When a marking of the indicator or of the security platform is added, raised, lowered or replaced, its deployments,
+hits sightings and validation results follow at once, and the counters follow every change of markings, sharing,
+authorized members or author of either end. A marking of a type that neither end carries is kept, as it may have been
+set on the deployment itself. An indicator has one deployment per security
 platform: a `deployed-on` relationship has no start or stop time (its dates are the deployment, synchronization and
 removal dates), so creating or importing it again updates the existing one. The counters stored on an indicator are visible to every
 reader of the indicator: they only count the deployments that carry no marking beyond the indicator's own, are
@@ -86,7 +93,8 @@ shared with every organization the indicator is shared with and have no authoriz
 deployment a reader of the indicator cannot read.
 On a platform with organization segregation, these relationships are shared with the organizations that both the
 indicator and the security platform are shared with, never with the other organizations of the connector account,
-and they follow every later sharing change of either end. A connector account outside the platform organization
+and they follow every later sharing change of either end. This holds whoever creates the deployment: one created by
+hand or imported in a bundle gets the same organizations, whatever organizations the request names. A connector account outside the platform organization
 reports only on the pairs it can read back: the indicator and the security platform must both be shared with one of
 its organizations.
 
@@ -217,7 +225,8 @@ Connectors use the following GraphQL mutations, also available in the Python cli
 
 - `indicatorReportDeployment`: reports the deployment status of one indicator on one platform.
 - `indicatorReportDeployments`: reports the deployment status of a batch of indicators on one platform.
-- `indicatorReportHits`: reports the hits of one indicator on one platform.
+- `indicatorReportHits`: reports the hits of one indicator on one platform; `lastHit`, the time of the most recent
+  hit, is required and makes a retried report harmless.
 
 These mutations require both the "Update knowledge" and the "Connectors API usage" (`CONNECTORAPI`) capabilities, as
 granted by the default *Connector* role: the account of a stream connector or of any other integration writing the

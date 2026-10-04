@@ -1,7 +1,6 @@
 # coding: utf-8
 """Unit tests of the dissemination assurance write-back (OpenCTI-Platform/opencti#18680)."""
 
-from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -69,7 +68,12 @@ def test_report_sends_the_contract_mutation(local_api_client):
 def test_feature_detection_is_cached_and_degrades_gracefully(local_api_client):
     deployment = deployment_with(local_api_client, [UNSUPPORTED_FIELDS])
     assert deployment.report("indicator-1", "platform-1", "deployed") is None
-    assert deployment.report_hits("indicator-1", "platform-1", 2) is None
+    assert (
+        deployment.report_hits(
+            "indicator-1", "platform-1", 2, last_hit="2026-10-03T10:00:00Z"
+        )
+        is None
+    )
     assert (
         deployment.report_batch(
             "platform-1", [{"indicator_id": "i", "status": "active"}]
@@ -164,7 +168,12 @@ def test_report_hits_validates_count(local_api_client):
         local_api_client,
         [SUPPORTED_FIELDS, {"data": {"indicatorReportHits": sighting}}],
     )
-    assert deployment.report_hits("indicator-1", "platform-1", 0) is None
+    assert (
+        deployment.report_hits(
+            "indicator-1", "platform-1", 0, last_hit="2026-10-03T10:00:00Z"
+        )
+        is None
+    )
     assert (
         deployment.report_hits(
             "indicator-1", "platform-1", 3, last_hit="2026-10-03T10:00:00Z"
@@ -176,16 +185,13 @@ def test_report_hits_validates_count(local_api_client):
     assert variables["lastHit"] == "2026-10-03T10:00:00Z"
 
 
-def test_report_hits_always_sends_a_watermark(local_api_client):
-    sighting = {"id": "sighting-1", "attribute_count": 1}
-    deployment = deployment_with(
-        local_api_client,
-        [SUPPORTED_FIELDS, {"data": {"indicatorReportHits": sighting}}],
-    )
-    assert deployment.report_hits("indicator-1", "platform-1", 1) == sighting
-    last_hit = local_api_client.query.call_args_list[1].args[1]["lastHit"]
-    assert last_hit.endswith("Z")
-    assert datetime.fromisoformat(last_hit.replace("Z", "+00:00")).tzinfo is not None
+def test_report_hits_requires_the_last_hit(local_api_client):
+    deployment = deployment_with(local_api_client, [SUPPORTED_FIELDS])
+    # Without the vendor time of the newest hit, a retried report would be counted twice
+    assert deployment.report_hits("indicator-1", "platform-1", 1, last_hit="") is None
+    assert deployment.report_hits("indicator-1", "platform-1", 1, None) is None
+    assert local_api_client.query.call_count == 0
+    local_api_client.app_logger.warning.assert_called()
 
 
 def test_security_platform_resolution_is_cached(local_api_client):

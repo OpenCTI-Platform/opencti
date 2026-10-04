@@ -1,8 +1,12 @@
 import { ForbiddenAccess, ValidationError } from '../../config/errors';
-import { isEmptyField } from '../../database/utils';
+import { isEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../../database/utils';
+import { getEntitiesMapFromCache } from '../../database/cache';
 import { FROM_START_STR, UNTIL_END_STR } from '../../utils/format';
 import { INPUT_MARKINGS } from '../../schema/general';
 import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
+import type { BasicStoreIdentifier } from '../../types/store';
+import type { EditInput } from '../../generated/graphql';
 import { cleanMarkings } from '../../utils/markingDefinition-utils';
 import { pairMarkings } from '../indicatorDeployment/indicatorDeployment-utils';
 import { registerEntityValidator, type ValidatorFn } from '../../schema/validator-register';
@@ -86,19 +90,71 @@ const markingIdsOf = (values: unknown): string[] => (Array.isArray(values) ? val
   .map((value) => (typeof value === 'string' ? value : (value as { internal_id?: string } | null)?.internal_id))
   .filter((id): id is string => typeof id === 'string' && id.length > 0);
 
+type MarkedEnd = { [RELATION_OBJECT_MARKING]?: string[] | null };
+
+// Marking ids given in any form (internal, standard or STIX id) as internal ids.
+const toMarkingInternalIds = async (context: AuthContext, ids: string[]) => {
+  const markingsMap = await getEntitiesMapFromCache<BasicStoreIdentifier>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  return ids.map((id) => markingsMap.get(id)?.internal_id ?? id);
+};
+
+// Whether markings are at least as strict as those of both ends: adding the markings of the ends would not make the
+// cleaned markings (highest of each type) any stricter.
+const coversEndMarkings = async (context: AuthContext, markingIds: string[], from: MarkedEnd, to: MarkedEnd) => {
+  const provided = await toMarkingInternalIds(context, markingIds);
+  const cleaned = await cleanMarkings(context, [...provided, ...pairMarkings(from, to)]);
+  return cleaned.every((marking: { internal_id?: string } | string) => provided.includes(typeof marking === 'string' ? marking : marking.internal_id ?? ''));
+};
+
 /**
  * Whether a created or upserted deployment carries the markings of its indicator and of its security platform, as the
- * write-back mutations give it: adding them would not make the cleaned markings (highest of each type) any stricter.
+ * write-back mutations give it.
  */
 export const coversPairMarkings = async (context: AuthContext, instance: Record<string, unknown>) => {
-  const from = instance.from as { [RELATION_OBJECT_MARKING]?: string[] | null } | undefined;
-  const to = instance.to as { [RELATION_OBJECT_MARKING]?: string[] | null } | undefined;
+  const from = instance.from as MarkedEnd | undefined;
+  const to = instance.to as MarkedEnd | undefined;
   if (!from || !to) {
     return true;
   }
-  const provided = markingIdsOf(instance[INPUT_MARKINGS]);
-  const cleaned = await cleanMarkings(context, [...provided, ...pairMarkings(from, to)]);
-  return cleaned.every((marking: { internal_id?: string } | string) => provided.includes(typeof marking === 'string' ? marking : marking.internal_id ?? ''));
+  return coversEndMarkings(context, markingIdsOf(instance[INPUT_MARKINGS]), from, to);
+};
+
+/**
+ * Markings of a deployment after edits of its markings, applied in order, or undefined when no edit can relax them
+ * (additions only: an addition of a lower marking of a type already present never replaces the higher one).
+ */
+export const markingsAfterEdits = async (context: AuthContext, current: string[], editInputs: EditInput[]) => {
+  const markingEdits = editInputs.filter((input) => input.key === INPUT_MARKINGS);
+  if (markingEdits.every((input) => input.operation === UPDATE_OPERATION_ADD)) {
+    return undefined;
+  }
+  let result = await toMarkingInternalIds(context, current);
+  for (let index = 0; index < markingEdits.length; index += 1) {
+    const { operation, value } = markingEdits[index];
+    const values = await toMarkingInternalIds(context, markingIdsOf(value));
+    if (operation === UPDATE_OPERATION_ADD) {
+      result = [...new Set([...result, ...values])];
+    } else if (operation === UPDATE_OPERATION_REMOVE) {
+      result = result.filter((id) => !values.includes(id));
+    } else {
+      result = values;
+    }
+  }
+  return result;
+};
+
+/**
+ * Whether edits leave a deployment at least as restricted as its indicator and its security platform: a marking of an
+ * end can be raised on the deployment, never removed nor replaced by a lower one.
+ */
+export const keepsPairMarkings = async (context: AuthContext, initial: Record<string, unknown> | undefined, editInputs: EditInput[]) => {
+  const from = initial?.from as MarkedEnd | undefined;
+  const to = initial?.to as MarkedEnd | undefined;
+  if (!from || !to) {
+    return true;
+  }
+  const result = await markingsAfterEdits(context, markingIdsOf(initial?.[RELATION_OBJECT_MARKING] ?? []), editInputs);
+  return result === undefined || coversEndMarkings(context, result, from, to);
 };
 
 /**
@@ -175,12 +231,15 @@ const validatorCreation: ValidatorFn = async (context, user, instance) => {
   return true;
 };
 
-const validatorUpdate: ValidatorFn = async (context, user, instance, initial) => {
+const validatorUpdate: ValidatorFn = async (context, user, instance, initial, editInputs = []) => {
   if (setsValidityWindow(instance)) {
     return refuseValidityWindow();
   }
   if (isBypassUser(user)) {
     return true;
+  }
+  if (!await keepsPairMarkings(context, initial, editInputs)) {
+    return refuseMarkings(user);
   }
   if (setsReservedStatus(instance)) {
     return refuseReservedStatus();

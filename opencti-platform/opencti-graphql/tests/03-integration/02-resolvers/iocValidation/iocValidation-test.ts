@@ -10,9 +10,9 @@ import { maintainIocValidationRequests, validationResultSightingStixId } from '.
 import { ENTITY_TYPE_IOC_VALIDATION_REQUEST, IOC_VALIDATION_CONNECTOR_SCOPE } from '../../../../src/modules/iocValidation/iocValidation-types';
 import { storeLoadById } from '../../../../src/database/middleware-loader';
 import { patchAttribute } from '../../../../src/database/middleware';
-import { elDeleteElements } from '../../../../src/database/engine';
+import { elDeleteElements, elUpdate } from '../../../../src/database/engine';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
-import type { BasicStoreRelation } from '../../../../src/types/store';
+import type { BasicStoreEntity, BasicStoreRelation } from '../../../../src/types/store';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 
 const IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202020';
@@ -464,7 +464,10 @@ describe('IOC validation requests', () => {
       auto: false,
       auto_update: false,
     };
-    await registerConnector(testContext, ADMIN_USER, waitingConnector, { active: false, connector_user_id: connectorUserId });
+    await registerConnector(testContext, ADMIN_USER, waitingConnector, { connector_user_id: connectorUserId });
+    // A registered connector is alive while it pings: its last ping is set beyond the liveness window
+    const offline = await storeLoadById<BasicStoreEntity>(testContext, ADMIN_USER, WAITING_IOC_VALIDATION_CONNECTOR, ENTITY_TYPE_CONNECTOR);
+    await elUpdate(testContext, offline._index, offline.internal_id, { doc: { updated_at: new Date(Date.now() - 10 * 60 * 1000).toISOString() } });
     resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
     const indicator = await queryAsAdminWithSuccess({
       query: INDICATOR_ADD,
@@ -486,7 +489,8 @@ describe('IOC validation requests', () => {
       expect(request.status_message).toEqual('Waiting for an active OpenAEV IOC validation connector');
       // The platform removes the indicator while the request waits, then the connector comes back
       await queryAsUserWithSuccess(USER_CONNECTOR, { query: REPORT_DEPLOYMENT, variables: { indicatorId, platformId, status: 'removed' } });
-      await registerConnector(testContext, ADMIN_USER, waitingConnector, { active: true, connector_user_id: connectorUserId });
+      // The connector pings again
+      await registerConnector(testContext, ADMIN_USER, waitingConnector, { connector_user_id: connectorUserId });
       resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
       await maintainIocValidationRequests(testContext);
       const read = await queryAsAdminWithSuccess({ query: REQUEST_READ, variables: { id: request.id } });

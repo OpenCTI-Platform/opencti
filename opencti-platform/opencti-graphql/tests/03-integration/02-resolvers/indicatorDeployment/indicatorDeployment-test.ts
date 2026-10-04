@@ -14,10 +14,11 @@ import {
 } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-domain';
 import { deleteElementById, stixLoadById } from '../../../../src/database/middleware';
 import { internalLoadById } from '../../../../src/database/middleware-loader';
-import { elUpdate } from '../../../../src/database/engine';
+import { elDeleteElements, elUpdate } from '../../../../src/database/engine';
 import * as streamHandler from '../../../../src/database/stream/stream-handler';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
-import { RELATION_GRANTED_TO } from '../../../../src/schema/stixRefRelationship';
+import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
+import { MARKING_TLP_AMBER } from '../../../../src/schema/identifier';
 
 const INDICATOR_ADD = gql`
   mutation IndicatorAdd($input: IndicatorAddInput!) {
@@ -72,6 +73,16 @@ const RELATION_ADD = gql`
     stixCoreRelationshipAdd(input: $input) { ${DEPLOYMENT_FIELDS} }
   }
 `;
+const DEPLOYMENT_MARKING_DELETE = gql`
+  mutation DeploymentMarkingDelete($id: ID!, $toId: StixRef!) {
+    stixCoreRelationshipEdit(id: $id) { relationDelete(toId: $toId, relationship_type: "object-marking") { id } }
+  }
+`;
+const DEPLOYMENT_FIELD_PATCH = gql`
+  mutation DeploymentFieldPatch($id: ID!, $input: [EditInput]!) {
+    stixCoreRelationshipEdit(id: $id) { fieldPatch(input: $input) { id } }
+  }
+`;
 const REPORT_DEPLOYMENT = gql`
   mutation IndicatorReportDeployment($indicatorId: StixRef!, $platformId: StixRef!, $status: IndicatorDeploymentStatus!, $externalId: String, $metadata: IndicatorDeploymentMetadataInput) {
     indicatorReportDeployment(indicatorId: $indicatorId, platformId: $platformId, status: $status, externalId: $externalId, metadata: $metadata) {
@@ -88,7 +99,7 @@ const REPORT_DEPLOYMENTS = gql`
   }
 `;
 const REPORT_HITS = gql`
-  mutation IndicatorReportHits($indicatorId: StixRef!, $platformId: StixRef!, $count: Int!, $lastHit: DateTime, $firstHit: DateTime) {
+  mutation IndicatorReportHits($indicatorId: StixRef!, $platformId: StixRef!, $count: Int!, $lastHit: DateTime!, $firstHit: DateTime) {
     indicatorReportHits(indicatorId: $indicatorId, platformId: $platformId, count: $count, lastHit: $lastHit, firstHit: $firstHit) {
       id
       attribute_count
@@ -141,6 +152,11 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
   const setOrganizations = async (id: string, organizationIds: string[]) => {
     const stored = await internalLoadById(testContext, ADMIN_USER, id) as unknown as { _index: string };
     const script = { source: "ctx._source['rel_granted.internal_id'] = params.ids", lang: 'painless', params: { ids: organizationIds } };
+    await elUpdate(testContext, stored._index, id, { script });
+  };
+  const setMarkings = async (id: string, markingIds: string[]) => {
+    const stored = await internalLoadById(testContext, ADMIN_USER, id) as unknown as { _index: string };
+    const script = { source: "ctx._source['rel_object-marking.internal_id'] = params.ids", lang: 'painless', params: { ids: markingIds } };
     await elUpdate(testContext, stored._index, id, { script });
   };
   const loadOrganizations = async (id: string, type?: string) => {
@@ -198,6 +214,49 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
   it('should share a deployment with the organizations of both its ends only', async () => {
     // Never with the organizations of the reporting account, nor with an organization of one end only
     expect(await loadOrganizations(deploymentId)).toEqual([testOrganizationId]);
+  });
+
+  it('should share a deployment created through the generic relationship creation with the organizations of both its ends only', async () => {
+    // Neither streamed nor kept: the raw stream counts of the suite are unchanged
+    const streamed = vi.spyOn(streamHandler, 'storeCreateRelationEvent').mockResolvedValue(undefined as never);
+    await setOrganizations(secondIndicatorId, [testOrganizationId, platformOrganizationId]);
+    let relationId: string | undefined;
+    try {
+      // Requested for an organization of one end only: the deployment gets the organizations both ends are shared with
+      const result = await queryAsAdminWithSuccess({
+        query: RELATION_ADD,
+        variables: { input: { fromId: secondIndicatorId, toId: platformId, relationship_type: 'deployed-on', objectOrganization: [platformOrganizationId] } },
+      });
+      relationId = result.data?.stixCoreRelationshipAdd.id;
+      expect(streamed).toHaveBeenCalledTimes(1);
+      expect(await loadOrganizations(relationId as string)).toEqual([testOrganizationId]);
+    } finally {
+      streamed.mockRestore();
+      if (relationId) {
+        const relation = await internalLoadById(testContext, ADMIN_USER, relationId);
+        await elDeleteElements(testContext, ADMIN_USER, [relation as never], { forceDelete: true, forceRefresh: true });
+      }
+      await setOrganizations(secondIndicatorId, []);
+    }
+  });
+
+  it('should refuse an edit removing from a deployment a marking of its indicator, through every edit path', async () => {
+    const amber = await internalLoadById(testContext, ADMIN_USER, MARKING_TLP_AMBER) as unknown as { internal_id: string };
+    await setMarkings(indicatorId, [amber.internal_id]);
+    await setMarkings(deploymentId, [amber.internal_id]);
+    try {
+      // The marking given by its standard id, as a client may
+      await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: DEPLOYMENT_MARKING_DELETE, variables: { id: deploymentId, toId: MARKING_TLP_AMBER } });
+      await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+        query: DEPLOYMENT_FIELD_PATCH,
+        variables: { id: deploymentId, input: [{ key: 'objectMarking', value: [], operation: 'replace' }] },
+      });
+      const deployment = await internalLoadById(testContext, ADMIN_USER, deploymentId) as unknown as Record<string, string[] | undefined>;
+      expect(deployment[RELATION_OBJECT_MARKING]).toEqual([amber.internal_id]);
+    } finally {
+      await setMarkings(deploymentId, []);
+      await setMarkings(indicatorId, []);
+    }
   });
 
   it('should share a deployment again with the organizations of both its ends after a sharing change of one end', async () => {

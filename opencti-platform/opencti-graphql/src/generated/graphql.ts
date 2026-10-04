@@ -19595,7 +19595,7 @@ export type MutationIndicatorReportHitsArgs = {
   count: Scalars['Int']['input'];
   firstHit?: InputMaybe<Scalars['DateTime']['input']>;
   indicatorId: Scalars['StixRef']['input'];
-  lastHit?: InputMaybe<Scalars['DateTime']['input']>;
+  lastHit: Scalars['DateTime']['input'];
   platformId: Scalars['StixRef']['input'];
 };
 
@@ -50993,7 +50993,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   indicatorRelationDelete?: Resolver<Maybe<ResolversTypes['Indicator']>, ParentType, ContextType, RequireFields<MutationIndicatorRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   indicatorReportDeployment?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType, RequireFields<MutationIndicatorReportDeploymentArgs, 'indicatorId' | 'platformId' | 'status'>>;
   indicatorReportDeployments?: Resolver<Maybe<ResolversTypes['IndicatorDeploymentBatchResult']>, ParentType, ContextType, RequireFields<MutationIndicatorReportDeploymentsArgs, 'platformId' | 'reports'>>;
-  indicatorReportHits?: Resolver<Maybe<ResolversTypes['StixSightingRelationship']>, ParentType, ContextType, RequireFields<MutationIndicatorReportHitsArgs, 'count' | 'indicatorId' | 'platformId'>>;
+  indicatorReportHits?: Resolver<Maybe<ResolversTypes['StixSightingRelationship']>, ParentType, ContextType, RequireFields<MutationIndicatorReportHitsArgs, 'count' | 'indicatorId' | 'lastHit' | 'platformId'>>;
   indicatorsRequestValidation?: Resolver<Maybe<ResolversTypes['IocValidationRequest']>, ParentType, ContextType, RequireFields<MutationIndicatorsRequestValidationArgs, 'indicatorIds' | 'platformIds' | 'testKinds'>>;
   individualAdd?: Resolver<Maybe<ResolversTypes['Individual']>, ParentType, ContextType, RequireFields<MutationIndividualAddArgs, 'input'>>;
   individualEdit?: Resolver<Maybe<ResolversTypes['IndividualEditMutations']>, ParentType, ContextType, RequireFields<MutationIndividualEditArgs, 'id'>>;

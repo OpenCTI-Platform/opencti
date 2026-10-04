@@ -116,6 +116,7 @@ import {
   ID_STANDARD,
   IDS_STIX,
   INPUT_CREATED_BY,
+  INPUT_GRANTED_REFS,
   INPUT_LABELS,
   INPUT_MARKINGS,
   INTERNAL_IDS_ALIASES,
@@ -145,7 +146,8 @@ import {
   isUpdatedAtObject,
   noReferenceAttributes,
 } from '../schema/fieldDataAdapter';
-import { isStixCoreRelationship, RELATION_REVOKED_BY, RELATION_TARGETS, RELATION_USES } from '../schema/stixCoreRelationship';
+import { isStixCoreRelationship, RELATION_DEPLOYED_ON, RELATION_REVOKED_BY, RELATION_TARGETS, RELATION_USES } from '../schema/stixCoreRelationship';
+import { pairOrganizations } from '../modules/indicatorDeployment/indicatorDeployment-utils';
 import {
   ATTRIBUTE_ADDITIONAL_NAMES,
   ATTRIBUTE_ALIASES,
@@ -3559,8 +3561,19 @@ export const createRelationRaw = async (
         throw FunctionalError('You cant create a cyclic relation', { from: from.standard_id, to: to.standard_id });
       }
     }
+    // A new deployment is shared with exactly the organizations both its ends are shared with, whatever creates it
+    // (generic relationship creation, bundle ingestion): never with the organizations of the user or of the input.
+    let buildOpts = opts;
+    if (relationshipType === RELATION_DEPLOYED_ON && !opts.grantedRefsFromInput) {
+      const organizationIds = pairOrganizations(from, to);
+      const organizations = organizationIds.length > 0
+        ? await internalFindByIds(context, SYSTEM_USER, organizationIds, { type: ENTITY_TYPE_IDENTITY_ORGANIZATION }) as BasicStoreObject[]
+        : [];
+      resolvedInput = { ...resolvedInput, [INPUT_GRANTED_REFS]: organizations };
+      buildOpts = { ...opts, grantedRefsFromInput: true };
+    }
     // Just build a standard relationship
-    const dataRel = await buildRelationData(context, user, resolvedInput, opts);
+    const dataRel = await buildRelationData(context, user, resolvedInput, buildOpts);
     const relationProvenance = await computeCreationProvenance(context, user, relationshipType, resolvedInput, {
       fromRule,
       restore: opts.restore,
