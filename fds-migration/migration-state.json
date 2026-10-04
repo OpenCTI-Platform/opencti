@@ -313,7 +313,8 @@
         "opencti-platform/opencti-front/src/private/components/data/DataTableToolBar.jsx",
         "opencti-platform/opencti-front/src/private/components/data/forms/view/FormFieldRenderer.tsx",
         "opencti-platform/opencti-front/src/private/components/settings/groups/GroupEditionMarkings.tsx",
-        "opencti-platform/opencti-front/src/private/components/widgets/WidgetCreationParameters.tsx"
+        "opencti-platform/opencti-front/src/private/components/widgets/WidgetCreationParameters.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarRemoveConfirm.tsx"
       ]
     },
     {
@@ -418,6 +419,21 @@
       "reason": "graph experience: the number of filters in use on the filter buttons of the graph toolbar",
       "files": [
         "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarItem.tsx"
+      ]
+    },
+    {
+      "component": "Text",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "graph experience: the type scale of the graph panels (legend headings and counters, hover card title, empty state title and text, keyboard shortcuts, the reasons and shortcuts of the More actions items)",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphLegend.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphHoverCard.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphEmptyState.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphShortcutsDialog.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarMoreActions.tsx"
       ]
     }
   ]
