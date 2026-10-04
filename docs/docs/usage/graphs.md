@@ -109,7 +109,7 @@ Details appear as they become readable: far out, nodes are plain discs; closer, 
 
 The controls on the top left of the graph zoom in and out, fit the whole graph, fit the selection, centre the view on the selection, show or hide the legend, show the graph full screen and export it. Fitting keeps every entity clear of the controls, the counters, the legend and the details panel. A graph opened for the first time is fitted again once its layout settles, unless you zoomed or moved it meanwhile; afterwards it opens as you left it. In full screen, the toolbar and every dialog stay available; press `Esc` or the control again to leave.
 
-Next to the controls, the **counter row** sums up the graph: the number of entities (members of collapsed groups included) and of relationships drawn, the entities you do not have access to (**restricted**) and the entities that **need attention** because they carry a warning or an error badge, such as a low confidence or stale knowledge. Click a counter to select what it counts, then fit the selection, open it or act on it from the toolbar.
+Next to the controls, the **counter row** sums up the graph: the number of entities drawn one by one (the legend also counts the members of collapsed groups) and of relationships, the entities you do not have access to (**restricted**) and the entities that **need attention** because they carry a warning or an error badge, such as a low confidence or stale knowledge. Click a counter to select what it counts, then fit the selection, open it or act on it from the toolbar.
 
 ## Focus and hover cards
 

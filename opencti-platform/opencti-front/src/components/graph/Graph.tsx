@@ -430,11 +430,12 @@ const Graph = ({
     if (carriers) selectNodes(shownNodes.filter((node) => carriers.has(node.id)));
   };
 
-  // --- Counter row: the entities (members of collapsed groups included, as in the legend), the
-  // relationships, the restricted entities and those needing attention, each selecting what it counts.
+  // --- Counter row: the entities drawn one by one, the relationships, the restricted entities and
+  // those needing attention, each selecting exactly what it counts. Members of collapsed groups are
+  // counted by the legend, where their group is expanded.
   const counters = useMemo<GraphCounter[]>(() => {
     const entityNodes = shownNodes.filter((node) => !node.groupOf && !node.relationship_type);
-    const entityCount = entityNodes.length + shownNodes.reduce((sum, node) => sum + (node.groupOf?.memberIds.length ?? 0), 0);
+    const entityCount = entityNodes.length;
     const relationshipLinks = shownLinks.filter((link) => !!link.label);
     const restrictedNodes = entityNodes.filter((node) => node.isRestricted);
     const attentionNodes = entityNodes.filter((node) => attentionIds.has(node.id));
@@ -508,7 +509,8 @@ const Graph = ({
       palette,
       curvatureOf,
       title: imageTitle,
-      subtitle: `${t_i18n('{count, plural, one {# entity} other {# entities}}', { values: { count: shownNodes.length } })}, ${t_i18n('{count, plural, one {# relationship} other {# relationships}}', { values: { count: shownLinks.filter((l) => !!l.label).length } })}`,
+      // The totals of the legend: members of collapsed groups included, relationship nodes left out.
+      subtitle: `${t_i18n('{count, plural, one {# entity} other {# entities}}', { values: { count: [...families.values()].reduce((sum, family) => sum + family.count, 0) } })}, ${t_i18n('{count, plural, one {# relationship} other {# relationships}}', { values: { count: shownLinks.filter((l) => !!l.label).length } })}`,
       typeLabel: (node) => (node.relationship_type ? t_i18n(`relationship_${node.relationship_type}`) : t_i18n(`entity_${node.entity_type}`)),
       badgesOf: (node) => badgesOfNode(node, { t_i18n }),
       linkColor: linkColorPaint,
