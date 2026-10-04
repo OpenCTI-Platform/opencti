@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { EXCLUSION_ADJUDICATION_DISAGREES, EXCLUSION_ADJUDICATION_MISSING, evaluatePolicyEligibility } from '../../../../src/modules/curation/curation-policies';
+import {
+  EXCLUSION_ADJUDICATION_DISAGREES,
+  EXCLUSION_ADJUDICATION_MISSING,
+  EXCLUSION_CROSS_MARKINGS,
+  EXCLUSION_CROSS_ORGANIZATIONS,
+  evaluatePolicyEligibility,
+} from '../../../../src/modules/curation/curation-policies';
 import type { CurationAdjudication } from '../../../../src/modules/curation/curation-types';
 
 const policy = {
@@ -44,5 +50,16 @@ describe('curation policy adjudication agreement', () => {
 
   it('does not require an agreement for the kinds the Curator never adjudicates', () => {
     expect(evaluatePolicyEligibility(policy, proposal('stale', null), facts, false)).toBeNull();
+  });
+});
+
+describe('curation policy access guardrails', () => {
+  const aliasPolicy = { ...policy, policy_kinds: ['alias'], require_adjudication: false } as typeof policy;
+  const aliasProposal = { ...proposal('alias', null), recommended_action: 'add_aliases' } as ReturnType<typeof proposal>;
+
+  it('never adds an alias across different markings or organizations', () => {
+    expect(evaluatePolicyEligibility(aliasPolicy, aliasProposal, facts, false)).toBeNull();
+    expect(evaluatePolicyEligibility(aliasPolicy, aliasProposal, { ...facts, markingSets: [[], ['tlp-red']] }, false)).toBe(EXCLUSION_CROSS_MARKINGS);
+    expect(evaluatePolicyEligibility(aliasPolicy, aliasProposal, { ...facts, organizationSets: [['org-a'], ['org-b']] }, false)).toBe(EXCLUSION_CROSS_ORGANIZATIONS);
   });
 });

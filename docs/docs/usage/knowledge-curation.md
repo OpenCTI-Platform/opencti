@@ -30,7 +30,7 @@ Knowledge curation addresses these problems on the stored graph:
 
 - **Analysts work an inbox instead of hunting duplicates.** Each proposal explains why it exists, with the evidence that produced its confidence.
 - **Merges are no longer final.** Every merge is recorded and can be reverted, entirely or for some of the merged entities, during a retention window.
-- **Automation stays safe.** Policies only apply proposals above their thresholds, never merge across markings or organizations, and every automatic action is reversible.
+- **Automation stays safe.** Policies only apply proposals above their thresholds, never merge or add aliases across markings or organizations, and every automatic action is reversible.
 - **Managers get a measure.** The Knowledge health score and its trend show whether the graph gets cleaner.
 - **Agents get a graph they can reason over.** XTM One agents and importers bind names to existing entities instead of creating new duplicates.
 
@@ -261,8 +261,8 @@ Before enabling a policy, click **Dry run**. The dry run evaluates the open prop
 | `subject_missing`         | A subject no longer exists.                                                                   |
 | `below_threshold`         | The confidence is below the auto-apply threshold.                                             |
 | `source_class_mismatch`   | The subjects do not come from the source class of the policy.                                 |
-| `cross_markings`          | A merge between subjects that do not carry the same markings.                                 |
-| `cross_organizations`     | A merge between subjects that are not shared with the same organizations.                     |
+| `cross_markings`          | A proposal (merge or alias) whose subjects do not carry the same markings.                    |
+| `cross_organizations`     | A proposal (merge or alias) whose subjects are not shared with the same organizations.        |
 | `open_contradiction`      | A subject is involved in an open contradiction.                                               |
 | `adjudication_missing`    | Agreement is required but there is no adjudication, or the agent answered `skip`.             |
 | `adjudication_disagrees`  | Agreement is required and the adjudication disagrees with the proposal.                       |

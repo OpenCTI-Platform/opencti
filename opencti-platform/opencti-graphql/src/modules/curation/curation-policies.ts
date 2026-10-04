@@ -15,7 +15,6 @@ import { ACTION_TYPE_CURATION_APPLY } from '../../domain/backgroundTask-common';
 import { FilterMode, FilterOperator, type EditInput } from '../../generated/graphql';
 import { now } from '../../utils/format';
 import {
-  ACTION_MERGE,
   type BasicStoreEntityCurationPolicy,
   type BasicStoreEntityCurationProposal,
   type CurationPolicyDryRunResult,
@@ -85,8 +84,8 @@ const sameSets = (sets: string[][]) => {
 
 /**
  * Decide whether a policy may apply a proposal on its own. Returns the exclusion reason, or null when eligible.
- * Guardrails that no policy can disable: never merge across different markings or organizations, never apply a
- * choice that needs a human (attribution conflicts, splits).
+ * Guardrails that no policy can disable: never apply a proposal whose subjects have different markings or
+ * organizations, never apply a choice that needs a human (attribution conflicts, splits).
  */
 export const evaluatePolicyEligibility = (
   policy: Pick<BasicStoreEntityCurationPolicy, 'policy_kinds' | 'policy_entity_types' | 'auto_apply_threshold' | 'policy_source_class' | 'forbid_open_contradiction' | 'require_adjudication'>,
@@ -101,10 +100,9 @@ export const evaluatePolicyEligibility = (
   if (!facts.subjectsFound) return EXCLUSION_SUBJECT_MISSING;
   if (proposal.confidence_score < policy.auto_apply_threshold) return EXCLUSION_THRESHOLD;
   if (policy.policy_source_class !== SOURCE_CLASS_ANY && facts.sourceClass !== policy.policy_source_class) return EXCLUSION_SOURCE_CLASS;
-  if (proposal.recommended_action === ACTION_MERGE || proposal.proposal_kind === PROPOSAL_KIND_MERGE) {
-    if (!sameSets(facts.markingSets)) return EXCLUSION_CROSS_MARKINGS;
-    if (!sameSets(facts.organizationSets)) return EXCLUSION_CROSS_ORGANIZATIONS;
-  }
+  // Every kind: an alias addition copies a name from one subject to another, which must not cross restrictions either.
+  if (!sameSets(facts.markingSets)) return EXCLUSION_CROSS_MARKINGS;
+  if (!sameSets(facts.organizationSets)) return EXCLUSION_CROSS_ORGANIZATIONS;
   if (policy.forbid_open_contradiction && hasOpenContradiction) return EXCLUSION_OPEN_CONTRADICTION;
   // Agreement can only be required where the Curator adjudicates: the other kinds are never sent to it.
   if (policy.require_adjudication && ADJUDICATED_PROPOSAL_KINDS.includes(proposal.proposal_kind)) {
