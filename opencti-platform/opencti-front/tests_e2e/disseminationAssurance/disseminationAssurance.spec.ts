@@ -101,12 +101,32 @@ const withoutAnyDeployment = async (page: Page) => {
   });
 };
 
+/** Renders the pages in the built-in light theme, for this page only: the platform and user themes are left as they are. */
+const withLightTheme = async (page: Page) => {
+  await page.route('**/graphql', async (route) => {
+    if (!(route.request().postData() ?? '').includes('query RootPrivateQuery')) {
+      await route.fallback();
+      return;
+    }
+    const response = await route.fetch();
+    const body = await response.json();
+    const light = (body?.data?.themes?.edges ?? [])
+      .map((edge: { node: { id: string; name: string } }) => edge.node)
+      .find((node: { id: string; name: string }) => node.name === 'Filigran Light');
+    if (light && body.data.me) {
+      body.data.me.theme = light.id;
+    }
+    await route.fulfill({ response, json: body });
+  });
+};
+
 /**
  * Content of the test
  * -------------------
  * Three live or failed deployments on a security platform, a validation request answered with one detected and one
  * missed indicator: the area with its key figures and on first use, both Deployments tabs, the "Validate live
- * deployments" preview and the completed request with its missed indicator.
+ * deployments" preview and the completed request with its missed indicator; then the area, the preview and the
+ * completed request again in the light theme.
  */
 test.describe('Dissemination assurance documentation', () => {
   test.use({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 });
@@ -178,6 +198,28 @@ test.describe('Dissemination assurance documentation', () => {
       await expect(details.getByTestId('ioc-validation-results-summary')).toHaveText('1 of 2 tests detected or prevented');
       await expect(details.getByRole('link', { name: 'Open the deployment' })).toBeVisible();
       await capture(page, testInfo, 'validation-missed');
+      // endregion
+
+      // region The overview, the validation dialog and the completed request in the light theme
+      await withLightTheme(page);
+      await page.goto('/dashboard/defense/assurance/overview');
+      await expect(page.getByTestId('dissemination-funnel')).toBeVisible();
+      await expect(page.getByTestId('deployed-on-all').getByText('cdn-assets.example')).toBeVisible();
+      await capture(page, testInfo, 'overview-light');
+
+      await page.goto(`/dashboard/entities/security_platforms/${platformId}/deployments`);
+      await expect(page.getByTestId('deployed-on-platform').getByText('cdn-assets.example')).toBeVisible();
+      await page.getByTestId('request-validation-button').click();
+      await expect(page.getByTestId('ioc-validation-tested-indicators')).toBeVisible();
+      await expect(page.getByTestId('validation-request-summary')).toContainText('on 1 platform');
+      await capture(page, testInfo, 'validate-live-light');
+      await page.keyboard.press('Escape');
+
+      await page.goto('/dashboard/defense/assurance/validations');
+      await page.getByText('Weekly validation of live indicators').first().click();
+      await expect(page.getByTestId('ioc-validation-request-details').getByTestId('ioc-validation-results-summary')).toHaveText('1 of 2 tests detected or prevented');
+      await capture(page, testInfo, 'validation-missed-light');
+      await page.unroute('**/graphql');
       // endregion
     } finally {
       if (requestId) {
