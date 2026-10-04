@@ -584,7 +584,7 @@ export const fetchPageLookups = async (context: AuthContext, docs: ScanDocument[
       aggs: connectionCountAggregation(ids, 'from'),
     };
   }
-  // Relationships created after the computation time are counted by the streaming increments only
+  // Relationships and containers created after the computation time are counted by the streaming increments only
   const createdBeforeRun = { range: { created_at: { lte: new Date(run.asOf).toISOString() } } };
   const [sightingsData, relationshipsData, containersData] = await Promise.all([
     rawSearch(context, [READ_INDEX_STIX_SIGHTING_RELATIONSHIPS], {
@@ -605,6 +605,7 @@ export const fetchPageLookups = async (context: AuthContext, docs: ScanDocument[
       query: {
         bool: {
           filter: [
+            createdBeforeRun,
             { term: { 'parent_types.keyword': ENTITY_TYPE_CONTAINER } },
             { terms: { 'rel_object.internal_id.keyword': ids } },
           ],
@@ -810,7 +811,6 @@ export const scanKnowledge = async (
 ) => {
   const maxDays = Math.max(...SCORECARD_PERIODS.map((period) => SCORECARD_PERIOD_DAYS[period]));
   const query = buildScanQuery(state.asOf, state.asOf - maxDays * DAY_MS, run.availability.provenance);
-  const now = Date.now();
   let searchAfter: unknown[] | undefined;
   for (;;) {
     const { remaining, size } = scanPageSize(settings.max_scan_objects, state.scanned);
@@ -837,7 +837,8 @@ export const scanKnowledge = async (
       const pageLookups = await fetchPageLookups(context, docs, run);
       for (let i = 0; i < docs.length; i += 1) {
         await doYield();
-        const signals = computeDocumentSignals(docs[i], pageLookups, run, now);
+        // Expiration is evaluated at the computation time: a backfilled day sees the indicators valid on that day
+        const signals = computeDocumentSignals(docs[i], pageLookups, run, state.asOf);
         processDocument(state, docs[i], resolver, signals, settings);
       }
       state.scanned += docs.length;
