@@ -31,6 +31,7 @@ import { checkUserCanShareMarkings } from '../user/user-domain';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
+import { isStixDomainObjectIdentity } from '../../schema/stixDomainObject';
 import { now } from '../../utils/format';
 import {
   ATTRIBUTE_TIMELINE_ANCHORS,
@@ -844,6 +845,11 @@ const writeImportedContributions = async (
   const elementsWithMarkings = elementIds.length > 0
     ? await internalFindByIds(context, SYSTEM_USER, elementIds, { toMap: true }) as unknown as Record<string, AnyStoreElement>
     : {};
+  // An imported author is kept only when it resolves to an identity, like the author of a milestone added through the API
+  const importedAuthorId = (ref: string | null | undefined): string | null => {
+    const author = ref ? resolved[ref] : undefined;
+    return author && isStixDomainObjectIdentity(author.entity_type) ? author.internal_id : null;
+  };
   const docs = importable.map(({ event, existing, internalId, markings }) => {
     validateWindow(event.event_time, event.event_end_time);
     const element = event.element_ref ? resolved[event.element_ref] : null;
@@ -873,7 +879,7 @@ const writeImportedContributions = async (
         ...(element ? markingsOf(elementsWithMarkings[element.internal_id] ?? {}) : []),
         ...access.markings,
       ])),
-      created_by_id: event.created_by_ref ? resolved[event.created_by_ref]?.internal_id : null,
+      created_by_id: importedAuthorId(event.created_by_ref),
       creator_ids: existing ? Array.from(new Set([...creatorIdsOf(existing), user.id])) : [user.id],
       restricted_members: access.restricted_members,
     }, existing);
