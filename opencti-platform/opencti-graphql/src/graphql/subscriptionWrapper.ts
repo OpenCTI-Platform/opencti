@@ -8,7 +8,24 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEntityFromCache } from '../database/cache';
 import { isUserCanAccessStoreElement, SYSTEM_USER } from '../utils/access';
 import { getMessagesFilteredByRecipients } from '../domain/settings';
+import { resolveUserByIdFromCache } from '../modules/user/user-domain';
 import type { BasicStoreSettingsMessage } from '../types/settings';
+
+/**
+ * Whether the subscriber may still read an instance it listens to. The user of
+ * a subscription context is a snapshot taken when the socket opened, with the
+ * groups, markings and organizations of that moment: the current user is read
+ * from the cache for every event, so an access lost since then stops the events.
+ */
+export const canSubscriberStillAccess = async (context: any, instance: any): Promise<boolean> => {
+  try {
+    const subscriber = context?.user?.id ? await resolveUserByIdFromCache(context, context.user.id) : undefined;
+    return !!subscriber && await isUserCanAccessStoreElement(context, subscriber, instance);
+  } catch {
+    // A throw here closes the socket (4500) and orphans the redis sub.
+    return false;
+  }
+};
 
 const withCancel = (asyncIterator: AsyncIterableIterator<any>, onCancel: () => void): AsyncIterable<any> => {
   const returnFn = asyncIterator.return;
@@ -90,7 +107,7 @@ export const subscribeToInstanceEvents = async (
       if (!isEventOfInstance(payload)) {
         return false;
       }
-      return !recheckAccess || isUserCanAccessStoreElement(context, context.user, payload.instance);
+      return !recheckAccess || canSubscriberStillAccess(context, payload.instance);
     },
   )(parent, { id }, context);
   if (cleanFn) {
