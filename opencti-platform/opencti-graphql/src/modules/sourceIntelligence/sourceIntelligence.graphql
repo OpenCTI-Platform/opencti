@@ -30,6 +30,7 @@ enum SourceRecommendationKind {
 
 enum SourceRecommendationStatus {
   proposed
+  applying
   applied
   dismissed
   reverted

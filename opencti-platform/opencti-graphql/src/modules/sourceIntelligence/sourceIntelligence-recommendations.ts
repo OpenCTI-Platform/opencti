@@ -70,6 +70,7 @@ import {
   RECOMMENDATION_RAISE_CONFIDENCE,
   RECOMMENDATION_RETIRE,
   RECOMMENDATION_STATUS_APPLIED,
+  RECOMMENDATION_STATUS_APPLYING,
   RECOMMENDATION_STATUS_DISMISSED,
   RECOMMENDATION_STATUS_FAILED,
   RECOMMENDATION_STATUS_PROPOSED,
@@ -98,7 +99,7 @@ const DAY_MS = 24 * 3600 * 1000;
 const MODULES_MODMANAGE = 'MODULES_MODMANAGE';
 type ManagedConnector = BasicStoreEntityConnector & { manager_requested_status?: string | null; title?: string };
 const STOPPED_STATUSES = ['stopping', 'stopped'];
-const ACTIVE_STATUSES = [RECOMMENDATION_STATUS_PROPOSED, RECOMMENDATION_STATUS_APPLIED];
+const ACTIVE_STATUSES = [RECOMMENDATION_STATUS_PROPOSED, RECOMMENDATION_STATUS_APPLYING, RECOMMENDATION_STATUS_APPLIED];
 const FEED_EDIT_FUNCTIONS: Record<string, (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => Promise<unknown>> = {
   [ENTITY_TYPE_INGESTION_RSS]: ingestionRssEditField,
   [ENTITY_TYPE_INGESTION_TAXII]: ingestionTaxiiEditField,
@@ -569,6 +570,9 @@ const applyLockedRecommendation = async (
   }
   const source = await loadSourceOf(context, recommendation);
   const now = new Date().toISOString();
+  // The side effect only runs once the recommendation is recorded as applying: when its outcome cannot be recorded
+  // and cannot be undone, the recommendation stays applying and no retry runs the side effect a second time
+  await patchAttribute(context, user, id, ENTITY_TYPE_SOURCE_RECOMMENDATION, { recommendation_status: RECOMMENDATION_STATUS_APPLYING });
   let patch: Record<string, unknown>;
   try {
     const result = await executeApply(context, user, recommendation, source, settings, autonomous, input);
@@ -584,6 +588,7 @@ const applyLockedRecommendation = async (
   } catch (err: any) {
     // A missing capability refuses the request, it is not an execution failure of the recommendation
     if (err?.extensions?.code === FORBIDDEN_ACCESS) {
+      await patchAttribute(context, user, id, ENTITY_TYPE_SOURCE_RECOMMENDATION, { recommendation_status: recommendation.recommendation_status });
       throw err;
     }
     logApp.warn('[OPENCTI-MODULE] Source intelligence recommendation apply failed', { cause: err, id, kind: recommendation.recommendation_kind });
@@ -593,10 +598,19 @@ const applyLockedRecommendation = async (
   try {
     ({ element } = await patchAttribute(context, user, id, ENTITY_TYPE_SOURCE_RECOMMENDATION, patch));
   } catch (persistError) {
-    // The action ran but could not be recorded: it is undone so that retrying the recommendation never repeats it
+    // The action ran but could not be recorded: it is undone, and the recommendation goes back to its previous status
+    // only once undone; otherwise it stays applying, which no retry applies again
     if (patch.recommendation_status === RECOMMENDATION_STATUS_APPLIED) {
-      await executeRevert(context, user, { ...recommendation, revert_payload: patch.revert_payload as string }, source)
-        .catch((revertError: unknown) => logApp.error('[OPENCTI-MODULE] Source intelligence could not undo an unrecorded apply', { cause: revertError, id }));
+      const undone = await executeRevert(context, user, { ...recommendation, revert_payload: patch.revert_payload as string }, source)
+        .then(() => true)
+        .catch((revertError: unknown) => {
+          logApp.error('[OPENCTI-MODULE] Source intelligence could not undo an unrecorded apply, the recommendation stays applying', { cause: revertError, id });
+          return false;
+        });
+      if (undone) {
+        await patchAttribute(context, user, id, ENTITY_TYPE_SOURCE_RECOMMENDATION, { recommendation_status: recommendation.recommendation_status })
+          .catch((restoreError: unknown) => logApp.error('[OPENCTI-MODULE] Source intelligence could not restore an undone recommendation', { cause: restoreError, id }));
+      }
     }
     throw persistError;
   }
@@ -661,7 +675,9 @@ export const revertSourceRecommendation = async (context: AuthContext, user: Aut
 
 const dismissLockedRecommendation = async (context: AuthContext, user: AuthUser, recommendation: BasicStoreEntitySourceRecommendation, reason?: string | null) => {
   const id = recommendation.internal_id;
-  if (recommendation.recommendation_status !== RECOMMENDATION_STATUS_PROPOSED && recommendation.recommendation_status !== RECOMMENDATION_STATUS_FAILED) {
+  // An applying recommendation whose outcome was never recorded is closed here once its target has been checked
+  const dismissable = [RECOMMENDATION_STATUS_PROPOSED, RECOMMENDATION_STATUS_APPLYING, RECOMMENDATION_STATUS_FAILED];
+  if (!dismissable.includes(recommendation.recommendation_status)) {
     throw FunctionalError('Only proposed recommendations can be dismissed', { id, status: recommendation.recommendation_status });
   }
   const patch = {
@@ -733,7 +749,8 @@ export const findRecommendationsByFingerprint = async (context: AuthContext, fin
 };
 
 export const findOrCreateProposal = async (context: AuthContext, proposal: RecommendationProposal) => {
-  const existing = await findRecommendationsByFingerprint(context, proposal.fingerprint, [RECOMMENDATION_STATUS_PROPOSED, RECOMMENDATION_STATUS_FAILED]);
+  const openStatuses = [RECOMMENDATION_STATUS_PROPOSED, RECOMMENDATION_STATUS_APPLYING, RECOMMENDATION_STATUS_FAILED];
+  const existing = await findRecommendationsByFingerprint(context, proposal.fingerprint, openStatuses);
   if (existing.length > 0) {
     return existing[0];
   }

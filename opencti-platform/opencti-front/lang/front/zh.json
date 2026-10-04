@@ -6259,5 +6259,8 @@
   "Rejected by {user} {time}": "由 {user} 拒绝 {time}",
   "Rejected {time}": "已拒绝 {time}",
   "A rejected recommendation is not proposed again during the cooldown period configured in the settings.": "已拒绝的建议在设置中配置的冷却期内不会再次提出。",
-  "Cooldown after a rejection (days)": "拒绝后的冷却期（天）"
+  "Cooldown after a rejection (days)": "拒绝后的冷却期（天）",
+  "Applying": "正在应用",
+  "The change is being applied": "正在应用更改",
+  "If this lasts, its outcome could not be recorded: check the target of the recommendation, then reject it to close it. It is never applied a second time.": "如果持续出现此状态，说明无法记录结果：请检查该建议的目标，然后拒绝以关闭它。它绝不会被再次应用。"
 }
