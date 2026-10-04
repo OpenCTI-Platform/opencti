@@ -1,9 +1,11 @@
+import { Readable } from 'node:stream';
+import type { FileHandle } from 'fs/promises';
 import { describe, expect, it } from 'vitest';
 import { computeHuntPlaybookOutcome, isHuntRunGroupSettled } from '../../../../src/modules/hunt/hunt-playbook';
 import { isHuntRunFinalized } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
 import { matchHuntResultFilter } from '../../../../src/modules/playbook/components/hunt-result-filter-component';
 import { eventTouchedRefs, isStandingHuntTriggered } from '../../../../src/modules/hunt/hunt-automation';
-import { huntExtensionDefinition, toPackHunt } from '../../../../src/modules/hunt/hunt-pack';
+import { HUNT_PACK_MAX_BYTES, huntExtensionDefinition, parseHuntPack, toPackHunt } from '../../../../src/modules/hunt/hunt-pack';
 import type { BasicStoreEntityHuntRun } from '../../../../src/modules/hunt/huntRun/huntRun-types';
 import type { BasicStoreEntityHunt, StixHunt } from '../../../../src/modules/hunt/hunt-types';
 import type { DataEvent } from '../../../../src/types/event';
@@ -128,6 +130,25 @@ describe('Standing hunt triggers', () => {
 });
 
 describe('Hunt packs', () => {
+  const upload = (chunks: Iterable<Buffer | string>) => Promise.resolve({ createReadStream: () => Readable.from(chunks) } as unknown as FileHandle);
+
+  it('should read a pack under its byte limit and refuse a larger one while it streams', async () => {
+    const pack = { type: 'bundle', objects: [{ id: 'hunt--1', type: 'hunt', name: 'Hunt' }, { id: 'hunt--1', type: 'hunt', name: 'Hunt, last occurrence' }] };
+    const parsed = await parseHuntPack(upload([JSON.stringify(pack)]));
+    // A hunt listed twice is read once, as its last occurrence
+    expect(parsed.hunts.map((hunt) => hunt.name)).toEqual(['Hunt, last occurrence']);
+    let produced = 0;
+    function* oversized() {
+      for (let index = 0; index < 1000; index += 1) {
+        produced += 1;
+        yield Buffer.alloc(1024 * 1024, ' ');
+      }
+    }
+    await expect(parseHuntPack(upload(oversized()))).rejects.toThrow(`A hunt pack is limited to ${HUNT_PACK_MAX_BYTES / (1024 * 1024)} MB`);
+    expect(produced).toBeLessThan(1000);
+    await expect(parseHuntPack(upload(['not json']))).rejects.toThrow('A hunt pack must be a STIX 2.1 bundle');
+  });
+
   it('should distribute hunts as hub drafts without local execution settings', () => {
     const stixHunt = {
       id: 'hunt--1',

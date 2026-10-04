@@ -104,7 +104,7 @@ The verdict is set as follows:
 | The run completed with hits | `pending`, until an analyst sets the verdict |
 | The run failed or timed out | `inconclusive` |
 
-When the hits reach the escalation threshold, OpenCTI creates an **Incident** in a new draft workspace, never directly in the knowledge graph. The Incident description recommends running Case Autopilot once the draft is validated, to investigate the hits and their attribution. Validating the draft makes the Incident part of the knowledge.
+When the hits reach the escalation threshold, OpenCTI creates an **Incident** in a new draft workspace, never directly in the knowledge graph. The Incident carries the markings and organizations of the run, the workspace is restricted to the organizations the run is shared with, and its name only identifies the run. The Incident description recommends running Case Autopilot once the draft is validated, to investigate the hits and their attribution. Validating the draft makes the Incident part of the knowledge.
 
 Analysts set the final verdict from the run, with an optional feedback. Hunt statistics (runs, hits, verdict distribution, runs per platform) are displayed on the hunt overview and are available as dashboard widgets.
 

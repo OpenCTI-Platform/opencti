@@ -438,7 +438,7 @@ const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRu
   if (current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED && (current.hits_count ?? 0) >= hunt.escalation_threshold && !current.incident_id) {
     try {
       if (!current.draft_id) {
-        const draftId = await createHuntIncidentWorkspace(context, hunt, current);
+        const draftId = await createHuntIncidentWorkspace(context, current);
         current = await patchHuntRun(context, current, { draft_id: draftId });
       }
       const incidentId = await createHuntIncidentInWorkspace(context, hunt, current, null, current.draft_id as string);
@@ -844,7 +844,7 @@ export const setHuntRunVerdict = async (context: AuthContext, user: AuthUser, ru
     };
     if (verdict === HUNT_VERDICT_TRUE_POSITIVE && !current.incident_id) {
       // A draft recorded by an interrupted finalization is reused rather than doubled
-      const draftId = current.draft_id ?? await createHuntIncidentWorkspace(context, hunt, current);
+      const draftId = current.draft_id ?? await createHuntIncidentWorkspace(context, current);
       patch.draft_id = draftId;
       patch.incident_id = await createHuntIncidentInWorkspace(context, hunt, current, parseIncidentProposal(current.incident_proposal), draftId);
     }

@@ -15,7 +15,6 @@ import { STIX_EXT_OCTI_HUNT } from '../../types/stix-2-1-extensions';
 import { FilterMode } from '../../generated/graphql';
 import { INPUT_CREATED_BY, INPUT_MARKINGS } from '../../schema/general';
 import { addLabel } from '../../domain/label';
-import { extractContentFrom } from '../../utils/fileToContent';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import {
@@ -33,6 +32,8 @@ import {
 } from './hunt-types';
 
 export const HUNT_PACK_MAX_HUNTS = 200;
+// Far above a pack of the maximum number of hunts with their references; the upload is refused as soon as it is larger
+export const HUNT_PACK_MAX_BYTES = 20 * 1024 * 1024;
 const HUNT_STIX_TYPES = ['hunt', 'x-opencti-hunt'];
 const HUNT_EXTENSION_CREATED = '2026-10-03T00:00:00.000Z';
 const FILIGRAN_NAME = 'Filigran';
@@ -235,8 +236,36 @@ export const planHuntPackImport = async (
   return { input, labels: stixHunt.labels ?? [], unresolved, blocked };
 };
 
+// The upload is read under the byte limit: an oversized file is refused while it streams, never buffered in full
+const readHuntPackFile = async (file: Promise<FileHandle>): Promise<string> => {
+  const upload = await file;
+  const stream = upload.createReadStream();
+  return new Promise<string>((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    let size = 0;
+    stream.on('data', (chunk: Buffer | string) => {
+      const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+      size += buffer.length;
+      if (size > HUNT_PACK_MAX_BYTES) {
+        stream.destroy();
+        reject(FunctionalError(`A hunt pack is limited to ${HUNT_PACK_MAX_BYTES / (1024 * 1024)} MB`, { limit: HUNT_PACK_MAX_BYTES }));
+        return;
+      }
+      chunks.push(buffer);
+    });
+    stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
+    stream.on('error', reject);
+  });
+};
+
 export const parseHuntPack = async (file: Promise<FileHandle>) => {
-  const bundle = await extractContentFrom<{ type?: string; objects?: Record<string, any>[] }>(file);
+  const content = await readHuntPackFile(file);
+  let bundle: { type?: string; objects?: Record<string, any>[] } | null;
+  try {
+    bundle = JSON.parse(content);
+  } catch {
+    throw FunctionalError('A hunt pack must be a STIX 2.1 bundle');
+  }
   if (bundle?.type !== 'bundle' || !Array.isArray(bundle.objects)) {
     throw FunctionalError('A hunt pack must be a STIX 2.1 bundle');
   }

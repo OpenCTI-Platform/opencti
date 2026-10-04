@@ -5,7 +5,7 @@ import { createEntity, createRelation } from '../../database/middleware';
 import { ENTITY_TYPE_INCIDENT } from '../../schema/stixDomainObject';
 import { RELATION_RELATED_TO } from '../../schema/stixCoreRelationship';
 import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
-import { HUNT_MANAGER_USER } from '../../utils/access';
+import { HUNT_MANAGER_USER, MEMBER_ACCESS_RIGHT_EDIT } from '../../utils/access';
 import { addDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import { type BasicStoreEntityHunt, RELATION_HUNT_TARGETS, RELATION_HUNT_TECHNIQUES } from './hunt-types';
 import type { BasicStoreEntityHuntRun } from './huntRun/huntRun-types';
@@ -34,19 +34,24 @@ export const parseIncidentProposal = (proposal: string | null | undefined): Hunt
 
 /**
  * The draft workspace an incident proposed by a hunt run is created in (draft-first: an analyst validates it into the
- * knowledge graph).
+ * knowledge graph). The workspace is restricted to the organizations the run is shared with, if any, and its name and
+ * description carry no detail of the hunt: draft workspaces are listed to every user with draft access, the markings
+ * of the run only protect the incident inside.
  */
-export const createHuntIncidentWorkspace = async (context: AuthContext, hunt: BasicStoreEntityHunt, run: BasicStoreEntityHuntRun): Promise<string> => {
+export const createHuntIncidentWorkspace = async (context: AuthContext, run: BasicStoreEntityHuntRun): Promise<string> => {
+  const organizations = run[RELATION_GRANTED_TO] ?? [];
   const draft = await addDraftWorkspace(context, HUNT_MANAGER_USER, {
-    name: truncate(`Hunt incident - ${hunt.name}`, 250),
-    description: `Incident proposed by the hunt "${hunt.name}" (run ${run.internal_id}, ${run.hits_count ?? 0} hits). Validate the draft to create the incident.`,
+    name: `Hunt incident - run ${run.internal_id}`,
+    description: 'Incident proposed by a hunt run. Validate the draft to create the incident.',
+    ...(organizations.length > 0 ? { authorized_members: organizations.map((id) => ({ id, access_right: MEMBER_ACCESS_RIGHT_EDIT })) } : {}),
   });
   return draft.id;
 };
 
 /**
- * Creates the Incident of a hunt run in its draft workspace. The incident inherits the hunt markings, author and
- * organizations, and is related to the hunt targets and techniques.
+ * Creates the Incident of a hunt run in its draft workspace. The incident carries the markings and organizations of
+ * the run (those of the hunt and of its security platform), the hunt author, and is related to the hunt targets and
+ * techniques.
  */
 export const createHuntIncidentInWorkspace = async (
   context: AuthContext,
@@ -73,8 +78,8 @@ export const createHuntIncidentInWorkspace = async (
     source: 'OpenCTI Hunts',
     first_seen: run.time_window_start,
     last_seen: run.time_window_end,
-    objectMarking: hunt[RELATION_OBJECT_MARKING] ?? [],
-    objectOrganization: hunt[RELATION_GRANTED_TO] ?? [],
+    objectMarking: run[RELATION_OBJECT_MARKING] ?? [],
+    objectOrganization: run[RELATION_GRANTED_TO] ?? [],
   };
   if (hunt[RELATION_CREATED_BY]) {
     incidentInput.createdBy = hunt[RELATION_CREATED_BY];
@@ -87,7 +92,7 @@ export const createHuntIncidentInWorkspace = async (
         fromId: incident.internal_id,
         toId: relatedIds[index],
         relationship_type: RELATION_RELATED_TO,
-        objectMarking: hunt[RELATION_OBJECT_MARKING] ?? [],
+        objectMarking: run[RELATION_OBJECT_MARKING] ?? [],
       });
     } catch (error) {
       logApp.warn('[OPENCTI-MODULE] Hunt incident draft relation could not be created', { cause: error, huntId: hunt.internal_id, toId: relatedIds[index] });

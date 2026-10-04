@@ -358,6 +358,12 @@ describe('Hunt resolvers', () => {
     expect(live.data?.incident).toBeNull();
     const inDraft = await queryAsAdmin({ query: gql`query Incident($id: String!) { incident(id: $id) { id description } }`, variables: { id: run.incident_id } }, run.draft_id);
     expect(inDraft.data?.incident.description).toContain(HUNT_INCIDENT_RECOMMENDATION);
+    // Draft workspaces are listed to every user with draft access: the workspace carries no detail of the hunt
+    const workspace = await queryAsAdminWithSuccess({ query: gql`query HuntDraft($id: String!) { draftWorkspace(id: $id) { name description } }`, variables: { id: run.draft_id } });
+    expect(workspace.data?.draftWorkspace.name).toEqual(`Hunt incident - run ${secondRunId}`);
+    const huntName = (await queryAsAdminWithSuccess({ query: HUNT_READ, variables: { id: huntId } })).data?.hunt.name;
+    expect(huntName).toBeTruthy();
+    expect(`${workspace.data?.draftWorkspace.name} ${workspace.data?.draftWorkspace.description}`).not.toContain(huntName);
   });
 
   it('should record the verdict of an analyst without opening a second incident', async () => {
