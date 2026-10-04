@@ -41,6 +41,7 @@ export const USER_MERGE_SCALAR_DISPOSITIONS: Record<string, UserMergeScalarDispo
   '*.creator_id': { kind: 'covered', registerRow: 'basic-object.creator-id' },
   '*.applicant_id': { kind: 'excluded', reason: 'another-chunk', detail: 'History, Activity and PirHistory are rewritten by the history chunk' },
   '*.xtm_hub_registration_user_id': { kind: 'covered', registerRow: 'settings.xtm-hub-registration-user-id' },
+  '*.pulse_consent_user_id': { kind: 'covered', registerRow: 'settings.pulse-consent-user-id' },
   '*.platform_ip_whitelist_exclusion_ids': { kind: 'excluded', reason: 'another-chunk', detail: 'Register asks to invalidate the entry, not to transfer it' },
   '*.recipients': { kind: 'excluded', reason: 'another-chunk', detail: 'Trigger recipients are rewritten by the notification chunk' },
   '*.feed_public_user_id': { kind: 'excluded', reason: 'another-handler', detail: 'Public sharing handler, which also reports the exposure change' },

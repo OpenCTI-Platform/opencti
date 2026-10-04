@@ -110,6 +110,7 @@ export const filterEventTypesOptions = [
   { value: 'create', label: 'Creation' },
   { value: 'update', label: 'Modification' },
   { value: 'delete', label: 'Deletion' },
+  { value: 'pulse_trending', label: 'Trending in my sector (Threat Pulse)' },
 ];
 
 export const instanceEventTypesOptions = [

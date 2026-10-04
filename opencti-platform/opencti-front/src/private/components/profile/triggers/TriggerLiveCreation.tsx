@@ -27,6 +27,7 @@ import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
 import { useTheme } from '@mui/material/styles';
+import { ThreatPulseTriggerNotice, useThreatPulseAccess } from '../../common/threat_pulse/ThreatPulseUnlock';
 
 // region live
 export const triggerLiveKnowledgeCreationMutation = graphql`
@@ -101,6 +102,14 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
     { value: 'update', label: t_i18n('Modification') },
     { value: 'delete', label: t_i18n('Deletion') },
   ];
+  // Offered but not selected by default: it notifies on Threat Pulse signals, not on changes of the knowledge. Listed
+  // whatever the Threat Pulse access, but only selectable with the full experience.
+  const availableEventTypesOptions: { value: TriggerEventType; label: string }[] = [
+    ...eventTypesOptions,
+    { value: 'pulse_trending', label: t_i18n('Trending in my sector (Threat Pulse)') },
+  ];
+  const pulseAccess = useThreatPulseAccess();
+  const isPulseTrendingLocked = (option: { value: string }) => option.value === 'pulse_trending' && pulseAccess !== 'full';
   // Provenance events are opt-in: available, never selected by default
   const provenanceEventTypesOptions: { value: TriggerEventType; label: string }[] = [
     { value: 'corroboration', label: t_i18n('Corroboration reached') },
@@ -197,9 +206,11 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           multiple={true}
           label={t_i18n('Triggering on')}
           options={
-            [...(instance_trigger ? instanceEventTypesOptions : eventTypesOptions), ...provenanceEventTypesOptions]
+            [...(instance_trigger ? instanceEventTypesOptions : availableEventTypesOptions), ...provenanceEventTypesOptions]
           }
+          isOptionDisabled={isPulseTrendingLocked}
         />
+        {!instance_trigger && <ThreatPulseTriggerNotice access={pulseAccess} />}
         {values.event_types.some((eventType) => eventType.value === 'corroboration') && (
           <Field
             component={TextField}

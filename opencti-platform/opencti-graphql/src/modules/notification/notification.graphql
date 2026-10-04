@@ -33,6 +33,7 @@ enum TriggerEventType {
     corroboration
     # Provenance: a source proposed an alternative value for a field of the element
     conflict
+    pulse_trending
 }
 input TriggerLiveAddInput {
     name: String! @constraint(minLength: 2, format: "not-blank")

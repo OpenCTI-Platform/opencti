@@ -35,6 +35,8 @@ const DigestNotification: FunctionComponent<DigestNotificationProps> = ({ notifi
               return 'critical' as const;
             case 'conflict':
               return 'medium' as const;
+            case 'pulse_trending':
+              return 'high' as const;
             default:
               return 'low' as const;
           }

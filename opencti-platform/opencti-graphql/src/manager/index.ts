@@ -8,6 +8,7 @@ import './knowledgeFreshnessManager';
 import './provenanceBackfillManager';
 import './pirManager';
 import './platformUsageMetricsManager';
+import './pulseManager';
 import './retentionManager';
 import './telemetryManager';
 import './workflowStatusCleanupManager';

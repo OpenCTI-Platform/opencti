@@ -54,6 +54,8 @@ Live triggers can also respond to two [provenance](provenance.md) event types:
 - **Corroboration reached**: the number of distinct sources asserting a matching element reaches the corroboration threshold of the trigger (2 by default, up to 200). The notification is sent once, when the threshold is crossed.
 - **Source conflict detected**: a source proposes a value conflicting with the current value of a matching element.
 
+Live triggers can also respond to the **Trending in my sector (Threat Pulse)** event type: a matching object of the platform starts rising in the platform's sector on [Threat Pulse](threat-pulse.md). An object notified as trending is not notified again for 7 days. This event type is part of the full Threat Pulse experience: on a platform running the Threat Pulse preview, it is listed but cannot be selected, with the reason and the step to unlock it.
+
 ![Trigger configuration](assets/trigger-configuration.png)
 
 ### Instance triggers
