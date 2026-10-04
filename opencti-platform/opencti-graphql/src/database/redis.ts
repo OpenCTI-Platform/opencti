@@ -835,6 +835,11 @@ export const redisGetManagerEventState = async (managerName: string) => {
   const managerEventStateKey = MANAGER_EVENT_STATE_KEY + managerName;
   return getClientBase().get(managerEventStateKey);
 };
+// Atomic: a value written by another node between the read and the write is never overwritten unseen
+export const redisGetSetManagerEventState = async (managerName: string, event_state_id: string) => {
+  const managerEventStateKey = MANAGER_EVENT_STATE_KEY + managerName;
+  return getClientBase().getset(managerEventStateKey, event_state_id);
+};
 // endregion
 
 // region - defense coverage pending validation tracking

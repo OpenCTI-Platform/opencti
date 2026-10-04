@@ -2,6 +2,7 @@ import {
   redisDeleteDefensePendingValidationTracking,
   redisGetDefensePendingValidationTrackings,
   redisGetManagerEventState,
+  redisGetSetManagerEventState,
   redisSetDefensePendingValidationTracking,
   redisSetManagerEventState,
 } from '../../database/redis';
@@ -59,13 +60,11 @@ export const requestFullDefenseCoverageComputation = async () => {
   await redisSetManagerEventState(STATE_FULL_REQUESTED, 'true');
 };
 
+/**
+ * Read and reset the request in one step, so a request made while it is consumed stays pending for the next run.
+ */
 export const consumeFullComputationRequest = async (): Promise<boolean> => {
-  const requested = await redisGetManagerEventState(STATE_FULL_REQUESTED);
-  if (requested === 'true') {
-    await redisSetManagerEventState(STATE_FULL_REQUESTED, 'false');
-    return true;
-  }
-  return false;
+  return (await redisGetSetManagerEventState(STATE_FULL_REQUESTED, 'false')) === 'true';
 };
 
 export const isFullComputationRequested = async (): Promise<boolean> => {

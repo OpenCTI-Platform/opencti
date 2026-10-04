@@ -6,7 +6,7 @@ import { SYSTEM_USER } from '../../../../src/utils/access';
 import { MARKING_TLP_RED } from '../../../../src/schema/identifier';
 import { computeDefenseCoverage, defenseGapId } from '../../../../src/modules/defenseCoverage/defenseCoverage-compute';
 import { trackPendingValidationRequests } from '../../../../src/modules/defenseCoverage/defenseCoverage-domain';
-import { listPendingValidationTrackings, queuePendingValidationTracking } from '../../../../src/modules/defenseCoverage/defenseCoverage-state';
+import { consumeFullComputationRequest, listPendingValidationTrackings, queuePendingValidationTracking } from '../../../../src/modules/defenseCoverage/defenseCoverage-state';
 import { type BasicStoreEntityDefenseGap, ENTITY_TYPE_DEFENSE_GAP } from '../../../../src/modules/defenseCoverage/defenseGap/defenseGap-types';
 import { redisSetDefensePendingValidationTracking } from '../../../../src/database/redis';
 import { internalFindByIds } from '../../../../src/database/middleware-loader';
@@ -495,6 +495,11 @@ describe('Threat-informed defense matrix', () => {
     const status = await queryAsAdminWithSuccess({ query: STATUS });
     expect(status.data?.defenseCoverageStatus.full_computation_requested).toBe(true);
     expect(typeof status.data?.defenseCoverageStatus.validation_available).toBe('boolean');
+    // Read and reset in one step: the manager consumes a request once
+    expect(await consumeFullComputationRequest()).toBe(true);
+    expect(await consumeFullComputationRequest()).toBe(false);
+    const consumed = await queryAsAdminWithSuccess({ query: STATUS });
+    expect(consumed.data?.defenseCoverageStatus.full_computation_requested).toBe(false);
   });
 
   const triggerFilters = JSON.stringify({ mode: 'and', filters: [{ key: ['entity_type'], values: ['Attack-Pattern'], operator: 'eq', mode: 'or' }], filterGroups: [] });
