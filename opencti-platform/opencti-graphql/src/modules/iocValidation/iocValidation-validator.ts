@@ -1,5 +1,6 @@
-import { ForbiddenAccess } from '../../config/errors';
+import { ForbiddenAccess, ValidationError } from '../../config/errors';
 import { isEmptyField } from '../../database/utils';
+import { FROM_START_STR, UNTIL_END_STR } from '../../utils/format';
 import { INPUT_MARKINGS } from '../../schema/general';
 import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { cleanMarkings } from '../../utils/markingDefinition-utils';
@@ -100,6 +101,25 @@ export const coversPairMarkings = async (context: AuthContext, instance: Record<
   return cleaned.every((marking: { internal_id?: string } | string) => provided.includes(typeof marking === 'string' ? marking : marking.internal_id ?? ''));
 };
 
+/**
+ * Whether an input gives a deployment a validity window. A deployment has none (its dates are deployed_at,
+ * last_sync_at and removed_at): without start and stop times its identity is the pair alone, so every creation or
+ * import of the same pair upserts the one deployment of the pair instead of adding a second one.
+ */
+export const setsValidityWindow = (instance: Record<string, unknown>) => [['start_time', FROM_START_STR], ['stop_time', UNTIL_END_STR]]
+  .some(([field, defaultValue]) => {
+    const value = firstValue(instance[field]);
+    if (isEmptyField(value)) {
+      return false;
+    }
+    const time = new Date(value as string).getTime();
+    return Number.isNaN(time) || time !== new Date(defaultValue).getTime();
+  });
+
+const refuseValidityWindow = () => {
+  throw ValidationError('A deployment has no start or stop time: one deployment exists per indicator and security platform', 'start_time');
+};
+
 const refuseMarkings = (user: AuthUser) => {
   throw ForbiddenAccess('A deployment carries the markings of its indicator and of its security platform', { user_id: user.id });
 };
@@ -108,6 +128,9 @@ const refuseMarkings = (user: AuthUser) => {
 // whose writes never reach the edition validator: a new deployment only takes the defaults from a regular editor,
 // and an existing one is changed under the edition rules, resets included.
 const validatorCreation: ValidatorFn = async (context, user, instance) => {
+  if (setsValidityWindow(instance)) {
+    return refuseValidityWindow();
+  }
   if (!await coversPairMarkings(context, instance)) {
     return refuseMarkings(user);
   }
@@ -143,6 +166,9 @@ const validatorCreation: ValidatorFn = async (context, user, instance) => {
 };
 
 const validatorUpdate: ValidatorFn = async (context, user, instance, initial) => {
+  if (setsValidityWindow(instance)) {
+    return refuseValidityWindow();
+  }
   if (isBypassUser(user)) {
     return true;
   }

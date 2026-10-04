@@ -759,6 +759,14 @@ export const disseminationAssuranceMetrics = async (context: AuthContext, user: 
 // endregion
 
 // region expiry interplay
+const EXPIRY_SCAN_CURSOR_STATE = 'indicator_deployment_expiry_scan';
+
+/** Past its validity, or revoked, before the threshold: the connector had the grace period to confirm the removal. */
+export const isExpiredForRemoval = (indicator: { valid_until?: unknown; revoked?: boolean; updated_at?: unknown }, threshold: string) => {
+  const before = (value: unknown) => !!value && new Date(value as string).getTime() < new Date(threshold).getTime();
+  return before(indicator.valid_until) || (indicator.revoked === true && before(indicator.updated_at));
+};
+
 /**
  * Indicators that expired or were revoked are removed by the connectors through the stream events they already consume
  * (revocation update, or delete event on filtered streams), and so are deployments withdrawn by an analyst (revoked relationship).
@@ -769,28 +777,26 @@ export const disseminationAssuranceMetrics = async (context: AuthContext, user: 
 export const flagExpiredDeployments = async (context: AuthContext, user: AuthUser, gracePeriodMs: number, batchSize: number) => {
   const threshold = new Date(Date.now() - gracePeriodMs).toISOString();
   const liveFilter = { key: ['deployment_status'], values: LIVE_DEPLOYMENT_STATUSES };
-  const expiredIndicators = await fullEntitiesList<BasicStoreEntityIndicator>(context, SYSTEM_USER, [ENTITY_TYPE_INDICATOR], {
-    filters: {
-      mode: 'and' as never,
-      filters: [{ key: [INDICATOR_DEPLOYMENT_PLATFORMS_COUNT], values: [0], operator: 'gt' as never }],
-      filterGroups: [{
-        mode: 'or' as never,
-        filters: [{ key: ['valid_until'], values: [threshold], operator: 'lt' as never }],
-        filterGroups: [{
-          mode: 'and' as never,
-          filters: [{ key: ['revoked'], values: [true] }, { key: ['updated_at'], values: [threshold], operator: 'lt' as never }],
-          filterGroups: [],
-        }],
-      }],
-    },
-    noFiltersChecking: true,
-    maxSize: batchSize,
-  } as never);
-  const fromExpiredIndicators = expiredIndicators.length === 0 ? [] : await fullRelationsList<BasicStoreRelationDeployedOn>(context, SYSTEM_USER, RELATION_DEPLOYED_ON, {
-    fromId: expiredIndicators.map((i) => i.internal_id),
+  // The live deployments themselves are scanned, one resumable page per run: the counters stored on the indicators
+  // leave out the deployments some readers cannot see, so they cannot select the candidates.
+  const after = (await redisGetManagerEventState(EXPIRY_SCAN_CURSOR_STATE)) || undefined;
+  const livePage = await pageRelationsConnection<BasicStoreRelationDeployedOn>(context, SYSTEM_USER, RELATION_DEPLOYED_ON, {
+    first: batchSize,
+    after,
+    orderBy: 'internal_id',
+    orderMode: 'asc',
     filters: { mode: 'and' as never, filters: [liveFilter], filterGroups: [] },
     noFiltersChecking: true,
-  });
+  } as never);
+  const scanDone = !livePage.pageInfo.hasNextPage || !livePage.pageInfo.endCursor;
+  await redisSetManagerEventState(EXPIRY_SCAN_CURSOR_STATE, scanDone ? '' : String(livePage.pageInfo.endCursor));
+  const liveDeployments = livePage.edges.map((edge) => edge.node);
+  const sourceIds = [...new Set(liveDeployments.map((deployment) => deployment.fromId))];
+  const sources = sourceIds.length === 0 ? [] : await storeLoadByIds<BasicStoreEntityIndicator>(context, SYSTEM_USER, sourceIds, ENTITY_TYPE_INDICATOR);
+  const expiredSourceIds = new Set(sources
+    .filter((indicator) => indicator && isExpiredForRemoval(indicator, threshold))
+    .map((indicator) => indicator.internal_id));
+  const fromExpiredIndicators = liveDeployments.filter((deployment) => expiredSourceIds.has(deployment.fromId));
   const withdrawn = await fullRelationsList<BasicStoreRelationDeployedOn>(context, SYSTEM_USER, RELATION_DEPLOYED_ON, {
     filters: {
       mode: 'and' as never,

@@ -5,6 +5,7 @@ import {
   carriesLifecycleState,
   carriesValidationProof,
   coversPairMarkings,
+  setsValidityWindow,
   isLifecycleWriter,
   touchesLifecycleFields,
   touchesValidationFields,
@@ -122,5 +123,19 @@ describe('Deployment markings guard', () => {
     const administrator = { id: 'admin', capabilities: [{ name: 'BYPASS' }] } as unknown as AuthUser;
     await expect(validatorCreation(testContext, administrator, { from, to, objectMarking: ['tlp-amber'] })).rejects.toThrow('markings of its indicator');
     await expect(validatorCreation(testContext, administrator, { from, to, objectMarking: ['tlp-amber', 'pap-red'] })).resolves.toEqual(true);
+  });
+});
+
+describe('Deployment identity guard', () => {
+  it('should refuse a validity window, which would give the pair a second deployment', async () => {
+    expect(setsValidityWindow({ deployment_status: 'active' })).toEqual(false);
+    expect(setsValidityWindow({ start_time: '1970-01-01T00:00:00.000Z', stop_time: '5138-11-16T09:46:40.000Z' })).toEqual(false);
+    expect(setsValidityWindow({ start_time: '2026-10-01T00:00:00.000Z' })).toEqual(true);
+    expect(setsValidityWindow({ stop_time: ['2026-12-31T00:00:00.000Z'] })).toEqual(true);
+    const validatorCreation = getEntityValidatorCreation(RELATION_DEPLOYED_ON) as ValidatorFn;
+    const validatorUpdate = getEntityValidatorUpdate(RELATION_DEPLOYED_ON) as ValidatorFn;
+    const administrator = { id: 'admin', capabilities: [{ name: 'BYPASS' }] } as unknown as AuthUser;
+    await expect(validatorCreation(testContext, administrator, { start_time: '2026-10-01T00:00:00.000Z' })).rejects.toThrow('no start or stop time');
+    await expect(validatorUpdate(testContext, administrator, { stop_time: ['2026-12-31T00:00:00.000Z'] }, {})).rejects.toThrow('no start or stop time');
   });
 });
