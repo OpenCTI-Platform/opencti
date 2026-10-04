@@ -472,7 +472,8 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
           {t_i18n('Purge my contributions')}
         </Button>
       )}
-      {settings.enabled && (
+      {/* Opting out never waits for the new consent: a platform waiting for it can stop contributing too */}
+      {settings.mode === 'contribute_and_read' && (
         <Button variant="secondary" onClick={() => configure({ mode: 'preview' })} disabled={configuring} data-testid="threat-pulse-stop-button">
           {t_i18n('Stop contributing')}
         </Button>
