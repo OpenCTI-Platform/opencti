@@ -258,6 +258,8 @@ export const managedConnectorAdd = async (
   context: AuthContext,
   user: AuthUser,
   input: AddManagedConnectorInput,
+  // Called before each write: an error thrown before its first call left nothing behind
+  options: { beforeWrite?: () => void } = {},
 ) => {
   await checkEnterpriseEdition(context);
   // Get contract
@@ -286,19 +288,6 @@ export const managedConnectorAdd = async (
   if (input.user_id.length < 2) {
     throw FunctionalError('You have not chosen a user responsible for data creation', {});
   }
-  let finalUserId = input.user_id;
-  if (input.automatic_user) {
-    const onTheFlyCreatedUser = await createOnTheFlyUser(
-      context,
-      user,
-      { userName: input.user_id, serviceAccount: true, confidenceLevel: input.confidence_level ? parseInt(input.confidence_level, 10) : null },
-    );
-    finalUserId = onTheFlyCreatedUser.id;
-  }
-  const connectorUser = await storeLoadById(context, user, finalUserId, ENTITY_TYPE_USER);
-  if (isEmptyField(connectorUser)) {
-    throw UnsupportedError('Connector user not found', { id: finalUserId });
-  }
   // Sanitize name
   const sanitizedName = sanitizeContainerName(input.name);
   if (!sanitizedName || sanitizedName.length < 2) {
@@ -310,6 +299,21 @@ export const managedConnectorAdd = async (
   if (nameCollision) {
     logApp.info(`[CONNECTOR] Name collision detected: connector with name '${sanitizedName}' already exists`);
     throw FunctionalError('CONNECTOR_NAME_ALREADY_EXISTS');
+  }
+  // The checks above only read: a refused deployment leaves neither a service account nor a connector behind
+  let finalUserId = input.user_id;
+  if (input.automatic_user) {
+    options.beforeWrite?.();
+    const onTheFlyCreatedUser = await createOnTheFlyUser(
+      context,
+      user,
+      { userName: input.user_id, serviceAccount: true, confidenceLevel: input.confidence_level ? parseInt(input.confidence_level, 10) : null },
+    );
+    finalUserId = onTheFlyCreatedUser.id;
+  }
+  const connectorUser = await storeLoadById(context, user, finalUserId, ENTITY_TYPE_USER);
+  if (isEmptyField(connectorUser)) {
+    throw UnsupportedError('Connector user not found', { id: finalUserId });
   }
 
   // Create connector
@@ -328,6 +332,7 @@ export const managedConnectorAdd = async (
     built_in: false,
   };
 
+  options.beforeWrite?.();
   const createdConnector: any = await createEntity(context, user, connectorToCreate, ENTITY_TYPE_CONNECTOR);
   // Increment telemetry for connector deployed via composer
   await addConnectorDeployedCount();

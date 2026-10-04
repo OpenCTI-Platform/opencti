@@ -671,6 +671,44 @@ describe('Source intelligence', () => {
     expect(completed.data.revertSourceRecommendation.status).toBe('reverted');
   });
 
+  it('should fail a connector deployment refused before writing and leave a linked connector running on revert', async () => {
+    const { created } = await upsertProposals(testContext, [{
+      kind: 'add_connector',
+      source_id: null,
+      fingerprint: `${TEST_FINGERPRINT_PREFIX}-deploy-refused`,
+      name: 'Deploy a connector missing from the catalog',
+      rationale: 'Integration test',
+      payload: { slug: 'missing-connector', title: 'Missing test connector', catalog_id: uuidv4(), contract_image: 'opencti/connector-missing-from-catalog' },
+      evidence: {},
+    }, {
+      kind: 'add_connector',
+      source_id: null,
+      fingerprint: `${TEST_FINGERPRINT_PREFIX}-deploy-linked`,
+      name: 'Link a connector deployed beforehand',
+      rationale: 'Integration test',
+      payload: { slug: 'linked-connector', title: 'Linked test connector', catalog_id: uuidv4(), contract_image: 'opencti/connector-linked' },
+      evidence: {},
+    }], settings, { kinds: [] });
+    expect(created.length).toBe(2);
+    const [refused, linked] = created;
+
+    // The contract is unknown: the deployment refuses before creating anything, so the recommendation fails and can be retried
+    const failed = await queryAsAdminWithSuccess({ query: APPLY_MUTATION, variables: { id: refused.internal_id } });
+    expect(failed.data.applySourceRecommendation.status).toBe('failed');
+    const kept = await storeLoadById<BasicStoreEntity & { error_message?: string }>(testContext, ADMIN_USER, refused.internal_id, ENTITY_TYPE_SOURCE_RECOMMENDATION);
+    expect(kept?.error_message).toContain('Target contract not found');
+    const retried = await queryAsAdminWithSuccess({ query: APPLY_MUTATION, variables: { id: refused.internal_id } });
+    expect(retried.data.applySourceRecommendation.status).toBe('failed');
+
+    // A linked connector was not deployed by the recommendation: the revert does not stop it (this one no longer exists)
+    await patchAttribute(testContext, ADMIN_USER, linked.internal_id, ENTITY_TYPE_SOURCE_RECOMMENDATION, {
+      recommendation_status: 'applied',
+      revert_payload: JSON.stringify({ connector_id: uuidv4(), linked: true }),
+    });
+    const reverted = await queryAsAdminWithSuccess({ query: REVERT_MUTATION, variables: { id: linked.internal_id } });
+    expect(reverted.data.revertSourceRecommendation.status).toBe('reverted');
+  });
+
   it('should dismiss a recommendation and not propose it again during the cooldown', async () => {
     const proposal = {
       kind: 'raise_confidence' as const,

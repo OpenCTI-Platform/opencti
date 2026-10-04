@@ -147,7 +147,7 @@ For each recommendation you can:
 
 - **Apply** it. Applying requires the capability matching the action (for example, managing accesses to change a user confidence level). When it cannot be applied, the recommendation says that nothing was changed and offers **Retry**, and **Open the connector** when the connector refused the change; **Show details** gives the cause.
 - **Reject** it, with an optional reason. A rejected recommendation is not proposed again before a cooldown (30 days by default).
-- **Revert** it once applied. Reverting restores the previous state (confidence level, schedule, connector status, whether a feed was running) and removes what was created (decay rule, exclusion list). A quarantine draft is kept for review.
+- **Revert** it once applied. Reverting restores the previous state (confidence level, schedule, connector status, whether a feed was running) and removes what was created (decay rule, exclusion list). A quarantine draft is kept for review. A connector the recommendation deployed is stopped and keeps its data; a connector deployed beforehand and linked to the recommendation is left running.
 
 An applied recommendation shows who applied it and when, with **Revert**:
 
@@ -161,7 +161,7 @@ Once reverted, the recommendation keeps its history and is not proposed again au
 
 ![Reverted recommendation](assets/source-intelligence-recommendation-reverted.png)
 
-While its change runs, a recommendation shows **Applying**. A change refused before anything was written (for example, a missing setting) makes it fail with **Retry**. If the change failed after something may have been written, or its outcome cannot be recorded, it stays **Applying**, with the cause behind **Show details**: it is never applied a second time and cannot be rejected, since its change may be in place. Check the target of the recommendation (user, connector, feed or settings) in that case.
+While its change runs, a recommendation shows **Applying**. A change refused before anything was written (for example, a missing setting, or a connector deployment refused because the connector is not compatible with the platform version, no connector manager is configured or a connector with the same name exists) makes it fail with **Retry**. If the change failed after something may have been written, or its outcome cannot be recorded, it stays **Applying**, with the cause behind **Show details**: it is never applied a second time and cannot be rejected, since its change may be in place. Check the target of the recommendation (user, connector, feed or settings) in that case.
 
 A revert works the same way: while it runs, the recommendation shows **Reverting**. If the revert fails or its outcome cannot be recorded, the recommendation stays **Reverting**, with the cause behind **Show details** and **Retry**: every step of a revert can run again safely (a decay rule or an exclusion list already removed is not removed twice), and the recommendation is neither proposed again nor applied meanwhile.
 

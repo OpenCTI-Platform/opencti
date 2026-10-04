@@ -86,8 +86,8 @@ export const recommendationFingerprint = (kind: string, ...parts: string[]) => [
 
 /**
  * A connector fulfils an add_connector recommendation only when it is the recommended catalog entry: same catalog
- * identifier, or same contract image (how the collection gaps detect a deployed catalog connector). Reverting the
- * recommendation stops the recorded connector, so an unrelated connector must never be recorded.
+ * identifier, or same contract image (how the collection gaps detect a deployed catalog connector). The recorded
+ * connector is the outcome of the recommendation, so an unrelated connector must never be recorded.
  */
 export const connectorMatchesCatalogEntry = (
   connector: { catalog_id?: string | null; manager_contract_image?: string | null },

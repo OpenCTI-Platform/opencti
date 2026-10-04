@@ -478,12 +478,16 @@ const executeApply = async (
             catalog_id: payload.catalog_id ?? null,
           });
         }
-        return { apply_result: `Connector ${connector.name} deployed`, revert_payload: { connector_id: connector.id } };
+        // Linking deploys nothing: the connector already ran before the recommendation, so a revert leaves it running
+        return { apply_result: `Connector ${connector.name} linked`, revert_payload: { connector_id: connector.id, linked: true } };
       }
       if (!payload.contract_image) {
         throw FunctionalError('This connector is not available in the local catalog, deploy it from the catalog page');
       }
-      progress.writing = true;
+      // The deployment checks its contract, the connector manager and the name before writing: a refused one can be retried
+      const beforeWrite = () => {
+        progress.writing = true;
+      };
       const created = await managedConnectorAdd(context, user, {
         name: payload.title,
         catalog_id: payload.catalog_id,
@@ -492,7 +496,7 @@ const executeApply = async (
         user_id: `[C] ${payload.title}`,
         automatic_user: true,
         confidence_level: '50',
-      });
+      }, { beforeWrite });
       return { apply_result: `Connector ${created.name} deployed through XTM Composer`, revert_payload: { connector_id: created.id } };
     }
     default:
@@ -585,6 +589,9 @@ const executeRevert = async (context: AuthContext, user: AuthUser, recommendatio
       }
     case RECOMMENDATION_ADD_CONNECTOR:
       requireCapability(user, false, MODULES_MODMANAGE);
+      if (revert.linked) {
+        return 'Linked connector left running, the recommendation did not deploy it';
+      }
       await updateConnectorRequestedStatus(context, user, { id: revert.connector_id, status: ConnectorRequestStatus.Stopping });
       return 'Deployed connector stopped, its data is kept';
     default:
