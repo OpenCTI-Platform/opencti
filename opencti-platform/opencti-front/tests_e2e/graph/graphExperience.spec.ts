@@ -78,7 +78,8 @@ test.describe('Graph experience', { tag: ['@ce'] }, () => {
   test('collapses a type into one group node and expands it back', async ({ page }) => {
     await openGraph(page);
     await legend(page).getByRole('button', { name: 'Collapse into one node' }).first().click();
-    await expect(elements(page).getByRole('option', { name: /1 \u00d7 / })).toHaveCount(1);
+    // The group node gives its relationship count after its name; the options of the links drawn towards it also name it.
+    await expect(elements(page).getByRole('option', { name: /1 \u00d7 [^,]+, \d+ relationships?$/ })).toHaveCount(1);
     await legend(page).getByRole('button', { name: 'Expand the group' }).click();
     await expect(elements(page).getByRole('option', { name: /\u00d7/ })).toHaveCount(0);
     await expect(elements(page).getByRole('option')).toHaveCount(9);
