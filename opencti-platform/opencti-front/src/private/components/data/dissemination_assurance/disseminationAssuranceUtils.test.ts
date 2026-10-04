@@ -6,6 +6,7 @@ import {
   buildValidationCandidateFilters,
   canRemoveDeployment,
   canRetryDeployment,
+  computeDeploymentKpis,
   DEFAULT_TEST_KINDS,
   DEPLOYMENT_STATUS_SEVERITIES,
   DEPLOYMENT_STATUSES,
@@ -211,5 +212,16 @@ describe('KPI strip', () => {
     expect(buildKpiFilters('active')?.filters[0].values).toEqual(['active']);
     expect(buildKpiFilters('validated')?.filters).toEqual([{ key: 'validation_status', values: ['detected', 'prevented'], operator: 'eq', mode: 'or' }]);
     expect(buildKpiFilters('missed')?.filters[0]).toEqual({ key: 'validation_status', values: ['missed'], operator: 'eq', mode: 'or' });
+  });
+});
+
+describe('KPI strip key figures', () => {
+  it('should count the deployments its filters list, from the status breakdowns', () => {
+    const kpis = computeDeploymentKpis(
+      [{ status: 'active', count: 4 }, { status: 'deployed', count: 2 }, { status: 'failed', count: 3 }, { status: 'removed', count: 1 }],
+      [{ status: 'detected', count: 2 }, { status: 'prevented', count: 1 }, { status: 'missed', count: 2 }, { status: 'not_requested', count: 5 }],
+    );
+    expect(kpis).toEqual({ disseminated: 10, deployed: 6, active: 4, failed: 3, validated: 3, missed: 2 });
+    expect(computeDeploymentKpis([], [])).toEqual({ disseminated: 0, deployed: 0, active: 0, failed: 0, validated: 0, missed: 0 });
   });
 });

@@ -20,7 +20,6 @@ import { notify, redisGetManagerEventState, redisSetManagerEventState } from '..
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { FunctionalError, ValidationError } from '../../config/errors';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, INPUT_MARKINGS, OPENCTI_NAMESPACE } from '../../schema/general';
-import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { ENTITY_TYPE_INDICATOR, type BasicStoreEntityIndicator } from '../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type BasicStoreEntitySecurityPlatform } from '../securityPlatform/securityPlatform-types';
@@ -49,7 +48,7 @@ import {
   RELATION_DEPLOYED_ON,
   type StoreRelationDeployedOn,
 } from './indicatorDeployment-types';
-import { isDeploymentStatus } from './indicatorDeployment-utils';
+import { isDeploymentStatus, pairMarkings } from './indicatorDeployment-utils';
 import { consumeDeploymentRateLimit, DEPLOYMENT_RATE_LIMIT_BATCH, DEPLOYMENT_RATE_LIMIT_HITS, DEPLOYMENT_RATE_LIMIT_SINGLE } from './indicatorDeployment-rate-limit';
 
 export const DEPLOYMENT_BATCH_MAX_SIZE = 500;
@@ -290,7 +289,7 @@ const applyDeploymentReport = async (
         fromId: indicator.internal_id,
         toId: platform.internal_id,
         relationship_type: RELATION_DEPLOYED_ON,
-        [INPUT_MARKINGS]: indicator[RELATION_OBJECT_MARKING] ?? [],
+        [INPUT_MARKINGS]: pairMarkings(indicator, platform),
         ...change.attributes,
       }) as unknown as BasicStoreRelationDeployedOn;
       return { element, outcome: 'created' };
@@ -410,7 +409,7 @@ export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, 
       toId: platform.internal_id,
       relationship_type: STIX_SIGHTING_RELATIONSHIP,
       stix_id: sightingStixId,
-      [INPUT_MARKINGS]: indicator[RELATION_OBJECT_MARKING] ?? [],
+      [INPUT_MARKINGS]: pairMarkings(indicator, platform),
       attribute_count: count,
       first_seen: firstSeen,
       last_seen: lastSeen,
@@ -427,7 +426,7 @@ export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, 
         fromId: indicator.internal_id,
         toId: platform.internal_id,
         relationship_type: RELATION_DEPLOYED_ON,
-        [INPUT_MARKINGS]: indicator[RELATION_OBJECT_MARKING] ?? [],
+        [INPUT_MARKINGS]: pairMarkings(indicator, platform),
         deployment_status: DEPLOYMENT_STATUS_ACTIVE,
         deployed_at: firstHit,
         last_sync_at: now,

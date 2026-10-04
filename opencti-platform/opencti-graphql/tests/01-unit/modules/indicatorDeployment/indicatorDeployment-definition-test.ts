@@ -6,7 +6,7 @@ import { isStixCoreRelationship, RELATION_DEPLOYED_ON } from '../../../../src/sc
 import { ENTITY_TYPE_INDICATOR } from '../../../../src/modules/indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../../src/modules/securityPlatform/securityPlatform-types';
 import { ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
-import { buildDeployedOnCreationData, isDeploymentStatus, isValidationStatus } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-utils';
+import { buildDeployedOnCreationData, isDeploymentStatus, isValidationStatus, pairMarkings } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-utils';
 import { convertDeployedOnToStixExtension } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-converter';
 import type { StoreRelation } from '../../../../src/types/store';
 
@@ -140,5 +140,15 @@ describe('deployed-on STIX extension', () => {
 
   it('should not add anything to other relationship types', () => {
     expect(convertDeployedOnToStixExtension({ relationship_type: 'uses' } as unknown as StoreRelation)).toEqual({});
+  });
+});
+
+describe('markings of the relationships generated for a pair', () => {
+  it('should carry the markings of the indicator and of the security platform, once each', () => {
+    const indicator = { 'object-marking': ['tlp-green', 'pap-amber'] };
+    const platform = { 'object-marking': ['tlp-green', 'tlp-red'] };
+    expect(pairMarkings(indicator, platform)).toEqual(['tlp-green', 'pap-amber', 'tlp-red']);
+    expect(pairMarkings({}, platform)).toEqual(['tlp-green', 'tlp-red']);
+    expect(pairMarkings({ 'object-marking': null }, {})).toEqual([]);
   });
 });

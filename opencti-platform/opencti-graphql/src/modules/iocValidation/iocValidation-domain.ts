@@ -11,7 +11,6 @@ import { notify } from '../../database/redis';
 import { isEmptyField, isNotEmptyField } from '../../database/utils';
 import { lockResources } from '../../lock/master-lock';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_MARKINGS, OPENCTI_NAMESPACE } from '../../schema/general';
-import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { fullEntitiesList, fullRelationsList, internalLoadById, pageEntitiesConnection, storeLoadById, storeLoadByIds } from '../../database/middleware-loader';
 import { connectorsForEnrichment } from '../../database/repository';
@@ -36,6 +35,7 @@ import {
   VALIDATION_STATUS_REQUESTED,
 } from '../indicatorDeployment/indicatorDeployment-types';
 import { findDeployedOn, pairLockKey, refreshIndicatorDeploymentCounters } from '../indicatorDeployment/indicatorDeployment-domain';
+import { pairMarkings } from '../indicatorDeployment/indicatorDeployment-utils';
 import type {
   IocValidationRequestStatusInput,
   MutationIndicatorsRequestValidationArgs,
@@ -620,7 +620,7 @@ export const reportIocValidationResults = async (context: AuthContext, user: Aut
           toId: platform.internal_id,
           relationship_type: STIX_SIGHTING_RELATIONSHIP,
           stix_id: sightingStixId,
-          [INPUT_MARKINGS]: indicator[RELATION_OBJECT_MARKING] ?? [],
+          [INPUT_MARKINGS]: pairMarkings(indicator, platform),
           attribute_count: result.hitCount ?? 1,
           first_seen: observedAt,
           last_seen: observedAt,
