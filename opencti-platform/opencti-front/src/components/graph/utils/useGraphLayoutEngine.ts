@@ -45,6 +45,8 @@ const useGraphLayoutEngine = ({ graphRef, nodes, shapeSignature, layout, enabled
   const latestNodes = useRef(nodes);
   latestNodes.current = nodes;
 
+  // Applied again when the node objects change too: the graph data can replace them under the
+  // same ids (an edited entity), and the replacements must take the positions and pins.
   useEffect(() => {
     if (!enabled) return undefined;
     if (!layout) {
@@ -95,7 +97,7 @@ const useGraphLayoutEngine = ({ graphRef, nodes, shapeSignature, layout, enabled
     };
     frame.current = requestAnimationFrame(step);
     return () => cancelAnimationFrame(frame.current);
-  }, [enabled, layout?.key, shapeSignature]);
+  }, [enabled, layout?.key, shapeSignature, nodes]);
 
   /** `targets`: where the applied layout puts the nodes, `null` without one. */
   return { animating, targets };
