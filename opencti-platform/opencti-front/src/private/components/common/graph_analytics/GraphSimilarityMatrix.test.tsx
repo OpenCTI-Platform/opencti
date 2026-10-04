@@ -27,9 +27,10 @@ describe('GraphSimilarityMatrix', () => {
   it('renders one labelled cell per ordered pair with the score as a percentage', () => {
     testRender(<GraphSimilarityMatrix entities={entities} cells={cells} />);
     expect(screen.getByTestId('graph-similarity-matrix')).toBeInTheDocument();
-    expect(screen.getAllByLabelText('APT A / APT B: 62%')).toHaveLength(1);
-    expect(screen.getAllByLabelText('APT B / APT A: 62%')).toHaveLength(1);
-    expect(screen.getAllByLabelText('APT A / APT C: 0%')).toHaveLength(1);
+    expect(screen.getAllByLabelText('APT A and APT B: 62% similar, 4 shared elements')).toHaveLength(1);
+    expect(screen.getAllByLabelText('APT B and APT A: 62% similar, 4 shared elements')).toHaveLength(1);
+    expect(screen.getAllByLabelText('APT B and APT C: 10% similar, 1 shared element')).toHaveLength(1);
+    expect(screen.getAllByLabelText('APT A and APT C: 0% similar, 0 shared elements')).toHaveLength(1);
     expect(screen.getAllByText('62')).toHaveLength(2);
     expect(screen.getAllByText('10')).toHaveLength(2);
   });
