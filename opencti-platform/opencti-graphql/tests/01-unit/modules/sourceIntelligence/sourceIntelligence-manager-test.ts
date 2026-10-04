@@ -22,8 +22,11 @@ import { SCORECARD_NUMERIC_ATTRIBUTES } from '../../../../src/modules/sourceInte
 const settings = { recompute_hour_utc: 2 };
 
 describe('Source intelligence manager scheduling', () => {
-  it('should compute immediately when no full computation ever ran', () => {
-    expect(isFullComputationDue({}, settings, Date.UTC(2026, 9, 3, 0, 30))).toBe(true);
+  it('should run the first computation at the configured hour, or on request', () => {
+    expect(isFullComputationDue({}, settings, Date.UTC(2026, 9, 3, 0, 30))).toBe(false);
+    expect(isFullComputationDue({}, settings, Date.UTC(2026, 9, 3, 10, 0))).toBe(false);
+    expect(isFullComputationDue({}, settings, Date.UTC(2026, 9, 3, 2, 15))).toBe(true);
+    expect(isFullComputationDue({ recompute_requested_at: '2026-10-03T10:00:00.000Z' }, settings, Date.UTC(2026, 9, 3, 10, 1))).toBe(true);
   });
 
   it('should compute once a day after the configured hour', () => {
