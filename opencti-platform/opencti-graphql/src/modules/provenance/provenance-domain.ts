@@ -326,25 +326,37 @@ const publishProvenanceAction = async (user: AuthUser, element: BasicStoreObject
  * becomes an alternative attributed to its owner.
  */
 export const adoptConflictValue = async (context: AuthContext, user: AuthUser, id: string, field: string, valueHash: string) => {
-  const element = await loadEditableTrackedElement(context, user, id);
-  const attribute = schemaAttributesDefinition.getAttribute(element.entity_type, field);
+  const loaded = await loadEditableTrackedElement(context, user, id);
+  const attribute = schemaAttributesDefinition.getAttribute(loaded.entity_type, field);
   if (!attribute || !isConflictTrackedAttribute(attribute) || attribute.update === false) {
     throw FunctionalError('This field cannot be adopted from a source', { field });
   }
-  const proposals = findConflictProposals(element, field, valueHash);
-  const proposal = proposals.find((candidate) => candidate.value !== null && candidate.value !== undefined);
-  if (!proposal?.value) {
-    throw FunctionalError('This value is too large to be adopted, edit the field directly', { field });
+  // Same lock as the upserts from the read to the conflict cleanup: an upsert can neither replace the adopted
+  // value in between nor have its proposal removed as the adopted one
+  const lockIds = R.uniq([loaded.internal_id, loaded.standard_id]);
+  const lock = await lockResources(lockIds, { draftId: getDraftContext(context, user) });
+  let element;
+  let proposals;
+  try {
+    element = await loadEditableTrackedElement(context, user, id);
+    proposals = findConflictProposals(element, field, valueHash);
+    const proposal = proposals.find((candidate) => candidate.value !== null && candidate.value !== undefined);
+    if (!proposal?.value) {
+      throw FunctionalError('This value is too large to be adopted, edit the field directly', { field });
+    }
+    const adoptedValue = JSON.parse(proposal.value);
+    const currentValue = element[field];
+    const owner = await resolveCurrentValueOwner(context, element, field);
+    const edit = [{ key: field, value: [adoptedValue], operation: EditOperation.Replace }];
+    await updateAttribute(context, user, element.internal_id, element.entity_type, edit, { locks: lockIds });
+    const conflictsAdd = [];
+    if (owner && currentValue !== null && currentValue !== undefined && normalizeConflictValue(attribute, currentValue) !== normalizeConflictValue(attribute, adoptedValue)) {
+      conflictsAdd.push({ field, value: buildConflictValue(attribute, currentValue, owner.source, owner.confidence, now()) });
+    }
+    await applyProvenanceUpdate(context, element, { conflictsAdd, conflictsRemove: [{ field, value_hash: valueHash }] }, { refresh: true });
+  } finally {
+    await lock.unlock();
   }
-  const adoptedValue = JSON.parse(proposal.value);
-  const currentValue = element[field];
-  const owner = await resolveCurrentValueOwner(context, element, field);
-  await updateAttribute(context, user, element.internal_id, element.entity_type, [{ key: field, value: [adoptedValue], operation: EditOperation.Replace }]);
-  const conflictsAdd = [];
-  if (owner && currentValue !== null && currentValue !== undefined && normalizeConflictValue(attribute, currentValue) !== normalizeConflictValue(attribute, adoptedValue)) {
-    conflictsAdd.push({ field, value: buildConflictValue(attribute, currentValue, owner.source, owner.confidence, now()) });
-  }
-  await applyProvenanceUpdate(context, element, { conflictsAdd, conflictsRemove: [{ field, value_hash: valueHash }] }, { refresh: true });
   await publishProvenanceAction(user, element, `adopts the value proposed by ${describeProposalSources(proposals)} for \`${field}\``, { field, value_hash: valueHash });
   await addProvenanceConflictAdoptionCount();
   return loadTrackedElement(context, user, element.internal_id);
