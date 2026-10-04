@@ -95,6 +95,9 @@ const ThreatPulseBenchmarkContent = ({ period }: { period: PulsePeriodValue }) =
     );
   }
   const header = (label: string) => <th><Text variant="content-compact" style={secondary}>{label}</Text></th>;
+  const median = (value: number | null | undefined) => (value !== null && value !== undefined
+    ? <Text variant="content-compact">{n(value)}</Text>
+    : <Text variant="content-compact" style={secondary}>{t_i18n('Not published')}</Text>);
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }} data-testid="threat-pulse-benchmark">
       <Text variant="content-compact" style={secondary}>
@@ -122,9 +125,9 @@ const ThreatPulseBenchmarkContent = ({ period }: { period: PulsePeriodValue }) =
               <td><Text variant="content-compact">{translateEntityType(metric.object_type)}</Text></td>
               <td><Text variant="content-compact">{t_i18n(PULSE_EVENT_KIND_LABELS[metric.event_kind] ?? metric.event_kind)}</Text></td>
               <td><Text variant="content-compact">{n(metric.platform_count)}</Text></td>
-              <td><Text variant="content-compact">{metric.sector_median !== null && metric.sector_median !== undefined ? n(metric.sector_median) : '-'}</Text></td>
-              <td><Text variant="content-compact">{metric.network_median !== null && metric.network_median !== undefined ? n(metric.network_median) : '-'}</Text></td>
-              <td><Chip label={formatPulseRatio(metric.ratio)} severity={pulseRatioSeverity(metric.ratio)} /></td>
+              <td>{median(metric.sector_median)}</td>
+              <td>{median(metric.network_median)}</td>
+              <td>{metric.ratio !== null && metric.ratio !== undefined && <Chip label={formatPulseRatio(metric.ratio)} severity={pulseRatioSeverity(metric.ratio)} />}</td>
             </tr>
           ))}
         </tbody>
@@ -142,7 +145,9 @@ const ThreatPulseBenchmarkContent = ({ period }: { period: PulsePeriodValue }) =
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     {link ? <Link to={`${link}/${entry.entity.id}`} style={{ color: 'inherit' }}>{name}</Link> : name}
                   </Box>
-                  <Text variant="content-compact" style={secondary}>{`${n(entry.platform_count)} / ${n(entry.sector_median)}`}</Text>
+                  <Text variant="content-compact" style={secondary}>
+                    {t_i18n('{count} on this platform, sector median {median}', { values: { count: n(entry.platform_count), median: n(entry.sector_median) } })}
+                  </Text>
                   <Chip label={formatPulseRatio(entry.ratio)} severity={pulseRatioSeverity(entry.ratio)} />
                 </Box>
               );

@@ -21,9 +21,12 @@ const markHubReachable = (value: unknown): void => {
 /**
  * The e2e platform is not registered on XTM Hub, so the Threat Pulse answers of the platform are served by the browser:
  * each listed operation gets the given data, every other request reaches the platform. With `hubReachable`, the
- * platform settings report XTM Hub as reachable, so that the "not connected" state can offer the connection.
+ * platform settings report XTM Hub as reachable, so that the "not connected" state can offer the connection. With
+ * `theme`, the user reads the platform in that theme, without changing the theme of the platform. Returns whether the
+ * theme was applied.
  */
-const mockThreatPulse = async (page: Page, answers: Record<string, unknown>, { hubReachable = false } = {}) => {
+const mockThreatPulse = async (page: Page, answers: Record<string, unknown>, { hubReachable = false, theme }: { hubReachable?: boolean; theme?: string } = {}) => {
+  let themeApplied = false;
   await page.unrouteAll({ behavior: 'ignoreErrors' });
   await page.route('**/graphql', async (route) => {
     const body = route.request().postData() ?? '';
@@ -32,20 +35,29 @@ const mockThreatPulse = async (page: Page, answers: Record<string, unknown>, { h
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ data: answers[operation] }) });
       return;
     }
-    if (!hubReachable) {
+    const rethemed = !!theme && /query RootPrivateQuery\b/.test(body);
+    if (!hubReachable && !rethemed) {
       await route.fallback();
       return;
     }
     const response = await route.fetch();
     const text = await response.text();
-    if (!text.includes('"xtm_hub_backend_is_reachable"')) {
+    if (!rethemed && !text.includes('"xtm_hub_backend_is_reachable"')) {
       await route.fulfill({ response, body: text });
       return;
     }
     const json = JSON.parse(text);
-    markHubReachable(json);
+    if (hubReachable) {
+      markHubReachable(json);
+    }
+    const themeId = rethemed ? json.data?.themes?.edges?.find(({ node }: { node: { id: string; name: string } }) => node.name === theme)?.node.id : null;
+    if (themeId && json.data.me) {
+      json.data.me.theme = themeId;
+      themeApplied = true;
+    }
     await route.fulfill({ response, body: JSON.stringify(json) });
   });
+  return () => themeApplied;
 };
 
 const PREVIEW_INFORMATION = {
@@ -203,14 +215,31 @@ test('Keep the Sector benchmark template and the trending widget discoverable in
   await expect(benchmark.getByTestId('threat-pulse-locked-row')).toHaveCount(3);
 });
 
-// The images of docs/docs/usage/threat-pulse.md: every surface in each of its states, on the answers below.
+// The images of docs/docs/usage/threat-pulse.md: every surface in each of its states, on the answers below, cropped to
+// the surface with a 16 px margin. A surface taller than the window is captured whole, without the margin.
+const SHOT_MARGIN = 16;
 const shoot = async (target: Locator, name: string, testInfo: TestInfo) => {
   await expect(target).toBeVisible();
   await target.scrollIntoViewIfNeeded();
-  await target.screenshot({ path: testInfo.outputPath(`${name}.png`), animations: 'disabled' });
+  const path = testInfo.outputPath(`${name}.png`);
+  const box = await target.boundingBox();
+  const viewport = target.page().viewportSize();
+  if (!box || !viewport || box.height + 2 * SHOT_MARGIN > viewport.height) {
+    await target.screenshot({ path, animations: 'disabled' });
+    return;
+  }
+  const x = Math.max(0, box.x - SHOT_MARGIN);
+  const y = Math.max(0, box.y - SHOT_MARGIN);
+  const width = Math.min(viewport.width, box.x + box.width + SHOT_MARGIN) - x;
+  const height = Math.min(viewport.height, box.y + box.height + SHOT_MARGIN) - y;
+  await target.page().screenshot({ path, clip: { x, y, width, height }, animations: 'disabled' });
 };
 
-const widgetOf = (content: Locator) => content.locator('xpath=ancestor::div[contains(concat(" ", normalize-space(@class), " "), " react-grid-item ")][1]');
+// The dashboard widget holding the content, with its title and its frame.
+const widgetOf = async (content: Locator) => {
+  const widget = content.locator('xpath=ancestor::div[contains(concat(" ", normalize-space(@class), " "), " react-grid-item ")][1]');
+  return (await widget.count()) > 0 ? widget : content;
+};
 
 const docsEntity = (id: string, name: string, entityType = 'Malware') => ({ __typename: entityType, id, entity_type: entityType, representative: { main: name } });
 
@@ -283,84 +312,118 @@ const docsTrending = (preview: boolean) => ({
   },
 });
 
-const docsBenchmark = {
-  pulseBenchmark: { readable: false, unavailable_reason: 'contribution_required', period: 'last_30_days', sector_bucket: 'finance', region_bucket: 'europe', sector_platforms_bucket: null, metrics: [], entries: [] },
-};
+const docsBenchmark = (preview: boolean) => ({
+  pulseBenchmark: preview
+    ? { readable: false, unavailable_reason: 'contribution_required', period: 'last_30_days', sector_bucket: 'finance', region_bucket: 'europe', sector_platforms_bucket: null, metrics: [], entries: [] }
+    : {
+        readable: true,
+        unavailable_reason: null,
+        period: 'last_30_days',
+        sector_bucket: 'finance',
+        region_bucket: 'europe',
+        sector_platforms_bucket: '50-99',
+        metrics: [
+          { object_type: 'Indicator', event_kind: 'sighted', platform_count: 1240, sector_median: 610, network_median: 380, ratio: 2.0 },
+          { object_type: 'Indicator', event_kind: 'created', platform_count: 8400, sector_median: 9100, network_median: 5200, ratio: 0.9 },
+          { object_type: 'Malware', event_kind: 'referenced', platform_count: 320, sector_median: 140, network_median: 95, ratio: 2.3 },
+          { object_type: 'Vulnerability', event_kind: 'detected', platform_count: 48, sector_median: 150, network_median: 120, ratio: 0.3 },
+          { object_type: 'Intrusion-Set', event_kind: 'referenced', platform_count: 12, sector_median: null, network_median: 9, ratio: null },
+        ],
+        entries: [
+          { object_type: 'Malware', platform_count: 96, sector_median: 12, ratio: 8, entity: docsEntity('threat-pulse-docs-1', 'LockBit 3.0') },
+          { object_type: 'Vulnerability', platform_count: 40, sector_median: 8, ratio: 5, entity: docsEntity('threat-pulse-docs-3', 'CVE-2026-1288', 'Vulnerability') },
+        ],
+      },
+});
 
-test('Capture the Threat Pulse surfaces of the documentation in each of their states', { tag: ['@ce'] }, async ({ page }, testInfo) => {
+test.describe('Threat Pulse documentation images', () => {
+  test.use({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 });
+
+  test('Capture the Threat Pulse surfaces of the documentation in each of their states', { tag: ['@ce'] }, async ({ page }, testInfo) => {
   // Overview card: preview, then contribution
-  await mockThreatPulse(page, { ThreatPulseCardQuery: pulseEntity('preview', PREVIEW_INFORMATION, 'contribution_required') });
-  await openNewIntrusionSet(page);
-  const overviewUrl = page.url();
-  await expect(page.getByTestId('threat-pulse-preview')).toBeVisible();
-  await shoot(page.getByTestId('threat-pulse-card-container'), 'threat-pulse-card-preview', testInfo);
-  await mockThreatPulse(page, { ThreatPulseCardQuery: pulseEntity('full', FULL_INFORMATION, null) });
-  await page.goto(overviewUrl);
-  await expect(page.getByTestId('threat-pulse-card')).toBeVisible();
-  await shoot(page.getByTestId('threat-pulse-card-container'), 'threat-pulse-card-full', testInfo);
+    await mockThreatPulse(page, { ThreatPulseCardQuery: pulseEntity('preview', PREVIEW_INFORMATION, 'contribution_required') });
+    await openNewIntrusionSet(page);
+    const overviewUrl = page.url();
+    await expect(page.getByTestId('threat-pulse-preview')).toBeVisible();
+    await shoot(page.getByTestId('threat-pulse-card-container'), 'threat-pulse-card-preview', testInfo);
+    await mockThreatPulse(page, { ThreatPulseCardQuery: pulseEntity('full', FULL_INFORMATION, null) });
+    await page.goto(overviewUrl);
+    await expect(page.getByTestId('threat-pulse-card')).toBeVisible();
+    await shoot(page.getByTestId('threat-pulse-card-container'), 'threat-pulse-card-full', testInfo);
 
-  // Trending in your sector: preview with the folded locked ranks, then full
-  for (const mode of ['preview', 'full'] as const) {
-    await mockThreatPulse(page, {
+    // The template card, then the trending and benchmark widgets of the dashboard it creates: preview, then full
+    const dashboardAnswers = (mode: 'preview' | 'full') => ({
       ThreatPulseDashboardTemplateButtonQuery: { pulseStatus: { id: 'pulse-status', access: mode } },
       ThreatPulseTrendingQuery: docsTrending(mode === 'preview'),
-      ThreatPulseBenchmarkQuery: docsBenchmark,
+      ThreatPulseBenchmarkQuery: docsBenchmark(mode === 'preview'),
     });
-    await page.goto('/dashboard/workspaces/dashboards');
-    await page.getByTestId('threat-pulse-dashboard-template').click();
-    if (mode === 'preview') {
-      await shoot(page.getByRole('dialog'), 'threat-pulse-template-card', testInfo);
+    const trendingOf = (mode: 'preview' | 'full') => page.getByTestId(mode === 'preview' ? 'threat-pulse-trending-preview' : 'threat-pulse-trending-list');
+    const benchmarkOf = (mode: 'preview' | 'full') => page.getByTestId(mode === 'preview' ? 'threat-pulse-benchmark-locked' : 'threat-pulse-benchmark');
+    let fullDashboardUrl = '';
+    for (const mode of ['preview', 'full'] as const) {
+      await mockThreatPulse(page, dashboardAnswers(mode));
+      await page.goto('/dashboard/workspaces/dashboards');
+      await page.getByTestId('threat-pulse-dashboard-template').click();
+      if (mode === 'preview') {
+        await shoot(page.getByRole('dialog'), 'threat-pulse-template-card', testInfo);
+      }
+      await page.getByTestId('threat-pulse-template-create').click();
+      await expect(page).toHaveURL(/\/dashboard\/workspaces\/dashboards\/[0-9a-f-]+$/);
+      await shoot(await widgetOf(trendingOf(mode)), `threat-pulse-trending-${mode}`, testInfo);
+      await shoot(await widgetOf(benchmarkOf(mode)), `threat-pulse-benchmark-${mode}`, testInfo);
+      fullDashboardUrl = page.url();
     }
-    await page.getByTestId('threat-pulse-template-create').click();
-    await expect(page).toHaveURL(/\/dashboard\/workspaces\/dashboards\/[0-9a-f-]+$/);
-    const trending = page.getByTestId(mode === 'preview' ? 'threat-pulse-trending-preview' : 'threat-pulse-trending-list');
-    await expect(trending).toBeVisible();
-    const widget = widgetOf(trending);
-    await shoot((await widget.count()) > 0 ? widget : trending, `threat-pulse-trending-${mode}`, testInfo);
-  }
 
-  // The banner of the first day of the preview
-  await mockThreatPulse(page, {
-    ThreatPulsePreviewBannerQuery: { pulseStatus: { access: 'preview', preview_entities: 42, preview_since: new Date(Date.now() - 60 * 60 * 1000).toISOString() } },
-  });
-  await page.goto('/dashboard');
-  const banner = page.getByText('Threat Pulse preview: 42 of your objects are seen across the community.');
-  await expect(banner).toBeVisible();
-  await shoot(banner.locator('xpath=ancestor::div[1]'), 'threat-pulse-banner-preview', testInfo);
+    // The widgets draw their own colours: the same dashboard in the light theme
+    const lightThemeApplied = await mockThreatPulse(page, dashboardAnswers('full'), { theme: 'Filigran Light' });
+    await page.goto(fullDashboardUrl);
+    await expect.poll(lightThemeApplied).toBe(true);
+    await shoot(await widgetOf(trendingOf('full')), 'threat-pulse-trending-full-light', testInfo);
+    await shoot(await widgetOf(benchmarkOf('full')), 'threat-pulse-benchmark-full-light', testInfo);
 
-  // Settings > Filigran Experience in each mode, and the consent
-  const settingsStates: Array<[string, Record<string, unknown>]> = [
-    ['preview', {}],
-    ['contribute', {
-      mode: 'contribute_and_read',
-      access: 'full',
-      enabled: true,
-      readable: true,
-      consent_accepted_version: '2026-10-1',
-      consent_date: '2026-10-01T09:00:00.000Z',
-      consent_user_name: 'admin',
-      sector_bucket: 'finance',
-      region_bucket: 'europe',
-      contribution: {
-        last_push_at: '2026-10-03T08:00:00.000Z',
-        last_refresh_at: '2026-10-03T02:00:00.000Z',
-        last_error: null,
-        total_records: 12840,
-        days: [],
-        by_type: [{ entity_type: 'Indicator', records: 11200 }, { entity_type: 'Malware', records: 940 }, { entity_type: 'Vulnerability', records: 700 }],
-      },
-      network: { reachable: true, k_threshold: 5, retention_months: 13, contributors_bucket: '250+', read_access: true, last_contribution_day: '2026-10-03', contribution_status: 'active', read_access_until: '2026-10-17', contribution_grace_days: 14 },
-    }],
-    ['off', { mode: 'off', access: 'off' }],
-  ];
-  for (const [state, overrides] of settingsStates) {
-    await mockThreatPulse(page, { ThreatPulseSettingsQuery: docsSettings(overrides) });
+    // The banner of the first day of the preview
+    await mockThreatPulse(page, {
+      ThreatPulsePreviewBannerQuery: { pulseStatus: { access: 'preview', preview_entities: 42, preview_since: new Date(Date.now() - 60 * 60 * 1000).toISOString() } },
+    });
+    await page.goto('/dashboard');
+    const banner = page.getByText('Threat Pulse preview: 42 of your objects are seen across the community.');
+    await expect(banner).toBeVisible();
+    await shoot(banner.locator('xpath=ancestor::div[1]'), 'threat-pulse-banner-preview', testInfo);
+
+    // Settings > Filigran Experience in each mode, and the consent
+    const settingsStates: Array<[string, Record<string, unknown>]> = [
+      ['preview', {}],
+      ['contribute', {
+        mode: 'contribute_and_read',
+        access: 'full',
+        enabled: true,
+        readable: true,
+        consent_accepted_version: '2026-10-1',
+        consent_date: '2026-10-01T09:00:00.000Z',
+        consent_user_name: 'admin',
+        sector_bucket: 'finance',
+        region_bucket: 'europe',
+        contribution: {
+          last_push_at: '2026-10-03T08:00:00.000Z',
+          last_refresh_at: '2026-10-03T02:00:00.000Z',
+          last_error: null,
+          total_records: 12840,
+          days: [],
+          by_type: [{ entity_type: 'Indicator', records: 11200 }, { entity_type: 'Malware', records: 940 }, { entity_type: 'Vulnerability', records: 700 }],
+        },
+        network: { reachable: true, k_threshold: 5, retention_months: 13, contributors_bucket: '250+', read_access: true, last_contribution_day: '2026-10-03', contribution_status: 'active', read_access_until: '2026-10-17', contribution_grace_days: 14 },
+      }],
+      ['off', { mode: 'off', access: 'off' }],
+    ];
+    for (const [state, overrides] of settingsStates) {
+      await mockThreatPulse(page, { ThreatPulseSettingsQuery: docsSettings(overrides) });
+      await page.goto('/dashboard/settings/experience');
+      await shoot(page.getByTestId('experience-threat-pulse-card'), `threat-pulse-settings-${state}`, testInfo);
+    }
+    await mockThreatPulse(page, { ThreatPulseSettingsQuery: docsSettings({}) });
     await page.goto('/dashboard/settings/experience');
-    await shoot(page.getByTestId('experience-threat-pulse-card'), `threat-pulse-settings-${state}`, testInfo);
-  }
-  await mockThreatPulse(page, { ThreatPulseSettingsQuery: docsSettings({}) });
-  await page.goto('/dashboard/settings/experience');
-  await page.getByTestId('threat-pulse-enable-button').click();
-  await expect(page.getByTestId('threat-pulse-consent-dialog')).toBeVisible();
-  await shoot(page.getByRole('dialog'), 'threat-pulse-consent-dialog', testInfo);
+    await page.getByTestId('threat-pulse-enable-button').click();
+    await expect(page.getByTestId('threat-pulse-consent-dialog')).toBeVisible();
+    await shoot(page.getByRole('dialog'), 'threat-pulse-consent-dialog', testInfo);
+  });
 });
