@@ -444,7 +444,7 @@ const LandscapeChanges = () => {
           </Box>
         </Card>
       </Box>
-      {diffId && loadingDiff && <Loader variant={LoaderVariant.inElement} />}
+      {diffId && loadingDiff && !readFailed && <Loader variant={LoaderVariant.inElement} />}
       {diff && isRunning && (
         <Box sx={{ marginBottom: 3 }}>
           <Card title={t_i18n('Computing the landscape changes')}>

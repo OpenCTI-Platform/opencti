@@ -248,10 +248,10 @@ const TriggerChangeDigestCreation: FunctionComponent<TriggerChangeDigestCreation
               fullWidth={true}
               containerstyle={fieldSpacingContainerStyle}
             >
-              <SelectItem value="hour">{t_i18n('hour')}</SelectItem>
-              <SelectItem value="day">{t_i18n('day')}</SelectItem>
-              <SelectItem value="week">{t_i18n('week')}</SelectItem>
-              <SelectItem value="month">{t_i18n('month')}</SelectItem>
+              <SelectItem value="hour">{t_i18n('Every hour')}</SelectItem>
+              <SelectItem value="day">{t_i18n('Every day')}</SelectItem>
+              <SelectItem value="week">{t_i18n('Every week')}</SelectItem>
+              <SelectItem value="month">{t_i18n('Every month')}</SelectItem>
             </Field>
             {values.period === 'week' && (
               <Field
@@ -301,7 +301,11 @@ const TriggerChangeDigestCreation: FunctionComponent<TriggerChangeDigestCreation
                 }}
               />
             )}
-            <NotifierField name="notifiers" onChange={setFieldValue} />
+            <NotifierField
+              name="notifiers"
+              onChange={setFieldValue}
+              helpertext={t_i18n('Where the digest is delivered, for example in the platform or by email. Choose at least one.')}
+            />
             <FormButtonContainer>
               <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>{t_i18n('Cancel')}</Button>
               <Button onClick={submitForm} disabled={isSubmitting}>{t_i18n('Create')}</Button>
