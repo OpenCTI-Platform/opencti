@@ -38,7 +38,10 @@ describe('dissemination assurance statuses', () => {
     VALIDATION_STATUSES.forEach((status) => expect(VALIDATION_STATUS_SEVERITIES[status]).toBeDefined());
     expect(Object.keys(REQUEST_STATUS_SEVERITIES)).toHaveLength(9);
     expect(DEPLOYMENT_STATUS_SEVERITIES.failed).toEqual('critical');
-    expect(VALIDATION_STATUS_SEVERITIES.missed).toEqual('high');
+    // Tones by meaning: a missed test is a failure, a rejected or timed out request needs attention
+    expect(VALIDATION_STATUS_SEVERITIES.missed).toEqual('critical');
+    expect(REQUEST_STATUS_SEVERITIES.rejected).toEqual('medium');
+    expect(REQUEST_STATUS_SEVERITIES.expired).toEqual('medium');
   });
 
   it('should classify live, proven and open states', () => {

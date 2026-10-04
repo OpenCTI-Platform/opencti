@@ -37,7 +37,7 @@ export const VALIDATION_STATUS_SEVERITIES: Record<ValidationStatus, ChipSeverity
   requested: 'info',
   detected: 'low',
   prevented: 'low',
-  missed: 'high',
+  missed: 'critical',
   error: 'critical',
 };
 
@@ -49,8 +49,8 @@ export const REQUEST_STATUS_SEVERITIES: Record<IocValidationRequestStatus, ChipS
   completed: 'low',
   partial: 'medium',
   failed: 'critical',
-  rejected: 'high',
-  expired: 'neutral',
+  rejected: 'medium',
+  expired: 'medium',
 };
 
 export interface TestKindDefinition {
