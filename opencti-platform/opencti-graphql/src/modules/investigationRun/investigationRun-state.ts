@@ -255,12 +255,19 @@ export const isLowRiskDraft = (draftTypes: string[]): boolean => {
   return draftTypes.length > 0 && draftTypes.every((type) => LOW_RISK_DRAFT_TYPES.includes(type));
 };
 
+/** What a draft changes: its types, and whether they were read from all of it. */
+export interface DraftChanges {
+  types: string[];
+  complete: boolean;
+}
+
 export const canAutoApproveDraft = (
   policy: Pick<BasicStoreEntityInvestigationPolicy, 'auto_approve_low_risk' | 'auto_approve_min_confidence'>,
-  draftTypes: string[],
+  draft: DraftChanges,
   leadingConfidence: number | null,
 ): boolean => {
-  if (!policy.auto_approve_low_risk || !isLowRiskDraft(draftTypes)) return false;
+  // Types read from part of a draft do not tell it is low risk: an analyst decides.
+  if (!policy.auto_approve_low_risk || !draft.complete || !isLowRiskDraft(draft.types)) return false;
   // The policy approves on the leading hypothesis' confidence: without an assessed one, an analyst decides.
   return leadingConfidence !== null && leadingConfidence >= policy.auto_approve_min_confidence;
 };

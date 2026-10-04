@@ -167,12 +167,17 @@ describe('Case Autopilot auto-approval', () => {
     expect(isLowRiskDraft(['Note', 'Observed-Data'])).toBe(true);
     expect(isLowRiskDraft(['Note', 'Indicator'])).toBe(false);
     expect(isLowRiskDraft([])).toBe(false);
-    expect(canAutoApproveDraft(buildPolicy(), ['Note'], 90)).toBe(true);
-    expect(canAutoApproveDraft(buildPolicy(), ['Note'], 50)).toBe(false);
+    const notes = { types: ['Note'], complete: true };
+    expect(canAutoApproveDraft(buildPolicy(), notes, 90)).toBe(true);
+    expect(canAutoApproveDraft(buildPolicy(), notes, 50)).toBe(false);
     // Without an assessed leading hypothesis the threshold is not met: an analyst decides.
-    expect(canAutoApproveDraft(buildPolicy(), ['Note'], null)).toBe(false);
-    expect(canAutoApproveDraft(buildPolicy({ auto_approve_low_risk: false }), ['Note'], 99)).toBe(false);
-    expect(canAutoApproveDraft(buildPolicy(), ['Note', 'stix-core-relationship'], 99)).toBe(false);
+    expect(canAutoApproveDraft(buildPolicy(), notes, null)).toBe(false);
+    expect(canAutoApproveDraft(buildPolicy({ auto_approve_low_risk: false }), notes, 99)).toBe(false);
+    expect(canAutoApproveDraft(buildPolicy(), { types: ['Note', 'stix-core-relationship'], complete: true }, 99)).toBe(false);
+  });
+
+  it('leaves a draft read only in part to an analyst', () => {
+    expect(canAutoApproveDraft(buildPolicy(), { types: ['Note'], complete: false }, 99)).toBe(false);
   });
 });
 
