@@ -17,6 +17,7 @@ import type { FilterGroup } from '../../generated/graphql';
 import { isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
 import { conflictFieldLabel } from './provenance-conflicts';
+import type { StoreProvenanceFields } from './provenance-types';
 import {
   type BasicStoreEntityTrigger,
   DEFAULT_CORROBORATION_THRESHOLD,
@@ -97,8 +98,15 @@ const parseTriggerFilters = (trigger: BasicStoreEntityTrigger): FilterGroup | un
 /**
  * Provenance updates never emit stream events (side channel), so the notification events of the
  * provenance trigger types are produced here and consumed like any live trigger event (notifications, digests).
+ * `current` is the provenance stored by the write: it replaces the provenance of the loaded element, which a
+ * search may still return as it was before the write (no refresh on the write path).
  */
-export const notifyProvenanceChange = async (context: AuthContext, element: { internal_id: string }, change: ProvenanceChange) => {
+export const notifyProvenanceChange = async (
+  context: AuthContext,
+  element: { internal_id: string },
+  change: ProvenanceChange,
+  current: Partial<StoreProvenanceFields> | null = null,
+) => {
   try {
     const triggers = await getEntitiesListFromCache<BasicStoreEntityTrigger>(context, SYSTEM_USER, ENTITY_TYPE_TRIGGER);
     const listening = computeListeningTriggers(triggers, change);
@@ -109,10 +117,11 @@ export const notifyProvenanceChange = async (context: AuthContext, element: { in
     if (liveNotifications.length === 0) {
       return 0;
     }
-    const instance = await storeLoadByIdWithRefs(context, SYSTEM_USER, element.internal_id);
-    if (!instance) {
+    const loaded = await storeLoadByIdWithRefs(context, SYSTEM_USER, element.internal_id);
+    if (!loaded) {
       return 0;
     }
+    const instance = current ? { ...loaded, ...current } as typeof loaded : loaded;
     const stix = convertStoreToStix_2_1(instance);
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     let stored = 0;

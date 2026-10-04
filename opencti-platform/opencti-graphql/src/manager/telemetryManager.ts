@@ -818,12 +818,15 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setDecayRuleCreationCount(decayRuleCreationCountInRedis);
     const knowledgeDecayRuleCreationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_KNOWLEDGE_DECAY_RULE_CREATION);
     manager.setKnowledgeDecayRuleCreationCount(knowledgeDecayRuleCreationCountInRedis);
-    const knowledgeStaleFlaggedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_KNOWLEDGE_STALE_FLAGGED);
-    manager.setKnowledgeStaleFlaggedCount(knowledgeStaleFlaggedCountInRedis);
-    const provenanceConflictDetectedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_PROVENANCE_CONFLICT_DETECTED);
-    manager.setProvenanceConflictDetectedCount(provenanceConflictDetectedCountInRedis);
-    const provenanceConflictAdoptionCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_PROVENANCE_CONFLICT_ADOPTION);
-    manager.setProvenanceConflictAdoptionCount(provenanceConflictAdoptionCountInRedis);
+    // Provenance disabled: no read at all, its gauges stay at zero
+    if (PROVENANCE_ENABLED) {
+      const knowledgeStaleFlaggedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_KNOWLEDGE_STALE_FLAGGED);
+      manager.setKnowledgeStaleFlaggedCount(knowledgeStaleFlaggedCountInRedis);
+      const provenanceConflictDetectedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_PROVENANCE_CONFLICT_DETECTED);
+      manager.setProvenanceConflictDetectedCount(provenanceConflictDetectedCountInRedis);
+      const provenanceConflictAdoptionCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_PROVENANCE_CONFLICT_ADOPTION);
+      manager.setProvenanceConflictAdoptionCount(provenanceConflictAdoptionCountInRedis);
+    }
     const customViewCreatedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED);
     manager.setCustomViewCreatedCount(customViewCreatedCountInRedis);
     const customViewEnabledCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED);

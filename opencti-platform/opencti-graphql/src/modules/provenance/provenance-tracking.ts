@@ -2,6 +2,7 @@ import type { AuthContext } from '../../types/user';
 import type { BasicStoreEntityEntitySetting } from '../entitySetting/entitySetting-types';
 import { getAvailableSettings, getEntitySettingFromCache } from '../entitySetting/entitySetting-utils';
 import { schemaTypesDefinition } from '../../schema/schema-types';
+import { getParentTypes } from '../../schema/schemaUtils';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
@@ -57,4 +58,14 @@ export const listProvenanceTrackedTypes = async (context: AuthContext) => {
     }
   }
   return tracked;
+};
+
+/**
+ * The given types whose provenance is tracked, an abstract type standing for its tracked concrete types.
+ */
+export const restrictToTrackedTypes = (types: string[], trackedTypes: string[]) => {
+  const tracked = new Set(trackedTypes);
+  return [...new Set(types.flatMap((type) => (tracked.has(type)
+    ? [type]
+    : trackedTypes.filter((candidate) => (getParentTypes(candidate) as string[]).includes(type)))))];
 };

@@ -22,6 +22,7 @@ import {
 } from '../decayRule/decayRule-types';
 import { ATTRIBUTE_FRESHNESS_RULE_ID, ATTRIBUTE_FRESHNESS_STALE, ATTRIBUTE_FRESHNESS_STALE_AT, ATTRIBUTE_LAST_ASSERTED_AT } from './provenance-types';
 import { applyProvenanceUpdate, isNoopUpdate } from './provenance-write';
+import { listProvenanceTrackedTypes, restrictToTrackedTypes } from './provenance-tracking';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const FRESHNESS_SCAN_PAGE_SIZE = 500;
@@ -229,7 +230,8 @@ const applyKnowledgeDecayRule = async (
   return applied;
 };
 
-const prepareRules = (rules: BasicStoreEntityDecayRule[]): PreparedRule[] => {
+// A rule only applies to the types whose provenance is tracked: an untracked type keeps no freshness
+const prepareRules = (rules: BasicStoreEntityDecayRule[], trackedTypes: string[]): PreparedRule[] => {
   const prepared: PreparedRule[] = [];
   for (let index = 0; index < rules.length; index += 1) {
     const rule = rules[index];
@@ -238,7 +240,8 @@ const prepareRules = (rules: BasicStoreEntityDecayRule[]): PreparedRule[] => {
       continue;
     }
     try {
-      prepared.push({ rule, types: resolveKnowledgeDecayRuleTypes(rule), filters: parseKnowledgeDecayFilters(rule.decay_filters) });
+      const types = restrictToTrackedTypes(resolveKnowledgeDecayRuleTypes(rule), trackedTypes);
+      prepared.push({ rule, types, filters: parseKnowledgeDecayFilters(rule.decay_filters) });
     } catch (err) {
       logApp.error('[PROVENANCE] Knowledge decay rule skipped, invalid configuration', { cause: err, rule_id: rule.id });
     }
@@ -255,7 +258,7 @@ const hasLowerPriority = (rule: BasicStoreEntityDecayRule, reference: BasicStore
  * lower priority rules of the same scope: their flags are released so that the next run applies its policy.
  */
 export const releaseFlagsTakenOverByRule = async (context: AuthContext, user: AuthUser, rule: BasicStoreEntityDecayRule) => {
-  const [current] = rule.active ? prepareRules([rule]) : [];
+  const [current] = rule.active ? prepareRules([rule], await listProvenanceTrackedTypes(context)) : [];
   if (!current || current.types.length === 0) {
     return 0;
   }
@@ -295,7 +298,7 @@ export const releaseFlagsTakenOverByRule = async (context: AuthContext, user: Au
  */
 export const applyKnowledgeDecayRules = async (context: AuthContext, user: AuthUser, opts: { batchSize: number }): Promise<KnowledgeFreshnessRunResult> => {
   const result: KnowledgeFreshnessRunResult = { flagged: 0, lowered: 0, revoked: 0, errors: 0 };
-  const rules = prepareRules(await getActiveKnowledgeDecayRules(context));
+  const rules = prepareRules(await getActiveKnowledgeDecayRules(context), await listProvenanceTrackedTypes(context));
   let budget = opts.batchSize;
   for (let index = 0; index < rules.length && budget > 0; index += 1) {
     budget -= await applyKnowledgeDecayRule(context, user, rules[index], rules.slice(0, index), budget, result);

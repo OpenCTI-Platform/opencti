@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/index';
 import { computeListeningTriggers, describeProvenanceChange } from '../../../../src/modules/provenance/provenance-notification';
-import { computeProvenanceChange } from '../../../../src/modules/provenance/provenance-write';
+import { computeProvenanceChange, newConflictAdditions } from '../../../../src/modules/provenance/provenance-write';
 import { resolveCorroborationThreshold } from '../../../../src/modules/notification/notification-domain';
 import type { BasicStoreEntityTrigger } from '../../../../src/modules/notification/notification-types';
 import type { StoreAssertion } from '../../../../src/modules/provenance/provenance-types';
@@ -69,11 +69,13 @@ describe('Provenance triggers', () => {
     };
     expect(computeProvenanceChange(element, ['a'])).toEqual({ corroboration: undefined, conflictFields: [], newConflictValues: 0 });
     expect(computeProvenanceChange(element, ['b']).corroboration).toEqual({ from: 1, to: 2 });
-    const conflicts = computeProvenanceChange(element, ['a'], [
+    const newConflicts = newConflictAdditions(element, [
       { field: 'description', value: conflictValue('known') },
       { field: 'description', value: conflictValue('new') },
       { field: 'name', value: conflictValue('other') },
     ]);
+    expect(newConflicts.map((addition) => addition.value.value_hash)).toEqual([conflictValue('new').value_hash, conflictValue('other').value_hash]);
+    const conflicts = computeProvenanceChange(element, ['a'], newConflicts);
     expect(conflicts.conflictFields).toEqual(['description', 'name']);
     expect(conflicts.newConflictValues).toEqual(2);
   });

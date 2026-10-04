@@ -8,7 +8,7 @@ Provenance is available in the Community Edition. It is deterministic: no AI is 
 
 Provenance is recorded only on the entity types where it is enabled, so that knowledge re-sent over and over by sources (attack patterns, locations, sectors...) does not weigh on ingestion. By default, it is enabled on indicators, intrusion sets, threat actors (groups and individuals) and malware.
 
-To enable or disable it on a type, open "Settings > Customization > Entity types", select the type and use the "Track sources and corroboration" switch of the "Provenance" card. Relationships, sightings and observables are configured on their "Relationship", "Sighting" and observable types. Disabling provenance on a type stops recording it immediately; the provenance already recorded is kept but no longer displayed.
+To enable or disable it on a type, open "Settings > Customization > Entity types", select the type and use the "Track sources and corroboration" switch of the "Provenance" card. Relationships, sightings and observables are configured on their "Relationship", "Sighting" and observable types. Disabling provenance on a type stops recording it immediately; the provenance already recorded is kept but no longer displayed: neither on the elements of that type nor in the Conflicts and Stale knowledge tabs of the Curation hub, and the knowledge decay rules no longer apply to them.
 
 The default set of tracked types can be changed with the `provenance:default_tracked_types` parameter (see [Configuration](#configuration)): it applies to the types whose setting was never changed in the interface.
 
@@ -27,7 +27,7 @@ An assertion links a piece of knowledge to one source. A source can be:
 
 For each source, OpenCTI keeps the first and last assertion dates, the number of times the source asserted the knowledge and the confidence it provided. When a source sends the same knowledge again, only its assertion is updated: no new history entry is written, and the modification date of the knowledge does not change.
 
-To keep ingestion fast, a source repeating an assertion within the re-assertion window (24 hours by default) is not written again, unless it brings a new conflicting value or a new procedure, or the knowledge is flagged as stale. The last assertion date of a source is therefore refreshed at most once per window, and its number of assertions counts these refreshes. A new source is always recorded immediately, so corroboration is never delayed.
+To keep ingestion fast, a source repeating an assertion within the re-assertion window (24 hours by default) is not written again, unless it brings a new conflicting value or a new procedure, resolves a stored conflict (the value it sends is now the current value of the field, so it is no longer listed as an alternative), or the knowledge is flagged as stale. The last assertion date of a source is therefore refreshed at most once per window, and its number of assertions counts these refreshes. A new source is always recorded immediately, so corroboration is never delayed.
 
 The details of up to 200 sources are kept per element: the earliest source and the most recently active ones. Every source that ever asserted the element is still counted in its corroboration and can be used in the "Asserted by" filters.
 
