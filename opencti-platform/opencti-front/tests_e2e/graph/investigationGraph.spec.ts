@@ -35,12 +35,12 @@ test.describe('Investigation graph', { tag: ['@ce'] }, () => {
     await graph.waitForGraph(3);
     const initialCount = (await graph.nodeIds()).length;
 
-    await expect(graph.getToolbarButton('Expand')).toBeDisabled();
+    await expect(graph.getToolbarButton('Expand the selected entities')).toBeDisabled();
     await graph.arrangeInMiddle([fixture.malware.id]);
     await graph.waitForGraph(3);
     await graph.clickNode(fixture.malware.id);
     await expect(graph.getSelectionSummary(1)).toBeVisible();
-    await graph.getToolbarButton('Expand').click();
+    await graph.getToolbarButton('Expand the selected entities').click();
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
     // Nothing is ticked when the dialog opens, and expanding without a type does nothing.

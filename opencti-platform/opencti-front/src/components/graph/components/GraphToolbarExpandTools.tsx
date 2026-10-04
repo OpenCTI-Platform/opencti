@@ -672,7 +672,7 @@ const GraphToolbarExpandTools = ({
         Icon={<OpenWithOutlined />}
         color="primary"
         onClick={() => setIsExpandOpen(true)}
-        title={t_i18n('Expand')}
+        title={t_i18n('Expand the selected entities')}
         disabledReason={selectedNodes.length === 0 ? t_i18n('Select entities first') : undefined}
       />
 
