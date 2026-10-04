@@ -1271,24 +1271,40 @@ export const recordPulseTelemetry = async (context: AuthContext, event: PulseTel
 };
 // endregion
 
-// The platform left XTM Hub: the community data written for it and the state of its contribution go with the
-// registration, so nothing stale passes for current and a later registration starts from the preview.
-export const resetPulseOnUnregistration = async () => {
-  await redisBumpPulsePolicyGeneration();
-  await redisBumpPulseConfigGeneration();
-  await redisDiscardPulseOutbox();
-  await redisDiscardPulseActivity(lastUtcDays(ACTIVITY_DAYS));
-  await redisSetPulseState({
-    contribution_accepted: undefined,
-    contribution_lapsed: undefined,
-    last_refresh_at: undefined,
-    refresh_offset: undefined,
-    preview_refresh_at: undefined,
-    preview_offset: undefined,
-    preview_matched: undefined,
-    preview_since: undefined,
+// The platform leaves XTM Hub. *unregister* writes the settings: it runs under the push lock once the generations
+// moved, so no push and no page of the nightly refresh or of the preview runs halfway through it, and none started
+// before it sends or writes afterwards. A contributing platform goes back to the preview in the same write: contributing
+// again, after a new registration, takes a renewed consent. The community data written for the platform and the state
+// of its contribution go with the registration, so nothing stale passes for current.
+export const unregisterFromPulse = async (
+  context: AuthContext,
+  unregister: (pulseUpdates: Array<{ key: string; value: unknown[] }>) => Promise<void>,
+) => {
+  await withPulsePushLock(async () => {
+    await redisBumpPulsePolicyGeneration();
+    await redisBumpPulseConfigGeneration();
+    const { values } = await loadPulseContext(context, { fresh: true });
+    await unregister(isPulseContributing(values) ? [{ key: PULSE_SETTINGS_MODE, value: [PulseMode.Preview] }] : []);
+    try {
+      await redisDiscardPulseOutbox();
+      await redisDiscardPulseActivity(lastUtcDays(ACTIVITY_DAYS));
+      await redisSetPulseState({
+        contribution_accepted: undefined,
+        contribution_lapsed: undefined,
+        last_refresh_at: undefined,
+        refresh_offset: undefined,
+        preview_refresh_at: undefined,
+        preview_offset: undefined,
+        preview_matched: undefined,
+        preview_since: undefined,
+      });
+      await clearPulseNetworkInformation();
+    } catch (error) {
+      // The unregistration stands; the generations already stop every cycle started before it, and the next one finds
+      // no registration and sends nothing.
+      logApp.error('[THREAT PULSE] Community data not cleaned after the XTM Hub unregistration', { cause: error });
+    }
   });
-  await clearPulseNetworkInformation();
 };
 
 // region purge

@@ -12,7 +12,7 @@ import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
 import { ENTITY_TYPE_TRIGGER } from '../../../src/modules/notification/notification-types';
 import { MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
-import { recordPulseActivity, resetPulseOnUnregistration, runPulseContribution, runPulsePreview, runPulseRefresh, utcDay } from '../../../src/modules/xtm/pulse/pulse-domain';
+import { recordPulseActivity, runPulseContribution, runPulsePreview, runPulseRefresh, unregisterFromPulse, utcDay } from '../../../src/modules/xtm/pulse/pulse-domain';
 import { redisBumpPulsePolicyGeneration, redisClaimPulseOutbox, redisGetPulseState, redisSetPulseState, redisTakePulseActivity } from '../../../src/modules/xtm/pulse/pulse-cache';
 import { recordPulseSightingIncrease } from '../../../src/modules/xtm/pulse/pulse-sighting-activity';
 import { runPulseTrendingNotifications } from '../../../src/modules/xtm/pulse/pulse-notifications';
@@ -662,13 +662,31 @@ describe('Threat Pulse manager and API', () => {
     expect(result.data?.pulseEntity).toMatchObject({ access: 'off', readable: false, unavailable_reason: 'not_enabled' });
   });
 
-  it('should keep neither community data nor contribution state once the platform leaves XTM Hub', async () => {
+  it('should keep neither community data, contribution state nor consent once the platform leaves XTM Hub', async () => {
+    await queryAsAdminWithSuccess({ query: CONFIGURE, variables: { input: { mode: 'contribute_and_read', consent_version: PULSE_CONSENT_VERSION } } });
     await redisSetPulseState({ contribution_accepted: 'true', preview_matched: '3' });
-    await resetPulseOnUnregistration();
+    // The registration itself stays for the next tests: the unregistration writes the Threat Pulse updates alone.
+    let written: Array<{ key: string; value: unknown[] }> = [];
+    await unregisterFromPulse(testContext, async (pulseUpdates) => {
+      written = pulseUpdates;
+      await updateAttribute(testContext, ADMIN_USER, settingsId, ENTITY_TYPE_SETTINGS, pulseUpdates);
+    });
+    expect(written).toEqual([{ key: 'pulse_mode', value: ['preview'] }]);
+    resetCacheForEntity(ENTITY_TYPE_SETTINGS);
     const state = await redisGetPulseState();
     expect({ accepted: state.contribution_accepted, matched: state.preview_matched }).toEqual({ accepted: undefined, matched: undefined });
     expect(await redisClaimPulseOutbox()).toEqual([]);
     const entity = await storeLoadById<BasicStorePulseEntity>(testContext, ADMIN_USER, sharedIndicatorId, ENTITY_TYPE_INDICATOR);
     expect(entity.pulse_prevalence).toBeUndefined();
+    // Back in the preview: contributing again takes a renewed consent.
+    const status = await queryAsAdminWithSuccess({ query: PULSE_STATUS });
+    expect(status.data?.pulseStatus).toMatchObject({ mode: 'preview', access: 'preview' });
+    const refused = await queryAsAdmin({ query: CONFIGURE, variables: { input: { mode: 'contribute_and_read' } } });
+    expect(refused.errors?.[0]?.message).toContain('consent');
+    // A platform that was not contributing keeps its mode.
+    await unregisterFromPulse(testContext, async (pulseUpdates) => {
+      written = pulseUpdates;
+    });
+    expect(written).toEqual([]);
   });
 });

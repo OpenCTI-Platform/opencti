@@ -16,7 +16,7 @@ An administrator chooses the mode of the platform in "Settings > Filigran Experi
 | **Contribute** (full experience) | Everything: prevalence, range of contributing platforms, network first and last seen, 12-week trend, sector trend, community uniqueness, the full "Trending in your sector" list, the Sector benchmark (Enterprise Edition), the "Trending in my sector" triggers and the Sector Pulse Briefing (Enterprise Edition). | Keyed hashes and activity counts of the objects in scope, every hour (see below). |
 | **Off** | Nothing. | Nothing. |
 
-A platform that is not registered on XTM Hub shows what Threat Pulse would add and a "Connect to XTM Hub" button to its administrators. Unregistering a platform from XTM Hub removes the community data from its objects and the state of its contribution: a later registration starts from the preview. A platform that cannot reach XTM Hub is never asked to connect.
+A platform that is not registered on XTM Hub shows what Threat Pulse would add and a "Connect to XTM Hub" button to its administrators. Unregistering a platform from XTM Hub removes the community data from its objects and the state of its contribution, and a contributing platform goes back to the preview: after a later registration, contributing again takes a renewed consent. A platform that cannot reach XTM Hub is never asked to connect.
 
 ### Preview
 

@@ -15,7 +15,7 @@ import { getEnterpriseEditionInfo } from '../modules/settings/licensing';
 import { deleteNewsFeedItemsByExternalId, upsertNewsFeed } from '../modules/xtm/hub/news-feed/news-feed-domain';
 import { pushAll } from '../utils/arrayUtil';
 import { promiseMap } from '../utils/promiseUtils';
-import { resetPulseOnUnregistration } from '../modules/xtm/pulse/pulse-domain';
+import { unregisterFromPulse } from '../modules/xtm/pulse/pulse-domain';
 
 interface AttributeUpdate {
   key: keyof BasicStoreSettings;
@@ -136,19 +136,15 @@ const resetRegistration = async (context: AuthContext, user: AuthUser, settings:
     },
   ];
 
-  await updateAttribute(
-    context,
-    user,
-    settings.id,
-    ENTITY_TYPE_SETTINGS,
-    attributeUpdates,
-  );
-  try {
-    await resetPulseOnUnregistration();
-  } catch (error) {
-    // The unregistration stands; the next Threat Pulse cycle finds no registration and sends nothing.
-    logApp.error('[THREAT PULSE] Community data not cleaned after the XTM Hub unregistration', { cause: error });
-  }
+  await unregisterFromPulse(context, async (pulseUpdates) => {
+    await updateAttribute(
+      context,
+      user,
+      settings.id,
+      ENTITY_TYPE_SETTINGS,
+      [...attributeUpdates, ...pulseUpdates],
+    );
+  });
 
   const updatedSettings = await getSettings(context);
   await notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, HUB_REGISTRATION_MANAGER_USER);
