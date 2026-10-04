@@ -6,7 +6,7 @@ import { BUS_TOPICS, logApp } from '../../../config/conf';
 import { ForbiddenAccess, FunctionalError, ResourceNotFoundError } from '../../../config/errors';
 import { withHuntLock } from '../hunt-lock';
 import { createEntity, patchAttribute } from '../../../database/middleware';
-import { type EntityOptions, internalLoadById, pageEntitiesConnection, storeLoadById, topEntitiesList } from '../../../database/middleware-loader';
+import { type EntityOptions, fullEntitiesList, internalLoadById, pageEntitiesConnection, storeLoadById, topEntitiesList } from '../../../database/middleware-loader';
 import { elAggregationCount, elHistogramCount, elHistogramSum } from '../../../database/engine';
 import { fillTimeSeries, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
 import { notify } from '../../../database/redis';
@@ -509,35 +509,60 @@ const withHuntRunTransition = async <T>(
   });
 };
 
-/**
- * Consumes the automatic retry planned on a terminated run, under its transition lock, so that the hunt manager and a
- * manual retry never both replace the run. Returns the run as read under the lock and whether a retry was planned.
- */
-export const consumeScheduledRetry = async (context: AuthContext, runId: string) => {
-  return withHuntRunTransition(context, runId, async (run) => {
-    const planned = !!run.next_retry_at;
-    if (planned) {
-      await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { next_retry_at: null });
-    }
-    return { run, planned };
-  });
+const sameInstant = (left?: string | Date | null, right?: string | Date | null) => {
+  return (left ? new Date(left).getTime() : null) === (right ? new Date(right).getTime() : null);
 };
 
 /**
- * Manual retry of a terminated run: the next attempt on the same connector and window. It replaces the automatic retry
- * planned on the run, if any, which is restored when the replacement cannot be created.
+ * The next attempt already created for a terminated run: same hunt, connector and window, attempt + 1, and the same
+ * playbook step when it carries one (a manual retry outside a planned retry carries none).
  */
-export const retryHuntRun = async (context: AuthContext, user: AuthUser, runId: string) => {
-  const reachable = await findHuntRunById(context, user, runId);
-  if (!reachable) {
-    throw ResourceNotFoundError('Hunt run cannot be found', { runId });
-  }
-  if (!HUNT_RUN_TERMINAL_STATUSES.includes(reachable.hunt_run_status)) {
-    throw FunctionalError('Only a terminated run can be retried', { runId, status: reachable.hunt_run_status });
-  }
-  const hunt = await loadHuntForRun(context, user, reachable);
-  const { run, planned } = await consumeScheduledRetry(context, reachable.internal_id);
-  try {
+const findHuntRunReplacement = async (context: AuthContext, run: BasicStoreEntityHuntRun) => {
+  const filters = [
+    { key: ['hunt_id'], values: [run.hunt_id] },
+    { key: ['hunt_run_trigger'], values: [HUNT_RUN_TRIGGER_RETRY] },
+    ...(run.connector_id ? [{ key: ['connector_id'], values: [run.connector_id] }] : []),
+  ];
+  const retries = await fullEntitiesList<BasicStoreEntityHuntRun>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT_RUN], {
+    filters: { mode: FilterMode.And, filters, filterGroups: [] },
+    noFiltersChecking: true,
+  });
+  return retries.find((retry) => (retry.attempt ?? 1) === (run.attempt ?? 1) + 1
+    && (retry.connector_id ?? null) === (run.connector_id ?? null)
+    && sameInstant(retry.time_window_start, run.time_window_start)
+    && (!retry.playbook_step_id || retry.playbook_step_id === run.playbook_step_id)) ?? null;
+};
+
+export interface HuntRunReplacementOptions {
+  // Automatic retries only replace a run whose retry is planned; a manual retry replaces it anyway
+  automatic: boolean;
+  triggeredBy?: string | null;
+  requester?: AuthUser;
+}
+
+/**
+ * Replaces a terminated run by its next attempt on the same connector and window, under the transition lock of the
+ * run: the check of an existing replacement and its creation are atomic, so concurrent retries (manual ones, or a
+ * manual one and the hunt manager) create a single next attempt and the later ones get it back with `created: false`.
+ * The planned automatic retry is consumed once the replacement exists. A crash between the creation and the
+ * consumption is caught up by the next retry, which finds the replacement.
+ */
+export const replaceHuntRun = async (context: AuthContext, hunt: BasicStoreEntityHunt, runId: string, options: HuntRunReplacementOptions) => {
+  return withHuntRunTransition(context, runId, async (run) => {
+    const planned = !!run.next_retry_at;
+    const consume = async () => {
+      if (planned) {
+        await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { next_retry_at: null });
+      }
+    };
+    const existing = await findHuntRunReplacement(context, run);
+    if (existing) {
+      await consume();
+      return { run, planned, replacement: existing, created: false };
+    }
+    if (options.automatic && !planned) {
+      return { run, planned, replacement: null, created: false };
+    }
     const runs = await createHuntRuns(context, hunt, {
       trigger: HUNT_RUN_TRIGGER_RETRY,
       mode: run.hunt_run_mode,
@@ -548,23 +573,40 @@ export const retryHuntRun = async (context: AuthContext, user: AuthUser, runId: 
       aevInjectId: run.aev_inject_id,
       securityCoverageId: run.security_coverage_id,
       techniqueId: run.technique_id,
-      triggeredBy: user.id,
-      requester: user,
+      triggeredBy: options.triggeredBy ?? run.triggered_by,
+      requester: options.requester,
       attempt: (run.attempt ?? 1) + 1,
+      // A planned retry keeps the run in its playbook step, which waits on it
       playbook: planned && run.playbook_id && run.playbook_execution_id && run.playbook_step_id
         ? { playbookId: run.playbook_id, executionId: run.playbook_execution_id, stepId: run.playbook_step_id }
         : null,
     });
-    if (runs.length === 0) {
-      throw FunctionalError('The hunt connector of this run is not alive anymore', { runId, connectorId: run.connector_id });
+    if (runs.length > 0) {
+      await consume();
     }
-    return runs[0];
-  } catch (error) {
-    if (planned) {
-      await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { next_retry_at: run.next_retry_at });
-    }
-    throw error;
+    return { run, planned, replacement: runs[0] ?? null, created: runs.length > 0 };
+  });
+};
+
+/**
+ * Manual retry of a terminated run: the next attempt on the same connector and window. It replaces the automatic retry
+ * planned on the run, if any, which stays planned when the replacement cannot be created. A run already replaced
+ * returns its replacement.
+ */
+export const retryHuntRun = async (context: AuthContext, user: AuthUser, runId: string) => {
+  const reachable = await findHuntRunById(context, user, runId);
+  if (!reachable) {
+    throw ResourceNotFoundError('Hunt run cannot be found', { runId });
   }
+  if (!HUNT_RUN_TERMINAL_STATUSES.includes(reachable.hunt_run_status)) {
+    throw FunctionalError('Only a terminated run can be retried', { runId, status: reachable.hunt_run_status });
+  }
+  const hunt = await loadHuntForRun(context, user, reachable);
+  const { replacement } = await replaceHuntRun(context, hunt, reachable.internal_id, { automatic: false, triggeredBy: user.id, requester: user });
+  if (!replacement) {
+    throw FunctionalError('The hunt connector of this run is not alive anymore', { runId, connectorId: reachable.connector_id });
+  }
+  return replacement;
 };
 
 /**

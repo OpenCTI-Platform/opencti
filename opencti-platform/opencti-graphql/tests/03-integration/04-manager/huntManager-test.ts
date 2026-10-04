@@ -321,7 +321,32 @@ describe('Hunt manager', () => {
     const retriesAfterManual = await retries();
     await retryFailedHuntRuns(testContext);
     expect(await retries()).toEqual(retriesAfterManual);
+    // A later retry of the same run gets its replacement back instead of a second next attempt
+    expect((await retryHuntRun(testContext, ADMIN_USER, run.internal_id)).internal_id).toEqual(replacement.internal_id);
     await expireHuntRun(testContext, await loadRun(replacement.internal_id), 'Hunt manager test');
+  });
+
+  it('should create a single next attempt for concurrent retries of a run', async () => {
+    const hunt = await loadHunt(huntId);
+    const [run] = await createHuntRuns(testContext, hunt, { trigger: HUNT_RUN_TRIGGER_MANUAL, dispatch: false });
+    await patchAttribute(testContext, ADMIN_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { dispatched_at: hoursAgo(2) });
+    await expireHuntRun(testContext, await loadRun(run.internal_id), 'Hunt manager test');
+    const expired = await loadRun(run.internal_id);
+    // Two manual retries and the hunt manager, all at once
+    await patchAttribute(testContext, ADMIN_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { next_retry_at: hoursAgo(1) });
+    const [first, second] = await Promise.all([
+      retryHuntRun(testContext, ADMIN_USER, run.internal_id),
+      retryHuntRun(testContext, ADMIN_USER, run.internal_id),
+      retryFailedHuntRuns(testContext),
+    ]);
+    expect(first.internal_id).toEqual(second.internal_id);
+    const nextAttempts = (await middlewareLoader.fullEntitiesList<BasicStoreEntityHuntRun>(testContext, ADMIN_USER, [ENTITY_TYPE_HUNT_RUN], {
+      filters: { mode: FilterMode.And, filters: [{ key: ['hunt_id'], values: [huntId] }, { key: ['hunt_run_trigger'], values: [HUNT_RUN_TRIGGER_RETRY] }], filterGroups: [] },
+      noFiltersChecking: true,
+    })).filter((item) => item.attempt === (expired.attempt ?? 1) + 1 && item.time_window_start === expired.time_window_start);
+    expect(nextAttempts.map((item) => item.internal_id)).toEqual([first.internal_id]);
+    expect((await loadRun(run.internal_id)).next_retry_at).toBeFalsy();
+    await expireHuntRun(testContext, await loadRun(first.internal_id), 'Hunt manager test');
   });
 
   it('should paginate the readable results of a run and count only them', async () => {

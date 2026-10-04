@@ -60,7 +60,7 @@ You can also start a hunt from a threat: the **Hunt this** action of the more ac
 
 ![Translation preview in the Logic tab: the SPL query a Splunk hunt connector would execute](assets/hunt-logic-translation-preview.png)
 
-Runs follow the statuses `queued`, `running`, then `completed`, `failed` or `timeout`. A run waits in the queue while its connector is unavailable or busy (each connector has a concurrency and a daily budget). Failed and timed out runs are retried automatically with an exponential backoff. Retrying a terminated run by hand starts its next attempt at once and replaces the automatic retry planned for it, so a run is never retried twice.
+Runs follow the statuses `queued`, `running`, then `completed`, `failed` or `timeout`. A run waits in the queue while its connector is unavailable or busy (each connector has a concurrency and a daily budget). Failed and timed out runs are retried automatically with an exponential backoff. Retrying a terminated run by hand starts its next attempt at once and replaces the automatic retry planned for it, so a run is never retried twice: retrying a run that already has its next attempt opens that attempt.
 
 Runs are visible in the **Runs** tab of the hunt and in the **Hunt runs** list. The work of each run is also listed in the connector works.
 

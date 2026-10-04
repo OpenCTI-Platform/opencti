@@ -39,12 +39,11 @@ import {
   HUNT_RUN_STATUS_QUEUED,
   HUNT_RUN_STATUS_TIMEOUT,
   HUNT_RUN_TERMINAL_STATUSES,
-  HUNT_RUN_TRIGGER_RETRY,
   HUNT_RUN_TRIGGER_SCHEDULE,
   HUNT_RUN_TRIGGER_STANDING,
   type HuntPlaybookContext,
 } from './huntRun/huntRun-types';
-import { computeRetryAt, consumeScheduledRetry, createHuntRuns, expireHuntRun, isHuntRunFinalized, reconcileHuntRunFinalization } from './huntRun/huntRun-domain';
+import { computeRetryAt, createHuntRuns, expireHuntRun, isHuntRunFinalized, reconcileHuntRunFinalization, replaceHuntRun } from './huntRun/huntRun-domain';
 import { dispatchHuntRun, listHuntConnectors } from './hunt-dispatch';
 import { computeNextRunAt } from './hunt-schedule';
 import { updateHuntRunInformation } from './hunt-stats';
@@ -182,41 +181,28 @@ export const retryFailedHuntRuns = async (context: AuthContext): Promise<number>
   ], 'next_retry_at');
   let retried = 0;
   for (let index = 0; index < runs.length; index += 1) {
-    const hunt = await internalLoadById<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, runs[index].hunt_id, { type: ENTITY_TYPE_HUNT });
-    // The retry schedule is consumed first, under the run lock: a crash between the two steps never retries a run
-    // twice, and a retry an analyst already started is not created again
-    const { run, planned } = await consumeScheduledRetry(context, runs[index].internal_id);
-    const expiredSince = run.completed_at ? Date.now() - new Date(run.completed_at).getTime() : 0;
+    const listed = runs[index];
+    const hunt = await internalLoadById<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, listed.hunt_id, { type: ENTITY_TYPE_HUNT });
+    const expiredSince = listed.completed_at ? Date.now() - new Date(listed.completed_at).getTime() : 0;
     const giveUp = !hunt || [HUNT_STATUS_DRAFT, HUNT_STATUS_RETIRED].includes(hunt.hunt_status) || expiredSince > HUNT_CONFIG.queueExpiryHours * 3600000;
-    if (planned && !giveUp && hunt) {
-      try {
-        const created = await createHuntRuns(context, hunt, {
-          trigger: HUNT_RUN_TRIGGER_RETRY,
-          mode: run.hunt_run_mode,
-          securityPlatformIds: run.security_platform_id ? [run.security_platform_id] : [],
-          connectorIds: run.connector_id ? [run.connector_id] : [],
-          windowStart: run.time_window_start,
-          windowEnd: run.time_window_end,
-          aevInjectId: run.aev_inject_id,
-          securityCoverageId: run.security_coverage_id,
-          techniqueId: run.technique_id,
-          triggeredBy: run.triggered_by,
-          attempt: (run.attempt ?? 1) + 1,
-          playbook: run.playbook_id && run.playbook_execution_id && run.playbook_step_id
-            ? { playbookId: run.playbook_id, executionId: run.playbook_execution_id, stepId: run.playbook_step_id }
-            : null,
-        });
-        if (created.length > 0) {
+    try {
+      if (giveUp) {
+        await patchAttribute(context, HUNT_MANAGER_USER, listed.internal_id, ENTITY_TYPE_HUNT_RUN, { next_retry_at: null });
+      } else {
+        // Under the run lock: a retry an analyst already started, or a replacement created before a crash, is not
+        // created again
+        const { planned, created, replacement } = await replaceHuntRun(context, hunt, listed.internal_id, { automatic: true });
+        if (created) {
           retried += 1;
-        } else {
-          // Connector down: try again later, the queue expiry bounds the wait
-          await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { next_retry_at: computeRetryAt(run.attempt ?? 1) });
+        } else if (planned && !replacement) {
+          // Connector down: try again later, the queue expiry bounds the wait (a later replacement still finds this one)
+          await patchAttribute(context, HUNT_MANAGER_USER, listed.internal_id, ENTITY_TYPE_HUNT_RUN, { next_retry_at: computeRetryAt(listed.attempt ?? 1) });
         }
-      } catch (error) {
-        logApp.error('[OPENCTI-MODULE] Hunt run retry failed', { cause: error, runId: run.internal_id });
-        await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { next_retry_at: computeRetryAt(run.attempt ?? 1) })
-          .catch((restoreError) => logApp.error('[OPENCTI-MODULE] Hunt run retry reschedule failed', { cause: restoreError, runId: run.internal_id }));
       }
+    } catch (error) {
+      logApp.error('[OPENCTI-MODULE] Hunt run retry failed', { cause: error, runId: listed.internal_id });
+      await patchAttribute(context, HUNT_MANAGER_USER, listed.internal_id, ENTITY_TYPE_HUNT_RUN, { next_retry_at: computeRetryAt(listed.attempt ?? 1) })
+        .catch((restoreError) => logApp.error('[OPENCTI-MODULE] Hunt run retry reschedule failed', { cause: restoreError, runId: listed.internal_id }));
     }
   }
   return retried;
