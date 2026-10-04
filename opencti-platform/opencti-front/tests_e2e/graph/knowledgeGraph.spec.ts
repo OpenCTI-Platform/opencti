@@ -118,6 +118,10 @@ test.describe('Container knowledge graph', { tag: ['@ce'] }, () => {
     await graph.getToolbar().getByPlaceholder('Search these results...').fill('');
     await graph.clickBackground();
 
+    // The shapes cover the whole drawing: framed first, as the entity without relationships drifts
+    // away under the forces once the others were dragged.
+    await graph.getControl('Fit the whole graph').click();
+    await graph.waitForGraph(5);
     await graph.getToolbarButton('Free rectangle select').click();
     await graph.dragAcrossCanvas();
     await expect(graph.getSelectionSummary(5)).toBeVisible();
@@ -162,8 +166,17 @@ test.describe('Container knowledge graph', { tag: ['@ce'] }, () => {
     await graph.getToolbarButton('Display time range selector').click();
     const handles = page.getByRole('slider');
     await expect(handles).toHaveCount(2);
+    // The toolbar grows to show the selector: the handle is measured once it stopped moving.
+    const firstHandle = page.locator('.react_time_range__handle_wrapper').first();
+    let lastTop = Number.NaN;
+    await expect.poll(async () => {
+      const top = (await firstHandle.boundingBox())?.y ?? Number.NaN;
+      const still = top === lastTop;
+      lastTop = top;
+      return still;
+    }, { intervals: [250] }).toBe(true);
     const rail = await page.locator('.react_time_range__rail__outer').boundingBox();
-    const handle = await page.locator('.react_time_range__handle_wrapper').first().boundingBox();
+    const handle = await firstHandle.boundingBox();
     if (!rail || !handle) throw new Error('Time range slider is not rendered');
     await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2);
     await page.mouse.down();

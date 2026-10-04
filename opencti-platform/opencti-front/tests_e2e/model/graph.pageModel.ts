@@ -102,11 +102,11 @@ export default class GraphPage {
   }
 
   getSelectionSummary(count: number) {
-    return this.page.getByText(`${count} objects selected`, { exact: true });
+    return this.page.getByText(count === 1 ? '1 object selected' : `${count} objects selected`, { exact: true });
   }
 
   getAnySelectionSummary() {
-    return this.page.getByText(/^\d+ objects selected$/);
+    return this.page.getByText(/^\d+ objects? selected$/);
   }
 
   async snapshot(): Promise<GraphSnapshot> {
@@ -133,6 +133,30 @@ export default class GraphPage {
       previous = current;
       return settled;
     }, { timeout: 60000, intervals: [700] }).toBe(true);
+  }
+
+  /**
+   * Waits for at least `minNodes` nodes and for their layout to stand still, in graph units so that
+   * the framing animation does not count; returns the time (`Date.now()`) of the first sample of
+   * the still layout, to measure how long laying it out took.
+   */
+  async waitForStableLayout(minNodes: number): Promise<number> {
+    await expect(this.getCanvas()).toBeVisible();
+    let previous = { at: 0, positions: '' };
+    let stableAt = 0;
+    await expect.poll(async () => {
+      const state = await this.page.evaluate(readGraphSnapshot);
+      const at = Date.now();
+      if (!state || state.nodes.length < minNodes) return false;
+      const positions = JSON.stringify(state.nodes.map(({ gx, gy }) => [Math.round(gx), Math.round(gy)]));
+      if (positions === previous.positions) {
+        stableAt = previous.at;
+        return true;
+      }
+      previous = { at, positions };
+      return false;
+    }, { timeout: 120000, intervals: [250] }).toBe(true);
+    return stableAt;
   }
 
   async node(id: string) {
@@ -237,11 +261,8 @@ export default class GraphPage {
     await this.page.mouse.up();
   }
 
-  /**
-   * Clicks an empty spot of the canvas: far from every node and not under anything floating over
-   * the canvas (panels, cards, the details panel).
-   */
-  async clickBackground() {
+  /** An empty spot of the canvas, far from every node and under nothing floating over it. */
+  private async freeSpot(): Promise<[number, number] | null> {
     const box = await this.getCanvas().boundingBox();
     if (!box) throw new Error('Canvas has no bounding box');
     const state = await this.snapshot();
@@ -250,12 +271,24 @@ export default class GraphPage {
       for (let fx = 0.05; fx < 0.95; fx += 0.1) candidates.push([box.width * fx, box.height * fy]);
     }
     const farFromNodes = candidates.filter(([cx, cy]) => state.nodes.every((n) => Math.hypot(n.x - cx, n.y - cy) > 60));
-    const onCanvas = await this.page.evaluate((points) => points.find(([x, y]) => {
+    return this.page.evaluate((points) => points.find(([x, y]) => {
       const element = document.elementFromPoint(x, y);
       return element?.tagName === 'CANVAS';
     }) ?? null, farFromNodes.map(([cx, cy]) => [box.x + cx, box.y + cy]));
-    if (!onCanvas) throw new Error('No free spot on the canvas to click');
-    await this.page.mouse.click(onCanvas[0], onCanvas[1]);
+  }
+
+  /**
+   * Clicks an empty spot of the canvas: far from every node and not under anything floating over
+   * the canvas (panels, cards, the details panel), waiting for a closing dialog or drawer to leave.
+   */
+  async clickBackground() {
+    let spot: [number, number] | null = null;
+    await expect.poll(async () => {
+      spot = await this.freeSpot();
+      return spot !== null;
+    }, { message: 'No free spot on the canvas to click', timeout: 15000 }).toBe(true);
+    const [x, y] = spot as unknown as [number, number];
+    await this.page.mouse.click(x, y);
   }
 
   /** Picks one entry of a toolbar option list (select by type, filters), then closes the list. */

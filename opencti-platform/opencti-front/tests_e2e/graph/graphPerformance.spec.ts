@@ -2,8 +2,10 @@ import { expect, test } from '../fixtures/baseFixtures';
 import GraphPage from '../model/graph.pageModel';
 import { createLargeGraphFixture, deleteLargeGraphFixture, LargeGraphFixture, withApiRequest } from '../dataForTesting/graph.data';
 
-const HUBS = 10;
-const SPOKES = 30;
+/** 20 malware and 480 domain names: 500 nodes; 960 communications and 40 variants: 1,000 links. */
+const SHAPE = { hubs: 20, spokes: 24, hubsPerSpoke: 2, variantsPerHub: 2 };
+const NODES = SHAPE.hubs * (SHAPE.spokes + 1);
+const LINKS = SHAPE.hubs * SHAPE.spokes * SHAPE.hubsPerSpoke + SHAPE.hubs * SHAPE.variantsPerHub;
 const SAMPLE_MS = 3000;
 
 /** Intervals between the animation frames of the page, in milliseconds, over `durationMs`. */
@@ -26,36 +28,46 @@ const percentile = (values: number[], p: number) => {
 };
 
 /**
- * The frame rate of a large investigation while the forces lay it out again: every frame then
- * moves and repaints every node and link, the heaviest steady work the graph does. The budget is
- * loose on purpose (CI browsers render without a GPU); it catches a drawing that stops scaling.
+ * The drawing of a large investigation, 500 nodes and 1,000 links: the time until its first layout
+ * stands still, then the frame rate while the forces lay it out again, when every frame moves and
+ * repaints every node and link (the heaviest steady work the graph does). The budgets are loose on
+ * purpose (CI browsers render without a GPU); they catch a drawing that stops scaling. The measures
+ * are printed and attached to the report.
  */
 test.describe('Graph performance', { tag: ['@ce'] }, () => {
-  test.describe.configure({ mode: 'serial', timeout: 300000 });
+  test.describe.configure({ mode: 'serial', timeout: 600000 });
   let fixture: LargeGraphFixture;
 
   test.beforeAll(async ({ playwright }) => {
-    test.setTimeout(300000);
-    fixture = await withApiRequest(playwright, (request) => createLargeGraphFixture(request, HUBS, SPOKES));
+    test.setTimeout(600000);
+    fixture = await withApiRequest(playwright, (request) => createLargeGraphFixture(request, SHAPE));
   });
 
   test.afterAll(async ({ playwright }) => {
-    test.setTimeout(300000);
+    test.setTimeout(600000);
     await withApiRequest(playwright, (request) => deleteLargeGraphFixture(request, fixture));
   });
 
-  test('keeps a large investigation smooth while the forces lay it out', async ({ page }) => {
+  test('lays out a large investigation and keeps it smooth while the forces run', async ({ page }) => {
     const graph = new GraphPage(page);
+    const start = Date.now();
     await page.goto(`/dashboard/workspaces/investigations/${fixture.investigationId}`);
-    const nodeCount = HUBS * (SPOKES + 1);
-    await graph.waitForGraph(nodeCount);
-    expect((await graph.snapshot()).links.length).toBeGreaterThanOrEqual(HUBS * SPOKES);
+    const stableAfterMs = await graph.waitForStableLayout(NODES);
+    const snapshot = await graph.snapshot();
+    expect(snapshot.nodes.length).toBe(NODES);
+    expect(snapshot.links.length).toBeGreaterThanOrEqual(LINKS);
+    const layoutMs = stableAfterMs - start;
 
     await graph.getToolbarButton('Unfix the nodes and re-apply forces').click();
     const intervals = await page.evaluate(sampleFrameIntervals, SAMPLE_MS);
     const median = percentile(intervals, 50);
     const p90 = percentile(intervals, 90);
-    test.info().annotations.push({ type: 'frame intervals', description: `median ${median.toFixed(1)} ms, p90 ${p90.toFixed(1)} ms, ${intervals.length} frames` });
+    const measures = `${snapshot.nodes.length} nodes, ${snapshot.links.length} links: first stable layout ${(layoutMs / 1000).toFixed(1)} s after navigation; `
+      + `frame time while the forces run median ${median.toFixed(1)} ms, p90 ${p90.toFixed(1)} ms over ${intervals.length} frames`;
+    test.info().annotations.push({ type: 'graph performance', description: measures });
+    // eslint-disable-next-line no-console
+    console.log(`Graph performance - ${measures}`);
+    expect(layoutMs).toBeLessThan(60000);
     expect(median).toBeLessThan(50);
     expect(p90).toBeLessThan(120);
   });

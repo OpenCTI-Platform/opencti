@@ -234,11 +234,34 @@ const inBatches = async <T, R>(items: T[], size: number, run: (item: T, index: n
   return results;
 };
 
+export interface LargeGraphShape {
+  /** Malware at the centre of the graph. */
+  hubs: number;
+  /** Domain names per hub. */
+  spokes: number;
+  /** Hubs each domain name communicates with: its own and the next ones. */
+  hubsPerSpoke?: number;
+  /** Variants each hub has among the next hubs. */
+  variantsPerHub?: number;
+}
+
+const addPerfRelationship = async (request: APIRequestContext, type: string, fromId: string, toId: string) => {
+  const data = await graphqlRequest<{ stixCoreRelationshipAdd: IdResult }>(
+    request,
+    `mutation { stixCoreRelationshipAdd(input: { relationship_type: ${quote(type)}, fromId: ${quote(fromId)}, toId: ${quote(toId)} }) { id } }`,
+    'perf relationship',
+  );
+  return data.stixCoreRelationshipAdd.id;
+};
+
 /**
- * An investigation large enough to measure the drawing: `hubs` malware, each communicating with
- * `spokes` domain names, so `hubs * (spokes + 1)` nodes and `hubs * spokes` links.
+ * An investigation large enough to measure the drawing: `hubs` malware and `hubs * spokes` domain
+ * names, so `hubs * (spokes + 1)` nodes; each domain name communicates with `hubsPerSpoke` malware
+ * and each malware is a variant of `variantsPerHub` others, so
+ * `hubs * spokes * hubsPerSpoke + hubs * variantsPerHub` links.
  */
-export const createLargeGraphFixture = async (request: APIRequestContext, hubs: number, spokes: number): Promise<LargeGraphFixture> => {
+export const createLargeGraphFixture = async (request: APIRequestContext, shape: LargeGraphShape): Promise<LargeGraphFixture> => {
+  const { hubs, spokes, hubsPerSpoke = 1, variantsPerHub = 0 } = shape;
   const suffix = `${Date.now().toString(36)}${Math.floor(Math.random() * 1000)}`;
   const malwareIds = await inBatches([...Array(hubs).keys()], 10, (hub) => addDomainObject(request, 'malwareAdd', `Graph perf malware ${suffix} ${hub}`, ''));
   const domainIds = await inBatches([...Array(hubs * spokes).keys()], 20, async (index) => {
@@ -249,19 +272,19 @@ export const createLargeGraphFixture = async (request: APIRequestContext, hubs: 
     );
     return data.stixCyberObservableAdd.id;
   });
-  // Each batch links distinct malware, so concurrent creations never wait on the same lock.
-  const relationshipIds = await inBatches(domainIds, hubs, async (domainId, index) => {
-    const data = await graphqlRequest<{ stixCoreRelationshipAdd: IdResult }>(
-      request,
-      `mutation { stixCoreRelationshipAdd(input: {
-        relationship_type: "communicates-with",
-        fromId: ${quote(malwareIds[index % hubs])},
-        toId: ${quote(domainId)}
-      }) { id } }`,
-      'perf relationship',
-    );
-    return data.stixCoreRelationshipAdd.id;
-  });
+  // One round per hub of a domain name: within a batch of `hubs` consecutive domain names every
+  // malware appears once, so concurrent creations never wait on the same lock.
+  const relationshipIds: string[] = [];
+  for (let round = 0; round < hubsPerSpoke; round += 1) {
+    relationshipIds.push(...await inBatches(domainIds, hubs, (domainId, index) => (
+      addPerfRelationship(request, 'communicates-with', malwareIds[(index + round) % hubs], domainId)
+    )));
+  }
+  for (let offset = 1; offset <= variantsPerHub; offset += 1) {
+    for (let hub = 0; hub < hubs; hub += 1) {
+      relationshipIds.push(await addPerfRelationship(request, 'variant-of', malwareIds[hub], malwareIds[(hub + offset) % hubs]));
+    }
+  }
   const investigation = await graphqlRequest<{ workspaceAdd: IdResult }>(
     request,
     `mutation { workspaceAdd(input: {
