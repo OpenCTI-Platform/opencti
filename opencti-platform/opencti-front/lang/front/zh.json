@@ -6262,6 +6262,5 @@
   "Cooldown after a rejection (days)": "拒绝后的冷却期（天）",
   "Applying": "正在应用",
   "The change is being applied": "正在应用更改",
-  "If this lasts, its outcome could not be recorded: check the target of the recommendation, then reject it to close it. It is never applied a second time.": "如果持续出现此状态，说明无法记录结果：请检查该建议的目标，然后拒绝以关闭它。它绝不会被再次应用。",
   "If this lasts, its outcome could not be recorded: check the target of the recommendation. It stays listed as applying and is never applied a second time.": "如果持续出现此状态，说明无法记录结果：请检查该建议的目标。它会保持“正在应用”状态，且绝不会被再次应用。"
 }

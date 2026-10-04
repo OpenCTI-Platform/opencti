@@ -6262,6 +6262,5 @@
   "Cooldown after a rejection (days)": "Periodo de espera tras un rechazo (días)",
   "Applying": "Aplicando",
   "The change is being applied": "El cambio se está aplicando",
-  "If this lasts, its outcome could not be recorded: check the target of the recommendation, then reject it to close it. It is never applied a second time.": "Si se prolonga, no se pudo registrar el resultado: compruebe el destino de la recomendación y, a continuación, recházela para cerrarla. Nunca se aplica una segunda vez.",
   "If this lasts, its outcome could not be recorded: check the target of the recommendation. It stays listed as applying and is never applied a second time.": "Si se prolonga, no se pudo registrar el resultado: compruebe el destino de la recomendación. Sigue figurando como «Aplicando» y nunca se aplica una segunda vez."
 }

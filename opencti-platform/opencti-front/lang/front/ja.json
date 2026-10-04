@@ -6262,6 +6262,5 @@
   "Cooldown after a rejection (days)": "却下後の待機期間 (日)",
   "Applying": "適用中",
   "The change is being applied": "変更を適用しています",
-  "If this lasts, its outcome could not be recorded: check the target of the recommendation, then reject it to close it. It is never applied a second time.": "この状態が続く場合、結果を記録できませんでした。推奨事項の対象を確認してから、却下して閉じてください。2 回適用されることはありません。",
   "If this lasts, its outcome could not be recorded: check the target of the recommendation. It stays listed as applying and is never applied a second time.": "この状態が続く場合、結果を記録できませんでした。推奨事項の対象を確認してください。「適用中」のまま表示され、2 回適用されることはありません。"
 }

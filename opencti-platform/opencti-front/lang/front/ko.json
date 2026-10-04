@@ -6262,6 +6262,5 @@
   "Cooldown after a rejection (days)": "거부 후 대기 기간 (일)",
   "Applying": "적용 중",
   "The change is being applied": "변경 사항을 적용하는 중입니다",
-  "If this lasts, its outcome could not be recorded: check the target of the recommendation, then reject it to close it. It is never applied a second time.": "이 상태가 계속되면 결과를 기록하지 못한 것입니다. 권장 사항의 대상을 확인한 다음 거부하여 닫으십시오. 두 번 적용되지 않습니다.",
   "If this lasts, its outcome could not be recorded: check the target of the recommendation. It stays listed as applying and is never applied a second time.": "이 상태가 계속되면 결과를 기록하지 못한 것입니다. 권장 사항의 대상을 확인하십시오. '적용 중'으로 계속 표시되며 두 번 적용되지 않습니다."
 }
