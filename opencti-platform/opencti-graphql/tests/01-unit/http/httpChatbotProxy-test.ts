@@ -1382,6 +1382,12 @@ describe('httpChatbotProxy: postChatbotMessageApprove for Case Autopilot runs', 
     expect(res.json).toHaveBeenCalledWith({ error: 'No decisions supplied' });
 
     res = buildRes();
+    const tooMany = Array.from({ length: 101 }, () => ({ tool_call_id: APPROVAL_ID, decision: 'approve' }));
+    await postChatbotMessageApprove(buildSessionReq({ ...RUN_BODY, decisions: tooMany }), res);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ error: expect.stringContaining('Too many decisions') });
+
+    res = buildRes();
     await postChatbotMessageApprove(buildSessionReq({
       ...RUN_BODY,
       decisions: [{ tool_call_id: APPROVAL_ID, decision: 'approve' }, { tool_call_id: APPROVAL_ID, decision: 'approve_always' }],

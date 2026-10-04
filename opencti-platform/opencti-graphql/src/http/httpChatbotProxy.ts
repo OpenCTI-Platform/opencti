@@ -354,8 +354,12 @@ const answerInvestigationApproval = async (context: AuthContext, req: Express.Re
     res.status(400).json({ error: 'Invalid investigation run id' });
     return;
   }
-  if (!Array.isArray(rawDecisions) || rawDecisions.length === 0 || rawDecisions.length > MAX_INVESTIGATION_DECISIONS) {
+  if (!Array.isArray(rawDecisions) || rawDecisions.length === 0) {
     res.status(400).json({ error: 'No decisions supplied' });
+    return;
+  }
+  if (rawDecisions.length > MAX_INVESTIGATION_DECISIONS) {
+    res.status(400).json({ error: `Too many decisions: at most ${MAX_INVESTIGATION_DECISIONS} per request` });
     return;
   }
   const decisions: InvestigationApprovalDecisionInput[] = [];
