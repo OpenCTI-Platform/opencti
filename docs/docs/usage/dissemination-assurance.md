@@ -173,8 +173,9 @@ for the approval workflow and the safety settings.
 
 When OpenAEV sends the results, the validation status of each deployment is updated to `detected`, `prevented`,
 `missed` or `error`, and the request shows the outcome of every indicator and platform pair. A missed indicator
-links to its deployment, and a completed request can be validated again in one action. Each request keeps the outcome it
-got: validating the same deployment again updates the deployment, not the results of the earlier requests.
+links to its deployment, and a completed request can be validated again in one action. A request where at least one
+test ends in `error` is shown as partially completed, with the number of tests that could not run. Each request keeps
+the outcome it got: validating the same deployment again updates the deployment, not the results of the earlier requests.
 
 A request without results after the timeout (`ioc_validation:timeout_days`) expires, and its deployments still waiting
 get the `error` status. A result that a security platform reports later for the same request replaces that timeout

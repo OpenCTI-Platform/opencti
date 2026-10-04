@@ -3855,6 +3855,7 @@
   "Partial": "부분적",
   "partial": "부분적",
   "Partially completed": "부분 완료",
+  "Partially completed - {count} of {total} detected or prevented, {error, plural, one {# test could not run} other {# tests could not run}}": "부분 완료 - {total}건 중 {count}건 탐지 또는 차단, {error, plural, other {#건의 테스트를 실행하지 못함}}",
   "Participant": "참가자",
   "Participant(s)": "참여자",
   "Participants": "참여자",

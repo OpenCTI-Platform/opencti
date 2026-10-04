@@ -3855,6 +3855,7 @@
   "Partial": "部分的",
   "partial": "部分的",
   "Partially completed": "一部完了",
+  "Partially completed - {count} of {total} detected or prevented, {error, plural, one {# test could not run} other {# tests could not run}}": "一部完了 - {total} 件中 {count} 件を検知またはブロック、{error, plural, other {# 件のテストを実行できませんでした}}",
   "Participant": "参加者",
   "Participant(s)": "参加者",
   "Participants": "参加者",

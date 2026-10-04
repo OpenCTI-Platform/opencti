@@ -101,7 +101,7 @@ const Field = ({ label, children }: { label: string; children: ReactNode }) => (
 const useStatusSentence = () => {
   const { t_i18n } = useFormatter();
   return (request: IocValidationRequestData) => {
-    const { total, detected, prevented } = request.results_summary;
+    const { total, detected, prevented, error } = request.results_summary;
     switch (request.status) {
       case 'pending':
         return t_i18n('Waiting for an active OpenAEV IOC validation connector');
@@ -112,8 +112,12 @@ const useStatusSentence = () => {
       case 'running':
         return t_i18n('{count, plural, one {Running on # platform} other {Running on # platforms}}', { values: { count: request.platforms.length } });
       case 'completed':
-      case 'partial':
         return t_i18n('Completed - {count} of {total} detected or prevented', { values: { count: detected + prevented, total } });
+      case 'partial':
+        return t_i18n(
+          'Partially completed - {count} of {total} detected or prevented, {error, plural, one {# test could not run} other {# tests could not run}}',
+          { values: { count: detected + prevented, total, error } },
+        );
       case 'rejected':
         return t_i18n('Rejected in OpenAEV, nothing was tested');
       case 'expired':

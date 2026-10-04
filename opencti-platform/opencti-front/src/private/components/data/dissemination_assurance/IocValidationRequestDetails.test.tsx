@@ -37,13 +37,13 @@ const request = (status: string) => ({
   deployments: [deployment('d1', 'login-portal.example'), deployment('d2', 'update-service.example')],
 });
 
-const renderDetails = async (status: string) => {
+const renderDetails = async (status: string, overrides: Record<string, unknown> = {}) => {
   const rendered = testRender(<IocValidationRequestDetails requestId="request-1" title="Weekly validation of live indicators" onClose={() => {}} />, {
     userContext: createMockUserContext({ me: { id: 'user-1', name: 'admin', capabilities: [{ name: 'BYPASS' }], userSubscriptions: { edges: [] } } }),
   });
   await waitFor(() => {
     (rendered.relayEnv as RelayMockEnvironment).mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
-      IocValidationRequest: () => request(status),
+      IocValidationRequest: () => ({ ...request(status), ...overrides }),
     }));
   });
   return rendered;
@@ -65,6 +65,16 @@ describe('IOC validation request details', () => {
     expect(screen.getByText('cdn-assets.example')).toBeTruthy();
     expect(screen.getByText('Not live on this security platform')).toBeTruthy();
     expect(screen.queryByText('indicator-s1')).toBeNull();
+  });
+
+  it('never presents a request with tests in error as fully completed', async () => {
+    await renderDetails('partial', {
+      results_summary: { total: 2, requested: 0, detected: 1, prevented: 0, missed: 0, error: 1, skipped: 1 },
+    });
+
+    const header = await screen.findByTestId('ioc-validation-status-header');
+    expect(within(header).getByText('Partially completed - 1 of 2 detected or prevented, 1 test could not run')).toBeTruthy();
+    expect(within(header).queryByText('Completed - 1 of 2 detected or prevented')).toBeNull();
   });
 
   it('points to OpenAEV while the request waits for its approval', async () => {

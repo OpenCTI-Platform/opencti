@@ -3855,6 +3855,7 @@
   "Partial": "Частичное",
   "partial": "Частичное",
   "Partially completed": "Частично завершено",
+  "Partially completed - {count} of {total} detected or prevented, {error, plural, one {# test could not run} other {# tests could not run}}": "Частично завершено - {count} из {total} обнаружено или предотвращено, {error, plural, one {# тест не выполнен} few {# теста не выполнено} many {# тестов не выполнено} other {# теста не выполнено}}",
   "Participant": "Участник",
   "Participant(s)": "Участник(и)",
   "Participants": "Участники",

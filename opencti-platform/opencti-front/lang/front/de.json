@@ -3855,6 +3855,7 @@
   "Partial": "Teilweise",
   "partial": "Teilweise",
   "Partially completed": "Teilweise abgeschlossen",
+  "Partially completed - {count} of {total} detected or prevented, {error, plural, one {# test could not run} other {# tests could not run}}": "Teilweise abgeschlossen - {count} von {total} erkannt oder verhindert, {error, plural, one {# Test konnte nicht ausgeführt werden} other {# Tests konnten nicht ausgeführt werden}}",
   "Participant": "Teilnehmer",
   "Participant(s)": "Beteiligte(r)",
   "Participants": "Teilnehmer",

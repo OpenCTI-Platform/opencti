@@ -3855,6 +3855,7 @@
   "Partial": "部分",
   "partial": "部分",
   "Partially completed": "部分完成",
+  "Partially completed - {count} of {total} detected or prevented, {error, plural, one {# test could not run} other {# tests could not run}}": "部分完成 - {total} 个中有 {count} 个被检测或阻止，{error, plural, other {# 个测试无法运行}}",
   "Participant": "参与者",
   "Participant(s)": "参与者",
   "Participants": "参与者",
