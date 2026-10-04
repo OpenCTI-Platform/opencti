@@ -47,7 +47,7 @@ import * as workDomain from '../../../src/domain/work';
 import { PLAYBOOK_HUNT_COMPONENT } from '../../../src/modules/playbook/components/hunt-component';
 import { playbookBundleElementsToApply } from '../../../src/modules/playbook/playbook-types';
 import { loadHuntRunResultsForPlaybook } from '../../../src/modules/hunt/hunt-playbook';
-import { MARKING_TLP_RED } from '../../../src/schema/identifier';
+import * as middleware from '../../../src/database/middleware';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 
 const CONNECTOR_ID = '6d2f4c1e-8a3b-4f6e-9c7d-2b5a1e0f3d02';
@@ -365,27 +365,26 @@ describe('Hunt manager', () => {
     await expireHuntRun(testContext, recorded, 'Hunt manager test');
   });
 
-  it('should give a playbook only the results the hunt connector of the run can read', async () => {
-    // The test connector group only holds TLP:GREEN
-    const restricted = await queryAsAdminWithSuccess({
-      query: gql`mutation IntrusionSetAdd($input: IntrusionSetAddInput!) { intrusionSetAdd(input: $input) { id } }`,
-      variables: { input: { name: 'Hunt manager test restricted intrusion set', objectMarking: [MARKING_TLP_RED] } },
-    });
-    const restrictedId = restricted.data?.intrusionSetAdd.id;
+  it('should give a playbook the results of a run as its hunt connector can read them', async () => {
     const hunt = await loadHunt(huntId);
     const [run] = await createHuntRuns(testContext, hunt, { trigger: HUNT_RUN_TRIGGER_MANUAL, dispatch: false });
+    const load = vi.spyOn(middleware, 'stixLoadByIds');
     try {
-      await patchAttribute(testContext, ADMIN_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { connector_id: CONNECTOR_ID, result_ids: [intrusionSetId, restrictedId] });
-      const results = await loadHuntRunResultsForPlaybook(testContext, [await loadRun(run.internal_id)], new Set());
-      const loadedIds = results.map((result) => result.extensions[STIX_EXT_OCTI].id);
-      expect(loadedIds).toContain(intrusionSetId);
-      expect(loadedIds).not.toContain(restrictedId);
+      await patchAttribute(testContext, ADMIN_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { connector_id: CONNECTOR_ID, result_ids: [intrusionSetId, securityPlatformId] });
+      // An object already in the bundle is not loaded again
+      const results = await loadHuntRunResultsForPlaybook(testContext, [await loadRun(run.internal_id)], new Set([securityPlatformId]));
+      // Loaded with the user of the hunt connector of the run, never with the automation identity of the playbook
+      expect(load).toHaveBeenCalledTimes(1);
+      expect(load.mock.calls[0][1].id).toEqual(USER_CONNECTOR.id);
+      expect(load.mock.calls[0][2]).toEqual([intrusionSetId]);
+      expect(results.map((result) => result.extensions[STIX_EXT_OCTI].id)).toEqual([intrusionSetId]);
       // A run without a hunt connector gives the playbook nothing
       await patchAttribute(testContext, ADMIN_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { connector_id: null });
       expect(await loadHuntRunResultsForPlaybook(testContext, [await loadRun(run.internal_id)], new Set())).toEqual([]);
+      expect(load).toHaveBeenCalledTimes(1);
     } finally {
+      load.mockRestore();
       await expireHuntRun(testContext, await loadRun(run.internal_id), 'Hunt manager test');
-      await deleteElementById(testContext, ADMIN_USER, restrictedId, ENTITY_TYPE_INTRUSION_SET);
     }
   });
 
