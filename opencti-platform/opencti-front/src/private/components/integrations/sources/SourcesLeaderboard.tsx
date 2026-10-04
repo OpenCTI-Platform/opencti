@@ -305,10 +305,15 @@ const SourcesLeaderboard = () => {
         if (!cost) {
           return <SourceMetricValue value={null} reason={t_i18n('No cost declared for this source. Set it on its scorecard page.')} />;
         }
+        const costPerObject = format.cost(latest_cost_per_actionable, cost.currency);
+        // An unmeasured value carries its own focusable tooltip: no second one around it
+        if (costPerObject === null) {
+          return <SourceMetricValue value={null} />;
+        }
         return (
           <Tooltip>
             <TooltipTrigger asChild>
-              <span tabIndex={0}><SourceMetricValue value={format.cost(latest_cost_per_actionable, cost.currency)} /></span>
+              <span tabIndex={0}>{costPerObject}</span>
             </TooltipTrigger>
             <TooltipContent>
               {t_i18n(DECLARED_COST_LABELS[cost.period] ?? DECLARED_COST_LABELS.month, { values: { amount: format.cost(cost.amount, cost.currency) } })}
