@@ -140,6 +140,8 @@ export const SOURCES_CARD_MAX_SOURCES = 5;
 
 export interface SourcesCardModel {
   readonly sources: ProvenanceAssertion[];
+  // Every source of the element, including the ones beyond the bounded details
+  readonly totalSourcesCount: number;
   readonly hiddenSourcesCount: number;
   readonly conflictingFields: string[];
 }
@@ -160,9 +162,11 @@ export const buildSourcesCardModel = (
     return null;
   }
   const sources = sorted.slice(0, maxSources);
+  const totalSourcesCount = Math.max(sorted.length, corroborationCount ?? 0);
   return {
     sources,
-    hiddenSourcesCount: Math.max(sorted.length, corroborationCount ?? 0) - sources.length,
+    totalSourcesCount,
+    hiddenSourcesCount: totalSourcesCount - sources.length,
     conflictingFields: (conflicts ?? []).filter((conflict) => conflict.values.length > 0).map((conflict) => conflict.field_label ?? conflict.field),
   };
 };

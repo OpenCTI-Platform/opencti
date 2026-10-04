@@ -91,7 +91,7 @@ const ProvenanceSourcesCardContent = ({ id, fetchKey, onOpen, showEmpty }: Prove
       fullHeight={false}
       action={(
         <Button variant="tertiary" size="small" onClick={onOpen} data-testid="provenance-open-sources">
-          {t_i18n('View all')}
+          {t_i18n('View all {count, plural, one {# source} other {# sources}}', { values: { count: model.totalSourcesCount } })}
         </Button>
       )}
     >
@@ -123,7 +123,7 @@ const ProvenanceSourcesCardContent = ({ id, fetchKey, onOpen, showEmpty }: Prove
                 disableGutters
                 data-testid="provenance-source-item"
                 secondaryAction={source.confidence !== null && source.confidence !== undefined ? (
-                  <Typography variant="caption">{`${t_i18n('Confidence')} ${source.confidence}`}</Typography>
+                  <Typography variant="caption">{t_i18n('Confidence {confidence}', { values: { confidence: source.confidence } })}</Typography>
                 ) : undefined}
               >
                 <ListItemIcon sx={{ minWidth: 32 }}>
@@ -140,7 +140,7 @@ const ProvenanceSourcesCardContent = ({ id, fetchKey, onOpen, showEmpty }: Prove
         {model.hiddenSourcesCount > 0 && (
           <div>
             <Button variant="tertiary" size="small" onClick={onOpen} data-testid="provenance-more-sources">
-              {t_i18n('{count} more sources', { values: { count: model.hiddenSourcesCount } })}
+              {t_i18n('{count, plural, one {# more source} other {# more sources}}', { values: { count: model.hiddenSourcesCount } })}
             </Button>
           </div>
         )}

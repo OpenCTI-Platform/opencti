@@ -61,6 +61,25 @@ export const KNOWLEDGE_FRESHNESS_POLICY_LABELS: Record<KnowledgeFreshnessPolicy,
   revoke: 'Revoke',
 };
 
+// One sentence built from the fields of the rule: what it targets, after how long and what happens
+export const KNOWLEDGE_DECAY_RULE_EFFECT = '{targets} not re-asserted within {days, plural, one {# day} other {# days}} '
+  + '{policy, select, revoke {are flagged as stale and revoked} lower_confidence {are flagged as stale and their confidence is lowered} other {are flagged as stale}}.';
+
+interface KnowledgeDecayRuleEffectInput {
+  readonly target_scope?: string | null;
+  readonly target_types?: ReadonlyArray<string> | null;
+  readonly stale_after_days?: number | null;
+  readonly freshness_policy?: string | null;
+}
+
+export const knowledgeDecayRuleEffect = (t_i18n: (message: string, opts?: { values: Record<string, unknown> }) => string, rule: KnowledgeDecayRuleEffectInput) => {
+  const types = (rule.target_types ?? []).map((type) => t_i18n(rule.target_scope === 'relationship' ? `relationship_${type}` : `entity_${type}`));
+  const allTargets = rule.target_scope === 'relationship' ? t_i18n('All relationships') : t_i18n('Entities');
+  return t_i18n(KNOWLEDGE_DECAY_RULE_EFFECT, {
+    values: { targets: types.length > 0 ? types.join(', ') : allTargets, days: rule.stale_after_days ?? 0, policy: rule.freshness_policy ?? 'flag' },
+  });
+};
+
 // Indicators keep their own score decay
 const EXCLUDED_ENTITY_TYPES = ['Indicator'];
 

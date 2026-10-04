@@ -23,6 +23,7 @@ describe('buildSourcesCardModel', () => {
     const model = buildSourcesCardModel(assertions, null);
     expect(model?.sources.map((source) => source.source_id)).toEqual(['s07', 's06', 's05', 's04', 's03']);
     expect(model?.hiddenSourcesCount).toBe(2);
+    expect(model?.totalSourcesCount).toBe(7);
     expect(model?.conflictingFields).toEqual([]);
   });
 
@@ -36,6 +37,7 @@ describe('buildSourcesCardModel', () => {
     const model = buildSourcesCardModel([assertion('a', '2026-09-01T00:00:00.000Z'), assertion('b', '2026-09-02T00:00:00.000Z')], null, 240, 1);
     expect(model?.sources.map((source) => source.source_id)).toEqual(['b']);
     expect(model?.hiddenSourcesCount).toBe(239);
+    expect(model?.totalSourcesCount).toBe(240);
   });
 
   it('only reports the labels of the fields that still have alternative values', () => {

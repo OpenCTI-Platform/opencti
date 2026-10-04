@@ -2,7 +2,8 @@ import React from 'react';
 import { graphql } from 'react-relay';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { useQueryLoadingWithLoadQuery } from '../../../../utils/hooks/useQueryLoading';
-import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import { emptyFilterGroup, isFilterGroupNotEmpty, useBuildEntityTypeBasedFilterContext } from '../../../../utils/filters/filtersUtils';
+import { useFormatter } from '../../../../components/i18n';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
@@ -116,9 +117,12 @@ interface ProvenanceKnowledgeEntitiesProps {
   // Fixed provenance filter of the view (stale knowledge, conflicts), not editable by the user
   fixedFilters: FilterGroup;
   withConflicts?: boolean;
+  // Shown when nothing matches the fixed filter (no conflict, no stale knowledge)
+  emptyMessage: string;
 }
 
-const ProvenanceKnowledgeEntities = ({ storageKey, fixedFilters, withConflicts = false }: ProvenanceKnowledgeEntitiesProps) => {
+const ProvenanceKnowledgeEntities = ({ storageKey, fixedFilters, withConflicts = false, emptyMessage }: ProvenanceKnowledgeEntitiesProps) => {
+  const { t_i18n } = useFormatter();
   const initialValues = {
     filters: emptyFilterGroup,
     searchTerm: '',
@@ -130,6 +134,7 @@ const ProvenanceKnowledgeEntities = ({ storageKey, fixedFilters, withConflicts =
     storageKey,
     initialValues,
   );
+  const hasUserFilters = isFilterGroupNotEmpty(viewStorage.filters) || !!viewStorage.searchTerm;
   const userFilters = useBuildEntityTypeBasedFilterContext('Stix-Core-Object', viewStorage.filters);
   const contextFilters: FilterGroup = { mode: 'and', filters: [], filterGroups: [fixedFilters, userFilters as FilterGroup] };
   const queryPaginationOptions = { ...paginationOptions, filters: contextFilters } as unknown as ProvenanceKnowledgeEntitiesLinesPaginationQuery$variables;
@@ -164,6 +169,7 @@ const ProvenanceKnowledgeEntities = ({ storageKey, fixedFilters, withConflicts =
       contextFilters={contextFilters}
       lineFragment={provenanceKnowledgeEntitiesLineFragment}
       preloadedPaginationProps={preloadedPaginationProps}
+      emptyStateMessage={hasUserFilters ? t_i18n('No result for these filters') : emptyMessage}
       exportContext={{ entity_type: 'Stix-Core-Object' }}
       availableEntityTypes={['Stix-Core-Object']}
       actions={(row: { id: string }) => <ProvenanceSourcesAction id={row.id} onChange={refresh} />}
