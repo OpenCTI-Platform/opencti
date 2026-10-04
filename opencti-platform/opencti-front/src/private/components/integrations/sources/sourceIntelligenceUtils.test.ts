@@ -5,6 +5,7 @@ import {
   buildTrendSerie,
   criterionPriority,
   escapeHtml,
+  findSourceWidgetMetric,
   formatCost,
   formatCount,
   formatHours,
@@ -16,6 +17,7 @@ import {
   scoreLevel,
   sourceEditCostLink,
   sourceScorecardRefLink,
+  sourceWidgetMetricsFor,
 } from './sourceIntelligenceUtils';
 
 describe('Source intelligence links and priorities', () => {
@@ -44,6 +46,18 @@ describe('Source intelligence links and priorities', () => {
 
   it('should open the cost editor of a source', () => {
     expect(sourceEditCostLink('source-1')).toEqual('/dashboard/integrations/sources/source/source-1?edit=cost');
+  });
+});
+
+describe('Source widget metrics', () => {
+  it('should not plot a signed metric as the parts of a donut', () => {
+    expect(sourceWidgetMetricsFor('donut').map((metric) => metric.key)).not.toContain('lead_time_hours');
+    expect(sourceWidgetMetricsFor('horizontal-bar').map((metric) => metric.key)).toContain('lead_time_hours');
+    // A donut saved with a signed metric plots the default metric, like an unknown one
+    expect(findSourceWidgetMetric('lead_time_hours', 'donut').key).toEqual('value_score');
+    expect(findSourceWidgetMetric('lead_time_hours', 'horizontal-bar').key).toEqual('lead_time_hours');
+    expect(findSourceWidgetMetric('noise_count', 'donut').key).toEqual('noise_count');
+    expect(findSourceWidgetMetric('unknown_metric').key).toEqual('value_score');
   });
 });
 

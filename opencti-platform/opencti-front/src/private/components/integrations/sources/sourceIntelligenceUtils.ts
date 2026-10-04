@@ -127,6 +127,8 @@ export interface SourceWidgetMetric {
   label: string;
   type: ScorecardMetricType;
   enterprise: boolean;
+  // Can be negative: not a part of a whole
+  signed?: boolean;
 }
 
 // Scorecard metrics of the "Intelligence sources" dashboard perspective (same keys as the sourceScorecard* API metrics)
@@ -138,7 +140,7 @@ export const SOURCE_WIDGET_METRICS: SourceWidgetMetric[] = [
   { key: 'unique_count', label: 'Unique objects', type: 'count', enterprise: false },
   { key: 'unique_contribution', label: 'Unique contribution', type: 'ratio', enterprise: false },
   { key: 'corroboration_rate', label: 'Corroboration rate', type: 'ratio', enterprise: false },
-  { key: 'lead_time_hours', label: 'Lead time (hours)', type: 'hours', enterprise: false },
+  { key: 'lead_time_hours', label: 'Lead time (hours)', type: 'hours', enterprise: false, signed: true },
   { key: 'first_reporter_share', label: 'First reporter share', type: 'ratio', enterprise: false },
   { key: 'accuracy', label: 'Accuracy', type: 'ratio', enterprise: false },
   { key: 'relevance', label: 'Relevance', type: 'ratio', enterprise: true },
@@ -154,8 +156,15 @@ export const SOURCE_WIDGET_METRICS: SourceWidgetMetric[] = [
   { key: 'community_uniqueness', label: 'Community uniqueness', type: 'ratio', enterprise: false },
 ];
 
-export const findSourceWidgetMetric = (key: string | null | undefined): SourceWidgetMetric => {
-  return SOURCE_WIDGET_METRICS.find((metric) => metric.key === key) ?? SOURCE_WIDGET_METRICS[0];
+// A donut plots the parts of a whole: it offers no signed metric
+export const sourceWidgetMetricsFor = (widgetType?: string): SourceWidgetMetric[] => {
+  return widgetType === 'donut' ? SOURCE_WIDGET_METRICS.filter((metric) => !metric.signed) : SOURCE_WIDGET_METRICS;
+};
+
+// Unknown metrics, and metrics the widget type cannot plot, fall back to the first one
+export const findSourceWidgetMetric = (key: string | null | undefined, widgetType?: string): SourceWidgetMetric => {
+  const metrics = sourceWidgetMetricsFor(widgetType);
+  return metrics.find((metric) => metric.key === key) ?? metrics[0];
 };
 
 // Widgets plot ratios as percents
