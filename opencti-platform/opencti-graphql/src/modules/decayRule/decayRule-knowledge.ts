@@ -60,6 +60,19 @@ const FRESHNESS_RESET_FIELDS = ['active', 'order', 'target_types', 'decay_filter
 // Edits that can make a rule take over elements targeted by lower priority rules
 export const KNOWLEDGE_PRIORITY_FIELDS = ['active', 'order', 'target_types', 'decay_filters'];
 
+// Held by a change of a knowledge decay rule until its flags are released, and by the freshness manager around each
+// policy it applies with the rule: a policy is applied either before the release or with the new configuration
+export const knowledgeDecayRuleLockKey = (ruleId: string) => `knowledge_decay_rule_lock_${ruleId}`;
+
+// Whether a stored rule still has the configuration a freshness run loaded (a deleted rule has none)
+export const hasSameFreshnessConfiguration = (loaded: object, stored: object | undefined | null) => {
+  if (!stored) {
+    return false;
+  }
+  const valueOf = (rule: object, field: string) => JSON.stringify((rule as Record<string, unknown>)[field] ?? null);
+  return FRESHNESS_RESET_FIELDS.every((field) => valueOf(loaded, field) === valueOf(stored, field));
+};
+
 export interface KnowledgeDecayRuleDefinition {
   name: string;
   description?: string | null;

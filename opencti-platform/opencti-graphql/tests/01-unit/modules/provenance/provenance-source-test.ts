@@ -196,6 +196,29 @@ describe('Provenance source resolution', () => {
     expect(feedLoadsCount()).toBe(1);
   });
 
+  it('should never record a feed under its connector while the feed index cannot be loaded', async () => {
+    const feed = feedEntry('b7f1b2b4-9a7e-4e0e-a4a7-2d3f2c8e1d01', 'Vendor advisories');
+    vi.mocked(cache.getEntitiesListFromCache).mockResolvedValue([...connectors, builtInConnectorOf(feed)] as never);
+    vi.mocked(loader.fullEntitiesList).mockRejectedValue(new Error('search engine unavailable'));
+    await expect(writeOf(feed)).rejects.toThrow('Ingestion feeds index unavailable');
+    // A failed load is not retried by every write
+    vi.mocked(loader.fullEntitiesList).mockClear();
+    await expect(writeOf(feed)).rejects.toThrow('Ingestion feeds index unavailable');
+    expect(loader.fullEntitiesList).not.toHaveBeenCalled();
+    advanceClock(61 * 1000);
+    vi.mocked(loader.fullEntitiesList).mockResolvedValue([feedEntry(FEED_ID, 'Partner collection'), feed] as never);
+    const source = await writeOf(feed);
+    expect(source).toEqual({ source_id: feed.internal_id, source_kind: 'feed', source_name: 'Vendor advisories', work_id: workOf(connectorIdOf(feed)) });
+  });
+
+  it('should never record a synchronized write under another source while the feed index cannot be loaded', async () => {
+    const synchronizerUser = { id: 'c0000000-0000-4000-8000-000000000009', name: 'Remote platform' } as AuthUser;
+    vi.mocked(loader.fullEntitiesList).mockRejectedValue(new Error('search engine unavailable'));
+    const write = resolveAssertionSource({ synchronizedUpsert: true } as AuthContext, synchronizerUser, { createdBy: { internal_id: 'identity-1', name: 'ACME CERT' } });
+    await expect(write).rejects.toThrow('Ingestion feeds index unavailable');
+    advanceClock(61 * 1000);
+  });
+
   it('should attribute a human write with an author to the author', async () => {
     const source = await resolveAssertionSource(contextFor(), humanUser, { createdBy: { internal_id: 'identity-1', name: 'ACME CERT' } });
     expect(source).toEqual({ source_id: 'identity-1', source_kind: 'author', source_name: 'ACME CERT', work_id: null });

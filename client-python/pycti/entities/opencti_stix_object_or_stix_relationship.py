@@ -815,6 +815,8 @@ class StixObjectOrStixRelationship:
                     }
                 }
         """
+        # The default selection (self.properties) carries the provenance summary;
+        # read_provenance() reads the assertions, conflicts and procedures as well
         self.provenance_properties = (
             """
             ... on StixObject {

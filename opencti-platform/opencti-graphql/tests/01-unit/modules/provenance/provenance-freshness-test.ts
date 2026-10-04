@@ -5,6 +5,7 @@ import {
   BUILT_IN_KNOWLEDGE_DECAY_RULES,
   checkDecayRulePatch,
   getDecayRuleScope,
+  hasSameFreshnessConfiguration,
   isKnowledgeDecayRule,
   type KnowledgeDecayRuleDefinition,
   resolveKnowledgeDecayRuleTypes,
@@ -115,6 +116,22 @@ describe('Knowledge decay rules', () => {
     const builtIn = storedRule({ built_in: true, active: false });
     expect(checkDecayRulePatch(builtIn, [{ key: 'active', value: ['true'] }])).toEqual(true);
     expect(() => checkDecayRulePatch(builtIn, [{ key: 'stale_after_days', value: ['10'] }])).toThrow();
+  });
+
+  it('should let a freshness run apply a rule only while the rule keeps the configuration the run loaded', () => {
+    const loaded = storedRule({ freshness_policy: 'lower_confidence', freshness_confidence_step: 10 });
+    expect(hasSameFreshnessConfiguration(loaded, storedRule({ freshness_policy: 'lower_confidence', freshness_confidence_step: 10 }))).toEqual(true);
+    // A new name or description does not change what the run applies
+    expect(hasSameFreshnessConfiguration(loaded, { ...loaded, name: 'Renamed', description: 'New description' })).toEqual(true);
+    expect(hasSameFreshnessConfiguration(loaded, { ...loaded, stale_after_days: 30 })).toEqual(false);
+    expect(hasSameFreshnessConfiguration(loaded, { ...loaded, freshness_policy: 'revoke' })).toEqual(false);
+    expect(hasSameFreshnessConfiguration(loaded, { ...loaded, freshness_confidence_step: 20 })).toEqual(false);
+    expect(hasSameFreshnessConfiguration(loaded, { ...loaded, active: false })).toEqual(false);
+    expect(hasSameFreshnessConfiguration(loaded, { ...loaded, order: 2 })).toEqual(false);
+    expect(hasSameFreshnessConfiguration(loaded, { ...loaded, target_types: ['uses', 'targets'] })).toEqual(false);
+    expect(hasSameFreshnessConfiguration(loaded, { ...loaded, decay_filters: '{"mode":"and","filters":[],"filterGroups":[]}' })).toEqual(false);
+    // A deleted rule applies to nothing
+    expect(hasSameFreshnessConfiguration(loaded, undefined)).toEqual(false);
   });
 });
 
