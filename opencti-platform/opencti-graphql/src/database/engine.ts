@@ -1351,7 +1351,9 @@ export const elUpdateIndicesMappings = async (indexNames?: string[]): Promise<vo
       : indexMappingProperties;
     const fieldsLimit = computeMappingFieldsLimit(properties);
     if (fieldsLimit > ES_MAX_MAPPINGS) {
-      logApp.warn('[SEARCH] Index mapping above the default fields limit, raising the limit of the index', {
+      // The limit is raised as soon as the mapping leaves less than the headroom under the default limit, so the
+      // mapping itself may still be below that default: the message describes the raise, not an overflow.
+      logApp.warn('[SEARCH] Index fields limit raised above the default to keep the headroom over the mapping', {
         index,
         fields: countMappingFields(properties),
         limit: fieldsLimit,

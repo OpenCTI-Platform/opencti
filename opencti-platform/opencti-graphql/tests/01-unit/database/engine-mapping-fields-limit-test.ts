@@ -13,7 +13,7 @@ const LEGACY_FIELDS_OF_A_LONG_LIVED_PLATFORM = 800;
 // Budget for the mapping generated from the current schema. It is deliberately below the default limit so that a
 // long-lived index (current schema + legacy fields) keeps room under the default limit as long as possible, and the
 // limit raise stays the exception. When the schema legitimately grows past it, raise the budget in the same change
-// and check the warning "Index mapping above the default fields limit" on a long-lived test platform.
+// and check the warning "Index fields limit raised above the default" on a long-lived test platform.
 const GENERATED_MAPPING_FIELDS_BUDGET = ES_MAX_MAPPINGS - ES_MAPPING_FIELDS_HEADROOM;
 
 const engine = new ElkClient({ node: 'http://localhost:9200' });
