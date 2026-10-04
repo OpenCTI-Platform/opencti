@@ -68,6 +68,7 @@ const REQUEST_FIELDS = `
   requested_by { id }
   openaev_simulation_id
   work_id
+  created_at
   dispatched_at
   completed_at
 `;
@@ -227,6 +228,8 @@ describe('IOC validation requests', () => {
   it('should read and list the request', async () => {
     const read = await queryAsAdminWithSuccess({ query: REQUEST_READ, variables: { id: requestId } });
     expect(read.data?.iocValidationRequest.name).toContain('Validation of 1 indicator(s)');
+    // Dated on creation: the list orders on it and the maintenance times pending requests out from it
+    expect(read.data?.iocValidationRequest.created_at).toBeTruthy();
     const list = await queryAsAdminWithSuccess({ query: REQUESTS_LIST, variables: {} });
     expect(list.data?.iocValidationRequests.edges.map((e: { node: { id: string } }) => e.node.id)).toContain(requestId);
   });
