@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { Chip, Text } from '@filigran/design-system';
 import { Alert, Box, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import Grid from '@mui/material/Grid2';
+import Button from '@common/button/Button';
 import Card from '@common/card/Card';
 import WidgetDistributionList from '../../../../components/dashboard/WidgetDistributionList';
 import { useFormatter } from '../../../../components/i18n';
@@ -65,24 +66,37 @@ const DistributionCard = ({ title, entries, testId, total }: DistributionCardPro
   );
 };
 
-const delta = (before?: number | null, after?: number | null) => {
-  if (before === null || before === undefined || after === null || after === undefined || before === after) return '-';
-  return `${before} -> ${after}`;
-};
-
 interface LandscapeChangesResultsProps {
   diff: LandscapeDiffData;
   truncated?: boolean;
+  // Compare the same scope over a longer period, offered when nothing changed
+  onWidenPeriod?: () => void;
 }
 
 /**
  * Aggregates and per-entity drill-down of a landscape diff.
  */
-const LandscapeChangesResults = ({ diff, truncated = false }: LandscapeChangesResultsProps) => {
+const LandscapeChangesResults = ({ diff, truncated = false, onWidenPeriod }: LandscapeChangesResultsProps) => {
   const { t_i18n, n } = useFormatter();
   const { aggregates } = diff;
   if (!aggregates) return null;
   const period = { from: diff.from, to: diff.to };
+  const transition = (before?: number | null, after?: number | null) => {
+    if ((before ?? null) === (after ?? null)) return <Text variant="content-caption" style={{ color: 'var(--text-default-secondary)' }}>{t_i18n('Unchanged')}</Text>;
+    return t_i18n('{before} -> {after}', { values: { before: before ?? t_i18n('Not set'), after: after ?? t_i18n('Not set') } });
+  };
+  if (aggregates.entities_changed === 0 && aggregates.new_entities === 0) {
+    return (
+      <Alert
+        severity="info"
+        data-testid="landscape-changes-results"
+        sx={{ alignItems: 'center' }}
+        action={onWidenPeriod && <Button variant="secondary" onClick={onWidenPeriod}>{t_i18n('Widen the period')}</Button>}
+      >
+        {t_i18n('No change in this scope during this period')}
+      </Alert>
+    );
+  }
   return (
     <Box data-testid="landscape-changes-results">
       {truncated && (
@@ -174,8 +188,8 @@ const LandscapeChangesResults = ({ diff, truncated = false }: LandscapeChangesRe
                     <TableCell align="right">{n(entity.relationships_removed)}</TableCell>
                     <TableCell align="right">{n(entity.relationships_revoked)}</TableCell>
                     <TableCell align="right">{n(entity.attributes_changed)}</TableCell>
-                    <TableCell>{delta(entity.confidence_before, entity.confidence_after)}</TableCell>
-                    <TableCell>{delta(entity.score_before, entity.score_after)}</TableCell>
+                    <TableCell>{transition(entity.confidence_before, entity.confidence_after)}</TableCell>
+                    <TableCell>{transition(entity.score_before, entity.score_after)}</TableCell>
                     <TableCell align="right">{n(entity.change_score)}</TableCell>
                   </TableRow>
                 );

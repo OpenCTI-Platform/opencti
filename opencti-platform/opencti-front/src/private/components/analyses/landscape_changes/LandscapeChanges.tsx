@@ -1,6 +1,7 @@
 import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { useSearchParams } from 'react-router';
+import { useIntl } from 'react-intl';
 import { ProgressBar, Radio, RadioGroup, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Text } from '@filigran/design-system';
 import { Alert, Box } from '@mui/material';
 import Button from '@common/button/Button';
@@ -21,6 +22,7 @@ import { hasPayloadErrors } from '../../common/time_machine/timeMachineMutations
 import {
   DateRange,
   exportFileName,
+  formatDuration,
   landscapeDiffToCsv,
   landscapeDiffToHtml,
   landscapeDiffToJson,
@@ -57,6 +59,8 @@ const landscapeChangesPollQuery = graphql`
       saved_filter_id
       custom_view_id
       scope_entity_types
+      created_at
+      updated_at
       error
       truncated
       aggregates {
@@ -161,16 +165,35 @@ interface ScopeSelectorProps {
   customViewId: string;
   onSavedFilterChange: (id: string) => void;
   onCustomViewChange: (id: string) => void;
+  onChooseScope: () => void;
 }
 
-const ScopeSelector = ({ mode, savedFilterId, customViewId, onSavedFilterChange, onCustomViewChange }: ScopeSelectorProps) => {
+// First use of a scope kind that has nothing to offer yet: what Landscape changes compares, and another scope to start with
+const ScopeFirstUse = ({ message, onChooseScope }: { message: string; onChooseScope: () => void }) => {
+  const { t_i18n } = useFormatter();
+  return (
+    <Alert
+      severity="info"
+      data-testid="landscape-changes-first-use"
+      sx={{ alignItems: 'center' }}
+      action={<Button onClick={onChooseScope}>{t_i18n('Choose a scope')}</Button>}
+    >
+      <Text variant="content-compact" as="p">{message}</Text>
+      <Text variant="content-caption" as="p" style={{ color: 'var(--text-default-secondary)' }}>
+        {t_i18n('Landscape changes compares a set of entities between two dates: new entities and relationships, new techniques, malware, tools and victims, revocations, and confidence and score changes.')}
+      </Text>
+    </Alert>
+  );
+};
+
+const ScopeSelector = ({ mode, savedFilterId, customViewId, onSavedFilterChange, onCustomViewChange, onChooseScope }: ScopeSelectorProps) => {
   const { t_i18n } = useFormatter();
   const data = useLazyLoadQuery<LandscapeChangesScopesQuery>(landscapeChangesScopesQuery, {}, { fetchPolicy: 'store-and-network' });
   const savedFilters = (data.savedFilters?.edges ?? []).map((edge) => edge?.node).filter((node) => !!node);
   const customViews = (data.customViews?.edges ?? []).map((edge) => edge?.node).filter((node) => !!node);
   if (mode === 'saved_filter') {
     if (savedFilters.length === 0) {
-      return <Text variant="content-compact" style={{ color: 'var(--text-default-secondary)' }}>{t_i18n('No saved filter available.')}</Text>;
+      return <ScopeFirstUse message={t_i18n('No saved filter yet. Save the filters of a list to compare its entities, or start from filters.')} onChooseScope={onChooseScope} />;
     }
     return (
       <Select value={savedFilterId} onValueChange={onSavedFilterChange}>
@@ -187,7 +210,7 @@ const ScopeSelector = ({ mode, savedFilterId, customViewId, onSavedFilterChange,
   }
   if (mode === 'custom_view') {
     if (customViews.length === 0) {
-      return <Text variant="content-compact" style={{ color: 'var(--text-default-secondary)' }}>{t_i18n('No custom view available.')}</Text>;
+      return <ScopeFirstUse message={t_i18n('No custom view yet. Create a custom view to compare its entities, or start from filters.')} onChooseScope={onChooseScope} />;
     }
     return (
       <Select value={customViewId} onValueChange={onCustomViewChange}>
@@ -219,7 +242,8 @@ const toExportData = (diff: LandscapeDiffResult): LandscapeDiffData => ({
  * (a saved filter, the entities of a custom view or custom filters).
  */
 const LandscapeChanges = () => {
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n, fldt, n } = useFormatter();
+  const intl = useIntl();
   const [searchParams, setSearchParams] = useSearchParams();
   const [mode, setMode] = useState<ScopeMode>('filters');
   const [savedFilterId, setSavedFilterId] = useState('');
@@ -227,6 +251,8 @@ const LandscapeChanges = () => {
   const [entityType, setEntityType] = useState(AUTO_ENTITY_TYPE);
   const [groupBy, setGroupBy] = useState<string>('entity_type');
   const [range, setRange] = useState<DateRange>(presetRange('90d'));
+  const [rangePreset, setRangePreset] = useState<string>('90d');
+  const duration = (milliseconds: number) => formatDuration(milliseconds, (value, unit) => intl.formatNumber(value, { style: 'unit', unit, unitDisplay: 'long' }));
   const [filters, helpers] = useFiltersState();
   const availableFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Domain-Object']);
   const [diff, setDiff] = useState<LandscapeDiffResult | null>(null);
@@ -303,16 +329,24 @@ const LandscapeChanges = () => {
   };
 
   // A failed diff is computed again with its own scope and period, whatever the form shows
-  const handleRecompute = (failed: LandscapeDiffResult) => {
+  const handleRecompute = (failed: LandscapeDiffResult, period: DateRange = { from: failed.from, to: failed.to }) => {
     runLandscape({
-      from: failed.from,
-      to: failed.to,
+      from: period.from,
+      to: period.to,
       group_by: (failed.group_by ?? 'entity_type') as LandscapeGroupBy,
       filters: failed.filters ?? null,
       saved_filter_id: failed.saved_filter_id ?? null,
       custom_view_id: failed.custom_view_id ?? null,
       entity_types: [...failed.scope_entity_types],
     });
+  };
+
+  // A scope without change during the period is compared again over the last year
+  const handleWidenPeriod = (empty: LandscapeDiffResult) => {
+    const wider = presetRange('365d');
+    setRange(wider);
+    setRangePreset('365d');
+    handleRecompute(empty, wider);
   };
 
   const isRunning = !!diff && (diff.status === 'pending' || diff.status === 'running');
@@ -341,6 +375,7 @@ const LandscapeChanges = () => {
                 customViewId={customViewId}
                 onSavedFilterChange={setSavedFilterId}
                 onCustomViewChange={setCustomViewId}
+                onChooseScope={() => setMode('filters')}
               />
             </Suspense>
             {mode === 'filters' && (
@@ -382,7 +417,7 @@ const LandscapeChanges = () => {
                 </SelectContent>
               </Select>
             </Box>
-            <TimeMachinePeriodSelector value={range} onChange={setRange} initialPreset="90d" />
+            <TimeMachinePeriodSelector value={range} onChange={setRange} preset={rangePreset} onPresetChange={setRangePreset} />
             <Box sx={{ display: 'flex', gap: 1 }}>
               <Button onClick={handleCompute} disabled={!canCompute || running || isRunning} data-testid="landscape-changes-compute">
                 {t_i18n('Compute the landscape changes')}
@@ -395,10 +430,14 @@ const LandscapeChanges = () => {
       {diff && isRunning && (
         <Box sx={{ marginBottom: 3 }}>
           <Card title={t_i18n('Computing the landscape changes')}>
-            <ProgressBar value={progress} aria-label={t_i18n('Landscape diff progress')} />
-            <Text variant="content-compact" style={{ marginTop: 8 }}>
-              {`${diff.progress} / ${diff.total} ${t_i18n('entities processed')}`}
-            </Text>
+            <Box role="status" data-testid="landscape-changes-progress">
+              <ProgressBar value={progress} aria-label={t_i18n('Landscape diff progress')} />
+              <Text variant="content-compact" style={{ marginTop: 8 }}>
+                {t_i18n('{progress} of {total} entities compared, {elapsed} elapsed', {
+                  values: { progress: n(diff.progress), total: n(diff.total), elapsed: duration(Date.now() - new Date(diff.created_at).getTime()) },
+                })}
+              </Text>
+            </Box>
           </Card>
         </Box>
       )}
@@ -419,9 +458,16 @@ const LandscapeChanges = () => {
       {diff && diff.status === 'complete' && (
         <>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2, gap: 2, flexWrap: 'wrap' }}>
-            <Text variant="title-lg">
-              {t_i18n('Changes between')} {fldt(diff.from)} {t_i18n('and')} {fldt(diff.to)}
-            </Text>
+            <Box>
+              <Text variant="title-lg" as="p">
+                {t_i18n('Changes between {from} and {to}', { values: { from: fldt(diff.from), to: fldt(diff.to) } })}
+              </Text>
+              <Text variant="content-caption" as="p" style={{ color: 'var(--text-default-secondary)' }} data-testid="landscape-changes-status">
+                {t_i18n('{total, plural, one {Compared # entity in {duration}} other {Compared # entities in {duration}}}', {
+                  values: { total: diff.total, duration: duration(new Date(diff.updated_at).getTime() - new Date(diff.created_at).getTime()) },
+                })}
+              </Text>
+            </Box>
             <TimeMachineExportMenu
               fileName={(extension) => exportFileName('landscape_changes', diff.from, diff.to, extension)}
               buildJson={() => landscapeDiffToJson(toExportData(diff))}
@@ -429,7 +475,11 @@ const LandscapeChanges = () => {
               buildHtml={() => landscapeDiffToHtml(toExportData(diff), t_i18n, fldt)}
             />
           </Box>
-          <LandscapeChangesResults diff={toExportData(diff)} truncated={diff.truncated} />
+          <LandscapeChangesResults
+            diff={toExportData(diff)}
+            truncated={diff.truncated}
+            onWidenPeriod={rangePreset === '365d' || running ? undefined : () => handleWidenPeriod(diff)}
+          />
         </>
       )}
       {diffId && diff === null && !loadingDiff && !running && (

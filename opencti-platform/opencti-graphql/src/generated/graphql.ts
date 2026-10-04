@@ -15136,6 +15136,7 @@ export type LandscapeDiff = {
   to: Scalars['DateTime']['output'];
   total: Scalars['Int']['output'];
   truncated: Scalars['Boolean']['output'];
+  updated_at: Scalars['DateTime']['output'];
 };
 
 export type LandscapeDiffAggregates = {
@@ -48421,6 +48422,7 @@ export type LandscapeDiffResolvers<ContextType = any, ParentType extends Resolve
   to?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   total?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   truncated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
 }>;
 
 export type LandscapeDiffAggregatesResolvers<ContextType = any, ParentType extends ResolversParentTypes['LandscapeDiffAggregates'] = ResolversParentTypes['LandscapeDiffAggregates']> = ResolversObject<{

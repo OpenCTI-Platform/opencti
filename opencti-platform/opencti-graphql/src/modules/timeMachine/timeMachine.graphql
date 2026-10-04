@@ -248,6 +248,7 @@ type LandscapeDiff {
     custom_view_id: String
     scope_entity_types: [String!]!
     created_at: DateTime!
+    updated_at: DateTime!
     expires_at: DateTime!
     error: String
     truncated: Boolean!
