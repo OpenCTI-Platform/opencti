@@ -149,10 +149,10 @@ const uniq = (values: Array<string | null | undefined>): string[] => Array.from(
 export const markingsOf = (element: Record<string, any>): string[] => timelineRefIds(element, RELATION_OBJECT_MARKING);
 
 /**
- * A derived event is never less marked than its element, whatever its rule reads, nor than its container: once the
- * element is deleted, the markings of the event stand for those of the element when its removal is notified.
+ * A timeline event is never less marked than its element (whatever the rule of a derived event reads), nor than its
+ * container: once the element is deleted, the markings of the event stand for those of the element.
  */
-export const derivedEventMarkings = (eventMarkings: string[], element: Record<string, any> | undefined, containerMarkings: string[]): string[] => {
+export const timelineEventMarkings = (eventMarkings: string[], element: Record<string, any> | undefined, containerMarkings: string[]): string[] => {
   return uniq([...eventMarkings, ...(element ? markingsOf(element) : []), ...containerMarkings]);
 };
 
@@ -214,6 +214,13 @@ const normalizeForSignature = (value: unknown): unknown => {
 
 export const timelineEventSignature = (doc: Record<string, any>): string => {
   return JSON.stringify(CONTENT_FIELDS.map((field) => normalizeForSignature(doc[field])));
+};
+
+const ACCESS_FIELDS = ['restricted_members', 'element_access', buildRefRelationKey(RELATION_OBJECT_MARKING)];
+
+/** Whether who may read the event changed between two versions of it (its markings, members or the access of its element). */
+export const isTimelineEventAccessChanged = (previous: Record<string, any>, next: Record<string, any>): boolean => {
+  return ACCESS_FIELDS.some((field) => JSON.stringify(normalizeForSignature(previous[field])) !== JSON.stringify(normalizeForSignature(next[field])));
 };
 
 export interface TimelineEventDocInput {
@@ -710,9 +717,10 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
   const access = containerAccessFields(container);
   // The access of each element beyond its markings is kept on its events: once the element is deleted, it still decides
   // who may learn of their removal. The same read serves the visibility scope of the anchors.
-  const derivedElementIds = uniq(allDerived.map((event) => event.element_id).filter((id): id is string => !!id && id !== containerId));
-  const elements = derivedElementIds.length > 0
-    ? await internalFindByIds(context, SYSTEM_USER, derivedElementIds, { toMap: true, baseData: true }) as unknown as Record<string, AnyStoreElement>
+  const storedManual = stored.filter((e) => e.event_source === 'manual');
+  const elementIds = uniq([...allDerived, ...storedManual].map((event) => event.element_id).filter((id): id is string => !!id && id !== containerId));
+  const elements = elementIds.length > 0
+    ? await internalFindByIds(context, SYSTEM_USER, elementIds, { toMap: true, baseData: true }) as unknown as Record<string, AnyStoreElement>
     : {};
   const elementAccessOf = (elementId: string | null | undefined): TimelineElementAccess | null => {
     const element = elementId ? elements[elementId] : undefined;
@@ -749,7 +757,7 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
       element_type: event.element_type,
       confidence: event.confidence,
       external_id: null,
-      markings: derivedEventMarkings(event.markings, event.element_id ? elements[event.element_id] : undefined, access.markings),
+      markings: timelineEventMarkings(event.markings, event.element_id ? elements[event.element_id] : undefined, access.markings),
       created_by_id: event.created_by_id,
       creator_ids: event.creator_ids ?? [],
       restricted_members: access.restricted_members,
@@ -762,9 +770,11 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
     ? new Set(derived.map((event) => computeDerivedEventId(containerId, event.rule_id, derivedEventKey(event), event.kind)))
     : null;
   const docsById = new Map(Array.from(derivedDocsById).filter(([internalId]) => !keptIds || keptIds.has(internalId)));
-  // Manual events only follow the access of the container
-  stored.filter((e) => e.event_source === 'manual').forEach((event) => {
-    const markings = uniq([...markingsOf(event), ...access.markings]);
+  // Manual events follow the access of the container and of their element: never less marked than either, with the access
+  // of the element beyond its markings recorded like on derived events (a deleted element keeps the markings it gave)
+  storedManual.forEach((event) => {
+    const element = event.element_id && event.element_id !== containerId ? elements[event.element_id] : undefined;
+    const markings = timelineEventMarkings(markingsOf(event), element, access.markings);
     const doc = buildTimelineEventDoc({
       internal_id: event.internal_id,
       container_id: containerId,
@@ -790,6 +800,7 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
       created_by_id: (event[buildRefRelationKey(RELATION_CREATED_BY)] ?? [])[0],
       creator_ids: Array.isArray(event.creator_id) ? event.creator_id : uniq([event.creator_id as string]),
       restricted_members: access.restricted_members,
+      element_access: elementAccessOf(event.element_id),
     }, event);
     docsById.set(event.internal_id, doc);
   });
@@ -838,12 +849,18 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
     await upsertTimelineSettings(context, container, { capped_anchor_bounds: cappedAnchorBounds }, generatedSettings);
   }
   if (changedDocs.length > 0 || staleEvents.length > 0) {
+    // An event whose access changed (its element restricted or deleted) is no longer named to the readers who lost it:
+    // the update then goes, like a truncated one, to every reader of the case, so that an open timeline refreshes
+    const accessChanged = changedDocs.some((doc) => {
+      const previous = storedById.get(doc.internal_id);
+      return !!previous && isTimelineEventAccessChanged(previous, doc);
+    });
     await publishTimelineUpdate({
       container_id: containerId,
       update_type: 'derived',
       changed_event_ids: changedDocs.map((d) => d.internal_id).slice(0, TIMELINE_UPDATE_MAX_EVENTS),
       removed_events: toRemovedTimelineEvents(staleEvents.slice(0, TIMELINE_UPDATE_MAX_EVENTS)),
-      truncated: changedDocs.length > TIMELINE_UPDATE_MAX_EVENTS || staleEvents.length > TIMELINE_UPDATE_MAX_EVENTS,
+      truncated: accessChanged || changedDocs.length > TIMELINE_UPDATE_MAX_EVENTS || staleEvents.length > TIMELINE_UPDATE_MAX_EVENTS,
       anchors,
     });
   }

@@ -27,7 +27,8 @@ import * as timelineEngine from '../../../src/modules/timeline/timeline-engine';
 import { elUpdate } from '../../../src/database/engine';
 import { processDueTimelineRegenerations, timelineStreamEventsHandler } from '../../../src/manager/timelineManager';
 import type { DataEvent, SseEvent } from '../../../src/types/event';
-import { createEntity, deleteElementById } from '../../../src/database/middleware';
+import { createEntity, createRelation, deleteElementById } from '../../../src/database/middleware';
+import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { MEMBER_ACCESS_RIGHT_ADMIN, SYSTEM_USER } from '../../../src/utils/access';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
 
@@ -589,7 +590,7 @@ describe('Incident and case timeline', () => {
       expect(await timelineUpdateForUser(testContext, participate, { ...update, changed_event_ids: [], removed_events: [removedAboutRestrictedDeleted] })).toBeNull();
       expect((await timelineUpdateForUser(testContext, editor, { ...update, changed_event_ids: [], removed_events: [removedAboutRestrictedDeleted] }))?.changed_event_ids)
         .toEqual(['removed-event']);
-      // Without a recorded access (a manual event), nobody reads an event whose element was deleted
+      // Without a recorded access, nobody reads an event whose element was deleted
       const removedWithoutAccess = { ...removedAboutDeleted, element_access: null };
       expect(await timelineUpdateForUser(testContext, participate, { ...update, changed_event_ids: [], removed_events: [removedWithoutAccess] })).toBeNull();
       // An update naming only part of its events reaches the subscriber, without the events it cannot read
@@ -1231,6 +1232,13 @@ describe('Incident and case timeline', () => {
       // Every container is handed back to the queue for the tests that follow
       await Promise.all(claimed.map((id) => acknowledgeTimelineRegeneration(id)));
       await enqueueTimelineRegeneration([...others, ...claimed], 0);
+      // The regeneration then refreshes the access of the element on the event: its new marking, and its access beyond markings
+      const amber = await internalLoadById(testContext, SYSTEM_USER, MARKING_TLP_AMBER);
+      await createRelation(testContext, SYSTEM_USER, { fromId: outsideId, toId: amber.internal_id, relationship_type: RELATION_OBJECT_MARKING });
+      await queryAsAdminWithSuccess({ query: TIMELINE_REGENERATE, variables: { containerId: caseIncident.id } });
+      const refreshed = (await loadStoredTimelineEvents(testContext, caseIncident.id)).find((event) => event.internal_id === milestone.data.timelineEventAdd.id);
+      expect(refreshed?.[`rel_${RELATION_OBJECT_MARKING}.internal_id`]).toContain(amber.internal_id);
+      expect(refreshed?.element_access).toEqual({ restricted_members: [], granted: [] });
       await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: milestone.data.timelineEventAdd.id } });
       await queryAsAdminWithSuccess({ query: STIX_CORE_OBJECT_DELETE, variables: { id: outsideId } });
     });

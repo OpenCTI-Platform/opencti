@@ -602,9 +602,9 @@ export const timelineUpdateForUser = async (context: AuthContext, user: AuthUser
   const { items } = await filterAccessibleEvents(context, user, update.container_id, candidates, (event) => event);
   const named = new Set(items.map((event) => event.internal_id));
   // A removed event whose element was deleted resolves for nobody: it is read as its element was, from the access the
-  // regeneration recorded on the event (its markings carry those of the element). Without that record, as for a manual
-  // event, nobody reads the event since its element was deleted. A removed event whose element still exists stays named
-  // only to the readers of the element.
+  // regeneration recorded on the event (its markings carry those of the element). Without that record (an event never
+  // regenerated since it was added), nobody reads the event since its element was deleted. A removed event whose element
+  // still exists stays named only to the readers of the element.
   const unresolvedRemoved = readableRemoved.filter((event) => !!event.element_id && !named.has(event.id));
   const unresolvedElementIds = Array.from(new Set(unresolvedRemoved.map((event) => event.element_id as string)));
   const existingElements = unresolvedElementIds.length > 0

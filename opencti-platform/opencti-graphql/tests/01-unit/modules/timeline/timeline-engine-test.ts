@@ -5,10 +5,11 @@ import {
   computeDerivedEventId,
   computeManualEventId,
   createConcurrencyLimiter,
-  derivedEventMarkings,
   getTimelineRules,
   isPendingAnnotationApplicable,
+  isTimelineEventAccessChanged,
   keptAnalystFields,
+  timelineEventMarkings,
   timelineEventMaxConfidence,
   timelineEventSignature,
   timelineEventStandardId,
@@ -317,10 +318,19 @@ describe('Timeline first-use generation limit', () => {
 describe('Timeline derived event markings', () => {
   it('should never mark a derived event less than its element, even when its rule reads no marking', () => {
     // As read without its relations, the element carries its markings as doc values
-    expect(derivedEventMarkings([], { 'object-marking': ['tlp-amber'] }, ['tlp-green']).sort()).toEqual(['tlp-amber', 'tlp-green']);
-    expect(derivedEventMarkings(['tlp-amber'], { 'rel_object-marking.internal_id': ['tlp-amber', 'pap-red'] }, []).sort()).toEqual(['pap-red', 'tlp-amber']);
+    expect(timelineEventMarkings([], { 'object-marking': ['tlp-amber'] }, ['tlp-green']).sort()).toEqual(['tlp-amber', 'tlp-green']);
+    expect(timelineEventMarkings(['tlp-amber'], { 'rel_object-marking.internal_id': ['tlp-amber', 'pap-red'] }, []).sort()).toEqual(['pap-red', 'tlp-amber']);
     // The container itself (or an element not read) adds nothing beyond the markings of the container
-    expect(derivedEventMarkings(['tlp-clear'], undefined, ['tlp-green']).sort()).toEqual(['tlp-clear', 'tlp-green']);
+    expect(timelineEventMarkings(['tlp-clear'], undefined, ['tlp-green']).sort()).toEqual(['tlp-clear', 'tlp-green']);
+  });
+
+  it('should tell when who may read an event changed between two versions of it', () => {
+    const event = { name: 'Related campaign spotted', 'rel_object-marking.internal_id': ['tlp-green'], element_access: { restricted_members: [], granted: [] } };
+    expect(isTimelineEventAccessChanged(event, { ...event, name: 'Renamed' })).toBe(false);
+    expect(isTimelineEventAccessChanged(event, { ...event, 'rel_object-marking.internal_id': ['tlp-amber', 'tlp-green'] })).toBe(true);
+    expect(isTimelineEventAccessChanged(event, { ...event, element_access: { restricted_members: [{ id: 'user', access_right: 'admin' }], granted: [] } })).toBe(true);
+    // The element was deleted: its access is no longer recorded
+    expect(isTimelineEventAccessChanged(event, { ...event, element_access: null })).toBe(true);
   });
 });
 
