@@ -43,6 +43,7 @@ import { isRelationConsistent } from '../../utils/modelConsistency';
 import { nowTime } from '../../utils/format';
 import {
   computeNextFullPassAt,
+  lastFullPassEndedAt,
   getGraphAnalyticsComputeConfig,
   GRAPH_RUN_LEASE_MS,
   isFullPassInProgress,
@@ -866,6 +867,7 @@ export const getGraphAnalyticsStatus = async (context: AuthContext, user: AuthUs
     full_pass_in_progress: isFullPassInProgress(state),
     last_full_pass_started_at: parseStateDate(state[GRAPH_STATE_FULL_PASS_STARTED_AT]),
     last_full_pass_completed_at: parseStateDate(state[GRAPH_STATE_FULL_PASS_COMPLETED_AT]),
+    last_full_pass_ended_at: lastFullPassEndedAt(state),
     next_full_pass_at: computeNextFullPassAt(state, getGraphAnalyticsComputeConfig()),
     similarity_documents: similarityDocuments,
     clusters_count: clustersCount,

@@ -91,6 +91,7 @@ interface GraphAnalyticsStateSource {
   readonly pending_entities: number;
   readonly full_pass_in_progress: boolean;
   readonly last_full_pass_completed_at?: unknown;
+  readonly last_full_pass_ended_at?: unknown;
   readonly analytics_process_last_run_at?: unknown;
 }
 
@@ -98,7 +99,7 @@ interface GraphAnalyticsStateSource {
 export const resolveGraphAnalyticsState = (status: GraphAnalyticsStateSource): GraphAnalyticsState => {
   if (!status.manager_enabled) return 'disabled';
   if (status.full_pass_in_progress || status.pending_entities > 0) return 'analysing';
-  if (!status.last_full_pass_completed_at && !status.analytics_process_last_run_at) return 'not_analysed';
+  if (!status.last_full_pass_completed_at && !status.last_full_pass_ended_at && !status.analytics_process_last_run_at) return 'not_analysed';
   return 'up_to_date';
 };
 

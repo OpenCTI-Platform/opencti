@@ -2885,6 +2885,7 @@
   "Last obs.": "Последние наблюдения.",
   "Last observables": "Последние наблюдения",
   "Last observed": "Последнее наблюдение",
+  "Last pass {time} stopped at its entity limit, the next one continues where it stopped": "Последний проход ({time}) остановлен на лимите сущностей, следующий продолжит с места остановки",
   "Last processed message": "Последнее обработанное сообщение",
   "Last reports": "Последние отчеты",
   "Last result": "Последний результат",

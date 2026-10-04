@@ -2885,6 +2885,7 @@
   "Last obs.": "Last obs.",
   "Last observables": "Last observables",
   "Last observed": "Last observed",
+  "Last pass {time} stopped at its entity limit, the next one continues where it stopped": "Last pass {time} stopped at its entity limit, the next one continues where it stopped",
   "Last processed message": "Last processed message",
   "Last reports": "Last reports",
   "Last result": "Last result",

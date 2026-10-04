@@ -16,6 +16,7 @@ export const graphAnalyticsStatusQuery = graphql`
       pending_entities
       full_pass_in_progress
       last_full_pass_completed_at
+      last_full_pass_ended_at
       next_full_pass_at
       similarity_documents
       clusters_count
@@ -65,10 +66,12 @@ const GraphAnalyticsStatus = ({ queryRef }: { queryRef: PreloadedQuery<GraphAnal
       : t_i18n('Full pass of the knowledge graph in progress');
   } else if (state === 'not_analysed') {
     sentence = t_i18n('The first full pass of the knowledge graph starts in the next minutes.');
+  } else if (status.last_full_pass_completed_at) {
+    sentence = <GraphRelativeTime date={status.last_full_pass_completed_at} template="Last full pass {time}" />;
+  } else if (status.last_full_pass_ended_at) {
+    sentence = <GraphRelativeTime date={status.last_full_pass_ended_at} template="Last pass {time} stopped at its entity limit, the next one continues where it stopped" />;
   } else {
-    sentence = status.last_full_pass_completed_at
-      ? <GraphRelativeTime date={status.last_full_pass_completed_at} template="Last full pass {time}" />
-      : <GraphRelativeTime date={status.analytics_process_last_run_at as string} template="Last analytics run {time}" />;
+    sentence = <GraphRelativeTime date={status.analytics_process_last_run_at as string} template="Last analytics run {time}" />;
   }
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }} data-testid="graph-analytics-status">

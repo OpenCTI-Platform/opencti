@@ -3,7 +3,10 @@ import conf from '../../config/conf';
 // Fields of the graph analytics state hash stored in Redis
 export const GRAPH_STATE_LAST_INCREMENTAL_RUN = 'last_incremental_run';
 export const GRAPH_STATE_FULL_PASS_STARTED_AT = 'full_pass_started_at';
+// end of the last pass that reached the last entity
 export const GRAPH_STATE_FULL_PASS_COMPLETED_AT = 'full_pass_completed_at';
+// end of the last pass, completed or stopped at its entity cap: the next pass is scheduled from it
+export const GRAPH_STATE_FULL_PASS_ENDED_AT = 'full_pass_ended_at';
 export const GRAPH_STATE_FULL_PASS_CURSOR = 'full_pass_cursor';
 export const GRAPH_STATE_FULL_PASS_PROCESSED = 'full_pass_processed';
 export const GRAPH_STATE_CLUSTERING_LAST_RUN = 'clustering_last_run';

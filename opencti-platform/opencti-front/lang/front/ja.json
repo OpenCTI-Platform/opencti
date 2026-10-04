@@ -2885,6 +2885,7 @@
   "Last obs.": "最終観測日時",
   "Last observables": "最新の観測結果",
   "Last observed": "最終観測日時",
+  "Last pass {time} stopped at its entity limit, the next one continues where it stopped": "前回のパス（{time}）はエンティティ上限で停止しました。次回は停止した位置から再開します",
   "Last processed message": "最後に処理したメッセージ",
   "Last reports": "最新レポート",
   "Last result": "最後の結果",

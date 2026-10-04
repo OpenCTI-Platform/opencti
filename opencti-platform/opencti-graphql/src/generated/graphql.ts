@@ -10304,7 +10304,10 @@ export type GraphAnalyticsStatus = {
   analytics_process_version?: Maybe<Scalars['String']['output']>;
   clusters_count: Scalars['Int']['output'];
   full_pass_in_progress: Scalars['Boolean']['output'];
+  /** End of the last full pass that reached the last entity */
   last_full_pass_completed_at?: Maybe<Scalars['DateTime']['output']>;
+  /** End of the last full pass, whether it reached the last entity or stopped at its entity cap */
+  last_full_pass_ended_at?: Maybe<Scalars['DateTime']['output']>;
   last_full_pass_started_at?: Maybe<Scalars['DateTime']['output']>;
   last_incremental_run?: Maybe<Scalars['DateTime']['output']>;
   manager_enabled: Scalars['Boolean']['output'];
@@ -46957,6 +46960,7 @@ export type GraphAnalyticsStatusResolvers<ContextType = any, ParentType extends 
   clusters_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   full_pass_in_progress?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   last_full_pass_completed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  last_full_pass_ended_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   last_full_pass_started_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   last_incremental_run?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   manager_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;

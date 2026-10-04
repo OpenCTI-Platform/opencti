@@ -2885,6 +2885,7 @@
   "Last obs.": "Última obs.",
   "Last observables": "Últimos observables",
   "Last observed": "Dernière observation",
+  "Last pass {time} stopped at its entity limit, the next one continues where it stopped": "Última pasada {time} detenida en su límite de entidades, la siguiente continúa donde se detuvo",
   "Last processed message": "Último mensaje procesado",
   "Last reports": "Últimos informes",
   "Last result": "Último resultado",

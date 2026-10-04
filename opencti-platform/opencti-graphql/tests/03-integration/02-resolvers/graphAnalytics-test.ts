@@ -11,6 +11,7 @@ import { ENTITY_DOMAIN_NAME, ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE } from '.
 import { GRAPH_ANALYTICS_MANAGER_USER } from '../../../src/utils/access';
 import {
   getGraphAnalyticsComputeConfig,
+  isFullPassInProgress,
   processDirtyEntities,
   runFullPassStep,
   runInfrastructureClustering,
@@ -28,6 +29,7 @@ import {
   GRAPH_STATE_ANALYTICS_LAST_RUN_AT,
   GRAPH_STATE_FULL_PASS_COMPLETED_AT,
   GRAPH_STATE_FULL_PASS_CURSOR,
+  GRAPH_STATE_FULL_PASS_ENDED_AT,
   GRAPH_STATE_FULL_PASS_PROCESSED,
   GRAPH_STATE_FULL_PASS_STARTED_AT,
 } from '../../../src/modules/graphAnalytics/graphAnalytics-state';
@@ -640,11 +642,17 @@ describe('Graph analytics resolvers', () => {
   it('should resume a capped full pass where the previous one stopped', async () => {
     const capped = { ...config, fullPassBatchSize: 2, fullPassMaxEntities: 2 };
     try {
+      const completedBefore = (await redisGraphAnalyticsGetState())[GRAPH_STATE_FULL_PASS_COMPLETED_AT];
       await startFullPass();
       const first = await runFullPassStep(context, user, capped, 60000);
       expect(first).toEqual({ processed: 2, outcome: 'capped' });
-      const firstCursor = (await redisGraphAnalyticsGetState())[GRAPH_STATE_FULL_PASS_CURSOR];
+      const firstState = await redisGraphAnalyticsGetState();
+      const firstCursor = firstState[GRAPH_STATE_FULL_PASS_CURSOR];
       expect(firstCursor).toBeTruthy();
+      // the pass ended, but it did not refresh every entity: it is not reported as a completed full pass
+      expect(firstState[GRAPH_STATE_FULL_PASS_ENDED_AT]).toBeTruthy();
+      expect(firstState[GRAPH_STATE_FULL_PASS_COMPLETED_AT]).toEqual(completedBefore);
+      expect(isFullPassInProgress(firstState)).toBe(false);
       await startFullPass();
       const second = await runFullPassStep(context, user, capped, 60000);
       expect(second).toEqual({ processed: 2, outcome: 'capped' });
@@ -652,7 +660,13 @@ describe('Graph analytics resolvers', () => {
       expect(secondCursor).toBeTruthy();
       expect(secondCursor).not.toEqual(firstCursor);
     } finally {
-      await redisGraphAnalyticsDeleteState([GRAPH_STATE_FULL_PASS_CURSOR, GRAPH_STATE_FULL_PASS_STARTED_AT, GRAPH_STATE_FULL_PASS_COMPLETED_AT, GRAPH_STATE_FULL_PASS_PROCESSED]);
+      await redisGraphAnalyticsDeleteState([
+        GRAPH_STATE_FULL_PASS_CURSOR,
+        GRAPH_STATE_FULL_PASS_STARTED_AT,
+        GRAPH_STATE_FULL_PASS_COMPLETED_AT,
+        GRAPH_STATE_FULL_PASS_ENDED_AT,
+        GRAPH_STATE_FULL_PASS_PROCESSED,
+      ]);
       await redisGraphAnalyticsPopReady(Date.now(), 100);
     }
   });

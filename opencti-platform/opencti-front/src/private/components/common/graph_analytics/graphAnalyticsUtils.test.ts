@@ -39,6 +39,8 @@ describe('graphAnalyticsUtils', () => {
     expect(resolveGraphAnalyticsState({ ...idle, full_pass_in_progress: true })).toBe('analysing');
     expect(resolveGraphAnalyticsState({ ...idle, last_full_pass_completed_at: null })).toBe('not_analysed');
     expect(resolveGraphAnalyticsState({ ...idle, last_full_pass_completed_at: null, analytics_process_last_run_at: '2026-10-04T00:10:00Z' })).toBe('up_to_date');
+    // a pass stopped at its entity cap analysed the platform, although no pass reached the last entity yet
+    expect(resolveGraphAnalyticsState({ ...idle, last_full_pass_completed_at: null, last_full_pass_ended_at: '2026-10-04T00:10:00Z' })).toBe('up_to_date');
   });
 
   it('formats scores as bounded percentages', () => {

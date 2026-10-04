@@ -10,7 +10,13 @@ import {
 } from '../../../../src/modules/graphAnalytics/graphAnalytics-features';
 import { isAcceptedPathEntityType, resolvePathRelationshipTypes } from '../../../../src/modules/graphAnalytics/graphAnalytics-paths';
 import { isAnalyticsProcessActive, GRAPH_STATE_ANALYTICS_LAST_RUN_AT } from '../../../../src/modules/graphAnalytics/graphAnalytics-state';
-import { computeNextFullPassAt, isFullPassInProgress, shouldStartFullPass, getGraphAnalyticsComputeConfig } from '../../../../src/modules/graphAnalytics/graphAnalytics-compute';
+import {
+  computeNextFullPassAt,
+  isFullPassInProgress,
+  lastFullPassEndedAt,
+  shouldStartFullPass,
+  getGraphAnalyticsComputeConfig,
+} from '../../../../src/modules/graphAnalytics/graphAnalytics-compute';
 import { resolveConcreteEntityType } from '../../../../src/modules/graphAnalytics/graphAnalytics-store';
 
 describe('graph analytics feature extraction rules', () => {
@@ -123,6 +129,28 @@ describe('graph analytics scheduling', () => {
     expect(isFullPassInProgress({ full_pass_started_at: '2026-10-01T02:00:00.000Z' })).toBe(true);
     expect(isFullPassInProgress({ full_pass_started_at: '2026-10-01T02:00:00.000Z', full_pass_completed_at: '2026-10-01T03:00:00.000Z' })).toBe(false);
     expect(shouldStartFullPass({ full_pass_started_at: '2026-10-01T02:00:00.000Z' }, config)).toBe(false);
+  });
+
+  it('should schedule the next pass after a pass stopped at its entity cap without reporting it completed', () => {
+    const hourly = { ...config, fullPassHour: 2 };
+    const now = new Date('2026-10-01T10:00:00.000Z');
+    // the cap stopped the pass of this night; the last pass that reached the last entity is older
+    const capped = {
+      full_pass_started_at: '2026-10-01T02:00:00.000Z',
+      full_pass_ended_at: '2026-10-01T04:00:00.000Z',
+      full_pass_completed_at: '2026-09-29T03:00:00.000Z',
+    };
+    expect(isFullPassInProgress(capped)).toBe(false);
+    expect(lastFullPassEndedAt(capped)?.toISOString()).toBe('2026-10-01T04:00:00.000Z');
+    expect(shouldStartFullPass(capped, hourly, now)).toBe(false);
+    expect((computeNextFullPassAt(capped, hourly, now) as Date).toISOString()).toBe('2026-10-02T02:00:00.000Z');
+    // a capped first pass: no completion yet, the next pass is still scheduled from its end
+    const firstCapped = { full_pass_started_at: '2026-10-01T02:00:00.000Z', full_pass_ended_at: '2026-10-01T04:00:00.000Z' };
+    expect(isFullPassInProgress(firstCapped)).toBe(false);
+    expect(shouldStartFullPass(firstCapped, hourly, now)).toBe(false);
+    // a state written before the end date existed is scheduled from its completion date
+    expect(lastFullPassEndedAt({ full_pass_completed_at: '2026-10-01T03:00:00.000Z' })?.toISOString()).toBe('2026-10-01T03:00:00.000Z');
+    expect(lastFullPassEndedAt({})).toBeNull();
   });
 
   it('should consider the analytics process active only within the grace period', () => {

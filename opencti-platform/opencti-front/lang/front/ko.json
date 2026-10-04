@@ -2885,6 +2885,7 @@
   "Last obs.": "마지막 관찰",
   "Last observables": "마지막 관찰 가능 항목",
   "Last observed": "마지막으로 관찰됨",
+  "Last pass {time} stopped at its entity limit, the next one continues where it stopped": "마지막 패스({time})가 엔티티 한도에서 중지되었습니다. 다음 패스는 중지된 위치부터 계속됩니다",
   "Last processed message": "마지막으로 처리된 메시지",
   "Last reports": "마지막 보고서",
   "Last result": "마지막 결과",

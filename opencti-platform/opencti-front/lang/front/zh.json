@@ -2885,6 +2885,7 @@
   "Last obs.": "最后观测.",
   "Last observables": "最后的可观测数据",
   "Last observed": "最后观测",
+  "Last pass {time} stopped at its entity limit, the next one continues where it stopped": "上次遍历（{time}）在实体数量上限处停止，下次遍历将从停止处继续",
   "Last processed message": "上次处理的消息",
   "Last reports": "最后报告",
   "Last result": "最后结果",

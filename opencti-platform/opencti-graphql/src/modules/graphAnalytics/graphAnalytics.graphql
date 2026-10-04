@@ -197,7 +197,10 @@ type GraphAnalyticsStatus {
     last_incremental_run: DateTime
     full_pass_in_progress: Boolean!
     last_full_pass_started_at: DateTime
+    "End of the last full pass that reached the last entity"
     last_full_pass_completed_at: DateTime
+    "End of the last full pass, whether it reached the last entity or stopped at its entity cap"
+    last_full_pass_ended_at: DateTime
     "When the next full pass starts, null while one is running"
     next_full_pass_at: DateTime
     similarity_documents: Int!
