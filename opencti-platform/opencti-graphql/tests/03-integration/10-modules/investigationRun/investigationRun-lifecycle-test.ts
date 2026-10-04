@@ -6,10 +6,12 @@ import { ADMIN_USER, getUserIdByEmail, testContext, USER_EDITOR, USER_PARTICIPAT
 import { connectorDelete, registerConnector } from '../../../../src/domain/connector';
 import { updateProcessedTime } from '../../../../src/domain/work';
 import { ConnectorType, InvestigationRunTrigger } from '../../../../src/generated/graphql';
+import { MARKING_TLP_AMBER } from '../../../../src/schema/identifier';
 import { addInvestigationRun, decideInvestigationApprovals, loadInvestigationRun } from '../../../../src/modules/investigationRun/investigationRun-domain';
 import * as entrepriseEdition from '../../../../src/enterprise-edition/ee';
 import * as aiAgentShared from '../../../../src/modules/playbook/components/ai-agent-shared';
 import * as investigationXtm from '../../../../src/modules/investigationRun/investigationRun-xtm';
+import * as draftWorkspaceDomain from '../../../../src/modules/draftWorkspace/draftWorkspace-domain';
 import { parseEngineInvestigation } from '../../../../src/modules/investigationRun/investigationRun-engine';
 import { listInvestigationRunsToProcess, processInvestigationRun } from '../../../../src/modules/investigationRun/investigationRun-executor';
 
@@ -128,6 +130,9 @@ const DELETE_CASE = gql`mutation CaseIncidentDelete($id: ID!) { caseIncidentDele
 const RESTRICT_CONTAINER = gql`
   mutation ContainerRestrict($id: ID!, $input: [MemberAccessInput!]) { containerEdit(id: $id) { editAuthorizedMembers(input: $input) { id } } }
 `;
+const MARK_SDO = gql`
+  mutation SdoMark($id: ID!, $input: StixRefRelationshipAddInput!) { stixDomainObjectEdit(id: $id) { relationAdd(input: $input) { id } } }
+`;
 const DELETE_SDO = gql`mutation SdoDelete($id: ID!) { stixDomainObjectEdit(id: $id) { delete } }`;
 const DELETE_SCO = gql`mutation ScoDelete($id: ID!) { stixCyberObservableEdit(id: $id) { delete } }`;
 const DELETE_DRAFT = gql`mutation DraftDelete($id: ID!) { draftWorkspaceDelete(id: $id) }`;
@@ -215,6 +220,9 @@ const RUN_ENRICHMENT_STATE = gql`
 `;
 const CASE_LATEST_RUN = gql`
   query CaseLatestRun($id: String!) { caseIncident(id: $id) { id latestInvestigationRun { id run_status } } }
+`;
+const RUN_MARKINGS = gql`
+  query RunMarkings($id: ID!) { investigationRun(id: $id) { id xtm_revision objectMarking { standard_id } } }
 `;
 const RUNS_OF_CASE = gql`
   query RunsOfCase($caseId: String) { investigationRuns(caseId: $caseId, first: 10) { edges { node { id run_status } } } }
@@ -581,6 +589,8 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       vi.mocked(investigationXtm.cancelInvestigation).mockClear();
       await queryAsAdminWithSuccess({ query: RESTRICT_CONTAINER, variables: { id: caseId, input: [{ id: ADMIN_USER.id, access_right: 'admin' }] } });
       engineStage = 'completed';
+      // The first deletion of the draft fails: the run keeps its reference and the manager retries.
+      const deletion = vi.spyOn(draftWorkspaceDomain, 'deleteDraftWorkspace').mockRejectedValueOnce(new Error('Draft store unavailable'));
       const stopped = await tickUntil(runId, (current) => current.run_status !== 'running');
       expect(stopped).toMatchObject({
         run_status: 'failed',
@@ -594,14 +604,45 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
         report_id: null,
         hypotheses: [],
         recommendations: [],
-        draft_id: null,
+        draft_id: mirrored.draft_id,
       });
       expect(stopped.steps.every((step: { action: string | null }) => step.action === null)).toBe(true);
+      expect((await listInvestigationRunsToProcess(testContext, 50)).map((run) => run.internal_id)).toContain(runId);
+      await processInvestigationRun(testContext, runId);
+      deletion.mockRestore();
+      expect((await readRun(runId)).draft_id).toBeNull();
+      expect((await listInvestigationRunsToProcess(testContext, 50)).map((run) => run.internal_id)).not.toContain(runId);
       // The draft of the run is deleted with what it wrote there.
       const draft = await queryAsAdmin({ query: gql`query Draft($id: String!) { draftWorkspace(id: $id) { id } }`, variables: { id: mirrored.draft_id } });
       expect(draft.data?.draftWorkspace ?? null).toBeNull();
       expect(investigationXtm.cancelInvestigation).toHaveBeenCalledWith(expect.anything(), ENGINE_ID);
       expect((await loadInvestigationRun(testContext, runId))?.xtm_status).toBe('cancelled');
+    } finally {
+      await queryAsAdmin({ query: DELETE_CASE, variables: { id: caseId } });
+    }
+  });
+
+  it('carries a marking added to its case after its draft copied the case', async () => {
+    const created = await queryAsAdminWithSuccess({ query: CREATE_CASE, variables: { input: { name: 'Case Autopilot e2e marked case', objects: [fixture.ipId] } } });
+    const caseId = created.data.caseIncidentAdd.id;
+    const runMarkings = async (runId: string) => {
+      const { data } = await queryAsAdminWithSuccess({ query: RUN_MARKINGS, variables: { id: runId } });
+      return data.investigationRun.objectMarking.map((marking: { standard_id: string }) => marking.standard_id);
+    };
+    try {
+      engineStage = 'planning';
+      const { data } = await queryAsAdminWithSuccess({ query: RUN_ADD, variables: { subjectId: caseId } });
+      const runId = data.investigationRunAdd.id;
+      createdRuns.push({ id: runId });
+      await tickUntil(runId, (current) => current.run_phase === 'investigating');
+      engineStage = 'running';
+      await tickUntil(runId, (current) => (current as unknown as { xtm_revision: number }).xtm_revision >= 1);
+      expect(await runMarkings(runId)).not.toContain(MARKING_TLP_AMBER);
+      // The draft of the run holds the copy of the case it made at creation, without the marking.
+      await queryAsAdminWithSuccess({ query: MARK_SDO, variables: { id: caseId, input: { toId: MARKING_TLP_AMBER, relationship_type: 'object-marking' } } });
+      engineStage = 'completed';
+      await tickUntil(runId, (current) => (current as unknown as { xtm_revision: number }).xtm_revision >= 2);
+      expect(await runMarkings(runId)).toContain(MARKING_TLP_AMBER);
     } finally {
       await queryAsAdmin({ query: DELETE_CASE, variables: { id: caseId } });
     }

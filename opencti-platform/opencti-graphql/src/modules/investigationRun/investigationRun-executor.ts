@@ -67,7 +67,7 @@ import { ENTITY_TYPE_PIR } from '../pir/pir-types';
 import { checkStixCoreRelationshipMapping } from '../../database/stix';
 import { executionContext, INVESTIGATION_MANAGER_USER, isUserHasCapability, isUserInPlatformOrganization, KNOWLEDGE_KNENRICHMENT } from '../../utils/access';
 import { resolveUserByIdFromCache } from '../user/user-domain';
-import { addDraftWorkspace, deleteDraftWorkspace, validateDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
+import { addDraftWorkspace, deleteDraftWorkspace, findById as findDraftById, validateDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import { addWorkspace, workspaceEditField } from '../workspace/workspace-domain';
 import { askElementEnrichmentForConnectors } from '../../domain/stixCoreObject';
 import { loadWorkById } from '../../domain/work';
@@ -178,6 +178,8 @@ const SUBJECT_INACCESSIBLE_REASON = 'The investigated entity is no longer access
 const SUBJECT_INACCESSIBLE = { reason: SUBJECT_INACCESSIBLE_REASON, code: 'subject_inaccessible' };
 const MEMBER_RESTRICTED_CODE = 'member_restricted';
 const MEMBER_RESTRICTED_REASON = 'An entity of the investigation is now restricted to authorized members: Case Autopilot stopped and withheld what it had found';
+// End reasons of the runs stopped at an access boundary, whose draft is deleted.
+const CARRY_BOUNDARY_CODES = [MEMBER_RESTRICTED_CODE, SUBJECT_INACCESSIBLE.code];
 // Runs whose engine run is stopped after them: cancelled by an analyst, or stopped at a member restriction.
 const STOPPED_RUN_STATUSES: string[] = [InvestigationRunStatus.Cancelled, InvestigationRunStatus.Failed];
 
@@ -793,10 +795,22 @@ const revisionCitedIds = (evidence: InvestigationEvidence[], conclusion: Record<
   ...conclusionCourseOfActionIds(conclusion),
 ]).slice(0, INVESTIGATION_LIMITS.evidence + INVESTIGATION_LIMITS.candidates + INVESTIGATION_LIMITS.coursesOfAction);
 
+// The copy a draft holds of a live object keeps the markings and organization
+// sharing it had when it was copied: what a run carries also follows the live
+// versions, read by the manager whoever they are now hidden from, so access
+// tightened on a live object after its copy is carried too.
+const withLiveVersions = async (elements: BasicStoreCommon[], extraIds: string[] = []): Promise<BasicStoreCommon[]> => {
+  const ids = R.uniq([...extraIds, ...elements.map((element) => element.internal_id)]);
+  if (ids.length === 0) return elements;
+  const managerContext = await userContext(INVESTIGATION_MANAGER_USER);
+  return [...elements, ...await findElements(managerContext, INVESTIGATION_MANAGER_USER, ids)];
+};
+
+// What a mirrored revision carries the access of: what it cites, its subject and its case.
 const citedElements = async (exec: RunExecution, evidence: InvestigationEvidence[], conclusion: Record<string, unknown> | null | undefined): Promise<BasicStoreCommon[]> => {
   const ids = revisionCitedIds(evidence, conclusion);
-  if (ids.length === 0) return [];
-  return withoutMemberRestricted(await findElements(exec.draftContext, exec.runUser, ids));
+  const cited = ids.length === 0 ? [] : withoutMemberRestricted(await findElements(exec.draftContext, exec.runUser, ids));
+  return withLiveVersions(cited, [exec.run.subject_id, exec.run.case_id].filter((id): id is string => !!id));
 };
 
 // A run and its outputs carry markings and organization sharing, never a member
@@ -808,7 +822,7 @@ const citedElements = async (exec: RunExecution, evidence: InvestigationEvidence
 // the object from: the copy a draft holds of a live object keeps the
 // restrictions it had when it was copied, and a restriction that excludes the
 // run identity would hide the object from it.
-const findCarryBoundary = async (exec: RunExecution, citedIds: string[]): Promise<{ reason: string; code: string | null } | null> => {
+const findCarryBoundary = async (exec: RunExecution, citedIds: string[]): Promise<{ reason: string; code: string } | null> => {
   const { run } = exec;
   const ids = R.uniq([run.subject_id, run.case_id, ...citedIds].filter((id): id is string => !!id));
   const managerContext = await userContext(INVESTIGATION_MANAGER_USER);
@@ -835,11 +849,27 @@ const findCarryBoundary = async (exec: RunExecution, citedIds: string[]): Promis
   return null;
 };
 
+// The draft of a run stopped at an access boundary holds what the run derived:
+// the run keeps its reference until the draft is deleted, and the manager
+// retries a deletion that failed.
+const deleteStoppedRunDraft = async (context: AuthContext, runId: string, draftId: string) => {
+  try {
+    const draft = await findDraftById(context, INVESTIGATION_MANAGER_USER, draftId);
+    if (draft) {
+      await deleteDraftWorkspace(context, INVESTIGATION_MANAGER_USER, draftId);
+    }
+  } catch (cause) {
+    logApp.error('[CASE AUTOPILOT] Draft of a stopped investigation not deleted, retried on the next tick', { runId, draftId, cause });
+    return;
+  }
+  await updateInvestigationRun(context, runId, (current) => (current.draft_id === draftId ? { draft_id: null } : null));
+};
+
 // Everything the run derived from what it read is withheld, as it may describe
 // what the run can no longer carry: the engine's text, the conclusion OpenCTI
 // scored from it, the references to its outputs, and its draft, deleted with
 // what it wrote there. Gates still waiting are rejected, jobs not started skipped.
-const stopAtCarryBoundary = async (exec: RunExecution, boundary: { reason: string; code: string | null }) => {
+const stopAtCarryBoundary = async (exec: RunExecution, boundary: { reason: string; code: string }) => {
   const now = new Date();
   const stop: { done: boolean; engineRunning: boolean; draftId: string | null } = { done: false, engineRunning: false, draftId: null };
   await updateInvestigationRun(exec.liveContext, exec.run.internal_id, (current) => {
@@ -861,7 +891,6 @@ const stopAtCarryBoundary = async (exec: RunExecution, boundary: { reason: strin
       report: null,
       report_sources: [],
       outputs: EMPTY_OUTPUTS,
-      draft_id: null,
       approvals: current.approvals.map((approval) => (approval.status === InvestigationApprovalStatus.Pending
         ? { ...approval, status: InvestigationApprovalStatus.Rejected, decided_at: now.toISOString(), rejection_reason: 'Investigation stopped' }
         : approval)),
@@ -876,11 +905,7 @@ const stopAtCarryBoundary = async (exec: RunExecution, boundary: { reason: strin
   if (!stop.done) return;
   addInvestigationRunOutcomeCount(InvestigationRunStatus.Failed);
   if (stop.draftId) {
-    try {
-      await deleteDraftWorkspace(exec.liveContext, INVESTIGATION_MANAGER_USER, stop.draftId);
-    } catch (cause) {
-      logApp.error('[CASE AUTOPILOT] Draft of a stopped investigation not deleted', { runId: exec.run.internal_id, draftId: stop.draftId, cause });
-    }
+    await deleteStoppedRunDraft(exec.liveContext, exec.run.internal_id, stop.draftId);
   }
   if (stop.engineRunning) {
     await stopCancelledEngineRun(exec.liveContext, exec.run.internal_id);
@@ -1243,7 +1268,8 @@ const listDraftChanges = async (exec: RunExecution): Promise<DraftChanges> => {
 // Markings and organization sharing of everything the run read or wrote about,
 // so its text never outlives their restrictions: the cited objects, the case
 // and every candidate threat its hypotheses or its conclusion name, as the run
-// identity reads them (an identifier it cannot read restricts nothing).
+// identity reads them (an identifier it cannot read restricts nothing), with
+// the access their live versions and the live subject have now.
 const collectRunRestrictions = async (exec: RunExecution, subject: BasicStoreEntity, caseId: string | null, candidateIds: string[]): Promise<OutputRestrictions> => {
   const ids = R.uniq([
     ...exec.run.evidence.filter(isObjectEvidence).map((evidence) => evidence.opencti_id as string),
@@ -1252,7 +1278,7 @@ const collectRunRestrictions = async (exec: RunExecution, subject: BasicStoreEnt
     ...candidateIds,
     ...(caseId ? [caseId] : []),
   ]).slice(0, INVESTIGATION_LIMITS.evidence + INVESTIGATION_LIMITS.candidates + INVESTIGATION_LIMITS.coursesOfAction + 1);
-  const elements = await findElements(exec.draftContext, exec.runUser, ids);
+  const elements = await withLiveVersions(await findElements(exec.draftContext, exec.runUser, ids), [subject.internal_id]);
   return {
     markings: R.uniq([...markingIdsOf(subject), ...elements.flatMap((element) => markingIdsOf(element))]),
     organizations: intersectOrganizationIds(organizationIdsOf(subject), elements),
@@ -1477,6 +1503,9 @@ const completeValidation = async (exec: RunExecution) => {
  */
 export const processInvestigationRun = async (context: AuthContext, runId: string) => {
   const run = await loadInvestigationRun(context, runId);
+  if (run && run.run_status === InvestigationRunStatus.Failed && run.draft_id && CARRY_BOUNDARY_CODES.includes(run.end_reason_code ?? '')) {
+    await deleteStoppedRunDraft(context, runId, run.draft_id);
+  }
   if (run && STOPPED_RUN_STATUSES.includes(run.run_status) && run.xtm_status === ENGINE_CANCEL_PENDING) {
     await stopCancelledEngineRun(context, runId);
     return;
@@ -1540,8 +1569,9 @@ const nextRunsWindow = createRunWindow<BasicStoreEntityInvestigationRun>();
 
 /**
  * The next runs to advance, oldest first, resuming where the previous tick
- * stopped: the active runs, and the cancelled or stopped runs whose engine run
- * is not confirmed stopped yet.
+ * stopped: the active runs, the cancelled or stopped runs whose engine run is
+ * not confirmed stopped yet, and the runs stopped at an access boundary whose
+ * draft is not deleted yet.
  */
 export const listInvestigationRunsToProcess = (context: AuthContext, limit: number) => nextRunsWindow(async (after) => {
   const connection = await pageEntitiesConnection<BasicStoreEntityInvestigationRun>(context, INVESTIGATION_MANAGER_USER, [ENTITY_TYPE_INVESTIGATION_RUN], {
@@ -1553,6 +1583,14 @@ export const listInvestigationRunsToProcess = (context: AuthContext, limit: numb
         filters: [
           { key: ['run_status'], values: STOPPED_RUN_STATUSES },
           { key: ['xtm_status'], values: [ENGINE_CANCEL_PENDING] },
+        ],
+        filterGroups: [],
+      }, {
+        mode: FilterMode.And,
+        filters: [
+          { key: ['run_status'], values: [InvestigationRunStatus.Failed] },
+          { key: ['end_reason_code'], values: CARRY_BOUNDARY_CODES },
+          { key: ['draft_id'], values: [], operator: FilterOperator.NotNil },
         ],
         filterGroups: [],
       }],
