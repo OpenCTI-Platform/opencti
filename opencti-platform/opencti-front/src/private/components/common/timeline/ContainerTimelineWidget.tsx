@@ -157,7 +157,7 @@ const ContainerTimelineWidgetEvents = ({
       />
       {total > events.length && (
         <Text variant="content-caption" as="div" style={{ marginTop: theme.spacing(0.5) }} data-testid="timeline-widget-truncated">
-          {t_i18n('{shown} of {total} events', { values: { shown: n(events.length), total: n(total) } })}
+          {t_i18n('{shown} of {total, plural, one {# event} other {# events}}', { values: { shown: n(events.length), total } })}
         </Text>
       )}
     </>

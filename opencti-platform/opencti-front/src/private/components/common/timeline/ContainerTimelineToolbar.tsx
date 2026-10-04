@@ -203,7 +203,7 @@ const ContainerTimelineToolbar = ({
             size="small"
             startIcon={<SyncOutlined fontSize="small" />}
             onClick={onRefresh}
-            aria-label={liveUpdates > 0 ? t_i18n('{count} new timeline updates, refresh', { values: { count: liveUpdates } }) : t_i18n('Refresh')}
+            aria-label={liveUpdates > 0 ? t_i18n('{count, plural, one {# new timeline update} other {# new timeline updates}}, refresh', { values: { count: liveUpdates } }) : t_i18n('Refresh')}
             data-testid="timeline-refresh"
           >
             {liveUpdates > 0 ? t_i18n('New updates') : t_i18n('Refresh')}

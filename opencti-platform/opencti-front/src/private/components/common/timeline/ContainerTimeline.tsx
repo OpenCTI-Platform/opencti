@@ -402,7 +402,7 @@ const ContainerTimelineEventsView = ({
           )}
           <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1.5), marginTop: theme.spacing(1.5) }}>
             <Text variant="content-caption" as="span">
-              {t_i18n('{shown} of {total} events', { values: { shown: n(events.length), total: n(total) } })}
+              {t_i18n('{shown} of {total, plural, one {# event} other {# events}}', { values: { shown: n(events.length), total } })}
             </Text>
             {hasNext && (
               <Button variant="secondary" size="small" disabled={isLoadingNext} onClick={() => loadNext(EVENTS_PAGE_SIZE)} data-testid="timeline-load-more">

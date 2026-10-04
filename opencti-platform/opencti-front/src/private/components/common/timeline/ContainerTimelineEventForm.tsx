@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router';
+import { useTheme } from '@mui/material/styles';
 import { Text } from '@filigran/design-system';
 import type { PayloadError } from 'relay-runtime';
 import { Field, Form, Formik, FormikHelpers } from 'formik';
@@ -28,6 +29,7 @@ import type {
 import type { ContainerTimelineMutationsEditMutation } from './__generated__/ContainerTimelineMutationsEditMutation.graphql';
 import type { TimelineEventDetails } from './ContainerTimelineEventDrawer';
 import { TIMELINE_DOCUMENTATION_URL } from './ContainerTimelineStates';
+import useTimelineColors from './useTimelineColors';
 import {
   TIMELINE_KIND_LABELS,
   TIMELINE_LANE_LABELS,
@@ -67,6 +69,10 @@ const toDate = (value: string | null | undefined) => (value ? new Date(value) : 
 
 const ContainerTimelineEventForm = ({ containerId, open, event, onClose, onSaved }: ContainerTimelineEventFormProps) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
+  const colors = useTimelineColors();
+  // Help line of a field that has no helper text of its own, aligned with the helper texts of the other fields
+  const helpStyle = { color: colors.textSecondary, margin: theme.spacing(0.5, 1.75, 0) };
   const [commitAdd] = useApiMutation<ContainerTimelineMutationsAddMutation>(timelineEventAddMutation);
   const [commitEdit] = useApiMutation<ContainerTimelineMutationsEditMutation>(timelineEventEditMutation);
   const isEdition = !!event;
@@ -164,17 +170,37 @@ const ContainerTimelineEventForm = ({ containerId, open, event, onClose, onSaved
       >
         {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
           <Form data-testid="timeline-event-form">
-            <Field component={TextField} variant="outlined" name="title" label={t_i18n('Title')} required fullWidth={true} />
+            <Field
+              component={TextField}
+              variant="outlined"
+              name="title"
+              label={t_i18n('Title')}
+              required
+              fullWidth={true}
+              helperText={t_i18n('What happened, in a few words, for example "Hosts isolated by the SOC".')}
+            />
             <Field
               component={DateTimePickerField}
               name="event_time"
               required
-              textFieldProps={{ label: t_i18n('Start date'), variant: 'outlined', fullWidth: true, style: fieldSpacingContainerStyle }}
+              textFieldProps={{
+                label: t_i18n('Start date'),
+                variant: 'outlined',
+                fullWidth: true,
+                style: fieldSpacingContainerStyle,
+                helperText: t_i18n('When it happened, in your time zone.'),
+              }}
             />
             <Field
               component={DateTimePickerField}
               name="event_end_time"
-              textFieldProps={{ label: t_i18n('End date'), variant: 'outlined', fullWidth: true, style: fieldSpacingContainerStyle }}
+              textFieldProps={{
+                label: t_i18n('End date'),
+                variant: 'outlined',
+                fullWidth: true,
+                style: fieldSpacingContainerStyle,
+                helperText: t_i18n('When it ended, for an event that lasted, such as an isolation. Leave it empty for a moment in time.'),
+              }}
             />
             <Field
               component={SelectFieldFds}
@@ -213,6 +239,9 @@ const ContainerTimelineEventForm = ({ containerId, open, event, onClose, onSaved
               ))}
             </Field>
             <Field component={MarkdownField} name="description" label={t_i18n('Description')} fullWidth={true} multiline={true} rows="4" style={fieldSpacingContainerStyle} />
+            <Text variant="content-caption" as="p" style={helpStyle}>
+              {t_i18n('Details of what happened, in Markdown, for example the hosts and the tools involved. Optional.')}
+            </Text>
             <Field
               component={TextareaField}
               name="annotation"
@@ -225,6 +254,7 @@ const ContainerTimelineEventForm = ({ containerId, open, event, onClose, onSaved
               name="objectMarking"
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
+              helpertext={t_i18n('Who may read the event. It always carries the markings of the case; leave it empty to keep only those.')}
             />
             {!isEdition && (
               <Field
