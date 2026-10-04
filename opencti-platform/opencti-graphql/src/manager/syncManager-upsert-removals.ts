@@ -1,5 +1,6 @@
 import * as jsonpatch from 'fast-json-patch';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
+import { INPUT_GRANTED_REFS, INPUT_MARKINGS } from '../schema/general';
 
 interface SyncEventContext {
   reverse_patch?: jsonpatch.Operation[];
@@ -13,11 +14,14 @@ interface UpsertOperation {
   operation?: string;
 }
 
-// Multi-valued attributes that bind an entity to its identity: alternative standard ids and aliases.
+// Multi-valued attributes an upsert only adds to: the ones binding an entity to its identity (alternative standard
+// ids, aliases) and its access restrictions (markings, organization sharing).
 const REMOVABLE_FIELDS: { upsertKey: string; read: (data: SyncStixData | undefined) => unknown }[] = [
   { upsertKey: 'x_opencti_stix_ids', read: (data) => data?.extensions?.[STIX_EXT_OCTI]?.stix_ids },
   { upsertKey: 'aliases', read: (data) => data?.aliases },
   { upsertKey: 'x_opencti_aliases', read: (data) => data?.extensions?.[STIX_EXT_OCTI]?.aliases },
+  { upsertKey: INPUT_MARKINGS, read: (data) => data?.object_marking_refs },
+  { upsertKey: INPUT_GRANTED_REFS, read: (data) => data?.extensions?.[STIX_EXT_OCTI]?.granted_refs },
 ];
 
 const valuesOf = (data: SyncStixData | undefined, read: (data: SyncStixData | undefined) => unknown): string[] => {

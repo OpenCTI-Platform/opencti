@@ -13,7 +13,8 @@ def _octi_extension(stix_object):
     return stix_object.get("extensions", {}).get(OPENCTI_EXTENSION, {})
 
 
-# Multi-valued attributes binding an entity to its identity, by upsert key
+# Multi-valued attributes an upsert only adds to, by upsert key: identity (alternative
+# standard ids, aliases) and access restrictions (markings, organization sharing)
 REMOVABLE_FIELDS = {
     "x_opencti_stix_ids": lambda stix_object: _octi_extension(stix_object).get(
         "stix_ids"
@@ -21,6 +22,10 @@ REMOVABLE_FIELDS = {
     "aliases": lambda stix_object: stix_object.get("aliases"),
     "x_opencti_aliases": lambda stix_object: _octi_extension(stix_object).get(
         "aliases"
+    ),
+    "objectMarking": lambda stix_object: stix_object.get("object_marking_refs"),
+    "objectOrganization": lambda stix_object: _octi_extension(stix_object).get(
+        "granted_refs"
     ),
 }
 

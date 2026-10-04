@@ -35,6 +35,26 @@ describe('synchronized updates removing identity values', () => {
     expect(current.extensions?.[STIX_EXT_OCTI]).not.toHaveProperty('opencti_upsert_operations');
   });
 
+  it('sends the markings and organizations an update removed as explicit removals', () => {
+    const red = 'marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed';
+    const green = 'marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da';
+    const current: SyncStixData = {
+      ...entity(),
+      object_marking_refs: [green],
+      extensions: { [STIX_EXT_OCTI]: { id: 'internal-id', type: 'Intrusion-Set', granted_refs: [] } },
+    };
+    const context = {
+      reverse_patch: [
+        { op: 'replace' as const, path: '/object_marking_refs', value: [green, red] },
+        { op: 'replace' as const, path: `/extensions/${STIX_EXT_OCTI}/granted_refs`, value: ['identity--org'] },
+      ],
+    };
+    expect(operationsOf(withUpsertRemovals(current, context))).toEqual([
+      { key: 'objectMarking', value: [red], operation: 'remove' },
+      { key: 'objectOrganization', value: ['identity--org'], operation: 'remove' },
+    ]);
+  });
+
   it('removes the aliases kept in the OpenCTI extension under their own attribute', () => {
     const current: SyncStixData = { id: 'identity--a', type: 'identity', extensions: { [STIX_EXT_OCTI]: { aliases: ['Kept'] } } };
     const context = { reverse_patch: [{ op: 'replace' as const, path: `/extensions/${STIX_EXT_OCTI}/aliases`, value: ['Kept', 'Gone'] }] };
