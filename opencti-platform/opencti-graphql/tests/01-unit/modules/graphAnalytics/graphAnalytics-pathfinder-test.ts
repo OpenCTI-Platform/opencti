@@ -123,6 +123,18 @@ describe('graph analytics path finder', () => {
     const result = await searchPaths(options(expand, { maxExpandedNodes: 10 }));
     expect(result.paths).toEqual([]);
     expect(result.truncated).toBe(true);
+    // a hard cap: the level that reaches it only admits the nodes that fit
+    expect(result.explored_nodes).toBeLessThanOrEqual(10);
+  });
+
+  it('should still find the paths through the nodes admitted before the cap', async () => {
+    const edges: Edge[] = [['r0', 'uses', 'a', 'b'], ['r1', 'uses', 'b', 'z']];
+    for (let i = 0; i < 20; i += 1) edges.push([`x${i}`, 'uses', 'a', `n${i}`]);
+    const { expand } = buildGraph(edges);
+    const result = await searchPaths(options(expand, { maxExpandedNodes: 4 }));
+    expect(result.explored_nodes).toBeLessThanOrEqual(4);
+    expect(result.truncated).toBe(true);
+    expect(result.paths.map((p) => p.node_ids)).toEqual([['a', 'b', 'z']]);
   });
 
   it('should stop on the deadline', async () => {

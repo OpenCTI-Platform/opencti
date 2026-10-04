@@ -806,11 +806,14 @@ export const upsertGraphAnalyticsMetrics = async (context: AuthContext, user: Au
   if (input.complete) {
     const finalized = await finalizeClusteringRun(context, GRAPH_ANALYTICS_MANAGER_USER, input.run_id);
     removed = finalized.removed;
+    // recorded while the lease is held: a platform clustering run taking the lease next sees the process active
+    state[GRAPH_STATE_ANALYTICS_LAST_RUN_AT] = new Date().toISOString();
+    await redisGraphAnalyticsSetState(state);
     await redisGraphAnalyticsReleaseRunLease(input.run_id);
     await notifyClusterMemberships(context, finalized.publishedAt);
-    state[GRAPH_STATE_ANALYTICS_LAST_RUN_AT] = new Date().toISOString();
+  } else {
+    await redisGraphAnalyticsSetState(state);
   }
-  await redisGraphAnalyticsSetState(state);
   return {
     run_id: input.run_id,
     updated_entities: updated,

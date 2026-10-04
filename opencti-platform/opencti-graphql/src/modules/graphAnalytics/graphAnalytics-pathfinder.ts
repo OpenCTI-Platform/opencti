@@ -142,10 +142,7 @@ export const searchPaths = async (opts: PathSearchOptions): Promise<StixPathsSea
       timedOut = true;
       break;
     }
-    if (exploredNodes() >= opts.maxExpandedNodes) {
-      truncated = true;
-      break;
-    }
+    // once the node cap is reached, levels keep linking the nodes already admitted to the other side, without new ones
     const side = forward.frontier.length <= backward.frontier.length ? forward : backward;
     const other = side === forward ? backward : forward;
     const expansion = await opts.expand(side.frontier, opts.maxRelationshipsPerLevel);
@@ -166,7 +163,14 @@ export const searchPaths = async (opts: PathSearchOptions): Promise<StixPathsSea
       .filter(([id]) => !endpoints.has(id) && !other.levels.has(id))
       .map(([id, type]) => ({ id, type }));
     const accepted = toCheck.length > 0 ? await opts.acceptNodes(toCheck) : new Set<string>();
-    const isAllowed = (id: string) => endpoints.has(id) || other.levels.has(id) || accepted.has(id);
+    // the node cap is a hard limit: a level only admits the new nodes that fit, in discovery order
+    const budget = Math.max(0, opts.maxExpandedNodes - exploredNodes());
+    let admitted = accepted;
+    if (accepted.size > budget) {
+      admitted = new Set(toCheck.map(({ id }) => id).filter((id) => accepted.has(id)).slice(0, budget));
+      truncated = true;
+    }
+    const isAllowed = (id: string) => endpoints.has(id) || other.levels.has(id) || admitted.has(id);
     // register parents
     const newFrontier = new Set<string>();
     side.frontier.forEach((nodeId) => {

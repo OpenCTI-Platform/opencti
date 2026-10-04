@@ -465,6 +465,12 @@ export const runInfrastructureClustering = async (
     logApp.info('[OPENCTI-MODULE] Graph analytics infrastructure clustering skipped, another clustering run is in progress');
     return { clusters: 0, members: 0, skipped: true };
   }
+  // the analytics process may have published a run while the population was computed: its clusters are newer
+  if (isAnalyticsProcessActive(await redisGraphAnalyticsGetState())) {
+    await redisGraphAnalyticsReleaseRunLease(runId);
+    logApp.info('[OPENCTI-MODULE] Graph analytics infrastructure clustering skipped, the analytics process published a run meanwhile');
+    return { clusters: 0, members: 0, skipped: true };
+  }
   const writes = clusters.map((cluster) => ({
     cluster_id: buildGraphClusterId(kind, cluster.anchor),
     cluster_kind: kind,
