@@ -29,6 +29,7 @@ import SelectFieldFds, { SelectItem } from '../../../../components/fields/Select
 import { useFormatter } from '../../../../components/i18n';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { engineReasonLabel } from '../../investigation_runs/investigationRunUtils';
+import { CASE_AUTOPILOT_POLICIES_DOCS_URL } from '../../investigation_runs/investigationRunOutcomes';
 import { InvestigationPolicyFormQuery, InvestigationPolicyFormQuery$data } from './__generated__/InvestigationPolicyFormQuery.graphql';
 import {
   AUTONOMOUS_ACTION_LABELS,
@@ -203,9 +204,21 @@ const InvestigationPolicyForm = ({ policy, submitLabel, onSubmit, onCancel }: In
     >
       {({ submitForm, isSubmitting }) => (
         <Form>
+          <Typography variant="body2" sx={{ marginBottom: 2 }}>
+            {t_i18n('A policy sets what Case Autopilot may do on its own, its budget and what starts it.')}
+            {' '}
+            <a href={CASE_AUTOPILOT_POLICIES_DOCS_URL} target="_blank" rel="noopener noreferrer">{t_i18n('Learn more')}</a>
+          </Typography>
           <Field component={TextField} name="name" label={t_i18n('Name')} fullWidth required />
           <Field component={TextField} name="description" label={t_i18n('Description')} fullWidth multiline rows={2} style={{ marginTop: 20 }} />
-          <Field component={SwitchField} type="checkbox" name="is_default" label={t_i18n('Default policy')} containerstyle={fieldSpacingContainerStyle} />
+          <Field
+            component={SwitchField}
+            type="checkbox"
+            name="is_default"
+            label={t_i18n('Default policy')}
+            helpertext={t_i18n('Used by every launch and playbook that does not name another policy. Turning it on replaces the current default policy.')}
+            containerstyle={fieldSpacingContainerStyle}
+          />
           <Typography variant="h4" sx={{ marginTop: 3 }}>{t_i18n('Investigation engine')}</Typography>
           <PackPicker catalog={investigationPacks} storedPackId={policy.pack_id} />
           <Field
@@ -251,21 +264,67 @@ const InvestigationPolicyForm = ({ policy, submitLabel, onSubmit, onCancel }: In
             label={t_i18n('Approve low-risk drafts automatically (notes and observed data only)')}
             containerstyle={fieldSpacingContainerStyle}
           />
-          <Field component={TextField} name="auto_approve_min_confidence" type="number" label={t_i18n('Minimum confidence for the automatic approval (%)')} fullWidth style={{ marginTop: 20 }} />
-          <Field component={TextField} name="attribution_min_confidence" type="number" label={t_i18n('Minimum confidence to write an attribution (%)')} fullWidth style={{ marginTop: 20 }} />
+          <Field
+            component={TextField}
+            name="auto_approve_min_confidence"
+            type="number"
+            label={t_i18n('Minimum confidence for the automatic approval (%)')}
+            helperText={t_i18n('The leading hypothesis must reach this confidence for a low-risk draft to be approved automatically, for example 80 (0 to 100). Ignored while the automatic approval is off.')}
+            fullWidth
+            style={{ marginTop: 20 }}
+          />
+          <Field
+            component={TextField}
+            name="attribution_min_confidence"
+            type="number"
+            label={t_i18n('Minimum confidence to write an attribution (%)')}
+            helperText={t_i18n('Below this confidence, the leading hypothesis is reported but no attribution relationship is written to the draft, for example 70 (0 to 100).')}
+            fullWidth
+            style={{ marginTop: 20 }}
+          />
           <Typography variant="h4" sx={{ marginTop: 3 }}>{t_i18n('Budget')}</Typography>
-          <Field component={TextField} name="max_iterations" type="number" label={t_i18n('Maximum iterations')} fullWidth style={{ marginTop: 10 }} />
-          <Field component={TextField} name="max_enrichment_jobs" type="number" label={t_i18n('Maximum enrichment jobs')} fullWidth style={{ marginTop: 20 }} />
-          <Field component={TextField} name="max_minutes" type="number" label={t_i18n('Maximum duration (minutes)')} fullWidth style={{ marginTop: 20 }} />
+          <Field
+            component={TextField}
+            name="max_iterations"
+            type="number"
+            label={t_i18n('Maximum iterations')}
+            helperText={t_i18n('Reasoning steps of the engine in one investigation, for example 10 (1 to 50). When they are used up, the engine ends the investigation with what it found.')}
+            fullWidth
+            style={{ marginTop: 10 }}
+          />
+          <Field
+            component={TextField}
+            name="max_enrichment_jobs"
+            type="number"
+            label={t_i18n('Maximum enrichment jobs')}
+            helperText={t_i18n('Connector runs one investigation may request, for example 20 (0 to 200, 0 turns enrichment off). Once reached, further enrichment requests are refused and the investigation goes on with what it has.')}
+            fullWidth
+            style={{ marginTop: 20 }}
+          />
+          <Field
+            component={TextField}
+            name="max_minutes"
+            type="number"
+            label={t_i18n('Maximum duration (minutes)')}
+            helperText={t_i18n('Longest duration of one investigation, for example 60 (1 to 1440). Once spent, OpenCTI stops the engine run and the investigation concludes with what it found.')}
+            fullWidth
+            style={{ marginTop: 20 }}
+          />
           <Typography variant="h4" sx={{ marginTop: 3 }}>{t_i18n('Triggers and identity')}</Typography>
           <Field
             component={SwitchField}
             type="checkbox"
             name="trigger_on_case_rfi_creation"
             label={t_i18n('Investigate every new request for information')}
+            helpertext={t_i18n('Starts an investigation with this policy whenever a request for information is created. When off, requests for information are investigated only when someone runs Case Autopilot.')}
             containerstyle={fieldSpacingContainerStyle}
           />
-          <PlaybookFlowFieldRunAs name="run_as" label="Run automatic investigations as" style={{ marginTop: 20 }} />
+          <PlaybookFlowFieldRunAs
+            name="run_as"
+            label="Run automatic investigations as"
+            helperText={t_i18n('Automatic investigations act and read as this user, and see only what it can see. Empty: the platform administrator. Only yourself and service accounts can be selected.')}
+            style={{ marginTop: 20 }}
+          />
           <FormButtonContainer>
             <Button variant="secondary" onClick={onCancel} disabled={isSubmitting}>{t_i18n('Cancel')}</Button>
             <Button onClick={submitForm} disabled={isSubmitting} data-testid="investigation-policy-submit">{submitLabel}</Button>

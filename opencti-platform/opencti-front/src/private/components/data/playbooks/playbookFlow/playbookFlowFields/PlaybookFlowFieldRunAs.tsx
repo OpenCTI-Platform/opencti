@@ -44,12 +44,14 @@ interface OptionRunAs extends FieldOption {
 interface PlaybookFlowFieldRunAsProps {
   name: string;
   label?: string;
+  helperText?: string;
   style?: Record<string, string | number>;
 }
 
 const PlaybookFlowFieldRunAs: FunctionComponent<PlaybookFlowFieldRunAsProps> = ({
   name,
   label,
+  helperText,
   style,
 }) => {
   const { t_i18n } = useFormatter();
@@ -102,7 +104,7 @@ const PlaybookFlowFieldRunAs: FunctionComponent<PlaybookFlowFieldRunAsProps> = (
         name={name}
         multiple={false}
         label={t_i18n(label ?? 'Run as')}
-        helperText={t_i18n('Only yourself and service accounts can be selected')}
+        helperText={helperText ?? t_i18n('Only yourself and service accounts can be selected')}
         style={style}
         noOptionsText={t_i18n('No available options')}
         options={options}

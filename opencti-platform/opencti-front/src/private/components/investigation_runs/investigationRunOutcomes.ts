@@ -20,6 +20,7 @@ export type Translate = (message: string, options?: { values?: Record<string, st
 export const POLICIES_PATH = '/dashboard/settings/customization/case_autopilot';
 export const CONNECTORS_PATH = '/dashboard/data/ingestion/connectors';
 export const CASE_AUTOPILOT_DOCS_URL = 'https://docs.opencti.io/latest/usage/case-autopilot/';
+export const CASE_AUTOPILOT_POLICIES_DOCS_URL = `${CASE_AUTOPILOT_DOCS_URL}#investigation-policies`;
 export const XTM_ONE_SETTINGS_PATH = '/dashboard/settings/experience';
 
 // region durations
