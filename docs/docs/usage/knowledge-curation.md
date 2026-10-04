@@ -186,6 +186,9 @@ Reverting a proposal undoes what its apply changed:
 
 - For a merge, the [merge record](#reversible-merges-and-unmerge) restores every merged entity.
 - For the other actions, OpenCTI replays the recorded change backwards. A value is restored only if the entity still holds the value written by the apply: later edits are kept, and reported in the activity log. The check and the restore run under the entity lock, so an edit made at the same time is never overwritten. Notes created by the apply are deleted, and attributions deleted by the apply are restored from the [trash](delete-restore.md) as long as they are still in it.
+- Two proposals cannot be reverted: a date fix, since the platform refuses an end date before the start date, and a split, which already undid a merge (merge the restored entities again instead).
+
+Accepting a proposal applies exactly the change it describes: through the API, the only choice a caller adds is the attribution to keep for an attribution conflict.
 
 A reverted proposal is never proposed again. Every decision (accept, reject, revert, adjudication) is recorded in the [activity log](../administration/audit/overview.md).
 

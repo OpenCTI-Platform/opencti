@@ -21,6 +21,7 @@ import {
 import { now } from '../../utils/format';
 import {
   ACTION_FIX_DATES,
+  ACTION_UNMERGE,
   type BasicStoreEntityCurationPolicy,
   type BasicStoreEntityCurationProposal,
   type CurationAdjudication,
@@ -311,16 +312,20 @@ export const decideProposal = async (
   }
   const patch: Record<string, unknown> = { curation_adjudication: adjudication };
   if (input.target_id) patch.target_id = input.target_id;
-  const { element } = await patchAttribute(context, SYSTEM_USER, proposal.internal_id, ENTITY_TYPE_CURATION_PROPOSAL, patch);
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'update',
-    event_access: 'extended',
-    message: `records decision \`${input.decision}\` on curation proposal \`${proposal.name}\``,
-    context_data: { id: proposal.internal_id, entity_type: ENTITY_TYPE_CURATION_PROPOSAL, input: { decision: input.decision, apply: input.apply ?? false } },
+  // Recorded under the transition lock on a proposal read again: a decision never lands on a proposal closed meanwhile.
+  return withProposalLock(proposal.internal_id, async () => {
+    await loadOpenProposal(context, user, proposal.internal_id);
+    const { element } = await patchAttribute(context, SYSTEM_USER, proposal.internal_id, ENTITY_TYPE_CURATION_PROPOSAL, patch);
+    await publishUserAction({
+      user,
+      event_type: 'mutation',
+      event_scope: 'update',
+      event_access: 'extended',
+      message: `records decision \`${input.decision}\` on curation proposal \`${proposal.name}\``,
+      context_data: { id: proposal.internal_id, entity_type: ENTITY_TYPE_CURATION_PROPOSAL, input: { decision: input.decision, apply: input.apply ?? false } },
+    });
+    return element as unknown as BasicStoreEntityCurationProposal;
   });
-  return element as unknown as BasicStoreEntityCurationProposal;
 };
 
 const POLICY_APPLIED_COUNT_SCRIPT = 'ctx._source.applied_count = (ctx._source.applied_count == null ? 0 : ctx._source.applied_count) + params.increment';
@@ -410,14 +415,17 @@ export const bulkRejectProposals = async (context: AuthContext, user: AuthUser, 
 };
 
 /**
- * An applied proposal is reverted from its merge record or its applied patch. A date fix is the exception: reverting
- * it would write back an end date before the start date, which the platform refuses on every update.
+ * An applied proposal is reverted from its merge record (applied as a merge: its recommended action, or a merge
+ * decision) or its applied patch. Two exceptions: a date fix, as reverting it would write back an end date before the
+ * start date, which the platform refuses on every update; and a split, whose merge record is the merge it undid, so
+ * there is no merge of its own to undo.
  */
-// A proposal applied as a merge (its recommended action, or a merge decision) is reverted through its merge record.
+const NOT_REVERTIBLE_ACTIONS = [ACTION_FIX_DATES, ACTION_UNMERGE];
+
 export const isProposalRevertible = (proposal: BasicStoreEntityCurationProposal) => {
   const isApplied = proposal.proposal_status === PROPOSAL_STATUS_ACCEPTED || proposal.proposal_status === PROPOSAL_STATUS_AUTO_APPLIED;
   const hasTrace = !!proposal.merge_record_id || !!proposal.applied_patch;
-  return isApplied && hasTrace && proposal.recommended_action !== ACTION_FIX_DATES;
+  return isApplied && hasTrace && !NOT_REVERTIBLE_ACTIONS.includes(proposal.recommended_action);
 };
 
 export const revertProposal = async (context: AuthContext, user: AuthUser, id: string) => withProposalLock(id, async () => {
@@ -430,6 +438,9 @@ export const revertProposal = async (context: AuthContext, user: AuthUser, id: s
   }
   if (proposal.recommended_action === ACTION_FIX_DATES) {
     throw FunctionalError('A date fix cannot be reverted: the original end date is before the start date, which the platform does not accept', { id });
+  }
+  if (proposal.recommended_action === ACTION_UNMERGE) {
+    throw FunctionalError('A split cannot be reverted: merge the restored entities again instead', { id });
   }
   if (!canUserRevertProposal(user, proposal)) {
     throw ForbiddenAccess('You are not allowed to revert this curation proposal');

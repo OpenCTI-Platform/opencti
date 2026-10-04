@@ -30,6 +30,28 @@ REMOVABLE_FIELDS = {
 }
 
 
+def _merge_operations(carried, removals):
+    # The operations the event carries are kept; a removal for the same key removes both lists
+    operations = [dict(operation) for operation in carried]
+    for removal in removals:
+        same = next(
+            (
+                operation
+                for operation in operations
+                if operation.get("operation") == "remove"
+                and operation.get("key") == removal["key"]
+            ),
+            None,
+        )
+        if same is None:
+            operations.append(removal)
+        else:
+            carried_values = same.get("value")
+            values = carried_values if isinstance(carried_values, list) else []
+            same["value"] = list(dict.fromkeys([*values, *removal["value"]]))
+    return operations
+
+
 def _upsert_removals(previous, current):
     removals = []
     for upsert_key, read in REMOVABLE_FIELDS.items():
@@ -116,13 +138,15 @@ class TestLocalSynchronizer:
                 current = data["data"]
                 # In case of update always apply operation to the previous id
                 current["id"] = previous["id"]
-                # An upsert only adds ids and aliases: the ones the update removed are removed explicitly
+                # An upsert only adds these values: the ones the update removed are removed explicitly
                 removals = _upsert_removals(previous, current)
                 if removals:
                     extension = current.setdefault("extensions", {}).setdefault(
                         OPENCTI_EXTENSION, {}
                     )
-                    extension["opencti_upsert_operations"] = removals
+                    extension["opencti_upsert_operations"] = _merge_operations(
+                        extension.get("opencti_upsert_operations") or [], removals
+                    )
                 bundle = {
                     "type": "bundle",
                     "x_opencti_event_version": data["version"],

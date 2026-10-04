@@ -163,7 +163,8 @@ const applyAddAliases = async (context: AuthContext, user: AuthUser, proposal: B
   if (opts.targetId && opts.targetId !== proposedTargetId) {
     return applyAliasDecision(context, user, proposal, opts);
   }
-  const payload = { ...parsePayload(proposal), ...(opts.payload ?? {}) };
+  // The aliases are the detector's: an accept never adds others than the proposed ones.
+  const payload = parsePayload(proposal);
   const element = await loadSubject(context, user, proposedTargetId);
   return addAliases(context, user, element, (payload.aliases ?? []) as string[]);
 };
@@ -188,8 +189,9 @@ const applyFixDates = async (context: AuthContext, user: AuthUser, proposal: Bas
 };
 
 const applyResolveAttribution = async (context: AuthContext, user: AuthUser, proposal: BasicStoreEntityCurationProposal, opts: ApplyOptions): Promise<ApplyResult> => {
-  const payload = { ...parsePayload(proposal), ...(opts.payload ?? {}) };
-  const keepActorId = payload.keep_actor_id as string | undefined;
+  // The caller only chooses the attribution to keep: the attributions in conflict are the detector's.
+  const payload = parsePayload(proposal);
+  const keepActorId = (opts.payload?.keep_actor_id ?? payload.keep_actor_id) as string | undefined;
   const relationships = (payload.relationships ?? []) as Array<{ actor_id: string; relationship_id: string }>;
   if (!keepActorId || !relationships.some((relation) => relation.actor_id === keepActorId)) {
     throw FunctionalError('Choose which attribution to keep (keep_actor_id) to resolve this contradiction', { proposal_id: proposal.internal_id });
@@ -273,8 +275,9 @@ const applyPreserveProcedure = async (
   return { appliedPatch: { operations: [], created_ids: [note.internal_id ?? note.id], applied_at: now() }, mergeRecordId: null };
 };
 
-const applySetField = async (context: AuthContext, user: AuthUser, proposal: BasicStoreEntityCurationProposal, opts: ApplyOptions): Promise<ApplyResult> => {
-  const payload = { ...parsePayload(proposal), ...(opts.payload ?? {}) };
+const applySetField = async (context: AuthContext, user: AuthUser, proposal: BasicStoreEntityCurationProposal): Promise<ApplyResult> => {
+  // The field and its value are the detector's: an accept never writes another value.
+  const payload = parsePayload(proposal);
   const element = await loadSubject(context, user, payload.element_id ?? proposal.target_id);
   const key = payload.key as string;
   if (!schemaAttributesDefinition.getAttribute(element.entity_type, key)) {
@@ -325,7 +328,7 @@ export const executeProposalAction = async (
     case ACTION_PRESERVE_PROCEDURE:
       return applyPreserveProcedure(context, user, proposal, settings);
     case ACTION_SET_FIELD:
-      return applySetField(context, user, proposal, opts);
+      return applySetField(context, user, proposal);
     case ACTION_ACKNOWLEDGE:
       return { appliedPatch: { operations: [], applied_at: now() }, mergeRecordId: null };
     default:
@@ -334,11 +337,15 @@ export const executeProposalAction = async (
 };
 
 // region revert
+// A relationship id deleted, recreated and deleted again has several delete operations: the newest is the apply's.
 const findDeleteOperationForElement = async (context: AuthContext, elementId: string) => {
   const operations = await fullEntitiesList(context, SYSTEM_USER, [ENTITY_TYPE_DELETE_OPERATION], {
     filters: { mode: FilterMode.And, filters: [{ key: ['main_entity_id'], values: [elementId], operator: FilterOperator.Eq }], filterGroups: [] },
+    orderBy: 'created_at',
+    orderMode: OrderingMode.Desc,
+    maxSize: 1,
     noFiltersChecking: true,
-  });
+  } as any);
   return operations[0];
 };
 
