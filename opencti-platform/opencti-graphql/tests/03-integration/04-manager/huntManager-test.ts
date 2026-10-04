@@ -375,7 +375,7 @@ describe('Hunt manager', () => {
       const results = await loadHuntRunResultsForPlaybook(testContext, [await loadRun(run.internal_id)], new Set([securityPlatformId]));
       // Loaded with the user of the hunt connector of the run, never with the automation identity of the playbook
       expect(load).toHaveBeenCalledTimes(1);
-      expect(load.mock.calls[0][1].id).toEqual(USER_CONNECTOR.id);
+      expect(load.mock.calls[0][1].user_email).toEqual(USER_CONNECTOR.email);
       expect(load.mock.calls[0][2]).toEqual([intrusionSetId]);
       expect(results.map((result) => result.extensions[STIX_EXT_OCTI].id)).toEqual([intrusionSetId]);
       // A run without a hunt connector gives the playbook nothing
