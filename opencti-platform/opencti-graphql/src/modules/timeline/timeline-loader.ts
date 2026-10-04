@@ -86,6 +86,13 @@ const asArray = (value: unknown): string[] => {
   return (Array.isArray(value) ? value : [value]).filter((v) => typeof v === 'string' && v.length > 0) as string[];
 };
 
+// Read with its relations, a document carries a ref in its rel_ key; read without them (the default of the engine), the
+// markings, labels and author come back as doc values under the relation type: both are read, whatever loaded the element
+export const timelineRefIds = (element: Record<string, any>, relationType: string): string[] => Array.from(new Set([
+  ...asArray(element[buildRefRelationKey(relationType)]),
+  ...asArray(element[relationType]),
+]));
+
 const dateString = (value: unknown): string | null => {
   if (value === null || value === undefined || value === '') return null;
   if (value instanceof Date) return value.toISOString();
@@ -99,19 +106,19 @@ export const toTimelineElement = (element: AnyStoreElement, opts: { labels?: Map
   SOFT_EXTRA_KEYS.forEach((key) => {
     if (element[key] !== undefined && element[key] !== null) extra[key] = element[key];
   });
-  const labelIds = asArray(element[buildRefRelationKey(RELATION_OBJECT_LABEL)]);
+  const labelIds = timelineRefIds(element, RELATION_OBJECT_LABEL);
   return {
     id: element.internal_id,
     standard_id: element.standard_id,
     entity_type: element.entity_type,
     name: extractEntityRepresentativeName(element),
-    markings: asArray(element[buildRefRelationKey(RELATION_OBJECT_MARKING)]),
+    markings: timelineRefIds(element, RELATION_OBJECT_MARKING),
     labels: opts.labels ? labelIds.map((id) => opts.labels?.get(id)).filter((v): v is string => !!v) : undefined,
     created: dateString(element.created),
     created_at: dateString(element.created_at),
     updated_at: dateString(element.updated_at),
     creator_ids: asArray(element.creator_id),
-    created_by_id: asArray(element[buildRefRelationKey(RELATION_CREATED_BY)])[0] ?? null,
+    created_by_id: timelineRefIds(element, RELATION_CREATED_BY)[0] ?? null,
     confidence: element.confidence ?? null,
     description: element.description ?? element.x_opencti_description ?? null,
     first_seen: dateString(element.first_seen),
@@ -169,7 +176,7 @@ export const toTimelineHistoryEntry = (log: AnyStoreElement): TimelineHistoryEnt
     entity_name: contextData.entity_name ?? '',
     message: contextData.message ?? '',
     user_id: log.user_id ?? null,
-    markings: asArray(log[buildRefRelationKey(RELATION_OBJECT_MARKING)]),
+    markings: timelineRefIds(log, RELATION_OBJECT_MARKING),
     changes,
   };
 };

@@ -1,5 +1,35 @@
 import { describe, expect, it } from 'vitest';
-import { buildTimelineStatuses, capTimelineRead } from '../../../../src/modules/timeline/timeline-loader';
+import { buildTimelineStatuses, capTimelineRead, timelineRefIds, toTimelineElement } from '../../../../src/modules/timeline/timeline-loader';
+
+describe('Timeline element refs', () => {
+  it('should read the refs of a document read with its relations', () => {
+    const element = { 'rel_object-marking.internal_id': ['amber', 'pap'], 'rel_created-by.internal_id': ['author'] };
+    expect(timelineRefIds(element, 'object-marking')).toEqual(['amber', 'pap']);
+    expect(timelineRefIds(element, 'created-by')).toEqual(['author']);
+  });
+
+  it('should read the security refs a document read without its relations carries as doc values', () => {
+    // The engine converts the doc values of rel_object-marking.internal_id.keyword into the relation type key
+    const element = { 'object-marking': ['amber'], granted: ['org-a', 'org-b'], 'created-by': 'author' };
+    expect(timelineRefIds(element, 'object-marking')).toEqual(['amber']);
+    expect(timelineRefIds(element, 'granted')).toEqual(['org-a', 'org-b']);
+    expect(timelineRefIds(element, 'created-by')).toEqual(['author']);
+    expect(timelineRefIds({}, 'object-marking')).toEqual([]);
+  });
+
+  it('should give a derived element the markings and the author it was read with', () => {
+    const element = toTimelineElement({
+      internal_id: 'indicator-1',
+      standard_id: 'indicator--1',
+      entity_type: 'Indicator',
+      name: 'Amber indicator',
+      'object-marking': ['amber'],
+      'created-by': 'author',
+    } as any);
+    expect(element.markings).toEqual(['amber']);
+    expect(element.created_by_id).toEqual('author');
+  });
+});
 
 describe('Timeline derivation input bounds', () => {
   it('should keep a family within its bound untouched and not report a truncation', () => {

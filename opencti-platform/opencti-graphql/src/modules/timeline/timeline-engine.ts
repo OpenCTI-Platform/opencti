@@ -54,6 +54,7 @@ import {
   SOFT_RELATION_DEPLOYED_ON,
   SOFT_TYPE_HUNT_RUN,
   SOFT_TYPE_INVESTIGATION_RUN,
+  timelineRefIds,
 } from './timeline-loader';
 import { computeTimelineAnchors, diffTimelineAnchors } from './timeline-anchors';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../securityCoverage/securityCoverage-types';
@@ -110,7 +111,7 @@ const derivedEventKey = (event: DerivedTimelineEvent) => {
 // region store helpers
 const uniq = (values: Array<string | null | undefined>): string[] => Array.from(new Set(values.filter((v): v is string => !!v)));
 
-export const markingsOf = (element: Record<string, any>): string[] => uniq(element[buildRefRelationKey(RELATION_OBJECT_MARKING)] ?? []);
+export const markingsOf = (element: Record<string, any>): string[] => timelineRefIds(element, RELATION_OBJECT_MARKING);
 
 export const loadStoredTimelineEvents = async (context: AuthContext, containerId: string): Promise<StoredTimelineEvent[]> => {
   return fullEntitiesList<StoredTimelineEvent>(context, SYSTEM_USER, [ENTITY_TYPE_TIMELINE_EVENT], {
@@ -329,7 +330,7 @@ export const publishTimelineUpdate = async (payload: Omit<TimelineUpdatePayload,
 // endregion
 
 // region contributions (anchors and STIX exchange) refreshed from the stored events
-const grantedOf = (element: Record<string, any>): string[] => uniq(element[buildRefRelationKey(RELATION_GRANTED_TO)] ?? []);
+const grantedOf = (element: Record<string, any>): string[] => timelineRefIds(element, RELATION_GRANTED_TO);
 const authorOf = (event: StoredTimelineEvent): string | undefined => (event[buildRefRelationKey(RELATION_CREATED_BY)] ?? [])[0];
 
 interface ContainerVisibilityScope {
@@ -375,13 +376,9 @@ const resolveContainerVisibilityScope = async (
   const containerGranted = grantedOf(container);
   const elementIds = uniq(events.map((e) => e.element_id).filter((id): id is string => !!id && id !== containerId));
   const authorIds = uniq(events.filter((e) => e.event_source === 'manual').map(authorOf).filter((id): id is string => !!id));
-  // Base data plus the access scope of each element: authorized members (base field), markings and organization sharing
+  // Base data carries the authorized members; markings and organization sharing come with every read as security doc values
   const resolved = elementIds.length + authorIds.length > 0
-    ? await internalFindByIds(context, SYSTEM_USER, [...elementIds, ...authorIds], {
-      toMap: true,
-      baseData: true,
-      baseFields: [buildRefRelationKey(RELATION_OBJECT_MARKING), buildRefRelationKey(RELATION_GRANTED_TO)],
-    }) as unknown as Record<string, AnyStoreElement>
+    ? await internalFindByIds(context, SYSTEM_USER, [...elementIds, ...authorIds], { toMap: true, baseData: true }) as unknown as Record<string, AnyStoreElement>
     : {};
   const markingsMap = await getEntitiesMapFromCache<StoreMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const isMarkingCoveredByContainer = buildContainerMarkingCoverage(markingsOf(container), markingsMap);
