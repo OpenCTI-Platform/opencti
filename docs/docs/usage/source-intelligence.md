@@ -62,7 +62,7 @@ The top of the Sources area tells you whether the scorecards are current:
 | Not computed yet | No computation has run on this platform; the first one runs at the daily recompute hour. | **Compute now** |
 | Manager stopped | The source intelligence manager is not running. | **Open settings** |
 
-When the scan stops at the maximum number of objects set in the settings, a warning says how many objects the scorecards cover, with **Raise the limit**. In Enterprise Edition, such a computation proposes no new recommendation and applies none autonomously: tuning a source from part of the knowledge could quarantine or retire it on incomplete data, so recommendations wait for a computation that covers every object (collection gaps are still computed). While the history is backfilled, a progress bar shows how many days are computed ("Backfilling history - 6 of 14 days"); a larger backfill range set later computes the missing older days only. Below the header, counters show the number of sources, quarantined sources, recommendations to review and collection gaps (the last two in Enterprise Edition). Each counter opens the list it counts.
+When the scan stops at the maximum number of objects set in the settings, a warning says how many objects the scorecards cover, with **Raise the limit**. The limit is exact: the scorecards never cover more objects than it allows. In Enterprise Edition, such a computation proposes no new recommendation and applies none autonomously: tuning a source from part of the knowledge could quarantine or retire it on incomplete data, so recommendations wait for a computation that covers every object (collection gaps are still computed). While the history is backfilled, a progress bar shows how many days are computed ("Backfilling history - 6 of 14 days"); a larger backfill range set later computes the missing older days only. Below the header, counters show the number of sources, quarantined sources, recommendations to review and collection gaps (the last two in Enterprise Edition). Each counter opens the list it counts.
 
 ![Sources area with its status header, counters and leaderboard](assets/source-intelligence-sources-overview.png)
 
@@ -148,7 +148,9 @@ For each recommendation you can:
 
 While its change runs, a recommendation shows **Applying**. A change refused before anything was written (for example, a missing setting) makes it fail with **Retry**. If the change failed after something may have been written, or its outcome cannot be recorded, it stays **Applying**, with the cause behind **Show details**: it is never applied a second time and cannot be rejected, since its change may be in place. Check the target of the recommendation (user, connector, feed or settings) in that case.
 
-While a source is quarantined, validating or deleting its quarantine draft first opens a new quarantine draft and routes the source to it, so nothing the source sends reaches the live knowledge or the draft being closed.
+A revert works the same way: while it runs, the recommendation shows **Reverting**. If the revert fails or its outcome cannot be recorded, the recommendation stays **Reverting**, with the cause behind **Show details** and **Retry**: every step of a revert can run again safely (a decay rule or an exclusion list already removed is not removed twice), and the recommendation is neither proposed again nor applied meanwhile.
+
+While a source is quarantined, validating or deleting its quarantine draft first opens a new quarantine draft and routes the source to it, so nothing the source sends reaches the live knowledge or the draft being closed. Feed data already waiting to be processed for the closed draft goes to the new quarantine draft as well.
 
 A recommendation that no longer matches the situation is withdrawn automatically. Every application, rejection and revert is recorded in the [activity logs](../administration/audit/configuration.md).
 

@@ -7,6 +7,7 @@ import {
   periodCounting,
   type RunLookups,
   type ScanDocument,
+  scanPageSize,
   type ScanTrace,
   toAssertionActivity,
 } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-compute';
@@ -94,5 +95,23 @@ describe('Source intelligence assertion activity', () => {
     const undated = toAssertionActivity({ sourceId: 'source-1', firstAt: null, lastAt: null }, january, october, august);
     expect(undated.start).toEqual(january);
     expect(undated.end).toEqual(january);
+  });
+});
+
+describe('Source intelligence scan limit', () => {
+  it('should request the objects left below the limit and one more that only tells whether the scan is truncated', () => {
+    expect(scanPageSize(1000, 0)).toEqual({ remaining: 1000, size: 1001 });
+    expect(scanPageSize(1, 0)).toEqual({ remaining: 1, size: 2 });
+    expect(scanPageSize(1500, 1000)).toEqual({ remaining: 500, size: 501 });
+  });
+
+  it('should never request more than a page', () => {
+    expect(scanPageSize(2000000, 0)).toEqual({ remaining: 2000000, size: 2000 });
+    expect(scanPageSize(4000, 2000)).toEqual({ remaining: 2000, size: 2000 });
+  });
+
+  it('should only check for one more object once the limit is reached', () => {
+    expect(scanPageSize(4000, 4000)).toEqual({ remaining: 0, size: 1 });
+    expect(scanPageSize(4000, 4500)).toEqual({ remaining: 0, size: 1 });
   });
 });

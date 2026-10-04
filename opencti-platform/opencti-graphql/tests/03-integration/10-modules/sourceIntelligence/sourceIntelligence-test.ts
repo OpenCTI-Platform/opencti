@@ -670,6 +670,8 @@ describe('Source intelligence', () => {
     await runFullComputation(testContext, { ...eagerSettings, max_scan_objects: 1 });
     const truncated = await queryAsAdminWithSuccess({ query: STATUS_QUERY });
     expect(truncated.data.sourceIntelligenceStatus.last_scan_truncated).toBe(true);
+    // The limit is exact: the object beyond it only tells that the scan is truncated
+    expect(truncated.data.sourceIntelligenceStatus.last_scanned_objects).toBe(1);
     expect(await listRecommendations()).toHaveLength(0);
     // The same thresholds over the whole knowledge do propose tuning
     await runFullComputation(testContext, eagerSettings);

@@ -761,6 +761,15 @@ export const buildScanQuery = (asOf: number, windowStart: number, mode: Provenan
 };
 
 /**
+ * Size of the next scan page: the documents that remain below the scan limit, plus one that is never scored and only
+ * tells whether the scan is truncated.
+ */
+export const scanPageSize = (maxScanObjects: number, scanned: number) => {
+  const remaining = Math.max(0, maxScanObjects - scanned);
+  return { remaining, size: Math.min(SCAN_PAGE_SIZE, remaining + 1) };
+};
+
+/**
  * Bounded scan of the knowledge asserted during the longest period, accounting every document in all periods at once.
  */
 export const scanKnowledge = async (
@@ -775,6 +784,7 @@ export const scanKnowledge = async (
   const now = Date.now();
   let searchAfter: unknown[] | undefined;
   for (;;) {
+    const { remaining, size } = scanPageSize(settings.max_scan_objects, state.scanned);
     const requestedAt = Date.now();
     const data = await rawSearch(context, [
       READ_INDEX_STIX_DOMAIN_OBJECTS,
@@ -786,21 +796,24 @@ export const scanKnowledge = async (
       _source: SCAN_SOURCE_FIELDS,
       sort: [{ 'internal_id.keyword': 'asc' }],
       ...(searchAfter ? { search_after: searchAfter } : {}),
-    }, SCAN_PAGE_SIZE);
+    }, size);
     const hits = data.hits?.hits ?? [];
     if (hits.length === 0) {
       break;
     }
-    const docs: ScanDocument[] = hits.map((hit: any) => hit._source as ScanDocument);
-    state.scanPages.push([requestedAt, docs[docs.length - 1].internal_id]);
-    const pageLookups = await fetchPageLookups(context, docs, run);
-    for (let i = 0; i < docs.length; i += 1) {
-      await doYield();
-      const signals = computeDocumentSignals(docs[i], pageLookups, run, now);
-      processDocument(state, docs[i], resolver, signals, settings);
+    const scoredHits = hits.slice(0, remaining);
+    if (scoredHits.length > 0) {
+      const docs: ScanDocument[] = scoredHits.map((hit: any) => hit._source as ScanDocument);
+      state.scanPages.push([requestedAt, docs[docs.length - 1].internal_id]);
+      const pageLookups = await fetchPageLookups(context, docs, run);
+      for (let i = 0; i < docs.length; i += 1) {
+        await doYield();
+        const signals = computeDocumentSignals(docs[i], pageLookups, run, now);
+        processDocument(state, docs[i], resolver, signals, settings);
+      }
+      state.scanned += docs.length;
     }
-    state.scanned += hits.length;
-    if (state.scanned >= settings.max_scan_objects) {
+    if (hits.length > scoredHits.length) {
       state.truncated = true;
       logApp.warn('[OPENCTI-MODULE] Source intelligence scan truncated, increase max_scan_objects to cover the whole period', {
         scanned: state.scanned,
@@ -808,7 +821,7 @@ export const scanKnowledge = async (
       });
       break;
     }
-    if (hits.length < SCAN_PAGE_SIZE) {
+    if (hits.length < size) {
       break;
     }
     searchAfter = hits[hits.length - 1].sort;
