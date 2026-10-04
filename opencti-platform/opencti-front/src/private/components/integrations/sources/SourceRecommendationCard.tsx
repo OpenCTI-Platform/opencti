@@ -101,6 +101,7 @@ const PAYLOAD_LABELS: Record<string, string> = {
   title: 'Integration',
   origin: 'Recommended from',
 };
+const DECAY_RULE_FIELDS = ['decay_lifetime', 'decay_pound', 'decay_revoke_score'];
 const PAYLOAD_VALUE_LABELS: Record<string, Record<string, string>> = {
   origin: { hub: 'XTM Hub', local: 'Local catalog' },
 };
@@ -177,9 +178,15 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
   });
 
   const valueOrNotSet = (value: unknown) => (value === undefined || value === null || value === '' ? t_i18n('Not set') : String(value));
-  const changes = CHANGE_PAIRS
-    .filter(([, after]) => payload[after] !== undefined && payload[after] !== null)
-    .map(([before, after, label]) => ({ label: t_i18n(label), before: valueOrNotSet(payload[before]), after: valueOrNotSet(payload[after]) }));
+  // A decay rule is created by the recommendation: nothing is set before it applies
+  const changes = recommendation.kind === 'add_decay_rule'
+    ? DECAY_RULE_FIELDS
+        .filter((key) => payload[key] !== undefined && payload[key] !== null)
+        .map((key) => ({ key, label: t_i18n(PAYLOAD_LABELS[key]), before: t_i18n('Not set'), after: valueOrNotSet(payload[key]) }))
+    : CHANGE_PAIRS
+        .filter(([, after]) => payload[after] !== undefined && payload[after] !== null)
+        .map(([before, after, label]) => ({ key: after, label: t_i18n(label), before: valueOrNotSet(payload[before]), after: valueOrNotSet(payload[after]) }));
+  const previewedKeys = new Set(changes.map(({ key }) => key));
   const applyLabel = catalogSlug
     ? t_i18n('Deploy {name}', { values: { name: typeof payload.title === 'string' ? payload.title : catalogSlug } })
     : t_i18n(APPLY_ACTION_LABELS[recommendation.kind] ?? 'Apply', { values: { value: valueOrNotSet(payload.proposed_max_confidence) } });
@@ -208,7 +215,7 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
     return valueLabel ? t_i18n(valueLabel) : String(value);
   };
   const details = Object.entries(payload)
-    .filter(([key, value]) => PAYLOAD_LABELS[key] && value !== null && typeof value !== 'object')
+    .filter(([key, value]) => PAYLOAD_LABELS[key] && !previewedKeys.has(key) && value !== null && typeof value !== 'object')
     .map(([key, value]) => ({ key, label: t_i18n(PAYLOAD_LABELS[key]), value: formatDetail(key, value) }));
 
   let history: { sentence: string; date: string } | null = null;
