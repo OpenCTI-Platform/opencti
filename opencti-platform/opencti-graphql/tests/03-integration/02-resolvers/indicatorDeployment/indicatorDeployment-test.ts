@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
-import { ADMIN_USER, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext, USER_CONNECTOR, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
+import { ADMIN_USER, getUserIdByEmail, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext, USER_CONNECTOR, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
 import {
   backfillIndicatorDeploymentCounters,
   COUNTER_FIELDS,
@@ -453,6 +453,55 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
       { query: REPORT_HITS, variables: { indicatorId, platformId, count: 1 } },
       'The time of the last hit is required: it keeps a retried report from being counted twice',
     );
+  });
+
+  it('should refuse a negative hit count on the generic edit and upsert paths, as the next hit report adds to it', async () => {
+    await queryAsUserIsExpectedError(
+      USER_CONNECTOR,
+      { query: DEPLOYMENT_FIELD_PATCH, variables: { id: deploymentId, input: [{ key: 'hit_count', value: ['-2'], operation: 'replace' }] } },
+      'The counter should be a non-negative integer',
+    );
+    await queryAsUserIsExpectedError(
+      USER_CONNECTOR,
+      { query: RELATION_ADD, variables: { input: { fromId: indicatorId, toId: platformId, relationship_type: 'deployed-on', hit_count: -2, update: true } } },
+      'The counter should be a non-negative integer',
+    );
+    const list = await queryAsAdminWithSuccess({ query: DEPLOYMENTS_LIST, variables: { toId: [platformId] } });
+    const deployment = list.data?.stixCoreRelationships.edges.map((e: { node: { id: string } }) => e.node).find((n: { id: string }) => n.id === deploymentId);
+    expect(deployment.hit_count).toEqual(5);
+  });
+
+  it('should add the reporting connector to the creators of a deployment someone else created, heartbeats included', async () => {
+    const connectorUserId = await getUserIdByEmail(USER_CONNECTOR.email);
+    const created = await queryAsAdminWithSuccess({
+      query: INDICATOR_ADD,
+      variables: { input: { name: 'reporters.evil.example', pattern: "[domain-name:value = 'reporters.evil.example']", pattern_type: 'stix', x_opencti_main_observable_type: 'Domain-Name' } },
+    });
+    const reportedIndicatorId = created.data?.indicatorAdd.id;
+    // Shared like the indicator of the other tests, so the connector account reads the deployment the same way
+    await setOrganizations(reportedIndicatorId, [testOrganizationId, platformOrganizationId]);
+    try {
+      const imported = await queryAsAdminWithSuccess({
+        query: RELATION_ADD,
+        variables: { input: { fromId: reportedIndicatorId, toId: platformId, relationship_type: 'deployed-on', deployment_status: 'deployed' } },
+      });
+      const importedId = imported.data?.stixCoreRelationshipAdd.id;
+      const creatorsOf = async () => (await internalLoadById(testContext, ADMIN_USER, importedId) as unknown as { creator_id: string[] }).creator_id;
+      expect(await creatorsOf()).not.toContain(connectorUserId);
+      // A heartbeat (same status) is accepted: the connector becomes a reporter once, the lifecycle is unchanged
+      const heartbeat = await queryAsUserWithSuccess(USER_CONNECTOR, { query: REPORT_DEPLOYMENT, variables: { indicatorId: reportedIndicatorId, platformId, status: 'deployed' } });
+      expect(heartbeat.data?.indicatorReportDeployment.deployment_status).toEqual('deployed');
+      const afterHeartbeat = await creatorsOf();
+      expect(afterHeartbeat).toContain(connectorUserId);
+      expect(afterHeartbeat).toContain(ADMIN_USER.id);
+      // A later report keeps every creator, without duplicates
+      await queryAsUserWithSuccess(USER_CONNECTOR, { query: REPORT_DEPLOYMENT, variables: { indicatorId: reportedIndicatorId, platformId, status: 'active' } });
+      const afterReport = await creatorsOf();
+      expect(afterReport.filter((id) => id === connectorUserId)).toHaveLength(1);
+      expect(afterReport).toContain(ADMIN_USER.id);
+    } finally {
+      await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: reportedIndicatorId } });
+    }
   });
 
   it('should refuse deployment state written by a regular editor through the generic relationship creation', async () => {

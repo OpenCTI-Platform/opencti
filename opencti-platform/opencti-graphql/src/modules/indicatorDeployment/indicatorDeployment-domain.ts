@@ -22,6 +22,7 @@ import {
   READ_INDEX_STIX_CORE_RELATIONSHIPS,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_RELATIONSHIPS_INDICES,
+  UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REPLACE,
 } from '../../database/utils';
 import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
@@ -40,7 +41,7 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationshi
 import { ENTITY_TYPE_INDICATOR, type BasicStoreEntityIndicator } from '../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type BasicStoreEntitySecurityPlatform } from '../securityPlatform/securityPlatform-types';
 import { ENTITY_TYPE_IOC_VALIDATION_REQUEST } from '../iocValidation/iocValidation-types';
-import { isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
+import { INTERNAL_USERS, isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
 import { isEnterpriseEditionFromSettings } from '../../enterprise-edition/ee';
 import { storeUpdateEvent } from '../../database/stream/stream-handler';
 import { addIndicatorDeploymentReportCount, addIndicatorHitsReportCount } from '../../manager/telemetryManager';
@@ -296,6 +297,15 @@ const touchLastSync = async (context: AuthContext, relation: BasicStoreRelation,
   await elUpdate(context, relation._index, relation.internal_id, { script: { source: EL_REPLACE_SCRIPT_SOURCE, lang: 'painless', params } });
 };
 
+/** Whether an accepted report adds its account to the creators of the deployment (internal and no-creator accounts never are). */
+const isNewDeploymentReporter = (deployment: { creator_id?: string | string[] | null }, user: AuthUser) => {
+  if (INTERNAL_USERS[user.id] || user.no_creators) {
+    return false;
+  }
+  const creators = Array.isArray(deployment.creator_id) ? deployment.creator_id : [deployment.creator_id];
+  return !creators.includes(user.id);
+};
+
 const notifyRelationEdit = async (user: AuthUser, element: unknown) => {
   return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, element, user);
 };
@@ -532,13 +542,19 @@ const applyDeploymentReport = async (
     if (change.stale) {
       return { element: existing, outcome: 'unchanged' };
     }
-    if (!change.meaningful) {
+    // An accepted report makes its account a reporter of the deployment, as an upsert would: its later
+    // validation results are trusted (isTrustedDeploymentReporter reads creator_id)
+    const addsReporter = isNewDeploymentReporter(existing, user);
+    if (!change.meaningful && !addsReporter) {
       await touchLastSync(context, existing, change.attributes.last_sync_at);
       return { element: { ...existing, last_sync_at: change.attributes.last_sync_at as Date }, outcome: 'unchanged' };
     }
-    const { element } = await patchAttribute(context, user, existing.internal_id, RELATION_DEPLOYED_ON, change.attributes);
+    const patch: Record<string, unknown> = addsReporter ? { ...change.attributes, creator_id: [user.id] } : change.attributes;
+    const { element } = await patchAttribute(context, user, existing.internal_id, RELATION_DEPLOYED_ON, patch, {
+      operations: addsReporter ? { creator_id: UPDATE_OPERATION_ADD } : undefined,
+    });
     await notifyRelationEdit(user, element);
-    return { element: element as unknown as BasicStoreRelationDeployedOn, outcome: 'updated' };
+    return { element: element as unknown as BasicStoreRelationDeployedOn, outcome: change.meaningful ? 'updated' : 'unchanged' };
   } finally {
     await lock.unlock();
   }
