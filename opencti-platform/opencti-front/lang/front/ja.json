@@ -6158,5 +6158,7 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "現在のユーザーが所属している組織に加え、メインプラットフォームの組織にも所属することになります。",
   "Zoom": "ズーム",
   "Zoom in": "ズームイン",
-  "Zoom out": "ズームアウト"
+  "Zoom out": "ズームアウト",
+  "The source is scored again from the next computation": "次回の計算からこのソースは再びスコアリングされます",
+  "The source is no longer scored": "このソースはスコアリングされなくなりました"
 }

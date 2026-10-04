@@ -6158,5 +6158,7 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "ваш пользователь будет относиться к основной организации платформы в дополнение к любой организации, к которой принадлежит текущий пользователь",
   "Zoom": "Zoom",
   "Zoom in": "Увеличить",
-  "Zoom out": "Уменьшить масштаб"
+  "Zoom out": "Уменьшить масштаб",
+  "The source is scored again from the next computation": "Источник снова оценивается начиная со следующего расчёта",
+  "The source is no longer scored": "Источник больше не оценивается"
 }

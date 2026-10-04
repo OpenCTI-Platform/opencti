@@ -37,6 +37,7 @@ import {
   SOURCE_KIND_LABELS,
 } from './sourceIntelligenceUtils';
 import SourceMetricValue, { RelativeTime, useSourceMetricFormat } from './SourceMetricValue';
+import notifyMutationOutcome from './notifyMutationOutcome';
 import { SourceDetailQuery } from './__generated__/SourceDetailQuery.graphql';
 import { SourceRecommendationsQuery } from './__generated__/SourceRecommendationsQuery.graphql';
 
@@ -259,7 +260,18 @@ const SourceDetailComponent = ({ queryRef, period, onPeriodChange }: SourceDetai
   const canManage = useGranted([MODULES_MODMANAGE, INGESTION_SETINGESTIONS]);
   const { source, sourceScorecards } = usePreloadedQuery(sourceDetailQuery, queryRef);
   const [trendMetric, setTrendMetric] = useState('value_score');
-  const [commitEnable] = useApiMutation(sourceDetailEnableMutation);
+  const [commitEnable, enableInFlight] = useApiMutation(sourceDetailEnableMutation);
+  const handleEnable = (checked: boolean) => {
+    if (!source) return;
+    commitEnable({
+      variables: { id: source.id, input: [{ key: 'enabled', value: [String(checked)] }] },
+      onCompleted: (_, errors) => {
+        notifyMutationOutcome(errors, {
+          success: checked ? t_i18n('The source is scored again from the next computation') : t_i18n('The source is no longer scored'),
+        });
+      },
+    });
+  };
   const trendDefinition = TREND_METRICS.find((metric) => metric.key === trendMetric) ?? TREND_METRICS[0];
   const trendSeries = useMemo(() => [{
     name: t_i18n(trendDefinition.label),
@@ -354,7 +366,8 @@ const SourceDetailComponent = ({ queryRef, period, onPeriodChange }: SourceDetai
             {canManage && (
               <Switch
                 checked={source.enabled}
-                onCheckedChange={(checked) => commitEnable({ variables: { id: source.id, input: [{ key: 'enabled', value: [String(checked)] }] } })}
+                disabled={enableInFlight}
+                onCheckedChange={handleEnable}
                 label={t_i18n('Scored')}
                 data-testid="source-enabled-switch"
               />

@@ -6158,5 +6158,7 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "사용자는 현재 사용자가 소속된 조직 외에 기본 플랫폼 조직과도 관련됩니다",
   "Zoom": "확대/축소",
   "Zoom in": "확대",
-  "Zoom out": "축소"
+  "Zoom out": "축소",
+  "The source is scored again from the next computation": "다음 계산부터 이 소스가 다시 평가됩니다",
+  "The source is no longer scored": "이 소스는 더 이상 평가되지 않습니다"
 }

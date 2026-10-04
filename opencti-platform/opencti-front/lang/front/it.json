@@ -6158,5 +6158,7 @@
   "your user will pertain to the main platform organisation in addition to any organisation that the current user is belonging to": "il vostro utente apparterrà all'organizzazione principale della piattaforma, oltre a qualsiasi organizzazione a cui appartiene l'utente corrente",
   "Zoom": "Zoom",
   "Zoom in": "Ingrandisci",
-  "Zoom out": "Riduci"
+  "Zoom out": "Riduci",
+  "The source is scored again from the next computation": "La fonte viene di nuovo valutata dal prossimo calcolo",
+  "The source is no longer scored": "La fonte non viene più valutata"
 }
