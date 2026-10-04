@@ -445,6 +445,15 @@ describe('Provenance: every fact knows who said it', () => {
     expect((await loadRelation(usesId)).freshness_stale).toEqual(true);
     expect(await staleCount(takeoverRuleId)).toEqual(1);
     expect(await staleCount(ruleId)).toEqual(0);
+    // Moved below the first rule, the rule releases what it flagged and the first rule takes it back
+    await queryAsAdminWithSuccess({ query: DECAY_RULE_PATCH, variables: { id: takeoverRuleId, input: [{ key: 'order', value: ['50'] }] } });
+    expect((await loadRelation(usesId)).freshness_stale).toEqual(false);
+    expect(await staleCount(takeoverRuleId)).toEqual(0);
+    resetCacheForEntity(ENTITY_TYPE_DECAY_RULE);
+    await applyKnowledgeDecayRules(testContext, DECAY_MANAGER_USER, { batchSize: 100 });
+    expect((await loadRelation(usesId)).freshness_stale).toEqual(true);
+    expect(await staleCount(ruleId)).toEqual(1);
+    expect(await staleCount(takeoverRuleId)).toEqual(0);
     await queryAsUserWithSuccess(USER_EDITOR, { query: ASSERT, variables: { id: usesId } });
   });
 
