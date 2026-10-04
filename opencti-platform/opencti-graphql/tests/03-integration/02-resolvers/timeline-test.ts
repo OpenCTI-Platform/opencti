@@ -1105,6 +1105,24 @@ describe('Incident and case timeline', () => {
       await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: added.data.timelineEventAdd.id } });
     });
 
+    it('should write, count and notify once an event named twice in one extension', async () => {
+      const event = { id: 'timeline-event--2d4f6a8c-1b3e-4c5d-8e7f-9a0b1c2d3e4f', title: 'Duplicated milestone', event_time: '2026-02-05T23:00:00.000Z' };
+      const extension = JSON.stringify({ events: [event, { ...event, title: 'Duplicated milestone, last version' }], annotations: [] });
+      const manualEventCount = () => redisGetTelemetry(TELEMETRY_GAUGE_TIMELINE_MANUAL_EVENT);
+      const countBefore = await manualEventCount();
+      const notified = vi.spyOn(timelineNotification, 'notifyTimelineMilestoneAdded');
+      await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension } });
+      const matching = (await listTimeline(secondCase.id, { sources: ['manual'] })).filter((e) => e.title.startsWith('Duplicated milestone'));
+      // The last occurrence wins
+      expect(matching.map((e) => e.title)).toEqual(['Duplicated milestone, last version']);
+      await awaitUntilCondition(async () => (await manualEventCount()) === countBefore + 1, 3000, { message: 'The imported milestone was not counted in time' });
+      await awaitUntilCondition(async () => notified.mock.calls.length === 1, 3000, { message: 'The imported milestone was not notified in time' });
+      expect(await manualEventCount()).toEqual(countBefore + 1);
+      expect(notified).toHaveBeenCalledTimes(1);
+      notified.mockRestore();
+      await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: matching[0].id } });
+    });
+
     it('should never apply an imported annotation to a derived event above the confidence level of the user', async () => {
       const confidentMalware = await queryAsAdminWithSuccess({
         query: MALWARE_ADD,

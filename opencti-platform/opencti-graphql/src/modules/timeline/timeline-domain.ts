@@ -1012,9 +1012,13 @@ const writeImportedContributions = async (
   const { items: readable } = await filterAccessibleEvents(context, user, container.internal_id, readableManual, (e) => e);
   const readableIds = new Set(readable.map((e) => e.internal_id));
   const storedIds = new Set(storedManual.map((e) => e.internal_id));
-  const candidates = events.map((event) => {
+  const identified = events.map((event) => {
     const existing = findKnownEvent(event);
-    const internalId = existing?.internal_id ?? computeManualEventId(container.internal_id, event.id);
+    return { event, existing, internalId: existing?.internal_id ?? computeManualEventId(container.internal_id, event.id) };
+  });
+  // An extension naming the same event twice writes, counts and notifies it once, and takes the cap of the case once:
+  // its last occurrence wins
+  const candidates = Array.from(new Map(identified.map((candidate) => [candidate.internalId, candidate])).values()).map(({ event, existing, internalId }) => {
     const overwritesUnreadable = storedIds.has(internalId) && !readableIds.has(internalId);
     // Nor is a stored event above the confidence level of the user overwritten, like any edit of the event
     const stored = existing ?? storedById.get(internalId);
