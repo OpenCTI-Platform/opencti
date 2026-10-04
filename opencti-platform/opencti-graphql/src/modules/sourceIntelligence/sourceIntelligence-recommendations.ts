@@ -556,6 +556,9 @@ const withRecommendationTransition = async <T>(
   }
 };
 
+// Business errors (validation, refusal) are raised before anything is written
+const isBusinessError = (err: any) => err?.extensions?.data?.genre === 'BUSINESS';
+
 const applyLockedRecommendation = async (
   context: AuthContext,
   user: AuthUser,
@@ -592,7 +595,14 @@ const applyLockedRecommendation = async (
       throw err;
     }
     logApp.warn('[OPENCTI-MODULE] Source intelligence recommendation apply failed', { cause: err, id, kind: recommendation.recommendation_kind });
-    patch = { recommendation_status: RECOMMENDATION_STATUS_FAILED, error_message: err?.message ?? String(err), autonomous };
+    // A business error refuses the change before anything is written: it can be retried. Any other error can come
+    // after a write (a created connector, a routed draft): the outcome is unknown, it stays applying, never retried
+    const refused = isBusinessError(err);
+    patch = {
+      recommendation_status: refused ? RECOMMENDATION_STATUS_FAILED : RECOMMENDATION_STATUS_APPLYING,
+      error_message: err?.message ?? String(err),
+      autonomous,
+    };
   }
   let element;
   try {
