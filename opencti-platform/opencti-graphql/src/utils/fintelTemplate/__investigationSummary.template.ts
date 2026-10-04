@@ -3,7 +3,8 @@ import { SELF_ID } from './__fintelTemplateWidgets';
 
 // Built-in template rendering the latest Case Autopilot investigation of a
 // case. The sections are markdown computed from the run data by the
-// platform (investigationRun-report.ts) and sanitized when rendered.
+// platform (investigationRun-report.ts) and sanitized when rendered; no
+// free-text attribute is inserted, as plain values are not escaped.
 export const INVESTIGATION_SUMMARY_TEMPLATE_NAME = 'Autonomous investigation summary';
 export const INVESTIGATION_SUMMARY_TEMPLATE_TYPES = ['Case-Incident', 'Case-Rfi', 'Case-Rft'];
 
@@ -14,7 +15,6 @@ export const widgetInvestigationSummaryAttributes: FintelTemplateWidgetAddInput 
     perspective: null,
     dataSelection: [{
       columns: [
-        { label: 'Representative', attribute: 'representative.main', variableName: 'representative' },
         { label: 'Creation date', attribute: 'created_at', displayStyle: 'text', variableName: 'creationDate' },
         { label: 'Investigation status', attribute: 'latestInvestigationRun.run_status', variableName: 'investigationStatus' },
         { label: 'Investigation completion date', attribute: 'latestInvestigationRun.completed_at', variableName: 'investigationCompletionDate' },
@@ -36,7 +36,7 @@ export const widgetInvestigationSummaryAttributes: FintelTemplateWidgetAddInput 
 
 const template_content = `
 <div>
-  <h2>Autonomous investigation summary: $representative</h2>
+  <h2>Autonomous investigation summary</h2>
   <p><em>Generated from the latest Case Autopilot investigation of this case ($investigationStatus, $investigationCompletionDate). Review every section before dissemination.</em></p>
 
   <h3>1. Executive summary</h3>

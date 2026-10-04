@@ -94,7 +94,10 @@ import {
 } from './investigationRun-state';
 import { cancelInvestigation, listInvestigationPacks, pushInvestigationFeedback } from './investigationRun-xtm';
 import { notifyInvestigationRunStatus } from './investigationRun-notification';
-import { intersectOrganizationIds, isMemberRestricted, markingIdsOf, organizationIdsOf } from './investigationRun-utils';
+import { intersectOrganizationIds, isCreationSharingWidened, isMemberRestricted, markingIdsOf, organizationIdsOf } from './investigationRun-utils';
+import { getEntityFromCache } from '../../database/cache';
+import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
+import type { BasicStoreSettings } from '../../types/settings';
 
 const runLockKey = (runId: string) => `investigation_run_lock_${runId}`;
 const subjectLockKey = (subjectId: string) => `investigation_run_subject_lock_${subjectId}`;
@@ -617,13 +620,18 @@ const createRecommendationTask = async (
     '',
     `Recommended by Case Autopilot (${recommendation.priority}, ${recommendation.action_kind.replace(/_/g, ' ')}) in the investigation "${run.name}".`,
   ].join('\n').trim();
+  // The recommendation may quote what the run cites: the task carries the run markings and sharing too.
+  const organizations = organizationIdsOf(anchor).filter((id) => organizationIdsOf(run).includes(id));
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, INVESTIGATION_MANAGER_USER, ENTITY_TYPE_SETTINGS);
+  if (isCreationSharingWidened(user, settings, context.user_inside_platform_organization ?? false, organizations)) {
+    throw FunctionalError('The task would be shared with your organizations beyond the sharing of the investigation: a user who can restrict the sharing of what they create must apply it', { id: run.internal_id });
+  }
   const task = await taskAdd(outOfDraft(context), user, {
     name: recommendation.text.slice(0, 250),
     description,
     objects: [anchor.internal_id],
-    // The recommendation may quote what the run cites: the task carries the run markings and sharing too.
     objectMarking: Array.from(new Set([...markingIdsOf(anchor), ...markingIdsOf(run)])),
-    objectOrganization: organizationIdsOf(anchor).filter((id) => organizationIdsOf(run).includes(id)),
+    objectOrganization: organizations,
   });
   return task.internal_id ?? task.id;
 };

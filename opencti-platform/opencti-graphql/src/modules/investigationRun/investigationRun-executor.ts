@@ -473,9 +473,17 @@ const initializeRun = async (exec: RunExecution) => {
     await failRun(liveContext, run.internal_id, 'The investigated entity is no longer accessible to the identity of the run');
     return;
   }
-  if (!run.case_id && run.create_case && !exec.policy.allowed_actions.includes(InvestigationAutonomousAction.CreateCase)) {
-    await failRun(liveContext, run.internal_id, 'The policy of the run no longer allows creating its case');
-    return;
+  if (!run.case_id && run.create_case) {
+    if (!exec.policy.allowed_actions.includes(InvestigationAutonomousAction.CreateCase)) {
+      await failRun(liveContext, run.internal_id, 'The policy of the run no longer allows creating its case');
+      return;
+    }
+    const settings = await getEntityFromCache<BasicStoreSettings>(liveContext, INVESTIGATION_MANAGER_USER, ENTITY_TYPE_SETTINGS);
+    if (isCreationSharingWidened(runUser, settings, liveContext.user_inside_platform_organization ?? false, organizationIdsOf(subject))) {
+      // The platform would share the new case with the organizations of the identity, beyond the ones of the subject.
+      await failRun(liveContext, run.internal_id, 'The identity of the investigation cannot restrict the sharing of a new case to the organizations of the investigated entity: pick a case');
+      return;
+    }
   }
   const patch: Record<string, unknown> = {};
   // Draft: every write of the run lands here, nothing reaches the live graph without approval.
@@ -659,6 +667,8 @@ const processEnrichments = async (exec: RunExecution): Promise<BasicStoreEntityI
   const openWaves = (run.enrichment_waves ?? []).filter((wave) => !wave.delta_computed);
   if (queued.length === 0 && dispatched.length === 0 && openWaves.length === 0) return run;
   const requestPatches = new Map<string, Partial<InvestigationEnrichmentRequest>>();
+  // Jobs started by this tick, already recorded on the run.
+  const started = new Map<string, Partial<InvestigationEnrichmentRequest>>();
   // Dispatch, within the enrichment budget.
   const canEnrich = isUserHasCapability(runUser, KNOWLEDGE_KNENRICHMENT);
   const budgetLeft = Math.max(0, run.budget.max_enrichment_jobs - run.budget.used_enrichment_jobs);
@@ -672,20 +682,36 @@ const processEnrichments = async (exec: RunExecution): Promise<BasicStoreEntityI
         completed_at: now.toISOString(),
       });
     } else {
-      // A cancellation since the run was read stops the job before it starts: it may be a paid connector.
-      const current = await loadInvestigationRun(exec.liveContext, run.internal_id);
-      const stillQueued = !!current && ACTIVE_RUN_STATUSES.includes(current.run_status)
-        && current.enrichment_requests.some((item) => item.id === request.id && item.status === InvestigationEnrichmentRequestStatus.Queued);
-      if (!stillQueued) continue;
-      try {
-        const works = await askElementEnrichmentForConnectors(exec.draftContext, runUser, request.entity_id, [request.connector_id]);
-        const workId = works?.[0]?.id ?? null;
-        requestPatches.set(request.id, workId
-          ? { status: InvestigationEnrichmentRequestStatus.Dispatched, work_id: workId, dispatched_at: now.toISOString() }
-          : { status: InvestigationEnrichmentRequestStatus.Failed, error: 'The connector did not accept the job', completed_at: now.toISOString() });
-        if (workId) dispatchedCount += 1;
-      } catch (error) {
-        requestPatches.set(request.id, { status: InvestigationEnrichmentRequestStatus.Failed, error: errorMessage(error), completed_at: now.toISOString() });
+      // Checked, started and recorded under the lock of the run actions, as a
+      // cancellation is: either the cancellation skips the job, or the job starts
+      // and is recorded before the cancellation reads it (it may be a paid connector).
+      const patch = await withRunActions(exec.liveContext, run.internal_id, async (current) => {
+        const stillQueued = ACTIVE_RUN_STATUSES.includes(current.run_status)
+          && current.enrichment_requests.some((item) => item.id === request.id && item.status === InvestigationEnrichmentRequestStatus.Queued);
+        if (!stillQueued) return null;
+        let requestPatch: Partial<InvestigationEnrichmentRequest>;
+        try {
+          const works = await askElementEnrichmentForConnectors(exec.draftContext, runUser, request.entity_id, [request.connector_id]);
+          const startedWorkId = works?.[0]?.id ?? null;
+          requestPatch = startedWorkId
+            ? { status: InvestigationEnrichmentRequestStatus.Dispatched, work_id: startedWorkId, dispatched_at: now.toISOString() }
+            : { status: InvestigationEnrichmentRequestStatus.Failed, error: 'The connector did not accept the job', completed_at: now.toISOString() };
+        } catch (error) {
+          requestPatch = { status: InvestigationEnrichmentRequestStatus.Failed, error: errorMessage(error), completed_at: now.toISOString() };
+        }
+        const workId = requestPatch.work_id;
+        await updateInvestigationRun(exec.liveContext, run.internal_id, (fresh) => ({
+          enrichment_requests: fresh.enrichment_requests.map((item) => (item.id === request.id ? { ...item, ...requestPatch } : item)),
+          ...(workId ? {
+            pending_work_ids: R.uniq([...(fresh.pending_work_ids ?? []), workId]),
+            budget: { ...fresh.budget, used_enrichment_jobs: fresh.budget.used_enrichment_jobs + 1 },
+          } : {}),
+        }));
+        return requestPatch;
+      });
+      if (patch) {
+        started.set(request.id, patch);
+        if (patch.work_id) dispatchedCount += 1;
       }
     }
   }
@@ -694,14 +720,14 @@ const processEnrichments = async (exec: RunExecution): Promise<BasicStoreEntityI
   const works = await Promise.all(dispatched.map((request) => (request.work_id ? loadWork(exec.liveContext, request.work_id) : Promise.resolve(null))));
   dispatched.forEach((request, index) => {
     const work = works[index];
-    const started = new Date(request.dispatched_at ?? request.created_at).getTime();
+    const dispatchedAt = new Date(request.dispatched_at ?? request.created_at).getTime();
     if (work?.status === 'complete') {
       requestPatches.set(request.id, { status: InvestigationEnrichmentRequestStatus.Completed, completed_at: now.toISOString() });
-    } else if (now.getTime() - started > ENRICHMENT_WAVE_TIMEOUT_MS) {
+    } else if (now.getTime() - dispatchedAt > ENRICHMENT_WAVE_TIMEOUT_MS) {
       requestPatches.set(request.id, { status: InvestigationEnrichmentRequestStatus.Timeout, completed_at: now.toISOString() });
     }
   });
-  const nextRequests = run.enrichment_requests.map((request) => ({ ...request, ...(requestPatches.get(request.id) ?? {}) }));
+  const nextRequests = run.enrichment_requests.map((request) => ({ ...request, ...(started.get(request.id) ?? {}), ...(requestPatches.get(request.id) ?? {}) }));
   // Waves whose jobs all ended: what they brought into the Draft.
   const wavePatches = new Map<string, Partial<InvestigationEnrichmentWave>>();
   for (let index = 0; index < openWaves.length; index += 1) {
@@ -717,7 +743,9 @@ const processEnrichments = async (exec: RunExecution): Promise<BasicStoreEntityI
       wavePatches.set(wave.id, { status });
     }
   }
-  if (requestPatches.size === 0 && wavePatches.size === 0) return run;
+  if (requestPatches.size === 0 && wavePatches.size === 0) {
+    return started.size > 0 ? (await loadInvestigationRun(exec.liveContext, run.internal_id)) ?? run : run;
+  }
   return updateInvestigationRun(exec.liveContext, run.internal_id, (current) => {
     const pendingWorkIds = new Set(current.pending_work_ids ?? []);
     const enrichmentRequests = current.enrichment_requests.map((request) => {
@@ -733,7 +761,6 @@ const processEnrichments = async (exec: RunExecution): Promise<BasicStoreEntityI
       enrichment_requests: enrichmentRequests,
       enrichment_waves: enrichmentWaves,
       pending_work_ids: Array.from(pendingWorkIds),
-      budget: { ...current.budget, used_enrichment_jobs: current.budget.used_enrichment_jobs + dispatchedCount },
     };
   });
 };
