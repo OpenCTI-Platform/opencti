@@ -3927,6 +3927,7 @@
   "Provenance": "出所",
   "Provenance backfill": "出所バックフィル",
   "Provenance backfill progress": "出所バックフィルの進捗",
+  "Provenance is disabled on this platform.": "このプラットフォームでは出所の記録が無効になっています。",
   "Provenance is not available: this type of element is not tracked, or its sources are restricted for your account.": "来歴を表示できません。この種類の要素は追跡されていないか、ソースへのアクセスがお使いのアカウントでは制限されています。",
   "Provider group": "プロバイダーグループ",
   "Provider identifier": "プロバイダ識別子",

@@ -5,6 +5,7 @@ import * as loader from '../../../../src/database/middleware-loader';
 import { connectorIdFromWorkId, isOpenAevCoverageConnector, resolveAssertionSource } from '../../../../src/modules/provenance/provenance-source';
 import { buildCreationProvenance, removeProvenanceInputs } from '../../../../src/modules/provenance/provenance-write';
 import { OPENCTI_NAMESPACE } from '../../../../src/schema/general';
+import { ENTITY_TYPE_SYNC } from '../../../../src/schema/internalObject';
 import { RULE_MANAGER_USER } from '../../../../src/utils/access';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 
@@ -36,6 +37,47 @@ const connectors = [
 
 const contextFor = (workId?: string) => ({ workId } as AuthContext);
 const workOf = (connectorId: string) => `work_${connectorId}_2026-10-03T08:00:00.000Z`;
+
+// The feed index is module state: the clock only moves forward so that every test sees a consistent index age
+const realNow = Date.now.bind(Date);
+let clockOffset = 0;
+vi.spyOn(Date, 'now').mockImplementation(() => realNow() + clockOffset);
+const advanceClock = (ms: number) => {
+  clockOffset += ms;
+};
+const settle = () => new Promise((resolve) => {
+  setTimeout(resolve, 0);
+});
+
+type FeedEntry = { internal_id: string; name: string };
+const feedEntry = (id: string, name: string): FeedEntry => ({ internal_id: id, name });
+const connectorIdOf = (feed: FeedEntry) => uuidv5(feed.internal_id, OPENCTI_NAMESPACE);
+const builtInConnectorOf = (feed: FeedEntry) => ({ internal_id: connectorIdOf(feed), name: `[FEED - RSS] ${feed.name}`, connector_user_id: sharedUser.id, built_in: true });
+const writeOf = (feed: FeedEntry) => resolveAssertionSource(contextFor(workOf(connectorIdOf(feed))), sharedUser, {});
+const feedLoadsCount = () => vi.mocked(loader.fullEntitiesList).mock.calls.filter((args) => !(args[2] as string[]).includes(ENTITY_TYPE_SYNC)).length;
+// Feed loads are held until released; each one returns the feeds that existed when it started
+const holdFeedLoads = (feedsAtStart: () => FeedEntry[]) => {
+  let released = false;
+  const held: (() => void)[] = [];
+  vi.mocked(loader.fullEntitiesList).mockImplementation(((...args: unknown[]) => {
+    if ((args[2] as string[]).includes(ENTITY_TYPE_SYNC)) {
+      return Promise.resolve([]);
+    }
+    const feeds = feedsAtStart();
+    return new Promise((resolve) => {
+      if (released) {
+        resolve(feeds);
+      } else {
+        held.push(() => resolve(feeds));
+      }
+    });
+  }) as never);
+  vi.mocked(loader.fullEntitiesList).mockClear();
+  return () => {
+    released = true;
+    held.splice(0).forEach((release) => release());
+  };
+};
 
 describe('Provenance source resolution', () => {
   beforeEach(() => {
@@ -107,6 +149,51 @@ describe('Provenance source resolution', () => {
     const source = await resolveAssertionSource(contextFor(workOf(importConnectorId)), sharedUser, {});
     expect(source.source_id).toEqual(importConnectorId);
     expect(loader.fullEntitiesList).not.toHaveBeenCalled();
+  });
+
+  it('should resolve the writes that arrive during a load with that same load', async () => {
+    const [first, ...others] = [1, 2, 3].map((n) => feedEntry(`b7f1b2b4-9a7e-4e0e-a4a7-2d3f2c8e1b0${n}`, `Blog ${n}`));
+    vi.mocked(cache.getEntitiesListFromCache).mockResolvedValue([...connectors, ...[first, ...others].map(builtInConnectorOf)] as never);
+    const release = holdFeedLoads(() => [feedEntry(FEED_ID, 'Partner collection'), first, ...others]);
+    const firstWrite = writeOf(first);
+    await settle();
+    const otherWrites = others.map(writeOf);
+    await settle();
+    release();
+    const sources = await Promise.all([firstWrite, ...otherWrites]);
+    expect(sources.map((source) => source.source_id)).toEqual([first, ...others].map((feed) => feed.internal_id));
+    expect(feedLoadsCount()).toBe(1);
+  });
+
+  it('should share one more load between the writes that the load in flight could not resolve', async () => {
+    const [early, ...late] = [1, 2, 3, 4].map((n) => feedEntry(`b7f1b2b4-9a7e-4e0e-a4a7-2d3f2c8e1c0${n}`, `Vendor feed ${n}`));
+    vi.mocked(cache.getEntitiesListFromCache).mockResolvedValue([...connectors, ...[early, ...late].map(builtInConnectorOf)] as never);
+    let existingFeeds = [feedEntry(FEED_ID, 'Partner collection'), early];
+    const release = holdFeedLoads(() => existingFeeds);
+    const earlyWrite = writeOf(early);
+    await settle();
+    // Created while the first load runs: that load cannot hold them
+    existingFeeds = [...existingFeeds, ...late];
+    const lateWrites = late.map(writeOf);
+    await settle();
+    expect(feedLoadsCount()).toBe(1);
+    release();
+    const sources = await Promise.all([earlyWrite, ...lateWrites]);
+    expect(sources.map((source) => source.source_id)).toEqual([early, ...late].map((feed) => feed.internal_id));
+    expect(feedLoadsCount()).toBe(2);
+  });
+
+  it('should refresh an expired index with one load shared by the writes that arrive meanwhile', async () => {
+    const release = holdFeedLoads(() => [feedEntry(FEED_ID, 'Partner collection')]);
+    advanceClock(10 * 60 * 1000);
+    const firstWrite = resolveAssertionSource(contextFor(workOf(FEED_CONNECTOR_ID)), sharedUser, {});
+    await settle();
+    const otherWrites = [1, 2].map(() => resolveAssertionSource(contextFor(workOf(FEED_CONNECTOR_ID)), sharedUser, {}));
+    await settle();
+    release();
+    const sources = await Promise.all([firstWrite, ...otherWrites]);
+    expect(sources.map((source) => source.source_id)).toEqual([FEED_ID, FEED_ID, FEED_ID]);
+    expect(feedLoadsCount()).toBe(1);
   });
 
   it('should attribute a human write with an author to the author', async () => {

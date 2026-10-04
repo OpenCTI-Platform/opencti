@@ -3927,6 +3927,7 @@
   "Provenance": "来源",
   "Provenance backfill": "来源回填",
   "Provenance backfill progress": "来源回填进度",
+  "Provenance is disabled on this platform.": "此平台已禁用来源记录。",
   "Provenance is not available: this type of element is not tracked, or its sources are restricted for your account.": "来源信息不可用：此类元素未被跟踪，或其来源对您的账户受限。",
   "Provider group": "提供者组",
   "Provider identifier": "提供商标识符",

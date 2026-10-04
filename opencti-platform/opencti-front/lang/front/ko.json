@@ -3927,6 +3927,7 @@
   "Provenance": "출처",
   "Provenance backfill": "출처 백필",
   "Provenance backfill progress": "출처 백필 진행률",
+  "Provenance is disabled on this platform.": "이 플랫폼에서는 출처 기록이 비활성화되어 있습니다.",
   "Provenance is not available: this type of element is not tracked, or its sources are restricted for your account.": "출처 정보를 사용할 수 없습니다. 이 유형의 요소는 추적되지 않거나, 계정에서 해당 소스에 대한 접근이 제한되어 있습니다.",
   "Provider group": "공급자 그룹",
   "Provider identifier": "공급자 식별자",

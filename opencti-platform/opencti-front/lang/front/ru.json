@@ -3927,6 +3927,7 @@
   "Provenance": "Происхождение",
   "Provenance backfill": "Фоновое заполнение происхождения",
   "Provenance backfill progress": "Ход заполнения происхождения",
+  "Provenance is disabled on this platform.": "Отслеживание происхождения отключено на этой платформе.",
   "Provenance is not available: this type of element is not tracked, or its sources are restricted for your account.": "Сведения о происхождении недоступны: этот тип элементов не отслеживается или источники ограничены для вашей учётной записи.",
   "Provider group": "Группа провайдера",
   "Provider identifier": "Идентификатор провайдера",

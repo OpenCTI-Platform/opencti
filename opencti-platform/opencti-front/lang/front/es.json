@@ -3927,6 +3927,7 @@
   "Provenance": "Procedencia",
   "Provenance backfill": "Recuperación de procedencia",
   "Provenance backfill progress": "Progreso de la recuperación de procedencia",
+  "Provenance is disabled on this platform.": "La procedencia está desactivada en esta plataforma.",
   "Provenance is not available: this type of element is not tracked, or its sources are restricted for your account.": "La procedencia no está disponible: este tipo de elemento no se rastrea o sus fuentes están restringidas para su cuenta.",
   "Provider group": "Grupo de proveedores",
   "Provider identifier": "Identificador del proveedor",

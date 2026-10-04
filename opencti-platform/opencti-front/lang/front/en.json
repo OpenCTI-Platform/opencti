@@ -3927,6 +3927,7 @@
   "Provenance": "Provenance",
   "Provenance backfill": "Provenance backfill",
   "Provenance backfill progress": "Provenance backfill progress",
+  "Provenance is disabled on this platform.": "Provenance is disabled on this platform.",
   "Provenance is not available: this type of element is not tracked, or its sources are restricted for your account.": "Provenance is not available: this type of element is not tracked, or its sources are restricted for your account.",
   "Provider group": "Provider group",
   "Provider identifier": "Provider identifier",
