@@ -656,7 +656,7 @@ const applyTimelineEventEdit = async (context: AuthContext, user: AuthUser, load
   if (event.event_source === 'derived') {
     const forbidden = providedFields.filter((field) => !DERIVED_EDITABLE_FIELDS.includes(field));
     if (forbidden.length > 0) {
-      throw FunctionalError('A derived event can only be annotated, pinned or hidden', { fields: forbidden });
+      throw FunctionalError('A derived event only accepts an annotation and an ordering hint (pin and hide it with timelineEventPin and timelineEventHide)', { fields: forbidden });
     }
     const analystFields = new Set<TimelineAnalystField>(event.analyst_fields ?? []);
     const patch: Record<string, unknown> = {};

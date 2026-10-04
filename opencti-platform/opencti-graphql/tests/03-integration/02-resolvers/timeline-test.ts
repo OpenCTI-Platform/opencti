@@ -560,7 +560,7 @@ describe('Incident and case timeline', () => {
       expect(annotated.data.timelineEventEdit.annotation).toEqual('Initial dropper');
       await queryAsAdminWithError(
         { query: TIMELINE_EVENT_EDIT, variables: { id: derivedMalwareEventId, input: { title: 'Renamed' } } },
-        'A derived event can only be annotated, pinned or hidden',
+        'A derived event only accepts an annotation and an ordering hint (pin and hide it with timelineEventPin and timelineEventHide)',
       );
       await queryAsAdminWithError({ query: TIMELINE_EVENT_DELETE, variables: { id: derivedMalwareEventId } }, 'A derived event cannot be deleted, hide it instead');
       const pinnedOnly = await listTimeline(caseIncident.id, { pinnedOnly: true });
