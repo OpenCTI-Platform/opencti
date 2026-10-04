@@ -87,10 +87,12 @@ describe('Hook: useBuildAttributesOutcome', () => {
     const columns = [
       { variableName: 'caseName', attribute: 'name' },
       { variableName: 'summary', attribute: 'latestInvestigationRun.report_sections.executive_summary' },
+      { variableName: 'run', attribute: 'latestInvestigationRun' },
     ];
     const withheld = await buildAttributesOutcome('id_XX', { instance_id: SELF_ID, columns }, ['tlp-red']);
     expect(withheld.find((o) => o.variableName === 'caseName')?.attributeData).toEqual('Phishing case');
     expect(withheld.find((o) => o.variableName === 'summary')?.attributeData).toEqual('Withheld: marked above the marking limits of this export');
+    expect(withheld.find((o) => o.variableName === 'run')?.attributeData).toEqual('Withheld: marked above the marking limits of this export');
   });
 });
 
@@ -107,6 +109,12 @@ describe('Function: isReadThroughNotAllowedObject', () => {
   it('should withhold a value read through a nested object carrying a marking above the limits', () => {
     expect(isReadThroughNotAllowedObject(instance, 'latestInvestigationRun.report_sections.report', ['tlp-amber'])).toEqual(true);
     expect(isReadThroughNotAllowedObject(instance, 'latestInvestigationRun.run_status', ['tlp-amber'])).toEqual(true);
+  });
+
+  it('should withhold a nested object selected as a whole when it carries a marking above the limits', () => {
+    expect(isReadThroughNotAllowedObject(instance, 'latestInvestigationRun', ['tlp-amber'])).toEqual(true);
+    expect(isReadThroughNotAllowedObject(instance, 'latestInvestigationRun', ['tlp-red'])).toEqual(false);
+    expect(isReadThroughNotAllowedObject(instance, 'objectMarking', ['tlp-red'])).toEqual(false);
   });
 
   it('should keep the values of the instance itself and of nested objects within the limits', () => {

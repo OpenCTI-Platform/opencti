@@ -9,7 +9,8 @@ import { SELF_ID } from '../../../filters/filtersUtils';
 import { useFormatter } from '../../../../components/i18n';
 
 // A nested object read by a column (the latest investigation run of a case)
-// can be marked above the instance itself: its values follow its markings.
+// can be marked above the instance itself: its values follow its markings,
+// whether the column selects one of its fields or the whole object.
 export const isReadThroughNotAllowedObject = (
   instance: object,
   attribute: string,
@@ -17,7 +18,7 @@ export const isReadThroughNotAllowedObject = (
 ) => {
   if (notAllowedMarkingIds.length === 0) return false;
   let current: unknown = instance;
-  for (const segment of attribute.split('.').slice(0, -1)) {
+  for (const segment of attribute.split('.')) {
     if (!current || typeof current !== 'object' || Array.isArray(current)) return false;
     current = (current as Record<string, unknown>)[segment];
     const markings = (current as { objectMarking?: readonly ({ id?: string } | null)[] | null } | null | undefined)?.objectMarking;
