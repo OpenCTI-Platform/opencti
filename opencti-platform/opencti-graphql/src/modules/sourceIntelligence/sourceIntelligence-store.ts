@@ -245,11 +245,16 @@ export const deleteLiveScorecardsOfSources = async (context: AuthContext, source
   });
 };
 
+// Expired snapshots one daily computation deletes at most: after a retention cut on a long-lived platform, the next
+// computations drain the rest instead of one massive deletion
+export const SNAPSHOT_PURGE_MAX_DOCS = 100000;
+
 export const purgeScorecardSnapshots = async (context: AuthContext, retentionDays: number, now = Date.now()) => {
   const limit = toSnapshotDate(now - retentionDays * 24 * 3600 * 1000);
   const result = await elRawDeleteByQuery({
     index: READ_INDEX_SOURCE_SCORECARDS,
     refresh: true,
+    max_docs: SNAPSHOT_PURGE_MAX_DOCS,
     body: {
       query: {
         bool: {
@@ -263,7 +268,8 @@ export const purgeScorecardSnapshots = async (context: AuthContext, retentionDay
   }).catch((err: unknown) => {
     throw DatabaseError('Source scorecards purge failed', { cause: err });
   });
-  logApp.debug('[OPENCTI-MODULE] Source intelligence scorecards purged', { deleted: result?.deleted, limit });
+  logApp.debug('[OPENCTI-MODULE] Source intelligence scorecards purged', { deleted: result?.deleted, limit, max_docs: SNAPSHOT_PURGE_MAX_DOCS });
+  return result?.deleted ?? 0;
 };
 
 export interface LiveIncrement {
