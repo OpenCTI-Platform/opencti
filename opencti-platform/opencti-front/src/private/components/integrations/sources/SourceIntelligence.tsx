@@ -36,7 +36,7 @@ import SourcesLeaderboard from './SourcesLeaderboard';
 import SourcesOverlap from './SourcesOverlap';
 import CollectionGaps from './CollectionGaps';
 import SourceRecommendations from './SourceRecommendations';
-import { SOURCE_INTELLIGENCE_DOCUMENTATION_URL, SOURCE_INTELLIGENCE_SETTINGS_PATH } from './sourceIntelligenceUtils';
+import { SOURCE_INTELLIGENCE_DOCUMENTATION_URL, SOURCE_INTELLIGENCE_MANAGER_DOCUMENTATION_URL, SOURCE_INTELLIGENCE_SETTINGS_PATH } from './sourceIntelligenceUtils';
 import SourceIntelligenceKpis, { QUARANTINED_SOURCES_FILTERS, sourceIntelligenceKpisQuery, SourceIntelligenceKpisSkeleton } from './SourceIntelligenceKpis';
 import { SourceIntelligenceStatusQuery } from './__generated__/SourceIntelligenceStatusQuery.graphql';
 import { SourceIntelligenceKpisQuery } from './__generated__/SourceIntelligenceKpisQuery.graphql';
@@ -51,6 +51,7 @@ export const sourceIntelligenceStatusQuery = graphql`
       pulse_available
       hunt_available
       sources_count
+      scored_sources_count
       last_full_run_start
       last_full_run_end
       last_run_success
@@ -246,6 +247,19 @@ const SourceIntelligenceHeader = ({ queryRef }: SourceIntelligenceHeaderProps) =
         ) : (
           <Typography variant="body2" aria-live="polite">{statusSentence}</Typography>
         )}
+        {runState === 'disabled' && (
+          <Button
+            variant="tertiary"
+            size="small"
+            component="a"
+            href={SOURCE_INTELLIGENCE_MANAGER_DOCUMENTATION_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="source-intelligence-manager-documentation"
+          >
+            {t_i18n('Read the documentation')}
+          </Button>
+        )}
       </Stack>
       <Typography variant="caption" component="p" sx={{ color: theme.palette.text.secondary, marginTop: 0.5, marginBottom: 0 }}>
         {captions.join(' - ')}
@@ -293,7 +307,8 @@ export const SourceIntelligenceHeaderSkeleton = () => (
 const SourceIntelligenceFirstUse = ({ queryRef }: SourceIntelligenceHeaderProps) => {
   const { t_i18n } = useFormatter();
   const { sourceIntelligenceStatus: status } = usePreloadedQuery(sourceIntelligenceStatusQuery, queryRef);
-  if (status.sources_count > 0) {
+  // Every tracked source gets scorecards: the first use lasts until one of them counts knowledge
+  if (status.scored_sources_count > 0) {
     return null;
   }
   return (

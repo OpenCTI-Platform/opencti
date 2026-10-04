@@ -17181,6 +17181,7 @@ type SourceIntelligenceStatus {
   pulse_available: Boolean!
   hunt_available: Boolean!
   sources_count: Int!
+  scored_sources_count: Int!
   last_full_run_start: DateTime
   last_full_run_end: DateTime
   last_run_success: Boolean

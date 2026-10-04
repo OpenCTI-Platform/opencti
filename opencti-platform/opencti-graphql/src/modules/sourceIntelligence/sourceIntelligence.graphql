@@ -413,7 +413,10 @@ type SourceIntelligenceStatus {
   provenance_mode: SourceProvenanceMode!
   pulse_available: Boolean!
   hunt_available: Boolean!
+  # Sources tracked, each with its scorecards refreshed at every computation
   sources_count: Int!
+  # Sources whose live scorecards count at least one object
+  scored_sources_count: Int!
   last_full_run_start: DateTime
   last_full_run_end: DateTime
   last_run_success: Boolean

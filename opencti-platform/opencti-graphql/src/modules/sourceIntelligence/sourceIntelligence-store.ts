@@ -113,6 +113,27 @@ export const findLiveScorecards = async (context: AuthContext, period: Scorecard
   return scorecards;
 };
 
+/**
+ * Sources scored with knowledge: a live scorecard of at least one period counts an object. Every tracked source gets
+ * live scorecards at each computation, so a scorecard alone does not tell that a source was scored.
+ */
+export const countScoredSources = async (context: AuthContext): Promise<number> => {
+  const filter = [...buildScorecardFilter({ live: true }), { range: { volume_total: { gt: 0 } } }];
+  const data = await elRawSearch(context, SYSTEM_USER, ENTITY_TYPE_SOURCE_SCORECARD, {
+    index: [READ_INDEX_SOURCE_SCORECARDS],
+    size: 0,
+    track_total_hits: false,
+    body: {
+      query: { bool: { filter } },
+      // Exact up to the threshold, far above the number of sources a platform tracks
+      aggs: { sources: { cardinality: { field: 'source_id.keyword', precision_threshold: 40000 } } },
+    },
+  }).catch((err: unknown) => {
+    throw DatabaseError('Source scorecards count failed', { cause: err });
+  });
+  return Number(data.aggregations?.sources?.value ?? 0);
+};
+
 export type ScorecardAggregation = 'sum' | 'avg' | 'min' | 'max';
 
 /**

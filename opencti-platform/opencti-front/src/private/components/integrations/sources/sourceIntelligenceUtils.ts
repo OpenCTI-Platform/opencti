@@ -28,6 +28,7 @@ export const SOURCE_KIND_LABELS: Record<string, string> = {
 export const SOURCE_INTELLIGENCE_SETTINGS_PATH = '/dashboard/settings/customization/source_intelligence';
 
 export const SOURCE_INTELLIGENCE_DOCUMENTATION_URL = 'https://docs.opencti.io/latest/usage/source-intelligence/';
+export const SOURCE_INTELLIGENCE_MANAGER_DOCUMENTATION_URL = 'https://docs.opencti.io/latest/deployment/advanced/managers/#source-intelligence-manager';
 
 export const sourceDetailLink = (sourceId: string) => `/dashboard/integrations/sources/source/${sourceId}`;
 // Deep link opening the cost editor of a source

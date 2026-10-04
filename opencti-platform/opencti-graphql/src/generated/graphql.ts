@@ -32908,6 +32908,7 @@ export type SourceIntelligenceStatus = {
   provenance_mode: SourceProvenanceMode;
   pulse_available: Scalars['Boolean']['output'];
   recompute_requested_at?: Maybe<Scalars['DateTime']['output']>;
+  scored_sources_count: Scalars['Int']['output'];
   sources_count: Scalars['Int']['output'];
 };
 
@@ -54998,6 +54999,7 @@ export type SourceIntelligenceStatusResolvers<ContextType = any, ParentType exte
   provenance_mode?: Resolver<ResolversTypes['SourceProvenanceMode'], ParentType, ContextType>;
   pulse_available?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   recompute_requested_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  scored_sources_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   sources_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 

@@ -61,7 +61,14 @@ import {
   type SourceKindValue,
   type StoreSourceScorecard,
 } from './sourceIntelligence-types';
-import { applyLiveScorecardCost, deleteLiveScorecardsOfSources, deleteScorecardsOfSources, findLiveScorecards, searchScorecards } from './sourceIntelligence-store';
+import {
+  applyLiveScorecardCost,
+  countScoredSources,
+  deleteLiveScorecardsOfSources,
+  deleteScorecardsOfSources,
+  findLiveScorecards,
+  searchScorecards,
+} from './sourceIntelligence-store';
 import { computeCostPerActionable, normalizeCostToDays, toSnapshotDate } from './sourceIntelligence-scoring';
 import { buildSourceResolver, type SourceResolver } from './sourceIntelligence-provenance';
 import { resolveSoftJoinAvailability } from './sourceIntelligence-compute';
@@ -825,9 +832,10 @@ export const backfillProgress = (state: SourceIntelligenceState): { done: number
 };
 
 export const getSourceIntelligenceStatus = async (context: AuthContext) => {
-  const [state, sources, running, enabled, enterprise] = await Promise.all([
+  const [state, sources, scoredSources, running, enabled, enterprise] = await Promise.all([
     getSourceIntelligenceState(),
     listAllSources(context),
+    countScoredSources(context),
     isSourceIntelligenceRunning(context),
     isSourceIntelligenceEnabled(),
     isEnterpriseEdition(context),
@@ -842,6 +850,7 @@ export const getSourceIntelligenceStatus = async (context: AuthContext) => {
     pulse_available: availability.pulse,
     hunt_available: availability.huntRunType !== null,
     sources_count: sources.length,
+    scored_sources_count: scoredSources,
     last_full_run_start: state.last_full_run_start ?? null,
     last_full_run_end: state.last_full_run_end ?? null,
     last_run_success: state.last_run_success ?? null,
