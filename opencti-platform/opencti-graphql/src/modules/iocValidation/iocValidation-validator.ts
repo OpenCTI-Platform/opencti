@@ -133,6 +133,27 @@ export const coversPairMarkings = async (context: AuthContext, instance: Record<
   return coversEndMarkings(context, markingIdsOf(instance[INPUT_MARKINGS]), from, to);
 };
 
+// Marking operations of an upsert (upsertOperations), applied after its markings are added to the stored ones.
+const upsertMarkingOperations = (instance: Record<string, unknown>) => ((instance.upsertOperations ?? []) as EditInput[])
+  .filter((input) => input.key === INPUT_MARKINGS);
+
+/**
+ * Whether the upsert of an existing deployment leaves it with the markings of its indicator and of its security
+ * platform: the markings it ends with are the stored ones, the markings of the input added, then its marking operations.
+ */
+export const coversUpsertPairMarkings = async (context: AuthContext, instance: Record<string, unknown>, existing: MarkedEnd) => {
+  const from = instance.from as MarkedEnd | undefined;
+  const to = instance.to as MarkedEnd | undefined;
+  if (!from || !to) {
+    return true;
+  }
+  const merged = [...markingIdsOf(existing[RELATION_OBJECT_MARKING] ?? []), ...markingIdsOf(instance[INPUT_MARKINGS] ?? [])];
+  const operations = upsertMarkingOperations(instance);
+  const effective = await markingsAfterEdits(context, merged, operations)
+    ?? [...merged, ...operations.flatMap((input) => markingIdsOf(input.value))];
+  return coversEndMarkings(context, effective, from, to);
+};
+
 /**
  * Markings of a deployment after edits of its markings, applied in order, or undefined when no edit can relax them
  * (additions only: an addition of a lower marking of a type already present never replaces the higher one).
@@ -205,21 +226,32 @@ const refuseSharing = (user: AuthUser) => {
   throw ForbiddenAccess('A deployment and its sightings are shared with the organizations of both its indicator and its security platform only', { user_id: user.id });
 };
 
-/**
- * Whether a sighting is one the platform generates for an (indicator, security platform) pair: the hits sighting of the
- * pair, or the result sighting of a validation request that included it (both identified by their deterministic id).
- */
-export const isGeneratedPairSighting = async (context: AuthContext, initial: Record<string, unknown> | undefined) => {
-  const from = initial?.from as { entity_type?: string; internal_id?: string } | undefined;
-  const to = initial?.to as { entity_type?: string; internal_id?: string } | undefined;
+type PairEnd = { entity_type?: string; internal_id?: string };
+
+// The (indicator, security platform) pair of a sighting or of a sighting input, when it is one.
+const sightingPair = (instance: Record<string, unknown> | undefined) => {
+  const from = instance?.from as PairEnd | undefined;
+  const to = instance?.to as PairEnd | undefined;
   if (from?.entity_type !== ENTITY_TYPE_INDICATOR || to?.entity_type !== ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM || !from.internal_id || !to.internal_id) {
-    return false;
+    return undefined;
   }
-  const indicatorId = from.internal_id;
-  const platformId = to.internal_id;
+  return { indicatorId: from.internal_id, platformId: to.internal_id };
+};
+
+/**
+ * Which sighting the platform generates for an (indicator, security platform) pair a sighting is: the hits sighting of
+ * the pair, or the result sighting of a validation request that included it (both identified by their deterministic
+ * id), or undefined for any other sighting.
+ */
+export const generatedPairSightingKind = async (context: AuthContext, initial: Record<string, unknown> | undefined): Promise<'hits' | 'validation_result' | undefined> => {
+  const pair = sightingPair(initial);
+  if (!pair) {
+    return undefined;
+  }
+  const { indicatorId, platformId } = pair;
   const ids = new Set([initial?.standard_id, ...((initial?.x_opencti_stix_ids as string[] | undefined) ?? [])].filter((id): id is string => typeof id === 'string'));
   if (ids.has(hitsSightingStixId(indicatorId, platformId))) {
-    return true;
+    return 'hits';
   }
   let generated = false;
   await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [ENTITY_TYPE_IOC_VALIDATION_REQUEST], {
@@ -232,7 +264,23 @@ export const isGeneratedPairSighting = async (context: AuthContext, initial: Rec
       return !generated;
     },
   } as never);
-  return generated;
+  return generated ? 'validation_result' : undefined;
+};
+
+export const isGeneratedPairSighting = async (context: AuthContext, initial: Record<string, unknown> | undefined) => {
+  return (await generatedPairSightingKind(context, initial)) !== undefined;
+};
+
+const suppliedStixIds = (instance: Record<string, unknown>) => [instance.stix_id, ...((instance.x_opencti_stix_ids as string[] | undefined) ?? [])]
+  .filter((id): id is string => typeof id === 'string');
+
+/**
+ * Whether a sighting creation or upsert carries the deterministic id of the hits sighting of its pair, which only the
+ * accounts reporting hits write (indicatorReportHits).
+ */
+export const claimsHitsSightingId = (instance: Record<string, unknown>) => {
+  const pair = sightingPair(instance);
+  return !!pair && suppliedStixIds(instance).includes(hitsSightingStixId(pair.indicatorId, pair.platformId));
 };
 
 /**
@@ -241,44 +289,65 @@ export const isGeneratedPairSighting = async (context: AuthContext, initial: Rec
  * sighting could take the id before the result is reported.
  */
 export const claimsValidationResultSightingId = async (context: AuthContext, instance: Record<string, unknown>) => {
-  const from = instance.from as { entity_type?: string; internal_id?: string } | undefined;
-  const to = instance.to as { entity_type?: string; internal_id?: string } | undefined;
-  if (from?.entity_type !== ENTITY_TYPE_INDICATOR || to?.entity_type !== ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM || !from.internal_id || !to.internal_id) {
+  const pair = sightingPair(instance);
+  if (!pair) {
     return undefined;
   }
-  const ids = [instance.stix_id, ...((instance.x_opencti_stix_ids as string[] | undefined) ?? [])].filter((id): id is string => typeof id === 'string');
+  const ids = suppliedStixIds(instance);
   if (ids.length === 0) {
     return undefined;
   }
-  const deployment = await findDeployedOn(context, SYSTEM_USER, from.internal_id, to.internal_id);
+  const deployment = await findDeployedOn(context, SYSTEM_USER, pair.indicatorId, pair.platformId);
   if (!deployment?.validation_run_id) {
     return undefined;
   }
-  return ids.includes(validationResultSightingStixId(deployment.validation_run_id, from.internal_id, to.internal_id)) ? deployment : undefined;
+  return ids.includes(validationResultSightingStixId(deployment.validation_run_id, pair.indicatorId, pair.platformId)) ? deployment : undefined;
 };
 
 const validatorSightingCreation: ValidatorFn = async (context, user, instance) => {
+  if (isBypassUser(user)) {
+    return true;
+  }
+  if (claimsHitsSightingId(instance) && !isLifecycleWriter(user)) {
+    return refuseLifecycle(user);
+  }
   const deployment = await claimsValidationResultSightingId(context, instance);
-  if (deployment && !isBypassUser(user) && !await canChangeValidation(context, user, deployment)) {
+  if (deployment && !await canChangeValidation(context, user, deployment)) {
     return refuseValidation(user);
   }
   return true;
 };
 
+// What a generated sighting records: the hits of the pair (count and window), or the outcome of a validation.
+const GENERATED_SIGHTING_CONTENT_FIELDS = ['attribute_count', 'x_opencti_negative', 'first_seen', 'last_seen', 'description'];
+
 // Hits and validation result sightings keep the markings and the sharing of their pair, as deployments do, for
-// administrators too.
+// administrators too; what they record is written by the accounts reporting it (or an administrator).
 const validatorSightingUpdate: ValidatorFn = async (context, user, _instance, initial, editInputs = []) => {
   const touchesAccess = editInputs.some((input) => input.key === INPUT_MARKINGS || input.key === INPUT_GRANTED_REFS);
-  if (!touchesAccess || !await isGeneratedPairSighting(context, initial)) {
+  const touchesContent = editInputs.some((input) => GENERATED_SIGHTING_CONTENT_FIELDS.includes(input.key));
+  if (!touchesAccess && !touchesContent) {
     return true;
   }
-  if (!await keepsPairMarkings(context, initial, editInputs)) {
+  const kind = await generatedPairSightingKind(context, initial);
+  if (!kind) {
+    return true;
+  }
+  if (touchesAccess && !await keepsPairMarkings(context, initial, editInputs)) {
     return refuseMarkings(user);
   }
-  if (!await keepsPairSharing(context, initial, editInputs)) {
+  if (touchesAccess && !await keepsPairSharing(context, initial, editInputs)) {
     return refuseSharing(user);
   }
-  return true;
+  if (!touchesContent || isBypassUser(user)) {
+    return true;
+  }
+  if (kind === 'hits') {
+    return isLifecycleWriter(user) ? true : refuseLifecycle(user);
+  }
+  const pair = sightingPair(initial);
+  const deployment = pair ? await findDeployedOn(context, SYSTEM_USER, pair.indicatorId, pair.platformId) : undefined;
+  return await canChangeValidation(context, user, deployment) ? true : refuseValidation(user);
 };
 
 /**
@@ -337,8 +406,13 @@ const validatorCreation: ValidatorFn = async (context, user, instance) => {
   if (invalidStatus) {
     return refuseInvalidStatus(instance, invalidStatus);
   }
-  if (!await coversPairMarkings(context, instance)) {
-    return refuseMarkings(user);
+  // A new deployment gets the markings of its input; an upsert keeps the stored ones it does not remove.
+  const inputCoversMarkings = await coversPairMarkings(context, instance);
+  if (!inputCoversMarkings || upsertMarkingOperations(instance).length > 0) {
+    const stored = await findExistingDeployment(context, user, instance);
+    if (!(stored ? await coversUpsertPairMarkings(context, instance, stored) : inputCoversMarkings)) {
+      return refuseMarkings(user);
+    }
   }
   if (isBypassUser(user)) {
     return true;

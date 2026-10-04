@@ -38,7 +38,10 @@ effect. Only the platform manager sets the `expired` status.
 Hits reported by a security platform are also recorded as a sighting of the indicator by the platform, so they show
 up with the other sightings of the indicator. The deployment is the reference record of the hits: the sighting is
 rebuilt from its hit count, first hit and last hit on every report, so a sighting left behind by an interrupted
-report, or deleted by mistake, is repaired by the next report of the platform without counting any hit twice.
+report, or deleted by mistake, is repaired by the next report of the platform without counting any hit twice. What
+the hits sighting records (count, first and last seen, negative flag, description) is written by connector accounts
+and administrators only, and only they can create a sighting carrying its identifier; analysts can still label it,
+add notes and references to it.
 Every hit report carries the time of its most recent hit, as the security platform recorded it: a report whose last
 hit is not after the last hit already known is a retry and adds nothing, so a report sent again after a lost answer
 is never counted twice. An integration that can send several reports ending at the same time (for example with
@@ -256,7 +259,8 @@ gives an indicator, `detected`, `prevented` or `missed`, and optionally the obse
 evidence. Only the pairs of the request on that platform still waiting for an answer, or closed by the timeout of the
 request, are updated, so a result already received is never overwritten. Each result is recorded as a sighting of the indicator by the platform,
 negative for a miss. The identifier of that sighting is reserved: while the request runs, only the accounts allowed
-to report its results can create a sighting carrying it.
+to report its results can create a sighting carrying it, and only they (or an administrator) can change what it
+records.
 
 A validation result is proof attributed to the platform, so it is accepted only from the connector account that
 recorded the deployments of the pairs on that platform (the integration reporting its deployment statuses), from the

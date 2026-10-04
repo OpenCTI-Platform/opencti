@@ -5,6 +5,7 @@ import {
   carriesLifecycleState,
   carriesValidationProof,
   coversPairMarkings,
+  coversUpsertPairMarkings,
   setsValidityWindow,
   invalidStatusField,
   isLifecycleWriter,
@@ -134,6 +135,18 @@ describe('Deployment markings guard', () => {
     expect(await coversPairMarkings(testContext, { from, to, objectMarking: ['tlp-amber'] })).toEqual(false);
     expect(await coversPairMarkings(testContext, { from, to })).toEqual(false);
     expect(await coversPairMarkings(testContext, { deployment_status: 'pending' })).toEqual(true);
+  });
+
+  it('should check an upsert on the markings it ends with: the stored ones, those of the input, then its operations', async () => {
+    const stored = { 'object-marking': ['tlp-amber', 'pap-red'] };
+    // A description-only upsert of a marked deployment keeps its markings
+    expect(await coversUpsertPairMarkings(testContext, { from, to, description: 'notes' }, stored)).toEqual(true);
+    expect(await coversUpsertPairMarkings(testContext, { from, to, objectMarking: ['pap-red'] }, { 'object-marking': ['tlp-amber'] })).toEqual(true);
+    expect(await coversUpsertPairMarkings(testContext, { from, to }, { 'object-marking': ['tlp-amber'] })).toEqual(false);
+    const operation = (kind: string, value: string[]) => ({ from, to, upsertOperations: [{ key: 'objectMarking', operation: kind, value }] });
+    expect(await coversUpsertPairMarkings(testContext, operation('remove', ['pap-red']), stored)).toEqual(false);
+    expect(await coversUpsertPairMarkings(testContext, operation('add', ['pap-red']), { 'object-marking': ['tlp-amber'] })).toEqual(true);
+    expect(await coversUpsertPairMarkings(testContext, { deployment_status: 'active' }, stored)).toEqual(true);
   });
 
   it('should refuse a deployment less restricted than its security platform, whoever creates it', async () => {

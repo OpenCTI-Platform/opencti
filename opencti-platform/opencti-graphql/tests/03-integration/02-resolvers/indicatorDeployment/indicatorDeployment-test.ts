@@ -84,6 +84,11 @@ const SIGHTING_MARKING_DELETE = gql`
     stixSightingRelationshipEdit(id: $id) { relationDelete(toId: $toId, relationship_type: "object-marking") { id } }
   }
 `;
+const SIGHTING_FIELD_PATCH = gql`
+  mutation SightingFieldPatch($id: ID!, $input: [EditInput]!) {
+    stixSightingRelationshipEdit(id: $id) { fieldPatch(input: $input) { id } }
+  }
+`;
 const DEPLOYMENT_FIELD_PATCH = gql`
   mutation DeploymentFieldPatch($id: ID!, $input: [EditInput]!) {
     stixCoreRelationshipEdit(id: $id) { fieldPatch(input: $input) { id } }
@@ -281,6 +286,27 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     }
   });
 
+  it('should accept the upsert of a marked deployment that does not repeat its markings, and keep them', async () => {
+    const amber = await internalLoadById(testContext, ADMIN_USER, MARKING_TLP_AMBER) as unknown as { internal_id: string };
+    await setMarkings(indicatorId, [amber.internal_id]);
+    await setMarkings(deploymentId, [amber.internal_id]);
+    // Neither streamed nor kept: the raw stream counts of the suite are unchanged
+    const streamed = vi.spyOn(streamHandler, 'storeUpdateEvent').mockResolvedValue(undefined as never);
+    try {
+      const upserted = await queryAsAdminWithSuccess({
+        query: RELATION_ADD,
+        variables: { input: { fromId: indicatorId, toId: platformId, relationship_type: 'deployed-on', description: 'Deployment notes', update: true } },
+      });
+      expect(upserted.data?.stixCoreRelationshipAdd.id).toEqual(deploymentId);
+      const deployment = await internalLoadById(testContext, ADMIN_USER, deploymentId) as unknown as Record<string, string[] | undefined>;
+      expect(deployment[RELATION_OBJECT_MARKING]).toEqual([amber.internal_id]);
+    } finally {
+      streamed.mockRestore();
+      await setMarkings(deploymentId, []);
+      await setMarkings(indicatorId, []);
+    }
+  });
+
   it('should share a deployment again with the organizations of both its ends after a sharing change of one end', async () => {
     await setOrganizations(platformId, [platformOrganizationId]);
     await repairPairMarkings(testContext, ADMIN_USER, { indicatorIds: [], platformIds: [platformId] });
@@ -432,6 +458,38 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
       await setOrganizations(platformId, [platformOrganizationId]);
       await setMarkings(sighting.internal_id, []);
       await setMarkings(indicatorId, []);
+    }
+  });
+
+  it('should leave what the hits sighting records to the accounts reporting hits', async () => {
+    const sightingStixId = hitsSightingStixId(indicatorId, platformId);
+    const before = await internalLoadById(testContext, ADMIN_USER, sightingStixId, { type: STIX_SIGHTING_RELATIONSHIP }) as unknown as {
+      internal_id: string;
+      attribute_count: number;
+      description: string;
+    };
+    // The reporting connector account may write it (same value: no change, no event)
+    await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: SIGHTING_FIELD_PATCH,
+      variables: { id: before.internal_id, input: [{ key: 'description', value: [before.description] }] },
+    });
+    // Side-channel only, so the raw stream counts of the suite are unchanged; the editor reads the pair meanwhile
+    await setOrganizations(platformId, [testOrganizationId]);
+    await setOrganizations(before.internal_id, [testOrganizationId]);
+    try {
+      await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+        query: SIGHTING_FIELD_PATCH,
+        variables: { id: before.internal_id, input: [{ key: 'attribute_count', value: ['1'] }] },
+      });
+      await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+        query: SIGHTING_FIELD_PATCH,
+        variables: { id: before.internal_id, input: [{ key: 'x_opencti_negative', value: ['true'] }] },
+      });
+      const after = await internalLoadById(testContext, ADMIN_USER, before.internal_id, { type: STIX_SIGHTING_RELATIONSHIP }) as unknown as { attribute_count: number };
+      expect(after.attribute_count).toEqual(before.attribute_count);
+    } finally {
+      await setOrganizations(before.internal_id, [platformOrganizationId]);
+      await setOrganizations(platformId, [platformOrganizationId]);
     }
   });
 
