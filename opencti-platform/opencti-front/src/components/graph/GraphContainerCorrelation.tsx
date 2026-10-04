@@ -159,6 +159,7 @@ const graphContainerCorrelationObjectsFragment = graphql`
             }
             ... on StixDomainObject {
               created
+              confidence
             }
             ... on AttackPattern {
               name
