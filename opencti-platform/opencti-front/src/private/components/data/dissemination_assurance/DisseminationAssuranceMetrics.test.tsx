@@ -4,7 +4,10 @@ import type { RelayMockEnvironment } from 'relay-test-utils/lib/RelayModernMockE
 import { describe, expect, it, vi } from 'vitest';
 import testRender from '../../../../utils/tests/test-render';
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import { HubEntryContext } from '../../common/hub/HubEntryContext';
+import disseminationAssurance from '../../defense/areas/assurance';
 import DisseminationAssuranceMetrics from './DisseminationAssuranceMetrics';
+import { DISSEMINATION_ASSURANCE_DOCUMENTATION_URL } from './disseminationAssuranceUtils';
 
 vi.mock('../../../../components/dashboard/WidgetHorizontalBars', () => ({ default: () => <div data-testid="widget-bars" /> }));
 vi.mock('../../../../components/dashboard/WidgetDonut', () => ({ default: () => <div data-testid="widget-donut" /> }));
@@ -58,13 +61,19 @@ describe('Dissemination assurance key figures', () => {
     expect(screen.getByTestId('deployments').textContent).toEqual('all');
   });
 
-  it('explains the area on first use, when no stream connector reported a deployment', async () => {
-    const { relayEnv } = testRender(<DisseminationAssuranceMetrics />);
+  it('explains the area with the hub first-use state, when no stream connector reported a deployment', async () => {
+    const { relayEnv } = testRender(
+      <HubEntryContext.Provider value={{ label: disseminationAssurance.label, description: disseminationAssurance.description }}>
+        <DisseminationAssuranceMetrics />
+      </HubEntryContext.Provider>,
+    );
     await resolveMetrics(relayEnv, metrics([], []));
 
-    expect(await screen.findByTestId('dissemination-assurance-first-use')).toBeTruthy();
-    expect(screen.getByText('No deployment reported yet')).toBeTruthy();
-    expect(screen.getByText('Read the documentation on deployment write-back')).toBeTruthy();
+    const firstUse = await screen.findByTestId('hub-first-use');
+    expect(within(firstUse).getByText('Dissemination assurance')).toBeTruthy();
+    expect(within(firstUse).getByText('Do the indicators you share reach your security platforms, and do they still work there?')).toBeTruthy();
+    expect(within(firstUse).getByText('Configure a stream connector').closest('a')?.getAttribute('href')).toEqual('/dashboard/integrations');
+    expect(within(firstUse).getByText('Read the documentation').closest('a')?.getAttribute('href')).toEqual(DISSEMINATION_ASSURANCE_DOCUMENTATION_URL);
     expect(screen.queryByTestId('dissemination-assurance-metrics')).toBeNull();
   });
 });

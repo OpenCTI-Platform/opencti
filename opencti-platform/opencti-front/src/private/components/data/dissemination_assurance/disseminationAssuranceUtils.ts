@@ -1,6 +1,15 @@
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 
 export const PATH_DISSEMINATION_ASSURANCE = '/dashboard/defense/assurance';
+
+/** The pages of the area, in order: the Defense hub shows them as tabs and names the open one in the breadcrumb. */
+export const DISSEMINATION_ASSURANCE_SECTIONS = [
+  { path: 'overview', label: 'Overview' },
+  { path: 'lists', label: 'Lists' },
+  { path: 'validations', label: 'Validation requests' },
+] as const;
+
+export type DisseminationAssuranceSectionPath = typeof DISSEMINATION_ASSURANCE_SECTIONS[number]['path'];
 export const PATH_DISSEMINATION_ASSURANCE_OVERVIEW = `${PATH_DISSEMINATION_ASSURANCE}/overview`;
 export const PATH_DISSEMINATION_ASSURANCE_LISTS = `${PATH_DISSEMINATION_ASSURANCE}/lists`;
 export const PATH_DISSEMINATION_ASSURANCE_VALIDATIONS = `${PATH_DISSEMINATION_ASSURANCE}/validations`;

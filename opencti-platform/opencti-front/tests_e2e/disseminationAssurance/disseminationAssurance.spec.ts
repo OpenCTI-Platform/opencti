@@ -65,10 +65,10 @@ test('Dissemination assurance', { tag: ['@disseminationAssurance', '@mutation'] 
     await expect(page.getByTestId('dissemination-assurance-overview-page')).toBeVisible();
     await expect(page.getByTestId('dissemination-assurance-metrics')).toBeVisible();
 
-    await page.getByTestId('dissemination-assurance-tab-lists').click();
+    await page.getByTestId('defense-assurance-section-lists').click();
     await expect(page.getByTestId('dissemination-assurance-lists-page')).toBeVisible();
 
-    await page.getByTestId('dissemination-assurance-tab-validations').click();
+    await page.getByTestId('defense-assurance-section-validations').click();
     await expect(page.getByTestId('ioc-validation-requests-page')).toBeVisible();
     // endregion
   } finally {
@@ -140,7 +140,7 @@ test.describe('Dissemination assurance documentation', () => {
 
       await withoutAnyDeployment(page);
       await page.reload();
-      await expect(page.getByTestId('dissemination-assurance-first-use')).toBeVisible();
+      await expect(page.getByTestId('hub-first-use')).toBeVisible();
       await capture(page, testInfo, 'first-use');
       await page.unroute('**/graphql');
       // endregion

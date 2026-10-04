@@ -2,11 +2,11 @@ import { ReactNode, Suspense, useMemo, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { Link } from 'react-router';
 import { Box, Grid, Stack, Typography } from '@mui/material';
-import { ShieldSyncOutline } from 'mdi-material-ui';
-import { Badge, Hero, HeroBody, HeroHeader } from '@filigran/design-system';
+import { Badge } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Card from '@common/card/Card';
 import { useFormatter } from '../../../../components/i18n';
+import HubFirstUse from '../../common/hub/HubFirstUse';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizontalBars';
 import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
@@ -112,33 +112,17 @@ const KpiCounter = ({ id, label, value, caption, badge, actionable, selected, on
   );
 };
 
-const FirstUseHero = () => {
+const FirstUse = () => {
   const { t_i18n } = useFormatter();
   return (
-    <Hero data-testid="dissemination-assurance-first-use">
-      <HeroHeader
-        icon={<ShieldSyncOutline />}
-        action={(
-          <Button variant="primary" component={Link} to="/dashboard/integrations">
-            {t_i18n('Configure a stream connector')}
-          </Button>
-        )}
-      >
-        {t_i18n('No deployment reported yet')}
-      </HeroHeader>
-      <HeroBody>
-        <Stack gap={1}>
-          <Typography variant="body2">
-            {t_i18n('Dissemination assurance measures whether the indicators you share reach your security platforms and still work there. Deployments appear here when a stream connector reports back which indicators it pushed, removed or could not deploy.')}
-          </Typography>
-          <Typography variant="body2">
-            <a href={DISSEMINATION_ASSURANCE_DOCUMENTATION_URL} target="_blank" rel="noopener noreferrer">
-              {t_i18n('Read the documentation on deployment write-back')}
-            </a>
-          </Typography>
-        </Stack>
-      </HeroBody>
-    </Hero>
+    <HubFirstUse
+      action={(
+        <Button variant="primary" component={Link} to="/dashboard/integrations">
+          {t_i18n('Configure a stream connector')}
+        </Button>
+      )}
+      documentationUrl={DISSEMINATION_ASSURANCE_DOCUMENTATION_URL}
+    />
   );
 };
 
@@ -171,7 +155,7 @@ const DisseminationAssuranceMetricsContent = ({ platformId, startDate, renderDep
   }
   const deploymentsCount = sumStatuses(metrics.deployment_statuses);
   if (!platformId && !startDate && deploymentsCount === 0) {
-    return <FirstUseHero />;
+    return <FirstUse />;
   }
 
   // The counters count the deployments listed under the strip, with the same period and platform.
