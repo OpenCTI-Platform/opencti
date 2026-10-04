@@ -194,7 +194,7 @@ describe('Case Autopilot run helpers', () => {
     expect(emptySectionSentence({ run_status: 'failed', end_reason_code: 'member_restricted' }, t, 'while active', 'ended'))
       .toBe('t:Withheld: an entity of the investigation became restricted to authorized members.');
     expect(emptySectionSentence({ run_status: 'failed', end_reason_code: 'subject_inaccessible' }, t, 'while active', 'ended'))
-      .toBe('t:Withheld: the investigated entity is no longer accessible to the identity of the investigation.');
+      .toBe('t:Withheld: the investigated entity is no longer accessible to the account the investigation runs as.');
     expect(emptySectionSentence({ run_status: 'failed', end_reason_code: 'engine_disabled' }, t, 'while active', 'ended')).toBe('ended');
     expect(emptySectionSentence({ run_status: 'running', end_reason_code: null }, t, 'while active', 'ended')).toBe('while active');
     expect(withheldSectionReason(null)).toBeNull();

@@ -408,7 +408,7 @@
   "An entity of the investigation is now restricted to authorized members: Case Autopilot stopped and withheld what it had found": "調査のエンティティが承認済みメンバーに制限されました。Case Autopilot は停止し、見つけた内容を非表示にしました",
   "An entity of the investigation is now restricted to authorized members: Case Autopilot stopped and withheld what it had found. Remove that entity from the case or ask an administrator for access, then run again.": "調査のエンティティが承認済みメンバーに制限されました。Case Autopilot は停止し、見つけた内容を非表示にしました。そのエンティティをケースから削除するか、管理者にアクセスを依頼してから、再実行してください。",
   "Withheld: an entity of the investigation became restricted to authorized members.": "非表示: 調査のエンティティが承認済みメンバーに制限されました。",
-  "Withheld: the investigated entity is no longer accessible to the identity of the investigation.": "非表示: 調査対象のエンティティに調査のアイデンティティからアクセスできなくなりました。",
+  "Withheld: the investigated entity is no longer accessible to the account the investigation runs as.": "非表示: 調査を実行しているアカウントから調査対象のエンティティにアクセスできなくなりました。",
   "An enumeration of security platform type": "セキュリティ・プラットフォーム型の列挙",
   "An enumeration of SSH key types": "SSH鍵タイプの列挙",
   "An enumeration of Windows service start types": "Windows サービス開始タイプの列挙",

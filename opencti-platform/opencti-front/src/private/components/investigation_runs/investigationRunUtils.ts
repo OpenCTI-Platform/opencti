@@ -110,7 +110,7 @@ export const engineReasonLabel = (code: string | null | undefined) => (code ? EN
 // Investigations stopped at an access boundary, whose findings are withheld: why their sections are empty.
 const WITHHELD_SECTION_REASONS: Record<string, string> = {
   [MEMBER_RESTRICTED_CODE]: 'Withheld: an entity of the investigation became restricted to authorized members.',
-  subject_inaccessible: 'Withheld: the investigated entity is no longer accessible to the identity of the investigation.',
+  subject_inaccessible: 'Withheld: the investigated entity is no longer accessible to the account the investigation runs as.',
 };
 
 export const withheldSectionReason = (code: string | null | undefined) => (code ? WITHHELD_SECTION_REASONS[code] ?? null : null);
