@@ -242,6 +242,7 @@ type TranslateWithValues = (message: string, opts?: { values?: Record<string, st
 
 const ACTION_LABELS: Record<string, string> = {
   added: 'Added',
+  changed: 'Changed',
   removed: 'Removed',
   revoked: 'Revoked',
   unrevoked: 'Unrevoked',
@@ -274,9 +275,11 @@ export const escapeHtml = (value: string | number | null | undefined): string =>
     .replace(/'/g, '&#39;');
 };
 
-const delta = (before?: number | null, after?: number | null) => {
-  if (before === null || before === undefined || after === null || after === undefined || before === after) return '';
-  return `${before} -> ${after}`;
+// Transition of a confidence or score in the exports, written like on screen: an unset side reads "Not set"
+const transitionText = (before: number | null | undefined, after: number | null | undefined, t: Translate) => {
+  const isUnset = (value: number | null | undefined) => value === null || value === undefined;
+  if ((isUnset(before) && isUnset(after)) || before === after) return '';
+  return `${isUnset(before) ? t('Not set') : before} -> ${isUnset(after) ? t('Not set') : after}`;
 };
 
 export const entityDiffToJson = (diff: EntityDiffData): string => JSON.stringify(diff, null, 2);
@@ -286,7 +289,16 @@ export const entityDiffToCsv = (diff: EntityDiffData, t: Translate): string => {
     [t('Section'), t('Type'), t('Field or target'), t('Action'), t('Before'), t('After'), t('Date'), t('By')],
   ];
   diff.attributes.forEach((attribute) => {
-    rows.push([t('Attributes'), attribute.key, attribute.label, t('Changed'), valuesToText(attribute.before), valuesToText(attribute.after), attribute.changed_at, attribute.changed_by]);
+    rows.push([
+      t('Attributes'),
+      attribute.key,
+      attribute.label,
+      actionLabel(attributeOperation(attribute.before, attribute.after), t),
+      valuesToText(attribute.before),
+      valuesToText(attribute.after),
+      attribute.changed_at,
+      attribute.changed_by,
+    ]);
   });
   diff.relationships.forEach((relationship) => {
     rows.push([
@@ -320,8 +332,8 @@ export const entityDiffToHtml = (diff: EntityDiffData, t: TranslateWithValues, f
     [t('Confidence changes on relationships'), summary.relationships_confidence_changed],
     [t('Objects added'), summary.container_objects_added],
     [t('Objects removed'), summary.container_objects_removed],
-    [t('Confidence'), delta(summary.confidence_before, summary.confidence_after) || '-'],
-    [t('Score'), delta(summary.score_before, summary.score_after) || '-'],
+    [t('Confidence'), transitionText(summary.confidence_before, summary.confidence_after, t) || '-'],
+    [t('Score'), transitionText(summary.score_before, summary.score_after, t) || '-'],
   ];
   const attributeRows = diff.attributes.map((attribute) => `<tr><td>${escapeHtml(attribute.label)}</td><td>${escapeHtml(valuesToText(attribute.before))}</td>`
     + `<td>${escapeHtml(valuesToText(attribute.after))}</td><td>${escapeHtml(attribute.changed_at ? formatDate(attribute.changed_at) : '')}</td>`
@@ -369,8 +381,8 @@ export const landscapeDiffToCsv = (diff: LandscapeDiffData, t: Translate): strin
       entity.relationships_removed,
       entity.relationships_revoked,
       entity.relationships_confidence_changed,
-      delta(entity.confidence_before, entity.confidence_after),
-      delta(entity.score_before, entity.score_after),
+      transitionText(entity.confidence_before, entity.confidence_after, t),
+      transitionText(entity.score_before, entity.score_after, t),
       entity.change_score,
     ]);
   });

@@ -214,7 +214,16 @@ describe('entity diff exports', () => {
     expect(lines[0]).toBe('Section,Type,Field or target,Action,Before,After,Date,By');
     expect(lines).toHaveLength(1 + entityDiff.attributes.length + entityDiff.relationships.length);
     expect(lines[1]).toBe('Attributes,description,Description,Changed,old,"new, ""quoted""",2026-08-01T10:00:00.000Z,admin');
+    // The operation of each attribute row is the one the table shows
+    expect(lines[2]).toBe('Attributes,aliases,Aliases,Added,,"Fancy Bear, Sofacy",,');
     expect(lines[3]).toBe('Relationships,uses,X-Agent,Added,,75,2026-09-01T00:00:00.000Z,connector');
+  });
+
+  it('writes a transition from or to an unset confidence or score like on screen', () => {
+    const summary = { ...entityDiff.summary, confidence_before: null, confidence_after: 75, score_before: 40, score_after: null };
+    const html = entityDiffToHtml({ ...entityDiff, summary }, tWithValues, formatDate);
+    expect(html).toContain('<td>Confidence</td><td>Not set -&gt; 75</td>');
+    expect(html).toContain('<td>Score</td><td>40 -&gt; Not set</td>');
   });
 
   it('builds an escaped HTML document for the PDF export', () => {
