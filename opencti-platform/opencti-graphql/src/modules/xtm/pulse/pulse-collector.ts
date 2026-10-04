@@ -11,6 +11,7 @@ import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../../schema/general';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../securityPlatform/securityPlatform-types';
 import { computeStableKeys, computeTransportHash, isValidPulseHash } from './pulse-hashing';
 import { isPulseContributable, type PulseMarkingPolicy } from './pulse-settings';
+import type { PulseWindowSighting } from './pulse-cache';
 import {
   PULSE_ENTITY_TYPE_BY_OBJECT_TYPE,
   PULSE_EVENT_KINDS,
@@ -82,8 +83,16 @@ export const boundPulseWindow = async (since: Date, until: Date, maxEvents: numb
 };
 
 // Local activity on in-scope objects during [since, until): creations, sightings (detections when sighted by a
-// security platform), container references and new relationships.
-export const collectPulseActivity = async (context: AuthContext, user: AuthUser, scopes: string[], since: Date, until: Date): Promise<PulseActivity> => {
+// security platform), container references and new relationships. *sightings* receives each sighting read with the
+// count read, for the commit of the window to add what an upsert raised meanwhile.
+export const collectPulseActivity = async (
+  context: AuthContext,
+  user: AuthUser,
+  scopes: string[],
+  since: Date,
+  until: Date,
+  sightings: PulseWindowSighting[] = [],
+): Promise<PulseActivity> => {
   const activity: PulseActivity = new Map();
   if (scopes.length === 0) {
     return activity;
@@ -103,7 +112,9 @@ export const collectPulseActivity = async (context: AuthContext, user: AuthUser,
     callback: async (relations) => {
       relations.forEach((relation) => {
         const kind = relation.toType === ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM ? 'detected' : 'sighted';
-        addActivity(activity, relation.fromId, kind, Number(relation.attribute_count ?? 1));
+        const count = Number(relation.attribute_count ?? 1);
+        addActivity(activity, relation.fromId, kind, count);
+        sightings.push({ id: relation.internal_id, count, entityId: relation.fromId, eventKind: kind });
       });
     },
   });

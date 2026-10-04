@@ -18,9 +18,13 @@ import {
   redisAddPulseActivity,
   redisBumpPulsePolicyGeneration,
   redisClaimPulseOutbox,
+  redisCommitPulseWindow,
   redisDiscardPulseActivity,
+  redisGetPulseConfigGeneration,
+  redisGetPulseCursor,
   redisGetPulseSalt,
   redisGetPulseState,
+  redisRecordPulseSightingIncrease,
   redisSetPulseSalt,
   redisSetPulseState,
   redisTakePulseActivity,
@@ -380,7 +384,7 @@ describe('Threat Pulse manager and API', () => {
       .filter((row) => row.platformId === settingsId && row.eventKind === 'detected' && row.day === today && malwareKeys.includes(row.key))
       .reduce((total, row) => total + row.count, 0);
     const before = detectedCount();
-    const seenAgainBySecurityPlatform = { fromId: malwareId, fromType: ENTITY_TYPE_MALWARE, toType: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM };
+    const seenAgainBySecurityPlatform = { internal_id: 'pulse-seen-again-detection', fromId: malwareId, fromType: ENTITY_TYPE_MALWARE, toType: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM };
     await recordPulseSightingIncrease(testContext, seenAgainBySecurityPlatform, 2);
     // A run takes the activity, then fails before its batches are pushed or kept in the outbox
     expect(await redisTakePulseActivity(today, 100)).toEqual([{ entityId: malwareId, eventKind: 'detected', count: 2 }]);
@@ -425,7 +429,7 @@ describe('Threat Pulse manager and API', () => {
       .reduce((total, row) => total + row.count, 0);
     const before = sightedCount();
     // An existing sighting seen three more times: its count rises, no relationship is created
-    await recordPulseSightingIncrease(testContext, { fromId: malwareId, fromType: ENTITY_TYPE_MALWARE, toType: 'Organization' }, 3);
+    await recordPulseSightingIncrease(testContext, { internal_id: 'pulse-seen-again-sighting', fromId: malwareId, fromType: ENTITY_TYPE_MALWARE, toType: 'Organization' }, 3);
     await runPulseContribution(testContext);
     expect(sightedCount()).toBe(before + 3 * malwareKeys.length);
   });
@@ -439,9 +443,43 @@ describe('Threat Pulse manager and API', () => {
     await runPulseContribution(testContext);
     const before = sightedCount();
     // Created after the last contribution and already raised: the next run reads the raised count with the sighting
-    await recordPulseSightingIncrease(testContext, { fromId: malwareId, fromType: ENTITY_TYPE_MALWARE, toType: 'Organization', created_at: new Date() }, 2);
+    await recordPulseSightingIncrease(testContext, { internal_id: 'pulse-raised-before-collection', fromId: malwareId, fromType: ENTITY_TYPE_MALWARE, toType: 'Organization', created_at: new Date() }, 2);
     await runPulseContribution(testContext);
     expect(sightedCount()).toBe(before);
+  });
+
+  it('should count once an increase that raced with the collection of its window, whatever the order', async () => {
+    await runPulseContribution(testContext);
+    const today = utcDay();
+    const previousCursor = await redisGetPulseCursor();
+    const object = 'pulse-race-object';
+    const raise = (id: string, createdAt: string, total: number, increase: number) => redisRecordPulseSightingIncrease({
+      id, createdAt, oldestCollected: '2000-01-01T00:00:00.000Z', total, increase, entityId: object, eventKind: 'sighted',
+    });
+    const commit = async (cursor: string, sightings: Array<{ id: string; count: number }>) => redisCommitPulseWindow(
+      [],
+      cursor,
+      [today],
+      await redisGetPulseConfigGeneration(),
+      sightings.map(({ id, count }) => ({ id, count, entityId: object, eventKind: 'sighted' as const })),
+    );
+    try {
+      const createdAt = new Date().toISOString();
+      // Raised to 3 after the window read it at 2, before the commit: the commit adds what the read missed
+      expect(await raise('pulse-race-read-first', createdAt, 3, 1)).toBe(0);
+      // Raised to 5 before the window read it: the read has it all
+      expect(await raise('pulse-race-upsert-first', createdAt, 5, 1)).toBe(0);
+      expect(await commit(new Date(Date.parse(createdAt) + 1000).toISOString(), [{ id: 'pulse-race-read-first', count: 2 }, { id: 'pulse-race-upsert-first', count: 5 }])).toBe(true);
+      expect(await redisTakePulseActivity(today, 100)).toEqual([{ entityId: object, eventKind: 'sighted', count: 1 }]);
+      // The late hook of an upsert the window had read adds nothing; the next upsert adds its own increase only
+      expect(await raise('pulse-race-upsert-first', createdAt, 5, 1)).toBe(0);
+      expect(await raise('pulse-race-read-first', createdAt, 4, 1)).toBe(1);
+      expect(await raise('pulse-race-read-first', createdAt, 3, 1)).toBe(0);
+    } finally {
+      // The activity of this test is acknowledged without being contributed, and the cursor of the suite comes back
+      await redisTakePulseActivity(today, 100);
+      await commit(previousCursor ?? new Date().toISOString(), []);
+    }
   });
 
   it('should keep the pending batches until XTM Hub accepts them, even after a run stopped once it claimed them', async () => {

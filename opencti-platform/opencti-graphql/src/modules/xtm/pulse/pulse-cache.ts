@@ -18,6 +18,8 @@ const STATS_TYPE_FIELD_PREFIX = 'type:';
 const POLICY_GENERATION_KEY = '{pulse}:policy:generation';
 const ACTIVITY_PREFIX = '{pulse}:activity:';
 const TAKEN_SUFFIX = ':taken';
+const SIGHTING_PENDING_KEY = '{pulse}:sightings:pending';
+const SIGHTING_COUNTED_PREFIX = '{pulse}:sightings:counted:';
 const TRENDING_NOTIFIED_KEY = '{pulse}:trending:notified';
 
 const SALT_TTL_SECONDS = 3 * 24 * 3600;
@@ -90,39 +92,90 @@ export const redisBumpPulsePolicyGeneration = async () => {
   await getClientBase().incr(POLICY_GENERATION_KEY);
 };
 
-// KEYS: generation, outbox, cursor, then the activity keys to acknowledge. ARGV: the generation of the cycle, the
-// cursor, then the batches.
+// KEYS: generation, outbox, cursor, the totals of the sightings waiting for their window, the counted totals and the
+// activity of the day, then the activity keys to acknowledge. ARGV: the generation of the cycle, the cursor, the number
+// of batches, the number of sightings, the TTLs of the counted totals and of the activity, the batches, then one
+// (id, count read, activity field) triple per sighting the window read.
+// A sighting seen again while its window was collected raised the total its hook kept: what the window read missed is
+// added to the activity of the day, and the total counted so far is kept for the hooks that run after the commit.
 const COMMIT_WINDOW_SCRIPT = `
 if (redis.call('GET', KEYS[1]) or '0') ~= ARGV[1] then
   return 0
 end
-for index = 3, #ARGV do
+local batches = tonumber(ARGV[3])
+local sightings = tonumber(ARGV[4])
+local first = 7
+for index = first, first + batches - 1 do
   redis.call('RPUSH', KEYS[2], ARGV[index])
 end
+local start = first + batches
+for index = start, start + sightings * 3 - 1, 3 do
+  local count = tonumber(ARGV[index + 1])
+  local seen = tonumber(redis.call('HGET', KEYS[4], ARGV[index]) or '0')
+  redis.call('HDEL', KEYS[4], ARGV[index])
+  if seen > count then
+    redis.call('HINCRBY', KEYS[6], ARGV[index + 2], seen - count)
+    redis.call('EXPIRE', KEYS[6], tonumber(ARGV[6]))
+  end
+  redis.call('HSET', KEYS[5], ARGV[index], math.max(seen, count))
+end
+if sightings > 0 then
+  redis.call('EXPIRE', KEYS[5], tonumber(ARGV[5]))
+end
 redis.call('SET', KEYS[3], ARGV[2])
-for index = 4, #KEYS do
+for index = 7, #KEYS do
   redis.call('DEL', KEYS[index])
 end
 return 1
 `;
+
+// A sighting a contribution window read: its id, the count read and the activity field of its sighted object.
+export interface PulseWindowSighting {
+  id: string;
+  count: number;
+  entityId: string;
+  eventKind: PulseEventKind;
+}
+
+// The totals counted for the sightings a window read are kept long enough for the hooks of the upserts that raced with
+// the window; past it, the increase an upsert reports is exact.
+const SIGHTING_COUNTED_TTL_SECONDS = 2 * 24 * 3600;
+const sightingCountedKey = (day: string) => `${SIGHTING_COUNTED_PREFIX}${day}`;
+const utcToday = () => new Date().toISOString().slice(0, 10);
+const utcYesterday = () => new Date(Date.now() - 24 * 3600 * 1000).toISOString().slice(0, 10);
 
 // The batches of a contribution window, the cursor after it and the acknowledgement of the activity taken from Redis,
 // in one script (every key shares the {pulse} slot): all of them are written, or none when the configuration changed
 // since the cycle started. The outbox is never trimmed: a run whose pending batches XTM Hub did not answer collects no
 // new window, and a batch whose salt day XTM Hub no longer accepts is dropped when claimed, so it holds at most one
 // window beyond the accepted days.
-export const redisCommitPulseWindow = async (items: PulseOutboxItem[], cursor: string, ackDays: string[], generation: string): Promise<boolean> => {
+export const redisCommitPulseWindow = async (
+  items: PulseOutboxItem[],
+  cursor: string,
+  ackDays: string[],
+  generation: string,
+  sightings: PulseWindowSighting[] = [],
+): Promise<boolean> => {
   const ackKeys = ackDays.map((day) => `${ACTIVITY_PREFIX}${day}${TAKEN_SUFFIX}`);
+  const today = utcToday();
   const committed = await getClientBase().eval(
     COMMIT_WINDOW_SCRIPT,
-    3 + ackKeys.length,
+    6 + ackKeys.length,
     CONFIG_GENERATION_KEY,
     OUTBOX_KEY,
     CURSOR_KEY,
+    SIGHTING_PENDING_KEY,
+    sightingCountedKey(today),
+    `${ACTIVITY_PREFIX}${today}`,
     ...ackKeys,
     generation,
     cursor,
+    items.length,
+    sightings.length,
+    SIGHTING_COUNTED_TTL_SECONDS,
+    ACTIVITY_TTL_SECONDS,
     ...items.map((item) => JSON.stringify(item)),
+    ...sightings.flatMap((sighting) => [sighting.id, Math.max(0, Math.floor(sighting.count)), `${sighting.entityId}|${sighting.eventKind}`]),
   );
   return committed === 1;
 };
@@ -264,7 +317,11 @@ export const redisGetPulseContributionStats = async (days: string[]) => {
   };
 };
 
-const activityKeys = (days: string[]) => days.flatMap((day) => [`${ACTIVITY_PREFIX}${day}`, `${ACTIVITY_PREFIX}${day}${TAKEN_SUFFIX}`]);
+// The activity of the days with what a run took from it, and the sighting totals that can still turn into activity.
+const activityKeys = (days: string[]) => [
+  ...days.flatMap((day) => [`${ACTIVITY_PREFIX}${day}`, `${ACTIVITY_PREFIX}${day}${TAKEN_SUFFIX}`, sightingCountedKey(day)]),
+  SIGHTING_PENDING_KEY,
+];
 
 export const redisClearPulseContributionState = async (days: string[]) => {
   const client = getClientBase();
@@ -284,6 +341,76 @@ export const redisAddPulseActivity = async (day: string, entityId: string, event
   const key = `${ACTIVITY_PREFIX}${day}`;
   await client.hincrby(key, `${entityId}|${eventKind}`, count);
   await client.expire(key, ACTIVITY_TTL_SECONDS);
+};
+
+// KEYS: cursor, totals of the sightings waiting for their window, counted totals of today and of yesterday, activity of
+// today. ARGV: sighting id, its creation date, the oldest date a window collects without a cursor (the later of the
+// consent and of the oldest accepted day; ISO dates, compared as text), its new total, the increase, the activity field,
+// then the TTLs of the waiting totals, the counted totals and the activity. Decided against the cursor in the same
+// script as the commit of a window, so each increase counts once:
+// - created at or after the start of the next window: its window reads the total, and the highest total its upserts
+//   reached is kept for the commit of that window, which adds what the read missed;
+// - otherwise: the increase is activity, or, while the total counted by a recent window is known, what exceeds it.
+const RECORD_SIGHTING_SCRIPT = `
+local bound = ARGV[3]
+local cursor = redis.call('GET', KEYS[1])
+if cursor and cursor > bound then
+  bound = cursor
+end
+if ARGV[2] ~= '' and ARGV[2] >= bound then
+  if tonumber(ARGV[4]) > tonumber(redis.call('HGET', KEYS[2], ARGV[1]) or '0') then
+    redis.call('HSET', KEYS[2], ARGV[1], ARGV[4])
+  end
+  redis.call('EXPIRE', KEYS[2], tonumber(ARGV[7]))
+  return 0
+end
+local total = tonumber(ARGV[4])
+local delta = tonumber(ARGV[5])
+local counted = redis.call('HGET', KEYS[3], ARGV[1]) or redis.call('HGET', KEYS[4], ARGV[1])
+if counted then
+  delta = total - tonumber(counted)
+  redis.call('HSET', KEYS[3], ARGV[1], math.max(total, tonumber(counted)))
+  redis.call('EXPIRE', KEYS[3], tonumber(ARGV[8]))
+end
+if delta <= 0 then
+  return 0
+end
+redis.call('HINCRBY', KEYS[5], ARGV[6], delta)
+redis.call('EXPIRE', KEYS[5], tonumber(ARGV[9]))
+return delta
+`;
+
+export interface PulseSightingIncrease {
+  id: string;
+  createdAt: string;
+  oldestCollected: string;
+  total: number;
+  increase: number;
+  entityId: string;
+  eventKind: PulseEventKind;
+}
+
+// Records a sighting seen again; answers the activity it added (0 while its window has still to read it).
+export const redisRecordPulseSightingIncrease = async (sighting: PulseSightingIncrease): Promise<number> => {
+  const result = await getClientBase().eval(
+    RECORD_SIGHTING_SCRIPT,
+    5,
+    CURSOR_KEY,
+    SIGHTING_PENDING_KEY,
+    sightingCountedKey(utcToday()),
+    sightingCountedKey(utcYesterday()),
+    `${ACTIVITY_PREFIX}${utcToday()}`,
+    sighting.id,
+    sighting.createdAt,
+    sighting.oldestCollected,
+    Math.max(0, Math.floor(sighting.total)),
+    Math.max(0, Math.floor(sighting.increase)),
+    `${sighting.entityId}|${sighting.eventKind}`,
+    ACTIVITY_TTL_SECONDS,
+    SIGHTING_COUNTED_TTL_SECONDS,
+    ACTIVITY_TTL_SECONDS,
+  );
+  return Number(result ?? 0);
 };
 
 // Atomically moves entries of the activity of a day into its taken set until the taken set holds *limit* entries -

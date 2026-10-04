@@ -102,6 +102,7 @@ import {
   redisTakePulseActivity,
   type PulseExternalActivity,
   type PulseOperationalState,
+  type PulseWindowSighting,
 } from './pulse-cache';
 import {
   type BasicStorePulseEntity,
@@ -784,10 +785,11 @@ const contributePulseCycle = async (context: AuthContext, cycle: PulseContributi
   until = await boundPulseWindow(since, until, databaseBudget, (end) => countPulseActivity(context, PULSE_MANAGER_USER, values.scopes, since, end));
   // Each record carries the UTC day of its activity and is hashed with the salt of that day.
   const activityByDay = new Map<string, PulseActivity>();
+  const windowSightings: PulseWindowSighting[] = [];
   const segments = utcDaySegments(since, until);
   for (let index = 0; index < segments.length; index += 1) {
     const segment = segments[index];
-    activityByDay.set(segment.day, await collectPulseActivity(context, PULSE_MANAGER_USER, values.scopes, segment.since, segment.until));
+    activityByDay.set(segment.day, await collectPulseActivity(context, PULSE_MANAGER_USER, values.scopes, segment.since, segment.until, windowSightings));
   }
   externalByDay.forEach((external, day) => {
     if (external.length > 0) {
@@ -817,7 +819,7 @@ const contributePulseCycle = async (context: AuthContext, cycle: PulseContributi
   // it and the acknowledgement of the activity taken from Redis. A run that stops before it sent nothing and the next
   // one collects the same window again; a run that stops after it leaves the batches in the outbox, sent by the next
   // run with the same identifiers, which XTM Hub counts once.
-  if (!(await redisCommitPulseWindow(windowItems, until.toISOString(), acceptedDays, generation))) {
+  if (!(await redisCommitPulseWindow(windowItems, until.toISOString(), acceptedDays, generation, windowSightings))) {
     // The configuration changed during the cycle: the window is collected again under the new one by the next run.
     logApp.info('[THREAT PULSE] Configuration changed during the contribution, the window is left to the next run');
     return;
