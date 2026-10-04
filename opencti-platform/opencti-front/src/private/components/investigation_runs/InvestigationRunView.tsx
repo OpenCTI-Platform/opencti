@@ -78,6 +78,7 @@ export const investigationRunViewFragment = graphql`
       id
       name
       attribution_min_confidence
+      allowed_actions
     }
     pack_id
     goal_plan
@@ -302,7 +303,10 @@ const InvestigationRunContent = ({ data, currentEntityId, onDeleted, onRunStarte
     }
   }, [run.run_status, run.workspace_id, run.id]);
   const entityNames = useMemo(() => new Map(run.enrichment_entities.map((entity) => [entity.id, entity.name])), [run.enrichment_entities]);
-  const canLaunch = useGranted([KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT], true);
+  const canUpdate = useGranted([KNOWLEDGE_KNUPDATE]);
+  const canEnrich = useGranted([KNOWLEDGE_KNENRICHMENT]);
+  // Run again and Continue keep the policy of the run: its enrichments need the capability too.
+  const canLaunch = canUpdate && (canEnrich || !run.policy?.allowed_actions.includes('enrichment'));
   const [commitRunAgain, launching] = useApiMutation<InvestigationRunViewRunAgainMutation>(investigationRunViewRunAgainMutation);
   const [commitContinue, continuing] = useApiMutation<InvestigationRunViewContinueMutation>(investigationRunViewContinueMutation);
   // Same subject and policy; the case is kept when it is live, else a new one is created in the new draft.

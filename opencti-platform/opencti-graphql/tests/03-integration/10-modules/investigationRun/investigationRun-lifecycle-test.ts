@@ -281,8 +281,12 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
     vi.restoreAllMocks();
   });
 
-  it('refuses to start a run for a user who cannot enrich knowledge', async () => {
+  it('refuses to start a run for a user who cannot update knowledge', async () => {
     await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, { query: RUN_ADD, variables: { subjectId: fixture.caseId } });
+  });
+
+  it('refuses to start, for a user who can update but not enrich knowledge, a run whose policy runs enrichments', async () => {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: RUN_ADD, variables: { subjectId: fixture.caseId } });
   });
 
   it('refuses, on the internal launch path of playbooks, an identity that cannot run the enrichments of its policy', async () => {
@@ -445,6 +449,10 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
     expect(again.errors?.[0]?.message).toContain('already handled');
     // The task is live knowledge: removed again, as the stream counters of the suite expect.
     await queryAsAdminWithSuccess({ query: gql`mutation TaskDelete($id: ID!) { taskDelete(id: $id) }`, variables: { id: applied.task_id } });
+  });
+
+  it('refuses to continue, for a user who can update but not enrich knowledge, a run whose policy runs enrichments', async () => {
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: RUN_CONTINUE, variables: { id: createdRuns[0].id } });
   });
 
   it('continues an investigation whose draft waits, and writes its outputs again', async () => {

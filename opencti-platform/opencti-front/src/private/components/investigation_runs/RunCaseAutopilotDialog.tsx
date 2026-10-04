@@ -45,7 +45,7 @@ import Dialog from '@common/dialog/Dialog';
 import { useFormatter } from '../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
-import useGranted, { SETTINGS_SETPARAMETERS } from '../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNENRICHMENT, SETTINGS_SETPARAMETERS } from '../../../utils/hooks/useGranted';
 import { useChatbot } from '../chatbox/ChatbotContext';
 import InvestigationRunStatusChip from './InvestigationRunStatusChip';
 import { caseAutopilotPath, rememberGraphAutoOpen, reportMutationOutcome } from './investigationRunUtils';
@@ -68,6 +68,7 @@ const runCaseAutopilotDialogQuery = graphql`
           name
           description
           is_default
+          allowed_actions
         }
       }
     }
@@ -166,8 +167,11 @@ const LaunchForm = ({ subjectId, subjectType, onStarted, onCancel }: LaunchFormP
   const engineMissing = xtmOneConfigured !== true;
   const caseMissing = needsCase && caseMode === 'existing' && !selectedCase;
   const canConfigure = useGranted([SETTINGS_SETPARAMETERS]);
+  const canEnrich = useGranted([KNOWLEDGE_KNENRICHMENT]);
+  const enrichmentRefused = !canEnrich && !!selectedPolicy?.allowed_actions.includes('enrichment');
   let startBlocker: string | null = null;
   if (engineMissing) startBlocker = t_i18n('XTM One is not connected');
+  else if (enrichmentRefused) startBlocker = t_i18n('This policy runs enrichments, which your role does not allow: choose another policy');
   else if (caseMissing) startBlocker = t_i18n('Select the case of the investigation');
   const start = () => {
     commit({
@@ -215,6 +219,14 @@ const LaunchForm = ({ subjectId, subjectType, onStarted, onCancel }: LaunchFormP
         </SelectContent>
       </Select>
       {selectedPolicy?.description && <Typography variant="body2" color="text.secondary">{selectedPolicy.description}</Typography>}
+      {enrichmentRefused && (
+        <Alert
+          severity="warning"
+          title={t_i18n('This policy runs enrichments')}
+          description={t_i18n('Your role does not allow enriching knowledge: choose a policy without enrichment, or ask your administrator.')}
+          data-testid="run-case-autopilot-enrichment-refused"
+        />
+      )}
       {needsCase && (
         <Stack spacing={1.5}>
           <Typography variant="h4">{t_i18n('Case of the investigation')}</Typography>

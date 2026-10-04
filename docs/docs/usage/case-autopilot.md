@@ -12,7 +12,7 @@ Case Autopilot is the OpenCTI face of the XTM One investigation engine (Deep Inv
 
 - An Enterprise Edition license.
 - XTM One connected to the platform (see the [XTM Suite configuration](../deployment/configuration.md#xtm-suite)), in a version that provides the investigation engine. When XTM One is not connected or does not run investigations, the Autopilot tab and the launch dialog say so and no investigation starts.
-- To start an investigation: the capabilities to update knowledge and to enrich knowledge. An investigation started by a playbook or for a new request for information acts as the identity configured there, which needs the capability to update knowledge, and to enrich knowledge when its policy runs enrichments.
+- To start or continue an investigation: the capability to update knowledge, and the capability to enrich knowledge when the policy of the investigation runs enrichments. Without the latter, the launch dialog explains why a policy with enrichments cannot be picked. An investigation started by a playbook or for a new request for information acts as the identity configured there, which needs the same capabilities.
 - To manage investigation policies: the capability to manage customization.
 
 ## Run Case Autopilot

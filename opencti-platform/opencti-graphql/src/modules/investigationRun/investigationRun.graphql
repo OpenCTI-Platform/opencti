@@ -611,9 +611,9 @@ input InvestigationPolicyAddInput {
 }
 
 type Mutation {
-  investigationRunAdd(subjectId: ID!, policyId: ID, caseId: ID): InvestigationRun @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT], and: true)
+  investigationRunAdd(subjectId: ID!, policyId: ID, caseId: ID): InvestigationRun @auth(for: [KNOWLEDGE_KNUPDATE])
   investigationRunCancel(id: ID!): InvestigationRun @auth(for: [KNOWLEDGE_KNUPDATE])
-  investigationRunContinue(id: ID!): InvestigationRun @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT], and: true)
+  investigationRunContinue(id: ID!): InvestigationRun @auth(for: [KNOWLEDGE_KNUPDATE])
   investigationRunDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   investigationRunFeedback(id: ID!, input: InvestigationRunFeedbackInput!): InvestigationRun @auth(for: [KNOWLEDGE_KNUPDATE])
   investigationRunRecommendationApply(id: ID!, recommendationId: String!, mode: InvestigationRecommendationApplyMode!): InvestigationRun @auth(for: [KNOWLEDGE_KNUPDATE])

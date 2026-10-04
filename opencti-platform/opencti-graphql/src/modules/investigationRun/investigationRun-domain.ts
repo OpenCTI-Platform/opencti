@@ -1119,6 +1119,12 @@ export const canContinueInvestigationRun = (run: BasicStoreEntityInvestigationRu
 
 export const continueInvestigationRun = async (context: AuthContext, user: AuthUser, id: string) => {
   const run = await findAccessibleRun(context, user, id);
+  // The run continues under its own identity: the caller must be allowed to
+  // run the enrichments of its policy as well.
+  const policy = run.policy_id ? await loadInvestigationPolicy(outOfDraft(context), run.policy_id) : null;
+  if (policy?.allowed_actions.includes(InvestigationAutonomousAction.Enrichment) && !isUserHasCapability(user, KNOWLEDGE_KNENRICHMENT)) {
+    throw ForbiddenAccess('Continuing this investigation runs the enrichments of its policy: you must be allowed to enrich knowledge');
+  }
   if (!canContinueInvestigationRun(run)) {
     throw FunctionalError('This investigation cannot be continued: its draft is no longer waiting or its time budget is spent', { id });
   }

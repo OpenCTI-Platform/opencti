@@ -24,7 +24,7 @@ import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
-import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, SETTINGS_SETPARAMETERS } from '../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE, SETTINGS_SETPARAMETERS } from '../../../utils/hooks/useGranted';
 import { useChatbot } from '../chatbox/ChatbotContext';
 import InvestigationRunDrawer from './InvestigationRunDrawer';
 import RunCaseAutopilotDialog, { AUTOPILOT_TAB_TYPES, type RunCaseAutopilotStarted } from './RunCaseAutopilotDialog';
@@ -43,7 +43,8 @@ const RunCaseAutopilotAskAI = ({ subjectId, subjectType, basePath }: RunCaseAuto
   const navigate = useNavigate();
   const isEnterpriseEdition = useEnterpriseEdition();
   const isAdmin = useGranted([SETTINGS_SETPARAMETERS]);
-  const canInvestigate = useGranted([KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT], true);
+  // The enrichment capability depends on the policy picked in the dialog.
+  const canInvestigate = useGranted([KNOWLEDGE_KNUPDATE]);
   const draftContext = useDraftContext();
   const { xtmOneConfigured } = useChatbot();
   const { settings: { id: settingsId } } = useAuth();
