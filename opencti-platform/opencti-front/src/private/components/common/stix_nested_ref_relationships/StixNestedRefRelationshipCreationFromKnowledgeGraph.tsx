@@ -9,7 +9,6 @@ import StixNestedRefRelationshipCreationFromKnowledgeGraphContent
   from '@components/common/stix_nested_ref_relationships/StixNestedRefRelationshipCreationFromKnowledgeGraphContent';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import GraphToolbarItem from '../../../../components/graph/components/GraphToolbarItem';
 
 interface StixNestedRefRelationshipCreationFromKnowledgeGraphProps {
@@ -22,16 +21,22 @@ interface StixNestedRefRelationshipCreationFromKnowledgeGraphProps {
   handleOpenCreateNested: () => void;
 }
 
-const DisabledNestedRelationshipButton = ({ needsSelection = false }: { needsSelection?: boolean }) => {
+type DisabledNestedRelationshipCause = 'selection' | 'loading' | 'creating';
+
+/** The tool while it cannot run, saying why: it stays in the keyboard path of the toolbar. */
+const DisabledNestedRelationshipButton = ({ cause }: { cause: DisabledNestedRelationshipCause }) => {
   const { t_i18n } = useFormatter();
+  const reasons: Record<DisabledNestedRelationshipCause, string> = {
+    selection: t_i18n('Select the entities to link first'),
+    loading: t_i18n('Checking the nested relationships these elements accept'),
+    creating: t_i18n('A nested relationship is being created'),
+  };
   return (
     <GraphToolbarItem
       title={t_i18n('Create a nested relationship')}
       color="primary"
       Icon={<ReadMoreOutlined />}
-      onClick={() => undefined}
-      disabled
-      disabledReason={needsSelection ? t_i18n('Select the entities to link first') : undefined}
+      disabledReason={reasons[cause]}
     />
   );
 };
@@ -56,9 +61,9 @@ const NestedRelationshipResolver = ({
     stixNestedRefRelationshipCreationResolveQuery,
     { id: fromId, toType },
   );
-  if (!queryRef) return <DisabledNestedRelationshipButton />;
+  if (!queryRef) return <DisabledNestedRelationshipButton cause="loading" />;
   return (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+    <React.Suspense fallback={<DisabledNestedRelationshipButton cause="loading" />}>
       <StixNestedRefRelationshipCreationFromKnowledgeGraphContent
         queryRef={queryRef}
         nestedRelationExist={nestedRelationExist}
@@ -80,8 +85,8 @@ const StixNestedRefRelationshipCreationFromKnowledgeGraph = ({
 }: StixNestedRefRelationshipCreationFromKnowledgeGraphProps) => {
   const from = relationFromObjects[0];
   const to = relationToObjects[0];
-  if (!nestedEnabled || !from || !to) return <DisabledNestedRelationshipButton needsSelection />;
-  if (openCreateNested) return <DisabledNestedRelationshipButton />;
+  if (!nestedEnabled || !from || !to) return <DisabledNestedRelationshipButton cause="selection" />;
+  if (openCreateNested) return <DisabledNestedRelationshipButton cause="creating" />;
   const fromId = from.id as string;
   const toType = to.entity_type as string;
   return (
