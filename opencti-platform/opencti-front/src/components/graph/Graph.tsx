@@ -215,10 +215,16 @@ const Graph = ({
     [shownNodes, shownLinks],
   );
   // A highlighted path that a filter, a hidden or collapsed entity or new data broke is dropped.
-  const drawablePath = useMemo(
-    () => (highlightedPath && isPathDrawable(highlightedPath, shownNodes, shownLinks) ? highlightedPath : null),
-    [highlightedPath, shownNodes, shownLinks, filterToken],
-  );
+  const drawablePath = useMemo(() => {
+    if (!highlightedPath) return null;
+    const shownEnds = shownLinks.map((link) => ({
+      id: link.id,
+      sourceId: endpointId(link.source) ?? link.source_id,
+      targetId: endpointId(link.target) ?? link.target_id,
+      disabled: link.disabled,
+    }));
+    return isPathDrawable(highlightedPath, shownNodes, shownEnds) ? highlightedPath : null;
+  }, [highlightedPath, shownNodes, shownLinks, filterToken]);
   useEffect(() => {
     if (highlightedPath && !drawablePath) clearHighlightedPath();
   }, [highlightedPath, drawablePath]);

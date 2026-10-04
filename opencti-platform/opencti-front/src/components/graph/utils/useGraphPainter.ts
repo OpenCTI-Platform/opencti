@@ -8,7 +8,7 @@ import { useFormatter } from '../../i18n';
 import { buildGraphPalette } from './graphPalette';
 import { type Box, computeLinkCurvatures, computeObstacleBends, type LinkEnds, linkEndsKey } from './graphGeometry';
 import type { LayoutPositions } from './graphLayouts';
-import { type GraphFocus, neighbourhood } from './graphFocus';
+import { type GraphFocus, type GraphPath, neighbourhood } from './graphFocus';
 import { type LevelOfDetail, levelOfDetail, type LinkLabel, NODE_RADIUS, paintGraphLink, paintGraphNode, paintGraphNodeHitArea, paintLinkLabels } from './graphPainting';
 import { badgesOfNode, type GraphBadge, useGraphBadgeRegistryVersion } from '../badges';
 
@@ -34,7 +34,7 @@ interface UseGraphPainterArgs {
   /** Links drawn, for the focus on a neighbourhood and the fan-out of parallel links. */
   links?: readonly GraphLink[];
   hovered?: GraphHoverTarget | null;
-  highlightedPath?: { nodeIds: string[]; linkIds: string[] } | null;
+  highlightedPath?: GraphPath | null;
   nodeCount?: number;
   /** Where a deterministic layout puts the nodes: straight links then bend around the nodes on their way. */
   layoutTargets?: LayoutPositions | null;
@@ -90,6 +90,9 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
   };
 
   const linkEnds = useMemo(() => links.map(linkEndsOf), [links]);
+  // The key of each link drawn, computed once per graph rather than at every frame.
+  const linkKeys = useMemo(() => new Map(links.map((link, index) => [link, linkEndsKey(linkEnds[index])])), [links, linkEnds]);
+  const keyOf = (link: GraphLink) => linkKeys.get(link) ?? linkEndsKey(linkEndsOf(link));
   const curvatures = useMemo(() => computeLinkCurvatures(linkEnds), [linkEnds]);
   const bends = useMemo(
     () => (layoutTargets ? computeObstacleBends(linkEnds, layoutTargets, OBSTACLE_CLEARANCE, curvatures) : null),
@@ -99,7 +102,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
   const selectedNodeIds = useMemo(() => new Set(selectedNodes.map((n) => n.id)), [selectedNodes]);
   const selectedLinkIds = useMemo(() => new Set(selectedLinks.map((l) => l.id)), [selectedLinks]);
   const pathNodeIds = useMemo(() => new Set(highlightedPath?.nodeIds ?? []), [highlightedPath]);
-  const pathLinkIds = useMemo(() => new Set(highlightedPath?.linkIds ?? []), [highlightedPath]);
+  const pathLinkKeys = useMemo(() => new Set(highlightedPath?.linkKeys ?? []), [highlightedPath]);
 
   /**
    * What stays at full strength: a highlighted path alone, otherwise the selection and the hovered
@@ -107,7 +110,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
    */
   const focus = useMemo<GraphFocus | null>(() => {
     if (highlightedPath && highlightedPath.nodeIds.length > 0) {
-      return { nodeIds: pathNodeIds, linkIds: pathLinkIds };
+      return { nodeIds: pathNodeIds, linkKeys: pathLinkKeys };
     }
     const centres = new Set(selectedNodeIds);
     selectedLinks.forEach((link) => {
@@ -124,11 +127,13 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     }
     if (centres.size === 0) return null;
     const reached = neighbourhood(linkEnds, centres);
-    const linkIds = new Set(reached.linkIds);
-    selectedLinkIds.forEach((id) => linkIds.add(id));
-    if (hovered?.kind === 'link') linkIds.add(hovered.id);
-    return { nodeIds: reached.nodeIds, linkIds };
-  }, [highlightedPath, selectedNodeIds, selectedLinks, hovered, linkEnds, pathNodeIds, pathLinkIds, selectedLinkIds]);
+    const linkKeys = new Set(reached.linkKeys);
+    // A selected relationship is drawn selected on each of its links; the hovered link alone.
+    linkEnds.forEach((ends) => {
+      if (selectedLinkIds.has(ends.id) || isHoveredLink(hovered, ends)) linkKeys.add(linkEndsKey(ends));
+    });
+    return { nodeIds: reached.nodeIds, linkKeys };
+  }, [highlightedPath, selectedNodeIds, selectedLinks, hovered, linkEnds, pathNodeIds, pathLinkKeys, selectedLinkIds]);
 
   const typeLabels = useRef(new Map<string, string>());
   const typeLabel = (node: GraphNode) => {
@@ -219,7 +224,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
   };
 
   const curvatureOf = (link: GraphLink) => {
-    const key = linkEndsKey(linkEndsOf(link));
+    const key = keyOf(link);
     const bend = bends?.get(key);
     if (bend !== undefined) return { curvature: bend, rotation: 0 };
     return curvatures.get(key) ?? { curvature: 0, rotation: 0 };
@@ -252,8 +257,8 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
       visual: {
         selected,
         hovered: isHoveredLink(hovered, linkEndsOf(link)),
-        faded: focus ? !focus.linkIds.has(link.id) : false,
-        onPath: pathLinkIds.has(link.id),
+        faded: focus ? !focus.linkKeys.has(keyOf(link)) : false,
+        onPath: pathLinkKeys.has(keyOf(link)),
       },
     });
     if (label) frameLabels.current.push(label);

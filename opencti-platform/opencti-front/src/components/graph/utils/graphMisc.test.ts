@@ -104,7 +104,7 @@ describe('graph view state persistence', () => {
       collapsedEntityTypes: ['Malware'],
       disabledRelationshipTypes: ['uses'],
       showLegend: false,
-      highlightedPath: { nodeIds: ['a', 'b'], linkIds: ['ab'] },
+      highlightedPath: { nodeIds: ['a', 'b'], linkKeys: ['ab|a|b'] },
     } as unknown as GraphState);
     expect(saved).toMatchObject({
       layoutMode: 'radial',

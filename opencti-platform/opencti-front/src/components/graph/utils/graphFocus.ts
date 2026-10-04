@@ -1,13 +1,14 @@
-import type { LinkEnds } from './graphGeometry';
+import { type LinkEnds, linkEndsKey } from './graphGeometry';
 
+/** Links are named by `linkEndsKey`: the two connector links of a nested relationship share its id. */
 export interface GraphFocus {
   nodeIds: ReadonlySet<string>;
-  linkIds: ReadonlySet<string>;
+  linkKeys: ReadonlySet<string>;
 }
 
 export interface GraphPath {
   nodeIds: string[];
-  linkIds: string[];
+  linkKeys: string[];
 }
 
 const adjacency = (links: readonly LinkEnds[]) => {
@@ -30,28 +31,28 @@ const adjacency = (links: readonly LinkEnds[]) => {
  */
 export const neighbourhood = (links: readonly LinkEnds[], centreIds: Iterable<string>): GraphFocus => {
   const nodeIds = new Set<string>(centreIds);
-  const linkIds = new Set<string>();
+  const linkKeys = new Set<string>();
   const centres = new Set(nodeIds);
   links.forEach((link) => {
     if (centres.has(link.sourceId) || centres.has(link.targetId)) {
-      linkIds.add(link.id);
+      linkKeys.add(linkEndsKey(link));
       nodeIds.add(link.sourceId);
       nodeIds.add(link.targetId);
     }
   });
-  return { nodeIds, linkIds };
+  return { nodeIds, linkKeys };
 };
 
 /**
  * The shortest path between two nodes over the links drawn, whatever their direction, found
- * breadth-first so that it has the fewest hops. Ties are broken by link id, which makes the
+ * breadth-first so that it has the fewest hops. Ties are broken by link key, which makes the
  * answer the same at every call. `null` when the two nodes are not connected.
  */
 export const shortestPath = (links: readonly LinkEnds[], fromId: string, toId: string): GraphPath | null => {
-  if (fromId === toId) return { nodeIds: [fromId], linkIds: [] };
+  if (fromId === toId) return { nodeIds: [fromId], linkKeys: [] };
   const byNode = adjacency(links);
-  byNode.forEach((list) => list.sort((a, b) => a.id.localeCompare(b.id)));
-  const previous = new Map<string, { nodeId: string; linkId: string }>();
+  byNode.forEach((list) => list.sort((a, b) => linkEndsKey(a).localeCompare(linkEndsKey(b))));
+  const previous = new Map<string, { nodeId: string; linkKey: string }>();
   const visited = new Set([fromId]);
   let frontier = [fromId];
   while (frontier.length > 0 && !visited.has(toId)) {
@@ -61,7 +62,7 @@ export const shortestPath = (links: readonly LinkEnds[], fromId: string, toId: s
         const other = link.sourceId === nodeId ? link.targetId : link.sourceId;
         if (!visited.has(other)) {
           visited.add(other);
-          previous.set(other, { nodeId, linkId: link.id });
+          previous.set(other, { nodeId, linkKey: linkEndsKey(link) });
           next.push(other);
         }
       });
@@ -70,16 +71,16 @@ export const shortestPath = (links: readonly LinkEnds[], fromId: string, toId: s
   }
   if (!visited.has(toId)) return null;
   const nodeIds = [toId];
-  const linkIds: string[] = [];
+  const linkKeys: string[] = [];
   let cursor = toId;
   while (cursor !== fromId) {
     const step = previous.get(cursor);
     if (!step) return null;
-    linkIds.unshift(step.linkId);
+    linkKeys.unshift(step.linkKey);
     nodeIds.unshift(step.nodeId);
     cursor = step.nodeId;
   }
-  return { nodeIds, linkIds };
+  return { nodeIds, linkKeys };
 };
 
 /**
@@ -89,11 +90,11 @@ export const shortestPath = (links: readonly LinkEnds[], fromId: string, toId: s
 export const isPathDrawable = (
   path: GraphPath,
   nodes: readonly { id: string; disabled?: boolean }[],
-  links: readonly { id: string; disabled?: boolean }[],
+  links: readonly (LinkEnds & { disabled?: boolean })[],
 ): boolean => {
   const nodeIds = new Set(nodes.filter((node) => !node.disabled).map((node) => node.id));
-  const linkIds = new Set(links.filter((link) => !link.disabled).map((link) => link.id));
-  return path.nodeIds.every((id) => nodeIds.has(id)) && path.linkIds.every((id) => linkIds.has(id));
+  const linkKeys = new Set(links.filter((link) => !link.disabled).map(linkEndsKey));
+  return path.nodeIds.every((id) => nodeIds.has(id)) && path.linkKeys.every((key) => linkKeys.has(key));
 };
 
 /**

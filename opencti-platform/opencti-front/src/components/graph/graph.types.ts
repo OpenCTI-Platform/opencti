@@ -1,6 +1,7 @@
 import { ForceGraphProps } from 'react-force-graph-3d';
 import { DefaultMarking } from '@components/settings/marking_definitions/markingDefinition.types';
 import type { ObjectToParse } from './utils/useGraphParser';
+import type { GraphPath } from './utils/graphFocus';
 
 interface GraphElement {
   id: string;
@@ -100,7 +101,7 @@ export interface GraphState {
   /** Legend open, or minimized to its pill; a preference of the user, not saved with the graph. */
   showLegend?: boolean;
   /** Shortest path highlighted between two nodes. */
-  highlightedPath?: { nodeIds: string[]; linkIds: string[] } | null;
+  highlightedPath?: GraphPath | null;
   withForces: boolean;
   selectFreeRectangle: boolean;
   selectFree: boolean;
