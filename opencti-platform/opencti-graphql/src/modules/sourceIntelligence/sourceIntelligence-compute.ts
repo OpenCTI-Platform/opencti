@@ -172,6 +172,8 @@ export interface ComputeState {
   pairs: Map<ScorecardPeriodValue, Map<string, number>>;
   scanned: number;
   truncated: boolean;
+  // Each page read by the scan: when it was requested and the last internal id it returned
+  scanPages: Array<[number, string]>;
 }
 
 export const createComputeState = (asOf: number): ComputeState => ({
@@ -180,7 +182,28 @@ export const createComputeState = (asOf: number): ComputeState => ({
   pairs: new Map(SCORECARD_PERIODS.map((period) => [period, new Map()])),
   scanned: 0,
   truncated: false,
+  scanPages: [],
 });
+
+/** Pages of the last full computation, started at `started_at`, kept to know which deleted objects it counted. */
+export interface ScanTrace {
+  started_at: number;
+  pages: Array<[number, string]>;
+}
+
+/**
+ * Whether the last full computation counted an object deleted at `time`. The scan reads the knowledge page by page in
+ * internal id order, without a snapshot: an object that existed when the computation started and was deleted while it
+ * scanned was counted only if its page was read before the deletion. Objects created after the start are counted
+ * live, never by the scan.
+ */
+export const countedByLastScan = (trace: ScanTrace | null | undefined, objectId: string, createdAt: number | null, time: number): boolean => {
+  if (!trace || time <= trace.started_at || (createdAt !== null && createdAt > trace.started_at)) {
+    return true;
+  }
+  const page = trace.pages.find(([, lastId]) => objectId <= lastId);
+  return page !== undefined && time > page[0];
+};
 
 const accumulatorOf = (state: ComputeState, period: ScorecardPeriodValue, sourceId: string): SourceAccumulator => {
   const periodAccumulators = state.accumulators.get(period) as Map<string, SourceAccumulator>;
@@ -752,6 +775,7 @@ export const scanKnowledge = async (
   const now = Date.now();
   let searchAfter: unknown[] | undefined;
   for (;;) {
+    const requestedAt = Date.now();
     const data = await rawSearch(context, [
       READ_INDEX_STIX_DOMAIN_OBJECTS,
       READ_INDEX_STIX_CYBER_OBSERVABLES,
@@ -768,6 +792,7 @@ export const scanKnowledge = async (
       break;
     }
     const docs: ScanDocument[] = hits.map((hit: any) => hit._source as ScanDocument);
+    state.scanPages.push([requestedAt, docs[docs.length - 1].internal_id]);
     const pageLookups = await fetchPageLookups(context, docs, run);
     for (let i = 0; i < docs.length; i += 1) {
       await doYield();

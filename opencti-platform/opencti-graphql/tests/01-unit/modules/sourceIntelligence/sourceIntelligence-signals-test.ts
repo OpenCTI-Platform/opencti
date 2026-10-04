@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/index';
 import {
   computeDocumentSignals,
+  countedByLastScan,
   emptyPageLookups,
   periodCounting,
   type RunLookups,
   type ScanDocument,
+  type ScanTrace,
   toAssertionActivity,
 } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-compute';
 import { ENTITY_TYPE_INDICATOR } from '../../../../src/modules/indicator/indicator-types';
@@ -51,6 +53,23 @@ describe('Source intelligence document signals', () => {
     const sighted = computeDocumentSignals(indicator(), page, run, NOW);
     expect(sighted.negativelySighted).toBe(true);
     expect(sighted.negative).toBe(true);
+  });
+});
+
+describe('Source intelligence scan trace', () => {
+  // Pages requested at 1100, 1200 and 1300, ending at internal ids 'b', 'm' and 't', by a computation started at 1000
+  const trace: ScanTrace = { started_at: 1000, pages: [[1100, 'b'], [1200, 'm'], [1300, 't']] };
+
+  it('should remove a deleted object only when the last scan counted it', () => {
+    // Deleted after its page was read: counted
+    expect(countedByLastScan(trace, 'c', 500, 1250)).toBe(true);
+    // Deleted before its page was read, or beyond the scanned range: never counted
+    expect(countedByLastScan(trace, 'c', 500, 1150)).toBe(false);
+    expect(countedByLastScan(trace, 'z', 500, 1400)).toBe(false);
+    // Created after the start, deleted before the computation, or no trace: the live accounting rules apply
+    expect(countedByLastScan(trace, 'c', 1050, 1150)).toBe(true);
+    expect(countedByLastScan(trace, 'c', 500, 900)).toBe(true);
+    expect(countedByLastScan(null, 'c', 500, 1150)).toBe(true);
   });
 });
 
