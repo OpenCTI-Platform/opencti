@@ -112,10 +112,11 @@ const InvestigationRunRecommendations = ({ run }: InvestigationRunRecommendation
                 <Typography variant="body1">{recommendation.text}</Typography>
                 {recommendation.rationale && <Typography variant="body2" color="text.secondary">{recommendation.rationale}</Typography>}
                 {recommendation.courseOfAction && (
-                  <Box>
-                    <Typography component="span" variant="body2" color="text.secondary">{`${t_i18n('Course of action')}: `}</Typography>
-                    <Link to={elementPath(recommendation.courseOfAction.id)}>{recommendation.courseOfAction.name}</Link>
-                  </Box>
+                  <Typography variant="body2" color="text.secondary">
+                    {t_i18n('Course of action: {name}', {
+                      values: { name: <Link key="coa" to={elementPath(recommendation.courseOfAction.id)}>{recommendation.courseOfAction.name}</Link> },
+                    })}
+                  </Typography>
                 )}
                 {recommendation.task_id && (
                   <Box><Link to={elementPath(recommendation.task_id)}>{t_i18n('Open the task')}</Link></Box>

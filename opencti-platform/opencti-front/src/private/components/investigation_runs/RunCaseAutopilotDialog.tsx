@@ -209,7 +209,7 @@ const LaunchForm = ({ subjectId, subjectType, onStarted, onCancel }: LaunchFormP
         <SelectContent aria-label={t_i18n('Investigation policy')}>
           {policies.map((policy) => (
             <SelectItem key={policy.id} value={policy.id}>
-              {policy.is_default ? `${policy.name} (${t_i18n('default')})` : policy.name}
+              {policy.is_default ? t_i18n('{name} (default)', { values: { name: policy.name } }) : policy.name}
             </SelectItem>
           ))}
         </SelectContent>

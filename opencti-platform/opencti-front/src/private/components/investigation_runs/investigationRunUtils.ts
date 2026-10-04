@@ -360,9 +360,10 @@ export const actionStatus = (steps: readonly StepLike[], engineOver = false): In
 /**
  * The goal plan of the latest engine run (`goal_plan` of the run, the shape
  * of the engine's GoalPlanResponse) with the steps that serve each action.
- * Steps of earlier engine runs (continuations) keep their own actions.
+ * Steps of earlier engine runs (continuations) keep their own actions. The
+ * action that writes the report has no step: the written report is its result.
  */
-export const buildGoalPlanView = <S extends StepLike>(goalPlan: unknown, steps: readonly S[], engineOver = false): GoalPlanView<S> => {
+export const buildGoalPlanView = <S extends StepLike>(goalPlan: unknown, steps: readonly S[], engineOver = false, reportWritten = false): GoalPlanView<S> => {
   const plan = goalPlan && typeof goalPlan === 'object' && !Array.isArray(goalPlan) ? goalPlan as Record<string, unknown> : {};
   const rawActions = Array.isArray(plan.actions) ? plan.actions.slice(0, MAX_ACTIONS) : [];
   const ordered = [...steps].sort((a, b) => a.position - b.position);
@@ -398,7 +399,10 @@ export const buildGoalPlanView = <S extends StepLike>(goalPlan: unknown, steps: 
   return {
     objective: text(plan.objective),
     reachable: plan.reachable !== false,
-    actions: actions.map((action) => ({ ...action, status: actionStatus(action.steps, engineOver) })),
+    actions: actions.map((action) => ({
+      ...action,
+      status: action.producesReport && action.steps.length === 0 && reportWritten ? 'completed' : actionStatus(action.steps, engineOver),
+    })),
     otherSteps: ordered.filter((step) => !used.has(step.id)),
   };
 };

@@ -89,7 +89,7 @@ const InvestigationRunHeader = ({ run, handlers, onOpenReport, onGiveFeedback, l
   const draftGate = pending.find((approval) => approval.kind === 'draft_validation');
   const draftOpen = !!run.draft && run.draft.draft_status !== 'validated';
   const draftChanges = draftGate ? draftChangeCount(run.draft?.objectsCount) : null;
-  const view = buildGoalPlanView(run.goal_plan, run.steps, isEngineRunOver(run));
+  const view = buildGoalPlanView(run.goal_plan, run.steps, isEngineRunOver(run), !!run.report);
   const currentIndex = view.actions.findIndex((action) => action.status === 'active');
   const nextIndex = currentIndex >= 0 ? currentIndex : view.actions.findIndex((action) => action.status === 'pending');
   const engineReason = engineReasonLabel(run.end_reason_code);

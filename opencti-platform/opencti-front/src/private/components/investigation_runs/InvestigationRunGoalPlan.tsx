@@ -284,7 +284,7 @@ const InvestigationRunGoalPlan = ({ run, handlers }: InvestigationRunGoalPlanPro
   const { schema } = useAuth();
   const [filter, setFilter] = useState<InvestigationStepStatusValue | null>(null);
   const [overrides, setOverrides] = useState<Record<string, boolean>>({});
-  const view = buildGoalPlanView(run.goal_plan, run.steps, isEngineRunOver(run));
+  const view = buildGoalPlanView(run.goal_plan, run.steps, isEngineRunOver(run), !!run.report);
   const numbers = citationNumbers(run.evidence, run.xtm_investigation_id);
   const entities = new Map(run.enrichment_entities.map((entity) => [entity.id, entity]));
   const observableIds = new Set(schema.scos.map((sco) => sco.id));

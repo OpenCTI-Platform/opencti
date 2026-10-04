@@ -63,8 +63,8 @@ const InvestigationRunFeedback = ({ runId, itemType, itemRef, itemLabel, decisio
       },
     });
   };
-  const acceptLabel = `${t_i18n('Accept')} - ${itemLabel}`;
-  const rejectLabel = `${t_i18n('Reject')} - ${itemLabel}`;
+  const acceptLabel = t_i18n('Accept {item}', { values: { item: itemLabel } });
+  const rejectLabel = t_i18n('Reject {item}', { values: { item: itemLabel } });
   return (
     <span style={{ display: 'inline-flex', gap: 4 }}>
       <IconButton

@@ -169,6 +169,10 @@ describe('Case Autopilot run helpers', () => {
     const steps = [step('s1', 'enrichment', 'completed', 1), step('s2', 'enrichment', 'pending', 2)];
     expect(buildGoalPlanView(plan, steps).actions.map((action) => action.status)).toEqual(['active', 'pending']);
     expect(buildGoalPlanView(plan, steps, true).actions.map((action) => action.status)).toEqual(['completed', 'skipped']);
+    // The action that writes the report has no step: the written report completes it.
+    const reportPlan = { actions: [{ slug: 'enrichment', label: 'Enrich' }, { slug: 'report', label: 'Write the report', produces_report: true }] };
+    expect(buildGoalPlanView(reportPlan, steps, true, true).actions.map((action) => action.status)).toEqual(['completed', 'completed']);
+    expect(buildGoalPlanView(reportPlan, steps, true, false).actions.map((action) => action.status)).toEqual(['completed', 'skipped']);
     expect(isEngineRunOver({ run_status: 'running', run_phase: 'investigating' })).toBe(false);
     expect(isEngineRunOver({ run_status: 'planned', run_phase: 'initializing' })).toBe(false);
     expect(isEngineRunOver({ run_status: 'awaiting_approval', run_phase: 'awaiting_validation' })).toBe(true);
