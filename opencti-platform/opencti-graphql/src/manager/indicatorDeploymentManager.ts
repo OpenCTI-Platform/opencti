@@ -88,7 +88,13 @@ export const extractAccessChangedEndpoints = (events: Array<SseEvent<DataEvent>>
     const patch = (event.data as unknown as { context?: { patch?: Array<{ path?: string }> } }).context?.patch ?? [];
     const accessPaths = ['object_marking_refs', 'granted_refs', 'authorized_members'];
     if (!patch.some((operation) => accessPaths.some((path) => operation.path?.includes(path)))) return;
-    const extension = (event.data.data as DeploymentEventData | undefined)?.extensions?.[STIX_EXT_OCTI];
+    const data = event.data.data as DeploymentEventData | undefined;
+    const extension = data?.extensions?.[STIX_EXT_OCTI];
+    // A marking removed from a deployment itself is given back from its ends, through its indicator
+    if (data?.type === 'relationship' && data.relationship_type === RELATION_DEPLOYED_ON) {
+      if (extension?.source_ref) indicatorIds.add(extension.source_ref);
+      return;
+    }
     if (!extension?.id) return;
     if (extension.type === ENTITY_TYPE_INDICATOR) indicatorIds.add(extension.id);
     if (extension.type === ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM) platformIds.add(extension.id);

@@ -23,7 +23,11 @@ import {
   READ_RELATIONSHIPS_INDICES,
   UPDATE_OPERATION_ADD,
 } from '../../database/utils';
-import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
+import { RELATION_CREATED_BY, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
+import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
+import { getEntityFromCache } from '../../database/cache';
+import type { BasicStoreSettings } from '../../types/settings';
 import { cleanMarkings } from '../../utils/markingDefinition-utils';
 import { lockResources } from '../../lock/master-lock';
 import { notify, redisGetManagerEventState, redisSetManagerEventState } from '../../database/redis';
@@ -1013,10 +1017,17 @@ export const refreshIndicatorDeploymentCounters = async (context: AuthContext, i
     ? []
     : await storeLoadByIds<BasicStoreEntitySecurityPlatform>(context, SYSTEM_USER, platformIds, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM);
   const platformsById = new Map(platforms.filter((platform) => platform).map((platform) => [platform.internal_id, platform]));
+  // Organization sharing only restricts reads when a platform organization is set
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const enforced = !!settings?.platform_organization;
+  const creatorIds = enforced ? [...new Set(indicators.map((indicator) => indicator[RELATION_CREATED_BY]).filter((id): id is string => !!id))] : [];
+  const individuals = creatorIds.length === 0 ? [] : await storeLoadByIds<BasicStoreEntity>(context, SYSTEM_USER, creatorIds, ENTITY_TYPE_IDENTITY_INDIVIDUAL);
+  const organizationSharing = { enforced, individualIds: new Set(individuals.filter((individual) => individual).map((individual) => individual.internal_id)) };
   let updated = 0;
   await BluePromise.map(indicators, async (indicator) => {
     const readable = (relationsByIndicator.get(indicator.internal_id) ?? [])
-      .filter((relation) => platformsById.has(relation.toId) && isReadableWithIndicator(relation, indicator, platformsById.get(relation.toId)));
+      .filter((relation) => platformsById.has(relation.toId)
+        && isReadableWithIndicator(relation, indicator, platformsById.get(relation.toId), organizationSharing));
     const counters = computeIndicatorDeploymentCounters(readable);
     const unchanged = (Object.keys(counters) as Array<keyof IndicatorDeploymentCounters>)
       .every((key) => (indicator[key] ?? 0) === counters[key] && indicator[key] !== undefined);

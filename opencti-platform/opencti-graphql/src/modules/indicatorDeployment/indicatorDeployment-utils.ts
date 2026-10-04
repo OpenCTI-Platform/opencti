@@ -9,7 +9,7 @@ import {
 } from './indicatorDeployment-types';
 import { v5 as uuidv5 } from 'uuid';
 import { OPENCTI_NAMESPACE } from '../../schema/general';
-import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
+import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 
 export const isDeploymentStatus = (value: unknown): value is DeploymentStatus => {
   return typeof value === 'string' && (DEPLOYMENT_STATUSES as readonly string[]).includes(value);
@@ -20,7 +20,7 @@ export const isValidationStatus = (value: unknown): value is ValidationStatus =>
 };
 
 type MarkedElement = { [RELATION_OBJECT_MARKING]?: string[] | null };
-type RestrictedElement = MarkedElement & { [RELATION_GRANTED_TO]?: string[] | null; restricted_members?: unknown[] | null };
+type RestrictedElement = MarkedElement & { [RELATION_GRANTED_TO]?: string[] | null; [RELATION_CREATED_BY]?: string | null; restricted_members?: unknown[] | null };
 
 /**
  * Markings of a relationship generated for an (indicator, security platform) pair: the deployment, its hits sighting
@@ -41,18 +41,28 @@ export const pairMarkings = (indicator: MarkedElement, platform: MarkedElement):
  *   organization and nothing proves they can read the deployment (such deployments are left out of the counters).
  * The same holds for the security platform of the deployment, whose own restrictions are checked as well: a
  * deployment created by a connector is shared with the connector organizations, not with those of the platform.
+ * Organizations only restrict reads when a platform organization is set; then the users of an individual read what
+ * this individual created, so an indicator created by an individual only counts what the same individual created.
  */
-export const isReadableWithIndicator = (deployment: RestrictedElement, indicator: RestrictedElement, platform?: RestrictedElement) => {
+export const isReadableWithIndicator = (
+  deployment: RestrictedElement,
+  indicator: RestrictedElement,
+  platform?: RestrictedElement,
+  organizationSharing: { enforced: boolean; individualIds: Set<string> } = { enforced: false, individualIds: new Set() },
+) => {
   if ((indicator.restricted_members ?? []).length > 0) {
     return false;
   }
   const indicatorMarkings = indicator[RELATION_OBJECT_MARKING] ?? [];
   const indicatorOrganizations = indicator[RELATION_GRANTED_TO] ?? [];
+  const indicatorCreator = indicator[RELATION_CREATED_BY];
   const readableByIndicatorReaders = (element: RestrictedElement) => {
+    if (!(element[RELATION_OBJECT_MARKING] ?? []).every((marking) => indicatorMarkings.includes(marking))) return false;
+    if ((element.restricted_members ?? []).length > 0) return false;
+    if (!organizationSharing.enforced) return true;
     const elementOrganizations = element[RELATION_GRANTED_TO] ?? [];
-    return (element[RELATION_OBJECT_MARKING] ?? []).every((marking) => indicatorMarkings.includes(marking))
-      && (element.restricted_members ?? []).length === 0
-      && indicatorOrganizations.every((organization) => elementOrganizations.includes(organization));
+    if (!indicatorOrganizations.every((organization) => elementOrganizations.includes(organization))) return false;
+    return !indicatorCreator || !organizationSharing.individualIds.has(indicatorCreator) || element[RELATION_CREATED_BY] === indicatorCreator;
   };
   return readableByIndicatorReaders(deployment) && (!platform || readableByIndicatorReaders(platform));
 };

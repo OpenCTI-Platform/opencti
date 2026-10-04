@@ -169,11 +169,20 @@ describe('markings of the relationships generated for a pair', () => {
 
   it('should not count a deployment shared with fewer organizations or members than the indicator', () => {
     const indicator = { granted: ['org-a', 'org-b'] };
-    expect(isReadableWithIndicator({ granted: ['org-a', 'org-b', 'org-c'] }, indicator)).toEqual(true);
-    expect(isReadableWithIndicator({ granted: ['org-a'] }, indicator)).toEqual(false);
-    expect(isReadableWithIndicator({}, indicator)).toEqual(false);
+    const sharing = { enforced: true, individualIds: new Set(['individual-1']) };
+    expect(isReadableWithIndicator({ granted: ['org-a', 'org-b', 'org-c'] }, indicator, undefined, sharing)).toEqual(true);
+    expect(isReadableWithIndicator({ granted: ['org-a'] }, indicator, undefined, sharing)).toEqual(false);
+    expect(isReadableWithIndicator({}, indicator, undefined, sharing)).toEqual(false);
+    // The security platform is checked like the deployment
+    expect(isReadableWithIndicator({ granted: ['org-a', 'org-b'] }, indicator, { granted: ['org-b'] }, sharing)).toEqual(false);
+    // Without a platform organization, organizations do not restrict reads
+    expect(isReadableWithIndicator({ granted: ['org-a'] }, indicator)).toEqual(true);
     // An indicator shared with no organization is only read by the platform organization, which reads every deployment
-    expect(isReadableWithIndicator({ granted: ['org-a'] }, {})).toEqual(true);
+    expect(isReadableWithIndicator({ granted: ['org-a'] }, {}, undefined, sharing)).toEqual(true);
+    // ... except the users of the individual who created it, who only read what this individual created
+    expect(isReadableWithIndicator({ granted: ['org-a'] }, { 'created-by': 'individual-1' }, undefined, sharing)).toEqual(false);
+    expect(isReadableWithIndicator({ 'created-by': 'individual-1' }, { 'created-by': 'individual-1' }, { 'created-by': 'individual-1' }, sharing)).toEqual(true);
+    expect(isReadableWithIndicator({}, { 'created-by': 'organization-1' }, {}, sharing)).toEqual(true);
     expect(isReadableWithIndicator({ restricted_members: [{ id: 'user-1', access_right: 'view' }] }, {})).toEqual(false);
     // Authorized members of the indicator read it whatever their organization
     expect(isReadableWithIndicator({ granted: ['org-a'] }, { restricted_members: [{ id: 'user-2', access_right: 'view' }] })).toEqual(false);
