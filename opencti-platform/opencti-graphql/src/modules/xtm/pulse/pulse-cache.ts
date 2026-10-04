@@ -58,6 +58,10 @@ export const redisGetPulseResponse = async <T>(cacheKey: string): Promise<T | nu
   return parseJson<T>(await getClientBase().get(`${RESPONSE_PREFIX}${cacheKey}`), cacheKey);
 };
 
+export const redisDeletePulseResponse = async (cacheKey: string) => {
+  await getClientBase().del(`${RESPONSE_PREFIX}${cacheKey}`);
+};
+
 export const redisSetPulseResponse = async (cacheKey: string, value: unknown, ttlSeconds: number) => {
   await getClientBase().set(`${RESPONSE_PREFIX}${cacheKey}`, JSON.stringify(value), 'EX', ttlSeconds);
 };
@@ -219,8 +223,10 @@ export interface PulseOperationalState {
   preview_digest_items?: string;
   preview_matched?: string;
   preview_since?: string;
-  // 'network' or 'registration' while a cleanup of the community data that failed waits for the next manager cycle.
+  // 'registration', 'opening', 'network' or 'scope' while a cleanup of the community data that failed waits for the
+  // next manager cycle, with the JSON scope ({ entityTypes, markingIds }) of a partial one.
   cleanup_pending?: string;
+  cleanup_scope?: string;
 }
 
 export const redisGetPulseState = async (): Promise<PulseOperationalState> => {

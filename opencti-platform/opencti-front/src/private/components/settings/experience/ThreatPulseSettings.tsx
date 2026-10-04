@@ -432,17 +432,17 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
   };
 
   // A contributing platform reads the preview until XTM Hub accepted a contribution, and again once its contributions
-  // lapsed: XTM Hub says which of the two.
-  const contributingInPreview = settings.mode === 'contribute_and_read' && settings.access === 'preview';
-  const lapsed = contributingInPreview && settings.network.contribution_status === 'lapsed';
-  const pending = contributingInPreview && !lapsed;
+  // lapsed: XTM Hub says which of the two, and its lapse wins over a local access that has not caught up yet.
+  const contributing = settings.mode === 'contribute_and_read' && (settings.access === 'preview' || settings.access === 'full');
+  const lapsed = contributing && settings.network.contribution_status === 'lapsed';
+  const pending = contributing && settings.access === 'preview' && !lapsed;
   let statusChip = <Chip label={t_i18n('Off')} severity="neutral" />;
   if (settings.access === 'not_connected') {
     statusChip = <Chip label={t_i18n('Not connected')} severity="neutral" />;
-  } else if (settings.access === 'full') {
-    statusChip = <Chip label={t_i18n('Contributing')} severity="low" />;
   } else if (lapsed) {
     statusChip = <Chip label={t_i18n('Contribution lapsed - preview')} severity="medium" />;
+  } else if (settings.access === 'full') {
+    statusChip = <Chip label={t_i18n('Contributing')} severity="low" />;
   } else if (pending) {
     statusChip = <Chip label={t_i18n('First contribution pending - preview')} severity="info" />;
   } else if (settings.access === 'preview') {

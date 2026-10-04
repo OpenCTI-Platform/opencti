@@ -201,6 +201,13 @@ describe('ThreatPulseSettings', () => {
     expect(lastConfigureInput(relayEnv)).toMatchObject({ mode: 'preview' });
   });
 
+  it('should say that the contribution lapsed when XTM Hub reports it before the local access caught up', async () => {
+    renderSettings({ ...LAPSED, access: 'full', readable: true });
+    expect(await screen.findByTestId('threat-pulse-lapsed')).toBeDefined();
+    expect(screen.getByText('Contribution lapsed - preview')).toBeDefined();
+    expect(screen.queryByText('Contributing')).toBeNull();
+  });
+
   it('should say that the full experience waits for the first accepted contribution, never that it lapsed', async () => {
     renderSettings({ ...LAPSED, network: { ...SETTINGS.network, contribution_status: 'none', last_contribution_day: null } });
     expect(await screen.findByTestId('threat-pulse-pending')).toBeDefined();

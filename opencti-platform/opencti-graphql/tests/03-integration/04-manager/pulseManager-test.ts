@@ -759,6 +759,17 @@ describe('Threat Pulse manager and API', () => {
     const afterNetwork = await redisGetPulseState();
     expect({ pending: afterNetwork.cleanup_pending, accepted: afterNetwork.contribution_accepted }).toEqual({ pending: undefined, accepted: 'true' });
     expect((await storeLoadById<BasicStorePulseEntity>(testContext, ADMIN_USER, sharedIndicatorId, ENTITY_TYPE_INDICATOR)).pulse_prevalence).toBeUndefined();
+    // An opening of the full experience left pending: the replay opens it, without waiting for another accepted push
+    await redisSetPulseState({ cleanup_pending: 'opening', contribution_accepted: undefined, contribution_lapsed: 'true' });
+    await runPulsePendingCleanup();
+    const afterOpening = await redisGetPulseState();
+    expect({ pending: afterOpening.cleanup_pending, accepted: afterOpening.contribution_accepted, lapsed: afterOpening.contribution_lapsed })
+      .toEqual({ pending: undefined, accepted: 'true', lapsed: undefined });
+    // A partial cleanup left pending keeps its scope until it is replayed
+    await redisSetPulseState({ cleanup_pending: 'scope', cleanup_scope: JSON.stringify({ entityTypes: ['Tool'], markingIds: [] }) });
+    await runPulsePendingCleanup();
+    const afterScope = await redisGetPulseState();
+    expect({ pending: afterScope.cleanup_pending, scope: afterScope.cleanup_scope }).toEqual({ pending: undefined, scope: undefined });
     await redisSetPulseState({ contribution_accepted: undefined });
   });
 });

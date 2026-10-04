@@ -54,6 +54,7 @@ import {
   combinePulseLookups,
   combinePulsePreviewSignals,
   PULSE_PREVIEW_CLEARED_DOCUMENT,
+  type PulseClearScope,
   type PulseDocumentUpdate,
   type PulsePreviewSignal,
   toPulseInformationOutput,
@@ -72,6 +73,7 @@ import {
   suggestPulseBuckets,
 } from './pulse-settings';
 import {
+  redisDeletePulseResponse,
   redisClaimPulseOutbox,
   redisBumpPulseConfigGeneration,
   redisBumpPulsePolicyGeneration,
@@ -192,12 +194,24 @@ const loadPulseContext = async (context: AuthContext, { fresh = false } = {}) =>
 };
 
 // region cleanup
-// The community data of the platform goes whenever it stops being current: contribution lapsed or opened, purge,
-// unregistration. The cleanup can fail (Elasticsearch, Redis): the pending marker is written before it and removed once
-// it succeeded, and every manager cycle replays a pending cleanup, registered on XTM Hub or not.
-type PulseCleanup = 'network' | 'registration';
+// The community data of the platform goes whenever it stops being current: unregistration, purge, lapse, the opening
+// of the full experience, a configuration that changes the mode or takes objects out. The cleanup can fail
+// (Elasticsearch, Redis): the pending marker - with the scope of a partial cleanup - is written before it and removed
+// once it succeeded, and every manager cycle replays a pending cleanup, registered on XTM Hub or not. A cleanup that
+// completes a state transition (opening) completes it when replayed.
+const PULSE_CLEANUPS = ['registration', 'opening', 'network', 'scope'] as const;
+type PulseCleanup = typeof PULSE_CLEANUPS[number];
 
-const runPulseCleanup = async (cleanup: PulseCleanup) => {
+const readPendingScope = (state: PulseOperationalState): PulseClearScope => {
+  try {
+    const scope = JSON.parse(state.cleanup_scope ?? '{}');
+    return { entityTypes: scope.entityTypes ?? [], markingIds: scope.markingIds ?? [] };
+  } catch {
+    return { entityTypes: [], markingIds: [] };
+  }
+};
+
+const runPulseCleanup = async (cleanup: PulseCleanup, scope: PulseClearScope) => {
   if (cleanup === 'registration') {
     // The registration is gone: what was collected for it goes with its contribution state.
     await redisDiscardPulseOutbox();
@@ -213,18 +227,32 @@ const runPulseCleanup = async (cleanup: PulseCleanup) => {
       preview_since: undefined,
     });
   }
-  await clearPulseNetworkInformation();
-  await redisSetPulseState({ cleanup_pending: undefined });
+  await clearPulseNetworkInformation(cleanup === 'scope' ? scope : undefined);
+  // XTM Hub accepted a contribution: once the preview signal is gone, the full experience opens.
+  const opened = cleanup === 'opening' ? { contribution_accepted: 'true', contribution_lapsed: undefined, last_refresh_at: undefined, preview_matched: undefined } : {};
+  await redisSetPulseState({ ...opened, cleanup_pending: undefined, cleanup_scope: undefined });
 };
 
-// Whether the cleanup succeeded: a failure is logged and left to the next manager cycle.
-const cleanupPulseData = async (cleanup: PulseCleanup) => {
-  let pending = cleanup;
+// Whether the cleanup succeeded: a failure is logged and left to the next manager cycle. A pending cleanup of the
+// registration covers any other; otherwise the latest one decides the state to reach, and a partial cleanup joins a
+// pending partial one or is covered by a pending full one.
+const cleanupPulseData = async (cleanup: PulseCleanup, scope: PulseClearScope = { entityTypes: [], markingIds: [] }) => {
+  let pending: PulseCleanup = cleanup;
   try {
-    // A pending cleanup of the registration covers the network information too.
-    pending = (await redisGetPulseState()).cleanup_pending === 'registration' ? 'registration' : cleanup;
-    await redisSetPulseState({ cleanup_pending: pending });
-    await runPulseCleanup(pending);
+    const state = await redisGetPulseState();
+    const current = PULSE_CLEANUPS.find((value) => value === state.cleanup_pending);
+    let pendingScope = scope;
+    if (current === 'registration' || (cleanup === 'scope' && current && current !== 'scope')) {
+      pending = current;
+    } else if (cleanup === 'scope' && current === 'scope') {
+      const previous = readPendingScope(state);
+      pendingScope = {
+        entityTypes: Array.from(new Set([...previous.entityTypes, ...scope.entityTypes])),
+        markingIds: Array.from(new Set([...previous.markingIds, ...scope.markingIds])),
+      };
+    }
+    await redisSetPulseState({ cleanup_pending: pending, cleanup_scope: pending === 'scope' ? JSON.stringify(pendingScope) : undefined });
+    await runPulseCleanup(pending, pendingScope);
     return true;
   } catch (error) {
     logApp.error('[THREAT PULSE] Community data not cleaned, the next manager cycle retries', { cause: error, cleanup: pending });
@@ -233,27 +261,36 @@ const cleanupPulseData = async (cleanup: PulseCleanup) => {
 };
 
 export const runPulsePendingCleanup = async () => {
-  const { cleanup_pending: pending } = await redisGetPulseState();
-  if (pending === 'network' || pending === 'registration') {
-    await withPulsePushLock(() => runPulseCleanup(pending));
+  const state = await redisGetPulseState();
+  const pending = PULSE_CLEANUPS.find((value) => value === state.cleanup_pending);
+  if (pending) {
+    await withPulsePushLock(() => runPulseCleanup(pending, readPendingScope(state)));
   }
 };
 // endregion
 
-// XTM Hub enforces the reciprocity: a contributing platform it answers contribution_required to (no accepted
-// contribution within the grace period) falls back to the preview until its next accepted contribution. The full
-// statistics it held are removed first, so nothing stale passes for current: until they are, the platform is not
-// marked lapsed and the next contribution_required answer retries, like the next manager cycle.
-const handlePulseReadError = async (values: PulseSettingsValues, error: unknown) => {
-  if (!(error instanceof PulseHubError) || error.code !== 'contribution_required' || !isPulseContributing(values)) {
-    return;
-  }
+// XTM Hub enforces the reciprocity: a contributing platform without an accepted contribution within the grace period
+// falls back to the preview until its next accepted contribution, whether a read answered contribution_required or the
+// status of XTM Hub reported the lapse. The full statistics it held are removed first, so nothing stale passes for
+// current: until they are, the platform is not marked lapsed and the next answer retries, like the next manager cycle.
+// Whether the platform is marked lapsed.
+const markPulseContributionLapsed = async () => {
   const state = await redisGetPulseState();
-  if (state.contribution_lapsed === 'true' || !(await cleanupPulseData('network'))) {
-    return;
+  if (state.contribution_lapsed === 'true') {
+    return true;
+  }
+  if (!(await cleanupPulseData('network'))) {
+    return false;
   }
   await redisSetPulseState({ contribution_lapsed: 'true', preview_refresh_at: undefined });
   logApp.info('[THREAT PULSE] XTM Hub requires a contribution, falling back to the preview until the next accepted contribution');
+  return true;
+};
+
+const handlePulseReadError = async (values: PulseSettingsValues, error: unknown) => {
+  if (error instanceof PulseHubError && error.code === 'contribution_required' && isPulseContributing(values)) {
+    await markPulseContributionLapsed();
+  }
 };
 
 export const toPulseUnavailableReason = (error: unknown): PulseUnavailableReason => {
@@ -304,6 +341,8 @@ export const getPulseStatus = async (context: AuthContext) => {
   };
 };
 
+const pulseStatusCacheKey = (platform: PulseHubPlatform) => `status:${platform.platformId}`;
+
 const getPulseNetworkStatus = async (platform: PulseHubPlatform | null) => {
   const unreachable = {
     reachable: false,
@@ -321,7 +360,7 @@ const getPulseNetworkStatus = async (platform: PulseHubPlatform | null) => {
     return unreachable;
   }
   try {
-    const cacheKey = `status:${platform.platformId}`;
+    const cacheKey = pulseStatusCacheKey(platform);
     let status = await redisGetPulseResponse<PulseHubStatus>(cacheKey);
     if (!status) {
       status = await xtmHubPulseClient.status(platform);
@@ -343,7 +382,12 @@ const getPulseNetworkStatus = async (platform: PulseHubPlatform | null) => {
 };
 
 export const getPulseSettings = async (context: AuthContext): Promise<PulseSettingsOutput> => {
-  const { settings, values, platform, state, access } = await loadPulseContext(context);
+  const { settings, values, platform, state, access: localAccess } = await loadPulseContext(context);
+  const network = await getPulseNetworkStatus(platform);
+  // XTM Hub reports the lapse of a quiet platform before any read of it answers contribution_required.
+  const lapsed = localAccess === PulseAccess.Full && isPulseContributing(values) && network.contribution_status === PulseContributionStatus.Lapsed
+    && await markPulseContributionLapsed();
+  const access = lapsed ? PulseAccess.Preview : localAccess;
   const markings = await getEntitiesListFromCache<StoreMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const forcedMarkings = await getForcedExcludedMarkings(context);
   const suggested = await suggestPulseBuckets(context, settings);
@@ -382,7 +426,7 @@ export const getPulseSettings = async (context: AuthContext): Promise<PulseSetti
       digest_items: Number(state.preview_digest_items ?? 0),
       matched_entities: Number(state.preview_matched ?? 0),
     },
-    network: await getPulseNetworkStatus(platform),
+    network,
   };
 };
 
@@ -468,22 +512,25 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
     // the next run collects from there under the new policy.
       await redisDiscardPulseOutbox();
     }
+    // The configuration stands whatever happens to these cleanups: a failed one is replayed by the next manager cycle.
     if (modeChanged && current.mode !== PulseMode.Off) {
     // The statistics of the previous mode never pass for those of the new one: the next cycle rebuilds them. Whatever
     // the connection to XTM Hub now, a mode that could write them is followed by a cleanup.
-      await clearPulseNetworkInformation();
+      await cleanupPulseData('network');
     } else if (!modeChanged && mode !== PulseMode.Off) {
     // The sector trends and the trending keys were read for the former sector or region: the stored statistics are
     // removed and the next cycle reads them again for the new one.
       const bucketsChanged = sectorBucket !== current.sectorBucket || regionBucket !== current.regionBucket;
       if (bucketsChanged && enabling) {
-        await clearPulseNetworkInformation();
+        await cleanupPulseData('network');
       } else {
       // A more restrictive configuration: the objects it takes out lose the statistics they received before. The
       // preview sends nothing, so its signal stays on every object in scope whatever the markings.
         const removedScopes = current.scopes.filter((scope) => !scopes.includes(scope));
         const addedExclusions = enabling ? (excludedMarkingIds as string[]).filter((markingId) => !current.excludedMarkingIds.includes(markingId)) : [];
-        await clearPulseNetworkInformation({ entityTypes: removedScopes, markingIds: addedExclusions });
+        if (removedScopes.length > 0 || addedExclusions.length > 0) {
+          await cleanupPulseData('scope', { entityTypes: removedScopes, markingIds: addedExclusions });
+        }
       }
       if (bucketsChanged) {
         await redisSetPulseState({ last_refresh_at: undefined, refresh_offset: undefined, preview_refresh_at: undefined, preview_offset: undefined });
@@ -600,23 +647,34 @@ const storePulseKeys = async (context: AuthContext, entities: BasicStorePulseEnt
 // One hourly contribution: pending batches first, then the activity of the window since the last run.
 // An accepted contribution opens the reads XTM Hub grants to contributors, or restores the ones it refused: the preview
 // signal leaves room for the full refresh.
-const recordAcceptedContribution = async (state: PulseOperationalState, pushedRecords: number, now: Date) => {
+// The last error of a contribution: an answer of XTM Hub, or the code its manager step leaves when it throws. A
+// successful contribution clears those only, never the code another step of the cycle left ("..._failed").
+const recordContributionError = async (code: string | undefined) => {
+  if (code) {
+    await redisSetPulseState({ last_error: code });
+    return;
+  }
+  const { last_error: current } = await redisGetPulseState();
+  if (current && (!current.endsWith('_failed') || current === 'contribution_failed')) {
+    await redisSetPulseState({ last_error: undefined });
+  }
+};
+
+const recordAcceptedContribution = async (platform: PulseHubPlatform, state: PulseOperationalState, pushedRecords: number, now: Date) => {
   if (pushedRecords <= 0) {
     return;
   }
+  // The status XTM Hub returned before this contribution (lapsed, for instance) no longer applies.
+  await redisDeletePulseResponse(pulseStatusCacheKey(platform));
   const opening = state.contribution_accepted !== 'true' || state.contribution_lapsed === 'true';
-  // The preview signal goes before the full experience opens: until it is removed, the platform stays in preview and
-  // the next accepted contribution opens it.
-  if (opening && !(await cleanupPulseData('network'))) {
-    await redisSetPulseState({ last_push_at: now.toISOString() });
+  if (!opening) {
+    await redisSetPulseState({ last_push_at: now.toISOString(), contribution_accepted: 'true' });
     return;
   }
-  await redisSetPulseState({
-    last_push_at: now.toISOString(),
-    contribution_accepted: 'true',
-    ...(opening ? { contribution_lapsed: undefined, last_refresh_at: undefined, preview_matched: undefined } : {}),
-  });
-  if (opening) {
+  await redisSetPulseState({ last_push_at: now.toISOString() });
+  // The preview signal goes before the full experience opens; a failed cleanup is replayed by the next manager cycle,
+  // which opens it then.
+  if (await cleanupPulseData('opening')) {
     logApp.info('[THREAT PULSE] Contribution accepted, the full experience is open');
   }
 };
@@ -641,7 +699,7 @@ export const runPulseContribution = async (context: AuthContext) => {
     if (outboxOutcome.error) {
       await redisSetPulseState({ last_error: outboxOutcome.error.code });
     }
-    await recordAcceptedContribution(state, pushedRecords, now);
+    await recordAcceptedContribution(platform, state, pushedRecords, now);
     addThreatPulseRecordsCount(pushedRecords);
     return { pushedRecords };
   }
@@ -709,14 +767,14 @@ export const runPulseContribution = async (context: AuthContext) => {
   if (!(await redisCommitPulseWindow(windowItems, until.toISOString(), acceptedDays, generation))) {
     // The configuration changed during the cycle: the window is collected again under the new one by the next run.
     logApp.info('[THREAT PULSE] Configuration changed during the contribution, the window is left to the next run');
-    await recordAcceptedContribution(state, pushedRecords, now);
+    await recordAcceptedContribution(platform, state, pushedRecords, now);
     addThreatPulseRecordsCount(pushedRecords);
     return { pushedRecords };
   }
   const windowOutcome = await pushPulseOutbox(platform, yesterday, generation);
   pushedRecords += windowOutcome.pushedRecords;
-  await redisSetPulseState({ last_error: windowOutcome.error?.code });
-  await recordAcceptedContribution(state, pushedRecords, now);
+  await recordContributionError(windowOutcome.error?.code);
+  await recordAcceptedContribution(platform, state, pushedRecords, now);
   addThreatPulseRecordsCount(pushedRecords);
   logApp.info('[THREAT PULSE] Contribution done', {
     since: since.toISOString(),
