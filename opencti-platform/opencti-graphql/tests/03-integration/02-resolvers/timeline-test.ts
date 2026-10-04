@@ -1,7 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin, queryAsAdminWithError, queryAsAdminWithSuccess, queryAsAuthUser, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
-import { ADMIN_USER, getAuthUser, TEST_ORGANIZATION, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
+import { ADMIN_USER, TEST_ORGANIZATION, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
+import { resolveUserById } from '../../../src/modules/user/user-domain';
+import type { AuthUser } from '../../../src/types/user';
 import { MARKING_TLP_AMBER, MARKING_TLP_GREEN } from '../../../src/schema/identifier';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_TIMELINE } from '../../../src/types/stix-2-1-extensions';
 import { deleteContainerTimeline, loadStoredTimelineEvents, timelineEventSignature } from '../../../src/modules/timeline/timeline-engine';
@@ -298,9 +300,10 @@ const listTimeline = async (id: string, variables: Record<string, unknown> = {})
   }));
 };
 
-// The static test admin carries no max shareable markings; the admin loaded from the store has them all, like a session
+// The static test admin and the stored user carry no max shareable markings; the complete user, built like a session, has them all
 const queryAsPlatformAdminWithSuccess = async (request: { query: unknown; variables: Record<string, unknown> }) => {
-  const admin = await getAuthUser(ADMIN_USER.id);
+  const completeAdmin = await resolveUserById(testContext, ADMIN_USER.id);
+  const admin = { ...completeAdmin, origin: { referer: 'test', user_id: completeAdmin?.internal_id } } as AuthUser;
   const result = await queryAsAuthUser(admin, request as Parameters<typeof queryAsAuthUser>[1]);
   expect(result.errors, `This errors should not be there: ${JSON.stringify(result.errors)}`).toBeUndefined();
   return { data: result.data as Record<string, any> };
