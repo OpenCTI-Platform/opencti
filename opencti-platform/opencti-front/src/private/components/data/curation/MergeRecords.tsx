@@ -222,6 +222,9 @@ const MergeRecords = ({ entityId }: MergeRecordsProps) => {
           initialValues={initialValues}
           ignoreUri={Boolean(entityId)}
           contextFilters={contextFilters}
+          emptyStateMessage={viewStorage.searchTerm ? undefined : (entityId
+            ? t_i18n('This entity took part in no recorded merge.')
+            : t_i18n('No merge recorded yet. Every merge, from Data > Entities, the API, the deduplication or a curation proposal, appears here and can be undone during its retention window.'))}
           preloadedPaginationProps={{
             linesQuery: mergeRecordsListQuery,
             linesFragment: mergeRecordsFragment,

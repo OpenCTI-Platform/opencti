@@ -15,7 +15,9 @@ const KnowledgeHealthScore = ({ score, height = 220 }: KnowledgeHealthScoreProps
   const { healthColor } = useCurationLabels();
   return (
     <div role="img" aria-label={t_i18n('Knowledge health score: {score} of 100', { values: { score } })} data-testid="knowledge-health-score">
+      {/* The radial bar does not redraw a new value in place: a new score mounts a new chart. */}
       <Chart
+        key={score}
         options={{
           chart: { type: 'radialBar', background: 'transparent', sparkline: { enabled: true } },
           plotOptions: {
