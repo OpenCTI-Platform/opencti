@@ -260,6 +260,17 @@ describe('GraphAccessibleList', () => {
     expect(screen.getByRole('option', { name: /^Malware Emotet, 1 relationship$/ })).toBeInTheDocument();
   });
 
+  it('mirrors each part of a nested relationship as its own option', () => {
+    // A nested relationship is drawn as a node and two connector links, all three with its id.
+    const nested = graphNode({ id: 'nested', label: 'related to', relationship_type: 'related-to', entity_type: 'related-to' });
+    const links = [graphLink(actor, nested, { id: 'nested' }), graphLink(nested, malware, { id: 'nested' })];
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
+    testRender(<GraphAccessibleList nodes={[actor, nested, malware]} links={links} selectedIds={new Set()} onSelectNode={vi.fn()} onSelectLink={vi.fn()} />);
+    expect(screen.getAllByRole('option')).toHaveLength(5);
+    expect(errors.mock.calls.some((call) => String(call[0]).includes('same key'))).toBe(false);
+    errors.mockRestore();
+  });
+
   it('mirrors the drawing as options a keyboard can select', () => {
     const onSelectNode = vi.fn();
     const onSelectLink = vi.fn();

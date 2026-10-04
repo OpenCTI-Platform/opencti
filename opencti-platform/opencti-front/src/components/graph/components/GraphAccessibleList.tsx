@@ -67,6 +67,10 @@ const GraphAccessibleList = ({ nodes, links, selectedIds, onSelectNode, onSelect
   const windowStart = Math.max(0, activeIndex - ACCESSIBLE_LIST_WINDOW_RADIUS);
   const windowEnd = Math.min(entries.length, activeIndex + ACCESSIBLE_LIST_WINDOW_RADIUS + 1);
   const idOf = (entry: Entry) => (entry.kind === 'node' ? entry.node.id : entry.link.id);
+  // A nested relationship is drawn as a node and two connector links that share its id.
+  const keyOf = (entry: Entry) => (entry.kind === 'node'
+    ? `node:${entry.node.id}`
+    : `link:${entry.link.id}:${endpoint(entry.link.source)?.id ?? entry.link.source_id}:${endpoint(entry.link.target)?.id ?? entry.link.target_id}`);
   const choose = (entry: Entry, additive: boolean) => {
     if (entry.kind === 'node') onSelectNode(entry.node, additive);
     else onSelectLink(entry.link, additive);
@@ -101,7 +105,7 @@ const GraphAccessibleList = ({ nodes, links, selectedIds, onSelectNode, onSelect
     >
       {entries.slice(windowStart, windowEnd).map((entry, offset) => (
         <div
-          key={idOf(entry)}
+          key={keyOf(entry)}
           id={`${listId}-${windowStart + offset}`}
           role="option"
           aria-selected={selectedIds.has(idOf(entry))}
