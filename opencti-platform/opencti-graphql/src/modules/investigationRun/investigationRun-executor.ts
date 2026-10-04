@@ -47,7 +47,7 @@ import {
 import { logApp } from '../../config/conf';
 import { elFindByIds } from '../../database/engine';
 import { internalFindByIds, pageEntitiesConnection, topEntitiesList, topRelationsList } from '../../database/middleware-loader';
-import { storeLoadByIdWithRefs } from '../../database/middleware';
+import { deleteElementById, storeLoadByIdWithRefs } from '../../database/middleware';
 import { getEntityFromCache } from '../../database/cache';
 import { READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_DRAFT_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../../database/utils';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
@@ -55,7 +55,13 @@ import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRel
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { RELATION_ATTRIBUTED_TO, RELATION_MITIGATES, RELATION_RELATED_TO } from '../../schema/stixCoreRelationship';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
-import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION, ENTITY_TYPE_INCIDENT } from '../../schema/stixDomainObject';
+import {
+  ENTITY_TYPE_ATTACK_PATTERN,
+  ENTITY_TYPE_CONTAINER_NOTE,
+  ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_COURSE_OF_ACTION,
+  ENTITY_TYPE_INCIDENT,
+} from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 import { ENTITY_TYPE_PIR } from '../pir/pir-types';
 import { checkStixCoreRelationshipMapping } from '../../database/stix';
@@ -940,11 +946,27 @@ const writeOutputs = async (
     });
   }
   const containers = R.uniq([subject.internal_id, ...(caseId ? [caseId] : [])]);
+  // A continuation may cite more restricted objects than the first conclusion:
+  // an output is edited in place only while it carries the restrictions of
+  // what it now quotes, else it is written again in the draft with them.
+  const keepsRestrictions = async (id: string, type: string) => {
+    const current = await storeLoadByIdWithRefs<StoreEntity>(draftContext, runUser, id, { type });
+    if (!current) return false;
+    const currentMarkings = markingIdsOf(current);
+    const currentOrganizations = organizationIdsOf(current);
+    if (markings.every((marking) => currentMarkings.includes(marking))
+      && currentOrganizations.length === organizations.length
+      && currentOrganizations.every((organization) => organizations.includes(organization))) {
+      return true;
+    }
+    await deleteElementById(draftContext, runUser, id, type);
+    return false;
+  };
   if (allowedAction(InvestigationAutonomousAction.CreateNote)) {
     // The investigation summary note: hypotheses, recommendations, timeline, indicators.
     await attempt('note', async () => {
       const content = buildInvestigationNoteContent(run);
-      if (outputs.note_id) {
+      if (outputs.note_id && await keepsRestrictions(outputs.note_id, ENTITY_TYPE_CONTAINER_NOTE)) {
         await stixDomainObjectEditField(draftContext, runUser, outputs.note_id, [{ key: 'content', value: [content] }]);
         return;
       }
@@ -964,7 +986,7 @@ const writeOutputs = async (
     if (run.report) {
       await attempt('report', async () => {
         const description = buildInvestigationReportSections(run).report.slice(0, INVESTIGATION_LIMITS.reportLength);
-        if (outputs.report_id) {
+        if (outputs.report_id && await keepsRestrictions(outputs.report_id, ENTITY_TYPE_CONTAINER_REPORT)) {
           await stixDomainObjectEditField(draftContext, runUser, outputs.report_id, [{ key: 'description', value: [description] }]);
           return;
         }

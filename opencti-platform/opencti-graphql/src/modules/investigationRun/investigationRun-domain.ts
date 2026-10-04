@@ -951,6 +951,16 @@ export const findInvestigationRunEnrichmentWave = async (context: AuthContext, u
   const wave = (run.enrichment_waves ?? []).find((item) => item.id === waveId);
   if (!wave) return null;
   const jobs = run.enrichment_requests.filter((request) => wave.request_ids.includes(request.id));
+  // The delta was collected as the run identity: each reader gets only the
+  // objects of the run draft it may read (markings, organizations, members).
+  const collected = wave.delta ?? [];
+  const readable = collected.length === 0 ? [] : await elFindByIds<BasicStoreEntity>(
+    runContextFor(context, run),
+    user,
+    collected.map((item) => item.id),
+    { indices: READ_DATA_INDICES_WITHOUT_INTERNAL, baseData: true },
+  ) as BasicStoreEntity[];
+  const readableIds = new Set(readable.map((element) => element.internal_id));
   return {
     id: wave.id,
     status: wave.delta_computed ? wave.status : computeWaveStatus(jobs),
@@ -964,7 +974,7 @@ export const findInvestigationRunEnrichmentWave = async (context: AuthContext, u
       status: job.status,
       error: job.error ?? null,
     })),
-    delta: wave.delta ?? [],
+    delta: collected.filter((item) => readableIds.has(item.id)),
   };
 };
 
