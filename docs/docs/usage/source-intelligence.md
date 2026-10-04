@@ -67,6 +67,8 @@ When the scan stops at the maximum number of objects set in the settings, a warn
 
 ![Sources area with its status header, counters and leaderboard](assets/source-intelligence-sources-overview.png)
 
+![Sources header when the manager is disabled in the platform configuration](assets/source-intelligence-sources-manager-disabled.png)
+
 Before the first computation, or while no source has written knowledge yet, the area explains which sources it will score and when the scorecards appear:
 
 ![Sources area before the first scorecards](assets/source-intelligence-sources-first-use.png)
@@ -191,5 +193,9 @@ The settings are in **Settings > Customization > Source intelligence** (also rea
 - the autonomy policy and the collection gap parameters (EE).
 
 ![Source intelligence settings](assets/source-intelligence-settings.png)
+
+When the manager is disabled in the platform configuration, the computation switch is greyed out and says why: no setting can start a computation until the deployment enables the manager.
+
+![Computation switch greyed out when the manager is disabled in the platform configuration](assets/source-intelligence-settings-manager-disabled.png)
 
 Scorecards are computed once a day. Between two computations, the counters follow the knowledge as it changes: a created object is added to its sources, and a deleted object is removed from the periods in which it was counted. Sightings, revocations, PIR links and hunt detections are credited to each source in the periods where it asserted the object, and withdrawn when the sighting, the PIR link or the true positive verdict is removed. A source sending again an object that already exists, without changing it, is counted by the daily computation, like ratios, scores and medians, and like the counts that depend on the whole knowledge (noise, unique and corroborated objects, actionable objects, accuracy). The scorecard page says when its value score and ratios were computed. Use **Recompute** in the Sources header to request a computation in the next minutes after a change; it is offered unless a computation is already running or requested.
