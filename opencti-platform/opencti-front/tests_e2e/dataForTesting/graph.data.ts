@@ -307,6 +307,16 @@ export const deleteLargeGraphFixture = async (request: APIRequestContext, fixtur
   }
 };
 
+/** An investigation of the given entities and relationships, none for an empty one. */
+export const createInvestigation = async (request: APIRequestContext, name: string, ids: string[]) => {
+  const data = await graphqlRequest<{ workspaceAdd: IdResult }>(
+    request,
+    `mutation { workspaceAdd(input: { type: "investigation", name: ${quote(name)}, investigated_entities_ids: ${JSON.stringify(ids)} }) { id } }`,
+    'investigation',
+  );
+  return data.workspaceAdd.id;
+};
+
 /** Removes an investigation a test created from the graph. */
 export const deleteInvestigation = (request: APIRequestContext, id: string) => deleteSilently(request, `mutation { workspaceDelete(id: ${quote(id)}) }`);
 

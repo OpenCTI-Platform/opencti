@@ -1,7 +1,7 @@
 import { Page } from '@playwright/test';
 import { expect, test } from '../fixtures/baseFixtures';
 import GraphPage from '../model/graph.pageModel';
-import { createGraphFixture, deleteGraphFixture, deleteInvestigation, GraphFixture, withApiRequest } from '../dataForTesting/graph.data';
+import { createGraphFixture, createInvestigation, deleteGraphFixture, deleteInvestigation, GraphFixture, withApiRequest } from '../dataForTesting/graph.data';
 
 /**
  * The capabilities the elevated graph adds on every surface: legend counters as filters,
@@ -180,5 +180,28 @@ test.describe('Graph experience', { tag: ['@ce'] }, () => {
     const download = page.waitForEvent('download');
     await graph.getControl('Export the whole graph as a high-resolution image').click();
     expect((await download).suggestedFilename()).toMatch(/\.png$/);
+  });
+
+  test('says why nothing is drawn and offers the next action', async ({ page, playwright }) => {
+    // Every entity type faded in the legend: the filters leave nothing, and clearing them restores the graph.
+    const graph = await openGraph(page);
+    const typeCounters = legend(page).getByRole('button', { name: /^(Intrusion set|Malware|Attack pattern|IPv4 address|Domain name): 1$/i });
+    await expect(typeCounters).toHaveCount(5);
+    for (const counter of await typeCounters.all()) await counter.click();
+    const filtered = page.getByRole('status').filter({ hasText: 'No entity matches these filters' });
+    await expect(filtered).toBeVisible();
+    await filtered.getByRole('button', { name: 'Clear filters' }).click();
+    await expect(filtered).toBeHidden();
+    await expect.poll(async () => (await graph.snapshot()).nodes.filter((n) => n.disabled)).toHaveLength(0);
+
+    // An investigation without any entity yet says how to start one.
+    const investigationId = await withApiRequest(playwright, (request) => createInvestigation(request, `Graph empty investigation ${fixture.suffix}`, []));
+    try {
+      await page.goto(`/dashboard/workspaces/investigations/${investigationId}`);
+      await expect(page.getByRole('status').filter({ hasText: 'Nothing to draw yet' })).toBeVisible();
+      await expect(page.getByRole('link', { name: 'Read the documentation' })).toBeVisible();
+    } finally {
+      await withApiRequest(playwright, (request) => deleteInvestigation(request, investigationId));
+    }
   });
 });

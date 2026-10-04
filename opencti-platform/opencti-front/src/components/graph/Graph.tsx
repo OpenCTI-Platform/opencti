@@ -16,6 +16,7 @@ import RelationSelection from './components/RelationSelection';
 import GraphLoadingAlert from './components/GraphLoadingAlert';
 import GraphControls from './components/GraphControls';
 import GraphCounters, { type GraphCounter } from './components/GraphCounters';
+import GraphEmptyState, { type GraphEmptyKind } from './components/GraphEmptyState';
 import GraphLegend, { type GraphLegendBadge } from './components/GraphLegend';
 import GraphHoverCard, { type GraphHoverCardTarget } from './components/GraphHoverCard';
 import GraphAccessibleList from './components/GraphAccessibleList';
@@ -83,6 +84,7 @@ const Graph = ({
     toggleLegend,
     hideNodes,
     showHiddenNodes,
+    resetFilters,
     toggleCollapsedEntityType,
     toggleRelationshipType,
     highlightShortestPath,
@@ -178,6 +180,25 @@ const Graph = ({
   const linkShown = (link: GraphLink) => shownNodeIds.has(endpointId(link.source) ?? link.source_id)
     && shownNodeIds.has(endpointId(link.target) ?? link.target_id);
   const shownLinks = useMemo(() => (displayData?.links ?? []).filter(linkShown), [displayData, shownNodeIds]);
+
+  // --- Nothing drawn: no data yet, everything hidden, or everything filtered out. Shown after a
+  // short delay so that a graph still receiving its data never flashes it.
+  const emptyKind = useMemo<GraphEmptyKind | null>(() => {
+    if (!displayData || isLoadingData) return null;
+    if (displayData.nodes.length === 0) return 'empty';
+    if (shownNodes.length === 0) return 'hidden';
+    if (shownNodes.every((node) => node.disabled)) return 'filtered';
+    return null;
+  }, [displayData, shownNodes, isLoadingData, filterToken]);
+  const [shownEmptyKind, setShownEmptyKind] = useState<GraphEmptyKind | null>(null);
+  useEffect(() => {
+    if (!emptyKind) {
+      setShownEmptyKind(null);
+      return undefined;
+    }
+    const timer = setTimeout(() => setShownEmptyKind(emptyKind), 600);
+    return () => clearTimeout(timer);
+  }, [emptyKind]);
   const shapeSignature = useMemo(
     () => `${shownNodes.map((n) => n.id).sort().join()}|${shownLinks.map((l) => l.id).sort().join()}`,
     [shownNodes, shownLinks],
@@ -675,6 +696,9 @@ const Graph = ({
               onNodeDragEnd={onNodeDragEnd}
             />
           </>
+        )}
+        {shownEmptyKind && (
+          <GraphEmptyState kind={shownEmptyKind} context={context} onClearFilters={resetFilters} onShowHidden={showHiddenNodes} />
         )}
         {/* The row only spans its panels: the canvas around them keeps its gestures. */}
         <div

@@ -6,6 +6,7 @@ import { graphLink, graphNode } from '../../../utils/tests/graphTestData';
 import GraphLegend from './GraphLegend';
 import GraphControls from './GraphControls';
 import GraphCounters from './GraphCounters';
+import GraphEmptyState from './GraphEmptyState';
 import GraphHoverCard, { GraphHoverCardActions } from './GraphHoverCard';
 import GraphAccessibleList, { ACCESSIBLE_LIST_WINDOW_RADIUS } from './GraphAccessibleList';
 import GraphShortcutsDialog from './GraphShortcutsDialog';
@@ -68,6 +69,25 @@ describe('GraphLegend', () => {
   it('stays above the time range selector of the toolbar when it is open', () => {
     testRender(<GraphLegend {...props} bottomOffset={80} />);
     expect(screen.getByRole('region', { name: 'Legend' }).style.marginBottom).toBe('80px');
+  });
+});
+
+describe('GraphEmptyState', () => {
+  it('says why nothing is drawn and offers the next action', async () => {
+    const onClearFilters = vi.fn();
+    const onShowHidden = vi.fn();
+    const { user, unmount } = testRender(<GraphEmptyState kind="filtered" onClearFilters={onClearFilters} onShowHidden={onShowHidden} />);
+    expect(screen.getByRole('status')).toHaveTextContent('No entity matches these filters');
+    await user.click(screen.getByRole('button', { name: 'Clear filters' }));
+    expect(onClearFilters).toHaveBeenCalled();
+    unmount();
+    const hidden = testRender(<GraphEmptyState kind="hidden" onClearFilters={onClearFilters} onShowHidden={onShowHidden} />);
+    await hidden.user.click(screen.getByRole('button', { name: 'Show the hidden entities' }));
+    expect(onShowHidden).toHaveBeenCalled();
+    hidden.unmount();
+    testRender(<GraphEmptyState kind="empty" context="investigation" onClearFilters={onClearFilters} onShowHidden={onShowHidden} />);
+    expect(screen.getByRole('status')).toHaveTextContent('Add entities to this investigation from the toolbar');
+    expect(screen.getByRole('link', { name: 'Read the documentation' })).toHaveAttribute('href', 'https://docs.opencti.io/latest/usage/graphs/');
   });
 });
 
