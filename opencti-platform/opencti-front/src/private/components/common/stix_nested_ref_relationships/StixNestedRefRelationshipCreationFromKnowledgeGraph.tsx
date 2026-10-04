@@ -1,7 +1,5 @@
 import { stixNestedRefRelationshipCreationResolveQuery } from '@components/common/stix_nested_ref_relationships/StixNestedRefRelationshipCreation';
-import IconButton from '@common/button/IconButton';
 import { ReadMoreOutlined } from '@mui/icons-material';
-import Tooltip from '@mui/material/Tooltip';
 import React from 'react';
 import {
   StixNestedRefRelationshipCreationResolveQuery,
@@ -12,6 +10,7 @@ import StixNestedRefRelationshipCreationFromKnowledgeGraphContent
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import GraphToolbarItem from '../../../../components/graph/components/GraphToolbarItem';
 
 interface StixNestedRefRelationshipCreationFromKnowledgeGraphProps {
   nestedRelationExist: boolean;
@@ -26,15 +25,13 @@ interface StixNestedRefRelationshipCreationFromKnowledgeGraphProps {
 const DisabledNestedRelationshipButton = () => {
   const { t_i18n } = useFormatter();
   return (
-    <Tooltip title={t_i18n('Create a nested relationship')}>
-      <IconButton
-        color="primary"
-        disabled={true}
-        aria-label={t_i18n('Create a nested relationship')}
-      >
-        <ReadMoreOutlined />
-      </IconButton>
-    </Tooltip>
+    <GraphToolbarItem
+      title={t_i18n('Create a nested relationship')}
+      color="primary"
+      Icon={<ReadMoreOutlined />}
+      onClick={() => undefined}
+      disabled
+    />
   );
 };
 
