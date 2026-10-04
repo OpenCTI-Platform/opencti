@@ -665,11 +665,11 @@ describe('IOC validation requests', () => {
       const reservedId = validationResultSightingStixId(id, liveIndicatorId, platformId);
       await queryAsUserIsExpectedForbidden(USER_EDITOR, {
         query: SIGHTING_ADD,
-        variables: { input: { fromId: liveIndicatorId, toId: platformId, stix_id: reservedId, x_opencti_negative: false } },
+        variables: { input: { fromId: liveIndicatorId, toId: platformId, stix_id: reservedId, attribute_count: 1, x_opencti_negative: false } },
       });
       await queryAsUserIsExpectedForbidden(USER_EDITOR, {
         query: SIGHTING_ADD,
-        variables: { input: { fromId: liveIndicatorId, toId: platformId, x_opencti_stix_ids: [reservedId], x_opencti_negative: false } },
+        variables: { input: { fromId: liveIndicatorId, toId: platformId, x_opencti_stix_ids: [reservedId], attribute_count: 1, x_opencti_negative: false } },
       });
       const squatted = await storeLoadById(testContext, ADMIN_USER, reservedId, STIX_SIGHTING_RELATIONSHIP);
       expect(squatted).toBeFalsy();
