@@ -2,9 +2,7 @@ import { ReactNode, Suspense, useEffect, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { Link } from 'react-router';
 import { DialogActions, Stack, Typography } from '@mui/material';
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
-import { Checkbox, Input, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, Textarea } from '@filigran/design-system';
+import { Alert, Checkbox, Input, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, Textarea } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -102,19 +100,17 @@ const ConnectorSelection = ({ connectorId, onChange }: { connectorId: string | n
     return (
       <Alert
         severity="warning"
-        variant="outlined"
         data-testid="ioc-validation-no-connector"
+        title={t_i18n('No OpenAEV IOC validation connector is active')}
+        description={canManageConnectors
+          ? t_i18n('Configure OpenCTI in OpenAEV, then check that its IOC validation connector is running.')
+          : t_i18n('Ask an administrator to configure OpenCTI in OpenAEV and start its IOC validation connector.')}
         action={canManageConnectors ? (
           <Button variant="secondary" size="small" component={Link} to={settingsPath}>
             {t_i18n('Open connector settings')}
           </Button>
         ) : undefined}
-      >
-        <AlertTitle>{t_i18n('No OpenAEV IOC validation connector is active')}</AlertTitle>
-        {canManageConnectors
-          ? t_i18n('Configure OpenCTI in OpenAEV, then check that its IOC validation connector is running.')
-          : t_i18n('Ask an administrator to configure OpenCTI in OpenAEV and start its IOC validation connector.')}
-      </Alert>
+      />
     );
   }
   if (activeConnectors.length === 1) return null;
@@ -225,10 +221,11 @@ const IocValidationRequestDialog = ({ open, onClose, indicators, platforms, defa
     <Dialog open={open} onClose={onClose} title={t_i18n('Request validation in OpenAEV')} size="medium">
       <Stack gap={2} data-testid="ioc-validation-request-dialog">
         {summary && <Typography variant="body2">{summary}</Typography>}
-        <Alert severity="info" variant="outlined">
-          <AlertTitle>{t_i18n('Every validation scenario is approved in OpenAEV before it runs')}</AlertTitle>
-          {t_i18n('OpenAEV runs benign tests built from each indicator and checks that the security platforms detected or prevented them. Only the test kinds allowed there are executed.')}
-        </Alert>
+        <Alert
+          severity="info"
+          title={t_i18n('Every validation scenario is approved in OpenAEV before it runs')}
+          description={t_i18n('OpenAEV runs benign tests built from each indicator and checks that the security platforms detected or prevented them. Only the test kinds allowed there are executed.')}
+        />
         {indicators.length > 0 && <TestedIndicators indicators={indicators} />}
         <Stack gap={0.5}>
           <Typography variant="h4">{t_i18n('Security platforms')}</Typography>
@@ -264,10 +261,11 @@ const IocValidationRequestDialog = ({ open, onClose, indicators, platforms, defa
             />
           ))}
           {testKinds.some((kind) => TEST_KINDS.find((definition) => definition.kind === kind)?.contactsInfrastructure) && (
-            <Alert severity="warning" variant="outlined">
-              <AlertTitle>{t_i18n('Network and HTTP tests reach the indicator values')}</AlertTitle>
-              {t_i18n('OpenAEV only runs them when an administrator allowed them, through the egress proxy or the sinkhole it configured.')}
-            </Alert>
+            <Alert
+              severity="warning"
+              title={t_i18n('Network and HTTP tests reach the indicator values')}
+              description={t_i18n('OpenAEV only runs them when an administrator allowed them, through the egress proxy or the sinkhole it configured.')}
+            />
           )}
         </Stack>
         <Input
@@ -284,9 +282,7 @@ const IocValidationRequestDialog = ({ open, onClose, indicators, platforms, defa
           onChange={(event) => setDescription(event.target.value)}
         />
         {tooManyIndicators && (
-          <Alert severity="error" variant="outlined">
-            <AlertTitle>{t_i18n('A validation request covers at most 200 indicators')}</AlertTitle>
-          </Alert>
+          <Alert severity="error" title={t_i18n('A validation request covers at most 200 indicators')} />
         )}
         <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           {open && <ConnectorSelection connectorId={connectorId} onChange={setConnectorId} />}
