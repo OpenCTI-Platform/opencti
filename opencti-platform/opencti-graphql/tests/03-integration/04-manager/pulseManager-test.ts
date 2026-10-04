@@ -19,7 +19,9 @@ import {
   redisBumpPulsePolicyGeneration,
   redisClaimPulseOutbox,
   redisDiscardPulseActivity,
+  redisGetPulseSalt,
   redisGetPulseState,
+  redisSetPulseSalt,
   redisSetPulseState,
   redisTakePulseActivity,
 } from '../../../src/modules/xtm/pulse/pulse-cache';
@@ -89,6 +91,8 @@ const LOST_ANSWER_IP = '198.51.100.215';
 const MARKED_LATER_IP = '198.51.100.216';
 const NARROWED_IP = '198.51.100.217';
 const STALE_POLICY_IP = '198.51.100.218';
+const PENDING_ACCEPTED_IP = '198.51.100.219';
+const FAILED_WINDOW_IP = '198.51.100.220';
 const PREVIEW_RED_DOMAIN = 'red-preview.pulse-test.example';
 const PREVIEW_PEERS = ['pulse-preview-1', 'pulse-preview-2', 'pulse-preview-3', 'pulse-preview-4', 'pulse-preview-5'];
 const PREVIEW_FORBIDDEN_OPERATIONS = ['pushPulse', 'pulseLookup', 'pulseTrending', 'pulseBenchmark'];
@@ -467,6 +471,35 @@ describe('Threat Pulse manager and API', () => {
     expect(contributed()).toBe(keys.length);
     expect(await redisClaimPulseOutbox()).toEqual([]);
     await deleteElementById(testContext, ADMIN_USER, indicatorId, ENTITY_TYPE_INDICATOR);
+  });
+
+  it('should record the pending batches XTM Hub accepted even when the window of the same run then fails', async () => {
+    const today = utcDay();
+    const addIndicator = async (ip: string) => (await queryAsAdminWithSuccess({
+      query: CREATE_INDICATOR,
+      variables: { input: { name: ip, pattern: `[ipv4-addr:value = '${ip}']`, pattern_type: 'stix', x_opencti_main_observable_type: 'IPv4-Addr' } },
+    })).data?.indicatorAdd.id;
+    // A batch waits in the outbox: XTM Hub failed the push that carried it
+    const pendingId = await addIndicator(PENDING_ACCEPTED_IP);
+    hub.failNext('pushPulse', 'INTERNAL_SERVER_ERROR');
+    await runPulseContribution(testContext);
+    const { last_push_at: before } = await redisGetPulseState();
+    // The next run pushes it, then cannot hash its own window: the salt of the day is not cached and XTM Hub fails it
+    const failedWindowId = await addIndicator(FAILED_WINDOW_IP);
+    const salt = await redisGetPulseSalt(today);
+    await redisSetPulseSalt(today, 'not-a-salt');
+    hub.failNext('pulseSalt', 'INTERNAL_SERVER_ERROR');
+    try {
+      await expect(runPulseContribution(testContext)).rejects.toThrow();
+    } finally {
+      if (salt) await redisSetPulseSalt(today, salt);
+    }
+    // What XTM Hub accepted at the start of the run is recorded as the platform's latest contribution
+    expect(await redisClaimPulseOutbox()).toEqual([]);
+    const { last_push_at: after } = await redisGetPulseState();
+    expect(Date.parse(after ?? '')).toBeGreaterThan(Date.parse(before ?? '') || 0);
+    await deleteElementById(testContext, ADMIN_USER, pendingId, ENTITY_TYPE_INDICATOR);
+    await deleteElementById(testContext, ADMIN_USER, failedWindowId, ENTITY_TYPE_INDICATOR);
   });
 
   it('should hide the network signal below the anonymity threshold', async () => {

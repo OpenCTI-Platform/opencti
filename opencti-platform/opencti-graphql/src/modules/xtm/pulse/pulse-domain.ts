@@ -732,29 +732,28 @@ const recordAcceptedContribution = async (platform: PulseHubPlatform, state: Pul
   }
 };
 
-export const runPulseContribution = async (context: AuthContext) => {
-  // Read before the settings, which come from the database: a configuration stored after this point stops the cycle
-  // before it records or sends anything more.
-  const generation = await redisGetPulseConfigGeneration();
-  const policyGeneration = await redisGetPulsePolicyGeneration();
-  const { values, platform, state } = await loadPulseContext(context, { fresh: true });
-  if (!isPulseContributing(values) || !platform) {
-    return { pushedRecords: 0 };
-  }
-  const now = new Date();
+interface PulseContributionCycle {
+  values: PulseSettingsValues;
+  platform: PulseHubPlatform;
+  generation: string;
+  policyGeneration: string;
+  now: Date;
+}
+
+// The pending batches first, then the window since the last run; `accepted` receives what XTM Hub accepted, as soon as
+// it accepted it.
+const contributePulseCycle = async (context: AuthContext, cycle: PulseContributionCycle, accepted: (records: number) => void) => {
+  const { values, platform, generation, policyGeneration, now } = cycle;
   const today = utcDay(now);
   const yesterday = previousUtcDay(today);
-  let pushedRecords = 0;
   const outboxOutcome = await pushPulseOutbox(platform, yesterday, generation);
-  pushedRecords += outboxOutcome.pushedRecords;
+  accepted(outboxOutcome.pushedRecords);
   if (outboxOutcome.error || outboxOutcome.stopped) {
     // Backpressure: no new window is collected while XTM Hub has not answered the pending batches.
     if (outboxOutcome.error) {
       await redisSetPulseState({ last_error: outboxOutcome.error.code });
     }
-    await recordAcceptedContribution(platform, state, pushedRecords, now);
-    addThreatPulseRecordsCount(pushedRecords);
-    return { pushedRecords };
+    return;
   }
   const cursor = await redisGetPulseCursor();
   let since = new Date(Math.min(now.getTime(), Date.parse(cursor ?? '') || new Date(values.consentDate ?? now).getTime()));
@@ -766,7 +765,7 @@ export const runPulseContribution = async (context: AuthContext) => {
   }
   let until = new Date(Math.min(now.getTime(), since.getTime() + MAX_WINDOW_HOURS * 3600 * 1000));
   if (until.getTime() <= since.getTime()) {
-    return { pushedRecords };
+    return;
   }
   // One budget of events per run for both sources: the activity kept in Redis (sightings seen again) is claimed first,
   // within half of it so that neither source starves the other, and the database window is bounded by the rest. Every
@@ -820,23 +819,42 @@ export const runPulseContribution = async (context: AuthContext) => {
   if (!(await redisCommitPulseWindow(windowItems, until.toISOString(), acceptedDays, generation))) {
     // The configuration changed during the cycle: the window is collected again under the new one by the next run.
     logApp.info('[THREAT PULSE] Configuration changed during the contribution, the window is left to the next run');
-    await recordAcceptedContribution(platform, state, pushedRecords, now);
-    addThreatPulseRecordsCount(pushedRecords);
-    return { pushedRecords };
+    return;
   }
   const windowOutcome = await pushPulseOutbox(platform, yesterday, generation);
-  pushedRecords += windowOutcome.pushedRecords;
+  accepted(windowOutcome.pushedRecords);
   await recordContributionError(windowOutcome.error?.code);
-  await recordAcceptedContribution(platform, state, pushedRecords, now);
-  addThreatPulseRecordsCount(pushedRecords);
   logApp.info('[THREAT PULSE] Contribution done', {
     since: since.toISOString(),
     until: until.toISOString(),
     days,
     records,
-    pushedRecords,
+    pushedRecords: outboxOutcome.pushedRecords + windowOutcome.pushedRecords,
     excluded,
   });
+};
+
+export const runPulseContribution = async (context: AuthContext) => {
+  // Read before the settings, which come from the database: a configuration stored after this point stops the cycle
+  // before it records or sends anything more.
+  const generation = await redisGetPulseConfigGeneration();
+  const policyGeneration = await redisGetPulsePolicyGeneration();
+  const { values, platform, state } = await loadPulseContext(context, { fresh: true });
+  if (!isPulseContributing(values) || !platform) {
+    return { pushedRecords: 0 };
+  }
+  const now = new Date();
+  let pushedRecords = 0;
+  try {
+    await contributePulseCycle(context, { values, platform, generation, policyGeneration, now }, (records) => {
+      pushedRecords += records;
+    });
+  } finally {
+    // Whatever stops the cycle after XTM Hub accepted records (an empty window, a failed collection), the accepted
+    // contribution is recorded: it is what opens the full experience.
+    await recordAcceptedContribution(platform, state, pushedRecords, now);
+    addThreatPulseRecordsCount(pushedRecords);
+  }
   return { pushedRecords };
 };
 
