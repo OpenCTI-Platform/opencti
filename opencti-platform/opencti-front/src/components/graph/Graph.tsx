@@ -579,26 +579,28 @@ const Graph = ({
   };
 
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  // The shortcuts of the actions the toolbar disables in 3D do nothing there either.
+  const only2D = (action: () => void) => () => {
+    if (!mode3D) action();
+  };
   useGraphKeyboardShortcuts(containerRef, {
     fit: zoomToFit,
     fitSelection: () => zoomToSelection(),
-    locate: () => locateNode(),
-    zoomIn,
-    zoomOut,
+    locate: only2D(() => locateNode()),
+    zoomIn: only2D(zoomIn),
+    zoomOut: only2D(zoomOut),
     selectAll: selectAllNodes,
     selectNeighbours: () => selectNeighbours(),
-    shortestPath: shortestPathOfSelection,
+    shortestPath: only2D(shortestPathOfSelection),
     hideSelection: () => hideNodes(selectedNodes.map((n) => n.id)),
     showHidden: showHiddenNodes,
     clearSelection: () => {
       if (selectedEntities.length === 0 && isFullscreen) exitFullscreen();
       else onBackgroundClick();
     },
-    toggleLegend,
+    toggleLegend: only2D(toggleLegend),
     toggleFullscreen,
-    exportImage: () => {
-      exportImage();
-    },
+    exportImage: only2D(() => exportImage()),
     focusSearch: () => {
       parentRef.current?.querySelector<HTMLInputElement>('[data-graph-search] input')?.focus();
     },
