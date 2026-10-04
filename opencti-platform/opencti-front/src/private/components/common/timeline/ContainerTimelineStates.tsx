@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import Skeleton from '@mui/material/Skeleton';
 import { useTheme } from '@mui/material/styles';
@@ -71,6 +71,69 @@ export const ContainerTimelineEmptyState = ({ filtered, canEdit, regenerating, o
     </div>
   );
 };
+
+interface ContainerTimelineErrorStateProps {
+  onRetry: () => void;
+}
+
+/** The events could not be loaded: say so and offer to load them again. */
+export const ContainerTimelineErrorState = ({ onRetry }: ContainerTimelineErrorStateProps) => {
+  const { t_i18n } = useFormatter();
+  const theme = useTheme();
+  return (
+    <div
+      data-testid="timeline-error"
+      role="alert"
+      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: theme.spacing(1.5), padding: theme.spacing(4, 2) }}
+    >
+      <Text variant="content-base-medium">{t_i18n('The timeline could not be loaded')}</Text>
+      <Text variant="content-caption">{t_i18n('Check your connection, then try again. If the problem persists, contact your administrator.')}</Text>
+      <Button variant="secondary" size="small" onClick={onRetry} data-testid="timeline-error-retry">
+        {t_i18n('Retry')}
+      </Button>
+    </div>
+  );
+};
+
+type ErrorResponse = { errors?: readonly { extensions?: { code?: string } }[] };
+type RequestError = { res?: ErrorResponse; data?: { res?: ErrorResponse } };
+const SESSION_ERROR_CODES = ['AUTH_REQUIRED', 'IP_FORBIDDEN'];
+
+// Only a failed request is worth a retry: a session error or an error of the code goes to the page error boundary
+const isRetryableError = (error: unknown) => {
+  const response = (error as RequestError | null)?.res ?? (error as RequestError | null)?.data?.res;
+  return !!response && !(response.errors ?? []).some(({ extensions }) => SESSION_ERROR_CODES.includes(extensions?.code ?? ''));
+};
+
+interface ContainerTimelineErrorBoundaryProps {
+  children: ReactNode;
+  onRetry: () => void;
+}
+
+/** Keeps a failed load of the events inside the timeline, with a retry. */
+export class ContainerTimelineErrorBoundary extends Component<ContainerTimelineErrorBoundaryProps, { error: unknown }> {
+  state = { error: null as unknown };
+
+  static getDerivedStateFromError(error: unknown) {
+    return { error };
+  }
+
+  retry = () => {
+    this.props.onRetry();
+    this.setState({ error: null });
+  };
+
+  render() {
+    const { error } = this.state;
+    if (!error) {
+      return this.props.children;
+    }
+    if (!isRetryableError(error)) {
+      throw error;
+    }
+    return <ContainerTimelineErrorState onRetry={this.retry} />;
+  }
+}
 
 const SKELETON_ROWS = 6;
 

@@ -27,13 +27,16 @@ export interface TimelineExportInput {
 }
 
 // Fixed palette: an export is a standalone document and must render the same in every theme.
+// The lane and text tones are the ones of the light theme of the platform (design-system light tokens).
+const TEXT_COLOR = '#18191b';
+const TEXT_SECONDARY_COLOR = '#494a50';
 const LANE_COLORS: Record<TimelineLaneValue, string> = {
-  adversary: '#e5484d',
-  evidence: '#3e9bff',
-  response: '#30a46c',
-  knowledge: '#8e4ec6',
-  detection: '#f5a524',
-  custom: '#7c8a9a',
+  adversary: '#b8180a',
+  evidence: '#0015a8',
+  response: '#117916',
+  knowledge: '#009474',
+  detection: '#b8550a',
+  custom: TEXT_SECONDARY_COLOR,
 };
 
 const DEFAULT_LABELS: Record<string, string> = {
@@ -157,10 +160,10 @@ export const renderTimelineSvg = (input: TimelineExportInput): string => {
     const y = PADDING + AXIS_HEIGHT + index * LANE_HEIGHT;
     parts.push(`<rect x="0" y="${y}" width="${SVG_WIDTH}" height="${LANE_HEIGHT}" fill="${index % 2 === 0 ? '#f5f7fa' : '#ffffff'}"/>`);
     parts.push(`<rect x="${PADDING}" y="${y + LANE_HEIGHT / 2 - 6}" width="4" height="12" fill="${LANE_COLORS[lane]}"/>`);
-    parts.push(`<text x="${PADDING + 10}" y="${y + LANE_HEIGHT / 2 + 4}" fill="#1f2933" font-weight="bold">${escapeXml(label(input, `lane.${lane}`))}</text>`);
+    parts.push(`<text x="${PADDING + 10}" y="${y + LANE_HEIGHT / 2 + 4}" fill="${TEXT_COLOR}" font-weight="bold">${escapeXml(label(input, `lane.${lane}`))}</text>`);
   });
   if (times.length === 0) {
-    parts.push(`<text x="${plotLeft}" y="${PADDING + AXIS_HEIGHT / 2}" fill="#52606d">${escapeXml(label(input, 'no_events'))}</text>`);
+    parts.push(`<text x="${plotLeft}" y="${PADDING + AXIS_HEIGHT / 2}" fill="${TEXT_SECONDARY_COLOR}">${escapeXml(label(input, 'no_events'))}</text>`);
     parts.push('</svg>');
     return parts.join('');
   }
@@ -180,7 +183,7 @@ export const renderTimelineSvg = (input: TimelineExportInput): string => {
   niceTicks(min, max, 6).forEach((tick) => {
     const tickX = x(tick).toFixed(1);
     parts.push(`<line x1="${tickX}" y1="${axisY - 4}" x2="${tickX}" y2="${height - PADDING}" stroke="#e4e7eb"/>`);
-    parts.push(`<text x="${tickX}" y="${axisY - 8}" fill="#52606d" text-anchor="middle">${escapeXml(formatExportDate(new Date(tick).toISOString()))}</text>`);
+    parts.push(`<text x="${tickX}" y="${axisY - 8}" fill="${TEXT_SECONDARY_COLOR}" text-anchor="middle">${escapeXml(formatExportDate(new Date(tick).toISOString()))}</text>`);
   });
   // Events
   input.events.forEach((event) => {
@@ -199,7 +202,7 @@ export const renderTimelineSvg = (input: TimelineExportInput): string => {
       parts.push(`<circle cx="${startX.toFixed(1)}" cy="${centerY}" r="${event.pinned ? 6 : 4}" fill="${color}" fill-opacity="${opacity}" stroke="#ffffff">${title}</circle>`);
     }
     if (event.pinned || event.source === 'manual') {
-      parts.push(`<text x="${(startX + 8).toFixed(1)}" y="${centerY - 8}" fill="#1f2933">${escapeXml(truncate(event.title, MAX_LABEL_CHARS))}</text>`);
+      parts.push(`<text x="${(startX + 8).toFixed(1)}" y="${centerY - 8}" fill="${TEXT_COLOR}">${escapeXml(truncate(event.title, MAX_LABEL_CHARS))}</text>`);
     }
   });
   // Anchors
@@ -208,8 +211,8 @@ export const renderTimelineSvg = (input: TimelineExportInput): string => {
       const value = input.anchors?.[key];
       if (!value) return;
       const anchorX = x(new Date(value).getTime()).toFixed(1);
-      parts.push(`<line x1="${anchorX}" y1="${PADDING + AXIS_HEIGHT}" x2="${anchorX}" y2="${height - PADDING}" stroke="#1f2933" stroke-dasharray="4 3"/>`);
-      parts.push(`<text x="${anchorX}" y="${height - 4}" fill="#1f2933" text-anchor="middle" font-size="10">${escapeXml(label(input, `anchor.${key}`))}</text>`);
+      parts.push(`<line x1="${anchorX}" y1="${PADDING + AXIS_HEIGHT}" x2="${anchorX}" y2="${height - PADDING}" stroke="${TEXT_COLOR}" stroke-dasharray="4 3"/>`);
+      parts.push(`<text x="${anchorX}" y="${height - 4}" fill="${TEXT_COLOR}" text-anchor="middle" font-size="10">${escapeXml(label(input, `anchor.${key}`))}</text>`);
     });
   }
   parts.push('</svg>');

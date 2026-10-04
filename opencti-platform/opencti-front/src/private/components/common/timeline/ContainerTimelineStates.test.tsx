@@ -1,8 +1,14 @@
-import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import React, { Component, type ReactNode } from 'react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen } from '@testing-library/react';
 import testRender from '../../../../utils/tests/test-render';
-import { ContainerTimelineEmptyState, ContainerTimelineSkeleton, TIMELINE_DOCUMENTATION_URL } from './ContainerTimelineStates';
+import {
+  ContainerTimelineEmptyState,
+  ContainerTimelineErrorBoundary,
+  ContainerTimelineErrorState,
+  ContainerTimelineSkeleton,
+  TIMELINE_DOCUMENTATION_URL,
+} from './ContainerTimelineStates';
 
 const actions = () => ({ onAdd: vi.fn(), onRegenerate: vi.fn(), onClearFilters: vi.fn() });
 
@@ -37,6 +43,76 @@ describe('ContainerTimelineEmptyState', () => {
   it('disables the regeneration while one is running', () => {
     testRender(<ContainerTimelineEmptyState filtered={false} canEdit={true} regenerating={true} {...actions()} />);
     expect(screen.getByRole('button', { name: 'Regenerate the timeline' })).toBeDisabled();
+  });
+});
+
+describe('ContainerTimelineErrorState', () => {
+  it('explains that the events could not be loaded and offers to retry', () => {
+    const onRetry = vi.fn();
+    testRender(<ContainerTimelineErrorState onRetry={onRetry} />);
+    expect(screen.getByRole('alert')).toHaveTextContent('The timeline could not be loaded');
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(onRetry).toHaveBeenCalledTimes(1);
+  });
+});
+
+class PageBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  render() {
+    return this.state.failed ? <div>page error</div> : this.props.children;
+  }
+}
+
+const requestError = (code: string) => Object.assign(new Error('request failed'), { res: { errors: [{ extensions: { code } }] } });
+
+describe('ContainerTimelineErrorBoundary', () => {
+  let failure: Error | null = null;
+  const Events = () => {
+    if (failure) throw failure;
+    return <div>events</div>;
+  };
+  const renderBoundary = (onRetry = vi.fn()) => testRender(
+    <PageBoundary>
+      <ContainerTimelineErrorBoundary onRetry={onRetry}>
+        <Events />
+      </ContainerTimelineErrorBoundary>
+    </PageBoundary>,
+  );
+
+  beforeEach(() => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+  });
+  afterEach(() => {
+    failure = null;
+    vi.restoreAllMocks();
+  });
+
+  it('shows the error panel when the request fails, and the events again after a retry', () => {
+    failure = requestError('DATABASE_ERROR');
+    const onRetry = vi.fn(() => {
+      failure = null;
+    });
+    renderBoundary(onRetry);
+    expect(screen.getByTestId('timeline-error')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(onRetry).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('events')).toBeInTheDocument();
+  });
+
+  it('leaves session errors and errors of the code to the page error boundary', () => {
+    failure = requestError('AUTH_REQUIRED');
+    const { unmount } = renderBoundary();
+    expect(screen.getByText('page error')).toBeInTheDocument();
+    unmount();
+    failure = new Error('rendering failed');
+    renderBoundary();
+    expect(screen.getByText('page error')).toBeInTheDocument();
+    expect(screen.queryByTestId('timeline-error')).toBeNull();
   });
 });
 

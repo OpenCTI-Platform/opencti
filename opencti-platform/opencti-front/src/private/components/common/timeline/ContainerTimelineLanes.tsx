@@ -511,6 +511,9 @@ const ContainerTimelineLanes = ({
               },
             })}
           </Text>
+          <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }} data-testid="timeline-tooltip-source">
+            {hover.event.source === 'manual' ? t_i18n('Analyst milestone') : t_i18n('Derived from the knowledge')}
+          </Text>
           {hover.event.annotation && (
             <Text variant="content-caption" as="div" style={{ marginTop: theme.spacing(0.5) }}>{hover.event.annotation}</Text>
           )}
