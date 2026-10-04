@@ -10,6 +10,7 @@ import { useFormatter } from '../../../../components/i18n';
 import GradientCard from '../../../../components/GradientCard';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import { isNotEmptyField } from '../../../../utils/utils';
+import { navigationClickHandlers } from '../../../../utils/domEvent';
 
 export const BrowseMoreButton = () => {
   const { t_i18n } = useFormatter();
@@ -49,13 +50,10 @@ export const DeployedCountChip = ({ count, to }: { count: number; to?: string })
         label={count > 1 ? t_i18n('{count} deployed', { values: { count } }) : t_i18n('Deployed')}
         severity="low"
         startIcon={<CheckCircleOutlined sx={{ fontSize: 14 }} />}
-        onClick={to
-          ? (event) => {
-            // The chip may live inside a clickable card: do not trigger it.
-              event.stopPropagation();
-              navigate(to);
-            }
-          : undefined}
+        // The chip lives inside cards and lines rendered as links, and nested
+        // anchors are invalid: it stays a button that never triggers the
+        // enclosing link and opens the deployed tab itself.
+        {...(to ? navigationClickHandlers(to, navigate) : {})}
       />
     </Tooltip>
   );
