@@ -476,7 +476,7 @@ const initializeRun = async (exec: RunExecution) => {
   const { run, runUser, liveContext } = exec;
   const subject = await storeLoadByIdWithRefs<StoreEntity>(liveContext, runUser, run.subject_id);
   if (!subject) {
-    await failRun(liveContext, run.internal_id, SUBJECT_INACCESSIBLE_REASON);
+    await stopAtCarryBoundary(exec, { reason: SUBJECT_INACCESSIBLE_REASON, code: null });
     return;
   }
   if (!run.case_id && run.create_case) {
@@ -562,7 +562,7 @@ const startEngine = async (exec: RunExecution) => {
   }
   const subject = await loadSubject(exec);
   if (!subject) {
-    await failRun(exec.liveContext, run.internal_id, SUBJECT_INACCESSIBLE_REASON);
+    await stopAtCarryBoundary(exec, { reason: SUBJECT_INACCESSIBLE_REASON, code: null });
     return;
   }
   // A continuation starts long after the launch checked the subject and its case.
@@ -803,20 +803,30 @@ const citedElements = async (exec: RunExecution, evidence: InvestigationEvidence
 // run stops before anything more is sent to the engine or mirrored once its
 // subject or its case is no longer readable by that identity, or once one of
 // them, or an object the engine cites, is restricted to authorized members.
-// Access is read on the live version: the copy a draft holds of a live object
-// keeps the restrictions it had when it was copied.
+// Restrictions are read on the live objects by the manager, whoever they hide
+// the object from: the copy a draft holds of a live object keeps the
+// restrictions it had when it was copied, and a restriction that excludes the
+// run identity would hide the object from it.
 const findCarryBoundary = async (exec: RunExecution, citedIds: string[]): Promise<{ reason: string; code: string | null } | null> => {
   const { run } = exec;
   const ids = R.uniq([run.subject_id, run.case_id, ...citedIds].filter((id): id is string => !!id));
-  const [live, inDraft] = await Promise.all([findElements(exec.liveContext, exec.runUser, ids), findElements(exec.draftContext, exec.runUser, ids)]);
+  const managerContext = await userContext(INVESTIGATION_MANAGER_USER);
+  const [allLive, readableLive, inDraft] = await Promise.all([
+    findElements(managerContext, INVESTIGATION_MANAGER_USER, ids),
+    findElements(exec.liveContext, exec.runUser, [run.subject_id, run.case_id].filter((id): id is string => !!id)),
+    findElements(exec.draftContext, exec.runUser, ids),
+  ]);
   const idsOf = (elements: BasicStoreCommon[]) => new Set(elements.flatMap((element) => [element.internal_id, element.standard_id]));
-  const liveIds = idsOf(live);
+  const readableIds = idsOf(readableLive);
   // Only a case the run created exists in its draft alone.
-  const caseReadable = !run.case_id || liveIds.has(run.case_id) || (run.create_case && idsOf(inDraft).has(run.case_id));
-  if (!liveIds.has(run.subject_id) || !caseReadable) {
+  const caseReadable = !run.case_id || readableIds.has(run.case_id) || (run.create_case && idsOf(inDraft).has(run.case_id));
+  if (!readableIds.has(run.subject_id) || !caseReadable) {
     return { reason: SUBJECT_INACCESSIBLE_REASON, code: null };
   }
-  const restricted = [...live, ...inDraft].filter((element) => isMemberRestricted(element));
+  const liveIds = idsOf(allLive);
+  // Objects the run created exist in its draft alone: their draft version is their only one.
+  const draftOnly = inDraft.filter((element) => !liveIds.has(element.internal_id) && !liveIds.has(element.standard_id));
+  const restricted = [...allLive, ...draftOnly].filter((element) => isMemberRestricted(element));
   if (restricted.length > 0) {
     logApp.warn('[CASE AUTOPILOT] Investigation stopped at a member restriction', { runId: run.internal_id, ids: restricted.map((element) => element.internal_id) });
     return { reason: MEMBER_RESTRICTED_REASON, code: MEMBER_RESTRICTED_CODE };
@@ -1252,7 +1262,7 @@ const ingestRun = async (exec: RunExecution) => {
   const { run, runUser, now, policy } = exec;
   const subject = await loadSubject(exec);
   if (!subject) {
-    await failRun(exec.liveContext, run.internal_id, SUBJECT_INACCESSIBLE_REASON);
+    await stopAtCarryBoundary(exec, { reason: SUBJECT_INACCESSIBLE_REASON, code: null });
     return;
   }
   // The final state of the engine run; what was mirrored when it cannot be read.
