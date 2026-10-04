@@ -38,7 +38,7 @@ Every source has a scorecard over three rolling windows: 7, 30 and 90 days. The 
 | Corroboration rate | Share of its objects also asserted by other sources (2 other sources by default). |
 | Lead time | For the objects shared with other sources, how many hours earlier (positive) or later (negative) the source reported them, and the share of objects it reported first. |
 | Accuracy | Share of its evaluated objects that were not revoked, not negatively sighted, not labelled as false positives and not excluded by a decay exclusion rule. |
-| Relevance (EE) | Share of its objects matching at least one PIR. |
+| Relevance (EE) | Share of its objects matching at least one PIR. Without an Enterprise Edition license, the relevance computed earlier is not shown, and sources and widgets can be neither filtered nor sorted on it. |
 | Impact | Detection impact on a 0-100 logarithmic scale. Hunt true positives and incidents weigh 3, security platform sightings weigh 2, other sightings weigh 1. |
 | Noise | Share of its objects that are never referenced, never sighted or expired. |
 | Freshness | Hours since its last assertion, and median ingestion latency. |

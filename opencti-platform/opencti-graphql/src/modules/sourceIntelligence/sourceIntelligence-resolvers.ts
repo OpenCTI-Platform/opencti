@@ -43,6 +43,11 @@ import {
 } from './sourceIntelligence-widgets';
 import { SOURCE_KIND_CONNECTOR, SOURCE_KIND_INGESTION_FEED } from './sourceIntelligence-types';
 
+// PIR relevance is measured in Enterprise Edition only: the values stored before a license downgrade are not served
+const enterpriseValue = async (context: AuthContext, value: number | null | undefined) => {
+  return (await isEnterpriseEdition(context)) ? (value ?? null) : null;
+};
+
 // Recommendation texts embed the names of their sources: names of restricted authors are masked for the requesting user
 type MaskedRecommendationField = 'name' | 'rationale' | 'payload' | 'evidence' | 'apply_result' | 'error_message' | 'dismiss_reason';
 
@@ -79,6 +84,7 @@ const sourceIntelligenceResolvers: Resolvers = {
     owner: (source: any, _, context) => (source.owner_id ? loadCreator(context, context.user, source.owner_id) : null),
     enabled: (source: any) => source.enabled !== false,
     quarantined: (source: any) => source.quarantined === true,
+    latest_relevance: (source: any, _, context) => enterpriseValue(context, source.latest_relevance),
     connector: (source: any, _, context) => {
       if (!source.ref_id) return null;
       if (source.source_kind === SOURCE_KIND_CONNECTOR) return loadConnector(context, context.user, source.ref_id);
@@ -95,6 +101,8 @@ const sourceIntelligenceResolvers: Resolvers = {
     period: (scorecard: any) => scorecard.scorecard_period,
     last_asserted_at: (scorecard: any) => scorecard.source_last_asserted_at ?? null,
     overlap: (scorecard: any) => scorecard.overlap ?? [],
+    pir_matched_count: (scorecard: any, _, context) => enterpriseValue(context, scorecard.pir_matched_count),
+    relevance: (scorecard: any, _, context) => enterpriseValue(context, scorecard.relevance),
   },
   SourceOverlapShare: {
     source: (share: any, _, context) => findSourceById(context, context.user, share.source_id) as any,

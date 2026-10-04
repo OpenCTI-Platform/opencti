@@ -12,7 +12,8 @@ import type { FilterGroup } from '../../generated/graphql';
 import { addSourceIntelligenceDashboardCount } from '../../manager/telemetryManager';
 import { type BasicStoreEntitySource, ENTITY_TYPE_SOURCE, REFERENCE_SCORECARD_PERIOD, type ScorecardPeriodValue, type StoreSourceScorecard } from './sourceIntelligence-types';
 import { aggregateScorecardSnapshotsByDay, findLiveScorecards, type ScorecardAggregation } from './sourceIntelligence-store';
-import { maskRestrictedSources } from './sourceIntelligence-domain';
+import { maskRestrictedSources, restrictSourceQueryToEdition } from './sourceIntelligence-domain';
+import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 
 export type ScorecardMetricType = 'count' | 'ratio' | 'hours' | 'cost' | 'score';
 
@@ -50,12 +51,21 @@ export const SCORECARD_METRICS: ScorecardMetric[] = [
 ];
 
 const METRIC_KEYS = new Set(SCORECARD_METRICS.map((metric) => metric.key));
+const ENTERPRISE_METRIC_KEYS = new Set<string>(SCORECARD_METRICS.filter((metric) => metric.enterprise).map((metric) => metric.key));
 
 const assertMetric = (metric: string): keyof StoreSourceScorecard & string => {
   if (!METRIC_KEYS.has(metric as keyof StoreSourceScorecard & string)) {
     throw FunctionalError('Unknown source scorecard metric', { metric });
   }
   return metric as keyof StoreSourceScorecard & string;
+};
+
+// Scorecards keep the Enterprise Edition metrics computed before a license downgrade: they are served in Enterprise Edition only
+const assertMetricsAllowed = async (context: AuthContext, metrics: Array<string | null>) => {
+  const enterpriseMetrics = metrics.filter((metric): metric is string => metric !== null && ENTERPRISE_METRIC_KEYS.has(metric));
+  if (enterpriseMetrics.length > 0 && !(await isEnterpriseEdition(context))) {
+    throw FunctionalError('This source scorecard metric requires an Enterprise Edition license', { metrics: enterpriseMetrics });
+  }
 };
 
 const metricValue = (scorecard: StoreSourceScorecard, metric: string): number | null => {
@@ -124,7 +134,8 @@ const restrictToCostCurrency = (data: WidgetEntry[], metrics: Array<string | nul
  * The number of sources is bounded by the source discovery settings (connectors, feeds, top authors and analysts).
  */
 const loadWidgetData = async (context: AuthContext, user: AuthUser, period: ScorecardPeriodValue, filters?: FilterGroup | null) => {
-  const sources = await fullEntitiesList<BasicStoreEntitySource>(context, user, [ENTITY_TYPE_SOURCE], { filters: filters ?? undefined });
+  const allowed = await restrictSourceQueryToEdition(context, { filters });
+  const sources = await fullEntitiesList<BasicStoreEntitySource>(context, user, [ENTITY_TYPE_SOURCE], { filters: allowed.filters ?? undefined });
   const masked = await maskRestrictedSources(context, user, sources);
   const scorecards = await findLiveScorecards(context, period, masked.map((source) => source.internal_id));
   const bySource = new Map(scorecards.map((scorecard) => [scorecard.source_id, scorecard]));
@@ -139,6 +150,7 @@ export const sourceScorecardsDistribution = async (
   args: { metric: string; period?: ScorecardPeriodValue | null; filters?: FilterGroup | null; first?: number | null; orderMode?: string | null },
 ) => {
   const metric = assertMetric(args.metric);
+  await assertMetricsAllowed(context, [metric]);
   const { data, currency } = restrictToCostCurrency(await loadWidgetData(context, user, args.period ?? REFERENCE_SCORECARD_PERIOD, args.filters), [metric]);
   const direction = args.orderMode === 'asc' ? 1 : -1;
   return data
@@ -154,6 +166,7 @@ export const sourceScorecardsNumber = async (
   args: { metric: string; period?: ScorecardPeriodValue | null; filters?: FilterGroup | null; aggregation?: string | null },
 ) => {
   const metric = assertMetric(args.metric);
+  await assertMetricsAllowed(context, [metric]);
   const loaded = await loadWidgetData(context, user, args.period ?? REFERENCE_SCORECARD_PERIOD, args.filters);
   const { data, currency } = restrictToCostCurrency(loaded, [metric]);
   const values = data.map(({ scorecard }) => metricValue(scorecard, metric)).filter((value): value is number => value !== null);
@@ -168,6 +181,7 @@ export const sourceScorecardsTimeSeries = async (
   args: { metric: string; period?: ScorecardPeriodValue | null; filters?: FilterGroup | null; startDate?: string | null; endDate?: string | null; aggregation?: string | null },
 ) => {
   const metric = assertMetric(args.metric);
+  await assertMetricsAllowed(context, [metric]);
   const period = args.period ?? REFERENCE_SCORECARD_PERIOD;
   const { data, currency } = restrictToCostCurrency(await loadWidgetData(context, user, period, args.filters), [metric]);
   const points = await aggregateScorecardSnapshotsByDay(context, {
@@ -190,6 +204,7 @@ export const sourceScorecardsScatter = async (
   const xMetric = assertMetric(args.xMetric);
   const yMetric = assertMetric(args.yMetric);
   const sizeMetric = args.sizeMetric ? assertMetric(args.sizeMetric) : null;
+  await assertMetricsAllowed(context, [xMetric, yMetric, sizeMetric]);
   const loaded = await loadWidgetData(context, user, args.period ?? REFERENCE_SCORECARD_PERIOD, args.filters);
   const { data, currency } = restrictToCostCurrency(loaded, [xMetric, yMetric, sizeMetric]);
   return data

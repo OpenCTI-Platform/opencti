@@ -21,7 +21,8 @@ import { INTERNAL_USERS, isUserHasCapability, SOURCE_INTELLIGENCE_MANAGER_USER, 
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { connectorIdFromIngestId } from '../../domain/connector';
-import { ConnectorType, type EditInput } from '../../generated/graphql';
+import { ConnectorType, type EditInput, type FilterGroup } from '../../generated/graphql';
+import { extractFilterKeys } from '../../utils/filtering/filtering-utils';
 import {
   ENTITY_TYPE_INGESTION_CSV,
   ENTITY_TYPE_INGESTION_JSON,
@@ -323,8 +324,26 @@ export const findSourceById = async (context: AuthContext, user: AuthUser, id: s
   return masked;
 };
 
+// PIR relevance is an Enterprise Edition measure: what a computation stored before a license downgrade is never served
+const ENTERPRISE_SOURCE_KPIS = ['latest_relevance'];
+
+/**
+ * Outside Enterprise Edition, sources are neither filtered nor sorted on an Enterprise Edition KPI: the values kept
+ * from an earlier computation would be inferred from the results. A sort on it falls back to the default order.
+ */
+export const restrictSourceQueryToEdition = async <T extends { orderBy?: string | null; filters?: FilterGroup | null }>(context: AuthContext, args: T): Promise<T> => {
+  if (await isEnterpriseEdition(context)) {
+    return args;
+  }
+  if (args.filters && extractFilterKeys(args.filters).some((key) => ENTERPRISE_SOURCE_KPIS.includes(key))) {
+    throw FunctionalError('Filtering sources on their relevance requires an Enterprise Edition license');
+  }
+  return args.orderBy && ENTERPRISE_SOURCE_KPIS.includes(args.orderBy) ? { ...args, orderBy: null } : args;
+};
+
 export const findSourcesPaginated = async (context: AuthContext, user: AuthUser, args: Record<string, any>) => {
-  const connection = await pageEntitiesConnection<BasicStoreEntitySource>(context, user, [ENTITY_TYPE_SOURCE], args);
+  const allowed = await restrictSourceQueryToEdition(context, args);
+  const connection = await pageEntitiesConnection<BasicStoreEntitySource>(context, user, [ENTITY_TYPE_SOURCE], allowed);
   const masked = await maskRestrictedSources(context, user, connection.edges.map((edge) => edge.node));
   return { ...connection, edges: connection.edges.map((edge, index) => ({ ...edge, node: masked[index] })) };
 };
