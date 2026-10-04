@@ -365,8 +365,14 @@ describe('Source intelligence history backfill', () => {
     expect(planBackfill({}, { backfill_days: 14 }, NOW)).toEqual({
       backfill_from_day: '2026-09-19', backfill_next_day: '2026-09-19', backfill_until_day: '2026-10-03', backfill_done: false,
     });
-    expect(planBackfill({}, { backfill_days: 0 }, NOW)).toEqual({ backfill_done: true });
+    expect(planBackfill({}, { backfill_days: 0 }, NOW)).toEqual({ backfill_done: true, backfill_next_day: null });
     expect(planBackfill({ backfill_done: true }, { backfill_days: 0 }, NOW)).toBeNull();
+  });
+
+  it('should stop a backfill in progress when the backfill is disabled', () => {
+    const inProgress = { backfill_from_day: '2026-09-19', backfill_until_day: '2026-10-03', backfill_next_day: '2026-09-25', backfill_done: false };
+    expect(planBackfill(inProgress, { backfill_days: 0 }, NOW)).toEqual({ backfill_done: true, backfill_next_day: null });
+    expect(planBackfill({ ...inProgress, backfill_done: true, backfill_next_day: null }, { backfill_days: 0 }, NOW)).toBeNull();
   });
 
   it('should compute only the missing older days when the range grows', () => {

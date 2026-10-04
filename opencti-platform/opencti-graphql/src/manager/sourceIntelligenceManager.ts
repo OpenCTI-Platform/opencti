@@ -602,7 +602,8 @@ export const planBackfill = (
   now: number,
 ): Partial<SourceIntelligenceState> | null => {
   if (settings.backfill_days <= 0) {
-    return !state.backfill_done && !state.backfill_next_day ? { backfill_done: true } : null;
+    // Disabling the backfill also stops a pass in progress
+    return !state.backfill_done || state.backfill_next_day ? { backfill_done: true, backfill_next_day: null } : null;
   }
   const requestedFrom = toSnapshotDate(now - settings.backfill_days * DAY_MS);
   const coveredFrom = state.backfill_from_day ?? null;
