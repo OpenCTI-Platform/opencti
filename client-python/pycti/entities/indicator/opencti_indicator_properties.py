@@ -110,13 +110,6 @@ INDICATOR_PROPERTIES = """
         }
     }
     x_mitre_platforms
-    x_opencti_rule_status
-    x_opencti_rule_level
-    x_opencti_rule_logsource {
-        category
-        product
-        service
-    }
     observables {
         edges {
             node {
@@ -262,13 +255,6 @@ INDICATOR_PROPERTIES_WITH_FILES = """
         }
     }
     x_mitre_platforms
-    x_opencti_rule_status
-    x_opencti_rule_level
-    x_opencti_rule_logsource {
-        category
-        product
-        service
-    }
     observables {
         edges {
             node {
@@ -311,5 +297,17 @@ INDICATOR_PROPERTIES_WITH_FILES = """
                 }
             }
         }
+    }
+"""
+
+# Detection rule metadata, selected only from the platforms whose Indicator type has it
+# (see Indicator.supports_rule_metadata)
+INDICATOR_RULE_PROPERTIES = """
+    x_opencti_rule_status
+    x_opencti_rule_level
+    x_opencti_rule_logsource {
+        category
+        product
+        service
     }
 """

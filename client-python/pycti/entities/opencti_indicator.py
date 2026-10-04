@@ -1,14 +1,27 @@
 # coding: utf-8
 
 import json
+import threading
 import uuid
+from typing import Optional
 
 from stix2.canonicalization.Canonicalize import canonicalize
 
 from .indicator.opencti_indicator_properties import (
     INDICATOR_PROPERTIES,
     INDICATOR_PROPERTIES_WITH_FILES,
+    INDICATOR_RULE_PROPERTIES,
 )
+
+_INDICATOR_FIELDS_QUERY = """
+    query IndicatorRuleMetadataFeatureDetection {
+        __type(name: "Indicator") {
+            fields {
+                name
+            }
+        }
+    }
+"""
 
 
 class Indicator:
@@ -27,8 +40,47 @@ class Indicator:
         :type opencti: OpenCTIApiClient
         """
         self.opencti = opencti
-        self.properties = INDICATOR_PROPERTIES
-        self.properties_with_files = INDICATOR_PROPERTIES_WITH_FILES
+        self._rule_metadata_supported: Optional[bool] = None
+        self._detection_lock = threading.Lock()
+
+    def supports_rule_metadata(self) -> bool:
+        """Tell if the platform knows the detection rule metadata of indicators (schema feature detection, cached).
+
+        :return: True when the Indicator type of the platform has ``x_opencti_rule_status``
+        :rtype: bool
+        """
+        if self._rule_metadata_supported is None:
+            with self._detection_lock:
+                if self._rule_metadata_supported is None:
+                    try:
+                        result = self.opencti.query(_INDICATOR_FIELDS_QUERY)
+                        fields = ((result.get("data") or {}).get("__type") or {}).get(
+                            "fields"
+                        ) or []
+                    except Exception as err:  # pylint: disable=broad-except
+                        self.opencti.app_logger.warning(
+                            "Cannot detect the indicator rule metadata support",
+                            {"error": str(err)},
+                        )
+                        return False
+                    self._rule_metadata_supported = "x_opencti_rule_status" in {
+                        field["name"] for field in fields
+                    }
+        return self._rule_metadata_supported
+
+    @property
+    def properties(self):
+        """Default selection of an indicator, with the rule metadata when the platform knows it."""
+        return INDICATOR_PROPERTIES + (
+            INDICATOR_RULE_PROPERTIES if self.supports_rule_metadata() else ""
+        )
+
+    @property
+    def properties_with_files(self):
+        """Default selection of an indicator with its files, with the rule metadata when the platform knows it."""
+        return INDICATOR_PROPERTIES_WITH_FILES + (
+            INDICATOR_RULE_PROPERTIES if self.supports_rule_metadata() else ""
+        )
 
     @staticmethod
     def generate_id(pattern):
@@ -73,11 +125,11 @@ class Indicator:
         }
         return cleaned if len(cleaned) > 0 else None
 
-    @staticmethod
-    def _rule_metadata_input(rule_status, rule_level, rule_logsource):
+    def _rule_metadata_input(self, rule_status, rule_level, rule_logsource):
         """Detection rule metadata of the indicator input, only the values that are set.
 
-        Omitting the unset keys keeps the client compatible with platforms that do not know them.
+        Unset keys are omitted, and the metadata is left out for a platform that does not know it, so the
+        indicator is still created there.
 
         :return: the input keys to add
         :rtype: dict
@@ -87,7 +139,14 @@ class Indicator:
             "x_opencti_rule_level": rule_level,
             "x_opencti_rule_logsource": rule_logsource,
         }
-        return {key: value for key, value in metadata.items() if value is not None}
+        metadata = {key: value for key, value in metadata.items() if value is not None}
+        if len(metadata) > 0 and not self.supports_rule_metadata():
+            self.opencti.app_logger.warning(
+                "The platform does not know the detection rule metadata of indicators, it is not sent",
+                {"keys": sorted(metadata.keys())},
+            )
+            return {}
+        return metadata
 
     def list(self, **kwargs):
         """List Indicator objects.
