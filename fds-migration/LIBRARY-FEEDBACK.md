@@ -800,6 +800,13 @@ replaces the popover under it. `TopBar.libraryOnly.test.ts` names `Popover` in
 `EXEMPTED` so that importing one directly stays a declared, dated exemption
 rather than a new arrival.
 
+**Second consumer, 2026-10-04:** the graph toolbar (`GraphToolbar.tsx`) folds its
+creation and removal tools into one button on a narrow graph and opens them in
+a MUI `Popover`. It needs `keepMounted`: the tools own their creation dialogs
+(the relationship drawn with the right button included), which must open while
+the popover is closed. A library popover will have to offer the same
+keep-mounted behaviour to replace it.
+
 **Not exempted, and now closed:** `Stack` and `Box` were still inside the NLQ
 toggle — MUI layout, not the control. Replaced by plain elements at the same
 geometry (4px caret margin and padding, unchanged 1px divider). The guard reads

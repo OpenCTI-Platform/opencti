@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { planToolbarOverflow, TOOLBAR_ACTION_WIDTH, TOOLBAR_DIVIDER_WIDTH } from './graphToolbarOverflow';
+import { planToolbarOverflow, shouldFoldCreationTools, TOOLBAR_ACTION_WIDTH, TOOLBAR_DIVIDER_WIDTH } from './graphToolbarOverflow';
 import { keepsKeyInField, nextToolbarIndex, toolbarControls } from './useToolbarRovingFocus';
 
 const candidates = [
@@ -33,6 +33,21 @@ describe('planToolbarOverflow', () => {
 
   it('sends everything to the menu when there is no room', () => {
     expect(planToolbarOverflow(candidates, 0).size).toBe(0);
+  });
+});
+
+describe('shouldFoldCreationTools', () => {
+  it('folds the creation tools only when the row cannot hold them, and unfolds them with an action to spare', () => {
+    expect(shouldFoldCreationTools(400, 300, false)).toBe(false);
+    expect(shouldFoldCreationTools(299, 300, false)).toBe(true);
+    // Folded, the same width keeps them folded until there is room for one more action.
+    expect(shouldFoldCreationTools(310, 300, true)).toBe(true);
+    expect(shouldFoldCreationTools(300 + TOOLBAR_ACTION_WIDTH, 300, true)).toBe(false);
+  });
+
+  it('never folds an unmeasured toolbar or tools not measured yet', () => {
+    expect(shouldFoldCreationTools(Infinity, 300, false)).toBe(false);
+    expect(shouldFoldCreationTools(10, 0, false)).toBe(false);
   });
 });
 

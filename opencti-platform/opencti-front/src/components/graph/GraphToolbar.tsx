@@ -3,6 +3,8 @@ import { Paper } from '@filigran/design-system';
 import Divider from '@mui/material/Divider';
 import { useTheme } from '@mui/material/styles';
 import LinearProgress from '@mui/material/LinearProgress';
+import Popover from '@mui/material/Popover';
+import { PencilPlusOutline } from 'mdi-material-ui';
 import useGraphInteractions from './utils/useGraphInteractions';
 import SearchInput from '../SearchInput';
 import type { Theme } from '../Theme';
@@ -17,7 +19,7 @@ import GraphToolbarMoreActions from './components/GraphToolbarMoreActions';
 import GraphCounters from './components/GraphCounters';
 import useGraphToolbarActions, { type GraphToolbarAction, type GraphToolbarGroup, useGraphToolbarGroupLabels } from './components/useGraphToolbarActions';
 import useToolbarRovingFocus from './utils/useToolbarRovingFocus';
-import { planToolbarOverflow } from './utils/graphToolbarOverflow';
+import { FOLDED_CREATION_WIDTH, planToolbarOverflow, shouldFoldCreationTools } from './utils/graphToolbarOverflow';
 import { useFormatter } from '../i18n';
 import useAuth from '../../utils/hooks/useAuth';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
@@ -37,10 +39,14 @@ const GAP_UNITS = 0.5;
 const GAP_PX = 4;
 const SEARCH_WIDTH = 220;
 
-/** Pinned parts never move to the "More actions" menu: their width is measured, the rest is planned. */
-const Pinned = ({ children, style, label }: { children: ReactNode; style?: React.CSSProperties; label?: string }) => (
+/**
+ * Pinned parts never move to the "More actions" menu: their width is measured, the rest is
+ * planned. `creation` marks the creation and removal tools, measured apart because they fold.
+ */
+const Pinned = ({ children, style, label, creation }: { children: ReactNode; style?: React.CSSProperties; label?: string; creation?: boolean }) => (
   <div
     data-toolbar-pinned=""
+    data-toolbar-creation={creation ? '' : undefined}
     role={label ? 'group' : undefined}
     aria-label={label}
     style={{ display: 'flex', alignItems: 'center', gap: GAP_PX, flexShrink: 0, ...style }}
@@ -89,19 +95,37 @@ const GraphToolbar = ({
     toolbarRef,
   } = useGraphContext();
 
-  // --- Room: what the pinned parts leave decides which actions stay in the toolbar.
+  const editable = context !== 'analyses';
+
+  // --- Room: what the pinned parts leave decides which actions stay in the toolbar. The creation
+  // and removal tools are pinned too, but fold into one button when the row cannot hold them.
   const rowRef = useRef<HTMLDivElement | null>(null);
   const { width: rowWidth } = useResizeObserver(rowRef);
-  const [pinnedWidth, setPinnedWidth] = useState(0);
+  const [fixedWidth, setFixedWidth] = useState(0);
+  const [creationWidth, setCreationWidth] = useState(0);
+  const [creationFolded, setCreationFolded] = useState(false);
+  const [creationAnchor, setCreationAnchor] = useState<HTMLElement | null>(null);
+  const padding = parseFloat(theme.spacing(1.5)) * 2;
+  const available = rowWidth > 0 ? rowWidth - padding - fixedWidth : Infinity;
+  const foldCreation = editable && shouldFoldCreationTools(available, creationWidth, creationFolded);
   useLayoutEffect(() => {
     const row = rowRef.current;
     if (!row) return;
-    const pinned = Array.from(row.querySelectorAll<HTMLElement>(':scope > [data-toolbar-pinned]'));
-    const total = pinned.reduce((sum, element) => sum + element.offsetWidth + GAP_PX, 0);
-    if (Math.abs(total - pinnedWidth) > 1) setPinnedWidth(total);
+    const widthOf = (selector: string) => Array.from(row.querySelectorAll<HTMLElement>(selector))
+      .reduce((sum, element) => sum + element.offsetWidth + GAP_PX, 0);
+    const fixed = widthOf(':scope > [data-toolbar-pinned]:not([data-toolbar-creation])');
+    if (Math.abs(fixed - fixedWidth) > 1) setFixedWidth(fixed);
+    // Measured while in the row; folded, their last width decides when they come back.
+    const creation = widthOf(':scope > [data-toolbar-creation]');
+    if (!creationFolded && Math.abs(creation - creationWidth) > 1) setCreationWidth(creation);
+    if (foldCreation !== creationFolded) {
+      setCreationFolded(foldCreation);
+      setCreationAnchor(null);
+    }
   });
-  const padding = parseFloat(theme.spacing(1.5)) * 2;
-  const room = rowWidth > 0 ? rowWidth - padding - pinnedWidth : Infinity;
+  let creationRoom = 0;
+  if (editable) creationRoom = creationFolded ? FOLDED_CREATION_WIDTH : creationWidth;
+  const room = available - creationRoom;
   const shownIds = useMemo(() => planToolbarOverflow(actions, room), [actions, room]);
   const shown = (group: GraphToolbarGroup) => actions.filter((action) => action.group === group && shownIds.has(action.id));
   const overflowed = actions.filter((action) => !shownIds.has(action.id));
@@ -139,8 +163,19 @@ const GraphToolbar = ({
   // The toolbar starts where the navigation ends; in full screen the graph covers the navigation.
   let navOffset = navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH;
   if (isFullscreen) navOffset = 0;
-  const editable = context !== 'analyses';
   const hasCounters = !!view && view.counters.length > 0;
+  const creationLabel = t_i18n('Creation and removal');
+  const creationTools = (
+    <>
+      {context === 'investigation' && (
+        <GraphToolbarExpandTools
+          onInvestigationExpand={onInvestigationExpand}
+          onInvestigationRollback={onInvestigationRollback}
+        />
+      )}
+      <GraphToolbarContentTools {...props} />
+    </>
+  );
 
   return (
     // The surface of the legend and the details panel, docked: square, with only its top edge drawn.
@@ -200,16 +235,19 @@ const GraphToolbar = ({
 
         {editable && (
           <>
-            <Pinned><GroupDivider /></Pinned>
-            <Pinned label={t_i18n('Creation and removal')}>
-              {context === 'investigation' && (
-                <GraphToolbarExpandTools
-                  onInvestigationExpand={onInvestigationExpand}
-                  onInvestigationRollback={onInvestigationRollback}
+            <Pinned creation><GroupDivider /></Pinned>
+            {creationFolded ? (
+              <Pinned creation>
+                <GraphToolbarItem
+                  title={creationLabel}
+                  Icon={<PencilPlusOutline />}
+                  pressed={!!creationAnchor}
+                  onClick={(event) => setCreationAnchor(event.currentTarget)}
                 />
-              )}
-              <GraphToolbarContentTools {...props} />
-            </Pinned>
+              </Pinned>
+            ) : (
+              <Pinned creation label={creationLabel}>{creationTools}</Pinned>
+            )}
           </>
         )}
 
@@ -235,6 +273,22 @@ const GraphToolbar = ({
           <GraphToolbarMoreActions actions={overflowed} />
         </Pinned>
       </div>
+
+      {/* Kept mounted while closed: the dialogs of the tools (a relationship drawn with the right button included) live in them. */}
+      {editable && creationFolded && (
+        <Popover
+          open={!!creationAnchor}
+          anchorEl={creationAnchor}
+          keepMounted
+          onClose={() => setCreationAnchor(null)}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <div role="group" aria-label={creationLabel} style={{ display: 'flex', alignItems: 'center', gap: GAP_PX, padding: theme.spacing(1) }}>
+            {creationTools}
+          </div>
+        </Popover>
+      )}
 
       {/* Only mounted while shown: the closed toolbar clips it, and its handles would stay reachable from the keyboard. */}
       {showTimeRange && <GraphToolbarTimeRange />}

@@ -49,3 +49,18 @@ export const planToolbarOverflow = (
     });
   return shown;
 };
+
+/** Room the creation and removal tools take once folded: their divider and one button. */
+export const FOLDED_CREATION_WIDTH = TOOLBAR_DIVIDER_WIDTH + TOOLBAR_ACTION_WIDTH;
+
+/**
+ * Whether the creation and removal tools, which stay in the toolbar while the other actions move
+ * to "More actions", fold into one button: when the room left by the other fixed parts cannot
+ * hold them, the row would clip them. Folded, they come back once the room holds them with an
+ * action to spare, so a width at the threshold does not make them flicker. An unmeasured toolbar
+ * (`available` not finite) or tools not measured yet never fold.
+ */
+export const shouldFoldCreationTools = (available: number, creationWidth: number, folded: boolean): boolean => {
+  if (!Number.isFinite(available) || creationWidth <= 0) return false;
+  return folded ? available < creationWidth + TOOLBAR_ACTION_WIDTH : available < creationWidth;
+};

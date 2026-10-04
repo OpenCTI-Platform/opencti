@@ -119,7 +119,7 @@ From left to right:
 | Filters | Filter by type (entity and relationship types, the same filters as the legend), by marking and by author, the time range selector, and **Clear all filters**; in correlation graphs, show every correlated entity or only the observables and indicators. A number on a filter tells how many choices are in use. Each filter opens a menu of its choices, grouped under headings and checked when in use; the menu stays open so that several choices can be made in a row. |
 | Export and help | The high-resolution image export, the legend, the keyboard shortcuts. |
 
-The search field and the **More actions** menu close the toolbar. **More actions** holds the rare actions (select all nodes, select by entity type, the relationships of the selection, unfix the nodes) and, when the window is too narrow for the whole toolbar, the actions it has no room for, grouped the same way.
+The search field and the **More actions** menu close the toolbar. **More actions** holds the rare actions (select all nodes, select by entity type, the relationships of the selection, unfix the nodes) and, when the window is too narrow for the whole toolbar, the actions it has no room for, grouped the same way. On a graph narrower still (a small window, or a side panel open next to it), the creation and removal tools fold into one **Creation and removal** button that opens them.
 
 Every tooltip names the action and its keyboard shortcut; a disabled action says why in its tooltip (for example "Select entities first"). The toolbar is one stop of the `Tab` key: the arrow keys, `Home` and `End` move between its controls.
 
