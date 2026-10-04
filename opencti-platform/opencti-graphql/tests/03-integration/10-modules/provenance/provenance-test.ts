@@ -10,6 +10,7 @@ import { resetCacheForEntity } from '../../../../src/database/cache';
 import { DECAY_MANAGER_USER } from '../../../../src/utils/access';
 import { STIX_EXT_OCTI_PROVENANCE } from '../../../../src/types/stix-2-1-extensions';
 import { ENTITY_TYPE_DECAY_RULE } from '../../../../src/modules/decayRule/decayRule-types';
+import { ENTITY_TYPE_ENTITY_SETTING } from '../../../../src/modules/entitySetting/entitySetting-types';
 import { ENTITY_TYPE_TRIGGER } from '../../../../src/modules/notification/notification-types';
 import { applyKnowledgeDecayRules } from '../../../../src/modules/provenance/provenance-freshness';
 import { PROVENANCE_BACKFILL_LOCK_KEY, restartProvenanceBackfill, runProvenanceBackfillBatch } from '../../../../src/modules/provenance/provenance-backfill';
@@ -324,6 +325,22 @@ describe('Provenance: every fact knows who said it', () => {
       'shared-hash:feed-a',
       'shared-hash:feed-b',
     ]);
+    // Retained provenance is not curated while the type is no longer tracked
+    const setting = await queryAsAdminWithSuccess({ query: gql`query { entitySettingByType(targetType: "Malware") { id } }` });
+    const TRACKING_PATCH = gql`mutation Patch($ids: [ID!]!, $input: [EditInput!]!) { entitySettingsFieldPatch(ids: $ids, input: $input) { id } }`;
+    const setTracking = async (value: string) => {
+      await queryAsAdminWithSuccess({ query: TRACKING_PATCH, variables: { ids: [setting.data?.entitySettingByType.id], input: [{ key: 'provenance_tracking', value: [value] }] } });
+      resetCacheForEntity(ENTITY_TYPE_ENTITY_SETTING);
+    };
+    await setTracking('false');
+    try {
+      await queryAsAdminWithError(
+        { query: CONFLICT_DISMISS, variables: { id: created.id, field: 'description', hash: 'shared-hash' } },
+        'Provenance is not tracked for this element',
+      );
+    } finally {
+      await setTracking('true');
+    }
     // Dismissing the value removes the proposal of every source
     await queryAsAdminWithSuccess({ query: CONFLICT_DISMISS, variables: { id: created.id, field: 'description', hash: 'shared-hash' } });
     const dismissed = await loadMalware(created.id);

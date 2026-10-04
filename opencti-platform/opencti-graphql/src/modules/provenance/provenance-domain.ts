@@ -31,7 +31,8 @@ import { isProcedureRelationship, procedureMatchKey } from './provenance-procedu
 import { resolveCurrentValueOwner } from './provenance-upsert';
 import { applyProvenanceUpdate, isProvenanceTrackedType, recordUpsertProvenance } from './provenance-write';
 import { getProvenanceBackfillState, restartProvenanceBackfill } from './provenance-backfill';
-import { listProvenanceTrackedTypes, restrictToTrackedTypes } from './provenance-tracking';
+import { isProvenanceTrackedForType, listProvenanceTrackedTypes, restrictToTrackedTypes } from './provenance-tracking';
+import { PROVENANCE_ENABLED } from './provenance-config';
 import {
   ASSERTION_SOURCE_KINDS,
   ATTRIBUTE_ASSERTION_SOURCE_KINDS,
@@ -270,8 +271,12 @@ const loadTrackedElement = async (context: AuthContext, user: AuthUser, id: stri
   return element;
 };
 
+// Retained provenance stays readable, but it is only curated while provenance is tracked for the element type
 const loadEditableTrackedElement = async (context: AuthContext, user: AuthUser, id: string) => {
   const element = await loadTrackedElement(context, user, id);
+  if (!PROVENANCE_ENABLED || !(await isProvenanceTrackedForType(context, element.entity_type))) {
+    throw FunctionalError('Provenance is not tracked for this element', { id });
+  }
   if (!validateUserAccessOperation(user, element, AccessOperation.EDIT)) {
     throw ForbiddenAccess();
   }
