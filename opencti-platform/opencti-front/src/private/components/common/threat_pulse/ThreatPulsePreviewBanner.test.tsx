@@ -3,7 +3,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, screen } from '@testing-library/react';
 import { MockPayloadGenerator } from 'relay-test-utils';
 import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
-import { threatPulsePreviewBannerDismissKey } from '../../../../utils/bannerConstants';
+import { THREAT_PULSE_PREVIEW_BANNER_DISMISSED_BUS, threatPulsePreviewBannerDismissKey } from '../../../../utils/bannerConstants';
+import { readThreatPulsePreviewBannerVisible } from '../../../../utils/bannerUtils';
+import { dispatch } from '../../../../utils/hooks/useBus';
+import useTopBanner from '../../../../utils/hooks/useTopBanner';
+import { TOP_BANNER_HEIGHT } from '../../../../components/TopBanner';
 import ThreatPulsePreviewBanner, { isPreviewBannerWindowOpen } from './ThreatPulsePreviewBanner';
 
 const administrator = createMockUserContext({ me: { id: 'admin', name: 'admin', capabilities: [{ name: 'BYPASS' }] } });
@@ -81,5 +85,23 @@ describe('ThreatPulsePreviewBanner', () => {
     const { relayEnv } = testRender(<ThreatPulsePreviewBanner />, { userContext: administrator });
     expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
     expect(screen.queryByText(/Threat Pulse preview:/)).toBeNull();
+  });
+
+  it('should give the top offset of the visible banner to a page mounted after it, until it is dismissed', async () => {
+    const TopOffset = () => {
+      const { height, showThreatPulsePreviewBanner } = useTopBanner();
+      return <div data-testid="top-offset">{`${showThreatPulsePreviewBanner}:${height}`}</div>;
+    };
+    renderBanner({ access: 'preview', preview_entities: 42, preview_since: hoursAgo(2) });
+    expect(await screen.findByText(/Threat Pulse preview:/)).toBeDefined();
+    expect(readThreatPulsePreviewBannerVisible()).toBe(true);
+    // A lazy route component mounted once the banner already reported its visibility
+    testRender(<TopOffset />, { userContext: administrator });
+    expect(screen.getByTestId('top-offset').textContent).toBe(`true:${TOP_BANNER_HEIGHT}`);
+    act(() => {
+      dispatch(THREAT_PULSE_PREVIEW_BANNER_DISMISSED_BUS, true);
+    });
+    expect(readThreatPulsePreviewBannerVisible()).toBe(false);
+    expect(screen.getByTestId('top-offset').textContent).toMatch(/^false:/);
   });
 });

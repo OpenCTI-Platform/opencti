@@ -3,10 +3,11 @@ import { graphql, PreloadedQuery, useQueryLoader, usePreloadedQuery } from 'reac
 import { useNavigate } from 'react-router';
 import TopBanner from '../../../../components/TopBanner';
 import { useFormatter } from '../../../../components/i18n';
-import { dispatch } from '../../../../utils/hooks/useBus';
+import useBus from '../../../../utils/hooks/useBus';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useGranted, { SETTINGS_SETMANAGEXTMHUB } from '../../../../utils/hooks/useGranted';
-import { THREAT_PULSE_PREVIEW_BANNER_DISMISSED_BUS, THREAT_PULSE_PREVIEW_BANNER_VISIBLE_BUS, threatPulsePreviewBannerDismissKey } from '../../../../utils/bannerConstants';
+import { THREAT_PULSE_PREVIEW_BANNER_DISMISSED_BUS, threatPulsePreviewBannerDismissKey } from '../../../../utils/bannerConstants';
+import { reportThreatPulsePreviewBannerVisible } from '../../../../utils/bannerUtils';
 import { THREAT_PULSE_SETTINGS_PATH, useThreatPulseImpression, useThreatPulseTelemetry } from './ThreatPulseUnlock';
 import { ThreatPulsePreviewBannerQuery } from './__generated__/ThreatPulsePreviewBannerQuery.graphql';
 
@@ -34,7 +35,10 @@ const ThreatPulsePreviewBannerContent = ({ queryRef, dismissKey }: { queryRef: P
   const isAdministrator = useGranted([SETTINGS_SETMANAGEXTMHUB]);
   const { trackCtaClick } = useThreatPulseTelemetry('banner');
   const { pulseStatus } = usePreloadedQuery(threatPulsePreviewBannerQuery, queryRef);
-  const [dismissed] = useState(() => localStorage.getItem(dismissKey) === 'true');
+  const [dismissed, setDismissed] = useState(() => localStorage.getItem(dismissKey) === 'true');
+  useBus(THREAT_PULSE_PREVIEW_BANNER_DISMISSED_BUS, (value: boolean) => {
+    if (value) setDismissed(true);
+  }, []);
   const [now, setNow] = useState(() => Date.now());
   const windowOpen = isPreviewBannerWindowOpen(pulseStatus.preview_since, now);
   // The window closes while the page stays open: the banner hides at its end, not at the next unrelated render.
@@ -50,10 +54,10 @@ const ThreatPulsePreviewBannerContent = ({ queryRef, dismissKey }: { queryRef: P
     && windowOpen;
   useThreatPulseImpression('banner', isVisible);
 
-  // The banner resolves its own visibility: useTopBanner keeps the shared top offset in sync through this bus.
+  // The banner resolves its own visibility: useTopBanner keeps the shared top offset in sync from this report.
   useEffect(() => {
-    dispatch(THREAT_PULSE_PREVIEW_BANNER_VISIBLE_BUS, isVisible);
-    return () => dispatch(THREAT_PULSE_PREVIEW_BANNER_VISIBLE_BUS, false);
+    reportThreatPulsePreviewBannerVisible(isVisible);
+    return () => reportThreatPulsePreviewBannerVisible(false);
   }, [isVisible]);
 
   if (!isVisible) return null;

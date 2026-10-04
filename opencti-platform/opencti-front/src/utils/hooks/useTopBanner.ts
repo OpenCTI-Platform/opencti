@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import useAuth from './useAuth';
 import useGranted, { SETTINGS_SETMANAGEXTMHUB } from './useGranted';
-import { readRegisterDismissed, shouldDisplayLicenseBanner, shouldDisplayRegisterBanner, shouldDisplayTrialBanner } from '../bannerUtils';
+import { readRegisterDismissed, readThreatPulsePreviewBannerVisible, shouldDisplayLicenseBanner, shouldDisplayRegisterBanner, shouldDisplayTrialBanner } from '../bannerUtils';
 import {
   REGISTER_BANNER_DISMISSED_BUS,
   SMTP_REFRESH_TOKEN_BANNER_VISIBLE_BUS,
@@ -31,8 +31,13 @@ const useTopBanner = (): TopBannerState => {
   // through a small pub/sub bus to keep the shared height in sync.
   const [showSmtpRefreshTokenBanner, setShowSmtpRefreshTokenBanner] = useState<boolean>(false);
   useBus(SMTP_REFRESH_TOKEN_BANNER_VISIBLE_BUS, (value: boolean) => setShowSmtpRefreshTokenBanner(value), []);
-  const [showThreatPulsePreviewBanner, setShowThreatPulsePreviewBanner] = useState<boolean>(false);
+  // The Threat Pulse preview banner reports its visibility once: a consumer mounted later starts from the last report,
+  // and reads it again once subscribed, so a report sent between its render and its subscription is not missed.
+  const [showThreatPulsePreviewBanner, setShowThreatPulsePreviewBanner] = useState<boolean>(readThreatPulsePreviewBannerVisible);
   useBus(THREAT_PULSE_PREVIEW_BANNER_VISIBLE_BUS, (value: boolean) => setShowThreatPulsePreviewBanner(value), []);
+  useEffect(() => {
+    setShowThreatPulsePreviewBanner(readThreatPulsePreviewBannerVisible());
+  }, []);
   useBus(THREAT_PULSE_PREVIEW_BANNER_DISMISSED_BUS, (dismissed: boolean) => {
     if (dismissed) setShowThreatPulsePreviewBanner(false);
   }, []);
