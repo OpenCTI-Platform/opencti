@@ -156,9 +156,11 @@ export const SOURCE_WIDGET_METRICS: SourceWidgetMetric[] = [
   { key: 'community_uniqueness', label: 'Community uniqueness', type: 'ratio', enterprise: false },
 ];
 
-// A donut plots the parts of a whole: it offers no signed metric
+// The parts of a donut and the size of a bubble cannot be negative: they offer no signed metric
+const UNSIGNED_PLOTS = ['donut', 'bubble-size'];
+
 export const sourceWidgetMetricsFor = (widgetType?: string): SourceWidgetMetric[] => {
-  return widgetType === 'donut' ? SOURCE_WIDGET_METRICS.filter((metric) => !metric.signed) : SOURCE_WIDGET_METRICS;
+  return widgetType && UNSIGNED_PLOTS.includes(widgetType) ? SOURCE_WIDGET_METRICS.filter((metric) => !metric.signed) : SOURCE_WIDGET_METRICS;
 };
 
 // Unknown metrics, and metrics the widget type cannot plot, fall back to the first one

@@ -77,6 +77,7 @@ const WidgetSourcesParameters = ({ type, selection, onChange }: WidgetSourcesPar
             value={selection.sort_by ?? 'volume_total'}
             onChange={(value) => onChange('sort_by', value)}
             testId="widget-sources-size-metric"
+            widgetType="bubble-size"
           />
         </>
       )}
