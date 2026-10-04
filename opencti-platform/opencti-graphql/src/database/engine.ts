@@ -1296,7 +1296,7 @@ const elCreateIndexTemplate = async (index: string, mappingProperties: Record<st
 };
 const sortMappingsKeys = (o: Record<string, any>): Record<string, any> => (Object(o) !== o || Array.isArray(o) ? o
   : Object.keys(o).sort().reduce((a, k) => ({ ...a, [k]: sortMappingsKeys(o[k]) }), {}));
-export const elUpdateIndicesMappings = async (): Promise<void> => {
+export const elUpdateIndicesMappings = async (indexNames?: string[]): Promise<void> => {
   // Update core settings
   await updateCoreSettings();
   // Reset the templates
@@ -1306,10 +1306,10 @@ export const elUpdateIndicesMappings = async (): Promise<void> => {
     const template = templates[index];
     await updateIndexTemplate(template.name, mappingProperties);
   }
-  // Update the current indices if needed
-  const indices = await elPlatformIndices();
+  // Update the current indices if needed, every platform index unless a subset is given
+  const indices: string[] = indexNames ?? (await elPlatformIndices()).map((platformIndex: { index: string }) => platformIndex.index);
   for (let indicesIndex = 0; indicesIndex < indices.length; indicesIndex += 1) {
-    const { index } = indices[indicesIndex];
+    const index = indices[indicesIndex];
     const { rollover_alias } = await elIndexSetting(index);
     const indexMappingProperties = await elPlatformMapping(index);
     // Type collision is not supported, mappingProperties must be forced to exist mapping in this case
@@ -1403,7 +1403,7 @@ export const elCreateIndex = async (index: string) => {
   const mappingProperties = engineMappingGenerator(engine);
   return elCreateIndexWithMapping(index, mappingProperties);
 };
-const elCreateIndexWithMapping = async (index: string, mappingProperties: Record<string, any>): Promise<any> => {
+export const elCreateIndexWithMapping = async (index: string, mappingProperties: Record<string, any>): Promise<any> => {
   await elCreateIndexTemplate(index, mappingProperties);
   const indexName = `${index}${ES_INDEX_PATTERN_SUFFIX}`;
   let isExist;
