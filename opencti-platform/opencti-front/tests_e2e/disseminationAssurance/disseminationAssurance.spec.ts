@@ -136,6 +136,7 @@ test.describe('Dissemination assurance documentation', () => {
       await expect(page.getByTestId('dissemination-assurance-metrics')).toBeVisible();
       await expect(page.getByTestId('kpi-missed')).toBeVisible();
       await expect(page.getByTestId('dissemination-funnel')).toBeVisible();
+      await expect(page.getByTestId('deployed-on-all').getByText('cdn-assets.example')).toBeVisible();
       await capture(page, testInfo, 'overview');
 
       await withoutAnyDeployment(page);
