@@ -20,6 +20,7 @@ import {
   latestValidation,
   mapLogsourceToDataComponents,
   rankRuleCandidates,
+  validationEvidencePool,
   visibleParentId,
 } from '../../../../src/modules/defenseCoverage/defenseCoverage-utils';
 import type { DefenseCoverage, DefenseValidationEvidence } from '../../../../src/modules/defenseCoverage/defenseCoverage-types';
@@ -236,6 +237,24 @@ describe('Defense coverage evaluation for a reader', () => {
     });
     expect(new Set(ids).size).toEqual(ids.length);
     expect(collectCoverageIds(undefined)).toEqual([]);
+  });
+});
+
+describe('Defense validation evidence pool', () => {
+  it('should keep a per-platform result missing from the capped technique-wide list', () => {
+    const coverage = buildCoverage();
+    const platformOnly = { id: 'scr-2', rel: 'covered-2', status: 'prevented' as const, last_result_at: '2026-09-10T00:00:00.000Z', scores: [] };
+    coverage.platforms[1].validations.push(platformOnly);
+    const pool = validationEvidencePool(coverage);
+    expect(pool.map((v) => `${v.id}|${v.rel}`)).toEqual(['scr-1|covered-1', 'scr-2|covered-2']);
+    expect(pool[1]).toBe(platformOnly);
+  });
+  it('should list a result once and prefer its technique-wide entry', () => {
+    const coverage = buildCoverage();
+    const pool = validationEvidencePool(coverage);
+    expect(pool).toHaveLength(1);
+    expect(pool[0]).toBe(coverage.validations[0]);
+    expect(validationEvidencePool(undefined)).toEqual([]);
   });
 });
 

@@ -5,7 +5,6 @@ import { fullEntitiesList, fullRelationsList, internalFindByIds, storeLoadById }
 import { elBulk } from '../../database/engine';
 import { buildEntityData } from '../../database/data-builder';
 import { FunctionalError } from '../../config/errors';
-import { logApp } from '../../config/conf';
 import { SYSTEM_USER } from '../../utils/access';
 import { now } from '../../utils/format';
 import { getParentTypes } from '../../schema/schemaUtils';
@@ -50,6 +49,7 @@ import {
   evaluateCoverage,
   mapLogsourceToDataComponents,
   rankRuleCandidates,
+  validationEvidencePool,
   visibleParentId,
 } from './defenseCoverage-utils';
 import { type DefensePlatform, defenseGapId, loadDefensePlatforms } from './defenseCoverage-compute';
@@ -66,7 +66,7 @@ import {
 
 const DEFAULT_GAPS_PAGE_SIZE = 50;
 const MAX_GAPS_PAGE_SIZE = 500;
-const MAX_EXPORT_ROWS = 10000;
+const EXPORT_BATCH_SIZE = 2000;
 const MAX_VALIDATION_TECHNIQUES = 200;
 const MAX_LOGSOURCES = 200;
 const DEFAULT_RULE_CANDIDATES = 5;
@@ -481,7 +481,7 @@ export const defenseTechniqueValidations = async (context: AuthContext, user: Au
   const { coverage, evaluation, evaluated } = view;
   // Only the results behind the displayed cell: the ones of the selected platforms (and the unattributed ones without selection)
   const contributing = new Set(evaluated.coverage_result_ids);
-  const accessible = (coverage?.validations ?? []).filter((v) => contributing.has(v.id) && evaluation.can(v.id) && evaluation.can(v.rel));
+  const accessible = validationEvidencePool(coverage).filter((v) => contributing.has(v.id) && evaluation.can(v.id) && evaluation.can(v.rel));
   if (accessible.length === 0) return [];
   const results = await findByIdsChunked<BasicStoreEntity>(context, user, accessible.map((v) => v.id), { type: ENTITY_TYPE_SECURITY_COVERAGE_RESULT });
   const resultsById = new Map(results.map((r) => [r.internal_id, r]));
@@ -792,29 +792,30 @@ const EXPORT_HEADERS = [
 
 export const exportDefenseGaps = async (context: AuthContext, user: AuthUser, args: GapsArgs) => {
   const { gaps } = await computeGapViews(context, user, args);
-  const rows = await attachGapRecords(context, user, gaps.slice(0, MAX_EXPORT_ROWS));
-  const candidates = await loadRuleCandidates(context, user, rows);
-  const csv = buildCsv(EXPORT_HEADERS, rows.map((gap) => [
-    gap.x_mitre_id ?? '',
-    gap.attack_pattern_name,
-    gap.platform?.name ?? 'All platforms',
-    gap.level,
-    gap.telemetry ? 'yes' : 'no',
-    gap.detection,
-    gap.validated,
-    gap.last_result_at ?? '',
-    gap.threats_count,
-    gap.threat_weight,
-    gap.priority,
-    gap.recommended_action,
-    (candidates.get(gap.id) ?? []).slice(0, 3).map((i) => i.name),
-    gap.last_validation_requested_at ?? '',
-  ]));
-  await addDefenseGapExportCount();
-  if (gaps.length > MAX_EXPORT_ROWS) {
-    logApp.warn('[DEFENSE-COVERAGE] Gap export truncated', { total: gaps.length, exported: MAX_EXPORT_ROWS });
+  // Every gap of the backlog is exported; records and rule candidates are loaded by bounded batches
+  const lines: unknown[][] = [];
+  for (let start = 0; start < gaps.length; start += EXPORT_BATCH_SIZE) {
+    const rows = await attachGapRecords(context, user, gaps.slice(start, start + EXPORT_BATCH_SIZE));
+    const candidates = await loadRuleCandidates(context, user, rows);
+    rows.forEach((gap) => lines.push([
+      gap.x_mitre_id ?? '',
+      gap.attack_pattern_name,
+      gap.platform?.name ?? 'All platforms',
+      gap.level,
+      gap.telemetry ? 'yes' : 'no',
+      gap.detection,
+      gap.validated,
+      gap.last_result_at ?? '',
+      gap.threats_count,
+      gap.threat_weight,
+      gap.priority,
+      gap.recommended_action,
+      (candidates.get(gap.id) ?? []).slice(0, 3).map((i) => i.name),
+      gap.last_validation_requested_at ?? '',
+    ]));
   }
-  return csv;
+  await addDefenseGapExportCount();
+  return buildCsv(EXPORT_HEADERS, lines);
 };
 // endregion
 

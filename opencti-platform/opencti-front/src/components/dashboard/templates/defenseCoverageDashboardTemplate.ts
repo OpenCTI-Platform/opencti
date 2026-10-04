@@ -1,6 +1,25 @@
 import type { DashboardTemplate, DashboardTemplateFilter, DashboardTemplateFilterGroup, DashboardTemplateSelection } from './dashboardTemplates';
 
-const RULE_PATTERN_TYPES = ['sigma', 'yara', 'snort', 'suricata', 'spl', 'eql', 'esql', 'kuery', 'lucene', 'kql', 'yara-l', 'crowdstrike-ioa'];
+// The rule pattern types of the detection layer (DEFENSE_RULE_PATTERN_TYPES of the defense coverage module)
+export const RULE_PATTERN_TYPES = [
+  'sigma',
+  'yara',
+  'snort',
+  'suricata',
+  'spl',
+  'eql',
+  'esql',
+  'kuery',
+  'lucene',
+  'kql',
+  'yara-l',
+  'crowdstrike-ioa',
+  'elastic-rule',
+  'sentinel-rule',
+  'splunk-rule',
+  'tanium-signal',
+  'nova',
+];
 
 const eq = (key: string, values: string[], operator = 'eq'): DashboardTemplateFilter => ({ key: [key], values, operator, mode: 'or' });
 const group = (filters: DashboardTemplateFilter[]): DashboardTemplateFilterGroup => ({ mode: 'and', filters, filterGroups: [] });

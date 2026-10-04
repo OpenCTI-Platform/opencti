@@ -563,6 +563,20 @@ export const escapeCsvValue = (value: unknown): string => {
   return str;
 };
 
+/**
+ * Every validation evidence of a technique, once per result and relationship. The technique-wide list and the
+ * per-platform lists are capped independently: a result raising the level of a selected platform may only be
+ * kept in that platform's list. The technique-wide entry wins when both exist.
+ */
+export const validationEvidencePool = (coverage: DefenseCoverage | undefined): DefenseValidationEvidence[] => {
+  const pool = new Map<string, DefenseValidationEvidence>();
+  [...(coverage?.validations ?? []), ...(coverage?.platforms ?? []).flatMap((p) => p.validations)].forEach((v) => {
+    const key = `${v.id}|${v.rel}`;
+    if (!pool.has(key)) pool.set(key, v);
+  });
+  return Array.from(pool.values());
+};
+
 export const buildCsv = (headers: string[], rows: unknown[][]): string => {
   const lines = [headers.map(escapeCsvValue).join(',')];
   rows.forEach((row) => lines.push(row.map(escapeCsvValue).join(',')));

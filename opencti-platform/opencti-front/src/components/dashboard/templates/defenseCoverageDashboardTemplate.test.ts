@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { fromB64 } from '../../../utils/String';
 import { indexedVisualizationTypes } from '../../../utils/widget/widgetUtils';
 import { buildDashboardTemplateExport, DASHBOARD_TEMPLATES } from './dashboardTemplates';
-import { defenseCoverageDashboardTemplate } from './defenseCoverageDashboardTemplate';
+import { defenseCoverageDashboardTemplate, RULE_PATTERN_TYPES } from './defenseCoverageDashboardTemplate';
 
 const translate = (text: string) => `[${text}]`;
 
@@ -19,6 +19,18 @@ describe('defense coverage dashboard template', () => {
   const exported = buildDashboardTemplateExport(defenseCoverageDashboardTemplate, translate);
   const manifest: { widgets: Record<string, ExportedWidget> } = JSON.parse(fromB64(exported.configuration.manifest));
   const widgets = Object.values(manifest.widgets);
+
+  it('counts every rule pattern type of the detection layer as a detection rule', () => {
+    const ruleFilters = widgets
+      .flatMap((widget) => widget.dataSelection)
+      .flatMap((selection) => selection.filters.filters as { key: string[]; values: string[] }[])
+      .filter((filter) => filter.key.includes('pattern_type'));
+    expect(ruleFilters.length).toBeGreaterThan(0);
+    ruleFilters.forEach((filter) => {
+      expect(filter.values).toEqual(RULE_PATTERN_TYPES);
+      expect(filter.values).toEqual(expect.arrayContaining(['elastic-rule', 'sentinel-rule', 'splunk-rule', 'tanium-signal', 'nova']));
+    });
+  });
 
   it('is offered in the template menu under its translated name', () => {
     expect(DASHBOARD_TEMPLATES).toContain(defenseCoverageDashboardTemplate);
