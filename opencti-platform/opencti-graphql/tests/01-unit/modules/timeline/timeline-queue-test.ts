@@ -26,8 +26,12 @@ vi.mock('../../../../src/database/redis', () => ({
       }
       return 1;
     },
-    zrangebyscore: async (_key: string, _min: string, max: number) => [...queue.entries()].filter(([, due]) => due <= max).map(([id]) => id),
-    zrem: async (_key: string, id: string) => (queue.delete(id) ? 1 : 0),
+    // The claim script: due members by score, at most `limit`, removed in the same step
+    eval: async (_script: string, _numKeys: number, _key: string, max: number, limit: number) => {
+      const due = [...queue.entries()].filter(([, score]) => score <= max).sort((a, b) => a[1] - b[1]).slice(0, limit).map(([id]) => id);
+      due.forEach((id) => queue.delete(id));
+      return due;
+    },
   }),
 }));
 

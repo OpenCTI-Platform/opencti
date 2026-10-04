@@ -19,18 +19,23 @@ export const enqueueTimelineRegeneration = async (containerIds: string[], delayM
   await getClientBase().zadd(TIMELINE_QUEUE_KEY, 'NX', ...(args as [number, string]));
 };
 
+// Selection and removal in one atomic step: a schedule added while a claim runs is never absorbed by that claim
+const CLAIM_DUE_SCRIPT = `
+local due = redis.call('ZRANGEBYSCORE', KEYS[1], '-inf', ARGV[1], 'LIMIT', 0, tonumber(ARGV[2]))
+if #due > 0 then
+  redis.call('ZREM', KEYS[1], unpack(due))
+end
+return due
+`;
+
 /**
  * Claim at most `limit` due containers. A container is claimed by removing it from the queue,
  * so two consumers can never process the same container from the same scheduling.
  */
 export const claimDueTimelineRegenerations = async (limit: number): Promise<string[]> => {
-  const due = await getClientBase().zrangebyscore(TIMELINE_QUEUE_KEY, '-inf', Date.now(), 'LIMIT', 0, limit);
-  const claimed: string[] = [];
-  for (let index = 0; index < due.length; index += 1) {
-    const removed = await getClientBase().zrem(TIMELINE_QUEUE_KEY, due[index]);
-    if (removed === 1) claimed.push(due[index]);
-  }
-  return claimed;
+  if (limit <= 0) return [];
+  const claimed = await getClientBase().eval(CLAIM_DUE_SCRIPT, 1, TIMELINE_QUEUE_KEY, Date.now(), limit);
+  return Array.isArray(claimed) ? claimed.map((id) => String(id)) : [];
 };
 
 // Failed regenerations are retried with an exponential backoff, then left to the next change or the nightly pass
