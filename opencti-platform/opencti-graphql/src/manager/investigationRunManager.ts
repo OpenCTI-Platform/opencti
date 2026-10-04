@@ -102,19 +102,30 @@ export const caseRfiCreationHandler = (context: AuthContext, policy: BasicStoreE
   };
 };
 
+// Where the hook of a policy reads from: its stored position, else now. The
+// progress starts there, so a failure on the very first event keeps that position.
+export const startCaseRfiHook = (policy: Pick<BasicStoreEntityInvestigationPolicy, 'last_event_id'>, now = Date.now()) => {
+  const startEventId = policy.last_event_id || `${now}-0`;
+  const progress: CaseRfiHookProgress = { handledEventId: startEventId, retry: false };
+  return { startEventId, progress };
+};
+
+// After a retryable failure the cursor stops on the last handled event, never past the failed one.
+export const nextCaseRfiHookPosition = (progress: CaseRfiHookProgress, lastEventId: string | null | undefined) => {
+  return (progress.retry ? progress.handledEventId : lastEventId) ?? null;
+};
+
 const processCaseRfiHooks = async (context: AuthContext) => {
   const policies = await listCaseRfiTriggerPolicies(context);
   for (let index = 0; index < policies.length; index += 1) {
     const policy = policies[index];
-    const startEventId = policy.last_event_id || `${Date.now()}-0`;
-    const progress: CaseRfiHookProgress = { handledEventId: null, retry: false };
+    const { startEventId, progress } = startCaseRfiHook(policy);
     const { lastEventId } = await fetchStreamEventsRangeFromEventId(
       startEventId,
       caseRfiCreationHandler(context, policy, progress),
       { streamBatchSize: INVESTIGATION_RUN_MANAGER_STREAM_BATCH_SIZE },
     );
-    // After a retryable failure the cursor stops on the last handled event, never past the failed one.
-    const position = progress.retry ? progress.handledEventId : lastEventId;
+    const position = nextCaseRfiHookPosition(progress, lastEventId);
     if (position && position !== policy.last_event_id) {
       await updateInvestigationPolicyStreamPosition(context, policy.internal_id, policy.last_event_id ?? '', position);
     }

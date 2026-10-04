@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { caseRfiCreationHandler, type CaseRfiHookProgress, isRetryableHookError } from '../../../src/manager/investigationRunManager';
+import { caseRfiCreationHandler, type CaseRfiHookProgress, isRetryableHookError, nextCaseRfiHookPosition, startCaseRfiHook } from '../../../src/manager/investigationRunManager';
 import { addInvestigationRun } from '../../../src/modules/investigationRun/investigationRun-domain';
 import { resolveUserByIdFromCache } from '../../../src/modules/user/user-domain';
 import { DatabaseError, ForbiddenAccess, FunctionalError, LockTimeoutError, MissingReferenceError } from '../../../src/config/errors';
@@ -94,6 +94,17 @@ describe('Case Autopilot manager - request for information hook', () => {
     const progress: CaseRfiHookProgress = { handledEventId: null, retry: false };
     await caseRfiCreationHandler(context, policy, progress)([rfiCreation('1-0', 'rfi-1')]);
     expect(progress).toEqual({ handledEventId: null, retry: true });
+  });
+
+  it('stores the starting position of a policy read for the first time when its first request fails', async () => {
+    vi.mocked(addInvestigationRun).mockRejectedValueOnce(LockTimeoutError({ participantIds: ['rfi-1'] }));
+    const { startEventId, progress } = startCaseRfiHook({ last_event_id: null }, 1000);
+    expect(startEventId).toBe('1000-0');
+    await caseRfiCreationHandler(context, policy, progress)([rfiCreation('1001-0', 'rfi-1'), rfiCreation('1002-0', 'rfi-2')]);
+    // The next run reads again from 1000-0, so the failed request is retried.
+    expect(nextCaseRfiHookPosition(progress, '1002-0')).toBe('1000-0');
+    expect(startCaseRfiHook({ last_event_id: '900-0' }, 1000).startEventId).toBe('900-0');
+    expect(nextCaseRfiHookPosition({ handledEventId: '1000-0', retry: false }, '1002-0')).toBe('1002-0');
   });
 
   it('does not wait for an identity when the batch holds no new request for information', async () => {
