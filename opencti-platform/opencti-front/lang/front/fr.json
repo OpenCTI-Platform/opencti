@@ -6217,5 +6217,5 @@
   "Cooldown after a rejection (days)": "Délai après un rejet (jours)",
   "Applying": "Application en cours",
   "The change is being applied": "La modification est en cours d'application",
-  "If this lasts, its outcome could not be recorded: check the target of the recommendation, then reject it to close it. It is never applied a second time.": "Si cela dure, son résultat n'a pas pu être enregistré : vérifiez la cible de la recommandation, puis rejetez-la pour la clore. Elle n'est jamais appliquée une seconde fois."
+  "If this lasts, its outcome could not be recorded: check the target of the recommendation. It stays listed as applying and is never applied a second time.": "Si cela dure, son résultat n'a pas pu être enregistré : vérifiez la cible de la recommandation. Elle reste affichée « Application en cours » et n'est jamais appliquée une seconde fois."
 }

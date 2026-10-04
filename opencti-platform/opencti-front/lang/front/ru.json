@@ -6217,5 +6217,5 @@
   "Cooldown after a rejection (days)": "Период ожидания после отклонения (дни)",
   "Applying": "Применяется",
   "The change is being applied": "Изменение применяется",
-  "If this lasts, its outcome could not be recorded: check the target of the recommendation, then reject it to close it. It is never applied a second time.": "Если это продолжается, результат не удалось записать: проверьте цель рекомендации, затем отклоните её, чтобы закрыть. Повторно она никогда не применяется."
+  "If this lasts, its outcome could not be recorded: check the target of the recommendation. It stays listed as applying and is never applied a second time.": "Если это продолжается, результат не удалось записать: проверьте цель рекомендации. Она остаётся в статусе «Применяется» и повторно никогда не применяется."
 }

@@ -675,8 +675,8 @@ export const revertSourceRecommendation = async (context: AuthContext, user: Aut
 
 const dismissLockedRecommendation = async (context: AuthContext, user: AuthUser, recommendation: BasicStoreEntitySourceRecommendation, reason?: string | null) => {
   const id = recommendation.internal_id;
-  // An applying recommendation whose outcome was never recorded is closed here once its target has been checked
-  const dismissable = [RECOMMENDATION_STATUS_PROPOSED, RECOMMENDATION_STATUS_APPLYING, RECOMMENDATION_STATUS_FAILED];
+  // An applying recommendation may have changed its target without a record to undo it: it stays applying
+  const dismissable = [RECOMMENDATION_STATUS_PROPOSED, RECOMMENDATION_STATUS_FAILED];
   if (!dismissable.includes(recommendation.recommendation_status)) {
     throw FunctionalError('Only proposed recommendations can be dismissed', { id, status: recommendation.recommendation_status });
   }
