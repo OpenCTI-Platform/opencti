@@ -1,7 +1,8 @@
 import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_DB_OPERATION } from '@opentelemetry/semantic-conventions';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, loadEntity, updateAttribute } from '../../database/middleware';
-import type { BasicStoreEntityEntitySetting, StoreEntityEntitySetting } from './entitySetting-types';
+import type { BasicStoreEntityEntitySetting, OverviewLayoutCustomization, StoreEntityEntitySetting } from './entitySetting-types';
+import { isProvenanceTrackingEnabled } from '../provenance/provenance-tracking';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { type EditInput, type EntitySettingFintelTemplatesArgs, FilterMode, type QueryEntitySettingsArgs } from '../../generated/graphql';
@@ -104,8 +105,42 @@ export const entitySettingEditField = async (context: AuthContext, user: AuthUse
   return notify(BUS_TOPICS[ENTITY_TYPE_ENTITY_SETTING].EDIT_TOPIC, element, user);
 };
 
+export const PROVENANCE_SOURCES_WIDGET: OverviewLayoutCustomization = { key: 'sources', width: 12, label: 'Sources' };
+
+const insertBefore = (layout: OverviewLayoutCustomization[], widget: OverviewLayoutCustomization, beforeKey: string) => {
+  const index = layout.findIndex((candidate) => candidate.key === beforeKey);
+  return index < 0 ? [...layout, widget] : [...layout.slice(0, index), widget, ...layout.slice(index)];
+};
+
+/**
+ * Widgets registered after a layout was customized take, in the customized layout, the place they have in the default one.
+ */
+export const mergeMissingWidgets = (stored: OverviewLayoutCustomization[], defaults: OverviewLayoutCustomization[]) => {
+  let layout = [...stored];
+  defaults.forEach((widget, index) => {
+    if (layout.some((candidate) => candidate.key === widget.key)) {
+      return;
+    }
+    const next = defaults.slice(index + 1).find((candidate) => layout.some((existing) => existing.key === candidate.key));
+    layout = next ? insertBefore(layout, widget, next.key) : [...layout, widget];
+  });
+  return layout;
+};
+
+/**
+ * Overview layout of a type: the customized one completed with the widgets registered since, the Sources widget
+ * only being part of it while the provenance of the type is tracked.
+ */
 export const getOverviewLayoutCustomization = (entitySetting: BasicStoreEntityEntitySetting) => {
-  return entitySetting.overview_layout_customization?.[0] ? entitySetting.overview_layout_customization : schemaOverviewLayoutCustomization.get(entitySetting.target_type);
+  const stored = entitySetting.overview_layout_customization?.[0] ? entitySetting.overview_layout_customization : undefined;
+  const registered = schemaOverviewLayoutCustomization.get(entitySetting.target_type) as OverviewLayoutCustomization[] | undefined;
+  if (!registered) {
+    return stored;
+  }
+  const isProvenanceTracked = isProvenanceTrackingEnabled(entitySetting);
+  const defaults = isProvenanceTracked ? insertBefore(registered, PROVENANCE_SOURCES_WIDGET, 'notes') : registered;
+  const layout = stored ? mergeMissingWidgets(stored, defaults) : defaults;
+  return isProvenanceTracked ? layout : layout.filter((widget) => widget.key !== PROVENANCE_SOURCES_WIDGET.key);
 };
 
 export const getTemplatesForSetting = async (

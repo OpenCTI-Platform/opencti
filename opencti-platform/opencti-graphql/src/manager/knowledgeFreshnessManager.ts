@@ -3,8 +3,10 @@ import conf, { booleanConf, logApp } from '../config/conf';
 import { DECAY_MANAGER_USER, executionContext } from '../utils/access';
 import { applyKnowledgeDecayRules } from '../modules/provenance/provenance-freshness';
 import { addKnowledgeStaleFlaggedCount } from './telemetryManager';
+import { PROVENANCE_ENABLED } from '../modules/provenance/provenance-config';
 
-const KNOWLEDGE_FRESHNESS_MANAGER_ENABLED = booleanConf('knowledge_freshness_manager:enabled', true);
+// Freshness is measured from the assertions: without provenance, there is nothing to evaluate
+const KNOWLEDGE_FRESHNESS_MANAGER_ENABLED = booleanConf('knowledge_freshness_manager:enabled', true) && PROVENANCE_ENABLED;
 const KNOWLEDGE_FRESHNESS_MANAGER_KEY = conf.get('knowledge_freshness_manager:lock_key') || 'knowledge_freshness_manager_lock';
 const SCHEDULE_TIME = conf.get('knowledge_freshness_manager:interval') || 3600000; // 1 hour
 const BATCH_SIZE = conf.get('knowledge_freshness_manager:batch_size') || 1000;

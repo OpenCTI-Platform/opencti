@@ -60,6 +60,7 @@ import {
 import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../modules/managerConfiguration/managerConfiguration-types';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import { type BasicStoreEntityDecayRule, ENTITY_TYPE_DECAY_RULE } from '../modules/decayRule/decayRule-types';
+import { PROVENANCE_ENABLED } from '../modules/provenance/provenance-config';
 import { redisClearTelemetry, redisGetTelemetry, redisSetTelemetryAdd } from '../database/redis';
 import { countOffloadedStreamEvents, rawFetchStreamInfo } from '../database/redis-stream';
 import type { AuthUser } from '../types/user';
@@ -552,22 +553,24 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // region Provenance and knowledge freshness information
     const decayRules = await getEntitiesListFromCache<BasicStoreEntityDecayRule>(context, TELEMETRY_MANAGER_USER, ENTITY_TYPE_DECAY_RULE);
     manager.setActiveKnowledgeDecayRulesCount(decayRules.filter((rule) => rule.active && (rule.target_scope ?? 'indicator') !== 'indicator').length);
-    const provenanceFilter = (key: string, values: string[], operator = FilterOperator.Eq) => ({
-      mode: FilterMode.And,
-      filters: [{ key: [key], values, operator }],
-      filterGroups: [],
-    });
-    const provenanceIndices = [READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS];
-    const [trackedRelationships, corroboratedRelationships, staleKnowledge, conflictingKnowledge] = await Promise.all([
-      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_CORE_RELATIONSHIPS, { filters: provenanceFilter('corroboration_count', [], FilterOperator.NotNil) }),
-      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_CORE_RELATIONSHIPS, { filters: provenanceFilter('corroboration_count', ['2'], FilterOperator.Gte) }),
-      elCount(context, TELEMETRY_MANAGER_USER, provenanceIndices, { filters: provenanceFilter('freshness_stale', ['true']) }),
-      elCount(context, TELEMETRY_MANAGER_USER, provenanceIndices, { filters: provenanceFilter('has_conflicts', ['true']) }),
-    ]);
-    manager.setProvenanceTrackedRelationshipsCount(trackedRelationships);
-    manager.setProvenanceCorroboratedRelationshipsCount(corroboratedRelationships);
-    manager.setProvenanceStaleKnowledgeCount(staleKnowledge);
-    manager.setProvenanceConflictingKnowledgeCount(conflictingKnowledge);
+    if (PROVENANCE_ENABLED) {
+      const provenanceFilter = (key: string, values: string[], operator = FilterOperator.Eq) => ({
+        mode: FilterMode.And,
+        filters: [{ key: [key], values, operator }],
+        filterGroups: [],
+      });
+      const provenanceIndices = [READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS];
+      const [trackedRelationships, corroboratedRelationships, staleKnowledge, conflictingKnowledge] = await Promise.all([
+        elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_CORE_RELATIONSHIPS, { filters: provenanceFilter('corroboration_count', [], FilterOperator.NotNil) }),
+        elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_CORE_RELATIONSHIPS, { filters: provenanceFilter('corroboration_count', ['2'], FilterOperator.Gte) }),
+        elCount(context, TELEMETRY_MANAGER_USER, provenanceIndices, { filters: provenanceFilter('freshness_stale', ['true']) }),
+        elCount(context, TELEMETRY_MANAGER_USER, provenanceIndices, { filters: provenanceFilter('has_conflicts', ['true']) }),
+      ]);
+      manager.setProvenanceTrackedRelationshipsCount(trackedRelationships);
+      manager.setProvenanceCorroboratedRelationshipsCount(corroboratedRelationships);
+      manager.setProvenanceStaleKnowledgeCount(staleKnowledge);
+      manager.setProvenanceConflictingKnowledgeCount(conflictingKnowledge);
+    }
     // endregion
 
     // region History retention rule status

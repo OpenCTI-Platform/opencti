@@ -4,6 +4,14 @@ Every piece of knowledge in OpenCTI records who said it. Each time a source crea
 
 Provenance is available in the Community Edition. It is deterministic: no AI is involved, and it never changes the score of indicators.
 
+## Entity types tracked
+
+Provenance is recorded only on the entity types where it is enabled, so that knowledge re-sent over and over by sources (attack patterns, locations, sectors...) does not weigh on ingestion. By default, it is enabled on indicators, intrusion sets, threat actors (groups and individuals) and malware.
+
+To enable or disable it on a type, open "Settings > Customization > Entity types", select the type and use the "Track sources and corroboration" switch of the "Provenance" card. Relationships, sightings and observables are configured on their "Relationship", "Sighting" and observable types. Disabling provenance on a type stops recording it immediately; the provenance already recorded is kept but no longer displayed.
+
+The default set of tracked types can be changed with the `provenance:default_tracked_types` parameter (see [Configuration](#configuration)): it applies to the types whose setting was never changed in the interface.
+
 ## Assertions
 
 An assertion links a piece of knowledge to one source. A source can be:
@@ -19,13 +27,15 @@ An assertion links a piece of knowledge to one source. A source can be:
 
 For each source, OpenCTI keeps the first and last assertion dates, the number of times the source asserted the knowledge and the confidence it provided. When a source sends the same knowledge again, only its assertion is updated: no new history entry is written, and the modification date of the knowledge does not change.
 
+To keep ingestion fast, a source repeating an assertion within the re-assertion window (24 hours by default) is not written again, unless it brings a new conflicting value or a new procedure, or the knowledge is flagged as stale. The last assertion date of a source is therefore refreshed at most once per window, and its number of assertions counts these refreshes. A new source is always recorded immediately, so corroboration is never delayed.
+
 The details of up to 200 sources are kept per element: the earliest source and the most recently active ones. Every source that ever asserted the element is still counted in its corroboration and can be used in the "Asserted by" filters.
 
 Assertions are recorded after deduplication, on the stored object. A source asserting a duplicate of an existing entity therefore corroborates the existing entity. When entities are merged, their assertions are merged too.
 
 !!! note "Data created before provenance tracking"
 
-    The provenance of the knowledge created before the upgrade is rebuilt in the background by the provenance backfill, from the history and the works of the platform. Its progress is visible in "Data > Processing > Tasks", where an administrator can also restart it. Replays are idempotent: existing assertions are merged, never duplicated.
+    The provenance of the knowledge created before the upgrade is rebuilt in the background by the provenance backfill, from the history and the works of the platform, for the tracked entity types only. Its progress is visible in "Data > Processing > Tasks", where an administrator can also restart it, for instance after enabling provenance on a new type. Replays are idempotent: existing assertions are merged, never duplicated.
 
 ## Corroboration and freshness
 
@@ -41,13 +51,13 @@ In investigation graphs, nodes are surrounded by a ring whose width grows with t
 
 ## Sources card and sources panel
 
-As soon as a source asserted it, the overview of every entity, observable, relationship and sighting shows a "Sources" card. The card displays:
+The overview of the elements of a tracked type shows a "Sources" card. On the entity types with a customizable overview, it is the "Sources" widget of the overview layout ("Settings > Customization > Entity types > Overview Layout"), where it can be moved and resized like any other widget; it is only part of the layout while provenance is tracked on the type. On the other types (indicators, observables, relationships and sightings), the card is displayed below the basic information as soon as a source asserted the element. The card displays:
 
 - the corroboration badge and the last assertion date;
 - the five most recent sources, each with its kind, its first and last assertion dates and its confidence. A source links to the page that describes it when there is one, for instance the organization or individual of an author;
 - the fields on which sources disagree.
 
-The card is not displayed for knowledge without provenance.
+When no source asserted the element yet, the widget says so; outside the overview layout, the card is not displayed.
 
 The "View all", "more sources" and "Review conflicts" buttons of the card open the sources panel, which lists:
 
@@ -72,9 +82,9 @@ Dates, counters, scores, confidence and technical fields never produce conflicts
 
 ## Procedures
 
-When several sources describe how a threat uses a technique, each `uses` relationship keeps the procedure provided by every source instead of overwriting the description. The "Use as description" action of the sources panel makes a procedure the description of the relationship.
+When several sources describe how a threat uses a technique, each `uses` relationship to an attack pattern keeps the procedure provided by every source instead of overwriting the description. The "Use as description" action of the sources panel makes a procedure the description of the relationship.
 
-Two parameters are available in the "Procedures" card of "Settings > Parameters":
+Procedures are recorded with the provenance of relationships: they are only preserved when provenance is tracked on the "Relationship" entity type (disabled by default). Two parameters are available in the "Procedures" card of "Settings > Customization > Entity types > Relationship":
 
 - **Procedures preservation on uses relationships**: enable or disable the preservation of the procedures (enabled by default).
 - **Procedures description policy**: when a new procedure arrives, keep the longest one or the most recent one as the description (longest by default).
@@ -130,7 +140,9 @@ In the Python client, `OpenCTIApiClient.get_provenance_extension(stix_object)` r
 | Parameter                                | Environment variable                       | Default value | Description                                                         |
 |:-----------------------------------------|:-------------------------------------------|:--------------|:--------------------------------------------------------------------|
 | provenance:enabled                       | PROVENANCE__ENABLED                        | `true`        | Record assertions on every write                                    |
+| provenance:reassertion_window_hours      | PROVENANCE__REASSERTION_WINDOW_HOURS       | 24            | Window within which a source repeating an assertion is not written again (0 writes every assertion) |
+| provenance:default_tracked_types         | PROVENANCE__DEFAULT_TRACKED_TYPES          | Indicator, Intrusion-Set, Threat-Actor-Group, Threat-Actor-Individual, Malware | Entity types tracked while their setting was never changed (`*` tracks every type) |
 | provenance:max_conflict_values_per_field | PROVENANCE__MAX_CONFLICT_VALUES_PER_FIELD  | 10            | Maximum number of alternative values kept for a conflicting field  |
 | provenance:refresh_on_write              | PROVENANCE__REFRESH_ON_WRITE               | `false`       | Refresh the index after each provenance update, slows down writes   |
 
-The provenance backfill and the knowledge freshness managers are described in the [managers](../deployment/advanced/managers.md) page.
+When provenance is disabled, nothing is recorded, no provenance extension is exported, and the provenance backfill and knowledge freshness managers do not run. The provenance backfill and the knowledge freshness managers are described in the [managers](../deployment/advanced/managers.md) page.

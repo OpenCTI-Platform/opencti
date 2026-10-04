@@ -9,6 +9,7 @@ import {
   type StoreAssertion,
   type StoreConflict,
 } from './provenance-types';
+import { PROVENANCE_ENABLED } from './provenance-config';
 
 type ProvenanceSource = {
   entity_type: string;
@@ -67,6 +68,9 @@ export const buildProvenanceStixExtension = (instance: ProvenanceSource): StixPr
 };
 
 export const withProvenanceStixExtension = <T extends { extensions: Record<string, unknown> }>(instance: ProvenanceSource, stix: T): T => {
+  if (!PROVENANCE_ENABLED) {
+    return stix;
+  }
   const extension = buildProvenanceStixExtension(instance);
   if (!extension) {
     return stix;

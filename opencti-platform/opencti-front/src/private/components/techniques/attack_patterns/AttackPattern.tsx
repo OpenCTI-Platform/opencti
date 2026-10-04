@@ -11,6 +11,7 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import ProvenanceSourcesCard from '@components/common/provenance/ProvenanceSourcesCard';
 
 export const attackPatternFragment = graphql`
   fragment AttackPattern_attackPattern on AttackPattern {
@@ -129,6 +130,12 @@ const AttackPattern: React.FC<AttackPatternProps> = ({
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={attackPattern.id}
                     />
+                  </Grid>
+                );
+              case 'sources':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ProvenanceSourcesCard id={attackPattern.id} showEmpty />
                   </Grid>
                 );
               case 'notes':

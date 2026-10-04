@@ -1,11 +1,8 @@
-import { getEntityFromCache } from '../../database/cache';
 import type { EditInput } from '../../generated/graphql';
-import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { iAttributes } from '../../schema/attribute-definition';
-import type { BasicStoreSettings } from '../../types/settings';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { SYSTEM_USER } from '../../utils/access';
 import { now } from '../../utils/format';
+import { getEntitySettingFromCache } from '../entitySetting/entitySetting-utils';
 import { logApp } from '../../config/conf';
 import { isNotEmptyField } from '../../database/utils';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
@@ -25,6 +22,7 @@ import {
   isProceduresPreservationEnabled,
   type ProcedureUpsertArgs,
 } from './provenance-procedures';
+import { PROVENANCE_ENABLED } from './provenance-config';
 import { resolveAssertionSource, resolveSourceOfUser } from './provenance-source';
 import {
   type AssertionSource,
@@ -93,7 +91,7 @@ export const prepareUpsertProvenance = async (
   args: { basePatch: Record<string, any>; updatePatch: Record<string, any>; inputs: EditInput[]; isConfidenceMatch: boolean; confidence: number | null | undefined },
 ): Promise<PreparedUpsertProvenance> => {
   const { basePatch, updatePatch, inputs, isConfidenceMatch, confidence } = args;
-  if (!isProvenanceRecordable(context, user, type)) {
+  if (!(await isProvenanceRecordable(context, user, type))) {
     return { inputs, record: null };
   }
   try {
@@ -103,8 +101,8 @@ export const prepareUpsertProvenance = async (
     let proceduresAdd: StoreProcedure[] = [];
     const skipFields: string[] = [];
     if (isProcedureRelationship(type, element.toType)) {
-      const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-      if (isProceduresPreservationEnabled(settings)) {
+      const relationshipSetting = await getEntitySettingFromCache(context, type);
+      if (isProceduresPreservationEnabled(relationshipSetting)) {
         const previousOwner = await resolveCurrentValueOwner(context, element, 'description');
         const procedureUpsert = computeProcedureUpsert({
           element: element as ProcedureUpsertArgs['element'],
@@ -112,7 +110,7 @@ export const prepareUpsertProvenance = async (
           source,
           previousSource: previousOwner?.source ?? null,
           at,
-          policy: getProceduresDescriptionPolicy(settings),
+          policy: getProceduresDescriptionPolicy(relationshipSetting),
           isConfidenceMatch,
           inputs,
         });
@@ -153,7 +151,7 @@ export const mergeProvenanceOnEntitiesMerge = async (
   target: UpsertElement & { _index: string },
   sources: UpsertElement[],
 ) => {
-  if (!isProvenanceRecordable(context, user, target.entity_type) || sources.length === 0) {
+  if (sources.length === 0 || !(await isProvenanceRecordable(context, user, target.entity_type))) {
     return;
   }
   try {
@@ -188,8 +186,8 @@ export const mergeProvenanceOnEntitiesMerge = async (
     }, undefined);
     const resetFreshness = target[ATTRIBUTE_FRESHNESS_STALE] === true
       && isFreshAfterMerge(target as FreshnessState, inheritedLastAssertedAt, await getActiveKnowledgeDecayRules(context));
-    const { before, writeOpts } = await resolveProvenanceBeforeWrite(context, target as UpsertElement & { _index: string } & Partial<StoreProvenanceFields>);
-    await applyProvenanceUpdate(context, target, { assertions, countMode: 'sum', conflictsAdd, proceduresAdd, sourceIdsAdd, sourceKindsAdd, resetFreshness }, writeOpts);
+    const before = await resolveProvenanceBeforeWrite(context, target as UpsertElement & { _index: string } & Partial<StoreProvenanceFields>);
+    await applyProvenanceUpdate(context, target, { assertions, countMode: 'sum', conflictsAdd, proceduresAdd, sourceIdsAdd, sourceKindsAdd, resetFreshness });
     const change = computeProvenanceChange(before, [...sourceIdsAdd, ...assertions.map((assertion) => assertion.source_id)], conflictsAdd);
     await publishProvenanceChange(context, target, change);
   } catch (err) {
@@ -201,12 +199,14 @@ export const mergeProvenanceOnEntitiesMerge = async (
  * The description of a new uses relationship to an Attack Pattern is its first procedure.
  */
 export const creationProceduresBuilder = async (context: AuthContext, relationshipType: string, input: Record<string, any>) => {
+  if (!PROVENANCE_ENABLED) {
+    return undefined;
+  }
   const description = typeof input.description === 'string' ? input.description.trim() : '';
   if (description.length === 0 || !isProcedureRelationship(relationshipType, input.to?.entity_type)) {
     return undefined;
   }
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  if (!isProceduresPreservationEnabled(settings)) {
+  if (!isProceduresPreservationEnabled(await getEntitySettingFromCache(context, relationshipType))) {
     return undefined;
   }
   return (source: AssertionSource, at: string) => [buildProcedure(description, source, at)];

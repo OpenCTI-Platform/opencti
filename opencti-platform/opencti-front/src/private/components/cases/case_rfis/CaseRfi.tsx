@@ -21,6 +21,7 @@ import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 import { CaseRfi_caseRfi$key } from './__generated__/CaseRfi_caseRfi.graphql';
 import Card from '../../../../components/common/card/Card';
+import ProvenanceSourcesCard from '@components/common/provenance/ProvenanceSourcesCard';
 
 const caseRfiFragment = graphql`
   fragment CaseRfi_caseRfi on CaseRfi {
@@ -259,6 +260,12 @@ const CaseRfi: React.FC<CaseRfiProps> = ({ caseRfiData, enableReferences }) => {
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={caseRfi.id}
                     />
+                  </Grid>
+                );
+              case 'sources':
+                return (
+                  <Grid key={key} size={{ xs: width }}>
+                    <ProvenanceSourcesCard id={caseRfi.id} showEmpty />
                   </Grid>
                 );
               case 'notes':

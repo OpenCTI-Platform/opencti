@@ -16,6 +16,7 @@ import type { AuthContext } from '../../types/user';
 import type { FilterGroup } from '../../generated/graphql';
 import { isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
+import { conflictFieldLabel } from './provenance-conflicts';
 import {
   type BasicStoreEntityTrigger,
   DEFAULT_CORROBORATION_THRESHOLD,
@@ -78,11 +79,12 @@ export const hasProvenanceTriggers = async (context: AuthContext) => {
   return triggers.some(isProvenanceTrigger);
 };
 
-export const describeProvenanceChange = (eventType: ProvenanceEventType, change: ProvenanceChange) => {
+export const describeProvenanceChange = (eventType: ProvenanceEventType, change: ProvenanceChange, entityType?: string) => {
   if (eventType === PROVENANCE_EVENT_CORROBORATION) {
     return `is now corroborated by ${change.corroboration?.to ?? 0} sources`;
   }
-  return `has conflicting values from sources on ${(change.conflictFields ?? []).join(', ')}`;
+  const fields = (change.conflictFields ?? []).map((field) => conflictFieldLabel(entityType, field));
+  return `has conflicting values from sources on ${fields.join(', ')}`;
 };
 
 const parseTriggerFilters = (trigger: BasicStoreEntityTrigger): FilterGroup | undefined => {
@@ -128,7 +130,7 @@ export const notifyProvenanceChange = async (context: AuthContext, element: { in
           const isMatch = await isStixMatchFilterGroup(userContext, user, stix, filters);
           if (isMatch) {
             const message = await generateNotificationMessageForInstance(userContext, user, stix);
-            targets.push({ user: convertToNotificationUser(user, trigger.notifiers), type: eventType, message: `${message} ${describeProvenanceChange(eventType, change)}` });
+            targets.push({ user: convertToNotificationUser(user, trigger.notifiers), type: eventType, message: `${message} ${describeProvenanceChange(eventType, change, instance.entity_type)}` });
           }
         }
         if (targets.length > 0) {

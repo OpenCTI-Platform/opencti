@@ -30,6 +30,7 @@ const provenanceKnowledgeEntitiesLineFragment = graphql`
     has_conflicts
     x_opencti_conflicts {
       field
+      field_label
     }
     draftVersion {
       draft_id
@@ -104,8 +105,8 @@ export const conflictingFieldsColumn: DataTableProps['dataColumns'][string] = {
   label: 'Conflicting fields',
   percentWidth: 16,
   isSortable: false,
-  render: ({ x_opencti_conflicts }: { x_opencti_conflicts?: ReadonlyArray<{ field: string }> | null }, { t_i18n }) => {
-    const fields = (x_opencti_conflicts ?? []).map((conflict) => t_i18n(conflict.field));
+  render: ({ x_opencti_conflicts }: { x_opencti_conflicts?: ReadonlyArray<{ field: string; field_label?: string | null }> | null }, { t_i18n }) => {
+    const fields = (x_opencti_conflicts ?? []).map((conflict) => t_i18n(conflict.field_label ?? conflict.field));
     return fields.length > 0 ? fields.join(', ') : '-';
   },
 };

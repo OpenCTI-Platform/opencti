@@ -83,7 +83,7 @@ More information can be found:
 
 ## Knowledge freshness manager
 
-The knowledge freshness manager applies the knowledge decay rules: it flags as stale, lowers the confidence of or revokes the relationships and entities that no source re-asserted for the configured period. It never changes the score of indicators.
+The knowledge freshness manager applies the knowledge decay rules: it flags as stale, lowers the confidence of or revokes the relationships and entities that no source re-asserted for the configured period. It never changes the score of indicators. It does not run when provenance is disabled (`provenance:enabled`).
 
 More information can be found:
 - [Knowledge decay rules](../../administration/decay-rules.md#knowledge-decay-rules).
@@ -91,7 +91,7 @@ More information can be found:
 
 ## Provenance backfill manager
 
-The provenance backfill manager rebuilds the provenance of the knowledge created before provenance tracking, from the history and the works of the platform. It processes the knowledge in small batches, resumes where it stopped after a restart, and stops once the whole knowledge is processed. Its progress is visible in "Data > Processing > Tasks", where an administrator can also restart it.
+The provenance backfill manager rebuilds the provenance of the knowledge created before provenance tracking, from the history and the works of the platform. It processes the knowledge in small batches, resumes where it stopped after a restart, and stops once the whole knowledge is processed. Its progress is visible in "Data > Processing > Tasks", where an administrator can also restart it. It does not run when provenance is disabled (`provenance:enabled`).
 
 More information can be found [here](../../usage/provenance.md).
 

@@ -39,7 +39,7 @@ export const provenanceSourcesPanelQuery = graphql`
         freshness_stale
         freshness_stale_at
         x_opencti_assertions { source_id source_kind source_name first_asserted_at last_asserted_at assert_count confidence }
-        x_opencti_conflicts { field values { value_hash display adoptable source_id source_kind source_name confidence last_asserted_at } }
+        x_opencti_conflicts { field field_label values { value_hash display adoptable source_id source_kind source_name confidence last_asserted_at } }
       }
       ... on StixCoreRelationship {
         id
@@ -53,7 +53,7 @@ export const provenanceSourcesPanelQuery = graphql`
         freshness_stale
         freshness_stale_at
         x_opencti_assertions { source_id source_kind source_name first_asserted_at last_asserted_at assert_count confidence }
-        x_opencti_conflicts { field values { value_hash display adoptable source_id source_kind source_name confidence last_asserted_at } }
+        x_opencti_conflicts { field field_label values { value_hash display adoptable source_id source_kind source_name confidence last_asserted_at } }
         procedures { text source_id last_asserted_at }
       }
       ... on StixSightingRelationship {
@@ -67,7 +67,7 @@ export const provenanceSourcesPanelQuery = graphql`
         freshness_stale
         freshness_stale_at
         x_opencti_assertions { source_id source_kind source_name first_asserted_at last_asserted_at assert_count confidence }
-        x_opencti_conflicts { field values { value_hash display adoptable source_id source_kind source_name confidence last_asserted_at } }
+        x_opencti_conflicts { field field_label values { value_hash display adoptable source_id source_kind source_name confidence last_asserted_at } }
       }
     }
   }
@@ -223,7 +223,7 @@ const ProvenanceSourcesContent = ({ queryRef, onChange }: ProvenanceSourcesConte
           <Stack gap={2} data-testid="provenance-conflicts">
             {conflicts.map((conflict) => (
               <Stack key={conflict.field} gap={1}>
-                <Typography variant="h4">{t_i18n(conflict.field)}</Typography>
+                <Typography variant="h4">{t_i18n(conflict.field_label ?? conflict.field)}</Typography>
                 {conflict.values.map((value) => (
                   <Stack
                     key={value.value_hash}

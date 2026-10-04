@@ -4652,7 +4652,7 @@ const StixCoreRelationshipOverview = ({
           </Card>
         </Grid>
         <Grid item xs={6}>
-          <ProvenanceOverviewColumn id={stixCoreRelationship.id}>
+          <ProvenanceOverviewColumn id={stixCoreRelationship.id} entityType={stixCoreRelationship.relationship_type} inheritedType="stix-core-relationship">
             <Card title={t_i18n('Details')}>
               <Grid container={true} spacing={2}>
                 <Grid item xs={6}>

@@ -38,6 +38,8 @@ export interface ProvenanceConflictValue {
 
 export interface ProvenanceConflict {
   readonly field: string;
+  // Schema label of the field, translated by the caller (t_i18n)
+  readonly field_label?: string | null;
   readonly values: ReadonlyArray<ProvenanceConflictValue>;
 }
 
@@ -143,13 +145,13 @@ export interface SourcesCardModel {
 }
 
 /**
- * Content of the Sources card: the most recent sources first, the number of sources left to the panel and the fields
- * on which sources disagree. The corroboration counts every source, including the ones whose detail is no longer
- * kept. Null when no source asserted the element, so that the card is not rendered.
+ * Content of the Sources card: the most recent sources first, the number of sources left to the panel and the labels
+ * of the fields on which sources disagree. The corroboration counts every source, including the ones whose detail is
+ * no longer kept. Null when no source asserted the element, so that the card is not rendered.
  */
 export const buildSourcesCardModel = (
   assertions: ReadonlyArray<ProvenanceAssertion> | null | undefined,
-  conflicts: ReadonlyArray<Pick<ProvenanceConflict, 'field'> & { readonly values: ReadonlyArray<unknown> }> | null | undefined,
+  conflicts: ReadonlyArray<Pick<ProvenanceConflict, 'field' | 'field_label'> & { readonly values: ReadonlyArray<unknown> }> | null | undefined,
   corroborationCount?: number | null,
   maxSources = SOURCES_CARD_MAX_SOURCES,
 ): SourcesCardModel | null => {
@@ -161,6 +163,6 @@ export const buildSourcesCardModel = (
   return {
     sources,
     hiddenSourcesCount: Math.max(sorted.length, corroborationCount ?? 0) - sources.length,
-    conflictingFields: (conflicts ?? []).filter((conflict) => conflict.values.length > 0).map((conflict) => conflict.field),
+    conflictingFields: (conflicts ?? []).filter((conflict) => conflict.values.length > 0).map((conflict) => conflict.field_label ?? conflict.field),
   };
 };

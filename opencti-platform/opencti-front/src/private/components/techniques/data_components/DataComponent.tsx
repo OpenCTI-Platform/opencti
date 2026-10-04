@@ -10,6 +10,7 @@ import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/Stix
 import { DataComponent_dataComponent$key } from './__generated__/DataComponent_dataComponent.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import ProvenanceSourcesCard from '@components/common/provenance/ProvenanceSourcesCard';
 
 const DataComponentFragment = graphql`
   fragment DataComponent_dataComponent on DataComponent {
@@ -124,6 +125,12 @@ const DataComponent: React.FC<DataComponentProps> = ({ dataComponentData }) => {
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={dataComponent.id}
                     />
+                  </Grid>
+                );
+              case 'sources':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ProvenanceSourcesCard id={dataComponent.id} showEmpty />
                   </Grid>
                 );
               case 'notes':

@@ -11,10 +11,9 @@ import {
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
 } from '../../database/utils';
 import { logApp } from '../../config/conf';
-import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, RULE_PREFIX } from '../../schema/general';
+import { RULE_PREFIX } from '../../schema/general';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_HISTORY, ENTITY_TYPE_WORK } from '../../schema/internalObject';
 import { RELATION_CREATED_BY } from '../../schema/stixRefRelationship';
-import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { RULE_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
 import { now } from '../../utils/format';
 import type { AuthContext } from '../../types/user';
@@ -34,6 +33,7 @@ import {
   type StoreAssertion,
 } from './provenance-types';
 import { applyProvenanceUpdate } from './provenance-write';
+import { listProvenanceTrackedTypes } from './provenance-tracking';
 
 // Inferred knowledge is included: its sources are the inference rules
 const BACKFILL_INDICES = [
@@ -44,7 +44,6 @@ const BACKFILL_INDICES = [
   READ_INDEX_INFERRED_ENTITIES,
   READ_INDEX_INFERRED_RELATIONSHIPS,
 ];
-const BACKFILL_TYPES = [ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP];
 const CREATED_BY_FIELD = `rel_${RELATION_CREATED_BY}.internal_id`;
 const BACKFILL_FIELDS = ['creator_id', 'created_at', 'updated_at', 'confidence', CREATED_BY_FIELD, `${RULE_PREFIX}*`];
 const HISTORY_ASSERTION_SCOPES = ['create', 'update', 'merge'];
@@ -368,6 +367,13 @@ export const runProvenanceBackfillBatch = async (context: AuthContext, opts: { b
   if (state.status === 'completed') {
     return state;
   }
+  // Only the types whose provenance is tracked are rebuilt (entity settings)
+  const trackedTypes = await listProvenanceTrackedTypes(context);
+  if (trackedTypes.length === 0) {
+    const completed = { ...state, status: 'completed' as const, cursor: null, completed_at: now() };
+    await saveBackfillState(context, configuration.id, completed, runStart);
+    return completed;
+  }
   if (state.status === 'pending') {
     state.status = 'running';
     state.started_at = runStart.toISOString();
@@ -375,10 +381,10 @@ export const runProvenanceBackfillBatch = async (context: AuthContext, opts: { b
     state.processed = 0;
     state.updated = 0;
     state.errors = 0;
-    state.expected = await elCount(context, SYSTEM_USER, BACKFILL_INDICES, { types: BACKFILL_TYPES });
+    state.expected = await elCount(context, SYSTEM_USER, BACKFILL_INDICES, { types: trackedTypes });
   }
   const page = await elPaginate<BackfillElement>(context, SYSTEM_USER, BACKFILL_INDICES, {
-    types: BACKFILL_TYPES,
+    types: trackedTypes,
     first: opts.batchSize,
     after: state.cursor,
     baseData: true,

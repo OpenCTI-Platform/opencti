@@ -38,12 +38,14 @@ describe('buildSourcesCardModel', () => {
     expect(model?.hiddenSourcesCount).toBe(239);
   });
 
-  it('only reports the fields that still have alternative values', () => {
+  it('only reports the labels of the fields that still have alternative values', () => {
+    const value = { value_hash: 'h1', display: 'Other', adoptable: true, source_id: 's1', last_asserted_at: '2026-09-01T00:00:00.000Z' };
     const conflicts: ProvenanceConflict[] = [
-      { field: 'description', values: [{ value_hash: 'h1', display: 'Other', adoptable: true, source_id: 's1', last_asserted_at: '2026-09-01T00:00:00.000Z' }] },
-      { field: 'primary_motivation', values: [] },
+      { field: 'x_opencti_description', field_label: 'Description', values: [value] },
+      { field: 'primary_motivation', field_label: 'Primary motivation', values: [] },
+      { field: 'x_custom_field', values: [value] },
     ];
-    expect(buildSourcesCardModel([assertion('a', '2026-09-01T00:00:00.000Z')], conflicts)?.conflictingFields).toEqual(['description']);
+    expect(buildSourcesCardModel([assertion('a', '2026-09-01T00:00:00.000Z')], conflicts)?.conflictingFields).toEqual(['Description', 'x_custom_field']);
   });
 });
 

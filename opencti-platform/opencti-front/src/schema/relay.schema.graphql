@@ -1484,8 +1484,6 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   xtm_hub_backend_is_reachable: Boolean
   xtm_hub_available_news_feed_types: [String!]
   platform_notifier_auto_trigger_assignee: Boolean!
-  platform_procedures_preservation: Boolean!
-  platform_procedures_description_policy: ProceduresDescriptionPolicy!
   platform_ai_enabled: Boolean!
   platform_ai_type: String
   platform_ai_model: String
@@ -11193,6 +11191,9 @@ type EntitySetting implements InternalObject & BasicObject {
   platform_hidden_type: Boolean
   enforce_reference: Boolean
   sync_workflow_status_by_name: Boolean
+  provenance_tracking: Boolean!
+  procedures_preservation: Boolean!
+  procedures_description_policy: ProceduresDescriptionPolicy!
   attributes_configuration: String
   attributesDefinitions: [TypeAttribute!]!
   mandatoryAttributes: [String!]!
@@ -16697,6 +16698,7 @@ type SourceConflictValue {
 
 type SourceConflict {
   field: String!
+  field_label: String!
   values: [SourceConflictValue!]!
 }
 

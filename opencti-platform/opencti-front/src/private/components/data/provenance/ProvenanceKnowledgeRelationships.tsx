@@ -30,6 +30,7 @@ const provenanceKnowledgeRelationshipsLineFragment = graphql`
     has_conflicts
     x_opencti_conflicts {
       field
+      field_label
     }
     draftVersion {
       draft_id

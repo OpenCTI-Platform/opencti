@@ -8,6 +8,7 @@ import TaskDetails from './TaskDetails';
 import { Tasks_tasks$key } from './__generated__/Tasks_tasks.graphql';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import ProvenanceSourcesCard from '@components/common/provenance/ProvenanceSourcesCard';
 
 export const taskFragment = graphql`
   fragment Tasks_tasks on Task {
@@ -120,6 +121,12 @@ const Task: React.FC<TaskProps> = ({ taskData, enableReferences }) => {
                     <StixCoreObjectLatestHistory
                       stixCoreObjectId={task.id}
                     />
+                  </Grid>
+                );
+              case 'sources':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ProvenanceSourcesCard id={task.id} showEmpty />
                   </Grid>
                 );
               case 'notes':
