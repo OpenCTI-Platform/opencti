@@ -32,6 +32,24 @@ describe('Draft work forwarding', () => {
     expect(await resolveDraftForward('draft-1')).toBe('draft-3');
   });
 
+  it('should reach the current draft after any number of renewals, then in one step', async () => {
+    for (let i = 0; i < 25; i += 1) {
+      await forwardDraftWork(`draft-${i}`, `draft-${i + 1}`);
+    }
+    expect(await resolveDraftForward('draft-0')).toBe('draft-25');
+    expect(forwards.get('draft-0')).toBe('draft-25');
+    await forwardDraftWork('draft-25', 'draft-26');
+    expect(await resolveDraftForward('draft-0')).toBe('draft-26');
+    expect(await resolveDraftForward('draft-24')).toBe('draft-26');
+  });
+
+  it('should stop a longer loop at the last draft before it', async () => {
+    await forwardDraftWork('draft-1', 'draft-2');
+    await forwardDraftWork('draft-2', 'draft-3');
+    await forwardDraftWork('draft-3', 'draft-1');
+    expect(await resolveDraftForward('draft-1')).toBe('draft-3');
+  });
+
   it('should never forward a draft to itself nor loop', async () => {
     await forwardDraftWork('draft-1', 'draft-1');
     expect(forwards.size).toBe(0);
