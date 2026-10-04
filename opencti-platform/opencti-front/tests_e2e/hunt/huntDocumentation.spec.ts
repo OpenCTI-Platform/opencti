@@ -50,9 +50,11 @@ test.describe('Hunt documentation screenshots', { tag: ['@hunt', '@mutation', '@
   }
 
   const completeOperation = async (page: Page, operation: string, complete: (data: CompletedData) => void) => {
+    const operationPattern = new RegExp(`\\bquery ${operation}\\b`);
     await page.route('**/graphql', async (route) => {
       const body = route.request().postDataJSON();
-      if (typeof body?.query !== 'string' || !body.query.includes(`query ${operation}(`)) {
+      const matches = body?.id === operation || (typeof body?.query === 'string' && operationPattern.test(body.query));
+      if (!matches) {
         await route.fallback();
         return;
       }

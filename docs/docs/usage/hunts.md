@@ -57,7 +57,7 @@ Runs are visible in the **Runs** tab of the hunt and in the **Hunt runs** list. 
 When a run completes, the hunt connector sends to OpenCTI:
 
 - the number of **hits** and of distinct entities,
-- an **evidence sample**: the result fields with their occurrence count. Raw values are never stored: each value is hashed and only a truncated preview is kept,
+- an **evidence sample**: the result fields with their occurrence count. Raw values are never stored: each value is hashed and only a truncated preview is kept, in which OpenCTI masks credentials, tokens, keys, e-mail users and long numbers before storing it, whatever the connector sent,
 - **knowledge**: a sighting of each technique and indicator of the hunt, where sighted on the security platform, and observed data referencing the observables extracted from the results (limited to the expected observable types). This knowledge carries the hunt run identifier, so it can always be traced back to the run that produced it.
 
 Evidence can also be attached to a run later (an alert raised by the SIEM, a follow-up search): it is merged into the run without changing its verdict.
