@@ -4,6 +4,7 @@ import './exclusionListCacheSyncManager';
 import './garbageCollectionManager';
 import './hubRegistrationManager';
 import './indicatorDecayManager';
+import './investigationRunManager';
 import './knowledgeFreshnessManager';
 import './provenanceBackfillManager';
 import './pirManager';

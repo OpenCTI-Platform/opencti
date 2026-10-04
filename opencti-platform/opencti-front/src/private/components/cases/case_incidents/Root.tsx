@@ -7,6 +7,9 @@ import StixCoreObjectContentRoot from '@components/common/stix_core_objects/Stix
 import StixCoreObjectSecurityCoverage from '@components/common/stix_core_objects/StixCoreObjectSecurityCoverage';
 import Security from 'src/utils/Security';
 import AIInsights from '@components/common/ai/AIInsights';
+import RunCaseAutopilotAskAI from '@components/investigation_runs/RunCaseAutopilotAskAI';
+import InvestigationRunsTab from '@components/investigation_runs/InvestigationRunsTab';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -106,6 +109,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }: RootCaseIncidentCompone
   const location = useLocation();
   const enableReferences = useIsEnforceReference('Case-Incident') && !useGranted([KNOWLEDGE_KNUPDATE_KNBYPASSREFERENCE]);
   const { t_i18n } = useFormatter();
+  const isEnterpriseEdition = useEnterpriseEdition();
   useSubscription(subConfig);
   const {
     caseIncident: caseData,
@@ -177,6 +181,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }: RootCaseIncidentCompone
               enableReferences={enableReferences}
             />
           ),
+          ...(isEnterpriseEdition ? { autopilot: <InvestigationRunsTab entityId={caseData.id} entityType="Case-Incident" /> } : {}),
           files: (
             <StixCoreObjectFilesAndHistory
               id={caseId}
@@ -190,6 +195,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }: RootCaseIncidentCompone
         }}
         extraActions={!isKnowledgeOrContent && (
           <>
+            <RunCaseAutopilotAskAI subjectId={caseData.id} subjectType="Case-Incident" basePath={basePath} />
             <AIInsights id={caseData.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
             <StixCoreObjectSecurityCoverage id={caseData.id} coverage={caseData.securityCoverage} />
           </>

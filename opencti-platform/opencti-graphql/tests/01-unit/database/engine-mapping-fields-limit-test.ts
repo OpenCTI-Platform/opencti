@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { Client as ElkClient } from '@elastic/elasticsearch';
+// Every module registers its attributes: the budget applies to the mapping a platform really generates.
+import '../../../src/modules/index';
 import { computeMappingFieldsLimit, countMappingFields, ES_MAPPING_FIELDS_HEADROOM, ES_MAX_MAPPINGS } from '../../../src/database/engine';
 import { engineMappingGenerator } from '../../../src/database/engine-mapping-generator';
 
@@ -7,11 +9,12 @@ import { engineMappingGenerator } from '../../../src/database/engine-mapping-gen
 // The engine never drops a mapped field, so every attribute the platform ever had counts against total_fields.
 const LEGACY_FIELDS_OF_A_LONG_LIVED_PLATFORM = 800;
 
-// Budget for the mapping generated from the current schema. It is deliberately below the default limit so that a
-// long-lived index (current schema + legacy fields) keeps room under the default limit as long as possible, and the
-// limit raise stays the exception. When the schema legitimately grows past it, raise the budget in the same change
-// and check the warning "Index mapping above the default fields limit" on a long-lived test platform.
-const GENERATED_MAPPING_FIELDS_BUDGET = ES_MAX_MAPPINGS - ES_MAPPING_FIELDS_HEADROOM;
+// Budget for the mapping generated from the current schema. Up to the default limit minus the headroom
+// (ES_MAX_MAPPINGS - ES_MAPPING_FIELDS_HEADROOM), indices keep the default limit; above it, every index gets its limit
+// raised at startup with the headroom, and the warning "Index mapping above the default fields limit" is logged once
+// per index. When the schema legitimately grows past the budget, raise it in the same change and check that warning
+// on a long-lived test platform.
+const GENERATED_MAPPING_FIELDS_BUDGET = 2600;
 
 const engine = new ElkClient({ node: 'http://localhost:9200' });
 

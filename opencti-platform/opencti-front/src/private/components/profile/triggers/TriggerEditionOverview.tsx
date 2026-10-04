@@ -13,7 +13,15 @@ import MarkdownField from '../../../../components/fields/markdownField/MarkdownF
 import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import TextField from '../../../../components/TextField';
 import TimePickerField from '../../../../components/TimePickerField';
-import { convertEventTypes, convertNotifiers, convertTriggers, filterEventTypesOptions, instanceEventTypesOptions, provenanceEventTypesOptions } from '../../../../utils/edition';
+import {
+  convertEventTypes,
+  convertNotifiers,
+  convertTriggers,
+  instanceEventTypesOptions,
+  knowledgeEventTypesOptions,
+  provenanceEventTypesOptions,
+} from '../../../../utils/edition';
+import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import {
   deserializeFilterGroupForFrontend,
@@ -94,6 +102,7 @@ interface TriggerEditionFormValues {
 
 const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = ({ data, handleClose, paginationOptions }) => {
   const { t_i18n } = useFormatter();
+  const isEnterpriseEdition = useEnterpriseEdition();
   const theme = useTheme();
   const defaultInstanceTriggerFilters = {
     ...emptyFilterGroup,
@@ -105,11 +114,8 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
   const [instanceTriggerFilters, instanceTriggerFiltersHelpers] = useFiltersState(deserializeFilterGroupForFrontend(trigger.filters)
     ?? defaultInstanceTriggerFilters, defaultInstanceTriggerFilters);
   const [instanceTrigger, setInstanceTrigger] = useState<boolean>(trigger.instance_trigger ?? false);
-  const eventTypesOptions: { value: TriggerEventType; label: string }[] = [
-    { value: 'create', label: t_i18n('Creation') },
-    { value: 'update', label: t_i18n('Modification') },
-    { value: 'delete', label: t_i18n('Deletion') },
-  ];
+  const eventTypesOptions: { value: TriggerEventType; label: string }[] = knowledgeEventTypesOptions(isEnterpriseEdition)
+    .map(({ value, label }) => ({ value: value as TriggerEventType, label: t_i18n(label) }));
 
   useEffect(() => {
     commitFieldPatch({
@@ -364,7 +370,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
               multiple={true}
               label={t_i18n('Triggering on')}
               options={
-                [...(trigger.instance_trigger ? instanceEventTypesOptions : filterEventTypesOptions), ...provenanceEventTypesOptions]
+                [...(trigger.instance_trigger ? instanceEventTypesOptions : knowledgeEventTypesOptions(isEnterpriseEdition)), ...provenanceEventTypesOptions]
                   .map((option) => ({ ...option, label: t_i18n(option.label) }))
               }
               onChange={asMultiValue<{ value: string; label: string }>((

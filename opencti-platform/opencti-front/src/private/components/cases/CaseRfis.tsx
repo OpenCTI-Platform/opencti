@@ -6,6 +6,7 @@ import StixCoreObjectForms from '@components/common/stix_core_objects/StixCoreOb
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../utils/hooks/useAuth';
+import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import CaseRfiCreation from './case_rfis/CaseRfiCreation';
 import { emptyFilterGroup, useBuildEntityTypeBasedFilterContext } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
@@ -64,6 +65,11 @@ const caseFragment = graphql`
       }
     }
     workflowEnabled
+    latestInvestigationRun {
+      id
+      run_status
+      run_phase
+    }
   }
 `;
 
@@ -126,6 +132,7 @@ export const LOCAL_STORAGE_KEY = 'caseRfis';
 
 const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
   const { t_i18n } = useFormatter();
+  const isEnterpriseEdition = useEnterpriseEdition();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Requests for Information | Cases'));
   const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
@@ -174,6 +181,7 @@ const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
       percentWidth: 9,
     },
     x_opencti_workflow_id: {},
+    ...(isEnterpriseEdition ? { latestInvestigationRun: {} } : {}),
     objectMarking: {
       isSortable: isRuntimeSort,
     },

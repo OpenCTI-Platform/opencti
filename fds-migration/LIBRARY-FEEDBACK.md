@@ -2321,3 +2321,31 @@ navigating chip renders a real anchor with the interactive chip's states.
 **Removal test.** At a pin where `Chip` can render an anchor: give the creator
 chip the link, delete its `navigationClickHandlers` spread and the marker, and
 confirm the chip is a `link` role whose `href` carries the base path.
+
+## 63. No stepper, timeline or skeleton, so every run surface composes its own
+
+**Needed.** The program's UX charter (section 3.3) asks every multi-step run to
+render as a vertical stepper: a status icon per step, a connector line, the
+step title, its state chip, right-aligned meta (duration, counts) and a
+disclosure with `aria-expanded`. It also asks loading states to use a skeleton
+in the layout's shape. The library ships neither a stepper or timeline nor a
+skeleton.
+
+**Today.** Composed from layout primitives with the library's `Chip`, `Spinner`
+and `Button`, as the charter allows:
+- `src/private/components/investigation_runs/InvestigationRunGoalPlan.tsx`
+  (Case Autopilot goal plan: the seven investigation step states, durations,
+  counts, state filter, expandable sources and evidence);
+- MUI `Skeleton` in `InvestigationRunsTab.tsx` (`InvestigationRunSkeleton`) and
+  in the draft preview of `InvestigationRunApprovals.tsx`.
+
+Other run surfaces of the program (hunt runs, timelines, curation batches) add
+their usage sites to this entry rather than opening a new one.
+
+**Ask.** A `Stepper` (vertical, with item states mapped on the chip tones, a
+`meta` slot and an optional disclosure) and a `Skeleton` (text, rounded,
+circular) in the library.
+
+**Removal test.** Replace the composed stepper and the MUI skeletons with the
+library components: the goal plan keeps its states, meta and disclosures, and
+the loading tab keeps its shape with no layout shift.
