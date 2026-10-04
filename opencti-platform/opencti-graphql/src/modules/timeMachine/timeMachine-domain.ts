@@ -61,6 +61,7 @@ const CONTAINER_OBJECTS_COUNT_BATCH_SIZE = 1000;
 const RESTRICTED_VALUE = 'Restricted';
 const DELETED_VALUE = 'Deleted';
 const RELATIONSHIP_HISTORY_TRUNCATED = 'RELATIONSHIP_HISTORY_TRUNCATED';
+const HISTORY_NOT_RETAINED = 'HISTORY_NOT_RETAINED';
 
 // Display order of the most meaningful attributes, other attributes follow alphabetically
 const ATTRIBUTES_ORDER = [
@@ -375,6 +376,19 @@ const accessDocumentAt = async (context: AuthContext, element: BasicStoreEntity,
 };
 
 /**
+ * Whether the state of the element at `date`, its access included, can be established. A state not changed since
+ * `date` is the current one. Otherwise the history must reach that date: a history retention rule purges the oldest
+ * events first, so the history is whole while the creation is retained, and only since the oldest retained event
+ * otherwise (a purged access change cannot be replayed).
+ */
+export const isStateEstablishedAt = async (context: AuthContext, element: BasicStoreEntity, date: string) => {
+  if (element.updated_at && !utcDate(date).isBefore(utcDate(element.updated_at))) return true;
+  const [oldest] = await fetchElementHistoryEvents(context, SYSTEM_USER, element.internal_id, { max: 1, order: 'asc' });
+  if (!oldest) return false;
+  return oldest.event_scope === 'create' || !utcDate(date).isBefore(utcDate(oldest.timestamp));
+};
+
+/**
  * The as-of view is only returned if the user could access the element with its markings
  * and organization sharing at that date (checked with the current rights of the user).
  */
@@ -636,7 +650,8 @@ export const entityAsOf = async (context: AuthContext, user: AuthUser, id: strin
       container_objects_count: null,
     };
   }
-  const accessDocument = await accessDocumentAt(context, element, date, replay.complete ? replay.document : null);
+  const established = await isStateEstablishedAt(context, element, date);
+  const accessDocument = established ? await accessDocumentAt(context, element, date, replay.complete ? replay.document : null) : null;
   const accessible = await isAsOfDocumentAccessible(context, user, element, accessDocument);
   if (!accessible) {
     return {
@@ -644,6 +659,7 @@ export const entityAsOf = async (context: AuthContext, user: AuthUser, id: strin
       representative: RESTRICTED_VALUE,
       exists: true,
       restricted: true,
+      warnings: established ? base.warnings : [...base.warnings, HISTORY_NOT_RETAINED],
       attributes: [],
       relationships: [],
       relationships_total: 0,
@@ -846,10 +862,13 @@ export const entityDiff = async (context: AuthContext, user: AuthUser, id: strin
   const existedAtFrom = atFrom.exists && existedAt(from);
   const warnings = [...new Set([...atTo.replay.warnings, ...atFrom.warnings])];
   const complete = atTo.replay.complete && atFrom.complete;
-  const [accessDocumentTo, accessDocumentFrom] = await Promise.all([
+  // The history must reach the start of the period, or the creation of an element created during it
+  const periodStart = existedAt(from) || !element.created_at ? from : utcDate(element.created_at).toISOString();
+  const established = await isStateEstablishedAt(context, element, periodStart);
+  const [accessDocumentTo, accessDocumentFrom] = established ? await Promise.all([
     accessDocumentAt(context, element, to, atTo.replay.complete ? atTo.replay.document : null),
     existedAtFrom ? accessDocumentAt(context, element, from, atTo.replay.complete && atFrom.complete ? atFrom.document : null) : Promise.resolve(null),
-  ]);
+  ]) : [null, null];
   const [accessibleTo, accessibleFrom] = await Promise.all([
     isAsOfDocumentAccessible(context, user, element, accessDocumentTo),
     existedAtFrom ? isAsOfDocumentAccessible(context, user, element, accessDocumentFrom) : Promise.resolve(true),
@@ -865,7 +884,7 @@ export const entityDiff = async (context: AuthContext, user: AuthUser, id: strin
       exists_at_to: true,
       restricted: true,
       complete,
-      warnings,
+      warnings: established ? warnings : [...warnings, HISTORY_NOT_RETAINED],
       summary: emptySummary,
       attributes: [],
       relationships: [],

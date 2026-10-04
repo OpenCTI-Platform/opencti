@@ -151,7 +151,7 @@ const TimeMachineSlider = ({ entityId, value, onChange }: TimeMachineSliderProps
       </Box>
       {historyStartsAfterCreation && (
         <Text variant="content-caption" as="p" style={{ color: 'var(--text-default-secondary)', marginTop: 8 }}>
-          {t_i18n('History is retained since {date}: older states only reflect the changes still available in the history.', { values: { date: fldt(timeline.history_start) } })}
+          {t_i18n('History is retained since {date}.', { values: { date: fldt(timeline.history_start) } })}
         </Text>
       )}
       {timeline?.events_truncated && (

@@ -188,6 +188,13 @@ const EntityDiffContent = ({ entityId, range, preset, onLoaded, onApplyPreset }:
   if (!diff) {
     return <Alert severity="info">{t_i18n('No data available for this period.')}</Alert>;
   }
+  if (diff.restricted && diff.warnings.includes('HISTORY_NOT_RETAINED')) {
+    return (
+      <Alert severity="info" data-testid="time-machine-diff-history-not-retained">
+        {t_i18n('The history of this entity is not retained back to the start of this period: its changes cannot be compared.')}
+      </Alert>
+    );
+  }
   if (diff.restricted) {
     return (
       <Alert severity="warning" data-testid="time-machine-diff-restricted">

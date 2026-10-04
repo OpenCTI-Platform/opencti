@@ -120,6 +120,13 @@ const EntityAsOfView = ({ entityId, date, onDateChange }: EntityAsOfViewProps) =
       </Alert>
     );
   }
+  if (asOf.restricted && asOf.warnings.includes('HISTORY_NOT_RETAINED')) {
+    return (
+      <Alert severity="info" data-testid="time-machine-history-not-retained" sx={{ alignItems: 'center' }} action={firstChangeAction}>
+        {t_i18n('The history of this entity is not retained back to this date: its state at that date cannot be shown.')}
+      </Alert>
+    );
+  }
   if (asOf.restricted) {
     return (
       <Alert severity="warning" data-testid="time-machine-restricted">

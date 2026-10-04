@@ -14,12 +14,15 @@ vi.mock('../../../../src/database/engine', async (importOriginal) => ({
   elCount: async () => 0,
 }));
 const fetchRelationshipsHistoryEventsMock = vi.fn();
+const fetchElementHistoryEventsMock = vi.fn();
 vi.mock('../../../../src/modules/timeMachine/timeMachine-history', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/modules/timeMachine/timeMachine-history')>()),
   fetchRelationshipsHistoryEvents: (...args: unknown[]) => fetchRelationshipsHistoryEventsMock(...args),
+  fetchElementHistoryEvents: (...args: unknown[]) => fetchElementHistoryEventsMock(...args),
 }));
 
-import { computeRelationshipChanges } from '../../../../src/modules/timeMachine/timeMachine-domain';
+import { computeRelationshipChanges, isStateEstablishedAt } from '../../../../src/modules/timeMachine/timeMachine-domain';
+import type { BasicStoreEntity } from '../../../../src/types/store';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 
 const context = {} as AuthContext;
@@ -61,5 +64,33 @@ describe('Relationship changes of an entity', () => {
     expect(byId.get('rel-deleted-target')).toMatchObject({ action: 'removed', target_id: 'malware-deleted', target_name: 'Deleted', target_deleted: true, target_restricted: false });
     expect(byId.get('rel-restricted-target')).toMatchObject({ action: 'removed', target_id: null, target_name: 'Restricted', target_restricted: true });
     expect(byId.get('rel-accessible-target')).toMatchObject({ action: 'confidence_changed', target_name: 'LynxLoader', target_type: 'Malware', confidence_before: 50, confidence_after: 80 });
+  });
+});
+
+describe('State of an entity established at a date', () => {
+  const element = { internal_id: 'element-a', entity_type: 'Intrusion-Set', updated_at: '2026-03-01T00:00:00.000Z' } as unknown as BasicStoreEntity;
+  const oldest = (scope: string, timestamp: string) => [{ event_scope: scope, timestamp }];
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should take the current state when the entity did not change since that date', async () => {
+    expect(await isStateEstablishedAt(context, element, '2026-03-02T00:00:00.000Z')).toBe(true);
+    expect(fetchElementHistoryEventsMock).not.toHaveBeenCalled();
+  });
+
+  it('should rely on the whole history while its creation is retained', async () => {
+    fetchElementHistoryEventsMock.mockResolvedValue(oldest('create', '2025-01-01T00:00:00.000Z'));
+    expect(await isStateEstablishedAt(context, element, '2025-06-01T00:00:00.000Z')).toBe(true);
+  });
+
+  it('should refuse a date older than the retained history', async () => {
+    // The creation and the first changes were purged by a retention rule
+    fetchElementHistoryEventsMock.mockResolvedValue(oldest('update', '2026-02-01T00:00:00.000Z'));
+    expect(await isStateEstablishedAt(context, element, '2026-01-15T00:00:00.000Z')).toBe(false);
+    expect(await isStateEstablishedAt(context, element, '2026-02-15T00:00:00.000Z')).toBe(true);
+    fetchElementHistoryEventsMock.mockResolvedValue([]);
+    expect(await isStateEstablishedAt(context, element, '2026-02-15T00:00:00.000Z')).toBe(false);
   });
 });
