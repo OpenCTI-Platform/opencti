@@ -170,7 +170,7 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
   const handleDismiss = () => commitDismiss({
     variables: { id: recommendation.id, reason: dismissReason.trim() || null },
     onCompleted: (_, errors) => {
-      if (!notifyMutationOutcome(errors, { success: t_i18n('Recommendation dismissed') })) return;
+      if (!notifyMutationOutcome(errors, { success: t_i18n('Recommendation rejected') })) return;
       setDismissOpen(false);
       setDismissReason('');
       onChange?.();
@@ -237,8 +237,8 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
     const time = rd(recommendation.dismissed_at);
     history = {
       sentence: recommendation.dismissed_by
-        ? t_i18n('Dismissed by {user} {time}', { values: { user: recommendation.dismissed_by.name, time } })
-        : t_i18n('Dismissed {time}', { values: { time } }),
+        ? t_i18n('Rejected by {user} {time}', { values: { user: recommendation.dismissed_by.name, time } })
+        : t_i18n('Rejected {time}', { values: { time } }),
       date: recommendation.dismissed_at,
     };
   }
@@ -371,7 +371,7 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
             )}
             {recommendation.status === 'proposed' && (
               <Button variant="secondary" size="small" startIcon={<CloseOutlined />} onClick={() => setDismissOpen(true)} disabled={busy} data-testid="source-recommendation-dismiss">
-                {t_i18n('Dismiss')}
+                {t_i18n('Reject')}
               </Button>
             )}
             {recommendation.status === 'applied' && (
@@ -396,9 +396,9 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
           <Button onClick={handleRevert} disabled={reverting} data-testid="source-recommendation-revert-confirm">{t_i18n('Revert')}</Button>
         </FormButtonContainer>
       </Dialog>
-      <Dialog open={dismissOpen} onClose={() => setDismissOpen(false)} title={t_i18n('Dismiss the recommendation')} size="small">
+      <Dialog open={dismissOpen} onClose={() => setDismissOpen(false)} title={t_i18n('Reject the recommendation')} size="small">
         <Typography variant="body2" sx={{ marginBottom: 2 }}>
-          {t_i18n('A dismissed recommendation is not proposed again during the cooldown period configured in the settings.')}
+          {t_i18n('A rejected recommendation is not proposed again during the cooldown period configured in the settings.')}
         </Typography>
         <Textarea
           label={t_i18n('Reason (optional)')}
@@ -408,7 +408,7 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
         />
         <FormButtonContainer>
           <Button variant="secondary" onClick={() => setDismissOpen(false)} disabled={dismissing}>{t_i18n('Cancel')}</Button>
-          <Button onClick={handleDismiss} disabled={dismissing}>{t_i18n('Dismiss')}</Button>
+          <Button onClick={handleDismiss} disabled={dismissing}>{t_i18n('Reject')}</Button>
         </FormButtonContainer>
       </Dialog>
     </Card>

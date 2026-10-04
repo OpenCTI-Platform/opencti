@@ -143,16 +143,16 @@ Each recommendation is an approval: it shows its rationale and a preview of the 
 For each recommendation you can:
 
 - **Apply** it. Applying requires the capability matching the action (for example, managing accesses to change a user confidence level). When it cannot be applied, the recommendation says that nothing was changed and offers **Retry**, and **Open the connector** when the connector refused the change; **Show details** gives the cause.
-- **Dismiss** it, with an optional reason. A dismissed recommendation is not proposed again before a cooldown (30 days by default).
+- **Reject** it, with an optional reason. A rejected recommendation is not proposed again before a cooldown (30 days by default).
 - **Revert** it once applied. Reverting restores the previous state (confidence level, schedule, connector status) and removes what was created (decay rule, exclusion list). A quarantine draft is kept for review.
 
 While a source is quarantined, validating or deleting its quarantine draft first opens a new quarantine draft and routes the source to it, so nothing the source sends reaches the live knowledge or the draft being closed.
 
-A recommendation that no longer matches the situation is withdrawn automatically. Every application, dismissal and revert is recorded in the [activity logs](../administration/audit/configuration.md).
+A recommendation that no longer matches the situation is withdrawn automatically. Every application, rejection and revert is recorded in the [activity logs](../administration/audit/configuration.md).
 
 ### Autonomy policy
 
-In the settings, an administrator can allow some recommendation kinds to be applied automatically, with a maximum number of automatic actions per run. After each daily computation, the proposed recommendations of the allowed kinds are applied oldest first, up to that maximum across all kinds; the ones left over are applied by the next runs. Failed, dismissed and reverted recommendations are never applied automatically. Automatically applied recommendations are flagged as such and can be reverted like the others.
+In the settings, an administrator can allow some recommendation kinds to be applied automatically, with a maximum number of automatic actions per run. After each daily computation, the proposed recommendations of the allowed kinds are applied oldest first, up to that maximum across all kinds; the ones left over are applied by the next runs. Failed, rejected and reverted recommendations are never applied automatically. Automatically applied recommendations are flagged as such and can be reverted like the others.
 
 ## Dashboards
 

@@ -1,7 +1,8 @@
 import React, { Suspense, useState } from 'react';
 import { graphql, PreloadedQuery, usePaginationFragment, usePreloadedQuery } from 'react-relay';
 import { Link } from 'react-router';
-import { Box, Skeleton, Stack, Typography } from '@mui/material';
+import { Box, Collapse, Skeleton, Stack, Typography } from '@mui/material';
+import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { Alert, Chip, Switch, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Button from '@common/button/Button';
@@ -115,6 +116,41 @@ export const collectionGapsQuery = graphql`
 
 const PAGE_SIZE = 20;
 
+const DeployFailure = ({ cause, onRetry, retrying }: { cause: string | null; onRetry?: () => void; retrying: boolean }) => {
+  const { t_i18n } = useFormatter();
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  return (
+    <Box>
+      <Alert
+        severity="error"
+        title={t_i18n('The recommendation could not be applied')}
+        description={t_i18n('Nothing was changed. Retry, or read the details to fix the cause first.')}
+        action={onRetry ? (
+          <Button variant="secondary" size="small" onClick={onRetry} disabled={retrying}>{t_i18n('Retry')}</Button>
+        ) : undefined}
+      />
+      {cause && (
+        <>
+          <Button
+            variant="tertiary"
+            size="small"
+            onClick={() => setDetailsOpen(!detailsOpen)}
+            startIcon={detailsOpen ? <ExpandLessOutlined /> : <ExpandMoreOutlined />}
+            aria-expanded={detailsOpen}
+          >
+            {detailsOpen ? t_i18n('Hide details') : t_i18n('Show details')}
+          </Button>
+          <Collapse in={detailsOpen}>
+            <Typography variant="caption" component="pre" sx={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontFamily: 'monospace' }}>
+              {cause}
+            </Typography>
+          </Collapse>
+        </>
+      )}
+    </Box>
+  );
+};
+
 const CRITERION_PRIORITY_LABELS: Record<'high' | 'medium' | 'low', string> = {
   high: 'High priority criterion',
   medium: 'Medium priority criterion',
@@ -172,20 +208,26 @@ const CollectionGapsList = ({ queryRef }: CollectionGapsListProps) => {
   });
   // Gap and connector pairs deployed from this page, until the next gap computation marks them as deployed
   const [deployedHere, setDeployedHere] = useState<Set<string>>(() => new Set());
+  // Failed deployments from this page with their cause, shown under the integration until a retry succeeds
+  const [failedHere, setFailedHere] = useState<Map<string, string | null>>(() => new Map());
   const [commitDeploy, deploying] = useApiMutation<CollectionGapsDeployMutation>(collectionGapDeployMutation);
   const handleDeploy = (gapId: string, slug: string) => commitDeploy({
     variables: { id: gapId, slug },
     onCompleted: (response, errors) => {
+      const key = `${gapId}|${slug}`;
       const recommendation = response.collectionGapDeployConnector;
-      let failure: string | null = null;
-      if (!errors?.length && recommendation?.status !== 'applied') {
-        failure = recommendation?.error_message
-          ? t_i18n('The connector could not be deployed: {reason}', { values: { reason: recommendation.error_message } })
-          : t_i18n('The connector could not be deployed.');
-      }
+      const failed = !errors?.length && recommendation?.status !== 'applied';
+      // The cause is shown under the integration, behind Show details
+      const failure = failed ? t_i18n('The connector could not be deployed.') : null;
       if (notifyMutationOutcome(errors, { success: t_i18n('Connector deployed through XTM Composer'), failure })) {
-        setDeployedHere((current) => new Set(current).add(`${gapId}|${slug}`));
+        setDeployedHere((current) => new Set(current).add(key));
       }
+      setFailedHere((current) => {
+        const next = new Map(current);
+        if (failed) next.set(key, recommendation?.error_message ?? null);
+        else next.delete(key);
+        return next;
+      });
     },
   });
   const queryData = usePreloadedQuery(collectionGapsQuery, queryRef);
@@ -311,42 +353,52 @@ const CollectionGapsList = ({ queryRef }: CollectionGapsListProps) => {
               ) : (
                 <Stack gap={1}>
                   {gap.recommended_connectors.map((connector) => {
-                    const deployed = connector.deployed || deployedHere.has(`${gap.id}|${connector.slug}`);
+                    const deployKey = `${gap.id}|${connector.slug}`;
+                    const deployed = connector.deployed || deployedHere.has(deployKey);
                     const deployable = canDeploy && !deployed && connector.manager_supported && !!connector.contract_image;
                     return (
-                      <Stack key={connector.slug} direction="row" gap={2} alignItems="center" justifyContent="space-between">
-                        <Box sx={{ minWidth: 0 }}>
-                          <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap">
-                            <Typography variant="body2" sx={{ fontWeight: 'fontWeightMedium' }}>{connector.title}</Typography>
-                            <Tag label={connector.origin === 'hub' ? t_i18n('XTM Hub') : t_i18n('Local catalog')} size="small" />
-                            {connector.verified && <Tag label={t_i18n('Verified')} size="small" color={theme.palette.success.main} />}
-                            {deployed && <Tag label={t_i18n('Already deployed')} size="small" />}
-                          </Stack>
-                          <Typography variant="caption" component="div" sx={{ color: theme.palette.text.secondary }}>
-                            {[...connector.matched_object_types, ...connector.matched_sectors, ...connector.matched_regions].join(', ')
-                              || connector.short_description}
-                          </Typography>
-                        </Box>
-                        {deployable && (
-                          <Button
-                            variant="secondary"
-                            size="small"
-                            disabled={deploying}
-                            onClick={() => handleDeploy(gap.id, connector.slug)}
-                            data-testid={`collection-gap-deploy-${connector.slug}`}
-                          >
-                            {t_i18n('Deploy')}
-                          </Button>
-                        )}
-                        {!deployable && !deployed && (
-                          <Button
-                            variant="tertiary"
-                            size="small"
-                            component={Link}
-                            to={`/dashboard/integrations/catalog/${connector.slug}`}
-                          >
-                            {t_i18n('Open in catalog')}
-                          </Button>
+                      <Stack key={connector.slug} gap={1}>
+                        <Stack direction="row" gap={2} alignItems="center" justifyContent="space-between">
+                          <Box sx={{ minWidth: 0 }}>
+                            <Stack direction="row" gap={1} alignItems="center" flexWrap="wrap">
+                              <Typography variant="body2" sx={{ fontWeight: 'fontWeightMedium' }}>{connector.title}</Typography>
+                              <Tag label={connector.origin === 'hub' ? t_i18n('XTM Hub') : t_i18n('Local catalog')} size="small" />
+                              {connector.verified && <Tag label={t_i18n('Verified')} size="small" color={theme.palette.success.main} />}
+                              {deployed && <Tag label={t_i18n('Already deployed')} size="small" />}
+                            </Stack>
+                            <Typography variant="caption" component="div" sx={{ color: theme.palette.text.secondary }}>
+                              {[...connector.matched_object_types, ...connector.matched_sectors, ...connector.matched_regions].join(', ')
+                                || connector.short_description}
+                            </Typography>
+                          </Box>
+                          {deployable && (
+                            <Button
+                              variant="secondary"
+                              size="small"
+                              disabled={deploying}
+                              onClick={() => handleDeploy(gap.id, connector.slug)}
+                              data-testid={`collection-gap-deploy-${connector.slug}`}
+                            >
+                              {t_i18n('Deploy {name}', { values: { name: connector.title } })}
+                            </Button>
+                          )}
+                          {!deployable && !deployed && (
+                            <Button
+                              variant="tertiary"
+                              size="small"
+                              component={Link}
+                              to={`/dashboard/integrations/catalog/${connector.slug}`}
+                            >
+                              {t_i18n('Open in catalog')}
+                            </Button>
+                          )}
+                        </Stack>
+                        {failedHere.has(deployKey) && (
+                          <DeployFailure
+                            cause={failedHere.get(deployKey) ?? null}
+                            onRetry={deployable ? () => handleDeploy(gap.id, connector.slug) : undefined}
+                            retrying={deploying}
+                          />
                         )}
                       </Stack>
                     );

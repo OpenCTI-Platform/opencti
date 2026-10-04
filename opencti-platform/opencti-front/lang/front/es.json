@@ -6206,5 +6206,13 @@
   "{measure}, highest over the last {days} days": "{measure}, máximo de los últimos {days} días",
   "{measure} per day, scored over {days} days": "{measure} por día, evaluado sobre {days} días",
   "{measure} ({currency})": "{measure} ({currency})",
-  "Values in {currency}": "Valores en {currency}"
+  "Values in {currency}": "Valores en {currency}",
+  "Reject": "Rechazar",
+  "Rejected": "Rechazada",
+  "Reject the recommendation": "Rechazar la recomendación",
+  "Recommendation rejected": "Recomendación rechazada",
+  "Rejected by {user} {time}": "Rechazada por {user} {time}",
+  "Rejected {time}": "Rechazada {time}",
+  "A rejected recommendation is not proposed again during the cooldown period configured in the settings.": "Una recomendación rechazada no se vuelve a proponer durante el periodo de espera configurado en los ajustes.",
+  "Cooldown after a rejection (days)": "Periodo de espera tras un rechazo (días)"
 }

@@ -6206,5 +6206,13 @@
   "{measure}, highest over the last {days} days": "{measure}, 최근 {days}일 최댓값",
   "{measure} per day, scored over {days} days": "일별 {measure} ({days}일 기준 평가)",
   "{measure} ({currency})": "{measure} ({currency})",
-  "Values in {currency}": "{currency} 기준 값"
+  "Values in {currency}": "{currency} 기준 값",
+  "Reject": "거부",
+  "Rejected": "거부됨",
+  "Reject the recommendation": "권장 사항 거부",
+  "Recommendation rejected": "권장 사항이 거부되었습니다",
+  "Rejected by {user} {time}": "{user}이(가) 거부함 {time}",
+  "Rejected {time}": "거부됨 {time}",
+  "A rejected recommendation is not proposed again during the cooldown period configured in the settings.": "거부된 권장 사항은 설정에 구성된 대기 기간 동안 다시 제안되지 않습니다.",
+  "Cooldown after a rejection (days)": "거부 후 대기 기간 (일)"
 }

@@ -6206,5 +6206,13 @@
   "{measure}, highest over the last {days} days": "{measure}，过去 {days} 天的最大值",
   "{measure} per day, scored over {days} days": "每日{measure}（按 {days} 天评分）",
   "{measure} ({currency})": "{measure}（{currency}）",
-  "Values in {currency}": "以 {currency} 计的数值"
+  "Values in {currency}": "以 {currency} 计的数值",
+  "Reject": "拒绝",
+  "Rejected": "已拒绝",
+  "Reject the recommendation": "拒绝该建议",
+  "Recommendation rejected": "建议已拒绝",
+  "Rejected by {user} {time}": "由 {user} 拒绝 {time}",
+  "Rejected {time}": "已拒绝 {time}",
+  "A rejected recommendation is not proposed again during the cooldown period configured in the settings.": "已拒绝的建议在设置中配置的冷却期内不会再次提出。",
+  "Cooldown after a rejection (days)": "拒绝后的冷却期（天）"
 }

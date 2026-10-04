@@ -6206,5 +6206,13 @@
   "{measure}, highest over the last {days} days": "{measure}, максимум за последние {days} дн.",
   "{measure} per day, scored over {days} days": "{measure} по дням, оценка за {days} дн.",
   "{measure} ({currency})": "{measure} ({currency})",
-  "Values in {currency}": "Значения в {currency}"
+  "Values in {currency}": "Значения в {currency}",
+  "Reject": "Отклонить",
+  "Rejected": "Отклонена",
+  "Reject the recommendation": "Отклонить рекомендацию",
+  "Recommendation rejected": "Рекомендация отклонена",
+  "Rejected by {user} {time}": "Отклонена пользователем {user} {time}",
+  "Rejected {time}": "Отклонена {time}",
+  "A rejected recommendation is not proposed again during the cooldown period configured in the settings.": "Отклонённая рекомендация не предлагается повторно в течение периода ожидания, заданного в настройках.",
+  "Cooldown after a rejection (days)": "Период ожидания после отклонения (дни)"
 }

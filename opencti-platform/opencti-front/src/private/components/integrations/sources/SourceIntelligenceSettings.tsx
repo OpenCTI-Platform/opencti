@@ -95,7 +95,7 @@ const TUNING_FIELDS: NumericFieldDefinition[] = [
   { name: 'tuning.min_confidence', label: 'Minimum confidence', min: 0, max: 100, integer: true },
   { name: 'tuning.noisy_decay_lifetime_days', label: 'Decay lifetime for noisy sources (days)', min: 1, max: 3650, integer: true },
   { name: 'tuning.deny_list_max_values', label: 'Maximum values in a deny list', min: 1, max: 100000, integer: true },
-  { name: 'tuning.dismiss_cooldown_days', label: 'Cooldown after a dismissal (days)', min: 0, max: 365, integer: true },
+  { name: 'tuning.dismiss_cooldown_days', label: 'Cooldown after a rejection (days)', min: 0, max: 365, integer: true },
   { name: 'tuning.min_schedule_minutes', label: 'Minimum schedule (minutes)', min: 5, max: 10080, integer: true },
 ];
 const AUTONOMY_FIELDS: NumericFieldDefinition[] = [
