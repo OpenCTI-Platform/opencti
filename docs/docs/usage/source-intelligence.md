@@ -23,7 +23,7 @@ Connector health (status, queue, errors) is not duplicated here: the scorecard p
 
 ### How facts are attributed to sources
 
-When [provenance tracking](reliability-confidence.md) records the sources that asserted every fact (first and last assertion per source), scorecards use these assertions: a fact asserted by three connectors counts for the three of them, and lead time is exact. The status header then reads **Attribution from the sources recorded on every fact**.
+When [provenance tracking](provenance.md) records the sources that asserted every fact (first and last assertion per source), scorecards use these assertions: a fact asserted by three connectors counts for the three of them, and lead time is exact. The status header then reads **Attribution from the sources recorded on every fact**.
 
 Otherwise, the platform falls back to the creators and the author of each object (**Attribution from creators and authors, lead time approximated**).
 
@@ -146,7 +146,7 @@ For each recommendation you can:
 - **Reject** it, with an optional reason. A rejected recommendation is not proposed again before a cooldown (30 days by default).
 - **Revert** it once applied. Reverting restores the previous state (confidence level, schedule, connector status) and removes what was created (decay rule, exclusion list). A quarantine draft is kept for review.
 
-While its change runs, a recommendation shows **Applying**. If the outcome of the change cannot be recorded, it stays **Applying**: it is never applied a second time and cannot be rejected, since its change may be in place. Check the target of the recommendation (user, connector, feed or settings) in that case.
+While its change runs, a recommendation shows **Applying**. A change refused before anything was written (for example, a missing setting) makes it fail with **Retry**. If the change failed after something may have been written, or its outcome cannot be recorded, it stays **Applying**, with the cause behind **Show details**: it is never applied a second time and cannot be rejected, since its change may be in place. Check the target of the recommendation (user, connector, feed or settings) in that case.
 
 While a source is quarantined, validating or deleting its quarantine draft first opens a new quarantine draft and routes the source to it, so nothing the source sends reaches the live knowledge or the draft being closed.
 
