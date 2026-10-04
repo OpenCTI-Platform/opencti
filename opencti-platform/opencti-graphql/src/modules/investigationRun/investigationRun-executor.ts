@@ -68,7 +68,7 @@ import { checkStixCoreRelationshipMapping } from '../../database/stix';
 import { executionContext, INVESTIGATION_MANAGER_USER, isUserHasCapability, isUserInPlatformOrganization, KNOWLEDGE_KNENRICHMENT } from '../../utils/access';
 import { resolveUserByIdFromCache } from '../user/user-domain';
 import { addDraftWorkspace, deleteDraftWorkspace, findById as findDraftById, validateDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
-import { addWorkspace, workspaceEditField } from '../workspace/workspace-domain';
+import { addWorkspace, findById as findWorkspaceById, workspaceDelete, workspaceEditField } from '../workspace/workspace-domain';
 import { askElementEnrichmentForConnectors } from '../../domain/stixCoreObject';
 import { loadWorkById } from '../../domain/work';
 import { addNote } from '../../domain/note';
@@ -285,6 +285,18 @@ const toEngineEntity = (evidence: InvestigationEvidence, description?: string | 
   author_reliability: evidence.author_reliability,
 });
 
+// The gates still open on a run that ends: its pending approvals are rejected
+// and its enrichment jobs not started yet are skipped, so nothing of it runs.
+const closeOpenGates = (current: BasicStoreEntityInvestigationRun, now: Date, reason: string) => ({
+  approvals: current.approvals.map((approval) => (approval.status === InvestigationApprovalStatus.Pending
+    ? { ...approval, status: InvestigationApprovalStatus.Rejected, decided_at: now.toISOString(), rejection_reason: reason }
+    : approval)),
+  enrichment_requests: current.enrichment_requests.map((request) => (request.status === InvestigationEnrichmentRequestStatus.Queued
+    || request.status === InvestigationEnrichmentRequestStatus.AwaitingApproval
+    ? { ...request, status: InvestigationEnrichmentRequestStatus.Skipped, error: reason, completed_at: now.toISOString() }
+    : request)),
+});
+
 const failRun = async (context: AuthContext, runId: string, reason: string, code?: string | null) => {
   const now = new Date();
   const updated = await updateInvestigationRun(context, runId, (current) => {
@@ -293,6 +305,7 @@ const failRun = async (context: AuthContext, runId: string, reason: string, code
       ...statusTransition(current, InvestigationRunStatus.Failed, InvestigationRunPhase.Done, now, reason),
       end_reason_code: code ?? current.end_reason_code ?? null,
       pending_work_ids: [],
+      ...closeOpenGates(current, now, 'Investigation failed'),
     };
   });
   if (updated.run_status === InvestigationRunStatus.Failed) {
@@ -366,6 +379,8 @@ interface CollectedContext {
   engineContext: InvestigationEngineContext;
   contextEvidence: InvestigationEvidence[];
   candidateInfo: Map<string, { name?: string | null; entity_type?: string | null; standard_id?: string | null }>;
+  // Everything sent to the engine: the run carries the access of all of it.
+  contextElements: BasicStoreCommon[];
 }
 
 // The context snapshot sent to the engine: what the knowledge graph already
@@ -463,7 +478,16 @@ const collectInvestigationContext = async (exec: RunExecution, subject: BasicSto
     connectors: engineConnectors,
     allowed_actions: exec.policy.allowed_actions,
   };
-  return { engineContext, contextEvidence, candidateInfo };
+  const sentEntityIds = new Set(contextEvidence.map((evidence) => evidence.id));
+  const contextElements: BasicStoreCommon[] = [
+    subject,
+    ...knownElements.filter((element) => sentEntityIds.has(element.internal_id)),
+    ...relationships.slice(0, INVESTIGATION_LIMITS.contextRelationships),
+    ...candidates,
+    ...coursesOfAction,
+    ...pirs,
+  ];
+  return { engineContext, contextEvidence, candidateInfo, contextElements };
 };
 
 // endregion
@@ -605,6 +629,8 @@ const startEngine = async (exec: RunExecution) => {
     remainingEnrichmentJobs: remainingEnrichmentJobs(run),
     continuesInvestigationId: run.continues_investigation_id ?? null,
   });
+  // The engine may use anything of its context without citing it: the run carries the access of all of it.
+  const carried = await withLiveVersions(collected.contextElements);
   // Collecting the context takes time: a run cancelled meanwhile starts nothing.
   const beforeStart = await loadInvestigationRun(exec.liveContext, run.internal_id);
   if (!beforeStart || TERMINAL_RUN_STATUSES.includes(beforeStart.run_status)) {
@@ -629,6 +655,8 @@ const startEngine = async (exec: RunExecution) => {
       };
     }
     return {
+      objectMarking: R.uniq([...markingIdsOf(current), ...carried.flatMap((element) => markingIdsOf(element))]),
+      objectOrganization: intersectOrganizationIds(organizationIdsOf(current), carried),
       agent_slug: agentSlug,
       pack_id: body.pack,
       xtm_investigation_id: engine.id,
@@ -862,34 +890,59 @@ const findCarryBoundary = async (exec: RunExecution, citedIds: string[]): Promis
   return null;
 };
 
-// The draft of a run stopped at an access boundary holds what the run derived:
-// the run keeps its reference until the draft is deleted, and the manager
-// retries a deletion that failed.
-const deleteStoppedRunDraft = async (context: AuthContext, runId: string, draftId: string) => {
-  try {
-    const draft = await findDraftById(context, INVESTIGATION_MANAGER_USER, draftId);
-    if (draft) {
-      await deleteDraftWorkspace(context, INVESTIGATION_MANAGER_USER, draftId);
+// The draft and the investigation graph of a run stopped at an access boundary
+// hold what the run read and derived: the run keeps each reference until its
+// deletion succeeds, and the manager retries a deletion that failed.
+const deleteStoppedRunArtifacts = async (context: AuthContext, runId: string, artifacts: { draftId: string | null; workspaceId: string | null }) => {
+  const deleted = { draft: false, workspace: false };
+  if (artifacts.draftId) {
+    try {
+      if (await findDraftById(context, INVESTIGATION_MANAGER_USER, artifacts.draftId)) {
+        await deleteDraftWorkspace(context, INVESTIGATION_MANAGER_USER, artifacts.draftId);
+      }
+      deleted.draft = true;
+    } catch (cause) {
+      logApp.error('[CASE AUTOPILOT] Draft of a stopped investigation not deleted, retried on the next tick', { runId, draftId: artifacts.draftId, cause });
     }
-  } catch (cause) {
-    logApp.error('[CASE AUTOPILOT] Draft of a stopped investigation not deleted, retried on the next tick', { runId, draftId, cause });
-    return;
   }
-  await updateInvestigationRun(context, runId, (current) => (current.draft_id === draftId ? { draft_id: null } : null));
+  if (artifacts.workspaceId) {
+    try {
+      if (await findWorkspaceById(context, INVESTIGATION_MANAGER_USER, artifacts.workspaceId)) {
+        await workspaceDelete(context, INVESTIGATION_MANAGER_USER, artifacts.workspaceId);
+      }
+      deleted.workspace = true;
+    } catch (cause) {
+      logApp.error('[CASE AUTOPILOT] Investigation graph of a stopped investigation not deleted, retried on the next tick', { runId, workspaceId: artifacts.workspaceId, cause });
+    }
+  }
+  if (!deleted.draft && !deleted.workspace) return;
+  await updateInvestigationRun(context, runId, (current) => {
+    const patch: Record<string, null> = {};
+    if (deleted.draft && current.draft_id === artifacts.draftId) patch.draft_id = null;
+    if (deleted.workspace && current.workspace_id === artifacts.workspaceId) patch.workspace_id = null;
+    return Object.keys(patch).length > 0 ? patch : null;
+  });
 };
 
 // Everything the run derived from what it read is withheld, as it may describe
 // what the run can no longer carry: the engine's text, the conclusion OpenCTI
-// scored from it, the references to its outputs, and its draft, deleted with
-// what it wrote there. Gates still waiting are rejected, jobs not started skipped.
+// scored from it, the references to its outputs, its draft, deleted with what
+// it wrote there, and its investigation graph, which holds what it read. Gates
+// still waiting are rejected, jobs not started skipped.
 const stopAtCarryBoundary = async (exec: RunExecution, boundary: { reason: string; code: string }) => {
   const now = new Date();
-  const stop: { done: boolean; engineRunning: boolean; draftId: string | null } = { done: false, engineRunning: false, draftId: null };
+  const stop: { done: boolean; engineRunning: boolean; draftId: string | null; workspaceId: string | null } = {
+    done: false,
+    engineRunning: false,
+    draftId: null,
+    workspaceId: null,
+  };
   await updateInvestigationRun(exec.liveContext, exec.run.internal_id, (current) => {
     if (TERMINAL_RUN_STATUSES.includes(current.run_status)) return null;
     stop.done = true;
     stop.engineRunning = current.run_phase === InvestigationRunPhase.Investigating && !!current.xtm_investigation_id && !current.budget_cancelled;
     stop.draftId = current.draft_id ?? null;
+    stop.workspaceId = current.workspace_id ?? null;
     return {
       ...statusTransition(current, InvestigationRunStatus.Failed, InvestigationRunPhase.Done, now, boundary.reason),
       end_reason_code: boundary.code,
@@ -904,21 +957,15 @@ const stopAtCarryBoundary = async (exec: RunExecution, boundary: { reason: strin
       report: null,
       report_sources: [],
       outputs: EMPTY_OUTPUTS,
-      approvals: current.approvals.map((approval) => (approval.status === InvestigationApprovalStatus.Pending
-        ? { ...approval, status: InvestigationApprovalStatus.Rejected, decided_at: now.toISOString(), rejection_reason: 'Investigation stopped' }
-        : approval)),
-      enrichment_requests: current.enrichment_requests.map((request) => (request.status === InvestigationEnrichmentRequestStatus.Queued
-        || request.status === InvestigationEnrichmentRequestStatus.AwaitingApproval
-        ? { ...request, status: InvestigationEnrichmentRequestStatus.Skipped, error: 'Investigation stopped', completed_at: now.toISOString() }
-        : request)),
+      ...closeOpenGates(current, now, 'Investigation stopped'),
       enrichment_waves: (current.enrichment_waves ?? []).map((wave) => ({ ...wave, delta: [] })),
       ...(stop.engineRunning ? { xtm_status: ENGINE_CANCEL_PENDING, engine_failures: 0 } : {}),
     };
   });
   if (!stop.done) return;
   addInvestigationRunOutcomeCount(InvestigationRunStatus.Failed);
-  if (stop.draftId) {
-    await deleteStoppedRunDraft(exec.liveContext, exec.run.internal_id, stop.draftId);
+  if (stop.draftId || stop.workspaceId) {
+    await deleteStoppedRunArtifacts(exec.liveContext, exec.run.internal_id, { draftId: stop.draftId, workspaceId: stop.workspaceId });
   }
   if (stop.engineRunning) {
     await stopCancelledEngineRun(exec.liveContext, exec.run.internal_id);
@@ -960,6 +1007,13 @@ const mirrorPatch = (
 });
 
 const investigate = async (exec: RunExecution) => {
+  // Read on every tick, before any enrichment job is dispatched or the engine
+  // polled, whether a revision changed or not.
+  const crossed = await findCarryBoundary(exec, runCitedIds(exec.run));
+  if (crossed) {
+    await stopAtCarryBoundary(exec, crossed);
+    return;
+  }
   const run = await processEnrichments(exec);
   const { runUser, now } = exec;
   const investigationId = run.xtm_investigation_id;
@@ -1282,7 +1336,8 @@ const listDraftChanges = async (exec: RunExecution): Promise<DraftChanges> => {
 // so its text never outlives their restrictions: the cited objects, the case
 // and every candidate threat its hypotheses or its conclusion name, as the run
 // identity reads them (an identifier it cannot read restricts nothing), with
-// the access their live versions and the live subject have now.
+// the access their live versions and the live subject have now, on top of the
+// access the run already carries (its whole engine context among others).
 const collectRunRestrictions = async (exec: RunExecution, subject: BasicStoreEntity, caseId: string | null, candidateIds: string[]): Promise<OutputRestrictions> => {
   const ids = R.uniq([
     ...exec.run.evidence.filter(isObjectEvidence).map((evidence) => evidence.opencti_id as string),
@@ -1293,8 +1348,8 @@ const collectRunRestrictions = async (exec: RunExecution, subject: BasicStoreEnt
   ]).slice(0, INVESTIGATION_LIMITS.evidence + INVESTIGATION_LIMITS.candidates + INVESTIGATION_LIMITS.coursesOfAction + 1);
   const elements = await withLiveVersions(await findElements(exec.draftContext, exec.runUser, ids), [subject.internal_id]);
   return {
-    markings: R.uniq([...markingIdsOf(subject), ...elements.flatMap((element) => markingIdsOf(element))]),
-    organizations: intersectOrganizationIds(organizationIdsOf(subject), elements),
+    markings: R.uniq([...markingIdsOf(exec.run), ...markingIdsOf(subject), ...elements.flatMap((element) => markingIdsOf(element))]),
+    organizations: intersectOrganizationIds(organizationIdsOf(exec.run), [subject, ...elements]),
   };
 };
 
@@ -1516,8 +1571,8 @@ const completeValidation = async (exec: RunExecution) => {
  */
 export const processInvestigationRun = async (context: AuthContext, runId: string) => {
   const run = await loadInvestigationRun(context, runId);
-  if (run && run.run_status === InvestigationRunStatus.Failed && run.draft_id && CARRY_BOUNDARY_CODES.includes(run.end_reason_code ?? '')) {
-    await deleteStoppedRunDraft(context, runId, run.draft_id);
+  if (run && run.run_status === InvestigationRunStatus.Failed && (run.draft_id || run.workspace_id) && CARRY_BOUNDARY_CODES.includes(run.end_reason_code ?? '')) {
+    await deleteStoppedRunArtifacts(context, runId, { draftId: run.draft_id ?? null, workspaceId: run.workspace_id ?? null });
   }
   if (run && STOPPED_RUN_STATUSES.includes(run.run_status) && run.xtm_status === ENGINE_CANCEL_PENDING) {
     await stopCancelledEngineRun(context, runId);
@@ -1651,7 +1706,7 @@ const nextRunsWindow = createRunWindow<BasicStoreEntityInvestigationRun>();
  * The next runs to advance, oldest first, resuming where the previous tick
  * stopped: the active runs, the cancelled or stopped runs whose engine run is
  * not confirmed stopped yet, and the runs stopped at an access boundary whose
- * draft is not deleted yet.
+ * draft or investigation graph is not deleted yet.
  */
 export const listInvestigationRunsToProcess = (context: AuthContext, limit: number) => nextRunsWindow(async (after) => {
   const connection = await pageEntitiesConnection<BasicStoreEntityInvestigationRun>(context, INVESTIGATION_MANAGER_USER, [ENTITY_TYPE_INVESTIGATION_RUN], {
@@ -1670,9 +1725,15 @@ export const listInvestigationRunsToProcess = (context: AuthContext, limit: numb
         filters: [
           { key: ['run_status'], values: [InvestigationRunStatus.Failed] },
           { key: ['end_reason_code'], values: CARRY_BOUNDARY_CODES },
-          { key: ['draft_id'], values: [], operator: FilterOperator.NotNil },
         ],
-        filterGroups: [],
+        filterGroups: [{
+          mode: FilterMode.Or,
+          filters: [
+            { key: ['draft_id'], values: [], operator: FilterOperator.NotNil },
+            { key: ['workspace_id'], values: [], operator: FilterOperator.NotNil },
+          ],
+          filterGroups: [],
+        }],
       }],
     },
     noFiltersChecking: true,

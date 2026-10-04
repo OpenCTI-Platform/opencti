@@ -746,6 +746,10 @@ const decideApprovalsOf = async (
   run: BasicStoreEntityInvestigationRun,
   decisions: InvestigationApprovalDecisionInput[],
 ): Promise<InvestigationApprovalOutcome> => {
+  // A failed or cancelled investigation executes nothing more; a completed one keeps its recommendation gates open.
+  if (run.run_status === InvestigationRunStatus.Failed || run.run_status === InvestigationRunStatus.Cancelled) {
+    throw FunctionalError('This investigation has ended: its approvals can no longer be decided', { id: runId, run_status: run.run_status });
+  }
   const now = new Date();
   const decided: Array<{ approval: InvestigationApproval; approved: boolean; reason: string | null }> = [];
   decisions.forEach((decision) => {

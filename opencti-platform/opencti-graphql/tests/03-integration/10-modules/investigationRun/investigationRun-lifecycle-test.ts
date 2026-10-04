@@ -614,6 +614,7 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
         hypotheses: [],
         recommendations: [],
         draft_id: mirrored.draft_id,
+        workspace_id: null,
       });
       expect(stopped.steps.every((step: { action: string | null }) => step.action === null)).toBe(true);
       expect((await listInvestigationRunsToProcess(testContext, 50)).map((run) => run.internal_id)).toContain(runId);
@@ -677,6 +678,9 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       // Nothing moved: the run keeps waiting for the analyst.
       await revalidateAwaitingInvestigationRun(testContext, runId);
       expect((await readRun(runId)).run_status).toBe('awaiting_approval');
+      const records = await queryAsAdminWithSuccess({ query: RUN_RECORDS, variables: { id: runId } });
+      const draftGate = records.data.investigationRun.approvals.find((approval: { kind: string; status: string }) => approval.kind === 'draft_validation' && approval.status === 'pending');
+      expect(draftGate).toBeTruthy();
       await queryAsAdminWithSuccess({ query: RESTRICT_CONTAINER, variables: { id: caseId, input: [{ id: ADMIN_USER.id, access_right: 'admin' }] } });
       expect((await listAwaitingInvestigationRunsToRevalidate(testContext, 50)).map((run) => run.internal_id)).toContain(runId);
       await revalidateAwaitingInvestigationRun(testContext, runId);
@@ -689,7 +693,12 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
         summary: null,
         report: null,
         draft_id: null,
+        workspace_id: null,
       });
+      // Its gates are closed: nothing of an ended investigation can be approved any more.
+      const closed = await queryAsAdminWithSuccess({ query: RUN_RECORDS, variables: { id: runId } });
+      expect(closed.data.investigationRun.approvals.find((approval: { id: string }) => approval.id === draftGate.id)?.status).toBe('rejected');
+      await expect(decideInvestigationApprovals(testContext, ADMIN_USER, runId, [{ tool_call_id: draftGate.id, decision: 'approve', rejection_reason: null }])).rejects.toThrow();
       const draft = await queryAsAdmin({ query: gql`query Draft($id: String!) { draftWorkspace(id: $id) { id } }`, variables: { id: awaiting.draft_id } });
       expect(draft.data?.draftWorkspace ?? null).toBeNull();
       expect((await listAwaitingInvestigationRunsToRevalidate(testContext, 50)).map((run) => run.internal_id)).not.toContain(runId);
