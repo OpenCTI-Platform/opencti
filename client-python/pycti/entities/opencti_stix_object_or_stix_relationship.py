@@ -789,8 +789,6 @@ class StixObjectOrStixRelationship:
                 single_sourced
                 has_conflicts
                 freshness_stale
-                single_sourced
-                freshness_stale_at
                 freshness_stale_at
                 x_opencti_assertions {
                     source_id
