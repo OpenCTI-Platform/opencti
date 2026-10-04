@@ -98,19 +98,21 @@ const LiveDeploymentsDialog = ({ side, entityId, entityName, onClose }: LiveDepl
   const indicators = platformOptions.length > 0
     ? indicatorIds.map((id) => ({ id, name: indicatorNames.get(id) ?? entityName ?? id }))
     : [];
-  const counts = { count: indicators.length, platforms: platformOptions.length };
-  const summary = t_i18n(
-    '{count, plural, one {# live indicator} other {# live indicators}} on {platforms, plural, one {# platform} other {# platforms}}',
-    { values: counts },
-  );
+  // The platforms counted are the ones selected in the dialog, which are the ones the request is sent for
+  const summary = (selectedPlatformCount: number) => (platformOptions.length > 0
+    ? t_i18n(
+        '{count, plural, one {# live indicator} other {# live indicators}} on {platforms, plural, one {# platform} other {# platforms}}',
+        { values: { count: indicators.length, platforms: selectedPlatformCount } },
+      )
+    : t_i18n('No live deployment to validate'));
   return (
     <IocValidationRequestDialog
       open
       onClose={onClose}
       indicators={indicators}
       platforms={platformOptions}
-      defaultName={t_i18n('Validation of {count, plural, one {# live indicator} other {# live indicators}}', { values: counts })}
-      summary={platformOptions.length > 0 ? summary : t_i18n('No live deployment to validate')}
+      defaultName={t_i18n('Validation of {count, plural, one {# live indicator} other {# live indicators}}', { values: { count: indicators.length } })}
+      summary={summary}
     />
   );
 };

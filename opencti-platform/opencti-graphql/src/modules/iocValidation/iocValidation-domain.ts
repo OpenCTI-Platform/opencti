@@ -478,16 +478,56 @@ const recheckPairsBeforeDispatch = async (context: AuthContext, request: StoreEn
     return request;
   }
   await refreshIndicatorDeploymentCounters(context, released.map((relation) => relation.fromId));
-  return withRequestLock(request.internal_id, async () => {
-    const current = (await findIocValidationRequest(context, SYSTEM_USER, request.internal_id) ?? request) as unknown as StoreEntityIocValidationRequest;
-    const keptIds = new Set(kept.map((pair) => pair.deployed_on_id));
-    const remaining = (current.pairs ?? []).filter((pair) => keptIds.has(pair.deployed_on_id));
-    const skipped = [...(current.skipped ?? []), ...dropped];
-    const attributes = { pairs: remaining, skipped, results_summary: summarizeRequestPairs(remaining, skipped.length) };
-    await setRequestAttributes(context, current, attributes);
-    logApp.info('[IOC-VALIDATION] Pairs no longer eligible left out before dispatch', { requestId: request.internal_id, dropped: dropped.length });
-    return { ...current, ...attributes };
-  });
+  const keptIds = new Set(kept.map((pair) => pair.deployed_on_id));
+  return recordPairsLeftOut(context, request, (pair) => keptIds.has(pair.deployed_on_id), dropped, 'no longer eligible');
+};
+
+// The request keeps the pairs `keep` accepts and lists the others with their reason in its skipped pairs.
+const recordPairsLeftOut = async (
+  context: AuthContext,
+  request: StoreEntityIocValidationRequest,
+  keep: (pair: IocValidationPair) => boolean,
+  leftOut: IocValidationSkipped[],
+  why: string,
+) => withRequestLock(request.internal_id, async () => {
+  const current = (await findIocValidationRequest(context, SYSTEM_USER, request.internal_id) ?? request) as unknown as StoreEntityIocValidationRequest;
+  const remaining = (current.pairs ?? []).filter(keep);
+  const skipped = [...(current.skipped ?? []), ...leftOut];
+  const attributes = { pairs: remaining, skipped, results_summary: summarizeRequestPairs(remaining, skipped.length) };
+  await setRequestAttributes(context, current, attributes);
+  logApp.info(`[IOC-VALIDATION] Pairs ${why} left out before dispatch`, { requestId: request.internal_id, dropped: leftOut.length });
+  return { ...current, ...attributes } as StoreEntityIocValidationRequest;
+});
+
+// Translated in the user interface, like the other skip reasons.
+export const IOC_VALIDATION_INACCESSIBLE_REASON = 'No longer accessible to the OpenAEV service account';
+
+/**
+ * Pairs the OpenAEV service account can no longer read (an end or the deployment lost its access while the request
+ * waited) are left out before the request is sent: each one still marked by this request is released (not requested
+ * again) and listed with its reason, so the request never waits for a pair that was not sent. Must run under the
+ * dispatch claim of the request.
+ */
+const leaveInaccessiblePairsOut = async (context: AuthContext, request: StoreEntityIocValidationRequest, inaccessible: IocValidationPair[]) => {
+  const released: Array<BasicStoreRelationDeployedOn & { _index: string }> = [];
+  const lock = await lockResources([...new Set(inaccessible.map((pair) => pairLockKey(pair.indicator_id, pair.platform_id)))].sort());
+  try {
+    await BluePromise.map(inaccessible, async (pair) => {
+      const current = await findDeployedOn(context, SYSTEM_USER, pair.indicator_id, pair.platform_id) as (BasicStoreRelationDeployedOn & { _index: string }) | undefined;
+      if (current && current.internal_id === pair.deployed_on_id && current.validation_run_id === request.internal_id
+        && current.validation_status === VALIDATION_STATUS_REQUESTED) {
+        const params = buildReplaceScriptParams({ validation_status: VALIDATION_STATUS_NOT_REQUESTED, validation_run_id: null, updated_at: new Date() });
+        await elUpdate(context, current._index, current.internal_id, { script: { source: EL_REPLACE_SCRIPT_SOURCE, lang: 'painless', params } });
+        released.push(current);
+      }
+    }, { concurrency: CONCURRENCY });
+  } finally {
+    await lock.unlock();
+  }
+  await refreshIndicatorDeploymentCounters(context, released.map((relation) => relation.fromId));
+  const leftOutIds = new Set(inaccessible.map((pair) => pair.deployed_on_id));
+  const leftOut = inaccessible.map((pair) => ({ indicator_id: pair.indicator_id, platform_id: pair.platform_id, reason: IOC_VALIDATION_INACCESSIBLE_REASON }));
+  return recordPairsLeftOut(context, request, (pair) => !leftOutIds.has(pair.deployed_on_id), leftOut, 'no longer accessible to the OpenAEV service account');
 };
 
 const dispatchClaimedIocValidationRequest = async (context: AuthContext, claimed: StoreEntityIocValidationRequest) => {
@@ -528,14 +568,10 @@ const dispatchClaimedIocValidationRequest = async (context: AuthContext, claimed
       deploymentRefs.set(internalId, stix.id as StixId);
     }
   });
-  const pairs: IocValidationBundlePair[] = request.pairs
-    .filter((pair) => indicatorRefs.has(pair.indicator_id) && platformRefs.has(pair.platform_id) && deploymentRefs.has(pair.deployed_on_id))
-    .map((pair) => ({
-      indicator_ref: indicatorRefs.get(pair.indicator_id) as StixId,
-      platform_ref: platformRefs.get(pair.platform_id) as StixId,
-      deployed_on_ref: deploymentRefs.get(pair.deployed_on_id) as StixId,
-    }));
-  if (pairs.length === 0) {
+  const isAccessible = (pair: IocValidationPair) => indicatorRefs.has(pair.indicator_id) && platformRefs.has(pair.platform_id)
+    && deploymentRefs.has(pair.deployed_on_id);
+  const inaccessible = request.pairs.filter((pair) => !isAccessible(pair));
+  if (inaccessible.length === request.pairs.length) {
     await resolvePendingPairs(context, request.internal_id, VALIDATION_STATUS_ERROR);
     return patchRequest(context, SYSTEM_USER, request.internal_id, {
       status: REQUEST_STATUS_FAILED,
@@ -543,14 +579,29 @@ const dispatchClaimedIocValidationRequest = async (context: AuthContext, claimed
       completed_at: new Date(),
     });
   }
-  const requestObject = buildIocValidationRequestForOpenAEV(request, {
+  // Only the pairs sent are kept on the request: it never waits for a pair OpenAEV did not receive.
+  const sent = inaccessible.length > 0 ? await leaveInaccessiblePairsOut(context, request, inaccessible) : request;
+  const pairs: IocValidationBundlePair[] = sent.pairs.map((pair) => ({
+    indicator_ref: indicatorRefs.get(pair.indicator_id) as StixId,
+    platform_ref: platformRefs.get(pair.platform_id) as StixId,
+    deployed_on_ref: deploymentRefs.get(pair.deployed_on_id) as StixId,
+  }));
+  const sentIndicatorIds = new Set(sent.pairs.map((pair) => pair.indicator_id));
+  const sentPlatformIds = new Set(sent.pairs.map((pair) => pair.platform_id));
+  const sentDeploymentIds = new Set(sent.pairs.map((pair) => pair.deployed_on_id));
+  const sentRefs = new Set<string>([
+    ...[...sentIndicatorIds].map((id) => indicatorRefs.get(id) as string),
+    ...[...sentPlatformIds].map((id) => platformRefs.get(id) as string),
+    ...[...sentDeploymentIds].map((id) => deploymentRefs.get(id) as string),
+  ]);
+  const requestObject = buildIocValidationRequestForOpenAEV(sent, {
     requestedBy: requester?.name ?? 'OpenCTI',
-    indicatorRefs: [...indicatorRefs.values()],
-    platformRefs: [...platformRefs.values()],
-    iocs: request.iocs.filter((ioc) => indicatorRefs.has(ioc.indicator_id)),
+    indicatorRefs: [...sentIndicatorIds].map((id) => indicatorRefs.get(id) as StixId),
+    platformRefs: [...sentPlatformIds].map((id) => platformRefs.get(id) as StixId),
+    iocs: sent.iocs.filter((ioc) => sentIndicatorIds.has(ioc.indicator_id)),
     pairs,
   });
-  const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: [requestObject, ...stixObjects] };
+  const bundle = { type: 'bundle', id: `bundle--${uuidv4()}`, objects: [requestObject, ...stixObjects.filter((stix) => sentRefs.has(stix.id))] };
   const workUser = requester ?? SYSTEM_USER;
   const work = await createWork(context, workUser, connector, `IOC validation: ${request.name}`, request.internal_id);
   if (!work) {

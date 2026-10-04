@@ -3482,6 +3482,7 @@
   "No log entries yet. Logs appear here when ingestion attempts occur.": "Записей в журнале пока нет. Записи появятся здесь при попытках импорта данных.",
   "No logs available": "Журналы отсутствуют",
   "No longer waiting for this validation request": "Больше не ожидает этот запрос на проверку",
+  "No longer accessible to the OpenAEV service account": "Больше не доступно служебной учётной записи OpenAEV",
   "No Malware analysis on this observable.": "Анализ вредоносного ПО на этом наблюдаемом объекте не проводился.",
   "No malware analysis on this observable.": "Анализ вредоносных программ для этого объекта наблюдения не проводился.",
   "No mapping": "Нет отображения",

@@ -164,6 +164,8 @@ test.describe('Dissemination assurance documentation', () => {
       await page.getByTestId('request-validation-button').click();
       await expect(page.getByTestId('ioc-validation-tested-indicators')).toBeVisible();
       await expect(page.getByTestId('ioc-validation-request-submit')).toBeEnabled();
+      // The summary counts the platforms the request is sent for: the selected ones
+      await expect(page.getByTestId('validation-request-summary')).toContainText('on 1 platform');
       await capture(page, testInfo, 'validate-live');
       await page.keyboard.press('Escape');
       // endregion

@@ -154,7 +154,10 @@ that starts waiting for another request in the meantime is skipped, and listed w
 When the IOC validation connector is not running, the request waits and is sent as soon as the connector is back.
 Before it is sent, every deployment is checked again: a deployment that is no longer live, whose removal was
 requested, or that no longer waits for this request is left out, listed with the reason, and can be validated again by
-another request; the indicators and platforms without any deployment left are not sent. Deleting a request releases
+another request; the indicators and platforms without any deployment left are not sent. A deployment whose indicator,
+security platform or relationship the OpenAEV service account can no longer read (a marking or a sharing changed
+while the request waited) is left out the same way, so the request never waits for a test that was not sent; when
+none is readable any more, the request fails with that reason. Deleting a request releases
 its deployments that are still waiting for results and deletes the sightings that recorded its results; a request
 being sent is deleted once the sending is recorded.
 

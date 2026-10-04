@@ -6,14 +6,15 @@ import { connectorDelete, registerConnector } from '../../../../src/domain/conne
 import { resetCacheForEntity } from '../../../../src/database/cache';
 import { ENTITY_TYPE_CONNECTOR } from '../../../../src/schema/internalObject';
 import { ConnectorType } from '../../../../src/generated/graphql';
-import { maintainIocValidationRequests, validationResultSightingStixId } from '../../../../src/modules/iocValidation/iocValidation-domain';
+import { IOC_VALIDATION_INACCESSIBLE_REASON, maintainIocValidationRequests, validationResultSightingStixId } from '../../../../src/modules/iocValidation/iocValidation-domain';
 import { ENTITY_TYPE_IOC_VALIDATION_REQUEST, IOC_VALIDATION_CONNECTOR_SCOPE } from '../../../../src/modules/iocValidation/iocValidation-types';
-import { storeLoadById } from '../../../../src/database/middleware-loader';
+import { internalLoadById, storeLoadById } from '../../../../src/database/middleware-loader';
 import { patchAttribute } from '../../../../src/database/middleware';
 import { elDeleteElements, elUpdate } from '../../../../src/database/engine';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
 import type { BasicStoreEntity, BasicStoreRelation } from '../../../../src/types/store';
 import { SYSTEM_USER } from '../../../../src/utils/access';
+import { MARKING_TLP_AMBER } from '../../../../src/schema/identifier';
 
 const IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202020';
 const WAITING_IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202021';
@@ -505,6 +506,68 @@ describe('IOC validation requests', () => {
       await queryAsAdminWithSuccess({ query: REQUEST_DELETE, variables: { id: request.id } });
     } finally {
       await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: indicatorId } });
+      await connectorDelete(testContext, ADMIN_USER, WAITING_IOC_VALIDATION_CONNECTOR);
+      resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+    }
+  });
+
+  it('should leave out before dispatch the pairs the OpenAEV service account can no longer read', async () => {
+    const connectorUserId = await getUserIdByEmail(USER_CONNECTOR.email);
+    const waitingConnector = {
+      id: WAITING_IOC_VALIDATION_CONNECTOR,
+      name: 'OpenAEV IOC validation (offline)',
+      type: ConnectorType.InternalEnrichment,
+      scope: [IOC_VALIDATION_CONNECTOR_SCOPE],
+      auto: false,
+      auto_update: false,
+    };
+    await registerConnector(testContext, ADMIN_USER, waitingConnector, { connector_user_id: connectorUserId });
+    const offline = await storeLoadById<BasicStoreEntity>(testContext, ADMIN_USER, WAITING_IOC_VALIDATION_CONNECTOR, ENTITY_TYPE_CONNECTOR);
+    await elUpdate(testContext, offline._index, offline.internal_id, { doc: { updated_at: new Date(Date.now() - 10 * 60 * 1000).toISOString() } });
+    resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+    const hidden = await queryAsAdminWithSuccess({
+      query: INDICATOR_ADD,
+      variables: { input: { name: 'hidden.evil.example', pattern: "[domain-name:value = 'hidden.evil.example']", pattern_type: 'stix', x_opencti_main_observable_type: 'Domain-Name' } },
+    });
+    const hiddenId = hidden.data?.indicatorAdd.id;
+    let partialRequestId: string | undefined;
+    try {
+      const deployment = await queryAsUserWithSuccess(USER_CONNECTOR, { query: REPORT_DEPLOYMENT, variables: { indicatorId: hiddenId, platformId, status: 'deployed' } });
+      const hiddenDeploymentId = deployment.data?.indicatorReportDeployment.id;
+      const created = await queryAsAdminWithSuccess({
+        query: REQUEST_VALIDATION,
+        variables: {
+          platformIds: [platformId],
+          indicatorIds: [liveIndicatorId, hiddenId],
+          testKinds: ['dns_resolution'],
+          connectorId: WAITING_IOC_VALIDATION_CONNECTOR,
+          name: 'Partly readable by OpenAEV',
+        },
+      });
+      partialRequestId = created.data?.indicatorsRequestValidation.id;
+      expect(created.data?.indicatorsRequestValidation.status).toEqual('pending');
+      // While the request waits, the indicator gets a marking the OpenAEV service account cannot read (no stream event)
+      const amber = await internalLoadById(testContext, ADMIN_USER, MARKING_TLP_AMBER) as unknown as { internal_id: string };
+      const stored = await internalLoadById(testContext, ADMIN_USER, hiddenId) as unknown as { _index: string };
+      const script = { source: "ctx._source['rel_object-marking.internal_id'] = params.ids", lang: 'painless', params: { ids: [amber.internal_id] } };
+      await elUpdate(testContext, stored._index, hiddenId, { script });
+      // The connector pings again
+      await registerConnector(testContext, ADMIN_USER, waitingConnector, { connector_user_id: connectorUserId });
+      resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+      await maintainIocValidationRequests(testContext);
+      const read = await queryAsAdminWithSuccess({ query: REQUEST_READ, variables: { id: partialRequestId } });
+      const dispatched = read.data?.iocValidationRequest;
+      expect(dispatched.status).toEqual('sent');
+      expect(dispatched.deployments.map((d: { id: string }) => d.id)).toEqual([liveDeploymentId]);
+      expect(dispatched.skipped).toEqual([{ indicator_id: hiddenId, platform_id: platformId, reason: IOC_VALIDATION_INACCESSIBLE_REASON }]);
+      // The pair left out does not wait for this request any more
+      const released = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: hiddenDeploymentId } });
+      expect(released.data?.stixCoreRelationship.validation_status).toEqual('not_requested');
+    } finally {
+      if (partialRequestId) {
+        await queryAsAdminWithSuccess({ query: REQUEST_DELETE, variables: { id: partialRequestId } });
+      }
+      await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: hiddenId } });
       await connectorDelete(testContext, ADMIN_USER, WAITING_IOC_VALIDATION_CONNECTOR);
       resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
     }

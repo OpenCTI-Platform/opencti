@@ -77,7 +77,8 @@ interface IocValidationRequestDialogProps {
   indicators: ValidationIndicatorOption[];
   platforms: ValidationPlatformOption[];
   defaultName: string;
-  summary?: ReactNode;
+  /** What the request covers, from the security platforms selected in the dialog (the ones submitted). */
+  summary?: (selectedPlatformCount: number) => ReactNode;
 }
 
 const PREVIEW_SIZE = 5;
@@ -220,7 +221,7 @@ const IocValidationRequestDialog = ({ open, onClose, indicators, platforms, defa
   return (
     <Dialog open={open} onClose={onClose} title={t_i18n('Request validation in OpenAEV')} size="medium">
       <Stack gap={2} data-testid="ioc-validation-request-dialog">
-        {summary && <Typography variant="body2">{summary}</Typography>}
+        {summary && <Typography variant="body2" data-testid="validation-request-summary">{summary(selectedPlatforms.length)}</Typography>}
         <Alert
           severity="info"
           title={t_i18n('Every validation scenario is approved in OpenAEV before it runs')}

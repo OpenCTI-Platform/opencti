@@ -3482,6 +3482,7 @@
   "No log entries yet. Logs appear here when ingestion attempts occur.": "Aún no hay entradas en el registro. Los registros aparecerán aquí cuando se produzcan intentos de importación.",
   "No logs available": "No hay registros disponibles",
   "No longer waiting for this validation request": "Ya no espera esta solicitud de validación",
+  "No longer accessible to the OpenAEV service account": "Ya no es accesible para la cuenta de servicio de OpenAEV",
   "No Malware analysis on this observable.": "Ningún análisis de malware sobre esta observable.",
   "No malware analysis on this observable.": "No hay análisis de malware en este observable.",
   "No mapping": "Sin mapeo",

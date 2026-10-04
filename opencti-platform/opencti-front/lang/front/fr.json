@@ -3482,6 +3482,7 @@
   "No log entries yet. Logs appear here when ingestion attempts occur.": "Aucune entrée de journal pour l'instant. Les journaux s'affichent ici lorsque des tentatives d'ingestion ont lieu.",
   "No logs available": "Aucun journal disponible",
   "No longer waiting for this validation request": "N'attend plus cette demande de validation",
+  "No longer accessible to the OpenAEV service account": "N'est plus accessible au compte de service OpenAEV",
   "No Malware analysis on this observable.": "Aucune analyse de code malveillant sur cet observable.",
   "No malware analysis on this observable.": "Pas d'analyse de logiciels malveillants sur cet observable.",
   "No mapping": "Aucune correspondance",
