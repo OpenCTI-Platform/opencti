@@ -13,7 +13,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import type { AuthContext } from '../../types/user';
+import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity } from '../../types/store';
 import { FilterMode } from '../../generated/graphql';
 import { patchAttribute } from '../../database/middleware';
@@ -83,6 +83,39 @@ export const renewQuarantineDraft = async (context: AuthContext, sourceId: strin
       }
     }
     return draftId;
+  } catch (err: any) {
+    if (err?.name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ participantIds: [sourceId] });
+    }
+    throw err;
+  } finally {
+    if (lock) {
+      await lock.unlock();
+    }
+  }
+};
+
+/**
+ * Lifts the quarantine of a source under the lock of its quarantine draft, so the enforcement never restores it
+ * half-way. The source is released first and its connector user leaves the draft last: a failure in between leaves
+ * the connector writing into the draft, never into the live knowledge.
+ */
+export const releaseQuarantine = async (
+  context: AuthContext,
+  user: AuthUser,
+  sourceId: string | undefined,
+  connectorUser?: { userId: string; draftContext: string },
+) => {
+  let lock;
+  try {
+    if (sourceId) {
+      lock = await lockResources([`source-quarantine-draft:${sourceId}`]);
+      await patchAttribute(context, user, sourceId, ENTITY_TYPE_SOURCE, { quarantined: false, quarantine_draft_id: null });
+      await publishCacheResetEvent(ENTITY_TYPE_SOURCE);
+    }
+    if (connectorUser) {
+      await userEditField(context, user, connectorUser.userId, [{ key: 'draft_context', value: [connectorUser.draftContext] }]);
+    }
   } catch (err: any) {
     if (err?.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds: [sourceId] });
