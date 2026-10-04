@@ -500,6 +500,13 @@ describe('Graph analytics resolvers', () => {
       analytics_process_version: 'test',
     }));
     expect(status.data.graphAnalyticsStatus.similarity_documents).toBeGreaterThanOrEqual(2);
+    // the clusters counter counts what the list shows the caller: clusters with at least one accessible member
+    const listCountQuery = gql`query clustersCount { graphClusters(first: 1) { pageInfo { globalCount } } }`;
+    const adminList = await queryAsAdminWithSuccess({ query: listCountQuery, variables: {} });
+    expect(status.data.graphAnalyticsStatus.clusters_count).toBe(adminList.data.graphClusters.pageInfo.globalCount);
+    const restrictedStatus = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: statusQuery, variables: {} });
+    const restrictedList = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: listCountQuery, variables: {} });
+    expect(restrictedStatus.data.graphAnalyticsStatus.clusters_count).toBe(restrictedList.data.graphClusters.pageInfo.globalCount);
   });
 
   it('should apply an analytics run only when it completes', async () => {

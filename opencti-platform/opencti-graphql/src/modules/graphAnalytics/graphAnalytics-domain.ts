@@ -850,15 +850,11 @@ export const upsertGraphAnalyticsMetrics = async (context: AuthContext, user: Au
 
 export const getGraphAnalyticsStatus = async (context: AuthContext, user: AuthUser) => {
   const state = await redisGraphAnalyticsGetState();
-  const [pending, similarityDocuments, clustersCount] = await Promise.all([
+  const [pending, similarityDocuments, clusters] = await Promise.all([
     redisGraphAnalyticsPendingCount(),
     countSimilarityRows(context, user),
-    // clusters of a run in progress are only counted once published
-    elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, {
-      types: [ENTITY_TYPE_GRAPH_CLUSTER],
-      filters: { mode: FilterMode.And, filters: [{ key: ['last_run_id'], values: [], operator: FilterOperator.NotNil }], filterGroups: [] },
-      noFiltersChecking: true,
-    }),
+    // the clusters the caller sees in the list: at least one member they can access
+    findGraphClusters(context, user, { first: 1 }),
   ]);
   return {
     manager_enabled: booleanConf('graph_analytics_manager:enabled', true),
@@ -870,7 +866,7 @@ export const getGraphAnalyticsStatus = async (context: AuthContext, user: AuthUs
     last_full_pass_ended_at: lastFullPassEndedAt(state),
     next_full_pass_at: computeNextFullPassAt(state, getGraphAnalyticsComputeConfig()),
     similarity_documents: similarityDocuments,
-    clusters_count: clustersCount,
+    clusters_count: clusters.pageInfo.globalCount,
     analytics_process_active: isAnalyticsProcessActive(state),
     analytics_process_last_run_at: parseStateDate(state[GRAPH_STATE_ANALYTICS_LAST_RUN_AT]),
     analytics_process_last_run_id: state[GRAPH_STATE_ANALYTICS_LAST_RUN_ID] ?? null,
