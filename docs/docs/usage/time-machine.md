@@ -51,6 +51,10 @@ When the entity did not exist yet at the selected date, the view says so and **G
 
 ![View as of a date before the creation of the entity](assets/time-machine-view-as-of-not-existing.png)
 
+When a history [retention rule](../administration/retentions.md) deleted the changes made around the selected date, the view says that the history of the entity is not retained back to that date (see [History retention and knowledge snapshots](#history-retention-and-knowledge-snapshots)), and **Go to the first recorded change** moves to the oldest state still available.
+
+![View as of a date older than the history still retained](assets/time-machine-view-as-of-not-retained.png)
+
 !!! note "Reconstruction warnings"
 
     A warning is displayed when the reconstruction is not exact:
@@ -201,7 +205,7 @@ The time machine never bypasses markings or organization restrictions:
 The time machine relies on the history of the knowledge:
 
 - The history is written by the [history manager](../deployment/advanced/managers.md#history-manager), which must be enabled.
-- When a **History** [retention rule](../administration/retentions.md) is active, history entries older than the retention duration are deleted. An entity can then only be rebuilt with the changes still available: older states only reflect the remaining history. The time slider and the **Reconstruction** panel show since when the history of the entity is available.
+- When a **History** [retention rule](../administration/retentions.md) is active, history entries older than the retention duration are deleted. A state older than the history still retained cannot be rebuilt reliably, nor its access at that date checked: unless the entity has not changed since that date, **View as of** and **Compare dates** say that the history is not retained back to that date instead of showing it, and **Go to the first recorded change** moves to the oldest state still available. The time slider and the **Reconstruction** panel show since when the history of the entity is available.
 
 To keep the reconstruction fast, the [knowledge snapshot manager](../deployment/advanced/managers.md#knowledge-snapshot-manager) takes a compact snapshot of every entity that changed during the week, including the entities whose only change is a new, updated or deleted relationship: its attribute values and the identifiers of its relationships by type, as they were at the snapshot date. A reconstruction starts from the closest snapshot (or the current knowledge) and replays the history from there, within a bounded window. Snapshots follow the history retention: they are deleted with the shortest active History retention rule.
 
