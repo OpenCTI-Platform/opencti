@@ -1,5 +1,7 @@
+import * as R from 'ramda';
 import { elList, elLoadById, elPaginate } from '../../database/engine';
 import { patchAttribute } from '../../database/middleware';
+import { lockResources } from '../../lock/master-lock';
 import { logApp } from '../../config/conf';
 import { type FilterGroup, FilterMode, FilterOperator } from '../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -153,27 +155,31 @@ const applyFreshnessPolicy = async (context: AuthContext, user: AuthUser, rule: 
   if (isFlagOnly) {
     return true;
   }
-  // A re-assertion that landed after the flag cleared it: the policy no longer applies
-  const reloaded = await elLoadById<BasicStoreBase & { freshness_stale?: boolean; freshness_rule_id?: string }>(context, user, element.internal_id, {
-    type: element.entity_type,
-    baseData: true,
-    baseFields: [ATTRIBUTE_FRESHNESS_STALE, ATTRIBUTE_FRESHNESS_RULE_ID],
-  });
-  if (reloaded?.freshness_stale !== true || reloaded.freshness_rule_id !== rule.id) {
-    result.flagged -= 1;
-    return false;
-  }
+  // Re-assertions write under the lock of the element (upsert, analyst confirmation): holding it from the check to the
+  // policy write guarantees that a re-assertion either clears the flag before the check or lands after the write
+  const lockIds = R.uniq([element.internal_id, element.standard_id].filter((lockId) => !!lockId));
+  let lock: { unlock: () => Promise<void> } | undefined;
   try {
+    lock = await lockResources(lockIds);
+    const reloaded = await elLoadById<FreshnessCandidate & { freshness_stale?: boolean; freshness_rule_id?: string }>(context, user, element.internal_id, {
+      type: element.entity_type,
+      baseData: true,
+      baseFields: [ATTRIBUTE_FRESHNESS_STALE, ATTRIBUTE_FRESHNESS_RULE_ID, 'confidence', 'revoked'],
+    });
+    if (reloaded?.freshness_stale !== true || reloaded.freshness_rule_id !== rule.id) {
+      result.flagged -= 1;
+      return false;
+    }
     if (policy === FRESHNESS_POLICY_LOWER_CONFIDENCE) {
-      const current = element.confidence ?? 0;
+      const current = reloaded.confidence ?? 0;
       const lowered = Math.max(0, current - (rule.freshness_confidence_step ?? DEFAULT_FRESHNESS_CONFIDENCE_STEP));
       if (lowered !== current) {
-        await patchAttribute(context, user, element.internal_id, element.entity_type, { confidence: lowered });
+        await patchAttribute(context, user, element.internal_id, element.entity_type, { confidence: lowered }, { locks: lockIds });
         result.lowered += 1;
       }
     }
-    if (policy === FRESHNESS_POLICY_REVOKE && element.revoked !== true) {
-      await patchAttribute(context, user, element.internal_id, element.entity_type, { revoked: true });
+    if (policy === FRESHNESS_POLICY_REVOKE && reloaded.revoked !== true) {
+      await patchAttribute(context, user, element.internal_id, element.entity_type, { revoked: true }, { locks: lockIds });
       result.revoked += 1;
     }
   } catch (err) {
@@ -181,6 +187,8 @@ const applyFreshnessPolicy = async (context: AuthContext, user: AuthUser, rule: 
     await applyProvenanceUpdate(context, element, { resetFreshness: true });
     result.flagged -= 1;
     throw err;
+  } finally {
+    await lock?.unlock();
   }
   return true;
 };

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildSourcesCardModel, type ProvenanceAssertion, type ProvenanceConflict } from './provenanceUtils';
+import { buildSourcesCardModel, groupProceduresByText, type ProvenanceAssertion, type ProvenanceConflict } from './provenanceUtils';
 import { PROVENANCE_SOURCE_LINK_RESOLVERS, type ProvenanceSourceLinkResolver, resolveProvenanceSourceLink } from './provenanceSourceLinks';
 
 const assertion = (source_id: string, last_asserted_at: string, source_kind = 'connector'): ProvenanceAssertion => ({
@@ -48,6 +48,21 @@ describe('buildSourcesCardModel', () => {
       { field: 'x_custom_field', values: [value] },
     ];
     expect(buildSourcesCardModel([assertion('a', '2026-09-01T00:00:00.000Z')], conflicts)?.conflictingFields).toEqual(['Description', 'x_custom_field']);
+  });
+});
+
+describe('groupProceduresByText', () => {
+  it('shows a procedure asserted by several sources once, with every named source and the latest assertion', () => {
+    const groups = groupProceduresByText([
+      { text: 'Spearphishing attachment', source_id: 'a', last_asserted_at: '2026-09-01T00:00:00.000Z' },
+      { text: ' spearphishing ATTACHMENT', source_id: 'b', last_asserted_at: '2026-09-03T00:00:00.000Z' },
+      { text: 'Spearphishing attachment', source_id: 'unknown', last_asserted_at: '2026-09-02T00:00:00.000Z' },
+      { text: 'Drive-by compromise', source_id: 'b', last_asserted_at: null },
+    ], [assertion('a', '2026-09-01T00:00:00.000Z'), assertion('b', '2026-09-03T00:00:00.000Z')]);
+    expect(groups).toEqual([
+      { text: 'Spearphishing attachment', sourceNames: ['Source a', 'Source b'], lastAssertedAt: '2026-09-03T00:00:00.000Z' },
+      { text: 'Drive-by compromise', sourceNames: ['Source b'], lastAssertedAt: null },
+    ]);
   });
 });
 

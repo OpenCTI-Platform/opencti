@@ -314,6 +314,17 @@ describe('Provenance: every fact knows who said it', () => {
     ]);
     // Default policy keeps the longest procedure as description
     expect(relation.description).toEqual('Spearphishing link to a credential harvesting page');
+    // The same procedure asserted by another source keeps the attribution of both sources
+    await queryAsUserWithSuccess(USER_EDITOR, {
+      query: addUses,
+      variables: { input: { fromId: malwareId, toId: attackPatternId, relationship_type: 'uses', description: 'Spearphishing attachment', confidence: 90 } },
+    });
+    const attributed = await loadRelation(usesId);
+    const attachmentSources = attributed.procedures
+      .filter((procedure: { text: string }) => procedure.text === 'Spearphishing attachment')
+      .map((procedure: { source_id: string }) => procedure.source_id);
+    expect(attachmentSources).toHaveLength(2);
+    expect(attachmentSources).toContain(ADMIN_USER.id);
   });
 
   it('should flag stale knowledge with knowledge decay rules and reset it on re-assertion', async () => {

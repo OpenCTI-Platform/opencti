@@ -109,6 +109,17 @@ describe('Provenance re-assertion coalescing', () => {
     expect(result.redundant).toEqual(false);
     expect(result.proceduresAdd).toEqual([added]);
   });
+
+  it('should keep the same procedure asserted by another source as a new attribution', () => {
+    const element = {
+      x_opencti_assertions: [stored(SOURCE_ID, hoursBefore(2)), stored(OTHER_SOURCE_ID, hoursBefore(2))],
+      procedures: [{ text: 'Spearphishing with macros', source_id: SOURCE_ID, last_asserted_at: hoursBefore(1) }],
+    };
+    const sameText = { text: 'Spearphishing with macros', source_id: OTHER_SOURCE_ID, last_asserted_at: AT };
+    const result = coalesceReassertion(element, OTHER_SOURCE_ID, AT, { proceduresAdd: [sameText] }, WINDOW);
+    expect(result.redundant).toEqual(false);
+    expect(result.proceduresAdd).toEqual([sameText]);
+  });
 });
 
 describe('Provenance corroboration read from the update response', () => {

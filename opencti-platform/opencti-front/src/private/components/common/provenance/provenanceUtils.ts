@@ -136,6 +136,37 @@ export const sortAssertionsByRecency = (assertions: ReadonlyArray<ProvenanceAsse
   return [...(assertions ?? [])].sort((a, b) => b.last_asserted_at.localeCompare(a.last_asserted_at));
 };
 
+export interface ProcedureGroup {
+  readonly text: string;
+  readonly sourceNames: string[];
+  readonly lastAssertedAt: string | null;
+}
+
+/**
+ * Procedures are kept per source: the same text asserted by several sources is shown once, with the name of every
+ * source that asserted it (sources beyond the bounded details have no name and are not listed).
+ */
+export const groupProceduresByText = (
+  procedures: ReadonlyArray<ProvenanceProcedure>,
+  assertions: ReadonlyArray<Pick<ProvenanceAssertion, 'source_id' | 'source_name'>>,
+): ProcedureGroup[] => {
+  const sourceNames = new Map(assertions.map((assertion) => [assertion.source_id, assertion.source_name]));
+  const groups = new Map<string, { text: string; sourceNames: string[]; lastAssertedAt: string | null }>();
+  procedures.forEach((procedure) => {
+    const key = procedure.text.trim().toLowerCase();
+    const group = groups.get(key) ?? { text: procedure.text, sourceNames: [], lastAssertedAt: null };
+    const name = procedure.source_id ? sourceNames.get(procedure.source_id) : undefined;
+    if (name && !group.sourceNames.includes(name)) {
+      group.sourceNames.push(name);
+    }
+    if (procedure.last_asserted_at && (!group.lastAssertedAt || procedure.last_asserted_at > group.lastAssertedAt)) {
+      group.lastAssertedAt = procedure.last_asserted_at;
+    }
+    groups.set(key, group);
+  });
+  return [...groups.values()];
+};
+
 export const SOURCES_CARD_MAX_SOURCES = 5;
 
 export interface SourcesCardModel {

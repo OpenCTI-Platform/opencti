@@ -8,6 +8,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Card from '@common/card/Card';
 import Drawer from '@components/common/drawer/Drawer';
@@ -17,7 +18,7 @@ import ProvenanceBadge from './ProvenanceBadge';
 import ProvenanceSourceKindIcon from './ProvenanceSourceKindIcon';
 import ProvenanceSourcesPanel from './ProvenanceSourcesPanel';
 import { resolveProvenanceSourceLink } from './provenanceSourceLinks';
-import { buildSourcesCardModel, freshnessColor, type ProvenanceData, sourceKindLabel, warningColor } from './provenanceUtils';
+import { buildSourcesCardModel, type ProvenanceData, sourceKindLabel, warningColor } from './provenanceUtils';
 import { ProvenanceSourcesCardQuery } from './__generated__/ProvenanceSourcesCardQuery.graphql';
 
 const provenanceSourcesCardQuery = graphql`
@@ -69,7 +70,7 @@ interface ProvenanceSourcesCardContentProps {
 
 const ProvenanceSourcesCardContent = ({ id, fetchKey, onOpen, showEmpty }: ProvenanceSourcesCardContentProps) => {
   const theme = useTheme<Theme>();
-  const { t_i18n, fldt, nsdt } = useFormatter();
+  const { t_i18n, rd, smhd } = useFormatter();
   const data = useLazyLoadQuery<ProvenanceSourcesCardQuery>(provenanceSourcesCardQuery, { id }, { fetchPolicy: 'store-and-network', fetchKey });
   const element = data.stixObjectOrStixRelationship as ProvenanceData | null;
   const model = element ? buildSourcesCardModel(element.x_opencti_assertions, element.x_opencti_conflicts, element.corroboration_count) : null;
@@ -86,15 +87,7 @@ const ProvenanceSourcesCardContent = ({ id, fetchKey, onOpen, showEmpty }: Prove
     ) : null;
   }
   return (
-    <Card
-      title={t_i18n('Sources')}
-      fullHeight={false}
-      action={(
-        <Button variant="tertiary" size="small" onClick={onOpen} data-testid="provenance-open-sources">
-          {t_i18n('View all {count, plural, one {# source} other {# sources}}', { values: { count: model.totalSourcesCount } })}
-        </Button>
-      )}
-    >
+    <Card title={t_i18n('Sources')} fullHeight={false}>
       <Stack gap={1.5} data-testid="provenance-sources-card">
         <Stack direction="row" alignItems="center" gap={1.5} flexWrap="wrap">
           <ProvenanceBadge
@@ -104,19 +97,30 @@ const ProvenanceSourcesCardContent = ({ id, fetchKey, onOpen, showEmpty }: Prove
             hasConflicts={element.has_conflicts}
           />
           {element.last_asserted_at && (
-            <Typography variant="body2" sx={{ color: freshnessColor(theme, element.freshness_days, element.freshness_stale) }}>
-              {t_i18n('Last asserted {date}', { values: { date: fldt(element.last_asserted_at) } })}
-            </Typography>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Typography variant="body2" color="textSecondary" tabIndex={0} data-testid="provenance-last-asserted">
+                  {t_i18n('Last asserted {date}', { values: { date: rd(element.last_asserted_at) } })}
+                </Typography>
+              </TooltipTrigger>
+              <TooltipContent>{smhd(element.last_asserted_at)}</TooltipContent>
+            </Tooltip>
           )}
         </Stack>
         <List dense disablePadding aria-label={t_i18n('Sources')}>
           {model.sources.map((source) => {
             const link = resolveProvenanceSourceLink(source);
+            const firstAsserted = rd(source.first_asserted_at);
+            const lastAsserted = rd(source.last_asserted_at);
             const details = [
               t_i18n(sourceKindLabel(source.source_kind)),
-              t_i18n('First asserted {date}', { values: { date: nsdt(source.first_asserted_at) } }),
-              t_i18n('Last asserted {date}', { values: { date: nsdt(source.last_asserted_at) } }),
+              ...(firstAsserted === lastAsserted
+                ? [t_i18n('Asserted {date}', { values: { date: lastAsserted } })]
+                : [t_i18n('First asserted {date}', { values: { date: firstAsserted } }), t_i18n('Last asserted {date}', { values: { date: lastAsserted } })]),
             ];
+            const absoluteDates = firstAsserted === lastAsserted
+              ? smhd(source.last_asserted_at)
+              : `${t_i18n('First asserted {date}', { values: { date: smhd(source.first_asserted_at) } })} - ${t_i18n('Last asserted {date}', { values: { date: smhd(source.last_asserted_at) } })}`;
             return (
               <ListItem
                 key={source.source_id}
@@ -131,19 +135,19 @@ const ProvenanceSourcesCardContent = ({ id, fetchKey, onOpen, showEmpty }: Prove
                 </ListItemIcon>
                 <ListItemText
                   primary={link ? <Link to={link}>{source.source_name}</Link> : source.source_name}
-                  secondary={details.join(' - ')}
+                  secondary={(
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span data-testid="provenance-source-dates">{details.join(' - ')}</span>
+                      </TooltipTrigger>
+                      <TooltipContent>{absoluteDates}</TooltipContent>
+                    </Tooltip>
+                  )}
                 />
               </ListItem>
             );
           })}
         </List>
-        {model.hiddenSourcesCount > 0 && (
-          <div>
-            <Button variant="tertiary" size="small" onClick={onOpen} data-testid="provenance-more-sources">
-              {t_i18n('{count, plural, one {# more source} other {# more sources}}', { values: { count: model.hiddenSourcesCount } })}
-            </Button>
-          </div>
-        )}
         {model.conflictingFields.length > 0 && (
           <Stack direction="row" alignItems="center" justifyContent="space-between" gap={1} flexWrap="wrap" data-testid="provenance-card-conflicts">
             <Typography variant="body2" sx={{ color: warningColor(theme) }}>
@@ -154,6 +158,16 @@ const ProvenanceSourcesCardContent = ({ id, fetchKey, onOpen, showEmpty }: Prove
             </Button>
           </Stack>
         )}
+        <Stack direction="row" alignItems="center" justifyContent="space-between" gap={1} data-testid="provenance-sources-card-footer">
+          <Typography variant="caption" color="textSecondary" data-testid="provenance-more-sources">
+            {model.hiddenSourcesCount > 0
+              ? t_i18n('{count, plural, one {# more source} other {# more sources}}', { values: { count: model.hiddenSourcesCount } })
+              : null}
+          </Typography>
+          <Button variant="tertiary" size="small" onClick={onOpen} data-testid="provenance-open-sources">
+            {t_i18n('View all {count, plural, one {# source} other {# sources}}', { values: { count: model.totalSourcesCount } })}
+          </Button>
+        </Stack>
       </Stack>
     </Card>
   );

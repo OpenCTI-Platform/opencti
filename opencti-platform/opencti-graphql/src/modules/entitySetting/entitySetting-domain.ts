@@ -112,11 +112,25 @@ export const entitySettingEditField = async (context: AuthContext, user: AuthUse
   return notify(BUS_TOPICS[ENTITY_TYPE_ENTITY_SETTING].EDIT_TOPIC, element, user);
 };
 
-export const PROVENANCE_SOURCES_WIDGET: OverviewLayoutCustomization = { key: 'sources', width: 12, label: 'Sources' };
+export const PROVENANCE_SOURCES_WIDGET: OverviewLayoutCustomization = { key: 'sources', width: 6, label: 'Sources' };
 
 const insertBefore = (layout: OverviewLayoutCustomization[], widget: OverviewLayoutCustomization, beforeKey: string) => {
   const index = layout.findIndex((candidate) => candidate.key === beforeKey);
   return index < 0 ? [...layout, widget] : [...layout.slice(0, index), widget, ...layout.slice(index)];
+};
+
+/**
+ * The Sources widget opens the second row of the overview, right after the basic information and the timeline that
+ * follows it on cases, so that it pairs with the timeline or with the next half-width widget.
+ */
+export const insertSourcesWidget = (layout: OverviewLayoutCustomization[]) => {
+  let anchor = layout.findIndex((candidate) => candidate.key === 'basicInformation');
+  if (anchor < 0 || layout[anchor + 1]?.key === 'timeline') {
+    anchor = layout.findIndex((candidate) => candidate.key === 'timeline');
+  }
+  return anchor < 0
+    ? [...layout, PROVENANCE_SOURCES_WIDGET]
+    : [...layout.slice(0, anchor + 1), PROVENANCE_SOURCES_WIDGET, ...layout.slice(anchor + 1)];
 };
 
 /**
@@ -136,7 +150,8 @@ export const mergeMissingWidgets = (stored: OverviewLayoutCustomization[], defau
 
 /**
  * Overview layout of a type: the customized one completed with the widgets registered since, the Sources widget
- * only being part of it while the provenance of the type is tracked.
+ * only being part of it while the provenance of the type is tracked. A layout customized before the Sources widget
+ * existed receives it at its default position and width.
  */
 export const getOverviewLayoutCustomization = (entitySetting: BasicStoreEntityEntitySetting) => {
   const stored = entitySetting.overview_layout_customization?.[0] ? entitySetting.overview_layout_customization : undefined;
@@ -144,10 +159,11 @@ export const getOverviewLayoutCustomization = (entitySetting: BasicStoreEntityEn
   if (!registered) {
     return stored;
   }
-  const isProvenanceTracked = isProvenanceTrackingEnabled(entitySetting);
-  const defaults = isProvenanceTracked ? insertBefore(registered, PROVENANCE_SOURCES_WIDGET, 'notes') : registered;
-  const layout = stored ? mergeMissingWidgets(stored, defaults) : defaults;
-  return isProvenanceTracked ? layout : layout.filter((widget) => widget.key !== PROVENANCE_SOURCES_WIDGET.key);
+  const layout = stored ? mergeMissingWidgets(stored, registered) : registered;
+  if (!isProvenanceTrackingEnabled(entitySetting)) {
+    return layout.filter((widget) => widget.key !== PROVENANCE_SOURCES_WIDGET.key);
+  }
+  return layout.some((widget) => widget.key === PROVENANCE_SOURCES_WIDGET.key) ? layout : insertSourcesWidget(layout);
 };
 
 export const getTemplatesForSetting = async (

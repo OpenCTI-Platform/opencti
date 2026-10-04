@@ -23,7 +23,7 @@ import type { Theme } from '../../../../components/Theme';
 import ProvenanceBadge from './ProvenanceBadge';
 import ProvenanceSourceKindIcon from './ProvenanceSourceKindIcon';
 import { MESSAGING$ } from '../../../../relay/environment';
-import { freshnessColor, notifyPayloadErrors, type ProvenanceData, sortAssertionsByRecency, sourceKindLabel, warningColor } from './provenanceUtils';
+import { freshnessColor, groupProceduresByText, notifyPayloadErrors, type ProvenanceData, sortAssertionsByRecency, sourceKindLabel, warningColor } from './provenanceUtils';
 import { ProvenanceSourcesPanelQuery } from './__generated__/ProvenanceSourcesPanelQuery.graphql';
 
 export const provenanceSourcesPanelQuery = graphql`
@@ -132,7 +132,7 @@ const ProvenanceSourcesContent = ({ queryRef, onChange }: ProvenanceSourcesConte
   }
   const assertions = sortAssertionsByRecency(element.x_opencti_assertions);
   const conflicts = (element.x_opencti_conflicts ?? []).filter((conflict) => conflict.values.length > 0);
-  const procedures = element.procedures ?? [];
+  const procedures = groupProceduresByText(element.procedures ?? [], assertions);
   const inFlight = adoptInFlight || dismissInFlight || procedureInFlight || assertInFlight;
   const completeWith = (successMessage: string) => (_: unknown, errors: readonly PayloadError[] | null) => {
     if (notifyPayloadErrors(errors)) return;
@@ -287,10 +287,15 @@ const ProvenanceSourcesContent = ({ queryRef, onChange }: ProvenanceSourcesConte
             {procedures.map((procedure) => {
               const isCurrent = (element.description ?? '').trim().toLowerCase() === procedure.text.trim().toLowerCase();
               return (
-                <Stack key={procedure.text} direction="row" alignItems="center" justifyContent="space-between" gap={2}>
+                <Stack key={procedure.text} direction="row" alignItems="center" justifyContent="space-between" gap={2} data-testid="provenance-procedure">
                   <Stack gap={0.5} sx={{ minWidth: 0 }}>
                     <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>{procedure.text}</Typography>
-                    {procedure.last_asserted_at && <Typography variant="caption">{t_i18n('Last asserted {date}', { values: { date: nsdt(procedure.last_asserted_at) } })}</Typography>}
+                    {procedure.sourceNames.length > 0 && (
+                      <Typography variant="caption" color="textSecondary">
+                        {t_i18n('Asserted by {sources}', { values: { sources: procedure.sourceNames.join(', ') } })}
+                      </Typography>
+                    )}
+                    {procedure.lastAssertedAt && <Typography variant="caption">{t_i18n('Last asserted {date}', { values: { date: nsdt(procedure.lastAssertedAt) } })}</Typography>}
                   </Stack>
                   {isCurrent ? (
                     <Tag label={t_i18n('Current description')} />
