@@ -216,6 +216,30 @@ const ThreatPulsePreviewCard = ({ pulseEntity }: { pulseEntity: PulseEntity }) =
   );
 };
 
+// Without any community data for the object, the reason alone: the message about the last known information would not
+// apply.
+const PULSE_NO_DATA_MESSAGES: Record<string, string> = {
+  hub_unreachable: 'XTM Hub could not be reached: the community data of this object appears once XTM Hub answers.',
+};
+
+// Full experience, no community data for the object yet: why, instead of an empty or missing card.
+const ThreatPulseUnavailableCard = ({ reason }: { reason: string }) => {
+  const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
+  const message = PULSE_NO_DATA_MESSAGES[reason] ?? PULSE_UNAVAILABLE_MESSAGES[reason] ?? 'The community data of this object is not available yet.';
+  return (
+    <Box sx={{ flex: '0 0 auto' }} data-testid="threat-pulse-card-container">
+      <Card title={<ThreatPulseCardTitle />} fullHeight={false}>
+        <Box data-testid="threat-pulse-card" sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+          <Text variant="content-compact" style={{ color: theme.palette.text.secondary }} data-testid="threat-pulse-unavailable">
+            {t_i18n(message)}
+          </Text>
+        </Box>
+      </Card>
+    </Box>
+  );
+};
+
 const ThreatPulseCardComponent = ({ entityId }: ThreatPulseCardProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
@@ -231,12 +255,15 @@ const ThreatPulseCardComponent = ({ entityId }: ThreatPulseCardProps) => {
   if (pulseEntity.access === 'preview') {
     return <ThreatPulsePreviewCard pulseEntity={pulseEntity} />;
   }
-  const information = pulseEntity.information;
-  if (pulseEntity.access !== 'full' || !information) {
+  if (pulseEntity.access !== 'full') {
     return null;
   }
-  const secondary = { color: theme.palette.text.secondary };
+  const information = pulseEntity.information;
   const reason = pulseEntity.unavailable_reason;
+  if (!information) {
+    return reason ? <ThreatPulseUnavailableCard reason={reason} /> : null;
+  }
+  const secondary = { color: theme.palette.text.secondary };
   const title = <ThreatPulseCardTitle />;
   const platforms = pulsePlatformsBucketLabel(t_i18n, information.platforms_bucket);
   const sectorPlatforms = pulsePlatformsBucketLabel(t_i18n, information.sector_platforms_bucket);

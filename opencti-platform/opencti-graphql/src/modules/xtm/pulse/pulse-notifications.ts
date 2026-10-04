@@ -28,7 +28,8 @@ export const PULSE_TRENDING_EVENT_TYPE = TriggerEventType.PulseTrending;
 const TRENDING_NOTIFICATION_MEMORY_DAYS = 7;
 const TRENDING_NOTIFICATION_SIZE = 200;
 
-const isPulseTrendingTrigger = ({ trigger }: ResolvedLive) => {
+// Only the triggers stored by users: the triggers the platform generates for every user have no entity type.
+export const isPulseTrendingTrigger = ({ trigger }: ResolvedLive) => {
   return trigger.entity_type === ENTITY_TYPE_TRIGGER && (trigger.event_types ?? []).includes(PULSE_TRENDING_EVENT_TYPE);
 };
 

@@ -120,6 +120,23 @@ describe('ThreatPulseCard', () => {
     expect(screen.getByText('25 to 49 platforms')).toBeDefined();
   });
 
+  it.each([
+    ['hub_unreachable', 'XTM Hub could not be reached: the community data of this object appears once XTM Hub answers.'],
+    ['rate_limited', 'The XTM Hub rate limit is reached, retry in a few minutes.'],
+    ['excluded', 'This object never leaves the platform: its markings or its restricted access exclude it from Threat Pulse.'],
+    ['an_unknown_reason', 'The community data of this object is not available yet.'],
+  ])('should explain why an object has no community data yet (%s)', async (reason, message) => {
+    renderCard({ ...FULL, unavailable_reason: reason }, null);
+    expect((await screen.findByTestId('threat-pulse-unavailable')).textContent).toBe(message);
+    expect(screen.queryByTestId('threat-pulse-prevalence-gauge')).toBeNull();
+    expect(screen.queryByText(reason)).toBeNull();
+  });
+
+  it('should render nothing in the full experience without community data nor a reason', () => {
+    renderCard(FULL, null);
+    expect(screen.queryByTestId('threat-pulse-card')).toBeNull();
+  });
+
   it('should show the coarse preview signal, the locked rows and the unlock step to an administrator', async () => {
     renderCard(IN_PREVIEW, PREVIEW);
     expect(await screen.findByTestId('threat-pulse-preview')).toBeDefined();
