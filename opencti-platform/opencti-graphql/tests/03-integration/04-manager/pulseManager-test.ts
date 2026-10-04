@@ -93,6 +93,13 @@ const NARROWED_IP = '198.51.100.217';
 const STALE_POLICY_IP = '198.51.100.218';
 const PENDING_ACCEPTED_IP = '198.51.100.219';
 const FAILED_WINDOW_IP = '198.51.100.220';
+const FORMER_CONSENT_IP = '198.51.100.221';
+const FORMER_CONSENT_VERSION = '2025-01-1';
+const PULSE_CONSENT_STATE = gql`
+  query PulseConsentState {
+    pulseSettings { mode enabled access consent_accepted_version }
+  }
+`;
 const PREVIEW_RED_DOMAIN = 'red-preview.pulse-test.example';
 const PREVIEW_PEERS = ['pulse-preview-1', 'pulse-preview-2', 'pulse-preview-3', 'pulse-preview-4', 'pulse-preview-5'];
 const PREVIEW_FORBIDDEN_OPERATIONS = ['pushPulse', 'pulseLookup', 'pulseTrending', 'pulseBenchmark'];
@@ -514,6 +521,27 @@ describe('Threat Pulse manager and API', () => {
     expect(Date.parse(after ?? '')).toBeGreaterThan(Date.parse(before ?? '') || 0);
     await deleteElementById(testContext, ADMIN_USER, pendingId, ENTITY_TYPE_INDICATOR);
     await deleteElementById(testContext, ADMIN_USER, failedWindowId, ENTITY_TYPE_INDICATOR);
+  });
+
+  it('should send nothing under a former consent version until the current one is accepted', async () => {
+    const pushes = () => hub.requests.filter((request) => request.operation === 'pushPulse').length;
+    const created = await queryAsAdminWithSuccess({
+      query: CREATE_INDICATOR,
+      variables: { input: { name: FORMER_CONSENT_IP, pattern: `[ipv4-addr:value = '${FORMER_CONSENT_IP}']`, pattern_type: 'stix', x_opencti_main_observable_type: 'IPv4-Addr' } },
+    });
+    const indicatorId = created.data?.indicatorAdd.id;
+    // An upgrade changed the consent text: the version this platform accepted is a former one
+    await updateAttribute(testContext, ADMIN_USER, settingsId, ENTITY_TYPE_SETTINGS, [{ key: 'pulse_consent_version', value: [FORMER_CONSENT_VERSION] }]);
+    const before = pushes();
+    const { pushedRecords } = await runPulseContribution(testContext);
+    expect({ pushedRecords, pushes: pushes() }).toEqual({ pushedRecords: 0, pushes: before });
+    await expect.poll(async () => (await queryAsAdminWithSuccess({ query: PULSE_CONSENT_STATE })).data?.pulseSettings, { timeout: 10000 })
+      .toMatchObject({ mode: 'contribute_and_read', enabled: false, access: 'preview', consent_accepted_version: FORMER_CONSENT_VERSION });
+    // Accepted again: the contribution resumes from the renewal on
+    await queryAsAdminWithSuccess({ query: CONFIGURE, variables: { input: { mode: 'contribute_and_read', consent_version: PULSE_CONSENT_VERSION } } });
+    await expect.poll(async () => (await queryAsAdminWithSuccess({ query: PULSE_CONSENT_STATE })).data?.pulseSettings, { timeout: 10000 })
+      .toMatchObject({ enabled: true, consent_accepted_version: PULSE_CONSENT_VERSION });
+    await deleteElementById(testContext, ADMIN_USER, indicatorId, ENTITY_TYPE_INDICATOR);
   });
 
   it('should hide the network signal below the anonymity threshold', async () => {

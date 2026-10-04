@@ -13,6 +13,7 @@ import type { PulseHubPlatform } from '../hub/xtm-hub-pulse-client';
 import type { PulseOperationalState } from './pulse-cache';
 import { PulseAccess, PulseMode, PulseRegionBucket, PulseSectorBucket } from '../../../generated/graphql';
 import {
+  PULSE_CONSENT_VERSION,
   PULSE_FORCED_EXCLUDED_MARKING_DEFINITIONS,
   PULSE_MODE_VALUES,
   PULSE_REGION_BUCKETS,
@@ -61,7 +62,11 @@ export const readPulseSettings = (settings: BasicStoreSettings): PulseSettingsVa
   };
 };
 
-export const isPulseContributing = (values: PulseSettingsValues) => values.mode === PulseMode.ContributeAndRead;
+// The contribution needs the consent of the current version: after an upgrade that changes its text, nothing is sent
+// and the platform reads the preview until an administrator accepts the new one.
+export const isPulseConsentCurrent = (values: PulseSettingsValues) => values.consentVersion === PULSE_CONSENT_VERSION;
+
+export const isPulseContributing = (values: PulseSettingsValues) => values.mode === PulseMode.ContributeAndRead && isPulseConsentCurrent(values);
 
 // Reciprocity: the full reads need the contribution, and XTM Hub enforces it. A contributing platform whose
 // contribution lapsed (XTM Hub answered contribution_required) falls back to the preview until it contributes again.
@@ -74,7 +79,7 @@ export const hasPulseReadAccess = (state: Pick<PulseOperationalState, 'contribut
 export const getPulseAccess = (values: PulseSettingsValues, registered: boolean, readAccess: boolean): PulseAccess => {
   if (!registered) return PulseAccess.NotConnected;
   if (values.mode === PulseMode.Off) return PulseAccess.Off;
-  if (values.mode === PulseMode.ContributeAndRead && readAccess) return PulseAccess.Full;
+  if (isPulseContributing(values) && readAccess) return PulseAccess.Full;
   return PulseAccess.Preview;
 };
 

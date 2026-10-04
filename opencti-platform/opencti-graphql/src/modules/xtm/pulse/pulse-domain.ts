@@ -551,9 +551,10 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
     await redisBumpPulseConfigGeneration();
     if (enabling && !wasContributing) {
     // The contribution starts now: activity recorded before (a node whose settings cache had not seen the opt-out yet)
-    // is never sent.
+    // is never sent, nor the batches built under a former consent version still waiting in the outbox.
       await redisSetPulseCursor(new Date().toISOString());
       await redisDiscardPulseActivity(lastUtcDays(ACTIVITY_DAYS));
+      await redisDiscardPulseOutbox();
     }
     if (!enabling) {
     // Nothing collected before the opt-out may leave afterwards.

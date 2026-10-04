@@ -17,9 +17,10 @@ import {
   matchRegionBucket,
   matchSectorBucket,
   readPulseSettings,
+  isPulseConsentCurrent,
   isPulseContributing,
 } from '../../../../../src/modules/xtm/pulse/pulse-settings';
-import { PULSE_SCOPE_ENTITY_TYPES, type BasicStorePulseEntity, type PulseHubLookupResult } from '../../../../../src/modules/xtm/pulse/pulse-types';
+import { PULSE_CONSENT_VERSION, PULSE_SCOPE_ENTITY_TYPES, type BasicStorePulseEntity, type PulseHubLookupResult } from '../../../../../src/modules/xtm/pulse/pulse-types';
 import { PulseAccess, PulseMode, PulsePrevalence, PulseRegionBucket, PulseSectorBucket, PulseTrend } from '../../../../../src/generated/graphql';
 import type { BasicStoreSettings } from '../../../../../src/types/settings';
 
@@ -211,9 +212,20 @@ describe('Threat Pulse settings', () => {
   });
 
   it('should read the contribute-only mode of the first builds as the contribution', () => {
-    const legacy = readPulseSettings({ id: 'settings', pulse_mode: 'contribute' } as unknown as BasicStoreSettings);
+    const legacy = readPulseSettings({ id: 'settings', pulse_mode: 'contribute', pulse_consent_version: PULSE_CONSENT_VERSION } as unknown as BasicStoreSettings);
     expect(legacy.mode).toBe(PulseMode.ContributeAndRead);
     expect(isPulseContributing(legacy)).toBe(true);
+  });
+
+  it('should pause the contribution until the current consent version is accepted', () => {
+    // An upgrade changed the consent text: the mode stays, nothing is sent and the platform reads the preview
+    [undefined, '2025-01-1'].forEach((consentVersion) => {
+      const values = readPulseSettings({ id: 'settings', pulse_mode: 'contribute_and_read', pulse_consent_version: consentVersion } as unknown as BasicStoreSettings);
+      expect(values.mode).toBe(PulseMode.ContributeAndRead);
+      expect(isPulseConsentCurrent(values)).toBe(false);
+      expect(isPulseContributing(values)).toBe(false);
+      expect(getPulseAccess(values, true, true)).toBe(PulseAccess.Preview);
+    });
   });
 
   it.each([
@@ -225,7 +237,7 @@ describe('Threat Pulse settings', () => {
     { mode: 'contribute_and_read', registered: false, readAccess: true, access: PulseAccess.NotConnected },
     { mode: 'preview', registered: false, readAccess: false, access: PulseAccess.NotConnected },
   ])('should give $access to $mode (registered $registered, read access $readAccess)', ({ mode, registered, readAccess, access }) => {
-    const values = readPulseSettings({ id: 'settings', pulse_mode: mode } as unknown as BasicStoreSettings);
+    const values = readPulseSettings({ id: 'settings', pulse_mode: mode, pulse_consent_version: PULSE_CONSENT_VERSION } as unknown as BasicStoreSettings);
     expect(getPulseAccess(values, registered, readAccess)).toBe(access);
   });
 
