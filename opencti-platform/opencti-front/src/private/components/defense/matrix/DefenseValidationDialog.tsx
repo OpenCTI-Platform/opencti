@@ -225,7 +225,7 @@ const DefenseValidationDialog = ({ open, onClose, onValidated, techniques, platf
               <SelectItem value="ENDPOINT">{t_i18n('Endpoint')}</SelectItem>
             </Field>
             <OpenVocabField
-              label={t_i18n('Platform(s) affinity')}
+              label={t_i18n('Platform affinity')}
               type="platforms_ov"
               name="platforms_affinity"
               onChange={(name, value) => setFieldValue(name, value)}
