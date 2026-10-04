@@ -1,3 +1,5 @@
+import { INGESTION_SETINGESTIONS, MODULES_MODMANAGE, SETTINGS_SETACCESSES, SETTINGS_SETCUSTOMIZATION } from '../../../../utils/hooks/useGranted';
+
 export type ScorecardPeriod = 'LAST_7_DAYS' | 'LAST_30_DAYS' | 'LAST_90_DAYS';
 
 export const SCORECARD_PERIODS: ScorecardPeriod[] = ['LAST_7_DAYS', 'LAST_30_DAYS', 'LAST_90_DAYS'];
@@ -329,4 +331,26 @@ export const buildTrendSerie = (scorecards: readonly ScorecardTrendPoint[], metr
 
 export const periodStartDate = (period: ScorecardPeriod, now = Date.now()) => {
   return new Date(now - SCORECARD_PERIOD_DAYS[period] * 24 * 3600 * 1000).toISOString();
+};
+
+/**
+ * The capability applying or reverting a recommendation requires: the one of the change it makes, as checked by the
+ * platform for each kind and target.
+ */
+export const recommendationActionCapability = (kind: string, payload: Record<string, unknown>): string => {
+  switch (kind) {
+    case 'raise_confidence':
+    case 'lower_confidence':
+      return SETTINGS_SETACCESSES;
+    case 'quarantine':
+      return payload.target === 'ingestion_feed' ? INGESTION_SETINGESTIONS : SETTINGS_SETACCESSES;
+    case 'add_decay_rule':
+    case 'add_deny_list':
+      return SETTINGS_SETCUSTOMIZATION;
+    case 'retire':
+    case 'change_schedule':
+      return payload.target === 'ingestion_feed' ? INGESTION_SETINGESTIONS : MODULES_MODMANAGE;
+    default:
+      return MODULES_MODMANAGE;
+  }
 };

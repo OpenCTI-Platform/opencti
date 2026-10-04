@@ -14,7 +14,7 @@ import { useSourceMetricFormat } from './SourceMetricValue';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useGranted, { INGESTION_SETINGESTIONS, MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
 import type { Theme } from '../../../../components/Theme';
-import { parseJsonObject, RECOMMENDATION_KIND_LABELS, RECOMMENDATION_STATUS_LABELS } from './sourceIntelligenceUtils';
+import { parseJsonObject, RECOMMENDATION_KIND_LABELS, RECOMMENDATION_STATUS_LABELS, recommendationActionCapability } from './sourceIntelligenceUtils';
 import { SourceRecommendationCard_recommendation$key } from './__generated__/SourceRecommendationCard_recommendation.graphql';
 import { SourceRecommendationCardApplyMutation } from './__generated__/SourceRecommendationCardApplyMutation.graphql';
 import { SourceRecommendationCardRevertMutation } from './__generated__/SourceRecommendationCardRevertMutation.graphql';
@@ -148,6 +148,7 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
   const [commitDismiss, dismissing] = useApiMutation<SourceRecommendationCardDismissMutation>(dismissMutation);
 
   const payload = parseJsonObject(recommendation.payload);
+  const canAct = useGranted([recommendationActionCapability(recommendation.kind, payload)]);
   const busy = applying || reverting || dismissing;
   const catalogSlug = recommendation.kind === 'add_connector' && typeof payload.slug === 'string' ? payload.slug : null;
 
@@ -324,7 +325,7 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
                 description={failedConnectorId
                   ? t_i18n('Nothing was changed. The connector refused the change: open it to check its state, then retry.')
                   : t_i18n('Nothing was changed. Retry, or read the details to fix the cause first.')}
-                action={canManage ? (
+                action={canAct ? (
                   <Stack direction="row" gap={1}>
                     {failedConnectorId && (
                       <Button variant="secondary" size="small" component={Link} to={`/dashboard/integrations/connectors/${failedConnectorId}`}>
@@ -366,9 +367,9 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
             </>
           )}
         </Box>
-        {canManage && (
+        {(canManage || canAct) && (
           <Stack direction="row" gap={1} flexShrink={0}>
-            {catalogSlug && recommendation.status === 'proposed' && (
+            {canManage && catalogSlug && recommendation.status === 'proposed' && (
               <Button
                 variant="secondary"
                 size="small"
@@ -378,17 +379,17 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
                 {t_i18n('Open in catalog')}
               </Button>
             )}
-            {recommendation.status === 'proposed' && (
+            {canAct && recommendation.status === 'proposed' && (
               <Button size="small" startIcon={<CheckOutlined />} onClick={handleApply} disabled={busy} data-testid="source-recommendation-apply">
                 {applyLabel}
               </Button>
             )}
-            {recommendation.status === 'proposed' && (
+            {canManage && recommendation.status === 'proposed' && (
               <Button variant="secondary" size="small" startIcon={<CloseOutlined />} onClick={() => setDismissOpen(true)} disabled={busy} data-testid="source-recommendation-dismiss">
                 {t_i18n('Reject')}
               </Button>
             )}
-            {recommendation.status === 'applied' && (
+            {canAct && recommendation.status === 'applied' && (
               <Button variant="secondary" size="small" startIcon={<UndoOutlined />} onClick={() => setRevertOpen(true)} disabled={busy} data-testid="source-recommendation-revert">
                 {t_i18n('Revert')}
               </Button>

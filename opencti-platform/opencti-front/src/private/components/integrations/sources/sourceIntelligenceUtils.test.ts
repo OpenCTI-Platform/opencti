@@ -14,6 +14,7 @@ import {
   formatScore,
   parseJsonObject,
   periodStartDate,
+  recommendationActionCapability,
   scoreLevel,
   sourceEditCostLink,
   sourceScorecardRefLink,
@@ -192,6 +193,22 @@ describe('Source intelligence utils', () => {
       expect(sourceScorecardRefLink({ source_kind: 'inference', source_id: 'rule-1' })).toBeNull();
       expect(sourceScorecardRefLink({ source_kind: 'emulation', source_id: 'e-1' })).toBeNull();
       expect(sourceScorecardRefLink({ source_kind: 'connector', source_id: '' })).toBeNull();
+    });
+  });
+
+  describe('recommendationActionCapability', () => {
+    it('should require the capability of the change each kind and target makes', () => {
+      expect(recommendationActionCapability('raise_confidence', {})).toBe('SETTINGS_SETACCESSES');
+      expect(recommendationActionCapability('lower_confidence', {})).toBe('SETTINGS_SETACCESSES');
+      expect(recommendationActionCapability('quarantine', { target: 'connector_user' })).toBe('SETTINGS_SETACCESSES');
+      expect(recommendationActionCapability('quarantine', { target: 'ingestion_feed' })).toBe('INGESTION_SETINGESTIONS');
+      expect(recommendationActionCapability('add_decay_rule', {})).toBe('SETTINGS_SETCUSTOMIZATION');
+      expect(recommendationActionCapability('add_deny_list', {})).toBe('SETTINGS_SETCUSTOMIZATION');
+      expect(recommendationActionCapability('retire', { target: 'ingestion_feed' })).toBe('INGESTION_SETINGESTIONS');
+      expect(recommendationActionCapability('retire', { target: 'connector' })).toBe('MODULES_MODMANAGE');
+      expect(recommendationActionCapability('change_schedule', { target: 'ingestion_feed' })).toBe('INGESTION_SETINGESTIONS');
+      expect(recommendationActionCapability('change_schedule', { target: 'connector' })).toBe('MODULES_MODMANAGE');
+      expect(recommendationActionCapability('add_connector', {})).toBe('MODULES_MODMANAGE');
     });
   });
 });

@@ -2,7 +2,7 @@
 
 Source intelligence measures the operational value of everything that feeds your platform: connectors, ingestion feeds, authors and analysts. It answers questions such as "which feeds bring knowledge nobody else brings?", "which ones are mostly noise?", "what does each actionable object cost us?" and "which priority intelligence requirements are not covered by any source?". It then turns these answers into recommendations to tune collection.
 
-You can find it in **Integrations > Sources**. Viewing sources requires the capability to access connectors or ingestion. Editing them (cost, settings, recommendations) requires the capability to manage connectors or ingestion.
+You can find it in **Integrations > Sources**. Viewing sources requires the capability to access connectors or ingestion. Editing them (cost, scoring, rejecting recommendations) requires the capability to manage connectors or ingestion. Applying or reverting a recommendation requires the capability of the change it makes: managing accesses for a confidence level or the quarantine of a connector, customization for a decay rule or an exclusion list, managing ingestion for a feed, managing connectors for a connector.
 
 !!! note "Enterprise Edition"
 

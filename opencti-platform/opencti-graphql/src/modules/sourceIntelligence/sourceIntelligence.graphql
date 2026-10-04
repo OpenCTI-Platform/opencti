@@ -617,8 +617,9 @@ type Query {
 type Mutation {
   sourceSetCost(id: ID!, input: SourceCostInput): Source @auth(for: [MODULES_MODMANAGE, INGESTION_SETINGESTIONS])
   sourceFieldPatch(id: ID!, input: [EditInput!]!): Source @auth(for: [MODULES_MODMANAGE, INGESTION_SETINGESTIONS])
-  applySourceRecommendation(id: ID!, input: SourceRecommendationApplyInput): SourceRecommendation @auth(for: [MODULES_MODMANAGE, INGESTION_SETINGESTIONS])
-  revertSourceRecommendation(id: ID!): SourceRecommendation @auth(for: [MODULES_MODMANAGE, INGESTION_SETINGESTIONS])
+  # Any capability one of the actions needs: the exact one is checked for each recommendation kind and target
+  applySourceRecommendation(id: ID!, input: SourceRecommendationApplyInput): SourceRecommendation @auth(for: [MODULES_MODMANAGE, INGESTION_SETINGESTIONS, SETTINGS_SETACCESSES, SETTINGS_SETCUSTOMIZATION])
+  revertSourceRecommendation(id: ID!): SourceRecommendation @auth(for: [MODULES_MODMANAGE, INGESTION_SETINGESTIONS, SETTINGS_SETACCESSES, SETTINGS_SETCUSTOMIZATION])
   dismissSourceRecommendation(id: ID!, reason: String): SourceRecommendation @auth(for: [MODULES_MODMANAGE, INGESTION_SETINGESTIONS])
   collectionGapDeployConnector(id: ID!, slug: String!): SourceRecommendation @auth(for: [MODULES_MODMANAGE])
   sourceIntelligenceSettingsEdit(input: SourceIntelligenceSettingsInput!): SourceIntelligenceSettings @auth(for: [SETTINGS_SETCUSTOMIZATION])

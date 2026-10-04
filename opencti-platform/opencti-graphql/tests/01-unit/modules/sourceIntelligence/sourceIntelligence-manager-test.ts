@@ -266,6 +266,29 @@ describe('Source intelligence live signal accounting', () => {
     });
   });
 
+  it.each([
+    ['set', true, false, 1],
+    ['withdrawn', false, true, -1],
+  ])('should count a revocation %s in the periods where each source asserted the object', async (_label, value, previous, sign) => {
+    const revocation = event('update', { id: 'indicator-1', type: 'Indicator' }, {
+      context: {
+        patch: [{ op: 'replace', path: '/revoked', value }],
+        reverse_patch: [{ op: 'replace', path: '/revoked', value: previous }],
+      },
+    });
+    const { periodIncrements } = await computeEventIncrements({} as AuthContext, [revocation] as any, resolver, {
+      enterprise: false,
+      huntRunType: null,
+      lookups: { documents },
+    });
+    const counted = { revoked_count: sign };
+    expect(byPeriod(periodIncrements as any)).toEqual({
+      LAST_7_DAYS: { 'source-feed': counted },
+      LAST_30_DAYS: { 'source-feed': counted },
+      LAST_90_DAYS: { 'source-connector': counted, 'source-feed': counted },
+    });
+  });
+
   it('should withdraw the detections of a hunt run whose true positive verdict is changed', async () => {
     const verdictChange = event('update', { id: 'run-1', type: HUNT_RUN_TYPE }, {
       context: {

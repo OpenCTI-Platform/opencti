@@ -511,6 +511,8 @@ const executeRevert = async (context: AuthContext, user: AuthUser, recommendatio
         await updateConnectorRequestedStatus(context, user, { id: revert.connector_id, status });
         return status === ConnectorRequestStatus.Starting ? 'Managed connector restarted' : 'Managed connector left stopped as before';
       }
+      // A source is disabled when its connector is not managed by XTM Composer: enabling it again needs the same capability
+      requireCapability(user, false, MODULES_MODMANAGE);
       if (revert.source_id) {
         await patchAttribute(context, user, revert.source_id, ENTITY_TYPE_SOURCE, { enabled: true });
         // Stream increments read the cached sources: the re-enabled source is scored again without waiting for a reset

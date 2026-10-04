@@ -307,8 +307,11 @@ export const computeEventIncrements = async (
         // emit no stream event (provenance writes them aside): the daily computation counts them
         const sourceIds = resolveEventSources(resolver, { originUserId: data.origin?.user_id });
         addIncrement(increments, sourceIds, { source_last_asserted_at: time });
-        if (patchSetsValue(updateEvent, '/revoked', true)) {
-          signals.push({ objectId: extension.id, patch: { revoked_count: 1 }, time });
+        // A revocation set or withdrawn adds or removes the object from the revoked ones
+        const revoked = patchSetsValue(updateEvent, '/revoked', true);
+        const wasRevoked = reversePatchSetsValue(updateEvent, '/revoked', true);
+        if (revoked !== wasRevoked) {
+          signals.push({ objectId: extension.id, patch: { revoked_count: revoked ? 1 : -1 }, time });
         }
       }
       if (options.huntRunType && entityType === options.huntRunType) {
