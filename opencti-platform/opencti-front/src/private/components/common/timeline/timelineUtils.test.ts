@@ -11,6 +11,7 @@ import {
   effectiveLanes,
   fitSvgToWidth,
   groupEventsByBucket,
+  layoutAnchorLabels,
   layoutLaneRows,
   panDomain,
   parseTimelineViewState,
@@ -209,5 +210,26 @@ describe('Timeline filters', () => {
     expect(effectiveLanes(['response'], ['adversary'])).toEqual(['response']);
     expect(effectiveLanes([], ['adversary', 'detection', 'response', 'evidence', 'knowledge', 'custom'])).toBeNull();
     expect(effectiveLanes([], ['response', 'adversary'])).toEqual(['adversary', 'response']);
+  });
+});
+
+describe('Timeline anchor labels', () => {
+  it('should put the labels of close anchors on successive rows', () => {
+    const labels = layoutAnchorLabels([
+      { key: 'first_adversary_activity', x: 300, label: 'First adversary activity' },
+      { key: 'first_detection', x: 320, label: 'First detection' },
+      { key: 'closure', x: 900, label: 'Closure' },
+    ], 100, 1000);
+    const rowOf = (key: string) => labels.find((label) => label.key === key)?.row;
+    expect(rowOf('first_adversary_activity')).toEqual(0);
+    expect(rowOf('first_detection')).toEqual(1);
+    expect(rowOf('closure')).toEqual(0);
+  });
+
+  it('should keep a label inside the plot', () => {
+    const [left] = layoutAnchorLabels([{ key: 'first_response', x: 101, label: 'First response' }], 100, 1000);
+    expect(left.x - ('First response'.length * 5.5) / 2).toBeGreaterThanOrEqual(100);
+    const [right] = layoutAnchorLabels([{ key: 'closure', x: 999, label: 'Closure' }], 100, 1000);
+    expect(right.x + ('Closure'.length * 5.5) / 2).toBeLessThanOrEqual(1000);
   });
 });

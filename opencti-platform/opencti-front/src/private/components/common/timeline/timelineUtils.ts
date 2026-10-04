@@ -364,6 +364,31 @@ export const clusterLaneEvents = <T extends TimelineEventLike>(events: T[], grou
 // endregion
 
 // region lane layout
+// Approximate width of a character of the 10 px anchor labels, enough to keep two labels apart
+const ANCHOR_LABEL_CHAR_WIDTH = 5.5;
+
+export interface AnchorLabelLayout<K extends string = string> {
+  key: K;
+  x: number;
+  label: string;
+  row: number;
+}
+
+/** Anchor labels kept inside the plot, on successive rows when anchors close in time would make them overlap. */
+export const layoutAnchorLabels = <K extends string>(
+  anchors: { key: K; x: number; label: string }[],
+  plotLeft: number,
+  plotRight: number,
+): AnchorLabelLayout<K>[] => {
+  const placed = anchors.map((anchor) => {
+    const halfWidth = (anchor.label.length * ANCHOR_LABEL_CHAR_WIDTH) / 2;
+    const x = Math.min(Math.max(anchor.x, plotLeft + halfWidth), Math.max(plotLeft + halfWidth, plotRight - halfWidth));
+    return { ...anchor, x, x1: x - halfWidth, x2: x + halfWidth };
+  });
+  const { rows } = layoutLaneRows(placed.map((anchor) => ({ id: anchor.key, x1: anchor.x1, x2: anchor.x2 })), 8);
+  return placed.map(({ key, x, label }) => ({ key, x, label, row: rows.get(key) ?? 0 }));
+};
+
 export interface LaneLayoutItem {
   id: string;
   x1: number;

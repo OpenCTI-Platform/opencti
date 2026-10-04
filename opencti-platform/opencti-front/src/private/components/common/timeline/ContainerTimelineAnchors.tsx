@@ -56,8 +56,8 @@ const ContainerTimelineAnchors = ({ anchors, dense = false, onAnchorClick }: Con
             <Text variant="content-caption" as="div" style={{ ...ellipsis, color: colors.textSecondary }}>
               {t_i18n(TIMELINE_ANCHOR_LABELS[key])}
             </Text>
-            <Text variant={dense ? 'content-compact-medium' : 'content-base-medium'} as="div" style={ellipsis}>
-              {value ? (dense ? nsdt(value) : fldt(value)) : '-'}
+            <Text variant={dense ? 'content-compact-medium' : 'content-base-medium'} as="div" style={value ? ellipsis : { ...ellipsis, color: colors.textSecondary }}>
+              {value ? (dense ? nsdt(value) : fldt(value)) : t_i18n('Not reached')}
             </Text>
           </>
         );

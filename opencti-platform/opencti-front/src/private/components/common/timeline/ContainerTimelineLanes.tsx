@@ -8,6 +8,7 @@ import useTimelineColors from './useTimelineColors';
 import { resolveTimelineSourceState, type TimelineSourceStateValue } from './timelineSourceStates';
 import {
   clusterLaneEvents,
+  layoutAnchorLabels,
   layoutLaneRows,
   panDomain,
   TIMELINE_ANCHOR_KEYS,
@@ -157,8 +158,6 @@ const ContainerTimelineLanes = ({
   }, [lanes, events, grouping, scale, compact, plotLeft, plotRight]);
 
   const lanesBottom = laneLayouts.length > 0 ? laneLayouts[laneLayouts.length - 1].y + laneLayouts[laneLayouts.length - 1].height : AXIS_HEIGHT;
-  const totalHeight = lanesBottom + (compact ? 4 : ANCHOR_HEIGHT + 6);
-
   const ticks = useMemo(() => scale.ticks(Math.max(2, Math.floor(plotWidth / 120))), [scale, plotWidth]);
   const span = domain[1] - domain[0];
   // The label follows the tick step, so two ticks of the same day never read the same
@@ -350,6 +349,14 @@ const ContainerTimelineLanes = ({
     .filter((anchor): anchor is { key: TimelineAnchorKey; time: number } => anchor.time !== null)
     .map((anchor) => ({ ...anchor, x: scale(new Date(anchor.time)) }))
     .filter((anchor) => anchor.x >= plotLeft && anchor.x <= plotRight);
+  // Anchors close in time get their labels on successive rows instead of overlapping, kept inside the plot
+  const anchorLabels = compact ? [] : layoutAnchorLabels(
+    anchorEntries.map((anchor) => ({ key: anchor.key, x: anchor.x, label: t_i18n(TIMELINE_ANCHOR_LABELS[anchor.key]) })),
+    plotLeft,
+    plotRight,
+  );
+  const anchorRows = anchorLabels.reduce((rows, label) => Math.max(rows, label.row + 1), 1);
+  const totalHeight = lanesBottom + (compact ? 4 : ANCHOR_HEIGHT * anchorRows + 6);
 
   return (
     <div
@@ -421,14 +428,12 @@ const ContainerTimelineLanes = ({
             <line x1={nowX} y1={AXIS_HEIGHT - 6} x2={nowX} y2={lanesBottom} stroke={colors.focus} strokeDasharray="1 3" strokeOpacity={0.6} />
           )}
           {anchorEntries.map((anchor) => (
-            <g key={anchor.key}>
-              <line x1={anchor.x} y1={AXIS_HEIGHT - 6} x2={anchor.x} y2={lanesBottom + 4} stroke={colors.anchor} strokeDasharray="5 3" strokeOpacity={0.7} />
-              {!compact && (
-                <text x={anchor.x} y={lanesBottom + ANCHOR_HEIGHT} fill={colors.text} fontSize={10} textAnchor="middle">
-                  {t_i18n(TIMELINE_ANCHOR_LABELS[anchor.key])}
-                </text>
-              )}
-            </g>
+            <line key={anchor.key} x1={anchor.x} y1={AXIS_HEIGHT - 6} x2={anchor.x} y2={lanesBottom + 4} stroke={colors.anchor} strokeDasharray="5 3" strokeOpacity={0.7} />
+          ))}
+          {anchorLabels.map((anchor) => (
+            <text key={anchor.key} x={anchor.x} y={lanesBottom + ANCHOR_HEIGHT * (anchor.row + 1)} fill={colors.text} fontSize={10} textAnchor="middle">
+              {anchor.label}
+            </text>
           ))}
           {laneLayouts.map((layout) => {
             const color = colors.lanes[layout.lane];
