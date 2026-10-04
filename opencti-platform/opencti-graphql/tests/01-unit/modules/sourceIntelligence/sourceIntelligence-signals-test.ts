@@ -6,6 +6,7 @@ import { ENTITY_TYPE_INDICATOR } from '../../../../src/modules/indicator/indicat
 const NOW = new Date('2026-10-01T00:00:00.000Z').getTime();
 
 const run: RunLookups = {
+  asOf: NOW,
   falsePositiveLabelIds: new Set(['label-false-positive']),
   pirFlaggedIds: null,
   huntTrueRunIds: [],

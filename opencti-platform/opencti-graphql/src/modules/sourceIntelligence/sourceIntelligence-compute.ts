@@ -64,7 +64,8 @@ const HOUR_MS = 3600 * 1000;
 const DAY_MS = 24 * HOUR_MS;
 const SCAN_PAGE_SIZE = 2000;
 const MAX_PIR_FLAGGED_IDS = 500000;
-const MAX_HUNT_RUNS = 10000;
+// Values per terms clause, below the default index.max_terms_count of the search engine
+const TERMS_CHUNK_SIZE = 10000;
 const MAX_COMBINED_SOURCES_PER_DOCUMENT = 50;
 
 // Soft dependencies on sibling innovations: the joins activate when their attributes exist in the schema
@@ -232,6 +233,8 @@ export const emptyPageLookups = (): PageLookups => ({
 });
 
 export interface RunLookups {
+  // Signals written after this time are counted by the streaming increments, never by this computation
+  asOf: number;
   falsePositiveLabelIds: Set<string>;
   pirFlaggedIds: Set<string> | null; // null outside Enterprise Edition
   huntTrueRunIds: string[];
@@ -479,6 +482,16 @@ const bucketsToMap = (aggregation: any, path: string[]): Map<string, number> => 
   return result;
 };
 
+const termsInChunks = (field: string, values: string[]) => {
+  const chunks: string[][] = [];
+  for (let i = 0; i < values.length; i += TERMS_CHUNK_SIZE) {
+    chunks.push(values.slice(i, i + TERMS_CHUNK_SIZE));
+  }
+  return chunks.length === 1
+    ? { terms: { [field]: chunks[0] } }
+    : { bool: { should: chunks.map((chunk) => ({ terms: { [field]: chunk } })), minimum_should_match: 1 } };
+};
+
 const rawSearch = async (context: AuthContext, index: string[], body: Record<string, unknown>, size = 0) => {
   return elRawSearch(context, SYSTEM_USER, ENTITY_TYPE_SOURCE_SCORECARD, { index, size, track_total_hits: false, body })
     .catch((err: unknown) => {
@@ -513,17 +526,19 @@ export const fetchPageLookups = async (context: AuthContext, docs: ScanDocument[
   };
   if (run.availability.huntRunType && run.huntTrueRunIds.length > 0) {
     sightingsAggs.hunt = {
-      filter: { terms: { [`${HUNT_RUN_SIGHTING_ATTRIBUTE}.keyword`]: run.huntTrueRunIds } },
+      filter: termsInChunks(`${HUNT_RUN_SIGHTING_ATTRIBUTE}.keyword`, run.huntTrueRunIds),
       aggs: connectionCountAggregation(ids, 'from'),
     };
   }
+  // Relationships created after the computation time are counted by the streaming increments only
+  const createdBeforeRun = { range: { created_at: { lte: new Date(run.asOf).toISOString() } } };
   const [sightingsData, relationshipsData, containersData] = await Promise.all([
     rawSearch(context, [READ_INDEX_STIX_SIGHTING_RELATIONSHIPS], {
-      query: { nested: { path: 'connections', query: { bool: { filter: connectionFilter(ids, 'from') } } } },
+      query: { bool: { filter: [createdBeforeRun, { nested: { path: 'connections', query: { bool: { filter: connectionFilter(ids, 'from') } } } }] } },
       aggs: sightingsAggs,
     }),
     rawSearch(context, [READ_INDEX_STIX_CORE_RELATIONSHIPS], {
-      query: { nested: { path: 'connections', query: { bool: { filter: connectionFilter(ids, 'any') } } } },
+      query: { bool: { filter: [createdBeforeRun, { nested: { path: 'connections', query: { bool: { filter: connectionFilter(ids, 'any') } } } }] } },
       aggs: {
         all: { filter: { match_all: {} }, aggs: connectionCountAggregation(ids, 'any') },
         incidents: {
@@ -575,49 +590,66 @@ const resolveFalsePositiveLabelIds = async (context: AuthContext, labels: string
   return new Set((data.hits?.hits ?? []).map((hit: any) => hit._source.internal_id as string));
 };
 
-const resolvePirFlaggedIds = async (context: AuthContext): Promise<Set<string>> => {
-  const flagged = new Set<string>();
+/**
+ * Every hit of a query, page by page in internal id order, so that no result is dropped past a page size.
+ */
+const searchAllHits = async (context: AuthContext, index: string[], query: Record<string, unknown>, source: string[], onHits: (hits: any[]) => boolean | void) => {
   let searchAfter: unknown[] | undefined;
-  while (flagged.size < MAX_PIR_FLAGGED_IDS) {
-    const data = await rawSearch(context, [READ_INDEX_INTERNAL_RELATIONSHIPS], {
-      query: { term: { 'entity_type.keyword': RELATION_IN_PIR } },
-      _source: ['connections.internal_id', 'connections.role'],
+  let hasMore = true;
+  while (hasMore) {
+    const data = await rawSearch(context, index, {
+      query,
+      _source: source,
       sort: [{ 'internal_id.keyword': 'asc' }],
       ...(searchAfter ? { search_after: searchAfter } : {}),
     }, SCAN_PAGE_SIZE);
     const hits = data.hits?.hits ?? [];
+    hasMore = onHits(hits) !== false && hits.length === SCAN_PAGE_SIZE;
+    searchAfter = hits.length > 0 ? hits[hits.length - 1].sort : searchAfter;
+  }
+};
+
+const resolvePirFlaggedIds = async (context: AuthContext, asOf: number): Promise<Set<string>> => {
+  const flagged = new Set<string>();
+  // PIR links created after the computation time are counted by the streaming increments only
+  const query = { bool: { filter: [{ term: { 'entity_type.keyword': RELATION_IN_PIR } }, { range: { created_at: { lte: new Date(asOf).toISOString() } } }] } };
+  await searchAllHits(context, [READ_INDEX_INTERNAL_RELATIONSHIPS], query, ['connections.internal_id', 'connections.role'], (hits) => {
     hits.forEach((hit: any) => {
       (hit._source.connections ?? [])
         .filter((connection: { role: string }) => connection.role?.endsWith('_from'))
         .forEach((connection: { internal_id: string }) => flagged.add(connection.internal_id));
     });
-    if (hits.length < SCAN_PAGE_SIZE) break;
-    searchAfter = hits[hits.length - 1].sort;
-  }
+    return flagged.size < MAX_PIR_FLAGGED_IDS;
+  });
   return flagged;
 };
 
 const searchHuntTrueRunIds = async (context: AuthContext, huntRunType: string, filters: Record<string, unknown>[]): Promise<string[]> => {
-  const data = await rawSearch(context, [READ_INDEX_INTERNAL_OBJECTS], {
-    query: {
-      bool: {
-        filter: [
-          { term: { 'entity_type.keyword': huntRunType } },
-          { term: { 'verdict.keyword': HUNT_VERDICT_TRUE_POSITIVE } },
-          ...filters,
-        ],
-      },
+  const runIds: string[] = [];
+  const query = {
+    bool: {
+      filter: [
+        { term: { 'entity_type.keyword': huntRunType } },
+        { term: { 'verdict.keyword': HUNT_VERDICT_TRUE_POSITIVE } },
+        ...filters,
+      ],
     },
-    _source: ['internal_id'],
-  }, MAX_HUNT_RUNS);
-  return (data.hits?.hits ?? []).map((hit: any) => hit._source.internal_id as string);
+  };
+  await searchAllHits(context, [READ_INDEX_INTERNAL_OBJECTS], query, ['internal_id'], (hits) => {
+    hits.forEach((hit: any) => runIds.push(hit._source.internal_id as string));
+  });
+  return runIds;
 };
 
-const resolveHuntTrueRunIds = async (context: AuthContext, huntRunType: string | null, since: number): Promise<string[]> => {
+/**
+ * True positive hunt runs updated in the scorecard range and before the computation time: a verdict given after it
+ * is counted by the streaming increments.
+ */
+const resolveHuntTrueRunIds = async (context: AuthContext, huntRunType: string | null, since: number, asOf: number): Promise<string[]> => {
   if (!huntRunType) {
     return [];
   }
-  return searchHuntTrueRunIds(context, huntRunType, [{ range: { updated_at: { gte: new Date(since).toISOString() } } }]);
+  return searchHuntTrueRunIds(context, huntRunType, [{ range: { updated_at: { gte: new Date(since).toISOString(), lte: new Date(asOf).toISOString() } } }]);
 };
 
 /**
@@ -627,7 +659,7 @@ export const findTrueHuntRunIds = async (context: AuthContext, huntRunType: stri
   if (!huntRunType || runIds.length === 0) {
     return [];
   }
-  return searchHuntTrueRunIds(context, huntRunType, [{ terms: { 'internal_id.keyword': runIds } }]);
+  return searchHuntTrueRunIds(context, huntRunType, [termsInChunks('internal_id.keyword', runIds)]);
 };
 
 export interface HuntRunSighting {
@@ -636,19 +668,20 @@ export interface HuntRunSighting {
 }
 
 /**
- * The sightings that hunt runs (innovation 01) attached to their run id, with the object each one sighted.
+ * Every sighting that hunt runs (innovation 01) attached to their run id, with the object each one sighted.
  */
 export const findHuntRunSightings = async (context: AuthContext, runIds: string[]): Promise<HuntRunSighting[]> => {
   if (runIds.length === 0) {
     return [];
   }
-  const data = await rawSearch(context, [READ_INDEX_STIX_SIGHTING_RELATIONSHIPS], {
-    query: { terms: { [`${HUNT_RUN_SIGHTING_ATTRIBUTE}.keyword`]: runIds } },
-    _source: [HUNT_RUN_SIGHTING_ATTRIBUTE, 'connections.internal_id', 'connections.role'],
-  }, MAX_HUNT_RUNS);
-  return (data.hits?.hits ?? []).flatMap((hit: any) => (hit._source.connections ?? [])
-    .filter((connection: { role: string }) => connection.role?.endsWith('_from'))
-    .map((connection: { internal_id: string }) => ({ runId: hit._source[HUNT_RUN_SIGHTING_ATTRIBUTE] as string, objectId: connection.internal_id })));
+  const sightings: HuntRunSighting[] = [];
+  const query = termsInChunks(`${HUNT_RUN_SIGHTING_ATTRIBUTE}.keyword`, runIds);
+  await searchAllHits(context, [READ_INDEX_STIX_SIGHTING_RELATIONSHIPS], query, [HUNT_RUN_SIGHTING_ATTRIBUTE, 'connections.internal_id', 'connections.role'], (hits) => {
+    hits.forEach((hit: any) => (hit._source.connections ?? [])
+      .filter((connection: { role: string }) => connection.role?.endsWith('_from'))
+      .forEach((connection: { internal_id: string }) => sightings.push({ runId: hit._source[HUNT_RUN_SIGHTING_ATTRIBUTE] as string, objectId: connection.internal_id })));
+  });
+  return sightings;
 };
 
 export const prepareRunLookups = async (context: AuthContext, settings: SourceIntelligenceSettings, enterprise: boolean, asOf: number): Promise<RunLookups> => {
@@ -656,10 +689,10 @@ export const prepareRunLookups = async (context: AuthContext, settings: SourceIn
   const maxDays = Math.max(...SCORECARD_PERIODS.map((period) => SCORECARD_PERIOD_DAYS[period]));
   const [falsePositiveLabelIds, pirFlaggedIds, huntTrueRunIds] = await Promise.all([
     resolveFalsePositiveLabelIds(context, settings.false_positive_labels),
-    enterprise ? resolvePirFlaggedIds(context) : Promise.resolve(null),
-    resolveHuntTrueRunIds(context, availability.huntRunType, asOf - maxDays * DAY_MS),
+    enterprise ? resolvePirFlaggedIds(context, asOf) : Promise.resolve(null),
+    resolveHuntTrueRunIds(context, availability.huntRunType, asOf - maxDays * DAY_MS, asOf),
   ]);
-  return { falsePositiveLabelIds, pirFlaggedIds, huntTrueRunIds, availability };
+  return { asOf, falsePositiveLabelIds, pirFlaggedIds, huntTrueRunIds, availability };
 };
 // endregion
 
