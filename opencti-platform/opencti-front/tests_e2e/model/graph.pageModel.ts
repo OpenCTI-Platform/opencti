@@ -385,8 +385,12 @@ export default class GraphPage {
     if (!(await this.isInToolbar(actionName))) {
       const menu = await this.openMoreActions();
       await GraphPage.menuItem(menu, actionName).click();
-      const submenu = this.page.getByRole('menu').last();
-      await GraphPage.menuItem(submenu, option, true).first().click();
+      await expect(this.page.getByRole('menu')).toHaveCount(2);
+      // The pointer would travel from the submenu trigger to the item across the parent menu,
+      // which closes the submenu on its way: the item is picked from the keyboard.
+      const item = GraphPage.menuItem(this.page.getByRole('menu').last(), option, true).first();
+      await item.focus();
+      await item.press('Enter');
       await this.closeMoreActions();
       return;
     }
