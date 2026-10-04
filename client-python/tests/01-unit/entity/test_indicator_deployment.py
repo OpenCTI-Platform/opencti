@@ -183,6 +183,29 @@ def test_report_hits_validates_count(local_api_client):
     variables = local_api_client.query.call_args_list[1].args[1]
     assert variables["count"] == 3
     assert variables["lastHit"] == "2026-10-03T10:00:00Z"
+    assert variables["reportId"] is None
+
+
+def test_report_hits_forwards_the_report_id(local_api_client):
+    sighting = {"id": "sighting-1", "attribute_count": 2}
+    deployment = deployment_with(
+        local_api_client,
+        [SUPPORTED_FIELDS, {"data": {"indicatorReportHits": sighting}}],
+    )
+    # Two reports ending at the same instant are told apart by their id
+    assert (
+        deployment.report_hits(
+            "indicator-1",
+            "platform-1",
+            2,
+            last_hit="2026-10-03T10:00:00Z",
+            report_id="report-2",
+        )
+        == sighting
+    )
+    query, variables = local_api_client.query.call_args_list[1].args
+    assert "reportId: $reportId" in query
+    assert variables["reportId"] == "report-2"
 
 
 def test_report_hits_requires_the_last_hit(local_api_client):

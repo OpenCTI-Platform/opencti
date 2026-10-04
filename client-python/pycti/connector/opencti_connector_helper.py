@@ -2906,6 +2906,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         count: int,
         last_hit: str,
         first_hit: Optional[str] = None,
+        report_id: Optional[str] = None,
     ) -> Optional[Dict]:
         """Report new hits (alerts, detections, incidents) of an indicator on the platform.
 
@@ -2915,6 +2916,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :param last_hit: ISO date of the most recent hit (required), the idempotency watermark
             of the report; pass the vendor time of the newest hit so that a re-sent report is ignored
         :param first_hit: ISO date of the oldest new hit
+        :param report_id: stable id of the report (the same when it is re-sent), so that two
+            distinct reports ending at the same instant are both counted
         :return: the hits sighting or None
         :rtype: Optional[Dict]
         """
@@ -2924,6 +2927,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             count=count,
             last_hit=last_hit,
             first_hit=first_hit,
+            report_id=report_id,
         )
 
     def list_indicator_deployments(

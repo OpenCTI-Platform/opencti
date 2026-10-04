@@ -103,6 +103,7 @@ const OPTIONAL_DEPLOYED_ON_KEYS = [
   'removed_at',
   'first_hit_at',
   'last_hit_at',
+  'last_hit_report_ids',
   'last_validation_at',
   'validation_run_id',
   'error_message',
@@ -120,7 +121,7 @@ export const buildDeployedOnCreationData = (input: Partial<Record<keyof Deployed
   };
   OPTIONAL_DEPLOYED_ON_KEYS.forEach((key) => {
     const value = input[key];
-    if (value !== undefined && value !== null && value !== '') {
+    if (value !== undefined && value !== null && value !== '' && !(Array.isArray(value) && value.length === 0)) {
       (data as unknown as Record<string, unknown>)[key] = value;
     }
   });

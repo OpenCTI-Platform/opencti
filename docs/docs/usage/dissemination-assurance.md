@@ -168,7 +168,9 @@ being sent is deleted once the sending is recorded.
 OpenAEV never runs anything without an explicit approval by one of its operators, and only runs the benign test
 kinds allowed in its settings. By default, the validation never contacts adversary infrastructure: DNS resolution
 does not connect to the resolved address, network tests can be sent to a sinkhole, and HTTP tests require an
-egress proxy. See the [OpenAEV documentation](https://docs.openaev.io/latest/usage/build/scenario/ioc-validation/)
+egress proxy. A URL indicator is only validated by an HTTP test of the URL itself: a DNS resolution of its host would
+only prove that the domain is detected, so while HTTP tests are not allowed the URL indicator is listed as skipped with
+its reason. See the [OpenAEV documentation](https://docs.openaev.io/latest/usage/build/scenario/ioc-validation/)
 for the approval workflow and the safety settings.
 
 When OpenAEV sends the results, the validation status of each deployment is updated to `detected`, `prevented`,

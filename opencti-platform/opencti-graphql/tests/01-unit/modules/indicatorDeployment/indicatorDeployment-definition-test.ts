@@ -106,6 +106,12 @@ describe('deployed-on creation data', () => {
     });
   });
 
+  it('should keep the report ids of the last hit, so a retried report is recognized on a new deployment', () => {
+    const data = buildDeployedOnCreationData({ last_hit_at: '2026-10-03T10:00:00.000Z', last_hit_report_ids: ['hits-report-1'] });
+    expect(data.last_hit_report_ids).toEqual(['hits-report-1']);
+    expect(buildDeployedOnCreationData({ last_hit_report_ids: [] })).not.toHaveProperty('last_hit_report_ids');
+  });
+
   it('should reject unknown statuses and negative counters', () => {
     const data = buildDeployedOnCreationData({ deployment_status: 'live', validation_status: 'ok', hit_count: -2 });
     expect(data.deployment_status).toEqual('pending');

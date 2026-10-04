@@ -87,6 +87,7 @@ _HITS_MUTATION = """
         $count: Int!
         $lastHit: DateTime
         $firstHit: DateTime
+        $reportId: String
     ) {
         indicatorReportHits(
             indicatorId: $indicatorId
@@ -94,6 +95,7 @@ _HITS_MUTATION = """
             count: $count
             lastHit: $lastHit
             firstHit: $firstHit
+            reportId: $reportId
         ) {
             id
             standard_id
@@ -369,6 +371,7 @@ class IndicatorDeployment:
         count: int,
         last_hit: str,
         first_hit: Optional[str] = None,
+        report_id: Optional[str] = None,
     ) -> Optional[Dict]:
         """Report new hits of an indicator on a security platform.
 
@@ -376,12 +379,15 @@ class IndicatorDeployment:
         A report whose ``last_hit`` is not after the last known hit is ignored by the platform,
         so ``last_hit`` is the idempotency watermark of the report: pass the vendor time of
         the newest hit, never the time of the call, so that a re-sent report is not counted twice.
+        Two distinct reports can end at the same instant: give each a stable ``report_id``
+        (the same one when the report is re-sent) so that the second one is counted too.
 
         :param indicator_id: id of the indicator
         :param platform_id: id of the security platform
         :param count: number of new hits (>= 1)
         :param last_hit: ISO date of the most recent hit (required)
         :param first_hit: ISO date of the oldest new hit, defaults to last_hit
+        :param report_id: stable id of the report, telling apart reports ending at the same instant
         :return: the hits sighting, or None
         :rtype: dict or None
         """
@@ -401,6 +407,7 @@ class IndicatorDeployment:
             "count": count,
             "lastHit": last_hit,
             "firstHit": first_hit,
+            "reportId": report_id,
         }
         try:
             result = self.opencti.query(_HITS_MUTATION, variables)

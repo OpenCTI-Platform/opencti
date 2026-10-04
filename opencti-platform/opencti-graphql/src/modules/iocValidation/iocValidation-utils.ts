@@ -71,15 +71,6 @@ export interface IndicatorForValidation {
 
 export type IocExtraction = { ioc: IocValidationIoc; reason?: undefined } | { ioc?: undefined; reason: string };
 
-const urlHost = (value: string): string | undefined => {
-  try {
-    const url = new URL(value.includes('://') ? value : `http://${value}`);
-    return url.hostname || undefined;
-  } catch {
-    return undefined;
-  }
-};
-
 /**
  * Deterministic choice of the benign test for an observable, given the allowed test kinds.
  * Returns undefined when no allowed kind can validate this observable.
@@ -96,12 +87,9 @@ export const resolveTestKind = (
     case 'IPv4-Addr':
     case 'IPv6-Addr':
       return observable.value && allows(TEST_KIND_NETWORK_TRAFFIC) ? { kind: TEST_KIND_NETWORK_TRAFFIC, value: observable.value } : undefined;
-    case 'Url': {
-      if (!observable.value) return undefined;
-      if (allows(TEST_KIND_HTTP_HEAD)) return { kind: TEST_KIND_HTTP_HEAD, value: observable.value };
-      const host = urlHost(observable.value);
-      return host && allows(TEST_KIND_DNS_RESOLUTION) ? { kind: TEST_KIND_DNS_RESOLUTION, value: host } : undefined;
-    }
+    // A DNS resolution of the host would only prove the detection of the domain, not of the URL indicator.
+    case 'Url':
+      return observable.value && allows(TEST_KIND_HTTP_HEAD) ? { kind: TEST_KIND_HTTP_HEAD, value: observable.value } : undefined;
     case 'StixFile': {
       const hashValues = Object.values(observable.hashes ?? {});
       if (observable.name && allows(TEST_KIND_FILE_DROP)) return { kind: TEST_KIND_FILE_DROP, value: observable.name };

@@ -105,8 +105,8 @@ const REPORT_DEPLOYMENTS = gql`
   }
 `;
 const REPORT_HITS = gql`
-  mutation IndicatorReportHits($indicatorId: StixRef!, $platformId: StixRef!, $count: Int!, $lastHit: DateTime, $firstHit: DateTime) {
-    indicatorReportHits(indicatorId: $indicatorId, platformId: $platformId, count: $count, lastHit: $lastHit, firstHit: $firstHit) {
+  mutation IndicatorReportHits($indicatorId: StixRef!, $platformId: StixRef!, $count: Int!, $lastHit: DateTime, $firstHit: DateTime, $reportId: String) {
+    indicatorReportHits(indicatorId: $indicatorId, platformId: $platformId, count: $count, lastHit: $lastHit, firstHit: $firstHit, reportId: $reportId) {
       id
       attribute_count
       first_seen
@@ -456,6 +456,39 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
       { query: REPORT_HITS, variables: { indicatorId, platformId, count: 1 } },
       'The time of the last hit is required: it keeps a retried report from being counted twice',
     );
+  });
+
+  it('should keep the report id of the hits report that created the deployment, so its retry is not counted twice', async () => {
+    // Neither streamed nor kept: the raw stream counts of the suite are unchanged
+    const streamed = [
+      vi.spyOn(streamHandler, 'storeCreateEntityEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeCreateRelationEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeUpdateEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeDeleteEvent').mockResolvedValue(undefined as never),
+    ];
+    let hitIndicatorId: string | undefined;
+    try {
+      const created = await queryAsAdminWithSuccess({
+        query: INDICATOR_ADD,
+        variables: { input: { name: 'first-hit.evil.example', pattern: "[domain-name:value = 'first-hit.evil.example']", pattern_type: 'stix', x_opencti_main_observable_type: 'Domain-Name' } },
+      });
+      hitIndicatorId = created.data?.indicatorAdd.id as string;
+      await setOrganizations(hitIndicatorId, [testOrganizationId, platformOrganizationId]);
+      // No deployment yet: the first hits report creates it
+      const report = { indicatorId: hitIndicatorId, platformId, count: 2, lastHit: '2026-10-03T10:00:00.000Z', reportId: 'hits-report-1' };
+      const first = await queryAsUserWithSuccess(USER_CONNECTOR, { query: REPORT_HITS, variables: report });
+      expect(first.data?.indicatorReportHits.attribute_count).toEqual(2);
+      const retried = await queryAsUserWithSuccess(USER_CONNECTOR, { query: REPORT_HITS, variables: report });
+      expect(retried.data?.indicatorReportHits.attribute_count).toEqual(2);
+      // Another report ending at the same instant is counted
+      const other = await queryAsUserWithSuccess(USER_CONNECTOR, { query: REPORT_HITS, variables: { ...report, count: 1, reportId: 'hits-report-2' } });
+      expect(other.data?.indicatorReportHits.attribute_count).toEqual(3);
+    } finally {
+      if (hitIndicatorId) {
+        await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: hitIndicatorId } });
+      }
+      streamed.forEach((spy) => spy.mockRestore());
+    }
   });
 
   it('should refuse a negative hit count on the generic edit and upsert paths, as the next hit report adds to it', async () => {

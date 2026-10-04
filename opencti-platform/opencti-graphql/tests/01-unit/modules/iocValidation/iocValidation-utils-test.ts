@@ -33,9 +33,9 @@ describe('resolveTestKind', () => {
     expect(resolveTestKind({ type: 'IPv4-Addr', value: '198.51.100.7' }, [...ALL_KINDS])).toEqual({ kind: 'network_traffic', value: '198.51.100.7' });
     expect(resolveTestKind({ type: 'IPv6-Addr', value: '2001:db8::1' }, ['dns_resolution'])).toBeUndefined();
   });
-  it('should map URLs to HTTP HEAD, falling back to DNS resolution of the host', () => {
-    expect(resolveTestKind({ type: 'Url', value: 'https://evil.example/path' }, ['http_head'])).toEqual({ kind: 'http_head', value: 'https://evil.example/path' });
-    expect(resolveTestKind({ type: 'Url', value: 'https://evil.example/path' }, ['dns_resolution'])).toEqual({ kind: 'dns_resolution', value: 'evil.example' });
+  it('should map URLs to HTTP HEAD only, never to a DNS resolution of their host', () => {
+    expect(resolveTestKind({ type: 'Url', value: 'https://evil.example/path' }, [...ALL_KINDS])).toEqual({ kind: 'http_head', value: 'https://evil.example/path' });
+    expect(resolveTestKind({ type: 'Url', value: 'https://evil.example/path' }, ['dns_resolution'])).toBeUndefined();
     expect(resolveTestKind({ type: 'Url', value: 'https://evil.example/path' }, ['file_drop'])).toBeUndefined();
   });
   it('should map files to the surrogate drop or the log injection', () => {
