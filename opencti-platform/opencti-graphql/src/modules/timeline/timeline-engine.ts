@@ -385,6 +385,10 @@ const resolveContainerVisibilityScope = async (
   const isElementAsVisibleAsContainer = (element: AnyStoreElement) => {
     if ((element.restricted_members ?? []).length > 0) return false;
     if (!markingsOf(element).every(isMarkingCoveredByContainer)) return false;
+    // Organization sharing (platform access rules): an object shared with no organization is readable inside the platform
+    // organization only, a shared object inside the platform organization and in each organization it is shared with.
+    // An element is therefore readable by every reader of the container when it is shared with at least the
+    // organizations of the container; an unshared container is read inside the platform organization only.
     const granted = new Set(grantedOf(element));
     return containerGranted.every((id) => granted.has(id));
   };
@@ -444,7 +448,8 @@ const buildExchange = async (
     hidden: event.hidden || undefined,
     annotation: event.annotation || undefined,
     object_marking_refs: toStandardIds(markingsOf(event)),
-    created_by_ref: resolved[authorOf(event) ?? '']?.standard_id,
+    // The author is a reference like the element: it travels only when it is as visible as the container
+    created_by_ref: portableElementRef(authorOf(event)),
   }));
   const exchangeAnnotations: StixTimelineExtensionAnnotation[] = annotated
     .filter((event) => !!portableElementRef(event.element_id))
