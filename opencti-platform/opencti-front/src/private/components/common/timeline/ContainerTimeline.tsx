@@ -137,7 +137,7 @@ const containerTimelineEventsFragment = graphql`
     count: { type: "Int", defaultValue: 500 }
     cursor: { type: "ID" }
   ) {
-    # First event matching the same filters, so that the fit covers the events not loaded yet
+    # First start and last end of the events matching the same filters, so that the fit covers the events not loaded yet
     earliest: containerTimeline(
       id: $id
       lanes: $lanes
@@ -152,6 +152,24 @@ const containerTimelineEventsFragment = graphql`
       edges {
         node {
           event_time
+        }
+      }
+    }
+    latestEnding: containerTimeline(
+      id: $id
+      lanes: $lanes
+      kinds: $kinds
+      sources: $sources
+      search: $search
+      includeHidden: $includeHidden
+      pinnedOnly: $pinnedOnly
+      orderBy: event_end_time
+      orderMode: desc
+      first: 1
+    ) {
+      edges {
+        node {
+          event_end_time
         }
       }
     }
@@ -347,9 +365,10 @@ const ContainerTimelineEventsView = ({
   const anchors = summary.anchors;
   // The fit spans every matching event, also the earlier ones not loaded yet ("Show earlier events" loads them)
   const earliestTime = data.earliest?.edges?.[0]?.node?.event_time;
+  const latestEnd = data.latestEnding?.edges?.[0]?.node?.event_end_time;
   const extent = useMemo(
-    () => computeTimelineExtent(events, [...TIMELINE_ANCHOR_KEYS.map((key) => anchors?.[key]), earliestTime]),
-    [events, anchors, earliestTime],
+    () => computeTimelineExtent(events, [...TIMELINE_ANCHOR_KEYS.map((key) => anchors?.[key]), earliestTime, latestEnd]),
+    [events, anchors, earliestTime, latestEnd],
   );
   const visibleDomain = domain ?? computeVisibleDomain(extent, state.zoom);
   const showsLanes = state.view === 'lanes' && events.length > 0;

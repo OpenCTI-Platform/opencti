@@ -25639,6 +25639,7 @@ export type QueryContainerTimelineArgs = {
   kinds?: InputMaybe<Array<TimelineEventKind>>;
   lanes?: InputMaybe<Array<TimelineLane>>;
   markings?: InputMaybe<Array<Scalars['String']['input']>>;
+  orderBy?: InputMaybe<TimelineEventsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   pinnedOnly?: InputMaybe<Scalars['Boolean']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
@@ -36614,6 +36615,13 @@ export enum TimelineEventSource {
   Manual = 'manual'
 }
 
+export enum TimelineEventsOrdering {
+  /** End time of the windows; only the events with an end time are listed */
+  EventEndTime = 'event_end_time',
+  /** Time of the event, then the ordering hint */
+  EventTime = 'event_time'
+}
+
 export type TimelineExportFile = {
   __typename?: 'TimelineExportFile';
   content: Scalars['String']['output'];
@@ -42095,6 +42103,7 @@ export type ResolversTypes = ResolversObject<{
   TimelineEventEditInput: TimelineEventEditInput;
   TimelineEventKind: TimelineEventKind;
   TimelineEventSource: TimelineEventSource;
+  TimelineEventsOrdering: TimelineEventsOrdering;
   TimelineExportFile: ResolverTypeWrapper<Omit<TimelineExportFile, 'file_markings'> & { file_markings: Array<ResolversTypes['MarkingDefinition']> }>;
   TimelineExportFormat: TimelineExportFormat;
   TimelineExportLabelInput: TimelineExportLabelInput;

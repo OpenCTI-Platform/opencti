@@ -143,6 +143,8 @@ const ContainerTimelineSettingsDrawer = ({ containerId, open, settings, onClose,
               key={kind}
               label={t_i18n(TIMELINE_KIND_LABELS[kind])}
               checked={values.hidden_kinds.includes(kind)}
+              // At least one kind stays visible
+              disabled={!values.hidden_kinds.includes(kind) && TIMELINE_KINDS.every((other) => other === kind || values.hidden_kinds.includes(other))}
               onCheckedChange={() => setValues({ ...values, hidden_kinds: toggle(values.hidden_kinds, kind) })}
             />
           ))}

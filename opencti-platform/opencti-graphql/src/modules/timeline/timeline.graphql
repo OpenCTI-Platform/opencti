@@ -53,6 +53,13 @@ enum TimelineEventKind {
   notification
 }
 
+enum TimelineEventsOrdering {
+  "Time of the event, then the ordering hint"
+  event_time
+  "End time of the windows; only the events with an end time are listed"
+  event_end_time
+}
+
 enum TimelineGrouping {
   hour
   day
@@ -353,6 +360,8 @@ type Query {
     search: String
     includeHidden: Boolean
     pinnedOnly: Boolean
+    "Event time by default"
+    orderBy: TimelineEventsOrdering
     "Ascending (default) from the oldest event, descending from the latest one"
     orderMode: OrderingMode
     first: Int

@@ -12,6 +12,7 @@ import {
 import { redisGetTelemetry } from '../../../src/database/redis';
 import { TELEMETRY_GAUGE_TIMELINE_MANUAL_EVENT } from '../../../src/manager/telemetryManager';
 import * as timelineNotification from '../../../src/modules/timeline/timeline-notification';
+import { TIMELINE_KINDS } from '../../../src/modules/timeline/timeline-types';
 import { ADMIN_USER, TEST_ORGANIZATION, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
 import { internalLoadById } from '../../../src/database/middleware-loader';
 import { timelineUpdateForUser } from '../../../src/modules/timeline/timeline-domain';
@@ -132,6 +133,7 @@ const CONTAINER_TIMELINE = gql`
     $search: String
     $includeHidden: Boolean
     $pinnedOnly: Boolean
+    $orderBy: TimelineEventsOrdering
     $orderMode: OrderingMode
     $first: Int
   ) {
@@ -145,6 +147,7 @@ const CONTAINER_TIMELINE = gql`
       search: $search
       includeHidden: $includeHidden
       pinnedOnly: $pinnedOnly
+      orderBy: $orderBy
       orderMode: $orderMode
       first: $first
     ) {
@@ -712,6 +715,18 @@ describe('Incident and case timeline', () => {
       expect([...times].sort((a, b) => b - a)).toEqual(times);
     });
 
+    it('should list the windows by their end time', async () => {
+      const ascending = await listTimeline(caseIncident.id);
+      const windows = ascending.filter((event) => !!event.event_end_time);
+      const latestEnd = Math.max(...windows.map((event) => new Date(event.event_end_time as string).getTime()));
+      const byEnd = await listTimeline(caseIncident.id, { orderBy: 'event_end_time', orderMode: 'desc' });
+      // Only the events with an end time, from the one that ends last
+      expect(byEnd).toHaveLength(windows.length);
+      expect(new Date(byEnd[0].event_end_time as string).getTime()).toEqual(latestEnd);
+      const ends = byEnd.map((event) => new Date(event.event_end_time as string).getTime());
+      expect([...ends].sort((a, b) => b - a)).toEqual(ends);
+    });
+
     it('should count in the summary exactly the events the user can list', async () => {
       const summary = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: CONTAINER_TIMELINE_SUMMARY, variables: { id: caseIncident.id } });
       const listed = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: CONTAINER_TIMELINE, variables: { id: caseIncident.id, first: 500 } });
@@ -795,6 +810,7 @@ describe('Incident and case timeline', () => {
       });
       expect(result.data.timelineSettingsUpdate).toMatchObject({ enabled_lanes: ['adversary', 'response'], default_grouping: 'week', default_zoom_window: 'fit', hidden_kinds: ['relation_created'] });
       await queryAsAdminWithError({ query: TIMELINE_SETTINGS_UPDATE, variables: { containerId: caseIncident.id, input: { enabled_lanes: [] } } }, 'At least one lane must be enabled');
+      await queryAsAdminWithError({ query: TIMELINE_SETTINGS_UPDATE, variables: { containerId: caseIncident.id, input: { hidden_kinds: [...TIMELINE_KINDS] } } }, 'At least one kind must stay visible');
     });
 
     it('should filter and order the containers on their anchors', async () => {

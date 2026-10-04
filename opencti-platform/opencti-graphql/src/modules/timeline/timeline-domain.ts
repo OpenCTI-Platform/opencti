@@ -8,7 +8,7 @@ import { elAggregationCount, elCount, elIndexElements, elLoadById } from '../../
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config/errors';
 import { getDraftContext } from '../../utils/draftContext';
-import { FilterMode, FilterOperator, OrderingMode } from '../../generated/graphql';
+import { FilterMode, FilterOperator, OrderingMode, TimelineEventsOrdering } from '../../generated/graphql';
 import type {
   QueryContainerTimelineArgs,
   QueryContainerTimelineExportArgs,
@@ -39,6 +39,7 @@ import {
   type StixTimelineExtensionEvent,
   TIMELINE_CONTAINER_TYPES,
   TIMELINE_DEFAULT_SETTINGS,
+  TIMELINE_KINDS,
   TIMELINE_MILESTONE_KINDS,
   type TimelineAnalystField,
   type TimelineAnchors,
@@ -271,11 +272,16 @@ const buildAccessibleTimelineFilters = async (context: AuthContext, user: AuthUs
 export const findContainerTimeline = async (context: AuthContext, user: AuthUser, args: QueryContainerTimelineArgs) => {
   const container = await ensureTimelineGenerated(context, await loadTimelineContainer(context, user, args.id));
   const first = Math.min(args.first ?? TIMELINE_DEFAULT_PAGE, TIMELINE_MAX_PAGE);
+  const filters = await buildAccessibleTimelineFilters(context, user, container.internal_id, args);
+  // By end time, only the windows are listed: no event without an end time ever reaches the sort or its cursor
+  const byEndTime = args.orderBy === TimelineEventsOrdering.EventEndTime;
   const connection = await pageEntitiesConnection<StoredTimelineEvent>(context, user, [ENTITY_TYPE_TIMELINE_EVENT], {
-    filters: await buildAccessibleTimelineFilters(context, user, container.internal_id, args) as any,
+    filters: (byEndTime
+      ? { ...filters, filters: [...filters.filters, { key: ['event_end_time'], values: [], operator: FilterOperator.NotNil }] }
+      : filters) as any,
     first,
     after: args.after,
-    orderBy: ['event_time', 'ordering_hint'],
+    orderBy: byEndTime ? ['event_end_time', 'event_time'] : ['event_time', 'ordering_hint'],
     orderMode: args.orderMode ?? OrderingMode.Asc,
   });
   const { items } = await filterAccessibleEvents(context, user, container.internal_id, connection.edges, (edge) => edge.node);
@@ -831,7 +837,12 @@ export const updateTimelineSettings = async (context: AuthContext, user: AuthUse
   }
   if (input.default_grouping) patch.default_grouping = input.default_grouping;
   if (input.default_zoom_window) patch.default_zoom_window = input.default_zoom_window;
-  if (input.hidden_kinds) patch.hidden_kinds = Array.from(new Set(input.hidden_kinds));
+  if (input.hidden_kinds) {
+    // An empty kinds filter means every kind: hiding them all would show them all again
+    const hidden = new Set<string>(input.hidden_kinds);
+    if (TIMELINE_KINDS.every((kind) => hidden.has(kind))) throw FunctionalError('At least one kind must stay visible');
+    patch.hidden_kinds = Array.from(hidden);
+  }
   // Read again under the lock: a change of the access to the container made while this write waited applies to it
   const settings = await withTimelineLock(container.internal_id, async () => {
     const locked = await loadEditableTimelineContainer(context, user, container.internal_id);
