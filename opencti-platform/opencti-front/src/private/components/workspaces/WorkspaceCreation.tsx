@@ -12,7 +12,7 @@ import IconButton from '../../../components/common/button/IconButton';
 import FormButtonContainer from '../../../components/common/form/FormButtonContainer';
 import MarkdownField from '../../../components/fields/markdownField/MarkdownField';
 import { useFormatter } from '../../../components/i18n';
-import { handleError, handleErrorInForm } from '../../../relay/environment';
+import { handleError, handleErrorInForm, MESSAGING$ } from '../../../relay/environment';
 import { resolveLink } from '../../../utils/Entity';
 import Security from '../../../utils/Security';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
@@ -73,7 +73,12 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
   const handleImport = (file: File) => new Promise<void>((resolve, reject) => {
     commitImportMutation({
       variables: { file },
-      onCompleted: (data) => {
+      onCompleted: (data, errors) => {
+        // A rejected import still completes, with its errors in the payload: never navigate to a missing dashboard
+        if (errors && errors.length > 0) {
+          reject({ res: { errors } });
+          return;
+        }
         navigate(
           `${resolveLink('Dashboard')}/${data.workspaceConfigurationImport}`,
         );
@@ -141,7 +146,12 @@ const WorkspaceCreation = ({ paginationOptions, type }: WorkspaceCreationProps) 
             <FileUploadOutlined fontSize="small" color="primary" />
           </IconButton>
         </Tooltip>
-        <DashboardTemplateMenu onCreate={(file) => handleImport(file).catch(() => {})} />
+        <DashboardTemplateMenu
+          onCreate={(file) => handleImport(file).catch((error) => {
+            // Network errors are already notified, payload errors are notified here
+            if (error) MESSAGING$.notifyRelayError(error);
+          })}
+        />
         {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
           <Button
             gradient
