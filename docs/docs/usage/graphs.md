@@ -147,6 +147,8 @@ The graph says why it is empty and offers the next step:
 - when the filters of the toolbar leave no entity, **Clear filters** restores the graph;
 - when every entity is hidden from the view, **Show the hidden entities** brings them back.
 
+![A new investigation without any entity yet, explaining how to add some](assets/graph-empty-investigation.png)
+
 ## Layouts
 
 The toolbar at the bottom offers several layouts. All of them except the forces are deterministic: the same graph is always drawn the same way, and nodes glide to their new place.
