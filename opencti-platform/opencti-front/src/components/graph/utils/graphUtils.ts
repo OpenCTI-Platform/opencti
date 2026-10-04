@@ -94,7 +94,6 @@ export const graphStateToLocalStorage = (state: GraphState) => {
     hiddenNodeIds,
     collapsedEntityTypes,
     disabledRelationshipTypes,
-    showLegend,
   } = state;
 
   let stateForStorage: Partial<GraphState> = {
@@ -109,7 +108,6 @@ export const graphStateToLocalStorage = (state: GraphState) => {
     hiddenNodeIds: hiddenNodeIds ?? [],
     collapsedEntityTypes: collapsedEntityTypes ?? [],
     disabledRelationshipTypes: disabledRelationshipTypes ?? [],
-    showLegend: showLegend ?? true,
   };
   if (zoom) {
     stateForStorage = {
@@ -136,7 +134,8 @@ export const normalizeGraphStateParams = (params: Record<string, unknown>): Part
   ['hiddenNodeIds', 'collapsedEntityTypes', 'disabledRelationshipTypes'].forEach((key) => {
     if (key in normalized) normalized[key] = asList(normalized[key]);
   });
-  if ('showLegend' in normalized) normalized.showLegend = String(normalized.showLegend) !== 'false';
+  // The legend state is a preference of the user (graphLegendPreference), never one of a graph.
+  delete normalized.showLegend;
   if ('layoutMode' in normalized && !['tiers', 'radial'].includes(String(normalized.layoutMode))) normalized.layoutMode = null;
   if ('layoutCentreId' in normalized && !normalized.layoutCentreId) normalized.layoutCentreId = null;
   return normalized as Partial<GraphState>;

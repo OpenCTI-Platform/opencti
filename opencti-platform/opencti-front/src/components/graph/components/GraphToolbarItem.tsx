@@ -1,35 +1,73 @@
 import React, { MouseEvent, ReactNode } from 'react';
-import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { Badge, IconButton, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { useFormatter } from '../../i18n';
 
 interface GraphToolbarItemProps {
   title: string;
-  /** `secondary` marks a tool that is on (a mode, a layout, a filter in use). */
-  color: 'primary' | 'secondary';
+  /** `secondary` marks a tool that is on; prefer `pressed` for a toggle. */
+  color?: 'primary' | 'secondary';
+  /** A toggle: announced as pressed or not, its label staying the same. */
+  pressed?: boolean;
+  /** Key or chord shown in the tooltip, for example `Shift+F`. */
+  shortcut?: string;
   Icon: ReactNode;
   onClick: (event: MouseEvent<HTMLButtonElement>) => void;
   disabled?: boolean;
+  /** Why the tool is not available now; disables it and says so in its tooltip. */
+  disabledReason?: string;
+  /** Number of filters or choices in use, drawn on the button. */
+  badge?: number;
 }
 
 const GraphToolbarItem = ({
   title,
-  color,
+  color = 'primary',
+  pressed,
+  shortcut,
   Icon,
   onClick,
   disabled,
+  disabledReason,
+  badge,
 }: GraphToolbarItemProps) => {
+  const { t_i18n } = useFormatter();
+  const isDisabled = disabled || !!disabledReason;
+  // The icon button announces `active` as pressed: a plain action leaves it unset.
+  const active = pressed ?? (color === 'secondary' ? true : undefined);
+  let control: ReactNode = (
+    <IconButton
+      priority="tertiary"
+      aria-label={title}
+      aria-keyshortcuts={shortcut}
+      active={active}
+      onClick={onClick}
+      disabled={isDisabled}
+      icon={Icon}
+      // A disabled button receives no pointer event: its wrapper opens the tooltip saying why.
+      style={isDisabled ? { pointerEvents: 'none' } : undefined}
+    />
+  );
+  if (badge) {
+    control = (
+      <Badge content={badge} tone="brand" accessibleText={t_i18n('{count, plural, one {# in use} other {# in use}}', { values: { count: badge } })}>
+        {control}
+      </Badge>
+    );
+  }
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <IconButton
-          priority="tertiary"
-          aria-label={title}
-          active={color === 'secondary'}
-          onClick={onClick}
-          disabled={disabled}
-          icon={Icon}
-        />
+        {isDisabled ? <span style={{ display: 'inline-flex' }}>{control}</span> : control}
       </TooltipTrigger>
-      <TooltipContent>{title}</TooltipContent>
+      <TooltipContent side="top">
+        {shortcut ? `${title} (${shortcut})` : title}
+        {isDisabled && disabledReason && (
+          <>
+            <br />
+            {disabledReason}
+          </>
+        )}
+      </TooltipContent>
     </Tooltip>
   );
 };

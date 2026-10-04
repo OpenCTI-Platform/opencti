@@ -1,29 +1,55 @@
 import Drawer from '@mui/material/Drawer';
-import React from 'react';
+import React, { ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import Divider from '@mui/material/Divider';
 import { useTheme } from '@mui/material/styles';
 import LinearProgress from '@mui/material/LinearProgress';
 import useGraphInteractions from './utils/useGraphInteractions';
 import SearchInput from '../SearchInput';
 import type { Theme } from '../Theme';
-import GraphToolbarDisplayTools, { GraphToolbarDisplayToolsProps } from './components/GraphToolbarDisplayTools';
-import GraphToolbarSelectTools from './components/GraphToolbarSelectTools';
-import GraphToolbarFilterTools from './components/GraphToolbarFilterTools';
 import GraphToolbarContentTools, { GraphToolbarContentToolsProps } from './components/GraphToolbarContentTools';
 import GraphToolbarTimeRange from './components/GraphToolbarTimeRange';
 import { useGraphContext } from './GraphContext';
-import GraphToolbarCorrelationTools from './components/GraphToolbarCorrelationTools';
+import { useGraphView } from './GraphViewContext';
 import GraphToolbarExpandTools, { GraphToolbarExpandToolsProps } from './components/GraphToolbarExpandTools';
+import GraphToolbarItem from './components/GraphToolbarItem';
+import GraphToolbarOptionsList from './components/GraphToolbarOptionsList';
+import GraphToolbarMoreActions from './components/GraphToolbarMoreActions';
+import GraphCounters from './components/GraphCounters';
+import useGraphToolbarActions, { type GraphToolbarAction, type GraphToolbarGroup, useGraphToolbarGroupLabels } from './components/useGraphToolbarActions';
+import useToolbarRovingFocus from './utils/useToolbarRovingFocus';
+import { planToolbarOverflow } from './utils/graphToolbarOverflow';
+import { useFormatter } from '../i18n';
 import useAuth from '../../utils/hooks/useAuth';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
 import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../utils/hooks/useDraftContext';
+import useResizeObserver from '../../utils/hooks/useResizeObserver';
 import { RIGHT_BAR_LAYER, fdsLayerClass, layerInputVars } from '../../utils/fdsLayer';
 import { GRAPH_TOOLBAR_HEIGHT, GRAPH_TOOLBAR_HEIGHT_WITH_TIME_RANGE } from './utils/graphFraming';
 
-export type GraphToolbarProps = GraphToolbarContentToolsProps & GraphToolbarExpandToolsProps & GraphToolbarDisplayToolsProps & {
+export type GraphToolbarProps = GraphToolbarContentToolsProps & GraphToolbarExpandToolsProps & {
+  /** Called once "Unfix the nodes and re-apply forces" released the saved positions. */
+  onUnfixNodes?: () => void;
   warning?: React.ReactNode;
 };
 
+/** Gap between two controls of the toolbar, in theme spacing units and in pixels. */
+const GAP_UNITS = 0.5;
+const GAP_PX = 4;
+const SEARCH_WIDTH = 220;
+
+/** Pinned parts never move to the "More actions" menu: their width is measured, the rest is planned. */
+const Pinned = ({ children, style }: { children: ReactNode; style?: React.CSSProperties }) => (
+  <div data-toolbar-pinned="" style={{ display: 'flex', alignItems: 'center', gap: GAP_PX, flexShrink: 0, ...style }}>{children}</div>
+);
+
+const GroupDivider = () => <Divider orientation="vertical" aria-hidden sx={{ height: 24, marginX: 1, flexShrink: 0 }} />;
+
+/**
+ * The one toolbar of a graph, docked under it: the counters of what is drawn, then the actions
+ * grouped by intent (view, layout, selection, creation and removal, filters, export, help), the
+ * search, and a "More actions" menu for the rare actions and those the toolbar has no room for.
+ * It is one tab stop; the arrow keys move between its controls.
+ */
 const GraphToolbar = ({
   onInvestigationExpand,
   onInvestigationRollback,
@@ -32,10 +58,14 @@ const GraphToolbar = ({
   ...props
 }: GraphToolbarProps) => {
   const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
   const { bannerSettings: { bannerHeightNumber } } = useAuth();
   const navOpen = localStorage.getItem('navOpen') === 'true';
   const { selectBySearch } = useGraphInteractions();
+  const view = useGraphView();
+  const actions = useGraphToolbarActions({ onUnfixNodes });
+  const groupLabels = useGraphToolbarGroupLabels();
 
   const posBottom = draftContext ? DRAFT_TOOLBAR_HEIGHT : 0;
 
@@ -52,10 +82,62 @@ const GraphToolbar = ({
     toolbarRef,
   } = useGraphContext();
 
+  // --- Room: what the pinned parts leave decides which actions stay in the toolbar.
+  const rowRef = useRef<HTMLDivElement | null>(null);
+  const { width: rowWidth } = useResizeObserver(rowRef);
+  const [pinnedWidth, setPinnedWidth] = useState(0);
+  useLayoutEffect(() => {
+    const row = rowRef.current;
+    if (!row) return;
+    const pinned = Array.from(row.querySelectorAll<HTMLElement>(':scope > [data-toolbar-pinned]'));
+    const total = pinned.reduce((sum, element) => sum + element.offsetWidth + GAP_PX, 0);
+    if (Math.abs(total - pinnedWidth) > 1) setPinnedWidth(total);
+  });
+  const padding = parseFloat(theme.spacing(1.5)) * 2;
+  const room = rowWidth > 0 ? rowWidth - padding - pinnedWidth : Infinity;
+  const shownIds = useMemo(() => planToolbarOverflow(actions, room), [actions, room]);
+  const shown = (group: GraphToolbarGroup) => actions.filter((action) => action.group === group && shownIds.has(action.id));
+  const overflowed = actions.filter((action) => !shownIds.has(action.id));
+
+  const roving = useToolbarRovingFocus(rowRef);
+
+  // --- Lists opened from the toolbar (select by type, filters).
+  const [openList, setOpenList] = useState<{ id: string; anchor: Element }>();
+  const listAction = openList ? actions.find((action) => action.id === openList.id) : undefined;
+  const renderAction = (action: GraphToolbarAction) => (
+    <GraphToolbarItem
+      key={action.id}
+      title={action.label}
+      Icon={action.icon}
+      shortcut={action.shortcut}
+      pressed={action.pressed}
+      disabledReason={action.disabledReason}
+      badge={action.badge}
+      onClick={(event) => {
+        if (action.options) setOpenList({ id: action.id, anchor: event.currentTarget });
+        else action.onSelect?.();
+      }}
+    />
+  );
+  const group = (name: GraphToolbarGroup, first = false) => {
+    const items = shown(name);
+    if (items.length === 0) return null;
+    return (
+      <React.Fragment key={name}>
+        {!first && <GroupDivider />}
+        <div role="group" aria-label={groupLabels[name]} style={{ display: 'flex', alignItems: 'center', gap: GAP_PX, flexShrink: 0 }}>
+          {items.map(renderAction)}
+        </div>
+      </React.Fragment>
+    );
+  };
+
   const isLoadingData = (loadingCurrent ?? 0) < (loadingTotal ?? 0);
   // In full screen the graph covers the navigation, so the toolbar starts at the edge.
   let paddingLeft = navOpen ? OPEN_BAR_WIDTH : SMALL_BAR_WIDTH;
   if (isFullscreen) paddingLeft = 0;
+  const editable = context !== 'analyses';
+  const hasCounters = !!view && view.counters.length > 0;
 
   return (
     <Drawer
@@ -63,7 +145,7 @@ const GraphToolbar = ({
       variant="permanent"
       slotProps={{ paper: {
         ref: toolbarRef,
-        elevation: 1,
+        elevation: 2,
         className: fdsLayerClass(RIGHT_BAR_LAYER),
         sx: { ...layerInputVars },
         style: {
@@ -88,63 +170,83 @@ const GraphToolbar = ({
         }}
       />
       <div
-        className="hide-scrollbar"
+        ref={rowRef}
+        role="toolbar"
+        aria-label={t_i18n('Graph toolbar')}
+        aria-orientation="horizontal"
+        onKeyDown={roving.onKeyDown}
+        onFocus={roving.onFocus}
         style={{
           height: 54,
           flex: '0 0 auto',
           display: 'flex',
           alignItems: 'center',
-          gap: theme.spacing(0.5),
-          padding: `0 ${theme.spacing(1)}`,
-          overflowX: 'scroll',
-          overflowY: 'hidden',
+          gap: theme.spacing(GAP_UNITS),
+          padding: `0 ${theme.spacing(1.5)}`,
+          overflow: 'hidden',
         }}
       >
-        <GraphToolbarDisplayTools onUnfixNodes={onUnfixNodes} />
-        <Divider sx={{ margin: 1, height: '80%' }} orientation="vertical" />
+        {view && hasCounters && (
+          <Pinned><GraphCounters counters={view.counters} /></Pinned>
+        )}
+        {group('view', !hasCounters)}
+        {group('layout')}
+        {group('selection')}
 
-        <GraphToolbarSelectTools />
-        <Divider sx={{ margin: 1, height: '80%' }} orientation="vertical" />
+        {editable && (
+          <>
+            <GroupDivider />
+            <Pinned>
+              {context === 'investigation' && (
+                <GraphToolbarExpandTools
+                  onInvestigationExpand={onInvestigationExpand}
+                  onInvestigationRollback={onInvestigationRollback}
+                />
+              )}
+              <GraphToolbarContentTools {...props} />
+            </Pinned>
+          </>
+        )}
 
-        <GraphToolbarFilterTools />
-        <Divider sx={{ margin: 1, height: '80%' }} orientation="vertical" />
-
+        {group('filters')}
         {warning && (
-          <div style={{ flexShrink: 1, minWidth: 0, marginRight: theme.spacing(1) }}>
-            {warning}
-          </div>
+          <Pinned style={{ flexShrink: 1, minWidth: 0 }}>{warning}</Pinned>
         )}
+        {group('export')}
+        {group('help')}
 
-        {context === 'correlation' && (
-          <>
-            <GraphToolbarCorrelationTools />
-            <Divider sx={{ margin: 1, marginRight: 2, height: '80%' }} orientation="vertical" />
-          </>
+        {editable && (
+          <Pinned style={{ width: SEARCH_WIDTH, marginLeft: 'auto' }}>
+            <div style={{ width: '100%' }} data-graph-search>
+              <SearchInput
+                keyword={search ?? ''}
+                variant="thin"
+                onSubmit={selectBySearch}
+              />
+            </div>
+          </Pinned>
         )}
-
-        <div style={{ flex: 1 }} data-graph-search>
-          {context !== 'analyses' && (
-            <SearchInput
-              keyword={search ?? ''}
-              variant="thin"
-              onSubmit={selectBySearch}
-            />
-          )}
-        </div>
-
-        {context === 'investigation' && (
-          <>
-            <Divider sx={{ margin: 1, height: '80%' }} orientation="vertical" />
-            <GraphToolbarExpandTools
-              onInvestigationExpand={onInvestigationExpand}
-              onInvestigationRollback={onInvestigationRollback}
-            />
-            <Divider sx={{ margin: 1, height: '80%' }} orientation="vertical" />
-          </>
-        )}
-
-        {context !== 'analyses' && <GraphToolbarContentTools {...props} />}
+        <Pinned style={editable ? undefined : { marginLeft: 'auto' }}>
+          <GraphToolbarMoreActions actions={overflowed} />
+        </Pinned>
       </div>
+
+      {listAction?.options && openList && (
+        <GraphToolbarOptionsList
+          isMultiple={listAction.options.multiple}
+          anchorEl={openList.anchor}
+          onClose={() => setOpenList(undefined)}
+          options={listAction.options.items}
+          getOptionKey={(option) => option.key}
+          getOptionText={(option) => option.label}
+          getOptionSection={(option) => option.section}
+          isOptionSelected={(option) => !!option.selected}
+          onSelect={(option) => {
+            listAction.options?.onSelect(option.key);
+            if (!listAction.options?.multiple) setOpenList(undefined);
+          }}
+        />
+      )}
 
       {/* Only mounted while shown: the closed toolbar clips it, and its handles would stay reachable from the keyboard. */}
       {showTimeRange && <GraphToolbarTimeRange />}

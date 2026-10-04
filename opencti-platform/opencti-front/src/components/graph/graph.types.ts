@@ -95,6 +95,7 @@ export interface GraphState {
   collapsedEntityTypes?: string[];
   /** Relationship types hidden from the view through the legend. */
   disabledRelationshipTypes?: string[];
+  /** Legend open, or minimized to its pill; a preference of the user, not saved with the graph. */
   showLegend?: boolean;
   /** Shortest path highlighted between two nodes. */
   highlightedPath?: { nodeIds: string[]; linkIds: string[] } | null;

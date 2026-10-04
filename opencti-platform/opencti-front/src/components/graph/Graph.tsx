@@ -14,10 +14,10 @@ import EntitiesDetailsRightsBar from './components/EntitiesDetailsRightBar';
 import type { Theme } from '../Theme';
 import RelationSelection from './components/RelationSelection';
 import GraphLoadingAlert from './components/GraphLoadingAlert';
-import GraphControls from './components/GraphControls';
-import GraphCounters, { type GraphCounter } from './components/GraphCounters';
+import type { GraphCounter } from './components/GraphCounters';
 import GraphEmptyState, { type GraphEmptyKind } from './components/GraphEmptyState';
-import GraphLegend, { type GraphLegendBadge } from './components/GraphLegend';
+import GraphLegend, { type GraphLegendBadge, GraphLegendPill } from './components/GraphLegend';
+import { type GraphViewActions, GraphViewContext } from './GraphViewContext';
 import GraphHoverCard, { type GraphHoverCardTarget } from './components/GraphHoverCard';
 import GraphAccessibleList from './components/GraphAccessibleList';
 import GraphShortcutsDialog from './components/GraphShortcutsDialog';
@@ -58,8 +58,6 @@ const Graph = ({
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { width, height } = useResizeObserver(parentRef);
-  const overlayRowRef = useRef<HTMLDivElement | null>(null);
-  const { height: overlayRowHeight } = useResizeObserver(overlayRowRef);
   const nodeClicked = useRef<{ node?: GraphNode; time?: number }>({});
   const pointer = useRef({ x: 0, y: 0 });
   const startInvestigation = useGraphStartInvestigation();
@@ -112,6 +110,8 @@ const Graph = ({
     rawPositions,
     isFullscreen,
     setIsFullscreen,
+    stixCoreObjectTypes,
+    relationshipTypes,
     graphState: {
       mode3D,
       modeTree,
@@ -576,6 +576,22 @@ const Graph = ({
     showShortcuts: () => setShortcutsOpen(true),
   });
 
+  // --- What the toolbar rendered inside the graph takes from it. The type filters count the types
+  // drawn, the same number as the legend pill and the "Filter by type" list of the toolbar.
+  const typeFilterCount = disabledEntityTypes.filter((type) => stixCoreObjectTypes.includes(type)).length
+    + disabledRelationshipTypes.filter((type) => relationshipTypes.includes(type)).length;
+  const latestViewActions = useRef({ exportImage, toggleFullscreen });
+  latestViewActions.current = { exportImage, toggleFullscreen };
+  const viewActions = useMemo<GraphViewActions>(() => ({
+    counters,
+    typeFilterCount,
+    exportImage: () => {
+      latestViewActions.current.exportImage();
+    },
+    toggleFullscreen: () => latestViewActions.current.toggleFullscreen(),
+    showShortcuts: () => setShortcutsOpen(true),
+  }), [counters, typeFilterCount]);
+
   const cardTarget: GraphHoverCardTarget | null = useMemo(() => {
     if (!card) return null;
     if (card.target.kind === 'node') {
@@ -704,41 +720,7 @@ const Graph = ({
         {shownEmptyKind && (
           <GraphEmptyState kind={shownEmptyKind} context={context} onClearFilters={resetFilters} onShowHidden={showHiddenNodes} />
         )}
-        {/* The row only spans its panels: the canvas around them keeps its gestures. */}
-        <div
-          ref={overlayRowRef}
-          style={{
-            position: 'absolute',
-            left: theme.spacing(1.5),
-            top: theme.spacing(1.5),
-            right: theme.spacing(1.5),
-            zIndex: 2,
-            display: 'flex',
-            alignItems: 'flex-start',
-            gap: theme.spacing(1),
-            pointerEvents: 'none',
-          }}
-        >
-          <GraphControls
-            hasSelection={selectedNodes.length > 0}
-            is3D={mode3D}
-            isFullscreen={isFullscreen}
-            showLegend={showLegend}
-            onZoomIn={zoomIn}
-            onZoomOut={zoomOut}
-            onFit={zoomToFit}
-            onFitSelection={() => zoomToSelection()}
-            onLocate={() => locateNode()}
-            onToggleLegend={toggleLegend}
-            onToggleFullscreen={toggleFullscreen}
-            onExport={() => {
-              exportImage();
-            }}
-            onShowShortcuts={() => setShortcutsOpen(true)}
-          />
-          {shownNodes.length > 0 && <GraphCounters counters={counters} />}
-        </div>
-        {!mode3D && showLegend && shownNodes.length > 0 && (
+        {!mode3D && shownNodes.length > 0 && (showLegend ? (
           <GraphLegend
             nodes={shownNodes}
             links={shownLinks}
@@ -748,14 +730,16 @@ const Graph = ({
             hiddenCount={hiddenNodeIds.length}
             badges={legendBadges}
             bottomOffset={toolbarOverlap}
-            topOffset={overlayRowHeight}
             onToggleEntityType={toggleEntityType}
             onToggleRelationshipType={toggleRelationshipType}
             onToggleCollapsed={toggleCollapsedEntityType}
             onShowHidden={showHiddenNodes}
             onSelectBadge={selectBadgeCarriers}
+            onMinimize={toggleLegend}
           />
-        )}
+        ) : (
+          <GraphLegendPill filterCount={typeFilterCount} bottomOffset={toolbarOverlap} onOpen={toggleLegend} />
+        ))}
         {!mode3D && card && cardTarget && (
           <GraphHoverCard
             target={cardTarget}
@@ -853,7 +837,9 @@ const Graph = ({
           }}
         />
         <GraphShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
-        {children}
+        <GraphViewContext.Provider value={viewActions}>
+          {children}
+        </GraphViewContext.Provider>
       </div>
     </RectangleSelection>
   );

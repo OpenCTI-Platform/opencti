@@ -1,9 +1,8 @@
 import React, { useMemo } from 'react';
-import { Button, Paper, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useTheme } from '@mui/material/styles';
 import { useFormatter } from '../../i18n';
 import type { Theme } from '../../Theme';
-import { EXPORT_REMOVE_CLASS } from '../../../utils/Image';
 import type { GraphBadgeTone } from '../badges/graphBadgeRegistry';
 import { buildGraphPalette } from '../utils/graphPalette';
 
@@ -24,8 +23,8 @@ export interface GraphCountersProps {
 }
 
 /**
- * The counter row of the graph: what it holds at a glance, each counter selecting the elements it
- * counts so that they can be framed, opened or acted on together.
+ * The counters opening the graph toolbar: what the graph holds at a glance, each counter selecting
+ * the elements it counts so that they can be framed, opened or acted on together.
  */
 const GraphCounters = ({ counters }: GraphCountersProps) => {
   const { t_i18n } = useFormatter();
@@ -33,37 +32,28 @@ const GraphCounters = ({ counters }: GraphCountersProps) => {
   const palette = useMemo(() => buildGraphPalette(theme), [theme]);
   if (counters.length === 0) return null;
   return (
-    <Paper
-      elevation={2}
-      padding={0}
-      className={EXPORT_REMOVE_CLASS}
-      role="toolbar"
-      aria-label={t_i18n('Graph summary')}
-      data-graph-panel=""
-      style={{ pointerEvents: 'auto' }}
-      onMouseDown={(event) => event.stopPropagation()}
-    >
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: theme.spacing(0.25), padding: theme.spacing(0.5) }}>
-        {counters.map(({ key, label, action, tone, onSelect }) => (
-          <Tooltip key={key}>
-            <TooltipTrigger asChild>
-              <Button
-                priority="tertiary"
-                size="sm"
-                aria-label={`${label} - ${action}`}
-                startIcon={tone
-                  ? <span aria-hidden style={{ width: 10, height: 10, borderRadius: '50%', border: `2px solid ${palette.tones[tone]}` }} />
-                  : undefined}
-                onClick={onSelect}
-              >
-                {label}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom">{action}</TooltipContent>
-          </Tooltip>
-        ))}
-      </div>
-    </Paper>
+    <div role="group" aria-label={t_i18n('Graph summary')} style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(0.25), flexShrink: 0 }}>
+      {counters.map(({ key, label, action, tone, onSelect }) => (
+        <Tooltip key={key}>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              priority="tertiary"
+              size="sm"
+              aria-label={`${label} - ${action}`}
+              startIcon={tone
+                ? <span aria-hidden style={{ width: 10, height: 10, borderRadius: '50%', border: `2px solid ${palette.tones[tone]}` }} />
+                : undefined}
+              onClick={onSelect}
+              style={{ whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}
+            >
+              {label}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="top">{action}</TooltipContent>
+        </Tooltip>
+      ))}
+    </div>
   );
 };
 

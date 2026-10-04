@@ -3,8 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen } from '@testing-library/react';
 import testRender from '../../../utils/tests/test-render';
 import { graphLink, graphNode } from '../../../utils/tests/graphTestData';
-import GraphLegend from './GraphLegend';
-import GraphControls from './GraphControls';
+import GraphLegend, { GraphLegendPill } from './GraphLegend';
 import GraphCounters from './GraphCounters';
 import GraphEmptyState from './GraphEmptyState';
 import GraphHoverCard, { GraphHoverCardActions } from './GraphHoverCard';
@@ -71,10 +70,37 @@ describe('GraphLegend', () => {
     expect(screen.getByRole('region', { name: 'Legend' }).style.marginBottom).toBe('80px');
   });
 
-  it('stays under the controls and the counter row, whatever the height of the graph', () => {
+  it('stays under what is docked at the top, whatever the height of the graph', () => {
     testRender(<GraphLegend {...props} topOffset={220} bottomOffset={80} />);
-    // The row and the toolbar, plus the margins above and under the legend and the gap under the row.
+    // What is docked at the top and the toolbar, plus the margins above and under the legend and the gap.
     expect(screen.getByRole('region', { name: 'Legend' }).style.maxHeight).toBe('calc(100% - 332px)');
+  });
+
+  it('minimizes from its header, saying what it folds and with which key', async () => {
+    const onMinimize = vi.fn();
+    const { user } = testRender(<GraphLegend {...props} onMinimize={onMinimize} />);
+    const minimize = screen.getByRole('button', { name: 'Minimize the legend' });
+    expect(minimize).toHaveAttribute('aria-expanded', 'true');
+    expect(minimize).toHaveAttribute('aria-keyshortcuts', 'G');
+    expect(document.getElementById(minimize.getAttribute('aria-controls') ?? '')).toHaveTextContent('Entities');
+    await user.click(minimize);
+    expect(onMinimize).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('GraphLegendPill', () => {
+  it('reopens the legend and counts the type filters in use', async () => {
+    const onOpen = vi.fn();
+    const { user, unmount } = testRender(<GraphLegendPill filterCount={2} bottomOffset={54} onOpen={onOpen} />);
+    const pill = screen.getByRole('button', { name: 'Show the legend, 2 filters' });
+    expect(pill).toHaveTextContent('Legend');
+    expect(pill).toHaveAttribute('aria-expanded', 'false');
+    expect(pill.closest('[data-graph-panel]')).not.toBeNull();
+    await user.click(pill);
+    expect(onOpen).toHaveBeenCalledTimes(1);
+    unmount();
+    testRender(<GraphLegendPill filterCount={0} onOpen={onOpen} />);
+    expect(screen.getByRole('button', { name: 'Show the legend' })).not.toHaveTextContent('filter');
   });
 });
 
@@ -109,7 +135,7 @@ describe('GraphCounters', () => {
         ]}
       />,
     );
-    expect(screen.getByRole('toolbar', { name: 'Graph summary' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Graph summary' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: '124 entities - Select the entities' }));
     await user.click(screen.getByRole('button', { name: /^3 restricted/ }));
     expect(onSelectEntities).toHaveBeenCalledTimes(1);
@@ -118,58 +144,7 @@ describe('GraphCounters', () => {
 
   it('draws nothing without a counter', () => {
     testRender(<GraphCounters counters={[]} />);
-    expect(screen.queryByRole('toolbar', { name: 'Graph summary' })).toBeNull();
-  });
-});
-
-describe('GraphControls', () => {
-  it('names every control with its shortcut and runs it', async () => {
-    const handlers = {
-      onZoomIn: vi.fn(),
-      onZoomOut: vi.fn(),
-      onFit: vi.fn(),
-      onFitSelection: vi.fn(),
-      onLocate: vi.fn(),
-      onToggleLegend: vi.fn(),
-      onToggleFullscreen: vi.fn(),
-      onExport: vi.fn(),
-      onShowShortcuts: vi.fn(),
-    };
-    const { user } = testRender(<GraphControls hasSelection={false} is3D={false} isFullscreen={false} showLegend {...handlers} />);
-    expect(screen.getByRole('toolbar', { name: 'Graph view controls' })).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Zoom in' }));
-    await user.click(screen.getByRole('button', { name: 'Fit the whole graph' }));
-    await user.click(screen.getByRole('button', { name: 'Show the graph full screen' }));
-    await user.click(screen.getByRole('button', { name: 'Export the whole graph as a high-resolution image' }));
-    expect(handlers.onZoomIn).toHaveBeenCalled();
-    expect(handlers.onFit).toHaveBeenCalled();
-    expect(handlers.onToggleFullscreen).toHaveBeenCalled();
-    expect(handlers.onExport).toHaveBeenCalled();
-    expect(screen.getByRole('button', { name: 'Fit the selection' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Fit the whole graph' })).toHaveAttribute('aria-keyshortcuts', 'F');
-  });
-
-  it('keeps only what works in 3D', () => {
-    testRender(
-      <GraphControls
-        hasSelection
-        is3D
-        isFullscreen
-        showLegend={false}
-        onZoomIn={vi.fn()}
-        onZoomOut={vi.fn()}
-        onFit={vi.fn()}
-        onFitSelection={vi.fn()}
-        onLocate={vi.fn()}
-        onToggleLegend={vi.fn()}
-        onToggleFullscreen={vi.fn()}
-        onExport={vi.fn()}
-        onShowShortcuts={vi.fn()}
-      />,
-    );
-    expect(screen.queryByRole('button', { name: 'Zoom in' })).toBeNull();
-    expect(screen.queryByRole('button', { name: /Export the whole graph/ })).toBeNull();
-    expect(screen.getByRole('button', { name: 'Leave full screen' })).toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: 'Graph summary' })).toBeNull();
   });
 });
 

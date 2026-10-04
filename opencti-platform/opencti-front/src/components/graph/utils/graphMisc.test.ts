@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { createTheme, ThemeOptions } from '@mui/material/styles';
 import ThemeDark from '../../ThemeDark';
 import ThemeLight from '../../ThemeLight';
@@ -6,6 +6,7 @@ import { buildGraphPalette, dataColorOutline } from './graphPalette';
 import { collisionForce } from './collisionForce';
 import { isOverlayOpen, shortcutOf } from './useGraphKeyboardShortcuts';
 import { graphStateToLocalStorage, normalizeGraphStateParams } from './graphUtils';
+import { readLegendOpen, writeLegendOpen } from './graphLegendPreference';
 import { graphNodeTitle } from './useGraphParser';
 import { graphNode } from '../../../utils/tests/graphTestData';
 import { glyphFromMarkup } from './graphIcons';
@@ -111,20 +112,33 @@ describe('graph view state persistence', () => {
       hiddenNodeIds: ['node-2'],
       collapsedEntityTypes: ['Malware'],
       disabledRelationshipTypes: ['uses'],
-      showLegend: false,
     });
     expect(saved).not.toHaveProperty('highlightedPath');
+    expect(saved).not.toHaveProperty('showLegend');
   });
 
-  it('reads them back from the strings of the URL', () => {
+  it('reads them back from the strings of the URL, leaving the legend state to the user preference', () => {
     expect(normalizeGraphStateParams({
       hiddenNodeIds: 'a,b',
       collapsedEntityTypes: '',
       showLegend: 'false',
       layoutMode: 'unknown',
       layoutCentreId: '',
-    })).toEqual({ hiddenNodeIds: ['a', 'b'], collapsedEntityTypes: [], showLegend: false, layoutMode: null, layoutCentreId: null });
-    expect(normalizeGraphStateParams({ layoutMode: 'tiers', showLegend: true })).toEqual({ layoutMode: 'tiers', showLegend: true });
+    })).toEqual({ hiddenNodeIds: ['a', 'b'], collapsedEntityTypes: [], layoutMode: null, layoutCentreId: null });
+    expect(normalizeGraphStateParams({ layoutMode: 'tiers', showLegend: true })).toEqual({ layoutMode: 'tiers' });
+  });
+});
+
+describe('legend preference', () => {
+  afterEach(() => window.localStorage.clear());
+
+  it('opens the legend until the user minimizes it, for every graph of that user only', () => {
+    expect(readLegendOpen('user-1')).toBe(true);
+    writeLegendOpen('user-1', false);
+    expect(readLegendOpen('user-1')).toBe(false);
+    expect(readLegendOpen('user-2')).toBe(true);
+    writeLegendOpen('user-1', true);
+    expect(readLegendOpen('user-1')).toBe(true);
   });
 });
 

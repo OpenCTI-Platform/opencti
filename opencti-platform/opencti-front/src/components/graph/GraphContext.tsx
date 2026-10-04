@@ -8,6 +8,8 @@ import { useFormatter } from '../i18n';
 import useGraphParser, { ObjectToParse } from './utils/useGraphParser';
 import { computeTimeRangeInterval, computeTimeRangeValues, GraphTimeRange } from './utils/graphTimeRange';
 import { graphStateToLocalStorage, normalizeGraphStateParams } from './utils/graphUtils';
+import { readLegendOpen, writeLegendOpen } from './utils/graphLegendPreference';
+import { UserContext } from '../../utils/hooks/useAuth';
 
 type Setter<T> = Dispatch<SetStateAction<T>>;
 
@@ -72,6 +74,7 @@ export const GraphProvider = ({
   const location = useLocation();
   const { t_i18n } = useFormatter();
   const { buildGraphData, buildCorrelationData } = useGraphParser();
+  const userId = useContext(UserContext).me?.id;
 
   const graphRef2D = useRef<GraphRef2D | undefined>(undefined);
   const graphRef3D = useRef<GraphRef3D | undefined>(undefined);
@@ -100,7 +103,7 @@ export const GraphProvider = ({
     hiddenNodeIds: [],
     collapsedEntityTypes: [],
     disabledRelationshipTypes: [],
-    showLegend: true,
+    showLegend: readLegendOpen(userId),
     highlightedPath: null,
   };
 
@@ -120,6 +123,10 @@ export const GraphProvider = ({
       saveViewParameters(navigate, location, localStorageKey, stateToSave);
     }
   }, [graphState]);
+
+  useEffect(() => {
+    writeLegendOpen(userId, graphState.showLegend !== false);
+  }, [graphState.showLegend]);
 
   useEffect(() => {
     // On selection change, reset relationship select mode, and the highlighted path unless both

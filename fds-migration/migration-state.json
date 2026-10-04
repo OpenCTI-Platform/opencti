@@ -347,10 +347,8 @@
         "imported-from-library",
         "no-hardcoded-padding"
       ],
-      "reason": "graph experience: the panels floating over the graph canvas (view controls, counter row, legend, hover card, empty state), padding owned by the padding prop",
+      "reason": "graph experience: the panels floating over the graph canvas (legend and its minimized pill, hover card, empty state), padding owned by the padding prop",
       "files": [
-        "opencti-platform/opencti-front/src/components/graph/components/GraphControls.tsx",
-        "opencti-platform/opencti-front/src/components/graph/components/GraphCounters.tsx",
         "opencti-platform/opencti-front/src/components/graph/components/GraphLegend.tsx",
         "opencti-platform/opencti-front/src/components/graph/components/GraphHoverCard.tsx",
         "opencti-platform/opencti-front/src/components/graph/components/GraphEmptyState.tsx"
@@ -362,10 +360,10 @@
       "guards": [
         "imported-from-library"
       ],
-      "reason": "graph experience: every graph tool button (toolbar items, view controls, legend and hover card actions); the active state of a tool is the active prop",
+      "reason": "graph experience: every graph tool button (toolbar items, the More actions trigger, legend and hover card actions); the pressed state of a toggle is the active prop",
       "files": [
         "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarItem.tsx",
-        "opencti-platform/opencti-front/src/components/graph/components/GraphControls.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarMoreActions.tsx",
         "opencti-platform/opencti-front/src/components/graph/components/GraphLegend.tsx",
         "opencti-platform/opencti-front/src/components/graph/components/GraphHoverCard.tsx"
       ]
@@ -376,9 +374,10 @@
       "guards": [
         "imported-from-library"
       ],
-      "reason": "graph experience: the counters of the counter row and the next action of the empty states",
+      "reason": "graph experience: the counters opening the graph toolbar, the minimized legend pill and the next action of the empty states",
       "files": [
         "opencti-platform/opencti-front/src/components/graph/components/GraphCounters.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphLegend.tsx",
         "opencti-platform/opencti-front/src/components/graph/components/GraphEmptyState.tsx"
       ]
     },
@@ -388,13 +387,35 @@
       "guards": [
         "imported-from-library"
       ],
-      "reason": "graph experience: the tooltips of the graph tool buttons, counters, legend entries and hover card badges",
+      "reason": "graph experience: the tooltips of the graph tool buttons (with their shortcut, or why they are disabled), counters, legend entries and hover card badges",
       "files": [
         "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarItem.tsx",
-        "opencti-platform/opencti-front/src/components/graph/components/GraphControls.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarMoreActions.tsx",
         "opencti-platform/opencti-front/src/components/graph/components/GraphCounters.tsx",
         "opencti-platform/opencti-front/src/components/graph/components/GraphLegend.tsx",
         "opencti-platform/opencti-front/src/components/graph/components/GraphHoverCard.tsx"
+      ]
+    },
+    {
+      "component": "Menu",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "graph experience: the More actions menu closing the graph toolbar, toggles as checkable items and lists as submenus",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarMoreActions.tsx"
+      ]
+    },
+    {
+      "component": "Badge",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "graph experience: the number of filters in use on the filter buttons of the graph toolbar",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarItem.tsx"
       ]
     }
   ]

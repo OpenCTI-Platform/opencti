@@ -1,6 +1,6 @@
-import React, { CSSProperties, useMemo } from 'react';
-import { IconButton, Paper, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
-import { UnfoldLessOutlined, UnfoldMoreOutlined, VisibilityOutlined } from '@mui/icons-material';
+import React, { CSSProperties, useId, useMemo } from 'react';
+import { Button, IconButton, Paper, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { LegendToggleOutlined, MinimizeOutlined, UnfoldLessOutlined, UnfoldMoreOutlined, VisibilityOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import ItemIcon from '../../ItemIcon';
 import { itemColor } from '../../../utils/Colors';
@@ -31,7 +31,7 @@ export interface GraphLegendProps {
   badges?: readonly GraphLegendBadge[];
   /** Pixels the toolbar under the graph covers at the bottom of the canvas, which the legend stays above. */
   bottomOffset?: number;
-  /** Height of the controls and counter row at the top of the canvas, which the legend stays under. */
+  /** Height of anything docked at the top of the canvas, which the legend stays under. */
   topOffset?: number;
   onToggleEntityType: (type: string) => void;
   onToggleRelationshipType: (type: string) => void;
@@ -39,7 +39,60 @@ export interface GraphLegendProps {
   onShowHidden: () => void;
   /** Selects the entities carrying the badge. */
   onSelectBadge?: (key: string) => void;
+  /** Folds the legend to its pill. */
+  onMinimize?: () => void;
 }
+
+/** Where the legend and its pill sit: the bottom left corner of the canvas, above the toolbar. */
+const cornerStyle = (spacing: string, bottomOffset: number): CSSProperties => ({
+  position: 'absolute',
+  left: spacing,
+  bottom: spacing,
+  marginBottom: bottomOffset,
+  zIndex: 2,
+});
+
+export interface GraphLegendPillProps {
+  /** Entity and relationship types filtered out from the legend. */
+  filterCount: number;
+  bottomOffset?: number;
+  onOpen: () => void;
+}
+
+/** The legend minimized: one button in its corner, with the number of filters in use. */
+export const GraphLegendPill = ({ filterCount, bottomOffset = 0, onOpen }: GraphLegendPillProps) => {
+  const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
+  const filters = filterCount > 0 ? t_i18n('{count, plural, one {# filter} other {# filters}}', { values: { count: filterCount } }) : null;
+  return (
+    <Paper
+      elevation={2}
+      padding={0}
+      data-graph-panel=""
+      style={cornerStyle(theme.spacing(1.5), bottomOffset)}
+      onMouseDown={(event) => event.stopPropagation()}
+    >
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            type="button"
+            priority="tertiary"
+            size="sm"
+            aria-label={filters ? `${t_i18n('Show the legend')}, ${filters}` : t_i18n('Show the legend')}
+            aria-expanded={false}
+            aria-keyshortcuts="G"
+            startIcon={<LegendToggleOutlined fontSize="small" />}
+            onClick={onOpen}
+          >
+            {t_i18n('Legend')}
+            {filters && <span style={{ color: theme.palette.text.secondary }}>{` \u00b7 ${filters}`}</span>}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="top">{`${t_i18n('Show the legend')} (G)`}</TooltipContent>
+      </Tooltip>
+    </Paper>
+  );
+};
 
 const countBy = <T, >(items: readonly T[], key: (item: T) => string) => {
   const counts = new Map<string, number>();
@@ -69,10 +122,12 @@ const GraphLegend = ({
   onToggleCollapsed,
   onShowHidden,
   onSelectBadge,
+  onMinimize,
 }: GraphLegendProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const palette = useMemo(() => buildGraphPalette(theme), [theme]);
+  const bodyId = useId();
 
   const entityCounts = useMemo(() => {
     const counts = countBy(
@@ -128,11 +183,7 @@ const GraphLegend = ({
       role="region"
       data-graph-panel=""
       style={{
-        position: 'absolute',
-        left: theme.spacing(1.5),
-        bottom: theme.spacing(1.5),
-        marginBottom: bottomOffset,
-        zIndex: 2,
+        ...cornerStyle(theme.spacing(1.5), bottomOffset),
         width: 248,
         display: 'flex',
         flexDirection: 'column',
@@ -140,7 +191,27 @@ const GraphLegend = ({
       }}
       onMouseDown={(event) => event.stopPropagation()}
     >
-      <Text variant="content-compact" as="div" style={{ maxHeight: 'min(45vh, 420px)', overflowY: 'auto', padding: theme.spacing(0.5) }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: theme.spacing(0.5, 0.5, 0, 1.25) }}>
+        <Text variant="content-compact-bold" as="h2" style={{ margin: 0 }}>{t_i18n('Legend')}</Text>
+        {onMinimize && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <IconButton
+                priority="tertiary"
+                size="sm"
+                aria-label={t_i18n('Minimize the legend')}
+                aria-expanded
+                aria-controls={bodyId}
+                aria-keyshortcuts="G"
+                icon={<MinimizeOutlined fontSize="small" />}
+                onClick={onMinimize}
+              />
+            </TooltipTrigger>
+            <TooltipContent side="right">{`${t_i18n('Minimize the legend')} (G)`}</TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+      <Text id={bodyId} variant="content-compact" as="div" style={{ maxHeight: 'min(45vh, 420px)', overflowY: 'auto', padding: theme.spacing(0, 0.5, 0.5) }}>
         <Text variant="content-compact-bold" as="div" style={heading}>{t_i18n('Entities')}</Text>
         {entityCounts.map(({ type, count: total, label }) => {
           const disabled = disabledEntityTypes.includes(type);
