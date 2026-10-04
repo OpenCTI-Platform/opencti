@@ -185,6 +185,19 @@ const Empty = ({ text }: { text: string }) => (
   <Typography variant="body2" color="text.secondary">{text}</Typography>
 );
 
+// Relative date, the full date on hover and focus
+const RelativeDate = ({ date }: { date: string }) => {
+  const { fldt, rd } = useFormatter();
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span tabIndex={0} style={{ cursor: 'help' }}>{rd(date)}</span>
+      </TooltipTrigger>
+      <TooltipContent>{fldt(date)}</TooltipContent>
+    </Tooltip>
+  );
+};
+
 interface DefenseTechniqueContentProps {
   queryRef: PreloadedQuery<DefenseTechniqueDrawerQuery>;
   scope: DefenseScopeState;
@@ -399,12 +412,24 @@ const DefenseTechniqueContent = ({ queryRef, scope, allowValidation }: DefenseTe
                   primary={validation.securityCoverage ? (
                     <Link to={`/dashboard/analyses/security_coverages/${validation.securityCoverage.id}`}>{validation.securityCoverage.name}</Link>
                   ) : validation.result.representative.main}
-                  secondary={[
-                    t_i18n(DEFENSE_VALIDATION_LABELS[validation.status as DefenseValidation]),
-                    validation.scores.map((s) => `${t_i18n(s.coverage_name)} ${s.coverage_score}%`).join(', '),
-                    validation.platforms.map((p) => `${p.platform.name}: ${t_i18n(DEFENSE_VALIDATION_LABELS[p.status as DefenseValidation])}`).join(', '),
-                    validation.last_result_at ? fldt(validation.last_result_at) : null,
-                  ].filter((part) => !!part).join(' - ')}
+                  secondary={(
+                    <>
+                      {[
+                        t_i18n(DEFENSE_VALIDATION_LABELS[validation.status as DefenseValidation]),
+                        validation.scores.map((s) => `${t_i18n(s.coverage_name)} ${s.coverage_score}%`).join(', '),
+                        // A platform's status is only repeated when it differs from the result's
+                        validation.platforms.map((p) => (p.status === validation.status
+                          ? p.platform.name
+                          : `${p.platform.name}: ${t_i18n(DEFENSE_VALIDATION_LABELS[p.status as DefenseValidation])}`)).join(', '),
+                      ].filter((part) => !!part).join(' - ')}
+                      {validation.last_result_at && (
+                        <>
+                          {' - '}
+                          <RelativeDate date={validation.last_result_at} />
+                        </>
+                      )}
+                    </>
+                  )}
                 />
               </ListItem>
             ))}
@@ -457,7 +482,12 @@ const DefenseTechniqueContent = ({ queryRef, scope, allowValidation }: DefenseTe
                   primary={request.securityCoverage ? (
                     <Link to={`/dashboard/analyses/security_coverages/${request.securityCoverage.id}`}>{request.securityCoverage.name}</Link>
                   ) : t_i18n('Restricted security coverage')}
-                  secondary={`${platformName(gap.platform_id)} - ${fldt(request.requested_at)}`}
+                  secondary={(
+                    <>
+                      {`${platformName(gap.platform_id)} - `}
+                      <RelativeDate date={request.requested_at} />
+                    </>
+                  )}
                 />
               </ListItem>
             )))}

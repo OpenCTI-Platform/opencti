@@ -3,11 +3,22 @@ import { graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { Box, DialogActions, List, ListItem, Stack, Typography } from '@mui/material';
-import { Chip } from '@filigran/design-system';
+import {
+  Chip,
+  Combobox,
+  ComboboxChips,
+  ComboboxClear,
+  ComboboxContent,
+  ComboboxControls,
+  ComboboxField,
+  ComboboxInput,
+  ComboboxLabel,
+  ComboboxTrigger,
+} from '@filigran/design-system';
+import { useIntl } from 'react-intl';
 import { useNavigate } from 'react-router';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
-import OpenVocabField from '@components/common/form/OpenVocabField';
 import TextField from '../../../../components/TextField';
 import PeriodicityField from '../../../../components/fields/PeriodicityField';
 import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
@@ -35,6 +46,20 @@ const defenseValidationDialogMutation = graphql`
 `;
 
 const NO_THREAT = 'none';
+// Techniques listed in the preview before the count of the others
+const PREVIEW_TECHNIQUES = 6;
+
+interface ScenarioPlatformOption {
+  value: string;
+  label: string;
+}
+// Endpoint platforms of the OpenAEV scenario, values of the platforms_ov vocabulary
+const SCENARIO_PLATFORMS: ScenarioPlatformOption[] = [
+  { value: 'windows', label: 'Windows' },
+  { value: 'linux', label: 'Linux' },
+  { value: 'macos', label: 'macOS' },
+];
+const scenarioPlatformLabel = (value: string) => SCENARIO_PLATFORMS.find((platform) => platform.value === value)?.label ?? value;
 
 interface DefenseValidationFormValues {
   name: string;
@@ -78,6 +103,7 @@ const techniqueTitle = (technique: DefenseValidationTechnique) => (technique.x_m
 
 const DefenseValidationDialog = ({ open, onClose, onValidated, techniques, platforms = [], gaps = [], threats }: DefenseValidationDialogProps) => {
   const { t_i18n } = useFormatter();
+  const intl = useIntl();
   const platformsOf = (techniqueId: string): string[] => {
     const paired = gaps.filter((gap) => gap.attackPatternId === techniqueId).map((gap) => gap.platformName);
     return Array.from(new Set([...paired, ...platforms.map((platform) => platform.name)]));
@@ -152,9 +178,8 @@ const DefenseValidationDialog = ({ open, onClose, onValidated, techniques, platf
                   {t_i18n('{count, plural, one {# technique} other {# techniques}}', { values: { count: techniques.length } })}
                 </Typography>
               </Stack>
-              {/* A long selection scrolls in place so the scenario and the confirmation stay in view */}
-              <List dense disablePadding data-testid="defense-validation-techniques" sx={{ maxHeight: 220, overflowY: 'auto' }}>
-                {techniques.map((technique) => {
+              <List dense disablePadding data-testid="defense-validation-techniques">
+                {techniques.slice(0, PREVIEW_TECHNIQUES).map((technique) => {
                   const targets = platformsOf(technique.id);
                   return (
                     <ListItem key={technique.id} disableGutters sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
@@ -166,14 +191,24 @@ const DefenseValidationDialog = ({ open, onClose, onValidated, techniques, platf
                   );
                 })}
               </List>
+              {techniques.length > PREVIEW_TECHNIQUES && (
+                <Typography variant="body2" color="text.secondary" data-testid="defense-validation-more">
+                  {t_i18n('{count, plural, one {and # more technique} other {and # more techniques}}', { values: { count: techniques.length - PREVIEW_TECHNIQUES } })}
+                </Typography>
+              )}
               <Typography variant="body2" color="text.secondary" sx={{ marginTop: 1 }} data-testid="defense-validation-scenario">
-                {t_i18n('Scenario: {type} targets on {platforms}, threat emulated: {threat}', {
-                  values: {
-                    type: t_i18n(values.type_affinity === 'ENDPOINT' ? 'Endpoint' : values.type_affinity),
-                    platforms: values.platforms_affinity.length > 0 ? values.platforms_affinity.join(', ') : t_i18n('any platform'),
-                    threat: threats.find((threat) => threat.value === values.threatId)?.label ?? t_i18n('None'),
-                  },
-                })}
+                {(() => {
+                  const scenarioValues = {
+                    type: t_i18n('Endpoint'),
+                    platforms: values.platforms_affinity.length > 0
+                      ? intl.formatList(values.platforms_affinity.map(scenarioPlatformLabel), { type: 'conjunction' })
+                      : t_i18n('any platform'),
+                    threat: threats.find((threat) => threat.value === values.threatId)?.label ?? '',
+                  };
+                  return values.threatId === NO_THREAT || !scenarioValues.threat
+                    ? t_i18n('Scenario: {type} targets on {platforms}, no threat emulated', { values: scenarioValues })
+                    : t_i18n('Scenario: {type} targets on {platforms}, emulating {threat}', { values: scenarioValues });
+                })()}
               </Typography>
             </Box>
             <Field
@@ -224,14 +259,31 @@ const DefenseValidationDialog = ({ open, onClose, onValidated, techniques, platf
             >
               <SelectItem value="ENDPOINT">{t_i18n('Endpoint')}</SelectItem>
             </Field>
-            <OpenVocabField
-              label={t_i18n('Platform affinity')}
-              type="platforms_ov"
-              name="platforms_affinity"
-              onChange={(name, value) => setFieldValue(name, value)}
-              containerStyle={fieldSpacingContainerStyle}
-              multiple
-            />
+            <Box style={fieldSpacingContainerStyle}>
+              <Combobox<ScenarioPlatformOption>
+                multiple
+                className="w-full"
+                options={SCENARIO_PLATFORMS}
+                value={SCENARIO_PLATFORMS.filter((platform) => values.platforms_affinity.includes(platform.value))}
+                getOptionLabel={(option) => option.label}
+                isOptionEqualToValue={(option, other) => option.value === other.value}
+                onValueChange={(next) => setFieldValue('platforms_affinity', ((next as ScenarioPlatformOption[] | null) ?? []).map((option) => option.value))}
+              >
+                <ComboboxLabel>{t_i18n('Platform affinity')}</ComboboxLabel>
+                <ComboboxField>
+                  <ComboboxChips aria-label={t_i18n('Platform affinity')} />
+                  <ComboboxInput
+                    placeholder={values.platforms_affinity.length === 0 ? t_i18n('any platform') : undefined}
+                    data-testid="defense-validation-platforms"
+                  />
+                  <ComboboxControls>
+                    <ComboboxClear />
+                    <ComboboxTrigger />
+                  </ComboboxControls>
+                </ComboboxField>
+                <ComboboxContent emptyMessage={t_i18n('No results')} listAriaLabel={t_i18n('Platform affinity')} />
+              </Combobox>
+            </Box>
             <DialogActions sx={{ paddingX: 0, marginTop: 2 }}>
               <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
                 {t_i18n('Cancel')}

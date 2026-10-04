@@ -2,7 +2,22 @@ import React, { Suspense, useState } from 'react';
 import { graphql, PreloadedQuery, usePaginationFragment, usePreloadedQuery } from 'react-relay';
 import { Box, DialogActions, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import { DeleteOutlined, DeviceHubOutlined, EditOutlined } from '@mui/icons-material';
-import { Button as DsButton, Card as DsCard, CardContent, CardFooter, CardHeader, CardTitle, Chip, IconButton, Switch, Text, Thumbnail } from '@filigran/design-system';
+import {
+  Button as DsButton,
+  Card as DsCard,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  Chip,
+  IconButton,
+  Switch,
+  Text,
+  Thumbnail,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -126,7 +141,7 @@ const MappingsTable = ({ queryRef, onEdit, onCreate, onFirstUseChange, searching
   searching: boolean;
   refreshKey: number;
 }) => {
-  const { t_i18n, nsdt } = useFormatter();
+  const { t_i18n, fldt, rd } = useFormatter();
   const queryData = usePreloadedQuery(defenseLogsourceMappingsLinesQuery, queryRef);
   const { data, hasNext, loadNext, isLoadingNext, refetch } = usePaginationFragment<DefenseLogsourceMappingsLinesRefetchQuery, DefenseLogsourceMappingsLines_data$key>(
     defenseLogsourceMappingsLinesFragment,
@@ -146,7 +161,11 @@ const MappingsTable = ({ queryRef, onEdit, onCreate, onFirstUseChange, searching
   return (
     <>
       {firstUse && <MappingsFirstUse onCreate={onCreate} />}
-      <Card title={t_i18n('{count, plural, one {# telemetry mapping} other {# telemetry mappings}}', { values: { count: data.defenseLogsourceMappings?.pageInfo.globalCount ?? 0 } })}>
+      <Card>
+        {/* The count stays out of the card title, which capitalizes every word */}
+        <Typography variant="body2" color="text.secondary" sx={{ marginBottom: 1 }} data-testid="defense-logsource-mappings-count">
+          {t_i18n('{count, plural, one {# telemetry mapping} other {# telemetry mappings}}', { values: { count: data.defenseLogsourceMappings?.pageInfo.globalCount ?? 0 } })}
+        </Typography>
         {mappings.length === 0 ? (
           <Typography variant="body2" color="text.secondary">{t_i18n('No telemetry mapping matches the search.')}</Typography>
         ) : (
@@ -182,8 +201,15 @@ const MappingsTable = ({ queryRef, onEdit, onCreate, onFirstUseChange, searching
                         </Stack>
                       </TableCell>
                       <TableCell>{mapping.description ?? '-'}</TableCell>
-                      <TableCell>{mapping.built_in ? t_i18n('Built-in') : t_i18n('Custom')}</TableCell>
-                      <TableCell sx={{ whiteSpace: 'nowrap' }}>{nsdt(mapping.updated_at)}</TableCell>
+                      <TableCell sx={{ whiteSpace: 'nowrap' }}>{mapping.built_in ? t_i18n('Built-in') : t_i18n('Custom')}</TableCell>
+                      <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span tabIndex={0} style={{ cursor: 'help' }}>{rd(mapping.updated_at)}</span>
+                          </TooltipTrigger>
+                          <TooltipContent>{fldt(mapping.updated_at)}</TooltipContent>
+                        </Tooltip>
+                      </TableCell>
                       <TableCell>
                         <Switch
                           aria-label={t_i18n('Active')}
