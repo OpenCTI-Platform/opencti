@@ -28,6 +28,8 @@ export interface GraphLink extends GraphElement {
   source: string | GraphNode;
   source_id: string;
   inferred: boolean;
+  /** A link drawn towards a group node: the number of relationships of the graph it stands for. */
+  represents?: number;
 }
 
 export interface GraphNode extends GraphElement {

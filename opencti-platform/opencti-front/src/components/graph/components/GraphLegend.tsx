@@ -94,11 +94,11 @@ export const GraphLegendPill = ({ filterCount, bottomOffset = 0, onOpen }: Graph
   );
 };
 
-const countBy = <T, >(items: readonly T[], key: (item: T) => string) => {
+const countBy = <T, >(items: readonly T[], key: (item: T) => string, weight: (item: T) => number = () => 1) => {
   const counts = new Map<string, number>();
   items.forEach((item) => {
     const value = key(item);
-    if (value) counts.set(value, (counts.get(value) ?? 0) + 1);
+    if (value) counts.set(value, (counts.get(value) ?? 0) + weight(item));
   });
   return counts;
 };
@@ -145,11 +145,13 @@ const GraphLegend = ({
   const relationshipCounts = useMemo(() => {
     const counts = countBy(
       [
-        ...links.filter((link) => !!link.label).map((link) => link.relationship_type || link.entity_type),
+        // A link drawn towards a group node counts every relationship it stands for.
+        ...links.filter((link) => !!link.label).map((link) => ({ type: link.relationship_type || link.entity_type, count: link.represents ?? 1 })),
         // A nested relationship is drawn as a node between two unlabelled connector links.
-        ...nodes.filter((node) => !!node.relationship_type && !node.groupOf).map((node) => node.relationship_type),
+        ...nodes.filter((node) => !!node.relationship_type && !node.groupOf).map((node) => ({ type: node.relationship_type, count: 1 })),
       ],
-      (type) => type,
+      (entry) => entry.type,
+      (entry) => entry.count,
     );
     return [...counts.entries()]
       .map(([type, count]) => ({ type, count, label: t_i18n(`relationship_${type}`) }))

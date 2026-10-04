@@ -49,6 +49,13 @@ describe('GraphLegend', () => {
     expect(screen.queryByRole('button', { name: /^uses: \d+.*entit/i })).toBeNull();
   });
 
+  it('counts every relationship a link drawn towards a group stands for', () => {
+    const group = graphNode({ id: 'group:Malware', entity_type: 'Malware', groupOf: { entityType: 'Malware', memberIds: ['malware', 'other'] } });
+    const groupLink = graphLink(actor, group, { id: `${GROUP_LINK_PREFIX}actor|group:Malware|uses`, represents: 2 });
+    testRender(<GraphLegend {...props} nodes={[actor, group]} links={[groupLink]} collapsedEntityTypes={['Malware']} />);
+    expect(screen.getByRole('button', { name: /uses: 2/i })).toBeInTheDocument();
+  });
+
   it('collapses a type and shows the hidden entities', async () => {
     const { user } = testRender(<GraphLegend {...props} hiddenCount={2} collapsedEntityTypes={['Malware']} />);
     await user.click(screen.getByRole('button', { name: 'Expand the group' }));

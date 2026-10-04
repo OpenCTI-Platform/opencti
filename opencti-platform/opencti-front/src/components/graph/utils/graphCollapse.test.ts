@@ -34,6 +34,13 @@ describe('withCollapsedGroups', () => {
     expect(groupLinks[0]).toMatchObject({ source_id: 'actor', target_id: `${GROUP_NODE_PREFIX}Malware`, relationship_type: 'uses' });
   });
 
+  it('counts the relationships a group link stands for, afresh at every computation', () => {
+    const cache = createCollapseCache();
+    expect(withCollapsedGroups(data, ['Malware'], label, cache).links.find(isGroupLink)?.represents).toBe(2);
+    const fewer = { nodes: data.nodes, links: [graphLink(actor, m1)] };
+    expect(withCollapsedGroups(fewer, ['Malware'], label, cache).links.find(isGroupLink)?.represents).toBe(1);
+  });
+
   it('tells the links drawn towards a group from the relationships of the platform', () => {
     const result = withCollapsedGroups(data, ['Malware'], label, createCollapseCache());
     expect(result.links.filter(isGroupLink)).toHaveLength(1);

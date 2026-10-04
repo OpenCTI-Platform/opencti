@@ -97,12 +97,14 @@ export const withCollapsedGroups = (
     if (drawn) {
       // Faded only when every link the group link stands for is faded by the filters.
       drawn.disabled = Boolean(drawn.disabled && link.disabled);
+      drawn.represents = (drawn.represents ?? 1) + 1;
       return;
     }
     const existing = cache.links.get(id);
     const fields = { ...link, id, source: nodeOf.get(source) ?? source, target: nodeOf.get(target) ?? target, source_id: source, target_id: target, raw: undefined };
     const groupLink: GraphLink = existing ? Object.assign(existing, fields) : fields;
     groupLink.disabled = link.disabled;
+    groupLink.represents = 1;
     cache.links.set(id, groupLink);
     groupLinks.set(id, groupLink);
   });
