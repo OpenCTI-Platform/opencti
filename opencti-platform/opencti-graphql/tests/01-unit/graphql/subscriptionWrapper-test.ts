@@ -22,6 +22,7 @@ describe('canSubscriberStillAccess', () => {
   it('checks the access of the current user and platform organization membership, not of the snapshot of the subscription', async () => {
     const current = { id: 'user-1', allowed_marking: [] } as unknown as AuthUser;
     vi.spyOn(userDomain, 'resolveUserByIdFromCache').mockResolvedValue(current);
+    vi.spyOn(userDomain, 'isUserAccountValid').mockReturnValue(true);
     const membership = vi.spyOn(access, 'isUserInPlatformOrganization').mockReturnValue(false);
     const check = vi.spyOn(access, 'isUserCanAccessStoreElement').mockResolvedValue(false);
     expect(await canSubscriberStillAccess(context, instance)).toBe(false);
@@ -29,6 +30,14 @@ describe('canSubscriberStillAccess', () => {
     expect(check).toHaveBeenCalledWith(expect.objectContaining({ user: current, user_inside_platform_organization: false }), current, instance);
     check.mockResolvedValue(true);
     expect(await canSubscriberStillAccess(context, instance)).toBe(true);
+  });
+
+  it('stops the events of a subscriber whose account was locked or expired since the socket opened', async () => {
+    const locked = { id: 'user-1', account_status: 'Locked', organizations: [], capabilities: [] } as unknown as AuthUser;
+    vi.spyOn(userDomain, 'resolveUserByIdFromCache').mockResolvedValue(locked);
+    const check = vi.spyOn(access, 'isUserCanAccessStoreElement').mockResolvedValue(true);
+    expect(await canSubscriberStillAccess(context, instance)).toBe(false);
+    expect(check).not.toHaveBeenCalled();
   });
 
   it('stops the events of a subscriber that no longer exists', async () => {
@@ -42,5 +51,17 @@ describe('canSubscriberStillAccess', () => {
     vi.spyOn(userDomain, 'resolveUserByIdFromCache').mockRejectedValue(new Error('Cache unavailable'));
     expect(await canSubscriberStillAccess(context, instance)).toBe(false);
     expect(await canSubscriberStillAccess({ user: null } as never, instance)).toBe(false);
+  });
+});
+
+describe('isUserAccountValid', () => {
+  const settings = { platform_organization: null } as never;
+  const account = (fields: Record<string, unknown>) => ({ id: 'user-1', account_status: 'Active', organizations: [], capabilities: [], ...fields }) as unknown as AuthUser;
+
+  it('accepts an active account and refuses one the authentication refuses', () => {
+    expect(userDomain.isUserAccountValid(account({}), settings)).toBe(true);
+    expect(userDomain.isUserAccountValid(account({ account_status: 'Locked' }), settings)).toBe(false);
+    expect(userDomain.isUserAccountValid(account({ account_lock_after_date: '2020-01-01T00:00:00.000Z' }), settings)).toBe(false);
+    expect(userDomain.isUserAccountValid(account({ password_valid_until: '2020-01-01T00:00:00.000Z' }), settings)).toBe(false);
   });
 });

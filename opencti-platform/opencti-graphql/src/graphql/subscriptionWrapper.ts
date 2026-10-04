@@ -8,21 +8,23 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEntityFromCache } from '../database/cache';
 import { isUserCanAccessStoreElement, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
 import { getMessagesFilteredByRecipients } from '../domain/settings';
-import { resolveUserByIdFromCache } from '../modules/user/user-domain';
+import { isUserAccountValid, resolveUserByIdFromCache } from '../modules/user/user-domain';
 import type { BasicStoreSettings, BasicStoreSettingsMessage } from '../types/settings';
 
 /**
  * Whether the subscriber may still read an instance it listens to. The user of
  * a subscription context is a snapshot taken when the socket opened, with the
- * groups, markings and organizations of that moment, and so is its membership
- * of the platform organization: both are read again for every event, so an
- * access lost since then stops the events.
+ * account state, groups, markings and organizations of that moment, and so is
+ * its membership of the platform organization: all are read again for every
+ * event, so an account locked or expired since then, or an access lost, stops
+ * the events.
  */
 export const canSubscriberStillAccess = async (context: any, instance: any): Promise<boolean> => {
   try {
     const subscriber = context?.user?.id ? await resolveUserByIdFromCache(context, context.user.id) : undefined;
     if (!subscriber) return false;
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+    if (!isUserAccountValid(subscriber, settings)) return false;
     const subscriberContext = { ...context, user: subscriber, user_inside_platform_organization: isUserInPlatformOrganization(subscriber, settings) };
     return await isUserCanAccessStoreElement(subscriberContext, subscriber, instance);
   } catch {
