@@ -60,6 +60,7 @@ import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 import { addInvestigationFeedbackCount, addInvestigationRunCount, addInvestigationRunOutcomeCount } from '../../manager/telemetryManager';
 import {
   ACTIVE_RUN_STATUSES,
+  CARRY_BOUNDARY_CODES,
   EMPTY_OUTPUTS,
   ENGINE_CANCEL_FAILED,
   ENGINE_CANCEL_PENDING,
@@ -70,6 +71,7 @@ import {
   INVESTIGATION_LIMITS,
   INVESTIGATION_SUBJECT_TYPES,
   INVESTIGATION_TAB_SUBJECT_TYPES,
+  MEMBER_RESTRICTED_CODE,
   TERMINAL_RUN_STATUSES,
   type BasicStoreEntityInvestigationPolicy,
   type BasicStoreEntityInvestigationRun,
@@ -94,7 +96,15 @@ import {
 } from './investigationRun-state';
 import { cancelInvestigation, listInvestigationPacks, pushInvestigationFeedback } from './investigationRun-xtm';
 import { notifyInvestigationRunStatus } from './investigationRun-notification';
-import { intersectOrganizationIds, isCreationSharingWidened, isMemberRestricted, markingIdsOf, organizationIdsOf } from './investigationRun-utils';
+import {
+  intersectOrganizationIds,
+  isCreationSharingWidened,
+  isMemberRestricted,
+  markingIdsOf,
+  organizationIdsOf,
+  runSourceIds,
+  withheldRunContent,
+} from './investigationRun-utils';
 import { getEntityFromCache } from '../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import type { BasicStoreSettings } from '../../types/settings';
@@ -115,19 +125,80 @@ export const loadInvestigationRun = (context: AuthContext, id: string) => {
   return internalLoadById<BasicStoreEntityInvestigationRun>(context, INVESTIGATION_MANAGER_USER, id, { type: ENTITY_TYPE_INVESTIGATION_RUN });
 };
 
+const FINDINGS_WITHHELD = 'What this investigation found is withheld: an entity it investigated or cites is now restricted to authorized members';
+
+/**
+ * A run copies the markings and organization sharing of what it reads, never a
+ * member restriction. Once its subject, its case or an object it cites is
+ * restricted to authorized members, what it derived is withheld from every
+ * reader, whatever the run status. The restrictions are read on the live
+ * objects, as the manager reads them, on every read and action: the manager
+ * stops an active run at that boundary only on its next pass and never
+ * revisits an ended one. A run already stopped at an access boundary holds
+ * nothing more to withhold. The sources of every run are read at once.
+ */
+export const findInvestigationRunsBeyondBoundary = async (context: AuthContext, runs: BasicStoreEntityInvestigationRun[]): Promise<boolean[]> => {
+  const isStopped = (run: BasicStoreEntityInvestigationRun) => !!run.end_reason_code && CARRY_BOUNDARY_CODES.includes(run.end_reason_code);
+  const ids = Array.from(new Set(runs.filter((run) => !isStopped(run)).flatMap((run) => runSourceIds(run))));
+  const sources = ids.length === 0 ? [] : await elFindByIds<BasicStoreEntity>(outOfDraft(context), INVESTIGATION_MANAGER_USER, ids, {
+    indices: READ_DATA_INDICES_WITHOUT_INTERNAL,
+    baseData: true,
+  }) as BasicStoreEntity[];
+  const restricted = new Set(sources.filter((source) => isMemberRestricted(source)).flatMap((source) => [source.internal_id, source.standard_id]));
+  return runs.map((run) => !isStopped(run) && runSourceIds(run).some((id) => restricted.has(id)));
+};
+
+export const isInvestigationRunBeyondBoundary = async (context: AuthContext, run: BasicStoreEntityInvestigationRun): Promise<boolean> => {
+  const [beyond] = await findInvestigationRunsBeyondBoundary(context, [run]);
+  return beyond;
+};
+
+// Batch loader behind the run resolvers: one read for the runs of a page.
+export const batchInvestigationRunsBeyondBoundary = async (context: AuthContext, _user: AuthUser, runs: BasicStoreEntityInvestigationRun[]) => {
+  return await findInvestigationRunsBeyondBoundary(context, runs) as unknown as BasicStoreCommon[];
+};
+
+/** A run beyond its access boundary as it is served: what it derived withheld, and why. */
+export const withholdInvestigationRunFindings = (run: BasicStoreEntityInvestigationRun): BasicStoreEntityInvestigationRun => ({
+  ...run,
+  ...withheldRunContent(run),
+  end_reason_code: MEMBER_RESTRICTED_CODE,
+});
+
+const loadServedRun = async (context: AuthContext, user: AuthUser, id: string) => {
+  await checkEnterpriseEdition(context);
+  const run = await storeLoadById<BasicStoreEntityInvestigationRun>(outOfDraft(context), user, id, ENTITY_TYPE_INVESTIGATION_RUN);
+  if (!run) return null;
+  const withheld = await isInvestigationRunBeyondBoundary(context, run);
+  return { run: withheld ? withholdInvestigationRunFindings(run) : run, withheld };
+};
+
 // The markings and organizations of the investigated entity are copied on
 // the run: the engine only returns it to users who can see the entity.
 export const findInvestigationRunById = async (context: AuthContext, user: AuthUser, id: string) => {
-  await checkEnterpriseEdition(context);
-  return storeLoadById<BasicStoreEntityInvestigationRun>(outOfDraft(context), user, id, ENTITY_TYPE_INVESTIGATION_RUN);
+  const served = await loadServedRun(context, user, id);
+  return served?.run ?? null;
 };
 
-const findAccessibleRun = async (context: AuthContext, user: AuthUser, id: string) => {
-  const run = await findInvestigationRunById(context, user, id);
-  if (!run) {
+// A run the user acts on. An action on what it found (feedback, a
+// recommendation, an approval, a continuation, an enrichment) is refused while
+// that is withheld; cancelling and deleting it stay possible.
+const findAccessibleRun = async (context: AuthContext, user: AuthUser, id: string, opts: { onFindings?: boolean } = {}) => {
+  const served = await loadServedRun(context, user, id);
+  if (!served) {
     throw FunctionalError('Investigation run not found', { id });
   }
-  return run;
+  if (opts.onFindings && served.withheld) {
+    throw FunctionalError(FINDINGS_WITHHELD, { id });
+  }
+  return served.run;
+};
+
+// The same refusal, read again on the fresh run an action executes on.
+const assertFindingsServed = async (context: AuthContext, run: BasicStoreEntityInvestigationRun) => {
+  if (await isInvestigationRunBeyondBoundary(context, run)) {
+    throw FunctionalError(FINDINGS_WITHHELD, { id: run.internal_id });
+  }
 };
 
 const emptyConnection = () => ({ edges: [], pageInfo: { startCursor: '', endCursor: '', hasNextPage: false, hasPreviousPage: false, globalCount: 0 } });
@@ -160,6 +231,8 @@ const LATEST_RUNS_PAGE = 500;
 // Batch loader behind the run badges of case and incident lists: one query for
 // the page, per-entity queries only when that page could have hidden a run.
 // Outside the Enterprise Edition the field is null, so case queries keep working.
+// What a run beyond its access boundary derived is withheld by the run
+// resolvers, as for every other path that resolves a run.
 export const batchLatestInvestigationRuns = async (context: AuthContext, user: AuthUser, entityIds: string[]) => {
   if (!(await isEnterpriseEdition(context))) {
     return entityIds.map(() => null) as unknown as BasicStoreCommon[];
@@ -557,7 +630,7 @@ const recordFeedback = async (
 };
 
 export const addInvestigationRunFeedback = async (context: AuthContext, user: AuthUser, id: string, input: InvestigationRunFeedbackInput) => {
-  const run = await findAccessibleRun(context, user, id);
+  const run = await findAccessibleRun(context, user, id, { onFindings: true });
   if (!feedbackItemLabel(run, input.item_type, input.item_ref)) {
     throw FunctionalError('Unknown hypothesis or recommendation', { id, itemRef: input.item_ref });
   }
@@ -652,8 +725,9 @@ export const applyInvestigationRecommendation = async (
   recommendationId: string,
   mode: InvestigationRecommendationApplyMode,
 ) => {
-  const accessible = await findAccessibleRun(context, user, id);
+  const accessible = await findAccessibleRun(context, user, id, { onFindings: true });
   const { run, updated } = await withRunActions(context, accessible.internal_id, async (fresh) => {
+    await assertFindingsServed(context, fresh);
     const recommendation = fresh.recommendations.find((r) => r.id === recommendationId);
     if (!recommendation) {
       throw FunctionalError('Unknown recommendation', { id, recommendationId });
@@ -857,13 +931,16 @@ export const decideInvestigationApprovals = async (
   runId: string,
   decisions: InvestigationApprovalDecisionInput[],
 ): Promise<InvestigationApprovalOutcome> => {
-  const accessible = await findAccessibleRun(context, user, runId);
+  const accessible = await findAccessibleRun(context, user, runId, { onFindings: true });
   if (!isUserHasCapability(user, KNOWLEDGE_KNUPDATE)) {
     throw ForbiddenAccess();
   }
   // Pending approvals are read again under the lock: a concurrent decision on
   // the same approval finds it decided and executes nothing.
-  return withRunActions(context, accessible.internal_id, (run) => decideApprovalsOf(context, user, runId, run, decisions));
+  return withRunActions(context, accessible.internal_id, async (run) => {
+    await assertFindingsServed(context, run);
+    return decideApprovalsOf(context, user, runId, run, decisions);
+  });
 };
 
 // endregion
@@ -871,7 +948,7 @@ export const decideInvestigationApprovals = async (
 // region engine queries (the investigation engine calls them as the run identity)
 
 const loadRunForEngine = async (context: AuthContext, user: AuthUser, id: string) => {
-  const run = await findAccessibleRun(context, user, id);
+  const run = await findAccessibleRun(context, user, id, { onFindings: true });
   if (run.run_as_id !== user.id) {
     throw ForbiddenAccess('Only the identity of the investigation can act for its engine');
   }
@@ -1121,12 +1198,13 @@ export const findInvestigationRunEnrichmentEntities = async (context: AuthContex
 // draft is still open: typically after approving an enrichment it held.
 export const canContinueInvestigationRun = (run: BasicStoreEntityInvestigationRun) => {
   if (!run.xtm_investigation_id || !run.draft_id) return false;
+  if (run.end_reason_code && CARRY_BOUNDARY_CODES.includes(run.end_reason_code)) return false;
   const awaitingDraft = run.run_status === InvestigationRunStatus.AwaitingApproval && run.run_phase === InvestigationRunPhase.AwaitingValidation;
   return awaitingDraft && remainingMinutes(run, new Date()) > 0;
 };
 
 export const continueInvestigationRun = async (context: AuthContext, user: AuthUser, id: string) => {
-  const run = await findAccessibleRun(context, user, id);
+  const run = await findAccessibleRun(context, user, id, { onFindings: true });
   // The run continues under its own identity: the caller must be allowed to
   // run the enrichments of its policy as well.
   const policy = run.policy_id ? await loadInvestigationPolicy(outOfDraft(context), run.policy_id) : null;

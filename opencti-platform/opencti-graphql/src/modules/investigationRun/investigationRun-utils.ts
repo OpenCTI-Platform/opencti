@@ -13,12 +13,12 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
-import { InvestigationEvidenceKind } from '../../generated/graphql';
+import { InvestigationApprovalKind, InvestigationEvidenceKind } from '../../generated/graphql';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_THREAT_ACTOR_GROUP } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../threatActorIndividual/threatActorIndividual-types';
-import type { InvestigationEvidence } from './investigationRun-types';
+import { EMPTY_OUTPUTS, INVESTIGATION_LIMITS, type BasicStoreEntityInvestigationRun, type InvestigationEvidence } from './investigationRun-types';
 import type { BasicStoreCommon } from '../../types/store';
 import type { AuthUser } from '../../types/user';
 import type { BasicStoreSettings } from '../../types/settings';
@@ -91,6 +91,49 @@ export const isMemberRestricted = (element: object | null | undefined): boolean 
 
 /** The elements a run may read or cite: those without a member restriction. */
 export const withoutMemberRestricted = <T extends object>(elements: T[]): T[] => elements.filter((element) => !isMemberRestricted(element));
+
+export const isObjectEvidence = (evidence: InvestigationEvidence) => evidence.kind === InvestigationEvidenceKind.OpenctiObject && !!evidence.opencti_id;
+
+/** What a stored run cites: its evidence objects, its hypothesis candidates and its courses of action. */
+export const runCitedIds = (run: BasicStoreEntityInvestigationRun): string[] => Array.from(new Set([
+  ...(run.evidence ?? []).filter(isObjectEvidence).map((evidence) => evidence.opencti_id as string),
+  ...(run.hypotheses ?? []).map((hypothesis) => hypothesis.candidate_id),
+  ...(run.recommendations ?? []).flatMap((recommendation) => (recommendation.course_of_action_id ? [recommendation.course_of_action_id] : [])),
+])).slice(0, INVESTIGATION_LIMITS.evidence + INVESTIGATION_LIMITS.candidates + INVESTIGATION_LIMITS.coursesOfAction);
+
+/** What a run carries the access of: its subject, its case and what it cites. */
+export const runSourceIds = (run: BasicStoreEntityInvestigationRun): string[] => Array.from(new Set([
+  run.subject_id,
+  run.case_id,
+  ...(run.case_ids ?? []),
+  ...runCitedIds(run),
+].filter((id): id is string => !!id)));
+
+/**
+ * Everything a run derived from what it read, emptied: the engine's text, the
+ * conclusion OpenCTI scored from it, the references to its outputs, what its
+ * enrichment waves brought, and the approvals and requests quoting any of it
+ * (a recommendation approval quotes its recommendation; the other records keep
+ * their decision, not their reason). Withheld once the run is stopped at an
+ * access boundary, and from every reader while one of its sources is beyond it.
+ */
+export const withheldRunContent = (run: BasicStoreEntityInvestigationRun) => ({
+  goal_plan: null,
+  steps: (run.steps ?? []).map((step) => ({ ...step, action: null, detail_params: null })),
+  evidence: [],
+  hypotheses: [],
+  timeline: [],
+  recommendations: [],
+  summary: null,
+  report: null,
+  report_sources: [],
+  outputs: EMPTY_OUTPUTS,
+  enrichment_waves: (run.enrichment_waves ?? []).map((wave) => ({ ...wave, delta: [] })),
+  approvals: (run.approvals ?? [])
+    .filter((approval) => approval.kind !== InvestigationApprovalKind.Recommendation)
+    .map((approval) => ({ ...approval, reason: null })),
+  enrichment_requests: (run.enrichment_requests ?? []).map((request) => ({ ...request, reason: null })),
+});
 
 /**
  * Restrictive organization sharing: what is written from several elements is

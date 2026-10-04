@@ -39,7 +39,6 @@ import {
   InvestigationApprovalStatus,
   InvestigationAutonomousAction,
   InvestigationEnrichmentRequestStatus,
-  InvestigationEvidenceKind,
   InvestigationRecommendationStatus,
   InvestigationRunPhase,
   InvestigationRunStatus,
@@ -80,6 +79,7 @@ import { addCaseIncident } from '../case/case-incident/case-incident-domain';
 import { addInvestigationEnrichmentJobCount, addInvestigationRunOutcomeCount } from '../../manager/telemetryManager';
 import { isXtmOneConfigured } from '../playbook/components/ai-agent-shared';
 import {
+  CARRY_BOUNDARY_CODES,
   EMPTY_OUTPUTS,
   ENGINE_CANCEL_PENDING,
   ENGINE_NO_AGENT,
@@ -89,6 +89,8 @@ import {
   ENTITY_TYPE_INVESTIGATION_RUN,
   INVESTIGATION_CASE_SUBJECT_TYPES,
   INVESTIGATION_LIMITS,
+  MEMBER_RESTRICTED_CODE,
+  SUBJECT_INACCESSIBLE_CODE,
   TERMINAL_RUN_STATUSES,
   ACTIVE_RUN_STATUSES,
   type BasicStoreEntityInvestigationPolicy,
@@ -146,9 +148,12 @@ import {
   intersectOrganizationIds,
   isCreationSharingWidened,
   isMemberRestricted,
+  isObjectEvidence,
   markingIdsOf,
   organizationIdsOf,
   representativeNameOf,
+  runCitedIds,
+  withheldRunContent,
   withoutMemberRestricted,
 } from './investigationRun-utils';
 
@@ -175,11 +180,8 @@ const ENGINE_FAILURE_REASONS: Record<string, string> = {
   [ENGINE_UNREACHABLE]: 'The XTM One investigation engine cannot be reached',
 };
 const SUBJECT_INACCESSIBLE_REASON = 'The investigated entity is no longer accessible to the identity of the run';
-const SUBJECT_INACCESSIBLE = { reason: SUBJECT_INACCESSIBLE_REASON, code: 'subject_inaccessible' };
-const MEMBER_RESTRICTED_CODE = 'member_restricted';
+const SUBJECT_INACCESSIBLE = { reason: SUBJECT_INACCESSIBLE_REASON, code: SUBJECT_INACCESSIBLE_CODE };
 const MEMBER_RESTRICTED_REASON = 'An entity of the investigation is now restricted to authorized members: Case Autopilot stopped and withheld what it had found';
-// End reasons of the runs stopped at an access boundary, whose draft is deleted.
-const CARRY_BOUNDARY_CODES = [MEMBER_RESTRICTED_CODE, SUBJECT_INACCESSIBLE.code];
 // Runs whose engine run is stopped after them: cancelled by an analyst, or stopped at a member restriction.
 const STOPPED_RUN_STATUSES: string[] = [InvestigationRunStatus.Cancelled, InvestigationRunStatus.Failed];
 
@@ -231,8 +233,6 @@ const userContext = async (user: AuthUser, draftId?: string | null): Promise<Aut
 const jwtUserOf = (user: AuthUser) => ({ id: user.id, user_email: user.user_email });
 
 const errorMessage = (error: unknown) => (error instanceof Error ? error.message : String(error)).slice(0, INVESTIGATION_LIMITS.textLength);
-
-const isObjectEvidence = (evidence: InvestigationEvidence) => evidence.kind === InvestigationEvidenceKind.OpenctiObject && !!evidence.opencti_id;
 
 const isRelationshipType = (entityType?: string | null) => !!entityType && (entityType.includes('relationship') || entityType === STIX_SIGHTING_RELATIONSHIP);
 
@@ -943,22 +943,13 @@ const stopAtCarryBoundary = async (exec: RunExecution, boundary: { reason: strin
     stop.engineRunning = current.run_phase === InvestigationRunPhase.Investigating && !!current.xtm_investigation_id && !current.budget_cancelled;
     stop.draftId = current.draft_id ?? null;
     stop.workspaceId = current.workspace_id ?? null;
+    const withheld = withheldRunContent(current);
     return {
       ...statusTransition(current, InvestigationRunStatus.Failed, InvestigationRunPhase.Done, now, boundary.reason),
       end_reason_code: boundary.code,
       pending_work_ids: [],
-      goal_plan: null,
-      steps: (current.steps ?? []).map((step) => ({ ...step, action: null, detail_params: null })),
-      evidence: [],
-      hypotheses: [],
-      timeline: [],
-      recommendations: [],
-      summary: null,
-      report: null,
-      report_sources: [],
-      outputs: EMPTY_OUTPUTS,
-      ...closeOpenGates(current, now, 'Investigation stopped'),
-      enrichment_waves: (current.enrichment_waves ?? []).map((wave) => ({ ...wave, delta: [] })),
+      ...withheld,
+      ...closeOpenGates({ ...current, ...withheld }, now, 'Investigation stopped'),
       ...(stop.engineRunning ? { xtm_status: ENGINE_CANCEL_PENDING, engine_failures: 0 } : {}),
     };
   });
@@ -1632,13 +1623,6 @@ export const processInvestigationRun = async (context: AuthContext, runId: strin
     await failRun(context, runId, errorMessage(error));
   }
 };
-
-// What a stored run cites: its evidence objects, its hypothesis candidates and its courses of action.
-const runCitedIds = (run: BasicStoreEntityInvestigationRun) => R.uniq([
-  ...(run.evidence ?? []).filter(isObjectEvidence).map((evidence) => evidence.opencti_id as string),
-  ...(run.hypotheses ?? []).map((hypothesis) => hypothesis.candidate_id),
-  ...(run.recommendations ?? []).flatMap((recommendation) => (recommendation.course_of_action_id ? [recommendation.course_of_action_id] : [])),
-]).slice(0, INVESTIGATION_LIMITS.evidence + INVESTIGATION_LIMITS.candidates + INVESTIGATION_LIMITS.coursesOfAction);
 
 /**
  * A run waiting for approval still shows what it derived. Its access boundary

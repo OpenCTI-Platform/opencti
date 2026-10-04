@@ -41,6 +41,7 @@ import {
   findInvestigationRunsPaginated,
   filterReadableRunRecords,
   requestInvestigationEnrichment,
+  withholdInvestigationRunFindings,
 } from './investigationRun-domain';
 import {
   addInvestigationPolicy,
@@ -61,6 +62,22 @@ const loadElement = (context: any, id: string | null | undefined, type: string |
 };
 
 const latestRun = (entity: { id: string }, context: any) => context.batch.latestInvestigationRunBatchLoader.load(entity.id);
+
+// What a run derived is served only while none of its sources is restricted to
+// authorized members, whichever path resolved the run: a query, a list, a case
+// badge, the generic object lookup, a mutation or a subscription event. Read
+// once per resolved run, batched across the runs of a page; the answer does
+// not depend on the reader.
+const servedRuns = new WeakMap<BasicStoreEntityInvestigationRun, Promise<BasicStoreEntityInvestigationRun>>();
+const served = (run: BasicStoreEntityInvestigationRun, context: any) => {
+  let view = servedRuns.get(run);
+  if (!view) {
+    const beyond: Promise<boolean> = context.batch.investigationRunBoundaryBatchLoader.load(run);
+    view = beyond.then((isBeyond) => (isBeyond ? withholdInvestigationRunFindings(run) : run));
+    servedRuns.set(run, view);
+  }
+  return view;
+};
 
 const investigationRunResolvers: Resolvers = {
   Query: {
@@ -88,24 +105,34 @@ const investigationRunResolvers: Resolvers = {
     runAs: (run, _, context) => context.batch.creatorBatchLoader.load(run.run_as_id),
     xtm_investigation_ids: (run) => run.xtm_investigation_ids ?? [],
     xtm_revision: (run) => run.xtm_revision ?? -1,
-    steps: (run) => run.steps ?? [],
-    evidence: (run) => run.evidence ?? [],
-    hypotheses: (run) => [...(run.hypotheses ?? [])].sort((a, b) => a.rank - b.rank),
-    timeline: (run) => run.timeline ?? [],
-    recommendations: (run) => run.recommendations ?? [],
+    end_reason_code: async (run, _, context) => (await served(run, context)).end_reason_code ?? null,
+    goal_plan: async (run, _, context) => (await served(run, context)).goal_plan ?? null,
+    steps: async (run, _, context) => (await served(run, context)).steps ?? [],
+    evidence: async (run, _, context) => (await served(run, context)).evidence ?? [],
+    hypotheses: async (run, _, context) => [...((await served(run, context)).hypotheses ?? [])].sort((a, b) => a.rank - b.rank),
+    timeline: async (run, _, context) => (await served(run, context)).timeline ?? [],
+    recommendations: async (run, _, context) => (await served(run, context)).recommendations ?? [],
     analyst_feedback: (run) => run.analyst_feedback ?? [],
-    approvals: (run, _, context) => filterReadableRunRecords(context, context.user, run, run.approvals ?? []),
-    enrichment_requests: (run, _, context) => filterReadableRunRecords(context, context.user, run, run.enrichment_requests ?? []),
-    enrichment_entities: (run, _, context) => findInvestigationRunEnrichmentEntities(context, context.user, run),
-    report_sources: (run) => run.report_sources ?? [],
-    report_id: (run) => run.outputs?.report_id ?? null,
-    can_continue: (run) => canContinueInvestigationRun(run),
+    approvals: async (run, _, context) => {
+      const view = await served(run, context);
+      return filterReadableRunRecords(context, context.user, view, view.approvals ?? []);
+    },
+    enrichment_requests: async (run, _, context) => {
+      const view = await served(run, context);
+      return filterReadableRunRecords(context, context.user, view, view.enrichment_requests ?? []);
+    },
+    enrichment_entities: async (run, _, context) => findInvestigationRunEnrichmentEntities(context, context.user, await served(run, context)),
+    summary: async (run, _, context) => (await served(run, context)).summary ?? null,
+    report: async (run, _, context) => (await served(run, context)).report ?? null,
+    report_sources: async (run, _, context) => (await served(run, context)).report_sources ?? [],
+    report_id: async (run, _, context) => (await served(run, context)).outputs?.report_id ?? null,
+    can_continue: async (run, _, context) => canContinueInvestigationRun(await served(run, context)),
     budget: (run) => ({ ...run.budget, used_minutes: computeUsedMinutes(run, new Date()) }),
     acceptance: (run) => {
       const acceptance = computeAcceptance(run.analyst_feedback ?? []);
       return { ...acceptance, rate: acceptanceRate(acceptance) };
     },
-    report_sections: (run) => buildInvestigationReportSections(run),
+    report_sections: async (run, _, context) => buildInvestigationReportSections(await served(run, context)),
   },
   InvestigationHypothesis: {
     candidate: (hypothesis, _, context) => loadElement(context, hypothesis.candidate_id, hypothesis.candidate_type),
@@ -159,7 +186,8 @@ const investigationRunResolvers: Resolvers = {
       subscribe: async (_: unknown, { id }: { id: string }, context: any) => {
         await checkEnterpriseEdition(context);
         const bus = BUS_TOPICS[ENTITY_TYPE_INVESTIGATION_RUN];
-        // A run's markings widen as it cites restricted objects: access is checked on every event.
+        // A run's markings widen as it cites restricted objects: access is checked on every event,
+        // and what an event carries of its findings is served by the run resolvers above.
         return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], {
           type: ENTITY_TYPE_INVESTIGATION_RUN,
           notifySelf: true,

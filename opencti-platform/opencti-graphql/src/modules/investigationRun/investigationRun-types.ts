@@ -78,6 +78,11 @@ export const ENGINE_UNAVAILABLE = 'engine_unavailable';
 export const ENGINE_NO_AGENT = 'engine_no_agent';
 export const ENGINE_UNREACHABLE = 'engine_unreachable';
 
+// Why a run stopped at an access boundary, with what it derived withheld.
+export const MEMBER_RESTRICTED_CODE = 'member_restricted';
+export const SUBJECT_INACCESSIBLE_CODE = 'subject_inaccessible';
+export const CARRY_BOUNDARY_CODES = [MEMBER_RESTRICTED_CODE, SUBJECT_INACCESSIBLE_CODE];
+
 // Engine status of a cancelled run whose engine run XTM One has not confirmed
 // stopping yet (asked again by the manager), then given up on.
 export const ENGINE_CANCEL_PENDING = 'cancel_pending';

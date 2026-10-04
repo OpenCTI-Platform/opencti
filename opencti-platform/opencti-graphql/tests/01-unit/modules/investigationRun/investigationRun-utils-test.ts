@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { intersectOrganizationIds, isCreationSharingWidened, isMemberRestricted, withoutMemberRestricted } from '../../../../src/modules/investigationRun/investigationRun-utils';
+import {
+  intersectOrganizationIds,
+  isCreationSharingWidened,
+  isMemberRestricted,
+  runCitedIds,
+  runSourceIds,
+  withheldRunContent,
+  withoutMemberRestricted,
+} from '../../../../src/modules/investigationRun/investigationRun-utils';
+import { InvestigationApprovalKind, InvestigationApprovalStatus, InvestigationEnrichmentRequestStatus, InvestigationStepStatus } from '../../../../src/generated/graphql';
+import { buildRun } from './investigationRun-fixtures';
 import { RELATION_GRANTED_TO } from '../../../../src/schema/stixRefRelationship';
 import { ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../../src/schema/stixMetaObject';
@@ -63,5 +73,50 @@ describe('Case Autopilot member restrictions', () => {
     expect(isMemberRestricted(everyoneInGroups)).toBe(true);
     expect(isMemberRestricted(unknownRight)).toBe(true);
     expect(withoutMemberRestricted([everyone, everyoneInGroups, unknownRight]).map((element) => element.internal_id)).toEqual(['pir']);
+  });
+});
+
+describe('Case Autopilot access boundary of a run', () => {
+  const coursedRun = () => buildRun({
+    case_id: 'case-1',
+    case_ids: ['case-1', 'case-incident--1'],
+    recommendations: [{ ...buildRun().recommendations[0], id: 'r2', course_of_action_id: 'coa-1' }],
+  });
+
+  it('names what a run cites: its evidence objects, its hypothesis candidates and its courses of action', () => {
+    expect(runCitedIds(coursedRun())).toEqual(['incident-1', 'ip-1', 'indicator-1', 'apt28', 'coa-1']);
+  });
+
+  it('carries the access of its subject, its case and what it cites', () => {
+    expect(runSourceIds(coursedRun())).toEqual(['incident-1', 'case-1', 'case-incident--1', 'ip-1', 'indicator-1', 'apt28', 'coa-1']);
+  });
+
+  it('withholds everything a run derived, and the approvals and requests quoting it', () => {
+    const run = buildRun({
+      goal_plan: { objective: 'Investigate the phishing wave' },
+      steps: [{ id: 's1', investigation_id: 'inv-1', position: 0, action: 'context_read', source_name: 'Read the case', status: InvestigationStepStatus.Completed, detail_params: { count: 2 }, findings_count: 2, evidence_count: 1 }],
+      enrichment_waves: [{ id: 'w1', status: 'completed', requested_at: '2026-10-01T10:00:00.000Z', request_ids: ['q1'], delta: [{ id: 'ip-2', entity_type: 'IPv4-Addr' }], delta_computed: true }],
+      approvals: [
+        { id: 'a1', kind: InvestigationApprovalKind.Recommendation, status: InvestigationApprovalStatus.Pending, description: 'Block 185.12.4.2', reason: 'C2 server', recommendation_id: 'r1', created_at: '2026-10-01T10:00:00.000Z' },
+        { id: 'a2', kind: InvestigationApprovalKind.DraftValidation, status: InvestigationApprovalStatus.Pending, description: 'Approve the investigation draft', reason: 'Most likely APT28', created_at: '2026-10-01T10:00:00.000Z' },
+      ],
+      enrichment_requests: [{ id: 'q1', entity_id: 'ip-1', connector_id: 'c1', reason: 'Resolve the C2', status: InvestigationEnrichmentRequestStatus.Completed, requested_by: 'engine', created_at: '2026-10-01T10:00:00.000Z' }],
+    } as never);
+    const withheld = withheldRunContent(run);
+    expect(withheld).toMatchObject({
+      goal_plan: null,
+      evidence: [],
+      hypotheses: [],
+      timeline: [],
+      recommendations: [],
+      summary: null,
+      report: null,
+      report_sources: [],
+      outputs: { attributed_candidate_ids: [], observable_ids: {} },
+    });
+    expect(withheld.steps).toEqual([expect.objectContaining({ id: 's1', source_name: 'Read the case', action: null, detail_params: null, findings_count: 2 })]);
+    expect(withheld.enrichment_waves).toEqual([expect.objectContaining({ id: 'w1', delta: [] })]);
+    expect(withheld.approvals).toEqual([expect.objectContaining({ id: 'a2', status: InvestigationApprovalStatus.Pending, reason: null })]);
+    expect(withheld.enrichment_requests).toEqual([expect.objectContaining({ id: 'q1', status: InvestigationEnrichmentRequestStatus.Completed, reason: null })]);
   });
 });

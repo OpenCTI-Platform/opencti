@@ -13,6 +13,8 @@ import * as aiAgentShared from '../../../../src/modules/playbook/components/ai-a
 import * as investigationXtm from '../../../../src/modules/investigationRun/investigationRun-xtm';
 import * as draftWorkspaceDomain from '../../../../src/modules/draftWorkspace/draftWorkspace-domain';
 import { parseEngineInvestigation } from '../../../../src/modules/investigationRun/investigationRun-engine';
+import investigationRunResolvers from '../../../../src/modules/investigationRun/investigationRun-resolvers';
+import { computeLoaders } from '../../../../src/http/httpAuthenticatedContext';
 import {
   listAwaitingInvestigationRunsToRevalidate,
   listInvestigationRunsToProcess,
@@ -702,6 +704,77 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       const draft = await queryAsAdmin({ query: gql`query Draft($id: String!) { draftWorkspace(id: $id) { id } }`, variables: { id: awaiting.draft_id } });
       expect(draft.data?.draftWorkspace ?? null).toBeNull();
       expect((await listAwaitingInvestigationRunsToRevalidate(testContext, 50)).map((run) => run.internal_id)).not.toContain(runId);
+    } finally {
+      if (runId) await queryAsAdmin({ query: RUN_CANCEL, variables: { id: runId } });
+      await queryAsAdmin({ query: DELETE_CASE, variables: { id: caseId } });
+    }
+  });
+
+  it('withholds what it found on every read path and refuses actions on it once its case is restricted, before the manager stops it', async () => {
+    const created = await queryAsAdminWithSuccess({ query: CREATE_CASE, variables: { input: { name: 'Case Autopilot e2e withheld case', objects: [fixture.ipId] } } });
+    const caseId = created.data.caseIncidentAdd.id;
+    let runId = '';
+    try {
+      engineStage = 'planning';
+      const { data } = await queryAsAdminWithSuccess({ query: RUN_ADD, variables: { subjectId: caseId } });
+      runId = data.investigationRunAdd.id;
+      createdRuns.push({ id: runId });
+      await tickUntil(runId, (current) => current.run_phase === 'investigating');
+      engineStage = 'completed';
+      const awaiting = await tickUntil(runId, (current) => current.run_status !== 'running', 15);
+      expect(awaiting.run_status).toBe('awaiting_approval');
+      expect(awaiting.evidence.length).toBeGreaterThan(0);
+      const before = await queryAsAdminWithSuccess({ query: RUN_RECORDS, variables: { id: runId } });
+      const draftGate = before.data.investigationRun.approvals.find((approval: { kind: string }) => approval.kind === 'draft_validation');
+      expect(before.data.investigationRun.approvals.some((approval: { kind: string }) => approval.kind === 'recommendation')).toBe(true);
+      await queryAsAdminWithSuccess({ query: RESTRICT_CONTAINER, variables: { id: caseId, input: [{ id: ADMIN_USER.id, access_right: 'admin' }] } });
+      // No manager pass: the run is still waiting, and what it found is already withheld.
+      expect(await readRun(runId)).toMatchObject({
+        run_status: 'awaiting_approval',
+        end_reason_code: 'member_restricted',
+        goal_plan: null,
+        evidence: [],
+        hypotheses: [],
+        recommendations: [],
+        summary: null,
+        report: null,
+        report_sources: [],
+        report_id: null,
+      });
+      const records = await queryAsAdminWithSuccess({ query: RUN_RECORDS, variables: { id: runId } });
+      expect(records.data.investigationRun.can_continue).toBe(false);
+      expect(records.data.investigationRun.approvals.map((approval: { kind: string }) => approval.kind)).toEqual(['draft_validation']);
+      expect(records.data.investigationRun.report_sections.report).toBe('No report was written.');
+      const findings = 'evidence { id } summary report';
+      const badge = await queryAsAdminWithSuccess({ query: gql`query Badge($id: String!) { caseIncident(id: $id) { latestInvestigationRun { id ${findings} } } }`, variables: { id: caseId } });
+      expect(badge.data.caseIncident.latestInvestigationRun).toEqual({ id: runId, evidence: [], summary: null, report: null });
+      const listed = await queryAsAdminWithSuccess({ query: gql`query Listed($caseId: String) { investigationRuns(caseId: $caseId, first: 10) { edges { node { id ${findings} } } } }`, variables: { caseId } });
+      expect(listed.data.investigationRuns.edges.map((edge: { node: unknown }) => edge.node)).toEqual([{ id: runId, evidence: [], summary: null, report: null }]);
+      const lookedUp = await queryAsAdminWithSuccess({ query: gql`query LookedUp($id: String!) { stixObjectOrStixRelationship(id: $id) { ... on InvestigationRun { id ${findings} } } }`, variables: { id: runId } });
+      expect(lookedUp.data.stixObjectOrStixRelationship).toEqual({ id: runId, evidence: [], summary: null, report: null });
+      // A subscription event carries the stored run: its fields are served the same way.
+      const stored = await loadInvestigationRun(testContext, runId);
+      expect(stored?.evidence.length).toBeGreaterThan(0);
+      const runFields = investigationRunResolvers.InvestigationRun as unknown as Record<string, (run: unknown, args: unknown, context: unknown) => Promise<unknown>>;
+      const eventContext = { ...testContext, user: ADMIN_USER, batch: computeLoaders(testContext, ADMIN_USER) };
+      expect(await runFields.evidence(stored, {}, eventContext)).toEqual([]);
+      expect(await runFields.summary(stored, {}, eventContext)).toBeNull();
+      expect(await runFields.end_reason_code(stored, {}, eventContext)).toBe('member_restricted');
+      // Nothing it found can be acted on; cancelling stays possible.
+      const feedback = await queryAsAdmin({
+        query: RUN_FEEDBACK,
+        variables: { id: runId, input: { item_type: 'hypothesis', item_ref: fixture.intrusionSetId, decision: 'accepted' } },
+      });
+      expect(feedback.errors?.[0]?.message).toContain('withheld');
+      const applied = await queryAsAdmin({ query: RUN_APPLY, variables: { id: runId, recommendationId: 'r1', mode: 'task' } });
+      expect(applied.errors?.[0]?.message).toContain('withheld');
+      const continued = await queryAsAdmin({ query: RUN_CONTINUE, variables: { id: runId } });
+      expect(continued.errors?.[0]?.message).toContain('withheld');
+      await expect(decideInvestigationApprovals(testContext, ADMIN_USER, runId, [{ tool_call_id: draftGate.id, decision: 'approve', rejection_reason: null }]))
+        .rejects.toThrow('withheld');
+      expect((await loadInvestigationRun(testContext, runId))?.run_status).toBe('awaiting_approval');
+      const cancelled = await queryAsAdminWithSuccess({ query: RUN_CANCEL, variables: { id: runId } });
+      expect(cancelled.data.investigationRunCancel.run_status).toBe('cancelled');
     } finally {
       if (runId) await queryAsAdmin({ query: RUN_CANCEL, variables: { id: runId } });
       await queryAsAdmin({ query: DELETE_CASE, variables: { id: caseId } });
