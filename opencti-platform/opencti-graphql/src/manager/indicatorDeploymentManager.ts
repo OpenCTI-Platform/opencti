@@ -13,6 +13,7 @@ import {
   reconcileAllIndicatorDeploymentCounters,
   reconcileIndicatorDeploymentCounters,
   refreshIndicatorDeploymentCounters,
+  repairPairMarkings,
   repairRecentDeploymentCounters,
 } from '../modules/indicatorDeployment/indicatorDeployment-domain';
 import { maintainIocValidationRequests } from '../modules/iocValidation/iocValidation-domain';
@@ -76,11 +77,34 @@ export const hasSecurityPlatformRemoval = (events: Array<SseEvent<DataEvent>>) =
   return isRemoval && data?.extensions?.[STIX_EXT_OCTI]?.type === ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM;
 });
 
+// Indicators and Security Platforms whose markings changed: their deployments and hits sightings carry the markings of
+// both ends, so they are repaired, and the counters of the indicators recomputed.
+export const extractMarkingChangedEndpoints = (events: Array<SseEvent<DataEvent>>) => {
+  const indicatorIds = new Set<string>();
+  const platformIds = new Set<string>();
+  events.forEach((event) => {
+    if (event.data?.type !== 'update') return;
+    const patch = (event.data as unknown as { context?: { patch?: Array<{ path?: string }> } }).context?.patch ?? [];
+    if (!patch.some((operation) => operation.path?.includes('object_marking_refs'))) return;
+    const extension = (event.data.data as DeploymentEventData | undefined)?.extensions?.[STIX_EXT_OCTI];
+    if (!extension?.id) return;
+    if (extension.type === ENTITY_TYPE_INDICATOR) indicatorIds.add(extension.id);
+    if (extension.type === ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM) platformIds.add(extension.id);
+  });
+  return { indicatorIds: [...indicatorIds], platformIds: [...platformIds] };
+};
+
 export const indicatorDeploymentStreamHandler = async (events: Array<SseEvent<DataEvent>>, lastEventId: string) => {
   const indicatorIds = extractDeploymentIndicatorIds(events);
   if (indicatorIds.length > 0) {
     const context = executionContext(CONTEXT_NAME);
     await refreshIndicatorDeploymentCounters(context, indicatorIds);
+  }
+  const markingChanges = extractMarkingChangedEndpoints(events);
+  if (markingChanges.indicatorIds.length > 0 || markingChanges.platformIds.length > 0) {
+    const context = executionContext(CONTEXT_NAME);
+    const repaired = await repairPairMarkings(context, EXPIRATION_MANAGER_USER, markingChanges);
+    logApp.info('[OPENCTI-MODULE] Deployment markings repaired after an endpoint marking change', { repaired });
   }
   if (hasSecurityPlatformRemoval(events)) {
     const context = executionContext(CONTEXT_NAME);

@@ -175,5 +175,7 @@ describe('markings of the relationships generated for a pair', () => {
     // An indicator shared with no organization is only read by the platform organization, which reads every deployment
     expect(isReadableWithIndicator({ granted: ['org-a'] }, {})).toEqual(true);
     expect(isReadableWithIndicator({ restricted_members: [{ id: 'user-1', access_right: 'view' }] }, {})).toEqual(false);
+    // Authorized members of the indicator read it whatever their organization
+    expect(isReadableWithIndicator({ granted: ['org-a'] }, { restricted_members: [{ id: 'user-2', access_right: 'view' }] })).toEqual(false);
   });
 });

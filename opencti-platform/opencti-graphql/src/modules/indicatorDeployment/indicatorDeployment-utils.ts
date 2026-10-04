@@ -7,6 +7,8 @@ import {
   VALIDATION_STATUSES,
   type ValidationStatus,
 } from './indicatorDeployment-types';
+import { v5 as uuidv5 } from 'uuid';
+import { OPENCTI_NAMESPACE } from '../../schema/general';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 
 export const isDeploymentStatus = (value: unknown): value is DeploymentStatus => {
@@ -35,16 +37,19 @@ export const pairMarkings = (indicator: MarkedElement, platform: MarkedElement):
  * - markings: the deployment carries no marking the indicator does not carry;
  * - organizations: the deployment is shared with every organization the indicator is shared with (an indicator shared
  *   with no organization is only read by the platform organization, which reads every deployment);
- * - authorized members: the deployment has none.
+ * - authorized members: neither has any, since authorized members of the indicator read it whatever their
+ *   organization and nothing proves they can read the deployment (such deployments are left out of the counters).
  */
 export const isReadableWithIndicator = (deployment: RestrictedElement, indicator: RestrictedElement) => {
   const indicatorMarkings = indicator[RELATION_OBJECT_MARKING] ?? [];
   if (!(deployment[RELATION_OBJECT_MARKING] ?? []).every((marking) => indicatorMarkings.includes(marking))) {
     return false;
   }
+  if ((deployment.restricted_members ?? []).length > 0 || (indicator.restricted_members ?? []).length > 0) {
+    return false;
+  }
   const deploymentOrganizations = deployment[RELATION_GRANTED_TO] ?? [];
-  const sharedAsWidely = (indicator[RELATION_GRANTED_TO] ?? []).every((organization) => deploymentOrganizations.includes(organization));
-  return sharedAsWidely && (deployment.restricted_members ?? []).length === 0;
+  return (indicator[RELATION_GRANTED_TO] ?? []).every((organization) => deploymentOrganizations.includes(organization));
 };
 
 const OPTIONAL_DEPLOYED_ON_KEYS = [
@@ -76,4 +81,11 @@ export const buildDeployedOnCreationData = (input: Partial<Record<keyof Deployed
     }
   });
   return data;
+};
+
+const VALIDATION_RESULT_SIGHTING_NAMESPACE = uuidv5('opencti-ioc-validation-result', OPENCTI_NAMESPACE);
+
+// One sighting per request and pair: a replayed result never records the outcome twice.
+export const validationResultSightingStixId = (requestInternalId: string, indicatorInternalId: string, platformInternalId: string) => {
+  return `sighting--${uuidv5(`${requestInternalId}|${indicatorInternalId}|${platformInternalId}`, VALIDATION_RESULT_SIGHTING_NAMESPACE)}`;
 };

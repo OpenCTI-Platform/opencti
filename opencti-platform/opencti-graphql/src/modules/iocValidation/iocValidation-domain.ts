@@ -1,4 +1,4 @@
-import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import { Promise as BluePromise } from 'bluebird';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreBase } from '../../types/store';
@@ -10,7 +10,7 @@ import { createRelation, patchAttribute, stixLoadByIds } from '../../database/mi
 import { notify } from '../../database/redis';
 import { isEmptyField, isNotEmptyField } from '../../database/utils';
 import { lockResources } from '../../lock/master-lock';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_MARKINGS, OPENCTI_NAMESPACE } from '../../schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_MARKINGS } from '../../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { fullEntitiesList, fullRelationsList, internalLoadById, pageEntitiesConnection, storeLoadById, storeLoadByIds } from '../../database/middleware-loader';
 import { connectorsForEnrichment } from '../../database/repository';
@@ -35,7 +35,7 @@ import {
   VALIDATION_STATUS_REQUESTED,
 } from '../indicatorDeployment/indicatorDeployment-types';
 import { findDeployedOn, pairLockKey, refreshIndicatorDeploymentCounters } from '../indicatorDeployment/indicatorDeployment-domain';
-import { pairMarkings } from '../indicatorDeployment/indicatorDeployment-utils';
+import { pairMarkings, validationResultSightingStixId } from '../indicatorDeployment/indicatorDeployment-utils';
 import type {
   IocValidationRequestStatusInput,
   MutationIndicatorsRequestValidationArgs,
@@ -293,19 +293,21 @@ export const requestIndicatorsValidation = async (context: AuthContext, user: Au
       skipped.push({ indicator_id: indicator.internal_id, reason: extraction.reason });
     }
   });
-  // 03. Pairs: only (indicator, platform) couples with a known deployment are validated
+  // 03. Pairs: only (indicator, platform) couples with a known deployment are validated, and only deployments both the
+  // requester and the OpenAEV service account can read (a deployment carries the markings of both of its ends)
   const iocIndicatorIds = iocs.map((ioc) => ioc.indicator_id);
-  const deployments = iocIndicatorIds.length === 0 ? [] : await fullRelationsList<BasicStoreRelationDeployedOn & { _index: string }>(
-    contextOutOfDraft,
-    connectorUser,
-    RELATION_DEPLOYED_ON,
-    { fromId: iocIndicatorIds, toId: resolvedPlatforms.map((p) => p.internal_id) },
-  );
+  const pairFilter = { fromId: iocIndicatorIds, toId: resolvedPlatforms.map((p) => p.internal_id) };
+  const [deployments, requesterDeployments] = iocIndicatorIds.length === 0 ? [[], []] : await Promise.all([
+    fullRelationsList<BasicStoreRelationDeployedOn & { _index: string }>(contextOutOfDraft, connectorUser, RELATION_DEPLOYED_ON, pairFilter),
+    fullRelationsList<BasicStoreRelationDeployedOn>(contextOutOfDraft, user, RELATION_DEPLOYED_ON, { ...pairFilter, baseData: true } as never),
+  ]);
+  const requesterReadable = new Set(requesterDeployments.map((d) => d.internal_id));
   const pairs: IocValidationPair[] = [];
   const pairDeployments: Array<BasicStoreRelationDeployedOn & { _index: string }> = [];
   iocs.forEach((ioc) => {
     resolvedPlatforms.forEach((platform) => {
-      const deployment = deployments.find((d) => d.fromId === ioc.indicator_id && d.toId === platform.internal_id);
+      // A deployment the requester cannot read is reported like a missing one, so its existence is not revealed
+      const deployment = deployments.find((d) => d.fromId === ioc.indicator_id && d.toId === platform.internal_id && requesterReadable.has(d.internal_id));
       if (!deployment) {
         skipped.push({ indicator_id: ioc.indicator_id, platform_id: platform.internal_id, reason: 'Not deployed on this security platform' });
       } else if (!LIVE_DEPLOYMENT_STATUSES.includes(deployment.deployment_status)) {
@@ -550,12 +552,7 @@ export const updateIocValidationRequestStatus = async (context: AuthContext, use
 };
 
 export const IOC_VALIDATION_RESULTS_MAX_SIZE = 500;
-const VALIDATION_RESULT_SIGHTING_NAMESPACE = uuidv5('opencti-ioc-validation-result', OPENCTI_NAMESPACE);
-
-// One sighting per request and pair: a replayed result never records the outcome twice.
-export const validationResultSightingStixId = (requestInternalId: string, indicatorInternalId: string, platformInternalId: string) => {
-  return `sighting--${uuidv5(`${requestInternalId}|${indicatorInternalId}|${platformInternalId}`, VALIDATION_RESULT_SIGHTING_NAMESPACE)}`;
-};
+export { validationResultSightingStixId };
 
 const toObservedAt = (value: unknown, now: Date) => {
   if (isEmptyField(value)) return now;
@@ -829,16 +826,21 @@ export const readableResultsSummary = async (context: AuthContext, user: AuthUse
     filterReadablePlatformIds(context, user, request),
   ]);
   const platforms = new Set(readablePlatforms);
+  // A deployment carries the markings of both ends: a reader of the indicator and of the platform may still not read it.
+  const readableDeployments = await loadRequestDeployments(context, user, request);
+  const readableDeploymentIds = new Set(readableDeployments.map((d) => d.internal_id));
   const fullyReadable = (request.indicator_ids ?? []).every((id) => readableIndicators.has(id))
-    && (request.platform_ids ?? []).every((id) => platforms.has(id));
+    && (request.platform_ids ?? []).every((id) => platforms.has(id))
+    && (request.pairs ?? []).every((pair) => readableDeploymentIds.has(pair.deployed_on_id));
   if (fullyReadable) {
     return request.results_summary ?? emptyResultsSummary();
   }
-  const pairs = (request.pairs ?? []).filter((pair) => readableIndicators.has(pair.indicator_id) && platforms.has(pair.platform_id));
+  const pairs = (request.pairs ?? []).filter((pair) => readableIndicators.has(pair.indicator_id)
+    && platforms.has(pair.platform_id)
+    && readableDeploymentIds.has(pair.deployed_on_id));
   const skipped = await filterReadableSkipped(context, user, request);
   const pairDeploymentIds = new Set(pairs.map((pair) => pair.deployed_on_id));
-  const deployments = (await loadRequestDeployments(context, user, request))
-    .filter((d) => pairDeploymentIds.has(d.internal_id) && d.validation_run_id === request.internal_id);
+  const deployments = readableDeployments.filter((d) => pairDeploymentIds.has(d.internal_id) && d.validation_run_id === request.internal_id);
   return summarizeValidationResults(pairs.length, skipped.length, deployments.map((d) => d.validation_status));
 };
 // endregion
