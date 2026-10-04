@@ -477,15 +477,19 @@ test.describe('Threat Pulse documentation images', () => {
       dashboardUrls[mode] = page.url();
     }
 
-    // The widgets draw their own colours: the same dashboards in the light theme
+    // The template card and the widgets draw their own colours: the same surfaces in the light theme
+    const templateThemeApplied = await mockThreatPulse(page, dashboardAnswers('preview'), { theme: LIGHT_THEME });
+    await page.goto('/dashboard/workspaces/dashboards');
+    await expect.poll(templateThemeApplied).toBe(true);
+    await page.getByTestId('threat-pulse-dashboard-template').click();
+    await shoot(page.getByRole('dialog'), 'threat-pulse-template-card-light', testInfo);
+    await page.keyboard.press('Escape');
     for (const mode of ['preview', 'full'] as const) {
       const lightThemeApplied = await mockThreatPulse(page, dashboardAnswers(mode), { theme: LIGHT_THEME });
       await page.goto(dashboardUrls[mode]);
       await expect.poll(lightThemeApplied).toBe(true);
       await shoot(await widgetOf(trendingOf(mode)), `threat-pulse-trending-${mode}-light`, testInfo);
-      if (mode === 'full') {
-        await shoot(await widgetOf(benchmarkOf(mode)), 'threat-pulse-benchmark-full-light', testInfo);
-      }
+      await shoot(await widgetOf(benchmarkOf(mode)), `threat-pulse-benchmark-${mode}-light`, testInfo);
     }
 
     // The banner of the first day of the preview, in the dark then the light theme
@@ -544,11 +548,16 @@ test.describe('Threat Pulse documentation images', () => {
         await shoot(page.getByTestId('experience-threat-pulse-card'), `threat-pulse-settings-${state}${theme ? '-light' : ''}`, testInfo);
       }
     }
-    await mockThreatPulse(page, { ThreatPulseSettingsQuery: docsSettings({}), ...pulseStatusAnswers('preview') });
-    await page.goto('/dashboard/settings/experience');
-    await page.getByTestId('threat-pulse-enable-button').click();
-    await expect(page.getByTestId('threat-pulse-consent-dialog')).toBeVisible();
-    await expect(page.getByTestId('threat-pulse-consent-accept')).toBeVisible();
-    await shoot(page.getByRole('dialog'), 'threat-pulse-consent-dialog', testInfo);
+    for (const theme of [undefined, LIGHT_THEME]) {
+      const consentThemeApplied = await mockThreatPulse(page, { ThreatPulseSettingsQuery: docsSettings({}), ...pulseStatusAnswers('preview') }, { theme });
+      await page.goto('/dashboard/settings/experience');
+      if (theme) {
+        await expect.poll(consentThemeApplied).toBe(true);
+      }
+      await page.getByTestId('threat-pulse-enable-button').click();
+      await expect(page.getByTestId('threat-pulse-consent-dialog')).toBeVisible();
+      await expect(page.getByTestId('threat-pulse-consent-accept')).toBeVisible();
+      await shoot(page.getByRole('dialog'), `threat-pulse-consent-dialog${theme ? '-light' : ''}`, testInfo);
+    }
   });
 });
