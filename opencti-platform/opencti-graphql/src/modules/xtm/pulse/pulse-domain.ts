@@ -565,9 +565,10 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
         });
       }
     }
-    await updateAttribute(context, user, settings.id, ENTITY_TYPE_SETTINGS, updates);
-    // A contribution cycle running under the former configuration records and sends nothing more from now on.
+    // Before the settings change as well: a contribution cycle running under the former configuration records and
+    // sends nothing more, and a failed bump leaves the settings untouched. A bump followed by a failed write is harmless.
     await redisBumpPulseConfigGeneration();
+    await updateAttribute(context, user, settings.id, ENTITY_TYPE_SETTINGS, updates);
     if (enabling && !wasContributing) {
     // The contribution starts now: activity recorded before (a node whose settings cache had not seen the opt-out yet)
     // is never sent, nor the batches built under a former consent version still waiting in the outbox.
