@@ -16,7 +16,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { StixObject } from '../../types/stix-2-1-common';
 import type { BasicStoreSettings } from '../../types/settings';
-import { INVESTIGATION_MANAGER_USER, isUserCanAccessStixElement, isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
+import { INVESTIGATION_MANAGER_USER, isUserCanAccessStixElement, isUserCanAccessStoreElement, isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
 import { stixLoadById } from '../../database/middleware';
 import { getEntityFromCache } from '../../database/cache';
 import { storeNotificationEvent } from '../../database/stream/stream-handler';
@@ -102,7 +102,9 @@ export const notifyInvestigationRunStatus = async (
       for (let userIndex = 0; userIndex < users.length; userIndex += 1) {
         const user: AuthUser = users[userIndex];
         const userContext = { ...context, user_inside_platform_organization: isUserInPlatformOrganization(user, settings) };
-        if (await isUserCanAccessStixElement(userContext, user, stix) && await isStixMatchFilterGroup(userContext, user, stix, filters)) {
+        // The run may carry stricter restrictions than its case, from what it cites: both must be readable.
+        if (await isUserCanAccessStixElement(userContext, user, stix) && await isUserCanAccessStoreElement(userContext, user, run)
+          && await isStixMatchFilterGroup(userContext, user, stix, filters)) {
           targets.push({ user: convertToNotificationUser(user, trigger.notifiers), type: eventType, message });
         }
       }

@@ -704,6 +704,16 @@ export const parseEngineKnowledge = (knowledge: Record<string, unknown> | null):
  * standard id: its summary and its hypotheses may quote them whether or not
  * they are cited as evidence.
  */
+/** The courses of action the recommendations of a conclusion name: their text may quote them. */
+export const conclusionCourseOfActionIds = (conclusion: Record<string, unknown> | null | undefined): string[] => {
+  const recommendations = conclusion?.recommendations;
+  if (!Array.isArray(recommendations)) return [];
+  return Array.from(new Set(recommendations
+    .map((recommendation) => (recommendation && typeof recommendation === 'object' ? (recommendation as Record<string, unknown>).course_of_action_id : null))
+    .filter((id): id is string => typeof id === 'string' && id.length > 0)))
+    .slice(0, INVESTIGATION_LIMITS.coursesOfAction);
+};
+
 export const conclusionCandidateIds = (conclusion: Record<string, unknown> | null | undefined): string[] => {
   const hypotheses = conclusion?.hypotheses;
   if (!Array.isArray(hypotheses)) return [];

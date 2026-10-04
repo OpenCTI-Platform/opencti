@@ -90,6 +90,7 @@ import {
   INVESTIGATION_CASE_SUBJECT_TYPES,
   INVESTIGATION_LIMITS,
   TERMINAL_RUN_STATUSES,
+  ACTIVE_RUN_STATUSES,
   type BasicStoreEntityInvestigationPolicy,
   type BasicStoreEntityInvestigationRun,
   type InvestigationApproval,
@@ -103,6 +104,7 @@ import {
 import { listPolicyEnrichmentConnectors, loadInvestigationRun, updateInvestigationRun } from './investigationRun-domain';
 import { loadInvestigationPolicy } from './investigationPolicy-domain';
 import {
+  boundApprovals,
   buildTimeline,
   canAutoApproveDraft,
   computeWaveStatus,
@@ -120,6 +122,7 @@ import {
   buildAllowedIds,
   buildStartBody,
   conclusionCandidateIds,
+  conclusionCourseOfActionIds,
   engineOutcome,
   groundConclusion,
   isReportPending,
@@ -141,6 +144,7 @@ import {
   evidenceFromElement,
   intersectOrganizationIds,
   isCreationSharingWidened,
+  isMemberRestricted,
   markingIdsOf,
   organizationIdsOf,
   representativeNameOf,
@@ -500,9 +504,13 @@ const initializeRun = async (exec: RunExecution) => {
       patch.case_ids = R.uniq([...(run.case_ids ?? []), created.internal_id, created.standard_id]);
     } else if (subject.entity_type === ENTITY_TYPE_INCIDENT) {
       const existingCase = await findCaseContainingSubject(exec, subject.internal_id);
-      if (existingCase) {
+      // A case restricted to authorized members is not read into the investigation.
+      if (existingCase && !isMemberRestricted(existingCase)) {
         patch.case_id = existingCase.internal_id;
         patch.case_ids = R.uniq([...(run.case_ids ?? []), existingCase.internal_id, existingCase.standard_id]);
+        // Its objects are read into the engine context: the run carries its restrictions from now on.
+        patch.objectMarking = R.uniq([...markingIdsOf(run), ...markingIdsOf(existingCase)]);
+        patch.objectOrganization = intersectOrganizationIds(organizationIdsOf(run), [existingCase]);
       }
     }
   }
@@ -586,6 +594,8 @@ const startEngine = async (exec: RunExecution) => {
       continues_investigation_id: null,
       budget_cancelled: false,
       engine_failures: 0,
+      // Each engine run counts its iterations from 0: a continuation adds to what earlier runs used.
+      budget: { ...current.budget, iterations_base: current.budget.used_iterations ?? 0 },
       goal_plan: engine.goal_plan ?? current.goal_plan ?? null,
       end_reason_code: null,
       status_reason: null,
@@ -655,6 +665,11 @@ const processEnrichments = async (exec: RunExecution): Promise<BasicStoreEntityI
         completed_at: now.toISOString(),
       });
     } else {
+      // A cancellation since the run was read stops the job before it starts: it may be a paid connector.
+      const current = await loadInvestigationRun(exec.liveContext, run.internal_id);
+      const stillQueued = !!current && ACTIVE_RUN_STATUSES.includes(current.run_status)
+        && current.enrichment_requests.some((item) => item.id === request.id && item.status === InvestigationEnrichmentRequestStatus.Queued);
+      if (!stillQueued) continue;
       try {
         const works = await askElementEnrichmentForConnectors(exec.draftContext, runUser, request.entity_id, [request.connector_id]);
         const workId = works?.[0]?.id ?? null;
@@ -721,27 +736,48 @@ const processEnrichments = async (exec: RunExecution): Promise<BasicStoreEntityI
 // region investigating
 
 // The OpenCTI objects an evidence list cites, read in the run Draft for their markings and sharing.
-const citedElements = async (exec: RunExecution, evidence: InvestigationEvidence[], candidateIds: string[] = []): Promise<BasicStoreCommon[]> => {
-  const ids = R.uniq([...evidence.filter(isObjectEvidence).map((item) => item.opencti_id as string), ...candidateIds])
-    .slice(0, INVESTIGATION_LIMITS.evidence + INVESTIGATION_LIMITS.candidates);
+// Everything an engine revision names: its cited objects, the candidates of its
+// hypotheses and the courses of action of its recommendations.
+const citedElements = async (exec: RunExecution, evidence: InvestigationEvidence[], conclusion: Record<string, unknown> | null | undefined): Promise<BasicStoreCommon[]> => {
+  const ids = R.uniq([
+    ...evidence.filter(isObjectEvidence).map((item) => item.opencti_id as string),
+    ...conclusionCandidateIds(conclusion),
+    ...conclusionCourseOfActionIds(conclusion),
+  ]).slice(0, INVESTIGATION_LIMITS.evidence + INVESTIGATION_LIMITS.candidates + INVESTIGATION_LIMITS.coursesOfAction);
   if (ids.length === 0) return [];
   const draftContext = await userContext(INVESTIGATION_MANAGER_USER, exec.run.draft_id);
   return findElements(draftContext, INVESTIGATION_MANAGER_USER, ids);
 };
 
+// The OpenCTI objects of a revision the run may cite: those its identity sees,
+// without a member restriction (the run cannot carry one).
+const citableObjectIds = async (exec: RunExecution, evidence: InvestigationEvidence[]): Promise<Set<string>> => {
+  const ids = R.uniq(evidence.filter(isObjectEvidence).map((item) => item.opencti_id as string)).slice(0, INVESTIGATION_LIMITS.evidence);
+  if (ids.length === 0) return new Set();
+  const visible = withoutMemberRestricted(await findElements(exec.draftContext, exec.runUser, ids));
+  return new Set(visible.flatMap((element) => [element.internal_id, element.standard_id]));
+};
+
 // A revision citing a restricted object restricts the run as soon as it is
 // mirrored, before anyone can read its evidence, summary or report: markings
 // add up, organization sharing narrows to what every cited object allows.
-const mirrorPatch = (current: BasicStoreEntityInvestigationRun, engine: EngineInvestigation, cited: BasicStoreCommon[]): Record<string, unknown> => ({
+// Objects the run may not cite are not mirrored as evidence.
+const mirrorPatch = (
+  current: BasicStoreEntityInvestigationRun,
+  engine: EngineInvestigation,
+  cited: BasicStoreCommon[],
+  citable: Set<string> | null = null,
+): Record<string, unknown> => ({
   objectMarking: R.uniq([...markingIdsOf(current), ...cited.flatMap((element) => markingIdsOf(element))]),
   objectOrganization: intersectOrganizationIds(organizationIdsOf(current), cited),
   goal_plan: engine.goal_plan ?? current.goal_plan ?? null,
   steps: mirrorSteps(current.steps ?? [], engine.id, engine.steps),
-  evidence: mirrorEvidence(current.evidence ?? [], engine),
+  evidence: mirrorEvidence(current.evidence ?? [], engine)
+    .filter((item) => !citable || !isObjectEvidence(item) || citable.has(item.opencti_id as string)),
   report: engine.report ?? current.report ?? null,
   report_sources: engine.report ? mirrorReportSources(engine) : current.report_sources ?? [],
   summary: (engine.conclusion?.summary as string | undefined)?.slice(0, INVESTIGATION_LIMITS.summaryLength) ?? current.summary ?? null,
-  budget: { ...current.budget, used_iterations: Math.max(current.budget.used_iterations ?? 0, engine.iterations_used) },
+  budget: { ...current.budget, used_iterations: Math.max(current.budget.used_iterations ?? 0, (current.budget.iterations_base ?? 0) + engine.iterations_used) },
   xtm_revision: engine.revision,
   xtm_status: engine.status,
   engine_failures: 0,
@@ -780,11 +816,12 @@ const investigate = async (exec: RunExecution) => {
   const engine = result.value;
   const outcome = engineOutcome(engine.status);
   const changed = engine.revision !== run.xtm_revision || engine.status !== run.xtm_status;
-  const cited = changed || outcome !== 'running'
-    ? await citedElements(exec, mirrorEvidence(run.evidence ?? [], engine), conclusionCandidateIds(engine.conclusion))
-    : [];
+  const revisionEvidence = mirrorEvidence(run.evidence ?? [], engine);
+  const mirroring = changed || outcome !== 'running';
+  const cited = mirroring ? await citedElements(exec, revisionEvidence, engine.conclusion) : [];
+  const citable = mirroring ? await citableObjectIds(exec, revisionEvidence) : null;
   if (outcome === 'failed') {
-    await updateInvestigationRun(exec.liveContext, run.internal_id, (current) => mirrorPatch(current, engine, cited));
+    await updateInvestigationRun(exec.liveContext, run.internal_id, (current) => mirrorPatch(current, engine, cited, citable));
     await failRun(exec.liveContext, run.internal_id, `The investigation engine stopped the investigation (${engine.end_reason_code ?? 'aborted'})`, engine.end_reason_code ?? 'engine_aborted');
     return;
   }
@@ -792,7 +829,7 @@ const investigate = async (exec: RunExecution) => {
     await updateInvestigationRun(exec.liveContext, run.internal_id, (current) => {
       if (TERMINAL_RUN_STATUSES.includes(current.run_status)) return null;
       return {
-        ...mirrorPatch(current, engine, cited),
+        ...mirrorPatch(current, engine, cited, citable),
         ...statusTransition(current, InvestigationRunStatus.Cancelled, InvestigationRunPhase.Done, now, 'The investigation was cancelled in XTM One'),
         end_reason_code: engine.end_reason_code ?? 'engine_cancelled',
       };
@@ -807,7 +844,7 @@ const investigate = async (exec: RunExecution) => {
     return;
   }
   await updateInvestigationRun(exec.liveContext, run.internal_id, (current) => ({
-    ...mirrorPatch(current, engine, cited),
+    ...mirrorPatch(current, engine, cited, citable),
     xtm_completed_at: outcome === 'completed' ? current.xtm_completed_at ?? now.toISOString() : current.xtm_completed_at ?? null,
     ...(concluded ? { run_phase: InvestigationRunPhase.Ingesting } : {}),
   }));
@@ -1064,9 +1101,10 @@ const collectRunRestrictions = async (exec: RunExecution, subject: BasicStoreEnt
   const ids = R.uniq([
     ...exec.run.evidence.filter(isObjectEvidence).map((evidence) => evidence.opencti_id as string),
     ...exec.run.hypotheses.map((hypothesis) => hypothesis.candidate_id),
+    ...exec.run.recommendations.flatMap((recommendation) => (recommendation.course_of_action_id ? [recommendation.course_of_action_id] : [])),
     ...candidateIds,
     ...(caseId ? [caseId] : []),
-  ]).slice(0, INVESTIGATION_LIMITS.evidence + INVESTIGATION_LIMITS.candidates + 1);
+  ]).slice(0, INVESTIGATION_LIMITS.evidence + INVESTIGATION_LIMITS.candidates + INVESTIGATION_LIMITS.coursesOfAction + 1);
   const elements = await findElements(draftContext, INVESTIGATION_MANAGER_USER, ids);
   return {
     markings: R.uniq([...markingIdsOf(subject), ...elements.flatMap((element) => markingIdsOf(element))]),
@@ -1134,7 +1172,8 @@ const ingest = async (exec: RunExecution) => {
     summary: grounded.summary ?? mirrored.summary ?? null,
   };
   // Every output may quote what the run cites: it carries the markings and the sharing of all of it.
-  const namedCandidates = conclusionCandidateIds(engine?.conclusion);
+  // Candidates and courses of action the conclusion names: its text may quote them.
+  const namedCandidates = [...conclusionCandidateIds(engine?.conclusion), ...conclusionCourseOfActionIds(engine?.conclusion)];
   const outputRestrictions = await collectRunRestrictions({ ...exec, run: finalRun }, subject, finalRun.case_id ?? null, namedCandidates);
   const { outputs, caseId, caseIds, failures } = await writeOutputs({ ...exec, run: finalRun }, subject, engine, outputRestrictions);
   const restrictions = await collectRunRestrictions({ ...exec, run: finalRun }, subject, caseId, namedCandidates);
@@ -1202,7 +1241,7 @@ const ingest = async (exec: RunExecution) => {
     objectOrganization: organizationIdsOf(current).filter((id) => restrictions.organizations.includes(id)),
     validation_work_id: validationWorkId,
     wave_started_at: now.toISOString(),
-    approvals: [...current.approvals, ...recommendationApprovals, ...draftApproval].slice(-INVESTIGATION_LIMITS.approvals),
+    approvals: boundApprovals([...current.approvals, ...recommendationApprovals, ...draftApproval]),
   }));
   if (nextStatus === InvestigationRunStatus.Completed) {
     addInvestigationRunOutcomeCount(InvestigationRunStatus.Completed);
