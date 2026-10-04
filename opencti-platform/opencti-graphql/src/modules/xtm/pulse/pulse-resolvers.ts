@@ -1,10 +1,5 @@
-import { PulseMode, type Resolvers } from '../../../generated/graphql';
+import type { Resolvers } from '../../../generated/graphql';
 import type { AuthContext } from '../../../types/user';
-import type { BasicStoreSettings } from '../../../types/settings';
-import { getEntityFromCache } from '../../../database/cache';
-import { SYSTEM_USER } from '../../../utils/access';
-import { ENTITY_TYPE_SETTINGS } from '../../../schema/internalObject';
-import { getPulseHubPlatform, readPulseSettings } from './pulse-settings';
 import {
   configurePulse,
   getPulseBenchmark,
@@ -14,21 +9,13 @@ import {
   getPulseTrending,
   purgePulseContributions,
   recordPulseTelemetry,
+  resolvePulseField,
   resolvePulseStatusPreview,
 } from './pulse-domain';
-import { toPulseInformationOutput } from './pulse-information';
 import type { BasicStorePulseEntity, PulsePeriodValue, PulseRegionBucketValue, PulseSectorBucketValue } from './pulse-types';
 
-// Nothing while the platform is not registered on XTM Hub or Threat Pulse is off, whatever an object still stores.
-// The settings come from the in-memory cache: no cost per object of a list.
 const pulseField = {
-  pulse: async (entity: unknown, _: unknown, context: AuthContext) => {
-    const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    if (!getPulseHubPlatform(settings) || readPulseSettings(settings).mode === PulseMode.Off) {
-      return null;
-    }
-    return toPulseInformationOutput(entity as BasicStorePulseEntity);
-  },
+  pulse: (entity: unknown, _: unknown, context: AuthContext) => resolvePulseField(context, entity as BasicStorePulseEntity),
 };
 
 const pulseResolvers: Resolvers = {

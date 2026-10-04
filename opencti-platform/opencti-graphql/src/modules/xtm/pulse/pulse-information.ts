@@ -4,7 +4,8 @@ import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../../database/utils';
 import { buildRefRelationSearchKey } from '../../../schema/general';
 import { RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
 import { logApp } from '../../../config/conf';
-import { PulsePrevalence } from '../../../generated/graphql';
+import { PulseAccess, PulsePrevalence } from '../../../generated/graphql';
+import { isPulseContributable, type PulseMarkingPolicy } from './pulse-settings';
 import {
   PULSE_ATTRIBUTE_FIRST_SEEN,
   PULSE_ATTRIBUTE_INFORMATION,
@@ -240,4 +241,29 @@ export const toPulseInformationOutput = (entity: BasicStorePulseEntity) => {
     community_uniqueness: entity.pulse_community_uniqueness ?? null,
     updated_at: information.updated_at,
   };
+};
+
+export const isPulsePreviewDocument = (entity: BasicStorePulseEntity) => entity.pulse_information?.preview === true;
+
+export interface PulseFieldPolicy {
+  access: PulseAccess;
+  scopes: string[];
+  // Only read for the full experience: the preview signal is local and covers every object type in scope.
+  markingPolicy: PulseMarkingPolicy | null;
+}
+
+// What an object shows of the community data under the current access, whatever a cleanup that failed left in the
+// index: nothing out of scope, the preview signal alone while the platform reads the preview, and in the full
+// experience nothing for an object excluded from the contribution.
+export const visiblePulseInformation = (entity: BasicStorePulseEntity, policy: PulseFieldPolicy) => {
+  if (!policy.scopes.includes(entity.entity_type)) {
+    return null;
+  }
+  if (policy.access === PulseAccess.Preview) {
+    return isPulsePreviewDocument(entity) ? toPulseInformationOutput(entity) : null;
+  }
+  if (policy.access === PulseAccess.Full && policy.markingPolicy && isPulseContributable(entity, policy.markingPolicy, policy.scopes)) {
+    return toPulseInformationOutput(entity);
+  }
+  return null;
 };

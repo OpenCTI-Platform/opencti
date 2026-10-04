@@ -248,6 +248,8 @@ describe('Threat Pulse manager and API', () => {
         variables: { filters: { mode: 'and', filters: [{ key: 'pulse_prevalence', values: ['widespread'] }], filterGroups: [] } },
       });
       expect(filtered.data?.indicators.edges.map((edge: { node: { id: string } }) => edge.node.id)).toContain(previewIndicatorId);
+      const listed = filtered.data?.indicators.edges.find((edge: { node: { id: string } }) => edge.node.id === previewIndicatorId);
+      expect(listed?.node.pulse).toMatchObject({ prevalence: 'widespread', platforms_bucket: null });
       const status = await queryAsAdminWithSuccess({ query: PULSE_STATUS });
       expect(status.data?.pulseStatus).toMatchObject({ mode: 'preview', access: 'preview', readable: false, preview_entities: 2 });
       expect(status.data?.pulseStatus.preview_since).toBeTruthy();
@@ -503,6 +505,8 @@ describe('Threat Pulse manager and API', () => {
     const ids = filtered.data?.indicators.edges.map((edge: { node: { id: string } }) => edge.node.id);
     expect(ids).toContain(sharedIndicatorId);
     expect(ids).not.toContain(redIndicatorId);
+    const listed = filtered.data?.indicators.edges.find((edge: { node: { id: string } }) => edge.node.id === sharedIndicatorId);
+    expect(listed?.node.pulse).toMatchObject({ prevalence: 'widespread', platforms_bucket: '5-9' });
   });
 
   it('should resolve trending items to the local entities only', async () => {

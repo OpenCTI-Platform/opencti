@@ -6,8 +6,11 @@ import {
   combinePulseLookups,
   combinePulsePreviewSignals,
   PULSE_PREVIEW_CLEARED_DOCUMENT,
+  type PulseFieldPolicy,
   toPulseInformationOutput,
+  visiblePulseInformation,
 } from '../../../../../src/modules/xtm/pulse/pulse-information';
+import { RELATION_OBJECT_MARKING } from '../../../../../src/schema/stixRefRelationship';
 import {
   getPulseAccess,
   hasPulseReadAccess,
@@ -157,6 +160,45 @@ describe('Threat Pulse preview information', () => {
   it('should clear the signal of an object that left the digest but keep its keys', () => {
     expect(Object.keys(PULSE_PREVIEW_CLEARED_DOCUMENT)).not.toContain('pulse_keys');
     expect(Object.values(PULSE_PREVIEW_CLEARED_DOCUMENT).every((value) => value === null)).toBe(true);
+  });
+});
+
+describe('Threat Pulse information under the current access', () => {
+  const updatedAt = new Date('2026-10-03T02:00:00.000Z');
+  const fullDocument = buildPulseDocument(['k1'], combinePulseLookups([published('a', { sector_trend: PulseTrend.Rising, sector_platforms_bucket: '10-24' })]), updatedAt);
+  const previewDocument = buildPulsePreviewDocument(['k1'], { prevalence: PulsePrevalence.Common, trend: PulseTrend.Rising }, updatedAt);
+  const entity = (doc: Record<string, unknown>, overrides: Record<string, unknown> = {}) => (
+    { entity_type: 'Malware', ...doc, ...overrides } as unknown as BasicStorePulseEntity
+  );
+  const markingPolicy = { knownMarkingIds: new Set(['tlp-green', 'tlp-red']), excludedMarkingIds: new Set(['tlp-red']) };
+  const scopes = ['Malware', 'Indicator'];
+  const preview: PulseFieldPolicy = { access: PulseAccess.Preview, scopes, markingPolicy: null };
+  const full: PulseFieldPolicy = { access: PulseAccess.Full, scopes, markingPolicy };
+
+  it('should show only the preview signal while the platform reads the preview, whatever a failed cleanup left', () => {
+    expect(visiblePulseInformation(entity(fullDocument), preview)).toBeNull();
+    expect(visiblePulseInformation(entity(previewDocument), preview)).toMatchObject({ preview: true, prevalence: PulsePrevalence.Common, platforms_bucket: null });
+  });
+
+  it('should show the full information of a contributable object in the full experience', () => {
+    expect(visiblePulseInformation(entity(fullDocument, { [RELATION_OBJECT_MARKING]: ['tlp-green'] }), full)).toMatchObject({
+      preview: false,
+      platforms_bucket: '5-9',
+      sector_trend: PulseTrend.Rising,
+    });
+  });
+
+  it('should show nothing for an object excluded from the contribution in the full experience', () => {
+    expect(visiblePulseInformation(entity(fullDocument, { [RELATION_OBJECT_MARKING]: ['tlp-red'] }), full)).toBeNull();
+    expect(visiblePulseInformation(entity(fullDocument, { [RELATION_OBJECT_MARKING]: ['unknown-marking'] }), full)).toBeNull();
+    expect(visiblePulseInformation(entity(fullDocument, { restricted_members: [{ id: 'user' }] }), full)).toBeNull();
+  });
+
+  it('should show nothing for a type out of scope, or once Threat Pulse is off or not connected', () => {
+    expect(visiblePulseInformation(entity(previewDocument, { entity_type: 'Tool' }), preview)).toBeNull();
+    expect(visiblePulseInformation(entity(fullDocument, { entity_type: 'Tool' }), full)).toBeNull();
+    expect(visiblePulseInformation(entity(previewDocument), { access: PulseAccess.Off, scopes, markingPolicy: null })).toBeNull();
+    expect(visiblePulseInformation(entity(fullDocument), { access: PulseAccess.NotConnected, scopes, markingPolicy })).toBeNull();
   });
 });
 

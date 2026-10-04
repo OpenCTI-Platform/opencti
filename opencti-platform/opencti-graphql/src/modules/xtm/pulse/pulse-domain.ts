@@ -53,12 +53,15 @@ import {
   clearPulseNetworkInformation,
   combinePulseLookups,
   combinePulsePreviewSignals,
+  isPulsePreviewDocument,
   PULSE_PREVIEW_CLEARED_DOCUMENT,
   toDayDate,
   type PulseClearScope,
   type PulseDocumentUpdate,
+  type PulseFieldPolicy,
   type PulsePreviewSignal,
   toPulseInformationOutput,
+  visiblePulseInformation,
   writePulseDocuments,
 } from './pulse-information';
 import {
@@ -845,6 +848,27 @@ const hasPulseNetworkData = (entity: BasicStorePulseEntity) => {
     || (entity.pulse_prevalence !== undefined && entity.pulse_prevalence !== null);
 };
 
+// Read once per request, whatever the number of objects a list resolves the field for.
+const pulseFieldPolicies = new WeakMap<AuthContext, Promise<PulseFieldPolicy>>();
+
+const loadPulseFieldPolicy = (context: AuthContext) => {
+  const known = pulseFieldPolicies.get(context);
+  if (known) {
+    return known;
+  }
+  const policy = (async () => {
+    const { values, access } = await loadPulseContext(context);
+    const markingPolicy = access === PulseAccess.Full ? await buildPulseMarkingPolicy(context, values) : null;
+    return { access, scopes: values.scopes, markingPolicy };
+  })();
+  pulseFieldPolicies.set(context, policy);
+  return policy;
+};
+
+export const resolvePulseField = async (context: AuthContext, entity: BasicStorePulseEntity) => {
+  return visiblePulseInformation(entity, await loadPulseFieldPolicy(context));
+};
+
 const lookupKeys = async (platform: PulseHubPlatform, day: string, salt: string, objectType: PulseObjectType, keys: string[]) => {
   const results = new Map<string, PulseHubLookupResult>();
   for (let index = 0; index < keys.length; index += PULSE_MAX_LOOKUP_HASHES) {
@@ -1126,7 +1150,8 @@ export const getPulseEntityInformation = async (context: AuthContext, user: Auth
   }
   if (access === PulseAccess.Preview) {
     // The preview signal written by the last digest pass, if the object is among the most prevalent of the community.
-    return { ...base, readable: false, unavailable_reason: PulseUnavailableReason.ContributionRequired, information: toPulseInformationOutput(entity) };
+    const information = isPulsePreviewDocument(entity) ? toPulseInformationOutput(entity) : null;
+    return { ...base, readable: false, unavailable_reason: PulseUnavailableReason.ContributionRequired, information };
   }
   const policy = await buildPulseMarkingPolicy(context, values);
   if (!isPulseContributable(entity, policy, values.scopes)) {
