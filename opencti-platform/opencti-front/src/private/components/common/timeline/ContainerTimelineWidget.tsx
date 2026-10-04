@@ -68,6 +68,10 @@ export const containerTimelineWidgetQuery = graphql`
 // The lanes disabled and the kinds hidden in the timeline settings are left out before the limit, so they never displace the others
 const containerTimelineWidgetEventsQuery = graphql`
   query ContainerTimelineWidgetEventsQuery($id: String!, $lanes: [TimelineLane!], $kinds: [TimelineEventKind!], $count: Int!) {
+    shown: containerTimelineSummary(id: $id, lanes: $lanes, kinds: $kinds) {
+      first_event_time
+      last_event_time
+    }
     containerTimeline(id: $id, lanes: $lanes, kinds: $kinds, first: $count, orderMode: desc) {
       pageInfo {
         globalCount
@@ -121,7 +125,7 @@ const ContainerTimelineWidgetEvents = ({
   const theme = useTheme();
   const navigate = useNavigate();
   const apiLanes = effectiveLanes([...lanes], enabledLanes);
-  const { containerTimeline } = useLazyLoadQuery<ContainerTimelineWidgetEventsQuery>(
+  const { containerTimeline, shown } = useLazyLoadQuery<ContainerTimelineWidgetEventsQuery>(
     containerTimelineWidgetEventsQuery,
     {
       id: containerId,
@@ -136,7 +140,8 @@ const ContainerTimelineWidgetEvents = ({
     return <WidgetNoData message={t_i18n('No event in this period')} />;
   }
   const shownLanes = (apiLanes ?? TIMELINE_LANES).filter((lane) => events.some((e) => e.lane === lane));
-  const extent = computeTimelineExtent(events, TIMELINE_ANCHOR_KEYS.map((key) => anchors?.[key]));
+  // The whole timeline of the shown lanes and kinds, also the events older than the latest ones drawn here
+  const extent = computeTimelineExtent(events, [...TIMELINE_ANCHOR_KEYS.map((key) => anchors?.[key]), shown?.first_event_time, shown?.last_event_time]);
   // A long timeline is drawn from its latest events: the count says so, the full timeline is one click away
   const total = containerTimeline?.pageInfo.globalCount ?? events.length;
   return (
