@@ -400,15 +400,17 @@ describe('Knowledge curation', () => {
     expect(movedRelation.fromId).toBe(entityA.id);
 
     // The record follows a later reclassification of the merged entity.
-    const readable = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: MERGE_RECORD_QUERY, variables: { id: mergeRecordId } });
-    expect(readable.data?.mergeRecord.id).toBe(mergeRecordId);
-    const reclassify = (operation: EditOperation) => updateAttribute(testContext, ADMIN_USER, entityA.id, ENTITY_TYPE_INTRUSION_SET, [
+    const readByParticipant = async () => {
+      const result = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: MERGE_RECORD_QUERY, variables: { id: mergeRecordId } });
+      return result.data?.mergeRecord;
+    };
+    const reclassify = (id: string, operation: EditOperation) => updateAttribute(testContext, ADMIN_USER, id, ENTITY_TYPE_INTRUSION_SET, [
       { key: INPUT_MARKINGS, value: [MARKING_TLP_RED], operation },
     ]);
-    await reclassify(EditOperation.Add);
-    const hidden = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: MERGE_RECORD_QUERY, variables: { id: mergeRecordId } });
-    expect(hidden.data?.mergeRecord).toBeNull();
-    await reclassify(EditOperation.Remove);
+    expect((await readByParticipant()).id).toBe(mergeRecordId);
+    await reclassify(entityA.id, EditOperation.Add);
+    expect(await readByParticipant()).toBeNull();
+    await reclassify(entityA.id, EditOperation.Remove);
 
     await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, { query: UNMERGE_MUTATION, variables: { mergeRecordId } });
     const unmerged = await queryAsAdminWithSuccess({ query: UNMERGE_MUTATION, variables: { mergeRecordId } });
@@ -419,6 +421,11 @@ describe('Knowledge curation', () => {
     expect(restored).toBeDefined();
     expect(restored.standard_id).toBe(entityB.standard_id);
     expect(restored.name).toBe(NAME_B);
+    // A restored source is a participant again: its reclassification applies to the record too.
+    expect((await readByParticipant()).id).toBe(mergeRecordId);
+    await reclassify(entityB.id, EditOperation.Add);
+    expect(await readByParticipant()).toBeNull();
+    await reclassify(entityB.id, EditOperation.Remove);
     const restoredRelation = await storeLoadById(testContext, ADMIN_USER, usesFromB, RELATION_USES) as unknown as { fromId: string };
     expect(restoredRelation.fromId).toBe(entityB.id);
     // One denormalized entry per relationship: the malware references both intrusion sets again, once each

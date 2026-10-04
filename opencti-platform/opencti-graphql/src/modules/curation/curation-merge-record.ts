@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import conf, { BUS_TOPICS, booleanConf, logApp } from '../../config/conf';
 import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../../config/errors';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicStoreBase, BasicStoreObject, StoreObject, StoreRelation } from '../../types/store';
+import type { BasicConnection, BasicStoreBase, BasicStoreObject, StoreObject, StoreRelation } from '../../types/store';
 import type { MergeCommitInput, MergePreparationInput, MergeRecorder } from '../../database/merge-hooks';
 import {
   createEntity,
@@ -16,6 +16,7 @@ import {
   updateAttribute,
 } from '../../database/middleware';
 import { internalFindByIds, pageEntitiesConnection, storeLoadById, type EntityOptions } from '../../database/middleware-loader';
+import { ES_DEFAULT_PAGINATION } from '../../database/engine';
 import { lockResources } from '../../lock/master-lock';
 import { getDraftContext } from '../../utils/draftContext';
 import { SYSTEM_USER } from '../../utils/access';
@@ -352,34 +353,59 @@ export const completePendingMergeRecords = async (context: AuthContext) => {
 // endregion
 
 // region queries
+const participantIdsOf = (record: BasicStoreEntityMergeRecord) => [record.merge_target_id, ...(record.merge_source_ids ?? [])].filter(isNotEmptyField);
+
 /**
- * A record carries the restrictions its participants had at merge time, and the surviving entity can be
- * reclassified afterwards: a record is shown only to users who can still read that entity. A record whose entity
- * no longer exists (deleted, or merged away later) keeps its own restrictions only.
+ * A record carries the restrictions its participants had at merge time, and every participant that exists today can
+ * be reclassified afterwards: the surviving entity, or a source an unmerge restored. A record is shown only to users
+ * who can read each of them. A participant that no longer exists (merged away, deleted) leaves the decision to the
+ * record's own restrictions.
  */
-const withReadableTargets = async (context: AuthContext, user: AuthUser, records: BasicStoreEntityMergeRecord[]) => {
-  const targetIds = R.uniq(records.map((record) => record.merge_target_id).filter(isNotEmptyField));
-  if (targetIds.length === 0) return records;
-  const readable = await internalFindByIds(context, user, targetIds, { baseData: true }) as BasicStoreBase[];
+const withReadableParticipants = async (context: AuthContext, user: AuthUser, records: BasicStoreEntityMergeRecord[]) => {
+  const ids = R.uniq(records.flatMap(participantIdsOf));
+  if (ids.length === 0) return records;
+  const readable = await internalFindByIds(context, user, ids, { baseData: true }) as BasicStoreBase[];
   const readableIds = new Set(readable.map((element) => element.internal_id));
-  const unreadableIds = targetIds.filter((id) => !readableIds.has(id));
+  const unreadableIds = ids.filter((id) => !readableIds.has(id));
   if (unreadableIds.length === 0) return records;
   const existing = await internalFindByIds(context, SYSTEM_USER, unreadableIds, { baseData: true }) as BasicStoreBase[];
   const hiddenIds = new Set(existing.map((element) => element.internal_id));
-  return records.filter((record) => !hiddenIds.has(record.merge_target_id));
+  return records.filter((record) => !participantIdsOf(record).some((id) => hiddenIds.has(id)));
 };
 
 export const findMergeRecordById = async (context: AuthContext, user: AuthUser, id: string) => {
   const record = await storeLoadById<BasicStoreEntityMergeRecord>(context, user, id, ENTITY_TYPE_MERGE_RECORD);
   if (!record) return record;
-  const [readable] = await withReadableTargets(context, user, [record]);
+  const [readable] = await withReadableParticipants(context, user, [record]);
   return readable;
 };
 
+const MAX_PAGE_REFILLS = 5;
+
+/** A page of records the user may read: pages emptied by the participant check are refilled from the next ones. */
 export const findMergeRecordsPaginated = async (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityMergeRecord>) => {
-  const connection = await pageEntitiesConnection<BasicStoreEntityMergeRecord>(context, user, [ENTITY_TYPE_MERGE_RECORD], opts);
-  const readable = new Set(await withReadableTargets(context, user, connection.edges.map((edge) => edge.node)));
-  return { ...connection, edges: connection.edges.filter((edge) => readable.has(edge.node)) };
+  const first = opts.first ?? ES_DEFAULT_PAGINATION;
+  const edges: BasicConnection<BasicStoreEntityMergeRecord>['edges'] = [];
+  let connection = await pageEntitiesConnection<BasicStoreEntityMergeRecord>(context, user, [ENTITY_TYPE_MERGE_RECORD], { ...opts, first });
+  for (let refill = 0; ; refill += 1) {
+    const readable = new Set(await withReadableParticipants(context, user, connection.edges.map((edge) => edge.node)));
+    const pageEdges = connection.edges;
+    const kept = pageEdges.filter((edge) => readable.has(edge.node)).slice(0, first - edges.length);
+    edges.push(...kept);
+    const lastKept = kept.length > 0 ? pageEdges.indexOf(kept[kept.length - 1]) : -1;
+    const moreInPage = pageEdges.slice(lastKept + 1).some((edge) => readable.has(edge.node));
+    const isFull = edges.length >= first;
+    if (isFull || !connection.pageInfo.hasNextPage || refill >= MAX_PAGE_REFILLS) {
+      const endCursor = isFull ? edges[edges.length - 1].cursor : (pageEdges[pageEdges.length - 1]?.cursor ?? connection.pageInfo.endCursor);
+      const hasNextPage = isFull ? (moreInPage || connection.pageInfo.hasNextPage) : connection.pageInfo.hasNextPage;
+      return { edges, pageInfo: { ...connection.pageInfo, endCursor, hasNextPage } };
+    }
+    connection = await pageEntitiesConnection<BasicStoreEntityMergeRecord>(context, user, [ENTITY_TYPE_MERGE_RECORD], {
+      ...opts,
+      first,
+      after: connection.pageInfo.endCursor,
+    });
+  }
 };
 
 const hasInterruptedUnmerge = (record: BasicStoreEntityMergeRecord) => (record.unmerge_pending_source_ids ?? []).length > 0;
