@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/index';
 import {
   changeFieldKey,
+  containerObjectIdsAt,
+  currentContainerObjectIds,
   diffDocuments,
   extractAttributeValues,
   firstNumber,
@@ -234,6 +236,21 @@ describe('Time machine replay', () => {
     expect(firstNumber([])).toBeNull();
     expect(firstNumber(undefined)).toBeNull();
     expect(firstNumber(['not-a-number'])).toBeNull();
+  });
+
+  it('should rewind the objects of a container with the objects changes since a date', () => {
+    const current = currentContainerObjectIds({ object: ['object-a', 'object-c', 'object-d'] });
+    expect(current).toEqual(['object-a', 'object-c', 'object-d']);
+    expect(currentContainerObjectIds({})).toEqual([]);
+    const events = [
+      updateEvent('2026-01-03T00:00:00.000Z', [{ key: 'objects', added: ['object-c'], removed: ['object-b'] }]),
+      // Added then removed since the date: it was not part of the container at that date
+      updateEvent('2026-01-04T00:00:00.000Z', [{ key: 'objects', added: ['object-e'] }]),
+      updateEvent('2026-01-05T00:00:00.000Z', [{ key: 'objects', removed: ['object-e'] }, { key: 'description', added: ['other change'] }]),
+      updateEvent('2026-01-06T00:00:00.000Z', [{ key: 'objects', added: ['object-d'] }]),
+    ];
+    expect(containerObjectIdsAt(current, events).sort()).toEqual(['object-a', 'object-b']);
+    expect(containerObjectIdsAt(current, [])).toEqual(current);
   });
 });
 

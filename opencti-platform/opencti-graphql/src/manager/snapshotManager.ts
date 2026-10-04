@@ -8,7 +8,6 @@ import { READ_INDEX_HISTORY, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from 
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../schema/general';
 import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
-import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { DatabaseError } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { now, utcDate } from '../utils/format';
@@ -18,7 +17,7 @@ import type { BasicStoreEntity, BasicStoreRelation } from '../types/store';
 import type { BasicStoreEntityRetentionRule } from '../modules/retentionRules/retentionRules-types';
 import { listRules } from '../modules/retentionRules/retentionRules-domain';
 import type { AttributeValues, CompactDocument, TimeMachineHistoryEvent } from '../modules/timeMachine/timeMachine-types';
-import { containerObjectsCountAt, currentContainerObjectsCount, extractAttributeValues, replayBackward } from '../modules/timeMachine/timeMachine-replay';
+import { extractAttributeValues, replayBackward } from '../modules/timeMachine/timeMachine-replay';
 import { fetchElementsHistoryEvents, fetchRelationshipsHistoryEvents } from '../modules/timeMachine/timeMachine-history';
 import { deleteSnapshotsBefore, indexSnapshots, type SnapshotInput } from '../modules/timeMachine/timeMachine-store';
 import { TIME_MACHINE_RELATIONSHIP_TYPES } from '../modules/timeMachine/timeMachine-relationships';
@@ -149,12 +148,10 @@ export const findChangedElementIds = async (
 
 export interface RewoundElement {
   attributes: AttributeValues;
-  // Number of objects of a container at the snapshot date, null for other entities
-  containerObjectsCount: number | null;
 }
 
 /**
- * Attributes (and number of objects of containers) of the entities at `snapshotDate`. The documents are read
+ * Attributes of the entities at `snapshotDate`. The documents are read
  * after that date (a resumed window can be read hours later), so the changes made since are reverted with
  * their reverse patches. Entities that cannot be rewound exactly are left out and snapshotted at the next window.
  */
@@ -178,17 +175,14 @@ export const rewindAttributes = async (context: AuthContext, entities: BasicStor
   });
   entities.forEach((entity) => {
     const attributes = extractAttributeValues(entity as any);
-    const isContainer = isStixDomainObjectContainer(entity.entity_type);
-    const currentCount = isContainer ? currentContainerObjectsCount(entity as any) : null;
     const elementEvents = eventsByElement.get(entity.internal_id);
     if (!elementEvents) {
-      rewound.set(entity.internal_id, { attributes, containerObjectsCount: currentCount });
+      rewound.set(entity.internal_id, { attributes });
       return;
     }
     const replay = replayBackward(attributes, entity.entity_type, elementEvents, snapshotDate, MAX_REWIND_EVENTS);
     if (replay.complete && replay.exists) {
-      const containerObjectsCount = currentCount !== null ? containerObjectsCountAt(currentCount, elementEvents, 'backward') : null;
-      rewound.set(entity.internal_id, { attributes: replay.document, containerObjectsCount });
+      rewound.set(entity.internal_id, { attributes: replay.document });
     }
   });
   return rewound;
@@ -211,20 +205,15 @@ export const findRelationshipsDeletedSince = async (context: AuthContext, ids: s
 };
 
 /**
- * Compact documents at `snapshotDate`: raw attribute values, number of objects of containers,
- * relationship ids by type (capped) and exact relationship counts by type. The relationships are the ones
+ * Compact documents at `snapshotDate`: raw attribute values, relationship ids by type (capped)
+ * and exact relationship counts by type. The relationships are the ones
  * created up to that date and still present, plus the ones deleted since that existed at that date.
  */
 export const buildCompactDocuments = async (context: AuthContext, entities: BasicStoreEntity[], snapshotDate: string): Promise<Map<string, CompactDocument>> => {
   const documents = new Map<string, CompactDocument>();
   const rewound = await rewindAttributes(context, entities, snapshotDate);
-  rewound.forEach(({ attributes, containerObjectsCount }, id) => {
-    documents.set(id, {
-      attributes,
-      relationships: {},
-      relationships_count: {},
-      ...(containerObjectsCount !== null ? { container_objects_count: containerObjectsCount } : {}),
-    });
+  rewound.forEach(({ attributes }, id) => {
+    documents.set(id, { attributes, relationships: {}, relationships_count: {} });
   });
   if (documents.size === 0) return documents;
   const ids = [...documents.keys()];

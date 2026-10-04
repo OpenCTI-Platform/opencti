@@ -44,7 +44,7 @@ The view shows:
 
 - the attributes of the entity at that date (name, description, aliases, confidence, score, markings, labels, author, external references, and so on),
 - the number of relationships by type at that date,
-- for containers, the number of contained objects at that date,
+- for containers, the number of objects they contained at that date and that you can access (the count is not shown when the container changed too often since that date to rebuild its content),
 - a **Reconstruction** panel explaining how the view was rebuilt: from the current knowledge or from a knowledge snapshot, how many changes were replayed, and since when the history of the entity is available.
 
 When the entity did not exist yet at the selected date, the view says so and **Go to the first recorded change** moves the date to the oldest change still in its history (usually its creation). When the entity has been deleted since, only a tombstone with the deletion date is displayed.

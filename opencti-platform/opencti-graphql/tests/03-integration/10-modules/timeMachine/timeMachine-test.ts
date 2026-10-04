@@ -291,24 +291,34 @@ describe('Knowledge time machine', () => {
     expect(timeline.max_replay_days).toBeGreaterThan(0);
   });
 
-  it('should keep the number of objects of a container in its snapshots', async () => {
+  it('should count the objects of a container at a past date with the rights of the user', async () => {
+    const restricted = await queryAsAdminWithSuccess({
+      query: CREATE_INTRUSION_SET,
+      variables: { input: { name: `${testName} contained amber`, objectMarking: [MARKING_TLP_AMBER] } },
+    });
+    const restrictedId = restricted.data.intrusionSetAdd.id;
     const report = await queryAsAdminWithSuccess({
       query: CREATE_REPORT,
-      variables: { input: { name: `${testName} report`, published: new Date().toISOString(), objects: [intrusionSetId, malwareId] } },
+      variables: { input: { name: `${testName} report`, published: new Date().toISOString(), objects: [intrusionSetId, malwareId, restrictedId] } },
     });
     const reportId = report.data.reportAdd.id;
     const [reportCreatedAt] = await waitForHistory(reportId, 'create');
     const entity = await internalLoadById<BasicStoreEntity>(testContext, SYSTEM_USER, reportId, { type: 'Report' });
     const snapshotDate = new Date().toISOString();
     const documents = await buildCompactDocuments(testContext, [entity], snapshotDate);
-    expect(documents.get(reportId)?.container_objects_count).toEqual(2);
     await indexSnapshots([{ entityId: reportId, entityType: 'Report', snapshotDate, historyCursor: snapshotDate, document: documents.get(reportId)! }]);
-    // Rebuilt from the snapshot, the as-of view still knows how many objects the report contained
-    const { data } = await queryAsAdminWithSuccess({ query: AS_OF_CONTAINER, variables: { id: reportId, date: middle(reportCreatedAt, snapshotDate) } });
+    const variables = { id: reportId, date: middle(reportCreatedAt, snapshotDate) };
+    // Rebuilt from the snapshot, the as-of view counts the objects of the report from its current objects
+    const { data } = await queryAsAdminWithSuccess({ query: AS_OF_CONTAINER, variables });
     expect(data.entityAsOf.exists).toBe(true);
     expect(data.entityAsOf.anchor).toEqual('snapshot');
-    expect(data.entityAsOf.container_objects_count).toEqual(2);
+    expect(data.entityAsOf.container_objects_count).toEqual(3);
+    // A contained object the user cannot access is not counted
+    const participate = await queryAsUser(USER_PARTICIPATE, { query: AS_OF_CONTAINER, variables });
+    expect(participate.errors).toBeUndefined();
+    expect(participate.data?.entityAsOf.container_objects_count).toEqual(2);
     await queryAsAdminWithSuccess({ query: DELETE_REPORT, variables: { id: reportId } });
+    await queryAsAdminWithSuccess({ query: DELETE_INTRUSION_SET, variables: { id: restrictedId } });
   });
 
   it('should rebuild from a knowledge snapshot when one is available', async () => {

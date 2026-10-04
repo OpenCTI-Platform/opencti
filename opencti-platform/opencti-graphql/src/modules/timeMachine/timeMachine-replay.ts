@@ -39,8 +39,8 @@ const TECHNICAL_ATTRIBUTES = new Set<string>([
   'decay_base_score_date',
 ]);
 
-// Container objects are reconstructed from the history changes of the `objects` reference
-// and from the `object` ref relationships: compact documents only keep their count.
+// Container objects are reconstructed from the current objects and the history changes of the `objects`
+// reference: they are not part of the replayed attributes nor of the compact documents.
 export const CONTAINER_OBJECTS_KEY = 'objects';
 
 export const isTimeMachineAttribute = (attribute: AttributeDefinition | RefAttribute): boolean => {
@@ -209,19 +209,20 @@ export const containerObjectsNetChanges = (events: TimeMachineHistoryEvent[]) =>
   return { added, removed };
 };
 
-export const currentContainerObjectsCount = (element: Record<string, unknown>) => {
+export const currentContainerObjectIds = (element: Record<string, unknown>): string[] => {
   const objects = element[RELATION_OBJECT];
-  return Array.isArray(objects) ? objects.length : 0;
+  return Array.isArray(objects) ? objects : [];
 };
 
 /**
- * Number of objects of a container at another date than a known count, from the `objects` changes
- * of the events between both dates: rewound for an earlier date, moved forward for a later one.
+ * Objects of a container at an earlier date than its current objects, rewound with the `objects` changes
+ * of the events since that date.
  */
-export const containerObjectsCountAt = (knownCount: number, events: TimeMachineHistoryEvent[], direction: 'backward' | 'forward') => {
+export const containerObjectIdsAt = (currentIds: string[], events: TimeMachineHistoryEvent[]): string[] => {
   const { added, removed } = containerObjectsNetChanges(events);
-  const count = direction === 'backward' ? knownCount - added.size + removed.size : knownCount + added.size - removed.size;
-  return Math.max(0, count);
+  const ids = new Set(currentIds.filter((id) => !added.has(id)));
+  removed.forEach((_, id) => ids.add(id));
+  return [...ids];
 };
 
 const rawsOf = (values?: { raw: string }[]) => (values ?? []).map((v) => v.raw).filter((raw) => raw !== null && raw !== undefined);
