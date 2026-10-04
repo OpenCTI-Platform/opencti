@@ -180,7 +180,7 @@ The **Layout** group of the toolbar offers several layouts, each a toggle. All o
 | Layout by entity tier | Read an attack left to right: threats, arsenal, techniques, observables and indicators, victims, locations, then containers. |
 | Radial layout | Put one entity at the centre (the selected one, or the most connected) and the others on rings by distance. |
 
-**Unfix the nodes and re-apply forces**, in **More actions**, forgets the saved positions and lets the forces arrange the graph again.
+**Unfix the nodes and re-apply forces**, in **More actions**, leaves a tree, tier or radial layout, forgets the saved positions and lets the forces arrange the graph again.
 
 ![Investigation graph in the horizontal tree layout](assets/graph-investigation-tree.png)
 
@@ -197,7 +197,7 @@ The search field of the toolbar selects the matching entities.
 
 ## Keyboard shortcuts
 
-Shortcuts apply while the pointer is over the graph or the focus is inside it, never while typing in a field or when a dialog is open. Press `?` to list them in the platform.
+Shortcuts apply while the pointer is over the graph or the focus is inside it, never while typing in a field or when a dialog is open. In 3D mode, the shortcuts of the actions available in 2D only (zoom, locate, shortest path, legend, image export) do nothing, as their buttons are disabled. Press `?` to list them in the platform.
 
 | Keys | Action |
 |---|---|
