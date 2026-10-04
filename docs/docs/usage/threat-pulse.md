@@ -33,7 +33,9 @@ In preview, every Threat Pulse surface shows the real coarse signal, labelled "P
 
 The first day the preview matches objects of the platform, each user sees one banner, for example "Threat Pulse preview: 42 of your objects are seen across the community." The number is counted on the platform. The banner waits while another platform banner (license, trial, registration, email configuration) is shown. Dismissing it hides it for good for that user in that browser.
 
-![Threat Pulse preview banner saying that 42 objects of the platform are seen across the community](assets/threat-pulse-banner.png)
+| Dark theme | Light theme |
+|:-----------|:------------|
+| ![Threat Pulse preview banner saying that 42 objects of the platform are seen across the community](assets/threat-pulse-banner.png) | ![Threat Pulse preview banner in the light theme](assets/threat-pulse-banner-light.png) |
 
 ### Contribute
 
@@ -89,6 +91,7 @@ Narrowing the scopes or excluding a new marking removes the community statistics
 | Preview | Contributing | Off |
 |:--------|:-------------|:----|
 | ![Threat Pulse settings in preview with 42 local objects found in the community digest](assets/threat-pulse-settings-preview.png) | ![Threat Pulse settings of a contributing platform with the records contributed per object type](assets/threat-pulse-settings-contributing.png) | ![Threat Pulse settings turned off with the way back to the preview](assets/threat-pulse-settings-off.png) |
+| ![Threat Pulse settings in preview, light theme](assets/threat-pulse-settings-preview-light.png) | ![Threat Pulse settings of a contributing platform, light theme](assets/threat-pulse-settings-contributing-light.png) | ![Threat Pulse settings turned off, light theme](assets/threat-pulse-settings-off-light.png) |
 
 ## Where Threat Pulse appears
 
@@ -100,11 +103,12 @@ The overview of indicators, attack patterns, vulnerabilities, intrusion sets, ma
 - **Preview**: the prevalence and trend when the object is in the digest, otherwise a short note, then the locked rows "Contributing platforms", "Network first seen", "Community trend over 12 weeks" and "Sector trend", and the unlock step.
 - **Not connected**: what Threat Pulse would add and the "Connect to XTM Hub" button.
 
-The card is not displayed when Threat Pulse is off.
+With the full experience, an object without community data yet shows why instead: XTM Hub could not be reached, its rate limit is reached, or the markings or restricted access of the object keep it on the platform. The card is not displayed when Threat Pulse is off.
 
-| Preview | Full |
-|:--------|:-----|
-| ![Threat Pulse card in preview with the prevalence, the trend and the locked rows contributing would add](assets/threat-pulse-card-preview.png) | ![Threat Pulse card of a contributing platform with the prevalence gauge, the range of platforms and the 12-week trend](assets/threat-pulse-card-contributing.png) |
+| Not connected | Preview | Full |
+|:--------------|:--------|:-----|
+| ![Threat Pulse card of a platform not connected to XTM Hub with the Connect to XTM Hub button](assets/threat-pulse-card-not-connected.png) | ![Threat Pulse card in preview with the prevalence, the trend and the locked rows contributing would add](assets/threat-pulse-card-preview.png) | ![Threat Pulse card of a contributing platform with the prevalence gauge, the range of platforms and the 12-week trend](assets/threat-pulse-card-contributing.png) |
+| ![Threat Pulse card of a platform not connected to XTM Hub, light theme](assets/threat-pulse-card-not-connected-light.png) | ![Threat Pulse card in preview, light theme](assets/threat-pulse-card-preview-light.png) | ![Threat Pulse card of a contributing platform, light theme](assets/threat-pulse-card-contributing-light.png) |
 
 ### Filters, columns and exports
 
@@ -118,9 +122,10 @@ These values are written without creating a history entry, a stream event or a m
 
 "Trending in your sector" is a widget of the dashboard catalog. It lists the local objects rising in the platform's sector over 7, 30 or 90 days, with their prevalence, range of platforms and growth, and says how many of the first ranks the platform does not hold. In preview, it names the first three ranks and folds the next ones into one locked row ("7 more trending objects - available when your platform contributes"); when nothing the platform holds is trending, it says so. It is not added to the default home dashboard.
 
-| Preview | Full | Full, light theme |
-|:--------|:-----|:------------------|
-| ![Trending in your sector in preview with the first ranks named and the next seven folded into one locked row](assets/threat-pulse-trending-preview.png) | ![Trending in your sector of a contributing platform with four rising objects, their prevalence, range of platforms and growth](assets/threat-pulse-trending-full.png) | ![Trending in your sector of a contributing platform in the light theme](assets/threat-pulse-trending-full-light.png) |
+| Preview | Full |
+|:--------|:-----|
+| ![Trending in your sector in preview with the first ranks named and the next seven folded into one locked row](assets/threat-pulse-trending-preview.png) | ![Trending in your sector of a contributing platform with four rising objects, their prevalence, range of platforms and growth](assets/threat-pulse-trending-full.png) |
+| ![Trending in your sector in preview, light theme](assets/threat-pulse-trending-preview-light.png) | ![Trending in your sector of a contributing platform, light theme](assets/threat-pulse-trending-full-light.png) |
 
 ### Sector benchmark (Enterprise Edition)
 
