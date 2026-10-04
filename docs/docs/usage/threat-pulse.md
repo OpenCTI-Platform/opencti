@@ -41,7 +41,9 @@ The first day the preview matches objects of the platform, each user sees one ba
 
 Contributing requires an administrator to accept the consent, which lists what is shared every hour, what never leaves the platform and what contributing unlocks, and lets the administrator choose the sector, the region, the object types and the excluded markings before anything is sent. OpenCTI records the consent with the administrator and the date. The contribution starts at that moment: no activity recorded before it is ever sent.
 
-![Threat Pulse consent listing what is shared every hour, what never leaves the platform and what contributing unlocks](assets/threat-pulse-consent-dialog.png)
+| Dark theme | Light theme |
+|:-----------|:------------|
+| ![Threat Pulse consent listing what is shared every hour, what never leaves the platform and what contributing unlocks](assets/threat-pulse-consent-dialog.png) | ![Threat Pulse consent in the light theme](assets/threat-pulse-consent-dialog-light.png) |
 
 Reciprocity is enforced by XTM Hub, not by the user interface: network lookups, the full trending list and benchmarks are only answered to platforms that contributed recently. A platform that just accepted the consent therefore keeps the preview until XTM Hub accepts its first contribution, sent by the next hourly run that has activity to share; "Settings > Filigran Experience" shows "First contribution pending - preview" meanwhile. A platform is an active contributor while its last contribution is at most 7 days old, and it keeps the full experience for 14 days after its last contribution. Past that grace period, the platform falls back to the preview automatically and "Settings > Filigran Experience" says so; the full experience comes back with the next accepted contribution.
 
@@ -140,13 +142,16 @@ The "Sector benchmark template" button of the dashboards list opens the template
 
 In preview, the template stays available: its benchmark tiles name what they would show once the platform contributes, and the widgets that read the sector trend and the network first seen are left out of the dashboard and listed as locked rows on the card.
 
-![Sector benchmark template card in preview listing the widgets it creates and the locked widgets](assets/threat-pulse-template-card.png)
+| Dark theme | Light theme |
+|:-----------|:------------|
+| ![Sector benchmark template card in preview listing the widgets it creates and the locked widgets](assets/threat-pulse-template-card.png) | ![Sector benchmark template card in preview, light theme](assets/threat-pulse-template-card-light.png) |
 
 A median that XTM Hub does not publish, because fewer platforms than the anonymity threshold reported that activity, reads "Not published".
 
-| Preview | Full | Full, light theme |
-|:--------|:-----|:------------------|
-| ![Sector benchmark widget in preview naming what each tile shows once the platform contributes](assets/threat-pulse-benchmark-preview.png) | ![Sector benchmark of a contributing platform comparing its activity per object type with the sector and network medians](assets/threat-pulse-benchmark-full.png) | ![Sector benchmark of a contributing platform in the light theme](assets/threat-pulse-benchmark-full-light.png) |
+| Preview | Full |
+|:--------|:-----|
+| ![Sector benchmark widget in preview naming what each tile shows once the platform contributes](assets/threat-pulse-benchmark-preview.png) | ![Sector benchmark of a contributing platform comparing its activity per object type with the sector and network medians](assets/threat-pulse-benchmark-full.png) |
+| ![Sector benchmark widget in preview, light theme](assets/threat-pulse-benchmark-preview-light.png) | ![Sector benchmark of a contributing platform in the light theme](assets/threat-pulse-benchmark-full-light.png) |
 
 ### Notifications
 
