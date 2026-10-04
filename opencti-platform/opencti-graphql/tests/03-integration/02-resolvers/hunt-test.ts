@@ -85,6 +85,9 @@ const HUNT_CONNECTOR_REGISTER = gql`
 const HUNT_CONNECTORS = gql`
   query HuntConnectors { huntConnectors(onlyAlive: false) { id platform languages } }
 `;
+const CONNECTORS_HUNT = gql`
+  query ConnectorsHunt { connectors { id connector_type hunt { platform languages supports_preview securityPlatform { name } } } }
+`;
 const SIGMA_VALIDATE = gql`
   query HuntSigmaValidate($sigma_rule: String!) { huntSigmaValidate(sigma_rule: $sigma_rule) { valid errors title } }
 `;
@@ -200,6 +203,13 @@ describe('Hunt resolvers', () => {
     resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
     const list = await queryAsAdminWithSuccess({ query: HUNT_CONNECTORS });
     expect(list.data?.huntConnectors.map((c: { id: string }) => c.id)).toContain(CONNECTOR_ID);
+    // The connector page reads the hunted platform from the connector itself, null for every other type
+    const connectors = await queryAsAdminWithSuccess({ query: CONNECTORS_HUNT });
+    type ConnectorHunt = { platform: string; languages: string[]; supports_preview: boolean; securityPlatform: { name: string } };
+    const all = connectors.data?.connectors as { id: string; connector_type: string; hunt: ConnectorHunt | null }[];
+    const huntConnector = all.find((c) => c.id === CONNECTOR_ID);
+    expect(huntConnector?.hunt).toEqual({ platform: 'splunk', languages: ['spl'], supports_preview: true, securityPlatform: { name: SECURITY_PLATFORM_NAME } });
+    expect(all.filter((c) => c.connector_type !== 'INTERNAL_HUNT').every((c) => c.hunt === null)).toBe(true);
   });
 
   it('should refuse an unknown platform and a telemetry connector without security platform', async () => {

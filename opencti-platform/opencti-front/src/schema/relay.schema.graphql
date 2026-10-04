@@ -2141,6 +2141,11 @@ type Connector implements BasicObject & InternalObject {
   version: String
   slug: String
   jwks: String!
+
+  """
+  Hunted platform of an INTERNAL_HUNT connector, null for every other connector type
+  """
+  hunt: HuntConnector
 }
 
 type ManagedConnector implements BasicObject & InternalObject {

@@ -10,7 +10,7 @@ Hunt connectors execute hunts. They are connectors of type `INTERNAL_HUNT`, each
 | `crowdstrike-logscale` | CrowdStrike Falcon LogScale | LogScale query language |
 | `google-secops` | Google SecOps | UDM search, YARA-L |
 | `opensearch` | OpenSearch (OCSF data) | PPL, Lucene |
-| `internet` | Infrastructure tracking on the Internet | Infrastructure queries |
+| `internet` | Infrastructure tracking on the Internet | Internet fingerprints |
 
 ## Registration
 
@@ -18,7 +18,9 @@ At startup a hunt connector registers its platform, the languages it executes an
 
 Several connectors can serve the same platform type for different security platforms, for instance one Splunk connector per Splunk deployment. The `internet` platform has no security platform.
 
-Registered hunt connectors, their platform and their health are displayed in **Defense > Hunts** when creating a hunt, and in the connectors list.
+Registered hunt connectors, their platform and their health are displayed in **Defense > Hunts** when creating a hunt, and in the connectors list, where the connector type reads **Internal hunt**.
+
+The page of a hunt connector (**Data > Ingestion > Connectors**) adds a **Hunted platform** card: the platform, its security platform, the query languages the connector executes, the maximum number of runs it accepts at the same time and whether it supports translation previews. Readers who can see Defense > Hunts also get the latest runs of the connector, each opening its run, and a link to the Hunts list.
 
 ## Run lifecycle
 

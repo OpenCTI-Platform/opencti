@@ -16,8 +16,10 @@ import {
   reportHuntRun,
   retryHuntRun,
   setHuntRunVerdict,
+  toHuntConnectorView,
   triageHuntRun,
 } from './huntRun-domain';
+import type { BasicStoreEntityConnector } from '../../../types/connector';
 
 const huntRunResolvers: Resolvers = {
   Query: {
@@ -52,6 +54,13 @@ const huntRunResolvers: Resolvers = {
     securityPlatform: (connector, _, context) => (connector.security_platform_id
       ? storeLoadById(context, context.user, connector.security_platform_id, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM)
       : null),
+  },
+  Connector: {
+    hunt: (connector) => {
+      // The Connector type is not mapped to its store entity in the generated resolver types
+      const stored = connector as unknown as BasicStoreEntityConnector;
+      return stored.hunt_platform ? toHuntConnectorView(stored) : null;
+    },
   },
   Mutation: {
     huntRunRetry: (_, { id }, context) => retryHuntRun(context, context.user, id),

@@ -23,7 +23,7 @@ import { SIGMA_RULE_PLACEHOLDER } from './HuntCreation';
 import HuntNativeQueriesField from './HuntNativeQueriesField';
 import HuntSigmaValidation from './HuntSigmaValidation';
 import { HuntRunStatusChip } from './HuntChips';
-import { isTerminalHuntRun, normalizeNativeQueries, type HuntNativeQueryFormValue } from './hunt-utils';
+import { huntQueryLanguageLabel, huntRunFailure, isTerminalHuntRun, normalizeNativeQueries, type HuntNativeQueryFormValue } from './hunt-utils';
 import { HuntLogic_hunt$key } from './__generated__/HuntLogic_hunt.graphql';
 import { HuntLogicFieldPatchMutation } from './__generated__/HuntLogicFieldPatchMutation.graphql';
 import { HuntLogicConnectorsQuery } from './__generated__/HuntLogicConnectorsQuery.graphql';
@@ -95,11 +95,59 @@ const huntLogicPreviewRunQuery = graphql`
       query_language
       connector_name
       error_message
+      securityPlatform {
+        name
+      }
     }
   }
 `;
 
 type PreviewRun = NonNullable<HuntLogicPreviewRunQuery$data['huntRun']>;
+
+const PreviewFailure = ({ run }: { run: PreviewRun }) => {
+  const theme = useTheme<Theme>();
+  const { t_i18n } = useFormatter();
+  const [showDetails, setShowDetails] = useState(false);
+  const failure = huntRunFailure(run.hunt_run_status, run.error_message);
+  if (!failure) return null;
+  const platform = run.securityPlatform?.name ?? run.connector_name ?? t_i18n('Internet');
+  let title: string;
+  switch (failure.kind) {
+    case 'timeout':
+      title = t_i18n('The connector did not answer in time');
+      break;
+    case 'translation':
+      title = t_i18n('The Sigma rule could not be translated for {platform}', { values: { platform } });
+      break;
+    case 'refused':
+      title = t_i18n('{platform} refused the query', { values: { platform } });
+      break;
+    case 'request':
+      title = t_i18n('The hunt connector could not read the run sent by the platform');
+      break;
+    default:
+      title = t_i18n('The run failed in {platform}', { values: { platform } });
+  }
+  return (
+    <Alert
+      severity="error"
+      title={title}
+      data-testid="hunt-preview-failure"
+      description={run.error_message ? (
+        <>
+          <Button variant="tertiary" size="small" aria-expanded={showDetails} onClick={() => setShowDetails(!showDetails)}>
+            {showDetails ? t_i18n('Hide details') : t_i18n('Show details')}
+          </Button>
+          {showDetails && (
+            <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(0.5), wordBreak: 'break-word' }}>
+              {run.error_message}
+            </Text>
+          )}
+        </>
+      ) : undefined}
+    />
+  );
+};
 type PreviewState
   = | { status: 'idle' }
     | { status: 'waiting'; run?: PreviewRun }
@@ -185,9 +233,9 @@ const TranslationPreview = ({ huntId, scopePlatformIds, dirty }: { huntId: strin
       <>
         <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), marginBottom: theme.spacing(1) }}>
           <HuntRunStatusChip value={run.hunt_run_status} />
-          <Text variant="content-caption">{[run.connector_name, run.query_language].filter(Boolean).join(' - ')}</Text>
+          <Text variant="content-caption">{[run.connector_name, huntQueryLanguageLabel(run.query_language, t_i18n)].filter(Boolean).join(' - ')}</Text>
         </div>
-        {run.error_message && <Text variant="content-compact" style={{ color: theme.palette.error.main }}>{run.error_message}</Text>}
+        <PreviewFailure run={run} />
         {run.translated_query && <CodeBlock code={run.translated_query} language={prismLanguageOf(run.query_language)} customHeight="auto" />}
       </>
     );

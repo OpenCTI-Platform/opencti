@@ -139,6 +139,11 @@ type HuntConnector {
   updated_at: DateTime
 }
 
+extend type Connector {
+  "Hunted platform of an INTERNAL_HUNT connector, null for every other connector type"
+  hunt: HuntConnector
+}
+
 # Queries
 type Query {
   huntRun(id: String!): HuntRun @auth(for: [KNOWLEDGE])

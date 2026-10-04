@@ -46,6 +46,7 @@ import {
   HUNT_ANALYST_VERDICTS,
   huntDraftWorkspacePath,
   huntIncidentSeverityLabel,
+  huntQueryLanguageLabel,
   huntRunFailure,
   huntRunTriggerLabel,
   huntVerdictLabel,
@@ -783,7 +784,7 @@ const HuntRunDrawerContent = ({ data, huntId, paginationOptions }: { data: HuntR
       {run.translated_query && (
         <Card title={t_i18n('Translated query')}>
           <Disclosure label={t_i18n('Show the query')} openLabel={t_i18n('Hide the query')} testId="hunt-run-query-toggle">
-            <Text variant="content-caption" style={{ display: 'block', margin: theme.spacing(1, 0) }}>{run.query_language ?? ''}</Text>
+            <Text variant="content-caption" style={{ display: 'block', margin: theme.spacing(1, 0) }}>{huntQueryLanguageLabel(run.query_language, t_i18n)}</Text>
             <CodeBlock code={run.translated_query} language={prismLanguageOf(run.query_language)} customHeight="auto" />
           </Disclosure>
         </Card>

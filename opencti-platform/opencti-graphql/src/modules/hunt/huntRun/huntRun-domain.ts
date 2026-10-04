@@ -772,7 +772,7 @@ export interface HuntConnectorView {
   updated_at: string | Date;
 }
 
-const toHuntConnectorView = (connector: BasicStoreEntityConnector): HuntConnectorView => ({
+export const toHuntConnectorView = (connector: BasicStoreEntityConnector): HuntConnectorView => ({
   id: connector.internal_id,
   name: connector.name,
   active: connector.active === true,

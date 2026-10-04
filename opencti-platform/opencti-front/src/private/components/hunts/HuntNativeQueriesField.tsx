@@ -9,7 +9,7 @@ import TextField from '../../../components/TextField';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import { HuntCodeEditorField } from './HuntCodeEditor';
-import { HUNT_PLATFORM_DEFAULT_LANGUAGE, HUNT_PLATFORMS, HUNT_QUERY_LANGUAGES, type HuntNativeQueryFormValue } from './hunt-utils';
+import { HUNT_PLATFORM_DEFAULT_LANGUAGE, HUNT_PLATFORMS, HUNT_QUERY_LANGUAGES, huntPlatformLabel, huntQueryLanguageLabel, type HuntNativeQueryFormValue } from './hunt-utils';
 
 interface HuntNativeQueriesFieldProps {
   name?: string;
@@ -65,7 +65,7 @@ const HuntNativeQueriesField = ({ name = 'native_queries', disabled = false }: H
                   }}
                 >
                   {HUNT_PLATFORMS.map((platform) => (
-                    <SelectItem key={platform} value={platform}>{platform}</SelectItem>
+                    <SelectItem key={platform} value={platform}>{huntPlatformLabel(platform, t_i18n)}</SelectItem>
                   ))}
                 </Field>
                 <Field
@@ -78,7 +78,7 @@ const HuntNativeQueriesField = ({ name = 'native_queries', disabled = false }: H
                   containerstyle={{ flex: 1 }}
                 >
                   {HUNT_QUERY_LANGUAGES.map((language) => (
-                    <SelectItem key={language} value={language}>{language}</SelectItem>
+                    <SelectItem key={language} value={language}>{huntQueryLanguageLabel(language, t_i18n)}</SelectItem>
                   ))}
                 </Field>
                 <div style={{ paddingTop: 22 }}>

@@ -8,6 +8,8 @@ import {
   formatHuntRunDuration,
   hasHuntLogic,
   huntIncidentSeverityLabel,
+  huntPlatformLabel,
+  huntQueryLanguageLabel,
   huntRunFailure,
   huntRunStatusLabel,
   huntRunStatusSeverity,
@@ -26,6 +28,25 @@ import {
 } from './hunt-utils';
 
 describe('Hunt utils', () => {
+  describe('huntPlatformLabel() and huntQueryLanguageLabel()', () => {
+    const t = (key: string) => `t:${key}`;
+    it('should name the platforms and languages instead of showing their slugs', () => {
+      expect(huntPlatformLabel('microsoft-sentinel', t)).toEqual('Microsoft Sentinel');
+      expect(huntPlatformLabel('crowdstrike-logscale', t)).toEqual('CrowdStrike Falcon LogScale');
+      expect(huntQueryLanguageLabel('esql', t)).toEqual('ES|QL');
+      expect(huntQueryLanguageLabel('yara-l', t)).toEqual('YARA-L');
+    });
+    it('should translate the internet entries only', () => {
+      expect(huntPlatformLabel('internet', t)).toEqual('t:Internet');
+      expect(huntQueryLanguageLabel('internet', t)).toEqual('t:Internet fingerprints');
+    });
+    it('should keep an unknown slug and return nothing without a value', () => {
+      expect(huntPlatformLabel('new-platform', t)).toEqual('new-platform');
+      expect(huntQueryLanguageLabel(null, t)).toEqual('');
+      expect(huntPlatformLabel(undefined, t)).toEqual('');
+    });
+  });
+
   describe('huntStatusTransitions()', () => {
     it('should follow the hunt lifecycle', () => {
       expect(huntStatusTransitions('draft').map((t) => t.to)).toEqual(['active', 'retired']);

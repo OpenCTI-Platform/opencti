@@ -59,6 +59,43 @@ export const HUNT_PLATFORM_DEFAULT_LANGUAGE: Record<string, string> = {
   internet: 'internet',
 };
 
+// Product and language names are proper nouns, only the internet entries are translated
+const HUNT_PLATFORM_NAMES: Record<string, string> = {
+  splunk: 'Splunk',
+  'microsoft-sentinel': 'Microsoft Sentinel',
+  'elastic-security': 'Elastic Security',
+  'crowdstrike-logscale': 'CrowdStrike Falcon LogScale',
+  'google-secops': 'Google SecOps',
+  opensearch: 'OpenSearch',
+  clickhouse: 'ClickHouse',
+  's3-ocsf': 'Amazon S3 (OCSF)',
+};
+const HUNT_QUERY_LANGUAGE_NAMES: Record<string, string> = {
+  spl: 'SPL',
+  kql: 'KQL',
+  esql: 'ES|QL',
+  lucene: 'Lucene',
+  eql: 'EQL',
+  logscale: 'LogScale query language',
+  'yara-l': 'YARA-L',
+  udm: 'UDM search',
+  ppl: 'PPL',
+  'opensearch-lucene': 'OpenSearch Lucene',
+  sql: 'SQL',
+};
+
+export const huntPlatformLabel = (platform: string | null | undefined, t_i18n: (key: string) => string) => {
+  if (!platform) return '';
+  if (platform === HUNT_PLATFORM_INTERNET) return t_i18n('Internet');
+  return HUNT_PLATFORM_NAMES[platform] ?? platform;
+};
+
+export const huntQueryLanguageLabel = (language: string | null | undefined, t_i18n: (key: string) => string) => {
+  if (!language) return '';
+  if (language === 'internet') return t_i18n('Internet fingerprints');
+  return HUNT_QUERY_LANGUAGE_NAMES[language] ?? language;
+};
+
 export const HUNT_TARGET_TYPES = ['Intrusion-Set', 'Malware', 'Campaign', 'Threat-Actor-Group', 'Threat-Actor-Individual'];
 export const HUNT_TECHNIQUE_TYPES = ['Attack-Pattern'];
 export const HUNT_SOURCE_TYPES = ['Indicator', 'Report'];
