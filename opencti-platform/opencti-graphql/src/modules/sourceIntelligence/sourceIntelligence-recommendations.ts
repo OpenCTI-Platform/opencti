@@ -93,6 +93,7 @@ import {
 } from './sourceIntelligence-rules';
 import { buildResolverFromSources, clearDisabledSourcesLiveData } from './sourceIntelligence-domain';
 import { isProvenanceAttributeAvailable } from './sourceIntelligence-provenance';
+import { releaseQuarantine } from './sourceIntelligence-quarantine';
 import { ATTRIBUTE_ASSERTION_SOURCE_IDS } from '../provenance/provenance-types';
 
 const DAY_MS = 24 * 3600 * 1000;
@@ -458,13 +459,12 @@ const executeRevert = async (context: AuthContext, user: AuthUser, recommendatio
       } else {
         requireCapability(user, false, INGESTION_SETINGESTIONS);
       }
-      if (revert.target === 'connector_user' && revert.user_id) {
-        await userEditField(context, user, revert.user_id, [{ key: 'draft_context', value: [revert.previous_draft_context ?? ''] }]);
-      }
-      if (source) {
-        await patchAttribute(context, user, source.internal_id, ENTITY_TYPE_SOURCE, { quarantined: false, quarantine_draft_id: null });
-        await publishCacheResetEvent(ENTITY_TYPE_SOURCE);
-      }
+      await releaseQuarantine(
+        context,
+        user,
+        source?.internal_id,
+        revert.target === 'connector_user' && revert.user_id ? { userId: revert.user_id, draftContext: revert.previous_draft_context ?? '' } : undefined,
+      );
       return 'Quarantine lifted, the quarantine draft is kept for review';
     case RECOMMENDATION_ADD_DECAY_RULE: {
       requireCapability(user, false, SETTINGS_SETCUSTOMIZATION);
