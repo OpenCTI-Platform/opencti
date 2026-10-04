@@ -24,7 +24,7 @@ It is designed to help users audit and understand the evolution of their CTI dat
 
 This manager supports the [knowledge time machine](../../usage/time-machine.md). Once a week, it takes a compact snapshot of every entity changed since the previous snapshot, including the entities whose only change is a relationship created, updated or deleted: its attribute values and the identifiers of its relationships by type, as they were at the snapshot date. Rebuilding an entity at a past date then starts from the closest snapshot instead of replaying the whole history.
 
-The manager also applies the retention of the time machine data: snapshots are deleted with the shortest active History retention rule, and the "new since your last visit" markers expire after one year or when their user is deleted.
+The manager also deletes the snapshots older than the shortest active History retention rule. The "new since your last visit" markers are not handled here: the [retention manager](#retention-manager) expires them after one year and removes them when their user is deleted, so it must stay enabled for that cleanup to run.
 
 ## Activity manager
 
@@ -51,6 +51,8 @@ It allows the user to create and configure synchronizers which are processes tha
 ## Retention manager
 
 The retention manager is a component that allows the user to define rules to help delete data in OpenCTI that is no longer relevant or useful. This helps to optimize the performance and storage of the OpenCTI platform and ensures the quality and accuracy of the data.
+
+It also expires the "new since your last visit" markers of the [knowledge time machine](../../usage/time-machine.md) after one year (`time_machine:visit_retention_days`) and removes the markers of deleted users. The knowledge snapshots themselves are deleted by the [knowledge snapshot manager](#knowledge-snapshot-manager).
 
 More information can be found [here](../../administration/retentions.md).
 
