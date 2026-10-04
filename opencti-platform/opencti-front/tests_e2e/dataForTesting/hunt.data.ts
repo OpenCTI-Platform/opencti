@@ -54,6 +54,7 @@ export const seedHuntWithCompletedRun = async (
         hypothesis: "Encoded PowerShell commands run on endpoints",
         hunt_status: active,
         sigma_rule: ${JSON.stringify(HUNT_SIGMA_RULE)},
+        hunt_scope: ${JSON.stringify(JSON.stringify({ mode: 'and', filters: [{ key: ['id'], values: [securityPlatformId], operator: 'eq', mode: 'or' }], filterGroups: [] }))},
         native_queries: [{ platform: "splunk", language: "spl", query: ${JSON.stringify('index=edr CommandLine="* -enc *"')} }]
       }) { id }
     }

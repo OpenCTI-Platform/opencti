@@ -2,9 +2,10 @@ import { Locator, Page } from '@playwright/test';
 import { expect, test } from '../fixtures/baseFixtures';
 import HuntsPage from '../model/hunts.pageModel';
 import HuntDetailsPage from '../model/huntDetails.pageModel';
+import SelectFieldPageModel from '../model/field/SelectField.pageModel';
 import { answerLatestHuntPreview, deleteSeededHunt, SeededHunt, seedHuntWithCompletedRun, startAndReportHuntRun } from '../dataForTesting/hunt.data';
 
-const TRANSLATED_QUERY = 'index=edr sourcetype=sysmon EventCode=1 CommandLine="* -enc *" | stats count by host, user, CommandLine';
+const TRANSLATED_QUERY = 'index=edr sourcetype=sysmon EventCode=1 CommandLine="* -enc *"';
 const EVIDENCE = [
   { field: 'host.name', value_hash: 'doc-host-1', value_preview: 'FIN-WS-0142', count: 21 },
   { field: 'user.name', value_hash: 'doc-user-1', value_preview: 'svc-backup', count: 17 },
@@ -15,8 +16,8 @@ const EVIDENCE = [
  * Screenshots of the hunt surfaces for the user documentation (`docs/docs/usage/assets/hunt-*.png`). They are taken on
  * data seeded the way hunt connectors report it and saved with the test results of the run. Two states cannot be
  * produced by a platform without XTM One or with hunts created by other tests: the AI triage proposal of a run and the
- * first use of the Hunts list. For those two screenshots only, the response of the query that reads them is completed
- * (the triage proposal fields, a zero hunt count) before the page renders it.
+ * first use of the Hunts list. For those two screenshots only, the responses that read them are completed (the triage
+ * proposal fields and the XTM One availability, a zero hunt count) before the page renders them.
  */
 test.describe('Hunt documentation screenshots', { tag: ['@hunt', '@mutation', '@ee'] }, () => {
   test.describe.configure({ mode: 'serial' });
@@ -99,8 +100,11 @@ test.describe('Hunt documentation screenshots', { tag: ['@hunt', '@mutation', '@
 
   test('Hunt overview, Sigma validation and translation preview', async ({ page, request }) => {
     const huntDetails = new HuntDetailsPage(page);
+    // The whole overview fits, with the hunt header and tabs
+    await page.setViewportSize({ width: 1440, height: 1800 });
     await page.goto(`/dashboard/defense/hunts/${seeded.huntId}`);
-    await capture(page, 'hunt-overview.png', huntDetails.getOverview());
+    await capture(page, 'hunt-overview.png', huntDetails.getPage(), huntDetails.getOverview());
+    await page.setViewportSize({ width: 1440, height: 900 });
     await huntDetails.tabs.goToLogicTab();
     await capture(page, 'hunt-logic-sigma-validation.png', huntDetails.getLogicPage(), huntDetails.getLogicSigmaValidation().getByText('Valid Sigma rule'));
     await page.getByTestId('hunt-translation-preview-start').click();
@@ -110,6 +114,13 @@ test.describe('Hunt documentation screenshots', { tag: ['@hunt', '@mutation', '@
   });
 
   test('Completed run with its evidence and the AI triage proposal', async ({ page }) => {
+    // The whole drawer fits, evidence included
+    await page.setViewportSize({ width: 1440, height: 2000 });
+    await page.route('**/chatbot/config', async (route) => {
+      const response = await route.fetch();
+      const json = response.ok() ? await response.json() : {};
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ...json, xtm_one_configured: true }) });
+    });
     await completeOperation(page, 'HuntRunDrawerQuery', (data) => {
       Object.assign(data.huntRun ?? {}, {
         verdict_proposal: 'true_positive',
@@ -123,6 +134,7 @@ test.describe('Hunt documentation screenshots', { tag: ['@hunt', '@mutation', '@
   });
 
   test('Failed run', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 1600 });
     await new HuntDetailsPage(page).gotoRun(seeded.huntId, failedRunId);
     await capture(page, 'hunt-run-failed.png', page.getByTestId('hunt-run-drawer'), page.getByTestId('hunt-run-failure'));
   });
@@ -134,6 +146,9 @@ test.describe('Hunt documentation screenshots', { tag: ['@hunt', '@mutation', '@
     await page.getByRole('button', { name: 'Update' }).first().click();
     const scheduleField = page.getByTestId('hunt-schedule-field');
     await scheduleField.scrollIntoViewIfNeeded();
+    // A cron schedule with its preview, left unsaved
+    await new SelectFieldPageModel(page, 'Schedule', false, scheduleField).selectOption('Scheduled (cron)');
+    await scheduleField.getByLabel('Cron expression (UTC)').fill('0 */6 * * *');
     await capture(page, 'hunt-schedule-field.png', scheduleField);
   });
 
