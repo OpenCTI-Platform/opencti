@@ -26160,6 +26160,8 @@ export type Query = {
   /** @deprecated [>=6.4 & <6.7]. Use `csvMapperTest mutation`. */
   csvMapperTest?: Maybe<CsvMapperTestResult>;
   csvMappers?: Maybe<CsvMapperConnection>;
+  /** Whether the OpenCTI Curator can be asked to adjudicate a proposal (adjudication enabled and XTM One reachable). */
+  curationAdjudicationAvailable: Scalars['Boolean']['output'];
   curationPolicies?: Maybe<CurationPolicyConnection>;
   curationPolicy?: Maybe<CurationPolicy>;
   curationPolicyDryRun?: Maybe<CurationPolicyDryRun>;
@@ -53512,6 +53514,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   csvMapperSchemaAttributes?: Resolver<Array<ResolversTypes['CsvMapperSchemaAttributes']>, ParentType, ContextType>;
   csvMapperTest?: Resolver<Maybe<ResolversTypes['CsvMapperTestResult']>, ParentType, ContextType, RequireFields<QueryCsvMapperTestArgs, 'configuration' | 'content'>>;
   csvMappers?: Resolver<Maybe<ResolversTypes['CsvMapperConnection']>, ParentType, ContextType, Partial<QueryCsvMappersArgs>>;
+  curationAdjudicationAvailable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   curationPolicies?: Resolver<Maybe<ResolversTypes['CurationPolicyConnection']>, ParentType, ContextType, Partial<QueryCurationPoliciesArgs>>;
   curationPolicy?: Resolver<Maybe<ResolversTypes['CurationPolicy']>, ParentType, ContextType, RequireFields<QueryCurationPolicyArgs, 'id'>>;
   curationPolicyDryRun?: Resolver<Maybe<ResolversTypes['CurationPolicyDryRun']>, ParentType, ContextType, RequireFields<QueryCurationPolicyDryRunArgs, 'id'>>;

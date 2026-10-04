@@ -195,6 +195,8 @@ const useCurationLabels = () => {
     if (score >= 60) return warning;
     return danger;
   };
+  /** A score change reads from its direction, never from the score it reached. */
+  const trendColor = (trend: number): string => (trend >= 0 ? success : danger);
 
   const label = (labels: Record<string, string>, key: string | null | undefined) => (key ? labels[key] ?? key : '-');
 
@@ -223,6 +225,7 @@ const useCurationLabels = () => {
     statusColor,
     confidenceColor,
     healthColor,
+    trendColor,
   };
 };
 

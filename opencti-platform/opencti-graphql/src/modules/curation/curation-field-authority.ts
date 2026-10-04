@@ -55,26 +55,44 @@ const refId = (value: unknown): string | undefined => {
   return (value as { internal_id?: string; id?: string }).internal_id ?? (value as { id?: string }).id;
 };
 
-const incomingSources = async (context: AuthContext, user: AuthUser, patch: Record<string, unknown>): Promise<FieldAuthoritySource[]> => {
+type ConnectorUser = Pick<BasicStoreEntity, 'internal_id'> & { connector_user_id?: string };
+
+const connectorSourcesOf = (connectors: ConnectorUser[], userId: string | undefined): FieldAuthoritySource[] => {
+  if (!userId) return [];
+  return connectors
+    .filter((connector) => connector.connector_user_id && connector.connector_user_id === userId)
+    .map((connector) => ({ source_type: AUTHORITY_SOURCE_CONNECTOR, source_id: connector.internal_id }));
+};
+
+const incomingSources = (user: AuthUser, patch: Record<string, unknown>, connectors: ConnectorUser[]): FieldAuthoritySource[] => {
   const sources: FieldAuthoritySource[] = [];
   const authorId = refId(patch.createdBy);
   if (authorId) sources.push({ source_type: AUTHORITY_SOURCE_AUTHOR, source_id: authorId });
-  const connectors = await getEntitiesListFromCache<BasicStoreEntity & { connector_user_id?: string }>(context, SYSTEM_USER, ENTITY_TYPE_CONNECTOR);
-  connectors
-    .filter((connector) => connector.connector_user_id && connector.connector_user_id === user.id)
-    .forEach((connector) => sources.push({ source_type: AUTHORITY_SOURCE_CONNECTOR, source_id: connector.internal_id }));
+  sources.push(...connectorSourcesOf(connectors, user.id));
   return sources;
 };
 
-const currentSources = (element: StoreObject, attribute: string): FieldAuthoritySource[] => {
+/**
+ * Sources of the current values of an entity no listed source wrote yet: the author of the entity and the connector
+ * that created it (its first creator), so a value created by a connector keeps that connector's rank.
+ */
+export const creationSources = (element: Record<string, any>, connectors: ConnectorUser[]): FieldAuthoritySource[] => {
+  const sources: FieldAuthoritySource[] = [];
+  const authorId = refId(element.createdBy) ?? refId(element['created-by']);
+  if (authorId) sources.push({ source_type: AUTHORITY_SOURCE_AUTHOR, source_id: authorId });
+  const creators = element.creator_id;
+  const creatorId = Array.isArray(creators) ? creators[0] : creators;
+  sources.push(...connectorSourcesOf(connectors, typeof creatorId === 'string' ? creatorId : undefined));
+  return sources;
+};
+
+const currentSources = (element: StoreObject, attribute: string, connectors: ConnectorUser[]): FieldAuthoritySource[] => {
   const entries = ((element as Record<string, any>)[FIELD_AUTHORITY_ATTRIBUTE] ?? []) as FieldAuthorityEntry[];
   const entry = entries.find((e) => e.attribute === attribute);
   if (entry) {
     return [{ source_type: entry.source_type as FieldAuthoritySource['source_type'], source_id: entry.source_id }];
   }
-  // Without bookkeeping yet, the author of the entity is considered as the source of its current values.
-  const authorId = refId((element as Record<string, any>).createdBy) ?? refId((element as Record<string, any>)['created-by']);
-  return authorId ? [{ source_type: AUTHORITY_SOURCE_AUTHOR, source_id: authorId }] : [];
+  return creationSources(element as Record<string, any>, connectors);
 };
 
 const rulesFor = async (context: AuthContext, type: string) => {
@@ -98,9 +116,10 @@ export const curationFieldAuthorityResolver: FieldAuthorityResolver = {
     if (rules.length === 0) return decisions;
     const ruled = rules.filter((rule) => rule.attribute in patch);
     if (ruled.length === 0) return decisions;
-    const incoming = await incomingSources(context, user, patch);
+    const connectors = await getEntitiesListFromCache<ConnectorUser>(context, SYSTEM_USER, ENTITY_TYPE_CONNECTOR);
+    const incoming = incomingSources(user, patch, connectors);
     ruled.forEach((rule) => {
-      const decision = decideFieldAuthority(rule, incoming, currentSources(element, rule.attribute));
+      const decision = decideFieldAuthority(rule, incoming, currentSources(element, rule.attribute, connectors));
       if (decision) decisions.set(rule.attribute, decision);
     });
     return decisions;
@@ -108,7 +127,8 @@ export const curationFieldAuthorityResolver: FieldAuthorityResolver = {
   recordApplied: async (context, user, element, type, patch, appliedKeys) => {
     try {
       const rules = await rulesFor(context, type);
-      const incoming = await incomingSources(context, user, patch);
+      const connectors = await getEntitiesListFromCache<ConnectorUser>(context, SYSTEM_USER, ENTITY_TYPE_CONNECTOR);
+      const incoming = incomingSources(user, patch, connectors);
       const entries: FieldAuthorityEntry[] = [];
       rules.filter((rule) => appliedKeys.includes(rule.attribute)).forEach((rule) => {
         const rank = rankSource(rule, incoming);

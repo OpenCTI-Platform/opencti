@@ -15,6 +15,7 @@ import {
   bulkRejectProposals,
   isProposalRevertible,
   curationSettingsForApi,
+  isCurationAdjudicationOffered,
   curationStatistics,
   decideProposal,
   editCurationSettings,
@@ -92,6 +93,7 @@ const curationResolvers: Resolvers = {
     knowledgeHealth: (_, __, context) => findLatestHealthSnapshot(context, context.user),
     knowledgeHealthSnapshots: (_, args, context) => findHealthSnapshotsPaginated(context, context.user, args as any),
     curationSettings: (_, __, context) => curationSettingsForApi(context) as any,
+    curationAdjudicationAvailable: (_, __, context) => isCurationAdjudicationOffered(context),
   },
   CurationProposal: {
     objectMarking: (proposal, _, context) => context.batch.markingsBatchLoader.load(proposal),

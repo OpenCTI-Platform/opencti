@@ -157,7 +157,7 @@ const KnowledgeHealthComponent = () => {
                 {health.score_trend !== null && health.score_trend !== undefined ? (
                   <Tag
                     label={t_i18n('{trend} since the previous snapshot', { values: { trend: `${health.score_trend >= 0 ? '+' : ''}${health.score_trend}` } })}
-                    color={health.score_trend >= 0 ? theme.palette.success.main : theme.palette.error.main}
+                    color={labels.trendColor(health.score_trend)}
                   />
                 ) : (
                   <Typography variant="body2" color={theme.palette.text.light}>{t_i18n('First snapshot')}</Typography>

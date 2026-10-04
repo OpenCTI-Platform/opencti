@@ -252,7 +252,13 @@ export const buildDigestLines = (snapshot: BasicStoreEntityKnowledgeHealthSnapsh
   ];
 };
 
-const escapeHtml = (value: string) => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+// Quotes are escaped too: the platform URL lands in an attribute.
+const escapeHtml = (value: string) => value
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
 
 /**
  * Weekly Knowledge Health digest (Community Edition): an in-platform notification for every recipient (users,
@@ -285,7 +291,7 @@ export const sendKnowledgeHealthDigest = async (context: AuthContext, settings: 
   if (emails.length > 0) {
     try {
       const html = `<h2>${title}</h2><ul>${lines.map((line) => `<li>${escapeHtml(line)}</li>`).join('')}</ul>`
-        + `<p><a href="${escapeHtml(curationUrl)}">Open the Knowledge Health dashboard</a></p>`;
+        + `<p><a href="${escapeHtml(curationUrl)}">Open Knowledge health</a></p>`;
       await sendMail({ from: await smtpComputeFrom(), to: [], bcc: emails, subject: `[OpenCTI] ${title}`, html }, { category: 'curation_digest' });
     } catch (error) {
       logApp.warn('[CURATION] Knowledge Health digest email cannot be sent', { cause: error });

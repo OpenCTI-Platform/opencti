@@ -95,7 +95,7 @@ const KnowledgeHealthWidget = ({ variant, title, popover }: KnowledgeHealthWidge
         <Box sx={{ textAlign: 'center' }} data-testid="knowledge-health-widget-score">
           <KnowledgeHealthScore score={score} height={180} />
           {trend !== null && trend !== undefined && (
-            <Box component="span" sx={{ color: labels.healthColor(score) }}>
+            <Box component="span" sx={{ color: labels.trendColor(trend) }}>
               {t_i18n('{trend} since the previous snapshot', { values: { trend: `${trend >= 0 ? '+' : ''}${trend}` } })}
             </Box>
           )}

@@ -3,13 +3,14 @@ import { createHash } from 'node:crypto';
 import type { AuthContext } from '../../types/user';
 import type { BasicStoreBase, BasicStoreEntity } from '../../types/store';
 import type { BasicStoreSettings } from '../../types/settings';
-import { createEntity, patchAttribute } from '../../database/middleware';
+import { createEntity, patchAttribute, updateAttribute } from '../../database/middleware';
 import { fullEntitiesList, internalFindByIds } from '../../database/middleware-loader';
 import { getEntityFromCache } from '../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { CURATION_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
-import { FilterMode, FilterOperator } from '../../generated/graphql';
+import { EditOperation, FilterMode, FilterOperator } from '../../generated/graphql';
+import { INPUT_GRANTED_REFS, INPUT_MARKINGS } from '../../schema/general';
 import { addCurationProposalCreatedCount } from '../../manager/telemetryManager';
 import { logApp } from '../../config/conf';
 import {
@@ -125,6 +126,54 @@ const proposalName = (draft: ProposalDraft) => {
   return names.length > 250 ? `${names.slice(0, 247)}...` : names;
 };
 
+const sameIds = (left: string[], right: string[]) => left.length === right.length && left.every((id) => right.includes(id));
+
+/**
+ * Refresh of an open proposal found again: its restrictions and subject names follow the current subjects, so a
+ * subject that gained a marking or an organization restriction since is never exposed through an older proposal.
+ */
+const refreshProposal = async (
+  context: AuthContext,
+  existing: BasicStoreEntityCurationProposal,
+  draft: ProposalDraft,
+  inBand: boolean,
+): Promise<PersistResult> => {
+  const subjects = await internalFindByIds(context, SYSTEM_USER, existing.subject_ids, { baseData: true }) as BasicStoreBase[];
+  if (subjects.length !== existing.subject_ids.length) {
+    logApp.debug('[CURATION] Proposal subjects disappeared before refresh, keeping the proposal', { id: existing.internal_id });
+    return { proposal: existing, created: false, suppressed: false };
+  }
+  const settingsEntity = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const { markingIds, organizationIds } = computeSubjectRestrictions(subjects, settingsEntity?.platform_organization);
+  const restrictionsChanged = !sameIds(markingIds, ((existing as any)[RELATION_OBJECT_MARKING] ?? []) as string[])
+    || !sameIds(organizationIds, ((existing as any)[RELATION_GRANTED_TO] ?? []) as string[]);
+  const subjectsById = new Map(subjects.map((subject) => [subject.internal_id, subject]));
+  const subjectNames = existing.subject_ids.map((id, index) => ((subjectsById.get(id) as { name?: string } | undefined)?.name ?? existing.subject_names[index]));
+  const namesChanged = JSON.stringify(subjectNames) !== JSON.stringify(existing.subject_names);
+  const findingChanged = Math.abs(existing.confidence_score - draft.confidence) > 0.001
+    || JSON.stringify(existing.curation_evidence) !== JSON.stringify(draft.evidence);
+  if (!restrictionsChanged && !namesChanged && !findingChanged) {
+    return { proposal: existing, created: false, suppressed: false };
+  }
+  if (restrictionsChanged) {
+    await updateAttribute(context, CURATION_MANAGER_USER, existing.internal_id, ENTITY_TYPE_CURATION_PROPOSAL, [
+      { key: INPUT_MARKINGS, value: markingIds, operation: EditOperation.Replace },
+      { key: INPUT_GRANTED_REFS, value: organizationIds, operation: EditOperation.Replace },
+    ]);
+  }
+  const joinedNames = subjectNames.join(' / ');
+  const { element: updated } = await patchAttribute(context, CURATION_MANAGER_USER, existing.internal_id, ENTITY_TYPE_CURATION_PROPOSAL, {
+    name: joinedNames.length > 250 ? `${joinedNames.slice(0, 247)}...` : joinedNames,
+    subject_names: subjectNames,
+    confidence_score: draft.confidence,
+    in_ambiguous_band: inBand,
+    curation_evidence: draft.evidence,
+    detector: draft.detector,
+    action_payload: draft.action_payload ?? null,
+  });
+  return { proposal: updated as unknown as BasicStoreEntityCurationProposal, created: false, suppressed: false };
+};
+
 /**
  * Create a proposal from a detector draft, or refresh the matching open one. Rejected, reverted or applied findings
  * are never proposed again.
@@ -149,19 +198,7 @@ export const persistProposalDraft = async (
   }
   const inBand = isInAmbiguousBand(draft.confidence, settings.ambiguous_band_min, settings.ambiguous_band_max);
   if (existing) {
-    const changed = Math.abs(existing.confidence_score - draft.confidence) > 0.001
-      || JSON.stringify(existing.curation_evidence) !== JSON.stringify(draft.evidence);
-    if (!changed) {
-      return { proposal: existing, created: false, suppressed: false };
-    }
-    const { element: updated } = await patchAttribute(context, CURATION_MANAGER_USER, existing.internal_id, ENTITY_TYPE_CURATION_PROPOSAL, {
-      confidence_score: draft.confidence,
-      in_ambiguous_band: inBand,
-      curation_evidence: draft.evidence,
-      detector: draft.detector,
-      action_payload: draft.action_payload ?? null,
-    });
-    return { proposal: updated as unknown as BasicStoreEntityCurationProposal, created: false, suppressed: false };
+    return refreshProposal(context, existing, draft, inBand);
   }
   const subjectIds = draft.subjects.map((subject) => subject.id);
   const subjects = await internalFindByIds(context, SYSTEM_USER, subjectIds, { baseData: true }) as BasicStoreBase[];

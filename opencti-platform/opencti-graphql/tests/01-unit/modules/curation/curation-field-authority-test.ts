@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { decideFieldAuthority, rankSource } from '../../../../src/modules/curation/curation-field-authority';
+import { creationSources, decideFieldAuthority, rankSource } from '../../../../src/modules/curation/curation-field-authority';
 import { AUTHORITY_SOURCE_AUTHOR, AUTHORITY_SOURCE_CONNECTOR, type FieldAuthorityRule, type FieldAuthoritySource } from '../../../../src/modules/curation/curation-types';
 
 const MITRE: FieldAuthoritySource = { source_type: AUTHORITY_SOURCE_AUTHOR, source_id: 'identity-mitre' };
@@ -51,6 +51,25 @@ describe('curation field authority', () => {
     it('leaves the decision to the confidence comparison when no side is ranked', () => {
       expect(decideFieldAuthority(RULE, [UNKNOWN], [])).toBeUndefined();
       expect(decideFieldAuthority(RULE, [], [UNKNOWN])).toBeUndefined();
+    });
+  });
+
+  describe('creationSources', () => {
+    const connectors = [{ internal_id: 'connector-feed', connector_user_id: 'user-feed' }, { internal_id: 'connector-other', connector_user_id: 'user-other' }];
+
+    it('credits the author and the connector that created the entity, before any recorded write', () => {
+      const created = { createdBy: 'identity-vendor', creator_id: ['user-feed', 'user-other'] };
+      expect(creationSources(created, connectors)).toEqual([VENDOR, FEED]);
+    });
+
+    it('lets a value created by a connector keep its rank against a less authoritative connector', () => {
+      const other: FieldAuthoritySource = { source_type: AUTHORITY_SOURCE_CONNECTOR, source_id: 'connector-other' };
+      const rule: FieldAuthorityRule = { ...RULE, sources: [FEED, other] };
+      expect(decideFieldAuthority(rule, [other], creationSources({ creator_id: 'user-feed' }, connectors))).toBe('deny');
+    });
+
+    it('credits nobody for an entity created by a user who is no connector and has no author', () => {
+      expect(creationSources({ creator_id: ['user-analyst'] }, connectors)).toEqual([]);
     });
   });
 });

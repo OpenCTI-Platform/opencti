@@ -10154,6 +10154,11 @@ type Query {
   knowledgeHealth: KnowledgeHealthSnapshot
   knowledgeHealthSnapshots(first: Int, after: ID, orderBy: KnowledgeHealthSnapshotOrdering, orderMode: OrderingMode, filters: FilterGroup): KnowledgeHealthSnapshotConnection
   curationSettings: CurationSettings!
+
+  """
+  Whether the OpenCTI Curator can be asked to adjudicate a proposal (adjudication enabled and XTM One reachable).
+  """
+  curationAdjudicationAvailable: Boolean!
   me: MeUser!
   otpGeneration: OtpElement
   user(id: String!): User

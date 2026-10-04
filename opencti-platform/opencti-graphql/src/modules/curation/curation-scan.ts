@@ -2,6 +2,7 @@ import * as R from 'ramda';
 import type { AuthContext } from '../../types/user';
 import type { BasicStoreEntity, BasicStoreRelation } from '../../types/store';
 import { fullEntitiesList, fullRelationsList, internalFindByIds, pageEntitiesConnection } from '../../database/middleware-loader';
+import { redisGetManagerEventState, redisSetManagerEventState } from '../../database/redis';
 import { elCount, elIndexExists, elRawSearch } from '../../database/engine';
 import { ES_INDEX_PREFIX, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../../database/utils';
 import { CURATION_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
@@ -122,15 +123,45 @@ export const toCandidate = (raw: BasicStoreEntity & Record<string, any>): Curati
   };
 };
 
+const SCAN_ROTATION_STATE = 'curation_scan_rotation_';
+const MAX_ROTATING_SLICE = 5000;
+
+/**
+ * The next slice of the entities of a type in creation order, from where the previous scan stopped; the cursor goes
+ * back to the first entity once the last slice is read, so successive scans go through the whole type.
+ */
+const loadRotatingSlice = async (context: AuthContext, type: string, size: number) => {
+  const stateKey = `${SCAN_ROTATION_STATE}${type}`;
+  const after = (await redisGetManagerEventState(stateKey)) || undefined;
+  const page = await pageEntitiesConnection<BasicStoreEntity>(context, CURATION_MANAGER_USER, [type], {
+    first: size,
+    after,
+    orderBy: 'created_at',
+    orderMode: 'asc',
+  } as any);
+  await redisSetManagerEventState(stateKey, page.pageInfo.hasNextPage ? (page.pageInfo.endCursor ?? '') : '');
+  return page.edges.map((edge) => edge.node);
+};
+
+/**
+ * Entities a scheduled scan compares, per type: the most recently updated half of the budget, and a rotating slice of
+ * the others for the second half, so that over successive scans every entity is compared with the recent ones.
+ * Entities that change are compared with the whole graph by the incremental detection.
+ */
 export const loadCuratedEntities = async (context: AuthContext, types: string[], maxPerType: number): Promise<CuratedEntity[]> => {
   const entities: CuratedEntity[] = [];
+  const recentSize = Math.ceil(maxPerType / 2);
+  const rotatingSize = Math.min(maxPerType - recentSize, MAX_ROTATING_SLICE);
   for (let index = 0; index < types.length; index += 1) {
-    const raw = await fullEntitiesList<BasicStoreEntity>(context, CURATION_MANAGER_USER, [types[index]], {
-      maxSize: maxPerType,
+    const recent = await fullEntitiesList<BasicStoreEntity>(context, CURATION_MANAGER_USER, [types[index]], {
+      maxSize: recentSize,
       orderBy: 'updated_at',
       orderMode: 'desc',
     } as any);
-    raw.forEach((element) => entities.push(toCuratedEntity(toCandidate(element as BasicStoreEntity & Record<string, any>))));
+    const recentIds = new Set(recent.map((element) => element.internal_id));
+    const rotating = rotatingSize > 0 ? await loadRotatingSlice(context, types[index], rotatingSize) : [];
+    [...recent, ...rotating.filter((element) => !recentIds.has(element.internal_id))]
+      .forEach((element) => entities.push(toCuratedEntity(toCandidate(element as BasicStoreEntity & Record<string, any>))));
   }
   return entities;
 };

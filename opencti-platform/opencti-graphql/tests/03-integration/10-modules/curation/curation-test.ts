@@ -323,6 +323,8 @@ describe('Knowledge curation', () => {
 
   it('should refuse curation settings changes to a user without the customization capability', async () => {
     await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, { query: SETTINGS_EDIT_MUTATION, variables: { input: { merge_record_retention_days: 30 } } });
+    // The settings (digest recipients, field authority sources) are read under Settings > Customization only.
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, { query: SETTINGS_QUERY, variables: {} });
   });
 
   it('should validate and save curation settings', async () => {

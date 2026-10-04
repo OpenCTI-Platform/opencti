@@ -491,7 +491,7 @@ type Query {
     filters: FilterGroup
     search: String
   ): MergeRecordConnection @auth(for: [KNOWLEDGE])
-  curationPolicy(id: ID!): CurationPolicy @auth(for: [KNOWLEDGE])
+  curationPolicy(id: ID!): CurationPolicy @auth(for: [SETTINGS_SETCUSTOMIZATION])
   curationPolicies(
     first: Int
     after: ID
@@ -499,7 +499,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): CurationPolicyConnection @auth(for: [KNOWLEDGE])
+  ): CurationPolicyConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
   curationPolicyDryRun(id: ID!): CurationPolicyDryRun @auth(for: [SETTINGS_SETCUSTOMIZATION])
   knowledgeHealth: KnowledgeHealthSnapshot @auth(for: [KNOWLEDGE])
   knowledgeHealthSnapshots(
@@ -509,7 +509,9 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
   ): KnowledgeHealthSnapshotConnection @auth(for: [KNOWLEDGE])
-  curationSettings: CurationSettings! @auth(for: [KNOWLEDGE])
+  curationSettings: CurationSettings! @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  "Whether the OpenCTI Curator can be asked to adjudicate a proposal (adjudication enabled and XTM One reachable)."
+  curationAdjudicationAvailable: Boolean! @auth(for: [KNOWLEDGE])
 }
 
 type Mutation {

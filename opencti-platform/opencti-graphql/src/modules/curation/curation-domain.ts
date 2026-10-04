@@ -8,6 +8,7 @@ import { internalFindByIds, pageEntitiesConnection, storeLoadById, type EntityOp
 import { elAggregationCount, elCount, elUpdate } from '../../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { SYSTEM_USER } from '../../utils/access';
+import { lockResources } from '../../lock/master-lock';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { createListTask, ACTION_TYPE_CURATION_APPLY } from '../../domain/backgroundTask-common';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
@@ -21,7 +22,7 @@ import {
 import { now } from '../../utils/format';
 import {
   ACTION_FIX_DATES,
-  ACTION_MERGE,
+  ACTION_UNMERGE,
   type BasicStoreEntityCurationPolicy,
   type BasicStoreEntityCurationProposal,
   type CurationAdjudication,
@@ -130,6 +131,23 @@ const loadOpenProposal = async (context: AuthContext, user: AuthUser, id: string
   return proposal;
 };
 
+/**
+ * Runs one status transition of a proposal at a time: the proposal is read again under its lock, so two decisions
+ * never both see it open and both change the graph. The lock key is not an element id, so the locks the merge and
+ * the unmerge take on their participants never collide with it.
+ */
+const withProposalLock = async <T>(id: string, fn: () => Promise<T>): Promise<T> => {
+  let lock;
+  try {
+    lock = await lockResources([`curation-proposal-transition-${id}`]);
+    return await fn();
+  } finally {
+    if (lock) {
+      await lock.unlock();
+    }
+  }
+};
+
 const parseJsonPayload = (payload?: string | null): Record<string, unknown> | null => {
   if (!payload) return null;
   try {
@@ -153,10 +171,11 @@ interface ApplyDecisionInput {
 const applyAndRecord = async (
   context: AuthContext,
   user: AuthUser,
-  proposal: BasicStoreEntityCurationProposal,
+  loadedProposal: BasicStoreEntityCurationProposal,
   settings: CurationSettings,
   input: ApplyDecisionInput,
-) => {
+) => withProposalLock(loadedProposal.internal_id, async () => {
+  const proposal = await loadOpenProposal(context, user, loadedProposal.internal_id);
   if (!canUserApplyProposal(user, proposal, input.decision)) {
     throw ForbiddenAccess('You are not allowed to apply this curation proposal');
   }
@@ -177,7 +196,19 @@ const applyAndRecord = async (
   if (input.policyId) patch.policy_id = input.policyId;
   if (input.adjudication) patch.curation_adjudication = { ...input.adjudication, applied: true };
   else if (proposal.curation_adjudication) patch.curation_adjudication = { ...proposal.curation_adjudication, applied: true };
-  const { element } = await patchAttribute(context, SYSTEM_USER, proposal.internal_id, ENTITY_TYPE_CURATION_PROPOSAL, patch);
+  let element;
+  try {
+    ({ element } = await patchAttribute(context, SYSTEM_USER, proposal.internal_id, ENTITY_TYPE_CURATION_PROPOSAL, patch));
+  } catch (error) {
+    // The graph is changed but the proposal still reads open: name what was applied, for the analyst who retries.
+    logApp.error('[CURATION] Proposal applied but its decision could not be recorded', {
+      cause: error,
+      proposal_id: proposal.internal_id,
+      merge_record_id: result.mergeRecordId,
+      applied_patch: result.appliedPatch,
+    });
+    throw error;
+  }
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -193,7 +224,7 @@ const applyAndRecord = async (
   if (input.status === PROPOSAL_STATUS_AUTO_APPLIED) addCurationProposalAutoAppliedCount();
   else addCurationProposalAcceptedCount();
   return element as unknown as BasicStoreEntityCurationProposal;
-};
+});
 
 export const acceptProposal = async (
   context: AuthContext,
@@ -214,10 +245,11 @@ export const acceptProposal = async (
 const recordRejection = async (
   context: AuthContext,
   user: AuthUser,
-  proposal: BasicStoreEntityCurationProposal,
+  loadedProposal: BasicStoreEntityCurationProposal,
   rationale?: string | null,
   adjudication?: CurationAdjudication | null,
-) => {
+) => withProposalLock(loadedProposal.internal_id, async () => {
+  const proposal = await loadOpenProposal(context, user, loadedProposal.internal_id);
   const patch: Record<string, unknown> = {
     proposal_status: PROPOSAL_STATUS_REJECTED,
     decided_at: now(),
@@ -236,7 +268,7 @@ const recordRejection = async (
   });
   addCurationProposalRejectedCount();
   return element as unknown as BasicStoreEntityCurationProposal;
-};
+});
 
 export const rejectProposal = async (context: AuthContext, user: AuthUser, id: string, rationale?: string | null) => {
   const proposal = await loadOpenProposal(context, user, id);
@@ -397,13 +429,14 @@ export const bulkRejectProposals = async (context: AuthContext, user: AuthUser, 
  * An applied proposal is reverted from its merge record or its applied patch. A date fix is the exception: reverting
  * it would write back an end date before the start date, which the platform refuses on every update.
  */
+// A proposal applied as a merge (its recommended action, or a merge decision) is reverted through its merge record.
 export const isProposalRevertible = (proposal: BasicStoreEntityCurationProposal) => {
   const isApplied = proposal.proposal_status === PROPOSAL_STATUS_ACCEPTED || proposal.proposal_status === PROPOSAL_STATUS_AUTO_APPLIED;
-  const hasTrace = (proposal.recommended_action === ACTION_MERGE && !!proposal.merge_record_id) || !!proposal.applied_patch;
+  const hasTrace = !!proposal.merge_record_id || !!proposal.applied_patch;
   return isApplied && hasTrace && proposal.recommended_action !== ACTION_FIX_DATES;
 };
 
-export const revertProposal = async (context: AuthContext, user: AuthUser, id: string) => {
+export const revertProposal = async (context: AuthContext, user: AuthUser, id: string) => withProposalLock(id, async () => {
   const proposal = await findProposalById(context, user, id);
   if (!proposal) {
     throw FunctionalError('Curation proposal not found', { id });
@@ -414,11 +447,12 @@ export const revertProposal = async (context: AuthContext, user: AuthUser, id: s
   if (proposal.recommended_action === ACTION_FIX_DATES) {
     throw FunctionalError('A date fix cannot be reverted: the original end date is before the start date, which the platform does not accept', { id });
   }
-  if (!canUserApplyProposal(user, proposal)) {
+  const revertedAction = proposal.merge_record_id ? ACTION_UNMERGE : proposal.recommended_action;
+  if (!canUserApplyProposal(user, { recommended_action: revertedAction })) {
     throw ForbiddenAccess('You are not allowed to revert this curation proposal');
   }
   let report: Record<string, unknown>;
-  if (proposal.recommended_action === ACTION_MERGE && proposal.merge_record_id) {
+  if (proposal.merge_record_id) {
     const result = await unmergeFromRecord(context, user, proposal.merge_record_id);
     report = { restored_ids: result.restored_ids, skipped_relationship_ids: result.skipped_relationship_ids };
   } else if (proposal.applied_patch) {
@@ -437,10 +471,16 @@ export const revertProposal = async (context: AuthContext, user: AuthUser, id: s
   });
   addCurationProposalRevertedCount();
   return element as unknown as BasicStoreEntityCurationProposal;
-};
+});
 // endregion
 
 // region settings
+/** Whether an analyst can ask the OpenCTI Curator to adjudicate a proposal: adjudication enabled and XTM One reachable. */
+export const isCurationAdjudicationOffered = async (context: AuthContext) => {
+  const settings = await getCurationSettings(context);
+  return settings.adjudication_enabled && isAdjudicationAvailable(context);
+};
+
 export const curationSettingsForApi = async (context: AuthContext) => {
   const settings = await getCurationSettings(context);
   const taxonomy = getTaxonomyMetadata();

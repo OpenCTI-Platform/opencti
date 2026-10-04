@@ -73,10 +73,7 @@ const curationProposalQuery = graphql`
       id
       ...CurationProposal_proposal
     }
-    curationSettings {
-      adjudication_available
-      adjudication_enabled
-    }
+    curationAdjudicationAvailable
   }
 `;
 
@@ -245,7 +242,7 @@ const CurationProposalComponent = ({ proposalId }: { proposalId: string }) => {
     <div data-testid="curation-proposal-page">
       <CurationProposalDetails
         data={data.curationProposal}
-        adjudicationAvailable={data.curationSettings.adjudication_available && data.curationSettings.adjudication_enabled}
+        adjudicationAvailable={data.curationAdjudicationAvailable}
       />
     </div>
   );
