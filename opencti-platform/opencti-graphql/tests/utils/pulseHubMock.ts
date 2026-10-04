@@ -89,6 +89,8 @@ export class PulseHubMock {
 
   private forcedErrors: Array<{ operation: string; code: string }> = [];
 
+  private refusedPurges = 0;
+
   private server: http.Server | undefined;
 
   private now: () => Date = () => new Date();
@@ -106,6 +108,11 @@ export class PulseHubMock {
   // The next call of the operation fails with the given GraphQL error code (e.g. PULSE_RATE_LIMITED).
   failNext(operation: string, code: string) {
     this.forcedErrors.push({ operation, code });
+  }
+
+  // The next purge answers success: false and deletes nothing.
+  refuseNextPurge() {
+    this.refusedPurges += 1;
   }
 
   saltOf(day: string) {
@@ -136,6 +143,7 @@ export class PulseHubMock {
     this.salts.clear();
     this.platformBuckets.clear();
     this.forcedErrors = [];
+    this.refusedPurges = 0;
     this.now = () => new Date();
   }
 
@@ -218,6 +226,10 @@ export class PulseHubMock {
         if (variables.platformId !== platformId) {
           throw new GraphqlError('FORBIDDEN', 'A platform can only purge its own contributions');
         }
+        if (this.refusedPurges > 0) {
+          this.refusedPurges -= 1;
+          return { pulsePurge: { success: false, deleted_records: 0 } };
+        }
         return { pulsePurge: this.purge(platformId) };
       default:
         throw new GraphqlError('BAD_USER_INPUT', 'Unknown operation');
@@ -256,6 +268,9 @@ export class PulseHubMock {
     if (input.sector_bucket && !SECTORS.includes(input.sector_bucket)) {
       throw new GraphqlError('BAD_USER_INPUT', 'Invalid sector');
     }
+    if (input.region_bucket && !REGIONS.includes(input.region_bucket)) {
+      throw new GraphqlError('BAD_USER_INPUT', 'Invalid region');
+    }
     const salt = this.saltOf(input.day);
     const groups = new Map<string, PulseLedgerRow[]>();
     this.rowsSince(30).forEach((row) => {
@@ -269,11 +284,11 @@ export class PulseHubMock {
         const allRows = this.ledger.filter((row) => row.key === rows[0].key && row.objectType === rows[0].objectType);
         return { hash: aes(salt, rows[0].key, false), object_type: rows[0].objectType, prevalence_bucket: this.prevalenceOf(allRows), trend: this.trendOf(allRows) };
       });
-    const trending = this.trending({ day: input.day, period: 'last_7_days', sector_bucket: input.sector_bucket ?? null, region_bucket: null, first: 10 }).items;
+    const trending = this.trending({ day: input.day, period: 'last_7_days', sector_bucket: input.sector_bucket ?? null, region_bucket: input.region_bucket ?? null, first: 10 }).items;
     return {
       day: input.day,
       sector_bucket: input.sector_bucket ?? null,
-      region_bucket: null,
+      region_bucket: input.region_bucket ?? null,
       items,
       trending: {
         period: 'last_7_days',

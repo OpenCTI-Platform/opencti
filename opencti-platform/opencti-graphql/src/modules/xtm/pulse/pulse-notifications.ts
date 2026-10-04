@@ -58,17 +58,28 @@ export const runPulseTrendingNotifications = async (context: AuthContext) => {
   const policy = await buildPulseMarkingPolicy(context, values);
   const rising = (await resolveTrendingEntries(context, PULSE_MANAGER_USER, platform, result, values.scopes))
     .filter((entry) => entry.trend === PulseTrend.Rising && isPulseContributable(entry.entity, policy, values.scopes));
-  const newIds = new Set(await redisFilterNewlyTrending(rising.map((entry) => entry.entity.internal_id), TRENDING_NOTIFICATION_MEMORY_DAYS));
-  const fresh = rising.filter((entry) => newIds.has(entry.entity.internal_id));
+  // Remembered per trigger and object, and only once a notification was stored: a trigger created later, or one
+  // whose users did not match yet, still receives the event.
+  const pairOf = (triggerId: string, entityId: string) => `${triggerId}|${entityId}`;
+  const freshPairs = new Set(await redisFilterNewlyTrending(
+    triggers.flatMap(({ trigger }) => rising.map((entry) => pairOf(trigger.internal_id, entry.entity.internal_id))),
+    TRENDING_NOTIFICATION_MEMORY_DAYS,
+  ));
+  const notifiedPairs: string[] = [];
+  const notifiedObjects = new Set<string>();
   let notifications = 0;
-  for (let entryIndex = 0; entryIndex < fresh.length; entryIndex += 1) {
-    const entry = fresh[entryIndex];
+  for (let entryIndex = 0; entryIndex < rising.length; entryIndex += 1) {
+    const entry = rising[entryIndex];
+    const pendingTriggers = triggers.filter(({ trigger }) => freshPairs.has(pairOf(trigger.internal_id, entry.entity.internal_id)));
+    if (pendingTriggers.length === 0) {
+      continue;
+    }
     const stix = await stixLoadById(context, PULSE_MANAGER_USER, entry.entity.internal_id) as StixObject | null;
     if (!stix) {
       continue;
     }
-    for (let triggerIndex = 0; triggerIndex < triggers.length; triggerIndex += 1) {
-      const { users, trigger } = triggers[triggerIndex];
+    for (let triggerIndex = 0; triggerIndex < pendingTriggers.length; triggerIndex += 1) {
+      const { users, trigger } = pendingTriggers[triggerIndex];
       const filters = trigger.filters ? JSON.parse(trigger.filters) : undefined;
       const targets: KnowledgeNotificationEvent['targets'] = [];
       for (let userIndex = 0; userIndex < users.length; userIndex += 1) {
@@ -94,12 +105,14 @@ export const runPulseTrendingNotifications = async (context: AuthContext) => {
         };
         await storeNotificationEvent(context, event);
         notifications += targets.length;
+        notifiedPairs.push(pairOf(trigger.internal_id, entry.entity.internal_id));
+        notifiedObjects.add(entry.entity.internal_id);
       }
     }
   }
-  await redisMarkTrendingNotified(fresh.map((entry) => entry.entity.internal_id));
+  await redisMarkTrendingNotified(notifiedPairs);
   if (notifications > 0) {
-    logApp.info('[THREAT PULSE] Trending notifications sent', { objects: fresh.length, notifications });
+    logApp.info('[THREAT PULSE] Trending notifications sent', { objects: notifiedObjects.size, notifications });
   }
   return notifications;
 };

@@ -55,6 +55,17 @@ describe('Threat Pulse hashing', () => {
     expect(first).toHaveLength(1);
   });
 
+  it('should give one key to every spelling of an IPv6 address or network', () => {
+    const keysOf = (value: string) => computeStableKeys({ entity_type: 'Indicator', pattern: `[ipv6-addr:value = '${value}']`, pattern_type: 'stix' });
+    expect(computeIndicatorCanonicalValue("[ipv6-addr:value = '2001:0DB8:0:0:0:0:0:1']", 'stix')).toBe('observable:ipv6-addr:value:2001:db8::1');
+    expect(keysOf('2001:0db8:0:0:0:0:0:1')).toEqual(keysOf('2001:db8::1'));
+    expect(keysOf('2001:DB8:0000::1')).toEqual(keysOf('2001:db8::1'));
+    expect(keysOf('2001:db8:0:0::/032')).toEqual(keysOf('2001:db8::/32'));
+    expect(keysOf('2001:db8::1')).not.toEqual(keysOf('2001:db8::2'));
+    // An address with a zone index has no compressed form: kept as written, lower-cased
+    expect(computeIndicatorCanonicalValue("[ipv6-addr:value = 'FE80::1%ETH0']", 'stix')).toBe('observable:ipv6-addr:value:fe80::1%eth0');
+  });
+
   it('should canonicalize complex and non STIX patterns on the normalized pattern', () => {
     const complex = computeIndicatorCanonicalValue("[ipv4-addr:value = '198.51.100.7'] OR [ipv4-addr:value = '198.51.100.8']", 'stix');
     expect(complex?.startsWith('pattern:stix:')).toBe(true);

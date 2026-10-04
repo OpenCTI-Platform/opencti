@@ -1,6 +1,8 @@
 import type { AuthContext } from '../../../types/user';
 import { BULK_TIMEOUT, elBulk, elRawUpdateByQuery } from '../../../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../../database/utils';
+import { buildRefRelationSearchKey } from '../../../schema/general';
+import { RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
 import { logApp } from '../../../config/conf';
 import { PulsePrevalence } from '../../../generated/graphql';
 import {
@@ -175,10 +177,25 @@ const CLEAR_NETWORK_SCRIPT = [
   "if (!changed) { ctx.op = 'noop'; }",
 ].join(' ');
 
-// Removes every network statistic from the entities, when reading is turned off: the local keys stay.
+// The objects a more restrictive configuration takes out: those of a removed scope, those with a newly excluded marking.
+export interface PulseClearScope {
+  entityTypes: string[];
+  markingIds: string[];
+}
+
+// Removes every network statistic from the entities (all of them, or only those of *scope*): the local keys stay.
 // pulse_information is not indexed: the documents are found through the indexed fields written with it.
-export const clearPulseNetworkInformation = async () => {
+export const clearPulseNetworkInformation = async (scope?: PulseClearScope) => {
   const indexedFields = [PULSE_ATTRIBUTE_KEYS, ...PULSE_NETWORK_ATTRIBUTES.filter((attribute) => attribute !== PULSE_ATTRIBUTE_INFORMATION)];
+  const hasPulseData = { bool: { should: indexedFields.map((field) => ({ exists: { field } })), minimum_should_match: 1 } };
+  const affected = scope ? [
+    ...(scope.entityTypes.length > 0 ? [{ terms: { 'entity_type.keyword': scope.entityTypes } }] : []),
+    ...(scope.markingIds.length > 0 ? [{ terms: { [buildRefRelationSearchKey(RELATION_OBJECT_MARKING)]: scope.markingIds } }] : []),
+  ] : [];
+  if (scope && affected.length === 0) {
+    return 0;
+  }
+  const query = scope ? { bool: { filter: [hasPulseData, { bool: { should: affected, minimum_should_match: 1 } }] } } : hasPulseData;
   const result = await elRawUpdateByQuery({
     index: READ_INDEX_STIX_DOMAIN_OBJECTS,
     refresh: true,
@@ -186,10 +203,10 @@ export const clearPulseNetworkInformation = async () => {
     wait_for_completion: true,
     body: {
       script: { source: CLEAR_NETWORK_SCRIPT, lang: 'painless', params: { attributes: PULSE_NETWORK_ATTRIBUTES } },
-      query: { bool: { should: indexedFields.map((field) => ({ exists: { field } })), minimum_should_match: 1 } },
+      query,
     },
   });
-  logApp.info('[THREAT PULSE] Network information cleared from entities', { updated: result?.updated });
+  logApp.info('[THREAT PULSE] Network information cleared from entities', { updated: result?.updated, scope });
   return result?.updated ?? 0;
 };
 

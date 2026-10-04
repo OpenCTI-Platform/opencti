@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { isIPv6 } from 'node:net';
 import * as R from 'ramda';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE, ENTITY_TYPE_TOOL } from '../../../schema/stixDomainObject';
 import { ENTITY_TYPE_INDICATOR } from '../../indicator/indicator-types';
@@ -13,7 +14,23 @@ const KEY_BYTES = 16;
 const HEX_KEY_REGEX = /^[0-9a-f]{32}$/;
 
 // Observable types whose value is case-insensitive.
-const CASE_INSENSITIVE_OBSERVABLE_TYPES = ['domain-name', 'hostname', 'email-addr', 'mac-addr', 'ipv6-addr', 'windows-registry-key'];
+const CASE_INSENSITIVE_OBSERVABLE_TYPES = ['domain-name', 'hostname', 'email-addr', 'mac-addr', 'windows-registry-key'];
+
+// The compressed lower-case form of an IPv6 address or network (2001:0DB8:0:0::1/64 -> 2001:db8::1/64), so that
+// every spelling of one address yields one key. A value that is not an IPv6 address is only lower-cased.
+const canonicalIpv6 = (value: string): string => {
+  const [address, prefix, ...rest] = value.split('/');
+  if (rest.length > 0 || !isIPv6(address) || (prefix !== undefined && !/^\d{1,3}$/.test(prefix))) {
+    return value.toLowerCase();
+  }
+  try {
+    const canonical = new URL(`http://[${address}]`).hostname.slice(1, -1);
+    return prefix === undefined ? canonical : `${canonical}/${Number(prefix)}`;
+  } catch {
+    // A zone index (fe80::1%eth0) has no URL form.
+    return value.toLowerCase();
+  }
+};
 
 export interface PulseHashableEntity {
   entity_type: string;
@@ -47,6 +64,9 @@ const toStixObservableType = (formattedType: string) => (formattedType === 'Stix
 
 const normalizeObservableValue = (stixType: string, path: string, value: string): string => {
   const trimmed = value.trim();
+  if (stixType === 'ipv6-addr') {
+    return canonicalIpv6(trimmed);
+  }
   if (CASE_INSENSITIVE_OBSERVABLE_TYPES.includes(stixType) || path.startsWith('hashes.')) {
     return trimmed.toLowerCase();
   }

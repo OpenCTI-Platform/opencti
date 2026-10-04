@@ -8,6 +8,7 @@ const ENTITY_LOOKUP_PREFIX = '{pulse}:entity:';
 const RESPONSE_PREFIX = '{pulse}:response:';
 const CURSOR_KEY = '{pulse}:cursor';
 const OUTBOX_KEY = '{pulse}:outbox';
+const OUTBOX_INFLIGHT_KEY = '{pulse}:outbox:inflight';
 const STATE_KEY = '{pulse}:state';
 const STATS_DAY_PREFIX = '{pulse}:stats:day:';
 const STATS_TYPE_KEY = '{pulse}:stats:types';
@@ -75,13 +76,49 @@ export const redisPushPulseOutbox = async (batches: PulseBatch[]) => {
   await client.ltrim(OUTBOX_KEY, -OUTBOX_MAX_BATCHES, -1);
 };
 
-export const redisPopPulseOutbox = async (): Promise<PulseBatch[]> => {
-  const client = getClientBase();
-  const raw = await client.lrange(OUTBOX_KEY, 0, -1);
-  if (raw.length > 0) {
-    await client.ltrim(OUTBOX_KEY, raw.length, -1);
+// Atomically moves the pending batches into the in-flight list, after what a run that stopped before settling its
+// batches left there, and returns the whole in-flight list (capped like the outbox).
+const CLAIM_OUTBOX_SCRIPT = `
+local outbox = KEYS[1]
+local inflight = KEYS[2]
+local pending = redis.call('LRANGE', outbox, 0, -1)
+for index = 1, #pending do
+  redis.call('RPUSH', inflight, pending[index])
+end
+redis.call('DEL', outbox)
+redis.call('LTRIM', inflight, -tonumber(ARGV[1]), -1)
+return redis.call('LRANGE', inflight, 0, -1)
+`;
+
+export interface PulseOutboxEntry {
+  raw: string;
+  batch: PulseBatch;
+}
+
+// A claimed batch stays in Redis until redisSettlePulseOutboxEntry: a run that stops or fails before XTM Hub answered
+// leaves it to the next run, so a pending contribution is never lost.
+export const redisClaimPulseOutbox = async (): Promise<PulseOutboxEntry[]> => {
+  const raw = ((await getClientBase().eval(CLAIM_OUTBOX_SCRIPT, 2, OUTBOX_KEY, OUTBOX_INFLIGHT_KEY, OUTBOX_MAX_BATCHES)) as string[] | null) ?? [];
+  const entries: PulseOutboxEntry[] = [];
+  for (let index = 0; index < raw.length; index += 1) {
+    const batch = parseJson<PulseBatch>(raw[index], OUTBOX_KEY);
+    if (batch) {
+      entries.push({ raw: raw[index], batch });
+    } else {
+      await getClientBase().lrem(OUTBOX_INFLIGHT_KEY, 1, raw[index]);
+    }
   }
-  return raw.map((entry) => parseJson<PulseBatch>(entry, OUTBOX_KEY)).filter((batch): batch is PulseBatch => batch !== null);
+  return entries;
+};
+
+// Once XTM Hub accepted the batch, or refused it for good.
+export const redisSettlePulseOutboxEntry = async (entry: PulseOutboxEntry) => {
+  await getClientBase().lrem(OUTBOX_INFLIGHT_KEY, 1, entry.raw);
+};
+
+// Opting out: nothing pending may leave afterwards.
+export const redisDiscardPulseOutbox = async () => {
+  await getClientBase().del(OUTBOX_KEY, OUTBOX_INFLIGHT_KEY);
 };
 // endregion
 
@@ -89,6 +126,8 @@ export const redisPopPulseOutbox = async (): Promise<PulseBatch[]> => {
 export interface PulseOperationalState {
   last_push_at?: string;
   last_refresh_at?: string;
+  // How many objects in scope the next nightly refresh skips: the ones the previous runs covered.
+  refresh_offset?: string;
   last_error?: string;
   // 'true' once XTM Hub answered contribution_required to a contributing platform, until its next accepted push.
   contribution_lapsed?: string;
@@ -146,7 +185,7 @@ const activityKeys = (days: string[]) => days.flatMap((day) => [`${ACTIVITY_PREF
 
 export const redisClearPulseContributionState = async (days: string[]) => {
   const client = getClientBase();
-  await client.del(STATS_TYPE_KEY, OUTBOX_KEY, CURSOR_KEY, TRENDING_NOTIFIED_KEY, ...activityKeys(days), ...days.map((day) => `${STATS_DAY_PREFIX}${day}`));
+  await client.del(STATS_TYPE_KEY, OUTBOX_KEY, OUTBOX_INFLIGHT_KEY, CURSOR_KEY, TRENDING_NOTIFIED_KEY, ...activityKeys(days), ...days.map((day) => `${STATS_DAY_PREFIX}${day}`));
 };
 // endregion
 
@@ -210,22 +249,23 @@ export const redisDiscardPulseActivity = async (days: string[]) => {
 // endregion
 
 // region trending notifications memory
-export const redisFilterNewlyTrending = async (entityIds: string[], memoryDays: number): Promise<string[]> => {
-  if (entityIds.length === 0) {
+// Members are "<trigger id>|<object id>" pairs.
+export const redisFilterNewlyTrending = async (members: string[], memoryDays: number): Promise<string[]> => {
+  if (members.length === 0) {
     return [];
   }
   const client = getClientBase();
   const now = Date.now();
   await client.zremrangebyscore(TRENDING_NOTIFIED_KEY, '-inf', now - memoryDays * 24 * 3600 * 1000);
-  const scores = await client.zmscore(TRENDING_NOTIFIED_KEY, ...entityIds);
-  return entityIds.filter((_, index) => scores[index] === null);
+  const scores = await client.zmscore(TRENDING_NOTIFIED_KEY, ...members);
+  return members.filter((_, index) => scores[index] === null);
 };
 
-export const redisMarkTrendingNotified = async (entityIds: string[]) => {
-  if (entityIds.length === 0) {
+export const redisMarkTrendingNotified = async (members: string[]) => {
+  if (members.length === 0) {
     return;
   }
   const now = Date.now();
-  await getClientBase().zadd(TRENDING_NOTIFIED_KEY, ...entityIds.flatMap((id) => [now, id]));
+  await getClientBase().zadd(TRENDING_NOTIFIED_KEY, ...members.flatMap((member) => [now, member]));
 };
 // endregion

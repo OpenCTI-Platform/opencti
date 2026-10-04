@@ -60,7 +60,9 @@ import {
 import {
   redisAckPulseActivity,
   redisAddPulseActivity,
+  redisClaimPulseOutbox,
   redisDiscardPulseActivity,
+  redisDiscardPulseOutbox,
   redisAddPulseContributionStats,
   redisClearPulseContributionState,
   redisGetPulseContributionStats,
@@ -69,8 +71,8 @@ import {
   redisGetPulseResponse,
   redisGetPulseSalt,
   redisGetPulseState,
-  redisPopPulseOutbox,
   redisPushPulseOutbox,
+  redisSettlePulseOutboxEntry,
   redisSetPulseCursor,
   redisSetPulseEntityLookup,
   redisSetPulseResponse,
@@ -362,13 +364,19 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
   }
   if (!enabling) {
     // Nothing collected before the opt-out may leave afterwards.
-    await redisPopPulseOutbox();
+    await redisDiscardPulseOutbox();
     await redisDiscardPulseActivity(lastUtcDays(ACTIVITY_DAYS));
   }
   const modeChanged = mode !== current.mode;
   if (modeChanged && (currentAccess === PulseAccess.Full || currentAccess === PulseAccess.Preview)) {
     // The statistics of the previous mode never pass for those of the new one: the next cycle rebuilds them.
     await clearPulseNetworkInformation();
+  } else if (!modeChanged && mode !== PulseMode.Off) {
+    // A more restrictive configuration: the objects it takes out lose the statistics they received before. The preview
+    // sends nothing, so its signal stays on every object in scope whatever the markings.
+    const removedScopes = current.scopes.filter((scope) => !scopes.includes(scope));
+    const addedExclusions = enabling ? (excludedMarkingIds as string[]).filter((markingId) => !current.excludedMarkingIds.includes(markingId)) : [];
+    await clearPulseNetworkInformation({ entityTypes: removedScopes, markingIds: addedExclusions });
   }
   if (modeChanged) {
     await redisSetPulseState({ contribution_lapsed: undefined, last_refresh_at: undefined, preview_refresh_at: undefined, preview_matched: undefined });
@@ -413,7 +421,14 @@ interface PushOutcome {
   error: PulseHubError | null;
 }
 
-const pushPulseBatches = async (platform: PulseHubPlatform, batches: PulseBatch[]): Promise<PushOutcome> => {
+// Pushes the batches in order. A batch is settled once XTM Hub accepted it or refused it for good; on any other
+// failure the push stops and the batches not settled yet are kept for the next run (in the outbox by default).
+const pushPulseBatches = async (
+  platform: PulseHubPlatform,
+  batches: PulseBatch[],
+  settle: (index: number) => Promise<void> = async () => undefined,
+  keepUnsettled: (unsettled: PulseBatch[]) => Promise<void> = redisPushPulseOutbox,
+): Promise<PushOutcome> => {
   let pushedRecords = 0;
   for (let index = 0; index < batches.length; index += 1) {
     const batch = batches[index];
@@ -422,15 +437,35 @@ const pushPulseBatches = async (platform: PulseHubPlatform, batches: PulseBatch[
       pushedRecords += accepted;
     } catch (error) {
       const hubError = error instanceof PulseHubError ? error : new PulseHubError('unexpected', String(error));
-      if (hubError.code === 'bad_request') {
-        logApp.error('[THREAT PULSE] XTM Hub refused a batch, it is dropped', { cause: hubError, records: batch.records.length });
-      } else {
-        await redisPushPulseOutbox(batches.slice(index));
+      if (hubError.code !== 'bad_request') {
+        await keepUnsettled(batches.slice(index));
         return { pushedRecords, error: hubError };
       }
+      logApp.error('[THREAT PULSE] XTM Hub refused a batch, it is dropped', { cause: hubError, records: batch.records.length });
     }
+    await settle(index);
   }
   return { pushedRecords, error: null };
+};
+
+// The pending batches of earlier runs. They stay claimed in Redis until XTM Hub answers for each of them.
+const pushPulseOutbox = async (platform: PulseHubPlatform, oldestAcceptedDay: string): Promise<PushOutcome> => {
+  const claimed = await redisClaimPulseOutbox();
+  const retryable = claimed.filter((entry) => entry.batch.day >= oldestAcceptedDay);
+  const expired = claimed.filter((entry) => entry.batch.day < oldestAcceptedDay);
+  if (expired.length > 0) {
+    logApp.warn('[THREAT PULSE] Pending batches older than the accepted salt days are dropped', { dropped: expired.length });
+    for (let index = 0; index < expired.length; index += 1) {
+      await redisSettlePulseOutboxEntry(expired[index]);
+    }
+  }
+  return pushPulseBatches(
+    platform,
+    retryable.map((entry) => entry.batch),
+    (index) => redisSettlePulseOutboxEntry(retryable[index]),
+    // Not settled: still claimed, so the next run claims them again.
+    async () => undefined,
+  );
 };
 
 const storePulseKeys = async (context: AuthContext, entities: BasicStorePulseEntity[]) => {
@@ -464,12 +499,7 @@ export const runPulseContribution = async (context: AuthContext) => {
   const today = utcDay(now);
   const yesterday = previousUtcDay(today);
   let pushedRecords = 0;
-  const pending = await redisPopPulseOutbox();
-  const retryable = pending.filter((batch) => batch.day >= yesterday);
-  if (pending.length > retryable.length) {
-    logApp.warn('[THREAT PULSE] Pending batches older than the accepted salt days are dropped', { dropped: pending.length - retryable.length });
-  }
-  const outboxOutcome = await pushPulseBatches(platform, retryable);
+  const outboxOutcome = await pushPulseOutbox(platform, yesterday);
   pushedRecords += outboxOutcome.pushedRecords;
   if (outboxOutcome.error) {
     await redisSetPulseState({ last_error: outboxOutcome.error.code });
@@ -610,13 +640,9 @@ export const refreshPulseEntities = async (context: AuthContext, platform: Pulse
   return updates.length;
 };
 
-const keysExistFilter: FilterGroup = {
-  mode: FilterMode.And,
-  filters: [{ key: ['pulse_keys'], values: [], operator: FilterOperator.NotNil }],
-  filterGroups: [],
-};
-
-// Nightly refresh of the network information of every object that already has Threat Pulse keys.
+// Nightly refresh of the network information of every object in scope: the keys of an object that never contributed,
+// matched or was read are computed here. A run handles up to REFRESH_MAX_ENTITIES objects and the next one goes on
+// after them, starting over once the scope is covered, so that no object waits for ever on a large platform.
 export const runPulseRefresh = async (context: AuthContext, force = false) => {
   const { values, platform, state, access } = await loadPulseContext(context);
   if (access !== PulseAccess.Full || !platform) {
@@ -628,23 +654,32 @@ export const runPulseRefresh = async (context: AuthContext, force = false) => {
   const day = utcDay();
   const salt = await getPulseSalt(platform, day);
   const policy = await buildPulseMarkingPolicy(context, values);
+  const offset = Math.max(0, Number(state.refresh_offset ?? 0) || 0);
+  let scanned = 0;
+  let handled = 0;
   let processed = 0;
   try {
     await fullEntitiesList<BasicStorePulseEntity>(context, PULSE_MANAGER_USER, values.scopes, {
-      filters: keysExistFilter,
       noFiltersChecking: true,
       callback: async (entities) => {
         const eligible = entities.filter((entity) => isPulseContributable(entity, policy, values.scopes));
-        processed += await refreshPulseEntities(context, platform, day, salt, eligible);
-        return processed < REFRESH_MAX_ENTITIES;
+        const start = Math.max(0, offset - scanned);
+        scanned += eligible.length;
+        const batch = eligible.slice(start, start + REFRESH_MAX_ENTITIES - handled);
+        if (batch.length > 0) {
+          handled += batch.length;
+          processed += await refreshPulseEntities(context, platform, day, salt, batch);
+        }
+        return handled < REFRESH_MAX_ENTITIES;
       },
     });
   } catch (error) {
     await handlePulseReadError(values, error);
     throw error;
   }
-  await redisSetPulseState({ last_refresh_at: new Date().toISOString() });
-  logApp.info('[THREAT PULSE] Network information refreshed', { processed });
+  const covered = handled < REFRESH_MAX_ENTITIES;
+  await redisSetPulseState({ last_refresh_at: new Date().toISOString(), refresh_offset: covered ? undefined : String(offset + handled) });
+  logApp.info('[THREAT PULSE] Network information refreshed', { processed, offset, covered });
   return processed;
 };
 
@@ -1086,6 +1121,11 @@ export const purgePulseContributions = async (context: AuthContext, user: AuthUs
     result = await xtmHubPulseClient.purge(platform);
   } catch (error) {
     throw FunctionalError('XTM Hub could not purge the Threat Pulse contributions, retry later', { reason: toPulseUnavailableReason(error) });
+  }
+  if (!result.success) {
+    // The contributions are still on XTM Hub: the local tracking stays, and nothing is audited as purged.
+    logApp.warn('[THREAT PULSE] XTM Hub did not purge the Threat Pulse contributions');
+    return result;
   }
   await redisClearPulseContributionState(lastUtcDays(STATS_DAYS + 1));
   await redisSetPulseCursor(new Date().toISOString());

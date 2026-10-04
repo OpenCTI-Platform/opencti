@@ -11,9 +11,9 @@ import { ENTITY_TYPE_SETTINGS } from '../../../src/schema/internalObject';
 import { ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_INDICATOR } from '../../../src/modules/indicator/indicator-types';
 import { ENTITY_TYPE_TRIGGER } from '../../../src/modules/notification/notification-types';
-import { MARKING_TLP_RED } from '../../../src/schema/identifier';
+import { MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
 import { recordPulseActivity, runPulseContribution, runPulsePreview, runPulseRefresh, utcDay } from '../../../src/modules/xtm/pulse/pulse-domain';
-import { redisTakePulseActivity } from '../../../src/modules/xtm/pulse/pulse-cache';
+import { redisClaimPulseOutbox, redisTakePulseActivity } from '../../../src/modules/xtm/pulse/pulse-cache';
 import { runPulseTrendingNotifications } from '../../../src/modules/xtm/pulse/pulse-notifications';
 import { computeStableKeys } from '../../../src/modules/xtm/pulse/pulse-hashing';
 import { PULSE_CONSENT_VERSION, type BasicStorePulseEntity } from '../../../src/modules/xtm/pulse/pulse-types';
@@ -58,6 +58,8 @@ const PULSE_TRENDING = gql`
       readable
       preview
       unavailable_reason
+      sector_bucket
+      region_bucket
       network_items_count
       locked_count
       entries { object_type rank platforms_bucket trend entity { id entity_type } }
@@ -70,6 +72,8 @@ const PULSE_STATUS = gql`
   }
 `;
 const PREVIEW_IP = '198.51.100.211';
+const OUTBOX_IP = '198.51.100.213';
+const GREEN_IP = '198.51.100.214';
 const PREVIEW_RED_DOMAIN = 'red-preview.pulse-test.example';
 const PREVIEW_PEERS = ['pulse-preview-1', 'pulse-preview-2', 'pulse-preview-3', 'pulse-preview-4', 'pulse-preview-5'];
 const PREVIEW_FORBIDDEN_OPERATIONS = ['pushPulse', 'pulseLookup', 'pulseTrending', 'pulseBenchmark'];
@@ -102,6 +106,11 @@ const CREATE_MALWARE = gql`
 const CREATE_TRIGGER = gql`
   mutation TriggerKnowledgeLiveAdd($input: TriggerLiveAddInput!) {
     triggerKnowledgeLiveAdd(input: $input) { id }
+  }
+`;
+const PULSE_SETTINGS = gql`
+  query PulseSettings {
+    pulseSettings { scopes contribution { total_records } }
   }
 `;
 const PURGE = gql`
@@ -243,6 +252,18 @@ describe('Threat Pulse manager and API', () => {
       await queryAsAdminWithSuccess({ query: PULSE_BENCHMARK, variables: { period: 'last_30_days' } });
       expect(hub.requests.slice(before).filter((request) => PREVIEW_FORBIDDEN_OPERATIONS.includes(request.operation))).toEqual([]);
     });
+
+    it('should read the preview digest of the configured sector and region', async () => {
+      await queryAsAdminWithSuccess({ query: CONFIGURE, variables: { input: { mode: 'preview', sector_bucket: 'finance', region_bucket: 'north_america' } } });
+      resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+      const before = hub.requests.length;
+      const preview = await queryAsAdminWithSuccess({ query: PULSE_TRENDING, variables: { period: 'last_7_days', includePreview: true } });
+      // The peers contributed from Europe: nothing trends in North America
+      expect(preview.data?.pulseTrending).toMatchObject({ preview: true, sector_bucket: 'finance', region_bucket: 'north_america', network_items_count: 0, entries: [] });
+      const digests = hub.requests.slice(before).filter((request) => request.operation === 'pulseDigest');
+      expect(digests.length).toBeGreaterThan(0);
+      digests.forEach((request) => expect(request.variables.input).toMatchObject({ sector_bucket: 'finance', region_bucket: 'north_america' }));
+    });
   });
 
   it('should enable Threat Pulse with the consent', async () => {
@@ -310,6 +331,33 @@ describe('Threat Pulse manager and API', () => {
     expect(huntedCount()).toBe(3 * malwareKeys.length);
   });
 
+  it('should keep the pending batches until XTM Hub accepts them, even after a run stopped once it claimed them', async () => {
+    const created = await queryAsAdminWithSuccess({ query: CREATE_INDICATOR, variables: { input: { name: OUTBOX_IP, pattern: `[ipv4-addr:value = '${OUTBOX_IP}']`, pattern_type: 'stix', x_opencti_main_observable_type: 'IPv4-Addr' } } });
+    const outboxIndicatorId = created.data?.indicatorAdd.id;
+    const entity = await storeLoadById<BasicStorePulseEntity>(testContext, ADMIN_USER, outboxIndicatorId, ENTITY_TYPE_INDICATOR);
+    const keys = computeStableKeys(entity);
+    const contributed = () => hub.ledger
+      .filter((row) => row.platformId === settingsId && keys.includes(row.key))
+      .reduce((total, row) => total + row.count, 0);
+    // XTM Hub fails: the batches wait in the outbox
+    hub.failNext('pushPulse', 'INTERNAL_SERVER_ERROR');
+    await runPulseContribution(testContext);
+    expect(contributed()).toBe(0);
+    // A run claims the pending batches, then stops before XTM Hub answered
+    expect((await redisClaimPulseOutbox()).length).toBeGreaterThan(0);
+    // The next run claims them again; XTM Hub fails again, they stay claimed
+    hub.failNext('pushPulse', 'INTERNAL_SERVER_ERROR');
+    await runPulseContribution(testContext);
+    expect(contributed()).toBe(0);
+    // Accepted once, then settled
+    await runPulseContribution(testContext);
+    expect(contributed()).toBe(keys.length);
+    expect(await redisClaimPulseOutbox()).toEqual([]);
+    await runPulseContribution(testContext);
+    expect(contributed()).toBe(keys.length);
+    await deleteElementById(testContext, ADMIN_USER, outboxIndicatorId, ENTITY_TYPE_INDICATOR);
+  });
+
   it('should hide the network signal below the anonymity threshold', async () => {
     const result = await queryAsAdminWithSuccess({ query: PULSE_ENTITY, variables: { id: sharedIndicatorId } });
     expect(result.data?.pulseEntity).toMatchObject({ readable: true, unavailable_reason: null });
@@ -358,6 +406,35 @@ describe('Threat Pulse manager and API', () => {
     expect(entityIds).not.toContain(redIndicatorId);
   });
 
+  it('should remove the statistics of the objects a narrower scope or a new exclusion takes out', async () => {
+    const load = (id: string, type: string) => storeLoadById<BasicStorePulseEntity>(testContext, ADMIN_USER, id, type);
+    const configure = async (input: Record<string, unknown>) => {
+      await queryAsAdminWithSuccess({ query: CONFIGURE, variables: { input: { mode: 'contribute_and_read', ...input } } });
+      resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+    };
+    const green = await queryAsAdminWithSuccess({ query: CREATE_INDICATOR, variables: { input: { name: GREEN_IP, pattern: `[ipv4-addr:value = '${GREEN_IP}']`, pattern_type: 'stix', x_opencti_main_observable_type: 'IPv4-Addr', objectMarking: [MARKING_TLP_GREEN] } } });
+    const greenIndicatorId = green.data?.indicatorAdd.id;
+    await seedPeers(greenIndicatorId, ENTITY_TYPE_INDICATOR);
+    await runPulseRefresh(testContext, true);
+    expect((await load(greenIndicatorId, ENTITY_TYPE_INDICATOR)).pulse_prevalence).toBeDefined();
+    const scopes: string[] = (await queryAsAdminWithSuccess({ query: PULSE_SETTINGS })).data?.pulseSettings.scopes;
+
+    // A new exclusion: only the objects with that marking lose their statistics
+    await configure({ excluded_markings: [MARKING_TLP_GREEN] });
+    expect((await load(greenIndicatorId, ENTITY_TYPE_INDICATOR)).pulse_prevalence).toBeUndefined();
+    expect((await load(sharedIndicatorId, ENTITY_TYPE_INDICATOR)).pulse_prevalence).toBe('widespread');
+
+    // A narrower scope: only the objects of the removed type lose theirs
+    await configure({ excluded_markings: [], scopes: scopes.filter((scope) => scope !== ENTITY_TYPE_INDICATOR) });
+    expect((await load(sharedIndicatorId, ENTITY_TYPE_INDICATOR)).pulse_prevalence).toBeUndefined();
+    expect((await load(malwareId, ENTITY_TYPE_MALWARE)).pulse_prevalence).toBeDefined();
+
+    await configure({ scopes });
+    expect(await runPulseRefresh(testContext, true)).toBeGreaterThanOrEqual(2);
+    expect((await load(sharedIndicatorId, ENTITY_TYPE_INDICATOR)).pulse_prevalence).toBe('widespread');
+    await deleteElementById(testContext, ADMIN_USER, greenIndicatorId, ENTITY_TYPE_INDICATOR);
+  });
+
   it('should keep the benchmark for Enterprise Edition platforms', async () => {
     const result = await queryAsAdminWithSuccess({ query: PULSE_BENCHMARK, variables: { period: 'last_30_days' } });
     const benchmark = result.data?.pulseBenchmark;
@@ -380,6 +457,19 @@ describe('Threat Pulse manager and API', () => {
     expect(await runPulseTrendingNotifications(testContext)).toBe(0);
   });
 
+  it('should notify a trending trigger created later, once', async () => {
+    const later = await queryAsAdminWithSuccess({
+      query: CREATE_TRIGGER,
+      variables: { input: { name: 'Threat Pulse trending later', event_types: ['pulse_trending'], instance_trigger: false, notifiers: [] } },
+    });
+    const laterTriggerId = later.data?.triggerKnowledgeLiveAdd.id;
+    resetCacheForEntity(ENTITY_TYPE_TRIGGER);
+    expect(await runPulseTrendingNotifications(testContext)).toBeGreaterThanOrEqual(2);
+    expect(await runPulseTrendingNotifications(testContext)).toBe(0);
+    await deleteElementById(testContext, ADMIN_USER, laterTriggerId, ENTITY_TYPE_TRIGGER);
+    resetCacheForEntity(ENTITY_TYPE_TRIGGER);
+  });
+
   it('should fall back to the preview when XTM Hub requires a contribution, and recover with the next accepted one', async () => {
     hub.failNext('pulseLookup', 'PULSE_CONTRIBUTION_REQUIRED');
     await expect(runPulseRefresh(testContext, true)).rejects.toThrow();
@@ -400,6 +490,18 @@ describe('Threat Pulse manager and API', () => {
     expect(await runPulseRefresh(testContext, true)).toBeGreaterThanOrEqual(2);
     const full = await queryAsAdminWithSuccess({ query: PULSE_ENTITY, variables: { id: sharedIndicatorId } });
     expect(full.data?.pulseEntity).toMatchObject({ access: 'full', readable: true, information: { preview: false, platforms_bucket: '5-9' } });
+  });
+
+  it('should keep the local contribution tracking when XTM Hub does not purge', async () => {
+    const contributedRows = hub.ledger.filter((row) => row.platformId === settingsId).length;
+    const before = await queryAsAdminWithSuccess({ query: PULSE_SETTINGS });
+    hub.refuseNextPurge();
+    const result = await queryAsAdminWithSuccess({ query: PURGE });
+    expect(result.data?.pulsePurge).toEqual({ success: false, deleted_records: 0 });
+    expect(hub.ledger.filter((row) => row.platformId === settingsId)).toHaveLength(contributedRows);
+    const after = await queryAsAdminWithSuccess({ query: PULSE_SETTINGS });
+    expect(after.data?.pulseSettings.contribution.total_records).toBe(before.data?.pulseSettings.contribution.total_records);
+    expect(after.data?.pulseSettings.contribution.total_records).toBeGreaterThan(0);
   });
 
   it('should purge every contribution of the platform on XTM Hub', async () => {
