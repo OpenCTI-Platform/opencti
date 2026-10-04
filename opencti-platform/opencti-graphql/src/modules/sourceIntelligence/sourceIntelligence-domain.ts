@@ -484,7 +484,8 @@ export const sourceEditField = async (context: AuthContext, user: AuthUser, id: 
     if (!owner) throw FunctionalError('Source owner not found', { owner_id: patch.owner_id });
   }
   const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_SOURCE, patch);
-  if (patch.enabled === false && source.enabled !== false) {
+  // On every save of a disabled source, not only when it gets disabled: saving it again retries a failed cleanup
+  if (patch.enabled === false) {
     await clearDisabledSourcesLiveData(context, [element as unknown as BasicStoreEntitySource]);
   }
   await publishUserAction({
