@@ -36,6 +36,8 @@ import {
 } from './timeMachineUtils';
 
 const t = (message: string) => message;
+const intl = createIntl({ locale: 'en', messages: {}, onError: () => {} });
+const tWithValues = (message: string, opts?: { values?: Record<string, string | number> }) => intl.formatMessage({ id: message, defaultMessage: message }, opts?.values);
 const formatDate = (date: string) => date.substring(0, 10);
 
 const value = (display: string, extra: Partial<{ deleted: boolean; restricted: boolean }> = {}) => ({
@@ -213,9 +215,9 @@ describe('entity diff exports', () => {
   });
 
   it('builds an escaped HTML document for the PDF export', () => {
-    const html = entityDiffToHtml(entityDiff, t, formatDate);
+    const html = entityDiffToHtml(entityDiff, tWithValues, formatDate);
     expect(html).toContain('<h1>APT &lt;28&gt;</h1>');
-    expect(html).toContain('Changes between 2026-07-01 and 2026-10-01');
+    expect(html).toContain('<p>Changes between 2026-07-01 and 2026-10-01</p>');
     expect(html).toContain('<td>Confidence</td><td>50 -&gt; 80</td>');
     expect(html).toContain('<td>Score</td><td>-</td>');
     expect(html).toContain('Old victim (deleted)');
@@ -223,7 +225,7 @@ describe('entity diff exports', () => {
   });
 
   it('states when there is no change', () => {
-    const html = entityDiffToHtml({ ...entityDiff, attributes: [], relationships: [] }, t, formatDate);
+    const html = entityDiffToHtml({ ...entityDiff, attributes: [], relationships: [] }, tWithValues, formatDate);
     expect(html.match(/No changes/g)).toHaveLength(2);
   });
 });
@@ -237,9 +239,10 @@ describe('landscape diff exports', () => {
   });
 
   it('builds the HTML report with the non-empty aggregates only', () => {
-    const html = landscapeDiffToHtml(landscapeDiff, t, formatDate);
+    const html = landscapeDiffToHtml(landscapeDiff, tWithValues, formatDate);
     expect(html).toContain('<h1>Landscape changes</h1>');
-    expect(html).toContain('Entity types: Intrusion-Set');
+    expect(html).toContain('<p>Changes between 2026-07-01 and 2026-10-01</p>');
+    expect(html).toContain('<td>Entity types</td><td>entity_Intrusion-Set</td>');
     expect(html).toContain('<h3>New techniques by tactic</h3>');
     expect(html).toContain('<td>Phishing</td><td>Attack-Pattern</td><td>2</td>');
     expect(html).toContain('<h3>New victims by country</h3>');
@@ -249,7 +252,7 @@ describe('landscape diff exports', () => {
   });
 
   it('handles a diff without aggregates nor entities', () => {
-    const html = landscapeDiffToHtml({ ...landscapeDiff, aggregates: null, entities: [] }, t, formatDate);
+    const html = landscapeDiffToHtml({ ...landscapeDiff, aggregates: null, entities: [] }, tWithValues, formatDate);
     expect(html).not.toContain('Summary');
     expect(html).not.toContain('Top changed entities');
   });
@@ -333,8 +336,7 @@ describe('Landscape changes grouping', () => {
 });
 
 describe('Counts and widget periods', () => {
-  const intl = createIntl({ locale: 'en', messages: {}, onError: () => {} });
-  const t = (message: string, opts?: { values?: Record<string, string | number> }) => intl.formatMessage({ id: message, defaultMessage: message }, opts?.values);
+  const t = tWithValues;
 
   it('should write a count with its singular or plural unit', () => {
     expect(countLabel('new_relationships', 1, t)).toEqual('1 new relationship');

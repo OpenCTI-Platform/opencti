@@ -237,6 +237,7 @@ export interface LandscapeDiffData {
 }
 
 type Translate = (message: string) => string;
+type TranslateWithValues = (message: string, opts?: { values?: Record<string, string | number> }) => string;
 
 const ACTION_LABELS: Record<string, string> = {
   added: 'Added',
@@ -304,7 +305,11 @@ export const entityDiffToCsv = (diff: EntityDiffData, t: Translate): string => {
   return toCsv(rows);
 };
 
-export const entityDiffToHtml = (diff: EntityDiffData, t: Translate, formatDate: (date: string) => string): string => {
+const periodCaption = (from: string, to: string, t: TranslateWithValues, formatDate: (date: string) => string) => {
+  return t('Changes between {from} and {to}', { values: { from: formatDate(from), to: formatDate(to) } });
+};
+
+export const entityDiffToHtml = (diff: EntityDiffData, t: TranslateWithValues, formatDate: (date: string) => string): string => {
   const { summary } = diff;
   const summaryRows = [
     [t('Attributes changed'), summary.attributes_changed],
@@ -327,7 +332,7 @@ export const entityDiffToHtml = (diff: EntityDiffData, t: Translate, formatDate:
     + `<td>${escapeHtml(object.object_name)}</td><td>${escapeHtml(object.at ? formatDate(object.at) : '')}</td></tr>`).join('');
   return [
     `<h1>${escapeHtml(diff.representative)}</h1>`,
-    `<p>${escapeHtml(t('Changes between'))} ${escapeHtml(formatDate(diff.from))} ${escapeHtml(t('and'))} ${escapeHtml(formatDate(diff.to))}</p>`,
+    `<p>${escapeHtml(periodCaption(diff.from, diff.to, t, formatDate))}</p>`,
     `<h2>${escapeHtml(t('Summary'))}</h2>`,
     `<table><tbody>${summaryRows.map(([label, value]) => `<tr><td>${escapeHtml(label)}</td><td>${escapeHtml(value)}</td></tr>`).join('')}</tbody></table>`,
     `<h2>${escapeHtml(t('Attributes'))}</h2>`,
@@ -400,12 +405,13 @@ const itemsTable = (title: string, items: ReadonlyArray<LandscapeItemData>, t: T
   return `<h3>${escapeHtml(title)}</h3><table><thead><tr><th>${escapeHtml(t('Name'))}</th><th>${escapeHtml(t('Type'))}</th><th>${escapeHtml(t('Count'))}</th></tr></thead><tbody>${rows}</tbody></table>`;
 };
 
-export const landscapeDiffToHtml = (diff: LandscapeDiffData, t: Translate, formatDate: (date: string) => string): string => {
+export const landscapeDiffToHtml = (diff: LandscapeDiffData, t: TranslateWithValues, formatDate: (date: string) => string): string => {
   const { aggregates } = diff;
+  const scopeTypes = diff.scope_entity_types.map((type) => t(`entity_${type}`)).join(', ');
   const parts = [
     `<h1>${escapeHtml(t('Landscape changes'))}</h1>`,
-    `<p>${escapeHtml(t('Changes between'))} ${escapeHtml(formatDate(diff.from))} ${escapeHtml(t('and'))} ${escapeHtml(formatDate(diff.to))}</p>`,
-    `<p>${escapeHtml(t('Entity types'))}: ${escapeHtml(diff.scope_entity_types.join(', '))}</p>`,
+    `<p>${escapeHtml(periodCaption(diff.from, diff.to, t, formatDate))}</p>`,
+    `<table><tbody><tr><td>${escapeHtml(t('Entity types'))}</td><td>${escapeHtml(scopeTypes)}</td></tr></tbody></table>`,
   ];
   if (aggregates) {
     const kpis = [
@@ -451,8 +457,6 @@ const COUNT_LABELS = {
   new_container_objects: '{count, plural, one {# new object} other {# new objects}}',
   attributes_changed: '{count, plural, one {# attribute changed} other {# attributes changed}}',
 } as const;
-
-type TranslateWithValues = (message: string, opts?: { values?: Record<string, string | number> }) => string;
 
 /**
  * A count with its unit, with the plural rules of the language ("1 update", "3 updates").
