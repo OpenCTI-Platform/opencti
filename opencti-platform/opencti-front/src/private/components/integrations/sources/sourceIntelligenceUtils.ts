@@ -96,7 +96,7 @@ export const RECOMMENDATION_KIND_LABELS: Record<string, string> = {
 export const RECOMMENDATION_STATUS_LABELS: Record<string, string> = {
   proposed: 'Proposed',
   applied: 'Applied',
-  dismissed: 'Dismissed',
+  dismissed: 'Rejected',
   reverted: 'Reverted',
   failed: 'Failed',
 };

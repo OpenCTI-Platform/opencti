@@ -6251,5 +6251,13 @@
   "{measure}, highest over the last {days} days": "{measure}、過去 {days} 日間の最大値",
   "{measure} per day, scored over {days} days": "日ごとの{measure} ({days} 日間で算出)",
   "{measure} ({currency})": "{measure} ({currency})",
-  "Values in {currency}": "{currency} 建ての値"
+  "Values in {currency}": "{currency} 建ての値",
+  "Reject": "却下",
+  "Rejected": "却下済み",
+  "Reject the recommendation": "推奨事項を却下",
+  "Recommendation rejected": "推奨事項を却下しました",
+  "Rejected by {user} {time}": "{user} が却下 {time}",
+  "Rejected {time}": "却下 {time}",
+  "A rejected recommendation is not proposed again during the cooldown period configured in the settings.": "却下された推奨事項は、設定で構成した待機期間中は再提案されません。",
+  "Cooldown after a rejection (days)": "却下後の待機期間 (日)"
 }
