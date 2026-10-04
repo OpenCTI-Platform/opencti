@@ -25,11 +25,29 @@ describe('canSubscriberStillAccess', () => {
     vi.spyOn(userDomain, 'isUserAccountValid').mockReturnValue(true);
     const membership = vi.spyOn(access, 'isUserInPlatformOrganization').mockReturnValue(false);
     const check = vi.spyOn(access, 'isUserCanAccessStoreElement').mockResolvedValue(false);
-    expect(await canSubscriberStillAccess(context, instance)).toBe(false);
+    const subscription = { user: { ...snapshot, origin: { socket: 'subscription' } }, user_inside_platform_organization: true } as Record<string, unknown>;
+    expect(await canSubscriberStillAccess(subscription, instance)).toBe(false);
     expect(membership).toHaveBeenCalledWith(current, { platform_organization: 'org-platform' });
-    expect(check).toHaveBeenCalledWith(expect.objectContaining({ user: current, user_inside_platform_organization: false }), current, instance);
+    const expectedUser = expect.objectContaining({ allowed_marking: [], origin: { socket: 'subscription' } });
+    expect(check).toHaveBeenCalledWith(expect.objectContaining({ user: expectedUser, user_inside_platform_organization: false }), expectedUser, instance);
+    // A refused event leaves the subscription context as it was.
+    expect(subscription.user).toMatchObject({ allowed_marking: [{ internal_id: 'marking-red' }] });
     check.mockResolvedValue(true);
-    expect(await canSubscriberStillAccess(context, instance)).toBe(true);
+    expect(await canSubscriberStillAccess(subscription, instance)).toBe(true);
+    // An event that passes is resolved with the current identity of the subscriber.
+    expect(subscription).toMatchObject({ user: { allowed_marking: [], origin: { socket: 'subscription' } }, user_inside_platform_organization: false });
+    expect(subscription.batch).toBeDefined();
+  });
+
+  it('stops the events of a subscriber that lost a capability the subscription requires', async () => {
+    const current = { id: 'user-1', capabilities: [{ name: 'SETTINGS_SETACCESSES' }] } as unknown as AuthUser;
+    vi.spyOn(userDomain, 'resolveUserByIdFromCache').mockResolvedValue(current);
+    vi.spyOn(userDomain, 'isUserAccountValid').mockReturnValue(true);
+    const check = vi.spyOn(access, 'isUserCanAccessStoreElement').mockResolvedValue(true);
+    expect(await canSubscriberStillAccess(context, instance, ['KNOWLEDGE'])).toBe(false);
+    expect(check).not.toHaveBeenCalled();
+    vi.spyOn(userDomain, 'resolveUserByIdFromCache').mockResolvedValue({ ...current, capabilities: [{ name: 'KNOWLEDGE' }] } as unknown as AuthUser);
+    expect(await canSubscriberStillAccess({ user: snapshot }, instance, ['KNOWLEDGE'])).toBe(true);
   });
 
   it('stops the events of a subscriber whose account was locked or expired since the socket opened', async () => {

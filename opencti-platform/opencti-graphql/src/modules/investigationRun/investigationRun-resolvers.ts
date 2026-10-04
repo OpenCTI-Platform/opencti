@@ -17,6 +17,7 @@ import type { Resolvers } from '../../generated/graphql';
 import { BUS_TOPICS } from '../../config/conf';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
+import { KNOWLEDGE } from '../../utils/access';
 import { loadCreators } from '../../database/members';
 import { elFindByIds } from '../../database/engine';
 import { internalLoadById } from '../../database/middleware-loader';
@@ -159,7 +160,12 @@ const investigationRunResolvers: Resolvers = {
         await checkEnterpriseEdition(context);
         const bus = BUS_TOPICS[ENTITY_TYPE_INVESTIGATION_RUN];
         // A run's markings widen as it cites restricted objects: access is checked on every event.
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: ENTITY_TYPE_INVESTIGATION_RUN, notifySelf: true, recheckAccess: true });
+        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], {
+          type: ENTITY_TYPE_INVESTIGATION_RUN,
+          notifySelf: true,
+          recheckAccess: true,
+          requiredCapabilities: [KNOWLEDGE],
+        });
       },
     },
   },
