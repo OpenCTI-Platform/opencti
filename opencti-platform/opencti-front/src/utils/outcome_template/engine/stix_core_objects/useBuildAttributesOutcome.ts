@@ -29,6 +29,15 @@ export const isReadThroughNotAllowedObject = (
   return false;
 };
 
+const LATEST_INVESTIGATION_RUN = 'latestInvestigationRun';
+
+// The latest investigation run costs a run lookup and the live checks of its
+// sources: only fetch it when a column of the widget reads it.
+export const selectsLatestInvestigationRun = (
+  columns: Pick<Widget['dataSelection'][0], 'columns'>['columns'],
+) => (columns ?? []).some(({ attribute }) => attribute === LATEST_INVESTIGATION_RUN
+  || !!attribute?.startsWith(`${LATEST_INVESTIGATION_RUN}.`));
+
 const useBuildAttributesOutcome = () => {
   const { t_i18n } = useFormatter();
   const { buildReadableAttribute } = useBuildReadableAttribute();
@@ -42,7 +51,10 @@ const useBuildAttributesOutcome = () => {
     if (!instance_id) {
       throw Error('The attribute widget should refers to an instance');
     }
-    const queryVariables = { id: instance_id === SELF_ID ? containerId : instance_id };
+    const queryVariables = {
+      id: instance_id === SELF_ID ? containerId : instance_id,
+      withInvestigationRun: selectsLatestInvestigationRun(columns),
+    };
     const data = await fetchQuery(
       stixCoreObjectsAttributesQuery,
       queryVariables,

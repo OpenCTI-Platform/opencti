@@ -3,7 +3,7 @@ import { fetchQuery } from 'react-relay';
 import { MockPayloadGenerator } from 'relay-test-utils';
 import { testRenderHook } from '../../../tests/test-render';
 import * as env from '../../../../relay/environment';
-import useBuildAttributesOutcome, { isReadThroughNotAllowedObject } from './useBuildAttributesOutcome';
+import useBuildAttributesOutcome, { isReadThroughNotAllowedObject, selectsLatestInvestigationRun } from './useBuildAttributesOutcome';
 import * as filterUtils from '../../../filters/filtersUtils';
 import { SELF_ID } from '../../../filters/filtersUtils';
 
@@ -93,6 +93,39 @@ describe('Hook: useBuildAttributesOutcome', () => {
     expect(withheld.find((o) => o.variableName === 'caseName')?.attributeData).toEqual('Phishing case');
     expect(withheld.find((o) => o.variableName === 'summary')?.attributeData).toEqual('Withheld: marked above the marking limits of this export');
     expect(withheld.find((o) => o.variableName === 'run')?.attributeData).toEqual('Withheld: marked above the marking limits of this export');
+  });
+
+  it('should only request the latest investigation run when a column reads it', async () => {
+    const { hook } = testRenderHook(() => useBuildAttributesOutcome());
+    const requestedVariables: unknown[] = [];
+    vi.spyOn(env, 'fetchQuery').mockImplementation((_q, variables) => {
+      requestedVariables.push(variables);
+      return { toPromise: async () => ({ stixCoreObject: { name: 'Phishing case' } }) } as unknown as ReturnType<typeof env.fetchQuery>;
+    });
+    const { buildAttributesOutcome } = hook.result.current;
+
+    await buildAttributesOutcome('id_XX', { instance_id: SELF_ID, columns: [{ variableName: 'caseName', attribute: 'name' }] });
+    await buildAttributesOutcome('id_XX', {
+      instance_id: SELF_ID,
+      columns: [{ variableName: 'summary', attribute: 'latestInvestigationRun.report_sections.executive_summary' }],
+    });
+    expect(requestedVariables).toEqual([
+      { id: 'id_XX', withInvestigationRun: false },
+      { id: 'id_XX', withInvestigationRun: true },
+    ]);
+  });
+});
+
+describe('Function: selectsLatestInvestigationRun', () => {
+  it('should select the run for a column reading the run or one of its fields', () => {
+    expect(selectsLatestInvestigationRun([{ attribute: 'latestInvestigationRun' }])).toBe(true);
+    expect(selectsLatestInvestigationRun([{ attribute: 'name' }, { attribute: 'latestInvestigationRun.run_status' }])).toBe(true);
+  });
+
+  it('should not select the run for other columns or no column', () => {
+    expect(selectsLatestInvestigationRun([{ attribute: 'name' }, { attribute: 'latestInvestigationRunner' }, { attribute: null }])).toBe(false);
+    expect(selectsLatestInvestigationRun([])).toBe(false);
+    expect(selectsLatestInvestigationRun(null)).toBe(false);
   });
 });
 

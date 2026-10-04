@@ -1,7 +1,7 @@
 import { graphql } from 'react-relay';
 
 const stixCoreObjectsAttributesQuery = graphql`
-    query StixCoreObjectsAttributesQuery($id: String!) {
+    query StixCoreObjectsAttributesQuery($id: String!, $withInvestigationRun: Boolean!) {
         stixCoreObject(id: $id) {
             id
             entity_type
@@ -265,7 +265,7 @@ const stixCoreObjectsAttributesQuery = graphql`
             ... on Case {
                 name
                 description
-                latestInvestigationRun {
+                latestInvestigationRun @include(if: $withInvestigationRun) {
                     objectMarking {
                         id
                     }
