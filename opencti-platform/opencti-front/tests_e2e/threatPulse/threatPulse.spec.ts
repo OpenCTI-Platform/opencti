@@ -179,6 +179,12 @@ test('Keep the Sector benchmark template and the trending widget discoverable in
 
   await page.goto('/dashboard/workspaces/dashboards');
   await page.getByTestId('threat-pulse-dashboard-template').click();
+  // The template card: title, purpose, the widgets it creates and the preview note
+  const templateCard = page.getByTestId('threat-pulse-template-card');
+  await expect(templateCard).toBeVisible();
+  await expect(templateCard.getByTestId('threat-pulse-template-widgets').locator('li')).toHaveCount(8);
+  await expect(templateCard.getByTestId('threat-pulse-template-preview-note')).toBeVisible();
+  await page.getByTestId('threat-pulse-template-create').click();
   await expect(page).toHaveURL(/\/dashboard\/workspaces\/dashboards\/[0-9a-f-]+$/);
 
   // Trending in your sector: the first ranks named, the next ones folded into one locked row, one step to unlock them

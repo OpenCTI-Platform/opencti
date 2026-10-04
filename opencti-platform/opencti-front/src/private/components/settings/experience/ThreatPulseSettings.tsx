@@ -26,7 +26,6 @@ import {
 } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
-import Tag from '@common/tag/Tag';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
@@ -37,7 +36,14 @@ import { MESSAGING$ } from '../../../../relay/environment';
 import ExperienceCard, { ExperienceHeadline } from './ExperienceCard';
 import ExperienceDetailRow from './ExperienceDetailRow';
 import ExperienceFeatureTile from './ExperienceFeatureTile';
-import { PULSE_CONTRIBUTION_STATUS_LABELS, PULSE_MODE_LABELS, PULSE_REGION_LABELS, PULSE_SECTOR_LABELS } from '../../common/threat_pulse/threatPulseUtils';
+import {
+  PULSE_CONTRIBUTION_STATUS_LABELS,
+  PULSE_MODE_LABELS,
+  PULSE_PUSH_ERROR_MESSAGES,
+  PULSE_REGION_LABELS,
+  PULSE_SECTOR_LABELS,
+  pulsePlatformsBucketLabel,
+} from '../../common/threat_pulse/threatPulseUtils';
 import { ThreatPulseSettingsQuery } from './__generated__/ThreatPulseSettingsQuery.graphql';
 import { ThreatPulseSettings_settings$data, ThreatPulseSettings_settings$key } from './__generated__/ThreatPulseSettings_settings.graphql';
 import { ThreatPulseSettingsConfigureMutation } from './__generated__/ThreatPulseSettingsConfigureMutation.graphql';
@@ -261,8 +267,30 @@ interface ConsentDialogProps {
   onAccept: (input: ConsentInput) => void;
 }
 
+const BucketHelper = () => {
+  const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
+  return (
+    <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>
+      {t_i18n('Shared as a coarse category, never your organization\'s name')}
+    </Text>
+  );
+};
+
+const ConsentList = ({ title, items, testId }: { title: string; items: string[]; testId: string }) => (
+  <Box data-testid={testId}>
+    <Text variant="content-compact-bold">{title}</Text>
+    <Box component="ul" sx={{ margin: 0, marginTop: 0.5, paddingLeft: 2.5, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+      {items.map((item) => (
+        <li key={item}><Text variant="content-compact">{item}</Text></li>
+      ))}
+    </Box>
+  </Box>
+);
+
 const ThreatPulseConsentDialog = ({ open, settings, markingOptions, onClose, onAccept }: ConsentDialogProps) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const [accepted, setAccepted] = useState(false);
   const [sector, setSector] = useState<PulseSectorBucket>(settings.sector_bucket ?? settings.suggested_sector_bucket);
   const [region, setRegion] = useState<PulseRegionBucket>(settings.region_bucket ?? settings.suggested_region_bucket);
@@ -271,39 +299,60 @@ const ThreatPulseConsentDialog = ({ open, settings, markingOptions, onClose, onA
   return (
     <Dialog open={open} onClose={onClose} title={t_i18n('Contribute to Threat Pulse')} size="medium">
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }} data-testid="threat-pulse-consent-dialog">
-        <Text variant="content-compact">
-          {t_i18n('By contributing, this platform sends to XTM Hub, every hour, keyed hashes of the indicators, attack patterns, vulnerabilities, intrusion sets, malware and tools it observes, with activity counts. Raw values, names, descriptions, files and the identity of your organization never leave the platform.')}
-        </Text>
-        <Text variant="content-compact">
-          {t_i18n('Hashes are derived with a salt that XTM Hub rotates every day. Objects marked TLP:RED, TLP:AMBER+STRICT or PAP:RED, objects with restricted access and the markings you exclude never contribute.')}
-        </Text>
-        <Text variant="content-compact">
-          {t_i18n('XTM Hub publishes a signal only when enough distinct platforms observed the same object (k-anonymity). Your sector and region are shared as coarse buckets only.')}
-        </Text>
-        <Text variant="content-compact">
-          {t_i18n('Contributing unlocks the full experience: platforms range, network first seen, 12-week trend, sector trend, trending alerts, benchmarks and briefings. You can stop contributing at any time and purge every contribution of this platform; the preview stays available and sends nothing.')}
+        <ConsentList
+          testId="threat-pulse-consent-shared"
+          title={t_i18n('What is shared every hour')}
+          items={[
+            t_i18n('Keyed hashes of the indicators, attack patterns, vulnerabilities, intrusion sets, malware and tools this platform observes, changed every day by a salt'),
+            t_i18n('How many times each one was created, sighted, detected or hunted that day'),
+            t_i18n('The sector and the region you choose below'),
+          ]}
+        />
+        <ConsentList
+          testId="threat-pulse-consent-never"
+          title={t_i18n('What never leaves this platform')}
+          items={[
+            t_i18n('Objects marked TLP:RED, TLP:AMBER+STRICT or PAP:RED, and the markings you exclude below'),
+            t_i18n('Objects with restricted access'),
+            t_i18n('Values, names, descriptions, files and the name of your organization'),
+          ]}
+        />
+        <ConsentList
+          testId="threat-pulse-consent-unlocks"
+          title={t_i18n('What you unlock')}
+          items={[
+            t_i18n('How many platforms see each object, since when, and its 12-week and sector trends'),
+            t_i18n('The full Trending in your sector list and its alerts'),
+            t_i18n('The sector benchmark and the weekly briefing (Enterprise Edition)'),
+          ]}
+        />
+        <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>
+          {settings.network.k_threshold
+            ? t_i18n('XTM Hub publishes a signal only once {count} platforms or more reported the same object. You can stop contributing and purge every contribution of this platform at any time; the preview stays and sends nothing.', { values: { count: settings.network.k_threshold } })
+            : t_i18n('XTM Hub publishes a signal only once enough platforms reported the same object. You can stop contributing and purge every contribution of this platform at any time; the preview stays and sends nothing.')}
         </Text>
         <a href={THREAT_PULSE_DOCUMENTATION_URL} target="_blank" rel="noopener noreferrer">
           <Text variant="content-compact">{t_i18n('Read what is shared in each mode')}</Text>
         </a>
         <Select value={sector} onValueChange={(value) => setSector(value as PulseSectorBucket)}>
-          <SelectLabel>{t_i18n('Sector bucket')}</SelectLabel>
-          <SelectTrigger aria-label={t_i18n('Sector bucket')}>
+          <SelectLabel>{t_i18n('Sector')}</SelectLabel>
+          <SelectTrigger aria-label={t_i18n('Sector')}>
             <SelectValue>{t_i18n(PULSE_SECTOR_LABELS[sector])}</SelectValue>
           </SelectTrigger>
-          <SelectContent aria-label={t_i18n('Sector bucket')}>
+          <SelectContent aria-label={t_i18n('Sector')}>
             {SECTOR_VALUES.map((value) => <SelectItem key={value} value={value}>{t_i18n(PULSE_SECTOR_LABELS[value])}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={region} onValueChange={(value) => setRegion(value as PulseRegionBucket)}>
-          <SelectLabel>{t_i18n('Region bucket')}</SelectLabel>
-          <SelectTrigger aria-label={t_i18n('Region bucket')}>
+          <SelectLabel>{t_i18n('Region')}</SelectLabel>
+          <SelectTrigger aria-label={t_i18n('Region')}>
             <SelectValue>{t_i18n(PULSE_REGION_LABELS[region])}</SelectValue>
           </SelectTrigger>
-          <SelectContent aria-label={t_i18n('Region bucket')}>
+          <SelectContent aria-label={t_i18n('Region')}>
             {REGION_VALUES.map((value) => <SelectItem key={value} value={value}>{t_i18n(PULSE_REGION_LABELS[value])}</SelectItem>)}
           </SelectContent>
         </Select>
+        <BucketHelper />
         <Box data-testid="threat-pulse-consent-privacy">
           <Text variant="content-compact">{t_i18n('Choose what this platform contributes: these choices apply before anything is sent.')}</Text>
           <ThreatPulsePrivacyFields
@@ -344,7 +393,7 @@ interface ThreatPulseSettingsComponentProps {
 }
 
 const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSettingsComponentProps) => {
-  const { t_i18n, fldt, n } = useFormatter();
+  const { t_i18n, fldt, fsd, n } = useFormatter();
   const { translateEntityType } = useEntityTranslation();
   const theme = useTheme<Theme>();
   const secondary = { color: theme.palette.text.secondary };
@@ -369,22 +418,32 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
           return;
         }
         setOpenPurge(false);
-        MESSAGING$.notifySuccess(`${n(response.pulsePurge.deleted_records)} ${t_i18n('contributions purged from XTM Hub')}`);
+        MESSAGING$.notifySuccess(t_i18n('{count, plural, one {# contribution} other {# contributions}} purged from XTM Hub', { values: { count: response.pulsePurge.deleted_records } }));
       },
     });
   };
 
   const lapsed = settings.mode === 'contribute_and_read' && settings.access === 'preview';
-  let statusChip = <Tag label={t_i18n('Off')} labelTextTransform="none" disableTooltip />;
+  let statusChip = <Chip label={t_i18n('Off')} severity="neutral" />;
   if (settings.access === 'not_connected') {
-    statusChip = <Tag label={t_i18n('Not connected')} labelTextTransform="none" disableTooltip />;
+    statusChip = <Chip label={t_i18n('Not connected')} severity="neutral" />;
   } else if (settings.access === 'full') {
-    statusChip = <Tag label={t_i18n('Contributing - full experience')} color={theme.palette.success.main} labelTextTransform="none" disableTooltip />;
+    statusChip = <Chip label={t_i18n('Contributing')} severity="low" />;
   } else if (lapsed) {
-    statusChip = <Tag label={t_i18n('Contribution lapsed - preview')} labelTextTransform="none" disableTooltip />;
+    statusChip = <Chip label={t_i18n('Contribution lapsed - preview')} severity="medium" />;
   } else if (settings.access === 'preview') {
-    statusChip = <Tag label={t_i18n('Preview')} color={accent} labelTextTransform="none" disableTooltip />;
+    statusChip = <Chip label={t_i18n('Preview')} severity="info" />;
   }
+  const bucketLabel = (label: string) => (
+    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+      <Text variant="content-compact" style={secondary}>{label}</Text>
+      <BucketHelper />
+    </Box>
+  );
+  const contributorsLabel = pulsePlatformsBucketLabel(t_i18n, settings.network.contributors_bucket);
+  const contributionStatus = settings.network.contribution_status
+    ? t_i18n(PULSE_CONTRIBUTION_STATUS_LABELS[settings.network.contribution_status] ?? '')
+    : '';
 
   const footer = isGranted ? (
     <>
@@ -426,7 +485,9 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
       </ExperienceDetailRow>
       <ExperienceDetailRow label={t_i18n('Last preview refresh')} divider={false}>
         <Text variant="content-compact">
-          {settings.preview.last_refresh_at ? `${fldt(settings.preview.last_refresh_at)} - ${n(settings.preview.digest_items)} ${t_i18n('objects in the digest')}` : '-'}
+          {settings.preview.last_refresh_at
+            ? t_i18n('{date} - {count, plural, one {# object} other {# objects}} in the digest', { values: { date: fldt(settings.preview.last_refresh_at), count: settings.preview.digest_items } })
+            : t_i18n('Not refreshed yet')}
         </Text>
       </ExperienceDetailRow>
     </div>
@@ -481,34 +542,36 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
       {settings.network.contribution_status && (
         <ExperienceDetailRow label={t_i18n('Contribution status')}>
           <Text variant="content-compact" data-testid="threat-pulse-contribution-status">
-            {`${t_i18n(PULSE_CONTRIBUTION_STATUS_LABELS[settings.network.contribution_status] ?? settings.network.contribution_status)}${settings.network.read_access_until ? ` - ${t_i18n('full experience until')} ${settings.network.read_access_until}` : ''}`}
+            {settings.network.read_access_until
+              ? t_i18n('{status} - full experience until {date}', { values: { status: contributionStatus, date: fsd(settings.network.read_access_until) } })
+              : contributionStatus}
           </Text>
         </ExperienceDetailRow>
       )}
-      <ExperienceDetailRow label={t_i18n('Sector bucket')}>
+      <ExperienceDetailRow label={bucketLabel(t_i18n('Sector'))}>
         <Select
           value={settings.sector_bucket ?? settings.suggested_sector_bucket}
           disabled={!isGranted || configuring}
           onValueChange={(value) => configure({ sector_bucket: value as PulseSectorBucket })}
         >
-          <SelectTrigger aria-label={t_i18n('Sector bucket')} style={{ width: 240 }}>
+          <SelectTrigger aria-label={t_i18n('Sector')} style={{ width: 240 }}>
             <SelectValue>{t_i18n(PULSE_SECTOR_LABELS[settings.sector_bucket ?? settings.suggested_sector_bucket])}</SelectValue>
           </SelectTrigger>
-          <SelectContent aria-label={t_i18n('Sector bucket')}>
+          <SelectContent aria-label={t_i18n('Sector')}>
             {SECTOR_VALUES.map((value) => <SelectItem key={value} value={value}>{t_i18n(PULSE_SECTOR_LABELS[value])}</SelectItem>)}
           </SelectContent>
         </Select>
       </ExperienceDetailRow>
-      <ExperienceDetailRow label={t_i18n('Region bucket')}>
+      <ExperienceDetailRow label={bucketLabel(t_i18n('Region'))}>
         <Select
           value={settings.region_bucket ?? settings.suggested_region_bucket}
           disabled={!isGranted || configuring}
           onValueChange={(value) => configure({ region_bucket: value as PulseRegionBucket })}
         >
-          <SelectTrigger aria-label={t_i18n('Region bucket')} style={{ width: 240 }}>
+          <SelectTrigger aria-label={t_i18n('Region')} style={{ width: 240 }}>
             <SelectValue>{t_i18n(PULSE_REGION_LABELS[settings.region_bucket ?? settings.suggested_region_bucket])}</SelectValue>
           </SelectTrigger>
-          <SelectContent aria-label={t_i18n('Region bucket')}>
+          <SelectContent aria-label={t_i18n('Region')}>
             {REGION_VALUES.map((value) => <SelectItem key={value} value={value}>{t_i18n(PULSE_REGION_LABELS[value])}</SelectItem>)}
           </SelectContent>
         </Select>
@@ -525,7 +588,9 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
       />
       <ExperienceDetailRow label={t_i18n('Consent')}>
         <Text variant="content-compact">
-          {settings.consent_date ? `${settings.consent_accepted_version} - ${settings.consent_user_name ?? '-'} - ${fldt(settings.consent_date)}` : '-'}
+          {settings.consent_date
+            ? t_i18n('Version {version}, accepted by {user} on {date}', { values: { version: settings.consent_accepted_version ?? '', user: settings.consent_user_name ?? t_i18n('a former user'), date: fldt(settings.consent_date) } })
+            : t_i18n('Not given yet')}
         </Text>
       </ExperienceDetailRow>
       <ExperienceDetailRow label={t_i18n('Records contributed (30 days)')}>
@@ -541,21 +606,27 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
         </ExperienceDetailRow>
       )}
       <ExperienceDetailRow label={t_i18n('Last contribution')}>
-        <Text variant="content-compact">{settings.contribution.last_push_at ? fldt(settings.contribution.last_push_at) : '-'}</Text>
+        <Text variant="content-compact">{settings.contribution.last_push_at ? fldt(settings.contribution.last_push_at) : t_i18n('None yet')}</Text>
       </ExperienceDetailRow>
       <ExperienceDetailRow label={t_i18n('Last network refresh')}>
-        <Text variant="content-compact">{settings.contribution.last_refresh_at ? fldt(settings.contribution.last_refresh_at) : '-'}</Text>
+        <Text variant="content-compact">{settings.contribution.last_refresh_at ? fldt(settings.contribution.last_refresh_at) : t_i18n('None yet')}</Text>
       </ExperienceDetailRow>
-      <ExperienceDetailRow label={t_i18n('Contributing platforms in the network')}>
-        <Text variant="content-compact">{settings.network.reachable ? (settings.network.contributors_bucket ?? '-') : t_i18n('XTM Hub is unreachable')}</Text>
-      </ExperienceDetailRow>
-      <ExperienceDetailRow label={t_i18n('Anonymity threshold')} divider={false}>
-        <Text variant="content-compact">
-          {settings.network.k_threshold ? `${settings.network.k_threshold} ${t_i18n('platforms')} - ${t_i18n('retention')} ${settings.network.retention_months} ${t_i18n('months')}` : '-'}
-        </Text>
-      </ExperienceDetailRow>
+      {(!settings.network.reachable || contributorsLabel) && (
+        <ExperienceDetailRow label={t_i18n('Contributing platforms in the network')}>
+          <Text variant="content-compact">{settings.network.reachable ? contributorsLabel : t_i18n('XTM Hub is unreachable')}</Text>
+        </ExperienceDetailRow>
+      )}
+      {settings.network.k_threshold ? (
+        <ExperienceDetailRow label={t_i18n('Anonymity threshold')} divider={false}>
+          <Text variant="content-compact">
+            {t_i18n('{count} platforms - contributions kept {months} months', { values: { count: settings.network.k_threshold, months: settings.network.retention_months ?? 0 } })}
+          </Text>
+        </ExperienceDetailRow>
+      ) : null}
       {settings.contribution.last_error && (
-        <Alert severity="warning" variant="outlined">{`${t_i18n('Last error')}: ${settings.contribution.last_error}`}</Alert>
+        <Alert severity="warning" variant="outlined" data-testid="threat-pulse-last-error">
+          {t_i18n(PULSE_PUSH_ERROR_MESSAGES[settings.contribution.last_error] ?? PULSE_PUSH_ERROR_MESSAGES.unexpected)}
+        </Alert>
       )}
     </div>
   );

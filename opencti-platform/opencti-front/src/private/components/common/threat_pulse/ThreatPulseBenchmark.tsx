@@ -19,6 +19,7 @@ import {
   PULSE_PERIODS,
   PULSE_SECTOR_LABELS,
   PULSE_UNAVAILABLE_MESSAGES,
+  pulsePlatformsBucketLabel,
   pulseRatioSeverity,
   type PulsePeriodValue,
 } from './threatPulseUtils';

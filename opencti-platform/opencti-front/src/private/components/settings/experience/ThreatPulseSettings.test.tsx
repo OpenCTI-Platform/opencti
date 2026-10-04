@@ -98,6 +98,37 @@ describe('ThreatPulseSettings', () => {
     });
   });
 
+  it('should list what is shared, what never leaves and what contributing unlocks in the consent', async () => {
+    renderSettings(IN_PREVIEW);
+    fireEvent.click(await screen.findByTestId('threat-pulse-enable-button'));
+    const dialog = await screen.findByTestId('threat-pulse-consent-dialog');
+    expect(within(dialog).getByTestId('threat-pulse-consent-shared').textContent).toContain('What is shared every hour');
+    expect(within(dialog).getByTestId('threat-pulse-consent-never').textContent).toContain('TLP:RED, TLP:AMBER+STRICT or PAP:RED');
+    expect(within(dialog).getByTestId('threat-pulse-consent-unlocks').textContent).toContain('What you unlock');
+    expect(within(dialog).getByText(/only once 5 platforms or more reported the same object/)).toBeDefined();
+    expect(within(dialog).getAllByText('Shared as a coarse category, never your organization\'s name')).toHaveLength(1);
+    expect(within(dialog).queryByText(/bucket/i)).toBeNull();
+  });
+
+  it('should state every value of a contributing platform in words, never a raw value or a dash', async () => {
+    renderSettings({
+      mode: 'contribute_and_read',
+      access: 'full',
+      enabled: true,
+      contribution: { ...SETTINGS.contribution, last_error: 'hub_unreachable' },
+      network: { ...SETTINGS.network, contribution_status: 'active', read_access: true },
+    });
+    expect(await screen.findByTestId('threat-pulse-configuration')).toBeDefined();
+    expect(screen.getByText('Contributing')).toBeDefined();
+    expect(screen.getByText('25 to 49 platforms')).toBeDefined();
+    expect(screen.getByText('5 platforms - contributions kept 13 months')).toBeDefined();
+    expect(screen.getByText('Not given yet')).toBeDefined();
+    expect(screen.getAllByText('None yet')).toHaveLength(2);
+    expect(screen.getByTestId('threat-pulse-last-error').textContent).toBe('XTM Hub could not be reached: the pending records are sent with the next hourly run.');
+    expect(screen.queryByText('-')).toBeNull();
+    expect(screen.queryByText('hub_unreachable')).toBeNull();
+  });
+
   it('should keep the consent open when the contribution is not enabled', async () => {
     const relayEnv = renderSettings(IN_PREVIEW);
     fireEvent.click(await screen.findByTestId('threat-pulse-enable-button'));

@@ -21,6 +21,8 @@ describe('Sector benchmark dashboard template', () => {
       expect(widget.parameters?.title).toMatch(/^\[.+\]$/);
       expect(widget.layout.x + widget.layout.w).toBeLessThanOrEqual(12);
     });
+    // One title per widget: the template card lists them
+    expect(new Set(widgets.map((widget) => widget.parameters?.title)).size).toBe(widgets.length);
   });
 
   it('should configure the Threat Pulse widgets with parameters only', () => {

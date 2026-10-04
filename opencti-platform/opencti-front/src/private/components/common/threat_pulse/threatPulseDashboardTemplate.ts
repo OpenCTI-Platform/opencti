@@ -53,41 +53,41 @@ const toWidget = ({ type, title, layout, dataSelection = [], parameters = {} }: 
  */
 export const buildSectorBenchmarkDashboard = (t_i18n: (key: string) => string): DashboardManifest => {
   const widgets = [
-    toWidget({ type: 'pulse-trending', title: t_i18n('Trending in your sector'), layout: { x: 0, y: 0, w: 6, h: 8 } }),
-    toWidget({ type: 'pulse-benchmark', title: t_i18n('Sector benchmark'), layout: { x: 6, y: 0, w: 6, h: 8 } }),
+    toWidget({ type: 'pulse-trending', title: t_i18n('Objects trending in your sector'), layout: { x: 0, y: 0, w: 6, h: 8 } }),
+    toWidget({ type: 'pulse-benchmark', title: t_i18n('Activity of this platform against the sector median'), layout: { x: 6, y: 0, w: 6, h: 8 } }),
     toWidget({
       type: 'number',
-      title: t_i18n('Indicators rising in the community'),
+      title: t_i18n('Indicators rising in the community this week'),
       layout: { x: 0, y: 8, w: 3, h: 2 },
       dataSelection: [selection('', filterGroup(['Indicator'], 'pulse_trend', ['rising']))],
     }),
     toWidget({
       type: 'number',
-      title: t_i18n('Threats rising in your sector'),
+      title: t_i18n('Threats rising in your sector this week'),
       layout: { x: 3, y: 8, w: 3, h: 2 },
       dataSelection: [selection('', filterGroup(THREAT_TYPES, 'pulse_sector_trend', ['rising']))],
     }),
     toWidget({
       type: 'donut',
-      title: t_i18n('Community prevalence of indicators'),
+      title: t_i18n('Community prevalence of indicators - last 30 days'),
       layout: { x: 6, y: 8, w: 3, h: 6 },
       dataSelection: [selection('', filterGroup(['Indicator']), { attribute: 'pulse_prevalence' })],
     }),
     toWidget({
       type: 'horizontal-bar',
-      title: t_i18n('Community trend of threats'),
+      title: t_i18n('Community trend of threats this week'),
       layout: { x: 9, y: 8, w: 3, h: 6 },
       dataSelection: [selection('', filterGroup(THREAT_TYPES), { attribute: 'pulse_trend' })],
     }),
     toWidget({
       type: 'list',
-      title: t_i18n('Threats rising in your sector'),
+      title: t_i18n('Top 10 threats rising in your sector this week'),
       layout: { x: 0, y: 10, w: 6, h: 8 },
       dataSelection: [selection('', filterGroup(THREAT_TYPES, 'pulse_sector_trend', ['rising']), { number: 10 })],
     }),
     toWidget({
       type: 'line',
-      title: t_i18n('Indicators by network first seen'),
+      title: t_i18n('Indicators per week of network first seen'),
       layout: { x: 6, y: 14, w: 6, h: 6 },
       dataSelection: [selection(t_i18n('Indicators'), filterGroup(['Indicator']), { date_attribute: PULSE_DATE_ATTRIBUTE })],
       parameters: { interval: 'week', legend: false },

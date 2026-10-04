@@ -126,6 +126,17 @@ export const PULSE_UNAVAILABLE_MESSAGES: Record<string, string> = {
   excluded: 'This object never leaves the platform: its markings or its restricted access exclude it from Threat Pulse.',
 };
 
+// The last error of the hourly contribution, as the codes of the XTM Hub client.
+export const PULSE_PUSH_ERROR_MESSAGES: Record<string, string> = {
+  hub_unreachable: 'XTM Hub could not be reached: the pending records are sent with the next hourly run.',
+  rate_limited: 'XTM Hub limited the requests of this platform: the pending records are sent with the next hourly run.',
+  contribution_required: 'XTM Hub requires a recent contribution: the next accepted one restores the full experience.',
+  unauthenticated: 'XTM Hub did not recognize this platform: check its registration in Settings > Filigran Experience.',
+  forbidden: 'XTM Hub did not recognize this platform: check its registration in Settings > Filigran Experience.',
+  bad_request: 'XTM Hub refused a batch of records as invalid: the batch was dropped.',
+  unexpected: 'XTM Hub could not record the last contribution: the pending records are sent with the next hourly run.',
+};
+
 // Position of a prevalence bucket on a 0-100 gauge, the middle of its segment.
 export const prevalenceGaugeValue = (prevalence: string | null | undefined) => {
   const index = PULSE_PREVALENCE_ORDER.indexOf((prevalence ?? '') as PulsePrevalenceValue);
