@@ -132,7 +132,7 @@ Knowledge decay rules are configured in the "Knowledge decay rules" tab of the "
     - *Flag*: the knowledge is flagged as stale.
     - *Lower confidence*: the knowledge is flagged and its confidence is lowered by the configured step.
     - *Revoke*: the knowledge is flagged and revoked. This policy is only available for types supporting revocation.
-- **Order**: when several rules match the same knowledge, the rule with the highest order applies. A rule that is created, activated, reordered or retargeted above other rules takes over the knowledge they already flagged: it is evaluated again under the new rule.
+- **Order**: when several rules match the same knowledge, the rule with the highest order applies. A rule that is created, activated, reordered or retargeted above other rules takes over the knowledge they already flagged: it is evaluated again under the new rule. Changing the order of a rule also releases the knowledge it flagged, so an overlapping rule that now has a higher order takes it over on the next run.
 
 A rule only applies to the types whose [provenance is tracked](../usage/provenance.md#entity-types-tracked): the knowledge of a type whose tracking is switched off is never flagged, lowered or revoked.
 

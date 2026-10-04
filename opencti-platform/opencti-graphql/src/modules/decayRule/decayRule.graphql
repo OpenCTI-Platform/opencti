@@ -75,6 +75,8 @@ type Query {
     filters: FilterGroup
     search: String
   ): DecayRuleConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  "Number of knowledge decay rules that flag knowledge the user can access"
+  knowledgeDecayRulesInvolvedCount: Int! @auth(for: [KNOWLEDGE])
 }
 
 input DecayRuleAddInput {

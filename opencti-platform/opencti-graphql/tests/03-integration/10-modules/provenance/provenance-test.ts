@@ -99,6 +99,12 @@ const DECAY_RULE = gql`
   }
 `;
 
+const KNOWLEDGE_DECAY_RULES_INVOLVED = gql`
+  query KnowledgeDecayRulesInvolved {
+    knowledgeDecayRulesInvolvedCount
+  }
+`;
+
 const DECAY_RULES = gql`
   query DecayRules($filters: FilterGroup) {
     decayRules(filters: $filters, first: 50) { edges { node { id name built_in active target_scope } } }
@@ -401,6 +407,9 @@ describe('Provenance: every fact knows who said it', () => {
     expect((await loadRelation(usesId)).freshness_stale).toEqual(true);
     const rule = await queryAsAdminWithSuccess({ query: DECAY_RULE, variables: { id: ruleId } });
     expect(rule.data?.decayRule.staleElementsCount).toEqual(1);
+    // Counted for any user with knowledge access, without the customization capability that lists the rules
+    const involved = await queryAsUserWithSuccess(USER_EDITOR, { query: KNOWLEDGE_DECAY_RULES_INVOLVED });
+    expect(involved.data?.knowledgeDecayRulesInvolvedCount).toBeGreaterThanOrEqual(1);
     // A longer delay makes the knowledge fresh again under the new configuration
     await queryAsAdminWithSuccess({ query: DECAY_RULE_PATCH, variables: { id: ruleId, input: [{ key: 'stale_after_days', value: ['90'] }] } });
     expect((await loadRelation(usesId)).freshness_stale).toEqual(false);

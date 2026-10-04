@@ -9,12 +9,13 @@ import {
   findById,
   getDecaySettingsChartData,
 } from './decayRule-domain';
-import { getDecayRuleScope } from './decayRule-knowledge';
+import { countKnowledgeDecayRulesInvolved, getDecayRuleScope } from './decayRule-knowledge';
 
 const decayRuleResolvers: Resolvers = {
   Query: {
     decayRule: (_, { id }, context) => findById(context, context.user, id),
     decayRules: (_, args, context) => findDecayRulePaginated(context, context.user, args),
+    knowledgeDecayRulesInvolvedCount: (_, __, context) => countKnowledgeDecayRulesInvolved(context, context.user),
   },
   DecayRule: {
     appliedIndicatorsCount: (decayRule, _, context) => countAppliedIndicators(context, context.user, decayRule),

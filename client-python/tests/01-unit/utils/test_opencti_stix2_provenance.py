@@ -76,3 +76,17 @@ def test_provenance_properties_cover_objects_and_relationships(
         assert fragment in properties
     assert properties.count("x_opencti_assertions") == 3
     assert "procedures" in properties
+
+
+def test_default_properties_carry_the_whole_provenance_summary(api_client_no_server):
+    for entity in (
+        api_client_no_server.opencti_stix_object_or_stix_relationship,
+        api_client_no_server.malware,
+        api_client_no_server.stix_core_relationship,
+        api_client_no_server.stix_sighting_relationship,
+    ):
+        properties = entity.properties
+        summaries = properties.count("corroboration_count")
+        assert summaries > 0
+        for field in ("single_sourced", "freshness_stale_at", "freshness_stale"):
+            assert properties.count(field) >= summaries
