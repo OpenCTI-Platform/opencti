@@ -70,6 +70,9 @@ const defenseCoverageResolvers: Resolvers = {
     securityCoverage: (request, _, context) => defenseGapValidationCoverage(context, context.user, request),
   },
   DefenseLogsourceMapping: {
+    logsource_category: (mapping) => mapping.x_opencti_rule_logsource?.category ?? null,
+    logsource_product: (mapping) => mapping.x_opencti_rule_logsource?.product ?? null,
+    logsource_service: (mapping) => mapping.x_opencti_rule_logsource?.service ?? null,
     resolvedDataComponents: (mapping, _, context) => resolveMappingDataComponents(context, context.user, mapping.data_components),
   },
   Mutation: {

@@ -1,4 +1,5 @@
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
+import { ruleLogsource } from '../../../schema/attribute-definition';
 import { type ModuleDefinition, registerDefinition } from '../../../schema/module';
 import { ENTITY_TYPE_DEFENSE_LOGSOURCE_MAPPING, type StixDefenseLogsourceMapping, type StoreEntityDefenseLogsourceMapping } from './defenseLogsourceMapping-types';
 import convertDefenseLogsourceMappingToStix from './defenseLogsourceMapping-converter';
@@ -21,9 +22,7 @@ const DEFENSE_LOGSOURCE_MAPPING_DEFINITION: ModuleDefinition<StoreEntityDefenseL
     { name: 'name', label: 'Name', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'mapping_key', label: 'Log source mapping key', type: 'string', format: 'short', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: false },
-    { name: 'logsource_category', label: 'Mapped log source category', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: true },
-    { name: 'logsource_product', label: 'Mapped log source product', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: true },
-    { name: 'logsource_service', label: 'Mapped log source service', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: true },
+    ruleLogsource,
     { name: 'data_components', label: 'Mapped data components', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
     { name: 'active', label: 'Status', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'built_in', label: 'Built-in', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: true },

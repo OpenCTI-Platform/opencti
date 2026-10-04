@@ -329,16 +329,18 @@ describe('Defense gap threat weight and priority', () => {
 
 describe('Defense log source mapping', () => {
   const entries = [
-    { logsource_category: 'process_creation', data_components: ['Process Creation', 'Command Execution'] },
-    { logsource_category: 'process_creation', logsource_product: 'windows', data_components: ['process creation'] },
-    { logsource_product: 'windows', logsource_service: 'security', data_components: ['Logon Session Creation'] },
-    { logsource_product: 'linux', data_components: ['Inactive'], active: false },
-    { data_components: ['Never'] },
+    { x_opencti_rule_logsource: { category: 'process_creation' }, data_components: ['Process Creation', 'Command Execution'] },
+    { x_opencti_rule_logsource: { category: 'process_creation', product: 'windows' }, data_components: ['process creation'] },
+    { x_opencti_rule_logsource: { product: 'windows', service: 'security' }, data_components: ['Logon Session Creation'] },
+    { x_opencti_rule_logsource: { product: 'linux' }, data_components: ['Inactive'], active: false },
+    { x_opencti_rule_logsource: {}, data_components: ['Never'] },
+    { data_components: ['Never either'] },
   ];
   it('should match the fields set on the entry only', () => {
     expect(isLogsourceMatching(entries[0], { category: 'Process_Creation', product: 'linux' })).toEqual(true);
     expect(isLogsourceMatching(entries[1], { category: 'process_creation', product: 'linux' })).toEqual(false);
     expect(isLogsourceMatching(entries[4], { category: 'process_creation' })).toEqual(false);
+    expect(isLogsourceMatching(entries[5], { category: 'process_creation' })).toEqual(false);
   });
   it('should map a log source to deduplicated data components', () => {
     expect(mapLogsourceToDataComponents({ category: 'process_creation', product: 'windows' }, entries)).toEqual(['Process Creation', 'Command Execution']);

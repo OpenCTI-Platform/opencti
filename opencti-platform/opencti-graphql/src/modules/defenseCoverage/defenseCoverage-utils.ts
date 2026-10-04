@@ -474,9 +474,7 @@ export const computeGapPriority = (level: number, threatWeight: number): number 
 
 // region logsource mapping
 export interface LogsourceCondition {
-  logsource_category?: string | null;
-  logsource_product?: string | null;
-  logsource_service?: string | null;
+  x_opencti_rule_logsource?: Logsource | null;
   data_components: string[];
   active?: boolean;
 }
@@ -498,10 +496,11 @@ export const buildLogsourceMappingKey = (category?: string | null, product?: str
  * Entries without any field never match.
  */
 export const isLogsourceMatching = (entry: LogsourceCondition, logsource: Logsource) => {
+  const expected = entry.x_opencti_rule_logsource ?? {};
   const conditions: Array<[string, string]> = [
-    [norm(entry.logsource_category), norm(logsource.category)],
-    [norm(entry.logsource_product), norm(logsource.product)],
-    [norm(entry.logsource_service), norm(logsource.service)],
+    [norm(expected.category), norm(logsource.category)],
+    [norm(expected.product), norm(logsource.product)],
+    [norm(expected.service), norm(logsource.service)],
   ];
   const defined = conditions.filter(([expected]) => expected.length > 0);
   return defined.length > 0 && defined.every(([expected, actual]) => expected === actual);

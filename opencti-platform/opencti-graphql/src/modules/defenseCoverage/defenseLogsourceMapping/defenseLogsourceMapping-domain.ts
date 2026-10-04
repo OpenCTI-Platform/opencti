@@ -62,9 +62,11 @@ const buildMappingInput = (input: DefenseLogsourceMappingDefault & { active?: bo
     name: buildLogsourceMappingName(logsource_category, logsource_product, logsource_service),
     description: input.description ?? '',
     mapping_key: buildLogsourceMappingKey(logsource_category, logsource_product, logsource_service),
-    logsource_category,
-    logsource_product,
-    logsource_service,
+    x_opencti_rule_logsource: {
+      ...(logsource_category ? { category: logsource_category } : {}),
+      ...(logsource_product ? { product: logsource_product } : {}),
+      ...(logsource_service ? { service: logsource_service } : {}),
+    },
     data_components: cleanDataComponentNames(input.data_components),
     active: input.active ?? true,
     built_in: builtIn,
@@ -77,8 +79,16 @@ export const findById = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById<BasicStoreEntityDefenseLogsourceMapping>(context, user, id, ENTITY_TYPE_DEFENSE_LOGSOURCE_MAPPING);
 };
 
+// The log source columns sort on the fields of the rule log source object the mapping stores
+const LOGSOURCE_ORDERING: Record<string, string> = {
+  logsource_category: 'x_opencti_rule_logsource.category',
+  logsource_product: 'x_opencti_rule_logsource.product',
+  logsource_service: 'x_opencti_rule_logsource.service',
+};
+
 export const findDefenseLogsourceMappingPaginated = (context: AuthContext, user: AuthUser, args: QueryDefenseLogsourceMappingsArgs) => {
-  return pageEntitiesConnection<BasicStoreEntityDefenseLogsourceMapping>(context, user, [ENTITY_TYPE_DEFENSE_LOGSOURCE_MAPPING], args);
+  const orderBy = args.orderBy ? (LOGSOURCE_ORDERING[args.orderBy] ?? args.orderBy) : args.orderBy;
+  return pageEntitiesConnection<BasicStoreEntityDefenseLogsourceMapping>(context, user, [ENTITY_TYPE_DEFENSE_LOGSOURCE_MAPPING], { ...args, orderBy });
 };
 
 export const listAllDefenseLogsourceMappings = (context: AuthContext, user: AuthUser) => {

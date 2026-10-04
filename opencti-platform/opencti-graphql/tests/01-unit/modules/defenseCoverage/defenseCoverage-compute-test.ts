@@ -45,7 +45,7 @@ const buildGraph = (): ComputationGraph => {
     })]]]),
     resultsById: new Map([['scr-1', result]]),
     dataComponentIdsByName: new Map([['process creation', ['dc-process']], ['command execution', ['dc-command']]]),
-    mappings: [{ logsource_category: 'process_creation', data_components: ['Process Creation'], active: true }],
+    mappings: [{ x_opencti_rule_logsource: { category: 'process_creation' }, data_components: ['Process Creation'], active: true }],
   };
 };
 

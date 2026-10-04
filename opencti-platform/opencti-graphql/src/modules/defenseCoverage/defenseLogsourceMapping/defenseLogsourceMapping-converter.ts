@@ -9,9 +9,9 @@ const convertDefenseLogsourceMappingToStix = (instance: StoreEntityDefenseLogsou
     ...stixObject,
     name: instance.name,
     description: instance.description,
-    logsource_category: instance.logsource_category,
-    logsource_product: instance.logsource_product,
-    logsource_service: instance.logsource_service,
+    logsource_category: instance.x_opencti_rule_logsource?.category,
+    logsource_product: instance.x_opencti_rule_logsource?.product,
+    logsource_service: instance.x_opencti_rule_logsource?.service,
     data_components: instance.data_components,
     active: instance.active,
     extensions: {
