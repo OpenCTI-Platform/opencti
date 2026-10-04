@@ -9,7 +9,7 @@
 
 Other data-quality pages join the hub as new tabs when they become available, without a new menu entry.
 
-![The Data menu expanded on Curation, with the Conflicts tab open under the breadcrumb Data, Curation, Conflicts](assets/curation-hub-conflicts-open.png)
+![The Data menu expanded with its Curation entry, and the Conflicts tab open under the breadcrumb Data > Curation > Conflicts, with the counters by kind of knowledge](assets/curation-hub-conflicts-open.png)
 
 ??? example "The same page in the light theme"
 

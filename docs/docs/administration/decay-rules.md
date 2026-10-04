@@ -136,7 +136,13 @@ Knowledge decay rules are configured in the "Knowledge decay rules" tab of the "
 
 A rule only applies to the types whose [provenance is tracked](../usage/provenance.md#entity-types-tracked): the knowledge of a type whose tracking is switched off is never flagged, lowered or revoked.
 
-![The Knowledge decay rules tab listing a custom rule on Malware that currently flags two elements, and the three built-in rules, disabled](./assets/knowledge-decay-rules.png)
+The list and the page of each rule state its effect in one sentence built from its fields, for instance "Malware not re-asserted within 60 days are flagged as stale." or "Uses relationships not re-asserted within 180 days are flagged as stale and their confidence is lowered."
+
+![The Knowledge decay rules tab: two custom rules, on uses relationships and on malware, and the three built-in rules, disabled, each with the sentence stating its effect, the number of elements it currently flags, its state and its order](./assets/knowledge-decay-rules.png)
+
+??? example "The same list in the light theme"
+
+    ![The Knowledge decay rules tab in the light theme](./assets/knowledge-decay-rules-light.png)
 
 Stale knowledge is listed in the "Stale knowledge" tab of "Data > Curation", can be filtered with the "Stale knowledge" filter in every list, and each rule shows the number of elements it currently flags. As soon as any source asserts the knowledge again, or a user confirms it from the sources panel, the stale flag is cleared. Deactivating or deleting a rule, or changing its targets, filters, delay or policy, clears the flags it set: the next run evaluates that knowledge again under the new configuration, so a new policy also applies to the knowledge already flagged.
 

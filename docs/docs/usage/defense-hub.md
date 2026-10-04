@@ -22,11 +22,17 @@ The **Defense** entry of the left menu, right after **Observations**, is where i
 - A number next to an area in the menu counts the work waiting for you there, for example hunt results to triage. It is never a total, and it disappears when nothing is waiting.
 - An area that has nothing to show yet says what it does and what feeds it, and offers its first action and a link to its documentation.
 
+![The Defense entry of the left menu with its area, the breadcrumb Defense > area, and the first-use state of the area: its name, the question it answers, its first action and a link to its documentation (shown with a sample area, since no area ships with this version)](assets/defense-hub-first-use.png)
+
+??? example "The same page in the light theme"
+
+    ![The Defense menu, breadcrumb and first-use state of an area in the light theme](assets/defense-hub-first-use-light.png)
+
 ## If nothing is available to you
 
 Opening a link to Defense when none of its areas is available to you shows a page that says so, with a way back to the dashboard, instead of sending you elsewhere without a word. The areas may be hidden on your platform or need a permission your account does not have: ask your administrator if you need them.
 
-![The Defense page saying that nothing in Defense is available to the reader, with a button back to the dashboard](assets/defense-hub-no-access.png)
+![The Defense page under the breadcrumb Defense: an information notice saying that nothing in Defense is available to the reader and why, with a Back to the dashboard button](assets/defense-hub-no-access.png)
 
 ??? example "The same page in the light theme"
 
