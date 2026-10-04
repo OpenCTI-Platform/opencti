@@ -40,6 +40,7 @@ import {
   findInvestigationRunEnrichmentWave,
   findInvestigationRunsPaginated,
   filterReadableRunRecords,
+  isInvestigationRunWithheld,
   requestInvestigationEnrichment,
 } from './investigationRun-domain';
 import {
@@ -85,6 +86,10 @@ const served = (run: BasicStoreEntityInvestigationRun, context: any) => {
   return view;
 };
 
+const artifactIdOf = (view: BasicStoreEntityInvestigationRun, key: 'draft_id' | 'workspace_id') => {
+  return isInvestigationRunWithheld(view) ? null : view[key] ?? null;
+};
+
 const investigationRunResolvers: Resolvers = {
   Query: {
     investigationRun: (_, { id }, context) => findInvestigationRunById(context, context.user, id),
@@ -105,8 +110,18 @@ const investigationRunResolvers: Resolvers = {
       const cases = await elFindByIds<BasicStoreEntity>(context, context.user, caseIds, { type: ENTITY_TYPE_CONTAINER_CASE }) as BasicStoreEntity[];
       return (cases[0] ?? null) as any;
     },
-    workspace: (run, _, context) => (run.workspace_id ? findWorkspaceById(context, context.user, run.workspace_id) : null),
-    draft: (run, _, context) => (run.draft_id ? findDraftById(context, context.user, run.draft_id) : null),
+    // The draft and the investigation graph of a withheld run hold what it
+    // found: never served from it, even while their deletion is retried.
+    workspace_id: async (run, _, context) => artifactIdOf(await served(run, context), 'workspace_id'),
+    workspace: async (run, _, context) => {
+      const id = artifactIdOf(await served(run, context), 'workspace_id');
+      return id ? findWorkspaceById(context, context.user, id) : null;
+    },
+    draft_id: async (run, _, context) => artifactIdOf(await served(run, context), 'draft_id'),
+    draft: async (run, _, context) => {
+      const id = artifactIdOf(await served(run, context), 'draft_id');
+      return id ? findDraftById(context, context.user, id) : null;
+    },
     policy: (run, _, context) => (run.policy_id ? internalLoadById(context, context.user, run.policy_id, { type: ENTITY_TYPE_INVESTIGATION_POLICY }) : null) as any,
     runAs: (run, _, context) => context.batch.creatorBatchLoader.load(run.run_as_id),
     xtm_investigation_ids: (run) => run.xtm_investigation_ids ?? [],

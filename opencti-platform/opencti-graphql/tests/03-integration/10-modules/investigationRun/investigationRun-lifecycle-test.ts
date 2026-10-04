@@ -772,6 +772,9 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       expect(await runFields.evidence(stored, {}, eventContext)).toEqual([]);
       expect(await runFields.summary(stored, {}, eventContext)).toBeNull();
       expect(await runFields.end_reason_code(stored, {}, eventContext)).toBe('member_restricted');
+      expect(stored?.draft_id).toBeTruthy();
+      expect(await runFields.draft_id(stored, {}, eventContext)).toBeNull();
+      expect(await runFields.draft(stored, {}, eventContext)).toBeNull();
       // Nothing it found can be acted on; cancelling stays possible.
       const feedback = await queryAsAdmin({
         query: RUN_FEEDBACK,

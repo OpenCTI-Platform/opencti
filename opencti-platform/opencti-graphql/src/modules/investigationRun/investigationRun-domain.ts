@@ -133,6 +133,7 @@ const FINDINGS_WITHHELD: Record<string, string> = {
 };
 // A run whose findings are already withheld: stopped at an access boundary, or served withheld.
 const WITHHELD_CODES = [...CARRY_BOUNDARY_CODES, SOURCE_INACCESSIBLE_CODE];
+export const isInvestigationRunWithheld = (run: BasicStoreEntityInvestigationRun) => !!run.end_reason_code && WITHHELD_CODES.includes(run.end_reason_code);
 
 /**
  * A run copies the markings and organization sharing of what it reads, never a
@@ -153,7 +154,7 @@ const readRunSources = async (
   user: AuthUser,
   runs: BasicStoreEntityInvestigationRun[],
 ): Promise<Array<{ reason: string | null; markingIds: string[] }>> => {
-  const isWithheld = (run: BasicStoreEntityInvestigationRun) => !!run.end_reason_code && WITHHELD_CODES.includes(run.end_reason_code);
+  const isWithheld = isInvestigationRunWithheld;
   const ids = Array.from(new Set(runs.filter((run) => !isWithheld(run)).flatMap((run) => runSourceIds(run))));
   if (ids.length === 0) return runs.map(() => ({ reason: null, markingIds: [] }));
   const liveContext = outOfDraft(context);
