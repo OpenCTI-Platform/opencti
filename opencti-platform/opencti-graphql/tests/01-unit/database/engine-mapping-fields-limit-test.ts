@@ -1,4 +1,7 @@
 import { describe, expect, it } from 'vitest';
+// The modules register their entity types and attributes in the schema; the platform imports them before anything
+// else (src/back.ts), so the mapping measured here is the one generated at startup, not the core schema alone.
+import '../../../src/modules/index';
 import { Client as ElkClient } from '@elastic/elasticsearch';
 import { computeMappingFieldsLimit, countMappingFields, ES_MAPPING_FIELDS_HEADROOM, ES_MAX_MAPPINGS } from '../../../src/database/engine';
 import { engineMappingGenerator } from '../../../src/database/engine-mapping-generator';
