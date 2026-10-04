@@ -33,15 +33,15 @@ In preview, every Threat Pulse surface shows the real coarse signal, labelled "P
 
 The first day the preview matches objects of the platform, each user sees one banner, for example "Threat Pulse preview: 42 of your objects are seen across the community." The number is counted on the platform. The banner waits while another platform banner (license, trial, registration, email configuration) is shown. Dismissing it hides it for good for that user in that browser.
 
-![Threat Pulse preview banner](assets/threat-pulse-banner-preview.png)
+![Threat Pulse preview banner saying that 42 objects of the platform are seen across the community](assets/threat-pulse-banner-preview.png)
 
 ### Contribute
 
 Contributing requires an administrator to accept the consent, which lists what is shared every hour, what never leaves the platform and what contributing unlocks, and lets the administrator choose the sector, the region, the object types and the excluded markings before anything is sent. OpenCTI records the consent with the administrator and the date.
 
-![Threat Pulse consent](assets/threat-pulse-consent-dialog.png)
+![Threat Pulse consent listing what is shared every hour, what never leaves the platform and what contributing unlocks](assets/threat-pulse-consent-dialog.png)
 
-Reciprocity is enforced by XTM Hub, not by the user interface: network lookups, the full trending list and benchmarks are only answered to platforms that contributed recently. A platform is an active contributor while its last contribution is at most 7 days old, and it keeps the full experience for 14 days after its last contribution. Past that grace period, the platform falls back to the preview automatically and "Settings > Filigran Experience" says so; the full experience comes back with the next accepted contribution.
+Reciprocity is enforced by XTM Hub, not by the user interface: network lookups, the full trending list and benchmarks are only answered to platforms that contributed recently. A platform that just accepted the consent therefore keeps the preview until XTM Hub accepts its first contribution, sent by the next hourly run that has activity to share; "Settings > Filigran Experience" shows "First contribution pending - preview" meanwhile. A platform is an active contributor while its last contribution is at most 7 days old, and it keeps the full experience for 14 days after its last contribution. Past that grace period, the platform falls back to the preview automatically and "Settings > Filigran Experience" says so; the full experience comes back with the next accepted contribution.
 
 Stopping the contribution ("Stop contributing") switches the platform back to the preview and removes the full statistics from the objects.
 
@@ -58,7 +58,7 @@ Every hour, a contributing platform sends to XTM Hub one record per object, acti
 | `sector_bucket`, `region_bucket` | The coarse sector and region chosen by the administrator, or `undisclosed` |
 | `batch_id` | A random identifier drawn for each batch of records and sent again when the batch is retried, so that XTM Hub counts it once |
 
-The batch schema accepts no other field, on the platform and on XTM Hub. A batch that XTM Hub did not answer stays on the platform and is sent again with the next hourly run, with the same identifier.
+The batch schema accepts no other field, on the platform and on XTM Hub. A batch that XTM Hub did not answer stays on the platform and is sent again with the next hourly run, with the same identifier; no new activity is collected while such batches wait, and a batch whose day XTM Hub no longer accepts (older than yesterday) is dropped. The contribution statistics count a batch once XTM Hub accepted it, never before.
 
 The hash is derived in two steps:
 
@@ -75,20 +75,20 @@ Never shared:
 
 ## Configure Threat Pulse
 
-In "Settings > Filigran Experience", the Threat Pulse card shows its status ("Preview", "Contributing", "Contribution lapsed - preview" or "Not connected") to every user who can open the page, and, for administrators:
+In "Settings > Filigran Experience", the Threat Pulse card shows its status ("Preview", "Contributing", "First contribution pending - preview", "Contribution lapsed - preview" or "Not connected") to every user who can open the page, and, for administrators:
 
 - **Mode**: preview, contribute (opens the consent) or off.
 - **Sector** and **Region**: the coarse categories used for sector trends and benchmarks, suggested from the platform organization; they are shared as a coarse category, never as the name of the organization. Choose "Undisclosed" to share none.
 - **Scopes**: the object types that contribute (all six by default).
 - **Excluded markings**: markings whose objects never contribute, in addition to the ones always excluded.
 - **Statistics**: in preview, the number of local objects found in the community digest and the last refresh; when contributing, the records contributed per type, the contribution status (active, grace period, lapsed), the range of contributing platforms in the network, the anonymity threshold and the last error, in words, when XTM Hub could not record a contribution.
-- **Purge my contributions**: deletes every contribution of the platform from XTM Hub, which recomputes its statistics. This is the right to purge; it is recorded in the audit logs. When XTM Hub does not confirm the purge, nothing changes on the platform and the page says so.
+- **Purge my contributions**: deletes every contribution of the platform from XTM Hub, which recomputes its statistics. This is the right to purge; it is recorded in the audit logs. XTM Hub then holds no contribution of the platform, so a contributing platform falls back to the preview until its next contribution is accepted. When XTM Hub does not confirm the purge, nothing changes on the platform and the page says so.
 
 Narrowing the scopes or excluding a new marking removes the community statistics from the objects it takes out. Changing the Threat Pulse settings and purging require the "Manage XTM Hub" capability.
 
 | Preview | Contributing | Off |
 |:--------|:-------------|:----|
-| ![Settings in preview](assets/threat-pulse-settings-preview.png) | ![Settings when contributing](assets/threat-pulse-settings-contribute.png) | ![Settings when off](assets/threat-pulse-settings-off.png) |
+| ![Threat Pulse settings in preview with 42 local objects found in the community digest](assets/threat-pulse-settings-preview.png) | ![Threat Pulse settings of a contributing platform with the records contributed per object type](assets/threat-pulse-settings-contribute.png) | ![Threat Pulse settings turned off with the way back to the preview](assets/threat-pulse-settings-off.png) |
 
 ## Where Threat Pulse appears
 
@@ -104,7 +104,7 @@ The card is not displayed when Threat Pulse is off.
 
 | Preview | Full |
 |:--------|:-----|
-| ![Threat Pulse card in preview](assets/threat-pulse-card-preview.png) | ![Threat Pulse card when contributing](assets/threat-pulse-card-full.png) |
+| ![Threat Pulse card in preview with the prevalence, the trend and the locked rows contributing would add](assets/threat-pulse-card-preview.png) | ![Threat Pulse card of a contributing platform with the prevalence gauge, the range of platforms and the 12-week trend](assets/threat-pulse-card-full.png) |
 
 ### Filters, columns and exports
 
@@ -118,9 +118,9 @@ These values are written without creating a history entry, a stream event or a m
 
 "Trending in your sector" is a widget of the dashboard catalog. It lists the local objects rising in the platform's sector over 7, 30 or 90 days, with their prevalence, range of platforms and growth, and says how many of the first ranks the platform does not hold. In preview, it names the first three ranks and folds the next ones into one locked row ("7 more trending objects - available when your platform contributes"); when nothing the platform holds is trending, it says so. It is not added to the default home dashboard.
 
-| Preview | Full |
-|:--------|:-----|
-| ![Trending in your sector in preview](assets/threat-pulse-trending-preview.png) | ![Trending in your sector when contributing](assets/threat-pulse-trending-full.png) |
+| Preview | Full | Full, light theme |
+|:--------|:-----|:------------------|
+| ![Trending in your sector in preview with the first ranks named and the next seven folded into one locked row](assets/threat-pulse-trending-preview.png) | ![Trending in your sector of a contributing platform with four rising objects, their prevalence, range of platforms and growth](assets/threat-pulse-trending-full.png) | ![Trending in your sector of a contributing platform in the light theme](assets/threat-pulse-trending-full-light.png) |
 
 ### Sector benchmark (Enterprise Edition)
 
@@ -128,7 +128,13 @@ The "Sector benchmark template" button of the dashboards list opens the template
 
 In preview, the template stays available: its benchmark tiles name what they would show once the platform contributes, and the widgets that read the sector trend and the network first seen are left out of the dashboard and listed as locked rows on the card.
 
-![Sector benchmark template card in preview](assets/threat-pulse-template-card.png)
+![Sector benchmark template card in preview listing the widgets it creates and the locked widgets](assets/threat-pulse-template-card.png)
+
+A median that XTM Hub does not publish, because fewer platforms than the anonymity threshold reported that activity, reads "Not published".
+
+| Preview | Full | Full, light theme |
+|:--------|:-----|:------------------|
+| ![Sector benchmark widget in preview naming what each tile shows once the platform contributes](assets/threat-pulse-benchmark-preview.png) | ![Sector benchmark of a contributing platform comparing its activity per object type with the sector and network medians](assets/threat-pulse-benchmark-full.png) | ![Sector benchmark of a contributing platform in the light theme](assets/threat-pulse-benchmark-full-light.png) |
 
 ### Notifications
 
