@@ -22,6 +22,8 @@ import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 import Card from '../../../../components/common/card/Card';
+import ContainerTimelineStrip from '../../common/timeline/ContainerTimelineStrip';
+import { resolveLink } from '../../../../utils/Entity';
 
 interface CaseRftProps {
   caseRftData: CaseUtils_case$key;
@@ -63,6 +65,9 @@ const CaseRft: React.FC<CaseRftProps> = ({ caseRftData, enableReferences }) => {
   );
   return (
     <div data-testid="rft-page">
+      <div style={{ marginBottom: 24 }}>
+        <ContainerTimelineStrip containerId={caseRft.id} basePath={`${resolveLink(caseRft.entity_type)}/${caseRft.id}`} />
+      </div>
       <Grid
         container={true}
         spacing={3}

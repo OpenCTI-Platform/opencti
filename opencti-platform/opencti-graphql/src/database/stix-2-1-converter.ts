@@ -117,7 +117,7 @@ import {
   ENTITY_WINDOWS_REGISTRY_VALUE_TYPE,
   isStixCyberObservable,
 } from '../schema/stixCyberObservable';
-import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-2-1-extensions';
+import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO, STIX_EXT_OCTI_TIMELINE } from '../types/stix-2-1-extensions';
 import { INPUT_ASSIGNEE, INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS, INPUT_PARTICIPANT } from '../schema/general';
 import { isRelationBuiltin, STIX_SPEC_VERSION } from './stix';
 import { isInternalRelationship, isStoreRelationPir, RELATION_IN_PIR } from '../schema/internalRelationship';
@@ -128,6 +128,8 @@ import { type StoreRelationPir } from '../modules/pir/pir-types';
 import { pushAll } from '../utils/arrayUtil';
 import { flattenCustomFieldValuesForStix } from '../modules/customField/custom-field-stix-utils';
 import { withProvenanceStixExtension } from '../modules/provenance/provenance-stix';
+import { buildStixTimelineExtension } from '../modules/timeline/timeline-extension';
+import { ATTRIBUTE_TIMELINE_EXCHANGE, type StoreTimelineExchange } from '../modules/timeline/timeline-types';
 
 export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');
@@ -284,6 +286,10 @@ export const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDo
   // custom_field_values only exists on StoreEntity (not StoreRelation); shared here so any entity
   // type adopting custom fields gets STIX flattening for free, without per-type converter wiring.
   const customFieldValues = 'custom_field_values' in instance ? instance.custom_field_values : undefined;
+  // Analyst timeline contributions only exist on incidents and cases; same shared-builder rationale as custom fields.
+  const timelineExtension = ATTRIBUTE_TIMELINE_EXCHANGE in instance
+    ? buildStixTimelineExtension((instance as StoreEntity & { [ATTRIBUTE_TIMELINE_EXCHANGE]?: StoreTimelineExchange })[ATTRIBUTE_TIMELINE_EXCHANGE])
+    : undefined;
   return {
     ...stixObject,
     created: convertToStixDate(instance.created),
@@ -300,6 +306,7 @@ export const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDo
         ...stixObject.extensions[STIX_EXT_OCTI],
         ...flattenCustomFieldValuesForStix(customFieldValues),
       }),
+      ...(timelineExtension ? { [STIX_EXT_OCTI_TIMELINE]: timelineExtension } : {}),
     },
   };
 };
@@ -414,6 +421,7 @@ const convertIncidentToStix = (instance: StoreEntity, type: string): SDO.StixInc
     severity: instance.severity,
     source: instance.source,
     extensions: {
+      ...incident.extensions,
       [STIX_EXT_OCTI]: cleanObject({
         ...incident.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',

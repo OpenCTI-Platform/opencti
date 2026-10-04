@@ -18,6 +18,7 @@ export const convertCaseRfiToStix_2_1 = (instance: StoreEntityCaseRfi): StixCase
     priority: instance.priority,
     object_refs: (instance[INPUT_OBJECTS] ?? []).map((m) => m.standard_id),
     extensions: {
+      ...caseRfi.extensions,
       [STIX_EXT_OCTI]: cleanObject({
         ...caseRfi.extensions[STIX_EXT_OCTI],
         extension_type: 'new-sdo',

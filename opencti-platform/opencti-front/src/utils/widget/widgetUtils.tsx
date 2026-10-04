@@ -16,6 +16,7 @@ import {
   Radar,
   StarSettingsOutline,
   TagTextOutline,
+  TimelineClockOutline,
   ViewListOutline,
 } from 'mdi-material-ui';
 import React from 'react';
@@ -226,6 +227,16 @@ const widgetVisualizationTypes = [
     isEntities: true,
     isAudits: true,
   },
+  {
+    key: 'case-timeline',
+    name: 'Incident and case timeline',
+    dataSelectionLimit: undefined,
+    category: 'case-timeline',
+    availableParameters: [],
+    isRelationships: false,
+    isEntities: false,
+    isAudits: false,
+  },
 ] as const;
 
 const customAttributesVisualizationType = {
@@ -337,6 +348,8 @@ export const renderWidgetIcon = (key: string, fontSize: 'large' | 'small' | 'med
       return <StarSettingsOutline fontSize={fontSize} color="primary" />;
     case 'wordcloud':
       return <ViewQuiltOutlined fontSize={fontSize} color="primary" />;
+    case 'case-timeline':
+      return <TimelineClockOutline fontSize={fontSize} color="primary" />;
     default:
       return <div />;
   }
