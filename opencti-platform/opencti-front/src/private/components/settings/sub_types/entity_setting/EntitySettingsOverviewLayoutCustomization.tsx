@@ -12,6 +12,7 @@ import { Form, Formik } from 'formik';
 import { useTheme } from '@mui/styles';
 import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import { MESSAGING$ } from '../../../../../relay/environment';
 import { HIDDEN_OVERVIEW_WIDGET_WIDTH } from '../../../../../utils/hooks/useOverviewLayoutCustomization';
 import type { Theme } from '../../../../../components/Theme';
 import type { EntitySettingsOverviewLayoutCustomization_entitySetting$data } from './__generated__/EntitySettingsOverviewLayoutCustomization_entitySetting.graphql';
@@ -103,6 +104,11 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
       variables: {
         ids: [id],
         input,
+      },
+      // A refused change (rights, validation) comes back as payload errors: the switches keep the stored layout and the
+      // administrator is told why
+      onCompleted: (_, errors) => {
+        if (errors && errors.length > 0) MESSAGING$.notifyError(errors.map((error) => error.message).join('\n'));
       },
     });
   };

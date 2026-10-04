@@ -182,6 +182,9 @@ const validateWindow = (eventTime: string, eventEndTime: string | null | undefin
 // a slot, the container goes to the timeline manager, whose batches and concurrency bound the work
 const TIMELINE_FIRST_USE_CONCURRENCY = conf.get('timeline_manager:first_use_concurrency') ?? 2;
 const TIMELINE_FIRST_USE_MAX_WAITING = 50;
+// The events of an imported extension are bounded on their own, never by the cap of manual events of the case: that cap
+// applies to the new milestones only, once the known events (always updated) are told apart
+const TIMELINE_IMPORT_MAX_EVENTS = Math.max(10000, TIMELINE_MAX_MANUAL_EVENTS);
 const runFirstUseGeneration = createConcurrencyLimiter(TIMELINE_FIRST_USE_CONCURRENCY, TIMELINE_FIRST_USE_MAX_WAITING);
 const firstUseGenerations = new Map<string, Promise<boolean>>();
 
@@ -274,13 +277,12 @@ const filterAccessibleEvents = async <T extends { node: StoredTimelineEvent } | 
   return { items: filtered, elements };
 };
 
-/** Elements referenced by the events of a container that the user cannot access (or that no longer exist). */
+/** Elements referenced by the events of a container that the user cannot access (or that no longer exist), read from every event. */
 const findInaccessibleElementIds = async (context: AuthContext, user: AuthUser, containerId: string): Promise<string[]> => {
   const references = await fullEntitiesList<StoredTimelineEvent>(context, user, [ENTITY_TYPE_TIMELINE_EVENT], {
     filters: buildTimelineFilters(containerId, { includeHidden: true }) as any,
     baseData: true,
     baseFields: ['element_id'],
-    maxSize: TIMELINE_MAX_STORED_EVENTS,
   } as any);
   const elementIds = Array.from(new Set(references.map((event) => event.element_id).filter((id): id is string => !!id && id !== containerId)));
   if (elementIds.length === 0) return [];
@@ -1162,7 +1164,7 @@ export const importTimelineExtension = async (context: AuthContext, user: AuthUs
   } catch {
     throw FunctionalError('Invalid timeline extension');
   }
-  const contributions = sanitizeTimelineExtension(extension, { maxEvents: TIMELINE_MAX_MANUAL_EVENTS, maxAnnotations: TIMELINE_MAX_EVENTS });
+  const contributions = sanitizeTimelineExtension(extension, { maxEvents: TIMELINE_IMPORT_MAX_EVENTS, maxAnnotations: TIMELINE_MAX_EVENTS });
   const { events, annotations, dropped, normalized } = contributions;
   if (dropped > 0 || normalized > 0) {
     logApp.warn('[TIMELINE] Timeline extension values dropped or normalized on import', { containerId: container.internal_id, dropped, normalized });

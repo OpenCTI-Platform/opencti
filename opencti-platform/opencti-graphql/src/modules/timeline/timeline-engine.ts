@@ -156,13 +156,14 @@ export const timelineEventMarkings = (eventMarkings: string[], element: Record<s
   return uniq([...eventMarkings, ...(element ? markingsOf(element) : []), ...containerMarkings]);
 };
 
+// Every stored event of the container, page by page: events stored under higher caps than the current ones must still be
+// found, to be rewritten or cleaned up
 export const loadStoredTimelineEvents = async (context: AuthContext, containerId: string): Promise<StoredTimelineEvent[]> => {
   return fullEntitiesList<StoredTimelineEvent>(context, SYSTEM_USER, [ENTITY_TYPE_TIMELINE_EVENT], {
     filters: { mode: FilterMode.And, filters: [{ key: ['container_id'], values: [containerId] }], filterGroups: [] },
     noFiltersChecking: true,
     // Events are rewritten from what is loaded here: their author must come along with them
     withoutRels: false,
-    maxSize: TIMELINE_MAX_STORED_EVENTS,
   } as any);
 };
 

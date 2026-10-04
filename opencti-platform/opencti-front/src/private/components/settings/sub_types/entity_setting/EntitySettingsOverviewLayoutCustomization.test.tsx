@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, screen, within } from '@testing-library/react';
 import testRender from '../../../../../utils/tests/test-render';
 import EntitySettingsOverviewLayoutCustomization from './EntitySettingsOverviewLayoutCustomization';
+import { MESSAGING$ } from '../../../../../relay/environment';
 
 const mockCommit = vi.fn();
 vi.mock('../../../../../utils/hooks/useApiMutation', () => ({
@@ -75,5 +76,17 @@ describe('EntitySettingsOverviewLayoutCustomization', () => {
     const { user } = renderLayout([TIMELINE, DETAILS, NOTES]);
     await user.click(screen.getByRole('switch', { name: 'Show Timeline at full width' }));
     expect(committedLayout().value).toEqual([{ ...TIMELINE, width: 12 }, DETAILS, NOTES]);
+  });
+
+  it('tells the administrator why a change was refused and keeps the stored layout', async () => {
+    const notifyError = vi.spyOn(MESSAGING$, 'notifyError').mockImplementation(() => {});
+    const { user } = renderLayout([TIMELINE, DETAILS, NOTES]);
+    await user.click(screen.getByRole('switch', { name: 'Display Timeline' }));
+    act(() => {
+      mockCommit.mock.lastCall?.[0].onCompleted(null, [{ message: 'You are not allowed to do this.' }]);
+    });
+    expect(notifyError).toHaveBeenCalledWith('You are not allowed to do this.');
+    expect(screen.getByRole('switch', { name: 'Display Timeline' })).toBeChecked();
+    notifyError.mockRestore();
   });
 });
