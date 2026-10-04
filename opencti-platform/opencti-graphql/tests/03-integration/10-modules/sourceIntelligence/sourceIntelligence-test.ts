@@ -16,6 +16,7 @@ import type { BasicStoreEntity } from '../../../../src/types/store';
 import { deleteDraftWorkspace } from '../../../../src/modules/draftWorkspace/draftWorkspace-domain';
 import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE } from '../../../../src/modules/draftWorkspace/draftWorkspace-types';
 import { DRAFT_STATUS_OPEN } from '../../../../src/modules/draftWorkspace/draftStatuses';
+import { resolveDraftForward } from '../../../../src/modules/draftWorkspace/draftWorkspace-closure';
 
 const SOURCES_QUERY = gql`
   query sources($first: Int, $orderBy: SourcesOrdering, $orderMode: OrderingMode) {
@@ -506,6 +507,8 @@ describe('Source intelligence', () => {
     expect(renewedDraftId).not.toBe(firstDraftId);
     const renewedDraft = await storeLoadById<BasicStoreEntityDraftWorkspace>(testContext, ADMIN_USER, renewedDraftId, ENTITY_TYPE_DRAFT_WORKSPACE);
     expect(renewedDraft?.draft_status).toBe(DRAFT_STATUS_OPEN);
+    // Work queued for the deleted draft goes to the new one
+    expect(await resolveDraftForward(firstDraftId)).toBe(renewedDraftId);
 
     const reverted = await queryAsAdminWithSuccess({ query: REVERT_MUTATION, variables: { id: recommendationId } });
     expect(reverted.data.revertSourceRecommendation.status).toBe('reverted');
@@ -538,6 +541,8 @@ describe('Source intelligence', () => {
     const renewedDraftId = await resolveFeedQuarantineDraftId(testContext, feedId) as string;
     expect(renewedDraftId).toBeTruthy();
     expect(renewedDraftId).not.toBe(firstDraftId);
+    // A bundle queued for the deleted draft before its deletion is processed into the new one
+    expect(await resolveDraftForward(firstDraftId)).toBe(renewedDraftId);
 
     await patchAttribute(testContext, ADMIN_USER, feedSource.internal_id, ENTITY_TYPE_SOURCE, { quarantined: false, quarantine_draft_id: null });
     expect(await resolveFeedQuarantineDraftId(testContext, feedId)).toBeUndefined();
