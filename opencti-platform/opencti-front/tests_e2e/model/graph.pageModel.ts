@@ -82,7 +82,7 @@ export default class GraphPage {
 
   /** The toolbar docked at the bottom of every graph. */
   getToolbar() {
-    return this.page.locator('.MuiDrawer-paperAnchorDockedBottom').last();
+    return this.page.locator('[data-graph-toolbar]').last();
   }
 
   /** The one toolbar of the graph, as assistive technologies see it. */

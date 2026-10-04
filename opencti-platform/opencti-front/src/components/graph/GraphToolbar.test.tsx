@@ -43,6 +43,13 @@ describe('GraphToolbar', () => {
     expect(screen.getByRole('button', { name: 'Zoom in' })).not.toHaveAttribute('aria-pressed');
   });
 
+  it('sits on the elevated surface of the legend and the details panel', () => {
+    renderToolbar();
+    const surface = screen.getByRole('toolbar', { name: 'Graph toolbar' }).closest('[data-graph-toolbar]');
+    expect(surface).toHaveClass('layer-2', 'rounded-none', 'border-t');
+    expect(surface).toHaveStyle({ position: 'fixed' });
+  });
+
   it('keeps one fit action and disables what cannot run, saying why', () => {
     renderToolbar();
     expect(screen.getAllByRole('button', { name: /^Fit/ }).map((button) => button.getAttribute('aria-label'))).toEqual(['Fit the whole graph', 'Fit the selection']);

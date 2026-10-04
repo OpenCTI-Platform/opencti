@@ -1,5 +1,5 @@
-import Drawer from '@mui/material/Drawer';
 import React, { ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Paper } from '@filigran/design-system';
 import Divider from '@mui/material/Divider';
 import { useTheme } from '@mui/material/styles';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -23,7 +23,7 @@ import useAuth from '../../utils/hooks/useAuth';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
 import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../utils/hooks/useDraftContext';
 import useResizeObserver from '../../utils/hooks/useResizeObserver';
-import { RIGHT_BAR_LAYER, fdsLayerClass, layerInputVars } from '../../utils/fdsLayer';
+import { SURFACE_LAYER, layerInputVars } from '../../utils/fdsLayer';
 import { GRAPH_TOOLBAR_HEIGHT, GRAPH_TOOLBAR_HEIGHT_WITH_TIME_RANGE } from './utils/graphFraming';
 
 export type GraphToolbarProps = GraphToolbarContentToolsProps & GraphToolbarExpandToolsProps & {
@@ -140,25 +140,28 @@ const GraphToolbar = ({
   const hasCounters = !!view && view.counters.length > 0;
 
   return (
-    <Drawer
-      anchor="bottom"
-      variant="permanent"
-      slotProps={{ paper: {
-        ref: toolbarRef,
-        elevation: 2,
-        className: fdsLayerClass(RIGHT_BAR_LAYER),
-        sx: { ...layerInputVars },
-        style: {
-          zIndex: 1,
-          paddingLeft,
-          right: 'var(--chatbot-sidebar-width, 0px)',
-          transition: 'right 225ms cubic-bezier(0.4, 0, 0.2, 1), height 0.2s ease',
-          height: showTimeRange ? GRAPH_TOOLBAR_HEIGHT_WITH_TIME_RANGE : GRAPH_TOOLBAR_HEIGHT,
-          overflow: 'hidden',
-          marginBottom: bannerHeightNumber,
-          bottom: posBottom,
-        },
-      } }}
+    // The surface of the legend and the details panel, docked: square, with only its top edge drawn.
+    <Paper
+      ref={toolbarRef}
+      elevation={SURFACE_LAYER}
+      padding={0}
+      className="rounded-none border-0 border-t"
+      data-graph-toolbar=""
+      style={{
+        ...layerInputVars,
+        position: 'fixed',
+        left: 0,
+        right: 'var(--chatbot-sidebar-width, 0px)',
+        bottom: posBottom,
+        zIndex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        paddingLeft,
+        transition: 'right 225ms cubic-bezier(0.4, 0, 0.2, 1), height 0.2s ease',
+        height: showTimeRange ? GRAPH_TOOLBAR_HEIGHT_WITH_TIME_RANGE : GRAPH_TOOLBAR_HEIGHT,
+        overflow: 'hidden',
+        marginBottom: bannerHeightNumber,
+      }}
     >
       <LinearProgress
         style={{
@@ -250,7 +253,7 @@ const GraphToolbar = ({
 
       {/* Only mounted while shown: the closed toolbar clips it, and its handles would stay reachable from the keyboard. */}
       {showTimeRange && <GraphToolbarTimeRange />}
-    </Drawer>
+    </Paper>
   );
 };
 
