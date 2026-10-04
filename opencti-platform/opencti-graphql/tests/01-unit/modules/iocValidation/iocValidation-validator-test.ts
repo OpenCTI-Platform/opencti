@@ -15,6 +15,7 @@ import { summarizeRequestPairs, withPairOutcomes } from '../../../../src/modules
 import { getEntityValidatorCreation, getEntityValidatorUpdate, type ValidatorFn } from '../../../../src/schema/validator-register';
 import { RELATION_DEPLOYED_ON } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-types';
 import type { AuthUser } from '../../../../src/types/user';
+import { EXPIRATION_MANAGER_USER } from '../../../../src/utils/access';
 import { testContext } from '../../../utils/testQuery';
 
 // Marking definitions come from the platform cache: here every marking is of its own type, so cleaning keeps them all.
@@ -85,6 +86,17 @@ describe('Deployment lifecycle fields guard', () => {
     await expect(validatorUpdate(testContext, editor, { description: ['notes'] }, {})).resolves.toEqual(true);
   });
 
+  it('should reserve the expired status to the deployment manager and administrators, whatever the write path', async () => {
+    const validatorCreation = getEntityValidatorCreation(RELATION_DEPLOYED_ON) as ValidatorFn;
+    const validatorUpdate = getEntityValidatorUpdate(RELATION_DEPLOYED_ON) as ValidatorFn;
+    await expect(validatorCreation(testContext, connector, { deployment_status: 'expired' })).rejects.toThrow('reserved to the platform');
+    await expect(validatorUpdate(testContext, connector, { deployment_status: ['expired'] }, {})).rejects.toThrow('reserved to the platform');
+    await expect(validatorCreation(testContext, administrator, { deployment_status: 'expired' })).resolves.toEqual(true);
+    await expect(validatorUpdate(testContext, administrator, { deployment_status: ['expired'] }, {})).resolves.toEqual(true);
+    await expect(validatorUpdate(testContext, EXPIRATION_MANAGER_USER, { deployment_status: ['expired'] }, {})).resolves.toEqual(true);
+    await expect(validatorUpdate(testContext, connector, { deployment_status: ['removed'] }, {})).resolves.toEqual(true);
+  });
+
   it('should let a regular editor create a new deployment in its default state', async () => {
     const validatorCreation = getEntityValidatorCreation(RELATION_DEPLOYED_ON) as ValidatorFn;
     await expect(validatorCreation(testContext, editor, { description: 'manual' })).resolves.toEqual(true);
@@ -151,5 +163,18 @@ describe('Request pair outcomes', () => {
     const withOutcomes = withPairOutcomes(pairs, [{ internal_id: 'd2', validation_status: 'missed' }]);
     expect(withOutcomes.map((pair) => pair.validation_status)).toEqual(['detected', 'missed']);
     expect(summarizeRequestPairs(withOutcomes, 1)).toEqual(expect.objectContaining({ total: 2, detected: 1, missed: 1, requested: 0, skipped: 1 }));
+  });
+
+  it('should keep a timed out pair marked only while its outcome is the timeout error', () => {
+    const pairs = [
+      { indicator_id: 'i1', platform_id: 'p1', deployed_on_id: 'd1', validation_status: 'error', timed_out: true },
+      { indicator_id: 'i2', platform_id: 'p1', deployed_on_id: 'd2', validation_status: 'error', timed_out: true },
+    ];
+    // d1 got a late verdict for this request, d2 still carries the timeout error
+    const withOutcomes = withPairOutcomes(pairs, [{ internal_id: 'd1', validation_status: 'detected' }, { internal_id: 'd2', validation_status: 'error' }]);
+    expect(withOutcomes).toEqual([
+      { indicator_id: 'i1', platform_id: 'p1', deployed_on_id: 'd1', validation_status: 'detected' },
+      { indicator_id: 'i2', platform_id: 'p1', deployed_on_id: 'd2', validation_status: 'error', timed_out: true },
+    ]);
   });
 });

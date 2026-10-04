@@ -3464,6 +3464,7 @@
   "No live deployment to validate": "Nessuna distribuzione attiva da convalidare",
   "No log entries yet. Logs appear here when ingestion attempts occur.": "Non ci sono ancora voci nel log. I log vengono visualizzati qui quando vengono effettuati tentativi di acquisizione.",
   "No logs available": "Nessun registro disponibile",
+  "No longer waiting for this validation request": "Non è più in attesa di questa richiesta di convalida",
   "No Malware analysis on this observable.": "Nessuna analisi del malware su questo osservabile.",
   "No malware analysis on this observable.": "Nessuna analisi del malware su questo osservabile.",
   "No mapping": "Nessuna mappatura",

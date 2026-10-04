@@ -192,14 +192,15 @@ const findRequestDeployments = async (context: AuthContext, requestId: string) =
 
 // Pairs still waiting for an answer from this request are resolved with the given status. Each pair is rechecked
 // under the pair lock of the result reports, so a result recorded meanwhile is never overwritten.
-const resolvePendingPairs = async (context: AuthContext, requestId: string, status: string) => {
+// Returns the ids of the deployments resolved.
+const resolvePendingPairs = async (context: AuthContext, requestId: string, status: string): Promise<Set<string>> => {
   const deployments = await findRequestDeployments(context, requestId);
   const pending = deployments.filter((d) => d.validation_status === VALIDATION_STATUS_REQUESTED);
+  const resolved: Array<BasicStoreRelationDeployedOn & { _index: string }> = [];
   if (pending.length > 0) {
     const attributes = status === VALIDATION_STATUS_NOT_REQUESTED
       ? { validation_status: VALIDATION_STATUS_NOT_REQUESTED, validation_run_id: null }
       : { validation_status: status, last_validation_at: new Date() };
-    const resolved: Array<BasicStoreRelationDeployedOn & { _index: string }> = [];
     await BluePromise.map(pending, async (relation) => {
       const lock = await lockResources([pairLockKey(relation.fromId, relation.toId)]);
       try {
@@ -215,7 +216,7 @@ const resolvePendingPairs = async (context: AuthContext, requestId: string, stat
     }, { concurrency: CONCURRENCY });
     await refreshIndicatorDeploymentCounters(context, resolved.map((r) => r.fromId));
   }
-  return deployments;
+  return new Set(resolved.map((relation) => relation.internal_id));
 };
 // endregion
 
@@ -392,8 +393,12 @@ export const requestIndicatorsValidation = async (context: AuthContext, user: Au
 
 // region dispatch to OpenAEV
 // Serializes the writes of the request status (dispatch, OpenAEV lifecycle updates).
+// Lock order, everywhere: dispatch claim, then request, then pairs.
+const dispatchLockKey = (requestId: string) => `ioc-validation-dispatch-${requestId}`;
+const requestLockKey = (requestId: string) => `ioc-validation-request-${requestId}`;
+
 const withRequestLock = async <T>(requestId: string, callback: () => Promise<T>): Promise<T> => {
-  const lock = await lockResources([`ioc-validation-request-${requestId}`]);
+  const lock = await lockResources([requestLockKey(requestId)]);
   try {
     return await callback();
   } finally {
@@ -415,7 +420,7 @@ const patchRequest = async (context: AuthContext, user: AuthUser, id: string, pa
  * and only a caller finding the request still pending and without work creates the work and pushes the scenario.
  */
 export const dispatchIocValidationRequest = async (context: AuthContext, request: StoreEntityIocValidationRequest) => {
-  const lock = await lockResources([`ioc-validation-dispatch-${request.internal_id}`]);
+  const lock = await lockResources([dispatchLockKey(request.internal_id)]);
   try {
     const current = await findIocValidationRequest(context, SYSTEM_USER, request.internal_id) as unknown as StoreEntityIocValidationRequest | undefined;
     if (!current || current.status !== REQUEST_STATUS_PENDING || isNotEmptyField(current.work_id)) {
@@ -427,22 +432,91 @@ export const dispatchIocValidationRequest = async (context: AuthContext, request
   }
 };
 
-const dispatchClaimedIocValidationRequest = async (context: AuthContext, request: StoreEntityIocValidationRequest) => {
+/**
+ * A request can wait for its connector: before it is sent, each pair is read again under its pair lock, and only the
+ * deployments still live, without removal requested and still waiting for this request are kept. A dropped pair still
+ * marked by this request is released (not requested again) and listed with its reason in the skipped pairs.
+ * Must run under the dispatch claim of the request.
+ */
+const recheckPairsBeforeDispatch = async (context: AuthContext, request: StoreEntityIocValidationRequest) => {
+  const pairs = request.pairs ?? [];
+  if (pairs.length === 0) {
+    return request;
+  }
+  const kept: IocValidationPair[] = [];
+  const dropped: IocValidationSkipped[] = [];
+  const released: Array<BasicStoreRelationDeployedOn & { _index: string }> = [];
+  const lock = await lockResources([...new Set(pairs.map((pair) => pairLockKey(pair.indicator_id, pair.platform_id)))].sort());
+  try {
+    await BluePromise.map(pairs, async (pair) => {
+      const current = await findDeployedOn(context, SYSTEM_USER, pair.indicator_id, pair.platform_id) as (BasicStoreRelationDeployedOn & { _index: string }) | undefined;
+      const bound = current && current.internal_id === pair.deployed_on_id
+        && current.validation_run_id === request.internal_id && current.validation_status === VALIDATION_STATUS_REQUESTED;
+      let reason: string | undefined;
+      if (!current || !bound) {
+        reason = 'No longer waiting for this validation request';
+      } else if (!LIVE_DEPLOYMENT_STATUSES.includes(current.deployment_status)) {
+        reason = 'Not live on this security platform';
+      } else if (current.revoked === true) {
+        reason = 'Removal requested on this security platform';
+      }
+      if (!reason) {
+        kept.push(pair);
+        return;
+      }
+      dropped.push({ indicator_id: pair.indicator_id, platform_id: pair.platform_id, reason });
+      if (current && bound) {
+        const params = buildReplaceScriptParams({ validation_status: VALIDATION_STATUS_NOT_REQUESTED, validation_run_id: null, updated_at: new Date() });
+        await elUpdate(context, current._index, current.internal_id, { script: { source: EL_REPLACE_SCRIPT_SOURCE, lang: 'painless', params } });
+        released.push(current);
+      }
+    }, { concurrency: CONCURRENCY });
+  } finally {
+    await lock.unlock();
+  }
+  if (dropped.length === 0) {
+    return request;
+  }
+  await refreshIndicatorDeploymentCounters(context, released.map((relation) => relation.fromId));
+  return withRequestLock(request.internal_id, async () => {
+    const current = (await findIocValidationRequest(context, SYSTEM_USER, request.internal_id) ?? request) as unknown as StoreEntityIocValidationRequest;
+    const keptIds = new Set(kept.map((pair) => pair.deployed_on_id));
+    const remaining = (current.pairs ?? []).filter((pair) => keptIds.has(pair.deployed_on_id));
+    const skipped = [...(current.skipped ?? []), ...dropped];
+    const attributes = { pairs: remaining, skipped, results_summary: summarizeRequestPairs(remaining, skipped.length) };
+    await setRequestAttributes(context, current, attributes);
+    logApp.info('[IOC-VALIDATION] Pairs no longer eligible left out before dispatch', { requestId: request.internal_id, dropped: dropped.length });
+    return { ...current, ...attributes };
+  });
+};
+
+const dispatchClaimedIocValidationRequest = async (context: AuthContext, claimed: StoreEntityIocValidationRequest) => {
   const connectors = await findIocValidationConnectors(context, SYSTEM_USER, true);
-  const connector = request.connector_id
-    ? connectors.find((c: BasicStoreBase) => c.internal_id === request.connector_id)
+  const connector = claimed.connector_id
+    ? connectors.find((c: BasicStoreBase) => c.internal_id === claimed.connector_id)
     : connectors[0];
   if (!connector) {
-    if (request.status_message !== 'Waiting for an active OpenAEV IOC validation connector') {
-      return patchRequest(context, SYSTEM_USER, request.internal_id, { status_message: 'Waiting for an active OpenAEV IOC validation connector' });
+    if (claimed.status_message !== 'Waiting for an active OpenAEV IOC validation connector') {
+      return patchRequest(context, SYSTEM_USER, claimed.internal_id, { status_message: 'Waiting for an active OpenAEV IOC validation connector' });
     }
-    return request;
+    return claimed;
+  }
+  const request = await recheckPairsBeforeDispatch(context, claimed);
+  if (request.pairs.length === 0) {
+    return patchRequest(context, SYSTEM_USER, request.internal_id, {
+      status: REQUEST_STATUS_FAILED,
+      status_message: 'No deployment of the request is still live and waiting for it',
+      completed_at: new Date(),
+    });
   }
   const connectorUser = await resolveConnectorUser(context, connector);
   const requesterId = requesterIdOf(request);
   const requester = requesterId ? await resolveUserByIdFromCache(context, requesterId) as AuthUser | undefined : undefined;
-  const indicators = await storeLoadByIds<BasicStoreEntityIndicator>(context, connectorUser, request.indicator_ids, ENTITY_TYPE_INDICATOR);
-  const platforms = await storeLoadByIds<BasicStoreEntitySecurityPlatform>(context, connectorUser, request.platform_ids, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM);
+  // The IOC list and the bundle are built from the pairs kept: an indicator or a platform without pair is not sent.
+  const pairIndicatorIds = [...new Set(request.pairs.map((pair) => pair.indicator_id))];
+  const pairPlatformIds = [...new Set(request.pairs.map((pair) => pair.platform_id))];
+  const indicators = await storeLoadByIds<BasicStoreEntityIndicator>(context, connectorUser, pairIndicatorIds, ENTITY_TYPE_INDICATOR);
+  const platforms = await storeLoadByIds<BasicStoreEntitySecurityPlatform>(context, connectorUser, pairPlatformIds, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM);
   const indicatorRefs = new Map(indicators.filter((i) => i).map((i) => [i.internal_id, i.standard_id as StixId]));
   const platformRefs = new Map(platforms.filter((p) => p).map((p) => [p.internal_id, p.standard_id as StixId]));
   const deploymentIds = request.pairs.map((pair) => pair.deployed_on_id);
@@ -636,6 +710,7 @@ export const reportIocValidationResults = async (context: AuthContext, user: Aut
   }
   const now = new Date();
   const updatedIndicatorIds: string[] = [];
+  const timedOutDeploymentIds = new Set((request.pairs ?? []).filter((pair) => pair.timed_out).map((pair) => pair.deployed_on_id));
   await BluePromise.map(args.results, async (result) => {
     const indicator = await storeLoadById<BasicStoreEntityIndicator>(context, user, result.indicatorId, ENTITY_TYPE_INDICATOR);
     if (!indicator || !(request.indicator_ids ?? []).includes(indicator.internal_id)) {
@@ -652,7 +727,9 @@ export const reportIocValidationResults = async (context: AuthContext, user: Aut
         logApp.info('[IOC-VALIDATION] Ignoring a result for a pair recorded by another account', { id: request.internal_id, deploymentId: deployment.internal_id });
         return;
       }
-      const waiting = deployment.validation_status === VALIDATION_STATUS_REQUESTED;
+      // A late verdict of this request replaces the error the timeout set, never a reported verdict.
+      const timedOut = deployment.validation_status === VALIDATION_STATUS_ERROR && timedOutDeploymentIds.has(deployment.internal_id);
+      const waiting = deployment.validation_status === VALIDATION_STATUS_REQUESTED || timedOut;
       // A retry of the recorded verdict only repairs its sighting (the verdict is written first).
       if (!waiting && deployment.validation_status !== result.status) {
         return;
@@ -705,9 +782,18 @@ export const deleteIocValidationRequest = async (context: AuthContext, user: Aut
   if (!request) {
     throw FunctionalError('IOC validation request not found', { id });
   }
-  // Unanswered pairs return to not requested so they are not left waiting forever
-  await resolvePendingPairs(context, request.internal_id, VALIDATION_STATUS_NOT_REQUESTED);
-  await deleteInternalObject(context, user, request.internal_id, ENTITY_TYPE_IOC_VALIDATION_REQUEST);
+  // A dispatch in flight finishes first: its pushed scenario is recorded on the request before the request goes.
+  const lock = await lockResources([dispatchLockKey(request.internal_id), requestLockKey(request.internal_id)]);
+  try {
+    const current = await findIocValidationRequest(context, SYSTEM_USER, request.internal_id);
+    if (current) {
+      // Unanswered pairs return to not requested so they are not left waiting forever
+      await resolvePendingPairs(context, current.internal_id, VALIDATION_STATUS_NOT_REQUESTED);
+      await deleteInternalObject(context, user, current.internal_id, ENTITY_TYPE_IOC_VALIDATION_REQUEST);
+    }
+  } finally {
+    await lock.unlock();
+  }
   return request.internal_id;
 };
 // endregion
@@ -720,11 +806,18 @@ const setRequestAttributes = async (context: AuthContext, request: BasicStoreEnt
 
 /**
  * The pairs of a request with the outcome each one got for this request: the current status of the deployments still
- * bound to it, the outcome recorded earlier for the pairs a newer request took over since.
+ * bound to it, the outcome recorded earlier for the pairs a newer request took over since. A timed out pair stays
+ * marked as such only while its outcome is still the timeout error.
  */
 export const withPairOutcomes = (pairs: IocValidationPair[], boundDeployments: Array<{ internal_id: string; validation_status?: string | null }>) => {
   const bound = new Map(boundDeployments.map((deployment) => [deployment.internal_id, deployment.validation_status]));
-  return pairs.map((pair) => (bound.has(pair.deployed_on_id) ? { ...pair, validation_status: bound.get(pair.deployed_on_id) ?? undefined } : pair));
+  return pairs.map((pair) => {
+    if (!bound.has(pair.deployed_on_id)) {
+      return pair;
+    }
+    const { timed_out: timedOut, ...outcome } = { ...pair, validation_status: bound.get(pair.deployed_on_id) ?? undefined };
+    return timedOut && outcome.validation_status === VALIDATION_STATUS_ERROR ? { ...outcome, timed_out: true } : outcome;
+  });
 };
 
 export const summarizeRequestPairs = (pairs: IocValidationPair[], skipped: number) => {
@@ -770,8 +863,9 @@ const refreshIocValidationRequest = async (context: AuthContext, requestId: stri
     attributes.status = summary.error > 0 ? REQUEST_STATUS_PARTIAL : REQUEST_STATUS_COMPLETED;
     attributes.completed_at = new Date();
   } else if (isOpen && now - dispatchedAt > IOC_VALIDATION_TIMEOUT_MS) {
-    await resolvePendingPairs(context, request.internal_id, VALIDATION_STATUS_ERROR);
-    const expiredPairs = withPairOutcomes(request.pairs ?? [], await findRequestDeployments(context, request.internal_id));
+    const timedOut = await resolvePendingPairs(context, request.internal_id, VALIDATION_STATUS_ERROR);
+    const expiredPairs = withPairOutcomes(request.pairs ?? [], await findRequestDeployments(context, request.internal_id))
+      .map((pair) => (timedOut.has(pair.deployed_on_id) ? { ...pair, timed_out: true } : pair));
     attributes.pairs = expiredPairs;
     attributes.results_summary = summarizeRequestPairs(expiredPairs, request.skipped?.length ?? 0);
     attributes.status = REQUEST_STATUS_EXPIRED;

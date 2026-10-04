@@ -143,6 +143,12 @@ another request are left out. The dialog shows what will be tested (the indicato
 test kinds) before you send the request. It is delivered to OpenAEV by the IOC validation connector. A deployment
 that starts waiting for another request in the meantime is skipped, and listed with the reason in the new request.
 
+When the IOC validation connector is not running, the request waits and is sent as soon as the connector is back.
+Before it is sent, every deployment is checked again: a deployment that is no longer live, whose removal was
+requested, or that no longer waits for this request is left out, listed with the reason, and can be validated again by
+another request; the indicators and platforms without any deployment left are not sent. Deleting a request releases
+its deployments that are still waiting for results; a request being sent is deleted once the sending is recorded.
+
 ![Validate live deployments dialog listing the indicators and the security platform to test](assets/dissemination-assurance-validate-live.png)
 
 OpenAEV never runs anything without an explicit approval by one of its operators, and only runs the benign test
@@ -155,6 +161,10 @@ When OpenAEV sends the results, the validation status of each deployment is upda
 `missed` or `error`, and the request shows the outcome of every indicator and platform pair. A missed indicator
 links to its deployment, and a completed request can be validated again in one action. Each request keeps the outcome it
 got: validating the same deployment again updates the deployment, not the results of the earlier requests.
+
+A request without results after the timeout (`ioc_validation:timeout_days`) expires, and its deployments still waiting
+get the `error` status. A result that a security platform reports later for the same request replaces that timeout
+error, never a result already recorded.
 
 ![Completed validation request with one detected and one missed indicator](assets/dissemination-assurance-validation-missed.png)
 
@@ -217,14 +227,15 @@ hit, last hit, deployment error) is written the same way everywhere else. Creati
 relationship with these values set is reserved to connector accounts (bundle imports, platform synchronization) and
 administrators. Any other account can still create a `deployed-on` relationship, which then starts in its default
 state (`pending`, no hit, validation not requested), but cannot set or reset the state of an existing one, including
-through a creation that updates an existing relationship. The analyst actions of the Deployments tabs (retry, remove)
-stay available with the "Update knowledge" capability.
+through a creation that updates an existing relationship. The `expired` status stays reserved to the platform manager
+and administrators on every path: a connector account cannot set it by creation, import or edition either. The analyst
+actions of the Deployments tabs (retry, remove) stay available with the "Update knowledge" capability.
 
 A security platform able to prove a validation test from its own data (for example a SIEM that searched for the
 benign test of a request) reports the outcome with `iocValidationReportResults(id, platformId, results)`: each result
 gives an indicator, `detected`, `prevented` or `missed`, and optionally the observation date, a hit count and the
-evidence. Only the pairs of the request on that platform still waiting for an answer are updated, so a result already
-received from OpenAEV is never overwritten. Each result is recorded as a sighting of the indicator by the platform,
+evidence. Only the pairs of the request on that platform still waiting for an answer, or closed by the timeout of the
+request, are updated, so a result already received is never overwritten. Each result is recorded as a sighting of the indicator by the platform,
 negative for a miss.
 
 A validation result is proof attributed to the platform, so it is accepted only from the connector account that

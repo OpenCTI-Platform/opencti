@@ -88,6 +88,8 @@ export interface IocValidationPair {
   deployed_on_id: string;
   // Outcome of the pair for this request, kept when a newer request takes the deployment over
   validation_status?: string;
+  // The error outcome was set by the request timeout, not reported: a late verdict of this request may replace it
+  timed_out?: boolean;
 }
 
 export interface IocValidationSkipped {

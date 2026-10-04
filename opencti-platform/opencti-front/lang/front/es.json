@@ -3464,6 +3464,7 @@
   "No live deployment to validate": "No hay ningún despliegue activo que validar",
   "No log entries yet. Logs appear here when ingestion attempts occur.": "Aún no hay entradas en el registro. Los registros aparecerán aquí cuando se produzcan intentos de importación.",
   "No logs available": "No hay registros disponibles",
+  "No longer waiting for this validation request": "Ya no espera esta solicitud de validación",
   "No Malware analysis on this observable.": "Ningún análisis de malware sobre esta observable.",
   "No malware analysis on this observable.": "No hay análisis de malware en este observable.",
   "No mapping": "Sin mapeo",

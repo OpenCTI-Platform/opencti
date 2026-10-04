@@ -3464,6 +3464,7 @@
   "No live deployment to validate": "검증할 활성 배포가 없습니다",
   "No log entries yet. Logs appear here when ingestion attempts occur.": "아직 로그 항목이 없습니다. 데이터 수집 시도가 이루어지면 여기에 로그가 표시됩니다.",
   "No logs available": "사용 가능한 로그 없음",
+  "No longer waiting for this validation request": "더 이상 이 검증 요청을 기다리지 않음",
   "No Malware analysis on this observable.": "이 관찰 가능 항목에 대한 악성 소프트웨어 분석 없음.",
   "No malware analysis on this observable.": "이 관찰 가능 항목에 대한 악성 소프트웨어 분석 없음.",
   "No mapping": "매핑 없음",

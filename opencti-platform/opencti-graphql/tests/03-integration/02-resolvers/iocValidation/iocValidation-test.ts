@@ -7,13 +7,16 @@ import { resetCacheForEntity } from '../../../../src/database/cache';
 import { ENTITY_TYPE_CONNECTOR } from '../../../../src/schema/internalObject';
 import { ConnectorType } from '../../../../src/generated/graphql';
 import { maintainIocValidationRequests, validationResultSightingStixId } from '../../../../src/modules/iocValidation/iocValidation-domain';
-import { IOC_VALIDATION_CONNECTOR_SCOPE } from '../../../../src/modules/iocValidation/iocValidation-types';
+import { ENTITY_TYPE_IOC_VALIDATION_REQUEST, IOC_VALIDATION_CONNECTOR_SCOPE } from '../../../../src/modules/iocValidation/iocValidation-types';
 import { storeLoadById } from '../../../../src/database/middleware-loader';
+import { patchAttribute } from '../../../../src/database/middleware';
 import { elDeleteElements } from '../../../../src/database/engine';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
 import type { BasicStoreRelation } from '../../../../src/types/store';
+import { SYSTEM_USER } from '../../../../src/utils/access';
 
 const IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202020';
+const WAITING_IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202021';
 
 const INDICATOR_ADD = gql`
   mutation IndicatorAdd($input: IndicatorAddInput!) {
@@ -42,7 +45,7 @@ const REPORT_DEPLOYMENT = gql`
 `;
 const DEPLOYMENT_READ = gql`
   query DeploymentRead($id: String!) {
-    stixCoreRelationship(id: $id) { id validation_status validation_run_id updated_at }
+    stixCoreRelationship(id: $id) { id deployment_status validation_status validation_run_id updated_at }
   }
 `;
 const DEPLOYMENT_CREATORS = gql`
@@ -449,5 +452,103 @@ describe('IOC validation requests', () => {
     const released = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: liveDeploymentId } });
     expect(released.data?.stixCoreRelationship.validation_status).toEqual('not_requested');
     await queryAsAdminWithSuccess({ query: REQUEST_DELETE, variables: { id: requestId } });
+  });
+
+  it('should only send the pairs still live when a request waited for its connector', async () => {
+    const connectorUserId = await getUserIdByEmail(USER_CONNECTOR.email);
+    const waitingConnector = {
+      id: WAITING_IOC_VALIDATION_CONNECTOR,
+      name: 'OpenAEV IOC validation (offline)',
+      type: ConnectorType.InternalEnrichment,
+      scope: [IOC_VALIDATION_CONNECTOR_SCOPE],
+      auto: false,
+      auto_update: false,
+    };
+    await registerConnector(testContext, ADMIN_USER, waitingConnector, { active: false, connector_user_id: connectorUserId });
+    resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+    const indicator = await queryAsAdminWithSuccess({
+      query: INDICATOR_ADD,
+      variables: { input: { name: 'waiting.evil.example', pattern: "[domain-name:value = 'waiting.evil.example']", pattern_type: 'stix', x_opencti_main_observable_type: 'Domain-Name' } },
+    });
+    const indicatorId = indicator.data?.indicatorAdd.id;
+    try {
+      const deployment = await queryAsUserWithSuccess(USER_CONNECTOR, {
+        query: REPORT_DEPLOYMENT,
+        variables: { indicatorId, platformId, status: 'deployed' },
+      });
+      const deploymentId = deployment.data?.indicatorReportDeployment.id;
+      const created = await queryAsAdminWithSuccess({
+        query: REQUEST_VALIDATION,
+        variables: { platformIds: [platformId], indicatorIds: [indicatorId], testKinds: ['dns_resolution'], connectorId: WAITING_IOC_VALIDATION_CONNECTOR, name: 'Waiting for its connector' },
+      });
+      const request = created.data?.indicatorsRequestValidation;
+      expect(request.status).toEqual('pending');
+      expect(request.status_message).toEqual('Waiting for an active OpenAEV IOC validation connector');
+      // The platform removes the indicator while the request waits, then the connector comes back
+      await queryAsUserWithSuccess(USER_CONNECTOR, { query: REPORT_DEPLOYMENT, variables: { indicatorId, platformId, status: 'removed' } });
+      await registerConnector(testContext, ADMIN_USER, waitingConnector, { active: true, connector_user_id: connectorUserId });
+      resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+      await maintainIocValidationRequests(testContext);
+      const read = await queryAsAdminWithSuccess({ query: REQUEST_READ, variables: { id: request.id } });
+      const dispatched = read.data?.iocValidationRequest;
+      expect(dispatched.status).toEqual('failed');
+      expect(dispatched.work_id).toBeNull();
+      expect(dispatched.skipped).toEqual([{ indicator_id: indicatorId, platform_id: platformId, reason: 'Not live on this security platform' }]);
+      expect(dispatched.results_summary).toEqual(expect.objectContaining({ total: 0, requested: 0, skipped: 1 }));
+      const released = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: deploymentId } });
+      expect(released.data?.stixCoreRelationship.validation_status).toEqual('not_requested');
+      expect(released.data?.stixCoreRelationship.validation_run_id).toBeNull();
+      await queryAsAdminWithSuccess({ query: REQUEST_DELETE, variables: { id: request.id } });
+    } finally {
+      await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: indicatorId } });
+      await connectorDelete(testContext, ADMIN_USER, WAITING_IOC_VALIDATION_CONNECTOR);
+      resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+    }
+  });
+
+  it('should let a late verdict of the request replace only the outcome its timeout set', async () => {
+    const created = await queryAsAdminWithSuccess({
+      query: REQUEST_VALIDATION,
+      variables: { platformIds: [platformId], indicatorIds: [liveIndicatorId], testKinds: ['dns_resolution'], name: 'Timed out' },
+    });
+    const id = created.data?.indicatorsRequestValidation.id;
+    // Dispatched long ago without any answer: the maintenance times it out
+    await patchAttribute(testContext, SYSTEM_USER, id, ENTITY_TYPE_IOC_VALIDATION_REQUEST, { dispatched_at: new Date('2020-01-01T00:00:00.000Z') });
+    await maintainIocValidationRequests(testContext);
+    const expired = await queryAsAdminWithSuccess({ query: REQUEST_READ, variables: { id } });
+    expect(expired.data?.iocValidationRequest.status).toEqual('expired');
+    const timedOut = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: liveDeploymentId } });
+    expect(timedOut.data?.stixCoreRelationship.validation_status).toEqual('error');
+    // The platform proves the test after the timeout: the verdict replaces the timeout error and gets its sighting
+    const late = await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: REPORT_RESULTS,
+      variables: { id, platformId, results: [{ indicatorId: liveIndicatorId, status: 'detected' }] },
+    });
+    expect(late.data?.iocValidationReportResults.results_summary).toEqual({ total: 1, requested: 0, error: 0, skipped: 0 });
+    const replaced = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: liveDeploymentId } });
+    expect(replaced.data?.stixCoreRelationship.validation_status).toEqual('detected');
+    const sighting = await storeLoadById(testContext, ADMIN_USER, validationResultSightingStixId(id, liveIndicatorId, platformId), STIX_SIGHTING_RELATIONSHIP);
+    expect(sighting).toBeTruthy();
+    // A recorded verdict is never replaced, even of a request that timed out
+    await queryAsUserWithSuccess(USER_CONNECTOR, {
+      query: REPORT_RESULTS,
+      variables: { id, platformId, results: [{ indicatorId: liveIndicatorId, status: 'missed' }] },
+    });
+    const kept = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: liveDeploymentId } });
+    expect(kept.data?.stixCoreRelationship.validation_status).toEqual('detected');
+    await queryAsAdminWithSuccess({ query: REQUEST_DELETE, variables: { id } });
+  });
+
+  it('should leave the expired status to the deployment manager on every write path', async () => {
+    await queryAsUserIsExpectedError(USER_CONNECTOR, {
+      query: DEPLOYMENT_FIELD_PATCH,
+      variables: { id: liveDeploymentId, input: [{ key: 'deployment_status', value: ['expired'] }] },
+    });
+    await queryAsUserIsExpectedError(USER_CONNECTOR, {
+      query: RELATION_ADD,
+      variables: { input: { relationship_type: 'deployed-on', fromId: liveIndicatorId, toId: platformId, deployment_status: 'expired', update: true } },
+    });
+    const deployment = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: liveDeploymentId } });
+    expect(deployment.data?.stixCoreRelationship.deployment_status).toEqual('deployed');
   });
 });

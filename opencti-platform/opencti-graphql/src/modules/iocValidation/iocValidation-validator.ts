@@ -9,7 +9,7 @@ import { registerEntityValidator, type ValidatorFn } from '../../schema/validato
 import type { AuthContext, AuthUser } from '../../types/user';
 import { isBypassUser, SYSTEM_USER } from '../../utils/access';
 import { findDeployedOn } from '../indicatorDeployment/indicatorDeployment-domain';
-import { DEPLOYMENT_STATUS_PENDING, RELATION_DEPLOYED_ON, VALIDATION_STATUS_NOT_REQUESTED } from '../indicatorDeployment/indicatorDeployment-types';
+import { DEPLOYMENT_STATUS_EXPIRED, DEPLOYMENT_STATUS_PENDING, RELATION_DEPLOYED_ON, VALIDATION_STATUS_NOT_REQUESTED } from '../indicatorDeployment/indicatorDeployment-types';
 import { findIocValidationConnectors } from './iocValidation-domain';
 import { isLifecycleWriter, isTrustedDeploymentReporter } from './iocValidation-utils';
 
@@ -120,6 +120,13 @@ const refuseValidityWindow = () => {
   throw ValidationError('A deployment has no start or stop time: one deployment exists per indicator and security platform', 'start_time');
 };
 
+// `expired` is the deployment manager's decision when no removal confirmation arrives in time, never a report.
+const setsReservedStatus = (instance: Record<string, unknown>) => firstValue(instance.deployment_status) === DEPLOYMENT_STATUS_EXPIRED;
+
+const refuseReservedStatus = () => {
+  throw ValidationError('Deployment status is invalid or reserved to the platform', 'status', { status: DEPLOYMENT_STATUS_EXPIRED });
+};
+
 const refuseMarkings = (user: AuthUser) => {
   throw ForbiddenAccess('A deployment carries the markings of its indicator and of its security platform', { user_id: user.id });
 };
@@ -136,6 +143,9 @@ const validatorCreation: ValidatorFn = async (context, user, instance) => {
   }
   if (isBypassUser(user)) {
     return true;
+  }
+  if (setsReservedStatus(instance)) {
+    return refuseReservedStatus();
   }
   const lifecycleWriter = isLifecycleWriter(user);
   if (carriesLifecycleState(instance) && !lifecycleWriter) {
@@ -171,6 +181,9 @@ const validatorUpdate: ValidatorFn = async (context, user, instance, initial) =>
   }
   if (isBypassUser(user)) {
     return true;
+  }
+  if (setsReservedStatus(instance)) {
+    return refuseReservedStatus();
   }
   if (touchesLifecycleFields(instance) && !isLifecycleWriter(user)) {
     return refuseLifecycle(user);
