@@ -22,6 +22,8 @@ Registered hunt connectors, their platform and their health are displayed in **D
 
 The page of a hunt connector (**Data > Ingestion > Connectors**) adds a **Hunted platform** card: the platform, its security platform, the query languages the connector executes, the maximum number of runs it accepts at the same time and whether it supports translation previews. Readers who can see Defense > Hunts also get the latest runs of the connector, each opening its run, and a link to the Hunts list.
 
+![Hunted platform card on the page of a Splunk hunt connector, with its latest hunt runs](assets/hunt-connector-page.png)
+
 ## Run lifecycle
 
 1. OpenCTI pushes a run to the queue of the connector serving the security platform. The message carries the hunt (hypothesis, Sigma rule, native query for the platform, techniques, targets, indicators, markings), the time window and the limits (maximum results, timeout, evidence caps). A work tracks the run in the connector works.

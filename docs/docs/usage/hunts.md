@@ -2,7 +2,9 @@
 
 Hunts turn threat intelligence into searches executed in your own telemetry. A hunt states a hypothesis ("if this intrusion set is active in our environment, encoded PowerShell commands run on our endpoints"), carries the detection logic that tests it, and is executed by hunt connectors against the security platforms (SIEM, EDR, XDR, data lakes) your organization operates. Every execution is a **hunt run**: it records what was searched, where, over which time window, what was found and the resulting **verdict**.
 
-Hunts live in the **Defense** area of the navigation, under **Hunts**.
+Hunts live in the **Defense** area of the navigation, under **Hunts**. The list opens on the statistics of the hunts over a period (runs, hits, true positives, autonomous and failed runs, hits over time, runs per platform, verdicts).
+
+![Defense > Hunts: the statistics of the hunts above the list of hunts](assets/hunt-list-populated.png)
 
 ## Concepts
 
@@ -29,6 +31,10 @@ Hunts live in the **Defense** area of the navigation, under **Hunts**.
 
 ## Create a hunt
 
+When the platform holds no hunt yet, **Defense > Hunts** explains what a hunt does and offers to create one, to plan one with AI (Enterprise Edition) or to import a hunt pack from the XTM Hub.
+
+![First use of Defense > Hunts: create a hunt, plan a hunt with AI or import from the XTM Hub](assets/hunt-list-first-use.png)
+
 From **Defense > Hunts**, click the creation button and fill in:
 
 - the name, the description and the **hypothesis**,
@@ -41,12 +47,18 @@ From **Defense > Hunts**, click the creation button and fill in:
 - the **escalation threshold**: from this number of hits, a completed run proposes an Incident (see below),
 - the **scope**: the security platforms the hunt runs on (all the platforms served by a hunt connector when empty).
 
+The **Logic** tab keeps the Sigma rule and the native queries of the hunt, validated as you type.
+
+![Logic tab of a hunt: the Sigma rule validated, with its level, log source and detection fields](assets/hunt-logic-sigma-validation.png)
+
 You can also start a hunt from a threat: the **Hunt this** action of the more actions menu of Attack Patterns, Intrusion Sets, Malware, Reports, Indicators and Priority Intelligence Requirements opens the creation form prefilled with the entity.
 
 ## Run a hunt
 
 - **Run now** executes the hunt on every security platform of its scope, each through the hunt connector registered for it. Each platform gets its own run.
 - **Test query** asks one hunt connector to translate the logic without executing it: the translated query is displayed in the **Logic** tab. Use it to review what will be executed on a platform before the first run.
+
+![Translation preview in the Logic tab: the SPL query a Splunk hunt connector would execute](assets/hunt-logic-translation-preview.png)
 
 Runs follow the statuses `queued`, `running`, then `completed`, `failed` or `timeout`. A run waits in the queue while its connector is unavailable or busy (each connector has a concurrency and a daily budget). Failed and timed out runs are retried automatically with an exponential backoff. Retrying a terminated run by hand starts its next attempt at once and replaces the automatic retry planned for it, so a run is never retried twice.
 
@@ -80,6 +92,10 @@ Run statuses and verdicts read the same everywhere (run drawer, lists, widgets),
 
 The run drawer opens with a status header: the status and verdict, one sentence that says where the run stands (for example "12 hits on 3 entities in Splunk prod - verdict pending") and the next action ("Set the verdict", "Retry" or "Open the incident draft"). A failed run explains why instead of showing the raw error: the connector timed out, the platform refused the query, or the Sigma rule could not be translated, each with its own next action (retry, check the connector, edit the rule); the message reported by the connector stays available under "Show details".
 
+![A completed run: status header, verdict, AI triage proposal with its confidence and rationale, then the evidence](assets/hunt-run-completed-triage.png)
+
+![A failed run: the platform refused the query, with Retry and Check the connector as next actions](assets/hunt-run-failed.png)
+
 The verdict is set as follows:
 
 | Situation | Verdict |
@@ -91,6 +107,8 @@ The verdict is set as follows:
 When the hits reach the escalation threshold, OpenCTI creates an **Incident** in a new draft workspace, never directly in the knowledge graph. The Incident description recommends running Case Autopilot once the draft is validated, to investigate the hits and their attribution. Validating the draft makes the Incident part of the knowledge.
 
 Analysts set the final verdict from the run, with an optional feedback. Hunt statistics (runs, hits, verdict distribution, runs per platform) are displayed on the hunt overview and are available as dashboard widgets.
+
+![Overview of a hunt: hypothesis, status and its transitions, schedule, scope and the latest runs](assets/hunt-overview.png)
 
 ## AI assistance
 

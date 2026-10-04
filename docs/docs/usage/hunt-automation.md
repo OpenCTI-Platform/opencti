@@ -10,7 +10,9 @@ An active hunt can run on its own. Automation never bypasses the analyst on what
 
 ## Schedules
 
-The **schedule** of a hunt is `manual` (the default), `standing` (see below) or a cron expression, for instance `0 */6 * * *` for every 6 hours. Schedules firing more often than the minimum interval (15 minutes by default) are refused; the creation and edition forms check the interval configured on the platform.
+The **schedule** of a hunt is `manual` (the default), `standing` (see below) or a cron expression, for instance `0 */6 * * *` for every 6 hours. Schedules firing more often than the minimum interval (15 minutes by default) are refused; the creation and edition forms check the interval configured on the platform and describe the schedule in words.
+
+![Schedule field of a hunt set to a cron expression, with its description](assets/hunt-schedule-field.png)
 
 When a scheduled hunt is due, the hunt manager runs it on the platforms of its scope and computes its next occurrence from the current date: occurrences missed during an outage are not replayed. The next run date is displayed on the hunt.
 
