@@ -30,7 +30,10 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { notifyPayloadErrors } from '../../defense/matrix/defenseMutation-utils';
-import { DefenseLogsourceMappingsLinesPaginationQuery } from './__generated__/DefenseLogsourceMappingsLinesPaginationQuery.graphql';
+import {
+  DefenseLogsourceMappingsLinesPaginationQuery,
+  DefenseLogsourceMappingsLinesPaginationQuery$variables,
+} from './__generated__/DefenseLogsourceMappingsLinesPaginationQuery.graphql';
 import { DefenseLogsourceMappingsLines_data$key } from './__generated__/DefenseLogsourceMappingsLines_data.graphql';
 import { DefenseLogsourceMappingsLinesRefetchQuery } from './__generated__/DefenseLogsourceMappingsLinesRefetchQuery.graphql';
 import { DefenseLogsourceMappingsDeleteMutation } from './__generated__/DefenseLogsourceMappingsDeleteMutation.graphql';
@@ -40,9 +43,16 @@ import DefenseLogsourceMappingForm, { type DefenseLogsourceMappingFormData } fro
 
 const PAGE_SIZE = 100;
 
+// The custom mappings, counted apart from the paginated list: one may sort after the first page
+const CUSTOM_MAPPINGS_FILTERS: DefenseLogsourceMappingsLinesPaginationQuery$variables['customFilters'] = {
+  mode: 'and',
+  filters: [{ key: ['built_in'], values: ['false'], operator: 'eq', mode: 'or' }],
+  filterGroups: [],
+};
+
 const defenseLogsourceMappingsLinesQuery = graphql`
-  query DefenseLogsourceMappingsLinesPaginationQuery($search: String, $count: Int!, $cursor: ID) {
-    ...DefenseLogsourceMappingsLines_data @arguments(search: $search, count: $count, cursor: $cursor)
+  query DefenseLogsourceMappingsLinesPaginationQuery($search: String, $count: Int!, $cursor: ID, $customFilters: FilterGroup) {
+    ...DefenseLogsourceMappingsLines_data @arguments(search: $search, count: $count, cursor: $cursor, customFilters: $customFilters)
   }
 `;
 
@@ -52,7 +62,13 @@ const defenseLogsourceMappingsLinesFragment = graphql`
     search: { type: "String" }
     count: { type: "Int", defaultValue: 100 }
     cursor: { type: "ID" }
+    customFilters: { type: "FilterGroup" }
   ) @refetchable(queryName: "DefenseLogsourceMappingsLinesRefetchQuery") {
+    customMappings: defenseLogsourceMappings(first: 1, filters: $customFilters) {
+      pageInfo {
+        globalCount
+      }
+    }
     defenseLogsourceMappings(search: $search, first: $count, after: $cursor, orderBy: name, orderMode: asc)
     @connection(key: "Pagination_defenseLogsourceMappings") {
       edges {
@@ -154,7 +170,7 @@ const MappingsTable = ({ queryRef, onEdit, onCreate, onFirstUseChange, searching
     if (refreshKey > 0) refetch({}, { fetchPolicy: 'network-only' });
   }, [refreshKey]);
   const mappings = (data.defenseLogsourceMappings?.edges ?? []).map(({ node }) => node);
-  const firstUse = !searching && mappings.every((mapping) => mapping.built_in);
+  const firstUse = !searching && (data.customMappings?.pageInfo.globalCount ?? 0) === 0;
   // The first-use card carries the creation action: the page header does not repeat it
   React.useEffect(() => onFirstUseChange(firstUse), [firstUse]);
 
@@ -291,6 +307,7 @@ const DefenseLogsourceMappings = () => {
   const queryRef = useQueryLoading<DefenseLogsourceMappingsLinesPaginationQuery>(defenseLogsourceMappingsLinesQuery, {
     search: search.length > 0 ? search : null,
     count: PAGE_SIZE,
+    customFilters: CUSTOM_MAPPINGS_FILTERS,
   });
   const [commitReset, resetting] = useApiMutation<DefenseLogsourceMappingsResetMutation>(defenseLogsourceMappingsResetMutation);
   const refresh = () => setRefreshKey((key) => key + 1);

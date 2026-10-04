@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildTechniqueCoverage, type ComputationGraph } from '../../../../src/modules/defenseCoverage/defenseCoverage-compute';
+import { accessSignature, buildTechniqueCoverage, type ComputationGraph } from '../../../../src/modules/defenseCoverage/defenseCoverage-compute';
 import { collectDefenseImpact } from '../../../../src/modules/defenseCoverage/defenseCoverage-impact';
 import { DEFENSE_LOGSOURCE_MAPPING_DEFAULTS } from '../../../../src/modules/defenseCoverage/defenseLogsourceMapping/defenseLogsourceMapping-domain';
 import { buildLogsourceMappingKey } from '../../../../src/modules/defenseCoverage/defenseCoverage-utils';
@@ -87,6 +87,21 @@ describe('Defense coverage vector building', () => {
   });
 });
 
+describe('Defense evidence access signature', () => {
+  it('should separate evidences by their stored member restrictions', () => {
+    const element = (members?: { id: string; access_right: string }[]) => ({
+      internal_id: 'e',
+      'object-marking': ['m2', 'm1'],
+      restricted_members: members,
+    } as unknown as BasicStoreEntity);
+    const open = accessSignature(element());
+    const restricted = accessSignature(element([{ id: 'group-1', access_right: 'view' }]));
+    expect(restricted).not.toEqual(open);
+    expect(open).toEqual('m1,m2;;');
+    expect(restricted).toEqual('m1,m2;;group-1:view');
+  });
+});
+
 const event = (type: string, data: Record<string, unknown>) => ({ id: '1-0', event: type, data: { type, data } } as never);
 
 describe('Defense coverage stream impact', () => {
@@ -117,6 +132,26 @@ describe('Defense coverage stream impact', () => {
     expect(platform.accessChanged).toEqual(true);
     expect(platform.full).toEqual(false);
     expect(collectDefenseImpact([event('update', { type: 'report', extensions: { [STIX_EXT_OCTI]: { id: 'r', type: 'Report' } } })]).accessChanged).toEqual(false);
+  });
+  it('should ask for a full computation when a system starts or stops providing telemetry', () => {
+    const systemProvides = (type: string) => event(type, {
+      type: 'relationship',
+      relationship_type: 'provides',
+      extensions: { [STIX_EXT_OCTI]: { id: 'p1', type: 'provides', source_ref: 'system-1', source_type: 'System', target_ref: 'dc-1' } },
+    });
+    expect(collectDefenseImpact([systemProvides('create')]).full).toEqual(true);
+    expect(collectDefenseImpact([systemProvides('delete')]).full).toEqual(true);
+    const updated = collectDefenseImpact([systemProvides('update')]);
+    expect(updated.full).toEqual(false);
+    expect(Array.from(updated.dataComponentIds)).toEqual(['dc-1']);
+    // A security platform is a defense platform with or without telemetry
+    const platformProvides = collectDefenseImpact([event('create', {
+      type: 'relationship',
+      relationship_type: 'provides',
+      extensions: { [STIX_EXT_OCTI]: { id: 'p2', type: 'provides', source_ref: SIEM, source_type: 'SecurityPlatform', target_ref: 'dc-2' } },
+    })]);
+    expect(platformProvides.full).toEqual(false);
+    expect(Array.from(platformProvides.dataComponentIds)).toEqual(['dc-2']);
   });
   it('should recompute the techniques covered by an updated security coverage result', () => {
     const result = collectDefenseImpact([event('update', { type: 'x-security-coverage-result', extensions: { [STIX_EXT_OCTI]: { id: 'res-1', type: 'Security-Coverage-Result' } } })]);

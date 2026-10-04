@@ -13,6 +13,7 @@ import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/secu
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT, RELATION_RESULT_OF } from '../securityCoverage/securityCoverageResult/securityCoverageResult-types';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../../schema/stixMetaObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
+import { authorizedMembers } from '../../schema/attribute-definition';
 import { doYield } from '../../utils/eventloop-utils';
 import { now } from '../../utils/format';
 import { FilterMode } from '../../generated/graphql';
@@ -177,14 +178,15 @@ export interface ComputationGraph {
   dataComponentIdsByName: Map<string, string[]>;
   mappings: LogsourceCondition[];
   // Access signature of every loaded evidence element: markings and granted organizations come with every load
-  // (security doc values), authorized members with the base fields
+  // (security doc values), restricted members with the base fields
   accessKeyById?: Map<string, string>;
 }
 
-const accessSignature = (element: BasicStoreEntity | BasicStoreRelation) => {
+export const accessSignature = (element: BasicStoreEntity | BasicStoreRelation) => {
   const data = element as unknown as Record<string, unknown>;
   const ids = (key: string) => [...((data[key] as string[] | undefined) ?? [])].sort().join(',');
-  const members = ((data.authorized_members as { id: string; access_right: string }[] | undefined) ?? [])
+  // Stored elements hold their member restrictions under restricted_members (authorized_members is the input name)
+  const members = ((data[authorizedMembers.name] as { id: string; access_right: string }[] | undefined) ?? [])
     .map((member) => `${member.id}:${member.access_right}`)
     .sort()
     .join(',');

@@ -36,10 +36,10 @@ import useDefenseScope from './useDefenseScope';
 import {
   DEFENSE_ACTION_LABELS,
   DEFENSE_ACTIONS,
-  DEFENSE_LEVEL_LABELS,
   DEFENSE_LEVELS,
   type DefenseAction,
   defenseGapsExportFileName,
+  defenseLevelLabel,
   downloadCsv,
   toThreatScopeInput,
 } from './defenseMatrix-utils';
@@ -107,16 +107,18 @@ const DefenseGaps = () => {
   const [orderMode, setOrderMode] = useState<'asc' | 'desc'>('desc');
   const [exporting, setExporting] = useState(false);
 
-  const levelOptions: LevelOption[] = DEFENSE_LEVELS.map((level) => ({ value: level, label: `${level} - ${t_i18n(DEFENSE_LEVEL_LABELS[level])}` }));
+  const levelOptions: LevelOption[] = DEFENSE_LEVELS.map((level) => ({ value: level, label: defenseLevelLabel(t_i18n, level) }));
   const actionOptions: ActionOption[] = DEFENSE_ACTIONS.map((action) => ({ value: action, label: t_i18n(DEFENSE_ACTION_LABELS[action]) }));
 
+  // Without threat overlay no technique is used by threats: the filter would empty the backlog
+  const usedByThreatsFilter = onlyUsedByThreats && scope.threatMode !== 'NONE';
   const variables: DefenseGapsLinesPaginationQuery$variables = {
     platformIds: scope.platformIds,
     threatScope: toThreatScopeInput(scope),
     filter: {
       levels: levels.length > 0 ? levels : null,
       recommended_actions: actions.length > 0 ? actions : null,
-      onlyUsedByThreats,
+      onlyUsedByThreats: usedByThreatsFilter,
       search: search.length > 0 ? search : null,
     },
     orderBy,
@@ -216,7 +218,7 @@ const DefenseGaps = () => {
         <Box sx={{ paddingBottom: 1 }}>
           <Switch
             label={t_i18n('Only techniques used by threats')}
-            checked={onlyUsedByThreats}
+            checked={usedByThreatsFilter}
             disabled={scope.threatMode === 'NONE'}
             onCheckedChange={(checked) => setOnlyUsedByThreats(checked)}
             data-testid="defense-gaps-only-threats"
