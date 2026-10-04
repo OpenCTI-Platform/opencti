@@ -1,4 +1,4 @@
-import React, { Suspense, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { Chip, Hero, HeroBody, HeroHeader, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { Box, Skeleton } from '@mui/material';
@@ -16,13 +16,7 @@ import { monthsAgo, now } from '../../../../utils/Time';
 import GraphAnalyticsStatus, { GraphAnalyticsStatusSkeleton, graphAnalyticsStatusQuery } from './GraphAnalyticsStatus';
 import GraphClustersGrowthChart from '../../common/graph_analytics/GraphClustersGrowthChart';
 import GraphRelativeTime from '../../common/graph_analytics/GraphRelativeTime';
-import {
-  formatGraphClusterLabel,
-  GRAPH_CLUSTER_KIND_LABELS,
-  GRAPH_CLUSTER_SOURCE_LABELS,
-  GRAPH_CLUSTERS_PATH,
-  trimLeadingEmptyPeriods,
-} from '../../common/graph_analytics/graphAnalyticsUtils';
+import { formatGraphClusterLabel, GRAPH_CLUSTER_SOURCE_LABELS, GRAPH_CLUSTERS_PATH, trimLeadingEmptyPeriods } from '../../common/graph_analytics/graphAnalyticsUtils';
 import type { GraphAnalyticsStatusQuery } from './__generated__/GraphAnalyticsStatusQuery.graphql';
 import type { GraphClustersListQuery, GraphClustersListQuery$variables } from './__generated__/GraphClustersListQuery.graphql';
 import type { GraphClusters_clusters$data } from './__generated__/GraphClusters_clusters.graphql';
@@ -128,7 +122,8 @@ const clustersSizeQuery = graphql`
 
 // Below this number of clusters, the growth chart is folded: one or two curves say less than the counters above it
 const GROWTH_CHART_OPEN_FROM = 3;
-const REPRESENTATIVES_SHOWN = 3;
+// two chips fit the column at 1440 px; the other representatives are named in the tooltip of "and N more"
+const REPRESENTATIVES_SHOWN = 2;
 
 const ClustersSizeChart = ({ queryRef }: { queryRef: PreloadedQuery<GraphClustersSizeQuery> }) => {
   const { t_i18n } = useFormatter();
@@ -151,12 +146,14 @@ const ClustersSizeChart = ({ queryRef }: { queryRef: PreloadedQuery<GraphCluster
 interface ClustersOverviewProps {
   statusQueryRef: PreloadedQuery<GraphAnalyticsStatusQuery>;
   sizeQueryRef: PreloadedQuery<GraphClustersSizeQuery> | null | undefined;
+  onFirstUse: (firstUse: boolean) => void;
 }
 
-const ClustersOverview = ({ statusQueryRef, sizeQueryRef }: ClustersOverviewProps) => {
+const ClustersOverview = ({ statusQueryRef, sizeQueryRef, onFirstUse }: ClustersOverviewProps) => {
   const { t_i18n } = useFormatter();
   const { graphAnalyticsStatus: status } = usePreloadedQuery(graphAnalyticsStatusQuery, statusQueryRef);
   const clustersCount = status?.clusters_count ?? 0;
+  useEffect(() => onFirstUse(clustersCount === 0), [clustersCount]);
   const [growthOpen, setGrowthOpen] = useState<boolean | null>(null);
   const showGrowth = growthOpen ?? clustersCount >= GROWTH_CHART_OPEN_FROM;
   return (
@@ -244,12 +241,14 @@ const GraphClusters = () => {
   const queryRef = useQueryLoading<GraphClustersListQuery>(clustersListQuery, queryPaginationOptions);
   const statusQueryRef = useQueryLoading<GraphAnalyticsStatusQuery>(graphAnalyticsStatusQuery, {});
   const sizeQueryRef = useQueryLoading<GraphClustersSizeQuery>(clustersSizeQuery, { startDate: monthsAgo(12), endDate: now() });
+  const [firstUse, setFirstUse] = useState(false);
 
   const dataColumns: DataTableProps['dataColumns'] = {
+    // the name states the kind of the cluster, which stays available as a filter
     name: {
       id: 'name',
       label: 'Name',
-      percentWidth: 26,
+      percentWidth: 27,
       isSortable: true,
       render: (cluster: GraphClusters_cluster$data) => (
         <Tooltip>
@@ -259,13 +258,6 @@ const GraphClusters = () => {
           <TooltipContent>{cluster.name}</TooltipContent>
         </Tooltip>
       ),
-    },
-    cluster_kind: {
-      id: 'cluster_kind',
-      label: 'Kind',
-      percentWidth: 13,
-      isSortable: true,
-      render: ({ cluster_kind }: GraphClusters_cluster$data) => <Chip label={t_i18n(GRAPH_CLUSTER_KIND_LABELS[cluster_kind] ?? cluster_kind)} />,
     },
     members_count: {
       id: 'members_count',
@@ -277,20 +269,26 @@ const GraphClusters = () => {
     representatives: {
       id: 'representatives',
       label: 'Representative entities',
-      percentWidth: 28,
+      percentWidth: 38,
       isSortable: false,
       render: ({ representatives, members_count }: GraphClusters_cluster$data) => {
         const shown = representatives.slice(0, REPRESENTATIVES_SHOWN);
         const more = Math.max(0, members_count - shown.length);
+        const hiddenNames = representatives.slice(REPRESENTATIVES_SHOWN).map((entity) => entity.representative.main);
         return (
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 0, overflow: 'hidden' }}>
             {shown.map((entity) => (
               <Chip key={entity.id} size="sm" label={entity.representative.main} startIcon={<ItemIcon type={entity.entity_type} size="small" />} />
             ))}
             {more > 0 && (
-              <Text variant="content-caption" as="span" style={{ whiteSpace: 'nowrap' }}>
-                {t_i18n('and {count} more', { values: { count: more } })}
-              </Text>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span tabIndex={0} style={{ whiteSpace: 'nowrap' }}>
+                    <Text variant="content-caption" as="span">{t_i18n('and {count} more', { values: { count: more } })}</Text>
+                  </span>
+                </TooltipTrigger>
+                {hiddenNames.length > 0 && <TooltipContent>{hiddenNames.join(', ')}</TooltipContent>}
+              </Tooltip>
             )}
           </Box>
         );
@@ -306,7 +304,7 @@ const GraphClusters = () => {
     promoted: {
       id: 'promoted',
       label: 'Promoted',
-      percentWidth: 7,
+      percentWidth: 9,
       isSortable: false,
       render: ({ promotedTo }: GraphClusters_cluster$data) => (promotedTo.length > 0
         ? t_i18n('{count, plural, one {# time} other {# times}}', { values: { count: promotedTo.length } })
@@ -327,31 +325,34 @@ const GraphClusters = () => {
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 2 }}>
         {statusQueryRef ? (
           <Suspense fallback={<GraphAnalyticsStatusSkeleton />}>
-            <ClustersOverview statusQueryRef={statusQueryRef} sizeQueryRef={sizeQueryRef} />
+            <ClustersOverview statusQueryRef={statusQueryRef} sizeQueryRef={sizeQueryRef} onFirstUse={setFirstUse} />
           </Suspense>
         ) : <GraphAnalyticsStatusSkeleton />}
       </Box>
+      {/* hidden, not unmounted, on first use: an empty list and its filters say less than the first-use state */}
       {queryRef && (
-        <DataTable
-          removeSelectAll
-          disableLineSelection
-          dataColumns={dataColumns}
-          resolvePath={(data: GraphClusters_clusters$data) => data.graphClusters?.edges?.map((e) => e?.node)}
-          storageKey={LOCAL_STORAGE_KEY}
-          initialValues={initialValues}
-          contextFilters={contextFilters}
-          getComputeLink={(node: GraphClusters_cluster$data) => `${GRAPH_CLUSTERS_PATH}/${node.id}`}
-          preloadedPaginationProps={{
-            linesQuery: clustersListQuery,
-            linesFragment: clustersFragment,
-            queryRef,
-            nodePath: ['graphClusters', 'pageInfo', 'globalCount'],
-            setNumberOfElements: helpers.handleSetNumberOfElements,
-          }}
-          lineFragment={clusterFragment}
-          entityTypes={['Graph-Cluster']}
-          searchContextFinal={{ entityTypes: ['Graph-Cluster'] }}
-        />
+        <Box sx={{ display: firstUse ? 'none' : 'block' }}>
+          <DataTable
+            removeSelectAll
+            disableLineSelection
+            dataColumns={dataColumns}
+            resolvePath={(data: GraphClusters_clusters$data) => data.graphClusters?.edges?.map((e) => e?.node)}
+            storageKey={LOCAL_STORAGE_KEY}
+            initialValues={initialValues}
+            contextFilters={contextFilters}
+            getComputeLink={(node: GraphClusters_cluster$data) => `${GRAPH_CLUSTERS_PATH}/${node.id}`}
+            preloadedPaginationProps={{
+              linesQuery: clustersListQuery,
+              linesFragment: clustersFragment,
+              queryRef,
+              nodePath: ['graphClusters', 'pageInfo', 'globalCount'],
+              setNumberOfElements: helpers.handleSetNumberOfElements,
+            }}
+            lineFragment={clusterFragment}
+            entityTypes={['Graph-Cluster']}
+            searchContextFinal={{ entityTypes: ['Graph-Cluster'] }}
+          />
+        </Box>
       )}
     </div>
   );

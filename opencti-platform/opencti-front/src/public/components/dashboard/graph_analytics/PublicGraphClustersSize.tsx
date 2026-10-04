@@ -3,7 +3,7 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import GraphClustersGrowthChart from '../../../../private/components/common/graph_analytics/GraphClustersGrowthChart';
-import { formatGraphClusterLabel } from '../../../../private/components/common/graph_analytics/graphAnalyticsUtils';
+import { formatGraphClusterLabel, trimLeadingEmptyPeriods } from '../../../../private/components/common/graph_analytics/graphAnalyticsUtils';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import type { Widget } from '../../../../utils/widget/widget';
@@ -44,11 +44,12 @@ const PublicGraphClustersSizeComponent = ({ parameters, queryRef }: PublicGraphC
   if (!publicGraphClustersSizeTimeSeries || publicGraphClustersSizeTimeSeries.length === 0) {
     return <WidgetNoData message={t_i18n('No cluster yet - clusters appear when an analytics pass finds entities sharing infrastructure')} />;
   }
+  const points = trimLeadingEmptyPeriods(publicGraphClustersSizeTimeSeries.map((serie) => serie.data));
   return (
     <GraphClustersGrowthChart
-      series={publicGraphClustersSizeTimeSeries.map((serie) => ({
+      series={publicGraphClustersSizeTimeSeries.map((serie, index) => ({
         name: formatGraphClusterLabel(t_i18n, serie.cluster),
-        data: serie.data.map((entry) => ({ x: new Date(entry.date), y: entry.value })),
+        data: points[index].map((entry) => ({ x: new Date(entry.date), y: entry.value })),
       }))}
       interval={getWidgetInterval(parameters ?? undefined)}
       hasLegend={parameters?.legend ?? true}

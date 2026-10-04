@@ -61,8 +61,8 @@ const GraphAnalyticsStatus = ({ queryRef }: { queryRef: PreloadedQuery<GraphAnal
     sentence = t_i18n('Graph analytics are disabled on this platform.');
   } else if (state === 'analysing') {
     sentence = status.pending_entities > 0
-      ? t_i18n('Analysing - {count, plural, one {# entity} other {# entities}} left', { values: { count: status.pending_entities } })
-      : t_i18n('Analysing the whole knowledge graph');
+      ? t_i18n('{count, plural, one {# entity} other {# entities}} left', { values: { count: status.pending_entities } })
+      : t_i18n('Full pass of the knowledge graph in progress');
   } else if (state === 'not_analysed') {
     sentence = t_i18n('The first full pass of the knowledge graph starts in the next minutes.');
   } else {

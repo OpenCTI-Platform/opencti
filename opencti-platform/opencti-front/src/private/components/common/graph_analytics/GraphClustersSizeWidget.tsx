@@ -4,7 +4,7 @@ import { useFormatter } from '../../../../components/i18n';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import GraphClustersGrowthChart from './GraphClustersGrowthChart';
-import { formatGraphClusterLabel } from './graphAnalyticsUtils';
+import { formatGraphClusterLabel, trimLeadingEmptyPeriods } from './graphAnalyticsUtils';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { computeStartEndDates } from '../../../../components/dashboard/dashboardVizUtils';
@@ -68,11 +68,12 @@ const GraphClustersSizeComponent = ({ queryRef, parameters }: GraphClustersSizeC
   if (graphClustersSizeTimeSeries.length === 0) {
     return <WidgetNoData message={t_i18n('No cluster yet - clusters appear when an analytics pass finds entities sharing infrastructure')} />;
   }
+  const points = trimLeadingEmptyPeriods(graphClustersSizeTimeSeries.map((serie) => serie.data));
   return (
     <GraphClustersGrowthChart
-      series={graphClustersSizeTimeSeries.map((serie) => ({
+      series={graphClustersSizeTimeSeries.map((serie, index) => ({
         name: formatGraphClusterLabel(t_i18n, serie.cluster),
-        data: serie.data.map((entry) => ({ x: new Date(entry.date), y: entry.value })),
+        data: points[index].map((entry) => ({ x: new Date(entry.date), y: entry.value })),
       }))}
       interval={getWidgetInterval(parameters)}
       hasLegend={parameters.legend ?? true}
