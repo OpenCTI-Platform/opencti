@@ -60,13 +60,15 @@ export const containerTimelineStripQuery = graphql`
 `;
 
 // The lanes disabled and the kinds hidden in the timeline settings are left out before the limit, so they never displace
-// the others; the count and the span of the card follow the same filters (the earliest event comes with the latest ones)
+// the others; the count and the span of the card come from the summary of the same lanes and kinds, over every event
 const containerTimelineStripEventsQuery = graphql`
   query ContainerTimelineStripEventsQuery($id: String!, $lanes: [TimelineLane!], $kinds: [TimelineEventKind!], $count: Int!) {
+    shown: containerTimelineSummary(id: $id, lanes: $lanes, kinds: $kinds) {
+      total
+      first_event_time
+      last_event_time
+    }
     containerTimeline(id: $id, lanes: $lanes, kinds: $kinds, first: $count, orderMode: desc) {
-      pageInfo {
-        globalCount
-      }
       edges {
         node {
           id
@@ -80,14 +82,6 @@ const containerTimelineStripEventsQuery = graphql`
           hidden
           source
           annotation
-        }
-      }
-    }
-    earliest: containerTimeline(id: $id, lanes: $lanes, kinds: $kinds, first: 1, orderMode: asc) {
-      edges {
-        node {
-          id
-          event_time
         }
       }
     }
@@ -132,7 +126,7 @@ const ContainerTimelineStripEvents = ({ containerId, enabledLanes, hiddenKinds, 
   const navigate = useNavigate();
   const summarize = useStripSummary();
   const apiLanes = effectiveLanes([], enabledLanes);
-  const { containerTimeline, earliest } = useLazyLoadQuery<ContainerTimelineStripEventsQuery>(
+  const { containerTimeline, shown } = useLazyLoadQuery<ContainerTimelineStripEventsQuery>(
     containerTimelineStripEventsQuery,
     {
       id: containerId,
@@ -143,15 +137,14 @@ const ContainerTimelineStripEvents = ({ containerId, enabledLanes, hiddenKinds, 
   );
   // The latest events in chronological order, drawn over the whole span of the timeline
   const events = useMemo(() => (containerTimeline?.edges ?? []).map((edge) => edge.node).reverse(), [containerTimeline]);
-  const total = containerTimeline?.pageInfo.globalCount ?? events.length;
+  const total = shown?.total ?? events.length;
   const lanes = TIMELINE_LANES.filter((lane) => (enabledLanes.length > 0 ? enabledLanes : TIMELINE_LANES).includes(lane) && events.some((e) => e.lane === lane));
-  const latest = computeTimelineExtent(events)?.[1] ?? null;
-  const first = earliest?.edges?.[0]?.node.event_time ?? events[0]?.event_time ?? null;
-  const extent = computeTimelineExtent(events, [...TIMELINE_ANCHOR_KEYS.map((key) => anchors?.[key]), first]);
+  // The span covers every shown event, also those older than the latest ones drawn here
+  const extent = computeTimelineExtent(events, [...TIMELINE_ANCHOR_KEYS.map((key) => anchors?.[key]), shown?.first_event_time, shown?.last_event_time]);
   return (
     <>
       <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }} data-testid="timeline-strip-summary">
-        {summarize(total, first, latest !== null ? new Date(latest).toISOString() : null)}
+        {summarize(total, shown?.first_event_time, shown?.last_event_time)}
       </Text>
       {events.length > 0 && (
         <ContainerTimelineLanes

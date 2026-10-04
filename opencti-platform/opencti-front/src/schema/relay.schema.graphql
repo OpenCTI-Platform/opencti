@@ -9514,7 +9514,15 @@ type Query {
     first: Int
     after: ID
   ): TimelineEventConnection
-  containerTimelineSummary(id: String!): TimelineSummary
+  containerTimelineSummary(
+    id: String!
+
+    """Counts and bounds restricted to these lanes (all when empty)"""
+    lanes: [TimelineLane!]
+
+    """Counts and bounds restricted to these kinds (all when empty)"""
+    kinds: [TimelineEventKind!]
+  ): TimelineSummary
   containerTimelineExport(
     id: String!
     format: TimelineExportFormat!

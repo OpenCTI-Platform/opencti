@@ -46,7 +46,7 @@ const canChangeTimelineEvent = async (context: AuthContext, event: { container_i
 const timelineResolvers: Resolvers = {
   Query: {
     containerTimeline: (_, args, context) => findContainerTimeline(context, context.user, args),
-    containerTimelineSummary: (_, { id }, context) => findContainerTimelineSummary(context, context.user, id),
+    containerTimelineSummary: (_, { id, lanes, kinds }, context) => findContainerTimelineSummary(context, context.user, id, { lanes, kinds }),
     containerTimelineExport: (_, args, context) => exportContainerTimeline(context, context.user, args),
     containerTimelineExportFile: (_, args, context) => exportContainerTimelineFile(context, context.user, args),
     timelineEvent: (_, { id }, context) => findTimelineEvent(context, context.user, id),

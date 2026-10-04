@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildTimelineConsistencyFilters, collectTimelineImpacts, isTimelineConsistencyPassDue } from '../../../src/manager/timelineManager';
+import { buildTimelineConsistencyFilters, collectTimelineImpacts, isTimelineConsistencyPassDue, newImpactCollector } from '../../../src/manager/timelineManager';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 import type { DataEvent, SseEvent } from '../../../src/types/event';
 
@@ -9,7 +9,7 @@ const streamEvent = (data: Record<string, any>): SseEvent<DataEvent> => ({
   data: { type: 'update', scope: 'external', version: '4', origin: {}, message: '', data } as any,
 });
 
-const newCollector = () => ({ containers: new Set<string>(), contained: new Set<string>(), related: new Set<string>(), references: new Set<string>() });
+const newCollector = newImpactCollector;
 
 describe('Timeline manager impact collection', () => {
   it('should directly impact a timeline container', () => {
@@ -23,6 +23,21 @@ describe('Timeline manager impact collection', () => {
     const collector = newCollector();
     collectTimelineImpacts(streamEvent({ type: 'note', object_refs: ['case-incident--1'], extensions: { [STIX_EXT_OCTI]: { id: 'note-1', type: 'Note' } } }), collector);
     expect(Array.from(collector.references)).toEqual(['case-incident--1']);
+  });
+
+  it('should follow the labels and kill chain phases the derivation reads through tasks and techniques', () => {
+    const collector = newCollector();
+    collectTimelineImpacts(streamEvent({ type: 'label', extensions: { [STIX_EXT_OCTI]: { id: 'label-1', type: 'Label' } } }), collector);
+    collectTimelineImpacts(streamEvent({ type: 'kill-chain-phase', extensions: { [STIX_EXT_OCTI]: { id: 'phase-1', type: 'Kill-Chain-Phase' } } }), collector);
+    expect(Array.from(collector.labels)).toEqual(['label-1']);
+    expect(Array.from(collector.killChainPhases)).toEqual(['phase-1']);
+    expect(collector.contained.size).toEqual(0);
+    // A label or a phase just created is used by nothing yet
+    const created = newCollector();
+    const event = streamEvent({ type: 'label', extensions: { [STIX_EXT_OCTI]: { id: 'label-2', type: 'Label' } } });
+    (event.data as any).type = 'create';
+    collectTimelineImpacts(event, created);
+    expect(created.labels.size).toEqual(0);
   });
 
   it('should also impact the cases an update removed from the object refs', () => {
@@ -108,5 +123,13 @@ describe('Timeline consistency pass schedule', () => {
     const filters = buildTimelineConsistencyFilters(null, at('2026-10-03T02:00:00.000Z'), 7);
     expect(filters.filters[0].values).toEqual(['2026-10-02T02:00:00.000Z']);
     expect(filters.filters[2].values).toEqual(['2026-09-26T02:00:00.000Z']);
+  });
+
+  it('should schedule every container of a type whose workflow changed, and every container for the task workflow', () => {
+    const caseWorkflow = buildTimelineConsistencyFilters(at('2026-10-02T02:00:05.000Z'), at('2026-10-03T02:00:00.000Z'), 30, ['Case-Incident', 'Report']);
+    expect(caseWorkflow.filters[3]).toEqual({ key: ['entity_type'], values: ['Case-Incident'] });
+    const taskWorkflow = buildTimelineConsistencyFilters(at('2026-10-02T02:00:05.000Z'), at('2026-10-03T02:00:00.000Z'), 30, ['Task']);
+    expect(taskWorkflow.filters[3]).toEqual({ key: ['entity_type'], values: ['Incident', 'Case-Incident', 'Case-Rfi', 'Case-Rft'] });
+    expect(buildTimelineConsistencyFilters(at('2026-10-02T02:00:05.000Z'), at('2026-10-03T02:00:00.000Z'), 30, ['Report']).filters).toHaveLength(3);
   });
 });

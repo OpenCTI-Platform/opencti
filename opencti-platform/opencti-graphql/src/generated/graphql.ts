@@ -25684,6 +25684,8 @@ export type QueryContainerTimelineExportFileArgs = {
 
 export type QueryContainerTimelineSummaryArgs = {
   id: Scalars['String']['input'];
+  kinds?: InputMaybe<Array<TimelineEventKind>>;
+  lanes?: InputMaybe<Array<TimelineLane>>;
 };
 
 

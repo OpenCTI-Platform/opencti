@@ -328,7 +328,12 @@ const settingsWithDefaults = (containerId: string, settings: StoredTimelineSetti
   hidden_kinds: settings?.hidden_kinds ?? TIMELINE_DEFAULT_SETTINGS.hidden_kinds,
 } as unknown as TimelineSettings);
 
-export const findContainerTimelineSummary = async (context: AuthContext, user: AuthUser, containerId: string): Promise<TimelineSummary> => {
+export const findContainerTimelineSummary = async (
+  context: AuthContext,
+  user: AuthUser,
+  containerId: string,
+  restriction: Pick<TimelineFilterArgs, 'lanes' | 'kinds'> = {},
+): Promise<TimelineSummary> => {
   const loaded = await storeLoadById<AnyStoreElement>(context, user, containerId, TIMELINE_CONTAINER_TYPES);
   if (!loaded) {
     throw FunctionalError('Timeline container cannot be found', { id: containerId });
@@ -337,8 +342,10 @@ export const findContainerTimelineSummary = async (context: AuthContext, user: A
   const baseArgs = { types: [ENTITY_TYPE_TIMELINE_EVENT], noFiltersChecking: true };
   // Same visibility as the list: the events of elements the user cannot access are not counted
   const hiddenElementIds = await findInaccessibleElementIds(context, user, container.internal_id);
-  const visibleFilters = excludeElements(buildTimelineFilters(container.internal_id, {}), hiddenElementIds);
-  const allFilters = excludeElements(buildTimelineFilters(container.internal_id, { includeHidden: true }), hiddenElementIds);
+  // Lanes and kinds narrow the counts and bounds, so that a view showing only some of them can name its own span
+  const scope = { lanes: restriction.lanes, kinds: restriction.kinds };
+  const visibleFilters = excludeElements(buildTimelineFilters(container.internal_id, scope), hiddenElementIds);
+  const allFilters = excludeElements(buildTimelineFilters(container.internal_id, { ...scope, includeHidden: true }), hiddenElementIds);
   const count = (filters: any) => elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...baseArgs, filters });
   const withFilter = (extra: any) => ({ ...allFilters, filters: [...allFilters.filters, extra] });
   const windowFilters = { ...visibleFilters, filters: [...visibleFilters.filters, { key: ['event_end_time'], values: [], operator: FilterOperator.NotNil }] };

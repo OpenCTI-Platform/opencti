@@ -4,6 +4,7 @@ import { queryAsAdmin, queryAsAdminWithError, queryAsAdminWithSuccess, queryAsAu
 import { ADMIN_USER, TEST_ORGANIZATION, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
 import { internalLoadById } from '../../../src/database/middleware-loader';
 import { timelineUpdateForUser } from '../../../src/modules/timeline/timeline-domain';
+import { acknowledgeTimelineRegeneration, claimDueTimelineRegenerations, enqueueTimelineRegeneration } from '../../../src/modules/timeline/timeline-queue';
 import { resolveUserById } from '../../../src/modules/user/user-domain';
 import type { AuthUser } from '../../../src/types/user';
 import { MARKING_TLP_AMBER, MARKING_TLP_GREEN } from '../../../src/schema/identifier';
@@ -141,6 +142,17 @@ const CONTAINER_TIMELINE = gql`
     }
   }
 `;
+const CONTAINER_TIMELINE_SUMMARY_SCOPED = gql`
+  query ContainerTimelineSummaryScoped($id: String!, $lanes: [TimelineLane!], $kinds: [TimelineEventKind!]) {
+    containerTimelineSummary(id: $id, lanes: $lanes, kinds: $kinds) {
+      total
+      first_event_time
+      last_event_time
+      lanes { lane count }
+    }
+  }
+`;
+
 const CONTAINER_TIMELINE_SUMMARY = gql`
   query ContainerTimelineSummary($id: String!) {
     containerTimelineSummary(id: $id) {
@@ -640,6 +652,18 @@ describe('Incident and case timeline', () => {
       expect(summary.settings).toMatchObject({ default_grouping: 'day', default_zoom_window: 'fit' });
     });
 
+    it('should restrict the counts and bounds of the summary to some lanes and kinds', async () => {
+      const restricted = await queryAsAdminWithSuccess({ query: CONTAINER_TIMELINE_SUMMARY_SCOPED, variables: { id: caseIncident.id, kinds: ['malware_seen'] } });
+      const summary = restricted.data.containerTimelineSummary;
+      const malwareEvents = await listTimeline(caseIncident.id, { kinds: ['malware_seen'] });
+      expect(summary.total).toEqual(malwareEvents.length);
+      const times = malwareEvents.flatMap((event) => [event.event_time, event.event_end_time]).filter((time): time is string => !!time).map((time) => Date.parse(time));
+      expect(Date.parse(summary.first_event_time)).toEqual(Math.min(...malwareEvents.map((event) => Date.parse(event.event_time))));
+      expect(Date.parse(summary.last_event_time)).toEqual(Math.max(...times));
+      const responseOnly = await queryAsAdminWithSuccess({ query: CONTAINER_TIMELINE_SUMMARY_SCOPED, variables: { id: caseIncident.id, lanes: ['response'] } });
+      expect(responseOnly.data.containerTimelineSummary.lanes.map((l: { lane: string }) => l.lane)).toEqual(['response']);
+    });
+
     it('should export the timeline as CSV, SVG and HTML with translated labels', async () => {
       const csv = await queryAsAdminWithSuccess({ query: CONTAINER_TIMELINE_EXPORT, variables: { id: caseIncident.id, format: 'csv' } });
       const csvContent: string = csv.data.containerTimelineExport;
@@ -911,6 +935,16 @@ describe('Incident and case timeline', () => {
       const notes = await listTimeline(caseIncident.id, { kinds: ['note_added'] });
       expect(notes).toHaveLength(1);
       expect(notes[0]).toMatchObject({ element_id: noteId, lane: 'response', event_time: '2026-02-05T09:00:00.000Z' });
+    });
+
+    it('should queue the cases containing a technique whose kill chain phase changed', async () => {
+      const stixPhase = { id: 'kill-chain-phase--5d5f0a52-30b1-5d2c-9a8e-0f0c1d2e3f40', type: 'kill-chain-phase', extensions: { [STIX_EXT_OCTI]: { id: killChainPhaseId, type: 'Kill-Chain-Phase' } } };
+      await timelineStreamEventsHandler(testContext, [streamEvent(stixPhase)]);
+      const claimed = await claimDueTimelineRegenerations(1000);
+      expect(claimed).toContain(caseIncident.id);
+      // Handed back to the queue for the tests that follow
+      await Promise.all(claimed.map((id) => acknowledgeTimelineRegeneration(id)));
+      await enqueueTimelineRegeneration(claimed, 0);
     });
 
     it('should drop the timeline of a deleted container', async () => {

@@ -11,8 +11,17 @@ import { fetchStreamEventsRangeFromEventId, fetchStreamInfo } from '../database/
 import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
 import { fullEntitiesList, fullRelationsList, internalFindByIds } from '../database/middleware-loader';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
-import { RELATION_OBJECT } from '../schema/stixRefRelationship';
-import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_CONTAINER_OPINION, ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INCIDENT } from '../schema/stixDomainObject';
+import { RELATION_KILL_CHAIN_PHASE, RELATION_OBJECT, RELATION_OBJECT_LABEL } from '../schema/stixRefRelationship';
+import { ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_STATUS } from '../schema/internalObject';
+import { getEntitiesListFromCache } from '../database/cache';
+import {
+  ENTITY_TYPE_ATTACK_PATTERN,
+  ENTITY_TYPE_CONTAINER_NOTE,
+  ENTITY_TYPE_CONTAINER_OPINION,
+  ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_INCIDENT,
+} from '../schema/stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_TASK } from '../modules/task/task-types';
 import { FilterMode, FilterOperator } from '../generated/graphql';
 import {
@@ -23,6 +32,7 @@ import {
   TIMELINE_CONTAINER_TYPES,
 } from '../modules/timeline/timeline-types';
 import { regenerateContainerTimeline } from '../modules/timeline/timeline-engine';
+import { timelineRefIds } from '../modules/timeline/timeline-loader';
 import {
   acknowledgeTimelineRegeneration,
   claimDueTimelineRegenerations,
@@ -63,7 +73,20 @@ interface ImpactCollector {
   related: Set<string>;
   // stix ids referenced by tasks, notes, opinions and reports
   references: Set<string>;
+  // labels read through the tasks of the cases (containment)
+  labels: Set<string>;
+  // kill chain phases ordering the techniques of the cases
+  killChainPhases: Set<string>;
 }
+
+export const newImpactCollector = (): ImpactCollector => ({
+  containers: new Set(),
+  contained: new Set(),
+  related: new Set(),
+  references: new Set(),
+  labels: new Set(),
+  killChainPhases: new Set(),
+});
 
 /** The refs of an updated object before its update, rebuilt from the reverse patch of the event (none otherwise). */
 const previousObjectRefs = (event: SseEvent<DataEvent>): string[] => {
@@ -90,6 +113,14 @@ export const collectTimelineImpacts = (event: SseEvent<DataEvent>, collector: Im
   if (type === ENTITY_TYPE_TIMELINE_EVENT || type === ENTITY_TYPE_TIMELINE_SETTINGS) return;
   if (isTimelineContainerType(type)) {
     collector.containers.add(id);
+    return;
+  }
+  // Meta objects read by the derivation through other elements: a change reaches the cases through those elements
+  if (type === ENTITY_TYPE_LABEL || type === ENTITY_TYPE_KILL_CHAIN_PHASE) {
+    // A new label or phase is used by nothing yet
+    if (event.data?.type !== 'create') {
+      (type === ENTITY_TYPE_LABEL ? collector.labels : collector.killChainPhases).add(id);
+    }
     return;
   }
   if (CONTAINERS_REFERENCING_TYPES.includes(type)) {
@@ -129,24 +160,54 @@ type ImpactedContainersSink = (containerIds: string[]) => Promise<void>;
  * they are read page by page and each page is queued before the next one is read, so none is dropped and the memory
  * stays bounded. The queue then regenerates them by bounded batches.
  */
+const queueContainersContaining = async (context: AuthContext, elementIds: string[], enqueue: ImpactedContainersSink) => {
+  if (elementIds.length === 0) return;
+  await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, TIMELINE_CONTAINER_TYPES, {
+    filters: { mode: FilterMode.And, filters: [{ key: [buildRefRelationKey(RELATION_OBJECT)], values: elementIds }], filterGroups: [] },
+    noFiltersChecking: true,
+    baseData: true,
+    first: TIMELINE_MANAGER_IMPACTED_PAGE_SIZE,
+    callback: async (containers: BasicStoreEntity[]) => {
+      await enqueue(containers.map((c) => c.internal_id));
+    },
+  } as any);
+};
+
+const queueReferencedContainers = async (context: AuthContext, references: string[], enqueue: ImpactedContainersSink) => {
+  if (references.length === 0) return;
+  const referenced = await internalFindByIds(context, SYSTEM_USER, references, { type: TIMELINE_CONTAINER_TYPES, baseData: true });
+  await enqueue((referenced as unknown as BasicStoreEntity[]).map((c) => c.internal_id));
+};
+
 const queueImpactedContainers = async (context: AuthContext, collector: ImpactCollector, enqueue: ImpactedContainersSink) => {
   await enqueue(Array.from(collector.containers));
-  const contained = Array.from(collector.contained);
-  if (contained.length > 0) {
-    await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, TIMELINE_CONTAINER_TYPES, {
-      filters: { mode: FilterMode.And, filters: [{ key: [buildRefRelationKey(RELATION_OBJECT)], values: contained }], filterGroups: [] },
+  await queueContainersContaining(context, Array.from(collector.contained), enqueue);
+  await queueReferencedContainers(context, Array.from(collector.references), enqueue);
+  const killChainPhases = Array.from(collector.killChainPhases);
+  if (killChainPhases.length > 0) {
+    // Techniques are ordered by their phases: the cases containing them are impacted
+    await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [ENTITY_TYPE_ATTACK_PATTERN], {
+      filters: { mode: FilterMode.And, filters: [{ key: [buildRefRelationKey(RELATION_KILL_CHAIN_PHASE)], values: killChainPhases }], filterGroups: [] },
       noFiltersChecking: true,
       baseData: true,
       first: TIMELINE_MANAGER_IMPACTED_PAGE_SIZE,
-      callback: async (containers: BasicStoreEntity[]) => {
-        await enqueue(containers.map((c) => c.internal_id));
+      callback: async (techniques: BasicStoreEntity[]) => {
+        await queueContainersContaining(context, techniques.map((t) => t.internal_id), enqueue);
       },
     } as any);
   }
-  const references = Array.from(collector.references);
-  if (references.length > 0) {
-    const referenced = await internalFindByIds(context, SYSTEM_USER, references, { type: TIMELINE_CONTAINER_TYPES, baseData: true });
-    await enqueue((referenced as unknown as BasicStoreEntity[]).map((c) => c.internal_id));
+  const labels = Array.from(collector.labels);
+  if (labels.length > 0) {
+    // Tasks are read through their labels (a containment task): the cases they point to are impacted
+    await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [ENTITY_TYPE_CONTAINER_TASK], {
+      filters: { mode: FilterMode.And, filters: [{ key: [buildRefRelationKey(RELATION_OBJECT_LABEL)], values: labels }], filterGroups: [] },
+      noFiltersChecking: true,
+      first: TIMELINE_MANAGER_IMPACTED_PAGE_SIZE,
+      callback: async (tasks: BasicStoreEntity[]) => {
+        const pointed = Array.from(new Set(tasks.flatMap((task) => timelineRefIds(task, RELATION_OBJECT))));
+        await queueReferencedContainers(context, pointed, enqueue);
+      },
+    } as any);
   }
   const related = Array.from(collector.related);
   if (related.length > 0) {
@@ -172,7 +233,7 @@ const queueImpactedContainers = async (context: AuthContext, collector: ImpactCo
 
 export const timelineStreamEventsHandler = async (context: AuthContext, streamEvents: Array<SseEvent<DataEvent>>) => {
   if (streamEvents.length === 0) return;
-  const collector: ImpactCollector = { containers: new Set(), contained: new Set(), related: new Set(), references: new Set() };
+  const collector = newImpactCollector();
   streamEvents.forEach((event) => collectTimelineImpacts(event, collector));
   await queueImpactedContainers(context, collector, (ids) => enqueueTimelineRegeneration(ids));
 };
@@ -237,20 +298,38 @@ export const isTimelineConsistencyPassDue = (lastRun: number | null, nowTime: nu
 /**
  * Containers of the consistency pass: changed since the previous pass, never computed, or not regenerated for the
  * max age. Its cost follows the activity of the platform, not the number of incidents and cases it holds.
+ * Workflow statuses are not in the stream: when the workflow of a container type changed since the previous pass
+ * (which status is final decides the closure), every container of that type is scheduled; a change of the task
+ * workflow (which decides when a task is completed) schedules every container.
  */
-export const buildTimelineConsistencyFilters = (lastRun: number | null, nowTime: number, maxAgeDays: number) => {
+export const buildTimelineConsistencyFilters = (lastRun: number | null, nowTime: number, maxAgeDays: number, changedWorkflowTypes: string[] = []) => {
   const changedSince = new Date(lastRun ?? nowTime - DAY_MS).toISOString();
   const staleBefore = new Date(nowTime - maxAgeDays * DAY_MS).toISOString();
   const computedAtKey = `${ATTRIBUTE_TIMELINE_ANCHORS}.computed_at`;
+  const workflowTypes = changedWorkflowTypes.includes(ENTITY_TYPE_CONTAINER_TASK)
+    ? TIMELINE_CONTAINER_TYPES
+    : TIMELINE_CONTAINER_TYPES.filter((type) => changedWorkflowTypes.includes(type));
   return {
     mode: FilterMode.Or,
     filters: [
       { key: ['updated_at'], operator: FilterOperator.Gte, values: [changedSince] },
       { key: [computedAtKey], operator: FilterOperator.Nil, values: [] },
       { key: [computedAtKey], operator: FilterOperator.Lt, values: [staleBefore] },
+      ...(workflowTypes.length > 0 ? [{ key: ['entity_type'], values: workflowTypes }] : []),
     ],
     filterGroups: [],
   };
+};
+
+/** Entity types whose workflow statuses were created or changed since the previous pass. */
+const findChangedWorkflowTypes = async (context: AuthContext, lastRun: number | null): Promise<string[]> => {
+  if (lastRun === null) return [];
+  const statuses = await getEntitiesListFromCache<BasicStoreEntity & { type?: string }>(context, SYSTEM_USER, ENTITY_TYPE_STATUS);
+  const changedAt = (status: BasicStoreEntity) => new Date(status.updated_at ?? status.created_at ?? 0).getTime();
+  return Array.from(new Set(statuses
+    .filter((status) => changedAt(status) >= lastRun)
+    .map((status) => status.type)
+    .filter((type): type is string => !!type)));
 };
 
 const runConsistencyPass = async (context: AuthContext) => {
@@ -258,9 +337,10 @@ const runConsistencyPass = async (context: AuthContext) => {
   const lastRun = await getTimelineConsistencyLastRun();
   if (!isTimelineConsistencyPassDue(lastRun, nowTime, TIMELINE_MANAGER_CONSISTENCY_HOUR)) return;
   let scheduled = 0;
+  const changedWorkflowTypes = await findChangedWorkflowTypes(context, lastRun);
   await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, TIMELINE_CONTAINER_TYPES, {
     baseData: true,
-    filters: buildTimelineConsistencyFilters(lastRun, nowTime, TIMELINE_MANAGER_CONSISTENCY_MAX_AGE_DAYS),
+    filters: buildTimelineConsistencyFilters(lastRun, nowTime, TIMELINE_MANAGER_CONSISTENCY_MAX_AGE_DAYS, changedWorkflowTypes),
     noFiltersChecking: true,
     callback: async (containers: BasicStoreEntity[]) => {
       await enqueueTimelineRegeneration(containers.map((c) => c.internal_id));
