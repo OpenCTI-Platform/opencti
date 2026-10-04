@@ -411,6 +411,30 @@
       ]
     },
     {
+      "component": "MenuItem",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "graph experience: the items of the graph toolbar menus; the choices of a toolbar list are one shared component, the same in the menu anchored to their tool and in their submenu of More actions",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarOptionsList.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarMoreActions.tsx"
+      ]
+    },
+    {
+      "component": "MenuLabel",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "graph experience: the headings of the graph toolbar menus (the groups of More actions, the parts of a toolbar list)",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarOptionsList.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarMoreActions.tsx"
+      ]
+    },
+    {
       "component": "Badge",
       "importFrom": "@filigran/design-system",
       "guards": [
