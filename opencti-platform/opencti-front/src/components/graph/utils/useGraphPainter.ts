@@ -207,6 +207,13 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     paintGraphNodeHitArea(ctx, data, color, detailOf(globalScale).labels);
   };
 
+  /** The colour of the relationship itself, whatever is selected or searched: the image export draws it. */
+  const linkBaseColor = (link: GraphLink) => {
+    if (link.isNestedInferred || link.inferred) return colors.inferred;
+    if (link.disabled) return colors.disabled;
+    return palette.link;
+  };
+
   /**
    * Determines color of the link.
    *
@@ -218,9 +225,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
 
     if (!selected && search) return colors.disabled;
     if (selected) return colors.selected;
-    if (link.isNestedInferred || link.inferred) return colors.inferred;
-    if (link.disabled) return colors.disabled;
-    return palette.link;
+    return linkBaseColor(link);
   };
 
   const curvatureOf = (link: GraphLink) => {
@@ -354,6 +359,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     nodePointerAreaPaint,
     linkLabelPaint,
     linkColorPaint,
+    linkBaseColor,
     linkPaint,
     linkCurvature,
     curvatureOf,

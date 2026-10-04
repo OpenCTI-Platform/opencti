@@ -95,6 +95,17 @@ describe('useGraphPainter', () => {
       }));
       expect(searching.result.current.linkColorPaint(link())).toBe(theme.palette.background.paper);
     });
+
+    it('colours the relationship itself for the image export, whatever is selected or searched', () => {
+      const selected = link();
+      const { hook } = testRenderHook(() => useGraphPainter({
+        selectedLinks: [selected], selectedNodes: [], detailsPreviewSelected: undefined, search: 'emo',
+      }));
+      expect(hook.result.current.linkBaseColor(selected)).toBe(theme.palette.primary.main);
+      expect(hook.result.current.linkBaseColor(link())).toBe(theme.palette.primary.main);
+      expect(hook.result.current.linkBaseColor(link({ inferred: true }))).toBe(theme.palette.warning.main);
+      expect(hook.result.current.linkBaseColor(link({ disabled: true }))).toBe(theme.palette.background.paper);
+    });
   });
 
   describe('nodePaint', () => {

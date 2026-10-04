@@ -25,15 +25,18 @@ export const nextToolbarIndex = (key: string, index: number, count: number): num
   }
 };
 
-/** In a text field, the arrow keys move the caret until it reaches the end it moves towards. */
-const keepsKeyInField = (target: EventTarget, key: string) => {
+/**
+ * In a text field, the arrow keys first collapse a text selection, then move the caret until it
+ * reaches the end it moves towards.
+ */
+export const keepsKeyInField = (target: EventTarget, key: string) => {
   if (!(target instanceof HTMLInputElement)) return false;
   if (key === 'Home' || key === 'End') return true;
   const { selectionStart, selectionEnd, value } = target;
   if (selectionStart === null || selectionEnd === null) return false;
-  if (key === 'ArrowLeft') return selectionStart > 0 || selectionEnd > 0;
-  if (key === 'ArrowRight') return selectionEnd < value.length;
-  return false;
+  if (key !== 'ArrowLeft' && key !== 'ArrowRight') return false;
+  if (selectionStart !== selectionEnd) return true;
+  return key === 'ArrowLeft' ? selectionStart > 0 : selectionEnd < value.length;
 };
 
 /**

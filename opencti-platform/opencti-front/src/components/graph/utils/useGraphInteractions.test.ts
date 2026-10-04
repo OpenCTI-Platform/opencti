@@ -51,6 +51,12 @@ describe('useGraphInteractions', () => {
     expect(state().selectedLinks.map((l) => l.id)).toEqual(['targets']);
   });
 
+  it('selects only the drawn relationships of the selected nodes, never one towards a hidden entity', () => {
+    const { interactions, state } = renderInteractions({ selectedNodes: [actor], hiddenNodeIds: ['victim'], selectRelationshipMode: null });
+    interactions.switchSelectRelationshipMode();
+    expect(state().selectedLinks.map((l) => l.id)).toEqual(['uses']);
+  });
+
   it('leaves every arrangement and forgets the saved positions when the nodes are unfixed', () => {
     const { interactions, state, graph } = renderInteractions({ layoutMode: 'tiers', modeTree: 'td' });
     interactions.unfixNodes();

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { planToolbarOverflow, TOOLBAR_ACTION_WIDTH, TOOLBAR_DIVIDER_WIDTH } from './graphToolbarOverflow';
-import { nextToolbarIndex, toolbarControls } from './useToolbarRovingFocus';
+import { keepsKeyInField, nextToolbarIndex, toolbarControls } from './useToolbarRovingFocus';
 
 const candidates = [
   { id: 'zoom-in', group: 'view', priority: 30 },
@@ -51,5 +51,21 @@ describe('toolbar roving focus', () => {
     const root = document.createElement('div');
     root.innerHTML = '<button>A</button><button disabled>B</button><span aria-hidden="true"><button>C</button></span><input aria-label="D" /><div role="button">E</div>';
     expect(toolbarControls(root).map((control) => control.textContent || control.getAttribute('aria-label'))).toEqual(['A', 'D', 'E']);
+  });
+
+  it('keeps the arrows in the search field until its selection is collapsed and its caret at the end', () => {
+    const field = document.createElement('input');
+    field.value = 'emotet';
+    field.setSelectionRange(2, 6);
+    expect(keepsKeyInField(field, 'ArrowRight')).toBe(true);
+    field.setSelectionRange(6, 6);
+    expect(keepsKeyInField(field, 'ArrowRight')).toBe(false);
+    field.setSelectionRange(0, 3);
+    expect(keepsKeyInField(field, 'ArrowLeft')).toBe(true);
+    field.setSelectionRange(0, 0);
+    expect(keepsKeyInField(field, 'ArrowLeft')).toBe(false);
+    expect(keepsKeyInField(field, 'ArrowRight')).toBe(true);
+    expect(keepsKeyInField(field, 'End')).toBe(true);
+    expect(keepsKeyInField(document.createElement('button'), 'ArrowRight')).toBe(false);
   });
 });

@@ -34,6 +34,7 @@ import { downloadCanvasAsPng, renderGraphImage } from './utils/graphExport';
 import { APP_BASE_PATH, MESSAGING$ } from '../../relay/environment';
 import useGraphStartInvestigation from './utils/useGraphStartInvestigation';
 import { graphNodeTitle } from './utils/useGraphParser';
+import useReaderActed from './utils/useReaderActed';
 
 export interface GraphProps {
   parentRef: MutableRefObject<HTMLDivElement | null>;
@@ -328,6 +329,7 @@ const Graph = ({
     nodePointerAreaPaint,
     nodeThreePaint,
     linkColorPaint,
+    linkBaseColor,
     linkPaint,
     linkCurvature,
     curvatureOf,
@@ -352,16 +354,9 @@ const Graph = ({
   // click, a key, a zoom, in the graph or in its toolbar) cancels it, so the view never moves
   // under the pointer.
   const frameWhenSettled = useRef(false);
-  const readerMoved = useRef(false);
-  useEffect(() => {
-    const onReaderAction = () => {
-      readerMoved.current = true;
-      frameWhenSettled.current = false;
-    };
-    const events = ['pointerdown', 'wheel', 'keydown'] as const;
-    events.forEach((event) => window.addEventListener(event, onReaderAction, true));
-    return () => events.forEach((event) => window.removeEventListener(event, onReaderAction, true));
-  }, []);
+  const readerActed = useReaderActed(mode3D, () => {
+    frameWhenSettled.current = false;
+  });
   const onEngineStop = () => {
     if (!frameWhenSettled.current) return;
     frameWhenSettled.current = false;
@@ -369,7 +364,6 @@ const Graph = ({
   };
 
   useEffect(() => {
-    readerMoved.current = false;
     let framing: ReturnType<typeof setTimeout> | undefined;
     // A short timeout to be sure graph is ready.
     const init = setTimeout(() => {
@@ -379,7 +373,7 @@ const Graph = ({
 
       // Another short timeout to wait forces to be applied
       framing = setTimeout(() => {
-        if (readerMoved.current) return;
+        if (readerActed.current) return;
         if (zoom) setZoom(zoom);
         else {
           zoomToFit();
@@ -545,7 +539,7 @@ const Graph = ({
       subtitle: `${t_i18n('{count, plural, one {# entity} other {# entities}}', { values: { count: [...families.values()].reduce((sum, family) => sum + family.count, 0) } })}, ${t_i18n('{count, plural, one {# relationship} other {# relationships}}', { values: { count: relationshipCount } })}`,
       typeLabel: (node) => (node.relationship_type ? t_i18n(`relationship_${node.relationship_type}`) : t_i18n(`entity_${node.entity_type}`)),
       badgesOf: (node) => badgesOfNode(node, { t_i18n }),
-      linkColor: linkColorPaint,
+      linkColor: linkBaseColor,
       legend: {
         title: t_i18n('Legend'),
         entities: [...families.values()].sort((a, b) => b.count - a.count),

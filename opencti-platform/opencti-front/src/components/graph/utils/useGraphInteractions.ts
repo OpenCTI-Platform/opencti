@@ -333,7 +333,10 @@ const useGraphInteractions = () => {
 
   const switchSelectRelationshipMode = () => {
     const selectedNodesIds = selectedNodes.map((n) => n.id);
+    // Only what is drawn can be selected: never a relationship towards a hidden or collapsed entity.
+    const shownIds = new Set((graphData?.nodes ?? []).filter(isNodeShown).map((n) => n.id));
     setSelectedLinks((graphData?.links ?? []).filter((l) => {
+      if (!shownIds.has(l.source_id) || !shownIds.has(l.target_id)) return false;
       const shouldGetFrom = selectRelationshipMode === null || selectRelationshipMode === 'children';
       const shouldGetTo = selectRelationshipMode === null || selectRelationshipMode === 'parent';
       return (shouldGetFrom && selectedNodesIds.includes(l.source_id))
