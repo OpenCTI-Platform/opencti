@@ -2,6 +2,7 @@ import { memo, ReactNode } from 'react';
 import WidgetText from './WidgetText';
 import type { Widget, WidgetHost } from 'src/utils/widget/widget';
 import StixCoreObjectsCustomAttributes from '@components/common/stix_core_objects/StixCoreObjectsCustomAttributes';
+import KnowledgeHealthWidget from '@components/data/curation/KnowledgeHealthWidget';
 import type { DashboardConfig } from './dashboard-types';
 import { computeStartEndDates } from 'src/components/dashboard/dashboardVizUtils';
 import WidgetNotImplemented from './WidgetNotImplemented';
@@ -42,6 +43,16 @@ const DashboardRawViz = ({
           title={undefined}
           popover={popover}
           host={host}
+        />
+      );
+    case 'knowledge-health-score':
+    case 'knowledge-health-trend':
+    case 'curation-open-proposals':
+      return (
+        <KnowledgeHealthWidget
+          variant={widget.type}
+          title={widget.parameters?.title}
+          popover={popover}
         />
       );
     default:

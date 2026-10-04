@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router';
 import StixDomainObjectTabsBox, { type StixDomainObjectTabsBoxTab } from './StixDomainObjectTabsBox';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import CustomViewRedirector from '@components/custom_views/CustomViewRedirector';
+import EntityChangesTab from '@components/common/changes/EntityChangesTab';
 
 interface StixDomainObjectMainProps {
   entity: { id: string; entity_type: string };
@@ -20,7 +21,11 @@ const StixDomainObjectMain = ({
   pages,
   extraRoutes,
 }: StixDomainObjectMainProps) => {
-  const tabs = Object.keys(pages) as StixDomainObjectTabsBoxTab[];
+  // Every entity with a history has a Changes tab: how it changed, including the merges it took part in.
+  const allPages = pages.history !== undefined && pages.changes === undefined
+    ? { ...pages, changes: <EntityChangesTab entityId={entity.id} basePath={basePath} /> }
+    : pages;
+  const tabs = Object.keys(allPages) as StixDomainObjectTabsBoxTab[];
   return (
     <>
       <StixDomainObjectTabsBox
@@ -54,6 +59,9 @@ const StixDomainObjectMain = ({
         )}
         {tabs.includes('files') && (
           <Route path="/files" element={pages.files} />
+        )}
+        {tabs.includes('changes') && (
+          <Route path="/changes" element={allPages.changes} />
         )}
         {tabs.includes('history') && (
           <Route path="/history" element={pages.history} />

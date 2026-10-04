@@ -51,6 +51,7 @@ type DataTableComponentProps = Pick<DataTableProps,
   | 'pageSize'
   | 'actionsColumnWidth'
   | 'enableInfiniteScroll'
+  | 'ignoreUri'
   | 'searchTerm'
 >;
 
@@ -87,6 +88,7 @@ const DataTableComponent = ({
   pageSize,
   actionsColumnWidth,
   enableInfiniteScroll = false,
+  ignoreUri,
 }: DataTableComponentProps) => {
   const { metricsDefinition } = useAppData();
 
@@ -94,7 +96,7 @@ const DataTableComponent = ({
   const columnsLocalStorage = useDataTableLocalStorage<LocalStorageColumns>(`${storageKey}_columns`, {}, true);
   const [localStorageColumns, setLocalStorageColumns] = columnsLocalStorage;
 
-  const paginationLocalStorage = useDataTablePaginationLocalStorage(storageKey, initialValues, variant !== DataTableVariant.default);
+  const paginationLocalStorage = useDataTablePaginationLocalStorage(storageKey, initialValues, ignoreUri ?? variant !== DataTableVariant.default);
   const {
     viewStorage: { pageSize: viewStoragePageSize },
     helpers,

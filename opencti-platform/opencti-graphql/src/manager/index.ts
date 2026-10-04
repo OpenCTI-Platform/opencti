@@ -1,3 +1,4 @@
+import './curationManager';
 import './dataSanityManager';
 import './exclusionListCacheBuildManager';
 import './exclusionListCacheSyncManager';

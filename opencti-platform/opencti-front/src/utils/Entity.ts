@@ -157,6 +157,12 @@ export const resolveLink = (type = 'unknown'): string | null => {
       return '/dashboard/observations/observables';
     case 'AuthenticationProvider':
       return '/dashboard/settings/accesses/authentications';
+    case 'CurationProposal':
+      return '/dashboard/data/curation/inbox';
+    case 'MergeRecord':
+      return '/dashboard/data/curation/merges';
+    case 'KnowledgeHealthSnapshot':
+      return '/dashboard/data/curation/health';
     default:
       return null;
   }

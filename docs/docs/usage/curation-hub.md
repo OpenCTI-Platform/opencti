@@ -4,11 +4,13 @@
 
 | Tab | What you do there |
 | --- | --- |
-| Inbox | Review what the curation engine proposes: possible duplicates, conflicting values, objects to merge. |
+| Inbox | Review what the curation engine proposes: possible duplicates, conflicting values, objects to merge ([details](knowledge-curation.md#work-the-curation-inbox)). |
 | Conflicts | See the attributes your sources disagree on, and which value each source asserts ([details](provenance.md#curation-tabs)). |
 | Stale knowledge | Find knowledge whose sources stopped confirming it, according to the knowledge decay rules ([details](provenance.md#curation-tabs)). |
-| Merges | Follow the merges that were applied, and undo one when it was wrong. |
-| Knowledge health | Measure the quality of the knowledge base over time. |
+| Merges | Follow the merges that were applied, and undo one when it was wrong ([details](knowledge-curation.md#reversible-merges-and-unmerge)). |
+| Knowledge health | Measure the quality of the knowledge base over time ([details](knowledge-curation.md#read-the-knowledge-health-score)). |
+
+![Inbox tab of the Curation hub, with its counters](assets/curation-inbox-kpis.png)
 
 ## When the entry is shown
 
@@ -18,6 +20,7 @@
 
 ## Related pages
 
+- [Knowledge curation](knowledge-curation.md): the detectors, proposals, reversible merges, policies and Knowledge health behind the Inbox, Merges and Knowledge health tabs.
 - [Provenance](provenance.md): the sources, conflicts and freshness behind the Conflicts and Stale knowledge tabs.
 - [Deduplication](deduplication.md): how OpenCTI avoids creating the same object twice.
 - [Merge objects](merging.md): merging objects by hand.

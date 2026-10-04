@@ -21,6 +21,7 @@ import { EVENT_CURRENT_VERSION } from '../database/stream/stream-utils';
 import { clearSyncConsumerMetrics, storeSyncConsumerMetrics } from '../graphql/syncConsumerMetrics';
 import { createParser } from 'eventsource-parser';
 import { InterruptibleTimer } from './interruptible-timer';
+import { withUpsertRemovals } from './syncManager-upsert-removals';
 import { buildIngestionErrorMeta, createIngestionLogger } from './ingestionManager/ingestionManagerUtils';
 import {
   ALLOWED_EMBEDDED_IMAGE_MIME_TYPE_SET,
@@ -333,7 +334,7 @@ export const transformDataWithReverseIdAndFilesData = async (sync, httpClient, d
   };
 
   await resolveEmbeddedImagesMarkdownFields(processingData);
-  return { data: processingData, previous_standard: idOperation?.value };
+  return { data: withUpsertRemovals(processingData, context), previous_standard: idOperation?.value };
 };
 
 const syncManagerInstance = (syncId) => {

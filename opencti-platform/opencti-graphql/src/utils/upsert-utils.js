@@ -475,7 +475,7 @@ export const mergeUpsertInputs = (resolvedElement, updatePatch, updatePatchInput
   return Array.from(updatePatchInputsMap.values());
 };
 
-export const generateAttributesInputsForUpsert = (context, _user, resolvedElement, type, updatePatch, confidenceForUpsert) => {
+export const generateAttributesInputsForUpsert = (context, _user, resolvedElement, type, updatePatch, confidenceForUpsert, authorityDecisions) => {
   const { isConfidenceMatch } = confidenceForUpsert;
   // -- Upsert attributes
   const inputs = [];
@@ -492,10 +492,12 @@ export const generateAttributesInputsForUpsert = (context, _user, resolvedElemen
       const isInputWithData = typeof inputData === 'string' ? isNotEmptyField(inputData.trim()) : isNotEmptyField(inputData);
       const isCurrentlyEmpty = isEmptyField(resolvedElement[attributeKey]) && isInputWithData; // If the element current data is empty, we always expect to put the value
       // Field can be upsert if:
-      // 1. Confidence is correct
+      // 1. The field authority rule allows the incoming source, or confidence is correct when no rule decides
       // 2. Attribute is declared upsert=true in the schema
       // 3. Data from the inputs is not empty to prevent any data cleaning
-      const canBeUpsert = isConfidenceMatch && attribute.upsert && isInputWithData;
+      const authorityDecision = authorityDecisions?.get(attributeKey);
+      const isSourceAllowed = authorityDecision ? authorityDecision === 'allow' : isConfidenceMatch;
+      const canBeUpsert = isSourceAllowed && attribute.upsert && isInputWithData;
       // Upsert will be done if upsert is well-defined but also in full synchro mode or if the current value is empty
       if (!isOutDatedModification) {
         if (isStructuralUpsert || canBeUpsert || isFullSync || isCurrentlyEmpty) {
@@ -577,14 +579,14 @@ export const generateRefsInputsForUpsert = (context, user, resolvedElement, _typ
   return inputs;
 };
 
-export const generateInputsForUpsert = async (context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition) => {
+export const generateInputsForUpsert = async (context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition, authorityDecisions) => {
   const inputs = []; // All inputs impacted by modifications (+inner)
   // if file(s) in updatePatch, we need to upload them and update x_opencti_files
   // Files follow the same confidence-based conflict resolution as other fields
   const fileInputs = await generateFileInputsForUpsert(context, user, resolvedElement, updatePatch, confidenceForUpsert);
   pushAll(inputs, fileInputs);
   // -- Upsert attributes
-  const attributesInputs = generateAttributesInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert);
+  const attributesInputs = generateAttributesInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, authorityDecisions);
   pushAll(inputs, attributesInputs);
   // -- Upsert refs
   const refsInputs = generateRefsInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition);
