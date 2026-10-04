@@ -38,6 +38,12 @@ type IocValidationIoc {
   file_name: String
 }
 
+# Outcome of a pair for one request, kept when a newer request validates the deployment again
+type IocValidationPairOutcome {
+  deployed_on_id: String!
+  validation_status: String
+}
+
 type IocValidationSkipped {
   indicator_id: String!
   indicator: Indicator
@@ -70,6 +76,7 @@ type IocValidationRequest implements InternalObject & BasicObject {
   iocs: [IocValidationIoc!]!
   skipped: [IocValidationSkipped!]!
   deployments: [StixCoreRelationship!]!
+  pair_outcomes: [IocValidationPairOutcome!]!
   openaev_scenario_id: String
   openaev_simulation_id: String
   external_uri: String

@@ -77,17 +77,19 @@ export const hasSecurityPlatformRemoval = (events: Array<SseEvent<DataEvent>>) =
   return isRemoval && data?.extensions?.[STIX_EXT_OCTI]?.type === ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM;
 });
 
-// Indicators and Security Platforms whose markings, sharing, authorized members or creator changed, by an update or a merge into them: their pair
+// Indicators and Security Platforms whose markings, sharing, authorized members or creator changed by an update, or that absorbed
+// another one by a merge (the merged pair relationships move to them without any relationship event): their pair
 // relationships carry the markings of both ends and the counters depend on the restrictions of both ends, so the
 // relationships are repaired and the counters of the indicators recomputed.
 export const extractAccessChangedEndpoints = (events: Array<SseEvent<DataEvent>>) => {
   const indicatorIds = new Set<string>();
   const platformIds = new Set<string>();
   events.forEach((event) => {
-    if (event.data?.type !== 'update' && event.data?.type !== 'merge') return;
+    const isMerge = event.data?.type === 'merge';
+    if (event.data?.type !== 'update' && !isMerge) return;
     const patch = (event.data as unknown as { context?: { patch?: Array<{ path?: string }> } }).context?.patch ?? [];
     const accessPaths = ['object_marking_refs', 'granted_refs', 'authorized_members', 'created_by_ref'];
-    if (!patch.some((operation) => accessPaths.some((path) => operation.path?.includes(path)))) return;
+    if (!isMerge && !patch.some((operation) => accessPaths.some((path) => operation.path?.includes(path)))) return;
     const data = event.data.data as DeploymentEventData | undefined;
     const extension = data?.extensions?.[STIX_EXT_OCTI];
     // A marking removed from a deployment itself is given back from its ends, through its indicator

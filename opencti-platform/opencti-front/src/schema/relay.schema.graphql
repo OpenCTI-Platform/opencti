@@ -15189,6 +15189,11 @@ type IocValidationIoc {
   file_name: String
 }
 
+type IocValidationPairOutcome {
+  deployed_on_id: String!
+  validation_status: String
+}
+
 type IocValidationSkipped {
   indicator_id: String!
   indicator: Indicator
@@ -15219,6 +15224,7 @@ type IocValidationRequest implements InternalObject & BasicObject {
   iocs: [IocValidationIoc!]!
   skipped: [IocValidationSkipped!]!
   deployments: [StixCoreRelationship!]!
+  pair_outcomes: [IocValidationPairOutcome!]!
   openaev_scenario_id: String
   openaev_simulation_id: String
   external_uri: String

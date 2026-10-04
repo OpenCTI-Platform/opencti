@@ -148,7 +148,8 @@ for the approval workflow and the safety settings.
 
 When OpenAEV sends the results, the validation status of each deployment is updated to `detected`, `prevented`,
 `missed` or `error`, and the request shows the outcome of every indicator and platform pair. A missed indicator
-links to its deployment, and a completed request can be validated again in one action.
+links to its deployment, and a completed request can be validated again in one action. Each request keeps the outcome it
+got: validating the same deployment again updates the deployment, not the results of the earlier requests.
 
 ![Completed validation request with one detected and one missed indicator](assets/dissemination-assurance-validation-missed.png)
 

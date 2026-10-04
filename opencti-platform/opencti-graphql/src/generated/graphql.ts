@@ -15270,6 +15270,12 @@ export type IocValidationIoc = {
   value: Scalars['String']['output'];
 };
 
+export type IocValidationPairOutcome = {
+  __typename?: 'IocValidationPairOutcome';
+  deployed_on_id: Scalars['String']['output'];
+  validation_status?: Maybe<Scalars['String']['output']>;
+};
+
 export type IocValidationPairResultInput = {
   evidence?: InputMaybe<Scalars['String']['input']>;
   hitCount?: InputMaybe<Scalars['Int']['input']>;
@@ -15297,6 +15303,7 @@ export type IocValidationRequest = BasicObject & InternalObject & {
   name: Scalars['String']['output'];
   openaev_scenario_id?: Maybe<Scalars['String']['output']>;
   openaev_simulation_id?: Maybe<Scalars['String']['output']>;
+  pair_outcomes: Array<IocValidationPairOutcome>;
   parent_types: Array<Scalars['String']['output']>;
   platform_ids: Array<Scalars['String']['output']>;
   platforms: Array<SecurityPlatform>;
@@ -42565,6 +42572,7 @@ export type ResolversTypes = ResolversObject<{
   IntrusionSetsOrdering: IntrusionSetsOrdering;
   InvestigationDuplicateInput: InvestigationDuplicateInput;
   IocValidationIoc: ResolverTypeWrapper<IocValidationIoc>;
+  IocValidationPairOutcome: ResolverTypeWrapper<IocValidationPairOutcome>;
   IocValidationPairResultInput: IocValidationPairResultInput;
   IocValidationRequest: ResolverTypeWrapper<BasicStoreEntityIocValidationRequest>;
   IocValidationRequestConnection: ResolverTypeWrapper<Omit<IocValidationRequestConnection, 'edges'> & { edges: Array<ResolversTypes['IocValidationRequestEdge']> }>;
@@ -43711,6 +43719,7 @@ export type ResolversParentTypes = ResolversObject<{
   IntrusionSetEditMutations: Omit<IntrusionSetEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['IntrusionSet']>, contextPatch?: Maybe<ResolversParentTypes['IntrusionSet']>, fieldPatch?: Maybe<ResolversParentTypes['IntrusionSet']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['IntrusionSet']> };
   InvestigationDuplicateInput: InvestigationDuplicateInput;
   IocValidationIoc: IocValidationIoc;
+  IocValidationPairOutcome: IocValidationPairOutcome;
   IocValidationPairResultInput: IocValidationPairResultInput;
   IocValidationRequest: BasicStoreEntityIocValidationRequest;
   IocValidationRequestConnection: Omit<IocValidationRequestConnection, 'edges'> & { edges: Array<ResolversParentTypes['IocValidationRequestEdge']> };
@@ -49666,6 +49675,11 @@ export type IocValidationIocResolvers<ContextType = any, ParentType extends Reso
   value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
+export type IocValidationPairOutcomeResolvers<ContextType = any, ParentType extends ResolversParentTypes['IocValidationPairOutcome'] = ResolversParentTypes['IocValidationPairOutcome']> = ResolversObject<{
+  deployed_on_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  validation_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
 export type IocValidationRequestResolvers<ContextType = any, ParentType extends ResolversParentTypes['IocValidationRequest'] = ResolversParentTypes['IocValidationRequest']> = ResolversObject<{
   completed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   connector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType>;
@@ -49684,6 +49698,7 @@ export type IocValidationRequestResolvers<ContextType = any, ParentType extends 
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   openaev_scenario_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   openaev_simulation_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  pair_outcomes?: Resolver<Array<ResolversTypes['IocValidationPairOutcome']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   platform_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   platforms?: Resolver<Array<ResolversTypes['SecurityPlatform']>, ParentType, ContextType>;
@@ -57747,6 +57762,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   IntrusionSetEdge?: IntrusionSetEdgeResolvers<ContextType>;
   IntrusionSetEditMutations?: IntrusionSetEditMutationsResolvers<ContextType>;
   IocValidationIoc?: IocValidationIocResolvers<ContextType>;
+  IocValidationPairOutcome?: IocValidationPairOutcomeResolvers<ContextType>;
   IocValidationRequest?: IocValidationRequestResolvers<ContextType>;
   IocValidationRequestConnection?: IocValidationRequestConnectionResolvers<ContextType>;
   IocValidationRequestEdge?: IocValidationRequestEdgeResolvers<ContextType>;

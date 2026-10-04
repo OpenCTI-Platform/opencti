@@ -5,10 +5,9 @@ import { describe, expect, it } from 'vitest';
 import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
 import IocValidationRequestDetails from './IocValidationRequestDetails';
 
-const deployment = (id: string, indicator: string, validationStatus: string) => ({
+const deployment = (id: string, indicator: string) => ({
   id,
   deployment_status: 'active',
-  validation_status: validationStatus,
   last_validation_at: '2026-10-03T12:00:00.000Z',
   from: { __typename: 'Indicator', id: `indicator-${id}`, name: indicator },
   to: { __typename: 'SecurityPlatform', id: 'platform-1', name: 'Contoso SIEM' },
@@ -31,9 +30,11 @@ const request = (status: string) => ({
   results_summary: { total: 2, requested: status === 'completed' ? 0 : 2, detected: status === 'completed' ? 1 : 0, prevented: 0, missed: status === 'completed' ? 1 : 0, error: 0, skipped: 1 },
   iocs: [{ indicator_id: 'indicator-d1', observable_type: 'Domain-Name', value: 'login-portal.example', test_kind: 'dns_resolution' }],
   skipped: [{ indicator_id: 'indicator-s1', indicator: { id: 'indicator-s1', name: 'cdn-assets.example' }, platform_id: 'platform-1', reason: 'Not live on this security platform' }],
-  deployments: status === 'completed'
-    ? [deployment('d1', 'login-portal.example', 'detected'), deployment('d2', 'update-service.example', 'missed')]
-    : [deployment('d1', 'login-portal.example', 'requested'), deployment('d2', 'update-service.example', 'requested')],
+  // Outcomes of this request, whatever a newer request recorded on the same deployments since
+  pair_outcomes: status === 'completed'
+    ? [{ deployed_on_id: 'd1', validation_status: 'detected' }, { deployed_on_id: 'd2', validation_status: 'missed' }]
+    : [{ deployed_on_id: 'd1', validation_status: 'requested' }, { deployed_on_id: 'd2', validation_status: 'requested' }],
+  deployments: [deployment('d1', 'login-portal.example'), deployment('d2', 'update-service.example')],
 });
 
 const renderDetails = async (status: string) => {
@@ -58,6 +59,8 @@ describe('IOC validation request details', () => {
     expect(screen.getByTestId('ioc-validation-results-summary').textContent).toEqual('1 of 2 tests detected or prevented');
     expect(screen.getByRole('progressbar')).toBeTruthy();
     expect(screen.getAllByText('Open the deployment')).toHaveLength(1);
+    expect(screen.getByTestId('validation-status-detected')).toBeTruthy();
+    expect(screen.getByTestId('validation-status-missed')).toBeTruthy();
     // A skipped indicator shows its name and its reason, never its identifier
     expect(screen.getByText('cdn-assets.example')).toBeTruthy();
     expect(screen.getByText('Not live on this security platform')).toBeTruthy();

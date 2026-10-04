@@ -64,6 +64,7 @@ const REQUEST_FIELDS = `
   iocs { indicator_id value test_kind }
   skipped { indicator_id platform_id reason }
   deployments { id }
+  pair_outcomes { deployed_on_id validation_status }
   connector { id }
   requested_by { id }
   openaev_simulation_id
@@ -130,6 +131,8 @@ describe('IOC validation requests', () => {
   let failedIndicatorId: string;
   let platformId: string;
   let liveDeploymentId: string;
+  // Completed request with a missed verdict, kept until a newer request takes its pair over
+  let provenRequestId: string;
   let requestId: string;
 
   beforeAll(async () => {
@@ -352,7 +355,7 @@ describe('IOC validation requests', () => {
     });
     const repaired = await storeLoadById<BasicStoreRelation & { x_opencti_negative?: boolean }>(testContext, ADMIN_USER, sightingId, STIX_SIGHTING_RELATIONSHIP);
     expect(repaired?.x_opencti_negative).toEqual(true);
-    await queryAsAdminWithSuccess({ query: REQUEST_DELETE, variables: { id } });
+    provenRequestId = id;
   });
 
   it('should refuse validation results written outside the validation paths', async () => {
@@ -400,7 +403,14 @@ describe('IOC validation requests', () => {
     });
     const waiting = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: liveDeploymentId } });
     expect(waiting.data?.stixCoreRelationship.validation_status).toEqual('requested');
+    // The earlier request keeps its own verdict while the newer one waits for its results
+    const earlier = await queryAsAdminWithSuccess({ query: REQUEST_READ, variables: { id: provenRequestId } });
+    expect(earlier.data?.iocValidationRequest.pair_outcomes).toEqual([{ deployed_on_id: liveDeploymentId, validation_status: 'missed' }]);
+    expect(earlier.data?.iocValidationRequest.results_summary).toEqual(expect.objectContaining({ missed: 1, requested: 0 }));
+    const newer = await queryAsAdminWithSuccess({ query: REQUEST_READ, variables: { id } });
+    expect(newer.data?.iocValidationRequest.pair_outcomes).toEqual([{ deployed_on_id: liveDeploymentId, validation_status: 'requested' }]);
     await queryAsAdminWithSuccess({ query: REQUEST_DELETE, variables: { id } });
+    await queryAsAdminWithSuccess({ query: REQUEST_DELETE, variables: { id: provenRequestId } });
   });
 
   it('should only filter requests on plain attributes and accessible references', async () => {

@@ -64,10 +64,13 @@ const iocValidationRequestDetailsQuery = graphql`
         platform_id
         reason
       }
+      pair_outcomes {
+        deployed_on_id
+        validation_status
+      }
       deployments {
         id
         deployment_status
-        validation_status
         last_validation_at
         from {
           ... on Indicator {
@@ -140,6 +143,8 @@ const IocValidationRequestDetailsContent = ({ requestId }: { requestId: string }
     return definition ? t_i18n(definition.label) : kind;
   };
   const openInOpenAev = isHttpUrl(request.external_uri) && isOpenRequest(request.status);
+  // The verdict of this request: a newer request on the same deployment does not change it
+  const outcomes = new Map(request.pair_outcomes.map((outcome) => [outcome.deployed_on_id, outcome.validation_status]));
   const indicators = new Map<string, string>();
   request.deployments.forEach((deployment) => {
     if (deployment.from?.id) indicators.set(deployment.from.id, deployment.from.name ?? deployment.from.id);
@@ -248,8 +253,8 @@ const IocValidationRequestDetailsContent = ({ requestId }: { requestId: string }
                 {deployment.to?.id ? <Link to={PATH_SECURITY_PLATFORM(deployment.to.id)}>{deployment.to.name}</Link> : t_i18n('Restricted')}
               </Typography>
               <DeploymentStatusChip status={deployment.deployment_status} />
-              <ValidationStatusChip status={deployment.validation_status} />
-              {deployment.validation_status === 'missed' && deployment.from?.id && (
+              <ValidationStatusChip status={outcomes.get(deployment.id)} />
+              {outcomes.get(deployment.id) === 'missed' && deployment.from?.id && (
                 <Button variant="tertiary" size="small" component={Link} to={`${PATH_INDICATOR(deployment.from.id)}/deployments`}>
                   {t_i18n('Open the deployment')}
                 </Button>

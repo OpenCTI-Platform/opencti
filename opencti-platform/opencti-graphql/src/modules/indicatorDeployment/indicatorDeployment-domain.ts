@@ -1,4 +1,3 @@
-import * as R from 'ramda';
 import { v5 as uuidv5 } from 'uuid';
 import { Promise as BluePromise } from 'bluebird';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -9,6 +8,7 @@ import {
   fullRelationsList,
   internalLoadById,
   pageEntitiesConnection,
+  pageRegardingEntitiesConnection,
   pageRelationsConnection,
   storeLoadById,
   storeLoadByIds,
@@ -645,30 +645,64 @@ const dateRangeFilters = (attribute: string, startDate?: DateInput, endDate?: Da
 
 export const computeProvenShare = (live: number, proven: number) => (live > 0 ? Math.round((proven / live) * 1000) / 10 : 0);
 
-// Indicators per deployment count query when counting the live deployments of expired or revoked indicators.
-const EXPIRED_SOURCES_CHUNK_SIZE = 5000;
+// Page size of the scan counting the live deployments of expired or revoked indicators.
+const EXPIRED_SCAN_PAGE_SIZE = 5000;
+
+const expiredDeployedIndicatorGroups = (now: string) => [filterGroup([
+  { key: ['revoked'], values: [true] },
+  { key: ['valid_until'], values: [now], operator: 'lt' },
+], [], 'or')];
 
 /**
- * Live deployments matching the filters whose indicator is revoked or past its valid_until: still on the platform
- * during the removal grace period, before the manager flags them expired. Only indicators the reader can access and
- * that have a live deployment somewhere are considered, so the scan stays bounded by what is still to remove.
+ * Live deployments of one security platform matching the filters whose indicator is revoked or past its valid_until:
+ * still on the platform during the removal grace period, before the manager flags them expired. Only indicators the
+ * reader can access are counted. The scan pages over the smaller side, one page in memory at a time: the expired
+ * indicators with a deployment on the platform, or the live deployments of the platform (one per indicator).
  */
-const countLiveDeploymentsOfExpiredIndicators = async (context: AuthContext, user: AuthUser, deploymentFilters: FilterContent[], now: string) => {
-  const indicators = await fullEntitiesList<BasicStoreEntityIndicator>(context, user, [ENTITY_TYPE_INDICATOR], {
-    filters: filterGroup([{ key: [INDICATOR_DEPLOYMENT_PLATFORMS_COUNT], values: [0], operator: 'gt' }], [filterGroup([
-      { key: ['revoked'], values: [true] },
-      { key: ['valid_until'], values: [now], operator: 'lt' },
-    ], [], 'or')]),
-    noFiltersChecking: true,
-    baseData: true,
-  } as never);
-  const ids = indicators.map((indicator) => indicator.internal_id);
-  const counts = await BluePromise.map(
-    R.splitEvery(EXPIRED_SOURCES_CHUNK_SIZE, ids),
-    (chunk) => countDeployments(context, user, [...deploymentFilters, { key: ['fromId'], values: chunk }]),
-    { concurrency: 2 },
+const countLiveDeploymentsOfExpiredIndicators = async (
+  context: AuthContext,
+  user: AuthUser,
+  platformId: string,
+  deploymentFilters: FilterContent[],
+  liveDeployments: number,
+  now: string,
+) => {
+  if (liveDeployments === 0) return 0;
+  const pageArgs = (after?: string) => ({ first: EXPIRED_SCAN_PAGE_SIZE, after, orderBy: 'internal_id', orderMode: 'asc', baseData: true, noFiltersChecking: true });
+  const nextCursor = (pageInfo: { hasNextPage?: boolean; endCursor?: unknown }) => {
+    return pageInfo.hasNextPage && pageInfo.endCursor ? String(pageInfo.endCursor) : undefined;
+  };
+  const expiredPage = (after?: string) => pageRegardingEntitiesConnection<BasicStoreEntityIndicator>(
+    context,
+    user,
+    platformId,
+    RELATION_DEPLOYED_ON,
+    ENTITY_TYPE_INDICATOR,
+    true,
+    { ...pageArgs(after), filters: filterGroup([], expiredDeployedIndicatorGroups(now)) } as never,
   );
-  return counts.reduce((total, count) => total + count, 0);
+  let total = 0;
+  let page = await expiredPage();
+  if ((page.pageInfo.globalCount ?? 0) <= liveDeployments) {
+    for (;;) {
+      const ids = page.edges.map((edge) => edge.node.internal_id);
+      if (ids.length > 0) total += await countDeployments(context, user, [...deploymentFilters, { key: ['fromId'], values: ids }]);
+      const after = nextCursor(page.pageInfo);
+      if (!after) return total;
+      page = await expiredPage(after);
+    }
+  }
+  let after: string | undefined;
+  do {
+    const livePage = await pageRelationsConnection<BasicStoreRelationDeployedOn>(context, user, RELATION_DEPLOYED_ON, {
+      ...pageArgs(after),
+      filters: filterGroup(deploymentFilters),
+    } as never);
+    const ids = [...new Set(livePage.edges.map((edge) => edge.node.fromId))];
+    if (ids.length > 0) total += await countIndicators(context, user, [{ key: ['internal_id'], values: ids }], expiredDeployedIndicatorGroups(now));
+    after = nextCursor(livePage.pageInfo);
+  } while (after);
+  return total;
 };
 
 export interface DisseminationAssuranceMetricsArgs {
@@ -691,14 +725,14 @@ export const disseminationAssuranceMetrics = async (context: AuthContext, user: 
   let funnel;
   if (args.platformId) {
     // Expired still deployed: flagged expired (removal never confirmed), or still live while the indicator is revoked or past valid_until.
-    const [disseminated, deployed, validated, hit, flaggedExpired, liveOfExpired] = await Promise.all([
+    const [disseminated, deployed, validated, hit, flaggedExpired] = await Promise.all([
       countDeployments(context, user, baseDeploymentFilters),
       countDeployments(context, user, [...baseDeploymentFilters, liveFilter]),
       countDeployments(context, user, [...baseDeploymentFilters, provenFilter]),
       countDeployments(context, user, [...baseDeploymentFilters, { key: ['hit_count'], values: [0], operator: 'gt' }]),
       countDeployments(context, user, [...baseDeploymentFilters, { key: ['deployment_status'], values: [DEPLOYMENT_STATUS_EXPIRED] }]),
-      countLiveDeploymentsOfExpiredIndicators(context, user, [...baseDeploymentFilters, liveFilter], now),
     ]);
+    const liveOfExpired = await countLiveDeploymentsOfExpiredIndicators(context, user, args.platformId, [...baseDeploymentFilters, liveFilter], deployed, now);
     funnel = { created: disseminated, disseminated, deployed, validated, hit, expired_still_deployed: flaggedExpired + liveOfExpired };
   } else {
     const createdDates = dateRangeFilters('created_at', args.startDate, args.endDate);
