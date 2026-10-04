@@ -41,6 +41,8 @@ The first day the preview matches objects of the platform, each user sees one ba
 
 Contributing requires an administrator to accept the consent, which lists what is shared every hour, what never leaves the platform and what contributing unlocks, and lets the administrator choose the sector, the region, the object types and the excluded markings before anything is sent. OpenCTI records the consent with the administrator and the date. The contribution starts at that moment: no activity recorded before it is ever sent.
 
+The consent has a version. When an upgrade of OpenCTI changes its text, the contribution pauses: nothing is sent and the platform reads the preview until an administrator accepts the new version, which "Settings > Filigran Experience" asks for with the "Consent to renew - preview" status and the "Review the new consent" button. Nothing prepared under the former version is sent once the new one is accepted.
+
 | Dark theme | Light theme |
 |:-----------|:------------|
 | ![Threat Pulse consent listing what is shared every hour, what never leaves the platform and what contributing unlocks](assets/threat-pulse-consent-dialog.png) | ![Threat Pulse consent in the light theme](assets/threat-pulse-consent-dialog-light.png) |

@@ -431,14 +431,19 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
     });
   };
 
+  // The contribution is enabled only under the current consent version: after an upgrade that changed the consent text,
+  // nothing is sent until an administrator accepts the new version.
+  const consentToRenew = settings.mode === 'contribute_and_read' && !settings.enabled;
   // A contributing platform reads the preview until XTM Hub accepted a contribution, and again once its contributions
   // lapsed: XTM Hub says which of the two, and its lapse wins over a local access that has not caught up yet.
-  const contributing = settings.mode === 'contribute_and_read' && (settings.access === 'preview' || settings.access === 'full');
+  const contributing = settings.mode === 'contribute_and_read' && !consentToRenew && (settings.access === 'preview' || settings.access === 'full');
   const lapsed = contributing && settings.network.contribution_status === 'lapsed';
   const pending = contributing && settings.access === 'preview' && !lapsed;
   let statusChip = <Chip label={t_i18n('Off')} severity="neutral" />;
   if (settings.access === 'not_connected') {
     statusChip = <Chip label={t_i18n('Not connected')} severity="neutral" />;
+  } else if (consentToRenew) {
+    statusChip = <Chip label={t_i18n('Consent to renew - preview')} severity="medium" />;
   } else if (lapsed) {
     statusChip = <Chip label={t_i18n('Contribution lapsed - preview')} severity="medium" />;
   } else if (settings.access === 'full') {
@@ -484,7 +489,7 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
       )}
       {!settings.enabled && (
         <Button onClick={() => setOpenConsent(true)} disabled={!settings.hub_registered || configuring} data-testid="threat-pulse-enable-button">
-          {t_i18n('Contribute and unlock the full experience')}
+          {consentToRenew ? t_i18n('Review the new consent') : t_i18n('Contribute and unlock the full experience')}
         </Button>
       )}
     </>
@@ -512,6 +517,11 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
   const pitch = (
     <>
       <ExperienceHeadline>{t_i18n('The open network early warning system')}</ExperienceHeadline>
+      {consentToRenew && (
+        <Alert severity="warning" variant="outlined" data-testid="threat-pulse-consent-renewal">
+          {t_i18n('The Threat Pulse consent changed since this platform accepted it: nothing is sent until an administrator accepts the new version, and the preview is shown meanwhile.')}
+        </Alert>
+      )}
       <Text variant="content-compact" style={secondary}>
         {t_i18n('The preview shows how widespread your objects are across the community and whether they rise, without sending anything. Contribute keyed hashes and counts, never values, to unlock network first seen, platforms ranges, sector trends, alerts and benchmarks.')}
       </Text>

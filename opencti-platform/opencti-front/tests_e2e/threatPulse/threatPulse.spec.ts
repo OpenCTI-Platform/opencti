@@ -532,6 +532,17 @@ test.describe('Threat Pulse documentation images', () => {
         network: { reachable: true, k_threshold: 5, retention_months: 13, contributors_bucket: '250+', read_access: true, last_contribution_day: '2026-10-03', contribution_status: 'active', read_access_until: '2026-10-17', contribution_grace_days: 14 },
       }, 'threat-pulse-total-records'],
       ['off', { mode: 'off', access: 'off' }, 'threat-pulse-preview-button'],
+      // An upgrade changed the consent text since the administrator accepted it
+      ['consent-renewal', {
+        mode: 'contribute_and_read',
+        access: 'preview',
+        enabled: false,
+        consent_accepted_version: '2025-09-1',
+        consent_date: '2025-09-01T09:00:00.000Z',
+        consent_user_name: 'admin',
+        sector_bucket: 'finance',
+        region_bucket: 'europe',
+      }, 'threat-pulse-consent-renewal'],
     ];
     for (const theme of [undefined, LIGHT_THEME]) {
       for (const [state, overrides, loaded] of settingsStates) {

@@ -208,6 +208,16 @@ describe('ThreatPulseSettings', () => {
     expect(screen.queryByText('Contributing')).toBeNull();
   });
 
+  it('should ask for the new consent when an upgrade changed it, and send nothing meanwhile', async () => {
+    renderSettings({ mode: 'contribute_and_read', access: 'preview', enabled: false, consent_accepted_version: '2025-01-1', consent_date: '2025-01-10T09:00:00.000Z' });
+    expect(await screen.findByTestId('threat-pulse-consent-renewal')).toBeDefined();
+    expect(screen.getByText('Consent to renew - preview')).toBeDefined();
+    expect(screen.queryByText('First contribution pending - preview')).toBeNull();
+    expect(screen.queryByTestId('threat-pulse-configuration')).toBeNull();
+    fireEvent.click(screen.getByText('Review the new consent'));
+    expect(await screen.findByTestId('threat-pulse-consent-dialog')).toBeDefined();
+  });
+
   it('should say that the full experience waits for the first accepted contribution, never that it lapsed', async () => {
     renderSettings({ ...LAPSED, network: { ...SETTINGS.network, contribution_status: 'none', last_contribution_day: null } });
     expect(await screen.findByTestId('threat-pulse-pending')).toBeDefined();
