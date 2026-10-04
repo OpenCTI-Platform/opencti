@@ -1,6 +1,8 @@
 import React, { Suspense, useMemo } from 'react';
 import { graphql, PreloadedQuery, useLazyLoadQuery, usePreloadedQuery } from 'react-relay';
 import { Link, useNavigate } from 'react-router';
+import { useTheme } from '@mui/material/styles';
+import { Text } from '@filigran/design-system';
 import Card from '../../../../components/common/card/Card';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
@@ -70,6 +72,7 @@ interface ContainerTimelineStripLanesProps {
 
 const ContainerTimelineStripLanes = ({ containerId, enabledLanes, total, boundaries, anchors, grouping, timelinePath }: ContainerTimelineStripLanesProps) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
   const navigate = useNavigate();
   const apiLanes = effectiveLanes([], enabledLanes);
   const { containerTimeline } = useLazyLoadQuery<ContainerTimelineStripEventsQuery>(
@@ -80,11 +83,11 @@ const ContainerTimelineStripLanes = ({ containerId, enabledLanes, total, boundar
   const events = useMemo(() => (containerTimeline?.edges ?? []).map((edge) => edge.node).reverse(), [containerTimeline]);
   const lanes = TIMELINE_LANES.filter((lane) => (enabledLanes.length > 0 ? enabledLanes : TIMELINE_LANES).includes(lane) && events.some((e) => e.lane === lane));
   if (events.length === 0) {
-    return <div style={{ marginTop: 8, fontSize: 12 }}>{t_i18n('This timeline has no event yet')}</div>;
+    return <Text variant="content-caption" as="div" style={{ marginTop: theme.spacing(1) }}>{t_i18n('This timeline has no event yet')}</Text>;
   }
   const extent = computeTimelineExtent(events, boundaries);
   return (
-    <div style={{ marginTop: 8 }}>
+    <div style={{ marginTop: theme.spacing(1) }}>
       <ContainerTimelineLanes
         events={events}
         lanes={lanes}
@@ -107,6 +110,7 @@ interface ContainerTimelineStripContentProps {
 
 const ContainerTimelineStripContent = ({ queryRef, containerId, timelinePath }: ContainerTimelineStripContentProps) => {
   const { t_i18n, n } = useFormatter();
+  const theme = useTheme();
   const { containerTimelineSummary: summary } = usePreloadedQuery<ContainerTimelineStripQuery>(containerTimelineStripQuery, queryRef);
   const boundaries = [...TIMELINE_ANCHOR_KEYS.map((key) => summary?.anchors?.[key]), summary?.first_event_time, summary?.last_event_time];
   return (
@@ -125,11 +129,11 @@ const ContainerTimelineStripContent = ({ queryRef, containerId, timelinePath }: 
           />
         </Suspense>
       ) : (
-        <div style={{ marginTop: 8, fontSize: 12 }}>{t_i18n('This timeline has no event yet')}</div>
+        <Text variant="content-caption" as="div" style={{ marginTop: theme.spacing(1) }}>{t_i18n('This timeline has no event yet')}</Text>
       )}
-      <div style={{ marginTop: 6, fontSize: 12 }}>
+      <Text variant="content-caption" as="div" style={{ marginTop: theme.spacing(0.75) }}>
         {t_i18n('{count} events', { values: { count: n(summary?.total ?? 0) } })}
-      </div>
+      </Text>
     </div>
   );
 };

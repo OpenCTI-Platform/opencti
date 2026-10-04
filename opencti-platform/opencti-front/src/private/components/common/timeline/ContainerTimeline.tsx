@@ -2,6 +2,8 @@ import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } fr
 import { graphql, PreloadedQuery, useMutation, usePaginationFragment, usePreloadedQuery, useSubscription } from 'react-relay';
 import { useSearchParams } from 'react-router';
 import type { GraphQLSubscriptionConfig } from 'relay-runtime';
+import { useTheme } from '@mui/material/styles';
+import { Text } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Card from '../../../../components/common/card/Card';
 import Alert from '../../../../components/Alert';
@@ -298,6 +300,7 @@ const ContainerTimelineEventsView = ({
   actions,
 }: ContainerTimelineEventsViewProps) => {
   const { t_i18n, n } = useFormatter();
+  const theme = useTheme();
   const queryData = usePreloadedQuery<ContainerTimelineEventsQuery>(containerTimelineEventsQuery, queryRef);
   const { data, hasNext, loadNext, isLoadingNext } = usePaginationFragment<ContainerTimelineEventsRefetchQuery, ContainerTimelineEvents_data$key>(
     containerTimelineEventsFragment,
@@ -367,10 +370,10 @@ const ContainerTimelineEventsView = ({
               onToggleHide={(event) => actions.toggleHide(event as TimelineEventDetails)}
             />
           )}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12 }}>
-            <span style={{ fontSize: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1.5), marginTop: theme.spacing(1.5) }}>
+            <Text variant="content-caption" as="span">
               {t_i18n('{shown} of {total} events', { values: { shown: n(events.length), total: n(total) } })}
-            </span>
+            </Text>
             {hasNext && (
               <Button variant="secondary" size="small" disabled={isLoadingNext} onClick={() => loadNext(EVENTS_PAGE_SIZE)} data-testid="timeline-load-more">
                 {t_i18n('Show earlier events')}
@@ -406,6 +409,7 @@ interface ContainerTimelineContentProps {
 
 const ContainerTimelineContent = ({ containerId, containerName, summaryRef, reloadSummary }: ContainerTimelineContentProps) => {
   const { t_i18n, n, nsdt } = useFormatter();
+  const theme = useTheme();
   const { containerTimelineSummary: summary } = usePreloadedQuery<ContainerTimelineSummaryQuery>(containerTimelineSummaryQuery, summaryRef);
   const [searchParams, setSearchParams] = useSearchParams();
   const settings = summary?.settings;
@@ -576,12 +580,12 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
           updateState({ view: 'lanes', domain: centered });
         }}
       />
-      <div style={{ marginTop: 8, fontSize: 12 }} data-testid="timeline-status">
+      <Text variant="content-caption" as="div" style={{ marginTop: theme.spacing(1) }} data-testid="timeline-status">
         {t_i18n('{count} events', { values: { count: n(summary.total) } })}
         {summary.generated_at && ` - ${t_i18n('Last update')} ${nsdt(summary.generated_at)}`}
-      </div>
+      </Text>
       {summary.truncated && (
-        <div style={{ marginTop: 12 }}>
+        <div style={{ marginTop: theme.spacing(1.5) }}>
           <Alert
             severity="info"
             content={t_i18n('This case is very large: its timeline is built from a bounded number of objects and history entries, so some events may be missing. Administrators can raise these limits in the timeline manager configuration.')}

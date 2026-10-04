@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTheme } from '@mui/material/styles';
 import {
   Badge,
   ButtonGroup,
@@ -80,8 +81,6 @@ interface ContainerTimelineToolbarProps {
   visibleDomain?: TimelineDomain | null;
 }
 
-const ICON = { fontSize: 18 };
-
 const WithTooltip = ({ title, children }: { title: string; children: React.ReactElement }) => (
   <Tooltip>
     <TooltipTrigger asChild>{children}</TooltipTrigger>
@@ -106,6 +105,7 @@ const ContainerTimelineToolbar = ({
   visibleDomain,
 }: ContainerTimelineToolbarProps) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
   const colors = useTimelineColors();
   const visibleSpan = visibleDomain ? describeTimelineSpan(visibleDomain) : null;
   const lanes = TIMELINE_LANES.filter((lane) => enabledLanes.includes(lane));
@@ -123,8 +123,8 @@ const ContainerTimelineToolbar = ({
   const sourceValue = state.sources.length === 1 ? state.sources[0] : 'all';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 12 }} data-testid="timeline-toolbar">
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1.25), marginBottom: theme.spacing(1.5) }} data-testid="timeline-toolbar">
+      <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>
         <ButtonGroup
           size="sm"
           value={state.view}
@@ -132,10 +132,10 @@ const ContainerTimelineToolbar = ({
           aria-label={t_i18n('Timeline view')}
         >
           <WithTooltip title={t_i18n('Lanes view')}>
-            <ButtonGroupItem value="lanes" aria-label={t_i18n('Lanes view')} icon={<ViewTimelineOutlined sx={ICON} />} />
+            <ButtonGroupItem value="lanes" aria-label={t_i18n('Lanes view')} icon={<ViewTimelineOutlined fontSize="small" />} />
           </WithTooltip>
           <WithTooltip title={t_i18n('List view')}>
-            <ButtonGroupItem value="list" aria-label={t_i18n('List view')} icon={<ViewListOutlined sx={ICON} />} />
+            <ButtonGroupItem value="list" aria-label={t_i18n('List view')} icon={<ViewListOutlined fontSize="small" />} />
           </WithTooltip>
         </ButtonGroup>
         <Select value={state.zoom} onValueChange={(value) => onChange({ zoom: value as TimelineZoomWindow, domain: null })}>
@@ -151,13 +151,13 @@ const ContainerTimelineToolbar = ({
         {state.view === 'lanes' && (
           <>
             <WithTooltip title={t_i18n('Zoom in')}>
-              <IconButton priority="tertiary" size="sm" aria-label={t_i18n('Zoom in')} icon={<ZoomInOutlined sx={ICON} />} onClick={() => onZoom(0.6)} />
+              <IconButton priority="tertiary" size="sm" aria-label={t_i18n('Zoom in')} icon={<ZoomInOutlined fontSize="small" />} onClick={() => onZoom(0.6)} />
             </WithTooltip>
             <WithTooltip title={t_i18n('Zoom out')}>
-              <IconButton priority="tertiary" size="sm" aria-label={t_i18n('Zoom out')} icon={<ZoomOutOutlined sx={ICON} />} onClick={() => onZoom(1 / 0.6)} />
+              <IconButton priority="tertiary" size="sm" aria-label={t_i18n('Zoom out')} icon={<ZoomOutOutlined fontSize="small" />} onClick={() => onZoom(1 / 0.6)} />
             </WithTooltip>
             <WithTooltip title={t_i18n('Fit the timeline')}>
-              <IconButton priority="tertiary" size="sm" aria-label={t_i18n('Fit the timeline')} icon={<FitScreenOutlined sx={ICON} />} onClick={onFit} />
+              <IconButton priority="tertiary" size="sm" aria-label={t_i18n('Fit the timeline')} icon={<FitScreenOutlined fontSize="small" />} onClick={onFit} />
             </WithTooltip>
             {visibleSpan && (
               <WithTooltip title={t_i18n('Visible period')}>
@@ -192,7 +192,7 @@ const ContainerTimelineToolbar = ({
           <Button
             variant="tertiary"
             size="small"
-            startIcon={<SyncOutlined sx={ICON} />}
+            startIcon={<SyncOutlined fontSize="small" />}
             onClick={onRefresh}
             aria-label={liveUpdates > 0 ? t_i18n('{count} new timeline updates, refresh', { values: { count: liveUpdates } }) : t_i18n('Refresh')}
             data-testid="timeline-refresh"
@@ -201,13 +201,13 @@ const ContainerTimelineToolbar = ({
           </Button>
         </Badge>
         {canEdit && (
-          <Button variant="primary" size="small" startIcon={<AddOutlined sx={ICON} />} onClick={onAdd} data-testid="timeline-add-milestone">
+          <Button variant="primary" size="small" startIcon={<AddOutlined fontSize="small" />} onClick={onAdd} data-testid="timeline-add-milestone">
             {t_i18n('Add an event')}
           </Button>
         )}
         <Menu>
           <MenuTrigger asChild>
-            <IconButton priority="secondary" size="sm" aria-label={t_i18n('Export the timeline')} icon={<GetAppOutlined sx={ICON} />} data-testid="timeline-export" />
+            <IconButton priority="secondary" size="sm" aria-label={t_i18n('Export the timeline')} icon={<GetAppOutlined fontSize="small" />} data-testid="timeline-export" />
           </MenuTrigger>
           <MenuContent align="end">
             <MenuLabel>{t_i18n('Export the timeline')}</MenuLabel>
@@ -220,23 +220,23 @@ const ContainerTimelineToolbar = ({
         {canEdit && (
           <Menu>
             <MenuTrigger asChild>
-              <IconButton priority="secondary" size="sm" aria-label={t_i18n('More actions')} icon={<MoreVertOutlined sx={ICON} />} data-testid="timeline-more-actions" />
+              <IconButton priority="secondary" size="sm" aria-label={t_i18n('More actions')} icon={<MoreVertOutlined fontSize="small" />} data-testid="timeline-more-actions" />
             </MenuTrigger>
             <MenuContent align="end">
               <MenuItem onSelect={onOpenSettings} data-testid="timeline-open-settings">
-                <SettingsOutlined sx={ICON} />
+                <SettingsOutlined fontSize="small" />
                 {t_i18n('Timeline settings')}
               </MenuItem>
               <MenuItem onSelect={onRegenerate} disabled={regenerating}>
-                <AutorenewOutlined sx={ICON} />
+                <AutorenewOutlined fontSize="small" />
                 {t_i18n('Regenerate the timeline')}
               </MenuItem>
             </MenuContent>
           </Menu>
         )}
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-        <div role="group" aria-label={t_i18n('Lanes')} style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>
+        <div role="group" aria-label={t_i18n('Lanes')} style={{ display: 'flex', gap: theme.spacing(0.75), flexWrap: 'wrap' }}>
           {lanes.map((lane) => {
             const active = selectedLanes.includes(lane);
             return (
@@ -262,7 +262,7 @@ const ContainerTimelineToolbar = ({
         </div>
         <Menu>
           <MenuTrigger asChild>
-            <Button variant="tertiary" size="small" startIcon={<FilterListOutlined sx={ICON} />}>
+            <Button variant="tertiary" size="small" startIcon={<FilterListOutlined fontSize="small" />}>
               {state.kinds.length > 0 ? t_i18n('Kinds ({count})', { values: { count: state.kinds.length } }) : t_i18n('All kinds')}
             </Button>
           </MenuTrigger>

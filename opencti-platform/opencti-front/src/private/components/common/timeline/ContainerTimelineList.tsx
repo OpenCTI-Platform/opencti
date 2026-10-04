@@ -95,16 +95,16 @@ const ContainerTimelineList = ({ events, grouping, selectedId, canEdit, onSelect
       aria-describedby="timeline-list-help"
       data-testid="timeline-list"
     >
-      <p id="timeline-list-help" style={{ color: colors.textSecondary, margin: '0 0 8px 0', fontSize: 12 }}>
+      <Text variant="content-caption" as="p" id="timeline-list-help" style={{ color: colors.textSecondary, margin: theme.spacing(0, 0, 1, 0) }}>
         {canEdit
           ? t_i18n('Use the up and down arrows to move between events, Enter to open, P to pin and H to hide')
           : t_i18n('Use the up and down arrows to move between events and Enter to open')}
-      </p>
+      </Text>
       {buckets.map((bucket) => (
         <section key={bucket.key} aria-label={bucketTitle(bucket.start, bucket.end)} role="listitem">
-          <h3 style={{ fontSize: 13, fontWeight: 600, margin: '16px 0 6px 0', color: colors.textSecondary }}>
+          <Text variant="content-compact-bold" as="h3" style={{ margin: theme.spacing(2, 0, 0.75, 0), color: colors.textSecondary }}>
             {bucketTitle(bucket.start, bucket.end)}
-          </h3>
+          </Text>
           <div role="list">
             {bucket.events.map((event) => {
               const lane = event.lane as TimelineLane;
@@ -139,17 +139,17 @@ const ContainerTimelineList = ({ events, grouping, selectedId, canEdit, onSelect
                       opacity: event.hidden ? 0.55 : 1,
                     }}
                   >
-                    <div style={{ minWidth: 150, color: colors.textSecondary, fontSize: 12 }}>
+                    <Text variant="content-caption" as="div" style={{ minWidth: 150, color: colors.textSecondary }}>
                       <div>{fldt(event.event_time)}</div>
                       {event.event_end_time && <div>{`\u2192 ${fldt(event.event_end_time)}`}</div>}
-                    </div>
+                    </Text>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                        <span style={{ fontWeight: 600 }}>{event.title}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(0.75), flexWrap: 'wrap' }}>
+                        <Text variant="content-base-bold" as="span">{event.title}</Text>
                         {event.pinned && <PushPinOutlined fontSize="inherit" titleAccess={t_i18n('Pinned')} />}
                         {event.hidden && <VisibilityOffOutlined fontSize="inherit" titleAccess={t_i18n('Hidden')} />}
                       </div>
-                      <div style={{ display: 'flex', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', gap: theme.spacing(0.75), marginTop: theme.spacing(0.5), flexWrap: 'wrap' }}>
                         <Chip label={t_i18n(TIMELINE_LANE_LABELS[lane] ?? lane)} color={colors.lanes[lane]} />
                         <Chip label={t_i18n(TIMELINE_KIND_LABELS[event.kind] ?? event.kind)} />
                         <TimelineSourceStateChip state={event.source_state} />
@@ -159,9 +159,11 @@ const ContainerTimelineList = ({ events, grouping, selectedId, canEdit, onSelect
                         {event.source === 'manual' && <Chip label={t_i18n('Milestone')} severity="info" />}
                       </div>
                       {event.element_name && (
-                        <div style={{ marginTop: 4, fontSize: 12, color: colors.textSecondary }}>{event.element_name}</div>
+                        <Text variant="content-caption" as="div" style={{ marginTop: theme.spacing(0.5), color: colors.textSecondary }}>{event.element_name}</Text>
                       )}
-                      {event.annotation && <div style={{ marginTop: 4, fontSize: 12, fontStyle: 'italic' }}>{event.annotation}</div>}
+                      {event.annotation && (
+                        <Text variant="content-caption" as="div" style={{ marginTop: theme.spacing(0.5), fontStyle: 'italic' }}>{event.annotation}</Text>
+                      )}
                     </div>
                   </div>
                 </div>

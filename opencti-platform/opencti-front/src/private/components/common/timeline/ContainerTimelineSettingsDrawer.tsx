@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Checkbox, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { useTheme } from '@mui/material/styles';
+import { Checkbox, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, Text } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Drawer from '@components/common/drawer/Drawer';
 import { useFormatter } from '../../../../components/i18n';
@@ -45,16 +46,18 @@ const toggle = (values: readonly string[], value: string) => (values.includes(va
 
 const SectionTitle = ({ children }: { children: React.ReactNode }) => {
   const colors = useTimelineColors();
+  const theme = useTheme();
   return (
-    <div style={{ fontSize: 12, fontWeight: 600, color: colors.textSecondary, textTransform: 'uppercase', marginBottom: 6 }}>
+    <Text variant="content-compact-bold" as="div" style={{ color: colors.textSecondary, marginBottom: theme.spacing(0.75) }}>
       {children}
-    </div>
+    </Text>
   );
 };
 
 /** Per-container timeline settings, shared by every user of the case timeline. */
 const ContainerTimelineSettingsDrawer = ({ containerId, open, settings, onClose, onSaved }: ContainerTimelineSettingsDrawerProps) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme();
   const [values, setValues] = useState<TimelineSettingsValues>(settings);
   const [saving, setSaving] = useState(false);
   const [commit] = useApiMutation<ContainerTimelineMutationsSettingsMutation>(timelineSettingsUpdateMutation);
@@ -89,9 +92,9 @@ const ContainerTimelineSettingsDrawer = ({ containerId, open, settings, onClose,
   return (
     <Drawer title={t_i18n('Timeline settings')} open={open} onClose={onClose}>
       <div data-testid="timeline-settings-drawer">
-        <div style={{ marginBottom: 20 }}>{t_i18n('These settings apply to every user of this case timeline.')}</div>
+        <Text variant="content-base" as="div" style={{ marginBottom: theme.spacing(2.5) }}>{t_i18n('These settings apply to every user of this case timeline.')}</Text>
         <SectionTitle>{t_i18n('Enabled lanes')}</SectionTitle>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: theme.spacing(0.75) }}>
           {TIMELINE_LANES.map((lane) => (
             <Checkbox
               key={lane}
@@ -103,7 +106,7 @@ const ContainerTimelineSettingsDrawer = ({ containerId, open, settings, onClose,
             />
           ))}
         </div>
-        <div style={{ display: 'flex', gap: 16, marginTop: 20 }}>
+        <div style={{ display: 'flex', gap: theme.spacing(2), marginTop: theme.spacing(2.5) }}>
           <div style={{ flex: 1 }}>
             <Select value={values.default_grouping} onValueChange={(value) => setValues({ ...values, default_grouping: value })}>
               <SelectLabel>{t_i18n('Default grouping')}</SelectLabel>
@@ -131,10 +134,10 @@ const ContainerTimelineSettingsDrawer = ({ containerId, open, settings, onClose,
             </Select>
           </div>
         </div>
-        <div style={{ marginTop: 20 }}>
+        <div style={{ marginTop: theme.spacing(2.5) }}>
           <SectionTitle>{t_i18n('Kinds hidden by default')}</SectionTitle>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: theme.spacing(0.75) }}>
           {TIMELINE_KINDS.map((kind) => (
             <Checkbox
               key={kind}

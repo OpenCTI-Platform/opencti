@@ -74,8 +74,6 @@ interface ContainerTimelineEventDrawerProps {
   onCenter: (event: TimelineEventDetails) => void;
 }
 
-const ICON = { fontSize: 18 };
-
 /** One item of the metadata grid: a secondary caption over its value. */
 const MetadataItem = ({ label, children }: { label: string; children: React.ReactNode }) => {
   const colors = useTimelineColors();
@@ -140,27 +138,27 @@ const ContainerTimelineEventDrawer = ({
   const headerActions = (
     <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
       {canEdit && event.editable && (
-        <Button variant="secondary" size="small" startIcon={<EditOutlined sx={ICON} />} onClick={() => onEdit(event)} data-testid="timeline-event-edit">
+        <Button variant="secondary" size="small" startIcon={<EditOutlined fontSize="small" />} onClick={() => onEdit(event)} data-testid="timeline-event-edit">
           {t_i18n('Edit')}
         </Button>
       )}
       {canContribute && (
-        <Button variant="secondary" size="small" startIcon={<PushPinOutlined sx={ICON} />} onClick={() => onTogglePin(event)} data-testid="timeline-event-pin">
+        <Button variant="secondary" size="small" startIcon={<PushPinOutlined fontSize="small" />} onClick={() => onTogglePin(event)} data-testid="timeline-event-pin">
           {event.pinned ? t_i18n('Unpin') : t_i18n('Pin')}
         </Button>
       )}
       <Menu>
         <MenuTrigger asChild>
-          <IconButton priority="tertiary" size="sm" aria-label={t_i18n('More actions')} icon={<MoreVertOutlined sx={ICON} />} data-testid="timeline-event-more" />
+          <IconButton priority="tertiary" size="sm" aria-label={t_i18n('More actions')} icon={<MoreVertOutlined fontSize="small" />} data-testid="timeline-event-more" />
         </MenuTrigger>
         <MenuContent align="end">
           <MenuItem onSelect={() => onCenter(event)}>
-            <CenterFocusStrongOutlined sx={ICON} />
+            <CenterFocusStrongOutlined fontSize="small" />
             {t_i18n('Center on the timeline')}
           </MenuItem>
           {canContribute && (
             <MenuItem onSelect={() => onToggleHide(event)} data-testid="timeline-event-hide">
-              {event.hidden ? <VisibilityOutlined sx={ICON} /> : <VisibilityOffOutlined sx={ICON} />}
+              {event.hidden ? <VisibilityOutlined fontSize="small" /> : <VisibilityOffOutlined fontSize="small" />}
               {event.hidden ? t_i18n('Show') : t_i18n('Hide')}
             </MenuItem>
           )}
@@ -168,7 +166,7 @@ const ContainerTimelineEventDrawer = ({
             <>
               <MenuSeparator />
               <MenuItem onSelect={() => setConfirmDelete(true)} data-testid="timeline-event-delete">
-                <DeleteOutlined sx={ICON} />
+                <DeleteOutlined fontSize="small" />
                 {t_i18n('Delete')}
               </MenuItem>
             </>
@@ -297,7 +295,7 @@ const ContainerTimelineEventDrawer = ({
           )}
           {canContribute && !annotating && (
             <div>
-              <Button variant="tertiary" size="small" startIcon={<EditOutlined sx={ICON} />} onClick={() => setAnnotating(true)} data-testid="timeline-event-annotate">
+              <Button variant="tertiary" size="small" startIcon={<EditOutlined fontSize="small" />} onClick={() => setAnnotating(true)} data-testid="timeline-event-annotate">
                 {event.annotation ? t_i18n('Edit the annotation') : t_i18n('Add an annotation')}
               </Button>
             </div>
