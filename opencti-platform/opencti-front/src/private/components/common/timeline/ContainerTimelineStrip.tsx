@@ -155,7 +155,7 @@ const ContainerTimelineStripEvents = ({ containerId, enabledLanes, hiddenKinds, 
           anchors={anchors}
           compact={true}
           onSelect={(eventId) => navigate(`${timelinePath}?event=${encodeURIComponent(eventId)}`)}
-          ariaLabel={t_i18n('Overview of the timeline, {count} events', { values: { count: total } })}
+          ariaLabel={t_i18n('Overview of the timeline, {count, plural, one {# event} other {# events}}', { values: { count: total } })}
         />
       )}
     </>

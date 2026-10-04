@@ -387,7 +387,7 @@ const ContainerTimelineEventsView = ({
               onFit={() => onDomainChange(null)}
               onSelect={onSelect}
               onClusterSelect={(clusterDomain) => onDomainChange(zoomDomain(clusterDomain, 1.2))}
-              ariaLabel={t_i18n('Timeline of {count} events', { values: { count: events.length } })}
+              ariaLabel={t_i18n('Timeline of {count, plural, one {# event} other {# events}}', { values: { count: events.length } })}
             />
           ) : (
             <ContainerTimelineList
@@ -438,7 +438,7 @@ interface ContainerTimelineContentProps {
 }
 
 const ContainerTimelineContent = ({ containerId, containerName, summaryRef, reloadSummary }: ContainerTimelineContentProps) => {
-  const { t_i18n, n, nsdt } = useFormatter();
+  const { t_i18n, nsdt } = useFormatter();
   const theme = useTheme();
   const { containerTimelineSummary: summary } = usePreloadedQuery<ContainerTimelineSummaryQuery>(containerTimelineSummaryQuery, summaryRef);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -611,7 +611,7 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
         }}
       />
       <Text variant="content-caption" as="div" style={{ marginTop: theme.spacing(1) }} data-testid="timeline-status">
-        {t_i18n('{count} events', { values: { count: n(viewTotal ?? summary.total) } })}
+        {t_i18n('{count, plural, one {# event} other {# events}}', { values: { count: viewTotal ?? summary.total } })}
         {summary.generated_at && ` - ${t_i18n('Last update')} ${nsdt(summary.generated_at)}`}
       </Text>
       {summary.truncated && (

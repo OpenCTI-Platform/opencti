@@ -114,7 +114,7 @@ test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, r
     await expect(list).toContainText(taskCreated);
     await expect(list).not.toContainText(malwareName);
     // The status counts the events of the filtered view, not the whole timeline
-    await expect(page.getByTestId('timeline-status')).toHaveText(/^1 events/);
+    await expect(page.getByTestId('timeline-status')).toHaveText(/^1 event( - |$)/);
     await page.getByRole('switch', { name: 'Pinned only' }).click();
     await expect(list).toContainText(malwareName);
     // endregion

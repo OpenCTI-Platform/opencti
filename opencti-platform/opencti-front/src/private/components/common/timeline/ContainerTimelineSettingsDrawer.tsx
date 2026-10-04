@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router';
 import { useTheme } from '@mui/material/styles';
 import { Checkbox, Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue, Text } from '@filigran/design-system';
 import Button from '@common/button/Button';
@@ -26,6 +27,7 @@ import {
   TIMELINE_ZOOM_WINDOWS,
 } from './timelineUtils';
 import useTimelineColors from './useTimelineColors';
+import { TIMELINE_DOCUMENTATION_URL } from './ContainerTimelineStates';
 
 export interface TimelineSettingsValues {
   enabled_lanes: readonly string[];
@@ -58,6 +60,8 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => {
 const ContainerTimelineSettingsDrawer = ({ containerId, open, settings, onClose, onSaved }: ContainerTimelineSettingsDrawerProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
+  const colors = useTimelineColors();
+  const helpStyle = { color: colors.textSecondary, margin: theme.spacing(0.75, 0, 1) };
   const [values, setValues] = useState<TimelineSettingsValues>(settings);
   const [saving, setSaving] = useState(false);
   const [commit] = useApiMutation<ContainerTimelineMutationsSettingsMutation>(timelineSettingsUpdateMutation);
@@ -94,6 +98,7 @@ const ContainerTimelineSettingsDrawer = ({ containerId, open, settings, onClose,
       <div data-testid="timeline-settings-drawer">
         <Text variant="content-base" as="div" style={{ marginBottom: theme.spacing(2.5) }}>{t_i18n('These settings apply to every user of this case timeline.')}</Text>
         <SectionTitle>{t_i18n('Enabled lanes')}</SectionTitle>
+        <Text variant="content-caption" as="p" style={helpStyle}>{t_i18n('Lanes switched off are hidden for every reader of this case.')}</Text>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: theme.spacing(0.75) }}>
           {TIMELINE_LANES.map((lane) => (
             <Checkbox
@@ -110,7 +115,7 @@ const ContainerTimelineSettingsDrawer = ({ containerId, open, settings, onClose,
           <div style={{ flex: 1 }}>
             <Select value={values.default_grouping} onValueChange={(value) => setValues({ ...values, default_grouping: value })}>
               <SelectLabel>{t_i18n('Default grouping')}</SelectLabel>
-              <SelectTrigger aria-label={t_i18n('Default grouping')}>
+              <SelectTrigger aria-label={t_i18n('Default grouping')} aria-describedby="timeline-settings-grouping-help">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent aria-label={t_i18n('Default grouping')}>
@@ -119,11 +124,14 @@ const ContainerTimelineSettingsDrawer = ({ containerId, open, settings, onClose,
                 ))}
               </SelectContent>
             </Select>
+            <Text id="timeline-settings-grouping-help" variant="content-caption" as="p" style={helpStyle}>
+              {t_i18n('How events are grouped when the timeline opens, for every user of this case. Each reader can still change the grouping from the toolbar.')}
+            </Text>
           </div>
           <div style={{ flex: 1 }}>
             <Select value={values.default_zoom_window} onValueChange={(value) => setValues({ ...values, default_zoom_window: value })}>
               <SelectLabel>{t_i18n('Default zoom window')}</SelectLabel>
-              <SelectTrigger aria-label={t_i18n('Default zoom window')}>
+              <SelectTrigger aria-label={t_i18n('Default zoom window')} aria-describedby="timeline-settings-zoom-help">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent aria-label={t_i18n('Default zoom window')}>
@@ -132,10 +140,16 @@ const ContainerTimelineSettingsDrawer = ({ containerId, open, settings, onClose,
                 ))}
               </SelectContent>
             </Select>
+            <Text id="timeline-settings-zoom-help" variant="content-caption" as="p" style={helpStyle}>
+              {t_i18n('The period the lanes view shows when it opens, for every user of this case. Each reader can still choose another period, zoom or pan from the toolbar.')}
+            </Text>
           </div>
         </div>
         <div style={{ marginTop: theme.spacing(2.5) }}>
           <SectionTitle>{t_i18n('Kinds hidden by default')}</SectionTitle>
+          <Text variant="content-caption" as="p" style={helpStyle}>
+            {t_i18n('Hidden kinds are left out of the default view of every reader; choosing them in the kinds filter shows them again.')}
+          </Text>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: theme.spacing(0.75) }}>
           {TIMELINE_KINDS.map((kind) => (
@@ -149,6 +163,11 @@ const ContainerTimelineSettingsDrawer = ({ containerId, open, settings, onClose,
             />
           ))}
         </div>
+        <Text variant="content-caption" as="div" style={{ marginTop: theme.spacing(2) }}>
+          <Link to={`${TIMELINE_DOCUMENTATION_URL}#timeline-settings`} target="_blank" rel="noopener noreferrer" data-testid="timeline-settings-learn-more">
+            {t_i18n('Learn more')}
+          </Link>
+        </Text>
         <FormButtonContainer>
           <Button variant="secondary" onClick={onClose} disabled={saving}>{t_i18n('Cancel')}</Button>
           <Button onClick={save} disabled={saving || values.enabled_lanes.length === 0} data-testid="timeline-settings-save">{t_i18n('Save')}</Button>

@@ -1,4 +1,6 @@
 import React from 'react';
+import { Link } from 'react-router';
+import { Text } from '@filigran/design-system';
 import type { PayloadError } from 'relay-runtime';
 import { Field, Form, Formik, FormikHelpers } from 'formik';
 import * as Yup from 'yup';
@@ -25,6 +27,7 @@ import type {
 } from './__generated__/ContainerTimelineMutationsAddMutation.graphql';
 import type { ContainerTimelineMutationsEditMutation } from './__generated__/ContainerTimelineMutationsEditMutation.graphql';
 import type { TimelineEventDetails } from './ContainerTimelineEventDrawer';
+import { TIMELINE_DOCUMENTATION_URL } from './ContainerTimelineStates';
 import {
   TIMELINE_KIND_LABELS,
   TIMELINE_LANE_LABELS,
@@ -173,31 +176,71 @@ const ContainerTimelineEventForm = ({ containerId, open, event, onClose, onSaved
               name="event_end_time"
               textFieldProps={{ label: t_i18n('End date'), variant: 'outlined', fullWidth: true, style: fieldSpacingContainerStyle }}
             />
-            <Field component={SelectFieldFds} name="precision" label={t_i18n('Precision')} fullWidth={true} containerstyle={fieldSpacingContainerStyle}>
+            <Field
+              component={SelectFieldFds}
+              name="precision"
+              label={t_i18n('Precision')}
+              fullWidth={true}
+              containerstyle={fieldSpacingContainerStyle}
+              helpertext={t_i18n('How sure the start date is. A precision other than Exact is shown in the list and the details, and an Approximate event is drawn with a dashed outline.')}
+            >
               {TIMELINE_PRECISIONS.map((precision) => (
                 <SelectItem key={precision} value={precision}>{t_i18n(TIMELINE_PRECISION_LABELS[precision])}</SelectItem>
               ))}
             </Field>
-            <Field component={SelectFieldFds} name="lane" label={t_i18n('Lane')} fullWidth={true} containerstyle={fieldSpacingContainerStyle}>
+            <Field
+              component={SelectFieldFds}
+              name="lane"
+              label={t_i18n('Lane')}
+              fullWidth={true}
+              containerstyle={fieldSpacingContainerStyle}
+              helpertext={t_i18n('The row of the timeline the event is drawn on. Use Custom for an event that fits no other lane.')}
+            >
               {TIMELINE_LANES.map((lane) => (
                 <SelectItem key={lane} value={lane}>{t_i18n(TIMELINE_LANE_LABELS[lane])}</SelectItem>
               ))}
             </Field>
-            <Field component={SelectFieldFds} name="kind" label={t_i18n('Kind')} fullWidth={true} containerstyle={fieldSpacingContainerStyle}>
+            <Field
+              component={SelectFieldFds}
+              name="kind"
+              label={t_i18n('Kind')}
+              fullWidth={true}
+              containerstyle={fieldSpacingContainerStyle}
+              helpertext={t_i18n('What happened. Adding a milestone kind (listed first) notifies the Timeline milestone added triggers; a Containment milestone sets the containment anchor.')}
+            >
               {KIND_OPTIONS.map((kind) => (
                 <SelectItem key={kind} value={kind}>{t_i18n(TIMELINE_KIND_LABELS[kind])}</SelectItem>
               ))}
             </Field>
             <Field component={MarkdownField} name="description" label={t_i18n('Description')} fullWidth={true} multiline={true} rows="4" style={fieldSpacingContainerStyle} />
-            <Field component={TextareaField} name="annotation" label={t_i18n('Annotation')} className="mt-5" rows={3} />
+            <Field
+              component={TextareaField}
+              name="annotation"
+              label={t_i18n('Annotation')}
+              className="mt-5"
+              rows={3}
+              helperText={t_i18n('An analyst note shown in the event details and in the exports to everyone who can read the event. The description says what happened; the annotation, what it means for the case.')}
+            />
             <ObjectMarkingField
               name="objectMarking"
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             {!isEdition && (
-              <Field component={SwitchField} type="checkbox" name="pinned" label={t_i18n('Pin on the timeline')} containerstyle={fieldSpacingContainerStyle} />
+              <Field
+                component={SwitchField}
+                type="checkbox"
+                name="pinned"
+                label={t_i18n('Pin on the timeline')}
+                containerstyle={fieldSpacingContainerStyle}
+                helpertext={t_i18n('A pinned event stands out on the timeline and stays visible when Pinned only is on.')}
+              />
             )}
+            <Text variant="content-caption" as="div" style={fieldSpacingContainerStyle}>
+              <Link to={`${TIMELINE_DOCUMENTATION_URL}#milestones`} target="_blank" rel="noopener noreferrer" data-testid="timeline-event-form-learn-more">
+                {t_i18n('Learn more')}
+              </Link>
+            </Text>
             <FormButtonContainer>
               <Button variant="secondary" onClick={handleReset} disabled={isSubmitting}>{t_i18n('Cancel')}</Button>
               <Button onClick={submitForm} disabled={isSubmitting} data-testid="timeline-event-form-submit">

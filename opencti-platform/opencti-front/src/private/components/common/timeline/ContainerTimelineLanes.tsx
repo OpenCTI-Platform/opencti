@@ -358,7 +358,7 @@ const ContainerTimelineLanes = ({
     const { cluster } = item;
     const centerY = laneY + LANE_PADDING + row * ROW_HEIGHT + ROW_HEIGHT / 2;
     const x = scale(new Date(cluster.start + (cluster.end - cluster.start) / 2));
-    const label = t_i18n('{count} events from {from} to {to}', { values: { count: cluster.events.length, from: fldt(new Date(cluster.start)), to: fldt(new Date(cluster.end)) } });
+    const label = t_i18n('{count, plural, one {# event} other {# events}} - {from} to {to}', { values: { count: cluster.events.length, from: fldt(new Date(cluster.start)), to: fldt(new Date(cluster.end)) } });
     const select = () => onClusterSelect?.([cluster.start, cluster.end]);
     return (
       <g
