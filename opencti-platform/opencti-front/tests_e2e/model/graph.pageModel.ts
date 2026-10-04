@@ -1,4 +1,4 @@
-import { expect, Page } from '@playwright/test';
+import { expect, type Locator, Page } from '@playwright/test';
 
 export interface GraphNodeOnScreen {
   id: string;
@@ -85,9 +85,72 @@ export default class GraphPage {
     return this.page.locator('.MuiDrawer-paperAnchorDockedBottom').last();
   }
 
-  /** A control of the panel floating over the canvas (zoom, fit, full screen, export...). */
-  getControl(name: string) {
-    return this.page.getByRole('toolbar', { name: 'Graph view controls' }).getByRole('button', { name, exact: true });
+  /** The one toolbar of the graph, as assistive technologies see it. */
+  getToolbarRegion() {
+    return this.page.getByRole('toolbar', { name: 'Graph toolbar' });
+  }
+
+  /** The "More actions" menu closing the toolbar, opened. */
+  async openMoreActions() {
+    const menu = this.page.getByRole('menu', { name: 'More actions' });
+    if (!(await menu.isVisible())) await this.getToolbarButton('More actions').click();
+    await expect(menu).toBeVisible();
+    return menu;
+  }
+
+  async closeMoreActions() {
+    const menus = this.page.getByRole('menu');
+    for (let attempt = 0; attempt < 3 && (await menus.count()) > 0; attempt += 1) {
+      await this.page.keyboard.press('Escape');
+    }
+    await expect(menus).toHaveCount(0);
+  }
+
+  /** An item of a menu by its label, which a count or the reason it is disabled may follow. */
+  private static menuItem(menu: Locator, name: string, exact = false) {
+    const label = exact ? name : new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`);
+    return menu.getByRole('menuitem', { name: label }).or(menu.getByRole('menuitemcheckbox', { name: label }));
+  }
+
+  /** Whether an action sits in the toolbar itself; otherwise "More actions" lists it. */
+  async isInToolbar(name: string) {
+    return (await this.getToolbarButton(name).count()) > 0;
+  }
+
+  /** Runs an action of the toolbar, from the toolbar or from "More actions", wherever it is. */
+  async runToolbarAction(name: string) {
+    if (await this.isInToolbar(name)) {
+      await this.getToolbarButton(name).click();
+      return;
+    }
+    const menu = await this.openMoreActions();
+    await GraphPage.menuItem(menu, name).click();
+  }
+
+  /** Checks that a toggle of the toolbar is on or off, wherever it is. */
+  async expectToolbarToggle(name: string, on: boolean) {
+    if (await this.isInToolbar(name)) {
+      await expect(this.getToolbarButton(name)).toHaveAttribute('aria-pressed', String(on));
+      return;
+    }
+    const menu = await this.openMoreActions();
+    await expect(GraphPage.menuItem(menu, name)).toHaveAttribute('aria-checked', String(on));
+    await this.closeMoreActions();
+  }
+
+  /** Checks that an action of the toolbar can run or not, wherever it is. */
+  async expectToolbarActionEnabled(name: string, enabled: boolean) {
+    if (await this.isInToolbar(name)) {
+      const button = this.getToolbarButton(name);
+      if (enabled) await expect(button).toBeEnabled();
+      else await expect(button).toBeDisabled();
+      return;
+    }
+    const menu = await this.openMoreActions();
+    const item = GraphPage.menuItem(menu, name);
+    if (enabled) await expect(item).not.toHaveAttribute('aria-disabled', 'true');
+    else await expect(item).toHaveAttribute('aria-disabled', 'true');
+    await this.closeMoreActions();
   }
 
   async hoverNode(id: string) {
@@ -187,7 +250,7 @@ export default class GraphPage {
   async arrangeInMiddle(ids: string[]) {
     // Framed first: the forces may have moved a node under a panel since the graph was last fitted,
     // where a drag would grab the panel instead.
-    await this.getControl('Fit the whole graph').click();
+    await this.getToolbarButton('Fit the whole graph').click();
     await this.waitForGraph(ids.length);
     const box = await this.getCanvas().boundingBox();
     if (!box) throw new Error('Canvas has no bounding box');
@@ -302,9 +365,20 @@ export default class GraphPage {
     await this.page.mouse.click(x, y);
   }
 
-  /** Picks one entry of a toolbar option list (select by type, filters), then closes the list. */
-  async openOptionsAndPick(buttonName: string, option: string) {
-    await this.getToolbarButton(buttonName).click();
+  /**
+   * Picks one entry of a toolbar list (select by type, filters), from the toolbar or from its
+   * submenu in "More actions", then closes the list.
+   */
+  async openOptionsAndPick(actionName: string, option: string) {
+    if (!(await this.isInToolbar(actionName))) {
+      const menu = await this.openMoreActions();
+      await GraphPage.menuItem(menu, actionName).click();
+      const submenu = this.page.getByRole('menu').last();
+      await GraphPage.menuItem(submenu, option, true).first().click();
+      await this.closeMoreActions();
+      return;
+    }
+    await this.getToolbarButton(actionName).click();
     const list = this.page.getByRole('presentation').last();
     await list.getByRole('button', { name: option }).first().click();
     // A single-choice list closes itself on pick; a multiple-choice one stays open.

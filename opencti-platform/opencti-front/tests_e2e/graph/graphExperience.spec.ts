@@ -44,16 +44,34 @@ test.describe('Graph experience', { tag: ['@ce'] }, () => {
     // Relationship types filter their links only.
     await legend(page).getByRole('button', { name: /communicates with: 1/i }).click();
     await expect.poll(async () => (await graph.snapshot()).links.filter((l) => l.disabled).length).toBe(1);
-    await graph.getToolbarButton('Clear all filters').click();
+    await graph.runToolbarAction('Clear all filters');
     await expect.poll(async () => (await graph.snapshot()).links.filter((l) => l.disabled).length).toBe(0);
+  });
 
-    // The legend can be hidden and the choice is kept.
-    await graph.getControl('Hide the legend').click();
+  test('minimizes the legend to a pill counting the filters, the choice kept for the user', async ({ page }) => {
+    const graph = await openGraph(page);
+    const pill = page.getByRole('button', { name: /^Show the legend/ });
+    await graph.expectToolbarToggle('Legend', true);
+    await legend(page).getByRole('button', { name: 'Malware: 1' }).click();
+    await legend(page).getByRole('button', { name: 'Minimize the legend' }).click();
     await expect(legend(page)).toBeHidden();
+    // The pill sits in the corner of the legend and names the type filters in use.
+    await expect(pill).toHaveText(/Legend.*1 filter/);
+    await graph.expectToolbarToggle('Legend', false);
+    // The same filter state and count as the type filter of the toolbar.
+    if (await graph.isInToolbar('Filter by type')) await expect(graph.getToolbarButton('Filter by type').locator('xpath=..')).toContainText('1');
+
     await page.reload();
     await graph.waitForGraph(5);
     await expect(legend(page)).toBeHidden();
-    await graph.getControl('Show the legend').click();
+    await expect(pill).toBeVisible();
+    await pill.click();
+    await expect(legend(page)).toBeVisible();
+    await graph.runToolbarAction('Clear all filters');
+    // The toolbar toggle drives the same state.
+    await graph.runToolbarAction('Legend');
+    await expect(pill).toHaveText('Legend');
+    await graph.runToolbarAction('Legend');
     await expect(legend(page)).toBeVisible();
   });
 
@@ -103,27 +121,27 @@ test.describe('Graph experience', { tag: ['@ce'] }, () => {
 
   test('arranges the graph by entity tier and around a selected entity', async ({ page }) => {
     const graph = await openGraph(page);
-    await graph.getToolbarButton('Enable the layout by entity tier').click();
-    await expect(graph.getToolbarButton('Disable the layout by entity tier')).toBeVisible();
+    await graph.runToolbarAction('Layout by entity tier');
+    await graph.expectToolbarToggle('Layout by entity tier', true);
     await graph.waitForGraph(5);
     const tiers = await graph.snapshot();
     const gx = (id: string) => tiers.nodes.find((n) => n.id === id)?.gx ?? NaN;
     expect(gx(fixture.intrusionSet.id)).toBeLessThan(gx(fixture.malware.id));
     expect(gx(fixture.malware.id)).toBeLessThan(gx(fixture.attackPattern.id));
     expect(gx(fixture.attackPattern.id)).toBeLessThan(gx(fixture.ipv4.id));
-    await graph.getToolbarButton('Disable the layout by entity tier').click();
+    await graph.runToolbarAction('Layout by entity tier');
     // The nodes glide back to their place: the drag starts from where the malware stands still.
     await graph.waitForGraph(5);
 
     await graph.arrangeInMiddle([fixture.malware.id]);
     await graph.waitForGraph(5);
     await graph.clickNode(fixture.malware.id);
-    await graph.getToolbarButton('Enable the radial layout around the selection').click();
+    await graph.runToolbarAction('Radial layout around the selection');
     await graph.waitForGraph(5);
     const radial = await graph.snapshot();
     const centre = radial.nodes.find((n) => n.id === fixture.malware.id);
     expect(Math.hypot(centre?.gx ?? NaN, centre?.gy ?? NaN)).toBeLessThan(1);
-    await graph.getToolbarButton('Disable the radial layout').click();
+    await graph.runToolbarAction('Radial layout around the selection');
   });
 
   test('highlights the shortest path between two nodes and selects neighbourhoods', async ({ page }) => {
@@ -141,22 +159,22 @@ test.describe('Graph experience', { tag: ['@ce'] }, () => {
     await graph.clickNode(fixture.intrusionSet.id);
     await graph.clickNode(fixture.ipv4.id, ['Shift']);
     await expect(graph.getSelectionSummary(2)).toBeVisible();
-    await graph.getToolbarButton('Highlight the shortest path between the two selected nodes').click();
-    await expect(graph.getToolbarButton('Clear the highlighted path')).toBeVisible();
-    await graph.getToolbarButton('Clear the highlighted path').click();
+    await graph.runToolbarAction('Shortest path between the two selected nodes');
+    await graph.expectToolbarToggle('Shortest path between the two selected nodes', true);
+    await graph.runToolbarAction('Shortest path between the two selected nodes');
 
     await graph.clickBackground();
     await graph.clickNode(fixture.attackPattern.id);
-    await graph.getToolbarButton('Select the neighbours of the selected nodes').click();
+    await graph.runToolbarAction('Select the neighbours of the selected nodes');
     await expect(graph.getSelectionSummary(3)).toBeVisible();
   });
 
   test('navigates with the controls, the keyboard and full screen', async ({ page }) => {
     const graph = await openGraph(page);
     const before = (await graph.snapshot()).zoom;
-    await graph.getControl('Zoom in').click();
+    await graph.runToolbarAction('Zoom in');
     await expect.poll(async () => (await graph.snapshot()).zoom).toBeGreaterThan(before);
-    await graph.getControl('Fit the whole graph').click();
+    await graph.getToolbarButton('Fit the whole graph').click();
 
     // Over the canvas, in the middle of its top edge: clear of the panels and, once fitted, of the nodes.
     const box = await graph.getCanvas().boundingBox();
@@ -170,20 +188,31 @@ test.describe('Graph experience', { tag: ['@ce'] }, () => {
     await graph.getCanvas().hover(overCanvas);
     await page.keyboard.press('g');
     await expect(legend(page)).toBeHidden();
+    await expect(page.getByRole('button', { name: /^Show the legend/ })).toBeVisible();
     await page.keyboard.press('g');
     await expect(legend(page)).toBeVisible();
 
-    await graph.getControl('Show the graph full screen').click();
-    await expect(graph.getControl('Leave full screen')).toBeVisible();
+    // The toolbar is one tab stop: the arrow keys move between its controls.
+    const toolbar = graph.getToolbarRegion();
+    await expect(toolbar.locator('[tabindex="0"]')).toHaveCount(1);
+    await toolbar.locator('[tabindex="0"]').focus();
+    const first = await page.evaluate(() => document.activeElement?.getAttribute('aria-label'));
+    await page.keyboard.press('ArrowRight');
+    await expect.poll(() => page.evaluate(() => document.activeElement?.getAttribute('aria-label'))).not.toBe(first);
+    await page.keyboard.press('Home');
+    await expect.poll(() => page.evaluate(() => document.activeElement?.getAttribute('aria-label'))).toBe(first);
+
+    await graph.runToolbarAction('Full screen');
+    await graph.expectToolbarToggle('Full screen', true);
     await graph.waitForGraph(5);
-    await graph.getControl('Leave full screen').click();
-    await expect(graph.getControl('Show the graph full screen')).toBeVisible();
+    await graph.runToolbarAction('Full screen');
+    await graph.expectToolbarToggle('Full screen', false);
   });
 
   test('exports the whole graph as a high-resolution image with its legend', async ({ page }) => {
     const graph = await openGraph(page);
     const download = page.waitForEvent('download');
-    await graph.getControl('Export the whole graph as a high-resolution image').click();
+    await graph.runToolbarAction('Export the whole graph as a high-resolution image');
     expect((await download).suggestedFilename()).toMatch(/\.png$/);
   });
 

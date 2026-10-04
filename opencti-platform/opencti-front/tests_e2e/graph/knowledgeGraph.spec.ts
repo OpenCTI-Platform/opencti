@@ -46,44 +46,45 @@ test.describe('Container knowledge graph', { tag: ['@ce'] }, () => {
   test('switches between 2D and 3D and keeps the choice', async ({ page }) => {
     const graph = new GraphPage(page);
     await openGraph(graph, page);
-    await graph.getToolbarButton('Enable 3D mode').click();
-    await expect(graph.getToolbarButton('Disable 3D mode')).toBeVisible();
+    await graph.runToolbarAction('3D mode');
+    await graph.expectToolbarToggle('3D mode', true);
     await expect(page.locator('.force-graph-container')).toHaveCount(0);
     await expect(page.locator('canvas').first()).toBeVisible();
     // 3D disables the 2D-only selection tools.
-    await expect(graph.getToolbarButton('Free rectangle select')).toBeDisabled();
-    await expect(graph.getToolbarButton('Free select')).toBeDisabled();
+    await graph.expectToolbarActionEnabled('Rectangle selection', false);
+    await graph.expectToolbarActionEnabled('Free-shape selection', false);
     await page.reload();
-    await expect(graph.getToolbarButton('Disable 3D mode')).toBeVisible();
-    await graph.getToolbarButton('Disable 3D mode').click();
+    await graph.expectToolbarToggle('3D mode', true);
+    await graph.runToolbarAction('3D mode');
     await graph.waitForGraph(5);
-    await expect(graph.getToolbarButton('Enable 3D mode')).toBeVisible();
+    await graph.expectToolbarToggle('3D mode', false);
   });
 
   test('applies tree layouts, forces, fit and reset of the layout', async ({ page }) => {
     const graph = new GraphPage(page);
     await openGraph(graph, page);
-    await graph.getToolbarButton('Enable vertical tree mode').click();
-    await expect(graph.getToolbarButton('Disable vertical tree mode')).toBeVisible();
+    await graph.runToolbarAction('Vertical tree layout');
+    await graph.expectToolbarToggle('Vertical tree layout', true);
     await graph.waitForGraph(5);
-    await graph.getToolbarButton('Disable vertical tree mode').click();
-    await expect(graph.getToolbarButton('Enable vertical tree mode')).toBeVisible();
+    await graph.runToolbarAction('Vertical tree layout');
+    await graph.expectToolbarToggle('Vertical tree layout', false);
 
-    await graph.getToolbarButton('Enable horizontal tree mode').click();
-    await expect(graph.getToolbarButton('Disable horizontal tree mode')).toBeVisible();
+    await graph.runToolbarAction('Horizontal tree layout');
+    await graph.expectToolbarToggle('Horizontal tree layout', true);
     await graph.waitForGraph(5);
-    await graph.getToolbarButton('Disable horizontal tree mode').click();
-    await expect(graph.getToolbarButton('Enable horizontal tree mode')).toBeVisible();
+    await graph.runToolbarAction('Horizontal tree layout');
+    await graph.expectToolbarToggle('Horizontal tree layout', false);
 
     // Without forces the tree layouts and the reset are unavailable.
-    await graph.getToolbarButton('Disable forces').click();
-    await expect(graph.getToolbarButton('Enable vertical tree mode')).toBeDisabled();
-    await expect(graph.getToolbarButton('Unfix the nodes and re-apply forces')).toBeDisabled();
-    await graph.getToolbarButton('Disable forces').click();
-    await expect(graph.getToolbarButton('Enable vertical tree mode')).toBeEnabled();
+    await graph.runToolbarAction('Forces');
+    await graph.expectToolbarToggle('Forces', false);
+    await graph.expectToolbarActionEnabled('Vertical tree layout', false);
+    await graph.expectToolbarActionEnabled('Unfix the nodes and re-apply forces', false);
+    await graph.runToolbarAction('Forces');
+    await graph.expectToolbarActionEnabled('Vertical tree layout', true);
 
-    await graph.getToolbarButton('Fit graph to canvas').click();
-    await graph.getToolbarButton('Unfix the nodes and re-apply forces').click();
+    await graph.getToolbarButton('Fit the whole graph').click();
+    await graph.runToolbarAction('Unfix the nodes and re-apply forces');
     await graph.waitForGraph(5);
     expect(await graph.nodeIds()).toHaveLength(5);
   });
@@ -101,11 +102,12 @@ test.describe('Container knowledge graph', { tag: ['@ce'] }, () => {
     await graph.clickBackground();
     await expect(graph.getAnySelectionSummary()).toBeHidden();
 
-    await graph.getToolbarButton('Select all nodes').click();
+    await graph.runToolbarAction('Select all nodes');
     await expect(graph.getSelectionSummary(5)).toBeVisible();
-    await graph.getToolbarButton('Select Relationships of Selected Nodes').click();
+    await graph.runToolbarAction('Select the relationships of the selected nodes');
     await expect(graph.getSelectionSummary(9)).toBeVisible();
-    await expect(graph.getToolbarButton('Select Child Relationships of Selected Nodes (From)')).toBeVisible();
+    // The action moves on to the next mode, named for what it will do.
+    await graph.expectToolbarActionEnabled('Select the child relationships of the selected nodes (from)', true);
     await graph.clickBackground();
 
     await graph.openOptionsAndPick('Select by entity type', 'Malware');
@@ -120,18 +122,18 @@ test.describe('Container knowledge graph', { tag: ['@ce'] }, () => {
 
     // The shapes cover the whole drawing: framed first, as the entity without relationships drifts
     // away under the forces once the others were dragged.
-    await graph.getControl('Fit the whole graph').click();
+    await graph.getToolbarButton('Fit the whole graph').click();
     await graph.waitForGraph(5);
-    await graph.getToolbarButton('Free rectangle select').click();
+    await graph.runToolbarAction('Rectangle selection');
     await graph.dragAcrossCanvas();
     await expect(graph.getSelectionSummary(5)).toBeVisible();
-    await graph.getToolbarButton('Free rectangle select').click();
+    await graph.runToolbarAction('Rectangle selection');
     await graph.clickBackground();
 
-    await graph.getToolbarButton('Free select').click();
+    await graph.runToolbarAction('Free-shape selection');
     await graph.lassoAcrossCanvas();
     await expect(graph.getSelectionSummary(5)).toBeVisible();
-    await graph.getToolbarButton('Free select').click();
+    await graph.runToolbarAction('Free-shape selection');
     await graph.clickBackground();
     await expect(graph.getAnySelectionSummary()).toBeHidden();
   });
@@ -141,29 +143,30 @@ test.describe('Container knowledge graph', { tag: ['@ce'] }, () => {
     await openGraph(graph, page);
     const disabledIds = async () => (await graph.snapshot()).nodes.filter((n) => n.disabled).map((n) => n.id).sort();
 
-    await graph.openOptionsAndPick('Filter entity types', 'Malware');
+    await graph.expectToolbarActionEnabled('Clear all filters', false);
+    await graph.openOptionsAndPick('Filter by type', 'Malware');
     await expect.poll(disabledIds).toEqual([fixture.malware.id]);
-    await graph.getToolbarButton('Clear all filters').click();
+    await graph.runToolbarAction('Clear all filters');
     await expect.poll(disabledIds).toEqual([]);
 
-    await graph.openOptionsAndPick('Filter marking definitions', 'TLP:GREEN');
+    await graph.openOptionsAndPick('Filter by marking', 'TLP:GREEN');
     await expect.poll(disabledIds).toContain(fixture.intrusionSet.id);
-    await graph.getToolbarButton('Clear all filters').click();
+    await graph.runToolbarAction('Clear all filters');
     await expect.poll(disabledIds).toEqual([]);
 
-    await graph.openOptionsAndPick('Filter authors (created by)', fixture.authorName);
+    await graph.openOptionsAndPick('Filter by author', fixture.authorName);
     await expect.poll(disabledIds).toEqual(expect.arrayContaining([fixture.intrusionSet.id, fixture.malware.id]));
-    await graph.getToolbarButton('Clear all filters').click();
+    await graph.runToolbarAction('Clear all filters');
     await expect.poll(disabledIds).toEqual([]);
 
     // The filters are kept when the page is opened again.
-    await graph.openOptionsAndPick('Filter entity types', 'Malware');
+    await graph.openOptionsAndPick('Filter by type', 'Malware');
     await page.reload();
     await graph.waitForGraph(5);
     await expect.poll(disabledIds).toEqual([fixture.malware.id]);
-    await graph.getToolbarButton('Clear all filters').click();
+    await graph.runToolbarAction('Clear all filters');
 
-    await graph.getToolbarButton('Display time range selector').click();
+    await graph.runToolbarAction('Time range');
     const handles = page.getByRole('slider');
     await expect(handles).toHaveCount(2);
     // The toolbar grows to show the selector: the handle is measured once it stopped moving.
@@ -183,9 +186,9 @@ test.describe('Container knowledge graph', { tag: ['@ce'] }, () => {
     await page.mouse.move(rail.x + rail.width * 0.75, handle.y + handle.height / 2, { steps: 10 });
     await page.mouse.up();
     await expect.poll(async () => (await graph.snapshot()).links.filter((l) => l.disabled).length).toBeGreaterThan(0);
-    await graph.getToolbarButton('Clear all filters').click();
+    await graph.runToolbarAction('Clear all filters');
     await expect.poll(async () => (await graph.snapshot()).links.filter((l) => l.disabled).length).toBe(0);
-    await graph.getToolbarButton('Display time range selector').click();
+    await graph.runToolbarAction('Time range');
     await expect(handles).toHaveCount(0);
   });
 

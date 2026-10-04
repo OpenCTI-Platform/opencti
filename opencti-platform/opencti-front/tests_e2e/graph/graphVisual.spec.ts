@@ -29,7 +29,7 @@ test.describe('Graph visual regression', { tag: ['@ce'] }, () => {
   };
 
   const arrangeByTier = async (graph: GraphPage, minNodes: number) => {
-    await graph.getToolbarButton('Enable the layout by entity tier').click();
+    await graph.runToolbarAction('Layout by entity tier');
     await graph.waitForGraph(minNodes);
   };
 
@@ -40,7 +40,7 @@ test.describe('Graph visual regression', { tag: ['@ce'] }, () => {
     await arrangeByTier(graph, 5);
     await expectGraphScreenshot(page, graph.getCanvas(), 'knowledge-graph-tiers.png');
     // The layout is saved per container: switched off so the next test starts from the default.
-    await graph.getToolbarButton('Disable the layout by entity tier').click();
+    await graph.runToolbarAction('Layout by entity tier');
   });
 
   test('focus on a selected entity and its neighbours', async ({ page }) => {
@@ -52,17 +52,17 @@ test.describe('Graph visual regression', { tag: ['@ce'] }, () => {
     await expect(graph.getSelectionSummary(1)).toBeVisible();
     await page.mouse.move(5, 5);
     await expectGraphScreenshot(page, graph.getCanvas(), 'knowledge-graph-focus.png', [page.locator('.MuiDrawer-paperAnchorRight')]);
-    await graph.getToolbarButton('Disable the layout by entity tier').click();
+    await graph.runToolbarAction('Layout by entity tier');
   });
 
   test('investigation graph in the horizontal tree layout', async ({ page }) => {
     const graph = new GraphPage(page);
     await page.goto(`/dashboard/workspaces/investigations/${fixture.investigation.id}`);
     await graph.waitForGraph(3);
-    await graph.getToolbarButton('Enable horizontal tree mode').click();
+    await graph.runToolbarAction('Horizontal tree layout');
     await graph.waitForGraph(3);
     await expectGraphScreenshot(page, graph.getCanvas(), 'investigation-graph-tree.png');
-    await graph.getToolbarButton('Disable horizontal tree mode').click();
+    await graph.runToolbarAction('Horizontal tree layout');
   });
 
   test('correlation graph laid out by entity tier', async ({ page }) => {
@@ -71,7 +71,7 @@ test.describe('Graph visual regression', { tag: ['@ce'] }, () => {
     await graph.waitForGraph(3);
     await arrangeByTier(graph, 3);
     await expectGraphScreenshot(page, graph.getCanvas(), 'correlation-graph-tiers.png');
-    await graph.getToolbarButton('Disable the layout by entity tier').click();
+    await graph.runToolbarAction('Layout by entity tier');
   });
 
   test('knowledge graph in the light theme', async ({ page, playwright }) => {
@@ -88,7 +88,7 @@ test.describe('Graph visual regression', { tag: ['@ce'] }, () => {
       await graph.waitForGraph(5);
       await arrangeByTier(graph, 5);
       await expectGraphScreenshot(page, graph.getCanvas(), 'knowledge-graph-tiers-light.png');
-      await graph.getToolbarButton('Disable the layout by entity tier').click();
+      await graph.runToolbarAction('Layout by entity tier');
     } finally {
       await withApiRequest(playwright, (request) => patchSettings(request, settingsId, 'platform_theme', initialThemeId));
     }

@@ -58,7 +58,7 @@ test.describe('Graph performance', { tag: ['@ce'] }, () => {
     expect(snapshot.links.length).toBeGreaterThanOrEqual(LINKS);
     const layoutMs = stableAfterMs - start;
 
-    await graph.getToolbarButton('Unfix the nodes and re-apply forces').click();
+    await graph.runToolbarAction('Unfix the nodes and re-apply forces');
     const intervals = await page.evaluate(sampleFrameIntervals, SAMPLE_MS);
     const median = percentile(intervals, 50);
     const p90 = percentile(intervals, 90);

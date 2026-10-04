@@ -37,7 +37,7 @@ test.describe('Correlation and analyses graphs', { tag: ['@ce'] }, () => {
     await graph.getToolbarButton('Show only correlated observables and indicators').click();
     await expect.poll(() => graph.nodeIds()).not.toContain(fixture.malware.id);
 
-    await graph.getToolbarButton('Select all nodes').click();
+    await graph.runToolbarAction('Select all nodes');
     await expect(graph.getSelectionSummary(3)).toBeVisible();
     await graph.clickBackground();
     await graph.getToolbar().getByPlaceholder('Search these results...').fill(fixture.correlatedReport.name);
@@ -56,7 +56,7 @@ test.describe('Correlation and analyses graphs', { tag: ['@ce'] }, () => {
     // the graph has a search field of its own).
     await expect(graph.getToolbar().getByPlaceholder('Search these results...')).toHaveCount(0);
     await expect(graph.getToolbarButton('Remove selected items')).toHaveCount(0);
-    await graph.getToolbarButton('Select all nodes').click();
+    await graph.runToolbarAction('Select all nodes');
     await expect(graph.getAnySelectionSummary()).toBeVisible();
   });
 });
