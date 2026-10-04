@@ -6,7 +6,7 @@ import { useFormatter } from '../../../../components/i18n';
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { ProvenanceKpiStripQuery, ProvenanceKpiStripQuery$variables } from './__generated__/ProvenanceKpiStripQuery.graphql';
 
-const provenanceKpiStripQuery = graphql`
+export const provenanceKpiStripQuery = graphql`
   query ProvenanceKpiStripQuery($filters: FilterGroup) {
     entities: stixCoreObjectsNumber(filters: $filters) { total }
     relationships: stixCoreRelationshipsNumber(filters: $filters) { total }

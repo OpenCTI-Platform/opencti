@@ -10,4 +10,9 @@ describe('Curation hub - provenance tabs', () => {
     expect(CURATION_TABS.find((tab) => tab.path === 'conflicts')?.label).toEqual('Conflicts');
     expect(CURATION_TABS.find((tab) => tab.path === 'stale-knowledge')?.label).toEqual('Stale knowledge');
   });
+
+  it('counts the pending work of both tabs on their tab and on the Curation menu entry', () => {
+    expect(CURATION_TABS.find((tab) => tab.path === 'conflicts')?.useBadgeCount).toBeTypeOf('function');
+    expect(CURATION_TABS.find((tab) => tab.path === 'stale-knowledge')?.useBadgeCount).toBeTypeOf('function');
+  });
 });

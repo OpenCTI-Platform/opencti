@@ -11,13 +11,8 @@ import ProvenanceKnowledgeEntities from './ProvenanceKnowledgeEntities';
 import ProvenanceKnowledgeSightings from './ProvenanceKnowledgeSightings';
 import ProvenanceKpiStrip, { type ProvenanceKind } from './ProvenanceKpiStrip';
 import useProvenanceTrackedFilters from './useProvenanceTrackedFilters';
+import { STALE_FILTERS } from './provenanceCurationCounts';
 import { StaleKnowledgeRulesQuery, StaleKnowledgeRulesQuery$variables } from './__generated__/StaleKnowledgeRulesQuery.graphql';
-
-const STALE_FILTERS: FilterGroup = {
-  mode: 'and',
-  filters: [{ key: 'freshness_stale', values: ['true'], operator: 'eq', mode: 'or' }],
-  filterGroups: [],
-};
 
 const KNOWLEDGE_RULES_FILTERS: FilterGroup = {
   mode: 'and',

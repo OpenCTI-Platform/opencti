@@ -3,18 +3,12 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
-import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import ProvenanceKnowledgeRelationships from './ProvenanceKnowledgeRelationships';
 import ProvenanceKnowledgeEntities from './ProvenanceKnowledgeEntities';
 import ProvenanceKnowledgeSightings from './ProvenanceKnowledgeSightings';
 import ProvenanceKpiStrip, { type ProvenanceKind } from './ProvenanceKpiStrip';
 import useProvenanceTrackedFilters from './useProvenanceTrackedFilters';
-
-const CONFLICTS_FILTERS: FilterGroup = {
-  mode: 'and',
-  filters: [{ key: 'has_conflicts', values: ['true'], operator: 'eq', mode: 'or' }],
-  filterGroups: [],
-};
+import { CONFLICTS_FILTERS } from './provenanceCurationCounts';
 
 /**
  * Conflicts tab of the Curation hub: knowledge on which sources disagree, with the losing values of the upsert
