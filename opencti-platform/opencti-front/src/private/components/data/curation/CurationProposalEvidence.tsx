@@ -112,7 +112,7 @@ const CurationProposalEvidence = ({ data }: CurationProposalEvidenceProps) => {
                       <Box component="dl" sx={{ margin: 0, marginTop: 0.5, color: theme.palette.text.light, typography: 'caption' }}>
                         {Object.entries(details).slice(0, 8).map(([key, value]) => (
                           <div key={key}>
-                            <Box component="dt" sx={{ display: 'inline', fontWeight: 600 }}>{key}: </Box>
+                            <Box component="dt" sx={{ display: 'inline', fontWeight: 'fontWeightBold' }}>{key}: </Box>
                             <Box component="dd" sx={{ display: 'inline', margin: 0 }}>{formatDetailValue(value)}</Box>
                           </div>
                         ))}

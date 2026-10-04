@@ -243,7 +243,7 @@ const trendLabel = (trend: number | null | undefined) => {
 export const buildDigestLines = (snapshot: BasicStoreEntityKnowledgeHealthSnapshot): string[] => {
   const metrics = snapshot.health_metrics;
   return [
-    `Knowledge health score: ${snapshot.health_score}/100${trendLabel(snapshot.score_trend)}`,
+    `Knowledge health score: ${snapshot.health_score} of 100${trendLabel(snapshot.score_trend)}`,
     `Estimated duplicates: ${metrics.duplicate_estimate} (${(metrics.duplicate_rate * 100).toFixed(1)}% of ${metrics.curated_entities_count} curated entities)`,
     `Open contradictions: ${metrics.contradiction_count}, stale entities: ${metrics.stale_count} (${(metrics.stale_share * 100).toFixed(1)}%)`,
     `Alias coverage: ${(metrics.alias_coverage * 100).toFixed(1)}%, source conflict rate: ${(metrics.source_conflict_rate * 100).toFixed(1)}%`,

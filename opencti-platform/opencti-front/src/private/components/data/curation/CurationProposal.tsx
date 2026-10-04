@@ -156,7 +156,7 @@ const CurationProposalDetails = ({ data, adjudicationAvailable }: { data: Curati
                 <Box component="dl" sx={{ margin: 0, typography: 'body2' }} data-testid="curation-proposed-change">
                   {payloadEntries.map(([key, value]) => (
                     <div key={key}>
-                      <Box component="dt" sx={{ display: 'inline', fontWeight: 600 }}>{key}: </Box>
+                      <Box component="dt" sx={{ display: 'inline', fontWeight: 'fontWeightBold' }}>{key}: </Box>
                       <Box component="dd" sx={{ display: 'inline', margin: 0 }}>
                         {typeof value === 'object' ? JSON.stringify(value) : String(value)}
                       </Box>
