@@ -6203,5 +6203,7 @@
   "Value score": "Оценка ценности",
   "XTM Hub could not be reached.": "Не удалось связаться с XTM Hub.",
   "XTM Hub returned a partial ranking.": "XTM Hub вернул неполный рейтинг.",
-  "XTM Hub returned an error.": "XTM Hub вернул ошибку."
+  "XTM Hub returned an error.": "XTM Hub вернул ошибку.",
+  "The source is scored again from the next computation": "Источник снова оценивается начиная со следующего расчёта",
+  "The source is no longer scored": "Источник больше не оценивается"
 }

@@ -6203,5 +6203,7 @@
   "Value score": "가치 점수",
   "XTM Hub could not be reached.": "XTM Hub에 연결할 수 없습니다.",
   "XTM Hub returned a partial ranking.": "XTM Hub가 일부 순위만 반환했습니다.",
-  "XTM Hub returned an error.": "XTM Hub에서 오류를 반환했습니다."
+  "XTM Hub returned an error.": "XTM Hub에서 오류를 반환했습니다.",
+  "The source is scored again from the next computation": "다음 계산부터 이 소스가 다시 평가됩니다",
+  "The source is no longer scored": "이 소스는 더 이상 평가되지 않습니다"
 }

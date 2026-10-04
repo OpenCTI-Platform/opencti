@@ -6203,5 +6203,7 @@
   "Value score": "Value score",
   "XTM Hub could not be reached.": "XTM Hub could not be reached.",
   "XTM Hub returned a partial ranking.": "XTM Hub returned a partial ranking.",
-  "XTM Hub returned an error.": "XTM Hub returned an error."
+  "XTM Hub returned an error.": "XTM Hub returned an error.",
+  "The source is scored again from the next computation": "The source is scored again from the next computation",
+  "The source is no longer scored": "The source is no longer scored"
 }

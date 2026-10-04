@@ -6203,5 +6203,7 @@
   "Value score": "Wertpunktzahl",
   "XTM Hub could not be reached.": "XTM Hub ist nicht erreichbar.",
   "XTM Hub returned a partial ranking.": "XTM Hub hat eine unvollständige Rangliste geliefert.",
-  "XTM Hub returned an error.": "XTM Hub hat einen Fehler zurückgegeben."
+  "XTM Hub returned an error.": "XTM Hub hat einen Fehler zurückgegeben.",
+  "The source is scored again from the next computation": "Die Quelle wird ab der nächsten Berechnung wieder bewertet",
+  "The source is no longer scored": "Die Quelle wird nicht mehr bewertet"
 }

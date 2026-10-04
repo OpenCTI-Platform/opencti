@@ -6203,5 +6203,7 @@
   "Value score": "価値スコア",
   "XTM Hub could not be reached.": "XTM Hub に接続できませんでした。",
   "XTM Hub returned a partial ranking.": "XTM Hub から部分的なランキングが返されました。",
-  "XTM Hub returned an error.": "XTM Hub がエラーを返しました。"
+  "XTM Hub returned an error.": "XTM Hub がエラーを返しました。",
+  "The source is scored again from the next computation": "次回の計算からこのソースは再びスコアリングされます",
+  "The source is no longer scored": "このソースはスコアリングされなくなりました"
 }
