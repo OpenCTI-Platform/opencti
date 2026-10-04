@@ -58,7 +58,7 @@ export const USER_MERGE_SCALAR_DISPOSITIONS: Record<string, UserMergeScalarDispo
   'User-Visit.user_id': {
     kind: 'excluded',
     reason: 'another-handler',
-    detail: 'Personal last visit markers, identified by user and entity: never transferred, the knowledge snapshot manager purges them with the source account',
+    detail: 'Personal last visit markers, identified by user and entity: never transferred, the retention manager purges them with the source account',
   },
   [`${ENTITY_USER_ACCOUNT}.user_id`]: {
     kind: 'excluded',
