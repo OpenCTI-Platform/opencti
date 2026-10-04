@@ -1,6 +1,6 @@
 # Work with graphs
 
-OpenCTI draws knowledge as graphs in several places: the **Graph** and **Correlation** views of containers (reports, groupings, incident responses, requests for information and for takedown), **investigations**, the graph view of the **Analyses** tab of an entity, and the explanation of an **inferred relationship**. All of them share the same graph, described on this page.
+OpenCTI draws knowledge as graphs in several places: the **Graph** and **Correlation** views of containers (reports, groupings, incident responses, requests for information and for takedown), **investigations**, the graph view of the **Analyses** tab of an entity, and the explanation of an **inferred relationship**. All of them draw nodes, links and badges the same way. The first four are the interactive graph described on this page; the explanation of an inferred relationship is a fixed, read-only illustration of the rule that produced it, with the focus on hover and the keyboard list of its elements but without controls, legend, layouts or hover card actions.
 
 ## Why use the graph?
 
@@ -15,7 +15,7 @@ A graph shows what a list cannot: who is connected to what, through which relati
 
 ## Where graphs appear
 
-The same graph, with the same controls, is drawn on every surface below, in the dark and the light themes.
+The same interactive graph, with the same controls, is drawn on every surface below, in the dark and the light themes.
 
 === "Knowledge of a container"
 
@@ -138,6 +138,14 @@ The legend on the bottom left counts the entities of each type and the relations
 - The **Badges** section lists only the badges present in the graph, with the number of entities carrying each; click one to select those entities.
 
 When the time range selector of the toolbar is open, the legend moves up so that the whole slider stays free.
+
+## When nothing is drawn
+
+The graph says why it is empty and offers the next step:
+
+- a container or an investigation without any entity yet explains how to add some, with a link to this page;
+- when the filters of the toolbar leave no entity, **Clear filters** restores the graph;
+- when every entity is hidden from the view, **Show the hidden entities** brings them back.
 
 ## Layouts
 
