@@ -2340,7 +2340,7 @@ title, description, primary and secondary action) in the library.
 `LandscapeChanges` and `LandscapeChangesResults`: an empty period still offers
 "Compare the last 90 days" and a scope without saved filter still offers "Choose a scope".
 
-## 63. A `Chip` closes any tooltip around it, because its own clipped-label tooltip opens on hover
+## 64. A `Chip` closes any tooltip around it, because its own clipped-label tooltip opens on hover
 
 **Raised** while capturing the "New since your last visit" chip of the knowledge time machine, whose
 tooltip lists what changed since the last visit: the tooltip opened, then closed within a second while
