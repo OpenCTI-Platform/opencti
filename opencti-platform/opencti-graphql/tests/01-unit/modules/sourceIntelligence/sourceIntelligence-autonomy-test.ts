@@ -4,11 +4,12 @@ import { selectAutonomousCandidates } from '../../../../src/modules/sourceIntell
 import { DEFAULT_SOURCE_INTELLIGENCE_SETTINGS, type SourceIntelligenceSettings } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-settings';
 import type { BasicStoreEntitySourceRecommendation, RecommendationKindValue } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-types';
 
-const recommendation = (id: string, kind: string, status: string, proposedAt: string) => ({
+const recommendation = (id: string, kind: string, status: string, proposedAt: string, fingerprint = `fingerprint-${id}`) => ({
   internal_id: id,
   recommendation_kind: kind,
   recommendation_status: status,
   proposed_at: proposedAt,
+  fingerprint,
 }) as unknown as BasicStoreEntitySourceRecommendation;
 
 const settingsWith = (kinds: RecommendationKindValue[], maxPerRun: number): SourceIntelligenceSettings => ({
@@ -41,6 +42,16 @@ describe('Source intelligence autonomy policy', () => {
   it('should never retry failed, dismissed, reverted or applied recommendations', () => {
     const settled = ['failed', 'dismissed', 'reverted', 'applied'].map((status, index) => recommendation(`settled-${status}`, 'add_decay_rule', status, `2026-08-0${index + 1}T00:00:00.000Z`));
     expect(selectAutonomousCandidates(settled, settingsWith(['add_decay_rule'], 10))).toEqual([]);
+  });
+
+  it('should never apply again automatically a change someone reverted', () => {
+    const history = [
+      recommendation('decay-reverted', 'add_decay_rule', 'reverted', '2026-08-01T00:00:00.000Z', 'decay-source-1'),
+      recommendation('decay-again', 'add_decay_rule', 'proposed', '2026-09-01T00:00:00.000Z', 'decay-source-1'),
+      recommendation('decay-reverting', 'add_decay_rule', 'reverting', '2026-08-02T00:00:00.000Z', 'decay-source-2'),
+      recommendation('decay-other', 'add_decay_rule', 'proposed', '2026-09-02T00:00:00.000Z', 'decay-source-3'),
+    ];
+    expect(ids(selectAutonomousCandidates(history, settingsWith(['add_decay_rule'], 10)))).toEqual(['decay-other']);
   });
 
   it('should apply nothing without allowed kinds or with a zero cap', () => {

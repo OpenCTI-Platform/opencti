@@ -882,12 +882,18 @@ export const upsertProposals = async (
 /**
  * Recommendations the autonomy policy applies in one run: every proposed recommendation of an allowed kind, oldest
  * first, within the per-run cap. Proposals left over by the cap are taken first by the next runs; failed, dismissed
- * and applied ones are never retried automatically.
+ * and applied ones are never retried automatically. A change someone reverted is never applied again automatically:
+ * the proposal of the same fingerprint waits for a person.
  */
 export const selectAutonomousCandidates = (recommendations: BasicStoreEntitySourceRecommendation[], settings: SourceIntelligenceSettings) => {
   const allowed = new Set(settings.autonomy.auto_apply_kinds);
+  const revertedStatuses: string[] = [RECOMMENDATION_STATUS_REVERTED, RECOMMENDATION_STATUS_REVERTING];
+  const revertedFingerprints = new Set(recommendations
+    .filter((recommendation) => revertedStatuses.includes(recommendation.recommendation_status))
+    .map((recommendation) => recommendation.fingerprint));
   return recommendations
     .filter((recommendation) => recommendation.recommendation_status === RECOMMENDATION_STATUS_PROPOSED && allowed.has(recommendation.recommendation_kind))
+    .filter((recommendation) => !revertedFingerprints.has(recommendation.fingerprint))
     .sort((a, b) => (a.proposed_at ?? '').localeCompare(b.proposed_at ?? '') || a.internal_id.localeCompare(b.internal_id))
     .slice(0, Math.max(0, settings.autonomy.max_auto_actions_per_run));
 };
