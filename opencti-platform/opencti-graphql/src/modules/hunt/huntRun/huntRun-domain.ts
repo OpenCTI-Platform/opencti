@@ -41,7 +41,7 @@ import {
   RELATION_HUNT_TARGETS,
   RELATION_HUNT_TECHNIQUES,
 } from '../hunt-types';
-import { dispatchHuntRun, listHuntConnectors, resolveHuntConnectorTargets } from '../hunt-dispatch';
+import { dispatchHuntRun, huntConnectorPlatform, listHuntConnectors, resolveHuntConnectorTargets } from '../hunt-dispatch';
 import { clampInteger, HUNT_CONFIG, HUNT_DEFAULT_TIME_WINDOW_HOURS, huntRunRestrictions, sanitizeEvidence, techniqueValidationStatus, truncate } from '../hunt-utils';
 import { huntLogicError } from '../hunt-validators';
 import { updateHuntRunInformation } from '../hunt-stats';
@@ -853,7 +853,8 @@ export const toHuntConnectorView = (connector: BasicStoreEntityConnector): HuntC
   id: connector.internal_id,
   name: connector.name,
   active: connector.active === true,
-  platform: connector.hunt_platform ?? '',
+  // The platform the dispatch reads: a connector registered before its hunt registration is known by its scope
+  platform: huntConnectorPlatform(connector) ?? '',
   languages: connector.hunt_languages ?? [],
   supports_preview: connector.hunt_supports_preview !== false,
   max_concurrent_runs: connector.hunt_max_concurrent_runs ?? null,

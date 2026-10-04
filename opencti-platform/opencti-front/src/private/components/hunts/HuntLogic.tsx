@@ -23,7 +23,7 @@ import { SIGMA_RULE_PLACEHOLDER } from './HuntCreation';
 import HuntNativeQueriesField from './HuntNativeQueriesField';
 import HuntSigmaValidation from './HuntSigmaValidation';
 import { HuntRunStatusChip } from './HuntChips';
-import { huntQueryLanguageLabel, huntRunFailure, isTerminalHuntRun, normalizeNativeQueries, type HuntNativeQueryFormValue } from './hunt-utils';
+import { HUNT_PLATFORM_INTERNET, huntQueryLanguageLabel, huntRunFailure, isTerminalHuntRun, normalizeNativeQueries, type HuntNativeQueryFormValue } from './hunt-utils';
 import { HuntLogic_hunt$key } from './__generated__/HuntLogic_hunt.graphql';
 import { HuntLogicFieldPatchMutation } from './__generated__/HuntLogicFieldPatchMutation.graphql';
 import { HuntLogicConnectorsQuery } from './__generated__/HuntLogicConnectorsQuery.graphql';
@@ -156,7 +156,14 @@ type PreviewState
 
 const ANY_PLATFORM = 'any';
 
-const TranslationPreview = ({ huntId, scopePlatformIds, dirty }: { huntId: string; scopePlatformIds: string[]; dirty: boolean }) => {
+interface TranslationPreviewProps {
+  huntId: string;
+  huntType: string;
+  scopePlatformIds: string[];
+  dirty: boolean;
+}
+
+const TranslationPreview = ({ huntId, huntType, scopePlatformIds, dirty }: TranslationPreviewProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { huntConnectors } = useLazyLoadQuery<HuntLogicConnectorsQuery>(huntLogicConnectorsQuery, {}, { fetchPolicy: 'store-and-network' });
@@ -168,14 +175,18 @@ const TranslationPreview = ({ huntId, scopePlatformIds, dirty }: { huntId: strin
     if (pollTimer.current) clearTimeout(pollTimer.current);
   }, []);
 
+  // The connectors the platform can pick, as the dispatch does: the internet platform for an infrastructure hunt,
+  // the security platforms of the hunt scope (all of them for an unscoped hunt) otherwise
+  const eligibleConnectors = huntConnectors.filter((connector) => connector.supports_preview && (huntType === 'infrastructure'
+    ? connector.platform === HUNT_PLATFORM_INTERNET
+    : connector.platform !== HUNT_PLATFORM_INTERNET && !!connector.securityPlatform && scopePlatformIds.includes(connector.securityPlatform.id)));
   const platforms = new Map<string, string>();
-  huntConnectors.forEach((connector) => {
-    if (connector.supports_preview && connector.securityPlatform
-      && (scopePlatformIds.length === 0 || scopePlatformIds.includes(connector.securityPlatform.id))) {
+  eligibleConnectors.forEach((connector) => {
+    if (connector.securityPlatform) {
       platforms.set(connector.securityPlatform.id, connector.securityPlatform.name);
     }
   });
-  const hasPreviewConnector = huntConnectors.some((connector) => connector.supports_preview);
+  const hasPreviewConnector = eligibleConnectors.length > 0;
 
   const poll = (runId: string, startedAt: number) => {
     fetchQuery<HuntLogicPreviewRunQuery>(huntLogicPreviewRunQuery, { id: runId }, { fetchPolicy: 'network-only' })
@@ -244,7 +255,7 @@ const TranslationPreview = ({ huntId, scopePlatformIds, dirty }: { huntId: strin
   return (
     <div data-testid="hunt-translation-preview">
       {!hasPreviewConnector ? (
-        <Text variant="content-compact">{t_i18n('No live hunt connector supports translation preview')}</Text>
+        <Text variant="content-compact">{t_i18n('No live hunt connector supports translation preview on the platforms of this hunt')}</Text>
       ) : (
         <>
           <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>
@@ -355,7 +366,7 @@ const HuntLogic = ({ data }: HuntLogicProps) => {
             <Grid item xs={12} lg={isTelemetry ? 5 : 12}>
               <Card title={t_i18n('Translation preview')}>
                 <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-                  <TranslationPreview huntId={hunt.id} scopePlatformIds={(hunt.scopePlatforms ?? []).map((platform) => platform.id)} dirty={dirty} />
+                  <TranslationPreview huntId={hunt.id} huntType={hunt.hunt_type} scopePlatformIds={(hunt.scopePlatforms ?? []).map((platform) => platform.id)} dirty={dirty} />
                 </Suspense>
               </Card>
             </Grid>

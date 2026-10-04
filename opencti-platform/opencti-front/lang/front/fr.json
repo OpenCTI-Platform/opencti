@@ -3528,7 +3528,7 @@
   "No import works for this file": "Pas d'executions d'import pour ce fichier",
   "No label": "Aucun label",
   "No limit set by the connector": "Aucune limite fixée par le connecteur",
-  "No live hunt connector supports translation preview": "Aucun connecteur de chasse actif ne prend en charge l'aperçu de traduction",
+  "No live hunt connector supports translation preview on the platforms of this hunt": "Aucun connecteur de chasse actif ne prend en charge l'aperçu de traduction sur les plateformes de cette chasse",
   "No log entries yet. Logs appear here when ingestion attempts occur.": "Aucune entrée de journal pour l'instant. Les journaux s'affichent ici lorsque des tentatives d'ingestion ont lieu.",
   "No logs available": "Aucun journal disponible",
   "No Malware analysis on this observable.": "Aucune analyse de code malveillant sur cet observable.",

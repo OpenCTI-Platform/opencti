@@ -3528,7 +3528,7 @@
   "No import works for this file": "このファイルはインポートできません",
   "No label": "ラベルなし",
   "No limit set by the connector": "コネクターによる上限なし",
-  "No live hunt connector supports translation preview": "翻訳プレビューに対応した稼働中のハントコネクターがありません",
+  "No live hunt connector supports translation preview on the platforms of this hunt": "このハントのプラットフォームで翻訳プレビューに対応した稼働中のハントコネクターがありません",
   "No log entries yet. Logs appear here when ingestion attempts occur.": "まだログエントリはありません。データ取り込みの試行が行われると、ここにログが表示されます。",
   "No logs available": "過去ログなし",
   "No Malware analysis on this observable.": "この観測点では、マルウェアの解析は行われていません。",

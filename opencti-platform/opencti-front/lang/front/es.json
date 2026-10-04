@@ -3528,7 +3528,7 @@
   "No import works for this file": "No funciona la importación de este archivo",
   "No label": "Sin etiquetas",
   "No limit set by the connector": "Sin límite fijado por el conector",
-  "No live hunt connector supports translation preview": "Ningún conector de caza activo admite la vista previa de traducción",
+  "No live hunt connector supports translation preview on the platforms of this hunt": "Ningún conector de caza activo admite la vista previa de traducción en las plataformas de esta caza",
   "No log entries yet. Logs appear here when ingestion attempts occur.": "Aún no hay entradas en el registro. Los registros aparecerán aquí cuando se produzcan intentos de importación.",
   "No logs available": "No hay registros disponibles",
   "No Malware analysis on this observable.": "Ningún análisis de malware sobre esta observable.",

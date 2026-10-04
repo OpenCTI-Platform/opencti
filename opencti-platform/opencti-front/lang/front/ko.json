@@ -3528,7 +3528,7 @@
   "No import works for this file": "이 파일에는 가져오기가 작동하지 않습니다",
   "No label": "라벨 없음",
   "No limit set by the connector": "커넥터가 설정한 제한 없음",
-  "No live hunt connector supports translation preview": "번역 미리보기를 지원하는 활성 헌트 커넥터가 없습니다",
+  "No live hunt connector supports translation preview on the platforms of this hunt": "이 헌트의 플랫폼에서 번역 미리보기를 지원하는 활성 헌트 커넥터가 없습니다",
   "No log entries yet. Logs appear here when ingestion attempts occur.": "아직 로그 항목이 없습니다. 데이터 수집 시도가 이루어지면 여기에 로그가 표시됩니다.",
   "No logs available": "사용 가능한 로그 없음",
   "No Malware analysis on this observable.": "이 관찰 가능 항목에 대한 악성 소프트웨어 분석 없음.",

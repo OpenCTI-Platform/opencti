@@ -42,6 +42,8 @@ import {
   runScheduledHunts,
 } from '../../../src/modules/hunt/hunt-automation';
 import { redisSetManagerEventState } from '../../../src/database/redis';
+import * as rabbitmq from '../../../src/database/rabbitmq';
+import * as workDomain from '../../../src/domain/work';
 import { PLAYBOOK_HUNT_COMPONENT } from '../../../src/modules/playbook/components/hunt-component';
 import { playbookBundleElementsToApply } from '../../../src/modules/playbook/playbook-types';
 import { loadHuntRunResultsForPlaybook } from '../../../src/modules/hunt/hunt-playbook';
@@ -277,6 +279,30 @@ describe('Hunt manager', () => {
     }
     for (let index = 0; index < runs.length; index += 1) {
       await expireHuntRun(testContext, await loadRun(runs[index].internal_id), 'Hunt manager test');
+    }
+  });
+
+  it('should delete the work of a dispatch whose message cannot be published', async () => {
+    const hunt = await loadHunt(huntId);
+    const [run] = await createHuntRuns(testContext, hunt, { trigger: HUNT_RUN_TRIGGER_MANUAL, dispatch: false });
+    const { maxConcurrentRunsPerConnector } = HUNT_CONFIG;
+    HUNT_CONFIG.maxConcurrentRunsPerConnector = 1000;
+    const createWork = vi.spyOn(workDomain, 'createWork');
+    const push = vi.spyOn(rabbitmq, 'pushToConnector').mockRejectedValueOnce(new Error('Queue unavailable'));
+    try {
+      await expect(dispatchHuntRun(testContext, run, hunt)).rejects.toThrow('Queue unavailable');
+      const work = await createWork.mock.results[0].value;
+      expect(work?.id).toBeTruthy();
+      expect(await workDomain.loadWorkById(testContext, ADMIN_USER, work.id)).toBeFalsy();
+      // The run stays queued for the next dispatch, its budget slot released
+      const released = await loadRun(run.internal_id);
+      expect(released.dispatched_at).toBeFalsy();
+      expect(released.work_id).toBeFalsy();
+    } finally {
+      HUNT_CONFIG.maxConcurrentRunsPerConnector = maxConcurrentRunsPerConnector;
+      createWork.mockRestore();
+      push.mockRestore();
+      await expireHuntRun(testContext, await loadRun(run.internal_id), 'Hunt manager test');
     }
   });
 

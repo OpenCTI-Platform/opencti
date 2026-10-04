@@ -12,7 +12,7 @@ import { elCount } from '../../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { fullEntitiesList } from '../../database/middleware-loader';
 import { patchAttribute } from '../../database/middleware';
-import { createWork } from '../../domain/work';
+import { createWork, deleteWork } from '../../domain/work';
 import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
 import { CONNECTOR_INTERNAL_HUNT } from '../../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
@@ -50,7 +50,7 @@ export const listHuntConnectors = async (context: AuthContext, onlyAlive = true)
     .filter((connector) => !onlyAlive || connector.active === true);
 };
 
-const huntConnectorPlatform = (connector: BasicStoreEntityConnector): string | null => {
+export const huntConnectorPlatform = (connector: BasicStoreEntityConnector): string | null => {
   if (connector.hunt_platform) {
     return connector.hunt_platform;
   }
@@ -275,7 +275,7 @@ export const dispatchHuntRun = async (
   if (!reserved) {
     return false;
   }
-  let workId: string;
+  let workId: string | undefined;
   try {
     const securityPlatform = run.security_platform_id
       ? (await findByIds<BasicStoreEntity>(context, SYSTEM_USER, [run.security_platform_id]))[0] ?? null
@@ -290,7 +290,12 @@ export const dispatchHuntRun = async (
     const message = await buildHuntRunMessage(context, run, hunt, connector, securityPlatform, workId);
     await pushToConnector(connector.internal_id, message);
   } catch (error) {
-    // Nothing was published: the slot is released and the run stays queued for the next dispatch
+    // Nothing was published: the work no connector will ever process is deleted (every retry creates its own), the
+    // slot is released and the run stays queued for the next dispatch
+    if (workId) {
+      await deleteWork(context, HUNT_MANAGER_USER, workId)
+        .catch((deleteError: unknown) => logApp.error('[OPENCTI-MODULE] Hunt run work cannot be deleted after a failed dispatch', { cause: deleteError, runId: run.internal_id, workId }));
+    }
     await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { dispatched_at: null });
     throw error;
   }
