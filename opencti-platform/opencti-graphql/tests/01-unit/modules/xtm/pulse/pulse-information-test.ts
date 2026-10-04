@@ -8,7 +8,14 @@ import {
   PULSE_PREVIEW_CLEARED_DOCUMENT,
   toPulseInformationOutput,
 } from '../../../../../src/modules/xtm/pulse/pulse-information';
-import { getPulseAccess, matchRegionBucket, matchSectorBucket, readPulseSettings, isPulseContributing } from '../../../../../src/modules/xtm/pulse/pulse-settings';
+import {
+  getPulseAccess,
+  hasPulseReadAccess,
+  matchRegionBucket,
+  matchSectorBucket,
+  readPulseSettings,
+  isPulseContributing,
+} from '../../../../../src/modules/xtm/pulse/pulse-settings';
 import { PULSE_SCOPE_ENTITY_TYPES, type BasicStorePulseEntity, type PulseHubLookupResult } from '../../../../../src/modules/xtm/pulse/pulse-types';
 import { PulseAccess, PulseMode, PulsePrevalence, PulseRegionBucket, PulseSectorBucket, PulseTrend } from '../../../../../src/generated/graphql';
 import type { BasicStoreSettings } from '../../../../../src/types/settings';
@@ -166,15 +173,25 @@ describe('Threat Pulse settings', () => {
   });
 
   it.each([
-    { mode: 'preview', registered: true, lapsed: false, access: PulseAccess.Preview },
-    { mode: 'contribute_and_read', registered: true, lapsed: false, access: PulseAccess.Full },
-    { mode: 'contribute_and_read', registered: true, lapsed: true, access: PulseAccess.Preview },
-    { mode: 'off', registered: true, lapsed: false, access: PulseAccess.Off },
-    { mode: 'contribute_and_read', registered: false, lapsed: false, access: PulseAccess.NotConnected },
-    { mode: 'preview', registered: false, lapsed: false, access: PulseAccess.NotConnected },
-  ])('should give $access to $mode (registered $registered, lapsed $lapsed)', ({ mode, registered, lapsed, access }) => {
+    { mode: 'preview', registered: true, readAccess: false, access: PulseAccess.Preview },
+    { mode: 'contribute_and_read', registered: true, readAccess: true, access: PulseAccess.Full },
+    // Opted in, but no contribution accepted yet, or none within the grace period
+    { mode: 'contribute_and_read', registered: true, readAccess: false, access: PulseAccess.Preview },
+    { mode: 'off', registered: true, readAccess: false, access: PulseAccess.Off },
+    { mode: 'contribute_and_read', registered: false, readAccess: true, access: PulseAccess.NotConnected },
+    { mode: 'preview', registered: false, readAccess: false, access: PulseAccess.NotConnected },
+  ])('should give $access to $mode (registered $registered, read access $readAccess)', ({ mode, registered, readAccess, access }) => {
     const values = readPulseSettings({ id: 'settings', pulse_mode: mode } as unknown as BasicStoreSettings);
-    expect(getPulseAccess(values, registered, lapsed)).toBe(access);
+    expect(getPulseAccess(values, registered, readAccess)).toBe(access);
+  });
+
+  it.each([
+    { state: {}, readAccess: false },
+    { state: { contribution_accepted: 'true' }, readAccess: true },
+    { state: { contribution_accepted: 'true', contribution_lapsed: 'true' }, readAccess: false },
+    { state: { contribution_lapsed: 'true' }, readAccess: false },
+  ])('should open the full reads only after an accepted contribution ($state)', ({ state, readAccess }) => {
+    expect(hasPulseReadAccess(state)).toBe(readAccess);
   });
 
   it('should ignore unknown values', () => {

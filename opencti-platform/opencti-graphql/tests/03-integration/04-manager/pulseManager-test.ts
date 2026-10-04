@@ -280,10 +280,12 @@ describe('Threat Pulse manager and API', () => {
       variables: { input: { mode: 'contribute_and_read', consent_version: PULSE_CONSENT_VERSION, sector_bucket: 'finance', region_bucket: 'europe' } },
     });
     const configuration = result.data?.pulseConfigure;
+    // XTM Hub grants the full reads to a platform that contributed: the preview stays until its first accepted batch
     expect(configuration).toMatchObject({
       mode: 'contribute_and_read',
       enabled: true,
-      readable: true,
+      access: 'preview',
+      readable: false,
       consent_accepted_version: PULSE_CONSENT_VERSION,
       sector_bucket: 'finance',
       region_bucket: 'europe',
@@ -303,6 +305,11 @@ describe('Threat Pulse manager and API', () => {
 
     const { pushedRecords } = await runPulseContribution(testContext);
     expect(pushedRecords).toBeGreaterThan(0);
+    // The first accepted contribution opens the full reads, and only accepted records count in the statistics
+    const status = await queryAsAdminWithSuccess({ query: PULSE_STATUS });
+    expect(status.data?.pulseStatus).toMatchObject({ mode: 'contribute_and_read', access: 'full', readable: true });
+    const settingsAfterPush = await queryAsAdminWithSuccess({ query: PULSE_SETTINGS });
+    expect(settingsAfterPush.data?.pulseSettings.contribution.total_records).toBe(pushedRecords);
     const pushes = hub.requests.filter((request) => request.operation === 'pushPulse');
     expect(pushes.length).toBeGreaterThan(0);
     pushes.forEach((push) => {
@@ -347,22 +354,28 @@ describe('Threat Pulse manager and API', () => {
     const contributed = () => hub.ledger
       .filter((row) => row.platformId === settingsId && keys.includes(row.key))
       .reduce((total, row) => total + row.count, 0);
-    // XTM Hub fails: the batches wait in the outbox
+    const totalRecords = async () => (await queryAsAdminWithSuccess({ query: PULSE_SETTINGS })).data?.pulseSettings.contribution.total_records;
+    const recordsBefore = await totalRecords();
+    // XTM Hub fails: the batches wait in the outbox, and nothing counts as contributed
     hub.failNext('pushPulse', 'INTERNAL_SERVER_ERROR');
     await runPulseContribution(testContext);
     expect(contributed()).toBe(0);
+    expect(await totalRecords()).toBe(recordsBefore);
     // A run claims the pending batches, then stops before XTM Hub answered
     expect((await redisClaimPulseOutbox()).length).toBeGreaterThan(0);
     // The next run claims them again; XTM Hub fails again, they stay claimed
     hub.failNext('pushPulse', 'INTERNAL_SERVER_ERROR');
     await runPulseContribution(testContext);
     expect(contributed()).toBe(0);
-    // Accepted once, then settled
+    // Accepted once, then settled and counted once
     await runPulseContribution(testContext);
     expect(contributed()).toBe(keys.length);
     expect(await redisClaimPulseOutbox()).toEqual([]);
+    const recordsAccepted = await totalRecords();
+    expect(recordsAccepted).toBeGreaterThanOrEqual(recordsBefore + keys.length);
     await runPulseContribution(testContext);
     expect(contributed()).toBe(keys.length);
+    expect(await totalRecords()).toBe(recordsAccepted);
     await deleteElementById(testContext, ADMIN_USER, outboxIndicatorId, ENTITY_TYPE_INDICATOR);
   });
 
@@ -550,6 +563,9 @@ describe('Threat Pulse manager and API', () => {
     expect(result.data?.pulsePurge.success).toBe(true);
     expect(result.data?.pulsePurge.deleted_records).toBeGreaterThan(0);
     expect(hub.ledger.filter((row) => row.platformId === settingsId)).toHaveLength(0);
+    // XTM Hub holds no contribution of the platform any more: back to the preview until the next accepted one
+    const status = await queryAsAdminWithSuccess({ query: PULSE_STATUS });
+    expect(status.data?.pulseStatus).toMatchObject({ mode: 'contribute_and_read', access: 'preview', readable: false });
   });
 
   it('should remove the full statistics when the contribution stops, back to the preview', async () => {

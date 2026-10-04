@@ -19,7 +19,7 @@ import {
 import { ENTITY_TYPE_TRIGGER } from '../../notification/notification-types';
 import { PulseAccess, PulsePeriod, PulseSectorBucket, PulseTrend, TriggerEventType } from '../../../generated/graphql';
 import { getHubTrending, resolveTrendingEntries } from './pulse-domain';
-import { buildPulseMarkingPolicy, getPulseAccess, getPulseHubPlatform, isPulseContributable, readPulseSettings } from './pulse-settings';
+import { buildPulseMarkingPolicy, getPulseAccess, getPulseHubPlatform, hasPulseReadAccess, isPulseContributable, readPulseSettings } from './pulse-settings';
 import { redisFilterNewlyTrending, redisGetPulseState, redisMarkTrendingNotified } from './pulse-cache';
 import { PULSE_OBJECT_TYPE_BY_ENTITY_TYPE } from './pulse-types';
 
@@ -40,7 +40,7 @@ export const runPulseTrendingNotifications = async (context: AuthContext) => {
   const platform = getPulseHubPlatform(settings);
   const state = await redisGetPulseState();
   // The trending triggers are part of the full experience: a platform in preview lists them but they never fire.
-  const access = getPulseAccess(values, platform !== null, state.contribution_lapsed === 'true');
+  const access = getPulseAccess(values, platform !== null, hasPulseReadAccess(state));
   if (access !== PulseAccess.Full || !platform || !values.sectorBucket || values.sectorBucket === PulseSectorBucket.Undisclosed) {
     return 0;
   }

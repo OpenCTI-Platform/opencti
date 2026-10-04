@@ -176,6 +176,13 @@ describe('ThreatPulseSettings', () => {
     expect(lastConfigureInput(relayEnv)).toMatchObject({ mode: 'preview' });
   });
 
+  it('should say that the full experience waits for the first accepted contribution, never that it lapsed', async () => {
+    renderSettings({ ...LAPSED, network: { ...SETTINGS.network, contribution_status: 'none', last_contribution_day: null } });
+    expect(await screen.findByTestId('threat-pulse-pending')).toBeDefined();
+    expect(screen.getByText('First contribution pending - preview')).toBeDefined();
+    expect(screen.queryByTestId('threat-pulse-lapsed')).toBeNull();
+  });
+
   it('should show the state without any action to a user who cannot manage XTM Hub', async () => {
     const { relayEnv } = testRender(<ThreatPulseSettings />, { userContext: analyst });
     const query = relayEnv.mock.getMostRecentOperation();

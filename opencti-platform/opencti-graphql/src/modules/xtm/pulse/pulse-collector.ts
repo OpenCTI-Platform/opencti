@@ -12,6 +12,7 @@ import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../securityPlatform/s
 import { computeStableKeys, computeTransportHash, isValidPulseHash } from './pulse-hashing';
 import { isPulseContributable, type PulseMarkingPolicy } from './pulse-settings';
 import {
+  PULSE_ENTITY_TYPE_BY_OBJECT_TYPE,
   PULSE_EVENT_KINDS,
   PULSE_MAX_RECORD_COUNT,
   PULSE_MAX_RECORDS_PER_BATCH,
@@ -20,6 +21,7 @@ import {
   PULSE_SECTOR_BUCKETS,
   type BasicStorePulseEntity,
   type PulseBatch,
+  type PulseOutboxItem,
   type PulseEventKind,
   type PulseObjectType,
   type PulseRecord,
@@ -123,6 +125,8 @@ export interface PulseKeyedRecord {
   object_type: PulseObjectType;
   event_kind: PulseEventKind;
   count: number;
+  // The object whose activity produced the record first: counted in the contribution statistics, never sent.
+  entity_id?: string;
 }
 
 export interface PulseAggregation {
@@ -175,7 +179,13 @@ export const aggregatePulseActivity = (
       kinds.forEach((count, kind) => {
         const recordId = `${key}|${kind}`;
         const current = totals.get(recordId);
-        totals.set(recordId, { key, object_type: objectType, event_kind: kind, count: Math.min(PULSE_MAX_RECORD_COUNT, (current?.count ?? 0) + count) });
+        totals.set(recordId, {
+          key,
+          object_type: objectType,
+          event_kind: kind,
+          count: Math.min(PULSE_MAX_RECORD_COUNT, (current?.count ?? 0) + count),
+          entity_id: current?.entity_id ?? entity.internal_id,
+        });
         if (!current) {
           recordsByEntityType[entity.entity_type] = (recordsByEntityType[entity.entity_type] ?? 0) + 1;
         }
@@ -252,4 +262,29 @@ export const buildPulseBatches = (
     batches.push(batch);
   }
   return batches;
+};
+
+// The batches of one day, each with what it adds to the contribution statistics once XTM Hub accepts it: its records
+// per entity type, and the objects whose first record it carries, so that an object split over two batches counts once.
+export const buildPulseOutboxItems = (
+  records: PulseKeyedRecord[],
+  salt: string,
+  day: string,
+  buckets: { sector_bucket: PulseSectorBucketValue; region_bucket: PulseRegionBucketValue },
+): PulseOutboxItem[] => {
+  const counted = new Set<string>();
+  return buildPulseBatches(records, salt, day, buckets).map((batch, index) => {
+    const slice = records.slice(index * PULSE_MAX_RECORDS_PER_BATCH, (index + 1) * PULSE_MAX_RECORDS_PER_BATCH);
+    const byType: Record<string, number> = {};
+    let objects = 0;
+    slice.forEach((record) => {
+      const entityType = PULSE_ENTITY_TYPE_BY_OBJECT_TYPE[record.object_type];
+      byType[entityType] = (byType[entityType] ?? 0) + 1;
+      if (record.entity_id && !counted.has(record.entity_id)) {
+        counted.add(record.entity_id);
+        objects += 1;
+      }
+    });
+    return { batch, stats: { records: slice.length, objects, by_type: byType } };
+  });
 };

@@ -220,7 +220,10 @@ test('Keep the Sector benchmark template and the trending widget discoverable in
 const SHOT_MARGIN = 16;
 const shoot = async (target: Locator, name: string, testInfo: TestInfo) => {
   await expect(target).toBeVisible();
-  await target.scrollIntoViewIfNeeded();
+  // A dashboard widget renders again while its content loads: the scroll is retried until the surface stays attached.
+  await expect(async () => {
+    await target.scrollIntoViewIfNeeded({ timeout: 2000 });
+  }).toPass({ timeout: 15000 });
   const path = testInfo.outputPath(`${name}.png`);
   const box = await target.boundingBox();
   const viewport = target.page().viewportSize();

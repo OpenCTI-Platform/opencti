@@ -35,7 +35,15 @@ import {
   PulseUnavailableReason,
 } from '../../../generated/graphql';
 import { PulseHubError, type PulseHubPlatform, xtmHubPulseClient } from '../hub/xtm-hub-pulse-client';
-import { aggregatePulseActivity, buildPulseBatches, collectPulseActivity, countPulseActivity, loadPulseEntities, mergePulseActivity, type PulseActivity } from './pulse-collector';
+import {
+  aggregatePulseActivity,
+  buildPulseOutboxItems,
+  collectPulseActivity,
+  countPulseActivity,
+  loadPulseEntities,
+  mergePulseActivity,
+  type PulseActivity,
+} from './pulse-collector';
 import { computeStableKeys, computeTransportHash, decodeTransportHash, isValidPulseHash } from './pulse-hashing';
 import {
   buildPulseDocument,
@@ -53,6 +61,7 @@ import {
   buildPulseMarkingPolicy,
   getForcedExcludedMarkings,
   getPulseAccess,
+  hasPulseReadAccess,
   getPulseBuckets,
   getPulseHubPlatform,
   isPulseContributable,
@@ -66,7 +75,6 @@ import {
   redisCommitPulseWindow,
   redisDiscardPulseActivity,
   redisDiscardPulseOutbox,
-  redisAddPulseContributionStats,
   redisClearPulseContributionState,
   redisGetPulseContributionStats,
   redisGetPulseCursor,
@@ -81,6 +89,7 @@ import {
   redisSetPulseSalt,
   redisSetPulseState,
   redisTakePulseActivity,
+  type PulseOperationalState,
 } from './pulse-cache';
 import {
   type BasicStorePulseEntity,
@@ -101,7 +110,6 @@ import {
   PULSE_SETTINGS_SCOPES,
   PULSE_SETTINGS_SECTOR,
   PULSE_STATUS_ID,
-  type PulseBatch,
   type PulseEventKind,
   type PulseHubDigest,
   type PulseHubLookupResult,
@@ -109,6 +117,7 @@ import {
   type PulseHubTrendingItem,
   type PulseHubTrendingResult,
   type PulseObjectType,
+  type PulseOutboxItem,
   type PulsePeriodValue,
   type PulseRegionBucketValue,
   type PulseSectorBucketValue,
@@ -159,7 +168,7 @@ const loadPulseContext = async (context: AuthContext) => {
   const values = readPulseSettings(settings);
   const platform = getPulseHubPlatform(settings);
   const state = await redisGetPulseState();
-  const access = getPulseAccess(values, platform !== null, state.contribution_lapsed === 'true');
+  const access = getPulseAccess(values, platform !== null, hasPulseReadAccess(state));
   return { settings, values, platform, state, access };
 };
 
@@ -393,6 +402,7 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
   if (modeChanged) {
     await redisSetPulseState({
       contribution_lapsed: undefined,
+      contribution_accepted: undefined,
       last_refresh_at: undefined,
       refresh_offset: undefined,
       preview_refresh_at: undefined,
@@ -449,15 +459,16 @@ const pushPulseOutbox = async (platform: PulseHubPlatform, oldestAcceptedDay: st
   if (expired.length > 0) {
     logApp.warn('[THREAT PULSE] Pending batches older than the accepted salt days are dropped', { dropped: expired.length });
     for (let index = 0; index < expired.length; index += 1) {
-      await redisSettlePulseOutboxEntry(expired[index]);
+      await redisSettlePulseOutboxEntry(expired[index], false);
     }
   }
   const retryable = claimed.filter((entry) => entry.batch.day >= oldestAcceptedDay);
   let pushedRecords = 0;
   for (let index = 0; index < retryable.length; index += 1) {
     const entry = retryable[index];
+    let accepted = 0;
     try {
-      const { accepted } = await xtmHubPulseClient.push(platform, entry.batch);
+      ({ accepted } = await xtmHubPulseClient.push(platform, entry.batch));
       pushedRecords += accepted;
     } catch (error) {
       const hubError = error instanceof PulseHubError ? error : new PulseHubError('unexpected', String(error));
@@ -466,7 +477,8 @@ const pushPulseOutbox = async (platform: PulseHubPlatform, oldestAcceptedDay: st
       }
       logApp.error('[THREAT PULSE] XTM Hub refused a batch, it is dropped', { cause: hubError, records: entry.batch.records.length });
     }
-    await redisSettlePulseOutboxEntry(entry);
+    // The statistics count what XTM Hub accepted, once per batch.
+    await redisSettlePulseOutboxEntry(entry, accepted > 0);
   }
   return { pushedRecords, error: null };
 };
@@ -482,14 +494,22 @@ const storePulseKeys = async (context: AuthContext, entities: BasicStorePulseEnt
 };
 
 // One hourly contribution: pending batches first, then the activity of the window since the last run.
-// An accepted contribution restores the reads XTM Hub refused: the preview signal leaves room for the full refresh.
-const recoverFromContributionLapse = async (lapsed: boolean, pushedRecords: number) => {
-  if (!lapsed || pushedRecords <= 0) {
+// An accepted contribution opens the reads XTM Hub grants to contributors, or restores the ones it refused: the preview
+// signal leaves room for the full refresh.
+const recordAcceptedContribution = async (state: PulseOperationalState, pushedRecords: number, now: Date) => {
+  if (pushedRecords <= 0) {
     return;
   }
-  await redisSetPulseState({ contribution_lapsed: undefined, last_refresh_at: undefined, preview_matched: undefined });
-  await clearPulseNetworkInformation();
-  logApp.info('[THREAT PULSE] Contribution accepted again, the full experience is restored');
+  const opening = state.contribution_accepted !== 'true' || state.contribution_lapsed === 'true';
+  await redisSetPulseState({
+    last_push_at: now.toISOString(),
+    contribution_accepted: 'true',
+    ...(opening ? { contribution_lapsed: undefined, last_refresh_at: undefined, preview_matched: undefined } : {}),
+  });
+  if (opening) {
+    await clearPulseNetworkInformation();
+    logApp.info('[THREAT PULSE] Contribution accepted, the full experience is open');
+  }
 };
 
 export const runPulseContribution = async (context: AuthContext) => {
@@ -497,7 +517,6 @@ export const runPulseContribution = async (context: AuthContext) => {
   if (!isPulseContributing(values) || !platform) {
     return { pushedRecords: 0 };
   }
-  const lapsed = state.contribution_lapsed === 'true';
   const now = new Date();
   const today = utcDay(now);
   const yesterday = previousUtcDay(today);
@@ -505,8 +524,9 @@ export const runPulseContribution = async (context: AuthContext) => {
   const outboxOutcome = await pushPulseOutbox(platform, yesterday);
   pushedRecords += outboxOutcome.pushedRecords;
   if (outboxOutcome.error) {
+    // Backpressure: no new window is collected while XTM Hub has not answered the pending batches.
     await redisSetPulseState({ last_error: outboxOutcome.error.code });
-    await recoverFromContributionLapse(lapsed, pushedRecords);
+    await recordAcceptedContribution(state, pushedRecords, now);
     addThreatPulseRecordsCount(pushedRecords);
     return { pushedRecords };
   }
@@ -546,8 +566,7 @@ export const runPulseContribution = async (context: AuthContext) => {
   const buckets = getPulseBuckets(values);
   let records = 0;
   let excluded = 0;
-  const windowBatches: PulseBatch[] = [];
-  const windowStats: Array<{ day: string; records: number; objects: number; recordsByEntityType: Record<string, number> }> = [];
+  const windowItems: PulseOutboxItem[] = [];
   const days = Array.from(activityByDay.keys()).sort();
   for (let index = 0; index < days.length; index += 1) {
     const day = days[index];
@@ -557,25 +576,19 @@ export const runPulseContribution = async (context: AuthContext) => {
     records += aggregation.records.length;
     excluded += aggregation.excludedCount;
     if (aggregation.records.length > 0) {
-      windowBatches.push(...buildPulseBatches(aggregation.records, await getPulseSalt(platform, day), day, buckets));
+      windowItems.push(...buildPulseOutboxItems(aggregation.records, await getPulseSalt(platform, day), day, buckets));
       await storePulseKeys(context, aggregation.contributedEntities);
-      windowStats.push({ day, records: aggregation.records.length, objects: aggregation.contributedEntities.length, recordsByEntityType: aggregation.recordsByEntityType });
     }
   }
-  // Written ahead of any push, in one transaction: the batches of the window, the cursor after it and the
-  // acknowledgement of the activity taken from Redis. A run that stops before it sent nothing and the next one collects
-  // the same window again; a run that stops after it leaves the batches in the outbox, sent by the next run with the
-  // same identifiers, which XTM Hub counts once.
-  await redisCommitPulseWindow(windowBatches, until.toISOString(), acceptedDays);
-  for (let index = 0; index < windowStats.length; index += 1) {
-    const { day, records: dayRecords, objects, recordsByEntityType } = windowStats[index];
-    await redisAddPulseContributionStats(day, dayRecords, objects, recordsByEntityType);
-  }
+  // Written ahead of any push, in one transaction: the batches of the window with their statistics, the cursor after
+  // it and the acknowledgement of the activity taken from Redis. A run that stops before it sent nothing and the next
+  // one collects the same window again; a run that stops after it leaves the batches in the outbox, sent by the next
+  // run with the same identifiers, which XTM Hub counts once.
+  await redisCommitPulseWindow(windowItems, until.toISOString(), acceptedDays);
   const windowOutcome = await pushPulseOutbox(platform, yesterday);
   pushedRecords += windowOutcome.pushedRecords;
-  const lastError = windowOutcome.error?.code;
-  await redisSetPulseState({ last_push_at: now.toISOString(), last_error: lastError });
-  await recoverFromContributionLapse(lapsed, pushedRecords);
+  await redisSetPulseState({ last_error: windowOutcome.error?.code });
+  await recordAcceptedContribution(state, pushedRecords, now);
   addThreatPulseRecordsCount(pushedRecords);
   logApp.info('[THREAT PULSE] Contribution done', {
     since: since.toISOString(),
@@ -1148,7 +1161,7 @@ export const recordPulseTelemetry = (event: PulseTelemetryEvent, surface: PulseS
 
 // region purge
 export const purgePulseContributions = async (context: AuthContext, user: AuthUser) => {
-  const { settings, platform } = await loadPulseContext(context);
+  const { settings, platform, access } = await loadPulseContext(context);
   if (!platform) {
     throw FunctionalError('Register the platform on XTM Hub to purge its Threat Pulse contributions');
   }
@@ -1165,6 +1178,11 @@ export const purgePulseContributions = async (context: AuthContext, user: AuthUs
   }
   await redisClearPulseContributionState(lastUtcDays(STATS_DAYS + 1));
   await redisSetPulseCursor(new Date().toISOString());
+  // XTM Hub no longer holds a contribution of the platform: the full reads wait for the next accepted one.
+  await redisSetPulseState({ contribution_accepted: undefined, contribution_lapsed: undefined, last_push_at: undefined, last_refresh_at: undefined, refresh_offset: undefined });
+  if (access === PulseAccess.Full) {
+    await clearPulseNetworkInformation();
+  }
   await publishUserAction({
     user,
     event_type: 'mutation',

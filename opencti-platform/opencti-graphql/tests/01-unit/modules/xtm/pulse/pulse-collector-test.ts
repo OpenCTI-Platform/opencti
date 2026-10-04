@@ -14,7 +14,14 @@ vi.mock('../../../../../src/database/cache', () => ({
   getEntityFromCache: vi.fn(),
 }));
 
-import { aggregatePulseActivity, assertPulseBatch, buildPulseBatches, mergePulseActivity, type PulseActivity } from '../../../../../src/modules/xtm/pulse/pulse-collector';
+import {
+  aggregatePulseActivity,
+  assertPulseBatch,
+  buildPulseBatches,
+  buildPulseOutboxItems,
+  mergePulseActivity,
+  type PulseActivity,
+} from '../../../../../src/modules/xtm/pulse/pulse-collector';
 import { buildPulseMarkingPolicy, isPulseContributable } from '../../../../../src/modules/xtm/pulse/pulse-settings';
 import { computeStableKeys } from '../../../../../src/modules/xtm/pulse/pulse-hashing';
 import { PULSE_SCOPE_ENTITY_TYPES, type BasicStorePulseEntity, type PulseBatch, type PulseSettingsValues } from '../../../../../src/modules/xtm/pulse/pulse-types';
@@ -139,6 +146,23 @@ describe('Threat Pulse collector privacy guardrails', () => {
     expect(batches.map((batch) => batch.records.length)).toEqual([5000, 5000, 2001]);
     // One identifier per batch: XTM Hub counts each of them once
     expect(new Set(batches.map((batch) => batch.batch_id)).size).toBe(3);
+  });
+
+  it('should count each object once in the statistics of the batches that carry its records, and never send it', () => {
+    // 4999 objects with one record each, then one object whose three records straddle the two batches
+    const records = Array.from({ length: 5002 }, (_, index) => ({
+      key: index.toString(16).padStart(32, '0'),
+      object_type: index < 5001 ? 'indicator' as const : 'malware' as const,
+      event_kind: 'created' as const,
+      count: 1,
+      entity_id: index < 4999 ? `entity-${index}` : 'entity-split',
+    }));
+    const items = buildPulseOutboxItems(records, SALT, '2026-10-03', BUCKETS);
+    expect(items.map((item) => item.stats)).toEqual([
+      { records: 5000, objects: 5000, by_type: { Indicator: 5000 } },
+      { records: 2, objects: 0, by_type: { Indicator: 1, Malware: 1 } },
+    ]);
+    expect(JSON.stringify(items.map((item) => item.batch))).not.toContain('entity-');
   });
 });
 

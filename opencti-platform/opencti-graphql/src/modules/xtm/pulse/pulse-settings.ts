@@ -10,6 +10,7 @@ import { ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_
 import { SYSTEM_USER } from '../../../utils/access';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
 import type { PulseHubPlatform } from '../hub/xtm-hub-pulse-client';
+import type { PulseOperationalState } from './pulse-cache';
 import { PulseAccess, PulseMode, PulseRegionBucket, PulseSectorBucket } from '../../../generated/graphql';
 import {
   PULSE_FORCED_EXCLUDED_MARKING_DEFINITIONS,
@@ -64,10 +65,16 @@ export const isPulseContributing = (values: PulseSettingsValues) => values.mode 
 
 // Reciprocity: the full reads need the contribution, and XTM Hub enforces it. A contributing platform whose
 // contribution lapsed (XTM Hub answered contribution_required) falls back to the preview until it contributes again.
-export const getPulseAccess = (values: PulseSettingsValues, registered: boolean, contributionLapsed: boolean): PulseAccess => {
+// XTM Hub answers the full reads to a platform it accepted a contribution from, until the grace period lapses.
+export const hasPulseReadAccess = (state: Pick<PulseOperationalState, 'contribution_accepted' | 'contribution_lapsed'>) => {
+  return state.contribution_accepted === 'true' && state.contribution_lapsed !== 'true';
+};
+
+// A contributing platform reads the full experience once XTM Hub accepted its contribution, and the preview before.
+export const getPulseAccess = (values: PulseSettingsValues, registered: boolean, readAccess: boolean): PulseAccess => {
   if (!registered) return PulseAccess.NotConnected;
   if (values.mode === PulseMode.Off) return PulseAccess.Off;
-  if (values.mode === PulseMode.ContributeAndRead && !contributionLapsed) return PulseAccess.Full;
+  if (values.mode === PulseMode.ContributeAndRead && readAccess) return PulseAccess.Full;
   return PulseAccess.Preview;
 };
 

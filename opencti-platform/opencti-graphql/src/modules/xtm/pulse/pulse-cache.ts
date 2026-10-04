@@ -1,6 +1,6 @@
 import { getClientBase } from '../../../database/redis';
 import { logApp } from '../../../config/conf';
-import type { PulseBatch, PulseEventKind } from './pulse-types';
+import type { PulseEventKind, PulseOutboxItem } from './pulse-types';
 
 // The {pulse} hash tag keeps every key on one Redis cluster slot, as some commands below touch several keys.
 const SALT_PREFIX = '{pulse}:salt:';
@@ -20,7 +20,6 @@ const SALT_TTL_SECONDS = 3 * 24 * 3600;
 // The activity of a day can only be contributed with the salt of that day, which XTM Hub keeps for 3 days.
 const ACTIVITY_TTL_SECONDS = 3 * 24 * 3600;
 const STATS_TTL_SECONDS = 31 * 24 * 3600;
-const OUTBOX_MAX_BATCHES = 500;
 
 const parseJson = <T>(raw: string | null, label: string): T | null => {
   if (!raw) {
@@ -68,12 +67,13 @@ export const redisSetPulseCursor = async (isoDate: string) => {
 };
 
 // The batches of a contribution window, the cursor after it and the acknowledgement of the activity taken from Redis,
-// in one transaction (every key shares the {pulse} slot): either all of them are written or none.
-export const redisCommitPulseWindow = async (batches: PulseBatch[], cursor: string, ackDays: string[]) => {
+// in one transaction (every key shares the {pulse} slot): either all of them are written or none. The outbox is never
+// trimmed: a run whose pending batches XTM Hub did not answer collects no new window, and a batch whose salt day XTM
+// Hub no longer accepts is dropped when claimed, so it holds at most one window beyond the accepted days.
+export const redisCommitPulseWindow = async (items: PulseOutboxItem[], cursor: string, ackDays: string[]) => {
   const transaction = getClientBase().multi();
-  if (batches.length > 0) {
-    transaction.rpush(OUTBOX_KEY, ...batches.map((batch) => JSON.stringify(batch)));
-    transaction.ltrim(OUTBOX_KEY, -OUTBOX_MAX_BATCHES, -1);
+  if (items.length > 0) {
+    transaction.rpush(OUTBOX_KEY, ...items.map((item) => JSON.stringify(item)));
   }
   transaction.set(CURSOR_KEY, cursor);
   if (ackDays.length > 0) {
@@ -87,7 +87,7 @@ export const redisCommitPulseWindow = async (batches: PulseBatch[], cursor: stri
 };
 
 // Atomically moves the pending batches into the in-flight list, after what a run that stopped before settling its
-// batches left there, and returns the whole in-flight list (capped like the outbox).
+// batches left there, and returns the whole in-flight list.
 const CLAIM_OUTBOX_SCRIPT = `
 local outbox = KEYS[1]
 local inflight = KEYS[2]
@@ -96,24 +96,41 @@ for index = 1, #pending do
   redis.call('RPUSH', inflight, pending[index])
 end
 redis.call('DEL', outbox)
-redis.call('LTRIM', inflight, -tonumber(ARGV[1]), -1)
 return redis.call('LRANGE', inflight, 0, -1)
 `;
 
-export interface PulseOutboxEntry {
+// Removes a settled batch and, when XTM Hub accepted it, adds its statistics: both happen once, in one script, however
+// many times a run settles the same entry.
+const SETTLE_OUTBOX_SCRIPT = `
+local removed = redis.call('LREM', KEYS[1], 1, ARGV[1])
+if removed == 1 and ARGV[2] == '1' then
+  redis.call('HINCRBY', KEYS[2], 'records', tonumber(ARGV[3]))
+  redis.call('HINCRBY', KEYS[2], 'objects', tonumber(ARGV[4]))
+  redis.call('EXPIRE', KEYS[2], tonumber(ARGV[5]))
+  for index = 6, #ARGV, 2 do
+    redis.call('HINCRBY', KEYS[3], ARGV[index], tonumber(ARGV[index + 1]))
+  end
+end
+return removed
+`;
+
+export interface PulseOutboxEntry extends PulseOutboxItem {
   raw: string;
-  batch: PulseBatch;
 }
+
+const isPulseOutboxItem = (value: PulseOutboxItem | null): value is PulseOutboxItem => {
+  return !!value && typeof value.batch === 'object' && value.batch !== null && typeof value.stats === 'object' && value.stats !== null;
+};
 
 // A claimed batch stays in Redis until redisSettlePulseOutboxEntry: a run that stops or fails before XTM Hub answered
 // leaves it to the next run, so a pending contribution is never lost.
 export const redisClaimPulseOutbox = async (): Promise<PulseOutboxEntry[]> => {
-  const raw = ((await getClientBase().eval(CLAIM_OUTBOX_SCRIPT, 2, OUTBOX_KEY, OUTBOX_INFLIGHT_KEY, OUTBOX_MAX_BATCHES)) as string[] | null) ?? [];
+  const raw = ((await getClientBase().eval(CLAIM_OUTBOX_SCRIPT, 2, OUTBOX_KEY, OUTBOX_INFLIGHT_KEY)) as string[] | null) ?? [];
   const entries: PulseOutboxEntry[] = [];
   for (let index = 0; index < raw.length; index += 1) {
-    const batch = parseJson<PulseBatch>(raw[index], OUTBOX_KEY);
-    if (batch) {
-      entries.push({ raw: raw[index], batch });
+    const item = parseJson<PulseOutboxItem>(raw[index], OUTBOX_KEY);
+    if (isPulseOutboxItem(item)) {
+      entries.push({ raw: raw[index], batch: item.batch, stats: item.stats });
     } else {
       await getClientBase().lrem(OUTBOX_INFLIGHT_KEY, 1, raw[index]);
     }
@@ -121,9 +138,23 @@ export const redisClaimPulseOutbox = async (): Promise<PulseOutboxEntry[]> => {
   return entries;
 };
 
-// Once XTM Hub accepted the batch, or refused it for good.
-export const redisSettlePulseOutboxEntry = async (entry: PulseOutboxEntry) => {
-  await getClientBase().lrem(OUTBOX_INFLIGHT_KEY, 1, entry.raw);
+// Once XTM Hub answered the batch: accepted, its records count in the contribution statistics; refused for good or
+// past the accepted salt days, it is dropped without counting.
+export const redisSettlePulseOutboxEntry = async (entry: PulseOutboxEntry, accepted: boolean) => {
+  const typeArgs = Object.entries(entry.stats.by_type).flatMap(([entityType, records]) => [entityType, String(records)]);
+  await getClientBase().eval(
+    SETTLE_OUTBOX_SCRIPT,
+    3,
+    OUTBOX_INFLIGHT_KEY,
+    `${STATS_DAY_PREFIX}${entry.batch.day}`,
+    STATS_TYPE_KEY,
+    entry.raw,
+    accepted ? '1' : '0',
+    String(entry.stats.records),
+    String(entry.stats.objects),
+    String(STATS_TTL_SECONDS),
+    ...typeArgs,
+  );
 };
 
 // Opting out: nothing pending may leave afterwards.
@@ -141,6 +172,9 @@ export interface PulseOperationalState {
   last_error?: string;
   // 'true' once XTM Hub answered contribution_required to a contributing platform, until its next accepted push.
   contribution_lapsed?: string;
+  // 'true' once XTM Hub accepted a contribution of the platform since it enabled the contribution or purged it: XTM Hub
+  // grants the full reads to a platform that contributed, never to one that only asked to.
+  contribution_accepted?: string;
   preview_refresh_at?: string;
   // How many objects in scope the next preview pass skips: the ones the previous passes covered.
   preview_offset?: string;
@@ -164,19 +198,6 @@ export const redisSetPulseState = async (state: PulseOperationalState) => {
   }
   if (removals.length > 0) {
     await client.hdel(STATE_KEY, ...removals);
-  }
-};
-
-export const redisAddPulseContributionStats = async (day: string, records: number, objects: number, recordsByEntityType: Record<string, number>) => {
-  const client = getClientBase();
-  const dayKey = `${STATS_DAY_PREFIX}${day}`;
-  await client.hincrby(dayKey, 'records', records);
-  await client.hincrby(dayKey, 'objects', objects);
-  await client.expire(dayKey, STATS_TTL_SECONDS);
-  const typeEntries = Object.entries(recordsByEntityType);
-  for (let index = 0; index < typeEntries.length; index += 1) {
-    const [entityType, count] = typeEntries[index];
-    await client.hincrby(STATS_TYPE_KEY, entityType, count);
   }
 };
 

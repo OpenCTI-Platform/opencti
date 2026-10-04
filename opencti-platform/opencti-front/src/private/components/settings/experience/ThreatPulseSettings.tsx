@@ -423,7 +423,11 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
     });
   };
 
-  const lapsed = settings.mode === 'contribute_and_read' && settings.access === 'preview';
+  // A contributing platform reads the preview until XTM Hub accepted a contribution, and again once its contributions
+  // lapsed: XTM Hub says which of the two.
+  const contributingInPreview = settings.mode === 'contribute_and_read' && settings.access === 'preview';
+  const lapsed = contributingInPreview && settings.network.contribution_status === 'lapsed';
+  const pending = contributingInPreview && !lapsed;
   let statusChip = <Chip label={t_i18n('Off')} severity="neutral" />;
   if (settings.access === 'not_connected') {
     statusChip = <Chip label={t_i18n('Not connected')} severity="neutral" />;
@@ -431,6 +435,8 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
     statusChip = <Chip label={t_i18n('Contributing')} severity="low" />;
   } else if (lapsed) {
     statusChip = <Chip label={t_i18n('Contribution lapsed - preview')} severity="medium" />;
+  } else if (pending) {
+    statusChip = <Chip label={t_i18n('First contribution pending - preview')} severity="info" />;
   } else if (settings.access === 'preview') {
     statusChip = <Chip label={t_i18n('Preview')} severity="info" />;
   }
@@ -517,6 +523,11 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
       {lapsed && (
         <Alert severity="warning" variant="outlined" data-testid="threat-pulse-lapsed" style={{ marginBottom: theme.spacing(1) }}>
           {t_i18n('XTM Hub received no contribution from this platform within the grace period: the preview is shown until the next contribution is accepted.')}
+        </Alert>
+      )}
+      {pending && (
+        <Alert severity="info" variant="outlined" data-testid="threat-pulse-pending" style={{ marginBottom: theme.spacing(1) }}>
+          {t_i18n('The full experience opens once XTM Hub accepts the first contribution of this platform, sent by the next hourly run with activity to share: the preview is shown until then.')}
         </Alert>
       )}
       <ExperienceDetailRow label={t_i18n('Mode')}>

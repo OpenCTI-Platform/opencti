@@ -132,6 +132,18 @@ export interface PulseBatch {
   records: PulseRecord[];
 }
 
+// What a batch adds to the contribution statistics once XTM Hub accepted it. Kept on the platform, never sent.
+export interface PulseBatchStats {
+  records: number;
+  objects: number;
+  by_type: Record<string, number>;
+}
+
+export interface PulseOutboxItem {
+  batch: PulseBatch;
+  stats: PulseBatchStats;
+}
+
 // Hub answers (contract section 3).
 export interface PulseHubLookupResult {
   hash: string;
