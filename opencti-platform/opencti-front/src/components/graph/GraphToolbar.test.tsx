@@ -46,6 +46,17 @@ describe('GraphToolbar', () => {
     expect(screen.getByRole('button', { name: 'Zoom in' })).not.toHaveAttribute('aria-pressed');
   });
 
+  it('measures every fixed part, the divider before the creation tools included, to plan its room', () => {
+    renderToolbar();
+    const toolbar = screen.getByRole('toolbar', { name: 'Graph toolbar' });
+    const creation = within(toolbar).getByRole('group', { name: 'Creation and removal' });
+    expect(creation).toHaveAttribute('data-toolbar-pinned');
+    const divider = creation.previousElementSibling;
+    expect(divider).toHaveAttribute('data-toolbar-pinned');
+    expect(divider?.children).toHaveLength(1);
+    expect(divider?.firstElementChild).toHaveAttribute('aria-hidden', 'true');
+  });
+
   it('sits on the elevated surface of the legend and the details panel', () => {
     renderToolbar();
     const surface = screen.getByRole('toolbar', { name: 'Graph toolbar' }).closest('[data-graph-toolbar]');

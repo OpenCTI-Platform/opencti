@@ -200,7 +200,7 @@ const GraphToolbar = ({
 
         {editable && (
           <>
-            <GroupDivider />
+            <Pinned><GroupDivider /></Pinned>
             <Pinned label={t_i18n('Creation and removal')}>
               {context === 'investigation' && (
                 <GraphToolbarExpandTools
