@@ -300,7 +300,8 @@ export const computeEventIncrements = async (
     } else if (data.type === EVENT_TYPE_UPDATE) {
       const updateEvent = data as UpdateEvent;
       if (isKnowledge) {
-        // A source re-asserting an object refreshes its freshness
+        // A source updating an object refreshes its freshness. Assertions recorded without a change of the object
+        // emit no stream event (provenance writes them aside): the daily computation counts them
         const sourceIds = resolveEventSources(resolver, { originUserId: data.origin?.user_id });
         addIncrement(increments, sourceIds, { source_last_asserted_at: time });
         if (patchSetsValue(updateEvent, '/revoked', true)) {
