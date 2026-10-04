@@ -26,6 +26,8 @@ The **Defense** entry of the left menu, right after **Observations**, is where i
 
 Opening a link to Defense when none of its areas is available to you shows a page that says so, with a way back to the dashboard, instead of sending you elsewhere without a word. The areas may be hidden on your platform or need a permission your account does not have: ask your administrator if you need them.
 
+![The Defense page saying that nothing in Defense is available to the reader, with a button back to the dashboard](assets/defense-hub-no-access.png)
+
 ## Related pages
 
 - [Security Coverage](security-coverage.md): the coverage of a security platform, also shown on the platform itself.

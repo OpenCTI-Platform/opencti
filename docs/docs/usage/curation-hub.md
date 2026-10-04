@@ -10,6 +10,8 @@
 | Merges | Follow the merges that were applied, and undo one when it was wrong. |
 | Knowledge health | Measure the quality of the knowledge base over time. |
 
+![The Data menu expanded on Curation, with the Conflicts tab open under the breadcrumb Data, Curation, Conflicts](assets/curation-hub-conflicts-open.png)
+
 ## When the entry is shown
 
 - **Curation** appears in the **Data** menu, right after **Relationships**, as soon as one of its tabs is available on your platform.
