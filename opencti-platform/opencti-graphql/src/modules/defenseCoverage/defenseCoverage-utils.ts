@@ -164,12 +164,16 @@ export const computeRecommendedAction = (input: {
  * round robin): a reader who can see any evidence of a partition still sees one. The level class splits a partition
  * where the evidence kind matters to the level (the deployment status), so that each class stays represented too.
  * Pass the evidences in preference order: the first one of a partition is the one kept.
+ * The partitions themselves are bounded by maxPartitions, a hard limit on the stored size: beyond it, the partitions
+ * of the first evidences in preference order are kept, so a reader of a dropped partition may see a lower level,
+ * never a higher one.
  */
 export const capEvidences = <T>(
   evidences: T[],
   max: number,
   accessKeyOf?: (evidence: T) => string,
   levelClassOf?: (evidence: T) => string,
+  maxPartitions = max * 4,
 ): T[] => {
   if (evidences.length <= max) return evidences;
   if (!accessKeyOf) return evidences.slice(0, max);
@@ -180,7 +184,7 @@ export const capEvidences = <T>(
     if (group) group.push(evidence);
     else groups.set(key, [evidence]);
   });
-  const groupLists = Array.from(groups.values());
+  const groupLists = Array.from(groups.values()).slice(0, Math.max(max, maxPartitions));
   const capped: T[] = groupLists.map((group) => group[0]);
   for (let round = 1; capped.length < max; round += 1) {
     const picks = groupLists.filter((group) => round < group.length).map((group) => group[round]);

@@ -39,6 +39,8 @@ import { generateStandardId } from '../../schema/identifier';
 
 const VALIDATION_SUCCESS_THRESHOLD = conf.get('defense_coverage_manager:validation_success_threshold') ?? 50;
 const MAX_EVIDENCES = conf.get('defense_coverage_manager:max_evidences') ?? 250;
+// Hard bound of the stored access partitions of an evidence list, whatever their number
+const MAX_EVIDENCE_PARTITIONS = conf.get('defense_coverage_manager:max_evidence_partitions') ?? 1000;
 const BULK_SIZE = 500;
 const IDS_CHUNK_SIZE = 5000;
 
@@ -316,16 +318,16 @@ export const buildTechniqueCoverage = (attackPatternId: string, graph: Computati
   const attributedRels = new Set(Array.from(vectors.values()).flatMap((vector) => vector.validations.map((v) => v.rel)));
   const platforms = Array.from(vectors.values()).map((vector) => ({
     ...vector,
-    telemetry: capEvidences(R.uniqBy((t) => `${t.id}|${t.rel}|${t.detects}`, vector.telemetry), MAX_EVIDENCES, accessKey),
-    deployments: capEvidences(vector.deployments, MAX_EVIDENCES, accessKey, (d) => d.status),
-    validations: capEvidences(latestFirst(vector.validations), MAX_EVIDENCES, accessKey),
+    telemetry: capEvidences(R.uniqBy((t) => `${t.id}|${t.rel}|${t.detects}`, vector.telemetry), MAX_EVIDENCES, accessKey, undefined, MAX_EVIDENCE_PARTITIONS),
+    deployments: capEvidences(vector.deployments, MAX_EVIDENCES, accessKey, (d) => d.status, MAX_EVIDENCE_PARTITIONS),
+    validations: capEvidences(latestFirst(vector.validations), MAX_EVIDENCES, accessKey, undefined, MAX_EVIDENCE_PARTITIONS),
   }));
   const coverage: DefenseCoverage = {
     computed_at: computedAt,
-    data_components: capEvidences(dataComponents, MAX_EVIDENCES, accessKey),
-    rules: capEvidences(rules, MAX_EVIDENCES, accessKey),
-    mitigations: capEvidences(mitigations, MAX_EVIDENCES, accessKey),
-    validations: capEvidences(latestFirst(validations.map((v) => ({ ...v, attributed: attributedRels.has(v.rel) }))), MAX_EVIDENCES, accessKey),
+    data_components: capEvidences(dataComponents, MAX_EVIDENCES, accessKey, undefined, MAX_EVIDENCE_PARTITIONS),
+    rules: capEvidences(rules, MAX_EVIDENCES, accessKey, undefined, MAX_EVIDENCE_PARTITIONS),
+    mitigations: capEvidences(mitigations, MAX_EVIDENCES, accessKey, undefined, MAX_EVIDENCE_PARTITIONS),
+    validations: capEvidences(latestFirst(validations.map((v) => ({ ...v, attributed: attributedRels.has(v.rel) }))), MAX_EVIDENCES, accessKey, undefined, MAX_EVIDENCE_PARTITIONS),
     platforms,
     level: 0,
   };

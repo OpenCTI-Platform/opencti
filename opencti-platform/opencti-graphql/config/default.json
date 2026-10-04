@@ -354,6 +354,7 @@
     "max_incremental_techniques": 300,
     "validation_success_threshold": 50,
     "max_evidences": 250,
+    "max_evidence_partitions": 1000,
     "reader_cache_ttl": 300000
   },
   "platform_usage_metrics_manager": {

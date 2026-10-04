@@ -396,6 +396,18 @@ describe('Defense evidence cap', () => {
     const capped = capEvidences(partitions, 3, (e) => e.key);
     expect(capped.map((e) => e.id)).toEqual(['p0-a', 'p1-a', 'p2-a', 'p3-a', 'p4-a']);
   });
+  it('should bound the access signatures kept by the partition limit', () => {
+    const partitions = Array.from({ length: 10 }, (_, index) => [
+      { id: `p${index}-a`, key: `signature-${index}` },
+      { id: `p${index}-b`, key: `signature-${index}` },
+    ]).flat();
+    // The partitions of the first evidences in preference order are kept, never more than the limit
+    expect(capEvidences(partitions, 3, (e) => e.key, undefined, 4).map((e) => e.id)).toEqual(['p0-a', 'p1-a', 'p2-a', 'p3-a']);
+    // The default limit is four times the evidence bound
+    expect(capEvidences(partitions, 2, (e) => e.key)).toHaveLength(8);
+    // The limit never drops below the evidence bound itself
+    expect(capEvidences(partitions, 5, (e) => e.key, undefined, 1).map((e) => e.id)).toEqual(['p0-a', 'p1-a', 'p2-a', 'p3-a', 'p4-a']);
+  });
   it('should keep every level class of an access signature', () => {
     const deployments = [
       { id: 'rule-1', status: 'deployed', key: 'tlp-amber' },

@@ -178,9 +178,26 @@ export const initDefenseLogsourceMappings = async (context: AuthContext, user: A
   return created;
 };
 
+type RestoreAction = 'create' | 'restore' | 'unchanged' | 'keep_custom';
+
+/**
+ * What restoring a built-in mapping does to the mapping holding its log source key: create it when missing, give a
+ * built-in entry its shipped definition back, and keep a custom mapping of the same log source (one a later release
+ * ships as built-in) untouched - the custom mapping of the organization takes the built-in's place.
+ */
+export const builtInRestoreAction = (
+  current: Pick<BasicStoreEntityDefenseLogsourceMapping, 'built_in' | 'data_components' | 'active' | 'description'> | undefined,
+  shipped: { data_components: string[]; description?: string | null },
+): RestoreAction => {
+  if (!current) return 'create';
+  if (!current.built_in) return 'keep_custom';
+  const sameComponents = [...current.data_components].sort().join('|') === [...shipped.data_components].sort().join('|');
+  return !sameComponents || !current.active || current.description !== shipped.description ? 'restore' : 'unchanged';
+};
+
 /**
  * Restore every built-in mapping to its shipped definition and recreate the missing ones.
- * Custom mappings are kept.
+ * Custom mappings are kept, including one holding the log source of a built-in entry.
  */
 export const resetDefenseLogsourceMappings = async (context: AuthContext, user: AuthUser) => {
   const existing = await listAllDefenseLogsourceMappings(context, user);
@@ -189,19 +206,17 @@ export const resetDefenseLogsourceMappings = async (context: AuthContext, user: 
   for (let index = 0; index < DEFENSE_LOGSOURCE_MAPPING_DEFAULTS.length; index += 1) {
     const mappingInput = buildMappingInput(DEFENSE_LOGSOURCE_MAPPING_DEFAULTS[index], true);
     const current = existingByKey.get(mappingInput.mapping_key);
-    if (!current) {
+    const action = builtInRestoreAction(current, mappingInput);
+    if (action === 'create') {
       await createInternalObject(context, user, mappingInput, ENTITY_TYPE_DEFENSE_LOGSOURCE_MAPPING, { auditLogEnabled: false });
       restored += 1;
-    } else {
-      const sameComponents = [...current.data_components].sort().join('|') === [...mappingInput.data_components].sort().join('|');
-      if (!sameComponents || !current.active || current.description !== mappingInput.description) {
-        await updateAttribute(context, user, current.id, ENTITY_TYPE_DEFENSE_LOGSOURCE_MAPPING, [
-          { key: 'data_components', value: mappingInput.data_components },
-          { key: 'active', value: [true] },
-          { key: 'description', value: [mappingInput.description] },
-        ]);
-        restored += 1;
-      }
+    } else if (action === 'restore' && current) {
+      await updateAttribute(context, user, current.id, ENTITY_TYPE_DEFENSE_LOGSOURCE_MAPPING, [
+        { key: 'data_components', value: mappingInput.data_components },
+        { key: 'active', value: [true] },
+        { key: 'description', value: [mappingInput.description] },
+      ]);
+      restored += 1;
     }
   }
   await publishUserAction({

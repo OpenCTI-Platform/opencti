@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { accessSignature, buildTechniqueCoverage, type ComputationGraph } from '../../../../src/modules/defenseCoverage/defenseCoverage-compute';
 import { collectDefenseImpact } from '../../../../src/modules/defenseCoverage/defenseCoverage-impact';
-import { DEFENSE_LOGSOURCE_MAPPING_DEFAULTS } from '../../../../src/modules/defenseCoverage/defenseLogsourceMapping/defenseLogsourceMapping-domain';
+import { builtInRestoreAction, DEFENSE_LOGSOURCE_MAPPING_DEFAULTS } from '../../../../src/modules/defenseCoverage/defenseLogsourceMapping/defenseLogsourceMapping-domain';
 import { buildLogsourceMappingKey } from '../../../../src/modules/defenseCoverage/defenseCoverage-utils';
 import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
 import type { BasicStoreEntity, BasicStoreRelation } from '../../../../src/types/store';
@@ -187,5 +187,14 @@ describe('Defense log source mapping defaults', () => {
       expect(entry.logsource_category || entry.logsource_product || entry.logsource_service).toBeTruthy();
       expect(entry.data_components.length).toBeGreaterThan(0);
     });
+  });
+  it('should restore built-in entries and keep a custom mapping holding a built-in log source', () => {
+    const shipped = { data_components: ['Process Creation'], description: 'Process creation' };
+    expect(builtInRestoreAction(undefined, shipped)).toEqual('create');
+    expect(builtInRestoreAction({ built_in: true, data_components: ['Process Creation'], active: true, description: 'Process creation' }, shipped)).toEqual('unchanged');
+    expect(builtInRestoreAction({ built_in: true, data_components: ['Command Execution'], active: true, description: 'Process creation' }, shipped)).toEqual('restore');
+    expect(builtInRestoreAction({ built_in: true, data_components: ['Process Creation'], active: false, description: 'Process creation' }, shipped)).toEqual('restore');
+    // A custom mapping of the same log source is the organization's choice: never overwritten nor reclassified
+    expect(builtInRestoreAction({ built_in: false, data_components: ['Command Execution'], active: false, description: 'Ours' }, shipped)).toEqual('keep_custom');
   });
 });
