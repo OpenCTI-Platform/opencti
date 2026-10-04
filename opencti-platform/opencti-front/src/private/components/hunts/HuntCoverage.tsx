@@ -4,11 +4,14 @@ import { Link } from 'react-router';
 import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/styles';
 import { Text } from '@filigran/design-system';
+import Button from '@common/button/Button';
 import Card from '../../../components/common/card/Card';
+import Security from '../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
-import { PATH_ATTACK_PATTERN, PATH_HUNT, PATH_SECURITY_COVERAGE } from '../common/routes/paths';
+import { PATH_ATTACK_PATTERN, PATH_HUNT, PATH_SECURITY_COVERAGE, PATH_SECURITY_COVERAGES } from '../common/routes/paths';
 import { HuntRunStatusChip, HuntTechniqueValidationChip } from './HuntChips';
 import { HUNT_RUN_ENTITY_TYPE, type HuntTechniqueValidationStatus } from './hunt-utils';
 import { HuntCoverage_hunt$key } from './__generated__/HuntCoverage_hunt.graphql';
@@ -122,9 +125,23 @@ const HuntCoverageComponent = ({ hunt }: { hunt: HuntCoverageHunt }) => {
       <Grid item xs={12} md={5}>
         <Card title={t_i18n('Emulation validations')}>
           {emulationRuns.length === 0 ? (
-            <Text variant="content-compact">
-              {t_i18n('No emulation has validated this hunt yet. OpenAEV validates a hunt when a Security Coverage simulation exercises one of its techniques.')}
-            </Text>
+            <>
+              <Text variant="content-compact">
+                {t_i18n('No emulation has validated this hunt yet. OpenAEV validates a hunt when a Security Coverage simulation exercises one of its techniques.')}
+              </Text>
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <Button
+                  variant="secondary"
+                  size="small"
+                  component={Link}
+                  to={PATH_SECURITY_COVERAGES}
+                  style={{ marginTop: theme.spacing(1.5) }}
+                  data-testid="hunt-coverage-run-simulation"
+                >
+                  {t_i18n('Run a Security Coverage simulation')}
+                </Button>
+              </Security>
+            </>
           ) : (
             <ul style={{ listStyle: 'none', margin: 0, padding: 0 }} data-testid="hunt-coverage-emulations">
               {emulationRuns.map((run) => {

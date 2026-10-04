@@ -4547,6 +4547,7 @@
   "Rules Engine | Customization | Settings": "Rules Engine | Anpassung | Einstellungen",
   "Rules engine status": "Status der Regelmaschine",
   "Run": "Ausführen",
+  "Run a Security Coverage simulation": "Eine Security-Coverage-Simulation ausführen",
   "Run hunts": "Hunts ausführen",
   "Run now": "Jetzt ausführen",
   "Run predefined rule on STIX bundle": "Erweiterte vordefinierte Berechnungen ausführen",
