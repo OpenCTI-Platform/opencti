@@ -72,7 +72,7 @@ const PULSE_TRENDING = gql`
       region_bucket
       network_items_count
       locked_count
-      entries { object_type rank platforms_bucket trend entity { id entity_type } }
+      entries { object_type rank platforms_bucket trend first_seen_network entity { id entity_type } }
     }
   }
 `;
@@ -509,6 +509,18 @@ describe('Threat Pulse manager and API', () => {
     const entityIds = trending.entries.map((entry: { entity: { id: string } }) => entry.entity.id);
     expect(entityIds).toEqual(expect.arrayContaining([sharedIndicatorId, malwareId]));
     expect(entityIds).not.toContain(redIndicatorId);
+  });
+
+  it('should keep the network first seen day of a trending item null when XTM Hub withholds it', async () => {
+    hub.withholdTrendingFirstSeen = true;
+    try {
+      const result = await queryAsAdminWithSuccess({ query: PULSE_TRENDING, variables: { period: 'last_30_days' } });
+      const entries = result.data?.pulseTrending.entries;
+      expect(entries.length).toBeGreaterThan(0);
+      entries.forEach((entry: { first_seen_network: string | null }) => expect(entry.first_seen_network).toBeNull());
+    } finally {
+      hub.withholdTrendingFirstSeen = false;
+    }
   });
 
   it('should look an object up again once the values it is matched on changed, whatever the cached lookup', async () => {

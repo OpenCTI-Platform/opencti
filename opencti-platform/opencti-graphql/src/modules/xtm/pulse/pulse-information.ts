@@ -91,7 +91,7 @@ export const combinePulseLookups = (results: PulseHubLookupResult[]): PulseCombi
   };
 };
 
-const toDayDate = (day: string | null) => (day ? `${day}T00:00:00.000Z` : null);
+export const toDayDate = (day: string | null) => (day ? `${day}T00:00:00.000Z` : null);
 
 // 0 below the anonymity threshold, then 1 (rare) to 4 (widespread): one sort key for preview and full documents.
 export const pulsePrevalenceRank = (published: boolean, prevalence: PulsePrevalenceValue | null) => (published && prevalence ? prevalenceRank(prevalence) + 1 : 0);

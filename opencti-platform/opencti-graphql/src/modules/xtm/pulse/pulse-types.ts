@@ -168,7 +168,8 @@ export interface PulseHubTrendingItem {
   prevalence_bucket: PulsePrevalenceValue;
   trend: PulseTrendValue;
   growth: number;
-  first_seen_network: string;
+  // Null when the object reached the anonymity threshold over the period but in no single week: XTM Hub withholds it.
+  first_seen_network: string | null;
 }
 
 export interface PulseHubTrendingResult {

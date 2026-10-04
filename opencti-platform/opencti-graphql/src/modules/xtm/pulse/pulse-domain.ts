@@ -54,6 +54,7 @@ import {
   combinePulseLookups,
   combinePulsePreviewSignals,
   PULSE_PREVIEW_CLEARED_DOCUMENT,
+  toDayDate,
   type PulseClearScope,
   type PulseDocumentUpdate,
   type PulsePreviewSignal,
@@ -1166,7 +1167,7 @@ export const resolveTrendingEntries = async (context: AuthContext, user: AuthUse
       prevalence: item.prevalence_bucket,
       trend: item.trend,
       growth: item.growth,
-      first_seen_network: `${item.first_seen_network}T00:00:00.000Z`,
+      first_seen_network: toDayDate(item.first_seen_network),
     }));
 };
 

@@ -78,6 +78,9 @@ const median = (values: number[]) => {
 export class PulseHubMock {
   k = 5;
 
+  // As XTM Hub does for an object that reached k over the period but in no single week.
+  withholdTrendingFirstSeen = false;
+
   readonly requests: PulseHubMockRequest[] = [];
 
   ledger: PulseLedgerRow[] = [];
@@ -502,7 +505,7 @@ export class PulseHubMock {
           prevalence_bucket: this.prevalenceOf(allRows),
           trend: this.trendOf(rows),
           growth: (recent + 1) / (baseline + 1),
-          first_seen_network: days[0],
+          first_seen_network: this.withholdTrendingFirstSeen ? null : days[0],
         },
       }];
     }).sort((a, b) => (b.item.growth - a.item.growth) || (b.recent - a.recent)).slice(0, first);
