@@ -4,7 +4,7 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../publicDashboard/publicDashboard
 import { ENTITY_TYPE_NEWS_FEED_ITEM } from '../xtm/hub/news-feed/news-feed-types';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION } from '../workflow/types/workflow-types';
 import { ENTITY_USER_ACCOUNT } from '../../schema/stixCyberObservable';
-import { ENTITY_TYPE_SOURCE, ENTITY_TYPE_SOURCE_RECOMMENDATION } from '../sourceIntelligence/sourceIntelligence-types';
+import { ENTITY_TYPE_SOURCE, ENTITY_TYPE_SOURCE_RECOMMENDATION, SOURCE_KIND_MANUAL } from '../sourceIntelligence/sourceIntelligence-types';
 import type { UserMergeScalarCondition, UserMergeScalarTarget } from './userMerge-scalarTargets';
 
 /**
@@ -94,6 +94,33 @@ export interface UserMergeScalarComplement extends UserMergeScalarTarget {
 }
 
 export const USER_MERGE_SCALAR_COMPLEMENTS: UserMergeScalarComplement[] = [
+  {
+    id: 'source-analyst-ref-id',
+    registerRow: 'source.analyst-ref-id',
+    entityTypes: [ENTITY_TYPE_SOURCE],
+    path: 'ref_id',
+    shape: 'single',
+    condition: { path: 'source_kind', equals: SOURCE_KIND_MANUAL },
+    missingBecause: "declared with format 'short': it references a connector, a feed or an author for the other source kinds",
+  },
+  {
+    id: 'source-recommendation-payload-user-id',
+    registerRow: 'source-recommendation.payload-user-ids',
+    entityTypes: [ENTITY_TYPE_SOURCE_RECOMMENDATION],
+    path: 'payload',
+    shape: 'serialized',
+    serializedKey: 'user_id',
+    missingBecause: "held in a JSON string declared with format 'json'",
+  },
+  {
+    id: 'source-recommendation-revert-payload-user-id',
+    registerRow: 'source-recommendation.payload-user-ids',
+    entityTypes: [ENTITY_TYPE_SOURCE_RECOMMENDATION],
+    path: 'revert_payload',
+    shape: 'serialized',
+    serializedKey: 'user_id',
+    missingBecause: "held in a JSON string declared with format 'json'",
+  },
   {
     id: 'connector-user-id',
     registerRow: 'connector.user-id',

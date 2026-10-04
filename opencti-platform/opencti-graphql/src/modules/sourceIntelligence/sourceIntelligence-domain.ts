@@ -631,7 +631,20 @@ const collectSourceCandidates = async (context: AuthContext, settings: SourceInt
 export const syncSources = async (context: AuthContext, settings: SourceIntelligenceSettings) => {
   const candidates = await collectSourceCandidates(context, settings);
   const existing = await listAllSources(context);
-  const existingByKey = new Map(existing.map((source) => [`${source.source_kind}|${source.ref_id}`, source]));
+  // Two analyst sources reference the same user once their users were merged: the oldest one, with the longest
+  // history, is kept and the other is removed with its scorecards
+  const existingByKey = new Map<string, BasicStoreEntitySource>();
+  const duplicates: BasicStoreEntitySource[] = [];
+  [...existing]
+    .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+    .forEach((source) => {
+      const key = `${source.source_kind}|${source.ref_id}`;
+      if (existingByKey.has(key)) {
+        duplicates.push(source);
+      } else {
+        existingByKey.set(key, source);
+      }
+    });
   const candidateKeys = new Set<string>();
   let created = 0;
   let updated = 0;
@@ -656,18 +669,19 @@ export const syncSources = async (context: AuthContext, settings: SourceIntellig
     }
   }
   // Connectors and feeds deleted from the platform or no longer sources: their sources and scorecards are removed
-  const orphans = existing.filter((source) => {
+  const orphans = Array.from(existingByKey.values()).filter((source) => {
     const key = `${source.source_kind}|${source.ref_id}`;
     return !candidateKeys.has(key) && (source.source_kind === SOURCE_KIND_CONNECTOR || source.source_kind === SOURCE_KIND_INGESTION_FEED);
   });
-  for (let i = 0; i < orphans.length; i += 1) {
-    await deleteElementById(context, SOURCE_INTELLIGENCE_MANAGER_USER, orphans[i].internal_id, ENTITY_TYPE_SOURCE);
+  const removed = [...orphans, ...duplicates];
+  for (let i = 0; i < removed.length; i += 1) {
+    await deleteElementById(context, SOURCE_INTELLIGENCE_MANAGER_USER, removed[i].internal_id, ENTITY_TYPE_SOURCE);
   }
-  await deleteScorecardsOfSources(context, orphans.map((source) => source.internal_id));
-  if (created + updated + orphans.length > 0) {
+  await deleteScorecardsOfSources(context, removed.map((source) => source.internal_id));
+  if (created + updated + removed.length > 0) {
     await publishCacheResetEvent(ENTITY_TYPE_SOURCE);
   }
-  logApp.info('[OPENCTI-MODULE] Source intelligence sources synchronized', { created, updated, removed: orphans.length, total: candidates.length });
+  logApp.info('[OPENCTI-MODULE] Source intelligence sources synchronized', { created, updated, removed: removed.length, total: candidates.length });
   return listAllSources(context);
 };
 // endregion
