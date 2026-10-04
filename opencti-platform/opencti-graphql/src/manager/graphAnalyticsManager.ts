@@ -111,16 +111,20 @@ const processStreamEvents = async (events: Array<SseEvent<DataEvent>>) => {
 
 const STREAM_MAX_BATCHES_PER_TICK = 20;
 
-const resolveStreamStart = async (): Promise<string> => {
+export const resolveStreamStart = async (): Promise<string> => {
   const lastEventId = await redisGetManagerEventState(GRAPH_ANALYTICS_MANAGER_NAME);
   if (lastEventId) return lastEventId;
   // first start: begin at the live position, the initial full pass covers the existing knowledge
+  let start = '0-0';
   try {
     const streamInfo = await fetchStreamInfo();
-    return streamInfo.lastEventId;
+    start = streamInfo.lastEventId;
   } catch {
-    return '0-0';
+    // no stream yet: every event is new
   }
+  // saved at once: otherwise a tick receiving no event starts the next one at the live position, skipping what came in between
+  await redisSetManagerEventState(GRAPH_ANALYTICS_MANAGER_NAME, start);
+  return start;
 };
 
 const consumeStream = async () => {
