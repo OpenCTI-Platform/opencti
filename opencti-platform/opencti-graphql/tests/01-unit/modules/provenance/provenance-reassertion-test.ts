@@ -209,6 +209,21 @@ describe('Provenance upsert recording', () => {
     expect(vi.mocked(elUpdate).mock.calls.map((call) => [call[5]?.ifSeqNo, call[5]?.ifPrimaryTerm])).toEqual([[7, 1], [8, 1]]);
   });
 
+  it('should not report conflict values written without a version after a sustained contention', async () => {
+    const addition = { field: 'description', value: conflictValue('new-value', SOURCE_ID, AT) };
+    vi.mocked(elRawGet).mockResolvedValue({ _seq_no: 1, _primary_term: 1, _source: {} } as never);
+    const versionConflict = { extensions: { data: { cause: { meta: { statusCode: 409 } } } } };
+    // Every conditional attempt loses, then the unconditional write lands next to the same value from the winner
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      vi.mocked(elUpdate).mockRejectedValueOnce(versionConflict);
+    }
+    vi.mocked(elUpdate).mockResolvedValueOnce({ result: 'updated', get: { _source: { x_opencti_conflicts: [{ field: 'description', values: [addition.value] }] } } } as never);
+    const { newConflicts } = await writeProvenanceUpdate(context, target, { conflictsAdd: [addition] });
+    expect(newConflicts).toEqual([]);
+    expect(elUpdate).toHaveBeenCalledTimes(6);
+    expect(vi.mocked(elUpdate).mock.calls[5][5]?.ifSeqNo).toBeUndefined();
+  });
+
   it('should report the conflict values a write creates, applied on the version it read', async () => {
     const addition = { field: 'description', value: conflictValue('new-value', SOURCE_ID, AT) };
     vi.mocked(elRawGet).mockResolvedValueOnce({ _seq_no: 3, _primary_term: 2, _source: {} } as never);

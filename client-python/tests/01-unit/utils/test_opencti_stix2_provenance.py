@@ -1,3 +1,5 @@
+import re
+
 import pytest
 
 from pycti import OpenCTIApiClient
@@ -90,3 +92,6 @@ def test_default_properties_carry_the_whole_provenance_summary(api_client_no_ser
         assert summaries > 0
         for field in ("single_sourced", "freshness_stale_at", "freshness_stale"):
             assert properties.count(field) >= summaries
+        # Each field of the summary is selected once per summary, never twice
+        for field in ("single_sourced", "freshness_stale_at", "has_conflicts"):
+            assert len(re.findall(rf"\b{field}\b", properties)) == summaries

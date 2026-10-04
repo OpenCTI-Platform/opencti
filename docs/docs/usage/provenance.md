@@ -8,7 +8,7 @@ Provenance is available in the Community Edition. It is deterministic: no AI is 
 
 Provenance is recorded only on the entity types where it is enabled, so that knowledge re-sent over and over by sources (attack patterns, locations, sectors...) does not weigh on ingestion. By default, it is enabled on indicators, intrusion sets, threat actors (groups and individuals) and malware.
 
-To enable or disable it on a type, open "Settings > Customization > Entity types", select the type and use the "Track sources and corroboration" switch of the "Provenance" card. Relationships, sightings and observables are configured on their "Relationship", "Sighting" and observable types. Disabling provenance on a type stops recording it immediately; the provenance already recorded is kept but no longer displayed: neither on the elements of that type nor in the Conflicts and Stale knowledge tabs of the Curation hub, and the knowledge decay rules no longer apply to them.
+To enable or disable it on a type, open "Settings > Customization > Entity types", select the type and use the "Track sources and corroboration" switch of the "Provenance" card. Relationships, sightings and observables are configured on their "Relationship", "Sighting" and observable types. Disabling provenance on a type stops recording it immediately; the provenance already recorded is kept but no longer displayed: neither on the elements of that type nor in the Conflicts and Stale knowledge tabs of the Curation hub, and the knowledge decay rules no longer apply to them. It can no longer be curated either: adopting or dismissing a conflicting value, using a procedure as the description and confirming an element is still valid are refused, on that type and on every type while provenance is disabled on the platform.
 
 The default set of tracked types can be changed with the `provenance:default_tracked_types` parameter (see [Configuration](#configuration)): it applies to the types whose setting was never changed in the interface.
 
@@ -166,7 +166,7 @@ Two visualizations are available in the widget catalog of dashboards, for the en
 - **Knowledge freshness - days since the last assertion**: the knowledge per time elapsed since its last assertion by any source (0-30 days, 31-90 days, 91-180 days, 181-365 days, over 365 days, never asserted).
 - **Single-sourced share by entity type**: per entity or relationship type, the knowledge asserted by a single source versus the corroborated knowledge. The "Number of results" parameter limits the number of types displayed.
 
-When no assertion matches the widget yet, it says so: "No assertion recorded yet. Provenance appears as connectors and users create knowledge."
+Both only count the types on which provenance is tracked: the knowledge of an untracked type has no source to show and never weighs on the "never asserted" share. When no assertion matches the widget yet, it says so: "No assertion recorded yet. Provenance appears as connectors and users create knowledge."
 
 ![A dashboard with the two provenance widgets: the knowledge freshness by time since the last assertion, and the single-sourced share by entity type](assets/provenance-widgets.png)
 

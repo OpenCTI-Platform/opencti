@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CURATION_TABS, grantedCurationTabs } from './curationTabs';
 import type { ModuleHelper } from '../../../../utils/platformModulesHelper';
+import { KNOWLEDGE } from '../../../../utils/hooks/useGranted';
 
 const modules = (provenanceEnabled: boolean) => ({ isProvenanceEnabled: () => provenanceEnabled }) as ModuleHelper;
 
@@ -25,5 +26,13 @@ describe('Curation hub - provenance tabs', () => {
     const disabled = grantedCurationTabs(CURATION_TABS, () => true, modules(false)).map((tab) => tab.path);
     expect(disabled).not.toContain('conflicts');
     expect(disabled).not.toContain('stale-knowledge');
+  });
+
+  it('lists both tabs only for a user with knowledge access, so the hub shows its no-access state to the others', () => {
+    const withKnowledge = grantedCurationTabs(CURATION_TABS, (needs) => needs.includes(KNOWLEDGE), modules(true)).map((tab) => tab.path);
+    expect(withKnowledge).toEqual(expect.arrayContaining(['conflicts', 'stale-knowledge']));
+    const withoutKnowledge = grantedCurationTabs(CURATION_TABS, () => false, modules(true)).map((tab) => tab.path);
+    expect(withoutKnowledge).not.toContain('conflicts');
+    expect(withoutKnowledge).not.toContain('stale-knowledge');
   });
 });

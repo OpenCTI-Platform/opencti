@@ -132,6 +132,11 @@ export const freshnessColor = (theme: Theme, days: number | null | undefined, st
   return days <= 365 ? warningColor(theme) : theme.palette.error.main;
 };
 
+// Compared on the instants, never on the formatted dates: two assertions months apart can both read "3 months ago".
+export const isAssertedOnce = (assertion: Pick<ProvenanceAssertion, 'first_asserted_at' | 'last_asserted_at'>) => {
+  return new Date(assertion.first_asserted_at).getTime() === new Date(assertion.last_asserted_at).getTime();
+};
+
 export const sortAssertionsByRecency = (assertions: ReadonlyArray<ProvenanceAssertion> | null | undefined) => {
   return [...(assertions ?? [])].sort((a, b) => b.last_asserted_at.localeCompare(a.last_asserted_at));
 };

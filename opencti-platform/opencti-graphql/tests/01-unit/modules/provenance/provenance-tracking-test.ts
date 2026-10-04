@@ -9,6 +9,7 @@ import {
 } from '../../../../src/modules/provenance/provenance-tracking';
 import { getOverviewLayoutCustomization, insertSourcesWidget, mergeMissingWidgets } from '../../../../src/modules/entitySetting/entitySetting-domain';
 import { creationProceduresBuilder } from '../../../../src/modules/provenance/provenance-upsert';
+import { resolveStatisticsTypes } from '../../../../src/modules/provenance/provenance-domain';
 import type { BasicStoreEntityEntitySetting } from '../../../../src/modules/entitySetting/entitySetting-types';
 import type { AuthContext } from '../../../../src/types/user';
 
@@ -73,6 +74,19 @@ describe('Provenance tracking per entity type', () => {
     expect(await listProvenanceUntrackedTypesOfSetting(context, setting('stix-core-relationship', false))).toContain('uses');
     expect(await listProvenanceUntrackedTypesOfSetting(context, setting('Intrusion-Set'))).toEqual([]);
     expect(await listProvenanceUntrackedTypesOfSetting(context, setting('Attack-Pattern'))).toEqual(['Attack-Pattern']);
+  });
+
+  it('should restrict the provenance statistics to the tracked types', async () => {
+    const tracked = await listProvenanceTrackedTypes(context);
+    const everything = resolveStatisticsTypes(null, tracked);
+    expect(everything).toEqual(expect.arrayContaining(['Malware', 'Intrusion-Set', 'uses', 'IPv4-Addr']));
+    expect(everything).not.toContain('Report');
+    expect(everything).not.toContain('targets');
+    expect(everything).not.toContain('stix-sighting-relationship');
+    const domainObjects = resolveStatisticsTypes(['Stix-Domain-Object'], tracked);
+    expect(domainObjects).toContain('Malware');
+    expect(domainObjects).not.toContain('IPv4-Addr');
+    expect(resolveStatisticsTypes(['Report', 'targets'], tracked)).toEqual([]);
   });
 });
 

@@ -231,11 +231,7 @@ const Root = () => {
         />
         <Route
           path="/curation/*"
-          element={(
-            <Security needs={[KNOWLEDGE]} placeholder={<Navigate to="/dashboard" />}>
-              {boundaryWrapper(RootCuration)}
-            </Security>
-          )}
+          element={boundaryWrapper(RootCuration)}
         />
         <Route
           path="/health/*"

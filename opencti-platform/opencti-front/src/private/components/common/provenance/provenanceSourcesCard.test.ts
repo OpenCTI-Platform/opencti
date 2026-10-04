@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildSourcesCardModel, groupConflictValues, groupProceduresByText, type ProvenanceAssertion, type ProvenanceConflict } from './provenanceUtils';
+import { buildSourcesCardModel, groupConflictValues, groupProceduresByText, isAssertedOnce, type ProvenanceAssertion, type ProvenanceConflict } from './provenanceUtils';
 import { PROVENANCE_SOURCE_LINK_RESOLVERS, type ProvenanceSourceLinkResolver, resolveProvenanceSourceLink } from './provenanceSourceLinks';
 
 const assertion = (source_id: string, last_asserted_at: string, source_kind = 'connector'): ProvenanceAssertion => ({
@@ -48,6 +48,15 @@ describe('buildSourcesCardModel', () => {
       { field: 'x_custom_field', values: [value] },
     ];
     expect(buildSourcesCardModel([assertion('a', '2026-09-01T00:00:00.000Z')], conflicts)?.conflictingFields).toEqual(['Description', 'x_custom_field']);
+  });
+});
+
+describe('isAssertedOnce', () => {
+  it('compares the assertion instants, not their formatted dates', () => {
+    expect(isAssertedOnce({ first_asserted_at: '2026-06-01T00:00:00.000Z', last_asserted_at: '2026-06-01T00:00:00Z' })).toBe(true);
+    // Distinct assertions, although both read "3 months ago" at the end of September
+    expect(isAssertedOnce({ first_asserted_at: '2026-06-01T00:00:00.000Z', last_asserted_at: '2026-06-20T00:00:00.000Z' })).toBe(false);
+    expect(isAssertedOnce({ first_asserted_at: '2026-06-01T00:00:00.000Z', last_asserted_at: '2026-06-01T00:00:01.000Z' })).toBe(false);
   });
 });
 

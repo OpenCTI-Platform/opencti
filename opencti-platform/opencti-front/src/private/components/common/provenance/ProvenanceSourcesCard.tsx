@@ -18,7 +18,7 @@ import ProvenanceBadge from './ProvenanceBadge';
 import ProvenanceSourceKindIcon from './ProvenanceSourceKindIcon';
 import ProvenanceSourcesPanel from './ProvenanceSourcesPanel';
 import { resolveProvenanceSourceLink } from './provenanceSourceLinks';
-import { buildSourcesCardModel, type ProvenanceData, sourceKindLabel, warningColor } from './provenanceUtils';
+import { buildSourcesCardModel, isAssertedOnce, type ProvenanceData, sourceKindLabel, warningColor } from './provenanceUtils';
 import { ProvenanceSourcesCardQuery } from './__generated__/ProvenanceSourcesCardQuery.graphql';
 
 const provenanceSourcesCardQuery = graphql`
@@ -110,15 +110,16 @@ const ProvenanceSourcesCardContent = ({ id, fetchKey, onOpen, showEmpty }: Prove
         <List dense disablePadding aria-label={t_i18n('Sources')}>
           {model.sources.map((source) => {
             const link = resolveProvenanceSourceLink(source);
+            const assertedOnce = isAssertedOnce(source);
             const firstAsserted = rd(source.first_asserted_at);
             const lastAsserted = rd(source.last_asserted_at);
             const details = [
               t_i18n(sourceKindLabel(source.source_kind)),
-              ...(firstAsserted === lastAsserted
+              ...(assertedOnce
                 ? [t_i18n('Asserted {date}', { values: { date: lastAsserted } })]
                 : [t_i18n('First asserted {date}', { values: { date: firstAsserted } }), t_i18n('Last asserted {date}', { values: { date: lastAsserted } })]),
             ];
-            const absoluteDates = firstAsserted === lastAsserted
+            const absoluteDates = assertedOnce
               ? smhd(source.last_asserted_at)
               : `${t_i18n('First asserted {date}', { values: { date: smhd(source.first_asserted_at) } })} - ${t_i18n('Last asserted {date}', { values: { date: smhd(source.last_asserted_at) } })}`;
             return (

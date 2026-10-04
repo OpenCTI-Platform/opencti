@@ -31,6 +31,8 @@ import { isProcedureRelationship, procedureMatchKey } from './provenance-procedu
 import { resolveCurrentValueOwner } from './provenance-upsert';
 import { applyProvenanceUpdate, isProvenanceTrackedType, recordUpsertProvenance } from './provenance-write';
 import { getProvenanceBackfillState, restartProvenanceBackfill } from './provenance-backfill';
+import { isProvenanceTrackedForType, listProvenanceTrackedTypes, restrictToTrackedTypes } from './provenance-tracking';
+import { PROVENANCE_ENABLED } from './provenance-config';
 import {
   ASSERTION_SOURCE_KINDS,
   ATTRIBUTE_ASSERTION_SOURCE_KINDS,
@@ -132,10 +134,23 @@ const withFilter = (filters: FilterGroup | null | undefined, filter: FilterGroup
   filterGroups: filters ? [filters] : [],
 });
 
-const statisticsTypes = (types: string[] | null | undefined) => (types && types.length > 0 ? types : DEFAULT_STATISTICS_TYPES);
+/**
+ * Statistics only cover the types whose provenance is tracked: an untracked type has no source to count and would
+ * only inflate the totals and the "never asserted" share. An abstract type stands for its tracked concrete types.
+ */
+export const resolveStatisticsTypes = (types: string[] | null | undefined, trackedTypes: string[]) => {
+  return restrictToTrackedTypes(types && types.length > 0 ? types : DEFAULT_STATISTICS_TYPES, trackedTypes);
+};
+
+const statisticsTypes = async (context: AuthContext, types: string[] | null | undefined) => {
+  return resolveStatisticsTypes(types, await listProvenanceTrackedTypes(context));
+};
 
 export const provenanceStatistics = async (context: AuthContext, user: AuthUser, args: QueryProvenanceStatisticsArgs) => {
-  const types = statisticsTypes(args.types);
+  const types = await statisticsTypes(context, args.types);
+  if (types.length === 0) {
+    return { total: 0, with_provenance: 0, single_sourced: 0, corroborated: 0, with_conflicts: 0, stale: 0 };
+  }
   const baseFilters = args.filters ?? null;
   const count = (filters: FilterGroup | null) => elCount(context, user, READ_STIX_DATA_WITH_INFERRED, { types, filters });
   const [total, withProvenance, single, corroborated, withConflicts, stale] = await Promise.all([
@@ -175,7 +190,10 @@ const combineFilters = (base: FilterGroup | null | undefined, extra: FilterGroup
 });
 
 export const provenanceFreshnessDistribution = async (context: AuthContext, user: AuthUser, args: QueryProvenanceFreshnessDistributionArgs) => {
-  const types = statisticsTypes(args.types);
+  const types = await statisticsTypes(context, args.types);
+  if (types.length === 0) {
+    return [...FRESHNESS_BUCKETS.map((bucket) => ({ label: bucket.bucket, value: 0 })), { label: UNKNOWN_FRESHNESS_BUCKET, value: 0 }];
+  }
   const count = (filters: FilterGroup) => elCount(context, user, READ_STIX_DATA_WITH_INFERRED, { types, filters });
   const counts = await Promise.all(FRESHNESS_BUCKETS.map((bucket) => count(combineFilters(args.filters, freshnessBucketFilter(bucket)))));
   const unknown = await count(combineFilters(args.filters, {
@@ -187,7 +205,10 @@ export const provenanceFreshnessDistribution = async (context: AuthContext, user
 };
 
 export const provenanceSourceKindsDistribution = async (context: AuthContext, user: AuthUser, args: QueryProvenanceSourceKindsDistributionArgs) => {
-  const types = statisticsTypes(args.types);
+  const types = await statisticsTypes(context, args.types);
+  if (types.length === 0) {
+    return ASSERTION_SOURCE_KINDS.map((kind) => ({ source_kind: kind, count: 0 }));
+  }
   const counts = await Promise.all(ASSERTION_SOURCE_KINDS.map((kind) => elCount(context, user, READ_STIX_DATA_WITH_INFERRED, {
     types,
     filters: combineFilters(args.filters, { mode: FilterMode.And, filters: [{ key: [ATTRIBUTE_ASSERTION_SOURCE_KINDS], values: [kind] }], filterGroups: [] }),
@@ -199,7 +220,10 @@ export const provenanceSourceKindsDistribution = async (context: AuthContext, us
  * Share of single-sourced knowledge per entity type, among the knowledge with provenance.
  */
 export const provenanceSingleSourcedByType = async (context: AuthContext, user: AuthUser, args: QueryProvenanceSingleSourcedByTypeArgs) => {
-  const types = statisticsTypes(args.types);
+  const types = await statisticsTypes(context, args.types);
+  if (types.length === 0) {
+    return [];
+  }
   const aggregate = (filters: FilterGroup) => elAggregationCount(context, user, READ_STIX_DATA_WITH_INFERRED, {
     types,
     field: 'entity_type',
@@ -247,8 +271,12 @@ const loadTrackedElement = async (context: AuthContext, user: AuthUser, id: stri
   return element;
 };
 
+// Retained provenance stays readable, but it is only curated while provenance is tracked for the element type
 const loadEditableTrackedElement = async (context: AuthContext, user: AuthUser, id: string) => {
   const element = await loadTrackedElement(context, user, id);
+  if (!PROVENANCE_ENABLED || !(await isProvenanceTrackedForType(context, element.entity_type))) {
+    throw FunctionalError('Provenance is not tracked for this element', { id });
+  }
   if (!validateUserAccessOperation(user, element, AccessOperation.EDIT)) {
     throw ForbiddenAccess();
   }
@@ -298,25 +326,37 @@ const publishProvenanceAction = async (user: AuthUser, element: BasicStoreObject
  * becomes an alternative attributed to its owner.
  */
 export const adoptConflictValue = async (context: AuthContext, user: AuthUser, id: string, field: string, valueHash: string) => {
-  const element = await loadEditableTrackedElement(context, user, id);
-  const attribute = schemaAttributesDefinition.getAttribute(element.entity_type, field);
+  const loaded = await loadEditableTrackedElement(context, user, id);
+  const attribute = schemaAttributesDefinition.getAttribute(loaded.entity_type, field);
   if (!attribute || !isConflictTrackedAttribute(attribute) || attribute.update === false) {
     throw FunctionalError('This field cannot be adopted from a source', { field });
   }
-  const proposals = findConflictProposals(element, field, valueHash);
-  const proposal = proposals.find((candidate) => candidate.value !== null && candidate.value !== undefined);
-  if (!proposal?.value) {
-    throw FunctionalError('This value is too large to be adopted, edit the field directly', { field });
+  // Same lock as the upserts from the read to the conflict cleanup: an upsert can neither replace the adopted
+  // value in between nor have its proposal removed as the adopted one
+  const lockIds = R.uniq([loaded.internal_id, loaded.standard_id]);
+  const lock = await lockResources(lockIds, { draftId: getDraftContext(context, user) });
+  let element;
+  let proposals;
+  try {
+    element = await loadEditableTrackedElement(context, user, id);
+    proposals = findConflictProposals(element, field, valueHash);
+    const proposal = proposals.find((candidate) => candidate.value !== null && candidate.value !== undefined);
+    if (!proposal?.value) {
+      throw FunctionalError('This value is too large to be adopted, edit the field directly', { field });
+    }
+    const adoptedValue = JSON.parse(proposal.value);
+    const currentValue = element[field];
+    const owner = await resolveCurrentValueOwner(context, element, field);
+    const edit = [{ key: field, value: [adoptedValue], operation: EditOperation.Replace }];
+    await updateAttribute(context, user, element.internal_id, element.entity_type, edit, { locks: lockIds });
+    const conflictsAdd = [];
+    if (owner && currentValue !== null && currentValue !== undefined && normalizeConflictValue(attribute, currentValue) !== normalizeConflictValue(attribute, adoptedValue)) {
+      conflictsAdd.push({ field, value: buildConflictValue(attribute, currentValue, owner.source, owner.confidence, now()) });
+    }
+    await applyProvenanceUpdate(context, element, { conflictsAdd, conflictsRemove: [{ field, value_hash: valueHash }] }, { refresh: true });
+  } finally {
+    await lock.unlock();
   }
-  const adoptedValue = JSON.parse(proposal.value);
-  const currentValue = element[field];
-  const owner = await resolveCurrentValueOwner(context, element, field);
-  await updateAttribute(context, user, element.internal_id, element.entity_type, [{ key: field, value: [adoptedValue], operation: EditOperation.Replace }]);
-  const conflictsAdd = [];
-  if (owner && currentValue !== null && currentValue !== undefined && normalizeConflictValue(attribute, currentValue) !== normalizeConflictValue(attribute, adoptedValue)) {
-    conflictsAdd.push({ field, value: buildConflictValue(attribute, currentValue, owner.source, owner.confidence, now()) });
-  }
-  await applyProvenanceUpdate(context, element, { conflictsAdd, conflictsRemove: [{ field, value_hash: valueHash }] }, { refresh: true });
   await publishProvenanceAction(user, element, `adopts the value proposed by ${describeProposalSources(proposals)} for \`${field}\``, { field, value_hash: valueHash });
   await addProvenanceConflictAdoptionCount();
   return loadTrackedElement(context, user, element.internal_id);
