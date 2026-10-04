@@ -7,13 +7,18 @@ import { connectorDelete, registerConnector } from '../../../../src/domain/conne
 import { updateProcessedTime } from '../../../../src/domain/work';
 import { ConnectorType, InvestigationRunTrigger } from '../../../../src/generated/graphql';
 import { MARKING_TLP_AMBER } from '../../../../src/schema/identifier';
-import { addInvestigationRun, decideInvestigationApprovals, loadInvestigationRun } from '../../../../src/modules/investigationRun/investigationRun-domain';
+import { addInvestigationRun, cancelInvestigationRun, decideInvestigationApprovals, loadInvestigationRun } from '../../../../src/modules/investigationRun/investigationRun-domain';
 import * as entrepriseEdition from '../../../../src/enterprise-edition/ee';
 import * as aiAgentShared from '../../../../src/modules/playbook/components/ai-agent-shared';
 import * as investigationXtm from '../../../../src/modules/investigationRun/investigationRun-xtm';
 import * as draftWorkspaceDomain from '../../../../src/modules/draftWorkspace/draftWorkspace-domain';
 import { parseEngineInvestigation } from '../../../../src/modules/investigationRun/investigationRun-engine';
-import { listInvestigationRunsToProcess, processInvestigationRun } from '../../../../src/modules/investigationRun/investigationRun-executor';
+import {
+  listAwaitingInvestigationRunsToRevalidate,
+  listInvestigationRunsToProcess,
+  processInvestigationRun,
+  revalidateAwaitingInvestigationRun,
+} from '../../../../src/modules/investigationRun/investigationRun-executor';
 
 // A faithful stand-in for the XTM One investigation engine: raw answers in the
 // shape of `GET /api/v1/platform/investigations/{id}` (dev-docs/investigations.md
@@ -550,6 +555,10 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
     const runId = data.investigationRunAdd.id;
     createdRuns.push({ id: runId });
     await tickUntil(runId, (current) => current.run_phase === 'investigating');
+    // A reader of the run without the update capability cannot cancel it.
+    const reader = { ...ADMIN_USER, capabilities: [{ name: 'KNOWLEDGE' }] } as unknown as typeof ADMIN_USER;
+    await expect(cancelInvestigationRun(testContext, reader, runId)).rejects.toThrow();
+    expect((await loadInvestigationRun(testContext, runId))?.run_status).toBe('running');
     vi.mocked(investigationXtm.cancelInvestigation).mockResolvedValueOnce({ ok: false, failure: 'engine_unreachable', status: 503, message: 'XTM One is unreachable' });
     const cancelled = await queryAsAdminWithSuccess({ query: RUN_CANCEL, variables: { id: runId } });
     expect(cancelled.data.investigationRunCancel).toMatchObject({ run_status: 'cancelled', run_phase: 'done' });
@@ -629,10 +638,11 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       const { data } = await queryAsAdminWithSuccess({ query: RUN_MARKINGS, variables: { id: runId } });
       return data.investigationRun.objectMarking.map((marking: { standard_id: string }) => marking.standard_id);
     };
+    let runId = '';
     try {
       engineStage = 'planning';
       const { data } = await queryAsAdminWithSuccess({ query: RUN_ADD, variables: { subjectId: caseId } });
-      const runId = data.investigationRunAdd.id;
+      runId = data.investigationRunAdd.id;
       createdRuns.push({ id: runId });
       await tickUntil(runId, (current) => current.run_phase === 'investigating');
       engineStage = 'running';
@@ -644,6 +654,47 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       await tickUntil(runId, (current) => (current as unknown as { xtm_revision: number }).xtm_revision >= 2);
       expect(await runMarkings(runId)).toContain(MARKING_TLP_AMBER);
     } finally {
+      // An active run cannot be deleted: cancelled here so that the suite deletes it with its marking.
+      if (runId) await queryAsAdmin({ query: RUN_CANCEL, variables: { id: runId } });
+      await queryAsAdmin({ query: DELETE_CASE, variables: { id: caseId } });
+    }
+  });
+
+  it('stops an investigation waiting for approval once its case becomes restricted to authorized members', async () => {
+    const created = await queryAsAdminWithSuccess({ query: CREATE_CASE, variables: { input: { name: 'Case Autopilot e2e reviewed case', objects: [fixture.ipId] } } });
+    const caseId = created.data.caseIncidentAdd.id;
+    let runId = '';
+    try {
+      engineStage = 'planning';
+      const { data } = await queryAsAdminWithSuccess({ query: RUN_ADD, variables: { subjectId: caseId } });
+      runId = data.investigationRunAdd.id;
+      createdRuns.push({ id: runId });
+      await tickUntil(runId, (current) => current.run_phase === 'investigating');
+      engineStage = 'completed';
+      const awaiting = await tickUntil(runId, (current) => current.run_status !== 'running', 15);
+      expect(awaiting.run_status).toBe('awaiting_approval');
+      expect(awaiting.draft_id).toBeTruthy();
+      // Nothing moved: the run keeps waiting for the analyst.
+      await revalidateAwaitingInvestigationRun(testContext, runId);
+      expect((await readRun(runId)).run_status).toBe('awaiting_approval');
+      await queryAsAdminWithSuccess({ query: RESTRICT_CONTAINER, variables: { id: caseId, input: [{ id: ADMIN_USER.id, access_right: 'admin' }] } });
+      expect((await listAwaitingInvestigationRunsToRevalidate(testContext, 50)).map((run) => run.internal_id)).toContain(runId);
+      await revalidateAwaitingInvestigationRun(testContext, runId);
+      expect(await readRun(runId)).toMatchObject({
+        run_status: 'failed',
+        end_reason_code: 'member_restricted',
+        evidence: [],
+        hypotheses: [],
+        recommendations: [],
+        summary: null,
+        report: null,
+        draft_id: null,
+      });
+      const draft = await queryAsAdmin({ query: gql`query Draft($id: String!) { draftWorkspace(id: $id) { id } }`, variables: { id: awaiting.draft_id } });
+      expect(draft.data?.draftWorkspace ?? null).toBeNull();
+      expect((await listAwaitingInvestigationRunsToRevalidate(testContext, 50)).map((run) => run.internal_id)).not.toContain(runId);
+    } finally {
+      if (runId) await queryAsAdmin({ query: RUN_CANCEL, variables: { id: runId } });
       await queryAsAdmin({ query: DELETE_CASE, variables: { id: caseId } });
     }
   });

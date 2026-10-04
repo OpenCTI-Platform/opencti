@@ -301,6 +301,15 @@ const failRun = async (context: AuthContext, runId: string, reason: string, code
   logApp.warn('[CASE AUTOPILOT] Investigation failed', { runId, reason, code });
 };
 
+// A cancellation ends a run under the same run lock as these updates: a phase
+// update applies only while the run is still running, so a run cancelled since
+// its phase started is never advanced again.
+const updateRunningRun = (
+  context: AuthContext,
+  runId: string,
+  mutate: (run: BasicStoreEntityInvestigationRun) => Record<string, unknown> | null,
+) => updateInvestigationRun(context, runId, (current) => (current.run_status === InvestigationRunStatus.Running ? mutate(current) : null));
+
 // A call to the engine that failed: an engine that cannot run investigations
 // fails the run at once with its reason; a transient failure is retried on the
 // next ticks, within a bound.
@@ -312,7 +321,7 @@ const handleEngineFailure = async (exec: RunExecution, result: Extract<EngineRes
     await failRun(exec.liveContext, run.internal_id, ENGINE_FAILURE_REASONS[result.failure] ?? result.message, result.failure);
     return;
   }
-  await updateInvestigationRun(exec.liveContext, run.internal_id, () => ({ engine_failures: failures }));
+  await updateRunningRun(exec.liveContext, run.internal_id, () => ({ engine_failures: failures }));
 };
 
 // endregion
@@ -549,7 +558,11 @@ const initializeRun = async (exec: RunExecution) => {
     patch.workspace_id = workspace.id;
   }
   patch.run_phase = InvestigationRunPhase.Starting;
-  await updateInvestigationRun(liveContext, run.internal_id, () => patch);
+  // A run cancelled while it was initialized is not advanced, and keeps the
+  // references to what its initialization created, as if cancelled just after.
+  await updateInvestigationRun(liveContext, run.internal_id, (current) => (current.run_status === InvestigationRunStatus.Running
+    ? patch
+    : R.omit(['run_phase'], patch)));
 };
 
 // Start one engine run: the first one, or a continuation of the previous one.
@@ -951,7 +964,7 @@ const investigate = async (exec: RunExecution) => {
   const { runUser, now } = exec;
   const investigationId = run.xtm_investigation_id;
   if (!investigationId) {
-    await updateInvestigationRun(exec.liveContext, run.internal_id, () => ({ run_phase: InvestigationRunPhase.Starting }));
+    await updateRunningRun(exec.liveContext, run.internal_id, () => ({ run_phase: InvestigationRunPhase.Starting }));
     return;
   }
   // The time budget is OpenCTI's: once spent, the engine run is cancelled and
@@ -965,7 +978,7 @@ const investigate = async (exec: RunExecution) => {
       return;
     }
     budgetCancelled = true;
-    await updateInvestigationRun(exec.liveContext, run.internal_id, () => ({
+    await updateRunningRun(exec.liveContext, run.internal_id, () => ({
       budget_cancelled: true,
       wave_started_at: now.toISOString(),
       status_reason: 'The time budget is spent: the investigation concludes with what it found',
@@ -975,7 +988,7 @@ const investigate = async (exec: RunExecution) => {
   if (!result.ok) {
     const graceOver = budgetCancelled && now.getTime() - new Date(run.wave_started_at ?? now.toISOString()).getTime() > BUDGET_CANCEL_GRACE_MS;
     if (graceOver) {
-      await updateInvestigationRun(exec.liveContext, run.internal_id, () => ({ run_phase: InvestigationRunPhase.Ingesting }));
+      await updateRunningRun(exec.liveContext, run.internal_id, () => ({ run_phase: InvestigationRunPhase.Ingesting }));
       return;
     }
     await handleEngineFailure({ ...exec, run }, result);
@@ -996,7 +1009,7 @@ const investigate = async (exec: RunExecution) => {
   const cited = mirroring ? await citedElements(exec, revisionEvidence, engine.conclusion) : [];
   const citable = mirroring ? await citableObjectIds(exec, revisionEvidence) : null;
   if (outcome === 'failed') {
-    await updateInvestigationRun(exec.liveContext, run.internal_id, (current) => mirrorPatch(current, engine, cited, citable));
+    await updateRunningRun(exec.liveContext, run.internal_id, (current) => mirrorPatch(current, engine, cited, citable));
     await failRun(exec.liveContext, run.internal_id, `The investigation engine stopped the investigation (${engine.end_reason_code ?? 'aborted'})`, engine.end_reason_code ?? 'engine_aborted');
     return;
   }
@@ -1018,7 +1031,7 @@ const investigate = async (exec: RunExecution) => {
   if (!changed && !concluded && !(outcome === 'completed' && !run.xtm_completed_at)) {
     return;
   }
-  await updateInvestigationRun(exec.liveContext, run.internal_id, (current) => ({
+  await updateRunningRun(exec.liveContext, run.internal_id, (current) => ({
     ...mirrorPatch(current, engine, cited, citable),
     xtm_completed_at: outcome === 'completed' ? current.xtm_completed_at ?? now.toISOString() : current.xtm_completed_at ?? null,
     ...(concluded ? { run_phase: InvestigationRunPhase.Ingesting } : {}),
@@ -1299,7 +1312,7 @@ const ingestRun = async (exec: RunExecution) => {
     if (result.ok) {
       engine = result.value;
     } else if (result.failure === ENGINE_UNREACHABLE && (run.engine_failures ?? 0) + 1 < INVESTIGATION_LIMITS.engineFailures) {
-      await updateInvestigationRun(exec.liveContext, run.internal_id, (current) => ({ engine_failures: (current.engine_failures ?? 0) + 1 }));
+      await updateRunningRun(exec.liveContext, run.internal_id, (current) => ({ engine_failures: (current.engine_failures ?? 0) + 1 }));
       return;
     }
   }
@@ -1564,6 +1577,73 @@ export const processInvestigationRun = async (context: AuthContext, runId: strin
     await failRun(context, runId, errorMessage(error));
   }
 };
+
+// What a stored run cites: its evidence objects, its hypothesis candidates and its courses of action.
+const runCitedIds = (run: BasicStoreEntityInvestigationRun) => R.uniq([
+  ...(run.evidence ?? []).filter(isObjectEvidence).map((evidence) => evidence.opencti_id as string),
+  ...(run.hypotheses ?? []).map((hypothesis) => hypothesis.candidate_id),
+  ...(run.recommendations ?? []).flatMap((recommendation) => (recommendation.course_of_action_id ? [recommendation.course_of_action_id] : [])),
+]).slice(0, INVESTIGATION_LIMITS.evidence + INVESTIGATION_LIMITS.candidates + INVESTIGATION_LIMITS.coursesOfAction);
+
+/**
+ * A run waiting for approval still shows what it derived. Its access boundary
+ * is read again on every pass of the manager, under the actions lock of the
+ * run so that no approval is being applied meanwhile: once its subject, its
+ * case or what it cites is restricted to authorized members, or its subject or
+ * case is no longer readable by its identity, the run stops with everything it
+ * derived withheld and its draft deleted.
+ */
+export const revalidateAwaitingInvestigationRun = async (context: AuthContext, runId: string) => {
+  try {
+    await withRunActions(context, runId, async (run) => {
+      if (run.run_status !== InvestigationRunStatus.AwaitingApproval) return;
+      const runUser = await resolveUserByIdFromCache(context, run.run_as_id);
+      const policy = run.policy_id ? await loadInvestigationPolicy(context, run.policy_id) : null;
+      if (!runUser || !policy) return;
+      const exec: RunExecution = {
+        run,
+        runUser,
+        policy,
+        liveContext: await userContext(runUser),
+        draftContext: await userContext(runUser, run.draft_id),
+        now: new Date(),
+      };
+      const boundary = await findCarryBoundary(exec, runCitedIds(run));
+      if (boundary) {
+        await stopAtCarryBoundary(exec, boundary);
+      }
+    });
+  } catch (error) {
+    logApp.error('[CASE AUTOPILOT] Access boundary of an investigation waiting for approval not read', { runId, cause: error });
+  }
+};
+
+const nextAwaitingRunsWindow = createRunWindow<BasicStoreEntityInvestigationRun>();
+
+/**
+ * The next runs waiting for approval whose access boundary is read again,
+ * oldest first, resuming where the previous tick stopped, apart from the
+ * active runs so that they never wait behind the runs under review.
+ */
+export const listAwaitingInvestigationRunsToRevalidate = (context: AuthContext, limit: number) => nextAwaitingRunsWindow(async (after) => {
+  const connection = await pageEntitiesConnection<BasicStoreEntityInvestigationRun>(context, INVESTIGATION_MANAGER_USER, [ENTITY_TYPE_INVESTIGATION_RUN], {
+    filters: {
+      mode: FilterMode.And,
+      filters: [{ key: ['run_status'], values: [InvestigationRunStatus.AwaitingApproval] }],
+      filterGroups: [],
+    },
+    noFiltersChecking: true,
+    orderBy: 'created_at',
+    orderMode: 'asc' as never,
+    first: limit,
+    after,
+  });
+  return {
+    items: connection.edges.map((edge) => edge.node),
+    endCursor: connection.pageInfo.endCursor ?? null,
+    hasNextPage: connection.pageInfo.hasNextPage,
+  };
+});
 
 const nextRunsWindow = createRunWindow<BasicStoreEntityInvestigationRun>();
 

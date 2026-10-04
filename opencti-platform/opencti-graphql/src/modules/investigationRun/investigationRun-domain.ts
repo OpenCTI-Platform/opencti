@@ -430,6 +430,10 @@ export const stopCancelledEngineRun = async (context: AuthContext, runId: string
 
 export const cancelInvestigationRun = async (context: AuthContext, user: AuthUser, id: string) => {
   const run = await findAccessibleRun(context, user, id);
+  // Cancelling rejects the gates of the run and stops its engine run: reading it is not enough.
+  if (!isUserHasCapability(user, KNOWLEDGE_KNUPDATE)) {
+    throw ForbiddenAccess();
+  }
   if (TERMINAL_RUN_STATUSES.includes(run.run_status)) {
     return run;
   }

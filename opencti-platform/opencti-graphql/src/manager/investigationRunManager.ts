@@ -31,7 +31,13 @@ import { OPENCTI_ADMIN_UUID } from '../schema/general';
 import { InvestigationRunTrigger } from '../generated/graphql';
 import { resolveUserByIdFromCache } from '../modules/user/user-domain';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../modules/case/case-rfi/case-rfi-types';
-import { INVESTIGATION_MANAGER_CONTEXT, listInvestigationRunsToProcess, processInvestigationRun } from '../modules/investigationRun/investigationRun-executor';
+import {
+  INVESTIGATION_MANAGER_CONTEXT,
+  listAwaitingInvestigationRunsToRevalidate,
+  listInvestigationRunsToProcess,
+  processInvestigationRun,
+  revalidateAwaitingInvestigationRun,
+} from '../modules/investigationRun/investigationRun-executor';
 import { addInvestigationRun } from '../modules/investigationRun/investigationRun-domain';
 import { listCaseRfiTriggerPolicies, updateInvestigationPolicyStreamPosition } from '../modules/investigationRun/investigationPolicy-domain';
 import type { BasicStoreEntityInvestigationPolicy } from '../modules/investigationRun/investigationRun-types';
@@ -43,6 +49,7 @@ const INVESTIGATION_RUN_MANAGER_LOCK_KEY = conf.get('investigation_run_manager:l
 const INVESTIGATION_RUN_MANAGER_INTERVAL = conf.get('investigation_run_manager:interval') ?? 10000;
 const INVESTIGATION_RUN_MANAGER_MAX_CONCURRENCY = conf.get('investigation_run_manager:max_concurrency') ?? 3;
 const INVESTIGATION_RUN_MANAGER_MAX_RUNS_PER_TICK = conf.get('investigation_run_manager:max_runs_per_tick') ?? 50;
+const INVESTIGATION_RUN_MANAGER_MAX_AWAITING_RUNS_PER_TICK = conf.get('investigation_run_manager:max_awaiting_runs_per_tick') ?? 10;
 const INVESTIGATION_RUN_MANAGER_STREAM_BATCH_SIZE = conf.get('investigation_run_manager:stream_batch_size') ?? 2000;
 
 // The hook runs as the policy identity, like the AI agent playbook components
@@ -141,6 +148,8 @@ export const investigationRunManagerHandler = async () => {
   }
   const runs = await listInvestigationRunsToProcess(context, INVESTIGATION_RUN_MANAGER_MAX_RUNS_PER_TICK);
   await BluePromise.map(runs, (run) => processInvestigationRun(context, run.internal_id), { concurrency: INVESTIGATION_RUN_MANAGER_MAX_CONCURRENCY });
+  const awaiting = await listAwaitingInvestigationRunsToRevalidate(context, INVESTIGATION_RUN_MANAGER_MAX_AWAITING_RUNS_PER_TICK);
+  await BluePromise.map(awaiting, (run) => revalidateAwaitingInvestigationRun(context, run.internal_id), { concurrency: INVESTIGATION_RUN_MANAGER_MAX_CONCURRENCY });
 };
 
 const INVESTIGATION_RUN_MANAGER_DEFINITION: ManagerDefinition = {
