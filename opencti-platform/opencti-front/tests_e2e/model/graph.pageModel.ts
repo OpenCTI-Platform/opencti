@@ -185,6 +185,10 @@ export default class GraphPage {
    * a drag between them never lands under the details panel that opens on the right.
    */
   async arrangeInMiddle(ids: string[]) {
+    // Framed first: the forces may have moved a node under a panel since the graph was last fitted,
+    // where a drag would grab the panel instead.
+    await this.getControl('Fit the whole graph').click();
+    await this.waitForGraph(ids.length);
     const box = await this.getCanvas().boundingBox();
     if (!box) throw new Error('Canvas has no bounding box');
     for (let index = 0; index < ids.length; index += 1) {
