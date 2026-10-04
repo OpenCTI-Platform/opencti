@@ -243,8 +243,8 @@ export const canAutoApproveDraft = (
   leadingConfidence: number | null,
 ): boolean => {
   if (!policy.auto_approve_low_risk || !isLowRiskDraft(draftTypes)) return false;
-  // Without any hypothesis the threshold cannot apply: only notes and observed data are involved.
-  return leadingConfidence === null || leadingConfidence >= policy.auto_approve_min_confidence;
+  // The policy approves on the leading hypothesis' confidence: without an assessed one, an analyst decides.
+  return leadingConfidence !== null && leadingConfidence >= policy.auto_approve_min_confidence;
 };
 
 // Latest decision per analyst and item: an analyst changing their mind replaces their previous decision.

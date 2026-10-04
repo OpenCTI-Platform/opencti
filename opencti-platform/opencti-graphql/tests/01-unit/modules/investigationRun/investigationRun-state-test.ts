@@ -168,7 +168,8 @@ describe('Case Autopilot auto-approval', () => {
     expect(isLowRiskDraft([])).toBe(false);
     expect(canAutoApproveDraft(buildPolicy(), ['Note'], 90)).toBe(true);
     expect(canAutoApproveDraft(buildPolicy(), ['Note'], 50)).toBe(false);
-    expect(canAutoApproveDraft(buildPolicy(), ['Note'], null)).toBe(true);
+    // Without an assessed leading hypothesis the threshold is not met: an analyst decides.
+    expect(canAutoApproveDraft(buildPolicy(), ['Note'], null)).toBe(false);
     expect(canAutoApproveDraft(buildPolicy({ auto_approve_low_risk: false }), ['Note'], 99)).toBe(false);
     expect(canAutoApproveDraft(buildPolicy(), ['Note', 'stix-core-relationship'], 99)).toBe(false);
   });
