@@ -20,7 +20,13 @@ vi.mock('../../../../src/modules/timeMachine/timeMachine-history', async (import
   fetchElementsHistoryEvents: (...args: unknown[]) => fetchElementsHistoryEventsMock(...args),
 }));
 
-import { computeLandscapeDiff, resolveCountedElements } from '../../../../src/modules/timeMachine/landscapeDiff-domain';
+const redisSetMock = vi.fn();
+vi.mock('../../../../src/database/redis', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/database/redis')>()),
+  getClientBase: () => ({ get: async () => null, set: (...args: unknown[]) => redisSetMock(...args) }),
+}));
+
+import { computeLandscapeDiff, landscapeDiffSummary, resolveCountedElements } from '../../../../src/modules/timeMachine/landscapeDiff-domain';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 
 const FROM = '2026-01-01T00:00:00.000Z';
@@ -101,5 +107,35 @@ describe('Landscape diff counts', () => {
     expect(result.contributors).not.toContain('malware-z');
     expect(result.contributors).not.toContain('malware-w');
     expect(result.contributors).not.toContain('rel-revoked-restricted');
+  });
+
+  describe('fresh widget summaries', () => {
+    const input = { entity_types: ['Intrusion-Set'], from: FROM, to: TO };
+    const noChanges = () => {
+      fullRelationsListMock.mockResolvedValue([]);
+      fetchElementsHistoryEventsMock.mockResolvedValue([]);
+      fetchRelationshipsHistoryEventsMock.mockResolvedValue([]);
+    };
+
+    it('should compute again a result whose access changed during its computation', async () => {
+      noChanges();
+      // Scoped-a is reclassified away from the user after it was read by the first computation
+      topEntitiesListMock.mockResolvedValueOnce([entity('scoped-a'), entity('scoped-b')]).mockResolvedValue([entity('scoped-b')]);
+      mockAccess(['scoped-b'], ['scoped-a']);
+      const summary = await landscapeDiffSummary(context, user, input);
+      expect(topEntitiesListMock).toHaveBeenCalledTimes(2);
+      expect(summary.aggregates.entities_in_scope).toEqual(1);
+      expect(redisSetMock).toHaveBeenCalledTimes(1);
+      expect(JSON.parse(redisSetMock.mock.calls[0][1]).contributors).toEqual(['scoped-b']);
+    });
+
+    it('should refuse a result whose access keeps changing rather than return it', async () => {
+      noChanges();
+      topEntitiesListMock.mockResolvedValue([entity('scoped-a')]);
+      mockAccess([], ['scoped-a']);
+      await expect(landscapeDiffSummary(context, user, input)).rejects.toThrow('Access to the knowledge of this landscape diff changed');
+      expect(topEntitiesListMock).toHaveBeenCalledTimes(2);
+      expect(redisSetMock).not.toHaveBeenCalled();
+    });
   });
 });

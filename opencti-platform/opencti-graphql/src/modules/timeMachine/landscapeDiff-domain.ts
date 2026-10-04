@@ -626,6 +626,7 @@ export const computeLandscapeDiff = async (
 
 // region Background execution with progress and cache
 const LANDSCAPE_INTERRUPTED_MESSAGE = 'Landscape diff computation was interrupted';
+const LANDSCAPE_ACCESS_CHANGED_MESSAGE = 'Access to the knowledge of this landscape diff changed, it must be computed again';
 
 export interface LandscapeRunSlot {
   userId: string;
@@ -966,7 +967,15 @@ export const landscapeDiffSummary = async (context: AuthContext, user: AuthUser,
       return cachedResult;
     }
   }
-  const computation = await computeLandscapeDiff(context, user, scope, input.from, input.to, groupBy, { maxEntities: LANDSCAPE_WIDGET_MAX_ENTITIES });
+  // A fresh result is checked like a stored one: an element reclassified during the computation is never leaked.
+  // It is computed again once, then refused when access keeps changing.
+  const computeAccessible = async () => {
+    const computed = await computeLandscapeDiff(context, user, scope, input.from, input.to, groupBy, { maxEntities: LANDSCAPE_WIDGET_MAX_ENTITIES });
+    const accessible = await isLandscapeResultAccessible(context, user, computed.contributors, computed.aggregates, computed.entities);
+    return accessible ? computed : null;
+  };
+  const computation = (await computeAccessible()) ?? (await computeAccessible());
+  if (!computation) throw FunctionalError(LANDSCAPE_ACCESS_CHANGED_MESSAGE);
   const result: LandscapeDiffSummaryResult = {
     from: input.from,
     to: input.to,
@@ -982,6 +991,22 @@ export const landscapeDiffSummary = async (context: AuthContext, user: AuthUser,
   return result;
 };
 
+// Every complete result is checked against its contributors before it is returned, the first time included
+const revalidateCompleteState = async (context: AuthContext, user: AuthUser, state: LandscapeDiffState): Promise<LandscapeDiffState> => {
+  if (state.status !== 'complete') return state;
+  if (await isLandscapeResultAccessible(context, user, await readContributors(state.id), state.aggregates, state.entities)) return state;
+  const outdated: LandscapeDiffState = {
+    ...state,
+    status: 'failed',
+    error: LANDSCAPE_ACCESS_CHANGED_MESSAGE,
+    aggregates: null,
+    entities: [],
+    updated_at: now(),
+  };
+  await writeState(outdated);
+  return outdated;
+};
+
 export const findLandscapeDiff = async (context: AuthContext, user: AuthUser, id: string): Promise<LandscapeDiffState | null> => {
   const state = await readState(id);
   // A landscape diff is only visible to the user who requested it, with the rights it was computed with
@@ -994,21 +1019,10 @@ export const findLandscapeDiff = async (context: AuthContext, user: AuthUser, id
       landscapeRunSlots.release(state.id, LANDSCAPE_INTERRUPTED_MESSAGE);
       return interrupted;
     }
-    // The run progressed since it was read: its owner is alive
-    return readState(id);
+    // The run progressed since it was read: its owner is alive, and it may have completed in the meantime
+    const progressed = await readState(id);
+    return progressed ? revalidateCompleteState(context, user, progressed) : null;
   }
-  if (state.status === 'complete' && !await isLandscapeResultAccessible(context, user, await readContributors(state.id), state.aggregates, state.entities)) {
-    const outdated: LandscapeDiffState = {
-      ...state,
-      status: 'failed',
-      error: 'Access to the knowledge of this landscape diff changed, it must be computed again',
-      aggregates: null,
-      entities: [],
-      updated_at: now(),
-    };
-    await writeState(outdated);
-    return outdated;
-  }
-  return state;
+  return revalidateCompleteState(context, user, state);
 };
 // endregion
