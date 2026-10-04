@@ -76,6 +76,9 @@ export const CHANGES_SECTION_AS_OF = 'as-of';
 export const FROM_SEARCH_PARAM = 'from';
 export const TO_SEARCH_PARAM = 'to';
 export const AS_OF_SEARCH_PARAM = 'asOf';
+// Date of the last visit of the user, offered as the "Since your last visit" preset of the comparison
+export const LAST_VISIT_SEARCH_PARAM = 'lastVisit';
+export const LAST_VISIT_PRESET = 'last_visit';
 
 export const changesSearch = (section: string, params: Record<string, string> = {}) => {
   return new URLSearchParams({ [CHANGES_SECTION_SEARCH_PARAM]: section, ...params }).toString();
@@ -83,6 +86,15 @@ export const changesSearch = (section: string, params: Record<string, string> = 
 
 export const comparePeriodSearch = (range: DateRange) => {
   return changesSearch(CHANGES_SECTION_COMPARE, { [FROM_SEARCH_PARAM]: range.from, [TO_SEARCH_PARAM]: range.to });
+};
+
+// Comparison from the last visit of the user to now, opened from the "New since your last visit" chip
+export const sinceLastVisitSearch = (lastVisit: string, now: Date = new Date()) => {
+  return changesSearch(CHANGES_SECTION_COMPARE, {
+    [FROM_SEARCH_PARAM]: lastVisit,
+    [TO_SEARCH_PARAM]: now.toISOString(),
+    [LAST_VISIT_SEARCH_PARAM]: lastVisit,
+  });
 };
 
 // Entity pages without tabs, hence without a Changes tab
@@ -434,20 +446,69 @@ export const landscapeDiffToHtml = (diff: LandscapeDiffData, t: Translate, forma
 };
 
 const COUNT_LABELS = {
-  new_relationships: ['1 new relationship', '{count} new relationships'],
-  updates: ['1 update', '{count} updates'],
-  new_container_objects: ['1 new object', '{count} new objects'],
-  attributes_changed: ['1 attribute changed', '{count} attributes changed'],
+  new_relationships: '{count, plural, one {# new relationship} other {# new relationships}}',
+  updates: '{count, plural, one {# update} other {# updates}}',
+  new_container_objects: '{count, plural, one {# new object} other {# new objects}}',
+  attributes_changed: '{count, plural, one {# attribute changed} other {# attributes changed}}',
 } as const;
 
 type TranslateWithValues = (message: string, opts?: { values?: Record<string, string | number> }) => string;
 
 /**
- * A count with its unit, singular or plural ("1 update", "3 updates").
+ * A count with its unit, with the plural rules of the language ("1 update", "3 updates").
  */
 export const countLabel = (kind: keyof typeof COUNT_LABELS, count: number, t: TranslateWithValues) => {
-  const [one, other] = COUNT_LABELS[kind];
-  return count === 1 ? t(one) : t(other, { values: { count } });
+  return t(COUNT_LABELS[kind], { values: { count } });
+};
+
+export type DurationUnit = 'second' | 'minute' | 'hour';
+
+/**
+ * A duration in the largest unit that keeps it readable ("40 seconds", "3 minutes", "1.5 hours"),
+ * the number and its unit being formatted by `formatUnit` in the language of the user.
+ */
+export const formatDuration = (milliseconds: number, formatUnit: (value: number, unit: DurationUnit) => string) => {
+  const seconds = Math.max(0, Math.round(milliseconds / 1000));
+  if (seconds < 60) return formatUnit(seconds, 'second');
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return formatUnit(minutes, 'minute');
+  return formatUnit(Math.round(minutes / 6) / 10, 'hour');
+};
+
+export type AttributeOperation = 'added' | 'changed' | 'removed';
+
+// Operation of an attribute row of a comparison: set during the period, cleared during it, or changed
+export const attributeOperation = (before: ReadonlyArray<unknown>, after: ReadonlyArray<unknown>): AttributeOperation => {
+  if (before.length === 0) return 'added';
+  if (after.length === 0) return 'removed';
+  return 'changed';
+};
+
+export interface DiffSummaryMeasure {
+  key: string;
+  // i18n key of the measure
+  label: string;
+  changed: boolean;
+}
+
+/**
+ * Measures of a comparison summary in display order, each flagged when it changed during the period:
+ * only the changed ones get a card, the others are folded into one caption. Contained objects only
+ * measure containers.
+ */
+export const diffSummaryMeasures = (summary: EntityDiffData['summary'], isContainer: boolean): DiffSummaryMeasure[] => {
+  const differs = (before?: number | null, after?: number | null) => (before ?? null) !== (after ?? null);
+  const measures: DiffSummaryMeasure[] = [
+    { key: 'attributes_changed', label: 'Attributes changed', changed: summary.attributes_changed > 0 },
+    { key: 'relationships_added', label: 'Relationships added', changed: summary.relationships_added > 0 },
+    { key: 'relationships_removed', label: 'Relationships removed', changed: summary.relationships_removed > 0 },
+    { key: 'relationships_revoked', label: 'Relationships revoked', changed: summary.relationships_revoked > 0 },
+    { key: 'confidence', label: 'Confidence', changed: differs(summary.confidence_before, summary.confidence_after) },
+    { key: 'score', label: 'Score', changed: differs(summary.score_before, summary.score_after) },
+    { key: 'relationships_confidence_changed', label: 'Confidence changes on relationships', changed: summary.relationships_confidence_changed > 0 },
+    { key: 'container_objects', label: 'Contained objects', changed: summary.container_objects_added + summary.container_objects_removed > 0 },
+  ];
+  return measures.filter((measure) => measure.changed || isContainer || measure.key !== 'container_objects');
 };
 
 // Failure messages stored by the platform for the cases an analyst can act upon

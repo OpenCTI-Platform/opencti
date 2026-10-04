@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
+import { createIntl } from 'react-intl';
 import {
   actionLabel,
+  attributeOperation,
   CHANGES_SECTION_AS_OF,
   CHANGES_SECTION_COMPARE,
   changesSearch,
   clampDate,
   comparePeriodSearch,
+  diffSummaryMeasures,
   entityChangesPath,
   entityDiffToCsv,
   entityDiffToHtml,
@@ -14,6 +17,7 @@ import {
   escapeCsvCell,
   escapeHtml,
   exportFileName,
+  formatDuration,
   isValidDate,
   landscapeDiffToCsv,
   landscapeDiffToHtml,
@@ -25,6 +29,7 @@ import {
   presetLabel,
   presetRange,
   resolveChangesSection,
+  sinceLastVisitSearch,
   TIME_MACHINE_PRESETS,
   valuesToText,
   widgetDefaultRange,
@@ -328,7 +333,8 @@ describe('Landscape changes grouping', () => {
 });
 
 describe('Counts and widget periods', () => {
-  const t = (message: string, opts?: { values?: Record<string, string | number> }) => message.replace('{count}', String(opts?.values?.count ?? ''));
+  const intl = createIntl({ locale: 'en', messages: {}, onError: () => {} });
+  const t = (message: string, opts?: { values?: Record<string, string | number> }) => intl.formatMessage({ id: message, defaultMessage: message }, opts?.values);
 
   it('should write a count with its singular or plural unit', () => {
     expect(countLabel('new_relationships', 1, t)).toEqual('1 new relationship');
@@ -338,6 +344,14 @@ describe('Counts and widget periods', () => {
     expect(countLabel('attributes_changed', 0, t)).toEqual('0 attributes changed');
   });
 
+  it('should write durations in the largest readable unit', () => {
+    const format = (value: number, unit: string) => `${value} ${unit}`;
+    expect(formatDuration(40_400, format)).toEqual('40 second');
+    expect(formatDuration(185_000, format)).toEqual('3 minute');
+    expect(formatDuration(90 * 60_000, format)).toEqual('1.5 hour');
+    expect(formatDuration(-5_000, format)).toEqual('0 second');
+  });
+
   it('should keep the default widget period stable for a whole minute', () => {
     const early = widgetDefaultRange(new Date('2026-10-03T22:40:05.123Z'));
     const late = widgetDefaultRange(new Date('2026-10-03T22:40:59.999Z'));
@@ -345,6 +359,46 @@ describe('Counts and widget periods', () => {
     expect(early.to).toEqual('2026-10-03T22:41:00.000Z');
     expect(early.from).toEqual('2026-09-03T22:41:00.000Z');
     expect(widgetDefaultRange(new Date('2026-10-03T22:41:00.000Z')).to).toEqual('2026-10-03T22:41:00.000Z');
+  });
+});
+
+describe('Comparison summary and rows', () => {
+  const summary = {
+    attributes_changed: 2,
+    relationships_added: 0,
+    relationships_removed: 0,
+    relationships_revoked: 1,
+    relationships_confidence_changed: 0,
+    container_objects_added: 0,
+    container_objects_removed: 0,
+    confidence_before: 50,
+    confidence_after: 80,
+    score_before: null,
+    score_after: null,
+  };
+
+  it('should flag the measures that changed and keep contained objects for containers only', () => {
+    const changed = (isContainer: boolean) => diffSummaryMeasures(summary, isContainer).filter((measure) => measure.changed).map((measure) => measure.key);
+    expect(changed(false)).toEqual(['attributes_changed', 'relationships_revoked', 'confidence']);
+    const unchanged = diffSummaryMeasures(summary, false).filter((measure) => !measure.changed).map((measure) => measure.key);
+    expect(unchanged).toEqual(['relationships_added', 'relationships_removed', 'score', 'relationships_confidence_changed']);
+    expect(diffSummaryMeasures(summary, true).map((measure) => measure.key)).toContain('container_objects');
+    // A score set during the period is a change, even from no value
+    expect(diffSummaryMeasures({ ...summary, score_after: 40 }, false).find((measure) => measure.key === 'score')?.changed).toBe(true);
+  });
+
+  it('should name the operation of an attribute row', () => {
+    expect(attributeOperation([], ['a'])).toEqual('added');
+    expect(attributeOperation(['a'], [])).toEqual('removed');
+    expect(attributeOperation(['a'], ['b'])).toEqual('changed');
+  });
+
+  it('should open the comparison since the last visit with its preset', () => {
+    const search = new URLSearchParams(sinceLastVisitSearch('2026-09-01T10:00:00.000Z', new Date('2026-10-04T12:00:00.000Z')));
+    expect(search.get('section')).toEqual('compare');
+    expect(search.get('from')).toEqual('2026-09-01T10:00:00.000Z');
+    expect(search.get('to')).toEqual('2026-10-04T12:00:00.000Z');
+    expect(search.get('lastVisit')).toEqual('2026-09-01T10:00:00.000Z');
   });
 });
 

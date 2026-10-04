@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { graphql, useMutation } from 'react-relay';
+import { useNavigate } from 'react-router';
 import { Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { Box } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
-import { countLabel } from './timeMachineUtils';
+import { countLabel, sinceLastVisitSearch } from './timeMachineUtils';
 import { SinceLastVisitChipsRecordMutation, SinceLastVisitChipsRecordMutation$data } from './__generated__/SinceLastVisitChipsRecordMutation.graphql';
 
 const sinceLastVisitChipsRecordMutation = graphql`
@@ -24,14 +25,18 @@ type SinceLastVisitData = NonNullable<SinceLastVisitChipsRecordMutation$data['en
 
 interface SinceLastVisitChipsProps {
   entityId: string;
+  // Path of the Changes tab of the entity, when it has one
+  changesPath?: string;
 }
 
 /**
- * Records the visit of the user on the entity overview and displays what changed since the
- * previous visit (new relationships, updates by others, objects added to a container).
+ * Records the visit of the user on the entity overview and displays one chip for what changed since the
+ * previous visit; its tooltip breaks the changes down (new relationships, updates by others, objects added
+ * to a container) and a click opens the comparison since that visit in the Changes tab.
  */
-const SinceLastVisitChips = ({ entityId }: SinceLastVisitChipsProps) => {
-  const { t_i18n, fldt } = useFormatter();
+const SinceLastVisitChips = ({ entityId, changesPath }: SinceLastVisitChipsProps) => {
+  const { t_i18n, rd, fldt } = useFormatter();
+  const navigate = useNavigate();
   const [commit] = useMutation<SinceLastVisitChipsRecordMutation>(sinceLastVisitChipsRecordMutation);
   const [data, setData] = useState<SinceLastVisitData | null>(null);
 
@@ -48,32 +53,36 @@ const SinceLastVisitChips = ({ entityId }: SinceLastVisitChipsProps) => {
   if (!data || data.first_visit || !data.reference_date) {
     return null;
   }
-  const hasChanges = data.new_relationships > 0 || data.updates > 0 || data.new_container_objects > 0;
-  const since = fldt(data.reference_date);
+  const referenceDate = data.reference_date;
+  const breakdown = [
+    data.new_relationships > 0 ? countLabel('new_relationships', data.new_relationships, t_i18n) : null,
+    data.updates > 0 ? countLabel('updates', data.updates, t_i18n) : null,
+    data.new_container_objects > 0 ? countLabel('new_container_objects', data.new_container_objects, t_i18n) : null,
+  ].filter((line): line is string => !!line);
+  const hasChanges = breakdown.length > 0;
+  const lastVisit = t_i18n('Last visit {date}', { values: { date: rd(referenceDate) } });
+  const label = hasChanges ? t_i18n('New since your last visit') : t_i18n('No change since your last visit');
+  const openChanges = changesPath && hasChanges ? () => navigate(`${changesPath}?${sinceLastVisitSearch(referenceDate)}`) : undefined;
   return (
-    <Box
-      sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap', marginBottom: 2 }}
-      data-testid="since-last-visit"
-      role="status"
-      aria-label={t_i18n('New since your last visit')}
-    >
+    <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }} data-testid="since-last-visit" role="status">
       <Tooltip>
         <TooltipTrigger asChild>
           <span>
-            <Chip label={hasChanges ? t_i18n('New since your last visit') : t_i18n('No change since your last visit')} severity={hasChanges ? 'info' : 'neutral'} />
+            <Chip
+              label={label}
+              severity={hasChanges ? 'info' : 'neutral'}
+              onClick={openChanges}
+              aria-label={openChanges ? t_i18n('{label}, open the changes since {date}', { values: { label, date: fldt(referenceDate) } }) : undefined}
+            />
           </span>
         </TooltipTrigger>
-        <TooltipContent>{`${t_i18n('Last visit')}: ${since}`}</TooltipContent>
+        <TooltipContent>
+          <Box component="span" sx={{ display: 'flex', flexDirection: 'column' }} data-testid="since-last-visit-breakdown">
+            {breakdown.map((line) => <span key={line}>{line}</span>)}
+            <span>{lastVisit}</span>
+          </Box>
+        </TooltipContent>
       </Tooltip>
-      {data.new_relationships > 0 && (
-        <Chip label={countLabel('new_relationships', data.new_relationships, t_i18n)} severity="info" />
-      )}
-      {data.updates > 0 && (
-        <Chip label={countLabel('updates', data.updates, t_i18n)} severity="info" />
-      )}
-      {data.new_container_objects > 0 && (
-        <Chip label={countLabel('new_container_objects', data.new_container_objects, t_i18n)} severity="info" />
-      )}
     </Box>
   );
 };

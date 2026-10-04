@@ -20,7 +20,12 @@ export interface EntityChangesSection {
 
 const CompareDatesSection = ({ entityId }: EntityChangesSectionProps) => <EntityDiffTab entityId={entityId} />;
 
-// Sections of the Changes tab, in display order
+/**
+ * Sections of the Changes tab, in display order. Every section follows the same anatomy: a toolbar row (scope
+ * controls on the left, actions on the right), a one-line summary with counts, the table or list of the changes,
+ * and an empty state that offers its action, without a section-level breadcrumb.
+ * See .github/instructions/frontend/patterns/changes-tab-sections.md.
+ */
 export const ENTITY_CHANGES_SECTIONS: EntityChangesSection[] = [
   { key: CHANGES_SECTION_COMPARE, label: 'Compare dates', Component: CompareDatesSection },
   { key: CHANGES_SECTION_AS_OF, label: 'View as of', Component: EntityAsOfSection },

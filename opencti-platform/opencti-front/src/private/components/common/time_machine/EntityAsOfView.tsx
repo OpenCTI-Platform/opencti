@@ -1,12 +1,15 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { Text } from '@filigran/design-system';
 import { Alert, Box, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
 import Grid from '@mui/material/Grid2';
+import Button from '@common/button/Button';
 import Card from '@common/card/Card';
 import { useFormatter } from '../../../../components/i18n';
 import TimeMachineValues from './TimeMachineValues';
+import { timeMachineSliderTimelineQuery } from './TimeMachineSlider';
 import { EntityAsOfViewQuery } from './__generated__/EntityAsOfViewQuery.graphql';
+import { TimeMachineSliderTimelineQuery } from './__generated__/TimeMachineSliderTimelineQuery.graphql';
 
 const entityAsOfViewQuery = graphql`
   query EntityAsOfViewQuery($id: String!, $date: DateTime!) {
@@ -51,6 +54,7 @@ const entityAsOfViewQuery = graphql`
 interface EntityAsOfViewProps {
   entityId: string;
   date: string;
+  onDateChange: (date: string) => void;
 }
 
 export const useTimeMachineWarningMessage = () => {
@@ -71,25 +75,48 @@ export const useTimeMachineWarningMessage = () => {
   };
 };
 
-const EntityAsOfView = ({ entityId, date }: EntityAsOfViewProps) => {
+/**
+ * "Go to the first recorded change" of an empty as-of view: the oldest change still in the history of the entity
+ * (its creation, or the start of the history still retained), from the timeline the slider already loaded.
+ * The creation date of the entity is only used without any history: its creation event is recorded just after it.
+ */
+const FirstChangeAction = ({ entityId, onDateChange }: { entityId: string; onDateChange: (date: string) => void }) => {
+  const { t_i18n } = useFormatter();
+  const data = useLazyLoadQuery<TimeMachineSliderTimelineQuery>(timeMachineSliderTimelineQuery, { id: entityId }, { fetchPolicy: 'store-or-network' });
+  const timeline = data.entityTimeMachineTimeline;
+  const firstChange = timeline?.history_start ?? timeline?.created_at;
+  if (!firstChange) return null;
+  return (
+    <Button variant="secondary" onClick={() => onDateChange(firstChange)}>
+      {t_i18n('Go to the first recorded change')}
+    </Button>
+  );
+};
+
+const EntityAsOfView = ({ entityId, date, onDateChange }: EntityAsOfViewProps) => {
   const { t_i18n, fldt, n } = useFormatter();
   const warningMessage = useTimeMachineWarningMessage();
   const data = useLazyLoadQuery<EntityAsOfViewQuery>(entityAsOfViewQuery, { id: entityId, date }, { fetchPolicy: 'store-and-network' });
   const asOf = data.entityAsOf;
+  const firstChangeAction = (
+    <Suspense fallback={null}>
+      <FirstChangeAction entityId={entityId} onDateChange={onDateChange} />
+    </Suspense>
+  );
   if (!asOf) {
-    return <Alert severity="info">{t_i18n('No data available for this date.')}</Alert>;
+    return <Alert severity="info" sx={{ alignItems: 'center' }} action={firstChangeAction}>{t_i18n('No data available for this date.')}</Alert>;
   }
   if (asOf.deleted) {
     return (
       <Alert severity="warning" data-testid="time-machine-tombstone">
-        {t_i18n('This entity has been deleted on')} {fldt(asOf.deleted_at)}.
+        {t_i18n('This entity was deleted on {date}.', { values: { date: fldt(asOf.deleted_at) } })}
       </Alert>
     );
   }
   if (!asOf.exists) {
     return (
-      <Alert severity="info" data-testid="time-machine-not-existing">
-        {t_i18n('This entity did not exist on')} {fldt(asOf.date)}.
+      <Alert severity="info" data-testid="time-machine-not-existing" sx={{ alignItems: 'center' }} action={firstChangeAction}>
+        {t_i18n('This entity did not exist yet on {date}.', { values: { date: fldt(asOf.date) } })}
       </Alert>
     );
   }
@@ -147,21 +174,23 @@ const EntityAsOfView = ({ entityId, date }: EntityAsOfViewProps) => {
             </Table>
             {asOf.container_objects_count !== null && asOf.container_objects_count !== undefined && (
               <Text variant="content-compact" style={{ marginTop: 16 }}>
-                {t_i18n('Contained objects')}: {n(asOf.container_objects_count)}
+                {t_i18n('{count, plural, one {# contained object} other {# contained objects}}', { values: { count: asOf.container_objects_count } })}
               </Text>
             )}
           </Card>
           <Box sx={{ marginTop: 3 }}>
             <Card title={t_i18n('Reconstruction')}>
               <Text variant="content-compact">
-                {asOf.anchor === 'snapshot' ? t_i18n('Rebuilt from the knowledge snapshot of') : t_i18n('Rebuilt from the current knowledge of')} {fldt(asOf.anchor_date)}
+                {asOf.anchor === 'snapshot'
+                  ? t_i18n('Rebuilt from the knowledge snapshot of {date}', { values: { date: fldt(asOf.anchor_date) } })
+                  : t_i18n('Rebuilt from the current knowledge of {date}', { values: { date: fldt(asOf.anchor_date) } })}
               </Text>
               <Text variant="content-compact">
-                {t_i18n('Changes replayed')}: {n(asOf.replayed_events)}
+                {t_i18n('{count, plural, one {# change replayed} other {# changes replayed}}', { values: { count: asOf.replayed_events } })}
               </Text>
               {asOf.history_start && (
                 <Text variant="content-compact">
-                  {t_i18n('History available since')} {fldt(asOf.history_start)}
+                  {t_i18n('History available since {date}', { values: { date: fldt(asOf.history_start) } })}
                 </Text>
               )}
             </Card>

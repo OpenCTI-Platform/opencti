@@ -53,7 +53,8 @@ export default class TimeMachinePage {
   }
 
   async exportDiff(menuItem: string) {
-    await this.getDiff().getByRole('button', { name: 'Export' }).click();
+    // The export sits in the period toolbar, on the right of the period selector
+    await this.getPeriodSelector().getByRole('button', { name: 'Export' }).click();
     return this.page.getByRole('menuitem', { name: menuItem }).click();
   }
 

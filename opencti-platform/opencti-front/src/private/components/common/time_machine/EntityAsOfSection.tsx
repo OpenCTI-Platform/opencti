@@ -57,7 +57,7 @@ const EntityAsOfSection = ({ entityId, basePath }: EntityAsOfSectionProps) => {
           </Button>
         )}
       >
-        {t_i18n('Read-only view of this entity as it was on')} {fldt(asOfDate)}
+        {t_i18n('Read-only view of this entity as it was on {date}', { values: { date: fldt(asOfDate) } })}
       </Alert>
       <Box sx={{ marginBottom: 3 }}>
         <Card title={t_i18n('Time machine')}>
@@ -67,7 +67,7 @@ const EntityAsOfSection = ({ entityId, basePath }: EntityAsOfSectionProps) => {
         </Card>
       </Box>
       <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <EntityAsOfView entityId={entityId} date={asOfDate} />
+        <EntityAsOfView entityId={entityId} date={asOfDate} onDateChange={setAsOfDate} />
       </Suspense>
     </Box>
   );

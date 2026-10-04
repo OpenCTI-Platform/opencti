@@ -32,6 +32,10 @@ test('Time machine: view an entity as of a past date and diff it', { tag: ['@ce'
   await expect(timeMachine.getAsOfSection().getByText('Read-only view of this entity as it was on')).toBeVisible();
   await expect(timeMachine.getSlider()).toBeVisible();
   await expect(timeMachine.getNotExistingMessage()).toBeVisible();
+  // The empty view offers its next action: the first recorded change, the creation of the entity
+  await timeMachine.getNotExistingMessage().getByRole('button', { name: 'Go to the first recorded change' }).click();
+  await expect(timeMachine.getAsOfView()).toBeVisible();
+  await expect(timeMachine.getNotExistingMessage()).toBeHidden();
   await timeMachine.backToCurrentKnowledge();
   await expect(page).toHaveURL(/\/overview/);
   await expect(timeMachine.getAsOfSection()).toBeHidden();
@@ -43,6 +47,8 @@ test('Time machine: view an entity as of a past date and diff it', { tag: ['@ce'
   await expect(timeMachine.getDiff()).toBeVisible();
   await expect(timeMachine.getDiff().getByText('This entity did not exist at the start of the period, its creation is part of the changes.')).toBeVisible();
   await expect(timeMachine.getDiff().getByRole('table', { name: 'Attribute changes' })).toContainText(name);
+  // Each row names its operation: the attributes set at the creation are added
+  await expect(timeMachine.getDiff().getByRole('table', { name: 'Attribute changes' }).getByText('Added').first()).toBeVisible();
 
   // Both sections of the Changes tab are one click away from each other
   await timeMachine.goToChangesSection('View as of');

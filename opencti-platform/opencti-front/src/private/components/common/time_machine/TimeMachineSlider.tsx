@@ -11,7 +11,7 @@ import type { Theme } from '../../../../components/Theme';
 import { clampDate } from './timeMachineUtils';
 import { TimeMachineSliderTimelineQuery } from './__generated__/TimeMachineSliderTimelineQuery.graphql';
 
-const timeMachineSliderTimelineQuery = graphql`
+export const timeMachineSliderTimelineQuery = graphql`
   query TimeMachineSliderTimelineQuery($id: String!) {
     entityTimeMachineTimeline(id: $id) {
       entity_id
@@ -115,7 +115,7 @@ const TimeMachineSlider = ({ entityId, value, onChange }: TimeMachineSliderProps
               <Box
                 component="button"
                 type="button"
-                aria-label={`${t_i18n('Change on')} ${fldt(new Date(time))}`}
+                aria-label={t_i18n('Change on {date}', { values: { date: fldt(new Date(time)) } })}
                 onClick={() => commit(time)}
                 sx={{
                   position: 'absolute',
@@ -131,7 +131,7 @@ const TimeMachineSlider = ({ entityId, value, onChange }: TimeMachineSliderProps
                 }}
               />
             </TooltipTrigger>
-            <TooltipContent>{`${t_i18n('Change on')} ${fldt(new Date(time))}`}</TooltipContent>
+            <TooltipContent>{t_i18n('Change on {date}', { values: { date: fldt(new Date(time)) } })}</TooltipContent>
           </Tooltip>
         ))}
         {snapshotTimes.map((time) => (
@@ -151,7 +151,7 @@ const TimeMachineSlider = ({ entityId, value, onChange }: TimeMachineSliderProps
       </Box>
       {historyStartsAfterCreation && (
         <Text variant="content-caption" as="p" style={{ color: 'var(--text-default-secondary)', marginTop: 8 }}>
-          {t_i18n('History is retained since')} {fldt(timeline.history_start)}. {t_i18n('Older states only reflect the changes still available in the history.')}
+          {t_i18n('History is retained since {date}: older states only reflect the changes still available in the history.', { values: { date: fldt(timeline.history_start) } })}
         </Text>
       )}
       {timeline?.events_truncated && (

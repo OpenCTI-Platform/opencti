@@ -41,7 +41,14 @@ const StixDomainObjectMain = ({
         extraActions={extraActions}
       />
       <Routes>
-        <Route path="/overview" element={<TimeMachineOverview entityId={entity.id}>{allPages.overview}</TimeMachineOverview>} />
+        <Route
+          path="/overview"
+          element={(
+            <TimeMachineOverview entityId={entity.id} changesPath={tabs.includes('changes') ? `${basePath}/changes` : undefined}>
+              {allPages.overview}
+            </TimeMachineOverview>
+          )}
+        />
         {tabs.includes('result') && (
           <Route path="/result" element={allPages.result} />
         )}
