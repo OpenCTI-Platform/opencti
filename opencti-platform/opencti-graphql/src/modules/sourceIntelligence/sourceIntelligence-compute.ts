@@ -63,7 +63,6 @@ import {
 const HOUR_MS = 3600 * 1000;
 const DAY_MS = 24 * HOUR_MS;
 const SCAN_PAGE_SIZE = 2000;
-const MAX_PIR_FLAGGED_IDS = 500000;
 // Values per terms clause, below the default index.max_terms_count of the search engine
 const TERMS_CHUNK_SIZE = 10000;
 const MAX_COMBINED_SOURCES_PER_DOCUMENT = 50;
@@ -271,6 +270,8 @@ export interface PageLookups {
   relationshipIncidents: Map<string, number>;
   containerReferences: Map<string, number>;
   containerIncidents: Map<string, number>;
+  // Objects of the page, and entities its relationships connect, that a PIR links to (Enterprise Edition)
+  pirFlagged: Set<string>;
 }
 
 export const emptyPageLookups = (): PageLookups => ({
@@ -282,13 +283,15 @@ export const emptyPageLookups = (): PageLookups => ({
   relationshipIncidents: new Map(),
   containerReferences: new Map(),
   containerIncidents: new Map(),
+  pirFlagged: new Set(),
 });
 
 export interface RunLookups {
   // Signals written after this time are counted by the streaming increments, never by this computation
   asOf: number;
   falsePositiveLabelIds: Set<string>;
-  pirFlaggedIds: Set<string> | null; // null outside Enterprise Edition
+  // PIR relevance is an Enterprise Edition signal, read page by page with the other signals
+  pirRelevance: boolean;
   huntTrueRunIds: string[];
   availability: SoftJoinAvailability;
 }
@@ -335,11 +338,11 @@ export const computeDocumentSignals = (doc: ScanDocument, page: PageLookups, run
   const decayExcluded = !!doc.decay_exclusion_applied_rule?.decay_exclusion_id;
   const negative = negativeRevocation || negativelySighted || falsePositive || decayExcluded;
   let pirMatched = false;
-  if (run.pirFlaggedIds) {
+  if (run.pirRelevance) {
     if (isEntity) {
-      pirMatched = (doc.pir_information ?? []).some((info) => info.pir_score > 0) || run.pirFlaggedIds.has(id);
+      pirMatched = (doc.pir_information ?? []).some((info) => info.pir_score > 0) || page.pirFlagged.has(id);
     } else {
-      pirMatched = (doc.connections ?? []).some((connection) => run.pirFlaggedIds?.has(connection.internal_id));
+      pirMatched = (doc.connections ?? []).some((connection) => page.pirFlagged.has(connection.internal_id));
     }
   }
   const sightings = page.sightings.get(id) ?? 0;
@@ -584,9 +587,27 @@ export const fetchPageLookups = async (context: AuthContext, docs: ScanDocument[
       aggs: connectionCountAggregation(ids, 'from'),
     };
   }
-  // Relationships and containers created after the computation time are counted by the streaming increments only
+  // Relationships, containers and PIR links created after the computation time are counted by the streaming increments only
   const createdBeforeRun = { range: { created_at: { lte: new Date(run.asOf).toISOString() } } };
-  const [sightingsData, relationshipsData, containersData] = await Promise.all([
+  // A relationship is PIR relevant through the entities it connects: they are looked up with the objects of the page
+  const pirIds = run.pirRelevance
+    ? [...new Set([...ids, ...docs.flatMap((doc) => (doc.connections ?? []).map((connection) => connection.internal_id))])]
+    : [];
+  const pirLookup = pirIds.length > 0
+    ? rawSearch(context, [READ_INDEX_INTERNAL_RELATIONSHIPS], {
+        query: {
+          bool: {
+            filter: [
+              { term: { 'entity_type.keyword': RELATION_IN_PIR } },
+              createdBeforeRun,
+              { nested: { path: 'connections', query: { bool: { filter: connectionFilter(pirIds, 'from') } } } },
+            ],
+          },
+        },
+        aggs: connectionCountAggregation(pirIds, 'from'),
+      })
+    : Promise.resolve(null);
+  const [sightingsData, relationshipsData, containersData, pirData] = await Promise.all([
     rawSearch(context, [READ_INDEX_STIX_SIGHTING_RELATIONSHIPS], {
       query: { bool: { filter: [createdBeforeRun, { nested: { path: 'connections', query: { bool: { filter: connectionFilter(ids, 'from') } } } }] } },
       aggs: sightingsAggs,
@@ -619,6 +640,7 @@ export const fetchPageLookups = async (context: AuthContext, docs: ScanDocument[
         },
       },
     }),
+    pirLookup,
   ]);
   const sightingsAggregations = sightingsData.aggregations ?? {};
   lookups.sightings = bucketsToMap(sightingsAggregations, ['positive', 'connections', 'matching', 'ids']);
@@ -631,6 +653,7 @@ export const fetchPageLookups = async (context: AuthContext, docs: ScanDocument[
   const containersAggregations = containersData.aggregations ?? {};
   lookups.containerReferences = bucketsToMap(containersAggregations, ['all']);
   lookups.containerIncidents = bucketsToMap(containersAggregations, ['incidents', 'ids']);
+  lookups.pirFlagged = new Set(bucketsToMap(pirData?.aggregations ?? {}, ['connections', 'matching', 'ids']).keys());
   return lookups;
 };
 
@@ -662,21 +685,6 @@ const searchAllHits = async (context: AuthContext, index: string[], query: Recor
     hasMore = onHits(hits) !== false && hits.length === SCAN_PAGE_SIZE;
     searchAfter = hits.length > 0 ? hits[hits.length - 1].sort : searchAfter;
   }
-};
-
-const resolvePirFlaggedIds = async (context: AuthContext, asOf: number): Promise<Set<string>> => {
-  const flagged = new Set<string>();
-  // PIR links created after the computation time are counted by the streaming increments only
-  const query = { bool: { filter: [{ term: { 'entity_type.keyword': RELATION_IN_PIR } }, { range: { created_at: { lte: new Date(asOf).toISOString() } } }] } };
-  await searchAllHits(context, [READ_INDEX_INTERNAL_RELATIONSHIPS], query, ['connections.internal_id', 'connections.role'], (hits) => {
-    hits.forEach((hit: any) => {
-      (hit._source.connections ?? [])
-        .filter((connection: { role: string }) => connection.role?.endsWith('_from'))
-        .forEach((connection: { internal_id: string }) => flagged.add(connection.internal_id));
-    });
-    return flagged.size < MAX_PIR_FLAGGED_IDS;
-  });
-  return flagged;
 };
 
 const searchHuntTrueRunIds = async (context: AuthContext, huntRunType: string, filters: Record<string, unknown>[]): Promise<string[]> => {
@@ -742,12 +750,11 @@ export const findHuntRunSightings = async (context: AuthContext, runIds: string[
 export const prepareRunLookups = async (context: AuthContext, settings: SourceIntelligenceSettings, enterprise: boolean, asOf: number): Promise<RunLookups> => {
   const availability = resolveSoftJoinAvailability();
   const maxDays = Math.max(...SCORECARD_PERIODS.map((period) => SCORECARD_PERIOD_DAYS[period]));
-  const [falsePositiveLabelIds, pirFlaggedIds, huntTrueRunIds] = await Promise.all([
+  const [falsePositiveLabelIds, huntTrueRunIds] = await Promise.all([
     resolveFalsePositiveLabelIds(context, settings.false_positive_labels),
-    enterprise ? resolvePirFlaggedIds(context, asOf) : Promise.resolve(null),
     resolveHuntTrueRunIds(context, availability.huntRunType, asOf - maxDays * DAY_MS, asOf),
   ]);
-  return { asOf, falsePositiveLabelIds, pirFlaggedIds, huntTrueRunIds, availability };
+  return { asOf, falsePositiveLabelIds, pirRelevance: enterprise, huntTrueRunIds, availability };
 };
 // endregion
 

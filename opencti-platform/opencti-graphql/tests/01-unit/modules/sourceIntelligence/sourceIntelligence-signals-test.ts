@@ -19,7 +19,7 @@ const NOW = new Date('2026-10-01T00:00:00.000Z').getTime();
 const run: RunLookups = {
   asOf: NOW,
   falsePositiveLabelIds: new Set(['label-false-positive']),
-  pirFlaggedIds: null,
+  pirRelevance: false,
   huntTrueRunIds: [],
   availability: { provenance: 'assertions', pulse: false, huntRunType: null },
 };
@@ -55,6 +55,23 @@ describe('Source intelligence document signals', () => {
     const sighted = computeDocumentSignals(indicator(), page, run, NOW);
     expect(sighted.negativelySighted).toBe(true);
     expect(sighted.negative).toBe(true);
+  });
+
+  it('should read the PIR relevance of an entity and of the entities a relationship connects from its page', () => {
+    const page = emptyPageLookups();
+    page.pirFlagged.add('indicator-1');
+    page.pirFlagged.add('malware-1');
+    const enterprise = { ...run, pirRelevance: true };
+    expect(computeDocumentSignals(indicator(), page, enterprise, NOW).pirMatched).toBe(true);
+    expect(computeDocumentSignals(indicator({ internal_id: 'indicator-2' }), page, enterprise, NOW).pirMatched).toBe(false);
+    const relationship: ScanDocument = {
+      internal_id: 'relationship-1',
+      entity_type: 'indicates',
+      connections: [{ internal_id: 'indicator-2', role: 'indicates_from' }, { internal_id: 'malware-1', role: 'indicates_to' }],
+    };
+    expect(computeDocumentSignals(relationship, page, enterprise, NOW).pirMatched).toBe(true);
+    // Outside Enterprise Edition, PIR relevance is not measured
+    expect(computeDocumentSignals(indicator(), page, run, NOW).pirMatched).toBe(false);
   });
 });
 
