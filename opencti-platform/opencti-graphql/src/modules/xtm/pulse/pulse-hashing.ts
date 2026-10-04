@@ -43,6 +43,40 @@ export interface PulseHashableEntity {
 
 const collapseWhitespace = (value: string) => value.replace(/\s+/g, ' ').trim();
 
+// STIX patterns: whitespace is insignificant outside the single-quoted literals and kept as written inside them, so
+// that two values differing by a space never share a key.
+export const collapseStixPatternWhitespace = (pattern: string) => {
+  let result = '';
+  let quoted = false;
+  let space = false;
+  for (let index = 0; index < pattern.length; index += 1) {
+    const char = pattern[index];
+    if (quoted) {
+      result += char;
+      if (char === '\\' && index + 1 < pattern.length) {
+        index += 1;
+        result += pattern[index];
+      } else if (char === '\'') {
+        quoted = false;
+      }
+    } else if (/\s/.test(char)) {
+      space = true;
+    } else {
+      if (space && result.length > 0) {
+        result += ' ';
+      }
+      space = false;
+      result += char;
+      quoted = char === '\'';
+    }
+  }
+  return result;
+};
+
+// Other pattern languages (YARA, Sigma, Snort...): whitespace can be part of a string or a regular expression, so the
+// text is kept as written but for its line endings and its outer whitespace.
+const normalizePatternText = (pattern: string) => pattern.replace(/\r\n?/g, '\n').trim();
+
 export const normalizeThreatName = (name: string): string => {
   return name.normalize('NFKC').toLowerCase().replace(/[\s\-_.]+/g, '');
 };
@@ -87,7 +121,7 @@ export const computeIndicatorCanonicalValue = (pattern: string | undefined, patt
   }
   const type = patternType.toLowerCase();
   if (type !== STIX_PATTERN_TYPE) {
-    return `pattern:${type}:${collapseWhitespace(pattern)}`;
+    return `pattern:${type}:${normalizePatternText(pattern)}`;
   }
   try {
     const observables = extractObservablesFromIndicatorPattern(pattern);
@@ -101,9 +135,9 @@ export const computeIndicatorCanonicalValue = (pattern: string | undefined, patt
         return `observable:${stixType}:${normalizedPath}:${normalizeObservableValue(stixType, normalizedPath, value)}`;
       }
     }
-    return `pattern:${type}:${collapseWhitespace(cleanupIndicatorPattern(patternType, pattern))}`;
+    return `pattern:${type}:${collapseStixPatternWhitespace(cleanupIndicatorPattern(patternType, pattern))}`;
   } catch {
-    return `pattern:${type}:${collapseWhitespace(pattern)}`;
+    return `pattern:${type}:${collapseStixPatternWhitespace(pattern)}`;
   }
 };
 

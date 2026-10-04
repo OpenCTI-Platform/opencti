@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  collapseStixPatternWhitespace,
   computeCanonicalValues,
   computeIndicatorCanonicalValue,
   computeStableKey,
@@ -69,8 +70,17 @@ describe('Threat Pulse hashing', () => {
   it('should canonicalize complex and non STIX patterns on the normalized pattern', () => {
     const complex = computeIndicatorCanonicalValue("[ipv4-addr:value = '198.51.100.7'] OR [ipv4-addr:value = '198.51.100.8']", 'stix');
     expect(complex?.startsWith('pattern:stix:')).toBe(true);
-    expect(computeIndicatorCanonicalValue('rule test {  condition:\n true }', 'yara')).toBe('pattern:yara:rule test { condition: true }');
+    // Other languages are kept as written but for line endings and outer whitespace: a space can be part of a string
+    expect(computeIndicatorCanonicalValue('  rule test {\r\n strings: $a = "a  b" condition: $a }\n', 'yara'))
+      .toBe('pattern:yara:rule test {\n strings: $a = "a  b" condition: $a }');
+    const yaraKeys = (literal: string) => computeStableKeys({ entity_type: 'Indicator', pattern: `rule t { strings: $a = "${literal}" condition: $a }`, pattern_type: 'yara' });
+    expect(yaraKeys('a b')).not.toEqual(yaraKeys('a  b'));
     expect(computeIndicatorCanonicalValue(undefined, 'stix')).toBeUndefined();
+  });
+
+  it('should collapse the whitespace of a STIX pattern outside its literals only', () => {
+    expect(collapseStixPatternWhitespace("[file:name = 'a  b']   OR\n [file:name = 'it\\'s  x']"))
+      .toBe("[file:name = 'a  b'] OR [file:name = 'it\\'s  x']");
   });
 
   it('should canonicalize attack patterns, vulnerabilities and threats', () => {
