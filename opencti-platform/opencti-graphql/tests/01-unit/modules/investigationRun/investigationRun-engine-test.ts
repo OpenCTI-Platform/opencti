@@ -19,6 +19,7 @@ import {
   mirrorReportSources,
   mirrorSteps,
   parseEngineInvestigation,
+  canonicalObservableValue,
   parseEngineKnowledge,
   REPORT_WAIT_MS,
   type InvestigationEngineContext,
@@ -275,5 +276,17 @@ describe('Case Autopilot knowledge list', () => {
     expect(knowledge.relationships).toEqual([{ from: 'evil.example', to: '185.12.4.2', type: 'resolves-to', description: 'passive DNS' }]);
     expect(knowledge.notes).toEqual([{ value: 'evil.example', content: 'Newsroom fingerprint matched' }]);
     expect(parseEngineKnowledge(null)).toEqual({ observables: [], relationships: [], notes: [] });
+  });
+
+  it('keeps the case of a URL path and query, which carry meaning, and matches it without case', () => {
+    const knowledge = parseEngineKnowledge({
+      observables: [{ type: 'Url', value: 'HTTPS://Login.Example.com/CaseA?Token=X' }, { type: 'Domain-Name', value: 'Login.Example.com' }],
+      relationships: [['https://login.example.com/casea?token=x', 'login.example.com', 'related-to']],
+      notes: [['https://login.example.com/CaseA?Token=X', 'Credential harvesting page']],
+    });
+    expect(knowledge.observables).toEqual([{ type: 'Url', value: 'https://login.example.com/CaseA?Token=X' }, { type: 'Domain-Name', value: 'login.example.com' }]);
+    expect(knowledge.relationships).toEqual([{ from: 'https://login.example.com/CaseA?Token=X', to: 'login.example.com', type: 'related-to', description: null }]);
+    expect(knowledge.notes).toEqual([{ value: 'https://login.example.com/CaseA?Token=X', content: 'Credential harvesting page' }]);
+    expect(canonicalObservableValue('Url', 'not a url')).toBe('not a url');
   });
 });

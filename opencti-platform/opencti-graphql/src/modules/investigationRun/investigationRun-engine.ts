@@ -672,27 +672,44 @@ export interface EngineKnowledge {
 const KNOWLEDGE_OBSERVABLE_TYPES = ['Domain-Name', 'IPv4-Addr', 'IPv6-Addr', 'Url'];
 const KNOWLEDGE_RELATIONSHIP_TYPES = ['resolves-to', 'related-to'];
 
+const URL_PARTS = /^([a-z][a-z0-9+.-]*:\/\/)([^/?#]*)(.*)$/i;
+
+/**
+ * An observable value as written to the draft: addresses and domain names
+ * compare without case; a URL keeps the case of its path and query, which
+ * carry meaning, and only its scheme and host are lowercased.
+ */
+export const canonicalObservableValue = (type: string, value: string): string => {
+  if (type !== 'Url') return value.toLowerCase();
+  const parts = URL_PARTS.exec(value);
+  return parts ? `${parts[1].toLowerCase()}${parts[2].toLowerCase()}${parts[3]}` : value;
+};
+
 /** The deterministic knowledge list of the engine (`build_knowledge`), bounded and typed. */
 export const parseEngineKnowledge = (knowledge: Record<string, unknown> | null): EngineKnowledge => {
   const observables = asArray(knowledge?.observables).map(asRecord).map((item) => {
     const type = asString(item?.type, 50);
-    const value = asString(item?.value, 2000)?.toLowerCase() ?? null;
-    return type && value && KNOWLEDGE_OBSERVABLE_TYPES.includes(type) ? { type: type as EngineKnowledge['observables'][number]['type'], value } : null;
+    const raw = asString(item?.value, 2000);
+    return type && raw && KNOWLEDGE_OBSERVABLE_TYPES.includes(type)
+      ? { type: type as EngineKnowledge['observables'][number]['type'], value: canonicalObservableValue(type, raw) }
+      : null;
   }).filter((item): item is EngineKnowledge['observables'][number] => item !== null).slice(0, INVESTIGATION_LIMITS.knowledgeObservables);
-  const values = new Set(observables.map((item) => item.value));
+  // Relationships and notes name observables as the engine wrote them: matched without case.
+  const valueOf = new Map(observables.map((item) => [item.value.toLowerCase(), item.value]));
+  const known = (value: string | null) => (value ? valueOf.get(value.toLowerCase()) ?? null : null);
   const relationships = asArray(knowledge?.relationships).map((raw) => {
     const item: Record<string, unknown> | null = Array.isArray(raw) ? { from: raw[0], to: raw[1], type: raw[2], description: raw[3] } : asRecord(raw);
-    const from = asString(item?.from ?? item?.from_value, 2000)?.toLowerCase() ?? null;
-    const to = asString(item?.to ?? item?.to_value, 2000)?.toLowerCase() ?? null;
+    const from = known(asString(item?.from ?? item?.from_value, 2000));
+    const to = known(asString(item?.to ?? item?.to_value, 2000));
     const type = asString(item?.type ?? item?.relationship_type, 50);
-    if (!from || !to || !values.has(from) || !values.has(to) || !type || !KNOWLEDGE_RELATIONSHIP_TYPES.includes(type)) return null;
+    if (!from || !to || !type || !KNOWLEDGE_RELATIONSHIP_TYPES.includes(type)) return null;
     return { from, to, type, description: truncate(item?.description) };
   }).filter((item): item is EngineKnowledge['relationships'][number] => item !== null).slice(0, INVESTIGATION_LIMITS.knowledgeRelationships);
   const notes = asArray(knowledge?.notes).map((raw) => {
     const item: Record<string, unknown> | null = Array.isArray(raw) ? { value: raw[0], content: raw[1] } : asRecord(raw);
-    const value = asString(item?.value ?? item?.observable, 2000)?.toLowerCase() ?? null;
+    const value = known(asString(item?.value ?? item?.observable, 2000));
     const content = truncate(item?.content, INVESTIGATION_LIMITS.summaryLength);
-    return value && content && values.has(value) ? { value, content } : null;
+    return value && content ? { value, content } : null;
   }).filter((item): item is EngineKnowledge['notes'][number] => item !== null).slice(0, INVESTIGATION_LIMITS.knowledgeNotes);
   return { observables, relationships, notes };
 };
