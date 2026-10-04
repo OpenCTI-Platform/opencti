@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import {
   redisDeleteDefensePendingLevelChanges,
   redisDeleteDefensePendingValidationTracking,
@@ -141,38 +140,52 @@ export const clearPendingValidationTracking = async (securityCoverageId: string)
   await redisDeleteDefensePendingValidationTracking(securityCoverageId);
 };
 
+const parsePendingChange = (value: string | undefined): DefenseCoverageChange | undefined => {
+  try {
+    const change = value ? JSON.parse(value) : undefined;
+    return change?.attack_pattern_id && change.previous && change.coverage ? change as DefenseCoverageChange : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
 /**
- * Level changes of a computation waiting for their delivery to the live triggers. The stored coverage is already their
- * new baseline, so a later computation never finds them again: they stay queued until they are delivered.
- * Batch ids sort by queuing time.
+ * Queue level changes for their delivery to the live triggers, before the new coverage is stored: the stored coverage
+ * becomes their baseline, so a later computation would never find them again. One entry per technique: a change queued
+ * again for a technique (a computation retried after a failure, or a new change before the delivery) keeps the first
+ * previous coverage and the latest coverage, and is delivered again to every trigger.
  */
 export const queuePendingLevelChanges = async (changes: DefenseCoverageChange[]) => {
-  const batchId = `${now()}|${uuidv4()}`;
-  await redisSetDefensePendingLevelChanges(batchId, JSON.stringify(changes));
-  return batchId;
+  if (changes.length === 0) return;
+  const queued = await redisGetDefensePendingLevelChanges(changes.map((change) => change.attack_pattern_id));
+  const entries: Record<string, string> = {};
+  changes.forEach((change) => {
+    const earlier = parsePendingChange(queued[change.attack_pattern_id]);
+    const merged: DefenseCoverageChange = { attack_pattern_id: change.attack_pattern_id, previous: earlier?.previous ?? change.previous, coverage: change.coverage };
+    entries[change.attack_pattern_id] = JSON.stringify(merged);
+  });
+  await redisSetDefensePendingLevelChanges(entries);
 };
 
 /**
- * Queued batches, oldest first; a batch that cannot be read has no `changes` so the caller drops it.
+ * Queued changes, and the ids of the entries that cannot be read (the caller drops them).
  */
-export const listPendingLevelChanges = async (): Promise<Array<{ id: string; changes?: DefenseCoverageChange[] }>> => {
+export const listPendingLevelChanges = async (): Promise<{ changes: DefenseCoverageChange[]; unreadable: string[] }> => {
   const entries = await redisGetDefensePendingLevelChanges();
-  return Object.entries(entries ?? {})
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([id, value]) => {
-      try {
-        const changes = JSON.parse(value);
-        return Array.isArray(changes) ? { id, changes: changes as DefenseCoverageChange[] } : { id };
-      } catch {
-        return { id };
-      }
-    });
+  const changes: DefenseCoverageChange[] = [];
+  const unreadable: string[] = [];
+  Object.entries(entries ?? {}).forEach(([id, value]) => {
+    const change = parsePendingChange(value);
+    if (change) changes.push(change);
+    else unreadable.push(id);
+  });
+  return { changes, unreadable };
 };
 
-export const replacePendingLevelChanges = async (batchId: string, changes: DefenseCoverageChange[]) => {
-  await redisSetDefensePendingLevelChanges(batchId, JSON.stringify(changes));
+export const savePendingLevelChange = async (change: DefenseCoverageChange) => {
+  await redisSetDefensePendingLevelChanges({ [change.attack_pattern_id]: JSON.stringify(change) });
 };
 
-export const clearPendingLevelChanges = async (batchId: string) => {
-  await redisDeleteDefensePendingLevelChanges(batchId);
+export const clearPendingLevelChanges = async (attackPatternIds: string[]) => {
+  await redisDeleteDefensePendingLevelChanges(attackPatternIds);
 };

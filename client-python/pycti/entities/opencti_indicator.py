@@ -51,8 +51,9 @@ class Indicator:
     def supports_rule_metadata(self) -> bool:
         """Tell if the platform knows the detection rule metadata of indicators (schema feature detection, cached).
 
-        A detection that fails (platform unavailable, introspection disabled) counts as unsupported and is tried again
-        after ``FEATURE_DETECTION_RETRY_DELAY`` seconds.
+        A support found is kept for the life of the client. An absence of support, or a detection that fails (platform
+        unavailable, introspection disabled), is checked again after ``FEATURE_DETECTION_RETRY_DELAY`` seconds, so a
+        long-running client follows an upgrade of the platform.
 
         :return: True when the Indicator type of the platform has ``x_opencti_rule_status``
         :rtype: bool
@@ -75,7 +76,11 @@ class Indicator:
                     self._rule_metadata_supported = "x_opencti_rule_status" in {
                         field["name"] for field in fields
                     }
-                    self._rule_metadata_retry_at = float("inf")
+                    self._rule_metadata_retry_at = (
+                        float("inf")
+                        if self._rule_metadata_supported
+                        else time.monotonic() + FEATURE_DETECTION_RETRY_DELAY
+                    )
                 except Exception as err:  # pylint: disable=broad-except
                     self.opencti.app_logger.warning(
                         "Cannot detect the indicator rule metadata support",

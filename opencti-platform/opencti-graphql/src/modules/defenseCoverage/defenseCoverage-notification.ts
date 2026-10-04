@@ -23,7 +23,7 @@ import {
 } from './defenseCoverage-types';
 import { type AccessPredicate, collectCoverageIds, evaluateCoverage } from './defenseCoverage-utils';
 import { findAccessibleIds } from './defenseCoverage-reader';
-import { clearPendingLevelChanges, listPendingLevelChanges, replacePendingLevelChanges } from './defenseCoverage-state';
+import { clearPendingLevelChanges, listPendingLevelChanges, savePendingLevelChange } from './defenseCoverage-state';
 
 export const DEFENSE_TRIGGER_LEVEL_DECREASED = TriggerEventType.DefenseLevelDecreased;
 export const DEFENSE_TRIGGER_LEVEL_INCREASED = TriggerEventType.DefenseLevelIncreased;
@@ -185,42 +185,27 @@ export const notifyDefenseLevelChanges = async (context: AuthContext, changes: D
 };
 
 /**
- * The queued changes a failed delivery did not handle: the changes after the last fully handled one, the first of them
- * remembering the triggers already handled, so a retry never stores a notification twice.
- */
-export const remainingDefenseLevelChanges = (changes: DefenseCoverageChange[], progress: DefenseDeliveryProgress): DefenseCoverageChange[] => {
-  const remaining = changes.slice(progress.done);
-  if (remaining.length > 0 && progress.triggerIds.length > 0) {
-    remaining[0] = { ...remaining[0], delivered_trigger_ids: progress.triggerIds };
-  }
-  return remaining;
-};
-
-/**
- * Deliver the queued level changes, oldest computation first. A batch leaves the queue once delivered; when a delivery
- * fails, what it did not handle stays queued, the next batches wait behind it, and the next run retries.
+ * Deliver the queued level changes. A change leaves the queue once delivered; when a delivery fails, the changes it did
+ * not reach stay queued, the one it stopped on remembers the triggers already handled, and the next run retries.
  * Returns the number of notified recipients.
  */
 export const deliverPendingDefenseLevelChanges = async (context: AuthContext, notify = notifyDefenseLevelChanges) => {
-  const batches = await listPendingLevelChanges();
-  let delivered = 0;
-  for (let index = 0; index < batches.length; index += 1) {
-    const { id, changes } = batches[index];
-    if (!changes) {
-      logApp.error('[DEFENSE-COVERAGE] Unreadable queued defense level changes dropped', { batch: id });
-      await clearPendingLevelChanges(id);
-    } else {
-      const progress: DefenseDeliveryProgress = { done: 0, triggerIds: [] };
-      try {
-        delivered += await notify(context, changes, progress);
-      } catch (error) {
-        const remaining = remainingDefenseLevelChanges(changes, progress);
-        if (progress.done > 0 || progress.triggerIds.length > 0) await replacePendingLevelChanges(id, remaining);
-        logApp.error('[DEFENSE-COVERAGE] Defense level changes could not be notified, kept for the next run', { cause: error, pending: remaining.length });
-        return delivered;
-      }
-      await clearPendingLevelChanges(id);
-    }
+  const { changes, unreadable } = await listPendingLevelChanges();
+  if (unreadable.length > 0) {
+    logApp.error('[DEFENSE-COVERAGE] Unreadable queued defense level changes dropped', { attack_pattern_ids: unreadable });
+    await clearPendingLevelChanges(unreadable);
   }
-  return delivered;
+  if (changes.length === 0) return 0;
+  const progress: DefenseDeliveryProgress = { done: 0, triggerIds: [] };
+  try {
+    const delivered = await notify(context, changes, progress);
+    await clearPendingLevelChanges(changes.map((change) => change.attack_pattern_id));
+    return delivered;
+  } catch (error) {
+    await clearPendingLevelChanges(changes.slice(0, progress.done).map((change) => change.attack_pattern_id));
+    const current = changes[progress.done];
+    if (current && progress.triggerIds.length > 0) await savePendingLevelChange({ ...current, delivered_trigger_ids: progress.triggerIds });
+    logApp.error('[DEFENSE-COVERAGE] Defense level changes could not be notified, kept for the next run', { cause: error, pending: changes.length - progress.done });
+    return 0;
+  }
 };

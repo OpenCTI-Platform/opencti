@@ -114,6 +114,25 @@ def test_a_failed_detection_leaves_the_field_out_until_it_is_retried(local_api_c
     )
 
 
+def test_an_older_platform_is_checked_again_after_the_retry_delay(local_api_client):
+    relationship = relationship_with(
+        local_api_client,
+        [UNSUPPORTED_INPUT, CREATED, CREATED, SUPPORTED_INPUT, CREATED, CREATED],
+    )
+    create_has_covered(relationship, coverage_platforms_information=COVERAGE_PLATFORMS)
+    create_has_covered(relationship, coverage_platforms_information=COVERAGE_PLATFORMS)
+    assert "coverage_platforms_information" not in sent_input(local_api_client)
+    assert local_api_client.query.call_count == 3
+    # The platform was upgraded meanwhile: once the delay is over, the field is detected and kept
+    relationship._input_fields_retry_at = 0.0
+    create_has_covered(relationship, coverage_platforms_information=COVERAGE_PLATFORMS)
+    create_has_covered(relationship, coverage_platforms_information=COVERAGE_PLATFORMS)
+    assert sent_input(local_api_client)["coverage_platforms_information"] == (
+        COVERAGE_PLATFORMS
+    )
+    assert local_api_client.query.call_count == 6
+
+
 def test_a_relationship_without_coverage_platforms_needs_no_detection(
     local_api_client,
 ):

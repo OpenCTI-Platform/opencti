@@ -642,13 +642,16 @@ export const computeDefenseCoverage = async (
       updates.push({ attackPattern, coverage });
     }
   }
-  await bulkUpdateCoverages(context, updates);
-  const cleared = await clearRevokedCoverages(context, revokedAttackPatterns);
+  // The level changes are queued before the new coverage is stored: once stored, it is their baseline and a computation
+  // retried after a failure would not find them again
   const coverageChanges = collectDefenseCoverageChanges(updates.map(({ attackPattern, coverage }) => ({
     attackPatternId: attackPattern.internal_id,
     previous: (attackPattern as unknown as { x_opencti_defense_coverage?: DefenseCoverage }).x_opencti_defense_coverage,
     coverage,
   })));
+  await queuePendingLevelChanges(coverageChanges);
+  await bulkUpdateCoverages(context, updates);
+  const cleared = await clearRevokedCoverages(context, revokedAttackPatterns);
 
   // 6. Gap lifecycle records
   const producedGapIds = new Set<string>();
@@ -659,9 +662,8 @@ export const computeDefenseCoverage = async (
     await deleteGapsOfTechniques(revokedIds);
   }
   await bumpDefenseCoverageVersion();
-  // 7. Live triggers on level changes, once the new coverage is readable. The stored coverage is already their baseline,
-  // so they are queued before the delivery: a failed delivery is retried from the queue by the next run
-  if (coverageChanges.length > 0) await queuePendingLevelChanges(coverageChanges);
+  // 7. Live triggers on the queued level changes, once the new coverage is readable; a failed delivery is retried from
+  // the queue by the next run
   let notified = 0;
   try {
     notified = await deliverPendingDefenseLevelChanges(context);

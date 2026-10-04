@@ -468,23 +468,24 @@ class StixCoreRelationship:
     def supports_input_field(self, field: str) -> bool:
         """Tell if the relationship creation input of the platform has a field (schema feature detection, cached).
 
-        A detection that fails (platform unavailable, introspection disabled) counts as no field and is tried again
-        after ``FEATURE_DETECTION_RETRY_DELAY`` seconds.
+        A field found is kept for the life of the client. A missing field, or a detection that fails (platform
+        unavailable, introspection disabled), is checked again after ``FEATURE_DETECTION_RETRY_DELAY`` seconds, so a
+        long-running client follows an upgrade of the platform.
 
         :param field: name of the input field
         :type field: str
         :return: True when ``StixCoreRelationshipAddInput`` has the field
         :rtype: bool
         """
-        if (
-            self._input_fields is not None
-            and time.monotonic() < self._input_fields_retry_at
+        if self._input_fields is not None and (
+            field in self._input_fields
+            or time.monotonic() < self._input_fields_retry_at
         ):
             return field in self._input_fields
         with self._detection_lock:
-            if (
-                self._input_fields is None
-                or time.monotonic() >= self._input_fields_retry_at
+            if self._input_fields is None or (
+                field not in self._input_fields
+                and time.monotonic() >= self._input_fields_retry_at
             ):
                 try:
                     result = self.opencti.query(_RELATIONSHIP_INPUT_FIELDS_QUERY)
@@ -492,7 +493,9 @@ class StixCoreRelationship:
                         "inputFields"
                     ) or []
                     self._input_fields = {item["name"] for item in fields}
-                    self._input_fields_retry_at = float("inf")
+                    self._input_fields_retry_at = (
+                        time.monotonic() + FEATURE_DETECTION_RETRY_DELAY
+                    )
                 except Exception as err:  # pylint: disable=broad-except
                     self.opencti.app_logger.warning(
                         "Cannot detect the relationship input fields of the platform",

@@ -1149,7 +1149,12 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
       }
     }
   }
-  await addDefenseValidationRequestCount();
+  // The request exists: a usage counter that cannot be written must not report it as failed, a retry would duplicate it
+  try {
+    await addDefenseValidationRequestCount();
+  } catch (error) {
+    logApp.warn('[DEFENSE-COVERAGE] Validation request not counted in the usage telemetry', { cause: error, security_coverage_id: securityCoverage.id });
+  }
   return { securityCoverage, grouping, gaps_count: gapsCount };
 };
 // endregion

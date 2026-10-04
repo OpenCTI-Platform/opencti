@@ -857,16 +857,22 @@ export const redisDeleteDefensePendingValidationTracking = async (securityCovera
 // endregion
 
 // region - defense coverage pending level changes
-// One field per computation: a batch is removed once delivered, or rewritten with the changes not delivered yet
+// One field per technique: a change queued again for the same technique replaces its field, so the queue never holds
+// more entries than techniques
 const DEFENSE_PENDING_LEVEL_CHANGES_KEY = 'defense_coverage_pending_level_changes';
-export const redisSetDefensePendingLevelChanges = async (batchId: string, changes: string) => {
-  await getClientBase().hset(DEFENSE_PENDING_LEVEL_CHANGES_KEY, batchId, changes);
+export const redisSetDefensePendingLevelChanges = async (changes: Record<string, string>) => {
+  if (Object.keys(changes).length === 0) return;
+  await getClientBase().hset(DEFENSE_PENDING_LEVEL_CHANGES_KEY, changes);
 };
-export const redisGetDefensePendingLevelChanges = async (): Promise<Record<string, string>> => {
-  return getClientBase().hgetall(DEFENSE_PENDING_LEVEL_CHANGES_KEY);
+export const redisGetDefensePendingLevelChanges = async (ids?: string[]): Promise<Record<string, string>> => {
+  if (!ids) return getClientBase().hgetall(DEFENSE_PENDING_LEVEL_CHANGES_KEY);
+  if (ids.length === 0) return {};
+  const values = await getClientBase().hmget(DEFENSE_PENDING_LEVEL_CHANGES_KEY, ...ids);
+  return Object.fromEntries(ids.map((id, index) => [id, values[index]]).filter(([, value]) => value !== null)) as Record<string, string>;
 };
-export const redisDeleteDefensePendingLevelChanges = async (batchId: string) => {
-  await getClientBase().hdel(DEFENSE_PENDING_LEVEL_CHANGES_KEY, batchId);
+export const redisDeleteDefensePendingLevelChanges = async (ids: string[]) => {
+  if (ids.length === 0) return;
+  await getClientBase().hdel(DEFENSE_PENDING_LEVEL_CHANGES_KEY, ...ids);
 };
 // endregion
 

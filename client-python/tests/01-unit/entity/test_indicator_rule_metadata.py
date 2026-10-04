@@ -77,6 +77,18 @@ def test_a_failed_detection_selects_no_rule_metadata_until_it_is_retried(
     assert local_api_client.query.call_count == 2
 
 
+def test_an_older_platform_is_checked_again_after_the_retry_delay(local_api_client):
+    indicator = indicator_with(local_api_client, [UNSUPPORTED_FIELDS, SUPPORTED_FIELDS])
+    assert "x_opencti_rule_status" not in indicator.properties
+    assert "x_opencti_rule_status" not in indicator.properties
+    assert local_api_client.query.call_count == 1
+    # The platform was upgraded meanwhile: once the delay is over, the client sees it
+    indicator._rule_metadata_retry_at = 0.0
+    assert INDICATOR_RULE_PROPERTIES in indicator.properties
+    assert INDICATOR_RULE_PROPERTIES in indicator.properties
+    assert local_api_client.query.call_count == 2
+
+
 def test_rule_metadata_input_keeps_the_set_values_for_a_platform_that_knows_it(
     local_api_client,
 ):

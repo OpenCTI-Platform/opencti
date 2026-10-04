@@ -56,7 +56,8 @@ const runComputation = async (context: AuthContext, attackPatternIds?: string[])
  * Retry the level changes whose delivery failed, under the computation lock so a computation never delivers them twice.
  */
 const deliverQueuedLevelChanges = async (context: AuthContext) => {
-  if ((await listPendingLevelChanges()).length === 0) return;
+  const { changes, unreadable } = await listPendingLevelChanges();
+  if (changes.length === 0 && unreadable.length === 0) return;
   let lock;
   try {
     lock = await lockResources([DEFENSE_COVERAGE_COMPUTE_KEY], { retryCount: COMPUTE_LOCK_RETRY_COUNT });
