@@ -116,6 +116,10 @@
   "telemetry_manager": {
     "enabled": false
   },
+  "timeline_manager": {
+    "enabled": false,
+    "debounce_ms": 0
+  },
   "providers": {
     "local": {
       "strategy": "LocalStrategy"

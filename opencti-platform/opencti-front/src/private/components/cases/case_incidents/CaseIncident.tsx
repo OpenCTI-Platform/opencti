@@ -22,6 +22,8 @@ import { isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject
 import { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
 import Card from '../../../../components/common/card/Card';
+import ContainerTimelineStrip from '../../common/timeline/ContainerTimelineStrip';
+import { resolveLink } from '../../../../utils/Entity';
 
 interface CaseIncidentProps {
   caseIncidentData: CaseUtils_case$key;
@@ -66,6 +68,9 @@ const CaseIncident: React.FC<CaseIncidentProps> = ({ caseIncidentData, enableRef
 
   return (
     <>
+      <div style={{ marginBottom: 24 }}>
+        <ContainerTimelineStrip containerId={caseIncident.id} basePath={`${resolveLink(caseIncident.entity_type)}/${caseIncident.id}`} />
+      </div>
       <Grid
         container={true}
         spacing={3}

@@ -12,6 +12,7 @@ export type StixDomainObjectTabsBoxTab
     | 'result'
     | 'knowledge'
     | 'content'
+    | 'timeline'
     | 'analyses'
     | 'sightings'
     | 'entities'
@@ -54,6 +55,10 @@ const TABS_INFO: readonly TabInfo[] = [{
   path: 'content',
   label: 'Content',
 }, {
+  tab: 'timeline',
+  path: 'timeline',
+  label: 'Timeline',
+}, {
   tab: 'analyses',
   path: 'analyses',
   label: 'Analyses',
@@ -78,6 +83,9 @@ const TABS_INFO: readonly TabInfo[] = [{
   path: 'history',
   label: 'History',
 }];
+
+/** Whether an entity tab exists on this platform, for links into tabs that other modules contribute. */
+export const isStixDomainObjectTabAvailable = (tab: string): boolean => TABS_INFO.some((info) => info.tab === tab);
 
 type TabsWithCustomViewsProps = PropsWithChildren<{
   basePath: string;

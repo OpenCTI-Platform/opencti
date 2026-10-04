@@ -117,6 +117,12 @@ export const instanceEventTypesOptions = [
   { value: 'delete', label: 'Deletion' },
 ];
 
+// Incident and case timeline events: offered by the trigger forms, never selected by default
+export const timelineEventTypesOptions = [
+  { value: 'timeline_anchor_changed', label: 'Timeline anchor changed' },
+  { value: 'timeline_milestone_added', label: 'Timeline milestone added' },
+];
+
 export const convertEventTypes = (element) => element?.event_types?.map((event_type) => {
-  return filterEventTypesOptions.find((o) => o.value === event_type);
+  return [...filterEventTypesOptions, ...timelineEventTypesOptions].find((o) => o.value === event_type);
 });

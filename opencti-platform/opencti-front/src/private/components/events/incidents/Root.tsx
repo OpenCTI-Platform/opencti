@@ -11,6 +11,7 @@ import AIInsights from '@components/common/ai/AIInsights';
 import StixCoreRelationshipCreationFromEntityHeader from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntityHeader';
 import CreateRelationshipContextProvider from '@components/common/stix_core_relationships/CreateRelationshipContextProvider';
 import Incident from './Incident';
+import ContainerTimeline from '../../common/timeline/ContainerTimeline';
 import IncidentKnowledge from './IncidentKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectMain from '@components/common/stix_domain_objects/StixDomainObjectMain';
@@ -191,6 +192,7 @@ const RootIncidentComponent = ({ queryRef }: RootIncidentComponentProps) => {
                     stixCoreObject={incident}
                   />
                 ),
+                timeline: <ContainerTimeline containerId={incident.id} containerName={incident.name} />,
                 analyses: (
                   <StixCoreObjectOrStixCoreRelationshipContainers
                     stixDomainObjectOrStixCoreRelationship={incident}
