@@ -12,7 +12,7 @@ An administrator chooses the mode of the platform in "Settings > Filigran Experi
 
 | Mode | What the platform shows | What leaves the platform |
 |:-----|:------------------------|:-------------------------|
-| **Preview** (default) | The coarse community signal of the local objects that are among the most prevalent of the community: prevalence and trend only, labelled "Preview". The first three ranks of "Trending in your sector". | **Nothing.** The platform downloads the daily digest and matches it locally. |
+| **Preview** (default) | The coarse community signal of the local objects that are among the most prevalent of the community: prevalence and trend only, labelled "Preview". The first three ranks of "Trending in your sector". | **Nothing about your objects.** The platform downloads the daily digest and matches it locally; the download request names only the day and, once chosen with a consent, the coarse sector and region of the digest it asks for. |
 | **Contribute** (full experience) | Everything: prevalence, range of contributing platforms, network first and last seen, 12-week trend, sector trend, community uniqueness, the full "Trending in your sector" list, the Sector benchmark (Enterprise Edition), the "Trending in my sector" triggers and the Sector Pulse Briefing (Enterprise Edition). | Keyed hashes and activity counts of the objects in scope, every hour (see below). |
 | **Off** | Nothing. | Nothing. |
 
