@@ -83,8 +83,10 @@ import {
   redisBumpPulsePolicyGeneration,
   redisCommitPulseWindow,
   redisDiscardPulseActivity,
+  redisDiscardPulseAdmission,
   redisDiscardPulseOutbox,
   redisClearPulseContributionState,
+  redisGetPulseAdmission,
   redisGetPulseContributionStats,
   redisGetPulseConfigGeneration,
   redisGetPulsePolicyGeneration,
@@ -94,6 +96,7 @@ import {
   redisGetPulseSalt,
   redisGetPulseState,
   redisSettlePulseOutboxEntry,
+  redisSetPulseAdmission,
   redisSetPulseCursor,
   redisSetPulseEntityLookup,
   redisSetPulseResponse,
@@ -538,6 +541,8 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
   const narrowing = wasContributing && (!enabling
     || current.scopes.some((scope) => !scopes.includes(scope))
     || (excludedMarkingIds as string[]).some((markingId) => !current.excludedMarkingIds.includes(markingId)));
+  const widening = wasContributing && enabling && (scopes.some((scope) => !current.scopes.includes(scope))
+    || current.excludedMarkingIds.some((markingId) => !(excludedMarkingIds as string[]).includes(markingId)));
   const modeChanged = mode !== current.mode;
   // Serialized with the pushes and with the pages of the nightly refresh and of the preview: none of them runs halfway
   // through the change, and the ones after it read the new configuration (generation).
@@ -547,6 +552,19 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
     // step below fails.
       await redisBumpPulsePolicyGeneration();
     }
+    if (wasContributing && enabling) {
+      // Before the settings change too: the activity of the window not collected yet stays under the narrowest settings
+      // in force since it started, so that widening them never contributes what happened while they excluded it.
+      const admission = await redisGetPulseAdmission();
+      if (widening || admission) {
+        const kept = admission?.scopes ?? current.scopes;
+        await redisSetPulseAdmission({
+          until: widening || !admission ? new Date().toISOString() : admission.until,
+          scopes: kept.filter((scope) => current.scopes.includes(scope) && scopes.includes(scope)),
+          excludedMarkingIds: Array.from(new Set([...(admission?.excludedMarkingIds ?? []), ...current.excludedMarkingIds, ...(excludedMarkingIds as string[])])),
+        });
+      }
+    }
     await updateAttribute(context, user, settings.id, ENTITY_TYPE_SETTINGS, updates);
     // A contribution cycle running under the former configuration records and sends nothing more from now on.
     await redisBumpPulseConfigGeneration();
@@ -554,11 +572,13 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
     // The contribution starts now: activity recorded before (a node whose settings cache had not seen the opt-out yet)
     // is never sent, nor the batches built under a former consent version still waiting in the outbox.
       await redisSetPulseCursor(new Date().toISOString());
+      await redisDiscardPulseAdmission();
       await redisDiscardPulseActivity(lastUtcDays(ACTIVITY_DAYS));
       await redisDiscardPulseOutbox();
     }
     if (!enabling) {
     // Nothing collected before the opt-out may leave afterwards.
+      await redisDiscardPulseAdmission();
       await redisDiscardPulseOutbox();
       await redisDiscardPulseActivity(lastUtcDays(ACTIVITY_DAYS));
     } else if (narrowing) {
@@ -765,7 +785,12 @@ const contributePulseCycle = async (context: AuthContext, cycle: PulseContributi
     logApp.warn('[THREAT PULSE] Activity older than the accepted salt days is not contributed', { since: since.toISOString(), until: oldestAccepted.toISOString() });
     since = oldestAccepted;
   }
-  let until = new Date(Math.min(now.getTime(), since.getTime() + MAX_WINDOW_HOURS * 3600 * 1000));
+  // A window that starts before the last widening of the settings ends there and is collected under the former ones.
+  const admission = await redisGetPulseAdmission();
+  const admissionEnd = admission ? Date.parse(admission.until) : Number.NaN;
+  const admitted = admission && since.getTime() < admissionEnd ? admission : null;
+  const windowValues = admitted ? { ...values, scopes: admitted.scopes, excludedMarkingIds: admitted.excludedMarkingIds } : values;
+  let until = new Date(Math.min(now.getTime(), since.getTime() + MAX_WINDOW_HOURS * 3600 * 1000, admitted ? admissionEnd : Number.POSITIVE_INFINITY));
   if (until.getTime() <= since.getTime()) {
     return;
   }
@@ -782,21 +807,21 @@ const contributePulseCycle = async (context: AuthContext, cycle: PulseContributi
     externalByDay.set(day, external);
   }
   const databaseBudget = Math.max(1, MAX_EVENTS_PER_RUN - externalEntries);
-  until = await boundPulseWindow(since, until, databaseBudget, (end) => countPulseActivity(context, PULSE_MANAGER_USER, values.scopes, since, end));
+  until = await boundPulseWindow(since, until, databaseBudget, (end) => countPulseActivity(context, PULSE_MANAGER_USER, windowValues.scopes, since, end));
   // Each record carries the UTC day of its activity and is hashed with the salt of that day.
   const activityByDay = new Map<string, PulseActivity>();
   const windowSightings: PulseWindowSighting[] = [];
   const segments = utcDaySegments(since, until);
   for (let index = 0; index < segments.length; index += 1) {
     const segment = segments[index];
-    activityByDay.set(segment.day, await collectPulseActivity(context, PULSE_MANAGER_USER, values.scopes, segment.since, segment.until, windowSightings));
+    activityByDay.set(segment.day, await collectPulseActivity(context, PULSE_MANAGER_USER, windowValues.scopes, segment.since, segment.until, windowSightings));
   }
   externalByDay.forEach((external, day) => {
     if (external.length > 0) {
       activityByDay.set(day, mergePulseActivity(activityByDay.get(day) ?? new Map(), external));
     }
   });
-  const policy = await buildPulseMarkingPolicy(context, values);
+  const policy = await buildPulseMarkingPolicy(context, windowValues);
   const buckets = getPulseBuckets(values);
   let records = 0;
   let excluded = 0;
@@ -806,7 +831,7 @@ const contributePulseCycle = async (context: AuthContext, cycle: PulseContributi
     const day = days[index];
     const activity = activityByDay.get(day) as PulseActivity;
     const entities = await loadPulseEntities(context, PULSE_MANAGER_USER, Array.from(activity.keys()));
-    const aggregation = aggregatePulseActivity(activity, entities, policy, values.scopes);
+    const aggregation = aggregatePulseActivity(activity, entities, policy, windowValues.scopes);
     records += aggregation.records.length;
     excluded += aggregation.excludedCount;
     if (aggregation.records.length > 0) {
@@ -1235,24 +1260,29 @@ export const getPulseEntityInformation = async (context: AuthContext, user: Auth
   try {
     // Under the lock of the configuration changes and of the cleanups, against the configuration stored now, like the
     // manager passes: a lookup never sends the hash of an object a newer policy excludes, nor writes its statistics
-    // after the cleanup of that policy.
+    // after the cleanup of that policy. The object is read again too: markings or access changed since the first read
+    // are the ones the policy judges.
     return await withPulsePushLock(async () => {
       const current = await loadPulseContext(context, { fresh: true });
       const currentBase = { ...base, access: current.access, sector_bucket: current.values.sectorBucket ?? null };
-      const answer = await answerPulseEntityFromStore(context, entity, current);
+      const reloaded = await storeLoadById<BasicStorePulseEntity>(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT);
+      if (!reloaded) {
+        return { ...currentBase, readable: false, unavailable_reason: PulseUnavailableReason.OutOfScope, information: null };
+      }
+      const answer = await answerPulseEntityFromStore(context, reloaded, current);
       if (!('lookup' in answer)) {
         return { ...currentBase, ...answer };
       }
-      const keys = computeStableKeys(entity);
+      const keys = computeStableKeys(reloaded);
       const day = utcDay();
       const salt = await getPulseSalt(answer.lookup, day);
-      const loader = getLookupLoader(answer.lookup, day, salt, PULSE_OBJECT_TYPE_BY_ENTITY_TYPE[entity.entity_type]);
+      const loader = getLookupLoader(answer.lookup, day, salt, PULSE_OBJECT_TYPE_BY_ENTITY_TYPE[reloaded.entity_type]);
       const results = await Promise.all(keys.map((key) => loader.load(key)));
       const information = combinePulseLookups(results.filter((result): result is PulseHubLookupResult => !!result));
       const doc = buildPulseDocument(keys, information, new Date());
-      await writePulseDocuments(context, [{ entity, doc }]);
-      await redisSetPulseEntityLookup(entity.internal_id, LOOKUP_CACHE_TTL_SECONDS);
-      return { ...currentBase, readable: true, unavailable_reason: null, information: toPulseInformationOutput({ ...entity, ...doc } as BasicStorePulseEntity) };
+      await writePulseDocuments(context, [{ entity: reloaded, doc }]);
+      await redisSetPulseEntityLookup(reloaded.internal_id, LOOKUP_CACHE_TTL_SECONDS);
+      return { ...currentBase, readable: true, unavailable_reason: null, information: toPulseInformationOutput({ ...reloaded, ...doc } as BasicStorePulseEntity) };
     });
   } catch (error) {
     logApp.warn('[THREAT PULSE] Entity lookup failed', { cause: error, entityId: entity.internal_id });

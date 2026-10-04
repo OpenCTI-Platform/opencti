@@ -99,6 +99,8 @@ const PENDING_ACCEPTED_IP = '198.51.100.219';
 const FAILED_WINDOW_IP = '198.51.100.220';
 const FORMER_CONSENT_IP = '198.51.100.221';
 const EXCLUDED_TRENDING_IP = '198.51.100.222';
+const OUT_OF_SCOPE_IP = '198.51.100.223';
+const ADMITTED_IP = '198.51.100.224';
 const FORMER_CONSENT_VERSION = '2025-01-1';
 const PULSE_CONSENT_STATE = gql`
   query PulseConsentState {
@@ -685,6 +687,32 @@ describe('Threat Pulse manager and API', () => {
     await deleteElementById(testContext, ADMIN_USER, indicatorId, ENTITY_TYPE_INDICATOR);
   });
 
+  it('should never contribute the activity that happened while a scope was left out, once the administrator adds it back', async () => {
+    const configure = async (input: Record<string, unknown>) => {
+      await queryAsAdminWithSuccess({ query: CONFIGURE, variables: { input: { mode: 'contribute_and_read', ...input } } });
+      resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+    };
+    const createIndicator = async (value: string) => {
+      const created = await queryAsAdminWithSuccess({ query: CREATE_INDICATOR, variables: { input: { name: value, pattern: `[ipv4-addr:value = '${value}']`, pattern_type: 'stix', x_opencti_main_observable_type: 'IPv4-Addr' } } });
+      const id: string = created.data?.indicatorAdd.id;
+      const keys = computeStableKeys(await storeLoadById<BasicStorePulseEntity>(testContext, ADMIN_USER, id, ENTITY_TYPE_INDICATOR));
+      return { id, contributed: () => hub.ledger.filter((row) => row.platformId === settingsId && keys.includes(row.key)).length };
+    };
+    const scopes: string[] = (await queryAsAdminWithSuccess({ query: PULSE_SETTINGS })).data?.pulseSettings.scopes;
+    await runPulseContribution(testContext);
+    await configure({ scopes: scopes.filter((scope) => scope !== ENTITY_TYPE_INDICATOR) });
+    // Created while indicators are out of the scope, then indicators come back before the next run
+    const outOfScope = await createIndicator(OUT_OF_SCOPE_IP);
+    await configure({ scopes });
+    const admitted = await createIndicator(ADMITTED_IP);
+    await runPulseContribution(testContext);
+    await runPulseContribution(testContext);
+    expect(outOfScope.contributed()).toBe(0);
+    expect(admitted.contributed()).toBeGreaterThan(0);
+    await deleteElementById(testContext, ADMIN_USER, outOfScope.id, ENTITY_TYPE_INDICATOR);
+    await deleteElementById(testContext, ADMIN_USER, admitted.id, ENTITY_TYPE_INDICATOR);
+  });
+
   it('should never send a pending batch built under a policy narrowed since, even when its discard did not happen', async () => {
     const created = await queryAsAdminWithSuccess({ query: CREATE_INDICATOR, variables: { input: { name: STALE_POLICY_IP, pattern: `[ipv4-addr:value = '${STALE_POLICY_IP}']`, pattern_type: 'stix', x_opencti_main_observable_type: 'IPv4-Addr' } } });
     const indicatorId = created.data?.indicatorAdd.id;
@@ -838,6 +866,8 @@ describe('Threat Pulse manager and API', () => {
     const preview = await queryAsAdminWithSuccess({ query: PULSE_ENTITY, variables: { id: sharedIndicatorId } });
     expect(preview.data?.pulseEntity).toMatchObject({ access: 'preview', information: { preview: true } });
 
+    // The window that ends where an earlier test removed an exclusion goes first
+    await runPulseContribution(testContext);
     const created = await queryAsAdminWithSuccess({ query: CREATE_INDICATOR, variables: { input: { name: '198.51.100.212', pattern: "[ipv4-addr:value = '198.51.100.212']", pattern_type: 'stix', x_opencti_main_observable_type: 'IPv4-Addr' } } });
     const { pushedRecords } = await runPulseContribution(testContext);
     expect(pushedRecords).toBeGreaterThan(0);

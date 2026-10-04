@@ -7,6 +7,7 @@ const SALT_PREFIX = '{pulse}:salt:';
 const ENTITY_LOOKUP_PREFIX = '{pulse}:entity:';
 const RESPONSE_PREFIX = '{pulse}:response:';
 const CURSOR_KEY = '{pulse}:cursor';
+const ADMISSION_KEY = '{pulse}:admission';
 const OUTBOX_KEY = '{pulse}:outbox';
 const OUTBOX_INFLIGHT_KEY = '{pulse}:outbox:inflight';
 const CONFIG_GENERATION_KEY = '{pulse}:config:generation';
@@ -74,6 +75,26 @@ export const redisGetPulseCursor = async (): Promise<string | null> => getClient
 
 export const redisSetPulseCursor = async (isoDate: string) => {
   await getClientBase().set(CURSOR_KEY, isoDate);
+};
+
+// The scopes and marking exclusions in force until a widening of the settings: the activity before that instant is
+// collected under them, never under the wider ones. It outlives the activity it bounds, never contributed past 3 days.
+export interface PulseAdmission {
+  until: string;
+  scopes: string[];
+  excludedMarkingIds: string[];
+}
+
+export const redisGetPulseAdmission = async (): Promise<PulseAdmission | null> => {
+  return parseJson<PulseAdmission>(await getClientBase().get(ADMISSION_KEY), ADMISSION_KEY);
+};
+
+export const redisSetPulseAdmission = async (admission: PulseAdmission) => {
+  await getClientBase().set(ADMISSION_KEY, JSON.stringify(admission), 'EX', ACTIVITY_TTL_SECONDS);
+};
+
+export const redisDiscardPulseAdmission = async () => {
+  await getClientBase().del(ADMISSION_KEY);
 };
 
 // Moves with every change of the Threat Pulse configuration, once the new one is stored: a contribution cycle started
@@ -325,7 +346,7 @@ const activityKeys = (days: string[]) => [
 
 export const redisClearPulseContributionState = async (days: string[]) => {
   const client = getClientBase();
-  await client.del(STATS_TYPE_KEY, OUTBOX_KEY, OUTBOX_INFLIGHT_KEY, CURSOR_KEY, TRENDING_NOTIFIED_KEY, ...activityKeys(days), ...days.map((day) => `${STATS_DAY_PREFIX}${day}`));
+  await client.del(STATS_TYPE_KEY, OUTBOX_KEY, OUTBOX_INFLIGHT_KEY, CURSOR_KEY, ADMISSION_KEY, TRENDING_NOTIFIED_KEY, ...activityKeys(days), ...days.map((day) => `${STATS_DAY_PREFIX}${day}`));
 };
 // endregion
 
