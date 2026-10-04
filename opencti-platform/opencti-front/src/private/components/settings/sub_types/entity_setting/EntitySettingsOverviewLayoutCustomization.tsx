@@ -6,7 +6,7 @@ import TableHead from '@mui/material/TableHead';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import TableBody from '@mui/material/TableBody';
-import { Switch } from '@filigran/design-system';
+import { Switch, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { DragIndicatorOutlined } from '@mui/icons-material';
 import { Form, Formik } from 'formik';
 import { useTheme } from '@mui/styles';
@@ -14,7 +14,7 @@ import { useFormatter } from '../../../../../components/i18n';
 import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { HIDDEN_OVERVIEW_WIDGET_WIDTH } from '../../../../../utils/hooks/useOverviewLayoutCustomization';
 import type { Theme } from '../../../../../components/Theme';
-import { EntitySettingsFragment_entitySetting$data } from './__generated__/EntitySettingsFragment_entitySetting.graphql';
+import type { EntitySettingsOverviewLayoutCustomization_entitySetting$data } from './__generated__/EntitySettingsOverviewLayoutCustomization_entitySetting.graphql';
 
 export const entitySettingsOverviewLayoutCustomizationFragment = graphql`
   fragment EntitySettingsOverviewLayoutCustomization_entitySetting on EntitySetting {
@@ -24,6 +24,10 @@ export const entitySettingsOverviewLayoutCustomizationFragment = graphql`
       key
       width
       label
+    }
+    defaultOverviewLayoutCustomization {
+      key
+      width
     }
   }
 `;
@@ -43,14 +47,16 @@ export const entitySettingsOverviewLayoutCustomizationEdit = graphql`
 type NonNullableFields<T> = {
   [P in keyof T]: NonNullable<T[P]>;
 };
-export type EntitySettingsOverviewLayoutCustomizationData = NonNullableFields<Pick<EntitySettingsFragment_entitySetting$data, 'id' | 'overview_layout_customization'>>;
+type LayoutCustomizationData = EntitySettingsOverviewLayoutCustomization_entitySetting$data;
+export type EntitySettingsOverviewLayoutCustomizationData = NonNullableFields<Pick<LayoutCustomizationData, 'id' | 'overview_layout_customization'>>
+  & Partial<Pick<LayoutCustomizationData, 'defaultOverviewLayoutCustomization'>>;
 
 interface EntitySettingsOverviewLayoutCustomizationProps {
   entitySettingsData: EntitySettingsOverviewLayoutCustomizationData;
 }
 
 const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverviewLayoutCustomizationProps> = ({
-  entitySettingsData: { id, overview_layout_customization },
+  entitySettingsData: { id, overview_layout_customization, defaultOverviewLayoutCustomization },
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
@@ -75,6 +81,7 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
 
   const editInputsKeys = overview_layout_customization.map(({ key }) => key);
   const editLabels: Record<string, string> = overview_layout_customization.reduce((o, { key, label }) => ({ ...o, [key]: label }), {});
+  const defaultWidths: Record<string, number> = Object.fromEntries((defaultOverviewLayoutCustomization ?? []).map(({ key, width }) => [key, width]));
   const getWidth = (values: Record<string, boolean | number>, inputKey: string) => {
     if (!values[`${inputKey}_isDisplayed`]) {
       return HIDDEN_OVERVIEW_WIDGET_WIDTH;
@@ -152,6 +159,15 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
                       overview_layout_customization.map(({ key, label }, index) => {
                         const isDisplayed = (values as Record<string, boolean>)[`${key}_isDisplayed`];
                         const widget = t_i18n(label);
+                        const fullWidthSwitch = (
+                          <Switch
+                            name={`${key}_isFullWidth`}
+                            checked={isDisplayed && (values as Record<string, boolean>)[`${key}_isFullWidth`]}
+                            onCheckedChange={(checked: boolean) => updateLayout({ ...values, [`${key}_isFullWidth`]: checked })}
+                            disabled={updateInFlight || !isDisplayed}
+                            aria-label={t_i18n('Show {widget} at full width', { values: { widget } })}
+                          />
+                        );
                         return (
                           <Draggable key={key} draggableId={`${key}_order`} index={index} isDragDisabled={updateInFlight}>
                             {(providedDrag, snapshotDrag) => (
@@ -175,26 +191,31 @@ const EntitySettingsOverviewLayoutCustomization: React.FC<EntitySettingsOverview
                                 >
                                   <DragIndicatorOutlined />
                                 </TableCell>
-                                <TableCell sx={{ color: isDisplayed ? undefined : 'text.disabled' }}>
+                                <TableCell sx={{ color: isDisplayed ? undefined : 'text.secondary' }}>
                                   {widget}
                                 </TableCell>
                                 <TableCell>
                                   <Switch
                                     name={`${key}_isDisplayed`}
                                     checked={isDisplayed}
-                                    onCheckedChange={(checked: boolean) => updateLayout({ ...values, [`${key}_isDisplayed`]: checked })}
+                                    onCheckedChange={(checked: boolean) => updateLayout({
+                                      ...values,
+                                      [`${key}_isDisplayed`]: checked,
+                                      ...(checked ? { [`${key}_isFullWidth`]: (defaultWidths[key] ?? 6) === 12 } : {}),
+                                    })}
                                     disabled={updateInFlight}
                                     aria-label={t_i18n('Display {widget}', { values: { widget } })}
                                   />
                                 </TableCell>
                                 <TableCell>
-                                  <Switch
-                                    name={`${key}_isFullWidth`}
-                                    checked={isDisplayed && (values as Record<string, boolean>)[`${key}_isFullWidth`]}
-                                    onCheckedChange={(checked: boolean) => updateLayout({ ...values, [`${key}_isFullWidth`]: checked })}
-                                    disabled={updateInFlight || !isDisplayed}
-                                    aria-label={t_i18n('Display {widget} in full width', { values: { widget } })}
-                                  />
+                                  {isDisplayed ? fullWidthSwitch : (
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span tabIndex={0} style={{ display: 'inline-flex' }}>{fullWidthSwitch}</span>
+                                      </TooltipTrigger>
+                                      <TooltipContent>{t_i18n('Display the widget to choose its width')}</TooltipContent>
+                                    </Tooltip>
+                                  )}
                                 </TableCell>
                               </TableRow>
                             )}

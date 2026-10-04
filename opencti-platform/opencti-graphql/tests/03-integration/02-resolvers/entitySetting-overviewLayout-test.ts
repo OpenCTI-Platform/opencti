@@ -14,6 +14,11 @@ const READ_QUERY = gql`
         width
         label
       }
+      defaultOverviewLayoutCustomization {
+        key
+        width
+        label
+      }
     }
   }
 `;
@@ -84,6 +89,11 @@ describe('EntitySetting resolver - overview layout of the incident response time
     const hidden = [...LEGACY_LAYOUT, { ...TIMELINE_WIDGET, width: 0 }];
     expect(await storeLayout(hidden)).toEqual(hidden);
     expect(await readLayout()).toEqual(hidden);
+  });
+
+  it('should expose the default layout next to a customized one', async () => {
+    const result = await queryAsAdmin({ query: READ_QUERY, variables: { targetType: ENTITY_TYPE_CONTAINER_CASE_INCIDENT } });
+    expect(result.data?.entitySettingByType.defaultOverviewLayoutCustomization).toEqual(schemaOverviewLayoutCustomization.get(ENTITY_TYPE_CONTAINER_CASE_INCIDENT));
   });
 
   it('should reset to the default layout', async () => {

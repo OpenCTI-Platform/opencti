@@ -104,8 +104,12 @@ export const entitySettingEditField = async (context: AuthContext, user: AuthUse
   return notify(BUS_TOPICS[ENTITY_TYPE_ENTITY_SETTING].EDIT_TOPIC, element, user);
 };
 
+export const getDefaultOverviewLayoutCustomization = (entitySetting: BasicStoreEntityEntitySetting) => {
+  return schemaOverviewLayoutCustomization.get(entitySetting.target_type);
+};
+
 export const getOverviewLayoutCustomization = (entitySetting: BasicStoreEntityEntitySetting) => {
-  const defaultLayout = schemaOverviewLayoutCustomization.get(entitySetting.target_type);
+  const defaultLayout = getDefaultOverviewLayoutCustomization(entitySetting);
   const storedLayout = entitySetting.overview_layout_customization;
   if (!storedLayout?.[0]) {
     return defaultLayout;

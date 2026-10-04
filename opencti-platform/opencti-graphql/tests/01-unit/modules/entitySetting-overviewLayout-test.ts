@@ -3,7 +3,7 @@ import '../../../src/modules/case/case-incident/case-incident';
 import '../../../src/modules/case/case-rfi/case-rfi';
 import '../../../src/modules/case/case-rft/case-rft';
 import '../../../src/modules/incident/incident';
-import { getOverviewLayoutCustomization } from '../../../src/modules/entitySetting/entitySetting-domain';
+import { getDefaultOverviewLayoutCustomization, getOverviewLayoutCustomization } from '../../../src/modules/entitySetting/entitySetting-domain';
 import { mergeOverviewLayoutCustomization } from '../../../src/modules/entitySetting/entitySetting-utils';
 import type { BasicStoreEntityEntitySetting, OverviewLayoutCustomization } from '../../../src/modules/entitySetting/entitySetting-types';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../src/modules/case/case-incident/case-incident-types';
@@ -72,6 +72,12 @@ describe('Overview layout of the timeline containers', () => {
     const layout = getOverviewLayoutCustomization(entitySetting(ENTITY_TYPE_CONTAINER_CASE_INCIDENT, stored));
     expect(layout).toEqual(stored);
     expect(layout?.filter(({ key }) => key === TIMELINE_WIDGET.key)).toEqual([{ ...TIMELINE_WIDGET, width: 0 }]);
+  });
+
+  it('exposes the default layout whatever the stored layout', () => {
+    const hidden = [...LEGACY_CASE_INCIDENT_LAYOUT, { ...TIMELINE_WIDGET, width: 0 }];
+    expect(getDefaultOverviewLayoutCustomization(entitySetting(ENTITY_TYPE_CONTAINER_CASE_INCIDENT, hidden)))
+      .toEqual(schemaOverviewLayoutCustomization.get(ENTITY_TYPE_CONTAINER_CASE_INCIDENT));
   });
 
   it('returns a stored layout as is for a type without default layout', () => {
