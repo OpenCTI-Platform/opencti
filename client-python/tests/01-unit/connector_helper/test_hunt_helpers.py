@@ -102,6 +102,18 @@ class TestHuntHelpers(TestCase):
         self.assertEqual(statuses, ["running", "failed"])
         self.assertEqual(helper.api.hunt_run.report.call_args.kwargs["error"], "down")
 
+    def test_listen_hunt_does_not_report_again_a_failure_the_callback_reported(self):
+        helper = _helper()
+        error = TimeoutError("no answer within 30 seconds")
+        error.hunt_run_reported = True
+        callback = _hunt_callback(helper, MagicMock(side_effect=error))
+        with self.assertRaises(TimeoutError):
+            callback(_event())
+        statuses = [
+            call.kwargs["status"] for call in helper.api.hunt_run.report.call_args_list
+        ]
+        self.assertEqual(statuses, ["running"])
+
     def test_listen_hunt_tolerates_a_failure_already_reported(self):
         helper = _helper()
         helper.api.hunt_run.report.side_effect = [

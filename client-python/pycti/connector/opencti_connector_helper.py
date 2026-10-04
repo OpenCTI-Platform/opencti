@@ -3342,8 +3342,11 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         Like :meth:`listen`, for the ``INTERNAL_HUNT`` messages: the run is
         reported ``running`` before the callback, and ``failed`` (with the
         error) when the callback raises, before the error is raised again so
-        that the work is marked in error. The callback receives the ``event``
-        of the message (hunt, time window, limits, security platform).
+        that the work is marked in error. A callback that already reported the
+        failure itself (as ``timeout`` for instance) sets the
+        ``hunt_run_reported`` attribute of the error to ``True``: the run is
+        then not reported again. The callback receives the ``event`` of the
+        message (hunt, time window, limits, security platform).
 
         :param message_callback: function processing a hunt run event
         :type message_callback: Callable[[Dict], str]
@@ -3364,6 +3367,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             try:
                 return message_callback(event_data)
             except Exception as err:
+                if getattr(err, "hunt_run_reported", False) is True:
+                    raise
                 try:
                     self.report_hunt_run(run_id, "failed", error=str(err))
                 except Exception as report_error:  # pylint: disable=broad-except
