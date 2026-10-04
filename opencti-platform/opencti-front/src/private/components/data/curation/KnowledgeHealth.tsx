@@ -178,7 +178,7 @@ const KnowledgeHealthComponent = () => {
                           {t_i18n('weight')} {formatPercent(item.weight)}
                         </span>
                       </Typography>
-                      <Typography variant="body2">{Math.round(item.score)}/100</Typography>
+                      <Typography variant="body2">{t_i18n('{score} / 100', { values: { score: Math.round(item.score) } })}</Typography>
                     </Box>
                     <LinearProgress
                       variant="determinate"

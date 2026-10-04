@@ -153,7 +153,7 @@ const CurationProposalDetails = ({ data, adjudicationAvailable }: { data: Curati
             {payloadEntries.length > 0 && (
               <Box sx={{ gridColumn: '1 / -1' }}>
                 <Label>{t_i18n('Proposed change')}</Label>
-                <Box component="dl" sx={{ margin: 0, fontSize: 13 }} data-testid="curation-proposed-change">
+                <Box component="dl" sx={{ margin: 0, typography: 'body2' }} data-testid="curation-proposed-change">
                   {payloadEntries.map(([key, value]) => (
                     <div key={key}>
                       <Box component="dt" sx={{ display: 'inline', fontWeight: 600 }}>{key}: </Box>

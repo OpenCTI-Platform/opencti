@@ -109,7 +109,7 @@ const CurationProposalEvidence = ({ data }: CurationProposalEvidenceProps) => {
                   <TableCell sx={{ verticalAlign: 'top' }}>
                     <div>{item.description}</div>
                     {details && (
-                      <Box component="dl" sx={{ margin: 0, marginTop: 0.5, color: theme.palette.text.light, fontSize: 12 }}>
+                      <Box component="dl" sx={{ margin: 0, marginTop: 0.5, color: theme.palette.text.light, typography: 'caption' }}>
                         {Object.entries(details).slice(0, 8).map(([key, value]) => (
                           <div key={key}>
                             <Box component="dt" sx={{ display: 'inline', fontWeight: 600 }}>{key}: </Box>
