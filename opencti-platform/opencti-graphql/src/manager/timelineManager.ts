@@ -181,6 +181,28 @@ const queueContainersContaining = async (context: AuthContext, elementIds: strin
   } as any);
 };
 
+/**
+ * A manual event may point to an element its case does not contain: a change of that element (its access above all, which
+ * decides whether the event travels in the STIX exchange of the case) reaches the case through the event itself.
+ */
+const queueContainersOfManualEventsAbout = async (context: AuthContext, elementIds: string[], enqueue: ImpactedContainersSink) => {
+  if (elementIds.length === 0) return;
+  await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [ENTITY_TYPE_TIMELINE_EVENT], {
+    filters: {
+      mode: FilterMode.And,
+      filters: [{ key: ['event_source'], values: ['manual'] }, { key: ['element_id'], values: elementIds }],
+      filterGroups: [],
+    },
+    noFiltersChecking: true,
+    baseData: true,
+    baseFields: ['container_id'],
+    first: TIMELINE_MANAGER_IMPACTED_PAGE_SIZE,
+    callback: async (events: Array<BasicStoreEntity & { container_id?: string }>) => {
+      await enqueue(Array.from(new Set(events.map((event) => event.container_id).filter((id): id is string => !!id))));
+    },
+  } as any);
+};
+
 const queueReferencedContainers = async (context: AuthContext, references: string[], enqueue: ImpactedContainersSink) => {
   if (references.length === 0) return;
   const referenced = await internalFindByIds(context, SYSTEM_USER, references, { type: TIMELINE_CONTAINER_TYPES, baseData: true });
@@ -190,6 +212,7 @@ const queueReferencedContainers = async (context: AuthContext, references: strin
 const queueImpactedContainers = async (context: AuthContext, collector: ImpactCollector, enqueue: ImpactedContainersSink) => {
   await enqueue(Array.from(collector.containers));
   await queueContainersContaining(context, Array.from(collector.contained), enqueue);
+  await queueContainersOfManualEventsAbout(context, [...collector.contained, ...collector.containers], enqueue);
   await queueContainersContaining(context, Array.from(collector.externalReferences), enqueue, RELATION_EXTERNAL_REFERENCE);
   await queueReferencedContainers(context, Array.from(collector.references), enqueue);
   const killChainPhases = Array.from(collector.killChainPhases);

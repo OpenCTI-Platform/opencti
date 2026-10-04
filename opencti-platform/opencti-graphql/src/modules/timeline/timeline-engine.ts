@@ -618,6 +618,22 @@ export const timelineEventMaxConfidence = (user: AuthUser): number | null => {
   return isNotEmptyField(maxConfidence) ? maxConfidence as number : null;
 };
 
+/**
+ * The analyst fields of a derived event as an annotation waiting for the event, set by users the confidence check of
+ * the event already let through: they apply whatever the confidence of the event.
+ */
+export const keptAnalystFields = (event: Pick<StoredTimelineEvent, 'internal_id' | 'analyst_fields' | 'pinned' | 'hidden' | 'annotation' | 'ordering_hint'>): TimelinePendingAnnotation => {
+  const fields = new Set<TimelineAnalystField>(event.analyst_fields ?? []);
+  return {
+    event_id: event.internal_id,
+    ...(fields.has('pinned') ? { pinned: event.pinned } : {}),
+    ...(fields.has('hidden') ? { hidden: event.hidden } : {}),
+    ...(fields.has('annotation') ? { annotation: event.annotation ?? null } : {}),
+    ...(fields.has('ordering_hint') ? { ordering_hint: event.ordering_hint ?? null } : {}),
+    max_confidence: 100,
+  };
+};
+
 /** An imported annotation applies to a derived event only within the confidence level its importer had. */
 export const isPendingAnnotationApplicable = (annotation: TimelinePendingAnnotation, confidence: number | null | undefined): boolean => {
   return isNotEmptyField(annotation.max_confidence) && cropNumber(confidence ?? 0, 0, 100) <= (annotation.max_confidence as number);
@@ -790,13 +806,20 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
   const staleIds = staleEvents.map((e) => e.internal_id);
   await deleteTimelineDocuments(staleIds);
   // Consume the imported annotations that found their event and record the generation
-  const remaining = (settings?.pending_annotations ?? []).filter((a) => !docsById.has(a.event_id));
+  const remaining = new Map((settings?.pending_annotations ?? []).filter((a) => !docsById.has(a.event_id)).map((a) => [a.event_id, a]));
+  // A derived event pushed out by the cap of the case keeps its analyst fields in the timeline state: they come back
+  // with the event once it is within the cap again
+  staleEvents.filter((event) => derivedDocsById.has(event.internal_id) && (event.analyst_fields ?? []).length > 0).forEach((event) => {
+    if (!remaining.has(event.internal_id) && remaining.size < TIMELINE_MAX_EVENTS) {
+      remaining.set(event.internal_id, keptAnalystFields(event));
+    }
+  });
   const refusedAnnotations = refusedAnnotationIds.filter((id) => docsById.has(id)).length;
   if (refusedAnnotations > 0) {
     logApp.warn('[TIMELINE] Imported annotations of events above the confidence level of their importer were not applied', { containerId, refused: refusedAnnotations });
   }
   const generatedSettings = await upsertTimelineSettings(context, container, {
-    pending_annotations: remaining,
+    pending_annotations: Array.from(remaining.values()),
     derivation_truncated: truncated,
     generated_at: now(),
     ...(capped ? {} : { capped_anchor_bounds: null }),

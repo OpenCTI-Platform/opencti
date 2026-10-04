@@ -1213,6 +1213,28 @@ describe('Incident and case timeline', () => {
       await queryAsAdminWithSuccess({ query: EXTERNAL_REFERENCE_DELETE, variables: { id: referenceId } });
     });
 
+    it('should queue the case of a manual event about an element the case does not contain', async () => {
+      const outside = await queryAsAdminWithSuccess({ query: MALWARE_ADD, variables: { input: { name: 'Timeline malware outside the case' } } });
+      const outsideId = outside.data.malwareAdd.id;
+      const milestone = await queryAsAdminWithSuccess({
+        query: TIMELINE_EVENT_ADD,
+        variables: { input: { container_id: caseIncident.id, event_time: '2026-02-05T22:00:00.000Z', title: 'Related campaign spotted', element_id: outsideId } },
+      });
+      // The regenerations scheduled by the addition are handled first: only the change of the element is left to queue the case
+      const pending = await claimDueTimelineRegenerations(1000);
+      await Promise.all(pending.map((id) => acknowledgeTimelineRegeneration(id)));
+      const others = pending.filter((id) => id !== caseIncident.id);
+      const stixMalware = { id: outside.data.malwareAdd.standard_id, type: 'malware', extensions: { [STIX_EXT_OCTI]: { id: outsideId, type: 'Malware' } } };
+      await timelineStreamEventsHandler(testContext, [streamEvent(stixMalware)]);
+      const claimed = await claimDueTimelineRegenerations(1000);
+      expect(claimed).toContain(caseIncident.id);
+      // Every container is handed back to the queue for the tests that follow
+      await Promise.all(claimed.map((id) => acknowledgeTimelineRegeneration(id)));
+      await enqueueTimelineRegeneration([...others, ...claimed], 0);
+      await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: milestone.data.timelineEventAdd.id } });
+      await queryAsAdminWithSuccess({ query: STIX_CORE_OBJECT_DELETE, variables: { id: outsideId } });
+    });
+
     it('should keep a container scheduled again during its regeneration queued until the running claim is acknowledged', async () => {
       const containerId = `timeline-queue-${Date.now()}`;
       // The other due containers are handed back to the queue for the tests that follow

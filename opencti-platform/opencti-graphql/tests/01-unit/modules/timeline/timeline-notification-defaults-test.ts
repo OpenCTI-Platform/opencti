@@ -9,8 +9,10 @@ vi.mock('../../../../src/database/cache', () => ({
   getEntityFromCache: (...args: any[]) => getEntityFromCache(...args),
 }));
 
-import { getNotifications, TRIGGER_EVENT_TYPES_VALUES } from '../../../../src/manager/notificationManager';
+import { getNotifications, removeWebhookDuplicates, TRIGGER_EVENT_TYPES_VALUES } from '../../../../src/manager/notificationManager';
 import { ENTITY_TYPE_USER } from '../../../../src/schema/internalObject';
+import { ENTITY_TYPE_NOTIFIER } from '../../../../src/modules/notifier/notifier-types';
+import { NOTIFIER_CONNECTOR_WEBHOOK } from '../../../../src/modules/notifier/notifier-statics';
 import { ACCOUNT_STATUS_ACTIVE } from '../../../../src/config/conf';
 import { TIMELINE_TRIGGER_ANCHOR_CHANGED, TIMELINE_TRIGGER_MILESTONE_ADDED } from '../../../../src/modules/timeline/timeline-notification';
 
@@ -42,5 +44,15 @@ describe('Timeline events and the default triggers', () => {
     generated.forEach(({ trigger }) => {
       expect(trigger.event_types).toEqual(['create', 'update', 'delete']);
     });
+  });
+
+  it('should call a webhook shared by the recipients of a timeline notification once', async () => {
+    getEntitiesListFromCache.mockImplementation((_context: unknown, _user: unknown, type: string) => Promise.resolve(type === ENTITY_TYPE_NOTIFIER
+      ? [{ id: 'shared-webhook', notifier_connector_id: NOTIFIER_CONNECTOR_WEBHOOK }, { id: 'email', notifier_connector_id: 'email-connector' }]
+      : []));
+    const recipient = (userId: string) => ({ user: { user_id: userId, user_email: `${userId}@opencti.io`, user_service_account: false, notifiers: ['shared-webhook', 'email'] } });
+    const targets = [recipient('analyst-1'), recipient('analyst-2')];
+    await removeWebhookDuplicates({} as any, targets);
+    expect(targets.map((target) => target.user.notifiers)).toEqual([['shared-webhook', 'email'], ['email']]);
   });
 });

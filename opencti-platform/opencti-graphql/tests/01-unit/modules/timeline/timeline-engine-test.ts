@@ -8,6 +8,7 @@ import {
   derivedEventMarkings,
   getTimelineRules,
   isPendingAnnotationApplicable,
+  keptAnalystFields,
   timelineEventMaxConfidence,
   timelineEventSignature,
   timelineEventStandardId,
@@ -331,6 +332,13 @@ describe('Timeline imported annotations and confidence', () => {
     expect(timelineEventMaxConfidence(userWith({ max_confidence: 40, overrides: [{ entity_type: ENTITY_TYPE_TIMELINE_EVENT, max_confidence: 70 }] }))).toEqual(70);
     expect(timelineEventMaxConfidence(userWith({ max_confidence: 40, overrides: [{ entity_type: 'Malware', max_confidence: 90 }] }))).toEqual(40);
     expect(timelineEventMaxConfidence(userWith(null as unknown as AuthUser['effective_confidence_level']))).toBeNull();
+  });
+
+  it('should keep the analyst fields of a derived event pushed out by the cap, and only those', () => {
+    const kept = keptAnalystFields({ internal_id: 'capped', analyst_fields: ['pinned', 'annotation'], pinned: true, hidden: false, annotation: 'Initial dropper', ordering_hint: 3 });
+    expect(kept).toEqual({ event_id: 'capped', pinned: true, annotation: 'Initial dropper', max_confidence: 100 });
+    // They were set by users the confidence check of the event let through: they come back whatever its confidence
+    expect(isPendingAnnotationApplicable(kept, 100)).toBe(true);
   });
 
   it('should apply an imported annotation only to an event within the confidence level of its importer', () => {

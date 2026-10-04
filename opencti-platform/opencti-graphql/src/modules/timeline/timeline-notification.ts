@@ -8,7 +8,13 @@ import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import type { BasicStoreSettings } from '../../types/settings';
 import { storeNotificationEvent } from '../../database/stream/stream-handler';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
-import { convertToNotificationUser, EVENT_NOTIFICATION_VERSION, getLiveNotifications, type KnowledgeNotificationEvent } from '../../manager/notificationManager';
+import {
+  convertToNotificationUser,
+  EVENT_NOTIFICATION_VERSION,
+  getLiveNotifications,
+  type KnowledgeNotificationEvent,
+  removeWebhookDuplicates,
+} from '../../manager/notificationManager';
 import type { StixObject } from '../../types/stix-2-1-common';
 import { extractStixRepresentative } from '../../database/stix-representative';
 import { TriggerEventType } from '../../generated/graphql';
@@ -68,6 +74,7 @@ const notifyTimelineTrigger = async (
       }
     }
     if (targets.length > 0) {
+      await removeWebhookDuplicates(context, targets);
       const notificationEvent: KnowledgeNotificationEvent = {
         version: EVENT_NOTIFICATION_VERSION,
         notification_id: trigger.internal_id,

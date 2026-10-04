@@ -497,6 +497,25 @@ export const buildUpdateEventContext = (streamEvent: SseEvent<DataEvent>): Updat
   return { previous, eventContext: buildFilterEventContext(streamEvent.data as UpdateEvent) };
 };
 
+/** One notification calls a shared webhook once, whatever the number of its recipients (a trigger shared with a group). */
+export const removeWebhookDuplicates = async (context: AuthContext, targets: Array<{ user: NotificationUser }>) => {
+  if (targets.length === 0) return;
+  const allNotifiers = await getEntitiesListFromCache<BasicStoreEntityNotifier>(context, SYSTEM_USER, ENTITY_TYPE_NOTIFIER);
+  const webhookNotifiers = allNotifiers.filter((notifier) => notifier.notifier_connector_id === NOTIFIER_CONNECTOR_WEBHOOK)
+    .map((notifier) => notifier.id);
+  const targetedWebhooks = new Set();
+  for (let i = 0; i < targets.length; i += 1) {
+    const target = targets[i];
+    target.user.notifiers = target.user.notifiers.filter((notifiersId) => {
+      if (webhookNotifiers.includes(notifiersId)) {
+        if (targetedWebhooks.has(notifiersId)) return false;
+        targetedWebhooks.add(notifiersId);
+      }
+      return true;
+    });
+  }
+};
+
 export const buildTargetEvents = async (
   context: AuthContext,
   users: AuthUser[],
@@ -592,24 +611,7 @@ export const buildTargetEvents = async (
       }
     }
   }
-  if (targets.length) {
-    // Remove webhook duplicates: Ensure that 1 notification results in only 1 webhook call, regardless of the number of users in the group.
-    const allNotifiers = await getEntitiesListFromCache<BasicStoreEntityNotifier>(context, SYSTEM_USER, ENTITY_TYPE_NOTIFIER);
-    const webhookNotifiers = allNotifiers.filter((notifier) => notifier.notifier_connector_id === NOTIFIER_CONNECTOR_WEBHOOK)
-      .map((notifier) => notifier.id);
-    const targetedWebhooks = new Set();
-
-    for (let i = 0; i < targets.length; i += 1) {
-      const target = targets[i];
-      target.user.notifiers = target.user.notifiers.filter((notifiersId) => {
-        if (webhookNotifiers.includes(notifiersId)) {
-          if (targetedWebhooks.has(notifiersId)) return false;
-          targetedWebhooks.add(notifiersId);
-        }
-        return true;
-      });
-    }
-  }
+  await removeWebhookDuplicates(context, targets);
   return targets;
 };
 
