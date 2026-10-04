@@ -45,6 +45,13 @@ describe.each(perspectives)('Saved provenance widgets of the %s perspective', (_
     expect(screen.queryByTestId('provenance-freshness-widget')).not.toBeInTheDocument();
   });
 
+  it('should give the next step and the documentation of the configuration', () => {
+    setProvenanceEnabled(false);
+    testRender(render(widgetOf('provenance-freshness')));
+    expect(screen.getByText('An administrator enables it in the platform configuration (provenance:enabled).')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Learn more' })).toHaveAttribute('href', 'https://docs.opencti.io/latest/usage/provenance/#configuration');
+  });
+
   it('should keep the title given to the widget while provenance is disabled', () => {
     setProvenanceEnabled(false);
     testRender(render(widgetOf('provenance-single-sourced', 'Single-sourced intrusion sets')));
