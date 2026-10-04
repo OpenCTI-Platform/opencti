@@ -2,7 +2,8 @@ import conf from '../../config/conf';
 import { getClientBase } from '../../database/redis';
 
 // Sorted set of containers waiting for a timeline regeneration, scored by the time they become due.
-const TIMELINE_QUEUE_KEY = 'timeline_regeneration_queue';
+// The queue and the in-flight set share a hash tag: the claim script reads both, also on a Redis cluster.
+const TIMELINE_QUEUE_KEY = '{timeline_regeneration}_queue';
 // Debounce: the first change of a container schedules its regeneration, the following changes
 // arriving before the due time are absorbed by the same regeneration.
 export const TIMELINE_DEBOUNCE_MS = conf.get('timeline_manager:debounce_ms') ?? 10000;
@@ -19,23 +20,52 @@ export const enqueueTimelineRegeneration = async (containerIds: string[], delayM
   await getClientBase().zadd(TIMELINE_QUEUE_KEY, 'NX', ...(args as [number, string]));
 };
 
-// Selection and removal in one atomic step: a schedule added while a claim runs is never absorbed by that claim
+// Claimed containers, scored by the end of their lease: a claim is only dropped once its regeneration was handled
+const TIMELINE_IN_FLIGHT_KEY = '{timeline_regeneration}_in_flight';
+// Longer than any bounded regeneration; a claim whose manager stopped before handling it is due again after it
+export const TIMELINE_CLAIM_LEASE_MS = conf.get('timeline_manager:claim_lease_ms') ?? 900000;
+const RECLAIM_BATCH = 1000;
+
+// One atomic step: expired leases go back to the queue (a newer schedule keeps its due time), then the due
+// containers move from the queue to the in-flight set. A schedule added while a claim runs is never absorbed by it.
 const CLAIM_DUE_SCRIPT = `
+local expired = redis.call('ZRANGEBYSCORE', KEYS[2], '-inf', ARGV[1], 'LIMIT', 0, tonumber(ARGV[4]))
+for _, id in ipairs(expired) do
+  redis.call('ZREM', KEYS[2], id)
+  redis.call('ZADD', KEYS[1], 'NX', ARGV[1], id)
+end
 local due = redis.call('ZRANGEBYSCORE', KEYS[1], '-inf', ARGV[1], 'LIMIT', 0, tonumber(ARGV[2]))
-if #due > 0 then
-  redis.call('ZREM', KEYS[1], unpack(due))
+for _, id in ipairs(due) do
+  redis.call('ZREM', KEYS[1], id)
+  redis.call('ZADD', KEYS[2], ARGV[3], id)
 end
 return due
 `;
 
 /**
- * Claim at most `limit` due containers. A container is claimed by removing it from the queue,
- * so two consumers can never process the same container from the same scheduling.
+ * Claim at most `limit` due containers. A container is claimed by moving it from the queue to the in-flight set
+ * under a lease, so two consumers can never process the same container from the same scheduling, and a claim is
+ * never lost: until `acknowledgeTimelineRegeneration`, an expired lease makes the container due again.
  */
 export const claimDueTimelineRegenerations = async (limit: number): Promise<string[]> => {
   if (limit <= 0) return [];
-  const claimed = await getClientBase().eval(CLAIM_DUE_SCRIPT, 1, TIMELINE_QUEUE_KEY, Date.now(), limit);
+  const nowTime = Date.now();
+  const claimed = await getClientBase().eval(
+    CLAIM_DUE_SCRIPT,
+    2,
+    TIMELINE_QUEUE_KEY,
+    TIMELINE_IN_FLIGHT_KEY,
+    nowTime,
+    limit,
+    nowTime + TIMELINE_CLAIM_LEASE_MS,
+    RECLAIM_BATCH,
+  );
   return Array.isArray(claimed) ? claimed.map((id) => String(id)) : [];
+};
+
+/** Release the claim of a container once its regeneration succeeded or its retry was scheduled. */
+export const acknowledgeTimelineRegeneration = async (containerId: string) => {
+  await getClientBase().zrem(TIMELINE_IN_FLIGHT_KEY, containerId);
 };
 
 // Failed regenerations are retried with an exponential backoff, then left to the next change or the nightly pass

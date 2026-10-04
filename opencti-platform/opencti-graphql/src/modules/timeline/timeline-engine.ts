@@ -313,14 +313,29 @@ export const containerAccessFields = (container: AnyStoreElement) => ({
 // endregion
 
 // region live updates
+/** An event removed by a change, with what decides who could read it (the event itself can no longer be loaded) */
+export interface TimelineRemovedEvent {
+  id: string;
+  element_id: string | null;
+  marking_ids: string[];
+}
+
 export interface TimelineUpdatePayload {
   id: string;
   container_id: string;
   update_type: 'derived' | 'manual' | 'annotation' | 'settings' | 'anchors';
   changed_event_ids: string[];
+  // Resolved per subscriber into changed_event_ids, never sent as is
+  removed_events?: TimelineRemovedEvent[];
   updated_at: string;
   anchors?: TimelineAnchors | null;
 }
+
+export const toRemovedTimelineEvents = (events: StoredTimelineEvent[]): TimelineRemovedEvent[] => events.map((event) => ({
+  id: event.internal_id,
+  element_id: event.element_id ?? null,
+  marking_ids: markingsOf(event),
+}));
 
 // The author of the change does not receive its own update (the subscription filters on the publishing user)
 export const publishTimelineUpdate = async (payload: Omit<TimelineUpdatePayload, 'id' | 'updated_at'>, user: AuthUser = SYSTEM_USER) => {
@@ -661,7 +676,8 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
   if (changedDocs.length > 0) {
     await elIndexElements(context, SYSTEM_USER, ENTITY_TYPE_TIMELINE_EVENT, changedDocs);
   }
-  const staleIds = stored.filter((e) => e.event_source === 'derived' && !docsById.has(e.internal_id)).map((e) => e.internal_id);
+  const staleEvents = stored.filter((e) => e.event_source === 'derived' && !docsById.has(e.internal_id));
+  const staleIds = staleEvents.map((e) => e.internal_id);
   await deleteTimelineDocuments(staleIds);
   // Consume the imported annotations that found their event and record the generation
   const remaining = (settings?.pending_annotations ?? []).filter((a) => !docsById.has(a.event_id));
@@ -671,9 +687,14 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
   }
   const finalEvents = docs as unknown as StoredTimelineEvent[];
   const { anchors } = await refreshTimelineContributions(context, container, { events: finalEvents });
-  const changedIds = [...changedDocs.map((d) => d.internal_id), ...staleIds];
-  if (changedIds.length > 0) {
-    await publishTimelineUpdate({ container_id: containerId, update_type: 'derived', changed_event_ids: changedIds.slice(0, 500), anchors });
+  if (changedDocs.length > 0 || staleEvents.length > 0) {
+    await publishTimelineUpdate({
+      container_id: containerId,
+      update_type: 'derived',
+      changed_event_ids: changedDocs.map((d) => d.internal_id).slice(0, 500),
+      removed_events: toRemovedTimelineEvents(staleEvents.slice(0, 500)),
+      anchors,
+    });
   }
   return {
     container_id: containerId,
@@ -726,13 +747,14 @@ export const regenerateContainerTimeline = async (
   try {
     // Background regenerations skip a container being regenerated, explicit ones wait for it
     lock = await lockResources([timelineLockKey(container.internal_id)], opts.wait ? {} : { retryCount: 0 });
-    if (opts.skipIfGenerated) {
-      const current = await internalLoadById<AnyStoreElement>(context, SYSTEM_USER, container.internal_id, { type: TIMELINE_CONTAINER_TYPES });
-      if (!current) return null;
-      if (current[ATTRIBUTE_TIMELINE_ANCHORS]?.computed_at) return null;
-      return await regenerateLocked(context, current);
+    // The snapshot is read again under the lock: a contribution may have changed the container while this call waited
+    const current = await internalLoadById<AnyStoreElement>(context, SYSTEM_USER, container.internal_id, { type: TIMELINE_CONTAINER_TYPES });
+    if (!current) {
+      await deleteContainerTimeline(container.internal_id);
+      return null;
     }
-    return await regenerateLocked(context, container);
+    if (opts.skipIfGenerated && current[ATTRIBUTE_TIMELINE_ANCHORS]?.computed_at) return null;
+    return await regenerateLocked(context, current);
   } catch (error: any) {
     if (error?.name === TYPE_LOCK_ERROR) {
       // The running regeneration may have started before the latest changes: another one is scheduled

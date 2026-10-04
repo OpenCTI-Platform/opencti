@@ -2,6 +2,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin, queryAsAdminWithError, queryAsAdminWithSuccess, queryAsAuthUser, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { ADMIN_USER, TEST_ORGANIZATION, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
+import { internalLoadById } from '../../../src/database/middleware-loader';
+import { timelineUpdateForUser } from '../../../src/modules/timeline/timeline-domain';
 import { resolveUserById } from '../../../src/modules/user/user-domain';
 import type { AuthUser } from '../../../src/types/user';
 import { MARKING_TLP_AMBER, MARKING_TLP_GREEN } from '../../../src/schema/identifier';
@@ -476,6 +478,31 @@ describe('Incident and case timeline', () => {
       expect(editorEvents.find((e: TimelineEventNode) => e.element_id === indicatorId)).toBeDefined();
     });
 
+    it('should only name in a live update the events the subscriber can read', async () => {
+      const participate = await resolveUserById(testContext, USER_PARTICIPATE.id) as AuthUser;
+      const editor = await resolveUserById(testContext, USER_EDITOR.id) as AuthUser;
+      const stored = await loadStoredTimelineEvents(testContext, caseIncident.id);
+      const restrictedId = stored.find((event) => event.element_id === indicatorId)?.internal_id as string;
+      const openId = stored.find((event) => event.kind === 'malware_seen')?.internal_id as string;
+      expect(restrictedId && openId).toBeTruthy();
+      const update = { id: caseIncident.id, container_id: caseIncident.id, update_type: 'derived' as const, changed_event_ids: [openId, restrictedId], updated_at: new Date().toISOString() };
+      expect((await timelineUpdateForUser(testContext, participate, update))?.changed_event_ids).toEqual([openId]);
+      expect((await timelineUpdateForUser(testContext, editor, update))?.changed_event_ids.sort()).toEqual([openId, restrictedId].sort());
+      // An update about restricted events only, changed or removed, never reaches the subscriber
+      expect(await timelineUpdateForUser(testContext, participate, { ...update, changed_event_ids: [restrictedId] })).toBeNull();
+      const removedAboutIndicator = { id: 'removed-event', element_id: indicatorId, marking_ids: [] };
+      expect(await timelineUpdateForUser(testContext, participate, { ...update, changed_event_ids: [], removed_events: [removedAboutIndicator] })).toBeNull();
+      const amber = await internalLoadById(testContext, SYSTEM_USER, MARKING_TLP_AMBER);
+      const removedAmber = { id: 'removed-event', element_id: null, marking_ids: [amber.internal_id] };
+      expect(await timelineUpdateForUser(testContext, participate, { ...update, changed_event_ids: [], removed_events: [removedAmber] })).toBeNull();
+      const removedOpen = { id: 'removed-event', element_id: null, marking_ids: [] };
+      const removedUpdate = await timelineUpdateForUser(testContext, participate, { ...update, changed_event_ids: [], removed_events: [removedOpen] });
+      expect(removedUpdate?.changed_event_ids).toEqual(['removed-event']);
+      expect(removedUpdate).not.toHaveProperty('removed_events');
+      // Updates about the container itself name no event and always go through
+      expect(await timelineUpdateForUser(testContext, participate, { ...update, update_type: 'settings', changed_event_ids: [] })).toMatchObject({ update_type: 'settings', changed_event_ids: [] });
+    });
+
     it('should tell who can contribute to the timeline', async () => {
       const participate = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: CONTAINER_TIMELINE_SUMMARY, variables: { id: caseIncident.id } });
       expect(participate.data.containerTimelineSummary.can_edit).toBe(false);
@@ -823,6 +850,27 @@ describe('Incident and case timeline', () => {
       await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension: unknownMarking } });
       const manual = await listTimeline(secondCase.id, { sources: ['manual'] });
       expect(manual.map((event) => event.title)).not.toContain('Unknown marking milestone');
+    });
+
+    it('should keep the markings of a known milestone when an import updates it', async () => {
+      const amber = await queryAsAdminWithSuccess({
+        query: TIMELINE_EVENT_ADD,
+        variables: { input: { container_id: secondCase.id, event_time: '2026-02-05T18:00:00.000Z', title: 'Regulator call', external_id: 'import-keeps-markings', objectMarking: [MARKING_TLP_AMBER] } },
+      });
+      const unmarkedUpdate = JSON.stringify({
+        events: [{
+          id: 'timeline-event--0f3d6a2e-7c51-4f0b-9d7e-2b8c4e1a5f60',
+          external_id: 'import-keeps-markings',
+          title: 'Regulator call answered',
+          event_time: '2026-02-05T18:00:00.000Z',
+        }],
+        annotations: [],
+      });
+      await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension: unmarkedUpdate } });
+      const updated = (await listTimeline(secondCase.id, { sources: ['manual'] })).find((event) => event.id === amber.data.timelineEventAdd.id);
+      expect(updated?.title).toEqual('Regulator call answered');
+      expect(updated?.objectMarking.map((marking) => marking.standard_id)).toContain(MARKING_TLP_AMBER);
+      await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: amber.data.timelineEventAdd.id } });
     });
 
     it('should leave out a manual event about an element restricted to fewer members than the container', async () => {

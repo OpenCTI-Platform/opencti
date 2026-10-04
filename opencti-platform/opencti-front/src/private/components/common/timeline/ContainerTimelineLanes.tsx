@@ -397,7 +397,8 @@ const ContainerTimelineLanes = ({
         width={width}
         height={totalHeight}
         viewBox={`0 0 ${width} ${totalHeight}`}
-        role="img"
+        // An image hides its descendants from assistive technologies: with focusable events or clusters, it is a group
+        role={onSelect || onClusterSelect ? 'group' : 'img'}
         aria-label={ariaLabel}
         fontFamily={colors.fontFamily}
         fontSize={11}

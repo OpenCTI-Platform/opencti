@@ -27,7 +27,9 @@ import {
   pinTimelineEvent,
   recordTimelineView,
   regenerateTimeline,
+  timelineUpdateForUser,
   updateTimelineSettings,
+  visibleTimelineUpdates,
 } from './timeline-domain';
 
 // Ordering values exposed on the lists of the timeline containers, resolved to the anchors attribute paths
@@ -89,9 +91,11 @@ const timelineResolvers: Resolvers = {
   Subscription: {
     containerTimelineUpdated: {
       resolve: /* v8 ignore next */ (payload: any) => payload.instance,
-      subscribe: /* v8 ignore next */ (_, { id }, context) => {
+      subscribe: /* v8 ignore next */ async (_, { id }, context) => {
         const bus = BUS_TOPICS[ENTITY_TYPE_TIMELINE_EVENT];
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: TIMELINE_CONTAINER_TYPES });
+        const updates = await subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], { type: TIMELINE_CONTAINER_TYPES });
+        // Each subscriber only hears about the events it can read
+        return visibleTimelineUpdates(updates[Symbol.asyncIterator](), (update) => timelineUpdateForUser(context, context.user, update));
       },
     },
   },

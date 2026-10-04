@@ -63,6 +63,8 @@ import {
   TIMELINE_MAX_MANUAL_EVENTS,
   TIMELINE_MAX_STORED_EVENTS,
   type TimelineRegenerationResult,
+  toRemovedTimelineEvents,
+  type TimelineUpdatePayload,
   upsertTimelineSettings,
   withTimelineLock,
 } from './timeline-engine';
@@ -507,6 +509,59 @@ export const exportContainerTimelineFile = async (context: AuthContext, user: Au
 };
 // endregion
 
+// region live updates
+/**
+ * A live update as one subscriber may see it: it names only the changed or removed events this user can read, and an
+ * update about events the user cannot read at all is not sent to it (null). Updates about the container itself
+ * (settings, anchors) name no event and always go through.
+ */
+export const timelineUpdateForUser = async (context: AuthContext, user: AuthUser, update: TimelineUpdatePayload): Promise<TimelineUpdatePayload | null> => {
+  const { removed_events: removed = [], ...signal } = update;
+  if (update.changed_event_ids.length === 0 && removed.length === 0) {
+    return signal;
+  }
+  const changed = update.changed_event_ids.length > 0
+    ? await internalFindByIds(context, user, update.changed_event_ids, { type: ENTITY_TYPE_TIMELINE_EVENT }) as unknown as StoredTimelineEvent[]
+    : [];
+  const allowedMarkings = new Set(user.allowed_marking.map((marking) => marking.internal_id));
+  const readableRemoved = removed.filter((event) => isBypassUser(user) || event.marking_ids.every((id) => allowedMarkings.has(id)));
+  const candidates = [
+    ...changed,
+    ...readableRemoved.map((event) => ({ internal_id: event.id, element_id: event.element_id }) as unknown as StoredTimelineEvent),
+  ];
+  const { items } = await filterAccessibleEvents(context, user, update.container_id, candidates, (event) => event);
+  if (items.length === 0) {
+    return null;
+  }
+  return { ...signal, changed_event_ids: items.map((event) => event.internal_id) };
+};
+
+/**
+ * Maps the live updates of a subscription through `forUser`, skipping the ones it drops. Closing the subscription
+ * closes the source at once, even while an update is awaited, so no listener outlives its subscriber.
+ */
+export const visibleTimelineUpdates = <T extends { instance: TimelineUpdatePayload }>(
+  source: AsyncIterator<T>,
+  forUser: (update: TimelineUpdatePayload) => Promise<TimelineUpdatePayload | null>,
+): AsyncIterableIterator<T> => {
+  const pull = async (): Promise<IteratorResult<T>> => {
+    const next = await source.next();
+    if (next.done) {
+      return next;
+    }
+    const instance = await forUser(next.value.instance);
+    return instance ? { done: false, value: { ...next.value, instance } } : pull();
+  };
+  const iterator: AsyncIterableIterator<T> = {
+    next: pull,
+    return: (value?: unknown) => (source.return ? source.return(value) : Promise.resolve({ done: true, value: undefined } as IteratorResult<T>)),
+    throw: (error?: unknown) => (source.throw ? source.throw(error) : Promise.reject(error)),
+    [Symbol.asyncIterator]: () => iterator,
+  };
+  return iterator;
+};
+// endregion
+
 // region mutations
 const afterTimelineChange = async (
   context: AuthContext,
@@ -514,9 +569,16 @@ const afterTimelineChange = async (
   container: AnyStoreElement,
   updateType: 'manual' | 'annotation' | 'settings',
   changedIds: string[],
+  removed: StoredTimelineEvent[] = [],
 ) => {
   const { anchors } = await refreshTimelineContributions(context, container);
-  await publishTimelineUpdate({ container_id: container.internal_id, update_type: updateType, changed_event_ids: changedIds, anchors }, user);
+  await publishTimelineUpdate({
+    container_id: container.internal_id,
+    update_type: updateType,
+    changed_event_ids: changedIds,
+    removed_events: toRemovedTimelineEvents(removed),
+    anchors,
+  }, user);
 };
 
 const reloadEvent = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -728,7 +790,7 @@ export const deleteTimelineEvent = async (context: AuthContext, user: AuthUser, 
       throw FunctionalError('A derived event cannot be deleted, hide it instead', { id });
     }
     await deleteTimelineDocuments([event.internal_id]);
-    await afterTimelineChange(context, user, container, 'manual', [event.internal_id]);
+    await afterTimelineChange(context, user, container, 'manual', [], [event]);
     return event.internal_id;
   });
 };
@@ -817,7 +879,7 @@ const writeImportedContributions = async (
     // Nor is a stored event above the confidence level of the user overwritten, like any edit of the event
     const stored = existing ?? storedById.get(internalId);
     const overwritesAboveConfidence = !!stored && !controlUserConfidenceAgainstElement(user, stored as unknown as BasicStoreEntity, true);
-    return { event, existing, internalId, markings: overwritesUnreadable || overwritesAboveConfidence ? null : importableMarkings(event) };
+    return { event, existing, stored, internalId, markings: overwritesUnreadable || overwritesAboveConfidence ? null : importableMarkings(event) };
   });
   const skipped = candidates.filter((candidate) => candidate.markings === null).length;
   if (skipped > 0) {
@@ -850,7 +912,7 @@ const writeImportedContributions = async (
     const author = ref ? resolved[ref] : undefined;
     return author && isStixDomainObjectIdentity(author.entity_type) ? author.internal_id : null;
   };
-  const docs = importable.map(({ event, existing, internalId, markings }) => {
+  const docs = importable.map(({ event, existing, stored, internalId, markings }) => {
     validateWindow(event.event_time, event.event_end_time);
     const element = event.element_ref ? resolved[event.element_ref] : null;
     return buildTimelineEventDoc({
@@ -874,7 +936,9 @@ const writeImportedContributions = async (
       ordering_hint: event.ordering_hint ?? null,
       analyst_fields: [],
       external_id: existing ? (existing.external_id ?? null) : (event.external_id ?? event.id),
+      // An update keeps the markings the stored event already carries: an import never declassifies it
       markings: Array.from(new Set([
+        ...(stored ? markingsOf(stored) : []),
         ...(markings as string[]),
         ...(element ? markingsOf(elementsWithMarkings[element.internal_id] ?? {}) : []),
         ...access.markings,

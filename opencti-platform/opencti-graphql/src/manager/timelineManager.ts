@@ -23,6 +23,7 @@ import {
 } from '../modules/timeline/timeline-types';
 import { regenerateContainerTimeline } from '../modules/timeline/timeline-engine';
 import {
+  acknowledgeTimelineRegeneration,
   claimDueTimelineRegenerations,
   clearTimelineRegenerationAttempts,
   enqueueTimelineRegeneration,
@@ -196,6 +197,10 @@ export const processDueTimelineRegenerations = async (context: AuthContext) => {
       const retried = await retryTimelineRegeneration(containerId).catch(() => false);
       logApp.error('[TIMELINE] Container timeline regeneration failure', { cause: error, containerId, retried });
     }
+    // Handled (regenerated, rescheduled or given up): the claim is released; until then its lease protects it
+    await acknowledgeTimelineRegeneration(containerId).catch((error) => {
+      logApp.warn('[TIMELINE] Claim not released, it is reclaimed when its lease expires', { cause: error, containerId });
+    });
   }, { concurrency: TIMELINE_MANAGER_MAX_CONCURRENCY });
 };
 

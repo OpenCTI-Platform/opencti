@@ -376,6 +376,7 @@
     "max_stream_batches_per_run": 20,
     "regeneration_batch_size": 20,
     "max_concurrency": 2,
+    "claim_lease_ms": 900000,
     "impacted_containers_page_size": 1000,
     "consistency_hour": 2,
     "consistency_max_age_days": 30,

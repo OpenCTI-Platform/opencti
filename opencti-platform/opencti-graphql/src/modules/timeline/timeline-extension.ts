@@ -92,7 +92,9 @@ export const sanitizeTimelineExtension = (
   const events: StixTimelineExtensionEvent[] = [];
   rawEvents.forEach((raw) => {
     const id = isObject(raw) ? asString(raw.id) : undefined;
-    const externalId = isObject(raw) ? asString(raw.external_id) : undefined;
+    const rawExternalId = isObject(raw) ? asString(raw.external_id) : undefined;
+    // An overlong idempotency key is dropped, never cut: two keys sharing their first characters must not merge
+    const externalId = rawExternalId && rawExternalId.length <= EXTERNAL_ID_MAX_LENGTH ? rawExternalId : undefined;
     const title = isObject(raw) ? asString(raw.title) : undefined;
     const eventTime = isObject(raw) ? asTime(raw.event_time) : undefined;
     if (!isObject(raw) || !(id ?? externalId) || !title || !eventTime) {
@@ -115,11 +117,12 @@ export const sanitizeTimelineExtension = (
       raw.pinned !== undefined && raw.pinned !== null && asBoolean(raw.pinned) === undefined,
       raw.hidden !== undefined && raw.hidden !== null && asBoolean(raw.hidden) === undefined,
       title.length > TITLE_MAX_LENGTH,
+      rawExternalId !== undefined && externalId === undefined,
     ].filter(Boolean).length;
     normalized += optionalDropped;
     events.push(cleanObject({
       id: id ?? externalId as string,
-      external_id: externalId?.slice(0, EXTERNAL_ID_MAX_LENGTH),
+      external_id: externalId,
       event_time: eventTime,
       event_end_time: eventEndTime,
       precision,

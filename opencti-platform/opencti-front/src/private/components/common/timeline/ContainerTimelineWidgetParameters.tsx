@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
 import {
   Checkbox,
@@ -74,12 +74,17 @@ const ContainerTimelineWidgetParameters = ({ parameters, onChange }: ContainerTi
   const theme = useTheme();
   const [options, setOptions] = useState<ContainerOption[]>([]);
   const [selected, setSelected] = useState<ContainerOption | null>(null);
+  const latestSearch = useRef(0);
   const lanes = parameters.timeline_lanes ?? [];
 
   const search = (value: string) => {
+    // Responses can arrive out of order: only the latest search may set the options
+    latestSearch.current += 1;
+    const searchId = latestSearch.current;
     fetchQuery<ContainerTimelineWidgetParametersSearchQuery>(containerSearchQuery, { search: value, types: TIMELINE_CONTAINER_TYPES, count: SEARCH_SIZE })
       .toPromise()
       .then((data) => {
+        if (searchId !== latestSearch.current) return;
         setOptions((data?.stixDomainObjects?.edges ?? []).map(({ node }) => ({ value: node.id, label: node.representative.main, type: node.entity_type })));
       });
   };

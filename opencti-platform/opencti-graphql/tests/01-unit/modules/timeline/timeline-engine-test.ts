@@ -224,6 +224,23 @@ describe('Timeline STIX extension', () => {
     expect(sanitizeTimelineExtension('garbage', IMPORT_LIMITS)).toEqual({ events: [], annotations: [], dropped: 0, normalized: 0 });
   });
 
+  it('should drop an overlong external id instead of cutting it', () => {
+    const sharedPrefix = 'x'.repeat(256);
+    const result = sanitizeTimelineExtension({
+      events: [
+        { id: 'timeline-event--1', external_id: `${sharedPrefix}-a`, event_time: '2026-03-05T00:00:00.000Z', title: 'First' },
+        { id: 'timeline-event--2', external_id: `${sharedPrefix}-b`, event_time: '2026-03-05T00:00:00.000Z', title: 'Second' },
+        { external_id: `${sharedPrefix}-c`, event_time: '2026-03-05T00:00:00.000Z', title: 'No other identity' },
+      ],
+      annotations: [],
+    }, IMPORT_LIMITS);
+    // Each event keeps its own identity: two keys sharing their first 256 characters never collapse into one
+    expect(result.events.map((e) => e.id)).toEqual(['timeline-event--1', 'timeline-event--2']);
+    expect(result.events.every((e) => e.external_id === undefined)).toBe(true);
+    expect(result.dropped).toEqual(1);
+    expect(result.normalized).toEqual(2);
+  });
+
   it('should only read a bounded number of contributions', () => {
     const events = Array.from({ length: 5 }, (_, index) => ({ id: `timeline-event--${index}`, event_time: '2026-03-05T00:00:00.000Z', title: `Event ${index}` }));
     const annotations = Array.from({ length: 4 }, (_, index) => ({ rule_id: 'technique-kill-chain', kind: 'technique_used', element_ref: `attack-pattern--${index}` }));

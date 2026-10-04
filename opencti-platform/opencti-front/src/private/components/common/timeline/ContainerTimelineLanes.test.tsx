@@ -40,3 +40,28 @@ describe('ContainerTimelineLanes tooltip', () => {
     expect(screen.getByTestId('timeline-tooltip-source')).toHaveTextContent('Analyst milestone');
   });
 });
+
+describe('ContainerTimelineLanes accessibility', () => {
+  const domain: [number, number] = [new Date('2026-02-01T00:00:00.000Z').getTime(), new Date('2026-02-10T00:00:00.000Z').getTime()];
+
+  it('is an image when nothing in it can be activated', () => {
+    renderLanes([event('derived-1', 'derived')]);
+    expect(screen.getByRole('img', { name: 'Timeline' })).toBeInTheDocument();
+  });
+
+  it('is a group exposing its events as buttons when they can be opened', () => {
+    testRender(
+      <ContainerTimelineLanes
+        events={[event('derived-1', 'derived')]}
+        lanes={['response']}
+        domain={domain}
+        grouping="day"
+        ariaLabel="Timeline"
+        onSelect={() => {}}
+      />,
+    );
+    expect(screen.queryByRole('img', { name: 'Timeline' })).toBeNull();
+    expect(screen.getByRole('group', { name: 'Timeline' })).toBeInTheDocument();
+    expect(screen.getByTestId('timeline-event-derived-1')).toHaveAttribute('role', 'button');
+  });
+});

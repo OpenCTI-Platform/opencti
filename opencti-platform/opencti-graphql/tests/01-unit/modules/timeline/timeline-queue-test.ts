@@ -1,15 +1,19 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  acknowledgeTimelineRegeneration,
   claimDueTimelineRegenerations,
   clearTimelineRegenerationAttempts,
+  enqueueTimelineRegeneration,
   retryDelayMs,
   retryTimelineRegeneration,
+  TIMELINE_CLAIM_LEASE_MS,
   TIMELINE_DEBOUNCE_MS,
   TIMELINE_MAX_RETRIES,
 } from '../../../../src/modules/timeline/timeline-queue';
 
 const attempts = new Map<string, number>();
 const queue = new Map<string, number>();
+const inFlight = new Map<string, number>();
 
 vi.mock('../../../../src/database/redis', () => ({
   getClientBase: () => ({
@@ -26,10 +30,18 @@ vi.mock('../../../../src/database/redis', () => ({
       }
       return 1;
     },
-    // The claim script: due members by score, at most `limit`, removed in the same step
-    eval: async (_script: string, _numKeys: number, _key: string, max: number, limit: number) => {
+    zrem: async (_key: string, id: string) => (inFlight.delete(id) ? 1 : 0),
+    // The claim script: expired leases back to the queue (NX), then the due members, at most `limit`, moved in flight
+    eval: async (_script: string, _numKeys: number, _queueKey: string, _inFlightKey: string, max: number, limit: number, leaseEnd: number) => {
+      [...inFlight.entries()].filter(([, end]) => end <= max).forEach(([id]) => {
+        inFlight.delete(id);
+        if (!queue.has(id)) queue.set(id, max);
+      });
       const due = [...queue.entries()].filter(([, score]) => score <= max).sort((a, b) => a[1] - b[1]).slice(0, limit).map(([id]) => id);
-      due.forEach((id) => queue.delete(id));
+      due.forEach((id) => {
+        queue.delete(id);
+        inFlight.set(id, leaseEnd);
+      });
       return due;
     },
   }),
@@ -39,6 +51,11 @@ describe('Timeline regeneration queue', () => {
   beforeEach(() => {
     attempts.clear();
     queue.clear();
+    inFlight.clear();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('should double the retry delay at each attempt', () => {
@@ -68,5 +85,27 @@ describe('Timeline regeneration queue', () => {
     queue.clear();
     expect(await retryTimelineRegeneration('case-2')).toBe(true);
     expect(attempts.get('case-2')).toEqual(1);
+  });
+
+  it('should keep a claim in flight until it is acknowledged', async () => {
+    await enqueueTimelineRegeneration(['case-3'], 0);
+    expect(await claimDueTimelineRegenerations(10)).toEqual(['case-3']);
+    expect(queue.has('case-3')).toBe(false);
+    expect(inFlight.get('case-3')).toBeGreaterThanOrEqual(Date.now());
+    // Claimed once: a second claim within the lease does not hand it out again
+    expect(await claimDueTimelineRegenerations(10)).toEqual([]);
+    await acknowledgeTimelineRegeneration('case-3');
+    expect(inFlight.has('case-3')).toBe(false);
+  });
+
+  it('should hand out again a claim whose lease expired before it was acknowledged', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-04T10:00:00.000Z'));
+    await enqueueTimelineRegeneration(['case-4'], 0);
+    expect(await claimDueTimelineRegenerations(10)).toEqual(['case-4']);
+    // The manager stopped before handling it: once the lease is over, the container is due again
+    vi.setSystemTime(new Date(Date.now() + TIMELINE_CLAIM_LEASE_MS));
+    expect(await claimDueTimelineRegenerations(10)).toEqual(['case-4']);
+    expect(inFlight.get('case-4')).toEqual(Date.now() + TIMELINE_CLAIM_LEASE_MS);
   });
 });
