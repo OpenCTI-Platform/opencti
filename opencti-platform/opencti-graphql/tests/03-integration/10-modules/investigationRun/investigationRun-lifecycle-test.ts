@@ -404,6 +404,15 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
     try {
       const withoutEdition = await queryAsAdminWithSuccess({ query, variables: { id: runId } });
       expect(withoutEdition.data.stixObjectOrStixRelationship).toBeNull();
+      // The generic listing reads STIX objects and relationships only: never these internal types.
+      const listing = gql`
+        query GenericRunList($filters: FilterGroup) {
+          stixObjectOrStixRelationships(first: 10, filters: $filters) { edges { node { ... on InvestigationRun { id } ... on InvestigationPolicy { id } } } }
+        }
+      `;
+      const filters = { mode: 'and', filters: [{ key: 'entity_type', values: ['Investigation-Run', 'Investigation-Policy'] }], filterGroups: [] };
+      const listed = await queryAsAdminWithSuccess({ query: listing, variables: { filters } });
+      expect(listed.data.stixObjectOrStixRelationships.edges).toEqual([]);
     } finally {
       edition.mockResolvedValue(true);
     }

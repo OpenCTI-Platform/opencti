@@ -521,14 +521,14 @@ const resolveAlias = (allowed: AllowedIds, value: unknown): string | null => {
 /**
  * Resolve an evidence reference of the conclusion: a citation number of the
  * engine run (`cite:3`, `[3]` or `3`), or an OpenCTI id (internal or standard)
- * of its evidence.
+ * of its evidence. Every engine run numbers its citations from 1: a number
+ * only names evidence of that run, earlier evidence is cited by its id.
  */
 const resolveEvidenceRef = (ref: unknown, allowed: AllowedIds, evidence: InvestigationEvidence[], investigationId: string): string | null => {
   const value = typeof ref === 'number' ? String(ref) : (typeof ref === 'string' ? ref.trim().replace(/^cite:\s*/i, '').replace(/^\[|\]$/g, '') : '');
   if (!value) return null;
   if (/^\d+$/.test(value)) {
-    const cited = evidence.find((item) => item.n === Number(value) && item.investigation_id === investigationId)
-      ?? evidence.find((item) => item.n === Number(value));
+    const cited = evidence.find((item) => item.n === Number(value) && item.investigation_id === investigationId);
     return cited ? cited.id : null;
   }
   return resolveAlias(allowed, value);
