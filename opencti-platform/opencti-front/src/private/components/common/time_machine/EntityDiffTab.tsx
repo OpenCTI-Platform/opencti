@@ -36,6 +36,17 @@ import {
   TO_SEARCH_PARAM,
 } from './timeMachineUtils';
 import { EntityDiffTabQuery, EntityDiffTabQuery$data } from './__generated__/EntityDiffTabQuery.graphql';
+import { timeMachineSliderTimelineQuery } from './TimeMachineSlider';
+import { TimeMachineSliderTimelineQuery } from './__generated__/TimeMachineSliderTimelineQuery.graphql';
+
+// Next step of a period that starts before the retained history: the oldest change still in the history of the entity
+const HistoryStartHint = ({ entityId }: { entityId: string }) => {
+  const { t_i18n, fldt } = useFormatter();
+  const data = useLazyLoadQuery<TimeMachineSliderTimelineQuery>(timeMachineSliderTimelineQuery, { id: entityId }, { fetchPolicy: 'store-or-network' });
+  const historyStart = data.entityTimeMachineTimeline?.history_start;
+  if (!historyStart) return null;
+  return <>{` ${t_i18n('Pick a period starting after {date}.', { values: { date: fldt(historyStart) } })}`}</>;
+};
 
 const entityDiffTabQuery = graphql`
   query EntityDiffTabQuery($id: String!, $from: DateTime!, $to: DateTime!) {
@@ -192,6 +203,9 @@ const EntityDiffContent = ({ entityId, range, preset, onLoaded, onApplyPreset }:
     return (
       <Alert severity="info" data-testid="time-machine-diff-history-not-retained">
         {t_i18n('The history of this entity is not retained back to the start of this period: its changes cannot be compared.')}
+        <Suspense fallback={null}>
+          <HistoryStartHint entityId={entityId} />
+        </Suspense>
       </Alert>
     );
   }

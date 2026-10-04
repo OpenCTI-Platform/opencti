@@ -1,5 +1,6 @@
 import React, { FunctionComponent, Suspense } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
+import { Link } from 'react-router';
 import { Field, Form, Formik } from 'formik';
 import { FormikConfig } from 'formik/dist/types';
 import * as Yup from 'yup';
@@ -49,6 +50,7 @@ const triggerChangeDigestCreationSavedFiltersQuery = graphql`
   }
 `;
 
+const CHANGE_DIGEST_DOCUMENTATION_URL = 'https://docs.opencti.io/latest/usage/time-machine/#change-digests';
 const NO_SAVED_FILTER = 'none';
 // With a saved filter, the entity types of its list unless the user picks one
 const AUTO_ENTITY_TYPE = 'auto';
@@ -98,6 +100,7 @@ const SavedFilterField = ({ onSelect }: { onSelect: (savedFilterId: string) => v
       variant="outlined"
       name="saved_filter"
       label={t_i18n('Saved filter')}
+      helpertext={t_i18n('Compares the entities of this saved filter, with the entity types of the list it was saved in.')}
       fullWidth={true}
       containerstyle={fieldSpacingContainerStyle}
       onChange={(_: string, value: string) => onSelect(value)}
@@ -188,6 +191,8 @@ const TriggerChangeDigestCreation: FunctionComponent<TriggerChangeDigestCreation
           <Form>
             <Text variant="content-compact" style={{ color: 'var(--text-default-secondary)', marginBottom: 8 }}>
               {t_i18n('At each period, the recipients receive what changed on the entities of the filter set: new relationships, removals, revocations, confidence and score changes.')}
+              {' '}
+              <Link to={CHANGE_DIGEST_DOCUMENTATION_URL} target="_blank" rel="noopener noreferrer">{t_i18n('Learn more')}</Link>
             </Text>
             <Field component={TextField} variant="outlined" name="name" label={t_i18n('Name')} fullWidth={true} />
             <Field
@@ -215,6 +220,9 @@ const TriggerChangeDigestCreation: FunctionComponent<TriggerChangeDigestCreation
               variant="outlined"
               name="scope_entity_type"
               label={t_i18n('Entity types')}
+              helpertext={values.scope_entity_type === AUTO_ENTITY_TYPE
+                ? t_i18n('With "Entity types of the scope", the digest compares the entity types of the list of the saved filter.')
+                : t_i18n('Only the entities of this type are compared.')}
               fullWidth={true}
               containerstyle={fieldSpacingContainerStyle}
             >
@@ -236,6 +244,7 @@ const TriggerChangeDigestCreation: FunctionComponent<TriggerChangeDigestCreation
               variant="outlined"
               name="period"
               label={t_i18n('Period')}
+              helpertext={t_i18n('Each digest compares the knowledge at its sending time with the knowledge one period earlier, for example this week against last week.')}
               fullWidth={true}
               containerstyle={fieldSpacingContainerStyle}
             >
@@ -245,7 +254,15 @@ const TriggerChangeDigestCreation: FunctionComponent<TriggerChangeDigestCreation
               <SelectItem value="month">{t_i18n('month')}</SelectItem>
             </Field>
             {values.period === 'week' && (
-              <Field component={SelectFieldFds} variant="outlined" name="day" label={t_i18n('Week day')} fullWidth={true} containerstyle={fieldSpacingContainerStyle}>
+              <Field
+                component={SelectFieldFds}
+                variant="outlined"
+                name="day"
+                label={t_i18n('Week day')}
+                helpertext={t_i18n('The digest is sent on this day, at the time below, in your time zone.')}
+                fullWidth={true}
+                containerstyle={fieldSpacingContainerStyle}
+              >
                 <SelectItem value="1">{t_i18n('Monday')}</SelectItem>
                 <SelectItem value="2">{t_i18n('Tuesday')}</SelectItem>
                 <SelectItem value="3">{t_i18n('Wednesday')}</SelectItem>
@@ -256,7 +273,15 @@ const TriggerChangeDigestCreation: FunctionComponent<TriggerChangeDigestCreation
               </Field>
             )}
             {values.period === 'month' && (
-              <Field component={SelectFieldFds} variant="outlined" name="day" label={t_i18n('Month day')} fullWidth={true} containerstyle={fieldSpacingContainerStyle}>
+              <Field
+                component={SelectFieldFds}
+                variant="outlined"
+                name="day"
+                label={t_i18n('Month day')}
+                helpertext={t_i18n('The digest is sent on this day of the month, at the time below, in your time zone.')}
+                fullWidth={true}
+                containerstyle={fieldSpacingContainerStyle}
+              >
                 {Array.from(Array(31).keys()).map((idx) => (
                   <SelectItem key={idx} value={(idx + 1).toString()}>{(idx + 1).toString()}</SelectItem>
                 ))}
@@ -267,7 +292,13 @@ const TriggerChangeDigestCreation: FunctionComponent<TriggerChangeDigestCreation
                 component={TimePickerField}
                 name="time"
                 withMinutes={true}
-                textFieldProps={{ label: t_i18n('Time'), variant: 'outlined', fullWidth: true, style: { marginTop: 20 } }}
+                textFieldProps={{
+                  label: t_i18n('Time'),
+                  variant: 'outlined',
+                  fullWidth: true,
+                  style: { marginTop: 20 },
+                  ...(values.period === 'day' ? { helperText: t_i18n('The digest is sent at this time, in your time zone.') } : {}),
+                }}
               />
             )}
             <NotifierField name="notifiers" onChange={setFieldValue} />

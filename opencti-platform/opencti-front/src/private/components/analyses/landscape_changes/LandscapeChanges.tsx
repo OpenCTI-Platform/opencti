@@ -9,7 +9,7 @@ import Card from '@common/card/Card';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
-import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
+import { fetchQuery } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import { serializeFilterGroupForBackend, useAvailableFilterKeysForEntityTypes } from '../../../../utils/filters/filtersUtils';
@@ -261,6 +261,8 @@ const LandscapeChanges = () => {
   const [loadingDiff, setLoadingDiff] = useState(false);
   const diffId = searchParams.get(DIFF_SEARCH_PARAM);
   const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [readFailed, setReadFailed] = useState(false);
+  const retryRead = useRef<(() => void) | null>(null);
   const [commitRun, running] = useApiMutation<LandscapeChangesRunMutation>(landscapeChangesRunMutation);
 
   // Poll the background computation until it completes (the diff id is kept in the URL)
@@ -274,6 +276,7 @@ const LandscapeChanges = () => {
         .then((data) => {
           if (cancelled) return;
           failures = 0;
+          setReadFailed(false);
           const result = data?.landscapeDiff ?? null;
           setDiff(result);
           setLoadingDiff(false);
@@ -284,16 +287,22 @@ const LandscapeChanges = () => {
         .catch(() => {
           if (cancelled) return;
           // A failed read says nothing about the computation: only a successful answer can end the polling
-          if (failures === 0) MESSAGING$.notifyError(t_i18n('Unable to read the landscape diff'));
           failures += 1;
+          setReadFailed(true);
           pollTimer.current = setTimeout(poll, landscapePollRetryDelay(failures));
         });
     };
+    retryRead.current = () => {
+      if (pollTimer.current) clearTimeout(pollTimer.current);
+      poll();
+    };
     setDiff(null);
+    setReadFailed(false);
     setLoadingDiff(!!diffId);
     poll();
     return () => {
       cancelled = true;
+      retryRead.current = null;
       if (pollTimer.current) clearTimeout(pollTimer.current);
     };
   }, [diffId]);
@@ -490,6 +499,20 @@ const LandscapeChanges = () => {
             onWidenPeriod={rangePreset === '365d' || running ? undefined : () => handleWidenPeriod(diff)}
           />
         </>
+      )}
+      {diffId && readFailed && (
+        <Alert
+          severity="error"
+          data-testid="landscape-changes-read-failed"
+          sx={{ marginTop: 2 }}
+          action={(
+            <Button variant="secondary" size="small" onClick={() => retryRead.current?.()}>
+              {t_i18n('Retry')}
+            </Button>
+          )}
+        >
+          {t_i18n('The landscape changes could not be read.')}
+        </Alert>
       )}
       {diffId && diff === null && !loadingDiff && !running && (
         <Alert
