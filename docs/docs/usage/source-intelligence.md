@@ -62,7 +62,7 @@ The top of the Sources area tells you whether the scorecards are current:
 | Not computed yet | No computation has run on this platform; the first one runs at the daily recompute hour. | **Compute now** |
 | Manager stopped | The source intelligence manager is not running. | **Open settings** |
 
-When the scan stops at the maximum number of objects set in the settings, a warning says how many objects the scorecards cover, with **Raise the limit**. The limit is exact: the scorecards never cover more objects than it allows. In Enterprise Edition, such a computation proposes no new recommendation and applies none autonomously: tuning a source from part of the knowledge could quarantine or retire it on incomplete data, so recommendations wait for a computation that covers every object (collection gaps are still computed). While the history is backfilled, a progress bar shows how many days are computed ("Backfilling history - 6 of 14 days"); a larger backfill range set later computes the missing older days only. Below the header, counters show the number of sources, quarantined sources, recommendations to review and collection gaps (the last two in Enterprise Edition). Each counter opens the list it counts.
+When the scan stops at the maximum number of objects set in the settings, a warning says how many objects the scorecards cover, with **Raise the limit**. The limit is exact: the scorecards never cover more objects than it allows. In Enterprise Edition, such a computation proposes no new recommendation and applies none autonomously: tuning a source from part of the knowledge could quarantine or retire it on incomplete data, so recommendations wait for a computation that covers every object (collection gaps are still computed). While the history is backfilled, a progress bar shows how many days are computed ("Backfilling history - 6 of 14 days"); a larger backfill range set later computes the missing older days only, and a range of 0 days stops a backfill in progress. Below the header, counters show the number of sources, quarantined sources, recommendations to review and collection gaps (the last two in Enterprise Edition). Each counter opens the list it counts.
 
 ![Sources area with its status header, counters and leaderboard](assets/source-intelligence-sources-overview.png)
 
@@ -144,7 +144,7 @@ For each recommendation you can:
 
 - **Apply** it. Applying requires the capability matching the action (for example, managing accesses to change a user confidence level). When it cannot be applied, the recommendation says that nothing was changed and offers **Retry**, and **Open the connector** when the connector refused the change; **Show details** gives the cause.
 - **Reject** it, with an optional reason. A rejected recommendation is not proposed again before a cooldown (30 days by default).
-- **Revert** it once applied. Reverting restores the previous state (confidence level, schedule, connector status) and removes what was created (decay rule, exclusion list). A quarantine draft is kept for review.
+- **Revert** it once applied. Reverting restores the previous state (confidence level, schedule, connector status, whether a feed was running) and removes what was created (decay rule, exclusion list). A quarantine draft is kept for review.
 
 While its change runs, a recommendation shows **Applying**. A change refused before anything was written (for example, a missing setting) makes it fail with **Retry**. If the change failed after something may have been written, or its outcome cannot be recorded, it stays **Applying**, with the cause behind **Show details**: it is never applied a second time and cannot be rejected, since its change may be in place. Check the target of the recommendation (user, connector, feed or settings) in that case.
 
@@ -156,7 +156,7 @@ A recommendation that no longer matches the situation is withdrawn automatically
 
 ### Autonomy policy
 
-In the settings, an administrator can allow some recommendation kinds to be applied automatically, with a maximum number of automatic actions per run. After each daily computation, the proposed recommendations of the allowed kinds are applied oldest first, up to that maximum across all kinds; the ones left over are applied by the next runs. Failed, rejected and reverted recommendations are never applied automatically. Automatically applied recommendations are flagged as such and can be reverted like the others.
+In the settings, an administrator can allow some recommendation kinds to be applied automatically, with a maximum number of automatic actions per run. After each daily computation, the proposed recommendations of the allowed kinds are applied oldest first, up to that maximum across all kinds; the ones left over are applied by the next runs. Failed, rejected and reverted recommendations are never applied automatically, and neither is a change someone reverted when the same recommendation is proposed again: it waits for a person. Automatically applied recommendations are flagged as such and can be reverted like the others.
 
 ## Dashboards
 
