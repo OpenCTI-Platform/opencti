@@ -34,6 +34,19 @@ describe('withCollapsedGroups', () => {
     expect(groupLinks[0]).toMatchObject({ source: 'actor', target: `${GROUP_NODE_PREFIX}Malware`, relationship_type: 'uses' });
   });
 
+  it('leaves hidden entities out of the groups and out of the links redrawn towards them', () => {
+    const hidden = graphNode({ id: 'm3', entity_type: 'Malware', x: 50, y: 0 });
+    const victim = graphNode({ id: 'victim', entity_type: 'Organization', x: 60, y: 0 });
+    const withHidden = { nodes: [...data.nodes, hidden, victim], links: [...data.links, graphLink(hidden, victim, { relationship_type: 'targets', entity_type: 'targets' })] };
+    const result = withCollapsedGroups(withHidden, ['Malware'], label, createCollapseCache(), new Set(['m3']));
+    const group = result.nodes.find(isGroupNode);
+    expect(group?.label).toBe('2 Malware');
+    expect(group?.groupOf?.memberIds).toEqual(['m1', 'm2']);
+    expect(result.links.slice(withHidden.links.length).map((link) => link.target)).toEqual([`${GROUP_NODE_PREFIX}Malware`]);
+    // Every member hidden: no group at all.
+    expect(withCollapsedGroups(withHidden, ['Malware'], label, createCollapseCache(), new Set(['m1', 'm2', 'm3'])).nodes.some(isGroupNode)).toBe(false);
+  });
+
   it('fades a group link only when every link it stands for is faded', () => {
     const faded = graphLink(actor, m1, { disabled: true });
     const kept = graphLink(actor, m2, { disabled: false });

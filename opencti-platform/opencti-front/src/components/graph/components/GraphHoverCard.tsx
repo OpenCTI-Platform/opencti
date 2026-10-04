@@ -21,6 +21,7 @@ import { type GraphBadge, graphNodeActionsFor, useGraphNodeActionRegistryVersion
 import { graphNodeTitle, NO_AUTHOR_ID, NO_MARKING_ID } from '../utils/useGraphParser';
 import { buildGraphPalette, dataColorOutline } from '../utils/graphPalette';
 import { EXPORT_REMOVE_CLASS } from '../../../utils/Image';
+import { APP_BASE_PATH } from '../../../relay/environment';
 
 export type GraphHoverCardTarget
   = | { kind: 'node'; node: GraphNode }
@@ -271,7 +272,7 @@ const GraphHoverCard = ({
                 label={label}
                 icon={<Icon fontSize="small" />}
                 onClick={() => {
-                  if (action.href) window.open(action.href(node), '_blank', 'noopener,noreferrer');
+                  if (action.href) window.open(`${APP_BASE_PATH}${action.href(node)}`, '_blank', 'noopener,noreferrer');
                   else action.onSelect?.(node);
                 }}
               />

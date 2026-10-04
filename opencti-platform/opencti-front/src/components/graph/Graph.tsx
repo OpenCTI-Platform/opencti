@@ -31,7 +31,7 @@ import useGraphFullscreen from './utils/useGraphFullscreen';
 import { isPathDrawable, relationshipCounts } from './utils/graphFocus';
 import { badgesOfNode, useGraphBadgeRegistryVersion } from './badges';
 import { downloadCanvasAsPng, renderGraphImage } from './utils/graphExport';
-import { MESSAGING$ } from '../../relay/environment';
+import { APP_BASE_PATH, MESSAGING$ } from '../../relay/environment';
 import useGraphStartInvestigation from './utils/useGraphStartInvestigation';
 import { graphNodeTitle } from './utils/useGraphParser';
 
@@ -167,15 +167,16 @@ const Graph = ({
 
   // --- What is drawn: groups for collapsed types, hidden entities left out.
   const collapseCache = useRef(createCollapseCache());
+  const hiddenIds = useMemo(() => new Set(hiddenNodeIds), [hiddenNodeIds]);
   const displayData = useMemo(() => (graphData
     ? withCollapsedGroups(
         graphData,
         collapsedEntityTypes,
         (entityType, count) => `${count} \u00d7 ${t_i18n(`entity_${entityType}`)}`,
         collapseCache.current,
+        hiddenIds,
       )
-    : graphData), [graphData, collapsedEntityTypes, filterToken]);
-  const hiddenIds = useMemo(() => new Set(hiddenNodeIds), [hiddenNodeIds]);
+    : graphData), [graphData, collapsedEntityTypes, filterToken, hiddenIds]);
   const nodeShown = (node: GraphNode) => !hiddenIds.has(node.id) && !isCollapsedMember(node, collapsedEntityTypes);
   const shownNodes = useMemo(() => (displayData?.nodes ?? []).filter(nodeShown), [displayData, hiddenIds, collapsedEntityTypes]);
   const shownNodeIds = useMemo(() => new Set(shownNodes.map((n) => n.id)), [shownNodes]);
@@ -760,7 +761,7 @@ const Graph = ({
             onMouseEnter={cancelClose}
             onMouseLeave={scheduleClose}
             actions={{
-              onOpen: (id) => window.open(`/dashboard/id/${id}`, '_blank', 'noopener,noreferrer'),
+              onOpen: (id) => window.open(`${APP_BASE_PATH}/dashboard/id/${id}`, '_blank', 'noopener,noreferrer'),
               onExpand: context === 'investigation'
                 ? (node) => {
                     selectNodes([node]);

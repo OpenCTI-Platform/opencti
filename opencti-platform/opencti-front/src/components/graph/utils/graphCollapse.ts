@@ -23,21 +23,22 @@ export const createCollapseCache = (): CollapseCache => ({ nodes: new Map(), lin
 /**
  * The drawing data with every collapsed entity type stood for by one group node: the members stay
  * in the data (hidden, so selection, filters and positions keep working on them) and every link
- * touching a member is redrawn once towards the group. Without collapsed types the data is
- * returned as is.
+ * touching a member is redrawn once towards the group. Hidden entities are neither members nor
+ * linked through a group, as they are not drawn. Without collapsed types the data is returned as is.
  */
 export const withCollapsedGroups = (
   data: GraphData,
   collapsedTypes: readonly string[],
   groupLabel: (entityType: string, count: number) => string,
   cache: CollapseCache,
+  hiddenIds: ReadonlySet<string> = new Set(),
 ): GraphData => {
   if (collapsedTypes.length === 0) return data;
   const collapsed = new Set(collapsedTypes);
   const groupOfMember = new Map<string, string>();
   const members = new Map<string, GraphNode[]>();
   data.nodes.forEach((node) => {
-    if (!collapsed.has(node.entity_type) || node.relationship_type) return;
+    if (!collapsed.has(node.entity_type) || node.relationship_type || hiddenIds.has(node.id)) return;
     const groupId = `${GROUP_NODE_PREFIX}${node.entity_type}`;
     groupOfMember.set(node.id, groupId);
     const list = members.get(groupId);
@@ -77,6 +78,7 @@ export const withCollapsedGroups = (
   data.links.forEach((link) => {
     const sourceId = endpointId(link.source) ?? link.source_id;
     const targetId = endpointId(link.target) ?? link.target_id;
+    if (hiddenIds.has(sourceId) || hiddenIds.has(targetId)) return;
     const source = groupOfMember.get(sourceId) ?? sourceId;
     const target = groupOfMember.get(targetId) ?? targetId;
     if (source === sourceId && target === targetId) return;

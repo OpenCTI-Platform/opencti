@@ -15,7 +15,7 @@ export interface GraphNodeAction {
    * one given to `GraphProvider`, `undefined` for container knowledge graphs).
    */
   isAvailable: (node: GraphNode, context: string | undefined) => boolean;
-  /** An in-app path the action opens. */
+  /** An in-app path the action opens in a new tab, such as `/dashboard/id/<id>`: the base path of the platform is added. */
   href?: (node: GraphNode) => string;
   /** Run on click when the action is not a link. */
   onSelect?: (node: GraphNode) => void;
