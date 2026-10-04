@@ -187,6 +187,21 @@ describe('Source intelligence rules', () => {
     expect(proposals[0].rationale).toContain('Better vendor');
   });
 
+  it('should retire a redundant ingestion feed only when it is running', () => {
+    const feedSource = { ...connectorSource, source_kind: 'ingestion_feed', ref_id: 'feed-1' } as BasicStoreEntitySource;
+    const feed = { id: 'feed-1', entity_type: 'IngestionTaxii', scheduling_period: 'PT6H', ingestion_running: true };
+    const redundant = {
+      source: feedSource,
+      connector: null,
+      scorecard: scorecard({ unique_contribution: 0.01, lead_time_hours: -4, overlap: [{ source_id: 'source-2', shared_count: 950, share: 0.95 }] }),
+      peerScorecards: new Map([['source-2', scorecard({ source_id: 'source-2', lead_time_hours: 5 })]]),
+    };
+    const proposals = evaluateSourceRules(input({ ...redundant, feed }));
+    expect(kinds(proposals)).toEqual(['retire']);
+    expect(proposals[0].payload).toMatchObject({ target: 'ingestion_feed', feed_id: 'feed-1', feed_type: 'IngestionTaxii' });
+    expect(evaluateSourceRules(input({ ...redundant, feed: { ...feed, ingestion_running: false } }))).toEqual([]);
+  });
+
   it('should keep a redundant source that reports first', () => {
     const peer = scorecard({ source_id: 'source-2', lead_time_hours: -6 });
     expect(evaluateSourceRules(input({

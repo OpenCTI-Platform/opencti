@@ -280,6 +280,10 @@ const retireRule = (input: RuleInput, proposals: RecommendationProposal[]) => {
   if (source.source_kind !== SOURCE_KIND_CONNECTOR && source.source_kind !== SOURCE_KIND_INGESTION_FEED) {
     return;
   }
+  // A feed already stopped has nothing to retire
+  if (source.source_kind === SOURCE_KIND_INGESTION_FEED && feed && !feed.ingestion_running) {
+    return;
+  }
   const ownLead = scorecard.lead_time_hours;
   const redundantWith = scorecard.overlap.find((overlap) => {
     if (overlap.share < settings.thresholds.redundant_overlap) return false;

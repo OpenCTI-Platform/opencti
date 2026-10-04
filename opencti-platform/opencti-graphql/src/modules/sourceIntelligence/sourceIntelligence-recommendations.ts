@@ -392,9 +392,14 @@ const executeApply = async (
     case RECOMMENDATION_RETIRE: {
       if (payload.target === 'ingestion_feed') {
         requireCapability(user, autonomous, INGESTION_SETINGESTIONS);
+        const feed = await storeLoadById<BasicStoreEntity & { ingestion_running?: boolean }>(context, SYSTEM_USER, payload.feed_id, payload.feed_type);
+        if (!feed) throw FunctionalError('Ingestion feed not found', { feed_id: payload.feed_id });
         progress.writing = true;
         await feedEditFunction(payload.feed_type)(context, user, payload.feed_id, [{ key: 'ingestion_running', value: [false] }]);
-        return { apply_result: 'Ingestion feed stopped', revert_payload: { target: 'ingestion_feed', feed_id: payload.feed_id, feed_type: payload.feed_type } };
+        return {
+          apply_result: 'Ingestion feed stopped',
+          revert_payload: { target: 'ingestion_feed', feed_id: payload.feed_id, feed_type: payload.feed_type, previous_running: feed.ingestion_running === true },
+        };
       }
       requireCapability(user, autonomous, MODULES_MODMANAGE);
       const connector = await storeLoadById<ManagedConnector>(context, SYSTEM_USER, payload.connector_id, ENTITY_TYPE_CONNECTOR);
@@ -512,8 +517,10 @@ const executeRevert = async (context: AuthContext, user: AuthUser, recommendatio
     case RECOMMENDATION_RETIRE:
       if (revert.target === 'ingestion_feed') {
         requireCapability(user, false, INGESTION_SETINGESTIONS);
-        await feedEditFunction(revert.feed_type)(context, user, revert.feed_id, [{ key: 'ingestion_running', value: [true] }]);
-        return 'Ingestion feed restarted';
+        // Recommendations applied before the running state was recorded only ever stopped running feeds
+        const running = revert.previous_running ?? true;
+        await feedEditFunction(revert.feed_type)(context, user, revert.feed_id, [{ key: 'ingestion_running', value: [running] }]);
+        return running ? 'Ingestion feed restarted' : 'Ingestion feed left stopped as before';
       }
       if (revert.target === 'connector') {
         requireCapability(user, false, MODULES_MODMANAGE);
