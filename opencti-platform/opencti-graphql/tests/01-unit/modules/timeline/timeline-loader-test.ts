@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildTimelineStatuses, capTimelineRead, timelineRefIds, toTimelineElement } from '../../../../src/modules/timeline/timeline-loader';
+import { buildTimelineStatuses, capTimelineRead, keepNewestTimelineEntries, timelineRefIds, toTimelineElement } from '../../../../src/modules/timeline/timeline-loader';
 
 describe('Timeline element refs', () => {
   it('should read the refs of a document read with its relations', () => {
@@ -50,6 +50,16 @@ describe('Timeline derivation input bounds', () => {
     capTimelineRead(bounds, ['a', 'b'], 1);
     expect(capTimelineRead(bounds, ['c'], 5)).toEqual(['c']);
     expect(bounds.truncated).toBe(true);
+  });
+
+  it('should keep the newest history entries beyond the bound, in chronological order', () => {
+    const bounds = { truncated: false };
+    // Read from the newest entry, one past the bound
+    expect(keepNewestTimelineEntries(bounds, ['2026-02-06', '2026-02-05', '2026-02-04', '2026-02-03'], 3)).toEqual(['2026-02-04', '2026-02-05', '2026-02-06']);
+    expect(bounds.truncated).toBe(true);
+    const within = { truncated: false };
+    expect(keepNewestTimelineEntries(within, ['2026-02-02', '2026-02-01'], 3)).toEqual(['2026-02-01', '2026-02-02']);
+    expect(within.truncated).toBe(false);
   });
 });
 

@@ -191,16 +191,24 @@ const toFiles = (container: AnyStoreElement): TimelineFileData[] => {
   }));
 };
 
+/**
+ * Entries read from the newest one, capped to their bound and given back in chronological order: beyond its bound, the
+ * history of a case keeps its newest entries (the latest transitions, completions and assignments drive the anchors).
+ */
+export const keepNewestTimelineEntries = <T>(bounds: TimelineReadBounds, newestFirst: T[], max: number): T[] => {
+  return capTimelineRead(bounds, newestFirst, max).reverse();
+};
+
 const findHistory = async (context: AuthContext, bounds: TimelineReadBounds, filters: any, maxSize: number) => {
   const logs = await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [ENTITY_TYPE_HISTORY], {
     indices: [READ_INDEX_HISTORY],
     filters,
     noFiltersChecking: true,
     orderBy: ['timestamp'],
-    orderMode: OrderingMode.Asc,
+    orderMode: OrderingMode.Desc,
     maxSize: maxSize + 1,
   } as any);
-  return capTimelineRead(bounds, logs, maxSize).map((log) => toTimelineHistoryEntry(log as AnyStoreElement));
+  return keepNewestTimelineEntries(bounds, logs, maxSize).map((log) => toTimelineHistoryEntry(log as AnyStoreElement));
 };
 
 const findBoundedEntities = async <T extends BasicStoreEntity>(

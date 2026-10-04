@@ -497,13 +497,16 @@ export interface TimelineContributionsResult {
 export const refreshTimelineContributions = async (
   context: AuthContext,
   container: AnyStoreElement,
-  opts: { events?: StoredTimelineEvent[]; notifyAnchors?: boolean } = {},
+  // anchorEvents: the events the anchors are computed from when they are more than the stored ones (a regeneration
+  // beyond the cap of the case passes every derived event, so that the cap never moves an anchor)
+  opts: { events?: StoredTimelineEvent[]; anchorEvents?: StoredTimelineEvent[]; notifyAnchors?: boolean } = {},
 ): Promise<TimelineContributionsResult> => {
   const events = opts.events ?? await loadStoredTimelineEvents(context, container.internal_id);
+  const anchorEvents = opts.anchorEvents ?? events;
   const isClosed = await isContainerClosed(context, container);
   const previousAnchors = container[ATTRIBUTE_TIMELINE_ANCHORS] as Partial<TimelineAnchors> | undefined;
-  const scope = await resolveContainerVisibilityScope(context, container, events);
-  const anchors = computeTimelineAnchors(events.filter(scope.isEventAsVisibleAsContainer).map((e) => ({
+  const scope = await resolveContainerVisibilityScope(context, container, anchorEvents);
+  const anchors = computeTimelineAnchors(anchorEvents.filter(scope.isEventAsVisibleAsContainer).map((e) => ({
     lane: e.lane,
     kind: e.kind,
     rule_id: e.rule_id,
@@ -589,7 +592,10 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
     logApp.error('[TIMELINE] Derivation rule failure', { cause: error, ruleId, containerId });
   });
   let truncated = inputTruncated;
-  if (derived.length > TIMELINE_MAX_EVENTS) {
+  // Every derived event counts for the anchors; only the capped subset is stored
+  const allDerived = derived;
+  const capped = derived.length > TIMELINE_MAX_EVENTS;
+  if (capped) {
     // Keep the most meaningful events first (adversary, detection, response, ...) and the oldest within a lane
     derived = [...derived]
       .sort((a, b) => (LANE_PRIORITY[a.lane] - LANE_PRIORITY[b.lane]) || a.event_time.localeCompare(b.event_time))
@@ -602,17 +608,17 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
   const pending = pendingAnnotationsMap(settings);
   const access = containerAccessFields(container);
   // Build the derived documents, deduplicated on their deterministic id
-  const docsById = new Map<string, ReturnType<typeof buildTimelineEventDoc>>();
-  derived.forEach((event) => {
+  const derivedDocsById = new Map<string, ReturnType<typeof buildTimelineEventDoc>>();
+  allDerived.forEach((event) => {
     const internalId = computeDerivedEventId(containerId, event.rule_id, derivedEventKey(event), event.kind);
-    if (docsById.has(internalId)) return;
+    if (derivedDocsById.has(internalId)) return;
     const existing = storedById.get(internalId);
     const analyst = applyAnalystFields(
       { pinned: false, hidden: false, annotation: null, ordering_hint: event.ordering_hint ?? null },
       existing,
       pending.get(internalId),
     );
-    docsById.set(internalId, buildTimelineEventDoc({
+    derivedDocsById.set(internalId, buildTimelineEventDoc({
       internal_id: internalId,
       container_id: containerId,
       name: event.name,
@@ -636,6 +642,10 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
       ...analyst,
     }, existing));
   });
+  const keptIds = capped
+    ? new Set(derived.map((event) => computeDerivedEventId(containerId, event.rule_id, derivedEventKey(event), event.kind)))
+    : null;
+  const docsById = new Map(Array.from(derivedDocsById).filter(([internalId]) => !keptIds || keptIds.has(internalId)));
   // Manual events only follow the access of the container
   stored.filter((e) => e.event_source === 'manual').forEach((event) => {
     const markings = uniq([...markingsOf(event), ...access.markings]);
@@ -686,7 +696,11 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
     addTimelineDerivedEventCount(createdCount);
   }
   const finalEvents = docs as unknown as StoredTimelineEvent[];
-  const { anchors } = await refreshTimelineContributions(context, container, { events: finalEvents });
+  // Beyond the cap of the case, the anchors still read every derived event: the cap never moves the containment or the closure
+  const anchorEvents = capped
+    ? [...derivedDocsById.values(), ...docs.filter((doc) => doc.event_source === 'manual')] as unknown as StoredTimelineEvent[]
+    : undefined;
+  const { anchors } = await refreshTimelineContributions(context, container, { events: finalEvents, anchorEvents });
   if (changedDocs.length > 0 || staleEvents.length > 0) {
     await publishTimelineUpdate({
       container_id: containerId,
