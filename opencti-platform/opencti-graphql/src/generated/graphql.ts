@@ -24897,6 +24897,8 @@ export type Query = {
   connectorsForWorker?: Maybe<Array<Maybe<Connector>>>;
   container?: Maybe<Container>;
   containerTimeline?: Maybe<TimelineEventConnection>;
+  /** Bounds of every event matching the filters, also the ones not loaded yet by the paginated list */
+  containerTimelineBounds?: Maybe<TimelineBounds>;
   containerTimelineExport?: Maybe<Scalars['String']['output']>;
   /** Timeline export stored as a file: the content and the file markings covering it, computed from the same events */
   containerTimelineExportFile?: Maybe<TimelineExportFile>;
@@ -25639,12 +25641,23 @@ export type QueryContainerTimelineArgs = {
   kinds?: InputMaybe<Array<TimelineEventKind>>;
   lanes?: InputMaybe<Array<TimelineLane>>;
   markings?: InputMaybe<Array<Scalars['String']['input']>>;
-  orderBy?: InputMaybe<TimelineEventsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   pinnedOnly?: InputMaybe<Scalars['Boolean']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
   sources?: InputMaybe<Array<TimelineEventSource>>;
   to?: InputMaybe<Scalars['DateTime']['input']>;
+};
+
+
+export type QueryContainerTimelineBoundsArgs = {
+  id: Scalars['String']['input'];
+  includeHidden?: InputMaybe<Scalars['Boolean']['input']>;
+  kinds?: InputMaybe<Array<TimelineEventKind>>;
+  lanes?: InputMaybe<Array<TimelineLane>>;
+  markings?: InputMaybe<Array<Scalars['String']['input']>>;
+  pinnedOnly?: InputMaybe<Scalars['Boolean']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  sources?: InputMaybe<Array<TimelineEventSource>>;
 };
 
 
@@ -36487,6 +36500,14 @@ export type TimelineAnchors = {
   first_response?: Maybe<Scalars['DateTime']['output']>;
 };
 
+export type TimelineBounds = {
+  __typename?: 'TimelineBounds';
+  /** Earliest start of the matching events */
+  first_event_time?: Maybe<Scalars['DateTime']['output']>;
+  /** Latest start or end of the matching events, whichever is later */
+  last_event_time?: Maybe<Scalars['DateTime']['output']>;
+};
+
 export type TimelineEvent = BasicObject & InternalObject & {
   __typename?: 'TimelineEvent';
   analyst_fields: Array<Scalars['String']['output']>;
@@ -36613,13 +36634,6 @@ export enum TimelineEventKind {
 export enum TimelineEventSource {
   Derived = 'derived',
   Manual = 'manual'
-}
-
-export enum TimelineEventsOrdering {
-  /** End time of the windows; only the events with an end time are listed */
-  EventEndTime = 'event_end_time',
-  /** Time of the event, then the ordering hint */
-  EventTime = 'event_time'
 }
 
 export type TimelineExportFile = {
@@ -42096,6 +42110,7 @@ export type ResolversTypes = ResolversObject<{
   ThreatActorsOrdering: ThreatActorsOrdering;
   TimeSeries: ResolverTypeWrapper<TimeSeries>;
   TimelineAnchors: ResolverTypeWrapper<TimelineAnchors>;
+  TimelineBounds: ResolverTypeWrapper<TimelineBounds>;
   TimelineEvent: ResolverTypeWrapper<BasicStoreEntityTimelineEvent>;
   TimelineEventAddInput: TimelineEventAddInput;
   TimelineEventConnection: ResolverTypeWrapper<Omit<TimelineEventConnection, 'edges'> & { edges: Array<ResolversTypes['TimelineEventEdge']> }>;
@@ -42103,7 +42118,6 @@ export type ResolversTypes = ResolversObject<{
   TimelineEventEditInput: TimelineEventEditInput;
   TimelineEventKind: TimelineEventKind;
   TimelineEventSource: TimelineEventSource;
-  TimelineEventsOrdering: TimelineEventsOrdering;
   TimelineExportFile: ResolverTypeWrapper<Omit<TimelineExportFile, 'file_markings'> & { file_markings: Array<ResolversTypes['MarkingDefinition']> }>;
   TimelineExportFormat: TimelineExportFormat;
   TimelineExportLabelInput: TimelineExportLabelInput;
@@ -43161,6 +43175,7 @@ export type ResolversParentTypes = ResolversObject<{
   ThreatActorIndividualEdge: Omit<ThreatActorIndividualEdge, 'node'> & { node: ResolversParentTypes['ThreatActorIndividual'] };
   TimeSeries: TimeSeries;
   TimelineAnchors: TimelineAnchors;
+  TimelineBounds: TimelineBounds;
   TimelineEvent: BasicStoreEntityTimelineEvent;
   TimelineEventAddInput: TimelineEventAddInput;
   TimelineEventConnection: Omit<TimelineEventConnection, 'edges'> & { edges: Array<ResolversParentTypes['TimelineEventEdge']> };
@@ -51229,6 +51244,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   connectorsForWorker?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType>;
   container?: Resolver<Maybe<ResolversTypes['Container']>, ParentType, ContextType, Partial<QueryContainerArgs>>;
   containerTimeline?: Resolver<Maybe<ResolversTypes['TimelineEventConnection']>, ParentType, ContextType, RequireFields<QueryContainerTimelineArgs, 'id'>>;
+  containerTimelineBounds?: Resolver<Maybe<ResolversTypes['TimelineBounds']>, ParentType, ContextType, RequireFields<QueryContainerTimelineBoundsArgs, 'id'>>;
   containerTimelineExport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryContainerTimelineExportArgs, 'format' | 'id'>>;
   containerTimelineExportFile?: Resolver<Maybe<ResolversTypes['TimelineExportFile']>, ParentType, ContextType, RequireFields<QueryContainerTimelineExportFileArgs, 'format' | 'id'>>;
   containerTimelineSummary?: Resolver<Maybe<ResolversTypes['TimelineSummary']>, ParentType, ContextType, RequireFields<QueryContainerTimelineSummaryArgs, 'id'>>;
@@ -54237,6 +54253,11 @@ export type TimelineAnchorsResolvers<ContextType = any, ParentType extends Resol
   first_response?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
 }>;
 
+export type TimelineBoundsResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimelineBounds'] = ResolversParentTypes['TimelineBounds']> = ResolversObject<{
+  first_event_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  last_event_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+}>;
+
 export type TimelineEventResolvers<ContextType = any, ParentType extends ResolversParentTypes['TimelineEvent'] = ResolversParentTypes['TimelineEvent']> = ResolversObject<{
   analyst_fields?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   annotatable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -56242,6 +56263,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ThreatActorIndividualEdge?: ThreatActorIndividualEdgeResolvers<ContextType>;
   TimeSeries?: TimeSeriesResolvers<ContextType>;
   TimelineAnchors?: TimelineAnchorsResolvers<ContextType>;
+  TimelineBounds?: TimelineBoundsResolvers<ContextType>;
   TimelineEvent?: TimelineEventResolvers<ContextType>;
   TimelineEventConnection?: TimelineEventConnectionResolvers<ContextType>;
   TimelineEventEdge?: TimelineEventEdgeResolvers<ContextType>;

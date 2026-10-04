@@ -9507,9 +9507,6 @@ type Query {
     includeHidden: Boolean
     pinnedOnly: Boolean
 
-    """Event time by default"""
-    orderBy: TimelineEventsOrdering
-
     """
     Ascending (default) from the oldest event, descending from the latest one
     """
@@ -9517,6 +9514,11 @@ type Query {
     first: Int
     after: ID
   ): TimelineEventConnection
+
+  """
+  Bounds of every event matching the filters, also the ones not loaded yet by the paginated list
+  """
+  containerTimelineBounds(id: String!, lanes: [TimelineLane!], kinds: [TimelineEventKind!], sources: [TimelineEventSource!], markings: [String!], search: String, includeHidden: Boolean, pinnedOnly: Boolean): TimelineBounds
   containerTimelineSummary(
     id: String!
 
@@ -17671,14 +17673,6 @@ enum TimelineEventKind {
   notification
 }
 
-enum TimelineEventsOrdering {
-  """Time of the event, then the ordering hint"""
-  event_time
-
-  """End time of the windows; only the events with an end time are listed"""
-  event_end_time
-}
-
 enum TimelineGrouping {
   hour
   day
@@ -17822,6 +17816,14 @@ type TimelineSummary {
   """
   truncated: Boolean!
   generated_at: DateTime
+}
+
+type TimelineBounds {
+  """Earliest start of the matching events"""
+  first_event_time: DateTime
+
+  """Latest start or end of the matching events, whichever is later"""
+  last_event_time: DateTime
 }
 
 type TimelineRegenerationResult {

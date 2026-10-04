@@ -11,8 +11,8 @@ import { fetchStreamEventsRangeFromEventId, fetchStreamInfo } from '../database/
 import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
 import { fullEntitiesList, fullRelationsList, internalFindByIds } from '../database/middleware-loader';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
-import { RELATION_KILL_CHAIN_PHASE, RELATION_OBJECT, RELATION_OBJECT_LABEL } from '../schema/stixRefRelationship';
-import { ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
+import { RELATION_EXTERNAL_REFERENCE, RELATION_KILL_CHAIN_PHASE, RELATION_OBJECT, RELATION_OBJECT_LABEL } from '../schema/stixRefRelationship';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_STATUS } from '../schema/internalObject';
 import { getEntitiesListFromCache } from '../database/cache';
 import {
@@ -77,6 +77,8 @@ interface ImpactCollector {
   labels: Set<string>;
   // kill chain phases ordering the techniques of the cases
   killChainPhases: Set<string>;
+  // external references of the containers (publications)
+  externalReferences: Set<string>;
 }
 
 export const newImpactCollector = (): ImpactCollector => ({
@@ -86,6 +88,7 @@ export const newImpactCollector = (): ImpactCollector => ({
   references: new Set(),
   labels: new Set(),
   killChainPhases: new Set(),
+  externalReferences: new Set(),
 });
 
 /** The refs of an updated object before its update, rebuilt from the reverse patch of the event (none otherwise). */
@@ -121,6 +124,11 @@ export const collectTimelineImpacts = (event: SseEvent<DataEvent>, collector: Im
     if (event.data?.type !== 'create') {
       (type === ENTITY_TYPE_LABEL ? collector.labels : collector.killChainPhases).add(id);
     }
+    return;
+  }
+  // External references are read on the containers themselves: a change reaches the containers citing them
+  if (type === ENTITY_TYPE_EXTERNAL_REFERENCE) {
+    if (event.data?.type !== 'create') collector.externalReferences.add(id);
     return;
   }
   if (CONTAINERS_REFERENCING_TYPES.includes(type)) {
@@ -160,10 +168,10 @@ type ImpactedContainersSink = (containerIds: string[]) => Promise<void>;
  * they are read page by page and each page is queued before the next one is read, so none is dropped and the memory
  * stays bounded. The queue then regenerates them by bounded batches.
  */
-const queueContainersContaining = async (context: AuthContext, elementIds: string[], enqueue: ImpactedContainersSink) => {
+const queueContainersContaining = async (context: AuthContext, elementIds: string[], enqueue: ImpactedContainersSink, relation = RELATION_OBJECT) => {
   if (elementIds.length === 0) return;
   await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, TIMELINE_CONTAINER_TYPES, {
-    filters: { mode: FilterMode.And, filters: [{ key: [buildRefRelationKey(RELATION_OBJECT)], values: elementIds }], filterGroups: [] },
+    filters: { mode: FilterMode.And, filters: [{ key: [buildRefRelationKey(relation)], values: elementIds }], filterGroups: [] },
     noFiltersChecking: true,
     baseData: true,
     first: TIMELINE_MANAGER_IMPACTED_PAGE_SIZE,
@@ -182,6 +190,7 @@ const queueReferencedContainers = async (context: AuthContext, references: strin
 const queueImpactedContainers = async (context: AuthContext, collector: ImpactCollector, enqueue: ImpactedContainersSink) => {
   await enqueue(Array.from(collector.containers));
   await queueContainersContaining(context, Array.from(collector.contained), enqueue);
+  await queueContainersContaining(context, Array.from(collector.externalReferences), enqueue, RELATION_EXTERNAL_REFERENCE);
   await queueReferencedContainers(context, Array.from(collector.references), enqueue);
   const killChainPhases = Array.from(collector.killChainPhases);
   if (killChainPhases.length > 0) {

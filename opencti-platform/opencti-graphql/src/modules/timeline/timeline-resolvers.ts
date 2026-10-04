@@ -18,6 +18,7 @@ import {
   exportContainerTimeline,
   exportContainerTimelineFile,
   findContainerTimeline,
+  findContainerTimelineBounds,
   findContainerTimelineSummary,
   findTimelineAnchors,
   findTimelineEvent,
@@ -46,6 +47,7 @@ const canChangeTimelineEvent = async (context: AuthContext, event: { container_i
 const timelineResolvers: Resolvers = {
   Query: {
     containerTimeline: (_, args, context) => findContainerTimeline(context, context.user, args),
+    containerTimelineBounds: (_, args, context) => findContainerTimelineBounds(context, context.user, args),
     containerTimelineSummary: (_, { id, lanes, kinds }, context) => findContainerTimelineSummary(context, context.user, id, { lanes, kinds }),
     containerTimelineExport: (_, args, context) => exportContainerTimeline(context, context.user, args),
     containerTimelineExportFile: (_, args, context) => exportContainerTimelineFile(context, context.user, args),

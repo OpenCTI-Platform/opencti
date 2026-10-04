@@ -52,6 +52,19 @@ describe('Timeline manager impact collection', () => {
     expect(created.labels.size).toEqual(0);
   });
 
+  it('should reach the containers citing an updated external reference, never the containment lookup', () => {
+    const collector = newCollector();
+    collectTimelineImpacts(streamEvent({ type: 'external-reference', extensions: { [STIX_EXT_OCTI]: { id: 'ref-1', type: 'External-Reference' } } }), collector);
+    expect(Array.from(collector.externalReferences)).toEqual(['ref-1']);
+    expect(collector.contained.size + collector.related.size).toEqual(0);
+    // An external reference just created is cited by nothing yet
+    const created = newCollector();
+    const event = streamEvent({ type: 'external-reference', extensions: { [STIX_EXT_OCTI]: { id: 'ref-2', type: 'External-Reference' } } });
+    (event.data as any).type = 'create';
+    collectTimelineImpacts(event, created);
+    expect(created.externalReferences.size).toEqual(0);
+  });
+
   it('should also impact the cases an update removed from the object refs', () => {
     const collector = newCollector();
     const note = { type: 'note', object_refs: ['case-incident--1'], extensions: { [STIX_EXT_OCTI]: { id: 'note-1', type: 'Note' } } };

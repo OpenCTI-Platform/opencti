@@ -58,6 +58,16 @@ const CASE_INCIDENT_ADD = gql`
     caseIncidentAdd(input: $input) { id standard_id }
   }
 `;
+const EXTERNAL_REFERENCE_ADD = gql`
+  mutation TimelineExternalReferenceAdd($input: ExternalReferenceAddInput!) {
+    externalReferenceAdd(input: $input) { id standard_id }
+  }
+`;
+const EXTERNAL_REFERENCE_DELETE = gql`
+  mutation TimelineExternalReferenceDelete($id: ID!) {
+    externalReferenceEdit(id: $id) { delete }
+  }
+`;
 const TASK_ADD = gql`
   mutation TimelineTaskAdd($input: TaskAddInput!) {
     taskAdd(input: $input) { id standard_id }
@@ -133,7 +143,6 @@ const CONTAINER_TIMELINE = gql`
     $search: String
     $includeHidden: Boolean
     $pinnedOnly: Boolean
-    $orderBy: TimelineEventsOrdering
     $orderMode: OrderingMode
     $first: Int
   ) {
@@ -147,12 +156,19 @@ const CONTAINER_TIMELINE = gql`
       search: $search
       includeHidden: $includeHidden
       pinnedOnly: $pinnedOnly
-      orderBy: $orderBy
       orderMode: $orderMode
       first: $first
     ) {
       pageInfo { globalCount }
       edges { node { ${TIMELINE_EVENT_FIELDS} } }
+    }
+  }
+`;
+const CONTAINER_TIMELINE_BOUNDS = gql`
+  query ContainerTimelineBounds($id: String!, $sources: [TimelineEventSource!]) {
+    containerTimelineBounds(id: $id, sources: $sources) {
+      first_event_time
+      last_event_time
     }
   }
 `;
@@ -715,16 +731,26 @@ describe('Incident and case timeline', () => {
       expect([...times].sort((a, b) => b - a)).toEqual(times);
     });
 
-    it('should list the windows by their end time', async () => {
-      const ascending = await listTimeline(caseIncident.id);
-      const windows = ascending.filter((event) => !!event.event_end_time);
-      const latestEnd = Math.max(...windows.map((event) => new Date(event.event_end_time as string).getTime()));
-      const byEnd = await listTimeline(caseIncident.id, { orderBy: 'event_end_time', orderMode: 'desc' });
-      // Only the events with an end time, from the one that ends last
-      expect(byEnd).toHaveLength(windows.length);
-      expect(new Date(byEnd[0].event_end_time as string).getTime()).toEqual(latestEnd);
-      const ends = byEnd.map((event) => new Date(event.event_end_time as string).getTime());
-      expect([...ends].sort((a, b) => b - a)).toEqual(ends);
+    it('should bound every matching event the user can list, also a window ending after the latest start', async () => {
+      const span = (events: Array<Pick<TimelineEventNode, 'event_time' | 'event_end_time'>>) => {
+        const starts = events.map((event) => new Date(event.event_time).getTime());
+        const ends = events.filter((event) => !!event.event_end_time).map((event) => new Date(event.event_end_time as string).getTime());
+        return { first: Math.min(...starts), last: Math.max(...starts, ...ends) };
+      };
+      const time = (value: string | Date | null) => (value ? new Date(value).getTime() : null);
+      const listed = await listTimeline(caseIncident.id);
+      const bounds = (await queryAsAdminWithSuccess({ query: CONTAINER_TIMELINE_BOUNDS, variables: { id: caseIncident.id } })).data.containerTimelineBounds;
+      expect({ first: time(bounds.first_event_time), last: time(bounds.last_event_time) }).toEqual(span(listed));
+      // Same filters as the list
+      const manual = await listTimeline(caseIncident.id, { sources: ['manual'] });
+      const manualBounds = (await queryAsAdminWithSuccess({ query: CONTAINER_TIMELINE_BOUNDS, variables: { id: caseIncident.id, sources: ['manual'] } })).data.containerTimelineBounds;
+      expect({ first: time(manualBounds.first_event_time), last: time(manualBounds.last_event_time) }).toEqual(span(manual));
+      // Same visibility as the list
+      const userListed = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: CONTAINER_TIMELINE, variables: { id: caseIncident.id, first: 500 } });
+      const userBounds = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: CONTAINER_TIMELINE_BOUNDS, variables: { id: caseIncident.id } });
+      const userEvents = userListed.data.containerTimeline.edges.map((edge: { node: TimelineEventNode }) => edge.node);
+      const { first_event_time: userFirst, last_event_time: userLast } = userBounds.data.containerTimelineBounds;
+      expect({ first: time(userFirst), last: time(userLast) }).toEqual(span(userEvents));
     });
 
     it('should count in the summary exactly the events the user can list', async () => {
@@ -936,6 +962,17 @@ describe('Incident and case timeline', () => {
       await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: amber.data.timelineEventAdd.id } });
     });
 
+    it('should keep the markings of a milestone added again with the same external id', async () => {
+      const input = { container_id: secondCase.id, event_time: '2026-02-05T19:00:00.000Z', title: 'Regulator follow-up', external_id: 'retry-keeps-markings' };
+      const amber = await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_ADD, variables: { input: { ...input, objectMarking: [MARKING_TLP_AMBER] } } });
+      // A retry without the markings updates the milestone, it never declassifies it
+      const retried = await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_ADD, variables: { input: { ...input, title: 'Regulator follow-up sent' } } });
+      expect(retried.data.timelineEventAdd.id).toEqual(amber.data.timelineEventAdd.id);
+      expect(retried.data.timelineEventAdd.title).toEqual('Regulator follow-up sent');
+      expect(retried.data.timelineEventAdd.objectMarking.map((marking: { standard_id: string }) => marking.standard_id)).toContain(MARKING_TLP_AMBER);
+      await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: amber.data.timelineEventAdd.id } });
+    });
+
     it('should leave out a manual event about an element restricted to fewer members than the container', async () => {
       const restrictedCase = await createEntity(testContext, SYSTEM_USER, {
         name: 'Timeline restricted request',
@@ -984,6 +1021,25 @@ describe('Incident and case timeline', () => {
       // Handed back to the queue for the tests that follow
       await Promise.all(claimed.map((id) => acknowledgeTimelineRegeneration(id)));
       await enqueueTimelineRegeneration(claimed, 0);
+    });
+
+    it('should queue the containers citing an external reference that changed', async () => {
+      const reference = await queryAsAdminWithSuccess({
+        query: EXTERNAL_REFERENCE_ADD,
+        variables: { input: { source_name: 'Timeline advisory', url: 'https://timeline.example/advisory', external_id: 'TL-ADV-1' } },
+      });
+      const referenceId = reference.data.externalReferenceAdd.id;
+      const citing = await queryAsAdminWithSuccess({ query: CASE_INCIDENT_ADD, variables: { input: { name: 'Timeline cited case', externalReferences: [referenceId] } } });
+      const citingId = citing.data.caseIncidentAdd.id;
+      const stixReference = { id: reference.data.externalReferenceAdd.standard_id, type: 'external-reference', extensions: { [STIX_EXT_OCTI]: { id: referenceId, type: 'External-Reference' } } };
+      await timelineStreamEventsHandler(testContext, [streamEvent(stixReference)]);
+      const claimed = await claimDueTimelineRegenerations(1000);
+      expect(claimed).toContain(citingId);
+      // The other containers are handed back to the queue for the tests that follow
+      await Promise.all(claimed.map((id) => acknowledgeTimelineRegeneration(id)));
+      await enqueueTimelineRegeneration(claimed.filter((id) => id !== citingId), 0);
+      await queryAsAdminWithSuccess({ query: STIX_CORE_OBJECT_DELETE, variables: { id: citingId } });
+      await queryAsAdminWithSuccess({ query: EXTERNAL_REFERENCE_DELETE, variables: { id: referenceId } });
     });
 
     it('should keep a container scheduled again during its regeneration queued until the running claim is acknowledged', async () => {

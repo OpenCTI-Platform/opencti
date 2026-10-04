@@ -53,13 +53,6 @@ enum TimelineEventKind {
   notification
 }
 
-enum TimelineEventsOrdering {
-  "Time of the event, then the ordering hint"
-  event_time
-  "End time of the windows; only the events with an end time are listed"
-  event_end_time
-}
-
 enum TimelineGrouping {
   hour
   day
@@ -194,6 +187,13 @@ type TimelineSummary {
   "True when the derivation of this container reached one of its bounds (objects, history, events)"
   truncated: Boolean!
   generated_at: DateTime
+}
+
+type TimelineBounds {
+  "Earliest start of the matching events"
+  first_event_time: DateTime
+  "Latest start or end of the matching events, whichever is later"
+  last_event_time: DateTime
 }
 
 type TimelineRegenerationResult {
@@ -360,13 +360,22 @@ type Query {
     search: String
     includeHidden: Boolean
     pinnedOnly: Boolean
-    "Event time by default"
-    orderBy: TimelineEventsOrdering
     "Ascending (default) from the oldest event, descending from the latest one"
     orderMode: OrderingMode
     first: Int
     after: ID
   ): TimelineEventConnection @auth(for: [KNOWLEDGE])
+  "Bounds of every event matching the filters, also the ones not loaded yet by the paginated list"
+  containerTimelineBounds(
+    id: String!
+    lanes: [TimelineLane!]
+    kinds: [TimelineEventKind!]
+    sources: [TimelineEventSource!]
+    markings: [String!]
+    search: String
+    includeHidden: Boolean
+    pinnedOnly: Boolean
+  ): TimelineBounds @auth(for: [KNOWLEDGE])
   containerTimelineSummary(
     id: String!
     "Counts and bounds restricted to these lanes (all when empty)"

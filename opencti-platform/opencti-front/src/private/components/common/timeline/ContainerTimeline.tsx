@@ -137,8 +137,8 @@ const containerTimelineEventsFragment = graphql`
     count: { type: "Int", defaultValue: 500 }
     cursor: { type: "ID" }
   ) {
-    # First start and last end of the events matching the same filters, so that the fit covers the events not loaded yet
-    earliest: containerTimeline(
+    # Bounds of every event matching the same filters, so that the fit covers the events not loaded yet
+    containerTimelineBounds(
       id: $id
       lanes: $lanes
       kinds: $kinds
@@ -146,32 +146,9 @@ const containerTimelineEventsFragment = graphql`
       search: $search
       includeHidden: $includeHidden
       pinnedOnly: $pinnedOnly
-      orderMode: asc
-      first: 1
     ) {
-      edges {
-        node {
-          event_time
-        }
-      }
-    }
-    latestEnding: containerTimeline(
-      id: $id
-      lanes: $lanes
-      kinds: $kinds
-      sources: $sources
-      search: $search
-      includeHidden: $includeHidden
-      pinnedOnly: $pinnedOnly
-      orderBy: event_end_time
-      orderMode: desc
-      first: 1
-    ) {
-      edges {
-        node {
-          event_end_time
-        }
-      }
+      first_event_time
+      last_event_time
     }
     containerTimeline(
       id: $id
@@ -364,11 +341,11 @@ const ContainerTimelineEventsView = ({
   }, [linkedEventId, events, hasNext, isLoadingNext]);
   const anchors = summary.anchors;
   // The fit spans every matching event, also the earlier ones not loaded yet ("Show earlier events" loads them)
-  const earliestTime = data.earliest?.edges?.[0]?.node?.event_time;
-  const latestEnd = data.latestEnding?.edges?.[0]?.node?.event_end_time;
+  const firstTime = data.containerTimelineBounds?.first_event_time;
+  const lastTime = data.containerTimelineBounds?.last_event_time;
   const extent = useMemo(
-    () => computeTimelineExtent(events, [...TIMELINE_ANCHOR_KEYS.map((key) => anchors?.[key]), earliestTime, latestEnd]),
-    [events, anchors, earliestTime, latestEnd],
+    () => computeTimelineExtent(events, [...TIMELINE_ANCHOR_KEYS.map((key) => anchors?.[key]), firstTime, lastTime]),
+    [events, anchors, firstTime, lastTime],
   );
   const visibleDomain = domain ?? computeVisibleDomain(extent, state.zoom);
   const showsLanes = state.view === 'lanes' && events.length > 0;

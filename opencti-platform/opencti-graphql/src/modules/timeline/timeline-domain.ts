@@ -8,11 +8,13 @@ import { elAggregationCount, elCount, elIndexElements, elLoadById } from '../../
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { ForbiddenAccess, FunctionalError, UnsupportedError } from '../../config/errors';
 import { getDraftContext } from '../../utils/draftContext';
-import { FilterMode, FilterOperator, OrderingMode, TimelineEventsOrdering } from '../../generated/graphql';
+import { FilterMode, FilterOperator, OrderingMode } from '../../generated/graphql';
 import type {
   QueryContainerTimelineArgs,
+  QueryContainerTimelineBoundsArgs,
   QueryContainerTimelineExportArgs,
   QueryContainerTimelineExportFileArgs,
+  TimelineBounds,
   TimelineEventAddInput,
   TimelineEventEditInput,
   TimelineEventKind,
@@ -272,20 +274,40 @@ const buildAccessibleTimelineFilters = async (context: AuthContext, user: AuthUs
 export const findContainerTimeline = async (context: AuthContext, user: AuthUser, args: QueryContainerTimelineArgs) => {
   const container = await ensureTimelineGenerated(context, await loadTimelineContainer(context, user, args.id));
   const first = Math.min(args.first ?? TIMELINE_DEFAULT_PAGE, TIMELINE_MAX_PAGE);
-  const filters = await buildAccessibleTimelineFilters(context, user, container.internal_id, args);
-  // By end time, only the windows are listed: no event without an end time ever reaches the sort or its cursor
-  const byEndTime = args.orderBy === TimelineEventsOrdering.EventEndTime;
   const connection = await pageEntitiesConnection<StoredTimelineEvent>(context, user, [ENTITY_TYPE_TIMELINE_EVENT], {
-    filters: (byEndTime
-      ? { ...filters, filters: [...filters.filters, { key: ['event_end_time'], values: [], operator: FilterOperator.NotNil }] }
-      : filters) as any,
+    filters: await buildAccessibleTimelineFilters(context, user, container.internal_id, args) as any,
     first,
     after: args.after,
-    orderBy: byEndTime ? ['event_end_time', 'event_time'] : ['event_time', 'ordering_hint'],
+    orderBy: ['event_time', 'ordering_hint'],
     orderMode: args.orderMode ?? OrderingMode.Asc,
   });
   const { items } = await filterAccessibleEvents(context, user, container.internal_id, connection.edges, (edge) => edge.node);
   return { ...connection, edges: items };
+};
+
+/** Earliest start and latest instant (start or end) of the events matching already accessible filters. */
+const computeTimelineBounds = async (context: AuthContext, user: AuthUser, filters: ReturnType<typeof buildTimelineFilters>): Promise<TimelineBounds> => {
+  const windowFilters = { ...filters, filters: [...filters.filters, { key: ['event_end_time'], values: [], operator: FilterOperator.NotNil }] };
+  const firstOf = (pageFilters: typeof filters, orderBy: string, orderMode: OrderingMode) => pageEntitiesConnection<StoredTimelineEvent>(
+    context,
+    user,
+    [ENTITY_TYPE_TIMELINE_EVENT],
+    { filters: pageFilters as any, first: 1, orderBy, orderMode },
+  );
+  const [firstEvents, lastEvents, lastEndingEvents] = await Promise.all([
+    firstOf(filters, 'event_time', OrderingMode.Asc),
+    firstOf(filters, 'event_time', OrderingMode.Desc),
+    firstOf(windowFilters, 'event_end_time', OrderingMode.Desc),
+  ]);
+  return {
+    first_event_time: firstEvents.edges[0]?.node.event_time ?? null,
+    last_event_time: latestTimelineTime(lastEvents.edges[0]?.node.event_time, lastEndingEvents.edges[0]?.node.event_end_time),
+  };
+};
+
+export const findContainerTimelineBounds = async (context: AuthContext, user: AuthUser, args: QueryContainerTimelineBoundsArgs): Promise<TimelineBounds> => {
+  const container = await ensureTimelineGenerated(context, await loadTimelineContainer(context, user, args.id));
+  return computeTimelineBounds(context, user, await buildAccessibleTimelineFilters(context, user, container.internal_id, args));
 };
 
 export const findTimelineEvent = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -354,17 +376,14 @@ export const findContainerTimelineSummary = async (
   const allFilters = excludeElements(buildTimelineFilters(container.internal_id, { ...scope, includeHidden: true }), hiddenElementIds);
   const count = (filters: any) => elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...baseArgs, filters });
   const withFilter = (extra: any) => ({ ...allFilters, filters: [...allFilters.filters, extra] });
-  const windowFilters = { ...visibleFilters, filters: [...visibleFilters.filters, { key: ['event_end_time'], values: [], operator: FilterOperator.NotNil }] };
-  const [total, manualCount, pinnedCount, hiddenCount, lanes, kinds, firstEvents, lastEvents, lastEndingEvents, settings] = await Promise.all([
+  const [total, manualCount, pinnedCount, hiddenCount, lanes, kinds, bounds, settings] = await Promise.all([
     count(visibleFilters),
     count({ ...visibleFilters, filters: [...visibleFilters.filters, { key: ['event_source'], values: ['manual'] }] }),
     count({ ...visibleFilters, filters: [...visibleFilters.filters, { key: ['pinned'], values: ['true'] }] }),
     count(withFilter({ key: ['hidden'], values: ['true'] })),
     elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...baseArgs, filters: visibleFilters as any, field: 'lane', normalizeLabel: false }),
     elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...baseArgs, filters: visibleFilters as any, field: 'kind', normalizeLabel: false }),
-    pageEntitiesConnection<StoredTimelineEvent>(context, user, [ENTITY_TYPE_TIMELINE_EVENT], { filters: visibleFilters as any, first: 1, orderBy: 'event_time', orderMode: OrderingMode.Asc }),
-    pageEntitiesConnection<StoredTimelineEvent>(context, user, [ENTITY_TYPE_TIMELINE_EVENT], { filters: visibleFilters as any, first: 1, orderBy: 'event_time', orderMode: OrderingMode.Desc }),
-    pageEntitiesConnection<StoredTimelineEvent>(context, user, [ENTITY_TYPE_TIMELINE_EVENT], { filters: windowFilters as any, first: 1, orderBy: 'event_end_time', orderMode: OrderingMode.Desc }),
+    computeTimelineBounds(context, user, visibleFilters),
     loadTimelineSettings(context, container.internal_id),
   ]);
   return {
@@ -373,8 +392,8 @@ export const findContainerTimelineSummary = async (
     manual_count: manualCount,
     pinned_count: pinnedCount,
     hidden_count: hiddenCount,
-    first_event_time: firstEvents.edges[0]?.node.event_time ?? null,
-    last_event_time: latestTimelineTime(lastEvents.edges[0]?.node.event_time, lastEndingEvents.edges[0]?.node.event_end_time),
+    first_event_time: bounds.first_event_time,
+    last_event_time: bounds.last_event_time,
     lanes: lanes.map((l) => ({ lane: l.label, count: l.count })),
     kinds: kinds.map((k) => ({ kind: k.label, count: k.count })),
     anchors: container[ATTRIBUTE_TIMELINE_ANCHORS] ?? null,
@@ -690,8 +709,8 @@ export const addTimelineEvent = async (context: AuthContext, user: AuthUser, inp
     ordering_hint: input.ordering_hint ?? null,
     analyst_fields: [],
     external_id: input.external_id ?? null,
-    // An event is never less marked than the element it points to, nor than its container
-    markings: Array.from(new Set([...markingIds, ...(element ? markingsOf(element) : []), ...access.markings])),
+    // An event is never less marked than the element it points to, nor than its container; adding it again never declassifies it
+    markings: Array.from(new Set([...(previous ? markingsOf(previous) : []), ...markingIds, ...(element ? markingsOf(element) : []), ...access.markings])),
     created_by_id: author?.internal_id ?? null,
     creator_ids: previous ? Array.from(new Set([...creatorIdsOf(previous), user.id])) : [user.id],
     restricted_members: access.restricted_members,
