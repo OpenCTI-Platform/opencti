@@ -532,14 +532,16 @@ describe('Threat Pulse manager and API', () => {
     const indicatorId = created.data?.indicatorAdd.id;
     // An upgrade changed the consent text: the version this platform accepted is a former one
     await updateAttribute(testContext, ADMIN_USER, settingsId, ENTITY_TYPE_SETTINGS, [{ key: 'pulse_consent_version', value: [FORMER_CONSENT_VERSION] }]);
+    resetCacheForEntity(ENTITY_TYPE_SETTINGS);
     const before = pushes();
     const { pushedRecords } = await runPulseContribution(testContext);
     expect({ pushedRecords, pushes: pushes() }).toEqual({ pushedRecords: 0, pushes: before });
-    await expect.poll(async () => (await queryAsAdminWithSuccess({ query: PULSE_CONSENT_STATE })).data?.pulseSettings, { timeout: 10000 })
+    expect((await queryAsAdminWithSuccess({ query: PULSE_CONSENT_STATE })).data?.pulseSettings)
       .toMatchObject({ mode: 'contribute_and_read', enabled: false, access: 'preview', consent_accepted_version: FORMER_CONSENT_VERSION });
     // Accepted again: the contribution resumes from the renewal on
     await queryAsAdminWithSuccess({ query: CONFIGURE, variables: { input: { mode: 'contribute_and_read', consent_version: PULSE_CONSENT_VERSION } } });
-    await expect.poll(async () => (await queryAsAdminWithSuccess({ query: PULSE_CONSENT_STATE })).data?.pulseSettings, { timeout: 10000 })
+    resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+    expect((await queryAsAdminWithSuccess({ query: PULSE_CONSENT_STATE })).data?.pulseSettings)
       .toMatchObject({ enabled: true, consent_accepted_version: PULSE_CONSENT_VERSION });
     await deleteElementById(testContext, ADMIN_USER, indicatorId, ENTITY_TYPE_INDICATOR);
   });
