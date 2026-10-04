@@ -377,8 +377,12 @@ const collectNeighborhood = async (exec: RunExecution, seedIds: string[]) => {
   ) as BasicStoreEntity[];
   const readable = withoutMemberRestricted(entities);
   const readableIds = new Set([...seedIds, ...readable.map((entity) => entity.internal_id)]);
-  // A relationship to an entity the run may not read is left out with it.
-  return { relationships: relationships.filter((relationship) => readableIds.has(relationship.fromId) && readableIds.has(relationship.toId)), entities: readable };
+  // A relationship to an entity the run may not read is left out with it, and so
+  // is a relationship restricted to authorized members, as the entities are.
+  return {
+    relationships: withoutMemberRestricted(relationships).filter((relationship) => readableIds.has(relationship.fromId) && readableIds.has(relationship.toId)),
+    entities: readable,
+  };
 };
 
 // Objects of a case (the case of the run or the investigated case).
