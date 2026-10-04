@@ -271,6 +271,8 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
         query: DEPLOYMENT_FIELD_PATCH,
         variables: { id: deploymentId, input: [{ key: 'objectMarking', value: [], operation: 'replace' }] },
       });
+      // Administrators included, as on creation
+      await queryAsAdminWithError({ query: DEPLOYMENT_MARKING_DELETE, variables: { id: deploymentId, toId: MARKING_TLP_AMBER } }, undefined, 'FORBIDDEN_ACCESS');
       const deployment = await internalLoadById(testContext, ADMIN_USER, deploymentId) as unknown as Record<string, string[] | undefined>;
       expect(deployment[RELATION_OBJECT_MARKING]).toEqual([amber.internal_id]);
     } finally {
@@ -422,6 +424,7 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     await setOrganizations(sighting.internal_id, [testOrganizationId]);
     try {
       await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: SIGHTING_MARKING_DELETE, variables: { id: sighting.internal_id, toId: MARKING_TLP_AMBER } });
+      await queryAsAdminWithError({ query: SIGHTING_MARKING_DELETE, variables: { id: sighting.internal_id, toId: MARKING_TLP_AMBER } }, undefined, 'FORBIDDEN_ACCESS');
       const stored = await internalLoadById(testContext, ADMIN_USER, sighting.internal_id, { type: STIX_SIGHTING_RELATIONSHIP }) as unknown as Record<string, string[] | undefined>;
       expect(stored[RELATION_OBJECT_MARKING]).toEqual([amber.internal_id]);
     } finally {

@@ -228,10 +228,11 @@ export const isGeneratedPairSighting = async (context: AuthContext, initial: Rec
   return generated;
 };
 
-// Hits and validation result sightings keep the markings and the sharing of their pair, as deployments do.
+// Hits and validation result sightings keep the markings and the sharing of their pair, as deployments do, for
+// administrators too.
 const validatorSightingUpdate: ValidatorFn = async (context, user, _instance, initial, editInputs = []) => {
   const touchesAccess = editInputs.some((input) => input.key === INPUT_MARKINGS || input.key === INPUT_GRANTED_REFS);
-  if (!touchesAccess || isBypassUser(user) || !await isGeneratedPairSighting(context, initial)) {
+  if (!touchesAccess || !await isGeneratedPairSighting(context, initial)) {
     return true;
   }
   if (!await keepsPairMarkings(context, initial, editInputs)) {
@@ -323,14 +324,15 @@ const validatorUpdate: ValidatorFn = async (context, user, instance, initial, ed
   if (setsValidityWindow(instance)) {
     return refuseValidityWindow();
   }
-  if (isBypassUser(user)) {
-    return true;
-  }
+  // The pair access rules bind administrators too, as on creation; the bypass only lifts the lifecycle permissions.
   if (!await keepsPairMarkings(context, initial, editInputs)) {
     return refuseMarkings(user);
   }
   if (!await keepsPairSharing(context, initial, editInputs)) {
     return refuseSharing(user);
+  }
+  if (isBypassUser(user)) {
+    return true;
   }
   if (setsReservedStatus(instance)) {
     return refuseReservedStatus();
