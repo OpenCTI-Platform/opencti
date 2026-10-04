@@ -24,7 +24,7 @@ import { Alert, Hero, HeroBody, HeroHeader, Select, SelectContent, SelectItem, S
 import Card from '@common/card/Card';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../components/i18n';
-import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, SETTINGS_SETCUSTOMIZATION, SETTINGS_SETPARAMETERS } from '../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE, SETTINGS_SETCUSTOMIZATION, SETTINGS_SETPARAMETERS } from '../../../utils/hooks/useGranted';
 import { useChatbot } from '../chatbox/ChatbotContext';
 import InvestigationRunView from './InvestigationRunView';
 import InvestigationRunSkeleton from './InvestigationRunSkeleton';
@@ -72,7 +72,8 @@ const InvestigationRunsTab = ({ entityId, entityType }: InvestigationRunsTabProp
   const [fetchKey, setFetchKey] = useState(0);
   const [launching, setLaunching] = useState(false);
   const { xtmOneConfigured } = useChatbot();
-  const canLaunch = useGranted([KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNENRICHMENT], true);
+  // The launch dialog explains when the policy picked runs enrichments the role cannot run.
+  const canLaunch = useGranted([KNOWLEDGE_KNUPDATE]);
   const canCustomize = useGranted([SETTINGS_SETCUSTOMIZATION]);
   const canConfigure = useGranted([SETTINGS_SETPARAMETERS]);
   const requestedRunId = searchParams.get('run');
