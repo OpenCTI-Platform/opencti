@@ -9,6 +9,7 @@ const RESPONSE_PREFIX = '{pulse}:response:';
 const CURSOR_KEY = '{pulse}:cursor';
 const OUTBOX_KEY = '{pulse}:outbox';
 const OUTBOX_INFLIGHT_KEY = '{pulse}:outbox:inflight';
+const CONFIG_GENERATION_KEY = '{pulse}:config:generation';
 const STATE_KEY = '{pulse}:state';
 const STATS_DAY_PREFIX = '{pulse}:stats:day:';
 const STATS_TYPE_KEY = '{pulse}:stats:types';
@@ -66,24 +67,49 @@ export const redisSetPulseCursor = async (isoDate: string) => {
   await getClientBase().set(CURSOR_KEY, isoDate);
 };
 
+// Moves with every change of the Threat Pulse configuration, once the new one is stored: a contribution cycle started
+// under another configuration neither records nor sends what it collected.
+export const redisGetPulseConfigGeneration = async (): Promise<string> => (await getClientBase().get(CONFIG_GENERATION_KEY)) ?? '0';
+
+export const redisBumpPulseConfigGeneration = async () => {
+  await getClientBase().incr(CONFIG_GENERATION_KEY);
+};
+
+// KEYS: generation, outbox, cursor, then the activity keys to acknowledge. ARGV: the generation of the cycle, the
+// cursor, then the batches.
+const COMMIT_WINDOW_SCRIPT = `
+if (redis.call('GET', KEYS[1]) or '0') ~= ARGV[1] then
+  return 0
+end
+for index = 3, #ARGV do
+  redis.call('RPUSH', KEYS[2], ARGV[index])
+end
+redis.call('SET', KEYS[3], ARGV[2])
+for index = 4, #KEYS do
+  redis.call('DEL', KEYS[index])
+end
+return 1
+`;
+
 // The batches of a contribution window, the cursor after it and the acknowledgement of the activity taken from Redis,
-// in one transaction (every key shares the {pulse} slot): either all of them are written or none. The outbox is never
-// trimmed: a run whose pending batches XTM Hub did not answer collects no new window, and a batch whose salt day XTM
-// Hub no longer accepts is dropped when claimed, so it holds at most one window beyond the accepted days.
-export const redisCommitPulseWindow = async (items: PulseOutboxItem[], cursor: string, ackDays: string[]) => {
-  const transaction = getClientBase().multi();
-  if (items.length > 0) {
-    transaction.rpush(OUTBOX_KEY, ...items.map((item) => JSON.stringify(item)));
-  }
-  transaction.set(CURSOR_KEY, cursor);
-  if (ackDays.length > 0) {
-    transaction.del(...ackDays.map((day) => `${ACTIVITY_PREFIX}${day}${TAKEN_SUFFIX}`));
-  }
-  const results = await transaction.exec();
-  const failure = (results ?? []).find(([error]) => error);
-  if (!results || failure) {
-    throw failure?.[0] ?? new Error('Threat Pulse contribution window could not be recorded');
-  }
+// in one script (every key shares the {pulse} slot): all of them are written, or none when the configuration changed
+// since the cycle started. The outbox is never trimmed: a run whose pending batches XTM Hub did not answer collects no
+// new window, and a batch whose salt day XTM Hub no longer accepts is dropped when claimed, so it holds at most one
+// window beyond the accepted days.
+export const redisCommitPulseWindow = async (items: PulseOutboxItem[], cursor: string, ackDays: string[], generation: string): Promise<boolean> => {
+  const ackKeys = ackDays.map((day) => `${ACTIVITY_PREFIX}${day}${TAKEN_SUFFIX}`);
+  const committed = await getClientBase().eval(
+    COMMIT_WINDOW_SCRIPT,
+    3 + ackKeys.length,
+    CONFIG_GENERATION_KEY,
+    OUTBOX_KEY,
+    CURSOR_KEY,
+    ...ackKeys,
+    generation,
+    cursor,
+    ...items.map((item) => JSON.stringify(item)),
+  );
+  return committed === 1;
 };
 
 // Atomically moves the pending batches into the in-flight list, after what a run that stopped before settling its

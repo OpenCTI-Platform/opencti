@@ -14,6 +14,7 @@ import { ENTITY_TYPE_TRIGGER } from '../../../src/modules/notification/notificat
 import { MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
 import { recordPulseActivity, runPulseContribution, runPulsePreview, runPulseRefresh, utcDay } from '../../../src/modules/xtm/pulse/pulse-domain';
 import { redisClaimPulseOutbox, redisTakePulseActivity } from '../../../src/modules/xtm/pulse/pulse-cache';
+import { recordPulseSightingIncrease } from '../../../src/modules/xtm/pulse/pulse-sighting-activity';
 import { runPulseTrendingNotifications } from '../../../src/modules/xtm/pulse/pulse-notifications';
 import { computeStableKeys } from '../../../src/modules/xtm/pulse/pulse-hashing';
 import { PULSE_CONSENT_VERSION, type BasicStorePulseEntity } from '../../../src/modules/xtm/pulse/pulse-types';
@@ -76,6 +77,7 @@ const OUTBOX_IP = '198.51.100.213';
 const GREEN_IP = '198.51.100.214';
 const LOST_ANSWER_IP = '198.51.100.215';
 const MARKED_LATER_IP = '198.51.100.216';
+const NARROWED_IP = '198.51.100.217';
 const PREVIEW_RED_DOMAIN = 'red-preview.pulse-test.example';
 const PREVIEW_PEERS = ['pulse-preview-1', 'pulse-preview-2', 'pulse-preview-3', 'pulse-preview-4', 'pulse-preview-5'];
 const PREVIEW_FORBIDDEN_OPERATIONS = ['pushPulse', 'pulseLookup', 'pulseTrending', 'pulseBenchmark'];
@@ -118,6 +120,11 @@ const ADD_MARKING = gql`
 const PULSE_SETTINGS = gql`
   query PulseSettings {
     pulseSettings { scopes contribution { total_records } }
+  }
+`;
+const TELEMETRY = gql`
+  mutation PulseTelemetry($event: PulseTelemetryEvent!, $surface: PulseSurface!) {
+    pulseTelemetry(event: $event, surface: $surface)
   }
 `;
 const PURGE = gql`
@@ -250,6 +257,11 @@ describe('Threat Pulse manager and API', () => {
       expect(benchmark.data?.pulseBenchmark.unavailable_reason).toBe('contribution_required');
     });
 
+    it('should count the preview events of a platform in preview', async () => {
+      const result = await queryAsAdminWithSuccess({ query: TELEMETRY, variables: { event: 'impression', surface: 'entity_card' } });
+      expect(result.data?.pulseTelemetry).toBe(true);
+    });
+
     it('should never contribute, look up, read trending or benchmarks in preview, whatever runs', async () => {
       const before = hub.requests.length;
       await runPulseContribution(testContext);
@@ -284,13 +296,16 @@ describe('Threat Pulse manager and API', () => {
     expect(configuration).toMatchObject({
       mode: 'contribute_and_read',
       enabled: true,
-      access: 'preview',
       readable: false,
       consent_accepted_version: PULSE_CONSENT_VERSION,
       sector_bucket: 'finance',
       region_bucket: 'europe',
     });
     expect(configuration.consent_user_name).toBeTruthy();
+    resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+    // Still in preview until the first accepted contribution: its preview events count
+    const telemetry = await queryAsAdminWithSuccess({ query: TELEMETRY, variables: { event: 'cta_click', surface: 'trending_widget' } });
+    expect(telemetry.data?.pulseTelemetry).toBe(true);
     expect(configuration.forced_excluded_markings.map((marking: { definition: string }) => marking.definition)).toEqual(expect.arrayContaining(['TLP:RED', 'TLP:AMBER+STRICT']));
     resetCacheForEntity(ENTITY_TYPE_SETTINGS);
   });
@@ -308,6 +323,9 @@ describe('Threat Pulse manager and API', () => {
     // The first accepted contribution opens the full reads, and only accepted records count in the statistics
     const status = await queryAsAdminWithSuccess({ query: PULSE_STATUS });
     expect(status.data?.pulseStatus).toMatchObject({ mode: 'contribute_and_read', access: 'full', readable: true });
+    // The preview events are counted for platforms in preview only, whatever the client sends
+    const telemetry = await queryAsAdminWithSuccess({ query: TELEMETRY, variables: { event: 'impression', surface: 'entity_card' } });
+    expect(telemetry.data?.pulseTelemetry).toBe(false);
     const settingsAfterPush = await queryAsAdminWithSuccess({ query: PULSE_SETTINGS });
     expect(settingsAfterPush.data?.pulseSettings.contribution.total_records).toBe(pushedRecords);
     const pushes = hub.requests.filter((request) => request.operation === 'pushPulse');
@@ -344,6 +362,19 @@ describe('Threat Pulse manager and API', () => {
     expect(await redisTakePulseActivity(today)).toEqual([]);
     await runPulseContribution(testContext);
     expect(huntedCount()).toBe(3 * malwareKeys.length);
+  });
+
+  it('should contribute the sightings of an object seen again, not only its first one', async () => {
+    const today = utcDay();
+    const malwareKeys = computeStableKeys(await storeLoadById<BasicStorePulseEntity>(testContext, ADMIN_USER, malwareId, ENTITY_TYPE_MALWARE));
+    const sightedCount = () => hub.ledger
+      .filter((row) => row.platformId === settingsId && row.eventKind === 'sighted' && row.day === today && malwareKeys.includes(row.key))
+      .reduce((total, row) => total + row.count, 0);
+    const before = sightedCount();
+    // An existing sighting seen three more times: its count rises, no relationship is created
+    await recordPulseSightingIncrease(testContext, { fromId: malwareId, fromType: ENTITY_TYPE_MALWARE, toType: 'Organization' }, 3);
+    await runPulseContribution(testContext);
+    expect(sightedCount()).toBe(before + 3 * malwareKeys.length);
   });
 
   it('should keep the pending batches until XTM Hub accepts them, even after a run stopped once it claimed them', async () => {
@@ -443,6 +474,28 @@ describe('Threat Pulse manager and API', () => {
     const entityIds = trending.entries.map((entry: { entity: { id: string } }) => entry.entity.id);
     expect(entityIds).toEqual(expect.arrayContaining([sharedIndicatorId, malwareId]));
     expect(entityIds).not.toContain(redIndicatorId);
+  });
+
+  it('should never send the batches built under a scope the administrator narrowed since', async () => {
+    const configure = async (input: Record<string, unknown>) => {
+      await queryAsAdminWithSuccess({ query: CONFIGURE, variables: { input: { mode: 'contribute_and_read', ...input } } });
+      resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+    };
+    const created = await queryAsAdminWithSuccess({ query: CREATE_INDICATOR, variables: { input: { name: NARROWED_IP, pattern: `[ipv4-addr:value = '${NARROWED_IP}']`, pattern_type: 'stix', x_opencti_main_observable_type: 'IPv4-Addr' } } });
+    const indicatorId = created.data?.indicatorAdd.id;
+    const keys = computeStableKeys(await storeLoadById<BasicStorePulseEntity>(testContext, ADMIN_USER, indicatorId, ENTITY_TYPE_INDICATOR));
+    const contributed = () => hub.ledger.filter((row) => row.platformId === settingsId && keys.includes(row.key)).length;
+    const scopes: string[] = (await queryAsAdminWithSuccess({ query: PULSE_SETTINGS })).data?.pulseSettings.scopes;
+    // The batch waits in the outbox, then indicators leave the scope
+    hub.failNext('pushPulse', 'INTERNAL_SERVER_ERROR');
+    await runPulseContribution(testContext);
+    expect(contributed()).toBe(0);
+    await configure({ scopes: scopes.filter((scope) => scope !== ENTITY_TYPE_INDICATOR) });
+    await runPulseContribution(testContext);
+    expect(contributed()).toBe(0);
+    expect(await redisClaimPulseOutbox()).toEqual([]);
+    await configure({ scopes });
+    await deleteElementById(testContext, ADMIN_USER, indicatorId, ENTITY_TYPE_INDICATOR);
   });
 
   it('should remove the statistics of the objects a narrower scope or a new exclusion takes out', async () => {

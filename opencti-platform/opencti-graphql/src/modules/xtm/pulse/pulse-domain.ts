@@ -17,7 +17,7 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../../schema/general';
 import { PULSE_MANAGER_USER, SYSTEM_USER } from '../../../utils/access';
 import { publishUserAction } from '../../../listener/UserActionListener';
 import { isEnterpriseEdition } from '../../../enterprise-edition/ee';
-import { getSettings } from '../../../domain/settings';
+import { getSettings, getSettingsFromDatabase } from '../../../domain/settings';
 import { addThreatPulseLookupsCount, addThreatPulseModeChangeCount, addThreatPulsePreviewEventCount, addThreatPulseRecordsCount } from '../../../manager/telemetryManager';
 import {
   FilterMode,
@@ -72,11 +72,13 @@ import {
 import {
   redisAddPulseActivity,
   redisClaimPulseOutbox,
+  redisBumpPulseConfigGeneration,
   redisCommitPulseWindow,
   redisDiscardPulseActivity,
   redisDiscardPulseOutbox,
   redisClearPulseContributionState,
   redisGetPulseContributionStats,
+  redisGetPulseConfigGeneration,
   redisGetPulseCursor,
   redisGetPulseEntityLookup,
   redisGetPulseResponse,
@@ -163,8 +165,11 @@ export const utcDaySegments = (since: Date, until: Date) => {
 };
 // endregion
 
-const loadPulseContext = async (context: AuthContext) => {
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+// `fresh` reads the settings from the database rather than the cache another node may not have refreshed yet.
+const loadPulseContext = async (context: AuthContext, { fresh = false } = {}) => {
+  const settings = fresh
+    ? await getSettingsFromDatabase(context) as BasicStoreSettings
+    : await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const values = readPulseSettings(settings);
   const platform = getPulseHubPlatform(settings);
   const state = await redisGetPulseState();
@@ -370,6 +375,8 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
     );
   }
   await updateAttribute(context, user, settings.id, ENTITY_TYPE_SETTINGS, updates);
+  // A contribution cycle running under the former configuration records and sends nothing more from now on.
+  await redisBumpPulseConfigGeneration();
   if (enabling && !wasContributing) {
     await redisSetPulseCursor(new Date().toISOString());
   }
@@ -377,6 +384,11 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
     // Nothing collected before the opt-out may leave afterwards.
     await redisDiscardPulseOutbox();
     await redisDiscardPulseActivity(lastUtcDays(ACTIVITY_DAYS));
+  } else if (wasContributing && (current.scopes.some((scope) => !scopes.includes(scope))
+    || (excludedMarkingIds as string[]).some((markingId) => !current.excludedMarkingIds.includes(markingId)))) {
+    // The batches not sent yet were built under the former, wider policy: they never leave. Their activity was already
+    // acknowledged, so it is not contributed again; the next run collects from there under the new policy.
+    await redisDiscardPulseOutbox();
   }
   const modeChanged = mode !== current.mode;
   if (modeChanged && (currentAccess === PulseAccess.Full || currentAccess === PulseAccess.Preview)) {
@@ -448,12 +460,15 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
 interface PushOutcome {
   pushedRecords: number;
   error: PulseHubError | null;
+  // The configuration changed during the cycle.
+  stopped?: boolean;
 }
 
 // The pending batches, in order. They stay claimed in Redis until XTM Hub answers for each of them: a batch is settled
 // once XTM Hub accepted it or refused it for good; on any other failure the push stops and the batches not settled yet
-// stay claimed, so the next run claims them again.
-const pushPulseOutbox = async (platform: PulseHubPlatform, oldestAcceptedDay: string): Promise<PushOutcome> => {
+// stay claimed, so the next run claims them again. Nothing more leaves once the configuration changed since the cycle
+// read it (generation).
+const pushPulseOutbox = async (platform: PulseHubPlatform, oldestAcceptedDay: string, generation: string): Promise<PushOutcome> => {
   const claimed = await redisClaimPulseOutbox();
   const expired = claimed.filter((entry) => entry.batch.day < oldestAcceptedDay);
   if (expired.length > 0) {
@@ -466,6 +481,9 @@ const pushPulseOutbox = async (platform: PulseHubPlatform, oldestAcceptedDay: st
   let pushedRecords = 0;
   for (let index = 0; index < retryable.length; index += 1) {
     const entry = retryable[index];
+    if ((await redisGetPulseConfigGeneration()) !== generation) {
+      return { pushedRecords, error: null, stopped: true };
+    }
     let accepted = 0;
     try {
       ({ accepted } = await xtmHubPulseClient.push(platform, entry.batch));
@@ -513,7 +531,10 @@ const recordAcceptedContribution = async (state: PulseOperationalState, pushedRe
 };
 
 export const runPulseContribution = async (context: AuthContext) => {
-  const { values, platform, state } = await loadPulseContext(context);
+  // Read before the settings, which come from the database: a configuration stored after this point stops the cycle
+  // before it records or sends anything more.
+  const generation = await redisGetPulseConfigGeneration();
+  const { values, platform, state } = await loadPulseContext(context, { fresh: true });
   if (!isPulseContributing(values) || !platform) {
     return { pushedRecords: 0 };
   }
@@ -521,11 +542,13 @@ export const runPulseContribution = async (context: AuthContext) => {
   const today = utcDay(now);
   const yesterday = previousUtcDay(today);
   let pushedRecords = 0;
-  const outboxOutcome = await pushPulseOutbox(platform, yesterday);
+  const outboxOutcome = await pushPulseOutbox(platform, yesterday, generation);
   pushedRecords += outboxOutcome.pushedRecords;
-  if (outboxOutcome.error) {
+  if (outboxOutcome.error || outboxOutcome.stopped) {
     // Backpressure: no new window is collected while XTM Hub has not answered the pending batches.
-    await redisSetPulseState({ last_error: outboxOutcome.error.code });
+    if (outboxOutcome.error) {
+      await redisSetPulseState({ last_error: outboxOutcome.error.code });
+    }
     await recordAcceptedContribution(state, pushedRecords, now);
     addThreatPulseRecordsCount(pushedRecords);
     return { pushedRecords };
@@ -584,8 +607,14 @@ export const runPulseContribution = async (context: AuthContext) => {
   // it and the acknowledgement of the activity taken from Redis. A run that stops before it sent nothing and the next
   // one collects the same window again; a run that stops after it leaves the batches in the outbox, sent by the next
   // run with the same identifiers, which XTM Hub counts once.
-  await redisCommitPulseWindow(windowItems, until.toISOString(), acceptedDays);
-  const windowOutcome = await pushPulseOutbox(platform, yesterday);
+  if (!(await redisCommitPulseWindow(windowItems, until.toISOString(), acceptedDays, generation))) {
+    // The configuration changed during the cycle: the window is collected again under the new one by the next run.
+    logApp.info('[THREAT PULSE] Configuration changed during the contribution, the window is left to the next run');
+    await recordAcceptedContribution(state, pushedRecords, now);
+    addThreatPulseRecordsCount(pushedRecords);
+    return { pushedRecords };
+  }
+  const windowOutcome = await pushPulseOutbox(platform, yesterday, generation);
   pushedRecords += windowOutcome.pushedRecords;
   await redisSetPulseState({ last_error: windowOutcome.error?.code });
   await recordAcceptedContribution(state, pushedRecords, now);
@@ -679,6 +708,9 @@ export const runPulseRefresh = async (context: AuthContext, force = false) => {
   let scanned = 0;
   let handled = 0;
   let processed = 0;
+  // Set once an eligible object past the cap was seen: the next run starts there. A run that fills the cap with the
+  // last object of the scope reads one more page to know it, and the next run starts over.
+  let remaining = false;
   try {
     await fullEntitiesList<BasicStorePulseEntity>(context, PULSE_MANAGER_USER, values.scopes, {
       noFiltersChecking: true,
@@ -688,20 +720,22 @@ export const runPulseRefresh = async (context: AuthContext, force = false) => {
         await writePulseDocuments(context, ineligible.map((entity) => ({ entity, doc: PULSE_PREVIEW_CLEARED_DOCUMENT })));
         const eligible = entities.filter((entity) => isPulseContributable(entity, policy, values.scopes));
         const start = Math.max(0, offset - scanned);
+        const room = REFRESH_MAX_ENTITIES - handled;
         scanned += eligible.length;
-        const batch = eligible.slice(start, start + REFRESH_MAX_ENTITIES - handled);
+        remaining = eligible.length > start + room;
+        const batch = eligible.slice(start, start + room);
         if (batch.length > 0) {
           handled += batch.length;
           processed += await refreshPulseEntities(context, platform, day, salt, batch);
         }
-        return handled < REFRESH_MAX_ENTITIES;
+        return !remaining;
       },
     });
   } catch (error) {
     await handlePulseReadError(values, error);
     throw error;
   }
-  const covered = handled < REFRESH_MAX_ENTITIES;
+  const covered = !remaining;
   await redisSetPulseState({ last_refresh_at: new Date().toISOString(), refresh_offset: covered ? undefined : String(offset + handled) });
   logApp.info('[THREAT PULSE] Network information refreshed', { processed, offset, covered });
   return processed;
@@ -776,12 +810,16 @@ export const runPulsePreview = async (context: AuthContext, force = false) => {
   let scanned = 0;
   let handled = 0;
   let matched = 0;
+  // Set once an object past the cap was seen, as in the nightly refresh.
+  let remaining = false;
   await fullEntitiesList<BasicStorePulseEntity>(context, PULSE_MANAGER_USER, values.scopes, {
     noFiltersChecking: true,
     callback: async (entities) => {
       const start = Math.max(0, offset - scanned);
+      const room = PREVIEW_MAX_ENTITIES - handled;
       scanned += entities.length;
-      const batch = entities.slice(start, start + PREVIEW_MAX_ENTITIES - handled);
+      remaining = entities.length > start + room;
+      const batch = entities.slice(start, start + room);
       handled += batch.length;
       const updates: PulseDocumentUpdate[] = batch.flatMap((entity) => {
         const objectType = PULSE_OBJECT_TYPE_BY_ENTITY_TYPE[entity.entity_type];
@@ -801,10 +839,10 @@ export const runPulsePreview = async (context: AuthContext, force = false) => {
         return Object.keys(keysDoc).length > 0 ? [{ entity, doc: keysDoc }] : [];
       });
       await writePulseDocuments(context, updates);
-      return handled < PREVIEW_MAX_ENTITIES;
+      return !remaining;
     },
   });
-  const covered = handled < PREVIEW_MAX_ENTITIES;
+  const covered = !remaining;
   // Every object the preview signal is on, whichever pass wrote it: only preview documents carry a prevalence here.
   const matchedTotal = await elCount(context, PULSE_MANAGER_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, {
     types: values.scopes,
@@ -1136,10 +1174,11 @@ export const getPulseBenchmark = async (context: AuthContext, user: AuthUser, ar
       metrics: result.metrics.map((metric) => ({
         object_type: PULSE_ENTITY_TYPE_BY_OBJECT_TYPE[metric.object_type] ?? metric.object_type,
         event_kind: metric.event_kind,
-        platform_count: metric.platform_count,
+        // The activity of the platform in its current sector, the operand of the comparison with the sector median: the
+        // count shown next to the median and the ratio are the same figure.
+        platform_count: metric.sector_platform_count,
         sector_median: metric.sector_median,
         network_median: metric.network_median,
-        // Against the sector median, the activity of the platform in that sector only.
         ratio: metric.sector_median && metric.sector_median > 0 ? metric.sector_platform_count / metric.sector_median : null,
       })),
       entries,
@@ -1153,7 +1192,13 @@ export const getPulseBenchmark = async (context: AuthContext, user: AuthUser, ar
 // endregion
 
 // region usage telemetry of the preview surfaces
-export const recordPulseTelemetry = (event: PulseTelemetryEvent, surface: PulseSurface) => {
+// Counted only while the platform is in preview, whatever the client says: these are the impressions and calls to
+// action of the preview.
+export const recordPulseTelemetry = async (context: AuthContext, event: PulseTelemetryEvent, surface: PulseSurface) => {
+  const { access } = await loadPulseContext(context);
+  if (access !== PulseAccess.Preview) {
+    return false;
+  }
   addThreatPulsePreviewEventCount(event, surface);
   return true;
 };

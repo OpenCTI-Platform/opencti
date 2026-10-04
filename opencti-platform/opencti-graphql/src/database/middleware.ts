@@ -217,6 +217,7 @@ import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefiniti
 import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
 import { computeCreationProvenance, recordUpsertProvenance, removeProvenanceInputs } from '../modules/provenance/provenance-write';
 import { creationProceduresBuilder, mergeProvenanceOnEntitiesMerge, prepareUpsertProvenance } from '../modules/provenance/provenance-upsert';
+import { recordPulseSightingIncrease } from '../modules/xtm/pulse/pulse-sighting-activity';
 import { buildChanges, generateCreateMessage, generateRestoreMessage } from './data-changes';
 import { authorizedMembers, authorizedMembersActivationDate, confidence, iAliasedIds, iAttributes, modified, type RefAttribute, updatedAt } from '../schema/attribute-definition';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
@@ -3366,6 +3367,12 @@ const upsertElement = async (
   // -- Whatever the resolution, the writing source asserted this element
   if (preparedProvenance.record) {
     await recordUpsertProvenance(context, user, resolvedElement, preparedProvenance.record);
+  }
+  if (isStixSightingRelationship(type) && inputs.length > 0) {
+    const sighting = resolvedElement as unknown as BasicStoreRelation & { attribute_count?: number };
+    const updated = upsertResult.element as unknown as { attribute_count?: number };
+    const increase = Number(updated?.attribute_count ?? 0) - Number(sighting.attribute_count ?? 0);
+    await recordPulseSightingIncrease(context, sighting, increase);
   }
   return upsertResult;
 };

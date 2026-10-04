@@ -32,7 +32,7 @@ const pulseResolvers: Resolvers = {
   Mutation: {
     pulseConfigure: (_, { input }, context) => configurePulse(context, context.user, input),
     pulsePurge: (_, __, context) => purgePulseContributions(context, context.user),
-    pulseTelemetry: (_, { event, surface }) => recordPulseTelemetry(event, surface),
+    pulseTelemetry: (_, { event, surface }, context) => recordPulseTelemetry(context, event, surface),
   },
   Indicator: pulseField,
   AttackPattern: pulseField,
