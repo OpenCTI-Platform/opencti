@@ -146,6 +146,18 @@ For each recommendation you can:
 - **Reject** it, with an optional reason. A rejected recommendation is not proposed again before a cooldown (30 days by default).
 - **Revert** it once applied. Reverting restores the previous state (confidence level, schedule, connector status, whether a feed was running) and removes what was created (decay rule, exclusion list). A quarantine draft is kept for review.
 
+An applied recommendation shows who applied it and when, with **Revert**:
+
+![Applied recommendation with its Revert action](assets/source-intelligence-recommendation-applied.png)
+
+**Revert** asks for a confirmation that says what the revert restores:
+
+![Confirmation of the revert of a recommendation](assets/source-intelligence-recommendation-revert-confirm.png)
+
+Once reverted, the recommendation keeps its history and is not proposed again automatically:
+
+![Reverted recommendation](assets/source-intelligence-recommendation-reverted.png)
+
 While its change runs, a recommendation shows **Applying**. A change refused before anything was written (for example, a missing setting) makes it fail with **Retry**. If the change failed after something may have been written, or its outcome cannot be recorded, it stays **Applying**, with the cause behind **Show details**: it is never applied a second time and cannot be rejected, since its change may be in place. Check the target of the recommendation (user, connector, feed or settings) in that case.
 
 A revert works the same way: while it runs, the recommendation shows **Reverting**. If the revert fails or its outcome cannot be recorded, the recommendation stays **Reverting**, with the cause behind **Show details** and **Retry**: every step of a revert can run again safely (a decay rule or an exclusion list already removed is not removed twice), and the recommendation is neither proposed again nor applied meanwhile.
