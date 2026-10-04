@@ -2,22 +2,7 @@ import React, { Suspense, useState } from 'react';
 import { graphql, PreloadedQuery, usePaginationFragment, usePreloadedQuery } from 'react-relay';
 import { Box, DialogActions, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import { DeleteOutlined, DeviceHubOutlined, EditOutlined } from '@mui/icons-material';
-import {
-  Button as DsButton,
-  Card as DsCard,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-  Chip,
-  IconButton,
-  Switch,
-  Text,
-  Thumbnail,
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@filigran/design-system';
+import { Button as DsButton, Chip, Hero, HeroBody, HeroHeader, IconButton, Switch, Text, Thumbnail, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -128,24 +113,22 @@ const DOCUMENTATION_URL = 'https://docs.opencti.io/latest/usage/defense-matrix/'
 const MappingsFirstUse = ({ onCreate }: { onCreate: () => void }) => {
   const { t_i18n } = useFormatter();
   return (
-    <DsCard data-testid="defense-logsource-mappings-first-use">
-      <CardHeader
+    <Hero data-testid="defense-logsource-mappings-first-use">
+      <HeroHeader
         icon={<Thumbnail><DeviceHubOutlined /></Thumbnail>}
         action={<Button onClick={onCreate} data-testid="defense-logsource-mappings-first-use-create">{t_i18n('Add a mapping')}</Button>}
       >
-        <CardTitle>{t_i18n('Tell the defense matrix what your telemetry covers')}</CardTitle>
-      </CardHeader>
-      <CardContent clamp={0}>
+        <Text variant="title-md">{t_i18n('Tell the defense matrix what your telemetry covers')}</Text>
+      </HeroHeader>
+      <HeroBody>
         <Text variant="content-base">
           {t_i18n('A mapping links a log source (for example Windows process creation events collected by Sysmon) to the MITRE data sources it feeds. The defense matrix uses the mappings to know which techniques a security platform can see, from the log sources of its deployed rules or the ones you declare. Built-in mappings cover the Sigma taxonomy; add yours for the log sources of your organization.')}
         </Text>
-      </CardContent>
-      <CardFooter>
         <DsButton priority="tertiary" size="sm" asChild>
           <a href={DOCUMENTATION_URL} target="_blank" rel="noreferrer">{t_i18n('Read the documentation')}</a>
         </DsButton>
-      </CardFooter>
-    </DsCard>
+      </HeroBody>
+    </Hero>
   );
 };
 
