@@ -48,7 +48,7 @@ import {
   RELATION_DEPLOYED_ON,
   type StoreRelationDeployedOn,
 } from './indicatorDeployment-types';
-import { isDeploymentStatus, pairMarkings } from './indicatorDeployment-utils';
+import { isDeploymentStatus, isReadableWithIndicator, pairMarkings } from './indicatorDeployment-utils';
 import { consumeDeploymentRateLimit, DEPLOYMENT_RATE_LIMIT_BATCH, DEPLOYMENT_RATE_LIMIT_HITS, DEPLOYMENT_RATE_LIMIT_SINGLE } from './indicatorDeployment-rate-limit';
 
 export const DEPLOYMENT_BATCH_MAX_SIZE = 500;
@@ -882,7 +882,8 @@ export const reconcileAllIndicatorDeploymentCounters = async (context: AuthConte
 
 /**
  * Recompute the derived deployment counters of the given indicators from their deployed-on relationships.
- * Runs as system user: only numbers are stored on the indicator, never the restricted relationships.
+ * Runs as system user: only numbers are stored on the indicator, and only the deployments every reader of the indicator
+ * can read are counted, so a deployment on a more restricted security platform is never revealed by a counter.
  * Side-channel update: no stream event, no history, updated_at kept.
  */
 export const refreshIndicatorDeploymentCounters = async (context: AuthContext, indicatorIds: string[]) => {
@@ -908,7 +909,8 @@ export const refreshIndicatorDeploymentCounters = async (context: AuthContext, i
   });
   let updated = 0;
   await BluePromise.map(indicators, async (indicator) => {
-    const counters = computeIndicatorDeploymentCounters(relationsByIndicator.get(indicator.internal_id) ?? []);
+    const readable = (relationsByIndicator.get(indicator.internal_id) ?? []).filter((relation) => isReadableWithIndicator(relation, indicator));
+    const counters = computeIndicatorDeploymentCounters(readable);
     const unchanged = (Object.keys(counters) as Array<keyof IndicatorDeploymentCounters>)
       .every((key) => (indicator[key] ?? 0) === counters[key] && indicator[key] !== undefined);
     if (!unchanged) {

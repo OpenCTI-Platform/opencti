@@ -6,7 +6,13 @@ import { isStixCoreRelationship, RELATION_DEPLOYED_ON } from '../../../../src/sc
 import { ENTITY_TYPE_INDICATOR } from '../../../../src/modules/indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../../src/modules/securityPlatform/securityPlatform-types';
 import { ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
-import { buildDeployedOnCreationData, isDeploymentStatus, isValidationStatus, pairMarkings } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-utils';
+import {
+  buildDeployedOnCreationData,
+  isDeploymentStatus,
+  isReadableWithIndicator,
+  isValidationStatus,
+  pairMarkings,
+} from '../../../../src/modules/indicatorDeployment/indicatorDeployment-utils';
 import { convertDeployedOnToStixExtension } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-converter';
 import type { StoreRelation } from '../../../../src/types/store';
 
@@ -150,5 +156,14 @@ describe('markings of the relationships generated for a pair', () => {
     expect(pairMarkings(indicator, platform)).toEqual(['tlp-green', 'pap-amber', 'tlp-red']);
     expect(pairMarkings({}, platform)).toEqual(['tlp-green', 'tlp-red']);
     expect(pairMarkings({ 'object-marking': null }, {})).toEqual([]);
+  });
+
+  it('should only count the deployments every reader of the indicator can read', () => {
+    const indicator = { 'object-marking': ['tlp-green', 'pap-amber'] };
+    expect(isReadableWithIndicator({ 'object-marking': ['tlp-green'] }, indicator)).toEqual(true);
+    expect(isReadableWithIndicator({}, indicator)).toEqual(true);
+    // The platform added a marking the indicator does not carry
+    expect(isReadableWithIndicator({ 'object-marking': ['tlp-green', 'tlp-red'] }, indicator)).toEqual(false);
+    expect(isReadableWithIndicator({ 'object-marking': ['tlp-green'] }, {})).toEqual(false);
   });
 });

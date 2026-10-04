@@ -71,6 +71,11 @@ The counters are kept up to date from the deployment events. Deleting or merging
 deployments without individual events, so the platform manager then recomputes the counters of every indicator
 with deployments; it also rechecks them continuously in bounded batches.
 
+A deployment, its hits sighting and its validation results carry the markings of both the indicator and the
+security platform, so only the users who can read both can read them. The counters stored on an indicator are
+visible to every reader of the indicator: they only count the deployments that carry no marking beyond the
+indicator's own, and never reveal the deployments of a security platform more restricted than the indicator.
+
 ## Viewing deployments
 
 - On an indicator, the **Deployments** tab lists the security platforms the indicator is deployed on, with the
