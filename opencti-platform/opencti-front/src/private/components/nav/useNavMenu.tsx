@@ -206,7 +206,7 @@ const useNavMenu = (): NavGroup[] => {
   const isGrantedToNeeds = (needs: string[]) => isGrantedTo(me, needs);
   const defenseAreas = visibleDefenseAreas(DEFENSE_AREAS, hiddenEntities.filter((e): e is string => !!e), isGrantedToNeeds);
   const curationTabs = grantedCurationTabs(CURATION_TABS, isGrantedToNeeds);
-  const curationCounts = curationTabs.flatMap((tab) => (tab.useBadgeCount ? [tab.useBadgeCount] : []));
+  const curationCounts = curationTabs.flatMap((tab) => (tab.useBadgeCount ? [{ id: tab.path, useCount: tab.useBadgeCount }] : []));
 
   const groups: (RawNavGroup | false)[] = [
     {
