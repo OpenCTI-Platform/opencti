@@ -3,7 +3,8 @@ import '../../../../src/modules/index';
 import { computeSnapshotRetentionDate, splitRunBudget } from '../../../../src/manager/snapshotManager';
 import { buildAggregatesMessage, buildChangeMessage, parseTriggerFilters } from '../../../../src/modules/timeMachine/timeMachine-changeDigest';
 import { DEFAULT_CHANGE_DIGEST_LOCALE, formatChangeDigestMessage, resolveChangeDigestLocale } from '../../../../src/modules/timeMachine/timeMachine-changeDigest-messages';
-import { landscapeResultReferencedIds, savedFilterScopeEntityTypes } from '../../../../src/modules/timeMachine/landscapeDiff-domain';
+import { landscapeResultReferencedIds, SAVED_FILTER_SCOPES, savedFilterScopeEntityTypes } from '../../../../src/modules/timeMachine/landscapeDiff-domain';
+import { isStixCoreObject } from '../../../../src/schema/stixCoreObject';
 import type { BasicStoreEntityRetentionRule } from '../../../../src/modules/retentionRules/retentionRules-types';
 import type { LandscapeDiffAggregates, LandscapeDiffEntitySummary } from '../../../../src/modules/timeMachine/timeMachine-types';
 
@@ -162,8 +163,19 @@ describe('Landscape diff scopes', () => {
   it('should map saved filter list scopes to entity types', () => {
     expect(savedFilterScopeEntityTypes('intrusionSets')).toEqual(['Intrusion-Set']);
     expect(savedFilterScopeEntityTypes('malwares')).toEqual(['Malware']);
+    // The scope is the storage key of the list, whatever its spelling
+    expect(savedFilterScopeEntityTypes('indicators-list')).toEqual(['Indicator']);
+    expect(savedFilterScopeEntityTypes('administrative-areas')).toEqual(['Administrative-Area']);
+    expect(savedFilterScopeEntityTypes('securityPlatform')).toEqual(['SecurityPlatform']);
+    expect(savedFilterScopeEntityTypes('caseIncidents')).toEqual(['Case-Incident']);
     expect(savedFilterScopeEntityTypes('unknown-list')).toBeNull();
     expect(savedFilterScopeEntityTypes(undefined)).toBeNull();
+  });
+
+  it('should only map saved filter scopes to entity types a landscape diff accepts', () => {
+    Object.values(SAVED_FILTER_SCOPES).flat().forEach((type) => {
+      expect(isStixCoreObject(type), type).toBe(true);
+    });
   });
 
   it('should list every entity named by a landscape result', () => {

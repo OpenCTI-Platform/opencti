@@ -71,8 +71,9 @@ export const LANDSCAPE_GROUP_BY_VALUES = ['entity_type', 'relationship_type', 't
 
 const INFRASTRUCTURE_TYPES = [ENTITY_TYPE_INFRASTRUCTURE, ENTITY_IPV4_ADDR, ENTITY_IPV6_ADDR, ENTITY_DOMAIN_NAME, ENTITY_URL, ENTITY_HOSTNAME];
 
-// Saved filters are scoped to the list they were created in, this maps the list scope to its entity types
-const SAVED_FILTER_SCOPES: Record<string, string[]> = {
+// Saved filters are scoped to the list they were created in (the storage key of the list), this maps the list scope
+// to its entity types
+export const SAVED_FILTER_SCOPES: Record<string, string[]> = {
   intrusionSets: ['Intrusion-Set'],
   threatActorsGroups: ['Threat-Actor-Group'],
   threatActorsIndividuals: ['Threat-Actor-Individual'],
@@ -90,7 +91,13 @@ const SAVED_FILTER_SCOPES: Record<string, string[]> = {
   reports: ['Report'],
   groupings: ['Grouping'],
   notes: ['Note'],
+  observedDatas: ['Observed-Data'],
   malwareAnalyses: ['Malware-Analysis'],
+  caseIncidents: ['Case-Incident'],
+  caseRfis: ['Case-Rfi'],
+  caseRfts: ['Case-Rft'],
+  'cases-casesTasks': ['Task'],
+  feedbacks: ['Feedback'],
   sectors: ['Sector'],
   organizations: ['Organization'],
   individuals: ['Individual'],
@@ -100,11 +107,13 @@ const SAVED_FILTER_SCOPES: Record<string, string[]> = {
   regions: ['Region'],
   cities: ['City'],
   positions: ['Position'],
-  administrativeAreas: ['Administrative-Area'],
+  'administrative-areas': ['Administrative-Area'],
   infrastructures: ['Infrastructure'],
-  indicators: ['Indicator'],
+  'indicators-list': ['Indicator'],
   stixCyberObservables: ['Stix-Cyber-Observable'],
-  securityPlatforms: ['SecurityPlatform'],
+  artifacts: ['Artifact'],
+  securityPlatform: ['SecurityPlatform'],
+  securityCoverages: ['Security-Coverage'],
 };
 
 export const savedFilterScopeEntityTypes = (scope: string | undefined | null): string[] | null => {
