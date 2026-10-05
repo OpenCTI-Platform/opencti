@@ -5,6 +5,7 @@ import {
   ComboboxContent,
   ComboboxControls,
   ComboboxField,
+  ComboboxHelperText,
   ComboboxInput,
   ComboboxLabel,
   ComboboxTrigger,
@@ -53,6 +54,7 @@ interface EntitySelectComponentProps extends EntitySelectBaseProps {
   onChange?: (val: EntityOption | EntityOption[] | null) => void;
   // entities that cannot be chosen here, for instance the entity the selection starts from
   excludedIds?: string[];
+  helperText?: React.ReactNode;
 }
 
 const EntitySelectComponent = ({
@@ -64,6 +66,7 @@ const EntitySelectComponent = ({
   onInputChange,
   queryRef,
   excludedIds,
+  helperText,
 }: EntitySelectComponentProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
@@ -127,6 +130,7 @@ const EntitySelectComponent = ({
         emptyMessage={t_i18n('No available options')}
         listAriaLabel={label}
       />
+      {helperText ? <ComboboxHelperText>{helperText}</ComboboxHelperText> : null}
     </Combobox>
   );
 };

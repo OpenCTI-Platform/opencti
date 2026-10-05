@@ -223,12 +223,18 @@ const GraphClusterPromoteDialog = ({ clusterId, clusterName, membersCount, targe
             />
             <CreatedByField name="createdBy" style={fieldSpacingContainerStyle} setFieldValue={setFieldValue} />
             <ObjectMarkingField name="objectMarking" style={fieldSpacingContainerStyle} setFieldValue={setFieldValue} />
-            <Box sx={{ mt: 2 }}>
+            <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
               <Switch
                 checked={values.include_features}
                 onCheckedChange={(checked) => setFieldValue('include_features', checked)}
                 label={t_i18n('Include the shared features (certificates, ASN, registrars...)')}
+                aria-describedby="graph-cluster-promote-features-help"
               />
+              <Text variant="content-caption" id="graph-cluster-promote-features-help">
+                {target === 'Grouping'
+                  ? t_i18n('On: the grouping also contains the certificates, autonomous systems, registrars and other features the members share, as the evidence of what ties them together. Off: it contains the members only.')
+                  : t_i18n('On: the campaign is also related to the certificates, autonomous systems, registrars and other features the members share, as the evidence of what ties them together. Off: it is related to the members only.')}
+              </Text>
             </Box>
             <FormButtonContainer>
               <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>

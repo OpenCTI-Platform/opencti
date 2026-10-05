@@ -21,7 +21,7 @@ Graph analytics are part of the Community Edition and do not use any AI.
 
 1. Open any entity, open the more-actions menu of its header and click **Connect to...**.
 2. Select the target entity.
-3. Optionally adjust the search: maximum path length (4 relationships by default, 6 at most), number of paths, relationship types and intermediate entity types, inferred relationships, or going through containers (reports, groupings, cases).
+3. Optionally adjust the search: maximum path length (4 relationships by default, 6 at most), number of paths, relationship types and intermediate entity types, inferred relationships, or going through containers (reports, groupings, cases). Each setting has a help line under it with an example, and **Learn more** at the top of the dialog opens this section.
 4. Click **Find paths**. The shortest paths are listed first, each one as a chain of entities and relationship types. Longer paths are only listed when they reach each of their entities by its shortest route: a detour through an entity already reached by a shorter path is not listed.
 5. Select the paths you are interested in and click **Start an investigation with the selected paths** to open them in a new investigation.
 
@@ -58,6 +58,12 @@ Threats (intrusion sets, threat actors, campaigns), malware, infrastructures, do
 ![Tooltip of a similarity percentage naming the two measures it combines](assets/graph-analytics-similar-score.png)
 
 The **Investigate these similar entities** button, on the same toolbar as the filters and **Refresh similarity**, starts an investigation with the entity, its look-alikes and the shared evidence.
+
+When no look-alike is listed, the tab names the next step. With a minimum similarity or **Only with an OpenAEV scenario** set, **Reset the filters** lists every look-alike again. Otherwise, it names the knowledge similarity is computed from (the techniques, tools, malware, infrastructure or victims of a threat or a malware; the certificates, autonomous systems, registrars, name servers or hosting of an infrastructure or an observable): add it, for example from a report, then click **Refresh similarity**.
+
+![Similar tab of an intrusion set without look-alikes yet, naming the knowledge to add and the refresh action](assets/graph-analytics-similar-none.png)
+
+![Similar tab whose filters match no look-alike, with the action to reset the filters](assets/graph-analytics-similar-empty.png)
 
 **Compare side by side** lines up the description, author, creation date, graph degree, graph cluster, markings and labels of both entities, then lists the shared evidence.
 
@@ -116,6 +122,7 @@ The detail of a cluster shows its members (most connected first), its shared fea
 
 - **Create Grouping** creates a Grouping containing the members you can access, and optionally the shared features. The dialog lists the members it will contain before you confirm: the first five, then **Show more** loads the next ones until every member is listed.
 - **Create Campaign** creates a Campaign related to the members you can access.
+- In both dialogs, **Include the shared features** (on by default) also adds the certificates, autonomous systems, registrars and other features the members share, as the evidence of what ties them together; when it is off, only the members are added.
 - **Add to investigation** opens the members and shared features in a new investigation.
 
 ![Detail of an infrastructure cluster sharing a certificate](assets/graph-analytics-cluster-detail.png)

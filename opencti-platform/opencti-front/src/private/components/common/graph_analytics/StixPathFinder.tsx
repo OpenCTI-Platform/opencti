@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import React, { ReactNode, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
 import { Link } from 'react-router';
 import {
@@ -10,11 +10,13 @@ import {
   ComboboxContent,
   ComboboxControls,
   ComboboxField,
+  ComboboxHelperText,
   ComboboxInput,
   ComboboxLabel,
   ComboboxTrigger,
   Select,
   SelectContent,
+  SelectHelperText,
   SelectItem,
   SelectLabel,
   SelectTrigger,
@@ -122,6 +124,7 @@ export type StixPathResult = StixPathsResult['paths'][number];
 
 const DEPTHS = ['1', '2', '3', '4', '5', '6'];
 const PATH_COUNTS = ['1', '3', '5', '10', '20'];
+const PATH_FINDER_DOCUMENTATION = 'https://docs.opencti.io/latest/usage/graph-analytics/#find-paths-between-two-entities';
 
 interface TypeOption {
   label: string;
@@ -130,12 +133,13 @@ interface TypeOption {
 
 interface TypesComboboxProps {
   label: string;
+  helperText: string;
   options: TypeOption[];
   value: TypeOption[];
   onChange: (value: TypeOption[]) => void;
 }
 
-const TypesCombobox = ({ label, options, value, onChange }: TypesComboboxProps) => {
+const TypesCombobox = ({ label, helperText, options, value, onChange }: TypesComboboxProps) => {
   const { t_i18n } = useFormatter();
   return (
     <Combobox<TypeOption>
@@ -155,7 +159,25 @@ const TypesCombobox = ({ label, options, value, onChange }: TypesComboboxProps) 
         </ComboboxControls>
       </ComboboxField>
       <ComboboxContent emptyMessage={t_i18n('No available options')} listAriaLabel={label} />
+      <ComboboxHelperText>{helperText}</ComboboxHelperText>
     </Combobox>
+  );
+};
+
+interface PathFinderSwitchProps {
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+  label: string;
+  helperText: string;
+}
+
+const PathFinderSwitch = ({ checked, onCheckedChange, label, helperText }: PathFinderSwitchProps) => {
+  const helperId = useId();
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, flex: '1 1 240px' }}>
+      <Switch checked={checked} onCheckedChange={onCheckedChange} label={label} aria-describedby={helperId} />
+      <Text variant="content-caption" id={helperId}>{helperText}</Text>
+    </Box>
   );
 };
 
@@ -305,11 +327,23 @@ const StixPathFinder = ({ fromId, fromLabel, toId, toLabel, renderActions }: Sti
   const resultActions = result && result.paths.length > 0 ? renderActions(result, selectedPaths) : null;
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }} data-testid="graph-path-finder">
-      <Text variant="content-compact">
-        {toId
-          ? t_i18n('Paths between {from} and {to}', { values: { from: fromLabel, to: toLabel ?? '' } })
-          : t_i18n('Paths from {name}', { values: { name: fromLabel } })}
-      </Text>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+        <Text variant="content-compact">
+          {toId
+            ? t_i18n('Paths between {from} and {to}', { values: { from: fromLabel, to: toLabel ?? '' } })
+            : t_i18n('Paths from {name}', { values: { name: fromLabel } })}
+        </Text>
+        <Button
+          variant="tertiary"
+          size="small"
+          href={PATH_FINDER_DOCUMENTATION}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-testid="graph-path-learn-more"
+        >
+          {t_i18n('Learn more')}
+        </Button>
+      </Box>
       {neighborhood && neighborhood.total > 0 && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }} data-testid="graph-neighborhood-summary">
           <Text variant="content-caption">
@@ -337,6 +371,9 @@ const StixPathFinder = ({ fromId, fromLabel, toId, toLabel, renderActions }: Sti
       {!toId && (
         <EntitySelect
           label={t_i18n('Target entity')}
+          helperText={neighborhood && neighborhood.total > 0
+            ? t_i18n('The entity to connect {name} to. Until you pick one, the chips above summarize the neighborhood of {name}: click a relationship type to search through it only.', { values: { name: fromLabel } })
+            : t_i18n('The entity to connect {name} to, searched by name among the entities you can access.', { values: { name: fromLabel } })}
           types={['Stix-Core-Object']}
           multiple={false}
           value={target}
@@ -354,6 +391,9 @@ const StixPathFinder = ({ fromId, fromLabel, toId, toLabel, renderActions }: Sti
             <SelectContent aria-label={t_i18n('Maximum path length')}>
               {DEPTHS.map((depth) => <SelectItem key={depth} value={depth}>{depth}</SelectItem>)}
             </SelectContent>
+            <SelectHelperText>
+              {t_i18n('One hop is one relationship: an intrusion set that uses a malware communicating with an IP address is a path of length 2. Longer paths reach more distant entities and take longer to search.')}
+            </SelectHelperText>
           </Select>
         </Box>
         <Box sx={{ flex: 1 }}>
@@ -365,12 +405,18 @@ const StixPathFinder = ({ fromId, fromLabel, toId, toLabel, renderActions }: Sti
             <SelectContent aria-label={t_i18n('Number of paths')}>
               {PATH_COUNTS.map((count) => <SelectItem key={count} value={count}>{count}</SelectItem>)}
             </SelectContent>
+            <SelectHelperText>
+              {t_i18n('How many paths to list, the shortest first. A higher number shows more alternative routes between the two entities.')}
+            </SelectHelperText>
           </Select>
         </Box>
       </Box>
       <Box ref={relationshipFieldRef}>
         <TypesCombobox
           label={t_i18n('Relationship types (all by default)')}
+          helperText={t_i18n('Only follow these relationships, for example "{first}" and "{second}" to trace the tools used and their network activity.', {
+            values: { first: t_i18n('relationship_uses'), second: t_i18n('relationship_communicates-with') },
+          })}
           options={relationshipOptions}
           value={relationshipTypes}
           onChange={setRelationshipTypes}
@@ -378,13 +424,26 @@ const StixPathFinder = ({ fromId, fromLabel, toId, toLabel, renderActions }: Sti
       </Box>
       <TypesCombobox
         label={t_i18n('Intermediate entity types (all by default)')}
+        helperText={t_i18n('Only go through these entity types between the two entities, for example {first} and {second}. The two entities you connect are always kept.', {
+          values: { first: t_i18n('entity_Malware'), second: t_i18n('entity_Infrastructure') },
+        })}
         options={entityTypeOptions}
         value={entityTypes}
         onChange={setEntityTypes}
       />
       <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-        <Switch checked={includeInferred} onCheckedChange={setIncludeInferred} label={t_i18n('Include inferred relationships')} />
-        <Switch checked={includeContainers} onCheckedChange={setIncludeContainers} label={t_i18n('Go through containers')} />
+        <PathFinderSwitch
+          checked={includeInferred}
+          onCheckedChange={setIncludeInferred}
+          label={t_i18n('Include inferred relationships')}
+          helperText={t_i18n('Also follow the relationships created by the inference rules of the platform. Off: only the relationships stored in the knowledge are followed.')}
+        />
+        <PathFinderSwitch
+          checked={includeContainers}
+          onCheckedChange={setIncludeContainers}
+          label={t_i18n('Go through containers')}
+          helperText={t_i18n('Also link two entities through a report, a grouping or a case that contains them both, for example two indicators listed in the same report.')}
+        />
       </Box>
       {loading && <Loader variant={LoaderVariant.inElement} />}
       {result && (

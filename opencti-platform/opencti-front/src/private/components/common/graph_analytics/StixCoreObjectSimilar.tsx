@@ -97,6 +97,10 @@ const recomputeMutation = graphql`
 
 const MIN_SCORES = ['0', '0.2', '0.4', '0.6', '0.8'];
 const PAGE_SIZE = 25;
+const SIMILARITY_DOCUMENTATION = 'https://docs.opencti.io/latest/usage/graph-analytics/#similar-entities';
+// compared on the techniques, tools, malware, infrastructure and victims they share; every other type with a Similar tab
+// is compared on certificates, autonomous systems, registrars, name servers and hosting
+const THREAT_SIMILARITY_TYPES = ['Intrusion-Set', 'Threat-Actor-Group', 'Threat-Actor-Individual', 'Campaign', 'Malware'];
 
 export type SimilarEntityNode = NonNullable<StixCoreObjectSimilarQuery$data['similarEntities']>['edges'][number]['node'];
 
@@ -104,9 +108,12 @@ interface StixCoreObjectSimilarComponentProps {
   queryRef: PreloadedQuery<StixCoreObjectSimilarQuery>;
   // toolbar element receiving the actions that need the results, so every control sits on one row
   actionsSlot: HTMLElement | null;
+  filtered: boolean;
+  onResetFilters: () => void;
+  canRecompute: boolean;
 }
 
-const StixCoreObjectSimilarComponent = ({ queryRef, actionsSlot }: StixCoreObjectSimilarComponentProps) => {
+const StixCoreObjectSimilarComponent = ({ queryRef, actionsSlot, filtered, onResetFilters, canRecompute }: StixCoreObjectSimilarComponentProps) => {
   const { t_i18n } = useFormatter();
   const { translateEntityType } = useEntityTranslation();
   const canInvestigate = useGranted([INVESTIGATION_INUPDATE]);
@@ -117,13 +124,44 @@ const StixCoreObjectSimilarComponent = ({ queryRef, actionsSlot }: StixCoreObjec
   const nodes = (similarEntities?.edges ?? []).map((edge) => edge.node);
 
   if (nodes.length === 0) {
+    const learnMore = (
+      <Button variant="tertiary" size="small" href={SIMILARITY_DOCUMENTATION} target="_blank" rel="noopener noreferrer">
+        {t_i18n('Learn more')}
+      </Button>
+    );
+    if (filtered) {
+      return (
+        <Alert
+          severity="info"
+          elevation={1}
+          data-testid="graph-similar-empty"
+          title={t_i18n('No similar entity matches these filters.')}
+          description={t_i18n('Lower the minimum similarity or turn off "Only with an OpenAEV scenario" to list every look-alike of this entity.')}
+          action={(
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+              <Button variant="secondary" size="small" onClick={onResetFilters} data-testid="graph-similar-reset-filters">
+                {t_i18n('Reset the filters')}
+              </Button>
+              {learnMore}
+            </Box>
+          )}
+        />
+      );
+    }
+    const sharedKnowledge = THREAT_SIMILARITY_TYPES.includes(stixCoreObject.entity_type)
+      ? t_i18n('Look-alikes appear once this entity shares techniques, tools, malware, infrastructure or victims with other entities of its kind.')
+      : t_i18n('Look-alikes appear once this entity shares certificates, autonomous systems, registrars, name servers or hosting with other entities of its kind.');
+    const nextStep = canRecompute
+      ? t_i18n('Add that knowledge, for example from a report, then click "Refresh similarity" to recompute it now.')
+      : t_i18n('Once that knowledge is added, for example from a report, the similarity is recomputed in the background.');
     return (
       <Alert
         severity="info"
         elevation={1}
         data-testid="graph-similar-empty"
         title={t_i18n('No similar entity found yet.')}
-        description={t_i18n('Similarity is computed in the background from the shared techniques, tools, malware, infrastructure, victims or co-occurrences, and refreshed when the knowledge changes.')}
+        description={`${sharedKnowledge} ${nextStep}`}
+        action={learnMore}
       />
     );
   }
@@ -285,7 +323,16 @@ const StixCoreObjectSimilar = ({ stixCoreObjectId }: StixCoreObjectSimilarProps)
       </Box>
       {queryRef && (
         <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <StixCoreObjectSimilarComponent queryRef={queryRef} actionsSlot={actionsSlot} />
+          <StixCoreObjectSimilarComponent
+            queryRef={queryRef}
+            actionsSlot={actionsSlot}
+            filtered={minScore !== '0' || onlyWithSecurityCoverage}
+            onResetFilters={() => {
+              setMinScore('0');
+              setOnlyWithSecurityCoverage(false);
+            }}
+            canRecompute={canRecompute}
+          />
         </Suspense>
       )}
     </Box>
