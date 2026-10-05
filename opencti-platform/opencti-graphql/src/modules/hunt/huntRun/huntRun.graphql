@@ -46,6 +46,35 @@ type HuntEvidence {
   value_hash: String!
   value_preview: String
   count: Int!
+  "The value is one the hunt logic matched, not context of the event"
+  matched: Boolean!
+}
+
+type HuntHitField {
+  name: String!
+  value: String!
+}
+
+"One event a run matched, as its connector extracted it: secrets masked, values truncated"
+type HuntHit {
+  timestamp: DateTime
+  "The field of the event the hunt logic matched, and its value"
+  matched_field: String
+  matched_value: String
+  host: String
+  user: String
+  process: String
+  command_line: String
+  source_ip: String
+  destination_ip: String
+  domain: String
+  url: String
+  file_hash: String
+  "Id of the event on the hunted platform"
+  event_id: String
+  "The rule or detection of the platform the event raised, if any"
+  detection: String
+  extra_fields: [HuntHitField!]!
 }
 
 enum HuntIocVerdict {
@@ -117,6 +146,11 @@ type HuntRun implements BasicObject & InternalObject {
   results_truncated: Boolean
   distinct_entities: Int
   evidence_sample: [HuntEvidence!]
+  "Single events the run matched (a sample, the first ones the connector sent)"
+  hit_sample: [HuntHit!]
+  "Dates of the first and last event the run matched, null when the connector dates none"
+  first_hit_at: DateTime
+  last_hit_at: DateTime
   "Indicator hunts: one result per value looked up"
   ioc_results: [HuntIocResult!]
   result_ids: [String!]
@@ -247,6 +281,34 @@ input HuntEvidenceInput {
   value_hash: String!
   value_preview: String
   count: Int!
+  "True for a value the hunt logic matched (the field of the rule detection), false or omitted for context of the event"
+  matched: Boolean
+}
+
+input HuntHitFieldInput {
+  name: String! @constraint(maxLength: 128)
+  value: String! @constraint(maxLength: 4096)
+}
+
+"One event the run matched. Every field is optional; the platform masks secrets and truncates values"
+input HuntHitInput {
+  timestamp: DateTime
+  matched_field: String @constraint(maxLength: 256)
+  matched_value: String @constraint(maxLength: 4096)
+  host: String @constraint(maxLength: 512)
+  user: String @constraint(maxLength: 512)
+  process: String @constraint(maxLength: 1024)
+  command_line: String @constraint(maxLength: 4096)
+  source_ip: String @constraint(maxLength: 64)
+  destination_ip: String @constraint(maxLength: 64)
+  domain: String @constraint(maxLength: 512)
+  url: String @constraint(maxLength: 2048)
+  "MD5, SHA-1 or SHA-256 of the file the event involves"
+  file_hash: String @constraint(maxLength: 128)
+  event_id: String @constraint(maxLength: 256)
+  detection: String @constraint(maxLength: 512)
+  "Other fields worth reading (at most 10 are kept)"
+  extra_fields: [HuntHitFieldInput!]
 }
 
 input HuntIocResultInput {
@@ -275,6 +337,11 @@ input HuntRunReportInput {
   truncated: Boolean
   distinct_entities: Int
   evidence_sample: [HuntEvidenceInput!]
+  "Single events the run matched, the most relevant first (at most 50 are kept)"
+  hits: [HuntHitInput!]
+  "Dates of the first and last matched event of the whole run, when the hits sent are only a sample"
+  first_hit_at: DateTime
+  last_hit_at: DateTime
   "Indicator hunts: the result of each value of the run message"
   ioc_results: [HuntIocResultInput!]
   result_ids: [String!]
@@ -288,6 +355,7 @@ input HuntRunEvidenceAddInput {
   result_ids: [String!]!
   hits_count: Int
   evidence_sample: [HuntEvidenceInput!]
+  hits: [HuntHitInput!]
   observed_at: DateTime
   source: String @constraint(maxLength: 128)
 }

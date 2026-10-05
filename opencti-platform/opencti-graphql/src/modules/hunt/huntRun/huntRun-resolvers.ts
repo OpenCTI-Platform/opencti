@@ -57,6 +57,10 @@ const huntRunResolvers: Resolvers = {
     href: () => null,
     opencti_id: () => null,
     entity_type: () => null,
+    matched: (evidence) => evidence.matched === true,
+  },
+  HuntHit: {
+    extra_fields: (hit) => hit.extra_fields ?? [],
   },
   HuntConnector: {
     securityPlatform: (connector, _, context) => (connector.security_platform_id

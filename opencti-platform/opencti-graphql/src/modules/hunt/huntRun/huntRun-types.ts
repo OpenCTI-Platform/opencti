@@ -69,6 +69,27 @@ export interface HuntEvidence {
   value_hash: string;
   value_preview?: string | null;
   count: number;
+  // The value is one the hunt logic matched (the connector says so), not context of the event
+  matched?: boolean;
+}
+
+/** One event a run matched, as the connector extracted it: values masked and truncated by the platform. */
+export interface HuntHit {
+  timestamp: string | null;
+  matched_field?: string | null;
+  matched_value?: string | null;
+  host?: string | null;
+  user?: string | null;
+  process?: string | null;
+  command_line?: string | null;
+  source_ip?: string | null;
+  destination_ip?: string | null;
+  domain?: string | null;
+  url?: string | null;
+  file_hash?: string | null;
+  event_id?: string | null;
+  detection?: string | null;
+  extra_fields?: { name: string; value: string }[];
 }
 
 // Connection test of a hunt connector: a message of this mode, answered by the connector with one result per check
@@ -122,6 +143,10 @@ interface HuntRunAttributes {
   results_truncated?: boolean | null;
   distinct_entities?: number | null;
   evidence_sample?: HuntEvidence[];
+  hit_sample?: HuntHit[];
+  first_hit_at?: string | null;
+  last_hit_at?: string | null;
+  hit_observation_ids?: string[];
   result_ids?: string[];
   verdict: string;
   verdict_source?: string | null;

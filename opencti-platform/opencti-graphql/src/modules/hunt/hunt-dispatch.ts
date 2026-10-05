@@ -44,7 +44,7 @@ import {
   HUNT_RUN_TRIGGER_MANUAL,
   HUNT_RUN_TRIGGER_PREVIEW,
 } from './huntRun/huntRun-types';
-import { clampInteger, HUNT_CONFIG, HUNT_DEFAULT_MAX_RESULTS, normalizeNativeQueries, parseHuntFilterGroup } from './hunt-utils';
+import { clampInteger, HUNT_CONFIG, HUNT_DEFAULT_MAX_RESULTS, huntExpectedObservables, normalizeNativeQueries, parseHuntFilterGroup } from './hunt-utils';
 import { HUNT_MESSAGES, type HuntMessage, huntMessage, type HuntMessageValues, renderHuntMessage } from './hunt-messages';
 
 export interface HuntConnectorTarget {
@@ -278,7 +278,7 @@ export const buildHuntRunMessage = async (
         hunt_type: hunt.hunt_type,
         sigma_rule: hunt.sigma_rule && hunt.sigma_rule.trim().length > 0 ? hunt.sigma_rule : null,
         native_query: nativeQuery,
-        expected_observables: hunt.expected_observables ?? [],
+        expected_observables: huntExpectedObservables(hunt),
         benign_patterns: hunt.benign_patterns ?? [],
         escalation_threshold: hunt.escalation_threshold,
         object_marking_refs: markings,

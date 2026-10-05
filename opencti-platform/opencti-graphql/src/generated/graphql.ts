@@ -12797,6 +12797,8 @@ export type HuntEvidence = {
   href?: Maybe<Scalars['String']['output']>;
   kind: Scalars['String']['output'];
   label: Scalars['String']['output'];
+  /** The value is one the hunt logic matched, not context of the event */
+  matched: Scalars['Boolean']['output'];
   opencti_id?: Maybe<Scalars['String']['output']>;
   quote?: Maybe<Scalars['String']['output']>;
   value_hash: Scalars['String']['output'];
@@ -12806,8 +12808,65 @@ export type HuntEvidence = {
 export type HuntEvidenceInput = {
   count: Scalars['Int']['input'];
   field: Scalars['String']['input'];
+  /** True for a value the hunt logic matched (the field of the rule detection), false or omitted for context of the event */
+  matched?: InputMaybe<Scalars['Boolean']['input']>;
   value_hash: Scalars['String']['input'];
   value_preview?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** One event a run matched, as its connector extracted it: secrets masked, values truncated */
+export type HuntHit = {
+  __typename?: 'HuntHit';
+  command_line?: Maybe<Scalars['String']['output']>;
+  destination_ip?: Maybe<Scalars['String']['output']>;
+  /** The rule or detection of the platform the event raised, if any */
+  detection?: Maybe<Scalars['String']['output']>;
+  domain?: Maybe<Scalars['String']['output']>;
+  /** Id of the event on the hunted platform */
+  event_id?: Maybe<Scalars['String']['output']>;
+  extra_fields: Array<HuntHitField>;
+  file_hash?: Maybe<Scalars['String']['output']>;
+  host?: Maybe<Scalars['String']['output']>;
+  /** The field of the event the hunt logic matched, and its value */
+  matched_field?: Maybe<Scalars['String']['output']>;
+  matched_value?: Maybe<Scalars['String']['output']>;
+  process?: Maybe<Scalars['String']['output']>;
+  source_ip?: Maybe<Scalars['String']['output']>;
+  timestamp?: Maybe<Scalars['DateTime']['output']>;
+  url?: Maybe<Scalars['String']['output']>;
+  user?: Maybe<Scalars['String']['output']>;
+};
+
+export type HuntHitField = {
+  __typename?: 'HuntHitField';
+  name: Scalars['String']['output'];
+  value: Scalars['String']['output'];
+};
+
+export type HuntHitFieldInput = {
+  name: Scalars['String']['input'];
+  value: Scalars['String']['input'];
+};
+
+/** One event the run matched. Every field is optional; the platform masks secrets and truncates values */
+export type HuntHitInput = {
+  command_line?: InputMaybe<Scalars['String']['input']>;
+  destination_ip?: InputMaybe<Scalars['String']['input']>;
+  detection?: InputMaybe<Scalars['String']['input']>;
+  domain?: InputMaybe<Scalars['String']['input']>;
+  event_id?: InputMaybe<Scalars['String']['input']>;
+  /** Other fields worth reading (at most 10 are kept) */
+  extra_fields?: InputMaybe<Array<HuntHitFieldInput>>;
+  /** MD5, SHA-1 or SHA-256 of the file the event involves */
+  file_hash?: InputMaybe<Scalars['String']['input']>;
+  host?: InputMaybe<Scalars['String']['input']>;
+  matched_field?: InputMaybe<Scalars['String']['input']>;
+  matched_value?: InputMaybe<Scalars['String']['input']>;
+  process?: InputMaybe<Scalars['String']['input']>;
+  source_ip?: InputMaybe<Scalars['String']['input']>;
+  timestamp?: InputMaybe<Scalars['DateTime']['input']>;
+  url?: InputMaybe<Scalars['String']['input']>;
+  user?: InputMaybe<Scalars['String']['input']>;
 };
 
 /** A value an indicator hunt looks up, with the indicators and observables it comes from */
@@ -13011,6 +13070,10 @@ export type HuntRun = BasicObject & InternalObject & {
   error_message?: Maybe<Scalars['String']['output']>;
   evidence_sample?: Maybe<Array<HuntEvidence>>;
   evidence_sources?: Maybe<Array<Scalars['String']['output']>>;
+  /** Dates of the first and last event the run matched, null when the connector dates none */
+  first_hit_at?: Maybe<Scalars['DateTime']['output']>;
+  /** Single events the run matched (a sample, the first ones the connector sent) */
+  hit_sample?: Maybe<Array<HuntHit>>;
   hits_count?: Maybe<Scalars['Int']['output']>;
   /** The hunt of the run, null when it was deleted (hunt_deleted) or when the user cannot read it */
   hunt?: Maybe<Hunt>;
@@ -13026,6 +13089,7 @@ export type HuntRun = BasicObject & InternalObject & {
   /** Indicator hunts: one result per value looked up */
   ioc_results?: Maybe<Array<HuntIocResult>>;
   last_evidence_at?: Maybe<Scalars['DateTime']['output']>;
+  last_hit_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   next_retry_at?: Maybe<Scalars['DateTime']['output']>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
@@ -13082,6 +13146,7 @@ export type HuntRunEdge = {
 
 export type HuntRunEvidenceAddInput = {
   evidence_sample?: InputMaybe<Array<HuntEvidenceInput>>;
+  hits?: InputMaybe<Array<HuntHitInput>>;
   hits_count?: InputMaybe<Scalars['Int']['input']>;
   observed_at?: InputMaybe<Scalars['DateTime']['input']>;
   result_ids: Array<Scalars['String']['input']>;
@@ -13099,9 +13164,14 @@ export type HuntRunReportInput = {
   distinct_entities?: InputMaybe<Scalars['Int']['input']>;
   error?: InputMaybe<Scalars['String']['input']>;
   evidence_sample?: InputMaybe<Array<HuntEvidenceInput>>;
+  /** Dates of the first and last matched event of the whole run, when the hits sent are only a sample */
+  first_hit_at?: InputMaybe<Scalars['DateTime']['input']>;
+  /** Single events the run matched, the most relevant first (at most 50 are kept) */
+  hits?: InputMaybe<Array<HuntHitInput>>;
   hits_count?: InputMaybe<Scalars['Int']['input']>;
   /** Indicator hunts: the result of each value of the run message */
   ioc_results?: InputMaybe<Array<HuntIocResultInput>>;
+  last_hit_at?: InputMaybe<Scalars['DateTime']['input']>;
   query_language?: InputMaybe<Scalars['String']['input']>;
   result_ids?: InputMaybe<Array<Scalars['String']['input']>>;
   status: HuntRunStatus;
@@ -45661,6 +45731,10 @@ export type ResolversTypes = ResolversObject<{
   HuntEdge: ResolverTypeWrapper<Omit<HuntEdge, 'node'> & { node: ResolversTypes['Hunt'] }>;
   HuntEvidence: ResolverTypeWrapper<HuntEvidence>;
   HuntEvidenceInput: HuntEvidenceInput;
+  HuntHit: ResolverTypeWrapper<HuntHit>;
+  HuntHitField: ResolverTypeWrapper<HuntHitField>;
+  HuntHitFieldInput: HuntHitFieldInput;
+  HuntHitInput: HuntHitInput;
   HuntIoc: ResolverTypeWrapper<HuntIoc>;
   HuntIocResult: ResolverTypeWrapper<Omit<HuntIocResult, 'sources'> & { sources: Array<ResolversTypes['StixCoreObject']> }>;
   HuntIocResultInput: HuntIocResultInput;
@@ -47004,6 +47078,10 @@ export type ResolversParentTypes = ResolversObject<{
   HuntEdge: Omit<HuntEdge, 'node'> & { node: ResolversParentTypes['Hunt'] };
   HuntEvidence: HuntEvidence;
   HuntEvidenceInput: HuntEvidenceInput;
+  HuntHit: HuntHit;
+  HuntHitField: HuntHitField;
+  HuntHitFieldInput: HuntHitFieldInput;
+  HuntHitInput: HuntHitInput;
   HuntIoc: HuntIoc;
   HuntIocResult: Omit<HuntIocResult, 'sources'> & { sources: Array<ResolversParentTypes['StixCoreObject']> };
   HuntIocResultInput: HuntIocResultInput;
@@ -52552,10 +52630,34 @@ export type HuntEvidenceResolvers<ContextType = any, ParentType extends Resolver
   href?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   kind?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  matched?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   opencti_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   quote?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   value_hash?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value_preview?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type HuntHitResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntHit'] = ResolversParentTypes['HuntHit']> = ResolversObject<{
+  command_line?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  destination_ip?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  detection?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  domain?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  event_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  extra_fields?: Resolver<Array<ResolversTypes['HuntHitField']>, ParentType, ContextType>;
+  file_hash?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  host?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  matched_field?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  matched_value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  process?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  source_ip?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  timestamp?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  user?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type HuntHitFieldResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntHitField'] = ResolversParentTypes['HuntHitField']> = ResolversObject<{
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type HuntIocResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntIoc'] = ResolversParentTypes['HuntIoc']> = ResolversObject<{
@@ -52666,6 +52768,8 @@ export type HuntRunResolvers<ContextType = any, ParentType extends ResolversPare
   error_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   evidence_sample?: Resolver<Maybe<Array<ResolversTypes['HuntEvidence']>>, ParentType, ContextType>;
   evidence_sources?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  first_hit_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  hit_sample?: Resolver<Maybe<Array<ResolversTypes['HuntHit']>>, ParentType, ContextType>;
   hits_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   hunt?: Resolver<Maybe<ResolversTypes['Hunt']>, ParentType, ContextType>;
   hunt_deleted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -52678,6 +52782,7 @@ export type HuntRunResolvers<ContextType = any, ParentType extends ResolversPare
   incident_proposal?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   ioc_results?: Resolver<Maybe<Array<ResolversTypes['HuntIocResult']>>, ParentType, ContextType>;
   last_evidence_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  last_hit_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   next_retry_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
@@ -62645,6 +62750,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   HuntConnector?: HuntConnectorResolvers<ContextType>;
   HuntEdge?: HuntEdgeResolvers<ContextType>;
   HuntEvidence?: HuntEvidenceResolvers<ContextType>;
+  HuntHit?: HuntHitResolvers<ContextType>;
+  HuntHitField?: HuntHitFieldResolvers<ContextType>;
   HuntIoc?: HuntIocResolvers<ContextType>;
   HuntIocResult?: HuntIocResultResolvers<ContextType>;
   HuntIocSet?: HuntIocSetResolvers<ContextType>;
