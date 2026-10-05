@@ -13,7 +13,7 @@ import type { BasicStoreCommon } from '../../../types/store';
 import { type File, FilterMode, FilterOperator, OrderingMode, State } from '../../../generated/graphql';
 import { loadExportWorksAsProgressFiles } from '../../../domain/work';
 import { elSearchFiles } from '../../../database/file-search';
-import { SYSTEM_USER } from '../../../utils/access';
+import { isBypassUser, SYSTEM_USER } from '../../../utils/access';
 import { FROM_START_STR } from '../../../utils/format';
 import { RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
 import { buildRefRelationKey } from '../../../schema/general';
@@ -94,6 +94,7 @@ interface FilesOptions<T extends BasicStoreCommon> extends EntityOptions<T> {
   orderBy?: string;
   exact_path?: boolean;
   orderMode?: OrderingMode;
+  creator_id?: string;
 }
 
 const buildFileFilters = (paths: string[], opts?: FilesOptions<BasicStoreEntityDocument>) => {
@@ -122,6 +123,9 @@ const buildFileFilters = (paths: string[], opts?: FilesOptions<BasicStoreEntityD
   }
   if (opts?.maxFileSize) {
     filters.filters.push({ key: ['size'], values: [String(opts.maxFileSize)], operator: FilterOperator.Lte });
+  }
+  if (opts?.creator_id) {
+    filters.filters.push({ key: ['metaData.creator_id'], values: [opts.creator_id] });
   }
   return filters;
 };
@@ -192,7 +196,10 @@ export const getIndexedFilesUsedSize = async (context: AuthContext): Promise<num
 export const paginatedForPathWithEnrichment = async (context: AuthContext, user: AuthUser, path: string, entity_id?: string, opts?: FilesOptions<BasicStoreEntityDocument>) => {
   // Only auto-set exact_path if it's not explicitly provided in opts
   const autoExactPath = opts?.exact_path === undefined ? isEmptyField(entity_id) : opts.exact_path;
-  const filterOpts = { ...opts, exact_path: autoExactPath };
+  // Export files are only listed to the user who generated them, bypass users see them all
+  const isExportPath = path.startsWith('export/');
+  const exportCreatorId = isExportPath && !isBypassUser(user) ? user.id : undefined;
+  const filterOpts = { ...opts, exact_path: autoExactPath, ...(exportCreatorId ? { creator_id: exportCreatorId } : {}) };
   const draftContext = getDraftContext(context, user);
   const pathsToTarget = draftContext ? [`${getDraftFilePrefix(draftContext)}${path}`, path] : [path];
   const findOpts: EntityOptions<BasicStoreEntityDocument> = {
@@ -228,10 +235,30 @@ export const paginatedForPathWithEnrichment = async (context: AuthContext, user:
     }
   }
   // Enrich pagination for ongoing exports
-  if (path.startsWith('export/')) {
-    const progressFiles = await loadExportWorksAsProgressFiles(context, user, path);
+  if (isExportPath) {
+    const progressFiles = await loadExportWorksAsProgressFiles(context, user, path, { userId: exportCreatorId });
     pagination.edges = [...progressFiles.map((p: any) => ({ node: p, cursor: uuidv4() })), ...pagination.edges];
   }
   // endregion
   return pagination;
+};
+
+/**
+ * Retrieve export files paginated for a given export context.
+ *
+ * @param context - The current authentication context.
+ * @param user - The user performing the request.
+ * @param exportContext - The export target, defining the entity type and an optional entity id.
+ * @param opts - Optional file listing options (e.g. `first`) merged into the query.
+ * @returns A paginated connection of export files for the resolved path.
+ */
+export const paginatedForExportContext = async (
+  context: AuthContext,
+  user: AuthUser,
+  exportContext: { entity_type: string; entity_id?: string },
+  opts?: FilesOptions<BasicStoreEntityDocument>,
+) => {
+  const path = `export/${exportContext.entity_type}${exportContext.entity_id ? `/${exportContext.entity_id}` : ''}`;
+  const listOpts = { ...opts, entity_id: exportContext.entity_id, entity_type: exportContext.entity_type };
+  return paginatedForPathWithEnrichment(context, user, path, exportContext.entity_id, listOpts);
 };
