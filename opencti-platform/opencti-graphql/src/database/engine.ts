@@ -232,7 +232,10 @@ export const BULK_TIMEOUT = '1h';
 // The effective limit of an index is computed from the mapping it must hold (computeMappingFieldsLimit): attributes
 // removed from the schema stay mapped forever in long-lived indices, so a fixed limit eventually fails a mapping update
 // at startup (the history index of a platform created years ago exceeded 3000 fields on 2026-10-03).
-export const ES_MAX_MAPPINGS: number = conf.get('elasticsearch:max_mappings') || 3000;
+// The value reaches the engine as a settings payload: coerce it, a string "3000" from a configuration file would be
+// sent as text and a non-numeric value falls back to the default.
+const configuredMaxMappings = Number(conf.get('elasticsearch:max_mappings'));
+export const ES_MAX_MAPPINGS: number = Number.isFinite(configuredMaxMappings) && configuredMaxMappings > 0 ? configuredMaxMappings : 3000;
 // Free fields kept above the current mapping size, so a mapping update never fails because of the limit itself.
 export const ES_MAPPING_FIELDS_HEADROOM = 500;
 const MAX_AGGREGATION_SIZE = 100;

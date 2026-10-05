@@ -47,7 +47,13 @@ const buildLongLivedMapping = () => {
     growthFields += countMappingFields({ [key]: generated[key] });
   }
   const previousSchema = Object.fromEntries(Object.entries(generated).filter(([key]) => !growthKeys.includes(key)));
-  const legacyFieldsCount = ES_MAX_MAPPINGS - FREE_FIELDS_BEFORE_UPGRADE - countMappingFields(previousSchema);
+  const previousSchemaFields = countMappingFields(previousSchema);
+  const legacyFieldsCount = ES_MAX_MAPPINGS - FREE_FIELDS_BEFORE_UPGRADE - previousSchemaFields;
+  if (legacyFieldsCount < 0) {
+    // The schema grew past what the fixture can model: say so instead of failing on a negative array length.
+    throw new Error(`The generated schema already uses ${previousSchemaFields} fields, more than the ${ES_MAX_MAPPINGS - FREE_FIELDS_BEFORE_UPGRADE} `
+      + 'the long-lived fixture can hold before the upgrade: raise ES_MAX_MAPPINGS or lower FREE_FIELDS_BEFORE_UPGRADE in this test');
+  }
   const legacy = Object.fromEntries(Array.from({ length: legacyFieldsCount }, (_, i) => [`legacy_attribute_${i}`, { type: 'keyword' }]));
   return { mapping: { ...legacy, ...previousSchema }, generatedKeys: Object.keys(generated), growthKeys, growthFields, legacyKeys: Object.keys(legacy) };
 };
@@ -57,6 +63,8 @@ const indexFieldsLimit = async (index: string): Promise<number> => {
   return Number(settings.index.mapping?.total_fields?.limit);
 };
 
+// `engine` is an ElkClient | OpenClient union: TypeScript refuses a single call on the union because the two clients'
+// method signatures are not compatible, hence the narrowing branch (the same pattern as the engine module itself).
 const putIndexFieldsLimit = async (index: string, limit: number) => {
   const args = { index, body: { index: { mapping: { total_fields: { limit } } } } };
   if (engine instanceof ElkClient) {
