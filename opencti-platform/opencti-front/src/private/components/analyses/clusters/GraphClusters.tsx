@@ -1,6 +1,6 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import { Chip, Hero, HeroBody, HeroHeader, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { Chip, Hero, HeroBody, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { Box, Skeleton } from '@mui/material';
 import Button from '@common/button/Button';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
@@ -161,11 +161,10 @@ const ClustersOverview = ({ statusQueryRef, sizeQueryRef, onFirstUse }: Clusters
       <GraphAnalyticsStatus queryRef={statusQueryRef} />
       {clustersCount === 0 ? (
         <Hero data-testid="graph-clusters-first-use">
-          <HeroHeader icon={<ItemIcon type="Infrastructure" />}>
-            <Text variant="title-sm" as="h2">{t_i18n('No cluster yet')}</Text>
-          </HeroHeader>
-          <HeroBody>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <HeroBody separator={false}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, textAlign: 'center' }}>
+              <ItemIcon type="Infrastructure" />
+              <Text variant="title-sm" as="h2">{t_i18n('No cluster yet')}</Text>
               <Text variant="content-base">
                 {t_i18n('Clusters group the infrastructure sharing certificates, autonomous systems, registrars, name servers or hosting. They appear after the first full analytics pass of the knowledge graph.')}
               </Text>
