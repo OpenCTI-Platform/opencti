@@ -116,6 +116,11 @@ describe('filterManagers', () => {
     expect(ids(filterManagers([item('PULSE_MANAGER')], 'all', 'pulsé'))).toEqual(['PULSE_MANAGER']);
   });
 
+  it('finds a manager by its raw id, whole or partial', () => {
+    expect(ids(filterManagers(managers, 'all', 'GARBAGE_COLLECTION_MANAGER'))).toEqual(['GARBAGE_COLLECTION_MANAGER']);
+    expect(ids(filterManagers(managers, 'all', 'rule_eng'))).toEqual(['RULE_ENGINE']);
+  });
+
   it('combines the status filter and the search', () => {
     expect(ids(filterManagers(managers, 'enabled', 'hunt'))).toEqual([]);
     expect(ids(filterManagers(managers, 'disabled', 'engine'))).toEqual(['RULE_ENGINE']);

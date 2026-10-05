@@ -237,6 +237,6 @@ This section informs the administrator of the status of every manager used in th
 
 - Managers are grouped by domain: core platform, knowledge, ingestion and connectors, notifications, defense and investigations, Enterprise Edition, telemetry and Filigran ecosystem.
 - The filter above the list shows how many managers are enabled and disabled; select "Enabled" or "Disabled" to keep only those, and use the search to find a manager by its name.
-- A manager reads "Enabled" when it runs, "Disabled" when the configuration switches it off. On a Community platform, the managers that require the Enterprise Edition read "Enterprise Edition".
+- A manager reads "Enabled" when the platform configuration turns it on and "Disabled" when the configuration switches it off. The status describes the configuration: it does not tell whether the manager is processing something at this moment. On a Community platform, the managers that require the Enterprise Edition read "Enterprise Edition".
 
-In cluster mode, the fact that a manager appears as enabled means that it is active in at least one node.
+In cluster mode, a manager reads "Enabled" when the configuration of at least one node turns it on.

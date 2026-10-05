@@ -147,7 +147,7 @@ export const countManagers = (managers: ManagerItem[]): ManagerCounts => {
 
 const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 
-/** Keeps the managers matching the status filter and whose label or id contains every word of the search. */
+/** Keeps the managers matching the status filter and whose label, humanized id or raw id contains every word of the search. */
 export const filterManagers = (
   managers: ManagerItem[],
   status: ManagerStatusFilter,
@@ -157,7 +157,7 @@ export const filterManagers = (
   return managers.filter((manager) => {
     if (status !== 'all' && manager.status !== status) return false;
     if (terms.length === 0) return true;
-    const haystack = `${normalize(manager.label)} ${normalize(humanizeManagerId(manager.id))}`;
+    const haystack = [manager.label, humanizeManagerId(manager.id), manager.id].map(normalize).join(' ');
     return terms.every((term) => haystack.includes(term));
   });
 };
