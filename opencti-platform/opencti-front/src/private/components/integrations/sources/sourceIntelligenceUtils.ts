@@ -349,7 +349,7 @@ export const buildOverlapHeatmapSeries = (sources: readonly OverlapSource[], cel
 };
 
 export interface ScorecardTrendPoint {
-  snapshot_date: string;
+  scorecard_date: string;
   is_live: boolean;
   [metric: string]: unknown;
 }
@@ -361,11 +361,11 @@ export interface ScorecardTrendPoint {
 export const buildTrendSerie = (scorecards: readonly ScorecardTrendPoint[], metric: string, type: ScorecardMetricType) => {
   const points = new Map<string, number>();
   [...scorecards]
-    .sort((a, b) => a.snapshot_date.localeCompare(b.snapshot_date) || Number(a.is_live) - Number(b.is_live))
+    .sort((a, b) => a.scorecard_date.localeCompare(b.scorecard_date) || Number(a.is_live) - Number(b.is_live))
     .forEach((scorecard) => {
       const value = scorecard[metric];
       if (typeof value === 'number' && Number.isFinite(value)) {
-        points.set(scorecard.snapshot_date, type === 'ratio' ? Math.round(value * 1000) / 10 : value);
+        points.set(scorecard.scorecard_date, type === 'ratio' ? Math.round(value * 1000) / 10 : value);
       }
     });
   return Array.from(points.entries()).map(([date, value]) => ({ x: `${date}T00:00:00.000Z`, y: value }));

@@ -158,10 +158,10 @@ describe('Source intelligence utils', () => {
   describe('buildTrendSerie()', () => {
     it('should keep one point per day with the live scorecard last and ratios in percents', () => {
       const serie = buildTrendSerie([
-        { snapshot_date: '2026-10-02', is_live: true, accuracy: 0.9 },
-        { snapshot_date: '2026-10-01', is_live: false, accuracy: 0.5 },
-        { snapshot_date: '2026-10-02', is_live: false, accuracy: 0.8 },
-        { snapshot_date: '2026-09-30', is_live: false, accuracy: null },
+        { scorecard_date: '2026-10-02', is_live: true, accuracy: 0.9 },
+        { scorecard_date: '2026-10-01', is_live: false, accuracy: 0.5 },
+        { scorecard_date: '2026-10-02', is_live: false, accuracy: 0.8 },
+        { scorecard_date: '2026-09-30', is_live: false, accuracy: null },
       ], 'accuracy', 'ratio');
       expect(serie).toEqual([
         { x: '2026-10-01T00:00:00.000Z', y: 50 },
@@ -170,7 +170,7 @@ describe('Source intelligence utils', () => {
     });
 
     it('should keep raw values for counts', () => {
-      expect(buildTrendSerie([{ snapshot_date: '2026-10-01', is_live: false, volume_total: 12 }], 'volume_total', 'count'))
+      expect(buildTrendSerie([{ scorecard_date: '2026-10-01', is_live: false, volume_total: 12 }], 'volume_total', 'count'))
         .toEqual([{ x: '2026-10-01T00:00:00.000Z', y: 12 }]);
     });
   });

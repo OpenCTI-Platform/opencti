@@ -71,7 +71,7 @@ type SourceScorecard {
   period: SourceScorecardPeriod!
   period_start: DateTime!
   period_end: DateTime!
-  snapshot_date: String!
+  scorecard_date: String!
   computed_at: DateTime!
   is_live: Boolean!
   provenance_mode: SourceProvenanceMode
