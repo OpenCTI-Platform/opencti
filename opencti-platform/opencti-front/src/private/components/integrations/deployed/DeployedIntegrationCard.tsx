@@ -1,5 +1,4 @@
 import React from 'react';
-import { useNavigate } from 'react-router';
 import { Stack, Tooltip, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
@@ -10,6 +9,7 @@ import { DeployedIntegrationItem } from '@components/integrations/deployed/useDe
 import { useFormatter } from '../../../../components/i18n';
 import Card from '../../../../components/common/card/Card';
 import ItemBoolean from '../../../../components/ItemBoolean';
+import { stopLinkNavigation } from '../../../../utils/domEvent';
 import { paperBorder } from '../paperSurface';
 
 interface StatusDotProps {
@@ -81,7 +81,6 @@ export interface DeployedIntegrationCardProps {
 const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProps) => {
   const { t_i18n, n, nsdt } = useFormatter();
   const theme = useTheme();
-  const navigate = useNavigate();
   const typeMetadata = useDeployedTypeMetadata();
   const { label: typeLabel, icon: TypeIcon } = typeMetadata(item.sectionKey);
 
@@ -113,7 +112,8 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
       }}
     >
       <Card
-        onClick={() => navigate(item.detailUrl)}
+        // A real link, so ctrl/cmd and middle click open the detail in a new tab.
+        to={item.detailUrl}
         sx={{
           height: 220,
           borderRadius: 1,
@@ -248,7 +248,7 @@ const DeployedIntegrationCard = ({ item, onChange }: DeployedIntegrationCardProp
               <Metric label={t_i18n('User')} value={item.userName} />
             )}
           </Stack>
-          <Box onClick={(event) => event.stopPropagation()}>
+          <Box onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation}>
             {statusChip}
           </Box>
         </Stack>
