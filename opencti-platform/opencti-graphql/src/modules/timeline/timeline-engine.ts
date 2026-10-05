@@ -614,6 +614,9 @@ export const refreshTimelineContributions = async (
     // Elements of the events already read as the system user, base data
     elements?: Record<string, AnyStoreElement>;
     notifyAnchors?: boolean;
+    // Set by a regeneration only: computed_at tells when the timeline was last generated from the knowledge, and the
+    // consistency pass regenerates the timelines whose computed_at is too old, however often analysts curate them
+    regenerated?: boolean;
   } = {},
 ): Promise<TimelineContributionsResult> => {
   const events = opts.events ?? await loadStoredTimelineEvents(context, container.internal_id);
@@ -626,7 +629,10 @@ export const refreshTimelineContributions = async (
   const scope = await resolveContainerVisibilityScope(context, container, anchorEvents, opts.elements);
   const anchorInput = anchorEvents.filter(scope.isEventAsVisibleAsContainer);
   const toAnchorEvent = (e: StoredTimelineEvent) => ({ lane: e.lane, kind: e.kind, rule_id: e.rule_id, event_time: e.event_time, hidden: e.hidden });
-  const anchors = computeTimelineAnchors(anchorInput.map(toAnchorEvent), { isClosed, computedAt: now(), previous: previousAnchors, bounds: anchorBounds });
+  const computedAt = now();
+  const previousGeneratedAt = previousAnchors?.computed_at ? new Date(previousAnchors.computed_at as string).toISOString() : undefined;
+  const generatedAt = opts.regenerated ? computedAt : previousGeneratedAt;
+  const anchors = computeTimelineAnchors(anchorInput.map(toAnchorEvent), { isClosed, computedAt, generatedAt, previous: previousAnchors, bounds: anchorBounds });
   const storedIds = new Set(events.map((e) => e.internal_id));
   const cappedAnchorBounds = opts.anchorEvents
     ? computeTimelineAnchorBounds(anchorInput.filter((e) => !storedIds.has(e.internal_id)).map(toAnchorEvent))
@@ -890,7 +896,13 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
   const anchorEvents = capped
     ? [...derivedDocsById.values(), ...docs.filter((doc) => doc.event_source === 'manual')] as unknown as StoredTimelineEvent[]
     : undefined;
-  const { anchors, cappedAnchorBounds } = await refreshTimelineContributions(context, container, { events: finalEvents, anchorEvents, anchorBounds: null, elements });
+  const { anchors, cappedAnchorBounds } = await refreshTimelineContributions(context, container, {
+    events: finalEvents,
+    anchorEvents,
+    anchorBounds: null,
+    elements,
+    regenerated: true,
+  });
   if (capped) {
     // The changes made until the next regeneration recompute the anchors from the stored events and these bounds
     await upsertTimelineSettings(context, container, { capped_anchor_bounds: cappedAnchorBounds }, generatedSettings);

@@ -39,6 +39,15 @@ describe('Timeline anchors', () => {
     expect(closed.changed_at).toEqual('2026-04-03T00:00:00.000Z');
   });
 
+  it('should keep the generation date when the anchors are recomputed between two generations', () => {
+    const generated = computeTimelineAnchors(events, { isClosed: false, computedAt });
+    // A milestone or a pin recomputes the anchors without regenerating the timeline: computed_at stays the generation date
+    const curated = computeTimelineAnchors(events, { isClosed: true, computedAt: '2026-04-05T00:00:00.000Z', generatedAt: generated.computed_at as string, previous: generated });
+    expect(curated.computed_at).toEqual(computedAt);
+    // while the change date still tells when an anchor value moved
+    expect(curated.changed_at).toEqual('2026-04-05T00:00:00.000Z');
+  });
+
   it('should date the change of anchors stored before the change date existed', () => {
     const legacy = { first_adversary_activity: '2026-03-01T00:00:00.000Z', computed_at: computedAt };
     const anchors = computeTimelineAnchors(events, { isClosed: false, computedAt: '2026-04-02T00:00:00.000Z', previous: legacy });

@@ -80,7 +80,7 @@ The overview of incidents and cases shows the same anchors with a miniature of t
 
 Hidden events never move an anchor. Every reader of the case sees the same anchors, so they are computed only from the events every reader can see: an event marked more strictly than the case, or about an element marked more strictly, restricted to authorized members or shared with fewer organizations than the case, never moves an anchor. Click an anchor to center the timeline on it.
 
-The anchors are stored on the container in the `x_opencti_timeline_anchors` attribute, with two technical dates: `computed_at` (last computation) and `changed_at` (last change of one of the anchor values). They can be used to filter and sort the lists of incidents and cases (for example "Containment" before a date), and `changed_at` lets integrations fetch only the containers whose anchors changed since their last synchronization. OpenCTI does not aggregate them into metrics.
+The anchors are stored on the container in the `x_opencti_timeline_anchors` attribute, with two technical dates: `computed_at` (last generation of the timeline from the knowledge; a milestone, a pin or a hidden event recomputes the anchors without moving it, and the nightly consistency pass regenerates the timelines whose `computed_at` is older than `timeline_manager:consistency_max_age_days`) and `changed_at` (last change of one of the anchor values). They can be used to filter and sort the lists of incidents and cases (for example "Containment" before a date), and `changed_at` lets integrations fetch only the containers whose anchors changed since their last synchronization. OpenCTI does not aggregate them into metrics.
 
 ## Overview layout
 

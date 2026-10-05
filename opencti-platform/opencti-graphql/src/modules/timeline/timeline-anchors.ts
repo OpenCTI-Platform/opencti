@@ -14,6 +14,8 @@ export interface AnchorComputationContext {
   // closure only exists while the container sits in a final workflow status
   isClosed: boolean;
   computedAt: string;
+  // last generation of the timeline from the knowledge, when it is not this computation (a milestone or a pin since)
+  generatedAt?: string;
   // anchors stored by the previous computation, changed_at is kept when no anchor value moved
   previous?: Partial<TimelineAnchors> | null;
   // anchor values of the derived events a capped timeline does not store: they count like events
@@ -55,8 +57,9 @@ export const diffTimelineAnchors = (previous: Partial<TimelineAnchors> | null | 
  * - first_response: first event of the response lane
  * - containment: first containment milestone or first completion of a task labelled containment
  * - closure: last transition to a final workflow status, only while the container is still closed
- * computed_at moves on every computation, changed_at only when one of these values moves: consumers
- * use changed_at as their incremental cursor.
+ * computed_at is the last generation of the timeline from the knowledge (the consistency pass regenerates the timelines
+ * it finds too old), changed_at moves only when one of these values moves: consumers use changed_at as their incremental
+ * cursor.
  */
 export const computeTimelineAnchors = (events: AnchorEventLike[], context: AnchorComputationContext): TimelineAnchors => {
   const visible = events.filter((event) => !event.hidden);
@@ -70,7 +73,7 @@ export const computeTimelineAnchors = (events: AnchorEventLike[], context: Ancho
   };
   const previousChangedAt = context.previous?.changed_at;
   const changedAt = previousChangedAt && diffTimelineAnchors(context.previous, values).length === 0 ? previousChangedAt : context.computedAt;
-  return { ...values, computed_at: context.computedAt, changed_at: changedAt };
+  return { ...values, computed_at: context.generatedAt ?? context.computedAt, changed_at: changedAt };
 };
 
 /** Anchor values of events whatever the status of their container (the closure applies only while it is closed). */
