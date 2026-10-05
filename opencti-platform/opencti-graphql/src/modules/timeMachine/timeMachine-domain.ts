@@ -698,6 +698,21 @@ export const entityAsOf = async (context: AuthContext, user: AuthUser, id: strin
 // endregion
 
 // region Diff
+/**
+ * Relationships that still exist but that the user cannot access today. The history events are authorized with the
+ * access they had when they were recorded: a relationship restricted since then is left out of what they tell.
+ * A relationship deleted since keeps the access rule of its history.
+ */
+export const relationshipsRestrictedToUser = async (context: AuthContext, user: AuthUser, ids: string[]) => {
+  const uniqueIds = [...new Set(ids.filter((id) => !!id))];
+  if (uniqueIds.length === 0) return new Set<string>();
+  const opts = { baseData: true, indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED };
+  const existing = await internalFindByIdsMapped<BasicStoreObject>(context, SYSTEM_USER, uniqueIds, opts);
+  const existingIds = uniqueIds.filter((id) => !!existing[id]);
+  const accessible = existingIds.length > 0 ? await internalFindByIdsMapped<BasicStoreObject>(context, user, existingIds, opts) : {};
+  return new Set(existingIds.filter((id) => !accessible[id]));
+};
+
 const countByType = (changes: RelationshipChange[], action: RelationshipChange['action']) => {
   const counts = new Map<string, number>();
   changes.filter((c) => c.action === action).forEach((c) => counts.set(c.relationship_type, (counts.get(c.relationship_type) ?? 0) + 1));
@@ -752,6 +767,9 @@ export const computeRelationshipChanges = async (
     const visible = await internalFindByIdsMapped<BasicStoreObject>(context, user, addedBeyondCap, { baseData: true, indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED });
     addedBeyondCap.filter((id) => !!visible[id]).forEach((id) => addedIds.add(id));
   }
+  const surviving = [...states.entries()].filter(([id, state]) => !state.deleted && !addedIds.has(id)).map(([id]) => id);
+  const restricted = await relationshipsRestrictedToUser(context, user, surviving);
+  restricted.forEach((id) => states.delete(id));
   (createdRelations as BasicStoreRelation[]).forEach((relation) => {
     const isSource = relation.fromId === elementId;
     changes.push({
@@ -1011,11 +1029,20 @@ export const entityTimeMachineTimeline = async (context: AuthContext, user: Auth
     throw FunctionalError('Element not found', { id });
   }
   // One extra event is read to tell the slider that only the most recent changes are marked
-  const [fetchedEvents, historyStart, snapshots] = await Promise.all([
+  const [elementEvents, relationshipEvents, historyStart, snapshots] = await Promise.all([
     fetchElementHistoryEvents(context, user, element.internal_id, { max: MAX_TIMELINE_EVENTS + 1, scopes: ['create', 'update', 'merge'] }),
+    // The relationships of the entity are part of its state at a date: their creations and deletions are changes too
+    fetchRelationshipsHistoryEvents(context, user, [element.internal_id], {
+      scopes: ['create', 'delete'],
+      entityTypes: TIME_MACHINE_RELATIONSHIP_TYPES,
+      max: MAX_TIMELINE_EVENTS + 1,
+    }),
     fetchOldestHistoryDate(context, user, element.internal_id),
     listSnapshotDates(context, element.internal_id, MAX_TIMELINE_SNAPSHOTS),
   ]);
+  const restricted = await relationshipsRestrictedToUser(context, user, relationshipEvents.map((event) => event.context_id));
+  const fetchedEvents = [...elementEvents, ...relationshipEvents.filter((event) => !restricted.has(event.context_id))]
+    .sort((a, b) => utcDate(b.timestamp).diff(utcDate(a.timestamp)));
   const events = fetchedEvents.slice(0, MAX_TIMELINE_EVENTS);
   return {
     entity_id: element.internal_id,

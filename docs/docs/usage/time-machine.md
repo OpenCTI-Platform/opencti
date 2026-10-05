@@ -32,7 +32,7 @@ The section, the period and the date are kept in the URL of the page, so you can
 1. Open the **Changes** tab of the entity and select **View as of**, or choose **View as of** in the more actions menu of the entity header (the button with three dots). The view opens 30 days back, in read-only mode, and a banner reminds you of the date being displayed.
 2. Pick the date:
     - type it in the **View as of** date field,
-    - drag the slider, which shows a mark for every recorded change of the entity (the 200 most recent ones for entities with a longer history, as a caption below the slider says; older dates can still be selected),
+    - drag the slider, which shows a mark for every recorded change of the entity, including the creation or deletion of its relationships you can access (the 200 most recent ones for entities with a longer history, as a caption below the slider says; older dates can still be selected),
     - or jump between changes with **Previous change** and **Next change**.
 3. Click **Back to the current knowledge** to return to the overview of the entity.
 

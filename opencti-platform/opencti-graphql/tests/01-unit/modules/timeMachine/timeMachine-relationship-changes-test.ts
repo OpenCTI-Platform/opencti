@@ -8,6 +8,11 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
   ...(await importOriginal<typeof import('../../../../src/database/middleware-loader')>()),
   topRelationsList: async () => [],
   internalFindByIdsMapped: (...args: unknown[]) => internalFindByIdsMappedMock(...args),
+  internalLoadById: async (_context: AuthContext, _user: AuthUser, id: string) => ({ internal_id: id, entity_type: 'Intrusion-Set', created_at: '2025-06-01T00:00:00.000Z' }),
+}));
+vi.mock('../../../../src/modules/timeMachine/timeMachine-store', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/modules/timeMachine/timeMachine-store')>()),
+  listSnapshotDates: async () => [],
 }));
 vi.mock('../../../../src/database/engine', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/engine')>()),
@@ -19,9 +24,10 @@ vi.mock('../../../../src/modules/timeMachine/timeMachine-history', async (import
   ...(await importOriginal<typeof import('../../../../src/modules/timeMachine/timeMachine-history')>()),
   fetchRelationshipsHistoryEvents: (...args: unknown[]) => fetchRelationshipsHistoryEventsMock(...args),
   fetchElementHistoryEvents: (...args: unknown[]) => fetchElementHistoryEventsMock(...args),
+  fetchOldestHistoryDate: async () => '2025-06-01T00:00:00.000Z',
 }));
 
-import { computeRelationshipChanges, isStateEstablishedAt } from '../../../../src/modules/timeMachine/timeMachine-domain';
+import { computeRelationshipChanges, entityTimeMachineTimeline, isStateEstablishedAt } from '../../../../src/modules/timeMachine/timeMachine-domain';
 import type { BasicStoreEntity } from '../../../../src/types/store';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 
@@ -89,6 +95,52 @@ describe('Relationship changes of an entity', () => {
     const relationshipLookups = internalFindByIdsMappedMock.mock.calls.filter(([, requester, ids]) => requester === user && (ids as string[]).includes('rel-visible'));
     expect(relationshipLookups).toHaveLength(1);
     expect(relationshipLookups[0][2]).toEqual(['rel-visible', 'rel-hidden']);
+  });
+
+  it('should leave out the changes of a relationship restricted since, and keep those of a relationship deleted since', async () => {
+    const confidenceChange = [{ field: 'uses--confidence', changes_added: [{ raw: '90' }], changes_removed: [{ raw: '60' }] }] as TimeMachineHistoryEvent['changes'];
+    fetchRelationshipsHistoryEventsMock.mockResolvedValue([
+      relationshipEvent('rel-reclassified', 'malware-a', 'update', confidenceChange),
+      relationshipEvent('rel-deleted-since', 'malware-a', 'update', confidenceChange),
+    ]);
+    internalFindByIdsMappedMock.mockImplementation(async (_context: AuthContext, requester: AuthUser, ids: string[]) => {
+      // The reclassified relationship still exists, only the platform can read it now
+      const known: Record<string, unknown> = requester === SYSTEM_USER
+        ? { 'rel-reclassified': { internal_id: 'rel-reclassified', entity_type: 'uses' } }
+        : { 'malware-a': { internal_id: 'malware-a', entity_type: 'Malware', name: 'LynxLoader' } };
+      return Object.fromEntries(ids.filter((id) => known[id]).map((id) => [id, known[id]]));
+    });
+    const { allChanges } = await computeRelationshipChanges(context, user, 'element-a', '2026-01-01T00:00:00.000Z', '2026-02-01T00:00:00.000Z', new Map());
+    expect(allChanges.map((change) => [change.relationship_id, change.action])).toEqual([['rel-deleted-since', 'confidence_changed']]);
+  });
+});
+
+describe('Timeline of an entity', () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should mark the creations and deletions of its relationships the user can still access', async () => {
+    fetchElementHistoryEventsMock.mockResolvedValue([{ id: 'event-update', timestamp: '2026-01-05T00:00:00.000Z', event_scope: 'update', context_id: 'element-a' }]);
+    fetchRelationshipsHistoryEventsMock.mockResolvedValue([
+      relationshipEvent('rel-accessible', 'malware-a', 'create'),
+      relationshipEvent('rel-reclassified', 'malware-b', 'create'),
+      relationshipEvent('rel-deleted-since', 'malware-c', 'delete'),
+    ]);
+    internalFindByIdsMappedMock.mockImplementation(async (_context: AuthContext, requester: AuthUser, ids: string[]) => {
+      const known: Record<string, unknown> = requester === SYSTEM_USER
+        ? { 'rel-accessible': { internal_id: 'rel-accessible' }, 'rel-reclassified': { internal_id: 'rel-reclassified' } }
+        : { 'rel-accessible': { internal_id: 'rel-accessible' } };
+      return Object.fromEntries(ids.filter((id) => known[id]).map((id) => [id, known[id]]));
+    });
+    const timeline = await entityTimeMachineTimeline(context, user, 'element-a');
+    expect(fetchRelationshipsHistoryEventsMock.mock.calls[0][3]).toMatchObject({ scopes: ['create', 'delete'] });
+    expect(timeline.events).toEqual([
+      { date: '2026-01-15T00:00:00.000Z', event_scope: 'delete' },
+      { date: '2026-01-10T00:00:00.000Z', event_scope: 'create' },
+      { date: '2026-01-05T00:00:00.000Z', event_scope: 'update' },
+    ]);
+    expect(timeline.events_truncated).toBe(false);
   });
 });
 
