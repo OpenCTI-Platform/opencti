@@ -148,6 +148,11 @@ const uniq = (values: Array<string | null | undefined>): string[] => Array.from(
 
 export const markingsOf = (element: Record<string, any>): string[] => timelineRefIds(element, RELATION_OBJECT_MARKING);
 
+/** Elements whose data a stored event carries besides its element, as recorded by the regeneration: each is read like the element. */
+export const timelineEventSourceIds = (event: Pick<StoredTimelineEvent, 'element_access'>): string[] => {
+  return (event.element_access?.sources ?? []).map((source) => source.id);
+};
+
 /**
  * A timeline event is never less marked than its element (whatever the rule of a derived event reads), nor than its
  * container: once the element is deleted, the markings of the event stand for those of the element.
@@ -454,7 +459,7 @@ const resolveContainerVisibilityScope = async (
 ): Promise<ContainerVisibilityScope> => {
   const containerId = container.internal_id;
   const containerGranted = grantedOf(container);
-  const elementIds = uniq(events.map((e) => e.element_id).filter((id): id is string => !!id && id !== containerId));
+  const elementIds = uniq(events.flatMap((e) => [e.element_id, ...timelineEventSourceIds(e)]).filter((id): id is string => !!id && id !== containerId));
   const authorIds = uniq(events.filter((e) => e.event_source === 'manual').map(authorOf).filter((id): id is string => !!id));
   const toRead = [...elementIds, ...authorIds].filter((id) => !preloaded[id]);
   // Base data carries the authorized members; markings and organization sharing come with every read as security doc values
@@ -476,6 +481,10 @@ const resolveContainerVisibilityScope = async (
   };
   const isEventAsVisibleAsContainer = (event: StoredTimelineEvent) => {
     if (!markingsOf(event).every(isMarkingCoveredByContainer)) return false;
+    // The sources of a derived event (the relationships dating a technique, the run behind a finding) date or describe
+    // it like its element: each must be as visible as the container, and a source no longer found never is
+    const sourcesAsVisible = timelineEventSourceIds(event).every((id) => !!resolved[id] && isElementAsVisibleAsContainer(resolved[id]));
+    if (!sourcesAsVisible) return false;
     if (!event.element_id || event.element_id === containerId) return true;
     // The access scope of a deleted element is unknown while the event still speaks about it: never as visible as the container
     const element = resolved[event.element_id];
@@ -719,14 +728,23 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
   // The access of each element beyond its markings is kept on its events: once the element is deleted, it still decides
   // who may learn of their removal. The same read serves the visibility scope of the anchors.
   const storedManual = stored.filter((e) => e.event_source === 'manual');
-  const elementIds = uniq([...allDerived, ...storedManual].map((event) => event.element_id).filter((id): id is string => !!id && id !== containerId));
+  const elementIds = uniq([
+    ...[...allDerived, ...storedManual].map((event) => event.element_id),
+    ...allDerived.flatMap((event) => event.source_ids ?? []),
+  ].filter((id): id is string => !!id && id !== containerId));
   const elements = elementIds.length > 0
     ? await internalFindByIds(context, SYSTEM_USER, elementIds, { toMap: true, baseData: true }) as unknown as Record<string, AnyStoreElement>
     : {};
-  const elementAccessOf = (elementId: string | null | undefined): TimelineElementAccess | null => {
+  const accessOf = (element: AnyStoreElement) => ({ restricted_members: (element.restricted_members ?? []) as AuthorizedMember[], granted: grantedOf(element) });
+  const elementAccessOf = (elementId: string | null | undefined, sourceIds: string[] = []): TimelineElementAccess | null => {
     const element = elementId ? elements[elementId] : undefined;
-    return element ? { restricted_members: (element.restricted_members ?? []) as AuthorizedMember[], granted: grantedOf(element) } : null;
+    if (!element) return null;
+    // A source no longer found keeps its id: the reads look for it and never find it, until the next regeneration drops it
+    const sources = uniq(sourceIds).map((id) => (elements[id] ? { id, ...accessOf(elements[id]) } : { id, restricted_members: [], granted: [] }));
+    return sources.length > 0 ? { ...accessOf(element), sources } : accessOf(element);
   };
+  // A derived event is never less marked than the elements whose data it carries, whatever its rule merged
+  const sourceMarkingsOf = (event: DerivedTimelineEvent): string[] => (event.source_ids ?? []).flatMap((id) => (elements[id] ? markingsOf(elements[id]) : []));
   // Build the derived documents, deduplicated on their deterministic id
   const derivedDocsById = new Map<string, ReturnType<typeof buildTimelineEventDoc>>();
   const refusedAnnotationIds: string[] = [];
@@ -758,12 +776,12 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
       element_type: event.element_type,
       confidence: event.confidence,
       external_id: null,
-      markings: timelineEventMarkings(event.markings, event.element_id ? elements[event.element_id] : undefined, access.markings),
+      markings: timelineEventMarkings([...event.markings, ...sourceMarkingsOf(event)], event.element_id ? elements[event.element_id] : undefined, access.markings),
       created_by_id: event.created_by_id,
       creator_ids: event.creator_ids ?? [],
       restricted_members: access.restricted_members,
       source_state: event.source_state ?? null,
-      element_access: elementAccessOf(event.element_id),
+      element_access: elementAccessOf(event.element_id, event.source_ids),
       ...analyst,
     }, existing));
   });

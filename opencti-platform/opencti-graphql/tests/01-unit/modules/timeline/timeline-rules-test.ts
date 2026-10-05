@@ -90,6 +90,8 @@ describe('Timeline adversary rules', () => {
     });
     expect(events[0].markings).toContain('marking-rel');
     expect(events[0].description).toContain('initial-access');
+    // The window comes from the relationship: the event is read like it, not only like the technique
+    expect(events[0].source_ids).toEqual(['rel-1']);
   });
 
   it('should place techniques without times in kill chain order over the adversary window, flagged approximate', () => {
@@ -346,9 +348,12 @@ describe('Timeline soft-check rules', () => {
       name: 'Hunt run Cobalt beacons',
       description: '3 hits',
       source_state: { family: 'hunt_run', state: 'completed', verdict: 'true_positive' },
+      // The event points to the hunt but tells about the run: it is read like both
+      source_ids: ['run-1'],
     });
     // The hunt of the second run is not in scope: the event points to the run itself
     expect(huntRuns[1]).toMatchObject({ element_id: 'run-2', element_type: 'Hunt-Run', name: 'Hunt run manual run (failed)', source_state: { family: 'hunt_run', state: 'failed', verdict: null } });
+    expect(huntRuns[1].source_ids).toEqual([]);
     expect(huntRuns[1].description).toBeUndefined();
     expect(events.find((e) => e.kind === 'deployment')).toMatchObject({
       name: 'evil.com deployed on Sentinel',
@@ -381,6 +386,8 @@ describe('Timeline soft-check rules', () => {
       name: '10.0.0.9 first seen',
       discriminator: 'inv-1-finding-ip-9-first_seen',
       time_precision: 'approximate',
+      // A finding points to the element found but is dated and named by the run: it is read like both
+      source_ids: ['inv-1'],
     });
   });
 

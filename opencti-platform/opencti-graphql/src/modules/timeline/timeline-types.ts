@@ -133,6 +133,16 @@ export interface BasicStoreEntityTimelineEvent extends BasicStoreEntity {
 export interface TimelineElementAccess {
   restricted_members: AuthorizedMember[];
   granted: string[];
+  // The other elements whose data the derived event carries, each read like the element. Recorded with the access of
+  // the element only: an event whose element cannot be resolved is read by nobody, whatever its sources.
+  sources?: TimelineSourceAccess[];
+}
+
+/** An element whose data a derived event carries besides its element, with its access beyond markings (which the event carries). */
+export interface TimelineSourceAccess {
+  id: string;
+  restricted_members: AuthorizedMember[];
+  granted: string[];
 }
 
 /**

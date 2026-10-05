@@ -76,8 +76,10 @@ import {
   TIMELINE_MAX_MANUAL_EVENTS,
   TIMELINE_MAX_STORED_EVENTS,
   timelineEventMaxConfidence,
+  timelineEventSourceIds,
   type TimelineRegenerationResult,
   toRemovedTimelineEvents,
+  type TimelineRemovedEvent,
   type TimelineUpdatePayload,
   upsertTimelineSettings,
   withTimelineLock,
@@ -257,7 +259,12 @@ export const latestTimelineTime = (latestStart: string | null | undefined, lates
   return new Date(latestEnd).getTime() > new Date(latestStart).getTime() ? latestEnd : latestStart;
 };
 
-/** Drop the events pointing to elements the user cannot see (or that no longer exist). */
+/** Element and sources of an event, the container aside: the user reads the event only when he can access each of them. */
+const referencedElementIds = (event: StoredTimelineEvent, containerId: string): string[] => {
+  return [event.element_id, ...timelineEventSourceIds(event)].filter((id): id is string => !!id && id !== containerId);
+};
+
+/** Drop the events pointing to elements, or carrying data of sources, the user cannot see (or that no longer exist). */
 const filterAccessibleEvents = async <T extends { node: StoredTimelineEvent } | StoredTimelineEvent>(
   context: AuthContext,
   user: AuthUser,
@@ -266,41 +273,52 @@ const filterAccessibleEvents = async <T extends { node: StoredTimelineEvent } | 
   getEvent: (item: T) => StoredTimelineEvent,
   opts: { fullElements?: boolean } = {},
 ): Promise<{ items: T[]; elements: Record<string, AnyStoreElement> }> => {
-  const elementIds = Array.from(new Set(items.map((item) => getEvent(item).element_id).filter((id): id is string => !!id && id !== containerId)));
+  const elementIds = Array.from(new Set(items.flatMap((item) => referencedElementIds(getEvent(item), containerId))));
   const elements = elementIds.length > 0
     ? await internalFindByIds(context, user, elementIds, { toMap: true, baseData: !opts.fullElements }) as unknown as Record<string, AnyStoreElement>
     : {};
-  const filtered = items.filter((item) => {
-    const elementId = getEvent(item).element_id;
-    return !elementId || elementId === containerId || !!elements[elementId];
-  });
+  const filtered = items.filter((item) => referencedElementIds(getEvent(item), containerId).every((id) => !!elements[id]));
   return { items: filtered, elements };
 };
 
-/** Elements referenced by the events of a container that the user cannot access (or that no longer exist), read from every event. */
-const findInaccessibleElementIds = async (context: AuthContext, user: AuthUser, containerId: string): Promise<string[]> => {
+interface InaccessibleTimelineReferences {
+  elementIds: string[];
+  // Events carrying data of a source the user cannot access: sources are not indexed, these events are left out by id
+  eventIds: string[];
+}
+
+/** Elements and sources referenced by the events of a container that the user cannot access (or that no longer exist), read from every event. */
+const findInaccessibleReferences = async (context: AuthContext, user: AuthUser, containerId: string): Promise<InaccessibleTimelineReferences> => {
   const references = await fullEntitiesList<StoredTimelineEvent>(context, user, [ENTITY_TYPE_TIMELINE_EVENT], {
     filters: buildTimelineFilters(containerId, { includeHidden: true }) as any,
     baseData: true,
-    baseFields: ['element_id'],
+    baseFields: ['element_id', 'element_access'],
   } as any);
+  const referencedIds = Array.from(new Set(references.flatMap((event) => referencedElementIds(event, containerId))));
+  if (referencedIds.length === 0) return { elementIds: [], eventIds: [] };
+  const accessible = await internalFindByIds(context, user, referencedIds, { toMap: true, baseData: true }) as unknown as Record<string, AnyStoreElement>;
+  const isInaccessible = (id: string) => !accessible[id];
   const elementIds = Array.from(new Set(references.map((event) => event.element_id).filter((id): id is string => !!id && id !== containerId)));
-  if (elementIds.length === 0) return [];
-  const accessible = await internalFindByIds(context, user, elementIds, { toMap: true, baseData: true }) as unknown as Record<string, AnyStoreElement>;
-  return elementIds.filter((id) => !accessible[id]);
-};
-
-const excludeElements = (filters: ReturnType<typeof buildTimelineFilters>, hiddenElementIds: string[]) => {
-  if (hiddenElementIds.length === 0) return filters;
   return {
-    ...filters,
-    filters: [...filters.filters, { key: ['element_id'], values: hiddenElementIds, operator: FilterOperator.NotEq, mode: FilterMode.And }],
+    elementIds: elementIds.filter(isInaccessible),
+    eventIds: references.filter((event) => timelineEventSourceIds(event).some(isInaccessible)).map((event) => event.internal_id),
   };
 };
 
-/** Timeline filters restricted to the events of the elements the user can access, before any pagination or count. */
+// Filters with these exclusions are built by the module alone (users give values, never keys): they are not checked
+// against the filterable attributes, `internal_id` not being one
+const excludeInaccessible = (filters: ReturnType<typeof buildTimelineFilters>, hidden: InaccessibleTimelineReferences) => {
+  const exclusions = [
+    ...(hidden.elementIds.length > 0 ? [{ key: ['element_id'], values: hidden.elementIds, operator: FilterOperator.NotEq, mode: FilterMode.And }] : []),
+    ...(hidden.eventIds.length > 0 ? [{ key: ['internal_id'], values: hidden.eventIds, operator: FilterOperator.NotEq, mode: FilterMode.And }] : []),
+  ];
+  if (exclusions.length === 0) return filters;
+  return { ...filters, filters: [...filters.filters, ...exclusions] };
+};
+
+/** Timeline filters restricted to the events of the elements and sources the user can access, before any pagination or count. */
 const buildAccessibleTimelineFilters = async (context: AuthContext, user: AuthUser, containerId: string, args: TimelineFilterArgs) => {
-  return excludeElements(buildTimelineFilters(containerId, args), await findInaccessibleElementIds(context, user, containerId));
+  return excludeInaccessible(buildTimelineFilters(containerId, args), await findInaccessibleReferences(context, user, containerId));
 };
 
 export const findContainerTimeline = async (context: AuthContext, user: AuthUser, args: QueryContainerTimelineArgs) => {
@@ -308,6 +326,7 @@ export const findContainerTimeline = async (context: AuthContext, user: AuthUser
   const first = Math.min(args.first ?? TIMELINE_DEFAULT_PAGE, TIMELINE_MAX_PAGE);
   const connection = await pageEntitiesConnection<StoredTimelineEvent>(context, user, [ENTITY_TYPE_TIMELINE_EVENT], {
     filters: await buildAccessibleTimelineFilters(context, user, container.internal_id, args) as any,
+    noFiltersChecking: true,
     first,
     after: args.after,
     orderBy: ['event_time', 'ordering_hint'],
@@ -324,7 +343,7 @@ const computeTimelineBounds = async (context: AuthContext, user: AuthUser, filte
     context,
     user,
     [ENTITY_TYPE_TIMELINE_EVENT],
-    { filters: pageFilters as any, first: 1, orderBy, orderMode },
+    { filters: pageFilters as any, noFiltersChecking: true, first: 1, orderBy, orderMode },
   );
   const [firstEvents, lastEvents, lastEndingEvents] = await Promise.all([
     firstOf(filters, 'event_time', OrderingMode.Asc),
@@ -400,12 +419,12 @@ export const findContainerTimelineSummary = async (
   }
   const container = await ensureTimelineGenerated(context, loaded);
   const baseArgs = { types: [ENTITY_TYPE_TIMELINE_EVENT], noFiltersChecking: true };
-  // Same visibility as the list: the events of elements the user cannot access are not counted
-  const hiddenElementIds = await findInaccessibleElementIds(context, user, container.internal_id);
+  // Same visibility as the list: the events of elements or sources the user cannot access are not counted
+  const hidden = await findInaccessibleReferences(context, user, container.internal_id);
   // Lanes and kinds narrow the counts and bounds, so that a view showing only some of them can name its own span
   const scope = { lanes: restriction.lanes, kinds: restriction.kinds };
-  const visibleFilters = excludeElements(buildTimelineFilters(container.internal_id, scope), hiddenElementIds);
-  const allFilters = excludeElements(buildTimelineFilters(container.internal_id, { ...scope, includeHidden: true }), hiddenElementIds);
+  const visibleFilters = excludeInaccessible(buildTimelineFilters(container.internal_id, scope), hidden);
+  const allFilters = excludeInaccessible(buildTimelineFilters(container.internal_id, { ...scope, includeHidden: true }), hidden);
   const count = (filters: any) => elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...baseArgs, filters });
   const withFilter = (extra: any) => ({ ...allFilters, filters: [...allFilters.filters, extra] });
   const [total, manualCount, pinnedCount, hiddenCount, lanes, kinds, bounds, settings] = await Promise.all([
@@ -599,7 +618,7 @@ export const timelineUpdateForUser = async (context: AuthContext, user: AuthUser
   const readableRemoved = removed.filter((event) => isBypassUser(user) || event.marking_ids.every((id) => allowedMarkings.has(id)));
   const candidates = [
     ...changed,
-    ...readableRemoved.map((event) => ({ internal_id: event.id, element_id: event.element_id }) as unknown as StoredTimelineEvent),
+    ...readableRemoved.map((event) => ({ internal_id: event.id, element_id: event.element_id, element_access: event.element_access }) as unknown as StoredTimelineEvent),
   ];
   const { items } = await filterAccessibleEvents(context, user, update.container_id, candidates, (event) => event);
   const named = new Set(items.map((event) => event.internal_id));
@@ -624,9 +643,17 @@ export const timelineUpdateForUser = async (context: AuthContext, user: AuthUser
   const readableDeletedIds = deletedElements.length > 0
     ? new Set((await userFilterStoreElements(context, user, deletedElements)).map((element) => element.internal_id))
     : new Set<string>();
+  // The sources of such an event are still read as they are now: one the user cannot access, or deleted too, keeps the removal unnamed
+  const sourceIdsOf = (event: TimelineRemovedEvent) => timelineEventSourceIds({ element_access: event.element_access });
+  const deletedElementSourceIds = Array.from(new Set(removedWithDeletedElement.flatMap(sourceIdsOf)));
+  const readableSources = deletedElementSourceIds.length > 0
+    ? await internalFindByIds(context, user, deletedElementSourceIds, { toMap: true, baseData: true }) as unknown as Record<string, AnyStoreElement>
+    : {};
   const changedEventIds = [
     ...items.map((event) => event.internal_id),
-    ...removedWithDeletedElement.filter((event) => readableDeletedIds.has(event.element_id as string)).map((event) => event.id),
+    ...removedWithDeletedElement
+      .filter((event) => readableDeletedIds.has(event.element_id as string) && sourceIdsOf(event).every((id) => !!readableSources[id]))
+      .map((event) => event.id),
   ];
   if (changedEventIds.length > 0) {
     return { ...signal, changed_event_ids: changedEventIds };

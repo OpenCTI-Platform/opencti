@@ -22,7 +22,7 @@ import { resolveUserById } from '../../../src/modules/user/user-domain';
 import type { AuthUser } from '../../../src/types/user';
 import { MARKING_TLP_AMBER, MARKING_TLP_GREEN } from '../../../src/schema/identifier';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_TIMELINE } from '../../../src/types/stix-2-1-extensions';
-import { deleteContainerTimeline, loadStoredTimelineEvents, timelineEventSignature } from '../../../src/modules/timeline/timeline-engine';
+import { deleteContainerTimeline, loadStoredTimelineEvents, timelineEventSignature, timelineEventSourceIds } from '../../../src/modules/timeline/timeline-engine';
 import * as timelineEngine from '../../../src/modules/timeline/timeline-engine';
 import { elUpdate } from '../../../src/database/engine';
 import { processDueTimelineRegenerations, timelineStreamEventsHandler } from '../../../src/manager/timelineManager';
@@ -609,6 +609,50 @@ describe('Incident and case timeline', () => {
       expect(await timelineUpdateForUser(testContext, editor, restrictedUpdate)).toBeNull();
       expect(await timelineUpdateForUser(testContext, ADMIN_USER, restrictedUpdate)).toMatchObject({ update_type: 'settings', container_id: restrictedCase.id });
       await deleteElementById(testContext, SYSTEM_USER, restrictedCase.id, ENTITY_TYPE_CONTAINER_CASE_RFI);
+    });
+
+    it('should read a derived event like every relationship it is dated by, not only like its technique', async () => {
+      const participate = await resolveUserById(testContext, USER_PARTICIPATE.id) as AuthUser;
+      const [technique] = (await loadStoredTimelineEvents(testContext, caseIncident.id)).filter((event) => event.kind === 'technique_used');
+      // The window of the technique comes from its uses relationship: the regeneration records the relationship as a source
+      expect(timelineEventSourceIds(technique)).toEqual([usesRelationshipId]);
+      // The relationship becomes unreadable for the participant (shared with fewer organizations, restricted to some members),
+      // the technique and the markings of the event staying readable: the TLP:AMBER indicator stands for it
+      await elUpdate(testContext, technique._index, technique.internal_id, {
+        doc: { element_access: { ...technique.element_access, sources: [{ id: indicatorId, restricted_members: [], granted: [] }] } },
+      });
+      try {
+        const listedIds = async (user: typeof USER_EDITOR) => {
+          const result = await queryAsUserWithSuccess(user, { query: CONTAINER_TIMELINE, variables: { id: caseIncident.id, first: 500, kinds: ['technique_used'] } });
+          return { ids: result.data.containerTimeline.edges.map((edge: { node: TimelineEventNode }) => edge.node.id), count: result.data.containerTimeline.pageInfo.globalCount };
+        };
+        // Left out before the pagination, so that the page and its count agree
+        expect(await listedIds(USER_PARTICIPATE)).toEqual({ ids: [], count: 0 });
+        expect(await listedIds(USER_EDITOR)).toEqual({ ids: [technique.internal_id], count: 1 });
+        const kindCount = async (user: typeof USER_EDITOR) => {
+          const result = await queryAsUserWithSuccess(user, { query: CONTAINER_TIMELINE_SUMMARY, variables: { id: caseIncident.id } });
+          return result.data.containerTimelineSummary.kinds.find((k: { kind: string; count: number }) => k.kind === 'technique_used')?.count ?? 0;
+        };
+        expect(await kindCount(USER_PARTICIPATE)).toEqual(0);
+        expect(await kindCount(USER_EDITOR)).toEqual(1);
+        // Its window no longer opens the span of the timeline for the participant
+        const firstEventTime = async (user: typeof USER_EDITOR) => {
+          const result = await queryAsUserWithSuccess(user, { query: CONTAINER_TIMELINE_BOUNDS, variables: { id: caseIncident.id } });
+          return iso(result.data.containerTimelineBounds.first_event_time);
+        };
+        expect(await firstEventTime(USER_PARTICIPATE)).not.toEqual(ADVERSARY_START);
+        expect(await firstEventTime(USER_EDITOR)).toEqual(ADVERSARY_START);
+        // Nor is it read by its id or named in a live update
+        const byId = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: TIMELINE_EVENT, variables: { id: technique.internal_id } });
+        expect(byId.data.timelineEvent).toBeNull();
+        const update = { id: caseIncident.id, container_id: caseIncident.id, update_type: 'derived' as const, changed_event_ids: [technique.internal_id], updated_at: new Date().toISOString() };
+        expect(await timelineUpdateForUser(testContext, participate, update)).toBeNull();
+      } finally {
+        // The regeneration records the access of the actual source again
+        await queryAsAdminWithSuccess({ query: TIMELINE_REGENERATE, variables: { containerId: caseIncident.id } });
+      }
+      const [restored] = (await loadStoredTimelineEvents(testContext, caseIncident.id)).filter((event) => event.kind === 'technique_used');
+      expect(timelineEventSourceIds(restored)).toEqual([usesRelationshipId]);
     });
 
     it('should tell who can contribute to the timeline', async () => {

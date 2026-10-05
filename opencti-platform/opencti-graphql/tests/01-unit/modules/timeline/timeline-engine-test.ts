@@ -12,6 +12,7 @@ import {
   timelineEventMarkings,
   timelineEventMaxConfidence,
   timelineEventSignature,
+  timelineEventSourceIds,
   timelineEventStandardId,
   timelineRuleFamily,
 } from '../../../../src/modules/timeline/timeline-engine';
@@ -331,6 +332,20 @@ describe('Timeline derived event markings', () => {
     expect(isTimelineEventAccessChanged(event, { ...event, element_access: { restricted_members: [{ id: 'user', access_right: 'admin' }], granted: [] } })).toBe(true);
     // The element was deleted: its access is no longer recorded
     expect(isTimelineEventAccessChanged(event, { ...event, element_access: null })).toBe(true);
+    // A source of the event (a relationship dating a technique) was restricted
+    const withSource = { ...event, element_access: { restricted_members: [], granted: [], sources: [{ id: 'rel-1', restricted_members: [], granted: [] }] } };
+    expect(isTimelineEventAccessChanged(event, withSource)).toBe(true);
+    expect(isTimelineEventAccessChanged(withSource, {
+      ...withSource,
+      element_access: { ...withSource.element_access, sources: [{ id: 'rel-1', restricted_members: [], granted: ['org-1'] }] },
+    })).toBe(true);
+  });
+
+  it('should read the sources of an event from the access the regeneration recorded', () => {
+    expect(timelineEventSourceIds({ element_access: { restricted_members: [], granted: [], sources: [{ id: 'rel-1', restricted_members: [], granted: [] }, { id: 'rel-2', restricted_members: [], granted: [] }] } })).toEqual(['rel-1', 'rel-2']);
+    expect(timelineEventSourceIds({ element_access: { restricted_members: [], granted: [] } })).toEqual([]);
+    // An event whose element could not be resolved records no access: it is read by nobody, whatever its sources
+    expect(timelineEventSourceIds({ element_access: null })).toEqual([]);
   });
 });
 

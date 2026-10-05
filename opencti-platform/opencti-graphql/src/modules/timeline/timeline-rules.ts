@@ -134,6 +134,9 @@ export interface DerivedTimelineEvent {
   discriminator?: string;
   element_id: string | null;
   element_type: string | null;
+  // Other elements whose data the event carries (the relationships dating a technique, the run behind a hunt or a
+  // finding): each is read like the element, so a reader who cannot access one of them never sees the event
+  source_ids?: string[];
   event_time: string;
   event_end_time?: string | null;
   time_precision: TimelinePrecisionValue;
@@ -355,6 +358,7 @@ const techniqueRule: TimelineRule = {
           lane: 'adversary',
           element_id: technique.id,
           element_type: technique.entity_type,
+          source_ids: related.map((r) => r.id),
           event_time: iso(from),
           event_end_time: to !== null && to > from ? iso(to) : null,
           time_precision: 'exact',
@@ -843,6 +847,7 @@ export const huntRunRule: TimelineRule = {
         // A run points to its hunt when the hunt is in scope, to itself otherwise
         element_id: huntName ? huntId as string : run.id,
         element_type: huntName ? 'Hunt' : run.entity_type,
+        source_ids: huntName ? [run.id] : [],
         discriminator: run.id,
         event_time: iso(start),
         event_end_time: end !== null && end > start ? iso(end) : null,
@@ -1082,6 +1087,7 @@ export const investigationRunRule: TimelineRule = {
           discriminator,
           element_id: entityId,
           element_type: entityType,
+          source_ids: [run.id],
           event_time: iso(time),
           time_precision: 'approximate',
           name: `${name ?? entityType ?? 'Element'} ${INVESTIGATION_FINDING_LABELS[event] ?? event}`,
