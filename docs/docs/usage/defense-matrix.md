@@ -72,7 +72,7 @@ A header sums the scope up: the selected security platforms and threats, and the
 * **Security platforms**: select one or several platforms to restrict the levels, or keep all of them.
 * **Threats**: choose the threats to compare with: all threats, selected threats, threats matching a filter, or none. Techniques used by these threats are outlined, with the number of threats using them.
 * **Layers**: show or hide telemetry, detection, validation and mitigations.
-* The coverage summary and the coverage by tactic give the share of techniques at each level, over all techniques and over the techniques used by the selected threats.
+* The coverage summary and the coverage by tactic give the share of techniques at each level, over all techniques and over the techniques used by the selected threats. Each tactic column shows the share of its techniques with a deployed detection (**% covered**). In every one of these figures, a technique counts once, at the best level of the technique and its sub-techniques.
 
 ![Security platform selection](assets/defense-matrix-filters.png)
 
@@ -106,6 +106,8 @@ The **Gaps** section lists every technique and platform pair below level 4, with
 * its **priority**, based on the threats using the technique (weighted by the confidence of their relationships) and on its level;
 * the **rule candidates**: rules indicating the technique that are not deployed yet, ranked by the compatibility of their log source with the telemetry of the platform.
 
+Without a selected security platform, each technique has one **All platforms** row: its missing telemetry is the telemetry that no platform provides, and its rule candidates are the rules deployed on no platform.
+
 The backlog shares the scope of the matrix (platforms and threats). It can be filtered (levels, recommended actions, techniques used by the threats only, search), sorted, and exported to CSV with **Export CSV**: the export holds the filtered backlog, in its order, up to 10,000 gaps. When the backlog holds more, a message says so after the download: narrow the filters to export the others.
 
 ![Gaps backlog](assets/defense-matrix-gaps.png)
@@ -133,7 +135,7 @@ A [live trigger](notifications.md#triggers) can listen to two defense events in 
 | **Defense level decreased** | The aggregated defense level of a technique, as the recipient sees it, goes down: for example a rule is removed from a platform, a platform stops providing a data component or the latest OpenAEV validation failed. |
 | **Defense level increased** | The aggregated defense level of a technique, as the recipient sees it, goes up: for example a rule is deployed or a validation succeeds. |
 
-The notification names the technique and both levels, for example "defense level decreased from 3 (detection deployed) to 1 (telemetry)". Use the trigger filters to restrict it, for example to attack patterns with a given kill chain phase or label. The level changes of a computation are kept until they are delivered: if the notifications cannot be sent, the defense coverage manager sends them at its next run.
+The notification names the technique and both levels, for example "defense level decreased from 3 (detection deployed) to 1 (telemetry)". Use the trigger filters to restrict it, for example to attack patterns with a given kill chain phase or label. The level changes of a computation are kept until they are delivered: if the notifications cannot be sent, the defense coverage manager sends them at its next run. A change is only reported up to the level actually stored, so a computation that could not be saved notifies nothing.
 
 Each recipient is told about the level they see: both levels are computed from the evidences the recipient can access, so a change caused only by a rule, a relationship or a result they cannot see sends them nothing, and a change they can see is reported even when other evidences keep the overall level unchanged. An evidence deleted since the previous computation counts with the markings and organizations it had, as kept in the [trash](delete-restore.md#trash); once it is no longer in the trash, it no longer counts for anyone but the users who bypass access restrictions. A recipient is only notified about techniques they can access. The first computation of the matrix sets the levels without notifying, and a recomputation that leaves a level unchanged notifies nobody. Digests built on these triggers collect the events like any other live notification.
 
