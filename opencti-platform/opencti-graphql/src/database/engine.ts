@@ -3905,9 +3905,9 @@ export const elBulk = async (context: AuthContext, args: any) => {
 export const elIndex = async (
   indexName: string[] | string | undefined,
   documentBody: Record<string, any>,
-  opts: { refresh?: boolean; pipeline?: any } = {},
+  opts: { refresh?: boolean; pipeline?: any; retryOnTransitoryError?: boolean } = {},
 ) => {
-  const { refresh = true, pipeline } = opts;
+  const { refresh = true, pipeline, retryOnTransitoryError = true } = opts;
   const documentId = documentBody.internal_id;
   const entityType = documentBody.entity_type ? documentBody.entity_type : '';
   logApp.debug(`[SEARCH] index > ${entityType} ${documentId} in ${indexName}`, { documentBody });
@@ -3929,7 +3929,8 @@ export const elIndex = async (
       return await engine.index(indexParams);
     }
   };
-  await retryElOperations(indexOperation).catch((err: any) => {
+  const indexPromise = retryOnTransitoryError ? retryElOperations(indexOperation) : indexOperation();
+  await indexPromise.catch((err: any) => {
     throw DatabaseError('Simple indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
   });
 

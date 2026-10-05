@@ -164,6 +164,16 @@ describe('engine retries on circuit breaking exception', () => {
       });
       expect(testMocks.index).toHaveBeenCalledTimes(1);
     });
+
+    it('does not retry when retryOnTransitoryError is disabled', async () => {
+      testMocks.index.mockRejectedValue(TRANSIENT_ERROR);
+      const indexPromise = elIndex('entities', { internal_id: 'entity-1', entity_type: 'Report' }, { retryOnTransitoryError: false });
+      await expect(indexPromise).rejects.toMatchObject({
+        message: 'Simple indexing fail',
+        extensions: { code: 'DATABASE_ERROR' },
+      });
+      expect(testMocks.index).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('elDelete', () => {

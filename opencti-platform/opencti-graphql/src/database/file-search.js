@@ -65,7 +65,9 @@ export const elIndexFiles = async (context, user, files) => {
       };
       const documentBody = buildIndexFileBody(internal_id, fileObject, entity);
       try {
-        await elIndex(INDEX_FILES, documentBody, { pipeline: 'attachment' });
+        // No retry here: a circuit breaking exception is likely caused by the file content size itself,
+        // so replaying the same large request would only add memory pressure before reaching the fallback.
+        await elIndex(INDEX_FILES, documentBody, { pipeline: 'attachment', retryOnTransitoryError: false });
       } catch (err) {
         // catch & log error
         logApp.error('Error on file indexing', { cause: err, file_id });
