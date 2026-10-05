@@ -34,7 +34,7 @@ import CreatedByField from '../common/form/CreatedByField';
 import ObjectLabelField from '../common/form/ObjectLabelField';
 import ObjectMarkingField from '../common/form/ObjectMarkingField';
 import { ExternalReferencesField } from '../common/form/ExternalReferencesField';
-import StixCoreObjectsField from '../common/form/StixCoreObjectsField';
+import HuntEntitiesField from './HuntEntitiesField';
 import ObservableTypesField from '../common/form/ObservableTypesField';
 import { HuntCodeEditorField } from './HuntCodeEditor';
 import HuntSigmaValidation from './HuntSigmaValidation';
@@ -325,12 +325,10 @@ export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues:
 
           <SectionTitle>{t_i18n('Execution')}</SectionTitle>
           {values.hunt_type !== 'infrastructure' && (
-            <StixCoreObjectsField
+            <HuntEntitiesField
               name="scopePlatforms"
               label={t_i18n('Security platforms (empty for all)')}
               types={HUNT_SCOPE_TYPES}
-              multiple
-              disableCreation
               helpertext={t_i18n('Where the hunt runs: its hunt connectors execute it on these platforms. Left empty, every hunt-capable platform.')}
               style={fieldSpacingContainerStyle}
             />
@@ -409,29 +407,23 @@ export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues:
           </div>
 
           <SectionTitle>{t_i18n('Knowledge')}</SectionTitle>
-          <StixCoreObjectsField
+          <HuntEntitiesField
             name="huntTargets"
             label={t_i18n('Targeted threats')}
             types={HUNT_TARGET_TYPES}
-            multiple
-            disableCreation
             style={fieldSpacingContainerStyle}
           />
-          <StixCoreObjectsField
+          <HuntEntitiesField
             name="huntTechniques"
             label={t_i18n('Covered techniques')}
             types={HUNT_TECHNIQUE_TYPES}
-            multiple
-            disableCreation
             style={fieldSpacingContainerStyle}
           />
           {values.hunt_type !== 'indicators' && (
-            <StixCoreObjectsField
+            <HuntEntitiesField
               name="huntSources"
               label={t_i18n('Based on (indicators, reports)')}
               types={HUNT_SOURCE_TYPES}
-              multiple
-              disableCreation
               style={fieldSpacingContainerStyle}
             />
           )}

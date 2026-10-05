@@ -4,6 +4,7 @@ import { Formik, useFormikContext } from 'formik';
 import { useNavigate } from 'react-router';
 import { useTheme } from '@mui/styles';
 import {
+  Alert,
   Dialog,
   DialogBody,
   DialogContent,
@@ -23,9 +24,9 @@ import CodeBlock from '@components/common/CodeBlock';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
-import { notifyPayloadErrors } from './hunt-mutation-utils';
+import { mutationErrorMessage, payloadErrorsMessage } from './hunt-mutation-utils';
 import { AgentOption, fetchAgentsForIntent } from '../../../utils/ai/agentApi';
-import StixCoreObjectsField from '../common/form/StixCoreObjectsField';
+import HuntEntitiesField from './HuntEntitiesField';
 import { HUNT_PLANNER_INTENT, HUNT_SOURCE_TYPES, HUNT_TARGET_TYPES, HUNT_TECHNIQUE_TYPES, huntDraftWorkspacePath, huntTypeLabel } from './hunt-utils';
 import { HuntPlanDialogMutation, HuntPlanDialogMutation$data } from './__generated__/HuntPlanDialogMutation.graphql';
 
@@ -78,6 +79,7 @@ const HuntPlanDialog = ({ open, onClose, entityIds }: HuntPlanDialogProps) => {
   const [agentSlug, setAgentSlug] = useState<string>(DEFAULT_AGENT);
   const [proposal, setProposal] = useState<HuntProposal | null>(null);
   const [pickedIds, setPickedIds] = useState<string[]>([]);
+  const [planError, setPlanError] = useState<string | null>(null);
   const [commit, inFlight] = useApiMutation<HuntPlanDialogMutation>(huntPlanDialogMutation);
   const picksSubjects = entityIds.length === 0;
   const subjectIds = picksSubjects ? pickedIds : entityIds;
@@ -87,6 +89,7 @@ const HuntPlanDialog = ({ open, onClose, entityIds }: HuntPlanDialogProps) => {
     let active = true;
     setProposal(null);
     setPickedIds([]);
+    setPlanError(null);
     fetchAgentsForIntent(HUNT_PLANNER_INTENT).then((options) => {
       if (active) setAgents(options);
     });
@@ -96,6 +99,7 @@ const HuntPlanDialog = ({ open, onClose, entityIds }: HuntPlanDialogProps) => {
   }, [open]);
 
   const plan = () => {
+    setPlanError(null);
     commit({
       variables: {
         input: {
@@ -104,10 +108,14 @@ const HuntPlanDialog = ({ open, onClose, entityIds }: HuntPlanDialogProps) => {
         },
       },
       onCompleted: (data, errors) => {
-        if (!notifyPayloadErrors(errors)) {
-          setProposal(data.huntPlan ?? null);
+        const errorMessage = payloadErrorsMessage(errors);
+        if (errorMessage) {
+          setPlanError(errorMessage);
+          return;
         }
+        setProposal(data.huntPlan ?? null);
       },
+      onError: (error) => setPlanError(mutationErrorMessage(error, t_i18n('The agent could not plan the hunt'))),
     });
   };
 
@@ -158,12 +166,10 @@ const HuntPlanDialog = ({ open, onClose, entityIds }: HuntPlanDialogProps) => {
         {picksSubjects && (
           <Formik<PlanSubjectsValues> initialValues={{ subjects: [] }} onSubmit={() => undefined}>
             <div data-testid="hunt-plan-subjects">
-              <StixCoreObjectsField
+              <HuntEntitiesField
                 name="subjects"
                 label={t_i18n('Plan from (threats, techniques, reports or indicators)')}
                 types={PLAN_SUBJECT_TYPES}
-                multiple
-                disableCreation
                 helpertext={t_i18n('Pick at least one threat, technique, report or indicator')}
               />
               <PlanSubjectsSync onChange={setPickedIds} />
@@ -186,6 +192,11 @@ const HuntPlanDialog = ({ open, onClose, entityIds }: HuntPlanDialogProps) => {
           {t_i18n('The default hunt planner writes a falsifiable hypothesis, a Sigma rule and the expected observables from the knowledge you pick.')}
         </Text>
         {inFlight && <Spinner size="md" label={t_i18n('The agent is planning the hunt')} />}
+        {planError && (
+          <div role="alert">
+            <Alert severity="error" title={t_i18n('The agent could not plan the hunt')} description={planError} data-testid="hunt-plan-error" />
+          </div>
+        )}
       </div>
     );
   };

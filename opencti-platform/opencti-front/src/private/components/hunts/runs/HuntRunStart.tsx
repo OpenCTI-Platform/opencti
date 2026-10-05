@@ -1,4 +1,4 @@
-import React, { Suspense, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { Link, useNavigate } from 'react-router';
 import { Field, Form, Formik } from 'formik';
@@ -6,6 +6,7 @@ import * as Yup from 'yup';
 import { PlayArrowOutlined } from '@mui/icons-material';
 import { useTheme } from '@mui/styles';
 import {
+  Alert,
   Checkbox,
   Dialog,
   DialogBody,
@@ -25,7 +26,7 @@ import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { notifyPayloadErrors } from '../hunt-mutation-utils';
+import { mutationErrorMessage, payloadErrorsMessage } from '../hunt-mutation-utils';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { canStartHuntRun, HUNT_MAX_TIME_WINDOW_HOURS } from '../hunt-utils';
 
@@ -75,9 +76,10 @@ interface PlatformChoicesProps {
   onChange: (ids: string[]) => void;
   scopePlatformIds: string[];
   huntType: string;
+  onCount: (count: number) => void;
 }
 
-const PlatformChoices = ({ selected, onChange, scopePlatformIds, huntType }: PlatformChoicesProps) => {
+const PlatformChoices = ({ selected, onChange, scopePlatformIds, huntType, onCount }: PlatformChoicesProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { huntConnectors } = useLazyLoadQuery<HuntRunStartConnectorsQuery>(huntRunStartConnectorsQuery, {}, { fetchPolicy: 'store-and-network' });
@@ -91,6 +93,7 @@ const PlatformChoices = ({ selected, onChange, scopePlatformIds, huntType }: Pla
     }
   });
   const options = Array.from(platforms.values()).sort((a, b) => a.name.localeCompare(b.name));
+  useEffect(() => onCount(options.length), [options.length]);
   if (options.length === 0) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1), alignItems: 'flex-start' }} data-testid="hunt-run-start-no-connector">
@@ -105,7 +108,11 @@ const PlatformChoices = ({ selected, onChange, scopePlatformIds, huntType }: Pla
   }
   const toggle = (id: string, checked: boolean) => onChange(checked ? [...selected, id] : selected.filter((value) => value !== id));
   return (
-    <fieldset style={{ border: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: theme.spacing(1) }} data-testid="hunt-run-start-platforms">
+    <fieldset
+      // The padding keeps the hover and focus rings of the checkboxes inside the scrolling body of the dialog
+      style={{ border: 'none', margin: 0, padding: theme.spacing(1), display: 'flex', flexDirection: 'column', gap: theme.spacing(1.5) }}
+      data-testid="hunt-run-start-platforms"
+    >
       <legend style={{ marginBottom: theme.spacing(1) }}>
         <Text variant="content-compact">{t_i18n('Security platforms (none selected means every platform of the scope)')}</Text>
       </legend>
@@ -140,7 +147,15 @@ const HuntRunStart = ({ hunt, paginationOptions, compact = false }: HuntRunStart
   const navigate = useNavigate();
   const draftContext = useDraftContext();
   const [open, setOpen] = useState(false);
+  const [runError, setRunError] = useState<string | null>(null);
+  // null while unknown, and for infrastructure hunts, which run on the internet hunt connectors
+  const [runnablePlatforms, setRunnablePlatforms] = useState<number | null>(null);
   const [commit] = useApiMutation<HuntRunStartMutation>(huntRunStartMutation);
+  const openDialog = (next: boolean) => {
+    setRunError(null);
+    setRunnablePlatforms(null);
+    setOpen(next);
+  };
   const canRun = canStartHuntRun(hunt.hunt_status, !!draftContext);
   const scopePlatformIds = (hunt.scopePlatforms ?? []).map((platform) => platform.id);
   const validation = Yup.object().shape({
@@ -159,6 +174,7 @@ const HuntRunStart = ({ hunt, paginationOptions, compact = false }: HuntRunStart
   }
 
   const onSubmit = (values: RunStartValues, { setSubmitting }: { setSubmitting: (submitting: boolean) => void }) => {
+    setRunError(null);
     commit({
       variables: {
         id: hunt.id,
@@ -174,7 +190,9 @@ const HuntRunStart = ({ hunt, paginationOptions, compact = false }: HuntRunStart
       },
       onCompleted: (data, errors) => {
         setSubmitting(false);
-        if (notifyPayloadErrors(errors) || !data.huntRunStart) {
+        const errorMessage = payloadErrorsMessage(errors);
+        if (errorMessage || !data.huntRunStart) {
+          setRunError(errorMessage ?? t_i18n('The hunt could not be started'));
           return;
         }
         setOpen(false);
@@ -186,7 +204,10 @@ const HuntRunStart = ({ hunt, paginationOptions, compact = false }: HuntRunStart
           navigate(`${PATH_HUNT(hunt.id)}/runs`);
         }
       },
-      onError: () => setSubmitting(false),
+      onError: (error) => {
+        setSubmitting(false);
+        setRunError(mutationErrorMessage(error, t_i18n('The hunt could not be started')));
+      },
     });
   };
 
@@ -196,7 +217,7 @@ const HuntRunStart = ({ hunt, paginationOptions, compact = false }: HuntRunStart
       variant={compact ? 'secondary' : 'primary'}
       startIcon={<PlayArrowOutlined fontSize="small" />}
       disabled={!canRun}
-      onClick={() => setOpen(true)}
+      onClick={() => openDialog(true)}
       data-testid="hunt-run-start"
     >
       {t_i18n('Run now')}
@@ -213,8 +234,8 @@ const HuntRunStart = ({ hunt, paginationOptions, compact = false }: HuntRunStart
           <TooltipContent>{disabledReason}</TooltipContent>
         </Tooltip>
       ) : runButton}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent size="md">
+      <Dialog open={open} onOpenChange={openDialog}>
+        <DialogContent size="md" data-testid="hunt-run-start-dialog">
           <DialogTitle>{t_i18n('Run the hunt now')}</DialogTitle>
           <DialogDescription>
             {t_i18n('The hunt is dispatched to the hunt connectors of its scope; each platform gets its own run.')}
@@ -225,7 +246,7 @@ const HuntRunStart = ({ hunt, paginationOptions, compact = false }: HuntRunStart
             onSubmit={onSubmit}
           >
             {({ values, setFieldValue, submitForm, isSubmitting }) => (
-              <Form>
+              <Form style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(3), flex: 1, minHeight: 0 }}>
                 <DialogBody>
                   {hunt.hunt_type === 'infrastructure' ? (
                     <Text variant="content-compact">{t_i18n('Infrastructure hunts run on the internet hunt connectors')}</Text>
@@ -236,6 +257,7 @@ const HuntRunStart = ({ hunt, paginationOptions, compact = false }: HuntRunStart
                         onChange={(ids) => setFieldValue('security_platform_ids', ids)}
                         scopePlatformIds={scopePlatformIds}
                         huntType={hunt.hunt_type}
+                        onCount={setRunnablePlatforms}
                       />
                     </Suspense>
                   )}
@@ -249,12 +271,17 @@ const HuntRunStart = ({ hunt, paginationOptions, compact = false }: HuntRunStart
                       required
                     />
                   </div>
+                  {runError && (
+                    <div style={{ marginTop: theme.spacing(2) }} role="alert">
+                      <Alert severity="error" title={t_i18n('The hunt could not be started')} description={runError} data-testid="hunt-run-start-error" />
+                    </div>
+                  )}
                 </DialogBody>
                 <DialogFooter>
-                  <Button variant="secondary" onClick={() => setOpen(false)} disabled={isSubmitting}>
+                  <Button variant="secondary" onClick={() => openDialog(false)} disabled={isSubmitting}>
                     {t_i18n('Cancel')}
                   </Button>
-                  <Button onClick={submitForm} disabled={isSubmitting} data-testid="hunt-run-start-submit">
+                  <Button onClick={submitForm} disabled={isSubmitting || runnablePlatforms === 0} data-testid="hunt-run-start-submit">
                     {t_i18n('Run')}
                   </Button>
                 </DialogFooter>

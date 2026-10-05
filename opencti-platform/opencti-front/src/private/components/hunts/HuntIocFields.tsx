@@ -5,7 +5,7 @@ import { Chip, Text } from '@filigran/design-system';
 import TextareaField from '../../../components/TextareaField';
 import FilterIconButton from '../../../components/FilterIconButton';
 import Filters from '../common/lists/Filters';
-import StixCoreObjectsField from '../common/form/StixCoreObjectsField';
+import HuntEntitiesField from './HuntEntitiesField';
 import useFiltersState from '../../../utils/filters/useFiltersState';
 import { useAvailableFilterKeysForEntityTypes } from '../../../utils/filters/filtersUtils';
 import { useFormatter } from '../../../components/i18n';
@@ -59,13 +59,15 @@ export const HuntIocTextSummary = ({ text }: { text: string }) => {
 interface HuntIocFieldsProps {
   filtersState: ReturnType<typeof useFiltersState>;
   disabled?: boolean;
+  /** The filter builder opens MUI popovers, which a modal design-system dialog cannot host: dialogs leave it out */
+  withFilters?: boolean;
 }
 
 /**
  * What an indicator hunt looks for, four ways that add up: indicators and observables picked from a list, the
  * indicators and observables of entities, values pasted as text, and the ones matching a filter.
  */
-const HuntIocFields = ({ filtersState, disabled = false }: HuntIocFieldsProps) => {
+const HuntIocFields = ({ filtersState, disabled = false, withFilters = true }: HuntIocFieldsProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { values } = useFormikContext<{ ioc_values_text: string }>();
@@ -74,22 +76,18 @@ const HuntIocFields = ({ filtersState, disabled = false }: HuntIocFieldsProps) =
   const searchContext = { entityTypes: IOC_FILTER_ENTITY_TYPES };
   return (
     <div data-testid="hunt-ioc-fields">
-      <StixCoreObjectsField
+      <HuntEntitiesField
         name="iocElements"
         label={t_i18n('Indicators and observables')}
         types={HUNT_IOC_ELEMENT_TYPES}
-        multiple
-        disableCreation
         disabled={disabled}
         helpertext={t_i18n('Pick the indicators and observables to look for, for example the IP addresses of a campaign')}
         style={fieldSpacingContainerStyle}
       />
-      <StixCoreObjectsField
+      <HuntEntitiesField
         name="iocEntities"
         label={t_i18n('Take them from')}
         types={HUNT_IOC_ENTITY_TYPES}
-        multiple
-        disableCreation
         disabled={disabled}
         helpertext={t_i18n('Every indicator and observable of a report, a grouping, an incident response, a threat or an incident, read again at every run')}
         style={fieldSpacingContainerStyle}
@@ -106,23 +104,29 @@ const HuntIocFields = ({ filtersState, disabled = false }: HuntIocFieldsProps) =
         />
         <HuntIocTextSummary text={values.ioc_values_text ?? ''} />
       </div>
-      <div style={fieldSpacingContainerStyle} data-testid="hunt-ioc-filters">
-        <Text variant="content-compact" style={{ color: theme.palette.text.secondary, marginBottom: theme.spacing(0.5) }}>
-          {t_i18n('Or the ones matching a filter')}
+      {withFilters ? (
+        <div style={fieldSpacingContainerStyle} data-testid="hunt-ioc-filters">
+          <Text variant="content-compact" style={{ color: theme.palette.text.secondary, marginBottom: theme.spacing(0.5) }}>
+            {t_i18n('Or the ones matching a filter')}
+          </Text>
+          {!disabled && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), marginBottom: theme.spacing(1) }}>
+              <Filters helpers={helpers} availableFilterKeys={availableFilterKeys} searchContext={searchContext} />
+            </div>
+          )}
+          <FilterIconButton filters={filters} helpers={helpers} entityTypes={IOC_FILTER_ENTITY_TYPES} searchContext={searchContext} redirection />
+          <Text variant="content-caption" style={{ color: theme.palette.text.secondary }}>
+            <HuntHelp
+              text={t_i18n('For example the indicators labelled apt28 that are still valid. Without a filter, only the values above are looked for.')}
+              href={HUNT_DOCS.indicatorSources}
+            />
+          </Text>
+        </div>
+      ) : (
+        <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(2), color: theme.palette.text.secondary }} data-testid="hunt-ioc-filters-elsewhere">
+          {t_i18n('To look for the indicators matching a filter, add the filter from the Logic tab of the hunt once it is created.')}
         </Text>
-        {!disabled && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), marginBottom: theme.spacing(1) }}>
-            <Filters helpers={helpers} availableFilterKeys={availableFilterKeys} searchContext={searchContext} />
-          </div>
-        )}
-        <FilterIconButton filters={filters} helpers={helpers} entityTypes={IOC_FILTER_ENTITY_TYPES} searchContext={searchContext} redirection />
-        <Text variant="content-caption" style={{ color: theme.palette.text.secondary }}>
-          <HuntHelp
-            text={t_i18n('For example the indicators labelled apt28 that are still valid. Without a filter, only the values above are looked for.')}
-            href={HUNT_DOCS.indicatorSources}
-          />
-        </Text>
-      </div>
+      )}
     </div>
   );
 };

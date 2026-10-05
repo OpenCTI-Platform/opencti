@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router';
 import { Field, Form, Formik } from 'formik';
 import { useTheme } from '@mui/styles';
 import {
+  Alert,
   Dialog,
   DialogBody,
   DialogContent,
@@ -27,9 +28,9 @@ import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useFiltersState from '../../../utils/filters/useFiltersState';
 import { emptyFilterGroup, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
-import StixCoreObjectsField from '../common/form/StixCoreObjectsField';
 import { PATH_HUNT } from '../common/routes/paths';
-import { notifyPayloadErrors } from './hunt-mutation-utils';
+import HuntEntitiesField from './HuntEntitiesField';
+import { mutationErrorMessage, notifyPayloadErrors, payloadErrorsMessage } from './hunt-mutation-utils';
 import HuntIocFields from './HuntIocFields';
 import { HuntCodeEditorField } from './HuntCodeEditor';
 import HuntSigmaValidation from './HuntSigmaValidation';
@@ -125,6 +126,7 @@ const HuntGuidedCreation = ({ kind, open, onClose }: HuntGuidedCreationProps) =>
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [connectorsCount, setConnectorsCount] = useState(0);
+  const [createError, setCreateError] = useState<string | null>(null);
   const iocFiltersState = useFiltersState(emptyFilterGroup);
   const [commitAdd] = useApiMutation<HuntGuidedCreationAddMutation>(huntGuidedCreationAddMutation);
   const [commitRun] = useApiMutation<HuntGuidedCreationRunMutation>(huntGuidedCreationRunMutation);
@@ -138,6 +140,7 @@ const HuntGuidedCreation = ({ kind, open, onClose }: HuntGuidedCreationProps) =>
   };
   const close = () => {
     setStep(0);
+    setCreateError(null);
     onClose();
   };
   const finish = (values: HuntFormValues, setSubmitting: (submitting: boolean) => void) => {
@@ -145,11 +148,14 @@ const HuntGuidedCreation = ({ kind, open, onClose }: HuntGuidedCreationProps) =>
     const input = {
       ...toHuntAddInput({ ...values, hunt_status: runNow ? 'active' : 'draft' }, '', serializeFilterGroupForBackend(iocFiltersState[0])),
     };
+    setCreateError(null);
     commitAdd({
       variables: { input },
       onCompleted: (response, errors) => {
-        if (notifyPayloadErrors(errors) || !response.huntAdd) {
+        const errorMessage = payloadErrorsMessage(errors);
+        if (errorMessage || !response.huntAdd) {
           setSubmitting(false);
+          setCreateError(errorMessage ?? t_i18n('The hunt could not be created'));
           return;
         }
         const hunt = (response as HuntGuidedCreationAddMutation$data).huntAdd as { id: string };
@@ -179,7 +185,10 @@ const HuntGuidedCreation = ({ kind, open, onClose }: HuntGuidedCreationProps) =>
           },
         });
       },
-      onError: () => setSubmitting(false),
+      onError: (error) => {
+        setSubmitting(false);
+        setCreateError(mutationErrorMessage(error, t_i18n('The hunt could not be created')));
+      },
     });
   };
   const stepTitles = kind === 'indicators'
@@ -198,7 +207,7 @@ const HuntGuidedCreation = ({ kind, open, onClose }: HuntGuidedCreationProps) =>
             const iocCount = parseIocText(values.ioc_values_text).values.length + values.iocElements.length + values.iocEntities.length
               + (iocFiltersState[0].filters ?? []).length;
             return (
-              <Form>
+              <Form style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(3), flex: 1, minHeight: 0 }}>
                 <DialogBody>
                   <ol aria-label={t_i18n('Steps')} style={{ display: 'flex', gap: theme.spacing(2), listStyle: 'none', padding: 0, margin: `0 0 ${theme.spacing(2)} 0` }}>
                     {stepTitles.map((title, index) => (
@@ -209,16 +218,14 @@ const HuntGuidedCreation = ({ kind, open, onClose }: HuntGuidedCreationProps) =>
                       </li>
                     ))}
                   </ol>
-                  {step === 0 && kind === 'indicators' && <HuntIocFields filtersState={iocFiltersState} />}
+                  {step === 0 && kind === 'indicators' && <HuntIocFields filtersState={iocFiltersState} withFilters={false} />}
                   {step === 0 && kind === 'sigma' && <SigmaStep sigmaRule={values.sigma_rule} />}
                   {step === 1 && (
                     <div data-testid="hunt-guided-scope">
-                      <StixCoreObjectsField
+                      <HuntEntitiesField
                         name="scopePlatforms"
                         label={t_i18n('Security platforms (empty for all)')}
                         types={HUNT_SCOPE_TYPES}
-                        multiple
-                        disableCreation
                         helpertext={t_i18n('Where the hunt runs: its hunt connectors execute it on these platforms. Left empty, every hunt-capable platform.')}
                       />
                       <div style={{ ...fieldSpacingContainerStyle, display: 'flex', flexDirection: 'column', gap: theme.spacing(0.5) }}>
@@ -240,6 +247,11 @@ const HuntGuidedCreation = ({ kind, open, onClose }: HuntGuidedCreationProps) =>
                           ? t_i18n('The hunt is created active and its first run starts right away. Its runs record what they found and a verdict.')
                           : t_i18n('No hunt connector can run it yet: the hunt is saved as a draft and its page lists what it still needs.')}
                       </Text>
+                    </div>
+                  )}
+                  {createError && (
+                    <div style={{ marginTop: theme.spacing(2) }} role="alert">
+                      <Alert severity="error" title={t_i18n('The hunt could not be created')} description={createError} data-testid="hunt-guided-error" />
                     </div>
                   )}
                 </DialogBody>

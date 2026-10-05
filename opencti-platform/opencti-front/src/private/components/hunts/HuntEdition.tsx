@@ -30,7 +30,7 @@ import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { useIsMandatoryAttribute } from '../../../utils/hooks/useEntitySettings';
 import CreatedByField from '../common/form/CreatedByField';
 import ObjectMarkingField from '../common/form/ObjectMarkingField';
-import StixCoreObjectsField from '../common/form/StixCoreObjectsField';
+import HuntEntitiesField from './HuntEntitiesField';
 import ObservableTypesField from '../common/form/ObservableTypesField';
 import HuntScheduleField from './HuntScheduleField';
 import HuntTriggerFiltersField from './HuntTriggerFiltersField';
@@ -285,12 +285,10 @@ const HuntEditionForm = ({ data, onClose }: HuntEditionFormProps) => {
             </Field>
           </div>
           {values.hunt_type !== 'infrastructure' && (
-            <StixCoreObjectsField
+            <HuntEntitiesField
               name="scopePlatforms"
               label={t_i18n('Security platforms (empty for all)')}
               types={HUNT_SCOPE_TYPES}
-              multiple
-              disableCreation
               helpertext={t_i18n('Where the hunt runs: its hunt connectors execute it on these platforms. Left empty, every hunt-capable platform.')}
               style={fieldSpacingContainerStyle}
             />
@@ -360,10 +358,10 @@ const HuntEditionForm = ({ data, onClose }: HuntEditionFormProps) => {
               helperText={<HuntHelp text={t_i18n('Known legitimate activity the triage must not escalate, for example a backup service account')} href={HUNT_DOCS.runs} />}
             />
           </div>
-          <StixCoreObjectsField name="huntTargets" label={t_i18n('Targeted threats')} types={HUNT_TARGET_TYPES} multiple disableCreation style={fieldSpacingContainerStyle} />
-          <StixCoreObjectsField name="huntTechniques" label={t_i18n('Covered techniques')} types={HUNT_TECHNIQUE_TYPES} multiple disableCreation style={fieldSpacingContainerStyle} />
+          <HuntEntitiesField name="huntTargets" label={t_i18n('Targeted threats')} types={HUNT_TARGET_TYPES} style={fieldSpacingContainerStyle} />
+          <HuntEntitiesField name="huntTechniques" label={t_i18n('Covered techniques')} types={HUNT_TECHNIQUE_TYPES} style={fieldSpacingContainerStyle} />
           {values.hunt_type !== 'indicators' && initialValues.hunt_type !== 'indicators' && (
-            <StixCoreObjectsField name="huntSources" label={t_i18n('Based on (indicators, reports)')} types={HUNT_SOURCE_TYPES} multiple disableCreation style={fieldSpacingContainerStyle} />
+            <HuntEntitiesField name="huntSources" label={t_i18n('Based on (indicators, reports)')} types={HUNT_SOURCE_TYPES} style={fieldSpacingContainerStyle} />
           )}
           {(values.hunt_type === 'indicators' || initialValues.hunt_type === 'indicators') && (
             <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(2), color: theme.palette.text.secondary }}>
