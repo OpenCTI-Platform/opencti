@@ -5,9 +5,9 @@ import type { UserMergeHandlerContext, UserMergeHandlerPlan } from '../../../../
 const SOURCE = '11111111-1111-4111-8111-111111111111';
 const TARGET = '22222222-2222-4222-8222-222222222222';
 
-// One page holds what the scan hands over at once; every record names the source in its input.
+// One page holds what the scan hands over at once; every record names the source in a recorded change.
 const recordsOf = (prefix: string, count: number, index = 'opencti_history-000001'): UserMergeRewriteCandidate[] => {
-  return Array.from({ length: count }, (_, i) => ({ id: `${prefix}-${i}`, index, source: { context_data: { input: { recipients: [SOURCE] } } } }));
+  return Array.from({ length: count }, (_, i) => ({ id: `${prefix}-${i}`, index, source: { context_data: { history_changes: [{ field: 'Report--objectAssignee', changes_added: [{ raw: SOURCE }], changes_removed: [] }] } } }));
 };
 
 let pages: UserMergeRewriteCandidate[][] = [];
@@ -15,10 +15,10 @@ let failOnBulk: number | undefined;
 const bulks: { count: number; refresh?: boolean }[] = [];
 const refreshes: string[][] = [];
 
-// The payload scan hands over these pages; the subject-ids scan of compute finds nothing.
+// The changes scan hands over these pages; the subject-ids scan of compute finds nothing.
 vi.mock('../../../../src/modules/userMerge/userMerge-bulk', () => ({
   userMergeScanPagesForRewrite: async (_context: unknown, _indices: unknown, query: unknown, onPage: (page: UserMergeRewriteCandidate[]) => Promise<void> | void) => {
-    if (!JSON.stringify(query).includes('context_data.input')) {
+    if (!JSON.stringify(query).includes('history_changes')) {
       return;
     }
     for (let i = 0; i < pages.length; i += 1) {
@@ -43,7 +43,7 @@ const { userMergeHistoryPayloadHandler } = await import('../../../../src/modules
 const handlerContext = { context: {}, sourceId: SOURCE, targetId: TARGET, mergeStartedAt: new Date() } as unknown as UserMergeHandlerContext;
 const plan = { changes: [] } as unknown as UserMergeHandlerPlan;
 
-describe('history payload rewriting at scale', () => {
+describe('history changes rewriting at scale', () => {
   beforeEach(() => {
     pages = [];
     failOnBulk = undefined;

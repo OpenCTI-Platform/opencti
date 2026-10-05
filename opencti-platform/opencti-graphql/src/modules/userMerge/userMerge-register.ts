@@ -61,7 +61,7 @@ export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
   row('fintel-template.instance-filters', TRANSFER, 'FintelTemplate', 'instance_filters'),
   row('form.schema-defaults', TRANSFER, 'Form', 'form_schema.draftDefaults / fields[].defaultValue'),
   row('history.context-data-attribution', TRANSFER, 'History', 'context_data.creator_ids[]'),
-  row('history.context-data-payload', TRANSFER, 'History', 'context_data.input / list_params / filters / history_changes / subject ids'),
+  row('history.context-data-payload', TRANSFER, 'History', 'context_data.history_changes / subject ids'),
   row('history.user-id', TRANSFER, 'History', 'user_id'),
   row('ingestion.user-id', TRANSFER, 'IngestionCsv / IngestionJson / IngestionRss / IngestionTaxii / IngestionTaxiiCollection', 'user_id'),
   row('internal-file.metadata-creator-id', TRANSFER, 'InternalFile', 'metaData.creator_id'),
@@ -135,7 +135,15 @@ export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
   row('workflow-instance-pending.transition-actions', CONDITIONAL, 'WorkflowInstance (pending transition)', 'pendingTransition.actions[] / params'),
   row('workflow-instance-pending.transition-triggered-by', CONDITIONAL, 'WorkflowInstance (pending transition)', 'pendingTransition.triggeredBy'),
 
-  // --- retain (11) -----------------------------------------------------------------------
+  // --- retain (12) -----------------------------------------------------------------------
+  /**
+   * Split from `history.context-data-payload` in v6. The raw payload of a recorded action is not
+   * exposed by the API — `ContextData` carries none of these fields — and nothing resolves the
+   * ids it holds into names: it is only shown verbatim, as the raw data of an audit record.
+   * Rewriting it would alter audit evidence for a reader that does not exist, and selecting it
+   * meant reading every record that carries one, the bulk of the history index.
+   */
+  row('history.context-data-raw-payload', RETAIN, 'History', 'context_data.input / list_params / filters'),
   row('live-event.origin-user-id', RETAIN, 'Activity / Notification / Live event', 'event.origin.user_id and stream payloads'),
   row('application-log.structured-fields', RETAIN, 'Application log / audit export', 'structured fields user_id / source_user_id / target_user_id'),
   row('file-content.object-bytes', RETAIN, 'File content', 'object bytes'),

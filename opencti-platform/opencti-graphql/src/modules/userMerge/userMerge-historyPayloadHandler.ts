@@ -1,9 +1,9 @@
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY, ENTITY_TYPE_PIR_HISTORY } from '../../schema/internalObject';
 import { DatabaseError } from '../../config/errors';
 import { userMergeBulkRewrite, userMergeBulkUpdate, userMergeRefresh, userMergeScanPagesForRewrite } from './userMerge-bulk';
-import type { UserMergeHandler, UserMergeHandlerContext, UserMergeHandlerPlan, UserMergePlannedChange, UserMergeRightsAlert } from './userMerge-handler';
+import type { UserMergeHandler, UserMergeHandlerContext, UserMergeHandlerPlan, UserMergePlannedChange } from './userMerge-handler';
 import { USER_MERGE_TARGET_INDICES } from './userMerge-handler';
-import { remapUserInJsonString, remapUserInJsonValue } from './userMerge-jsonRemap';
+import { remapUserInJsonValue } from './userMerge-jsonRemap';
 
 export const USER_MERGE_HISTORY_PAYLOAD_HANDLER = 'history-context-data-payload';
 
@@ -25,33 +25,23 @@ const SUBJECT_ID_FIELDS = ['id', 'element_id', 'entity_id', 'from_id', 'to_id'];
 const SUBJECT_IDS_MULTIPLE_FIELDS = ['selected_ids'];
 
 /**
- * The structured parts of the payload, which cannot be pre-selected.
- *
- * `input` and `list_params` map to `flattened` on Elasticsearch and `flat_object` on OpenSearch.
- * Nothing in the codebase queries that shape today, and the two engines do not agree on what a
- * term query against it returns, so the handler does not bet on one: it reads the candidates and
- * filters them in memory. A false negative here would silently leave the source id inside an audit
- * record, which is exactly what this row exists to prevent.
- */
-const FLAT_PAYLOAD_FIELDS = ['input', 'list_params'];
-
-/**
  * The recorded changes, which map to `nested`.
  *
- * A `nested` field is indexed as separate hidden documents, so a plain `exists` on the parent path
- * matches nothing at all — the selection below reaches it through a `nested` query instead. This
- * is the field that carries the author of an attribute change, `creator_id` above all.
+ * They are what the history of an entity displays, and the platform resolves the ids they hold
+ * into names when it reads them back (`attributesChangesResolver`), rebuilding the message from
+ * them on the way. Once the source account is deleted, a change naming it would read "Restricted".
+ *
+ * The rest of the payload — `input`, `list_params`, `filters` — is retained, under a row of its
+ * own: the API does not expose it and nothing resolves it, so a merge would rewrite an audit
+ * record for a reader that does not exist.
  */
 const CHANGES_FIELD = 'history_changes';
 
-const PAYLOAD_FIELDS = [...FLAT_PAYLOAD_FIELDS, CHANGES_FIELD];
-
-/** Serialized filter payload. Plain `text`, so a phrase query does reach it. */
-const FILTERS_FIELD = 'filters';
+/** The two sides of a recorded change, both holding the same `{ raw, translated }` pairs. */
+const CHANGE_VALUE_FIELDS = ['changes_added', 'changes_removed'];
 
 const fieldPaths = HISTORY_ENTITY_TYPES.flatMap((entityType) => {
-  return [...SUBJECT_ID_FIELDS, ...SUBJECT_IDS_MULTIPLE_FIELDS, ...PAYLOAD_FIELDS, FILTERS_FIELD]
-    .map((field) => `${entityType}.context_data.${field}`);
+  return [...SUBJECT_ID_FIELDS, ...SUBJECT_IDS_MULTIPLE_FIELDS, CHANGES_FIELD].map((field) => `${entityType}.context_data.${field}`);
 });
 
 /**
@@ -78,40 +68,39 @@ const subjectIdQuery = (sourceId: string, mergeStartedAt: Date) => ({
 });
 
 /**
- * The candidates for the parts that have to be read back.
+ * The records whose recorded changes name the source.
  *
- * The phrase query on `filters` is a genuine narrowing; the `exists` clauses are not a search for
- * the source id but a way to skip the records that carry no structured payload at all, which is
- * the bulk of the history index. Both are safe: neither can exclude a document that holds the
- * source id in a field this handler rewrites.
+ * Every value of a change maps to `text`, so a phrase query on the id is a genuine narrowing: the
+ * standard analyzer splits it on its dashes, wherever it sits — a plain `raw` id, an id inside a
+ * serialized `raw` object, a key of the `translated` label map. It is a pre-selection, confirmed
+ * value by value once read, and it keeps the scan to the records that name the source rather than
+ * every record that carries a change.
  */
-const payloadQuery = (sourceId: string, mergeStartedAt: Date) => ({
+const changesQuery = (sourceId: string, mergeStartedAt: Date) => ({
   bool: {
-    filter: [{ terms: { 'entity_type.keyword': HISTORY_ENTITY_TYPES } }, beforeMergeStarted(mergeStartedAt)],
-    minimum_should_match: 1,
-    should: [
-      { match_phrase: { [`context_data.${FILTERS_FIELD}`]: sourceId } },
-      ...FLAT_PAYLOAD_FIELDS.map((field) => ({ exists: { field: `context_data.${field}` } })),
+    filter: [
+      { terms: { 'entity_type.keyword': HISTORY_ENTITY_TYPES } },
+      beforeMergeStarted(mergeStartedAt),
       {
         nested: {
           path: `context_data.${CHANGES_FIELD}`,
-          query: { exists: { field: `context_data.${CHANGES_FIELD}.field` } },
+          query: {
+            bool: {
+              minimum_should_match: 1,
+              should: CHANGE_VALUE_FIELDS.flatMap((side) => ['raw', 'translated'].map((part) => ({
+                match_phrase: { [`context_data.${CHANGES_FIELD}.${side}.${part}`]: sourceId },
+              }))),
+            },
+          },
         },
       },
     ],
   },
 });
 
-interface ContextData extends Record<string, unknown> {
-  filters?: string;
-}
-
 const isRecord = (value: unknown): value is Record<string, unknown> => {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 };
-
-/** The two sides of a recorded change, both holding the same `{ raw, translated }` pairs. */
-const CHANGE_VALUE_FIELDS = ['changes_added', 'changes_removed'];
 
 /**
  * The label map a recorded change stores next to the id it resolved, serialized as
@@ -197,108 +186,55 @@ const rewriteChangeLabels = (changes: unknown, sourceId: string, targetId: strin
   return { value: changed ? rewritten : changes, changed };
 };
 
-export interface HistoryPayloadRewrite {
-  /** The rewritten `context_data`, or null when nothing in it could be rewritten. */
-  rewritten: ContextData | null;
-  /**
-   * The serialized filters name the source but do not parse, and were left untouched.
-   *
-   * Independent of `rewritten`: a record can have its structured payload rewritten and still carry
-   * a filters string that could not be, and that one must not be lost with the rest.
-   */
-  unparsable: boolean;
-}
-
 /**
- * The rewritten `context_data` for one record, and whether part of it had to be left alone.
+ * The rewritten recorded changes of one record, or null when they name nobody relevant.
  *
- * The filters string and the structured payloads go through the same remapper as every other
- * serialized user reference, deduplication included: a history entry claiming a field gained the
- * target twice would describe a state the platform cannot hold.
+ * The values go through the same remapper as every other serialized user reference, deduplication
+ * included: a history entry claiming a field gained the target twice would describe a state the
+ * platform cannot hold.
  */
-export const userMergeRewriteHistoryPayload = (
-  contextData: ContextData,
-  sourceId: string,
-  targetId: string,
-): HistoryPayloadRewrite => {
-  const rewritten: ContextData = { ...contextData };
-  let changed = false;
-  for (let i = 0; i < PAYLOAD_FIELDS.length; i += 1) {
-    const field = PAYLOAD_FIELDS[i];
-    const value = contextData[field];
-    if (value !== undefined && value !== null) {
-      const result = remapUserInJsonValue(value, sourceId, targetId);
-      if (result.changed) {
-        rewritten[field] = result.payload;
-        changed = true;
-      }
-    }
+export const userMergeRewriteHistoryChanges = (changes: unknown, sourceId: string, targetId: string): unknown[] | null => {
+  if (!Array.isArray(changes)) {
+    return null;
   }
-  const changeLabels = rewriteChangeLabels(rewritten[CHANGES_FIELD], sourceId, targetId);
-  if (changeLabels.changed) {
-    rewritten[CHANGES_FIELD] = changeLabels.value;
-    changed = true;
-  }
-  // Left alone when it does not parse: an unreadable payload is reported rather than rewritten by
-  // string substitution, which cannot tell a whole value from a substring. The fields rewritten
-  // above are kept, so the record is not lost with it.
-  let unparsable = false;
-  const filters = contextData[FILTERS_FIELD];
-  if (typeof filters === 'string') {
-    const result = remapUserInJsonString(filters, sourceId, targetId);
-    if (result.changed) {
-      rewritten[FILTERS_FIELD] = result.json;
-      changed = true;
-    } else if (!result.parsed) {
-      unparsable = true;
-    }
-  }
-  return { rewritten: changed ? rewritten : null, unparsable };
+  const values = remapUserInJsonValue(changes, sourceId, targetId);
+  const labels = rewriteChangeLabels(values.payload, sourceId, targetId);
+  return values.changed || labels.changed ? labels.value as unknown[] : null;
 };
 
-type PayloadUpdate = { id: string; index: string; doc: Record<string, unknown> };
+type ChangesUpdate = { id: string; index: string; doc: Record<string, unknown> };
 
 /**
- * Walks the records whose payload names the source and hands the rewrites over one page at a
- * time, keeping none of them past their page.
- *
- * How many records name a user has no bound the merge controls, and each rewrite carries a whole
- * `context_data` — the changes of a bulk edit, the raw input, the filters. Collected over the
- * whole scan, they would make the peak memory, and the size of a single bulk request, grow with
- * the history of the user rather than with a page. Returns the count of records whose filters
- * name the source but could not be read, rewritten or not for the rest.
+ * Walks the records whose changes name the source and hands the rewrites over one page at a time,
+ * keeping none of them past their page: a bulk edit records every element it touched, so the size
+ * of a rewrite is not bounded by the merge.
  */
-const scanPayloadRewrites = async (
+const scanChangesRewrites = async (
   { context, sourceId, targetId, mergeStartedAt }: UserMergeHandlerContext,
-  onPage: (updates: PayloadUpdate[]) => Promise<void> | void,
-): Promise<number> => {
-  let unparsable = 0;
-  await userMergeScanPagesForRewrite(context, USER_MERGE_TARGET_INDICES, payloadQuery(sourceId, mergeStartedAt), async (page) => {
-    const updates: PayloadUpdate[] = [];
+  onPage: (updates: ChangesUpdate[]) => Promise<void> | void,
+): Promise<void> => {
+  await userMergeScanPagesForRewrite(context, USER_MERGE_TARGET_INDICES, changesQuery(sourceId, mergeStartedAt), async (page) => {
+    const updates: ChangesUpdate[] = [];
     for (let i = 0; i < page.length; i += 1) {
       const candidate = page[i];
-      const contextData = (candidate.source as { context_data?: ContextData }).context_data;
-      if (contextData) {
-        const result = userMergeRewriteHistoryPayload(contextData, sourceId, targetId);
-        if (result.unparsable) {
-          unparsable += 1;
-        }
-        if (result.rewritten) {
-          updates.push({ id: candidate.id, index: candidate.index, doc: { context_data: result.rewritten } });
-        }
+      const changes = (candidate.source as { context_data?: Record<string, unknown> }).context_data?.[CHANGES_FIELD];
+      const rewritten = userMergeRewriteHistoryChanges(changes, sourceId, targetId);
+      if (rewritten) {
+        // Partial document: only the changes move, the rest of the record is left as recorded.
+        updates.push({ id: candidate.id, index: candidate.index, doc: { context_data: { [CHANGES_FIELD]: rewritten } } });
       }
     }
     await onPage(updates);
   });
-  return unparsable;
 };
 
 /**
- * Rewrites the user references buried in a recorded action.
+ * Rewrites the user references a recorded action carries in what the platform shows of it: its
+ * subject and its recorded changes.
  *
  * Split from the history handler of the previous chunk on purpose: that one moves attribution
- * fields, which are plain keywords a script can rewrite in place. This one deals with the payload
- * the action carried, which is stored in three shapes that no single query reaches.
+ * fields, which are plain keywords a script can rewrite in place. The recorded changes are
+ * `nested` values that have to be read back and walked.
  */
 export const userMergeHistoryPayloadHandler: UserMergeHandler = {
   identifier: USER_MERGE_HISTORY_PAYLOAD_HANDLER,
@@ -308,9 +244,9 @@ export const userMergeHistoryPayloadHandler: UserMergeHandler = {
   compute: async (handlerContext: UserMergeHandlerContext): Promise<UserMergeHandlerPlan> => {
     const { context, sourceId, mergeStartedAt } = handlerContext;
     // Both selections are collapsed into one set of document ids rather than added up, so that a
-    // record naming the source in its subject and in its payload is reported once.
+    // record naming the source in its subject and in its changes is reported once.
     const impacted = new Set<string>();
-    const unparsable = await scanPayloadRewrites(handlerContext, (updates) => {
+    await scanChangesRewrites(handlerContext, (updates) => {
       updates.forEach((update) => impacted.add(update.id));
     });
     await userMergeScanPagesForRewrite(context, USER_MERGE_TARGET_INDICES, subjectIdQuery(sourceId, mergeStartedAt), (page) => {
@@ -323,20 +259,9 @@ export const userMergeHistoryPayloadHandler: UserMergeHandler = {
       entity_type: ENTITY_TYPE_HISTORY,
       count: impacted.size,
       exact: true,
-      detail: `records written before ${mergeStartedAt.toISOString()} naming the source in their subject or payload; what the merge on this pair wrote about the source is out of reach by construction`,
+      detail: `records written before ${mergeStartedAt.toISOString()} naming the source in their subject or recorded changes; what the merge on this pair wrote about the source is out of reach by construction`,
     }];
-    // Not blocking, like the unreadable payloads of the other handlers: the record is left as it
-    // stands and the operator decides. Without this, the filters of an audit record would keep
-    // naming the source and nothing would say so.
-    const alerts: UserMergeRightsAlert[] = [];
-    if (unparsable > 0) {
-      alerts.push({
-        register_row_id: REGISTER_ROW,
-        kind: 'rights',
-        message: `${unparsable} ${ENTITY_TYPE_HISTORY} record(s) hold the source id in a ${FILTERS_FIELD} the platform cannot parse, and were left untouched`,
-      });
-    }
-    return { handler: USER_MERGE_HISTORY_PAYLOAD_HANDLER, changes, alerts };
+    return { handler: USER_MERGE_HISTORY_PAYLOAD_HANDLER, changes, alerts: [] };
   },
   apply: async (handlerContext: UserMergeHandlerContext): Promise<number> => {
     const { context, sourceId, targetId, mergeStartedAt } = handlerContext;
@@ -361,20 +286,20 @@ export const userMergeHistoryPayloadHandler: UserMergeHandler = {
     // the rewrite leaves alone, and a page already written lies behind the cursor. The pages are
     // left unrefreshed and the indices written refreshed once, rather than once per page on the
     // heaviest index of the platform.
-    const label = `${USER_MERGE_HISTORY_PAYLOAD_HANDLER}:payload`;
+    const label = `${USER_MERGE_HISTORY_PAYLOAD_HANDLER}:changes`;
     const written = new Set<string>();
-    let payloads = 0;
+    let rewritten = 0;
     try {
-      await scanPayloadRewrites(handlerContext, async (updates) => {
-        payloads += await userMergeBulkRewrite(context, label, updates, { refresh: false });
+      await scanChangesRewrites(handlerContext, async (updates) => {
+        rewritten += await userMergeBulkRewrite(context, label, updates, { refresh: false });
         updates.forEach((update) => written.add(update.index));
       });
     } catch (err) {
       // A bulk is no more atomic than the update above: the pages already written stay written,
       // and a run reporting zero would read as "nothing was touched". Re-running completes it.
-      throw DatabaseError('User merge history payload rewrite aborted', { label, updated: subjects.updated + payloads, cause: err });
+      throw DatabaseError('User merge history changes rewrite aborted', { label, updated: subjects.updated + rewritten, cause: err });
     }
     await userMergeRefresh(label, Array.from(written));
-    return subjects.updated + payloads;
+    return subjects.updated + rewritten;
   },
 };

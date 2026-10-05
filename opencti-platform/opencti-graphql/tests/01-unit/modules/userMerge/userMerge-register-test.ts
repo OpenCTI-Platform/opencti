@@ -2,28 +2,31 @@ import { describe, expect, it } from 'vitest';
 import { findRegisterRow, registerRowsByDisposition, USER_MERGE_REGISTER, UserMergeDisposition } from '../../../../src/modules/userMerge/userMerge-register';
 
 /**
- * The v5 baseline, transcribed from the register page. It is asserted here rather than
+ * The v6 baseline, transcribed from the register page. It is asserted here rather than
  * derived from the constant: a test that recounts the array would agree with any
  * transcription mistake it is supposed to catch.
+ *
+ * v6 splits the raw payload of a history record (`input`, `list_params`, `filters`) out of
+ * `history.context-data-payload` into a retained row of its own.
  */
-const V5_DISTRIBUTION: Record<UserMergeDisposition, number> = {
+const V6_DISTRIBUTION: Record<UserMergeDisposition, number> = {
   [UserMergeDisposition.Transfer]: 41,
   [UserMergeDisposition.Invalidate]: 20,
   [UserMergeDisposition.Conditional]: 21,
-  [UserMergeDisposition.Retain]: 11,
+  [UserMergeDisposition.Retain]: 12,
   [UserMergeDisposition.OutOfScope]: 6,
 };
 
 describe('User merge register', () => {
-  it('should match the v5 distribution, disposition by disposition', () => {
-    Object.entries(V5_DISTRIBUTION).forEach(([disposition, expectedCount]) => {
+  it('should match the v6 distribution, disposition by disposition', () => {
+    Object.entries(V6_DISTRIBUTION).forEach(([disposition, expectedCount]) => {
       const rows = registerRowsByDisposition(disposition as UserMergeDisposition);
       expect(rows.length, `disposition ${disposition}`).toBe(expectedCount);
     });
   });
 
-  it('should hold exactly 99 rows, and no row outside the known dispositions', () => {
-    const total = Object.values(V5_DISTRIBUTION).reduce((acc, count) => acc + count, 0);
+  it('should hold exactly 100 rows, and no row outside the known dispositions', () => {
+    const total = Object.values(V6_DISTRIBUTION).reduce((acc, count) => acc + count, 0);
     expect(USER_MERGE_REGISTER.length).toBe(total);
   });
 

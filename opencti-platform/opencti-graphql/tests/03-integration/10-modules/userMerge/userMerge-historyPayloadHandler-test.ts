@@ -21,10 +21,11 @@ let SOURCE_ID: string;
 let TARGET_ID: string;
 
 const CHANGES_DOCUMENT = 'merge-test-payload-changes';
-const INPUT_DOCUMENT = 'merge-test-payload-input';
-const BROKEN_FILTERS_WITH_INPUT_DOCUMENT = 'merge-test-payload-broken-filters-with-input';
-const BROKEN_FILTERS_ONLY_DOCUMENT = 'merge-test-payload-broken-filters-only';
-const DOCUMENT_IDS = [CHANGES_DOCUMENT, INPUT_DOCUMENT, BROKEN_FILTERS_WITH_INPUT_DOCUMENT, BROKEN_FILTERS_ONLY_DOCUMENT];
+const MEMBERS_CHANGE_DOCUMENT = 'merge-test-payload-members-change';
+const FILTERS_CHANGE_DOCUMENT = 'merge-test-payload-filters-change';
+const OTHER_CHANGE_DOCUMENT = 'merge-test-payload-other-change';
+const RAW_PAYLOAD_DOCUMENT = 'merge-test-payload-raw';
+const DOCUMENT_IDS = [CHANGES_DOCUMENT, MEMBERS_CHANGE_DOCUMENT, FILTERS_CHANGE_DOCUMENT, OTHER_CHANGE_DOCUMENT, RAW_PAYLOAD_DOCUMENT];
 
 const document = (internalId: string, entityType: string, contextData: Record<string, unknown>) => ({
   internal_id: internalId,
@@ -49,10 +50,18 @@ const readDocument = async (internalId: string) => {
 };
 
 let registeredHandlers: UserMergeHandler[];
-let mergeResult: Awaited<ReturnType<typeof merge>>;
+let dryRunResult: Awaited<ReturnType<typeof merge>>;
 
-/** A filters string that names the source but is cut short: it cannot be read back. */
-const brokenFilters = () => `{"mode":"and","filters":[{"key":["creator_id"],"values":["${SOURCE_ID}"`;
+// Values an object or a filter attribute records serialized in `raw`: the selection has to reach
+// the id inside them as well as a plain one.
+const members = (id: string) => JSON.stringify([{ id, access_right: 'view' }]);
+const filters = (id: string) => JSON.stringify({ mode: 'and', filters: [{ key: ['creator_id'], values: [id] }], filterGroups: [] });
+const changeOf = (field: string, raw: string) => [{ field, changes_added: [{ raw }], changes_removed: [] }];
+
+const countOf = (result: typeof dryRunResult) => (result.report?.handlers ?? [])
+  .flatMap((outcome) => outcome.changes)
+  .filter((change) => change.register_row_id === 'history.context-data-payload')
+  .reduce((sum, change) => sum + change.count, 0);
 
 describe('userMerge history payload handler', () => {
   beforeAll(async () => {
@@ -75,27 +84,31 @@ describe('userMerge history payload handler', () => {
         changes_removed: [],
       }],
     }));
-    // The shape the activity listener writes, which the same row also covers.
-    await elIndex(INDEX_HISTORY, document(INPUT_DOCUMENT, 'Activity', {
-      message: 'creates a report',
+    await elIndex(INDEX_HISTORY, document(MEMBERS_CHANGE_DOCUMENT, 'History', {
+      message: 'Update 1 elements',
       entity_type: 'Report',
-      input: { objectAssignee: [SOURCE_ID] },
+      history_changes: changeOf('Report--authorized_members', members(SOURCE_ID)),
     }));
-    // A record whose filters cannot be read must not lose the rest of its rewrite, and a record
-    // that holds nothing else must still be reported.
-    await elIndex(INDEX_HISTORY, document(BROKEN_FILTERS_WITH_INPUT_DOCUMENT, 'Activity', {
+    await elIndex(INDEX_HISTORY, document(FILTERS_CHANGE_DOCUMENT, 'History', {
+      message: 'Update 1 elements',
+      entity_type: 'Trigger',
+      history_changes: changeOf('Trigger--filters', filters(SOURCE_ID)),
+    }));
+    await elIndex(INDEX_HISTORY, document(OTHER_CHANGE_DOCUMENT, 'History', {
+      message: 'Update 1 elements',
+      entity_type: 'Report',
+      history_changes: changeOf('Report--objectAssignee', OTHER_ID),
+    }));
+    // The raw payload the activity listener records is retained: neither exposed nor resolved.
+    await elIndex(INDEX_HISTORY, document(RAW_PAYLOAD_DOCUMENT, 'Activity', {
       message: 'creates a stream',
       entity_type: 'Report',
       input: { objectAssignee: [SOURCE_ID] },
-      filters: brokenFilters(),
+      filters: filters(SOURCE_ID),
     }));
-    await elIndex(INDEX_HISTORY, document(BROKEN_FILTERS_ONLY_DOCUMENT, 'Activity', {
-      message: 'reads a stream',
-      entity_type: 'Report',
-      filters: brokenFilters(),
-    }));
-    mergeResult = await merge(false);
-    expect(mergeResult.status).toEqual(UserMergeStatus.Success);
+    dryRunResult = await merge(true);
+    const result = await merge(false);
+    expect(result.status).toEqual(UserMergeStatus.Success);
   });
 
   afterAll(async () => {
@@ -111,9 +124,9 @@ describe('userMerge history payload handler', () => {
     await deleteMergeableUser(TARGET_ID);
   });
 
-  it('should rewrite the source id carried by a recorded input', async () => {
-    const contextData = await readDocument(INPUT_DOCUMENT) as { input: { objectAssignee: string[] } };
-    expect(contextData.input.objectAssignee).toEqual([TARGET_ID]);
+  // The selection only reads the records whose changes name the source, nothing else.
+  it('should plan the records whose recorded changes name the source', () => {
+    expect(countOf(dryRunResult)).toEqual(3);
   });
 
   it('should rewrite the source id carried by a recorded change', async () => {
@@ -131,23 +144,28 @@ describe('userMerge history payload handler', () => {
     expect(Object.keys(translated)).toEqual([TARGET_ID]);
   });
 
-  // The unreadable filters are left as recorded, but they do not take the input down with them.
-  it('should still rewrite the input of a record whose filters cannot be read', async () => {
-    const contextData = await readDocument(BROKEN_FILTERS_WITH_INPUT_DOCUMENT) as { input: { objectAssignee: string[] }; filters: string };
-    expect(contextData.input.objectAssignee).toEqual([TARGET_ID]);
-    expect(contextData.filters).toEqual(brokenFilters());
+  it('should rewrite the source id inside a serialized object change', async () => {
+    const contextData = await readDocument(MEMBERS_CHANGE_DOCUMENT) as { history_changes: { changes_added: { raw: string }[] }[] };
+    expect(contextData.history_changes[0].changes_added[0].raw).toEqual(members(TARGET_ID));
   });
 
-  it('should leave unreadable filters as recorded', async () => {
-    const contextData = await readDocument(BROKEN_FILTERS_ONLY_DOCUMENT) as { filters: string };
-    expect(contextData.filters).toEqual(brokenFilters());
+  it('should rewrite the source id inside a serialized filters change', async () => {
+    const contextData = await readDocument(FILTERS_CHANGE_DOCUMENT) as { history_changes: { changes_added: { raw: string }[] }[] };
+    expect(contextData.history_changes[0].changes_added[0].raw).toEqual(filters(TARGET_ID));
   });
 
-  it('should report every record whose filters could not be read', () => {
-    const alerts = mergeResult.report?.handlers.flatMap((outcome) => outcome.alerts) ?? [];
-    expect(alerts).toHaveLength(1);
-    expect(alerts[0].register_row_id).toEqual('history.context-data-payload');
-    expect(alerts[0].blocking).not.toBe(true);
-    expect(alerts[0].message).toContain('2 History record(s)');
+  it('should leave a change naming another account untouched', async () => {
+    const contextData = await readDocument(OTHER_CHANGE_DOCUMENT) as { history_changes: { changes_added: { raw: string }[] }[] };
+    expect(contextData.history_changes[0].changes_added[0].raw).toEqual(OTHER_ID);
+  });
+
+  it('should leave the raw payload of a record as recorded', async () => {
+    const contextData = await readDocument(RAW_PAYLOAD_DOCUMENT) as { input: { objectAssignee: string[] }; filters: string };
+    expect(contextData.input.objectAssignee).toEqual([SOURCE_ID]);
+    expect(contextData.filters).toEqual(filters(SOURCE_ID));
+  });
+
+  it('should be a no-op when replayed', async () => {
+    expect(countOf(await merge(true))).toEqual(0);
   });
 });
