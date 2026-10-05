@@ -6,9 +6,10 @@ import {
   redisCountChangeDigestJobFailure,
   redisExpireChangeDigestJobs,
   redisGetChangeDigestJobs,
+  redisClaimDigestDelivery,
+  redisConfirmDigestDelivery,
   redisIsChangeDigestJobDue,
-  redisIsDigestDelivered,
-  redisMarkDigestDelivered,
+  redisReleaseDigestDelivery,
   redisRemoveChangeDigestJob,
   redisRescheduleChangeDigestJob,
 } from '../../../../src/database/redis';
@@ -59,13 +60,20 @@ describe('Change digest jobs in Redis', () => {
     await redisRemoveChangeDigestJob(member('failing'));
   });
 
-  it('records the delivery of a digest under its delivery key', async () => {
-    const deliveryKey = member('delivered');
-    expect(await redisIsDigestDelivered(deliveryKey)).toBe(false);
-    await redisMarkDigestDelivered(deliveryKey);
-    expect(await redisIsDigestDelivered(deliveryKey)).toBe(true);
-    expect(await redisIsDigestDelivered(member('other'))).toBe(false);
-    await getClientBase().zrem('digest_deliveries', deliveryKey);
+  it('claims a digest delivery once, releases it after a failure and keeps it after a success', async () => {
+    const receipt = member('delivery|notifier-email');
+    expect(await redisClaimDigestDelivery(receipt)).toBe(true);
+    // Being sent
+    expect(await redisClaimDigestDelivery(receipt)).toBe(false);
+    // The notifier failed: the digest can be sent again
+    await redisReleaseDigestDelivery(receipt);
+    expect(await redisClaimDigestDelivery(receipt)).toBe(true);
+    // The notifier succeeded: never sent again
+    await redisConfirmDigestDelivery(receipt);
+    expect(await redisClaimDigestDelivery(receipt)).toBe(false);
+    expect(await redisClaimDigestDelivery(member('delivery|notifier-ui'))).toBe(true);
+    await redisReleaseDigestDelivery(receipt);
+    await redisReleaseDigestDelivery(member('delivery|notifier-ui'));
   });
 
   it('expires the jobs scheduled strictly before a date', async () => {

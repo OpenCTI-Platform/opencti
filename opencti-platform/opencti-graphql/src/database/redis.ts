@@ -883,18 +883,30 @@ export const redisRemoveChangeDigestJob = async (member: string) => {
 // endregion
 
 // region - digest deliveries
-// Delivery keys of the digests delivered (a change digest: one trigger, recipient and period), scored by the end of
-// their retention, which covers every retry of a change digest: a digest stored twice is delivered once
+// Receipts of the digests that carry a delivery key (a change digest: one trigger, recipient and period), one per key
+// and notifier, scored by the end of their validity: claimed for a short time while the notifier sends, then kept long
+// enough to cover every retry of a change digest once the notifier succeeded
 const DIGEST_DELIVERIES_KEY = 'digest_deliveries';
+const DIGEST_DELIVERY_CLAIM_MS = 10 * 60 * 1000;
 const DIGEST_DELIVERY_RETENTION_MS = 8 * 24 * 60 * 60 * 1000;
-export const redisIsDigestDelivered = async (deliveryKey: string): Promise<boolean> => {
-  const retainedUntil = await getClientBase().zscore(DIGEST_DELIVERIES_KEY, deliveryKey);
-  return retainedUntil !== null && Number(retainedUntil) > Date.now();
+const CLAIM_DIGEST_DELIVERY_SCRIPT = `
+local validUntil = redis.call('ZSCORE', KEYS[1], ARGV[1])
+if validUntil and tonumber(validUntil) > tonumber(ARGV[2]) then return 0 end
+redis.call('ZADD', KEYS[1], ARGV[3], ARGV[1])
+return 1`;
+// False when the digest was already sent to this notifier, or is being sent
+export const redisClaimDigestDelivery = async (receipt: string): Promise<boolean> => {
+  const now = Date.now();
+  const claimed = await getClientBase().eval(CLAIM_DIGEST_DELIVERY_SCRIPT, 1, DIGEST_DELIVERIES_KEY, receipt, now, now + DIGEST_DELIVERY_CLAIM_MS);
+  return claimed === 1;
 };
-export const redisMarkDigestDelivered = async (deliveryKey: string) => {
+export const redisConfirmDigestDelivery = async (receipt: string) => {
   const now = Date.now();
   await getClientBase().zremrangebyscore(DIGEST_DELIVERIES_KEY, '-inf', now);
-  await getClientBase().zadd(DIGEST_DELIVERIES_KEY, now + DIGEST_DELIVERY_RETENTION_MS, deliveryKey);
+  await getClientBase().zadd(DIGEST_DELIVERIES_KEY, now + DIGEST_DELIVERY_RETENTION_MS, receipt);
+};
+export const redisReleaseDigestDelivery = async (receipt: string) => {
+  await getClientBase().zrem(DIGEST_DELIVERIES_KEY, receipt);
 };
 // endregion
 

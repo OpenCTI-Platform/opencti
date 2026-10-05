@@ -3,7 +3,7 @@ import conf, { booleanConf, getBaseUrl, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { createStreamProcessor } from '../database/stream/stream-handler';
-import { redisGetManagerEventState, redisIsDigestDelivered, redisMarkDigestDelivered, redisSetManagerEventState } from '../database/redis';
+import { redisClaimDigestDelivery, redisConfirmDigestDelivery, redisGetManagerEventState, redisReleaseDigestDelivery, redisSetManagerEventState } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import { sendMail, smtpComputeFrom, smtpIsAlive } from '../database/smtp';
 import type { NotifierTestInput } from '../generated/graphql';
@@ -286,6 +286,34 @@ export const internalProcessNotification = async (
   }
 };
 
+/**
+ * Sends a notification through one notifier. With a delivery receipt (a digest carrying a delivery key, one receipt per
+ * notifier), the receipt is claimed before sending, kept once the notifier succeeded and released when it failed: a
+ * digest stored again is only sent to the notifiers that did not receive it. Returns false when it was not sent again.
+ */
+export const sendToNotifier = async (deliveryReceipt: string | undefined, send: () => Promise<void>): Promise<boolean> => {
+  if (deliveryReceipt && !(await redisClaimDigestDelivery(deliveryReceipt))) {
+    return false;
+  }
+  try {
+    await send();
+  } catch (err) {
+    if (deliveryReceipt) {
+      await redisReleaseDigestDelivery(deliveryReceipt).catch((releaseError) => {
+        // The claim expires by itself, the digest can then be sent again
+        logApp.warn('[OPENCTI-MODULE] Digest delivery receipt could not be released', { cause: releaseError, manager: 'PUBLISHER_MANAGER' });
+      });
+    }
+    throw err;
+  }
+  if (deliveryReceipt) {
+    await redisConfirmDigestDelivery(deliveryReceipt).catch((confirmError) => {
+      logApp.warn('[OPENCTI-MODULE] Digest delivery receipt could not be recorded', { cause: confirmError, manager: 'PUBLISHER_MANAGER' });
+    });
+  }
+  return true;
+};
+
 export const processNotificationEvent = async (
   context: AuthContext,
   notificationMap: Map<string, BasicStoreEntityTrigger>,
@@ -293,6 +321,7 @@ export const processNotificationEvent = async (
   user: NotificationUser,
   notificationData: NotificationData[],
   usersMap: Map<string, AuthUser>,
+  deliveryKey?: string,
 ): Promise<void> => {
   const storeSettings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
 
@@ -312,8 +341,14 @@ export const processNotificationEvent = async (
     const userNotifierId = userNotifiers[i];
     const notifier = notifierMap.get(userNotifierId) ?? {} as BasicStoreEntityNotifier;
 
+    const deliveryReceipt = deliveryKey ? `${deliveryKey}|${userNotifierId}` : undefined;
     // There is no await in purpose; the goal is to send notification and continue without waiting result.
-    internalProcessNotification(context, storeSettings, notificationMap, user, notifier, notificationData, [notificationTrigger], usersMap)
+    sendToNotifier(deliveryReceipt, () => internalProcessNotification(context, storeSettings, notificationMap, user, notifier, notificationData, [notificationTrigger], usersMap))
+      .then((sent) => {
+        if (!sent) {
+          logApp.info('[OPENCTI-MODULE] Digest already sent to this notifier, not sent again', { manager: 'PUBLISHER_MANAGER', notifierType: notifier.notifier_connector_id, notificationId });
+        }
+      })
       .catch((reason) => {
         logApp.error('[OPENCTI-MODULE] Publisher manager notification processing error', {
           cause: reason,
@@ -366,28 +401,13 @@ export const processLiveNotificationEvent = async (
   }
 };
 
-// A digest stored with a delivery key is delivered once per key, even when a retry stored it a second time. Stream
-// events are processed one at a time, and the key is recorded only once the digest is delivered.
-export const deliverDigestOnce = async (event: DigestEvent, deliver: () => Promise<void>): Promise<boolean> => {
-  const deliveryKey = event.delivery_key;
-  if (deliveryKey && await redisIsDigestDelivered(deliveryKey)) {
-    logApp.info('[OPENCTI-MODULE] Digest already delivered, not delivered again', { manager: 'PUBLISHER_MANAGER', notification_id: event.notification_id });
-    return false;
-  }
-  await deliver();
-  if (deliveryKey) {
-    await redisMarkDigestDelivered(deliveryKey);
-  }
-  return true;
-};
-
 const processDigestNotificationEvent = async (context: AuthContext, notificationMap: Map<string, BasicStoreEntityTrigger>, event: DigestEvent) => {
   const { target: user, data } = event;
   const usersMap = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const dataWithFullMessage = data.map((d) => {
     return { ...d, message: createFullNotificationMessage(d.message, usersMap, d.streamMessage, d.origin, d.type) };
   });
-  await processNotificationEvent(context, notificationMap, event.notification_id, user, dataWithFullMessage, usersMap);
+  await processNotificationEvent(context, notificationMap, event.notification_id, user, dataWithFullMessage, usersMap, event.delivery_key);
 };
 
 const liveNotificationBufferPerEntity: Record<string, { timestamp: number; events: SseEvent<KnowledgeNotificationEvent>[] }> = {};
@@ -524,7 +544,7 @@ const publisherStreamHandler = async (streamEvents: Array<SseEvent<StreamNotifEv
         if (digestEvent.data.playbook_source) {
           notificationMap.set(notification_id, { name: digestEvent.data.playbook_source, trigger_type: type } as BasicStoreEntityTrigger);
         }
-        await deliverDigestOnce(digestEvent.data, () => processDigestNotificationEvent(context, notificationMap, digestEvent.data));
+        await processDigestNotificationEvent(context, notificationMap, digestEvent.data);
       }
       await redisSetManagerEventState(PUBLISHER_MANAGER_NAME, streamEvent.id);
     }
