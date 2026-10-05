@@ -184,20 +184,23 @@ export const computeDeploymentKpis = (
   missed: sumStatuses(validationStatuses, ['missed']),
 });
 
+const reportedFilter = { key: 'last_sync_at', values: [], operator: 'not_nil', mode: 'or' };
+
+// The status breakdowns count reported deployments only, so every counter filter keeps the same restriction.
 const statusFilter = (key: string, values: string[]): FilterGroup => ({
   mode: 'and',
-  filters: [{ key, values, operator: 'eq', mode: 'or' }],
+  filters: [{ key, values, operator: 'eq', mode: 'or' }, reportedFilter],
   filterGroups: [],
 });
 
 /**
  * Deployments shown under the KPI strip for the selected counter, every deployment without selection.
- * "Disseminated" lists the deployments a connector reported, the ones it counts: a hand-recorded pending one is out.
+ * Counters count the deployments a connector reported: a hand-recorded pending one is out.
  */
 export const buildKpiFilters = (kpi: KpiId | null): FilterGroup | undefined => {
   switch (kpi) {
     case 'disseminated':
-      return { mode: 'and', filters: [{ key: 'last_sync_at', values: [], operator: 'not_nil', mode: 'or' }], filterGroups: [] };
+      return { mode: 'and', filters: [reportedFilter], filterGroups: [] };
     case 'deployed':
       return statusFilter('deployment_status', LIVE_DEPLOYMENT_STATUSES);
     case 'active':

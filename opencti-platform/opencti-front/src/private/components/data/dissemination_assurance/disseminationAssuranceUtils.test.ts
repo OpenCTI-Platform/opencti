@@ -209,12 +209,13 @@ describe('KPI strip', () => {
   });
 
   it('should filter the deployments of the selected counter, and none for all deployments', () => {
+    const reported = { key: 'last_sync_at', values: [], operator: 'not_nil', mode: 'or' };
     expect(buildKpiFilters(null)).toBeUndefined();
-    expect(buildKpiFilters('disseminated')?.filters).toEqual([{ key: 'last_sync_at', values: [], operator: 'not_nil', mode: 'or' }]);
-    expect(buildKpiFilters('deployed')?.filters).toEqual([{ key: 'deployment_status', values: ['deployed', 'active'], operator: 'eq', mode: 'or' }]);
+    expect(buildKpiFilters('disseminated')?.filters).toEqual([reported]);
+    expect(buildKpiFilters('deployed')?.filters).toEqual([{ key: 'deployment_status', values: ['deployed', 'active'], operator: 'eq', mode: 'or' }, reported]);
     expect(buildKpiFilters('active')?.filters[0].values).toEqual(['active']);
-    expect(buildKpiFilters('validated')?.filters).toEqual([{ key: 'validation_status', values: ['detected', 'prevented'], operator: 'eq', mode: 'or' }]);
-    expect(buildKpiFilters('missed')?.filters[0]).toEqual({ key: 'validation_status', values: ['missed'], operator: 'eq', mode: 'or' });
+    expect(buildKpiFilters('validated')?.filters).toEqual([{ key: 'validation_status', values: ['detected', 'prevented'], operator: 'eq', mode: 'or' }, reported]);
+    expect(buildKpiFilters('missed')?.filters).toEqual([{ key: 'validation_status', values: ['missed'], operator: 'eq', mode: 'or' }, reported]);
   });
 });
 
