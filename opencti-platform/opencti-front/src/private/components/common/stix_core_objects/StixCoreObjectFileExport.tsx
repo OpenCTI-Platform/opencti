@@ -283,6 +283,12 @@ const StixCoreObjectFileExportComponent = ({
   const [commitUploadFintelFile] = useMutation<StixCoreObjectContentFilesUploadStixCoreObjectMutation>(
     stixCoreObjectContentFilesUploadStixCoreObjectMutation,
   );
+  // A transport failure carries no GraphQL error to show: the timeline export reports it with its own message
+  const [commitUploadTimelineFile] = useApiMutation<StixCoreObjectContentFilesUploadStixCoreObjectMutation>(
+    stixCoreObjectContentFilesUploadStixCoreObjectMutation,
+    undefined,
+    { errorMessage: t_i18n('The timeline export failed') },
+  );
   const buildFintelDesignOptions = (values: StixCoreObjectFileExportFormInputs): FintelDesign => ({
     file_id: values.fintelDesign?.value.file_id ?? null,
     gradiantFromColor: values.fintelDesign?.value.gradiantFromColor ?? null,
@@ -507,7 +513,7 @@ const StixCoreObjectFileExportComponent = ({
       const selectedFileMarkings = values.fileMarkings.map(({ value }) => value);
       const { blob, fileMarkings } = await renderStoredTimelineFile(scoId, format, contentMaxMarkings, selectedFileMarkings);
       const file = new File([blob], `${values.exportFileName}.${format}`, { type: values.format });
-      commitUploadFile({
+      commitUploadTimelineFile({
         variables: { id: scoId, file, fileMarkings: fileMarkings.ids, noTriggerImport: true },
         onCompleted: (result, errors) => {
           setSubmitting(false);
