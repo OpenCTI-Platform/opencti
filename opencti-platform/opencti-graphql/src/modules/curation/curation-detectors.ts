@@ -533,6 +533,14 @@ const sourcesOf = (entity: CuratedEntity): Set<string> => {
   return entity.created_by_id ? new Set([entity.created_by_id]) : new Set();
 };
 
+const sourceNamesOf = (entities: CuratedEntity[], sourceIds: string[]): string[] => {
+  const names = new Map<string, string>();
+  entities.forEach((entity) => (entity.x_opencti_assertions ?? []).forEach((assertion) => {
+    if (assertion.source_id && assertion.source_name && !names.has(assertion.source_id)) names.set(assertion.source_id, assertion.source_name);
+  }));
+  return sourceIds.flatMap((id) => (names.has(id) ? [names.get(id) as string] : []));
+};
+
 /**
  * Turn the collected signals of a pair into a proposal draft: merge for entities of the same type, type mismatch for
  * entities of the same family but different types. Returns null when the combined confidence is too low or when no
@@ -565,8 +573,12 @@ export const buildPairDraft = (signals: PairSignals, context: PairContext): Prop
   if (leftSources.size > 0 && rightSources.size > 0) {
     const sharedSources = intersection(leftSources, rightSources);
     if (sharedSources.length > 0 && !hasExactCollision) {
+      const sharedSourceNames = sourceNamesOf([left, right], sharedSources.slice(0, 20));
       items.push(evidence(EVIDENCE_SOURCE_AGREEMENT, sharedSources.length / Math.min(leftSources.size, rightSources.size), EVIDENCE_WEIGHTS.sameSource,
-        'The same source maintains both entities separately, which suggests they are distinct', { shared_sources: sharedSources.slice(0, 20) }));
+        sharedSourceNames.length > 0
+          ? `${sharedSourceNames.map((name) => `"${name}"`).join(', ')} maintain(s) both entities separately, which suggests they are distinct`
+          : 'The same source maintains both entities separately, which suggests they are distinct',
+        { shared_sources: sharedSources.slice(0, 20), shared_source_names: sharedSourceNames }));
     } else if (sharedSources.length === 0) {
       items.push(evidence(EVIDENCE_SOURCE_AGREEMENT, 1, EVIDENCE_WEIGHTS.sourceDisagreement,
         'The entities come from different sources, a typical pattern of vendor naming', { left_sources: [...leftSources].slice(0, 10), right_sources: [...rightSources].slice(0, 10) }));

@@ -288,7 +288,12 @@ export const evidenceMessage = (item: CurationEvidence): ExplanationMessage => {
       if (overlap === null) break;
       return message('Structural similarity of {similarity}% in the knowledge graph analytics', { similarity: overlap });
     case 'source_agreement':
-      if (Array.isArray(details.shared_sources)) return message('The same source maintains both entities separately, which suggests they are distinct');
+      if (Array.isArray(details.shared_sources)) {
+        const names = strings(details.shared_source_names);
+        if (names.length === 1) return message('The source {sources} maintains both entities separately, which suggests they are distinct', { sources: quotedList(names) });
+        if (names.length > 1) return message('The sources {sources} maintain both entities separately, which suggests they are distinct', { sources: quotedList(names) });
+        return message('The same source maintains both entities separately, which suggests they are distinct');
+      }
       if (Array.isArray(details.left_sources)) return message('The entities come from different sources, a typical pattern of vendor naming');
       break;
     case 'date_inversion': {
@@ -441,11 +446,17 @@ const explainMerge = (proposal: ExplainedProposal, subjects: Subject[], options:
   const catalogued = items.some((item) => item.evidence_type === EVIDENCE_TAXONOMY);
   const whyValues = { left: target.name, right: others[0]?.name ?? '-', entityType: target.entity_type };
   let why = message('"{left}" and "{right}" share their techniques, tools or targets so closely that they may describe the same thing, although their names differ. Check the evidence before merging.', whyValues);
+  // The sentence never claims more than the confidence shown next to it
+  const conclusive = confidenceOf(proposal).level === 'high';
   if (catalogued) {
-    why = message('"{left}" and "{right}" are listed as two names of the same {entityType} by a public catalogue of threat names shipped with OpenCTI, so they very likely describe the same thing. Two copies split its reports, indicators and relationships between them.', whyValues);
+    why = conclusive
+      ? message('"{left}" and "{right}" are listed as two names of the same {entityType} by a public catalogue of threat names shipped with OpenCTI, so they very likely describe the same thing. Two copies split its reports, indicators and relationships between them.', whyValues)
+      : message('"{left}" and "{right}" are listed as two names of the same {entityType} by a public catalogue of threat names shipped with OpenCTI, so they may describe the same thing, but the rest of the evidence is not conclusive. Check it before merging.', whyValues);
   }
   if (spelledAlike) {
-    why = message('The {entityType} entities "{left}" and "{right}" carry the same name written differently, so they very likely describe the same thing. Two copies split its reports, indicators and relationships between them.', whyValues);
+    why = conclusive
+      ? message('The {entityType} entities "{left}" and "{right}" carry the same name written differently, so they very likely describe the same thing. Two copies split its reports, indicators and relationships between them.', whyValues)
+      : message('The {entityType} entities "{left}" and "{right}" carry the same name written differently, so they may describe the same thing, but the rest of the evidence is not conclusive. Check it before merging.', whyValues);
   }
   return {
     title: others.length === 1 ? message('Merge "{other}" into "{target}"', values) : message('Merge {count} entities into "{target}"', values),

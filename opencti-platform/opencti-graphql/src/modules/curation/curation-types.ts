@@ -498,7 +498,7 @@ export interface CurationCandidateEntity {
   marking_ids: string[];
   organization_ids: string[];
   updated_at?: string | null;
-  x_opencti_assertions?: Array<{ source_id: string }> | null;
+  x_opencti_assertions?: Array<{ source_id: string; source_name?: string | null }> | null;
   x_opencti_graph_metrics?: Record<string, unknown> | null;
 }
 

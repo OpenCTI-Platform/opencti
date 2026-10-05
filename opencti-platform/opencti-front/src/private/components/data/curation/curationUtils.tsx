@@ -309,7 +309,12 @@ const useCurationLabels = () => {
         if (overlap === null) break;
         return t_i18n('Structural similarity of {similarity}% in the knowledge graph analytics', { values: { similarity: overlap } });
       case 'source_agreement':
-        if (list('shared_sources')) return t_i18n('The same source maintains both entities separately, which suggests they are distinct');
+        if (list('shared_sources')) {
+          const names = (list('shared_source_names') ?? []).filter((name): name is string => typeof name === 'string' && name.length > 0);
+          if (names.length === 1) return t_i18n('The source {sources} maintains both entities separately, which suggests they are distinct', { values: { sources: quoted(names) } });
+          if (names.length > 1) return t_i18n('The sources {sources} maintain both entities separately, which suggests they are distinct', { values: { sources: quoted(names) } });
+          return t_i18n('The same source maintains both entities separately, which suggests they are distinct');
+        }
         if (list('left_sources')) return t_i18n('The entities come from different sources, a typical pattern of vendor naming');
         break;
       case 'date_inversion': {

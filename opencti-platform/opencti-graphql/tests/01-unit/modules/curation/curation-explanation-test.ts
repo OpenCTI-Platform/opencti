@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildProposalExplanation, type ExplainedProposal, renderTemplate } from '../../../../src/modules/curation/curation-explanation';
-import { detectMissingAliases, toCuratedEntity } from '../../../../src/modules/curation/curation-detectors';
+import { buildPairDraft, detectMissingAliases, toCuratedEntity } from '../../../../src/modules/curation/curation-detectors';
 import type { CurationEvidence } from '../../../../src/modules/curation/curation-types';
 
 const evidenceItem = (evidenceType: string, details: Record<string, unknown>, description = 'stored description'): CurationEvidence => ({
@@ -127,6 +127,66 @@ describe('curation proposal explanations', () => {
     expect(explained.why.text).toBe('"APT28" and "Fancy Bear" are listed as two names of the same Intrusion Set by a public catalogue of threat names shipped with OpenCTI, so they very likely describe the same thing. Two copies split its reports, indicators and relationships between them.');
     expect(explained.why.text).not.toContain('written differently');
     expect(explained.evidence[0].sources).toEqual([{ name: 'MITRE ATT&CK', reference: 'G0007', url: 'https://attack.mitre.org/groups/G0007/' }]);
+  });
+
+  it('never says a merge is very likely when its confidence is low', () => {
+    const explained = buildProposalExplanation(proposal({
+      subject_ids: ['a', 'b'],
+      subject_names: ['APT28', 'Fancy Bear'],
+      target_id: 'a',
+      confidence_score: 0.48,
+      curation_evidence: [
+        evidenceItem('taxonomy', { cluster: 'mitre:G0007', source: 'mitre', left_name: 'Fancy Bear', right_name: 'APT28' }),
+        evidenceItem('source_agreement', { shared_sources: ['source-1'], shared_source_names: ['Mandiant'] }),
+      ],
+    }), [
+      { internal_id: 'a', entity_type: 'Intrusion-Set', name: 'APT28' },
+      { internal_id: 'b', entity_type: 'Intrusion-Set', name: 'Fancy Bear' },
+    ]);
+    expect(explained.confidence.level).toBe('low');
+    expect(explained.why.text).toBe('"APT28" and "Fancy Bear" are listed as two names of the same Intrusion Set by a public catalogue of threat names shipped with OpenCTI, so they may describe the same thing, but the rest of the evidence is not conclusive. Check it before merging.');
+    expect(explained.why.text).not.toContain('very likely');
+    expectPlainLanguage(explained.text);
+  });
+
+  it('names the source that maintains both entities of a merge separately', () => {
+    const explain = (details: Record<string, unknown>) => buildProposalExplanation(proposal({
+      subject_ids: ['a', 'b'],
+      subject_names: ['APT28', 'Fancy Bear'],
+      target_id: 'a',
+      curation_evidence: [evidenceItem('source_agreement', details)],
+    }), [
+      { internal_id: 'a', entity_type: 'Intrusion-Set', name: 'APT28' },
+      { internal_id: 'b', entity_type: 'Intrusion-Set', name: 'Fancy Bear' },
+    ]).evidence[0].message.text;
+    expect(explain({ shared_sources: ['source-1'], shared_source_names: ['Mandiant'] }))
+      .toBe('The source "Mandiant" maintains both entities separately, which suggests they are distinct');
+    expect(explain({ shared_sources: ['source-1', 'source-2'], shared_source_names: ['Mandiant', 'CrowdStrike'] }))
+      .toBe('The sources "Mandiant", "CrowdStrike" maintain both entities separately, which suggests they are distinct');
+    // Proposals raised before the names were recorded keep the generic sentence
+    expect(explain({ shared_sources: ['source-1'] })).toBe('The same source maintains both entities separately, which suggests they are distinct');
+  });
+
+  it('records the names of the sources that maintain both entities of a pair', () => {
+    const entity = (id: string, name: string) => toCuratedEntity({
+      internal_id: id,
+      standard_id: `intrusion-set--${id}`,
+      entity_type: 'Intrusion-Set',
+      name,
+      aliases: [],
+      marking_ids: [],
+      organization_ids: [],
+      x_opencti_assertions: [{ source_id: 'source-1', source_name: 'Mandiant' }, { source_id: `own-${id}`, source_name: `Feed ${id}` }],
+    });
+    const draft = buildPairDraft({
+      left: entity('a', 'APT28'),
+      right: entity('b', 'Fancy Bear'),
+      evidence: [evidenceItem('taxonomy', { cluster: 'mitre:G0007', source: 'mitre', left_name: 'Fancy Bear', right_name: 'APT28' })],
+      detectors: new Set(['taxonomy']),
+    }, { minConfidence: 0, behaviorThreshold: 1 });
+    const sameSource = draft?.evidence.find((item) => item.evidence_type === 'source_agreement');
+    expect(JSON.parse(sameSource?.details ?? '{}')).toEqual({ shared_sources: ['source-1'], shared_source_names: ['Mandiant'] });
+    expect(sameSource?.description).toBe('"Mandiant" maintain(s) both entities separately, which suggests they are distinct');
   });
 
   it('explains a type mismatch as a review that changes nothing', () => {
