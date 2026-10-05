@@ -1,7 +1,7 @@
 import { Page } from '@playwright/test';
 import LeftBarPage from './menu/leftBar.pageModel';
 
-export type ManagerStatusFilter = 'all' | 'enabled' | 'disabled';
+export type ManagerStatusFilter = 'all' | 'enabled' | 'disabled' | 'unlicensed';
 
 export default class SettingsPage {
   pageUrl = '/dashboard/settings';

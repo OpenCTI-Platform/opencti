@@ -21,7 +21,7 @@ interface SettingsManagersProps {
   isEnterpriseEditionValid: boolean;
 }
 
-const STATUS_FILTERS: ManagerStatusFilter[] = ['all', 'enabled', 'disabled'];
+const STATUS_FILTERS: ManagerStatusFilter[] = ['all', 'enabled', 'disabled', 'unlicensed'];
 // Heights are multiples of the grid row unit so a group's span is exact.
 const GRID_ROW_UNIT = 8;
 const HEADER_HEIGHT = 24;
@@ -37,12 +37,16 @@ const SettingsManagers = ({ modules, isEnterpriseEditionValid }: SettingsManager
 
   const managers = toManagerItems(modules, t_i18n, isEnterpriseEditionValid);
   const counts = countManagers(managers);
-  const groups = groupManagers(filterManagers(managers, status, search), t_i18n);
+  // The Enterprise Edition segment only exists while some managers wait for a license, so the segments add up to "All".
+  const statusFilters = STATUS_FILTERS.filter((filter) => filter !== 'unlicensed' || counts.unlicensed > 0);
+  const activeStatus = statusFilters.includes(status) ? status : 'all';
+  const groups = groupManagers(filterManagers(managers, activeStatus, search), t_i18n);
 
   const filterLabels: Record<ManagerStatusFilter, string> = {
     all: t_i18n('All'),
     enabled: t_i18n('Enabled'),
     disabled: t_i18n('Disabled'),
+    unlicensed: t_i18n('Enterprise Edition'),
   };
 
   const resetFilters = () => {
@@ -72,13 +76,13 @@ const SettingsManagers = ({ modules, isEnterpriseEditionValid }: SettingsManager
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
         <ToggleButtonGroup
           exclusive
-          value={status}
+          value={activeStatus}
           aria-label={t_i18n('Filter managers by status')}
           onChange={(_, value: ManagerStatusFilter | null) => {
             if (value) setStatus(value);
           }}
         >
-          {STATUS_FILTERS.map((filter) => (
+          {statusFilters.map((filter) => (
             <ToggleButton
               key={filter}
               value={filter}

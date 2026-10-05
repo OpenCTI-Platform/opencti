@@ -1,6 +1,6 @@
 export type ManagerDomain = 'core' | 'knowledge' | 'ingestion' | 'notifications' | 'defense' | 'enterprise' | 'ecosystem' | 'other';
 
-export type ManagerStatusFilter = 'all' | 'enabled' | 'disabled';
+export type ManagerStatusFilter = 'all' | 'enabled' | 'disabled' | 'unlicensed';
 
 // `unlicensed`: an Enterprise-only manager on a platform without the Enterprise Edition, off by design.
 export type ManagerStatus = 'enabled' | 'disabled' | 'unlicensed';

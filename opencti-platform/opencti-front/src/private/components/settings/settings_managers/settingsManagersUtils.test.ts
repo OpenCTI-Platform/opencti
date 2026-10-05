@@ -102,10 +102,11 @@ describe('filterManagers', () => {
   ];
   const ids = (list: ManagerItem[]) => list.map((manager) => manager.id);
 
-  it('filters by status, an unlicensed manager only under all', () => {
+  it('filters by status, an unlicensed manager under all and its own status only', () => {
     expect(ids(filterManagers(managers, 'all', ''))).toEqual(['PLAYBOOK_MANAGER', 'HUNT_MANAGER', 'GARBAGE_COLLECTION_MANAGER', 'RULE_ENGINE']);
     expect(ids(filterManagers(managers, 'enabled', ''))).toEqual(['GARBAGE_COLLECTION_MANAGER']);
     expect(ids(filterManagers(managers, 'disabled', ''))).toEqual(['HUNT_MANAGER', 'RULE_ENGINE']);
+    expect(ids(filterManagers(managers, 'unlicensed', ''))).toEqual(['PLAYBOOK_MANAGER']);
   });
 
   it('searches the label and the humanized id, case and accent insensitive, every word', () => {

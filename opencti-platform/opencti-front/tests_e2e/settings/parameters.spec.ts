@@ -53,6 +53,16 @@ test('Parameters page summary, dependencies and managers grid', { tag: ['@ce'] }
   if (disabledCount === 0) {
     await expect(settingsPage.getManagersEmptyState()).toBeVisible();
   }
+  // Without an Enterprise Edition license, the Enterprise-only managers have their own segment and the segments add up
+  let unlicensedCount = 0;
+  if (await settingsPage.getManagersFilter('unlicensed').isVisible()) {
+    await settingsPage.getManagersFilter('unlicensed').click();
+    await expect(settingsPage.getManagersFilter('unlicensed')).toHaveAttribute('aria-pressed', 'true');
+    unlicensedCount = await rows.count();
+    expect(unlicensedCount).toBeGreaterThan(0);
+    await expect(rows.and(page.locator('[data-status="unlicensed"]'))).toHaveCount(unlicensedCount);
+  }
+  expect(enabledCount + disabledCount + unlicensedCount).toBe(total);
   await settingsPage.getManagersFilter('all').click();
   await expect(rows).toHaveCount(total);
 });
