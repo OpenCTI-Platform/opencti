@@ -65,7 +65,7 @@ import { evaluatePolicyEligibility, findPolicyById, loadPolicyFacts } from './cu
 import { createHealthSnapshot, findLatestHealthSnapshot } from './curation-health';
 import { currentMergeConfidence, isGraphSimilarityAvailable } from './curation-scan';
 import { getTaxonomyMetadata } from './curation-taxonomy';
-import { CURATION_MANAGER_ENABLED, CURATION_SCAN_INTERVAL_MS, CURATION_SNAPSHOT_INTERVAL_MS, nextRunDate } from './curation-schedule';
+import { CURATION_MANAGER_ENABLED, CURATION_SCAN_INTERVAL_MS, CURATION_SNAPSHOT_INTERVAL_MS, isCurationRunning, nextRunDate } from './curation-schedule';
 import { withProposalTransitionLock } from './curation-locks';
 import { keepWithReadableParticipants, pageWithReadableParticipants } from './curation-readability';
 import { payloadRelationshipIds } from './curation-proposals';
@@ -130,7 +130,7 @@ export const curationStatistics = async (context: AuthContext, user: AuthUser) =
     getCurationSettings(context),
   ]);
   const asEntries = (aggregation: Array<{ label: string; value: number }>) => aggregation.map(({ label, value }) => ({ key: label, count: value }));
-  const scanScheduled = CURATION_MANAGER_ENABLED && settings.curation_enabled;
+  const scanScheduled = isCurationRunning(settings.curation_enabled);
   return {
     open_count: openCount,
     ambiguous_count: ambiguousCount,
