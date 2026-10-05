@@ -239,42 +239,88 @@ const resolveId = (source: SourceFile, valueIndex: number): string | undefined =
   return resolved?.kind === 'string' ? resolved.value : undefined;
 };
 
-// Source text of the call argument list opened at openIndex, whitespace collapsed, for error messages.
+// Source text of the call argument list opened at openIndex, whitespace collapsed and shortened, for error messages.
 const readCallArguments = (source: SourceFile, openIndex: number): string => {
   let depth = 0;
+  let closeIndex = Math.min(source.code.length, openIndex + 80);
   for (let index = openIndex; index < source.code.length; index += 1) {
     if ('([{'.includes(source.code[index])) {
       depth += 1;
     } else if (')]}'.includes(source.code[index])) {
       depth -= 1;
       if (depth === 0) {
-        return source.text.slice(openIndex + 1, index).replace(/\s+/g, ' ').trim();
+        closeIndex = index;
+        break;
       }
     }
   }
-  return source.text.slice(openIndex + 1, openIndex + 40).replace(/\s+/g, ' ').trim();
+  const argumentsText = source.text.slice(openIndex + 1, closeIndex).replace(/\s+/g, ' ').trim();
+  return argumentsText.length > 80 ? `${argumentsText.slice(0, 77)}...` : argumentsText;
 };
 
-// Every call is collected: an argument other than an object literal or a resolvable identifier is reported, never skipped.
-const collectRegisteredManagersOf = (source: SourceFile, errors: string[]): ManagerId[] => [
-  ...source.code.matchAll(/(?<!\bfunction\s+)\bregisterManager\(\s*/g),
-].flatMap((match): ManagerId[] => {
-  const openIndex = (match.index ?? 0) + 'registerManager'.length;
-  const argumentIndex = (match.index ?? 0) + match[0].length;
-  const argument = /^(?:\{|[A-Za-z_$][\w$]*)/.exec(source.code.slice(argumentIndex))?.[0];
-  let id: string | undefined;
-  if (argument === '{') {
-    id = resolveId(source, findTopLevelIdValue(source, argumentIndex));
-  } else if (argument) {
-    const definition = resolveIdentifier(source, argument);
-    id = definition?.kind === 'object' ? resolveId(definition.source, findTopLevelIdValue(definition.source, definition.openIndex)) : undefined;
+const REGISTER_MANAGER = 'registerManager';
+
+// Local names bound to registerManager in a file: the name itself and the alias of every named import of it.
+const registerManagerBindings = (source: SourceFile): string[] => {
+  const names = new Set([REGISTER_MANAGER]);
+  for (const [, specifiers] of source.text.matchAll(/\bimport\s*(?:type\s+)?\{([^}]*)\}\s*from\s*['"][^'"]+['"]/g)) {
+    for (const specifier of specifiers.split(',')) {
+      const [imported, local] = specifier.trim().replace(/^type\s+/, '').split(/\s+as\s+/);
+      if (imported === REGISTER_MANAGER && local) {
+        names.add(local.trim());
+      }
+    }
   }
-  if (!id) {
-    errors.push(`${relative(source.file)}: cannot resolve the manager id of registerManager(${argument === '{' ? '{ ... }' : readCallArguments(source, openIndex)})`);
+  return [...names];
+};
+
+const lineOf = (source: SourceFile, index: number) => source.text.slice(0, index).split('\n').length;
+
+const resolveRegistration = (source: SourceFile, argumentIndex: number): string | undefined => {
+  const argument = /^(?:\{|[A-Za-z_$][\w$]*)/.exec(source.code.slice(argumentIndex))?.[0];
+  if (argument === '{') {
+    return resolveId(source, findTopLevelIdValue(source, argumentIndex));
+  }
+  const definition = argument ? resolveIdentifier(source, argument) : undefined;
+  return definition?.kind === 'object' ? resolveId(definition.source, findTopLevelIdValue(definition.source, definition.openIndex)) : undefined;
+};
+
+// Every occurrence of a registerManager binding is accounted for: inside an import or a declaration it is skipped, as a
+// direct or namespace call (`module.registerManager(...)`) its manager id is resolved, and any other use (an alias
+// assignment, a re-export, a callback) is reported, so no registration path escapes the guard silently.
+const collectRegisteredManagersOf = (source: SourceFile, errors: string[]): ManagerId[] => {
+  if (!source.code.includes(REGISTER_MANAGER)) {
     return [];
   }
-  return [{ id, file: relative(source.file) }];
-});
+  const imports = [...source.text.matchAll(/\bimport\b[^;'"]*?\bfrom\s*['"][^'"]+['"]/g)]
+    .map((match) => [match.index ?? 0, (match.index ?? 0) + match[0].length]);
+  const occurrences = registerManagerBindings(source)
+    .flatMap((name) => [...source.code.matchAll(new RegExp(`(?<![\\w$])${name.replace(/\$/g, '\\$')}(?![\\w$])`, 'g'))]
+      .map((match) => ({ name, index: match.index ?? 0 })))
+    .sort((a, b) => a.index - b.index);
+  return occurrences.flatMap(({ name, index }): ManagerId[] => {
+    const before = source.code.slice(Math.max(0, index - 40), index);
+    const isMember = /\.\s*$/.test(before);
+    if (imports.some(([start, end]) => index >= start && index < end)
+      || /\b(?:const|let|var|function)\s+$/.test(before)
+      || (isMember && name !== REGISTER_MANAGER)) {
+      return [];
+    }
+    const call = /^\s*\(\s*/.exec(source.code.slice(index + name.length));
+    if (!call) {
+      const line = source.text.split('\n')[lineOf(source, index) - 1].trim();
+      errors.push(`${relative(source.file)}:${lineOf(source, index)}: unsupported use of ${REGISTER_MANAGER}, the guard cannot follow it: ${line}`);
+      return [];
+    }
+    const openIndex = index + name.length + call[0].indexOf('(');
+    const id = resolveRegistration(source, index + name.length + call[0].length);
+    if (!id) {
+      errors.push(`${relative(source.file)}: cannot resolve the manager id of ${name}(${readCallArguments(source, openIndex)})`);
+      return [];
+    }
+    return [{ id, file: relative(source.file) }];
+  });
+};
 
 const collectRegisteredManagers = (errors: string[]): ManagerId[] => listSourceFiles(SRC_ROOT)
   .flatMap((file) => collectRegisteredManagersOf(loadSource(file), errors));
@@ -356,6 +402,32 @@ describe('Manager labels of the Settings > Parameters page', () => {
     expect(errors).toEqual([
       'src/manager/virtualManager.ts: cannot resolve the manager id of registerManager((DEFINITION))',
       'src/manager/virtualManager.ts: cannot resolve the manager id of registerManager(createDefinition())',
+    ]);
+  });
+
+  it('should follow import aliases and namespace calls and report any other use of registerManager', () => {
+    const errors: string[] = [];
+    const source: SourceFile = {
+      file: path.join(SRC_ROOT, 'manager', 'virtualManager.ts'),
+      ...maskSource([
+        'import { registerManager as enlist, type ManagerDefinition } from \'./managerModule\';',
+        'import * as managers from \'./managerModule\';',
+        'enlist({ id: \'ALIASED_MANAGER\' });',
+        'managers.registerManager({ id: \'NAMESPACED_MANAGER\' });',
+        'const register = registerManager;',
+        'export { registerManager as signUp } from \'./managerModule\';',
+        'schedule(registerManager);',
+        'other.enlist({ id: \'NOT_A_MANAGER\' });',
+      ].join('\n')),
+    };
+    expect(collectRegisteredManagersOf(source, errors)).toEqual([
+      { id: 'ALIASED_MANAGER', file: 'src/manager/virtualManager.ts' },
+      { id: 'NAMESPACED_MANAGER', file: 'src/manager/virtualManager.ts' },
+    ]);
+    expect(errors).toEqual([
+      'src/manager/virtualManager.ts:5: unsupported use of registerManager, the guard cannot follow it: const register = registerManager;',
+      'src/manager/virtualManager.ts:6: unsupported use of registerManager, the guard cannot follow it: export { registerManager as signUp } from \'./managerModule\';',
+      'src/manager/virtualManager.ts:7: unsupported use of registerManager, the guard cannot follow it: schedule(registerManager);',
     ]);
   });
 
