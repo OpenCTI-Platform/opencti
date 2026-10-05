@@ -52,7 +52,8 @@ export const addIngestion = async (context: AuthContext, user: AuthUser, input: 
 };
 
 export const ingestionEditField = async (context: AuthContext, user: AuthUser, ingestionId: string, input: EditInput[]) => {
-  await validateIngestionExecutionIdentityFromEditInputs(context, user, input);
+  const storedIngestion = await findById(context, user, ingestionId);
+  await validateIngestionExecutionIdentityFromEditInputs(context, user, storedIngestion, input);
   const finalInput = input.map(({ key, value }) => {
     const item = { key, value };
     if (key === authorizedMembers.name) {

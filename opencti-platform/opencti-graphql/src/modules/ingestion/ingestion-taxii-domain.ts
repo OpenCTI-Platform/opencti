@@ -91,7 +91,8 @@ export const ingestionTaxiiEditField = async (context: AuthContext, user: AuthUs
   if (uriField && uriField.value[0]) {
     verifyIngestionUri(uriField.value[0]);
   }
-  await validateIngestionExecutionIdentityFromEditInputs(context, user, input);
+  const storedIngestion = await findTaxiiIngestionById(context, user, ingestionId);
+  await validateIngestionExecutionIdentityFromEditInputs(context, user, storedIngestion, input);
   const patchInput = [...input];
 
   if (input.some((editInput) => editInput.key === 'authentication_value')) {
@@ -174,6 +175,9 @@ export const ingestionTaxiiDelete = async (context: AuthContext, user: AuthUser,
 };
 
 export const ingestionTaxiiResetState = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
+  // Resetting the state replays the source under the ingestion identity, which must stay within the editing user rights.
+  const storedIngestion = await findTaxiiIngestionById(context, user, ingestionId);
+  await validateIngestionExecutionIdentity(context, user, storedIngestion?.user_id);
   await patchTaxiiIngestion(context, user, ingestionId, { current_state_cursor: undefined });
   const ingestionUpdated = await findTaxiiIngestionById(context, user, ingestionId);
 

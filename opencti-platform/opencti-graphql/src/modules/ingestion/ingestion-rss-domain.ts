@@ -86,7 +86,8 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
   if (uriField && uriField.value[0]) {
     verifyIngestionUri(uriField.value[0]);
   }
-  await validateIngestionExecutionIdentityFromEditInputs(context, user, input);
+  const storedIngestion = await findById(context, user, ingestionId);
+  await validateIngestionExecutionIdentityFromEditInputs(context, user, storedIngestion, input);
   const { element } = await updateAttribute<StoreEntityIngestionRss>(context, user, ingestionId, ENTITY_TYPE_INGESTION_RSS, input);
   await registerConnectorForIngestion(context, {
     id: element.id,
@@ -107,6 +108,9 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
 };
 
 export const ingestionRssResetState = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
+  // Resetting the state replays the source under the ingestion identity, which must stay within the editing user rights.
+  const storedIngestion = await findById(context, user, ingestionId);
+  await validateIngestionExecutionIdentity(context, user, storedIngestion?.user_id);
   await patchRssIngestion(context, user, ingestionId, { current_state_date: undefined });
   const ingestionUpdated = await findById(context, user, ingestionId);
   await publishUserAction({

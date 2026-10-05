@@ -401,7 +401,8 @@ export const ingestionJsonEditField = async (context: AuthContext, user: AuthUse
   if (uriField && uriField.value[0]) {
     verifyIngestionUri(uriField.value[0]);
   }
-  await validateIngestionExecutionIdentityFromEditInputs(context, user, input);
+  const storedIngestion = await findById(context, user, ingestionId);
+  await validateIngestionExecutionIdentityFromEditInputs(context, user, storedIngestion, input);
 
   const patchInput = [...input];
 
@@ -467,6 +468,9 @@ export const patchJsonIngestion = async (context: AuthContext, user: AuthUser, i
 };
 
 export const ingestionJsonResetState = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
+  // Resetting the state replays the source under the ingestion identity, which must stay within the editing user rights.
+  const storedIngestion = await findById(context, user, ingestionId);
+  await validateIngestionExecutionIdentity(context, user, storedIngestion?.user_id);
   await patchJsonIngestion(context, user, ingestionId, { ingestion_json_state: null });
   const ingestion = await findById(context, user, ingestionId);
   const connectorId = connectorIdFromIngestId(ingestion.id);

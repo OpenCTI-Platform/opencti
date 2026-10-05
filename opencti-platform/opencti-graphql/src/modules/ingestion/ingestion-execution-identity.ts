@@ -116,18 +116,26 @@ export const createIngestionAutomaticUser = async (
   return createdUser;
 };
 
+// Fields that neither change what is ingested nor how, editing them alone does not require the identity rights.
+const EDIT_KEYS_WITHOUT_IDENTITY_CHECK = ['ingestion_running', 'name', 'description'];
+
 /**
- * Same validation applied to edition inputs, only when the execution identity is actually changed.
+ * Same validation applied to edition inputs. Any edition (uri, mapper, authentication, members...) changes
+ * what is executed under the ingestion identity, so the effective identity, the new one or the stored one,
+ * must stay within the rights of the editing user.
  */
 export const validateIngestionExecutionIdentityFromEditInputs = async (
   context: AuthContext,
-  creatorUser: AuthUser,
+  editorUser: AuthUser,
+  storedIngestion: { user_id?: string | null } | undefined,
   inputs: { key: string; value: Array<string | undefined | null> }[],
 ): Promise<void> => {
-  const userIdInput = inputs.find((editInput) => editInput.key === 'user_id');
-  if (userIdInput) {
-    await validateIngestionExecutionIdentity(context, creatorUser, userIdInput.value?.[0]);
+  if (inputs.length > 0 && inputs.every((editInput) => EDIT_KEYS_WITHOUT_IDENTITY_CHECK.includes(editInput.key))) {
+    return;
   }
+  const userIdInput = inputs.find((editInput) => editInput.key === 'user_id');
+  const effectiveUserId = userIdInput ? userIdInput.value?.[0] : storedIngestion?.user_id;
+  await validateIngestionExecutionIdentity(context, editorUser, effectiveUserId);
 };
 
 interface IngestionExecutionIdentity {

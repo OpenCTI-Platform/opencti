@@ -139,7 +139,8 @@ export const ingestionCsvEditField = async (context: AuthContext, user: AuthUser
   if (uriField && uriField.value[0]) {
     verifyIngestionUri(uriField.value[0]);
   }
-  await validateIngestionExecutionIdentityFromEditInputs(context, user, input);
+  const storedIngestion = await findById(context, user, ingestionId);
+  await validateIngestionExecutionIdentityFromEditInputs(context, user, storedIngestion, input);
 
   const parsedInput = await Promise.all(input.map(async (editInput) => {
     if (editInput.key === 'csv_mapper') {
@@ -214,6 +215,9 @@ export const ingestionCsvAddAutoUser = async (context: AuthContext, user: AuthUs
 };
 
 export const ingestionCsvResetState = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
+  // Resetting the state replays the source under the ingestion identity, which must stay within the editing user rights.
+  const storedIngestion = await findById(context, user, ingestionId);
+  await validateIngestionExecutionIdentity(context, user, storedIngestion?.user_id);
   await patchCsvIngestion(context, user, ingestionId, { current_state_hash: '' });
   const ingestionUpdated = await findById(context, user, ingestionId);
   await publishUserAction({

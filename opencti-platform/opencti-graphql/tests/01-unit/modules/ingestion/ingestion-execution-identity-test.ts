@@ -175,20 +175,20 @@ describe('Ingestion execution identity confinement', () => {
     it('should apply the same validation when the identity is changed', async () => {
       const creator = buildUser({ capabilities: ['KNOWLEDGE'] });
       resolveUserByIdMock.mockResolvedValue(buildUser({ id: 'target', capabilities: ['SETTINGS_SETACCESSES'] }));
-      await expect(validateIngestionExecutionIdentityFromEditInputs(context, creator, [{ key: 'user_id', value: ['target'] }]))
+      await expect(validateIngestionExecutionIdentityFromEditInputs(context, creator, { user_id: 'stored' }, [{ key: 'user_id', value: ['target'] }]))
         .rejects.toThrowError();
     });
 
     it('should not resolve any identity when the edition does not change it', async () => {
       const creator = buildUser({ capabilities: ['KNOWLEDGE'] });
-      await expect(validateIngestionExecutionIdentityFromEditInputs(context, creator, [{ key: 'name', value: ['a name'] }]))
+      await expect(validateIngestionExecutionIdentityFromEditInputs(context, creator, { user_id: 'stored' }, [{ key: 'name', value: ['a name'] }]))
         .resolves.toBeUndefined();
       expect(resolveUserByIdMock).not.toHaveBeenCalled();
     });
 
     it('should treat an edition clearing the identity as a system identity', async () => {
       const creator = buildUser({ capabilities: ['KNOWLEDGE'] });
-      await expect(validateIngestionExecutionIdentityFromEditInputs(context, creator, [{ key: 'user_id', value: [] }]))
+      await expect(validateIngestionExecutionIdentityFromEditInputs(context, creator, { user_id: 'stored' }, [{ key: 'user_id', value: [] }]))
         .rejects.toThrowError();
       expect(resolveUserByIdMock).not.toHaveBeenCalled();
     });
