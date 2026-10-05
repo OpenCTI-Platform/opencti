@@ -9,6 +9,11 @@ import { useFormatter } from '../../../../components/i18n';
 
 const LOCAL_STORAGE_KEY = 'digest_notification';
 
+const DEFENSE_OPERATION_LABELS: Record<string, string> = {
+  defense_level_decreased: 'Defense level decreased',
+  defense_level_increased: 'Defense level increased',
+};
+
 interface DigestNotificationProps {
   notification: AlertsLine_node$data | undefined;
 }
@@ -29,8 +34,10 @@ const DigestNotification: FunctionComponent<DigestNotificationProps> = ({ notifi
         const getChipOperationSeverity = () => {
           switch (operation) {
             case 'update':
+            case 'defense_level_increased':
               return 'info' as const;
             case 'delete':
+            case 'defense_level_decreased':
               return 'critical' as const;
             default:
               return 'low' as const;
@@ -39,7 +46,7 @@ const DigestNotification: FunctionComponent<DigestNotificationProps> = ({ notifi
         return (
           <Chip
             severity={getChipOperationSeverity()}
-            label={t_i18n(operation)}
+            label={t_i18n(DEFENSE_OPERATION_LABELS[operation] ?? operation)}
             style={{ float: 'left' }}
           />
         );

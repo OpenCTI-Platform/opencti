@@ -306,6 +306,20 @@
     "batch_size": 10000,
     "interval": 60000
   },
+  "defense_coverage_manager": {
+    "enabled": true,
+    "lock_key": "defense_coverage_manager_lock",
+    "stream_lock_key": "defense_coverage_manager_stream_lock",
+    "interval": 300000,
+    "full_computation_interval": 86400000,
+    "stream_interval": 10000,
+    "stream_buffer_time": 10000,
+    "max_incremental_techniques": 300,
+    "validation_success_threshold": 50,
+    "max_evidences": 250,
+    "max_evidence_partitions": 1000,
+    "reader_cache_ttl": 300000
+  },
   "platform_usage_metrics_manager": {
     "enabled": false,
     "lock_key": "platform_usage_metrics_manager_lock"

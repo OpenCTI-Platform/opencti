@@ -17,6 +17,7 @@ import SwitchField from '../../../../components/fields/SwitchField';
 import TextField from '../../../../components/TextField';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
+import { defenseEventTypesOptions } from '../../../../utils/edition';
 import { emptyFilterGroup, getDefaultFilterObject, serializeFilterGroupForBackend, stixFilters, useFilterDefinition } from '../../../../utils/filters/filtersUtils';
 import { insertNode } from '../../../../utils/store';
 import NotifierField from '../../common/form/NotifierField';
@@ -186,9 +187,10 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           style={fieldSpacingContainerStyle}
           multiple={true}
           label={t_i18n('Triggering on')}
-          options={
-            instance_trigger ? instanceEventTypesOptions : eventTypesOptions
-          }
+          options={[
+            ...(instance_trigger ? instanceEventTypesOptions : eventTypesOptions),
+            ...defenseEventTypesOptions.map((option) => ({ ...option, label: t_i18n(option.label) })),
+          ]}
         />
         <NotifierField name="notifiers" onChange={setFieldValue} />
         <Field

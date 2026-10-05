@@ -132,11 +132,14 @@ interface AlertsLineActionsProps {
 
 // Event type is categorical, so the tone carries the distinction without asserting a level:
 // create -> low, update -> info, delete -> critical, several at once -> medium.
+// A lower defense level is a regression of the defense, a higher one an improvement.
 const operationSeverity = (operation: string): 'low' | 'info' | 'medium' | 'critical' => {
   switch (operation) {
     case 'update':
+    case 'defense_level_increased':
       return 'info';
     case 'delete':
+    case 'defense_level_decreased':
       return 'critical';
     case 'multiple':
       return 'medium';
@@ -288,6 +291,8 @@ const AlertsComponent: FunctionComponent<AlertsComponentProps> = ({
           create: t_i18n('Creation'),
           update: t_i18n('Modification'),
           delete: t_i18n('Deletion'),
+          defense_level_decreased: t_i18n('Defense level decreased'),
+          defense_level_increased: t_i18n('Defense level increased'),
           none: t_i18n('Unknown'),
         };
         return (

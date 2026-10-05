@@ -12,6 +12,9 @@ import {
   Counter,
   FormatListNumberedRtl,
   Radar,
+  ShieldAlertOutline,
+  ShieldCheckOutline,
+  ShieldHalfFull,
   StarSettingsOutline,
   TagTextOutline,
   ViewListOutline,
@@ -204,6 +207,36 @@ const widgetVisualizationTypes = [
     isEntities: true,
     isAudits: true,
   },
+  {
+    key: 'defense-tactic-coverage',
+    name: 'Defense coverage by tactic',
+    dataSelectionLimit: undefined,
+    category: 'defense',
+    availableParameters: [],
+    isRelationships: false,
+    isEntities: false,
+    isAudits: false,
+  },
+  {
+    key: 'defense-top-gaps',
+    name: 'Top uncovered techniques used by threats',
+    dataSelectionLimit: undefined,
+    category: 'defense',
+    availableParameters: [],
+    isRelationships: false,
+    isEntities: false,
+    isAudits: false,
+  },
+  {
+    key: 'defense-levels',
+    name: 'Techniques by defense level',
+    dataSelectionLimit: undefined,
+    category: 'defense',
+    availableParameters: [],
+    isRelationships: false,
+    isEntities: false,
+    isAudits: false,
+  },
 ] as const;
 
 const customAttributesVisualizationType = {
@@ -227,9 +260,12 @@ export const workspacesWidgetVisualizationTypes = widgetVisualizationTypes.filte
 
 export const fintelTemplatesWidgetVisualizationTypes = widgetVisualizationTypes.filter((w) => ['list'].includes(w.key));
 
+// Platform-wide widgets that do not depend on the entity of a custom view
+const GLOBAL_WIDGET_CATEGORIES: string[] = ['defense'];
+
 export const customViewsWidgetVisualizationTypes = [
   customAttributesVisualizationType,
-  ...workspacesWidgetVisualizationTypes,
+  ...workspacesWidgetVisualizationTypes.filter((w) => !GLOBAL_WIDGET_CATEGORIES.includes(w.category)),
 ];
 
 const allVisualizationTypes = [
@@ -242,6 +278,13 @@ export const indexedVisualizationTypes = R.indexBy(R.prop('key'), allVisualizati
 export const getCurrentCategory = (type: string | null) => {
   if (!type) return 'none';
   return indexedVisualizationTypes[type as WidgetVisualizationTypes]?.category ?? 'none';
+};
+
+/**
+ * Widgets configured with parameters only: no perspective and no data selection step.
+ */
+export const isWidgetWithoutDataSelection = (type: string | null) => {
+  return ['text', 'attribute', 'custom-attributes', 'defense'].includes(getCurrentCategory(type));
 };
 
 export const getCurrentAvailableParameters = (type: string | null): string[] => {
@@ -311,6 +354,12 @@ export const renderWidgetIcon = (key: string, fontSize: 'large' | 'small' | 'med
       return <StarSettingsOutline fontSize={fontSize} color="primary" />;
     case 'wordcloud':
       return <ViewQuiltOutlined fontSize={fontSize} color="primary" />;
+    case 'defense-tactic-coverage':
+      return <ShieldCheckOutline fontSize={fontSize} color="primary" />;
+    case 'defense-top-gaps':
+      return <ShieldAlertOutline fontSize={fontSize} color="primary" />;
+    case 'defense-levels':
+      return <ShieldHalfFull fontSize={fontSize} color="primary" />;
     default:
       return <div />;
   }

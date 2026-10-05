@@ -70,7 +70,10 @@ import { listRules } from '../modules/retentionRules/retentionRules-domain';
 import { fullEntitiesList } from '../database/middleware-loader';
 import { isSavedFilterShared } from '../modules/savedFilter/savedFilter-domain';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
-import { RELATION_HAS_COVERED } from '../schema/stixCoreRelationship';
+import { RELATION_HAS_COVERED, RELATION_PROVIDES } from '../schema/stixCoreRelationship';
+import { DEFENSE_GAP_STATUS_OPEN, ENTITY_TYPE_DEFENSE_GAP } from '../modules/defenseCoverage/defenseGap/defenseGap-types';
+import { DEFENSE_AGGREGATE_PLATFORM, DEFENSE_LEVEL_NONE, DEFENSE_LEVEL_TELEMETRY, DEFENSE_LEVEL_VALIDATED } from '../modules/defenseCoverage/defenseCoverage-types';
+import { getDefenseSnapshot } from '../modules/defenseCoverage/defenseCoverage-reader';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 
@@ -151,6 +154,9 @@ export const TELEMETRY_FORM_INTAKE_DELETED = 'formIntakeDeletedCount';
 export const TELEMETRY_FORM_INTAKE_SUBMITTED = 'formIntakeSubmittedCount';
 export const TELEMETRY_USER_LOGIN = 'userLoginCount';
 export const TELEMETRY_GAUGE_DECAY_RULE_CREATION = 'decayRuleCreationCount';
+export const TELEMETRY_GAUGE_DEFENSE_VALIDATION_REQUEST = 'defenseValidationRequestCount';
+export const TELEMETRY_GAUGE_DEFENSE_GAP_CLOSED = 'defenseGapClosedCount';
+export const TELEMETRY_GAUGE_DEFENSE_GAP_EXPORT = 'defenseGapExportCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED = 'customViewCreatedCount';
 export const TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED = 'customViewEnabledCount';
 export const TELEMETRY_GAUGE_SAVED_FILTER_PERMISSION_CHANGES = 'sharedSavedFiltersPermissionChangesCount';
@@ -260,6 +266,20 @@ export const addFormIntakeSubmittedCount = async () => {
 
 export const addDecayRuleCreationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_DECAY_RULE_CREATION, 1);
+};
+
+export const addDefenseValidationRequestCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_DEFENSE_VALIDATION_REQUEST, 1);
+};
+
+export const addDefenseGapClosedCount = async (count: number) => {
+  if (count > 0) {
+    await redisSetTelemetryAdd(TELEMETRY_GAUGE_DEFENSE_GAP_CLOSED, count);
+  }
+};
+
+export const addDefenseGapExportCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_DEFENSE_GAP_EXPORT, 1);
 };
 
 export const addUserBackgroundTaskCount = async () => {
@@ -564,6 +584,31 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setRelationshipsHasCoveredCount(relationshipsHasCoveredCount);
     // endregion
 
+    // region Defense coverage
+    const [
+      relationshipsProvidesCount,
+      defenseSnapshot,
+      defenseOpenGapsCount,
+    ] = await Promise.all([
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_CORE_RELATIONSHIPS, { types: [RELATION_PROVIDES] }),
+      getDefenseSnapshot(context),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, {
+        types: [ENTITY_TYPE_DEFENSE_GAP],
+        filters: {
+          mode: FilterMode.And,
+          filters: [{ key: ['status'], values: [DEFENSE_GAP_STATUS_OPEN] }, { key: ['platform_id'], values: [DEFENSE_AGGREGATE_PLATFORM] }],
+          filterGroups: [],
+        },
+      }),
+    ]);
+    // Revoked techniques are not part of the snapshot
+    const defenseLevels = defenseSnapshot.techniques.map((technique) => technique.coverage?.level ?? DEFENSE_LEVEL_NONE);
+    manager.setRelationshipsProvidesCount(relationshipsProvidesCount);
+    manager.setDefenseCoveredTechniquesCount(defenseLevels.filter((level) => level >= DEFENSE_LEVEL_TELEMETRY).length);
+    manager.setDefenseValidatedTechniquesCount(defenseLevels.filter((level) => level >= DEFENSE_LEVEL_VALIDATED).length);
+    manager.setDefenseOpenGapsCount(defenseOpenGapsCount);
+    // endregion
+
     // region Shared saved filters
     const savedFilters = await fullEntitiesList<BasicStoreEntitySavedFilter>(
       context,
@@ -766,6 +811,12 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setFormIntakeSubmittedCount(formIntakeSubmittedCountInRedis);
     const decayRuleCreationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DECAY_RULE_CREATION);
     manager.setDecayRuleCreationCount(decayRuleCreationCountInRedis);
+    const defenseValidationRequestCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DEFENSE_VALIDATION_REQUEST);
+    manager.setDefenseValidationRequestCount(defenseValidationRequestCountInRedis);
+    const defenseGapClosedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DEFENSE_GAP_CLOSED);
+    manager.setDefenseGapClosedCount(defenseGapClosedCountInRedis);
+    const defenseGapExportCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DEFENSE_GAP_EXPORT);
+    manager.setDefenseGapExportCount(defenseGapExportCountInRedis);
     const customViewCreatedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_CREATED);
     manager.setCustomViewCreatedCount(customViewCreatedCountInRedis);
     const customViewEnabledCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CUSTOM_VIEW_ENABLED);

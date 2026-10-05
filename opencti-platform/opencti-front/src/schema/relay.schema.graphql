@@ -8785,6 +8785,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
   killChainPhases: [KillChainPhase!]
   coverage_information: [CoverageResult!]
+  coverage_platforms_information: [CoveragePlatformResult!]
   creators: [Creator!]
   toStix(version: Version): String
   editContext: [EditUserContext!]
@@ -8794,6 +8795,18 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
 }
 
 input SecurityCoverageExpectation {
+  coverage_name: String!
+  coverage_score: Int!
+}
+
+type CoveragePlatformResult {
+  platform_ref: String!
+  coverage_name: String!
+  coverage_score: Int!
+}
+
+input SecurityCoveragePlatformExpectation {
+  platform_ref: String!
   coverage_name: String!
   coverage_score: Int!
 }
@@ -8822,6 +8835,7 @@ input StixCoreRelationshipAddInput {
   x_opencti_modified_at: DateTime
   external_uri: String
   coverage_information: [SecurityCoverageExpectation!]
+  coverage_platforms_information: [SecurityCoveragePlatformExpectation!]
   clientMutationId: String
   update: Boolean
   upsertOperations: [EditInput!]
@@ -9446,6 +9460,14 @@ type Query {
   securityCoverages(first: Int, after: ID, orderBy: SecurityCoverageOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): SecurityCoverageConnection
   securityCoverageResult(id: String!): SecurityCoverageResult
   securityCoverageResults(first: Int, after: ID, orderBy: SecurityCoverageResultOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): SecurityCoverageResultConnection
+  defensePlatforms: [DefensePlatform!]!
+  defenseMatrix(platformIds: [String!], threatScope: DefenseThreatScope): DefenseMatrix
+  defenseTechnique(id: String!, platformIds: [String!], threatScope: DefenseThreatScope): DefenseTechnique
+  defenseGaps(platformIds: [String!], threatScope: DefenseThreatScope, filter: DefenseGapsFilter, first: Int, after: ID, orderBy: DefenseGapsOrdering, orderMode: OrderingMode): DefenseGapConnection
+  defenseGapExport(platformIds: [String!], threatScope: DefenseThreatScope, filter: DefenseGapsFilter, orderBy: DefenseGapsOrdering, orderMode: OrderingMode): String
+  defenseCoverageStatus: DefenseCoverageStatus
+  defenseLogsourceMapping(id: String!): DefenseLogsourceMapping
+  defenseLogsourceMappings(first: Int, after: ID, orderBy: DefenseLogsourceMappingOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): DefenseLogsourceMappingConnection
   emailTemplate(id: ID!): EmailTemplate
   emailTemplates(first: Int, after: ID, orderBy: EmailTemplateOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): EmailTemplateConnection
   form(id: ID!): Form
@@ -10385,6 +10407,13 @@ type Mutation {
   securityCoverageResultDelete(id: ID!): ID
   securityCoverageResultRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   securityCoverageResultRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityCoverage
+  defenseGapsValidate(input: DefenseValidationInput!): DefenseValidationResult
+  defenseCoverageRecompute: Boolean
+  defensePlatformProvidesFromLogsources(id: ID!, logsources: [DefenseLogsourceInput!]!): DefenseProvidesResult
+  defenseLogsourceMappingAdd(input: DefenseLogsourceMappingAddInput!): DefenseLogsourceMapping
+  defenseLogsourceMappingFieldPatch(id: ID!, input: [EditInput!]!): DefenseLogsourceMapping
+  defenseLogsourceMappingDelete(id: ID!): ID
+  defenseLogsourceMappingsReset: Int
   askSendOtp(input: AskSendOtpInput!): String
   verifyOtp(input: VerifyOtpInput!): VerifyOtp
   verifyMfa(input: VerifyMfaInput!): Boolean
@@ -11317,6 +11346,8 @@ enum TriggerType {
 }
 
 enum TriggerEventType {
+  defense_level_decreased
+  defense_level_increased
   create
   update
   delete
@@ -13949,6 +13980,8 @@ enum IndicatorsOrdering {
   valid_until
   x_opencti_score
   x_opencti_detection
+  x_opencti_rule_status
+  x_opencti_rule_level
   confidence
   created
   modified
@@ -13959,6 +13992,18 @@ enum IndicatorsOrdering {
   creator
   createdBy
   _score
+}
+
+type IndicatorRuleLogsource {
+  category: String
+  product: String
+  service: String
+}
+
+input IndicatorRuleLogsourceInput {
+  category: String
+  product: String
+  service: String
 }
 
 type IndicatorConnection {
@@ -14067,6 +14112,9 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   x_opencti_observable_values: [ObservablesValues!]
   x_opencti_reliability: String
   x_mitre_platforms: [String]
+  x_opencti_rule_status: String
+  x_opencti_rule_level: String
+  x_opencti_rule_logsource: IndicatorRuleLogsource
   killChainPhases: [KillChainPhase!]
   observables(first: Int): StixCyberObservableConnection
   decay_base_score: Int
@@ -14113,6 +14161,13 @@ input IndicatorAddInput {
   x_opencti_main_observable_type: String
   x_opencti_reliability: String
   x_mitre_platforms: [String!]
+
+  "*Constraints:*\n* Maximal length: `64`\n"
+  x_opencti_rule_status: String
+
+  "*Constraints:*\n* Maximal length: `64`\n"
+  x_opencti_rule_level: String
+  x_opencti_rule_logsource: IndicatorRuleLogsourceInput
   killChainPhases: [String!]
   createdBy: String
   objectMarking: [String!]
@@ -16181,6 +16236,341 @@ input SecurityCoverageResultAddInput {
   coverage_valid_to: DateTime
   coverage_information: [SecurityCoverageExpectation!]
   resultOf: String!
+}
+
+enum DefenseDetectionStatus {
+  none
+  available
+  deployed
+  active
+}
+
+enum DefenseValidationStatus {
+  none
+  prevented
+  detected
+  failed
+}
+
+enum DefenseRecommendedAction {
+  add_telemetry
+  import_rule
+  deploy_rule
+  activate_rule
+  validate
+  fix_detection
+  none
+}
+
+enum DefenseThreatScopeMode {
+  ALL
+  SELECTED
+  FILTERED
+  NONE
+}
+
+input DefenseThreatScope {
+  mode: DefenseThreatScopeMode!
+  threatIds: [String!]
+  filters: FilterGroup
+}
+
+type DefensePlatform {
+  id: ID!
+  name: String!
+  entity_type: String!
+  security_platform_type: String
+}
+
+type DefenseCellPlatform {
+  platform_id: String!
+  level: Int!
+  telemetry: Boolean!
+  detection: DefenseDetectionStatus!
+  validated: DefenseValidationStatus!
+  last_result_at: DateTime
+  recommended_action: DefenseRecommendedAction!
+  data_components_count: Int!
+  inferred_data_components_count: Int!
+  rules_count: Int!
+  results_count: Int!
+}
+
+type DefenseMatrixCell {
+  attack_pattern_id: String!
+  x_mitre_id: String
+  name: String!
+  parent_attack_pattern_id: String
+  kill_chain_phase_ids: [String!]!
+  level: Int!
+  telemetry: Boolean!
+  detection: DefenseDetectionStatus!
+  validated: DefenseValidationStatus!
+  last_result_at: DateTime
+  mitigated: Boolean!
+  recommended_action: DefenseRecommendedAction!
+  threat_weight: Float!
+  threats_count: Int!
+  data_components_count: Int!
+  rules_count: Int!
+  mitigations_count: Int!
+  results_count: Int!
+  platforms: [DefenseCellPlatform!]!
+}
+
+type DefenseTacticCoverage {
+  kill_chain_phase_id: String!
+  kill_chain_name: String!
+  phase_name: String!
+  x_opencti_order: Int!
+  techniques_count: Int!
+  levels: [Int!]!
+  threat_techniques_count: Int!
+  threat_levels: [Int!]!
+}
+
+type DefenseMatrix {
+  computed_at: DateTime
+  platforms: [DefensePlatform!]!
+  threats_count: Int!
+  techniques_count: Int!
+  levels: [Int!]!
+  threat_levels: [Int!]!
+  cells: [DefenseMatrixCell!]!
+  tactics: [DefenseTacticCoverage!]!
+}
+
+type DefenseDataComponentEvidence {
+  dataComponent: DataComponent!
+  providedBy: [DefensePlatform!]!
+  inferredBy: [DefensePlatform!]!
+}
+
+type DefenseRuleDeployment {
+  platform: DefensePlatform!
+  status: String!
+}
+
+type DefenseRuleEvidence {
+  indicator: Indicator!
+  deployments: [DefenseRuleDeployment!]!
+  required_data_components: [String!]!
+}
+
+type DefenseValidationPlatformScore {
+  platform: DefensePlatform!
+  status: DefenseValidationStatus!
+  scores: [CoverageResult!]!
+}
+
+type DefenseValidationEvidenceResult {
+  result: SecurityCoverageResult!
+  securityCoverage: SecurityCoverage
+  status: DefenseValidationStatus!
+  last_result_at: DateTime
+  scores: [CoverageResult!]!
+  platforms: [DefenseValidationPlatformScore!]!
+}
+
+type DefenseThreatEvidence {
+  threat: StixDomainObject!
+  relationship_id: String!
+  confidence: Int!
+}
+
+type DefenseTechnique {
+  attackPattern: AttackPattern!
+  computed_at: DateTime
+  cell: DefenseMatrixCell!
+  dataComponents: [DefenseDataComponentEvidence!]!
+  rules: [DefenseRuleEvidence!]!
+  validations: [DefenseValidationEvidenceResult!]!
+  mitigations: [CourseOfAction!]!
+  threats: [DefenseThreatEvidence!]!
+  gaps: [DefenseGap!]!
+}
+
+enum DefenseValidationRequestStatus {
+  waiting
+  running
+  results
+}
+
+type DefenseValidationRequest {
+  security_coverage_id: String!
+  grouping_id: String!
+  threat_id: String
+  requested_at: DateTime!
+  requested_by: String!
+  status: DefenseValidationRequestStatus!
+  securityCoverage: SecurityCoverage
+}
+
+type DefenseGap implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  representative: Representative!
+  metrics: [Metric]
+  name: String!
+  attack_pattern_id: String!
+  attackPattern: AttackPattern
+  x_mitre_id: String
+  attack_pattern_name: String!
+  platform_id: String!
+  platform: DefensePlatform
+  kill_chain_phase_ids: [String!]!
+  level: Int!
+  telemetry: Boolean!
+  detection: DefenseDetectionStatus!
+  validated: DefenseValidationStatus!
+  last_result_at: DateTime
+  recommended_action: DefenseRecommendedAction!
+  threat_weight: Float!
+  threats_count: Int!
+  priority: Int!
+  status: String!
+  opened_at: DateTime
+  requiredDataComponents: [DataComponent!]!
+  ruleCandidates(first: Int): [Indicator!]!
+  validation_requests: [DefenseValidationRequest!]!
+  last_validation_requested_at: DateTime
+}
+
+type DefenseGapConnection {
+  pageInfo: PageInfo!
+  edges: [DefenseGapEdge!]!
+  threats_count: Int!
+}
+
+type DefenseGapEdge {
+  cursor: String!
+  node: DefenseGap!
+}
+
+enum DefenseGapsOrdering {
+  priority
+  level
+  threat_weight
+  x_mitre_id
+  name
+  platform
+}
+
+input DefenseGapsFilter {
+  levels: [Int!]
+  recommended_actions: [DefenseRecommendedAction!]
+  killChainPhaseIds: [String!]
+  onlyUsedByThreats: Boolean
+  search: String
+}
+
+input DefenseGapRefInput {
+  attackPatternId: String!
+  platformId: String!
+}
+
+input DefenseValidationInput {
+  attackPatternIds: [String!]!
+  platformIds: [String!]
+  gaps: [DefenseGapRefInput!]
+  threatId: String
+
+  "*Constraints:*\n* Minimal length: `2`\n* Maximal length: `250`\n* Must match format: `not-blank`\n"
+  name: String
+  description: String
+  periodicity: String
+  duration: String
+  type_affinity: String
+  platforms_affinity: [String!]
+
+  "*Constraints:*\n* Maximal length: `2048`\n"
+  external_reference_url: String
+}
+
+type DefenseValidationResult {
+  securityCoverage: SecurityCoverage!
+  grouping: Grouping!
+  gaps_count: Int!
+}
+
+input DefenseLogsourceInput {
+  category: String
+  product: String
+  service: String
+}
+
+type DefenseProvidesResult {
+  """Data components newly declared as provided by the platform"""
+  created_count: Int!
+
+  """Data components of the log sources the platform already provided"""
+  existing_count: Int!
+  dataComponents: [DataComponent!]!
+  unmatched_data_components: [String!]!
+}
+
+type DefenseCoverageStatus {
+  computed_at: DateTime
+  last_full_computation: DateTime
+  full_computation_requested: Boolean!
+
+  """
+  An enrichment connector (OpenAEV) is alive for security coverages: gaps can be validated
+  """
+  validation_available: Boolean!
+}
+
+type DefenseLogsourceMapping implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  representative: Representative!
+  metrics: [Metric]
+  created_at: DateTime!
+  updated_at: DateTime!
+  name: String!
+  description: String
+  logsource_category: String
+  logsource_product: String
+  logsource_service: String
+  data_components: [String!]!
+  resolvedDataComponents: [DataComponent!]!
+  active: Boolean!
+  built_in: Boolean!
+}
+
+enum DefenseLogsourceMappingOrdering {
+  name
+  logsource_category
+  logsource_product
+  logsource_service
+  active
+  built_in
+  created_at
+  updated_at
+  _score
+}
+
+type DefenseLogsourceMappingConnection {
+  pageInfo: PageInfo!
+  edges: [DefenseLogsourceMappingEdge!]!
+}
+
+type DefenseLogsourceMappingEdge {
+  cursor: String!
+  node: DefenseLogsourceMapping!
+}
+
+input DefenseLogsourceMappingAddInput {
+  logsource_category: String
+  logsource_product: String
+  logsource_service: String
+  data_components: [String!]!
+  description: String
+  active: Boolean
 }
 
 input AskSendOtpInput {

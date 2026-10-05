@@ -3,7 +3,7 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { ENTITY_TYPE_INDICATOR, type Stix2Indicator, type StixIndicator, type StoreEntityIndicator } from './indicator-types';
 import convertIndicatorToStix, { convertIndicatorToStix_2_0 } from './indicator-converter';
 import { killChainPhases, objectOrganization } from '../../schema/stixRefRelationship';
-import { revoked, xOpenctiReliability } from '../../schema/attribute-definition';
+import { revoked, ruleLogsource, xOpenctiReliability } from '../../schema/attribute-definition';
 import { RELATION_DERIVED_FROM } from '../../schema/stixCoreRelationship';
 import { REL_BUILT_IN } from '../../database/stix';
 
@@ -34,6 +34,9 @@ const INDICATOR_DEFINITION: ModuleDefinition<StoreEntityIndicator, StixIndicator
     { name: 'x_opencti_detection', label: 'Is detected', type: 'boolean', mandatoryType: 'no', editDefault: false, defaultValue: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'x_opencti_main_observable_type', label: 'Main observable type', type: 'string', format: 'short', mandatoryType: 'external', editDefault: true, defaultValue: 'Unknown', multiple: false, upsert: true, isFilterable: true },
     { name: 'x_mitre_platforms', label: 'Platforms', type: 'string', format: 'short', mandatoryType: 'customizable', editDefault: true, multiple: true, upsert: true, isFilterable: true },
+    { name: 'x_opencti_rule_status', label: 'Rule status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'x_opencti_rule_level', label: 'Rule level', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    ruleLogsource,
     {
       name: 'decay_next_reaction_date',
       type: 'date',

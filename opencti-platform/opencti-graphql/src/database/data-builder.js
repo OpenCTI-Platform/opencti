@@ -248,6 +248,10 @@ export const buildRelationData = async (context, user, input, opts = {}) => {
   if (isStixCoreRelationship(relationshipType)) {
     data.description = input.description ? input.description : '';
     data.coverage_information = input.coverage_information ? input.coverage_information : [];
+    // An explicit empty list is kept: on upsert it clears a stale per-platform attribution
+    if (Array.isArray(input.coverage_platforms_information)) {
+      data.coverage_platforms_information = input.coverage_platforms_information;
+    }
     data.start_time = isEmptyField(input.start_time) ? new Date(FROM_START) : input.start_time;
     data.stop_time = isEmptyField(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
     //* v8 ignore if */
