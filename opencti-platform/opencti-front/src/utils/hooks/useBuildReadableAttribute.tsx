@@ -1,6 +1,6 @@
 import { renderToString } from 'react-dom/server';
 import React, { ReactElement } from 'react';
-import { Marked, marked } from 'marked';
+import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { dateFormat } from '../Time';
 import { useBuildFilterKeysMapFromEntityType } from '../filters/filtersUtils';
@@ -18,23 +18,13 @@ const MARKDOWN_ATTRIBUTES = [
   'objective',
 ];
 
-// In tables, the only link wanted is the one to the entity page:
-const markedWithoutLinks = new Marked({
-  renderer: {
-    link({ tokens }) {
-      return this.parser.parseInline(tokens);
-    },
-  },
-});
-
 const buildStringAttribute = (inputValue: unknown, attributeType?: string, inTable = false) => {
   let value: string | ReactElement = typeof inputValue === 'string' ? inputValue : JSON.stringify(inputValue);
 
   if (attributeType === 'date') {
     value = dateFormat(new Date(value)) ?? '';
   } else if (attributeType === 'markdown') {
-    const markdownParser = inTable ? markedWithoutLinks : marked;
-    const mark = markdownParser.parse(value, {
+    const mark = marked.parse(value, {
       async: false,
       breaks: true,
       walkTokens: (token) => {
@@ -45,7 +35,9 @@ const buildStringAttribute = (inputValue: unknown, attributeType?: string, inTab
     });
     // !! Don't remove the call to sanitize, it's important to secure the call to dangerouslySetInnerHTML !!
     // We sanitize the given html above.
-    const stringHtml = DOMPurify.sanitize(mark);
+    // In tables, the only link wanted is the one to the entity page: other links
+    // (markdown, auto-detected like www.example.com, or raw HTML) are unwrapped, their text is kept.
+    const stringHtml = DOMPurify.sanitize(mark, inTable ? { FORBID_TAGS: ['a'] } : undefined);
     value = <div dangerouslySetInnerHTML={{ __html: stringHtml }} />;
   } else if (inTable) {
     value = stringWithZeroWidthSpace(value);

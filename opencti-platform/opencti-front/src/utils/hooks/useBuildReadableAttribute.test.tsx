@@ -59,14 +59,15 @@ describe('Hook: useBuildReadableAttribute', () => {
   it('should render markdown links as plain text only in tables', () => {
     const { hook } = testRenderHook(() => useBuildReadableAttribute());
     const { buildReadableAttribute } = hook.result.current;
-    const description = 'Visit www.example.com, mail foo@example.com or read [the doc](https://doc.example.com)';
+    const description = 'Visit www.example.com, mail foo@example.com, read [the doc](https://doc.example.com) or <a href="https://raw.example.com">the raw link</a>';
 
     const inTable = renderToString(buildReadableAttribute(description, { attribute: 'description' }, true) as ReactElement);
     expect(inTable).not.toContain('<a');
-    expect(inTable.replaceAll('\u200B', '')).toContain('Visit www.example.com, mail foo@example.com or read the doc');
+    expect(inTable.replaceAll('\u200B', '')).toContain('Visit www.example.com, mail foo@example.com, read the doc or the raw link');
 
     const outsideTable = renderToString(buildReadableAttribute(description, { attribute: 'description' }) as ReactElement);
     expect(outsideTable).toContain('<a href="http://www.example.com">');
     expect(outsideTable).toContain('<a href="https://doc.example.com">');
+    expect(outsideTable).toContain('<a href="https://raw.example.com">');
   });
 });
