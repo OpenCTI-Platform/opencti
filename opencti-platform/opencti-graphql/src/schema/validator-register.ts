@@ -1,6 +1,14 @@
 import type { AuthContext, AuthUser } from '../types/user';
+import type { EditInput } from '../generated/graphql';
 
-export type ValidatorFn = (context: AuthContext, user: AuthUser, instance: Record<string, unknown>, initialInstance?: Record<string, unknown>) => Promise<boolean>;
+// On update, `instance` holds the edited values by key and `editInputs` the edits themselves, with their operation.
+export type ValidatorFn = (
+  context: AuthContext,
+  user: AuthUser,
+  instance: Record<string, unknown>,
+  initialInstance?: Record<string, unknown>,
+  editInputs?: EditInput[],
+) => Promise<boolean>;
 
 const entityValidators = new Map<string, { validatorCreation?: ValidatorFn; validatorUpdate?: ValidatorFn }>();
 export const registerEntityValidator = (type: string, validators: { validatorCreation?: ValidatorFn; validatorUpdate?: ValidatorFn }) => {
