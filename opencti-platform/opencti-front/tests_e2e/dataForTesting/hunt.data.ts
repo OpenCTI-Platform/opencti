@@ -108,6 +108,26 @@ export const answerHuntPreview = async (request: APIRequestContext, runId: strin
 };
 
 /**
+ * The translation preview of a hunt waiting for its hunt connector, for instance the translation check its activation
+ * queued. Only for a hunt with a single preview run: the latest one is returned.
+ */
+export const findQueuedHuntPreview = async (request: APIRequestContext, huntId: string): Promise<string | undefined> => {
+  const runs = await graphqlRequest<{ huntRuns: { edges: Array<{ node: { id: string; hunt_run_status: string } }> } }>(request, `
+    query {
+      huntRuns(first: 1, orderBy: created_at, orderMode: desc, filters: {
+        mode: and, filterGroups: [],
+        filters: [
+          { key: ["hunt_id"], values: ["${huntId}"], operator: eq, mode: or },
+          { key: ["hunt_run_mode"], values: ["preview"], operator: eq, mode: or }
+        ]
+      }) { edges { node { id hunt_run_status } } }
+    }
+  `, 'Find the translation preview');
+  const preview = runs.huntRuns.edges[0]?.node;
+  return preview?.hunt_run_status === 'queued' ? preview.id : undefined;
+};
+
+/**
  * Creates a draft hunt the way the Hunt Planner proposes one: written by an agent, waiting for an analyst to review
  * and activate it.
  */

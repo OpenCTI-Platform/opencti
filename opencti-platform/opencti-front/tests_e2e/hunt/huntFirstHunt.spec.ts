@@ -1,8 +1,10 @@
 import { Locator, Page } from '@playwright/test';
 import { expect, test } from '../fixtures/baseFixtures';
 import {
+  answerHuntPreview,
   deleteHunt,
   deleteSeededHuntPlatform,
+  findQueuedHuntPreview,
   HUNT_SIGMA_RULE,
   reportIndicatorRun,
   SeededHuntPlatform,
@@ -10,6 +12,8 @@ import {
   seedHuntPlatform,
 } from '../dataForTesting/hunt.data';
 import { getSettings, getThemeIdByName, patchSettings } from '../dataForTesting/settings.data';
+
+const TRANSLATED_QUERY = 'index=edr sourcetype=sysmon EventCode=1 CommandLine="* -enc *"';
 
 const PASTED_VALUES = [
   '198.51.100.23',
@@ -128,6 +132,14 @@ test.describe('Your first hunt', { tag: ['@hunt', '@mutation', '@ce'] }, () => {
     await capture(page, `first-hunt-sigma-saved${suffix}.png`, page.getByTestId('hunt-logic-page'), saved.getByTestId('hunt-logic-activate'));
     await saved.getByTestId('hunt-logic-activate').click();
     await expect(header.getByTestId('hunt-status-chip')).toHaveText('Active');
+    // The activation queues a translation check of the saved rule, which its hunt connector answers
+    let translationCheckId: string | undefined;
+    await expect.poll(async () => {
+      translationCheckId = await findQueuedHuntPreview(request, huntId);
+      return translationCheckId;
+    }).toBeDefined();
+    await answerHuntPreview(request, translationCheckId as string, TRANSLATED_QUERY);
+    await page.reload();
     await expect(header.getByTestId('hunt-readiness-summary')).toHaveText('Ready to run');
     await capture(page, `first-hunt-activation-ready${suffix}.png`, header);
   };

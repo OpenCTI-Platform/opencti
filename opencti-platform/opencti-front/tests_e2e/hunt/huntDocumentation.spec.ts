@@ -2,7 +2,6 @@ import { APIRequestContext, Locator, Page } from '@playwright/test';
 import { expect, test } from '../fixtures/baseFixtures';
 import HuntsPage from '../model/hunts.pageModel';
 import HuntDetailsPage from '../model/huntDetails.pageModel';
-import SelectFieldPageModel from '../model/field/SelectField.pageModel';
 import {
   answerHuntPreview,
   deleteHunt,
@@ -179,8 +178,10 @@ test.describe('Hunt documentation screenshots', { tag: ['@hunt', '@mutation', '@
     await page.getByRole('button', { name: 'Update' }).first().click();
     const scheduleField = page.getByTestId('hunt-schedule-field');
     await scheduleField.scrollIntoViewIfNeeded();
-    // A cron schedule with its preview, left unsaved
-    await new SelectFieldPageModel(page, 'Schedule', false, scheduleField).selectOption('Scheduled (cron)');
+    // A cron schedule with its preview, left unsaved. The options are picked by their role: the label of the field
+    // carries the Enterprise Edition marker, so its list of options has no accessible name.
+    await scheduleField.getByRole('combobox', { name: 'Schedule' }).click();
+    await page.getByRole('option', { name: 'Scheduled (cron)', exact: true }).click();
     await scheduleField.getByLabel('Cron expression (UTC)').fill('0 */6 * * *');
     await capture(page, 'hunt-schedule-field.png', scheduleField);
   });
