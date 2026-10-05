@@ -1051,6 +1051,10 @@ class PingAlive(threading.Thread):
                 self.connector_logger.debug("PingAlive running.")
                 initial_state = self.get_state()
                 connector_info = self.connector_info.all_details
+
+                if self.connector_info.last_run_result is not None:
+                    self.connector_logger.error("[PING] ERROR during last run", {"last_run_result": self.connector_info.last_run_result})
+                
                 self.connector_logger.debug(
                     "PingAlive ConnectorInfo", {"connector_info": connector_info}
                 )
@@ -1862,6 +1866,8 @@ class ConnectorInfo:
         self._next_run_datetime = next_run_datetime
         self._last_run_datetime = last_run_datetime
 
+        self._last_run_result: str | None = None # Return from the last connector run, None means everything OK
+
     @property
     def all_details(self):
         """Get all connector information details as a dictionary.
@@ -1875,7 +1881,7 @@ class ConnectorInfo:
             "queue_threshold": self._queue_threshold,
             "queue_messages_size": self._queue_messages_size,
             "next_run_datetime": self._next_run_datetime,
-            "last_run_datetime": self._last_run_datetime,
+            "last_run_datetime": self._last_run_datetime
         }
 
     @property
@@ -1967,6 +1973,26 @@ class ConnectorInfo:
         :type value: datetime
         """
         self._next_run_datetime = value
+
+    @property
+    def last_run_result(self) -> str | None:
+        """Get the result of the last run.
+
+        :return: The result of the last run, or None if everything was OK
+        :rtype: str or None
+        """
+        return self._last_run_result
+
+    @last_run_result.setter
+    def last_run_result(self, value: str | None) -> None:
+        """Get or set the result of the last run.
+
+        :param value: The result of the last run
+        :type value: str or None
+        :return: The result of the last run
+        :rtype: str or None
+        """
+        self._last_run_result = value
 
     @property
     def last_run_datetime(self) -> datetime:
@@ -3062,7 +3088,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             sys.excepthook(*sys.exc_info())
 
     def schedule_iso(
-        self, message_callback: Callable[[], None], duration_period: str
+        self, message_callback: Callable[[], None | str], duration_period: str
     ) -> None:
         """Schedule connector execution using ISO 8601 duration format.
 
@@ -3139,7 +3165,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             )
 
     def schedule_process(
-        self, message_callback: Callable[[], None], duration_period: Union[int, float]
+        self, message_callback: Callable[[], None | str], duration_period: Union[int, float]
     ) -> None:
         """Schedule the execution of a connector process.
 
@@ -3171,7 +3197,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
                 sys.exit(0)
             else:
                 # Start running the connector
-                message_callback()
+                result = message_callback()
+                self.connector_info.last_run_result = result
+
                 # Set queue_threshold and queue_messages_size for the first run
                 self.check_connector_buffering()
                 # Lets you know what is the last run of the connector datetime
