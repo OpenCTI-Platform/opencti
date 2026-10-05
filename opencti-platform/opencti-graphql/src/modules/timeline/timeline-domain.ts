@@ -89,7 +89,7 @@ import {
 import { renderTimelineCsv, renderTimelineHtml, renderTimelineSvg, type TimelineExportEvent } from './timeline-export';
 import { computeTimelineAnchors } from './timeline-anchors';
 import { isContainerClosed } from './timeline-loader';
-import { notifyTimelineMilestoneAdded } from './timeline-notification';
+import { notifyTimelineMilestoneAdded, notifyTimelineMilestonesAdded } from './timeline-notification';
 import { type SanitizedTimelineExtension, sanitizeTimelineExtension } from './timeline-extension';
 import { addTimelineExportCount, addTimelineManualEventCount, addTimelineViewCount } from '../../manager/telemetryManager';
 import conf, { logApp } from '../../config/conf';
@@ -192,7 +192,7 @@ const TIMELINE_IMPORT_MAX_EVENTS = Math.max(10000, TIMELINE_MAX_MANUAL_EVENTS);
 const runFirstUseGeneration = createConcurrencyLimiter(TIMELINE_FIRST_USE_CONCURRENCY, TIMELINE_FIRST_USE_MAX_WAITING);
 const firstUseGenerations = new Map<string, Promise<boolean>>();
 
-const ensureTimelineGenerated = async (context: AuthContext, container: AnyStoreElement) => {
+const ensureTimelineGenerated = async (context: AuthContext, user: AuthUser, container: AnyStoreElement) => {
   if (container[ATTRIBUTE_TIMELINE_ANCHORS]?.computed_at) return container;
   // First opening of a container that was never processed: build its timeline now, always on the
   // live knowledge (never inside the draft the reader may be working in). Concurrent first reads
@@ -211,8 +211,9 @@ const ensureTimelineGenerated = async (context: AuthContext, container: AnyStore
     await enqueueTimelineRegeneration([containerId], 0);
     throw FunctionalError('The timeline of this case is being built, open it again in a moment', { id: containerId });
   }
-  const generated = await internalLoadById<AnyStoreElement>(generationContext, SYSTEM_USER, containerId, { type: TIMELINE_CONTAINER_TYPES });
-  return generated ?? container;
+  // Read again as the reader: the wait for a generation slot can be long, and a container deleted or no longer accessible
+  // meanwhile is not found, as it would be on a new request
+  return loadTimelineContainer(context, user, containerId);
 };
 
 interface TimelineFilterArgs {
@@ -345,7 +346,7 @@ const buildAccessibleTimelineFilters = async (context: AuthContext, user: AuthUs
 };
 
 export const findContainerTimeline = async (context: AuthContext, user: AuthUser, args: QueryContainerTimelineArgs) => {
-  const container = await ensureTimelineGenerated(context, await loadTimelineContainer(context, user, args.id));
+  const container = await ensureTimelineGenerated(context, user, await loadTimelineContainer(context, user, args.id));
   const first = Math.min(args.first ?? TIMELINE_DEFAULT_PAGE, TIMELINE_MAX_PAGE);
   const connection = await pageEntitiesConnection<StoredTimelineEvent>(context, user, [ENTITY_TYPE_TIMELINE_EVENT], {
     filters: await buildAccessibleTimelineFilters(context, user, container.internal_id, args) as any,
@@ -380,7 +381,7 @@ const computeTimelineBounds = async (context: AuthContext, user: AuthUser, filte
 };
 
 export const findContainerTimelineBounds = async (context: AuthContext, user: AuthUser, args: QueryContainerTimelineBoundsArgs): Promise<TimelineBounds> => {
-  const container = await ensureTimelineGenerated(context, await loadTimelineContainer(context, user, args.id));
+  const container = await ensureTimelineGenerated(context, user, await loadTimelineContainer(context, user, args.id));
   return computeTimelineBounds(context, user, await buildAccessibleTimelineFilters(context, user, container.internal_id, args));
 };
 
@@ -418,7 +419,7 @@ export const strongerTimelineConfidence = (stored: number | null | undefined, in
 };
 
 export const findTimelineAnchors = async (context: AuthContext, user: AuthUser, containerId: string): Promise<TimelineAnchors | null> => {
-  const container = await ensureTimelineGenerated(context, await loadTimelineContainer(context, user, containerId));
+  const container = await ensureTimelineGenerated(context, user, await loadTimelineContainer(context, user, containerId));
   return container?.[ATTRIBUTE_TIMELINE_ANCHORS] ?? null;
 };
 
@@ -446,7 +447,7 @@ export const findContainerTimelineSummary = async (
   if (!loaded) {
     throw FunctionalError('Timeline container cannot be found', { id: containerId });
   }
-  const container = await ensureTimelineGenerated(context, loaded);
+  const container = await ensureTimelineGenerated(context, user, loaded);
   const baseArgs = { types: [ENTITY_TYPE_TIMELINE_EVENT], noFiltersChecking: true };
   // Same visibility as the list: the events of elements or sources the user cannot access are not counted
   const hidden = await findInaccessibleReferences(context, user, container.internal_id);
@@ -527,7 +528,7 @@ const loadExportedTimelineEvents = async (
   args: TimelineExportArgs,
   opts: { storedInContainer?: boolean } = {},
 ): Promise<TimelineExportSnapshot> => {
-  const container = await ensureTimelineGenerated(context, await loadTimelineContainer(context, user, args.id));
+  const container = await ensureTimelineGenerated(context, user, await loadTimelineContainer(context, user, args.id));
   const contentMaxMarkings = args.contentMaxMarkings ?? [];
   if (contentMaxMarkings.length > 0) {
     const markingLevels = await Promise.all(contentMaxMarkings.map((markingId) => findMarkingDefinitionById(context, user, markingId)));
@@ -1239,12 +1240,10 @@ const writeImportedContributions = async (
   return createdMilestoneIds;
 };
 
-/** Notify the "Timeline milestone added" trigger for milestones just written, one after the other, as read by their author. */
+/** Notify the "Timeline milestone added" trigger for milestones just written, read at once as their author, in one pass over the triggers. */
 const notifyMilestonesAdded = async (context: AuthContext, user: AuthUser, containerId: string, milestoneIds: string[]) => {
-  for (let index = 0; index < milestoneIds.length; index += 1) {
-    const stored = await reloadEvent(context, user, milestoneIds[index]);
-    if (stored) await notifyTimelineMilestoneAdded(context, user, containerId, stored);
-  }
+  const stored = await internalFindByIds(context, user, milestoneIds, { type: ENTITY_TYPE_TIMELINE_EVENT }) as unknown as StoredTimelineEvent[];
+  await notifyTimelineMilestonesAdded(context, user, containerId, stored);
 };
 
 /**

@@ -1323,7 +1323,7 @@ describe('Incident and case timeline', () => {
       const extension = JSON.stringify({ events: [event, { ...event, title: 'Duplicated milestone, last version' }], annotations: [] });
       const manualEventCount = () => redisGetTelemetry(TELEMETRY_GAUGE_TIMELINE_MANUAL_EVENT);
       const countBefore = await manualEventCount();
-      const notified = vi.spyOn(timelineNotification, 'notifyTimelineMilestoneAdded');
+      const notified = vi.spyOn(timelineNotification, 'notifyTimelineMilestonesAdded');
       await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension } });
       const matching = (await listTimeline(secondCase.id, { sources: ['manual'] })).filter((e) => e.title.startsWith('Duplicated milestone'));
       // The last occurrence wins
@@ -1331,7 +1331,9 @@ describe('Incident and case timeline', () => {
       await awaitUntilCondition(async () => (await manualEventCount()) === countBefore + 1, 3000, { message: 'The imported milestone was not counted in time' });
       await awaitUntilCondition(async () => notified.mock.calls.length === 1, 3000, { message: 'The imported milestone was not notified in time' });
       expect(await manualEventCount()).toEqual(countBefore + 1);
+      // The milestones of one import are notified in one pass over the triggers
       expect(notified).toHaveBeenCalledTimes(1);
+      expect(notified.mock.calls[0][3].map((milestone) => milestone.name)).toEqual(['Duplicated milestone, last version']);
       notified.mockRestore();
       await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: matching[0].id } });
     });
@@ -1374,6 +1376,30 @@ describe('Incident and case timeline', () => {
       await queryAsAdmin({ query: STIX_CORE_OBJECT_DELETE, variables: { id: caseId } });
       await queryAsAdmin({ query: STIX_CORE_OBJECT_DELETE, variables: { id: confidentMalware.data.malwareAdd.id } });
       await deleteContainerTimeline(caseId);
+    });
+
+    it('should not answer from a container deleted while its first timeline was being built', async () => {
+      const created = await queryAsAdminWithSuccess({ query: CASE_INCIDENT_ADD, variables: { input: { name: 'Timeline case deleted during its first opening' } } });
+      const caseId = created.data.caseIncidentAdd.id;
+      type LoadedCase = { _index: string };
+      const loaded = await internalLoadById(testContext, SYSTEM_USER, caseId) as unknown as LoadedCase;
+      // Never opened: the first read builds its timeline
+      await elUpdate(testContext, loaded._index, caseId, { doc: { x_opencti_timeline_anchors: null } });
+      const regenerate = timelineEngine.regenerateContainerTimeline;
+      const generation = vi.spyOn(timelineEngine, 'regenerateContainerTimeline').mockImplementationOnce(async (...args) => {
+        const result = await regenerate(...args);
+        // The container goes away while the reader waits for the generation
+        await queryAsAdminWithSuccess({ query: STIX_CORE_OBJECT_DELETE, variables: { id: caseId } });
+        return result;
+      });
+      try {
+        const result = await queryAsAdmin({ query: CONTAINER_TIMELINE_SUMMARY, variables: { id: caseId } });
+        expect(generation).toHaveBeenCalled();
+        expect(result.data?.containerTimelineSummary ?? null).toBeNull();
+        expect(result.errors?.[0]?.message).toContain('Timeline container cannot be found');
+      } finally {
+        generation.mockRestore();
+      }
     });
 
     it('should leave out a manual event about an element restricted to fewer members than the container', async () => {
