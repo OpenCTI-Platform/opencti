@@ -32,7 +32,7 @@ describe('Relationship counts of a batch of elements', () => {
     expect(elRawSearchMock).toHaveBeenCalledTimes(1);
     const { body } = elRawSearchMock.mock.calls[0][3];
     expect(Object.keys(body.aggs.per_element.filters.filters)).toEqual(['element-a', 'element-b']);
-    expect(body.query.bool.must).toContainEqual({ range: { created_at: { lt: '2026-01-01T00:00:00.000Z' } } });
+    expect(body.query.bool.must).toContainEqual({ range: { created_at: { lte: '2026-01-01T00:00:00.000Z' } } });
     expect([...(counts.get('element-a') ?? new Map())]).toEqual([['uses', 2], ['targets', 1]]);
     expect(counts.get('element-b')?.size).toBe(0);
   });

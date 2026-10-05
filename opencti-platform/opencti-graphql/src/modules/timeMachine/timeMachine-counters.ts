@@ -67,8 +67,9 @@ const RELATIONSHIP_TYPES_CLAUSE = {
 const MAX_RELATIONSHIP_TYPES = 100;
 
 /**
- * Relationships of each element by relationship type, created before `endDate`: one aggregation for all the elements,
- * whatever their number of relationships.
+ * Relationships of each element by relationship type, created up to `endDate` included: one aggregation for all the
+ * elements, whatever their number of relationships. The history ranges start right after a date, so a relationship
+ * created at `endDate` is counted here and not as a later creation.
  */
 export const countRelationshipsByTypeForElements = async (
   context: AuthContext,
@@ -85,7 +86,7 @@ export const countRelationshipsByTypeForElements = async (
   });
   const body = {
     size: 0,
-    query: { bool: { must: [RELATIONSHIP_TYPES_CLAUSE, { range: { created_at: { lt: endDate } } }, ...restrictions.must], must_not: restrictions.must_not } },
+    query: { bool: { must: [RELATIONSHIP_TYPES_CLAUSE, { range: { created_at: { lte: endDate } } }, ...restrictions.must], must_not: restrictions.must_not } },
     aggs: { per_element: { filters: { filters }, aggs: { per_type: { terms: { field: 'entity_type.keyword', size: MAX_RELATIONSHIP_TYPES } } } } },
   };
   const data = await elRawSearch(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, { index: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, body }).catch((err: unknown) => {

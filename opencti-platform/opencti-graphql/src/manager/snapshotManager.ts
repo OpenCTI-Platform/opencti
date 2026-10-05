@@ -223,6 +223,8 @@ export const buildCompactDocuments = async (context: AuthContext, entities: Basi
     indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
     endDate: snapshotDate,
     dateAttribute: 'created_at',
+    // The changes since the snapshot are read strictly after its date: one created at that date is listed here
+    intervalInclude: true,
     baseData: true,
     maxSize: MAX_RELATIONSHIPS_PER_BATCH + 1,
   } as any);
