@@ -765,7 +765,7 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
     }
   });
 
-  it('stops an investigation whose case becomes restricted to authorized members while its approved draft is validated', async () => {
+  it('refuses to cancel an investigation whose approved draft is validated, and stops it once its case becomes restricted to authorized members', async () => {
     const created = await queryAsAdminWithSuccess({ query: CREATE_CASE, variables: { input: { name: 'Case Autopilot e2e validated case', objects: [fixture.ipId] } } });
     const caseId = created.data.caseIncidentAdd.id;
     let runId = '';
@@ -786,6 +786,10 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
         validation_work_id: null,
         wave_started_at: now.toISOString(),
       }));
+      // The approved changes are with the worker that writes them: the run keeps tracking that work.
+      const refused = await queryAsAdmin({ query: RUN_CANCEL, variables: { id: runId } });
+      expect(refused.errors?.[0]?.message).toBe('The approved changes of this investigation are being written to the case: it can no longer be cancelled');
+      expect(await loadInvestigationRun(testContext, runId)).toMatchObject({ run_status: 'running', run_phase: 'validating' });
       await queryAsAdminWithSuccess({ query: RESTRICT_CONTAINER, variables: { id: caseId, input: [{ id: ADMIN_USER.id, access_right: 'admin' }] } });
       await processInvestigationRun(testContext, runId);
       expect(await readRun(runId)).toMatchObject({

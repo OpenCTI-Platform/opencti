@@ -162,6 +162,7 @@ export const loadInvestigationRun = (context: AuthContext, id: string) => {
   return internalLoadById<BasicStoreEntityInvestigationRun>(context, INVESTIGATION_MANAGER_USER, id, { type: ENTITY_TYPE_INVESTIGATION_RUN });
 };
 
+const VALIDATION_NOT_CANCELLABLE = 'The approved changes of this investigation are being written to the case: it can no longer be cancelled';
 const FINDINGS_WITHHELD: Record<string, string> = {
   [MEMBER_RESTRICTED_CODE]: 'What this investigation found is withheld: an entity it investigated or cites is now restricted to authorized members',
   [SOURCE_INACCESSIBLE_CODE]: 'What this investigation found is withheld: an entity it investigated or cites is no longer accessible to you',
@@ -642,9 +643,15 @@ export const cancelInvestigationRun = async (context: AuthContext, user: AuthUse
   // Under the actions lock, then the run lock: an approval being applied (a task,
   // a draft validation) finishes before its gate can be rejected, and an engine
   // run recorded just before the cancellation is stopped too.
-  const cancellation: { done: boolean; engineId: string | null } = { done: false, engineId: null };
+  const cancellation: { done: boolean; validating: boolean; engineId: string | null } = { done: false, validating: false, engineId: null };
   const updated = await withRunActions(context, id, () => updateInvestigationRun(context, id, (current) => {
     if (!ACTIVE_RUN_STATUSES.includes(current.run_status)) return null;
+    // The approved draft is already with the worker that writes it into the knowledge, which
+    // cannot be recalled: the run keeps tracking that work until it ends.
+    if (current.run_phase === InvestigationRunPhase.Validating) {
+      cancellation.validating = true;
+      return null;
+    }
     cancellation.done = true;
     cancellation.engineId = current.run_phase === InvestigationRunPhase.Investigating ? current.xtm_investigation_id ?? null : null;
     const now = new Date();
@@ -662,6 +669,9 @@ export const cancelInvestigationRun = async (context: AuthContext, user: AuthUse
         : request)),
     };
   }));
+  if (cancellation.validating) {
+    throw FunctionalError(VALIDATION_NOT_CANCELLABLE, { id });
+  }
   await publishUserAction({
     user,
     event_type: 'mutation',

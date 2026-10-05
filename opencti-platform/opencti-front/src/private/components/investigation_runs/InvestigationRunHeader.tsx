@@ -95,6 +95,8 @@ const InvestigationRunHeader = ({ run, handlers, onOpenReport, onGiveFeedback, l
   const canCustomize = useGranted([SETTINGS_SETCUSTOMIZATION]);
   const { onRunAgain, onContinue } = handlers;
   const active = isRunActive(run.run_status);
+  // The approved draft is being written into the knowledge: that work cannot be recalled.
+  const validating = active && run.run_phase === 'validating';
   const pending = run.approvals.filter((approval) => approval.status === 'pending');
   const draftGate = pending.find((approval) => approval.kind === 'draft_validation');
   const draftOpen = !!run.draft && run.draft.draft_status !== 'validated';
@@ -194,7 +196,7 @@ const InvestigationRunHeader = ({ run, handlers, onOpenReport, onGiveFeedback, l
     <MenuItem key="docs" onSelect={() => window.open(CASE_AUTOPILOT_DOCS_URL, '_blank', 'noopener,noreferrer')}>{t_i18n('Read the documentation')}</MenuItem>,
   );
   const destructive: React.ReactNode[] = [];
-  if (active && canCancel) {
+  if (active && canCancel && !validating) {
     destructive.push(<MenuItem key="cancel" onSelect={() => setConfirm('cancel')} data-testid="investigation-run-cancel">{t_i18n('Cancel the investigation')}</MenuItem>);
   }
   if (!active && canDelete) {
@@ -228,6 +230,11 @@ const InvestigationRunHeader = ({ run, handlers, onOpenReport, onGiveFeedback, l
             <InvestigationRunStatusChip status={run.run_status} />
             <Typography variant="body1" aria-live="polite" data-testid="investigation-run-sentence">{sentence}</Typography>
           </Stack>
+          {validating && (
+            <Typography variant="body2" color="text.secondary" data-testid="investigation-run-not-cancellable">
+              {t_i18n('It can no longer be cancelled: the investigation ends once every approved change is written.')}
+            </Typography>
+          )}
           <Tooltip>
             <TooltipTrigger asChild>
               <Typography variant="body2" color="text.secondary" tabIndex={0} sx={{ alignSelf: 'flex-start' }}>
