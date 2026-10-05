@@ -1037,10 +1037,11 @@ export const syncSources = async (context: AuthContext, settings: SourceIntellig
   for (let i = 0; i < orphans.length; i += 1) {
     await releaseQuarantineOfRemovedSource(context, orphans[i]);
   }
+  // The sources go last: a removal interrupted before them is found and completed by the next synchronization
+  await deleteScorecardsOfSources(context, removed.map((source) => source.internal_id));
   for (let i = 0; i < removed.length; i += 1) {
     await deleteElementById(context, SOURCE_INTELLIGENCE_MANAGER_USER, removed[i].internal_id, ENTITY_TYPE_SOURCE);
   }
-  await deleteScorecardsOfSources(context, removed.map((source) => source.internal_id));
   if (created + updated + removed.length > 0) {
     await publishCacheResetEvent(ENTITY_TYPE_SOURCE);
   }
