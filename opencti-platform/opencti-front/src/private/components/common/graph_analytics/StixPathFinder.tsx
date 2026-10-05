@@ -263,12 +263,29 @@ const StixPathFinder = ({ fromId, fromLabel, toId, toLabel, renderActions }: Sti
 
   // a path needs two different entities: the source itself is never a valid target
   const targetId = (toId ?? target?.value) === fromId ? undefined : (toId ?? target?.value);
+  // A result is shown, and its paths acted on, only while the parameters it was searched with are the current ones
+  const searchKey = (depth: string, relationships: TypeOption[], entities: TypeOption[]) => JSON.stringify([
+    targetId, depth, maxPaths, relationships.map((r) => r.value), entities.map((e) => e.value), includeInferred, includeContainers,
+  ]);
+  const currentKey = searchKey(maxDepth, relationshipTypes, entityTypes);
+  const [resultKey, setResultKey] = useState<string | null>(null);
+  const latestKey = useRef(currentKey);
+  const latestRequest = useRef(0);
+  useEffect(() => {
+    latestKey.current = currentKey;
+  }, [currentKey]);
   // The next actions of an empty or limited result change a parameter and search again at once
   const findPaths = (overrides: { depth?: string; relationships?: TypeOption[]; entities?: TypeOption[] } = {}) => {
     if (!targetId) return;
     const depth = overrides.depth ?? maxDepth;
     const relationships = overrides.relationships ?? relationshipTypes;
     const entities = overrides.entities ?? entityTypes;
+    const key = searchKey(depth, relationships, entities);
+    latestKey.current = key;
+    latestRequest.current += 1;
+    const request = latestRequest.current;
+    // An answer is dropped once a newer search started or the parameters changed
+    const isCurrent = () => request === latestRequest.current && key === latestKey.current;
     setLoading(true);
     setResult(null);
     fetchQuery<StixPathFinderQuery>(stixPathFinderQuery, {
@@ -282,12 +299,18 @@ const StixPathFinder = ({ fromId, fromLabel, toId, toLabel, renderActions }: Sti
       includeContainers,
     }).toPromise()
       .then((data) => {
+        if (!isCurrent()) return;
         const paths = data?.stixPaths ?? null;
         setResult(paths);
+        setResultKey(key);
         setSelected(new Set((paths?.paths ?? []).map((_, index) => index)));
       })
-      .catch((err) => handleError(err))
-      .finally(() => setLoading(false));
+      .catch((err) => {
+        if (isCurrent()) handleError(err);
+      })
+      .finally(() => {
+        if (request === latestRequest.current) setLoading(false);
+      });
   };
 
   // Quick pivot: restrict the search to (or release) a relationship type of the starting entity
@@ -325,8 +348,9 @@ const StixPathFinder = ({ fromId, fromLabel, toId, toLabel, renderActions }: Sti
   const canAllowLongerPaths = DEPTHS.indexOf(maxDepth) < DEPTHS.length - 1;
   const hasTypeFilters = relationshipTypes.length > 0 || entityTypes.length > 0;
 
-  const selectedPaths = (result?.paths ?? []).filter((_, index) => selected.has(index));
-  const resultActions = result && result.paths.length > 0 ? renderActions(result, selectedPaths) : null;
+  const shownResult = result && resultKey === currentKey ? result : null;
+  const selectedPaths = (shownResult?.paths ?? []).filter((_, index) => selected.has(index));
+  const resultActions = shownResult && shownResult.paths.length > 0 ? renderActions(shownResult, selectedPaths) : null;
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }} data-testid="graph-path-finder">
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
@@ -448,19 +472,19 @@ const StixPathFinder = ({ fromId, fromLabel, toId, toLabel, renderActions }: Sti
         />
       </Box>
       {loading && <Loader variant={LoaderVariant.inElement} />}
-      {result && (
+      {shownResult && (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }} data-testid="graph-path-results">
           <Text variant="content-caption">
             {t_i18n('{entities, plural, one {# entity} other {# entities}} and {relationships, plural, one {# relationship} other {# relationships}} explored in {duration} ms', {
-              values: { entities: result.explored_nodes, relationships: result.explored_relationships, duration: n(result.duration_ms) },
+              values: { entities: shownResult.explored_nodes, relationships: shownResult.explored_relationships, duration: n(shownResult.duration_ms) },
             })}
           </Text>
-          {(result.truncated || result.timed_out) && (
+          {(shownResult.truncated || shownResult.timed_out) && (
             <Alert
               severity="warning"
               elevation={1}
               data-testid="graph-path-limit"
-              title={result.timed_out
+              title={shownResult.timed_out
                 ? t_i18n('The search reached its time limit, longer paths may exist.')
                 : t_i18n('The search reached its exploration limit, narrow it with relationship or entity types.')}
               action={(
@@ -470,7 +494,7 @@ const StixPathFinder = ({ fromId, fromLabel, toId, toLabel, renderActions }: Sti
               )}
             />
           )}
-          {result.paths.length === 0 ? (
+          {shownResult.paths.length === 0 ? (
             <Alert
               severity="info"
               elevation={1}
@@ -491,7 +515,7 @@ const StixPathFinder = ({ fromId, fromLabel, toId, toLabel, renderActions }: Sti
                 </Box>
               )}
             />
-          ) : result.paths.map((path, index) => (
+          ) : shownResult.paths.map((path, index) => (
             <Box key={path.relationship_ids.join('|')} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Checkbox
                 checked={selected.has(index)}
