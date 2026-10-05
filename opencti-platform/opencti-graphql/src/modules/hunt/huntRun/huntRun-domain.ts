@@ -930,6 +930,21 @@ export const resolveHuntRunIocResults = async (context: AuthContext, user: AuthU
 };
 
 /**
+ * Whether the user acts as the hunt connector the run was dispatched to. Several hunt connectors can run as the same
+ * user: the work of the dispatch, which only the connector that received the run knows, binds the call to that
+ * connector. The run stores its work before the connector receives it, so a run without work was never handed to any
+ * connector.
+ */
+export const isHuntRunConnectorCall = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityHuntRun, workId: string | null | undefined) => {
+  if (!run.work_id || workId !== run.work_id) {
+    return false;
+  }
+  const connectors = await listHuntConnectors(context, false);
+  const connector = connectors.find((c) => c.internal_id === run.connector_id);
+  return connector?.connector_user_id === user.id;
+};
+
+/**
  * Report of a run by its hunt connector (contract section 5).
  */
 export const reportHuntRun = async (context: AuthContext, user: AuthUser, runId: string, input: HuntRunReportInput) => {
@@ -937,16 +952,8 @@ export const reportHuntRun = async (context: AuthContext, user: AuthUser, runId:
   if (!reported) {
     throw ResourceNotFoundError('Hunt run cannot be found', { runId });
   }
-  const connectors = await listHuntConnectors(context, false);
-  const connector = connectors.find((c) => c.internal_id === reported.connector_id);
-  if (!isBypassUser(user)) {
-    // Several hunt connectors can run as the same user: the work of the dispatch, which only the connector that
-    // received the run knows, binds the report to that connector. The run stores its work before the connector
-    // receives it, so a run without work was never handed to any connector
-    const reportedWorkId = input.work_id ?? context.workId;
-    if (connector?.connector_user_id !== user.id || !reported.work_id || reportedWorkId !== reported.work_id) {
-      throw ForbiddenAccess('Only the hunt connector the run was dispatched to can report it', { runId });
-    }
+  if (!isBypassUser(user) && !await isHuntRunConnectorCall(context, user, reported, input.work_id ?? context.workId)) {
+    throw ForbiddenAccess('Only the hunt connector the run was dispatched to can report it', { runId });
   }
   const status = input.status as string;
   if (![HUNT_RUN_STATUS_RUNNING, HUNT_RUN_STATUS_COMPLETED, HUNT_RUN_STATUS_FAILED, HUNT_RUN_STATUS_TIMEOUT].includes(status)) {

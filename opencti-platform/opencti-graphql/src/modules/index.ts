@@ -176,6 +176,7 @@ import './securityCoverage/securityCoverageResult/securityCoverageResult-graphql
 import './defenseCoverage/defenseCoverage-graphql';
 import './hunt/hunt-graphql';
 import './hunt/huntRun/huntRun-graphql';
+import './hunt/huntRun/huntRun-attribution';
 import './auth/auth-graphql';
 import './emailTemplate/emailTemplate-graphql';
 import './form/form-graphql';

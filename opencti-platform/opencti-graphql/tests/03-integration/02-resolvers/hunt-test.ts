@@ -14,7 +14,10 @@ import { MARKING_TLP_RED } from '../../../src/schema/identifier';
 import type { BasicStoreEntity } from '../../../src/types/store';
 import { addSecurityPlatform } from '../../../src/modules/securityPlatform/securityPlatform-domain';
 import { ENTITY_TYPE_HUNT_RUN } from '../../../src/modules/hunt/huntRun/huntRun-types';
-import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
+import { STIX_SIGHTING_RELATIONSHIP } from '../../../src/schema/stixSightingRelationship';
+import { addObservedData } from '../../../src/domain/observedData';
+import { addStixSightingRelationship } from '../../../src/domain/stixSightingRelationship';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../src/modules/securityPlatform/securityPlatform-types';
 import { getEntitiesListFromCache, resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
@@ -149,6 +152,18 @@ const HUNT_RUN_VERDICT = gql`
 `;
 const HUNT_RUN_EVIDENCE = gql`
   mutation HuntRunEvidenceAdd($id: ID!, $input: HuntRunEvidenceAddInput!) { huntRunEvidenceAdd(id: $id, input: $input) { ${RUN_FIELDS} } }
+`;
+const OBSERVED_DATA_ADD = gql`
+  mutation ObservedDataAdd($input: ObservedDataAddInput!) { observedDataAdd(input: $input) { id } }
+`;
+const OBSERVED_DATA_FIELD_PATCH = gql`
+  mutation ObservedDataFieldPatch($id: ID!, $input: [EditInput]!) { observedDataEdit(id: $id) { fieldPatch(input: $input) { id } } }
+`;
+const SIGHTING_ADD = gql`
+  mutation SightingAdd($input: StixSightingRelationshipAddInput!) { stixSightingRelationshipAdd(input: $input) { id } }
+`;
+const SIGHTING_FIELD_PATCH = gql`
+  mutation SightingFieldPatch($id: ID!, $input: [EditInput]!) { stixSightingRelationshipEdit(id: $id) { fieldPatch(input: $input) { id } } }
 `;
 const HUNT_RUNS = gql`
   query HuntRuns($filters: FilterGroup) { huntRuns(filters: $filters, first: 50) { edges { node { id hunt_run_mode verdict } } pageInfo { globalCount } } }
@@ -370,6 +385,46 @@ describe('Hunt resolvers', () => {
     }
     const queued = await queryAsAdmin({ query: HUNT_RUN_REPORT, variables: { id: firstRunId, input: { status: 'queued' } } });
     expect(queued.errors?.[0].message).toContain('can only report a running, completed, failed or timeout status');
+  });
+
+  it('should only let the hunt connector of a run attribute observed data and sightings to it', async () => {
+    const dispatched = await internalLoadById<BasicStoreEntity & { work_id?: string }>(testContext, ADMIN_USER, firstRunId, { type: ENTITY_TYPE_HUNT_RUN });
+    const observedDataInput = {
+      first_observed: '2026-10-01T00:00:00.000Z',
+      last_observed: '2026-10-01T01:00:00.000Z',
+      number_observed: 1,
+      objects: [intrusionSetId],
+      x_opencti_hunt_run_id: firstRunId,
+    };
+    const sightingInput = { fromId: intrusionSetId, toId: securityPlatformId, attribute_count: 1, x_opencti_hunt_run_id: firstRunId };
+    // A knowledge editor, and the connector outside the work of the dispatch, cannot make evidence of the run
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: OBSERVED_DATA_ADD, variables: { input: observedDataInput } });
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: SIGHTING_ADD, variables: { input: sightingInput } });
+    await queryAsUserIsExpectedForbidden(USER_CONNECTOR, { query: SIGHTING_ADD, variables: { input: sightingInput } });
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: SIGHTING_ADD, variables: { input: { ...sightingInput, x_opencti_hunt_run_id: 'unknown-run' } } });
+    // The hunt connector of the run, in the work of the dispatch, as the worker ingests its bundle
+    const connectorUser = await getAuthUser(USER_CONNECTOR.id);
+    const workContext = { ...testContext, workId: dispatched.work_id };
+    const observedData = await addObservedData(workContext, connectorUser, observedDataInput);
+    const sighting = await addStixSightingRelationship(workContext, connectorUser, sightingInput);
+    try {
+      expect(observedData.x_opencti_hunt_run_id).toEqual(firstRunId);
+      expect(sighting.x_opencti_hunt_run_id).toEqual(firstRunId);
+      // An editor can neither clear the attribution nor move it to another run
+      await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+        query: SIGHTING_FIELD_PATCH,
+        variables: { id: sighting.id, input: [{ key: 'x_opencti_hunt_run_id', value: [''] }] },
+      });
+      await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+        query: OBSERVED_DATA_FIELD_PATCH,
+        variables: { id: observedData.id, input: [{ key: 'x_opencti_hunt_run_id', value: ['another-run'] }] },
+      });
+      const kept = await internalLoadById<BasicStoreEntity & { x_opencti_hunt_run_id?: string }>(testContext, ADMIN_USER, sighting.id, { type: STIX_SIGHTING_RELATIONSHIP });
+      expect(kept.x_opencti_hunt_run_id).toEqual(firstRunId);
+    } finally {
+      await deleteElementById(testContext, ADMIN_USER, sighting.id, STIX_SIGHTING_RELATIONSHIP);
+      await deleteElementById(testContext, ADMIN_USER, observedData.id, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
+    }
   });
 
   it('should complete a run without hits as benign', async () => {
