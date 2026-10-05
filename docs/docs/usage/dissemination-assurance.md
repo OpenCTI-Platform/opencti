@@ -133,7 +133,8 @@ From both tabs, an analyst with the *Update knowledge* capability can:
 Go to **Defense > Dissemination assurance**.
 
 - **Overview** starts with the key figures: disseminated, deployed, active, validated and missed. They count
-  deployments (one per indicator and security platform) recorded in the selected period, and each one filters the
+  deployments (one per indicator and security platform) reported by a connector in the selected period, so a pending
+  deployment recorded by hand is not counted until its connector reports it, and each one filters the
   list of deployments shown under it, so a figure always equals the number of deployments its list shows. Below,
   the lifecycle funnel follows the indicators created in the period from created to disseminated, deployed,
   validated and hit, with the indicators that expired but are still deployed, next to the deployment and validation
@@ -190,6 +191,8 @@ When OpenAEV sends the results, the validation status of each deployment is upda
 links to its deployment, and a completed request can be validated again in one action. A request where at least one
 test ends in `error` is shown as partially completed, with the number of tests that could not run. Each request keeps
 the outcome it got: validating the same deployment again updates the deployment, not the results of the earlier requests.
+A request is sent to OpenAEV at most once: a request whose sending was interrupted is never sent again, and it
+expires after the validation timeout with a message asking to request the validation again.
 
 A request without results after the timeout (`ioc_validation:timeout_days`) expires, and its deployments still waiting
 get the `error` status. A result that a security platform reports later for the same request replaces that timeout

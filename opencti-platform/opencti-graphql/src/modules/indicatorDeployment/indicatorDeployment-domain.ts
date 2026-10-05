@@ -40,7 +40,7 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationshi
 import { ENTITY_TYPE_INDICATOR, type BasicStoreEntityIndicator } from '../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type BasicStoreEntitySecurityPlatform } from '../securityPlatform/securityPlatform-types';
 import { ENTITY_TYPE_IOC_VALIDATION_REQUEST } from '../iocValidation/iocValidation-types';
-import { INTERNAL_USERS, isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
+import { EXPIRATION_MANAGER_USER, INTERNAL_USERS, isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
 import { isEnterpriseEditionFromSettings } from '../../enterprise-edition/ee';
 import { storeUpdateEvent } from '../../database/stream/stream-handler';
 import { addIndicatorDeploymentReportCount, addIndicatorHitsReportCount } from '../../manager/telemetryManager';
@@ -439,6 +439,32 @@ const ensurePairOrganizations = async (
   }
 };
 
+/**
+ * A pair relationship is created with the access of the ends read before its creation. An end restricted meanwhile
+ * is repaired from its change event, which only finds the relationships existing by then: once the relationship
+ * exists, its ends are read again and its access repaired as that event would, so either one sees the change.
+ */
+export const ensureCreatedPairAccess = async (
+  context: AuthContext,
+  created: { internal_id: string; entity_type: string },
+  indicatorId: string,
+  platformId: string,
+) => {
+  const [relation, indicator, platform] = await Promise.all([
+    storeLoadById<BasicStoreRelation>(context, SYSTEM_USER, created.internal_id, created.entity_type),
+    storeLoadById<BasicStoreEntityIndicator>(context, SYSTEM_USER, indicatorId, ENTITY_TYPE_INDICATOR),
+    storeLoadById<BasicStoreEntitySecurityPlatform>(context, SYSTEM_USER, platformId, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM),
+  ]);
+  if (!relation || !indicator || !platform) {
+    return;
+  }
+  await ensurePairMarkings(context, EXPIRATION_MANAGER_USER, relation, indicator, platform);
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  if (isEnterpriseEditionFromSettings(settings)) {
+    await ensurePairOrganizations(context, EXPIRATION_MANAGER_USER, relation, indicator, platform);
+  }
+};
+
 // Serializes every write on one (indicator, platform) pair. Never an entity id: createRelation locks the ids
 // of the elements it writes, and locking one of them here would make the nested creation wait on this lock.
 export const pairLockKey = (indicatorInternalId: string, platformInternalId: string) => `deployed-on-${indicatorInternalId}-${platformInternalId}`;
@@ -578,6 +604,7 @@ const applyDeploymentReport = async (
         [INPUT_GRANTED_REFS]: await pairSharingForReporter(context, user, indicator, platform),
         ...change.attributes,
       }, { grantedRefsFromInput: true }) as unknown as BasicStoreRelationDeployedOn;
+      await ensureCreatedPairAccess(context, element, indicator.internal_id, platform.internal_id);
       return { element, outcome: 'created' };
     }
     if (change.stale) {
@@ -772,6 +799,7 @@ export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, 
         last_hit_at: lastHit,
         last_hit_report_ids: reportIds,
       }, { grantedRefsFromInput: true }) as unknown as HitsDeploymentState;
+      await ensureCreatedPairAccess(context, deployment as unknown as BasicStoreRelationDeployedOn, indicator.internal_id, platform.internal_id);
     } else if (!replay) {
       const patch: Record<string, unknown> = {
         hit_count: addHits(existing.hit_count ?? 0, args.count),
@@ -801,6 +829,7 @@ export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, 
     let sighting;
     if (!existingSighting) {
       sighting = await createHitsSighting(values.attribute_count, values.first_seen, values.last_seen);
+      await ensureCreatedPairAccess(context, sighting as unknown as BasicStoreRelation, indicator.internal_id, platform.internal_id);
     } else if (!isHitsSightingUpToDate(existingSighting, values)) {
       const { element } = await patchAttribute(reportContext, user, existingSighting.internal_id, STIX_SIGHTING_RELATIONSHIP, values);
       sighting = element;
@@ -965,10 +994,11 @@ export const disseminationAssuranceMetrics = async (context: AuthContext, user: 
   const baseDeploymentFilters = [...platformFilters, ...relationDates];
   const liveFilter: FilterContent = { key: ['deployment_status'], values: LIVE_DEPLOYMENT_STATUSES };
   const provenFilter: FilterContent = { key: ['validation_status'], values: PROVEN_VALIDATION_STATUSES };
+  // Disseminated means reported by a connector (see isReportedDeployment)
+  const reportedFilter: FilterContent = { key: ['last_sync_at'], values: [], operator: 'not_nil' as never };
   let funnel;
   if (args.platformId) {
     // Expired still deployed: flagged expired (removal never confirmed), or still live while the indicator is revoked or past valid_until.
-    const reportedFilter: FilterContent = { key: ['last_sync_at'], values: [], operator: 'not_nil' as never };
     const [disseminated, deployed, validated, hit, flaggedExpired] = await Promise.all([
       countDeployments(context, user, [...baseDeploymentFilters, reportedFilter]),
       countDeployments(context, user, [...baseDeploymentFilters, liveFilter]),
@@ -1005,7 +1035,7 @@ export const disseminationAssuranceMetrics = async (context: AuthContext, user: 
       types: [RELATION_DEPLOYED_ON],
       field,
       normalizeLabel: false,
-      filters: filterGroup(baseDeploymentFilters),
+      filters: filterGroup([...baseDeploymentFilters, reportedFilter]),
     });
     return buckets
       .filter((bucket) => bucket.label !== 'unknown')

@@ -36,7 +36,7 @@ import {
   VALIDATION_STATUS_NOT_REQUESTED,
   VALIDATION_STATUS_REQUESTED,
 } from '../indicatorDeployment/indicatorDeployment-types';
-import { findDeployedOn, pairLockKey, refreshIndicatorDeploymentCounters } from '../indicatorDeployment/indicatorDeployment-domain';
+import { ensureCreatedPairAccess, findDeployedOn, pairLockKey, refreshIndicatorDeploymentCounters } from '../indicatorDeployment/indicatorDeployment-domain';
 import { pairMarkings, pairOrganizations, validationResultSightingStixId } from '../indicatorDeployment/indicatorDeployment-utils';
 import { sightingReportContext } from '../indicatorDeployment/indicatorDeployment-sightings';
 import type {
@@ -848,7 +848,7 @@ export const reportIocValidationResults = async (context: AuthContext, user: Aut
       }
       if (!sighting) {
         // The reserved id is the standard id too, so results observed at the same instant never share one
-        await createRelation(sightingReportContext(context), user, {
+        const created = await createRelation(sightingReportContext(context), user, {
           fromId: indicator.internal_id,
           toId: platform.internal_id,
           relationship_type: STIX_SIGHTING_RELATIONSHIP,
@@ -862,6 +862,7 @@ export const reportIocValidationResults = async (context: AuthContext, user: Aut
           x_opencti_negative: result.status === VALIDATION_STATUS_MISSED,
           description: result.evidence || `IOC validation ${result.status} reported by ${platform.name}`,
         }, { grantedRefsFromInput: true });
+        await ensureCreatedPairAccess(context, created as unknown as BasicStoreRelation, indicator.internal_id, platform.internal_id);
       }
       if (waiting) {
         updatedIndicatorIds.push(indicator.internal_id);
@@ -982,7 +983,9 @@ const refreshIocValidationRequest = async (context: AuthContext, requestId: stri
     attributes.pairs = expiredPairs;
     attributes.results_summary = summarizeRequestPairs(expiredPairs, request.skipped?.length ?? 0);
     attributes.status = REQUEST_STATUS_EXPIRED;
-    attributes.status_message = 'No result received from OpenAEV before the timeout';
+    attributes.status_message = request.status === REQUEST_STATUS_PENDING
+      ? 'The dispatch to OpenAEV was interrupted before it was confirmed: request the validation again'
+      : 'No result received from OpenAEV before the timeout';
     attributes.completed_at = new Date();
   }
   if (Object.keys(attributes).length === 0) {
@@ -1023,13 +1026,15 @@ export const maintainIocValidationRequests = async (context: AuthContext, pageSi
   let processed = 0;
   await BluePromise.map(requests, async (listed) => {
     try {
-      if (listed.status === REQUEST_STATUS_PENDING) {
+      // A pending request with a work was claimed by a dispatch that may not have published it: it is never sent
+      // again, and expires after the timeout like a request OpenAEV never answered.
+      if (listed.status === REQUEST_STATUS_PENDING && isEmptyField(listed.work_id)) {
         const current = await findIocValidationRequest(context, SYSTEM_USER, listed.internal_id);
-        if (current?.status === REQUEST_STATUS_PENDING) {
+        if (current?.status === REQUEST_STATUS_PENDING && isEmptyField(current.work_id)) {
           await dispatchIocValidationRequest(context, current as unknown as StoreEntityIocValidationRequest);
           processed += 1;
+          return;
         }
-        return;
       }
       // An OpenAEV lifecycle update can land between the listing and this point: decide on the current request,
       // under the lock of the lifecycle callback, so a final status is never overwritten by a stale decision.

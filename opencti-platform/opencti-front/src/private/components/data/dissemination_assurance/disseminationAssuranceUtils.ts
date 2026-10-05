@@ -190,9 +190,14 @@ const statusFilter = (key: string, values: string[]): FilterGroup => ({
   filterGroups: [],
 });
 
-/** Deployments shown under the KPI strip for the selected counter; every deployment for "Disseminated" or no selection. */
+/**
+ * Deployments shown under the KPI strip for the selected counter, every deployment without selection.
+ * "Disseminated" lists the deployments a connector reported, the ones it counts: a hand-recorded pending one is out.
+ */
 export const buildKpiFilters = (kpi: KpiId | null): FilterGroup | undefined => {
   switch (kpi) {
+    case 'disseminated':
+      return { mode: 'and', filters: [{ key: 'last_sync_at', values: [], operator: 'not_nil', mode: 'or' }], filterGroups: [] };
     case 'deployed':
       return statusFilter('deployment_status', LIVE_DEPLOYMENT_STATUSES);
     case 'active':
