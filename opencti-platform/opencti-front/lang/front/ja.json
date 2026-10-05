@@ -5151,6 +5151,7 @@
   "This report contains too many objects to be displayed as a graph. We are working on a new visualization which will allow large graph to be displayed in the future.": "このレポートには、非常に多いオブジェクトが含まれているため、グラフを表示できません。将来的には大きなグラフを表示できるように取り組んでいます。",
   "This request for sharing has been approved": "この共有リクエストは承認されました",
   "This request for sharing has been declined": "この共有リクエストは拒否されました",
+  "This result holds {count, number} elements, more than the {max, number} an investigation can start with. Narrow it, then start the investigation again.": "この結果には {count, number} 個の要素が含まれており、調査を開始できる上限の {max, number} 個を超えています。結果を絞り込んでから、もう一度調査を開始してください。",
   "This rule has been applied on the existing data": "既存のデータにルールを適用しました",
   "This saved filter is shared with other members. Are you sure you want to delete it?": "この保存済みフィルターは他のメンバーと共有されています。本当に削除しますか？",
   "This score is updated with the decay rule applied to this indicator.": "このスコアはこのインジケータに適用される減衰ルールで更新される。",

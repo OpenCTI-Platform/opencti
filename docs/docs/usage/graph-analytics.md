@@ -57,7 +57,7 @@ Threats (intrusion sets, threat actors, campaigns), malware, infrastructures, do
 
 ![Tooltip of a similarity percentage naming the two measures it combines](assets/graph-analytics-similar-score.png)
 
-The **Investigate these similar entities** button, on the same toolbar as the filters and **Refresh similarity**, starts an investigation with the entity, its look-alikes and the shared evidence.
+The **Investigate these similar entities** button, on the same toolbar as the filters and **Refresh similarity**, starts an investigation with the entity, its look-alikes and the shared evidence. An investigation always starts with the whole result: a result of more than 2,000 entities is refused with a message giving its size, and a higher minimum similarity narrows it.
 
 When no look-alike is listed, the tab names the next step. With a minimum similarity or **Only with an OpenAEV scenario** set, **Reset the filters** lists every look-alike again. Otherwise, it names the knowledge similarity is computed from (the techniques, tools, malware, infrastructure or victims of a threat or a malware; the certificates, autonomous systems, registrars, name servers or hosting of an infrastructure or an observable): add it, for example from a report, then click **Refresh similarity**.
 

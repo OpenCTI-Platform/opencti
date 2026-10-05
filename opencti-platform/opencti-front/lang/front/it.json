@@ -5151,6 +5151,7 @@
   "This report contains too many objects to be displayed as a graph. We are working on a new visualization which will allow large graph to be displayed in the future.": "Questo report contiene troppi oggetti per essere visualizzati come un grafo. Stiamo lavorando a una nuova visualizzazione che permetterà di visualizzare grandi grafi in futuro.",
   "This request for sharing has been approved": "Questa richiesta di condivisione è stata approvata",
   "This request for sharing has been declined": "Questa richiesta di condivisione è stata rifiutata",
+  "This result holds {count, number} elements, more than the {max, number} an investigation can start with. Narrow it, then start the investigation again.": "Questo risultato contiene {count, number} elementi, più dei {max, number} con cui può iniziare un'indagine. Restringilo, poi avvia di nuovo l'indagine.",
   "This rule has been applied on the existing data": "Questa regola è stata applicata ai dati esistenti",
   "This saved filter is shared with other members. Are you sure you want to delete it?": "Questo filtro salvato è condiviso con gli altri membri. Sei sicuro di volerlo eliminare?",
   "This score is updated with the decay rule applied to this indicator.": "Questo punteggio è aggiornato con la regola di decadimento applicata a questo indicatore.",

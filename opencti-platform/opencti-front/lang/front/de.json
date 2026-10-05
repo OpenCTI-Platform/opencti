@@ -5151,6 +5151,7 @@
   "This report contains too many objects to be displayed as a graph. We are working on a new visualization which will allow large graph to be displayed in the future.": "Dieser Bericht enthält zu viele Objekte, um als Diagramm angezeigt zu werden. Wir arbeiten an einer neuen Visualisierung, die es in Zukunft ermöglichen wird, große Diagramme darzustellen.",
   "This request for sharing has been approved": "Dieser Antrag auf gemeinsame Nutzung wurde genehmigt",
   "This request for sharing has been declined": "Dieser Antrag auf Freigabe wurde abgelehnt",
+  "This result holds {count, number} elements, more than the {max, number} an investigation can start with. Narrow it, then start the investigation again.": "Dieses Ergebnis enthält {count, number} Elemente, mehr als die {max, number}, mit denen eine Untersuchung beginnen kann. Grenzen Sie es ein und starten Sie die Untersuchung dann erneut.",
   "This rule has been applied on the existing data": "Diese Regel wurde auf die vorhandenen Daten angewandt",
   "This saved filter is shared with other members. Are you sure you want to delete it?": "Dieser gespeicherte Filter wird für andere Mitglieder freigegeben. Möchten Sie ihn wirklich löschen?",
   "This score is updated with the decay rule applied to this indicator.": "Diese Punktzahl wird mit der auf diesen Indikator angewandten Verfallsregel aktualisiert.",
