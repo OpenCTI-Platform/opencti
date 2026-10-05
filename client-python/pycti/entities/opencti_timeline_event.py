@@ -254,7 +254,10 @@ class TimelineEvent:
         """Add an analyst milestone (manual event) to a container timeline.
 
         Adding twice an event with the same ``external_id`` on the same container
-        updates it, so connectors can push their milestones idempotently.
+        updates it, so connectors can push their milestones idempotently. An
+        omitted field is not sent; a field passed as None is sent as null, so
+        that adding the event again clears ``element_id``, ``confidence`` and
+        ``createdBy``, which an omitted field leaves as stored.
 
         :param container_id: the id of the Incident or Case (required)
         :type container_id: str
@@ -345,7 +348,13 @@ class TimelineEvent:
         )
         result = self.opencti.query(
             query,
-            {"input": {k: v for k, v in timeline_input.items() if v is not None}},
+            {
+                "input": {
+                    k: v
+                    for k, v in timeline_input.items()
+                    if v is not None or k in kwargs
+                }
+            },
         )
         return self.opencti.process_multiple_fields(result["data"]["timelineEventAdd"])
 

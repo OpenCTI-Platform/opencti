@@ -519,8 +519,8 @@ interface TimelineExportSnapshot {
 
 /**
  * The events an export contains: the events the user can see, within the content ceiling he selected and his max
- * shareable markings (same rule as every export of the platform). The ceiling also applies to the elements the events
- * reference, which can be marked more strictly than the events themselves.
+ * shareable markings (same rule as every export of the platform). The ceiling also applies to the element and the sources
+ * of each event, which can be marked more strictly than the event itself until the next regeneration copies their markings.
  */
 const loadExportedTimelineEvents = async (
   context: AuthContext,
@@ -550,10 +550,8 @@ const loadExportedTimelineEvents = async (
     maxSize: TIMELINE_MAX_STORED_EVENTS,
   } as any);
   const { items, elements } = await filterAccessibleEvents(context, user, container.internal_id, events, (e) => e, { fullElements: true });
-  const withinCeiling = items.filter((event) => {
-    const element = event.element_id ? elements[event.element_id] : undefined;
-    return !element || markingsOf(element).every((markingId) => !markingsAboveCeiling.has(markingId));
-  });
+  const withinCeiling = items.filter((event) => referencedElementIds(event, container.internal_id)
+    .every((id) => markingsOf(elements[id]).every((markingId) => !markingsAboveCeiling.has(markingId))));
   // A file stored in the container reaches every reader of the container whose markings cover it, not only this user
   const exported = opts.storedInContainer ? await filterEventsSharedAsContainer(context, container, withinCeiling) : withinCeiling;
   const anchors = computeTimelineAnchors(exported, { isClosed: await isContainerClosed(context, container), computedAt: now() });
@@ -612,7 +610,7 @@ export const exportContainerTimeline = async (context: AuthContext, user: AuthUs
 
 /**
  * A stored export and its markings come from the same events: the file is never marked less strictly than the events
- * it contains nor than the elements they reference (highest marking per definition type).
+ * it contains nor than the elements and sources they reference (highest marking per definition type).
  */
 export const exportContainerTimelineFile = async (context: AuthContext, user: AuthUser, args: QueryContainerTimelineExportFileArgs) => {
   const selected = await resolveMarkingIds(context, args.fileMarkings ?? []);
@@ -620,10 +618,10 @@ export const exportContainerTimelineFile = async (context: AuthContext, user: Au
   const snapshot = await loadExportedTimelineEvents(context, user, args, { storedInContainer: true });
   const content = renderTimelineExport(snapshot, args);
   // The file always names the container: its markings are required even when no event is exported
-  const required = [...markingsOf(snapshot.container), ...snapshot.items.flatMap((event) => {
-    const element = event.element_id ? snapshot.elements[event.element_id] : undefined;
-    return element ? [...markingsOf(event), ...markingsOf(element)] : markingsOf(event);
-  })];
+  const required = [...markingsOf(snapshot.container), ...snapshot.items.flatMap((event) => [
+    ...markingsOf(event),
+    ...referencedElementIds(event, snapshot.container.internal_id).flatMap((id) => markingsOf(snapshot.elements[id])),
+  ])];
   const fileMarkings = await cleanMarkings(context, Array.from(new Set([...selected, ...required])));
   addTimelineExportCount();
   return { content, file_markings: fileMarkings };

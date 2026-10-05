@@ -237,6 +237,7 @@ const CONTAINER_TIMELINE_EXPORT = gql`
     $labels: [TimelineExportLabelInput!]
     $search: String
     $sources: [TimelineEventSource!]
+    $kinds: [TimelineEventKind!]
     $pinnedOnly: Boolean
     $contentMaxMarkings: [String!]
   ) {
@@ -246,14 +247,15 @@ const CONTAINER_TIMELINE_EXPORT = gql`
       labels: $labels
       search: $search
       sources: $sources
+      kinds: $kinds
       pinnedOnly: $pinnedOnly
       contentMaxMarkings: $contentMaxMarkings
     )
   }
 `;
 const CONTAINER_TIMELINE_EXPORT_FILE = gql`
-  query ContainerTimelineExportFile($id: String!, $format: TimelineExportFormat!, $contentMaxMarkings: [String!], $fileMarkings: [String!]) {
-    containerTimelineExportFile(id: $id, format: $format, contentMaxMarkings: $contentMaxMarkings, fileMarkings: $fileMarkings) {
+  query ContainerTimelineExportFile($id: String!, $format: TimelineExportFormat!, $kinds: [TimelineEventKind!], $contentMaxMarkings: [String!], $fileMarkings: [String!]) {
+    containerTimelineExportFile(id: $id, format: $format, kinds: $kinds, contentMaxMarkings: $contentMaxMarkings, fileMarkings: $fileMarkings) {
       content
       file_markings { id standard_id }
     }
@@ -944,6 +946,32 @@ describe('Incident and case timeline', () => {
       expect(markingIdsOf(ceiled.data.containerTimelineExportFile)).toEqual([MARKING_TLP_GREEN]);
     });
 
+    it('should apply the content ceiling and the file markings to the sources of an event, not only to its element', async () => {
+      const green = await queryAsAdminWithSuccess({ query: MARKING_DEFINITION, variables: { id: MARKING_TLP_GREEN } });
+      const greenId = green.data.markingDefinition.id;
+      const [technique] = (await loadStoredTimelineEvents(testContext, caseIncident.id)).filter((event) => event.kind === 'technique_used');
+      // A source marked TLP:AMBER since the last regeneration: the event and its technique do not carry its markings yet
+      await elUpdate(testContext, technique._index, technique.internal_id, {
+        doc: { element_access: { ...technique.element_access, sources: [{ id: indicatorId, restricted_members: [], granted: [] }] } },
+      });
+      try {
+        const variables = { id: caseIncident.id, format: 'csv', kinds: ['technique_used'] };
+        const full = await queryAsPlatformAdminWithSuccess({ query: CONTAINER_TIMELINE_EXPORT, variables });
+        expect(full.data.containerTimelineExport).toContain('Timeline spearphishing');
+        const ceiled = await queryAsPlatformAdminWithSuccess({ query: CONTAINER_TIMELINE_EXPORT, variables: { ...variables, contentMaxMarkings: [greenId] } });
+        expect(ceiled.data.containerTimelineExport).not.toContain('Timeline spearphishing');
+        const file = await queryAsAdminWithSuccess({ query: CONTAINER_TIMELINE_EXPORT_FILE, variables: { ...variables, fileMarkings: [greenId] } });
+        expect(file.data.containerTimelineExportFile.content).toContain('Timeline spearphishing');
+        const fileMarkingIds = file.data.containerTimelineExportFile.file_markings.map((marking: { standard_id: string }) => marking.standard_id);
+        expect(fileMarkingIds).toContain(MARKING_TLP_AMBER);
+        expect(fileMarkingIds).not.toContain(MARKING_TLP_GREEN);
+      } finally {
+        await queryAsAdminWithSuccess({ query: TIMELINE_REGENERATE, variables: { containerId: caseIncident.id } });
+      }
+      const [restored] = (await loadStoredTimelineEvents(testContext, caseIncident.id)).filter((event) => event.kind === 'technique_used');
+      expect(timelineEventSourceIds(restored)).toEqual([usesRelationshipId]);
+    });
+
     it('should leave out of a stored export the events about elements restricted to some members', async () => {
       // Only its authorized members read this request for information: the exporting admin does, other readers of the case do not
       const restricted = await createEntity(testContext, SYSTEM_USER, {
@@ -1082,14 +1110,16 @@ describe('Incident and case timeline', () => {
       const extension = JSON.stringify(JSON.parse(source.data.caseIncident.toStix).extensions[STIX_EXT_OCTI_TIMELINE]);
       const manualEventCount = () => redisGetTelemetry(TELEMETRY_GAUGE_TIMELINE_MANUAL_EVENT);
       const countBefore = await manualEventCount();
-      const notified = vi.spyOn(timelineNotification, 'notifyTimelineMilestoneAdded');
+      const notified = vi.spyOn(timelineNotification, 'notifyTimelineMilestonesAdded');
       const imported = await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension } });
       expect(imported.data.timelineImport.manual_count).toEqual(2);
-      // The milestones created by the import count and notify like the ones added by an analyst (both fire-and-forget)
+      // The milestones created by the import count and notify like the ones added by an analyst (both fire-and-forget),
+      // in one pass over the triggers
       await awaitUntilCondition(async () => (await manualEventCount()) === countBefore + 2, 3000, { message: 'Imported milestones were not counted in time' });
-      await awaitUntilCondition(async () => notified.mock.calls.length === 2, 3000, { message: 'Imported milestones were not notified in time' });
-      expect(notified.mock.calls.map(([, , containerId]) => containerId)).toEqual([secondCase.id, secondCase.id]);
-      expect(notified.mock.calls.map(([, , , milestone]) => milestone.name).sort()).toEqual(['Hosts isolated by the SOC', 'Regulator notified (CNIL)']);
+      await awaitUntilCondition(async () => notified.mock.calls.length === 1, 3000, { message: 'Imported milestones were not notified in time' });
+      const [[, , notifiedContainerId, notifiedMilestones]] = notified.mock.calls;
+      expect(notifiedContainerId).toEqual(secondCase.id);
+      expect(notifiedMilestones.map((milestone) => milestone.name).sort()).toEqual(['Hosts isolated by the SOC', 'Regulator notified (CNIL)']);
       const again = await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension } });
       expect(again.data.timelineImport.manual_count).toEqual(2);
       const pinnedOnly = await listTimeline(secondCase.id, { pinnedOnly: true });
@@ -1100,7 +1130,7 @@ describe('Incident and case timeline', () => {
       expect(back.data.timelineImport.manual_count).toEqual(2);
       // Updates of known events are neither counted nor notified again
       expect(await manualEventCount()).toEqual(countBefore + 2);
-      expect(notified).toHaveBeenCalledTimes(2);
+      expect(notified).toHaveBeenCalledTimes(1);
       notified.mockRestore();
     });
 

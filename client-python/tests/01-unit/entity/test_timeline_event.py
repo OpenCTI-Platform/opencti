@@ -59,6 +59,30 @@ def test_create_sends_only_the_provided_fields(local_api_client):
     }
 
 
+def test_create_sends_the_fields_passed_as_none_as_null(local_api_client):
+    local_api_client.query.return_value = {"data": {"timelineEventAdd": EVENT}}
+    local_api_client.timeline_event.create(
+        container_id=CONTAINER_ID,
+        event_time="2026-02-05T10:30:00.000Z",
+        title="Hosts isolated",
+        external_id="splunk-alert-42",
+        element_id=None,
+        confidence=None,
+        createdBy=None,
+    )
+    assert sent_variables(local_api_client) == {
+        "input": {
+            "container_id": CONTAINER_ID,
+            "event_time": "2026-02-05T10:30:00.000Z",
+            "title": "Hosts isolated",
+            "external_id": "splunk-alert-42",
+            "element_id": None,
+            "confidence": None,
+            "createdBy": None,
+        }
+    }
+
+
 @pytest.mark.parametrize(
     "missing",
     ["container_id", "event_time", "title"],
