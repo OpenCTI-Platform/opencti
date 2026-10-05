@@ -104,7 +104,7 @@ const huntRunDrawerFragment = graphql`
     verdict
     verdict_source
     verdict_rationale
-    analyst_feedback
+    hunt_analyst_feedback
     verdict_proposal
     verdict_proposal_confidence
     verdict_proposal_rationale
@@ -422,7 +422,7 @@ const RunEvidence = ({ run, results }: { run: Run; results: HuntRunResults_data$
 
 interface VerdictValues {
   verdict: string;
-  analyst_feedback: string;
+  hunt_analyst_feedback: string;
 }
 
 const RunVerdict = ({ run, cardRef }: { run: Run; cardRef: React.RefObject<HTMLDivElement | null> }) => {
@@ -432,7 +432,7 @@ const RunVerdict = ({ run, cardRef }: { run: Run; cardRef: React.RefObject<HTMLD
   const editable = canSetHuntRunVerdict(run);
   const onSubmit = (values: VerdictValues, { setSubmitting }: { setSubmitting: (submitting: boolean) => void }) => {
     commit({
-      variables: { id: run.id, input: { verdict: values.verdict as 'true_positive', analyst_feedback: values.analyst_feedback || null, source: 'analyst' } },
+      variables: { id: run.id, input: { verdict: values.verdict as 'true_positive', hunt_analyst_feedback: values.hunt_analyst_feedback || null, source: 'analyst' } },
       onCompleted: (_, errors) => {
         setSubmitting(false);
         if (!notifyPayloadErrors(errors)) {
@@ -458,16 +458,16 @@ const RunVerdict = ({ run, cardRef }: { run: Run; cardRef: React.RefObject<HTMLD
             <ExpandableMarkdown source={run.verdict_rationale} limit={300} />
           </>
         )}
-        {run.analyst_feedback && (
+        {run.hunt_analyst_feedback && (
           <>
             <Label sx={{ marginTop: 2 }}>{t_i18n('Analyst feedback')}</Label>
-            <ExpandableMarkdown source={run.analyst_feedback} limit={300} />
+            <ExpandableMarkdown source={run.hunt_analyst_feedback} limit={300} />
           </>
         )}
         {editable && (
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <Formik<VerdictValues>
-              initialValues={{ verdict: run.verdict === 'pending' ? 'true_positive' : run.verdict, analyst_feedback: '' }}
+              initialValues={{ verdict: run.verdict === 'pending' ? 'true_positive' : run.verdict, hunt_analyst_feedback: '' }}
               validationSchema={Yup.object().shape({ verdict: Yup.string().oneOf([...HUNT_ANALYST_VERDICTS]).required(t_i18n('This field is required')) })}
               onSubmit={onSubmit}
             >
@@ -479,7 +479,7 @@ const RunVerdict = ({ run, cardRef }: { run: Run; cardRef: React.RefObject<HTMLD
                     ))}
                   </Field>
                   <div style={{ marginTop: theme.spacing(2) }}>
-                    <Field component={TextareaField} name="analyst_feedback" label={t_i18n('Feedback')} rows={3} />
+                    <Field component={TextareaField} name="hunt_analyst_feedback" label={t_i18n('Feedback')} rows={3} />
                   </div>
                   <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(1) }}>
                     {t_i18n('A true positive verdict opens an incident in a draft for review')}

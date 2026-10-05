@@ -94,7 +94,7 @@ export const startAndReportHuntRun = async (request: APIRequestContext, seeded: 
  */
 export const setHuntRunVerdict = async (request: APIRequestContext, runId: string, verdict: string, feedback: string) => {
   await graphqlRequest(request, `
-    mutation { huntRunSetVerdict(id: "${runId}", input: { verdict: ${verdict}, analyst_feedback: ${JSON.stringify(feedback)} }) { id } }
+    mutation { huntRunSetVerdict(id: "${runId}", input: { verdict: ${verdict}, hunt_analyst_feedback: ${JSON.stringify(feedback)} }) { id } }
   `, 'Set the hunt run verdict');
 };
 

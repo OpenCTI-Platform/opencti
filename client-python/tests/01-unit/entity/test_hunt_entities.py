@@ -234,11 +234,18 @@ class TestHuntRun(TestCase):
         self.assertIsNone(run.set_verdict(id="run-1", verdict="pending"))
         self.assertEqual(opencti.query.call_count, 0)
         run.set_verdict(
-            id="run-1", verdict="benign", analyst_feedback="admin tool", source="agent"
+            id="run-1",
+            verdict="benign",
+            hunt_analyst_feedback="admin tool",
+            source="agent",
         )
         self.assertEqual(
             _variables(opencti)["input"],
-            {"verdict": "benign", "analyst_feedback": "admin tool", "source": "agent"},
+            {
+                "verdict": "benign",
+                "hunt_analyst_feedback": "admin tool",
+                "source": "agent",
+            },
         )
 
     def test_add_evidence_requires_result_objects(self):

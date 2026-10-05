@@ -455,7 +455,7 @@ describe('Hunt resolvers', () => {
     expect(pending.errors?.[0].message).toContain('A verdict is true positive, benign or inconclusive');
     const verdict = await queryAsAdminWithSuccess({
       query: HUNT_RUN_VERDICT,
-      variables: { id: secondRunId, input: { verdict: 'true_positive', analyst_feedback: 'Confirmed on two hosts' } },
+      variables: { id: secondRunId, input: { verdict: 'true_positive', hunt_analyst_feedback: 'Confirmed on two hosts' } },
     });
     const run = verdict.data?.huntRunSetVerdict;
     expect(run.verdict).toEqual('true_positive');
@@ -920,7 +920,7 @@ describe('Hunt resolvers', () => {
       statistics.mockRestore();
     }
     // Once the step succeeds, the verdict completes the finalization first, then records the analyst verdict
-    const verdict = await queryAsAdminWithSuccess({ query: HUNT_RUN_VERDICT, variables: { id: runId, input: { verdict: 'benign', analyst_feedback: 'Checked' } } });
+    const verdict = await queryAsAdminWithSuccess({ query: HUNT_RUN_VERDICT, variables: { id: runId, input: { verdict: 'benign', hunt_analyst_feedback: 'Checked' } } });
     expect(verdict.data?.huntRunSetVerdict).toMatchObject({ verdict: 'benign', verdict_source: 'analyst' });
   });
 

@@ -152,7 +152,7 @@ interface HuntRunAttributes {
   verdict: string;
   verdict_source?: string | null;
   verdict_rationale?: string | null;
-  analyst_feedback?: string | null;
+  hunt_analyst_feedback?: string | null;
   verdict_proposal?: string | null;
   verdict_proposal_confidence?: number | null;
   verdict_proposal_rationale?: string | null;

@@ -1172,7 +1172,7 @@ export const setHuntRunVerdict = async (context: AuthContext, user: AuthUser, ru
     const patch: Record<string, unknown> = {
       verdict,
       verdict_source: source,
-      analyst_feedback: input.analyst_feedback ? truncate(input.analyst_feedback, ERROR_MESSAGE_MAX_LENGTH) : current.analyst_feedback ?? null,
+      hunt_analyst_feedback: input.hunt_analyst_feedback ? truncate(input.hunt_analyst_feedback, ERROR_MESSAGE_MAX_LENGTH) : current.hunt_analyst_feedback ?? null,
     };
     if (verdict === HUNT_VERDICT_TRUE_POSITIVE && !current.incident_id) {
       // A draft recorded by an interrupted finalization is reused rather than doubled

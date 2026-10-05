@@ -64,7 +64,7 @@ class HuntRun:
             result_ids
             verdict
             verdict_source
-            analyst_feedback
+            hunt_analyst_feedback
             verdict_proposal
             verdict_proposal_confidence
             verdict_proposal_rationale
@@ -253,8 +253,8 @@ class HuntRun:
         :type id: str
         :param verdict: true_positive, benign or inconclusive
         :type verdict: str
-        :param analyst_feedback: (optional) the reasoning behind the verdict
-        :type analyst_feedback: str
+        :param hunt_analyst_feedback: (optional) the reasoning behind the verdict
+        :type hunt_analyst_feedback: str
         :param source: (optional) analyst (default) or agent
         :type source: str
         :return: the hunt run
@@ -285,7 +285,7 @@ class HuntRun:
                 "id": id,
                 "input": {
                     "verdict": verdict,
-                    "analyst_feedback": kwargs.get("analyst_feedback", None),
+                    "hunt_analyst_feedback": kwargs.get("hunt_analyst_feedback", None),
                     "source": kwargs.get("source", None),
                 },
             },

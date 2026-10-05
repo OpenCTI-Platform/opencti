@@ -13047,7 +13047,6 @@ export type HuntRequiredPermissionInput = {
 export type HuntRun = BasicObject & InternalObject & {
   __typename?: 'HuntRun';
   aev_inject_id?: Maybe<Scalars['String']['output']>;
-  analyst_feedback?: Maybe<Scalars['String']['output']>;
   attempt: Scalars['Int']['output'];
   completed_at?: Maybe<Scalars['DateTime']['output']>;
   connector_id?: Maybe<Scalars['String']['output']>;
@@ -13069,6 +13068,7 @@ export type HuntRun = BasicObject & InternalObject & {
   hits_sample?: Maybe<Array<HuntHit>>;
   /** The hunt of the run, null when it was deleted (hunt_deleted) or when the user cannot read it */
   hunt?: Maybe<Hunt>;
+  hunt_analyst_feedback?: Maybe<Scalars['String']['output']>;
   /** The hunt of the run was deleted (in the trash or for good), as opposed to a hunt the user cannot read */
   hunt_deleted: Scalars['Boolean']['output'];
   hunt_id: Scalars['String']['output'];
@@ -13206,7 +13206,7 @@ export enum HuntRunVerdict {
 }
 
 export type HuntRunVerdictInput = {
-  analyst_feedback?: InputMaybe<Scalars['String']['input']>;
+  hunt_analyst_feedback?: InputMaybe<Scalars['String']['input']>;
   source?: InputMaybe<HuntVerdictSource>;
   verdict: HuntRunVerdict;
 };
@@ -52739,7 +52739,6 @@ export type HuntRequiredPermissionResolvers<ContextType = any, ParentType extend
 
 export type HuntRunResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntRun'] = ResolversParentTypes['HuntRun']> = ResolversObject<{
   aev_inject_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  analyst_feedback?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   attempt?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   completed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   connector_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -52758,6 +52757,7 @@ export type HuntRunResolvers<ContextType = any, ParentType extends ResolversPare
   hits_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   hits_sample?: Resolver<Maybe<Array<ResolversTypes['HuntHit']>>, ParentType, ContextType>;
   hunt?: Resolver<Maybe<ResolversTypes['Hunt']>, ParentType, ContextType>;
+  hunt_analyst_feedback?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   hunt_deleted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   hunt_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   hunt_run_mode?: Resolver<ResolversTypes['HuntRunMode'], ParentType, ContextType>;

@@ -153,7 +153,7 @@ type HuntRun implements BasicObject & InternalObject {
   verdict: HuntRunVerdict!
   verdict_source: HuntVerdictSource
   verdict_rationale: String
-  analyst_feedback: String
+  hunt_analyst_feedback: String
   verdict_proposal: HuntRunVerdict
   verdict_proposal_confidence: Int
   verdict_proposal_rationale: String
@@ -267,7 +267,7 @@ type Query {
 # Mutations
 input HuntRunVerdictInput {
   verdict: HuntRunVerdict!
-  analyst_feedback: String
+  hunt_analyst_feedback: String
   source: HuntVerdictSource
 }
 
