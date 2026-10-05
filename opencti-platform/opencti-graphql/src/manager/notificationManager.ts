@@ -5,8 +5,10 @@ import type { Moment } from 'moment';
 import { type SizedNotifEvent, type StreamProcessor } from '../database/stream/stream-utils';
 import { fetchRangeNotifications, storeNotificationEvent, createStreamProcessor } from '../database/stream/stream-handler';
 import {
+  DIGEST_DELIVERY_CLAIM_MS,
   redisAddChangeDigestJobs,
-  redisCountChangeDigestJobFailure,
+  redisAreDigestDeliveriesConfirmed,
+  redisCountChangeDigestJobAttempt,
   redisExpireChangeDigestJobs,
   redisGetChangeDigestJobs,
   redisGetManagerEventState,
@@ -118,11 +120,15 @@ export interface ActionNotificationEvent extends StreamNotifEvent {
   origin: Partial<UserOrigin>;
 }
 
+// The receipt of a digest delivered through one notifier
+export const toDigestDeliveryReceipt = (deliveryKey: string, notifierId: string) => `${deliveryKey}|${notifierId}`;
+
 export interface DigestEvent extends StreamNotifEvent {
   type: 'digest';
   target: NotificationUser;
   playbook_source?: string;
-  // Set when the same digest can be stored more than once (a change digest retried after a stop): delivered once per key
+  // Set when the same digest can be stored more than once (a change digest stored again until every notifier received
+  // it): delivered once per key and notifier
   delivery_key?: string;
   data: Array<{ notification_id: string; instance: StixObject; type: string; message: string; origin?: Partial<UserOrigin>; streamMessage?: string }>;
 }
@@ -759,14 +765,18 @@ const CHANGE_DIGEST_CONCURRENCY = 2;
 const CHANGE_DIGEST_BATCH_SIZE = 100;
 // A change digest still waiting a week after the end of its period is not sent any more
 export const CHANGE_DIGEST_MAX_DELAY_MS = 7 * 24 * 60 * 60 * 1000;
-// A digest that cannot be built or stored is tried again 5, 10, 20 and 40 minutes later, then dropped
+// A digest that cannot be built or stored is tried again 5, 10, 20 and 40 minutes later; a job makes five attempts at
+// most, failed or stored, then is dropped
 export const CHANGE_DIGEST_MAX_ATTEMPTS = 5;
 export const CHANGE_DIGEST_RETRY_DELAY_MS = 5 * 60 * 1000;
+// A stored digest is checked again once its delivery claims lapsed: a delivery stopped midway can be sent again by then
+export const CHANGE_DIGEST_DELIVERY_CHECK_MS = DIGEST_DELIVERY_CLAIM_MS + CHANGE_DIGEST_RETRY_DELAY_MS;
 const CHANGE_DIGEST_JOB_SEPARATOR = '|';
 export const CHANGE_DIGEST_JOB_LOCK_PREFIX = 'change_digest_job_lock_';
 // A change digest computes a landscape diff per recipient: the computations run apart from the scheduler loop, a few at
 // a time, so a long one never makes another digest miss its scheduled minute. Each job stays in the Redis schedule
-// until it is done: a full queue, a restart or a crash delays a digest, the next pass or lock holder picks it up.
+// until its digest is delivered: a full queue, a restart or a crash delays a digest, the next pass or lock holder
+// picks it up.
 export const changeDigestQueue = createBoundedJobQueue('Change digest', CHANGE_DIGEST_CONCURRENCY, CHANGE_DIGEST_BATCH_SIZE);
 
 interface ChangeDigestJob {
@@ -808,27 +818,50 @@ interface ChangeDigestTask {
   dueAt: number;
 }
 
-// Throws when the digest cannot be built or stored, or when the job lock is lost before it is stored
+// Returns false when nothing changed over the period. Throws when the digest cannot be built or stored, or when the job
+// lock is lost before it is stored
 const sendChangeDigest = async (task: ChangeDigestTask, lockSignal: AbortSignal) => {
   const { context, settings, digest: { trigger }, user, job, member } = task;
   const userContext = { ...context, user_inside_platform_organization: isUserInPlatformOrganization(user, settings) };
   const locale = resolveChangeDigestLocale(user.language, settings.platform_language);
   const data = await buildChangeDigestData(userContext, user, trigger as unknown as ChangeDigestTrigger, job.fromDate, job.toDate, locale);
-  if (data.length > 0) {
-    lockSignal.throwIfAborted();
-    const target = convertToNotificationUser(user, trigger.notifiers);
-    // A stop between this store and the removal of the job stores the digest again at the next attempt: the publisher
-    // delivers it once per job
-    const digestEvent: DigestEvent = { version: EVENT_NOTIFICATION_VERSION, notification_id: trigger.internal_id, type: 'digest', target, data, delivery_key: member };
-    await storeNotificationEvent(context, digestEvent);
-    addChangeDigestSentCount();
+  if (data.length === 0) {
+    return false;
+  }
+  lockSignal.throwIfAborted();
+  const target = convertToNotificationUser(user, trigger.notifiers);
+  // Stored again by a later attempt until every notifier received it: the publisher delivers it once per notifier
+  const digestEvent: DigestEvent = { version: EVENT_NOTIFICATION_VERSION, notification_id: trigger.internal_id, type: 'digest', target, data, delivery_key: member };
+  await storeNotificationEvent(context, digestEvent);
+  addChangeDigestSentCount();
+  return true;
+};
+
+const isChangeDigestDelivered = async ({ digest: { trigger }, member }: ChangeDigestTask) => {
+  const receipts = (trigger.notifiers ?? []).map((notifierId) => toDigestDeliveryReceipt(member, notifierId));
+  return receipts.length === 0 || redisAreDigestDeliveriesConfirmed(receipts);
+};
+
+// A stored digest stays scheduled until every notifier received it, up to the last attempt
+const checkChangeDigestDeliveryLater = async (member: string, triggerId: string) => {
+  try {
+    const attempts = await redisCountChangeDigestJobAttempt(member);
+    if (attempts >= CHANGE_DIGEST_MAX_ATTEMPTS) {
+      logApp.warn('[OPENCTI-MODULE] Change digest stored for the last attempt, not checked again', { manager: 'NOTIFICATION_MANAGER', trigger_id: triggerId, attempts });
+      await removeChangeDigestJob(member);
+      return;
+    }
+    await redisRescheduleChangeDigestJob(member, utcDate().valueOf() + CHANGE_DIGEST_DELIVERY_CHECK_MS);
+  } catch (err) {
+    // The job keeps its place: the next pass finds the digest delivered or stores it again for the notifiers without a receipt
+    logApp.error('[OPENCTI-MODULE] Change digest stored, its delivery check could not be scheduled', { cause: err, manager: 'NOTIFICATION_MANAGER', trigger_id: triggerId });
   }
 };
 
 // A failed digest stays scheduled for a later attempt, until the last one
 const retryChangeDigestJob = async (member: string, triggerId: string, cause: unknown) => {
   try {
-    const attempts = await redisCountChangeDigestJobFailure(member);
+    const attempts = await redisCountChangeDigestJobAttempt(member);
     if (attempts >= CHANGE_DIGEST_MAX_ATTEMPTS) {
       logApp.error('[OPENCTI-MODULE] Change digest not sent, every attempt failed', { cause, manager: 'NOTIFICATION_MANAGER', trigger_id: triggerId, attempts });
       await removeChangeDigestJob(member);
@@ -860,8 +893,14 @@ const runChangeDigestJob = async (task: ChangeDigestTask) => {
     if (!(await redisIsChangeDigestJobDue(member, dueAt))) {
       return;
     }
+    // Stored by an earlier attempt and received through every notifier of the recipient
+    if (await isChangeDigestDelivered(task)) {
+      await removeChangeDigestJob(member);
+      return;
+    }
+    let stored: boolean;
     try {
-      await sendChangeDigest(task, jobLock.signal);
+      stored = await sendChangeDigest(task, jobLock.signal);
     } catch (err) {
       if (jobLock.signal.aborted) {
         // Another platform may own the job now: it decides
@@ -870,7 +909,11 @@ const runChangeDigestJob = async (task: ChangeDigestTask) => {
       await retryChangeDigestJob(member, digest.trigger.internal_id, err);
       return;
     }
-    await removeChangeDigestJob(member);
+    if (stored) {
+      await checkChangeDigestDeliveryLater(member, digest.trigger.internal_id);
+    } else {
+      await removeChangeDigestJob(member);
+    }
   } finally {
     try {
       await jobLock.unlock();
@@ -893,7 +936,7 @@ const scheduleChangeDigests = async (changeDigests: Array<ResolvedDigest>, baseD
   await redisAddChangeDigestJobs(jobs);
 };
 
-// Hands the oldest scheduled change digests to the queue; a job leaves the schedule once its digest is done
+// Hands the oldest scheduled change digests to the queue; a job leaves the schedule once its digest is delivered
 const runChangeDigestJobs = async (context: AuthContext, notifications: Array<ResolvedTrigger>, baseDate: Moment) => {
   const expired = await redisExpireChangeDigestJobs(baseDate.valueOf() - CHANGE_DIGEST_MAX_DELAY_MS);
   if (expired > 0) {
@@ -917,8 +960,9 @@ const runChangeDigestJobs = async (context: AuthContext, notifications: Array<Re
     const job = parseChangeDigestJobMember(member);
     const digest = job ? changeDigests.get(job.triggerId) : undefined;
     const user = job && digest ? findRecipient(digest, job.userId) : undefined;
-    if (!job || !digest || !user) {
-      // The trigger is deleted or no longer a change digest, or the user is no longer one of its recipients
+    if (!job || !digest || !user || user.user_service_account) {
+      // The trigger is deleted or no longer a change digest, or the user is no longer one of its recipients or is a
+      // service account, which receives no notification
       await removeChangeDigestJob(member);
     } else {
       const task: ChangeDigestTask = { context, settings, digest, user, job, member, dueAt: baseDate.valueOf() };

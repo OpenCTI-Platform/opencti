@@ -29,10 +29,11 @@ vi.mock('../../../src/manager/telemetryManager', async (importOriginal) => ({
   addChangeDigestSentCount: () => addChangeDigestSentCountMock(),
 }));
 
-// The Redis schedule of the change digest jobs, kept in memory (member -> score, like the sorted set), and the failed
-// attempts per job.
+// The Redis schedule of the change digest jobs, kept in memory (member -> score, like the sorted set), the attempts per
+// job and the delivery receipts confirmed by the publisher.
 const scheduledJobs = vi.hoisted(() => new Map<string, number>());
-const failedAttempts = vi.hoisted(() => new Map<string, number>());
+const attempts = vi.hoisted(() => new Map<string, number>());
+const deliveredReceipts = vi.hoisted(() => new Set<string>());
 vi.mock('../../../src/database/redis', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../src/database/redis')>()),
   redisAddChangeDigestJobs: async (jobs: Array<{ score: number; member: string }>) => {
@@ -53,17 +54,18 @@ vi.mock('../../../src/database/redis', async (importOriginal) => ({
       .map(([member]) => member);
   },
   redisIsChangeDigestJobDue: async (member: string, dueAt: number) => scheduledJobs.has(member) && (scheduledJobs.get(member) as number) <= dueAt,
-  redisCountChangeDigestJobFailure: async (member: string) => {
-    failedAttempts.set(member, (failedAttempts.get(member) ?? 0) + 1);
-    return failedAttempts.get(member) as number;
+  redisCountChangeDigestJobAttempt: async (member: string) => {
+    attempts.set(member, (attempts.get(member) ?? 0) + 1);
+    return attempts.get(member) as number;
   },
   redisRescheduleChangeDigestJob: async (member: string, retryAt: number) => {
     if (scheduledJobs.has(member)) scheduledJobs.set(member, retryAt);
   },
   redisRemoveChangeDigestJob: async (member: string) => {
     scheduledJobs.delete(member);
-    failedAttempts.delete(member);
+    attempts.delete(member);
   },
+  redisAreDigestDeliveriesConfirmed: async (receipts: string[]) => receipts.every((receipt) => deliveredReceipts.has(receipt)),
 }));
 
 // The job locks: held ids and the abort controller of each lock taken (no Redis needed).
@@ -84,12 +86,14 @@ vi.mock('../../../src/lock/master-lock', async (importOriginal) => ({
 }));
 
 import {
+  CHANGE_DIGEST_DELIVERY_CHECK_MS,
   CHANGE_DIGEST_JOB_LOCK_PREFIX,
   CHANGE_DIGEST_MAX_ATTEMPTS,
   CHANGE_DIGEST_MAX_DELAY_MS,
   changeDigestQueue,
   handleChangeDigestNotifications,
   toChangeDigestJobMember,
+  toDigestDeliveryReceipt,
 } from '../../../src/manager/notificationManager';
 import { getEntitiesListFromCache, getEntityFromCache } from '../../../src/database/cache';
 import { storeNotificationEvent } from '../../../src/database/stream/stream-handler';
@@ -136,19 +140,24 @@ describe('handleChangeDigestNotifications', () => {
   const regularDigest = { ...changeDigest, internal_id: 'digest-1', id: 'digest-1', trigger_type: 'digest', trigger_ids: [] } as unknown as BasicStoreEntityTrigger;
   const digestLine = { notification_id: 'change-digest-1', instance: { id: 'intrusion-set--1' }, type: 'update', message: '`2` new relationship(s)' };
 
-  const primeCache = (triggers: BasicStoreEntityTrigger[]) => {
+  const primeCache = (triggers: BasicStoreEntityTrigger[], users: AuthUser[] = [analyst, manager]) => {
     const resolveFromCache = (_ctx: AuthContext, _user: AuthUser, type: string) => {
-      return Promise.resolve(type === ENTITY_TYPE_TRIGGER ? triggers : [analyst, manager]);
+      return Promise.resolve(type === ENTITY_TYPE_TRIGGER ? triggers : users);
     };
     vi.mocked(getEntitiesListFromCache).mockImplementation(resolveFromCache as unknown as typeof getEntitiesListFromCache);
     vi.mocked(getEntityFromCache).mockResolvedValue({ platform_notifier_auto_trigger_assignee: true } as unknown as Awaited<ReturnType<typeof getEntityFromCache>>);
   };
 
   const storedEvents = () => vi.mocked(storeNotificationEvent).mock.calls.map((call) => call[1] as unknown as StoredDigestEvent);
+  const jobOf = (user: AuthUser) => toChangeDigestJobMember({ triggerId: 'change-digest-1', userId: user.id, fromDate: '2026-01-05T09:00:00.000Z', toDate: FROZEN.toISOString() });
+  // The publisher confirmed the delivery of the job's digest through these notifiers
+  const deliver = (member: string, notifiers: string[]) => notifiers.forEach((notifierId) => deliveredReceipts.add(toDigestDeliveryReceipt(member, notifierId)));
+  const checkAt = (time: string) => Date.parse(time) + CHANGE_DIGEST_DELIVERY_CHECK_MS;
 
   beforeEach(() => {
     scheduledJobs.clear();
-    failedAttempts.clear();
+    attempts.clear();
+    deliveredReceipts.clear();
     jobLocks.clear();
     vi.useFakeTimers();
     vi.setSystemTime(FROZEN);
@@ -180,9 +189,11 @@ describe('handleChangeDigestNotifications', () => {
     expect(events[0].target.notifiers).toEqual(['notifier-ui']);
     expect(events[0].data).toEqual([digestLine]);
     // Delivered once per trigger, recipient and period, even if a retry stores it again
-    expect(events[0].delivery_key).toBe(toChangeDigestJobMember({ triggerId: 'change-digest-1', userId: analyst.id, fromDate: '2026-01-05T09:00:00.000Z', toDate: FROZEN.toISOString() }));
+    expect(events[0].delivery_key).toBe(jobOf(analyst));
     // Only the stored digest is counted as sent
     expect(addChangeDigestSentCountMock).toHaveBeenCalledTimes(1);
+    // The stored digest waits for its delivery check; the recipient without changes has nothing to receive
+    expect([...scheduledJobs.entries()]).toEqual([[jobOf(analyst), checkAt('2026-01-12T09:00:00.000Z')]]);
   });
 
   it('does not count a digest as sent when it cannot be stored', async () => {
@@ -236,13 +247,13 @@ describe('handleChangeDigestNotifications', () => {
     // The same minute processed again does not queue the same digests again
     await handleChangeDigestNotifications({} as AuthContext);
     expect(changeDigestQueue.size()).toBe(2);
-    // A digest leaves the schedule only once it is done
+    // A digest leaves the schedule only once it is delivered
     expect(scheduledJobs.size).toBe(2);
     release();
     await changeDigestQueue.idle();
     expect(buildChangeDigestDataMock).toHaveBeenCalledTimes(2);
     expect(storedEvents()).toHaveLength(2);
-    expect(scheduledJobs.size).toBe(0);
+    expect([...scheduledJobs.values()]).toEqual([checkAt('2026-01-12T09:00:00.000Z'), checkAt('2026-01-12T09:00:00.000Z')]);
   });
 
   it('sends at a later pass the digests still scheduled after a restart, over their own period', async () => {
@@ -251,7 +262,8 @@ describe('handleChangeDigestNotifications', () => {
     // Left by a previous lock holder: the digest of the analyst for the period that ended an hour ago
     const fromDate = '2026-01-05T08:00:00.000Z';
     const toDate = '2026-01-12T08:00:00.000Z';
-    scheduledJobs.set(toChangeDigestJobMember({ triggerId: 'change-digest-1', userId: analyst.id, fromDate, toDate }), Date.parse(toDate));
+    const previousJob = toChangeDigestJobMember({ triggerId: 'change-digest-1', userId: analyst.id, fromDate, toDate });
+    scheduledJobs.set(previousJob, Date.parse(toDate));
     // 09:05, the change digest is not due
     vi.setSystemTime(new Date('2026-01-12T09:05:00.000Z'));
     await handleChangeDigestNotifications({} as AuthContext);
@@ -262,7 +274,7 @@ describe('handleChangeDigestNotifications', () => {
     expect(from).toBe(fromDate);
     expect(to).toBe(toDate);
     expect(storedEvents()).toHaveLength(1);
-    expect(scheduledJobs.size).toBe(0);
+    expect([...scheduledJobs.entries()]).toEqual([[previousJob, checkAt('2026-01-12T09:05:00.000Z')]]);
   });
 
   it('keeps the digests that have not started scheduled when the manager stops', async () => {
@@ -286,14 +298,16 @@ describe('handleChangeDigestNotifications', () => {
     release();
     await changeDigestQueue.idle();
     expect(buildChangeDigestDataMock).toHaveBeenCalledTimes(2);
-    expect(scheduledJobs.size).toBe(1);
+    const dueJobs = () => [...scheduledJobs.values()].filter((score) => score <= Date.now()).length;
+    expect(scheduledJobs.size).toBe(3);
+    expect(dueJobs()).toBe(1);
     // The next pass, a minute later, sends the digest left in the schedule
     vi.setSystemTime(new Date('2026-01-12T09:01:00.000Z'));
     await handleChangeDigestNotifications({} as AuthContext);
     await changeDigestQueue.idle();
     expect(buildChangeDigestDataMock).toHaveBeenCalledTimes(3);
     expect(storedEvents()).toHaveLength(3);
-    expect(scheduledJobs.size).toBe(0);
+    expect(dueJobs()).toBe(0);
   });
 
   it('does not send a digest that left the schedule before its turn in the queue', async () => {
@@ -344,8 +358,16 @@ describe('handleChangeDigestNotifications', () => {
     await changeDigestQueue.idle();
     expect(buildChangeDigestDataMock).toHaveBeenCalledTimes(3);
     expect(storedEvents().map((event) => event.target.user_id)).toEqual([manager.id, analyst.id]);
+    expect(scheduledJobs.get(analystJob)).toBe(checkAt('2026-01-12T09:05:00.000Z'));
+    // Both delivered: their checks remove them without computing them again
+    deliver(analystJob, ['notifier-ui']);
+    deliver(jobOf(manager), ['notifier-ui']);
+    vi.setSystemTime(new Date(checkAt('2026-01-12T09:05:00.000Z')));
+    await handleChangeDigestNotifications({} as AuthContext);
+    await changeDigestQueue.idle();
+    expect(buildChangeDigestDataMock).toHaveBeenCalledTimes(3);
     expect(scheduledJobs.size).toBe(0);
-    expect(failedAttempts.size).toBe(0);
+    expect(attempts.size).toBe(0);
   });
 
   it('tries a failing digest five times with a growing delay, then drops it', async () => {
@@ -367,7 +389,7 @@ describe('handleChangeDigestNotifications', () => {
     }
     expect(retries).toEqual(['2026-01-12T09:05:00.000Z', '2026-01-12T09:15:00.000Z', '2026-01-12T09:35:00.000Z', '2026-01-12T10:15:00.000Z']);
     expect(buildChangeDigestDataMock.mock.calls.filter((call) => (call[1] as AuthUser).id === analyst.id)).toHaveLength(CHANGE_DIGEST_MAX_ATTEMPTS);
-    expect(failedAttempts.size).toBe(0);
+    expect(attempts.size).toBe(0);
     expect(storedEvents()).toHaveLength(0);
   });
 
@@ -381,14 +403,14 @@ describe('handleChangeDigestNotifications', () => {
     await changeDigestQueue.idle();
     expect(storedEvents().map((event) => event.target.user_id)).toEqual([manager.id]);
     expect(scheduledJobs.get(analystJob)).toBe(FROZEN.getTime());
-    expect(failedAttempts.size).toBe(0);
+    expect(attempts.has(analystJob)).toBe(false);
     // It stopped without sending: the job is free and still due at the next pass
     jobLocks.clear();
     vi.setSystemTime(new Date('2026-01-12T09:01:00.000Z'));
     await handleChangeDigestNotifications({} as AuthContext);
     await changeDigestQueue.idle();
     expect(storedEvents().map((event) => event.target.user_id)).toEqual([manager.id, analyst.id]);
-    expect(scheduledJobs.size).toBe(0);
+    expect(scheduledJobs.get(analystJob)).toBe(checkAt('2026-01-12T09:01:00.000Z'));
     expect(jobLocks.size).toBe(0);
   });
 
@@ -403,7 +425,69 @@ describe('handleChangeDigestNotifications', () => {
     await changeDigestQueue.idle();
     expect(storedEvents().map((event) => event.target.user_id)).toEqual([manager.id]);
     expect(scheduledJobs.get(analystJob)).toBe(FROZEN.getTime());
-    expect(failedAttempts.size).toBe(0);
+    expect(attempts.has(analystJob)).toBe(false);
+  });
+
+  it('keeps a stored digest scheduled until every notifier received it, storing it again for the others', async () => {
+    primeCache([{ ...changeDigest, notifiers: ['notifier-ui', 'notifier-email'] } as unknown as BasicStoreEntityTrigger], [analyst]);
+    buildChangeDigestDataMock.mockResolvedValue([digestLine]);
+    const analystJob = jobOf(analyst);
+    const firstCheck = checkAt('2026-01-12T09:00:00.000Z');
+    await handleChangeDigestNotifications({} as AuthContext);
+    await changeDigestQueue.idle();
+    expect(scheduledJobs.get(analystJob)).toBe(firstCheck);
+    // Not checked before its time
+    vi.setSystemTime(new Date(firstCheck - 60000));
+    await handleChangeDigestNotifications({} as AuthContext);
+    await changeDigestQueue.idle();
+    expect(storedEvents()).toHaveLength(1);
+    // The platform stopped while the email was being sent: only the UI notifier received it, so it is stored again
+    deliver(analystJob, ['notifier-ui']);
+    vi.setSystemTime(new Date(firstCheck));
+    await handleChangeDigestNotifications({} as AuthContext);
+    await changeDigestQueue.idle();
+    expect(storedEvents().map((event) => event.delivery_key)).toEqual([analystJob, analystJob]);
+    expect(scheduledJobs.get(analystJob)).toBe(firstCheck + CHANGE_DIGEST_DELIVERY_CHECK_MS);
+    // Received through every notifier: the next check removes it without computing it again
+    deliver(analystJob, ['notifier-email']);
+    vi.setSystemTime(new Date(firstCheck + CHANGE_DIGEST_DELIVERY_CHECK_MS));
+    await handleChangeDigestNotifications({} as AuthContext);
+    await changeDigestQueue.idle();
+    expect(buildChangeDigestDataMock).toHaveBeenCalledTimes(2);
+    expect(scheduledJobs.size).toBe(0);
+    expect(attempts.size).toBe(0);
+  });
+
+  it('stores a digest that never reaches its notifier five times at most, one delivery check apart', async () => {
+    primeCache([changeDigest], [analyst]);
+    buildChangeDigestDataMock.mockResolvedValue([digestLine]);
+    const analystJob = jobOf(analyst);
+    await handleChangeDigestNotifications({} as AuthContext);
+    await changeDigestQueue.idle();
+    const checks: number[] = [];
+    while (scheduledJobs.has(analystJob)) {
+      const checkTime = scheduledJobs.get(analystJob) as number;
+      checks.push(checkTime);
+      vi.setSystemTime(new Date(checkTime));
+      await handleChangeDigestNotifications({} as AuthContext);
+      await changeDigestQueue.idle();
+    }
+    expect(checks).toEqual([1, 2, 3, 4].map((check) => FROZEN.getTime() + check * CHANGE_DIGEST_DELIVERY_CHECK_MS));
+    expect(storedEvents()).toHaveLength(CHANGE_DIGEST_MAX_ATTEMPTS);
+    expect(attempts.size).toBe(0);
+  });
+
+  it('removes without computing them the jobs of a recipient without notifier or of a service account', async () => {
+    const robot = { ...buildUser('robot-1'), user_service_account: true } as unknown as AuthUser;
+    const silentDigest = { ...changeDigest, notifiers: [] } as unknown as BasicStoreEntityTrigger;
+    const robotDigest = { ...changeDigest, internal_id: 'change-digest-2', id: 'change-digest-2', restricted_members: [{ id: robot.id }] } as unknown as BasicStoreEntityTrigger;
+    primeCache([silentDigest, robotDigest], [analyst, robot]);
+    buildChangeDigestDataMock.mockResolvedValue([digestLine]);
+    await handleChangeDigestNotifications({} as AuthContext);
+    await changeDigestQueue.idle();
+    expect(buildChangeDigestDataMock).not.toHaveBeenCalled();
+    expect(storedEvents()).toHaveLength(0);
+    expect(scheduledJobs.size).toBe(0);
   });
 
   it('removes without computing them the jobs of a deleted trigger or of a former recipient', async () => {

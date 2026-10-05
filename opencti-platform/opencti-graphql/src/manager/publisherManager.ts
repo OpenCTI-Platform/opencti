@@ -5,7 +5,9 @@ import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache }
 import { createStreamProcessor } from '../database/stream/stream-handler';
 import { v4 as uuidv4 } from 'uuid';
 import {
+  DIGEST_DELIVERY_CLAIM_MS,
   DIGEST_DELIVERY_RENEW_MS,
+  type DigestDeliveryConfirmation,
   redisClaimDigestDelivery,
   redisConfirmDigestDelivery,
   redisGetManagerEventState,
@@ -43,11 +45,12 @@ import {
   getNotifications,
   type KnowledgeNotificationEvent,
   type NotificationUser,
+  toDigestDeliveryReceipt,
 } from './notificationManager';
 import { type GetHttpClient, getHttpClient } from '../utils/http-client';
 import { extractRepresentative } from '../database/entity-representative';
 import { extractStixRepresentativeForUser } from '../database/stix-representative';
-import { EVENT_TYPE_UPDATE } from '../database/utils';
+import { EVENT_TYPE_UPDATE, wait } from '../database/utils';
 import { sanitizeNotificationData } from '../utils/templateContextSanitizer';
 import { safeRender } from '../utils/safeEjs.client';
 import { NOTIFICATION_STREAM_NAME, type StreamProcessor } from '../database/stream/stream-utils';
@@ -61,6 +64,7 @@ const PUBLISHER_BUFFERING_SECONDS = conf.get('publisher_manager:buffering_second
 const WEBHOOK_TIMEOUT = conf.get('publisher_manager:webhook_timeout') || 300_000;
 const PUBLISHER_MANAGER_NAME = 'publisher_manager';
 const STREAM_SCHEDULE_TIME = 10000;
+const DIGEST_DELIVERY_CONFIRM_RETRY_MS = 5000;
 
 export async function processNotificationData(
   context: AuthContext,
@@ -227,7 +231,7 @@ export async function handleSimplifiedEmailNotification(
   }
 }
 
-export async function handleWebhookNotification(configurationString: string | undefined, templateData: object) {
+export async function handleWebhookNotification(configurationString: string | undefined, templateData: object, signal?: AbortSignal) {
   const { url, template, verb, params, headers } = JSON.parse(configurationString ?? '{}') as NOTIFIER_CONNECTOR_WEBHOOK_INTERFACE;
 
   // Use safeRender with JSON escape option for webhook templates
@@ -242,7 +246,7 @@ export async function handleWebhookNotification(configurationString: string | un
   const httpClientOptions: GetHttpClient = { responseType: 'json', headers: headersObject, timeout: WEBHOOK_TIMEOUT };
   const httpClient = getHttpClient(httpClientOptions);
 
-  await httpClient.call({ url, method: verb, params: paramsObject, data: webhookPayload });
+  await httpClient.call({ url, method: verb, params: paramsObject, data: webhookPayload, signal });
 }
 
 export const internalProcessNotification = async (
@@ -254,6 +258,7 @@ export const internalProcessNotification = async (
   notificationData: NotificationData[],
   triggerList: BasicStoreEntityTrigger[],
   usersMap: Map<string, AuthUser>,
+  signal?: AbortSignal,
 ): Promise<void> => {
   if (notificationUser.user_service_account) {
     throw UnsupportedError('Cannot send notification to service account user');
@@ -269,6 +274,7 @@ export const internalProcessNotification = async (
   const content = Object.entries(contentEventMapping).map(([title, events]) => ({ title, events }));
 
   const assembledTemplateData = assembleTemplateData(content, triggerList, storeSettings, notificationUser, notificationData);
+  signal?.throwIfAborted();
 
   // Telemetry: notifications sent by channel (attempts semantics, counted
   // before the delivery call; simplified email counts as email).
@@ -287,7 +293,7 @@ export const internalProcessNotification = async (
       break;
     case NOTIFIER_CONNECTOR_WEBHOOK:
       addNotificationSentCount('webhook');
-      await handleWebhookNotification(notifierConfigurationString, assembledTemplateData);
+      await handleWebhookNotification(notifierConfigurationString, assembledTemplateData, signal);
       break;
     default:
       // TODO: Handle other notifier scenarios
@@ -295,44 +301,89 @@ export const internalProcessNotification = async (
   }
 };
 
+export type NotifierDelivery = 'sent' | 'already_sent' | 'being_sent' | 'possibly_sent_twice';
+
 /**
  * Sends a notification through one notifier. With a delivery receipt (a digest carrying a delivery key, one receipt per
- * notifier), the receipt is claimed under an owner token before sending, renewed while the notifier sends, kept once it
- * succeeded and released when it failed: a digest stored again is only sent to the notifiers that did not receive it.
- * Returns false when it was not sent again.
+ * notifier), the receipt is claimed under an owner token before sending and renewed while the notifier sends, kept once
+ * it succeeded and released when it failed: a digest stored again is only sent to the notifiers that did not receive it.
+ * The send is aborted as soon as the claim is lost, or would lapse before its next renewal, so that no other sender
+ * starts while it runs: a webhook call is cancelled, a notification not handed to its notifier yet is not sent. A send
+ * that completed anyway is still recorded, and reported as possibly sent twice when another sender took the claim.
  */
-export const sendToNotifier = async (deliveryReceipt: string | undefined, send: () => Promise<void>): Promise<boolean> => {
+export const sendToNotifier = async (deliveryReceipt: string | undefined, send: (signal: AbortSignal) => Promise<void>): Promise<NotifierDelivery> => {
+  const sending = new AbortController();
   if (!deliveryReceipt) {
-    await send();
-    return true;
+    await send(sending.signal);
+    return 'sent';
   }
   const ownerToken = uuidv4();
-  if (!(await redisClaimDigestDelivery(deliveryReceipt, ownerToken))) {
-    return false;
+  let heldUntil = Date.now() + DIGEST_DELIVERY_CLAIM_MS;
+  const claim = await redisClaimDigestDelivery(deliveryReceipt, ownerToken);
+  if (claim !== 'claimed') {
+    return claim === 'delivered' ? 'already_sent' : 'being_sent';
   }
-  const keepClaim = async (operation: string, apply: () => Promise<boolean>) => {
+  let renewal: NodeJS.Timeout | undefined;
+  let claimLost = false;
+  const renew = async () => {
+    const renewedAt = Date.now();
     try {
-      if (!(await apply())) {
-        logApp.warn('[OPENCTI-MODULE] Digest delivery claim lost', { manager: 'PUBLISHER_MANAGER', operation });
+      if (await redisRenewDigestDelivery(deliveryReceipt, ownerToken)) {
+        heldUntil = renewedAt + DIGEST_DELIVERY_CLAIM_MS;
+      } else {
+        claimLost = true;
+        sending.abort(UnsupportedError('Digest delivery claim lost, the notifier sending is aborted'));
       }
     } catch (err) {
-      // The claim expires by itself
-      logApp.warn('[OPENCTI-MODULE] Digest delivery claim could not be updated', { cause: err, manager: 'PUBLISHER_MANAGER', operation });
+      logApp.warn('[OPENCTI-MODULE] Digest delivery claim could not be renewed', { cause: err, manager: 'PUBLISHER_MANAGER' });
+      if (Date.now() + DIGEST_DELIVERY_RENEW_MS >= heldUntil) {
+        sending.abort(UnsupportedError('Digest delivery claim could not be renewed in time, the notifier sending is aborted'));
+      }
+    }
+    // Still renewed after an abort: a notifier that already handed the notification over may finish sending it
+    if (renewal && !claimLost) {
+      renewal = setTimeout(renew, DIGEST_DELIVERY_RENEW_MS);
     }
   };
-  const renewal = setInterval(() => {
-    void keepClaim('renew', () => redisRenewDigestDelivery(deliveryReceipt, ownerToken));
-  }, DIGEST_DELIVERY_RENEW_MS);
+  renewal = setTimeout(renew, DIGEST_DELIVERY_RENEW_MS);
+  const stopRenewal = () => {
+    clearTimeout(renewal);
+    renewal = undefined;
+  };
   try {
-    await send();
+    await send(sending.signal);
   } catch (err) {
-    clearInterval(renewal);
-    await keepClaim('release', () => redisReleaseDigestDelivery(deliveryReceipt, ownerToken));
+    stopRenewal();
+    try {
+      await redisReleaseDigestDelivery(deliveryReceipt, ownerToken);
+    } catch (releaseError) {
+      // The claim lapses by itself
+      logApp.warn('[OPENCTI-MODULE] Digest delivery claim could not be released', { cause: releaseError, manager: 'PUBLISHER_MANAGER' });
+    }
     throw err;
   }
-  clearInterval(renewal);
-  await keepClaim('confirm', () => redisConfirmDigestDelivery(deliveryReceipt, ownerToken));
-  return true;
+  stopRenewal();
+  let confirmation: DigestDeliveryConfirmation | undefined;
+  while (!confirmation) {
+    try {
+      confirmation = await redisConfirmDigestDelivery(deliveryReceipt, ownerToken);
+    } catch (err) {
+      // Tried again while the claim holds; once it lapses, a later attempt of the digest sends it to this notifier again
+      if (Date.now() + DIGEST_DELIVERY_CONFIRM_RETRY_MS >= heldUntil) {
+        logApp.error('[OPENCTI-MODULE] Digest sent but its delivery could not be recorded', { cause: err, manager: 'PUBLISHER_MANAGER' });
+        return 'sent';
+      }
+      logApp.warn('[OPENCTI-MODULE] Digest delivery could not be recorded, tried again', { cause: err, manager: 'PUBLISHER_MANAGER' });
+      await wait(DIGEST_DELIVERY_CONFIRM_RETRY_MS);
+    }
+  }
+  if (confirmation === 'claim_taken') {
+    return 'possibly_sent_twice';
+  }
+  if (confirmation === 'claim_lost') {
+    logApp.warn('[OPENCTI-MODULE] Digest delivery claim lost during the sending, nobody else sent it', { manager: 'PUBLISHER_MANAGER' });
+  }
+  return 'sent';
 };
 
 export const processNotificationEvent = async (
@@ -362,12 +413,22 @@ export const processNotificationEvent = async (
     const userNotifierId = userNotifiers[i];
     const notifier = notifierMap.get(userNotifierId) ?? {} as BasicStoreEntityNotifier;
 
-    const deliveryReceipt = deliveryKey ? `${deliveryKey}|${userNotifierId}` : undefined;
-    // There is no await in purpose; the goal is to send notification and continue without waiting result.
-    sendToNotifier(deliveryReceipt, () => internalProcessNotification(context, storeSettings, notificationMap, user, notifier, notificationData, [notificationTrigger], usersMap))
-      .then((sent) => {
-        if (!sent) {
-          logApp.info('[OPENCTI-MODULE] Digest already sent to this notifier, not sent again', { manager: 'PUBLISHER_MANAGER', notifierType: notifier.notifier_connector_id, notificationId });
+    const deliveryReceipt = deliveryKey ? toDigestDeliveryReceipt(deliveryKey, userNotifierId) : undefined;
+    // There is no await in purpose; the goal is to send notification and continue without waiting result. A digest
+    // with a delivery key is not lost when the platform stops meanwhile: its change digest job stays scheduled until
+    // every notifier has its receipt, and stores it again for the notifiers without one.
+    const send = (signal: AbortSignal) => {
+      return internalProcessNotification(context, storeSettings, notificationMap, user, notifier, notificationData, [notificationTrigger], usersMap, signal);
+    };
+    sendToNotifier(deliveryReceipt, send)
+      .then((delivery) => {
+        const meta = { manager: 'PUBLISHER_MANAGER', notifierType: notifier.notifier_connector_id, notificationId };
+        if (delivery === 'already_sent') {
+          logApp.info('[OPENCTI-MODULE] Digest already sent to this notifier, not sent again', meta);
+        } else if (delivery === 'being_sent') {
+          logApp.info('[OPENCTI-MODULE] Digest being sent to this notifier by another sender, not sent again', meta);
+        } else if (delivery === 'possibly_sent_twice') {
+          logApp.error('[OPENCTI-MODULE] Digest sent while another sender held its delivery claim, this notifier may have received it twice', meta);
         }
       })
       .catch((reason) => {
