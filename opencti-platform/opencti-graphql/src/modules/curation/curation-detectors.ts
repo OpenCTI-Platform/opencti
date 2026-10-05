@@ -574,11 +574,12 @@ export const buildPairDraft = (signals: PairSignals, context: PairContext): Prop
     const sharedSources = intersection(leftSources, rightSources);
     if (sharedSources.length > 0 && !hasExactCollision) {
       const sharedSourceNames = sourceNamesOf([left, right], sharedSources.slice(0, 20));
+      const quotedNames = sharedSourceNames.map((name) => `"${name}"`).join(', ');
+      let description = 'The same source maintains both entities separately, which suggests they are distinct';
+      if (sharedSourceNames.length === 1) description = `The source ${quotedNames} maintains both entities separately, which suggests they are distinct`;
+      if (sharedSourceNames.length > 1) description = `The sources ${quotedNames} maintain both entities separately, which suggests they are distinct`;
       items.push(evidence(EVIDENCE_SOURCE_AGREEMENT, sharedSources.length / Math.min(leftSources.size, rightSources.size), EVIDENCE_WEIGHTS.sameSource,
-        sharedSourceNames.length > 0
-          ? `${sharedSourceNames.map((name) => `"${name}"`).join(', ')} maintain(s) both entities separately, which suggests they are distinct`
-          : 'The same source maintains both entities separately, which suggests they are distinct',
-        { shared_sources: sharedSources.slice(0, 20), shared_source_names: sharedSourceNames }));
+        description, { shared_sources: sharedSources.slice(0, 20), shared_source_names: sharedSourceNames }));
     } else if (sharedSources.length === 0) {
       items.push(evidence(EVIDENCE_SOURCE_AGREEMENT, 1, EVIDENCE_WEIGHTS.sourceDisagreement,
         'The entities come from different sources, a typical pattern of vendor naming', { left_sources: [...leftSources].slice(0, 10), right_sources: [...rightSources].slice(0, 10) }));
