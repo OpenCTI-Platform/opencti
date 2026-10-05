@@ -136,7 +136,9 @@ describe('useFieldRenderer', () => {
     renderField(vocabField);
     const fieldTypeSelect = screen.getAllByRole('combobox')[1];
     expect(fieldTypeSelect).toHaveTextContent('Open Vocabulary');
-    expect(fieldTypeSelect).toHaveAttribute('disabled');
+    expect(fieldTypeSelect).not.toHaveAttribute('disabled');
+    fireEvent.click(fieldTypeSelect);
+    expect(screen.getAllByRole('option')).toHaveLength(1);
   });
 
   it('locks the field type to Number/Date & Time for numeric and date attributes', () => {
@@ -156,7 +158,9 @@ describe('useFieldRenderer', () => {
     renderField(numberField);
     const numberFieldTypeSelect = screen.getAllByRole('combobox')[1];
     expect(numberFieldTypeSelect).toHaveTextContent('Number');
-    expect(numberFieldTypeSelect).toHaveAttribute('disabled');
+    expect(numberFieldTypeSelect).not.toHaveAttribute('disabled');
+    fireEvent.click(numberFieldTypeSelect);
+    expect(screen.getAllByRole('option')).toHaveLength(1);
 
     cleanup();
     const dateField = createField({
@@ -166,7 +170,9 @@ describe('useFieldRenderer', () => {
     renderField(dateField);
     const dateFieldTypeSelect = screen.getAllByRole('combobox')[1];
     expect(dateFieldTypeSelect).toHaveTextContent('Date & Time');
-    expect(dateFieldTypeSelect).toHaveAttribute('disabled');
+    expect(dateFieldTypeSelect).not.toHaveAttribute('disabled');
+    fireEvent.click(dateFieldTypeSelect);
+    expect(screen.getAllByRole('option')).toHaveLength(1);
   });
 
   it('disables move controls at the entity boundaries and calls move handlers otherwise', () => {

@@ -294,9 +294,17 @@ const useFieldRenderer = ({
           <Select
             value={field.type}
             onValueChange={(value) => {
-              handleFieldChange(`fields.${fieldIndex}.type`, value);
+              // Guard against a spurious empty onValueChange the Select can fire when its
+              // value and its options list change in the same render (e.g. right after the
+              // attribute select above auto-assigns a forced type) - '' is never a real choice.
+              if (value) {
+                handleFieldChange(`fields.${fieldIndex}.type`, value);
+              }
             }}
-            disabled={!field.attributeMapping.attributeName || availableFieldTypes.length <= 1}
+            // Never disable: a disabled Select never mounts its options, so a forced value
+            // (openvocab/number/datetime/etc.) would never get a label to display (FDS Select
+            // only registers an item's label the first time its dropdown opens).
+            disabled={!field.attributeMapping.attributeName}
           >
             <div>
               <SelectLabel>{t_i18n('Field Type')}</SelectLabel>
