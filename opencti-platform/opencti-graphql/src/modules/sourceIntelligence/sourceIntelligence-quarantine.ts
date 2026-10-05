@@ -28,7 +28,7 @@ import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { addDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import { DRAFT_STATUS_OPEN } from '../draftWorkspace/draftStatuses';
-import { forwardDraftWork, registerDraftClosureHandler } from '../draftWorkspace/draftWorkspace-closure';
+import { forwardDraftWork, openDraftForwarding, registerDraftClosureHandler } from '../draftWorkspace/draftWorkspace-closure';
 import { userEditField } from '../user/user-domain';
 import { type BasicStoreEntitySource, ENTITY_TYPE_SOURCE, SOURCE_KIND_CONNECTOR, SOURCE_KIND_INGESTION_FEED } from './sourceIntelligence-types';
 
@@ -71,6 +71,7 @@ export const renewQuarantineDraft = async (context: AuthContext, sourceId: strin
         description: `Data routed by Source Intelligence while the source ${source.name} is quarantined (previous quarantine draft closed or deleted).`,
       });
       draftId = draft.id;
+      await openDraftForwarding(draft.id);
       // Feed bundles already queued for the previous draft follow the quarantine into the new one
       if (source.quarantine_draft_id && draftId) {
         await forwardDraftWork(source.quarantine_draft_id, draftId);

@@ -712,6 +712,50 @@ describe('Source intelligence', () => {
     await deleteDraftWorkspace(testContext, ADMIN_USER, renewedDraftId);
   });
 
+  it('should refuse the work queued for a first quarantine draft closed after the quarantine was lifted', async () => {
+    const createFeedSource = (name: string) => createEntity(testContext, ADMIN_USER, {
+      source_kind: 'ingestion_feed',
+      ref_id: uuidv4(),
+      ref_type: 'IngestionRss',
+      name,
+      source_user_ids: [],
+      enabled: true,
+      quarantined: false,
+    }, ENTITY_TYPE_SOURCE);
+
+    // Opened by a quarantine recommendation, lifted by its revert before any renewal
+    const recommended = await createFeedSource('Source intelligence test feed quarantined by a recommendation');
+    const { created } = await upsertProposals(testContext, [{
+      kind: 'quarantine',
+      source_id: recommended.internal_id,
+      fingerprint: `${TEST_FINGERPRINT_PREFIX}-quarantine-first-draft`,
+      name: 'Quarantine the test feed into a draft',
+      rationale: 'Integration test',
+      payload: { target: 'ingestion_feed' },
+      evidence: {},
+    }], settings, { kinds: [] });
+    expect(created.length).toBe(1);
+    const applied = await queryAsAdminWithSuccess({ query: APPLY_MUTATION, variables: { id: created[0].internal_id } });
+    expect(applied.data.applySourceRecommendation.status).toBe('applied');
+    const quarantined = await storeLoadById<BasicStoreEntitySource>(testContext, ADMIN_USER, recommended.internal_id, ENTITY_TYPE_SOURCE);
+    const recommendedDraftId = quarantined?.quarantine_draft_id as string;
+    expect(recommendedDraftId).toBeTruthy();
+    const reverted = await queryAsAdminWithSuccess({ query: REVERT_MUTATION, variables: { id: created[0].internal_id } });
+    expect(reverted.data.revertSourceRecommendation.status).toBe('reverted');
+    expect(await resolveDraftForward(recommendedDraftId)).toEqual({ draftId: recommendedDraftId, closed: false });
+    await deleteDraftWorkspace(testContext, ADMIN_USER, recommendedDraftId);
+    expect(await resolveDraftForward(recommendedDraftId)).toEqual({ draftId: recommendedDraftId, closed: true });
+
+    // Opened by the first bundle of a quarantined feed, closed after the quarantine was lifted
+    const routed = await createFeedSource('Source intelligence test feed quarantined by routing');
+    await patchAttribute(testContext, ADMIN_USER, routed.internal_id, ENTITY_TYPE_SOURCE, { quarantined: true, quarantine_draft_id: null });
+    const routedDraftId = await resolveFeedQuarantineDraftId(testContext, routed.ref_id as string) as string;
+    expect(routedDraftId).toBeTruthy();
+    await patchAttribute(testContext, ADMIN_USER, routed.internal_id, ENTITY_TYPE_SOURCE, { quarantined: false, quarantine_draft_id: null });
+    await deleteDraftWorkspace(testContext, ADMIN_USER, routedDraftId);
+    expect(await resolveDraftForward(routedDraftId)).toEqual({ draftId: routedDraftId, closed: true });
+  });
+
   it('should keep a failed revert as reverting and complete a retried one', async () => {
     const { created } = await upsertProposals(testContext, [{
       kind: 'change_schedule',

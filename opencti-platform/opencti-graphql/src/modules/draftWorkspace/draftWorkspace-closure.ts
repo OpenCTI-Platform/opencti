@@ -36,13 +36,22 @@ export const runDraftClosureHandlers = async (context: AuthContext, draftId: str
 };
 
 /**
+ * Starts the forwarding chain of a draft that work is routed into (a quarantine draft), before anything is routed to
+ * it: when it closes with no draft taking over, the work still queued for it is refused, whatever the draft cache of
+ * the worker's node still says. A draft already in a chain keeps its entry.
+ */
+export const openDraftForwarding = async (draftId: string) => {
+  await redisSetDraftForwardIfAbsent(draftId, DRAFT_FORWARD_OPEN_END);
+};
+
+/**
  * Sends the work still queued for a closed draft to the draft that took over from it. A queued message keeps the
  * draft it was pushed for: a worker processing it after the closure must not write into the closed draft.
  */
 export const forwardDraftWork = async (closedDraftId: string, nextDraftId: string) => {
   if (closedDraftId !== nextDraftId) {
     await redisSetDraftForward(closedDraftId, nextDraftId);
-    await redisSetDraftForwardIfAbsent(nextDraftId, DRAFT_FORWARD_OPEN_END);
+    await openDraftForwarding(nextDraftId);
   }
 };
 

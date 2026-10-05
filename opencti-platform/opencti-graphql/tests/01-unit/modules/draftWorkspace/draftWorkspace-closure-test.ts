@@ -15,7 +15,13 @@ vi.mock('../../../../src/database/redis', () => ({
   redisGetDraftForward: vi.fn(async (draftId: string) => forwards.get(draftId) ?? null),
 }));
 
-const { forwardDraftWork, registerDraftClosureHandler, resolveDraftForward, runDraftClosureHandlers } = await import('../../../../src/modules/draftWorkspace/draftWorkspace-closure');
+const {
+  forwardDraftWork,
+  openDraftForwarding,
+  registerDraftClosureHandler,
+  resolveDraftForward,
+  runDraftClosureHandlers,
+} = await import('../../../../src/modules/draftWorkspace/draftWorkspace-closure');
 
 const context = {} as AuthContext;
 const open = (draftId: string) => ({ draftId, closed: false });
@@ -93,6 +99,23 @@ describe('Draft work forwarding', () => {
     expect(await resolveDraftForward('draft-1')).toEqual(closed('draft-3'));
     expect(await resolveDraftForward('draft-2')).toEqual(closed('draft-3'));
     expect(await resolveDraftForward('draft-3')).toEqual(closed('draft-3'));
+  });
+
+  it('should refuse the work of a draft opened for routed work once it closes with no draft taking over', async () => {
+    await openDraftForwarding('draft-1');
+    expect(await resolveDraftForward('draft-1')).toEqual(open('draft-1'));
+    await runDraftClosureHandlers(context, 'draft-1');
+    expect(await resolveDraftForward('draft-1')).toEqual(closed('draft-1'));
+  });
+
+  it('should keep forwarding a draft opened for routed work that another draft took over', async () => {
+    await openDraftForwarding('draft-1');
+    takingOver.set('draft-1', 'draft-2');
+    await runDraftClosureHandlers(context, 'draft-1');
+    expect(await resolveDraftForward('draft-1')).toEqual(open('draft-2'));
+    // Opening a draft already in a chain never cuts it
+    await openDraftForwarding('draft-1');
+    expect(await resolveDraftForward('draft-1')).toEqual(open('draft-2'));
   });
 
   it('should record nothing when a draft that never received forwarded work closes', async () => {

@@ -39,6 +39,7 @@ import { addDecayRule, deleteDecayRule } from '../decayRule/decayRule-domain';
 import { type BasicStoreEntityDecayRule, ENTITY_TYPE_DECAY_RULE } from '../decayRule/decayRule-types';
 import { addExclusionListFile, deleteExclusionList } from '../exclusionList/exclusionList-domain';
 import { ENTITY_TYPE_EXCLUSION_LIST } from '../exclusionList/exclusionList-types';
+import { openDraftForwarding } from '../draftWorkspace/draftWorkspace-closure';
 import { addDraftWorkspace, deleteDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import { userEditField } from '../user/user-domain';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
@@ -362,6 +363,7 @@ const executeApply = async (
       });
       const previousDraftContext = connectorUser?.draft_context ?? null;
       try {
+        await openDraftForwarding(draft.id);
         if (connectorUser) {
           await userEditField(context, user, connectorUser.internal_id, [{ key: 'draft_context', value: [draft.id] }]);
         }
