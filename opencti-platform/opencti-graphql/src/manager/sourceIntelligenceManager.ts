@@ -488,6 +488,11 @@ const processStreamIncrements = async (context: AuthContext) => {
     await redisSetManagerEventState(SOURCE_INTELLIGENCE_MANAGER_CONTEXT, lastEventId);
     return;
   }
+  const intelligenceState = await getSourceIntelligenceState();
+  // Live scorecards written without their scan trace would count again the events the scan read
+  if (intelligenceState.live_rebuild_pending) {
+    return;
+  }
   // A batch interrupted after its first writes is replayed alone, under the same marker: its scorecards already
   // written skip it, the others apply it. A pending end the cursor already passed (full computation) is stale.
   const storedPending = await redisGetManagerEventState(SOURCE_INTELLIGENCE_PENDING_BATCH);
@@ -501,7 +506,7 @@ const processStreamIncrements = async (context: AuthContext) => {
   const disabledSourceIds = new Set(sources.filter((source) => source.enabled === false).map((source) => source.internal_id));
   const enterprise = await isEnterpriseEdition(context);
   const { huntRunType } = resolveSoftJoinAvailability();
-  const scanTrace = parseScanTrace((await getSourceIntelligenceState()).last_scan_trace);
+  const scanTrace = parseScanTrace(intelligenceState.last_scan_trace);
   for (let batch = 0; batch < MAX_STREAM_BATCHES_PER_RUN; batch += 1) {
     const events: Array<SseEvent<DataEvent>> = [];
     const { lastEventId: nextEventId } = await fetchStreamEventsRangeFromEventId<DataEvent>(
@@ -568,6 +573,7 @@ const computeAndStore = async (
   if (laterStreamEventId(cursor, boundary) === boundary) {
     await redisSetManagerEventState(SOURCE_INTELLIGENCE_PENDING_BATCH, boundary);
   }
+  await updateSourceIntelligenceState({ live_rebuild_pending: true });
   await writeScorecards(context, documents);
   return { tracked, state, documents };
 };
@@ -584,7 +590,7 @@ export const runFullComputation = async (context: AuthContext, settings: SourceI
     const scanAsOf = Math.max(now, Date.now());
     const { tracked, state, documents } = await computeAndStore(context, settings, sources, scanAsOf, { live: true, snapshot: true, enterprise, streamBoundary });
     const trace: ScanTrace = { started_at: scanAsOf, pages: state.scanPages };
-    await updateSourceIntelligenceState({ last_scan_trace: JSON.stringify(trace) });
+    await updateSourceIntelligenceState({ last_scan_trace: JSON.stringify(trace), live_rebuild_pending: false });
     // The live scorecards now count everything written before the scan: the stream resumes after its last event then,
     // so the events the scan already counted are never applied again and the later ones are kept
     const cursor = await redisGetManagerEventState(SOURCE_INTELLIGENCE_MANAGER_CONTEXT);
@@ -705,6 +711,9 @@ const runBackfillStep = async (context: AuthContext, settings: SourceIntelligenc
 };
 
 export const isFullComputationDue = (state: SourceIntelligenceState, settings: Pick<SourceIntelligenceSettings, 'recompute_hour_utc'>, now: number) => {
+  if (state.live_rebuild_pending) {
+    return true;
+  }
   if (state.recompute_requested_at && (!state.last_full_run_start || state.recompute_requested_at > state.last_full_run_start)) {
     return true;
   }

@@ -109,6 +109,9 @@ export interface SourceIntelligenceState {
   last_scan_truncated?: boolean | null;
   // JSON ScanTrace of the last full computation, read by the live accounting of deletions
   last_scan_trace?: string | null;
+  // Set while a full computation writes the live scorecards, cleared with the trace that matches them: until then the
+  // stream waits, and the full computation is run again
+  live_rebuild_pending?: boolean | null;
   backfill_next_day?: string | null;
   backfill_done?: boolean | null;
   // Planned range of the history backfill: first day, and day before which the days are already covered

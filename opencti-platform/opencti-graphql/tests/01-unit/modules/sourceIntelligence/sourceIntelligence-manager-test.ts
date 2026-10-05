@@ -48,6 +48,12 @@ describe('Source intelligence manager scheduling', () => {
     expect(isFullComputationDue(state, settings, Date.UTC(2026, 9, 3, 10, 0))).toBe(true);
     expect(isFullComputationDue({ ...state, last_full_run_start: '2026-10-03T09:01:00.000Z' }, settings, Date.UTC(2026, 9, 3, 10, 0))).toBe(false);
   });
+
+  it('should run again a computation interrupted while it wrote the live scorecards', () => {
+    const state = { last_full_run_day: '2026-10-03', last_full_run_start: '2026-10-03T02:00:00.000Z' };
+    expect(isFullComputationDue(state, settings, Date.UTC(2026, 9, 3, 10, 0))).toBe(false);
+    expect(isFullComputationDue({ ...state, live_rebuild_pending: true }, settings, Date.UTC(2026, 9, 3, 10, 0))).toBe(true);
+  });
 });
 
 describe('Source intelligence live deletion accounting', () => {
