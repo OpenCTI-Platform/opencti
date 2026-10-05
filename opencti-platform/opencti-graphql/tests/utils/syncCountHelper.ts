@@ -44,7 +44,8 @@ testCreatedCounter.label = 15;
 testCreatedCounter.language = 1;
 testCreatedCounter.location = 21;
 testCreatedCounter['mac-addr'] = 1;
-testCreatedCounter.malware = 62;
+// + 1 created by timeMachine-test
+testCreatedCounter.malware = 63;
 testCreatedCounter['malware-analysis'] = 3;
 testCreatedCounter['marking-definition'] = 24;
 testCreatedCounter.narrative = 1;
@@ -152,7 +153,8 @@ testDeletedCounter.label = 2;
 testDeletedCounter.language = 1;
 testDeletedCounter.location = 16;
 testDeletedCounter['mac-addr'] = 1;
-testDeletedCounter.malware = 35;
+// + 1 deleted by timeMachine-test
+testDeletedCounter.malware = 36;
 testDeletedCounter['malware-analysis'] = 2;
 testDeletedCounter['marking-definition'] = 13;
 testDeletedCounter.narrative = 1;
