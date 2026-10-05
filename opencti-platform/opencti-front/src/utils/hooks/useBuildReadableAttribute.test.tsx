@@ -67,4 +67,12 @@ describe('Hook: useBuildReadableAttribute', () => {
     expect(html).not.toContain('<script>');
     expect(buildReadableAttribute('2026-10-03T18:00:00.000Z', { attribute: 'latestInvestigationRun.completed_at' })).toEqual('2026-10-03');
   });
+  it('should export a missing date as an empty value', () => {
+    const { hook } = testRenderHook(() => useBuildReadableAttribute());
+    const { buildReadableAttribute } = hook.result.current;
+
+    expect(buildReadableAttribute('', { attribute: 'latestInvestigationRun.completed_at' })).toEqual('');
+    expect(buildReadableAttribute(null, { attribute: 'latestInvestigationRun.completed_at' })).toEqual('');
+    expect(buildReadableAttribute(undefined, { attribute: 'published' })).toEqual('');
+  });
 });

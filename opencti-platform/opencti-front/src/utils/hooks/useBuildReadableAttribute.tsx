@@ -27,7 +27,9 @@ const buildStringAttribute = (inputValue: unknown, attributeType?: string, inTab
   let value: string | ReactElement = typeof inputValue === 'string' ? inputValue : JSON.stringify(inputValue);
 
   if (attributeType === 'date') {
-    value = dateFormat(new Date(value)) ?? '';
+    // A missing date, such as the completion of an investigation still running, exports as an empty value.
+    const date = new Date(value);
+    value = Number.isNaN(date.getTime()) ? '' : dateFormat(date) ?? '';
   } else if (attributeType === 'markdown') {
     const mark = marked.parse(value, {
       async: false,
