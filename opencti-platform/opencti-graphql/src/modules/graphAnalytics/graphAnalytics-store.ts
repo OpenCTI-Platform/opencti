@@ -815,6 +815,10 @@ const publishRunClusters = async (runId: string) => {
  * deleted (whatever their source, only one source is active at a time) and entity assignments written by older runs
  * are detached. `publishedAt` is the joining date recorded on the entities that changed cluster. `assertRunLease` is
  * awaited before each publication step and throws when the run no longer holds the write lease.
+ * Cluster documents and member assignments live in different indices, so the switch is ordered, not atomic: a member
+ * always points to a published cluster document, but while the switch runs (or after an interruption) a cluster may
+ * show the new metadata with part of its previous memberships, and a stale cluster may remain until its removal.
+ * Every step is keyed on the run id, so the next completed run converges the whole state.
  */
 export const finalizeClusteringRun = async (
   context: AuthContext,
