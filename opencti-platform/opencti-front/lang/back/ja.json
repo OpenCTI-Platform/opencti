@@ -459,6 +459,7 @@
   "Graph degree by relationship type": "リレーションシップタイプ別のグラフ次数",
   "Graph metrics": "グラフ指標",
   "Graph metrics computation date": "グラフ指標の計算日",
+  "GRAPH_ANALYTICS_MANAGER": "グラフ分析マネージャー",
   "Group": "グループ",
   "Group Confidence Level": "グループ信頼度",
   "Group name": "グループ名",

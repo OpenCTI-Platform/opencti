@@ -459,6 +459,7 @@
   "Graph degree by relationship type": "Grado en el grafo por tipo de relación",
   "Graph metrics": "Métricas del grafo",
   "Graph metrics computation date": "Fecha de cálculo de las métricas del grafo",
+  "GRAPH_ANALYTICS_MANAGER": "Gestor de análisis de grafo",
   "Group": "Grupo",
   "Group Confidence Level": "Nivel de confianza del grupo",
   "Group name": "Nombre del grupo",

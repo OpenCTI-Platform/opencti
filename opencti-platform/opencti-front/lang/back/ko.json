@@ -459,6 +459,7 @@
   "Graph degree by relationship type": "관계 유형별 그래프 차수",
   "Graph metrics": "그래프 지표",
   "Graph metrics computation date": "그래프 지표 계산 날짜",
+  "GRAPH_ANALYTICS_MANAGER": "그래프 분석 관리자",
   "Group": "그룹",
   "Group Confidence Level": "그룹 신뢰 수준",
   "Group name": "그룹 이름",

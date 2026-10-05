@@ -459,6 +459,7 @@
   "Graph degree by relationship type": "Степень в графе по типу связи",
   "Graph metrics": "Метрики графа",
   "Graph metrics computation date": "Дата вычисления метрик графа",
+  "GRAPH_ANALYTICS_MANAGER": "Менеджер анализа графа",
   "Group": "Группа",
   "Group Confidence Level": "Уровень доверия в группе",
   "Group name": "Название группы",
