@@ -1,8 +1,8 @@
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY, ENTITY_TYPE_PIR_HISTORY } from '../../schema/internalObject';
 import { userMergeBulkRewrite, userMergeBulkUpdate, userMergeScanPagesForRewrite } from './userMerge-bulk';
-import type { UserMergeHandler, UserMergeHandlerContext, UserMergeHandlerPlan, UserMergePlannedChange } from './userMerge-handler';
+import type { UserMergeHandler, UserMergeHandlerContext, UserMergeHandlerPlan, UserMergePlannedChange, UserMergeRightsAlert } from './userMerge-handler';
 import { USER_MERGE_TARGET_INDICES } from './userMerge-handler';
-import { remapUserInJsonValue } from './userMerge-jsonRemap';
+import { remapUserInJsonString, remapUserInJsonValue } from './userMerge-jsonRemap';
 
 export const USER_MERGE_HISTORY_PAYLOAD_HANDLER = 'history-context-data-payload';
 
@@ -196,8 +196,20 @@ const rewriteChangeLabels = (changes: unknown, sourceId: string, targetId: strin
   return { value: changed ? rewritten : changes, changed };
 };
 
+export interface HistoryPayloadRewrite {
+  /** The rewritten `context_data`, or null when nothing in it could be rewritten. */
+  rewritten: ContextData | null;
+  /**
+   * The serialized filters name the source but do not parse, and were left untouched.
+   *
+   * Independent of `rewritten`: a record can have its structured payload rewritten and still carry
+   * a filters string that could not be, and that one must not be lost with the rest.
+   */
+  unparsable: boolean;
+}
+
 /**
- * The rewritten `context_data` for one record, or null when it holds no reference to the source.
+ * The rewritten `context_data` for one record, and whether part of it had to be left alone.
  *
  * The filters string and the structured payloads go through the same remapper as every other
  * serialized user reference, deduplication included: a history entry claiming a field gained the
@@ -207,7 +219,7 @@ export const userMergeRewriteHistoryPayload = (
   contextData: ContextData,
   sourceId: string,
   targetId: string,
-): ContextData | null => {
+): HistoryPayloadRewrite => {
   const rewritten: ContextData = { ...contextData };
   let changed = false;
   for (let i = 0; i < PAYLOAD_FIELDS.length; i += 1) {
@@ -226,41 +238,49 @@ export const userMergeRewriteHistoryPayload = (
     rewritten[CHANGES_FIELD] = changeLabels.value;
     changed = true;
   }
+  // Left alone when it does not parse: an unreadable payload is reported rather than rewritten by
+  // string substitution, which cannot tell a whole value from a substring. The fields rewritten
+  // above are kept, so the record is not lost with it.
+  let unparsable = false;
   const filters = contextData[FILTERS_FIELD];
-  if (typeof filters === 'string' && filters.includes(sourceId)) {
-    // Left alone when it does not parse: an unreadable payload is reported by the caller rather
-    // than rewritten by string substitution, which cannot tell a whole value from a substring.
-    try {
-      const parsed = JSON.parse(filters);
-      const result = remapUserInJsonValue(parsed, sourceId, targetId);
-      if (result.changed) {
-        rewritten[FILTERS_FIELD] = JSON.stringify(result.payload);
-        changed = true;
-      }
-    } catch {
-      return null;
+  if (typeof filters === 'string') {
+    const result = remapUserInJsonString(filters, sourceId, targetId);
+    if (result.changed) {
+      rewritten[FILTERS_FIELD] = result.json;
+      changed = true;
+    } else if (!result.parsed) {
+      unparsable = true;
     }
   }
-  return changed ? rewritten : null;
+  return { rewritten: changed ? rewritten : null, unparsable };
 };
+
+interface PayloadRewrites {
+  updates: { id: string; index: string; doc: Record<string, unknown> }[];
+  /** Records whose filters name the source but could not be read, rewritten or not for the rest. */
+  unparsable: number;
+}
 
 const collectPayloadRewrites = async (
   { context, sourceId, targetId, mergeStartedAt }: UserMergeHandlerContext,
-): Promise<{ id: string; index: string; doc: Record<string, unknown> }[]> => {
-  const updates: { id: string; index: string; doc: Record<string, unknown> }[] = [];
+): Promise<PayloadRewrites> => {
+  const collected: PayloadRewrites = { updates: [], unparsable: 0 };
   await userMergeScanPagesForRewrite(context, USER_MERGE_TARGET_INDICES, payloadQuery(sourceId, mergeStartedAt), (page) => {
     for (let i = 0; i < page.length; i += 1) {
       const candidate = page[i];
       const contextData = (candidate.source as { context_data?: ContextData }).context_data;
       if (contextData) {
-        const rewritten = userMergeRewriteHistoryPayload(contextData, sourceId, targetId);
+        const { rewritten, unparsable } = userMergeRewriteHistoryPayload(contextData, sourceId, targetId);
+        if (unparsable) {
+          collected.unparsable += 1;
+        }
         if (rewritten) {
-          updates.push({ id: candidate.id, index: candidate.index, doc: { context_data: rewritten } });
+          collected.updates.push({ id: candidate.id, index: candidate.index, doc: { context_data: rewritten } });
         }
       }
     }
   });
-  return updates;
+  return collected;
 };
 
 /**
@@ -279,7 +299,8 @@ export const userMergeHistoryPayloadHandler: UserMergeHandler = {
     const { context, sourceId, mergeStartedAt } = handlerContext;
     // Both selections are collapsed into one set of document ids rather than added up, so that a
     // record naming the source in its subject and in its payload is reported once.
-    const impacted = new Set((await collectPayloadRewrites(handlerContext)).map((update) => update.id));
+    const payloads = await collectPayloadRewrites(handlerContext);
+    const impacted = new Set(payloads.updates.map((update) => update.id));
     await userMergeScanPagesForRewrite(context, USER_MERGE_TARGET_INDICES, subjectIdQuery(sourceId, mergeStartedAt), (page) => {
       for (let i = 0; i < page.length; i += 1) {
         impacted.add(page[i].id);
@@ -292,7 +313,18 @@ export const userMergeHistoryPayloadHandler: UserMergeHandler = {
       exact: true,
       detail: `records written before ${mergeStartedAt.toISOString()} naming the source in their subject or payload; what the merge on this pair wrote about the source is out of reach by construction`,
     }];
-    return { handler: USER_MERGE_HISTORY_PAYLOAD_HANDLER, changes, alerts: [] };
+    // Not blocking, like the unreadable payloads of the other handlers: the record is left as it
+    // stands and the operator decides. Without this, the filters of an audit record would keep
+    // naming the source and nothing would say so.
+    const alerts: UserMergeRightsAlert[] = [];
+    if (payloads.unparsable > 0) {
+      alerts.push({
+        register_row_id: REGISTER_ROW,
+        kind: 'rights',
+        message: `${payloads.unparsable} ${ENTITY_TYPE_HISTORY} record(s) hold the source id in a ${FILTERS_FIELD} the platform cannot parse, and were left untouched`,
+      });
+    }
+    return { handler: USER_MERGE_HISTORY_PAYLOAD_HANDLER, changes, alerts };
   },
   apply: async (handlerContext: UserMergeHandlerContext): Promise<number> => {
     const { context, sourceId, targetId, mergeStartedAt } = handlerContext;
@@ -313,8 +345,8 @@ export const userMergeHistoryPayloadHandler: UserMergeHandler = {
         },
       },
     );
-    const payloadUpdates = await collectPayloadRewrites(handlerContext);
-    const payloads = await userMergeBulkRewrite(context, `${USER_MERGE_HISTORY_PAYLOAD_HANDLER}:payload`, payloadUpdates);
+    const { updates } = await collectPayloadRewrites(handlerContext);
+    const payloads = await userMergeBulkRewrite(context, `${USER_MERGE_HISTORY_PAYLOAD_HANDLER}:payload`, updates);
     return subjects.updated + payloads;
   },
 };

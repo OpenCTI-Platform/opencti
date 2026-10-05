@@ -22,7 +22,9 @@ let TARGET_ID: string;
 
 const CHANGES_DOCUMENT = 'merge-test-payload-changes';
 const INPUT_DOCUMENT = 'merge-test-payload-input';
-const DOCUMENT_IDS = [CHANGES_DOCUMENT, INPUT_DOCUMENT];
+const BROKEN_FILTERS_WITH_INPUT_DOCUMENT = 'merge-test-payload-broken-filters-with-input';
+const BROKEN_FILTERS_ONLY_DOCUMENT = 'merge-test-payload-broken-filters-only';
+const DOCUMENT_IDS = [CHANGES_DOCUMENT, INPUT_DOCUMENT, BROKEN_FILTERS_WITH_INPUT_DOCUMENT, BROKEN_FILTERS_ONLY_DOCUMENT];
 
 const document = (internalId: string, entityType: string, contextData: Record<string, unknown>) => ({
   internal_id: internalId,
@@ -47,6 +49,10 @@ const readDocument = async (internalId: string) => {
 };
 
 let registeredHandlers: UserMergeHandler[];
+let mergeResult: Awaited<ReturnType<typeof merge>>;
+
+/** A filters string that names the source but is cut short: it cannot be read back. */
+const brokenFilters = () => `{"mode":"and","filters":[{"key":["creator_id"],"values":["${SOURCE_ID}"`;
 
 describe('userMerge history payload handler', () => {
   beforeAll(async () => {
@@ -75,8 +81,21 @@ describe('userMerge history payload handler', () => {
       entity_type: 'Report',
       input: { objectAssignee: [SOURCE_ID] },
     }));
-    const result = await merge(false);
-    expect(result.status).toEqual(UserMergeStatus.Success);
+    // A record whose filters cannot be read must not lose the rest of its rewrite, and a record
+    // that holds nothing else must still be reported.
+    await elIndex(INDEX_HISTORY, document(BROKEN_FILTERS_WITH_INPUT_DOCUMENT, 'Activity', {
+      message: 'creates a stream',
+      entity_type: 'Report',
+      input: { objectAssignee: [SOURCE_ID] },
+      filters: brokenFilters(),
+    }));
+    await elIndex(INDEX_HISTORY, document(BROKEN_FILTERS_ONLY_DOCUMENT, 'Activity', {
+      message: 'reads a stream',
+      entity_type: 'Report',
+      filters: brokenFilters(),
+    }));
+    mergeResult = await merge(false);
+    expect(mergeResult.status).toEqual(UserMergeStatus.Success);
   });
 
   afterAll(async () => {
@@ -110,5 +129,25 @@ describe('userMerge history payload handler', () => {
     };
     const translated = JSON.parse(contextData.history_changes[0].changes_added[0].translated);
     expect(Object.keys(translated)).toEqual([TARGET_ID]);
+  });
+
+  // The unreadable filters are left as recorded, but they do not take the input down with them.
+  it('should still rewrite the input of a record whose filters cannot be read', async () => {
+    const contextData = await readDocument(BROKEN_FILTERS_WITH_INPUT_DOCUMENT) as { input: { objectAssignee: string[] }; filters: string };
+    expect(contextData.input.objectAssignee).toEqual([TARGET_ID]);
+    expect(contextData.filters).toEqual(brokenFilters());
+  });
+
+  it('should leave unreadable filters as recorded', async () => {
+    const contextData = await readDocument(BROKEN_FILTERS_ONLY_DOCUMENT) as { filters: string };
+    expect(contextData.filters).toEqual(brokenFilters());
+  });
+
+  it('should report every record whose filters could not be read', () => {
+    const alerts = mergeResult.report?.handlers.flatMap((outcome) => outcome.alerts) ?? [];
+    expect(alerts).toHaveLength(1);
+    expect(alerts[0].register_row_id).toEqual('history.context-data-payload');
+    expect(alerts[0].blocking).not.toBe(true);
+    expect(alerts[0].message).toContain('2 History record(s)');
   });
 });
