@@ -363,14 +363,19 @@ const ContainerTimelineLanes = ({
     return (
       <g
         key={cluster.id}
+        className="timeline-cluster"
         role={onClusterSelect ? 'button' : undefined}
         tabIndex={onClusterSelect ? 0 : undefined}
         aria-label={label}
         style={{ cursor: onClusterSelect ? 'zoom-in' : 'default', outline: 'none' }}
         onClick={select}
         onKeyDown={(keyEvent) => onMarkerKeyDown(keyEvent, select)}
+        data-testid={`timeline-cluster-${cluster.id}`}
       >
         <title>{label}</title>
+        {onClusterSelect && (
+          <circle className="timeline-cluster-focus" cx={x} cy={centerY} r={13} fill="none" stroke={colors.focus} strokeWidth={2} />
+        )}
         <circle cx={x} cy={centerY} r={9} fill={color} fillOpacity={0.85} stroke={colors.background} />
         <text x={x} y={centerY + 3.5} fill={colors.background} fontSize={9.5} fontWeight="bold" textAnchor="middle">
           {cluster.events.length > 99 ? '99+' : cluster.events.length}
@@ -420,6 +425,8 @@ const ContainerTimelineLanes = ({
           <clipPath id={clipId}>
             <rect x={plotLeft} y={0} width={plotWidth} height={totalHeight} />
           </clipPath>
+          {/* The browser outline of a focused cluster would frame its group, not its circle: a ring shows the keyboard focus */}
+          <style>{'.timeline-cluster-focus { visibility: hidden; } .timeline-cluster:focus-visible .timeline-cluster-focus { visibility: visible; }'}</style>
         </defs>
         <rect x={0} y={0} width={width} height={totalHeight} fill={colors.background} />
         {laneLayouts.map((layout, index) => (

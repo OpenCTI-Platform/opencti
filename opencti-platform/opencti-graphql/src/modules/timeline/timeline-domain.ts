@@ -703,13 +703,19 @@ export const visibleTimelineUpdates = <T extends { instance: TimelineUpdatePaylo
   source: AsyncIterator<T>,
   forUser: (update: TimelineUpdatePayload) => Promise<TimelineUpdatePayload | null>,
 ): AsyncIterableIterator<T> => {
+  // A loop rather than a recursion: a subscriber who reads none of a long run of updates waits on one promise, not
+  // on a chain growing with every update skipped
   const pull = async (): Promise<IteratorResult<T>> => {
-    const next = await source.next();
-    if (next.done) {
-      return next;
+    for (;;) {
+      const next = await source.next();
+      if (next.done) {
+        return next;
+      }
+      const instance = await forUser(next.value.instance);
+      if (instance) {
+        return { done: false, value: { ...next.value, instance } };
+      }
     }
-    const instance = await forUser(next.value.instance);
-    return instance ? { done: false, value: { ...next.value, instance } } : pull();
   };
   const iterator: AsyncIterableIterator<T> = {
     next: pull,

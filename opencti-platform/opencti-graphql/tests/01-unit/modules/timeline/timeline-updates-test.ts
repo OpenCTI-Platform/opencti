@@ -45,6 +45,17 @@ describe('Timeline live updates', () => {
     expect(first.value.instance.changed_event_ids).toEqual(['visible']);
   });
 
+  it('should go through a long run of unreadable updates and stop at the first readable one', async () => {
+    const unreadable = Array.from({ length: 5000 }, () => message(['restricted']));
+    const queued = [...unreadable, message(['visible']), message(['later'])];
+    const { source } = listener(queued);
+    const updates = visibleTimelineUpdates(source, withoutRestricted);
+    const first = await updates.next();
+    expect(first.value.instance.changed_event_ids).toEqual(['visible']);
+    // The update after the readable one is left for the next pull
+    expect(queued).toHaveLength(1);
+  });
+
   it('should close the listener at once, even while an update is awaited', async () => {
     const { source, isClosed } = listener([]);
     const updates = visibleTimelineUpdates(source, withoutRestricted);

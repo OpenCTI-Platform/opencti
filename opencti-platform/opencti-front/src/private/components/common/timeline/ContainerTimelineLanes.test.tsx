@@ -64,4 +64,21 @@ describe('ContainerTimelineLanes accessibility', () => {
     expect(screen.getByRole('group', { name: 'Timeline' })).toBeInTheDocument();
     expect(screen.getByTestId('timeline-event-derived-1')).toHaveAttribute('role', 'button');
   });
+
+  it('draws a focus ring around a cluster, shown on keyboard focus only', () => {
+    const { container } = testRender(
+      <ContainerTimelineLanes
+        events={[event('derived-1', 'derived'), event('derived-2', 'derived')]}
+        lanes={['response']}
+        domain={domain}
+        grouping="day"
+        ariaLabel="Timeline"
+        onClusterSelect={() => {}}
+      />,
+    );
+    const cluster = screen.getByRole('button', { name: /^2 events - / });
+    expect(cluster).toHaveAttribute('tabindex', '0');
+    expect(cluster.querySelector('.timeline-cluster-focus')).not.toBeNull();
+    expect(container.querySelector('svg style')?.textContent).toContain('.timeline-cluster:focus-visible .timeline-cluster-focus { visibility: visible; }');
+  });
 });
