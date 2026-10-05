@@ -1250,6 +1250,7 @@
   "Run security coverage": "运行安全覆盖",
   "Run security platform": "运行安全平台",
   "Run start date": "运行开始日期",
+  "Run techniques not found": "运行中未找到的技术",
   "Run time window end": "运行时间窗口结束",
   "Run time window start": "运行时间窗口开始",
   "Run triggered by": "运行触发者",

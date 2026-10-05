@@ -51,6 +51,7 @@ import type { BasicStoreEntitySecurityCoverageResult } from '../modules/security
 import type { BasicStoreEntityHunt } from '../modules/hunt/hunt-types';
 import type { BasicStoreEntityHuntRun } from '../modules/hunt/huntRun/huntRun-types';
 import type { HuntConnectorView } from '../modules/hunt/huntRun/huntRun-domain';
+import type { SigmaValidation } from '../modules/hunt/hunt-sigma';
 import type { DefenseMatrixView, DefenseMatrixCellView, DefenseCellPlatformView, DefensePlatformView, DefenseTechniqueView, DefenseDataComponentEvidenceView, DefenseRuleEvidenceView, DefenseRuleDeploymentView, DefenseValidationEvidenceView, DefenseValidationPlatformScoreView, DefenseThreatEvidenceView, DefenseProvidesResultView, DefenseValidationResultView, DefenseGapView } from '../modules/defenseCoverage/defenseCoverage-domain';
 import type { DefenseGapValidationRequest } from '../modules/defenseCoverage/defenseGap/defenseGap-types';
 import type { BasicStoreEntityDefenseLogsourceMapping } from '../modules/defenseCoverage/defenseLogsourceMapping/defenseLogsourceMapping-types';
@@ -13250,6 +13251,8 @@ export type HuntRun = BasicObject & InternalObject & {
   translated_query?: Maybe<Scalars['String']['output']>;
   triggeredBy?: Maybe<Creator>;
   triggered_by?: Maybe<Scalars['String']['output']>;
+  /** The ATT&CK techniques its Sigma rule tags that matched no attack pattern of the knowledge base when the run was created: they get no coverage from the run */
+  unresolved_techniques: Array<Scalars['String']['output']>;
   updated_at?: Maybe<Scalars['DateTime']['output']>;
   verdict: HuntRunVerdict;
   verdict_proposal?: Maybe<HuntRunVerdict>;
@@ -13380,6 +13383,8 @@ export type HuntSigmaValidation = {
   logsource_product?: Maybe<Scalars['String']['output']>;
   logsource_service?: Maybe<Scalars['String']['output']>;
   title?: Maybe<Scalars['String']['output']>;
+  /** The tagged techniques that match no attack pattern of the knowledge base the user can read: they link the hunt to nothing */
+  unresolved_attack_techniques: Array<Scalars['String']['output']>;
   valid: Scalars['Boolean']['output'];
 };
 
@@ -45955,7 +45960,7 @@ export type ResolversTypes = ResolversObject<{
   HuntRunVerdict: HuntRunVerdict;
   HuntRunVerdictInput: HuntRunVerdictInput;
   HuntRunsOrdering: HuntRunsOrdering;
-  HuntSigmaValidation: ResolverTypeWrapper<HuntSigmaValidation>;
+  HuntSigmaValidation: ResolverTypeWrapper<SigmaValidation>;
   HuntSourceKind: HuntSourceKind;
   HuntStatistics: ResolverTypeWrapper<HuntStatistics>;
   HuntStatisticsBucket: ResolverTypeWrapper<HuntStatisticsBucket>;
@@ -47308,7 +47313,7 @@ export type ResolversParentTypes = ResolversObject<{
   HuntRunReportInput: HuntRunReportInput;
   HuntRunStartInput: HuntRunStartInput;
   HuntRunVerdictInput: HuntRunVerdictInput;
-  HuntSigmaValidation: HuntSigmaValidation;
+  HuntSigmaValidation: SigmaValidation;
   HuntStatistics: HuntStatistics;
   HuntStatisticsBucket: HuntStatisticsBucket;
   HuntStatisticsPoint: HuntStatisticsPoint;
@@ -53102,6 +53107,7 @@ export type HuntRunResolvers<ContextType = any, ParentType extends ResolversPare
   translated_query?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   triggeredBy?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   triggered_by?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  unresolved_techniques?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   verdict?: Resolver<ResolversTypes['HuntRunVerdict'], ParentType, ContextType>;
   verdict_proposal?: Resolver<Maybe<ResolversTypes['HuntRunVerdict']>, ParentType, ContextType>;
@@ -53133,6 +53139,7 @@ export type HuntSigmaValidationResolvers<ContextType = any, ParentType extends R
   logsource_product?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   logsource_service?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  unresolved_attack_techniques?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   valid?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 }>;
 

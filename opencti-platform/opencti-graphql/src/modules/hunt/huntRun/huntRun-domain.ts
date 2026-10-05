@@ -72,7 +72,14 @@ import {
 } from '../hunt-utils';
 import { huntLogicError } from '../hunt-validators';
 import { HUNT_MESSAGES, renderHuntMessage } from '../hunt-messages';
-import { findHuntTranslation, huntLogicFingerprint, huntTranslationMessage, isDeterministicHuntFailure, isTerminalHuntRunFailure } from '../hunt-logic';
+import {
+  findHuntTranslation,
+  findUnresolvedHuntTechniques,
+  huntLogicFingerprint,
+  huntTranslationMessage,
+  isDeterministicHuntFailure,
+  isTerminalHuntRunFailure,
+} from '../hunt-logic';
 import { resolveHuntIocSet } from '../hunt-iocs';
 import { countIocHits, hasUnsearchedIoc, linkIocDeployments, mergeHuntIocResults } from './huntRun-iocs';
 import { updateHuntRunInformation } from '../hunt-stats';
@@ -271,6 +278,20 @@ export interface HuntRunRequest {
   } | null;
 }
 
+// The tagged techniques a run reports as not found: a lookup that fails reports none rather than blocking the run
+const findRunUnresolvedTechniques = async (context: AuthContext, hunt: BasicStoreEntityHunt) => {
+  try {
+    const unresolved = await findUnresolvedHuntTechniques(context, HUNT_MANAGER_USER, hunt.sigma_rule);
+    if (unresolved.length > 0) {
+      logApp.info('[OPENCTI-MODULE] Hunt run tagged techniques not found in the knowledge base', { huntId: hunt.internal_id, attackIds: unresolved });
+    }
+    return unresolved;
+  } catch (error) {
+    logApp.warn('[OPENCTI-MODULE] Hunt run tagged techniques lookup failed', { cause: error, huntId: hunt.internal_id });
+    return [];
+  }
+};
+
 /**
  * Creates one queued run per target connector and dispatches it when the budget allows (the hunt manager
  * dispatches the deferred ones). Runs are created by the hunt manager identity with the markings and organizations
@@ -325,6 +346,7 @@ export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntit
   const autoEscalation = mode === HUNT_RUN_MODE_EXECUTE
     ? request.autoEscalation ?? (HUNT_RUN_AUTONOMOUS_TRIGGERS.includes(request.trigger) || hunt.escalate_manual_runs === true)
     : null;
+  const unresolvedTechniques = targets.length > 0 && mode === HUNT_RUN_MODE_EXECUTE ? await findRunUnresolvedTechniques(context, hunt) : [];
   // Taken before any run is published: a run its connector completes during the dispatch records a later date
   const queuedAt = now();
   let dispatchBudget = request.dispatchLimit ?? Number.POSITIVE_INFINITY;
@@ -345,6 +367,7 @@ export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntit
       retry_of: request.retryOf ?? null,
       hunt_logic_fingerprint: logicFingerprint,
       auto_escalation: autoEscalation,
+      unresolved_techniques: unresolvedTechniques,
       aev_inject_id: request.aevInjectId ?? null,
       security_coverage_id: request.securityCoverageId ?? null,
       technique_id: request.techniqueId ?? null,

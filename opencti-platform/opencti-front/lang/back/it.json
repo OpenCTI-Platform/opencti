@@ -1250,6 +1250,7 @@
   "Run security coverage": "Copertura di sicurezza dell'esecuzione",
   "Run security platform": "Piattaforma di sicurezza dell'esecuzione",
   "Run start date": "Data di inizio dell'esecuzione",
+  "Run techniques not found": "Tecniche non trovate dell'esecuzione",
   "Run time window end": "Fine della finestra temporale dell'esecuzione",
   "Run time window start": "Inizio della finestra temporale dell'esecuzione",
   "Run triggered by": "Esecuzione attivata da",

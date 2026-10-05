@@ -21,6 +21,7 @@ import { computeHuntReadiness } from './hunt-readiness';
 import { deriveHuntContent } from './hunt-derivation';
 import { exportHuntPack } from './hunt-pack';
 import { validateSigmaRule } from './hunt-sigma';
+import { findUnresolvedAttackTechniques } from './hunt-logic';
 import { ENTITY_TYPE_HUNT, RELATION_HUNT_SOURCES, RELATION_HUNT_TARGETS, RELATION_HUNT_TECHNIQUES } from './hunt-types';
 import { HUNT_CONFIG } from './hunt-utils';
 import { computeHuntStatistics, computeHuntTechniqueValidations, findHuntRunsForHunt, startHuntPreview, startHuntRuns } from './huntRun/huntRun-domain';
@@ -48,6 +49,9 @@ const huntResolvers: Resolvers = {
     runs: (hunt, args, context) => findHuntRunsForHunt(context, context.user, hunt.id, args),
     statistics: (hunt, args, context) => computeHuntStatistics(context, context.user, { ...args, huntId: hunt.id }),
     toStixBundle: (hunt, _, context) => exportHuntPack(context, context.user, [hunt.id]),
+  },
+  HuntSigmaValidation: {
+    unresolved_attack_techniques: (validation, _, context) => findUnresolvedAttackTechniques(context, context.user, validation.attack_techniques),
   },
   Mutation: {
     huntAdd: (_, { input }, context) => addHunt(context, context.user, input),

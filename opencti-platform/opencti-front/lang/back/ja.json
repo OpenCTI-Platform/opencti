@@ -1250,6 +1250,7 @@
   "Run security coverage": "実行のセキュリティカバレッジ",
   "Run security platform": "実行のセキュリティプラットフォーム",
   "Run start date": "実行の開始日",
+  "Run techniques not found": "実行の見つからないテクニック",
   "Run time window end": "実行の時間枠の終了",
   "Run time window start": "実行の時間枠の開始",
   "Run triggered by": "実行のトリガー元",

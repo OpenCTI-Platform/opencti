@@ -180,6 +180,8 @@ interface HuntRunAttributes {
   hunt_logic_fingerprint?: string | null;
   // The run opens an incident draft by itself above the escalation threshold (autonomous runs, manual runs on opt-in)
   auto_escalation?: boolean | null;
+  // ATT&CK techniques tagged in the Sigma rule that matched no attack pattern of the knowledge base at the creation
+  unresolved_techniques?: string[];
   playbook_id?: string | null;
   playbook_execution_id?: string | null;
   playbook_step_id?: string | null;

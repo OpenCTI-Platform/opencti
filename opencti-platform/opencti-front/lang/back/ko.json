@@ -1250,6 +1250,7 @@
   "Run security coverage": "실행 보안 커버리지",
   "Run security platform": "실행 보안 플랫폼",
   "Run start date": "실행 시작 날짜",
+  "Run techniques not found": "실행에서 찾을 수 없는 기법",
   "Run time window end": "실행 시간 범위 종료",
   "Run time window start": "실행 시간 범위 시작",
   "Run triggered by": "실행 트리거 주체",

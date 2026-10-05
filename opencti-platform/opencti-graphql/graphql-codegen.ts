@@ -84,6 +84,7 @@ const config: CodegenConfig = {
           Hunt: '../modules/hunt/hunt-types#BasicStoreEntityHunt',
           HuntRun: '../modules/hunt/huntRun/huntRun-types#BasicStoreEntityHuntRun',
           HuntConnector: '../modules/hunt/huntRun/huntRun-domain#HuntConnectorView',
+          HuntSigmaValidation: '../modules/hunt/hunt-sigma#SigmaValidation',
           AttackPatternCoverage: '../modules/securityCoverage/securityCoverage-types#CoveredEntity',
           VulnerabilityCoverage: '../modules/securityCoverage/securityCoverage-types#CoveredEntity',
           DefenseMatrix: '../modules/defenseCoverage/defenseCoverage-domain#DefenseMatrixView',

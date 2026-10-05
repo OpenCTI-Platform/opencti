@@ -180,6 +180,8 @@ type HuntRun implements BasicObject & InternalObject {
   failure_retryable: Boolean
   "Why a run failed for good and what to change, null for any other run"
   failure_reason: HuntMessage
+  "The ATT&CK techniques its Sigma rule tags that matched no attack pattern of the knowledge base when the run was created: they get no coverage from the run"
+  unresolved_techniques: [String!]!
   playbook_id: String
   playbook_execution_id: String
   evidence_sources: [String!]

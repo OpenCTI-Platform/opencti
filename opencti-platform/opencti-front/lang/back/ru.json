@@ -1250,6 +1250,7 @@
   "Run security coverage": "Покрытие безопасности запуска",
   "Run security platform": "Платформа безопасности запуска",
   "Run start date": "Дата начала запуска",
+  "Run techniques not found": "Ненайденные техники выполнения",
   "Run time window end": "Конец временного окна запуска",
   "Run time window start": "Начало временного окна запуска",
   "Run triggered by": "Инициатор запуска",

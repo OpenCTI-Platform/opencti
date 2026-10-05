@@ -151,6 +151,8 @@ type HuntSigmaValidation {
   logsource_service: String
   detection_fields: [String!]!
   attack_techniques: [String!]!
+  "The tagged techniques that match no attack pattern of the knowledge base the user can read: they link the hunt to nothing"
+  unresolved_attack_techniques: [String!]!
 }
 
 type Hunt implements BasicObject & StixCoreObject & StixDomainObject & StixObject {

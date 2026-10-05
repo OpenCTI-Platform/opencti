@@ -139,14 +139,11 @@ export const huntTranslationMessage = (translation: HuntTranslation): { template
 };
 
 /**
- * The ATT&CK techniques the Sigma rule of a hunt tags (attack.t1059.001) that match no attack pattern of the knowledge
- * base the user can read: they link the hunt to nothing and are reported rather than dropped silently.
+ * The ATT&CK techniques (T1059.001) that match no attack pattern of the knowledge base the user can read: tagged in a
+ * Sigma rule, they link the hunt to nothing and are reported rather than dropped silently.
  */
-export const findUnresolvedHuntTechniques = async (context: AuthContext, user: AuthUser, sigmaRule: string | null | undefined): Promise<string[]> => {
-  if (!sigmaRule?.trim()) {
-    return [];
-  }
-  const tagged = validateSigmaRule(sigmaRule).attack_techniques;
+export const findUnresolvedAttackTechniques = async (context: AuthContext, user: AuthUser, attackIds: string[]): Promise<string[]> => {
+  const tagged = Array.from(new Set(attackIds.map((attackId) => attackId.toUpperCase())));
   if (tagged.length === 0) {
     return [];
   }
@@ -155,4 +152,12 @@ export const findUnresolvedHuntTechniques = async (context: AuthContext, user: A
   });
   const knownIds = new Set(known.map((technique) => technique.x_mitre_id?.toUpperCase()));
   return tagged.filter((attackId) => !knownIds.has(attackId));
+};
+
+/** The techniques the Sigma rule of a hunt tags that the knowledge base lacks. */
+export const findUnresolvedHuntTechniques = async (context: AuthContext, user: AuthUser, sigmaRule: string | null | undefined): Promise<string[]> => {
+  if (!sigmaRule?.trim()) {
+    return [];
+  }
+  return findUnresolvedAttackTechniques(context, user, validateSigmaRule(sigmaRule).attack_techniques);
 };
