@@ -179,6 +179,15 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     const element = await internalLoadById(testContext, ADMIN_USER, id, type ? { type } : undefined) as unknown as Record<string, string[] | undefined>;
     return [...(element[RELATION_GRANTED_TO] ?? [])].sort();
   };
+  // The deployment manager repairs the sharing of a pair from its ends a moment after the events of the previous tests.
+  // A test letting the editor read the pair therefore adds its organization rather than swapping it in, so a repair
+  // landing meanwhile keeps the deployment readable by the connector account, and shares the pair again from its ends
+  // once they are restored.
+  const lendPairToEditor = async (sightingId: string) => {
+    await setOrganizations(platformId, [platformOrganizationId, testOrganizationId]);
+    await setOrganizations(sightingId, [platformOrganizationId, testOrganizationId]);
+  };
+  const sharePairFromItsEnds = () => repairPairMarkings(testContext, ADMIN_USER, { indicatorIds: [], platformIds: [platformId] });
 
   beforeAll(async () => {
     const indicator = await queryAsAdminWithSuccess({
@@ -451,8 +460,7 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     // Side-channel only, so the raw stream counts of the suite are unchanged; the editor reads the pair meanwhile
     await setMarkings(indicatorId, [amber.internal_id]);
     await setMarkings(sighting.internal_id, [amber.internal_id]);
-    await setOrganizations(platformId, [testOrganizationId]);
-    await setOrganizations(sighting.internal_id, [testOrganizationId]);
+    await lendPairToEditor(sighting.internal_id);
     try {
       await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: SIGHTING_MARKING_DELETE, variables: { id: sighting.internal_id, toId: MARKING_TLP_AMBER } });
       await queryAsAdminWithError({ query: SIGHTING_MARKING_DELETE, variables: { id: sighting.internal_id, toId: MARKING_TLP_AMBER } }, undefined, 'FORBIDDEN_ACCESS');
@@ -463,6 +471,7 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
       await setOrganizations(platformId, [platformOrganizationId]);
       await setMarkings(sighting.internal_id, []);
       await setMarkings(indicatorId, []);
+      await sharePairFromItsEnds();
     }
   });
 
@@ -486,8 +495,7 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     const byReservedId = await internalLoadById(testContext, ADMIN_USER, sightingStixId, { type: STIX_SIGHTING_RELATIONSHIP }) as unknown as { internal_id: string };
     expect(byReservedId.internal_id).toEqual(before.internal_id);
     // Side-channel only, so the raw stream counts of the suite are unchanged; the editor reads the pair meanwhile
-    await setOrganizations(platformId, [testOrganizationId]);
-    await setOrganizations(before.internal_id, [testOrganizationId]);
+    await lendPairToEditor(before.internal_id);
     try {
       await queryAsUserIsExpectedForbidden(USER_EDITOR, {
         query: SIGHTING_FIELD_PATCH,
@@ -502,6 +510,7 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     } finally {
       await setOrganizations(before.internal_id, [platformOrganizationId]);
       await setOrganizations(platformId, [platformOrganizationId]);
+      await sharePairFromItsEnds();
     }
   });
 
@@ -735,8 +744,7 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     const platformOrganizations = await loadOrganizations(platformId);
     const sightingOrganizations = await loadOrganizations(before.internal_id, STIX_SIGHTING_RELATIONSHIP);
     // Side-channel only, so the raw stream counts of the suite are unchanged; the editor reads the pair meanwhile
-    await setOrganizations(platformId, [testOrganizationId]);
-    await setOrganizations(before.internal_id, [testOrganizationId]);
+    await lendPairToEditor(before.internal_id);
     try {
       await queryAsUserIsExpectedForbidden(USER_EDITOR, {
         query: SIGHTING_ADD,
@@ -750,6 +758,7 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
       await setOrganizations(before.internal_id, sightingOrganizations);
       await setOrganizations(platformId, platformOrganizations);
       await setStixIds(before.x_opencti_stix_ids ?? []);
+      await sharePairFromItsEnds();
     }
   });
 
