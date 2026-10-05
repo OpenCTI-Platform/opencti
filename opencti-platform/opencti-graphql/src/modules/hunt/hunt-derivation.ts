@@ -16,7 +16,7 @@ import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../threatActorIndividual/th
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { findByIds } from './hunt-loaders';
 import { HUNT_IOC_CONTAINER_TYPES, HUNT_IOC_OBSERVABLE_TYPES, HUNT_IOC_SUBJECT_TYPES, HUNT_TARGET_TYPES } from './hunt-entity-types';
-import { type IocElement, iocElementName, iocValuesOfElement, listContainedIocElements, listSubjectIocElements } from './hunt-iocs';
+import { type IocElement, iocElementName, iocValuesOfElement, listContainedIocElements, listRelatedElements, listSubjectIocElements } from './hunt-iocs';
 import { HUNT_TYPE_INDICATORS, HUNT_TYPE_TELEMETRY } from './hunt-types';
 import { HUNT_CONFIG } from './hunt-utils';
 
@@ -121,7 +121,7 @@ const deriveTechniques = async (context: AuthContext, user: AuthUser, entity: Io
     return regarding(context, user, entity.internal_id, RELATION_OBJECT, [ENTITY_TYPE_ATTACK_PATTERN], false, MAX_TECHNIQUES);
   }
   if (entity.entity_type === ENTITY_TYPE_INDICATOR) {
-    return regarding(context, user, entity.internal_id, RELATION_INDICATES, [ENTITY_TYPE_ATTACK_PATTERN], false, MAX_TECHNIQUES);
+    return listRelatedElements(context, user, RELATION_INDICATES, { fromId: entity.internal_id }, [ENTITY_TYPE_ATTACK_PATTERN], MAX_TECHNIQUES);
   }
   const subjects = sources.filter((source) => HUNT_IOC_SUBJECT_TYPES.includes(source.entity_type));
   const used = await Promise.all(subjects.map((source) => regarding(context, user, source.id, RELATION_USES, [ENTITY_TYPE_ATTACK_PATTERN], false, MAX_TECHNIQUES)));
@@ -135,7 +135,7 @@ const deriveTargets = async (context: AuthContext, user: AuthUser, entity: IocEl
     return contained.map((target) => ({ ...toDerived(target), relation: 'self' }));
   }
   if (entity.entity_type === ENTITY_TYPE_INDICATOR) {
-    const indicated = await regarding(context, user, entity.internal_id, RELATION_INDICATES, HUNT_TARGET_TYPES, false, MAX_TARGETS);
+    const indicated = await listRelatedElements(context, user, RELATION_INDICATES, { fromId: entity.internal_id }, HUNT_TARGET_TYPES, MAX_TARGETS);
     return indicated.map((target) => ({ ...toDerived(target), relation: 'self' }));
   }
   return sources.filter((source) => HUNT_TARGET_TYPES.includes(source.entity_type));

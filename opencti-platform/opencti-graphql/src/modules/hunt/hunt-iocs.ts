@@ -1,9 +1,9 @@
 import { isIPv4, isIPv6 } from 'node:net';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicStoreEntity, BasicStoreEntityMarkingDefinition } from '../../types/store';
+import type { BasicStoreEntity, BasicStoreEntityMarkingDefinition, BasicStoreRelation } from '../../types/store';
 import { ValidationError } from '../../config/errors';
 import { getEntitiesMapFromCache } from '../../database/cache';
-import { pageEntitiesConnection, pageRegardingEntitiesConnection } from '../../database/middleware-loader';
+import { pageEntitiesConnection, pageRegardingEntitiesConnection, topRelationsList } from '../../database/middleware-loader';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { RELATION_INDICATES, RELATION_RELATED_TO } from '../../schema/stixCoreRelationship';
@@ -247,13 +247,35 @@ export const listContainedIocElements = async (context: AuthContext, user: AuthU
   return connection.edges.map((edge) => edge.node);
 };
 
+/**
+ * The other side of the relationships of a type from or to an element, read through the relationships: the target side
+ * of `indicates` and of `related-to` from an observable is not indexed on the target, so the target cannot list them.
+ */
+export const listRelatedElements = async (
+  context: AuthContext,
+  user: AuthUser,
+  relationType: string,
+  side: { fromId: string } | { toId: string },
+  types: string[],
+  first: number,
+) => {
+  const isFrom = 'fromId' in side;
+  const relations = await topRelationsList<any>(context, user, relationType, {
+    ...side,
+    ...(isFrom ? { toTypes: types } : { fromTypes: types }),
+    first,
+  }) as BasicStoreRelation[];
+  const ids = Array.from(new Set(relations.map((relation) => (isFrom ? relation.toId : relation.fromId))));
+  return findByIds<IocElement>(context, user, ids, { type: types });
+};
+
 /** Indicators indicating a threat or an incident, and observables related to it. */
 export const listSubjectIocElements = async (context: AuthContext, user: AuthUser, subjectId: string, first: number) => {
   const [indicators, observables] = await Promise.all([
-    pageRegardingEntitiesConnection<IocElement>(context, user, subjectId, RELATION_INDICATES, [ENTITY_TYPE_INDICATOR], true, { first }),
-    pageRegardingEntitiesConnection<IocElement>(context, user, subjectId, RELATION_RELATED_TO, HUNT_IOC_OBSERVABLE_TYPES, true, { first }),
+    listRelatedElements(context, user, RELATION_INDICATES, { toId: subjectId }, [ENTITY_TYPE_INDICATOR], first),
+    listRelatedElements(context, user, RELATION_RELATED_TO, { toId: subjectId }, HUNT_IOC_OBSERVABLE_TYPES, first),
   ]);
-  return [...indicators.edges, ...observables.edges].map((edge) => edge.node);
+  return [...indicators, ...observables];
 };
 
 /** The name an indicator or an observable is shown with. */
