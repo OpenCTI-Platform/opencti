@@ -33,6 +33,11 @@ describe('Source intelligence provenance', () => {
     expect(resolveProvenanceMode()).toEqual('assertions');
   });
 
+  it('should fall back on the creators when provenance is switched off, as its assertions are no longer refreshed', () => {
+    expect(isProvenanceAttributeAvailable(false)).toBe(false);
+    expect(resolveProvenanceMode(false)).toEqual('creators');
+  });
+
   it('should resolve the assertions of a document, one entry per source', () => {
     const resolver = buildSourceResolver(sources);
     const assertions = resolveDocumentAssertions({

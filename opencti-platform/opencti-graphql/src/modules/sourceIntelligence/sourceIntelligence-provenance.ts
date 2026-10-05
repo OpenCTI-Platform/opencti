@@ -1,4 +1,5 @@
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
+import { PROVENANCE_ENABLED } from '../provenance/provenance-config';
 import {
   type BasicStoreEntitySource,
   type ProvenanceMode,
@@ -34,11 +35,14 @@ export const ASSERTION_KIND_TO_SOURCE_KIND: Record<string, SourceKindValue> = {
   user: SOURCE_KIND_MANUAL,
 };
 
-export const isProvenanceAttributeAvailable = (): boolean => {
-  return schemaAttributesDefinition.getAttributeByName(PROVENANCE_ATTRIBUTE) !== undefined;
+// With provenance switched off, the attribute stays registered but no write refreshes it: its data is stale
+export const isProvenanceAttributeAvailable = (provenanceEnabled = PROVENANCE_ENABLED): boolean => {
+  return provenanceEnabled && schemaAttributesDefinition.getAttributeByName(PROVENANCE_ATTRIBUTE) !== undefined;
 };
 
-export const resolveProvenanceMode = (): ProvenanceMode => (isProvenanceAttributeAvailable() ? 'assertions' : 'creators');
+export const resolveProvenanceMode = (provenanceEnabled = PROVENANCE_ENABLED): ProvenanceMode => {
+  return isProvenanceAttributeAvailable(provenanceEnabled) ? 'assertions' : 'creators';
+};
 
 export interface SourceResolver {
   // `${source_kind}|${ref_id}` -> source internal id
