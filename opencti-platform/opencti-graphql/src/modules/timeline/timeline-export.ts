@@ -1,4 +1,4 @@
-import { TIMELINE_ANCHOR_KEYS, TIMELINE_LANES, type TimelineAnchors, type TimelineLaneValue } from './timeline-types';
+import { TIMELINE_ANCHOR_KEYS, type TimelineAnchors, type TimelineLaneValue } from './timeline-types';
 
 export interface TimelineExportEvent {
   id: string;
@@ -140,11 +140,14 @@ const niceTicks = (from: number, to: number, count: number): number[] => {
   return Array.from({ length: count + 1 }, (_, index) => from + index * step);
 };
 
+// The lanes from top to bottom, as the timeline view draws them
+export const TIMELINE_EXPORT_LANE_ORDER: readonly TimelineLaneValue[] = ['adversary', 'detection', 'response', 'evidence', 'knowledge', 'custom'];
+
 /** Render the timeline as a standalone SVG (lanes, events, windows, anchors). */
 export const renderTimelineSvg = (input: TimelineExportInput): string => {
   // The lanes selected in the view, empty ones included; without a selection, the core lanes and the custom lane when it is used
   const selected = input.lanes && input.lanes.length > 0 ? new Set(input.lanes) : null;
-  const lanes = TIMELINE_LANES.filter((lane) => (selected ? selected.has(lane) : lane !== 'custom' || input.events.some((e) => e.lane === 'custom')));
+  const lanes = TIMELINE_EXPORT_LANE_ORDER.filter((lane) => (selected ? selected.has(lane) : lane !== 'custom' || input.events.some((e) => e.lane === 'custom')));
   const height = AXIS_HEIGHT + lanes.length * LANE_HEIGHT + PADDING * 2;
   const plotLeft = LABEL_WIDTH + PADDING;
   const plotRight = SVG_WIDTH - PADDING;

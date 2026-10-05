@@ -6,8 +6,10 @@ import {
   renderTimelineCsv,
   renderTimelineHtml,
   renderTimelineSvg,
+  TIMELINE_EXPORT_LANE_ORDER,
   type TimelineExportInput,
 } from '../../../../src/modules/timeline/timeline-export';
+import { TIMELINE_LANES } from '../../../../src/modules/timeline/timeline-types';
 
 const input: TimelineExportInput = {
   containerName: 'Ransomware <case>',
@@ -64,6 +66,14 @@ describe('Timeline exports', () => {
     const svg = renderTimelineSvg({ ...input, events: [], anchors: null });
     expect(svg).toContain('No event');
     expect(svg).not.toContain('Custom');
+  });
+
+  it('should draw every lane from top to bottom in the order of the timeline view', () => {
+    expect([...TIMELINE_EXPORT_LANE_ORDER].sort()).toEqual([...TIMELINE_LANES].sort());
+    const svg = renderTimelineSvg(input);
+    const positions = ['Adversary', 'Detection', 'Response', 'Evidence', 'Knowledge', 'Custom'].map((name) => svg.indexOf(`>${name}</text>`));
+    expect(positions.every((position) => position >= 0)).toBe(true);
+    expect([...positions].sort((a, b) => a - b)).toEqual(positions);
   });
 
   it('should render the lanes selected in the view only, empty ones included', () => {
