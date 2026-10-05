@@ -123,6 +123,12 @@ Validation needs OpenAEV connected to the platform: an OpenAEV platform reads th
 
 ![Validation dialog](assets/defense-matrix-validation-dialog.png)
 
+A validation request holds at most 200 techniques. In the Gaps section, a selection of more techniques (one by one or with **Select all**) disables the validation button and says why above the list: unselect some of them to validate. From the matrix header, **Validate the gaps** takes the 200 techniques used by the most threats first, and the dialog says how many techniques of the scope the request leaves out, with a link to the Gaps section to validate them next.
+
+![Gaps backlog with more than 200 techniques selected](assets/defense-matrix-gaps-over-limit.png)
+
+![Validation dialog leaving techniques of the scope out](assets/defense-matrix-validation-deferred.png)
+
 Each request listed in the technique drawer tells where OpenAEV stands: **Waiting for OpenAEV** while no OpenAEV platform has read its security coverage, then **Read by OpenAEV, waiting for the first results** until the scenario sends results.
 
 ![Validation requests waiting for OpenAEV](assets/defense-matrix-drawer-requests.png)
