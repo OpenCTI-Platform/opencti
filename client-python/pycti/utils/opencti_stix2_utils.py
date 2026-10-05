@@ -17,6 +17,11 @@ STIX_EXT_OCTI_TIMELINE: str = (
     "extension-definition--e1c8c28f-24a5-52b1-9c2e-f3b1ff208fdb"
 )
 
+#: Set by the bundle splitter on the copy of an incident or a case sent again after
+#: the elements of its timeline that refer back to it: the timeline extension of the
+#: copy is imported only once these elements exist
+TIMELINE_REQUIRED_IDS: str = "x_opencti_timeline_required_ids"
+
 # Sentinel used to distinguish "value not provided by the caller" from an
 # explicit ``None``/``null``. Any dict value equal (by identity) to this
 # sentinel is stripped from GraphQL mutation variables before the request

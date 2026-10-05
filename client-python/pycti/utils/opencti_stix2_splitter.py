@@ -1,3 +1,4 @@
+import copy
 import json
 import uuid
 from typing import Tuple
@@ -13,6 +14,7 @@ from pycti.utils.opencti_stix2_utils import (
     STIX_EXT_OCTI_TIMELINE,
     SUPPORTED_INTERNAL_OBJECTS,
     SUPPORTED_STIX_ENTITY_OBJECTS,
+    TIMELINE_REQUIRED_IDS,
 )
 
 OPENCTI_EXTENSION = "extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba"
@@ -58,6 +60,8 @@ class OpenCTIStix2Splitter:
         self.cache_refs = {}
         self.elements = []
         self.incompatible_items = []
+        # Per incident or case, the elements of its timeline imported after it
+        self.timeline_deferred_refs = {}
 
     def get_internal_ids_in_extension(self, item):
         """Get internal IDs from OpenCTI extensions in a STIX object.
@@ -285,17 +289,25 @@ class OpenCTIStix2Splitter:
         # so that its analyst contributions resolve their elements, authors and markings.
         # The extension itself is kept as is: a ref missing from the bundle is skipped on import.
         # An element that refers back to the container (a note about the case) is not waited
-        # for: the cycle would be broken by removing that reference from the element.
+        # for: the cycle would be broken by removing that reference from the element. It is
+        # imported after the container, and the container is sent again after it.
         for nested_ref in self.get_timeline_extension_refs(item):
             if (
-                raw_data.get(nested_ref) is not None
-                and is_id_supported(nested_ref)
-                and nested_ref != item_id
-                and nested_ref not in parent_acc
-                and nested_ref not in self.cache_refs[item_id]
-                and item_id not in (self.cache_refs.get(nested_ref) or [])
-                and not self.refers_to(nested_ref, item_id, raw_data)
+                raw_data.get(nested_ref) is None
+                or not is_id_supported(nested_ref)
+                or nested_ref == item_id
+                or nested_ref in self.cache_refs[item_id]
             ):
+                continue
+            if (
+                nested_ref in parent_acc
+                or item_id in (self.cache_refs.get(nested_ref) or [])
+                or self.refers_to(nested_ref, item_id, raw_data)
+            ):
+                deferred = self.timeline_deferred_refs.setdefault(item_id, [])
+                if nested_ref not in deferred:
+                    deferred.append(nested_ref)
+            else:
                 self.cache_refs[item_id].append(nested_ref)
                 nb_deps += self.enlist_element(
                     nested_ref,
@@ -386,6 +398,31 @@ class OpenCTIStix2Splitter:
             :rtype: int
             """
             return elem["nb_deps"]
+
+        # A container whose timeline names elements imported after it is sent again after
+        # them, so that its timeline extension is imported once they exist
+        compatible_ids = {element["id"] for element in self.elements}
+        for container_id, deferred_refs in self.timeline_deferred_refs.items():
+            container = self.cache_index.get(container_id)
+            required_refs = [
+                ref
+                for ref in deferred_refs
+                if self.cache_index.get(ref) is not None
+                and self.cache_index[ref]["id"] in compatible_ids
+            ]
+            if (
+                container is None
+                or container["id"] not in compatible_ids
+                or len(required_refs) == 0
+            ):
+                continue
+            resent_container = copy.deepcopy(container)
+            resent_container[TIMELINE_REQUIRED_IDS] = required_refs
+            resent_container["nb_deps"] = 1 + max(
+                [container["nb_deps"]]
+                + [self.cache_index[ref]["nb_deps"] for ref in required_refs]
+            )
+            self.elements.append(resent_container)
 
         self.elements.sort(key=by_dep_size)
 

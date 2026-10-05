@@ -5,7 +5,10 @@ import pytest
 from stix2 import Report
 
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
-from pycti.utils.opencti_stix2_utils import STIX_EXT_OCTI_TIMELINE
+from pycti.utils.opencti_stix2_utils import (
+    STIX_EXT_OCTI_TIMELINE,
+    TIMELINE_REQUIRED_IDS,
+)
 
 
 def test_split_bundle():
@@ -263,7 +266,8 @@ def test_split_timeline_extension_keeps_the_reverse_refs_of_its_elements(
     case_first, through_report
 ):
     # The element of a contribution refers back to the case (a note about the case, directly or
-    # through a report): the case cannot wait for it, and the note keeps its reference to the case
+    # through a report): the case cannot wait for it, the note keeps its reference to the case,
+    # and the case is sent again after the note, requiring it, for its timeline to attach it
     case = {
         "type": "case-incident",
         "spec_version": "2.1",
@@ -309,21 +313,26 @@ def test_split_timeline_extension_keeps_the_reverse_refs_of_its_elements(
     expectations, _, bundles = stix_splitter.split_bundle_with_expectations(
         bundle=json.dumps(bundle)
     )
-    assert expectations == len(objects)
-    split = {
-        json.loads(b)["objects"][0]["id"]: json.loads(b)["objects"][0] for b in bundles
-    }
-    assert split[note["id"]]["object_refs"] == note["object_refs"]
+    assert expectations == len(objects) + 1
+    split = [json.loads(b) for b in bundles]
+    order = [b["objects"][0]["id"] for b in split]
+    assert order.index(case["id"]) < order.index(note["id"])
+    split_by_id = {b["objects"][0]["id"]: b["objects"][0] for b in split}
+    assert split_by_id[note["id"]]["object_refs"] == note["object_refs"]
     if through_report:
-        assert split[report["id"]]["object_refs"] == [case["id"]]
-    sequences = {
-        json.loads(b)["objects"][0]["id"]: json.loads(b)["x_opencti_seq"]
-        for b in bundles
-    }
-    assert sequences[case["id"]] < sequences[note["id"]]
-    assert split[case["id"]]["extensions"][STIX_EXT_OCTI_TIMELINE] == (
-        case["extensions"][STIX_EXT_OCTI_TIMELINE]
-    )
+        assert split_by_id[report["id"]]["object_refs"] == [case["id"]]
+    first_case, resent_case = [b for b in split if b["objects"][0]["id"] == case["id"]]
+    assert TIMELINE_REQUIRED_IDS not in first_case["objects"][0]
+    assert resent_case["objects"][0][TIMELINE_REQUIRED_IDS] == [note["id"]]
+    note_sequence = next(b for b in split if b["objects"][0]["id"] == note["id"])[
+        "x_opencti_seq"
+    ]
+    assert first_case["x_opencti_seq"] < note_sequence < resent_case["x_opencti_seq"]
+    assert order[-1] == case["id"]
+    for split_case in [first_case, resent_case]:
+        assert split_case["objects"][0]["extensions"][STIX_EXT_OCTI_TIMELINE] == (
+            case["extensions"][STIX_EXT_OCTI_TIMELINE]
+        )
 
 
 def test_split_timeline_extension_missing_refs_are_kept():

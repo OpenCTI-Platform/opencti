@@ -7,6 +7,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from pycti import STIX_EXT_OCTI_TIMELINE, OpenCTIApiClient, OpenCTIStix2
+from pycti.utils.opencti_stix2_utils import TIMELINE_REQUIRED_IDS
 
 CONTAINER_ID = "c1a1b5c3-38e0-4f0a-9df1-8b7a9e3a4a10"
 EVENT = {"id": "e1", "title": "Hosts isolated", "kind": "containment"}
@@ -255,6 +256,45 @@ def test_stix_import_ignores_empty_extensions_and_other_types(local_api_client):
         {"type": "incident", "id": "incident--1"}, {"id": CONTAINER_ID}
     )
     local_api_client.timeline_event.import_extension.assert_not_called()
+
+
+NOTE_ID = "note--3a1b2c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d"
+
+
+def resent_case(extension):
+    return {**timeline_case(extension), TIMELINE_REQUIRED_IDS: [NOTE_ID]}
+
+
+def test_stix_import_of_a_resent_case_waits_for_its_required_elements(
+    local_api_client,
+):
+    stix2 = OpenCTIStix2(local_api_client)
+    local_api_client.timeline_event.import_extension = MagicMock()
+    local_api_client.opencti_stix_object_or_stix_relationship.read = MagicMock(
+        return_value=None
+    )
+    extension = {"events": [{"id": "timeline-event--1", "element_ref": NOTE_ID}]}
+    with pytest.raises(ValueError, match="MISSING_REFERENCE_ERROR.*" + NOTE_ID):
+        stix2.import_timeline_extension(resent_case(extension), {"id": CONTAINER_ID})
+    local_api_client.opencti_stix_object_or_stix_relationship.read.assert_called_once_with(
+        id=NOTE_ID, customAttributes="id"
+    )
+    local_api_client.timeline_event.import_extension.assert_not_called()
+
+
+def test_stix_import_of_a_resent_case_imports_once_its_elements_exist(
+    local_api_client,
+):
+    stix2 = OpenCTIStix2(local_api_client)
+    local_api_client.timeline_event.import_extension = MagicMock()
+    local_api_client.opencti_stix_object_or_stix_relationship.read = MagicMock(
+        return_value={"id": "f3a1"}
+    )
+    extension = {"events": [{"id": "timeline-event--1", "element_ref": NOTE_ID}]}
+    stix2.import_timeline_extension(resent_case(extension), {"id": CONTAINER_ID})
+    local_api_client.timeline_event.import_extension.assert_called_once_with(
+        container_id=CONTAINER_ID, extension=extension
+    )
 
 
 def test_stix_import_tolerates_platforms_without_timelines(local_api_client):

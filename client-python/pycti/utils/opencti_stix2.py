@@ -40,6 +40,7 @@ from pycti.utils.opencti_stix2_utils import (
     STIX_CYBER_OBSERVABLE_MAPPING,
     STIX_EXT_OCTI_TIMELINE,
     STIX_META_OBJECTS,
+    TIMELINE_REQUIRED_IDS,
     OpenCTIStix2Utils,
 )
 
@@ -1497,12 +1498,16 @@ class OpenCTIStix2:
 
         Manual events and the annotations of derived events travel in the
         ``STIX_EXT_OCTI_TIMELINE`` extension; derived events are recomputed by
-        the receiving platform.
+        the receiving platform. The copy of a container that the bundle splitter
+        sends again after the elements of its timeline that refer back to it
+        waits for them, as a missing reference, so that importing its extension
+        again attaches them.
 
         :param stix_object: the imported STIX2 object
         :type stix_object: Dict
         :param stix_object_result: the OpenCTI object created from it
         :type stix_object_result: Dict
+        :raises ValueError: a required element of the timeline is not imported yet
         """
         if stix_object.get("type") not in TIMELINE_CONTAINER_STIX_TYPES:
             return
@@ -1513,6 +1518,22 @@ class OpenCTIStix2:
             len(extension.get("annotations") or []) == 0
         ):
             return
+        missing_refs = [
+            ref
+            for ref in stix_object.get(TIMELINE_REQUIRED_IDS) or []
+            if self.opencti.opencti_stix_object_or_stix_relationship.read(
+                id=ref, customAttributes="id"
+            )
+            is None
+        ]
+        if len(missing_refs) > 0:
+            raise ValueError(
+                ERROR_TYPE_MISSING_REFERENCE
+                + ": timeline elements of "
+                + stix_object["id"]
+                + " not imported yet: "
+                + ", ".join(missing_refs)
+            )
         try:
             self.opencti.timeline_event.import_extension(
                 container_id=stix_object_result["id"], extension=extension
