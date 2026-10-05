@@ -5,6 +5,7 @@ import DashboardRawViz from './DashboardRawViz';
 import DashboardRelationshipsViz from './DashboardRelationshipsViz';
 import DashboardAuditsViz from './DashboardAuditsViz';
 import DashboardEntitiesViz from './DashboardEntitiesViz';
+import DashboardSourcesViz from './DashboardSourcesViz';
 import type { DashboardConfig } from './dashboard-types';
 
 interface DashboardVizProps {
@@ -46,6 +47,15 @@ const DashboardViz = ({
         )}
         {perspective === 'audits' && (
           <DashboardAuditsViz
+            widget={widget}
+            config={config}
+            popover={popover}
+            host={host}
+            refreshRate={refreshRate}
+          />
+        )}
+        {perspective === 'sources' && (
+          <DashboardSourcesViz
             widget={widget}
             config={config}
             popover={popover}

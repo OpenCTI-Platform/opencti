@@ -22,6 +22,7 @@ import type { AttributeDefinition, BasicObjectDefinition } from '../schema/attri
 import { pushAll } from '../utils/arrayUtil';
 import { lockResources } from '../lock/master-lock';
 import { redisFinishAsyncCall, redisGetAsyncCall, redisInitializeAsyncCall } from './redis';
+import { ENTITY_TYPE_SOURCE_SCORECARD } from '../modules/sourceIntelligence/sourceIntelligence-types';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
 const rabbitmqPrefix = conf.get('rabbitmq:queue_prefix');
@@ -78,6 +79,10 @@ export const READ_INDEX_INFERRED_RELATIONSHIPS = `${INDEX_INFERRED_RELATIONSHIPS
 export const INDEX_DRAFT_OBJECTS = `${ES_INDEX_PREFIX}_draft_objects`;
 export const READ_INDEX_DRAFT_OBJECTS = `${INDEX_DRAFT_OBJECTS}*`;
 
+// Source intelligence scorecards (computed snapshots, never part of the knowledge indices)
+export const INDEX_SOURCE_SCORECARDS = `${ES_INDEX_PREFIX}_source_scorecards`;
+export const READ_INDEX_SOURCE_SCORECARDS = `${INDEX_SOURCE_SCORECARDS}*`;
+
 export const isInferredIndex = (
   index: string | undefined | null,
 ): boolean => !!index && (index.startsWith(INDEX_INFERRED_ENTITIES) || index.startsWith(INDEX_INFERRED_RELATIONSHIPS));
@@ -102,6 +107,7 @@ export const WRITE_PLATFORM_INDICES = [
   INDEX_DRAFT_OBJECTS,
   INDEX_STIX_SIGHTING_RELATIONSHIPS,
   INDEX_STIX_META_RELATIONSHIPS,
+  INDEX_SOURCE_SCORECARDS,
 ];
 
 export const READ_STIX_INDICES = [
@@ -312,6 +318,7 @@ export const inferIndexFromConceptType = (conceptType: string, inferred = false)
   }
   // Entities
   if (isHistoryObject(conceptType)) return INDEX_HISTORY;
+  if (conceptType === ENTITY_TYPE_SOURCE_SCORECARD) return INDEX_SOURCE_SCORECARDS;
   if (isInternalObject(conceptType)) return INDEX_INTERNAL_OBJECTS;
   if (isStixMetaObject(conceptType)) return INDEX_STIX_META_OBJECTS;
   if (isStixDomainObject(conceptType)) return INDEX_STIX_DOMAIN_OBJECTS;

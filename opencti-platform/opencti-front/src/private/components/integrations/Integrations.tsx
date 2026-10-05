@@ -235,6 +235,7 @@ interface IntegrationsComponentProps {
 const IntegrationsComponent = ({ tab, data }: IntegrationsComponentProps) => {
   const { t_i18n } = useFormatter();
   const { hasActiveManagers } = useConnectorManagerStatus();
+  const isSourcesReader = useGranted([MODULES, INGESTION]);
   const { deploymentData, feedsData, formsData } = data;
 
   // Feed instances register a technical twin connector: excluded from the
@@ -288,6 +289,13 @@ const IntegrationsComponent = ({ tab, data }: IntegrationsComponentProps) => {
                 {t_i18n('Available')}
               </Link>
             </TabsTrigger>
+            {isSourcesReader && (
+              <TabsTrigger value="sources" asChild>
+                <Link to="/dashboard/integrations/sources" data-testid="integrations-tab-sources">
+                  {t_i18n('Sources')}
+                </Link>
+              </TabsTrigger>
+            )}
           </TabsList>
         </Tabs>
 

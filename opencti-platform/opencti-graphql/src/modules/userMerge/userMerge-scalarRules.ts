@@ -4,6 +4,7 @@ import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../publicDashboard/publicDashboard
 import { ENTITY_TYPE_NEWS_FEED_ITEM } from '../xtm/hub/news-feed/news-feed-types';
 import { ENTITY_TYPE_WORKFLOW_DEFINITION } from '../workflow/types/workflow-types';
 import { ENTITY_USER_ACCOUNT } from '../../schema/stixCyberObservable';
+import { ENTITY_TYPE_SOURCE, ENTITY_TYPE_SOURCE_RECOMMENDATION, SOURCE_KIND_MANUAL } from '../sourceIntelligence/sourceIntelligence-types';
 import type { UserMergeScalarCondition, UserMergeScalarTarget } from './userMerge-scalarTargets';
 
 /**
@@ -55,6 +56,11 @@ export const USER_MERGE_SCALAR_DISPOSITIONS: Record<string, UserMergeScalarDispo
   'History.user_id': { kind: 'excluded', reason: 'another-chunk', detail: 'History is rewritten by the history chunk' },
   'PirHistory.user_id': { kind: 'excluded', reason: 'another-chunk', detail: 'PirHistory is rewritten by the history chunk' },
   'Activity.user_id': { kind: 'excluded', reason: 'another-chunk', detail: 'Activity is rewritten by the history chunk' },
+  [`${ENTITY_TYPE_SOURCE}.owner_id`]: { kind: 'covered', registerRow: 'source.owner-id' },
+  [`${ENTITY_TYPE_SOURCE}.source_user_ids`]: { kind: 'covered', registerRow: 'source.source-user-ids' },
+  [`${ENTITY_TYPE_SOURCE_RECOMMENDATION}.applied_by_id`]: { kind: 'covered', registerRow: 'source-recommendation.applied-by-id' },
+  [`${ENTITY_TYPE_SOURCE_RECOMMENDATION}.dismissed_by_id`]: { kind: 'covered', registerRow: 'source-recommendation.dismissed-by-id' },
+  [`${ENTITY_TYPE_SOURCE_RECOMMENDATION}.reverted_by_id`]: { kind: 'covered', registerRow: 'source-recommendation.reverted-by-id' },
   [`${ENTITY_USER_ACCOUNT}.user_id`]: {
     kind: 'excluded',
     reason: 'not-a-platform-user',
@@ -88,6 +94,33 @@ export interface UserMergeScalarComplement extends UserMergeScalarTarget {
 }
 
 export const USER_MERGE_SCALAR_COMPLEMENTS: UserMergeScalarComplement[] = [
+  {
+    id: 'source-analyst-ref-id',
+    registerRow: 'source.analyst-ref-id',
+    entityTypes: [ENTITY_TYPE_SOURCE],
+    path: 'ref_id',
+    shape: 'single',
+    condition: { path: 'source_kind', equals: SOURCE_KIND_MANUAL },
+    missingBecause: "declared with format 'short': it references a connector, a feed or an author for the other source kinds",
+  },
+  {
+    id: 'source-recommendation-payload-user-id',
+    registerRow: 'source-recommendation.payload-user-ids',
+    entityTypes: [ENTITY_TYPE_SOURCE_RECOMMENDATION],
+    path: 'payload',
+    shape: 'serialized',
+    serializedKey: 'user_id',
+    missingBecause: "held in a JSON string declared with format 'json'",
+  },
+  {
+    id: 'source-recommendation-revert-payload-user-id',
+    registerRow: 'source-recommendation.payload-user-ids',
+    entityTypes: [ENTITY_TYPE_SOURCE_RECOMMENDATION],
+    path: 'revert_payload',
+    shape: 'serialized',
+    serializedKey: 'user_id',
+    missingBecause: "held in a JSON string declared with format 'json'",
+  },
   {
     id: 'connector-user-id',
     registerRow: 'connector.user-id',

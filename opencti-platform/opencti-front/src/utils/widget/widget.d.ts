@@ -19,7 +19,7 @@ export type WidgetHost = {
   missingHostEntityFiller?: ReactNode;
 };
 
-export type WidgetPerspective = 'audits' | 'entities' | 'relationships' | '%future added value';
+export type WidgetPerspective = 'audits' | 'entities' | 'relationships' | 'sources' | '%future added value';
 
 export type WidgetColumnAttributeType
   = | 'date'

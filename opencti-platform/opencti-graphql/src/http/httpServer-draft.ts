@@ -10,6 +10,9 @@ export const checkDraftInContext = async (executeContext: AuthContext) => {
   // When context is in draft, we need to check draft status: if draft is not in an open status, it means that it is no longer possible to execute requests in this draft
   if (executeContext.draft_context) {
     if (executeContext.user) {
+      if (executeContext.draft_forward_closed) {
+        throw DraftLockedError('Cannot execute request in a draft that was closed with no draft taking over from it');
+      }
       const draftWorkspaces = await getEntitiesMapFromCache(executeContext, SYSTEM_USER, ENTITY_TYPE_DRAFT_WORKSPACE);
       const draftWorkspace: BasicStoreEntityDraftWorkspace = draftWorkspaces.get(executeContext.draft_context) as BasicStoreEntityDraftWorkspace;
 

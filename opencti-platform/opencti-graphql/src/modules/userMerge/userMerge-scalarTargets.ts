@@ -108,8 +108,8 @@ export const resolveUserMergeScalarTargets = (): UserMergeScalarResolution => {
     });
   });
   USER_MERGE_SCALAR_COMPLEMENTS.forEach((complement) => {
-    const { id, registerRow, entityTypes, path, shape, nestedRoot, condition, unexpectedAtRest } = complement;
-    targets.push({ id, registerRow, entityTypes, path, shape, nestedRoot, condition, unexpectedAtRest });
+    const { id, registerRow, entityTypes, path, shape, serializedKey, nestedRoot, condition, unexpectedAtRest } = complement;
+    targets.push({ id, registerRow, entityTypes, path, shape, serializedKey, nestedRoot, condition, unexpectedAtRest });
   });
   return { targets, excluded, unassigned };
 };

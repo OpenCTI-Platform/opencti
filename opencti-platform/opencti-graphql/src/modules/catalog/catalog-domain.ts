@@ -12,7 +12,7 @@ import {
   type GraphqlCatalogRevision,
   type GraphqlCatalogContract,
 } from './catalog-types';
-import { isEmptyField } from '../../database/utils';
+import { isEmptyField, REDACTED_INFORMATION } from '../../database/utils';
 import { UnsupportedError } from '../../config/errors';
 import type { ConnectorContractConfiguration, ContractConfigInput } from '../../generated/graphql';
 import type { ValidateFunction } from 'ajv';
@@ -41,7 +41,7 @@ const normalizeContractConfigSchema = (
   };
 };
 
-const getContractConfigSchemaWithoutExcludedRuntimeVars = (configSchema: CatalogContract['config_schema'] | null | undefined) => {
+export const getContractConfigSchemaWithoutExcludedRuntimeVars = (configSchema: CatalogContract['config_schema'] | null | undefined) => {
   const normalizedConfigSchema = normalizeContractConfigSchema(configSchema);
   const filteredProperties = Object.fromEntries(
     Object.entries(normalizedConfigSchema.properties).filter(([property]) => !EXCLUDED_CONFIG_VARS.includes(property)),
@@ -417,6 +417,18 @@ export const computeConnectorTargetContract = (
   });
 
   return contractConfigurations;
+};
+
+/**
+ * Contract configuration as entered, with the value of every setting the contract stores encrypted (password
+ * settings) redacted: what an activity log or any other record may keep of a deployment.
+ */
+export const redactContractConfigurationSecrets = (
+  configurations: ContractConfigInput[],
+  resolved: ConnectorContractConfiguration[],
+): ContractConfigInput[] => {
+  const encryptedKeys = new Set(resolved.filter((configuration) => configuration.encrypted).map((configuration) => configuration.key));
+  return configurations.map((configuration) => (encryptedKeys.has(configuration.key) ? { ...configuration, value: REDACTED_INFORMATION } : configuration));
 };
 
 const mapCatalogToGraphqlCatalog = (
