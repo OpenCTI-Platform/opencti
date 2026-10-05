@@ -24,11 +24,11 @@ import { ENTITY_TYPE_CONTAINER_GROUPING } from '../grouping/grouping-types';
 import { deleteElementById } from '../../database/middleware';
 import { addExternalReference } from '../../domain/externalReference';
 import { addDefenseGapExportCount, addDefenseValidationRequestCount } from '../../manager/telemetryManager';
-import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS, wait } from '../../database/utils';
+import { INDEX_INTERNAL_OBJECTS, READ_INDEX_HISTORY, READ_INDEX_INTERNAL_OBJECTS, wait } from '../../database/utils';
 import { logApp } from '../../config/conf';
 import type { DefenseGapsFilter, DefenseGapsOrdering, DefenseLogsourceInput, DefenseValidationInput, OrderingMode } from '../../generated/graphql';
-import { DefenseValidationRequestStatus } from '../../generated/graphql';
-import { worksForSource } from '../../domain/work';
+import { DefenseValidationRequestStatus, FilterMode } from '../../generated/graphql';
+import { ENTITY_TYPE_WORK } from '../../schema/internalObject';
 import {
   DEFENSE_AGGREGATE_PLATFORM,
   DEFENSE_LEVEL_MAX,
@@ -680,11 +680,13 @@ const attachGapRecords = async (context: AuthContext, user: AuthUser, gaps: Defe
     const requests = (record.validation_requests ?? [])
       .filter((request) => accessibleIds.has(request.security_coverage_id) && accessibleIds.has(request.grouping_id))
       .map((request) => ({ ...request, threat_id: request.threat_id && accessibleIds.has(request.threat_id) ? request.threat_id : undefined }));
+    // The record dates the latest request of any reader: a restricted one must not date the gap
+    const lastRequestedAt = R.last(R.sortBy((request) => new Date(request.requested_at).getTime(), requests))?.requested_at;
     return {
       ...gap,
       opened_at: record.opened_at,
       validation_requests: requests,
-      last_validation_requested_at: requests.length > 0 ? record.last_validation_requested_at : undefined,
+      last_validation_requested_at: lastRequestedAt,
     };
   });
 };
@@ -725,20 +727,20 @@ export const defenseTechniqueGaps = async (context: AuthContext, user: AuthUser,
   return attachGapRecords(context, user, gaps);
 };
 
-// Field resolvers run once per gap: the gaps of one page are resolved together, one lookup per field
-const requestLoaders = new WeakMap<AuthContext, Map<string, DataLoader<DefenseGapView, unknown>>>();
-const loaderForRequest = <V>(context: AuthContext, key: string, batch: (gaps: readonly DefenseGapView[]) => Promise<V[]>) => {
+// Field resolvers run once per node: the nodes of one page are resolved together, one lookup per field
+const requestLoaders = new WeakMap<AuthContext, Map<string, unknown>>();
+const loaderForRequest = <V, K = DefenseGapView>(context: AuthContext, key: string, batch: (keys: readonly K[]) => Promise<V[]>) => {
   let loaders = requestLoaders.get(context);
   if (!loaders) {
     loaders = new Map();
     requestLoaders.set(context, loaders);
   }
-  let loader = loaders.get(key);
+  let loader = loaders.get(key) as DataLoader<K, V> | undefined;
   if (!loader) {
-    loader = new DataLoader<DefenseGapView, unknown>(batch, { cache: false });
+    loader = new DataLoader<K, V>(batch, { cache: false });
     loaders.set(key, loader);
   }
-  return loader as DataLoader<DefenseGapView, V>;
+  return loader;
 };
 
 export const defenseGapRequiredDataComponents = async (context: AuthContext, user: AuthUser, gap: DefenseGapView) => {
@@ -837,8 +839,44 @@ export const defenseGapRuleCandidates = async (context: AuthContext, user: AuthU
   return candidates.slice(0, Math.min(Math.max(first ?? DEFAULT_RULE_CANDIDATES, 1), 50));
 };
 
+const loadValidationCoverages = async (context: AuthContext, user: AuthUser, coverageIds: readonly string[]) => {
+  const coverages = await findByIdsChunked<BasicStoreEntitySecurityCoverage>(context, user, [...coverageIds], { type: ENTITY_TYPE_SECURITY_COVERAGE });
+  const coveragesById = new Map(coverages.map((coverage) => [coverage.internal_id, coverage]));
+  return coverageIds.map((id) => coveragesById.get(id) ?? null);
+};
+
 export const defenseGapValidationCoverage = async (context: AuthContext, user: AuthUser, request: DefenseGapValidationRequest) => {
-  return storeLoadById<BasicStoreEntitySecurityCoverage>(context, user, request.security_coverage_id, ENTITY_TYPE_SECURITY_COVERAGE);
+  const loader = loaderForRequest<BasicStoreEntitySecurityCoverage | null, string>(context, `validation-coverages:${user.id}`, (ids) => {
+    return loadValidationCoverages(context, user, ids);
+  });
+  return loader.load(request.security_coverage_id);
+};
+
+// A work moves to progress when a connector receives it, then to complete
+const RECEIVED_WORK_STATUSES = ['progress', 'complete'];
+
+const loadValidationStatuses = async (context: AuthContext, user: AuthUser, coverageIds: readonly string[]) => {
+  const coverages = await loadValidationCoverages(context, user, coverageIds);
+  const withResults = new Set(coverages
+    .filter((coverage) => !!(coverage as unknown as { coverage_last_result?: string } | null)?.coverage_last_result)
+    .map((coverage) => coverage?.internal_id));
+  const awaitingIds = uniq(coverageIds.filter((id) => !withResults.has(id)));
+  // Works are platform records: only whether a connector received the enrichment of the security coverage is used
+  const receivedWorks = awaitingIds.length === 0 ? [] : await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [ENTITY_TYPE_WORK], {
+    indices: [READ_INDEX_HISTORY],
+    baseData: true,
+    baseFields: ['event_source_id'],
+    filters: {
+      mode: FilterMode.And,
+      filters: [{ key: ['event_source_id'], values: awaitingIds }, { key: ['status'], values: RECEIVED_WORK_STATUSES }],
+      filterGroups: [],
+    },
+  });
+  const receivedIds = new Set(receivedWorks.map((work) => (work as unknown as { event_source_id?: string }).event_source_id));
+  return coverageIds.map((id) => {
+    if (withResults.has(id)) return DefenseValidationRequestStatus.Results;
+    return receivedIds.has(id) ? DefenseValidationRequestStatus.Running : DefenseValidationRequestStatus.Waiting;
+  });
 };
 
 /**
@@ -847,14 +885,10 @@ export const defenseGapValidationCoverage = async (context: AuthContext, user: A
  * read it.
  */
 export const defenseGapValidationStatus = async (context: AuthContext, user: AuthUser, request: DefenseGapValidationRequest) => {
-  const coverage = await defenseGapValidationCoverage(context, user, request);
-  if ((coverage as unknown as { coverage_last_result?: string } | undefined)?.coverage_last_result) {
-    return DefenseValidationRequestStatus.Results;
-  }
-  // Works are platform records: only whether a connector received the enrichment of the security coverage is used
-  const works = await worksForSource(context, SYSTEM_USER, request.security_coverage_id) as Array<{ status?: string; received_time?: string }>;
-  const received = works.some((work) => !!work.received_time || work.status === 'progress' || work.status === 'complete');
-  return received ? DefenseValidationRequestStatus.Running : DefenseValidationRequestStatus.Waiting;
+  const loader = loaderForRequest<DefenseValidationRequestStatus, string>(context, `validation-statuses:${user.id}`, (ids) => {
+    return loadValidationStatuses(context, user, ids);
+  });
+  return loader.load(request.security_coverage_id);
 };
 
 const EXPORT_HEADERS = [

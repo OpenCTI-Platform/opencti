@@ -127,7 +127,7 @@ const DEFENSE_TECHNIQUE = gql`
       rules { indicator { id } deployments { platform { id } status } }
       mitigations { id }
       threats { threat { id } confidence }
-      gaps { platform_id level validation_requests { security_coverage_id grouping_id threat_id status } }
+      gaps { platform_id level last_validation_requested_at validation_requests { security_coverage_id grouping_id threat_id status } }
     }
   }
 `;
@@ -224,6 +224,7 @@ describe('Threat-informed defense matrix', () => {
   let groupingId: string | undefined;
   let mappingId: string | undefined;
   let externalReferenceId: string | undefined;
+  let lastRequestedAt: string | undefined;
 
   const relate = async (fromId: string, toId: string, relationship_type: string) => {
     const result = await queryAsAdminWithSuccess({ query: RELATIONSHIP_ADD, variables: { input: { fromId, toId, relationship_type, confidence: 80 } } });
@@ -425,6 +426,8 @@ describe('Threat-informed defense matrix', () => {
     const technique = await queryAsAdminWithSuccess({ query: DEFENSE_TECHNIQUE, variables: { id: created.attackPattern, platformIds: [created.platform] } });
     const platformGap = technique.data?.defenseTechnique.gaps.find((g: { platform_id: string }) => g.platform_id === created.platform);
     expect(platformGap.validation_requests).toEqual([{ security_coverage_id: securityCoverageId, grouping_id: groupingId, threat_id: created.threat, status: 'waiting' }]);
+    lastRequestedAt = platformGap.last_validation_requested_at;
+    expect(lastRequestedAt).toBeTruthy();
     // A recomputation refreshes the computed fields of the gap and keeps its validation requests
     await computeDefenseCoverage(testContext, SYSTEM_USER, { attackPatternIds: [created.attackPattern] });
     const recomputed = await queryAsAdminWithSuccess({ query: DEFENSE_TECHNIQUE, variables: { id: created.attackPattern, platformIds: [created.platform] } });
@@ -451,10 +454,12 @@ describe('Threat-informed defense matrix', () => {
     const records = await internalFindByIds<BasicStoreEntityDefenseGap>(testContext, SYSTEM_USER, [gapId], { type: ENTITY_TYPE_DEFENSE_GAP }) as BasicStoreEntityDefenseGap[];
     const requests = (records[0]?.validation_requests ?? []).filter((tracked) => tracked.security_coverage_id === queuedCoverageId);
     expect(requests).toEqual([request]);
-    // A reader never sees a tracked request whose Security Coverage he cannot access
+    expect(records[0]?.last_validation_requested_at).toEqual(request.requested_at);
+    // A reader never sees a tracked request whose Security Coverage he cannot access, nor its date
     const technique = await queryAsAdminWithSuccess({ query: DEFENSE_TECHNIQUE, variables: { id: created.attackPattern, platformIds: [created.platform] } });
     const platformGap = technique.data?.defenseTechnique.gaps.find((g: { platform_id: string }) => g.platform_id === created.platform);
     expect(platformGap.validation_requests).toEqual([{ security_coverage_id: securityCoverageId, grouping_id: groupingId, threat_id: created.threat, status: 'waiting' }]);
+    expect(platformGap.last_validation_requested_at).toEqual(lastRequestedAt);
   });
 
   it('should leave no grouping behind when the security coverage of a validation request cannot be created', async () => {
