@@ -7,6 +7,7 @@ import {
   defenseLevelEventType,
   notifyDefenseLevelChanges,
   readerLevelChange,
+  reconcileQueuedChanges,
 } from '../../../../src/modules/defenseCoverage/defenseCoverage-notification';
 import type { DefenseCoverage } from '../../../../src/modules/defenseCoverage/defenseCoverage-types';
 import type { StixObject } from '../../../../src/types/stix-2-1-common';
@@ -44,6 +45,23 @@ describe('Defense level notifications', () => {
     expect(changes.map((change) => change.attack_pattern_id)).toEqual(['decreased', 'same level, other evidences']);
     expect(changes[0].previous.level).toEqual(3);
     expect(changes[0].coverage.level).toEqual(1);
+  });
+
+  it('should tell a queued change only up to the coverage actually stored', () => {
+    const queued = [
+      { attack_pattern_id: 'stored', previous: withRules([]), coverage: withRules(['rule']), delivered_trigger_ids: ['trigger-1'] },
+      { attack_pattern_id: 'storage failed', previous: withRules([]), coverage: withRules(['rule']) },
+      { attack_pattern_id: 'revoked', previous: withRules([]), coverage: withRules(['rule']) },
+    ];
+    const stored = new Map([['stored', withRules(['rule'])], ['storage failed', withRules([])]]);
+    const { changes, dropped } = reconcileQueuedChanges(queued, stored);
+    expect(dropped).toEqual(['revoked']);
+    expect(changes.map((change) => change.attack_pattern_id)).toEqual(['stored', 'storage failed']);
+    expect(changes[0].delivered_trigger_ids).toEqual(['trigger-1']);
+    const visible = only(['rule', 'rule-indicates']);
+    expect(readerLevelChange(changes[0], visible)).toEqual({ attack_pattern_id: 'stored', previous_level: 0, level: 2 });
+    // The coverage was never stored: the technique is back at its previous level and nobody is told a change
+    expect(readerLevelChange(changes[1], visible)).toBeUndefined();
   });
 
   it('should compute the change with the evidences the recipient can access', () => {

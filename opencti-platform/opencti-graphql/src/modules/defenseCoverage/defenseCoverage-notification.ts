@@ -3,8 +3,12 @@ import { logApp } from '../../config/conf';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreSettings } from '../../types/settings';
 import type { StixObject } from '../../types/stix-2-1-common';
+import type { BasicStoreEntity } from '../../types/store';
 import { isBypassUser, isUserCanAccessStixElement, isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
 import { stixLoadById } from '../../database/middleware';
+import { internalFindByIds } from '../../database/middleware-loader';
+import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
+import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
 import { getEntityFromCache } from '../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { storeNotificationEvent } from '../../database/stream/stream-handler';
@@ -184,17 +188,58 @@ export const notifyDefenseLevelChanges = async (context: AuthContext, changes: D
   return delivered;
 };
 
+const STORED_COVERAGES_CHUNK_SIZE = 1000;
+
+const loadStoredCoverages = async (context: AuthContext, attackPatternIds: string[]) => {
+  const stored = new Map<string, DefenseCoverage>();
+  const chunks = R.splitEvery(STORED_COVERAGES_CHUNK_SIZE, R.uniq(attackPatternIds));
+  for (let index = 0; index < chunks.length; index += 1) {
+    const attackPatterns = await internalFindByIds<BasicStoreEntity>(context, SYSTEM_USER, chunks[index], {
+      type: ENTITY_TYPE_ATTACK_PATTERN,
+      indices: [READ_INDEX_STIX_DOMAIN_OBJECTS],
+      baseData: true,
+      baseFields: ['x_opencti_defense_coverage'],
+    }) as BasicStoreEntity[];
+    attackPatterns.forEach((attackPattern) => {
+      const coverage = (attackPattern as unknown as { x_opencti_defense_coverage?: DefenseCoverage }).x_opencti_defense_coverage;
+      if (coverage) stored.set(attackPattern.internal_id, coverage);
+    });
+  }
+  return stored;
+};
+
 /**
- * Deliver the queued level changes. A change leaves the queue once delivered; when a delivery fails, the changes it did
- * not reach stay queued, the one it stopped on remembers the triggers already handled, and the next run retries.
+ * The queued changes as they stand against the coverages actually stored. A change is queued before its coverage is
+ * stored, so a storage that failed leaves a change the platform does not hold: each change ends at the stored coverage
+ * of its technique (back at its previous coverage, it tells nobody anything), and the change of a technique that has
+ * no stored coverage any more (deleted or revoked) is dropped.
+ */
+export const reconcileQueuedChanges = (queued: DefenseCoverageChange[], stored: ReadonlyMap<string, DefenseCoverage>) => {
+  const changes: DefenseCoverageChange[] = [];
+  const dropped: string[] = [];
+  queued.forEach((change) => {
+    const coverage = stored.get(change.attack_pattern_id);
+    if (coverage) changes.push({ ...change, coverage });
+    else dropped.push(change.attack_pattern_id);
+  });
+  return { changes, dropped };
+};
+
+/**
+ * Deliver the queued level changes, each up to the coverage stored for its technique. A change leaves the queue once
+ * delivered; when a delivery fails, the changes it did not reach stay queued, the one it stopped on remembers the
+ * triggers already handled, and the next run retries.
  * Returns the number of notified recipients.
  */
-export const deliverPendingDefenseLevelChanges = async (context: AuthContext, notify = notifyDefenseLevelChanges) => {
-  const { changes, unreadable } = await listPendingLevelChanges();
+export const deliverPendingDefenseLevelChanges = async (context: AuthContext, notify = notifyDefenseLevelChanges, loadStored = loadStoredCoverages) => {
+  const { changes: queued, unreadable } = await listPendingLevelChanges();
   if (unreadable.length > 0) {
     logApp.error('[DEFENSE-COVERAGE] Unreadable queued defense level changes dropped', { attack_pattern_ids: unreadable });
     await clearPendingLevelChanges(unreadable);
   }
+  if (queued.length === 0) return 0;
+  const { changes, dropped } = reconcileQueuedChanges(queued, await loadStored(context, queued.map((change) => change.attack_pattern_id)));
+  if (dropped.length > 0) await clearPendingLevelChanges(dropped);
   if (changes.length === 0) return 0;
   const progress: DefenseDeliveryProgress = { done: 0, triggerIds: [] };
   try {
