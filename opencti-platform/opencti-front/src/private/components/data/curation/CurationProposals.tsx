@@ -190,10 +190,10 @@ const CurationProposalsComponent = () => {
     },
     detector: {
       id: 'detector',
-      label: 'Detector',
+      label: 'Found by',
       percentWidth: 12,
       isSortable: false,
-      render: ({ detector }: CurationProposals_proposal$data) => labels.detector(detector),
+      render: ({ detector, proposal_kind }: CurationProposals_proposal$data) => labels.foundBy(proposal_kind, detector),
     },
     proposal_status: {
       id: 'proposal_status',

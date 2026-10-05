@@ -17244,6 +17244,72 @@ type CurationProposal implements InternalObject & BasicObject {
   True when accepting takes a choice made on this proposal alone (the attribution to keep): it is accepted one at a time, never in a bulk accept nor by a policy.
   """
   choice_required: Boolean!
+
+  """
+  What the proposal changes, the evidence behind it, why, what its confidence means and what each decision does, in plain language.
+  """
+  explanation: CurationProposalExplanation!
+}
+
+"""
+One sentence of an explanation: the English text, and the template and values a client translates it from.
+"""
+type CurationExplanationMessage {
+  """Translation key, with {placeholders} filled from the values."""
+  template: String!
+
+  """JSON object of the placeholder values."""
+  values: String!
+  text: String!
+}
+
+type CurationExplanationEntity {
+  id: String!
+  name: String!
+  entity_type: String!
+}
+
+type CurationExplanationSource {
+  name: String!
+  reference: String
+  url: String
+}
+
+type CurationExplanationChange {
+  field: CurationExplanationMessage!
+  before: [String!]!
+  after: [String!]!
+}
+
+type CurationExplanationEvidence {
+  message: CurationExplanationMessage!
+  entities: [CurationExplanationEntity!]!
+  sources: [CurationExplanationSource!]!
+}
+
+type CurationExplanationConfidence {
+  score: Float!
+
+  """high, medium or low."""
+  level: String!
+  meaning: CurationExplanationMessage!
+}
+
+type CurationProposalExplanation {
+  title: CurationExplanationMessage!
+  changes: [CurationExplanationChange!]!
+  evidence: [CurationExplanationEvidence!]!
+  why: CurationExplanationMessage!
+  confidence: CurationExplanationConfidence!
+  on_accept: CurationExplanationMessage!
+  on_reject: CurationExplanationMessage!
+  on_later: CurationExplanationMessage!
+
+  """False when an accepted proposal cannot be reverted from the proposal."""
+  reversible: Boolean!
+
+  """The whole explanation as plain text."""
+  text: String!
 }
 
 enum CurationProposalOrdering {

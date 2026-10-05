@@ -107,7 +107,7 @@ const useCurationLabels = () => {
   const evidenceLabels: Record<string, string> = {
     canonical_collision: t_i18n('Same canonical name'),
     shared_alias: t_i18n('Shared alias'),
-    taxonomy: t_i18n('Vendor taxonomy'),
+    taxonomy: t_i18n('Public name catalogue'),
     trigram: t_i18n('Name similarity'),
     description_similarity: t_i18n('Description similarity'),
     graph_similarity: t_i18n('Graph similarity'),
@@ -377,6 +377,10 @@ const useCurationLabels = () => {
     status: (key?: string | null) => label(statusLabels, key),
     action: (key?: string | null) => label(actionLabels, key),
     detector: (key?: string | null) => label(detectorLabels, key),
+    /** What found a proposal: alias proposals come from the public name catalogues, not from a name comparison. */
+    foundBy: (kind?: string | null, detector?: string | null) => (kind === 'alias'
+      ? t_i18n('Public name catalogues (MITRE ATT&CK, MISP galaxy)')
+      : label(detectorLabels, detector)),
     evidence: (key?: string | null) => label(evidenceLabels, key),
     explanation,
     /** A merge whose retention window is over reads "Expired"; other irreversible merges read "Not reversible". */

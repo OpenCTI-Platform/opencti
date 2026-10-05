@@ -17,6 +17,7 @@ import { CurationProposalEvidence_proposal$key } from './__generated__/CurationP
 
 const evidenceFragment = graphql`
   fragment CurationProposalEvidence_proposal on CurationProposal {
+    proposal_kind
     confidence_score
     in_ambiguous_band
     detector
@@ -52,7 +53,7 @@ const CurationProposalEvidence = ({ data }: CurationProposalEvidenceProps) => {
   const totalWeight = proposal.evidence.reduce((acc, item) => acc + Math.max(0, item.weight), 0);
 
   return (
-    <Card title={t_i18n('Evidence')} padding="none">
+    <Card title={t_i18n('Evidence details')} padding="none">
       <Box sx={{ paddingX: 3, paddingY: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
         <Typography variant="body2" color={theme.palette.text.light}>
           {t_i18n('Combined confidence')}
@@ -61,7 +62,7 @@ const CurationProposalEvidence = ({ data }: CurationProposalEvidenceProps) => {
           <CurationConfidence value={proposal.confidence_score} ambiguous={proposal.in_ambiguous_band} />
         </Box>
         <Typography variant="body2" color={theme.palette.text.light}>
-          {labels.detector(proposal.detector)}
+          {labels.foundBy(proposal.proposal_kind, proposal.detector)}
         </Typography>
       </Box>
       {proposal.evidence.length === 0 ? (
@@ -71,7 +72,7 @@ const CurationProposalEvidence = ({ data }: CurationProposalEvidenceProps) => {
           <TableHead>
             <TableRow>
               <TableCell>{t_i18n('Evidence')}</TableCell>
-              <TableCell sx={{ width: 200 }}>{t_i18n('Score')}</TableCell>
+              <TableCell sx={{ width: 200 }}>{t_i18n('Strength')}</TableCell>
               <TableCell sx={{ width: 170 }}>{t_i18n('Share of the decision')}</TableCell>
               <TableCell>{t_i18n('Explanation')}</TableCell>
             </TableRow>

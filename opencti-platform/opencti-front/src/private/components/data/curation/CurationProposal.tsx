@@ -14,6 +14,7 @@ import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDo
 import CurationProposalActions from './CurationProposalActions';
 import CurationProposalCompare, { buildMergePreview, compareFragment } from './CurationProposalCompare';
 import CurationProposalEvidence from './CurationProposalEvidence';
+import CurationProposalExplanation, { useExplanationTranslator } from './CurationProposalExplanation';
 import CurationConfidence from './CurationConfidence';
 import CurationSkeleton from './CurationSkeleton';
 import useCurationLabels, { CURATION_MERGES_PATH, formatPercent, parseJsonObject } from './curationUtils';
@@ -62,6 +63,29 @@ const proposalDetailsFragment = graphql`
     adjudicable
     created_at
     updated_at
+    explanation {
+      title { template values text }
+      changes {
+        field { template values text }
+        before
+        after
+      }
+      evidence {
+        message { template values text }
+        entities { id name entity_type }
+        sources { name reference url }
+      }
+      why { template values text }
+      confidence {
+        score
+        level
+        meaning { template values text }
+      }
+      on_accept { template values text }
+      on_reject { template values text }
+      on_later { template values text }
+      reversible
+    }
     ...CurationProposalCompare_proposal
     ...CurationProposalEvidence_proposal
   }
@@ -77,12 +101,11 @@ const curationProposalQuery = graphql`
   }
 `;
 
-const PAYLOAD_HIDDEN_KEYS = ['element_id', 'relationship_id'];
-
 const CurationProposalDetails = ({ data, adjudicationAvailable }: { data: CurationProposal_proposal$key; adjudicationAvailable: boolean }) => {
   const theme = useTheme<Theme>();
   const { t_i18n, fldt, rd } = useFormatter();
   const labels = useCurationLabels();
+  const translate = useExplanationTranslator();
   const proposal = useFragment(proposalDetailsFragment, data);
   const payload = parseJsonObject(proposal.action_payload);
   const isAttribution = proposal.recommended_action === 'resolve_attribution';
@@ -100,7 +123,6 @@ const CurationProposalDetails = ({ data, adjudicationAvailable }: { data: Curati
   const isTargeted = isAttribution || ['merge', 'add_aliases'].includes(proposal.recommended_action);
   const survivorIndex = survivorId ? proposal.subject_ids.indexOf(survivorId) : -1;
   const survivorName = survivorIndex >= 0 ? proposal.subject_names[survivorIndex] ?? null : null;
-  const payloadEntries = payload ? Object.entries(payload).filter(([key]) => !PAYLOAD_HIDDEN_KEYS.includes(key)) : [];
   const compare = useFragment<CurationProposalCompare_proposal$key>(compareFragment, proposal);
   const proposedAliases = proposal.recommended_action === 'add_aliases' && Array.isArray(payload?.aliases)
     ? (payload.aliases as unknown[]).filter((name): name is string => typeof name === 'string' && name.length > 0)
@@ -127,8 +149,9 @@ const CurationProposalDetails = ({ data, adjudicationAvailable }: { data: Curati
               <Tag label={labels.kind(proposal.proposal_kind)} />
               {isOpen && proposal.in_ambiguous_band && <Tag label={t_i18n('Needs your decision')} color={theme.palette.warn.main} />}
             </Box>
-            <Typography variant="h1" sx={{ margin: 0 }} data-testid="curation-proposal-title">{proposal.name}</Typography>
-            <Typography variant="body1" data-testid="curation-proposal-summary">{summary}</Typography>
+            <Typography variant="h1" sx={{ margin: 0 }} data-testid="curation-proposal-title">{translate(proposal.explanation.title)}</Typography>
+            <Typography variant="body1" data-testid="curation-proposal-why">{translate(proposal.explanation.why)}</Typography>
+            <Typography variant="body2" color={theme.palette.text.light} data-testid="curation-proposal-summary">{summary}</Typography>
           </Box>
           <CurationProposalActions
             proposal={proposal}
@@ -136,9 +159,19 @@ const CurationProposalDetails = ({ data, adjudicationAvailable }: { data: Curati
             survivorName={survivorName}
             preview={preview}
             adjudicationAvailable={adjudicationAvailable}
+            explanation={proposal.explanation}
           />
         </Box>
       </Card>
+      <Box sx={{ marginBottom: 2 }}>
+        <Card title={t_i18n('What this proposal does')}>
+          <CurationProposalExplanation
+            explanation={proposal.explanation}
+            chosen={isAttribution ? survivorName : null}
+            hideWhy
+          />
+        </Card>
+      </Box>
       <Box sx={{ marginBottom: 2 }}>
         <Card title={t_i18n('Recommendation')}>
           <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 2 }}>
@@ -151,28 +184,13 @@ const CurationProposalDetails = ({ data, adjudicationAvailable }: { data: Curati
               <CurationConfidence value={proposal.confidence_score} ambiguous={proposal.in_ambiguous_band} />
             </div>
             <div>
-              <Label>{t_i18n('Detector')}</Label>
-              <Typography variant="body2">{labels.detector(proposal.detector)}</Typography>
+              <Label>{t_i18n('Found by')}</Label>
+              <Typography variant="body2">{labels.foundBy(proposal.proposal_kind, proposal.detector)}</Typography>
             </div>
             <div>
               <Label>{t_i18n('Detection date')}</Label>
               <Typography variant="body2">{fldt(proposal.created_at)}</Typography>
             </div>
-            {payloadEntries.length > 0 && (
-              <Box sx={{ gridColumn: '1 / -1' }}>
-                <Label>{t_i18n('Proposed change')}</Label>
-                <Box component="dl" sx={{ margin: 0, typography: 'body2' }} data-testid="curation-proposed-change">
-                  {payloadEntries.map(([key, value]) => (
-                    <div key={key}>
-                      <Box component="dt" sx={{ display: 'inline', fontWeight: 'fontWeightBold' }}>{key}: </Box>
-                      <Box component="dd" sx={{ display: 'inline', margin: 0 }}>
-                        {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-                      </Box>
-                    </div>
-                  ))}
-                </Box>
-              </Box>
-            )}
           </Box>
         </Card>
       </Box>
