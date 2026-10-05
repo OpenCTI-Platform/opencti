@@ -96,10 +96,15 @@ const artifactIdOf = (view: BasicStoreEntityInvestigationRun, key: 'draft_id' | 
   return isInvestigationRunWithheld(view) ? null : view[key] ?? null;
 };
 
-// What identifies what a withheld run read (its subject, its case, its engine
-// runs) is withheld from the reader with its findings; the stored run keeps it
-// for its cleanup and its audit.
+// While what a run found is withheld from the reader, an identifier of what it
+// read is served only to a reader who can read what it identifies, and the ids
+// of its engine runs, which hold its findings, not at all. The stored run keeps
+// them for its cleanup and its audit.
 const isServedWithheld = async (run: BasicStoreEntityInvestigationRun, context: any) => isInvestigationRunWithheld(await served(run, context));
+const servedSourceId = async (run: BasicStoreEntityInvestigationRun, context: any, id: string | null | undefined, type: string) => {
+  if (!id || !(await isServedWithheld(run, context))) return id ?? null;
+  return (await loadElement(context, id, type)) ? id : null;
+};
 
 // Where the objects a run reads and cites are published when they change, a
 // marking, a sharing or a member restriction included.
@@ -171,11 +176,11 @@ const investigationRunResolvers: Resolvers = {
   InvestigationRun: {
     creators: (run, _, context) => loadCreators(context, context.user, run),
     objectMarking: async (run, _, context) => context.batch.markingsBatchLoader.load(await served(run, context)),
-    subject_id: async (run, _, context) => (await isServedWithheld(run, context) ? null : run.subject_id),
-    subject: async (run, _, context) => (await isServedWithheld(run, context) ? null : loadElement(context, run.subject_id, run.subject_type)),
-    case_id: async (run, _, context) => (await isServedWithheld(run, context) ? null : run.case_id ?? null),
+    subject_id: (run, _, context) => servedSourceId(run, context, run.subject_id, run.subject_type),
+    subject: (run, _, context) => loadElement(context, run.subject_id, run.subject_type),
+    case_id: (run, _, context) => servedSourceId(run, context, run.case_id, ENTITY_TYPE_CONTAINER_CASE),
     case: async (run, _, context) => {
-      const caseIds = await isServedWithheld(run, context) ? [] : run.case_ids ?? [];
+      const caseIds = run.case_ids ?? [];
       if (caseIds.length === 0) return null;
       const cases = await elFindByIds<BasicStoreEntity>(context, context.user, caseIds, { type: ENTITY_TYPE_CONTAINER_CASE }) as BasicStoreEntity[];
       return (cases[0] ?? null) as any;

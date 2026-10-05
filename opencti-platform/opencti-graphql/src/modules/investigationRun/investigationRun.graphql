@@ -350,7 +350,7 @@ type InvestigationRun implements InternalObject & BasicObject {
   objectMarking: [MarkingDefinition!]
   # Investigation run
   name: String!
-  # Null, like case_id, case and the engine run ids, while what the run found is withheld from the reader.
+  # Null, like case_id, while what the run found is withheld from a reader who cannot read its subject.
   subject_id: String
   subject_type: String!
   subject: StixCoreObject

@@ -674,15 +674,22 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
         // Kept on the stored run for the retry, never served from a withheld run.
         draft_id: null,
         workspace_id: null,
-        // What identifies what it read is withheld too; the stored run keeps it for its cleanup.
-        subject_id: null,
-        subject: null,
-        case_id: null,
-        case: null,
+        // So is its engine run, which holds what it found; the stored run keeps it to stop it.
         xtm_investigation_id: null,
         xtm_investigation_ids: [],
+        // Its case stays named for a member who can still read it.
+        subject_id: caseId,
       });
-      expect((await loadInvestigationRun(testContext, runId))?.subject_id).toBe(caseId);
+      // A reader beyond the restriction is served no identifier of what it read.
+      const restrictedRun = await loadInvestigationRun(testContext, runId);
+      const runFields = investigationRunResolvers.InvestigationRun as unknown as Record<string, (run: unknown, args: unknown, context: unknown) => Promise<unknown>>;
+      const editor = await getAuthUser(await getUserIdByEmail(USER_EDITOR.email));
+      const editorContext = { ...testContext, user: editor, batch: computeLoaders(testContext, editor) };
+      expect(restrictedRun?.subject_id).toBe(caseId);
+      expect(await runFields.subject_id(restrictedRun, {}, editorContext)).toBeNull();
+      expect(await runFields.subject(restrictedRun, {}, editorContext)).toBeNull();
+      expect(await runFields.case_id(restrictedRun, {}, editorContext)).toBeNull();
+      expect(await runFields.case(restrictedRun, {}, editorContext)).toBeNull();
       expect((await loadInvestigationRun(testContext, runId))?.draft_id).toBe(mirrored.draft_id);
       expect(stopped.steps.every((step: { action: string | null }) => step.action === null)).toBe(true);
       expect((await listInvestigationRunsToProcess(testContext, 50)).map((run) => run.internal_id)).toContain(runId);
@@ -886,12 +893,9 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
         report: null,
         report_sources: [],
         report_id: null,
-        subject_id: null,
-        subject: null,
-        case_id: null,
-        case: null,
         xtm_investigation_id: null,
         xtm_investigation_ids: [],
+        subject_id: caseId,
       });
       const records = await queryAsAdminWithSuccess({ query: RUN_RECORDS, variables: { id: runId } });
       expect(records.data.investigationRun.can_continue).toBe(false);
@@ -915,10 +919,12 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       expect(stored?.draft_id).toBeTruthy();
       expect(await runFields.draft_id(stored, {}, eventContext)).toBeNull();
       expect(await runFields.draft(stored, {}, eventContext)).toBeNull();
-      expect(stored?.subject_id).toBe(caseId);
-      expect(await runFields.subject_id(stored, {}, eventContext)).toBeNull();
-      expect(await runFields.case_id(stored, {}, eventContext)).toBeNull();
       expect(await runFields.xtm_investigation_ids(stored, {}, eventContext)).toEqual([]);
+      expect(await runFields.subject_id(stored, {}, eventContext)).toBe(caseId);
+      const outsider = await getAuthUser(await getUserIdByEmail(USER_EDITOR.email));
+      const outsiderContext = { ...testContext, user: outsider, batch: computeLoaders(testContext, outsider) };
+      expect(await runFields.subject_id(stored, {}, outsiderContext)).toBeNull();
+      expect(await runFields.case_id(stored, {}, outsiderContext)).toBeNull();
       // Nothing it found can be acted on; cancelling stays possible.
       const feedback = await queryAsAdmin({
         query: RUN_FEEDBACK,
@@ -968,10 +974,9 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       expect(await runFields.hypotheses(stored, {}, editorContext)).toEqual([]);
       expect(await runFields.analyst_feedback(stored, {}, editorContext)).toEqual([]);
       expect(await runFields.end_reason_code(stored, {}, editorContext)).toBe('source_inaccessible');
-      expect(await runFields.subject_id(stored, {}, editorContext)).toBeNull();
-      expect(await runFields.subject(stored, {}, editorContext)).toBeNull();
-      expect(await runFields.case(stored, {}, editorContext)).toBeNull();
+      // The engine run, which holds what it found, is withheld; the case, which the editor still reads, stays named.
       expect(await runFields.xtm_investigation_id(stored, {}, editorContext)).toBeNull();
+      expect(await runFields.subject_id(stored, {}, editorContext)).toBe(caseId);
       expect(await runFields.name(stored, {}, editorContext)).toBe('Case Autopilot');
       expect(await runFields.name(stored, {}, { ...testContext, user: ADMIN_USER, batch: computeLoaders(testContext, ADMIN_USER) })).toBe(stored.name);
       const adminContext = { ...testContext, user: ADMIN_USER, batch: computeLoaders(testContext, ADMIN_USER) };
