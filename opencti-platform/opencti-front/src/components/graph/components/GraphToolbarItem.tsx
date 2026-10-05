@@ -19,13 +19,15 @@ const GraphToolbarItem = ({
 }: GraphToolbarItemProps) => {
   return (
     <Tooltip title={title}>
-      <IconButton
-        color={color}
-        onClick={onClick}
-        disabled={disabled}
-      >
-        {Icon}
-      </IconButton>
+      <span style={{ display: 'inline-flex' }}>
+        <IconButton
+          color={color}
+          onClick={onClick}
+          disabled={disabled}
+        >
+          {Icon}
+        </IconButton>
+      </span>
     </Tooltip>
   );
 };
