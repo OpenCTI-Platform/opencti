@@ -1,5 +1,6 @@
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY, ENTITY_TYPE_PIR_HISTORY } from '../../schema/internalObject';
-import { userMergeBulkRewrite, userMergeBulkUpdate, userMergeScanPagesForRewrite } from './userMerge-bulk';
+import { DatabaseError } from '../../config/errors';
+import { userMergeBulkRewrite, userMergeBulkUpdate, userMergeRefresh, userMergeScanPagesForRewrite } from './userMerge-bulk';
 import type { UserMergeHandler, UserMergeHandlerContext, UserMergeHandlerPlan, UserMergePlannedChange, UserMergeRightsAlert } from './userMerge-handler';
 import { USER_MERGE_TARGET_INDICES } from './userMerge-handler';
 import { remapUserInJsonString, remapUserInJsonValue } from './userMerge-jsonRemap';
@@ -255,32 +256,41 @@ export const userMergeRewriteHistoryPayload = (
   return { rewritten: changed ? rewritten : null, unparsable };
 };
 
-interface PayloadRewrites {
-  updates: { id: string; index: string; doc: Record<string, unknown> }[];
-  /** Records whose filters name the source but could not be read, rewritten or not for the rest. */
-  unparsable: number;
-}
+type PayloadUpdate = { id: string; index: string; doc: Record<string, unknown> };
 
-const collectPayloadRewrites = async (
+/**
+ * Walks the records whose payload names the source and hands the rewrites over one page at a
+ * time, keeping none of them past their page.
+ *
+ * How many records name a user has no bound the merge controls, and each rewrite carries a whole
+ * `context_data` — the changes of a bulk edit, the raw input, the filters. Collected over the
+ * whole scan, they would make the peak memory, and the size of a single bulk request, grow with
+ * the history of the user rather than with a page. Returns the count of records whose filters
+ * name the source but could not be read, rewritten or not for the rest.
+ */
+const scanPayloadRewrites = async (
   { context, sourceId, targetId, mergeStartedAt }: UserMergeHandlerContext,
-): Promise<PayloadRewrites> => {
-  const collected: PayloadRewrites = { updates: [], unparsable: 0 };
-  await userMergeScanPagesForRewrite(context, USER_MERGE_TARGET_INDICES, payloadQuery(sourceId, mergeStartedAt), (page) => {
+  onPage: (updates: PayloadUpdate[]) => Promise<void> | void,
+): Promise<number> => {
+  let unparsable = 0;
+  await userMergeScanPagesForRewrite(context, USER_MERGE_TARGET_INDICES, payloadQuery(sourceId, mergeStartedAt), async (page) => {
+    const updates: PayloadUpdate[] = [];
     for (let i = 0; i < page.length; i += 1) {
       const candidate = page[i];
       const contextData = (candidate.source as { context_data?: ContextData }).context_data;
       if (contextData) {
-        const { rewritten, unparsable } = userMergeRewriteHistoryPayload(contextData, sourceId, targetId);
-        if (unparsable) {
-          collected.unparsable += 1;
+        const result = userMergeRewriteHistoryPayload(contextData, sourceId, targetId);
+        if (result.unparsable) {
+          unparsable += 1;
         }
-        if (rewritten) {
-          collected.updates.push({ id: candidate.id, index: candidate.index, doc: { context_data: rewritten } });
+        if (result.rewritten) {
+          updates.push({ id: candidate.id, index: candidate.index, doc: { context_data: result.rewritten } });
         }
       }
     }
+    await onPage(updates);
   });
-  return collected;
+  return unparsable;
 };
 
 /**
@@ -299,8 +309,10 @@ export const userMergeHistoryPayloadHandler: UserMergeHandler = {
     const { context, sourceId, mergeStartedAt } = handlerContext;
     // Both selections are collapsed into one set of document ids rather than added up, so that a
     // record naming the source in its subject and in its payload is reported once.
-    const payloads = await collectPayloadRewrites(handlerContext);
-    const impacted = new Set(payloads.updates.map((update) => update.id));
+    const impacted = new Set<string>();
+    const unparsable = await scanPayloadRewrites(handlerContext, (updates) => {
+      updates.forEach((update) => impacted.add(update.id));
+    });
     await userMergeScanPagesForRewrite(context, USER_MERGE_TARGET_INDICES, subjectIdQuery(sourceId, mergeStartedAt), (page) => {
       for (let i = 0; i < page.length; i += 1) {
         impacted.add(page[i].id);
@@ -317,11 +329,11 @@ export const userMergeHistoryPayloadHandler: UserMergeHandler = {
     // stands and the operator decides. Without this, the filters of an audit record would keep
     // naming the source and nothing would say so.
     const alerts: UserMergeRightsAlert[] = [];
-    if (payloads.unparsable > 0) {
+    if (unparsable > 0) {
       alerts.push({
         register_row_id: REGISTER_ROW,
         kind: 'rights',
-        message: `${payloads.unparsable} ${ENTITY_TYPE_HISTORY} record(s) hold the source id in a ${FILTERS_FIELD} the platform cannot parse, and were left untouched`,
+        message: `${unparsable} ${ENTITY_TYPE_HISTORY} record(s) hold the source id in a ${FILTERS_FIELD} the platform cannot parse, and were left untouched`,
       });
     }
     return { handler: USER_MERGE_HISTORY_PAYLOAD_HANDLER, changes, alerts };
@@ -345,8 +357,24 @@ export const userMergeHistoryPayloadHandler: UserMergeHandler = {
         },
       },
     );
-    const { updates } = await collectPayloadRewrites(handlerContext);
-    const payloads = await userMergeBulkRewrite(context, `${USER_MERGE_HISTORY_PAYLOAD_HANDLER}:payload`, updates);
+    // Written as the scan goes, which is safe: the scan pages on `internal_id` and `_index`, which
+    // the rewrite leaves alone, and a page already written lies behind the cursor. The pages are
+    // left unrefreshed and the indices written refreshed once, rather than once per page on the
+    // heaviest index of the platform.
+    const label = `${USER_MERGE_HISTORY_PAYLOAD_HANDLER}:payload`;
+    const written = new Set<string>();
+    let payloads = 0;
+    try {
+      await scanPayloadRewrites(handlerContext, async (updates) => {
+        payloads += await userMergeBulkRewrite(context, label, updates, { refresh: false });
+        updates.forEach((update) => written.add(update.index));
+      });
+    } catch (err) {
+      // A bulk is no more atomic than the update above: the pages already written stay written,
+      // and a run reporting zero would read as "nothing was touched". Re-running completes it.
+      throw DatabaseError('User merge history payload rewrite aborted', { label, updated: subjects.updated + payloads, cause: err });
+    }
+    await userMergeRefresh(label, Array.from(written));
     return subjects.updated + payloads;
   },
 };

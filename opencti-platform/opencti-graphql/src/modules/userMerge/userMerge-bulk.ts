@@ -1,5 +1,5 @@
 import { DatabaseError } from '../../config/errors';
-import { elBulk, elRawSearch, elRawUpdateByQuery } from '../../database/engine';
+import { elBulk, elRawSearch, elRawUpdateByQuery, elRefreshIndices } from '../../database/engine';
 import { logApp } from '../../config/conf';
 import type { AuthContext } from '../../types/user';
 import { SYSTEM_USER } from '../../utils/access';
@@ -200,11 +200,15 @@ export const userMergeScanForRewrite = async (
  *
  * Partial documents rather than whole ones: a merge rewrites one field and must not resurrect
  * the rest of a document read a moment earlier.
+ *
+ * `refresh: false` is for a caller writing page by page, which then refreshes once with
+ * {@link userMergeRefresh} rather than on every page.
  */
 export const userMergeBulkRewrite = async (
   context: AuthContext,
   label: string,
   updates: { id: string; index: string; doc: Record<string, unknown> }[],
+  opts: { refresh?: boolean } = {},
 ): Promise<number> => {
   if (updates.length === 0) {
     return 0;
@@ -213,11 +217,21 @@ export const userMergeBulkRewrite = async (
     { update: { _index: update.index, _id: update.id } },
     { doc: update.doc },
   ]);
-  await elBulk(context, { refresh: true, timeout: '60m', body }).catch((err: unknown) => {
+  await elBulk(context, { refresh: opts.refresh ?? true, timeout: '60m', body }).catch((err: unknown) => {
     throw DatabaseError('User merge bulk rewrite failed', { label, cause: err });
   });
   logApp.info('[MERGE_USERS] bulk rewrite done', { label, updated: updates.length });
   return updates.length;
+};
+
+/** Makes the unrefreshed writes of a page-by-page rewrite visible to the reads that follow. */
+export const userMergeRefresh = async (label: string, indices: string[]): Promise<void> => {
+  if (indices.length === 0) {
+    return;
+  }
+  await elRefreshIndices(indices).catch((err: unknown) => {
+    throw DatabaseError('User merge refresh failed', { label, indices, cause: err });
+  });
 };
 
 /** Deletes the documents the caller selected, each in the index it was read from. */
