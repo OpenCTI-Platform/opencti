@@ -6,11 +6,13 @@ import { type SizedNotifEvent, type StreamProcessor } from '../database/stream/s
 import { fetchRangeNotifications, storeNotificationEvent, createStreamProcessor } from '../database/stream/stream-handler';
 import {
   redisAddChangeDigestJobs,
+  redisCountChangeDigestJobFailure,
   redisExpireChangeDigestJobs,
   redisGetChangeDigestJobs,
   redisGetManagerEventState,
-  redisIsChangeDigestJobScheduled,
+  redisIsChangeDigestJobDue,
   redisRemoveChangeDigestJob,
+  redisRescheduleChangeDigestJob,
   redisSetManagerEventState,
 } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
@@ -755,6 +757,9 @@ const CHANGE_DIGEST_CONCURRENCY = 2;
 const CHANGE_DIGEST_BATCH_SIZE = 100;
 // A change digest still waiting a week after the end of its period is not sent any more
 export const CHANGE_DIGEST_MAX_DELAY_MS = 7 * 24 * 60 * 60 * 1000;
+// A digest that cannot be built or stored is tried again 5, 10, 20 and 40 minutes later, then dropped
+export const CHANGE_DIGEST_MAX_ATTEMPTS = 5;
+export const CHANGE_DIGEST_RETRY_DELAY_MS = 5 * 60 * 1000;
 const CHANGE_DIGEST_JOB_SEPARATOR = '|';
 // A change digest computes a landscape diff per recipient: the computations run apart from the scheduler loop, a few at
 // a time, so a long one never makes another digest miss its scheduled minute. Each job stays in the Redis schedule
@@ -790,20 +795,35 @@ const removeChangeDigestJob = async (member: string) => {
   }
 };
 
+// Throws when the digest cannot be built or stored
 const sendChangeDigest = async (context: AuthContext, settings: BasicStoreSettings, digest: ResolvedDigest, user: AuthUser, job: ChangeDigestJob) => {
   const { trigger } = digest;
   const userContext = { ...context, user_inside_platform_organization: isUserInPlatformOrganization(user, settings) };
+  const locale = resolveChangeDigestLocale(user.language, settings.platform_language);
+  const data = await buildChangeDigestData(userContext, user, trigger as unknown as ChangeDigestTrigger, job.fromDate, job.toDate, locale);
+  if (data.length > 0) {
+    const target = convertToNotificationUser(user, trigger.notifiers);
+    const digestEvent: DigestEvent = { version: EVENT_NOTIFICATION_VERSION, notification_id: trigger.internal_id, type: 'digest', target, data };
+    await storeNotificationEvent(context, digestEvent);
+    addChangeDigestSentCount();
+  }
+};
+
+// A failed digest stays scheduled for a later attempt, until the last one
+const retryChangeDigestJob = async (member: string, triggerId: string, cause: unknown) => {
   try {
-    const locale = resolveChangeDigestLocale(user.language, settings.platform_language);
-    const data = await buildChangeDigestData(userContext, user, trigger as unknown as ChangeDigestTrigger, job.fromDate, job.toDate, locale);
-    if (data.length > 0) {
-      const target = convertToNotificationUser(user, trigger.notifiers);
-      const digestEvent: DigestEvent = { version: EVENT_NOTIFICATION_VERSION, notification_id: trigger.internal_id, type: 'digest', target, data };
-      await storeNotificationEvent(context, digestEvent);
-      addChangeDigestSentCount();
+    const attempts = await redisCountChangeDigestJobFailure(member);
+    if (attempts >= CHANGE_DIGEST_MAX_ATTEMPTS) {
+      logApp.error('[OPENCTI-MODULE] Change digest not sent, every attempt failed', { cause, manager: 'NOTIFICATION_MANAGER', trigger_id: triggerId, attempts });
+      await removeChangeDigestJob(member);
+      return;
     }
+    const retryAt = utcDate().valueOf() + CHANGE_DIGEST_RETRY_DELAY_MS * 2 ** (attempts - 1);
+    logApp.warn('[OPENCTI-MODULE] Change digest generation error, tried again later', { cause, manager: 'NOTIFICATION_MANAGER', trigger_id: triggerId, attempts, retry_at: new Date(retryAt).toISOString() });
+    await redisRescheduleChangeDigestJob(member, retryAt);
   } catch (err) {
-    logApp.error('[OPENCTI-MODULE] Change digest generation error', { cause: err, manager: 'NOTIFICATION_MANAGER', trigger_id: trigger.internal_id });
+    // The job keeps its place and runs again at the next pass
+    logApp.error('[OPENCTI-MODULE] Change digest generation error, the attempt could not be recorded', { cause: err, manager: 'NOTIFICATION_MANAGER', trigger_id: triggerId });
   }
 };
 
@@ -849,11 +869,16 @@ const runChangeDigestJobs = async (context: AuthContext, notifications: Array<Re
       await removeChangeDigestJob(member);
     } else {
       changeDigestQueue.enqueue(member, async () => {
-        // Read in the schedule just before a job of the same digest finished and removed it: already sent
-        if (!(await redisIsChangeDigestJobScheduled(member))) {
+        // Read in the schedule just before a job of the same digest finished: already sent, or moved to a later attempt
+        if (!(await redisIsChangeDigestJobDue(member, baseDate.valueOf()))) {
           return;
         }
-        await sendChangeDigest(context, settings, digest, user, job);
+        try {
+          await sendChangeDigest(context, settings, digest, user, job);
+        } catch (err) {
+          await retryChangeDigestJob(member, digest.trigger.internal_id, err);
+          return;
+        }
         await removeChangeDigestJob(member);
       });
     }

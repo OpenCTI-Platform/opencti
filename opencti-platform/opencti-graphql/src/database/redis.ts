@@ -838,10 +838,14 @@ export const redisGetManagerEventState = async (managerName: string) => {
 // endregion
 
 // region - change digest jobs
-// Scheduled change digests waiting to be computed, scored by the end of their period. A job leaves the set only once
-// it is done, so a restart or a busy platform delays a digest instead of losing it.
+// Scheduled change digests waiting to be computed, scored by the end of their period (or by their next attempt after
+// a failure). A job leaves the set only once it is done, so a restart or a busy platform delays a digest instead of
+// losing it.
 const CHANGE_DIGEST_JOBS_KEY = 'change_digest_jobs';
 const CHANGE_DIGEST_JOBS_CHUNK_SIZE = 500;
+// Failed attempts per job; the whole hash expires when no attempt has failed for this long
+const CHANGE_DIGEST_JOB_ATTEMPTS_KEY = 'change_digest_job_attempts';
+const CHANGE_DIGEST_JOB_ATTEMPTS_TTL_MS = 8 * 24 * 60 * 60 * 1000;
 export const redisAddChangeDigestJobs = async (jobs: Array<{ score: number; member: string }>) => {
   for (let index = 0; index < jobs.length; index += CHANGE_DIGEST_JOBS_CHUNK_SIZE) {
     const scoreMembers = jobs.slice(index, index + CHANGE_DIGEST_JOBS_CHUNK_SIZE).flatMap(({ score, member }) => [score, member]);
@@ -857,12 +861,24 @@ export const redisExpireChangeDigestJobs = async (expiredBefore: number): Promis
 export const redisGetChangeDigestJobs = async (dueAt: number, count: number): Promise<string[]> => {
   return getClientBase().zrangebyscore(CHANGE_DIGEST_JOBS_KEY, '-inf', dueAt, 'LIMIT', 0, count);
 };
-export const redisIsChangeDigestJobScheduled = async (member: string): Promise<boolean> => {
+// True when the job is still scheduled and due at `dueAt`
+export const redisIsChangeDigestJobDue = async (member: string, dueAt: number): Promise<boolean> => {
   const score = await getClientBase().zscore(CHANGE_DIGEST_JOBS_KEY, member);
-  return score !== null;
+  return score !== null && Number(score) <= dueAt;
+};
+// Counts a failed attempt of the job and returns the number of failed attempts so far
+export const redisCountChangeDigestJobFailure = async (member: string): Promise<number> => {
+  const attempts = await getClientBase().hincrby(CHANGE_DIGEST_JOB_ATTEMPTS_KEY, member, 1);
+  await getClientBase().pexpire(CHANGE_DIGEST_JOB_ATTEMPTS_KEY, CHANGE_DIGEST_JOB_ATTEMPTS_TTL_MS);
+  return attempts;
+};
+// Moves a job still scheduled to `retryAt`; XX: a job removed meanwhile is not scheduled again
+export const redisRescheduleChangeDigestJob = async (member: string, retryAt: number) => {
+  await getClientBase().zadd(CHANGE_DIGEST_JOBS_KEY, 'XX', retryAt, member);
 };
 export const redisRemoveChangeDigestJob = async (member: string) => {
   await getClientBase().zrem(CHANGE_DIGEST_JOBS_KEY, member);
+  await getClientBase().hdel(CHANGE_DIGEST_JOB_ATTEMPTS_KEY, member);
 };
 // endregion
 

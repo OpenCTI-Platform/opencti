@@ -29,8 +29,10 @@ vi.mock('../../../src/manager/telemetryManager', async (importOriginal) => ({
   addChangeDigestSentCount: () => addChangeDigestSentCountMock(),
 }));
 
-// The Redis schedule of the change digest jobs, kept in memory (member -> score, like the sorted set).
+// The Redis schedule of the change digest jobs, kept in memory (member -> score, like the sorted set), and the failed
+// attempts per job.
 const scheduledJobs = vi.hoisted(() => new Map<string, number>());
+const failedAttempts = vi.hoisted(() => new Map<string, number>());
 vi.mock('../../../src/database/redis', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../src/database/redis')>()),
   redisAddChangeDigestJobs: async (jobs: Array<{ score: number; member: string }>) => {
@@ -50,13 +52,27 @@ vi.mock('../../../src/database/redis', async (importOriginal) => ({
       .slice(0, count)
       .map(([member]) => member);
   },
-  redisIsChangeDigestJobScheduled: async (member: string) => scheduledJobs.has(member),
+  redisIsChangeDigestJobDue: async (member: string, dueAt: number) => scheduledJobs.has(member) && (scheduledJobs.get(member) as number) <= dueAt,
+  redisCountChangeDigestJobFailure: async (member: string) => {
+    failedAttempts.set(member, (failedAttempts.get(member) ?? 0) + 1);
+    return failedAttempts.get(member) as number;
+  },
+  redisRescheduleChangeDigestJob: async (member: string, retryAt: number) => {
+    if (scheduledJobs.has(member)) scheduledJobs.set(member, retryAt);
+  },
   redisRemoveChangeDigestJob: async (member: string) => {
     scheduledJobs.delete(member);
+    failedAttempts.delete(member);
   },
 }));
 
-import { CHANGE_DIGEST_MAX_DELAY_MS, changeDigestQueue, handleChangeDigestNotifications, toChangeDigestJobMember } from '../../../src/manager/notificationManager';
+import {
+  CHANGE_DIGEST_MAX_ATTEMPTS,
+  CHANGE_DIGEST_MAX_DELAY_MS,
+  changeDigestQueue,
+  handleChangeDigestNotifications,
+  toChangeDigestJobMember,
+} from '../../../src/manager/notificationManager';
 import { getEntitiesListFromCache, getEntityFromCache } from '../../../src/database/cache';
 import { storeNotificationEvent } from '../../../src/database/stream/stream-handler';
 import { ENTITY_TYPE_TRIGGER } from '../../../src/modules/notification/notification-types';
@@ -113,6 +129,7 @@ describe('handleChangeDigestNotifications', () => {
 
   beforeEach(() => {
     scheduledJobs.clear();
+    failedAttempts.clear();
     vi.useFakeTimers();
     vi.setSystemTime(FROZEN);
   });
@@ -278,6 +295,58 @@ describe('handleChangeDigestNotifications', () => {
     await changeDigestQueue.idle();
     expect(buildChangeDigestDataMock).toHaveBeenCalledTimes(2);
     expect(storedEvents().map((event) => event.target.user_id)).toEqual([analyst.id, analyst.id]);
+  });
+
+  it('tries a failed digest again five minutes later and sends it once it succeeds', async () => {
+    primeCache([changeDigest]);
+    let failures = 1;
+    buildChangeDigestDataMock.mockImplementation(async (_ctx: AuthContext, recipient: AuthUser) => {
+      if (recipient.id === analyst.id && failures > 0) {
+        failures -= 1;
+        throw new Error('engine unavailable');
+      }
+      return [digestLine];
+    });
+    const analystJob = toChangeDigestJobMember({ triggerId: 'change-digest-1', userId: analyst.id, fromDate: '2026-01-05T09:00:00.000Z', toDate: FROZEN.toISOString() });
+    await handleChangeDigestNotifications({} as AuthContext);
+    await changeDigestQueue.idle();
+    expect(storedEvents().map((event) => event.target.user_id)).toEqual([manager.id]);
+    expect(scheduledJobs.get(analystJob)).toBe(Date.parse('2026-01-12T09:05:00.000Z'));
+    // Not tried again before its time
+    vi.setSystemTime(new Date('2026-01-12T09:04:00.000Z'));
+    await handleChangeDigestNotifications({} as AuthContext);
+    await changeDigestQueue.idle();
+    expect(buildChangeDigestDataMock).toHaveBeenCalledTimes(2);
+    vi.setSystemTime(new Date('2026-01-12T09:05:00.000Z'));
+    await handleChangeDigestNotifications({} as AuthContext);
+    await changeDigestQueue.idle();
+    expect(buildChangeDigestDataMock).toHaveBeenCalledTimes(3);
+    expect(storedEvents().map((event) => event.target.user_id)).toEqual([manager.id, analyst.id]);
+    expect(scheduledJobs.size).toBe(0);
+    expect(failedAttempts.size).toBe(0);
+  });
+
+  it('tries a failing digest five times with a growing delay, then drops it', async () => {
+    primeCache([changeDigest]);
+    buildChangeDigestDataMock.mockImplementation(async (_ctx: AuthContext, recipient: AuthUser) => {
+      if (recipient.id === analyst.id) throw new Error('landscape diff failed');
+      return [];
+    });
+    const analystJob = toChangeDigestJobMember({ triggerId: 'change-digest-1', userId: analyst.id, fromDate: '2026-01-05T09:00:00.000Z', toDate: FROZEN.toISOString() });
+    await handleChangeDigestNotifications({} as AuthContext);
+    await changeDigestQueue.idle();
+    const retries: string[] = [];
+    while (scheduledJobs.has(analystJob)) {
+      const retryAt = scheduledJobs.get(analystJob) as number;
+      retries.push(new Date(retryAt).toISOString());
+      vi.setSystemTime(new Date(retryAt));
+      await handleChangeDigestNotifications({} as AuthContext);
+      await changeDigestQueue.idle();
+    }
+    expect(retries).toEqual(['2026-01-12T09:05:00.000Z', '2026-01-12T09:15:00.000Z', '2026-01-12T09:35:00.000Z', '2026-01-12T10:15:00.000Z']);
+    expect(buildChangeDigestDataMock.mock.calls.filter((call) => (call[1] as AuthUser).id === analyst.id)).toHaveLength(CHANGE_DIGEST_MAX_ATTEMPTS);
+    expect(failedAttempts.size).toBe(0);
+    expect(storedEvents()).toHaveLength(0);
   });
 
   it('removes without computing them the jobs of a deleted trigger or of a former recipient', async () => {
