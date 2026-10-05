@@ -1,5 +1,5 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicStoreBase, BasicStoreCommon } from '../../types/store';
+import type { BasicStoreBase, StoreObject } from '../../types/store';
 import type { BasicStoreSettings } from '../../types/settings';
 import type { StixObject } from '../../types/stix-2-1-common';
 import { isUserCanAccessStixElement, isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
@@ -51,7 +51,7 @@ export const notifyGraphClusterJoined = async (context: AuthContext, publishedAt
   const clusterIds = Array.from(new Set(joined.map((element) => metricsOf(element)?.cluster_id).filter((id): id is string => !!id)));
   const clusters = new Map((await loadGraphClusters(context, SYSTEM_USER, clusterIds)).map((cluster) => [cluster.internal_id, cluster]));
   const memberIds = joined.filter((element) => clusters.has(metricsOf(element)?.cluster_id ?? '')).map((element) => element.internal_id);
-  const members = memberIds.length > 0 ? await storeLoadByIdsWithRefs<BasicStoreCommon>(context, SYSTEM_USER, memberIds) : [];
+  const members = memberIds.length > 0 ? await storeLoadByIdsWithRefs<StoreObject>(context, SYSTEM_USER, memberIds) : [];
   const membersById = new Map(members.map((member) => [member.internal_id, member]));
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   let delivered = 0;
