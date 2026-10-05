@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
-import { Combobox, ComboboxChips, ComboboxClear, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxLabel, ComboboxTrigger } from '@filigran/design-system';
+import { Combobox, ComboboxChips, ComboboxClear, ComboboxContent, ComboboxControls, ComboboxField, ComboboxInput, ComboboxTrigger } from '@filigran/design-system';
 import { fetchQuery } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -69,6 +69,7 @@ const DefenseThreatsField = ({ value, onChange }: DefenseThreatsFieldProps) => {
   return (
     <Combobox<DefenseThreatOption>
       multiple
+      labelPosition="none"
       className="w-full"
       options={options}
       value={value}
@@ -88,10 +89,9 @@ const DefenseThreatsField = ({ value, onChange }: DefenseThreatsFieldProps) => {
         </span>
       )}
     >
-      <ComboboxLabel>{t_i18n('Threats')}</ComboboxLabel>
       <ComboboxField>
         <ComboboxChips aria-label={t_i18n('Threats')} />
-        <ComboboxInput data-testid="defense-threats-input" />
+        <ComboboxInput placeholder={t_i18n('Threats')} aria-label={t_i18n('Threats')} data-testid="defense-threats-input" />
         <ComboboxControls>
           <ComboboxClear />
           <ComboboxTrigger />

@@ -11,13 +11,11 @@ import {
   ComboboxControls,
   ComboboxField,
   ComboboxInput,
-  ComboboxLabel,
   ComboboxTrigger,
   IconButton,
   Select,
   SelectContent,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
   Switch,
@@ -161,10 +159,12 @@ const DefenseGaps = () => {
           <PlatformsToolbar queryRef={platformsQueryRef} scope={scope} onScopeChange={setScope} />
         </Suspense>
       )}
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-end', gap: 2 }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2 }} data-testid="defense-gaps-toolbar">
+        <SearchInput onSubmit={setSearch} />
         <Box sx={{ minWidth: 240, flex: '1 1 240px', maxWidth: 360 }}>
           <Combobox<LevelOption>
             multiple
+            labelPosition="none"
             className="w-full"
             options={levelOptions}
             value={levelOptions.filter((o) => levels.includes(o.value))}
@@ -172,10 +172,9 @@ const DefenseGaps = () => {
             isOptionEqualToValue={(a, b) => a.value === b.value}
             onValueChange={(next) => setLevels(((next as LevelOption[] | null) ?? []).map((o) => o.value))}
           >
-            <ComboboxLabel>{t_i18n('Defense levels')}</ComboboxLabel>
             <ComboboxField>
               <ComboboxChips aria-label={t_i18n('Defense levels')} />
-              <ComboboxInput placeholder={t_i18n('Below validated')} data-testid="defense-gaps-levels" />
+              <ComboboxInput placeholder={t_i18n('Below validated')} aria-label={t_i18n('Defense levels')} data-testid="defense-gaps-levels" />
               <ComboboxControls>
                 <ComboboxClear />
                 <ComboboxTrigger />
@@ -187,6 +186,7 @@ const DefenseGaps = () => {
         <Box sx={{ minWidth: 240, flex: '1 1 240px', maxWidth: 420 }}>
           <Combobox<ActionOption>
             multiple
+            labelPosition="none"
             className="w-full"
             options={actionOptions}
             value={actionOptions.filter((o) => actions.includes(o.value))}
@@ -194,10 +194,9 @@ const DefenseGaps = () => {
             isOptionEqualToValue={(a, b) => a.value === b.value}
             onValueChange={(next) => setActions(((next as ActionOption[] | null) ?? []).map((o) => o.value))}
           >
-            <ComboboxLabel>{t_i18n('Recommended actions')}</ComboboxLabel>
             <ComboboxField>
               <ComboboxChips aria-label={t_i18n('Recommended actions')} />
-              <ComboboxInput placeholder={t_i18n('All actions')} data-testid="defense-gaps-actions" />
+              <ComboboxInput placeholder={t_i18n('All actions')} aria-label={t_i18n('Recommended actions')} data-testid="defense-gaps-actions" />
               <ComboboxControls>
                 <ComboboxClear />
                 <ComboboxTrigger />
@@ -206,10 +205,9 @@ const DefenseGaps = () => {
             <ComboboxContent emptyMessage={t_i18n('No available options')} listAriaLabel={t_i18n('Recommended actions')} />
           </Combobox>
         </Box>
-        <Box sx={{ minWidth: 180 }}>
+        <Stack direction="row" spacing={1} alignItems="center">
           <Select value={orderBy} onValueChange={(value) => setOrderBy(value as GapsOrdering)}>
-            <SelectLabel>{t_i18n('Sort by')}</SelectLabel>
-            <SelectTrigger aria-label={t_i18n('Sort by')}>
+            <SelectTrigger aria-label={t_i18n('Sort by')} style={{ width: 180 }}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent aria-label={t_i18n('Sort by')}>
@@ -218,15 +216,15 @@ const DefenseGaps = () => {
               ))}
             </SelectContent>
           </Select>
-        </Box>
-        <IconButton
-          size="md"
-          priority="tertiary"
-          aria-label={orderMode === 'asc' ? t_i18n('Ascending order') : t_i18n('Descending order')}
-          onClick={() => setOrderMode(orderMode === 'asc' ? 'desc' : 'asc')}
-          icon={orderMode === 'asc' ? <ArrowUpwardOutlined fontSize="small" /> : <ArrowDownwardOutlined fontSize="small" />}
-        />
-        <Box sx={{ paddingBottom: 1 }}>
+          <IconButton
+            size="md"
+            priority="tertiary"
+            aria-label={orderMode === 'asc' ? t_i18n('Ascending order') : t_i18n('Descending order')}
+            onClick={() => setOrderMode(orderMode === 'asc' ? 'desc' : 'asc')}
+            icon={orderMode === 'asc' ? <ArrowUpwardOutlined fontSize="small" /> : <ArrowDownwardOutlined fontSize="small" />}
+          />
+        </Stack>
+        <Stack direction="row" spacing={1} alignItems="center">
           <Switch
             label={t_i18n('Only techniques used by threats')}
             checked={usedByThreatsFilter}
@@ -236,12 +234,11 @@ const DefenseGaps = () => {
             data-testid="defense-gaps-only-threats"
           />
           {!threatOverlay && (
-            <Typography id="defense-gaps-only-threats-reason" variant="caption" color="text.secondary" component="p">
+            <Typography id="defense-gaps-only-threats-reason" variant="caption" color="text.secondary" noWrap>
               {t_i18n('Choose threats in the scope first')}
             </Typography>
           )}
-        </Box>
-        <SearchInput variant="thin" onSubmit={setSearch} />
+        </Stack>
         <Stack direction="row" spacing={1} sx={{ marginLeft: 'auto' }}>
           <Button
             variant="secondary"

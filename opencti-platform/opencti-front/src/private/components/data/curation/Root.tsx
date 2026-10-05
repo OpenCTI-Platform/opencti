@@ -31,7 +31,7 @@ const CurationTabPage = ({ tabs }: { tabs: CurationTab[] }) => {
     return <Navigate to={`${PATH_CURATION}/${tabs[0].path}`} replace={true} />;
   }
   return (
-    <PageContainer withRightMenu={false} withGap>
+    <PageContainer withRightMenu={false}>
       <Breadcrumbs
         elements={[
           { label: t_i18n('Data') },

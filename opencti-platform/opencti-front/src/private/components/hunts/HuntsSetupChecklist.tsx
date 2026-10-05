@@ -91,7 +91,7 @@ const HuntsSetupChecklist = ({ state }: { state: HuntsSetupState }) => {
               <Button variant="secondary" size="small" component={Link} to={HUNT_CONNECTOR_CATALOG_PATH} data-testid="hunts-setup-deploy-connector">
                 {t_i18n('Deploy a hunt connector')}
               </Button>
-              <Button variant="tertiary" size="small" href={HUNT_DOCS.connectors} target="_blank" rel="noopener noreferrer">{t_i18n('Required permissions')}</Button>
+              <Button variant="secondary" size="small" href={HUNT_DOCS.connectors} target="_blank" rel="noopener noreferrer">{t_i18n('Required permissions')}</Button>
             </>
           ) : undefined}
         >

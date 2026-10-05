@@ -27,7 +27,7 @@ const HubTabBar = ({ label, value, tabs, testIdPrefix }: HubTabBarProps) => {
   const { t_i18n } = useFormatter();
   return (
     <Tabs value={value} panels="external">
-      <TabsList aria-label={label}>
+      <TabsList aria-label={label} className="mb-6">
         {tabs.map((tab) => (
           <TabsTrigger key={tab.path} value={tab.path} asChild>
             <Link to={tab.link} data-testid={`${testIdPrefix}-${tab.path}`}>

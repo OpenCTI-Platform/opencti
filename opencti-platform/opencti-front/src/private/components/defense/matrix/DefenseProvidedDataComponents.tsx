@@ -9,6 +9,7 @@ import Dialog from '@common/dialog/Dialog';
 import StixCoreRelationshipCreationFromEntity from '@components/common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import Card from '../../../../components/common/card/Card';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
+import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
@@ -214,7 +215,7 @@ const ProvidedList = ({ queryRef, onDeleted }: { queryRef: PreloadedQuery<Defens
   const [toRemove, setToRemove] = useState<{ id: string; name: string } | null>(null);
   const relations = (data.stixCoreRelationships?.edges ?? []).map(({ node }) => node).filter((node) => !!node.to?.id);
   if (relations.length === 0) {
-    return <Typography variant="body2" color="text.secondary">{t_i18n('No data component is declared as provided.')}</Typography>;
+    return <WidgetNoData message={t_i18n('No data component is declared as provided.')} />;
   }
   const remove = () => toRemove && commitDelete({
     variables: { id: toRemove.id },
@@ -312,6 +313,7 @@ const DefenseProvidedDataComponents = ({ entityId }: DefenseProvidedDataComponen
             <StixCoreRelationshipCreationFromEntity
               entityId={entityId}
               variant="inLine"
+              inLineSize="default"
               allowedRelationshipTypes={[PROVIDES]}
               targetStixDomainObjectTypes={['Data-Component']}
               paginationOptions={{}}

@@ -95,7 +95,13 @@ const KpiCounter = ({ id, label, value, caption, badge, actionable, selected, on
           : t_i18n('{label}: {value}, filter the deployments', { values: { label, value } }),
         'aria-pressed': selected,
       }}
-      sx={selected ? { outline: '2px solid var(--border-input-focus)', outlineOffset: '-2px' } : undefined}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'flex-start',
+        alignItems: 'stretch',
+        ...(selected ? { outline: '2px solid var(--border-input-focus)', outlineOffset: '-2px' } : {}),
+      }}
     >
       <Stack gap={0.5} data-testid={`kpi-${id}`}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" gap={1}>
@@ -109,7 +115,7 @@ const KpiCounter = ({ id, label, value, caption, badge, actionable, selected, on
         >
           {value}
         </Typography>
-        {caption && <Typography variant="caption" color="text.secondary">{caption}</Typography>}
+        {caption && <Typography variant="caption" color="text.secondary" noWrap title={caption}>{caption}</Typography>}
       </Stack>
     </Card>
   );
@@ -192,7 +198,7 @@ const DisseminationAssuranceMetricsContent = ({ platformId, startDate, renderDep
       id: 'disseminated',
       label: t_i18n('Disseminated'),
       value: n(kpis.disseminated),
-      caption: t_i18n('Deployments recorded by the stream connectors'),
+      caption: t_i18n('Recorded by stream connectors'),
       badge: kpis.failed > 0 ? t_i18n('{count, plural, one {# failed} other {# failed}}', { values: { count: kpis.failed } }) : undefined,
     },
     { id: 'deployed', label: t_i18n('Deployed'), value: n(kpis.deployed), caption: shareOfDisseminated(kpis.deployed) },
@@ -200,14 +206,14 @@ const DisseminationAssuranceMetricsContent = ({ platformId, startDate, renderDep
       id: 'active',
       label: t_i18n('Active'),
       value: n(kpis.active),
-      caption: t_i18n('Deployments the platform confirmed as live'),
+      caption: t_i18n('Confirmed live by the platform'),
     },
     { id: 'validated', label: t_i18n('Validated'), value: n(kpis.validated), caption: shareOfDisseminated(kpis.validated) },
     {
       id: 'missed',
       label: t_i18n('Missed'),
       value: n(kpis.missed),
-      caption: t_i18n('Validation tests the platform did not catch'),
+      caption: t_i18n('Tests the platform missed'),
       actionable: kpis.missed > 0,
     },
   ];

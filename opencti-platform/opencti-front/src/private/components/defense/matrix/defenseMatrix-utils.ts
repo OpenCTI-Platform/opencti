@@ -299,6 +299,17 @@ export const parseDefenseScope = (raw: string | null): DefenseScopeState => {
 // Maximum number of gaps in an export, the one the API applies
 export const DEFENSE_GAPS_EXPORT_MAX = 10000;
 
+const TACTIC_MINOR_WORDS = new Set(['and', 'of', 'the', 'to', 'in', 'on', 'for']);
+
+// Kill chain phases are stored as slugs ("command-and-control"); ATT&CK names them "Command and Control"
+export const tacticDisplayName = (phaseName: string) => {
+  if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(phaseName)) return phaseName;
+  return phaseName
+    .split('-')
+    .map((word, index) => (index > 0 && TACTIC_MINOR_WORDS.has(word) ? word : `${word.charAt(0).toUpperCase()}${word.slice(1)}`))
+    .join(' ');
+};
+
 export const defenseGapsExportFileName = (date: Date) => `defense_gaps_${date.toISOString().substring(0, 10)}.csv`;
 
 export const downloadCsv = (content: string, fileName: string) => {

@@ -40,7 +40,7 @@ const DefenseAreaPage = ({ area }: { area: DefenseArea }) => {
   }
   const section = defenseAreaSection(area, subPath);
   return (
-    <PageContainer withRightMenu={false} withGap>
+    <PageContainer withRightMenu={false}>
       <Breadcrumbs
         elements={[
           { label: t_i18n('Defense') },

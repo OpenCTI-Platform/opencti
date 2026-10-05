@@ -1,4 +1,4 @@
-import React, { Suspense, useMemo, useState } from 'react';
+import React, { ReactNode, Suspense, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/styles';
@@ -189,10 +189,13 @@ interface HuntStatisticsProps {
   huntId?: string | null;
   showWidgets?: boolean;
   defaultPeriod?: HuntStatisticsPeriod;
+  /** Rendered before the period selector, on its row */
+  action?: ReactNode;
 }
 
-const HuntStatistics = ({ huntId = null, showWidgets = true, defaultPeriod = '30d' }: HuntStatisticsProps) => {
+const HuntStatistics = ({ huntId = null, showWidgets = true, defaultPeriod = '30d', action }: HuntStatisticsProps) => {
   const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const [period, setPeriod] = useState<HuntStatisticsPeriod>(defaultPeriod);
   // The window is computed once per period change so the query is not refetched at every render
   const variables = useMemo(() => huntStatisticsVariables(huntId, period), [huntId, period]);
@@ -200,7 +203,8 @@ const HuntStatistics = ({ huntId = null, showWidgets = true, defaultPeriod = '30
 
   return (
     <div data-testid="hunt-statistics">
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: theme.spacing(1), marginBottom: 12 }}>
+        {action}
         <Select value={period} onValueChange={(value) => setPeriod(value as HuntStatisticsPeriod)}>
           <SelectTrigger aria-label={t_i18n('Period')} style={{ width: 180 }}>
             <SelectValue />

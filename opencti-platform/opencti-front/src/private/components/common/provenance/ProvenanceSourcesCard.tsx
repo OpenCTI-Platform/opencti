@@ -79,7 +79,7 @@ const ProvenanceSourcesCardContent = ({ id, fetchKey, onOpen, showEmpty }: Prove
   }
   if (!model) {
     return showEmpty ? (
-      <Card title={t_i18n('Sources')} fullHeight={false}>
+      <Card title={t_i18n('Sources')}>
         <Typography variant="body2" data-testid="provenance-sources-empty">
           {t_i18n('No source asserted this knowledge yet.')}
         </Typography>
@@ -87,7 +87,7 @@ const ProvenanceSourcesCardContent = ({ id, fetchKey, onOpen, showEmpty }: Prove
     ) : null;
   }
   return (
-    <Card title={t_i18n('Sources')} fullHeight={false}>
+    <Card title={t_i18n('Sources')}>
       <Stack gap={1.5} data-testid="provenance-sources-card">
         <Stack direction="row" alignItems="center" gap={1.5} flexWrap="wrap">
           <ProvenanceBadge

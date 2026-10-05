@@ -21,9 +21,8 @@ import {
 import { DashboardOutlined, RefreshOutlined, SettingsOutlined } from '@mui/icons-material';
 import Button from '@common/button/Button';
 import EEChip from '@components/common/entreprise_edition/EEChip';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
-import PageContainer from '../../../../components/PageContainer';
 import { useFormatter } from '../../../../components/i18n';
+import { IntegrationsSourcesChrome } from '../Integrations';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -196,8 +195,10 @@ const SourceIntelligenceHeader = ({ queryRef }: SourceIntelligenceHeaderProps) =
           <Typography id="source-intelligence-title" variant="h1" sx={{ marginBottom: 0.5 }}>
             {t_i18n('Source Intelligence')}
           </Typography>
-          <Typography variant="body2" sx={{ color: theme.palette.text.secondary, maxWidth: 760 }}>
-            {t_i18n('Measure the operational value of every connector, feed and author: unique contribution, lead time, accuracy, relevance, detection impact, noise and cost.')}
+          <Typography variant="body2" sx={{ color: theme.palette.text.secondary }} noWrap>
+            {t_i18n('Measure the operational value of every connector, feed and author.')}
+            {' '}
+            <a href={SOURCE_INTELLIGENCE_DOCUMENTATION_URL} target="_blank" rel="noopener noreferrer">{t_i18n('Learn more')}</a>
           </Typography>
         </Box>
         <Stack direction="row" gap={1} flexShrink={0} flexWrap="wrap">
@@ -361,28 +362,8 @@ const SourceIntelligence = ({ view: forcedView }: SourceIntelligenceProps) => {
     : `/dashboard/integrations/sources/${target}`);
 
   return (
-    <div data-testid="source-intelligence-page">
-      <PageContainer withGap style={{ paddingBottom: 50 }}>
-        <Breadcrumbs
-          elements={[
-            { label: t_i18n('Integrations'), link: '/dashboard/integrations' },
-            { label: t_i18n('Sources'), current: true },
-          ]}
-          noMargin
-        />
-        <Tabs value="sources" panels="external">
-          <TabsList>
-            <TabsTrigger value="deployed" asChild>
-              <Link to="/dashboard/integrations/deployed">{t_i18n('Deployed')}</Link>
-            </TabsTrigger>
-            <TabsTrigger value="available" asChild>
-              <Link to="/dashboard/integrations/available">{t_i18n('Available')}</Link>
-            </TabsTrigger>
-            <TabsTrigger value="sources" asChild>
-              <Link to="/dashboard/integrations/sources" data-testid="integrations-tab-sources">{t_i18n('Sources')}</Link>
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+    <IntegrationsSourcesChrome>
+      <Stack gap={3} data-testid="source-intelligence-page">
         {statusQueryRef && (
           <Suspense fallback={<SourceIntelligenceHeaderSkeleton />}>
             <SourceIntelligenceHeader queryRef={statusQueryRef} />
@@ -430,8 +411,8 @@ const SourceIntelligence = ({ view: forcedView }: SourceIntelligenceProps) => {
           {view === 'gaps' && <CollectionGaps />}
           {view === 'recommendations' && <SourceRecommendations />}
         </Suspense>
-      </PageContainer>
-    </div>
+      </Stack>
+    </IntegrationsSourcesChrome>
   );
 };
 

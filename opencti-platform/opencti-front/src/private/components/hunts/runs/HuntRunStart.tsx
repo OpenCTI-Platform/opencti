@@ -212,7 +212,7 @@ const HuntRunStart = ({ hunt, paginationOptions, compact = false }: HuntRunStart
 
   const runButton = (
     <Button
-      size="small"
+      size={compact ? 'default' : 'small'}
       variant={compact ? 'secondary' : 'primary'}
       startIcon={<PlayArrowOutlined fontSize="small" />}
       disabled={!canRun}

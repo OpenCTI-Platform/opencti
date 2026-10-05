@@ -69,8 +69,8 @@ const Kpi = ({ label, value, to, testId }: KpiProps) => {
         '&:focus-visible': { outline: `2px solid ${theme.palette.primary.main}`, outlineOffset: 2 },
       }}
     >
-      <Typography variant="h2" component="div" sx={{ margin: 0 }}>{n(value)}</Typography>
       <Typography variant="body2" sx={{ color: 'text.secondary' }}>{label}</Typography>
+      <Typography variant="h2" component="div" sx={{ margin: 0 }}>{n(value)}</Typography>
     </Box>
   );
 };

@@ -282,18 +282,19 @@ const Hunts = () => {
       <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
         <HuntsFirstUse paginationOptions={queryPaginationOptions}>
           <div ref={setStatisticsElement} style={{ marginBottom: 16 }}>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
-              <Button
-                variant="tertiary"
-                size="small"
-                onClick={toggleCharts}
-                startIcon={<BarChartOutlined fontSize="small" />}
-                aria-pressed={showCharts}
-              >
-                {showCharts ? t_i18n('Hide charts') : t_i18n('Show charts')}
-              </Button>
-            </div>
-            <HuntStatistics showWidgets={showCharts} />
+            <HuntStatistics
+              showWidgets={showCharts}
+              action={(
+                <Button
+                  variant="tertiary"
+                  onClick={toggleCharts}
+                  startIcon={<BarChartOutlined fontSize="small" />}
+                  aria-pressed={showCharts}
+                >
+                  {showCharts ? t_i18n('Hide charts') : t_i18n('Show charts')}
+                </Button>
+              )}
+            />
           </div>
           {matchesNothing && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }} data-testid="hunts-no-match">

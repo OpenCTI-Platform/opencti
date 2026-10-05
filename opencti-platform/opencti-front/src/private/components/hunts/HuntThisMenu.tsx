@@ -137,7 +137,7 @@ const HuntThisMenu = ({ entity }: HuntThisMenuProps) => {
         <Menu>
           <MenuTrigger asChild>
             <Button
-              priority="secondary"
+              priority="tertiary"
               size="sm"
               startIcon={<Crosshairs fontSize="small" />}
               endIcon={<ExpandMoreOutlined fontSize="small" />}

@@ -142,8 +142,8 @@ const SavedList = ({ listId }: { listId: SavedListId }) => {
   } as UsePreloadedPaginationFragment<DisseminationAssuranceListsLinesPaginationQuery>;
 
   const dataColumns: DataTableProps['dataColumns'] = {
-    pattern_type: { percentWidth: 10 },
-    name: { percentWidth: 26 },
+    pattern_type: { percentWidth: 9 },
+    name: { percentWidth: 20 },
     deployment_platforms_count: {
       id: 'deployment_platforms_count',
       label: t_i18n('Live platforms'),
@@ -154,26 +154,26 @@ const SavedList = ({ listId }: { listId: SavedListId }) => {
     deployment_failed_count: {
       id: 'deployment_failed_count',
       label: t_i18n('Failed deployments'),
-      percentWidth: 10,
+      percentWidth: 13,
       isSortable: true,
       render: ({ deployment_failed_count }: DisseminationAssuranceListsLine_node$data) => defaultRender(n(deployment_failed_count ?? 0)),
     },
     validated_platforms_count: {
       id: 'validated_platforms_count',
       label: t_i18n('Validated platforms'),
-      percentWidth: 10,
+      percentWidth: 13,
       isSortable: true,
       render: ({ validated_platforms_count }: DisseminationAssuranceListsLine_node$data) => defaultRender(n(validated_platforms_count ?? 0)),
     },
     hit_platforms_count: {
       id: 'hit_platforms_count',
       label: t_i18n('Platforms with hits'),
-      percentWidth: 10,
+      percentWidth: 13,
       isSortable: true,
       render: ({ hit_platforms_count }: DisseminationAssuranceListsLine_node$data) => defaultRender(n(hit_platforms_count ?? 0)),
     },
     valid_until: { percentWidth: 12 },
-    objectMarking: { percentWidth: 12, isSortable: false },
+    objectMarking: { percentWidth: 10, isSortable: false },
   };
 
   return (

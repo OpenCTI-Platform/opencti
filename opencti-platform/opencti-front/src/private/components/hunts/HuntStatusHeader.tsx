@@ -271,6 +271,15 @@ const HuntStatusHeader = ({ data }: HuntStatusHeaderProps) => {
           </div>
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+              {status !== 'retired' && (
+                <Button variant="secondary" onClick={() => openRetire(true)} disabled={inFlight} data-testid="hunt-status-to-retired">
+                  {t_i18n('Retire')}
+                </Button>
+              )}
+              <Button variant="secondary" startIcon={<ManageSearchOutlined fontSize="small" />} onClick={() => setPreviewing(true)} data-testid="hunt-query-preview-open">
+                {t_i18n('Preview the query')}
+              </Button>
+              <HuntRunStart hunt={hunt} compact />
               {primary && (
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: theme.spacing(1) }}>
                   <Button
@@ -288,15 +297,6 @@ const HuntStatusHeader = ({ data }: HuntStatusHeaderProps) => {
                     </Text>
                   )}
                 </span>
-              )}
-              <HuntRunStart hunt={hunt} compact />
-              <Button variant="secondary" size="small" startIcon={<ManageSearchOutlined fontSize="small" />} onClick={() => setPreviewing(true)} data-testid="hunt-query-preview-open">
-                {t_i18n('Preview the query')}
-              </Button>
-              {status !== 'retired' && (
-                <Button variant="tertiary" size="small" onClick={() => openRetire(true)} disabled={inFlight} data-testid="hunt-status-to-retired">
-                  {t_i18n('Retire')}
-                </Button>
               )}
             </div>
           </Security>
