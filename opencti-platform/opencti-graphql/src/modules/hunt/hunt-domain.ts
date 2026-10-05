@@ -65,7 +65,7 @@ import { callHuntAgent, HUNT_PLANNER_INTENT, validateHuntPlanSpec } from './hunt
 import { parseHuntPack, planHuntPackImport, resolveHuntPackLabels } from './hunt-pack';
 import { type HuntValidationState, mergeHuntEdits, validateHuntState } from './hunt-validators';
 import { withHuntLock } from './hunt-lock';
-import { cancelDeletedHuntRuns, createHuntRuns, findHuntConnectors } from './huntRun/huntRun-domain';
+import { cancelDeletedHuntRuns, createHuntRuns, findHuntConnectors, startHuntTranslationCheck } from './huntRun/huntRun-domain';
 import { type BasicStoreEntityHuntRun, ENTITY_TYPE_HUNT_RUN, HUNT_RUN_TRIGGER_EMULATION } from './huntRun/huntRun-types';
 
 const ATTACK_TECHNIQUE_ID = /^T\d{4}(?:\.\d{3})?$/i;
@@ -176,6 +176,9 @@ export const addHunt = async (context: AuthContext, user: AuthUser, input: HuntA
   if (!context.draft_context) {
     await refreshNextRunAt(context, created);
   }
+  if (!context.draft_context && !replicated && created.hunt_status === HUNT_STATUS_ACTIVE && opts.upsertedStatus !== HUNT_STATUS_ACTIVE) {
+    await startHuntTranslationCheck(context, user, created);
+  }
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
@@ -266,6 +269,7 @@ export const huntEditField = async (
   // Activating (or resuming) a hunt requires every item of its readiness, refused with the sentence of the first unmet
   // one; inside a draft workspace the hunt only runs once the draft is validated, its logic is checked at the edit
   const activation = normalizedInput.find((editInput) => editInput.key === 'hunt_status');
+  let activated = false;
   if (activation && (activation.value ?? [])[0] === HUNT_STATUS_ACTIVE && !context.draft_context) {
     const current = await findHuntById(context, user, huntId);
     if (current && current.hunt_status !== HUNT_STATUS_ACTIVE) {
@@ -274,11 +278,15 @@ export const huntEditField = async (
       if (unmet) {
         throw ValidationError(`This hunt cannot be activated: ${unmet.message}`, 'hunt_status');
       }
+      activated = true;
     }
   }
   const updated = await stixDomainObjectEditField(context, user, huntId, normalizedInput, opts) as BasicStoreEntityHunt;
   if (!context.draft_context && input.some((editInput) => ['hunt_schedule', 'hunt_status'].includes(editInput.key))) {
     await refreshNextRunAt(context, updated);
+  }
+  if (activated) {
+    await startHuntTranslationCheck(context, user, updated);
   }
   return updated;
 };

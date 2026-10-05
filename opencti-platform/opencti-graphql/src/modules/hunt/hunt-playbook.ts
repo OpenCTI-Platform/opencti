@@ -7,6 +7,7 @@ import { FilterMode, FilterOperator } from '../../generated/graphql';
 import { AUTOMATION_MANAGER_USER, HUNT_MANAGER_USER } from '../../utils/access';
 import { resolveUserByIdFromCache } from '../user/user-domain';
 import { listHuntConnectors } from './hunt-dispatch';
+import { isTerminalHuntRunFailure } from './hunt-logic';
 import {
   type BasicStoreEntityHuntRun,
   ENTITY_TYPE_HUNT_RUN,
@@ -83,12 +84,14 @@ export const computeHuntPlaybookOutcome = (runs: BasicStoreEntityHuntRun[]): Hun
     }
   });
   const effective = Array.from(latest.values());
+  // A run that failed for good has no verdict to match: its pending verdict never waits for a review
+  const judged = effective.filter((run) => !isTerminalHuntRunFailure(run));
   return {
     runs_count: effective.length,
     completed_count: effective.filter((run) => run.hunt_run_status === HUNT_RUN_STATUS_COMPLETED).length,
     hits_total: effective.reduce((sum, run) => sum + (run.hits_count ?? 0), 0),
-    verdicts: Array.from(new Set(effective.map((run) => run.verdict))),
-    proposed_verdicts: Array.from(new Set(effective
+    verdicts: Array.from(new Set(judged.map((run) => run.verdict))),
+    proposed_verdicts: Array.from(new Set(judged
       .map((run) => (run.verdict === HUNT_VERDICT_PENDING && run.verdict_proposal ? run.verdict_proposal : run.verdict)))),
     incident_ids: Array.from(new Set(effective.map((run) => run.incident_id).filter((id): id is string => !!id))),
   };

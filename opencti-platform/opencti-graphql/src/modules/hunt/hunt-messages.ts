@@ -38,6 +38,11 @@ export const HUNT_MESSAGES = {
   queueNextDispatch: 'Waiting for the next dispatch of the hunt manager',
   runCancelledHuntDeleted: 'The hunt of this run was deleted',
   runCancelledConnectorDeleted: 'The hunt connector of this run was deleted',
+  runFailedTranslation: '{connector} cannot translate the hunt logic for its platform: edit the Sigma rule or add a native query, the run is not retried',
+  runFailedRejected: '{connector} refuses this run the same way at every attempt: fix the hunt logic, the run is not retried',
+  translationReady: '{connector} translated the hunt logic',
+  translationChecking: '{connector} is checking the translation of the hunt logic',
+  translationFailed: '{connector} cannot translate the hunt logic: {error}',
 } as const;
 
 export type HuntMessageValues = Record<string, string | number>;

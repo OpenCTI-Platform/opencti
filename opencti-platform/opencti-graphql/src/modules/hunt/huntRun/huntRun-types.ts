@@ -174,6 +174,10 @@ interface HuntRunAttributes {
   completed_at?: string | null;
   cost_ms?: number | null;
   error_message?: string | null;
+  // False for a failure the same run meets again in the same way (translation, a query the platform rejects): no retry
+  failure_retryable?: boolean | null;
+  // The hunt logic the run was created from (huntLogicFingerprint): the translation of this logic is known from its runs
+  hunt_logic_fingerprint?: string | null;
   playbook_id?: string | null;
   playbook_execution_id?: string | null;
   playbook_step_id?: string | null;

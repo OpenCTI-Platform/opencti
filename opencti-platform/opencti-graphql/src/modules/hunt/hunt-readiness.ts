@@ -8,6 +8,7 @@ import { huntLogicError, sigmaRuleErrors } from './hunt-validators';
 import { HUNT_MESSAGES, type HuntMessageValues, listNames, renderHuntMessage } from './hunt-messages';
 import { type HuntIocSet, resolveHuntIocSet } from './hunt-iocs';
 import { huntConnectorPlatform, listHuntConnectors, resolveHuntScopePlatforms } from './hunt-dispatch';
+import { findHuntTranslation, type HuntTranslation, huntTranslationMessage } from './hunt-logic';
 import { HuntReadinessKey, HuntReadinessStatus } from '../../generated/graphql';
 
 type ReadinessKey = `${HuntReadinessKey}`;
@@ -19,6 +20,7 @@ const KEYS: Record<ReadinessKey, HuntReadinessKey> = {
   schedule: HuntReadinessKey.Schedule,
   scope: HuntReadinessKey.Scope,
   draft: HuntReadinessKey.Draft,
+  translation: HuntReadinessKey.Translation,
 };
 const STATUSES: Record<ReadinessStatus, HuntReadinessStatus> = {
   met: HuntReadinessStatus.Met,
@@ -126,18 +128,33 @@ const connectorItem = (hunt: BasicStoreEntityHunt, connectors: BasicStoreEntityC
   return item('connector', 'met', HUNT_MESSAGES.connectorReady, { connectors: listNames(alive.map((connector) => connector.name)) });
 };
 
+// The translation of the current logic, as its last translation preview or execution found it: a logic that fails to
+// translate for good blocks the activation, one being checked or translated informs. Unknown until a run of it reports.
+const translationItem = (translation: HuntTranslation | null): HuntReadinessItem[] => {
+  if (!translation) {
+    return [];
+  }
+  const { template, values } = huntTranslationMessage(translation);
+  const statuses: Record<HuntTranslation['state'], ReadinessStatus> = { translated: 'met', checking: 'warning', failed: 'unmet' };
+  return [item('translation', statuses[translation.state], template, values)];
+};
+
 /**
- * What a hunt needs to run, item by item, in the words of the user interface: its logic, a hunt connector able to run
- * it on a platform of its scope, how it runs (manual, schedule, standing, PIR) and its scope. A hunt is ready to be
- * activated when no item is unmet; the activation refuses it otherwise, with the sentence of the first unmet item.
+ * What a hunt needs to run, item by item, in the words of the user interface: its logic and its translation, a hunt
+ * connector able to run it on a platform of its scope, how it runs (manual, schedule, standing, PIR) and its scope. A
+ * hunt is ready to be activated when no item is unmet; the activation refuses it otherwise, with the sentence of the
+ * first unmet item.
  */
 export const computeHuntReadiness = async (context: AuthContext, user: AuthUser, hunt: BasicStoreEntityHunt): Promise<HuntReadiness> => {
-  const [enterprise, connectors, iocSet] = await Promise.all([
+  const logicValid = huntLogicError(hunt) === null;
+  const [enterprise, connectors, iocSet, translation] = await Promise.all([
     isEnterpriseEdition(context),
     listHuntConnectors(context, false),
-    hunt.hunt_type === HUNT_TYPE_INDICATORS && huntLogicError(hunt) === null ? resolveHuntIocSet(context, hunt) : Promise.resolve(null),
+    hunt.hunt_type === HUNT_TYPE_INDICATORS && logicValid ? resolveHuntIocSet(context, hunt) : Promise.resolve(null),
+    logicValid ? findHuntTranslation(context, user, hunt) : Promise.resolve(null),
   ]);
-  const items: HuntReadinessItem[] = [...logicItems(hunt, iocSet)];
+  const logic = logicItems(hunt, iocSet);
+  const items: HuntReadinessItem[] = [...logic, ...(logic.some(isUnmetReadinessItem) ? [] : translationItem(translation))];
   if (hunt.hunt_type === HUNT_TYPE_INFRASTRUCTURE) {
     items.push(connectorItem(hunt, connectors, null));
     items.push(scheduleItem(hunt, enterprise));

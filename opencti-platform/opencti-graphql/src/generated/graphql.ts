@@ -13154,7 +13154,9 @@ export enum HuntReadinessKey {
   Draft = 'draft',
   Logic = 'logic',
   Schedule = 'schedule',
-  Scope = 'scope'
+  Scope = 'scope',
+  /** Whether the current logic translates, as its last translation preview or run found it */
+  Translation = 'translation'
 }
 
 export enum HuntReadinessStatus {
@@ -13192,6 +13194,10 @@ export type HuntRun = BasicObject & InternalObject & {
   error_message?: Maybe<Scalars['String']['output']>;
   evidence_sample?: Maybe<Array<HuntEvidence>>;
   evidence_sources?: Maybe<Array<Scalars['String']['output']>>;
+  /** Why a run failed for good and what to change, null for any other run */
+  failure_reason?: Maybe<HuntMessage>;
+  /** False for a failure the run meets again in the same way at every attempt (translation, a query the platform rejects): never retried, no verdict; true for another failure; null for a run that did not fail */
+  failure_retryable?: Maybe<Scalars['Boolean']['output']>;
   /** Dates of the first and last event the run matched, null when the connector dates none */
   first_hit_at?: Maybe<Scalars['DateTime']['output']>;
   hits_count?: Maybe<Scalars['Int']['output']>;
@@ -13297,6 +13303,8 @@ export type HuntRunReportInput = {
   last_hit_at?: InputMaybe<Scalars['DateTime']['input']>;
   query_language?: InputMaybe<Scalars['String']['input']>;
   result_ids?: InputMaybe<Array<Scalars['String']['input']>>;
+  /** Failed runs: false when the run fails again in the same way at every attempt (translation error, a query the platform rejects, an invalid run message), so it is not retried */
+  retryable?: InputMaybe<Scalars['Boolean']['input']>;
   status: HuntRunStatus;
   translated_query?: InputMaybe<Scalars['String']['input']>;
   truncated?: InputMaybe<Scalars['Boolean']['input']>;
@@ -53009,6 +53017,8 @@ export type HuntRunResolvers<ContextType = any, ParentType extends ResolversPare
   error_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   evidence_sample?: Resolver<Maybe<Array<ResolversTypes['HuntEvidence']>>, ParentType, ContextType>;
   evidence_sources?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  failure_reason?: Resolver<Maybe<ResolversTypes['HuntMessage']>, ParentType, ContextType>;
+  failure_retryable?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   first_hit_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   hits_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   hits_sample?: Resolver<Maybe<Array<ResolversTypes['HuntHit']>>, ParentType, ContextType>;

@@ -25,6 +25,7 @@ import {
 } from './huntRun-domain';
 import type { BasicStoreEntityConnector } from '../../../types/connector';
 import { huntRunQueueReason } from '../hunt-dispatch';
+import { huntRunFailureReason } from '../hunt-logic';
 
 const huntRunResolvers: Resolvers = {
   Query: {
@@ -36,6 +37,7 @@ const huntRunResolvers: Resolvers = {
     hunt: (run, _, context) => storeLoadById(context, context.user, run.hunt_id, ENTITY_TYPE_HUNT),
     hunt_deleted: (run, _, context) => isHuntRunHuntDeleted(context, run),
     queue_reason: (run, _, context) => huntRunQueueReason(context, run),
+    failure_reason: (run) => huntRunFailureReason(run),
     securityPlatform: (run, _, context) => (run.security_platform_id
       ? storeLoadById(context, context.user, run.security_platform_id, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM)
       : null),

@@ -71,7 +71,8 @@ import {
   truncate,
 } from '../hunt-utils';
 import { huntLogicError } from '../hunt-validators';
-import { HUNT_MESSAGES } from '../hunt-messages';
+import { HUNT_MESSAGES, renderHuntMessage } from '../hunt-messages';
+import { findHuntTranslation, huntLogicFingerprint, huntTranslationMessage, isDeterministicHuntFailure, isTerminalHuntRunFailure } from '../hunt-logic';
 import { resolveHuntIocSet } from '../hunt-iocs';
 import { countIocHits, hasUnsearchedIoc, linkIocDeployments, mergeHuntIocResults } from './huntRun-iocs';
 import { updateHuntRunInformation } from '../hunt-stats';
@@ -318,6 +319,7 @@ export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntit
     throw FunctionalError('The hunt time window start must be before its end', { windowStart, windowEnd });
   }
   const runs: BasicStoreEntityHuntRun[] = [];
+  const logicFingerprint = huntLogicFingerprint(hunt);
   // Taken before any run is published: a run its connector completes during the dispatch records a later date
   const queuedAt = now();
   let dispatchBudget = request.dispatchLimit ?? Number.POSITIVE_INFINITY;
@@ -336,6 +338,7 @@ export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntit
       verdict: HUNT_VERDICT_PENDING,
       attempt: Math.max(1, request.attempt ?? 1),
       retry_of: request.retryOf ?? null,
+      hunt_logic_fingerprint: logicFingerprint,
       aev_inject_id: request.aevInjectId ?? null,
       security_coverage_id: request.securityCoverageId ?? null,
       technique_id: request.techniqueId ?? null,
@@ -396,6 +399,13 @@ export const startHuntRuns = async (
   if (!hunt) {
     throw ResourceNotFoundError('Hunt cannot be found', { huntId });
   }
+  // A logic its translation preview or a run already failed to translate for good fails again: refused before any
+  // connector slot or daily run is spent on it
+  const translation = await findHuntTranslation(context, user, hunt, input?.security_platform_ids ?? []);
+  if (translation?.state === 'failed') {
+    const { template, values } = huntTranslationMessage(translation);
+    throw FunctionalError(`The hunt cannot run: ${renderHuntMessage(template, values)}`, { huntId, runId: translation.run.internal_id });
+  }
   const runs = await createHuntRuns(context, hunt, {
     trigger: 'manual',
     securityPlatformIds: input?.security_platform_ids ?? [],
@@ -435,6 +445,27 @@ export const startHuntPreview = async (context: AuthContext, user: AuthUser, hun
   return runs[0];
 };
 
+/**
+ * The translation preview of an activated hunt whose current logic no run has translated yet: its result reaches the
+ * translation item of the readiness of the hunt. Best effort, the activation never depends on it: a hunt without a
+ * preview connector on its scope is activated all the same.
+ */
+export const startHuntTranslationCheck = async (context: AuthContext, user: AuthUser, hunt: BasicStoreEntityHunt) => {
+  if (context.draft_context || hunt.hunt_type === HUNT_TYPE_INDICATORS) {
+    return null;
+  }
+  try {
+    if (await findHuntTranslation(context, user, hunt)) {
+      return null;
+    }
+    const runs = await createHuntRuns(context, hunt, { trigger: HUNT_RUN_TRIGGER_PREVIEW, mode: HUNT_RUN_MODE_PREVIEW, triggeredBy: user.id, requester: user });
+    return runs[0] ?? null;
+  } catch (error) {
+    logApp.warn('[OPENCTI-MODULE] Hunt translation check at activation skipped', { cause: error, huntId: hunt.internal_id });
+    return null;
+  }
+};
+
 // endregion
 
 // region completion
@@ -444,7 +475,11 @@ export const computeRetryAt = (attempt: number, from = Date.now()) => {
   return new Date(from + backoff * 60000).toISOString();
 };
 
-const computeAutomaticVerdict = (run: BasicStoreEntityHuntRun): string => {
+export const computeAutomaticVerdict = (run: BasicStoreEntityHuntRun): string => {
+  // A run that failed for good searched nothing: it is left without a verdict, never inconclusive
+  if (isTerminalHuntRunFailure(run)) {
+    return HUNT_VERDICT_PENDING;
+  }
   if (run.hunt_run_status !== HUNT_RUN_STATUS_COMPLETED) {
     return HUNT_VERDICT_INCONCLUSIVE;
   }
@@ -934,8 +969,12 @@ const applyHuntRunReport = async (context: AuthContext, run: BasicStoreEntityHun
   if (status === HUNT_RUN_STATUS_FAILED || status === HUNT_RUN_STATUS_TIMEOUT) {
     patch.completed_at = reportedAt;
     patch.error_message = truncate(input.error ?? (status === HUNT_RUN_STATUS_TIMEOUT ? 'The run exceeded its deadline' : 'Unknown error'), ERROR_MESSAGE_MAX_LENGTH);
+    // A failure met again at every attempt (translation, a query the platform rejects) is never retried: each attempt
+    // would take a connector slot and a run of the daily quota for the same error
+    const deterministic = isDeterministicHuntFailure(status, input.error, input.retryable);
+    patch.failure_retryable = !deterministic;
     // Automatic retries with exponential backoff, translation previews are never retried
-    if (run.hunt_run_mode === HUNT_RUN_MODE_EXECUTE && run.attempt <= HUNT_CONFIG.maxRetries) {
+    if (!deterministic && run.hunt_run_mode === HUNT_RUN_MODE_EXECUTE && run.attempt <= HUNT_CONFIG.maxRetries) {
       patch.next_retry_at = computeRetryAt(run.attempt);
     }
   }

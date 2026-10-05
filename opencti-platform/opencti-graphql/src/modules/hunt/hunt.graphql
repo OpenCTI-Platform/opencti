@@ -70,6 +70,8 @@ enum HuntReadinessKey {
   schedule
   scope
   draft
+  "Whether the current logic translates, as its last translation preview or run found it"
+  translation
 }
 enum HuntReadinessStatus {
   met

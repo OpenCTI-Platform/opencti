@@ -146,6 +146,7 @@ class TestHuntHelpers(TestCase):
             truncated=True,
             ioc_results=None,
             hits_sample=None,
+            retryable=None,
         )
 
     def test_report_hunt_run_forwards_the_results_per_value(self):
@@ -179,6 +180,13 @@ class TestHuntHelpers(TestCase):
         self.assertEqual(
             helper.api.hunt_run.report.call_args.kwargs["hits_sample"], hits
         )
+
+    def test_report_hunt_run_forwards_whether_the_failure_is_retryable(self):
+        helper = _helper()
+        helper.report_hunt_run(
+            "run-1", "failed", error="HuntTranslationError: boom", retryable=False
+        )
+        self.assertIs(helper.api.hunt_run.report.call_args.kwargs["retryable"], False)
 
     def test_report_hunt_run_names_the_work_it_was_given(self):
         helper = _helper()

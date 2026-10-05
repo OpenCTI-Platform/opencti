@@ -203,6 +203,8 @@ class HuntRun:
             that received the run (OpenCTI refuses a report without it)
         :param ioc_results: (optional) indicator hunts: list of {key, seen, searched, hits_count, first_seen,
             last_seen, hosts, reason}, one per value of the run message (a value left out is recorded not searched)
+        :param retryable: (optional) failed runs: False when the run fails again in the same way at every attempt
+            (translation error, a query the platform rejects, an invalid run message), so it is not retried
         :return: the hunt run
         :rtype: dict or None
         """
@@ -243,6 +245,8 @@ class HuntRun:
             report_input["ioc_results"] = kwargs.get("ioc_results")
         if kwargs.get("hits_sample", None) is not None:
             report_input["hits_sample"] = kwargs.get("hits_sample")
+        if kwargs.get("retryable", None) is not None:
+            report_input["retryable"] = bool(kwargs.get("retryable"))
         result = self.opencti.query(query, {"id": id, "input": report_input})
         return result["data"]["huntRunReport"]
 

@@ -174,6 +174,10 @@ type HuntRun implements BasicObject & InternalObject {
   completed_at: DateTime
   cost_ms: Int
   error_message: String
+  "False for a failure the run meets again in the same way at every attempt (translation, a query the platform rejects): never retried, no verdict; true for another failure; null for a run that did not fail"
+  failure_retryable: Boolean
+  "Why a run failed for good and what to change, null for any other run"
+  failure_reason: HuntMessage
   playbook_id: String
   playbook_execution_id: String
   evidence_sources: [String!]
@@ -339,6 +343,8 @@ input HuntRunReportInput {
   result_ids: [String!]
   cost_ms: Int
   error: String
+  "Failed runs: false when the run fails again in the same way at every attempt (translation error, a query the platform rejects, an invalid run message), so it is not retried"
+  retryable: Boolean
 }
 
 # Evidence found outside the run dispatch (a SIEM alert action, a follow-up search), attached to any run status
