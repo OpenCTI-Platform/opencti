@@ -69,6 +69,7 @@ const ConnectorCatalogIdentityCard: FunctionComponent<ConnectorCatalogIdentityCa
           <Tag
             label={hint}
             size="small"
+            labelTextTransform="none"
             tooltipTitle={catalogIdentityHintDescription(identity.source, t_i18n)}
           />
         )}

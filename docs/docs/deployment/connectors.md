@@ -326,6 +326,8 @@ The platform looks for the catalog entry of a connector in this order and stops 
 
 When the platform is not sure, it keeps the generic icon of the connector type rather than showing a wrong logo. The connector page tells how the entry was found: "Reported by the connector", "Identified by name" or "Chosen by hand".
 
+![Connector page of a self-deployed connector identified by its name](assets/connector-identity/connector-name-1440.png)
+
 ### Choose the catalog entry by hand
 
 Users with the "Manage connector state" capability can link a self-deployed connector to its catalog entry:
@@ -333,6 +335,8 @@ Users with the "Manage connector state" capability can link a self-deployed conn
 1. Open the connector from Integrations > Deployed.
 2. In "About this connector", click "Identify connector" (or "Change catalog entry" when an entry was already found).
 3. Search the catalog, select the entry (the entries of the connector type are listed first) and click "Save".
+
+![Identify connector dialog with the chosen catalog entry](assets/connector-identity/identify-dialog-preview-1440.png)
 
 The choice is stored on the connector, apart from the registration data: it is kept when the connector restarts, re-registers or is renamed. "Use automatic identification" in the same dialog removes it and returns to the automatic order above. Connectors deployed through the composer and built-in connectors take their identity from the platform and cannot be changed.
 
