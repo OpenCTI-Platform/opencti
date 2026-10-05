@@ -36,7 +36,7 @@ export const registerUserMergeHandlers = (): void => {
   // Last: the source keeps its live accesses for the whole merge, so that a handler failing
   // halfway leaves an account an administrator can still inspect rather than one already stripped.
   registerUserMergeHandler(userMergeRuntimeHandler);
-  // Reads only, so it sees what every other handler left behind and reports it without acting.
+  // Claims the rows no handler acts on; it reads and writes nothing.
   registerUserMergeHandler(userMergeResidualHandler);
   assertUserMergeHandlersAreValid();
 };

@@ -1,10 +1,6 @@
-import { describe, expect, it, vi } from 'vitest';
-
-vi.mock('../../../../src/modules/userMerge/userMerge-bulk', () => ({
-  userMergeScanPagesForRewrite: async () => undefined,
-}));
-
-const { summarizeResidualFindings, userMergeResidualHandler } = await import('../../../../src/modules/userMerge/userMerge-residualHandler');
+import { describe, expect, it } from 'vitest';
+import { userMergeResidualHandler } from '../../../../src/modules/userMerge/userMerge-residualHandler';
+import { findRegisterRow } from '../../../../src/modules/userMerge/userMerge-register';
 
 describe('residual references handler', () => {
   it('should declare no read and no write', () => {
@@ -12,39 +8,23 @@ describe('residual references handler', () => {
     expect(userMergeResidualHandler.writes).toEqual([]);
   });
 
-  it('should report an empty sweep in plain words', () => {
-    expect(summarizeResidualFindings([])).toEqual(
-      'no serialized reference to the source found outside the rows the handlers claim',
-    );
+  it('should claim register rows that exist', () => {
+    userMergeResidualHandler.covers.forEach((rowId) => expect(findRegisterRow(rowId), rowId).toBeDefined());
   });
 
-  it('should order the findings by decreasing count', () => {
-    const summary = summarizeResidualFindings([
-      { entity_type: 'Report', count: 2 },
-      { entity_type: 'Note', count: 7 },
-    ]);
-    expect(summary).toEqual('best-effort sweep, nothing rewritten: Note (7), Report (2)');
+  // The merge answers for the references the register records: an unrecorded one is a new row and
+  // a new handler, not something to look for on a production platform.
+  it('should claim the unregistered field row without searching for it', async () => {
+    const plan = await userMergeResidualHandler.compute({} as never);
+    const unregistered = plan.changes.find((change) => change.register_row_id === 'any-type.unregistered-serialized-field');
+    expect(unregistered?.count).toEqual(0);
+    expect(unregistered?.detail).toContain('out of the merge scope');
   });
 
-  it('should order equal counts by entity type so the summary is stable', () => {
-    const summary = summarizeResidualFindings([
-      { entity_type: 'Report', count: 3 },
-      { entity_type: 'Note', count: 3 },
-    ]);
-    expect(summary).toEqual('best-effort sweep, nothing rewritten: Note (3), Report (3)');
-  });
-
-  // The plan fingerprint carries the count, not the detail. A detector registered last runs after
-  // every other handler has written, so a non-zero count would differ between the dry pass and the
-  // recompute and abort the merge.
   it('should never plan a change', async () => {
-    const plan = await userMergeResidualHandler.compute({
-      context: {} as never,
-      sourceId: 'source-id',
-      targetId: 'target-id',
-      dryRun: true,
-      mergeStartedAt: new Date(),
-    } as never);
+    const plan = await userMergeResidualHandler.compute({} as never);
+    expect(plan.changes.length).toEqual(userMergeResidualHandler.covers.length);
     expect(plan.changes.every((change) => change.count === 0)).toBe(true);
+    expect(await userMergeResidualHandler.apply({} as never, plan)).toEqual(0);
   });
 });
