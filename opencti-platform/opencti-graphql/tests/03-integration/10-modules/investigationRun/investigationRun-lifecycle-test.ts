@@ -197,6 +197,9 @@ const RUN_READ = gql`
       xtm_investigation_ids
       xtm_revision
       goal_plan
+      subject_id
+      subject { id }
+      case_id
       case { id }
       steps { id action status detail_code findings_count evidence_count }
       evidence { id n kind label href quote opencti_id entity_type in_draft }
@@ -671,7 +674,15 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
         // Kept on the stored run for the retry, never served from a withheld run.
         draft_id: null,
         workspace_id: null,
+        // What identifies what it read is withheld too; the stored run keeps it for its cleanup.
+        subject_id: null,
+        subject: null,
+        case_id: null,
+        case: null,
+        xtm_investigation_id: null,
+        xtm_investigation_ids: [],
       });
+      expect((await loadInvestigationRun(testContext, runId))?.subject_id).toBe(caseId);
       expect((await loadInvestigationRun(testContext, runId))?.draft_id).toBe(mirrored.draft_id);
       expect(stopped.steps.every((step: { action: string | null }) => step.action === null)).toBe(true);
       expect((await listInvestigationRunsToProcess(testContext, 50)).map((run) => run.internal_id)).toContain(runId);
@@ -875,6 +886,12 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
         report: null,
         report_sources: [],
         report_id: null,
+        subject_id: null,
+        subject: null,
+        case_id: null,
+        case: null,
+        xtm_investigation_id: null,
+        xtm_investigation_ids: [],
       });
       const records = await queryAsAdminWithSuccess({ query: RUN_RECORDS, variables: { id: runId } });
       expect(records.data.investigationRun.can_continue).toBe(false);
@@ -898,6 +915,10 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       expect(stored?.draft_id).toBeTruthy();
       expect(await runFields.draft_id(stored, {}, eventContext)).toBeNull();
       expect(await runFields.draft(stored, {}, eventContext)).toBeNull();
+      expect(stored?.subject_id).toBe(caseId);
+      expect(await runFields.subject_id(stored, {}, eventContext)).toBeNull();
+      expect(await runFields.case_id(stored, {}, eventContext)).toBeNull();
+      expect(await runFields.xtm_investigation_ids(stored, {}, eventContext)).toEqual([]);
       // Nothing it found can be acted on; cancelling stays possible.
       const feedback = await queryAsAdmin({
         query: RUN_FEEDBACK,
@@ -947,11 +968,17 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       expect(await runFields.hypotheses(stored, {}, editorContext)).toEqual([]);
       expect(await runFields.analyst_feedback(stored, {}, editorContext)).toEqual([]);
       expect(await runFields.end_reason_code(stored, {}, editorContext)).toBe('source_inaccessible');
+      expect(await runFields.subject_id(stored, {}, editorContext)).toBeNull();
+      expect(await runFields.subject(stored, {}, editorContext)).toBeNull();
+      expect(await runFields.case(stored, {}, editorContext)).toBeNull();
+      expect(await runFields.xtm_investigation_id(stored, {}, editorContext)).toBeNull();
       expect(await runFields.name(stored, {}, editorContext)).toBe('Case Autopilot');
       expect(await runFields.name(stored, {}, { ...testContext, user: ADMIN_USER, batch: computeLoaders(testContext, ADMIN_USER) })).toBe(stored.name);
       const adminContext = { ...testContext, user: ADMIN_USER, batch: computeLoaders(testContext, ADMIN_USER) };
       expect((await runFields.evidence(stored, {}, adminContext)) as unknown[]).not.toEqual([]);
       expect(await runFields.end_reason_code(stored, {}, adminContext)).toBeNull();
+      expect(await runFields.subject_id(stored, {}, adminContext)).toBe(caseId);
+      expect(await runFields.xtm_investigation_id(stored, {}, adminContext)).toBe(stored.xtm_investigation_id);
       // The run copied the markings of what it read; it is served with those its sources carry now.
       const servedMarkings = await runFields.objectMarking(stored, {}, adminContext) as Array<{ standard_id: string }>;
       expect(servedMarkings.map((marking) => marking.standard_id)).toContain(MARKING_TLP_RED);

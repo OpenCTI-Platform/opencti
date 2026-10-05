@@ -16085,7 +16085,7 @@ type InvestigationRun implements InternalObject & BasicObject {
   creators: [Creator!]
   objectMarking: [MarkingDefinition!]
   name: String!
-  subject_id: String!
+  subject_id: String
   subject_type: String!
   subject: StixCoreObject
   case_id: String

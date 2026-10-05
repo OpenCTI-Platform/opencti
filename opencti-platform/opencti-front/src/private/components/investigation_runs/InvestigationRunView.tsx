@@ -310,8 +310,8 @@ const InvestigationRunContent = ({ data, currentEntityId, onDeleted, onRunStarte
   const [commitRunAgain, launching] = useApiMutation<InvestigationRunViewRunAgainMutation>(investigationRunViewRunAgainMutation);
   const [commitContinue, continuing] = useApiMutation<InvestigationRunViewContinueMutation>(investigationRunViewContinueMutation);
   // Same subject and policy; the case is kept when it is live, else a new one is created in the new draft.
-  const runAgain = () => commitRunAgain({
-    variables: { subjectId: run.subject_id, policyId: run.policy?.id ?? null, caseId: run.case && run.case.id !== run.subject_id ? run.case.id : null },
+  const runAgain = (subjectId: string) => commitRunAgain({
+    variables: { subjectId, policyId: run.policy?.id ?? null, caseId: run.case && run.case.id !== subjectId ? run.case.id : null },
     onCompleted: (response, errors) => {
       const started = response.investigationRunAdd;
       if (!started || !reportMutationOutcome(errors, t_i18n('Case Autopilot has started the investigation'))) return;
@@ -325,9 +325,10 @@ const InvestigationRunContent = ({ data, currentEntityId, onDeleted, onRunStarte
     },
   });
   const caseObservablesPath = run.case ? caseTabPath(run.case, 'observables') : null;
+  const subjectId = run.subject_id;
   const handlers = {
-    // A run that is still going cannot be launched again.
-    onRunAgain: canLaunch && !isRunActive(run.run_status) && !launching ? runAgain : undefined,
+    // A run that is still going cannot be launched again, nor one whose subject is withheld from the reader.
+    onRunAgain: subjectId && canLaunch && !isRunActive(run.run_status) && !launching ? () => runAgain(subjectId) : undefined,
     onContinue: canLaunch && run.can_continue && !continuing ? continueRun : undefined,
     onReviewApprovals: () => reveal(approvalsRef.current),
     caseObservablesPath,

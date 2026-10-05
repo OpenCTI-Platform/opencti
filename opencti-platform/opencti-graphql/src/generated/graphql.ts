@@ -15158,7 +15158,7 @@ export type InvestigationRun = BasicObject & InternalObject & {
   status_reason?: Maybe<Scalars['String']['output']>;
   steps: Array<InvestigationStep>;
   subject?: Maybe<StixCoreObject>;
-  subject_id: Scalars['String']['output'];
+  subject_id?: Maybe<Scalars['String']['output']>;
   subject_type: Scalars['String']['output'];
   summary?: Maybe<Scalars['String']['output']>;
   timeline: Array<InvestigationTimelineEvent>;
@@ -48789,7 +48789,7 @@ export type InvestigationRunResolvers<ContextType = any, ParentType extends Reso
   status_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   steps?: Resolver<Array<ResolversTypes['InvestigationStep']>, ParentType, ContextType>;
   subject?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType>;
-  subject_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  subject_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   subject_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   summary?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   timeline?: Resolver<Array<ResolversTypes['InvestigationTimelineEvent']>, ParentType, ContextType>;
