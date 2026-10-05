@@ -121,7 +121,8 @@ const FilterIconButtonContainer: FunctionComponent<
     setFilterChipsParams,
   });
 
-  const openedGroup = displayedFilterGroups.find((group) => group.id === openedGroupId);
+  // `openedGroupId` is undefined when nothing is open: it must never match an id-less group.
+  const openedGroup = openedGroupId ? displayedFilterGroups.find((group) => group.id === openedGroupId) : undefined;
 
   return (
     <Box sx={{ width: '100%', position: 'relative' }}>

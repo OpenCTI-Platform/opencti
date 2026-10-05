@@ -80,7 +80,7 @@ const getLineStyle = ({
       width: 'fit-content',
       maxWidth: '100%',
       flexWrap: 'nowrap',
-      gap: 0,
+      gap: 1,
       overflow: 'hidden',
       backgroundColor: 'none',
       borderRadius: '0px',
@@ -220,7 +220,7 @@ const FilterChipLine: FunctionComponent<PropsWithChildren<FilterChipLineProps>> 
                   registerChipRef(group.id ?? '', node);
                 }}
                 filterGroup={group}
-                isOpen={openedGroupId === group.id}
+                isOpen={Boolean(group.id) && openedGroupId === group.id}
                 chipColor={chipColor}
                 style={filterStyle}
                 onClick={() => onToggleGroup(group.id)}
