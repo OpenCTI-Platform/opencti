@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -168,12 +168,18 @@ const CurationProposalExplanation = ({ explanation, changes, chosen, hideWhy = f
                 </span>
               ))}
               {item.entities.length > 0 && (
-                <Box component="span" sx={{ display: 'inline-flex', flexWrap: 'wrap', gap: 0.75, marginLeft: 0.75 }}>
-                  {item.entities.map((entity) => {
+                <span data-testid="curation-explanation-evidence-entities">
+                  {' - '}
+                  {item.entities.map((entity, position) => {
                     const link = resolveLink(entity.entity_type);
-                    return link ? <Link key={entity.id} to={`${link}/${entity.id}`}>{entity.name}</Link> : <span key={entity.id}>{entity.name}</span>;
+                    return (
+                      <Fragment key={entity.id}>
+                        {position > 0 && ', '}
+                        {link ? <Link to={`${link}/${entity.id}`}>{entity.name}</Link> : entity.name}
+                      </Fragment>
+                    );
                   })}
-                </Box>
+                </span>
               )}
             </Typography>
           ))}
