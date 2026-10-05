@@ -36,6 +36,10 @@ When the selected policy runs enrichments and your role does not allow enriching
 
 ![The launch dialog when the policy runs enrichments your role cannot run](assets/case-autopilot/launch-warning-dark.png)
 
+For an indicator or an observable, when you choose to create a new case and the selected policy does not allow creating a case, the dialog says so under the case choice and the launch waits until you select an existing case or another policy.
+
+![The launch dialog when the policy does not create cases](assets/case-autopilot/launch-new-case-refused-dark.png)
+
 The overview of an indicator or an observable shows a compact **Latest investigation** link with the state of its latest investigation; it opens the Autopilot tab of the case of that investigation.
 
 ## The Autopilot tab
@@ -117,11 +121,15 @@ Investigation policies are managed in **Settings > Customization > Investigation
 | Minimum confidence to write an attribution | The attribution relationship is written to the draft only above this confidence. |
 | Budget | Maximum iterations of the engine, maximum enrichment jobs and maximum duration. OpenCTI enforces the budget and cancels the engine run when the duration is exceeded. |
 | Investigate every new request for information | Start an investigation automatically when a request for information is created. |
-| Run automatic investigations as | The user automatic investigations act as. |
+| Run automatic investigations as | The user automatic investigations act as; when empty, the platform administrator. |
 
 The policy page also shows, per policy, the number of investigations and the share of hypotheses and recommendations analysts accepted.
 
 ![Investigation policies in Settings > Customization](assets/case-autopilot-policies.png)
+
+In the policy form, every field explains what it does, gives an example and its range, and says what happens at the limit or when it is left empty; **Learn more** at the top of the form opens this section.
+
+![The investigation policy form with the help of every field](assets/case-autopilot/policy-form-dark.png)
 
 One policy is the default: it cannot be deleted, and promoting another policy to default replaces it. A policy used by investigations in progress cannot be deleted until they end; the investigations it already ran are kept. When the creation of an automatic investigation fails for a technical reason (for example the database is briefly unavailable), the request for information is investigated on the next attempt rather than skipped.
 
