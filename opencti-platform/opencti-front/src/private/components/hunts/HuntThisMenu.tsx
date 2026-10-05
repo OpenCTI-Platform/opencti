@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { graphql } from 'react-relay';
-import { AutoAwesomeOutlined, ExpandMoreOutlined } from '@mui/icons-material';
+import { AutoAwesomeOutlined } from '@mui/icons-material';
 import { Crosshairs } from 'mdi-material-ui';
-import { Button, Menu, MenuContent, MenuItem, MenuTrigger, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
+import { IconButton, Menu, MenuContent, MenuItem, MenuTrigger, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useFormatter } from '../../../components/i18n';
 import { fetchQuery, MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
@@ -135,17 +135,20 @@ const HuntThisMenu = ({ entity }: HuntThisMenuProps) => {
     <Security needs={[KNOWLEDGE_KNUPDATE]}>
       <>
         <Menu>
-          <MenuTrigger asChild>
-            <Button
-              priority="tertiary"
-              size="sm"
-              startIcon={<Crosshairs fontSize="small" />}
-              endIcon={<ExpandMoreOutlined fontSize="small" />}
-              data-testid="hunt-this-menu"
-            >
-              {t_i18n('Hunt this')}
-            </Button>
-          </MenuTrigger>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <MenuTrigger asChild>
+                <IconButton
+                  priority="tertiary"
+                  size="sm"
+                  aria-label={t_i18n('Hunt this')}
+                  icon={<Crosshairs fontSize="small" />}
+                  data-testid="hunt-this-menu"
+                />
+              </MenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent>{t_i18n('Hunt this')}</TooltipContent>
+          </Tooltip>
           <MenuContent align="end" aria-label={t_i18n('Hunt this')}>
             <MenuItem
               startIcon={<Crosshairs fontSize="small" />}
