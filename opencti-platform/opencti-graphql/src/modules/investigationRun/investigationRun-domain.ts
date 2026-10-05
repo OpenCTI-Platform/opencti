@@ -496,6 +496,8 @@ export const addInvestigationRun = async (
   await checkEnterpriseEdition(context);
   const liveContext = outOfDraft(context);
   const trigger = opts.trigger ?? InvestigationRunTrigger.Manual;
+  // The policy identity is for automatic launches only: a launch through the API
+  // acts as its caller, never reading through another account.
   const runUser = await resolveRunAsUser(liveContext, user, opts.runAsUserId);
   // The run sees what its identity sees: the caller must be able to see the subject too.
   const subject = await storeLoadByIdWithRefs<StoreEntity>(liveContext, runUser, subjectId);

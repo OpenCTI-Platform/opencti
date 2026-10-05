@@ -80,6 +80,8 @@ import { addInvestigationEnrichmentJobCount, addInvestigationRunOutcomeCount } f
 import { isXtmOneConfigured } from '../playbook/components/ai-agent-shared';
 import {
   CARRY_BOUNDARY_CODES,
+  DRAFT_VALIDATION_FAILED_CODE,
+  DRAFT_VALIDATION_UNCONFIRMED_CODE,
   EMPTY_OUTPUTS,
   ENGINE_CANCEL_PENDING,
   ENGINE_NO_AGENT,
@@ -214,6 +216,8 @@ interface RunExecution {
 interface WorkState {
   id: string;
   status?: string;
+  // What the worker could not ingest; a complete work with errors wrote only part of its bundle.
+  errors?: Array<{ message?: string }>;
 }
 
 const loadWork = async (context: AuthContext, workId: string): Promise<WorkState | null> => {
@@ -224,12 +228,17 @@ const loadWork = async (context: AuthContext, workId: string): Promise<WorkState
 // The work an interrupted dispatch created for a connector in the draft of the
 // run: dispatches run one at a time under the run actions lock, so a work of
 // that connector and draft created since and known to no request is that one.
-const findStartedEnrichmentWork = async (exec: RunExecution, current: BasicStoreEntityInvestigationRun, connectorId: string, since: number) => {
+// With a source, only a work enriching that entity (by standard id) counts.
+const findStartedEnrichmentWork = async (exec: RunExecution, current: BasicStoreEntityInvestigationRun, connectorId: string, since: number, sourceId?: string) => {
   if (!current.draft_id) return null;
   const known = new Set([...current.enrichment_requests.flatMap((item) => (item.work_id ? [item.work_id] : [])), ...(current.pending_work_ids ?? [])]);
+  const filters = [
+    { key: 'draft_context', values: [current.draft_id], operator: 'eq', mode: 'or' },
+    ...(sourceId ? [{ key: 'event_source_id', values: [sourceId], operator: 'eq', mode: 'or' }] : []),
+  ];
   const works = await worksForConnector(exec.liveContext, INVESTIGATION_MANAGER_USER, connectorId, {
     first: 10,
-    filters: { mode: 'and', filters: [{ key: 'draft_context', values: [current.draft_id], operator: 'eq', mode: 'or' }], filterGroups: [] },
+    filters: { mode: 'and', filters, filterGroups: [] },
   }) as Array<WorkState & { timestamp?: string }>;
   const created = works.find((work) => !known.has(work.id) && !!work.timestamp && new Date(work.timestamp).getTime() >= since - 1000);
   return created?.id ?? null;
@@ -245,6 +254,17 @@ const findElements = async <T extends BasicStoreEntity = BasicStoreEntity>(
   if (ids.length === 0) return [];
   const options = opts.type ? { type: opts.type } : { indices: READ_DATA_INDICES_WITHOUT_INTERNAL };
   return await elFindByIds<T>(context, user, ids, options) as T[];
+};
+
+// The job an earlier pass started for a queued request and could not record
+// (the connector accepted it, then the run was not updated): a run holds one
+// live request per entity and connector, so an unknown work of that connector
+// on that entity in the run draft, created since the request, is that job.
+const findUnrecordedEnrichmentWork = async (exec: RunExecution, current: BasicStoreEntityInvestigationRun, request: InvestigationEnrichmentRequest) => {
+  if (!current.draft_id) return null;
+  const [entity] = await findElements(exec.draftContext, exec.runUser, [request.entity_id]);
+  if (!entity?.standard_id) return null;
+  return findStartedEnrichmentWork(exec, current, request.connector_id, new Date(request.created_at).getTime(), entity.standard_id);
 };
 
 const draftQuery = (filters?: unknown, first = 500) => ({ indices: [READ_INDEX_DRAFT_OBJECTS], filters: filters as never, first });
@@ -804,31 +824,43 @@ const processEnrichments = async (exec: RunExecution): Promise<BasicStoreEntityI
         const stillQueued = ACTIVE_RUN_STATUSES.includes(current.run_status)
           && current.enrichment_requests.some((item) => item.id === request.id && item.status === InvestigationEnrichmentRequestStatus.Queued);
         if (!stillQueued) return null;
-        let requestPatch: Partial<InvestigationEnrichmentRequest>;
-        const dispatchStartedAt = Date.now();
+        // A job an earlier pass started and could not record is recorded, never started twice.
+        let unrecordedWorkId: string | null;
         try {
-          const works = await askElementEnrichmentForConnectors(exec.draftContext, runUser, request.entity_id, [request.connector_id]);
-          const startedWorkId = works?.[0]?.id ?? null;
-          requestPatch = startedWorkId
-            ? { status: InvestigationEnrichmentRequestStatus.Dispatched, work_id: startedWorkId, dispatched_at: now.toISOString() }
-            : { status: InvestigationEnrichmentRequestStatus.Failed, error: 'The connector did not accept the job', completed_at: now.toISOString() };
-        } catch (error) {
-          // The dispatch may have failed once its work was created or its job pushed: that
-          // work is recorded with its budget, as a started job (it completes or times out),
-          // so that no job of the run changes its draft untracked.
-          const startedWorkId = await findStartedEnrichmentWork(exec, current, request.connector_id, dispatchStartedAt)
-            .catch((lookupError: unknown) => {
-              logApp.warn('[CASE AUTOPILOT] Works of a failed enrichment dispatch not read', { runId: run.internal_id, cause: errorMessage(lookupError) });
+          unrecordedWorkId = await findUnrecordedEnrichmentWork(exec, current, request);
+        } catch (lookupError) {
+          logApp.warn('[CASE AUTOPILOT] Works of a queued enrichment not read, dispatch retried on the next pass', { runId: run.internal_id, requestId: request.id, cause: errorMessage(lookupError) });
+          return null;
+        }
+        let requestPatch: Partial<InvestigationEnrichmentRequest>;
+        if (unrecordedWorkId) {
+          requestPatch = { status: InvestigationEnrichmentRequestStatus.Dispatched, work_id: unrecordedWorkId, dispatched_at: now.toISOString() };
+        } else {
+          const dispatchStartedAt = Date.now();
+          try {
+            const works = await askElementEnrichmentForConnectors(exec.draftContext, runUser, request.entity_id, [request.connector_id]);
+            const startedWorkId = works?.[0]?.id ?? null;
+            requestPatch = startedWorkId
+              ? { status: InvestigationEnrichmentRequestStatus.Dispatched, work_id: startedWorkId, dispatched_at: now.toISOString() }
+              : { status: InvestigationEnrichmentRequestStatus.Failed, error: 'The connector did not accept the job', completed_at: now.toISOString() };
+          } catch (error) {
+            // The dispatch may have failed once its work was created or its job pushed: that
+            // work is recorded with its budget, as a started job (it completes or times out),
+            // so that no job of the run changes its draft untracked.
+            const startedWorkId = await findStartedEnrichmentWork(exec, current, request.connector_id, dispatchStartedAt)
+              .catch((lookupError: unknown) => {
+                logApp.warn('[CASE AUTOPILOT] Works of a failed enrichment dispatch not read', { runId: run.internal_id, cause: errorMessage(lookupError) });
+                return null;
+              });
+            if (startedWorkId) {
+              requestPatch = { status: InvestigationEnrichmentRequestStatus.Dispatched, work_id: startedWorkId, dispatched_at: now.toISOString() };
+            } else if (isTransientFailure(error)) {
+              // Nothing started: the request stays queued for the next pass.
+              logApp.warn('[CASE AUTOPILOT] Enrichment dispatch interrupted, retried on the next pass', { runId: run.internal_id, requestId: request.id, cause: errorMessage(error) });
               return null;
-            });
-          if (startedWorkId) {
-            requestPatch = { status: InvestigationEnrichmentRequestStatus.Dispatched, work_id: startedWorkId, dispatched_at: now.toISOString() };
-          } else if (isTransientFailure(error)) {
-            // Nothing started: the request stays queued for the next pass.
-            logApp.warn('[CASE AUTOPILOT] Enrichment dispatch interrupted, retried on the next pass', { runId: run.internal_id, requestId: request.id, cause: errorMessage(error) });
-            return null;
-          } else {
-            requestPatch = { status: InvestigationEnrichmentRequestStatus.Failed, error: errorMessage(error), completed_at: now.toISOString() };
+            } else {
+              requestPatch = { status: InvestigationEnrichmentRequestStatus.Failed, error: errorMessage(error), completed_at: now.toISOString() };
+            }
           }
         }
         const workId = requestPatch.work_id;
@@ -1609,8 +1641,25 @@ const completeValidation = async (exec: RunExecution) => {
   const work = run.validation_work_id ? await loadWork(exec.liveContext, run.validation_work_id) : null;
   const startedAt = run.wave_started_at ? new Date(run.wave_started_at).getTime() : now.getTime();
   const timedOut = now.getTime() - startedAt > VALIDATION_TIMEOUT_MS;
-  if (work && work.status !== 'complete' && !timedOut) {
-    return; // The validation work is still being processed.
+  const confirmed = work?.status === 'complete';
+  // Until the platform confirms the approved changes (or the bound passes), the
+  // run keeps validating, so its boundary is watched while they are written.
+  if (!confirmed && !timedOut) {
+    return;
+  }
+  const writeErrors = (confirmed && work?.errors) || [];
+  let failure: { code: string; reason: string } | null = null;
+  if (!confirmed) {
+    failure = {
+      code: DRAFT_VALIDATION_UNCONFIRMED_CODE,
+      reason: `The platform did not confirm within ${VALIDATION_TIMEOUT_MS / 60000} minutes that the approved changes were written to the case`,
+    };
+  } else if (writeErrors.length > 0) {
+    const first = writeErrors.find((error) => error.message)?.message;
+    failure = {
+      code: DRAFT_VALIDATION_FAILED_CODE,
+      reason: `The platform reported ${writeErrors.length} error(s) writing the approved changes to the case${first ? ` (${first})` : ''}`.slice(0, INVESTIGATION_LIMITS.textLength),
+    };
   }
   // Draft objects got new internal ids in the live graph: resolve them by standard id.
   const outputs: InvestigationOutputs = { ...EMPTY_OUTPUTS, ...(run.outputs ?? {}) };
@@ -1637,8 +1686,7 @@ const completeValidation = async (exec: RunExecution) => {
     report_id: (outputs.report_standard_id && liveByStandard.get(outputs.report_standard_id)) || outputs.report_id || null,
     note_id: (outputs.note_standard_id && liveByStandard.get(outputs.note_standard_id)) || outputs.note_id || null,
   };
-  const reasons: string[] = [];
-  if (work?.status !== 'complete') reasons.push('Draft validation not confirmed in time, ids resolved with what is available');
+  const reasons: string[] = failure ? [failure.reason] : [];
   if (run.workspace_id) {
     const entityIds = R.uniq([run.subject_id, ...evidence.filter(isGraphEntity).map((item) => item.id)]).slice(0, INVESTIGATION_LIMITS.evidence);
     try {
@@ -1647,17 +1695,26 @@ const completeValidation = async (exec: RunExecution) => {
       reasons.push(`Investigation graph not updated (${errorMessage(error)})`);
     }
   }
-  // A cancellation during the validation stays: the run is only completed while still active.
-  const finalized = await updateInvestigationRun(exec.liveContext, run.internal_id, (current) => (TERMINAL_RUN_STATUSES.includes(current.run_status) ? null : {
-    ...statusTransition(current, InvestigationRunStatus.Completed, InvestigationRunPhase.Done, now, reasons.length > 0 ? reasons.join('. ') : null),
-    evidence,
-    hypotheses,
-    outputs: liveOutputs,
-    case_id: liveCase?.internal_id ?? current.case_id ?? null,
-    case_ids: R.uniq([...(current.case_ids ?? []), ...(liveCase ? [liveCase.internal_id] : [])]),
-  }));
-  if (finalized.run_status === InvestigationRunStatus.Completed) {
-    addInvestigationRunOutcomeCount(InvestigationRunStatus.Completed);
+  // A cancellation during the validation stays: the run only ends here while still active.
+  const outcome = failure ? InvestigationRunStatus.Failed : InvestigationRunStatus.Completed;
+  let ended = false;
+  await updateInvestigationRun(exec.liveContext, run.internal_id, (current) => {
+    if (TERMINAL_RUN_STATUSES.includes(current.run_status)) return null;
+    ended = true;
+    return {
+      ...statusTransition(current, outcome, InvestigationRunPhase.Done, now, reasons.length > 0 ? reasons.join('. ') : null),
+      ...(failure ? { end_reason_code: failure.code, ...closeOpenGates(current, now, 'Investigation failed') } : {}),
+      evidence,
+      hypotheses,
+      outputs: liveOutputs,
+      case_id: liveCase?.internal_id ?? current.case_id ?? null,
+      case_ids: R.uniq([...(current.case_ids ?? []), ...(liveCase ? [liveCase.internal_id] : [])]),
+    };
+  });
+  if (!ended) return;
+  addInvestigationRunOutcomeCount(outcome);
+  if (failure) {
+    logApp.warn('[CASE AUTOPILOT] Investigation failed', { runId: run.internal_id, reason: failure.reason, code: failure.code });
   }
 };
 

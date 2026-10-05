@@ -89,6 +89,11 @@ export const CARRY_BOUNDARY_CODES = [MEMBER_RESTRICTED_CODE, SUBJECT_INACCESSIBL
 // longer read one of its sources.
 export const SOURCE_INACCESSIBLE_CODE = 'source_inaccessible';
 
+// Why a run whose draft was approved did not complete: the platform reported
+// errors writing the approved changes, or did not confirm them in time.
+export const DRAFT_VALIDATION_FAILED_CODE = 'draft_validation_failed';
+export const DRAFT_VALIDATION_UNCONFIRMED_CODE = 'draft_validation_unconfirmed';
+
 // Engine status of a cancelled run whose engine run XTM One has not confirmed
 // stopping yet (asked again by the manager), then given up on.
 export const ENGINE_CANCEL_PENDING = 'cancel_pending';

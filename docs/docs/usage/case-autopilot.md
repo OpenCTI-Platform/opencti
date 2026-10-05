@@ -12,7 +12,7 @@ Case Autopilot is the OpenCTI face of the XTM One investigation engine (Deep Inv
 
 - An Enterprise Edition license.
 - XTM One connected to the platform (see the [XTM Suite configuration](../deployment/configuration.md#xtm-suite)), in a version that provides the investigation engine. When XTM One is not connected or does not run investigations, the Autopilot tab and the launch dialog say so and no investigation starts.
-- To start or continue an investigation: the capability to update knowledge, and the capability to enrich knowledge when the policy of the investigation runs enrichments. Without the latter, the launch dialog explains why a policy with enrichments cannot be picked. An investigation started by a playbook or for a new request for information acts as the identity configured there, which needs the same capabilities.
+- To start or continue an investigation: the capability to update knowledge, and the capability to enrich knowledge when the policy of the investigation runs enrichments. Without the latter, the launch dialog explains why a policy with enrichments cannot be picked. An investigation started by a playbook or for a new request for information acts as the identity configured there, which needs the same capabilities. An investigation you start yourself acts as you, even when its policy names an identity for automatic investigations: it never reads more than you can.
 - To manage investigation policies: the capability to manage customization.
 - The investigated entity and its case must not be restricted to authorized members (see [Entities restricted to authorized members](#entities-restricted-to-authorized-members)).
 
@@ -103,6 +103,8 @@ The **Waiting for your approval** card shows what each approval changes before y
 - for a recommendation, what it changes and why.
 
 **Review N changes** in the header moves to the first approval. A rejection takes an optional reason, which calibrates the next investigations of the platform. Once an analyst approved an enrichment the investigation held, **Continue the investigation** starts a new engine run on the same investigation, with the new knowledge.
+
+Once its draft is approved, by an analyst or automatically by the policy, the investigation completes only when the platform confirms that every approved change was written to the case. If the platform reports errors while writing them, or has not confirmed them after 30 minutes, the investigation ends as failed and the header says which: the draft keeps what was approved, so you can see what reached the case.
 
 ![An investigation waiting for the approval of its draft](assets/case-autopilot-awaiting-approval.png)
 

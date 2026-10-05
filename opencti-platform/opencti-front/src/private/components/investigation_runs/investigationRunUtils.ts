@@ -106,6 +106,8 @@ export const ENGINE_REASON_LABELS: Record<string, string> = {
   engine_no_agent: 'No agent of the connected XTM One answers the autonomous investigation intent.',
   engine_unreachable: 'The XTM One investigation engine cannot be reached.',
   'run.time_budget_spent': 'The time budget of the investigation was spent before it completed.',
+  draft_validation_failed: 'Some approved changes could not be written to the case. Open the draft to see what was approved, then check the case before running Case Autopilot again.',
+  draft_validation_unconfirmed: 'The platform did not confirm in time that the approved changes were written to the case. Open the draft to see what was approved, then check the case.',
 };
 
 export const engineReasonLabel = (code: string | null | undefined) => (code ? ENGINE_REASON_LABELS[code] ?? null : null);

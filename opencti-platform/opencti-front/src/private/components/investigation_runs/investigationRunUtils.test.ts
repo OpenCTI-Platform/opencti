@@ -195,6 +195,8 @@ describe('Case Autopilot run helpers', () => {
     expect(engineReasonLabel('engine_disabled')).toContain('Deep Investigation');
     expect(engineReasonLabel('member_restricted')).toContain('ask an administrator for access, then run again');
     expect(engineReasonLabel('source_inaccessible')).toContain('no longer accessible to you');
+    expect(engineReasonLabel('draft_validation_failed')).toContain('could not be written to the case');
+    expect(engineReasonLabel('draft_validation_unconfirmed')).toContain('did not confirm in time');
     expect(engineReasonLabel('other')).toBeNull();
     expect(engineReasonLabel(null)).toBeNull();
   });

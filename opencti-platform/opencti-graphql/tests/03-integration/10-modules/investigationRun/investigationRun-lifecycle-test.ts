@@ -1,10 +1,10 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
-import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden } from '../../../utils/testQueryHelper';
+import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
 import { v4 as uuid } from 'uuid';
 import { ADMIN_USER, getAuthUser, getUserIdByEmail, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { connectorDelete, registerConnector } from '../../../../src/domain/connector';
-import { updateProcessedTime } from '../../../../src/domain/work';
+import { createWork, updateProcessedTime } from '../../../../src/domain/work';
 import { ConnectorType, InvestigationEvidenceKind, InvestigationRunPhase, InvestigationRunStatus, InvestigationRunTrigger } from '../../../../src/generated/graphql';
 import { MARKING_TLP_AMBER, MARKING_TLP_RED } from '../../../../src/schema/identifier';
 import {
@@ -22,7 +22,9 @@ import * as stixCoreObjectDomain from '../../../../src/domain/stixCoreObject';
 import { DatabaseError } from '../../../../src/config/errors';
 import { internalLoadById } from '../../../../src/database/middleware-loader';
 import { RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
-import { statusTransition } from '../../../../src/modules/investigationRun/investigationRun-state';
+import { statusTransition, VALIDATION_TIMEOUT_MS } from '../../../../src/modules/investigationRun/investigationRun-state';
+import * as investigationRunDomain from '../../../../src/modules/investigationRun/investigationRun-domain';
+import { DRAFT_VALIDATION_CONNECTOR } from '../../../../src/modules/draftWorkspace/draftWorkspace-connector';
 import { runCitedIds } from '../../../../src/modules/investigationRun/investigationRun-utils';
 import type { BasicStoreEntityInvestigationRun } from '../../../../src/modules/investigationRun/investigationRun-types';
 import * as entrepriseEdition from '../../../../src/enterprise-edition/ee';
@@ -229,6 +231,7 @@ const RUN_RECORDS = gql`
     }
   }
 `;
+const RUN_IDENTITY = gql`query RunIdentity($id: ID!) { investigationRun(id: $id) { id policy { id } runAs { id } } }`;
 const RUN_APPLY = gql`
   mutation RunApply($id: ID!, $recommendationId: String!, $mode: InvestigationRecommendationApplyMode!) {
     investigationRunRecommendationApply(id: $id, recommendationId: $recommendationId, mode: $mode) { id recommendations { id status task_id } }
@@ -347,6 +350,34 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       expect(refused.errors?.[0]?.message).toContain('does not allow creating a case');
     } finally {
       await queryAsAdmin({ query: POLICY_DELETE, variables: { id: policyId } });
+    }
+  });
+
+  it('runs a launch from the interface as the analyst who starts it, never as the identity its policy names for automatic investigations', async () => {
+    const editorId = await getUserIdByEmail(USER_EDITOR.email);
+    const created = await queryAsAdminWithSuccess({ query: CREATE_CASE, variables: { input: { name: 'Case Autopilot e2e manual identity case', objects: [fixture.ipId] } } });
+    const caseId = created.data.caseIncidentAdd.id;
+    const policy = await queryAsAdminWithSuccess({
+      query: POLICY_ADD,
+      variables: { input: { name: 'Case Autopilot e2e automatic identity', allowed_actions: ['create_note'], run_as_id: ADMIN_USER.id } },
+    });
+    const policyId = policy.data.investigationPolicyAdd.id;
+    let runId = '';
+    try {
+      // The policy acts as the administrator for automatic investigations: an editor who starts one reads only what the editor can read.
+      const launched = await queryAsUserWithSuccess(USER_EDITOR, { query: RUN_ADD_WITH_POLICY, variables: { subjectId: caseId, policyId } });
+      runId = launched.data.investigationRunAdd.id;
+      const identity = await queryAsAdminWithSuccess({ query: RUN_IDENTITY, variables: { id: runId } });
+      expect(identity.data.investigationRun.policy.id).toBe(policyId);
+      expect(identity.data.investigationRun.runAs.id).toBe(editorId);
+    } finally {
+      // Never processed: the run has no draft or graph yet. The runs of the suite start with the next test.
+      if (runId) {
+        await queryAsAdmin({ query: RUN_CANCEL, variables: { id: runId } });
+        await queryAsAdmin({ query: RUN_DELETE, variables: { id: runId } });
+      }
+      await queryAsAdmin({ query: POLICY_DELETE, variables: { id: policyId } });
+      await queryAsAdmin({ query: DELETE_CASE, variables: { id: caseId } });
     }
   });
 
@@ -838,6 +869,55 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
     }
   });
 
+  it('completes an investigation once the platform confirms its approved changes, and fails it when the platform reports errors or does not confirm them in time', async () => {
+    const caseIds: string[] = [];
+    // A run whose approved changes a validation work writes, without ingesting a draft into the live graph of the suite.
+    const startValidating = async (name: string, startedAt: Date) => {
+      const created = await queryAsAdminWithSuccess({ query: CREATE_CASE, variables: { input: { name, objects: [fixture.ipId] } } });
+      caseIds.push(created.data.caseIncidentAdd.id);
+      engineStage = 'planning';
+      const { data } = await queryAsAdminWithSuccess({ query: RUN_ADD, variables: { subjectId: created.data.caseIncidentAdd.id } });
+      const runId: string = data.investigationRunAdd.id;
+      createdRuns.push({ id: runId });
+      await tickUntil(runId, (current) => current.run_phase === 'investigating');
+      const work = await createWork(testContext, ADMIN_USER, DRAFT_VALIDATION_CONNECTOR, `Draft validation ${name}`, DRAFT_VALIDATION_CONNECTOR.internal_id, { receivedTime: startedAt.toISOString() });
+      if (!work) throw new Error(`No validation work created for ${name}`);
+      await updateInvestigationRun(testContext, runId, (current) => ({
+        ...statusTransition(current, InvestigationRunStatus.Running, InvestigationRunPhase.Validating, new Date()),
+        validation_work_id: work.id,
+        wave_started_at: startedAt.toISOString(),
+      }));
+      return { runId, workId: work.id as string };
+    };
+    try {
+      // Confirmed: the run keeps validating while the work writes, and completes once it completes.
+      const confirmed = await startValidating('Case Autopilot e2e confirmed validation case', new Date());
+      await processInvestigationRun(testContext, confirmed.runId);
+      expect(await loadInvestigationRun(testContext, confirmed.runId)).toMatchObject({ run_status: 'running', run_phase: 'validating' });
+      await updateProcessedTime(testContext, ADMIN_USER, confirmed.workId, 'Draft validated');
+      await processInvestigationRun(testContext, confirmed.runId);
+      const completed = await loadInvestigationRun(testContext, confirmed.runId);
+      expect(completed).toMatchObject({ run_status: 'completed', run_phase: 'done' });
+      expect(completed?.end_reason_code ?? null).toBeNull();
+      // Written with errors: the run fails and says what the platform reported.
+      const partial = await startValidating('Case Autopilot e2e partial validation case', new Date());
+      await updateProcessedTime(testContext, ADMIN_USER, partial.workId, 'Relationship not ingested', true);
+      await processInvestigationRun(testContext, partial.runId);
+      const failed = await loadInvestigationRun(testContext, partial.runId);
+      expect(failed).toMatchObject({ run_status: 'failed', run_phase: 'done', end_reason_code: 'draft_validation_failed' });
+      expect(failed?.status_reason).toContain('1 error(s)');
+      expect(failed?.status_reason).toContain('Relationship not ingested');
+      // Still being written once the bound passed: the run fails as not confirmed, never as completed.
+      const late = await startValidating('Case Autopilot e2e unconfirmed validation case', new Date(Date.now() - VALIDATION_TIMEOUT_MS - 60 * 1000));
+      await processInvestigationRun(testContext, late.runId);
+      expect(await loadInvestigationRun(testContext, late.runId)).toMatchObject({ run_status: 'failed', run_phase: 'done', end_reason_code: 'draft_validation_unconfirmed' });
+    } finally {
+      for (let index = 0; index < caseIds.length; index += 1) {
+        await queryAsAdmin({ query: DELETE_CASE, variables: { id: caseIds[index] } });
+      }
+    }
+  });
+
   it('stops an investigation once an object the engine received as context, without citing it, becomes restricted to authorized members', async () => {
     // The second case of the suite, inside this case, reaches the engine as context; the engine never cites it.
     const created = await queryAsAdminWithSuccess({
@@ -1127,6 +1207,55 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       expect(dispatch).toHaveBeenCalledTimes(2);
     } finally {
       dispatch.mockRestore();
+      if (runId) await queryAsAdmin({ query: RUN_CANCEL, variables: { id: runId } });
+      await connectorDelete(testContext, ADMIN_USER, connectorId);
+      await queryAsAdmin({ query: DELETE_CASE, variables: { id: caseId } });
+    }
+  });
+
+  it('records the job a connector accepted when the run could not record it, instead of starting it again', async () => {
+    const created = await queryAsAdminWithSuccess({ query: CREATE_CASE, variables: { input: { name: 'Case Autopilot e2e unrecorded dispatch case', objects: [fixture.intrusionSetId, fixture.ipId] } } });
+    const caseId = created.data.caseIncidentAdd.id;
+    const connectorId = uuid();
+    await registerConnector(testContext, ADMIN_USER, {
+      id: connectorId, name: 'Case Autopilot e2e unrecorded dispatch', type: ConnectorType.InternalEnrichment, scope: ['IPv4-Addr'], auto: false,
+    });
+    let runId = '';
+    let acceptedWorkId = '';
+    const askEnrichment = stixCoreObjectDomain.askElementEnrichmentForConnectors;
+    const dispatch = vi.spyOn(stixCoreObjectDomain, 'askElementEnrichmentForConnectors');
+    const update = vi.spyOn(investigationRunDomain, 'updateInvestigationRun');
+    try {
+      engineStage = 'planning';
+      const { data } = await queryAsAdminWithSuccess({ query: RUN_ADD, variables: { subjectId: caseId } });
+      runId = data.investigationRunAdd.id;
+      createdRuns.push({ id: runId });
+      await tickUntil(runId, (current) => current.run_phase === 'investigating');
+      await queryAsAdminWithSuccess({
+        query: RUN_ENRICH,
+        variables: { id: runId, input: { entity_ids: [fixture.ipId], connector_ids: [connectorId], reason: 'Check the address' } },
+      });
+      // The connector accepts the job, then recording its work on the run meets a transient failure.
+      dispatch.mockImplementationOnce(async (context, user, enrichedId, connectorIds) => {
+        const works = await askEnrichment(context, user, enrichedId, connectorIds);
+        acceptedWorkId = works?.[0]?.id ?? '';
+        update.mockRejectedValueOnce(DatabaseError('Search engine unavailable'));
+        return works;
+      });
+      await processInvestigationRun(testContext, runId);
+      const unrecorded = await queryAsAdminWithSuccess({ query: RUN_ENRICHMENT_STATE, variables: { id: runId } });
+      expect(acceptedWorkId).toBeTruthy();
+      expect(unrecorded.data.investigationRun.enrichment_requests).toEqual([expect.objectContaining({ entity_id: fixture.ipId, status: 'queued', work_id: null })]);
+      expect(unrecorded.data.investigationRun.budget.used_enrichment_jobs).toBe(0);
+      // The next pass records the job the connector accepted, with its budget charge, and starts no second one.
+      await processInvestigationRun(testContext, runId);
+      const recorded = await queryAsAdminWithSuccess({ query: RUN_ENRICHMENT_STATE, variables: { id: runId } });
+      expect(recorded.data.investigationRun.enrichment_requests).toEqual([expect.objectContaining({ entity_id: fixture.ipId, status: 'dispatched', work_id: acceptedWorkId })]);
+      expect(recorded.data.investigationRun.budget.used_enrichment_jobs).toBe(1);
+      expect(dispatch).toHaveBeenCalledTimes(1);
+    } finally {
+      dispatch.mockRestore();
+      update.mockRestore();
       if (runId) await queryAsAdmin({ query: RUN_CANCEL, variables: { id: runId } });
       await connectorDelete(testContext, ADMIN_USER, connectorId);
       await queryAsAdmin({ query: DELETE_CASE, variables: { id: caseId } });
