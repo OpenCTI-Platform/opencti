@@ -225,13 +225,13 @@ To remove a custom theme:
 
 ## Dependencies
 
-![parameters_dependencies](assets/parameters_dependencies.png)
+![Dependencies](assets/parameters-dependencies.png)
 
 One card per service the platform depends on gives its version: the search engine (Elasticsearch or OpenSearch), RabbitMQ, Redis and, once registered, XTM One.
 
 ## Managers
 
-![parameters_managers](assets/parameters_managers.png)
+![Managers](assets/parameters-managers.png)
 
 This section informs the administrator of the status of every manager used in the platform. More information about the managers can be found [here](../deployment/advanced/managers.md).
 
