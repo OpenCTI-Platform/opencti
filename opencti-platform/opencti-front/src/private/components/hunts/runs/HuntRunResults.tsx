@@ -28,6 +28,8 @@ export const huntRunResultsFragment = graphql`
       hunt_run_status
       hits_count
       incident_id
+      incident_continued
+      sightings_created_count
       security_platform_id
       hunt {
         id
@@ -104,6 +106,8 @@ interface HuntRunKnowledgeInput {
   readonly hunt_run_status?: string | null;
   readonly hits_count?: number | null;
   readonly incident_id?: string | null;
+  readonly incident_continued?: boolean | null;
+  readonly sightings_created_count?: number | null;
   readonly security_platform_id?: string | null;
   readonly hunt?: { readonly hunt_type?: string | null } | null;
   readonly results_summary?: { readonly sightings: number; readonly observed_data: number; readonly observables: number; readonly others: number } | null;
@@ -111,17 +115,28 @@ interface HuntRunKnowledgeInput {
 
 /**
  * What a run produced, in one line, and why a completed run with hits has no sighting or no observable: null while a
- * run has produced nothing yet.
+ * run has produced nothing yet. A hunt keeps one sighting per sighted object and platform: a run creates it the first
+ * time and updates it afterwards; a run whose hits joined an incident still open says so.
  */
 export const huntRunKnowledge = (run: HuntRunKnowledgeInput, t_i18n: HuntRunTranslate) => {
   const summary = run.results_summary ?? { sightings: 0, observed_data: 0, observables: 0, others: 0 };
   const count = (message: string, value: number) => (value > 0 ? t_i18n(message, { values: { count: value } }) : null);
+  const createdSightings = run.sightings_created_count === null || run.sightings_created_count === undefined
+    ? null
+    : Math.min(run.sightings_created_count, summary.sightings);
+  const sightingParts = createdSightings === null
+    ? [count('{count, plural, one {# sighting} other {# sightings}}', summary.sightings)]
+    : [
+        count('{count, plural, one {# sighting created} other {# sightings created}}', createdSightings),
+        count('{count, plural, one {# sighting updated} other {# sightings updated}}', summary.sightings - createdSightings),
+      ];
   const parts = [
-    count('{count, plural, one {# sighting} other {# sightings}}', summary.sightings),
+    ...sightingParts,
     count('{count, plural, one {# observed data} other {# observed data}}', summary.observed_data),
     count('{count, plural, one {# observable} other {# observables}}', summary.observables),
     count('{count, plural, one {# other object} other {# other objects}}', summary.others),
-    count('{count, plural, one {# incident} other {# incidents}}', run.incident_id ? 1 : 0),
+    run.incident_id && run.incident_continued ? t_i18n('hits added to the open incident') : null,
+    run.incident_id && !run.incident_continued ? count('{count, plural, one {# incident} other {# incidents}}', 1) : null,
   ].filter((part): part is string => !!part);
   const completed = run.hunt_run_status === 'completed';
   if (!completed && parts.length === 0) {

@@ -88,6 +88,7 @@ import './defenseCoverage/defenseGap/defenseGap';
 import './defenseCoverage/defenseLogsourceMapping/defenseLogsourceMapping';
 import './hunt/hunt';
 import './hunt/huntRun/huntRun';
+import './hunt/huntHitRecord/huntHitRecord';
 import './authenticationProvider/authenticationProvider';
 import './customView/customView';
 import './retentionRules/retentionRules';

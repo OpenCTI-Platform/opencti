@@ -48,6 +48,10 @@ import {
   toHuntAddInput,
   huntRunPartialResultsSentence,
   huntConnectorSetupDocumentation,
+  huntHitRecurrence,
+  huntLastRunHits,
+  huntRunHitsBreakdown,
+  huntRunsRecur,
 } from './hunt-utils';
 
 describe('Hunt utils', () => {
@@ -510,5 +514,41 @@ describe('Observables to extract from hits', () => {
     const names: Record<string, string> = { 'entity_IPv4-Addr': 'IPv4 address', entity_StixFile: 'File', 'entity_User-Account': 'User account' };
     expect(huntObservableTypeNames(['IPv4-Addr', 'StixFile', 'User-Account'], (message) => names[message] ?? message)).toBe('IPv4 address, File, User account');
     expect(huntObservableTypeNames([], (message) => message)).toBe('');
+  });
+
+  describe('hits counted once across runs', () => {
+    const intl = createIntl({ locale: 'en', messages: {}, onError: () => {} });
+    const t = (message: string, options?: { values: Record<string, string | number> }) => intl.formatMessage({ id: message, defaultMessage: message }, options?.values);
+    const n = (value: number) => value.toLocaleString('en-US');
+
+    it('should tell the new hits of a run from the ones seen before', () => {
+      expect(huntRunHitsBreakdown({ hits_count: 120, hits_new_count: 12, hits_recurring_count: 108, hits_identified: true }, t, n)).toBe('120 (12 new, 108 seen before)');
+      expect(huntRunHitsBreakdown({ hits_count: 5000, hits_new_count: 12, hits_recurring_count: 988, hits_identified: true }, t, n))
+        .toBe('5,000 (12 new, 988 seen before, among 1,000 identified)');
+      // Not identified, or no hit: the plain count says it
+      expect(huntRunHitsBreakdown({ hits_count: 120, hits_new_count: 120, hits_recurring_count: 0, hits_identified: false }, t, n)).toBeNull();
+      expect(huntRunHitsBreakdown({ hits_count: 0, hits_identified: true }, t, n)).toBeNull();
+    });
+
+    it('should tag a sampled hit new, or since when the hunt knows it', () => {
+      const date = (value: string) => value.substring(0, 10);
+      expect(huntHitRecurrence({ is_new: true, times_seen: 1, known_since: '2026-10-05T10:00:00Z' }, t, n, date)).toEqual({ label: 'New', isNew: true });
+      expect(huntHitRecurrence({ is_new: false, times_seen: 4, known_since: '2026-10-01T10:00:00Z' }, t, n, date))
+        .toEqual({ label: 'Seen 4 times since 2026-10-01', isNew: false });
+      expect(huntHitRecurrence({ is_new: null }, t, n, date)).toBeNull();
+    });
+
+    it('should give the new hits of the last run of a hunt when known', () => {
+      expect(huntLastRunHits({ last_hits_count: 28, last_new_hits_count: 3 }, t, n)).toBe('28 hits, 3 new');
+      expect(huntLastRunHits({ last_hits_count: 28 }, t, n)).toBe('28 hits');
+      expect(huntLastRunHits({ last_hits_count: 0, last_new_hits_count: 0 }, t, n)).toBe('No hit');
+    });
+
+    it('should know which hunts run again and again by themselves', () => {
+      expect(huntRunsRecur({ hunt_schedule: '0 */6 * * *' })).toBe(true);
+      expect(huntRunsRecur({ hunt_schedule: 'standing' })).toBe(true);
+      expect(huntRunsRecur({ hunt_schedule: 'manual', hunt_pir_activation: true })).toBe(true);
+      expect(huntRunsRecur({ hunt_schedule: 'manual' })).toBe(false);
+    });
   });
 });

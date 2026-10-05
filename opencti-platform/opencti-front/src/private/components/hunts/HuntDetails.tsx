@@ -13,8 +13,9 @@ import type { Theme } from '../../../components/Theme';
 import { resolveLink } from '../../../utils/Entity';
 import { HuntRunStatusChip, HuntSourceKindChip, HuntStatusChip } from './HuntChips';
 import { useHuntScheduleText } from './HuntSchedulePreview';
-import { huntExtractsObservables, huntTypeLabel, parseHuntScopePlatformIds } from './hunt-utils';
+import { huntExtractsObservables, huntLastRunHits, huntRunsRecur, huntTypeLabel, parseHuntScopePlatformIds } from './hunt-utils';
 import { useHuntDefaultObservableTypeNames } from './HuntRunProducesSection';
+import useHuntConfiguration from './useHuntConfiguration';
 import { HuntDetails_hunt$key } from './__generated__/HuntDetails_hunt.graphql';
 
 const huntDetailsFragment = graphql`
@@ -43,6 +44,12 @@ const huntDetailsFragment = graphql`
     last_run_at
     last_run_status
     last_hits_count
+    last_new_hits_count
+    knownHits {
+      distinct_count
+      first_new_at
+      last_new_at
+    }
     next_run_at
     huntTargets {
       id
@@ -97,6 +104,7 @@ const HuntDetails = ({ data }: HuntDetailsProps) => {
   const { t_i18n, fldt, n } = useFormatter();
   const scheduleText = useHuntScheduleText();
   const defaultTypes = useHuntDefaultObservableTypeNames();
+  const { scheduleLookbackMinutes } = useHuntConfiguration();
   const hunt = useFragment(huntDetailsFragment, data);
   const advancedScope = hunt.hunt_scope && parseHuntScopePlatformIds(hunt.hunt_scope) === null;
   const scopeItems = (hunt.scopePlatforms ?? []).map((platform) => ({ id: platform.id, entity_type: platform.entity_type, label: platform.name }));
@@ -153,13 +161,29 @@ const HuntDetails = ({ data }: HuntDetailsProps) => {
               <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>
                 <Text variant="content-compact">{fldt(hunt.last_run_at)}</Text>
                 {hunt.last_run_status && <HuntRunStatusChip value={hunt.last_run_status} />}
-                <Text variant="content-compact">{t_i18n('{count, plural, =0 {No hit} one {# hit} other {# hits}}', { values: { count: hunt.last_hits_count ?? 0 } })}</Text>
+                <Text variant="content-compact" data-testid="hunt-last-run-hits">{huntLastRunHits(hunt, t_i18n, n)}</Text>
               </div>
             ) : <Text variant="content-compact">-</Text>}
+            <Label sx={{ marginTop: 2 }}>{t_i18n('Known hits')}</Label>
+            <div data-testid="hunt-known-hits">
+              <Text variant="content-compact">
+                {t_i18n('{count, plural, =0 {No hit known yet} one {# distinct hit} other {# distinct hits}}', { values: { count: hunt.knownHits.distinct_count } })}
+              </Text>
+              {hunt.knownHits.first_new_at && hunt.knownHits.last_new_at && (
+                <Text variant="content-caption" style={{ display: 'block' }}>
+                  {t_i18n('First found {first}, last new hit {last}', { values: { first: fldt(hunt.knownHits.first_new_at), last: fldt(hunt.knownHits.last_new_at) } })}
+                </Text>
+              )}
+            </div>
             <Label sx={{ marginTop: 2 }}>{t_i18n('Next run')}</Label>
             <Text variant="content-compact">{hunt.next_run_at ? fldt(hunt.next_run_at) : '-'}</Text>
             <Label sx={{ marginTop: 2 }}>{t_i18n('Time window')}</Label>
             <Text variant="content-compact">{t_i18n('{count} hours', { values: { count: hunt.time_window_hours } })}</Text>
+            {huntRunsRecur(hunt) && (
+              <Text variant="content-caption" style={{ display: 'block' }} data-testid="hunt-window-sentence">
+                {t_i18n('Recurring runs search since the previous run, with a {minutes}-minute overlap', { values: { minutes: n(scheduleLookbackMinutes) } })}
+              </Text>
+            )}
             <Label sx={{ marginTop: 2 }}>{t_i18n('Escalation threshold')}</Label>
             <Text variant="content-compact">{t_i18n('{count, plural, =0 {No hit} one {# hit} other {# hits}}', { values: { count: hunt.escalation_threshold } })}</Text>
             <Label sx={{ marginTop: 2 }}>{t_i18n('Maximum results per run')}</Label>

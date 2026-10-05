@@ -64,6 +64,7 @@ import { computeNextRunAt } from './hunt-schedule';
 import { updateHuntRunInformation } from './hunt-stats';
 import { HUNT_CONFIG, parseHuntFilterGroup } from './hunt-utils';
 import { findPlaybookHuntRuns, isHuntRunGroupSettled, resumeHuntPlaybookStep } from './hunt-playbook';
+import { purgeExpiredHuntHitRecords } from './huntHitRecord/huntHitRecord-domain';
 
 export const HUNT_MANAGER_STREAM_STATE = 'hunt_manager';
 // Soft coupling with Threat Pulse: entities whose community trend rises make their standing hunts react faster
@@ -483,6 +484,12 @@ export const purgeExpiredHuntRuns = async (context: AuthContext): Promise<number
         logApp.error('[OPENCTI-MODULE] Hunt run purge failed', { cause: error, runId: runs[index].internal_id });
       }
     }
+  }
+  // The known hits live as long as the runs that found them
+  try {
+    await purgeExpiredHuntHitRecords(minutesAgo(HUNT_CONFIG.runRetentionDays * 24 * 60));
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE] Hunt known hits purge failed', { cause: error });
   }
   return purged;
 };

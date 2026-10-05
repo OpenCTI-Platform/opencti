@@ -202,7 +202,11 @@ class HuntRun:
         :param work_id: (optional) the work the run was dispatched with, which binds the report to the connector
             that received the run (OpenCTI refuses a report without it)
         :param ioc_results: (optional) indicator hunts: list of {key, seen, searched, hits_count, first_seen,
-            last_seen, hosts, reason}, one per value of the run message (a value left out is recorded not searched)
+            last_seen, hosts, reason, hit_keys}, one per value of the run message (a value left out is recorded
+            not searched); hit_keys are the keys of the hits holding the value
+        :param hit_keys: (optional) the stable key of every hit the run read, sampled or not (the rule of the
+            connectors SDK, analysis.hit_key): OpenCTI counts the hits it never saw for the hunt and the security
+            platform as new; without keys, every hit counts as new
         :param retryable: (optional) failed runs: False when the run fails again in the same way at every attempt
             (translation error, a query the platform rejects, an invalid run message), so it is not retried
         :return: the hunt run
@@ -245,6 +249,8 @@ class HuntRun:
             report_input["ioc_results"] = kwargs.get("ioc_results")
         if kwargs.get("hits_sample", None) is not None:
             report_input["hits_sample"] = kwargs.get("hits_sample")
+        if kwargs.get("hit_keys", None) is not None:
+            report_input["hit_keys"] = list(kwargs.get("hit_keys"))
         if kwargs.get("retryable", None) is not None:
             report_input["retryable"] = bool(kwargs.get("retryable"))
         result = self.opencti.query(query, {"id": id, "input": report_input})
@@ -312,6 +318,8 @@ class HuntRun:
         :param hits_count: (optional) hits added to the run
         :param evidence_sample: (optional) list of {field, value_hash, value_preview, count}
         :param hits_sample: (optional) one item per hit, same shape as in report
+        :param hit_keys: (optional) the keys of the hits of the evidence, same rule as in report: without
+            keys, the hits of the evidence count as new
         :param security_platform_id: (optional) the platform where the evidence was observed
         :param observed_at: (optional) observation date
         :param source: (optional) where the evidence comes from (for example splunk-alert-action)
@@ -346,6 +354,8 @@ class HuntRun:
         }
         if kwargs.get("hits_sample", None) is not None:
             evidence_input["hits_sample"] = kwargs.get("hits_sample")
+        if kwargs.get("hit_keys", None) is not None:
+            evidence_input["hit_keys"] = list(kwargs.get("hit_keys"))
         result = self.opencti.query(query, {"id": id, "input": evidence_input})
         return result["data"]["huntRunEvidenceAdd"]
 

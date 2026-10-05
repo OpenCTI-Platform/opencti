@@ -26,6 +26,7 @@ import { findUnresolvedAttackTechniques } from './hunt-logic';
 import { ENTITY_TYPE_HUNT, RELATION_HUNT_SOURCES, RELATION_HUNT_TARGETS, RELATION_HUNT_TECHNIQUES } from './hunt-types';
 import { HUNT_CONFIG, HUNT_DEFAULT_EXPECTED_OBSERVABLES } from './hunt-utils';
 import { computeHuntStatistics, computeHuntTechniqueValidations, findHuntRunsForHunt, startHuntPreview, startHuntRuns } from './huntRun/huntRun-domain';
+import { findHuntKnownHits } from './huntHitRecord/huntHitRecord-domain';
 
 const huntResolvers: Resolvers = {
   Query: {
@@ -35,6 +36,7 @@ const huntResolvers: Resolvers = {
     huntConfiguration: () => ({
       min_schedule_interval_minutes: HUNT_CONFIG.minScheduleIntervalMinutes,
       default_expected_observables: HUNT_DEFAULT_EXPECTED_OBSERVABLES,
+      schedule_lookback_minutes: HUNT_CONFIG.scheduleLookbackMinutes,
     }),
     huntStatistics: (_, args, context) => computeHuntStatistics(context, context.user, args),
     huntPackExport: (_, { ids }, context) => exportHuntPack(context, context.user, ids),
@@ -51,6 +53,7 @@ const huntResolvers: Resolvers = {
     escalate_manual_runs: (hunt) => hunt.escalate_manual_runs === true,
     iocSet: (hunt, { first }, context) => loadHuntIocSet(context, hunt, first),
     runs: (hunt, args, context) => findHuntRunsForHunt(context, context.user, hunt.id, args),
+    knownHits: (hunt, _, context) => findHuntKnownHits(context, context.user, hunt.id),
     statistics: (hunt, args, context) => computeHuntStatistics(context, context.user, { ...args, huntId: hunt.id }),
     toStixBundle: (hunt, _, context) => exportHuntPack(context, context.user, [hunt.id]),
   },

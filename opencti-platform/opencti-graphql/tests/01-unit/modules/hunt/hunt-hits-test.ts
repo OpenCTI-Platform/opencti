@@ -47,6 +47,8 @@ describe('Hunt hits sample', () => {
       process: 'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe',
     }]);
     expect(stored).toEqual({
+      // The events of one detection are one hit: the detection identifies it
+      hit_key: sha256(JSON.stringify(['v1', 'detection', 'rule_powershell_encoded'])),
       event_id: 'evt-1',
       timestamp: '2026-10-05T10:00:00.000Z',
       detection: 'rule_powershell_encoded',

@@ -1,8 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { internalLoadById, storeLoadById } from '../../../../src/database/middleware-loader';
+import { internalLoadById, storeLoadById, topEntitiesList } from '../../../../src/database/middleware-loader';
 import { createEntity, patchAttribute } from '../../../../src/database/middleware';
 import { resolveHuntConnectorTargets } from '../../../../src/modules/hunt/hunt-dispatch';
-import { createHuntIncidentInWorkspace, createHuntIncidentWorkspace } from '../../../../src/modules/hunt/hunt-incident';
+import { continueHuntIncident, createHuntIncidentInWorkspace, createHuntIncidentWorkspace, findOpenHuntIncident } from '../../../../src/modules/hunt/hunt-incident';
+import { recordHuntHits } from '../../../../src/modules/hunt/huntHitRecord/huntHitRecord-domain';
+import { upsertHuntSightings } from '../../../../src/modules/hunt/hunt-sightings';
 import { updateHuntRunInformation } from '../../../../src/modules/hunt/hunt-stats';
 import { createHuntRuns, isAutoEscalatedHuntRun, reportHuntRun, setHuntRunVerdict } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
 import type { BasicStoreEntityHunt } from '../../../../src/modules/hunt/hunt-types';
@@ -42,6 +44,18 @@ vi.mock('../../../../src/modules/hunt/hunt-incident', async (importOriginal) => 
   ...await importOriginal<typeof import('../../../../src/modules/hunt/hunt-incident')>(),
   createHuntIncidentWorkspace: vi.fn(async () => 'draft-1'),
   createHuntIncidentInWorkspace: vi.fn(async () => 'incident-1'),
+  findOpenHuntIncident: vi.fn(async () => null),
+  continueHuntIncident: vi.fn(async () => undefined),
+}));
+
+vi.mock('../../../../src/modules/hunt/huntHitRecord/huntHitRecord-domain', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/modules/hunt/huntHitRecord/huntHitRecord-domain')>(),
+  recordHuntHits: vi.fn(),
+}));
+
+vi.mock('../../../../src/modules/hunt/hunt-sightings', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/modules/hunt/hunt-sightings')>(),
+  upsertHuntSightings: vi.fn(async () => ({ ids: [], created: 0, updated: 0 })),
 }));
 
 vi.mock('../../../../src/modules/hunt/hunt-stats', async (importOriginal) => ({
@@ -171,5 +185,109 @@ describe('Escalation at the end of a run above the threshold', () => {
     await setHuntRunVerdict(testContext, ADMIN_USER, 'run-1', { verdict: 'true_positive' } as never);
     expect(createHuntIncidentWorkspace).toHaveBeenCalledTimes(1);
     expect(finalState()).toMatchObject({ verdict: 'true_positive', draft_id: 'draft-1', incident_id: 'incident-1' });
+  });
+});
+
+const KEYS = Array.from({ length: 28 }, (_, index) => index.toString(16).padStart(64, '0'));
+
+describe('Hits counted once across the runs of a hunt', () => {
+  const loading = (run: BasicStoreEntityHuntRun) => {
+    vi.mocked(storeLoadById).mockImplementation(async (_context, _user, _id, type) => (type === 'Hunt' ? hunt : { ...run, ...finalState() }) as never);
+    vi.mocked(internalLoadById).mockResolvedValue(hunt as never);
+    vi.mocked(updateHuntRunInformation).mockResolvedValue(undefined as never);
+    vi.mocked(patchAttribute).mockImplementation(async (_context, _user, _id, _type, patch) => ({ element: { ...run, ...finalState(), ...patch } }) as never);
+  };
+  const autonomous = { ...running, hunt_run_trigger: 'standing', auto_escalation: true, security_platform_id: 'platform-1' } as BasicStoreEntityHuntRun;
+
+  afterEach(() => {
+    vi.mocked(patchAttribute).mockReset();
+    vi.mocked(storeLoadById).mockReset();
+    vi.mocked(recordHuntHits).mockReset();
+    vi.mocked(findOpenHuntIncident).mockReset();
+    vi.mocked(findOpenHuntIncident).mockResolvedValue(null);
+    vi.mocked(continueHuntIncident).mockClear();
+    vi.mocked(createHuntIncidentWorkspace).mockClear();
+    vi.mocked(createHuntIncidentInWorkspace).mockClear();
+    vi.mocked(upsertHuntSightings).mockClear();
+  });
+
+  it('should open nothing when every hit of an autonomous run was seen before', async () => {
+    loading(autonomous);
+    vi.mocked(recordHuntHits).mockResolvedValue({ newCount: 0, recurringCount: 28 });
+    await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'completed', hits_count: 28, hit_keys: KEYS } as never);
+    expect(recordHuntHits).toHaveBeenCalledWith(testContext, expect.objectContaining({ huntId: 'hunt-1', securityPlatformId: 'platform-1', runId: 'run-1', keys: KEYS }));
+    expect(createHuntIncidentWorkspace).not.toHaveBeenCalled();
+    expect(finalState()).toMatchObject({ hits_count: 28, hits_new_count: 0, hits_recurring_count: 28, hits_identified: true, verdict_source: 'auto' });
+    expect(updateHuntRunInformation).toHaveBeenLastCalledWith(testContext, 'hunt-1', expect.objectContaining({ last_hits_count: 28, last_new_hits_count: 0 }), { onlyIfNewer: true });
+    // The sightings of the hunt are kept up to date all the same
+    expect(upsertHuntSightings).toHaveBeenCalledTimes(1);
+  });
+
+  it('should escalate when the new hits alone reach the threshold', async () => {
+    loading(autonomous);
+    vi.mocked(recordHuntHits).mockResolvedValue({ newCount: 12, recurringCount: 16 });
+    await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'completed', hits_count: 28, hit_keys: KEYS } as never);
+    expect(createHuntIncidentWorkspace).toHaveBeenCalledTimes(1);
+    expect(finalState()).toMatchObject({ hits_new_count: 12, incident_id: 'incident-1', incident_continued: false });
+  });
+
+  it('should add the hits to the incident still open from a previous run instead of opening a new one', async () => {
+    loading(autonomous);
+    vi.mocked(recordHuntHits).mockResolvedValue({ newCount: 12, recurringCount: 16 });
+    vi.mocked(findOpenHuntIncident).mockResolvedValue({ incidentId: 'incident-0', draftId: 'draft-0' });
+    await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'completed', hits_count: 28, hit_keys: KEYS } as never);
+    expect(createHuntIncidentWorkspace).not.toHaveBeenCalled();
+    expect(createHuntIncidentInWorkspace).not.toHaveBeenCalled();
+    expect(continueHuntIncident).toHaveBeenCalledWith(testContext, hunt, expect.objectContaining({ internal_id: 'run-1' }), { incidentId: 'incident-0', draftId: 'draft-0' });
+    expect(finalState()).toMatchObject({ incident_id: 'incident-0', draft_id: 'draft-0', incident_continued: true });
+  });
+
+  it('should count every hit as new, and say so, when the connector identifies none or the known hits cannot be read', async () => {
+    loading(autonomous);
+    await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'completed', hits_count: 28 } as never);
+    expect(recordHuntHits).not.toHaveBeenCalled();
+    expect(finalState()).toMatchObject({ hits_new_count: 28, hits_recurring_count: 0, hits_identified: false });
+    vi.mocked(patchAttribute).mockReset();
+    loading(autonomous);
+    vi.mocked(recordHuntHits).mockRejectedValue(new Error('engine unavailable'));
+    await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'completed', hits_count: 28, hit_keys: KEYS } as never);
+    expect(finalState()).toMatchObject({ hits_new_count: 28, hits_recurring_count: 0, hits_identified: false });
+  });
+});
+
+describe('Time window of the recurring runs', () => {
+  beforeEach(() => {
+    vi.mocked(resolveHuntConnectorTargets).mockResolvedValue([
+      { connector: { internal_id: 'connector-1', name: 'Splunk Hunt' }, securityPlatform: { internal_id: 'platform-1', name: 'Splunk' } },
+    ] as never);
+    vi.mocked(createEntity).mockImplementation(async (_context, _user, input) => ({ ...input, internal_id: 'run-2' }) as never);
+    vi.mocked(updateHuntRunInformation).mockResolvedValue(undefined as never);
+  });
+
+  afterEach(() => {
+    vi.mocked(createEntity).mockReset();
+    vi.mocked(topEntitiesList).mockReset();
+    vi.mocked(topEntitiesList).mockResolvedValue([]);
+  });
+
+  it('should search a scheduled run since the end of the previous completed run, with the lookback overlap', async () => {
+    const previousEnd = new Date(Date.now() - 6 * 3600 * 1000).toISOString();
+    vi.mocked(topEntitiesList).mockResolvedValueOnce([{ internal_id: 'run-1', time_window_end: previousEnd }] as never);
+    await createHuntRuns(testContext, hunt, { trigger: 'schedule', dispatch: false });
+    expect(createdRun().time_window_start).toEqual(new Date(new Date(previousEnd).getTime() - 15 * 60 * 1000).toISOString());
+    expect(createdRun().continues_run_id).toEqual('run-1');
+  });
+
+  it('should search the full window for a first run, and keep the window a manual run asks for', async () => {
+    vi.mocked(topEntitiesList).mockResolvedValue([]);
+    await createHuntRuns(testContext, hunt, { trigger: 'standing', dispatch: false });
+    const first = createdRun();
+    expect(new Date(first.time_window_end as string).getTime() - new Date(first.time_window_start as string).getTime()).toEqual(24 * 3600 * 1000);
+    expect(first.continues_run_id).toBeNull();
+    vi.mocked(topEntitiesList).mockResolvedValue([{ internal_id: 'run-1', time_window_end: new Date().toISOString() }] as never);
+    await createHuntRuns(testContext, hunt, { trigger: 'manual', requester: ADMIN_USER, timeWindowHours: 48, dispatch: false });
+    const manual = createdRun();
+    expect(new Date(manual.time_window_end as string).getTime() - new Date(manual.time_window_start as string).getTime()).toEqual(48 * 3600 * 1000);
+    expect(manual.continues_run_id).toBeNull();
   });
 });

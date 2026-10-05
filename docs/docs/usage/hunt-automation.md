@@ -6,7 +6,7 @@
 
     Manual hunts, manual runs, query tests, verdicts and hunt packs are part of the Community Edition.
 
-An active hunt can run on its own. Automation never bypasses the analyst on what matters: hunts proposed by an agent start as drafts, Incidents are created in draft workspaces, and agent verdicts are proposals. What automation does on its own is limited to running hunts, recording their results (sightings and observed data created by the hunt connectors) and creating Incident drafts.
+An active hunt can run on its own. Automation never bypasses the analyst on what matters: hunts proposed by an agent start as drafts, Incidents are created in draft workspaces, and agent verdicts are proposals. What automation does on its own is limited to running hunts, recording their results (the observed data of the hunt connectors, the sightings OpenCTI keeps up to date) and creating Incident drafts or adding new hits to an incident still open. Recurring runs search since the previous run and only new hits escalate, see [How hits are counted](hunts.md#how-hits-are-counted).
 
 ## Schedules
 

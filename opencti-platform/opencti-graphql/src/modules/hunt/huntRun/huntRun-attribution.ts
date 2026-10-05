@@ -9,6 +9,8 @@ import { findHuntRunById, isHuntRunConnectorCall } from './huntRun-domain';
 
 // The observed data and the sightings a run found carry its id: the run and Source Intelligence count them as its evidence
 export const ATTRIBUTE_HUNT_RUN_ID = 'x_opencti_hunt_run_id';
+// The sighting a hunt keeps up to date names the hunt: only the platform sets it (hunt-sightings)
+const ATTRIBUTE_SIGHTING_HUNT_ID = 'x_opencti_hunt_id';
 
 const attributedRunId = (value: unknown): string | null => {
   const [runId] = Array.isArray(value) ? value : [value];
@@ -40,5 +42,23 @@ const validatorUpdate: ValidatorFn = async (context, user, instance, initial) =>
   return validateHuntRunAttribution(context, user, runId);
 };
 
+// A sighting names the hunt that keeps it only when the platform writes it: a connector or a user never sets, changes
+// or clears it (an update carries the edited keys only)
+const validateSightingHunt = (user: AuthUser, touched: boolean) => {
+  if (touched && !isBypassUser(user)) {
+    throw ForbiddenAccess('Only the platform keeps the sighting of a hunt up to date');
+  }
+};
+
+const sightingValidatorCreation: ValidatorFn = async (context, user, instance) => {
+  validateSightingHunt(user, !isEmptyField(instance[ATTRIBUTE_SIGHTING_HUNT_ID]));
+  return validatorCreation(context, user, instance);
+};
+
+const sightingValidatorUpdate: ValidatorFn = async (context, user, instance, initial) => {
+  validateSightingHunt(user, ATTRIBUTE_SIGHTING_HUNT_ID in instance);
+  return validatorUpdate(context, user, instance, initial);
+};
+
 registerEntityValidator(ENTITY_TYPE_CONTAINER_OBSERVED_DATA, { validatorCreation, validatorUpdate });
-registerEntityValidator(STIX_SIGHTING_RELATIONSHIP, { validatorCreation, validatorUpdate });
+registerEntityValidator(STIX_SIGHTING_RELATIONSHIP, { validatorCreation: sightingValidatorCreation, validatorUpdate: sightingValidatorUpdate });

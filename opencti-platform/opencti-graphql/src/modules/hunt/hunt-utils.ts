@@ -43,10 +43,14 @@ export const HUNT_CONFIG = {
   dispatchRecoveryMinutes: numberConf('hunt_manager:dispatch_recovery_minutes', 5),
   runRetentionDays: numberConf('hunt_manager:run_retention_days', 365),
   previewRetentionDays: numberConf('hunt_manager:preview_retention_days', 7),
+  scheduleLookbackMinutes: Number.isFinite(Number(conf.get('hunt_manager:schedule_lookback_minutes')))
+    ? Math.max(0, Number(conf.get('hunt_manager:schedule_lookback_minutes')))
+    : 15,
 };
 
-// What a run reports as observables when its hunt names none: what a hit commonly involves
-export const HUNT_DEFAULT_EXPECTED_OBSERVABLES = ['IPv4-Addr', 'IPv6-Addr', 'Domain-Name', 'Url', 'StixFile', 'Email-Addr', 'Hostname', 'User-Account'];
+// What a run reports as observables when its hunt names none: what a hit commonly involves. Each connector keeps the
+// types it can extract
+export const HUNT_DEFAULT_EXPECTED_OBSERVABLES = ['IPv4-Addr', 'IPv6-Addr', 'Domain-Name', 'Url', 'StixFile', 'Email-Addr', 'Hostname', 'User-Account', 'X509-Certificate'];
 
 export const huntExpectedObservables = (hunt: { expected_observables?: string[] | null }) => {
   const expected = (hunt.expected_observables ?? []).filter((type) => typeof type === 'string' && type.trim().length > 0);
@@ -159,12 +163,69 @@ const hitEntityValue = (value: unknown, maxLength: number): string | null => {
   return truncate(applyMasks(SECRET_MASKS, value.trim()), maxLength);
 };
 
+export const HUNT_HIT_KEY_VERSION = 'v1';
+
+const hitKeyValue = (value: unknown): string => (typeof value === 'string' ? value : '');
+
+/**
+ * The stable key of a hit, computed over the hit as the connector reported it (before the platform masks or truncates
+ * anything), the rule the connectors SDK applies to every hit it reads (analysis.hit_key): the SHA-256 hex digest of a
+ * compact JSON array, ["v1", "detection", detection] for a hit grouped into a detection, else ["v1", "event", event id],
+ * else ["v1", "fields", timestamp to the second in UTC ("YYYY-MM-DDTHH:MM:SSZ" or ""), host, user, process,
+ * [[field, value hash in lower case], ...] sorted]. An empty string counts as absent. The security platform is not part
+ * of the key: the known hits of a hunt are kept per security platform.
+ */
+export const huntHitKey = (hit: HuntHitInputLike): string => {
+  const detection = hitKeyValue(hit?.detection);
+  const eventId = hitKeyValue(hit?.event_id);
+  let parts: unknown[];
+  if (detection.length > 0) {
+    parts = [HUNT_HIT_KEY_VERSION, 'detection', detection];
+  } else if (eventId.length > 0) {
+    parts = [HUNT_HIT_KEY_VERSION, 'event', eventId];
+  } else {
+    const timestamp = toIsoDate(hit?.timestamp);
+    const matched = (Array.isArray(hit?.matched) ? hit.matched : [])
+      .map((match) => [hitKeyValue(match?.field), hitKeyValue(match?.value_hash).toLowerCase()])
+      .sort(([fieldA, hashA], [fieldB, hashB]) => {
+        if (fieldA !== fieldB) {
+          return fieldA < fieldB ? -1 : 1;
+        }
+        if (hashA !== hashB) {
+          return hashA < hashB ? -1 : 1;
+        }
+        return 0;
+      });
+    parts = [
+      HUNT_HIT_KEY_VERSION,
+      'fields',
+      timestamp ? `${timestamp.substring(0, 19)}Z` : '',
+      hitKeyValue(hit?.host),
+      hitKeyValue(hit?.user),
+      hitKeyValue(hit?.process),
+      matched,
+    ];
+  }
+  return sha256(JSON.stringify(parts));
+};
+
+const HIT_KEY_PATTERN = /^[0-9a-f]{64}$/;
+
+/** The hit keys a connector reported, distinct and well formed, at most as many as the results a run may read. */
+export const sanitizeHitKeys = (keys: unknown, maxItems = HUNT_CONFIG.maxResultsPerRun): string[] | null => {
+  if (!Array.isArray(keys)) {
+    return null;
+  }
+  const valid = keys.filter((key): key is string => typeof key === 'string').map((key) => key.trim().toLowerCase()).filter((key) => HIT_KEY_PATTERN.test(key));
+  return Array.from(new Set(valid)).slice(0, maxItems);
+};
+
 /**
  * One evidence item per hit, as the platform stores it: when, where, who, the process and the fields the hunt logic
  * matched, so that a single hit can be read next to the per-field aggregation of the evidence sample. Matched values
  * get the treatment of the evidence sample (hashed again, previews masked and truncated); a preview is complete when
- * it is the whole value the connector hashed and the platform did not alter it. Hits are kept in time order, at most
- * `maxItems`, a hit without any value is dropped.
+ * it is the whole value the connector hashed and the platform did not alter it. Each hit keeps the key of the hit as
+ * reported (huntHitKey). Hits are kept in time order, at most `maxItems`, a hit without any value is dropped.
  */
 export const sanitizeHits = (
   hits: HuntHitInputLike[] | null | undefined,
@@ -183,6 +244,7 @@ export const sanitizeHits = (
       return [{ field, value_hash: sha256(value), value_preview: preview, value_complete: raw !== null && preview === raw && sha256(raw) === value }];
     }).slice(0, HIT_MATCHED_FIELDS_MAX);
     const hit: HuntHit = {
+      hit_key: huntHitKey(item),
       event_id: hitEntityValue(item?.event_id, HIT_EVENT_ID_MAX_LENGTH),
       timestamp: toIsoDate(item?.timestamp),
       detection: hitEntityValue(item?.detection, HIT_DETECTION_MAX_LENGTH),

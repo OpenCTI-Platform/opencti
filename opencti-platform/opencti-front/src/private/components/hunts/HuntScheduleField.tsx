@@ -11,6 +11,7 @@ import type { HuntScheduleMode } from './hunt-schedule-utils';
 import { HUNT_DOCS, buildHuntSchedule } from './hunt-utils';
 import { HuntHelp } from './HuntLearnMore';
 import HuntEELabel from './HuntEELabel';
+import useHuntConfiguration from './useHuntConfiguration';
 
 interface HuntScheduleFieldProps {
   modeName?: string;
@@ -28,8 +29,9 @@ interface ScheduleValues {
  */
 const HuntScheduleField = ({ modeName = 'schedule_mode', cronName = 'schedule_cron', disabled = false }: HuntScheduleFieldProps) => {
   const theme = useTheme<Theme>();
-  const { t_i18n } = useFormatter();
+  const { t_i18n, n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
+  const { scheduleLookbackMinutes } = useHuntConfiguration();
   const { values } = useFormikContext<ScheduleValues>();
   const mode = (values[modeName] ?? 'manual') as HuntScheduleMode;
   const cron = String(values[cronName] ?? '');
@@ -66,6 +68,14 @@ const HuntScheduleField = ({ modeName = 'schedule_mode', cronName = 'schedule_cr
       )}
       {/* The helper line already says what a manual hunt does */}
       {mode !== 'manual' && <HuntSchedulePreview schedule={schedule} />}
+      {mode !== 'manual' && (
+        <div style={{ marginTop: theme.spacing(1) }} data-testid="hunt-schedule-window">
+          <HuntHelp
+            text={t_i18n('Each run searches since the previous one, with a {minutes}-minute overlap', { values: { minutes: n(scheduleLookbackMinutes) } })}
+            href={HUNT_DOCS.hitCounting}
+          />
+        </div>
+      )}
     </div>
   );
 };

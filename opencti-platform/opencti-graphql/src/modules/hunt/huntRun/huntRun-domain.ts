@@ -69,6 +69,7 @@ import {
   mergeEvidence,
   mergeHits,
   sanitizeEvidence,
+  sanitizeHitKeys,
   sanitizeHits,
   techniqueValidationStatus,
   truncate,
@@ -87,8 +88,17 @@ import { resolveHuntIocSet } from '../hunt-iocs';
 import { countIocHits, hasUnsearchedIoc, linkIocDeployments, mergeHuntIocResults } from './huntRun-iocs';
 import { updateHuntRunInformation } from '../hunt-stats';
 import { writeHuntCoverageResult } from '../hunt-coverage';
-import { createHuntIncidentInWorkspace, createHuntIncidentWorkspace, parseIncidentProposal } from '../hunt-incident';
+import {
+  continueHuntIncident,
+  createHuntIncidentInWorkspace,
+  createHuntIncidentWorkspace,
+  findOpenHuntIncident,
+  type OpenHuntIncident,
+  parseIncidentProposal,
+} from '../hunt-incident';
 import { createHuntHitObservations } from '../hunt-hit-observations';
+import { upsertHuntSightings } from '../hunt-sightings';
+import { recordHuntHits } from '../huntHitRecord/huntHitRecord-domain';
 import { callHuntAgent, HUNT_TRIAGE_INTENT, validateHuntTriageResult } from '../hunt-agents';
 import {
   type BasicStoreEntityHuntRun,
@@ -100,6 +110,7 @@ import {
   HUNT_RUN_ACTIVE_STATUSES,
   HUNT_RUN_AUTONOMOUS_TRIGGERS,
   HUNT_RUN_FINALIZABLE_STATUSES,
+  HUNT_RUN_INCREMENTAL_TRIGGERS,
   HUNT_RUN_MODE_EXECUTE,
   HUNT_RUN_MODE_PREVIEW,
   HUNT_RUN_STATUS_CANCELLED,
@@ -306,6 +317,8 @@ export interface HuntRunRequest {
   attempt?: number;
   // The run a retry replaces
   retryOf?: string | null;
+  // A retry searches the window of the run it replaces, which continued this run
+  continuesRunId?: string | null;
   // A retry escalates as the run it replaces; any other run as its trigger and its hunt decide
   autoEscalation?: boolean | null;
   playbook?: {
@@ -318,6 +331,52 @@ export interface HuntRunRequest {
     context?: HuntPlaybookContext;
   } | null;
 }
+
+/**
+ * The time window of a recurring run: from where the previous completed run of the hunt on the same security platform
+ * ended, minus the lookback overlap that catches the events indexed late, never longer than the time window of the hunt.
+ * Without a previous run, or one older than the time window, the full time window (continued is false).
+ */
+export const computeHuntRunWindow = (end: Date, hours: number, lookbackMinutes: number, previousEnd?: string | Date | null) => {
+  const full = new Date(end.getTime() - hours * 3600 * 1000);
+  const previous = previousEnd ? new Date(previousEnd) : null;
+  if (!previous || Number.isNaN(previous.getTime())) {
+    return { start: full, continued: false };
+  }
+  const since = new Date(previous.getTime() - lookbackMinutes * 60 * 1000);
+  if (since.getTime() <= full.getTime()) {
+    return { start: full, continued: false };
+  }
+  // A previous window ending after now (clock drift between nodes) still leaves the overlap to search
+  const start = since.getTime() < end.getTime() ? since : new Date(end.getTime() - Math.max(lookbackMinutes, 1) * 60 * 1000);
+  return { start, continued: true };
+};
+
+/** The completed run of a hunt on a security platform (null: on the internet) whose time window ends last. */
+export const findLastCompletedHuntRun = async (context: AuthContext, huntId: string, securityPlatformId: string | null) => {
+  const [previous] = await topEntitiesList<BasicStoreEntityHuntRun>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT_RUN], {
+    first: 1,
+    orderBy: 'time_window_end',
+    orderMode: OrderingMode.Desc,
+    filters: {
+      mode: FilterMode.And,
+      filters: [
+        { key: ['hunt_id'], values: [huntId] },
+        securityPlatformId
+          ? { key: ['security_platform_id'], values: [securityPlatformId] }
+          : { key: ['security_platform_id'], values: [], operator: FilterOperator.Nil },
+        { key: ['hunt_run_status'], values: [HUNT_RUN_STATUS_COMPLETED] },
+        { key: ['hunt_run_mode'], values: [HUNT_RUN_MODE_EXECUTE] },
+      ],
+      filterGroups: [],
+    },
+    noFiltersChecking: true,
+  });
+  return previous ?? null;
+};
+
+/** Hits of a run never seen before for its hunt on its platform: every hit when the connector identifies none. */
+export const huntRunNewHits = (run: Pick<BasicStoreEntityHuntRun, 'hits_new_count' | 'hits_count'>) => run.hits_new_count ?? run.hits_count ?? 0;
 
 // The tagged techniques a run reports as not found: a lookup that fails reports none rather than blocking the run
 const findRunUnresolvedTechniques = async (context: AuthContext, hunt: BasicStoreEntityHunt) => {
@@ -378,10 +437,12 @@ export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntit
   }
   const windowEnd = request.windowEnd ? new Date(request.windowEnd) : new Date();
   const hours = clampInteger(request.timeWindowHours ?? hunt.time_window_hours, 1, HUNT_CONFIG.maxTimeWindowHours, HUNT_DEFAULT_TIME_WINDOW_HOURS);
-  const windowStart = request.windowStart ? new Date(request.windowStart) : new Date(windowEnd.getTime() - hours * 3600 * 1000);
-  if (windowStart.getTime() >= windowEnd.getTime()) {
-    throw FunctionalError('The hunt time window start must be before its end', { windowStart, windowEnd });
+  const fullWindowStart = request.windowStart ? new Date(request.windowStart) : new Date(windowEnd.getTime() - hours * 3600 * 1000);
+  if (fullWindowStart.getTime() >= windowEnd.getTime()) {
+    throw FunctionalError('The hunt time window start must be before its end', { windowStart: fullWindowStart, windowEnd });
   }
+  // Recurring runs search since the previous run of the hunt on their platform; any explicit window is kept as it is
+  const incremental = mode === HUNT_RUN_MODE_EXECUTE && HUNT_RUN_INCREMENTAL_TRIGGERS.includes(request.trigger) && !request.windowStart && !request.windowEnd;
   const runs: BasicStoreEntityHuntRun[] = [];
   const logicFingerprint = huntLogicFingerprint(hunt);
   const autoEscalation = mode === HUNT_RUN_MODE_EXECUTE
@@ -393,6 +454,18 @@ export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntit
   let dispatchBudget = request.dispatchLimit ?? Number.POSITIVE_INFINITY;
   for (let index = 0; index < targets.length; index += 1) {
     const { connector, securityPlatform, restrictions } = targets[index];
+    let windowStart = fullWindowStart;
+    let continuesRunId: string | null = request.continuesRunId ?? null;
+    if (incremental) {
+      // A lookup that fails searches the full time window: a run is never lost for it
+      const previous = await findLastCompletedHuntRun(context, hunt.internal_id, securityPlatform?.internal_id ?? null).catch((error) => {
+        logApp.warn('[OPENCTI-MODULE] Hunt run previous window lookup failed, the full time window is searched', { cause: error, huntId: hunt.internal_id });
+        return null;
+      });
+      const window = computeHuntRunWindow(windowEnd, hours, HUNT_CONFIG.scheduleLookbackMinutes, previous?.time_window_end);
+      windowStart = window.start;
+      continuesRunId = window.continued && previous ? previous.internal_id : null;
+    }
     const runInput = {
       hunt_id: hunt.internal_id,
       hunt_run_status: HUNT_RUN_STATUS_QUEUED,
@@ -403,6 +476,7 @@ export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntit
       connector_name: connector.name,
       time_window_start: windowStart.toISOString(),
       time_window_end: windowEnd.toISOString(),
+      continues_run_id: continuesRunId,
       verdict: HUNT_VERDICT_PENDING,
       attempt: Math.max(1, request.attempt ?? 1),
       retry_of: request.retryOf ?? null,
@@ -657,7 +731,33 @@ export const isHuntRunFinalized = (run: Pick<BasicStoreEntityHuntRun, 'hunt_run_
 };
 
 /**
- * Post-completion of a run: Incident draft above the escalation threshold, hunt statistics, Security Coverage
+ * The incident of a run: the hits go to the incident still open from a previous run of the hunt on the same platform
+ * (in its draft when not validated yet), else a new incident draft is opened. A draft recorded by an interrupted
+ * finalization is reused rather than doubled. The run records the incident, and whether it continued an open one.
+ */
+const escalateHuntRun = async (
+  context: AuthContext,
+  hunt: BasicStoreEntityHunt,
+  run: BasicStoreEntityHuntRun,
+  proposal: ReturnType<typeof parseIncidentProposal>,
+): Promise<BasicStoreEntityHuntRun> => {
+  const open: OpenHuntIncident | null = run.draft_id ? null : await findOpenHuntIncident(context, run);
+  if (open) {
+    await continueHuntIncident(context, hunt, run, open);
+    return patchHuntRun(context, run, { incident_id: open.incidentId, draft_id: open.draftId, incident_continued: true });
+  }
+  let current = run;
+  if (!current.draft_id) {
+    const draftId = await createHuntIncidentWorkspace(context, current);
+    current = await patchHuntRun(context, current, { draft_id: draftId });
+  }
+  const incidentId = await createHuntIncidentInWorkspace(context, hunt, current, proposal, current.draft_id as string);
+  return patchHuntRun(context, current, { incident_id: incidentId, incident_continued: false });
+};
+
+/**
+ * Post-completion of a run: the sightings of the hunt, the incident above the escalation threshold of new hits (a new
+ * draft, or the incident still open from a previous run), hunt statistics, Security Coverage
  * write-back for emulation runs, then the automatic verdict, which marks the run finalized. Every step is idempotent
  * (the draft and incident ids are recorded as soon as they exist, older runs never overwrite the statistics of a newer
  * one, the coverage write-back merges): when one fails, the run stays unfinalized and a later attempt completes it.
@@ -683,17 +783,27 @@ const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRu
       logApp.error('[OPENCTI-MODULE] Hunt hit observations creation failed', { cause: error, runId: current.internal_id });
     }
   }
-  // A run started by hand escalates only when its hunt asks for it: otherwise the analyst opens the incident with a true
-  // positive verdict, never before reading the hits
-  if (current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED && isAutoEscalatedHuntRun(current)
-    && (current.hits_count ?? 0) >= hunt.escalation_threshold && !current.incident_id) {
+  // One sighting per hunt, sighted object and platform, updated in place: never a sighting per run
+  if (current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED && (current.hits_count ?? 0) > 0) {
     try {
-      if (!current.draft_id) {
-        const draftId = await createHuntIncidentWorkspace(context, current);
-        current = await patchHuntRun(context, current, { draft_id: draftId });
+      const sightings = await upsertHuntSightings(context, hunt, current);
+      if (sightings.ids.length > 0) {
+        const resultIds = Array.from(new Set([...(current.result_ids ?? []), ...sightings.ids])).slice(0, HUNT_RUN_RESULT_IDS_MAX);
+        current = await patchHuntRun(context, current, { result_ids: resultIds, sightings_created_count: current.sightings_created_count ?? sightings.created });
       }
-      const incidentId = await createHuntIncidentInWorkspace(context, hunt, current, null, current.draft_id as string);
-      current = await patchHuntRun(context, current, { incident_id: incidentId });
+    } catch (error) {
+      complete = false;
+      logApp.error('[OPENCTI-MODULE] Hunt sightings update failed', { cause: error, runId: current.internal_id });
+    }
+  }
+  // Only hits never seen before escalate: a standing hunt above its threshold on known activity opens nothing new. A
+  // run started by hand escalates only when its hunt asks for it: otherwise the analyst opens the incident with a true
+  // positive verdict, never before reading the hits
+  const newHits = huntRunNewHits(current);
+  if (current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED && isAutoEscalatedHuntRun(current)
+    && newHits > 0 && newHits >= hunt.escalation_threshold && !current.incident_id) {
+    try {
+      current = await escalateHuntRun(context, hunt, current, null);
     } catch (error) {
       complete = false;
       logApp.error('[OPENCTI-MODULE] Hunt incident draft creation failed', { cause: error, runId: current.internal_id });
@@ -704,6 +814,7 @@ const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRu
       last_run_at: current.completed_at ?? now(),
       last_run_status: current.hunt_run_status,
       last_hits_count: current.hits_count ?? 0,
+      last_new_hits_count: newHits,
     }, { onlyIfNewer: true });
   } catch (error) {
     complete = false;
@@ -913,6 +1024,7 @@ export const replaceHuntRun = async (context: AuthContext, hunt: BasicStoreEntit
       requester: options.requester,
       attempt: (run.attempt ?? 1) + 1,
       retryOf: run.internal_id,
+      continuesRunId: run.continues_run_id ?? null,
       autoEscalation: isAutoEscalatedHuntRun(run),
       // A planned retry keeps the run in its playbook step, which waits on it
       playbook: planned && run.playbook_id && run.playbook_execution_id && run.playbook_step_id
@@ -985,6 +1097,56 @@ export const isHuntRunConnectorCall = async (context: AuthContext, user: AuthUse
   return connector?.connector_user_id === user.id;
 };
 
+/** The keys of the values each hit of an indicator run holds, by hit key, from the keys each value result reports. */
+export const huntIocKeysByHit = (iocResults: ReadonlyArray<{ key?: string | null; hit_keys?: ReadonlyArray<string> | null }> | null | undefined) => {
+  const byHit = new Map<string, string[]>();
+  (iocResults ?? []).forEach((result) => {
+    const iocKey = typeof result.key === 'string' ? result.key : '';
+    (sanitizeHitKeys(result.hit_keys) ?? []).forEach((hitKey) => {
+      if (iocKey.length > 0) {
+        byHit.set(hitKey, Array.from(new Set([...(byHit.get(hitKey) ?? []), iocKey])));
+      }
+    });
+  });
+  return byHit;
+};
+
+/**
+ * New and recurring hits of a completed run, from the hit keys its connector reports, matched against the hits already
+ * known for the hunt on the platform of the run (which then knows them too). A connector that reports no key (an older
+ * one, or a lookup that returns counts) makes every hit new, and so does a ledger that cannot be read: the run says so
+ * with hits_identified.
+ */
+const recordReportedHits = async (
+  context: AuthContext,
+  run: BasicStoreEntityHuntRun,
+  input: Pick<HuntRunReportInput, 'hit_keys' | 'ioc_results'>,
+  hitsCount: number,
+  reportedAt: string,
+) => {
+  const unidentified = { hits_identified: false, hits_new_count: hitsCount, hits_recurring_count: 0 };
+  const reportedKeys = sanitizeHitKeys(input.hit_keys);
+  if (reportedKeys === null) {
+    return unidentified;
+  }
+  const iocKeysByHit = huntIocKeysByHit(input.ioc_results as never);
+  const keys = Array.from(new Set([...reportedKeys, ...iocKeysByHit.keys()])).slice(0, HUNT_CONFIG.maxResultsPerRun);
+  try {
+    const { newCount, recurringCount } = await recordHuntHits(context, {
+      huntId: run.hunt_id,
+      securityPlatformId: run.security_platform_id,
+      runId: run.internal_id,
+      keys,
+      iocKeysByHit,
+      seenAt: reportedAt,
+    });
+    return { hits_identified: true, hits_new_count: newCount, hits_recurring_count: recurringCount };
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE] Hunt known hits could not be matched, every hit of the run counts as new', { cause: error, runId: run.internal_id });
+    return unidentified;
+  }
+};
+
 /**
  * Report of a run by its hunt connector (contract section 5).
  */
@@ -1047,6 +1209,7 @@ const applyHuntRunReport = async (context: AuthContext, run: BasicStoreEntityHun
       }
       // Results are complete only when the connector says so: a report that omits it leaves the state unknown
       patch.results_truncated = input.truncated === true || resultIds.length > HUNT_RUN_RESULT_IDS_MAX ? true : (input.truncated ?? null);
+      Object.assign(patch, await recordReportedHits(context, run, input, patch.hits_count as number, reportedAt));
     }
     if (typeof input.cost_ms === 'number') {
       patch.cost_ms = Math.max(0, Math.round(input.cost_ms));
@@ -1161,6 +1324,7 @@ const refreshHuntRunOutcome = async (context: AuthContext, run: BasicStoreEntity
       last_run_at: run.completed_at ?? now(),
       last_run_status: run.hunt_run_status,
       last_hits_count: run.hits_count ?? 0,
+      last_new_hits_count: huntRunNewHits(run),
     }, { onlyIfNewer: true });
     await writeHuntCoverageResult(context, run);
   } catch (error) {
@@ -1223,12 +1387,35 @@ export const addHuntRunEvidence = async (context: AuthContext, user: AuthUser, r
     const automaticVerdict = outcomeChanges && current.verdict_source === HUNT_VERDICT_SOURCE_AUTO;
     const resultIds = Array.from(new Set([...(current.result_ids ?? []), ...results.map((result) => result.standard_id)]));
     const hitsSample = mergeHits(current.hits_sample ?? [], sanitizeHits(input.hits_sample));
+    // Evidence with hit keys tells its new hits from the known ones; without keys, its hits count as new
+    let addedNew = addedHits;
+    let addedRecurring = 0;
+    const evidenceKeys = sanitizeHitKeys(input.hit_keys);
+    if (evidenceKeys && evidenceKeys.length > 0 && current.hunt_run_mode === HUNT_RUN_MODE_EXECUTE) {
+      try {
+        const matched = await recordHuntHits(context, {
+          huntId: current.hunt_id,
+          securityPlatformId: current.security_platform_id,
+          runId: current.internal_id,
+          keys: evidenceKeys,
+          seenAt: lastEvidenceAt.toISOString(),
+        });
+        addedNew = matched.newCount;
+        addedRecurring = matched.recurringCount;
+      } catch (error) {
+        logApp.error('[OPENCTI-MODULE] Hunt known hits could not be matched for late evidence, its hits count as new', { cause: error, runId: current.internal_id });
+      }
+    }
     const { element: patched } = await patchAttribute(context, HUNT_MANAGER_USER, current.internal_id, ENTITY_TYPE_HUNT_RUN, {
       hits_sample: hitsSample,
       ...huntHitDates(hitsSample, {}, current),
       result_ids: resultIds.slice(0, HUNT_RUN_RESULT_IDS_MAX),
       ...(resultIds.length > HUNT_RUN_RESULT_IDS_MAX ? { results_truncated: true } : {}),
       hits_count: (current.hits_count ?? 0) + addedHits,
+      ...(addedHits > 0 || addedNew > 0 || addedRecurring > 0 ? {
+        hits_new_count: huntRunNewHits(current) + addedNew,
+        hits_recurring_count: (current.hits_recurring_count ?? 0) + addedRecurring,
+      } : {}),
       evidence_sample: markMatchedEvidence(mergeEvidence(current.evidence_sample ?? [], sanitizeEvidence(input.evidence_sample)), hitsSample),
       evidence_sources: Array.from(new Set([...(current.evidence_sources ?? []), ...(source ? [source] : [])])).slice(-EVIDENCE_SOURCES_MAX),
       last_evidence_at: lastEvidenceAt.toISOString(),
@@ -1300,12 +1487,22 @@ export const setHuntRunVerdict = async (context: AuthContext, user: AuthUser, ru
       verdict_source: source,
       hunt_analyst_feedback: input.hunt_analyst_feedback ? truncate(input.hunt_analyst_feedback, ERROR_MESSAGE_MAX_LENGTH) : current.hunt_analyst_feedback ?? null,
     };
-    // The incident is offered with a true positive verdict: the analyst may record the verdict alone
+    // The incident is offered with a true positive verdict: the analyst may record the verdict alone. The hits go to the
+    // incident still open from a previous run of the hunt on the platform, if any
     if (verdict === HUNT_VERDICT_TRUE_POSITIVE && !current.incident_id && input.create_incident !== false) {
-      // A draft recorded by an interrupted finalization is reused rather than doubled
-      const draftId = current.draft_id ?? await createHuntIncidentWorkspace(context, current);
-      patch.draft_id = draftId;
-      patch.incident_id = await createHuntIncidentInWorkspace(context, hunt, current, parseIncidentProposal(current.incident_proposal), draftId);
+      const open = current.draft_id ? null : await findOpenHuntIncident(context, current);
+      if (open) {
+        await continueHuntIncident(context, hunt, current, open);
+        patch.draft_id = open.draftId;
+        patch.incident_id = open.incidentId;
+        patch.incident_continued = true;
+      } else {
+        // A draft recorded by an interrupted finalization is reused rather than doubled
+        const draftId = current.draft_id ?? await createHuntIncidentWorkspace(context, current);
+        patch.draft_id = draftId;
+        patch.incident_id = await createHuntIncidentInWorkspace(context, hunt, current, parseIncidentProposal(current.incident_proposal), draftId);
+        patch.incident_continued = false;
+      }
     }
     const { element: patched } = await patchAttribute(context, user, current.internal_id, ENTITY_TYPE_HUNT_RUN, patch);
     return patched;

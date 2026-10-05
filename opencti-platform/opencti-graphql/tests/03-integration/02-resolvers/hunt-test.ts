@@ -9,9 +9,9 @@ import { createRelation, deleteElementById, patchAttribute } from '../../../src/
 import { addSecurityCoverage, listSecurityCoverageResults, securityCoverageDelete } from '../../../src/modules/securityCoverage/securityCoverage-domain';
 import { RELATION_HAS_COVERED } from '../../../src/schema/stixCoreRelationship';
 import { addIntrusionSet } from '../../../src/domain/intrusionSet';
-import { internalLoadById } from '../../../src/database/middleware-loader';
+import { fullRelationsList, internalLoadById } from '../../../src/database/middleware-loader';
 import { MARKING_TLP_RED } from '../../../src/schema/identifier';
-import type { BasicStoreEntity } from '../../../src/types/store';
+import type { BasicStoreEntity, BasicStoreRelation } from '../../../src/types/store';
 import { addSecurityPlatform } from '../../../src/modules/securityPlatform/securityPlatform-domain';
 import { ENTITY_TYPE_HUNT_RUN } from '../../../src/modules/hunt/huntRun/huntRun-types';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
@@ -28,7 +28,7 @@ import { STIX_EXT_OCTI_HUNT } from '../../../src/types/stix-2-1-extensions';
 import { HUNT_MANAGER_USER } from '../../../src/utils/access';
 import { finalizeInterruptedHuntRuns } from '../../../src/modules/hunt/hunt-automation';
 import { HUNT_RUN_RESULT_IDS_MAX } from '../../../src/modules/hunt/huntRun/huntRun-domain';
-import { HUNT_CONFIG } from '../../../src/modules/hunt/hunt-utils';
+import { HUNT_CONFIG, huntHitKey } from '../../../src/modules/hunt/hunt-utils';
 
 const CONNECTOR_ID = '0b7e4b54-1f4f-4bde-9e93-8d0f1d6a3c01';
 const RESTRICTED_CONNECTOR_ID = '4c3f2a1d-8e7b-4d6c-9a5f-1b2c3d4e5f60';
@@ -146,6 +146,17 @@ const reportAsConnector = async (request: { query: typeof HUNT_RUN_REPORT; varia
 };
 const HUNT_RUN_STATE = gql`
   query HuntRunState($id: String!) { huntRun(id: $id) { ${RUN_FIELDS} } }
+`;
+const HUNT_RUN_KNOWN_HITS = gql`
+  query HuntRunKnownHits($id: String!) {
+    huntRun(id: $id) {
+      id hits_count hits_new_count hits_recurring_count hits_identified incident_continued sightings_created_count incident_id draft_id
+      hits_sample { event_id is_new times_seen known_since }
+    }
+  }
+`;
+const HUNT_KNOWN_HITS = gql`
+  query HuntKnownHits($id: String!) { hunt(id: $id) { id last_hits_count last_new_hits_count knownHits { distinct_count first_new_at last_new_at } } }
 `;
 const HUNT_RUN_VERDICT = gql`
   mutation HuntRunSetVerdict($id: ID!, $input: HuntRunVerdictInput!) { huntRunSetVerdict(id: $id, input: $input) { ${RUN_FIELDS} } }
@@ -498,9 +509,10 @@ describe('Hunt resolvers', () => {
     expect(run.hits_sample[0].matched[0].value_hash).not.toEqual('a'.repeat(64));
     expect(new Date(run.hits_sample[0].timestamp).toISOString()).toEqual('2026-10-05T10:00:00.000Z');
     expect(new Date(run.first_hit_at).toISOString()).toEqual('2026-10-05T10:00:00.000Z');
-    // Only STIX identifiers are recorded from a connector report
+    // Only STIX identifiers are recorded from a connector report, then the sighting the platform keeps for the hunt
     const stored = await internalLoadById<BasicStoreEntity & { result_ids?: string[] }>(testContext, ADMIN_USER, secondRunId, { type: ENTITY_TYPE_HUNT_RUN });
-    expect(stored.result_ids).toEqual([intrusionSetStandardId]);
+    expect(stored.result_ids?.[0]).toEqual(intrusionSetStandardId);
+    expect(stored.result_ids?.slice(1)).toEqual([expect.stringMatching(/^sighting--/)]);
     expect(run.verdict).toEqual('pending');
     expect(run.incident_id).toBeTruthy();
     expect(run.draft_id).toBeTruthy();
@@ -568,7 +580,9 @@ describe('Hunt resolvers', () => {
     expect(run.incident_id).toBeTruthy();
     expect(run.draft_id).toBeTruthy();
     draftIds.push(run.draft_id);
-    expect(run.result_ids).toEqual([intrusionSetStandardId]);
+    // The sighting of the technique the hunt keeps on the platform, updated by this run too
+    expect(run.result_ids[0]).toEqual(intrusionSetStandardId);
+    expect(run.result_ids.slice(1)).toEqual([expect.stringMatching(/^sighting--/)]);
     expect(run.evidence_sources).toEqual(['splunk-alert-action']);
     const older = await queryAsAdminWithSuccess({
       query: HUNT_RUN_EVIDENCE,
@@ -577,6 +591,73 @@ describe('Hunt resolvers', () => {
     expect(older.data?.huntRunEvidenceAdd.last_evidence_at).toEqual(run.last_evidence_at);
     const unknown = await queryAsAdmin({ query: HUNT_RUN_EVIDENCE, variables: { id: firstRunId, input: { result_ids: ['sighting--00000000-0000-4000-8000-000000000000'] } } });
     expect(unknown.errors?.[0].message).toContain('cannot be found or are not accessible');
+  });
+
+  it('should count a hit once across runs: a second run over the same events has no new hit, no new sighting, no new incident', async () => {
+    const created = await queryAsAdminWithSuccess({
+      query: HUNT_ADD,
+      variables: {
+        input: {
+          name: 'Hunt test known hits',
+          hypothesis: 'Encoded commands keep running on the same endpoints',
+          sigma_rule: SIGMA_RULE,
+          escalation_threshold: 2,
+          escalate_manual_runs: true,
+          native_queries: [{ platform: 'splunk', language: 'spl', query: 'index=edr CommandLine="* -enc *"' }],
+        },
+      },
+    });
+    const knownHuntId = created.data?.huntAdd.id;
+    huntIds.push(knownHuntId);
+    const events = ['evt-a', 'evt-b', 'evt-c', 'evt-d', 'evt-e'];
+    const hit = (eventId: string) => ({
+      event_id: eventId,
+      timestamp: '2026-10-05T10:00:00Z',
+      matched: [{ field: 'process.command_line', value_hash: 'b'.repeat(64), value_preview: 'powershell -enc AAAA' }],
+      host: 'ws-042',
+    });
+    const runOver = async (eventIds: string[]) => {
+      const started = await queryAsAdminWithSuccess({ query: HUNT_RUN_START, variables: { id: knownHuntId } });
+      const runId = started.data?.huntRunStart[0].id;
+      await reportAsConnector({
+        query: HUNT_RUN_REPORT,
+        variables: {
+          id: runId,
+          input: { status: 'completed', hits_count: eventIds.length, hits_sample: eventIds.map(hit), hit_keys: eventIds.map((eventId) => huntHitKey(hit(eventId))) },
+        },
+      });
+      return (await queryAsAdminWithSuccess({ query: HUNT_RUN_KNOWN_HITS, variables: { id: runId } })).data?.huntRun;
+    };
+    const huntSightings = () => fullRelationsList<BasicStoreRelation & { attribute_count: number; x_opencti_hunt_run_id: string }>(
+      testContext,
+      ADMIN_USER,
+      STIX_SIGHTING_RELATIONSHIP,
+      { filters: { mode: 'and', filters: [{ key: ['x_opencti_hunt_id'], values: [knownHuntId] }], filterGroups: [] } } as never,
+    );
+    // A first run: every hit is new, an incident draft opens, the hunt sights its technique once
+    const first = await runOver(events.slice(0, 3));
+    expect(first).toMatchObject({ hits_count: 3, hits_new_count: 3, hits_recurring_count: 0, hits_identified: true, incident_continued: false, sightings_created_count: 1 });
+    expect(first.incident_id).toBeTruthy();
+    draftIds.push(first.draft_id);
+    expect(first.hits_sample.map((sampled: { is_new: boolean }) => sampled.is_new)).toEqual([true, true, true]);
+    const [sighting] = await huntSightings();
+    expect(sighting).toMatchObject({ attribute_count: 3, x_opencti_hunt_run_id: first.id });
+    // A second run over the same events: nothing is new, nothing escalates, the same sighting stays
+    const second = await runOver(events.slice(0, 3));
+    expect(second).toMatchObject({ hits_count: 3, hits_new_count: 0, hits_recurring_count: 3, hits_identified: true, sightings_created_count: 0 });
+    expect(second.incident_id).toBeNull();
+    expect(second.hits_sample.map((sampled: { is_new: boolean; times_seen: number }) => [sampled.is_new, sampled.times_seen])).toEqual([[false, 2], [false, 2], [false, 2]]);
+    const afterSecond = await huntSightings();
+    expect(afterSecond).toHaveLength(1);
+    expect(afterSecond[0]).toMatchObject({ id: sighting.id, attribute_count: 3, x_opencti_hunt_run_id: second.id });
+    // A third run with two new hits: they reach the threshold and go to the incident still open, the sighting counts 5
+    const third = await runOver([events[0], events[3], events[4]]);
+    expect(third).toMatchObject({ hits_new_count: 2, hits_recurring_count: 1, incident_continued: true, incident_id: first.incident_id, draft_id: first.draft_id });
+    const afterThird = await huntSightings();
+    expect(afterThird).toHaveLength(1);
+    expect(afterThird[0]).toMatchObject({ id: sighting.id, attribute_count: 5 });
+    const read = await queryAsAdminWithSuccess({ query: HUNT_KNOWN_HITS, variables: { id: knownHuntId } });
+    expect(read.data?.hunt).toMatchObject({ last_hits_count: 3, last_new_hits_count: 2, knownHits: { distinct_count: 5 } });
   });
 
   it('should translate without executing for a preview', async () => {

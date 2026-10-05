@@ -9,6 +9,8 @@ export interface HuntRunInformationPatch {
   last_run_at?: string | null;
   last_run_status?: string | null;
   last_hits_count?: number | null;
+  // Hits of the last run never seen before for the hunt on its security platform
+  last_new_hits_count?: number | null;
   next_run_at?: string | null;
   hunt_pir_armed?: boolean | null;
   hunt_pir_armed_at?: string | null;

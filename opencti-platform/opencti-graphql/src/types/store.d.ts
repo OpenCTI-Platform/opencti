@@ -241,6 +241,7 @@ interface StoreRawRelation extends StoreProxyRelation {
   revoked: boolean;
   x_opencti_negative: boolean;
   x_opencti_hunt_run_id?: string; // optional, set on sightings found by a hunt run
+  x_opencti_hunt_id?: string; // optional, set on the sighting a hunt keeps up to date on a security platform
   is_inferred: boolean;
   // number
   confidence: number;

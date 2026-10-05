@@ -65,6 +65,7 @@ export interface SightingExtension extends StixOpenctiExtension {
   where_sighted_refs_granted_refs: Array<string>;
   negative: boolean;
   hunt_run_id?: string; // optional
+  hunt_id?: string; // optional, the hunt keeping the sighting up to date
 }
 export interface StixSighting extends StixRelationshipObject {
   description: string;

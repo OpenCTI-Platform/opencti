@@ -88,6 +88,7 @@ interface HuntAttributes {
   last_run_at?: string;
   last_run_status?: string;
   last_hits_count?: number;
+  last_new_hits_count?: number;
   next_run_at?: string;
   hunt_pir_armed?: boolean;
   hunt_pir_armed_at?: string;

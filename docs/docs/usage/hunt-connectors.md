@@ -319,7 +319,7 @@ Full configuration: [connector README](https://github.com/OpenCTI-Platform/conne
 
 ## Registration
 
-At startup a hunt connector registers its platform, the languages it executes and the **security platform** it executes against. The security platform is an Identity of type Security Platform (SIEM, EDR, XDR, SOAR, NDR, ISPM); it is created when missing. Hunts are scoped on security platforms, and the sightings produced by the runs are sighted on them.
+At startup a hunt connector registers its platform, the languages it executes and the **security platform** it executes against. The security platform is an Identity of type Security Platform (SIEM, EDR, XDR, SOAR, NDR, ISPM); it is created when missing. Hunts are scoped on security platforms, and the sightings OpenCTI keeps for the hunts are sighted on them.
 
 Several connectors can serve the same platform type for different security platforms, for instance one Splunk connector per Splunk deployment. The `internet` platform has no security platform.
 
@@ -358,8 +358,22 @@ as the connection test and a link to it.
 
 1. OpenCTI pushes a run to the queue of the connector serving the security platform. The message carries the hunt (hypothesis, Sigma rule, native query for the platform, techniques, targets, indicators, markings), the time window and the limits (maximum results, timeout, evidence caps). A technique, target, indicator or author more restricted than the hunt (a marking the hunt does not cover, or organizations the readers of the hunt may not belong to) is left out of the message: the connector never learns of it. A work tracks the run in the connector works.
 2. The connector reports the run as `running`, translates the Sigma rule into the platform language (or takes the native query as is), and executes it over the time window.
-3. When results are found, the connector sends a STIX bundle: sightings of the techniques and indicators of the hunt by the security platform of the run (none when the run has no security platform), and an observable with its observed data for each value of the observables to extract from hits found in the results, among the types the connector supports (see [What a run produces](hunts.md#what-a-run-produces)). The identifiers are deterministic, so that re-runs update the knowledge instead of duplicating it.
-4. The connector reports the run as `completed` with the hits count, the translated query, the evidence sample and whether the results are partial (`truncated`: shard failures, a partial API answer or an exhausted result budget, the hits count then being a lower bound), as `timeout` when the execution exceeded the run deadline, or as `failed` with the error. Failed and timed out runs are retried with the same backoff and never create knowledge.
+3. When results are found, the connector sends a STIX bundle: an observable with its observed data for each value of the observables to extract from hits found in the results, among the types the connector supports (see [What a run produces](hunts.md#what-a-run-produces)). The identifiers are deterministic, so that re-runs update the knowledge instead of duplicating it. The connector sends no sighting: OpenCTI keeps one sighting of each technique and indicator of the hunt per security platform and updates it from the hit keys of each run.
+4. The connector reports the run as `completed` with the hits count, the key of every hit it read (`hit_keys`, see below), the translated query, the evidence sample and whether the results are partial (`truncated`: shard failures, a partial API answer or an exhausted result budget, the hits count then being a lower bound), as `timeout` when the execution exceeded the run deadline, or as `failed` with the error. Failed and timed out runs are retried with the same backoff and never create knowledge.
+
+### Hit keys
+
+`hit_keys` lets OpenCTI count only the hits a hunt never saw on the platform (see [How hits are counted](hunts.md#how-hits-are-counted)). A connector computes one key per hit it read after benign suppression, sampled or not, bounded by the maximum results of the run, and reports the distinct keys. For an indicator hunt, each value result carries the keys of the hits holding the value (`hit_keys` of the result), which keeps the sighting of each indicator to its own hits. A lookup that returns counts instead of events reports no key: every hit of the run then counts as new.
+
+The key is the SHA-256 hex digest of a compact JSON array (no spaces, UTF-8, characters not escaped) computed over the hit as the connector reports it in `hits_sample`, values exactly as sent, an empty string counting as absent:
+
+| The hit has | Hashed array |
+|---|---|
+| A detection (the platform groups events into detections) | `["v1", "detection", <detection>]` |
+| Else an event id | `["v1", "event", <event_id>]` |
+| Else | `["v1", "fields", <timestamp to the second in UTC, "YYYY-MM-DDTHH:MM:SSZ", or "">, <host or "">, <user or "">, <process or "">, [[<field>, <value_hash in lower case>], ...]]`, the matched fields sorted by field then hash |
+
+The security platform is not part of the key: OpenCTI keeps the known hits of a hunt per security platform. OpenCTI recomputes the key of each sampled hit with the same rule, and the connectors SDK computes it in `analysis.hit_key`; both assert the same test vectors.
 
 For a query test, the connector translates the logic and reports the translated query without executing it.
 
@@ -373,7 +387,7 @@ The Python library `pycti` provides the helpers of the hunt connector contract:
 - `helper.register_hunt_platform(platform, languages, security_platform_name, security_platform_type, supports_preview, max_concurrent_runs, supports_indicators, required_permissions, documentation_url)`, the registration: `required_permissions` lists the permissions the account needs on the platform (`name` and `purpose` each) and `documentation_url` its setup documentation, both shown on the Hunted platform card,
 - `helper.listen_hunt(callback)`, the consumption of the runs (the callback receives the run message) and of the connection tests (`mode` `check`, no run),
 - `helper.report_hunt_connection_check(check_id, checks)`, the answer to a connection test: one `{name, ok, message}` per check,
-- `helper.report_hunt_run(run_id, status, ...)`, the run report. It carries the work the run was dispatched with (by default the work of the message being processed): OpenCTI accepts the report of a dispatched run only with it, so that hunt connectors sharing a user cannot report each other's runs,
+- `helper.report_hunt_run(run_id, status, ...)`, the run report, `hit_keys` included. It carries the work the run was dispatched with (by default the work of the message being processed): OpenCTI accepts the report of a dispatched run only with it, so that hunt connectors sharing a user cannot report each other's runs,
 - `api.hunt` and `api.hunt_run`, the hunt and hunt run entities.
 
 The connectors SDK provides an `InternalHuntConnector` base class and a template implementing the full lifecycle (deadline, Sigma translation through pySigma, result mapping to STIX, evidence hashing): a new platform only implements the query execution. It declares its `required_permissions` and `documentation_url`, and its `connection_test_query()` (or `connection_checks()`, each check through `run_check()`) for **Test connection**. Its API client (`HuntApiClient`) raises `HuntAccessDeniedError` on HTTP 401 and 403, with the `access_denied_hints` sentence of the connector naming what the account lacks.

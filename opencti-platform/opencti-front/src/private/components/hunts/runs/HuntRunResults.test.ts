@@ -38,6 +38,19 @@ describe('huntRunKnowledge', () => {
     expect(knowledge).toEqual({ produced: '2 sightings, 1 observed data, 3 observables, 1 other object, 1 incident', reasons: [] });
   });
 
+  it('should tell the sightings a run created from the ones of the hunt it updated, and hits added to an open incident', () => {
+    const knowledge = huntRunKnowledge({
+      ...completed,
+      incident_id: 'incident-0',
+      incident_continued: true,
+      sightings_created_count: 1,
+      results_summary: { sightings: 3, observed_data: 1, observables: 0, others: 0 },
+    }, t);
+    expect(knowledge?.produced).toEqual('1 sighting created, 2 sightings updated, 1 observed data, hits added to the open incident');
+    const updatedOnly = huntRunKnowledge({ ...completed, sightings_created_count: 0, results_summary: { ...empty, sightings: 2, observables: 1 } }, t);
+    expect(updatedOnly?.produced).toEqual('2 sightings updated, 1 observable');
+  });
+
   it('should leave out the kinds a run did not produce', () => {
     const knowledge = huntRunKnowledge({ ...completed, results_summary: { ...empty, sightings: 1, observed_data: 4 } }, t);
     expect(knowledge).toEqual({ produced: '1 sighting, 4 observed data', reasons: [] });

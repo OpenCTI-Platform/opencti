@@ -14867,6 +14867,8 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   attribute_count: Int!
   x_opencti_negative: Boolean!
   x_opencti_hunt_run_id: String
+  "The hunt whose runs keep this sighting up to date (one sighting per hunt, sighted object and security platform)"
+  x_opencti_hunt_id: String
   objectLabel: [Label!]
   objectOrganization: [Organization!]
   externalReferences(first: Int): ExternalReferenceConnection

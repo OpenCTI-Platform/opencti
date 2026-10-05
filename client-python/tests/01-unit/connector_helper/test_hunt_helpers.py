@@ -147,7 +147,14 @@ class TestHuntHelpers(TestCase):
             ioc_results=None,
             hits_sample=None,
             retryable=None,
+            hit_keys=None,
         )
+
+    def test_report_hunt_run_forwards_the_hit_keys(self):
+        helper = _helper()
+        keys = ["a" * 64, "b" * 64]
+        helper.report_hunt_run("run-1", "completed", hits_count=2, hit_keys=keys)
+        self.assertEqual(helper.api.hunt_run.report.call_args.kwargs["hit_keys"], keys)
 
     def test_report_hunt_run_forwards_the_results_per_value(self):
         helper = _helper()

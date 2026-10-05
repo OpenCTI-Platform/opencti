@@ -32,7 +32,7 @@ The first rule guarantees that a run never discloses an indicator to the readers
 1. The platform resolves the values of the hunt when the run is dispatched and keeps them on the run.
 2. The hunt connector groups them by observable type in batches of 50 values (`hunt_manager:ioc_batch_size`) and runs one lookup per batch over the time window of the run, the **look back** of the hunt (24 hours, 7 days, 30 days, or any number of hours up to 720). **Preview the query** shows these lookups without running them.
 3. It reports, for each value: seen or not, the number of events holding it, the first and last of them, and up to ten hosts; or not searched, with the reason, when the platform cannot look up that type.
-4. It sends one **sighting** per seen value on the hunted security platform, for each indicator or observable the value comes from; a pasted value is created as an observable and sighted. Sightings carry the hits as their count, the first and last event as their dates, and the markings of the hunt.
+4. It reports the keys of the hits holding each value. OpenCTI keeps one **sighting** per hunt, indicator or observable a seen value comes from, and security platform, updated in place at each run: its count holds the distinct hits of its values found so far, its dates the first and the latest hit, and it carries the markings of the hunt. A pasted value is created as an observable by the connector, so that OpenCTI can sight it. A lookup that returns counts instead of events adds the hits of each run to the count.
 
 Only hunt connectors that look up indicators run indicator hunts. The Splunk hunt connector does; the others run detection rule hunts. The checklist of the hunt says when no hunt connector of its scope supports indicator lookups.
 
@@ -58,4 +58,4 @@ Indicator hunts extend the `INTERNAL_HUNT` contract:
 - the report (`huntRunReport`, pycti `report_hunt_run(ioc_results=...)`) carries `ioc_results`, one per key: `seen`, `searched`, `hits_count`, `first_seen`, `last_seen`, `hosts`, `reason`. A value the report leaves out is recorded not searched;
 - a connector declares the capability at registration (`huntConnectorRegister(supports_indicators: true)`, pycti `register_hunt_platform(supports_indicators=True)`).
 
-With the connectors SDK, override `ioc_query(batch)` on `InternalHuntConnector`: the base batches the values, runs the lookups within the run deadline, finds the values in the returned events (or reads one aggregated row per value with `ioc_aggregated = True`), reports the results and sends the sightings.
+With the connectors SDK, override `ioc_query(batch)` on `InternalHuntConnector`: the base batches the values, runs the lookups within the run deadline, finds the values in the returned events (or reads one aggregated row per value with `ioc_aggregated = True`), reports the results with the keys of the hits of each value, and sends the observables of the pasted values.

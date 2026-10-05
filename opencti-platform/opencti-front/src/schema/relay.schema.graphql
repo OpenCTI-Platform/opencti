@@ -9608,6 +9608,11 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   attribute_count: Int!
   x_opencti_negative: Boolean!
   x_opencti_hunt_run_id: String
+
+  """
+  The hunt whose runs keep this sighting up to date (one sighting per hunt, sighted object and security platform)
+  """
+  x_opencti_hunt_id: String
   objectLabel: [Label!]
   objectOrganization: [Organization!]
   externalReferences(first: Int): ExternalReferenceConnection
@@ -18714,6 +18719,22 @@ type HuntReadiness {
   items: [HuntReadinessItem!]!
 }
 
+"""
+What a hunt knows of its hits: each distinct hit once, whatever the number of runs that found it
+"""
+type HuntKnownHits {
+  """
+  Distinct hits the runs of the hunt found and the platform still remembers (kept as long as the runs)
+  """
+  distinct_count: Int!
+
+  """When a run found the earliest hit still known"""
+  first_new_at: DateTime
+
+  """When a run last found a hit never seen before"""
+  last_new_at: DateTime
+}
+
 type HuntStatisticsPoint {
   date: DateTime!
   value: Int!
@@ -18748,6 +18769,11 @@ type HuntConfiguration {
   The observable types a run extracts from its hits when its hunt names none
   """
   default_expected_observables: [String!]!
+
+  """
+  Recurring runs (schedule, standing hunt, PIR activation) search from where the previous completed run on the same platform ended, minus this overlap in minutes
+  """
+  schedule_lookback_minutes: Int!
 }
 
 enum HuntTechniqueValidationStatus {
@@ -18876,6 +18902,16 @@ type Hunt implements BasicObject & StixCoreObject & StixDomainObject & StixObjec
   last_run_at: DateTime
   last_run_status: String
   last_hits_count: Int
+
+  """
+  Hits of the last run never seen before for the hunt on its security platform
+  """
+  last_new_hits_count: Int
+
+  """
+  What the hunt knows of its hits on the security platforms the user can read
+  """
+  knownHits: HuntKnownHits!
   next_run_at: DateTime
   hunt_pir_armed: Boolean
   hunt_pir_armed_at: DateTime
@@ -19255,6 +19291,17 @@ type HuntHit {
   host: String
   user: String
   process: String
+
+  """
+  The hit was never seen before this run for the hunt on its platform; null when the hit is not identified or no longer known
+  """
+  is_new: Boolean
+
+  """Runs of the hunt that found the hit on this platform so far"""
+  times_seen: Int
+
+  """When a run of the hunt first found the hit on this platform"""
+  known_since: DateTime
 }
 
 enum HuntIocVerdict {
@@ -19354,6 +19401,34 @@ type HuntRun implements BasicObject & InternalObject {
   translated_query: String
   query_language: String
   hits_count: Int
+
+  """
+  Hits never seen before for the hunt on the security platform of the run; every hit when the connector identifies none
+  """
+  hits_new_count: Int
+
+  """Hits earlier runs of the hunt already found on this platform"""
+  hits_recurring_count: Int
+
+  """
+  The connector reported a key per hit: false means every hit counts as new
+  """
+  hits_identified: Boolean
+
+  """
+  The run searched from where the previous completed run of the hunt on the same platform ended, minus the lookback overlap
+  """
+  time_window_continued: Boolean!
+
+  """
+  Sightings of the hunt the run created; the other sightings among its results were updated in place
+  """
+  sightings_created_count: Int
+
+  """
+  The run added its hits to the incident still open from a previous run instead of opening a new one
+  """
+  incident_continued: Boolean
   results_truncated: Boolean
   distinct_entities: Int
   evidence_sample: [HuntEvidence!]
@@ -19576,6 +19651,11 @@ input HuntIocResultInput {
 
   "Why the value was not searched\n\n*Constraints:*\n* Maximal length: `512`\n"
   reason: String
+
+  """
+  Keys of the hits holding the value (same rule as hit_keys of the report)
+  """
+  hit_keys: [String!]
 }
 
 input HuntRunReportInput {
@@ -19594,6 +19674,11 @@ input HuntRunReportInput {
   One evidence item per hit, on top of the per-field aggregation of evidence_sample
   """
   hits_sample: [HuntHitInput!]
+
+  """
+  The stable key of every hit the run read, sampled or not (SHA-256 of a v1 JSON array over the detection, else the event id, else the timestamp to the second, host, user, process and matched field hashes): hits never seen for the hunt on the platform count as new
+  """
+  hit_keys: [String!]
 
   """
   Dates of the first and last matched event of the whole run, when hits_sample is only a sample
@@ -19619,6 +19704,11 @@ input HuntRunEvidenceAddInput {
   hits_count: Int
   evidence_sample: [HuntEvidenceInput!]
   hits_sample: [HuntHitInput!]
+
+  """
+  Keys of the hits of the evidence (same rule as the report): without keys, its hits count as new
+  """
+  hit_keys: [String!]
   observed_at: DateTime
 
   "*Constraints:*\n* Maximal length: `128`\n"

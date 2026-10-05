@@ -1,15 +1,19 @@
 import type { AuthContext } from '../../types/user';
 import type { BasicStoreEntity } from '../../types/store';
 import { logApp } from '../../config/conf';
-import { createEntity, createRelation } from '../../database/middleware';
-import { internalLoadById } from '../../database/middleware-loader';
-import { ENTITY_TYPE_INCIDENT } from '../../schema/stixDomainObject';
+import { createEntity, createRelation, patchAttribute } from '../../database/middleware';
+import { internalLoadById, topEntitiesList } from '../../database/middleware-loader';
+import { ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_INCIDENT } from '../../schema/stixDomainObject';
 import { RELATION_RELATED_TO } from '../../schema/stixCoreRelationship';
 import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
-import { HUNT_MANAGER_USER, MEMBER_ACCESS_RIGHT_EDIT } from '../../utils/access';
+import { FilterMode, FilterOperator, OrderingMode } from '../../generated/graphql';
+import { HUNT_MANAGER_USER, MEMBER_ACCESS_RIGHT_EDIT, SYSTEM_USER } from '../../utils/access';
+import { findByType as findStatusesByType } from '../../domain/status';
 import { addDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
+import { DRAFT_STATUS_OPEN } from '../draftWorkspace/draftStatuses';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import { type BasicStoreEntityHunt, RELATION_HUNT_SOURCES, RELATION_HUNT_TARGETS, RELATION_HUNT_TECHNIQUES } from './hunt-types';
-import type { BasicStoreEntityHuntRun, HuntHit } from './huntRun/huntRun-types';
+import { type BasicStoreEntityHuntRun, ENTITY_TYPE_HUNT_RUN, type HuntHit } from './huntRun/huntRun-types';
 import { validateSigmaRule } from './hunt-sigma';
 import { truncate } from './hunt-utils';
 
@@ -118,7 +122,10 @@ export const buildHuntIncidentContent = (
   }
   const dated = run.first_hit_at ? `between ${firstSeen} and ${lastSeen}` : `in the time window ${run.time_window_start} - ${run.time_window_end}`;
   const platform = platformName ? ` on ${platformName}` : '';
-  sections.push(`The hunt matched ${run.hits_count ?? 0} events (${run.distinct_entities ?? 0} distinct entities)${platform} ${dated}, in its run ${run.internal_id}.`);
+  const known = run.hits_identified === true && (run.hits_recurring_count ?? 0) > 0
+    ? ` ${run.hits_new_count ?? 0} of them were never seen before, ${run.hits_recurring_count} were seen by earlier runs.`
+    : '';
+  sections.push(`The hunt matched ${run.hits_count ?? 0} events (${run.distinct_entities ?? 0} distinct entities)${platform} ${dated}, in its run ${run.internal_id}.${known}`);
   if (hits.length > 0) {
     const facts = [
       ['Matched fields', topValues(hits, (hit) => (hit.matched ?? []).map((match) => match.field))],
@@ -198,4 +205,113 @@ export const createHuntIncidentInWorkspace = async (
     }
   }
   return incident.internal_id;
+};
+
+/** An incident a later run of the hunt adds its hits to: in its draft while the draft is not validated, else in the knowledge. */
+export interface OpenHuntIncident {
+  incidentId: string;
+  draftId: string | null;
+}
+
+type IncidentWithStatus = BasicStoreEntity & { x_opencti_workflow_id?: string | null };
+
+/**
+ * Whether an incident is closed: its status is the last one of the incident workflow (a workflow of one status, or no
+ * status at all, never closes an incident).
+ */
+export const isHuntIncidentClosed = async (context: AuthContext, incident: IncidentWithStatus) => {
+  if (!incident.x_opencti_workflow_id) {
+    return false;
+  }
+  const statuses = (await findStatusesByType(context, SYSTEM_USER, ENTITY_TYPE_INCIDENT))
+    .filter((status) => !status.scope || status.scope === 'GLOBAL')
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  return statuses.length > 1 && statuses[statuses.length - 1].internal_id === incident.x_opencti_workflow_id;
+};
+
+/**
+ * The incident of a previous run of the hunt on the same security platform that is still open: its draft is not
+ * validated yet, or it was validated and its status is not the last one of the incident workflow. Null when the latest
+ * incident of the hunt on the platform is closed, deleted, or in a draft validated or deleted since.
+ */
+export const findOpenHuntIncident = async (context: AuthContext, run: BasicStoreEntityHuntRun): Promise<OpenHuntIncident | null> => {
+  const [previous] = await topEntitiesList<BasicStoreEntityHuntRun>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT_RUN], {
+    first: 1,
+    orderBy: 'completed_at',
+    orderMode: OrderingMode.Desc,
+    filters: {
+      mode: FilterMode.And,
+      filters: [
+        { key: ['hunt_id'], values: [run.hunt_id] },
+        run.security_platform_id
+          ? { key: ['security_platform_id'], values: [run.security_platform_id] }
+          : { key: ['security_platform_id'], values: [], operator: FilterOperator.Nil },
+        { key: ['incident_id'], values: [], operator: FilterOperator.NotNil },
+        { key: ['id'], values: [run.internal_id], operator: FilterOperator.NotEq },
+      ],
+      filterGroups: [],
+    },
+    noFiltersChecking: true,
+  });
+  if (!previous?.incident_id) {
+    return null;
+  }
+  const draft = previous.draft_id
+    ? await internalLoadById<BasicStoreEntity & { draft_status?: string }>(context, HUNT_MANAGER_USER, previous.draft_id, { type: ENTITY_TYPE_DRAFT_WORKSPACE })
+    : null;
+  const inDraft = previous.draft_id
+    ? await internalLoadById<IncidentWithStatus>({ ...context, draft_context: previous.draft_id }, HUNT_MANAGER_USER, previous.incident_id, { type: ENTITY_TYPE_INCIDENT })
+    : null;
+  if (draft && draft.draft_status === DRAFT_STATUS_OPEN && inDraft) {
+    return { incidentId: inDraft.internal_id, draftId: previous.draft_id ?? null };
+  }
+  // A validated draft published the incident under its standard id
+  const live = await internalLoadById<IncidentWithStatus>(context, HUNT_MANAGER_USER, previous.incident_id, { type: ENTITY_TYPE_INCIDENT })
+    ?? (inDraft ? await internalLoadById<IncidentWithStatus>(context, HUNT_MANAGER_USER, inDraft.standard_id, { type: ENTITY_TYPE_INCIDENT }) : null);
+  if (!live || await isHuntIncidentClosed(context, live)) {
+    return null;
+  }
+  return { incidentId: live.internal_id, draftId: null };
+};
+
+/**
+ * Adds the hits of a run to an incident still open from a previous run of the hunt, in its draft when it has one: the
+ * incident is related to the observed data and observables of the run, gets a note with the run summary, and its last
+ * seen date moves to the last hit. Relations already there are kept.
+ */
+export const continueHuntIncident = async (context: AuthContext, hunt: BasicStoreEntityHunt, run: BasicStoreEntityHuntRun, open: OpenHuntIncident) => {
+  const targetContext: AuthContext = open.draftId ? { ...context, draft_context: open.draftId } : context;
+  const markings = run[RELATION_OBJECT_MARKING] ?? [];
+  const relatedIds = Array.from(new Set(run.hit_observation_ids ?? []));
+  for (let index = 0; index < relatedIds.length; index += 1) {
+    try {
+      await createRelation(targetContext, HUNT_MANAGER_USER, {
+        fromId: open.incidentId,
+        toId: relatedIds[index],
+        relationship_type: RELATION_RELATED_TO,
+        objectMarking: markings,
+      });
+    } catch (error) {
+      logApp.warn('[OPENCTI-MODULE] Hunt incident relation could not be added', { cause: error, huntId: hunt.internal_id, toId: relatedIds[index] });
+    }
+  }
+  const platform = run.security_platform_id ? await internalLoadById<BasicStoreEntity>(context, HUNT_MANAGER_USER, run.security_platform_id) : null;
+  const content = buildHuntIncidentContent(hunt, run, null, platform?.name ?? null);
+  const newHits = run.hits_new_count ?? run.hits_count ?? 0;
+  await createEntity(targetContext, HUNT_MANAGER_USER, {
+    attribute_abstract: truncate(`${hunt.name} - ${newHits} new hits in a later run`, 250),
+    content: content.description,
+    note_types: ['analysis'],
+    objects: [open.incidentId],
+    objectMarking: markings,
+    ...(hunt[RELATION_CREATED_BY] ? { createdBy: hunt[RELATION_CREATED_BY] } : {}),
+  }, ENTITY_TYPE_CONTAINER_NOTE);
+  const incident = await internalLoadById<BasicStoreEntity & { last_seen?: string }>(targetContext, HUNT_MANAGER_USER, open.incidentId, { type: ENTITY_TYPE_INCIDENT });
+  if (incident && content.last_seen && (!incident.last_seen || new Date(content.last_seen).getTime() > new Date(incident.last_seen).getTime())) {
+    try {
+      await patchAttribute(targetContext, HUNT_MANAGER_USER, open.incidentId, ENTITY_TYPE_INCIDENT, { last_seen: content.last_seen });
+    } catch (error) {
+      logApp.warn('[OPENCTI-MODULE] Hunt incident last seen date could not move', { cause: error, incidentId: open.incidentId });
+    }
+  }
 };

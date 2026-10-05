@@ -98,6 +98,16 @@ type HuntReadiness {
   items: [HuntReadinessItem!]!
 }
 
+"What a hunt knows of its hits: each distinct hit once, whatever the number of runs that found it"
+type HuntKnownHits {
+  "Distinct hits the runs of the hunt found and the platform still remembers (kept as long as the runs)"
+  distinct_count: Int!
+  "When a run found the earliest hit still known"
+  first_new_at: DateTime
+  "When a run last found a hit never seen before"
+  last_new_at: DateTime
+}
+
 type HuntStatisticsPoint {
   date: DateTime!
   value: Int!
@@ -127,6 +137,8 @@ type HuntConfiguration {
   min_schedule_interval_minutes: Int!
   "The observable types a run extracts from its hits when its hunt names none"
   default_expected_observables: [String!]!
+  "Recurring runs (schedule, standing hunt, PIR activation) search from where the previous completed run on the same platform ended, minus this overlap in minutes"
+  schedule_lookback_minutes: Int!
 }
 
 enum HuntTechniqueValidationStatus {
@@ -313,6 +325,10 @@ type Hunt implements BasicObject & StixCoreObject & StixDomainObject & StixObjec
   last_run_at: DateTime
   last_run_status: String
   last_hits_count: Int
+  "Hits of the last run never seen before for the hunt on its security platform"
+  last_new_hits_count: Int
+  "What the hunt knows of its hits on the security platforms the user can read"
+  knownHits: HuntKnownHits!
   next_run_at: DateTime
   hunt_pir_armed: Boolean
   hunt_pir_armed_at: DateTime

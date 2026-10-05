@@ -70,6 +70,12 @@ type HuntHit {
   host: String
   user: String
   process: String
+  "The hit was never seen before this run for the hunt on its platform; null when the hit is not identified or no longer known"
+  is_new: Boolean
+  "Runs of the hunt that found the hit on this platform so far"
+  times_seen: Int
+  "When a run of the hunt first found the hit on this platform"
+  known_since: DateTime
 }
 
 enum HuntIocVerdict {
@@ -146,6 +152,18 @@ type HuntRun implements BasicObject & InternalObject {
   translated_query: String
   query_language: String
   hits_count: Int
+  "Hits never seen before for the hunt on the security platform of the run; every hit when the connector identifies none"
+  hits_new_count: Int
+  "Hits earlier runs of the hunt already found on this platform"
+  hits_recurring_count: Int
+  "The connector reported a key per hit: false means every hit counts as new"
+  hits_identified: Boolean
+  "The run searched from where the previous completed run of the hunt on the same platform ended, minus the lookback overlap"
+  time_window_continued: Boolean!
+  "Sightings of the hunt the run created; the other sightings among its results were updated in place"
+  sightings_created_count: Int
+  "The run added its hits to the incident still open from a previous run instead of opening a new one"
+  incident_continued: Boolean
   # The platform returned partial results: hits_count is a lower bound
   results_truncated: Boolean
   distinct_entities: Int
@@ -337,6 +355,8 @@ input HuntIocResultInput {
   hosts: [String!]
   "Why the value was not searched"
   reason: String @constraint(maxLength: 512)
+  "Keys of the hits holding the value (same rule as hit_keys of the report)"
+  hit_keys: [String!]
 }
 
 input HuntRunReportInput {
@@ -352,6 +372,8 @@ input HuntRunReportInput {
   evidence_sample: [HuntEvidenceInput!]
   "One evidence item per hit, on top of the per-field aggregation of evidence_sample"
   hits_sample: [HuntHitInput!]
+  "The stable key of every hit the run read, sampled or not (SHA-256 of a v1 JSON array over the detection, else the event id, else the timestamp to the second, host, user, process and matched field hashes): hits never seen for the hunt on the platform count as new"
+  hit_keys: [String!]
   "Dates of the first and last matched event of the whole run, when hits_sample is only a sample"
   first_hit_at: DateTime
   last_hit_at: DateTime
@@ -371,6 +393,8 @@ input HuntRunEvidenceAddInput {
   hits_count: Int
   evidence_sample: [HuntEvidenceInput!]
   hits_sample: [HuntHitInput!]
+  "Keys of the hits of the evidence (same rule as the report): without keys, its hits count as new"
+  hit_keys: [String!]
   observed_at: DateTime
   source: String @constraint(maxLength: 128)
 }

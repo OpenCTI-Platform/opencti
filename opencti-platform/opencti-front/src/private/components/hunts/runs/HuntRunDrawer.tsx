@@ -48,6 +48,7 @@ import {
   huntMessageText,
   huntQueryLanguageLabel,
   huntRunFailure,
+  huntRunHitsBreakdown,
   huntRunPartialResultsSentence,
   huntRunTriggerLabel,
   huntRunUnresolvedTechniquesSentence,
@@ -60,6 +61,7 @@ import { shortHash } from '../hunt-evidence-utils';
 import { insertStartedHuntRuns } from './hunt-run-store';
 import HuntRunResults from './HuntRunResults';
 import HuntRunIocResults from './HuntRunIocResults';
+import HuntRunHits from './HuntRunHits';
 import { HuntRunResults_data$key } from './__generated__/HuntRunResults_data.graphql';
 import { HuntRunDrawer_run$data, HuntRunDrawer_run$key } from './__generated__/HuntRunDrawer_run.graphql';
 import { HuntRunDrawerQuery } from './__generated__/HuntRunDrawerQuery.graphql';
@@ -103,6 +105,25 @@ const huntRunDrawerFragment = graphql`
     translated_query
     query_language
     hits_count
+    hits_new_count
+    hits_recurring_count
+    hits_identified
+    time_window_continued
+    incident_continued
+    hits_sample {
+      event_id
+      timestamp
+      host
+      user
+      process
+      matched {
+        field
+        value_preview
+      }
+      is_new
+      times_seen
+      known_since
+    }
     results_truncated
     distinct_entities
     evidence_sample {
@@ -278,7 +299,9 @@ const RunDetails = ({ run }: { run: Run }) => {
       key: 'hits',
       label: t_i18n('Hits'),
       // Partial results: the platform did not return everything, the count is a lower bound
-      value: run.results_truncated ? t_i18n('At least {count}', { values: { count: n(run.hits_count ?? 0) } }) : count(run.hits_count),
+      value: run.results_truncated
+        ? t_i18n('At least {count}', { values: { count: n(run.hits_count ?? 0) } })
+        : huntRunHitsBreakdown(run, t_i18n, n) ?? count(run.hits_count),
     },
     { key: 'distinct_entities', label: t_i18n('Distinct entities'), value: count(run.distinct_entities) },
   ];
@@ -640,6 +663,11 @@ const RunLinks = ({ run }: { run: Run }) => {
           </li>
         ))}
       </ul>
+      {run.incident_continued && (
+        <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(1) }} data-testid="hunt-run-incident-continued">
+          {t_i18n('The new hits of this run went to the incident still open from a previous run')}
+        </Text>
+      )}
       {run.draft_id && (
         <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(1) }}>
           {t_i18n('The incident stays in its draft until an analyst validates it into the knowledge graph')}
@@ -847,6 +875,17 @@ const HuntRunDrawerContent = ({ data, results, huntId, paginationOptions }: Hunt
     <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(2) }} data-testid="hunt-run-drawer">
       <RunStatusHeader run={run} huntId={huntId} canRetry={canRetry} retrying={retrying} onRetry={retry} onSetVerdict={focusVerdict} />
       {isExecution && <RunVerdict run={run} cardRef={verdictRef} />}
+      {isExecution && run.hunt_run_status === 'completed' && ((run.hits_count ?? 0) > 0 || run.time_window_continued) && (
+        <HuntRunHits
+          hitsCount={run.hits_count}
+          newCount={run.hits_new_count}
+          recurringCount={run.hits_recurring_count}
+          identified={run.hits_identified}
+          windowContinued={run.time_window_continued}
+          platform={runPlatformName(run, t_i18n)}
+          hits={run.hits_sample ?? []}
+        />
+      )}
       {isExecution && <HuntRunIocResults data={run} />}
       {isExecution && <RunEvidence run={run} results={results} />}
       <RunLinks run={run} />

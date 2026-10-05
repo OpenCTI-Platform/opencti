@@ -191,6 +191,70 @@ export const HUNT_DOCS = {
   schedules: `${HUNT_DOCS_BASE}/hunt-automation/#schedules`,
   standing: `${HUNT_DOCS_BASE}/hunt-automation/#standing-hunts`,
   pir: `${HUNT_DOCS_BASE}/hunt-automation/#activation-by-priority-intelligence-requirements`,
+  hitCounting: `${HUNT_DOCS_BASE}/hunts/#how-hits-are-counted`,
+};
+
+/**
+ * The hits of a run with what is new in them: "120 (12 new, 108 seen before)". New and seen before cover the hits the
+ * connector identified; when it returned more than it identified (partial results), the sentence says how many were
+ * identified. Null for a run without hits or whose hits are not identified.
+ */
+export const huntRunHitsBreakdown = (
+  run: { hits_count?: number | null; hits_new_count?: number | null; hits_recurring_count?: number | null; hits_identified?: boolean | null },
+  t_i18n: HuntTranslate,
+  n: (value: number) => string,
+) => {
+  const hits = run.hits_count ?? 0;
+  if (hits === 0 || run.hits_identified !== true) {
+    return null;
+  }
+  const fresh = run.hits_new_count ?? 0;
+  const known = run.hits_recurring_count ?? 0;
+  const values = { hits: n(hits), new: n(fresh), known: n(known), identified: n(fresh + known) };
+  return fresh + known < hits
+    ? t_i18n('{hits} ({new} new, {known} seen before, among {identified} identified)', { values })
+    : t_i18n('{hits} ({new} new, {known} seen before)', { values });
+};
+
+/** The hits of the last run of a hunt, with the new ones when the platform knows them: "28 hits, 3 new". */
+export const huntLastRunHits = (
+  hunt: { last_hits_count?: number | null; last_new_hits_count?: number | null },
+  t_i18n: HuntTranslate,
+  n: (value: number) => string,
+) => {
+  const hits = hunt.last_hits_count ?? 0;
+  const label = t_i18n('{count, plural, =0 {No hit} one {# hit} other {# hits}}', { values: { count: hits } });
+  if (hits === 0 || hunt.last_new_hits_count === null || hunt.last_new_hits_count === undefined) {
+    return label;
+  }
+  return t_i18n('{hits}, {new} new', { values: { hits: label, new: n(hunt.last_new_hits_count) } });
+};
+
+/** Whether a hunt runs by itself again and again (schedule, standing hunt, PIR activation): its runs search since the previous one. */
+export const huntRunsRecur = (hunt: { hunt_schedule?: string | null; hunt_pir_activation?: boolean | null }) => {
+  return huntScheduleMode(hunt.hunt_schedule) !== 'manual' || hunt.hunt_pir_activation === true;
+};
+
+/** Whether a sampled hit is new in its run, or since when and how often the runs of the hunt found it; null when unknown. */
+export const huntHitRecurrence = (
+  hit: { is_new?: boolean | null; times_seen?: number | null; known_since?: string | null },
+  t_i18n: HuntTranslate,
+  n: (value: number) => string,
+  formatDate: (date: string) => string,
+): { label: string; isNew: boolean } | null => {
+  if (hit.is_new === true) {
+    return { label: t_i18n('New'), isNew: true };
+  }
+  if (hit.is_new === false && hit.known_since) {
+    const times = hit.times_seen ?? 1;
+    return {
+      label: times === 1
+        ? t_i18n('Seen once since {date}', { values: { date: formatDate(hit.known_since) } })
+        : t_i18n('Seen {count} times since {date}', { values: { count: n(times), date: formatDate(hit.known_since) } }),
+      isNew: false,
+    };
+  }
+  return null;
 };
 
 // The section of the hunt connectors page giving the account, permissions and configuration of each catalog connector

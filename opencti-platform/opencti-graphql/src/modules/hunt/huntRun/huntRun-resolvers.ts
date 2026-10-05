@@ -28,6 +28,7 @@ import {
 import type { BasicStoreEntityConnector } from '../../../types/connector';
 import { huntRunQueueReason } from '../hunt-dispatch';
 import { huntRunFailureReason } from '../hunt-logic';
+import { annotateHuntRunHits } from '../huntHitRecord/huntHitRecord-domain';
 
 const huntRunResolvers: Resolvers = {
   Query: {
@@ -55,6 +56,8 @@ const huntRunResolvers: Resolvers = {
     result_ids: (run, _, context) => findHuntRunResultIds(context, context.user, run),
     results_summary: (run, _, context) => findHuntRunResultsSummary(context, context.user, run),
     ioc_results: (run, _, context) => resolveHuntRunIocResults(context, context.user, run) as any,
+    hits_sample: (run, _, context) => annotateHuntRunHits(context, run) as any,
+    time_window_continued: (run) => !!run.continues_run_id,
   },
   // A telemetry hit in the program-wide evidence shape: a tool result labelled by its field, quoting its preview
   HuntEvidence: {

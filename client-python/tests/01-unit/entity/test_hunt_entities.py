@@ -219,6 +219,18 @@ class TestHuntRun(TestCase):
         )
         self.assertEqual(_variables(opencti)["input"]["hits_sample"], hits)
 
+    def test_report_sends_hit_keys_only_when_known(self):
+        opencti = _opencti(
+            {"huntRunReport": {"id": "run-1", "hunt_run_status": "completed"}}
+        )
+        keys = ("a" * 64, "b" * 64)
+        HuntRun(opencti).report(
+            id="run-1", status="completed", hits_count=2, hit_keys=keys
+        )
+        self.assertEqual(_variables(opencti)["input"]["hit_keys"], list(keys))
+        HuntRun(opencti).report(id="run-1", status="completed", hits_count=2)
+        self.assertNotIn("hit_keys", _variables(opencti)["input"])
+
     def test_report_sends_retryable_only_when_known(self):
         opencti = _opencti(
             {"huntRunReport": {"id": "run-1", "hunt_run_status": "failed"}}
@@ -279,6 +291,9 @@ class TestHuntRun(TestCase):
         hits = [{"event_id": "evt-2", "matched": [], "host": "ws-042"}]
         run.add_evidence(id="run-1", result_ids=["sighting--2"], hits_sample=hits)
         self.assertEqual(_variables(opencti)["input"]["hits_sample"], hits)
+        self.assertNotIn("hit_keys", _variables(opencti)["input"])
+        run.add_evidence(id="run-1", result_ids=["sighting--2"], hit_keys=["c" * 64])
+        self.assertEqual(_variables(opencti)["input"]["hit_keys"], ["c" * 64])
 
     def test_register_connector_requires_the_platform_and_languages(self):
         opencti = _opencti({"huntConnectorRegister": {"id": "connector-1"}})

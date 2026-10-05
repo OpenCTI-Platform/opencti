@@ -44,6 +44,7 @@ export const huntsLineFragment = graphql`
     last_run_at
     last_run_status
     last_hits_count
+    last_new_hits_count
     next_run_at
     created
     created_at
@@ -163,7 +164,7 @@ const useRemainingHeight = (element: HTMLDivElement | null, watched: HTMLDivElem
 };
 
 const Hunts = () => {
-  const { t_i18n } = useFormatter();
+  const { t_i18n, n } = useFormatter();
   const scheduleText = useHuntScheduleText();
   const { setTitle } = useConnectedDocumentModifier();
   setTitle(t_i18n('Hunts | Defense'));
@@ -246,18 +247,26 @@ const Hunts = () => {
     last_hits_count: {
       id: 'last_hits_count',
       label: 'Last hits',
-      percentWidth: 7,
+      percentWidth: 9,
       isSortable: true,
-      render: ({ last_hits_count }: Hunts_HuntFragment$data) => defaultRender(last_hits_count ?? '-'),
+      // The hits of the last run, and among them the ones never seen before
+      render: ({ last_hits_count, last_new_hits_count }: Hunts_HuntFragment$data) => {
+        if (last_hits_count === null || last_hits_count === undefined) {
+          return defaultRender('-');
+        }
+        return defaultRender(last_hits_count > 0 && last_new_hits_count !== null && last_new_hits_count !== undefined
+          ? t_i18n('{hits} ({new} new)', { values: { hits: n(last_hits_count), new: n(last_new_hits_count) } })
+          : n(last_hits_count));
+      },
     },
     next_run_at: {
       id: 'next_run_at',
       label: 'Next run',
-      percentWidth: 9,
+      percentWidth: 8,
       isSortable: true,
       render: ({ next_run_at }: Hunts_HuntFragment$data, { fd }: { fd: (date: string | null | undefined) => string }) => defaultRender(fd(next_run_at)),
     },
-    objectLabel: { percentWidth: 8 },
+    objectLabel: { percentWidth: 7 },
     objectMarking: { percentWidth: 7 },
   };
 

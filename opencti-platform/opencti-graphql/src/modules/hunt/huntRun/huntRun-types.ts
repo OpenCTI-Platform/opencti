@@ -44,6 +44,9 @@ export const HUNT_RUN_TRIGGERS = [
 ];
 // Triggers started without a human action, counted as autonomous runs.
 export const HUNT_RUN_AUTONOMOUS_TRIGGERS = [HUNT_RUN_TRIGGER_SCHEDULE, HUNT_RUN_TRIGGER_STANDING, HUNT_RUN_TRIGGER_PIR, HUNT_RUN_TRIGGER_PLAYBOOK, HUNT_RUN_TRIGGER_EMULATION];
+// Recurring runs of a hunt: each one searches from where the previous completed run of the hunt on the same security
+// platform ended (minus the lookback overlap), never more than the time window of the hunt
+export const HUNT_RUN_INCREMENTAL_TRIGGERS = [HUNT_RUN_TRIGGER_SCHEDULE, HUNT_RUN_TRIGGER_STANDING, HUNT_RUN_TRIGGER_PIR];
 
 export const HUNT_RUN_MODE_EXECUTE = 'execute';
 export const HUNT_RUN_MODE_PREVIEW = 'preview';
@@ -83,6 +86,8 @@ export interface HuntHitField {
 
 /** One event a run matched, as the platform stores it. */
 export interface HuntHit {
+  // Stable key of the hit (huntHitKey), computed over the hit as the connector reported it; absent on older runs
+  hit_key?: string | null;
   event_id: string | null;
   timestamp: string | null;
   // The detection of the platform grouping the event (YARA-L): the events of one detection are one hit
@@ -140,6 +145,17 @@ interface HuntRunAttributes {
   query_language?: string | null;
   ioc_results?: HuntIocResult[] | null;
   hits_count?: number | null;
+  // Hits never seen before for the hunt on the security platform of the run, and hits already known (Hunt-Hit-Record).
+  // A run whose connector identifies no hit (hits_identified false) counts every hit as new
+  hits_new_count?: number | null;
+  hits_recurring_count?: number | null;
+  hits_identified?: boolean | null;
+  // The completed run whose time window this autonomous run continues (incremental windows), null for a full window
+  continues_run_id?: string | null;
+  // Sightings of the hunt the run created; the others it found were updated in place
+  sightings_created_count?: number | null;
+  // The run added its hits to an incident still open from a previous run instead of opening a new one
+  incident_continued?: boolean | null;
   // The platform returned partial results: hits_count is a lower bound
   results_truncated?: boolean | null;
   distinct_entities?: number | null;
