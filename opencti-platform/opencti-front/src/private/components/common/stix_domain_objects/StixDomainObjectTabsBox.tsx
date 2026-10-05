@@ -13,7 +13,6 @@ export type StixDomainObjectTabsBoxTab
     | 'logic'
     | 'runs'
     | 'evidence'
-    | 'coverage'
     | 'knowledge'
     | 'coverage'
     | 'content'
@@ -64,10 +63,6 @@ const TABS_INFO: readonly TabInfo[] = [{
   tab: 'evidence',
   path: 'evidence',
   label: 'Evidence',
-}, {
-  tab: 'coverage',
-  path: 'coverage',
-  label: 'Coverage',
 }, {
   tab: 'knowledge',
   path: 'knowledge',
