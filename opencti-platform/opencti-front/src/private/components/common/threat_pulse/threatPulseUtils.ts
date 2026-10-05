@@ -66,6 +66,26 @@ export const PULSE_PERIOD_LABELS: Record<PulsePeriodValue, string> = {
   last_90_days: '90 days',
 };
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// XTM Hub publishes the last 7, 30 or 90 days only: a dashboard date range of up to a week maps to 7 days, up to a
+// month (31 days) to 30 days, anything longer or open-ended to 90 days. Null without any date, the widget then keeps
+// its own period selector.
+export const pulsePeriodFromDateRange = (startDate?: string | null, endDate?: string | null): PulsePeriodValue | null => {
+  if (!startDate) {
+    return endDate ? 'last_90_days' : null;
+  }
+  const start = new Date(startDate).getTime();
+  const end = endDate ? new Date(endDate).getTime() : Date.now();
+  if (Number.isNaN(start) || Number.isNaN(end)) {
+    return null;
+  }
+  const days = Math.round((end - start) / DAY_MS);
+  if (days <= 7) return 'last_7_days';
+  if (days <= 31) return 'last_30_days';
+  return 'last_90_days';
+};
+
 export const PULSE_MODE_LABELS: Record<string, string> = {
   off: 'Off',
   preview: 'Preview, nothing sent',

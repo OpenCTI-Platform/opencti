@@ -185,6 +185,8 @@ const ThreatPulseTrendingList = ({ period, first }: ThreatPulseTrendingListProps
 interface ThreatPulseTrendingProps {
   title?: string;
   first?: number;
+  // Derived from the dashboard date range: it replaces the widget's own period selector.
+  period?: PulsePeriodValue;
   popover?: ReactNode;
 }
 
@@ -192,21 +194,29 @@ interface ThreatPulseTrendingProps {
  * "Trending in your sector": local objects rising in the platform's sector bucket on Threat Pulse. Used as a home
  * widget and as a custom dashboard widget.
  */
-const ThreatPulseTrending = ({ title, first = 10, popover }: ThreatPulseTrendingProps) => {
+const ThreatPulseTrending = ({ title, first = 10, period: dashboardPeriod, popover }: ThreatPulseTrendingProps) => {
+  const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const [period, setPeriod] = useState<PulsePeriodValue>('last_7_days');
+  const [selectedPeriod, setSelectedPeriod] = useState<PulsePeriodValue>('last_7_days');
+  const period = dashboardPeriod ?? selectedPeriod;
   const action = (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-      <Select value={period} onValueChange={(value) => setPeriod(value as PulsePeriodValue)}>
-        <SelectTrigger aria-label={t_i18n('Period')} style={{ width: 140 }}>
-          <SelectValue>{t_i18n(PULSE_PERIOD_LABELS[period])}</SelectValue>
-        </SelectTrigger>
-        <SelectContent aria-label={t_i18n('Period')}>
-          {PULSE_PERIODS.map((value) => (
-            <SelectItem key={value} value={value}>{t_i18n(PULSE_PERIOD_LABELS[value])}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {dashboardPeriod ? (
+        <Text variant="content-compact" style={{ color: theme.palette.text.secondary }} data-testid="threat-pulse-trending-period">
+          {t_i18n(PULSE_PERIOD_LABELS[period])}
+        </Text>
+      ) : (
+        <Select value={period} onValueChange={(value) => setSelectedPeriod(value as PulsePeriodValue)}>
+          <SelectTrigger aria-label={t_i18n('Period')} style={{ width: 140 }}>
+            <SelectValue>{t_i18n(PULSE_PERIOD_LABELS[period])}</SelectValue>
+          </SelectTrigger>
+          <SelectContent aria-label={t_i18n('Period')}>
+            {PULSE_PERIODS.map((value) => (
+              <SelectItem key={value} value={value}>{t_i18n(PULSE_PERIOD_LABELS[value])}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
       {popover}
     </Box>
   );

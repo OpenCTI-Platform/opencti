@@ -113,4 +113,19 @@ describe('ThreatPulseTrending', () => {
     expect(await screen.findByTestId('threat-pulse-trending-unavailable')).toBeDefined();
     expect(screen.getByText('Register the platform on XTM Hub to use Threat Pulse.')).toBeDefined();
   });
+
+  it('should follow the period of its dashboard instead of its own selector', async () => {
+    const { relayEnv } = testRender(<ThreatPulseTrending period="last_30_days" />, { userContext: administrator });
+    act(() => {
+      relayEnv.mock.resolveMostRecentOperation((operation) => {
+        expect(operation.request.variables).toEqual({ period: 'last_30_days', first: 10 });
+        return MockPayloadGenerator.generate(operation, {
+          PulseTrending: () => ({ ...BASE, period: 'last_30_days', sector_bucket: 'finance', region_bucket: null, network_items_count: 0, entries: [] }),
+        });
+      });
+    });
+    expect(await screen.findByText('Sector: Finance - last 30 days')).toBeDefined();
+    expect(screen.getByTestId('threat-pulse-trending-period').textContent).toBe('30 days');
+    expect(screen.queryByRole('combobox', { name: 'Period' })).toBeNull();
+  });
 });

@@ -15,6 +15,7 @@ import {
   PULSE_TREND_SEVERITIES,
   PULSE_UNAVAILABLE_MESSAGES,
   prevalenceGaugeValue,
+  pulsePeriodFromDateRange,
   pulsePlatformsBucketLabel,
   pulseRatioSeverity,
 } from './threatPulseUtils';
@@ -51,6 +52,20 @@ describe('Threat Pulse utils', () => {
       'out_of_scope',
       'rate_limited',
     ]);
+  });
+
+  it('should map a dashboard date range to the Threat Pulse period of its length', () => {
+    expect(pulsePeriodFromDateRange(undefined, undefined)).toBeNull();
+    expect(pulsePeriodFromDateRange(null, null)).toBeNull();
+    expect(pulsePeriodFromDateRange('2026-10-04T00:00:00.000Z', '2026-10-05T00:00:00.000Z')).toBe('last_7_days');
+    expect(pulsePeriodFromDateRange('2026-09-28T00:00:00.000Z', '2026-10-05T00:00:00.000Z')).toBe('last_7_days');
+    expect(pulsePeriodFromDateRange('2026-08-31T00:00:00.000Z', '2026-10-01T00:00:00.000Z')).toBe('last_30_days');
+    expect(pulsePeriodFromDateRange('2026-07-05T00:00:00.000Z', '2026-10-05T00:00:00.000Z')).toBe('last_90_days');
+    expect(pulsePeriodFromDateRange('2025-10-05T00:00:00.000Z', '2026-10-05T00:00:00.000Z')).toBe('last_90_days');
+    // An open start is the longest period; an open end runs to now.
+    expect(pulsePeriodFromDateRange(null, '2026-10-05T00:00:00.000Z')).toBe('last_90_days');
+    expect(pulsePeriodFromDateRange(new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), null)).toBe('last_7_days');
+    expect(pulsePeriodFromDateRange('not a date', '2026-10-05T00:00:00.000Z')).toBeNull();
   });
 
   it('should place each prevalence bucket in the middle of its gauge segment', () => {
