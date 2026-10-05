@@ -10,6 +10,8 @@ import {
   queryAsUserWithSuccess,
 } from '../../utils/testQueryHelper';
 import { redisGetTelemetry } from '../../../src/database/redis';
+import * as redis from '../../../src/database/redis';
+import { BUS_TOPICS } from '../../../src/config/conf';
 import { TELEMETRY_GAUGE_TIMELINE_MANUAL_EVENT } from '../../../src/manager/telemetryManager';
 import * as timelineNotification from '../../../src/modules/timeline/timeline-notification';
 import { ENTITY_TYPE_TIMELINE_EVENT, TIMELINE_KINDS } from '../../../src/modules/timeline/timeline-types';
@@ -772,6 +774,14 @@ describe('Incident and case timeline', () => {
       expect(manual).toHaveLength(2);
     });
 
+    it('should refuse an empty external id, which would add the event again on every call', async () => {
+      const input = { container_id: caseIncident.id, event_time: '2026-02-05T12:30:00.000Z', title: 'Ticket opened' };
+      await queryAsAdminWithError({ query: TIMELINE_EVENT_ADD, variables: { input: { ...input, external_id: '' } } }, 'The external id of a timeline event cannot be empty');
+      await queryAsAdminWithError({ query: TIMELINE_EVENT_ADD, variables: { input: { ...input, external_id: '   ' } } }, 'The external id of a timeline event cannot be empty');
+      const manual = await listTimeline(caseIncident.id, { sources: ['manual'] });
+      expect(manual.map((event) => event.title)).not.toContain('Ticket opened');
+    });
+
     it('should edit a manual event and validate its window', async () => {
       const edited = await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_EDIT, variables: { id: manualEventId, input: { title: 'Hosts isolated by the SOC', annotation: 'Confirmed by the EDR console' } } });
       expect(edited.data.timelineEventEdit).toMatchObject({ title: 'Hosts isolated by the SOC', annotation: 'Confirmed by the EDR console' });
@@ -835,6 +845,29 @@ describe('Incident and case timeline', () => {
       expect((await listTimeline(caseIncident.id, { includeHidden: true })).find((e) => e.id === relationEvents[0].id)).toBeDefined();
       const summary = await queryAsAdminWithSuccess({ query: CONTAINER_TIMELINE_SUMMARY, variables: { id: caseIncident.id } });
       expect(summary.data.containerTimelineSummary).toMatchObject({ hidden_count: 1, pinned_count: 1, manual_count: 2, can_edit: true, truncated: false });
+    });
+
+    it('should publish every live update of a change as its author, who does not receive them', async () => {
+      const editTopic = BUS_TOPICS[ENTITY_TYPE_TIMELINE_EVENT].EDIT_TOPIC;
+      const [technique] = (await loadStoredTimelineEvents(testContext, caseIncident.id)).filter((event) => event.kind === 'technique_used');
+      const published = vi.spyOn(redis, 'notify');
+      try {
+        // A containment milestone earlier than the current one moves the anchors: the anchors update follows the event update
+        const added = await queryAsAdminWithSuccess({
+          query: TIMELINE_EVENT_ADD,
+          variables: { input: { container_id: caseIncident.id, event_time: '2026-02-05T09:00:00.000Z', title: 'Earlier containment', kind: 'containment', lane: 'response' } },
+        });
+        await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: added.data.timelineEventAdd.id } });
+        // A regeneration asked by the analyst that rewrites an event
+        await elUpdate(testContext, technique._index, technique.internal_id, { doc: { description: 'Outdated description' } });
+        await queryAsAdminWithSuccess({ query: TIMELINE_REGENERATE, variables: { containerId: caseIncident.id } });
+        const updates = published.mock.calls.filter(([topic, update]) => topic === editTopic && update.container_id === caseIncident.id);
+        expect(updates.map(([, update]) => update.update_type)).toEqual(expect.arrayContaining(['manual', 'anchors', 'derived']));
+        // The subscription leaves out the updates published by its own user
+        expect(updates.map(([, , author]) => author.id)).toEqual(updates.map(() => ADMIN_USER.id));
+      } finally {
+        published.mockRestore();
+      }
     });
   });
 

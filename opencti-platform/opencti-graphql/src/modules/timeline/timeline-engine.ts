@@ -703,6 +703,8 @@ export const refreshTimelineContributions = async (
     // Set by a regeneration only: computed_at tells when the timeline was last generated from the knowledge, and the
     // consistency pass regenerates the timelines whose computed_at is too old, however often analysts curate them
     regenerated?: boolean;
+    // The user whose change moved the anchors: like his other updates, he does not receive this one
+    actor?: AuthUser;
   } = {},
 ): Promise<TimelineContributionsResult> => {
   const events = opts.events ?? await loadStoredTimelineEvents(context, container.internal_id);
@@ -734,7 +736,7 @@ export const refreshTimelineContributions = async (
   // The first computation (backfill) is not a change an analyst wants to be notified about
   const hadAnchors = !!previousAnchors?.computed_at;
   if (changedAnchors.length > 0) {
-    await publishTimelineUpdate({ container_id: container.internal_id, update_type: 'anchors', changed_event_ids: [], anchors });
+    await publishTimelineUpdate({ container_id: container.internal_id, update_type: 'anchors', changed_event_ids: [], anchors }, opts.actor);
     if (hadAnchors && opts.notifyAnchors !== false) {
       await notifyTimelineAnchorsChanged(context, container.internal_id, changedAnchors, anchors)
         .catch((error) => logApp.error('[TIMELINE] Unable to notify anchor changes', { cause: error, containerId: container.internal_id }));
@@ -853,7 +855,7 @@ export interface TimelineRegenerationResult {
   duration_ms: number;
 }
 
-const regenerateLocked = async (context: AuthContext, container: AnyStoreElement): Promise<TimelineRegenerationResult> => {
+const regenerateLocked = async (context: AuthContext, container: AnyStoreElement, actor?: AuthUser): Promise<TimelineRegenerationResult> => {
   const start = Date.now();
   const containerId = container.internal_id;
   const { input, truncated: inputTruncated } = await loadTimelineDerivationInput(context, container);
@@ -1034,6 +1036,7 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
     cappedAnnotatedEvents,
     elements,
     regenerated: true,
+    actor,
   });
   if (capped) {
     // The changes made until the next regeneration recompute the anchors from the stored events and these bounds
@@ -1051,7 +1054,7 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
       removed_events: toRemovedTimelineEvents(staleEvents.slice(0, TIMELINE_UPDATE_MAX_EVENTS)),
       truncated: refreshEveryReader || changedDocs.length > TIMELINE_UPDATE_MAX_EVENTS || staleEvents.length > TIMELINE_UPDATE_MAX_EVENTS,
       anchors,
-    });
+    }, actor);
   }
   return {
     container_id: containerId,
@@ -1087,12 +1090,13 @@ export const withTimelineLock = async <T>(containerId: string, write: () => Prom
  * Regenerate the derived events of a container. Idempotent: derived events have deterministic ids,
  * unchanged events are not rewritten and analyst fields survive. Returns null when another
  * regeneration of the same container is already running, or, with `skipIfGenerated`, when a
- * concurrent call generated the timeline while this one was waiting for the lock.
+ * concurrent call generated the timeline while this one was waiting for the lock. The updates of a regeneration asked
+ * by a user (`actor`) are published as his, so that he does not receive them, like the updates of his other changes.
  */
 export const regenerateContainerTimeline = async (
   context: AuthContext,
   containerId: string,
-  opts: { wait?: boolean; skipIfGenerated?: boolean } = {},
+  opts: { wait?: boolean; skipIfGenerated?: boolean; actor?: AuthUser } = {},
 ): Promise<TimelineRegenerationResult | null> => {
   const container = await internalLoadById<AnyStoreElement>(context, SYSTEM_USER, containerId, { type: TIMELINE_CONTAINER_TYPES });
   if (!container) {
@@ -1111,7 +1115,7 @@ export const regenerateContainerTimeline = async (
       return null;
     }
     if (opts.skipIfGenerated && current[ATTRIBUTE_TIMELINE_ANCHORS]?.computed_at) return null;
-    return await regenerateLocked(context, current);
+    return await regenerateLocked(context, current, opts.actor);
   } catch (error: any) {
     if (error?.name === TYPE_LOCK_ERROR) {
       // The running regeneration may have started before the latest changes: another one is scheduled

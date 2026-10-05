@@ -181,6 +181,11 @@ const validateWindow = (eventTime: string, eventEndTime: string | null | undefin
     }
   }
 };
+
+// The external id is the idempotency key of a manual event: an empty one would match nothing and add the event again on every call
+const validateExternalId = (externalId: string | null | undefined) => {
+  if (typeof externalId === 'string' && externalId.trim().length === 0) throw FunctionalError('The external id of a timeline event cannot be empty');
+};
 // endregion
 
 // region reads
@@ -725,7 +730,7 @@ const afterTimelineChange = async (
   changedIds: string[],
   removed: StoredTimelineEvent[] = [],
 ) => {
-  const { anchors } = await refreshTimelineContributions(context, container);
+  const { anchors } = await refreshTimelineContributions(context, container, { actor: user });
   await publishTimelineUpdate({
     container_id: container.internal_id,
     update_type: updateType,
@@ -824,6 +829,7 @@ const docFromStored = (event: StoredTimelineEvent, container: AnyStoreElement, p
 export const addTimelineEvent = async (context: AuthContext, user: AuthUser, input: TimelineEventAddInput) => {
   const container = await loadEditableTimelineContainer(context, user, input.container_id);
   validateWindow(input.event_time, input.event_end_time);
+  validateExternalId(input.external_id);
   const markingIds = await resolveMarkingIds(context, input.objectMarking ?? []);
   validateMarkings(user, markingIds);
   // Checked before waiting for the lock, read again under it for its markings
@@ -1034,7 +1040,7 @@ export const updateTimelineSettings = async (context: AuthContext, user: AuthUse
 
 export const regenerateTimeline = async (context: AuthContext, user: AuthUser, containerId: string): Promise<TimelineRegenerationResult | null> => {
   const container = await loadEditableTimelineContainer(context, user, containerId);
-  return regenerateContainerTimeline(context, container.internal_id, { wait: true });
+  return regenerateContainerTimeline(context, container.internal_id, { wait: true, actor: user });
 };
 
 /** Write the imported contributions and return the ids of the milestones created; runs under the timeline lock of the container. */
@@ -1277,7 +1283,7 @@ export const importTimelineExtension = async (context: AuthContext, user: AuthUs
       : {};
     return writeImportedContributions(context, user, locked, contributions, resolved);
   });
-  const regenerated = await regenerateContainerTimeline(context, container.internal_id, { wait: true });
+  const regenerated = await regenerateContainerTimeline(context, container.internal_id, { wait: true, actor: user });
   if (createdMilestoneIds.length > 0) {
     notifyMilestonesAdded(context, user, container.internal_id, createdMilestoneIds)
       .catch((error) => logApp.error('[TIMELINE] Unable to notify imported milestones', { cause: error, containerId: container.internal_id }));
