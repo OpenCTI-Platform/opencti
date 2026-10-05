@@ -238,12 +238,8 @@ const GraphToolbarRemoveConfirm = ({
             variant="outlined"
             style={{ marginTop: 20 }}
           >
-            {/* Same layout as ReportDeletion: the message slot scrolls and clips its edges,
-                so the inset keeps the box and the focus ring painted outside it in view. */}
             <Stack spacing={1} pl={1}>
               <AlertTitle>{t_i18n('Cascade delete')}</AlertTitle>
-              {/* The library Checkbox carries its own label: a MUI FormControlLabel pulls its
-                  control 11px left for MUI's padding, which clipped this box out of sight. */}
               <Checkbox
                 label={t_i18n('Delete the element if no other containers contain it')}
                 checked={andDelete}

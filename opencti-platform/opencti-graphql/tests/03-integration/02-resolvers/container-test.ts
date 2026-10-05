@@ -28,6 +28,59 @@ const REPORT_RELATIONSHIPS_QUERY = gql`
   }
 `;
 
+const REPORT_RELATIONSHIPS_CONTAINER_QUERY = gql`
+  query reportRelationships($id: String!) {
+    container(id: $id) {
+      id
+      objects(types: ["stix-core-relationship"], first: 100) {
+        edges {
+          node {
+            ... on StixCoreRelationship {
+              id
+              relationship_type
+              confidence
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+const SHARED_REPORT_RELATIONSHIP_QUERY = gql`
+  query sharedReportRelationship($id: String!) {
+    stixCoreRelationship(id: $id) {
+      id
+      from { ... on BasicObject { id } }
+      to { ... on BasicObject { id } }
+    }
+  }
+`;
+
+const REPORT_CREATE_MUTATION = gql`
+  mutation reportRelationshipListCreate($input: ReportAddInput!) {
+    reportAdd(input: $input) { id }
+  }
+`;
+
+const REPORT_RELATION_ADD_MUTATION = gql`
+  mutation reportRelationshipListAdd($id: ID!, $input: StixRefRelationshipAddInput!) {
+    reportEdit(id: $id) { relationAdd(input: $input) { id } }
+  }
+`;
+
+const REPORT_RELATION_DELETE_MUTATION = gql`
+  mutation reportRelationshipListRemove($id: ID!, $toId: StixRef!) {
+    reportEdit(id: $id) { relationDelete(toId: $toId, relationship_type: "object") { id } }
+  }
+`;
+
+const REPORT_DELETE_MUTATION = gql`
+  mutation reportRelationshipListDelete($id: ID!) {
+    reportEdit(id: $id) { delete }
+  }
+`;
+
 type ReportRelationship = {
   id: string;
   relationship_type: string;
@@ -225,24 +278,7 @@ describe('Container resolver standard behavior', () => {
 
   it('should list and paginate only the core relationships referenced by a report', async () => {
     const containerResult = await queryAsAdmin({
-      query: gql`
-        query reportRelationships($id: String!) {
-          container(id: $id) {
-            id
-            objects(types: ["stix-core-relationship"], first: 100) {
-              edges {
-                node {
-                  ... on StixCoreRelationship {
-                    id
-                    relationship_type
-                    confidence
-                  }
-                }
-              }
-            }
-          }
-        }
-      `,
+      query: REPORT_RELATIONSHIPS_CONTAINER_QUERY,
       variables: { id: REPORT_RAW_ID },
     });
     expect(containerResult.errors).toBeUndefined();
@@ -308,15 +344,7 @@ describe('Container resolver standard behavior', () => {
 
   it('should require explicit report membership and preserve a shared relationship when removing it', async () => {
     const relationshipResult = await queryAsAdmin({
-      query: gql`
-        query sharedReportRelationship($id: String!) {
-          stixCoreRelationship(id: $id) {
-            id
-            from { ... on BasicObject { id } }
-            to { ... on BasicObject { id } }
-          }
-        }
-      `,
+      query: SHARED_REPORT_RELATIONSHIP_QUERY,
       variables: { id: 'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02' },
     });
     expect(relationshipResult.errors).toBeUndefined();
@@ -325,11 +353,7 @@ describe('Container resolver standard behavior', () => {
     const reportIds: string[] = [];
     const createReport = async (name: string, objects: string[]) => {
       const result = await queryAsAdmin({
-        query: gql`
-          mutation reportRelationshipListCreate($input: ReportAddInput!) {
-            reportAdd(input: $input) { id }
-          }
-        `,
+        query: REPORT_CREATE_MUTATION,
         variables: { input: { name, published: '2020-02-26T00:51:35.000Z', objects } },
       });
       if (result.data?.reportAdd?.id) reportIds.push(result.data.reportAdd.id);
@@ -353,11 +377,7 @@ describe('Container resolver standard behavior', () => {
       expect(initiallyEmpty.pageInfo.globalCount).toEqual(0);
 
       const addResult = await queryAsAdmin({
-        query: gql`
-          mutation reportRelationshipListAdd($id: ID!, $input: StixRefRelationshipAddInput!) {
-            reportEdit(id: $id) { relationAdd(input: $input) { id } }
-          }
-        `,
+        query: REPORT_RELATION_ADD_MUTATION,
         variables: { id: reportId, input: { toId: relationship.id, relationship_type: 'object' } },
       });
       expect(addResult.errors).toBeUndefined();
@@ -366,11 +386,7 @@ describe('Container resolver standard behavior', () => {
       expect(afterAdd.pageInfo.globalCount).toEqual(1);
 
       const removeResult = await queryAsAdmin({
-        query: gql`
-          mutation reportRelationshipListRemove($id: ID!, $toId: StixRef!) {
-            reportEdit(id: $id) { relationDelete(toId: $toId, relationship_type: "object") { id } }
-          }
-        `,
+        query: REPORT_RELATION_DELETE_MUTATION,
         variables: { id: reportId, toId: relationship.id },
       });
       expect(removeResult.errors).toBeUndefined();
@@ -383,11 +399,7 @@ describe('Container resolver standard behavior', () => {
     } finally {
       for (const reportId of reportIds) {
         const deleted = await queryAsAdmin({
-          query: gql`
-            mutation reportRelationshipListDelete($id: ID!) {
-              reportEdit(id: $id) { delete }
-            }
-          `,
+          query: REPORT_DELETE_MUTATION,
           variables: { id: reportId },
         });
         expect(deleted.errors).toBeUndefined();
