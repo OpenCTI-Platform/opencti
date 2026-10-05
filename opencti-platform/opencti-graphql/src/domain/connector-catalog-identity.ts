@@ -17,8 +17,9 @@ import { SYSTEM_USER } from '../utils/access';
 
 // Identity of a connector in the catalog, resolved for every connector, managed or not.
 // Order of trust: the composer contract, a catalog entry chosen by hand, the slug the
-// connector reported at registration, then a name matching exactly one catalog entry.
-// A wrong logo is worse than no logo: an ambiguous name resolves to nothing.
+// connector reported at registration, then a name matching exactly one catalog entry: equal to
+// its title or its slug, otherwise containing its title or contained in it. A wrong logo is worse
+// than no logo: an ambiguous name resolves to nothing.
 
 export interface ConnectorCatalogIdentity {
   slug: string;
@@ -32,7 +33,11 @@ export type CatalogIdentityContract = Pick<BasicStoreEntityCatalogContract, 'slu
 
 interface IndexedCatalogContract {
   contract: CatalogIdentityContract;
+  // Keys of the title, compared for equality and for containment.
   keys: string[];
+  // The slug names the image of the entry (opencti/connector-<slug>) and deployers often name the
+  // connector after it: a name equal to the slug designates the entry, a name containing it does not.
+  slugKey: string;
   tokens: string[];
 }
 
@@ -95,7 +100,8 @@ export const identityTokens = (value: string | null | undefined): string[] => {
 
 const indexContract = (contract: CatalogIdentityContract): IndexedCatalogContract => ({
   contract,
-  keys: [...new Set([...identityKeys(contract.title), compactIdentityKey(contract.slug)])].filter((key) => key.length > 1),
+  keys: identityKeys(contract.title),
+  slugKey: compactIdentityKey(contract.slug),
   tokens: identityTokens(contract.title),
 });
 
@@ -138,7 +144,7 @@ export const matchCatalogContractsByName = (name: string | null | undefined, can
   if (nameKeys.length === 0) {
     return [];
   }
-  const exactMatches = candidates.filter((indexed) => indexed.keys.some((key) => nameKeys.includes(key)));
+  const exactMatches = candidates.filter((indexed) => nameKeys.includes(indexed.slugKey) || indexed.keys.some((key) => nameKeys.includes(key)));
   if (exactMatches.length > 0) {
     return exactMatches.map((indexed) => indexed.contract);
   }

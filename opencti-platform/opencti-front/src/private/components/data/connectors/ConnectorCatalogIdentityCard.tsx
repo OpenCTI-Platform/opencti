@@ -10,11 +10,12 @@ import Tag from '../../../../components/common/tag/Tag';
 import type { Theme } from '../../../../components/Theme';
 import useGranted, { MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
 import ConnectorCatalogIdentityDialog from './ConnectorCatalogIdentityDialog';
-import { canIdentifyConnector, catalogIdentityHint, catalogIdentityHintDescription, ConnectorCatalogIdentityValue } from './utils/connectorCatalogIdentity';
+import { canIdentifyConnector, catalogIdentityHint, catalogIdentityHintDescription, ConnectorCatalogIdentityValue, isSameConnectorName } from './utils/connectorCatalogIdentity';
 
 interface ConnectorCatalogIdentityCardProps {
   connector: {
     readonly id: string;
+    readonly name: string;
     readonly connector_type?: string | null;
     readonly is_managed?: boolean | null;
     readonly built_in?: boolean | null;
@@ -39,6 +40,8 @@ const ConnectorCatalogIdentityCard: FunctionComponent<ConnectorCatalogIdentityCa
   }
 
   const hint = catalogIdentityHint(identity?.source, t_i18n);
+  // The page header shows the name of the connector: the catalog title is only repeated when it differs.
+  const showTitle = !!identity && !isSameConnectorName(identity.title, connector.name);
   const dialog = canManage && (
     <ConnectorCatalogIdentityDialog open={dialogOpen} onClose={() => setDialogOpen(false)} connector={connector} />
   );
@@ -75,10 +78,19 @@ const ConnectorCatalogIdentityCard: FunctionComponent<ConnectorCatalogIdentityCa
         )}
       >
         <Stack gap={1.5}>
-          {identity.short_description && (
-            <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
-              {identity.short_description}
-            </Typography>
+          {(showTitle || identity.short_description) && (
+            <Stack gap={0.5}>
+              {showTitle && (
+                <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                  {identity.title}
+                </Typography>
+              )}
+              {identity.short_description && (
+                <Typography variant="body2" sx={{ color: theme.palette.text.secondary }}>
+                  {identity.short_description}
+                </Typography>
+              )}
+            </Stack>
           )}
           <Stack direction="row" gap={1} flexWrap="wrap">
             <Button

@@ -4,6 +4,7 @@ import {
   buildCatalogIdentityIndex,
   type CatalogIdentityContract,
   compactIdentityKey,
+  connectorCatalogIdentity,
   connectorCatalogIdentityOptions,
   connectorCatalogIdentityUpdate,
   findCatalogContractByName,
@@ -179,6 +180,20 @@ describe('Connector catalog identity - name match', () => {
     expect(findCatalogContractByName(duplicated, 'Intel471', 'EXTERNAL_IMPORT')).toBeUndefined();
   });
 
+  it('should identify a name equal to the slug of a single entry', () => {
+    // Kubernetes and Helm deployments often name a connector after its image, opencti/connector-<slug>.
+    expect(findCatalogContractByName(index, 'cisa-kev', 'EXTERNAL_IMPORT')?.slug).toEqual('cisa-kev');
+    expect(findCatalogContractByName(index, 'opencti', 'EXTERNAL_IMPORT')?.slug).toEqual('opencti');
+    expect(findCatalogContractByName(index, 'export-file-txt', 'INTERNAL_EXPORT_FILE')?.slug).toEqual('export-file-txt');
+  });
+
+  it('should never identify a name by containment of a slug', () => {
+    // "opencti" is the slug of OpenCTI Datasets only, but a name containing it designates neither entry.
+    expect(findCatalogContractByName(index, 'My OpenCTI mirror', 'EXTERNAL_IMPORT')).toBeUndefined();
+    expect(findCatalogContractByName(index, 'cisa-kev-mirror', 'EXTERNAL_IMPORT')).toBeUndefined();
+    expect(findCatalogContractByName(index, 'mitre-backup', 'EXTERNAL_IMPORT')).toBeUndefined();
+  });
+
   it('should not identify short or unrelated names by containment', () => {
     expect(findCatalogContractByName(index, 'S3', 'EXTERNAL_IMPORT')?.slug).toEqual('s3');
     expect(findCatalogContractByName(index, 'S3 backups', 'EXTERNAL_IMPORT')).toBeUndefined();
@@ -232,8 +247,21 @@ describe('Connector catalog identity - resolution order', () => {
     expect(resolveConnectorCatalogIdentity({ ...baseConnector, name: 'In-house enrichment' }, index)).toBeNull();
   });
 
+  it('should skip catalog entries without slug or title and keep the first entry of a slug', () => {
+    const partial = buildCatalogIdentityIndex([
+      contract('', 'No slug', 'EXTERNAL_IMPORT'),
+      contract('no-title', '', 'EXTERNAL_IMPORT'),
+      contract('urlhaus', 'URLhaus', 'EXTERNAL_IMPORT', '/logo/first.png'),
+      contract('URLhaus', 'URLhaus copy', 'EXTERNAL_IMPORT', '/logo/second.png'),
+    ]);
+    expect([...partial.bySlug.keys()]).toEqual(['urlhaus']);
+    expect(partial.byConnectorType.get('EXTERNAL_IMPORT')?.map((indexed) => indexed.contract.slug)).toEqual(['urlhaus']);
+    expect(resolveConnectorCatalogIdentity({ ...baseConnector, name: 'No slug' }, partial)).toBeNull();
+    expect(resolveConnectorCatalogIdentity({ ...baseConnector, slug: 'urlhaus' }, partial)?.logo).toEqual('/logo/first.png');
+  });
+
   it('should return a null logo when the catalog entry has none', () => {
-    const withoutLogo = buildCatalogIdentityIndex([{ slug: 'threatfox', title: 'ThreatFox', connector_type: 'EXTERNAL_IMPORT', logo_uri: '' }]);
+    const withoutLogo = buildCatalogIdentityIndex([{ slug: 'threatfox', title: 'ThreatFox', connector_type: 'EXTERNAL_IMPORT', logo_uri: '', short_description: '' }]);
     expect(resolveConnectorCatalogIdentity({ ...baseConnector, slug: 'threatfox' }, withoutLogo)?.logo).toBeNull();
   });
 });
@@ -303,6 +331,22 @@ describe('Connector catalog identity - loading', () => {
     const identities = await batchConnectorCatalogIdentities(testContext, testUser, [{ ...baseConnector, built_in: true }]);
     expect(fullEntitiesList).not.toHaveBeenCalled();
     expect(identities).toEqual([null]);
+  });
+
+  it('should resolve a connector through the loader of the request', async () => {
+    const resolved = { slug: 'urlhaus', title: 'URLhaus', logo: null, short_description: null, source: ConnectorCatalogIdentitySource.Name };
+    const load = vi.fn().mockResolvedValue(resolved);
+    const context = { ...testContext, batch: { connectorCatalogIdentityBatchLoader: { load } } } as unknown as AuthContext;
+    const connector = { ...baseConnector, name: 'Abuse.ch URLhaus' };
+    await expect(connectorCatalogIdentity(context, testUser, connector)).resolves.toBe(resolved);
+    expect(load).toHaveBeenCalledWith(connector);
+    expect(fullEntitiesList).not.toHaveBeenCalled();
+  });
+
+  it('should resolve a connector without a request loader', async () => {
+    vi.mocked(fullEntitiesList).mockResolvedValue([storedContract('urlhaus', 'URLhaus', '6.9.0', '/logo/urlhaus.png')] as never);
+    const identity = await connectorCatalogIdentity(testContext, testUser, { ...baseConnector, name: 'Abuse.ch URLhaus' });
+    expect(identity).toMatchObject({ slug: 'urlhaus', logo: '/logo/urlhaus.png', source: ConnectorCatalogIdentitySource.Name });
   });
 
   it('should list the catalog entries as options sorted by title', async () => {

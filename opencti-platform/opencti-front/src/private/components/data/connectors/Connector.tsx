@@ -236,6 +236,9 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
   });
 
   const connectorConfig = getConnectorConfig();
+  const typeLabel = connector.connector_type
+    ? getConnectorMetadata(connector.connector_type as IngestionConnectorType, t_i18n).label
+    : '';
   const connectorTriggerStatus = getConnectorTriggerStatus(connectorConfig);
   const connectorOnlyContextualStatus = getConnectorOnlyContextualStatus(connectorConfig);
 
@@ -311,7 +314,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 </Label>
                 <Tag
                   key={connector.connector_type}
-                  label={connector.connector_type ?? ''}
+                  label={typeLabel}
                 />
               </Grid>
               <Grid item xs={6}>
@@ -706,6 +709,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     </>
   ), [
     connector,
+    typeLabel,
     connectorFiltersEnabled,
     connectorOnlyContextualStatus,
     connectorTriggerStatus,
@@ -816,9 +820,6 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
   }, [connector.is_managed, connector.manager_contract_definition, connector.manager_contract_configuration]);
 
   const TypeIcon = getConnectorTypeIcon(connector.connector_type ?? '');
-  const typeLabel = connector.connector_type
-    ? getConnectorMetadata(connector.connector_type as IngestionConnectorType, t_i18n).label
-    : '';
   // Composer contract, catalog entry chosen by hand, reported slug or unique name match: the same
   // logo as on the connectors grid and the deployed integrations.
   const contractLogo = connector.catalog_identity?.logo;

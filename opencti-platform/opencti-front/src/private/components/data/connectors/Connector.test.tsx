@@ -181,10 +181,48 @@ describe('Connector', () => {
         expect(screen.getByText('About this connector')).toBeTruthy();
       });
       expect(screen.getByAltText('Abuse.ch URLhaus').getAttribute('src')).toBe('/logo/urlhaus.png');
+      expect(screen.getByText('URLhaus')).toBeTruthy();
       expect(screen.getByText('Malicious URLs')).toBeTruthy();
       expect(screen.getByText('Identified by name')).toBeTruthy();
       expect(screen.getByRole('link', { name: 'View in catalog' }).getAttribute('href')).toBe('/dashboard/integrations/catalog/urlhaus');
       expect(screen.getByRole('button', { name: 'Change catalog entry' })).toBeTruthy();
+    });
+
+    it('should name the catalog entry chosen for a connector whose name says otherwise', async () => {
+      await renderConnector({
+        name: 'Feed A',
+        catalog_identity: { slug: 'mitre-atlas', title: 'MITRE ATLAS', logo: '/logo/atlas.png', short_description: null, source: 'manual' },
+      }, connectorAdmin);
+
+      await waitFor(() => {
+        expect(screen.getByText('Chosen by hand')).toBeTruthy();
+      });
+      expect(screen.getByText('Feed A')).toBeTruthy();
+      expect(screen.getByText('MITRE ATLAS')).toBeTruthy();
+    });
+
+    it('should not repeat a catalog title equal to the connector name', async () => {
+      await renderConnector({
+        name: 'URLhaus',
+        catalog_identity: { slug: 'urlhaus', title: 'URLhaus', logo: '/logo/urlhaus.png', short_description: 'Malicious URLs', source: 'reported' },
+      }, connectorAdmin);
+
+      await waitFor(() => {
+        expect(screen.getByText('Malicious URLs')).toBeTruthy();
+      });
+      // Only the page header carries the name.
+      expect(screen.getAllByText('URLhaus')).toHaveLength(1);
+    });
+
+    it('should show the label of the connector type in the basic information', async () => {
+      await renderConnector({ connector_type: 'INTERNAL_ENRICHMENT', catalog_identity: null }, connectorAdmin);
+
+      await waitFor(() => {
+        expect(screen.getByText('Basic information')).toBeTruthy();
+      });
+      // Page header and basic information name the type the same way.
+      expect(screen.getAllByText('Internal enrichment')).toHaveLength(2);
+      expect(screen.queryByText('INTERNAL_ENRICHMENT')).toBeNull();
     });
 
     it('should offer to identify a connector the platform could not recognise', async () => {
