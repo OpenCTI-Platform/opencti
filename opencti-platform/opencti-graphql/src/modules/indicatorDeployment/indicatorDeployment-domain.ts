@@ -215,6 +215,12 @@ export interface HitsSightingValues {
   last_seen: Date;
 }
 
+// The hit counts are 32-bit integers (mapping and API): they stop at the largest one instead of failing the report,
+// so the replay watermark and the sighting keep moving once it is reached.
+export const HIT_COUNT_MAX = 2147483647;
+
+export const addHits = (count: number, newHits: number) => Math.min(HIT_COUNT_MAX, count + newHits);
+
 /**
  * Values of the hits sighting, rebuilt from the deployment (the durable record of the hits) so that a sighting
  * left behind by a failed write is repaired: the count never goes below the deployment hit count and never
@@ -231,12 +237,12 @@ export const computeHitsSightingValues = (
   const firstHit = toDate(deployment.first_hit_at, reportFirstHit);
   const lastHit = toDate(deployment.last_hit_at, reportLastHit);
   if (!sighting) {
-    return { attribute_count: Math.max(deploymentCount, newHits), first_seen: firstHit, last_seen: lastHit };
+    return { attribute_count: addHits(0, Math.max(deploymentCount, newHits)), first_seen: firstHit, last_seen: lastHit };
   }
   const sightingFirst = toDate(sighting.first_seen, firstHit);
   const sightingLast = toDate(sighting.last_seen, lastHit);
   return {
-    attribute_count: Math.max((sighting.attribute_count ?? 0) + newHits, deploymentCount),
+    attribute_count: Math.max(addHits(sighting.attribute_count ?? 0, newHits), Math.min(deploymentCount, HIT_COUNT_MAX)),
     first_seen: sightingFirst.getTime() <= firstHit.getTime() ? sightingFirst : firstHit,
     last_seen: sightingLast.getTime() >= lastHit.getTime() ? sightingLast : lastHit,
   };
@@ -764,7 +770,7 @@ export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, 
       }, { grantedRefsFromInput: true }) as unknown as HitsDeploymentState;
     } else if (!replay) {
       const patch: Record<string, unknown> = {
-        hit_count: (existing.hit_count ?? 0) + args.count,
+        hit_count: addHits(existing.hit_count ?? 0, args.count),
         last_hit_at: lastHit,
         last_hit_report_ids: reportIds,
         last_sync_at: now,
@@ -1084,12 +1090,17 @@ export const flagExpiredDeployments = async (context: AuthContext, user: AuthUse
   await BluePromise.map([...toFlag.values()], async (relation) => {
     try {
       // A report can land between the scan and this write: recheck under the pair lock of the report path.
-      // A relation changed since the scan is left to the next run, which sees its new state.
-      const lock = await lockResources([pairLockKey(relation.fromId, relation.toId)]);
+      // A relation changed since the scan is left to the next run, which sees its new state. The indicator is
+      // locked too (its edits lock it) and read again: one renewed since the scan keeps its deployments live.
+      const lock = await lockResources([pairLockKey(relation.fromId, relation.toId), relation.fromId]);
       try {
         const current = await findDeployedOn(context, SYSTEM_USER, relation.fromId, relation.toId);
         const unchanged = current && String(current.updated_at) === String(relation.updated_at);
-        if (current && unchanged && LIVE_DEPLOYMENT_STATUSES.includes(current.deployment_status)) {
+        const indicator = await storeLoadById<BasicStoreEntityIndicator>(context, SYSTEM_USER, relation.fromId, ENTITY_TYPE_INDICATOR);
+        const withdrawnBeforeThreshold = (current as { revoked?: boolean } | undefined)?.revoked === true
+          && !!current?.updated_at && new Date(current.updated_at as unknown as string).getTime() < new Date(threshold).getTime();
+        const eligible = withdrawnBeforeThreshold || (!!indicator && isExpiredForRemoval(indicator, threshold));
+        if (current && unchanged && eligible && LIVE_DEPLOYMENT_STATUSES.includes(current.deployment_status)) {
           const { element } = await patchAttribute(context, user, current.internal_id, RELATION_DEPLOYED_ON, { deployment_status: DEPLOYMENT_STATUS_EXPIRED });
           await notifyRelationEdit(user, element);
           flagged += 1;

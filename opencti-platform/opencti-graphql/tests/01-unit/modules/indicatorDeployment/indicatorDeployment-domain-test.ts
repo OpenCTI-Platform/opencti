@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/index';
 import {
+  addHits,
   computeDeploymentChange,
   computeIndicatorDeploymentCounters,
   computeHitsSightingValues,
   computeProvenShare,
+  HIT_COUNT_MAX,
   HIT_REPORT_IDS_MAX,
   hitReportIdsAfter,
   isExpiredForRemoval,
@@ -166,6 +168,13 @@ describe('hits sighting values', () => {
 
   it('should rebuild a missing sighting from the deployment, original first hit included', () => {
     expect(computeHitsSightingValues(undefined, deployment, 0, REPORT_FIRST, LAST)).toEqual({ attribute_count: 12, first_seen: FIRST, last_seen: LAST });
+  });
+  it('should stop the hit counts at the largest 32-bit integer instead of overflowing them', () => {
+    expect(addHits(HIT_COUNT_MAX - 1, 1)).toEqual(HIT_COUNT_MAX);
+    expect(addHits(HIT_COUNT_MAX, 5)).toEqual(HIT_COUNT_MAX);
+    expect(addHits(10, 5)).toEqual(15);
+    const full = { attribute_count: HIT_COUNT_MAX - 2, first_seen: FIRST.toISOString(), last_seen: LAST.toISOString() };
+    expect(computeHitsSightingValues(full, { ...deployment, hit_count: HIT_COUNT_MAX }, 7, REPORT_FIRST, LAST).attribute_count).toEqual(HIT_COUNT_MAX);
   });
   it('should repair a sighting left behind by a failed write on a replay', () => {
     const stale = { attribute_count: 7, first_seen: FIRST.toISOString(), last_seen: '2026-10-02T10:00:00.000Z' };
