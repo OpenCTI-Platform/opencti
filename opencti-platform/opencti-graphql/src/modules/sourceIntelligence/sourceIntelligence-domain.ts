@@ -47,6 +47,7 @@ import {
   type BasicStoreEntitySourceRecommendation,
   ENTITY_TYPE_SOURCE,
   ENTITY_TYPE_SOURCE_RECOMMENDATION,
+  RECOMMENDATION_QUARANTINE,
   RECOMMENDATION_STATUS_APPLIED,
   RECOMMENDATION_STATUS_APPLYING,
   RECOMMENDATION_STATUS_REVERTING,
@@ -75,6 +76,7 @@ import {
 } from './sourceIntelligence-store';
 import { computeCostPerActionable, normalizeCostToDays, toSnapshotDate } from './sourceIntelligence-scoring';
 import { buildSourceResolver, isProvenanceAttributeAvailable, type SourceResolver } from './sourceIntelligence-provenance';
+import { quarantinedConnectorUserId, releaseQuarantine } from './sourceIntelligence-quarantine';
 import {
   ATTRIBUTE_ASSERTIONS,
   ATTRIBUTE_LAST_ASSERTED_AT,
@@ -869,6 +871,38 @@ const collectSourceCandidates = async (context: AuthContext, settings: SourceInt
 
 const REVERTABLE_RECOMMENDATION_STATUSES = [RECOMMENDATION_STATUS_APPLYING, RECOMMENDATION_STATUS_APPLIED, RECOMMENDATION_STATUS_REVERTING];
 
+/**
+ * Lifts the quarantine of a connector or feed source about to be removed. The service account of a connector outlives
+ * it: its user gets back the draft context recorded when the quarantine was applied, never staying routed to a
+ * quarantine draft that no source enforces anymore. A user moved to another draft context since is left there.
+ */
+export const releaseQuarantineOfRemovedSource = async (context: AuthContext, source: BasicStoreEntitySource) => {
+  if (!source.quarantined) {
+    return;
+  }
+  const userId = quarantinedConnectorUserId(source);
+  const user = userId ? await storeLoadById<BasicStoreEntity & { draft_context?: string | null }>(context, SYSTEM_USER, userId, ENTITY_TYPE_USER) : undefined;
+  let connectorUser: { userId: string; draftContext: string } | undefined;
+  if (userId && user && user.draft_context === source.quarantine_draft_id) {
+    const recommendations = await fullEntitiesList<BasicStoreEntitySourceRecommendation>(context, SYSTEM_USER, [ENTITY_TYPE_SOURCE_RECOMMENDATION], {
+      filters: {
+        mode: 'and',
+        filters: [
+          { key: ['source_id'], values: [source.internal_id], operator: 'eq', mode: 'or' },
+          { key: ['recommendation_kind'], values: [RECOMMENDATION_QUARANTINE], operator: 'eq', mode: 'or' },
+          { key: ['recommendation_status'], values: REVERTABLE_RECOMMENDATION_STATUSES, operator: 'eq', mode: 'or' },
+        ],
+        filterGroups: [],
+      },
+    } as any);
+    const revert = recommendations
+      .map((recommendation) => parseJsonRecord(recommendation.revert_payload))
+      .find((payload) => payload.target === 'connector_user' && payload.user_id === userId);
+    connectorUser = { userId, draftContext: typeof revert?.previous_draft_context === 'string' ? revert.previous_draft_context : '' };
+  }
+  await releaseQuarantine(context, SOURCE_INTELLIGENCE_MANAGER_USER, source.internal_id, connectorUser);
+};
+
 const loadSourceIdsWithRevertableChanges = async (context: AuthContext, sourceIds: string[]) => {
   if (sourceIds.length === 0) {
     return new Set<string>();
@@ -1000,6 +1034,9 @@ export const syncSources = async (context: AuthContext, settings: SourceIntellig
   const revertable = await loadSourceIdsWithRevertableChanges(context, departed.map((source) => source.internal_id));
   const dropped = departed.filter((source) => !isKeptOutsideDiscovery(source, revertable));
   const removed = [...orphans, ...dropped, ...duplicates];
+  for (let i = 0; i < orphans.length; i += 1) {
+    await releaseQuarantineOfRemovedSource(context, orphans[i]);
+  }
   for (let i = 0; i < removed.length; i += 1) {
     await deleteElementById(context, SOURCE_INTELLIGENCE_MANAGER_USER, removed[i].internal_id, ENTITY_TYPE_SOURCE);
   }

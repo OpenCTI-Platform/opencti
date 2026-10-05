@@ -29,7 +29,9 @@ import { elUpdate } from '../../../../src/database/engine';
 import { resolveFeedQuarantineDraftId } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-quarantine';
 import { fullEntitiesList, storeLoadById } from '../../../../src/database/middleware-loader';
 import type { BasicStoreEntity } from '../../../../src/types/store';
-import { deleteDraftWorkspace } from '../../../../src/modules/draftWorkspace/draftWorkspace-domain';
+import { addDraftWorkspace, deleteDraftWorkspace } from '../../../../src/modules/draftWorkspace/draftWorkspace-domain';
+import { userEditField } from '../../../../src/modules/user/user-domain';
+import { ENTITY_TYPE_USER } from '../../../../src/schema/internalObject';
 import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE } from '../../../../src/modules/draftWorkspace/draftWorkspace-types';
 import { DRAFT_STATUS_OPEN } from '../../../../src/modules/draftWorkspace/draftStatuses';
 import { resolveDraftForward } from '../../../../src/modules/draftWorkspace/draftWorkspace-closure';
@@ -517,6 +519,45 @@ describe('Source intelligence', () => {
     }
     await deleteElementById(testContext, ADMIN_USER, asserted.internal_id, ENTITY_TYPE_MALWARE);
     await deleteElementById(testContext, ADMIN_USER, author.internal_id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+  });
+
+  it('should give the connector user its draft context back when a quarantined connector source is removed', async () => {
+    const draft = await addDraftWorkspace(testContext, ADMIN_USER, { name: 'Source intelligence orphan quarantine draft' });
+    // A connector deleted from the platform while its source was quarantined: its service account stays
+    const orphan = await createEntity(testContext, ADMIN_USER, {
+      source_kind: 'connector',
+      ref_id: uuidv4(),
+      ref_type: 'Connector',
+      name: 'Source intelligence deleted quarantined connector',
+      source_user_ids: [connectorUserId],
+      enabled: true,
+      quarantined: true,
+      quarantine_draft_id: draft.id,
+    }, ENTITY_TYPE_SOURCE);
+    const { created } = await upsertProposals(testContext, [{
+      kind: 'quarantine',
+      source_id: orphan.internal_id,
+      fingerprint: `${TEST_FINGERPRINT_PREFIX}-orphan-quarantine`,
+      name: 'Quarantine the deleted connector',
+      rationale: 'Integration test',
+      payload: { target: 'connector_user', user_id: connectorUserId },
+      evidence: {},
+    }], settings, { kinds: [] });
+    await patchAttribute(testContext, ADMIN_USER, created[0].internal_id, ENTITY_TYPE_SOURCE_RECOMMENDATION, {
+      recommendation_status: 'applied',
+      revert_payload: JSON.stringify({ target: 'connector_user', user_id: connectorUserId, previous_draft_context: '', draft_id: draft.id }),
+    });
+    await userEditField(testContext, ADMIN_USER, connectorUserId, [{ key: 'draft_context', value: [draft.id] }]);
+    try {
+      await syncSources(testContext, { ...settings, min_author_volume: 1, min_manual_volume: 1 });
+      expect(await storeLoadById(testContext, ADMIN_USER, orphan.internal_id, ENTITY_TYPE_SOURCE)).toBeFalsy();
+      const connectorUser = await storeLoadById<BasicStoreEntity & { draft_context?: string | null }>(testContext, ADMIN_USER, connectorUserId, ENTITY_TYPE_USER);
+      expect(connectorUser?.draft_context ?? '').toBe('');
+    } finally {
+      await userEditField(testContext, ADMIN_USER, connectorUserId, [{ key: 'draft_context', value: [''] }]);
+      await deleteElementById(testContext, ADMIN_USER, created[0].internal_id, ENTITY_TYPE_SOURCE_RECOMMENDATION);
+      await deleteDraftWorkspace(testContext, ADMIN_USER, draft.id);
+    }
   });
 
   it('should hand the recommendations, curation and history of a duplicate analyst source over to the kept one', async () => {

@@ -43,7 +43,7 @@ const isOpenDraft = (draft: BasicStoreEntityDraftWorkspace | undefined): draft i
 };
 
 // Connector sources are quarantined through the draft context of their connector user
-const quarantinedConnectorUserId = (source: BasicStoreEntitySource) => {
+export const quarantinedConnectorUserId = (source: BasicStoreEntitySource) => {
   return source.source_kind === SOURCE_KIND_CONNECTOR ? (source.source_user_ids ?? [])[0] : undefined;
 };
 
