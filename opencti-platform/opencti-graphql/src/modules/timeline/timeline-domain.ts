@@ -1072,8 +1072,10 @@ const writeImportedContributions = async (
       kind: event.kind,
       event_source: 'manual',
       rule_id: null,
-      element_id: element?.internal_id ?? null,
-      element_type: element?.entity_type ?? null,
+      // A known event keeps its element when the imported version names none or one the user cannot resolve: its element
+      // decides who may read it, and an import never loosens that
+      element_id: element?.internal_id ?? stored?.element_id ?? null,
+      element_type: element?.entity_type ?? stored?.element_type ?? null,
       pinned: event.pinned ?? false,
       hidden: event.hidden ?? false,
       annotation: event.annotation ?? null,

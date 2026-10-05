@@ -1105,6 +1105,19 @@ describe('Incident and case timeline', () => {
       await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: added.data.timelineEventAdd.id } });
     });
 
+    it('should keep the element of a known event when an import names none', async () => {
+      const withElement = { id: 'timeline-event--7a1c3e5f-2b4d-4f6a-8c9e-0d1f2a3b4c5d', title: 'Dropper isolated', event_time: '2026-02-06T08:00:00.000Z', element_ref: malware.standard_id };
+      await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension: JSON.stringify({ events: [withElement], annotations: [] }) } });
+      const { element_ref: _, ...withoutElement } = withElement;
+      await queryAsAdminWithSuccess({
+        query: TIMELINE_IMPORT,
+        variables: { containerId: secondCase.id, extension: JSON.stringify({ events: [{ ...withoutElement, title: 'Dropper isolated and removed' }], annotations: [] }) },
+      });
+      const [updated] = (await listTimeline(secondCase.id, { sources: ['manual'] })).filter((e) => e.title.startsWith('Dropper isolated'));
+      expect(updated).toMatchObject({ title: 'Dropper isolated and removed', element_id: malware.id });
+      await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: updated.id } });
+    });
+
     it('should write, count and notify once an event named twice in one extension', async () => {
       const event = { id: 'timeline-event--2d4f6a8c-1b3e-4c5d-8e7f-9a0b1c2d3e4f', title: 'Duplicated milestone', event_time: '2026-02-05T23:00:00.000Z' };
       const extension = JSON.stringify({ events: [event, { ...event, title: 'Duplicated milestone, last version' }], annotations: [] });
