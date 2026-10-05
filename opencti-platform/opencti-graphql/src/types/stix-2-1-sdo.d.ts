@@ -203,6 +203,7 @@ export interface StixObservedDataExtension extends StixOpenctiExtension {
   number_seen?: number; // optional
   max_distinct_count?: number; // optional
   object_refs_inferred?: Array<StixId>; // optional
+  hunt_run_id?: string; // optional
 }
 
 export interface StixObservedData extends StixContainer {

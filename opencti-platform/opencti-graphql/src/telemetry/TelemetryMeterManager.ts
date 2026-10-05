@@ -399,6 +399,24 @@ export class TelemetryMeterManager {
   isCurationEnabled = 0;
   // endregion Knowledge curation
 
+  // Hunt runs started, broken down by trigger (manual, schedule, standing, playbook, emulation, preview, retry)
+  huntRunItems: DimensionalGaugeItem[] = [];
+
+  // Hunt run verdicts set by analysts or agents, broken down by verdict
+  huntVerdictItems: DimensionalGaugeItem[] = [];
+
+  // Number of hunts planned by an XTM One agent
+  huntPlanCount = 0;
+
+  // Number of hunt runs triaged by an XTM One agent
+  huntTriageCount = 0;
+
+  // Hunts broken down by status (draft, active, paused, retired)
+  huntsByStatusItems: DimensionalGaugeItem[] = [];
+
+  // Number of live hunt connectors
+  huntConnectorsCount = 0;
+
   // Built-in LLM configuration state, with the provider type as dimension
   isAiEnabledItems: DimensionalGaugeItem[] = [];
 
@@ -893,6 +911,30 @@ export class TelemetryMeterManager {
     this.isCurationEnabled = n;
   }
 
+  setHuntRunItems(items: DimensionalGaugeItem[]) {
+    this.huntRunItems = items;
+  }
+
+  setHuntVerdictItems(items: DimensionalGaugeItem[]) {
+    this.huntVerdictItems = items;
+  }
+
+  setHuntPlanCount(n: number) {
+    this.huntPlanCount = n;
+  }
+
+  setHuntTriageCount(n: number) {
+    this.huntTriageCount = n;
+  }
+
+  setHuntsByStatusItems(items: DimensionalGaugeItem[]) {
+    this.huntsByStatusItems = items;
+  }
+
+  setHuntConnectorsCount(n: number) {
+    this.huntConnectorsCount = n;
+  }
+
   setIsAiEnabledItems(items: DimensionalGaugeItem[]) {
     this.isAiEnabledItems = items;
   }
@@ -1134,6 +1176,8 @@ export class TelemetryMeterManager {
     this.registerGauge('knowledge_health_score', 'Latest Knowledge Health score (0 to 100)', 'knowledgeHealthScore');
     this.registerGauge('is_curation_enabled', 'Knowledge curation detectors are enabled', 'isCurationEnabled', { unit: 'boolean' });
     // endregion
+    this.registerGauge('hunt_plan_count', 'Number of hunts planned by an XTM One agent', 'huntPlanCount');
+    this.registerGauge('hunt_triage_count', 'Number of hunt runs triaged by an XTM One agent', 'huntTriageCount');
     this.registerDimensionalGauge('is_ai_enabled', 'Built-in LLM configuration state with provider type dimension', 'isAiEnabledItems', { unit: 'boolean' });
     this.registerGauge('is_xtm_one_configured', 'XTM One is configured (url and token)', 'isXtmOneConfigured', { unit: 'boolean' });
     this.registerGauge('is_chatbot_cgu_accepted', 'Filigran chatbot AI CGU accepted', 'isChatbotCguAccepted', { unit: 'boolean' });
@@ -1155,6 +1199,10 @@ export class TelemetryMeterManager {
     this.registerGauge('is_xtm_hub_registered', 'platform is registered on XTM Hub', 'isXtmHubRegistered', { unit: 'boolean' });
     this.registerGauge('indexed_files_count', 'number of indexed files', 'indexedFilesCount');
     this.registerGauge('playbook_execution_count', 'number of playbook executions started', 'playbookExecutionCount');
+    this.registerDimensionalGauge('hunt_run_count', 'hunt runs started broken down by trigger', 'huntRunItems');
+    this.registerDimensionalGauge('hunt_verdict_count', 'hunt run verdicts set broken down by verdict', 'huntVerdictItems');
+    this.registerDimensionalGauge('hunts_count', 'hunts broken down by status', 'huntsByStatusItems');
+    this.registerGauge('hunt_connectors_count', 'number of live hunt connectors', 'huntConnectorsCount');
     this.registerDimensionalGauge('notification_sent_count', 'notifications sent broken down by channel (email, webhook, ui)', 'notificationSentItems');
     this.registerGauge('export_generated_count', 'number of export generations requested', 'exportGeneratedCount');
     this.registerGauge('ingestion_objects_processed_count', 'number of objects processed by completed works', 'ingestionObjectsProcessedCount');

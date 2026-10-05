@@ -91,6 +91,8 @@ import {
   ChessKnight,
   CityVariantOutline,
   ClipboardTextClockOutline,
+  Crosshairs,
+  CrosshairsGps,
   DatabaseExportOutline,
   FileDelimitedOutline,
   FileOutline,
@@ -306,6 +308,11 @@ const iconSelector = (
       return <BugReportOutlined style={style} fontSize={fontSize} role="img" aria-label={type} />;
     case 'incident':
       return <Fire style={style} fontSize={fontSize} role="img" aria-label={type} />;
+    case 'hunt':
+      return <Crosshairs style={style} fontSize={fontSize} role="img" aria-label={type} />;
+    case 'hunt-run':
+    case 'hunt-result':
+      return <CrosshairsGps style={style} fontSize={fontSize} role="img" aria-label={type} />;
     case 'channel':
       return (
         <SurroundSoundOutlined style={style} fontSize={fontSize} role="img" aria-label={type} />

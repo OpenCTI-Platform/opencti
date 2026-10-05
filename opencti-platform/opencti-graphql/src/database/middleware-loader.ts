@@ -102,6 +102,8 @@ export interface EntityOptions<T extends BasicStoreCommon> extends EntityFilters
   includeAuthorities?: boolean | null;
   withInferences?: boolean;
   includeDeletedInDraft?: boolean | null;
+  /** False keeps the `rel_*` ref fields in the results, which the engine excludes by default. */
+  withoutRels?: boolean;
 }
 
 // relations

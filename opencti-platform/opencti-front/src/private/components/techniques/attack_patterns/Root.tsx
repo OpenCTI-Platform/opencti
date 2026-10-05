@@ -27,6 +27,7 @@ import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../uti
 import AttackPatternEdition from './AttackPatternEdition';
 import AttackPatternDeletion from './AttackPatternDeletion';
 import { PATH_ATTACK_PATTERN, PATH_ATTACK_PATTERNS } from '@components/common/routes/paths';
+import HuntThisMenu from '@components/hunts/HuntThisMenu';
 
 const subscription = graphql`
   subscription RootAttackPatternSubscription($id: ID!) {
@@ -189,6 +190,7 @@ const RootAttackPattern = ({ attackPatternId, queryRef }: RootAttackPatternProps
                 history:
                   <StixCoreObjectHistory stixCoreObjectId={attackPatternId} />,
               }}
+              extraActions={<HuntThisMenu entity={attackPattern} />}
             />
           </div>
         </>
