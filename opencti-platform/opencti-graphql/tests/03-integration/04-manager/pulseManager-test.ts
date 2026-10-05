@@ -34,7 +34,7 @@ import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../src/modules/sec
 import { recordPulseSightingIncrease } from '../../../src/modules/xtm/pulse/pulse-sighting-activity';
 import { runPulseTrendingNotifications } from '../../../src/modules/xtm/pulse/pulse-notifications';
 import { computeStableKeys } from '../../../src/modules/xtm/pulse/pulse-hashing';
-import { PULSE_CONSENT_VERSION, type BasicStorePulseEntity } from '../../../src/modules/xtm/pulse/pulse-types';
+import { PULSE_CONSENT_VERSION, PULSE_SETTINGS_REGION, PULSE_SETTINGS_SECTOR, type BasicStorePulseEntity } from '../../../src/modules/xtm/pulse/pulse-types';
 import { PulseHubMock } from '../../utils/pulseHubMock';
 
 const HUB_TOKEN = 'threat-pulse-integration-token';
@@ -211,6 +211,24 @@ describe('Threat Pulse manager and API', () => {
   it('should refuse a Threat Pulse change through the generic settings edition', async () => {
     await expect(settingsEditField(testContext, ADMIN_USER, settingsId, [{ key: 'pulse_mode', value: ['contribute_and_read'] }]))
       .rejects.toThrow(/Threat Pulse/);
+  });
+
+  it('should keep both of two concurrent configuration changes', async () => {
+    const before = (await queryAsAdminWithSuccess({ query: CONFIGURE, variables: { input: { mode: 'preview' } } })).data?.pulseConfigure;
+    // Each change keeps the fields it leaves out as they are: the second one serialized must start from the first.
+    await Promise.all([
+      queryAsAdminWithSuccess({ query: CONFIGURE, variables: { input: { mode: 'preview', sector_bucket: 'healthcare' } } }),
+      queryAsAdminWithSuccess({ query: CONFIGURE, variables: { input: { mode: 'preview', region_bucket: 'middle_east' } } }),
+    ]);
+    resetCacheForEntity(ENTITY_TYPE_SETTINGS);
+    const after = (await queryAsAdminWithSuccess({ query: CONFIGURE, variables: { input: { mode: 'preview' } } })).data?.pulseConfigure;
+    expect([after.sector_bucket, after.region_bucket]).toEqual(['healthcare', 'middle_east']);
+    // An unset bucket cannot be set back through the mutation: the settings return to what they were directly.
+    await updateAttribute(testContext, ADMIN_USER, settingsId, ENTITY_TYPE_SETTINGS, [
+      { key: PULSE_SETTINGS_SECTOR, value: before.sector_bucket ? [before.sector_bucket] : [] },
+      { key: PULSE_SETTINGS_REGION, value: before.region_bucket ? [before.region_bucket] : [] },
+    ]);
+    resetCacheForEntity(ENTITY_TYPE_SETTINGS);
   });
 
   describe('preview (the default mode)', () => {

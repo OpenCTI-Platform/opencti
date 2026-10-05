@@ -515,59 +515,62 @@ const describePulseMode = (mode: string) => {
 };
 
 export const configurePulse = async (context: AuthContext, user: AuthUser, input: PulseConfigurationInput) => {
-  const { settings, values: current, platform } = await loadPulseContext(context);
   const mode = input.mode as string;
   if (!PULSE_MODE_VALUES.includes(mode as typeof PULSE_MODE_VALUES[number])) {
     throw FunctionalError('Invalid Threat Pulse mode', { mode });
   }
-  const scopes = input.scopes ?? current.scopes;
-  const invalidScopes = scopes.filter((scope) => !PULSE_SCOPE_ENTITY_TYPES.includes(scope));
-  if (invalidScopes.length > 0) {
-    throw FunctionalError('Threat Pulse scopes contain unsupported entity types', { invalidScopes });
-  }
-  const enabling = mode === PulseMode.ContributeAndRead;
-  const wasContributing = isPulseContributing(current);
-  if (mode !== PulseMode.Off && scopes.length === 0) {
-    throw FunctionalError('Select at least one entity type for Threat Pulse');
-  }
-  if (enabling && !platform) {
-    throw FunctionalError('Register the platform on XTM Hub before enabling the Threat Pulse contribution');
-  }
-  const markings = await getEntitiesListFromCache<StoreMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
-  const requestedMarkings = input.excluded_markings ?? current.excludedMarkingIds;
-  const excludedMarkingIds = requestedMarkings.map((markingId) => markings.find((marking) => marking.internal_id === markingId || marking.standard_id === markingId)?.internal_id);
-  if (excludedMarkingIds.some((markingId) => !markingId)) {
-    throw FunctionalError('Threat Pulse excluded markings contain unknown marking definitions');
-  }
-  const consentRequired = enabling && (!wasContributing || current.consentVersion !== PULSE_CONSENT_VERSION);
-  if (consentRequired && input.consent_version !== PULSE_CONSENT_VERSION) {
-    throw FunctionalError('The Threat Pulse consent must be accepted to enable the contribution', { required_version: PULSE_CONSENT_VERSION });
-  }
-  const sectorBucket = (input.sector_bucket ?? current.sectorBucket) as PulseSectorBucketValue | undefined;
-  const regionBucket = (input.region_bucket ?? current.regionBucket) as PulseRegionBucketValue | undefined;
-  const updates: Array<{ key: string; value: unknown[] }> = [
-    { key: PULSE_SETTINGS_MODE, value: [mode] },
-    { key: PULSE_SETTINGS_SCOPES, value: scopes },
-    { key: PULSE_SETTINGS_EXCLUDED_MARKINGS, value: excludedMarkingIds as string[] },
-    { key: PULSE_SETTINGS_SECTOR, value: sectorBucket ? [sectorBucket] : [] },
-    { key: PULSE_SETTINGS_REGION, value: regionBucket ? [regionBucket] : [] },
-  ];
-  if (consentRequired) {
-    updates.push(
-      { key: PULSE_SETTINGS_CONSENT_VERSION, value: [PULSE_CONSENT_VERSION] },
-      { key: PULSE_SETTINGS_CONSENT_DATE, value: [new Date()] },
-      { key: PULSE_SETTINGS_CONSENT_USER, value: [user.id] },
-    );
-  }
-  const narrowing = wasContributing && (!enabling
-    || current.scopes.some((scope) => !scopes.includes(scope))
-    || (excludedMarkingIds as string[]).some((markingId) => !current.excludedMarkingIds.includes(markingId)));
-  const widening = wasContributing && enabling && (scopes.some((scope) => !current.scopes.includes(scope))
-    || current.excludedMarkingIds.some((markingId) => !(excludedMarkingIds as string[]).includes(markingId)));
-  const modeChanged = mode !== current.mode;
-  // Serialized with the pushes and with the pages of the nightly refresh and of the preview: none of them runs halfway
-  // through the change, and the ones after it read the new configuration (generation).
-  await withPulsePushLock(async () => {
+  // Serialized with the pushes, with the pages of the nightly refresh and of the preview, and with the other
+  // configuration changes: none of them runs halfway through the change, the ones after it read the new configuration
+  // (generation), and the configuration it starts from is read inside the lock, from the database, so a concurrent
+  // change is never overwritten with the values it replaced.
+  const change = await withPulsePushLock(async () => {
+    const { settings, values: current, platform } = await loadPulseContext(context, { fresh: true });
+    const scopes = input.scopes ?? current.scopes;
+    const invalidScopes = scopes.filter((scope) => !PULSE_SCOPE_ENTITY_TYPES.includes(scope));
+    if (invalidScopes.length > 0) {
+      throw FunctionalError('Threat Pulse scopes contain unsupported entity types', { invalidScopes });
+    }
+    const enabling = mode === PulseMode.ContributeAndRead;
+    const wasContributing = isPulseContributing(current);
+    if (mode !== PulseMode.Off && scopes.length === 0) {
+      throw FunctionalError('Select at least one entity type for Threat Pulse');
+    }
+    if (enabling && !platform) {
+      throw FunctionalError('Register the platform on XTM Hub before enabling the Threat Pulse contribution');
+    }
+    const markings = await getEntitiesListFromCache<StoreMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+    const requestedMarkings = input.excluded_markings ?? current.excludedMarkingIds;
+    const excludedMarkingIds = requestedMarkings
+      .map((markingId) => markings.find((marking) => marking.internal_id === markingId || marking.standard_id === markingId)?.internal_id);
+    if (excludedMarkingIds.some((markingId) => !markingId)) {
+      throw FunctionalError('Threat Pulse excluded markings contain unknown marking definitions');
+    }
+    const consentRequired = enabling && (!wasContributing || current.consentVersion !== PULSE_CONSENT_VERSION);
+    if (consentRequired && input.consent_version !== PULSE_CONSENT_VERSION) {
+      throw FunctionalError('The Threat Pulse consent must be accepted to enable the contribution', { required_version: PULSE_CONSENT_VERSION });
+    }
+    const sectorBucket = (input.sector_bucket ?? current.sectorBucket) as PulseSectorBucketValue | undefined;
+    const regionBucket = (input.region_bucket ?? current.regionBucket) as PulseRegionBucketValue | undefined;
+    const updates: Array<{ key: string; value: unknown[] }> = [
+      { key: PULSE_SETTINGS_MODE, value: [mode] },
+      { key: PULSE_SETTINGS_SCOPES, value: scopes },
+      { key: PULSE_SETTINGS_EXCLUDED_MARKINGS, value: excludedMarkingIds as string[] },
+      { key: PULSE_SETTINGS_SECTOR, value: sectorBucket ? [sectorBucket] : [] },
+      { key: PULSE_SETTINGS_REGION, value: regionBucket ? [regionBucket] : [] },
+    ];
+    if (consentRequired) {
+      updates.push(
+        { key: PULSE_SETTINGS_CONSENT_VERSION, value: [PULSE_CONSENT_VERSION] },
+        { key: PULSE_SETTINGS_CONSENT_DATE, value: [new Date()] },
+        { key: PULSE_SETTINGS_CONSENT_USER, value: [user.id] },
+      );
+    }
+    const narrowing = wasContributing && (!enabling
+      || current.scopes.some((scope) => !scopes.includes(scope))
+      || (excludedMarkingIds as string[]).some((markingId) => !current.excludedMarkingIds.includes(markingId)));
+    const widening = wasContributing && enabling && (scopes.some((scope) => !current.scopes.includes(scope))
+      || current.excludedMarkingIds.some((markingId) => !(excludedMarkingIds as string[]).includes(markingId)));
+    const modeChanged = mode !== current.mode;
     if (narrowing) {
     // Before the settings change: from now on no batch built under the former, wider policy is sent, even when a
     // step below fails.
@@ -652,7 +655,9 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
       });
       addThreatPulseModeChangeCount(mode as PulseMode);
     }
+    return { settings, scopes, excludedMarkingIds, sectorBucket, regionBucket, consentRequired, enabling, wasContributing, modeChanged };
   });
+  const { settings, scopes, excludedMarkingIds, sectorBucket, regionBucket, consentRequired, enabling, wasContributing, modeChanged } = change;
   let message = `updates the Threat Pulse configuration (${describePulseMode(mode)})`;
   if (enabling && !wasContributing) {
     message = `enables the Threat Pulse contribution (${describePulseMode(mode)}) and accepts the consent version \`${PULSE_CONSENT_VERSION}\``;
