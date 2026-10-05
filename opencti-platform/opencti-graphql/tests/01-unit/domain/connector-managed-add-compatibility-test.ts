@@ -39,8 +39,11 @@ vi.mock('../../../src/database/middleware-loader', () => ({
 vi.mock('../../../src/listener/UserActionListener', () => ({
   publishUserAction: vi.fn(), completeContextDataForEntity: vi.fn(),
 }));
-vi.mock('../../../src/modules/catalog/catalog-domain', () => ({
-  computeConnectorTargetContract: vi.fn(), getSupportedContractsByImage: vi.fn(), mapContractEntityFieldsToEmbeddedConnectorManagerContract: vi.fn(),
+vi.mock('../../../src/modules/catalog/catalog-domain', async (importOriginal) => ({
+  computeConnectorTargetContract: vi.fn(),
+  getSupportedContractsByImage: vi.fn(),
+  mapContractEntityFieldsToEmbeddedConnectorManagerContract: vi.fn(),
+  redactContractConfigurationSecrets: (await importOriginal<typeof import('../../../src/modules/catalog/catalog-domain')>()).redactContractConfigurationSecrets,
 }));
 vi.mock('../../../src/database/cache', () => ({ getEntitiesMapFromCache: vi.fn() }));
 vi.mock('../../../src/manager/telemetryManager', () => ({
@@ -82,6 +85,9 @@ import { createEntity } from '../../../src/database/middleware';
 import { fullEntitiesList, storeLoadById } from '../../../src/database/middleware-loader';
 import { completeConnector, connectors } from '../../../src/database/repository';
 import { createOnTheFlyUser } from '../../../src/modules/user/user-domain';
+import { computeConnectorTargetContract } from '../../../src/modules/catalog/catalog-domain';
+import { publishUserAction } from '../../../src/listener/UserActionListener';
+import { REDACTED_INFORMATION } from '../../../src/database/utils';
 
 const fakeContext = {} as any;
 const fakeUser = { id: 'user-1', name: 'Test User', capabilities: [] } as any;
@@ -132,6 +138,7 @@ describe('connector.ts — managedConnectorAdd write boundary', () => {
     vi.mocked(storeLoadById).mockResolvedValue({ id: 'service-account-1' } as never);
     vi.mocked(createEntity).mockResolvedValue({ id: 'connector-1', internal_id: 'connector-1', name: 'my-connector' } as never);
     vi.mocked(completeConnector).mockImplementation((element) => element as never);
+    vi.mocked(computeConnectorTargetContract).mockReturnValue([]);
   });
 
   it('should refuse a missing connector manager before writing anything', async () => {
@@ -166,5 +173,21 @@ describe('connector.ts — managedConnectorAdd write boundary', () => {
     expect(order[0]).toEqual('beforeWrite');
     expect(order).toContain('createOnTheFlyUser');
     expect(createEntity).toHaveBeenCalledTimes(1);
+  });
+
+  it('should never record the secret settings of the deployment in the activity log', async () => {
+    vi.mocked(computeConnectorTargetContract).mockReturnValue([
+      { key: 'API_KEY', value: 'encrypted-value', encrypted: true },
+      { key: 'API_URL', value: 'https://api.example.com' },
+    ]);
+    const configuration = [{ key: 'API_KEY', value: 'clear-secret' }, { key: 'API_URL', value: 'https://api.example.com' }];
+
+    await managedConnectorAdd(fakeContext, fakeUser, { ...automaticInput, manager_contract_configuration: configuration });
+    const activity = vi.mocked(publishUserAction).mock.calls[0][0] as any;
+    expect(activity.context_data.input.manager_contract_configuration).toEqual([
+      { key: 'API_KEY', value: REDACTED_INFORMATION },
+      { key: 'API_URL', value: 'https://api.example.com' },
+    ]);
+    expect(JSON.stringify(activity)).not.toContain('clear-secret');
   });
 });

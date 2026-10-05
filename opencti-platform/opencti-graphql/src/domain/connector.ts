@@ -56,7 +56,7 @@ import { isCompatibleVersionWithMinimal } from '../utils/version';
 import { extractEntityRepresentativeName } from '../database/entity-representative';
 import type { BasicStoreCommon, StoreEntity } from '../types/store';
 import { addConnectorDeployedCount, addWorkbenchDraftConvertionCount, addWorkbenchValidationCount } from '../manager/telemetryManager';
-import { computeConnectorTargetContract, mapContractEntityFieldsToEmbeddedConnectorManagerContract } from '../modules/catalog/catalog-domain';
+import { computeConnectorTargetContract, mapContractEntityFieldsToEmbeddedConnectorManagerContract, redactContractConfigurationSecrets } from '../modules/catalog/catalog-domain';
 import { getEntitiesMapFromCache } from '../database/cache';
 
 import { createOnTheFlyUser } from '../modules/user/user-domain';
@@ -343,7 +343,11 @@ export const managedConnectorAdd = async (
     event_scope: 'create',
     event_access: 'administration',
     message: `creates ${ENTITY_TYPE_CONNECTOR} \`${createdConnector.name}\``,
-    context_data: { id: createdConnector.internal_id, entity_type: ENTITY_TYPE_CONNECTOR, input },
+    context_data: {
+      id: createdConnector.internal_id,
+      entity_type: ENTITY_TYPE_CONNECTOR,
+      input: { ...input, manager_contract_configuration: redactContractConfigurationSecrets(input.manager_contract_configuration, contractConfigurations) },
+    },
   });
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, createdConnector, user);
