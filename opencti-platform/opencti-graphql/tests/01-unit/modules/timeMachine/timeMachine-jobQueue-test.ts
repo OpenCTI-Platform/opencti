@@ -65,4 +65,28 @@ describe('Bounded job queue', () => {
     await queue.idle();
     expect(done).toEqual(['waiting']);
   });
+
+  it('should forget the jobs that have not started when cleared and let the running ones finish', async () => {
+    const queue = createBoundedJobQueue('test', 1, 10);
+    const gate = deferred();
+    const done: string[] = [];
+    queue.enqueue('running', async () => {
+      await gate.promise;
+      done.push('running');
+    });
+    queue.enqueue('waiting', async () => {
+      done.push('waiting');
+    });
+    queue.clear();
+    expect(queue.size()).toBe(1);
+    gate.resolve();
+    await queue.idle();
+    expect(done).toEqual(['running']);
+    // A cleared job can be queued again
+    expect(queue.enqueue('waiting', async () => {
+      done.push('waiting');
+    })).toBe(true);
+    await queue.idle();
+    expect(done).toEqual(['running', 'waiting']);
+  });
 });

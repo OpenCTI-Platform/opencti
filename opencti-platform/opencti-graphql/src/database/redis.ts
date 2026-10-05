@@ -837,6 +837,35 @@ export const redisGetManagerEventState = async (managerName: string) => {
 };
 // endregion
 
+// region - change digest jobs
+// Scheduled change digests waiting to be computed, scored by the end of their period. A job leaves the set only once
+// it is done, so a restart or a busy platform delays a digest instead of losing it.
+const CHANGE_DIGEST_JOBS_KEY = 'change_digest_jobs';
+const CHANGE_DIGEST_JOBS_CHUNK_SIZE = 500;
+export const redisAddChangeDigestJobs = async (jobs: Array<{ score: number; member: string }>) => {
+  for (let index = 0; index < jobs.length; index += CHANGE_DIGEST_JOBS_CHUNK_SIZE) {
+    const scoreMembers = jobs.slice(index, index + CHANGE_DIGEST_JOBS_CHUNK_SIZE).flatMap(({ score, member }) => [score, member]);
+    // NX: a job already waiting keeps its place
+    await getClientBase().zadd(CHANGE_DIGEST_JOBS_KEY, 'NX', ...scoreMembers);
+  }
+};
+// Removes the jobs scored strictly before `expiredBefore` and returns how many were removed
+export const redisExpireChangeDigestJobs = async (expiredBefore: number): Promise<number> => {
+  return getClientBase().zremrangebyscore(CHANGE_DIGEST_JOBS_KEY, '-inf', `(${expiredBefore}`);
+};
+// The `count` oldest jobs scored up to `dueAt`
+export const redisGetChangeDigestJobs = async (dueAt: number, count: number): Promise<string[]> => {
+  return getClientBase().zrangebyscore(CHANGE_DIGEST_JOBS_KEY, '-inf', dueAt, 'LIMIT', 0, count);
+};
+export const redisIsChangeDigestJobScheduled = async (member: string): Promise<boolean> => {
+  const score = await getClientBase().zscore(CHANGE_DIGEST_JOBS_KEY, member);
+  return score !== null;
+};
+export const redisRemoveChangeDigestJob = async (member: string) => {
+  await getClientBase().zrem(CHANGE_DIGEST_JOBS_KEY, member);
+};
+// endregion
+
 // region connector logs
 export interface FeedLog {
   timestamp: string;

@@ -60,7 +60,7 @@ More information can be found [here](../../administration/retentions.md).
 
 The notification manager is a component that allows the user to customize and receive alerts about events/changes in the platform.
 
-The [change digests](../../usage/time-machine.md#change-digests) of its digest schedule compute the landscape changes of each recipient apart from the schedule itself, two at a time, so a long computation never delays another digest.
+The [change digests](../../usage/time-machine.md#change-digests) of its digest schedule compute the landscape changes of each recipient apart from the schedule itself, two at a time, so a long computation never delays another digest. Each due digest is recorded in Redis until it is sent: a busy platform or a restart delays it instead of dropping it, and the platform that takes over the notification manager sends it. A digest still waiting a week after the end of its period is not sent any more.
 
 More information can be found [here](../../usage/notifications.md).
 
