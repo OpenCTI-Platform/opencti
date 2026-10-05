@@ -18,10 +18,19 @@ interface SettingsDependenciesProps {
 
 const toTestId = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
+// The platform always reports XTM One, with this version until a registration exists.
+const XTM_ONE_DEPENDENCY = 'XTM-One';
+const XTM_ONE_NOT_CONNECTED = 'Not connected';
+
+/** The services to show: XTM One only once it is registered. */
+export const toDisplayedDependencies = (dependencies: ReadonlyArray<Dependency>): Dependency[] => dependencies
+  .filter((dependency) => dependency.name !== XTM_ONE_DEPENDENCY || dependency.version !== XTM_ONE_NOT_CONNECTED);
+
 const SettingsDependencies = ({ dependencies }: SettingsDependenciesProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  if (dependencies.length === 0) {
+  const displayed = toDisplayedDependencies(dependencies);
+  if (displayed.length === 0) {
     return null;
   }
   return (
@@ -35,7 +44,7 @@ const SettingsDependencies = ({ dependencies }: SettingsDependenciesProps) => {
           gap: 3,
         }}
       >
-        {dependencies.map((dependency) => (
+        {displayed.map((dependency) => (
           <Card key={dependency.name} padding="medium" data-testid={`settings-dependency-${toTestId(dependency.name)}`}>
             <Typography variant="body2" sx={{ color: theme.palette.text.light, lineHeight: '19px' }}>
               {t_i18n(dependency.name)}
