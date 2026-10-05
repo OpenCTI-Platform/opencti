@@ -558,6 +558,7 @@
   "Investigation report": "조사 보고서",
   "Investigation status": "조사 상태",
   "Investigation timeline": "조사 타임라인",
+  "INVESTIGATION_RUN_MANAGER": "Case Autopilot 관리자",
   "IP allow list": "IP 허용 목록",
   "IP allow list enabled": "IP 허용 목록 활성화됨",
   "IP allow list exclusion IDs": "IP 허용 목록에서 제외된 ID",

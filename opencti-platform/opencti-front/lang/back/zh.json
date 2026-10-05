@@ -558,6 +558,7 @@
   "Investigation report": "调查报告",
   "Investigation status": "调查状态",
   "Investigation timeline": "调查时间线",
+  "INVESTIGATION_RUN_MANAGER": "Case Autopilot 管理器",
   "IP allow list": "IP 允许列表",
   "IP allow list enabled": "已启用 IP 允许列表",
   "IP allow list exclusion IDs": "IP 允许列表的排除 ID",

@@ -558,6 +558,7 @@
   "Investigation report": "調査レポート",
   "Investigation status": "調査ステータス",
   "Investigation timeline": "調査タイムライン",
+  "INVESTIGATION_RUN_MANAGER": "Case Autopilot マネージャー",
   "IP allow list": "IP許可リスト",
   "IP allow list enabled": "IP許可リストが有効になっています",
   "IP allow list exclusion IDs": "IP許可リストの除外ID",

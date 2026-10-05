@@ -558,6 +558,7 @@
   "Investigation report": "Rapporto di indagine",
   "Investigation status": "Stato dell'indagine",
   "Investigation timeline": "Cronologia dell'indagine",
+  "INVESTIGATION_RUN_MANAGER": "Gestore di Case Autopilot",
   "IP allow list": "Elenco IP consentiti",
   "IP allow list enabled": "Elenco IP consentiti abilitato",
   "IP allow list exclusion IDs": "ID esclusi dall'elenco IP consentiti",
