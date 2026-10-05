@@ -3463,6 +3463,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         truncated: Optional[bool] = None,
         work_id: Optional[str] = None,
         ioc_results: Optional[List[Dict]] = None,
+        hits_sample: Optional[List[Dict]] = None,
     ) -> Dict:
         """Report the outcome of a hunt run to OpenCTI (huntRunReport).
 
@@ -3485,6 +3486,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             being processed, which binds the report to this connector
         :param ioc_results: indicator hunts, one result per value of the run message:
             {key, seen, searched, hits_count, first_seen, last_seen, hosts, reason}
+        :param hits_sample: one item per hit, in time order, values hashed and truncated like the
+            evidence sample: {event_id, timestamp, detection, matched: [{field, value_hash,
+            value_preview}], host, user, process}
         :return: the hunt run
         :rtype: Dict
         """
@@ -3502,6 +3506,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             error=error,
             truncated=truncated,
             ioc_results=ioc_results,
+            hits_sample=hits_sample,
         )
 
     def listen_hunt(self, message_callback: Callable[[Dict], str]) -> None:

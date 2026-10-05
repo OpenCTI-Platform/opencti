@@ -75,7 +75,10 @@ const RUN_FIELDS = `
   incident_id
   draft_id
   result_ids
-  evidence_sample { kind label quote field value_hash value_preview count }
+  evidence_sample { kind label quote field value_hash value_preview count matched }
+  hits_sample { event_id timestamp detection host user process matched { field value_hash value_preview value_complete } }
+  first_hit_at
+  last_hit_at
   evidence_sources
   attempt
   next_retry_at
@@ -391,11 +394,36 @@ describe('Hunt resolvers', () => {
           hits_count: 5,
           distinct_entities: 2,
           result_ids: [intrusionSetStandardId, 'not a STIX id', 'indicator--not-a-uuid'],
-          evidence_sample: [{ field: 'process.command_line', value_hash: 'powershell -enc AAAA', value_preview: 'powershell -enc AAAA', count: 5 }],
+          evidence_sample: [
+            { field: 'metadata.log_type', value_hash: 'WINEVTLOG', value_preview: 'WINEVTLOG', count: 9 },
+            { field: 'process.command_line', value_hash: 'powershell -enc AAAA', value_preview: 'powershell -enc AAAA', count: 5 },
+          ],
+          // The per-hit evidence of the connectors SDK, its preview truncated
+          hits_sample: [{
+            event_id: 'evt-1',
+            timestamp: '2026-10-05T10:00:00Z',
+            detection: null,
+            matched: [{ field: 'process.command_line', value_hash: 'a'.repeat(64), value_preview: 'powershell -enc AAAA' }],
+            host: null,
+            user: null,
+            process: 'powershell.exe',
+          }],
         },
       },
     });
     const run = completed.data?.huntRunReport;
+    expect(run.hits_sample).toEqual([{
+      event_id: 'evt-1',
+      timestamp: expect.anything(),
+      detection: null,
+      host: null,
+      user: null,
+      process: 'powershell.exe',
+      matched: [{ field: 'process.command_line', value_hash: expect.stringMatching(/^[a-f0-9]{64}$/), value_preview: 'powershell -enc AAAA', value_complete: false }],
+    }]);
+    expect(run.hits_sample[0].matched[0].value_hash).not.toEqual('a'.repeat(64));
+    expect(new Date(run.hits_sample[0].timestamp).toISOString()).toEqual('2026-10-05T10:00:00.000Z');
+    expect(new Date(run.first_hit_at).toISOString()).toEqual('2026-10-05T10:00:00.000Z');
     // Only STIX identifiers are recorded from a connector report
     const stored = await internalLoadById<BasicStoreEntity & { result_ids?: string[] }>(testContext, ADMIN_USER, secondRunId, { type: ENTITY_TYPE_HUNT_RUN });
     expect(stored.result_ids).toEqual([intrusionSetStandardId]);
@@ -405,12 +433,14 @@ describe('Hunt resolvers', () => {
     draftIds.push(run.draft_id);
     // A raw value sent as a hash is hashed again by the platform
     expect(run.evidence_sample[0].value_hash).toMatch(/^[a-f0-9]{64}$/);
-    expect(run.evidence_sample[0]).toMatchObject({ kind: 'tool_result', label: 'process.command_line', quote: 'powershell -enc AAAA', count: 5 });
+    // The field a hit matched comes before metadata seen more often
+    expect(run.evidence_sample[0]).toMatchObject({ kind: 'tool_result', label: 'process.command_line', quote: 'powershell -enc AAAA', count: 5, matched: true });
     // Draft-first: the incident only exists in its draft workspace
     const live = await queryAsAdmin({ query: gql`query Incident($id: String!) { incident(id: $id) { id } }`, variables: { id: run.incident_id } });
     expect(live.data?.incident).toBeNull();
     const inDraft = await queryAsAdmin({ query: gql`query Incident($id: String!) { incident(id: $id) { id description } }`, variables: { id: run.incident_id } }, run.draft_id);
     expect(inDraft.data?.incident.description).toContain(HUNT_INCIDENT_RECOMMENDATION);
+    expect(inDraft.data?.incident.description).toContain('- 2026-10-05T10:00:00.000Z, process powershell.exe, process.command_line = powershell -enc AAAA');
     // Draft workspaces are listed to every user with draft access: the workspace carries no detail of the hunt
     const workspace = await queryAsAdminWithSuccess({ query: gql`query HuntDraft($id: String!) { draftWorkspace(id: $id) { name description } }`, variables: { id: run.draft_id } });
     expect(workspace.data?.draftWorkspace.name).toEqual(`Hunt incident - run ${secondRunId}`);

@@ -19038,40 +19038,38 @@ type HuntEvidence {
   value_preview: String
   count: Int!
 
-  """The value is one the hunt logic matched, not context of the event"""
+  """
+  The value is one the hunt logic matched (a field matched in a hit of the run), not context of the event
+  """
   matched: Boolean!
 }
 
+"""
+A field of a hit that the hunt logic matched: the value is hashed again by the platform, its preview masked and truncated
+"""
 type HuntHitField {
-  name: String!
-  value: String!
+  field: String!
+  value_hash: String!
+  value_preview: String
+
+  """The preview is the whole value, neither truncated nor masked"""
+  value_complete: Boolean!
 }
 
-"""
-One event a run matched, as its connector extracted it: secrets masked, values truncated
-"""
+"""One event a run matched"""
 type HuntHit {
+  """Id of the event on the hunted platform"""
+  event_id: String
   timestamp: DateTime
 
-  """The field of the event the hunt logic matched, and its value"""
-  matched_field: String
-  matched_value: String
+  """
+  The detection of the platform grouping the event (YARA-L): the events of one detection are one hit
+  """
+  detection: String
+  matched: [HuntHitField!]!
   host: String
   user: String
   process: String
-  command_line: String
-  source_ip: String
-  destination_ip: String
-  domain: String
-  url: String
-  file_hash: String
-
-  """Id of the event on the hunted platform"""
-  event_id: String
-
-  """The rule or detection of the platform the event raised, if any"""
-  detection: String
-  extra_fields: [HuntHitField!]!
 }
 
 enum HuntIocVerdict {
@@ -19164,9 +19162,9 @@ type HuntRun implements BasicObject & InternalObject {
   evidence_sample: [HuntEvidence!]
 
   """
-  Single events the run matched (a sample, the first ones the connector sent)
+  One evidence item per hit, in time order (a sample), next to the per-field aggregation of evidence_sample
   """
-  hit_sample: [HuntHit!]
+  hits_sample: [HuntHit!]
 
   """
   Dates of the first and last event the run matched, null when the connector dates none
@@ -19303,60 +19301,38 @@ input HuntEvidenceInput {
 }
 
 input HuntHitFieldInput {
-  "*Constraints:*\n* Maximal length: `128`\n"
-  name: String!
+  """
+  Field of the event, named as in the query language of the platform (target.process.command_line)
+  """
+  field: String!
 
-  "*Constraints:*\n* Maximal length: `4096`\n"
-  value: String!
+  """SHA-256 hex of the full value"""
+  value_hash: String!
+
+  """The value, truncated"""
+  value_preview: String
 }
 
 """
-One event the run matched. Every field is optional; the platform masks secrets and truncates values
+One event a run matched. Every field but matched is optional; the platform hashes matched values again, masks secrets and truncates values
 """
 input HuntHitInput {
+  """Id of the event on the hunted platform"""
+  event_id: String
   timestamp: DateTime
 
-  "*Constraints:*\n* Maximal length: `256`\n"
-  matched_field: String
-
-  "*Constraints:*\n* Maximal length: `4096`\n"
-  matched_value: String
-
-  "*Constraints:*\n* Maximal length: `512`\n"
-  host: String
-
-  "*Constraints:*\n* Maximal length: `512`\n"
-  user: String
-
-  "*Constraints:*\n* Maximal length: `1024`\n"
-  process: String
-
-  "*Constraints:*\n* Maximal length: `4096`\n"
-  command_line: String
-
-  "*Constraints:*\n* Maximal length: `64`\n"
-  source_ip: String
-
-  "*Constraints:*\n* Maximal length: `64`\n"
-  destination_ip: String
-
-  "*Constraints:*\n* Maximal length: `512`\n"
-  domain: String
-
-  "*Constraints:*\n* Maximal length: `2048`\n"
-  url: String
-
-  "MD5, SHA-1 or SHA-256 of the file the event involves\n\n*Constraints:*\n* Maximal length: `128`\n"
-  file_hash: String
-
-  "*Constraints:*\n* Maximal length: `256`\n"
-  event_id: String
-
-  "*Constraints:*\n* Maximal length: `512`\n"
+  """
+  The detection of the platform grouping the event (YARA-L): the events of one detection are one hit
+  """
   detection: String
 
-  """Other fields worth reading (at most 10 are kept)"""
-  extra_fields: [HuntHitFieldInput!]
+  """
+  The fields of the detection logic present in the event (indicator runs: the field holding the value)
+  """
+  matched: [HuntHitFieldInput!]!
+  host: String
+  user: String
+  process: String
 }
 
 input HuntIocResultInput {
@@ -19390,12 +19366,12 @@ input HuntRunReportInput {
   evidence_sample: [HuntEvidenceInput!]
 
   """
-  Single events the run matched, the most relevant first (at most 50 are kept)
+  One evidence item per hit, on top of the per-field aggregation of evidence_sample
   """
-  hits: [HuntHitInput!]
+  hits_sample: [HuntHitInput!]
 
   """
-  Dates of the first and last matched event of the whole run, when the hits sent are only a sample
+  Dates of the first and last matched event of the whole run, when hits_sample is only a sample
   """
   first_hit_at: DateTime
   last_hit_at: DateTime
@@ -19412,7 +19388,7 @@ input HuntRunEvidenceAddInput {
   result_ids: [String!]!
   hits_count: Int
   evidence_sample: [HuntEvidenceInput!]
-  hits: [HuntHitInput!]
+  hits_sample: [HuntHitInput!]
   observed_at: DateTime
 
   "*Constraints:*\n* Maximal length: `128`\n"

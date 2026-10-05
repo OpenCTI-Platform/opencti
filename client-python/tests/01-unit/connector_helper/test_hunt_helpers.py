@@ -145,6 +145,7 @@ class TestHuntHelpers(TestCase):
             error=None,
             truncated=True,
             ioc_results=None,
+            hits_sample=None,
         )
 
     def test_report_hunt_run_forwards_the_results_per_value(self):
@@ -153,6 +154,30 @@ class TestHuntHelpers(TestCase):
         helper.report_hunt_run("run-1", "completed", ioc_results=results)
         self.assertEqual(
             helper.api.hunt_run.report.call_args.kwargs["ioc_results"], results
+        )
+
+    def test_report_hunt_run_forwards_the_hits_sample(self):
+        helper = _helper()
+        hits = [
+            {
+                "event_id": "evt-1",
+                "timestamp": "2026-10-05T10:00:00Z",
+                "detection": None,
+                "matched": [
+                    {
+                        "field": "target.process.command_line",
+                        "value_hash": "a" * 64,
+                        "value_preview": "powershell -enc ",
+                    }
+                ],
+                "host": "ws-042",
+                "user": "jdoe",
+                "process": "powershell.exe",
+            }
+        ]
+        helper.report_hunt_run("run-1", "completed", hits_count=1, hits_sample=hits)
+        self.assertEqual(
+            helper.api.hunt_run.report.call_args.kwargs["hits_sample"], hits
         )
 
     def test_report_hunt_run_names_the_work_it_was_given(self):

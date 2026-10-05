@@ -194,6 +194,30 @@ class TestHuntRun(TestCase):
         self.assertEqual(variables["input"]["hits_count"], 4)
         self.assertEqual(variables["input"]["translated_query"], "index=main")
         self.assertNotIn("work_id", variables["input"])
+        self.assertNotIn("hits_sample", variables["input"])
+
+    def test_report_sends_the_hits_sample(self):
+        opencti = _opencti(
+            {"huntRunReport": {"id": "run-1", "hunt_run_status": "completed"}}
+        )
+        hits = [
+            {
+                "event_id": "evt-1",
+                "timestamp": "2026-10-05T10:00:00Z",
+                "matched": [
+                    {
+                        "field": "principal.ip",
+                        "value_hash": "a" * 64,
+                        "value_preview": "10.0.0.4",
+                    }
+                ],
+                "host": "ws-042",
+            }
+        ]
+        HuntRun(opencti).report(
+            id="run-1", status="completed", hits_count=1, hits_sample=hits
+        )
+        self.assertEqual(_variables(opencti)["input"]["hits_sample"], hits)
 
     def test_report_names_the_work_of_the_dispatch(self):
         opencti = _opencti(
@@ -230,6 +254,10 @@ class TestHuntRun(TestCase):
         evidence_input = _variables(opencti)["input"]
         self.assertEqual(evidence_input["result_ids"], ["sighting--1"])
         self.assertEqual(evidence_input["source"], "splunk-alert-action")
+        self.assertNotIn("hits_sample", evidence_input)
+        hits = [{"event_id": "evt-2", "matched": [], "host": "ws-042"}]
+        run.add_evidence(id="run-1", result_ids=["sighting--2"], hits_sample=hits)
+        self.assertEqual(_variables(opencti)["input"]["hits_sample"], hits)
 
     def test_register_connector_requires_the_platform_and_languages(self):
         opencti = _opencti({"huntConnectorRegister": {"id": "connector-1"}})

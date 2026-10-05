@@ -60,7 +60,10 @@ const huntRunResolvers: Resolvers = {
     matched: (evidence) => evidence.matched === true,
   },
   HuntHit: {
-    extra_fields: (hit) => hit.extra_fields ?? [],
+    matched: (hit) => hit.matched ?? [],
+  },
+  HuntHitField: {
+    value_complete: (field) => field.value_complete === true,
   },
   HuntConnector: {
     securityPlatform: (connector, _, context) => (connector.security_platform_id

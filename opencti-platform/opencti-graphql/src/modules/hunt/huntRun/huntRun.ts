@@ -50,10 +50,10 @@ const HUNT_RUN_DEFINITION: ModuleDefinition<StoreEntityHuntRun, StixHuntRun> = {
     { name: 'results_truncated', label: 'Partial results', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'distinct_entities', label: 'Distinct entities', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'evidence_sample', label: 'Evidence sample', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
-    { name: 'hit_sample', label: 'Hit sample', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
+    { name: 'hits_sample', label: 'Hits sample', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'first_hit_at', label: 'Run first hit date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'last_hit_at', label: 'Run last hit date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
-    // Observed Data and observables the platform created from the hit sample, in the knowledge graph
+    // Observed Data and observables the platform created from the hits sample, in the knowledge graph
     { name: 'hit_observation_ids', label: 'Run hit observations', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'ioc_results', label: 'Results per value', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'result_ids', label: 'Run results', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },

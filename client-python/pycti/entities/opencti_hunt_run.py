@@ -189,6 +189,8 @@ class HuntRun:
         :param hits_count: (optional) number of hits
         :param distinct_entities: (optional) number of distinct entities in the hits
         :param evidence_sample: (optional) list of {field, value_hash, value_preview, count}
+        :param hits_sample: (optional) one item per hit, in time order: {event_id, timestamp, detection,
+            matched: [{field, value_hash, value_preview}], host, user, process}
         :param translated_query: (optional) the query executed on the platform
         :param query_language: (optional) the language of the query
         :param cost_ms: (optional) execution duration in milliseconds
@@ -239,6 +241,8 @@ class HuntRun:
             report_input["work_id"] = kwargs.get("work_id")
         if kwargs.get("ioc_results", None) is not None:
             report_input["ioc_results"] = kwargs.get("ioc_results")
+        if kwargs.get("hits_sample", None) is not None:
+            report_input["hits_sample"] = kwargs.get("hits_sample")
         result = self.opencti.query(query, {"id": id, "input": report_input})
         return result["data"]["huntRunReport"]
 
@@ -303,6 +307,7 @@ class HuntRun:
         :type result_ids: list
         :param hits_count: (optional) hits added to the run
         :param evidence_sample: (optional) list of {field, value_hash, value_preview, count}
+        :param hits_sample: (optional) one item per hit, same shape as in report
         :param security_platform_id: (optional) the platform where the evidence was observed
         :param observed_at: (optional) observation date
         :param source: (optional) where the evidence comes from (for example splunk-alert-action)
@@ -327,20 +332,17 @@ class HuntRun:
                 }
             }
         """
-        result = self.opencti.query(
-            query,
-            {
-                "id": id,
-                "input": {
-                    "result_ids": result_ids,
-                    "hits_count": kwargs.get("hits_count", None),
-                    "evidence_sample": kwargs.get("evidence_sample", None),
-                    "security_platform_id": kwargs.get("security_platform_id", None),
-                    "observed_at": kwargs.get("observed_at", None),
-                    "source": kwargs.get("source", None),
-                },
-            },
-        )
+        evidence_input = {
+            "result_ids": result_ids,
+            "hits_count": kwargs.get("hits_count", None),
+            "evidence_sample": kwargs.get("evidence_sample", None),
+            "security_platform_id": kwargs.get("security_platform_id", None),
+            "observed_at": kwargs.get("observed_at", None),
+            "source": kwargs.get("source", None),
+        }
+        if kwargs.get("hits_sample", None) is not None:
+            evidence_input["hits_sample"] = kwargs.get("hits_sample")
+        result = self.opencti.query(query, {"id": id, "input": evidence_input})
         return result["data"]["huntRunEvidenceAdd"]
 
     def retry(self, **kwargs):

@@ -17,7 +17,15 @@ export interface HuntHitObservable {
 
 const HASH_ALGORITHMS: Record<number, string> = { 32: 'MD5', 40: 'SHA-1', 64: 'SHA-256' };
 const DOMAIN_PATTERN = /^(?=.{1,253}$)(?:[a-z\d](?:[a-z\d-]{0,61}[a-z\d])?\.)+[a-z]{2,63}$/i;
+const URL_PATTERN = /^[a-z][a-z\d+.-]*:\/\/\S+$/i;
 const MASKED = '[masked';
+// A file name reads like a domain and a hash like any hex id: the field the value comes from tells them apart
+const COMMAND_LINE_FIELD = /command_?line/i;
+const HOSTNAME_FIELD = /hostname/i;
+const DOMAIN_FIELD = /domain|dns/i;
+const HASH_FIELD = /hash|md5|sha_?(1|256)/i;
+// The connector joins the values of a multi-valued field before hashing them
+const VALUES_SEPARATOR = ', ';
 
 const usable = (value: string | null | undefined): value is string => {
   return typeof value === 'string' && value.trim().length > 0 && !value.includes(MASKED) && !value.endsWith('...');
@@ -31,45 +39,57 @@ const addressObservable = (value: string): HuntHitObservable | null => {
   return version === 6 ? { key: `IPv6-Addr:${value}`, type: 'IPv6-Addr', input: { IPv6Addr: { value } } } : null;
 };
 
+const hostnameObservable = (value: string): HuntHitObservable => ({ key: `Hostname:${value}`, type: 'Hostname', input: { Hostname: { value } } });
+
+const matchedValueObservable = (field: string, value: string): HuntHitObservable | null => {
+  const address = addressObservable(value);
+  if (address) {
+    return address;
+  }
+  if (URL_PATTERN.test(value)) {
+    return { key: `Url:${value}`, type: 'Url', input: { Url: { value } } };
+  }
+  if (HOSTNAME_FIELD.test(field)) {
+    return hostnameObservable(value);
+  }
+  if (DOMAIN_FIELD.test(field) && DOMAIN_PATTERN.test(value)) {
+    const domain = value.toLowerCase();
+    return { key: `Domain-Name:${domain}`, type: 'Domain-Name', input: { DomainName: { value: domain } } };
+  }
+  const hash = value.toLowerCase();
+  const algorithm = HASH_FIELD.test(field) && /^[a-f\d]+$/.test(hash) ? HASH_ALGORITHMS[hash.length] : undefined;
+  return algorithm ? { key: `StixFile:${hash}`, type: 'StixFile', input: { StixFile: { hashes: [{ algorithm, hash }] } } } : null;
+};
+
 /**
- * The observables of one hit: its addresses, domain, URL, host, account, file hash and command line. A value the
- * platform masked or truncated names nothing and is skipped.
+ * The observables of one hit: its host and account, and what the fields the hunt logic matched hold (addresses, URLs,
+ * host names, domains, file hashes, command lines). Only a complete preview of a matched value names something: a
+ * value the platform masked or truncated is skipped.
  */
 export const extractHitObservables = (hit: HuntHit): HuntHitObservable[] => {
   const observables: HuntHitObservable[] = [];
-  [hit.source_ip, hit.destination_ip].forEach((address) => {
-    const observable = usable(address) ? addressObservable(address.trim()) : null;
-    if (observable) {
-      observables.push(observable);
+  (hit.matched ?? []).filter((match) => match.value_complete && usable(match.value_preview)).forEach((match) => {
+    const value = (match.value_preview as string).trim();
+    if (COMMAND_LINE_FIELD.test(match.field)) {
+      observables.push({ key: `Process:${value}`, type: 'Process', input: { Process: { command_line: value } } });
+      return;
     }
+    value.split(VALUES_SEPARATOR).map((part) => part.trim()).forEach((part) => {
+      const observable = part.length > 0 ? matchedValueObservable(match.field, part) : null;
+      if (observable) {
+        observables.push(observable);
+      }
+    });
   });
-  if (usable(hit.domain) && DOMAIN_PATTERN.test(hit.domain.trim())) {
-    const value = hit.domain.trim().toLowerCase();
-    observables.push({ key: `Domain-Name:${value}`, type: 'Domain-Name', input: { DomainName: { value } } });
-  }
-  if (usable(hit.url)) {
-    observables.push({ key: `Url:${hit.url.trim()}`, type: 'Url', input: { Url: { value: hit.url.trim() } } });
-  }
   if (usable(hit.host)) {
-    const value = hit.host.trim();
-    observables.push({ key: `Hostname:${value}`, type: 'Hostname', input: { Hostname: { value } } });
+    observables.push(hostnameObservable(hit.host.trim()));
   }
   if (usable(hit.user)) {
     const value = hit.user.trim();
     observables.push({ key: `User-Account:${value}`, type: 'User-Account', input: { UserAccount: { account_login: value } } });
   }
-  if (usable(hit.file_hash)) {
-    const hash = hit.file_hash.trim().toLowerCase();
-    const algorithm = /^[a-f\d]+$/.test(hash) ? HASH_ALGORITHMS[hash.length] : undefined;
-    if (algorithm) {
-      observables.push({ key: `StixFile:${hash}`, type: 'StixFile', input: { StixFile: { hashes: [{ algorithm, hash }] } } });
-    }
-  }
-  if (usable(hit.command_line)) {
-    const value = hit.command_line.trim();
-    observables.push({ key: `Process:${value}`, type: 'Process', input: { Process: { command_line: value } } });
-  }
-  return observables;
+  const unique = new Map(observables.map((observable) => [observable.key, observable]));
+  return Array.from(unique.values());
 };
 
 /**
@@ -79,7 +99,7 @@ export const extractHitObservables = (hit: HuntHit): HuntHitObservable[] => {
  * A hit that fails is logged and skipped. Returns the internal ids of the observed data and observables created.
  */
 export const createHuntHitObservations = async (context: AuthContext, hunt: BasicStoreEntityHunt, run: BasicStoreEntityHuntRun) => {
-  const hits = (run.hit_sample ?? []).slice(0, HUNT_CONFIG.hitObservedDataMaxItems);
+  const hits = (run.hits_sample ?? []).slice(0, HUNT_CONFIG.hitObservedDataMaxItems);
   // Loaded on use: the observable and observed data domains import the whole schema, the hunt module is part of it
   const [{ addStixCyberObservable }, { addObservedData }] = await Promise.all([import('../../domain/stixCyberObservable'), import('../../domain/observedData')]);
   const access = {

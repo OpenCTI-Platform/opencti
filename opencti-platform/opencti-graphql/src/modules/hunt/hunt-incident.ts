@@ -55,13 +55,14 @@ export const createHuntIncidentWorkspace = async (context: AuthContext, run: Bas
   return draft.id;
 };
 
-const topValues = (hits: HuntHit[], field: keyof HuntHit): string[] => {
+const topValues = (hits: HuntHit[], values: (hit: HuntHit) => (string | null | undefined)[]): string[] => {
   const counts = new Map<string, number>();
   hits.forEach((hit) => {
-    const value = hit[field];
-    if (typeof value === 'string' && value.length > 0) {
-      counts.set(value, (counts.get(value) ?? 0) + 1);
-    }
+    new Set(values(hit)).forEach((value) => {
+      if (typeof value === 'string' && value.length > 0) {
+        counts.set(value, (counts.get(value) ?? 0) + 1);
+      }
+    });
   });
   return Array.from(counts.entries())
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
@@ -75,7 +76,7 @@ const describeHit = (hit: HuntHit) => {
     hit.host ? `host ${hit.host}` : null,
     hit.user ? `user ${hit.user}` : null,
     hit.process ? `process ${hit.process}` : null,
-    hit.matched_field ? `${hit.matched_field}${hit.matched_value ? ` = ${truncate(hit.matched_value, 200)}` : ''}` : null,
+    ...(hit.matched ?? []).map((match) => `${match.field}${match.value_preview ? ` = ${truncate(match.value_preview, 200)}` : ''}`),
   ];
   return `- ${parts.filter((part) => part !== null).join(', ')}`;
 };
@@ -102,7 +103,7 @@ export const buildHuntIncidentContent = (
   const sigma = hunt.sigma_rule ? validateSigmaRule(hunt.sigma_rule) : null;
   const levelSeverity = sigma?.level ? SIGMA_LEVEL_SEVERITIES[sigma.level] : undefined;
   const severity = proposal?.severity && INCIDENT_SEVERITIES.includes(proposal.severity) ? proposal.severity : (levelSeverity ?? 'medium');
-  const hits = run.hit_sample ?? [];
+  const hits = run.hits_sample ?? [];
   const firstSeen = run.first_hit_at ?? run.time_window_start;
   const lastSeen = run.last_hit_at ?? run.time_window_end;
   const hypothesis = hunt.hypothesis?.trim() || hunt.description?.trim();
@@ -120,10 +121,10 @@ export const buildHuntIncidentContent = (
   sections.push(`The hunt matched ${run.hits_count ?? 0} events (${run.distinct_entities ?? 0} distinct entities)${platform} ${dated}, in its run ${run.internal_id}.`);
   if (hits.length > 0) {
     const facts = [
-      ['Matched fields', topValues(hits, 'matched_field')],
-      ['Hosts', topValues(hits, 'host')],
-      ['Users', topValues(hits, 'user')],
-      ['Processes', topValues(hits, 'process')],
+      ['Matched fields', topValues(hits, (hit) => (hit.matched ?? []).map((match) => match.field))],
+      ['Hosts', topValues(hits, (hit) => [hit.host])],
+      ['Users', topValues(hits, (hit) => [hit.user])],
+      ['Processes', topValues(hits, (hit) => [hit.process])],
     ].filter(([, values]) => values.length > 0).map(([label, values]) => `${label}: ${(values as string[]).join(', ')}`);
     const shown = hits.slice(0, DESCRIPTION_HITS_MAX).map(describeHit);
     sections.push([...facts, `First hits (${shown.length} of ${run.hits_count ?? hits.length}):`, ...shown].join('\n'));

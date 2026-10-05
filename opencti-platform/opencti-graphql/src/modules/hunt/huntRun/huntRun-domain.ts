@@ -62,6 +62,7 @@ import {
   HUNT_DEFAULT_TIME_WINDOW_HOURS,
   huntRunRestrictions,
   huntHitDates,
+  markMatchedEvidence,
   mergeEvidence,
   mergeHits,
   sanitizeEvidence,
@@ -466,7 +467,7 @@ export const huntTriageRunPayload = (run: BasicStoreEntityHuntRun, securityPlatf
   security_platform: securityPlatformName ?? HUNT_PLATFORM_INTERNET,
   translated_query: run.translated_query ?? '',
   evidence_sample: run.evidence_sample ?? [],
-  hit_sample: run.hit_sample ?? [],
+  hits_sample: run.hits_sample ?? [],
   hit_dates: { first: run.first_hit_at ?? null, last: run.last_hit_at ?? null },
 });
 
@@ -558,7 +559,7 @@ const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRu
   let current = run;
   let complete = true;
   // The hits as knowledge first: the incident relates to them
-  if (current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED && (current.hit_sample ?? []).length > 0 && (current.hit_observation_ids ?? []).length === 0) {
+  if (current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED && (current.hits_sample ?? []).length > 0 && (current.hit_observation_ids ?? []).length === 0) {
     try {
       const { observedDataIds, observableIds } = await createHuntHitObservations(context, hunt, current);
       const observationIds = [...observedDataIds, ...observableIds];
@@ -909,10 +910,10 @@ const applyHuntRunReport = async (context: AuthContext, run: BasicStoreEntityHun
     if (run.hunt_run_mode === HUNT_RUN_MODE_EXECUTE) {
       patch.hits_count = Math.max(0, Math.round(input.hits_count ?? 0));
       patch.distinct_entities = Math.max(0, Math.round(input.distinct_entities ?? 0));
-      patch.evidence_sample = sanitizeEvidence(input.evidence_sample);
-      const hitSample = sanitizeHits(input.hits);
-      patch.hit_sample = hitSample;
-      Object.assign(patch, huntHitDates(hitSample, { first_hit_at: input.first_hit_at, last_hit_at: input.last_hit_at }));
+      const hitsSample = sanitizeHits(input.hits_sample);
+      patch.hits_sample = hitsSample;
+      patch.evidence_sample = markMatchedEvidence(sanitizeEvidence(input.evidence_sample), hitsSample);
+      Object.assign(patch, huntHitDates(hitsSample, { first_hit_at: input.first_hit_at, last_hit_at: input.last_hit_at }));
       const resultIds = Array.from(new Set((input.result_ids ?? []).filter((id) => typeof id === 'string' && STIX_ID_PATTERN.test(id))));
       patch.result_ids = resultIds.slice(0, HUNT_RUN_RESULT_IDS_MAX);
       if (Array.isArray(run.ioc_results) && run.ioc_results.length > 0) {
@@ -1095,14 +1096,14 @@ export const addHuntRunEvidence = async (context: AuthContext, user: AuthUser, r
       && current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED && isHuntRunFinalized(current);
     const automaticVerdict = outcomeChanges && current.verdict_source === HUNT_VERDICT_SOURCE_AUTO;
     const resultIds = Array.from(new Set([...(current.result_ids ?? []), ...results.map((result) => result.standard_id)]));
-    const hitSample = mergeHits(current.hit_sample ?? [], sanitizeHits(input.hits));
+    const hitsSample = mergeHits(current.hits_sample ?? [], sanitizeHits(input.hits_sample));
     const { element: patched } = await patchAttribute(context, HUNT_MANAGER_USER, current.internal_id, ENTITY_TYPE_HUNT_RUN, {
-      hit_sample: hitSample,
-      ...huntHitDates(hitSample, {}, current),
+      hits_sample: hitsSample,
+      ...huntHitDates(hitsSample, {}, current),
       result_ids: resultIds.slice(0, HUNT_RUN_RESULT_IDS_MAX),
       ...(resultIds.length > HUNT_RUN_RESULT_IDS_MAX ? { results_truncated: true } : {}),
       hits_count: (current.hits_count ?? 0) + addedHits,
-      evidence_sample: mergeEvidence(current.evidence_sample ?? [], sanitizeEvidence(input.evidence_sample)),
+      evidence_sample: markMatchedEvidence(mergeEvidence(current.evidence_sample ?? [], sanitizeEvidence(input.evidence_sample)), hitsSample),
       evidence_sources: Array.from(new Set([...(current.evidence_sources ?? []), ...(source ? [source] : [])])).slice(-EVIDENCE_SOURCES_MAX),
       last_evidence_at: lastEvidenceAt.toISOString(),
       // Reopens the finalization of the run, finalizeHuntRun records the automatic verdict again
