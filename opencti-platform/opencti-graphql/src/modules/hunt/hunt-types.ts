@@ -82,6 +82,8 @@ interface HuntAttributes {
   expected_observables?: string[];
   benign_patterns?: string[];
   escalation_threshold: number;
+  // Manual runs open an incident draft above the escalation threshold like autonomous ones; off, it is offered at verdict time
+  escalate_manual_runs?: boolean;
   hunt_max_results?: number;
   last_run_at?: string;
   last_run_status?: string;
@@ -122,6 +124,7 @@ export interface StixHunt extends StixDomainObject {
   expected_observables: string[];
   benign_patterns: string[];
   escalation_threshold: number;
+  escalate_manual_runs?: boolean;
   hunt_max_results?: number;
   [ATTRIBUTE_HUNT_TARGETS]: string[];
   [ATTRIBUTE_HUNT_TECHNIQUES]: string[];

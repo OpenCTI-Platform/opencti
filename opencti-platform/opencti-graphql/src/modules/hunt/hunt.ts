@@ -69,6 +69,7 @@ const HUNT_DEFINITION: ModuleDefinition<StoreEntityHunt, StixHunt> = {
     { name: 'expected_observables', label: 'Hunt expected observables', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, upsert_force_replace: true, isFilterable: false },
     { name: 'benign_patterns', label: 'Hunt benign patterns', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: true, upsert: true, upsert_force_replace: true, isFilterable: false },
     { name: 'escalation_threshold', label: 'Hunt escalation threshold', type: 'numeric', precision: 'integer', defaultValue: 10, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'escalate_manual_runs', label: 'Escalate manual runs', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'hunt_max_results', label: 'Hunt maximum results per run', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
     // Run statistics, written by the platform without stream events
     { name: 'last_run_at', label: 'Hunt last run date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },

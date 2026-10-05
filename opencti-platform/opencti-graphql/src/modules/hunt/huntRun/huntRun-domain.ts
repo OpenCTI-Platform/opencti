@@ -258,6 +258,8 @@ export interface HuntRunRequest {
   attempt?: number;
   // The run a retry replaces
   retryOf?: string | null;
+  // A retry escalates as the run it replaces; any other run as its trigger and its hunt decide
+  autoEscalation?: boolean | null;
   playbook?: {
     playbookId: string;
     executionId: string;
@@ -320,6 +322,9 @@ export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntit
   }
   const runs: BasicStoreEntityHuntRun[] = [];
   const logicFingerprint = huntLogicFingerprint(hunt);
+  const autoEscalation = mode === HUNT_RUN_MODE_EXECUTE
+    ? request.autoEscalation ?? (HUNT_RUN_AUTONOMOUS_TRIGGERS.includes(request.trigger) || hunt.escalate_manual_runs === true)
+    : null;
   // Taken before any run is published: a run its connector completes during the dispatch records a later date
   const queuedAt = now();
   let dispatchBudget = request.dispatchLimit ?? Number.POSITIVE_INFINITY;
@@ -339,6 +344,7 @@ export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntit
       attempt: Math.max(1, request.attempt ?? 1),
       retry_of: request.retryOf ?? null,
       hunt_logic_fingerprint: logicFingerprint,
+      auto_escalation: autoEscalation,
       aev_inject_id: request.aevInjectId ?? null,
       security_coverage_id: request.securityCoverageId ?? null,
       technique_id: request.techniqueId ?? null,
@@ -573,6 +579,12 @@ const patchHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRun, 
 };
 
 /**
+ * Whether a run opens an incident draft by itself above the escalation threshold, as decided at its creation. A run
+ * created before the decision was recorded escalated whatever started it, and keeps doing so.
+ */
+export const isAutoEscalatedHuntRun = (run: Pick<BasicStoreEntityHuntRun, 'auto_escalation'>) => run.auto_escalation !== false;
+
+/**
  * A terminated executed run is finalized once its automatic verdict is recorded (verdict_source set, by finalization or
  * by an analyst). A terminated run without it stopped before the end of its finalization and is finalized again.
  */
@@ -607,7 +619,10 @@ const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRu
       logApp.error('[OPENCTI-MODULE] Hunt hit observations creation failed', { cause: error, runId: current.internal_id });
     }
   }
-  if (current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED && (current.hits_count ?? 0) >= hunt.escalation_threshold && !current.incident_id) {
+  // A run started by hand escalates only when its hunt asks for it: otherwise the analyst opens the incident with a true
+  // positive verdict, never before reading the hits
+  if (current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED && isAutoEscalatedHuntRun(current)
+    && (current.hits_count ?? 0) >= hunt.escalation_threshold && !current.incident_id) {
     try {
       if (!current.draft_id) {
         const draftId = await createHuntIncidentWorkspace(context, current);
@@ -834,6 +849,7 @@ export const replaceHuntRun = async (context: AuthContext, hunt: BasicStoreEntit
       requester: options.requester,
       attempt: (run.attempt ?? 1) + 1,
       retryOf: run.internal_id,
+      autoEscalation: isAutoEscalatedHuntRun(run),
       // A planned retry keeps the run in its playbook step, which waits on it
       playbook: planned && run.playbook_id && run.playbook_execution_id && run.playbook_step_id
         ? { playbookId: run.playbook_id, executionId: run.playbook_execution_id, stepId: run.playbook_step_id, instanceId: run.playbook_instance_id }
@@ -1213,7 +1229,8 @@ export const setHuntRunVerdict = async (context: AuthContext, user: AuthUser, ru
       verdict_source: source,
       hunt_analyst_feedback: input.hunt_analyst_feedback ? truncate(input.hunt_analyst_feedback, ERROR_MESSAGE_MAX_LENGTH) : current.hunt_analyst_feedback ?? null,
     };
-    if (verdict === HUNT_VERDICT_TRUE_POSITIVE && !current.incident_id) {
+    // The incident is offered with a true positive verdict: the analyst may record the verdict alone
+    if (verdict === HUNT_VERDICT_TRUE_POSITIVE && !current.incident_id && input.create_incident !== false) {
       // A draft recorded by an interrupted finalization is reused rather than doubled
       const draftId = current.draft_id ?? await createHuntIncidentWorkspace(context, current);
       patch.draft_id = draftId;

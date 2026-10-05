@@ -43,6 +43,7 @@ const huntResolvers: Resolvers = {
     techniqueValidations: (hunt, _, context) => computeHuntTechniqueValidations(context, context.user, hunt),
     sigmaValidation: (hunt) => huntSigmaValidation(hunt),
     readiness: (hunt, _, context) => computeHuntReadiness(context, context.user, hunt),
+    escalate_manual_runs: (hunt) => hunt.escalate_manual_runs === true,
     iocSet: (hunt, { first }, context) => loadHuntIocSet(context, hunt, first),
     runs: (hunt, args, context) => findHuntRunsForHunt(context, context.user, hunt.id, args),
     statistics: (hunt, args, context) => computeHuntStatistics(context, context.user, { ...args, huntId: hunt.id }),

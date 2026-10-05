@@ -84,6 +84,7 @@ const HUNT_RUN_DEFINITION: ModuleDefinition<StoreEntityHuntRun, StixHuntRun> = {
     { name: 'error_message', label: 'Run error', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'failure_retryable', label: 'Run failure retryable', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'hunt_logic_fingerprint', label: 'Run hunt logic fingerprint', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'auto_escalation', label: 'Run automatic escalation', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'playbook_id', label: 'Run playbook', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'playbook_execution_id', label: 'Run playbook execution', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'playbook_step_id', label: 'Run playbook step', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },

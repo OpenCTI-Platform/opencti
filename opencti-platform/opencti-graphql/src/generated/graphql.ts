@@ -12447,6 +12447,8 @@ export type Hunt = BasicObject & StixCoreObject & StixDomainObject & StixObject 
   draftVersion?: Maybe<DraftVersion>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String']['output'];
+  /** Runs started by hand open an incident draft above the escalation threshold, like scheduled and autonomous runs. Off (the default), the incident is offered when a true positive verdict is set */
+  escalate_manual_runs: Scalars['Boolean']['output'];
   escalation_threshold: Scalars['Int']['output'];
   expected_observables?: Maybe<Array<Scalars['String']['output']>>;
   exportFiles?: Maybe<FileConnection>;
@@ -12728,6 +12730,7 @@ export type HuntAddInput = {
   createdBy?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
   embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
+  escalate_manual_runs?: InputMaybe<Scalars['Boolean']['input']>;
   escalation_threshold?: InputMaybe<Scalars['Int']['input']>;
   expected_observables?: InputMaybe<Array<Scalars['String']['input']>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
@@ -13181,6 +13184,8 @@ export type HuntRun = BasicObject & InternalObject & {
   __typename?: 'HuntRun';
   aev_inject_id?: Maybe<Scalars['String']['output']>;
   attempt: Scalars['Int']['output'];
+  /** The run opens an incident draft by itself above the escalation threshold: autonomous runs always, runs started by hand when their hunt escalates manual runs. False: the incident is offered at verdict time */
+  auto_escalation: Scalars['Boolean']['output'];
   completed_at?: Maybe<Scalars['DateTime']['output']>;
   connector_id?: Maybe<Scalars['String']['output']>;
   connector_name?: Maybe<Scalars['String']['output']>;
@@ -13345,6 +13350,8 @@ export enum HuntRunVerdict {
 }
 
 export type HuntRunVerdictInput = {
+  /** A true positive verdict opens an incident draft from the run unless false; ignored for any other verdict or a run that has one */
+  create_incident?: InputMaybe<Scalars['Boolean']['input']>;
   hunt_analyst_feedback?: InputMaybe<Scalars['String']['input']>;
   source?: InputMaybe<HuntVerdictSource>;
   verdict: HuntRunVerdict;
@@ -52704,6 +52711,7 @@ export type HuntResolvers<ContextType = any, ParentType extends ResolversParentT
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  escalate_manual_runs?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   escalation_threshold?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   expected_observables?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<HuntExportFilesArgs>>;
@@ -53004,6 +53012,7 @@ export type HuntRequiredPermissionResolvers<ContextType = any, ParentType extend
 export type HuntRunResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntRun'] = ResolversParentTypes['HuntRun']> = ResolversObject<{
   aev_inject_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   attempt?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  auto_escalation?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   completed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   connector_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   connector_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

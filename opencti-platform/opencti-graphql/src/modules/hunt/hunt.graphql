@@ -303,6 +303,8 @@ type Hunt implements BasicObject & StixCoreObject & StixDomainObject & StixObjec
   expected_observables: [String!]
   benign_patterns: [String!]
   escalation_threshold: Int!
+  "Runs started by hand open an incident draft above the escalation threshold, like scheduled and autonomous runs. Off (the default), the incident is offered when a true positive verdict is set"
+  escalate_manual_runs: Boolean!
   hunt_max_results: Int
   last_run_at: DateTime
   last_run_status: String
@@ -501,6 +503,7 @@ input HuntAddInput {
   expected_observables: [String!]
   benign_patterns: [String!]
   escalation_threshold: Int
+  escalate_manual_runs: Boolean
   hunt_max_results: Int
   huntTargets: [String!]
   huntTechniques: [String!]

@@ -159,6 +159,8 @@ type HuntRun implements BasicObject & InternalObject {
   verdict_proposal_rationale: String
   verdict_proposal_agent: String
   incident_proposal: String
+  "The run opens an incident draft by itself above the escalation threshold: autonomous runs always, runs started by hand when their hunt escalates manual runs. False: the incident is offered at verdict time"
+  auto_escalation: Boolean!
   incident_id: String
   draft_id: String
   aev_inject_id: String
@@ -273,6 +275,8 @@ input HuntRunVerdictInput {
   verdict: HuntRunVerdict!
   hunt_analyst_feedback: String
   source: HuntVerdictSource
+  "A true positive verdict opens an incident draft from the run unless false; ignored for any other verdict or a run that has one"
+  create_incident: Boolean
 }
 
 input HuntEvidenceInput {

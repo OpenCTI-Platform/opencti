@@ -12,6 +12,7 @@ import {
   findHuntRunResultIds,
   findHuntRunResults,
   findHuntRunsPaginated,
+  isAutoEscalatedHuntRun,
   isHuntRunHuntDeleted,
   registerHuntConnector,
   reportHuntConnectorCheck,
@@ -38,6 +39,7 @@ const huntRunResolvers: Resolvers = {
     hunt_deleted: (run, _, context) => isHuntRunHuntDeleted(context, run),
     queue_reason: (run, _, context) => huntRunQueueReason(context, run),
     failure_reason: (run) => huntRunFailureReason(run),
+    auto_escalation: (run) => isAutoEscalatedHuntRun(run),
     securityPlatform: (run, _, context) => (run.security_platform_id
       ? storeLoadById(context, context.user, run.security_platform_id, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM)
       : null),

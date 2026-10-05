@@ -18840,6 +18840,11 @@ type Hunt implements BasicObject & StixCoreObject & StixDomainObject & StixObjec
   expected_observables: [String!]
   benign_patterns: [String!]
   escalation_threshold: Int!
+
+  """
+  Runs started by hand open an incident draft above the escalation threshold, like scheduled and autonomous runs. Off (the default), the incident is offered when a true positive verdict is set
+  """
+  escalate_manual_runs: Boolean!
   hunt_max_results: Int
   last_run_at: DateTime
   last_run_status: String
@@ -19030,6 +19035,7 @@ input HuntAddInput {
   expected_observables: [String!]
   benign_patterns: [String!]
   escalation_threshold: Int
+  escalate_manual_runs: Boolean
   hunt_max_results: Int
   huntTargets: [String!]
   huntTechniques: [String!]
@@ -19280,6 +19286,11 @@ type HuntRun implements BasicObject & InternalObject {
   verdict_proposal_rationale: String
   verdict_proposal_agent: String
   incident_proposal: String
+
+  """
+  The run opens an incident draft by itself above the escalation threshold: autonomous runs always, runs started by hand when their hunt escalates manual runs. False: the incident is offered at verdict time
+  """
+  auto_escalation: Boolean!
   incident_id: String
   draft_id: String
   aev_inject_id: String
@@ -19389,6 +19400,11 @@ input HuntRunVerdictInput {
   verdict: HuntRunVerdict!
   hunt_analyst_feedback: String
   source: HuntVerdictSource
+
+  """
+  A true positive verdict opens an incident draft from the run unless false; ignored for any other verdict or a run that has one
+  """
+  create_incident: Boolean
 }
 
 input HuntEvidenceInput {

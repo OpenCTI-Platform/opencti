@@ -226,6 +226,7 @@ export const planHuntPackImport = async (
     expected_observables: stixHunt.expected_observables ?? [],
     benign_patterns: stixHunt.benign_patterns ?? [],
     escalation_threshold: stixHunt.escalation_threshold,
+    escalate_manual_runs: stixHunt.escalate_manual_runs === true,
     hunt_max_results: stixHunt.hunt_max_results || undefined,
     [INPUT_HUNT_TECHNIQUES]: await resolveTechniques(stixHunt[ATTRIBUTE_HUNT_TECHNIQUES]),
     [INPUT_HUNT_TARGETS]: await resolveIds(stixHunt[ATTRIBUTE_HUNT_TARGETS]),

@@ -178,6 +178,8 @@ interface HuntRunAttributes {
   failure_retryable?: boolean | null;
   // The hunt logic the run was created from (huntLogicFingerprint): the translation of this logic is known from its runs
   hunt_logic_fingerprint?: string | null;
+  // The run opens an incident draft by itself above the escalation threshold (autonomous runs, manual runs on opt-in)
+  auto_escalation?: boolean | null;
   playbook_id?: string | null;
   playbook_execution_id?: string | null;
   playbook_step_id?: string | null;
