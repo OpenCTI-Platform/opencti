@@ -1716,8 +1716,9 @@ export const processInvestigationRun = async (context: AuthContext, runId: strin
       default:
         break;
     }
+    // Whatever state the complete pass left the run in: a pass that ends the run or makes it wait for an approval counts too.
     if ((run.step_failures ?? 0) > 0) {
-      await updateRunningRun(context, runId, () => ({ step_failures: 0 }));
+      await updateInvestigationRun(context, runId, (current) => ((current.step_failures ?? 0) > 0 ? { step_failures: 0 } : null));
     }
   } catch (error) {
     const failures = (run.step_failures ?? 0) + 1;
