@@ -435,6 +435,8 @@ interface ContainerVisibilityScope {
   isElementAsVisibleAsContainer: (element: AnyStoreElement) => boolean;
   /** The event and the element it references are readable by every reader of the container */
   isEventAsVisibleAsContainer: (event: StoredTimelineEvent) => boolean;
+  /** The element and sources of the event are restricted to no authorized member and shared with the organizations of the container at least, whatever their markings */
+  isEventSharedAsContainer: (event: StoredTimelineEvent) => boolean;
 }
 
 /**
@@ -482,9 +484,8 @@ const resolveContainerVisibilityScope = async (
   const resolved = { ...preloaded, ...read };
   const markingsMap = await getEntitiesMapFromCache<StoreMarkingDefinition>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const isMarkingCoveredByContainer = buildContainerMarkingCoverage(markingsOf(container), markingsMap);
-  const isElementAsVisibleAsContainer = (element: AnyStoreElement) => {
+  const isElementSharedAsContainer = (element: AnyStoreElement) => {
     if ((element.restricted_members ?? []).length > 0) return false;
-    if (!markingsOf(element).every(isMarkingCoveredByContainer)) return false;
     // Organization sharing (platform access rules): an object shared with no organization is readable inside the platform
     // organization only, a shared object inside the platform organization and in each organization it is shared with.
     // An element is therefore readable by every reader of the container when it is shared with at least the
@@ -492,18 +493,32 @@ const resolveContainerVisibilityScope = async (
     const granted = new Set(grantedOf(element));
     return containerGranted.every((id) => granted.has(id));
   };
-  const isEventAsVisibleAsContainer = (event: StoredTimelineEvent) => {
-    if (!markingsOf(event).every(isMarkingCoveredByContainer)) return false;
-    // The sources of a derived event (the relationships dating a technique, the run behind a finding) date or describe
-    // it like its element: each must be as visible as the container, and a source no longer found never is
-    const sourcesAsVisible = timelineEventSourceIds(event).every((id) => !!resolved[id] && isElementAsVisibleAsContainer(resolved[id]));
-    if (!sourcesAsVisible) return false;
-    if (!event.element_id || event.element_id === containerId) return true;
-    // The access scope of a deleted element is unknown while the event still speaks about it: never as visible as the container
-    const element = resolved[event.element_id];
-    return !!element && isElementAsVisibleAsContainer(element);
+  const isElementAsVisibleAsContainer = (element: AnyStoreElement) => {
+    return isElementSharedAsContainer(element) && markingsOf(element).every(isMarkingCoveredByContainer);
   };
-  return { resolved, isElementAsVisibleAsContainer, isEventAsVisibleAsContainer };
+  // The sources of a derived event (the relationships dating a technique, the run behind a finding) date or describe it
+  // like its element. The access scope of a deleted element or source is unknown while the event still speaks about it:
+  // never as visible as the container
+  const isEventReferencesMatching = (event: StoredTimelineEvent, isElementMatching: (element: AnyStoreElement) => boolean) => {
+    const referencedIds = [event.element_id, ...timelineEventSourceIds(event)].filter((id): id is string => !!id && id !== containerId);
+    return referencedIds.every((id) => !!resolved[id] && isElementMatching(resolved[id]));
+  };
+  const isEventAsVisibleAsContainer = (event: StoredTimelineEvent) => {
+    return markingsOf(event).every(isMarkingCoveredByContainer) && isEventReferencesMatching(event, isElementAsVisibleAsContainer);
+  };
+  const isEventSharedAsContainer = (event: StoredTimelineEvent) => isEventReferencesMatching(event, isElementSharedAsContainer);
+  return { resolved, isElementAsVisibleAsContainer, isEventAsVisibleAsContainer, isEventSharedAsContainer };
+};
+
+/**
+ * A file stored in the container is read by every reader of the container whose markings cover the file markings, which
+ * already cover the markings of its events and of their elements. Beyond markings, the file only holds the events whose
+ * element and sources are restricted to no authorized member and shared with the organizations of the container at least.
+ */
+export const filterEventsSharedAsContainer = async (context: AuthContext, container: AnyStoreElement, events: StoredTimelineEvent[]): Promise<StoredTimelineEvent[]> => {
+  if (events.length === 0) return events;
+  const scope = await resolveContainerVisibilityScope(context, container, events);
+  return events.filter(scope.isEventSharedAsContainer);
 };
 
 /**

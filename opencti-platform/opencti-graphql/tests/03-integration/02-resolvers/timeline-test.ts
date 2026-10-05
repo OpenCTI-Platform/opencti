@@ -911,6 +911,30 @@ describe('Incident and case timeline', () => {
       expect(markingIdsOf(ceiled.data.containerTimelineExportFile)).toEqual([MARKING_TLP_GREEN]);
     });
 
+    it('should leave out of a stored export the events about elements restricted to some members', async () => {
+      // Only its authorized members read this request for information: the exporting admin does, other readers of the case do not
+      const restricted = await createEntity(testContext, SYSTEM_USER, {
+        name: 'Timeline restricted request',
+        authorized_members: [{ id: ADMIN_USER.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }],
+      }, ENTITY_TYPE_CONTAINER_CASE_RFI);
+      const added = await queryAsAdminWithSuccess({
+        query: TIMELINE_EVENT_ADD,
+        variables: { input: { container_id: caseIncident.id, event_time: '2026-02-05T09:00:00.000Z', title: 'Regulator questions received', element_id: restricted.id } },
+      });
+      try {
+        // Downloaded, the export only reaches the exporting user: the event is in it
+        const downloaded = await queryAsAdminWithSuccess({ query: CONTAINER_TIMELINE_EXPORT, variables: { id: caseIncident.id, format: 'csv' } });
+        expect(downloaded.data.containerTimelineExport).toContain('Regulator questions received');
+        // Stored in the case, the file reaches every reader of the case whose markings cover it: the event is left out
+        const stored = await queryAsAdminWithSuccess({ query: CONTAINER_TIMELINE_EXPORT_FILE, variables: { id: caseIncident.id, format: 'csv' } });
+        expect(stored.data.containerTimelineExportFile.content).not.toContain('Regulator questions received');
+        expect(stored.data.containerTimelineExportFile.content).toContain('Hosts isolated by the SOC');
+      } finally {
+        await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: added.data.timelineEventAdd.id } });
+        await deleteElementById(testContext, SYSTEM_USER, restricted.id, ENTITY_TYPE_CONTAINER_CASE_RFI);
+      }
+    });
+
     it('should name the referenced elements in the exports', async () => {
       const csv = await queryAsAdminWithSuccess({ query: CONTAINER_TIMELINE_EXPORT, variables: { id: caseIncident.id, format: 'csv' } });
       const rows = (csv.data.containerTimelineExport as string).split('\r\n').filter((row) => row.length > 0);

@@ -63,6 +63,7 @@ import {
   containerAccessFields,
   createConcurrencyLimiter,
   deleteTimelineDocuments,
+  filterEventsSharedAsContainer,
   getTimelineRules,
   loadStoredTimelineEvents,
   loadTimelineSettings,
@@ -492,7 +493,12 @@ interface TimelineExportSnapshot {
  * shareable markings (same rule as every export of the platform). The ceiling also applies to the elements the events
  * reference, which can be marked more strictly than the events themselves.
  */
-const loadExportedTimelineEvents = async (context: AuthContext, user: AuthUser, args: TimelineExportArgs): Promise<TimelineExportSnapshot> => {
+const loadExportedTimelineEvents = async (
+  context: AuthContext,
+  user: AuthUser,
+  args: TimelineExportArgs,
+  opts: { storedInContainer?: boolean } = {},
+): Promise<TimelineExportSnapshot> => {
   const container = await ensureTimelineGenerated(context, await loadTimelineContainer(context, user, args.id));
   const contentMaxMarkings = args.contentMaxMarkings ?? [];
   if (contentMaxMarkings.length > 0) {
@@ -519,8 +525,10 @@ const loadExportedTimelineEvents = async (context: AuthContext, user: AuthUser, 
     const element = event.element_id ? elements[event.element_id] : undefined;
     return !element || markingsOf(element).every((markingId) => !markingsAboveCeiling.has(markingId));
   });
-  const anchors = computeTimelineAnchors(withinCeiling, { isClosed: await isContainerClosed(context, container), computedAt: now() });
-  return { container, items: withinCeiling, elements, anchors };
+  // A file stored in the container reaches every reader of the container whose markings cover it, not only this user
+  const exported = opts.storedInContainer ? await filterEventsSharedAsContainer(context, container, withinCeiling) : withinCeiling;
+  const anchors = computeTimelineAnchors(exported, { isClosed: await isContainerClosed(context, container), computedAt: now() });
+  return { container, items: exported, elements, anchors };
 };
 
 const renderTimelineExport = (snapshot: TimelineExportSnapshot, args: TimelineExportArgs): string => {
@@ -580,7 +588,7 @@ export const exportContainerTimeline = async (context: AuthContext, user: AuthUs
 export const exportContainerTimelineFile = async (context: AuthContext, user: AuthUser, args: QueryContainerTimelineExportFileArgs) => {
   const selected = await resolveMarkingIds(context, args.fileMarkings ?? []);
   validateMarkings(user, selected);
-  const snapshot = await loadExportedTimelineEvents(context, user, args);
+  const snapshot = await loadExportedTimelineEvents(context, user, args, { storedInContainer: true });
   const content = renderTimelineExport(snapshot, args);
   // The file always names the container: its markings are required even when no event is exported
   const required = [...markingsOf(snapshot.container), ...snapshot.items.flatMap((event) => {
