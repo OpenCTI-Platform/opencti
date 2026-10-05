@@ -211,6 +211,15 @@ export const countedByLastScan = (trace: ScanTrace | null | undefined, objectId:
 };
 
 /**
+ * Whether the last full computation counted the creation of an object: the scan reads every object created up to its
+ * start, the stream adds the later ones. Both read the same creation date, so an object counts once whichever side of
+ * the stream position its event fell.
+ */
+export const creationCountedByLastScan = (trace: ScanTrace | null | undefined, createdAt: number | null): boolean => {
+  return !!trace && createdAt !== null && createdAt <= trace.started_at;
+};
+
+/**
  * Whether the last full computation already counted a signal given to an object at `time` while it scanned (a
  * revocation, read with the object, or a sighting, PIR match or hunt verdict, read with the signals of its page): the
  * scan read it after the event. The stream applies the signal otherwise, so a change made during the scan counts once.

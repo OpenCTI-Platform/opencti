@@ -318,6 +318,24 @@ describe('Source intelligence live signal accounting', () => {
     expect(await incrementsWith(AT + 30 * 1000, AT + 60 * 1000)).toBeUndefined();
   });
 
+  it('should not count again the creation of an object the full computation scanned', async () => {
+    const creation = (createdAt: number) => event('create', { id: 'indicator-2', type: 'Indicator', created_at: iso(createdAt) }, { origin: { user_id: 'user-feed' } });
+    const scanTrace = { started_at: AT, pages: [] as Array<[number, string, number]> };
+    const creditedSources = async (createdAt: number) => {
+      const { increments } = await computeEventIncrements({} as AuthContext, [creation(createdAt)] as any, resolver, {
+        enterprise: false,
+        huntRunType: null,
+        lookups: { documents },
+        scanTrace,
+      });
+      return Array.from(increments.keys());
+    };
+    // Created before the scan date: the scan counted it, even when its event comes after the stream position
+    expect(await creditedSources(AT - 1000)).toEqual([]);
+    // Created after the scan date: only the stream counts it
+    expect(await creditedSources(AT + 1000)).toEqual(['source-feed']);
+  });
+
   it('should withdraw the detections of a hunt run whose true positive verdict is changed', async () => {
     const verdictChange = event('update', { id: 'run-1', type: HUNT_RUN_TYPE }, {
       context: {

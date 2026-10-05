@@ -53,6 +53,7 @@ import {
   scanKnowledge,
   type ScanTrace,
   countedByLastScan,
+  creationCountedByLastScan,
   signalSeenByLastScan,
   toAssertionActivity,
 } from '../modules/sourceIntelligence/sourceIntelligence-compute';
@@ -304,7 +305,8 @@ export const computeEventIncrements = async (
     const entityType: string = extension.type;
     const isKnowledge = isStixCoreObject(entityType) || isStixCoreRelationship(entityType) || entityType === STIX_SIGHTING_RELATIONSHIP;
     if (data.type === EVENT_TYPE_CREATE) {
-      if (isKnowledge && extension.is_inferred !== true) {
+      const createdAt = extension.created_at ? Date.parse(extension.created_at) : NaN;
+      if (isKnowledge && extension.is_inferred !== true && !creationCountedByLastScan(options.scanTrace, Number.isNaN(createdAt) ? null : createdAt)) {
         const sourceIds = resolveEventSources(resolver, {
           originUserId: data.origin?.user_id,
           creatorIds: extension.creator_ids,
@@ -577,8 +579,11 @@ export const runFullComputation = async (context: AuthContext, settings: SourceI
     const enterprise = await isEnterpriseEdition(context);
     const sources = await syncSources(context, settings);
     const streamBoundary = await streamHighWaterMark();
-    const { tracked, state, documents } = await computeAndStore(context, settings, sources, now, { live: true, snapshot: true, enterprise, streamBoundary });
-    const trace: ScanTrace = { started_at: now, pages: state.scanPages };
+    // The scan reads the objects created up to a date taken after the stream position: an object created in between
+    // is scanned, and its replayed creation is then recognised by its date and not counted again
+    const scanAsOf = Math.max(now, Date.now());
+    const { tracked, state, documents } = await computeAndStore(context, settings, sources, scanAsOf, { live: true, snapshot: true, enterprise, streamBoundary });
+    const trace: ScanTrace = { started_at: scanAsOf, pages: state.scanPages };
     await updateSourceIntelligenceState({ last_scan_trace: JSON.stringify(trace) });
     // The live scorecards now count everything written before the scan: the stream resumes after its last event then,
     // so the events the scan already counted are never applied again and the later ones are kept
