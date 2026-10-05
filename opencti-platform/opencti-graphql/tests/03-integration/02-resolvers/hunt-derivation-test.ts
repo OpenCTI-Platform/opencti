@@ -126,7 +126,8 @@ describe('Hunt derived content ("Hunt this")', () => {
     expect(byId.get(domainIndicatorId)).toMatchObject({ value_types: ['Domain-Name'], source_ids: [malwareId] });
     expect(byId.get(fileIndicatorId)).toMatchObject({ value_types: ['StixFile'], source_ids: [malwareId] });
     expect(derived.techniques).toEqual([{ id: techniqueId, x_mitre_id: 'T9901' }]);
-    expect(derived.rules).toEqual([{ id: sigmaIndicatorId, pattern_type: 'sigma', pattern: SIGMA_RULE, technique_ids: [techniqueId] }]);
+    // String attributes are stored trimmed
+    expect(derived.rules).toEqual([{ id: sigmaIndicatorId, pattern_type: 'sigma', pattern: SIGMA_RULE.trim(), technique_ids: [techniqueId] }]);
     expect(derived.elements_truncated).toBe(false);
   });
 
