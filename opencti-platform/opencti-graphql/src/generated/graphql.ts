@@ -35747,7 +35747,6 @@ export type SourceRecommendation = BasicObject & InternalObject & {
   dismissed_by?: Maybe<Creator>;
   entity_type: Scalars['String']['output'];
   error_message?: Maybe<Scalars['String']['output']>;
-  evidence?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   kind: SourceRecommendationKind;
   metrics?: Maybe<Array<Maybe<Metric>>>;
@@ -35757,6 +35756,7 @@ export type SourceRecommendation = BasicObject & InternalObject & {
   pir_id?: Maybe<Scalars['ID']['output']>;
   proposed_at: Scalars['DateTime']['output'];
   rationale: Scalars['String']['output'];
+  recommendation_evidence?: Maybe<Scalars['String']['output']>;
   representative: Representative;
   required_settings: Array<ConnectorRequiredSetting>;
   reverted_at?: Maybe<Scalars['DateTime']['output']>;
@@ -59365,7 +59365,6 @@ export type SourceRecommendationResolvers<ContextType = any, ParentType extends 
   dismissed_by?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   error_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  evidence?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   kind?: Resolver<ResolversTypes['SourceRecommendationKind'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
@@ -59375,6 +59374,7 @@ export type SourceRecommendationResolvers<ContextType = any, ParentType extends 
   pir_id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   proposed_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   rationale?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  recommendation_evidence?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   required_settings?: Resolver<Array<ResolversTypes['ConnectorRequiredSetting']>, ParentType, ContextType>;
   reverted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
