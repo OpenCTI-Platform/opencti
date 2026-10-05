@@ -11,7 +11,7 @@ import {
   setUserTheme,
   type TimelineCase,
 } from '../dataForTesting/timeline.data';
-import { captureOverview } from './timelineCaptures';
+import { captureDrawer, captureOverview } from './timelineCaptures';
 
 const LIGHT_THEME = 'Filigran Light';
 
@@ -103,7 +103,7 @@ test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, r
     await page.keyboard.press('Enter');
     const drawer = page.getByTestId('timeline-event-drawer');
     await expect(drawer).toBeVisible();
-    await capture('drawer-event');
+    await captureDrawer(page, testInfo, 'drawer-event', drawer);
     // The drawer actions sit in its header, next to the close button
     await page.getByTestId('timeline-event-pin').click();
     await expect(page.getByTestId('timeline-event-pin')).toHaveText('Unpin');
@@ -124,7 +124,9 @@ test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, r
     const form = page.getByTestId('timeline-event-form');
     await expect(form).toBeVisible();
     await form.getByLabel('Title').fill(milestoneTitle);
-    await capture('form-milestone');
+    // Every field explains itself, and the form links to the milestones section of the documentation
+    await expect(form.getByTestId('timeline-event-form-learn-more')).toBeAttached();
+    await captureDrawer(page, testInfo, 'form-milestone', form);
     await page.getByTestId('timeline-event-form-submit').click();
     await expect(page.getByText('The event has been added to the timeline')).toBeVisible();
     await expect(list).toContainText(milestoneTitle);
@@ -158,8 +160,12 @@ test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, r
     // region Timeline settings
     await page.getByTestId('timeline-more-actions').click();
     await page.getByTestId('timeline-open-settings').click();
-    await expect(page.getByTestId('timeline-settings-drawer')).toBeVisible();
-    await capture('settings-drawer');
+    const settings = page.getByTestId('timeline-settings-drawer');
+    await expect(settings).toBeVisible();
+    await expect(settings.getByTestId('timeline-settings-learn-more')).toBeAttached();
+    await captureDrawer(page, testInfo, 'settings-drawer', settings);
+    await page.keyboard.press('Escape');
+    await expect(settings).not.toBeVisible();
     // endregion
 
     // region Error state: the events cannot be loaded, then they load again on retry
@@ -183,12 +189,22 @@ test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, r
     await expect(page.getByTestId('timeline-lanes')).toBeVisible();
     // endregion
 
-    // region Lanes view in the light theme
+    // region Lanes view, event form and settings in the light theme
     lightTheme = true;
     await setUserTheme(request, LIGHT_THEME);
     await page.goto(timelineUrl);
     await expect(page.getByTestId('timeline-lanes')).toBeVisible();
     await capture('lanes-populated-light');
+    await page.getByTestId('timeline-add-milestone').click();
+    await expect(form).toBeVisible();
+    await form.getByLabel('Title').fill(milestoneTitle);
+    await captureDrawer(page, testInfo, 'form-milestone-light', form);
+    await page.keyboard.press('Escape');
+    await expect(form).not.toBeVisible();
+    await page.getByTestId('timeline-more-actions').click();
+    await page.getByTestId('timeline-open-settings').click();
+    await expect(settings).toBeVisible();
+    await captureDrawer(page, testInfo, 'settings-drawer-light', settings);
     // endregion
   } finally {
     if (lightTheme) await setUserTheme(request, null);
