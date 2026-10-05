@@ -16,7 +16,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import type { Resolvers } from '../../generated/graphql';
 import { BUS_TOPICS } from '../../config/conf';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
-import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
+import { canSubscriberStillAccess } from '../../graphql/subscriptionWrapper';
+import { pubSubAsyncIterator } from '../../database/redis';
+import { ForbiddenAccess } from '../../config/errors';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
+import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { KNOWLEDGE } from '../../utils/access';
 import { loadCreators } from '../../database/members';
 import { elFindByIds } from '../../database/engine';
@@ -41,8 +45,10 @@ import {
   findInvestigationRunsPaginated,
   filterReadableRunRecords,
   isInvestigationRunWithheld,
+  loadInvestigationRun,
   requestInvestigationEnrichment,
 } from './investigationRun-domain';
+import { runSourceIds } from './investigationRun-utils';
 import {
   addInvestigationPolicy,
   countInvestigationRunsForPolicy,
@@ -88,6 +94,63 @@ const served = (run: BasicStoreEntityInvestigationRun, context: any) => {
 
 const artifactIdOf = (view: BasicStoreEntityInvestigationRun, key: 'draft_id' | 'workspace_id') => {
   return isInvestigationRunWithheld(view) ? null : view[key] ?? null;
+};
+
+// Where the objects a run reads and cites are published when they change, a
+// marking, a sharing or a member restriction included.
+const SOURCE_EDIT_TOPICS = [
+  BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC,
+  BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC,
+  BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC,
+  BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC,
+];
+
+/**
+ * The events of a run, and of the objects it reads and cites: a change of one
+ * of them delivers the run again, so that an open view is served what the
+ * subscriber may see now (findings withheld once a source is no longer
+ * accessible to them) instead of keeping what it showed. The subscriber's
+ * access to the run is checked on every event; what an event carries of its
+ * findings is served by the run resolvers above.
+ */
+const subscribeToRunAndSources = async (context: any, id: string): Promise<AsyncIterable<unknown>> => {
+  const item = await internalLoadById(context, context.user, id, { baseData: true, type: ENTITY_TYPE_INVESTIGATION_RUN });
+  if (!item) throw ForbiddenAccess('You are not allowed to listen this.');
+  const liveContext = { ...context, draft_context: '' };
+  const stored = await loadInvestigationRun(liveContext, id);
+  let sources = new Set(stored ? runSourceIds(stored) : []);
+  const inner = pubSubAsyncIterator([BUS_TOPICS[ENTITY_TYPE_INVESTIGATION_RUN].EDIT_TOPIC, ...SOURCE_EDIT_TOPICS]);
+  // A throw here closes the socket and orphans the redis subscription: every failure skips the event.
+  const runEventOf = async (payload: { instance?: { id?: string; standard_id?: string } } | undefined) => {
+    try {
+      const instance = payload?.instance;
+      if (!instance?.id) return null;
+      let run: BasicStoreEntityInvestigationRun | undefined;
+      if (instance.id === id) {
+        run = instance as unknown as BasicStoreEntityInvestigationRun;
+      } else if (sources.has(instance.id) || (!!instance.standard_id && sources.has(instance.standard_id))) {
+        run = await loadInvestigationRun(liveContext, id);
+      }
+      if (!run) return null;
+      sources = new Set(runSourceIds(run));
+      return await canSubscriberStillAccess(context, run, [KNOWLEDGE]) ? { instance: run } : null;
+    } catch {
+      return null;
+    }
+  };
+  const iterator = {
+    next: async (): Promise<IteratorResult<unknown>> => {
+      for (;;) {
+        const result = await inner.next();
+        if (result.done) return result;
+        const event = await runEventOf(result.value);
+        if (event) return { value: event, done: false };
+      }
+    },
+    return: () => (inner.return ? inner.return() : Promise.resolve({ value: undefined, done: true })),
+    throw: (error: Error) => (inner.throw ? inner.throw(error) : Promise.reject(error)),
+  };
+  return { [Symbol.asyncIterator]: () => iterator };
 };
 
 const investigationRunResolvers: Resolvers = {
@@ -208,15 +271,7 @@ const investigationRunResolvers: Resolvers = {
       resolve: (payload: { instance: BasicStoreEntityInvestigationRun }) => payload.instance,
       subscribe: async (_: unknown, { id }: { id: string }, context: any) => {
         await checkEnterpriseEdition(context);
-        const bus = BUS_TOPICS[ENTITY_TYPE_INVESTIGATION_RUN];
-        // A run's markings widen as it cites restricted objects: access is checked on every event,
-        // and what an event carries of its findings is served by the run resolvers above.
-        return subscribeToInstanceEvents(_, context, id, [bus.EDIT_TOPIC], {
-          type: ENTITY_TYPE_INVESTIGATION_RUN,
-          notifySelf: true,
-          recheckAccess: true,
-          requiredCapabilities: [KNOWLEDGE],
-        });
+        return subscribeToRunAndSources(context, id);
       },
     },
   },
