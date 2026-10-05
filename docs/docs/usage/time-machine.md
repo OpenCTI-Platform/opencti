@@ -156,7 +156,7 @@ Three widget visualizations bring the landscape changes to your [custom dashboar
 - **New techniques by tactic**,
 - **Top changed entities**.
 
-Create them with the **Entities** perspective: the filters of the widget define the set of entities, and the period of the dashboard defines the dates (the last 30 days when the dashboard has no period). Widgets cover at most 200 entities and their result is cached for one hour; when the set of entities exceeds this limit, the widget says that its result is partial. See [Widget creation](widgets.md) for details.
+Create them with the **Entities** perspective: the filters of the widget define the set of entities, and the period of the dashboard defines the dates (the last 30 days when the dashboard has no period). Widgets cover at most 200 entities and their result is cached for one hour once their period has ended (a period that ends now is computed again at each refresh, so it never misses a recent change); when the set of entities exceeds this limit, the widget says that its result is partial. See [Widget creation](widgets.md) for details.
 
 To start from a ready-made dashboard, go to **Dashboards > Custom dashboards**, click **Create from template** next to **Import dashboard** and choose **Threat landscape changes**. The dashboard shows the top changed threats (intrusion sets, threat actors and campaigns) with their new techniques by tactic and their new relationships by type, the top changed malware and tools with their new relationships, and the top changed vulnerabilities. Set the period of the dashboard to choose the dates compared; you can then edit every widget like any other.
 
