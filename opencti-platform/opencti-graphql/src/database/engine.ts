@@ -548,6 +548,12 @@ const collectErrorFieldValues = (error: any, fieldName: string): string[] => {
 };
 
 export const isTransitoryError = (error: any): boolean => {
+  // Circuit breaking exceptions always come with a 429 status, but their durability tells whether the condition
+  // clears by itself (TRANSIENT: request / in_flight_requests breakers) or requires manual intervention
+  // (PERMANENT: fielddata / accounting breakers). Retrying a permanent one is pointless and adds pressure on the engine.
+  if (collectErrorFieldValues(error, 'durability').some((durability) => durability.toUpperCase() === 'PERMANENT')) {
+    return false;
+  }
   const statusCode = error?.statusCode
     ?? error?.meta?.statusCode
     ?? error?.status

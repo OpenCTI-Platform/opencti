@@ -85,6 +85,9 @@ vi.mock('../../../src/config/conf', async (importOriginal) => {
 import { elDelete, elIndex, elReindexElements, elUpdate, searchEngineInit } from '../../../src/database/engine';
 
 const TRANSIENT_ERROR = new Error('circuit_breaking_exception: data too large');
+const PERMANENT_CIRCUIT_BREAKING_ERROR = Object.assign(new Error('circuit_breaking_exception: [fielddata] Data too large'), {
+  meta: { statusCode: 429, body: { error: { type: 'circuit_breaking_exception', durability: 'PERMANENT' } } },
+});
 const MAX_RETRY_ATTEMPTS = 6;
 
 describe('engine retries on circuit breaking exception', () => {
@@ -151,6 +154,15 @@ describe('engine retries on circuit breaking exception', () => {
       await vi.runAllTimersAsync();
       await rejectionAssertion;
       expect(testMocks.index).toHaveBeenCalledTimes(MAX_RETRY_ATTEMPTS);
+    });
+
+    it('does not retry a PERMANENT circuit_breaking_exception', async () => {
+      testMocks.index.mockRejectedValue(PERMANENT_CIRCUIT_BREAKING_ERROR);
+      await expect(elIndex('entities', { internal_id: 'entity-1', entity_type: 'Report' })).rejects.toMatchObject({
+        message: 'Simple indexing fail',
+        extensions: { code: 'DATABASE_ERROR' },
+      });
+      expect(testMocks.index).toHaveBeenCalledTimes(1);
     });
   });
 
