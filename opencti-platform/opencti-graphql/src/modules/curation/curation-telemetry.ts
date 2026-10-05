@@ -11,6 +11,7 @@ import {
   PROPOSAL_STATUS_OPEN,
 } from './curation-types';
 import { getCurationSettings } from './curation-settings';
+import { isCurationRunning } from './curation-schedule';
 
 export interface CurationTelemetryGauges {
   openProposals: number;
@@ -43,7 +44,7 @@ export const computeCurationTelemetryGauges = async (context: AuthContext, user:
       openProposals,
       enabledPolicies,
       healthScore: snapshots[0]?.health_score ?? 0,
-      curationEnabled: settings.curation_enabled,
+      curationEnabled: isCurationRunning(settings.curation_enabled),
     };
   } catch (error) {
     logApp.warn('[CURATION] Cannot compute curation telemetry gauges', { cause: error });
