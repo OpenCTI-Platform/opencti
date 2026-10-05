@@ -304,7 +304,7 @@ const SOURCE_RECOMMENDATION_DEFINITION: ModuleDefinition<StoreEntitySourceRecomm
     shortText('fingerprint', 'Fingerprint', { isFilterable: true, mandatory: true }),
     longText('rationale', 'Rationale'),
     json('payload', 'Recommendation payload'),
-    json('evidence', 'Evidence'),
+    json('recommendation_evidence', 'Recommendation evidence'),
     json('named_authors', 'Named author sources'),
     json('revert_payload', 'Revert payload'),
     longText('apply_result', 'Apply result'),

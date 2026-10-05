@@ -848,7 +848,7 @@ const createProposal = async (context: AuthContext, proposal: RecommendationProp
     name: proposal.name,
     rationale: proposal.rationale,
     payload,
-    evidence: JSON.stringify(proposal.evidence),
+    recommendation_evidence: JSON.stringify(proposal.evidence),
     named_authors: await recordNamedAuthors(context, { source_id: proposal.source_id, payload }),
     recommendation_kind: proposal.kind,
     recommendation_status: RECOMMENDATION_STATUS_PROPOSED,
@@ -938,7 +938,7 @@ export const upsertProposals = async (
       name: proposal.name,
       rationale: proposal.rationale,
       payload: JSON.stringify(proposal.payload),
-      evidence: JSON.stringify(proposal.evidence),
+      recommendation_evidence: JSON.stringify(proposal.evidence),
     };
     if (current && ACTIVE_RECOMMENDATION_STATUSES.includes(current.recommendation_status as typeof ACTIVE_RECOMMENDATION_STATUSES[number])) {
       if (current.recommendation_status === RECOMMENDATION_STATUS_PROPOSED) {

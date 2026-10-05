@@ -315,7 +315,7 @@ type SourceRecommendation implements InternalObject & BasicObject {
   source: Source
   rationale: String!
   payload: String!
-  evidence: String
+  recommendation_evidence: String
   apply_result: String
   error_message: String
   autonomous: Boolean!

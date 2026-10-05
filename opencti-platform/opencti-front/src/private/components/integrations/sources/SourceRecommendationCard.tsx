@@ -30,7 +30,7 @@ const recommendationFragment = graphql`
     status
     rationale
     payload
-    evidence
+    recommendation_evidence
     apply_result
     error_message
     autonomous

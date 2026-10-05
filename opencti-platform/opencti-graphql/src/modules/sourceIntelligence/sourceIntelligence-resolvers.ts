@@ -51,13 +51,13 @@ const enterpriseValue = async (context: AuthContext, value: number | null | unde
 };
 
 // Recommendation texts embed the names of their sources: names of restricted authors are masked for the requesting user
-type MaskedRecommendationField = 'name' | 'rationale' | 'payload' | 'evidence' | 'apply_result' | 'error_message' | 'dismiss_reason';
+type MaskedRecommendationField = 'name' | 'rationale' | 'payload' | 'recommendation_evidence' | 'apply_result' | 'error_message' | 'dismiss_reason';
 
 // Every stored text of a recommendation can quote the name of a marked author: none reaches a user who cannot see it
 const maskedRecommendationText = async (context: AuthContext, recommendation: any, field: MaskedRecommendationField): Promise<any> => {
   const names = await restrictedRecommendationNames(context, context.user as AuthUser, recommendation);
   const value = recommendation[field];
-  return field === 'payload' || field === 'evidence' ? maskRestrictedNamesInJson(value, names) : maskRestrictedNames(value, names);
+  return field === 'payload' || field === 'recommendation_evidence' ? maskRestrictedNamesInJson(value, names) : maskRestrictedNames(value, names);
 };
 
 const sourceIntelligenceResolvers: Resolvers = {
@@ -125,7 +125,7 @@ const sourceIntelligenceResolvers: Resolvers = {
     name: (recommendation: any, _, context) => maskedRecommendationText(context, recommendation, 'name'),
     rationale: (recommendation: any, _, context) => maskedRecommendationText(context, recommendation, 'rationale'),
     payload: (recommendation: any, _, context) => maskedRecommendationText(context, recommendation, 'payload'),
-    evidence: (recommendation: any, _, context) => maskedRecommendationText(context, recommendation, 'evidence'),
+    recommendation_evidence: (recommendation: any, _, context) => maskedRecommendationText(context, recommendation, 'recommendation_evidence'),
     apply_result: (recommendation: any, _, context) => maskedRecommendationText(context, recommendation, 'apply_result'),
     error_message: (recommendation: any, _, context) => maskedRecommendationText(context, recommendation, 'error_message'),
     dismiss_reason: (recommendation: any, _, context) => maskedRecommendationText(context, recommendation, 'dismiss_reason'),
