@@ -221,18 +221,26 @@ export const HuntPackExportButton = ({ ids, selectionOptions = {} }: HuntPackExp
   );
 };
 
+/** The hunt packs page of the XTM Hub for this platform, or null when the hub is not reachable. */
+export const useHuntPackHubUrl = (): string | null => {
+  const { settings, isXTMHubAccessible } = useContext(UserContext);
+  if (!isXTMHubAccessible || !isNotEmptyField(settings?.platform_xtmhub_url)) {
+    return null;
+  }
+  return `${settings?.platform_xtmhub_url}/redirect/opencti_hunt_packs?platform_id=${settings?.id}`;
+};
+
 interface HuntPackImportButtonProps {
   paginationOptions: Record<string, unknown>;
+  /** The list of hunts offers the XTM Hub in its Quick start menu instead. */
+  showHubLink?: boolean;
 }
 
-export const HuntPackImportButton = ({ paginationOptions }: HuntPackImportButtonProps) => {
+export const HuntPackImportButton = ({ paginationOptions, showHubLink = true }: HuntPackImportButtonProps) => {
   const { t_i18n } = useFormatter();
   const inputRef = useRef<HTMLInputElement>(null);
-  const { settings, isXTMHubAccessible } = useContext(UserContext);
   const [commitImport, importing] = useApiMutation<HuntPackImportMutation>(huntPackImportMutation);
-  const importFromHubUrl = isNotEmptyField(settings?.platform_xtmhub_url)
-    ? `${settings?.platform_xtmhub_url}/redirect/opencti_hunt_packs?platform_id=${settings?.id}`
-    : '';
+  const importFromHubUrl = useHuntPackHubUrl();
 
   const handleImport: InputHTMLAttributes<HTMLInputElement>['onChange'] = (event) => {
     const importedFile = event.target?.files?.[0];
@@ -277,7 +285,7 @@ export const HuntPackImportButton = ({ paginationOptions }: HuntPackImportButton
         </TooltipTrigger>
         <TooltipContent>{label}</TooltipContent>
       </Tooltip>
-      {isXTMHubAccessible && isNotEmptyField(importFromHubUrl) && (
+      {showHubLink && importFromHubUrl && (
         <Button gradient href={importFromHubUrl} target="_blank" rel="noopener noreferrer" title={t_i18n('Import from XTM Hub')}>
           {t_i18n('Import from XTM Hub')}
         </Button>
