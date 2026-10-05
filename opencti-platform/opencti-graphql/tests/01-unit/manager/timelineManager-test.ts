@@ -113,6 +113,46 @@ describe('Timeline manager impact collection', () => {
     expect(Array.from(collector.related)).toEqual(['mal-1']);
   });
 
+  it('should reach the containers of the soft-check sources the way the loader selects them', () => {
+    const collector = newCollector();
+    // A hunt run of an incident, not an object of it, and of a hunt
+    collectTimelineImpacts(streamEvent({ type: 'hunt-run', incident_id: 'incident-1', hunt_id: 'hunt-1', extensions: { [STIX_EXT_OCTI]: { id: 'run-1', type: 'Hunt-Run' } } }), collector);
+    // An investigation run about a subject and attached to cases
+    collectTimelineImpacts(streamEvent({
+      type: 'investigation-run', subject_id: 'case-incident--1', case_ids: ['case-incident--2', 'case-rfi--1'], extensions: { [STIX_EXT_OCTI]: { id: 'inv-1', type: 'InvestigationRun' } },
+    }), collector);
+    // A security coverage of a case, a result of a coverage and a has-covered relationship of a coverage
+    collectTimelineImpacts(streamEvent({ type: 'security-coverage', covered_ref: 'case-incident--3', extensions: { [STIX_EXT_OCTI]: { id: 'cov-1', type: 'Security-Coverage' } } }), collector);
+    collectTimelineImpacts(streamEvent({ type: 'security-coverage-result', result_of_ref: 'security-coverage--2', extensions: { [STIX_EXT_OCTI]: { id: 'res-1', type: 'Security-Coverage-Result' } } }), collector);
+    collectTimelineImpacts(streamEvent({
+      type: 'relationship',
+      extensions: { [STIX_EXT_OCTI]: { id: 'rel-1', type: 'has-covered', source_ref: 'cov-3', source_type: 'Security-Coverage', target_ref: 'ap-1', target_type: 'Attack-Pattern' } },
+    }), collector);
+    expect(Array.from(collector.references).sort()).toEqual(['case-incident--1', 'case-incident--2', 'case-incident--3', 'case-rfi--1', 'incident-1']);
+    expect(Array.from(collector.contained)).toEqual(expect.arrayContaining(['hunt-1', 'run-1', 'inv-1']));
+    expect(Array.from(collector.coverages).sort()).toEqual(['cov-3', 'security-coverage--2']);
+  });
+
+  it('should also reach the containers an update moved a soft-check source away from', () => {
+    const collector = newCollector();
+    const run = { type: 'investigation-run', subject_id: 'case-incident--1', case_ids: ['case-incident--1'], extensions: { [STIX_EXT_OCTI]: { id: 'inv-1', type: 'InvestigationRun' } } };
+    const event = streamEvent(run);
+    // Before the update, the run was also attached to a second case
+    (event.data as any).context = {
+      patch: [{ op: 'remove', path: '/case_ids/1' }],
+      reverse_patch: [{ op: 'add', path: '/case_ids/1', value: 'case-incident--2' }],
+    };
+    collectTimelineImpacts(event, collector);
+    expect(Array.from(collector.references).sort()).toEqual(['case-incident--1', 'case-incident--2']);
+    expect(run.case_ids).toEqual(['case-incident--1']);
+    // A hunt run moved to another incident leaves the previous one
+    const moved = newCollector();
+    const huntEvent = streamEvent({ type: 'hunt-run', incident_id: 'incident-2', extensions: { [STIX_EXT_OCTI]: { id: 'run-1', type: 'Hunt-Run' } } });
+    (huntEvent.data as any).context = { patch: [{ op: 'replace', path: '/incident_id', value: 'incident-2' }], reverse_patch: [{ op: 'replace', path: '/incident_id', value: 'incident-1' }] };
+    collectTimelineImpacts(huntEvent, moved);
+    expect(Array.from(moved.references).sort()).toEqual(['incident-1', 'incident-2']);
+  });
+
   it('should ignore inferred data and timeline objects', () => {
     const collector = newCollector();
     collectTimelineImpacts(streamEvent({ type: 'malware', extensions: { [STIX_EXT_OCTI]: { id: 'mal-1', type: 'Malware', is_inferred: true } } }), collector);

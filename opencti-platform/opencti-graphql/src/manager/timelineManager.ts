@@ -33,6 +33,8 @@ import {
 } from '../modules/timeline/timeline-types';
 import { regenerateContainerTimeline } from '../modules/timeline/timeline-engine';
 import { timelineRefIds } from '../modules/timeline/timeline-loader';
+import { ATTRIBUTE_COVERED, ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
+import { ATTRIBUTE_RESULT_OF } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
 import {
   acknowledgeTimelineRegeneration,
   claimDueTimelineRegenerations,
@@ -79,6 +81,8 @@ interface ImpactCollector {
   killChainPhases: Set<string>;
   // external references of the containers (publications)
   externalReferences: Set<string>;
+  // security coverages whose covered containers are impacted (through their results and has-covered relationships)
+  coverages: Set<string>;
 }
 
 export const newImpactCollector = (): ImpactCollector => ({
@@ -89,21 +93,33 @@ export const newImpactCollector = (): ImpactCollector => ({
   labels: new Set(),
   killChainPhases: new Set(),
   externalReferences: new Set(),
+  coverages: new Set(),
 });
 
-/** The refs of an updated object before its update, rebuilt from the reverse patch of the event (none otherwise). */
-const previousObjectRefs = (event: SseEvent<DataEvent>): string[] => {
+const idValues = (value: unknown): string[] => (Array.isArray(value) ? value : [value]).filter((v): v is string => typeof v === 'string' && v.length > 0);
+
+/** An updated object before its update, rebuilt from the reverse patch of the event; null when the update changed none of `fields`. */
+const previousVersion = (event: SseEvent<DataEvent>, fields: string[]): Record<string, unknown> | null => {
   const reversePatch = (event.data as Partial<UpdateEvent>)?.context?.reverse_patch;
-  if (event.data?.type !== 'update' || !Array.isArray(reversePatch) || reversePatch.length === 0) return [];
+  if (event.data?.type !== 'update' || !Array.isArray(reversePatch) || reversePatch.length === 0) return null;
+  const changesField = (path: string) => fields.some((field) => path === `/${field}` || path.startsWith(`/${field}/`));
+  if (!reversePatch.some((operation) => typeof operation?.path === 'string' && changesField(operation.path))) return null;
   try {
     const { newDocument: previous } = jsonpatch.applyPatch(structuredClone(event.data.data), reversePatch, false, false);
-    return ((previous as { object_refs?: string[] }).object_refs ?? []).filter((ref) => typeof ref === 'string');
+    return previous as Record<string, unknown>;
   } catch (error) {
-    // A patch that no longer applies cannot name the removed refs: the nightly consistency pass catches up
-    logApp.debug('[TIMELINE] Previous refs of an update not rebuilt', { cause: error });
-    return [];
+    // A patch that no longer applies cannot name the previous values: the nightly consistency pass catches up
+    logApp.debug('[TIMELINE] Previous version of an update not rebuilt', { cause: error });
+    return null;
   }
 };
+
+/** The refs of an updated object before its update (none when the update left them unchanged). */
+const previousObjectRefs = (event: SseEvent<DataEvent>): string[] => idValues(previousVersion(event, ['object_refs'])?.object_refs);
+
+// Fields through which the loader selects the soft-check sources of a container (see loadSoftSources)
+const SOFT_SOURCE_CONTAINER_FIELDS = ['subject_id', 'case_ids', 'incident_id', ATTRIBUTE_COVERED];
+const SOFT_SOURCE_FIELDS = [...SOFT_SOURCE_CONTAINER_FIELDS, 'hunt_id', ATTRIBUTE_RESULT_OF];
 
 /** Collect, from one stream event, what can impact a timeline (pure, no database access). */
 export const collectTimelineImpacts = (event: SseEvent<DataEvent>, collector: ImpactCollector) => {
@@ -143,6 +159,8 @@ export const collectTimelineImpacts = (event: SseEvent<DataEvent>, collector: Im
     // Deployments and timed relationships of contained elements impact the cases containing either endpoint
     if (extension.source_ref) collector.contained.add(extension.source_ref);
     if (extension.target_ref) collector.contained.add(extension.target_ref);
+    // The has-covered relationships of a security coverage are read for the container it covers
+    if (extension.source_type === ENTITY_TYPE_SECURITY_COVERAGE && extension.source_ref) collector.coverages.add(extension.source_ref);
     return;
   }
   if (stix.type === STIX_TYPE_SIGHTING) {
@@ -154,9 +172,15 @@ export const collectTimelineImpacts = (event: SseEvent<DataEvent>, collector: Im
     }
     return;
   }
-  // Soft-check sources: Case Autopilot runs point to their subject, hunt runs to their hunt
-  if (typeof stix.subject_id === 'string') collector.references.add(stix.subject_id);
-  if (typeof stix.hunt_id === 'string') collector.contained.add(stix.hunt_id);
+  // Soft-check sources, reached the way the loader selects them: Case Autopilot runs by their subject and their cases,
+  // hunt runs by their incident and their hunt, security coverages by the container they cover and their results by
+  // their coverage. The version before an update counts too: a run or a coverage moved away from a container leaves it
+  [stix, previousVersion(event, SOFT_SOURCE_FIELDS)].forEach((version) => {
+    if (!version) return;
+    SOFT_SOURCE_CONTAINER_FIELDS.forEach((field) => idValues(version[field]).forEach((ref) => collector.references.add(ref)));
+    idValues(version.hunt_id).forEach((ref) => collector.contained.add(ref));
+    idValues(version[ATTRIBUTE_RESULT_OF]).forEach((ref) => collector.coverages.add(ref));
+  });
   collector.contained.add(id);
   collector.related.add(id);
 };
@@ -214,12 +238,20 @@ const queueReferencedContainers = async (context: AuthContext, references: strin
   await enqueue((referenced as unknown as BasicStoreEntity[]).map((c) => c.internal_id));
 };
 
+const queueContainersCoveredBy = async (context: AuthContext, coverageIds: string[], enqueue: ImpactedContainersSink) => {
+  if (coverageIds.length === 0) return;
+  // The covered container comes with every read, like the markings
+  const coverages = await internalFindByIds(context, SYSTEM_USER, coverageIds, { type: ENTITY_TYPE_SECURITY_COVERAGE, baseData: true }) as unknown as BasicStoreEntity[];
+  await queueReferencedContainers(context, Array.from(new Set(coverages.flatMap((coverage) => timelineRefIds(coverage, RELATION_COVERED)))), enqueue);
+};
+
 const queueImpactedContainers = async (context: AuthContext, collector: ImpactCollector, enqueue: ImpactedContainersSink) => {
   await enqueue(Array.from(collector.containers));
   await queueContainersContaining(context, Array.from(collector.contained), enqueue);
   await queueContainersOfManualEventsAbout(context, [...collector.contained, ...collector.containers], enqueue);
   await queueContainersContaining(context, Array.from(collector.externalReferences), enqueue, RELATION_EXTERNAL_REFERENCE);
   await queueReferencedContainers(context, Array.from(collector.references), enqueue);
+  await queueContainersCoveredBy(context, Array.from(collector.coverages), enqueue);
   const killChainPhases = Array.from(collector.killChainPhases);
   if (killChainPhases.length > 0) {
     // Techniques are ordered by their phases: the cases containing them are impacted
