@@ -53,7 +53,7 @@ const LANDSCAPE_CACHE_TTL: number = conf.get('time_machine:landscape_cache_ttl')
 const LANDSCAPE_MAX_RUNNING_PER_USER: number = conf.get('time_machine:landscape_max_running_per_user') || 1;
 const LANDSCAPE_MAX_RUNNING: number = conf.get('time_machine:landscape_max_running') || 4;
 // Maximum number of history events read per batch of entities
-const LANDSCAPE_MAX_EVENTS_PER_BATCH = 20000;
+export const LANDSCAPE_MAX_EVENTS_PER_BATCH = 20000;
 // Maximum number of entities and items kept in a landscape diff result
 const LANDSCAPE_MAX_ENTITY_SUMMARIES = 200;
 const LANDSCAPE_MAX_ITEMS = 50;
@@ -383,14 +383,15 @@ const processBatch = async (
     }
   });
   // 3. Updates of the entities themselves in the period
-  const entityEvents = await fetchElementsHistoryEvents(context, user, ids, {
+  const fetchedEntityEvents = await fetchElementsHistoryEvents(context, user, ids, {
     from,
     to,
     scopes: ['update', 'merge'],
-    max: LANDSCAPE_MAX_EVENTS_PER_BATCH,
+    max: LANDSCAPE_MAX_EVENTS_PER_BATCH + 1,
     order: 'asc',
   });
-  if (entityEvents.length >= LANDSCAPE_MAX_EVENTS_PER_BATCH) acc.truncated = true;
+  if (fetchedEntityEvents.length > LANDSCAPE_MAX_EVENTS_PER_BATCH) acc.truncated = true;
+  const entityEvents = fetchedEntityEvents.slice(0, LANDSCAPE_MAX_EVENTS_PER_BATCH);
   entityEvents.forEach((event) => {
     const entityAcc = acc.entities.get(event.context_id);
     if (!entityAcc) return;

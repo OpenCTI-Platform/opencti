@@ -26,7 +26,7 @@ vi.mock('../../../../src/database/redis', async (importOriginal) => ({
   getClientBase: () => ({ get: async () => null, set: (...args: unknown[]) => redisSetMock(...args) }),
 }));
 
-import { computeLandscapeDiff, landscapeDiffSummary, resolveCountedElements } from '../../../../src/modules/timeMachine/landscapeDiff-domain';
+import { computeLandscapeDiff, LANDSCAPE_MAX_EVENTS_PER_BATCH, landscapeDiffSummary, resolveCountedElements } from '../../../../src/modules/timeMachine/landscapeDiff-domain';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 
 const FROM = '2026-01-01T00:00:00.000Z';
@@ -107,6 +107,30 @@ describe('Landscape diff counts', () => {
     expect(result.contributors).not.toContain('malware-z');
     expect(result.contributors).not.toContain('malware-w');
     expect(result.contributors).not.toContain('rel-revoked-restricted');
+  });
+
+  it('should mark a result partial only when the history of its entities goes beyond the event limit', async () => {
+    topEntitiesListMock.mockResolvedValue([entity('scoped-a')]);
+    fullRelationsListMock.mockResolvedValue([]);
+    fetchRelationshipsHistoryEventsMock.mockResolvedValue([]);
+    mockAccess(['scoped-a'], []);
+    const updates = (count: number) => Array.from({ length: count }, (_, index) => ({
+      id: `event-${index}`,
+      timestamp: '2026-01-15T00:00:00.000Z',
+      event_scope: 'update',
+      context_id: 'scoped-a',
+      changes: [],
+    }));
+    // The history holds exactly as many events as the limit, then one more
+    const historyOf = (available: number) => {
+      fetchElementsHistoryEventsMock.mockImplementation(async (_context: AuthContext, _user: AuthUser, _ids: string[], opts: { max: number }) => {
+        return updates(available).slice(0, opts.max);
+      });
+    };
+    historyOf(LANDSCAPE_MAX_EVENTS_PER_BATCH);
+    expect((await computeLandscapeDiff(context, user, { filters: null, entityTypes: ['Intrusion-Set'] }, FROM, TO, 'entity_type')).truncated).toBe(false);
+    historyOf(LANDSCAPE_MAX_EVENTS_PER_BATCH + 1);
+    expect((await computeLandscapeDiff(context, user, { filters: null, entityTypes: ['Intrusion-Set'] }, FROM, TO, 'entity_type')).truncated).toBe(true);
   });
 
   describe('fresh widget summaries', () => {
