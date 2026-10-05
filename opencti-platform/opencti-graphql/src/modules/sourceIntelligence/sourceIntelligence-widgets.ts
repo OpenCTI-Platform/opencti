@@ -130,13 +130,18 @@ const restrictToCostCurrency = (data: WidgetEntry[], metrics: Array<string | nul
 };
 
 /**
- * Sources matching the widget filters (filters on the Source attributes: kind, tags, enabled...) with their live scorecard.
+ * Sources matching the widget filters (filters on the Source attributes: kind, tags, enabled...), live scorecard or not.
  * The number of sources is bounded by the source discovery settings (connectors, feeds, top authors and analysts).
  */
-const loadWidgetData = async (context: AuthContext, user: AuthUser, period: ScorecardPeriodValue, filters?: FilterGroup | null) => {
+const loadWidgetSources = async (context: AuthContext, user: AuthUser, filters?: FilterGroup | null) => {
   const allowed = await restrictSourceQueryToEdition(context, { filters });
   const sources = await fullEntitiesList<BasicStoreEntitySource>(context, user, [ENTITY_TYPE_SOURCE], { filters: allowed.filters ?? undefined });
-  const masked = await maskRestrictedSources(context, user, sources);
+  return maskRestrictedSources(context, user, sources);
+};
+
+/** Sources matching the widget filters with their live scorecard: a source without one (disabled) is left out. */
+const loadWidgetData = async (context: AuthContext, user: AuthUser, period: ScorecardPeriodValue, filters?: FilterGroup | null) => {
+  const masked = await loadWidgetSources(context, user, filters);
   const scorecards = await findLiveScorecards(context, period, masked.map((source) => source.internal_id));
   const bySource = new Map(scorecards.map((scorecard) => [scorecard.source_id, scorecard]));
   return masked
@@ -183,9 +188,22 @@ export const sourceScorecardsTimeSeries = async (
   const metric = assertMetric(args.metric);
   await assertMetricsAllowed(context, [metric]);
   const period = args.period ?? REFERENCE_SCORECARD_PERIOD;
-  const { data, currency } = restrictToCostCurrency(await loadWidgetData(context, user, period, args.filters), [metric]);
+  // The history of a source outlives its live scorecards (a disabled source has none): every matching source counts
+  const sources = await loadWidgetSources(context, user, args.filters);
+  const sourceIds = sources.map((source) => source.internal_id);
+  let currency: string | null = null;
+  if (COST_METRIC_KEYS.has(metric)) {
+    // The currency each source has in the other widgets, its declared cost when it has no live scorecard
+    const liveCurrencies = new Map((await findLiveScorecards(context, period, sourceIds)).map((scorecard) => [scorecard.source_id, scorecard.cost_currency]));
+    currency = dominantCostCurrency(sources.map((source) => ({
+      cost_currency: liveCurrencies.has(source.internal_id) ? liveCurrencies.get(source.internal_id) ?? null : source.source_cost?.currency ?? null,
+    })));
+    if (!currency) {
+      return [];
+    }
+  }
   const points = await aggregateScorecardSnapshotsByDay(context, {
-    sourceIds: data.map(({ source }) => source.internal_id),
+    sourceIds,
     period,
     metric,
     costCurrency: currency,

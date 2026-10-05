@@ -2,7 +2,7 @@ import { elBulk, elIndexElements, elRawDeleteByQuery, elRawSearch } from '../../
 import { INDEX_SOURCE_SCORECARDS, READ_INDEX_SOURCE_SCORECARDS } from '../../database/utils';
 import { SYSTEM_USER } from '../../utils/access';
 import type { AuthContext } from '../../types/user';
-import { DatabaseError } from '../../config/errors';
+import { DatabaseError, FunctionalError } from '../../config/errors';
 import { logApp } from '../../config/conf';
 import { ENTITY_TYPE_SOURCE_SCORECARD, type ScorecardPeriodValue, type StoreSourceScorecard } from './sourceIntelligence-types';
 import { scorecardDocumentId, toSnapshotDate } from './sourceIntelligence-scoring';
@@ -33,6 +33,16 @@ export interface ScorecardSearchOptions {
   orderMode?: 'asc' | 'desc';
 }
 
+// A snapshot describes the day of its `snapshot_date`, which the history backfill computes days later: a date range
+// selects the days a chart shows, never the computation dates
+const toSnapshotDayBound = (date: string) => {
+  const time = new Date(date).getTime();
+  if (Number.isNaN(time)) {
+    throw FunctionalError('Invalid date for the source scorecards', { date });
+  }
+  return toSnapshotDate(time);
+};
+
 const buildScorecardFilter = (options: Omit<ScorecardSearchOptions, 'first' | 'orderMode'>) => {
   const filter: any[] = [{ term: { 'entity_type.keyword': ENTITY_TYPE_SOURCE_SCORECARD } }];
   if (options.sourceIds && options.sourceIds.length > 0) {
@@ -45,7 +55,14 @@ const buildScorecardFilter = (options: Omit<ScorecardSearchOptions, 'first' | 'o
     filter.push({ term: { is_live: options.live } });
   }
   if (options.startDate || options.endDate) {
-    filter.push({ range: { computed_at: { ...(options.startDate ? { gte: options.startDate } : {}), ...(options.endDate ? { lte: options.endDate } : {}) } } });
+    filter.push({
+      range: {
+        'snapshot_date.keyword': {
+          ...(options.startDate ? { gte: toSnapshotDayBound(options.startDate) } : {}),
+          ...(options.endDate ? { lte: toSnapshotDayBound(options.endDate) } : {}),
+        },
+      },
+    });
   }
   return filter;
 };
@@ -59,7 +76,8 @@ export const searchScorecards = async (context: AuthContext, options: ScorecardS
     track_total_hits: false,
     body: {
       query: { bool: { filter } },
-      sort: [{ computed_at: { order: options.orderMode ?? 'desc' } }],
+      // By day first, as the range selects them: a page of the first days never skips one computed later
+      sort: [{ 'snapshot_date.keyword': { order: options.orderMode ?? 'desc' } }, { computed_at: { order: options.orderMode ?? 'desc' } }],
     },
   }).catch((err: unknown) => {
     throw DatabaseError('Source scorecards search failed', { cause: err });
