@@ -14,12 +14,13 @@ import { useSourceMetricFormat } from './SourceMetricValue';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useGranted, { INGESTION_SETINGESTIONS, MODULES_MODMANAGE } from '../../../../utils/hooks/useGranted';
 import type { Theme } from '../../../../components/Theme';
-import { parseJsonObject, RECOMMENDATION_KIND_LABELS, RECOMMENDATION_STATUS_LABELS, recommendationActionCapability } from './sourceIntelligenceUtils';
+import { oneClickDeployBlocker, parseJsonObject, RECOMMENDATION_KIND_LABELS, RECOMMENDATION_STATUS_LABELS, recommendationActionCapability } from './sourceIntelligenceUtils';
 import { SourceRecommendationCard_recommendation$key } from './__generated__/SourceRecommendationCard_recommendation.graphql';
 import { SourceRecommendationCardApplyMutation } from './__generated__/SourceRecommendationCardApplyMutation.graphql';
 import { SourceRecommendationCardRevertMutation } from './__generated__/SourceRecommendationCardRevertMutation.graphql';
 import { SourceRecommendationCardDismissMutation } from './__generated__/SourceRecommendationCardDismissMutation.graphql';
 import notifyMutationOutcome from './notifyMutationOutcome';
+import ConnectorDeployDialog, { type ConnectorSettingValue, hasOnlyCollectableSettings } from './ConnectorDeployDialog';
 
 const recommendationFragment = graphql`
   fragment SourceRecommendationCard_recommendation on SourceRecommendation {
@@ -40,6 +41,13 @@ const recommendationFragment = graphql`
     reverted_at
     dismissed_at
     dismiss_reason
+    required_settings {
+      key
+      label
+      description
+      type
+      secret
+    }
     source {
       id
       name
@@ -154,10 +162,22 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
   const canAct = useGranted([recommendationActionCapability(recommendation.kind, payload)]);
   const busy = applying || reverting || dismissing;
   const catalogSlug = recommendation.kind === 'add_connector' && typeof payload.slug === 'string' ? payload.slug : null;
+  // A connector deployment first says what the connector needs, and collects it
+  const [deployOpen, setDeployOpen] = useState(false);
+  // XTM Composer support and the registered managers are checked by the deployment itself, which names them on failure
+  const deployBlocker = catalogSlug !== null ? oneClickDeployBlocker({
+    inLocalCatalog: typeof payload.contract_image === 'string' && payload.contract_image.length > 0,
+    managerSupported: true,
+    canDeploy: canAct,
+    hasRegisteredManager: null,
+    settingsCollectable: hasOnlyCollectableSettings(recommendation.required_settings),
+  }) : null;
+  const deployableHere = catalogSlug !== null && deployBlocker === null;
 
-  const handleApply = () => commitApply({
-    variables: { id: recommendation.id, input: {} },
+  const handleApply = (configuration?: ConnectorSettingValue[]) => commitApply({
+    variables: { id: recommendation.id, input: configuration ? { configuration } : {} },
     onCompleted: (response, errors) => {
+      setDeployOpen(false);
       const applied = response.applySourceRecommendation;
       // The cause is shown on the card, behind Show details
       const failure = !errors?.length && applied?.status !== 'applied' ? t_i18n('The recommendation could not be applied.') : null;
@@ -165,6 +185,7 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
       onChange?.();
     },
   });
+  const startApply = () => (catalogSlug ? setDeployOpen(true) : handleApply());
   const handleRevert = () => commitRevert({
     variables: { id: recommendation.id },
     onCompleted: (response, errors) => {
@@ -295,6 +316,11 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
           </Stack>
           <Typography variant="body2">{recommendation.rationale}</Typography>
           {changePreview}
+          {deployBlocker && recommendation.status === 'proposed' && (
+            <Typography variant="caption" component="div" sx={{ color: theme.palette.text.secondary, marginTop: 0.5 }} data-testid="source-recommendation-deploy-blocker">
+              {t_i18n(deployBlocker)}
+            </Typography>
+          )}
           {history && (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -353,7 +379,7 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
                         {t_i18n('Open the connector')}
                       </Button>
                     )}
-                    <Button variant="secondary" size="small" onClick={handleApply} disabled={busy} data-testid="source-recommendation-retry">
+                    <Button variant="secondary" size="small" onClick={startApply} disabled={busy} data-testid="source-recommendation-retry">
                       {t_i18n('Retry')}
                     </Button>
                   </Stack>
@@ -400,8 +426,8 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
                 {t_i18n('Open in catalog')}
               </Button>
             )}
-            {canAct && recommendation.status === 'proposed' && (
-              <Button size="small" startIcon={<CheckOutlined />} onClick={handleApply} disabled={busy} data-testid="source-recommendation-apply">
+            {canAct && recommendation.status === 'proposed' && (catalogSlug === null || deployableHere) && (
+              <Button size="small" startIcon={<CheckOutlined />} onClick={startApply} disabled={busy} data-testid="source-recommendation-apply">
                 {applyLabel}
               </Button>
             )}
@@ -418,6 +444,16 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
           </Stack>
         )}
       </Stack>
+      {catalogSlug && deployOpen && (
+        <ConnectorDeployDialog
+          open
+          connectorName={typeof payload.title === 'string' ? payload.title : catalogSlug}
+          settings={recommendation.required_settings}
+          deploying={applying}
+          onClose={() => setDeployOpen(false)}
+          onDeploy={(configuration) => handleApply(configuration)}
+        />
+      )}
       <Dialog open={revertOpen} onClose={() => setRevertOpen(false)} title={t_i18n('Revert this recommendation?')} size="small">
         <Typography variant="body2" sx={{ marginBottom: 1 }}>
           {t_i18n('Reverting restores the state before the recommendation was applied and removes what it created.')}

@@ -4757,6 +4757,7 @@ export type CollectionGapRecommendedConnector = {
   matched_regions: Array<Scalars['String']['output']>;
   matched_sectors: Array<Scalars['String']['output']>;
   origin: Scalars['String']['output'];
+  required_settings: Array<ConnectorRequiredSetting>;
   score: Scalars['Float']['output'];
   short_description?: Maybe<Scalars['String']['output']>;
   slug: Scalars['String']['output'];
@@ -4966,6 +4967,15 @@ export enum ConnectorRequestStatus {
   Starting = 'starting',
   Stopping = 'stopping'
 }
+
+export type ConnectorRequiredSetting = {
+  __typename?: 'ConnectorRequiredSetting';
+  description?: Maybe<Scalars['String']['output']>;
+  key: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+  secret: Scalars['Boolean']['output'];
+  type: Scalars['String']['output'];
+};
 
 export enum ConnectorType {
   ExternalImport = 'EXTERNAL_IMPORT',
@@ -18736,6 +18746,7 @@ export type MutationClearWorkflowPendingStateArgs = {
 
 
 export type MutationCollectionGapDeployConnectorArgs = {
+  configuration?: InputMaybe<Array<ContractConfigInput>>;
   id: Scalars['ID']['input'];
   slug: Scalars['String']['input'];
 };
@@ -33041,6 +33052,7 @@ export type SourceRecommendation = BasicObject & InternalObject & {
   proposed_at: Scalars['DateTime']['output'];
   rationale: Scalars['String']['output'];
   representative: Representative;
+  required_settings: Array<ConnectorRequiredSetting>;
   reverted_at?: Maybe<Scalars['DateTime']['output']>;
   reverted_by?: Maybe<Creator>;
   source?: Maybe<Source>;
@@ -33051,6 +33063,7 @@ export type SourceRecommendation = BasicObject & InternalObject & {
 };
 
 export type SourceRecommendationApplyInput = {
+  configuration?: InputMaybe<Array<ContractConfigInput>>;
   connector_id?: InputMaybe<Scalars['ID']['input']>;
 };
 
@@ -42581,6 +42594,7 @@ export type ResolversTypes = ResolversObject<{
   ConnectorPriorityGroup: ConnectorPriorityGroup;
   ConnectorQueueDetails: ResolverTypeWrapper<ConnectorQueueDetails>;
   ConnectorRequestStatus: ConnectorRequestStatus;
+  ConnectorRequiredSetting: ResolverTypeWrapper<ConnectorRequiredSetting>;
   ConnectorType: ConnectorType;
   ConnectorWithConfig: ConnectorWithConfig;
   ConstraintNumber: ResolverTypeWrapper<Scalars['ConstraintNumber']['output']>;
@@ -43809,6 +43823,7 @@ export type ResolversParentTypes = ResolversObject<{
   ConnectorMetadata: ConnectorMetadata;
   ConnectorMigrationAssessmentInput: ConnectorMigrationAssessmentInput;
   ConnectorQueueDetails: ConnectorQueueDetails;
+  ConnectorRequiredSetting: ConnectorRequiredSetting;
   ConnectorWithConfig: ConnectorWithConfig;
   ConstraintNumber: Scalars['ConstraintNumber']['output'];
   ConstraintString: Scalars['ConstraintString']['output'];
@@ -46357,6 +46372,7 @@ export type CollectionGapRecommendedConnectorResolvers<ContextType = any, Parent
   matched_regions?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   matched_sectors?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   origin?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  required_settings?: Resolver<Array<ResolversTypes['ConnectorRequiredSetting']>, ParentType, ContextType>;
   score?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   short_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -46502,6 +46518,14 @@ export type ConnectorMetadataResolvers<ContextType = any, ParentType extends Res
 export type ConnectorQueueDetailsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorQueueDetails'] = ResolversParentTypes['ConnectorQueueDetails']> = ResolversObject<{
   messages_number?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   messages_size?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+}>;
+
+export type ConnectorRequiredSettingResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorRequiredSetting'] = ResolversParentTypes['ConnectorRequiredSetting']> = ResolversObject<{
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  secret?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export interface ConstraintNumberScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['ConstraintNumber'], any> {
@@ -55081,6 +55105,7 @@ export type SourceRecommendationResolvers<ContextType = any, ParentType extends 
   proposed_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   rationale?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  required_settings?: Resolver<Array<ResolversTypes['ConnectorRequiredSetting']>, ParentType, ContextType>;
   reverted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   reverted_by?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   source?: Resolver<Maybe<ResolversTypes['Source']>, ParentType, ContextType>;
@@ -58205,6 +58230,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ConnectorManager?: ConnectorManagerResolvers<ContextType>;
   ConnectorMetadata?: ConnectorMetadataResolvers<ContextType>;
   ConnectorQueueDetails?: ConnectorQueueDetailsResolvers<ContextType>;
+  ConnectorRequiredSetting?: ConnectorRequiredSettingResolvers<ContextType>;
   ConstraintNumber?: GraphQLScalarType;
   ConstraintString?: GraphQLScalarType;
   Container?: ContainerResolvers<ContextType>;

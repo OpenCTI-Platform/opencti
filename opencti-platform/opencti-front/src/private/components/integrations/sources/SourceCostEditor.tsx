@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { graphql } from 'react-relay';
+import { useIntl } from 'react-intl';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { Stack, Typography } from '@mui/material';
@@ -11,7 +12,7 @@ import TextField from '../../../../components/TextField';
 import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { COST_PERIOD_LABELS } from './sourceIntelligenceUtils';
+import { COST_PERIOD_LABELS, costCurrencyOptions, SOURCE_INTELLIGENCE_DOCUMENTATION_URL } from './sourceIntelligenceUtils';
 import notifyMutationOutcome from './notifyMutationOutcome';
 import { SourceCostEditorMutation, SourceCostPeriod } from './__generated__/SourceCostEditorMutation.graphql';
 
@@ -50,6 +51,11 @@ interface CostFormValues {
 
 const SourceCostEditor = ({ sourceId, cost, primary = false, initialOpen = false }: SourceCostEditorProps) => {
   const { t_i18n } = useFormatter();
+  const intl = useIntl();
+  const currencyLabel = (code: string) => {
+    const name = intl.formatDisplayName(code, { type: 'currency', fallback: 'none' });
+    return name ? `${code} - ${name}` : code;
+  };
   const [open, setOpen] = useState(initialOpen);
   const [commit, inFlight] = useApiMutation<SourceCostEditorMutation>(sourceCostEditorMutation);
   const validation = Yup.object().shape({
@@ -99,15 +105,43 @@ const SourceCostEditor = ({ sourceId, cost, primary = false, initialOpen = false
           {({ isSubmitting, submitForm }) => (
             <Form>
               <Stack gap={2}>
-                <Field component={TextField} variant="standard" type="number" name="amount" label={t_i18n('Amount')} fullWidth inputProps={{ min: 0, step: 0.01 }} />
-                <Field component={TextField} variant="standard" name="currency" label={t_i18n('Currency')} fullWidth inputProps={{ maxLength: 3 }} />
-                <Field component={SelectFieldFds} name="period" label={t_i18n('Period')} fullWidth>
+                <Field
+                  component={TextField}
+                  variant="standard"
+                  type="number"
+                  name="amount"
+                  label={t_i18n('Amount')}
+                  helperText={t_i18n('What the source costs over the period, for example 12000. It is required: to stop tracking the cost, use Remove the cost.')}
+                  fullWidth
+                  inputProps={{ min: 0, step: 0.01 }}
+                />
+                <Field
+                  component={SelectFieldFds}
+                  name="currency"
+                  label={t_i18n('Currency')}
+                  helpertext={t_i18n('The currency of the amount, for example USD; EUR when left unchanged. Costs are never converted: a cost widget only uses the sources of the currency most of them have.')}
+                  fullWidth
+                >
+                  {costCurrencyOptions(cost?.currency).map((code) => (
+                    <SelectItem key={code} value={code}>{currencyLabel(code)}</SelectItem>
+                  ))}
+                </Field>
+                <Field
+                  component={SelectFieldFds}
+                  name="period"
+                  label={t_i18n('Period')}
+                  helpertext={t_i18n('What the amount pays for, for example a yearly subscription, the default. The cost is normalized to each scorecard window of 7, 30 and 90 days.')}
+                  fullWidth
+                >
                   {Object.entries(COST_PERIOD_LABELS).map(([value, label]) => (
                     <SelectItem key={value} value={value}>{t_i18n(label)}</SelectItem>
                   ))}
                 </Field>
               </Stack>
               <FormButtonContainer>
+                <Button variant="tertiary" component="a" href={`${SOURCE_INTELLIGENCE_DOCUMENTATION_URL}#cost`} target="_blank" rel="noopener noreferrer">
+                  {t_i18n('Learn more')}
+                </Button>
                 {cost && (
                   <Button variant="secondary" intent="destructive" onClick={clearCost} disabled={isSubmitting || inFlight}>
                     {t_i18n('Remove the cost')}

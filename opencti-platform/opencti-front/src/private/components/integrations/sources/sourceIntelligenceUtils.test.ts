@@ -12,6 +12,7 @@ import {
   formatMetric,
   formatRatio,
   formatScore,
+  oneClickDeployBlocker,
   parseJsonObject,
   periodStartDate,
   recommendationActionCapability,
@@ -210,5 +211,22 @@ describe('Source intelligence utils', () => {
       expect(recommendationActionCapability('change_schedule', { target: 'connector' })).toBe('MODULES_MODMANAGE');
       expect(recommendationActionCapability('add_connector', {})).toBe('MODULES_MODMANAGE');
     });
+  });
+});
+
+describe('oneClickDeployBlocker', () => {
+  const deployable = { inLocalCatalog: true, managerSupported: true, canDeploy: true, hasRegisteredManager: true, settingsCollectable: true };
+
+  it('should offer the one-click deployment when nothing prevents it', () => {
+    expect(oneClickDeployBlocker(deployable)).toBeNull();
+    expect(oneClickDeployBlocker({ ...deployable, hasRegisteredManager: null })).toBeNull();
+  });
+
+  it('should say why the one-click deployment is not offered, the catalog first', () => {
+    expect(oneClickDeployBlocker({ ...deployable, inLocalCatalog: false, canDeploy: false })).toContain('not in the local catalog');
+    expect(oneClickDeployBlocker({ ...deployable, managerSupported: false })).toContain('XTM Composer cannot run this connector');
+    expect(oneClickDeployBlocker({ ...deployable, canDeploy: false })).toContain('capability to manage connectors');
+    expect(oneClickDeployBlocker({ ...deployable, hasRegisteredManager: false })).toContain('No connector manager is registered');
+    expect(oneClickDeployBlocker({ ...deployable, settingsCollectable: false })).toContain('set on its catalog page');
   });
 });

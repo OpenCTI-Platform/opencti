@@ -47,7 +47,7 @@ import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { type BasicStoreEntityPir, ENTITY_TYPE_PIR } from '../pir/pir-types';
 import { constructFinalPirFilters, parsePir } from '../pir/pir-utils';
 import { getPirWithAccessCheck } from '../pir/pir-checkPirAccess';
-import { type FilterGroup, PirType } from '../../generated/graphql';
+import { type ContractConfigInput, type FilterGroup, PirType } from '../../generated/graphql';
 import { type BasicStoreEntityCatalogContract, ENTITY_TYPE_CATALOG_CONTRACT } from '../catalog/catalog-types';
 import { compareContractVersions, isSupportVersionCompatible } from '../catalog/catalog-version-utils';
 import { type HubIntegrationCoverageMatch, type HubIntegrationCoverageResult, xtmHubClient } from '../xtm/hub/xtm-hub-client';
@@ -667,6 +667,7 @@ export const deployCollectionGapConnector = async (
   gapId: string,
   slug: string,
   settings: SourceIntelligenceSettings,
+  configuration: readonly ContractConfigInput[] = [],
 ) => {
   await checkEnterpriseEdition(context);
   const gap = await storeLoadById<BasicStoreEntityCollectionGap>(context, user, gapId, ENTITY_TYPE_COLLECTION_GAP);
@@ -696,7 +697,7 @@ export const deployCollectionGapConnector = async (
       throw FunctionalError('This connector is already deployed', { id: gapId, slug });
     }
     const recommendation = await findOrCreateProposal(context, proposal);
-    return await applySourceRecommendation(context, user, recommendation.internal_id, settings);
+    return await applySourceRecommendation(context, user, recommendation.internal_id, settings, { configuration });
   } catch (err: any) {
     if (err?.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds: [gap.internal_id] });

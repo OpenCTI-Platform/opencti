@@ -11058,7 +11058,7 @@ type Mutation {
   applySourceRecommendation(id: ID!, input: SourceRecommendationApplyInput): SourceRecommendation
   revertSourceRecommendation(id: ID!): SourceRecommendation
   dismissSourceRecommendation(id: ID!, reason: String): SourceRecommendation
-  collectionGapDeployConnector(id: ID!, slug: String!): SourceRecommendation
+  collectionGapDeployConnector(id: ID!, slug: String!, configuration: [ContractConfigInput!]): SourceRecommendation
   sourceIntelligenceSettingsEdit(input: SourceIntelligenceSettingsInput!): SourceIntelligenceSettings
   sourceIntelligenceRecompute: Boolean
   sourceIntelligenceDashboardCreate(name: String): Workspace
@@ -16992,6 +16992,14 @@ type CollectionGapCoveringSource {
   share: Float!
 }
 
+type ConnectorRequiredSetting {
+  key: String!
+  label: String!
+  description: String
+  type: String!
+  secret: Boolean!
+}
+
 type CollectionGapRecommendedConnector {
   slug: String!
   title: String!
@@ -17007,6 +17015,7 @@ type CollectionGapRecommendedConnector {
   matched_object_types: [String!]!
   matched_sectors: [String!]!
   matched_regions: [String!]!
+  required_settings: [ConnectorRequiredSetting!]!
 }
 
 type CollectionGap implements InternalObject & BasicObject {
@@ -17086,6 +17095,7 @@ type SourceRecommendation implements InternalObject & BasicObject {
   dismissed_by: Creator
   dismissed_at: DateTime
   dismiss_reason: String
+  required_settings: [ConnectorRequiredSetting!]!
 }
 
 enum SourceRecommendationsOrdering {
@@ -17241,6 +17251,7 @@ input SourceCostInput {
 
 input SourceRecommendationApplyInput {
   connector_id: ID
+  configuration: [ContractConfigInput!]
 }
 
 input SourceIntelligenceValueWeightsInput {

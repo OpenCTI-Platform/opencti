@@ -223,6 +223,15 @@ type CollectionGapCoveringSource {
   share: Float!
 }
 
+# A setting the local catalog contract of a connector requires without a default value: a deployment must provide it
+type ConnectorRequiredSetting {
+  key: String!
+  label: String!
+  description: String
+  type: String!
+  secret: Boolean!
+}
+
 type CollectionGapRecommendedConnector {
   slug: String!
   title: String!
@@ -238,6 +247,7 @@ type CollectionGapRecommendedConnector {
   matched_object_types: [String!]!
   matched_sectors: [String!]!
   matched_regions: [String!]!
+  required_settings: [ConnectorRequiredSetting!]!
 }
 
 type CollectionGap implements InternalObject & BasicObject {
@@ -319,6 +329,8 @@ type SourceRecommendation implements InternalObject & BasicObject {
   dismissed_by: Creator
   dismissed_at: DateTime
   dismiss_reason: String
+  # Settings an add_connector recommendation needs to deploy its connector (empty for the other kinds)
+  required_settings: [ConnectorRequiredSetting!]!
 }
 
 enum SourceRecommendationsOrdering {
@@ -480,6 +492,8 @@ input SourceCostInput {
 input SourceRecommendationApplyInput {
   # Connector deployed from the catalog for an add_connector recommendation
   connector_id: ID
+  # Settings of the connector an add_connector recommendation deploys, used for the deployment only and never stored
+  configuration: [ContractConfigInput!]
 }
 
 input SourceIntelligenceValueWeightsInput {
@@ -627,7 +641,7 @@ type Mutation {
   applySourceRecommendation(id: ID!, input: SourceRecommendationApplyInput): SourceRecommendation @auth(for: [MODULES_MODMANAGE, INGESTION_SETINGESTIONS, SETTINGS_SETACCESSES, SETTINGS_SETCUSTOMIZATION])
   revertSourceRecommendation(id: ID!): SourceRecommendation @auth(for: [MODULES_MODMANAGE, INGESTION_SETINGESTIONS, SETTINGS_SETACCESSES, SETTINGS_SETCUSTOMIZATION])
   dismissSourceRecommendation(id: ID!, reason: String): SourceRecommendation @auth(for: [MODULES_MODMANAGE, INGESTION_SETINGESTIONS])
-  collectionGapDeployConnector(id: ID!, slug: String!): SourceRecommendation @auth(for: [MODULES_MODMANAGE])
+  collectionGapDeployConnector(id: ID!, slug: String!, configuration: [ContractConfigInput!]): SourceRecommendation @auth(for: [MODULES_MODMANAGE])
   sourceIntelligenceSettingsEdit(input: SourceIntelligenceSettingsInput!): SourceIntelligenceSettings @auth(for: [SETTINGS_SETCUSTOMIZATION])
   sourceIntelligenceRecompute: Boolean @auth(for: [MODULES_MODMANAGE, INGESTION_SETINGESTIONS])
   sourceIntelligenceDashboardCreate(name: String): Workspace @auth(for: [EXPLORE_EXUPDATE])

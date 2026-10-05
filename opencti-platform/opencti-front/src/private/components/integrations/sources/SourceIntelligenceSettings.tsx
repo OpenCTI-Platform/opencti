@@ -8,6 +8,8 @@ import { Checkbox } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Card from '@common/card/Card';
 import EEChip from '@components/common/entreprise_edition/EEChip';
+import ObjectLabelField from '@components/common/form/ObjectLabelField';
+import type { FieldOption } from '../../../../utils/field';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../components/i18n';
@@ -120,7 +122,7 @@ const numberSchema = (field: NumericFieldDefinition, t_i18n: (s: string, options
 };
 
 // Nested Yup object from dotted field names (`thresholds.low_accuracy` -> thresholds: { low_accuracy })
-const buildValidation = (t_i18n: (s: string) => string) => {
+const buildValidation = (t_i18n: (s: string, options?: { values?: Record<string, unknown> }) => string) => {
   const root: Record<string, Yup.AnySchema> = {};
   const nested: Record<string, Record<string, Yup.AnySchema>> = {};
   ALL_NUMERIC_FIELDS.forEach((field) => {
@@ -134,9 +136,13 @@ const buildValidation = (t_i18n: (s: string) => string) => {
   Object.entries(nested).forEach(([key, shape]) => {
     root[key] = Yup.object().shape(shape);
   });
-  root.false_positive_labels = Yup.string().max(2000);
+  root.false_positive_labels = Yup.array().max(50, t_i18n('At most {max} labels', { values: { max: 50 } }));
   return Yup.object().shape(root);
 };
+
+// The setting stores label values, matched case-insensitively: a label picked in the list is the one already listed
+const labelValue = (option: FieldOption) => option.label.trim().toLowerCase();
+const isSameLabel = (a: FieldOption, b: FieldOption) => labelValue(a) === labelValue(b);
 
 type SettingsData = NonNullable<SourceIntelligenceSettingsQuery['response']['sourceIntelligenceSettings']>;
 
@@ -159,7 +165,7 @@ const SourceIntelligenceSettingsForm = ({ queryRef }: SettingsFormProps) => {
   const settings: SettingsData = sourceIntelligenceSettings;
   const initialValues = {
     ...settings,
-    false_positive_labels: settings.false_positive_labels.join(', '),
+    false_positive_labels: settings.false_positive_labels.map((value): FieldOption => ({ label: value, value })),
     autonomy: { ...settings.autonomy, auto_apply_kinds: [...settings.autonomy.auto_apply_kinds] as string[] },
   };
 
@@ -201,7 +207,7 @@ const SourceIntelligenceSettingsForm = ({ queryRef }: SettingsFormProps) => {
             max_manual_sources: values.max_manual_sources,
           }),
           manager_running: values.manager_running,
-          false_positive_labels: values.false_positive_labels.split(',').map((label) => label.trim()).filter((label) => label.length > 0),
+          false_positive_labels: Array.from(new Set(values.false_positive_labels.map(labelValue).filter((label) => label.length > 0))),
           value_weights: toNumbers({ ...values.value_weights }),
           thresholds: toNumbers({ ...values.thresholds }),
           tuning: toNumbers({ ...values.tuning }),
@@ -245,13 +251,14 @@ const SourceIntelligenceSettingsForm = ({ queryRef }: SettingsFormProps) => {
                   : t_i18n('The source intelligence manager is disabled in the platform configuration: the scorecards are not computed whatever this setting.')}
               />
               {renderFields(GENERAL_FIELDS)}
-              <Field
-                component={TextField}
-                variant="standard"
+              <ObjectLabelField
                 name="false_positive_labels"
-                label={t_i18n('False positive labels (comma separated)')}
-                fullWidth
+                label={t_i18n('False positive labels')}
+                helpertext={t_i18n('Objects carrying one of these labels count as false positives of their sources, for example false-positive. Left empty, no label marks an object as a false positive.')}
                 style={{ marginTop: 16 }}
+                setFieldValue={setFieldValue}
+                values={values.false_positive_labels}
+                isOptionEqualToValue={isSameLabel}
               />
             </Card>
             <Card title={t_i18n('Operational value score weights')}>

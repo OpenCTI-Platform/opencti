@@ -1,9 +1,10 @@
 import React from 'react';
-import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { Select, SelectContent, SelectHelperText, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
+import Button from '@common/button/Button';
 import { useFormatter } from '../../../components/i18n';
 import useEnterpriseEdition from '../../../utils/hooks/useEnterpriseEdition';
 import type { WidgetDataSelection } from '../../../utils/widget/widget';
-import { findSourceWidgetMetric, sourceWidgetMetricsFor } from '../integrations/sources/sourceIntelligenceUtils';
+import { findSourceWidgetMetric, SOURCE_INTELLIGENCE_DOCUMENTATION_URL, sourceWidgetMetricsFor } from '../integrations/sources/sourceIntelligenceUtils';
 
 interface WidgetSourcesParametersProps {
   type: string;
@@ -21,13 +22,14 @@ const AGGREGATION_LABELS: Record<string, string> = {
 
 interface MetricSelectProps {
   label: string;
+  help: string;
   value: string;
   onChange: (value: string) => void;
   testId: string;
   widgetType?: string;
 }
 
-const MetricSelect = ({ label, value, onChange, testId, widgetType }: MetricSelectProps) => {
+const MetricSelect = ({ label, help, value, onChange, testId, widgetType }: MetricSelectProps) => {
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
   return (
@@ -42,6 +44,7 @@ const MetricSelect = ({ label, value, onChange, testId, widgetType }: MetricSele
             <SelectItem key={metric.key} value={metric.key}>{t_i18n(metric.label)}</SelectItem>
           ))}
         </SelectContent>
+        <SelectHelperText>{help}</SelectHelperText>
       </Select>
     </div>
   );
@@ -59,6 +62,9 @@ const WidgetSourcesParameters = ({ type, selection, onChange }: WidgetSourcesPar
     <div data-testid="widget-sources-parameters">
       <MetricSelect
         label={isBubble ? t_i18n('Horizontal axis metric') : t_i18n('Metric')}
+        help={isBubble
+          ? t_i18n('The measure on the horizontal axis, for example the volume. Left empty, it is the cost per actionable object.')
+          : t_i18n('The scorecard measure the widget shows, for example the volume. Left empty, it shows the operational value score.')}
         value={selection.attribute ?? (isBubble ? 'cost_per_actionable_object' : 'value_score')}
         onChange={(value) => onChange('attribute', value)}
         testId="widget-sources-metric"
@@ -68,12 +74,14 @@ const WidgetSourcesParameters = ({ type, selection, onChange }: WidgetSourcesPar
         <>
           <MetricSelect
             label={t_i18n('Vertical axis metric')}
+            help={t_i18n('The measure on the vertical axis, for example the accuracy. Left empty, it is the impact score.')}
             value={selection.field ?? 'impact_score'}
             onChange={(value) => onChange('field', value)}
             testId="widget-sources-y-metric"
           />
           <MetricSelect
             label={t_i18n('Bubble size metric')}
+            help={t_i18n('The measure that sizes each bubble, for example the unique objects. Left empty, it is the volume.')}
             value={selection.sort_by ?? 'volume_total'}
             onChange={(value) => onChange('sort_by', value)}
             testId="widget-sources-size-metric"
@@ -93,6 +101,11 @@ const WidgetSourcesParameters = ({ type, selection, onChange }: WidgetSourcesPar
                 <SelectItem key={aggregation} value={aggregation}>{t_i18n(AGGREGATION_LABELS[aggregation])}</SelectItem>
               ))}
             </SelectContent>
+            <SelectHelperText>
+              {type === 'number'
+                ? t_i18n('How the values of the scored sources are combined, for example their sum, or Number of sources to count them. Left empty, their average is shown.')
+                : t_i18n('How the values of the scored sources are combined on each day, for example their maximum. Left empty, their average is drawn.')}
+            </SelectHelperText>
           </Select>
         </div>
       )}
@@ -107,9 +120,15 @@ const WidgetSourcesParameters = ({ type, selection, onChange }: WidgetSourcesPar
               <SelectItem value="desc">{t_i18n('Highest first')}</SelectItem>
               <SelectItem value="asc">{t_i18n('Lowest first')}</SelectItem>
             </SelectContent>
+            <SelectHelperText>{t_i18n('The order of the sources, for example the lowest values first. Left empty, the highest values come first.')}</SelectHelperText>
           </Select>
         </div>
       )}
+      <div className="mt-3">
+        <Button variant="tertiary" size="small" component="a" href={`${SOURCE_INTELLIGENCE_DOCUMENTATION_URL}#dashboards`} target="_blank" rel="noopener noreferrer">
+          {t_i18n('Learn more')}
+        </Button>
+      </div>
     </div>
   );
 };

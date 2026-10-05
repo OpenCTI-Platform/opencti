@@ -19,6 +19,7 @@ import {
   isSourceIntelligenceRunning,
   maskRestrictedNames,
   maskRestrictedNamesInJson,
+  parseJsonRecord,
   requestSourceIntelligenceRecompute,
   restrictedRecommendationNames,
   sourceEditField,
@@ -41,7 +42,8 @@ import {
   sourceScorecardsScatter,
   sourceScorecardsTimeSeries,
 } from './sourceIntelligence-widgets';
-import { SOURCE_KIND_CONNECTOR, SOURCE_KIND_INGESTION_FEED } from './sourceIntelligence-types';
+import { RECOMMENDATION_ADD_CONNECTOR, SOURCE_KIND_CONNECTOR, SOURCE_KIND_INGESTION_FEED } from './sourceIntelligence-types';
+import { requiredSettingsOfImage } from './sourceIntelligence-deployment';
 
 // PIR relevance is measured in Enterprise Edition only: the values stored before a license downgrade are not served
 const enterpriseValue = async (context: AuthContext, value: number | null | undefined) => {
@@ -113,6 +115,9 @@ const sourceIntelligenceResolvers: Resolvers = {
     covering_sources: (gap: any) => gap.covering_sources ?? [],
     recommended_connectors: (gap: any) => gap.recommended_connectors ?? [],
   },
+  CollectionGapRecommendedConnector: {
+    required_settings: (connector: any, _, context) => requiredSettingsOfImage(context, context.user as AuthUser, connector.contract_image),
+  },
   CollectionGapCoveringSource: {
     source: (covering: any, _, context) => findSourceById(context, context.user, covering.source_id) as any,
   },
@@ -131,6 +136,11 @@ const sourceIntelligenceResolvers: Resolvers = {
     applied_by: (recommendation: any, _, context) => (recommendation.applied_by_id ? loadCreator(context, context.user, recommendation.applied_by_id) : null),
     reverted_by: (recommendation: any, _, context) => (recommendation.reverted_by_id ? loadCreator(context, context.user, recommendation.reverted_by_id) : null),
     dismissed_by: (recommendation: any, _, context) => (recommendation.dismissed_by_id ? loadCreator(context, context.user, recommendation.dismissed_by_id) : null),
+    required_settings: (recommendation: any, _, context) => {
+      if (recommendation.recommendation_kind !== RECOMMENDATION_ADD_CONNECTOR) return [];
+      const image = parseJsonRecord(recommendation.payload).contract_image;
+      return requiredSettingsOfImage(context, context.user as AuthUser, typeof image === 'string' ? image : null);
+    },
   },
   Mutation: {
     sourceSetCost: (_, { id, input }, context) => sourceSetCost(context, context.user, id, input) as any,
@@ -141,9 +151,9 @@ const sourceIntelligenceResolvers: Resolvers = {
     },
     revertSourceRecommendation: (_, { id }, context) => revertSourceRecommendation(context, context.user, id) as any,
     dismissSourceRecommendation: (_, { id, reason }, context) => dismissSourceRecommendation(context, context.user, id, reason) as any,
-    collectionGapDeployConnector: async (_, { id, slug }, context) => {
+    collectionGapDeployConnector: async (_, { id, slug, configuration }, context) => {
       const settings = await getSourceIntelligenceSettings(context);
-      return deployCollectionGapConnector(context, context.user, id, slug, settings) as any;
+      return deployCollectionGapConnector(context, context.user, id, slug, settings, configuration ?? []) as any;
     },
     sourceIntelligenceSettingsEdit: (_, { input }, context) => editSourceIntelligenceSettings(context, context.user, input) as any,
     sourceIntelligenceRecompute: (_, __, context) => requestSourceIntelligenceRecompute(context, context.user),

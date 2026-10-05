@@ -227,7 +227,7 @@ export const maskRestrictedSources = async <T extends BasicStoreEntitySource>(co
 // One resolution per request and recommendation: the masked fields of a recommendation share it
 const restrictedNamesByContext = new WeakMap<AuthContext, Map<string, Promise<string[]>>>();
 
-const parseJsonRecord = (value: string | null | undefined): Record<string, unknown> => {
+export const parseJsonRecord = (value: string | null | undefined): Record<string, unknown> => {
   try {
     const parsed = value ? JSON.parse(value) : {};
     return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};

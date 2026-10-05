@@ -97,6 +97,15 @@ import { buildResolverFromSources, clearDisabledSourcesLiveData, recordNamedAuth
 import { isProvenanceAttributeAvailable } from './sourceIntelligence-provenance';
 import { releaseQuarantine } from './sourceIntelligence-quarantine';
 import { ATTRIBUTE_ASSERTION_SOURCE_IDS } from '../provenance/provenance-types';
+import type { ContractConfigInput } from '../../generated/graphql';
+import { requiredSettingsOfImage } from './sourceIntelligence-deployment';
+
+export interface RecommendationApplyInput {
+  // Connector deployed from the catalog that an add_connector recommendation links
+  connector_id?: string | null;
+  // Settings of the connector an add_connector recommendation deploys: passed to the deployment, never stored
+  configuration?: readonly ContractConfigInput[] | null;
+}
 
 const DAY_MS = 24 * 3600 * 1000;
 type ManagedConnector = BasicStoreEntityConnector & { manager_requested_status?: string | null; title?: string };
@@ -310,7 +319,7 @@ const executeApply = async (
   source: BasicStoreEntitySource | null,
   settings: SourceIntelligenceSettings,
   autonomous: boolean,
-  input: { connector_id?: string | null },
+  input: RecommendationApplyInput,
   progress: ApplyProgress,
 ): Promise<ExecutionResult> => {
   const payload = parseJson<Record<string, any>>(recommendation.payload, {});
@@ -492,7 +501,7 @@ const executeApply = async (
         name: payload.title,
         catalog_id: payload.catalog_id,
         manager_contract_image: payload.contract_image,
-        manager_contract_configuration: [],
+        manager_contract_configuration: [...(input.configuration ?? [])],
         user_id: `[C] ${payload.title}`,
         automatic_user: true,
         confidence_level: '50',
@@ -638,7 +647,7 @@ const applyLockedRecommendation = async (
   user: AuthUser,
   recommendation: BasicStoreEntitySourceRecommendation,
   settings: SourceIntelligenceSettings,
-  input: { connector_id?: string | null },
+  input: RecommendationApplyInput,
   autonomous: boolean,
 ) => {
   const id = recommendation.internal_id;
@@ -728,7 +737,7 @@ export const applySourceRecommendation = async (
   user: AuthUser,
   id: string,
   settings: SourceIntelligenceSettings,
-  input: { connector_id?: string | null } = {},
+  input: RecommendationApplyInput = {},
   autonomous = false,
 ) => {
   await checkEnterpriseEdition(context);
@@ -990,7 +999,21 @@ export const applyAutonomousRecommendations = async (context: AuthContext, setti
   if (settings.autonomy.auto_apply_kinds.length === 0 || settings.autonomy.max_auto_actions_per_run <= 0) {
     return 0;
   }
-  const eligible = selectAutonomousCandidates(await loadAllRecommendations(context), settings);
+  const recommendations = await loadAllRecommendations(context);
+  // A connector that needs settings waits for a person to provide them when deploying it
+  const needsSettings = new Set<string>();
+  if (settings.autonomy.auto_apply_kinds.includes(RECOMMENDATION_ADD_CONNECTOR)) {
+    const connectorProposals = recommendations.filter((recommendation) => recommendation.recommendation_kind === RECOMMENDATION_ADD_CONNECTOR
+      && recommendation.recommendation_status === RECOMMENDATION_STATUS_PROPOSED);
+    for (let i = 0; i < connectorProposals.length; i += 1) {
+      const image = parseJson<Record<string, unknown>>(connectorProposals[i].payload, {}).contract_image;
+      const required = await requiredSettingsOfImage(context, SOURCE_INTELLIGENCE_MANAGER_USER, typeof image === 'string' ? image : null);
+      if (required.length > 0) {
+        needsSettings.add(connectorProposals[i].internal_id);
+      }
+    }
+  }
+  const eligible = selectAutonomousCandidates(recommendations.filter((recommendation) => !needsSettings.has(recommendation.internal_id)), settings);
   for (let i = 0; i < eligible.length; i += 1) {
     try {
       await applySourceRecommendation(context, SOURCE_INTELLIGENCE_MANAGER_USER, eligible[i].internal_id, settings, {}, true);

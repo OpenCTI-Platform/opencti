@@ -1,5 +1,7 @@
-import React, { Suspense, useState } from 'react';
-import { graphql, PreloadedQuery, usePaginationFragment, usePreloadedQuery } from 'react-relay';
+import React, { ReactNode, Suspense, useState } from 'react';
+import { graphql, PreloadedQuery, useLazyLoadQuery, usePaginationFragment, usePreloadedQuery } from 'react-relay';
+import { connectorManagerStatusQuery } from '@components/data/connectors/ConnectorManagerStatusContext';
+import { ConnectorManagerStatusContextQuery } from '@components/data/connectors/__generated__/ConnectorManagerStatusContextQuery.graphql';
 import { Link } from 'react-router';
 import { Box, Collapse, Skeleton, Stack, Typography } from '@mui/material';
 import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
@@ -17,8 +19,9 @@ import type { Theme } from '../../../../components/Theme';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { ValueScoreBar } from './SourcesLeaderboard';
 import { useSourceMetricFormat } from './SourceMetricValue';
-import { buildHubCoverageSearchUrl, criterionPriority } from './sourceIntelligenceUtils';
+import { buildHubCoverageSearchUrl, criterionPriority, oneClickDeployBlocker } from './sourceIntelligenceUtils';
 import notifyMutationOutcome from './notifyMutationOutcome';
+import ConnectorDeployDialog, { type ConnectorRequiredSetting, type ConnectorSettingValue, hasOnlyCollectableSettings } from './ConnectorDeployDialog';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { CollectionGapsQuery } from './__generated__/CollectionGapsQuery.graphql';
 import { CollectionGaps_gaps$key } from './__generated__/CollectionGaps_gaps.graphql';
@@ -89,6 +92,13 @@ const collectionGapsFragment = graphql`
             matched_object_types
             matched_sectors
             matched_regions
+            required_settings {
+              key
+              label
+              description
+              type
+              secret
+            }
           }
         }
       }
@@ -102,8 +112,8 @@ const collectionGapsFragment = graphql`
 `;
 
 const collectionGapDeployMutation = graphql`
-  mutation CollectionGapsDeployMutation($id: ID!, $slug: String!) {
-    collectionGapDeployConnector(id: $id, slug: $slug) {
+  mutation CollectionGapsDeployMutation($id: ID!, $slug: String!, $configuration: [ContractConfigInput!]) {
+    collectionGapDeployConnector(id: $id, slug: $slug, configuration: $configuration) {
       id
       status
       error_message
@@ -192,9 +202,24 @@ const sourceIntelligenceRecomputeMutation = graphql`
 
 interface CollectionGapsListProps {
   queryRef: PreloadedQuery<CollectionGapsQuery>;
+  // Null when the user cannot read the connector managers
+  hasRegisteredManager: boolean | null;
 }
 
-const CollectionGapsList = ({ queryRef }: CollectionGapsListProps) => {
+interface DeployTarget {
+  gapId: string;
+  slug: string;
+  title: string;
+  settings: readonly ConnectorRequiredSetting[];
+}
+
+// Reading the connector managers needs the capability to access connectors: only users who can deploy read them
+const WithRegisteredManagers = ({ children }: { children: (registered: boolean) => ReactNode }) => {
+  const data = useLazyLoadQuery<ConnectorManagerStatusContextQuery>(connectorManagerStatusQuery, {}, { fetchPolicy: 'store-or-network' });
+  return <>{children((data.connectorManagers ?? []).length > 0)}</>;
+};
+
+const CollectionGapsList = ({ queryRef, hasRegisteredManager }: CollectionGapsListProps) => {
   const { t_i18n, rd, fldt } = useFormatter();
   const theme = useTheme<Theme>();
   const format = useSourceMetricFormat();
@@ -214,9 +239,12 @@ const CollectionGapsList = ({ queryRef }: CollectionGapsListProps) => {
   // Failed deployments from this page with their cause, shown under the integration until a retry succeeds
   const [failedHere, setFailedHere] = useState<Map<string, string | null>>(() => new Map());
   const [commitDeploy, deploying] = useApiMutation<CollectionGapsDeployMutation>(collectionGapDeployMutation);
-  const handleDeploy = (gapId: string, slug: string) => commitDeploy({
-    variables: { id: gapId, slug },
+  // Connector whose deployment dialog is open: it says what the connector needs before anything is deployed
+  const [deployTarget, setDeployTarget] = useState<DeployTarget | null>(null);
+  const handleDeploy = (gapId: string, slug: string, configuration: ConnectorSettingValue[]) => commitDeploy({
+    variables: { id: gapId, slug, configuration },
     onCompleted: (response, errors) => {
+      setDeployTarget(null);
       const key = `${gapId}|${slug}`;
       const recommendation = response.collectionGapDeployConnector;
       const failed = !errors?.length && recommendation?.status !== 'applied';
@@ -357,7 +385,15 @@ const CollectionGapsList = ({ queryRef }: CollectionGapsListProps) => {
                   {gap.recommended_connectors.map((connector) => {
                     const deployKey = `${gap.id}|${connector.slug}`;
                     const deployed = connector.deployed || deployedHere.has(deployKey);
-                    const deployable = canDeploy && !deployed && connector.manager_supported && !!connector.contract_image;
+                    const blocker = oneClickDeployBlocker({
+                      inLocalCatalog: !!connector.contract_image,
+                      managerSupported: connector.manager_supported,
+                      canDeploy,
+                      hasRegisteredManager,
+                      settingsCollectable: hasOnlyCollectableSettings(connector.required_settings),
+                    });
+                    const deployable = !deployed && blocker === null;
+                    const openDeployDialog = () => setDeployTarget({ gapId: gap.id, slug: connector.slug, title: connector.title, settings: connector.required_settings });
                     return (
                       <Stack key={connector.slug} gap={1}>
                         <Stack direction="row" gap={2} alignItems="center" justifyContent="space-between">
@@ -372,19 +408,35 @@ const CollectionGapsList = ({ queryRef }: CollectionGapsListProps) => {
                               {[...connector.matched_object_types, ...connector.matched_sectors, ...connector.matched_regions].join(', ')
                                 || connector.short_description}
                             </Typography>
+                            {!deployed && blocker && (
+                              <Typography variant="caption" component="div" sx={{ color: theme.palette.text.secondary }} data-testid={`collection-gap-deploy-blocker-${connector.slug}`}>
+                                {t_i18n(blocker)}
+                              </Typography>
+                            )}
                           </Box>
                           {deployable && (
                             <Button
                               variant="secondary"
                               size="small"
                               disabled={deploying}
-                              onClick={() => handleDeploy(gap.id, connector.slug)}
+                              onClick={openDeployDialog}
                               data-testid={`collection-gap-deploy-${connector.slug}`}
                             >
                               {t_i18n('Deploy {name}', { values: { name: connector.title } })}
                             </Button>
                           )}
-                          {!deployable && !deployed && (
+                          {!deployable && !deployed && (!connector.contract_image && hubUrl ? (
+                            <Button
+                              variant="tertiary"
+                              size="small"
+                              component="a"
+                              href={buildHubCoverageSearchUrl(hubUrl, settings.id, gap)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {t_i18n('Open in XTM Hub')}
+                            </Button>
+                          ) : (
                             <Button
                               variant="tertiary"
                               size="small"
@@ -393,12 +445,12 @@ const CollectionGapsList = ({ queryRef }: CollectionGapsListProps) => {
                             >
                               {t_i18n('Open in catalog')}
                             </Button>
-                          )}
+                          ))}
                         </Stack>
                         {failedHere.has(deployKey) && (
                           <DeployFailure
                             cause={failedHere.get(deployKey) ?? null}
-                            onRetry={deployable ? () => handleDeploy(gap.id, connector.slug) : undefined}
+                            onRetry={deployable ? openDeployDialog : undefined}
                             retrying={deploying}
                           />
                         )}
@@ -416,12 +468,23 @@ const CollectionGapsList = ({ queryRef }: CollectionGapsListProps) => {
           <Button variant="secondary" onClick={() => loadNext(PAGE_SIZE)} disabled={isLoadingNext}>{t_i18n('Load more')}</Button>
         </Stack>
       )}
+      {deployTarget && (
+        <ConnectorDeployDialog
+          open
+          connectorName={deployTarget.title}
+          settings={deployTarget.settings}
+          deploying={deploying}
+          onClose={() => setDeployTarget(null)}
+          onDeploy={(configuration) => handleDeploy(deployTarget.gapId, deployTarget.slug, configuration)}
+        />
+      )}
     </Stack>
   );
 };
 
 const CollectionGapsView = () => {
   const { t_i18n } = useFormatter();
+  const canDeploy = useGranted([MODULES_MODMANAGE]);
   const [onlyGaps, setOnlyGaps] = useState(true);
   const queryRef = useQueryLoading<CollectionGapsQuery>(collectionGapsQuery, { count: PAGE_SIZE, onlyGaps });
   return (
@@ -434,7 +497,13 @@ const CollectionGapsView = () => {
       </Stack>
       {queryRef && (
         <Suspense fallback={<Skeleton variant="rounded" height={160} aria-hidden />}>
-          <CollectionGapsList queryRef={queryRef} />
+          {canDeploy ? (
+            <WithRegisteredManagers>
+              {(registered) => <CollectionGapsList queryRef={queryRef} hasRegisteredManager={registered} />}
+            </WithRegisteredManagers>
+          ) : (
+            <CollectionGapsList queryRef={queryRef} hasRegisteredManager={null} />
+          )}
         </Suspense>
       )}
     </Stack>

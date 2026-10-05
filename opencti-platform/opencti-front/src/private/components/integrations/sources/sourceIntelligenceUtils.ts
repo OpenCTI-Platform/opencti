@@ -30,6 +30,46 @@ export const SOURCE_INTELLIGENCE_SETTINGS_PATH = '/dashboard/settings/customizat
 export const SOURCE_INTELLIGENCE_DOCUMENTATION_URL = 'https://docs.opencti.io/latest/usage/source-intelligence/';
 export const SOURCE_INTELLIGENCE_MANAGER_DOCUMENTATION_URL = 'https://docs.opencti.io/latest/deployment/advanced/managers/#source-intelligence-manager';
 
+// Currencies offered by the cost editor (ISO 4217); a cost stored in another currency stays selectable
+export const COST_CURRENCIES = [
+  'EUR', 'USD', 'GBP', 'CHF', 'JPY', 'CAD', 'AUD', 'NZD', 'CNY', 'HKD', 'SGD', 'INR', 'KRW', 'TWD',
+  'BRL', 'MXN', 'SEK', 'NOK', 'DKK', 'PLN', 'CZK', 'ZAR', 'AED', 'SAR', 'ILS', 'TRY',
+];
+
+export const costCurrencyOptions = (current: string | null | undefined): string[] => {
+  const code = current?.toUpperCase();
+  return code && !COST_CURRENCIES.includes(code) ? [code, ...COST_CURRENCIES] : COST_CURRENCIES;
+};
+
+export interface OneClickDeployState {
+  inLocalCatalog: boolean;
+  managerSupported: boolean;
+  canDeploy: boolean;
+  // Null while unknown (the user cannot read the connector managers)
+  hasRegisteredManager: boolean | null;
+  settingsCollectable: boolean;
+}
+
+/** Why a recommended connector cannot be deployed in one click, and what to do instead; null when it can. */
+export const oneClickDeployBlocker = (state: OneClickDeployState): string | null => {
+  if (!state.inLocalCatalog) {
+    return 'This connector is not in the local catalog of the platform yet: deploy it yourself from its XTM Hub page.';
+  }
+  if (!state.managerSupported) {
+    return 'XTM Composer cannot run this connector: deploy it yourself from its catalog page.';
+  }
+  if (!state.canDeploy) {
+    return 'Deploying a connector requires the capability to manage connectors: ask an administrator, or open it in the catalog.';
+  }
+  if (state.hasRegisteredManager === false) {
+    return 'No connector manager is registered: register XTM Composer to deploy connectors in one click, or deploy this one yourself from its catalog page.';
+  }
+  if (!state.settingsCollectable) {
+    return 'This connector needs settings that are set on its catalog page: deploy it from there.';
+  }
+  return null;
+};
+
 export const sourceDetailLink = (sourceId: string) => `/dashboard/integrations/sources/source/${sourceId}`;
 // Deep link opening the cost editor of a source
 export const SOURCE_EDIT_PARAM = 'edit';
