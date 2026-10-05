@@ -66,8 +66,8 @@ import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 import { ENTITY_TYPE_PIR } from '../pir/pir-types';
 import { checkStixCoreRelationshipMapping } from '../../database/stix';
 import { INVESTIGATION_MANAGER_USER, isUserHasCapability, KNOWLEDGE_KNENRICHMENT } from '../../utils/access';
-import { addDraftWorkspace, deleteDraftWorkspace, findById as findDraftById, validateDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
-import { addWorkspace, findById as findWorkspaceById, workspaceDelete, workspaceEditField } from '../workspace/workspace-domain';
+import { addDraftWorkspace, validateDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
+import { addWorkspace, workspaceEditField } from '../workspace/workspace-domain';
 import { askElementEnrichmentForConnectors } from '../../domain/stixCoreObject';
 import { loadWorkById, worksForConnector } from '../../domain/work';
 import { addNote } from '../../domain/note';
@@ -104,6 +104,7 @@ import {
   type InvestigationRecommendation,
 } from './investigationRun-types';
 import {
+  deleteStoppedRunArtifacts,
   investigationIdentityContext,
   listPolicyEnrichmentConnectors,
   loadInvestigationRun,
@@ -970,37 +971,6 @@ const findCarryBoundary = async (exec: RunExecution, citedIds: string[]): Promis
 // The draft and the investigation graph of a run stopped at an access boundary
 // hold what the run read and derived: the run keeps each reference until its
 // deletion succeeds, and the manager retries a deletion that failed.
-const deleteStoppedRunArtifacts = async (context: AuthContext, runId: string, artifacts: { draftId: string | null; workspaceId: string | null }) => {
-  const deleted = { draft: false, workspace: false };
-  if (artifacts.draftId) {
-    try {
-      if (await findDraftById(context, INVESTIGATION_MANAGER_USER, artifacts.draftId)) {
-        await deleteDraftWorkspace(context, INVESTIGATION_MANAGER_USER, artifacts.draftId);
-      }
-      deleted.draft = true;
-    } catch (cause) {
-      logApp.error('[CASE AUTOPILOT] Draft of a stopped investigation not deleted, retried on the next tick', { runId, draftId: artifacts.draftId, cause });
-    }
-  }
-  if (artifacts.workspaceId) {
-    try {
-      if (await findWorkspaceById(context, INVESTIGATION_MANAGER_USER, artifacts.workspaceId)) {
-        await workspaceDelete(context, INVESTIGATION_MANAGER_USER, artifacts.workspaceId);
-      }
-      deleted.workspace = true;
-    } catch (cause) {
-      logApp.error('[CASE AUTOPILOT] Investigation graph of a stopped investigation not deleted, retried on the next tick', { runId, workspaceId: artifacts.workspaceId, cause });
-    }
-  }
-  if (!deleted.draft && !deleted.workspace) return;
-  await updateInvestigationRun(context, runId, (current) => {
-    const patch: Record<string, null> = {};
-    if (deleted.draft && current.draft_id === artifacts.draftId) patch.draft_id = null;
-    if (deleted.workspace && current.workspace_id === artifacts.workspaceId) patch.workspace_id = null;
-    return Object.keys(patch).length > 0 ? patch : null;
-  });
-};
-
 // Everything the run derived from what it read is withheld, as it may describe
 // what the run can no longer carry: the engine's text, the conclusion OpenCTI
 // scored from it, the references to its outputs, its draft, deleted with what

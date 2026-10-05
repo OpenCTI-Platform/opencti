@@ -605,6 +605,11 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
     expect(cancelled.data.investigationRunCancel).toMatchObject({ run_status: 'cancelled', run_phase: 'done' });
     expect(investigationXtm.cancelInvestigation).toHaveBeenCalledWith(expect.anything(), ENGINE_ID);
     expect((await loadInvestigationRun(testContext, runId))?.xtm_status).toBe('cancel_pending');
+    // Deleting the run asks XTM One again first: refused while the stop is not confirmed, the run kept.
+    vi.mocked(investigationXtm.cancelInvestigation).mockResolvedValueOnce({ ok: false, failure: 'engine_unreachable', status: 503, message: 'XTM One is unreachable' });
+    const refusedDeletion = await queryAsAdmin({ query: RUN_DELETE, variables: { id: runId } });
+    expect(refusedDeletion.errors?.[0]?.message).toBe('XTM One has not confirmed yet that the engine run of this investigation stopped: try deleting it again in a moment');
+    expect((await loadInvestigationRun(testContext, runId))?.xtm_status).toBe('cancel_pending');
     // Not confirmed by XTM One: the manager lists the run again and asks again.
     const toProcess = await listInvestigationRunsToProcess(testContext, 50);
     expect(toProcess.map((run) => run.internal_id)).toContain(runId);
@@ -693,6 +698,11 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       expect((await loadInvestigationRun(testContext, runId))?.draft_id).toBe(mirrored.draft_id);
       expect(stopped.steps.every((step: { action: string | null }) => step.action === null)).toBe(true);
       expect((await listInvestigationRunsToProcess(testContext, 50)).map((run) => run.internal_id)).toContain(runId);
+      // Deleting the run deletes its draft first: refused while that fails, the run keeps its reference.
+      deletion.mockRejectedValueOnce(new Error('Draft store unavailable'));
+      const refusedDeletion = await queryAsAdmin({ query: RUN_DELETE, variables: { id: runId } });
+      expect(refusedDeletion.errors?.[0]?.message).toBe('The draft or the investigation graph of this investigation could not be deleted yet: try deleting it again in a moment');
+      expect((await loadInvestigationRun(testContext, runId))?.draft_id).toBe(mirrored.draft_id);
       await processInvestigationRun(testContext, runId);
       deletion.mockRestore();
       expect((await loadInvestigationRun(testContext, runId))?.draft_id ?? null).toBeNull();
@@ -984,6 +994,11 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       expect(await runFields.end_reason_code(stored, {}, adminContext)).toBeNull();
       expect(await runFields.subject_id(stored, {}, adminContext)).toBe(caseId);
       expect(await runFields.xtm_investigation_id(stored, {}, adminContext)).toBe(stored.xtm_investigation_id);
+      // A status reason can carry error details of what the run did: withheld with the findings, the code says why.
+      const failureDetail = 'Not written: the report (search engine unavailable)';
+      const withDetail = { ...stored, status_reason: failureDetail };
+      expect(await runFields.status_reason(withDetail, {}, editorContext)).toBeNull();
+      expect(await runFields.status_reason(withDetail, {}, adminContext)).toBe(failureDetail);
       // The run copied the markings of what it read; it is served with those its sources carry now.
       const servedMarkings = await runFields.objectMarking(stored, {}, adminContext) as Array<{ standard_id: string }>;
       expect(servedMarkings.map((marking) => marking.standard_id)).toContain(MARKING_TLP_RED);

@@ -64,7 +64,8 @@ import { buildRefRelationKey } from '../../schema/general';
 import { iAliasedIds, xOpenctiStixIds } from '../../schema/attribute-definition';
 import { stixDomainObjectAddRelation, stixDomainObjectEditField } from '../../domain/stixDomainObject';
 import { taskAdd } from '../task/task-domain';
-import { findById as findDraftById, validateDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
+import { deleteDraftWorkspace, findById as findDraftById, validateDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
+import { findById as findWorkspaceById, workspaceDelete } from '../workspace/workspace-domain';
 import { connectorsForEnrichment } from '../../database/repository';
 import { isUserAccountValid, resolveUserByIdFromCache } from '../user/user-domain';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
@@ -75,7 +76,9 @@ import {
   EMPTY_OUTPUTS,
   ENGINE_CANCEL_FAILED,
   ENGINE_CANCEL_PENDING,
+  ENGINE_DISABLED,
   ENGINE_NOT_CONFIGURED,
+  ENGINE_UNAVAILABLE,
   ENTITY_TYPE_INVESTIGATION_RUN,
   INVESTIGATION_CASE_SUBJECT_TYPES,
   INVESTIGATION_DEFAULT_AGENT_SLUG,
@@ -163,6 +166,8 @@ export const loadInvestigationRun = (context: AuthContext, id: string) => {
 };
 
 const VALIDATION_NOT_CANCELLABLE = 'The approved changes of this investigation are being written to the case: it can no longer be cancelled';
+const ENGINE_STOP_UNCONFIRMED = 'XTM One has not confirmed yet that the engine run of this investigation stopped: try deleting it again in a moment';
+const ARTIFACTS_NOT_DELETED = 'The draft or the investigation graph of this investigation could not be deleted yet: try deleting it again in a moment';
 const FINDINGS_WITHHELD: Record<string, string> = {
   [MEMBER_RESTRICTED_CODE]: 'What this investigation found is withheld: an entity it investigated or cites is now restricted to authorized members',
   [SOURCE_INACCESSIBLE_CODE]: 'What this investigation found is withheld: an entity it investigated or cites is no longer accessible to you',
@@ -254,10 +259,15 @@ export const findInvestigationRunsWithheldReasons = async (context: AuthContext,
   return (await readRunSources(context, user, runs)).map(({ reason }) => reason);
 };
 
-/** A run as it is served while its findings are withheld from the reader: emptied, with the reason. */
+/**
+ * A run as it is served while its findings are withheld from the reader:
+ * emptied, with the reason code. Its status reason can carry error details of
+ * what it did, so it is withheld too; the code says why.
+ */
 export const withholdInvestigationRunFindings = (run: BasicStoreEntityInvestigationRun, reason: string): BasicStoreEntityInvestigationRun => ({
   ...run,
   ...withheldRunContent(run),
+  status_reason: null,
   end_reason_code: reason,
 });
 
@@ -619,7 +629,7 @@ export const addInvestigationRun = async (
  */
 export const stopCancelledEngineRun = async (context: AuthContext, runId: string, fallbackUser: AuthUser | null = null) => {
   const run = await loadInvestigationRun(outOfDraft(context), runId);
-  if (!run || run.xtm_status !== ENGINE_CANCEL_PENDING || !run.xtm_investigation_id) return;
+  if (!run || run.xtm_status !== ENGINE_CANCEL_PENDING || !run.xtm_investigation_id) return null;
   const runUser = (await resolveUserByIdFromCache(context, run.run_as_id)) ?? fallbackUser;
   const result = runUser ? await cancelInvestigation({ id: runUser.id, user_email: runUser.user_email }, run.xtm_investigation_id) : null;
   await updateInvestigationRun(context, runId, (current) => {
@@ -628,6 +638,44 @@ export const stopCancelledEngineRun = async (context: AuthContext, runId: string
     const attempts = (current.engine_failures ?? 0) + 1;
     logApp.warn('[CASE AUTOPILOT] Engine run not cancelled yet', { runId, attempts, failure: result?.failure ?? 'no identity' });
     return { engine_failures: attempts, ...(attempts >= INVESTIGATION_LIMITS.engineFailures ? { xtm_status: ENGINE_CANCEL_FAILED } : {}) };
+  });
+  return result;
+};
+
+/**
+ * Delete the draft and the investigation graph of a run stopped at an access
+ * boundary, with what it wrote and read there. What could not be deleted keeps
+ * its reference on the run, so that the manager, or a deletion of the run,
+ * tries again.
+ */
+export const deleteStoppedRunArtifacts = async (context: AuthContext, runId: string, artifacts: { draftId: string | null; workspaceId: string | null }) => {
+  const deleted = { draft: false, workspace: false };
+  if (artifacts.draftId) {
+    try {
+      if (await findDraftById(context, INVESTIGATION_MANAGER_USER, artifacts.draftId)) {
+        await deleteDraftWorkspace(context, INVESTIGATION_MANAGER_USER, artifacts.draftId);
+      }
+      deleted.draft = true;
+    } catch (cause) {
+      logApp.error('[CASE AUTOPILOT] Draft of a stopped investigation not deleted, retried on the next tick', { runId, draftId: artifacts.draftId, cause });
+    }
+  }
+  if (artifacts.workspaceId) {
+    try {
+      if (await findWorkspaceById(context, INVESTIGATION_MANAGER_USER, artifacts.workspaceId)) {
+        await workspaceDelete(context, INVESTIGATION_MANAGER_USER, artifacts.workspaceId);
+      }
+      deleted.workspace = true;
+    } catch (cause) {
+      logApp.error('[CASE AUTOPILOT] Investigation graph of a stopped investigation not deleted, retried on the next tick', { runId, workspaceId: artifacts.workspaceId, cause });
+    }
+  }
+  if (!deleted.draft && !deleted.workspace) return;
+  await updateInvestigationRun(context, runId, (current) => {
+    const patch: Record<string, null> = {};
+    if (deleted.draft && current.draft_id === artifacts.draftId) patch.draft_id = null;
+    if (deleted.workspace && current.workspace_id === artifacts.workspaceId) patch.workspace_id = null;
+    return Object.keys(patch).length > 0 ? patch : null;
   });
 };
 
@@ -689,11 +737,46 @@ export const cancelInvestigationRun = async (context: AuthContext, user: AuthUse
   return updated;
 };
 
+// Answers after which XTM One holds no engine run this platform can still stop:
+// no longer connected, without the investigation routes or the run, or no
+// longer running investigations.
+const ENGINE_GONE_FAILURES: string[] = [ENGINE_NOT_CONFIGURED, ENGINE_UNAVAILABLE, ENGINE_DISABLED];
+
+/**
+ * A stopped run is the record its cleanup is retried from: a deletion
+ * completes that cleanup first (the stop of its engine run, asked again when
+ * the manager gave up on it, and the deletion of the draft and investigation
+ * graph of a run stopped at an access boundary) and keeps the run while it
+ * cannot.
+ */
+const completeStoppedRunCleanup = async (context: AuthContext, user: AuthUser, id: string) => {
+  const liveContext = outOfDraft(context);
+  const run = await loadInvestigationRun(liveContext, id);
+  if (!run) return;
+  if (run.xtm_status === ENGINE_CANCEL_FAILED) {
+    await updateInvestigationRun(liveContext, id, (current) => (current.xtm_status === ENGINE_CANCEL_FAILED ? { xtm_status: ENGINE_CANCEL_PENDING, engine_failures: 0 } : null));
+  }
+  if (run.xtm_status === ENGINE_CANCEL_PENDING || run.xtm_status === ENGINE_CANCEL_FAILED) {
+    const result = await stopCancelledEngineRun(liveContext, id, user);
+    if (result && !result.ok && !ENGINE_GONE_FAILURES.includes(result.failure)) {
+      throw FunctionalError(ENGINE_STOP_UNCONFIRMED, { id });
+    }
+  }
+  if (run.run_status === InvestigationRunStatus.Failed && CARRY_BOUNDARY_CODES.includes(run.end_reason_code ?? '') && (run.draft_id || run.workspace_id)) {
+    await deleteStoppedRunArtifacts(liveContext, id, { draftId: run.draft_id ?? null, workspaceId: run.workspace_id ?? null });
+    const cleaned = await loadInvestigationRun(liveContext, id);
+    if (cleaned && (cleaned.draft_id || cleaned.workspace_id)) {
+      throw FunctionalError(ARTIFACTS_NOT_DELETED, { id });
+    }
+  }
+};
+
 export const deleteInvestigationRun = async (context: AuthContext, user: AuthUser, id: string) => {
   const run = await findAccessibleRun(context, user, id);
   if (ACTIVE_RUN_STATUSES.includes(run.run_status)) {
     throw FunctionalError('Cancel the investigation before deleting it', { id });
   }
+  await completeStoppedRunCleanup(context, user, id);
   await deleteInternalObject(outOfDraft(context), user, id, ENTITY_TYPE_INVESTIGATION_RUN);
   await notify(BUS_TOPICS[ENTITY_TYPE_INVESTIGATION_RUN].DELETE_TOPIC, run, user);
   return id;

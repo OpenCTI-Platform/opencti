@@ -21,6 +21,7 @@ import { pubSubAsyncIterator } from '../../database/redis';
 import { ForbiddenAccess } from '../../config/errors';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
+import { ENTITY_TYPE_PIR } from '../pir/pir-types';
 import { KNOWLEDGE } from '../../utils/access';
 import { loadCreators } from '../../database/members';
 import { elFindByIds } from '../../database/engine';
@@ -107,12 +108,14 @@ const servedSourceId = async (run: BasicStoreEntityInvestigationRun, context: an
 };
 
 // Where the objects a run reads and cites are published when they change, a
-// marking, a sharing or a member restriction included.
+// marking, a sharing or a member restriction included; the PIRs it reads as
+// context are internal objects, published on their own topic.
 const SOURCE_EDIT_TOPICS = [
   BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC,
   BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC,
   BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC,
   BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC,
+  BUS_TOPICS[ENTITY_TYPE_PIR].EDIT_TOPIC,
 ];
 
 /**
@@ -205,6 +208,7 @@ const investigationRunResolvers: Resolvers = {
     name: async (run, _, context) => (await served(run, context)).name,
     representative: async (run, _, context) => extractRepresentative(await served(run, context)),
     end_reason_code: async (run, _, context) => (await served(run, context)).end_reason_code ?? null,
+    status_reason: async (run, _, context) => (await served(run, context)).status_reason ?? null,
     goal_plan: async (run, _, context) => (await served(run, context)).goal_plan ?? null,
     steps: async (run, _, context) => (await served(run, context)).steps ?? [],
     evidence: async (run, _, context) => (await served(run, context)).evidence ?? [],

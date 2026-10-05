@@ -36,6 +36,9 @@ vi.mock('../../../../src/database/redis', async (importOriginal) => ({
 }));
 
 const { default: investigationRunResolvers } = await import('../../../../src/modules/investigationRun/investigationRun-resolvers');
+const { pubSubAsyncIterator } = await import('../../../../src/database/redis');
+const { BUS_TOPICS } = await import('../../../../src/config/conf');
+const { ENTITY_TYPE_PIR } = await import('../../../../src/modules/pir/pir-types');
 
 type Subscribe = (parent: unknown, args: { id: string }, context: unknown) => Promise<AsyncIterable<{ instance: { id: string } }>>;
 const subscribe = (investigationRunResolvers.Subscription as unknown as { investigationRun: { subscribe: Subscribe } }).investigationRun.subscribe;
@@ -59,6 +62,13 @@ describe('Case Autopilot run subscription', () => {
     expect((await iterator.next()).value).toEqual({ instance: mocks.run });
     expect((await iterator.next()).value?.instance).toMatchObject({ id: 'run-1', name: 'Renamed' });
     expect((await iterator.next()).done).toBe(true);
+  });
+
+  it('follows the edits of every kind of source a run reads, the PIRs of its context included', async () => {
+    mocks.events = [];
+    await listen();
+    const topics = vi.mocked(pubSubAsyncIterator).mock.calls.at(-1)?.[0] as unknown as string[];
+    expect(topics).toEqual(expect.arrayContaining([BUS_TOPICS[ENTITY_TYPE_PIR].EDIT_TOPIC]));
   });
 
   it('delivers nothing a subscriber may no longer receive, and closes the subscription when the client leaves', async () => {
