@@ -462,7 +462,7 @@ const promoteOperationCallback = async (context, user, task, container) => {
           objects.push(stixRelation);
         }
       } catch (e) {
-        logApp.error('[OPENCTI-MODULE][TASK-MANAGER] Task manager error during promote operation, skipping element', {
+        logApp.warn('[OPENCTI-MODULE][TASK-MANAGER] Task manager error during promote operation, skipping element', {
           cause: e,
           taskId: task.internal_id,
           workId: task.work_id,
@@ -660,7 +660,7 @@ const taskHandlerGenerator = (context) => {
     const isListTask = task.type === TASK_TYPE_LIST;
     const isRuleTask = task.type === TASK_TYPE_RULE;
     if (!isQueryTask && !isListTask && !isRuleTask) {
-      logApp.error('[OPENCTI-MODULE] Task manager unsupported type', { type: task.type });
+      logApp.warn('[OPENCTI-MODULE] Task manager unsupported type', { type: task.type });
       return;
     }
     // endregion
