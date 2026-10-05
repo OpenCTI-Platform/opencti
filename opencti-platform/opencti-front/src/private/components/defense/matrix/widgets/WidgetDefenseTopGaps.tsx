@@ -10,14 +10,14 @@ import WidgetNoData from '../../../../../components/dashboard/WidgetNoData';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import { useFormatter } from '../../../../../components/i18n';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
-import { DEFENSE_ACTION_LABELS, type DefenseAction, defenseLevelColor, defenseLevelLabel } from '../defenseMatrix-utils';
+import { DEFENSE_ACTION_LABELS, DEFENSE_UNCOVERED_LEVELS, type DefenseAction, defenseLevelColor, defenseLevelLabel } from '../defenseMatrix-utils';
 import { WidgetDefenseTopGapsQuery } from './__generated__/WidgetDefenseTopGapsQuery.graphql';
 
 const TOP_GAPS = 10;
 
 const widgetDefenseTopGapsQuery = graphql`
-  query WidgetDefenseTopGapsQuery($first: Int) {
-    defenseGaps(threatScope: { mode: ALL }, filter: { onlyUsedByThreats: true }, first: $first, orderBy: priority, orderMode: desc) {
+  query WidgetDefenseTopGapsQuery($first: Int, $levels: [Int!]) {
+    defenseGaps(threatScope: { mode: ALL }, filter: { levels: $levels, onlyUsedByThreats: true }, first: $first, orderBy: priority, orderMode: desc) {
       edges {
         node {
           id
@@ -68,7 +68,7 @@ interface WidgetDefenseTopGapsProps {
 
 const WidgetDefenseTopGaps = ({ title, popover }: WidgetDefenseTopGapsProps) => {
   const { t_i18n } = useFormatter();
-  const queryRef = useQueryLoading<WidgetDefenseTopGapsQuery>(widgetDefenseTopGapsQuery, { first: TOP_GAPS });
+  const queryRef = useQueryLoading<WidgetDefenseTopGapsQuery>(widgetDefenseTopGapsQuery, { first: TOP_GAPS, levels: DEFENSE_UNCOVERED_LEVELS });
   return (
     <WidgetContainer title={title || t_i18n('Top uncovered techniques used by threats')} action={popover}>
       <Box sx={{ height: '100%', overflow: 'auto' }}>

@@ -7,6 +7,7 @@ import {
   ALL_DEFENSE_LAYERS,
   computeLayerLevel,
   DEFAULT_DEFENSE_SCOPE,
+  DEFENSE_UNCOVERED_LEVELS,
   defenseFailedColor,
   defenseGapsExportFileName,
   defenseLevelColor,
@@ -70,6 +71,10 @@ describe('defenseMatrix-utils', () => {
       expect(summarizeLevels([4, 3, 1, 1, 1])).toEqual({ total: 10, covered: 2, percent: 20 });
       expect(summarizeLevels([0, 0, 0, 0, 0])).toEqual({ total: 0, covered: 0, percent: 0 });
       expect(summarizeLevels([1, 0, 0, 1, 1])).toEqual({ total: 3, covered: 2, percent: 67 });
+    });
+
+    it('treats the levels below a deployed detection as uncovered', () => {
+      expect(DEFENSE_UNCOVERED_LEVELS).toEqual([0, 1, 2]);
     });
   });
 

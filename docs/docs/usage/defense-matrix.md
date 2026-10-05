@@ -139,7 +139,7 @@ Each recipient is told about the level they see: both levels are computed from t
 
 ## Dashboards
 
-Three widgets are available in custom dashboards: **Defense coverage by tactic**, **Top uncovered techniques used by threats** and **Techniques by defense level** (the number of techniques with a deployed detection, of validated techniques, and the techniques per level). Like the matrix, they show the levels computed from the evidences the reader can access.
+Three widgets are available in custom dashboards: **Defense coverage by tactic**, **Top uncovered techniques used by threats** (the techniques without a deployed detection, highest priority first) and **Techniques by defense level** (the number of techniques with a deployed detection, of validated techniques, and the techniques per level). Like the matrix, they show the levels computed from the evidences the reader can access.
 
 Click **Create the defense coverage dashboard** next to **Recompute** in the defense matrix to create a custom dashboard from the built-in template: coverage by tactic, uncovered techniques used by threats, techniques by defense level, and detection rules by pattern type with the latest ones. The same template is offered on the custom dashboards page: click **Create from template** and choose **Defense coverage**.
 
