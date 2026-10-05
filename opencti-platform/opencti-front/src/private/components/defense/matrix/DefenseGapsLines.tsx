@@ -25,6 +25,7 @@ import {
   type DefenseValidation,
   defenseLevelColor,
   defenseLevelLabel,
+  MAX_VALIDATION_TECHNIQUES,
 } from './defenseMatrix-utils';
 
 const AGGREGATE_PLATFORM = 'all';
@@ -148,6 +149,8 @@ const DefenseGapsLines = ({ queryRef, scope, onlyUsedByThreats = false, onTotalC
     .filter((gap) => gap.platform_id !== AGGREGATE_PLATFORM)
     .map((gap) => ({ attackPatternId: gap.attack_pattern_id, platformId: gap.platform_id, platformName: gap.platform?.name ?? gap.platform_id }));
   const allSelected = gaps.length > 0 && gaps.every((gap) => selectedIds.has(gap.id));
+  // Individual and "Select all" selections alike: the platform refuses a larger request
+  const overValidationLimit = selectedTechniques.length > MAX_VALIDATION_TECHNIQUES;
 
   const toggle = (id: string, checked: boolean) => {
     const next = new Set(selectedIds);
@@ -167,8 +170,9 @@ const DefenseGapsLines = ({ queryRef, scope, onlyUsedByThreats = false, onTotalC
       action={(
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <Button
-            disabled={selectedTechniques.length === 0}
+            disabled={selectedTechniques.length === 0 || overValidationLimit}
             onClick={() => setValidating(true)}
+            aria-describedby={overValidationLimit ? 'defense-gaps-validate-limit' : undefined}
             data-testid="defense-gaps-validate"
           >
             {selectedTechniques.length === 0
@@ -178,6 +182,17 @@ const DefenseGapsLines = ({ queryRef, scope, onlyUsedByThreats = false, onTotalC
         </Security>
       )}
     >
+      {overValidationLimit && (
+        <Typography
+          id="defense-gaps-validate-limit"
+          variant="body2"
+          color="warning.main"
+          sx={{ marginBottom: 1 }}
+          data-testid="defense-gaps-validate-limit"
+        >
+          {t_i18n('A validation request holds at most {max} techniques and {count} are selected: unselect some of them to validate.', { values: { max: MAX_VALIDATION_TECHNIQUES, count: selectedTechniques.length } })}
+        </Typography>
+      )}
       {gaps.length === 0 ? (
         <Typography variant="body2" color="text.secondary" data-testid="defense-gaps-empty">
           {onlyUsedByThreats && data.defenseGaps?.threats_count === 0

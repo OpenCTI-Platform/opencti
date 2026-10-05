@@ -17,9 +17,10 @@ import {
   ComboboxTrigger,
 } from '@filigran/design-system';
 import { useIntl } from 'react-intl';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
+import { PATH_DEFENSE_GAPS } from '@components/common/routes/paths';
 import Alert from '../../../../components/Alert';
 import TextField from '../../../../components/TextField';
 import PeriodicityField from '../../../../components/fields/PeriodicityField';
@@ -28,7 +29,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { MESSAGING$ } from '../../../../relay/environment';
-import type { DefenseThreatOption } from './defenseMatrix-utils';
+import { type DefenseThreatOption, MAX_VALIDATION_TECHNIQUES } from './defenseMatrix-utils';
 import { notifyPayloadErrors } from './defenseMutation-utils';
 import { DefenseValidationDialogMutation } from './__generated__/DefenseValidationDialogMutation.graphql';
 
@@ -95,6 +96,8 @@ interface DefenseValidationDialogProps {
   onClose: () => void;
   onValidated?: () => void;
   techniques: ReadonlyArray<DefenseValidationTechnique>;
+  // Techniques of the scope left out because a request holds at most MAX_VALIDATION_TECHNIQUES
+  deferredCount?: number;
   // Platforms every technique is validated on (matrix scope, technique drawer)
   platforms?: ReadonlyArray<DefenseValidationPlatform>;
   // Exact technique and platform pairs selected in the gap backlog
@@ -104,7 +107,7 @@ interface DefenseValidationDialogProps {
 
 const techniqueTitle = (technique: DefenseValidationTechnique) => (technique.x_mitre_id ? `[${technique.x_mitre_id}] ${technique.name}` : technique.name);
 
-const DefenseValidationDialog = ({ open, onClose, onValidated, techniques, platforms = [], gaps = [], threats }: DefenseValidationDialogProps) => {
+const DefenseValidationDialog = ({ open, onClose, onValidated, techniques, deferredCount = 0, platforms = [], gaps = [], threats }: DefenseValidationDialogProps) => {
   const { t_i18n } = useFormatter();
   const intl = useIntl();
   const platformsOf = (techniqueId: string): string[] => {
@@ -210,6 +213,22 @@ const DefenseValidationDialog = ({ open, onClose, onValidated, techniques, platf
                 <Typography variant="body2" color="text.secondary" data-testid="defense-validation-more">
                   {t_i18n('{count, plural, one {and # more technique} other {and # more techniques}}', { values: { count: techniques.length - PREVIEW_TECHNIQUES } })}
                 </Typography>
+              )}
+              {deferredCount > 0 && (
+                <Box sx={{ marginTop: 1 }} data-testid="defense-validation-deferred">
+                  <Alert
+                    severity="warning"
+                    content={(
+                      <>
+                        {t_i18n('{count, plural, one {# more technique of this scope is not part of this request.} other {# more techniques of this scope are not part of this request.}}', { values: { count: deferredCount } })}
+                        {' '}
+                        {t_i18n('A validation request holds at most {max} techniques, the ones used by the most threats first. Select the others in the Gaps tab to validate them.', { values: { max: MAX_VALIDATION_TECHNIQUES } })}
+                        {' '}
+                        <Link to={PATH_DEFENSE_GAPS} onClick={onClose}>{t_i18n('Open the Gaps tab')}</Link>
+                      </>
+                    )}
+                  />
+                </Box>
               )}
               <Typography variant="body2" color="text.secondary" sx={{ marginTop: 1 }} data-testid="defense-validation-scenario">
                 {(() => {

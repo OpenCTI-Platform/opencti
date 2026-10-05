@@ -19,6 +19,22 @@ export const DEFENSE_LEVELS = [
 export const DEFENSE_COVERED_LEVEL = DEFENSE_LEVEL_DETECTION_DEPLOYED;
 // The gaps API also returns deployed detections that are not validated yet, so "uncovered" asks for these levels.
 export const DEFENSE_UNCOVERED_LEVELS: number[] = DEFENSE_LEVELS.filter((level) => level < DEFENSE_COVERED_LEVEL);
+// Techniques per validation request accepted by the platform
+export const MAX_VALIDATION_TECHNIQUES = 200;
+
+/**
+ * The techniques of the scope that no validation proved yet (only those the threats use under a threat overlay), the
+ * ones used by the most threats first, cut at the size of a validation request. `deferred` counts the techniques left out.
+ */
+export const defenseValidationTargets = <T extends { readonly level: number; readonly threats_count: number }>(
+  cells: ReadonlyArray<T>,
+  threatOverlay: boolean,
+) => {
+  const open = cells
+    .filter((cell) => cell.level < DEFENSE_LEVEL_VALIDATED && (!threatOverlay || cell.threats_count > 0))
+    .sort((a, b) => b.threats_count - a.threats_count || b.level - a.level);
+  return { targets: open.slice(0, MAX_VALIDATION_TECHNIQUES), deferred: Math.max(open.length - MAX_VALIDATION_TECHNIQUES, 0) };
+};
 
 /** The saved platforms of a scope that still exist and are visible, as the matrix shows them. */
 export const scopedDefensePlatforms = (
