@@ -104,6 +104,23 @@ describe('Timeline manager impact collection', () => {
     expect(Array.from(collector.contained).sort()).toEqual(['ap-1', 'incident-1', 'rel-1']);
   });
 
+  it('should reach the incidents related to a deployed indicator, which read its deployments', () => {
+    const collector = newCollector();
+    collectTimelineImpacts(streamEvent({
+      type: 'relationship',
+      extensions: { [STIX_EXT_OCTI]: { id: 'dep-1', type: 'deployed-on', source_ref: 'ind-1', source_type: 'Indicator', target_ref: 'platform-1', target_type: 'SecurityPlatform' } },
+    }), collector);
+    expect(Array.from(collector.contained).sort()).toEqual(['dep-1', 'ind-1', 'platform-1']);
+    expect(Array.from(collector.related)).toEqual(['ind-1']);
+    // Any other relationship reaches incidents only as an endpoint or through containment
+    const other = newCollector();
+    collectTimelineImpacts(streamEvent({
+      type: 'relationship',
+      extensions: { [STIX_EXT_OCTI]: { id: 'rel-1', type: 'indicates', source_ref: 'ind-1', source_type: 'Indicator', target_ref: 'mal-1', target_type: 'Malware' } },
+    }), other);
+    expect(other.related.size).toEqual(0);
+  });
+
   it('should follow the sighted element of a sighting', () => {
     const collector = newCollector();
     collectTimelineImpacts(streamEvent({ type: 'sighting', extensions: { [STIX_EXT_OCTI]: { id: 's-1', type: 'stix-sighting-relationship', sighting_of_ref: 'ind-1' } } }), collector);
@@ -157,6 +174,16 @@ describe('Timeline manager impact collection', () => {
     (huntEvent.data as any).context = { patch: [{ op: 'replace', path: '/incident_id', value: 'incident-2' }], reverse_patch: [{ op: 'replace', path: '/incident_id', value: 'incident-1' }] };
     collectTimelineImpacts(huntEvent, moved);
     expect(Array.from(moved.references).sort()).toEqual(['incident-1', 'incident-2']);
+  });
+
+  it('should reach the incidents related to the hunt of a run, before and after the update', () => {
+    // Incidents read the runs of the hunts related to them: a run moved to another hunt leaves the incidents of the first
+    const collector = newCollector();
+    const event = streamEvent({ type: 'hunt-run', hunt_id: 'hunt-2', extensions: { [STIX_EXT_OCTI]: { id: 'run-1', type: 'Hunt-Run' } } });
+    (event.data as any).context = { patch: [{ op: 'replace', path: '/hunt_id', value: 'hunt-2' }], reverse_patch: [{ op: 'replace', path: '/hunt_id', value: 'hunt-1' }] };
+    collectTimelineImpacts(event, collector);
+    expect(Array.from(collector.related).sort()).toEqual(['hunt-1', 'hunt-2', 'run-1']);
+    expect(Array.from(collector.contained).sort()).toEqual(['hunt-1', 'hunt-2', 'run-1']);
   });
 
   it('should ignore inferred data and timeline objects', () => {

@@ -34,7 +34,9 @@ import type {
 } from '../../generated/graphql';
 import { buildRefRelationKey } from '../../schema/general';
 import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
-import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
+import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
+import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
+import type { BasicStoreSettings } from '../../types/settings';
 import { getExportFilter } from '../../utils/getExportFilter';
 import { cleanMarkings } from '../../utils/markingDefinition-utils';
 import { findById as findMarkingDefinitionById } from '../../domain/markingDefinition';
@@ -66,6 +68,7 @@ import {
   filterAccessibleEvents,
   filterEventsSharedAsContainer,
   getTimelineRules,
+  isTimelineElementChangeWidening,
   loadStoredTimelineEvents,
   loadTimelineSettings,
   markingsOf,
@@ -150,6 +153,26 @@ const resolveElement = async (context: AuthContext, user: AuthUser, elementId: s
     throw FunctionalError('Timeline element cannot be found', { id: elementId });
   }
   return element;
+};
+
+const hasPlatformOrganization = async (context: AuthContext): Promise<boolean> => {
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  return !!settings.platform_organization;
+};
+
+// The event keeps the markings of every element it pointed to, but its other readers are those of its current element:
+// it is never pointed to an element, or to none, that users its current element is hidden from can read
+const controlTimelineElementChange = async (
+  context: AuthContext,
+  container: AnyStoreElement,
+  previousElementId: string | null | undefined,
+  next: AnyStoreElement | null,
+) => {
+  if (!previousElementId || previousElementId === next?.internal_id) return;
+  const previous = await internalLoadById<AnyStoreElement>(context, SYSTEM_USER, previousElementId);
+  if (isTimelineElementChangeWidening(container, previous, next, await hasPlatformOrganization(context))) {
+    throw FunctionalError('This event cannot point to an element, or to none, that users its current element is hidden from can read: add a new event instead', { id: previousElementId });
+  }
 };
 
 const resolveAuthor = async (context: AuthContext, user: AuthUser, authorId: string | null | undefined) => {
@@ -898,6 +921,8 @@ export const addTimelineEvent = async (context: AuthContext, user: AuthUser, inp
     }
     // Nor one above his confidence level, like any edit of the event
     if (current) controlUserConfidenceAgainstElement(user, current as unknown as BasicStoreEntity);
+    // Nor does it point a known event to an element, or to none, that more users read
+    if (current && input.element_id !== undefined) await controlTimelineElementChange(context, locked, current.element_id, element);
     if (!current && (await countManualTimelineEvents(context, container.internal_id)) >= TIMELINE_MAX_MANUAL_EVENTS) {
       throw FunctionalError('This timeline already holds the maximum number of milestones', { max: TIMELINE_MAX_MANUAL_EVENTS });
     }
@@ -958,6 +983,7 @@ const applyTimelineEventEdit = async (context: AuthContext, user: AuthUser, load
   let elementMarkings: string[] | null = null;
   if (input.element_id !== undefined) {
     const element = await resolveElement(context, user, input.element_id);
+    await controlTimelineElementChange(context, container, event.element_id, element);
     patch.element_id = element?.internal_id ?? null;
     patch.element_type = element?.entity_type ?? null;
     patch.element_access = element ? timelineElementAccessOf(element) : null;
@@ -1135,12 +1161,26 @@ const writeImportedContributions = async (
       max: TIMELINE_MAX_MANUAL_EVENTS,
     });
   }
-  // The references were resolved without their markings: the markings of the elements are read in full
-  const elementIds = Array.from(new Set(importable.map(({ event }) => (event.element_ref ? resolved[event.element_ref]?.internal_id : null))
+  // The references were resolved without their markings: the markings of the elements are read in full, with the stored
+  // elements of the known events, whose readers decide whether an imported element may replace them
+  const elementIds = Array.from(new Set(importable.flatMap(({ event, stored }) => [event.element_ref ? resolved[event.element_ref]?.internal_id : null, stored?.element_id])
     .filter((id): id is string => !!id)));
   const elementsWithMarkings = elementIds.length > 0
     ? await internalFindByIds(context, SYSTEM_USER, elementIds, { toMap: true }) as unknown as Record<string, AnyStoreElement>
     : {};
+  const platformOrganization = await hasPlatformOrganization(context);
+  // A known event keeps its element when the imported version names none, one the user cannot resolve, or one that users
+  // its stored element is hidden from can read: its element decides who may read it, and an import never loosens that
+  const importedElementOf = (event: StixTimelineExtensionEvent, stored: StoredTimelineEvent | null | undefined): AnyStoreElement | null => {
+    const element = event.element_ref ? resolved[event.element_ref] : null;
+    if (!element || !stored?.element_id) return element ?? null;
+    const next = elementsWithMarkings[element.internal_id] ?? element;
+    return isTimelineElementChangeWidening(container, elementsWithMarkings[stored.element_id], next, platformOrganization) ? null : element;
+  };
+  const keptElements = importable.filter(({ event, stored }) => !!event.element_ref && !!resolved[event.element_ref] && !importedElementOf(event, stored)).length;
+  if (keptElements > 0) {
+    logApp.warn('[TIMELINE] Imported elements read by more users than the stored ones were skipped, the events keep their element', { containerId: container.internal_id, skipped: keptElements });
+  }
   // An imported author is kept only when it resolves to an identity, like the author of a milestone added through the API
   const importedAuthorId = (ref: string | null | undefined): string | null => {
     const author = ref ? resolved[ref] : undefined;
@@ -1148,7 +1188,7 @@ const writeImportedContributions = async (
   };
   const docs = importable.map(({ event, existing, stored, internalId, markings }) => {
     validateWindow(event.event_time, event.event_end_time);
-    const element = event.element_ref ? resolved[event.element_ref] : null;
+    const element = importedElementOf(event, stored);
     return buildTimelineEventDoc({
       internal_id: internalId,
       container_id: container.internal_id,
@@ -1161,8 +1201,6 @@ const writeImportedContributions = async (
       kind: event.kind,
       event_source: 'manual',
       rule_id: null,
-      // A known event keeps its element when the imported version names none or one the user cannot resolve: its element
-      // decides who may read it, and an import never loosens that
       element_id: element?.internal_id ?? stored?.element_id ?? null,
       element_type: element?.entity_type ?? stored?.element_type ?? null,
       pinned: event.pinned ?? false,

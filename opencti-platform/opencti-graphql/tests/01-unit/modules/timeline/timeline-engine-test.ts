@@ -8,6 +8,7 @@ import {
   getTimelineRules,
   isPendingAnnotationApplicable,
   isPortableDerivedEvent,
+  isTimelineElementChangeWidening,
   isTimelineEventAccessChanged,
   isTimelineRefreshForEveryReader,
   keptAnalystFields,
@@ -30,6 +31,7 @@ import { ENTITY_TYPE_TIMELINE_EVENT, TIMELINE_KINDS } from '../../../../src/modu
 import { schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../../src/modules/case/case-incident/case-incident-types';
 import { ENTITY_TYPE_INCIDENT } from '../../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organization/organization-types';
 import { TimelineEventKind } from '../../../../src/generated/graphql';
 import '../../../../src/modules/index';
 
@@ -358,6 +360,69 @@ describe('Timeline container marking coverage', () => {
     const covered = buildContainerMarkingCoverage([], markings);
     expect(covered('tlp-clear')).toBe(false);
     expect(covered('tlp-green')).toBe(false);
+  });
+});
+
+describe('Timeline element change and readers', () => {
+  const member = (id: string, groups?: string[]) => ({ id, access_right: 'view', ...(groups ? { groups_restriction_ids: groups } : {}) });
+  const element = (id: string, access: { members?: ReturnType<typeof member>[]; granted?: string[]; type?: string } = {}) => ({
+    internal_id: id,
+    entity_type: access.type ?? ENTITY_TYPE_INCIDENT,
+    restricted_members: access.members ?? [],
+    granted: access.granted ?? [],
+  });
+  const container = element('case-1', { type: ENTITY_TYPE_CONTAINER_CASE_INCIDENT });
+
+  it('should never widen an event without element, or one kept on the same element', () => {
+    expect(isTimelineElementChangeWidening(container, null, element('b', { granted: ['org-2'] }), true)).toBe(false);
+    const restricted = element('a', { members: [member('user-1')] });
+    expect(isTimelineElementChangeWidening(container, restricted, restricted, true)).toBe(false);
+  });
+
+  it('should keep an event of an element with authorized members to elements with the same members or fewer', () => {
+    const previous = element('a', { members: [member('user-1'), member('group-1')] });
+    expect(isTimelineElementChangeWidening(container, previous, element('b', { members: [member('group-1')] }), false)).toBe(false);
+    // A member restricted to groups reads less than the same member without restriction, never more
+    expect(isTimelineElementChangeWidening(container, element('a', { members: [member('user-1', ['g-2', 'g-1'])] }), element('b', { members: [member('user-1', ['g-1', 'g-2'])] }), false)).toBe(false);
+    expect(isTimelineElementChangeWidening(container, previous, element('b', { members: [member('user-2')] }), false)).toBe(true);
+    expect(isTimelineElementChangeWidening(container, element('a', { members: [member('user-1', ['g-1'])] }), element('b', { members: [member('user-1')] }), false)).toBe(true);
+    // An element without members, or no element, is read beyond the members
+    expect(isTimelineElementChangeWidening(container, previous, element('b'), false)).toBe(true);
+    expect(isTimelineElementChangeWidening(container, previous, null, false)).toBe(true);
+  });
+
+  it('should keep an event of an element shared with organizations to elements shared with the same ones or fewer, under a platform organization', () => {
+    // A container shared with more organizations than the elements, so that the elements bound the readers of the event
+    const shared = element('case-2', { type: ENTITY_TYPE_CONTAINER_CASE_INCIDENT, granted: ['org-1', 'org-2', 'org-3'] });
+    const previous = element('a', { granted: ['org-1', 'org-2'] });
+    expect(isTimelineElementChangeWidening(shared, previous, element('b', { granted: ['org-2'] }), true)).toBe(false);
+    expect(isTimelineElementChangeWidening(shared, previous, element('b', { granted: ['org-2', 'org-3'] }), true)).toBe(true);
+    // An unshared element is read inside the platform organization only
+    expect(isTimelineElementChangeWidening(shared, element('a'), element('b', { granted: ['org-1'] }), true)).toBe(true);
+    // Authorized members bypass organization sharing: they cannot be placed against the organizations
+    expect(isTimelineElementChangeWidening(shared, previous, element('b', { members: [member('user-1')] }), true)).toBe(true);
+    // An element of a type no organization restricts is read by every user
+    expect(isTimelineElementChangeWidening(shared, previous, element('b', { type: ENTITY_TYPE_IDENTITY_ORGANIZATION }), true)).toBe(true);
+    expect(isTimelineElementChangeWidening(shared, element('a', { type: ENTITY_TYPE_IDENTITY_ORGANIZATION }), element('b', { granted: ['org-3'] }), true)).toBe(false);
+    // An unshared container is read inside the platform organization only: it bounds the readers of its events
+    expect(isTimelineElementChangeWidening(container, previous, element('b', { granted: ['org-2', 'org-3'] }), true)).toBe(false);
+  });
+
+  it('should ignore organization sharing without a platform organization', () => {
+    expect(isTimelineElementChangeWidening(container, element('a'), element('b', { granted: ['org-1'] }), false)).toBe(false);
+    expect(isTimelineElementChangeWidening(container, element('a', { granted: ['org-1'] }), null, false)).toBe(false);
+    expect(isTimelineElementChangeWidening(container, element('a'), element('b', { members: [member('user-1')] }), false)).toBe(false);
+  });
+
+  it('should allow any change when the container has no reader the previous element lacks', () => {
+    // The event is read like its container and its element: within the readers of the previous element, any element goes
+    const restrictedContainer = element('case-4', { type: ENTITY_TYPE_CONTAINER_CASE_INCIDENT, members: [member('user-1')] });
+    const previous = element('a', { members: [member('user-1'), member('user-2')] });
+    expect(isTimelineElementChangeWidening(restrictedContainer, previous, null, false)).toBe(false);
+    expect(isTimelineElementChangeWidening(restrictedContainer, previous, element('b'), false)).toBe(false);
+    const sharedContainer = element('case-3', { type: ENTITY_TYPE_CONTAINER_CASE_INCIDENT, granted: ['org-1'] });
+    expect(isTimelineElementChangeWidening(sharedContainer, element('a', { granted: ['org-1', 'org-2'] }), null, true)).toBe(false);
+    expect(isTimelineElementChangeWidening(sharedContainer, element('a', { granted: ['org-2'] }), null, true)).toBe(true);
   });
 });
 

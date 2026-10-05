@@ -33,7 +33,7 @@ import {
 } from '../modules/timeline/timeline-types';
 import { regenerateContainerTimeline } from '../modules/timeline/timeline-engine';
 import { RULE_INVESTIGATION_RUN } from '../modules/timeline/timeline-rules';
-import { timelineRefIds } from '../modules/timeline/timeline-loader';
+import { SOFT_RELATION_DEPLOYED_ON, timelineRefIds } from '../modules/timeline/timeline-loader';
 import { ATTRIBUTE_COVERED, ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
 import { ATTRIBUTE_RESULT_OF } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
 import { type BasicStoreEntityEntitySetting, ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
@@ -164,6 +164,8 @@ export const collectTimelineImpacts = (event: SseEvent<DataEvent>, collector: Im
     // Deployments and timed relationships of contained elements impact the cases containing either endpoint
     if (extension.source_ref) collector.contained.add(extension.source_ref);
     if (extension.target_ref) collector.contained.add(extension.target_ref);
+    // Deployments are also read for the indicators related to an incident: the incidents related to the deployed indicator are impacted
+    if (type === SOFT_RELATION_DEPLOYED_ON && extension.source_ref) collector.related.add(extension.source_ref);
     // The has-covered relationships of a security coverage are read for the container it covers
     if (extension.source_type === ENTITY_TYPE_SECURITY_COVERAGE && extension.source_ref) collector.coverages.add(extension.source_ref);
     return;
@@ -183,7 +185,11 @@ export const collectTimelineImpacts = (event: SseEvent<DataEvent>, collector: Im
   [stix, previousVersion(event, SOFT_SOURCE_FIELDS)].forEach((version) => {
     if (!version) return;
     SOFT_SOURCE_CONTAINER_FIELDS.forEach((field) => idValues(version[field]).forEach((ref) => collector.references.add(ref)));
-    idValues(version.hunt_id).forEach((ref) => collector.contained.add(ref));
+    // A hunt reaches the cases containing it and the incidents related to it, which read the runs of their related hunts
+    idValues(version.hunt_id).forEach((ref) => {
+      collector.contained.add(ref);
+      collector.related.add(ref);
+    });
     idValues(version[ATTRIBUTE_RESULT_OF]).forEach((ref) => collector.coverages.add(ref));
   });
   collector.contained.add(id);

@@ -1,8 +1,8 @@
 import { v5 as uuidv5 } from 'uuid';
 import conf, { BUS_TOPICS, logApp } from '../../config/conf';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicStoreBase, BasicStoreEntity, StoreMarkingDefinition } from '../../types/store';
-import { SYSTEM_USER } from '../../utils/access';
+import type { BasicStoreBase, BasicStoreCommon, BasicStoreEntity, StoreMarkingDefinition } from '../../types/store';
+import { isOrganizationUnrestricted, SYSTEM_USER } from '../../utils/access';
 import { fullEntitiesList, internalFindByIds, internalLoadById } from '../../database/middleware-loader';
 import { elIndexElements, elRawDeleteByQuery, elUpdate } from '../../database/engine';
 import { INDEX_INTERNAL_OBJECTS, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
@@ -469,6 +469,49 @@ export const timelineElementAccessOf = (element: Record<string, any>): TimelineE
   restricted_members: (element.restricted_members ?? []) as AuthorizedMember[],
   granted: grantedOf(element),
 });
+
+// Who reads an element beyond its markings, by the platform access rules: its authorized members only when it has some
+// (they bypass organization sharing); otherwise, under a platform organization and for a type restricted by
+// organization, the platform organization and each organization it is shared with; otherwise every user. Null: no bound.
+interface TimelineElementReaders {
+  members: Set<string> | null;
+  organizations: Set<string> | null;
+}
+
+const memberKey = (member: AuthorizedMember): string => JSON.stringify([member.id, [...(member.groups_restriction_ids ?? [])].sort()]);
+
+const readersOf = (element: Record<string, any>, hasPlatformOrganization: boolean): TimelineElementReaders => {
+  const members = (element.restricted_members ?? []) as AuthorizedMember[];
+  if (members.length > 0) return { members: new Set(members.map(memberKey)), organizations: null };
+  if (!hasPlatformOrganization || isOrganizationUnrestricted(element as BasicStoreCommon)) return { members: null, organizations: null };
+  return { members: null, organizations: new Set(grantedOf(element)) };
+};
+
+// A reader the comparison cannot place (an authorized member against organization sharing) counts as a new one
+const isReadByNoMoreThan = (next: TimelineElementReaders, previous: TimelineElementReaders): boolean => {
+  const { members, organizations } = previous;
+  if (members) return !!next.members && Array.from(next.members).every((key) => members.has(key));
+  if (organizations) return !next.members && !!next.organizations && Array.from(next.organizations).every((id) => organizations.has(id));
+  return true;
+};
+
+/**
+ * Whether pointing an event of the container from its element to another one, or to none, lets users read it who could
+ * not before, markings aside (the event keeps the markings of every element it pointed to). An event is read like its
+ * container and its element: the change is safe when the new element, or the container itself, has no reader the
+ * previous element lacks.
+ */
+export const isTimelineElementChangeWidening = (
+  container: Record<string, any>,
+  previous: Record<string, any> | null | undefined,
+  next: Record<string, any> | null | undefined,
+  hasPlatformOrganization: boolean,
+): boolean => {
+  if (!previous || previous.internal_id === next?.internal_id) return false;
+  const previousReaders = readersOf(previous, hasPlatformOrganization);
+  const nextReaders: TimelineElementReaders = next ? readersOf(next, hasPlatformOrganization) : { members: null, organizations: null };
+  return !isReadByNoMoreThan(nextReaders, previousReaders) && !isReadByNoMoreThan(readersOf(container, hasPlatformOrganization), previousReaders);
+};
 const authorOf = (event: StoredTimelineEvent): string | undefined => (event[buildRefRelationKey(RELATION_CREATED_BY)] ?? [])[0];
 
 interface ContainerVisibilityScope {

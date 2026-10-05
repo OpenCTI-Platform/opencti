@@ -1349,6 +1349,37 @@ describe('Incident and case timeline', () => {
       await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: updated.id } });
     });
 
+    it('should never point a known event to an element, or to none, that more users read', async () => {
+      // Only their authorized members read these requests for information; every reader of the case reads the malware
+      const restrictedOf = (name: string) => createEntity(testContext, SYSTEM_USER, {
+        name,
+        authorized_members: [{ id: ADMIN_USER.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }],
+      }, ENTITY_TYPE_CONTAINER_CASE_RFI);
+      const restricted = await restrictedOf('Timeline restricted source');
+      const restrictedTwin = await restrictedOf('Timeline restricted source follow-up');
+      const input = { container_id: secondCase.id, event_time: '2026-02-06T07:00:00.000Z', title: 'Source interviewed', external_id: 'restricted-element-kept' };
+      const added = await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_ADD, variables: { input: { ...input, element_id: restricted.id } } });
+      const addedId = added.data.timelineEventAdd.id;
+      try {
+        const refusal = 'This event cannot point to an element, or to none, that users its current element is hidden from can read: add a new event instead';
+        await queryAsAdminWithError({ query: TIMELINE_EVENT_EDIT, variables: { id: addedId, input: { element_id: malware.id } } }, refusal);
+        await queryAsAdminWithError({ query: TIMELINE_EVENT_EDIT, variables: { id: addedId, input: { element_id: null } } }, refusal);
+        await queryAsAdminWithError({ query: TIMELINE_EVENT_ADD, variables: { input: { ...input, element_id: malware.id } } }, refusal);
+        // Imported with the malware, the known event keeps its element and takes the rest of the import
+        const imported = { id: 'timeline-event--3b8d1f6a-4c2e-4a9b-8e7d-5f0c1a2b3d4e', external_id: input.external_id, title: 'Source interviewed again', event_time: input.event_time, element_ref: malware.standard_id };
+        await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension: JSON.stringify({ events: [imported], annotations: [] }) } });
+        const kept = (await listTimeline(secondCase.id, { sources: ['manual'] })).find((event) => event.id === addedId);
+        expect(kept).toMatchObject({ title: 'Source interviewed again', element_id: restricted.id });
+        // An element read by the same members takes its place
+        const moved = await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_EDIT, variables: { id: addedId, input: { element_id: restrictedTwin.id } } });
+        expect(moved.data.timelineEventEdit.element_id).toEqual(restrictedTwin.id);
+      } finally {
+        await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: addedId } });
+        await deleteElementById(testContext, SYSTEM_USER, restricted.id, ENTITY_TYPE_CONTAINER_CASE_RFI);
+        await deleteElementById(testContext, SYSTEM_USER, restrictedTwin.id, ENTITY_TYPE_CONTAINER_CASE_RFI);
+      }
+    });
+
     it('should keep the author of a known event when an import names none', async () => {
       const author = await internalLoadById(testContext, SYSTEM_USER, TEST_ORGANIZATION.id);
       const withAuthor = { id: 'timeline-event--5e2a7c9b-3d1f-4b6e-9a8c-1f0e2d3c4b5a', title: 'Regulator acknowledged', event_time: '2026-02-06T09:00:00.000Z', created_by_ref: author.standard_id };
