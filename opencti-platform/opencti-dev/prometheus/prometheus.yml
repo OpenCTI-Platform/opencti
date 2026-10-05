@@ -10,7 +10,7 @@ scrape_configs:
   - job_name: "rabbitmq"
     metrics_path: "/metrics/detailed"
     params:
-      family: ["queue_coarse_metrics"]
+      family: ["queue_coarse_metrics", "queue_metrics"]
     static_configs:
       - targets: ["host.docker.internal:15692"]
         labels:
