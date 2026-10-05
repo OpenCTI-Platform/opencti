@@ -8,10 +8,17 @@ import { validateUpdatableAttribute } from '../../../../../src/schema/schema-val
 import { PulseAccess, PulsePrevalence, PulseTrend } from '../../../../../src/generated/graphql';
 import { ENTITY_TYPE_INDICATOR } from '../../../../../src/modules/indicator/indicator-types';
 import { type PulseStixPolicy, setPulseStixPolicy } from '../../../../../src/modules/xtm/pulse/pulse-stix-policy';
+import { isPulseResolvedContributable, type PulseMarkingPolicy } from '../../../../../src/modules/xtm/pulse/pulse-settings';
 import type { StoreObject } from '../../../../../src/types/store';
 import '../../../../../src/modules/index';
 
-const FULL: PulseStixPolicy = { access: PulseAccess.Full, scopes: [ENTITY_TYPE_INDICATOR], cleanupPending: false };
+const MARKINGS: PulseMarkingPolicy = { knownMarkingIds: new Set(['marking-amber', 'marking-red']), excludedMarkingIds: new Set(['marking-red']) };
+const FULL: PulseStixPolicy = {
+  access: PulseAccess.Full,
+  scopes: [ENTITY_TYPE_INDICATOR],
+  cleanupPending: false,
+  isContributable: (instance) => isPulseResolvedContributable(instance, MARKINGS, [ENTITY_TYPE_INDICATOR]),
+};
 
 const indicator = (pulse: Record<string, unknown>) => ({
   _index: 'opencti_stix_domain_objects-000001',
@@ -95,6 +102,33 @@ describe('Threat Pulse fields in the OpenCTI STIX extension', () => {
       setPulseStixPolicy(policy);
       expect([carried(network), carried(preview)]).toEqual([false, false]);
     });
+  });
+
+  it('should carry the network data of an object only while it may leave the platform', () => {
+    const document = buildPulseDocument(['00112233445566778899aabbccddeeff'], combinePulseLookups([{
+      hash: 'a',
+      published: true,
+      prevalence_bucket: PulsePrevalence.Common,
+      platforms_bucket: '25-49',
+      first_seen_network: '2026-08-14',
+      last_seen_network: '2026-10-02',
+      trend: PulseTrend.Rising,
+      trend_series: [1, 2, 8],
+      sector_trend: PulseTrend.Rising,
+      sector_platforms_bucket: '5-9',
+    }]), new Date());
+    const carried = (access: Record<string, unknown>) => Object.keys(buildOCTIExtensions(indicator({ ...document, ...access })))
+      .some((key) => key.startsWith('pulse_'));
+    setPulseStixPolicy(FULL);
+    expect(carried({ objectMarking: [{ internal_id: 'marking-amber' }] })).toBe(true);
+    // An excluded or unknown marking, restricted members or a sharing with organizations take it out at once, before
+    // the next cycle clears the stored data.
+    expect(carried({ objectMarking: [{ internal_id: 'marking-red' }] })).toBe(false);
+    expect(carried({ objectMarking: [{ internal_id: 'marking-unknown' }] })).toBe(false);
+    expect(carried({ restricted_members: [{ id: 'user-id', access_right: 'view' }] })).toBe(false);
+    expect(carried({ objectOrganization: [{ internal_id: 'organization-id' }] })).toBe(false);
+    setPulseStixPolicy({ ...FULL, isContributable: null });
+    expect(carried({})).toBe(false);
   });
 });
 

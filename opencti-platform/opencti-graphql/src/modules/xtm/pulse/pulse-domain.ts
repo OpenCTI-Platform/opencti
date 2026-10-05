@@ -72,6 +72,7 @@ import {
   getPulseBuckets,
   getPulseHubPlatform,
   isPulseContributable,
+  isPulseResolvedContributable,
   isPulseContributing,
   readPulseSettings,
   suggestPulseBuckets,
@@ -203,8 +204,15 @@ const loadPulseContext = async (context: AuthContext, { fresh = false } = {}) =>
 };
 
 registerPulseStixPolicyRefresher(async () => {
-  const { values, state, access } = await loadPulseContext(executionContext('pulse_stix_policy'));
-  return { access, scopes: values.scopes, cleanupPending: state.cleanup_pending !== undefined };
+  const context = executionContext('pulse_stix_policy');
+  const { values, state, access } = await loadPulseContext(context);
+  const markingPolicy = access === PulseAccess.Full ? await buildPulseMarkingPolicy(context, values) : null;
+  return {
+    access,
+    scopes: values.scopes,
+    cleanupPending: state.cleanup_pending !== undefined,
+    isContributable: markingPolicy ? (instance) => isPulseResolvedContributable(instance, markingPolicy, values.scopes) : null,
+  };
 });
 
 // The node that changes the configuration or cleans the data carries the new state in STIX at once; the other nodes

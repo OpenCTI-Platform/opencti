@@ -9,6 +9,7 @@ import { RELATION_LOCATED_AT, RELATION_PART_OF } from '../../../schema/stixCoreR
 import { ENTITY_TYPE_IDENTITY_SECTOR, ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_REGION } from '../../../schema/stixDomainObject';
 import { SYSTEM_USER } from '../../../utils/access';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
+import { INPUT_GRANTED_REFS, INPUT_MARKINGS } from '../../../schema/general';
 import type { PulseHubPlatform } from '../hub/xtm-hub-pulse-client';
 import type { PulseOperationalState } from './pulse-cache';
 import { PulseAccess, PulseMode, PulseRegionBucket, PulseSectorBucket } from '../../../generated/graphql';
@@ -135,6 +136,23 @@ export const isPulseContributable = (entity: PulseContributableCandidate, policy
   }
   const markingIds = entity[RELATION_OBJECT_MARKING] ?? [];
   return markingIds.every((markingId) => policy.knownMarkingIds.has(markingId) && !policy.excludedMarkingIds.has(markingId));
+};
+
+// A resolved object (the STIX conversion) carries its markings and organizations as entities, not as ids.
+export interface PulseResolvedCandidate {
+  entity_type: string;
+  [INPUT_MARKINGS]?: Array<{ internal_id: string }>;
+  [INPUT_GRANTED_REFS]?: Array<{ internal_id: string }>;
+  restricted_members?: Array<unknown> | null;
+}
+
+export const isPulseResolvedContributable = (instance: PulseResolvedCandidate, policy: PulseMarkingPolicy, scopes: string[]): boolean => {
+  return isPulseContributable({
+    entity_type: instance.entity_type,
+    [RELATION_OBJECT_MARKING]: (instance[INPUT_MARKINGS] ?? []).map((marking) => marking.internal_id),
+    [RELATION_GRANTED_TO]: (instance[INPUT_GRANTED_REFS] ?? []).map((organization) => organization.internal_id),
+    restricted_members: instance.restricted_members ?? [],
+  }, policy, scopes);
 };
 // endregion
 
