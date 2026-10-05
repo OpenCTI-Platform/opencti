@@ -21,7 +21,7 @@ import { isStixSightingRelationship } from '../../schema/stixSightingRelationshi
 import { lockResources } from '../../lock/master-lock';
 import { RULE_PREFIX } from '../../schema/general';
 import { createRuleContent } from '../../rules/rules-utils';
-import { controlUserRestrictDeleteAgainstElement } from '../../utils/access';
+import { controlUserRestrictDeleteAgainstElement, SYSTEM_USER } from '../../utils/access';
 
 type ConfirmDeleteOptions = {
   isRestoring?: boolean;
@@ -251,7 +251,8 @@ export const processDeleteOperation = async (context: AuthContext, user: AuthUse
   const mainDeletedEntity = deletedElements.find((el) => el.internal_id === mainEntityId);
   // Main entity also live (failed restore, concurrent upsert): only purge the trash, keep the shared files
   if (!isRestoring && mainDeletedEntity) {
-    const liveMainEntities = await elFindByIds(context, user, [mainEntityId], { indices: READ_DATA_INDICES, baseData: true }) as BasicStoreObject[];
+    // Existence check must ignore the user visibility, the live entity may have different restrictions
+    const liveMainEntities = await elFindByIds(context, SYSTEM_USER, [mainEntityId], { indices: READ_DATA_INDICES, baseData: true }) as BasicStoreObject[];
     const liveMainEntity = liveMainEntities.find((el) => el.internal_id === mainEntityId);
     if (liveMainEntity) {
       logApp.warn('[DELETE OPERATION] Main entity exists in both live and deleted objects indices, only purging trash copies', {

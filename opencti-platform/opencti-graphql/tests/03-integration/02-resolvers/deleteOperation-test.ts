@@ -2,12 +2,16 @@ import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_API_TOKEN, ADMIN_USER, API_URI, PYTHON_PATH, TEST_ORGANIZATION, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
-import { queryAsAdminWithSuccess, queryAsUser, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
+import { queryAsAdminWithSuccess, queryAsUser, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
-import { MARKING_TLP_AMBER_STRICT, MARKING_TLP_RED } from '../../../src/schema/identifier';
+import { MARKING_TLP_AMBER_STRICT, MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
 import { INDEX_DELETED_OBJECTS, wait } from '../../../src/database/utils';
-import { elReindexElements } from '../../../src/database/engine';
+import { elReindexElements, elUpdate } from '../../../src/database/engine';
+import { internalLoadById } from '../../../src/database/middleware-loader';
+import { buildRefRelationKey } from '../../../src/schema/general';
+import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { execChildPython } from '../../../src/python/pythonBridge';
+import type { BasicStoreBase } from '../../../src/types/store';
 
 const CREATE_REPORT_QUERY = gql`
     mutation ReportAdd($input: ReportAddInput!) {
@@ -313,6 +317,64 @@ describe('Delete operation resolver testing', () => {
     expect(reportAfterConfirm.data?.report.id).toBe(liveReportId);
     expect(reportAfterConfirm.data?.report.importFiles.edges[0].node.name).toBe('poisonivy.json');
 
-    await queryAsAdmin({ query: DELETE_REPORT_QUERY, variables: { id: liveReportId } });
+    // Cleanup (wait for the recent-deletion window on the report id to expire)
+    await wait(5010);
+    await queryAsAdminWithSuccess({ query: DELETE_REPORT_QUERY, variables: { id: liveReportId } });
+    const reportAfterCleanup = await queryAsAdminWithSuccess({ query: READ_REPORT_QUERY, variables: { id: liveReportId } });
+    expect(reportAfterCleanup.data?.report).toBeNull();
+  });
+
+  it('should deleteOperation confirm keep files when the live main entity is not visible to the user', async () => {
+    // Report visible to USER_EDITOR (no marking, shared with its organization), with a file visible to USER_EDITOR
+    const REPORT_TO_CREATE = {
+      input: {
+        name: 'Report live but restricted',
+        description: 'Report live but restricted description',
+        published: '2020-02-26T00:51:35.000Z',
+        objectOrganization: [TEST_ORGANIZATION.id],
+      },
+    };
+    const report = await queryAsAdminWithSuccess({ query: CREATE_REPORT_QUERY, variables: REPORT_TO_CREATE });
+    const restrictedReportId = report.data?.reportAdd.id;
+    const uploadOpts = [API_URI, ADMIN_API_TOKEN, restrictedReportId, filename, [MARKING_TLP_GREEN]];
+    const execution = await execChildPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_uploader.py', uploadOpts);
+    expect(execution.status).toEqual('success');
+    await queryAsAdminWithSuccess({ query: DELETE_REPORT_QUERY, variables: { id: restrictedReportId } });
+
+    const getAllDeletedOperations = await queryAsAdminWithSuccess({ query: LIST_DELETE_OPERATION_QUERY,
+      variables: {
+        filters: {
+          mode: 'and',
+          filters: [{ key: 'main_entity_id', values: [restrictedReportId], operator: 'eq', mode: 'or' }],
+          filterGroups: [],
+        } } });
+    expect(getAllDeletedOperations.data?.deleteOperations.edges.length).toEqual(1);
+    const restrictedDeleteOperation = getAllDeletedOperations.data?.deleteOperations.edges[0].node;
+    const mainDeletedElement = restrictedDeleteOperation.deleted_elements.find((el: { id: string }) => el.id === restrictedReportId);
+
+    // Report back live, then restricted to TLP:RED on the live copy only (trash copy stays visible to USER_EDITOR)
+    await elReindexElements(testContext, ADMIN_USER, [restrictedReportId], INDEX_DELETED_OBJECTS, mainDeletedElement.source_index);
+    const redMarking = await internalLoadById(testContext, ADMIN_USER, MARKING_TLP_RED) as BasicStoreBase;
+    await elUpdate(testContext, mainDeletedElement.source_index, restrictedReportId, {
+      script: { source: 'ctx._source[params.field] = params.ids', params: { field: buildRefRelationKey(RELATION_OBJECT_MARKING), ids: [redMarking.internal_id] } },
+    });
+    const reportAsEditor = await queryAsUser(USER_EDITOR, { query: READ_REPORT_QUERY, variables: { id: restrictedReportId } });
+    expect(reportAsEditor.data?.report).toBeNull();
+    const deleteOperationAsEditor = await queryAsUserWithSuccess(USER_EDITOR, { query: READ_DELETE_OPERATION_QUERY, variables: { id: restrictedDeleteOperation.id } });
+    expect(deleteOperationAsEditor.data?.deleteOperation.id).toBe(restrictedDeleteOperation.id);
+
+    // Confirm by a user who cannot see the live copy: must still detect it and keep its files
+    await queryAsUserWithSuccess(USER_EDITOR, { query: DELETE_CONFIRM_MUTATION, variables: { id: restrictedDeleteOperation.id } });
+    const deleteOperationResult = await queryAsAdminWithSuccess({ query: READ_DELETE_OPERATION_QUERY, variables: { id: restrictedDeleteOperation.id } });
+    expect(deleteOperationResult.data?.deleteOperation).toBeNull();
+    const reportAfterConfirm = await queryAsAdminWithSuccess({ query: READ_REPORT_QUERY, variables: { id: restrictedReportId } });
+    expect(reportAfterConfirm.data?.report.id).toBe(restrictedReportId);
+    expect(reportAfterConfirm.data?.report.importFiles.edges[0].node.name).toBe('poisonivy.json');
+
+    // Cleanup (wait for the recent-deletion window on the report id to expire)
+    await wait(5010);
+    await queryAsAdminWithSuccess({ query: DELETE_REPORT_QUERY, variables: { id: restrictedReportId } });
+    const reportAfterCleanup = await queryAsAdminWithSuccess({ query: READ_REPORT_QUERY, variables: { id: restrictedReportId } });
+    expect(reportAfterCleanup.data?.report).toBeNull();
   });
 });
