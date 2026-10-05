@@ -21,6 +21,7 @@ import {
   isEarlierEvidence,
   isDraftValidationFailure,
   isEngineRunOver,
+  isReportInDraft,
   isRunActive,
   rememberGraphAutoOpen,
   runStatusSeverity,
@@ -210,6 +211,11 @@ describe('Case Autopilot run helpers', () => {
     expect(approvedDraftOutcome({ run_status: 'failed', run_phase: 'done', end_reason_code: 'draft_validation_failed' })).toBe('some changes could not be written to the case');
     expect(approvedDraftOutcome({ run_status: 'failed', run_phase: 'done', end_reason_code: 'draft_validation_unconfirmed' }))
       .toBe('the platform did not confirm the changes were written to the case');
+    expect(isReportInDraft({ run_status: 'completed', draft: { draft_status: 'validated' } })).toBe(false);
+    expect(isReportInDraft({ run_status: 'running', draft: { draft_status: 'validated' } })).toBe(true);
+    expect(isReportInDraft({ run_status: 'failed', draft: { draft_status: 'validated' } })).toBe(true);
+    expect(isReportInDraft({ run_status: 'completed', draft: { draft_status: 'open' } })).toBe(true);
+    expect(isReportInDraft({ run_status: 'completed', draft: null })).toBe(false);
     expect(isDraftValidationFailure('draft_validation_failed')).toBe(true);
     expect(isDraftValidationFailure('member_restricted')).toBe(false);
     expect(isDraftValidationFailure(null)).toBe(false);

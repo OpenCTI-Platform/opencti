@@ -21,7 +21,7 @@ import Typography from '@mui/material/Typography';
 import Card from '@common/card/Card';
 import { useFormatter } from '../../../components/i18n';
 import MarkdownDisplay from '../../../components/markdownDisplay/MarkdownDisplay';
-import { evidenceHref, isRunActive } from './investigationRunUtils';
+import { evidenceHref, isReportInDraft, isRunActive } from './investigationRunUtils';
 import type { InvestigationRunView_run$data } from './__generated__/InvestigationRunView_run.graphql';
 
 interface InvestigationRunReportProps {
@@ -32,7 +32,7 @@ interface InvestigationRunReportProps {
 const InvestigationRunReport = ({ run }: InvestigationRunReportProps) => {
   const { t_i18n } = useFormatter();
   const sources = [...run.report_sources].sort((a, b) => a.n - b.n);
-  const draftOpen = !!run.draft && run.draft.draft_status !== 'validated';
+  const inDraft = isReportInDraft(run);
   let emptyText = t_i18n('No report was written: the investigation found nothing it could cite.');
   if (isRunActive(run.run_status)) emptyText = t_i18n('The report is written once the investigation has weighed its hypotheses.');
   return (
@@ -67,7 +67,7 @@ const InvestigationRunReport = ({ run }: InvestigationRunReportProps) => {
         )}
         {run.report_id && (
           <Typography variant="body2">
-            {draftOpen && run.draft
+            {inDraft && run.draft
               ? <Link to={`/dashboard/data/import/draft/${run.draft.id}`}>{t_i18n('The report is in the investigation draft')}</Link>
               : <Link to={`/dashboard/analyses/reports/${run.report_id}`}>{t_i18n('Open the report')}</Link>}
           </Typography>

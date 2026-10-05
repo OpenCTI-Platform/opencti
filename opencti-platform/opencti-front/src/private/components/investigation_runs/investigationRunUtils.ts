@@ -134,6 +134,15 @@ export const approvedDraftOutcome = (run: { run_status: string; run_phase: strin
   return 'the changes were written to the case';
 };
 
+/**
+ * Whether the report of a run is read in its draft. A draft is validated as soon
+ * as its changes are queued, and the run names the live report only once it
+ * completed with the platform's confirmation that they were written.
+ */
+export const isReportInDraft = (run: { run_status: string; draft?: { draft_status?: string | null } | null }) => (
+  !!run.draft && (run.draft.draft_status !== 'validated' || run.run_status !== 'completed')
+);
+
 // Investigations stopped at an access boundary, whose findings are withheld: why their sections are empty.
 const WITHHELD_SECTION_REASONS: Record<string, string> = {
   [MEMBER_RESTRICTED_CODE]: 'Withheld: an entity of the investigation became restricted to authorized members.',
