@@ -1176,7 +1176,9 @@ export const addPlatformProvidesFromLogsources = async (
   }
   const mappings = (await listAllDefenseLogsourceMappings(context, SYSTEM_USER)).filter((m) => m.active);
   const names = uniq(logsources.flatMap((logsource) => mapLogsourceToDataComponents(logsource, mappings)));
-  const dataComponents = await fullEntitiesList<BasicStoreEntity>(context, user, [ENTITY_TYPE_DATA_COMPONENT], { baseData: true, baseFields: ['name'] });
+  // A revoked data component is withdrawn knowledge: no new telemetry is declared on it
+  const dataComponents = (await fullEntitiesList<BasicStoreEntity>(context, user, [ENTITY_TYPE_DATA_COMPONENT], { baseData: true, baseFields: ['name', 'revoked'] }))
+    .filter((dc) => !dc.revoked);
   const byName = new Map<string, BasicStoreEntity[]>();
   dataComponents.forEach((dc) => {
     const key = (dc.name ?? '').toLowerCase();

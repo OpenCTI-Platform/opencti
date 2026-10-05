@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { accessSignature, buildTechniqueCoverage, type ComputationGraph } from '../../../../src/modules/defenseCoverage/defenseCoverage-compute';
+import '../../../../src/modules/defenseCoverage/defenseGap/defenseGap';
+import {
+  accessSignature,
+  buildTechniqueCoverage,
+  type ComputationGraph,
+  defenseGapId,
+  isProducedGap,
+  withoutRevokedDataComponents,
+} from '../../../../src/modules/defenseCoverage/defenseCoverage-compute';
 import { collectDefenseImpact } from '../../../../src/modules/defenseCoverage/defenseCoverage-impact';
 import { builtInRestoreAction, DEFENSE_LOGSOURCE_MAPPING_DEFAULTS } from '../../../../src/modules/defenseCoverage/defenseLogsourceMapping/defenseLogsourceMapping-domain';
 import { buildLogsourceMappingKey, capEvidences } from '../../../../src/modules/defenseCoverage/defenseCoverage-utils';
@@ -125,6 +133,43 @@ describe('Defense evidence access signature', () => {
     ];
     const capped = capEvidences(evidences, 2, (evidence) => accessSignature(evidence));
     expect(capped.map((evidence) => evidence.internal_id)).toEqual(['member', 'grouped-member', 'member-with-authority']);
+  });
+});
+
+describe('Defense telemetry of revoked data components', () => {
+  it('should drop a revoked data component with its detects and provides relationships', () => {
+    const dataComponents = [
+      { internal_id: 'dc-active', name: 'Process Creation' },
+      { internal_id: 'dc-revoked', name: 'Command Execution', revoked: true },
+    ] as unknown as BasicStoreEntity[];
+    const filtered = withoutRevokedDataComponents(
+      dataComponents,
+      [relation('detects-1', 'dc-active', AP), relation('detects-2', 'dc-revoked', AP)],
+      [relation('provides-1', SIEM, 'dc-active'), relation('provides-2', SIEM, 'dc-revoked')],
+    );
+    expect(filtered.dataComponents.map((dc) => dc.internal_id)).toEqual(['dc-active']);
+    expect(filtered.detects.map((r) => r.id)).toEqual(['detects-1']);
+    expect(filtered.provides.map((r) => r.id)).toEqual(['provides-1']);
+  });
+});
+
+describe('Defense gaps produced by a run', () => {
+  const techniques = new Set([AP]);
+  const platforms = new Set([SIEM]);
+  const gap = (attackPatternId: string, platformId: string) => ({
+    internal_id: defenseGapId(attackPatternId, platformId).internalId,
+    attack_pattern_id: attackPatternId,
+    platform_id: platformId,
+  });
+
+  it('should recognize the gap of a technique and platform of the run', () => {
+    expect(isProducedGap(gap(AP, SIEM), techniques, platforms)).toBe(true);
+  });
+  it('should not recognize the gap of a technique or a platform out of the run', () => {
+    expect(isProducedGap(gap('attack-pattern-revoked', SIEM), techniques, platforms)).toBe(false);
+    expect(isProducedGap(gap(AP, EDR), techniques, platforms)).toBe(false);
+    expect(isProducedGap({ ...gap(AP, SIEM), internal_id: 'other-id' }, techniques, platforms)).toBe(false);
+    expect(isProducedGap({ internal_id: 'no-fields' }, techniques, platforms)).toBe(false);
   });
 });
 

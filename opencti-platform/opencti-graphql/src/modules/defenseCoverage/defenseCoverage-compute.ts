@@ -426,20 +426,24 @@ const isGapUnchanged = (previous: BasicStoreEntityDefenseGap, input: Record<stri
 
 /**
  * Write the gap of every technique and platform pair, by chunks of techniques, skipping the gaps whose computed values
- * did not change. `producedIds` receives the id of every gap of the run, written or not.
+ * did not change. Only the last bulk of the run refreshes the index: no batch of the run reads the gaps of another one.
  */
 const storeGaps = async (
   context: AuthContext,
   user: AuthUser,
   entries: Array<{ attackPattern: BasicStoreEntity; coverage: DefenseCoverage }>,
+  platformKeys: string[],
   platforms: DefensePlatform[],
   computedAt: string,
-  producedIds: Set<string>,
 ) => {
-  const platformKeys = [DEFENSE_AGGREGATE_PLATFORM, ...platforms.map((p) => p.id)];
   const platformNames = new Map(platforms.map((p) => [p.id, p.name]));
   let closed = 0;
   let written = 0;
+  let pendingBody: unknown[] | undefined;
+  const flush = async (refresh: boolean) => {
+    if (pendingBody) await elBulk(context, { refresh, body: pendingBody });
+    pendingBody = undefined;
+  };
   const chunks = R.splitEvery(GAP_CHUNK_TECHNIQUES, entries);
   for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex += 1) {
     const wanted = chunks[chunkIndex].flatMap(({ attackPattern, coverage }) => {
@@ -451,7 +455,6 @@ const storeGaps = async (
         ...defenseGapId(attackPattern.internal_id, platformId),
       }));
     });
-    wanted.forEach(({ internalId }) => producedIds.add(internalId));
     const existing = await findByIdsChunked<BasicStoreEntityDefenseGap>(context, user, wanted.map((w) => w.internalId), {
       type: ENTITY_TYPE_DEFENSE_GAP,
       indices: [READ_INDEX_INTERNAL_OBJECTS],
@@ -503,44 +506,66 @@ const storeGaps = async (
           { script: { source: GAP_REFRESH_SCRIPT, lang: 'painless', params: { computed, removed } }, upsert },
         ];
       });
-      await elBulk(context, { refresh: true, body });
+      await flush(false);
+      pendingBody = body;
     }
     written += docs.length;
   }
-  return { gaps: producedIds.size, written, closed };
+  await flush(true);
+  return { gaps: entries.length * platformKeys.length, written, closed };
+};
+
+/**
+ * Whether a run over the given techniques and platforms produces the gap: its id is derived from its technique and
+ * platform, so a gap the run produces is recognized without keeping the id of every gap of the run.
+ */
+export const isProducedGap = (
+  gap: { internal_id: string; attack_pattern_id?: string; platform_id?: string },
+  techniqueIds: Set<string>,
+  platformKeys: Set<string>,
+) => {
+  if (!gap.attack_pattern_id || !gap.platform_id) return false;
+  if (!techniqueIds.has(gap.attack_pattern_id) || !platformKeys.has(gap.platform_id)) return false;
+  return defenseGapId(gap.attack_pattern_id, gap.platform_id).internalId === gap.internal_id;
 };
 
 /**
  * After a full run, delete the gaps the run did not produce (a revoked or deleted technique, a removed platform),
  * except the ones written since the run started (a gap created meanwhile by a validation request).
+ * The stored gaps are read and deleted page by page.
  */
-const deleteStaleGaps = async (context: AuthContext, user: AuthUser, producedIds: Set<string>, computedAt: string) => {
-  const stored = await fullEntitiesList<BasicStoreEntityDefenseGap>(context, user, [ENTITY_TYPE_DEFENSE_GAP], {
+const deleteStaleGaps = async (context: AuthContext, user: AuthUser, techniqueIds: Set<string>, platformKeys: Set<string>, computedAt: string) => {
+  let deleted = 0;
+  await fullEntitiesList<BasicStoreEntityDefenseGap>(context, user, [ENTITY_TYPE_DEFENSE_GAP], {
     baseData: true,
-    baseFields: ['internal_id', 'computed_at'],
-  } as never);
-  const staleIds = stored
-    .filter((gap) => !producedIds.has(gap.internal_id) && (gap.computed_at ?? '') < computedAt)
-    .map((gap) => gap.internal_id);
-  const groups = R.splitEvery(BULK_SIZE, staleIds);
-  for (let index = 0; index < groups.length; index += 1) {
-    await elRawDeleteByQuery({
-      index: READ_INDEX_INTERNAL_OBJECTS,
-      refresh: true,
-      wait_for_completion: true,
-      body: {
-        query: {
-          bool: {
-            filter: [
-              { term: { 'entity_type.keyword': ENTITY_TYPE_DEFENSE_GAP } },
-              { terms: { 'internal_id.keyword': groups[index] } },
-            ],
+    baseFields: ['internal_id', 'attack_pattern_id', 'platform_id', 'computed_at'],
+    first: BULK_SIZE,
+    callback: async (page: BasicStoreEntityDefenseGap[]) => {
+      const staleIds = page
+        .filter((gap) => !isProducedGap(gap, techniqueIds, platformKeys) && (gap.computed_at ?? '') < computedAt)
+        .map((gap) => gap.internal_id);
+      if (staleIds.length > 0) {
+        await elRawDeleteByQuery({
+          index: READ_INDEX_INTERNAL_OBJECTS,
+          refresh: true,
+          wait_for_completion: true,
+          body: {
+            query: {
+              bool: {
+                filter: [
+                  { term: { 'entity_type.keyword': ENTITY_TYPE_DEFENSE_GAP } },
+                  { terms: { 'internal_id.keyword': staleIds } },
+                ],
+              },
+            },
           },
-        },
-      },
-    });
-  }
-  return staleIds.length;
+        });
+        deleted += staleIds.length;
+      }
+      return true;
+    },
+  } as never);
+  return deleted;
 };
 
 const deleteGapsOfTechniques = async (attackPatternIds: string[]) => {
@@ -562,6 +587,20 @@ const deleteGapsOfTechniques = async (attackPatternIds: string[]) => {
   });
 };
 // endregion
+
+/** Drop the revoked data components, the techniques they detect and the telemetry provided on them. */
+export const withoutRevokedDataComponents = (
+  dataComponents: BasicStoreEntity[],
+  detects: BasicStoreRelation[],
+  provides: BasicStoreRelation[],
+) => {
+  const revokedIds = new Set(dataComponents.filter((dc) => dc.revoked).map((dc) => dc.internal_id));
+  return {
+    dataComponents: dataComponents.filter((dc) => !dc.revoked),
+    detects: detects.filter((relation) => !revokedIds.has(relation.fromId)),
+    provides: provides.filter((relation) => !revokedIds.has(relation.toId)),
+  };
+};
 
 /**
  * Compute and store the defense coverage of every technique (full run) or of the given techniques (incremental run).
@@ -589,17 +628,20 @@ export const computeDefenseCoverage = async (
   const platformIdByStixId = new Map<string, string>();
   platforms.forEach((p) => p.stix_ids.forEach((stixId) => platformIdByStixId.set(stixId, p.id)));
 
-  // 2. Telemetry layer
-  const detects = await loadRelationsToTechniques(context, user, RELATION_DETECTS, [ENTITY_TYPE_DATA_COMPONENT], scopedIds);
-  const provides = await fullRelationsList<BasicStoreRelation>(context, user, RELATION_PROVIDES, {
-    toTypes: [ENTITY_TYPE_DATA_COMPONENT],
+  // 2. Telemetry layer: a revoked data component, and every relationship to it, is no telemetry evidence
+  const allDataComponents = await fullEntitiesList<BasicStoreEntity>(context, user, [ENTITY_TYPE_DATA_COMPONENT], {
     baseData: true,
-    baseFields: EVIDENCE_ACCESS_FIELDS,
+    baseFields: ['name', 'revoked', ...EVIDENCE_ACCESS_FIELDS],
   });
-  const dataComponents = await fullEntitiesList<BasicStoreEntity>(context, user, [ENTITY_TYPE_DATA_COMPONENT], {
-    baseData: true,
-    baseFields: ['name', ...EVIDENCE_ACCESS_FIELDS],
-  });
+  const { dataComponents, detects, provides } = withoutRevokedDataComponents(
+    allDataComponents,
+    await loadRelationsToTechniques(context, user, RELATION_DETECTS, [ENTITY_TYPE_DATA_COMPONENT], scopedIds),
+    await fullRelationsList<BasicStoreRelation>(context, user, RELATION_PROVIDES, {
+      toTypes: [ENTITY_TYPE_DATA_COMPONENT],
+      baseData: true,
+      baseFields: EVIDENCE_ACCESS_FIELDS,
+    }),
+  );
   const dataComponentIdsByName = new Map<string, string[]>();
   dataComponents.forEach((dc) => {
     const key = (dc.name ?? '').trim().toLowerCase();
@@ -668,10 +710,10 @@ export const computeDefenseCoverage = async (
   const cleared = await clearRevokedCoverages(context, revokedAttackPatterns);
 
   // 6. Gap lifecycle records
-  const producedGapIds = new Set<string>();
-  const { gaps, written, closed } = await storeGaps(context, user, entries, platforms, computedAt, producedGapIds);
+  const platformKeys = [DEFENSE_AGGREGATE_PLATFORM, ...platforms.map((p) => p.id)];
+  const { gaps, written, closed } = await storeGaps(context, user, entries, platformKeys, platforms, computedAt);
   if (isFull) {
-    await deleteStaleGaps(context, user, producedGapIds, computedAt);
+    await deleteStaleGaps(context, user, new Set(techniqueIds), new Set(platformKeys), computedAt);
   } else {
     await deleteGapsOfTechniques(revokedIds);
   }
