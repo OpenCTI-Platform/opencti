@@ -750,12 +750,13 @@ const countPublishedMembers = async (context: AuthContext, clusterIds: string[])
  * staged assignments of their members are renamed and the staged cluster fields move to the previous document; a
  * computed cluster displaced from its provisional id moves to a new document.
  */
-const reconcileRunClusterIdentities = async (context: AuthContext, runId: string): Promise<number> => {
+const reconcileRunClusterIdentities = async (context: AuthContext, runId: string, assertRunLease: () => Promise<void>): Promise<number> => {
   const overlaps = await loadRunLineageOverlaps(context, runId);
   if (overlaps.length === 0) return 0;
   const previousSizes = await countPublishedMembers(context, Array.from(new Set(overlaps.map((overlap) => overlap.previous))));
   const renames = matchClusterLineage(overlaps, previousSizes, (computedId) => buildDisplacedGraphClusterId(computedId, runId));
   if (renames.size === 0) return 0;
+  await assertRunLease();
   await elRawUpdateByQuery({
     index: GRAPH_METRICS_ENTITY_INDICES,
     refresh: true,
@@ -796,12 +797,17 @@ const reconcileRunClusterIdentities = async (context: AuthContext, runId: string
       : [{ delete: { _index: cluster._index, _id: cluster.internal_id } }];
     return [...write, ...release];
   });
-  if (body.length > 0) await elBulk(context, { refresh: true, timeout: '5m', body });
+  if (body.length > 0) {
+    await assertRunLease();
+    await elBulk(context, { refresh: true, timeout: '5m', body });
+  }
   return renames.size;
 };
 
-const publishRunClusters = async (runId: string) => {
+const publishRunClusters = async (runId: string, assertRunLease: () => Promise<void>) => {
+  await assertRunLease();
   await updateRunClusters(CLUSTER_PUBLISH_SCRIPT, { term: { 'pending_cluster.run_id': runId } }, 'Graph analytics clusters publication fail');
+  await assertRunLease();
   await updateRunClusters(CLUSTER_DROP_PENDING_SCRIPT, {
     bool: {
       must: [{ exists: { field: 'pending_cluster' } }],
@@ -814,7 +820,8 @@ const publishRunClusters = async (runId: string) => {
  * Finalize a clustering run: its staged entity metrics become the live ones, clusters not refreshed by the run are
  * deleted (whatever their source, only one source is active at a time) and entity assignments written by older runs
  * are detached. `publishedAt` is the joining date recorded on the entities that changed cluster. `assertRunLease` is
- * awaited before each publication step and throws when the run no longer holds the write lease.
+ * awaited before every write (each update by query and each bulk chunk) and throws when the run no longer holds the
+ * write lease, so a run that lost it stops before its next write.
  * Cluster documents and member assignments live in different indices, so the switch is ordered, not atomic: a member
  * always points to a published cluster document, but while the switch runs (or after an interruption) a cluster may
  * show the new metadata with part of its previous memberships, and a stale cluster may remain until its removal.
@@ -828,15 +835,13 @@ export const finalizeClusteringRun = async (
 ): Promise<{ removed: string[]; publishedAt: string }> => {
   const publishedAt = new Date().toISOString();
   await assertRunLease();
-  await reconcileRunClusterIdentities(context, runId);
+  await reconcileRunClusterIdentities(context, runId, assertRunLease);
   // clusters are published before their members point to them, so a cluster never shows another run's metadata
-  await assertRunLease();
-  await publishRunClusters(runId);
+  await publishRunClusters(runId, assertRunLease);
   await assertRunLease();
   await promoteRunMetrics(runId, publishedAt);
   await assertRunLease();
   await dropPendingMetricsNotFromRun(runId);
-  await assertRunLease();
   const stale = await elList<BasicStoreEntityGraphCluster>(context, user, READ_INDEX_INTERNAL_OBJECTS, {
     types: [ENTITY_TYPE_GRAPH_CLUSTER],
     baseData: true,
@@ -850,6 +855,7 @@ export const finalizeClusteringRun = async (
   const chunks = chunk(stale, BULK_CHUNK);
   for (let i = 0; i < chunks.length; i += 1) {
     const body = chunks[i].map((c) => ({ delete: { _index: c._index, _id: c.internal_id } }));
+    await assertRunLease();
     await elBulk(context, { refresh: true, body });
   }
   await assertRunLease();
