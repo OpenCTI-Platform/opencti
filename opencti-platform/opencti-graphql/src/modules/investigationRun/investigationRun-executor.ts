@@ -49,7 +49,7 @@ import { elFindByIds } from '../../database/engine';
 import { internalFindByIds, pageEntitiesConnection, topEntitiesList, topRelationsList } from '../../database/middleware-loader';
 import { deleteElementById, storeLoadByIdWithRefs } from '../../database/middleware';
 import { getEntityFromCache } from '../../database/cache';
-import { READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_DRAFT_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../../database/utils';
+import { READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_DRAFT_OBJECTS, READ_INDEX_INTERNAL_OBJECTS, READ_RELATIONSHIPS_INDICES } from '../../database/utils';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
@@ -249,10 +249,11 @@ const findElements = async <T extends BasicStoreEntity = BasicStoreEntity>(
   context: AuthContext,
   user: AuthUser,
   ids: string[],
-  opts: { type?: string } = {},
+  opts: { type?: string; withInternal?: boolean } = {},
 ): Promise<T[]> => {
   if (ids.length === 0) return [];
-  const options = opts.type ? { type: opts.type } : { indices: READ_DATA_INDICES_WITHOUT_INTERNAL };
+  const indices = opts.withInternal ? [...READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_INTERNAL_OBJECTS] : READ_DATA_INDICES_WITHOUT_INTERNAL;
+  const options = opts.type ? { type: opts.type } : { indices };
   return await elFindByIds<T>(context, user, ids, options) as T[];
 };
 
@@ -978,7 +979,8 @@ const findCarryBoundary = async (exec: RunExecution, citedIds: string[]): Promis
   const ids = R.uniq([run.subject_id, run.case_id, ...runReceivedIds(run), ...citedIds].filter((id): id is string => !!id));
   const managerContext = await userContext(INVESTIGATION_MANAGER_USER);
   const [allLive, readableLive, inDraft] = await Promise.all([
-    findElements(managerContext, INVESTIGATION_MANAGER_USER, ids),
+    // The PIRs of the context are internal objects.
+    findElements(managerContext, INVESTIGATION_MANAGER_USER, ids, { withInternal: true }),
     findElements(exec.liveContext, exec.runUser, [run.subject_id, run.case_id].filter((id): id is string => !!id)),
     findElements(exec.draftContext, exec.runUser, ids),
   ]);

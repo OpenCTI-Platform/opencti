@@ -46,7 +46,7 @@ import { notify } from '../../database/redis';
 import { BUS_TOPICS, logApp } from '../../config/conf';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import { lockResources } from '../../lock/master-lock';
-import { READ_DATA_INDICES_WITHOUT_INTERNAL } from '../../database/utils';
+import { READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
 import {
@@ -206,7 +206,8 @@ const readRunSources = async (
   const ids = Array.from(new Set(runs.filter((run) => !isWithheld(run)).flatMap((run) => runSourceIds(run))));
   if (ids.length === 0) return runs.map(() => ({ reason: null, markingIds: [] }));
   const liveContext = outOfDraft(context);
-  const opts = { indices: READ_DATA_INDICES_WITHOUT_INTERNAL, baseData: true };
+  // The PIRs of the context are internal objects.
+  const opts = { indices: [...READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_INTERNAL_OBJECTS], baseData: true };
   // Every id an element is found by, so that a source is never missed for being named by another one.
   const sourceOpts = { ...opts, baseFields: [buildRefRelationKey(RELATION_OBJECT_MARKING), xOpenctiStixIds.name, iAliasedIds.name] };
   const idsOf = (element: BasicStoreEntity) => [

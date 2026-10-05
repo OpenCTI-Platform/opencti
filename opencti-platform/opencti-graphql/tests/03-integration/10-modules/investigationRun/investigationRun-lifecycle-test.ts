@@ -231,6 +231,9 @@ const RUN_RECORDS = gql`
     }
   }
 `;
+const PIR_ADD = gql`mutation PirAdd($input: PirAddInput!) { pirAdd(input: $input) { id } }`;
+const PIR_RESTRICT = gql`mutation PirRestrict($id: ID!, $input: [MemberAccessInput!]!) { pirEditAuthorizedMembers(id: $id, input: $input) { id } }`;
+const PIR_DELETE = gql`mutation PirDelete($id: ID!) { pirDelete(id: $id) }`;
 const RUN_IDENTITY = gql`query RunIdentity($id: ID!) { investigationRun(id: $id) { id policy { id } runAs { id } } }`;
 const RUN_APPLY = gql`
   mutation RunApply($id: ID!, $recommendationId: String!, $mode: InvestigationRecommendationApplyMode!) {
@@ -949,6 +952,45 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       });
     } finally {
       if (runId) await queryAsAdmin({ query: RUN_CANCEL, variables: { id: runId } });
+      await queryAsAdmin({ query: DELETE_CASE, variables: { id: caseId } });
+    }
+  });
+
+  it('withholds what it found and stops once a PIR of its context becomes restricted to authorized members', async () => {
+    const created = await queryAsAdminWithSuccess({ query: CREATE_CASE, variables: { input: { name: 'Case Autopilot e2e PIR context case', objects: [fixture.ipId] } } });
+    const caseId = created.data.caseIncidentAdd.id;
+    const pir = await queryAsAdminWithSuccess({
+      query: PIR_ADD,
+      variables: {
+        input: {
+          name: 'Case Autopilot e2e PIR',
+          pir_type: 'THREAT_LANDSCAPE',
+          pir_rescan_days: 0,
+          pir_filters: { mode: 'and', filterGroups: [], filters: [{ key: ['confidence'], values: ['80'], operator: 'gt' }] },
+          // A criterion nothing of the suite matches: the PIR flags nothing while it exists.
+          pir_criteria: [{ weight: 1, filters: { mode: 'and', filterGroups: [], filters: [{ key: ['toId'], values: [uuid()] }] } }],
+        },
+      },
+    });
+    const pirId = pir.data.pirAdd.id;
+    let runId = '';
+    try {
+      engineStage = 'planning';
+      const { data } = await queryAsAdminWithSuccess({ query: RUN_ADD, variables: { subjectId: caseId } });
+      runId = data.investigationRunAdd.id;
+      createdRuns.push({ id: runId });
+      await tickUntil(runId, (current) => current.run_phase === 'investigating');
+      // The PIR a candidate of the case matters to reaches the engine as context, readable by everyone.
+      await updateInvestigationRun(testContext, runId, (current) => ({ context_ids: [...(current.context_ids ?? []), pirId] }));
+      expect(await readRun(runId)).toMatchObject({ run_status: 'running', end_reason_code: null });
+      await queryAsAdminWithSuccess({ query: PIR_RESTRICT, variables: { id: pirId, input: [{ id: ADMIN_USER.id, access_right: 'admin' }] } });
+      // Withheld on every read from now on, before the manager stops the run.
+      expect(await readRun(runId)).toMatchObject({ run_status: 'running', end_reason_code: 'member_restricted', evidence: [] });
+      await processInvestigationRun(testContext, runId);
+      expect(await readRun(runId)).toMatchObject({ run_status: 'failed', end_reason_code: 'member_restricted', draft_id: null, workspace_id: null });
+    } finally {
+      if (runId) await queryAsAdmin({ query: RUN_CANCEL, variables: { id: runId } });
+      await queryAsAdmin({ query: PIR_DELETE, variables: { id: pirId } });
       await queryAsAdmin({ query: DELETE_CASE, variables: { id: caseId } });
     }
   });
