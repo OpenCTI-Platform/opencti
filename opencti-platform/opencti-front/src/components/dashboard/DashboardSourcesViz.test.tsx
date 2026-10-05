@@ -1,7 +1,16 @@
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 import testRender from '../../utils/tests/test-render';
 
+const { mockUseGranted } = vi.hoisted(() => ({ mockUseGranted: vi.fn() }));
+
+vi.mock('../../utils/hooks/useGranted', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../utils/hooks/useGranted')>()),
+  default: mockUseGranted,
+}));
+vi.mock('./WidgetAccessDenied', () => ({
+  default: () => <div data-testid="widget-access-denied" />,
+}));
 vi.mock('@components/common/sources/SourcesNumber', () => ({
   default: () => <div data-testid="sources-number" />,
 }));
@@ -32,6 +41,24 @@ const makeWidget = (type: string): Widget => ({
 const config = { relativeDate: null, startDate: null, endDate: null };
 
 describe('DashboardSourcesViz', () => {
+  beforeEach(() => {
+    mockUseGranted.mockReset().mockReturnValue(true);
+  });
+
+  it('checks the connectors or ingestion capability that reads the scorecards', () => {
+    testRender(<DashboardSourcesViz widget={makeWidget('number')} config={config} />);
+    expect(mockUseGranted).toHaveBeenCalledWith(['MODULES', 'INGESTION']);
+  });
+
+  it.each(['number', 'list', 'line', 'bubble'])('mounts no source widget of a %s widget for a viewer without the capability', (type) => {
+    mockUseGranted.mockReturnValue(false);
+    const { getByTestId, queryByTestId } = testRender(<DashboardSourcesViz widget={makeWidget(type)} config={config} />);
+    expect(getByTestId('widget-access-denied')).toBeTruthy();
+    ['sources-number', 'sources-distribution', 'sources-time-series', 'sources-bubble'].forEach((testId) => {
+      expect(queryByTestId(testId)).toBeNull();
+    });
+  });
+
   it('renders SourcesNumber for a number widget', () => {
     const { getByTestId } = testRender(<DashboardSourcesViz widget={makeWidget('number')} config={config} />);
     expect(getByTestId('sources-number')).toBeTruthy();

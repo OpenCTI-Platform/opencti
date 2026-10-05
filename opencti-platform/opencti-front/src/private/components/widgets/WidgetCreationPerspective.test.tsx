@@ -1,7 +1,43 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { emptyFilterGroup, SELF_ID } from '../../../utils/filters/filtersUtils';
 import { containerTypes } from '../../../utils/hooks/useAttributes';
-import { buildInitialFilters } from './WidgetCreationPerspective';
+import testRender from '../../../utils/tests/test-render';
+import WidgetCreationPerspective, { buildInitialFilters } from './WidgetCreationPerspective';
+
+const { mockUseGranted } = vi.hoisted(() => ({ mockUseGranted: vi.fn() }));
+
+vi.mock('../../../utils/hooks/useGranted', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../utils/hooks/useGranted')>()),
+  default: mockUseGranted,
+}));
+vi.mock('../../../utils/hooks/useAttributes', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../../../utils/hooks/useAttributes')>();
+  return { ...original, default: () => ({ containerTypes: original.containerTypes }) };
+});
+vi.mock('./WidgetConfigContext', () => ({
+  useWidgetConfigContext: () => ({
+    host: { kind: 'workspace' },
+    config: { widget: { type: 'number', dataSelection: [] } },
+    setStep: vi.fn(),
+    setConfigWidget: vi.fn(),
+  }),
+}));
+
+describe('WidgetCreationPerspective', () => {
+  it('offers the intelligence sources perspective of a dashboard with the connectors or ingestion capability', () => {
+    mockUseGranted.mockReturnValue(true);
+    const { getByTestId } = testRender(<WidgetCreationPerspective />);
+    expect(mockUseGranted).toHaveBeenCalledWith(['MODULES', 'INGESTION']);
+    expect(getByTestId('sources-widget-perspective')).toBeTruthy();
+  });
+
+  it('does not offer the intelligence sources perspective without the capability', () => {
+    mockUseGranted.mockReturnValue(false);
+    const { getByTestId, queryByTestId } = testRender(<WidgetCreationPerspective />);
+    expect(getByTestId('entities-widget-perspective')).toBeTruthy();
+    expect(queryByTestId('sources-widget-perspective')).toBeNull();
+  });
+});
 
 describe('buildInitialFilters', () => {
   describe('when host is a fintel template', () => {

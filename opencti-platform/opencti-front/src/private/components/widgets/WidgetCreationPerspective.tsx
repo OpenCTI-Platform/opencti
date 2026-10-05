@@ -6,6 +6,7 @@ import { LibraryBooksOutlined, RssFeedOutlined } from '@mui/icons-material';
 import { v4 as uuid } from 'uuid';
 import { getDefaultWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
 import useAttributes from '../../../utils/hooks/useAttributes';
+import useGranted, { INGESTION, MODULES } from '../../../utils/hooks/useGranted';
 import { useFormatter } from '../../../components/i18n';
 import { getCurrentIsSources, indexedVisualizationTypes, WidgetVisualizationTypes } from '../../../utils/widget/widgetUtils';
 import { useWidgetConfigContext } from './WidgetConfigContext';
@@ -75,6 +76,7 @@ const WidgetCreationPerspective = () => {
 
   // Container and domain object have different filters for the perspective selection
   const { containerTypes } = useAttributes();
+  const isSourcesGranted = useGranted([MODULES, INGESTION]);
 
   const handleSelectPerspective = (perspective: WidgetPerspective) => {
     const initialFilters = buildInitialFilters(containerTypes, host, perspective);
@@ -124,8 +126,9 @@ const WidgetCreationPerspective = () => {
   const getCurrentIsRelationships = () => {
     return indexedVisualizationTypes[type as WidgetVisualizationTypes]?.isRelationships ?? false;
   };
-  // Source scorecards only feed dashboards, never fintel templates or custom views of an entity
-  const isSourcesAvailable = host.kind === 'workspace' && getCurrentIsSources(type);
+  // Source scorecards only feed dashboards, never fintel templates or custom views of an entity,
+  // and are readable with the connectors or ingestion capability only
+  const isSourcesAvailable = isSourcesGranted && host.kind === 'workspace' && getCurrentIsSources(type);
 
   let xs = 12;
   if (isSourcesAvailable) {
