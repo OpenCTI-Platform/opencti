@@ -9,7 +9,6 @@ import { useTheme } from '@mui/styles';
 import { Text } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
-import EEChip from '@components/common/entreprise_edition/EEChip';
 import CreateEntityControlledDial from '../../../components/CreateEntityControlledDial';
 import TextField from '../../../components/TextField';
 import TextareaField from '../../../components/TextareaField';
@@ -38,12 +37,12 @@ import HuntEntitiesField from './HuntEntitiesField';
 import ObservableTypesField from '../common/form/ObservableTypesField';
 import { HuntCodeEditorField } from './HuntCodeEditor';
 import HuntSigmaValidation from './HuntSigmaValidation';
+import HuntEELabel from './HuntEELabel';
 import HuntNativeQueriesField from './HuntNativeQueriesField';
 import HuntScheduleField from './HuntScheduleField';
 import HuntTriggerFiltersField from './HuntTriggerFiltersField';
 import { validateHuntSchedule } from './hunt-schedule-utils';
 import useHuntMinScheduleInterval from './useHuntMinScheduleInterval';
-import { MenuBookOutlined } from '@mui/icons-material';
 import HuntIocFields from './HuntIocFields';
 import HuntIndicatorSupportWarning from './HuntIndicatorSupportWarning';
 import { parseIocText } from './hunt-ioc-utils';
@@ -231,11 +230,6 @@ export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues:
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form data-testid="hunt-creation-form">
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: theme.spacing(1) }}>
-            <Button variant="tertiary" size="small" startIcon={<MenuBookOutlined fontSize="small" />} href={HUNT_DOCS.createHunt} target="_blank" rel="noopener noreferrer" data-testid="hunt-creation-learn-more">
-              {t_i18n('Learn more')}
-            </Button>
-          </div>
           {derived && (
             <>
               <HuntFromEntitySummary derived={derived} style={{ marginBottom: theme.spacing(2) }} />
@@ -303,20 +297,15 @@ export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues:
                 language="yaml"
                 placeholder={SIGMA_RULE_PLACEHOLDER}
                 minRows={10}
+                helperText={t_i18n('The detection logic in Sigma (YAML), translated for each platform by its hunt connector. Left empty, the hunt needs a native query.')}
                 testId="hunt-sigma-editor"
               />
-              <Text variant="content-caption" style={{ display: 'block', color: theme.palette.text.secondary }}>
-                {t_i18n('The detection logic in Sigma (YAML), translated for each platform by its hunt connector. Left empty, the hunt needs a native query.')}
-              </Text>
               <HuntSigmaValidation sigmaRule={values.sigma_rule} />
-              <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(1), color: theme.palette.text.secondary }} data-testid="hunt-creation-no-sigma">
-                {t_i18n('No Sigma rule yet? Plan the hunt with AI from the Quick start menu of the Hunts list, or import a hunt pack from its toolbar.')}
-              </Text>
             </div>
           )}
           {values.hunt_type !== 'indicators' && (
             <div style={fieldSpacingContainerStyle}>
-              <HuntNativeQueriesField />
+              <HuntNativeQueriesField label={t_i18n('Native queries')} />
             </div>
           )}
 
@@ -337,16 +326,15 @@ export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues:
             <HuntScheduleField />
           </div>
           {values.schedule_mode === 'standing' && <HuntTriggerFiltersField filtersState={triggerFiltersState} />}
-          <div style={{ ...fieldSpacingContainerStyle, display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
+          <div style={fieldSpacingContainerStyle}>
             <Field
               component={SwitchField}
               type="checkbox"
               name="hunt_pir_activation"
-              label={t_i18n('Activate when a PIR flags one of its targets')}
+              label={<HuntEELabel label={t_i18n('Activate when a PIR flags one of its targets')} feature={t_i18n('PIR activation')} />}
               helpertext={<HuntHelp text={t_i18n('The hunt runs when a PIR flags one of its targeted threats. Off, a PIR does not trigger it.')} href={HUNT_DOCS.pir} />}
               disabled={!isEnterpriseEdition}
             />
-            {!isEnterpriseEdition && <EEChip feature={t_i18n('PIR activation')} />}
           </div>
           <div style={{ ...fieldSpacingContainerStyle, display: 'flex', gap: theme.spacing(2) }}>
             <div style={{ flex: 1 }}>
@@ -486,7 +474,7 @@ const HuntCreation = ({ paginationOptions }: HuntCreationProps) => {
   const { t_i18n } = useFormatter();
   const updater = insertCreatedHunt(paginationOptions);
   return (
-    <Drawer title={t_i18n('Create a hunt')} controlledDial={CreateHuntControlledDial} size="large">
+    <Drawer title={t_i18n('Create a hunt')} controlledDial={CreateHuntControlledDial} size="large" learnMore={{ href: HUNT_DOCS.createHunt, testId: 'hunt-creation-learn-more' }}>
       {({ onClose }) => (
         <HuntCreationForm updater={updater} onCompleted={onClose} onReset={onClose} />
       )}
@@ -511,7 +499,7 @@ export const HuntCreationDrawer = ({ open, onClose, initialValues, derived, upda
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   return (
-    <Drawer title={derived ? t_i18n('Hunt {name}', { values: { name: derived.entity.name } }) : t_i18n('Create a hunt')} open={open} onClose={onClose} size="large">
+    <Drawer title={derived ? t_i18n('Hunt {name}', { values: { name: derived.entity.name } }) : t_i18n('Create a hunt')} open={open} onClose={onClose} size="large" learnMore={{ href: HUNT_DOCS.createHunt, testId: 'hunt-creation-learn-more' }}>
       <HuntCreationForm
         initialValues={initialValues}
         derived={derived}

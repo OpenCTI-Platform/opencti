@@ -1,7 +1,6 @@
 import React from 'react';
 import { Field, useFormikContext } from 'formik';
 import { useTheme } from '@mui/styles';
-import EEChip from '@components/common/entreprise_edition/EEChip';
 import SelectFieldFds, { SelectItem } from '../../../components/fields/SelectFieldFds';
 import TextField from '../../../components/TextField';
 import { useFormatter } from '../../../components/i18n';
@@ -11,6 +10,7 @@ import HuntSchedulePreview from './HuntSchedulePreview';
 import type { HuntScheduleMode } from './hunt-schedule-utils';
 import { HUNT_DOCS, buildHuntSchedule } from './hunt-utils';
 import { HuntHelp } from './HuntLearnMore';
+import HuntEELabel from './HuntEELabel';
 
 interface HuntScheduleFieldProps {
   modeName?: string;
@@ -37,22 +37,18 @@ const HuntScheduleField = ({ modeName = 'schedule_mode', cronName = 'schedule_cr
 
   return (
     <div data-testid="hunt-schedule-field">
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: theme.spacing(1) }}>
-        <Field
-          component={SelectFieldFds}
-          name={modeName}
-          label={t_i18n('Schedule')}
-          disabled={disabled}
-          fullWidth
-          containerstyle={{ flex: 1 }}
-          helpertext={<HuntHelp text={t_i18n('Manual: it runs when you click Run now. Scheduled: on a cron expression. Standing: when new knowledge matches its trigger filters.')} href={HUNT_DOCS.schedules} />}
-        >
-          <SelectItem value="manual">{t_i18n('Manual')}</SelectItem>
-          <SelectItem value="cron" disabled={!isEnterpriseEdition}>{t_i18n('Scheduled (cron)')}</SelectItem>
-          <SelectItem value="standing" disabled={!isEnterpriseEdition}>{t_i18n('Standing')}</SelectItem>
-        </Field>
-        {!isEnterpriseEdition && <EEChip feature={t_i18n('Autonomous hunts')} />}
-      </div>
+      <Field
+        component={SelectFieldFds}
+        name={modeName}
+        label={<HuntEELabel label={t_i18n('Schedule')} feature={t_i18n('Autonomous hunts')} />}
+        disabled={disabled}
+        fullWidth
+        helpertext={<HuntHelp text={t_i18n('Manual: it runs when you click Run now. Scheduled: on a cron expression. Standing: when new knowledge matches its trigger filters.')} href={HUNT_DOCS.schedules} />}
+      >
+        <SelectItem value="manual">{t_i18n('Manual')}</SelectItem>
+        <SelectItem value="cron" disabled={!isEnterpriseEdition}>{t_i18n('Scheduled (cron)')}</SelectItem>
+        <SelectItem value="standing" disabled={!isEnterpriseEdition}>{t_i18n('Standing')}</SelectItem>
+      </Field>
       {mode === 'cron' && (
         <div style={{ marginTop: theme.spacing(2) }}>
           <Field

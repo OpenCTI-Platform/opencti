@@ -108,7 +108,7 @@ export const HuntSigmaValidationPanel = ({ status, result }: HuntSigmaValidation
 
   let content: React.ReactNode;
   if (status === 'idle') {
-    content = <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>{t_i18n('Write a Sigma rule to validate it')}</Text>;
+    content = <Text variant="content-caption" style={{ display: 'block', color: theme.palette.text.secondary }}>{t_i18n('Write a Sigma rule to validate it')}</Text>;
   } else if (status === 'error') {
     content = <Text variant="content-compact" style={{ color: theme.palette.error.main }}>{t_i18n('The Sigma rule could not be validated, try again later')}</Text>;
   } else if (status === 'validating' && !result) {

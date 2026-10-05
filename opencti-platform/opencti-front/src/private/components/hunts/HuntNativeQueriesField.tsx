@@ -22,6 +22,8 @@ import { HuntHelp } from './HuntLearnMore';
 
 interface HuntNativeQueriesFieldProps {
   name?: string;
+  /** The field label, left out where a card title already names the field */
+  label?: string;
   disabled?: boolean;
 }
 
@@ -35,19 +37,35 @@ const emptyRow = (): HuntNativeQueryFormValue => ({ platform: '', language: '', 
  * Per-platform native query overrides: when a row matches the platform of a hunt connector,
  * the connector executes this query verbatim instead of translating the Sigma rule.
  */
-const HuntNativeQueriesField = ({ name = 'native_queries', disabled = false }: HuntNativeQueriesFieldProps) => {
+const HuntNativeQueriesField = ({ name = 'native_queries', label, disabled = false }: HuntNativeQueriesFieldProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { values, setFieldValue } = useFormikContext<NativeQueriesValues>();
   const rows = (values[name] ?? []) as HuntNativeQueryFormValue[];
+  const helper = (
+    <Text variant="content-caption" style={{ display: 'block', color: theme.palette.text.secondary }}>
+      {t_i18n('Native queries override the Sigma translation on their platform. Infrastructure hunts need an internet query.')}
+    </Text>
+  );
 
   return (
     <FieldArray name={name}>
       {({ push, remove }) => (
         <div data-testid="hunt-native-queries">
-          <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>
-            {t_i18n('Native queries override the Sigma translation on their platform. Infrastructure hunts need an internet query.')}
-          </Text>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing(1), minHeight: 28 }}>
+            {label ? <Text variant="content-compact" style={{ color: theme.palette.text.secondary }}>{label}</Text> : helper}
+            <Button
+              variant="tertiary"
+              size="small"
+              startIcon={<AddOutlined fontSize="small" />}
+              onClick={() => push(emptyRow())}
+              disabled={disabled}
+              data-testid="hunt-native-query-add"
+            >
+              {t_i18n('Add a native query')}
+            </Button>
+          </div>
+          {label && helper}
           {rows.map((row, index) => (
             <div
               key={index}
@@ -113,11 +131,9 @@ const HuntNativeQueriesField = ({ name = 'native_queries', disabled = false }: H
                   disabled={disabled}
                   minRows={4}
                   maxRows={16}
+                  helperText={t_i18n('Run as written within the time window of the run, for example index=edr CommandLine="* -enc *"')}
                   testId={`hunt-native-query-${index}`}
                 />
-                <Text variant="content-caption" style={{ display: 'block', color: theme.palette.text.secondary }}>
-                  {t_i18n('Run as written within the time window of the run, for example index=edr CommandLine="* -enc *"')}
-                </Text>
               </div>
               <div style={{ marginTop: theme.spacing(2) }}>
                 <Field
@@ -132,16 +148,6 @@ const HuntNativeQueriesField = ({ name = 'native_queries', disabled = false }: H
               </div>
             </div>
           ))}
-          <Button
-            variant="secondary"
-            size="small"
-            startIcon={<AddOutlined fontSize="small" />}
-            onClick={() => push(emptyRow())}
-            disabled={disabled}
-            sx={{ marginTop: 2 }}
-          >
-            {t_i18n('Add a native query')}
-          </Button>
         </div>
       )}
     </FieldArray>

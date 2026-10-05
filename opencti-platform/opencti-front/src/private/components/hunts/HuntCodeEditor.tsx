@@ -1,4 +1,4 @@
-import React, { KeyboardEvent, UIEvent, useId, useMemo, useRef } from 'react';
+import React, { KeyboardEvent, ReactNode, UIEvent, useId, useMemo, useRef } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { a11yDark, coy } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useTheme } from '@mui/styles';
@@ -13,6 +13,7 @@ const LINE_HEIGHT = 20;
 const PADDING_Y = 8;
 const PADDING_X = 12;
 const INDENT = '  ';
+const VISUALLY_HIDDEN: React.CSSProperties = { position: 'absolute', width: 1, height: 1, margin: -1, padding: 0, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap', border: 0 };
 
 /** Prism grammar used to highlight a hunt query language. */
 export const prismLanguageOf = (language?: string | null) => {
@@ -85,6 +86,8 @@ interface HuntCodeEditorProps {
   required?: boolean;
   error?: string | null;
   helperText?: string | null;
+  /** The secondary action of the field, at the end of its label row */
+  labelAction?: ReactNode;
   name?: string;
   testId?: string;
 }
@@ -107,6 +110,7 @@ export const HuntCodeEditor = ({
   required = false,
   error,
   helperText,
+  labelAction,
   name,
   testId,
 }: HuntCodeEditorProps) => {
@@ -114,6 +118,9 @@ export const HuntCodeEditor = ({
   const { t_i18n } = useFormatter();
   const inputId = useId();
   const hintId = useId();
+  const keyboardHintId = useId();
+  const keyboardHint = t_i18n('Tab indents the selection, press Escape then Tab to leave the editor');
+  const hint = error ?? helperText;
   const highlightRef = useRef<HTMLDivElement>(null);
   const gutterRef = useRef<HTMLDivElement>(null);
   const releaseFocus = useRef(false);
@@ -166,14 +173,17 @@ export const HuntCodeEditor = ({
 
   return (
     <div data-testid={testId}>
-      <Text
-        as="label"
-        htmlFor={inputId}
-        variant="content-compact"
-        style={{ display: 'block', marginBottom: theme.spacing(0.5), color: error ? theme.palette.error.main : theme.palette.text.secondary }}
-      >
-        {label}{required ? ' *' : ''}
-      </Text>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing(1), minHeight: 28, marginBottom: theme.spacing(0.5) }}>
+        <Text
+          as="label"
+          htmlFor={inputId}
+          variant="content-compact"
+          style={{ color: error ? theme.palette.error.main : theme.palette.text.secondary }}
+        >
+          {label}{required ? ' *' : ''}
+        </Text>
+        {labelAction}
+      </div>
       <div
         style={{
           display: 'flex',
@@ -244,7 +254,7 @@ export const HuntCodeEditor = ({
             disabled={disabled}
             required={required}
             aria-invalid={!!error}
-            aria-describedby={hintId}
+            aria-describedby={hint ? `${hintId} ${keyboardHintId}` : hintId}
             spellCheck={false}
             autoCapitalize="off"
             autoComplete="off"
@@ -278,8 +288,9 @@ export const HuntCodeEditor = ({
         variant="content-caption"
         style={{ display: 'block', marginTop: theme.spacing(0.5), color: error ? theme.palette.error.main : theme.palette.text.secondary }}
       >
-        {error ?? helperText ?? t_i18n('Tab indents the selection, press Escape then Tab to leave the editor')}
+        {hint ?? keyboardHint}
       </Text>
+      {hint && <span id={keyboardHintId} style={VISUALLY_HIDDEN}>{keyboardHint}</span>}
     </div>
   );
 };

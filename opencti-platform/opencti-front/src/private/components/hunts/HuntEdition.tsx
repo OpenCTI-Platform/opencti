@@ -7,7 +7,6 @@ import { useTheme } from '@mui/styles';
 import { Text } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Drawer, { DrawerControlledDialType } from '@components/common/drawer/Drawer';
-import EEChip from '@components/common/entreprise_edition/EEChip';
 import EditEntityControlledDial from '../../../components/EditEntityControlledDial';
 import FormButtonContainer from '../../../components/common/form/FormButtonContainer';
 import Loader, { LoaderVariant } from '../../../components/Loader';
@@ -57,6 +56,7 @@ import {
   type HuntTypeValue,
 } from './hunt-utils';
 import { HuntHelp } from './HuntLearnMore';
+import HuntEELabel from './HuntEELabel';
 import { HuntEdition_hunt$data, HuntEdition_hunt$key } from './__generated__/HuntEdition_hunt.graphql';
 import { HuntEditionQuery } from './__generated__/HuntEditionQuery.graphql';
 import { HuntEditionFieldPatchMutation } from './__generated__/HuntEditionFieldPatchMutation.graphql';
@@ -297,16 +297,15 @@ const HuntEditionForm = ({ data, onClose }: HuntEditionFormProps) => {
             <HuntScheduleField />
           </div>
           {values.schedule_mode === 'standing' && <HuntTriggerFiltersField filtersState={triggerFiltersState} />}
-          <div style={{ ...fieldSpacingContainerStyle, display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
+          <div style={fieldSpacingContainerStyle}>
             <Field
               component={SwitchField}
               type="checkbox"
               name="hunt_pir_activation"
-              label={t_i18n('Activate when a PIR flags one of its targets')}
+              label={<HuntEELabel label={t_i18n('Activate when a PIR flags one of its targets')} feature={t_i18n('PIR activation')} />}
               helpertext={<HuntHelp text={t_i18n('The hunt runs when a PIR flags one of its targeted threats. Off, a PIR does not trigger it.')} href={HUNT_DOCS.pir} />}
               disabled={!isEnterpriseEdition}
             />
-            {!isEnterpriseEdition && <EEChip feature={t_i18n('PIR activation')} />}
           </div>
           <div style={{ ...fieldSpacingContainerStyle, display: 'flex', gap: theme.spacing(2) }}>
             <div style={{ flex: 1 }}>
@@ -398,7 +397,15 @@ const HuntEditionContainer = ({ queryRef, onClose, controlledDial, open }: HuntE
     return null;
   }
   return (
-    <Drawer title={t_i18n('Update a hunt')} context={hunt.editContext} onClose={onClose} controlledDial={controlledDial} open={open} size="large">
+    <Drawer
+      title={t_i18n('Update a hunt')}
+      context={hunt.editContext}
+      onClose={onClose}
+      controlledDial={controlledDial}
+      open={open}
+      size="large"
+      learnMore={{ href: HUNT_DOCS.createHunt, testId: 'hunt-edition-learn-more' }}
+    >
       {({ onClose: closeDrawer }) => (
         <HuntEditionForm
           data={hunt}

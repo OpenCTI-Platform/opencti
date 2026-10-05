@@ -268,13 +268,13 @@ test.describe('Hunt documentation screenshots', { tag: ['@hunt', '@mutation', '@
     await new HuntDetailsPage(page).gotoRun(seeded.huntId, accessDeniedRunId);
     const failure = page.locator('[data-testid="hunt-run-failure"][data-kind="access"]');
     await capture(page, `hunt-run-access-denied${suffix}.png`, page.getByTestId('hunt-run-drawer'), failure.getByTestId('hunt-run-test-connection'));
-    // The whole creation form, each field with its help and the Learn more of the documentation
+    // The whole creation form, each field with its help; the Learn more of the documentation is in the drawer header
     await page.setViewportSize({ width: 1440, height: 2200 });
     const huntsPage = new HuntsPage(page);
     await huntsPage.goto();
     await huntsPage.openCreateForm();
     const form = page.getByTestId('hunt-creation-form');
-    await capture(page, `hunt-form-help${suffix}.png`, form, form.getByTestId('hunt-creation-learn-more'));
+    await capture(page, `hunt-form-help${suffix}.png`, form, page.getByTestId('hunt-creation-learn-more'));
     await page.setViewportSize({ width: 1440, height: 900 });
   };
 
