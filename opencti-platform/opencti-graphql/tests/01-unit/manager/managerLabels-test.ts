@@ -24,6 +24,16 @@ const relative = (file: string) => path.relative(GRAPHQL_ROOT, file).split(path.
 
 const REGEX_PRECEDERS = '(,=:[!&|?{};+-*%<>~^';
 
+// Offset of the quote closing the string literal opened at openIndex, backslash escapes respected.
+const findClosingQuote = (source: string, openIndex: number): number => {
+  const quote = source[openIndex];
+  let cursor = openIndex + 1;
+  while (cursor < source.length && source[cursor] !== quote && source[cursor] !== '\n') {
+    cursor += source[cursor] === '\\' ? 2 : 1;
+  }
+  return cursor;
+};
+
 const maskSource = (source: string): Omit<SourceFile, 'file'> => {
   const text = source.split('');
   const code = source.split('');
@@ -67,10 +77,7 @@ const maskSource = (source: string): Omit<SourceFile, 'file'> => {
       blank(code, index, end);
       index = end;
     } else if (char === '\'' || char === '"') {
-      let cursor = index + 1;
-      while (cursor < source.length && source[cursor] !== char && source[cursor] !== '\n') {
-        cursor += source[cursor] === '\\' ? 2 : 1;
-      }
+      const cursor = findClosingQuote(source, index);
       blank(code, index + 1, cursor);
       index = cursor + 1;
       lastSignificant = char;
@@ -149,7 +156,7 @@ const findClosingBrace = (code: string, openIndex: number): number => {
 const readExpression = (source: SourceFile, index: number): Expression | undefined => {
   const quote = source.text[index];
   if (quote === '\'' || quote === '"') {
-    return { literal: source.text.slice(index + 1, source.text.indexOf(quote, index + 1)) };
+    return { literal: source.text.slice(index + 1, findClosingQuote(source.text, index)).replace(/\\(.)/g, '$1') };
   }
   const identifier = /^[A-Za-z_$][\w$]*(?=\s*[,;}\n])/.exec(source.code.slice(index, index + 200))?.[0];
   return identifier ? { identifier } : undefined;
@@ -276,7 +283,9 @@ const collectClusterManagers = (errors: string[]): ManagerId[] => {
 
 const readDictionary = (file: string): Record<string, unknown> => (existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : {});
 
-const LANGUAGES = readdirSync(path.join(LANG_ROOT, 'back'))
+// The guard needs the monorepo checkout: a missing directory fails the first test instead of skipping the guard.
+const LANG_BACK_ROOT = path.join(LANG_ROOT, 'back');
+const LANGUAGES = (existsSync(LANG_BACK_ROOT) ? readdirSync(LANG_BACK_ROOT) : [])
   .filter((file) => file.endsWith('.json'))
   .map((file) => path.basename(file, '.json'))
   .sort();
@@ -292,12 +301,15 @@ const MANAGERS = [...collectClusterManagers(resolutionErrors), ...collectRegiste
 const MANAGER_IDS = [...new Set(MANAGERS.map(({ id }) => id))].sort();
 
 describe('Manager labels of the Settings > Parameters page', () => {
+  it('should find the language files of the front end', () => {
+    expect(LANGUAGES, `no language file in ${LANG_BACK_ROOT}: this test reads opencti-front/lang from the monorepo checkout`).toContain('en');
+  });
+
   it('should resolve the id of every manager', () => {
     expect(resolutionErrors).toEqual([]);
   });
 
   it('should collect the managers of both registration paths', () => {
-    expect(LANGUAGES).toContain('en');
     // RULE_ENGINE and HISTORY_MANAGER are reported by clusterManager.ts, the others go through registerManager().
     expect(MANAGER_IDS).toEqual(expect.arrayContaining(['RULE_ENGINE', 'HISTORY_MANAGER', 'TELEMETRY_MANAGER', 'RETENTION_MANAGER', 'CATALOG_MANAGER']));
   });
@@ -308,6 +320,7 @@ describe('Manager labels of the Settings > Parameters page', () => {
       const isLabelled = typeof label === 'string' && label.trim() !== '' && label !== id;
       return isLabelled ? [] : [`${id} (${language})`];
     }));
-    expect(missing, `add "<ID>": "<Feature> manager" to opencti-front/lang/back/<language>.json for: ${missing.join(', ')}`).toEqual([]);
+    const hint = 'add "<ID>": "<Feature> manager" to opencti-front/lang/back/<language>.json, or fix the entry of lang/front/<language>.json, which takes precedence';
+    expect(missing, `${hint}, for: ${missing.join(', ')}`).toEqual([]);
   });
 });
