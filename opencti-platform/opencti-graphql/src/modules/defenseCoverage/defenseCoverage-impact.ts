@@ -47,6 +47,8 @@ export interface DefenseImpact {
   ruleIds: Set<string>;
   // Security coverage results whose covered techniques must be recomputed
   resultIds: Set<string>;
+  // Courses of action whose mitigated techniques must be recomputed (a revocation withdraws the mitigation)
+  mitigationIds: Set<string>;
   accessChanged: boolean;
   // The threat usages of the overlays changed: a uses relationship, or a threat created, removed or with a new access
   overlayChanged: boolean;
@@ -78,6 +80,7 @@ export const collectDefenseImpact = (events: Array<SseEvent<DataEvent>>): Defens
     dataComponentIds: new Set(),
     ruleIds: new Set(),
     resultIds: new Set(),
+    mitigationIds: new Set(),
     accessChanged: false,
     overlayChanged: false,
     threatsChanged: false,
@@ -141,6 +144,7 @@ export const collectDefenseImpact = (events: Array<SseEvent<DataEvent>>): Defens
       // A marking or organization change on an evidence changes who may see it: readers re-evaluate their access
       impact.accessChanged = true;
       if (extension.type === ENTITY_TYPE_DATA_COMPONENT) impact.dataComponentIds.add(extension.id);
+      if (extension.type === ENTITY_TYPE_COURSE_OF_ACTION) impact.mitigationIds.add(extension.id);
       // A connector upsert of a result can change its date or its security coverage without touching has-covered
       if (extension.type === ENTITY_TYPE_SECURITY_COVERAGE_RESULT) impact.resultIds.add(extension.id);
     }

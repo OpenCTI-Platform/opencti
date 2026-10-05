@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/defenseCoverage/defenseGap/defenseGap';
 import {
   accessSignature,
+  activeMitigations,
   buildTechniqueCoverage,
   type ComputationGraph,
   defenseGapId,
@@ -153,6 +154,17 @@ describe('Defense telemetry of revoked data components', () => {
   });
 });
 
+describe('Defense mitigations of revoked courses of action', () => {
+  it('should keep only the mitigations of the courses of action that are loaded and not revoked', () => {
+    const coursesOfAction = [
+      { internal_id: 'coa-active' },
+      { internal_id: 'coa-revoked', revoked: true },
+    ] as unknown as BasicStoreEntity[];
+    const mitigates = [relation('m-1', 'coa-active', AP), relation('m-2', 'coa-revoked', AP), relation('m-3', 'coa-unknown', AP)];
+    expect(activeMitigations(mitigates, coursesOfAction).map((r) => r.id)).toEqual(['m-1']);
+  });
+});
+
 describe('Defense gaps produced by a run', () => {
   const techniques = new Set([AP]);
   const platforms = new Set([SIEM]);
@@ -199,6 +211,10 @@ describe('Defense coverage stream impact', () => {
     const dataComponent = collectDefenseImpact([event('update', { type: 'x-mitre-data-component', extensions: { [STIX_EXT_OCTI]: { id: 'dc', type: 'Data-Component' } } })]);
     expect(dataComponent.accessChanged).toEqual(true);
     expect(Array.from(dataComponent.dataComponentIds)).toEqual(['dc']);
+    // A revoked course of action withdraws the mitigation of the techniques it mitigates
+    const courseOfAction = collectDefenseImpact([event('update', { type: 'course-of-action', extensions: { [STIX_EXT_OCTI]: { id: 'coa', type: 'Course-Of-Action' } } })]);
+    expect(courseOfAction.accessChanged).toEqual(true);
+    expect(Array.from(courseOfAction.mitigationIds)).toEqual(['coa']);
     const platform = collectDefenseImpact([event('update', { type: 'identity', extensions: { [STIX_EXT_OCTI]: { id: 'p', type: 'SecurityPlatform' } } })]);
     expect(platform.accessChanged).toEqual(true);
     expect(platform.full).toEqual(false);

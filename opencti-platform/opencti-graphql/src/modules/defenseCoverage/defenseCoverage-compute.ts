@@ -602,6 +602,12 @@ export const withoutRevokedDataComponents = (
   };
 };
 
+/** Keep the mitigations of the loaded courses of action that are not revoked. */
+export const activeMitigations = (mitigates: BasicStoreRelation[], coursesOfAction: BasicStoreEntity[]) => {
+  const activeIds = new Set(coursesOfAction.filter((coa) => !coa.revoked).map((coa) => coa.internal_id));
+  return mitigates.filter((relation) => activeIds.has(relation.fromId));
+};
+
 /**
  * Compute and store the defense coverage of every technique (full run) or of the given techniques (incremental run).
  * The computation runs with the given user (the manager uses the system user) and stores only ids:
@@ -661,7 +667,13 @@ export const computeDefenseCoverage = async (
   const deployments = await loadDeployments(context, user, Array.from(rulesById.keys()));
 
   // 4. Mitigation and validation layers
-  const mitigates = await loadRelationsToTechniques(context, user, RELATION_MITIGATES, [ENTITY_TYPE_COURSE_OF_ACTION], scopedIds);
+  const allMitigates = await loadRelationsToTechniques(context, user, RELATION_MITIGATES, [ENTITY_TYPE_COURSE_OF_ACTION], scopedIds);
+  const coursesOfAction = await findByIdsChunked<BasicStoreEntity>(context, user, allMitigates.map((m) => m.fromId), {
+    type: ENTITY_TYPE_COURSE_OF_ACTION,
+    baseData: true,
+    baseFields: ['revoked'],
+  });
+  const mitigates = activeMitigations(allMitigates, coursesOfAction);
   const hasCovered = await loadRelationsToTechniques(context, user, RELATION_HAS_COVERED, [ENTITY_TYPE_SECURITY_COVERAGE_RESULT], scopedIds, [
     'coverage_information',
     'coverage_platforms_information',
