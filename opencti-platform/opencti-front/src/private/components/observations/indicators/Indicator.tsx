@@ -11,6 +11,7 @@ import StixCoreObjectOrStixRelationshipLastContainers from '../../common/contain
 import StixCoreObjectExternalReferences from '../../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import HuntsOfEntity from '../../hunts/HuntsOfEntity';
 
 const indicatorFragment = graphql`
   fragment Indicator_indicator on Indicator {
@@ -118,6 +119,7 @@ const Indicator: React.FC<IndicatorProps> = ({
           />
         </Grid>
       </Grid>
+      <HuntsOfEntity entityId={indicator.id} />
     </div>
   );
 };
