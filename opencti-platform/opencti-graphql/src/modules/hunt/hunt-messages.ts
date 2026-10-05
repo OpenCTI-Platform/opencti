@@ -30,6 +30,14 @@ export const HUNT_MESSAGES = {
   scopeEmpty: 'The scope matches no security platform: edit the scope',
   scopeInternet: 'Runs on the internet hunt connectors',
   draftWorkspace: 'In a draft workspace: the hunt runs once the draft is validated',
+  queueConnectorDeleted: 'The hunt connector of this run was deleted: the run is cancelled at the next pass of the hunt manager',
+  queueConnectorOffline: '{connector} has not answered recently: the run starts once it is back',
+  queueConnectorBusy: '{connector} already runs {count} hunts, its limit: the run starts when one of them ends',
+  queueConnectorQuota: '{connector} reached its daily quota of {count} runs: the run starts tomorrow',
+  queueSent: 'Sent to {connector}: waiting for the connector to start it',
+  queueNextDispatch: 'Waiting for the next dispatch of the hunt manager',
+  runCancelledHuntDeleted: 'The hunt of this run was deleted',
+  runCancelledConnectorDeleted: 'The hunt connector of this run was deleted',
 } as const;
 
 export type HuntMessageValues = Record<string, string | number>;
@@ -37,6 +45,19 @@ export type HuntMessageValues = Record<string, string | number>;
 export const renderHuntMessage = (template: string, values: HuntMessageValues = {}) => {
   return template.replace(/\{(\w+)\}/g, (placeholder, name: string) => (values[name] !== undefined ? String(values[name]) : placeholder));
 };
+
+export interface HuntMessage {
+  template: string;
+  values: { name: string; value: string }[];
+  message: string;
+}
+
+/** A sentence as the API serves it: its template, translated by the user interface, its values and its rendering. */
+export const huntMessage = (template: string, values: HuntMessageValues = {}): HuntMessage => ({
+  template,
+  values: Object.entries(values).map(([name, value]) => ({ name, value: String(value) })),
+  message: renderHuntMessage(template, values),
+});
 
 /** At most three names, then the count of the others. */
 export const listNames = (names: string[]) => {

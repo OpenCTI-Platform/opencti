@@ -65,7 +65,7 @@ import { callHuntAgent, HUNT_PLANNER_INTENT, validateHuntPlanSpec } from './hunt
 import { parseHuntPack, planHuntPackImport, resolveHuntPackLabels } from './hunt-pack';
 import { type HuntValidationState, mergeHuntEdits, validateHuntState } from './hunt-validators';
 import { withHuntLock } from './hunt-lock';
-import { createHuntRuns, findHuntConnectors } from './huntRun/huntRun-domain';
+import { cancelDeletedHuntRuns, createHuntRuns, findHuntConnectors } from './huntRun/huntRun-domain';
 import { type BasicStoreEntityHuntRun, ENTITY_TYPE_HUNT_RUN, HUNT_RUN_TRIGGER_EMULATION } from './huntRun/huntRun-types';
 
 const ATTACK_TECHNIQUE_ID = /^T\d{4}(?:\.\d{3})?$/i;
@@ -232,8 +232,16 @@ export const addHuntProposal = async (context: AuthContext, user: AuthUser, inpu
 };
 
 export const huntDelete = async (context: AuthContext, user: AuthUser, huntId: string) => {
-  // Runs are kept so that a hunt restored from the trash keeps its history, the run retention purges them
-  await deleteElementById(context, user, huntId, ENTITY_TYPE_HUNT);
+  const hunt = await findHuntById(context, user, huntId);
+  if (!hunt) {
+    throw ResourceNotFoundError('Hunt cannot be found', { huntId });
+  }
+  // Runs are kept so that a hunt restored from the trash keeps its history, the run retention purges them; those still
+  // waiting or running are cancelled, so that they free the slots of their connectors
+  await deleteElementById(context, user, hunt.internal_id, ENTITY_TYPE_HUNT);
+  if (!context.draft_context) {
+    await cancelDeletedHuntRuns(context, hunt.internal_id);
+  }
   await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].DELETE_TOPIC, huntId, user);
   return huntId;
 };

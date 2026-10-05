@@ -12895,6 +12895,15 @@ export enum HuntIocVerdict {
   Seen = 'seen'
 }
 
+/** A sentence of the platform: the English sentence with its {placeholders} is the translation key of the user interface */
+export type HuntMessage = {
+  __typename?: 'HuntMessage';
+  /** The sentence as the platform writes it */
+  message: Scalars['String']['output'];
+  template: Scalars['String']['output'];
+  values: Array<HuntMessageValue>;
+};
+
 export type HuntMessageValue = {
   __typename?: 'HuntMessageValue';
   name: Scalars['String']['output'];
@@ -13003,7 +13012,10 @@ export type HuntRun = BasicObject & InternalObject & {
   evidence_sample?: Maybe<Array<HuntEvidence>>;
   evidence_sources?: Maybe<Array<Scalars['String']['output']>>;
   hits_count?: Maybe<Scalars['Int']['output']>;
+  /** The hunt of the run, null when it was deleted (hunt_deleted) or when the user cannot read it */
   hunt?: Maybe<Hunt>;
+  /** The hunt of the run was deleted (in the trash or for good), as opposed to a hunt the user cannot read */
+  hunt_deleted: Scalars['Boolean']['output'];
   hunt_id: Scalars['String']['output'];
   hunt_run_mode: HuntRunMode;
   hunt_run_status: HuntRunStatus;
@@ -13021,6 +13033,8 @@ export type HuntRun = BasicObject & InternalObject & {
   playbook_execution_id?: Maybe<Scalars['String']['output']>;
   playbook_id?: Maybe<Scalars['String']['output']>;
   query_language?: Maybe<Scalars['String']['output']>;
+  /** Why a queued run waits: its connector offline, deleted or busy, or the next dispatch; null when the run is not queued */
+  queue_reason?: Maybe<HuntMessage>;
   representative: Representative;
   result_ids?: Maybe<Array<Scalars['String']['output']>>;
   results?: Maybe<StixObjectOrStixRelationshipConnection>;
@@ -13102,6 +13116,8 @@ export type HuntRunStartInput = {
 };
 
 export enum HuntRunStatus {
+  /** The hunt or the hunt connector of the run was deleted before the run ended, error_message says which */
+  Cancelled = 'cancelled',
   Completed = 'completed',
   Failed = 'failed',
   Queued = 'queued',
@@ -45653,6 +45669,7 @@ export type ResolversTypes = ResolversObject<{
   HuntIocValue: ResolverTypeWrapper<HuntIocValue>;
   HuntIocValueInput: HuntIocValueInput;
   HuntIocVerdict: HuntIocVerdict;
+  HuntMessage: ResolverTypeWrapper<HuntMessage>;
   HuntMessageValue: ResolverTypeWrapper<HuntMessageValue>;
   HuntNativeQuery: ResolverTypeWrapper<HuntNativeQuery>;
   HuntNativeQueryInput: HuntNativeQueryInput;
@@ -46994,6 +47011,7 @@ export type ResolversParentTypes = ResolversObject<{
   HuntIocSource: HuntIocSource;
   HuntIocValue: HuntIocValue;
   HuntIocValueInput: HuntIocValueInput;
+  HuntMessage: HuntMessage;
   HuntMessageValue: HuntMessageValue;
   HuntNativeQuery: HuntNativeQuery;
   HuntNativeQueryInput: HuntNativeQueryInput;
@@ -52583,6 +52601,12 @@ export type HuntIocValueResolvers<ContextType = any, ParentType extends Resolver
   value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
+export type HuntMessageResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntMessage'] = ResolversParentTypes['HuntMessage']> = ResolversObject<{
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  template?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  values?: Resolver<Array<ResolversTypes['HuntMessageValue']>, ParentType, ContextType>;
+}>;
+
 export type HuntMessageValueResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntMessageValue'] = ResolversParentTypes['HuntMessageValue']> = ResolversObject<{
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -52644,6 +52668,7 @@ export type HuntRunResolvers<ContextType = any, ParentType extends ResolversPare
   evidence_sources?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   hits_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   hunt?: Resolver<Maybe<ResolversTypes['Hunt']>, ParentType, ContextType>;
+  hunt_deleted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   hunt_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   hunt_run_mode?: Resolver<ResolversTypes['HuntRunMode'], ParentType, ContextType>;
   hunt_run_status?: Resolver<ResolversTypes['HuntRunStatus'], ParentType, ContextType>;
@@ -52660,6 +52685,7 @@ export type HuntRunResolvers<ContextType = any, ParentType extends ResolversPare
   playbook_execution_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   playbook_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   query_language?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  queue_reason?: Resolver<Maybe<ResolversTypes['HuntMessage']>, ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   result_ids?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   results?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, ParentType, ContextType, Partial<HuntRunResultsArgs>>;
@@ -62624,6 +62650,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   HuntIocSet?: HuntIocSetResolvers<ContextType>;
   HuntIocSource?: HuntIocSourceResolvers<ContextType>;
   HuntIocValue?: HuntIocValueResolvers<ContextType>;
+  HuntMessage?: HuntMessageResolvers<ContextType>;
   HuntMessageValue?: HuntMessageValueResolvers<ContextType>;
   HuntNativeQuery?: HuntNativeQueryResolvers<ContextType>;
   HuntPackImportResult?: HuntPackImportResultResolvers<ContextType>;
