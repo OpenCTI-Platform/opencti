@@ -10432,8 +10432,7 @@ export enum GraphClustersOrdering {
   Score = '_score',
   ClusterKind = 'cluster_kind',
   LastComputedAt = 'last_computed_at',
-  MembersCount = 'members_count',
-  Name = 'name'
+  MembersCount = 'members_count'
 }
 
 export enum GraphFeatureFamily {

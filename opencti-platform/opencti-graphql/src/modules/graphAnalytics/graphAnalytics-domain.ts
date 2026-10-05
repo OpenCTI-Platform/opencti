@@ -468,8 +468,8 @@ const searchScore = (cluster: BasicStoreEntityGraphCluster) => {
   const score = cluster.sort?.[0];
   return typeof score === 'number' ? score : 0;
 };
+// No name sorter: readers see a cluster under its first accessible representative, not under its stored name
 const CLUSTER_SORTERS: Record<string, (a: BasicStoreEntityGraphCluster, b: BasicStoreEntityGraphCluster) => number> = {
-  name: (a, b) => compareText(a.name, b.name),
   cluster_kind: (a, b) => compareText(a.cluster_kind, b.cluster_kind),
   members_count: (a, b) => a.members_count - b.members_count,
   last_computed_at: (a, b) => compareText(a.last_computed_at ? String(a.last_computed_at) : null, b.last_computed_at ? String(b.last_computed_at) : null),
@@ -615,7 +615,7 @@ export interface TimeSeriesArgs {
   interval: string;
 }
 
-/** Cumulative number of visible members over time, by member creation date in the platform. */
+/** Cumulative number of visible members over time, by the date each member joined the cluster (cluster_joined_at). */
 export const graphClusterTimeline = async (
   context: AuthContext,
   user: AuthUser,

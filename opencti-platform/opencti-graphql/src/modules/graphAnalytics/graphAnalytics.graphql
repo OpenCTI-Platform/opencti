@@ -167,7 +167,6 @@ type GraphCluster implements InternalObject & BasicObject {
 }
 
 enum GraphClustersOrdering {
-    name
     cluster_kind
     members_count
     last_computed_at

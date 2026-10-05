@@ -249,7 +249,8 @@ const GraphClusters = () => {
       id: 'name',
       label: 'Name',
       percentWidth: 27,
-      isSortable: true,
+      // the label is the first representative the reader can access, which the server cannot rank by
+      isSortable: false,
       render: (cluster: GraphClusters_cluster$data) => (
         <Tooltip>
           <TooltipTrigger asChild>

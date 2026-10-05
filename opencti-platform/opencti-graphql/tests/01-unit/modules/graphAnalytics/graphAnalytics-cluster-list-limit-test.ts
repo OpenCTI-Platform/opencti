@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import '../../../../src/modules/index';
-import { findGraphClusters, GRAPH_CLUSTERS_LIST_MAX } from '../../../../src/modules/graphAnalytics/graphAnalytics-domain';
+import { findGraphClusters, GRAPH_CLUSTERS_LIST_MAX, rankGraphClusters } from '../../../../src/modules/graphAnalytics/graphAnalytics-domain';
 import { loadGraphClusters } from '../../../../src/modules/graphAnalytics/graphAnalytics-store';
 import { elAggregationSearch, elList } from '../../../../src/database/engine';
 import { SYSTEM_USER } from '../../../../src/utils/access';
@@ -38,6 +38,11 @@ describe('graph analytics cluster list', () => {
     expect(elList).toHaveBeenCalledTimes(1);
     expect(connection.edges.map(({ node }) => [node.internal_id, node.members_count])).toEqual([['c-big', 9], ['c-small', 3]]);
     expect(connection.pageInfo.globalCount).toBe(2);
+  });
+
+  it('should never rank by the stored name, which readers do not see', () => {
+    const entries = [{ id: 'b', members_count: 1, cluster: cluster('b') }, { id: 'a', members_count: 1, cluster: cluster('a') }] as never;
+    expect(rankGraphClusters(entries, 'name')).toBe(entries);
   });
 
   it('should list nothing without visible members', async () => {
