@@ -28,9 +28,9 @@ import { SYSTEM_USER } from '../../../../src/utils/access';
 const context = {} as AuthContext;
 const user = { id: 'analyst-1' } as AuthUser;
 
-const relationshipEvent = (relationshipId: string, toId: string, scope: 'delete' | 'update', changes: TimeMachineHistoryEvent['changes'] = []) => ({
-  id: `event-${relationshipId}`,
-  timestamp: '2026-01-15T00:00:00.000Z',
+const relationshipEvent = (relationshipId: string, toId: string, scope: 'create' | 'delete' | 'update', changes: TimeMachineHistoryEvent['changes'] = []) => ({
+  id: `event-${relationshipId}-${scope}`,
+  timestamp: scope === 'create' ? '2026-01-10T00:00:00.000Z' : '2026-01-15T00:00:00.000Z',
   event_scope: scope,
   context_id: relationshipId,
   context_entity_type: 'uses',
@@ -64,6 +64,31 @@ describe('Relationship changes of an entity', () => {
     expect(byId.get('rel-deleted-target')).toMatchObject({ action: 'removed', target_id: 'malware-deleted', target_name: 'Deleted', target_deleted: true, target_restricted: false });
     expect(byId.get('rel-restricted-target')).toMatchObject({ action: 'removed', target_id: null, target_name: 'Restricted', target_restricted: true });
     expect(byId.get('rel-accessible-target')).toMatchObject({ action: 'confidence_changed', target_name: 'LynxLoader', target_type: 'Malware', confidence_before: 50, confidence_after: 80 });
+  });
+
+  it('should count the later changes of the relationships created in the period beyond the listing cap while they are visible', async () => {
+    const confidenceChange = [{ field: 'uses--confidence', changes_added: [{ raw: '90' }], changes_removed: [{ raw: '60' }] }] as TimeMachineHistoryEvent['changes'];
+    // None of them is in the listed page of created relationships (the listing returns nothing)
+    fetchRelationshipsHistoryEventsMock.mockResolvedValue([
+      relationshipEvent('rel-visible', 'malware-a', 'create'),
+      relationshipEvent('rel-visible', 'malware-a', 'update', confidenceChange),
+      relationshipEvent('rel-hidden', 'malware-b', 'create'),
+      relationshipEvent('rel-hidden', 'malware-b', 'update', confidenceChange),
+    ]);
+    internalFindByIdsMappedMock.mockImplementation(async (_context: AuthContext, requester: AuthUser, ids: string[]) => {
+      const known: Record<string, unknown> = requester === SYSTEM_USER ? {} : {
+        'rel-visible': { internal_id: 'rel-visible', entity_type: 'uses' },
+        'malware-a': { internal_id: 'malware-a', entity_type: 'Malware', name: 'LynxLoader' },
+      };
+      return Object.fromEntries(ids.filter((id) => known[id]).map((id) => [id, known[id]]));
+    });
+    const { allChanges } = await computeRelationshipChanges(context, user, 'element-a', '2026-01-01T00:00:00.000Z', '2026-02-01T00:00:00.000Z', new Map());
+    // The relationship the user cannot see any more is never described
+    expect(allChanges.map((change) => [change.relationship_id, change.action])).toEqual([['rel-visible', 'confidence_changed']]);
+    // The visibility of the relationships beyond the cap is checked with the rights of the user, in one request
+    const relationshipLookups = internalFindByIdsMappedMock.mock.calls.filter(([, requester, ids]) => requester === user && (ids as string[]).includes('rel-visible'));
+    expect(relationshipLookups).toHaveLength(1);
+    expect(relationshipLookups[0][2]).toEqual(['rel-visible', 'rel-hidden']);
   });
 });
 

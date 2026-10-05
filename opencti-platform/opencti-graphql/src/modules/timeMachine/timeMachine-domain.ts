@@ -741,9 +741,15 @@ export const computeRelationshipChanges = async (
   const eventsTruncated = fetchedEvents.length > MAX_REPLAY_EVENTS;
   const states = buildRelationshipStates(fetchedEvents.slice(0, MAX_REPLAY_EVENTS));
   const changes: RelationshipChange[] = [];
-  const createdIds = new Set<string>();
+  // Relationships created in the period and still visible: the listed ones, then the ones beyond the listing cap, so
+  // their later revocation and confidence changes are counted whatever the cap
+  const addedIds = new Set<string>((createdRelations as BasicStoreRelation[]).map((relation) => relation.internal_id));
+  const addedBeyondCap = [...states.entries()].filter(([id, state]) => state.created && !state.deleted && !addedIds.has(id)).map(([id]) => id);
+  if (addedBeyondCap.length > 0) {
+    const visible = await internalFindByIdsMapped<BasicStoreObject>(context, user, addedBeyondCap, { baseData: true, indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED });
+    addedBeyondCap.filter((id) => !!visible[id]).forEach((id) => addedIds.add(id));
+  }
   (createdRelations as BasicStoreRelation[]).forEach((relation) => {
-    createdIds.add(relation.internal_id);
     const isSource = relation.fromId === elementId;
     changes.push({
       relationship_id: relation.internal_id,
@@ -774,7 +780,7 @@ export const computeRelationshipChanges = async (
       target_deleted: false,
       target_restricted: false,
     };
-    relationshipStateActions(state, createdIds.has(relationshipId)).forEach((action) => {
+    relationshipStateActions(state, addedIds.has(relationshipId)).forEach((action) => {
       if (action === 'removed') {
         changes.push({ ...base, action, at: state.deleted ?? to, confidence_before: null, confidence_after: null, changed_by: userName(state.deleted_by) });
       } else if (action === 'confidence_changed') {
