@@ -66,7 +66,25 @@ vi.mock('../../../src/database/redis', async (importOriginal) => ({
   },
 }));
 
+// The job locks: held ids and the abort controller of each lock taken (no Redis needed).
+const jobLocks = vi.hoisted(() => new Map<string, AbortController>());
+vi.mock('../../../src/lock/master-lock', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/lock/master-lock')>()),
+  lockResources: async (ids: string[]) => {
+    if (ids.some((id) => jobLocks.has(id))) {
+      throw new Error('Execution timeout, too many concurrent call on the same entities');
+    }
+    const controller = new AbortController();
+    ids.forEach((id) => jobLocks.set(id, controller));
+    return {
+      signal: controller.signal,
+      unlock: async () => ids.forEach((id) => jobLocks.delete(id)),
+    };
+  },
+}));
+
 import {
+  CHANGE_DIGEST_JOB_LOCK_PREFIX,
   CHANGE_DIGEST_MAX_ATTEMPTS,
   CHANGE_DIGEST_MAX_DELAY_MS,
   changeDigestQueue,
@@ -130,6 +148,7 @@ describe('handleChangeDigestNotifications', () => {
   beforeEach(() => {
     scheduledJobs.clear();
     failedAttempts.clear();
+    jobLocks.clear();
     vi.useFakeTimers();
     vi.setSystemTime(FROZEN);
   });
@@ -347,6 +366,41 @@ describe('handleChangeDigestNotifications', () => {
     expect(buildChangeDigestDataMock.mock.calls.filter((call) => (call[1] as AuthUser).id === analyst.id)).toHaveLength(CHANGE_DIGEST_MAX_ATTEMPTS);
     expect(failedAttempts.size).toBe(0);
     expect(storedEvents()).toHaveLength(0);
+  });
+
+  it('leaves a digest to the platform that holds its job and sends it once the job is released', async () => {
+    primeCache([changeDigest]);
+    buildChangeDigestDataMock.mockResolvedValue([digestLine]);
+    const analystJob = toChangeDigestJobMember({ triggerId: 'change-digest-1', userId: analyst.id, fromDate: '2026-01-05T09:00:00.000Z', toDate: FROZEN.toISOString() });
+    // The previous holder of the notification manager is still computing the digest of the analyst
+    jobLocks.set(`${CHANGE_DIGEST_JOB_LOCK_PREFIX}${analystJob}`, new AbortController());
+    await handleChangeDigestNotifications({} as AuthContext);
+    await changeDigestQueue.idle();
+    expect(storedEvents().map((event) => event.target.user_id)).toEqual([manager.id]);
+    expect(scheduledJobs.get(analystJob)).toBe(FROZEN.getTime());
+    expect(failedAttempts.size).toBe(0);
+    // It stopped without sending: the job is free and still due at the next pass
+    jobLocks.clear();
+    vi.setSystemTime(new Date('2026-01-12T09:01:00.000Z'));
+    await handleChangeDigestNotifications({} as AuthContext);
+    await changeDigestQueue.idle();
+    expect(storedEvents().map((event) => event.target.user_id)).toEqual([manager.id, analyst.id]);
+    expect(scheduledJobs.size).toBe(0);
+    expect(jobLocks.size).toBe(0);
+  });
+
+  it('does not store a digest whose job lock is lost during the computation and leaves the job to its new owner', async () => {
+    primeCache([changeDigest]);
+    const analystJob = toChangeDigestJobMember({ triggerId: 'change-digest-1', userId: analyst.id, fromDate: '2026-01-05T09:00:00.000Z', toDate: FROZEN.toISOString() });
+    buildChangeDigestDataMock.mockImplementation(async (_ctx: AuthContext, recipient: AuthUser) => {
+      if (recipient.id === analyst.id) jobLocks.get(`${CHANGE_DIGEST_JOB_LOCK_PREFIX}${analystJob}`)?.abort();
+      return [digestLine];
+    });
+    await handleChangeDigestNotifications({} as AuthContext);
+    await changeDigestQueue.idle();
+    expect(storedEvents().map((event) => event.target.user_id)).toEqual([manager.id]);
+    expect(scheduledJobs.get(analystJob)).toBe(FROZEN.getTime());
+    expect(failedAttempts.size).toBe(0);
   });
 
   it('removes without computing them the jobs of a deleted trigger or of a former recipient', async () => {

@@ -761,6 +761,7 @@ export const CHANGE_DIGEST_MAX_DELAY_MS = 7 * 24 * 60 * 60 * 1000;
 export const CHANGE_DIGEST_MAX_ATTEMPTS = 5;
 export const CHANGE_DIGEST_RETRY_DELAY_MS = 5 * 60 * 1000;
 const CHANGE_DIGEST_JOB_SEPARATOR = '|';
+export const CHANGE_DIGEST_JOB_LOCK_PREFIX = 'change_digest_job_lock_';
 // A change digest computes a landscape diff per recipient: the computations run apart from the scheduler loop, a few at
 // a time, so a long one never makes another digest miss its scheduled minute. Each job stays in the Redis schedule
 // until it is done: a full queue, a restart or a crash delays a digest, the next pass or lock holder picks it up.
@@ -795,13 +796,24 @@ const removeChangeDigestJob = async (member: string) => {
   }
 };
 
-// Throws when the digest cannot be built or stored
-const sendChangeDigest = async (context: AuthContext, settings: BasicStoreSettings, digest: ResolvedDigest, user: AuthUser, job: ChangeDigestJob) => {
-  const { trigger } = digest;
+interface ChangeDigestTask {
+  context: AuthContext;
+  settings: BasicStoreSettings;
+  digest: ResolvedDigest;
+  user: AuthUser;
+  job: ChangeDigestJob;
+  member: string;
+  dueAt: number;
+}
+
+// Throws when the digest cannot be built or stored, or when the job lock is lost before it is stored
+const sendChangeDigest = async (task: ChangeDigestTask, lockSignal: AbortSignal) => {
+  const { context, settings, digest: { trigger }, user, job } = task;
   const userContext = { ...context, user_inside_platform_organization: isUserInPlatformOrganization(user, settings) };
   const locale = resolveChangeDigestLocale(user.language, settings.platform_language);
   const data = await buildChangeDigestData(userContext, user, trigger as unknown as ChangeDigestTrigger, job.fromDate, job.toDate, locale);
   if (data.length > 0) {
+    lockSignal.throwIfAborted();
     const target = convertToNotificationUser(user, trigger.notifiers);
     const digestEvent: DigestEvent = { version: EVENT_NOTIFICATION_VERSION, notification_id: trigger.internal_id, type: 'digest', target, data };
     await storeNotificationEvent(context, digestEvent);
@@ -824,6 +836,43 @@ const retryChangeDigestJob = async (member: string, triggerId: string, cause: un
   } catch (err) {
     // The job keeps its place and runs again at the next pass
     logApp.error('[OPENCTI-MODULE] Change digest generation error, the attempt could not be recorded', { cause: err, manager: 'NOTIFICATION_MANAGER', trigger_id: triggerId });
+  }
+};
+
+// One platform at a time owns a job: the lock is extended while the digest is computed and expires if its holder stops,
+// so a lock handover of the notification manager never sends the same digest twice
+const runChangeDigestJob = async (task: ChangeDigestTask) => {
+  const { member, dueAt, digest } = task;
+  let jobLock;
+  try {
+    jobLock = await lockResources([`${CHANGE_DIGEST_JOB_LOCK_PREFIX}${member}`], { retryCount: 0 });
+  } catch (err) {
+    // Held by another platform, which sends or reschedules the digest; otherwise tried again at a later pass
+    logApp.debug('[OPENCTI-MODULE] Change digest job not owned', { cause: err, manager: 'NOTIFICATION_MANAGER', trigger_id: digest.trigger.internal_id });
+    return;
+  }
+  try {
+    // Sent by a previous owner, or moved to a later attempt
+    if (!(await redisIsChangeDigestJobDue(member, dueAt))) {
+      return;
+    }
+    try {
+      await sendChangeDigest(task, jobLock.signal);
+    } catch (err) {
+      if (jobLock.signal.aborted) {
+        // Another platform may own the job now: it decides
+        return;
+      }
+      await retryChangeDigestJob(member, digest.trigger.internal_id, err);
+      return;
+    }
+    await removeChangeDigestJob(member);
+  } finally {
+    try {
+      await jobLock.unlock();
+    } catch (err) {
+      logApp.warn('[OPENCTI-MODULE] Change digest job lock could not be released', { cause: err, manager: 'NOTIFICATION_MANAGER' });
+    }
   }
 };
 
@@ -868,19 +917,8 @@ const runChangeDigestJobs = async (context: AuthContext, notifications: Array<Re
       // The trigger is deleted or no longer a change digest, or the user is no longer one of its recipients
       await removeChangeDigestJob(member);
     } else {
-      changeDigestQueue.enqueue(member, async () => {
-        // Read in the schedule just before a job of the same digest finished: already sent, or moved to a later attempt
-        if (!(await redisIsChangeDigestJobDue(member, baseDate.valueOf()))) {
-          return;
-        }
-        try {
-          await sendChangeDigest(context, settings, digest, user, job);
-        } catch (err) {
-          await retryChangeDigestJob(member, digest.trigger.internal_id, err);
-          return;
-        }
-        await removeChangeDigestJob(member);
-      });
+      const task: ChangeDigestTask = { context, settings, digest, user, job, member, dueAt: baseDate.valueOf() };
+      changeDigestQueue.enqueue(member, () => runChangeDigestJob(task));
     }
   }
 };
