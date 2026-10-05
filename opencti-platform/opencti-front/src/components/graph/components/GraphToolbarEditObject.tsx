@@ -45,15 +45,21 @@ const GraphToolbarEditObject = ({
   } else if (selectedLinks.length === 1 && (!selectedLinks[0].inferred || !selectedLinks[0].isNestedInferred)) {
     [objectToEdit] = selectedLinks;
   }
+  const isNotEditableFromGraph = !!objectToEdit
+    && (objectToEdit.parent_types.includes('Stix-Meta-Object')
+      || objectToEdit.parent_types.includes('Internal-Object')
+      || objectToEdit.parent_types.includes('internal-relationship'));
   let editDisabledReason: string | undefined;
   if (!objectToEdit) {
     editDisabledReason = selectedNodes.length + selectedLinks.length === 1
       ? t_i18n('Inferred knowledge cannot be edited')
       : t_i18n('Select one entity or relationship first');
+  } else if (isNotEditableFromGraph) {
+    editDisabledReason = t_i18n("This item can't be edited from the graph");
   }
 
   const openEditionForm = () => {
-    if (!objectToEdit) return;
+    if (!objectToEdit || isNotEditableFromGraph) return;
     const { parent_types, entity_type } = objectToEdit;
     if (!parent_types.includes('basic-relationship')
       && !parent_types.includes('Stix-Cyber-Observable')) {
@@ -94,7 +100,7 @@ const GraphToolbarEditObject = ({
         onClick={openEditionForm}
         title={t_i18n('Edit the selected item')}
       />
-      {objectToEdit && (
+      {objectToEdit && !isNotEditableFromGraph && (
         <>
           <StixDomainObjectEdition
             noStoreUpdate
