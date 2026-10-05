@@ -730,7 +730,7 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       expect(await runFields.case_id(restrictedRun, {}, editorContext)).toBeNull();
       expect(await runFields.case(restrictedRun, {}, editorContext)).toBeNull();
       expect((await loadInvestigationRun(testContext, runId))?.draft_id).toBe(mirrored.draft_id);
-      expect(stopped.steps.every((step: { action: string | null }) => step.action === null)).toBe(true);
+      expect(stopped.steps).toEqual([]);
       expect((await listInvestigationRunsToProcess(testContext, 50)).map((run) => run.internal_id)).toContain(runId);
       // Deleting the run deletes its draft first: refused while that fails, the run keeps its reference.
       deletion.mockRejectedValueOnce(new Error('Draft store unavailable'));

@@ -170,7 +170,9 @@ describe('Case Autopilot access boundary of a run', () => {
       outputs: { attributed_candidate_ids: [], observable_ids: {} },
       analyst_feedback: [],
     });
-    expect(withheld.steps).toEqual([expect.objectContaining({ id: 's1', source_name: 'Read the case', action: null, detail_params: null, findings_count: 2 })]);
+    // The step ledger names the engine run and counts what each source found.
+    expect(withheld.steps).toEqual([]);
+    expect(JSON.stringify(withheld)).not.toContain('inv-1');
     expect(withheld.enrichment_waves).toEqual([expect.objectContaining({ id: 'w1', delta: [] })]);
     expect(withheld.approvals).toEqual([expect.objectContaining({ id: 'a2', status: InvestigationApprovalStatus.Pending, reason: null, rejection_reason: null })]);
     expect(withheld.enrichment_requests).toEqual([expect.objectContaining({ id: 'q1', status: InvestigationEnrichmentRequestStatus.Completed, reason: null })]);
