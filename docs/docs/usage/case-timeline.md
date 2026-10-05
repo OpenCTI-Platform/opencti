@@ -120,15 +120,17 @@ When the events cannot be loaded, the tab says so, suggests checking the connect
 
 ### Views and navigation
 
-- **Lanes** and **List**: the view switch is always visible in the toolbar, next to the primary action **Add an event**. The list view is a vertical, accessible list of events.
+![Toolbar of the Timeline tab: view switch, zoom, grouping and search, then the actions; the filters on the second row](assets/case-timeline-toolbar.png)
+
+- **Lanes** and **List**: the view switch is always visible at the start of the toolbar; the primary action **Add an event** closes it on the right, after **Refresh**, **Export the timeline** and **More actions**. The list view is a vertical, accessible list of events.
 - **Zoom window**: Fit, Day, Week, Month, Quarter or Year; the period currently displayed is shown next to the zoom controls. In the lanes view, use `+` and `-` to zoom, the left and right arrows to pan and `0` to fit. On long incidents, nearby events are grouped into a count bubble that zooms in on click.
 - **Group by**: hour, day or week.
-- **Search** and filters: lanes, event kinds, event source (all events, derived from the knowledge or analyst milestones), **Pinned only** and **Show hidden events**.
+- **Search** and filters: lanes (**All lanes** menu, every lane shown by default), event kinds (**All kinds** menu), event source (all events, derived from the knowledge or analyst milestones), **Pinned only** and **Show hidden events**.
 - The current view (filters, zoom, grouping, mode) is kept in the URL, so that a view can be shared with a link.
 - The latest 500 events matching the filters are loaded first and displayed in chronological order; **Show earlier events** loads the previous ones. A link to an older event loads the earlier events until it is reached.
 - In the list view, use the up and down arrows to move between events, `Enter` to open an event, `P` to pin and `H` to hide it.
 
-![Filters of the timeline: the Evidence lane switched off and the event kinds menu open](assets/case-timeline-filters.png)
+![Filters of the timeline: the lanes menu open, every lane shown](assets/case-timeline-filters.png)
 
 ![List view of the timeline, events grouped by day](assets/case-timeline-list-populated.png)
 

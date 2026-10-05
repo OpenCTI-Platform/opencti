@@ -78,9 +78,13 @@ test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, r
     // endregion
 
     // region Filters: one lane switched off and the kinds menu open
+    const lanesFilter = page.getByTestId('timeline-lanes-filter');
     const evidenceLane = page.getByTestId('timeline-lane-evidence');
+    await lanesFilter.click();
     await evidenceLane.click();
     await expect(evidenceLane).toHaveAttribute('aria-checked', 'false');
+    await page.keyboard.press('Escape');
+    await expect(lanesFilter).toHaveText(/^Lanes \(\d+\)$/);
     await expect(page.getByTestId('timeline-lanes')).toBeVisible();
     await page.getByRole('button', { name: 'All kinds' }).click();
     await expect(page.getByText('Event kinds', { exact: true })).toBeVisible();
@@ -88,8 +92,11 @@ test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, r
     await expect(page.getByRole('menuitemcheckbox', { name: 'Malware seen', exact: true })).toHaveAttribute('aria-checked', 'false');
     await capture('filters');
     await page.keyboard.press('Escape');
+    await lanesFilter.click();
     await evidenceLane.click();
     await expect(evidenceLane).toHaveAttribute('aria-checked', 'true');
+    await page.keyboard.press('Escape');
+    await expect(lanesFilter).toHaveText('All lanes');
     // endregion
 
     // region List view, keyboard navigation, pin

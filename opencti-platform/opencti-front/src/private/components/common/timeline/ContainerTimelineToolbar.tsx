@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useId, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import {
   Badge,
   ButtonGroup,
   ButtonGroupItem,
   Checkbox,
-  Chip,
   IconButton,
   Menu,
   MenuContent,
@@ -35,11 +34,13 @@ import {
   SettingsOutlined,
   SyncOutlined,
   ViewListOutlined,
+  ViewStreamOutlined,
   ViewTimelineOutlined,
   ZoomInOutlined,
   ZoomOutOutlined,
 } from '@mui/icons-material';
 import Button from '@common/button/Button';
+import type { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import useTimelineColors from './useTimelineColors';
 import {
@@ -88,6 +89,22 @@ const WithTooltip = ({ title, children }: { title: string; children: React.React
   </Tooltip>
 );
 
+// The design-system switch writes its label in the compact 12px text: the toolbar writes it in the 14px text of its
+// selects and buttons, in a box of their height
+const ToolbarSwitch = ({ checked, onCheckedChange, label }: { checked: boolean; onCheckedChange: (checked: boolean) => void; label: string }) => {
+  const theme = useTheme<Theme>();
+  const id = useId();
+  return (
+    <label
+      htmlFor={id}
+      style={{ display: 'inline-flex', alignItems: 'center', gap: theme.spacing(1), height: theme.button.sizes.default.height, cursor: 'pointer' }}
+    >
+      <Switch id={id} checked={checked} onCheckedChange={onCheckedChange} />
+      <Text variant="content-base">{label}</Text>
+    </label>
+  );
+};
+
 const ContainerTimelineToolbar = ({
   state,
   onChange,
@@ -105,13 +122,14 @@ const ContainerTimelineToolbar = ({
   visibleDomain,
 }: ContainerTimelineToolbarProps) => {
   const { t_i18n } = useFormatter();
-  const theme = useTheme();
+  const theme = useTheme<Theme>();
   const colors = useTimelineColors();
   const visibleSpan = visibleDomain ? describeTimelineSpan(visibleDomain) : null;
   const lanes = TIMELINE_LANES.filter((lane) => enabledLanes.includes(lane));
   // A lane kept in the URL but disabled in the settings since is left out, as it is for the events shown
   const requestedLanes = state.lanes.filter((lane) => lanes.includes(lane));
   const selectedLanes = requestedLanes.length > 0 ? requestedLanes : lanes;
+  const allLanesSelected = selectedLanes.length === lanes.length;
   // The search field follows the URL (for example after "Clear filters") and keeps what is typed until it is submitted
   const [searchText, setSearchText] = useState(state.search ?? '');
   useEffect(() => setSearchText(state.search ?? ''), [state.search]);
@@ -131,7 +149,7 @@ const ContainerTimelineToolbar = ({
     <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1.25), marginBottom: theme.spacing(1.5) }} data-testid="timeline-toolbar">
       <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>
         <ButtonGroup
-          size="sm"
+          size="md"
           value={state.view}
           onValueChange={(value) => value && onChange({ view: value as TimelineView })}
           aria-label={t_i18n('Timeline view')}
@@ -156,17 +174,17 @@ const ContainerTimelineToolbar = ({
         {state.view === 'lanes' && (
           <>
             <WithTooltip title={t_i18n('Zoom in')}>
-              <IconButton priority="tertiary" size="sm" aria-label={t_i18n('Zoom in')} icon={<ZoomInOutlined fontSize="small" />} onClick={() => onZoom(0.6)} />
+              <IconButton priority="tertiary" size="md" aria-label={t_i18n('Zoom in')} icon={<ZoomInOutlined fontSize="small" />} onClick={() => onZoom(0.6)} />
             </WithTooltip>
             <WithTooltip title={t_i18n('Zoom out')}>
-              <IconButton priority="tertiary" size="sm" aria-label={t_i18n('Zoom out')} icon={<ZoomOutOutlined fontSize="small" />} onClick={() => onZoom(1 / 0.6)} />
+              <IconButton priority="tertiary" size="md" aria-label={t_i18n('Zoom out')} icon={<ZoomOutOutlined fontSize="small" />} onClick={() => onZoom(1 / 0.6)} />
             </WithTooltip>
             <WithTooltip title={t_i18n('Fit the timeline')}>
-              <IconButton priority="tertiary" size="sm" aria-label={t_i18n('Fit the timeline')} icon={<FitScreenOutlined fontSize="small" />} onClick={onFit} />
+              <IconButton priority="tertiary" size="md" aria-label={t_i18n('Fit the timeline')} icon={<FitScreenOutlined fontSize="small" />} onClick={onFit} />
             </WithTooltip>
             {visibleSpan && (
               <WithTooltip title={t_i18n('Visible period')}>
-                <Text variant="content-caption" aria-live="polite" data-testid="timeline-visible-span" style={{ color: colors.textSecondary }}>
+                <Text variant="content-base" aria-live="polite" data-testid="timeline-visible-span" style={{ color: colors.textSecondary }}>
                   {t_i18n(TIMELINE_SPAN_LABELS[visibleSpan.unit], { values: { count: visibleSpan.count } })}
                 </Text>
               </WithTooltip>
@@ -199,8 +217,7 @@ const ContainerTimelineToolbar = ({
         <div style={{ flex: 1 }} />
         <Badge content={liveUpdates} max={99} tone="brand" invisible={liveUpdates === 0}>
           <Button
-            variant="tertiary"
-            size="small"
+            variant="secondary"
             startIcon={<SyncOutlined fontSize="small" />}
             onClick={onRefresh}
             aria-label={liveUpdates > 0 ? t_i18n('{count, plural, one {# new timeline update} other {# new timeline updates}}, refresh', { values: { count: liveUpdates } }) : t_i18n('Refresh')}
@@ -209,14 +226,9 @@ const ContainerTimelineToolbar = ({
             {liveUpdates > 0 ? t_i18n('New updates') : t_i18n('Refresh')}
           </Button>
         </Badge>
-        {canEdit && (
-          <Button variant="primary" size="small" startIcon={<AddOutlined fontSize="small" />} onClick={onAdd} data-testid="timeline-add-milestone">
-            {t_i18n('Add an event')}
-          </Button>
-        )}
         <Menu>
           <MenuTrigger asChild>
-            <IconButton priority="secondary" size="sm" aria-label={t_i18n('Export the timeline')} icon={<GetAppOutlined fontSize="small" />} data-testid="timeline-export" />
+            <IconButton priority="secondary" size="md" aria-label={t_i18n('Export the timeline')} icon={<GetAppOutlined fontSize="small" />} data-testid="timeline-export" />
           </MenuTrigger>
           <MenuContent align="end">
             <MenuLabel>{t_i18n('Export the timeline')}</MenuLabel>
@@ -229,7 +241,7 @@ const ContainerTimelineToolbar = ({
         {canEdit && (
           <Menu>
             <MenuTrigger asChild>
-              <IconButton priority="secondary" size="sm" aria-label={t_i18n('More actions')} icon={<MoreVertOutlined fontSize="small" />} data-testid="timeline-more-actions" />
+              <IconButton priority="secondary" size="md" aria-label={t_i18n('More actions')} icon={<MoreVertOutlined fontSize="small" />} data-testid="timeline-more-actions" />
             </MenuTrigger>
             <MenuContent align="end">
               <MenuItem onSelect={onOpenSettings} data-testid="timeline-open-settings">
@@ -243,35 +255,49 @@ const ContainerTimelineToolbar = ({
             </MenuContent>
           </Menu>
         )}
+        {canEdit && (
+          <Button variant="primary" startIcon={<AddOutlined fontSize="small" />} onClick={onAdd} data-testid="timeline-add-milestone">
+            {t_i18n('Add an event')}
+          </Button>
+        )}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>
-        <div role="group" aria-label={t_i18n('Lanes')} style={{ display: 'flex', gap: theme.spacing(0.75), flexWrap: 'wrap' }}>
-          {lanes.map((lane) => {
-            const active = selectedLanes.includes(lane);
-            return (
-              <Chip
-                key={lane}
-                label={t_i18n(TIMELINE_LANE_LABELS[lane])}
-                color={active ? colors.lanes[lane] : undefined}
-                onClick={() => toggleLane(lane)}
-                role="checkbox"
-                aria-checked={active}
-                tabIndex={0}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    toggleLane(lane);
-                  }
-                }}
-                style={{ opacity: active ? 1 : 0.45 }}
-                data-testid={`timeline-lane-${lane}`}
-              />
-            );
-          })}
-        </div>
         <Menu>
           <MenuTrigger asChild>
-            <Button variant="tertiary" size="small" startIcon={<FilterListOutlined fontSize="small" />}>
+            <Button variant="tertiary" startIcon={<ViewStreamOutlined fontSize="small" />} data-testid="timeline-lanes-filter">
+              {allLanesSelected ? t_i18n('All lanes') : t_i18n('Lanes ({count})', { values: { count: selectedLanes.length } })}
+            </Button>
+          </MenuTrigger>
+          <MenuContent align="start">
+            <MenuLabel>{t_i18n('Lanes')}</MenuLabel>
+            {lanes.map((lane) => {
+              const active = selectedLanes.includes(lane);
+              return (
+                <MenuItem
+                  key={lane}
+                  role="menuitemcheckbox"
+                  aria-checked={active}
+                  startIcon={<Checkbox checked={active} presentational />}
+                  onSelect={(event) => {
+                    // Keep the menu open while several lanes are switched
+                    event.preventDefault();
+                    toggleLane(lane);
+                  }}
+                  data-testid={`timeline-lane-${lane}`}
+                >
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: theme.spacing(1) }}>
+                    {/* The marker of the lane in the lanes view */}
+                    <span aria-hidden="true" style={{ width: 4, height: 14, borderRadius: 2, backgroundColor: colors.lanes[lane] }} />
+                    {t_i18n(TIMELINE_LANE_LABELS[lane])}
+                  </span>
+                </MenuItem>
+              );
+            })}
+          </MenuContent>
+        </Menu>
+        <Menu>
+          <MenuTrigger asChild>
+            <Button variant="tertiary" startIcon={<FilterListOutlined fontSize="small" />}>
               {state.kinds.length > 0 ? t_i18n('Kinds ({count})', { values: { count: state.kinds.length } }) : t_i18n('All kinds')}
             </Button>
           </MenuTrigger>
@@ -314,12 +340,12 @@ const ContainerTimelineToolbar = ({
             <SelectItem value="manual">{t_i18n('Analyst milestones')}</SelectItem>
           </SelectContent>
         </Select>
-        <Switch
+        <ToolbarSwitch
           checked={state.pinnedOnly}
           onCheckedChange={(checked) => onChange({ pinnedOnly: checked })}
           label={t_i18n('Pinned only')}
         />
-        <Switch
+        <ToolbarSwitch
           checked={state.includeHidden}
           onCheckedChange={(checked) => onChange({ includeHidden: checked })}
           label={t_i18n('Show hidden events')}

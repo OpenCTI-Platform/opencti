@@ -50,11 +50,31 @@ describe('ContainerTimelineToolbar', () => {
     expect(onChange).toHaveBeenCalledWith({ kinds: ['sighting', 'malware_seen'] });
   });
 
-  it('shows every enabled lane selected when the lane kept in the URL was disabled since', () => {
+  it('shows every enabled lane selected when the lane kept in the URL was disabled since', async () => {
     const enabled = TIMELINE_LANES.filter((lane) => lane !== 'evidence');
-    testRender(<ContainerTimelineToolbar {...toolbarProps(baseState({ lanes: ['evidence'] }), vi.fn(), enabled)} />);
+    const { user } = testRender(<ContainerTimelineToolbar {...toolbarProps(baseState({ lanes: ['evidence'] }), vi.fn(), enabled)} />);
+    await user.click(screen.getByRole('button', { name: 'All lanes' }));
     expect(screen.queryByTestId('timeline-lane-evidence')).toBeNull();
     enabled.forEach((lane) => expect(screen.getByTestId(`timeline-lane-${lane}`)).toHaveAttribute('aria-checked', 'true'));
+  });
+
+  it('counts the lanes shown and switches one off from the lanes menu', async () => {
+    const onChange = vi.fn();
+    const { user } = testRender(<ContainerTimelineToolbar {...toolbarProps(baseState({ lanes: ['adversary', 'detection'] }), onChange)} />);
+    await user.click(screen.getByRole('button', { name: 'Lanes (2)' }));
+    expect(screen.getByRole('menuitemcheckbox', { name: 'Response' })).toHaveAttribute('aria-checked', 'false');
+    await user.click(screen.getByRole('menuitemcheckbox', { name: 'Detection' }));
+    expect(onChange).toHaveBeenCalledWith({ lanes: ['adversary'] });
+  });
+
+  it('names the switches by their labels and puts the primary action last', async () => {
+    const onChange = vi.fn();
+    const { user } = testRender(<ContainerTimelineToolbar {...toolbarProps(baseState(), onChange)} />);
+    await user.click(screen.getByRole('switch', { name: 'Pinned only' }));
+    expect(onChange).toHaveBeenCalledWith({ pinnedOnly: true });
+    expect(screen.getByRole('switch', { name: 'Show hidden events' })).toBeInTheDocument();
+    const firstRow = screen.getByTestId('timeline-toolbar').firstElementChild as HTMLElement;
+    expect(firstRow.lastElementChild).toContainElement(screen.getByTestId('timeline-add-milestone'));
   });
 
   it('keeps the search field in line with the view state', async () => {
