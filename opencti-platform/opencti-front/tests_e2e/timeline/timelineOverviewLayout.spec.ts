@@ -6,6 +6,7 @@ import {
   deleteEntity,
   deleteTimelineCase,
   resetOverviewLayout,
+  setTimelineLanes,
   setUserTheme,
   type TimelineCase,
 } from '../dataForTesting/timeline.data';
@@ -26,6 +27,7 @@ const LIGHT_THEME = 'Filigran Light';
  * Hide another widget and capture the Overview layout tab again.
  * Check that the incident response overview shows the loaded card in the second row, as wide as its neighbour, and capture
  * the page in the dark and light themes.
+ * Hide every event with the timeline settings: the card says so and offers Timeline settings, which opens the settings drawer of the Timeline tab.
  * Check that the knowledge graph of the case still renders next to the timeline.
  * Check the same card on a request for information.
  * Check that the overviews of a report and a grouping, containers without a timeline, keep their layout without the card.
@@ -80,6 +82,18 @@ test('Timeline in the overview layout', { tag: ['@ce', '@group1'] }, async ({ pa
     await page.goto(overviewUrl);
     await expectCardInSecondRow();
     await captureOverview(page, testInfo, 'overview-widget');
+    // endregion
+
+    // region Every event hidden by the timeline settings: the card offers the settings
+    await setTimelineLanes(request, timelineCase.caseId, ['custom']);
+    await page.goto(overviewUrl);
+    await expect(page.getByTestId('timeline-strip-empty')).toContainText('Every event of the case is in a lane or a kind the timeline settings hide.');
+    await expect(page.getByTestId('timeline-strip-add-milestone')).toHaveCount(0);
+    await captureOverview(page, testInfo, 'overview-widget-hidden');
+    await page.getByTestId('timeline-strip-open-settings').click();
+    await expect(page).toHaveURL(new RegExp(`${timelineCase.caseId}/timeline`));
+    await expect(page.getByTestId('timeline-settings-drawer')).toBeVisible();
+    await setTimelineLanes(request, timelineCase.caseId, ['adversary', 'detection', 'response', 'evidence', 'knowledge', 'custom']);
     // endregion
 
     // region Knowledge graph of the same case

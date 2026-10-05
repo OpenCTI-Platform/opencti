@@ -161,6 +161,14 @@ export const regenerateTimeline = async (request: APIRequestContext, containerId
   `, 'timelineRegenerate');
 };
 
+export const setTimelineLanes = async (request: APIRequestContext, containerId: string, lanes: string[]) => {
+  return mutate<{ id: string }>(request, `
+    mutation {
+      timelineSettingsUpdate(containerId: ${JSON.stringify(containerId)}, input: { enabled_lanes: [${lanes.join(', ')}] }) { id }
+    }
+  `, 'timelineSettingsUpdate');
+};
+
 export const addTimelineContainment = async (request: APIRequestContext, containerId: string, title: string, eventTime: string) => {
   return mutate<{ id: string }>(request, `
     mutation {
