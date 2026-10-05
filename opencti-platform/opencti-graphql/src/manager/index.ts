@@ -6,6 +6,7 @@ import './exclusionListCacheBuildManager';
 import './exclusionListCacheSyncManager';
 import './garbageCollectionManager';
 import './hubRegistrationManager';
+import './huntManager';
 import './indicatorDecayManager';
 import './indicatorDeploymentManager';
 import './knowledgeFreshnessManager';

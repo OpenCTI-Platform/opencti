@@ -114,3 +114,6 @@ export const useChatbot = (): ChatbotContextType => {
   }
   return context;
 };
+
+/** The chatbot context, or null outside of a ChatbotProvider (isolated tests, public pages). */
+export const useOptionalChatbot = (): ChatbotContextType | null => useContext(ChatbotContext);

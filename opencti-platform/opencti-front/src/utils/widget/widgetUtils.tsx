@@ -12,10 +12,13 @@ import {
   ChartTimeline,
   ChartTree,
   Counter,
+  Crosshairs,
   FormatListNumberedRtl,
   HeartPulse,
   InboxMultipleOutline,
   Radar,
+  ScaleBalance,
+  ServerNetwork,
   ShieldAlertOutline,
   ShieldCheckOutline,
   ShieldHalfFull,
@@ -292,6 +295,36 @@ const widgetVisualizationTypes = [
     isAudits: false,
   },
   {
+    key: 'hunt-hits-over-time',
+    name: 'Hunt hits over time',
+    dataSelectionLimit: undefined,
+    category: 'hunt',
+    availableParameters: [],
+    isRelationships: false,
+    isEntities: false,
+    isAudits: false,
+  },
+  {
+    key: 'hunt-runs-per-platform',
+    name: 'Hunt runs per platform',
+    dataSelectionLimit: undefined,
+    category: 'hunt',
+    availableParameters: [],
+    isRelationships: false,
+    isEntities: false,
+    isAudits: false,
+  },
+  {
+    key: 'hunt-verdict-distribution',
+    name: 'Hunt verdict distribution',
+    dataSelectionLimit: undefined,
+    category: 'hunt',
+    availableParameters: [],
+    isRelationships: false,
+    isEntities: false,
+    isAudits: false,
+  },
+  {
     key: 'bubble',
     name: 'Bubble',
     dataSelectionLimit: 1,
@@ -330,7 +363,7 @@ export const workspacesWidgetVisualizationTypes = widgetVisualizationTypes.filte
 export const fintelTemplatesWidgetVisualizationTypes = widgetVisualizationTypes.filter((w) => ['list'].includes(w.key));
 
 // Platform-wide widgets that do not depend on the entity of a custom view
-const GLOBAL_WIDGET_CATEGORIES: string[] = ['defense', 'curation'];
+const GLOBAL_WIDGET_CATEGORIES: string[] = ['defense', 'curation', 'hunt'];
 
 export const customViewsWidgetVisualizationTypes = [
   customAttributesVisualizationType,
@@ -353,7 +386,7 @@ export const getCurrentCategory = (type: string | null) => {
  * Widgets configured with parameters only: no perspective and no data selection step.
  */
 export const isWidgetWithoutDataSelection = (type: string | null) => {
-  return ['text', 'attribute', 'custom-attributes', 'defense', 'curation'].includes(getCurrentCategory(type));
+  return ['text', 'attribute', 'custom-attributes', 'defense', 'curation', 'hunt'].includes(getCurrentCategory(type));
 };
 
 export const getCurrentAvailableParameters = (type: string | null): string[] => {
@@ -440,6 +473,12 @@ export const renderWidgetIcon = (key: string, fontSize: 'large' | 'small' | 'med
       return <ShieldAlertOutline fontSize={fontSize} color="primary" />;
     case 'defense-levels':
       return <ShieldHalfFull fontSize={fontSize} color="primary" />;
+    case 'hunt-hits-over-time':
+      return <Crosshairs fontSize={fontSize} color="primary" />;
+    case 'hunt-runs-per-platform':
+      return <ServerNetwork fontSize={fontSize} color="primary" />;
+    case 'hunt-verdict-distribution':
+      return <ScaleBalance fontSize={fontSize} color="primary" />;
     default:
       return <div />;
   }

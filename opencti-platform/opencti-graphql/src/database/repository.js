@@ -2,7 +2,13 @@ import { filter, includes, map, pipe } from 'ramda';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_CONNECTOR_MANAGER, ENTITY_TYPE_SYNC, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { BACKGROUND_TASK_QUEUES, connectorConfig } from './rabbitmq';
 import { sinceNowInMinutes } from '../utils/format';
-import { CONNECTOR_INTERNAL_ANALYSIS, CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_IMPORT_FILE, CONNECTOR_INTERNAL_NOTIFICATION } from '../schema/general';
+import {
+  CONNECTOR_INTERNAL_ANALYSIS,
+  CONNECTOR_INTERNAL_ENRICHMENT,
+  CONNECTOR_INTERNAL_HUNT,
+  CONNECTOR_INTERNAL_IMPORT_FILE,
+  CONNECTOR_INTERNAL_NOTIFICATION,
+} from '../schema/general';
 import { fullEntitiesList, topEntitiesList, storeLoadById } from './middleware-loader';
 import { isEmptyField, isNotEmptyField } from './utils';
 import { BUILTIN_NOTIFIERS_CONNECTORS } from '../modules/notifier/notifier-statics';
@@ -320,6 +326,11 @@ export const connectorsForImport = async (context, user, scope, onlyAlive = fals
 
 export const connectorsForAnalysis = async (context, user, scope = null, onlyAlive = true, onlyAuto = false, onlyContextual = false) => {
   return connectorsFor(context, user, CONNECTOR_INTERNAL_ANALYSIS, scope, onlyAlive, onlyAuto, onlyContextual);
+};
+
+// Hunt connectors serving a hunt platform (connector scope = platform slug, see hunt module)
+export const connectorsForHunt = async (context, user, scope = null, onlyAlive = true) => {
+  return connectorsFor(context, user, CONNECTOR_INTERNAL_HUNT, scope, onlyAlive);
 };
 
 export const connectorsForNotification = async (context, user, scope, onlyAlive = false, onlyAuto = false, onlyContextual = false) => {

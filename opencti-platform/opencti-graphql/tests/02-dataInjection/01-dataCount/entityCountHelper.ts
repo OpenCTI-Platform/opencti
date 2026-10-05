@@ -11,7 +11,7 @@ export const entitiesCounter = {
   Credential: 1,
   DecayRule: 7, // 4 indicator decay rules, 3 knowledge decay rules (disabled)
   DefenseLogsourceMapping: 103,
-  EntitySetting: 47,
+  EntitySetting: 48,
   ExternalReference: 7,
   Group: TESTING_GROUPS.length + 3,
   Incident: 1,
@@ -44,7 +44,7 @@ export const entitiesCounter = {
   ThreatActorIndividual: 2,
   TrackingNumber: 1,
   User: TESTING_USERS.length + 1,
-  Vocabulary: 365,
+  Vocabulary: 366,
   EmailTemplate: 1,
   RetentionRule: 4,
   SecurityCoverage: 1,

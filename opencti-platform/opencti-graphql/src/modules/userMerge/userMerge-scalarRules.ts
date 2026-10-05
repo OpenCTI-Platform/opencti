@@ -57,6 +57,7 @@ export const USER_MERGE_SCALAR_DISPOSITIONS: Record<string, UserMergeScalarDispo
   'IngestionTaxii.user_id': { kind: 'covered', registerRow: 'ingestion.user-id' },
   'IngestionTaxiiCollection.user_id': { kind: 'covered', registerRow: 'ingestion.user-id' },
   'History.user_id': { kind: 'excluded', reason: 'another-chunk', detail: 'History is rewritten by the history chunk' },
+  'Hunt-Run.triggered_by': { kind: 'covered', registerRow: 'hunt-run.triggered-by' },
   'PirHistory.user_id': { kind: 'excluded', reason: 'another-chunk', detail: 'PirHistory is rewritten by the history chunk' },
   'Activity.user_id': { kind: 'excluded', reason: 'another-chunk', detail: 'Activity is rewritten by the history chunk' },
   [`${ENTITY_TYPE_SOURCE}.owner_id`]: { kind: 'covered', registerRow: 'source.owner-id' },
