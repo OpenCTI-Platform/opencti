@@ -60,6 +60,12 @@ export const convertHistoryHit = (source: any): TimeMachineHistoryEvent => {
   };
 };
 
+/**
+ * End date for a `created_at` listing of the engine, whose bounds are both exclusive: one millisecond later, so the
+ * listing ends with `to` included like the history ranges below and an element created at `to` is in both.
+ */
+export const inclusiveEndDate = (to: string) => new Date(new Date(to).getTime() + 1).toISOString();
+
 const buildRangeClause = (range: HistoryRange) => {
   const timestampRange: Record<string, string> = {};
   if (range.from) timestampRange.gt = range.from;

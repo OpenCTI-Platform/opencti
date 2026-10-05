@@ -21,9 +21,10 @@ vi.mock('../../../../src/modules/timeMachine/timeMachine-history', async (import
 }));
 
 const redisSetMock = vi.fn();
+const redisGetMock = vi.fn(async () => null as string | null);
 vi.mock('../../../../src/database/redis', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/redis')>()),
-  getClientBase: () => ({ get: async () => null, set: (...args: unknown[]) => redisSetMock(...args) }),
+  getClientBase: () => ({ get: () => redisGetMock(), set: (...args: unknown[]) => redisSetMock(...args) }),
 }));
 
 import { computeLandscapeDiff, LANDSCAPE_MAX_EVENTS_PER_BATCH, landscapeDiffSummary, resolveCountedElements } from '../../../../src/modules/timeMachine/landscapeDiff-domain';
@@ -133,6 +134,18 @@ describe('Landscape diff counts', () => {
     expect((await computeLandscapeDiff(context, user, { filters: null, entityTypes: ['Intrusion-Set'] }, FROM, TO, 'entity_type')).truncated).toBe(true);
   });
 
+  it('should list the entities and relationships created at the end of the period, like the history of the period', async () => {
+    topEntitiesListMock.mockResolvedValue([entity('scoped-a')]);
+    fullRelationsListMock.mockResolvedValue([]);
+    fetchElementsHistoryEventsMock.mockResolvedValue([]);
+    fetchRelationshipsHistoryEventsMock.mockResolvedValue([]);
+    mockAccess(['scoped-a'], []);
+    await computeLandscapeDiff(context, user, { filters: null, entityTypes: ['Intrusion-Set'] }, FROM, TO, 'entity_type');
+    const endOfPeriod = '2026-02-01T00:00:00.001Z';
+    expect(topEntitiesListMock.mock.calls[0][3]).toMatchObject({ endDate: endOfPeriod, dateAttribute: 'created_at' });
+    expect(fullRelationsListMock.mock.calls[0][3]).toMatchObject({ startDate: FROM, endDate: endOfPeriod, dateAttribute: 'created_at' });
+  });
+
   describe('fresh widget summaries', () => {
     const input = { entity_types: ['Intrusion-Set'], from: FROM, to: TO };
     const noChanges = () => {
@@ -160,6 +173,23 @@ describe('Landscape diff counts', () => {
       await expect(landscapeDiffSummary(context, user, input)).rejects.toThrow('Access to the knowledge of this landscape diff changed');
       expect(topEntitiesListMock).toHaveBeenCalledTimes(2);
       expect(redisSetMock).not.toHaveBeenCalled();
+    });
+
+    it('should compute again a cached summary computed before the end of the requested period', async () => {
+      noChanges();
+      topEntitiesListMock.mockResolvedValue([entity('scoped-b')]);
+      mockAccess(['scoped-b'], []);
+      const stale = { result: { from: FROM, to: TO, aggregates: { entities_in_scope: 7 }, entities: [] }, contributors: [], computed_until: '2026-01-31T23:59:00.000Z' };
+      redisGetMock.mockResolvedValueOnce(JSON.stringify(stale));
+      const summary = await landscapeDiffSummary(context, user, input);
+      expect(summary.aggregates.entities_in_scope).toEqual(1);
+      const stored = JSON.parse(redisSetMock.mock.calls[0][1]);
+      expect(new Date(stored.computed_until).getTime()).toBeGreaterThanOrEqual(new Date(TO).getTime());
+      // Computed after the end of the period: the next request reuses it
+      redisGetMock.mockResolvedValueOnce(JSON.stringify(stored));
+      topEntitiesListMock.mockClear();
+      expect((await landscapeDiffSummary(context, user, input)).aggregates.entities_in_scope).toEqual(1);
+      expect(topEntitiesListMock).not.toHaveBeenCalled();
     });
   });
 });

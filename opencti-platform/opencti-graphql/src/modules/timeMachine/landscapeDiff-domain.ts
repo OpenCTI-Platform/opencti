@@ -35,7 +35,7 @@ import type { FilterGroup } from '../../generated/graphql';
 import { OrderingMode } from '../../generated/graphql';
 import { addLandscapeDiffCount } from '../../manager/telemetryManager';
 import { changeFieldKey, firstNumber } from './timeMachine-replay';
-import { fetchElementsHistoryEvents, fetchRelationshipsHistoryEvents } from './timeMachine-history';
+import { fetchElementsHistoryEvents, fetchRelationshipsHistoryEvents, inclusiveEndDate } from './timeMachine-history';
 import { buildRelationshipStates, type RelationshipStateAction, relationshipStateActions, TIME_MACHINE_RELATIONSHIP_TYPES } from './timeMachine-relationships';
 import type {
   LandscapeDiffAggregates,
@@ -305,7 +305,7 @@ const processBatch = async (
     fromOrToId: ids,
     indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
     startDate: from,
-    endDate: to,
+    endDate: inclusiveEndDate(to),
     dateAttribute: 'created_at',
     maxSize: maxSize + 1,
     baseData: true,
@@ -586,7 +586,7 @@ export const computeLandscapeDiff = async (
     first: maxEntities + 1,
     orderBy: 'created_at',
     orderMode: OrderingMode.Desc,
-    endDate: to,
+    endDate: inclusiveEndDate(to),
     dateAttribute: 'created_at',
   } as any);
   const truncatedScope = scopeEntities.length > maxEntities;
@@ -988,7 +988,17 @@ export interface LandscapeDiffSummaryResult {
 interface CachedLandscapeSummary {
   result: LandscapeDiffSummaryResult;
   contributors: string[];
+  // Instant the computation started reading the history: the changes made after it are not in the result
+  computed_until: string;
 }
+
+/**
+ * A cached summary is reused only when it was computed after the end of the requested period: the end of a period
+ * reaching the current minute is in the future when it is computed, a later request must see the changes made since.
+ */
+export const isCachedSummaryCovering = (computedUntil: string | undefined, requestedTo: string) => {
+  return !!computedUntil && !utcDate(computedUntil).isBefore(utcDate(requestedTo));
+};
 
 export const landscapeResultReferencedIds = (aggregates: LandscapeDiffAggregates | null, entities: LandscapeDiffEntitySummary[]): string[] => {
   const ids = new Set(entities.map((entity) => entity.entity_id));
@@ -1020,8 +1030,8 @@ export const isLandscapeResultAccessible = async (
 };
 
 /**
- * Widgets use relative dates: the end of the period is aligned on the next minute so the cache is effective
- * without excluding the changes made during the requested period.
+ * Widgets use relative dates: the end of the period is aligned on the next minute so the requests of a minute share
+ * one cache key without excluding the changes made during the requested period.
  */
 export const alignSummaryEnd = (to: string): string => {
   const requestedTo = utcDate(to);
@@ -1051,7 +1061,7 @@ export const landscapeDiffSummary = async (context: AuthContext, user: AuthUser,
     } catch {
       logApp.warn('[TIME MACHINE] Landscape diff summary cache could not be parsed');
     }
-    const cachedResult = cachedEntry?.result;
+    const cachedResult = isCachedSummaryCovering(cachedEntry?.computed_until, dates.to) ? cachedEntry?.result : undefined;
     if (cachedResult && await isLandscapeResultAccessible(context, user, cachedEntry?.contributors ?? null, cachedResult.aggregates, cachedResult.entities)) {
       return cachedResult;
     }
@@ -1063,6 +1073,7 @@ export const landscapeDiffSummary = async (context: AuthContext, user: AuthUser,
     const accessible = await isLandscapeResultAccessible(context, user, computed.contributors, computed.aggregates, computed.entities);
     return accessible ? computed : null;
   };
+  const computedUntil = now();
   const computation = (await computeAccessible()) ?? (await computeAccessible());
   if (!computation) throw FunctionalError(LANDSCAPE_ACCESS_CHANGED_MESSAGE);
   const result: LandscapeDiffSummaryResult = {
@@ -1074,7 +1085,7 @@ export const landscapeDiffSummary = async (context: AuthContext, user: AuthUser,
     aggregates: computation.aggregates,
     entities: computation.entities,
   };
-  const entry: CachedLandscapeSummary = { result, contributors: computation.contributors };
+  const entry: CachedLandscapeSummary = { result, contributors: computation.contributors, computed_until: computedUntil };
   await getClientBase().set(cacheKey, JSON.stringify(entry), 'EX', LANDSCAPE_CACHE_TTL);
   addLandscapeDiffCount();
   return result;

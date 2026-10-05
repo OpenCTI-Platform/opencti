@@ -43,6 +43,7 @@ import {
   fetchElementsHistoryEvents,
   fetchOldestHistoryDate,
   fetchRelationshipsHistoryEvents,
+  inclusiveEndDate,
 } from './timeMachine-history';
 import { buildVisitElement, findSnapshotAtOrAfter, findSnapshotAtOrBefore, indexVisit, listSnapshotDates, loadUserVisits, deleteUserVisits } from './timeMachine-store';
 import { countSinceReferenceDates } from './timeMachine-counters';
@@ -732,7 +733,7 @@ export const computeRelationshipChanges = async (
     ...filterArgs,
     indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
     startDate: from,
-    endDate: to,
+    endDate: inclusiveEndDate(to),
     dateAttribute: 'created_at',
   };
   const [createdTotal, createdRelations, fetchedEvents] = await Promise.all([
@@ -744,7 +745,7 @@ export const computeRelationshipChanges = async (
       orderBy: 'created_at',
       orderMode: OrderingMode.Desc,
       startDate: from,
-      endDate: to,
+      endDate: inclusiveEndDate(to),
       dateAttribute: 'created_at',
     } as any),
     fetchRelationshipsHistoryEvents(context, user, [elementId], {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { alignSummaryEnd, landscapeDiffCacheKey, userAccessFingerprint } from '../../../../src/modules/timeMachine/landscapeDiff-domain';
+import { alignSummaryEnd, isCachedSummaryCovering, landscapeDiffCacheKey, userAccessFingerprint } from '../../../../src/modules/timeMachine/landscapeDiff-domain';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 
 const buildUser = (overrides: Partial<Record<string, unknown>> = {}) => ({
@@ -59,6 +59,16 @@ describe('Landscape diff cache and rights', () => {
     const reordered = [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }, { name: 'KNOWLEDGE_KNUPDATE' }];
     expect(userAccessFingerprint(inDraft, buildUser({ capabilitiesInDraft: reordered })))
       .toEqual(userAccessFingerprint(inDraft, buildUser({ capabilitiesInDraft: [...reordered].reverse() })));
+  });
+
+  it('should reuse a cached widget summary only when it was computed after the end of the requested period', () => {
+    // Computed early in the minute: a later request of the same minute must see the changes made since
+    expect(isCachedSummaryCovering('2026-10-03T12:00:10.000Z', '2026-10-03T12:00:50.000Z')).toBe(false);
+    expect(isCachedSummaryCovering('2026-10-03T12:00:50.000Z', '2026-10-03T12:00:50.000Z')).toBe(true);
+    // A past period is covered by any computation made after its end
+    expect(isCachedSummaryCovering('2026-10-03T13:00:00.000Z', '2026-10-03T12:00:00.000Z')).toBe(true);
+    // An entry stored without its computation instant is never reused
+    expect(isCachedSummaryCovering(undefined, '2026-10-03T12:00:00.000Z')).toBe(false);
   });
 
   it('should align the end of a widget period on the next minute without excluding the requested period', () => {
