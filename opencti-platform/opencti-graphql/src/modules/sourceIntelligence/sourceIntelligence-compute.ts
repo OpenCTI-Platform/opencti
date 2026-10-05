@@ -256,7 +256,7 @@ export interface ScanDocument extends ProvenanceDocument {
   decay_applied_rule?: { decay_revoke_score?: number | null } | null;
   decay_exclusion_applied_rule?: { decay_exclusion_id?: string } | null;
   'rel_object-label.internal_id'?: string[] | string;
-  pir_information?: Array<{ pir_id: string; pir_score: number }> | null;
+  pir_information?: Array<{ pir_id: string; pir_score: number; last_pir_score_date?: string | null }> | null;
   pulse_information?: { prevalence_bucket?: string } | Array<{ prevalence_bucket?: string }> | null;
   connections?: Array<{ internal_id: string; role: string }>;
 }
@@ -342,6 +342,18 @@ export const currentStateKnownAt = (doc: ScanDocument, run: Pick<RunLookups, 'hi
   return Number.isFinite(updated) && updated <= now;
 };
 
+/**
+ * Whether a PIR score of a document is the one it had at `now`. The PIR scores change without updating the object:
+ * a past day of the history backfill only counts a score that last changed before it.
+ */
+export const pirScoreKnownAt = (info: { last_pir_score_date?: string | null }, run: Pick<RunLookups, 'historical'>, now: number): boolean => {
+  if (!run.historical) {
+    return true;
+  }
+  const scored = new Date(info.last_pir_score_date ?? Number.NaN).getTime();
+  return Number.isFinite(scored) && scored <= now;
+};
+
 export const computeDocumentSignals = (doc: ScanDocument, page: PageLookups, run: RunLookups, now: number): DocumentSignals => {
   const id = doc.internal_id;
   const isRelationship = isStixCoreRelationship(doc.entity_type) || doc.entity_type === STIX_SIGHTING_RELATIONSHIP;
@@ -360,7 +372,7 @@ export const computeDocumentSignals = (doc: ScanDocument, page: PageLookups, run
   let pirMatched = false;
   if (run.pirRelevance) {
     if (isEntity) {
-      pirMatched = (doc.pir_information ?? []).some((info) => info.pir_score > 0) || page.pirFlagged.has(id);
+      pirMatched = (doc.pir_information ?? []).some((info) => info.pir_score > 0 && pirScoreKnownAt(info, run, now)) || page.pirFlagged.has(id);
     } else {
       pirMatched = (doc.connections ?? []).some((connection) => page.pirFlagged.has(connection.internal_id));
     }

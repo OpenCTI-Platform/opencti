@@ -113,6 +113,20 @@ describe('Source intelligence document signals', () => {
     // Outside Enterprise Edition, PIR relevance is not measured
     expect(computeDocumentSignals(indicator(), page, run, NOW).pirMatched).toBe(false);
   });
+
+  it('should only count in a past day a PIR score that last changed before it', () => {
+    const pastDay = new Date('2026-09-20T23:59:59.999Z').getTime();
+    const backfill = { ...run, historical: true, pirRelevance: true };
+    const scored = (date: string | null) => indicator({ pir_information: [{ pir_id: 'pir-1', pir_score: 50, last_pir_score_date: date }] });
+    expect(computeDocumentSignals(scored('2026-09-30T00:00:00.000Z'), emptyPageLookups(), backfill, pastDay).pirMatched).toBe(false);
+    expect(computeDocumentSignals(scored(null), emptyPageLookups(), backfill, pastDay).pirMatched).toBe(false);
+    expect(computeDocumentSignals(scored('2026-09-10T00:00:00.000Z'), emptyPageLookups(), backfill, pastDay).pirMatched).toBe(true);
+    // A PIR link dated before that day still counts, and the live computation reads the current score
+    const page = emptyPageLookups();
+    page.pirFlagged.add('indicator-1');
+    expect(computeDocumentSignals(scored('2026-09-30T00:00:00.000Z'), page, backfill, pastDay).pirMatched).toBe(true);
+    expect(computeDocumentSignals(scored('2026-09-30T00:00:00.000Z'), emptyPageLookups(), { ...run, pirRelevance: true }, pastDay).pirMatched).toBe(true);
+  });
 });
 
 describe('Source intelligence scan trace', () => {
