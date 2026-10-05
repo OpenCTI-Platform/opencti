@@ -90,6 +90,7 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   cert_auth?: CertAuthConfig;
   headers_auth?: HeadersAuthConfig;
   platform_session_max_concurrent?: number;
+  platform_session_presence_enabled?: boolean;
   password_policy_min_length?: number;
   password_policy_max_length?: number;
   password_policy_min_symbols?: number;

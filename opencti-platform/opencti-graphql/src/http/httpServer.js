@@ -36,6 +36,7 @@ import {
 } from './httpUtils';
 import { checkDraftInContext } from './httpServer-draft';
 import ipWhitelistMiddleware from './ipWhitelistMiddleware';
+import { onSessionPresenceClose, onSessionPresenceConnect } from './sessionPresence';
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');
@@ -129,6 +130,8 @@ const createHttpServer = async () => {
   const serverCleanup = useServer({
     schema,
     context: extractWsSessionContext,
+    onConnect: onSessionPresenceConnect,
+    onClose: onSessionPresenceClose,
   }, wsServer);
 
   apolloServer.addPlugin(ApolloServerPluginDrainHttpServer({ httpServer }));
