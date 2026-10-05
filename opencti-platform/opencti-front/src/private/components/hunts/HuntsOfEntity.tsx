@@ -51,7 +51,7 @@ export const huntsOfEntityFilters = (entityId: string) => ({
 
 const HuntsOfEntityCard = ({ entityId }: { entityId: string }) => {
   const theme = useTheme<Theme>();
-  const { t_i18n, fldt } = useFormatter();
+  const { t_i18n, fldt, n } = useFormatter();
   const { hunts } = useLazyLoadQuery<HuntsOfEntityQuery>(
     huntsOfEntityQuery,
     { filters: huntsOfEntityFilters(entityId), first: HUNTS_OF_ENTITY_LIMIT },
@@ -64,7 +64,7 @@ const HuntsOfEntityCard = ({ entityId }: { entityId: string }) => {
   }
   return (
     <div style={{ marginBottom: theme.spacing(2.5) }} data-testid="hunts-of-entity">
-      <Card title={t_i18n('{count, plural, one {Hunt using it (#)} other {Hunts using it (#)}}', { values: { count: total } })}>
+      <Card title={`${t_i18n('Hunts')} (${n(total)})`}>
         <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: theme.spacing(1) }}>
           {edges.map(({ node }) => {
             const verdict = node.runs?.edges?.[0]?.node?.verdict;

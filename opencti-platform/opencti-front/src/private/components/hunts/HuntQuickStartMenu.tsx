@@ -29,7 +29,7 @@ const HuntQuickStartMenu = () => {
     <>
       <Menu>
         <MenuTrigger asChild>
-          <Button variant="secondary" size="small" data-testid="hunts-quick-start">{t_i18n('Quick start')}</Button>
+          <Button variant="secondary" data-testid="hunts-quick-start">{t_i18n('Quick start')}</Button>
         </MenuTrigger>
         <MenuContent align="end">
           <MenuItem startIcon={<PolicyOutlined fontSize="small" />} onSelect={() => setGuided('indicators')} data-testid="hunts-quick-start-indicators">

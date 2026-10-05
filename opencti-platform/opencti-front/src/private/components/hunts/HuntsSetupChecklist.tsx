@@ -55,9 +55,9 @@ const Row = ({ met, children, action, testId }: { met: boolean; children: React.
   return (
     <li style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }} data-testid={testId} data-status={met ? 'met' : 'unmet'}>
       {met
-        ? <CheckCircleOutlined fontSize="small" style={{ color: theme.palette.success.main }} aria-hidden />
-        : <WarningAmberOutlined fontSize="small" style={{ color: theme.palette.warn.main }} aria-hidden />}
-      <Text variant="content-compact">{children}</Text>
+        ? <CheckCircleOutlined fontSize="small" style={{ color: theme.palette.success.main, flexShrink: 0 }} aria-hidden />
+        : <WarningAmberOutlined fontSize="small" style={{ color: theme.palette.warn.main, flexShrink: 0 }} aria-hidden />}
+      <Text variant="content-compact" style={{ flex: '1 1 0', minWidth: 0 }}>{children}</Text>
       {action}
     </li>
   );
