@@ -46,12 +46,18 @@ const COMPOSITE_PAGE_SIZE = 1000;
 const MIN_CHANGED_ELEMENTS_BUDGET = 2;
 // Maximum number of entities kept in the state to retry a snapshot that could not be built exactly
 const MAX_RETRY_IDS = 1000;
+// Overlap kept below the history watermark: one indexing batch of the history manager can become searchable in parts
+const HISTORY_INDEXING_MARGIN_MS = 60000;
 
 export interface SnapshotManagerState {
-  // End of the last completed snapshot window (history cursor)
+  // Lower bound of the next snapshot window (history cursor)
   cursor?: string;
+  // End of the last completed snapshot window: the next one opens PERIOD_DAYS after it
+  last_window_end?: string;
   // Window currently being processed, and the position in it when a run hit the per-run limit
   window_end?: string;
+  // Newest history event searchable when the window in progress started (see nextWindowStart)
+  window_watermark?: string | null;
   after_key?: Record<string, string> | null;
   // The position is in the relationship events of the window (the element events are done)
   relationships_phase?: boolean;
@@ -71,6 +77,34 @@ const readState = async (): Promise<SnapshotManagerState> => {
 
 const writeState = async (state: SnapshotManagerState) => {
   await redisSetManagerEventState(SNAPSHOT_MANAGER_STATE, JSON.stringify(state));
+};
+
+/**
+ * Newest history event searchable at or before `to`. The history manager indexes the stream in order and a history
+ * timestamp is the time of its stream event, so every earlier event is searchable too (less one indexing batch).
+ */
+export const findHistoryWatermark = async (context: AuthContext, to: string): Promise<string | null> => {
+  const body = {
+    size: 0,
+    query: { bool: { must: [{ terms: { 'entity_type.keyword': [ENTITY_TYPE_HISTORY] } }, { range: { timestamp: { lte: to } } }] } },
+    aggs: { watermark: { max: { field: 'timestamp' } } },
+  };
+  const data = await elRawSearch(context, SYSTEM_USER, ENTITY_TYPE_HISTORY, { index: READ_INDEX_HISTORY, body }).catch((err: unknown) => {
+    throw DatabaseError('Snapshot manager history watermark fail', { cause: err });
+  });
+  const value = data.aggregations?.watermark?.value;
+  return typeof value === 'number' ? new Date(value).toISOString() : null;
+};
+
+/**
+ * Lower bound of the window after a completed one: the history watermark measured before the window was read, less the
+ * indexing margin, and not the end of the window, so that an event of the window indexed after it was read is read by
+ * the next window. It never moves back, and stays in place when no history event was searchable.
+ */
+export const nextWindowStart = (cursor: string, watermark: string | null | undefined): string => {
+  if (!watermark) return cursor;
+  const start = utcDate(watermark).subtract(HISTORY_INDEXING_MARGIN_MS, 'milliseconds');
+  return start.isAfter(utcDate(cursor)) ? start.toISOString() : cursor;
 };
 
 export interface ChangedElementsCursor {
@@ -314,13 +348,16 @@ export const snapshotHandler = async () => {
   const currentDate = now();
   const isWindowInProgress = !!state.window_end && (!!state.after_key || !!state.relationships_phase);
   const cursor = state.cursor ?? utcDate(currentDate).subtract(PERIOD_DAYS, 'days').toISOString();
-  if (!isWindowInProgress && state.cursor && utcDate(currentDate).diff(utcDate(state.cursor), 'days', true) < PERIOD_DAYS) {
+  const lastWindowEnd = state.last_window_end ?? state.cursor;
+  if (!isWindowInProgress && lastWindowEnd && utcDate(currentDate).diff(utcDate(lastWindowEnd), 'days', true) < PERIOD_DAYS) {
     // Next snapshot window not reached yet: the retention still follows the hourly schedule
     await applySnapshotRetention(context, currentDate);
     return;
   }
   const windowEnd = isWindowInProgress ? state.window_end as string : currentDate;
-  logApp.info('[TIME MACHINE] Snapshot manager running', { from: cursor, to: windowEnd, resume: isWindowInProgress });
+  // Measured before any read of the window, kept while the window is resumed
+  const watermark = isWindowInProgress ? state.window_watermark ?? null : await findHistoryWatermark(context, windowEnd);
+  logApp.info('[TIME MACHINE] Snapshot manager running', { from: cursor, to: windowEnd, watermark, resume: isWindowInProgress });
   const resumeFrom = isWindowInProgress ? { relationships: !!state.relationships_phase, afterKey: state.after_key ?? null } : null;
   const { retried, deferred, discoveryBudget } = splitRunBudget(state.retry_ids ?? [], MAX_ENTITIES_PER_RUN);
   const { ids: changedIds, cursor: nextCursor } = await findChangedElementIds(context, cursor, windowEnd, resumeFrom, discoveryBudget);
@@ -352,9 +389,25 @@ export const snapshotHandler = async () => {
   const retryIds = toRetry.slice(0, MAX_RETRY_IDS);
   if (nextCursor) {
     // Per run limit reached, the same window (same lower bound) is resumed at the next run
-    await writeState({ cursor, window_end: windowEnd, after_key: nextCursor.afterKey, relationships_phase: nextCursor.relationships, retry_ids: retryIds });
+    await writeState({
+      cursor,
+      last_window_end: state.last_window_end,
+      window_end: windowEnd,
+      window_watermark: watermark,
+      after_key: nextCursor.afterKey,
+      relationships_phase: nextCursor.relationships,
+      retry_ids: retryIds,
+    });
   } else {
-    await writeState({ cursor: windowEnd, window_end: undefined, after_key: null, relationships_phase: false, retry_ids: retryIds });
+    await writeState({
+      cursor: nextWindowStart(cursor, watermark),
+      last_window_end: windowEnd,
+      window_end: undefined,
+      window_watermark: undefined,
+      after_key: null,
+      relationships_phase: false,
+      retry_ids: retryIds,
+    });
   }
   const retention = await applySnapshotRetention(context, currentDate);
   logApp.info('[TIME MACHINE] Snapshot manager done', { snapshots: snapshotsCount, retry: retryIds.length, ...retention, complete: !nextCursor });
