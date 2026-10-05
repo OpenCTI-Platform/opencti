@@ -315,6 +315,7 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 <Tag
                   key={connector.connector_type}
                   label={typeLabel}
+                  labelTextTransform="none"
                 />
               </Grid>
               <Grid item xs={6}>
