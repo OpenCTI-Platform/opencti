@@ -13,6 +13,7 @@ import {
   defenseLevelColor,
   defenseLevelTextColor,
   defenseThreatColor,
+  isDisplayedValidationFailed,
   isValidationFailed,
   parseDefenseScope,
   scopedDefensePlatforms,
@@ -35,6 +36,16 @@ describe('defenseMatrix-utils', () => {
       const platforms = [{ id: 'edr', name: 'EDR' }, { id: 'siem', name: 'SIEM' }];
       expect(scopedDefensePlatforms(['siem', 'deleted', 'edr'], platforms)).toEqual([{ id: 'siem', name: 'SIEM' }, { id: 'edr', name: 'EDR' }]);
       expect(scopedDefensePlatforms(['deleted'], platforms)).toEqual([]);
+    });
+  });
+  describe('isDisplayedValidationFailed', () => {
+    it('reads the displayed platform entries of a result attributed to platforms', () => {
+      expect(isDisplayedValidationFailed({ status: 'detected', platforms: [{ status: 'detected' }, { status: 'failed' }] })).toBe(true);
+      expect(isDisplayedValidationFailed({ status: 'failed', platforms: [{ status: 'prevented' }] })).toBe(false);
+    });
+    it('reads the technique-wide status of an unattributed result', () => {
+      expect(isDisplayedValidationFailed({ status: 'failed', platforms: [] })).toBe(true);
+      expect(isDisplayedValidationFailed({ status: 'detected', platforms: [] })).toBe(false);
     });
   });
   describe('computeLayerLevel', () => {

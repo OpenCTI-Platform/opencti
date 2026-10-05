@@ -29,6 +29,17 @@ export const scopedDefensePlatforms = (
   return platform ? [{ id: platform.id, name: platform.name }] : [];
 });
 
+/**
+ * Whether a result failed in the displayed cell: a result attributed to the displayed platforms fails through their
+ * entries, an unattributed one through its technique-wide status.
+ */
+export const isDisplayedValidationFailed = (validation: {
+  readonly status: string;
+  readonly platforms: ReadonlyArray<{ readonly status: string }>;
+}) => (validation.platforms.length > 0
+  ? validation.platforms.some((platform) => platform.status === 'failed')
+  : validation.status === 'failed');
+
 export const DEFENSE_LEVEL_LABELS: Record<number, string> = {
   [DEFENSE_LEVEL_NONE]: 'No coverage',
   [DEFENSE_LEVEL_TELEMETRY]: 'Telemetry only',

@@ -33,6 +33,7 @@ import {
   type DefenseValidation,
   defenseLevelColor,
   defenseLevelLabel,
+  isDisplayedValidationFailed,
   scopedDefensePlatforms,
   toThreatScopeInput,
 } from './defenseMatrix-utils';
@@ -229,7 +230,7 @@ const DefenseTechniqueContent = ({ queryRef, scope, allowValidation }: DefenseTe
   const resultDate = cell.last_result_at ? fld(cell.last_result_at) : t_i18n('an unknown date');
   const failed = cell.validated === 'failed';
   const latestValidation = [...defenseTechnique.validations]
-    .filter((validation) => (failed ? validation.status === 'failed' : true) && !!validation.securityCoverage)
+    .filter((validation) => (failed ? isDisplayedValidationFailed(validation) : true) && !!validation.securityCoverage)
     .sort((a, b) => (b.last_result_at ?? '').localeCompare(a.last_result_at ?? ''))[0];
   const explanation = (): string => {
     if (failed) {
