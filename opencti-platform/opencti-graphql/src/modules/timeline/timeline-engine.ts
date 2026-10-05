@@ -102,6 +102,15 @@ export const computeDerivedEventId = (containerId: string, ruleId: string, eleme
   return uuidv5(JSON.stringify([containerId, timelineRuleFamily(ruleId), elementKey ?? '', kind]), OPENCTI_NAMESPACE);
 };
 
+/**
+ * A derived event another platform can recompute from the same knowledge: identified by its element and kind alone.
+ * Events identified by a discriminator (history entries, files, hunt and investigation runs) depend on local ids no
+ * receiving platform holds, so their analyst contributions stay on the platform.
+ */
+export const isPortableDerivedEvent = (containerId: string, event: Pick<StoredTimelineEvent, 'internal_id' | 'rule_id' | 'element_id' | 'kind'>): boolean => {
+  return !!event.element_id && event.internal_id === computeDerivedEventId(containerId, event.rule_id ?? '', event.element_id, event.kind);
+};
+
 export const computeManualEventId = (containerId: string, externalId: string): string => {
   return uuidv5(JSON.stringify([containerId, 'manual', externalId]), OPENCTI_NAMESPACE);
 };
@@ -569,10 +578,8 @@ const buildExchange = async (
   const { resolved, isElementAsVisibleAsContainer, isEventAsVisibleAsContainer } = scope;
   // The title and description of a manual event speak about its element: the event travels only when both are as visible as the container
   const manual = events.filter((e) => e.event_source === 'manual' && isEventAsVisibleAsContainer(e));
-  const annotated = events.filter((e) => e.event_source === 'derived' && (e.analyst_fields ?? []).length > 0 && e.element_id
-    // Only annotations of events whose identity is portable travel: history-based events depend on local history ids
-    && e.internal_id === computeDerivedEventId(containerId, e.rule_id ?? '', e.element_id, e.kind)
-    && isEventAsVisibleAsContainer(e));
+  const annotated = events.filter((e) => e.event_source === 'derived' && (e.analyst_fields ?? []).length > 0
+    && isPortableDerivedEvent(containerId, e) && isEventAsVisibleAsContainer(e));
   const portableElementRef = (elementId: string | null | undefined): string | undefined => {
     const element = elementId ? resolved[elementId] : undefined;
     return element && isElementAsVisibleAsContainer(element) ? element.standard_id as string : undefined;

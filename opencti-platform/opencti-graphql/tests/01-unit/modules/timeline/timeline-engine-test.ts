@@ -7,6 +7,7 @@ import {
   createConcurrencyLimiter,
   getTimelineRules,
   isPendingAnnotationApplicable,
+  isPortableDerivedEvent,
   isTimelineEventAccessChanged,
   isTimelineRefreshForEveryReader,
   keptAnalystFields,
@@ -46,6 +47,15 @@ describe('Timeline event identity', () => {
     expect(timelineRuleFamily(RULE_WORKFLOW_CLOSURE)).toEqual('workflow-status');
     expect(computeDerivedEventId('case-1', RULE_TASK_CONTAINMENT, 'task-1', 'task_completed'))
       .toEqual(computeDerivedEventId('case-1', 'task-lifecycle', 'task-1', 'task_completed'));
+  });
+
+  it('should only exchange the contributions of derived events another platform can recompute', () => {
+    const knowledgeEvent = { internal_id: computeDerivedEventId('case-1', 'entity-first-last-seen', 'malware-1', 'malware_seen'), rule_id: 'entity-first-last-seen', element_id: 'malware-1', kind: 'malware_seen' as const };
+    expect(isPortableDerivedEvent('case-1', knowledgeEvent)).toBe(true);
+    // Identified by a local run or history entry: no receiving platform holds it
+    const runEvent = { internal_id: computeDerivedEventId('case-1', 'hunt-runs', 'hunt-1|run-1', 'hunt_run'), rule_id: 'hunt-runs', element_id: 'hunt-1', kind: 'hunt_run' as const };
+    expect(isPortableDerivedEvent('case-1', runEvent)).toBe(false);
+    expect(isPortableDerivedEvent('case-1', { ...knowledgeEvent, element_id: null })).toBe(false);
   });
 
   it('should compute idempotent ids for manual events with an external id', () => {
