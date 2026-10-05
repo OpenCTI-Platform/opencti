@@ -450,7 +450,7 @@ const LandscapeChanges = () => {
       {!diffId && (
         <Card>
           <Box
-            sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, paddingBlock: 3, textAlign: 'center' }}
+            sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, textAlign: 'center' }}
             data-testid="landscape-changes-empty"
           >
             <Text variant="content-base" as="p">
