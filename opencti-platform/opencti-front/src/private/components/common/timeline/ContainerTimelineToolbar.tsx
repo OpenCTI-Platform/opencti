@@ -4,13 +4,18 @@ import {
   Badge,
   ButtonGroup,
   ButtonGroupItem,
-  Checkbox,
+  Combobox,
+  ComboboxClear,
+  ComboboxContent,
+  ComboboxControls,
+  ComboboxField,
+  ComboboxInput,
+  ComboboxTrigger,
   IconButton,
   Menu,
   MenuContent,
   MenuItem,
   MenuLabel,
-  MenuSeparator,
   MenuTrigger,
   SearchField,
   Select,
@@ -27,14 +32,12 @@ import {
 import {
   AddOutlined,
   AutorenewOutlined,
-  FilterListOutlined,
   FitScreenOutlined,
   GetAppOutlined,
   MoreVertOutlined,
   SettingsOutlined,
   SyncOutlined,
   ViewListOutlined,
-  ViewStreamOutlined,
   ViewTimelineOutlined,
   ZoomInOutlined,
   ZoomOutOutlined,
@@ -105,6 +108,60 @@ const ToolbarSwitch = ({ checked, onCheckedChange, label }: { checked: boolean; 
   );
 };
 
+interface ToolbarFilterOption {
+  value: string;
+  label: string;
+  color?: string;
+}
+
+// The design-system Select picks a single value: a filter on several values is the library Combobox in multiple mode,
+// read-only, so that its field shows the summary of the selection where a select shows its value
+const ToolbarMultiFilter = ({ label, summary, clearLabel, options, selected, onSelectedChange, testId }: {
+  label: string;
+  summary: string;
+  clearLabel: string;
+  options: ToolbarFilterOption[];
+  selected: readonly string[];
+  onSelectedChange: (values: string[]) => void;
+  testId: string;
+}) => {
+  const theme = useTheme<Theme>();
+  return (
+    <div style={{ width: 190 }} data-testid={testId}>
+      <Combobox<ToolbarFilterOption>
+        multiple
+        clearable
+        options={options}
+        value={options.filter((option) => selected.includes(option.value))}
+        onValueChange={(next) => onSelectedChange(((next ?? []) as ToolbarFilterOption[]).map((option) => option.value))}
+        getOptionLabel={(option) => option.label}
+        isOptionEqualToValue={(a, b) => a.value === b.value}
+        filterOptions={(all) => all}
+        inputValue={summary}
+        onInputChange={() => {}}
+        selectOnFocus={false}
+        labelPosition="none"
+        renderOption={(option) => (option.color ? (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: theme.spacing(1) }}>
+            {/* The marker of the lane in the lanes view */}
+            <span aria-hidden="true" style={{ width: 4, height: 14, borderRadius: 2, backgroundColor: option.color }} />
+            {option.label}
+          </span>
+        ) : option.label)}
+      >
+        <ComboboxField>
+          <ComboboxInput aria-label={label} readOnly style={{ cursor: 'pointer' }} />
+          <ComboboxControls>
+            <ComboboxClear aria-label={clearLabel} />
+            <ComboboxTrigger />
+          </ComboboxControls>
+        </ComboboxField>
+        <ComboboxContent listAriaLabel={label} />
+      </Combobox>
+    </div>
+  );
+};
+
 const ContainerTimelineToolbar = ({
   state,
   onChange,
@@ -128,21 +185,10 @@ const ContainerTimelineToolbar = ({
   const lanes = TIMELINE_LANES.filter((lane) => enabledLanes.includes(lane));
   // A lane kept in the URL but disabled in the settings since is left out, as it is for the events shown
   const requestedLanes = state.lanes.filter((lane) => lanes.includes(lane));
-  const selectedLanes = requestedLanes.length > 0 ? requestedLanes : lanes;
-  const allLanesSelected = selectedLanes.length === lanes.length;
   // The search field follows the URL (for example after "Clear filters") and keeps what is typed until it is submitted
   const [searchText, setSearchText] = useState(state.search ?? '');
   useEffect(() => setSearchText(state.search ?? ''), [state.search]);
 
-  const toggleLane = (lane: TimelineLane) => {
-    const next = selectedLanes.includes(lane) ? selectedLanes.filter((l) => l !== lane) : [...selectedLanes, lane];
-    // Every enabled lane selected is the default view: keep the URL clean
-    onChange({ lanes: next.length === lanes.length || next.length === 0 ? [] : next });
-  };
-  const toggleKind = (kind: string) => {
-    const next = state.kinds.includes(kind) ? state.kinds.filter((k) => k !== kind) : [...state.kinds, kind];
-    onChange({ kinds: next });
-  };
   const sourceValue = state.sources.length === 1 ? state.sources[0] : 'all';
 
   return (
@@ -262,74 +308,25 @@ const ContainerTimelineToolbar = ({
         )}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>
-        <Menu>
-          <MenuTrigger asChild>
-            <Button variant="tertiary" startIcon={<ViewStreamOutlined fontSize="small" />} data-testid="timeline-lanes-filter">
-              {allLanesSelected ? t_i18n('All lanes') : t_i18n('Lanes ({count})', { values: { count: selectedLanes.length } })}
-            </Button>
-          </MenuTrigger>
-          <MenuContent align="start">
-            <MenuLabel>{t_i18n('Lanes')}</MenuLabel>
-            {lanes.map((lane) => {
-              const active = selectedLanes.includes(lane);
-              return (
-                <MenuItem
-                  key={lane}
-                  role="menuitemcheckbox"
-                  aria-checked={active}
-                  startIcon={<Checkbox checked={active} presentational />}
-                  onSelect={(event) => {
-                    // Keep the menu open while several lanes are switched
-                    event.preventDefault();
-                    toggleLane(lane);
-                  }}
-                  data-testid={`timeline-lane-${lane}`}
-                >
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: theme.spacing(1) }}>
-                    {/* The marker of the lane in the lanes view */}
-                    <span aria-hidden="true" style={{ width: 4, height: 14, borderRadius: 2, backgroundColor: colors.lanes[lane] }} />
-                    {t_i18n(TIMELINE_LANE_LABELS[lane])}
-                  </span>
-                </MenuItem>
-              );
-            })}
-          </MenuContent>
-        </Menu>
-        <Menu>
-          <MenuTrigger asChild>
-            <Button variant="tertiary" startIcon={<FilterListOutlined fontSize="small" />}>
-              {state.kinds.length > 0 ? t_i18n('Kinds ({count})', { values: { count: state.kinds.length } }) : t_i18n('All kinds')}
-            </Button>
-          </MenuTrigger>
-          <MenuContent align="start" style={{ maxHeight: 360, overflowY: 'auto' }}>
-            <MenuLabel>{t_i18n('Event kinds')}</MenuLabel>
-            {TIMELINE_KINDS.map((kind) => {
-              const checked = state.kinds.includes(kind);
-              // A presentational box renders no label: the row carries the text and the checked state
-              return (
-                <MenuItem
-                  key={kind}
-                  role="menuitemcheckbox"
-                  aria-checked={checked}
-                  startIcon={<Checkbox checked={checked} presentational />}
-                  onSelect={(event) => {
-                    // Keep the menu open while several kinds are picked
-                    event.preventDefault();
-                    toggleKind(kind);
-                  }}
-                >
-                  {t_i18n(TIMELINE_KIND_LABELS[kind])}
-                </MenuItem>
-              );
-            })}
-            {state.kinds.length > 0 && (
-              <>
-                <MenuSeparator />
-                <MenuItem onSelect={() => onChange({ kinds: [] })}>{t_i18n('Clear the kinds')}</MenuItem>
-              </>
-            )}
-          </MenuContent>
-        </Menu>
+        <ToolbarMultiFilter
+          label={t_i18n('Lanes')}
+          summary={requestedLanes.length > 0 ? t_i18n('Lanes ({count})', { values: { count: requestedLanes.length } }) : t_i18n('All lanes')}
+          clearLabel={t_i18n('Clear the lanes')}
+          options={lanes.map((lane) => ({ value: lane, label: t_i18n(TIMELINE_LANE_LABELS[lane]), color: colors.lanes[lane] }))}
+          selected={requestedLanes}
+          // Every enabled lane picked is the default view: keep the URL clean
+          onSelectedChange={(next) => onChange({ lanes: next.length === lanes.length ? [] : next as TimelineLane[] })}
+          testId="timeline-lanes-filter"
+        />
+        <ToolbarMultiFilter
+          label={t_i18n('Event kinds')}
+          summary={state.kinds.length > 0 ? t_i18n('Kinds ({count})', { values: { count: state.kinds.length } }) : t_i18n('All kinds')}
+          clearLabel={t_i18n('Clear the kinds')}
+          options={TIMELINE_KINDS.map((kind) => ({ value: kind, label: t_i18n(TIMELINE_KIND_LABELS[kind]) }))}
+          selected={state.kinds}
+          onSelectedChange={(next) => onChange({ kinds: next })}
+          testId="timeline-kinds-filter"
+        />
         <Select value={sourceValue} onValueChange={(value) => onChange({ sources: value === 'all' ? [] : [value as TimelineSource] })}>
           <SelectTrigger aria-label={t_i18n('Event source')} style={{ minWidth: 190 }}>
             <SelectValue />

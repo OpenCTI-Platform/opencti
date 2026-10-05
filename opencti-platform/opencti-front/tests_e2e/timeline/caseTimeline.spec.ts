@@ -30,7 +30,7 @@ const timelineCodename = () => {
  * Derive the timeline of a seeded incident response.
  * Check the overview strip and the position of the Timeline tab (after Content).
  * Check the lanes view, the anchors and the list view kept in the URL.
- * Switch a lane off and open the kinds filter.
+ * Restrict the view to one lane, open the kinds filter and clear the lanes.
  * Open an event with the keyboard, pin it and filter on pinned events.
  * Add a milestone from the drawer form, hide it and show hidden events again.
  * Record a containment and check the containment anchor.
@@ -77,26 +77,22 @@ test('Incident and case timeline', { tag: ['@ce', '@group1'] }, async ({ page, r
     await capture('lanes-populated');
     // endregion
 
-    // region Filters: one lane switched off and the kinds menu open
-    const lanesFilter = page.getByTestId('timeline-lanes-filter');
-    const evidenceLane = page.getByTestId('timeline-lane-evidence');
+    // region Filters: the view restricted to the Response lane (the opening of the case is there) and the kinds list open
+    const lanesFilter = page.getByRole('combobox', { name: 'Lanes' });
     await lanesFilter.click();
-    await evidenceLane.click();
-    await expect(evidenceLane).toHaveAttribute('aria-checked', 'false');
+    const responseLane = page.getByRole('option', { name: 'Response', exact: true });
+    await responseLane.click();
+    await expect(responseLane).toHaveAttribute('aria-selected', 'true');
     await page.keyboard.press('Escape');
-    await expect(lanesFilter).toHaveText(/^Lanes \(\d+\)$/);
+    await expect(lanesFilter).toHaveValue('Lanes (1)');
     await expect(page.getByTestId('timeline-lanes')).toBeVisible();
-    await page.getByRole('button', { name: 'All kinds' }).click();
-    await expect(page.getByText('Event kinds', { exact: true })).toBeVisible();
+    await page.getByRole('combobox', { name: 'Event kinds' }).click();
     // Every kind is a named, checkable row
-    await expect(page.getByRole('menuitemcheckbox', { name: 'Malware seen', exact: true })).toHaveAttribute('aria-checked', 'false');
+    await expect(page.getByRole('option', { name: 'Malware seen', exact: true })).toHaveAttribute('aria-selected', 'false');
     await capture('filters');
     await page.keyboard.press('Escape');
-    await lanesFilter.click();
-    await evidenceLane.click();
-    await expect(evidenceLane).toHaveAttribute('aria-checked', 'true');
-    await page.keyboard.press('Escape');
-    await expect(lanesFilter).toHaveText('All lanes');
+    await page.getByRole('button', { name: 'Clear the lanes' }).click();
+    await expect(lanesFilter).toHaveValue('All lanes');
     // endregion
 
     // region List view, keyboard navigation, pin

@@ -41,30 +41,40 @@ describe('ContainerTimelineToolbar', () => {
   it('names every kind of the kinds filter, shows which are selected and toggles them', async () => {
     const onChange = vi.fn();
     const { user } = testRender(<ContainerTimelineToolbar {...toolbarProps(baseState({ kinds: ['sighting'] }), onChange)} />);
-    await user.click(screen.getByRole('button', { name: 'Kinds (1)' }));
-    expect(screen.getAllByRole('menuitemcheckbox')).toHaveLength(TIMELINE_KINDS.length);
-    expect(screen.getByRole('menuitemcheckbox', { name: 'Sighting' })).toHaveAttribute('aria-checked', 'true');
-    const malwareSeen = screen.getByRole('menuitemcheckbox', { name: 'Malware seen' });
-    expect(malwareSeen).toHaveAttribute('aria-checked', 'false');
+    const kinds = screen.getByRole('combobox', { name: 'Event kinds' });
+    expect(kinds).toHaveValue('Kinds (1)');
+    await user.click(kinds);
+    expect(screen.getAllByRole('option')).toHaveLength(TIMELINE_KINDS.length);
+    expect(screen.getByRole('option', { name: 'Sighting' })).toHaveAttribute('aria-selected', 'true');
+    const malwareSeen = screen.getByRole('option', { name: 'Malware seen' });
+    expect(malwareSeen).toHaveAttribute('aria-selected', 'false');
     await user.click(malwareSeen);
     expect(onChange).toHaveBeenCalledWith({ kinds: ['sighting', 'malware_seen'] });
   });
 
-  it('shows every enabled lane selected when the lane kept in the URL was disabled since', async () => {
+  it('shows every lane when the lane kept in the URL was disabled since, and leaves the disabled lane out', async () => {
     const enabled = TIMELINE_LANES.filter((lane) => lane !== 'evidence');
     const { user } = testRender(<ContainerTimelineToolbar {...toolbarProps(baseState({ lanes: ['evidence'] }), vi.fn(), enabled)} />);
-    await user.click(screen.getByRole('button', { name: 'All lanes' }));
-    expect(screen.queryByTestId('timeline-lane-evidence')).toBeNull();
-    enabled.forEach((lane) => expect(screen.getByTestId(`timeline-lane-${lane}`)).toHaveAttribute('aria-checked', 'true'));
+    const lanesFilter = screen.getByRole('combobox', { name: 'Lanes' });
+    expect(lanesFilter).toHaveValue('All lanes');
+    await user.click(lanesFilter);
+    expect(screen.queryByRole('option', { name: 'Evidence' })).toBeNull();
+    expect(screen.getAllByRole('option')).toHaveLength(enabled.length);
+    screen.getAllByRole('option').forEach((option) => expect(option).toHaveAttribute('aria-selected', 'false'));
   });
 
-  it('counts the lanes shown and switches one off from the lanes menu', async () => {
+  it('counts the lanes picked, adds and removes one, and clears them', async () => {
     const onChange = vi.fn();
     const { user } = testRender(<ContainerTimelineToolbar {...toolbarProps(baseState({ lanes: ['adversary', 'detection'] }), onChange)} />);
-    await user.click(screen.getByRole('button', { name: 'Lanes (2)' }));
-    expect(screen.getByRole('menuitemcheckbox', { name: 'Response' })).toHaveAttribute('aria-checked', 'false');
-    await user.click(screen.getByRole('menuitemcheckbox', { name: 'Detection' }));
-    expect(onChange).toHaveBeenCalledWith({ lanes: ['adversary'] });
+    const lanesFilter = screen.getByRole('combobox', { name: 'Lanes' });
+    expect(lanesFilter).toHaveValue('Lanes (2)');
+    await user.click(lanesFilter);
+    await user.click(screen.getByRole('option', { name: 'Detection' }));
+    expect(onChange).toHaveBeenLastCalledWith({ lanes: ['adversary'] });
+    await user.click(screen.getByRole('option', { name: 'Response' }));
+    expect(onChange).toHaveBeenLastCalledWith({ lanes: ['adversary', 'detection', 'response'] });
+    await user.click(screen.getByRole('button', { name: 'Clear the lanes' }));
+    expect(onChange).toHaveBeenLastCalledWith({ lanes: [] });
   });
 
   it('names the switches by their labels and puts the primary action last', async () => {
