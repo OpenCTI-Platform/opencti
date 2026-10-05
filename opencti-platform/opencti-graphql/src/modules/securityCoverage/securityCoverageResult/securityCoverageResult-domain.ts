@@ -171,7 +171,7 @@ export const createHasCoveredRelTask = async (
     ? JSON.parse(selection.filters as string)
     : emptyFilterGroup;
   const search = isNotEmptyField(selection.search) ? selection.search as string : undefined;
-  if (!isFilterGroupNotEmpty(filterGroup) && !search) {
+  if (!isFilterGroupNotEmpty(filterGroup)) {
     throw FunctionalError(
       'Cannot create has-covered relationships without any entity selection, please provide ids, filters or a search term.',
       { securityCoverageResultId },

@@ -3504,7 +3504,6 @@ class OpenCTIStix2:
             relationships_config = self.opencti.get_attribute_in_extension(
                 "relationships_config", item
             )
-            print(relationships_config)
             raw_coverages = (
                 relationships_config["coverage_information"]
                 if "coverage_information" in relationships_config
