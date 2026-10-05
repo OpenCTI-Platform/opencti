@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { v4 as uuidv4 } from 'uuid';
+import { Promise as BluePromise } from 'bluebird';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation, StoreEntity } from '../../types/store';
 import {
@@ -325,9 +326,15 @@ export const findInvestigationRunsPaginated = async (context: AuthContext, user:
 };
 
 const LATEST_RUNS_PAGE = 500;
+const LATEST_RUNS_ROUNDS = 5;
+const LATEST_RUNS_CONCURRENCY = 5;
 
 // Batch loader behind the run badges of case and incident lists: one query for
-// the page, per-entity queries only when that page could have hidden a run.
+// the page. When that page is full, a few cases with many runs may have hidden
+// the others: those are resolved together, round after round, each round
+// leaving out the cases resolved so far (a page that is not full proves the
+// rest have none), and only what is left after the rounds one by one, a few
+// at a time.
 // Outside the Enterprise Edition the field is null, so case queries keep working.
 // What a run beyond its access boundary derived is withheld by the run
 // resolvers, as for every other path that resolves a run.
@@ -342,27 +349,31 @@ export const batchLatestInvestigationRuns = async (context: AuthContext, user: A
     filters: [{ key: ['case_ids'], values }, { key: ['subject_id'], values }],
     filterGroups: [],
   });
-  const runs = await topEntitiesList<BasicStoreEntityInvestigationRun>(liveContext, user, [ENTITY_TYPE_INVESTIGATION_RUN], {
-    filters: filtersFor(ids),
+  const latestRuns = (values: string[], first: number) => topEntitiesList<BasicStoreEntityInvestigationRun>(liveContext, user, [ENTITY_TYPE_INVESTIGATION_RUN], {
+    filters: filtersFor(values),
     orderBy: 'created_at',
     orderMode: 'desc' as never,
-    first: LATEST_RUNS_PAGE,
+    first,
   });
-  const latestFor = (id: string) => runs.find((run) => run.subject_id === id || (run.case_ids ?? []).includes(id)) ?? null;
-  const results = ids.map((id) => latestFor(id));
-  if (runs.length >= LATEST_RUNS_PAGE) {
-    await Promise.all(ids.map(async (id, index) => {
-      if (results[index]) return;
-      const [run] = await topEntitiesList<BasicStoreEntityInvestigationRun>(liveContext, user, [ENTITY_TYPE_INVESTIGATION_RUN], {
-        filters: filtersFor([id]),
-        orderBy: 'created_at',
-        orderMode: 'desc' as never,
-        first: 1,
-      });
-      results[index] = run ?? null;
-    }));
+  const byId = new Map<string, BasicStoreEntityInvestigationRun | null>();
+  const resolveFrom = (runs: BasicStoreEntityInvestigationRun[], values: string[]) => values.forEach((id) => {
+    const latest = runs.find((run) => run.subject_id === id || (run.case_ids ?? []).includes(id));
+    if (latest) byId.set(id, latest);
+  });
+  let page = await latestRuns(ids, LATEST_RUNS_PAGE);
+  resolveFrom(page, ids);
+  let missing = ids.filter((id) => !byId.has(id));
+  for (let round = 0; page.length >= LATEST_RUNS_PAGE && missing.length > 0 && round < LATEST_RUNS_ROUNDS; round += 1) {
+    page = await latestRuns(missing, LATEST_RUNS_PAGE);
+    resolveFrom(page, missing);
+    missing = missing.filter((id) => !byId.has(id));
   }
-  const byId = new Map(ids.map((id, index) => [id, results[index]]));
+  if (page.length >= LATEST_RUNS_PAGE && missing.length > 0) {
+    await BluePromise.map(missing, async (id) => {
+      const [run] = await latestRuns([id], 1);
+      if (run) byId.set(id, run);
+    }, { concurrency: LATEST_RUNS_CONCURRENCY });
+  }
   return entityIds.map((id) => byId.get(id) ?? null) as unknown as BasicStoreCommon[];
 };
 
