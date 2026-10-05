@@ -282,22 +282,20 @@ const StixCoreObjectSimilar = ({ stixCoreObjectId }: StixCoreObjectSimilarProps)
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }} data-testid="graph-similar-tab">
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }} data-testid="graph-similar-toolbar">
-        <Box sx={{ width: (theme) => theme.spacing(28) }}>
-          <Select value={minScore} onValueChange={setMinScore}>
-            <SelectTrigger aria-label={t_i18n('Minimum similarity')}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent aria-label={t_i18n('Minimum similarity')}>
-              {MIN_SCORES.map((value) => (
-                <SelectItem key={value} value={value}>
-                  {value === '0'
-                    ? t_i18n('Any similarity')
-                    : t_i18n('Similarity of at least {score}', { values: { score: formatSimilarityScore(Number(value)) } })}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Box>
+        <Select value={minScore} onValueChange={setMinScore}>
+          <SelectTrigger aria-label={t_i18n('Minimum similarity')}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent aria-label={t_i18n('Minimum similarity')}>
+            {MIN_SCORES.map((value) => (
+              <SelectItem key={value} value={value}>
+                {value === '0'
+                  ? t_i18n('Any similarity')
+                  : t_i18n('Similarity of at least {score}', { values: { score: formatSimilarityScore(Number(value)) } })}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Switch
           checked={onlyWithSecurityCoverage}
           onCheckedChange={setOnlyWithSecurityCoverage}

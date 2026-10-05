@@ -162,7 +162,7 @@ const ClustersOverview = ({ statusQueryRef, sizeQueryRef, onFirstUse }: Clusters
       {clustersCount === 0 ? (
         <Hero data-testid="graph-clusters-first-use">
           <HeroBody separator={false}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, textAlign: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, textAlign: 'center', width: '100%' }}>
               <ItemIcon type="Infrastructure" />
               <Text variant="title-sm" as="h2">{t_i18n('No cluster yet')}</Text>
               <Text variant="content-base">
