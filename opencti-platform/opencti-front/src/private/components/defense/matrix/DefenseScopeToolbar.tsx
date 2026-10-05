@@ -90,6 +90,17 @@ const DefenseScopeToolbar = ({
   const { t_i18n } = useFormatter();
   const platformOptions: PlatformOption[] = platforms.map((p) => ({ value: p.id, label: p.name, type: p.entity_type }));
   const selectedPlatforms = platformOptions.filter((o) => scope.platformIds.includes(o.value));
+  // The filter state is local: remount it when the threat filters change from outside (another user's stored scope),
+  // never on its own edits
+  const incomingFilters = JSON.stringify(scope.threatFilters ?? emptyFilterGroup);
+  const [filtersSync, setFiltersSync] = React.useState({ value: incomingFilters, generation: 0 });
+  if (incomingFilters !== filtersSync.value) {
+    setFiltersSync({ value: incomingFilters, generation: filtersSync.generation + 1 });
+  }
+  const onThreatFiltersChange = (next: DefenseScopeState) => {
+    setFiltersSync((current) => ({ ...current, value: JSON.stringify(next.threatFilters ?? emptyFilterGroup) }));
+    onScopeChange(next);
+  };
 
   return (
     <Box
@@ -147,7 +158,7 @@ const DefenseScopeToolbar = ({
           <DefenseThreatsField value={scope.threats} onChange={(threats) => onScopeChange({ ...scope, threats })} />
         </Box>
       )}
-      {scope.threatMode === 'FILTERED' && <ThreatFilters scope={scope} onScopeChange={onScopeChange} />}
+      {scope.threatMode === 'FILTERED' && <ThreatFilters key={filtersSync.generation} scope={scope} onScopeChange={onThreatFiltersChange} />}
       {layers && onLayersChange && (
         <Box role="group" aria-label={t_i18n('Layers')} sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, paddingTop: 3 }}>
           {DEFENSE_LAYERS.map((layer) => (
