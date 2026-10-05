@@ -85,6 +85,19 @@ describe('Curation proposal explanation', () => {
     expect(within(screen.getByTestId('curation-explanation-after')).getByText('APT29')).toBeInTheDocument();
   });
 
+  it('separates the entities an evidence names from its sentence and from each other', () => {
+    const merge: CurationExplanationData = {
+      ...aliasExplanation,
+      evidence: [{
+        message: explanationMessage('The source {sources} maintains both entities separately, which suggests they are distinct', { sources: '"Mandiant"' }),
+        entities: [{ id: 'apt28-id', name: 'APT28', entity_type: 'Intrusion-Set' }, { id: 'fancy-id', name: 'Fancy Bear', entity_type: 'Intrusion-Set' }],
+        sources: [],
+      }],
+    };
+    testRender(<CurationProposalExplanation explanation={merge} />);
+    expect(screen.getByTestId('curation-explanation-evidence-entities')).toHaveTextContent(/^- APT28, Fancy Bear$/);
+  });
+
   it('translates the values by kind: entity types, attributes and dates', () => {
     const fixDates: CurationExplanationData = {
       ...aliasExplanation,
