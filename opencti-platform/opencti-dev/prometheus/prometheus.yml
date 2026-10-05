@@ -15,6 +15,19 @@ scrape_configs:
       - targets: ["host.docker.internal:15692"]
         labels:
           app: 'opencti'
+  # Per-queue counters (e.g. acked messages) have no "detailed" variant: they are
+  # only exposed per queue by the per-object endpoint. It returns every metric for
+  # every queue, so only keep the ones we use.
+  - job_name: "rabbitmq-per-object"
+    metrics_path: "/metrics/per-object"
+    static_configs:
+      - targets: ["host.docker.internal:15692"]
+        labels:
+          app: "opencti"
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        regex: "rabbitmq_queue_messages_acked_total"
+        action: keep
   - job_name: "connectors"
     static_configs:
       - targets: ["host.docker.internal:9095"]
