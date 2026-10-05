@@ -239,24 +239,45 @@ const resolveId = (source: SourceFile, valueIndex: number): string | undefined =
   return resolved?.kind === 'string' ? resolved.value : undefined;
 };
 
-const collectRegisteredManagers = (errors: string[]): ManagerId[] => listSourceFiles(SRC_ROOT).flatMap((file) => {
-  const source = loadSource(file);
-  return [...source.code.matchAll(/\bregisterManager\(\s*(\{|[A-Za-z_$][\w$]*)/g)].flatMap((match): ManagerId[] => {
-    const argument = match[1];
-    let id: string | undefined;
-    if (argument === '{') {
-      id = resolveId(source, findTopLevelIdValue(source, (match.index ?? 0) + match[0].length - 1));
-    } else {
-      const definition = resolveIdentifier(source, argument);
-      id = definition?.kind === 'object' ? resolveId(definition.source, findTopLevelIdValue(definition.source, definition.openIndex)) : undefined;
+// Source text of the call argument list opened at openIndex, whitespace collapsed, for error messages.
+const readCallArguments = (source: SourceFile, openIndex: number): string => {
+  let depth = 0;
+  for (let index = openIndex; index < source.code.length; index += 1) {
+    if ('([{'.includes(source.code[index])) {
+      depth += 1;
+    } else if (')]}'.includes(source.code[index])) {
+      depth -= 1;
+      if (depth === 0) {
+        return source.text.slice(openIndex + 1, index).replace(/\s+/g, ' ').trim();
+      }
     }
-    if (!id) {
-      errors.push(`${relative(file)}: cannot resolve the manager id of registerManager(${argument === '{' ? '{ ... }' : argument})`);
-      return [];
-    }
-    return [{ id, file: relative(file) }];
-  });
+  }
+  return source.text.slice(openIndex + 1, openIndex + 40).replace(/\s+/g, ' ').trim();
+};
+
+// Every call is collected: an argument other than an object literal or a resolvable identifier is reported, never skipped.
+const collectRegisteredManagersOf = (source: SourceFile, errors: string[]): ManagerId[] => [
+  ...source.code.matchAll(/(?<!\bfunction\s+)\bregisterManager\(\s*/g),
+].flatMap((match): ManagerId[] => {
+  const openIndex = (match.index ?? 0) + 'registerManager'.length;
+  const argumentIndex = (match.index ?? 0) + match[0].length;
+  const argument = /^(?:\{|[A-Za-z_$][\w$]*)/.exec(source.code.slice(argumentIndex))?.[0];
+  let id: string | undefined;
+  if (argument === '{') {
+    id = resolveId(source, findTopLevelIdValue(source, argumentIndex));
+  } else if (argument) {
+    const definition = resolveIdentifier(source, argument);
+    id = definition?.kind === 'object' ? resolveId(definition.source, findTopLevelIdValue(definition.source, definition.openIndex)) : undefined;
+  }
+  if (!id) {
+    errors.push(`${relative(source.file)}: cannot resolve the manager id of registerManager(${argument === '{' ? '{ ... }' : readCallArguments(source, openIndex)})`);
+    return [];
+  }
+  return [{ id, file: relative(source.file) }];
 });
+
+const collectRegisteredManagers = (errors: string[]): ManagerId[] => listSourceFiles(SRC_ROOT)
+  .flatMap((file) => collectRegisteredManagersOf(loadSource(file), errors));
 
 const collectClusterManagers = (errors: string[]): ManagerId[] => {
   const cluster = loadSource(CLUSTER_MANAGER_FILE);
@@ -317,6 +338,25 @@ describe('Manager labels of the Settings > Parameters page', () => {
 
   it('should resolve the id of every manager', () => {
     expect(resolutionErrors).toEqual([]);
+  });
+
+  it('should report a registerManager() call whose argument it cannot read instead of skipping it', () => {
+    const errors: string[] = [];
+    const source: SourceFile = {
+      file: path.join(SRC_ROOT, 'manager', 'virtualManager.ts'),
+      ...maskSource([
+        'export function registerManager(manager: unknown) { return manager; }',
+        'registerManager((DEFINITION));',
+        'registerManager(createDefinition());',
+        '// registerManager((COMMENTED_OUT));',
+        'registerManager({ id: \'VIRTUAL_MANAGER\', enabled: true });',
+      ].join('\n')),
+    };
+    expect(collectRegisteredManagersOf(source, errors)).toEqual([{ id: 'VIRTUAL_MANAGER', file: 'src/manager/virtualManager.ts' }]);
+    expect(errors).toEqual([
+      'src/manager/virtualManager.ts: cannot resolve the manager id of registerManager((DEFINITION))',
+      'src/manager/virtualManager.ts: cannot resolve the manager id of registerManager(createDefinition())',
+    ]);
   });
 
   it('should collect the managers of both registration paths', () => {
