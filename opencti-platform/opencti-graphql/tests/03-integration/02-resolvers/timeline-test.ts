@@ -717,6 +717,11 @@ describe('Incident and case timeline', () => {
       const second = await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_ADD, variables: { input: { ...input, title: 'Regulator notified (CNIL)' } } });
       expect(second.data.timelineEventAdd.id).toEqual(first.data.timelineEventAdd.id);
       expect(second.data.timelineEventAdd).toMatchObject({ title: 'Regulator notified (CNIL)', external_id: 'splunk-alert-42' });
+      // A retry that names no author keeps the author of the event
+      const { createdBy: _, ...withoutAuthor } = input;
+      const retry = await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_ADD, variables: { input: { ...withoutAuthor, title: 'Regulator notified (CNIL)' } } });
+      const author = await internalLoadById(testContext, SYSTEM_USER, TEST_ORGANIZATION.id);
+      expect(retry.data.timelineEventAdd).toMatchObject({ id: first.data.timelineEventAdd.id, createdBy: { id: author.internal_id } });
       const manual = await listTimeline(caseIncident.id, { sources: ['manual'] });
       expect(manual).toHaveLength(2);
     });

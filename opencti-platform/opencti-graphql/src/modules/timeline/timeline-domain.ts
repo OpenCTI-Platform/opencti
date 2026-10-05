@@ -864,7 +864,10 @@ export const addTimelineEvent = async (context: AuthContext, user: AuthUser, inp
       external_id: input.external_id ?? null,
       // An event is never less marked than the element it points to, nor than its container; adding it again never declassifies it
       markings: Array.from(new Set([...(previous ? markingsOf(previous) : []), ...markingIds, ...(element ? markingsOf(element) : []), ...access.markings])),
-      created_by_id: author?.internal_id ?? null,
+      // Added again without naming an author, a known event keeps its author; an explicit null removes it
+      created_by_id: input.createdBy === undefined && previous
+        ? ((previous[buildRefRelationKey(RELATION_CREATED_BY)] ?? [])[0] ?? null)
+        : (author?.internal_id ?? null),
       creator_ids: previous ? Array.from(new Set([...creatorIdsOf(previous), user.id])) : [user.id],
       restricted_members: access.restricted_members,
       element_access: kept ? (kept.element_access ?? null) : (element ? timelineElementAccessOf(element) : null),
