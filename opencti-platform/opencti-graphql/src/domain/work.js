@@ -40,6 +40,8 @@ export const workToExportFile = (work) => {
     metaData: {
       messages: work.messages,
       errors: work.errors,
+      // The work holds the user who asked for the export
+      creator_id: work.user_id,
     },
   };
 };
@@ -120,10 +122,20 @@ export const worksForSource = async (context, user, sourceId, args = {}) => {
   });
 };
 
-export const loadExportWorksAsProgressFiles = async (context, user, sourceId) => {
-  const works = await worksForSource(context, user, sourceId, { type: CONNECTOR_INTERNAL_EXPORT_FILE, first: 10 });
+export const loadExportWorksAsProgressFiles = async (context, user, sourceId, opts = {}) => {
+  // userId restricts to the exports asked by this user
+  const filters = opts.userId ? addFilter(null, 'user_id', opts.userId) : null;
+  const works = await worksForSource(context, user, sourceId, { type: CONNECTOR_INTERNAL_EXPORT_FILE, filters, first: 10 });
   const filterSuccessCompleted = works.filter((w) => w.status !== 'complete' || w.errors.length > 0);
   return filterSuccessCompleted.map((item) => workToExportFile(item));
+};
+
+// Export connectors push the generated file with their own user,
+// the export work (named after the expected file) holds the user who asked for it
+export const findExportApplicantId = async (context, user, sourceId, fileName) => {
+  const filters = addFilter(null, 'name', fileName);
+  const works = await worksForSource(context, user, sourceId, { type: CONNECTOR_INTERNAL_EXPORT_FILE, filters, first: 1 });
+  return works[0]?.user_id;
 };
 
 export const deleteWorksRaw = async (context, works) => {
