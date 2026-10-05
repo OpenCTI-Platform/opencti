@@ -93,9 +93,10 @@ const listenOnLockPort = () => new Promise<Server | null>((resolve, reject) => {
 
 /**
  * Waits until no other test file holds the platform theme, takes it, and returns the function
- * that gives it back. The platform theme colours every page of every test: a file that changes
- * it, or that compares screenshots, holds it so that local runs, which execute several files at
- * once, never overlap them.
+ * that gives it back. The platform theme colours every page of every test: each test that changes
+ * it, or that compares screenshots, holds it for its own run (never a whole suite, so a waiting
+ * test is never kept beyond its timeout) and local runs, which execute several files at once,
+ * never overlap them.
  */
 export const acquirePlatformThemeLock = async (): Promise<() => Promise<void>> => {
   const server = await listenOnLockPort();

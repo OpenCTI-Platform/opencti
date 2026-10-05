@@ -64,6 +64,7 @@ export const withCollapsedGroups = (
       name: groupLabel(first.entity_type, list.length),
       disabled: list.every((member) => member.disabled),
       isNestedInferred: false,
+      isRestricted: false,
       numberOfConnectedElement: undefined,
       markedBy: [],
       confidence: null,

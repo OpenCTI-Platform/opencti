@@ -15,18 +15,23 @@ test.describe('Graph visual regression', { tag: ['@ce'] }, () => {
   let fixture: GraphFixture;
   let releasePlatformTheme: (() => Promise<void>) | undefined;
 
-  // Every baseline is drawn in a platform theme: no other file may change it meanwhile.
   test.beforeAll(async ({ playwright }) => {
-    releasePlatformTheme = await acquirePlatformThemeLock();
     fixture = await withApiRequest(playwright, (request) => createGraphFixture(request, 'visual'));
   });
 
   test.afterAll(async ({ playwright }) => {
-    try {
-      if (fixture) await withApiRequest(playwright, (request) => deleteGraphFixture(request, fixture));
-    } finally {
-      await releasePlatformTheme?.();
-    }
+    if (fixture) await withApiRequest(playwright, (request) => deleteGraphFixture(request, fixture));
+  });
+
+  // Every baseline is drawn in a platform theme: no other file may change it while a test draws one. The lock is
+  // held per test, so another file never waits for the whole suite within its own test timeout.
+  test.beforeEach(async () => {
+    releasePlatformTheme = await acquirePlatformThemeLock();
+  });
+
+  test.afterEach(async () => {
+    await releasePlatformTheme?.();
+    releasePlatformTheme = undefined;
   });
 
   const expectGraphScreenshot = async (page: Page, target: Locator, name: string, mask: Locator[] = []) => {

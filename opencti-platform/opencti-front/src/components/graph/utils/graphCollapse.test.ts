@@ -37,6 +37,14 @@ describe('withCollapsedGroups', () => {
     expect(result.nodes).toHaveLength(4);
   });
 
+  it('never takes the restricted outline of its first member, whatever the order of the members', () => {
+    const restricted = graphNode({ id: 'm0', entity_type: 'Malware', x: 0, y: 0, isRestricted: true });
+    const first = withCollapsedGroups({ nodes: [restricted, m1, m2], links: [] }, ['Malware'], label, createCollapseCache());
+    const last = withCollapsedGroups({ nodes: [m1, m2, restricted], links: [] }, ['Malware'], label, createCollapseCache());
+    expect(first.nodes.find(isGroupNode)?.isRestricted).toBe(false);
+    expect(last.nodes.find(isGroupNode)?.isRestricted).toBe(false);
+  });
+
   it('redraws the links towards the group once and drops the links inside it', () => {
     const result = withCollapsedGroups(data, ['Malware'], label, createCollapseCache());
     const groupLinks = result.links.slice(data.links.length);
