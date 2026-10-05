@@ -171,8 +171,11 @@ test('Merge record past its retention window', { tag: ['@ce'] }, async ({ page, 
  */
 test('Create the Knowledge health dashboard from its template', { tag: ['@ce'] }, async ({ page, request }, testInfo) => {
   await page.goto('/dashboard/workspaces/dashboards');
-  await page.getByTestId('CreateDashboardFromTemplate').click();
-  await page.getByTestId('dashboard-template-knowledge-health').click();
+  // The list toolbar renders again once the dashboards are loaded, which closes a menu opened before
+  await expect(async () => {
+    await page.getByTestId('CreateDashboardFromTemplate').click();
+    await page.getByTestId('dashboard-template-knowledge-health').click({ timeout: 5000 });
+  }).toPass({ timeout: 60000 });
   await expect(page).toHaveURL(/\/dashboard\/workspaces\/dashboards\/[0-9a-f-]{36}/);
   const dashboardId = page.url().match(/dashboards\/([0-9a-f-]{36})/)?.[1];
 
