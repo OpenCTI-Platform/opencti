@@ -3,6 +3,7 @@ import { onSessionPresenceClose, onSessionPresenceConnect, registerSessionPresen
 import * as cache from '../../../src/database/cache';
 import * as session from '../../../src/database/session';
 import * as listener from '../../../src/listener/UserActionListener';
+import { getStoppingState } from '../../../src/config/conf';
 
 const GRACE_PERIOD = vi.hoisted(() => 30000);
 
@@ -31,6 +32,7 @@ vi.mock('../../../src/config/conf', async (importOriginal: any) => {
         return actual.default.get(key);
       }),
     },
+    getStoppingState: vi.fn(() => false),
     logApp: { ...actual.logApp, error: vi.fn() },
   };
 });
@@ -62,6 +64,7 @@ describe('session presence', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllMocks();
+    vi.mocked(getStoppingState).mockReturnValue(false);
     enablePresence(true);
     storeSession({ user: USER });
   });
@@ -139,6 +142,29 @@ describe('session presence', () => {
     const connectionId = registerSessionPresence(sessionId, ORIGIN);
     unregisterSessionPresence(sessionId, connectionId);
     enablePresence(false);
+
+    await vi.advanceTimersByTimeAsync(GRACE_PERIOD);
+    expect(session.killSessionByRawId).not.toHaveBeenCalled();
+    expect(listener.publishUserAction).not.toHaveBeenCalled();
+  });
+
+  it('should not logout sessions whose sockets are closed by the platform shutdown', async () => {
+    const sessionId = nextSessionId();
+    const connectionId = registerSessionPresence(sessionId, ORIGIN);
+    vi.mocked(getStoppingState).mockReturnValue(true);
+    unregisterSessionPresence(sessionId, connectionId);
+    vi.mocked(getStoppingState).mockReturnValue(false);
+
+    // Even if the platform finally keeps running, nothing was scheduled
+    await vi.advanceTimersByTimeAsync(GRACE_PERIOD * 2);
+    expect(session.killSessionByRawId).not.toHaveBeenCalled();
+  });
+
+  it('should not logout when the platform is stopping at the end of the grace period', async () => {
+    const sessionId = nextSessionId();
+    const connectionId = registerSessionPresence(sessionId, ORIGIN);
+    unregisterSessionPresence(sessionId, connectionId);
+    vi.mocked(getStoppingState).mockReturnValue(true);
 
     await vi.advanceTimersByTimeAsync(GRACE_PERIOD);
     expect(session.killSessionByRawId).not.toHaveBeenCalled();
