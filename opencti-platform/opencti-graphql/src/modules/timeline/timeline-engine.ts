@@ -839,7 +839,9 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
     const element = elementId ? elements[elementId] : undefined;
     if (!element) return null;
     // A source no longer found keeps its id: the reads look for it and never find it, until the next regeneration drops it
-    const sources = uniq(sourceIds).map((id) => (elements[id] ? { id, ...timelineElementAccessOf(elements[id]) } : { id, restricted_members: [], granted: [] }));
+    const sources = uniq(sourceIds).map((id) => (elements[id]
+      ? { id, entity_type: elements[id].entity_type, ...timelineElementAccessOf(elements[id]) }
+      : { id, restricted_members: [], granted: [] }));
     return sources.length > 0 ? { ...timelineElementAccessOf(element), sources } : timelineElementAccessOf(element);
   };
   // A derived event is never less marked than the elements whose data it carries, whatever its rule merged

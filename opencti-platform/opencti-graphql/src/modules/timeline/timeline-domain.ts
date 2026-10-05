@@ -657,38 +657,52 @@ export const timelineUpdateForUser = async (context: AuthContext, user: AuthUser
   ];
   const { items } = await filterAccessibleEvents(context, user, update.container_id, candidates, (event) => event);
   const named = new Set(items.map((event) => event.internal_id));
-  // A removed event whose element was deleted resolves for nobody: it is read as its element was, from the access the
-  // regeneration recorded on the event (its markings carry those of the element). Without that record (an event never
-  // regenerated since it was added), nobody reads the event since its element was deleted. A removed event whose element
-  // still exists stays named only to the readers of the element.
+  // A removed event whose element or one of whose sources was deleted resolves for nobody: each deleted one is read as it
+  // was, from the access the regeneration recorded on the event (its markings carry theirs), and the ones that still exist
+  // are read as they are now. Without that record (an event never regenerated since it was added, or a source recorded
+  // without its type), nobody reads the event once the reference was deleted.
   const unresolvedRemoved = readableRemoved.filter((event) => !!event.element_id && !named.has(event.id));
-  const unresolvedElementIds = Array.from(new Set(unresolvedRemoved.map((event) => event.element_id as string)));
-  const existingElements = unresolvedElementIds.length > 0
-    ? await internalFindByIds(context, SYSTEM_USER, unresolvedElementIds, { toMap: true, baseData: true }) as unknown as Record<string, AnyStoreElement>
-    : {};
-  const removedWithDeletedElement = unresolvedRemoved
-    .filter((event) => !existingElements[event.element_id as string] && !!event.element_type && !!event.element_access);
-  const deletedElements = removedWithDeletedElement.map((event) => ({
-    internal_id: event.element_id,
-    entity_type: event.element_type,
-    [RELATION_OBJECT_MARKING]: event.marking_ids,
-    restricted_members: event.element_access?.restricted_members ?? [],
-    [RELATION_GRANTED_TO]: event.element_access?.granted ?? [],
-  }) as unknown as BasicStoreCommon);
-  const readableDeletedIds = deletedElements.length > 0
-    ? new Set((await userFilterStoreElements(context, user, deletedElements)).map((element) => element.internal_id))
-    : new Set<string>();
-  // The sources of such an event are still read as they are now: one the user cannot access, or deleted too, keeps the removal unnamed
   const sourceIdsOf = (event: TimelineRemovedEvent) => timelineEventSourceIds({ element_access: event.element_access });
-  const deletedElementSourceIds = Array.from(new Set(removedWithDeletedElement.flatMap(sourceIdsOf)));
-  const readableSources = deletedElementSourceIds.length > 0
-    ? await internalFindByIds(context, user, deletedElementSourceIds, { toMap: true, baseData: true }) as unknown as Record<string, AnyStoreElement>
+  const referenceIdsOf = (event: TimelineRemovedEvent) => [event.element_id as string, ...sourceIdsOf(event)].filter((id) => id !== update.container_id);
+  const unresolvedIds = Array.from(new Set(unresolvedRemoved.flatMap(referenceIdsOf)));
+  const existing = unresolvedIds.length > 0
+    ? await internalFindByIds(context, SYSTEM_USER, unresolvedIds, { toMap: true, baseData: true }) as unknown as Record<string, AnyStoreElement>
     : {};
+  const existingIds = unresolvedIds.filter((id) => !!existing[id]);
+  const readableExisting = existingIds.length > 0
+    ? await internalFindByIds(context, user, existingIds, { toMap: true, baseData: true }) as unknown as Record<string, AnyStoreElement>
+    : {};
+  const deletedReferenceOf = (event: TimelineRemovedEvent, id: string): BasicStoreCommon | null => {
+    const recorded = id === event.element_id
+      ? (event.element_type && event.element_access ? { entity_type: event.element_type, access: event.element_access } : null)
+      : (() => {
+          const source = (event.element_access?.sources ?? []).find((candidate) => candidate.id === id);
+          return source?.entity_type ? { entity_type: source.entity_type, access: source } : null;
+        })();
+    if (!recorded) return null;
+    return {
+      internal_id: id,
+      entity_type: recorded.entity_type,
+      [RELATION_OBJECT_MARKING]: event.marking_ids,
+      restricted_members: recorded.access.restricted_members ?? [],
+      [RELATION_GRANTED_TO]: recorded.access.granted ?? [],
+    } as unknown as BasicStoreCommon;
+  };
+  const resolvable = unresolvedRemoved.map((event) => {
+    const ids = referenceIdsOf(event);
+    const deleted = ids.filter((id) => !existing[id]).map((id) => deletedReferenceOf(event, id));
+    const resolved = ids.every((id) => !existing[id] || !!readableExisting[id]) && deleted.every((reference) => reference !== null);
+    return { event, deleted: resolved ? (deleted as BasicStoreCommon[]) : null };
+  }).filter((candidate): candidate is { event: TimelineRemovedEvent; deleted: BasicStoreCommon[] } => candidate.deleted !== null);
+  const deletedReferences = resolvable.flatMap(({ deleted }) => deleted);
+  const readableDeleted = deletedReferences.length > 0
+    ? new Set(await userFilterStoreElements(context, user, deletedReferences))
+    : new Set<BasicStoreCommon>();
   const changedEventIds = [
     ...items.map((event) => event.internal_id),
-    ...removedWithDeletedElement
-      .filter((event) => readableDeletedIds.has(event.element_id as string) && sourceIdsOf(event).every((id) => !!readableSources[id]))
-      .map((event) => event.id),
+    ...resolvable
+      .filter(({ deleted }) => deleted.every((reference) => readableDeleted.has(reference)))
+      .map(({ event }) => event.id),
   ];
   if (changedEventIds.length > 0) {
     return { ...signal, changed_event_ids: changedEventIds };

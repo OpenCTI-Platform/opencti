@@ -613,6 +613,41 @@ describe('Incident and case timeline', () => {
       // Without a recorded access, nobody reads an event whose element was deleted
       const removedWithoutAccess = { ...removedAboutDeleted, element_access: null };
       expect(await timelineUpdateForUser(testContext, participate, { ...update, changed_event_ids: [], removed_events: [removedWithoutAccess] })).toBeNull();
+      // A source of a removed event may be deleted while its element remains (a deleted uses relationship removes its
+      // technique event): the source is read as it was, from the access recorded on the event, the element as it is now
+      const openElementId = stored.find((event) => event.kind === 'malware_seen')?.element_id as string;
+      const deletedSource = { id: '0c1f2e3d-4b5a-4c6d-8e7f-9a0b1c2d3e4f', entity_type: 'uses', restricted_members: [], granted: [] };
+      const removedWithDeletedSource = {
+        id: 'removed-event',
+        element_id: openElementId,
+        element_type: 'Malware',
+        marking_ids: [],
+        element_access: { ...openAccess, sources: [deletedSource] },
+      };
+      const sourceUpdate = await timelineUpdateForUser(testContext, participate, { ...update, changed_event_ids: [], removed_events: [removedWithDeletedSource] });
+      expect(sourceUpdate?.changed_event_ids).toEqual(['removed-event']);
+      const removedWithDeletedRestrictedSource = {
+        ...removedWithDeletedSource,
+        element_access: { ...openAccess, sources: [{ ...deletedSource, restricted_members: [{ id: editor.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }] }] },
+      };
+      expect(await timelineUpdateForUser(testContext, participate, { ...update, changed_event_ids: [], removed_events: [removedWithDeletedRestrictedSource] })).toBeNull();
+      expect((await timelineUpdateForUser(testContext, editor, { ...update, changed_event_ids: [], removed_events: [removedWithDeletedRestrictedSource] }))?.changed_event_ids)
+        .toEqual(['removed-event']);
+      // A deleted source recorded without its type is read by nobody, and a source that still exists is read as it is now
+      const untypedSource = { id: deletedSource.id, restricted_members: [], granted: [] };
+      const removedWithUntypedSource = { ...removedWithDeletedSource, element_access: { ...openAccess, sources: [untypedSource] } };
+      expect(await timelineUpdateForUser(testContext, editor, { ...update, changed_event_ids: [], removed_events: [removedWithUntypedSource] })).toBeNull();
+      const removedWithAmberSourceAndDeletedOne = {
+        ...removedWithDeletedSource,
+        element_access: { ...openAccess, sources: [deletedSource, { id: indicatorId, entity_type: 'Indicator', restricted_members: [], granted: [] }] },
+      };
+      expect(await timelineUpdateForUser(testContext, participate, { ...update, changed_event_ids: [], removed_events: [removedWithAmberSourceAndDeletedOne] })).toBeNull();
+      expect((await timelineUpdateForUser(testContext, editor, { ...update, changed_event_ids: [], removed_events: [removedWithAmberSourceAndDeletedOne] }))?.changed_event_ids)
+        .toEqual(['removed-event']);
+      // Element and source both deleted: both are read as they were
+      const removedWithEverythingDeleted = { ...removedAboutDeleted, element_access: { ...openAccess, sources: [deletedSource] } };
+      expect((await timelineUpdateForUser(testContext, participate, { ...update, changed_event_ids: [], removed_events: [removedWithEverythingDeleted] }))?.changed_event_ids)
+        .toEqual(['removed-event']);
       // An update naming only part of its events reaches the subscriber, without the events it cannot read
       const truncatedUpdate = await timelineUpdateForUser(testContext, participate, { ...update, changed_event_ids: [restrictedId], truncated: true });
       expect(truncatedUpdate?.changed_event_ids).toEqual([]);

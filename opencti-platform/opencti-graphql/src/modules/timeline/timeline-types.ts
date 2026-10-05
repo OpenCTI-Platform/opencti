@@ -144,6 +144,8 @@ export interface TimelineElementAccess {
 /** An element whose data a derived event carries besides its element, with its access beyond markings (which the event carries). */
 export interface TimelineSourceAccess {
   id: string;
+  // Recorded while the source exists: once it is deleted, it is read as an element of this type
+  entity_type?: string;
   restricted_members: AuthorizedMember[];
   granted: string[];
 }
