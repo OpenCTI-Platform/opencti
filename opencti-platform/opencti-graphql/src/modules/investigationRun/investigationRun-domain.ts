@@ -93,6 +93,7 @@ import {
   evaluateEnrichmentRequest,
   feedbackCounterDelta,
   isEnrichmentRejection,
+  remainingIterations,
   remainingMinutes,
   statusTransition,
   upsertFeedback,
@@ -1303,12 +1304,13 @@ export const findInvestigationRunEnrichmentEntities = async (context: AuthContex
 // region continuation and engine catalog
 
 // An analyst may continue an investigation whose engine run ended, while its
-// draft is still open: typically after approving an enrichment it held.
+// draft is still open and time and iterations are left: typically after
+// approving an enrichment it held. Neither budget is replenished.
 export const canContinueInvestigationRun = (run: BasicStoreEntityInvestigationRun) => {
   if (!run.xtm_investigation_id || !run.draft_id) return false;
   if (run.end_reason_code && WITHHELD_CODES.includes(run.end_reason_code)) return false;
   const awaitingDraft = run.run_status === InvestigationRunStatus.AwaitingApproval && run.run_phase === InvestigationRunPhase.AwaitingValidation;
-  return awaitingDraft && remainingMinutes(run, new Date()) > 0;
+  return awaitingDraft && remainingMinutes(run, new Date()) > 0 && remainingIterations(run) > 0;
 };
 
 export const continueInvestigationRun = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -1320,7 +1322,7 @@ export const continueInvestigationRun = async (context: AuthContext, user: AuthU
     throw ForbiddenAccess('Continuing this investigation runs the enrichments of its policy: you must be allowed to enrich knowledge');
   }
   if (!canContinueInvestigationRun(run)) {
-    throw FunctionalError('This investigation cannot be continued: its draft is no longer waiting or its time budget is spent', { id });
+    throw FunctionalError('This investigation cannot be continued: its draft is no longer waiting, or its time or iteration budget is spent', { id });
   }
   const now = new Date();
   // Under the actions lock: a draft approval being decided finishes first, and
@@ -1336,7 +1338,7 @@ export const continueInvestigationRun = async (context: AuthContext, user: AuthU
     };
   }));
   if (updated.run_status !== InvestigationRunStatus.Running || updated.run_phase !== InvestigationRunPhase.Starting) {
-    throw FunctionalError('This investigation cannot be continued: its draft is no longer waiting or its time budget is spent', { id });
+    throw FunctionalError('This investigation cannot be continued: its draft is no longer waiting, or its time or iteration budget is spent', { id });
   }
   await publishUserAction({
     user,

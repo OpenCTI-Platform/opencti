@@ -21,6 +21,7 @@ import {
   isBudgetExhausted,
   isLowRiskDraft,
   remainingEnrichmentJobs,
+  remainingIterations,
   statusTransition,
   upsertFeedback,
 } from '../../../../src/modules/investigationRun/investigationRun-state';
@@ -71,6 +72,12 @@ describe('Case Autopilot budgets', () => {
     expect(isBudgetExhausted(buildRun(), NOW)).toBe(false);
     expect(isBudgetExhausted(buildRun({ budget: { ...buildRun().budget, used_iterations: 10 } }), NOW)).toBe(false);
     expect(isBudgetExhausted(buildRun({ active_ms: 61 * 60000 }), NOW)).toBe(true);
+  });
+
+  it('counts the iterations left to a continuation', () => {
+    expect(remainingIterations(buildRun({ budget: { ...buildRun().budget, max_iterations: 10, used_iterations: 3 } }))).toBe(7);
+    expect(remainingIterations(buildRun({ budget: { ...buildRun().budget, max_iterations: 10, used_iterations: 10 } }))).toBe(0);
+    expect(remainingIterations(buildRun({ budget: { ...buildRun().budget, max_iterations: 10, used_iterations: 12 } }))).toBe(0);
   });
 
   it('reserves enrichment jobs already queued or awaiting an approval', () => {

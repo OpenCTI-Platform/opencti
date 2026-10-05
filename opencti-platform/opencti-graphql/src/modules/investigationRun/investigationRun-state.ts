@@ -97,6 +97,10 @@ export const isBudgetExhausted = (run: BasicStoreEntityInvestigationRun, now: Da
   return remainingMinutes(run, now) <= 0;
 };
 
+export const remainingIterations = (run: BasicStoreEntityInvestigationRun): number => {
+  return Math.max(0, run.budget.max_iterations - (run.budget.used_iterations ?? 0));
+};
+
 export const remainingEnrichmentJobs = (run: BasicStoreEntityInvestigationRun): number => {
   const reserved = run.enrichment_requests.filter((request) => request.status === InvestigationEnrichmentRequestStatus.Queued
     || request.status === InvestigationEnrichmentRequestStatus.AwaitingApproval).length;
