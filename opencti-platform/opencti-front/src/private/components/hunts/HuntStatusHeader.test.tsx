@@ -117,6 +117,8 @@ describe('Hunt status header dialogs', () => {
       relayEnv.mock.rejectMostRecentOperation(new Error('Network error'));
     });
     expect(within(screen.getByTestId('hunt-status-retire-dialog')).getByTestId('hunt-status-retire-error')).toHaveTextContent('The hunt could not be retired');
+    // The snackbar would repeat the error behind the overlay, then once the dialog closes
+    expect(MESSAGING$.notifyRelayError).not.toHaveBeenCalled();
   });
 
   it('shows why the query preview could not start inside its dialog', async () => {
@@ -149,5 +151,6 @@ describe('Hunt status header dialogs', () => {
       relayEnv.mock.rejectMostRecentOperation(new Error('Network error'));
     });
     expect(within(dialog).getByTestId('hunt-preview-error')).toHaveTextContent('The query preview could not be started');
+    expect(MESSAGING$.notifyRelayError).not.toHaveBeenCalled();
   });
 });

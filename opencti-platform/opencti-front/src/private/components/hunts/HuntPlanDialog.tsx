@@ -23,8 +23,7 @@ import Button from '@common/button/Button';
 import CodeBlock from '@components/common/CodeBlock';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
-import useApiMutation from '../../../utils/hooks/useApiMutation';
-import { mutationErrorMessage, payloadErrorsMessage } from './hunt-mutation-utils';
+import { mutationErrorMessage, payloadErrorsMessage, useDialogMutation } from './hunt-mutation-utils';
 import { AgentOption, fetchAgentsForIntent } from '../../../utils/ai/agentApi';
 import HuntEntitiesField from './HuntEntitiesField';
 import { HUNT_PLANNER_INTENT, HUNT_SOURCE_TYPES, HUNT_TARGET_TYPES, HUNT_TECHNIQUE_TYPES, huntDraftWorkspacePath, huntTypeLabel } from './hunt-utils';
@@ -80,7 +79,7 @@ const HuntPlanDialog = ({ open, onClose, entityIds }: HuntPlanDialogProps) => {
   const [proposal, setProposal] = useState<HuntProposal | null>(null);
   const [pickedIds, setPickedIds] = useState<string[]>([]);
   const [planError, setPlanError] = useState<string | null>(null);
-  const [commit, inFlight] = useApiMutation<HuntPlanDialogMutation>(huntPlanDialogMutation);
+  const [commit, inFlight] = useDialogMutation<HuntPlanDialogMutation>(huntPlanDialogMutation);
   const picksSubjects = entityIds.length === 0;
   const subjectIds = picksSubjects ? pickedIds : entityIds;
 

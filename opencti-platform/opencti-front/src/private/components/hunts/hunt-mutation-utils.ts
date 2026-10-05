@@ -1,6 +1,13 @@
-import type { PayloadError } from 'relay-runtime';
+import { useMutation } from 'react-relay';
+import type { GraphQLTaggedNode, MutationParameters, PayloadError } from 'relay-runtime';
 import { MESSAGING$ } from '../../../relay/environment';
 import type { RelayError } from '../../../relay/relayTypes';
+
+/**
+ * A mutation whose errors a design-system dialog shows in its own body. Unlike useApiMutation, it raises no global
+ * snackbar: the snackbar renders under the overlay of the dialog, then repeats the error once the dialog closes.
+ */
+export const useDialogMutation = <T extends MutationParameters>(mutation: GraphQLTaggedNode) => useMutation<T>(mutation);
 
 /**
  * useApiMutation hands GraphQL payload errors to onCompleted, not to onError: they are notified here and the caller

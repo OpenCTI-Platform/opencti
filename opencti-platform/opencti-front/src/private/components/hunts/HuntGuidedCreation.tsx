@@ -30,7 +30,7 @@ import { emptyFilterGroup, serializeFilterGroupForBackend } from '../../../utils
 import { fieldSpacingContainerStyle } from '../../../utils/field';
 import { PATH_HUNT } from '../common/routes/paths';
 import HuntEntitiesField from './HuntEntitiesField';
-import { mutationErrorMessage, notifyPayloadErrors, payloadErrorsMessage } from './hunt-mutation-utils';
+import { mutationErrorMessage, notifyPayloadErrors, payloadErrorsMessage, useDialogMutation } from './hunt-mutation-utils';
 import HuntIocFields from './HuntIocFields';
 import HuntIndicatorSupportWarning from './HuntIndicatorSupportWarning';
 import { HuntCodeEditorField } from './HuntCodeEditor';
@@ -129,7 +129,7 @@ const HuntGuidedCreation = ({ kind, open, onClose }: HuntGuidedCreationProps) =>
   const [connectorsCount, setConnectorsCount] = useState(0);
   const [createError, setCreateError] = useState<string | null>(null);
   const iocFiltersState = useFiltersState(emptyFilterGroup);
-  const [commitAdd] = useApiMutation<HuntGuidedCreationAddMutation>(huntGuidedCreationAddMutation);
+  const [commitAdd] = useDialogMutation<HuntGuidedCreationAddMutation>(huntGuidedCreationAddMutation);
   const [commitRun] = useApiMutation<HuntGuidedCreationRunMutation>(huntGuidedCreationRunMutation);
   const initialValues: HuntFormValues = {
     ...emptyHuntFormValues(),

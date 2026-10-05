@@ -11,8 +11,7 @@ import type { Theme } from '../../../components/Theme';
 import { fetchQuery } from '../../../relay/environment';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import useApiMutation from '../../../utils/hooks/useApiMutation';
-import { mutationErrorMessage, payloadErrorsMessage } from './hunt-mutation-utils';
+import { mutationErrorMessage, payloadErrorsMessage, useDialogMutation } from './hunt-mutation-utils';
 import { prismLanguageOf } from './HuntCodeEditor';
 import { HuntRunStatusChip } from './HuntChips';
 import { huntQueryLanguageLabel, huntRunFailure, isHuntPreviewConnector, isTerminalHuntRun } from './hunt-utils';
@@ -138,7 +137,7 @@ const HuntTranslationPreview = ({ huntId, huntType, scopePlatformIds, dirty = fa
   const { huntConnectors } = useLazyLoadQuery<HuntTranslationPreviewConnectorsQuery>(huntTranslationPreviewConnectorsQuery, {}, { fetchPolicy: 'store-and-network' });
   const [platformId, setPlatformId] = useState<string>(ANY_PLATFORM);
   const [preview, setPreview] = useState<PreviewState>({ status: 'idle' });
-  const [commitTest] = useApiMutation<HuntTranslationPreviewTestQueryMutation>(huntTranslationPreviewTestQueryMutation);
+  const [commitTest] = useDialogMutation<HuntTranslationPreviewTestQueryMutation>(huntTranslationPreviewTestQueryMutation);
   const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoStarted = useRef(false);
   useEffect(() => () => {
@@ -184,7 +183,6 @@ const HuntTranslationPreview = ({ huntId, huntType, scopePlatformIds, dirty = fa
         }
         poll(data.huntTestQuery.id, Date.now());
       },
-      // The preview also renders in a design-system dialog, whose overlay covers the global snackbar
       onError: (error) => setPreview({ status: 'error', message: mutationErrorMessage(error, t_i18n('The query preview could not be started')) }),
     });
   };

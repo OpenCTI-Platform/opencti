@@ -25,8 +25,7 @@ import TextField from '../../../../components/TextField';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { MESSAGING$ } from '../../../../relay/environment';
-import useApiMutation from '../../../../utils/hooks/useApiMutation';
-import { mutationErrorMessage, payloadErrorsMessage } from '../hunt-mutation-utils';
+import { mutationErrorMessage, payloadErrorsMessage, useDialogMutation } from '../hunt-mutation-utils';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import { canStartHuntRun, HUNT_MAX_TIME_WINDOW_HOURS } from '../hunt-utils';
 
@@ -150,7 +149,7 @@ const HuntRunStart = ({ hunt, paginationOptions, compact = false }: HuntRunStart
   const [runError, setRunError] = useState<string | null>(null);
   // null while unknown, and for infrastructure hunts, which run on the internet hunt connectors
   const [runnablePlatforms, setRunnablePlatforms] = useState<number | null>(null);
-  const [commit] = useApiMutation<HuntRunStartMutation>(huntRunStartMutation);
+  const [commit] = useDialogMutation<HuntRunStartMutation>(huntRunStartMutation);
   const openDialog = (next: boolean) => {
     setRunError(null);
     setRunnablePlatforms(null);

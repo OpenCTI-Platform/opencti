@@ -19,7 +19,7 @@ import HuntRunStart from './runs/HuntRunStart';
 import HuntTranslationPreview from './HuntTranslationPreview';
 import { useHuntScheduleText } from './HuntSchedulePreview';
 import { HUNT_STATUS_MEANINGS, HUNT_STATUSES, huntDraftWorkspacePath, huntStatusLabel, type HuntStatusValue } from './hunt-utils';
-import { mutationErrorMessage, notifyPayloadErrors, payloadErrorsMessage } from './hunt-mutation-utils';
+import { mutationErrorMessage, notifyPayloadErrors, payloadErrorsMessage, useDialogMutation } from './hunt-mutation-utils';
 import { HuntStatusHeader_hunt$data, HuntStatusHeader_hunt$key } from './__generated__/HuntStatusHeader_hunt.graphql';
 import { HuntStatusHeaderStatusMutation } from './__generated__/HuntStatusHeaderStatusMutation.graphql';
 
@@ -187,6 +187,7 @@ const HuntStatusHeader = ({ data }: HuntStatusHeaderProps) => {
   const { t_i18n } = useFormatter();
   const hunt = useFragment(huntStatusHeaderFragment, data);
   const [commit, inFlight] = useApiMutation<HuntStatusHeaderStatusMutation>(huntStatusHeaderStatusMutation);
+  const [commitRetire, retiring] = useDialogMutation<HuntStatusHeaderStatusMutation>(huntStatusHeaderStatusMutation);
   const [showStatuses, setShowStatuses] = useState(hunt.hunt_status === 'draft');
   const [showChecklist, setShowChecklist] = useState(!hunt.readiness.ready || hunt.hunt_status !== 'active');
   const [confirmRetire, setConfirmRetire] = useState(false);
@@ -216,10 +217,9 @@ const HuntStatusHeader = ({ data }: HuntStatusHeaderProps) => {
     setRetireError(null);
     setConfirmRetire(next);
   };
-  // The confirmation is a design-system dialog, whose overlay covers the global snackbar: its errors stay inside it
   const retire = () => {
     setRetireError(null);
-    commit({
+    commitRetire({
       variables: { id: hunt.id, input: [{ key: 'hunt_status', value: ['retired'] }] },
       onCompleted: (_, errors) => {
         const errorMessage = payloadErrorsMessage(errors);
@@ -327,7 +327,7 @@ const HuntStatusHeader = ({ data }: HuntStatusHeaderProps) => {
           )}
           <DialogFooter>
             <Button variant="secondary" onClick={() => openRetire(false)}>{t_i18n('Cancel')}</Button>
-            <Button onClick={retire} disabled={inFlight} data-testid="hunt-status-retire-confirm">{t_i18n('Retire')}</Button>
+            <Button onClick={retire} disabled={retiring} data-testid="hunt-status-retire-confirm">{t_i18n('Retire')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
