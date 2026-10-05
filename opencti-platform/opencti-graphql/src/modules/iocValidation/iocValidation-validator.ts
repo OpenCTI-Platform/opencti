@@ -2,7 +2,7 @@ import { ForbiddenAccess, ValidationError } from '../../config/errors';
 import { isEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../../database/utils';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { FROM_START_STR, UNTIL_END_STR } from '../../utils/format';
-import { INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_MARKINGS } from '../../schema/general';
+import { IDS_STIX, INPUT_CREATED_BY, INPUT_GRANTED_REFS, INPUT_MARKINGS } from '../../schema/general';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../../schema/stixDomainObject';
@@ -12,7 +12,15 @@ import type { EditInput } from '../../generated/graphql';
 import { internalFindByIds, internalLoadById } from '../../database/middleware-loader';
 import { cleanMarkings } from '../../utils/markingDefinition-utils';
 import { pairMarkings, pairOrganizations } from '../indicatorDeployment/indicatorDeployment-utils';
-import { claimedGeneratedPairSighting, generatedPairSightingOf, sightingPair, suppliedStixIds } from '../indicatorDeployment/indicatorDeployment-sightings';
+import {
+  claimedGeneratedPairSighting,
+  type GeneratedPairSighting,
+  generatedPairSightingOf,
+  generatedPairSightingStixId,
+  isSightingReportContext,
+  sightingPair,
+  suppliedStixIds,
+} from '../indicatorDeployment/indicatorDeployment-sightings';
 import { registerEntityValidator, type ValidatorFn } from '../../schema/validator-register';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { isBypassUser, SYSTEM_USER } from '../../utils/access';
@@ -350,24 +358,78 @@ const validatorSightingCreation: ValidatorFn = async (context, user, instance) =
   if (!claimed || isBypassUser(user)) {
     return true;
   }
-  if (claimed.kind === 'hits') {
-    return isLifecycleWriter(user) ? true : refuseLifecycle(user);
+  return canWriteGeneratedSighting(context, user, instance, claimed);
+};
+
+const refuseGeneratedSightingWrite = (user: AuthUser) => {
+  throw ForbiddenAccess('What a hits or validation result sighting records is written by indicatorReportHits or iocValidationReportResults only', {
+    user_id: user.id,
+  });
+};
+
+const refuseReservedIdRemoval = (user: AuthUser) => {
+  throw ForbiddenAccess('A hits or validation result sighting keeps the identifier the platform gave it', { user_id: user.id });
+};
+
+// Apart from administrators, a generated sighting is written by its reporting mutation, and only by the accounts
+// reporting it: the generic paths could otherwise take its identifier with a content the report would refuse.
+const canWriteGeneratedSighting = async (
+  context: AuthContext,
+  user: AuthUser,
+  element: Record<string, unknown> | undefined,
+  generated: GeneratedPairSighting,
+) => {
+  if (generated.kind === 'hits' && !isLifecycleWriter(user)) {
+    return refuseLifecycle(user);
   }
-  return await canWriteValidationResult(context, user, instance, claimed.requestId) ? true : refuseValidation(user);
+  if (generated.kind === 'validation_result' && !await canWriteValidationResult(context, user, element, generated.requestId)) {
+    return refuseValidation(user);
+  }
+  return isSightingReportContext(context) ? true : refuseGeneratedSightingWrite(user);
+};
+
+// The STIX ids of a sighting once the edits of its x_opencti_stix_ids apply.
+const stixIdsAfterEdits = (initial: Record<string, unknown> | undefined, editInputs: EditInput[]) => {
+  let ids = ((initial?.x_opencti_stix_ids as string[] | undefined) ?? []).filter((id) => typeof id === 'string');
+  editInputs.filter((input) => input.key === IDS_STIX).forEach((input) => {
+    const values = (Array.isArray(input.value) ? input.value : [input.value]).filter((id): id is string => typeof id === 'string');
+    if (input.operation === UPDATE_OPERATION_ADD) {
+      ids = [...new Set([...ids, ...values])];
+    } else if (input.operation === UPDATE_OPERATION_REMOVE) {
+      ids = ids.filter((id) => !values.includes(id));
+    } else {
+      ids = values;
+    }
+  });
+  return ids;
 };
 
 // What a generated sighting records: the hits of the pair (count and window), or the outcome of a validation.
 const GENERATED_SIGHTING_CONTENT_FIELDS = ['attribute_count', 'x_opencti_negative', 'first_seen', 'last_seen', 'description'];
 
-// Hits and validation result sightings keep the markings and the sharing of their pair, as deployments do, for
-// administrators too; what they record is written by the accounts reporting it (or an administrator).
+// Hits and validation result sightings keep the markings and the sharing of their pair, as deployments do, and the
+// identifier the platform gave them, for administrators too; what they record is written by their report.
 const validatorSightingUpdate: ValidatorFn = async (context, user, _instance, initial, editInputs = []) => {
   const touchesAccess = editInputs.some((input) => [INPUT_MARKINGS, INPUT_GRANTED_REFS, INPUT_CREATED_BY].includes(input.key));
   const touchesContent = editInputs.some((input) => GENERATED_SIGHTING_CONTENT_FIELDS.includes(input.key));
-  if (!touchesAccess && !touchesContent) {
+  const touchesIds = editInputs.some((input) => input.key === IDS_STIX);
+  if (!touchesAccess && !touchesContent && !touchesIds) {
     return true;
   }
   const generated = await generatedPairSighting(context, initial);
+  if (touchesIds) {
+    const currentIds = [initial?.standard_id, ...((initial?.x_opencti_stix_ids as string[] | undefined) ?? [])].filter((id): id is string => typeof id === 'string');
+    const editedIds = stixIdsAfterEdits(initial, editInputs);
+    const reservedId = generated ? generatedPairSightingStixId(initial, generated) : undefined;
+    if (reservedId && ![initial?.standard_id, ...editedIds].includes(reservedId)) {
+      return refuseReservedIdRemoval(user);
+    }
+    // An edit giving a sighting the identifier of a generated sighting is a claim, authorized as on a creation
+    const claimed = await generatedPairSightingOf(context, initial, editedIds.filter((id) => !currentIds.includes(id)));
+    if (claimed && !isBypassUser(user)) {
+      await canWriteGeneratedSighting(context, user, initial, claimed);
+    }
+  }
   if (!generated) {
     return true;
   }
@@ -383,10 +445,7 @@ const validatorSightingUpdate: ValidatorFn = async (context, user, _instance, in
   if (!touchesContent || isBypassUser(user)) {
     return true;
   }
-  if (generated.kind === 'hits') {
-    return isLifecycleWriter(user) ? true : refuseLifecycle(user);
-  }
-  return await canWriteValidationResult(context, user, initial, generated.requestId) ? true : refuseValidation(user);
+  return canWriteGeneratedSighting(context, user, initial, generated);
 };
 
 /**

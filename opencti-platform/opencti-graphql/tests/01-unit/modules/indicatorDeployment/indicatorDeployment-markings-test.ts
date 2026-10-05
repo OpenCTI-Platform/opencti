@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import '../../../../src/modules/index';
 import { expectedPairMarkings } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-domain';
 import { hitsSightingStixId } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-utils';
+import { sightingReportContext } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-sightings';
 import {
   isGeneratedPairSighting,
   isIndividualAuthor,
@@ -115,19 +116,21 @@ describe('marking edits of a deployment', () => {
     const validatorSighting = getEntityValidatorUpdate(STIX_SIGHTING_RELATIONSHIP) as ValidatorFn;
     const removal = edit(EditOperation.Remove, ['pap-red']);
     await expect(validatorSighting(testContext, editor, { objectMarking: ['pap-red'] }, hitsSighting, removal)).rejects.toThrow('markings of its indicator');
-    // What the hits sighting records is written by the accounts reporting hits, or an administrator
+    // What the hits sighting records is written by the hits report of the accounts reporting hits, or an administrator
     const connector = { id: 'connector', capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }, { name: 'CONNECTORAPI' }] } as unknown as AuthUser;
     const administrator = { id: 'admin', capabilities: [{ name: 'BYPASS' }] } as unknown as AuthUser;
     const recount = [{ key: 'attribute_count', value: [1] }];
     await expect(validatorSighting(testContext, editor, { attribute_count: [1] }, hitsSighting, recount)).rejects.toThrow('deployment state');
     await expect(validatorSighting(testContext, editor, { description: 'x' }, hitsSighting, [{ key: 'description', value: ['x'] }])).rejects.toThrow('deployment state');
-    await expect(validatorSighting(testContext, connector, { attribute_count: [1] }, hitsSighting, recount)).resolves.toEqual(true);
+    await expect(validatorSighting(testContext, connector, { attribute_count: [1] }, hitsSighting, recount)).rejects.toThrow('indicatorReportHits');
+    await expect(validatorSighting(sightingReportContext(testContext), connector, { attribute_count: [1] }, hitsSighting, recount)).resolves.toEqual(true);
     await expect(validatorSighting(testContext, administrator, { attribute_count: [1] }, hitsSighting, recount)).resolves.toEqual(true);
     await expect(validatorSighting(testContext, editor, { objectLabel: ['triage'] }, hitsSighting, [{ key: 'objectLabel', value: ['triage'] }])).resolves.toEqual(true);
     // Nor can its deterministic id be taken by a sighting someone else creates
     const validatorSightingCreation = getEntityValidatorCreation(STIX_SIGHTING_RELATIONSHIP) as ValidatorFn;
     const squat = { from: indicator, to: platform, stix_id: hitsSighting.standard_id, objectMarking: ['tlp-amber', 'pap-red'] };
     await expect(validatorSightingCreation(testContext, editor, squat)).rejects.toThrow('deployment state');
+    await expect(validatorSightingCreation(testContext, connector, squat)).rejects.toThrow('indicatorReportHits');
     await expect(validatorSightingCreation(testContext, administrator, squat)).resolves.toEqual(true);
     // A sighting of another kind of entity is never one of the pair sightings
     const malwareSighting = { ...hitsSighting, from: { ...indicator, entity_type: 'Malware' } };

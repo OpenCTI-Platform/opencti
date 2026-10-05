@@ -23,6 +23,30 @@ export const sightingPair = (element: Record<string, unknown> | undefined) => {
 
 export type GeneratedPairSighting = { kind: 'hits' } | { kind: 'validation_result'; requestId: string };
 
+// Contexts of the reporting mutations (indicatorReportHits, iocValidationReportResults): apart from administrators,
+// what a hits or validation result sighting records is only written through them, never through the generic paths.
+const sightingReportContexts = new WeakSet<AuthContext>();
+
+/** A copy of the context, recognized by the sighting validators as the one of a reporting mutation. */
+export const sightingReportContext = (context: AuthContext): AuthContext => {
+  const reportContext = { ...context };
+  sightingReportContexts.add(reportContext);
+  return reportContext;
+};
+
+export const isSightingReportContext = (context: AuthContext) => sightingReportContexts.has(context);
+
+/** The deterministic id a generated sighting of its pair holds. */
+export const generatedPairSightingStixId = (element: Record<string, unknown> | undefined, generated: GeneratedPairSighting) => {
+  const pair = sightingPair(element);
+  if (!pair) {
+    return undefined;
+  }
+  return generated.kind === 'hits'
+    ? hitsSightingStixId(pair.indicatorId, pair.platformId)
+    : validationResultSightingStixId(generated.requestId, pair.indicatorId, pair.platformId);
+};
+
 /**
  * Which sighting the platform generates for an (indicator, security platform) pair the sighting is, given the STIX ids it
  * holds or claims: the hits sighting of the pair, or the result sighting of a validation request that included it, with

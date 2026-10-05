@@ -20,6 +20,12 @@ import type { AuthUser } from '../../../../src/types/user';
 import { EXPIRATION_MANAGER_USER } from '../../../../src/utils/access';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organization/organization-types';
+import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
+import { ENTITY_TYPE_INDICATOR } from '../../../../src/modules/indicator/indicator-types';
+import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../../src/modules/securityPlatform/securityPlatform-types';
+import { hitsSightingStixId } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-utils';
+import { sightingReportContext } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-sightings';
+import { EditOperation } from '../../../../src/generated/graphql';
 import { testContext } from '../../../utils/testQuery';
 
 // Marking definitions come from the platform cache: here every marking is of its own type, so cleaning keeps them all.
@@ -201,6 +207,36 @@ describe('Deployment identity guard', () => {
     const administrator = { id: 'admin', capabilities: [{ name: 'BYPASS' }] } as unknown as AuthUser;
     await expect(validatorCreation(testContext, administrator, { deployment_status: 'invalid-status' })).rejects.toThrow('Status is not one of the statuses');
     await expect(validatorUpdate(testContext, administrator, { validation_status: ['invalid-status'] }, {})).rejects.toThrow('Status is not one of the statuses');
+  });
+});
+
+describe('Hits sighting guard', () => {
+  const user = (capabilities: string[]) => ({ id: 'user-1', capabilities: capabilities.map((name) => ({ name })) }) as unknown as AuthUser;
+  const connector = user(['KNOWLEDGE_KNUPDATE', 'CONNECTORAPI']);
+  const administrator = user(['BYPASS']);
+  const indicatorId = 'a6d6f6a4-6a87-4c39-9d4f-7d2f3e6c1a01';
+  const platformId = 'b3c1e0d2-5f44-4b1e-8a3c-2e9d7f6a4b02';
+  const hitsId = hitsSightingStixId(indicatorId, platformId);
+  const hitsSighting = {
+    from: { entity_type: ENTITY_TYPE_INDICATOR, internal_id: indicatorId },
+    to: { entity_type: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, internal_id: platformId },
+    standard_id: 'sighting--0f1e2d3c-4b5a-4968-8778-695a4b3c2d1e',
+    x_opencti_stix_ids: [hitsId],
+  };
+  const validatorUpdate = () => getEntityValidatorUpdate(STIX_SIGHTING_RELATIONSHIP) as ValidatorFn;
+  const countEdit = [{ key: 'attribute_count', value: ['9'] }];
+
+  it('should leave what it records to its report, even for the reporting connector account', async () => {
+    await expect(validatorUpdate()(testContext, connector, {}, hitsSighting, countEdit)).rejects.toThrow('indicatorReportHits');
+    await expect(validatorUpdate()(sightingReportContext(testContext), connector, {}, hitsSighting, countEdit)).resolves.toEqual(true);
+    await expect(validatorUpdate()(testContext, administrator, {}, hitsSighting, countEdit)).resolves.toEqual(true);
+  });
+
+  it('should keep its identifier, for administrators too', async () => {
+    const removal = [{ key: 'x_opencti_stix_ids', value: [], operation: EditOperation.Replace }];
+    await expect(validatorUpdate()(testContext, administrator, {}, hitsSighting, removal)).rejects.toThrow('keeps the identifier');
+    const kept = [{ key: 'x_opencti_stix_ids', value: [hitsSighting.standard_id], operation: EditOperation.Remove }];
+    await expect(validatorUpdate()(testContext, administrator, {}, hitsSighting, kept)).resolves.toEqual(true);
   });
 });
 

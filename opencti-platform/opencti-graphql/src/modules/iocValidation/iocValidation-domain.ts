@@ -38,6 +38,7 @@ import {
 } from '../indicatorDeployment/indicatorDeployment-types';
 import { findDeployedOn, pairLockKey, refreshIndicatorDeploymentCounters } from '../indicatorDeployment/indicatorDeployment-domain';
 import { pairMarkings, pairOrganizations, validationResultSightingStixId } from '../indicatorDeployment/indicatorDeployment-utils';
+import { sightingReportContext } from '../indicatorDeployment/indicatorDeployment-sightings';
 import type {
   IocValidationRequestStatusInput,
   MutationIndicatorsRequestValidationArgs,
@@ -840,7 +841,7 @@ export const reportIocValidationResults = async (context: AuthContext, user: Aut
         await notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, element, user);
       }
       if (!sighting) {
-        await createRelation(context, user, {
+        await createRelation(sightingReportContext(context), user, {
           fromId: indicator.internal_id,
           toId: platform.internal_id,
           relationship_type: STIX_SIGHTING_RELATIONSHIP,

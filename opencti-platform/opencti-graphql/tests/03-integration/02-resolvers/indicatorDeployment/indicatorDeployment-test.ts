@@ -473,10 +473,15 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
       attribute_count: number;
       description: string;
     };
-    // The reporting connector account may write it (same value: no change, no event)
-    await queryAsUserWithSuccess(USER_CONNECTOR, {
+    // Only the hits report writes it: not even the reporting connector account through the generic edition
+    await queryAsUserIsExpectedForbidden(USER_CONNECTOR, {
       query: SIGHTING_FIELD_PATCH,
-      variables: { id: before.internal_id, input: [{ key: 'description', value: [before.description] }] },
+      variables: { id: before.internal_id, input: [{ key: 'description', value: ['edited outside the report'] }] },
+    });
+    // Nor does it lose the identifier the report finds it by
+    await queryAsUserIsExpectedForbidden(USER_CONNECTOR, {
+      query: SIGHTING_FIELD_PATCH,
+      variables: { id: before.internal_id, input: [{ key: 'x_opencti_stix_ids', value: [], operation: 'replace' }] },
     });
     // Side-channel only, so the raw stream counts of the suite are unchanged; the editor reads the pair meanwhile
     await setOrganizations(platformId, [testOrganizationId]);

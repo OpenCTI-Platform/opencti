@@ -39,9 +39,9 @@ Hits reported by a security platform are also recorded as a sighting of the indi
 up with the other sightings of the indicator. The deployment is the reference record of the hits: the sighting is
 rebuilt from its hit count, first hit and last hit on every report, so a sighting left behind by an interrupted
 report, or deleted by mistake, is repaired by the next report of the platform without counting any hit twice. What
-the hits sighting records (count, first and last seen, negative flag, description) is written by connector accounts
-and administrators only, and only they can create a sighting carrying its identifier; analysts can still label it,
-add notes and references to it.
+the hits sighting records (count, first and last seen, negative flag, description) is written by the hit reports of
+connector accounts, or by administrators: no one else creates a sighting carrying its identifier, and its identifier
+cannot be removed from it. Analysts can still label it, add notes and references to it.
 Every hit report carries the time of its most recent hit, as the security platform recorded it: a report whose last
 hit is not after the last hit already known is a retry and adds nothing, so a report sent again after a lost answer
 is never counted twice. An integration that can send several reports ending at the same time (for example with
@@ -268,9 +268,10 @@ benign test of a request) reports the outcome with `iocValidationReportResults(i
 gives an indicator, `detected`, `prevented` or `missed`, and optionally the observation date, a hit count and the
 evidence. Only the pairs of the request on that platform still waiting for an answer, or closed by the timeout of the
 request, are updated, so a result already received is never overwritten. Each result is recorded as a sighting of the indicator by the platform,
-negative for a miss. The identifier of that sighting is reserved: while the request runs, only the accounts allowed
-to report its results can create a sighting carrying it, and only they (or an administrator) can change what it
-records.
+negative for a miss. The identifier of that sighting is reserved to its request: only the results reported for that
+request (by its IOC validation connector or the account recording the deployment) create it and change what it
+records, even after a newer request took the pair over; administrators aside, nothing else does, and the identifier
+cannot be removed from the sighting.
 
 A validation result is proof attributed to the platform, so it is accepted only from the connector account that
 recorded the deployments of the pairs on that platform (the integration reporting its deployment statuses), from the

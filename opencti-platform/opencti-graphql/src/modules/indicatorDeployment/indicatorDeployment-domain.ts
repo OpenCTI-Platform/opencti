@@ -76,6 +76,7 @@ import {
   pairOrganizations,
   validationResultSightingStixId,
 } from './indicatorDeployment-utils';
+import { sightingReportContext } from './indicatorDeployment-sightings';
 import { consumeDeploymentRateLimit, DEPLOYMENT_RATE_LIMIT_BATCH, DEPLOYMENT_RATE_LIMIT_HITS, DEPLOYMENT_RATE_LIMIT_SINGLE } from './indicatorDeployment-rate-limit';
 
 export const DEPLOYMENT_BATCH_MAX_SIZE = 500;
@@ -724,7 +725,8 @@ export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, 
     if (existingSighting) {
       await ensurePairMarkings(context, user, existingSighting, indicator, platform);
     }
-    const createHitsSighting = async (count: number, firstSeen: Date, lastSeen: Date) => createRelation(context, user, {
+    const reportContext = sightingReportContext(context);
+    const createHitsSighting = async (count: number, firstSeen: Date, lastSeen: Date) => createRelation(reportContext, user, {
       fromId: indicator.internal_id,
       toId: platform.internal_id,
       relationship_type: STIX_SIGHTING_RELATIONSHIP,
@@ -787,7 +789,7 @@ export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, 
     if (!existingSighting) {
       sighting = await createHitsSighting(values.attribute_count, values.first_seen, values.last_seen);
     } else if (!isHitsSightingUpToDate(existingSighting, values)) {
-      const { element } = await patchAttribute(context, user, existingSighting.internal_id, STIX_SIGHTING_RELATIONSHIP, values);
+      const { element } = await patchAttribute(reportContext, user, existingSighting.internal_id, STIX_SIGHTING_RELATIONSHIP, values);
       sighting = element;
       await notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, element, user);
     } else {
