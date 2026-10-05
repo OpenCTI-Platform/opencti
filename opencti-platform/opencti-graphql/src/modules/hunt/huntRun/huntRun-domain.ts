@@ -83,8 +83,10 @@ import {
   HUNT_CONNECTION_CHECK_PENDING,
   HUNT_RUN_ACTIVE_STATUSES,
   HUNT_RUN_AUTONOMOUS_TRIGGERS,
+  HUNT_RUN_FINALIZABLE_STATUSES,
   HUNT_RUN_MODE_EXECUTE,
   HUNT_RUN_MODE_PREVIEW,
+  HUNT_RUN_STATUS_CANCELLED,
   HUNT_RUN_STATUS_COMPLETED,
   HUNT_RUN_STATUS_FAILED,
   HUNT_RUN_STATUS_QUEUED,
@@ -205,6 +207,25 @@ const loadHuntForRun = async (context: AuthContext, user: AuthUser, run: BasicSt
     throw ResourceNotFoundError('Hunt of the run cannot be found', { runId: run.internal_id });
   }
   return hunt;
+};
+
+// Whether a hunt exists is read once per request, however many of its runs the request lists
+const requestHuntExistence = new WeakMap<AuthContext, Map<string, Promise<boolean>>>();
+
+/**
+ * Whether the hunt of a run was deleted (in the trash or for good), read with the hunt manager identity: a hunt the user
+ * cannot read is not a deleted one.
+ */
+export const isHuntRunHuntDeleted = async (context: AuthContext, run: Pick<BasicStoreEntityHuntRun, 'hunt_id'>) => {
+  let existence = requestHuntExistence.get(context);
+  if (!existence) {
+    existence = new Map();
+    requestHuntExistence.set(context, existence);
+  }
+  const exists = existence.get(run.hunt_id)
+    ?? internalLoadById<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, run.hunt_id, { type: ENTITY_TYPE_HUNT }).then((hunt) => !!hunt);
+  existence.set(run.hunt_id, exists);
+  return !(await exists);
 };
 // endregion
 
@@ -514,7 +535,7 @@ const patchHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRun, 
  * by an analyst). A terminated run without it stopped before the end of its finalization and is finalized again.
  */
 export const isHuntRunFinalized = (run: Pick<BasicStoreEntityHuntRun, 'hunt_run_mode' | 'hunt_run_status' | 'verdict_source'>) => {
-  return run.hunt_run_mode !== HUNT_RUN_MODE_EXECUTE || !HUNT_RUN_TERMINAL_STATUSES.includes(run.hunt_run_status) || !!run.verdict_source;
+  return run.hunt_run_mode !== HUNT_RUN_MODE_EXECUTE || !HUNT_RUN_FINALIZABLE_STATUSES.includes(run.hunt_run_status) || !!run.verdict_source;
 };
 
 /**
@@ -629,6 +650,74 @@ export const releaseUnpublishedHuntRun = async (context: AuthContext, run: Basic
 };
 
 /**
+ * Cancels a run whose hunt or hunt connector was deleted, under its transition lock: a queued or running run ends
+ * cancelled, which frees its connector slot, and the automatic retry planned on a terminated run is dropped. A cancelled
+ * run gets no verdict, never counts in the statistics and is never retried. Returns the run when it changed.
+ */
+export const cancelHuntRun = async (context: AuthContext, runId: string, reason: string): Promise<BasicStoreEntityHuntRun | null> => {
+  const updated = await withHuntRunTransition(context, runId, async (current) => {
+    if (HUNT_RUN_ACTIVE_STATUSES.includes(current.hunt_run_status)) {
+      return patchHuntRun(context, current, { hunt_run_status: HUNT_RUN_STATUS_CANCELLED, completed_at: now(), error_message: reason, next_retry_at: null });
+    }
+    return current.next_retry_at ? patchHuntRun(context, current, { next_retry_at: null }) : null;
+  });
+  return updated ? notify(BUS_TOPICS[ENTITY_TYPE_HUNT_RUN].EDIT_TOPIC, updated, HUNT_MANAGER_USER) : null;
+};
+
+/**
+ * Cancels the runs matching the filters that still wait, run or plan a retry: the runs of a deleted hunt or of a deleted
+ * hunt connector. A failure on one run is logged, the hunt manager cancels it at a later pass. Returns the runs changed.
+ */
+export const cancelHuntRuns = async (context: AuthContext, filters: FilterGroup['filters'], reason: string): Promise<number> => {
+  const runs = await fullEntitiesList<BasicStoreEntityHuntRun>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT_RUN], {
+    filters: {
+      mode: FilterMode.And,
+      filters,
+      filterGroups: [{
+        mode: FilterMode.Or,
+        filters: [
+          { key: ['hunt_run_status'], values: HUNT_RUN_ACTIVE_STATUSES },
+          { key: ['next_retry_at'], values: [], operator: FilterOperator.NotNil },
+        ],
+        filterGroups: [],
+      }],
+    },
+    noFiltersChecking: true,
+  });
+  let cancelled = 0;
+  for (let index = 0; index < runs.length; index += 1) {
+    try {
+      if (await cancelHuntRun(context, runs[index].internal_id, reason)) {
+        cancelled += 1;
+      }
+    } catch (error) {
+      logApp.error('[OPENCTI-MODULE] Hunt run cannot be cancelled', { cause: error, runId: runs[index].internal_id });
+    }
+  }
+  return cancelled;
+};
+
+/** Cancels the runs of a deleted hunt. Never fails the deletion: the hunt manager cancels what is left. */
+export const cancelDeletedHuntRuns = async (context: AuthContext, huntId: string) => {
+  try {
+    return await cancelHuntRuns(context, [{ key: ['hunt_id'], values: [huntId] }], HUNT_MESSAGES.runCancelledHuntDeleted);
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE] Runs of a deleted hunt cannot be cancelled', { cause: error, huntId });
+    return 0;
+  }
+};
+
+/** Cancels the runs of a deleted hunt connector, so that a connector registered again under its id inherits none. */
+export const cancelDeletedHuntConnectorRuns = async (context: AuthContext, connectorId: string) => {
+  try {
+    return await cancelHuntRuns(context, [{ key: ['connector_id'], values: [connectorId] }], HUNT_MESSAGES.runCancelledConnectorDeleted);
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE] Runs of a deleted hunt connector cannot be cancelled', { cause: error, connectorId });
+    return 0;
+  }
+};
+
+/**
  * The next attempt already created for a terminated run: the retry that names it in retry_of. Two runs sharing their
  * hunt, connector, window and attempt (two playbook executions, two emulations) each get their own replacement.
  */
@@ -714,6 +803,9 @@ export const retryHuntRun = async (context: AuthContext, user: AuthUser, runId: 
   if (!HUNT_RUN_TERMINAL_STATUSES.includes(reachable.hunt_run_status)) {
     throw FunctionalError('Only a terminated run can be retried', { runId, status: reachable.hunt_run_status });
   }
+  if (reachable.hunt_run_status === HUNT_RUN_STATUS_CANCELLED) {
+    throw FunctionalError(`A cancelled run is not retried: ${reachable.error_message ?? 'its hunt or its hunt connector was deleted'}`, { runId });
+  }
   const hunt = await loadHuntForRun(context, user, reachable);
   const { replacement } = await replaceHuntRun(context, hunt, reachable.internal_id, { automatic: false, triggeredBy: user.id, requester: user });
   if (!replacement) {
@@ -771,6 +863,10 @@ export const reportHuntRun = async (context: AuthContext, user: AuthUser, runId:
 
 const applyHuntRunReport = async (context: AuthContext, run: BasicStoreEntityHuntRun, status: string, input: HuntRunReportInput) => {
   if (HUNT_RUN_TERMINAL_STATUSES.includes(run.hunt_run_status)) {
+    // A run cancelled while its connector executed it: the connector gets the reason and sends no knowledge for it
+    if (run.hunt_run_status === HUNT_RUN_STATUS_CANCELLED) {
+      throw FunctionalError(`The hunt run was cancelled: ${run.error_message ?? 'its hunt or its hunt connector was deleted'}`, { runId: run.internal_id });
+    }
     if (isHuntRunFinalized(run)) {
       throw FunctionalError('The hunt run is already terminated', { runId: run.internal_id, status: run.hunt_run_status });
     }
@@ -834,7 +930,8 @@ const applyHuntRunReport = async (context: AuthContext, run: BasicStoreEntityHun
 const completeHuntRunFinalization = async (context: AuthContext, run: BasicStoreEntityHuntRun, force = false) => {
   const hunt = await internalLoadById<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, run.hunt_id, { type: ENTITY_TYPE_HUNT });
   if (!hunt) {
-    return patchHuntRun(context, run, { verdict: computeAutomaticVerdict(run), verdict_source: HUNT_VERDICT_SOURCE_AUTO });
+    // The run of a deleted hunt is closed without a verdict: nobody triages it and no statistics count it
+    return patchHuntRun(context, run, { verdict_source: HUNT_VERDICT_SOURCE_AUTO });
   }
   const finalized = await finalizeHuntRun(context, run, hunt, force);
   if (force && !isHuntRunFinalized(run)) {
@@ -874,6 +971,17 @@ const applyHuntRunExpiry = async (context: AuthContext, run: BasicStoreEntityHun
   if (HUNT_RUN_TERMINAL_STATUSES.includes(run.hunt_run_status)) {
     return run;
   }
+  const hunt = await internalLoadById<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, run.hunt_id, { type: ENTITY_TYPE_HUNT });
+  // A run of a deleted hunt is cancelled, never a timeout with a verdict
+  if (!hunt) {
+    const cancelled = await patchHuntRun(context, run, {
+      hunt_run_status: HUNT_RUN_STATUS_CANCELLED,
+      completed_at: now(),
+      error_message: HUNT_MESSAGES.runCancelledHuntDeleted,
+      next_retry_at: null,
+    });
+    return notify(BUS_TOPICS[ENTITY_TYPE_HUNT_RUN].EDIT_TOPIC, cancelled, HUNT_MANAGER_USER);
+  }
   const patch: Record<string, unknown> = {
     hunt_run_status: HUNT_RUN_STATUS_TIMEOUT,
     completed_at: now(),
@@ -883,12 +991,7 @@ const applyHuntRunExpiry = async (context: AuthContext, run: BasicStoreEntityHun
   if (run.dispatched_at && run.hunt_run_mode === HUNT_RUN_MODE_EXECUTE && run.attempt <= HUNT_CONFIG.maxRetries) {
     patch.next_retry_at = computeRetryAt(run.attempt);
   }
-  const { element } = await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, patch);
-  let updated = element as unknown as BasicStoreEntityHuntRun;
-  const hunt = await internalLoadById<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, run.hunt_id, { type: ENTITY_TYPE_HUNT });
-  if (hunt) {
-    updated = await finalizeHuntRun(context, updated, hunt);
-  }
+  const updated = await finalizeHuntRun(context, await patchHuntRun(context, run, patch), hunt);
   return notify(BUS_TOPICS[ENTITY_TYPE_HUNT_RUN].EDIT_TOPIC, updated, HUNT_MANAGER_USER);
 };
 // endregion
@@ -1321,28 +1424,45 @@ export const computeHuntTechniqueValidations = async (context: AuthContext, user
   return validations;
 };
 
+/** Internal ids of every hunt that exists, whoever can read it: a hunt in the trash or deleted for good is not listed. */
+export const listExistingHuntIds = async (context: AuthContext) => {
+  const hunts = await fullEntitiesList<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT], { baseData: true, baseFields: ['internal_id'] });
+  return hunts.map((hunt) => hunt.internal_id);
+};
+
 export const computeHuntStatistics = async (context: AuthContext, user: AuthUser, args: HuntStatisticsArgs) => {
   const endDate = args.endDate ? new Date(args.endDate) : new Date();
   const startDate = args.startDate ? new Date(args.startDate) : new Date(endDate.getTime() - HUNT_STATISTICS_DEFAULT_DAYS * 24 * 3600 * 1000);
   const interval = args.interval && HUNT_STATISTICS_INTERVALS.includes(args.interval) ? args.interval : 'day';
-  const executeFilter = { key: ['hunt_run_mode'], values: [HUNT_RUN_MODE_EXECUTE] };
+  // Runs of a deleted hunt are kept for a hunt restored from the trash, never counted: the figures cover the hunts that
+  // exist (read with the hunt manager identity, the runs with the reader's). Cancelled runs never ran
+  const huntIds = args.huntId ? [args.huntId] : await listExistingHuntIds(context);
   const filters: FilterGroup = {
     mode: FilterMode.And,
-    filters: args.huntId ? [executeFilter, { key: ['hunt_id'], values: [args.huntId] }] : [executeFilter],
+    filters: [
+      { key: ['hunt_run_mode'], values: [HUNT_RUN_MODE_EXECUTE] },
+      { key: ['hunt_id'], values: huntIds },
+      { key: ['hunt_run_status'], values: [HUNT_RUN_STATUS_CANCELLED], operator: FilterOperator.NotEq },
+    ],
     filterGroups: [],
   };
+  // A verdict judges what a run found: only completed runs count in the verdicts, failures count as failed runs
+  const completedFilters: FilterGroup = { ...filters, filters: [...filters.filters, { key: ['hunt_run_status'], values: [HUNT_RUN_STATUS_COMPLETED] }] };
   const range = { startDate: startDate.toISOString(), endDate: endDate.toISOString() };
   const base = { types: [ENTITY_TYPE_HUNT_RUN], filters, ...range, dateAttribute: 'created_at' };
+  const hasHunts = huntIds.length > 0;
+  const none = Promise.resolve([]);
+  type Bucket = { label: string; count: number };
   const [verdicts, statuses, platforms, triggers, hitsOverTime, runsOverTime, lastRuns] = await Promise.all([
-    elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, field: 'verdict', normalizeLabel: false }),
-    elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, field: 'hunt_run_status', normalizeLabel: false }),
-    elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, field: 'security_platform_id', normalizeLabel: false }),
-    elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, field: 'hunt_run_trigger', normalizeLabel: false }),
-    elHistogramSum(context, user, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_HUNT_RUN], filters, ...range, field: 'created_at', interval, sumField: 'hits_count' }),
-    elHistogramCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_HUNT_RUN], filters, ...range, field: 'created_at', interval }),
-    topEntitiesList<BasicStoreEntityHuntRun>(context, user, [ENTITY_TYPE_HUNT_RUN], { first: 1, orderBy: 'created_at', orderMode: OrderingMode.Desc, filters }),
-  ]);
-  const countOf = (buckets: { label: string; count: number }[], label: string) => buckets.find((bucket) => bucket.label === label)?.count ?? 0;
+    hasHunts ? elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, filters: completedFilters, field: 'verdict', normalizeLabel: false }) : none,
+    hasHunts ? elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, field: 'hunt_run_status', normalizeLabel: false }) : none,
+    hasHunts ? elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, field: 'security_platform_id', normalizeLabel: false }) : none,
+    hasHunts ? elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, field: 'hunt_run_trigger', normalizeLabel: false }) : none,
+    hasHunts ? elHistogramSum(context, user, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_HUNT_RUN], filters, ...range, field: 'created_at', interval, sumField: 'hits_count' }) : none,
+    hasHunts ? elHistogramCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_HUNT_RUN], filters, ...range, field: 'created_at', interval }) : none,
+    hasHunts ? topEntitiesList<BasicStoreEntityHuntRun>(context, user, [ENTITY_TYPE_HUNT_RUN], { first: 1, orderBy: 'created_at', orderMode: OrderingMode.Desc, filters }) : none,
+  ]) as [Bucket[], Bucket[], Bucket[], Bucket[], any[], any[], BasicStoreEntityHuntRun[]];
+  const countOf = (buckets: Bucket[], label: string) => buckets.find((bucket) => bucket.label === label)?.count ?? 0;
   const platformIds = platforms.map((bucket) => bucket.label).filter((label) => label !== 'unknown');
   const platformEntities = platformIds.length > 0 ? await findByIds<BasicStoreEntity>(context, user, platformIds, { type: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM }) : [];
   const platformNames = new Map(platformEntities.map((platform) => [platform.internal_id, platform.name]));

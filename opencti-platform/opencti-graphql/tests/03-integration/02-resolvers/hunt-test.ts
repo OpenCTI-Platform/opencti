@@ -16,8 +16,9 @@ import { addSecurityPlatform } from '../../../src/modules/securityPlatform/secur
 import { ENTITY_TYPE_HUNT_RUN } from '../../../src/modules/hunt/huntRun/huntRun-types';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../src/modules/securityPlatform/securityPlatform-types';
-import { resetCacheForEntity } from '../../../src/database/cache';
+import { getEntitiesListFromCache, resetCacheForEntity } from '../../../src/database/cache';
 import { ENTITY_TYPE_CONNECTOR } from '../../../src/schema/internalObject';
+import type { BasicStoreEntityConnector } from '../../../src/types/connector';
 import { importHuntPack, loadHuntPlanEntities, resolveHuntPlanPlatformIds } from '../../../src/modules/hunt/hunt-domain';
 import { HUNT_INCIDENT_RECOMMENDATION } from '../../../src/modules/hunt/hunt-incident';
 import { STIX_EXT_OCTI_HUNT } from '../../../src/types/stix-2-1-extensions';
@@ -94,6 +95,12 @@ const HUNT_CONNECTOR_REGISTER = gql`
 `;
 const HUNT_CONNECTORS = gql`
   query HuntConnectors { huntConnectors(onlyAlive: false) { id platform languages } }
+`;
+const LIVE_HUNT_CONNECTORS = gql`
+  query LiveHuntConnectors { huntConnectors(onlyAlive: true) { id active } }
+`;
+const PING_CONNECTOR = gql`
+  mutation PingConnector($id: ID!, $state: String) { pingConnector(id: $id, state: $state) { id active } }
 `;
 const CONNECTORS_HUNT = gql`
   query ConnectorsHunt { connectors { id connector_type hunt { platform languages supports_preview securityPlatform { name } } } }
@@ -219,7 +226,6 @@ describe('Hunt resolvers', () => {
     expect(connector.supports_preview).toBe(true);
     expect(connector.securityPlatform.name).toEqual(SECURITY_PLATFORM_NAME);
     securityPlatformId = connector.securityPlatform.id;
-    resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
     const list = await queryAsAdminWithSuccess({ query: HUNT_CONNECTORS });
     expect(list.data?.huntConnectors.map((c: { id: string }) => c.id)).toContain(CONNECTOR_ID);
     // The connector page reads the hunted platform from the connector itself, null for every other type
@@ -229,6 +235,20 @@ describe('Hunt resolvers', () => {
     const huntConnector = all.find((c) => c.id === CONNECTOR_ID);
     expect(huntConnector?.hunt).toEqual({ platform: 'splunk', languages: ['spl'], supports_preview: true, securityPlatform: { name: SECURITY_PLATFORM_NAME } });
     expect(all.filter((c) => c.connector_type !== 'INTERNAL_HUNT').every((c) => c.hunt === null)).toBe(true);
+  });
+
+  it('should keep a pinging hunt connector live while its cached copy is stale', async () => {
+    // The entity cache loads the connector as it was 10 minutes ago, and a ping never refreshes the cache
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    await patchAttribute(testContext, ADMIN_USER, CONNECTOR_ID, ENTITY_TYPE_CONNECTOR, { updated_at: tenMinutesAgo });
+    resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+    const cached = await getEntitiesListFromCache<BasicStoreEntityConnector>(testContext, ADMIN_USER, ENTITY_TYPE_CONNECTOR);
+    expect(cached.find((c) => c.internal_id === CONNECTOR_ID)?.active).toBe(false);
+    const offline = await queryAsAdminWithSuccess({ query: LIVE_HUNT_CONNECTORS });
+    expect(offline.data?.huntConnectors.map((c: { id: string }) => c.id)).not.toContain(CONNECTOR_ID);
+    await queryAsUserWithSuccess(USER_CONNECTOR, { query: PING_CONNECTOR, variables: { id: CONNECTOR_ID, state: '{}' } });
+    const live = await queryAsAdminWithSuccess({ query: LIVE_HUNT_CONNECTORS });
+    expect(live.data?.huntConnectors.find((c: { id: string }) => c.id === CONNECTOR_ID)).toEqual({ id: CONNECTOR_ID, active: true });
   });
 
   it('should refuse an unknown platform and a telemetry connector without security platform', async () => {

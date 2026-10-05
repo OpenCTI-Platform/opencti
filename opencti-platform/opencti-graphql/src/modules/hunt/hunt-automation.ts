@@ -15,7 +15,10 @@ import { type FilterGroup, FilterMode, FilterOperator, OrderingMode } from '../.
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { isStixMatchFilterGroup } from '../../utils/filtering/filtering-stix/stix-filtering';
-import { HUNT_MANAGER_USER } from '../../utils/access';
+import { HUNT_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
+import type { BasicStoreEntityConnector } from '../../types/connector';
+import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
+import { HUNT_MESSAGES } from './hunt-messages';
 import { doYield } from '../../utils/eventloop-utils';
 import { now } from '../../utils/format';
 import { findByIds } from './hunt-loaders';
@@ -35,18 +38,19 @@ import {
   type BasicStoreEntityHuntRun,
   ENTITY_TYPE_HUNT_RUN,
   HUNT_RUN_ACTIVE_STATUSES,
+  HUNT_RUN_FINALIZABLE_STATUSES,
   HUNT_RUN_MODE_EXECUTE,
   HUNT_RUN_MODE_PREVIEW,
   HUNT_RUN_STATUS_FAILED,
   HUNT_RUN_STATUS_QUEUED,
   HUNT_RUN_STATUS_TIMEOUT,
-  HUNT_RUN_TERMINAL_STATUSES,
   HUNT_RUN_TRIGGER_PIR,
   HUNT_RUN_TRIGGER_SCHEDULE,
   HUNT_RUN_TRIGGER_STANDING,
   type HuntPlaybookContext,
 } from './huntRun/huntRun-types';
 import {
+  cancelHuntRun,
   computeRetryAt,
   createHuntRuns,
   expireHuntRun,
@@ -199,6 +203,57 @@ export const requeueUnpublishedHuntRuns = async (context: AuthContext): Promise<
 };
 
 /**
+ * Runs a deleted hunt or hunt connector left behind, whatever deleted it (the trash, a bulk deletion, a synchronization):
+ * the runs still waiting, running or planning a retry whose hunt no longer exists, or whose connector no longer exists or
+ * was registered again since the run was created (a redeployed connector reusing the id), are cancelled.
+ */
+export const cancelOrphanHuntRuns = async (context: AuthContext): Promise<number> => {
+  const runs = await fullEntitiesList<BasicStoreEntityHuntRun>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT_RUN], {
+    filters: andFilters([], [{
+      mode: FilterMode.Or,
+      filters: [
+        { key: ['hunt_run_status'], values: HUNT_RUN_ACTIVE_STATUSES },
+        { key: ['next_retry_at'], values: [], operator: FilterOperator.NotNil },
+      ],
+      filterGroups: [],
+    }]),
+    noFiltersChecking: true,
+  });
+  if (runs.length === 0) {
+    return 0;
+  }
+  const huntIds = Array.from(new Set(runs.map((run) => run.hunt_id)));
+  const connectorIds = Array.from(new Set(runs.map((run) => run.connector_id).filter((id): id is string => !!id)));
+  const [hunts, connectors] = await Promise.all([
+    findByIds<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, huntIds, { type: ENTITY_TYPE_HUNT }),
+    findByIds<BasicStoreEntityConnector>(context, SYSTEM_USER, connectorIds, { type: ENTITY_TYPE_CONNECTOR }),
+  ]);
+  const existingHunts = new Set(hunts.map((hunt) => hunt.internal_id));
+  const connectorsById = new Map(connectors.map((connector) => [connector.internal_id, connector]));
+  let cancelled = 0;
+  for (let index = 0; index < runs.length; index += 1) {
+    const run = runs[index];
+    const connector = run.connector_id ? connectorsById.get(run.connector_id) : undefined;
+    let reason: string | null = null;
+    if (!existingHunts.has(run.hunt_id)) {
+      reason = HUNT_MESSAGES.runCancelledHuntDeleted;
+    } else if (run.connector_id && (!connector || new Date(run.created_at).getTime() < new Date(connector.created_at).getTime())) {
+      reason = HUNT_MESSAGES.runCancelledConnectorDeleted;
+    }
+    if (reason) {
+      try {
+        if (await cancelHuntRun(context, run.internal_id, reason)) {
+          cancelled += 1;
+        }
+      } catch (error) {
+        logApp.error('[OPENCTI-MODULE] Orphan hunt run cannot be cancelled', { cause: error, runId: run.internal_id });
+      }
+    }
+  }
+  return cancelled;
+};
+
+/**
  * Runs the platform stops waiting for: dispatched and not reported within the run timeout (the preview timeout for
  * translation previews), or never accepted by a live connector within the queue expiry.
  */
@@ -300,7 +355,7 @@ const FINALIZATION_GIVE_UP_MINUTES = 60;
  */
 export const finalizeInterruptedHuntRuns = async (context: AuthContext): Promise<number> => {
   const runs = await listRuns(context, [
-    { key: ['hunt_run_status'], values: HUNT_RUN_TERMINAL_STATUSES },
+    { key: ['hunt_run_status'], values: HUNT_RUN_FINALIZABLE_STATUSES },
     { key: ['hunt_run_mode'], values: [HUNT_RUN_MODE_EXECUTE] },
     { key: ['verdict_source'], values: [], operator: FilterOperator.Nil },
     { key: ['completed_at'], values: [minutesAgo(FINALIZATION_GRACE_MINUTES)], operator: FilterOperator.Lte },
@@ -347,7 +402,7 @@ export const dispatchQueuedHuntRuns = async (context: AuthContext, budget: HuntT
         let deferred = false;
         try {
           if (!hunt) {
-            await expireHuntRun(context, run, 'The hunt of the run does not exist anymore');
+            await cancelHuntRun(context, run.internal_id, HUNT_MESSAGES.runCancelledHuntDeleted);
           } else if (await dispatchHuntRun(context, run, hunt)) {
             dispatched += 1;
           } else {
@@ -758,6 +813,7 @@ export const processStandingHunts = async (context: AuthContext, budget: HuntTic
 // endregion
 
 export interface HuntAutomationReport {
+  cancelled: number;
   requeued: number;
   expired: number;
   finalized: number;
@@ -775,7 +831,11 @@ export interface HuntAutomationReport {
  * (schedules, PIR activation, standing hunts) only with an Enterprise Edition license.
  */
 export const runHuntAutomation = async (context: AuthContext, isEnterprise: boolean): Promise<HuntAutomationReport> => {
-  const report: HuntAutomationReport = { requeued: 0, expired: 0, finalized: 0, retried: 0, dispatched: 0, resumed: 0, purged: 0, scheduled: 0, armed: 0, standing: 0 };
+  const report: HuntAutomationReport = {
+    cancelled: 0, requeued: 0, expired: 0, finalized: 0, retried: 0, dispatched: 0, resumed: 0, purged: 0, scheduled: 0, armed: 0, standing: 0,
+  };
+  // First: the runs of deleted hunts and connectors free their slots before anything is dispatched or expired
+  report.cancelled = await cancelOrphanHuntRuns(context);
   report.requeued = await requeueUnpublishedHuntRuns(context);
   report.expired = await expireStaleHuntRuns(context);
   report.finalized = await finalizeInterruptedHuntRuns(context);

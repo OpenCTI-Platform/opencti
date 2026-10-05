@@ -4,6 +4,8 @@ enum HuntRunStatus {
   completed
   failed
   timeout
+  "The hunt or the hunt connector of the run was deleted before the run ended, error_message says which"
+  cancelled
 }
 enum HuntRunTrigger {
   manual
@@ -72,6 +74,14 @@ type HuntIocResult {
   deployed: Boolean!
 }
 
+"A sentence of the platform: the English sentence with its {placeholders} is the translation key of the user interface"
+type HuntMessage {
+  template: String!
+  values: [HuntMessageValue!]!
+  "The sentence as the platform writes it"
+  message: String!
+}
+
 type HuntRun implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
@@ -84,7 +94,12 @@ type HuntRun implements BasicObject & InternalObject {
   updated_at: DateTime
   # Hunt run
   hunt_id: String!
+  "The hunt of the run, null when it was deleted (hunt_deleted) or when the user cannot read it"
   hunt: Hunt
+  "The hunt of the run was deleted (in the trash or for good), as opposed to a hunt the user cannot read"
+  hunt_deleted: Boolean!
+  "Why a queued run waits: its connector offline, deleted or busy, or the next dispatch; null when the run is not queued"
+  queue_reason: HuntMessage
   hunt_run_status: HuntRunStatus!
   hunt_run_trigger: HuntRunTrigger!
   hunt_run_mode: HuntRunMode!

@@ -5,7 +5,7 @@ import type { BasicStoreEntityConnector } from '../../types/connector';
 import { logApp } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
 import { withHuntLock } from './hunt-lock';
-import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
+import { getEntitiesMapFromCache } from '../../database/cache';
 import { completeConnector } from '../../database/repository';
 import { pushToConnector } from '../../database/rabbitmq';
 import { elCount } from '../../database/engine';
@@ -45,6 +45,7 @@ import {
   HUNT_RUN_TRIGGER_PREVIEW,
 } from './huntRun/huntRun-types';
 import { clampInteger, HUNT_CONFIG, HUNT_DEFAULT_MAX_RESULTS, normalizeNativeQueries, parseHuntFilterGroup } from './hunt-utils';
+import { HUNT_MESSAGES, type HuntMessage, huntMessage, type HuntMessageValues, renderHuntMessage } from './hunt-messages';
 
 export interface HuntConnectorTarget {
   connector: BasicStoreEntityConnector;
@@ -53,11 +54,15 @@ export interface HuntConnectorTarget {
 
 /**
  * Active hunt connectors, completed with their liveness (a connector pings every minute).
+ * Read from the database, never from the entity cache: a ping refreshes updated_at in the database only, so the cached
+ * copy of a live connector looks dead 5 minutes after the cache was last loaded.
  */
 export const listHuntConnectors = async (context: AuthContext, onlyAlive = true): Promise<BasicStoreEntityConnector[]> => {
-  const connectors = await getEntitiesListFromCache<BasicStoreEntityConnector>(context, SYSTEM_USER, ENTITY_TYPE_CONNECTOR);
+  const connectors = await fullEntitiesList<BasicStoreEntityConnector>(context, SYSTEM_USER, [ENTITY_TYPE_CONNECTOR], {
+    filters: { mode: FilterMode.And, filters: [{ key: ['connector_type'], values: [CONNECTOR_INTERNAL_HUNT] }], filterGroups: [] },
+    noFiltersChecking: true,
+  });
   return connectors
-    .filter((connector) => connector.connector_type === CONNECTOR_INTERNAL_HUNT)
     .map((connector) => completeConnector(connector) as BasicStoreEntityConnector)
     .filter((connector) => !onlyAlive || connector.active === true);
 };
@@ -134,6 +139,9 @@ const countRuns = async (context: AuthContext, filters: ReturnType<typeof runsFi
 export interface ConnectorBudget {
   canDispatch: boolean;
   reason?: string;
+  // The sentence of the reason and its values, shown on the queued runs it holds back
+  template?: string;
+  values?: HuntMessageValues;
 }
 
 /**
@@ -151,7 +159,8 @@ export const checkConnectorBudget = async (context: AuthContext, connector: Basi
     { key: 'dispatched_at', values: [], operator: FilterOperator.NotNil },
   ]));
   if (activeRuns >= maxConcurrent) {
-    return { canDispatch: false, reason: `connector ${connector.name} already runs ${activeRuns} hunts` };
+    const values = { connector: connector.name, count: activeRuns };
+    return { canDispatch: false, reason: renderHuntMessage(HUNT_MESSAGES.queueConnectorBusy, values), template: HUNT_MESSAGES.queueConnectorBusy, values };
   }
   if (!isPreview) {
     const dayStart = new Date();
@@ -161,10 +170,46 @@ export const checkConnectorBudget = async (context: AuthContext, connector: Basi
       { key: 'hunt_run_mode', values: [HUNT_RUN_MODE_PREVIEW], operator: FilterOperator.NotEq },
     ]));
     if (runsToday >= HUNT_CONFIG.dailyRunsPerConnector) {
-      return { canDispatch: false, reason: `connector ${connector.name} reached its daily quota of ${HUNT_CONFIG.dailyRunsPerConnector} runs` };
+      const values = { connector: connector.name, count: HUNT_CONFIG.dailyRunsPerConnector };
+      return { canDispatch: false, reason: renderHuntMessage(HUNT_MESSAGES.queueConnectorQuota, values), template: HUNT_MESSAGES.queueConnectorQuota, values };
     }
   }
   return { canDispatch: true };
+};
+
+// The budget of a connector is read once per request, however many of its queued runs the request lists
+const requestBudgets = new WeakMap<AuthContext, Map<string, Promise<ConnectorBudget>>>();
+
+/**
+ * Why a queued run waits, read when the run is: its connector deleted, offline or at one of its limits, its message sent
+ * and not started yet, or the next dispatch of the hunt manager. Null for a run that does not wait.
+ */
+export const huntRunQueueReason = async (context: AuthContext, run: BasicStoreEntityHuntRun): Promise<HuntMessage | null> => {
+  if (run.hunt_run_status !== HUNT_RUN_STATUS_QUEUED) {
+    return null;
+  }
+  const connectors = await listHuntConnectors(context, false);
+  const connector = connectors.find((candidate) => candidate.internal_id === run.connector_id);
+  if (!connector) {
+    return huntMessage(HUNT_MESSAGES.queueConnectorDeleted);
+  }
+  if (run.dispatched_at) {
+    return huntMessage(HUNT_MESSAGES.queueSent, { connector: connector.name });
+  }
+  if (connector.active !== true) {
+    return huntMessage(HUNT_MESSAGES.queueConnectorOffline, { connector: connector.name });
+  }
+  const isPreview = run.hunt_run_mode === HUNT_RUN_MODE_PREVIEW;
+  let budgets = requestBudgets.get(context);
+  if (!budgets) {
+    budgets = new Map();
+    requestBudgets.set(context, budgets);
+  }
+  const key = `${connector.internal_id}:${isPreview}`;
+  const budget = budgets.get(key) ?? checkConnectorBudget(context, connector, isPreview);
+  budgets.set(key, budget);
+  const { canDispatch, template, values } = await budget;
+  return !canDispatch && template ? huntMessage(template, values) : huntMessage(HUNT_MESSAGES.queueNextDispatch);
 };
 
 const loadRefs = async (context: AuthContext, ids: string[] | undefined, type?: string) => {

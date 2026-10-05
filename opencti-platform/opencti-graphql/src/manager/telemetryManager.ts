@@ -77,8 +77,7 @@ import { isSavedFilterShared } from '../modules/savedFilter/savedFilter-domain';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
 import { ENTITY_TYPE_HUNT, HUNT_STATUSES } from '../modules/hunt/hunt-types';
 import { HUNT_RUN_TRIGGERS, HUNT_VERDICT_BENIGN, HUNT_VERDICT_INCONCLUSIVE, HUNT_VERDICT_TRUE_POSITIVE } from '../modules/hunt/huntRun/huntRun-types';
-import { CONNECTOR_INTERNAL_HUNT } from '../schema/general';
-import { sinceNowInMinutes } from '../utils/format';
+import { listHuntConnectors } from '../modules/hunt/hunt-dispatch';
 import { RELATION_DEPLOYED_ON, RELATION_HAS_COVERED, RELATION_PROVIDES } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_IOC_VALIDATION_REQUEST } from '../modules/iocValidation/iocValidation-types';
 import { DEFENSE_GAP_STATUS_OPEN, ENTITY_TYPE_DEFENSE_GAP } from '../modules/defenseCoverage/defenseGap/defenseGap-types';
@@ -766,9 +765,7 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
       return { value, attributes: { status } };
     }));
     manager.setHuntsByStatusItems(huntsByStatusItems);
-    // A connector is alive when it pinged the platform in the last 5 minutes (see completeConnector)
-    const liveHuntConnectors = connectors
-      .filter((c) => c.connector_type === CONNECTOR_INTERNAL_HUNT && sinceNowInMinutes(c.updated_at) < 5);
+    const liveHuntConnectors = await listHuntConnectors(context, true);
     manager.setHuntConnectorsCount(liveHuntConnectors.length);
     // region Dissemination assurance
     const [relationshipsDeployedOnCount, iocValidationRequestsCount] = await Promise.all([
