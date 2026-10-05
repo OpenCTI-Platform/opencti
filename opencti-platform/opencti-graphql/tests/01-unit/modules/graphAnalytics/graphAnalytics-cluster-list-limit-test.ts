@@ -1,0 +1,49 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import '../../../../src/modules/index';
+import { findGraphClusters, GRAPH_CLUSTERS_LIST_MAX } from '../../../../src/modules/graphAnalytics/graphAnalytics-domain';
+import { loadGraphClusters } from '../../../../src/modules/graphAnalytics/graphAnalytics-store';
+import { elAggregationSearch, elList } from '../../../../src/database/engine';
+import { SYSTEM_USER } from '../../../../src/utils/access';
+import type { AuthContext } from '../../../../src/types/user';
+
+vi.mock('../../../../src/database/engine', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/database/engine')>()),
+  elAggregationSearch: vi.fn(),
+  elList: vi.fn(),
+}));
+vi.mock('../../../../src/modules/graphAnalytics/graphAnalytics-store', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/modules/graphAnalytics/graphAnalytics-store')>()),
+  loadGraphClusters: vi.fn(),
+}));
+
+const context = { source: 'test', otp_mandatory: false } as unknown as AuthContext;
+const cluster = (id: string) => ({ internal_id: id, name: `Cluster ${id}`, cluster_kind: 'infrastructure' });
+
+describe('graph analytics cluster list', () => {
+  beforeEach(() => {
+    vi.mocked(elAggregationSearch).mockReset();
+    vi.mocked(elList).mockReset();
+    vi.mocked(loadGraphClusters).mockReset();
+  });
+
+  it('should rank the largest visible clusters in one aggregation and one search, whatever the number of clusters', async () => {
+    vi.mocked(elAggregationSearch).mockResolvedValue({
+      largest: { sum_other_doc_count: 42, buckets: [{ key: 'c-big', doc_count: 9 }, { key: 'c-small', doc_count: 3 }] },
+    } as never);
+    vi.mocked(elList).mockResolvedValue([cluster('c-small'), cluster('c-big')] as never);
+    vi.mocked(loadGraphClusters).mockImplementation(async (_c, _u, ids) => ids.map((id) => cluster(id)) as never);
+    const connection = await findGraphClusters(context, SYSTEM_USER, { first: 25 });
+    expect(elAggregationSearch).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(elAggregationSearch).mock.calls[0][4]).toMatchObject({ largest: { terms: { size: GRAPH_CLUSTERS_LIST_MAX, shard_size: GRAPH_CLUSTERS_LIST_MAX } } });
+    expect(elList).toHaveBeenCalledTimes(1);
+    expect(connection.edges.map(({ node }) => [node.internal_id, node.members_count])).toEqual([['c-big', 9], ['c-small', 3]]);
+    expect(connection.pageInfo.globalCount).toBe(2);
+  });
+
+  it('should list nothing without visible members', async () => {
+    vi.mocked(elAggregationSearch).mockResolvedValue({ largest: { sum_other_doc_count: 0, buckets: [] } } as never);
+    const connection = await findGraphClusters(context, SYSTEM_USER, { first: 25 });
+    expect(connection.edges).toEqual([]);
+    expect(elList).not.toHaveBeenCalled();
+  });
+});

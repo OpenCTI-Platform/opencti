@@ -310,18 +310,17 @@ const clusterMembersFilter = (clusterId: string, filters?: InputMaybe<FilterGrou
   filterGroups: filters ? [filters] : [],
 });
 
-/** Number of cluster members visible to the caller (and matching optional member filters), per cluster. */
-const visibleMembersPerCluster = async (
+// The aggregations filter on raw metric fields (no filter key), so the member filters are checked and converted here
+const clusterMembersAggregationFilters = async (
   context: AuthContext,
   user: AuthUser,
   kinds?: GraphClusterKind[] | null,
   memberFilters?: InputMaybe<FilterGroup>,
-): Promise<Map<string, number>> => {
-  // The aggregation filters on raw metric fields (no filter key), so the member filters are checked and converted here
+): Promise<FilterGroup> => {
   const convertedMemberFilters = memberFilters
     ? await checkAndConvertFilters(context, user, memberFilters, user.id, filtersIdsFinder)
     : undefined;
-  const filters: FilterGroup = {
+  return {
     mode: FilterMode.And,
     filters: [
       { key: [`${GRAPH_METRICS_ATTRIBUTE}.cluster_id`], values: [], operator: FilterOperator.NotNil },
@@ -329,6 +328,46 @@ const visibleMembersPerCluster = async (
     ],
     filterGroups: convertedMemberFilters ? [convertedMemberFilters] : [],
   };
+};
+
+/**
+ * The `max` clusters with the most members visible to the caller (and matching optional member filters), in one
+ * aggregation. While the clusters fit in `max`, every shard returns all of its clusters and the counts are exact;
+ * `limited` tells that larger platforms only got their largest clusters.
+ */
+export const largestVisibleClusters = async (
+  context: AuthContext,
+  user: AuthUser,
+  max: number,
+  kinds?: GraphClusterKind[] | null,
+  memberFilters?: InputMaybe<FilterGroup>,
+): Promise<{ counts: Map<string, number>; limited: boolean }> => {
+  const filters = await clusterMembersAggregationFilters(context, user, kinds, memberFilters);
+  const aggregations = await elAggregationSearch(context, user, GRAPH_METRICS_ENTITY_INDICES, { types: [ABSTRACT_STIX_CORE_OBJECT], filters, noFiltersChecking: true }, {
+    largest: {
+      terms: {
+        field: `${GRAPH_METRICS_ATTRIBUTE}.cluster_id.keyword`,
+        size: max,
+        shard_size: max,
+        order: [{ _count: 'desc' }, { _key: 'asc' }],
+      },
+    },
+  });
+  const buckets: any[] = aggregations.largest?.buckets ?? [];
+  return {
+    counts: new Map(buckets.map((bucket) => [String(bucket.key), bucket.doc_count])),
+    limited: (aggregations.largest?.sum_other_doc_count ?? 0) > 0,
+  };
+};
+
+/** Number of cluster members visible to the caller (and matching optional member filters), per cluster. */
+const visibleMembersPerCluster = async (
+  context: AuthContext,
+  user: AuthUser,
+  kinds?: GraphClusterKind[] | null,
+  memberFilters?: InputMaybe<FilterGroup>,
+): Promise<Map<string, number>> => {
+  const filters = await clusterMembersAggregationFilters(context, user, kinds, memberFilters);
   const counts = new Map<string, number>();
   let after: Record<string, unknown> | undefined;
   do {
@@ -421,6 +460,8 @@ export interface GraphClustersArgs {
 }
 
 const CLUSTER_IDS_CHUNK = 10000;
+// one chunk of identifiers: the clusters of a page are matched by a single search
+export const GRAPH_CLUSTERS_LIST_MAX = CLUSTER_IDS_CHUNK;
 const compareText = (a?: string | null, b?: string | null) => (a ?? '').localeCompare(b ?? '');
 // Relevance of a cluster found by a search ordered by _score: the first sort value of its hit.
 const searchScore = (cluster: BasicStoreEntityGraphCluster) => {
@@ -453,9 +494,15 @@ export const rankGraphClusters = (entries: RankedGraphCluster[], orderBy: string
     || a.id.localeCompare(b.id));
 };
 
-/** Clusters having at least one member visible to the caller; members_count is the visible count. */
+/**
+ * Clusters having at least one member visible to the caller; members_count is the visible count. Only the
+ * GRAPH_CLUSTERS_LIST_MAX largest are listed, so a page costs one aggregation and one search whatever the platform size.
+ */
 export const findGraphClusters = async (context: AuthContext, user: AuthUser, args: GraphClustersArgs) => {
-  const visible = await visibleMembersPerCluster(context, user, args.kinds, args.memberFilters);
+  const { counts: visible, limited } = await largestVisibleClusters(context, user, GRAPH_CLUSTERS_LIST_MAX, args.kinds, args.memberFilters);
+  if (limited) {
+    logApp.info('[OPENCTI-MODULE] Graph analytics cluster list limited to the largest clusters', { max: GRAPH_CLUSTERS_LIST_MAX });
+  }
   if (visible.size === 0) return buildConnection([], 0);
   const filters: FilterGroup = {
     mode: FilterMode.And,

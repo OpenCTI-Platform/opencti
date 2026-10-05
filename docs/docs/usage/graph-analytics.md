@@ -110,7 +110,7 @@ The top of the page states whether the analytics are up to date or analysing, wi
 
 ![Entities waiting for analysis, with the action to analyse them now](assets/graph-analytics-pending.png)
 
-A cluster is named after the first of its representative entities you can access, for instance "Infrastructure cluster around update-cdn-sync.com"; its identifier is shown when you hover the name. The list shows the number of members, the first representatives and the number of other representatives (named when you hover it), whether the cluster was promoted, and when it was computed. **Show the chart** displays the growth of the largest clusters since they appeared; it is shown by default from three clusters.
+A cluster is named after the first of its representative entities you can access, for instance "Infrastructure cluster around update-cdn-sync.com"; its identifier is shown when you hover the name. The list shows the number of members, the first representatives and the number of other representatives (named when you hover it), whether the cluster was promoted, and when it was computed. It covers the 10,000 clusters with the most members you can see: on a larger knowledge graph, filter by kind or by member to reach the others. **Show the chart** displays the growth of the largest clusters since they appeared; it is shown by default from three clusters.
 
 ![Growth of the largest clusters since they appeared](assets/graph-analytics-clusters-growth.png)
 

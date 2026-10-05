@@ -25247,6 +25247,7 @@ export type Query = {
   graphAnalyticsPendingEntities: Array<StixCoreObject>;
   graphAnalyticsStatus?: Maybe<GraphAnalyticsStatus>;
   graphCluster?: Maybe<GraphCluster>;
+  /** Clusters with members visible to the caller, among the 10,000 clusters with the most visible members: narrow with kinds or memberFilters beyond */
   graphClusters?: Maybe<GraphClusterConnection>;
   graphClustersSizeTimeSeries: Array<GraphClusterTimeSeries>;
   /**
