@@ -13,6 +13,7 @@ import {
   RELATION_USES,
 } from '../../schema/stixCoreRelationship';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION, ENTITY_TYPE_DATA_COMPONENT, ENTITY_TYPE_IDENTITY_SYSTEM } from '../../schema/stixDomainObject';
+import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../../schema/stixMetaObject';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../securityCoverage/securityCoverage-types';
@@ -54,6 +55,8 @@ export interface DefenseImpact {
   overlayChanged: boolean;
   // A threat or one of its relationships changed, which can move it in or out of the threats of a filtered scope
   threatsChanged: boolean;
+  // A kill chain phase was created, renamed, reordered, merged or deleted: readers reload the tactics of the matrix
+  phasesChanged: boolean;
 }
 
 interface StixEventData {
@@ -84,6 +87,7 @@ export const collectDefenseImpact = (events: Array<SseEvent<DataEvent>>): Defens
     accessChanged: false,
     overlayChanged: false,
     threatsChanged: false,
+    phasesChanged: false,
   };
   events.forEach((event) => {
     const eventType = event.data.type;
@@ -117,6 +121,10 @@ export const collectDefenseImpact = (events: Array<SseEvent<DataEvent>>): Defens
         impact.overlayChanged = true;
         return;
       }
+    }
+    if (extension.type === ENTITY_TYPE_KILL_CHAIN_PHASE) {
+      impact.phasesChanged = true;
+      return;
     }
     if (eventType === EVENT_TYPE_MERGE) {
       if (FULL_RECOMPUTE_ENTITY_TYPES.includes(extension.type)) impact.full = true;

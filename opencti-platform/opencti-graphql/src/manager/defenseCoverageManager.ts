@@ -128,8 +128,8 @@ const handleDefenseStreamEvents = async (streamEvents: Array<SseEvent<DataEvent>
   fromResults.forEach((id) => techniqueIds.add(id));
   fromMitigations.forEach((id) => techniqueIds.add(id));
   if (techniqueIds.size === 0) {
-    // A new version drops the per-reader access cache built on the previous one
-    if (impact.accessChanged) await bumpDefenseCoverageVersion();
+    // A new version drops the per-reader access cache built on the previous one and reloads the tactics
+    if (impact.accessChanged || impact.phasesChanged) await bumpDefenseCoverageVersion();
     return;
   }
   if (techniqueIds.size > MAX_INCREMENTAL_TECHNIQUES) {

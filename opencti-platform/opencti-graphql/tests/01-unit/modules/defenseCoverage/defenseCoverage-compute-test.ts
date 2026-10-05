@@ -263,6 +263,12 @@ describe('Defense coverage stream impact', () => {
     expect(platformProvides.full).toEqual(false);
     expect(Array.from(platformProvides.dataComponentIds)).toEqual(['dc-2']);
   });
+  it.each(['create', 'update', 'merge', 'delete'])('should reload the tactics on a %s of a kill chain phase', (type) => {
+    const impact = collectDefenseImpact([event(type, { type: 'kill-chain-phase', extensions: { [STIX_EXT_OCTI]: { id: 'kcp-1', type: 'Kill-Chain-Phase' } } })]);
+    expect(impact.phasesChanged).toEqual(true);
+    expect(impact.full).toEqual(false);
+    expect(Array.from(impact.techniqueIds)).toEqual([]);
+  });
   it('should recompute the techniques covered by an updated security coverage result', () => {
     const result = collectDefenseImpact([event('update', { type: 'x-security-coverage-result', extensions: { [STIX_EXT_OCTI]: { id: 'res-1', type: 'Security-Coverage-Result' } } })]);
     expect(Array.from(result.resultIds)).toEqual(['res-1']);
