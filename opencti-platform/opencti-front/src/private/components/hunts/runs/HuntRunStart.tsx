@@ -197,7 +197,7 @@ const HuntRunStart = ({ hunt, paginationOptions, compact = false }: HuntRunStart
         }
         setOpen(false);
         const count = data.huntRunStart.length;
-        MESSAGING$.notifySuccess(t_i18n('{count} runs started', { values: { count } }));
+        MESSAGING$.notifySuccess(t_i18n('{count, plural, one {# run started} other {# runs started}}', { values: { count } }));
         if (count === 1) {
           navigate(`${PATH_HUNT(hunt.id)}/runs/${data.huntRunStart[0].id}`);
         } else {
