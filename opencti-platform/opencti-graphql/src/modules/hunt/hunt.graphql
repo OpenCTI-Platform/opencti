@@ -545,6 +545,27 @@ input HuntPlanInput {
   benign_patterns: [String!]
 }
 
+input HuntSigmaGenerateInput {
+  # The hunt the rule is written for: its saved fields complete the ones not given
+  hunt_id: ID
+  name: String
+  hypothesis: String
+  # The rule being edited, refined rather than replaced from scratch
+  sigma_rule: String
+  target_ids: [ID!]
+  technique_ids: [ID!]
+  security_platform_ids: [ID!]
+  benign_patterns: [String!]
+  agent_slug: String
+}
+
+type HuntSigmaGeneration {
+  sigma_rule: String!
+  validation: HuntSigmaValidation!
+  rationale: String
+  technique_ids: [String!]!
+}
+
 input HuntValidateFromEmulationInput {
   technique_id: String!
   security_platform_id: String
@@ -567,6 +588,7 @@ type Mutation {
   huntRunStart(id: ID!, input: HuntRunStartInput): [HuntRun!]! @auth(for: [KNOWLEDGE_KNUPDATE])
   huntTestQuery(id: ID!, securityPlatformId: ID): HuntRun @auth(for: [KNOWLEDGE_KNUPDATE])
   huntPlan(input: HuntPlanInput!): HuntProposal @auth(for: [KNOWLEDGE_KNUPDATE])
+  huntSigmaGenerate(input: HuntSigmaGenerateInput!): HuntSigmaGeneration! @auth(for: [KNOWLEDGE_KNUPDATE])
   huntValidateFromEmulation(input: HuntValidateFromEmulationInput!): HuntValidation @auth(for: [KNOWLEDGE_KNUPDATE])
   huntPackImport(file: Upload!): HuntPackImportResult @auth(for: [KNOWLEDGE_KNUPDATE])
 }

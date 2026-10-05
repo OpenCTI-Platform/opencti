@@ -128,10 +128,12 @@ interface HuntTranslationPreviewProps {
   dirty?: boolean;
   /** Starts the preview on the first available platform as soon as it renders */
   autoStart?: boolean;
+  /** Starts the preview each time it increases, for instance once a generated rule is saved */
+  startSignal?: number;
 }
 
 /** The query a hunt connector would run for the saved logic of a hunt, translated by the connector without executing it. */
-const HuntTranslationPreview = ({ huntId, huntType, scopePlatformIds, dirty = false, autoStart = false }: HuntTranslationPreviewProps) => {
+const HuntTranslationPreview = ({ huntId, huntType, scopePlatformIds, dirty = false, autoStart = false, startSignal = 0 }: HuntTranslationPreviewProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { huntConnectors } = useLazyLoadQuery<HuntTranslationPreviewConnectorsQuery>(huntTranslationPreviewConnectorsQuery, {}, { fetchPolicy: 'store-and-network' });
@@ -193,6 +195,12 @@ const HuntTranslationPreview = ({ huntId, huntType, scopePlatformIds, dirty = fa
       start();
     }
   }, [autoStart, hasPreviewConnector]);
+
+  useEffect(() => {
+    if (startSignal > 0 && hasPreviewConnector) {
+      start();
+    }
+  }, [startSignal]);
 
   let content: React.ReactNode = null;
   if (preview.status === 'waiting') {

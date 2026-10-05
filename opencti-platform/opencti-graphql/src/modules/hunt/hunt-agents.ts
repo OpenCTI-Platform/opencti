@@ -5,13 +5,14 @@ import { FunctionalError } from '../../config/errors';
 import { AUTOMATION_MANAGER_USER } from '../../utils/access';
 import xtmOneClient from '../xtm/one/xtm-one-client';
 import { type AgentJwtUser, buildPlaybookAutomationContext, callXtmAgent, isXtmOneConfigured } from '../playbook/components/ai-agent-shared';
-import { validateSigmaRule } from './hunt-sigma';
+import { type SigmaValidation, validateSigmaRule } from './hunt-sigma';
 import { HUNT_TYPE_INFRASTRUCTURE, HUNT_TYPE_TELEMETRY, type HuntNativeQuery } from './hunt-types';
 import { huntLogicError } from './hunt-validators';
 import { clampInteger, HUNT_CONFIG, HUNT_DEFAULT_ESCALATION_THRESHOLD, HUNT_DEFAULT_TIME_WINDOW_HOURS, HUNT_MAX_ESCALATION_THRESHOLD, normalizeNativeQueries } from './hunt-utils';
 import { HUNT_VERDICT_BENIGN, HUNT_VERDICT_INCONCLUSIVE, HUNT_VERDICT_TRUE_POSITIVE } from './huntRun/huntRun-types';
 
 export const HUNT_PLANNER_INTENT = 'cti.hunt_hypothesis';
+export const HUNT_SIGMA_GENERATION_INTENT = 'cti.hunt_sigma_generation';
 export const HUNT_TRIAGE_INTENT = 'cti.hunt_triage';
 
 const ATTACK_TECHNIQUE_ID = /^T\d{4}(?:\.\d{3})?$/;
@@ -210,6 +211,50 @@ export const validateHuntPlanSpec = (raw: unknown, allowedTargetIds: string[]): 
     rationale: (spec.rationale ?? '').trim(),
   };
 };
+
+// region Sigma rule generation
+export interface HuntSigmaGenerationSubject {
+  name: string;
+  hypothesis: string;
+  sigma_rule: string;
+}
+
+export interface HuntSigmaGenerationResult {
+  sigma_rule: string;
+  validation: SigmaValidation;
+  rationale: string;
+  technique_ids: string[];
+}
+
+/**
+ * The cti.hunt_sigma_generation request: the planner request of the hunt being written, whose only deliverable is the
+ * Sigma rule of a telemetry hunt. The rule being edited, when there is one, is refined rather than replaced.
+ */
+export const buildHuntSigmaRequest = <T extends object>(plannerRequest: T, subject: HuntSigmaGenerationSubject) => ({
+  ...plannerRequest,
+  task: 'hunt_sigma_generation',
+  hunt_type: HUNT_TYPE_TELEMETRY,
+  hunt: {
+    name: subject.name,
+    hypothesis: subject.hypothesis,
+    current_sigma_rule: subject.sigma_rule.length > 0 ? subject.sigma_rule : null,
+  },
+});
+
+/** The Sigma rule of a planner answer, kept only once the answer passed every check of a hunt plan. */
+export const validateHuntSigmaGeneration = (raw: unknown, allowedTargetIds: string[]): HuntSigmaGenerationResult => {
+  const spec = validateHuntPlanSpec(raw, allowedTargetIds);
+  if (spec.hunt_type !== HUNT_TYPE_TELEMETRY || spec.sigma_rule.length === 0) {
+    throw FunctionalError('The XTM One answer contains no Sigma rule', { hunt_type: spec.hunt_type });
+  }
+  return {
+    sigma_rule: spec.sigma_rule,
+    validation: validateSigmaRule(spec.sigma_rule),
+    rationale: spec.rationale,
+    technique_ids: spec.technique_ids,
+  };
+};
+// endregion
 
 export const validateHuntTriageResult = (raw: unknown): HuntTriageResult => {
   if (!validateTriageSchema(raw)) {

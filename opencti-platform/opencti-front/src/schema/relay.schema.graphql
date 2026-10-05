@@ -11224,6 +11224,7 @@ type Mutation {
   huntRunStart(id: ID!, input: HuntRunStartInput): [HuntRun!]!
   huntTestQuery(id: ID!, securityPlatformId: ID): HuntRun
   huntPlan(input: HuntPlanInput!): HuntProposal
+  huntSigmaGenerate(input: HuntSigmaGenerateInput!): HuntSigmaGeneration!
   huntValidateFromEmulation(input: HuntValidateFromEmulationInput!): HuntValidation
   huntPackImport(file: Upload!): HuntPackImportResult
   huntRunRetry(id: ID!): HuntRun
@@ -19094,6 +19095,25 @@ input HuntPlanInput {
   security_platform_ids: [ID!]
   agent_slug: String
   benign_patterns: [String!]
+}
+
+input HuntSigmaGenerateInput {
+  hunt_id: ID
+  name: String
+  hypothesis: String
+  sigma_rule: String
+  target_ids: [ID!]
+  technique_ids: [ID!]
+  security_platform_ids: [ID!]
+  benign_patterns: [String!]
+  agent_slug: String
+}
+
+type HuntSigmaGeneration {
+  sigma_rule: String!
+  validation: HuntSigmaValidation!
+  rationale: String
+  technique_ids: [String!]!
 }
 
 input HuntValidateFromEmulationInput {

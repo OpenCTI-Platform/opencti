@@ -25,6 +25,7 @@ import {
   FilterMode,
   type HuntAddInput,
   type HuntPlanInput,
+  type HuntSigmaGenerateInput,
   HuntSourceKind,
   HuntStatus,
   HuntType,
@@ -52,6 +53,8 @@ import {
   HUNT_TYPE_INDICATORS,
   INPUT_HUNT_TECHNIQUES,
   RELATION_HUNT_SOURCES,
+  RELATION_HUNT_TARGETS,
+  RELATION_HUNT_TECHNIQUES,
 } from './hunt-types';
 import { normalizeHuntIocValues, resolveHuntIocSet } from './hunt-iocs';
 import { computeHuntReadiness, isUnmetReadinessItem } from './hunt-readiness';
@@ -61,7 +64,7 @@ import { computeNextRunAt } from './hunt-schedule';
 import { updateHuntRunInformation } from './hunt-stats';
 import { buildHuntScopeFilter, HUNT_CONFIG, HUNT_DEFAULT_ESCALATION_THRESHOLD, HUNT_DEFAULT_TIME_WINDOW_HOURS, normalizeNativeQueries, sharedOrganizations } from './hunt-utils';
 import { resolveHuntScopePlatforms } from './hunt-dispatch';
-import { callHuntAgent, HUNT_PLANNER_INTENT, validateHuntPlanSpec } from './hunt-agents';
+import { buildHuntSigmaRequest, callHuntAgent, HUNT_PLANNER_INTENT, HUNT_SIGMA_GENERATION_INTENT, validateHuntPlanSpec, validateHuntSigmaGeneration } from './hunt-agents';
 import { parseHuntPack, planHuntPackImport, resolveHuntPackLabels } from './hunt-pack';
 import { type HuntValidationState, mergeHuntEdits, validateHuntState } from './hunt-validators';
 import { withHuntLock } from './hunt-lock';
@@ -371,16 +374,16 @@ export const resolveHuntPlanPlatformIds = async (context: AuthContext, user: Aut
   return Array.from(new Set(requested.map((id) => platforms[id].internal_id)));
 };
 
-export const planHunt = async (context: AuthContext, user: AuthUser, input: HuntPlanInput) => {
-  await checkEnterpriseEdition(context);
-  if (input.entity_ids.length === 0 || input.entity_ids.length > PLAN_MAX_ENTITIES) {
-    throw FunctionalError(`A hunt is planned from 1 to ${PLAN_MAX_ENTITIES} entities`);
-  }
-  const scopePlatformIds = await resolveHuntPlanPlatformIds(context, user, input.security_platform_ids ?? []);
-  const { entities: unique, reports, threats, techniques, indicators } = await loadHuntPlanEntities(context, user, input.entity_ids);
-  if (threats.length + techniques.length + indicators.length === 0) {
-    throw FunctionalError('No threat, technique or indicator to plan a hunt for');
-  }
+type HuntPlanKnowledge = Omit<Awaited<ReturnType<typeof loadHuntPlanEntities>>, 'entities'>;
+
+/** The cti.hunt_hypothesis request: the knowledge to plan from and the platforms of the live hunt connectors, with their query languages. */
+const buildHuntPlannerRequest = async (
+  context: AuthContext,
+  user: AuthUser,
+  { reports, threats, techniques, indicators }: HuntPlanKnowledge,
+  scopePlatformIds: string[],
+  benignPatterns: string[],
+) => {
   const connectors = await findHuntConnectors(context, true);
   const requestedPlatforms = new Set(scopePlatformIds);
   const platformIds = connectors
@@ -389,7 +392,7 @@ export const planHunt = async (context: AuthContext, user: AuthUser, input: Hunt
   const platforms = platformIds.length > 0
     ? await findByIds<BasicStoreEntitySecurityPlatform>(context, user, platformIds, { type: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM })
     : [];
-  const payload = {
+  return {
     task: 'hunt_hypothesis',
     threats: threats.map(toPlanThreat),
     techniques: techniques.map((technique) => ({
@@ -412,9 +415,22 @@ export const planHunt = async (context: AuthContext, user: AuthUser, input: Hunt
         languages: connector?.languages ?? [],
       };
     }),
-    benign_patterns: input.benign_patterns ?? [],
+    benign_patterns: benignPatterns,
     constraints: { max_time_window_hours: 720, max_escalation_threshold: 10000 },
   };
+};
+
+export const planHunt = async (context: AuthContext, user: AuthUser, input: HuntPlanInput) => {
+  await checkEnterpriseEdition(context);
+  if (input.entity_ids.length === 0 || input.entity_ids.length > PLAN_MAX_ENTITIES) {
+    throw FunctionalError(`A hunt is planned from 1 to ${PLAN_MAX_ENTITIES} entities`);
+  }
+  const scopePlatformIds = await resolveHuntPlanPlatformIds(context, user, input.security_platform_ids ?? []);
+  const { entities: unique, reports, threats, techniques, indicators } = await loadHuntPlanEntities(context, user, input.entity_ids);
+  if (threats.length + techniques.length + indicators.length === 0) {
+    throw FunctionalError('No threat, technique or indicator to plan a hunt for');
+  }
+  const payload = await buildHuntPlannerRequest(context, user, { reports, threats, techniques, indicators }, scopePlatformIds, input.benign_patterns ?? []);
   const jwtUser = await resolveAgentJwtUser(user.id);
   const { answer } = await callHuntAgent(HUNT_PLANNER_INTENT, jwtUser, payload, input.agent_slug);
   const spec = validateHuntPlanSpec(answer, threats.map((threat) => threat.internal_id));
@@ -453,6 +469,62 @@ export const planHunt = async (context: AuthContext, user: AuthUser, input: Hunt
     context_data: { id: proposal.hunt.internal_id, entity_type: ENTITY_TYPE_HUNT, input: { entity_ids: input.entity_ids, draft_id: proposal.draft_id } },
   });
   return proposal;
+};
+// endregion
+
+// region Sigma rule generation (XTM One cti.hunt_sigma_generation)
+/** The Sigma rule of a hunt being written, from its hypothesis, threats, techniques and platforms; nothing is saved. */
+export const generateHuntSigmaRule = async (context: AuthContext, user: AuthUser, input: HuntSigmaGenerateInput) => {
+  await checkEnterpriseEdition(context);
+  const hunt = input.hunt_id ? await storeLoadById<BasicStoreEntityHunt>(context, user, input.hunt_id, ENTITY_TYPE_HUNT) : null;
+  if (input.hunt_id && !hunt) {
+    throw ResourceNotFoundError('The hunt cannot be found', { id: input.hunt_id });
+  }
+  const name = (input.name ?? hunt?.name ?? '').trim();
+  const hypothesis = (input.hypothesis ?? hunt?.hypothesis ?? '').trim();
+  const sigmaRule = (input.sigma_rule ?? hunt?.sigma_rule ?? '').trim();
+  const entityIds = Array.from(new Set([
+    ...(input.target_ids ?? hunt?.[RELATION_HUNT_TARGETS] ?? []),
+    ...(input.technique_ids ?? hunt?.[RELATION_HUNT_TECHNIQUES] ?? []),
+  ]));
+  if (entityIds.length > PLAN_MAX_ENTITIES) {
+    throw FunctionalError(`A Sigma rule is generated from at most ${PLAN_MAX_ENTITIES} threats and techniques`);
+  }
+  if (hypothesis.length === 0 && entityIds.length === 0) {
+    throw FunctionalError('A Sigma rule is generated from the hypothesis of the hunt or from its threats and techniques');
+  }
+  let scopePlatformIds: string[] = [];
+  if (input.security_platform_ids) {
+    scopePlatformIds = await resolveHuntPlanPlatformIds(context, user, input.security_platform_ids);
+  } else if (hunt?.hunt_scope) {
+    scopePlatformIds = (await resolveHuntScopePlatforms(context, user, hunt)).map((platform) => platform.internal_id);
+  }
+  const knowledge = entityIds.length > 0 ? await loadHuntPlanEntities(context, user, entityIds) : null;
+  // Only the threats and techniques of the hunt ground the rule
+  const plannerRequest = await buildHuntPlannerRequest(
+    context,
+    user,
+    { reports: [], threats: knowledge?.threats ?? [], techniques: knowledge?.techniques ?? [], indicators: [] },
+    scopePlatformIds,
+    input.benign_patterns ?? hunt?.benign_patterns ?? [],
+  );
+  const payload = buildHuntSigmaRequest(plannerRequest, { name, hypothesis, sigma_rule: sigmaRule });
+  const jwtUser = await resolveAgentJwtUser(user.id);
+  const { slug, answer } = await callHuntAgent(HUNT_SIGMA_GENERATION_INTENT, jwtUser, payload, input.agent_slug);
+  const generation = validateHuntSigmaGeneration(answer, (knowledge?.threats ?? []).map((threat) => threat.internal_id));
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: hunt ? 'update' : 'create',
+    event_access: 'extended',
+    message: `generates the Sigma rule of hunt \`${name || 'without a name'}\` with XTM One`,
+    context_data: {
+      id: hunt?.internal_id ?? '',
+      entity_type: ENTITY_TYPE_HUNT,
+      input: { agent_slug: slug, target_ids: input.target_ids, technique_ids: input.technique_ids, security_platform_ids: input.security_platform_ids },
+    },
+  });
+  return generation;
 };
 // endregion
 

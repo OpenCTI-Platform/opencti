@@ -1,6 +1,6 @@
-import React, { Suspense, useState } from 'react';
+import React, { Suspense, useRef, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
+import { Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
 import { useTheme } from '@mui/styles';
@@ -17,10 +17,9 @@ import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useFiltersState from '../../../utils/filters/useFiltersState';
 import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
 import { notifyPayloadErrors } from './hunt-mutation-utils';
-import { HuntCodeEditorField } from './HuntCodeEditor';
 import { SIGMA_RULE_PLACEHOLDER } from './HuntCreation';
 import HuntNativeQueriesField from './HuntNativeQueriesField';
-import HuntSigmaValidation from './HuntSigmaValidation';
+import HuntSigmaRuleField from './HuntSigmaRuleField';
 import HuntTranslationPreview from './HuntTranslationPreview';
 import HuntIocFields from './HuntIocFields';
 import { HuntReadinessChecklist, huntStatusHeaderStatusMutation } from './HuntStatusHeader';
@@ -183,6 +182,8 @@ const DetectionRuleLogic = ({ hunt }: { hunt: HuntLogicData }) => {
   const canEdit = useGranted([KNOWLEDGE_KNUPDATE]);
   const [commit] = useApiMutation<HuntLogicFieldPatchMutation>(huntLogicFieldPatchMutation);
   const [saved, setSaved] = useState(false);
+  const [previewSignal, setPreviewSignal] = useState(0);
+  const previewAfterSave = useRef(false);
   const isTelemetry = hunt.hunt_type !== 'infrastructure';
   const initialValues: LogicValues = {
     sigma_rule: hunt.sigma_rule ?? '',
@@ -209,14 +210,22 @@ const DetectionRuleLogic = ({ hunt }: { hunt: HuntLogicData }) => {
       variables: { id: hunt.id, input },
       onCompleted: (_, errors) => {
         setSubmitting(false);
+        const preview = previewAfterSave.current;
+        previewAfterSave.current = false;
         if (notifyPayloadErrors(errors)) {
           return;
         }
         resetForm({ values });
         setSaved(true);
         MESSAGING$.notifySuccess(t_i18n('The hunt logic has been saved'));
+        if (preview) {
+          setPreviewSignal((signal) => signal + 1);
+        }
       },
-      onError: () => setSubmitting(false),
+      onError: () => {
+        previewAfterSave.current = false;
+        setSubmitting(false);
+      },
     });
   };
   return (
@@ -249,28 +258,40 @@ const DetectionRuleLogic = ({ hunt }: { hunt: HuntLogicData }) => {
               {isTelemetry && (
                 <Grid item xs={12} lg={7}>
                   <Card title={t_i18n('Sigma rule')} action={<HuntLearnMore href={HUNT_DOCS.createHunt} testId="hunt-logic-sigma-learn-more" />}>
-                    <Text variant="content-caption" style={{ display: 'block', marginBottom: theme.spacing(1) }}>
-                      {t_i18n('The activity to look for, in Sigma YAML that every hunt connector translates, for example a PowerShell process started with -enc. Left empty, the hunt needs a native query to run.')}
-                    </Text>
-                    <Field
-                      component={HuntCodeEditorField}
-                      name="sigma_rule"
+                    <HuntSigmaRuleField
                       label={t_i18n('Sigma rule (YAML)')}
-                      language="yaml"
+                      helperText={t_i18n('The activity to look for, in Sigma YAML that every hunt connector translates, for example a PowerShell process started with -enc. Left empty, the hunt needs a native query to run.')}
                       placeholder={SIGMA_RULE_PLACEHOLDER}
+                      generationInput={{ hunt_id: hunt.id }}
+                      nextStep={{
+                        sentence: t_i18n('Save the logic to preview the query each connector runs.'),
+                        action: (
+                          <Button
+                            variant="secondary"
+                            size="small"
+                            onClick={() => {
+                              previewAfterSave.current = true;
+                              submitForm();
+                            }}
+                            disabled={isSubmitting}
+                            data-testid="hunt-logic-save-and-preview"
+                          >
+                            {t_i18n('Save and preview')}
+                          </Button>
+                        ),
+                      }}
                       minRows={14}
                       maxRows={40}
                       disabled={!canEdit}
                       testId="hunt-logic-sigma"
                     />
-                    <HuntSigmaValidation sigmaRule={values.sigma_rule} />
                   </Card>
                 </Grid>
               )}
               <Grid item xs={12} lg={isTelemetry ? 5 : 12}>
                 <Card title={t_i18n('Query preview')} action={<HuntLearnMore href={HUNT_DOCS.runHunt} />}>
                   <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-                    <HuntTranslationPreview huntId={hunt.id} huntType={hunt.hunt_type} scopePlatformIds={scopePlatformIdsOf(hunt)} dirty={dirty} />
+                    <HuntTranslationPreview huntId={hunt.id} huntType={hunt.hunt_type} scopePlatformIds={scopePlatformIdsOf(hunt)} dirty={dirty} startSignal={previewSignal} />
                   </Suspense>
                   <LogicReadinessNotes hunt={hunt} />
                 </Card>

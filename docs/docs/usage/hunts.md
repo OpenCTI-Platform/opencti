@@ -76,8 +76,8 @@ The checklist **Before your first hunt** shows the live state of each prerequisi
 From **Defense > Hunts**, click the creation button and fill in:
 
 - the name, the description and the **hypothesis**,
-- the **Sigma rule**: it is validated while you type, the platform reports the parsing errors, the detection fields and the ATT&CK techniques found in its tags. Techniques found in the tags are linked to the hunt automatically,
-- optional **native queries**, one per platform, executed verbatim instead of the translated Sigma rule,
+- the **Sigma rule**: it is validated while you type, the platform reports the parsing errors, the detection fields and the ATT&CK techniques found in its tags. Techniques found in the tags are linked to the hunt automatically. **Generate with AI**, next to its label, writes the rule with XTM One (see [AI assistance](#ai-assistance)),
+- optional **native queries**, one per platform, executed verbatim instead of the translated Sigma rule (**Add a native query**, next to the label),
 - the **targets** (threats) and the **sources** (indicators, reports) of the hunt,
 - the **time window** searched by each run (24 hours by default),
 - the **expected observables**: the observable types the hunt connectors may extract from the results to create knowledge (IP addresses, domain names, URLs, file hashes, email addresses),
@@ -85,7 +85,7 @@ From **Defense > Hunts**, click the creation button and fill in:
 - the **escalation threshold**: from this number of hits, a completed run proposes an Incident (see below),
 - the **scope**: the security platforms the hunt runs on (all the platforms served by a hunt connector when empty).
 
-Each field says what it is, gives an example and what happens when it is left empty, with a **Learn more** link to the matching section of this page.
+Each field says what it is, gives an example and what happens when it is left empty, with a **Learn more** link to the matching section of this page; the **Learn more** of the drawer header, next to its close button, opens this section. Fields that need the Enterprise Edition (the autonomous schedules, the PIR activation) carry the **EE** chip right after their label.
 
 ![The hunt creation form: every field with its help and Learn more](assets/hunt-form-help.png)
 
@@ -198,13 +198,14 @@ Analysts set the final verdict from the run, with an optional feedback. Hunt sta
     AI assistance for hunts is available under the **OpenCTI Enterprise Edition** licence and requires XTM One. Please read the [dedicated page](../administration/enterprise.md) for full details.
 
 - **Plan a hunt**: from the **Ask AI** menu of a threat, a report or an indicator, the hunt planner agent of XTM One designs a hunt (hypothesis, Sigma rule, native queries, benign patterns, threshold) from the knowledge about the entity and the security platforms available. The hunt is created in a draft workspace for review, with the status **Draft**: validating the workspace creates it, and it runs only once an analyst activates it. When the hunt is planned from restricted intelligence (markings or organizations), the workspace gets a neutral name and description, so the name and hypothesis of the hunt are only shown to the users who can read it. The hunt carries the markings of the intelligence it references and is shared only with the organizations that intelligence all shares; the workspace is then restricted to those organizations and to the user who asked for the hunt. Planning is refused when the intelligence shares no organization, or when the user cannot restrict access to organizations. Through the API (`huntPlan` with `security_platform_ids`), a hunt can be planned for specific security platforms: the planner writes for those platforms only, the proposed hunt is scoped to them, and planning is refused when one of them cannot be found.
+- **Generate the Sigma rule**: **Generate with AI**, next to the label of the Sigma rule in the creation drawer and in the **Logic** tab, asks XTM One for the rule of the hunt being written, from its name and hypothesis, its targeted threats, its covered techniques and its security platforms (with the languages of their hunt connectors); a rule already in the editor is refined rather than replaced. The rule replaces the content of the editor with an **Undo**, and nothing is saved: the platform validates it as you type, and in the **Logic** tab **Save and preview** saves the logic and asks a hunt connector for the query it would run. The action is disabled, with the reason next to it, when XTM One is not configured or when the hunt has no hypothesis, threat or technique yet. Through the API, `huntSigmaGenerate` returns the rule and its validation; it requires the knowledge update capability and is recorded in the activity of the user.
 - **Triage**: runs with hits can be sent to the hunt triage agent, with whether the platform returned partial results (the hit count is then a lower bound). Its answer is stored as a **proposed verdict** with a confidence from 0 to 100 (shown as "Confidence not assessed" when the agent cannot weigh the evidence, never replaced by a number) and a rationale; it is never applied automatically, the analyst decides. Accepting the proposal records the verdict as the agent's; any other verdict, whether set from the run, through the API or by an XTM One agent on request, is recorded as the decision of the analyst who sets it.
 
 A hunt proposed by an agent, or imported from XTM Hub, opens with a banner listing what remains before it can run: review the hypothesis and the logic, add the logic it lacks, switch an autonomous schedule to manual without the Enterprise Edition, validate the draft workspace. Once the hunt has its logic and can run outside a draft workspace, the banner offers **Activate the hunt**.
 
 ![Draft banner of a hunt proposed by an agent: what remains before it runs](assets/hunt-draft-banner.png)
 
-Both answers are checked by XTM One against the hunt contract before they are returned, and again by OpenCTI. When an agent cannot produce an answer that passes its own check, OpenCTI reports the reasons the agent listed instead of an answer.
+Every answer is checked by XTM One against the hunt contract before it is returned, and again by OpenCTI. When an agent cannot produce an answer that passes its own check, OpenCTI reports the reasons the agent listed instead of an answer.
 
 ## Validation with OpenAEV
 

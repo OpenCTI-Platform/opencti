@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { extractJsonObject, huntAgentRefusalErrors, validateHuntPlanSpec, validateHuntTriageResult } from '../../../../src/modules/hunt/hunt-agents';
+import { buildHuntSigmaRequest, extractJsonObject, huntAgentRefusalErrors, validateHuntPlanSpec, validateHuntSigmaGeneration, validateHuntTriageResult } from '../../../../src/modules/hunt/hunt-agents';
 
 const SIGMA = 'title: Suspicious rundll32\nlogsource:\n  product: windows\n  category: process_creation\ndetection:\n  selection:\n    Image|endswith: rundll32.exe\n  condition: selection\n';
 
@@ -80,6 +80,39 @@ describe('Hunt planner answers', () => {
     }), []);
     expect(spec.hunt_type).toBe('infrastructure');
     expect(spec.sigma_rule).toBe('');
+  });
+});
+
+describe('Hunt Sigma rule generation', () => {
+  it('should ask for the Sigma rule of the hunt being written, refining its current rule', () => {
+    const request = buildHuntSigmaRequest({ task: 'hunt_hypothesis', threats: [], benign_patterns: ['backup'] }, { name: 'APT-X', hypothesis: 'If APT-X is active', sigma_rule: SIGMA });
+    expect(request).toEqual({
+      task: 'hunt_sigma_generation',
+      threats: [],
+      benign_patterns: ['backup'],
+      hunt_type: 'telemetry',
+      hunt: { name: 'APT-X', hypothesis: 'If APT-X is active', current_sigma_rule: SIGMA },
+    });
+    expect(buildHuntSigmaRequest({}, { name: '', hypothesis: 'h', sigma_rule: '' }).hunt.current_sigma_rule).toBeNull();
+  });
+
+  it('should keep the checked Sigma rule of the answer with what the platform reads from it', () => {
+    const generation = validateHuntSigmaGeneration(planAnswer(), ['allowed-threat']);
+    expect(generation.sigma_rule).toBe(SIGMA.trim());
+    expect(generation.validation.valid).toBe(true);
+    expect(generation.validation.logsource_product).toBe('windows');
+    expect(generation.technique_ids).toEqual(['T1218.011', 'T1218']);
+    expect(generation.rationale).toBe('The report describes rundll32 abuse');
+  });
+
+  it('should refuse an answer without a Sigma rule or with an invalid one', () => {
+    expect(() => validateHuntSigmaGeneration(planAnswer({
+      hunt_type: 'infrastructure',
+      sigma_rule: '',
+      native_queries: [{ platform: 'internet', language: 'internet', query: 'services.jarm.fingerprint: abc', pipeline: 'censys' }],
+    }), [])).toThrow('contains no Sigma rule');
+    expect(() => validateHuntSigmaGeneration(planAnswer({ sigma_rule: '' }), [])).toThrow('contains no Sigma rule');
+    expect(() => validateHuntSigmaGeneration(planAnswer({ sigma_rule: 'title: broken' }), [])).toThrow('invalid Sigma rule');
   });
 });
 

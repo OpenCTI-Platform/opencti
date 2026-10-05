@@ -13373,6 +13373,26 @@ export enum HuntRunsOrdering {
   Verdict = 'verdict'
 }
 
+export type HuntSigmaGenerateInput = {
+  agent_slug?: InputMaybe<Scalars['String']['input']>;
+  benign_patterns?: InputMaybe<Array<Scalars['String']['input']>>;
+  hunt_id?: InputMaybe<Scalars['ID']['input']>;
+  hypothesis?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  security_platform_ids?: InputMaybe<Array<Scalars['ID']['input']>>;
+  sigma_rule?: InputMaybe<Scalars['String']['input']>;
+  target_ids?: InputMaybe<Array<Scalars['ID']['input']>>;
+  technique_ids?: InputMaybe<Array<Scalars['ID']['input']>>;
+};
+
+export type HuntSigmaGeneration = {
+  __typename?: 'HuntSigmaGeneration';
+  rationale?: Maybe<Scalars['String']['output']>;
+  sigma_rule: Scalars['String']['output'];
+  technique_ids: Array<Scalars['String']['output']>;
+  validation: HuntSigmaValidation;
+};
+
 export type HuntSigmaValidation = {
   __typename?: 'HuntSigmaValidation';
   attack_techniques: Array<Scalars['String']['output']>;
@@ -20363,6 +20383,7 @@ export type Mutation = {
   huntRunSetVerdict?: Maybe<HuntRun>;
   huntRunStart: Array<HuntRun>;
   huntRunTriage?: Maybe<HuntRun>;
+  huntSigmaGenerate: HuntSigmaGeneration;
   huntTestQuery?: Maybe<HuntRun>;
   huntValidateFromEmulation?: Maybe<HuntValidation>;
   identityAdd?: Maybe<Identity>;
@@ -21918,6 +21939,11 @@ export type MutationHuntRunStartArgs = {
 
 export type MutationHuntRunTriageArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationHuntSigmaGenerateArgs = {
+  input: HuntSigmaGenerateInput;
 };
 
 
@@ -45960,6 +45986,8 @@ export type ResolversTypes = ResolversObject<{
   HuntRunVerdict: HuntRunVerdict;
   HuntRunVerdictInput: HuntRunVerdictInput;
   HuntRunsOrdering: HuntRunsOrdering;
+  HuntSigmaGenerateInput: HuntSigmaGenerateInput;
+  HuntSigmaGeneration: ResolverTypeWrapper<Omit<HuntSigmaGeneration, 'validation'> & { validation: ResolversTypes['HuntSigmaValidation'] }>;
   HuntSigmaValidation: ResolverTypeWrapper<SigmaValidation>;
   HuntSourceKind: HuntSourceKind;
   HuntStatistics: ResolverTypeWrapper<HuntStatistics>;
@@ -47313,6 +47341,8 @@ export type ResolversParentTypes = ResolversObject<{
   HuntRunReportInput: HuntRunReportInput;
   HuntRunStartInput: HuntRunStartInput;
   HuntRunVerdictInput: HuntRunVerdictInput;
+  HuntSigmaGenerateInput: HuntSigmaGenerateInput;
+  HuntSigmaGeneration: Omit<HuntSigmaGeneration, 'validation'> & { validation: ResolversParentTypes['HuntSigmaValidation'] };
   HuntSigmaValidation: SigmaValidation;
   HuntStatistics: HuntStatistics;
   HuntStatisticsBucket: HuntStatisticsBucket;
@@ -53130,6 +53160,13 @@ export type HuntRunEdgeResolvers<ContextType = any, ParentType extends Resolvers
   node?: Resolver<ResolversTypes['HuntRun'], ParentType, ContextType>;
 }>;
 
+export type HuntSigmaGenerationResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntSigmaGeneration'] = ResolversParentTypes['HuntSigmaGeneration']> = ResolversObject<{
+  rationale?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sigma_rule?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  technique_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  validation?: Resolver<ResolversTypes['HuntSigmaValidation'], ParentType, ContextType>;
+}>;
+
 export type HuntSigmaValidationResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntSigmaValidation'] = ResolversParentTypes['HuntSigmaValidation']> = ResolversObject<{
   attack_techniques?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   detection_fields?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
@@ -55908,6 +55945,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   huntRunSetVerdict?: Resolver<Maybe<ResolversTypes['HuntRun']>, ParentType, ContextType, RequireFields<MutationHuntRunSetVerdictArgs, 'id' | 'input'>>;
   huntRunStart?: Resolver<Array<ResolversTypes['HuntRun']>, ParentType, ContextType, RequireFields<MutationHuntRunStartArgs, 'id'>>;
   huntRunTriage?: Resolver<Maybe<ResolversTypes['HuntRun']>, ParentType, ContextType, RequireFields<MutationHuntRunTriageArgs, 'id'>>;
+  huntSigmaGenerate?: Resolver<ResolversTypes['HuntSigmaGeneration'], ParentType, ContextType, RequireFields<MutationHuntSigmaGenerateArgs, 'input'>>;
   huntTestQuery?: Resolver<Maybe<ResolversTypes['HuntRun']>, ParentType, ContextType, RequireFields<MutationHuntTestQueryArgs, 'id'>>;
   huntValidateFromEmulation?: Resolver<Maybe<ResolversTypes['HuntValidation']>, ParentType, ContextType, RequireFields<MutationHuntValidateFromEmulationArgs, 'input'>>;
   identityAdd?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType, RequireFields<MutationIdentityAddArgs, 'input'>>;
@@ -63098,6 +63136,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   HuntRun?: HuntRunResolvers<ContextType>;
   HuntRunConnection?: HuntRunConnectionResolvers<ContextType>;
   HuntRunEdge?: HuntRunEdgeResolvers<ContextType>;
+  HuntSigmaGeneration?: HuntSigmaGenerationResolvers<ContextType>;
   HuntSigmaValidation?: HuntSigmaValidationResolvers<ContextType>;
   HuntStatistics?: HuntStatisticsResolvers<ContextType>;
   HuntStatisticsBucket?: HuntStatisticsBucketResolvers<ContextType>;

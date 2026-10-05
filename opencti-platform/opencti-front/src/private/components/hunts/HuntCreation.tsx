@@ -35,8 +35,7 @@ import ObjectMarkingField from '../common/form/ObjectMarkingField';
 import { ExternalReferencesField } from '../common/form/ExternalReferencesField';
 import HuntEntitiesField from './HuntEntitiesField';
 import ObservableTypesField from '../common/form/ObservableTypesField';
-import { HuntCodeEditorField } from './HuntCodeEditor';
-import HuntSigmaValidation from './HuntSigmaValidation';
+import HuntSigmaRuleField from './HuntSigmaRuleField';
 import HuntEELabel from './HuntEELabel';
 import HuntNativeQueriesField from './HuntNativeQueriesField';
 import HuntScheduleField from './HuntScheduleField';
@@ -62,6 +61,7 @@ import {
   HUNT_TECHNIQUE_TYPES,
   type HuntFormValues,
   normalizeNativeQueries,
+  parseBenignPatterns,
   toHuntAddInput,
 } from './hunt-utils';
 import { HuntHelp } from './HuntLearnMore';
@@ -290,17 +290,22 @@ export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues:
           {values.hunt_type === 'indicators' && <HuntIocFields filtersState={iocFiltersState} />}
           {values.hunt_type === 'telemetry' && (
             <div style={fieldSpacingContainerStyle}>
-              <Field
-                component={HuntCodeEditorField}
-                name="sigma_rule"
+              <HuntSigmaRuleField
                 label={t_i18n('Sigma rule')}
-                language="yaml"
-                placeholder={SIGMA_RULE_PLACEHOLDER}
-                minRows={10}
                 helperText={t_i18n('The detection logic in Sigma (YAML), translated for each platform by its hunt connector. Left empty, the hunt needs a native query.')}
+                placeholder={SIGMA_RULE_PLACEHOLDER}
+                generationInput={{
+                  name: values.name,
+                  hypothesis: values.hypothesis,
+                  target_ids: values.huntTargets.map(({ value }) => value),
+                  technique_ids: values.huntTechniques.map(({ value }) => value),
+                  security_platform_ids: values.scopePlatforms.map(({ value }) => value),
+                  benign_patterns: parseBenignPatterns(values.benign_patterns),
+                }}
+                nextStep={{ sentence: t_i18n('Review it, then create the hunt: its Logic tab previews the query each connector runs.') }}
+                minRows={10}
                 testId="hunt-sigma-editor"
               />
-              <HuntSigmaValidation sigmaRule={values.sigma_rule} />
             </div>
           )}
           {values.hunt_type !== 'indicators' && (
