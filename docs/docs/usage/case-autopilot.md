@@ -104,9 +104,11 @@ The **Waiting for your approval** card shows what each approval changes before y
 
 **Review N changes** in the header moves to the first approval. A rejection takes an optional reason, which calibrates the next investigations of the platform. Once an analyst approved an enrichment the investigation held, **Continue the investigation** starts a new engine run on the same investigation, with the new knowledge.
 
-Once its draft is approved, by an analyst or automatically by the policy, the investigation completes only when the platform confirms that every approved change was written to the case. If the platform reports errors while writing them, or has not confirmed them after 30 minutes, the investigation ends as failed and the header says which: the draft keeps what was approved, so you can see what reached the case.
-
 ![An investigation waiting for the approval of its draft](assets/case-autopilot-awaiting-approval.png)
+
+Once its draft is approved, by an analyst or automatically by the policy, the investigation completes only when the platform confirms that every approved change was written to the case. If the platform reports errors while writing them, or has not confirmed them after 30 minutes, the investigation ends as failed, the header says which and offers **Open the draft**: the draft keeps what was approved, read-only, so you can see what reached the case. The approvals still waiting when an investigation fails or stops are closed with it, and the Approvals card says so.
+
+![An investigation whose approved changes could not all be written to the case, with Open the draft as its next step](assets/case-autopilot/validation-failed-dark.png)
 
 ## Investigation policies
 
