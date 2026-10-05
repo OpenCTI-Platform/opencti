@@ -6,6 +6,7 @@ import { ApplicationError, environment } from '../../relay/environment';
 export interface VocabularyDefinition {
   key: string;
   description: string;
+  closed: boolean;
   entity_types: string[];
   fields: {
     key: string;
@@ -19,6 +20,7 @@ export const vocabCategoriesQuery = graphql`
     vocabularyCategories {
       key
       description
+      closed
       entity_types
       fields {
         key
@@ -42,6 +44,7 @@ export const vocabFragment = graphql`
     is_hidden
     category {
       key
+      closed
       entity_types
       fields {
         key
@@ -86,6 +89,9 @@ const useVocabularyCategory = () => {
   const isVocabularyField = (entityType: string | undefined, field: string): boolean => {
     return fieldToCategory(entityType, field) !== undefined;
   };
+  const isClosedCategory = (category: VocabularyCategory): boolean => {
+    return data.vocabularyCategories.find(({ key }) => key === category)?.closed ?? false;
+  };
 
   const allFields = data.vocabularyCategories.flatMap((vc) => vc.fields);
 
@@ -94,6 +100,7 @@ const useVocabularyCategory = () => {
     fields: allFields.map(({ key }) => key),
     getFieldDefinition: (f: string) => allFields.find(({ key }) => f === key),
     isVocabularyField,
+    isClosedCategory,
     fieldToCategory,
     typeToCategory,
     categoriesOptions: categories.map((cat) => ({ value: cat, label: cat })),
