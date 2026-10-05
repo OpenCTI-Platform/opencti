@@ -55,8 +55,8 @@ describe('Hunt evidence sanitization', () => {
       { field: 'source.ip', value_hash: 'b'.repeat(64), value_preview: 'x'.repeat(50), count: 10 },
     ], 10, 10);
     expect(evidence).toEqual([
-      { field: 'source.ip', value_hash: sha256('b'.repeat(64)), value_preview: 'xxxxxxx...', count: 10 },
-      { field: 'process.command_line', value_hash: sha256(HASH), value_preview: 'powersh...', count: 5 },
+      { field: 'source.ip', value_hash: sha256('b'.repeat(64)), value_preview: 'xxxxxxx...', count: 10, matched: false },
+      { field: 'process.command_line', value_hash: sha256(HASH), value_preview: 'powersh...', count: 5, matched: false },
     ]);
   });
 
@@ -78,8 +78,8 @@ describe('Hunt evidence sanitization', () => {
       { field: 'user.name', value_hash: 'john.doe', count: 1 },
     ]));
     expect(merged).toEqual([
-      { field: 'source.ip', value_hash: sha256(HASH), value_preview: '10.0.0.1', count: 5 },
-      { field: 'user.name', value_hash: sha256('john.doe'), value_preview: null, count: 1 },
+      { field: 'source.ip', value_hash: sha256(HASH), value_preview: '10.0.0.1', count: 5, matched: false },
+      { field: 'user.name', value_hash: sha256('john.doe'), value_preview: null, count: 1, matched: false },
     ]);
   });
 

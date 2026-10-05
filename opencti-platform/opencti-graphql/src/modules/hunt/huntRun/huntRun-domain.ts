@@ -61,8 +61,11 @@ import {
   HUNT_CONFIG,
   HUNT_DEFAULT_TIME_WINDOW_HOURS,
   huntRunRestrictions,
+  huntHitDates,
   mergeEvidence,
+  mergeHits,
   sanitizeEvidence,
+  sanitizeHits,
   techniqueValidationStatus,
   truncate,
 } from '../hunt-utils';
@@ -73,6 +76,7 @@ import { countIocHits, hasUnsearchedIoc, linkIocDeployments, mergeHuntIocResults
 import { updateHuntRunInformation } from '../hunt-stats';
 import { writeHuntCoverageResult } from '../hunt-coverage';
 import { createHuntIncidentInWorkspace, createHuntIncidentWorkspace, parseIncidentProposal } from '../hunt-incident';
+import { createHuntHitObservations } from '../hunt-hit-observations';
 import { callHuntAgent, HUNT_TRIAGE_INTENT, validateHuntTriageResult } from '../hunt-agents';
 import {
   type BasicStoreEntityHuntRun,
@@ -462,6 +466,8 @@ export const huntTriageRunPayload = (run: BasicStoreEntityHuntRun, securityPlatf
   security_platform: securityPlatformName ?? HUNT_PLATFORM_INTERNET,
   translated_query: run.translated_query ?? '',
   evidence_sample: run.evidence_sample ?? [],
+  hit_sample: run.hit_sample ?? [],
+  hit_dates: { first: run.first_hit_at ?? null, last: run.last_hit_at ?? null },
 });
 
 /**
@@ -551,6 +557,20 @@ const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRu
   }
   let current = run;
   let complete = true;
+  // The hits as knowledge first: the incident relates to them
+  if (current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED && (current.hit_sample ?? []).length > 0 && (current.hit_observation_ids ?? []).length === 0) {
+    try {
+      const { observedDataIds, observableIds } = await createHuntHitObservations(context, hunt, current);
+      const observationIds = [...observedDataIds, ...observableIds];
+      if (observationIds.length > 0) {
+        const resultIds = Array.from(new Set([...(current.result_ids ?? []), ...observedDataIds])).slice(0, HUNT_RUN_RESULT_IDS_MAX);
+        current = await patchHuntRun(context, current, { hit_observation_ids: observationIds, result_ids: resultIds });
+      }
+    } catch (error) {
+      complete = false;
+      logApp.error('[OPENCTI-MODULE] Hunt hit observations creation failed', { cause: error, runId: current.internal_id });
+    }
+  }
   if (current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED && (current.hits_count ?? 0) >= hunt.escalation_threshold && !current.incident_id) {
     try {
       if (!current.draft_id) {
@@ -890,6 +910,9 @@ const applyHuntRunReport = async (context: AuthContext, run: BasicStoreEntityHun
       patch.hits_count = Math.max(0, Math.round(input.hits_count ?? 0));
       patch.distinct_entities = Math.max(0, Math.round(input.distinct_entities ?? 0));
       patch.evidence_sample = sanitizeEvidence(input.evidence_sample);
+      const hitSample = sanitizeHits(input.hits);
+      patch.hit_sample = hitSample;
+      Object.assign(patch, huntHitDates(hitSample, { first_hit_at: input.first_hit_at, last_hit_at: input.last_hit_at }));
       const resultIds = Array.from(new Set((input.result_ids ?? []).filter((id) => typeof id === 'string' && STIX_ID_PATTERN.test(id))));
       patch.result_ids = resultIds.slice(0, HUNT_RUN_RESULT_IDS_MAX);
       if (Array.isArray(run.ioc_results) && run.ioc_results.length > 0) {
@@ -1072,7 +1095,10 @@ export const addHuntRunEvidence = async (context: AuthContext, user: AuthUser, r
       && current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED && isHuntRunFinalized(current);
     const automaticVerdict = outcomeChanges && current.verdict_source === HUNT_VERDICT_SOURCE_AUTO;
     const resultIds = Array.from(new Set([...(current.result_ids ?? []), ...results.map((result) => result.standard_id)]));
+    const hitSample = mergeHits(current.hit_sample ?? [], sanitizeHits(input.hits));
     const { element: patched } = await patchAttribute(context, HUNT_MANAGER_USER, current.internal_id, ENTITY_TYPE_HUNT_RUN, {
+      hit_sample: hitSample,
+      ...huntHitDates(hitSample, {}, current),
       result_ids: resultIds.slice(0, HUNT_RUN_RESULT_IDS_MAX),
       ...(resultIds.length > HUNT_RUN_RESULT_IDS_MAX ? { results_truncated: true } : {}),
       hits_count: (current.hits_count ?? 0) + addedHits,

@@ -5,7 +5,7 @@ import { type FilterGroup, FilterMode, FilterOperator, HuntTechniqueValidationSt
 import { isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { HUNT_PLATFORMS, HUNT_SCHEDULE_STANDING, type HuntNativeQuery } from './hunt-types';
-import type { HuntEvidence } from './huntRun/huntRun-types';
+import type { HuntEvidence, HuntHit } from './huntRun/huntRun-types';
 import { isCronSchedule } from './hunt-schedule';
 
 const numberConf = (key: string, fallback: number): number => {
@@ -36,10 +36,21 @@ export const HUNT_CONFIG = {
   iocBatchSize: numberConf('hunt_manager:ioc_batch_size', 50),
   evidenceMaxItems: numberConf('hunt_manager:evidence_max_items', 20),
   evidenceMaxValueLength: numberConf('hunt_manager:evidence_max_value_length', 256),
+  hitSampleMaxItems: numberConf('hunt_manager:hit_sample_max_items', 50),
+  hitMaxValueLength: numberConf('hunt_manager:hit_max_value_length', 1024),
+  hitObservedDataMaxItems: numberConf('hunt_manager:hit_observed_data_max_items', 20),
   queueExpiryHours: numberConf('hunt_manager:queue_expiry_hours', 24),
   dispatchRecoveryMinutes: numberConf('hunt_manager:dispatch_recovery_minutes', 5),
   runRetentionDays: numberConf('hunt_manager:run_retention_days', 365),
   previewRetentionDays: numberConf('hunt_manager:preview_retention_days', 7),
+};
+
+// What a run reports as observables when its hunt names none: what a hit commonly involves
+export const HUNT_DEFAULT_EXPECTED_OBSERVABLES = ['IPv4-Addr', 'IPv6-Addr', 'Domain-Name', 'Url', 'StixFile', 'Email-Addr', 'Hostname', 'User-Account'];
+
+export const huntExpectedObservables = (hunt: { expected_observables?: string[] | null }) => {
+  const expected = (hunt.expected_observables ?? []).filter((type) => typeof type === 'string' && type.trim().length > 0);
+  return expected.length > 0 ? expected : HUNT_DEFAULT_EXPECTED_OBSERVABLES;
 };
 
 export const HUNT_DEFAULT_TIME_WINDOW_HOURS = 24;
@@ -84,7 +95,7 @@ export const techniqueValidationStatus = (counts: { runs: number; detected: numb
 
 // Secrets and personal data a telemetry value can carry, masked before a preview is stored whatever the connector sent.
 // Indicators (addresses, domains, hashes, command lines) stay readable: they are what an analyst triages.
-const EVIDENCE_MASKS: { pattern: RegExp; replacement: string }[] = [
+const SECRET_MASKS: { pattern: RegExp; replacement: string }[] = [
   { pattern: /-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?(-----END [A-Z ]*PRIVATE KEY-----|$)/g, replacement: '[masked private key]' },
   { pattern: /\beyJ[\w-]{8,}\.[\w-]{8,}\.[\w-]{8,}/g, replacement: '[masked token]' },
   { pattern: /\b(bearer|basic)\s+[\w~+/.-]{8,}=*/gi, replacement: '$1 [masked]' },
@@ -95,21 +106,113 @@ const EVIDENCE_MASKS: { pattern: RegExp; replacement: string }[] = [
   { pattern: /\b([a-z][a-z\d+.-]*:\/\/[^\s/:@]+):[^\s/@]+@/gi, replacement: '$1:[masked]@' },
   { pattern: /(^|\s)(-u|--user|--proxy-user)(\s+|=)(["']?)([^\s:"']+):("[^"]*"|'[^']*'|[^\s"']+)/gi, replacement: '$1$2$3$4$5:[masked]' },
   { pattern: /(^|\s)(--?(?:password|passwd|pass|pwd|secret|token|api[_-]?key|client[_-]?secret))(\s+)("[^"]*"|'[^']*'|(?!-)[^\s"']+)/gi, replacement: '$1$2$3[masked]' },
+];
+const EVIDENCE_MASKS: { pattern: RegExp; replacement: string }[] = [
+  ...SECRET_MASKS,
   { pattern: /\b[\w.%+-]+@((?:[\w-]+\.)+[a-z]{2,})\b/gi, replacement: '[masked]@$1' },
   { pattern: /\b\d{9,}\b/g, replacement: '[masked number]' },
 ];
 
-/** Masks the secrets and personal data of a telemetry value preview (credentials, tokens, keys, e-mail users, long numbers). */
-export const maskEvidencePreview = (value: string) => {
-  return EVIDENCE_MASKS.reduce((masked, { pattern, replacement }) => masked.replace(pattern, replacement), value);
+const applyMasks = (masks: { pattern: RegExp; replacement: string }[], value: string) => {
+  return masks.reduce((masked, { pattern, replacement }) => masked.replace(pattern, replacement), value);
 };
+
+/** Masks the secrets and personal data of a telemetry value preview (credentials, tokens, keys, e-mail users, long numbers). */
+export const maskEvidencePreview = (value: string) => applyMasks(EVIDENCE_MASKS, value);
 
 export interface HuntEvidenceInputLike {
   field?: string | null;
   value_hash?: string | null;
   value_preview?: string | null;
   count?: number | null;
+  matched?: boolean | null;
 }
+
+// Fields of a hit naming who and what the event involved (the account, the host, the event id): an analyst triages
+// them and the platform extracts observables from them, only their secrets are masked. Free text gets every mask
+const HUNT_HIT_ENTITY_FIELDS = ['host', 'user', 'process', 'source_ip', 'destination_ip', 'domain', 'url', 'file_hash', 'event_id'] as const;
+const HUNT_HIT_TEXT_FIELDS = ['matched_field', 'matched_value', 'command_line', 'detection'] as const;
+const HUNT_HIT_EXTRA_FIELDS_MAX = 10;
+const HUNT_HIT_EXTRA_NAME_MAX_LENGTH = 128;
+
+export interface HuntHitInputLike {
+  timestamp?: string | null;
+  extra_fields?: { name?: string | null; value?: string | null }[] | null;
+  [field: string]: unknown;
+}
+
+const toIsoDate = (value: unknown): string | null => {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return null;
+  }
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+};
+
+const hitValue = (value: unknown, mask: boolean, maxLength: number): string | null => {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return null;
+  }
+  return truncate(mask ? maskEvidencePreview(value.trim()) : applyMasks(SECRET_MASKS, value.trim()), maxLength);
+};
+
+/**
+ * The single events a run matched, as the platform stores them: at most `maxItems` (the first sent), every value
+ * masked and truncated whatever the connector sent, a hit without any value dropped. Next to the per-field evidence
+ * aggregation, they let an analyst read one hit: when, where, who, what matched.
+ */
+export const sanitizeHits = (
+  hits: HuntHitInputLike[] | null | undefined,
+  maxItems = HUNT_CONFIG.hitSampleMaxItems,
+  maxValueLength = HUNT_CONFIG.hitMaxValueLength,
+): HuntHit[] => {
+  const sanitized: HuntHit[] = [];
+  const items = hits ?? [];
+  for (let index = 0; index < items.length && sanitized.length < maxItems; index += 1) {
+    const item = items[index] ?? {};
+    const hit: HuntHit = { timestamp: toIsoDate(item.timestamp) };
+    let filled = hit.timestamp !== null;
+    HUNT_HIT_ENTITY_FIELDS.forEach((field) => {
+      hit[field] = hitValue(item[field], false, maxValueLength);
+      filled = filled || hit[field] !== null;
+    });
+    HUNT_HIT_TEXT_FIELDS.forEach((field) => {
+      hit[field] = hitValue(item[field], true, maxValueLength);
+      filled = filled || hit[field] !== null;
+    });
+    const extra = (Array.isArray(item.extra_fields) ? item.extra_fields : []).flatMap((field) => {
+      const name = typeof field?.name === 'string' ? truncate(field.name.trim(), HUNT_HIT_EXTRA_NAME_MAX_LENGTH) : '';
+      const value = hitValue(field?.value, true, maxValueLength);
+      return name.length > 0 && value !== null ? [{ name, value }] : [];
+    }).slice(0, HUNT_HIT_EXTRA_FIELDS_MAX);
+    hit.extra_fields = extra;
+    if (filled || extra.length > 0) {
+      sanitized.push(hit);
+    }
+  }
+  return sanitized;
+};
+
+/** Hits stored, then hits sanitized since: the first `maxItems` are kept. */
+export const mergeHits = (stored: HuntHit[], added: HuntHit[], maxItems = HUNT_CONFIG.hitSampleMaxItems): HuntHit[] => {
+  return [...stored, ...added].slice(0, maxItems);
+};
+
+/**
+ * Dates of the first and last hit of a run: the dates the connector reports for the whole run when it sends them (its
+ * sample is capped), widened by the hits of the sample; null when nothing dates a hit.
+ */
+export const huntHitDates = (
+  hits: HuntHit[],
+  reported: { first_hit_at?: string | null; last_hit_at?: string | null } = {},
+  stored: { first_hit_at?: string | null; last_hit_at?: string | null } = {},
+): { first_hit_at: string | null; last_hit_at: string | null } => {
+  const dates = [reported.first_hit_at, reported.last_hit_at, stored.first_hit_at, stored.last_hit_at, ...hits.map((hit) => hit.timestamp)]
+    .map(toIsoDate)
+    .filter((date): date is string => date !== null)
+    .sort();
+  return dates.length > 0 ? { first_hit_at: dates[0], last_hit_at: dates[dates.length - 1] } : { first_hit_at: null, last_hit_at: null };
+};
 
 /**
  * Evidence a connector sent, as the platform stores it: never raw telemetry. The platform hashes every submitted value
@@ -131,14 +234,15 @@ export const sanitizeEvidence = (
     const preview = typeof item.value_preview === 'string' && item.value_preview.length > 0
       ? truncate(maskEvidencePreview(item.value_preview), maxValueLength)
       : null;
-    return [{ field, value_hash: sha256(value), value_preview: preview, count }];
+    return [{ field, value_hash: sha256(value), value_preview: preview, count, matched: item.matched === true }];
   });
   return mergeEvidence([], items, maxItems);
 };
 
 /**
  * Stored evidence with evidence sanitized since, one item per field and value: hashes are the platform's already and
- * are never hashed again.
+ * are never hashed again. The values the hunt logic matched come first: by count alone, metadata constant across the
+ * hits (labels, categories, enrichment states) would crowd them out of the sample.
  */
 export const mergeEvidence = (stored: HuntEvidence[], added: HuntEvidence[], maxItems = HUNT_CONFIG.evidenceMaxItems): HuntEvidence[] => {
   const byKey = new Map<string, HuntEvidence>();
@@ -147,12 +251,13 @@ export const mergeEvidence = (stored: HuntEvidence[], added: HuntEvidence[], max
     const existing = byKey.get(key);
     if (existing) {
       existing.count += item.count;
+      existing.matched = existing.matched || item.matched === true;
     } else {
-      byKey.set(key, { field: item.field, value_hash: item.value_hash, value_preview: item.value_preview ?? null, count: item.count });
+      byKey.set(key, { field: item.field, value_hash: item.value_hash, value_preview: item.value_preview ?? null, count: item.count, matched: item.matched === true });
     }
   });
   return Array.from(byKey.values())
-    .sort((a, b) => b.count - a.count || a.field.localeCompare(b.field))
+    .sort((a, b) => Number(b.matched) - Number(a.matched) || b.count - a.count || a.field.localeCompare(b.field))
     .slice(0, maxItems);
 };
 
