@@ -289,6 +289,9 @@ export const emptyPageLookups = (): PageLookups => ({
 export interface RunLookups {
   // Signals written after this time are counted by the streaming increments, never by this computation
   asOf: number;
+  // A past day of the history backfill: the fields of an object that only have their current value are read from the
+  // objects not updated since that day
+  historical: boolean;
   falsePositiveLabelIds: Set<string>;
   // PIR relevance is an Enterprise Edition signal, read page by page with the other signals
   pirRelevance: boolean;
@@ -325,17 +328,34 @@ export interface DocumentSignals {
   createdTime: number | null;
 }
 
+/**
+ * Whether the revocation, labels and decay exclusion of a document, which only have their current value, are the ones
+ * it had at `now`. Every change to them updates the object: one not updated since a past day of the history backfill
+ * has them as they were that day, one updated since may carry them from a later day. The live computation reads them
+ * as they are, the stream applying the changes made after its pages were read.
+ */
+export const currentStateKnownAt = (doc: ScanDocument, run: Pick<RunLookups, 'historical'>, now: number): boolean => {
+  if (!run.historical) {
+    return true;
+  }
+  const updated = new Date(doc.updated_at ?? doc.created_at ?? Number.NaN).getTime();
+  return Number.isFinite(updated) && updated <= now;
+};
+
 export const computeDocumentSignals = (doc: ScanDocument, page: PageLookups, run: RunLookups, now: number): DocumentSignals => {
   const id = doc.internal_id;
   const isRelationship = isStixCoreRelationship(doc.entity_type) || doc.entity_type === STIX_SIGHTING_RELATIONSHIP;
   const isEntity = !isRelationship;
   const isIndicator = doc.entity_type === ENTITY_TYPE_INDICATOR;
   const isObservable = isStixCyberObservable(doc.entity_type);
-  const negativeRevocation = isNegativeRevocation(doc);
+  // A revocation, false positive label or decay exclusion that cannot be dated never reaches back into a past day:
+  // only the signals dated before it (sightings, relationships, containers) count for such an object
+  const known = currentStateKnownAt(doc, run, now);
+  const negativeRevocation = known && isNegativeRevocation(doc);
   const negativelySighted = (page.negativeSightings.get(id) ?? 0) > 0;
-  const labels = asArray(doc['rel_object-label.internal_id']);
+  const labels = known ? asArray(doc['rel_object-label.internal_id']) : [];
   const falsePositive = labels.some((labelId) => run.falsePositiveLabelIds.has(labelId));
-  const decayExcluded = !!doc.decay_exclusion_applied_rule?.decay_exclusion_id;
+  const decayExcluded = known && !!doc.decay_exclusion_applied_rule?.decay_exclusion_id;
   const negative = negativeRevocation || negativelySighted || falsePositive || decayExcluded;
   let pirMatched = false;
   if (run.pirRelevance) {
@@ -351,7 +371,8 @@ export const computeDocumentSignals = (doc: ScanDocument, page: PageLookups, run
   const incidents = (page.relationshipIncidents.get(id) ?? 0) + (page.containerIncidents.get(id) ?? 0);
   const referenced = (page.relationshipReferences.get(id) ?? 0) + (page.containerReferences.get(id) ?? 0) > 0;
   const sighted = sightings > 0 || platformSightings > 0;
-  const expired = isEntity && isExpired(doc, now);
+  // The end of validity is a date compared with `now`; an expiration by decay revocation is read like the revocation
+  const expired = isEntity && isExpired(known ? doc : { ...doc, revoked: false }, now);
   const noisy = isEntity && (expired || (!referenced && !sighted));
   const pulse = asArray(doc.pulse_information)[0];
   const pulseKnown = run.availability.pulse && isIndicator && !!pulse;
@@ -747,14 +768,20 @@ export const findHuntRunSightings = async (context: AuthContext, runIds: string[
   return sightings;
 };
 
-export const prepareRunLookups = async (context: AuthContext, settings: SourceIntelligenceSettings, enterprise: boolean, asOf: number): Promise<RunLookups> => {
+export const prepareRunLookups = async (
+  context: AuthContext,
+  settings: SourceIntelligenceSettings,
+  enterprise: boolean,
+  asOf: number,
+  historical: boolean,
+): Promise<RunLookups> => {
   const availability = resolveSoftJoinAvailability();
   const maxDays = Math.max(...SCORECARD_PERIODS.map((period) => SCORECARD_PERIOD_DAYS[period]));
   const [falsePositiveLabelIds, huntTrueRunIds] = await Promise.all([
     resolveFalsePositiveLabelIds(context, settings.false_positive_labels),
     resolveHuntTrueRunIds(context, availability.huntRunType, asOf - maxDays * DAY_MS, asOf),
   ]);
-  return { asOf, falsePositiveLabelIds, pirRelevance: enterprise, huntTrueRunIds, availability };
+  return { asOf, historical, falsePositiveLabelIds, pirRelevance: enterprise, huntTrueRunIds, availability };
 };
 // endregion
 

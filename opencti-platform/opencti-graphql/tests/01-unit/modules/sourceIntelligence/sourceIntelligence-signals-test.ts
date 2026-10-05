@@ -18,6 +18,7 @@ const NOW = new Date('2026-10-01T00:00:00.000Z').getTime();
 
 const run: RunLookups = {
   asOf: NOW,
+  historical: false,
   falsePositiveLabelIds: new Set(['label-false-positive']),
   pirRelevance: false,
   huntTrueRunIds: [],
@@ -55,6 +56,45 @@ describe('Source intelligence document signals', () => {
     const sighted = computeDocumentSignals(indicator(), page, run, NOW);
     expect(sighted.negativelySighted).toBe(true);
     expect(sighted.negative).toBe(true);
+  });
+
+  it('should never count in a past day a revocation, false positive label or decay exclusion it could not have seen', () => {
+    // A backfilled day, ten days before the object was last updated
+    const pastDay = new Date('2026-09-20T23:59:59.999Z').getTime();
+    const backfill = { ...run, historical: true };
+    const negatives: Partial<ScanDocument> = {
+      revoked: true,
+      'rel_object-label.internal_id': ['label-false-positive'],
+      decay_exclusion_applied_rule: { decay_exclusion_id: 'exclusion-1' },
+    };
+    const updatedSince = indicator({ ...negatives, updated_at: '2026-09-30T00:00:00.000Z' });
+    const signals = computeDocumentSignals(updatedSince, emptyPageLookups(), backfill, pastDay);
+    expect(signals.negativeRevocation).toBe(false);
+    expect(signals.falsePositive).toBe(false);
+    expect(signals.decayExcluded).toBe(false);
+    expect(signals.negative).toBe(false);
+    // A negative sighting created before that day is dated: it still counts
+    const page = emptyPageLookups();
+    page.negativeSightings.set('indicator-1', 1);
+    expect(computeDocumentSignals(updatedSince, page, backfill, pastDay).negative).toBe(true);
+    // Not updated since that day: its current state is its state on that day
+    const unchanged = computeDocumentSignals(indicator({ ...negatives, updated_at: '2026-09-10T00:00:00.000Z' }), emptyPageLookups(), backfill, pastDay);
+    expect(unchanged.negativeRevocation).toBe(true);
+    expect(unchanged.falsePositive).toBe(true);
+    expect(unchanged.decayExcluded).toBe(true);
+    // The live computation reads the current state, the stream applying the later changes
+    expect(computeDocumentSignals(updatedSince, emptyPageLookups(), run, pastDay).negative).toBe(true);
+  });
+
+  it('should only expire an object in a past day by a decay revocation known on that day', () => {
+    const pastDay = new Date('2026-09-20T23:59:59.999Z').getTime();
+    const backfill = { ...run, historical: true };
+    const decayRevoked: Partial<ScanDocument> = { revoked: true, x_opencti_score: 10, decay_applied_rule: { decay_revoke_score: 20 } };
+    expect(computeDocumentSignals(indicator({ ...decayRevoked, updated_at: '2026-09-30T00:00:00.000Z' }), emptyPageLookups(), backfill, pastDay).expired).toBe(false);
+    expect(computeDocumentSignals(indicator({ ...decayRevoked, updated_at: '2026-09-10T00:00:00.000Z' }), emptyPageLookups(), backfill, pastDay).expired).toBe(true);
+    // The end of validity is a date: compared with that day whatever the later updates
+    const ended = indicator({ valid_until: '2026-09-15T00:00:00.000Z', updated_at: '2026-09-30T00:00:00.000Z' });
+    expect(computeDocumentSignals(ended, emptyPageLookups(), backfill, pastDay).expired).toBe(true);
   });
 
   it('should read the PIR relevance of an entity and of the entities a relationship connects from its page', () => {

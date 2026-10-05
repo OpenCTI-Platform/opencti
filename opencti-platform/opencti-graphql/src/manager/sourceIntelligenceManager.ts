@@ -522,7 +522,7 @@ const computeAndStore = async (
   // Every source takes part in the attribution, so that disabling a source does not inflate the uniqueness of the others
   const resolver = buildResolverFromSources(sources);
   const state = createComputeState(asOf);
-  const run = await prepareRunLookups(context, settings, options.enterprise, asOf);
+  const run = await prepareRunLookups(context, settings, options.enterprise, asOf, !options.live);
   await scanKnowledge(context, state, resolver, settings, run);
   // A source can be disabled, deleted or given a cost during the scan: the scorecards use its current state
   const currentById = new Map((await listAllSources(context)).map((source) => [source.internal_id, source]));
@@ -656,7 +656,8 @@ export const planBackfill = (
 
 /**
  * One historical day per run, from the oldest to the end of the planned range (yesterday at most), so the trend charts
- * have data from the first day. Quality signals (revocations, sightings, labels) are evaluated with their current state.
+ * have data from the first day. Sightings, relationships and containers count when created by the end of the day;
+ * revocations, false positive labels and decay exclusions count for the objects not updated since, which had them then.
  */
 const runBackfillStep = async (context: AuthContext, settings: SourceIntelligenceSettings, state: SourceIntelligenceState, now: number) => {
   if (state.backfill_done || !state.backfill_next_day) {

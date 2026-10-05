@@ -29,7 +29,7 @@ Otherwise, the platform falls back to the creators and the author of each object
 
 ## Scorecards
 
-Every source has a scorecard over three rolling windows: 7, 30 and 90 days. The 30-day window is the reference used by the leaderboard. A daily snapshot is kept to draw trends, and the history is backfilled over the first days after the feature is enabled. Snapshots older than the snapshot retention of the settings are removed by the daily computation, at most 100,000 per day, so a shortened retention takes effect over the following days.
+Every source has a scorecard over three rolling windows: 7, 30 and 90 days. The 30-day window is the reference used by the leaderboard. A daily snapshot is kept to draw trends, and the history is backfilled over the first days after the feature is enabled. A backfilled day only counts what was known that day: the sightings, relationships and containers created by its end, and the revocations, false positive labels and decay exclusions of the objects not modified since (the platform keeps only the current value of these, so a later revocation never lowers the accuracy of an earlier day). Snapshots older than the snapshot retention of the settings are removed by the daily computation, at most 100,000 per day, so a shortened retention takes effect over the following days.
 
 | Metric | Meaning |
 |---|---|
