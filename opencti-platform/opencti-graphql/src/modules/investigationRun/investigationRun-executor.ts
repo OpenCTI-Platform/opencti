@@ -392,7 +392,8 @@ const collectCaseObjects = async (exec: RunExecution, caseId: string) => {
     fromId: caseId,
     first: INVESTIGATION_LIMITS.contextEntities,
   }) as unknown as BasicStoreRelation[];
-  const ids = R.uniq(refs.map((ref) => ref.toId));
+  // A link restricted to authorized members brings nothing into the investigation, whoever the identity.
+  const ids = R.uniq(withoutMemberRestricted(refs).map((ref) => ref.toId));
   if (ids.length === 0) return [];
   const objects = await elFindByIds<BasicStoreEntity>(exec.draftContext, exec.runUser, ids, { indices: READ_DATA_INDICES_WITHOUT_INTERNAL }) as BasicStoreEntity[];
   return withoutMemberRestricted(objects);
@@ -418,11 +419,11 @@ const collectInvestigationContext = async (exec: RunExecution, subject: BasicSto
   const { relationships, entities: neighbors } = await collectNeighborhood(exec, seedIds);
   const knownElements = R.uniqBy((element: BasicStoreEntity) => element.internal_id, [...caseObjects, ...subjectCaseObjects, ...neighbors])
     .filter((element) => element.internal_id !== subject.internal_id);
-  // Candidates: threats in the neighborhood and threats one hop further.
-  const candidateRelations = await topRelationsList<BasicStoreRelation>(draftContext, runUser, ABSTRACT_STIX_CORE_RELATIONSHIP, {
+  // Candidates: threats in the neighborhood and threats one hop further, through relationships the run may use.
+  const candidateRelations = withoutMemberRestricted(await topRelationsList<BasicStoreRelation>(draftContext, runUser, ABSTRACT_STIX_CORE_RELATIONSHIP, {
     fromOrToId: R.uniq([...seedIds, ...knownElements.map((element) => element.internal_id)]).slice(0, 100),
     first: INVESTIGATION_LIMITS.contextRelationships,
-  }) as unknown as BasicStoreRelation[];
+  }) as unknown as BasicStoreRelation[]);
   const candidateIds = R.uniq([
     ...knownElements.filter((element) => ATTRIBUTION_CANDIDATE_TYPES.includes(element.entity_type)).map((element) => element.internal_id),
     ...candidateRelations.flatMap((relationship) => [
@@ -435,10 +436,10 @@ const collectInvestigationContext = async (exec: RunExecution, subject: BasicSto
   const candidates = [...knownElements, ...extraCandidates].filter((element) => ATTRIBUTION_CANDIDATE_TYPES.includes(element.entity_type));
   // Courses of action mitigating the techniques in scope.
   const attackPatternIds = knownElements.filter((element) => element.entity_type === ENTITY_TYPE_ATTACK_PATTERN).map((element) => element.internal_id);
-  const mitigations = attackPatternIds.length === 0 ? [] : await topRelationsList<BasicStoreRelation>(draftContext, runUser, RELATION_MITIGATES, {
+  const mitigations = attackPatternIds.length === 0 ? [] : withoutMemberRestricted(await topRelationsList<BasicStoreRelation>(draftContext, runUser, RELATION_MITIGATES, {
     toId: attackPatternIds.slice(0, 100),
     first: INVESTIGATION_LIMITS.coursesOfAction,
-  }) as unknown as BasicStoreRelation[];
+  }) as unknown as BasicStoreRelation[]);
   const coaIds = R.uniq([
     ...knownElements.filter((element) => element.entity_type === ENTITY_TYPE_COURSE_OF_ACTION).map((element) => element.internal_id),
     ...mitigations.map((relationship) => relationship.fromId),
