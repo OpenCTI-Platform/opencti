@@ -36,8 +36,6 @@ export const dataSanityForceRunHandler = async (context: AuthContext) => {
       await markOperationAsRunning(context, DATA_SANITY_MANAGER_USER, operation.identifier);
       output = await operation.operationRun(context);
     } catch (e: any) {
-      // The operation did not complete. Its outcome is recorded below and shown in the UI,
-      // so this is a reported failure, not an unhandled one.
       runError = e;
       logApp.warn('[DATA_SANITY_MANAGER] Force_run data sanity operation failed', { operation: operation.identifier, cause: e });
     }
@@ -76,8 +74,6 @@ export const dataSanityListHandler = async (context: AuthContext, user: AuthUser
       await markOperationAsRunning(context, DATA_SANITY_MANAGER_USER, operation.identifier);
       output = await operation.operationRun(context);
     } catch (e: any) {
-      // The operation did not complete. Its outcome is recorded below and shown in the UI,
-      // so this is a reported failure, not an unhandled one.
       runError = e;
       logApp.warn('[DATA_SANITY_MANAGER] Data sanity operation failed', { operation: operation.identifier, cause: e });
     }
@@ -89,8 +85,6 @@ export const dataSanityListHandler = async (context: AuthContext, user: AuthUser
         logApp.info('[DATA_SANITY_MANAGER] Data sanity operation completed successfully', { operation: operation.identifier, executionTimeMs });
       }
     } catch (e: any) {
-      // The result could not be written: the operation stays flagged as running and every
-      // later pass skips it over the running lock. Needs a human.
       logApp.error('[DATA_SANITY_MANAGER] Data sanity operation result could not be recorded', { operation: operation.identifier, cause: e });
     }
   }
