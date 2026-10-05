@@ -1,6 +1,6 @@
 import { renderToString } from 'react-dom/server';
 import React, { ReactElement } from 'react';
-import { marked } from 'marked';
+import { Marked, marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { dateFormat } from '../Time';
 import { useBuildFilterKeysMapFromEntityType } from '../filters/filtersUtils';
@@ -18,13 +18,23 @@ const MARKDOWN_ATTRIBUTES = [
   'objective',
 ];
 
+// In tables, the only link wanted is the one to the entity page:
+const markedWithoutLinks = new Marked({
+  renderer: {
+    link({ tokens }) {
+      return this.parser.parseInline(tokens);
+    },
+  },
+});
+
 const buildStringAttribute = (inputValue: unknown, attributeType?: string, inTable = false) => {
   let value: string | ReactElement = typeof inputValue === 'string' ? inputValue : JSON.stringify(inputValue);
 
   if (attributeType === 'date') {
     value = dateFormat(new Date(value)) ?? '';
   } else if (attributeType === 'markdown') {
-    const mark = marked.parse(value, {
+    const markdownParser = inTable ? markedWithoutLinks : marked;
+    const mark = markdownParser.parse(value, {
       async: false,
       breaks: true,
       walkTokens: (token) => {
