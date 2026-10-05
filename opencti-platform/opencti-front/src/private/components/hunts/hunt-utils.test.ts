@@ -469,8 +469,8 @@ describe('Hunt utils', () => {
   });
 
   it('should say why the hit count of a run with partial results is a lower bound', () => {
-    const t = (message: string, options?: { values: Record<string, string> }) => Object.entries(options?.values ?? {})
-      .reduce((text, [key, value]) => text.replace(`{${key}}`, value), message);
+    const t = (message: string, options?: { values: Record<string, string | number> }) => Object.entries(options?.values ?? {})
+      .reduce((text, [key, value]) => text.replace(`{${key}}`, String(value)), message);
     const n = (value: number) => String(value);
     // The run reached the result limit of its hunt, or the platform default without one
     expect(huntRunPartialResultsSentence({ hits_count: 500, maxResults: 500 }, 'Splunk prod', t, n))
