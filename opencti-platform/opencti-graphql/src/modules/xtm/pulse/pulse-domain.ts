@@ -1060,12 +1060,20 @@ export const runPulseRefresh = async (context: AuthContext, force = false) => {
     await handlePulseReadError(values, error);
     throw error;
   }
-  if (stopped) {
+  const covered = !remaining;
+  // The checkpoint is written under the lock of its pages and only while the pass is current: a configuration change
+  // or a purge that reset it after the last page always wins.
+  const recorded = !stopped && await withPulsePushLock(async () => {
+    if (!(await isPulsePassCurrent(generation, values, access))) {
+      return false;
+    }
+    await redisSetPulseState({ last_refresh_at: new Date().toISOString(), refresh_offset: covered ? undefined : String(offset + handled) });
+    return true;
+  });
+  if (!recorded) {
     logApp.info('[THREAT PULSE] Configuration or access changed during the network refresh, the next run reads under the new one');
     return processed;
   }
-  const covered = !remaining;
-  await redisSetPulseState({ last_refresh_at: new Date().toISOString(), refresh_offset: covered ? undefined : String(offset + handled) });
   logApp.info('[THREAT PULSE] Network information refreshed', { processed, offset, covered });
   return processed;
 };
@@ -1238,14 +1246,26 @@ export const runPulsePreview = async (context: AuthContext, force = false) => {
     filters: PULSE_PREVIEW_SIGNAL_FILTERS,
     noFiltersChecking: true,
   });
-  await redisSetPulseState({
-    preview_refresh_at: updatedAt.toISOString(),
-    ...scan,
-    preview_digest_day: digest.day,
-    preview_digest_items: String(digest.items.length),
-    preview_matched: String(matchedTotal),
-    preview_since: matchedTotal > 0 ? state.preview_since ?? updatedAt.toISOString() : state.preview_since,
+  // Under the lock of its pages and only while the pass is current, like the network refresh: a mode or bucket change
+  // or a purge that reset the scan after the last page always wins.
+  const recorded = await withPulsePushLock(async () => {
+    if (!(await isPulsePassCurrent(generation, values, access))) {
+      return false;
+    }
+    await redisSetPulseState({
+      preview_refresh_at: updatedAt.toISOString(),
+      ...scan,
+      preview_digest_day: digest.day,
+      preview_digest_items: String(digest.items.length),
+      preview_matched: String(matchedTotal),
+      preview_since: matchedTotal > 0 ? state.preview_since ?? updatedAt.toISOString() : state.preview_since,
+    });
+    return true;
   });
+  if (!recorded) {
+    logApp.info('[THREAT PULSE] Configuration or access changed during the preview pass, the next pass reads under the new one');
+    return matched;
+  }
   logApp.info('[THREAT PULSE] Preview refreshed from the digest', { digestItems: digest.items.length, offset, handled, matched, matchedTotal, covered });
   return matched;
 };
