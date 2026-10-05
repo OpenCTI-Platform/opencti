@@ -80,7 +80,7 @@ From **Defense > Hunts**, click the creation button and fill in:
 - optional **native queries**, one per platform, executed verbatim instead of the translated Sigma rule (**Add a native query**, next to the label),
 - the **targets** (threats) and the **sources** (indicators, reports) of the hunt,
 - the **time window** searched by each run (24 hours by default),
-- the **expected observables**: the observable types the hunt connectors may extract from the results to create knowledge (IP addresses, domain names, URLs, file hashes, email addresses),
+- the **observables to extract from hits**, under **What a run produces**: the observable types whose values found in the hits become observables (the default types when left empty, see [What a run produces](#what-a-run-produces)); indicator hunts do not use it,
 - the **benign patterns**: known legitimate activity, shared with the triage agent,
 - the **escalation threshold**: from this number of hits, a completed run proposes an Incident (see below),
 - the **scope**: the security platforms the hunt runs on (all the platforms served by a hunt connector when empty).
@@ -145,9 +145,24 @@ When a run completes, the hunt connector sends to OpenCTI:
 
 - the number of **hits** and of distinct entities,
 - an **evidence sample**: the result fields with their occurrence count. Raw values are never stored: each value is hashed and only a truncated preview is kept, in which OpenCTI masks credentials (named fields, authorization headers, the password of a URL such as `https://user:password@host`, command-line arguments such as `curl -u user:password` or `--password value`), tokens, keys, e-mail users and long numbers before storing it, whatever the connector sent,
-- **knowledge**: a sighting of each technique and indicator of the hunt, where sighted on the security platform, and observed data referencing the observables extracted from the results (limited to the expected observable types). This knowledge carries the hunt run identifier, so it can always be traced back to the run that produced it.
+- **knowledge**: the sightings, observables and observed data described in [What a run produces](#what-a-run-produces). This knowledge carries the hunt run identifier, so it can always be traced back to the run that produced it.
 
 The page of a run lists the objects it created that you can read, 25 at a time: the list shows how many there are in total, and **Show more** loads the next ones.
+
+### What a run produces
+
+The raw events never leave the hunted platform: OpenCTI receives the hit count, the masked evidence sample and the objects below, each stamped with the run that produced it.
+
+| Created by | What | When |
+|---|---|---|
+| The hunt connector | A **sighting** of each technique and each indicator of the hunt, sighted by the security platform of the run, counting the hits between the first and the last matching event | Detection-rule hunts, for a run with hits. A run without a security platform creates no sighting: the hunt connector only logs a warning |
+| The hunt connector | An **observable** for each value of the **observables to extract from hits** found in the matching events, each with an **observed data** counting its occurrences | Detection-rule and internet infrastructure hunts. The hunt connector extracts only the types it supports, up to the maximum number of observables its configuration allows |
+| OpenCTI | An **observed data** for each hit of the evidence sample (20 at most, `hunt_manager:hit_observed_data_max_items`), holding the observables the hit names: its host, its account and the values of the fields the hunt logic matched (addresses, URLs, host names, domains, file hashes, command lines) | When a run completes with hits. A value OpenCTI masked or truncated names nothing and is skipped |
+| OpenCTI | An **Incident** in a new draft workspace | From the escalation threshold, see below |
+
+Left empty, **Observables to extract from hits** stands for the default types, which the empty field names and the hunt page lists: IPv4 address, IPv6 address, domain name, URL, file, email address, hostname and user account. A type a hunt connector does not support is ignored on its platform. An indicator hunt does not use this list, so its forms and its page do not show it: it records each value it finds as a sighting of its indicator or observable (see [Results and verdicts](hunt-indicators.md#results-and-verdicts)). An internet infrastructure hunt creates no sighting: the hosts it finds become an infrastructure related to the targeted threats, with an observable, an indicator and an observed data for each value of the types to extract. The default types hold no certificate: name **X509 certificate** in the list to keep the certificates of the hosts too, when the hunt connector is configured to create them.
+
+The run drawer sums this up under **Knowledge produced**, for example "2 sightings, 5 observed data, 3 observables", counted over the objects you can read. When a completed run with hits produced no observable and no observed data, it says why: the hits carried no value of the types to extract, or the hunt connector does not support these types. When a detection-rule run with hits produced no sighting, it says why too: the run has no security platform, or the hunt names no technique or indicator to sight.
 
 Evidence can also be attached to a run later (an alert raised by the SIEM, a follow-up search): it is merged into the run. When it brings hits to a completed run whose verdict was set automatically, the run is finalized again with its new hit count: a run without hits that was `benign` becomes `pending` for triage, an Incident draft is opened at the escalation threshold, and the hunt statistics and the emulation coverage follow. A verdict set by an analyst or an agent is kept; only the statistics and the coverage follow.
 

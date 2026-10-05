@@ -25,6 +25,9 @@ import { createWork, deleteWork } from '../../../domain/work';
 import { publishUserAction } from '../../../listener/UserActionListener';
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_HUNT } from '../../../schema/general';
 import { ENTITY_TYPE_CONNECTOR } from '../../../schema/internalObject';
+import { isStixCyberObservable } from '../../../schema/stixCyberObservable';
+import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../../../schema/stixDomainObject';
+import { isStixSightingRelationship } from '../../../schema/stixSightingRelationship';
 import {
   FilterMode,
   FilterOperator,
@@ -145,22 +148,54 @@ export const findHuntRunsForHunt = (context: AuthContext, user: AuthUser, huntId
   return findHuntRunsPaginated(context, user, { orderBy: 'created_at', orderMode: OrderingMode.Desc, ...args, filters });
 };
 
+/** What the results of a run hold, by kind. */
+export interface HuntRunResultsSummary {
+  sightings: number;
+  observed_data: number;
+  observables: number;
+  others: number;
+}
+
+/** Counts the results of a run by kind, each object once. */
+export const summarizeHuntRunResults = (results: ReadonlyArray<{ internal_id: string; entity_type: string }>): HuntRunResultsSummary => {
+  const summary: HuntRunResultsSummary = { sightings: 0, observed_data: 0, observables: 0, others: 0 };
+  const types = new Map(results.map((result) => [result.internal_id, result.entity_type]));
+  types.forEach((entityType) => {
+    if (isStixSightingRelationship(entityType)) {
+      summary.sightings += 1;
+    } else if (entityType === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
+      summary.observed_data += 1;
+    } else if (isStixCyberObservable(entityType)) {
+      summary.observables += 1;
+    } else {
+      summary.others += 1;
+    }
+  });
+  return summary;
+};
+
+interface ReadableHuntRunResults {
+  internalIds: string[];
+  visibleIds: string[];
+  summary: HuntRunResultsSummary;
+}
+
 // The results of a run the user can read, as internal ids in the order the run recorded them (markings and
-// organizations of every object apply). Access is resolved over every recorded id before any pagination, reading their
-// identifiers only, so counts never include the objects the user cannot read and no object is loaded in full.
-// Paging through thousands of results resolves the readable ids once per reader and version of the run, not on every
-// page. Every page still loads its objects with the access of the reader, so the short ttl only bounds how long a count
-// can lag behind an access change; the size bound counts ids, a run holding thousands of them
-const readableResultIdsCache = new LRUCache<string, { internalIds: string[]; visibleIds: string[] }>({
+// organizations of every object apply), with their summary by kind. Access is resolved over every recorded id before any
+// pagination, reading their identifiers and types only, so counts never include the objects the user cannot read and no
+// object is loaded in full. Paging through thousands of results resolves the readable ids once per reader and version of
+// the run, not on every page. Every page still loads its objects with the access of the reader, so the short ttl only
+// bounds how long a count can lag behind an access change; the size bound counts ids, a run holding thousands of them
+const readableResultIdsCache = new LRUCache<string, ReadableHuntRunResults>({
   maxSize: 200_000,
   sizeCalculation: (value) => value.internalIds.length + value.visibleIds.length + 1,
   ttl: 30 * 1000,
 });
 
-const readableHuntRunResultIds = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityHuntRun) => {
+const readableHuntRunResultIds = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityHuntRun): Promise<ReadableHuntRunResults> => {
   const ids = run.result_ids ?? [];
   if (ids.length === 0) {
-    return { internalIds: [] as string[], visibleIds: [] as string[] };
+    return { internalIds: [], visibleIds: [], summary: summarizeHuntRunResults([]) };
   }
   const cacheKey = [user.id, context.draft_context ?? '', run.internal_id, String(run.updated_at), ids.length].join('|');
   const cached = readableResultIdsCache.get(cacheKey);
@@ -173,7 +208,7 @@ const readableHuntRunResultIds = async (context: AuthContext, user: AuthUser, ru
     [element.internal_id, element.standard_id, ...(element.x_opencti_stix_ids ?? [])].forEach((id) => internalIdOf.set(id, element.internal_id));
   });
   const internalIds = Array.from(new Set(ids.map((id) => internalIdOf.get(id)).filter((id): id is string => !!id)));
-  const resolved = { internalIds, visibleIds: ids.filter((id) => internalIdOf.has(id)) };
+  const resolved = { internalIds, visibleIds: ids.filter((id) => internalIdOf.has(id)), summary: summarizeHuntRunResults(readable) };
   readableResultIdsCache.set(cacheKey, resolved);
   return resolved;
 };
@@ -212,6 +247,12 @@ export const findHuntRunResults = async (context: AuthContext, user: AuthUser, r
 export const findHuntRunResultIds = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityHuntRun) => {
   const { visibleIds } = await readableHuntRunResultIds(context, user, run);
   return visibleIds;
+};
+
+// What a run produced, by kind, over the same results the caller can read in its results
+export const findHuntRunResultsSummary = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityHuntRun) => {
+  const { summary } = await readableHuntRunResultIds(context, user, run);
+  return summary;
 };
 
 const loadHuntForRun = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityHuntRun) => {

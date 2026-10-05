@@ -30,7 +30,8 @@ import { useIsMandatoryAttribute } from '../../../utils/hooks/useEntitySettings'
 import CreatedByField from '../common/form/CreatedByField';
 import ObjectMarkingField from '../common/form/ObjectMarkingField';
 import HuntEntitiesField from './HuntEntitiesField';
-import ObservableTypesField from '../common/form/ObservableTypesField';
+import HuntFormSectionTitle from './HuntFormSectionTitle';
+import HuntRunProducesSection from './HuntRunProducesSection';
 import HuntScheduleField from './HuntScheduleField';
 import HuntTriggerFiltersField from './HuntTriggerFiltersField';
 import { validateHuntSchedule } from './hunt-schedule-utils';
@@ -344,10 +345,7 @@ const HuntEditionForm = ({ data, onClose }: HuntEditionFormProps) => {
               />
             </div>
           </div>
-          <ObservableTypesField name="expected_observables" label={t_i18n('Expected observables')} multiple style={fieldSpacingContainerStyle} />
-          <Text variant="content-caption" style={{ display: 'block', color: theme.palette.text.secondary }}>
-            {t_i18n('Observable types a run turns into observables when it finds them, for example IPv4-Addr. Left empty, a run creates no observable.')}
-          </Text>
+          <HuntRunProducesSection huntType={values.hunt_type} />
           <div style={fieldSpacingContainerStyle}>
             <Field
               component={TextareaField}
@@ -357,6 +355,7 @@ const HuntEditionForm = ({ data, onClose }: HuntEditionFormProps) => {
               helperText={<HuntHelp text={t_i18n('Known legitimate activity the triage must not escalate, for example a backup service account')} href={HUNT_DOCS.runs} />}
             />
           </div>
+          <HuntFormSectionTitle>{t_i18n('Knowledge')}</HuntFormSectionTitle>
           <HuntEntitiesField name="huntTargets" label={t_i18n('Targeted threats')} types={HUNT_TARGET_TYPES} style={fieldSpacingContainerStyle} />
           <HuntEntitiesField name="huntTechniques" label={t_i18n('Covered techniques')} types={HUNT_TECHNIQUE_TYPES} style={fieldSpacingContainerStyle} />
           {values.hunt_type !== 'indicators' && initialValues.hunt_type !== 'indicators' && (

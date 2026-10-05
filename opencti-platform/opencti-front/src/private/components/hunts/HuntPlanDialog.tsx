@@ -188,7 +188,7 @@ const HuntPlanDialog = ({ open, onClose, entityIds }: HuntPlanDialogProps) => {
           </SelectContent>
         </Select>
         <Text variant="content-caption" style={{ color: theme.palette.text.secondary }}>
-          {t_i18n('The default hunt planner writes a falsifiable hypothesis, a Sigma rule and the expected observables from the knowledge you pick.')}
+          {t_i18n('From the knowledge you pick, the default hunt planner writes a falsifiable hypothesis, a Sigma rule and the observables to extract.')}
         </Text>
         {inFlight && <Spinner size="md" label={t_i18n('The agent is planning the hunt')} />}
         {planError && (

@@ -18743,6 +18743,11 @@ type HuntStatistics {
 
 type HuntConfiguration {
   min_schedule_interval_minutes: Int!
+
+  """
+  The observable types a run extracts from its hits when its hunt names none
+  """
+  default_expected_observables: [String!]!
 }
 
 enum HuntTechniqueValidationStatus {
@@ -19249,6 +19254,18 @@ type HuntIocResult {
   deployed: Boolean!
 }
 
+"""The results of a run the user can read, counted by kind"""
+type HuntRunResultsSummary {
+  sightings: Int!
+  observed_data: Int!
+  observables: Int!
+
+  """
+  Results of any other kind, for example the infrastructure and indicators of an infrastructure hunt
+  """
+  others: Int!
+}
+
 """
 A sentence of the platform: the English sentence with its {placeholders} is the translation key of the user interface
 """
@@ -19318,6 +19335,11 @@ type HuntRun implements BasicObject & InternalObject {
   ioc_results: [HuntIocResult!]
   result_ids: [String!]
   results(first: Int, after: ID): StixObjectOrStixRelationshipConnection
+
+  """
+  What the run produced: its results counted by kind, over the same objects as results
+  """
+  results_summary: HuntRunResultsSummary!
   verdict: HuntRunVerdict!
   verdict_source: HuntVerdictSource
   verdict_rationale: String

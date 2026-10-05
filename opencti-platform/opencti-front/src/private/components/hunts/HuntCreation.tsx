@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
 import { useTheme } from '@mui/styles';
-import { Text } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Drawer, { DrawerControlledDialProps } from '@components/common/drawer/Drawer';
 import CreateEntityControlledDial from '../../../components/CreateEntityControlledDial';
@@ -34,7 +33,8 @@ import ObjectLabelField from '../common/form/ObjectLabelField';
 import ObjectMarkingField from '../common/form/ObjectMarkingField';
 import { ExternalReferencesField } from '../common/form/ExternalReferencesField';
 import HuntEntitiesField from './HuntEntitiesField';
-import ObservableTypesField from '../common/form/ObservableTypesField';
+import HuntFormSectionTitle from './HuntFormSectionTitle';
+import HuntRunProducesSection from './HuntRunProducesSection';
 import HuntSigmaRuleField from './HuntSigmaRuleField';
 import HuntEELabel from './HuntEELabel';
 import HuntNativeQueriesField from './HuntNativeQueriesField';
@@ -171,15 +171,6 @@ interface HuntCreationFormProps {
   derived?: HuntDerived | null;
 }
 
-const SectionTitle = ({ children }: { children: React.ReactNode }) => {
-  const theme = useTheme<Theme>();
-  return (
-    <Text variant="title-sm" as="h3" style={{ marginTop: theme.spacing(4), marginBottom: 0 }}>
-      {children}
-    </Text>
-  );
-};
-
 export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues: prefill, derived }: HuntCreationFormProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
@@ -286,7 +277,7 @@ export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues:
             </Field>
           </div>
 
-          <SectionTitle>{values.hunt_type === 'indicators' ? t_i18n('What to look for') : t_i18n('Logic')}</SectionTitle>
+          <HuntFormSectionTitle>{values.hunt_type === 'indicators' ? t_i18n('What to look for') : t_i18n('Logic')}</HuntFormSectionTitle>
           {values.hunt_type === 'indicators' && <HuntIocFields filtersState={iocFiltersState} />}
           {values.hunt_type === 'telemetry' && (
             <div style={fieldSpacingContainerStyle}>
@@ -314,7 +305,7 @@ export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues:
             </div>
           )}
 
-          <SectionTitle>{t_i18n('Execution')}</SectionTitle>
+          <HuntFormSectionTitle>{t_i18n('Execution')}</HuntFormSectionTitle>
           {values.hunt_type !== 'infrastructure' && (
             <HuntEntitiesField
               name="scopePlatforms"
@@ -379,16 +370,7 @@ export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues:
             </div>
           </div>
 
-          <SectionTitle>{t_i18n('Expected results')}</SectionTitle>
-          <ObservableTypesField
-            name="expected_observables"
-            label={t_i18n('Expected observables')}
-            multiple
-            style={fieldSpacingContainerStyle}
-          />
-          <Text variant="content-caption" style={{ display: 'block', color: theme.palette.text.secondary }}>
-            {t_i18n('Observable types a run turns into observables when it finds them, for example IPv4-Addr. Left empty, a run creates no observable.')}
-          </Text>
+          <HuntRunProducesSection huntType={values.hunt_type} />
           <div style={fieldSpacingContainerStyle}>
             <Field
               component={TextareaField}
@@ -399,7 +381,7 @@ export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues:
             />
           </div>
 
-          <SectionTitle>{t_i18n('Knowledge')}</SectionTitle>
+          <HuntFormSectionTitle>{t_i18n('Knowledge')}</HuntFormSectionTitle>
           <HuntEntitiesField
             name="huntTargets"
             label={t_i18n('Targeted threats')}

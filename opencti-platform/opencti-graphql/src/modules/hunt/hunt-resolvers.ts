@@ -24,7 +24,7 @@ import { exportHuntPack } from './hunt-pack';
 import { validateSigmaRule } from './hunt-sigma';
 import { findUnresolvedAttackTechniques } from './hunt-logic';
 import { ENTITY_TYPE_HUNT, RELATION_HUNT_SOURCES, RELATION_HUNT_TARGETS, RELATION_HUNT_TECHNIQUES } from './hunt-types';
-import { HUNT_CONFIG } from './hunt-utils';
+import { HUNT_CONFIG, HUNT_DEFAULT_EXPECTED_OBSERVABLES } from './hunt-utils';
 import { computeHuntStatistics, computeHuntTechniqueValidations, findHuntRunsForHunt, startHuntPreview, startHuntRuns } from './huntRun/huntRun-domain';
 
 const huntResolvers: Resolvers = {
@@ -32,7 +32,10 @@ const huntResolvers: Resolvers = {
     hunt: (_, { id }, context) => findHuntById(context, context.user, id),
     hunts: (_, args, context) => findHuntsPaginated(context, context.user, args),
     huntSigmaValidate: (_, { sigma_rule }) => validateSigmaRule(sigma_rule),
-    huntConfiguration: () => ({ min_schedule_interval_minutes: HUNT_CONFIG.minScheduleIntervalMinutes }),
+    huntConfiguration: () => ({
+      min_schedule_interval_minutes: HUNT_CONFIG.minScheduleIntervalMinutes,
+      default_expected_observables: HUNT_DEFAULT_EXPECTED_OBSERVABLES,
+    }),
     huntStatistics: (_, args, context) => computeHuntStatistics(context, context.user, args),
     huntPackExport: (_, { ids }, context) => exportHuntPack(context, context.user, ids),
     huntDerivedContent: (_, { entityId }, context) => deriveHuntContent(context, context.user, entityId),

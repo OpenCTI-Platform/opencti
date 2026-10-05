@@ -181,6 +181,7 @@ export const HUNT_DOCS = {
   connectors: `${HUNT_DOCS_BASE}/hunt-connectors/`,
   connectionTest: `${HUNT_DOCS_BASE}/hunt-connectors/#test-the-connection`,
   runs: `${HUNT_DOCS_BASE}/hunts/#results-evidence-and-verdicts`,
+  produces: `${HUNT_DOCS_BASE}/hunts/#what-a-run-produces`,
   runHunt: `${HUNT_DOCS_BASE}/hunts/#run-a-hunt`,
   activate: `${HUNT_DOCS_BASE}/hunts/#activate-a-hunt`,
   types: `${HUNT_DOCS_BASE}/hunts/#hunt-types`,
@@ -246,6 +247,23 @@ export const huntTypeDescription = (huntType?: string | null) => {
     default: return 'Needs a Sigma rule or a native query: runs it on the logs and events of your SIEM, EDR or data lake.';
   }
 };
+
+/** Whether the runs of a hunt type extract observables of the types the hunt names: an indicator hunt sights the values it looks up instead. */
+export const huntExtractsObservables = (huntType?: string | null) => huntType !== 'indicators';
+
+/** What a run of each hunt type records in the knowledge, in one line: the documentation details it. */
+export const huntRunProducesDescription = (huntType?: string | null) => {
+  switch (huntType) {
+    case 'indicators': return 'A run records a sighting of each indicator or observable whose value it finds, and observed data of its hits.';
+    case 'infrastructure': return 'A run turns the internet hosts it finds into infrastructure of the targeted threats, with observables and indicators.';
+    default: return 'A run with hits records sightings of the techniques and indicators of the hunt, observables and observed data.';
+  }
+};
+
+/** Observable types by their names, in the language of the user. */
+export const huntObservableTypeNames = (types: ReadonlyArray<string>, t_i18n: (message: string) => string) => types
+  .map((type) => t_i18n(`entity_${type}`))
+  .join(', ');
 
 /** The meaning of each status, one line each, as the hunt page explains them. */
 export const HUNT_STATUS_MEANINGS: Record<HuntStatusValue, string> = {

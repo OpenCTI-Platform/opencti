@@ -9,6 +9,8 @@ import {
   formatDerivedValueTypes,
   formatHuntWindow,
   type HuntDerived,
+  huntExtractsObservables,
+  huntObservableTypeNames,
   huntTypeDescription,
   huntTypeLabel,
   selectedDerivedElements,
@@ -492,5 +494,21 @@ describe('Hunt utils', () => {
       .toBe('Splunk prod returned partial results for this run, so the hit count is a lower bound.');
     expect(huntRunPartialResultsSentence({ hits_count: 0 }, 'Splunk prod', t, n))
       .toBe('Splunk prod returned partial results for this run, so the hit count is a lower bound.');
+  });
+});
+
+describe('Observables to extract from hits', () => {
+  it('should let every hunt type but indicator hunts name the observable types to extract', () => {
+    expect(huntExtractsObservables('telemetry')).toBe(true);
+    expect(huntExtractsObservables('infrastructure')).toBe(true);
+    // A hunt without a type is a detection rule hunt
+    expect(huntExtractsObservables(null)).toBe(true);
+    expect(huntExtractsObservables('indicators')).toBe(false);
+  });
+
+  it('should name observable types in the language of the user, in their order', () => {
+    const names: Record<string, string> = { 'entity_IPv4-Addr': 'IPv4 address', entity_StixFile: 'File', 'entity_User-Account': 'User account' };
+    expect(huntObservableTypeNames(['IPv4-Addr', 'StixFile', 'User-Account'], (message) => names[message] ?? message)).toBe('IPv4 address, File, User account');
+    expect(huntObservableTypeNames([], (message) => message)).toBe('');
   });
 });

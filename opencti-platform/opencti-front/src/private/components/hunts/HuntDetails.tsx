@@ -13,7 +13,8 @@ import type { Theme } from '../../../components/Theme';
 import { resolveLink } from '../../../utils/Entity';
 import { HuntRunStatusChip, HuntSourceKindChip, HuntStatusChip } from './HuntChips';
 import { useHuntScheduleText } from './HuntSchedulePreview';
-import { huntTypeLabel, parseHuntScopePlatformIds } from './hunt-utils';
+import { huntExtractsObservables, huntTypeLabel, parseHuntScopePlatformIds } from './hunt-utils';
+import { useHuntDefaultObservableTypeNames } from './HuntRunProducesSection';
 import { HuntDetails_hunt$key } from './__generated__/HuntDetails_hunt.graphql';
 
 const huntDetailsFragment = graphql`
@@ -95,6 +96,7 @@ const HuntDetails = ({ data }: HuntDetailsProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n, fldt, n } = useFormatter();
   const scheduleText = useHuntScheduleText();
+  const defaultTypes = useHuntDefaultObservableTypeNames();
   const hunt = useFragment(huntDetailsFragment, data);
   const advancedScope = hunt.hunt_scope && parseHuntScopePlatformIds(hunt.hunt_scope) === null;
   const scopeItems = (hunt.scopePlatforms ?? []).map((platform) => ({ id: platform.id, entity_type: platform.entity_type, label: platform.name }));
@@ -181,10 +183,16 @@ const HuntDetails = ({ data }: HuntDetailsProps) => {
             <Label>{t_i18n('Sources')}</Label>
             <EntityChips items={sources} testId="hunt-sources" />
           </Grid>
-          <Grid item xs={6}>
-            <Label>{t_i18n('Expected observables')}</Label>
-            {textList(hunt.expected_observables)}
-          </Grid>
+          {huntExtractsObservables(hunt.hunt_type) && (
+            <Grid item xs={6}>
+              <Label>{t_i18n('Observables to extract from hits')}</Label>
+              {(hunt.expected_observables ?? []).length > 0 ? textList((hunt.expected_observables ?? []).map((type) => t_i18n(`entity_${type}`))) : (
+                <Text variant="content-compact" data-testid="hunt-default-observables">
+                  {defaultTypes ? t_i18n('Default types: {types}', { values: { types: defaultTypes } }) : t_i18n('Platform default')}
+                </Text>
+              )}
+            </Grid>
+          )}
           <Grid item xs={6}>
             <Label>{t_i18n('Benign patterns')}</Label>
             {textList(hunt.benign_patterns)}

@@ -68,7 +68,7 @@ Once active, **Run now** runs the hunt on its platforms, and **Preview the query
 
 ## Plan a hunt with AI or import a hunt pack
 
-- **Plan a hunt with AI** (Enterprise Edition, XTM One) writes the hypothesis, the Sigma rule and the expected observables from threats, techniques, reports or indicators you pick. The proposal lands in a draft workspace you review; validating the draft creates the hunt as a **Draft**, and it runs once you activate it.
+- **Plan a hunt with AI** (Enterprise Edition, XTM One) writes the hypothesis, the Sigma rule and the observables to extract from hits, based on the threats, techniques, reports or indicators you pick. The proposal lands in a draft workspace you review; validating the draft creates the hunt as a **Draft**, and it runs once you activate it.
 - **Import a hunt pack** creates the hunts of a pack file as drafts; **Browse XTM Hub** opens the hunt packs shared on the XTM Hub.
 
 See [Hunts](hunts.md#ai-assistance) and [Hunt packs](hunts.md#hunt-packs).

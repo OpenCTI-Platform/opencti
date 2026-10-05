@@ -125,6 +125,8 @@ type HuntStatistics {
 
 type HuntConfiguration {
   min_schedule_interval_minutes: Int!
+  "The observable types a run extracts from its hits when its hunt names none"
+  default_expected_observables: [String!]!
 }
 
 enum HuntTechniqueValidationStatus {

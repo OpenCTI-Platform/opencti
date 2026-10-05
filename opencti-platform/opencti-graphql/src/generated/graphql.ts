@@ -12775,6 +12775,8 @@ export type HuntAddInput = {
 
 export type HuntConfiguration = {
   __typename?: 'HuntConfiguration';
+  /** The observable types a run extracts from its hits when its hunt names none */
+  default_expected_observables: Array<Scalars['String']['output']>;
   min_schedule_interval_minutes: Scalars['Int']['output'];
 };
 
@@ -13238,6 +13240,8 @@ export type HuntRun = BasicObject & InternalObject & {
   representative: Representative;
   result_ids?: Maybe<Array<Scalars['String']['output']>>;
   results?: Maybe<StixObjectOrStixRelationshipConnection>;
+  /** What the run produced: its results counted by kind, over the same objects as results */
+  results_summary: HuntRunResultsSummary;
   results_truncated?: Maybe<Scalars['Boolean']['output']>;
   securityPlatform?: Maybe<SecurityPlatform>;
   security_coverage_id?: Maybe<Scalars['String']['output']>;
@@ -13318,6 +13322,16 @@ export type HuntRunReportInput = {
   translated_query?: InputMaybe<Scalars['String']['input']>;
   truncated?: InputMaybe<Scalars['Boolean']['input']>;
   work_id?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** The results of a run the user can read, counted by kind */
+export type HuntRunResultsSummary = {
+  __typename?: 'HuntRunResultsSummary';
+  observables: Scalars['Int']['output'];
+  observed_data: Scalars['Int']['output'];
+  /** Results of any other kind, for example the infrastructure and indicators of an infrastructure hunt */
+  others: Scalars['Int']['output'];
+  sightings: Scalars['Int']['output'];
 };
 
 export type HuntRunStartInput = {
@@ -45980,6 +45994,7 @@ export type ResolversTypes = ResolversObject<{
   HuntRunEvidenceAddInput: HuntRunEvidenceAddInput;
   HuntRunMode: HuntRunMode;
   HuntRunReportInput: HuntRunReportInput;
+  HuntRunResultsSummary: ResolverTypeWrapper<HuntRunResultsSummary>;
   HuntRunStartInput: HuntRunStartInput;
   HuntRunStatus: HuntRunStatus;
   HuntRunTrigger: HuntRunTrigger;
@@ -47339,6 +47354,7 @@ export type ResolversParentTypes = ResolversObject<{
   HuntRunEdge: Omit<HuntRunEdge, 'node'> & { node: ResolversParentTypes['HuntRun'] };
   HuntRunEvidenceAddInput: HuntRunEvidenceAddInput;
   HuntRunReportInput: HuntRunReportInput;
+  HuntRunResultsSummary: HuntRunResultsSummary;
   HuntRunStartInput: HuntRunStartInput;
   HuntRunVerdictInput: HuntRunVerdictInput;
   HuntSigmaGenerateInput: HuntSigmaGenerateInput;
@@ -52870,6 +52886,7 @@ export type HuntResolvers<ContextType = any, ParentType extends ResolversParentT
 }>;
 
 export type HuntConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntConfiguration'] = ResolversParentTypes['HuntConfiguration']> = ResolversObject<{
+  default_expected_observables?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   min_schedule_interval_minutes?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
@@ -53124,6 +53141,7 @@ export type HuntRunResolvers<ContextType = any, ParentType extends ResolversPare
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
   result_ids?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   results?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, ParentType, ContextType, Partial<HuntRunResultsArgs>>;
+  results_summary?: Resolver<ResolversTypes['HuntRunResultsSummary'], ParentType, ContextType>;
   results_truncated?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   securityPlatform?: Resolver<Maybe<ResolversTypes['SecurityPlatform']>, ParentType, ContextType>;
   security_coverage_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -53158,6 +53176,13 @@ export type HuntRunConnectionResolvers<ContextType = any, ParentType extends Res
 export type HuntRunEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntRunEdge'] = ResolversParentTypes['HuntRunEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['HuntRun'], ParentType, ContextType>;
+}>;
+
+export type HuntRunResultsSummaryResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntRunResultsSummary'] = ResolversParentTypes['HuntRunResultsSummary']> = ResolversObject<{
+  observables?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  observed_data?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  others?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  sightings?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
 export type HuntSigmaGenerationResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntSigmaGeneration'] = ResolversParentTypes['HuntSigmaGeneration']> = ResolversObject<{
@@ -63136,6 +63161,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   HuntRun?: HuntRunResolvers<ContextType>;
   HuntRunConnection?: HuntRunConnectionResolvers<ContextType>;
   HuntRunEdge?: HuntRunEdgeResolvers<ContextType>;
+  HuntRunResultsSummary?: HuntRunResultsSummaryResolvers<ContextType>;
   HuntSigmaGeneration?: HuntSigmaGenerationResolvers<ContextType>;
   HuntSigmaValidation?: HuntSigmaValidationResolvers<ContextType>;
   HuntStatistics?: HuntStatisticsResolvers<ContextType>;
