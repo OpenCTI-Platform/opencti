@@ -117,6 +117,9 @@ const HUNT_ADD = gql`
 const HUNT_READ = gql`
   query Hunt($id: String!) { hunt(id: $id) { ${HUNT_FIELDS} last_run_status last_hits_count } }
 `;
+const HUNTS_LIST = gql`
+  query Hunts($filters: FilterGroup) { hunts(filters: $filters) { edges { node { ${HUNT_FIELDS} } } } }
+`;
 const HUNT_FIELD_PATCH = gql`
   mutation HuntFieldPatch($id: ID!, $input: [EditInput]!) { huntFieldPatch(id: $id, input: $input) { id hunt_status hunt_schedule next_run_at } }
 `;
@@ -303,6 +306,20 @@ describe('Hunt resolvers', () => {
     expect(created.sigmaValidation.valid).toBe(true);
     expect(created.huntTechniques.map((t: { x_mitre_id: string }) => t.x_mitre_id)).toEqual([TECHNIQUE_MITRE_ID]);
     expect(created.huntTargets.map((t: { id: string }) => t.id)).toEqual([intrusionSetId]);
+  });
+
+  it('should list hunts with their techniques and targets, as the hunt query returns them', async () => {
+    const listed = await queryAsAdminWithSuccess({
+      query: HUNTS_LIST,
+      variables: { filters: { mode: 'and', filters: [{ key: ['id'], values: [huntId], operator: 'eq', mode: 'or' }], filterGroups: [] } },
+    });
+    const nodes = listed.data?.hunts.edges.map((edge: { node: { id: string } }) => edge.node);
+    expect(nodes.map((node: { id: string }) => node.id)).toEqual([huntId]);
+    expect(nodes[0].huntTechniques.map((t: { x_mitre_id: string }) => t.x_mitre_id)).toEqual([TECHNIQUE_MITRE_ID]);
+    expect(nodes[0].huntTargets.map((t: { id: string }) => t.id)).toEqual([intrusionSetId]);
+    const read = await queryAsAdminWithSuccess({ query: HUNT_READ, variables: { id: huntId } });
+    expect(nodes[0].huntTechniques).toEqual(read.data?.hunt.huntTechniques);
+    expect(nodes[0].huntTargets).toEqual(read.data?.hunt.huntTargets);
   });
 
   it('should refuse an invalid Sigma rule and a schedule firing too often', async () => {

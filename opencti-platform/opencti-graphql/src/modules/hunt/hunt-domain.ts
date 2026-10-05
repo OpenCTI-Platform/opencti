@@ -83,7 +83,11 @@ export const findHuntById = (context: AuthContext, user: AuthUser, id: string) =
 };
 
 export const findHuntsPaginated = (context: AuthContext, user: AuthUser, args: EntityOptions<BasicStoreEntityHunt>) => {
-  return pageEntitiesConnection<BasicStoreEntityHunt>(context, user, [ENTITY_TYPE_HUNT], args);
+  return pageEntitiesConnection<BasicStoreEntityHunt>(context, user, [ENTITY_TYPE_HUNT], {
+    ...args,
+    // The listed hunts resolve their targets, techniques, sources, readiness and values from these refs
+    withoutRels: false,
+  });
 };
 
 export const loadHuntRefs = async <T extends BasicStoreObject = BasicStoreObject>(context: AuthContext, user: AuthUser, hunt: BasicStoreEntityHunt, relation: string) => {
