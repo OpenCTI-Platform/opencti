@@ -16,6 +16,7 @@ import {
   countEffectiveTechniques,
   escapeCsvValue,
   evaluateCoverage,
+  gapPlatformEvidence,
   isLogsourceMatching,
   latestValidation,
   mapLogsourceToDataComponents,
@@ -23,7 +24,7 @@ import {
   validationEvidencePool,
   visibleParentId,
 } from '../../../../src/modules/defenseCoverage/defenseCoverage-utils';
-import type { DefenseCoverage, DefenseValidationEvidence } from '../../../../src/modules/defenseCoverage/defenseCoverage-types';
+import { DEFENSE_AGGREGATE_PLATFORM, type DefenseCoverage, type DefenseValidationEvidence } from '../../../../src/modules/defenseCoverage/defenseCoverage-types';
 
 const validation = (status: DefenseValidationEvidence['status'], date: string, id = 'scr-1'): DefenseValidationEvidence => ({
   id,
@@ -373,6 +374,23 @@ describe('Defense rule candidates and export', () => {
   });
   it('should build a CSV document', () => {
     expect(buildCsv(['id', 'name'], [['T1059', 'Command and Scripting Interpreter']])).toEqual('id,name\r\nT1059,Command and Scripting Interpreter\r\n');
+  });
+});
+
+describe('Defense gap platform evidence', () => {
+  it('should count what any platform provides and deploys on the row of all platforms', () => {
+    const cell = evaluateCoverage('ap-1', buildCoverage(), () => true);
+    expect(cell.rule_ids).toEqual(['rule-1', 'rule-2']);
+    // rule-2 is deployed nowhere: it stays a candidate of the row of all platforms
+    expect(gapPlatformEvidence(cell, DEFENSE_AGGREGATE_PLATFORM)).toEqual({ data_component_ids: ['dc-process'], rule_ids: ['rule-1'] });
+    expect(gapPlatformEvidence(cell, OTHER_PLATFORM)).toEqual({ data_component_ids: ['dc-process'], rule_ids: [] });
+  });
+  it('should leave the telemetry no platform provides missing on the row of all platforms', () => {
+    const base = buildCoverage();
+    const coverage: DefenseCoverage = { ...base, platforms: base.platforms.map((p) => ({ ...p, telemetry: [] })) };
+    const cell = evaluateCoverage('ap-1', coverage, () => true);
+    expect(cell.data_component_ids).toEqual(['dc-process']);
+    expect(gapPlatformEvidence(cell, DEFENSE_AGGREGATE_PLATFORM).data_component_ids).toEqual([]);
   });
 });
 

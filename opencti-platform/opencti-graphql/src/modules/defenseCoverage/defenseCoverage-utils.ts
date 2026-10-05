@@ -376,6 +376,18 @@ export const evaluateCoverage = (
 };
 
 /**
+ * What the platforms of a gap row provide and deploy. The aggregated cell holds every detecting data component and
+ * every rule, so the row of all platforms counts what any of its platforms provides or deploys instead.
+ */
+export const gapPlatformEvidence = (cell: DefenseCell, platformId: string) => {
+  const cells = platformId === DEFENSE_AGGREGATE_PLATFORM ? cell.platforms : [cellForPlatform(cell, platformId)];
+  return {
+    data_component_ids: uniq(cells.flatMap((p) => [...p.data_component_ids, ...p.inferred_data_component_ids])),
+    rule_ids: uniq(cells.flatMap((p) => p.rule_ids)),
+  };
+};
+
+/**
  * The cell of one platform, or the aggregated cell when no platform is given.
  */
 export const cellForPlatform = (cell: DefenseCell, platformId: string) => {

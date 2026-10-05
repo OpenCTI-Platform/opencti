@@ -53,6 +53,7 @@ import {
   computeThreatWeight,
   countEffectiveTechniques,
   evaluateCoverage,
+  gapPlatformEvidence,
   mapLogsourceToDataComponents,
   rankRuleCandidates,
   validationEvidencePool,
@@ -560,7 +561,7 @@ const buildGapView = (
   const { threat_weight, threats_count } = threatFigures(evaluation.overlay, technique.id);
   const { standardId, internalId } = defenseGapId(technique.id, platformId);
   const platform = platformId === DEFENSE_AGGREGATE_PLATFORM ? null : evaluation.platformById.get(platformId) ?? null;
-  const platformDataComponents = uniq([...platformCell.data_component_ids, ...platformCell.inferred_data_component_ids]);
+  const provided = gapPlatformEvidence(cell, platformId);
   return {
     id: internalId,
     internal_id: internalId,
@@ -585,10 +586,10 @@ const buildGapView = (
     priority: computeGapPriority(platformCell.level, threat_weight),
     status: platformCell.level >= DEFENSE_LEVEL_VALIDATED ? DEFENSE_GAP_STATUS_CLOSED : DEFENSE_GAP_STATUS_OPEN,
     validation_requests: [],
-    required_data_component_ids: cell.data_component_ids.filter((id) => !platformDataComponents.includes(id)),
+    required_data_component_ids: cell.data_component_ids.filter((id) => !provided.data_component_ids.includes(id)),
     available_rule_ids: cell.rule_ids,
-    deployed_rule_ids: platformCell.rule_ids,
-    platform_data_component_ids: platformDataComponents,
+    deployed_rule_ids: provided.rule_ids,
+    platform_data_component_ids: provided.data_component_ids,
   };
 };
 
