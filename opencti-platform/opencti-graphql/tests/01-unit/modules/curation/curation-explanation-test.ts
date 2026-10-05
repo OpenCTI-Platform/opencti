@@ -186,7 +186,7 @@ describe('curation proposal explanations', () => {
     }, { minConfidence: 0, behaviorThreshold: 1 });
     const sameSource = draft?.evidence.find((item) => item.evidence_type === 'source_agreement');
     expect(JSON.parse(sameSource?.details ?? '{}')).toEqual({ shared_sources: ['source-1'], shared_source_names: ['Mandiant'] });
-    expect(sameSource?.description).toBe('"Mandiant" maintain(s) both entities separately, which suggests they are distinct');
+    expect(sameSource?.description).toBe('The source "Mandiant" maintains both entities separately, which suggests they are distinct');
   });
 
   it('explains a type mismatch as a review that changes nothing', () => {
