@@ -6,7 +6,7 @@ import { IconButton, Select, SelectContent, SelectItem, SelectLabel, SelectTrigg
 import { useFormatter } from '../../../../components/i18n';
 import { getVocabularyMappingByAttribute } from '../../../../utils/vocabularyMapping';
 import type { EntityTypeOption, FormBuilderData, FormFieldAttribute } from './Form.d';
-import { FIELD_TYPES, getAttributesForEntityType as getAttributesUtil, getAvailableFieldTypes } from './FormUtils';
+import { FIELD_TYPES, getAttributesForEntityType as getAttributesUtil, getAvailableFieldTypes, getForcedFieldType, mapAttributeTypeToFieldType } from './FormUtils';
 import useStyles from './useFormSchemaEditorStyles';
 
 interface UseFieldRendererParams {
@@ -131,8 +131,12 @@ const useFieldRenderer = ({
 
       // Check if it's a special attribute first
       const specialFieldType = SPECIAL_ATTRIBUTE_FIELD_TYPE[field.attributeMapping.attributeName];
+      const forcedType = getForcedFieldType(field.attributeMapping.attributeName, selectedAttribute?.type);
       if (specialFieldType) {
         availableFieldTypes = [specialFieldType];
+      } else if (forcedType) {
+        // Only one Field Type makes sense for this attribute - that's the only option offered.
+        availableFieldTypes = FIELD_TYPES.filter((fieldType) => fieldType.value === forcedType);
       } else {
         availableFieldTypes = getAvailableFieldTypes(entityType, entityTypes)
           .filter((fieldType) => {
@@ -140,10 +144,22 @@ const useFieldRenderer = ({
             if (fieldType.value === 'multiselect' && selectedAttribute && !selectedAttribute.multiple) {
               return false;
             }
+            // openvocab/number/datetime are handled above as forced types; don't offer them here.
+            if (fieldType.value === 'openvocab' || fieldType.value === 'number' || fieldType.value === 'datetime') {
+              return false;
+            }
 
             const attributesForType = getAttributesUtil(entityType, fieldType.value, entityTypes, t_i18n);
             return attributesForType.some((attr) => attr.value === field.attributeMapping.attributeName);
           });
+
+        // Keep the field's current type selectable, even if it came from the fallback below.
+        if (field.type && !availableFieldTypes.some((fieldType) => fieldType.value === field.type)) {
+          const currentFieldType = FIELD_TYPES.find((fieldType) => fieldType.value === field.type);
+          if (currentFieldType) {
+            availableFieldTypes = [...availableFieldTypes, currentFieldType];
+          }
+        }
       }
     }
 
@@ -210,14 +226,28 @@ const useFieldRenderer = ({
               }
               // Check for special attributes first
               const specialType = attributeName !== 'x_opencti_main_observable_type' ? SPECIAL_ATTRIBUTE_FIELD_TYPE[attributeName] : undefined;
+              const forcedType = getForcedFieldType(attributeName, selectedAttribute?.type);
               if (specialType) {
                 handleFieldChange(`fields.${fieldIndex}.type`, specialType.value);
+              } else if (forcedType) {
+                // Only one Field Type is valid for this attribute - always force it.
+                handleFieldChange(`fields.${fieldIndex}.type`, forcedType);
+                if (forcedType === 'openvocab') {
+                  const vocabMapping = getVocabularyMappingByAttribute(attributeName);
+                  if (vocabMapping?.multiple !== undefined) {
+                    handleFieldChange(`fields.${fieldIndex}.multiple`, vocabMapping.multiple);
+                  }
+                }
               } else {
-              // Determine and set an appropriate default field type for regular attributes
+              // Free-form (text-like) attribute: several field types are valid, pick a default.
                 const compatibleTypes = getAvailableFieldTypes(entityType, entityTypes)
                   .filter((fieldType) => {
                   // Filter out multiselect if attribute doesn't support multiple
                     if (fieldType.value === 'multiselect' && selectedAttribute && !selectedAttribute.multiple) {
+                      return false;
+                    }
+                    // openvocab/number/datetime are handled above as forced types.
+                    if (fieldType.value === 'openvocab' || fieldType.value === 'number' || fieldType.value === 'datetime') {
                       return false;
                     }
 
@@ -225,28 +255,21 @@ const useFieldRenderer = ({
                     return attributesForType.some((attr) => attr.value === attributeName);
                   });
 
-                if (compatibleTypes.length > 0) {
-                // Check if it's an OpenVocab field first - always set as default for OpenVocab attributes
-                  const vocabMapping = getVocabularyMappingByAttribute(attributeName);
-                  if (vocabMapping) {
-                  // Always default to openvocab for OpenVocab-compatible attributes
-                    handleFieldChange(`fields.${fieldIndex}.type`, 'openvocab');
-                    if (vocabMapping.multiple !== undefined) {
-                      handleFieldChange(`fields.${fieldIndex}.multiple`, vocabMapping.multiple);
+                if (!field.type || !compatibleTypes.some((t) => t.value === field.type)) {
+                // Set a default only if none is selected or the current one no longer fits.
+                  if (selectedAttribute?.defaultValues && selectedAttribute.defaultValues.length > 0) {
+                  // If attribute has vocabulary, suggest select (not multiselect unless multiple is true)
+                    const suggestedType = selectedAttribute.multiple ? 'multiselect' : 'select';
+                    handleFieldChange(`fields.${fieldIndex}.type`, suggestedType);
+                    if (suggestedType === 'multiselect') {
+                      handleFieldChange(`fields.${fieldIndex}.multiple`, true);
                     }
-                  } else if (!field.type || !compatibleTypes.some((t) => t.value === field.type)) {
-                  // Only set a default field type if none is selected or current is incompatible
-                    if (selectedAttribute?.defaultValues && selectedAttribute.defaultValues.length > 0) {
-                    // If attribute has vocabulary, suggest select (not multiselect unless multiple is true)
-                      const suggestedType = selectedAttribute.multiple ? 'multiselect' : 'select';
-                      handleFieldChange(`fields.${fieldIndex}.type`, suggestedType);
-                      if (suggestedType === 'multiselect') {
-                        handleFieldChange(`fields.${fieldIndex}.multiple`, true);
-                      }
-                    } else {
-                    // Set the first compatible type as default
-                      handleFieldChange(`fields.${fieldIndex}.type`, compatibleTypes[0].value);
-                    }
+                  } else if (compatibleTypes.length > 0) {
+                  // Set the first compatible type as default
+                    handleFieldChange(`fields.${fieldIndex}.type`, compatibleTypes[0].value);
+                  } else {
+                  // Nothing matched: fall back to the attribute's backend type so it's never left blank.
+                    handleFieldChange(`fields.${fieldIndex}.type`, mapAttributeTypeToFieldType(selectedAttribute?.type || 'string', attributeName));
                   }
                 }
               }
@@ -273,7 +296,7 @@ const useFieldRenderer = ({
             onValueChange={(value) => {
               handleFieldChange(`fields.${fieldIndex}.type`, value);
             }}
-            disabled={!field.attributeMapping.attributeName || !!getVocabularyMappingByAttribute(field.attributeMapping.attributeName)}
+            disabled={!field.attributeMapping.attributeName || availableFieldTypes.length <= 1}
           >
             <div>
               <SelectLabel>{t_i18n('Field Type')}</SelectLabel>

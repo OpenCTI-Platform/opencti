@@ -42,6 +42,15 @@ export const FIELD_TYPE_TO_ATTRIBUTE_TYPE: Record<string, string[]> = {
   openvocab: ['string'], // OpenVocab fields are string attributes with special rendering
 };
 
+// Attribute categories that only have one valid Field Type - locked once picked.
+// Plain string attributes stay free-form (text/textarea/select/multiselect) unless whitelisted as OpenVocab.
+export const getForcedFieldType = (attributeName: string, attrType?: string): string | null => {
+  if (getVocabularyMappingByAttribute(attributeName)) return 'openvocab';
+  if (attrType === 'numeric' || attrType === 'integer' || attrType === 'float') return 'number';
+  if (attrType === 'date') return 'datetime';
+  return null;
+};
+
 // Container types (backend constants)
 export const CONTAINER_TYPES = [
   'Case-Incident',
@@ -345,7 +354,7 @@ export const getAvailableRelationships = (
 };
 
 // Helper to convert attribute type to field type for forms
-const mapAttributeTypeToFieldType = (attrType: string, attrName: string): string => {
+export const mapAttributeTypeToFieldType = (attrType: string, attrName: string): string => {
   if (attrName === 'x_opencti_main_observable_type') return 'types';
   if (attrName === 'createdBy') return 'ref';
   if (attrName === 'objectLabel' || attrName === 'objectMarking') return 'refs';

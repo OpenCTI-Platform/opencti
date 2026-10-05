@@ -19,6 +19,9 @@ const entityTypes: EntityTypeOption[] = [
         defaultValues: [{ id: 'open', name: 'Open' }, { id: 'closed', name: 'Closed' }],
       },
       { value: 'tags', name: 'tags', label: 'Tags', type: 'string', multiple: true },
+      { value: 'priority', name: 'priority', label: 'Priority', type: 'string' },
+      { value: 'confidence', name: 'confidence', label: 'Confidence', type: 'numeric' },
+      { value: 'created', name: 'created', label: 'Created', type: 'date' },
     ],
   },
   {
@@ -113,6 +116,57 @@ describe('useFieldRenderer', () => {
     expect(handleFieldChange).toHaveBeenCalledWith('fields.0.label', 'Status');
     expect(handleFieldChange).toHaveBeenCalledWith('fields.0.name', 'status');
     expect(handleFieldChange).toHaveBeenCalledWith('fields.0.type', 'select');
+  });
+
+  it('auto-assigns openvocab for a whitelisted attribute and shows it selected and locked', () => {
+    const handleFieldChange = vi.fn();
+    const field = createField({ attributeMapping: { entity: 'main_entity', attributeName: '' }, type: '' });
+    renderField(field, createFormData({ fields: [field] }), { handleFieldChange });
+
+    openAttributeMapping();
+    fireEvent.click(screen.getByRole('option', { name: 'Priority' }));
+
+    expect(handleFieldChange).toHaveBeenCalledWith('fields.0.type', 'openvocab');
+
+    cleanup();
+    const vocabField = createField({
+      type: 'openvocab',
+      attributeMapping: { entity: 'main_entity', attributeName: 'priority' },
+    });
+    renderField(vocabField);
+    const fieldTypeSelect = screen.getAllByRole('combobox')[1];
+    expect(fieldTypeSelect).toHaveTextContent('Open Vocabulary');
+    expect(fieldTypeSelect).toHaveAttribute('disabled');
+  });
+
+  it('locks the field type to Number/Date & Time for numeric and date attributes', () => {
+    const handleFieldChange = vi.fn();
+    const field = createField({ attributeMapping: { entity: 'main_entity', attributeName: '' }, type: '' });
+    renderField(field, createFormData({ fields: [field] }), { handleFieldChange });
+
+    openAttributeMapping();
+    fireEvent.click(screen.getByRole('option', { name: 'Confidence' }));
+    expect(handleFieldChange).toHaveBeenCalledWith('fields.0.type', 'number');
+
+    cleanup();
+    const numberField = createField({
+      type: 'number',
+      attributeMapping: { entity: 'main_entity', attributeName: 'confidence' },
+    });
+    renderField(numberField);
+    const numberFieldTypeSelect = screen.getAllByRole('combobox')[1];
+    expect(numberFieldTypeSelect).toHaveTextContent('Number');
+    expect(numberFieldTypeSelect).toHaveAttribute('disabled');
+
+    cleanup();
+    const dateField = createField({
+      type: 'datetime',
+      attributeMapping: { entity: 'main_entity', attributeName: 'created' },
+    });
+    renderField(dateField);
+    const dateFieldTypeSelect = screen.getAllByRole('combobox')[1];
+    expect(dateFieldTypeSelect).toHaveTextContent('Date & Time');
+    expect(dateFieldTypeSelect).toHaveAttribute('disabled');
   });
 
   it('disables move controls at the entity boundaries and calls move handlers otherwise', () => {
