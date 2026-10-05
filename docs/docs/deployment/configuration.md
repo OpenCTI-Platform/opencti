@@ -543,8 +543,8 @@ These parameters bound the computations of the [knowledge time machine](../usage
 | time_machine:landscape_batch_size          | TIME_MACHINE__LANDSCAPE_BATCH_SIZE           | 100           | Number of entities processed at once by a landscape diff                                             |
 | time_machine:landscape_max_relationships   | TIME_MACHINE__LANDSCAPE_MAX_RELATIONSHIPS    | 20000         | Maximum number of new relationships read by a landscape diff                                         |
 | time_machine:landscape_cache_ttl           | TIME_MACHINE__LANDSCAPE_CACHE_TTL            | 3600          | Duration (in seconds) during which a landscape diff result is kept                                   |
-| time_machine:landscape_max_running_per_user | TIME_MACHINE__LANDSCAPE_MAX_RUNNING_PER_USER | 1             | Maximum number of landscape diffs computed at the same time for a user, per platform node            |
-| time_machine:landscape_max_running         | TIME_MACHINE__LANDSCAPE_MAX_RUNNING          | 4             | Maximum number of landscape diffs computed at the same time, per platform node                       |
+| time_machine:landscape_max_running_per_user | TIME_MACHINE__LANDSCAPE_MAX_RUNNING_PER_USER | 1             | Maximum number of landscape diffs computed at the same time for a user, across all platform nodes    |
+| time_machine:landscape_max_running         | TIME_MACHINE__LANDSCAPE_MAX_RUNNING          | 4             | Maximum number of landscape diffs computed at the same time, across all platform nodes               |
 | time_machine:widget_max_entities           | TIME_MACHINE__WIDGET_MAX_ENTITIES            | 200           | Maximum number of entities covered by a landscape widget                                             |
 | time_machine:change_digest_max_entities    | TIME_MACHINE__CHANGE_DIGEST_MAX_ENTITIES     | 500           | Maximum number of entities covered by a change digest                                                |
 

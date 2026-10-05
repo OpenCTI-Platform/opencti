@@ -66,6 +66,7 @@ const LANDSCAPE_STATE_PREFIX = 'landscape_diff:';
 const LANDSCAPE_CONTRIBUTORS_PREFIX = 'landscape_diff_contributors:';
 const LANDSCAPE_KEY_PREFIX = 'landscape_diff_key:';
 const LANDSCAPE_SUMMARY_PREFIX = 'landscape_diff_summary:';
+const LANDSCAPE_CLUSTER_SLOTS_KEY = 'landscape_diff_slots';
 
 export const LANDSCAPE_GROUP_BY_VALUES = ['entity_type', 'relationship_type', 'tactic'];
 
@@ -668,11 +669,67 @@ export const createLandscapeRunSlots = (limits: { maxPerUser: number; maxTotal: 
   return { reserve, touch, release, size: () => slots.size };
 };
 
-const landscapeRunSlots = createLandscapeRunSlots({
+// Removes the expired leases, then adds the lease only within the per-user and total limits
+const RESERVE_CLUSTER_SLOT_SCRIPT = `
+redis.call('ZREMRANGEBYSCORE', KEYS[1], '-inf', ARGV[1])
+if redis.call('ZCARD', KEYS[1]) >= tonumber(ARGV[6]) then return 0 end
+local userRunning = 0
+for _, member in ipairs(redis.call('ZRANGE', KEYS[1], 0, -1)) do
+  if string.sub(member, 1, string.len(ARGV[4])) == ARGV[4] then userRunning = userRunning + 1 end
+end
+if userRunning >= tonumber(ARGV[5]) then return 0 end
+redis.call('ZADD', KEYS[1], ARGV[2], ARGV[3])
+return 1`;
+
+// Extends a lease that has not expired yet
+const EXTEND_CLUSTER_SLOT_SCRIPT = `
+local leaseEnd = redis.call('ZSCORE', KEYS[1], ARGV[2])
+if not leaseEnd or tonumber(leaseEnd) < tonumber(ARGV[3]) then return 0 end
+redis.call('ZADD', KEYS[1], ARGV[1], ARGV[2])
+return 1`;
+
+/**
+ * The same limits for the whole platform: every node reserves its runs in one Redis sorted set of leases (one member
+ * per user and run, scored by the end of its lease). A lease is extended at each progress of its computation and
+ * expires `staleSeconds` after the last one, so the slot of a node that stopped is freed without any cleanup job.
+ */
+export const createLandscapeClusterSlots = (key: string, limits: { maxPerUser: number; maxTotal: number; staleSeconds: number }, clock: () => number = Date.now) => {
+  const member = (id: string, userId: string) => `${userId}|${id}`;
+  const reserve = async (id: string, userId: string): Promise<boolean> => {
+    const now = clock();
+    const leaseEnd = now + limits.staleSeconds * 1000;
+    const reserved = await getClientBase().eval(RESERVE_CLUSTER_SLOT_SCRIPT, 1, key, now, leaseEnd, member(id, userId), `${userId}|`, limits.maxPerUser, limits.maxTotal);
+    return reserved === 1;
+  };
+  // False when the lease expired meanwhile: the slot may be taken by another run
+  const extend = async (id: string, userId: string): Promise<boolean> => {
+    const now = clock();
+    const extended = await getClientBase().eval(EXTEND_CLUSTER_SLOT_SCRIPT, 1, key, now + limits.staleSeconds * 1000, member(id, userId), now);
+    return extended === 1;
+  };
+  const release = async (id: string, userId: string) => {
+    await getClientBase().zrem(key, member(id, userId));
+  };
+  return { reserve, extend, release };
+};
+
+const LANDSCAPE_LIMITS = {
   maxPerUser: LANDSCAPE_MAX_RUNNING_PER_USER,
   maxTotal: LANDSCAPE_MAX_RUNNING,
   staleSeconds: LANDSCAPE_STALE_SECONDS,
-});
+};
+// The node keeps the controller of each of its runs, the cluster keeps the limits of the platform
+const landscapeRunSlots = createLandscapeRunSlots(LANDSCAPE_LIMITS);
+const landscapeClusterSlots = createLandscapeClusterSlots(LANDSCAPE_CLUSTER_SLOTS_KEY, LANDSCAPE_LIMITS);
+
+const releaseClusterSlot = async (id: string, userId: string) => {
+  try {
+    await landscapeClusterSlots.release(id, userId);
+  } catch (err) {
+    // The lease expires by itself
+    logApp.warn('[TIME MACHINE] Landscape diff slot could not be released', { cause: err, id });
+  }
+};
 
 const stateKey = (id: string) => `${LANDSCAPE_STATE_PREFIX}${id}`;
 
@@ -790,6 +847,11 @@ const executeLandscapeDiff = async (requestContext: AuthContext, user: AuthUser,
   const writeOrStop = async (next: LandscapeDiffState) => {
     if (!await writeActiveLandscapeState(next)) landscapeRunSlots.release(state.id, LANDSCAPE_INTERRUPTED_MESSAGE);
   };
+  // The slot of the platform is free once the final state can be read: a new run requested right after is accepted
+  const writeFinalState = async (final: LandscapeDiffState) => {
+    await releaseClusterSlot(state.id, user.id);
+    return writeActiveLandscapeState(final);
+  };
   try {
     await writeOrStop(current);
     const computation = await computeLandscapeDiff(context, user, scope, state.input.from, state.input.to, state.input.group_by ?? 'entity_type', {
@@ -797,6 +859,11 @@ const executeLandscapeDiff = async (requestContext: AuthContext, user: AuthUser,
       onProgress: async (progress, total) => {
         signal.throwIfAborted();
         landscapeRunSlots.touch(state.id);
+        if (!await landscapeClusterSlots.extend(state.id, user.id)) {
+          // The lease expired, its slot may be taken by another run: this one stops
+          landscapeRunSlots.release(state.id, LANDSCAPE_INTERRUPTED_MESSAGE);
+          signal.throwIfAborted();
+        }
         current = { ...current, progress, total, updated_at: now() };
         await writeOrStop(current);
       },
@@ -815,7 +882,7 @@ const executeLandscapeDiff = async (requestContext: AuthContext, user: AuthUser,
       entities: computation.entities,
       updated_at: now(),
     };
-    if (await writeActiveLandscapeState(current)) {
+    if (await writeFinalState(current)) {
       addLandscapeDiffCount();
     } else {
       logApp.warn('[TIME MACHINE] Landscape diff finalized by another node before its completion', { id: state.id });
@@ -823,11 +890,11 @@ const executeLandscapeDiff = async (requestContext: AuthContext, user: AuthUser,
   } catch (err) {
     if (signal.aborted) {
       logApp.warn('[TIME MACHINE] Landscape diff computation interrupted', { id: state.id });
-      await writeActiveLandscapeState({ ...current, status: 'failed', error: LANDSCAPE_INTERRUPTED_MESSAGE, updated_at: now() });
+      await writeFinalState({ ...current, status: 'failed', error: LANDSCAPE_INTERRUPTED_MESSAGE, updated_at: now() });
       return;
     }
     logApp.error('[TIME MACHINE] Landscape diff computation failed', { cause: err, id: state.id });
-    await writeActiveLandscapeState({ ...current, status: 'failed', error: (err as Error)?.message ?? 'Landscape diff computation failed', updated_at: now() });
+    await writeFinalState({ ...current, status: 'failed', error: (err as Error)?.message ?? 'Landscape diff computation failed', updated_at: now() });
   }
 };
 
@@ -847,13 +914,28 @@ export const runLandscapeDiff = async (context: AuthContext, user: AuthUser, raw
     const cached = await findLandscapeDiff(context, user, cachedId);
     if (cached && cached.status !== 'failed') return cached;
   }
-  // The slot is reserved before any await so concurrent requests cannot exceed the limits
+  // The node slot is reserved before any await so concurrent requests of this node cannot exceed the limits, then the
+  // cluster slot applies them to the whole platform
   const id = uuidv4();
   const slot = landscapeRunSlots.reserve(id, user.id);
   if (!slot) {
     throw FunctionalError('Too many landscape diffs are being computed, please retry later');
   }
-  const releaseSlot = () => landscapeRunSlots.release(id);
+  let clusterReserved: boolean;
+  try {
+    clusterReserved = await landscapeClusterSlots.reserve(id, user.id);
+  } catch (err) {
+    landscapeRunSlots.release(id);
+    throw err;
+  }
+  if (!clusterReserved) {
+    landscapeRunSlots.release(id);
+    throw FunctionalError('Too many landscape diffs are being computed, please retry later');
+  }
+  const releaseSlot = () => {
+    landscapeRunSlots.release(id);
+    void releaseClusterSlot(id, user.id);
+  };
   const createdAt = now();
   const state: LandscapeDiffState = {
     id,
@@ -1015,8 +1097,10 @@ export const findLandscapeDiff = async (context: AuthContext, user: AuthUser, id
   if (isRunning && utcDate().diff(utcDate(state.updated_at), 'seconds') > LANDSCAPE_STALE_SECONDS) {
     const interrupted: LandscapeDiffState = { ...state, status: 'failed', error: LANDSCAPE_INTERRUPTED_MESSAGE, updated_at: now() };
     if (await finalizeStaleLandscapeState(state, interrupted)) {
-      // Aborts the computation and frees its slot when it runs on this node; on another node its next write stops it
+      // Aborts the computation and frees its slot when it runs on this node; on another node its next write stops it.
+      // Its slot of the platform is freed now, whatever node runs it
       landscapeRunSlots.release(state.id, LANDSCAPE_INTERRUPTED_MESSAGE);
+      await releaseClusterSlot(state.id, state.user_id);
       return interrupted;
     }
     // The run progressed since it was read: its owner is alive, and it may have completed in the meantime
