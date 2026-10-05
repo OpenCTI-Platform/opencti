@@ -15,6 +15,7 @@ import {
   fitSvgToWidth,
   groupEventsByBucket,
   groupOverflowItems,
+  isTimelineViewFilteredBy,
   layoutAnchorLabels,
   layoutLaneRows,
   panDomain,
@@ -240,6 +241,17 @@ describe('Timeline filters', () => {
     expect(effectiveLanes(['response'], [])).toEqual(['response']);
     expect(effectiveLanes([], ['adversary', 'detection', 'response', 'evidence', 'knowledge', 'custom'])).toBeNull();
     expect(effectiveLanes([], ['response', 'adversary'])).toEqual(['adversary', 'response']);
+  });
+
+  it('should read the events again after a pin or annotation change only when a filter depends on it', () => {
+    // Unpinning in the pinned-only view, or editing an annotation matched by the search, changes what the view lists
+    expect(isTimelineViewFilteredBy('pin', { pinnedOnly: true, search: '' })).toBe(true);
+    expect(isTimelineViewFilteredBy('annotation', { pinnedOnly: false, search: 'beacon' })).toBe(true);
+    // Elsewhere the loaded events stay as they are
+    expect(isTimelineViewFilteredBy('pin', { pinnedOnly: false, search: 'beacon' })).toBe(false);
+    expect(isTimelineViewFilteredBy('annotation', { pinnedOnly: true, search: '' })).toBe(false);
+    // A blank search filters nothing
+    expect(isTimelineViewFilteredBy('annotation', { pinnedOnly: false, search: '   ' })).toBe(false);
   });
 });
 

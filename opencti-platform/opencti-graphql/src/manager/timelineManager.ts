@@ -32,6 +32,7 @@ import {
   TIMELINE_CONTAINER_TYPES,
 } from '../modules/timeline/timeline-types';
 import { regenerateContainerTimeline } from '../modules/timeline/timeline-engine';
+import { RULE_INVESTIGATION_RUN } from '../modules/timeline/timeline-rules';
 import { timelineRefIds } from '../modules/timeline/timeline-loader';
 import { ATTRIBUTE_COVERED, ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
 import { ATTRIBUTE_RESULT_OF } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
@@ -210,17 +211,21 @@ const queueContainersContaining = async (context: AuthContext, elementIds: strin
 };
 
 /**
- * A manual event may point to an element, and name an author, its case does not contain: a change of either (its access
- * above all, which decides whether the event and its author travel in the STIX exchange of the case) reaches the case
- * through the event itself.
+ * A manual event may point to an element, and name an author, its case does not contain, and so may the findings of an
+ * investigation run: a change of either (its access above all, which decides whether the event is shown and whether it
+ * and its author travel in the STIX exchange of the case) reaches the case through the event itself.
  */
-const queueContainersOfManualEventsAbout = async (context: AuthContext, elementIds: string[], enqueue: ImpactedContainersSink) => {
+const queueContainersOfEventsAbout = async (context: AuthContext, elementIds: string[], enqueue: ImpactedContainersSink) => {
   if (elementIds.length === 0) return;
   await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [ENTITY_TYPE_TIMELINE_EVENT], {
     filters: {
       mode: FilterMode.And,
-      filters: [{ key: ['event_source'], values: ['manual'] }],
+      filters: [],
       filterGroups: [{
+        mode: FilterMode.Or,
+        filters: [{ key: ['event_source'], values: ['manual'] }, { key: ['rule_id'], values: [RULE_INVESTIGATION_RUN] }],
+        filterGroups: [],
+      }, {
         mode: FilterMode.Or,
         filters: [{ key: ['element_id'], values: elementIds }, { key: [buildRefRelationKey(RELATION_CREATED_BY)], values: elementIds }],
         filterGroups: [],
@@ -253,7 +258,7 @@ const queueImpactedContainers = async (context: AuthContext, collector: ImpactCo
   await enqueue(Array.from(collector.containers));
   await queueContainersContaining(context, Array.from(collector.contained), enqueue);
   // A manual event may point to any element, labels, kill chain phases and external references included
-  await queueContainersOfManualEventsAbout(context, [
+  await queueContainersOfEventsAbout(context, [
     ...collector.contained,
     ...collector.containers,
     ...collector.labels,

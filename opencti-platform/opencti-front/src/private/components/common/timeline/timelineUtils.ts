@@ -490,6 +490,15 @@ export const effectiveLanes = (selected: readonly string[], enabledLanes: readon
   if (chosen.length > 0) return chosen;
   return enabled.length === TIMELINE_LANES.length ? null : enabled;
 };
+
+/**
+ * Whether a pin or annotation change can move the event in or out of the loaded events: the filtered list never drops
+ * or adds an updated event by itself, so it is read again when the pinned-only view or a search (which matches the
+ * annotations) is active.
+ */
+export const isTimelineViewFilteredBy = (change: 'pin' | 'annotation', state: Pick<TimelineViewState, 'pinnedOnly' | 'search'>): boolean => (
+  change === 'pin' ? state.pinnedOnly : state.search.trim().length > 0
+);
 // endregion
 
 // region compact views (overview card)

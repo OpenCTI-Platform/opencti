@@ -49,6 +49,7 @@ import {
   computeVisibleDomain,
   effectiveKinds,
   effectiveLanes,
+  isTimelineViewFilteredBy,
   parseTimelineViewState,
   serializeTimelineViewState,
   TIMELINE_ADD_MILESTONE_PARAM,
@@ -572,7 +573,12 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
       variables: { id: event.id, pinned: !event.pinned },
       onCompleted: (_, errors) => {
         if (notifyTimelineMutationErrors(errors)) return;
-        reloadSummary();
+        if (!isTimelineViewFilteredBy('pin', state)) {
+          reloadSummary();
+          return;
+        }
+        if (event.pinned) updateState({ event: null });
+        refresh();
       },
     }),
     toggleHide: (event) => commitHide({
@@ -588,6 +594,7 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
       onCompleted: (_, errors) => {
         if (notifyTimelineMutationErrors(errors)) return;
         MESSAGING$.notifySuccess(t_i18n('The annotation has been saved'));
+        if (isTimelineViewFilteredBy('annotation', state)) refresh();
       },
     }),
     deleteEvent: (event) => commitDelete({

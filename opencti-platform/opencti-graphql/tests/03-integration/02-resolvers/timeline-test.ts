@@ -12,7 +12,8 @@ import {
 import { redisGetTelemetry } from '../../../src/database/redis';
 import { TELEMETRY_GAUGE_TIMELINE_MANUAL_EVENT } from '../../../src/manager/telemetryManager';
 import * as timelineNotification from '../../../src/modules/timeline/timeline-notification';
-import { TIMELINE_KINDS } from '../../../src/modules/timeline/timeline-types';
+import { ENTITY_TYPE_TIMELINE_EVENT, TIMELINE_KINDS } from '../../../src/modules/timeline/timeline-types';
+import { RULE_INVESTIGATION_RUN } from '../../../src/modules/timeline/timeline-rules';
 import { ADMIN_USER, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../src/schema/stixSightingRelationship';
 import { internalLoadById } from '../../../src/database/middleware-loader';
@@ -22,9 +23,16 @@ import { resolveUserById } from '../../../src/modules/user/user-domain';
 import type { AuthUser } from '../../../src/types/user';
 import { MARKING_TLP_AMBER, MARKING_TLP_GREEN } from '../../../src/schema/identifier';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_TIMELINE } from '../../../src/types/stix-2-1-extensions';
-import { deleteContainerTimeline, loadStoredTimelineEvents, timelineEventSignature, timelineEventSourceIds } from '../../../src/modules/timeline/timeline-engine';
+import {
+  buildTimelineEventDoc,
+  computeDerivedEventId,
+  deleteContainerTimeline,
+  loadStoredTimelineEvents,
+  timelineEventSignature,
+  timelineEventSourceIds,
+} from '../../../src/modules/timeline/timeline-engine';
 import * as timelineEngine from '../../../src/modules/timeline/timeline-engine';
-import { elUpdate } from '../../../src/database/engine';
+import { elIndexElements, elUpdate } from '../../../src/database/engine';
 import { processDueTimelineRegenerations, timelineStreamEventsHandler } from '../../../src/manager/timelineManager';
 import type { DataEvent, SseEvent } from '../../../src/types/event';
 import { createEntity, createRelation, deleteElementById } from '../../../src/database/middleware';
@@ -1432,6 +1440,46 @@ describe('Incident and case timeline', () => {
       expect(refreshed?.[`rel_${RELATION_OBJECT_MARKING}.internal_id`]).toContain(amber.internal_id);
       expect(refreshed?.element_access).toEqual({ restricted_members: [], granted: [] });
       await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: milestone.data.timelineEventAdd.id } });
+      await queryAsAdminWithSuccess({ query: STIX_CORE_OBJECT_DELETE, variables: { id: outsideId } });
+    });
+
+    it('should queue the case of an investigation finding about an element the case does not contain', async () => {
+      const outside = await queryAsAdminWithSuccess({ query: MALWARE_ADD, variables: { input: { name: 'Timeline malware found by an investigation' } } });
+      const outsideId = outside.data.malwareAdd.id;
+      // A finding outside the case, stored the way the investigation-run rule derives it
+      const discriminator = `investigation-run-finding-${outsideId}-first_seen`;
+      await elIndexElements(testContext, SYSTEM_USER, ENTITY_TYPE_TIMELINE_EVENT, [buildTimelineEventDoc({
+        internal_id: computeDerivedEventId(caseIncident.id, RULE_INVESTIGATION_RUN, `${outsideId}|${discriminator}`, 'investigation_step'),
+        container_id: caseIncident.id,
+        name: 'Timeline malware found by an investigation first seen',
+        event_time: '2026-02-05T21:00:00.000Z',
+        time_precision: 'approximate',
+        lane: 'evidence',
+        kind: 'investigation_step',
+        event_source: 'derived',
+        rule_id: RULE_INVESTIGATION_RUN,
+        element_id: outsideId,
+        element_type: 'Malware',
+        pinned: false,
+        hidden: false,
+        analyst_fields: [],
+        markings: [],
+        creator_ids: [],
+        restricted_members: [],
+      })]);
+      const { containerIds: pending, lease: pendingLease } = await claimDueTimelineRegenerations(1000);
+      await Promise.all(pending.map((id) => acknowledgeTimelineRegeneration(id, pendingLease)));
+      const stixMalware = { id: outside.data.malwareAdd.standard_id, type: 'malware', extensions: { [STIX_EXT_OCTI]: { id: outsideId, type: 'Malware' } } };
+      await timelineStreamEventsHandler(testContext, [streamEvent(stixMalware)]);
+      const { containerIds: claimed, lease } = await claimDueTimelineRegenerations(1000);
+      expect(claimed).toContain(caseIncident.id);
+      // Every container is handed back to the queue for the tests that follow
+      await Promise.all(claimed.map((id) => acknowledgeTimelineRegeneration(id, lease)));
+      await enqueueTimelineRegeneration([...pending, ...claimed], 0);
+      // No investigation run of the case derives the finding: the regeneration removes it again
+      await queryAsAdminWithSuccess({ query: TIMELINE_REGENERATE, variables: { containerId: caseIncident.id } });
+      const remaining = await loadStoredTimelineEvents(testContext, caseIncident.id);
+      expect(remaining.some((event) => event.element_id === outsideId)).toBe(false);
       await queryAsAdminWithSuccess({ query: STIX_CORE_OBJECT_DELETE, variables: { id: outsideId } });
     });
 
