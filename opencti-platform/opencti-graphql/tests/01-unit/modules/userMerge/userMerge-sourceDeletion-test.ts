@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { BUS_TOPICS } from '../../../../src/config/conf';
+import { ENTITY_TYPE_USER } from '../../../../src/schema/internalObject';
 import { UserMergeStatus } from '../../../../src/modules/userMerge/userMerge-types';
 
 interface DryRunStub {
@@ -26,8 +28,10 @@ vi.mock('../../../../src/database/middleware-loader', () => ({
 const deleteElementById = vi.fn(async () => ({ user_email: 'merged@example.com' }));
 const killUserSessions = vi.fn(async () => undefined);
 const publishUserAction = vi.fn(async () => undefined);
+const notify = vi.fn(async () => undefined);
 
 vi.mock('../../../../src/database/middleware', () => ({ deleteElementById: (...args: unknown[]) => deleteElementById(...(args as [])) }));
+vi.mock('../../../../src/database/redis', () => ({ notify: (...args: unknown[]) => notify(...(args as [])) }));
 vi.mock('../../../../src/database/session', () => ({ killUserSessions: (...args: unknown[]) => killUserSessions(...(args as [])) }));
 vi.mock('../../../../src/listener/UserActionListener', () => ({ publishUserAction: (...args: unknown[]) => publishUserAction(...(args as [])) }));
 
@@ -49,6 +53,7 @@ describe('source deletion gate', () => {
     deleteElementById.mockClear();
     killUserSessions.mockClear();
     publishUserAction.mockClear();
+    notify.mockClear();
   });
 
   it('should refuse while the source account is still active', async () => {
@@ -133,10 +138,19 @@ describe('source deletion gate', () => {
       expect(killUserSessions).toHaveBeenCalledTimes(1);
     });
 
+    // The cache manager drops a user from the other nodes and from the subscribers on this event
+    // alone: without it the deleted account stays readable there.
+    it('should notify the platform that the user was deleted', async () => {
+      await remove();
+      expect(notify).toHaveBeenCalledTimes(1);
+      expect(notify).toHaveBeenCalledWith(BUS_TOPICS[ENTITY_TYPE_USER].DELETE_TOPIC, { user_email: 'merged@example.com' }, {});
+    });
+
     it('should refuse and write nothing when the gate refuses', async () => {
       dryRun = succeededWith(2);
       await expect(remove()).rejects.toThrow('Source account cannot be deleted yet');
       expect(deleteElementById).not.toHaveBeenCalled();
+      expect(notify).not.toHaveBeenCalled();
     });
 
     it('should refuse while the source account is still active', async () => {

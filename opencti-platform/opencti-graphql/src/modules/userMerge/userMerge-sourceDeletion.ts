@@ -1,7 +1,8 @@
-import { ENABLED_DEMO_MODE } from '../../config/conf';
+import { BUS_TOPICS, ENABLED_DEMO_MODE } from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
 import { deleteElementById } from '../../database/middleware';
 import { storeLoadById } from '../../database/middleware-loader';
+import { notify } from '../../database/redis';
 import { killUserSessions } from '../../database/session';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
@@ -112,9 +113,11 @@ export const computeUserMergeSourceDeletionReadiness = async (
  * of a deletion, which nothing repairs. The generic detector reports what is left without blocking,
  * so the gate cannot promise the gap is closed; the deletion is written to survive being wrong.
  *
- * The non-destructive halves of `userDelete` are kept: the activity trace and the session kill.
- * A User is an internal object, so it is not trashable and the deletion is permanent — the source
- * document does not survive in the trash index carrying everything the merge just moved.
+ * The non-destructive halves of `userDelete` are kept: the activity trace, the session kill and
+ * the delete notification. The cache manager only drops a user from the caches of the other nodes
+ * and from the subscribers on that event, so without it the deleted account would stay readable
+ * there. A User is an internal object, so it is not trashable and the deletion is permanent — the
+ * source document does not survive in the trash index carrying everything the merge just moved.
  */
 export const deleteUserMergeSource = async (
   context: AuthContext,
@@ -137,5 +140,6 @@ export const deleteUserMergeSource = async (
     context_data: { id: sourceId, entity_type: ENTITY_TYPE_USER, input: { source_id: sourceId, target_id: targetId } },
   });
   await killUserSessions(sourceId);
+  await notify(BUS_TOPICS[ENTITY_TYPE_USER].DELETE_TOPIC, deleted, user);
   return sourceId;
 };
