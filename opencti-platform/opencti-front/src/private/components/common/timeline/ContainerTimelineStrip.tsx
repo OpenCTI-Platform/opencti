@@ -110,6 +110,35 @@ const useStripSummary = () => {
   };
 };
 
+interface ContainerTimelineStripEmptyProps {
+  message: string;
+  canEdit: boolean;
+  timelinePath: string;
+}
+
+/** What the card shows when it has no event to draw, with the next step. */
+const ContainerTimelineStripEmpty = ({ message, canEdit, timelinePath }: ContainerTimelineStripEmptyProps) => {
+  const { t_i18n } = useFormatter();
+  const theme = useTheme();
+  const navigate = useNavigate();
+  return (
+    <div role="status" data-testid="timeline-strip-empty" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: theme.spacing(1.5) }}>
+      <Text variant="content-base" as="div">{message}</Text>
+      {canEdit && (
+        <Button
+          variant="secondary"
+          size="small"
+          startIcon={<AddOutlined fontSize="small" />}
+          onClick={() => navigate(`${timelinePath}?${TIMELINE_ADD_MILESTONE_PARAM}=true`)}
+          data-testid="timeline-strip-add-milestone"
+        >
+          {t_i18n('Add a milestone')}
+        </Button>
+      )}
+    </div>
+  );
+};
+
 interface ContainerTimelineStripEventsProps {
   containerId: string;
   enabledLanes: readonly string[];
@@ -117,10 +146,11 @@ interface ContainerTimelineStripEventsProps {
   anchors: TimelineChartAnchors;
   grouping: TimelineGrouping;
   timelinePath: string;
+  canEdit: boolean;
 }
 
 /** Summary line and miniature of the lanes, both from the events the timeline settings show. */
-const ContainerTimelineStripEvents = ({ containerId, enabledLanes, hiddenKinds, anchors, grouping, timelinePath }: ContainerTimelineStripEventsProps) => {
+const ContainerTimelineStripEvents = ({ containerId, enabledLanes, hiddenKinds, anchors, grouping, timelinePath, canEdit }: ContainerTimelineStripEventsProps) => {
   const { t_i18n } = useFormatter();
   const colors = useTimelineColors();
   const navigate = useNavigate();
@@ -141,6 +171,15 @@ const ContainerTimelineStripEvents = ({ containerId, enabledLanes, hiddenKinds, 
   const lanes = TIMELINE_LANES.filter((lane) => (enabledLanes.length > 0 ? enabledLanes : TIMELINE_LANES).includes(lane) && events.some((e) => e.lane === lane));
   // The span covers every shown event, also those older than the latest ones drawn here
   const extent = computeTimelineExtent(events, [...TIMELINE_ANCHOR_KEYS.map((key) => anchors?.[key]), shown?.first_event_time, shown?.last_event_time]);
+  if (total === 0) {
+    return (
+      <ContainerTimelineStripEmpty
+        message={t_i18n('Every event of the case is in a lane or a kind the timeline settings hide. Change the settings from the Timeline tab.')}
+        canEdit={canEdit}
+        timelinePath={timelinePath}
+      />
+    );
+  }
   return (
     <>
       <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }} data-testid="timeline-strip-summary">
@@ -179,8 +218,8 @@ interface ContainerTimelineStripContentProps {
 const ContainerTimelineStripContent = ({ queryRef, containerId, timelinePath }: ContainerTimelineStripContentProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
-  const navigate = useNavigate();
   const { containerTimelineSummary: summary } = usePreloadedQuery<ContainerTimelineStripQuery>(containerTimelineStripQuery, queryRef);
+  const canEdit = !!summary?.can_edit;
   return (
     <div data-testid="timeline-strip" style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1.5), height: '100%' }}>
       {(summary?.total ?? 0) > 0 ? (
@@ -193,27 +232,17 @@ const ContainerTimelineStripContent = ({ queryRef, containerId, timelinePath }: 
               anchors={summary?.anchors}
               grouping={(summary?.settings.default_grouping ?? 'day') as TimelineGrouping}
               timelinePath={timelinePath}
+              canEdit={canEdit}
             />
           </Suspense>
           <ContainerTimelineAnchors anchors={summary?.anchors} dense={true} />
         </>
       ) : (
-        <div role="status" data-testid="timeline-strip-empty" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: theme.spacing(1.5) }}>
-          <Text variant="content-base" as="div">
-            {t_i18n('The timeline fills itself from the knowledge of the case and the milestones you add.')}
-          </Text>
-          {summary?.can_edit && (
-            <Button
-              variant="secondary"
-              size="small"
-              startIcon={<AddOutlined fontSize="small" />}
-              onClick={() => navigate(`${timelinePath}?${TIMELINE_ADD_MILESTONE_PARAM}=true`)}
-              data-testid="timeline-strip-add-milestone"
-            >
-              {t_i18n('Add a milestone')}
-            </Button>
-          )}
-        </div>
+        <ContainerTimelineStripEmpty
+          message={t_i18n('The timeline fills itself from the knowledge of the case and the milestones you add.')}
+          canEdit={canEdit}
+          timelinePath={timelinePath}
+        />
       )}
       <div style={{ marginTop: 'auto' }}>
         <Link to={timelinePath}>{t_i18n('Open the timeline')}</Link>

@@ -1137,7 +1137,9 @@ const writeImportedContributions = async (
         ...(element ? markingsOf(elementsWithMarkings[element.internal_id] ?? {}) : []),
         ...access.markings,
       ])),
-      created_by_id: importedAuthorId(event.created_by_ref),
+      // Like its element, a known event keeps its author when the imported version names none the user can resolve: the
+      // exchange leaves out the authors that are not as visible as the container
+      created_by_id: importedAuthorId(event.created_by_ref) ?? (stored ? (stored[buildRefRelationKey(RELATION_CREATED_BY)] ?? [])[0] ?? null : null),
       creator_ids: existing ? Array.from(new Set([...creatorIdsOf(existing), user.id])) : [user.id],
       restricted_members: access.restricted_members,
       element_access: element ? timelineElementAccessOf(elementsWithMarkings[element.internal_id] ?? element) : (stored?.element_access ?? null),

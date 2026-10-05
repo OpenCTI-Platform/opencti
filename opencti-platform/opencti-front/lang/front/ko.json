@@ -12,6 +12,7 @@
   "A pinned event stands out on the timeline and stays visible when Pinned only is on.": "고정된 이벤트는 타임라인에서 눈에 띄며, 고정된 항목만이 켜져 있을 때도 계속 표시됩니다.",
   "An analyst note shown in the event details and in the exports to everyone who can read the event. The description says what happened; the annotation, what it means for the case.": "이벤트를 읽을 수 있는 모든 사용자에게 이벤트 세부 정보와 내보내기에 표시되는 분석가 메모입니다. 설명은 무슨 일이 있었는지를, 주석은 그것이 케이스에 어떤 의미인지를 나타냅니다.",
   "Details of what happened, in Markdown, for example the hosts and the tools involved. Optional.": "무슨 일이 있었는지에 대한 세부 내용(Markdown)입니다. 예: 관련된 호스트와 도구. 선택 사항.",
+  "Every event of the case is in a lane or a kind the timeline settings hide. Change the settings from the Timeline tab.": "이 케이스의 모든 이벤트가 타임라인 설정에서 숨긴 레인 또는 종류에 속합니다. 타임라인 탭에서 설정을 변경하세요.",
   "Hidden kinds are left out of the default view of every reader; choosing them in the kinds filter shows them again.": "숨긴 종류는 모든 독자의 기본 보기에서 제외되며, 종류 필터에서 선택하면 다시 표시됩니다.",
   "How events are grouped when the timeline opens, for every user of this case. Each reader can still change the grouping from the toolbar.": "타임라인을 열 때 이벤트를 그룹화하는 방식으로, 이 케이스의 모든 사용자에게 적용됩니다. 각 독자는 도구 모음에서 그룹화를 계속 변경할 수 있습니다.",
   "How sure the start date is. A precision other than Exact is shown in the list and the details, and an Approximate event is drawn with a dashed outline.": "시작 일시가 얼마나 확실한지 나타냅니다. 정확 이외의 정밀도는 목록과 세부 정보에 표시되며, 대략 이벤트는 점선 테두리로 그려집니다.",

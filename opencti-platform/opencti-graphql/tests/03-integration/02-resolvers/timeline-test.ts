@@ -1232,6 +1232,21 @@ describe('Incident and case timeline', () => {
       await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: updated.id } });
     });
 
+    it('should keep the author of a known event when an import names none', async () => {
+      const author = await internalLoadById(testContext, SYSTEM_USER, TEST_ORGANIZATION.id);
+      const withAuthor = { id: 'timeline-event--5e2a7c9b-3d1f-4b6e-9a8c-1f0e2d3c4b5a', title: 'Regulator acknowledged', event_time: '2026-02-06T09:00:00.000Z', created_by_ref: author.standard_id };
+      await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension: JSON.stringify({ events: [withAuthor], annotations: [] }) } });
+      // An exchange leaves out an author that is not as visible as its container: importing it back keeps the author
+      const { created_by_ref: _, ...withoutAuthor } = withAuthor;
+      await queryAsAdminWithSuccess({
+        query: TIMELINE_IMPORT,
+        variables: { containerId: secondCase.id, extension: JSON.stringify({ events: [{ ...withoutAuthor, title: 'Regulator acknowledged the filing' }], annotations: [] }) },
+      });
+      const [updated] = (await listTimeline(secondCase.id, { sources: ['manual'] })).filter((e) => e.title.startsWith('Regulator acknowledged'));
+      expect(updated).toMatchObject({ title: 'Regulator acknowledged the filing', createdBy: { id: author.internal_id } });
+      await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: updated.id } });
+    });
+
     it('should write, count and notify once an event named twice in one extension', async () => {
       const event = { id: 'timeline-event--2d4f6a8c-1b3e-4c5d-8e7f-9a0b1c2d3e4f', title: 'Duplicated milestone', event_time: '2026-02-05T23:00:00.000Z' };
       const extension = JSON.stringify({ events: [event, { ...event, title: 'Duplicated milestone, last version' }], annotations: [] });

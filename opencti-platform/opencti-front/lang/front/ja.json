@@ -12,6 +12,7 @@
   "A pinned event stands out on the timeline and stays visible when Pinned only is on.": "ピン留めしたイベントはタイムライン上で目立ち、ピン留めのみがオンのときも表示されたままになります。",
   "An analyst note shown in the event details and in the exports to everyone who can read the event. The description says what happened; the annotation, what it means for the case.": "イベントを閲覧できるすべてのユーザーに、イベントの詳細とエクスポートで表示されるアナリストのメモです。説明は何が起きたかを、注釈はそれがケースにとって何を意味するかを示します。",
   "Details of what happened, in Markdown, for example the hosts and the tools involved. Optional.": "何が起きたかの詳細（Markdown）。例：関係するホストやツール。任意。",
+  "Every event of the case is in a lane or a kind the timeline settings hide. Change the settings from the Timeline tab.": "このケースのすべてのイベントは、タイムラインの設定で非表示にしているレーンまたは種類に含まれています。設定はタイムラインタブで変更できます。",
   "Hidden kinds are left out of the default view of every reader; choosing them in the kinds filter shows them again.": "非表示の種類は、すべての閲覧者の既定の表示から除外されます。種類フィルターで選ぶと再び表示されます。",
   "How events are grouped when the timeline opens, for every user of this case. Each reader can still change the grouping from the toolbar.": "タイムラインを開いたときのイベントのグループ化方法で、このケースのすべてのユーザーに適用されます。各閲覧者はツールバーからグループ化を変更できます。",
   "How sure the start date is. A precision other than Exact is shown in the list and the details, and an Approximate event is drawn with a dashed outline.": "開始日時の確かさです。正確以外の精度は一覧と詳細に表示され、おおよそのイベントは破線の枠で描かれます。",
