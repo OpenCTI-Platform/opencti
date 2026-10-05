@@ -263,7 +263,6 @@ const GraphToolbar = ({
             <div style={{ width: '100%' }} data-graph-search>
               <SearchInput
                 keyword={search ?? ''}
-                variant="thin"
                 onSubmit={selectBySearch}
               />
             </div>

@@ -39,7 +39,7 @@ const GraphCounters = ({ counters }: GraphCountersProps) => {
             <Button
               type="button"
               priority="tertiary"
-              size="sm"
+              size="md"
               aria-label={`${label} - ${action}`}
               startIcon={tone
                 ? <span aria-hidden style={{ width: 10, height: 10, borderRadius: '50%', border: `2px solid ${palette.tones[tone]}` }} />
