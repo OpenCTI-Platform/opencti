@@ -31,7 +31,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { fetchQuery } from '../../../../relay/environment';
+import { fetchQuery, handleError } from '../../../../relay/environment';
 import { resolveLink } from '../../../../utils/Entity';
 import EntitySelect, { type EntityOption } from '../form/EntitySelect';
 import type { StixPathFinderQuery, StixPathFinderQuery$data } from './__generated__/StixPathFinderQuery.graphql';
@@ -250,7 +250,8 @@ const StixPathFinder = ({ fromId, fromLabel, toId, toLabel, renderActions }: Sti
 
   useEffect(() => {
     fetchQuery<StixPathFinderNeighborhoodQuery>(neighborhoodQuery, { id: fromId }).toPromise()
-      .then((data) => setNeighborhood(data?.stixNeighborhoodSummary ?? null));
+      .then((data) => setNeighborhood(data?.stixNeighborhoodSummary ?? null))
+      .catch((err) => handleError(err));
   }, [fromId]);
 
   const relationshipOptions = useMemo(() => schema.scrs
@@ -285,6 +286,7 @@ const StixPathFinder = ({ fromId, fromLabel, toId, toLabel, renderActions }: Sti
         setResult(paths);
         setSelected(new Set((paths?.paths ?? []).map((_, index) => index)));
       })
+      .catch((err) => handleError(err))
       .finally(() => setLoading(false));
   };
 

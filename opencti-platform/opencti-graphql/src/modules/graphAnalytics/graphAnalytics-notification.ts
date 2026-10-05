@@ -1,10 +1,11 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicStoreBase } from '../../types/store';
+import type { BasicStoreBase, BasicStoreCommon } from '../../types/store';
 import type { BasicStoreSettings } from '../../types/settings';
 import type { StixObject } from '../../types/stix-2-1-common';
 import { isUserCanAccessStixElement, isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
 import { elList } from '../../database/engine';
-import { stixLoadById } from '../../database/middleware';
+import { storeLoadByIdsWithRefs } from '../../database/middleware';
+import { convertStoreToStix } from '../../database/stix-common-converter';
 import { getEntityFromCache } from '../../database/cache';
 import { storeNotificationEvent } from '../../database/stream/stream-handler';
 import { extractStixRepresentative } from '../../database/stix-representative';
@@ -49,12 +50,16 @@ export const notifyGraphClusterJoined = async (context: AuthContext, publishedAt
   const metricsOf = (element: BasicStoreBase) => (element as unknown as Record<string, GraphMetrics | undefined>)[GRAPH_METRICS_ATTRIBUTE];
   const clusterIds = Array.from(new Set(joined.map((element) => metricsOf(element)?.cluster_id).filter((id): id is string => !!id)));
   const clusters = new Map((await loadGraphClusters(context, SYSTEM_USER, clusterIds)).map((cluster) => [cluster.internal_id, cluster]));
+  const memberIds = joined.filter((element) => clusters.has(metricsOf(element)?.cluster_id ?? '')).map((element) => element.internal_id);
+  const members = memberIds.length > 0 ? await storeLoadByIdsWithRefs<BasicStoreCommon>(context, SYSTEM_USER, memberIds) : [];
+  const membersById = new Map(members.map((member) => [member.internal_id, member]));
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   let delivered = 0;
   for (let index = 0; index < joined.length; index += 1) {
     const cluster = clusters.get(metricsOf(joined[index])?.cluster_id ?? '');
-    const stix = cluster ? await stixLoadById(context, SYSTEM_USER, joined[index].internal_id) as StixObject | undefined : undefined;
-    if (!cluster || !stix) continue;
+    const member = membersById.get(joined[index].internal_id);
+    if (!cluster || !member) continue;
+    const stix = convertStoreToStix(member) as StixObject;
     const message = buildClusterJoinedMessage(extractStixRepresentative(stix), cluster.name);
     for (let triggerIndex = 0; triggerIndex < candidates.length; triggerIndex += 1) {
       const { users, trigger } = candidates[triggerIndex];
