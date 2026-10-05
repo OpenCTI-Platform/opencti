@@ -51,6 +51,16 @@ describe('Landscape diff cache and rights', () => {
     expect(userAccessFingerprint({ ...context, draft_context: 'draft-1' } as AuthContext, buildUser())).not.toEqual(main);
   });
 
+  it('should change the fingerprint in a draft when the draft capabilities of the user change', () => {
+    const inDraft = { ...context, draft_context: 'draft-1' } as AuthContext;
+    const reference = userAccessFingerprint(inDraft, buildUser({ capabilitiesInDraft: [{ name: 'KNOWLEDGE_KNUPDATE' }] }));
+    expect(userAccessFingerprint(inDraft, buildUser({ capabilitiesInDraft: [] }))).not.toEqual(reference);
+    expect(userAccessFingerprint(inDraft, buildUser({ capabilitiesInDraft: [{ name: 'KNOWLEDGE_KNUPDATE' }, { name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }] }))).not.toEqual(reference);
+    const reordered = [{ name: 'KNOWLEDGE_KNUPDATE_KNDELETE' }, { name: 'KNOWLEDGE_KNUPDATE' }];
+    expect(userAccessFingerprint(inDraft, buildUser({ capabilitiesInDraft: reordered })))
+      .toEqual(userAccessFingerprint(inDraft, buildUser({ capabilitiesInDraft: [...reordered].reverse() })));
+  });
+
   it('should align the end of a widget period on the next minute without excluding the requested period', () => {
     expect(alignSummaryEnd('2026-10-03T12:00:00.000Z')).toEqual('2026-10-03T12:00:00.000Z');
     expect(alignSummaryEnd('2026-10-03T12:00:00.001Z')).toEqual('2026-10-03T12:01:00.000Z');

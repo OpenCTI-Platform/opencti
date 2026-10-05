@@ -802,12 +802,14 @@ const readContributors = async (id: string): Promise<string[] | null> => {
 
 /**
  * Fingerprint of everything the results depend on in the rights of the user: a cached result
- * computed before a change of capabilities, markings, organizations or groups is never reused.
+ * computed before a change of capabilities (draft capabilities included), markings, organizations
+ * or groups is never reused.
  */
 export const userAccessFingerprint = (context: AuthContext, user: AuthUser) => {
   const ids = (items: Array<{ internal_id?: string; id?: string }> | undefined) => (items ?? []).map((item) => item.internal_id ?? item.id ?? '').sort();
   const payload = JSON.stringify({
     capabilities: (user.capabilities ?? []).map((capability) => capability.name).sort(),
+    capabilities_in_draft: (user.capabilitiesInDraft ?? []).map((capability) => capability.name).sort(),
     markings: ids(user.allowed_marking),
     organizations: ids(user.organizations),
     groups: ids(user.groups),
