@@ -17,8 +17,8 @@ import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { findByIds } from './hunt-loaders';
 import { HUNT_IOC_CONTAINER_TYPES, HUNT_IOC_OBSERVABLE_TYPES, HUNT_IOC_SUBJECT_TYPES, HUNT_TARGET_TYPES } from './hunt-entity-types';
 import { type IocElement, iocElementName, iocValuesOfElement, listContainedIocElements, listRelatedElements, listSubjectIocElements } from './hunt-iocs';
-import { HUNT_TYPE_INDICATORS, HUNT_TYPE_TELEMETRY } from './hunt-types';
 import { HUNT_CONFIG } from './hunt-utils';
+import { HuntDerivedSourceRelation, HuntType } from '../../generated/graphql';
 
 /** Pattern types of the indicators a detection-rule hunt runs: the Sigma rule, or a native query of its language. */
 export const HUNT_RULE_PATTERN_TYPES = ['sigma', 'spl', 'kql', 'eql', 'esql'];
@@ -36,8 +36,6 @@ const THREAT_ATTRIBUTION_TYPES: Record<string, string[]> = {
   [ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL]: [ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_CAMPAIGN],
 };
 const THREAT_ARSENAL_TYPES = [ENTITY_TYPE_MALWARE, ENTITY_TYPE_TOOL];
-
-export type HuntDerivedSourceRelation = 'self' | 'uses' | 'attributed';
 
 export interface HuntDerivedEntity {
   id: string;
@@ -66,7 +64,7 @@ export interface HuntDerivedRule extends HuntDerivedEntity {
 
 export interface HuntDerivedContent {
   entity: HuntDerivedSource;
-  suggested_type: string | null;
+  suggested_type: HuntType | null;
   sources: HuntDerivedSource[];
   targets: HuntDerivedSource[];
   elements: HuntDerivedElement[];
@@ -96,7 +94,7 @@ const isRule = (element: IocElement) => element.entity_type === ENTITY_TYPE_INDI
  * the malware and tools it uses and the intrusion sets and campaigns attributed to it.
  */
 const deriveSources = async (context: AuthContext, user: AuthUser, entity: IocElement): Promise<HuntDerivedSource[]> => {
-  const self: HuntDerivedSource = { ...toDerived(entity), relation: 'self' };
+  const self: HuntDerivedSource = { ...toDerived(entity), relation: HuntDerivedSourceRelation.Self };
   if (!HUNT_TARGET_TYPES.includes(entity.entity_type) || entity.entity_type === ENTITY_TYPE_MALWARE) {
     return [self];
   }
@@ -106,8 +104,8 @@ const deriveSources = async (context: AuthContext, user: AuthUser, entity: IocEl
     attributionTypes.length > 0 ? regarding(context, user, entity.internal_id, RELATION_ATTRIBUTED_TO, attributionTypes, true, MAX_RELATED_SOURCES) : Promise.resolve([]),
   ]);
   const related = [
-    ...arsenal.map((source): HuntDerivedSource => ({ ...toDerived(source), relation: 'uses' })),
-    ...attributed.map((source): HuntDerivedSource => ({ ...toDerived(source), relation: 'attributed' })),
+    ...arsenal.map((source): HuntDerivedSource => ({ ...toDerived(source), relation: HuntDerivedSourceRelation.Uses })),
+    ...attributed.map((source): HuntDerivedSource => ({ ...toDerived(source), relation: HuntDerivedSourceRelation.Attributed })),
   ];
   return Array.from(new Map([self, ...related].map((source) => [source.id, source])).values());
 };
@@ -132,11 +130,11 @@ const deriveTechniques = async (context: AuthContext, user: AuthUser, entity: Io
 const deriveTargets = async (context: AuthContext, user: AuthUser, entity: IocElement, sources: HuntDerivedSource[]): Promise<HuntDerivedSource[]> => {
   if (HUNT_IOC_CONTAINER_TYPES.includes(entity.entity_type)) {
     const contained = await regarding(context, user, entity.internal_id, RELATION_OBJECT, HUNT_TARGET_TYPES, false, MAX_TARGETS);
-    return contained.map((target) => ({ ...toDerived(target), relation: 'self' }));
+    return contained.map((target) => ({ ...toDerived(target), relation: HuntDerivedSourceRelation.Self }));
   }
   if (entity.entity_type === ENTITY_TYPE_INDICATOR) {
     const indicated = await listRelatedElements(context, user, RELATION_INDICATES, { fromId: entity.internal_id }, HUNT_TARGET_TYPES, MAX_TARGETS);
-    return indicated.map((target) => ({ ...toDerived(target), relation: 'self' }));
+    return indicated.map((target) => ({ ...toDerived(target), relation: HuntDerivedSourceRelation.Self }));
   }
   return sources.filter((source) => HUNT_TARGET_TYPES.includes(source.entity_type));
 };
@@ -229,14 +227,14 @@ export const deriveHuntContent = async (context: AuthContext, user: AuthUser, en
     .sort((a, b) => b.technique_ids.length - a.technique_ids.length || a.name.localeCompare(b.name))
     .slice(0, MAX_RULES);
   const derivedElements = Array.from(elements.values());
-  let suggestedType: string | null = null;
+  let suggestedType: HuntType | null = null;
   if (derivedElements.length > 0) {
-    suggestedType = HUNT_TYPE_INDICATORS;
+    suggestedType = HuntType.Indicators;
   } else if (sortedRules.length > 0) {
-    suggestedType = HUNT_TYPE_TELEMETRY;
+    suggestedType = HuntType.Telemetry;
   }
   return {
-    entity: { ...toDerived(entity), relation: 'self' },
+    entity: { ...toDerived(entity), relation: HuntDerivedSourceRelation.Self },
     suggested_type: suggestedType,
     sources: sources.filter((source) => HUNT_IOC_CONTAINER_TYPES.includes(source.entity_type) || HUNT_IOC_SUBJECT_TYPES.includes(source.entity_type)),
     targets: Array.from(new Map(targets.map((target) => [target.id, target])).values()),
