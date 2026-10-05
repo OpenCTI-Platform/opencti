@@ -179,11 +179,71 @@ describe('Ingestion execution identity confinement', () => {
         .rejects.toThrowError();
     });
 
-    it('should not resolve any identity when the edition does not change it', async () => {
+    it('should not resolve any identity when the edition only touches fields without effect on the execution', async () => {
       const creator = buildUser({ capabilities: ['KNOWLEDGE'] });
       await expect(validateIngestionExecutionIdentityFromEditInputs(context, creator, { user_id: 'stored' }, [{ key: 'name', value: ['a name'] }]))
         .resolves.toBeUndefined();
+      await expect(validateIngestionExecutionIdentityFromEditInputs(context, creator, { user_id: 'stored' }, [
+        { key: 'ingestion_running', value: ['false'] },
+        { key: 'description', value: ['a description'] },
+      ])).resolves.toBeUndefined();
       expect(resolveUserByIdMock).not.toHaveBeenCalled();
+    });
+
+    it('should validate the stored identity when only the uri is changed', async () => {
+      const editor = buildUser({ capabilities: ['KNOWLEDGE'] });
+      resolveUserByIdMock.mockResolvedValue(buildUser({ id: 'stored', capabilities: ['SETTINGS_SETACCESSES'] }));
+      await expect(validateIngestionExecutionIdentityFromEditInputs(context, editor, { user_id: 'stored' }, [{ key: 'uri', value: ['http://fakefeed.invalid'] }]))
+        .rejects.toThrowError();
+      expect(resolveUserByIdMock).toHaveBeenCalledWith(context, 'stored');
+    });
+
+    it('should validate the stored identity when the authorized members are changed', async () => {
+      const editor = buildUser({ capabilities: ['KNOWLEDGE'] });
+      resolveUserByIdMock.mockResolvedValue(buildUser({ id: 'stored', capabilities: ['SETTINGS_SETACCESSES'] }));
+      await expect(validateIngestionExecutionIdentityFromEditInputs(context, editor, { user_id: 'stored' }, [{ key: 'authorized_members', value: ['editor-id'] }]))
+        .rejects.toThrowError();
+    });
+
+    it('should validate the stored identity when a field without effect is mixed with a sensitive one', async () => {
+      const editor = buildUser({ capabilities: ['KNOWLEDGE'] });
+      resolveUserByIdMock.mockResolvedValue(buildUser({ id: 'stored', capabilities: ['SETTINGS_SETACCESSES'] }));
+      await expect(validateIngestionExecutionIdentityFromEditInputs(context, editor, { user_id: 'stored' }, [
+        { key: 'ingestion_running', value: ['true'] },
+        { key: 'uri', value: ['http://fakefeed.invalid'] },
+      ])).rejects.toThrowError();
+    });
+
+    it('should accept an uri edition when the stored identity stays within the editor rights', async () => {
+      const editor = buildUser({ capabilities: ['KNOWLEDGE', 'INGESTION_SETINGESTIONS'] });
+      resolveUserByIdMock.mockResolvedValue(buildUser({ id: 'stored', capabilities: ['KNOWLEDGE'] }));
+      await expect(validateIngestionExecutionIdentityFromEditInputs(context, editor, { user_id: 'stored' }, [{ key: 'uri', value: ['http://fakefeed.invalid'] }]))
+        .resolves.toBeUndefined();
+    });
+
+    it('should validate the new identity instead of the stored one when the identity is changed', async () => {
+      const editor = buildUser({ capabilities: ['KNOWLEDGE'] });
+      resolveUserByIdMock.mockResolvedValue(buildUser({ id: 'target', capabilities: ['KNOWLEDGE'] }));
+      await expect(validateIngestionExecutionIdentityFromEditInputs(context, editor, { user_id: 'stored' }, [
+        { key: 'user_id', value: ['target'] },
+        { key: 'uri', value: ['http://fakefeed.invalid'] },
+      ])).resolves.toBeUndefined();
+      expect(resolveUserByIdMock).toHaveBeenCalledWith(context, 'target');
+      expect(resolveUserByIdMock).not.toHaveBeenCalledWith(context, 'stored');
+    });
+
+    it('should treat a stored ingestion without identity as a system identity', async () => {
+      const editor = buildUser({ capabilities: ['KNOWLEDGE'] });
+      await expect(validateIngestionExecutionIdentityFromEditInputs(context, editor, { user_id: null }, [{ key: 'uri', value: ['http://fakefeed.invalid'] }]))
+        .rejects.toThrowError();
+      expect(resolveUserByIdMock).not.toHaveBeenCalled();
+    });
+
+    it('should accept any edition from an editor holding every right', async () => {
+      const editor = buildUser({ capabilities: ['BYPASS'] });
+      resolveUserByIdMock.mockResolvedValue(buildUser({ id: 'stored', capabilities: ['BYPASS'] }));
+      await expect(validateIngestionExecutionIdentityFromEditInputs(context, editor, { user_id: 'stored' }, [{ key: 'uri', value: ['http://fakefeed.invalid'] }]))
+        .resolves.toBeUndefined();
     });
 
     it('should treat an edition clearing the identity as a system identity', async () => {

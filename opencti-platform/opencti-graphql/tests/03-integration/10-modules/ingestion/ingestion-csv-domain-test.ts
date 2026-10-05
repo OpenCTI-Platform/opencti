@@ -4,6 +4,7 @@ import {
   deleteIngestionCsv,
   ingestionCsvAddAutoUser,
   ingestionCsvEditField,
+  ingestionCsvResetState,
   testCsvIngestionMapping,
 } from '../../../../src/modules/ingestion/ingestion-csv-domain';
 import { ADMIN_USER, PLATFORM_ORGANIZATION, testContext, USER_EDITOR } from '../../../utils/testQuery';
@@ -188,6 +189,47 @@ describe('Ingestion CSV domain - create CSV Feed coverage', async () => {
     const restrictedContext = executionContext('testContext', restrictedUser);
     await expect(ingestionCsvEditField(restrictedContext, restrictedUser, ingestionCreated.id, [{ key: 'user_id', value: [ADMIN_USER.id] }]))
       .rejects.toThrowError('You are not allowed to use this user for this ingestion');
+  });
+
+  it('should edition of a feed run by a more privileged identity be refused even when the identity is not changed', async () => {
+    const ingestionCsvInput: IngestionCsvAddInput = {
+      authentication_type: IngestionAuthType.None,
+      name: 'CSV Feed to test edition of a privileged feed',
+      uri: 'http://fakefeed.invalid',
+      user_id: USER_EDITOR.id,
+    };
+    const ingestionCreated = await addIngestionCsv(testContext, ADMIN_USER, ingestionCsvInput);
+    ingestionCreatedIds.push(ingestionCreated.id);
+
+    const restrictedUser = getFakeAuthUser('CsvFeedRestrictedPrivilegedFeedEditor');
+    restrictedUser.capabilities = [{ name: 'INGESTION_SETINGESTIONS' }] as AuthUser['capabilities'];
+    const restrictedContext = executionContext('testContext', restrictedUser);
+
+    // Redirecting the source would ingest any content under the privileged identity.
+    await expect(ingestionCsvEditField(restrictedContext, restrictedUser, ingestionCreated.id, [{ key: 'uri', value: ['http://otherfeed.invalid'] }]))
+      .rejects.toThrowError('You are not allowed to use this user for this ingestion');
+    // Mixing a field without effect on the execution does not bypass the validation.
+    await expect(ingestionCsvEditField(restrictedContext, restrictedUser, ingestionCreated.id, [
+      { key: 'ingestion_running', value: ['true'] },
+      { key: 'uri', value: ['http://otherfeed.invalid'] },
+    ])).rejects.toThrowError('You are not allowed to use this user for this ingestion');
+    await expect(ingestionCsvResetState(restrictedContext, restrictedUser, ingestionCreated.id))
+      .rejects.toThrowError('You are not allowed to use this user for this ingestion');
+
+    // Starting, stopping or renaming the feed does not change what is ingested.
+    const started = await ingestionCsvEditField(restrictedContext, restrictedUser, ingestionCreated.id, [{ key: 'ingestion_running', value: ['true'] }]);
+    expect(started.ingestion_running).toBe(true);
+    const renamed = await ingestionCsvEditField(restrictedContext, restrictedUser, ingestionCreated.id, [
+      { key: 'ingestion_running', value: ['false'] },
+      { key: 'name', value: ['CSV Feed to test edition of a privileged feed renamed'] },
+    ]);
+    expect(renamed.ingestion_running).toBe(false);
+    expect(renamed.name).toBe('CSV Feed to test edition of a privileged feed renamed');
+    expect(renamed.uri).toBe('http://fakefeed.invalid');
+
+    // An editor covering the identity rights can still edit the feed.
+    const edited = await ingestionCsvEditField(testContext, ADMIN_USER, ingestionCreated.id, [{ key: 'uri', value: ['http://otherfeed.invalid'] }]);
+    expect(edited.uri).toBe('http://otherfeed.invalid');
   });
 
   it('should create a CSV Feed with a strange name works fine', async () => {
