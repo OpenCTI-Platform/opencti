@@ -406,6 +406,14 @@ export const redisAddDeletions = async (internalIds: Array<string>, draftId: str
     await tx.zadd('platform-deletions', time, ...ids);
   });
 };
+// For an element deliberately recreated with the identifier it had before its deletion (a merge being reverted):
+// while the deletion is recent, every lock on that identifier is refused.
+export const redisRemoveDeletions = async (internalIds: Array<string>, draftId: string | undefined = undefined) => {
+  const ids = draftId ? internalIds.map((id) => `${id}${draftId}`) : internalIds;
+  if (ids.length > 0) {
+    await getClientLock().zrem('platform-deletions', ...ids);
+  }
+};
 export const redisFetchLatestDeletions = async () => {
   const time = new Date().getTime();
   await getClientLock().zremrangebyscore('platform-deletions', '-inf', time - (5 * 1000));
@@ -416,6 +424,8 @@ interface LockOptions {
   retryCount?: number;
   draftId?: string;
   child_operation?: string;
+  // Identifiers the caller recreates on purpose (an unmerge): a recent deletion of them does not refuse the lock.
+  restoredIds?: string[];
 }
 const defaultLockOpts: LockOptions = { automaticExtension: true, retryCount: conf.get('app:concurrency:retry_count'), draftId: '' };
 const getStackTrace = () => {
@@ -434,7 +444,7 @@ export interface LockHandle {
 export const lockResource = async (resources: Array<string>, opts: LockOptions = defaultLockOpts): Promise<LockHandle> => {
   let timeout: NodeJS.Timeout | undefined;
   let extension: undefined | Promise<void>;
-  const { retryCount = defaultLockOpts.retryCount, automaticExtension = defaultLockOpts.automaticExtension, draftId = defaultLockOpts.draftId } = opts;
+  const { retryCount = defaultLockOpts.retryCount, automaticExtension = defaultLockOpts.automaticExtension, draftId = defaultLockOpts.draftId, restoredIds = [] } = opts;
   const initialCallStack = getStackTrace();
   const resourcesId = R.uniq(resources).map((id) => `${id}${draftId}`);
   const locks = R.uniq(resourcesId).map((id) => `{locks}:${id}${draftId}`);
@@ -482,7 +492,8 @@ export const lockResource = async (resources: Array<string>, opts: LockOptions =
   // If lock succeed we need to be sure that delete not occurred just before the resolution/lock
   // If we do not check for that, we could update an entity even though it was just deleted, resulting in the entity being created again
   const latestDeletions = await redisFetchLatestDeletions();
-  const deletedParticipantsIds = resourcesId.filter((x) => latestDeletions.includes(x));
+  const restoredResourcesId = restoredIds.map((id) => `${id}${draftId}`);
+  const deletedParticipantsIds = resourcesId.filter((x) => latestDeletions.includes(x) && !restoredResourcesId.includes(x));
   if (deletedParticipantsIds.length > 0) {
     // noinspection ExceptionCaughtLocallyJS
     await lock.release();
@@ -1029,6 +1040,253 @@ export const redisDeleteIngestionLogHistory = async (feedId: string): Promise<vo
   }
 };
 // endregion
+
+// region - curation (knowledge curation manager bookkeeping)
+const CURATION_KEY_PREFIX = 'curation:';
+const CURATION_COUNTER_TTL_SECONDS = 400 * 24 * 3600;
+
+// Stored value: "<writer>\n<event id>\n<previous writer>". The script runs atomically, so concurrent writers each observe
+// their immediate predecessor, and replaying the same event returns the predecessor observed the first time.
+// One key per entity field: the first line is the current writer, the next ones the most recent events, newest first,
+// each with the writer that preceded it ("<event id>\t<previous writer>"). A replayed event returns the predecessor it
+// saw the first time and changes nothing, even when later events of the same field were recorded since. Stream event
+// ids only grow, so an event not newer than the newest one recorded is a replay even once it left the history: it
+// then reports no predecessor.
+const CURATION_SWAP_FIELD_WRITER_SCRIPT = `
+local function not_newer(event, reference)
+  local em, es = string.match(event, '^(%d+)-(%d+)$')
+  local rm, rs = string.match(reference, '^(%d+)-(%d+)$')
+  if not em or not rm then
+    return false
+  end
+  em, es, rm, rs = tonumber(em), tonumber(es), tonumber(rm), tonumber(rs)
+  return em < rm or (em == rm and es <= rs)
+end
+local value = redis.call('GET', KEYS[1])
+local current = ''
+local history = {}
+local newest = nil
+if value then
+  local index = 0
+  for line in string.gmatch(value .. '\\n', '(.-)\\n') do
+    if index == 0 then
+      current = line
+    else
+      local separator = string.find(line, '\\t', 1, true)
+      if separator then
+        local event = string.sub(line, 1, separator - 1)
+        if event == ARGV[2] then
+          return {string.sub(line, separator + 1), 1}
+        end
+        newest = newest or event
+        table.insert(history, line)
+      end
+    end
+    index = index + 1
+  end
+end
+if newest and not_newer(ARGV[2], newest) then
+  return {'', 1}
+end
+local lines = {ARGV[1], ARGV[2] .. '\\t' .. current}
+for i = 1, math.min(#history, tonumber(ARGV[4]) - 1) do
+  table.insert(lines, history[i])
+end
+redis.call('SET', KEYS[1], table.concat(lines, '\\n'), 'EX', tonumber(ARGV[3]))
+return {current, 0}
+`;
+// Events remembered per field with the writer that preceded them, for replays after a failed stream batch.
+const CURATION_FIELD_WRITER_EVENTS_KEPT = 32;
+
+export interface CurationFieldWriterSwap {
+  previous: string | null;
+  // True when the event was already recorded (stream replay after a failed batch).
+  replayed: boolean;
+}
+
+/**
+ * Remember the last writer of an entity field and return the previous one (if still within the TTL window).
+ * Used to detect sources overwriting each other on the same field. Replaying an event already recorded returns the
+ * writer that preceded it at the time and leaves the field history unchanged.
+ */
+export const redisCurationSwapFieldWriter = async (
+  entityId: string,
+  field: string,
+  writer: string,
+  eventId: string,
+  ttlSeconds: number,
+): Promise<CurationFieldWriterSwap> => {
+  const key = `${CURATION_KEY_PREFIX}writer:${entityId}:${field}`;
+  const [previous, replayed] = await getClientBase().eval(
+    CURATION_SWAP_FIELD_WRITER_SCRIPT,
+    1,
+    key,
+    writer,
+    eventId,
+    ttlSeconds,
+    CURATION_FIELD_WRITER_EVENTS_KEPT,
+  ) as [string, number];
+  return { previous: previous || null, replayed: replayed === 1 };
+};
+
+export const redisCurationIncrementCounter = async (name: string, day: string, increment = 1): Promise<number> => {
+  const key = `${CURATION_KEY_PREFIX}counter:${name}:${day}`;
+  const client = getClientBase();
+  const value = await client.incrby(key, increment);
+  await client.expire(key, CURATION_COUNTER_TTL_SECONDS);
+  return value;
+};
+
+export const redisCurationGetCounters = async (name: string, days: string[]): Promise<number[]> => {
+  if (days.length === 0) return [];
+  const values = await Promise.all(days.map((day) => getClientBase().get(`${CURATION_KEY_PREFIX}counter:${name}:${day}`)));
+  return values.map((value) => (value ? Number(value) : 0));
+};
+
+// Stream events the curation manager could not process, kept for replay; the oldest are dropped past the bound. A replay
+// claims them into a processing list and settles each one once handled, so an interrupted replay loses none. Both lists
+// share a hash tag: the scripts that move entries between them need one slot in a Redis cluster.
+const CURATION_DEAD_LETTER_KEY = `${CURATION_KEY_PREFIX}{dead_letters}:stream`;
+const CURATION_DEAD_LETTER_PROCESSING_KEY = `${CURATION_KEY_PREFIX}{dead_letters}:processing`;
+const CURATION_DEAD_LETTERS_KEPT = 1000;
+
+// The entries an interrupted replay left in the processing list are claimed again first, then the oldest dead letters.
+const CURATION_CLAIM_DEAD_LETTERS_SCRIPT = `
+  local claimed = redis.call('LRANGE', KEYS[2], 0, -1)
+  local missing = tonumber(ARGV[1]) - #claimed
+  if missing > 0 then
+    local taken = redis.call('LRANGE', KEYS[1], 0, missing - 1)
+    if #taken > 0 then
+      redis.call('LTRIM', KEYS[1], #taken, -1)
+      redis.call('RPUSH', KEYS[2], unpack(taken))
+      for _, entry in ipairs(taken) do table.insert(claimed, entry) end
+    end
+  end
+  return claimed`;
+
+const CURATION_SETTLE_DEAD_LETTER_SCRIPT = `
+  redis.call('LREM', KEYS[2], 1, ARGV[1])
+  if ARGV[2] ~= '' then
+    redis.call('RPUSH', KEYS[1], ARGV[2])
+    redis.call('LTRIM', KEYS[1], -tonumber(ARGV[3]), -1)
+  end
+  return 1`;
+
+export interface ClaimedDeadLetter<T> {
+  raw: string;
+  entry: T;
+}
+
+export const redisCurationPushDeadLetters = async (entries: object[]) => {
+  if (entries.length === 0) return;
+  const client = getClientBase();
+  await client.rpush(CURATION_DEAD_LETTER_KEY, ...entries.map((entry) => JSON.stringify(entry)));
+  await client.ltrim(CURATION_DEAD_LETTER_KEY, -CURATION_DEAD_LETTERS_KEPT, -1);
+};
+
+/** Claim the oldest dead letters for a replay, at most *count*: each one stays in Redis until it is settled. */
+export const redisCurationClaimDeadLetters = async <T>(count: number): Promise<ClaimedDeadLetter<T>[]> => {
+  const raw = await getClientBase().eval(CURATION_CLAIM_DEAD_LETTERS_SCRIPT, 2, CURATION_DEAD_LETTER_KEY, CURATION_DEAD_LETTER_PROCESSING_KEY, count) as string[] | null;
+  return (raw ?? []).map((entry) => ({ raw: entry, entry: JSON.parse(entry) as T }));
+};
+
+/** Settle a claimed dead letter: handled, or put back with *kept* for another replay. */
+export const redisCurationSettleDeadLetter = async (claimed: string, kept: object | null) => {
+  await getClientBase().eval(
+    CURATION_SETTLE_DEAD_LETTER_SCRIPT,
+    2,
+    CURATION_DEAD_LETTER_KEY,
+    CURATION_DEAD_LETTER_PROCESSING_KEY,
+    claimed,
+    kept ? JSON.stringify(kept) : '',
+    CURATION_DEAD_LETTERS_KEPT,
+  );
+};
+
+// The result of a proposal application whose decision could not be written: the next application finalizes it.
+const CURATION_APPLICATION_KEY_PREFIX = `${CURATION_KEY_PREFIX}application:`;
+const CURATION_APPLICATION_TTL_SECONDS = 30 * 24 * 3600;
+
+export const redisCurationSetApplicationResult = async (proposalId: string, result: object) => {
+  await getClientBase().set(`${CURATION_APPLICATION_KEY_PREFIX}${proposalId}`, JSON.stringify(result), 'EX', CURATION_APPLICATION_TTL_SECONDS);
+};
+
+export const redisCurationGetApplicationResult = async <T>(proposalId: string): Promise<T | null> => {
+  const raw = await getClientBase().get(`${CURATION_APPLICATION_KEY_PREFIX}${proposalId}`);
+  return raw ? JSON.parse(raw) as T : null;
+};
+
+export const redisCurationDeleteApplicationResult = async (proposalId: string) => {
+  await getClientBase().del(`${CURATION_APPLICATION_KEY_PREFIX}${proposalId}`);
+};
+
+// The entities whose curation records restrictions could not be refreshed from the stream, with their attempts: they
+// stay queued until a refresh succeeds, so a reclassification is never dropped with the stream position.
+const CURATION_RESTRICTION_RETRY_KEY = `${CURATION_KEY_PREFIX}restriction_refresh_retry`;
+
+export const redisCurationQueueRestrictionRefresh = async (entityIds: string[]) => {
+  if (entityIds.length === 0) return;
+  const client = getClientBase();
+  await client.hset(CURATION_RESTRICTION_RETRY_KEY, Object.fromEntries(entityIds.map((id) => [id, '0'])));
+};
+
+export const redisCurationGetQueuedRestrictionRefreshes = async (count: number): Promise<Array<{ entityId: string; attempts: number }>> => {
+  const [, flat] = await getClientBase().hscan(CURATION_RESTRICTION_RETRY_KEY, '0', 'COUNT', count);
+  const queued: Array<{ entityId: string; attempts: number }> = [];
+  for (let index = 0; index + 1 < flat.length && queued.length < count; index += 2) {
+    queued.push({ entityId: flat[index], attempts: Number(flat[index + 1]) || 0 });
+  }
+  return queued;
+};
+
+export const redisCurationCompleteRestrictionRefresh = async (entityId: string) => {
+  await getClientBase().hdel(CURATION_RESTRICTION_RETRY_KEY, entityId);
+};
+
+export const redisCurationFailRestrictionRefresh = async (entityId: string): Promise<number> => {
+  return getClientBase().hincrby(CURATION_RESTRICTION_RETRY_KEY, entityId, 1);
+};
+
+// The recipients a Knowledge Health digest was delivered to: a digest sent again never reaches them twice.
+const CURATION_DIGEST_KEY_PREFIX = `${CURATION_KEY_PREFIX}digest:`;
+const CURATION_DIGEST_TTL_SECONDS = 14 * 24 * 3600;
+
+export const redisCurationGetDigestDeliveries = async (snapshotId: string): Promise<string[]> => {
+  return getClientBase().smembers(`${CURATION_DIGEST_KEY_PREFIX}${snapshotId}`);
+};
+
+export const redisCurationAddDigestDelivery = async (snapshotId: string, recipient: string) => {
+  const key = `${CURATION_DIGEST_KEY_PREFIX}${snapshotId}`;
+  await getClientBase().multi().sadd(key, recipient).expire(key, CURATION_DIGEST_TTL_SECONDS).exec();
+};
+
+// A digest that missed recipients stays pending on its own snapshot, so a newer snapshot never sends it again to the
+// recipients it reached. It is retried for a day, at most once per retry interval.
+const CURATION_DIGEST_PENDING_KEY = `${CURATION_KEY_PREFIX}digest_pending`;
+const CURATION_DIGEST_RETRY_KEY = `${CURATION_KEY_PREFIX}digest_retry`;
+const CURATION_DIGEST_PENDING_TTL_SECONDS = 24 * 3600;
+const CURATION_DIGEST_RETRY_INTERVAL_SECONDS = 15 * 60;
+
+export const redisCurationSetPendingDigest = async (snapshotId: string) => {
+  await getClientBase().multi()
+    .set(CURATION_DIGEST_PENDING_KEY, snapshotId, 'EX', CURATION_DIGEST_PENDING_TTL_SECONDS)
+    .set(CURATION_DIGEST_RETRY_KEY, '1', 'EX', CURATION_DIGEST_RETRY_INTERVAL_SECONDS)
+    .exec();
+};
+
+export const redisCurationGetPendingDigest = async (): Promise<string | null> => {
+  return getClientBase().get(CURATION_DIGEST_PENDING_KEY);
+};
+
+export const redisCurationClearPendingDigest = async () => {
+  await getClientBase().del(CURATION_DIGEST_PENDING_KEY, CURATION_DIGEST_RETRY_KEY);
+};
+
+export const redisCurationAcquireDigestRetry = async (): Promise<boolean> => {
+  const result = await getClientBase().set(CURATION_DIGEST_RETRY_KEY, '1', 'EX', CURATION_DIGEST_RETRY_INTERVAL_SECONDS, 'NX');
+  return result === 'OK';
+};
+// endregion - curation
 
 // region - XTM One registration result
 const XTM_REGISTRATION_RESULT_KEY = 'xtm_registration_result';

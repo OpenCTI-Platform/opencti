@@ -5,7 +5,7 @@ import { READ_DATA_INDICES } from '../../src/database/utils';
 import { storeLoadByIdWithRefs } from '../../src/database/middleware';
 import { checkInstanceDiff } from '../utils/testStream';
 import { logApp } from '../../src/config/conf';
-import { ENTITY_TYPE_DELETE_OPERATION } from '../../src/modules/deleteOperation/deleteOperation-types';
+import { WITHOUT_PLATFORM_LOCAL_HISTORY_REFS } from '../../src/database/platform-local-history';
 
 import { convertStoreToStix_2_1 } from '../../src/database/stix-2-1-converter';
 
@@ -69,17 +69,6 @@ export const MALWARE_NUMBERS = 27;
 export const LABEL_NUMBERS = 13;
 export const UPLOADED_FILE_SIZE = 44174;
 
-const filterOutDeleteOperationRefs = {
-  mode: 'and',
-  filters: [{
-    mode: 'or',
-    key: 'elementWithTargetTypes',
-    values: [ENTITY_TYPE_DELETE_OPERATION],
-    operator: 'not_eq',
-  }],
-  filterGroups: [],
-};
-
 export const checkPreSyncContent = async () => {
   const initObjectAggregation = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['Stix-Object'], field: 'entity_type' });
   const objectMap = new Map(initObjectAggregation.map((i) => [i.label, i.value]));
@@ -88,7 +77,7 @@ export const checkPreSyncContent = async () => {
   expect(objectMap.get('Label')).toEqual(LABEL_NUMBERS);
   expect(objectMap.get('Vocabulary')).toEqual(VOCABULARY_NUMBERS);
   // Relations
-  const initRelationAggregation = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['stix-relationship'], field: 'entity_type', filters: filterOutDeleteOperationRefs });
+  const initRelationAggregation = await elAggregationCount(testContext, ADMIN_USER, READ_DATA_INDICES, { types: ['stix-relationship'], field: 'entity_type', filters: WITHOUT_PLATFORM_LOCAL_HISTORY_REFS });
   const relMap = new Map(initRelationAggregation.map((i) => [i.label, i.value]));
   expect(relMap.get('Object')).toEqual(191);
   expect(relMap.get('Indicates')).toEqual(59);

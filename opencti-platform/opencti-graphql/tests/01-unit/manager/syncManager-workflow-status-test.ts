@@ -96,6 +96,30 @@ describe('syncManager transformDataWithReverseIdAndFilesData - workflow status r
     expect(data.extensions[STIX_EXT_OCTI].workflow_status_scope).toBeUndefined();
   });
 
+  it('should keep the identity removals of an update that also changes the remapped workflow status', async () => {
+    mockResolveSyncedWorkflowId.mockResolvedValue('local-status-id');
+    const { transformDataWithReverseIdAndFilesData } = await import('../../../src/manager/syncManager');
+
+    const remoteData = buildRemoteData({
+      workflow_id: 'remote-status-id',
+      workflow_status_name: 'IN_PROGRESS',
+      workflow_status_scope: 'Global',
+      stix_ids: [],
+    });
+    // The reverse patch refers to the payload as the stream sent it, including the fields the remap drops.
+    const context = {
+      reverse_patch: [
+        { op: 'replace', path: `/extensions/${STIX_EXT_OCTI}/workflow_status_name`, value: 'NEW' },
+        { op: 'add', path: `/extensions/${STIX_EXT_OCTI}/stix_ids/0`, value: 'report--restored' },
+      ],
+    };
+    const { data } = await transformDataWithReverseIdAndFilesData({ uri: 'http://remote' }, {}, remoteData, context);
+
+    expect(data.extensions[STIX_EXT_OCTI].workflow_status_name).toBeUndefined();
+    expect(data.extensions[STIX_EXT_OCTI].opencti_upsert_operations).toEqual([
+      { key: 'x_opencti_stix_ids', value: ['report--restored'], operation: 'remove' },
+    ]);
+  });
   it('should drop the workflow id when there is no local match', async () => {
     mockResolveSyncedWorkflowId.mockResolvedValue(undefined);
     const { transformDataWithReverseIdAndFilesData } = await import('../../../src/manager/syncManager');

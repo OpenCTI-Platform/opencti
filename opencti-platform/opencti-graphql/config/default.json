@@ -372,6 +372,28 @@
     "lock_key": "data_sanity_manager_lock",
     "interval": 600000
   },
+  "curation_manager": {
+    "enabled": true,
+    "lock_key": "curation_manager_lock",
+    "stream_lock_key": "curation_manager_stream_lock",
+    "interval": 60000,
+    "scan_interval": 86400000,
+    "snapshot_interval": 86400000,
+    "policy_interval": 900000,
+    "adjudications_per_tick": 5,
+    "stream_max_entities_per_batch": 50
+  },
+  "curation_records_manager": {
+    "enabled": true,
+    "lock_key": "curation_records_manager_lock",
+    "stream_lock_key": "curation_records_manager_stream_lock",
+    "interval": 60000
+  },
+  "curation": {
+    "merge_records_enabled": true,
+    "merge_record_max_recreatable_relationships": 10000,
+    "merge_record_max_redirected_relationships": 100000
+  },
   "exclusion_list_cache_build_manager": {
     "enabled": true,
     "lock_key": "exclusion_list_cache_build_manager_lock",

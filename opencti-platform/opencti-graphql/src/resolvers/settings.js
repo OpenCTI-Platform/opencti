@@ -25,6 +25,7 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { elAggregationCount } from '../database/engine';
 import { findById } from '../modules/organization/organization-domain';
 import { READ_DATA_INDICES } from '../database/utils';
+import { WITHOUT_PLATFORM_LOCAL_HISTORY_REFS } from '../database/platform-local-history';
 import { internalFindByIds } from '../database/middleware-loader';
 import { getEnterpriseEditionInfo, IS_LTS_PLATFORM } from '../modules/settings/licensing';
 import { isRequestAccessEnabled } from '../modules/requestAccess/requestAccess-domain';
@@ -42,7 +43,11 @@ const settingsResolvers = {
   },
   AppDebugStatistics: {
     objects: (_, __, context) => elAggregationCount(context, context.user, READ_DATA_INDICES, { types: ['Stix-Object'], field: 'entity_type' }),
-    relationships: (_, __, context) => elAggregationCount(context, context.user, READ_DATA_INDICES, { types: ['stix-relationship'], field: 'entity_type' }),
+    relationships: (_, __, context) => elAggregationCount(context, context.user, READ_DATA_INDICES, {
+      types: ['stix-relationship'],
+      field: 'entity_type',
+      filters: WITHOUT_PLATFORM_LOCAL_HISTORY_REFS,
+    }),
   },
   Settings: {
     platform_type: () => (IS_LTS_PLATFORM ? PlatformType.Lts : PlatformType.Standard),

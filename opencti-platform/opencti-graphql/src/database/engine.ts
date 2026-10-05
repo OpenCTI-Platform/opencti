@@ -4790,11 +4790,19 @@ export const elIndexElements = async (
 
 export const elUpdateRelationConnections = async (context: AuthContext, elements: any[]) => {
   if (elements.length > 0) {
-    const source = 'def conn = ctx._source.connections.find(c -> c.internal_id == params.id); '
+    // Both connections of a self-referencing relationship hold the same element: the side picks the one to change.
+    const source = 'def matching = ctx._source.connections.findAll(c -> c.internal_id == params.id); '
+      + 'def conn = matching.find(c -> params.role != null && c.role != null && c.role.endsWith(params.role)); '
+      + 'if (conn == null) { conn = matching.get(0); } '
       + 'for (change in params.changes.entrySet()) { conn[change.getKey()] = change.getValue() }';
+    const roleOf = (side?: string) => {
+      if (side === 'source_ref') return `_${ROLE_FROM}`;
+      if (side === 'target_ref') return `_${ROLE_TO}`;
+      return null;
+    };
     const bodyUpdate = elements.flatMap((doc) => [
       { update: { _index: doc._index, _id: doc._id ?? doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
-      { script: { source, params: { id: doc.toReplace, changes: doc.data } } },
+      { script: { source, params: { id: doc.toReplace, role: roleOf(doc.side), changes: doc.data } } },
     ]);
     const bulkPromise = elBulk(context, { refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
     await Promise.all([bulkPromise]);

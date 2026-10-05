@@ -84,6 +84,7 @@ import './authenticationProvider/authenticationProvider';
 import './customView/customView';
 import './retentionRules/retentionRules';
 import './dataSanity/dataSanity';
+import './curation/curation';
 import './xtm/hub/news-feed/news-feed';
 import './user/user';
 
@@ -173,6 +174,7 @@ import './dataSharing/feed-graphql';
 import './dataSharing/streamCollection-graphql';
 import './retentionRules/retentionRules-graphql';
 import './dataSanity/dataSanity-graphql';
+import './curation/curation-graphql';
 import './user/user-graphql';
 import './userMerge/userMerge-graphql';
 import './workflow/api/workflow-graphql';
@@ -181,4 +183,5 @@ import './customField/custom-field-graphql';
 
 // region modules static init
 import './userMerge/userMerge-init';
+import './curation/curation-init';
 // endregion

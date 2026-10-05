@@ -47,7 +47,7 @@ const RETAIN = UserMergeDisposition.Retain;
 const OUT_OF_SCOPE = UserMergeDisposition.OutOfScope;
 
 export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
-  // --- transfer (40) ---------------------------------------------------------------------
+  // --- transfer (43) ---------------------------------------------------------------------
   row('activity.user-id', TRANSFER, 'Activity', 'user_id'),
   row('activity-history-pir-history.applicant-id', TRANSFER, 'Activity / History / PirHistory', 'applicant_id'),
   row('background-task-terminal.initiator-id', TRANSFER, 'BackgroundTask (done/failed/cancelled)', 'initiator_id'),
@@ -55,6 +55,7 @@ export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
   row('basic-object.i-attributes-user-id', TRANSFER, 'BasicObject / BasicRelationship', 'i_attributes[].user_id'),
   row('case-rfi-active.request-access-applicant-id', TRANSFER, 'Case-Rfi (active request)', 'x_opencti_request_access[].applicant_id'),
   row('case-rfi-terminal.request-access-applicant-id', TRANSFER, 'Case-Rfi (terminal request)', 'x_opencti_request_access (serialized JSON) -> applicant_id'),
+  row('curation-proposal.decided-by-id', TRANSFER, 'CurationProposal', 'decided_by_id'),
   row('custom-view.manifest', TRANSFER, 'CustomView', 'manifest (Base64)'),
   row('deleted-objects.all-references', TRANSFER, 'Deleted objects', 'creator_id / i_attributes.user_id / restricted_members / connections / serialized fields'),
   row('feed.filters', TRANSFER, 'Feed', 'filters'),
@@ -65,6 +66,8 @@ export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
   row('history.user-id', TRANSFER, 'History', 'user_id'),
   row('ingestion.user-id', TRANSFER, 'IngestionCsv / IngestionJson / IngestionRss / IngestionTaxii / IngestionTaxiiCollection', 'user_id'),
   row('internal-file.metadata-creator-id', TRANSFER, 'InternalFile', 'metaData.creator_id'),
+  row('merge-record.merged-by-id', TRANSFER, 'MergeRecord', 'merged_by_id'),
+  row('merge-record.unmerged-by-id', TRANSFER, 'MergeRecord', 'unmerged_by_id'),
   row('news-feed-item.user-id', TRANSFER, 'NewsFeedItem', 'user_id'),
   row('notification-terminal.user-id', TRANSFER, 'Notification (read or terminal)', 'user_id'),
   row('object-assignee.connections', TRANSFER, 'object-assignee', 'rel_object-assignee.internal_id / connections[].internal_id'),

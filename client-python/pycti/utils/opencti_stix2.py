@@ -3397,6 +3397,29 @@ class OpenCTIStix2:
                 playbook_id=playbook_id, entity_id=entity_id
             )
 
+    def curation_apply(self, item):
+        """Apply a knowledge curation proposal (background task operation).
+
+        The platform re-checks the proposal (status, policy eligibility, rights of
+        the task initiator) before applying it.
+
+        :param item: Bundle item targeting the curation proposal
+        :type item: dict
+        """
+        proposal_id = self.opencti.get_attribute_in_extension("id", item)
+        if proposal_id is None:
+            proposal_id = item["id"]
+        policy_id = self.opencti.get_attribute_in_extension("curation_policy_id", item)
+        query = """
+            mutation CurationProposalApply($id: ID!, $policy_id: ID) {
+                curationProposalApply(id: $id, policy_id: $policy_id) {
+                    id
+                    proposal_status
+                }
+            }
+        """
+        self.opencti.query(query, {"id": proposal_id, "policy_id": policy_id})
+
     def element_operation_delete(self, item, operation):
         """Delete an element.
 
@@ -3525,6 +3548,8 @@ class OpenCTIStix2:
             self.element_remove_groups(item)
         elif operation == "send_email":
             self.send_email(item=item)
+        elif operation == "curation_apply":
+            self.curation_apply(item=item)
         else:
             raise ValueError(
                 "Not supported opencti_operation",
