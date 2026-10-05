@@ -3,6 +3,7 @@ import { createIntl } from 'react-intl';
 import {
   actionLabel,
   attributeOperation,
+  carriesAsOfDate,
   CHANGES_SECTION_AS_OF,
   CHANGES_SECTION_COMPARE,
   changesSearch,
@@ -30,7 +31,6 @@ import {
   landscapeGroupTitle,
   presetLabel,
   presetRange,
-  resolveChangesSection,
   sinceLastVisitSearch,
   TIME_MACHINE_PRESETS,
   valuesToText,
@@ -283,17 +283,10 @@ describe('exportFileName', () => {
 });
 
 describe('Changes tab links', () => {
-  const sections = [CHANGES_SECTION_COMPARE, CHANGES_SECTION_AS_OF, 'merges'];
-
-  it('opens the requested section when it exists', () => {
-    expect(resolveChangesSection(sections, 'merges', null)).toBe('merges');
-    expect(resolveChangesSection(sections, CHANGES_SECTION_AS_OF, null)).toBe(CHANGES_SECTION_AS_OF);
-  });
-
-  it('opens the as-of view for a link carrying a date, the comparison otherwise', () => {
-    expect(resolveChangesSection(sections, null, '2026-07-01T00:00:00.000Z')).toBe(CHANGES_SECTION_AS_OF);
-    expect(resolveChangesSection(sections, 'unknown', 'not a date')).toBe(CHANGES_SECTION_COMPARE);
-    expect(resolveChangesSection([CHANGES_SECTION_COMPARE], null, '2026-07-01T00:00:00.000Z')).toBe(CHANGES_SECTION_COMPARE);
+  it('ties a link to the as-of view only when it carries a valid date', () => {
+    expect(carriesAsOfDate(new URLSearchParams({ asOf: '2026-07-01T00:00:00.000Z' }))).toBe(true);
+    expect(carriesAsOfDate(new URLSearchParams({ asOf: 'not a date' }))).toBe(false);
+    expect(carriesAsOfDate(new URLSearchParams({ from: '2026-07-01T00:00:00.000Z' }))).toBe(false);
   });
 
   it('opens the comparison of the entity on the period, or the page of entities without a Changes tab', () => {

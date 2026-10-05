@@ -106,11 +106,8 @@ export const entityChangesPath = (base: string, entityId: string, entityType: st
   return `${base}/${entityId}/changes?${comparePeriodSearch(range)}`;
 };
 
-// Section to display: the requested one when it exists, else the as-of view for a link carrying a date, else the comparison
-export const resolveChangesSection = (sections: string[], requested: string | null, asOf: string | null): string => {
-  if (requested && sections.includes(requested)) return requested;
-  return isValidDate(asOf) && sections.includes(CHANGES_SECTION_AS_OF) ? CHANGES_SECTION_AS_OF : CHANGES_SECTION_COMPARE;
-};
+// A link carrying a valid date belongs to the as-of view, when it names no section of the Changes tab
+export const carriesAsOfDate = (searchParams: URLSearchParams) => isValidDate(searchParams.get(AS_OF_SEARCH_PARAM));
 // endregion
 
 // Clamp a date of the slider between two bounds

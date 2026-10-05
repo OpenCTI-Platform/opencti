@@ -1,11 +1,12 @@
 # Changes Tab Sections
 
-The **Changes** tab of an entity is its single time tab: comparing two dates, viewing the entity as it was at a past date, and any other view of how the entity evolved (merges, provenance changes). Sections are registered in `ENTITY_CHANGES_SECTIONS` (`src/private/components/common/time_machine/EntityChangesTab.tsx`); never add a separate tab such as "Diff" or "Merge history".
+The **Changes** tab of an entity is its single time tab: comparing two dates, viewing the entity as it was at a past date, and any other view of how the entity evolved (merges, provenance changes). Sections are registered in `ENTITY_CHANGES_SECTIONS` (`src/private/components/common/changes/entityChangesSections.tsx`) and rendered by the single tab component `common/changes/EntityChangesTab.tsx`; never add a separate tab such as "Diff" or "Merge history", nor a second Changes tab or route.
 
 ## Registering a section
 
 - Add an entry `{ key, label, Component }` to `ENTITY_CHANGES_SECTIONS`, in display order. `label` is an i18n key in sentence case ("Compare dates", "View as of"), translated in every language file.
 - `Component` receives `{ entityId, basePath }`. The selected section is kept in the `section` search parameter; the section's own state (period, date) also goes in the URL, so every view can be shared and survives a reload.
+- A link that names no section opens the first section whose optional `matchesLink(searchParams)` accepts its other parameters (a link carrying a date opens "View as of"), else the first section.
 - Links into a section use the helpers of `timeMachineUtils.ts` (`changesSearch`, `comparePeriodSearch`, `sinceLastVisitSearch`), never hand-built query strings.
 
 ## Section anatomy

@@ -37,7 +37,7 @@ export default class TimeMachinePage {
   }
 
   getChangesTab() {
-    return this.page.getByTestId('time-machine-changes');
+    return this.page.getByTestId('entity-changes-tab');
   }
 
   goToChangesSection(name: 'Compare dates' | 'View as of') {
