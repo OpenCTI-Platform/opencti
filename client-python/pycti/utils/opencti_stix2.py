@@ -3510,9 +3510,7 @@ class OpenCTIStix2:
                 else []
             )
             coverage_information = [
-                {"coverage_name": cov["name"], "coverage_score": cov["score"]}
-                for cov in raw_coverages
-                if "score" in cov
+                cov for cov in raw_coverages if "coverage_score" in cov
             ]
             self.opencti.stix_core_relationship.create(
                 fromId=security_coverage_result_id,
