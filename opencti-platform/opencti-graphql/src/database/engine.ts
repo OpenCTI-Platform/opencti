@@ -547,11 +547,15 @@ const collectErrorFieldValues = (error: any, fieldName: string): string[] => {
     .filter((value): value is string => typeof value === 'string' && value.length > 0);
 };
 
+// Circuit breaking exceptions always come with a 429 status, but their durability tells whether the condition
+// clears by itself (TRANSIENT: request / in_flight_requests breakers) or requires manual intervention
+// (PERMANENT: fielddata / accounting breakers). Retrying a permanent one is pointless and adds pressure on the engine.
+const isPermanentCircuitBreakingError = (error: any): boolean => {
+  return collectErrorFieldValues(error, 'durability').some((durability) => durability.toUpperCase() === 'PERMANENT');
+};
+
 export const isTransitoryError = (error: any): boolean => {
-  // Circuit breaking exceptions always come with a 429 status, but their durability tells whether the condition
-  // clears by itself (TRANSIENT: request / in_flight_requests breakers) or requires manual intervention
-  // (PERMANENT: fielddata / accounting breakers). Retrying a permanent one is pointless and adds pressure on the engine.
-  if (collectErrorFieldValues(error, 'durability').some((durability) => durability.toUpperCase() === 'PERMANENT')) {
+  if (isPermanentCircuitBreakingError(error)) {
     return false;
   }
   const statusCode = error?.statusCode
@@ -3814,6 +3818,9 @@ const BULK_ITEM_TRANSIENT_ERRORS = [
   'version_conflict_engine_exception', // only after retry_on_conflict is exhausted
 ];
 const isTransientBulkItemError = (itemResult: any): boolean => {
+  if (isPermanentCircuitBreakingError(itemResult.error)) {
+    return false;
+  }
   return itemResult.status === 429 || BULK_ITEM_TRANSIENT_ERRORS.includes(itemResult.error?.type);
 };
 const bulkItemResult = (item: any) => item.index ?? item.update ?? item.delete ?? item.create;
