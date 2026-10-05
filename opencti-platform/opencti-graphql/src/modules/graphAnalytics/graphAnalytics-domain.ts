@@ -98,6 +98,7 @@ const INVESTIGATION_MAX_ELEMENTS = PROMOTION_MAX_MEMBERS;
 const UPSERT_MAX_METRICS = 5000;
 const UPSERT_MAX_CLUSTERS = 1000;
 const EDGES_MAX_PAGE = 5000;
+export const RECOMPUTE_MAX_IDS = 1000;
 
 const clamp = (value: number | null | undefined, fallback: number, min: number, max: number) => {
   const number = value ?? fallback;
@@ -935,7 +936,11 @@ export const findGraphAnalyticsPendingEntities = async (context: AuthContext, us
 
 /** Queue entities for a recompute at the next manager tick, ahead of the backlog (only the ones the caller can access). */
 export const requestGraphAnalyticsRecompute = async (context: AuthContext, user: AuthUser, ids: string[]) => {
-  const accessible = await accessibleMap<StoreEntity>(context, user, ids.slice(0, 1000));
+  // refused rather than cut: the caller must know that every entity it asked for is queued
+  if (ids.length > RECOMPUTE_MAX_IDS) {
+    throw FunctionalError('Too many entities to recompute in one request', { count: ids.length, max: RECOMPUTE_MAX_IDS });
+  }
+  const accessible = await accessibleMap<StoreEntity>(context, user, ids);
   const accessibleIds = Object.values(accessible).map((e) => e.internal_id);
   const uniqueIds = Array.from(new Set(accessibleIds));
   await redisGraphAnalyticsMarkPriority(uniqueIds);
