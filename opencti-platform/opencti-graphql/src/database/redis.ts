@@ -18,6 +18,7 @@ import { enrichWithRemoteCredentials } from '../config/credentials';
 import type { ExclusionListCacheItem } from './exclusionListCache';
 import { refreshLocalCacheForEntity } from './cache';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
+import { DIGEST_DELIVERY_CLAIM_MS } from './digest-delivery-timing';
 
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
@@ -893,8 +894,6 @@ export const redisRemoveChangeDigestJob = async (member: string) => {
 // owner of a claim renews or releases it. Both keys share one hash slot for the scripts.
 const DIGEST_DELIVERY_RECEIPTS_KEY = '{digest_deliveries}:receipts';
 const DIGEST_DELIVERY_OWNERS_KEY = '{digest_deliveries}:owners';
-export const DIGEST_DELIVERY_CLAIM_MS = 10 * 60 * 1000;
-export const DIGEST_DELIVERY_RENEW_MS = DIGEST_DELIVERY_CLAIM_MS / 4;
 const DIGEST_DELIVERY_RETENTION_MS = 8 * 24 * 60 * 60 * 1000;
 // 1: claimed, 0: claimed by another owner, 2: already delivered
 const CLAIM_DIGEST_DELIVERY_SCRIPT = `

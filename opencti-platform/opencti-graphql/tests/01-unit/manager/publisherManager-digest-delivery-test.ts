@@ -45,7 +45,7 @@ vi.mock('../../../src/modules/notification/notification-domain', async (importOr
 }));
 
 import { internalProcessNotification, sendToNotifier } from '../../../src/manager/publisherManager';
-import { DIGEST_DELIVERY_RENEW_MS } from '../../../src/database/redis';
+import { DIGEST_DELIVERY_RENEW_MS } from '../../../src/database/digest-delivery-timing';
 import { NOTIFIER_CONNECTOR_UI } from '../../../src/modules/notifier/notifier-statics';
 import type { AuthContext } from '../../../src/types/user';
 import type { BasicStoreSettings } from '../../../src/types/settings';

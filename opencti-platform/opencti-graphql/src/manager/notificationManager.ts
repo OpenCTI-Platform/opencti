@@ -4,8 +4,8 @@ import { clearIntervalAsync, setIntervalAsync, type SetIntervalAsyncTimer } from
 import type { Moment } from 'moment';
 import { type SizedNotifEvent, type StreamProcessor } from '../database/stream/stream-utils';
 import { fetchRangeNotifications, storeNotificationEvent, createStreamProcessor } from '../database/stream/stream-handler';
+import { DIGEST_DELIVERY_CLAIM_MS } from '../database/digest-delivery-timing';
 import {
-  DIGEST_DELIVERY_CLAIM_MS,
   redisAddChangeDigestJobs,
   redisAreDigestDeliveriesConfirmed,
   redisCountChangeDigestJobAttempt,

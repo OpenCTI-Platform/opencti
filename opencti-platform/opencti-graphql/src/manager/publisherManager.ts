@@ -4,9 +4,8 @@ import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/er
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { createStreamProcessor } from '../database/stream/stream-handler';
 import { v4 as uuidv4 } from 'uuid';
+import { DIGEST_DELIVERY_CLAIM_MS, DIGEST_DELIVERY_RENEW_MS } from '../database/digest-delivery-timing';
 import {
-  DIGEST_DELIVERY_CLAIM_MS,
-  DIGEST_DELIVERY_RENEW_MS,
   type DigestDeliveryConfirmation,
   redisClaimDigestDelivery,
   redisConfirmDigestDelivery,
