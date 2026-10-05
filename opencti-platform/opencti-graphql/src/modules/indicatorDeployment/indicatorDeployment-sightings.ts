@@ -21,16 +21,18 @@ export const sightingPair = (element: Record<string, unknown> | undefined) => {
   return { indicatorId: from.internal_id, platformId: to.internal_id };
 };
 
+export type GeneratedPairSighting = { kind: 'hits' } | { kind: 'validation_result'; requestId: string };
+
 /**
  * Which sighting the platform generates for an (indicator, security platform) pair the sighting is, given the STIX ids it
- * holds or claims: the hits sighting of the pair, or the result sighting of a validation request that included it (both
- * identified by their deterministic id), or undefined for any other sighting.
+ * holds or claims: the hits sighting of the pair, or the result sighting of a validation request that included it, with
+ * that request (both identified by their deterministic id), or undefined for any other sighting.
  */
-export const generatedPairSightingKindOf = async (
+export const generatedPairSightingOf = async (
   context: AuthContext,
   element: Record<string, unknown> | undefined,
   stixIds: string[],
-): Promise<GeneratedPairSightingKind | undefined> => {
+): Promise<GeneratedPairSighting | undefined> => {
   const pair = sightingPair(element);
   if (!pair || stixIds.length === 0) {
     return undefined;
@@ -38,21 +40,28 @@ export const generatedPairSightingKindOf = async (
   const { indicatorId, platformId } = pair;
   const ids = new Set(stixIds);
   if (ids.has(hitsSightingStixId(indicatorId, platformId))) {
-    return 'hits';
+    return { kind: 'hits' };
   }
-  let generated = false;
+  let requestId: string | undefined;
   await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [ENTITY_TYPE_IOC_VALIDATION_REQUEST], {
     filters: { mode: 'and', filters: [{ key: ['indicator_ids'], values: [indicatorId] }, { key: ['platform_ids'], values: [platformId] }], filterGroups: [] },
     noFiltersChecking: true,
     baseData: true,
     first: 500,
     callback: async (requests: BasicStoreEntity[]) => {
-      generated = requests.some((request) => ids.has(validationResultSightingStixId(request.internal_id, indicatorId, platformId)));
-      return !generated;
+      requestId = requests.find((request) => ids.has(validationResultSightingStixId(request.internal_id, indicatorId, platformId)))?.internal_id;
+      return requestId === undefined;
     },
   } as never);
-  return generated ? 'validation_result' : undefined;
+  return requestId ? { kind: 'validation_result', requestId } : undefined;
 };
+
+/** Which generated sighting of its pair a sighting is (see generatedPairSightingOf). */
+export const generatedPairSightingKindOf = async (
+  context: AuthContext,
+  element: Record<string, unknown> | undefined,
+  stixIds: string[],
+): Promise<GeneratedPairSightingKind | undefined> => (await generatedPairSightingOf(context, element, stixIds))?.kind;
 
 // STIX ids a sighting creation or upsert supplies (the generic creation accepts a supplied id).
 export const suppliedStixIds = (input: Record<string, unknown>) => [input.stix_id, ...((input.x_opencti_stix_ids as string[] | undefined) ?? [])]
@@ -60,7 +69,7 @@ export const suppliedStixIds = (input: Record<string, unknown>) => [input.stix_i
 
 /** Which generated sighting of its pair a sighting creation or upsert claims to be, by the STIX id it supplies. */
 export const claimedGeneratedPairSighting = (context: AuthContext, input: Record<string, unknown>) => {
-  return generatedPairSightingKindOf(context, input, suppliedStixIds(input));
+  return generatedPairSightingOf(context, input, suppliedStixIds(input));
 };
 
 type MatchedSighting = { internal_id?: string; standard_id?: string; x_opencti_stix_ids?: string[] | null };

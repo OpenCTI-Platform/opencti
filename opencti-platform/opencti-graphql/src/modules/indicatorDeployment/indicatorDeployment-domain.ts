@@ -243,6 +243,8 @@ export const computeHitsSightingValues = (
 
 export const HIT_REPORT_IDS_MAX = 100;
 export const HIT_REPORT_ID_MAX_LENGTH = 256;
+// Clock skew tolerated between a security platform and the platform on the time of the last hit of a report.
+export const HIT_TIME_MAX_AHEAD_MS = 5 * 60 * 1000;
 type HitsReplayState = Partial<Pick<DeployedOnAttributes, 'last_hit_at' | 'last_hit_report_ids'>>;
 
 /**
@@ -679,6 +681,14 @@ export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, 
   const firstHit = toDate(args.firstHit, lastHit);
   if (firstHit.getTime() > lastHit.getTime()) {
     throw ValidationError('First hit cannot be after last hit', 'firstHit');
+  }
+  // Refused rather than clamped: a future watermark would count every later report ending before it as a replay
+  if (lastHit.getTime() > now.getTime() + HIT_TIME_MAX_AHEAD_MS) {
+    throw ValidationError(
+      `The time of the last hit cannot be more than ${HIT_TIME_MAX_AHEAD_MS / 60000} minutes ahead of the platform clock`,
+      'lastHit',
+      { last_hit: lastHit.toISOString() },
+    );
   }
   const [indicator, platform] = await Promise.all([
     loadIndicator(context, user, args.indicatorId),

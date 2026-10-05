@@ -521,6 +521,15 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     );
   });
 
+  it('should refuse a hits report whose last hit is ahead of the platform clock, which would hide the reports before it', async () => {
+    const lastHit = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+    await queryAsUserIsExpectedError(
+      USER_CONNECTOR,
+      { query: REPORT_HITS, variables: { indicatorId, platformId, count: 1, lastHit } },
+      'The time of the last hit cannot be more than 5 minutes ahead of the platform clock',
+    );
+  });
+
   it('should keep the report id of the hits report that created the deployment, so its retry is not counted twice', async () => {
     // Neither streamed nor kept: the raw stream counts of the suite are unchanged
     const streamed = [

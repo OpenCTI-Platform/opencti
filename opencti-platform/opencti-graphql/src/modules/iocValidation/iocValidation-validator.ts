@@ -11,8 +11,8 @@ import type { BasicStoreEntity, BasicStoreIdentifier } from '../../types/store';
 import type { EditInput } from '../../generated/graphql';
 import { internalFindByIds, internalLoadById } from '../../database/middleware-loader';
 import { cleanMarkings } from '../../utils/markingDefinition-utils';
-import { hitsSightingStixId, pairMarkings, pairOrganizations, validationResultSightingStixId } from '../indicatorDeployment/indicatorDeployment-utils';
-import { claimedGeneratedPairSighting, generatedPairSightingKindOf, sightingPair, suppliedStixIds } from '../indicatorDeployment/indicatorDeployment-sightings';
+import { pairMarkings, pairOrganizations } from '../indicatorDeployment/indicatorDeployment-utils';
+import { claimedGeneratedPairSighting, generatedPairSightingOf, sightingPair, suppliedStixIds } from '../indicatorDeployment/indicatorDeployment-sightings';
 import { registerEntityValidator, type ValidatorFn } from '../../schema/validator-register';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { isBypassUser, SYSTEM_USER } from '../../utils/access';
@@ -250,14 +250,14 @@ const refuseSharing = (user: AuthUser) => {
   throw ForbiddenAccess('A deployment and its sightings are shared with the organizations of both its indicator and its security platform only', { user_id: user.id });
 };
 
-/** Which generated sighting of its pair a stored sighting is, by the STIX ids it holds (see generatedPairSightingKindOf). */
-export const generatedPairSightingKind = async (context: AuthContext, initial: Record<string, unknown> | undefined) => {
+/** Which generated sighting of its pair a stored sighting is, by the STIX ids it holds (see generatedPairSightingOf). */
+export const generatedPairSighting = async (context: AuthContext, initial: Record<string, unknown> | undefined) => {
   const ids = [initial?.standard_id, ...((initial?.x_opencti_stix_ids as string[] | undefined) ?? [])].filter((id): id is string => typeof id === 'string');
-  return generatedPairSightingKindOf(context, initial, ids);
+  return generatedPairSightingOf(context, initial, ids);
 };
 
 export const isGeneratedPairSighting = async (context: AuthContext, initial: Record<string, unknown> | undefined) => {
-  return (await generatedPairSightingKind(context, initial)) !== undefined;
+  return (await generatedPairSighting(context, initial)) !== undefined;
 };
 
 /**
@@ -312,39 +312,34 @@ const sightingInputCoversPairMarkings = async (context: AuthContext, instance: R
 };
 
 /**
- * Whether a sighting creation or upsert carries the deterministic id of the hits sighting of its pair, which only the
- * accounts reporting hits write (indicatorReportHits).
+ * Whether the account writes the result sighting of a validation request for a pair: a lifecycle writer that is the
+ * connector account of that request, or the trusted reporter of the deployment of the pair. The request is the one the
+ * result belongs to, never the request the pair is bound to now: once a newer request takes the pair over, neither an
+ * editor nor the connector of the newer request writes the result of an older one.
  */
-export const claimsHitsSightingId = (instance: Record<string, unknown>) => {
-  const pair = sightingPair(instance);
-  return !!pair && suppliedStixIds(instance).includes(hitsSightingStixId(pair.indicatorId, pair.platformId));
-};
-
-/**
- * Whether a sighting creation or upsert carries the deterministic id of the result sighting of the validation run
- * bound to its pair. Generic creation accepts a supplied STIX id, so without this check anyone able to create a
- * sighting could take the id before the result is reported.
- */
-export const claimsValidationResultSightingId = async (context: AuthContext, instance: Record<string, unknown>) => {
-  const pair = sightingPair(instance);
-  if (!pair) {
-    return undefined;
+const canWriteValidationResult = async (
+  context: AuthContext,
+  user: AuthUser,
+  element: Record<string, unknown> | undefined,
+  requestId: string,
+) => {
+  if (!isLifecycleWriter(user)) {
+    return false;
   }
-  const ids = suppliedStixIds(instance);
-  if (ids.length === 0) {
-    return undefined;
+  const pair = sightingPair(element);
+  const deployment = pair ? await findDeployedOn(context, SYSTEM_USER, pair.indicatorId, pair.platformId) : undefined;
+  if (deployment && isTrustedDeploymentReporter(deployment, user)) {
+    return true;
   }
-  const deployment = await findDeployedOn(context, SYSTEM_USER, pair.indicatorId, pair.platformId);
-  if (!deployment?.validation_run_id) {
-    return undefined;
-  }
-  return ids.includes(validationResultSightingStixId(deployment.validation_run_id, pair.indicatorId, pair.platformId)) ? deployment : undefined;
+  return isConnectorUserOfRequest(context, user, requestId);
 };
 
 // Generated sightings keep the markings of their pair and are never authored by an individual, for administrators too;
 // the platform gives them the sharing of their pair (createRelation).
 const validatorSightingCreation: ValidatorFn = async (context, user, instance) => {
-  if (await claimedGeneratedPairSighting(context, instance)) {
+  // Generic creation accepts a supplied STIX id: a claim of a generated sighting id is authorized as its report would be
+  const claimed = await claimedGeneratedPairSighting(context, instance);
+  if (claimed) {
     if (!await sightingInputCoversPairMarkings(context, instance)) {
       return refuseMarkings(user);
     }
@@ -352,17 +347,13 @@ const validatorSightingCreation: ValidatorFn = async (context, user, instance) =
       return refuseIndividualAuthor(user);
     }
   }
-  if (isBypassUser(user)) {
+  if (!claimed || isBypassUser(user)) {
     return true;
   }
-  if (claimsHitsSightingId(instance) && !isLifecycleWriter(user)) {
-    return refuseLifecycle(user);
+  if (claimed.kind === 'hits') {
+    return isLifecycleWriter(user) ? true : refuseLifecycle(user);
   }
-  const deployment = await claimsValidationResultSightingId(context, instance);
-  if (deployment && !await canChangeValidation(context, user, deployment)) {
-    return refuseValidation(user);
-  }
-  return true;
+  return await canWriteValidationResult(context, user, instance, claimed.requestId) ? true : refuseValidation(user);
 };
 
 // What a generated sighting records: the hits of the pair (count and window), or the outcome of a validation.
@@ -376,8 +367,8 @@ const validatorSightingUpdate: ValidatorFn = async (context, user, _instance, in
   if (!touchesAccess && !touchesContent) {
     return true;
   }
-  const kind = await generatedPairSightingKind(context, initial);
-  if (!kind) {
+  const generated = await generatedPairSighting(context, initial);
+  if (!generated) {
     return true;
   }
   if (touchesAccess && !await keepsPairMarkings(context, initial, editInputs)) {
@@ -392,12 +383,10 @@ const validatorSightingUpdate: ValidatorFn = async (context, user, _instance, in
   if (!touchesContent || isBypassUser(user)) {
     return true;
   }
-  if (kind === 'hits') {
+  if (generated.kind === 'hits') {
     return isLifecycleWriter(user) ? true : refuseLifecycle(user);
   }
-  const pair = sightingPair(initial);
-  const deployment = pair ? await findDeployedOn(context, SYSTEM_USER, pair.indicatorId, pair.platformId) : undefined;
-  return await canChangeValidation(context, user, deployment) ? true : refuseValidation(user);
+  return await canWriteValidationResult(context, user, initial, generated.requestId) ? true : refuseValidation(user);
 };
 
 /**

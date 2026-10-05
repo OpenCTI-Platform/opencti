@@ -692,4 +692,51 @@ describe('IOC validation requests', () => {
     const deployment = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: liveDeploymentId } });
     expect(deployment.data?.stixCoreRelationship.deployment_status).toEqual('deployed');
   });
+
+  it('should leave the result sighting of an earlier request to the accounts reporting it after a newer request took the pair over', async () => {
+    // Writes outside the dataset: kept out of the raw stream the synchronization tests count
+    const streamed = [
+      vi.spyOn(streamHandler, 'storeCreateEntityEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeCreateRelationEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeUpdateEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeDeleteEvent').mockResolvedValue(undefined as never),
+    ];
+    let olderId: string | undefined;
+    let newerId: string | undefined;
+    try {
+      const older = await queryAsAdminWithSuccess({
+        query: REQUEST_VALIDATION,
+        variables: { platformIds: [platformId], indicatorIds: [liveIndicatorId], testKinds: ['dns_resolution'], name: 'Older' },
+      });
+      olderId = older.data?.indicatorsRequestValidation.id as string;
+      await queryAsUserWithSuccess(USER_CONNECTOR, {
+        query: REPORT_RESULTS,
+        variables: { id: olderId, platformId, results: [{ indicatorId: liveIndicatorId, status: 'detected' }] },
+      });
+      // The result sighting of the older request is lost (removed here without event): its identifier is free again
+      const olderResultId = validationResultSightingStixId(olderId, liveIndicatorId, platformId);
+      const olderSighting = await storeLoadById(testContext, ADMIN_USER, olderResultId, STIX_SIGHTING_RELATIONSHIP);
+      await elDeleteElements(testContext, ADMIN_USER, [olderSighting as never], { forceDelete: true, forceRefresh: true });
+      const newer = await queryAsAdminWithSuccess({
+        query: REQUEST_VALIDATION,
+        variables: { platformIds: [platformId], indicatorIds: [liveIndicatorId], testKinds: ['dns_resolution'], name: 'Newer' },
+      });
+      newerId = newer.data?.indicatorsRequestValidation.id as string;
+      const deployment = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: liveDeploymentId } });
+      expect(deployment.data?.stixCoreRelationship.validation_run_id).toEqual(newerId);
+      // The pair is bound to the newer request now: the older result stays with the accounts reporting it
+      await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+        query: SIGHTING_ADD,
+        variables: { input: { fromId: liveIndicatorId, toId: platformId, stix_id: olderResultId, attribute_count: 1, x_opencti_negative: true } },
+      });
+      expect(await storeLoadById(testContext, ADMIN_USER, olderResultId, STIX_SIGHTING_RELATIONSHIP)).toBeFalsy();
+    } finally {
+      for (const id of [newerId, olderId]) {
+        if (id) {
+          await queryAsAdminWithSuccess({ query: REQUEST_DELETE, variables: { id } });
+        }
+      }
+      streamed.forEach((spy) => spy.mockRestore());
+    }
+  });
 });

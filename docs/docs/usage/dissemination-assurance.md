@@ -247,7 +247,8 @@ Connectors use the following GraphQL mutations, also available in the Python cli
 - `indicatorReportDeployments`: reports the deployment status of a batch of indicators on one platform.
 - `indicatorReportHits`: reports the hits of one indicator on one platform; `lastHit`, the time of the most recent
   hit, is required and makes a retried report harmless; the optional `reportId` tells apart distinct reports ending
-  at the same time.
+  at the same time. A `lastHit` more than 5 minutes ahead of the platform clock is refused: it would make every
+  later report ending before it look like a retry.
 
 These mutations require both the "Update knowledge" and the "Connectors API usage" (`CONNECTORAPI`) capabilities, as
 granted by the default *Connector* role: the account of a stream connector or of any other integration writing the

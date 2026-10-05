@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fullEntitiesList } from '../../../../src/database/middleware-loader';
-import { withoutWindowMatchedGeneratedSightings } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-sightings';
+import { generatedPairSightingOf, withoutWindowMatchedGeneratedSightings } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-sightings';
 import { hitsSightingStixId, validationResultSightingStixId } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-utils';
 import { ENTITY_TYPE_INDICATOR } from '../../../../src/modules/indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../../src/modules/securityPlatform/securityPlatform-types';
@@ -59,6 +59,12 @@ describe('existing sightings an ordinary sighting creation upserts', () => {
     vi.mocked(fullEntitiesList).mockClear();
     expect(await withoutWindowMatchedGeneratedSightings(context, pairInput, ['sighting--new'], [hits])).toEqual([]);
     expect(fullEntitiesList).not.toHaveBeenCalled();
+  });
+
+  it('names the validation request a result sighting belongs to', async () => {
+    expect(await generatedPairSightingOf(context, pairInput, result.x_opencti_stix_ids)).toEqual({ kind: 'validation_result', requestId: REQUEST_ID });
+    expect(await generatedPairSightingOf(context, pairInput, hits.x_opencti_stix_ids)).toEqual({ kind: 'hits' });
+    expect(await generatedPairSightingOf(context, pairInput, [ordinary.standard_id])).toBeUndefined();
   });
 
   it('keeps a generated sighting the input reaches by one of its ids', async () => {
