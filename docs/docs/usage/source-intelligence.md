@@ -92,7 +92,7 @@ The **Sources** card of an entity, an observable or a relationship (see [Provena
 
 ### Cost
 
-Set a cost on a source (amount, ISO 4217 currency, per month, quarter or year) from its scorecard page, or with **Set a cost** in the cost column of the leaderboard, which opens the same editor. Costs are shown in the currency format of your language, for example "€12,000 per year". The cost is normalized to each window to compute the cost per actionable object. A cost set while the daily computation runs is never lost: the computation writes each source with the cost it has when its scorecards are saved.
+Set a cost on a source (amount, currency, per month, quarter or year) from its scorecard page, or with **Set a cost** in the cost column of the leaderboard, which opens the same editor. The currency is picked from a list of ISO 4217 currencies (EUR when you do not change it); a cost saved earlier in a currency outside that list stays selectable. Each field of the editor says what it does, gives an example and what happens when it is left empty, and **Learn more** opens this section. Costs are shown in the currency format of your language, for example "€12,000 per year". The cost is normalized to each window to compute the cost per actionable object. A cost set while the daily computation runs is never lost: the computation writes each source with the cost it has when its scorecards are saved.
 
 ![Cost editor of a source](assets/source-intelligence-cost-editor.png)
 
@@ -112,7 +112,29 @@ The **Collection gaps** tab checks every criterion of every [PIR](pir.md) agains
 - diversity (40%): distinct sources contributing to it, against a target of 3,
 - freshness (20%): share of the 90-day matches that are recent.
 
-A criterion below the coverage threshold (50 by default) is a gap. For each gap, the platform shows the sources covering it and recommends connectors from the XTM Hub catalog whose declared coverage (object types, sectors, regions) matches the criterion. The platform must be registered on the XTM Hub for catalog recommendations; when it is not, or when the XTM Hub cannot be reached, only the connectors of the local catalog are recommended and the gap says so. The XTM Hub requests of one computation share a one-minute budget: when the XTM Hub answers too slowly, the remaining gaps of that computation use the local catalog as well, so that a slow XTM Hub never delays the scorecards. When more integrations match than the XTM Hub ranks, the gap shows that the ranking is partial: its first matches are combined with the local catalog. A recommended connector available in the local catalog as a managed connector can be deployed in one click through XTM Composer; the deployment runs as an "Add a connector" recommendation, so it is recorded in the recommendations inbox with its audit trail and can be reverted. Other recommended connectors open in the catalog. A recommendation coming from the XTM Hub deploys the latest catalog version compatible with your platform.
+A criterion below the coverage threshold (50 by default) is a gap. For each gap, the platform shows the sources covering it and recommends connectors from the XTM Hub catalog whose declared coverage (object types, sectors, regions) matches the criterion. The platform must be registered on the XTM Hub for catalog recommendations; when it is not, or when the XTM Hub cannot be reached, only the connectors of the local catalog are recommended and the gap says so. The XTM Hub requests of one computation share a one-minute budget: when the XTM Hub answers too slowly, the remaining gaps of that computation use the local catalog as well, so that a slow XTM Hub never delays the scorecards. When more integrations match than the XTM Hub ranks, the gap shows that the ranking is partial: its first matches are combined with the local catalog. A recommended connector available in the local catalog as a managed connector can be deployed in one click through XTM Composer; the deployment runs as an "Add a connector" recommendation, so it is recorded in the recommendations inbox with its audit trail and can be reverted. A recommendation coming from the XTM Hub deploys the latest catalog version compatible with your platform.
+
+**Deploy** first opens a dialog that says what the connector needs before anything is deployed:
+
+- the settings its catalog contract requires without a default value (for example the address and API key of the platform it reads), each with the description of the contract; secrets are masked as you type. The values are sent to XTM Composer for this deployment only and are not kept with the recommendation;
+- the service account the connector runs as, `[C] <connector name>`, created with a confidence level of 50;
+- where to change both afterwards: the connector settings from its page in **Integrations > Deployed**, its account in **Settings > Security > Users**.
+
+![Deployment dialog listing the settings the connector needs](assets/source-intelligence-deploy-dialog.png)
+
+When one-click deployment is not offered for a recommended connector, the reason is shown under it, with what to do instead:
+
+| Reason | What to do |
+|---|---|
+| The connector is not in the local catalog of the platform yet | Deploy it yourself from its XTM Hub page (**Open in XTM Hub**) |
+| XTM Composer cannot run this connector | Deploy it yourself from its catalog page (**Open in catalog**) |
+| You lack the capability to manage connectors | Ask an administrator, or open it in the catalog |
+| No connector manager is registered | Register XTM Composer to deploy connectors in one click, or deploy this one from its catalog page |
+| The connector needs a setting the dialog cannot collect (a list or a structured value) | Deploy it from its catalog page, which sets every kind of setting |
+
+![Reason shown when one-click deployment is not offered](assets/source-intelligence-deploy-blocked.png)
+
+Other recommended connectors open in the catalog.
 
 When the criteria of a PIR have different weights, each gap shows its priority (high, medium or low) relative to the other criteria of the PIR; hover it to see the weight. When no integration of the catalog covers a criterion yet, **Browse the XTM Hub catalog** opens the XTM Hub integrations filtered on the object types, sectors and regions of the criterion (**Browse the catalog** when the platform has no XTM Hub address).
 
@@ -135,7 +157,7 @@ The manager turns scorecards and gaps into recommendations. They are listed in t
 | Add a deny list | At least 10 of its objects are labelled as false positives | Creates an exclusion list with these values. |
 | Change schedule | No new assertion for 72 hours although the source usually produces data | Runs the feed or managed connector more often. |
 | Retire | At least 90% of its knowledge is also asserted by another source and it brings less than 5% unique objects | Stops the feed or managed connector, or disables the source. |
-| Add a connector | A collection gap is detected | Deploys the recommended catalog connector. |
+| Add a connector | A collection gap is detected | Deploys the recommended catalog connector, after the deployment dialog described in [Collection gaps](#collection-gaps-ee) collected the settings it needs. |
 
 Sources below a minimum volume (50 objects) do not get recommendations. All thresholds are configurable.
 
@@ -173,13 +195,19 @@ A recommendation that no longer matches the situation is withdrawn automatically
 
 ### Autonomy policy
 
-In the settings, an administrator can allow some recommendation kinds to be applied automatically, with a maximum number of automatic actions per run. Since the policy then applies them without asking anyone, allowing a kind requires the capabilities of its manual application: managing accesses for confidence changes, managing ingestions and connectors for schedule changes and retirements, managing accesses and ingestions for quarantines, managing connectors for new connectors, and the customization capability for decay rules and deny lists. After each daily computation, the proposed recommendations of the allowed kinds are applied oldest first, up to that maximum across all kinds; the ones left over are applied by the next runs. Failed, rejected and reverted recommendations are never applied automatically, and neither is a change someone reverted when the same recommendation is proposed again: it waits for a person. Automatically applied recommendations are flagged as such and can be reverted like the others.
+In the settings, an administrator can allow some recommendation kinds to be applied automatically, with a maximum number of automatic actions per run. Since the policy then applies them without asking anyone, allowing a kind requires the capabilities of its manual application: managing accesses for confidence changes, managing ingestions and connectors for schedule changes and retirements, managing accesses and ingestions for quarantines, managing connectors for new connectors, and the customization capability for decay rules and deny lists. After each daily computation, the proposed recommendations of the allowed kinds are applied oldest first, up to that maximum across all kinds; the ones left over are applied by the next runs. Failed, rejected and reverted recommendations are never applied automatically, and neither is a change someone reverted when the same recommendation is proposed again: it waits for a person. A connector whose catalog contract requires settings without a default value is never deployed automatically either: it waits for a person to provide them in the deployment dialog. Automatically applied recommendations are flagged as such and can be reverted like the others.
 
 ## Dashboards
 
 Dashboard widgets can use the **Sources** perspective to display any scorecard metric: number, list, distribution, horizontal bars, donut, time series and bubble chart (for example volume against value score). The dashboard time range selects the 7, 30 or 90-day window.
 
+Each parameter of a Sources widget (metric, axes, bubble size, aggregation, sort order) says what it does, gives an example and what the widget uses when it is left empty, and **Learn more** opens this section.
+
+![Parameters of a Sources widget with their help](assets/source-intelligence-widget-parameters.png)
+
 Widget titles name the metric, its aggregation and the scoring window (for example "Operational value score (0 to 100), average over the last 30 days"), axes carry their unit, and a widget without data says that no source was scored in the period.
+
+A time series draws the daily snapshots of the days in the dashboard time range, including the days the history backfill computed later. It keeps the history of a source that is no longer scored (disabled): its past snapshots stay on the chart, and filtering the widget on disabled sources shows their history.
 
 Click **Create ROI dashboard** in the Sources header to create the ready-made "Intelligence ROI" dashboard with the main metrics. Sources widgets are not available in public dashboards.
 
@@ -189,7 +217,7 @@ Click **Create ROI dashboard** in the Sources header to create the ready-made "I
 
 The settings are in **Settings > Customization > Source intelligence** (also reachable from the **Open settings** button of the Sources area) and require the customization capability. They give access to:
 
-- the computation: on or off, daily recompute hour (UTC), history backfill, snapshot retention, maximum number of scanned objects, false positive labels, corroboration and overlap parameters, author and analyst discovery,
+- the computation: on or off, daily recompute hour (UTC), history backfill, snapshot retention, maximum number of scanned objects, false positive labels (picked from the labels of the platform, up to 50, matched whatever their case), corroboration and overlap parameters, author and analyst discovery,
 - the value score weights,
 - the recommendation thresholds and tuning steps,
 - the autonomy policy and the collection gap parameters (EE).
