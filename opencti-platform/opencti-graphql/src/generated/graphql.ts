@@ -35790,10 +35790,10 @@ export type SourceScorecard = {
   provenance_mode?: Maybe<SourceProvenanceMode>;
   relevance?: Maybe<Scalars['Float']['output']>;
   revoked_count: Scalars['Int']['output'];
+  scorecard_date: Scalars['String']['output'];
   security_platform_sightings_count: Scalars['Int']['output'];
   shared_count: Scalars['Int']['output'];
   sightings_count: Scalars['Int']['output'];
-  snapshot_date: Scalars['String']['output'];
   source_id: Scalars['ID']['output'];
   source_kind: SourceKind;
   source_name?: Maybe<Scalars['String']['output']>;
@@ -59342,10 +59342,10 @@ export type SourceScorecardResolvers<ContextType = any, ParentType extends Resol
   provenance_mode?: Resolver<Maybe<ResolversTypes['SourceProvenanceMode']>, ParentType, ContextType>;
   relevance?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   revoked_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  scorecard_date?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   security_platform_sightings_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   shared_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   sightings_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  snapshot_date?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   source_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   source_kind?: Resolver<ResolversTypes['SourceKind'], ParentType, ContextType>;
   source_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

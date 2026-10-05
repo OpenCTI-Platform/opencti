@@ -211,7 +211,7 @@ export interface StoreSourceScorecard extends SourceScorecardMetrics {
   scorecard_period: ScorecardPeriodValue;
   period_start: string;
   period_end: string;
-  snapshot_date: string;
+  scorecard_date: string;
   computed_at: string;
   created_at: string;
   updated_at: string;

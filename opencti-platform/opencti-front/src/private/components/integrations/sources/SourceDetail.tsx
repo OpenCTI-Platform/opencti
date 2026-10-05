@@ -132,7 +132,7 @@ const sourceDetailQuery = graphql`
       }
     }
     sourceScorecards(sourceId: $id, period: $period, startDate: $trendStart, first: 400) {
-      snapshot_date
+      scorecard_date
       is_live
       value_score
       volume_total
@@ -324,7 +324,7 @@ const SourceDetailComponent = ({ queryRef, period, onPeriodChange }: SourceDetai
   let scoreTrend: { label: string; severity: ChipSeverity } | null = null;
   if (scorecard && typeof scorecard.value_score === 'number' && scoreReference && typeof scoreReference.value_score === 'number') {
     const delta = Math.round(scorecard.value_score - scoreReference.value_score);
-    const days = Math.max(1, Math.round((Date.now() - new Date(scoreReference.snapshot_date).getTime()) / (24 * 3600 * 1000)));
+    const days = Math.max(1, Math.round((Date.now() - new Date(scoreReference.scorecard_date).getTime()) / (24 * 3600 * 1000)));
     scoreTrend = delta === 0
       ? { label: t_i18n('Stable over {days, plural, one {# day} other {# days}}', { values: { days } }), severity: 'neutral' }
       : {
