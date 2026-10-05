@@ -829,6 +829,46 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     }
   });
 
+  it('should publish the first report of a deployment its connector created, so it counts as disseminated, then heartbeat', async () => {
+    // Neither streamed nor kept: the raw stream counts of the suite are unchanged
+    const streamed = [
+      vi.spyOn(streamHandler, 'storeCreateEntityEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeCreateRelationEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeUpdateEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeDeleteEvent').mockResolvedValue(undefined as never),
+    ];
+    const updates = streamed[2];
+    let reportedIndicatorId: string | undefined;
+    try {
+      const created = await queryAsAdminWithSuccess({
+        query: INDICATOR_ADD,
+        variables: { input: { name: 'first-report.evil.example', pattern: "[domain-name:value = 'first-report.evil.example']", pattern_type: 'stix', x_opencti_main_observable_type: 'Domain-Name' } },
+      });
+      reportedIndicatorId = created.data?.indicatorAdd.id as string;
+      await setOrganizations(reportedIndicatorId, [testOrganizationId, platformOrganizationId]);
+      // Created by the connector through the generic path: already a reporter, never synchronized
+      const pending = await queryAsUserWithSuccess(USER_CONNECTOR, {
+        query: RELATION_ADD,
+        variables: { input: { fromId: reportedIndicatorId, toId: platformId, relationship_type: 'deployed-on', deployment_status: 'pending' } },
+      });
+      expect(pending.data?.stixCoreRelationshipAdd.last_sync_at).toBeNull();
+      // Same status, first report: published, so the counters of the indicator are refreshed
+      const beforeFirst = updates.mock.calls.length;
+      const first = await queryAsUserWithSuccess(USER_CONNECTOR, { query: REPORT_DEPLOYMENT, variables: { indicatorId: reportedIndicatorId, platformId, status: 'pending' } });
+      expect(first.data?.indicatorReportDeployment.last_sync_at).not.toBeNull();
+      expect(updates.mock.calls.length).toBeGreaterThan(beforeFirst);
+      // Same status again: a heartbeat, never published
+      const beforeHeartbeat = updates.mock.calls.length;
+      await queryAsUserWithSuccess(USER_CONNECTOR, { query: REPORT_DEPLOYMENT, variables: { indicatorId: reportedIndicatorId, platformId, status: 'pending' } });
+      expect(updates.mock.calls.length).toEqual(beforeHeartbeat);
+    } finally {
+      if (reportedIndicatorId) {
+        await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: reportedIndicatorId } });
+      }
+      streamed.forEach((spy) => spy.mockRestore());
+    }
+  });
+
   it('should refuse deployment state written by a regular editor through the generic relationship creation', async () => {
     // Fabricated write-back evidence on a new deployment
     await queryAsUserIsExpectedForbidden(USER_EDITOR, {
