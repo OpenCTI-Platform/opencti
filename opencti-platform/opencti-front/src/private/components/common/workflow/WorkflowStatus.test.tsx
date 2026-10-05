@@ -345,7 +345,22 @@ describe('WorkflowTransitions', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('renders one button per transition when fewer than 3 transitions', () => {
+  it('renders a single button when there is one transition', () => {
+    const draft = makeDraft({
+      workflowInstance: {
+        id: 'instance-1',
+        currentState: 'in_review',
+        currentStatus: makeStatus(),
+        lastHistoryEntry: null,
+        allowedTransitions: [makeTransition({ event: 'approve' })],
+      },
+    });
+    testRender(<WorkflowTransitions data={draft} />);
+    expect(screen.getByRole('button', { name: 'approve' })).toBeDefined();
+    expect(screen.queryByRole('button', { name: 'Next status' })).toBeNull();
+  });
+
+  it('renders a dropdown menu when there are two transitions', async () => {
     const draft = makeDraft({
       workflowInstance: {
         id: 'instance-1',
@@ -358,12 +373,12 @@ describe('WorkflowTransitions', () => {
         ],
       },
     });
-    testRender(<WorkflowTransitions data={draft} />);
-    expect(screen.getByText('approve')).toBeDefined();
-    expect(screen.getByText('reject')).toBeDefined();
+    const { user } = testRender(<WorkflowTransitions data={draft} />);
+    await user.click(screen.getByRole('button', { name: 'Next status' }));
+    expect(screen.getAllByRole('menuitem')).toHaveLength(2);
   });
 
-  it('renders a dropdown menu when 3 or more transitions', async () => {
+  it('renders a dropdown menu when there are three or more transitions', async () => {
     const draft = makeDraft({
       workflowInstance: {
         id: 'instance-1',

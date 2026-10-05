@@ -39,7 +39,7 @@ vi.mock('../form/ObjectOrganizationField', async () => {
 });
 
 const statuses = Array.from({ length: 105 }, (_, index) => ({
-  status: { id: `status-${index}`, template: { name: `Status ${index}`, color: '#ff0000' } },
+  status: { id: `status-${index}`, order: index, template: { name: `Status ${index}`, color: '#ff0000' } },
   onExit: [{ type: 'updateAuthorizedMembers', params: null }],
   onEnter: [{ type: 'validateDraft', params: null }],
   requiresShareOrganizationInput: false,
@@ -56,7 +56,7 @@ const openDialog = async (onCompleted?: () => void) => {
 
 const selectStatus = async (user: ReturnType<typeof testRender>['user'], name = 'Status 104') => {
   await user.click(screen.getByRole('combobox'));
-  await user.click(await screen.findByRole('option', { name }));
+  await user.click(await screen.findByRole('option', { name: new RegExp(`${name}$`) }));
 };
 
 beforeEach(() => {
@@ -67,15 +67,20 @@ beforeEach(() => {
 });
 
 describe('WorkflowBypassStatus', () => {
-  it('changes a status without hooks immediately and keeps the current status until completion', async () => {
+  it('confirms a status without hooks and keeps the current status until completion', async () => {
     fetchStatuses.mockResolvedValue({ workflowBypassStatuses: [{ ...statuses[104], onExit: [], onEnter: [] }] });
     const { user } = await openDialog();
     expect(screen.getByRole('combobox')).toHaveTextContent('Status 0');
     await selectStatus(user);
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.getByRole('dialog')).toBeVisible();
+    expect(screen.getByText('No actions are configured for this transition. The status will be changed directly.')).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Apply actions' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Update status only' })).toBeNull();
+    expect(commit).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Update status' }));
     expect(commit).toHaveBeenCalledOnce();
     expect(commit.mock.calls[0][0].variables).toMatchObject({ targetStatusId: 'status-104', applyTransitionActions: false });
-    expect(screen.getByRole('combobox')).toHaveTextContent('Status 0');
+    expect(screen.getByRole('combobox', { hidden: true })).toHaveTextContent('Status 0');
   });
 
   it('previews source and target hooks and cancels without changing status', async () => {
@@ -108,7 +113,7 @@ describe('WorkflowBypassStatus', () => {
     await user.tab();
     expect(screen.getByRole('button', { name: 'Retry' })).toHaveFocus();
     await user.keyboard('{Enter}');
-    expect(await screen.findByRole('option', { name: 'Status 104' })).toBeVisible();
+    expect(await screen.findByRole('option', { name: /Status 104$/ })).toBeVisible();
   });
   it.each(['share', 'unshare', 'both'])('requires %s organizations and combines selected runtime inputs', async (mode) => {
     fetchStatuses.mockResolvedValue({ workflowBypassStatuses: [{
@@ -139,7 +144,7 @@ describe('WorkflowBypassStatus', () => {
     const { user } = await openDialog();
     await selectStatus(user);
     await user.click(screen.getByLabelText('Organizations to share with'));
-    await user.click(screen.getByRole('button', { name: 'Change status only' }));
+    await user.click(screen.getByRole('button', { name: 'Update status only' }));
     expect(commit).toHaveBeenCalledOnce();
     expect(commit.mock.calls[0][0].variables.applyTransitionActions).toBe(false);
     expect(commit.mock.calls[0][0].variables.runtimeParams).toBeUndefined();
@@ -191,7 +196,7 @@ describe('WorkflowBypassStatus', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
     await act(async () => resolve({ workflowBypassStatuses: statuses }));
     expect(fetchStatuses).toHaveBeenCalledWith(expect.anything(), { entityId: 'incident-1' });
-    expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual(statuses.map(({ status }) => status.template.name));
+    expect(screen.getAllByRole('option').map((option) => option.textContent)).toEqual(statuses.map(({ status }) => `${status.order + 1}${status.template.name}`));
   });
 
   it('notifies query failures and supports retry', async () => {
@@ -199,7 +204,7 @@ describe('WorkflowBypassStatus', () => {
     const { user } = testRender(<WorkflowBypassStatus data={entity()} entityType="Incident" />);
     await user.click(screen.getByRole('combobox'));
     await user.click(await screen.findByRole('button', { name: 'Retry' }));
-    expect(await screen.findByRole('option', { name: 'Status 104' })).toBeVisible();
+    expect(await screen.findByRole('option', { name: /Status 104$/ })).toBeVisible();
     expect(notifications.notifyError).toHaveBeenCalledOnce();
     expect(fetchStatuses).toHaveBeenCalledTimes(2);
   });
@@ -217,7 +222,7 @@ describe('WorkflowBypassStatus', () => {
     const { user } = await openDialog();
     await selectStatus(user);
     await user.type(screen.getByLabelText('Comment'), '  Ready  ');
-    const apply = screen.getByRole('button', { name: actions ? 'Apply actions' : 'Change status only' });
+    const apply = screen.getByRole('button', { name: actions ? 'Apply actions' : 'Update status only' });
     await user.dblClick(apply);
     expect(commit).toHaveBeenCalledOnce();
     expect(commit.mock.calls[0][0].variables).toEqual({ entityId: 'incident-1', targetStatusId: 'status-104', applyTransitionActions: actions, comment: 'Ready' });

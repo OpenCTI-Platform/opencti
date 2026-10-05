@@ -42,7 +42,7 @@ const WorkflowStatusView = ({ workflowInstance, fallback = null, hideStatus = fa
           <IconButton
             aria-label={t_i18n('View last comment')}
             onClick={(e) => setCommentAnchorEl(e.currentTarget)}
-            sx={{ marginRight: 0.5 }}
+            className="p-4"
           >
             <CommentOutlined fontSize="small" />
           </IconButton>
@@ -87,8 +87,8 @@ export const WorkflowStatusForEntity = ({ data, entityType, fallback = null, chi
   return isWorkflowUiEnabledForType(entityType, isFeatureEnable)
     ? (
         <>
-          <WorkflowStatusView workflowInstance={entity.workflowInstance} fallback={fallback} hideStatus={!!children && canEdit && isBypassUser(me)} />
           {entity.workflowInstance && canEdit && children}
+          <WorkflowStatusView workflowInstance={entity.workflowInstance} fallback={fallback} hideStatus={!!children && canEdit && isBypassUser(me)} />
         </>
       )
     : fallback;

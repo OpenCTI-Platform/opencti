@@ -1,13 +1,24 @@
 import { useEffect, useRef, useState } from 'react';
 import { useFragment } from 'react-relay';
-import { Chip, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
-import { Box } from '@mui/material';
+import {
+  Chip,
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogTitle,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Text,
+} from '@filigran/design-system';
 import { styled } from '@mui/material/styles';
-import { Field, Form, Formik, FormikHelpers, FormikErrors } from 'formik';
-import Dialog from '../../../../components/common/dialog/Dialog';
+import { Form, Formik, FormikHelpers, FormikErrors } from 'formik';
 import Button from '../../../../components/common/button/Button';
 import ItemStatus from '../../../../components/ItemStatus';
-import TextareaField from '../../../../components/TextareaField';
 import { useFormatter } from '../../../../components/i18n';
 import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
@@ -19,7 +30,7 @@ import { isWorkflowUiEnabledForType } from './workflowFeatureFlag';
 import type { WorkflowStatusStixDomainObject_data$data, WorkflowStatusStixDomainObject_data$key } from './__generated__/WorkflowStatusStixDomainObject_data.graphql';
 import type { WorkflowStatusBypassStatusesQuery } from './__generated__/WorkflowStatusBypassStatusesQuery.graphql';
 import type { WorkflowStatusSetStatusMutation } from './__generated__/WorkflowStatusSetStatusMutation.graphql';
-import ObjectOrganizationField from '../form/ObjectOrganizationField';
+import { Box } from '@mui/material';
 
 interface BypassValues {
   targetStatusId: string;
@@ -33,20 +44,19 @@ type WorkflowStatus = NonNullable<WorkflowStatusStixDomainObject_data$data['work
 
 const WorkflowOrderChip = styled(Chip)({ '& > span': { color: 'inherit' } });
 
-const ItemStatusWorkflow = ({ status }: { status: WorkflowStatus }) => (
-  <>
+export const ItemStatusWorkflow = ({ status }: { status: WorkflowStatus }) => (
+  <div className="flex gap-2">
     {status?.template && (
       <WorkflowOrderChip
         label={String(status.order + 1)}
         style={{
           color: status.template.color,
           backgroundColor: `color-mix(in srgb, ${status.template.color} 10%, transparent)`,
-          marginRight: 10,
         }}
       />
     )}
     <ItemStatus status={status} />
-  </>
+  </div>
 );
 
 export const WorkflowBypassStatus = ({ data, entityType, refreshing = false, onCompleted }: {
@@ -134,21 +144,11 @@ export const WorkflowBypassStatus = ({ data, entityType, refreshing = false, onC
       setSaving(false);
       helpers?.setSubmitting(false);
     };
-    const selected = statuses.find(({ status }) => status.id === values.targetStatusId);
-    const runtimeParams: Record<string, string[]> = {};
-    if (values.applyTransitionActions && selected?.requiresShareOrganizationInput) {
-      runtimeParams.shareOrganizationIds = values.shareOrganizations.map((organization) => organization.value);
-    }
-    if (values.applyTransitionActions && selected?.requiresUnshareOrganizationInput) {
-      runtimeParams.unshareOrganizationIds = values.unshareOrganizations.map((organization) => organization.value);
-    }
     commit({
       variables: {
         entityId: entity.id,
         targetStatusId: values.targetStatusId,
         applyTransitionActions: values.applyTransitionActions,
-        comment: values.comment.trim() || undefined,
-        ...(Object.keys(runtimeParams).length > 0 ? { runtimeParams } : {}),
       },
       onCompleted: (response, errors) => {
         release();
@@ -166,6 +166,11 @@ export const WorkflowBypassStatus = ({ data, entityType, refreshing = false, onC
       },
       onError: release,
     });
+  };
+
+  const hasTransitionActions = (statusId: string) => {
+    const selected = statuses.find(({ status }) => status.id === statusId);
+    return !!selected && (selected.onExit.length > 0 || selected.onEnter.length > 0);
   };
 
   const actionLabels = (actions: WorkflowStatusBypassStatusesQuery['response']['workflowBypassStatuses'][number]['onExit']): string[] => {
@@ -194,8 +199,7 @@ export const WorkflowBypassStatus = ({ data, entityType, refreshing = false, onC
         onValueChange={(statusId) => {
           const selected = statuses.find(({ status }) => status.id === statusId);
           if (!selected || blocked || loading || loadError || statusId === currentStatus?.id) return;
-          if (selected.onExit.length > 0 || selected.onEnter.length > 0) setTargetStatusId(statusId);
-          else handleApply({ targetStatusId: statusId, applyTransitionActions: false, comment: '', shareOrganizations: [], unshareOrganizations: [] });
+          setTargetStatusId(statusId);
         }}
       >
         <SelectTrigger aria-label={t_i18n('Status')} className="h-8 w-auto max-w-full border-0 bg-transparent">
@@ -215,7 +219,7 @@ export const WorkflowBypassStatus = ({ data, entityType, refreshing = false, onC
       {targetStatusId && (
         <Formik<BypassValues>
           key={targetStatusId}
-          initialValues={{ targetStatusId, applyTransitionActions: true, comment: '', shareOrganizations: [], unshareOrganizations: [] }}
+          initialValues={{ targetStatusId, applyTransitionActions: hasTransitionActions(targetStatusId), comment: '', shareOrganizations: [], unshareOrganizations: [] }}
           validate={validateValues}
           validateOnMount
           onSubmit={handleApply}
@@ -224,43 +228,59 @@ export const WorkflowBypassStatus = ({ data, entityType, refreshing = false, onC
             const disabled = blocked || isSubmitting;
             const dismissDisabled = committing || saving || isSubmitting;
             const selected = statuses.find(({ status }) => status.id === values.targetStatusId);
+            const hasActions = hasTransitionActions(values.targetStatusId);
             return (
               <Dialog
                 open
-                title={t_i18n('Change status')}
-                size="small"
-                onClose={() => {
-                  if (!dismissDisabled) setTargetStatusId(null);
+                onOpenChange={(isOpen) => {
+                  if (!isOpen && !dismissDisabled) setTargetStatusId(null);
                 }}
               >
-                <Form>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <div>{t_i18n('Apply these actions when changing status?')}</div>
-                    {[
-                      { title: `${t_i18n('On exit actions')}: ${currentStatus?.template?.name ?? t_i18n('Unknown')}`, actions: selected?.onExit ?? [] },
-                      { title: `${t_i18n('On enter actions')}: ${selected?.status.template?.name ?? t_i18n('Unknown')}`, actions: selected?.onEnter ?? [] },
-                    ].filter(({ actions }) => actions.length > 0).map(({ title, actions }) => (
-                      <div key={title}>
-                        <strong>{title}</strong>
-                        <Box component="ul" sx={{ m: 0, mt: 1, pl: 3, overflowWrap: 'anywhere' }}>
-                          {actionLabels(actions).map((label, index) => <li key={`${index}-${label}`}>{label}</li>)}
-                        </Box>
-                      </div>
-                    ))}
-                    <Field component={TextareaField} name="comment" label={t_i18n('Comment')} rows={3} maxLength={COMMENT_MAX_LENGTH} disabled={disabled} helperText={`${values.comment.length} / ${COMMENT_MAX_LENGTH}`} />
-                    {values.applyTransitionActions && selected?.requiresShareOrganizationInput && (
-                      <ObjectOrganizationField name="shareOrganizations" label={t_i18n('Organizations to share with')} multiple disabled={disabled} style={{ width: '100%' }} />
-                    )}
-                    {values.applyTransitionActions && selected?.requiresUnshareOrganizationInput && (
-                      <ObjectOrganizationField name="unshareOrganizations" label={t_i18n('Organizations to unshare from')} multiple disabled={disabled} style={{ width: '100%' }} />
-                    )}
-                  </Box>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 1, mt: 2 }}>
-                    <Button variant="tertiary" disabled={dismissDisabled} onClick={() => setTargetStatusId(null)}>{t_i18n('Cancel')}</Button>
-                    <Button variant="secondary" disabled={disabled || values.comment.length > COMMENT_MAX_LENGTH} onClick={() => handleApply({ ...values, applyTransitionActions: false }, { setSubmitting })}>{t_i18n('Change status only')}</Button>
-                    <Button type="submit" disabled={disabled || loading || loadError || !isValid || values.comment.length > COMMENT_MAX_LENGTH}>{t_i18n('Apply actions')}</Button>
-                  </Box>
-                </Form>
+                <DialogContent>
+                  <DialogTitle className="flex flex-col gap-6">
+                    <Text variant="title-md">Update status</Text>
+
+                    <div className="flex items-center gap-1">
+                      <ItemStatusWorkflow status={currentStatus} />
+                      →
+                      <ItemStatusWorkflow status={selected?.status} />
+                    </div>
+                  </DialogTitle>
+                  <Form className="flex flex-col gap-6 min-h-0">
+                    <DialogBody style={{ margin: 'calc(var(--spacing) * -1)', padding: 'var(--spacing)' }}>
+                      <Box className="flex flex-col gap-8 mb-8">
+                        <DialogDescription>
+                          <Text variant="content-compact">
+                            {hasActions
+                              ? t_i18n('Apply these actions when changing status?')
+                              : t_i18n('No actions are configured for this transition. The status will be changed directly.')}
+                          </Text>
+                        </DialogDescription>
+                        {[
+                          { title: t_i18n('On exit actions'), status: currentStatus, actions: selected?.onExit ?? [] },
+                          { title: t_i18n('On enter actions'), status: selected?.status, actions: selected?.onEnter ?? [] },
+                        ].filter(({ actions }) => actions.length > 0).map(({ title, status, actions }) => (
+                          <div key={title} className="flex flex-col gap-2">
+                            <div className="flex items-center gap-2">
+                              <Text variant="title-sm">{title}</Text>
+                              <ItemStatus status={status} />
+                            </div>
+                            <ul className="m-0 mt-1 pl-6" style={{ overflowWrap: 'anywhere' }}>
+                              {actionLabels(actions).map((label, index) => <li key={`${index}-${label}`}><Text variant="content-compact">{label}</Text></li>)}
+                            </ul>
+                          </div>
+                        ))}
+                      </Box>
+                    </DialogBody>
+                    <DialogFooter className="flex-wrap">
+                      <Button variant="tertiary" disabled={dismissDisabled} onClick={() => setTargetStatusId(null)}>{t_i18n('Cancel')}</Button>
+                      {hasActions && (
+                        <Button variant="secondary" disabled={disabled || values.comment.length > COMMENT_MAX_LENGTH} onClick={() => handleApply({ ...values, applyTransitionActions: false }, { setSubmitting })}>{t_i18n('Update status only')}</Button>
+                      )}
+                      <Button type="submit" disabled={disabled || loading || loadError || !isValid || values.comment.length > COMMENT_MAX_LENGTH}>{t_i18n(hasActions ? 'Apply actions' : 'Update status')}</Button>
+                    </DialogFooter>
+                  </Form>
+                </DialogContent>
               </Dialog>
             );
           }}

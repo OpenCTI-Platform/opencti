@@ -266,7 +266,7 @@ describe('WorkflowTransitions — next status menu', () => {
     const { user } = testRender(<WorkflowTransitions data={draft} />);
     await user.click(screen.getByRole('button', { name: 'Next status' }));
     expect(screen.getAllByRole('menuitem')).toHaveLength(3);
-    await user.click(screen.getByRole('menuitem', { name: 'approve' }));
+    await user.click(screen.getByRole('menuitem', { name: /^approve/ }));
     expect(await screen.findByText('Do you want to approve this draft and send it to ingestion?')).toBeDefined();
   });
 });

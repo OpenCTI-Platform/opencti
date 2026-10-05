@@ -67,7 +67,7 @@ const resolveRefresh = async (relayEnv: ReturnType<typeof testRender>['relayEnv'
 afterEach(() => vi.useRealTimers());
 
 describe('WorkflowTransitionsForEntity refresh', () => {
-  it.each([2, 3])('opens a menu for %s entity transitions without executing the primary label', async (count) => {
+  it.each([2, 3])('opens a menu for %s entity transitions without executing any of them', async (count) => {
     const transitions = instance(null).allowedTransitions;
     const { relayEnv, user } = await setup(null, true, 'edit', 'KNOWLEDGE_KNUPDATE', [
       transitions[0],
@@ -75,7 +75,7 @@ describe('WorkflowTransitionsForEntity refresh', () => {
       ...(count === 3 ? [{ ...transitions[0], event: 'review', actions: ['log', 'updateAuthorizedMembers'] }] : []),
     ]);
     vi.useRealTimers();
-    await user.click(screen.getByRole('button', { name: 'approve' }));
+    await user.click(screen.getByRole('button', { name: 'Next status' }));
     expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
     expect(screen.getByRole('menuitem', { name: 'approve' })).toBeVisible();
     expect(screen.getAllByRole('menuitem')).toHaveLength(count);
@@ -89,7 +89,7 @@ describe('WorkflowTransitionsForEntity refresh', () => {
     const transition = instance(null).allowedTransitions[0];
     const { relayEnv, user } = await setup(null, true, 'edit', 'KNOWLEDGE_KNUPDATE', [transition, { ...transition, event: 'close' }]);
     vi.useRealTimers();
-    const trigger = screen.getByRole('button', { name: 'approve' });
+    const trigger = screen.getByRole('button', { name: 'Next status' });
     trigger.focus();
     await user.keyboard('{Enter}');
     expect(screen.getByRole('menu')).toBeVisible();

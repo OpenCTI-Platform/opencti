@@ -1,16 +1,30 @@
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 import { fetchQuery, useFragment, useRelayEnvironment } from 'react-relay';
 import type { Subscription } from 'relay-runtime';
-import { Menu, MenuContent, MenuItem, MenuTrigger } from '@filigran/design-system';
-import { Alert, AlertTitle, Box, CircularProgress, DialogActions, DialogContentText, Tooltip, Typography } from '@mui/material';
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogTitle,
+  Icon,
+  Menu,
+  MenuContent,
+  MenuItem,
+  MenuTrigger,
+  Text,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@filigran/design-system';
+import { Alert, AlertTitle, Box, CircularProgress } from '@mui/material';
 import { ArrowDropDownOutlined, ArrowDropUpOutlined, ErrorOutline, LockOpenOutlined } from '@mui/icons-material';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { WorkflowStatus_data$data, WorkflowStatus_data$key } from './__generated__/WorkflowStatus_data.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import Transition from '../../../../components/Transition';
-import Dialog from '@common/dialog/Dialog';
 import { CommentMode } from '../../settings/sub_types/workflow/utils';
 import { workflowStatusFragment, workflowStatusStixDomainObjectFragment, workflowStatusEntityQuery, COMMENT_MAX_LENGTH } from './WorkflowStatus.graphql';
 import { TransitionFormValues, useTransitionWizard } from './useTransitionWizard';
@@ -26,7 +40,7 @@ import useInterval from '../../../../utils/hooks/useInterval';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import { useGetCurrentUserAccessRight } from '../../../../utils/authorizedMembers';
 import { relayErrorHandling } from '../../../../relay/environment';
-import WorkflowBypassStatus from './WorkflowBypassStatus';
+import WorkflowBypassStatus, { ItemStatusWorkflow } from './WorkflowBypassStatus';
 import Button from '@common/button/Button';
 
 interface WorkflowTransitionsProps {
@@ -95,6 +109,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
   if (!workflowInstance || !isWorkflowUiEnabledForType(entityType, isFeatureEnable)) {
     return null;
   }
+  console.log({ workflowInstance, wizard });
 
   if (isPending) {
     const totalExpected = pendingTransition?.asyncActions.reduce((sum, action) => sum + (action.expectedCount ?? 0), 0) ?? 0;
@@ -102,13 +117,13 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
     return (
       <>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography variant="caption" noWrap>
+          <Text as="span" variant="content-compact" className="whitespace-nowrap">
             {pendingTransition?.event}
-          </Typography>
+          </Text>
           {totalExpected > 0 && (
-            <Typography variant="caption" color="text.secondary" noWrap>
+            <Text as="span" variant="content-compact" className="whitespace-nowrap text-default-secondary">
               {totalProcessed} / {totalExpected}
-            </Typography>
+            </Text>
           )}
           <CircularProgress size={14} thickness={5} />
           {isBypass && (
@@ -131,25 +146,31 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
     return (
       <>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Tooltip title={workflowInstance.pendingError ?? t_i18n('One or more async workflow actions failed')}>
-            <ErrorOutline color="error" fontSize="small" />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <ErrorOutline color="error" fontSize="small" />
+            </TooltipTrigger>
+            <TooltipContent>{workflowInstance.pendingError ?? t_i18n('One or more async workflow actions failed')}</TooltipContent>
           </Tooltip>
-          <Typography variant="caption" color="error">
+          <Text as="span" variant="content-compact" style={{ color: 'var(--text-input-error)' }}>
             {t_i18n('Transition failed')}
-          </Typography>
+          </Text>
           {isBypass && (
-            <Tooltip title={t_i18n('Force-unlock this transition (admin only). The background task will be orphaned.')}>
-              <span>
-                <Button
-                  variant="secondary"
-                  size="small"
-                  onClick={handleClear}
-                  disabled={clearing || approving}
-                  startIcon={<LockOpenOutlined fontSize="small" />}
-                >
-                  {t_i18n('Clear')}
-                </Button>
-              </span>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span>
+                  <Button
+                    variant="secondary"
+                    size="small"
+                    onClick={handleClear}
+                    disabled={clearing || approving}
+                    startIcon={<LockOpenOutlined fontSize="small" />}
+                  >
+                    {t_i18n('Clear')}
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>{t_i18n('Force-unlock this transition (admin only). The background task will be orphaned.')}</TooltipContent>
             </Tooltip>
           )}
         </Box>
@@ -240,79 +261,112 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
           {({ values, isSubmitting, isValid }) => {
             const disabled = isSubmitting || approving || clearing;
             const missingComment = wizard.commentMode === CommentMode.required && !canBypassMandatoryFields && !values.comment.trim();
+            // Radix gives every DialogDescription the same id, so the validation prompt uses it only when no comment prompt precedes it.
+            const showComment = wizard.commentMode === CommentMode.allowed || wizard.commentMode === CommentMode.required;
+            const targetStatus = workflowInstance.allowedTransitions.find((transition) => transition.event === wizard.event)?.toStatus;
             return (
               <Dialog
                 open
-                slotProps={{ paper: { elevation: 1 } }}
-                keepMounted={false}
-                slots={{ transition: Transition }}
-                onClose={() => {
-                  if (!disabled) setWizard(null);
+                onOpenChange={(open) => {
+                  if (!open && !disabled) setWizard(null);
                 }}
-                title={wizard.event}
-                size="small"
               >
-                <Form noValidate>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    {wizard.requiresShareOrg && (
-                      <ObjectOrganizationField
-                        name="shareOrganizations"
-                        label={t_i18n('Organizations to share with')}
-                        multiple={true}
-                        disabled={disabled}
-                        style={{ width: '100%' }}
-                      />
+                <DialogContent>
+                  <DialogTitle className="flex flex-col gap-6">
+                    <Text variant="title-md">{wizard.event}</Text>
+
+                    {targetStatus && (
+                      <div className="flex items-center gap-1">
+                        <Text as="span" variant="content-compact-medium">{t_i18n('Transitioning to')}</Text>
+                        <ItemStatusWorkflow status={targetStatus} />
+                      </div>
                     )}
-                    {wizard.requiresUnshareOrg && (
-                      <ObjectOrganizationField
-                        name="unshareOrganizations"
-                        label={t_i18n('Organizations to unshare from')}
-                        multiple={true}
-                        disabled={disabled}
-                        style={{ width: '100%' }}
-                      />
-                    )}
-                    {(wizard.commentMode === CommentMode.allowed || wizard.commentMode === CommentMode.required) && (
-                      <>
-                        <DialogContentText>
-                          {wizard.commentMode === CommentMode.required
-                            ? t_i18n('A comment is required before changing the status.')
-                            : t_i18n('You can optionally add a comment before changing the status.')}
-                        </DialogContentText>
-                        <Field
-                          component={TextareaField}
-                          name="comment"
-                          label={t_i18n('Comment')}
-                          required={wizard.commentMode === CommentMode.required && !canBypassMandatoryFields}
-                          disabled={disabled}
-                          rows={3}
-                          maxLength={COMMENT_MAX_LENGTH}
-                          helperText={`${values.comment.length} / ${COMMENT_MAX_LENGTH}`}
-                        />
-                      </>
-                    )}
-                    {wizard.requiresValidation && (
-                      <>
-                        <DialogContentText>{t_i18n('Do you want to approve this draft and send it to ingestion?')}</DialogContentText>
-                        {processingCount > 0 && (
-                          <Alert severity="warning">
-                            <AlertTitle>{t_i18n('Ongoing processes')}</AlertTitle>
-                            {t_i18n('There are processes still running that could impact the data of the draft. '
-                              + 'By approving the draft now, the remaining changes that would have been applied by those processes will be ignored.')}
-                          </Alert>
+                  </DialogTitle>
+                  <Form noValidate className="flex flex-col gap-6 min-h-0">
+                    <DialogBody style={{ margin: 'calc(var(--spacing) * -1)', padding: 'var(--spacing)' }}>
+                      <Box className="flex flex-col gap-6">
+                        {showComment && (
+                          <div className="flex flex-col gap-4">
+                            <DialogDescription className="flex flex-col gap-2">
+                              <Text variant="title-sm">Add a comment</Text>
+                              <Text variant="content-compact">
+                                {wizard.commentMode === CommentMode.required
+                                  ? t_i18n('A comment is required before changing the status.')
+                                  : t_i18n('You can optionally add a comment before changing the status.')}
+                              </Text>
+                            </DialogDescription>
+                            <Field
+                              component={TextareaField}
+                              name="comment"
+                              label={`${t_i18n('Comment')}${CommentMode.required ? '*' : ''}`}
+                              required={wizard.commentMode === CommentMode.required && !canBypassMandatoryFields}
+                              disabled={disabled}
+                              rows={3}
+                              maxLength={COMMENT_MAX_LENGTH}
+                              helperText={`${values.comment.length} / ${COMMENT_MAX_LENGTH}`}
+                            />
+                          </div>
                         )}
-                      </>
-                    )}
-                  </Box>
-                  <DialogActions>
-                    <Button variant="secondary" onClick={() => setWizard(null)} disabled={disabled}>
-                      {t_i18n('Cancel')}
-                    </Button>
-                    <Button type="submit" disabled={disabled || !isValid || !!missingComment || values.comment.length > COMMENT_MAX_LENGTH}>
-                      {wizard.requiresValidation ? t_i18n('Approve') : t_i18n('Confirm')}
-                    </Button>
-                  </DialogActions>
-                </Form>
+                        {wizard.requiresShareOrg && (
+                          <div className="flex flex-col gap-4">
+                            <div className="flex items-center gap-2">
+                              <Icon name="triangle-alert" size={16} className="text-icon-warning" aria-hidden />
+                              <Text variant="title-sm">Share with organizations</Text>
+                            </div>
+                            <ObjectOrganizationField
+                              name="shareOrganizations"
+                              label={t_i18n('Organizations')}
+                              multiple={true}
+                              disabled={disabled}
+                              style={{ width: '100%' }}
+                              alert={false}
+                            />
+                          </div>
+                        )}
+                        {wizard.requiresUnshareOrg && (
+                          <div className="flex flex-col gap-4">
+                            <div className="flex items-center gap-2">
+                              <Icon name="triangle-alert" size={16} className="text-icon-warning" aria-hidden />
+                              <Text variant="title-sm">Unshare from organizations</Text>
+                            </div>
+                            <ObjectOrganizationField
+                              name="unshareOrganizations"
+                              label={t_i18n('Organizations')}
+                              multiple={true}
+                              disabled={disabled}
+                              style={{ width: '100%' }}
+                              alert={false}
+                            />
+                          </div>
+                        )}
+                        {wizard.requiresValidation && (
+                          <>
+                            {showComment ? (
+                              <Text variant="content-base">{t_i18n('Do you want to approve this draft and send it to ingestion?')}</Text>
+                            ) : (
+                              <DialogDescription>{t_i18n('Do you want to approve this draft and send it to ingestion?')}</DialogDescription>
+                            )}
+                            {processingCount > 0 && (
+                              <Alert severity="warning">
+                                <AlertTitle>{t_i18n('Ongoing processes')}</AlertTitle>
+                                {t_i18n('There are processes still running that could impact the data of the draft. '
+                                  + 'By approving the draft now, the remaining changes that would have been applied by those processes will be ignored.')}
+                              </Alert>
+                            )}
+                          </>
+                        )}
+                      </Box>
+                    </DialogBody>
+                    <DialogFooter>
+                      <Button variant="secondary" onClick={() => setWizard(null)} disabled={disabled}>
+                        {t_i18n('Cancel')}
+                      </Button>
+                      <Button type="submit" disabled={disabled || !isValid || !!missingComment || values.comment.length > COMMENT_MAX_LENGTH}>
+                        {wizard.requiresValidation ? t_i18n('Approve') : t_i18n('Confirm')}
+                      </Button>
+                    </DialogFooter>
+                  </Form>
+                </DialogContent>
               </Dialog>
             );
           }}
