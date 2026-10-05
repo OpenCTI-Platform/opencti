@@ -9,9 +9,11 @@ import {
   provenanceBackfillRestart,
   provenanceBackfillStatus,
   provenanceFreshnessDistribution,
+  provenanceRelationshipTrackingEdit,
   provenanceSingleSourcedByType,
   provenanceSourceKindsDistribution,
   provenanceStatistics,
+  provenanceTypeStatistics,
   resolveAssertionsForUser,
   resolveConflictsForUser,
 } from './provenance-domain';
@@ -41,6 +43,7 @@ const provenanceResolvers: Resolvers = {
     provenanceSourceKindsDistribution: (_, args, context) => provenanceSourceKindsDistribution(context, context.user, args) as any,
     provenanceSingleSourcedByType: (_, args, context) => provenanceSingleSourcedByType(context, context.user, args),
     provenanceBackfill: (_, __, context) => provenanceBackfillStatus(context) as any,
+    provenanceTypeStatistics: (_, args, context) => provenanceTypeStatistics(context, context.user, args),
   },
   // Results are resolved through the StixObjectOrStixRelationship union, stricter than the store types
   Mutation: {
@@ -49,6 +52,7 @@ const provenanceResolvers: Resolvers = {
     provenanceProcedureAdopt: (_, { id, text }, context) => adoptProcedure(context, context.user, id, text) as any,
     provenanceAssert: (_, { id }, context) => assertElement(context, context.user, id) as any,
     provenanceBackfillRestart: (_, __, context) => provenanceBackfillRestart(context, context.user) as any,
+    provenanceRelationshipTrackingEdit: (_, args, context) => provenanceRelationshipTrackingEdit(context, context.user, args),
   },
   // Inherited by every implementation of the interface (inheritResolversFromInterfaces)
   StixCoreObject: provenanceFieldsResolvers as any,

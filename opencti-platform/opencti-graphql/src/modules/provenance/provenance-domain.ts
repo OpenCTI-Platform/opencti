@@ -1,13 +1,22 @@
 import * as R from 'ramda';
 import { storeLoadByIdWithRefs, updateAttribute } from '../../database/middleware';
-import { elAggregationCount, elCount } from '../../database/engine';
+import { elAggregationCount, elCount, elFilteredAggregations } from '../../database/engine';
 import { lockResources } from '../../lock/master-lock';
 import { getDraftContext } from '../../utils/draftContext';
 import { READ_STIX_DATA_WITH_INFERRED } from '../../database/utils';
 import { FunctionalError, ForbiddenAccess } from '../../config/errors';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
-import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ENTITY_TYPE_IDENTITY } from '../../schema/general';
+import {
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  ENTITY_TYPE_IDENTITY,
+} from '../../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
+import { isStixCoreRelationship, STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
+import { schemaTypesDefinition } from '../../schema/schema-types';
+import { entitySettingEditField, findByType as findEntitySettingByType } from '../entitySetting/entitySetting-domain';
 import { AccessOperation, filterMembersUsersWithUsersOrgs, RESTRICTED_USER, validateUserAccessOperation } from '../../utils/access';
 import { controlUserConfidenceAgainstElement } from '../../utils/confidence-level';
 import { publishUserAction } from '../../listener/UserActionListener';
@@ -20,6 +29,8 @@ import {
   type QueryProvenanceSingleSourcedByTypeArgs,
   type QueryProvenanceSourceKindsDistributionArgs,
   type QueryProvenanceStatisticsArgs,
+  type QueryProvenanceTypeStatisticsArgs,
+  type MutationProvenanceRelationshipTrackingEditArgs,
 } from '../../generated/graphql';
 import { now } from '../../utils/format';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -31,7 +42,14 @@ import { isProcedureRelationship, procedureMatchKey } from './provenance-procedu
 import { resolveCurrentValueOwner } from './provenance-upsert';
 import { applyProvenanceUpdate, isProvenanceTrackedType, recordUpsertProvenance } from './provenance-write';
 import { getProvenanceBackfillState, restartProvenanceBackfill } from './provenance-backfill';
-import { isProvenanceTrackedForType, listProvenanceTrackedTypes, restrictToTrackedTypes } from './provenance-tracking';
+import {
+  ENTITY_SETTING_PROVENANCE_RELATIONSHIP_TYPES,
+  isProvenanceTrackedForType,
+  listProvenanceTrackedTypes,
+  parseProvenanceRelationshipTypes,
+  restrictToTrackedTypes,
+  serializeProvenanceRelationshipTypes,
+} from './provenance-tracking';
 import { PROVENANCE_ENABLED } from './provenance-config';
 import {
   ASSERTION_SOURCE_KINDS,
@@ -54,6 +72,9 @@ import {
 } from './provenance-types';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
+// Upper bound of concrete types in one statistics query: every domain object, observable and relationship type fits
+const MAX_STATISTICS_TYPES = 500;
+const PROVENANCE_RELATIONSHIP_TRACKING_LOCK = 'provenance_relationship_tracking';
 
 export const computeFreshnessDays = (lastAssertedAt: string | Date | null | undefined, reference: Date = new Date()): number | null => {
   if (!lastAssertedAt) {
@@ -240,6 +261,76 @@ export const provenanceSingleSourcedByType = async (context: AuthContext, user: 
   return totals
     .map((entry) => ({ entity_type: entry.label, total: entry.count, single_sourced: singleByType.get(entry.label) ?? 0 }))
     .sort((a, b) => b.total - a.total);
+};
+// endregion
+
+// region configuration
+const typesByAggregationKey = () => {
+  const candidates = [
+    ...schemaTypesDefinition.get(ABSTRACT_STIX_DOMAIN_OBJECT),
+    ...schemaTypesDefinition.get(ABSTRACT_STIX_CYBER_OBSERVABLE),
+    ...STIX_CORE_RELATIONSHIPS,
+    STIX_SIGHTING_RELATIONSHIP,
+  ];
+  return new Map(candidates.map((type) => [type.toLowerCase(), type]));
+};
+
+/**
+ * Per concrete type of the given types (an abstract type stands for its concrete types): the elements with recorded
+ * sources, the corroborated ones and the last assertion, shown next to the tracking switches of the customization.
+ */
+export const provenanceTypeStatistics = async (context: AuthContext, user: AuthUser, args: QueryProvenanceTypeStatisticsArgs) => {
+  if (!PROVENANCE_ENABLED || args.types.length === 0) {
+    return [];
+  }
+  const withProvenance: FilterGroup = {
+    mode: FilterMode.And,
+    filters: [{ key: [ATTRIBUTE_CORROBORATION_COUNT], values: [], operator: FilterOperator.NotNil }],
+    filterGroups: [],
+  };
+  const aggregations = await elFilteredAggregations(context, user, READ_STIX_DATA_WITH_INFERRED, { types: args.types, filters: withProvenance }, {
+    by_type: {
+      terms: { field: 'entity_type.keyword', size: MAX_STATISTICS_TYPES },
+      aggs: {
+        corroborated: { filter: { range: { [ATTRIBUTE_CORROBORATION_COUNT]: { gte: 2 } } } },
+        last_asserted_at: { max: { field: ATTRIBUTE_LAST_ASSERTED_AT } },
+      },
+    },
+  });
+  const types = typesByAggregationKey();
+  const buckets: Array<{ key: string; doc_count: number; corroborated: { doc_count: number }; last_asserted_at: { value: number | null } }> = aggregations.by_type?.buckets ?? [];
+  return buckets.map((bucket) => ({
+    entity_type: types.get(String(bucket.key).toLowerCase()) ?? String(bucket.key),
+    with_provenance: bucket.doc_count,
+    corroborated: bucket.corroborated.doc_count,
+    last_asserted_at: bucket.last_asserted_at.value ? new Date(bucket.last_asserted_at.value).toISOString() : null,
+  }));
+};
+
+/**
+ * Tracks, or stops tracking, the provenance of the given relationship types; the other types keep their tracking.
+ */
+export const provenanceRelationshipTrackingEdit = async (context: AuthContext, user: AuthUser, args: MutationProvenanceRelationshipTrackingEditArgs) => {
+  const relationshipTypes = R.uniq(args.relationship_types);
+  const unsupported = relationshipTypes.filter((type) => !isStixCoreRelationship(type));
+  if (relationshipTypes.length === 0 || unsupported.length > 0) {
+    throw FunctionalError('Provenance tracking is configured on relationship types', { types: unsupported });
+  }
+  const lock = await lockResources([PROVENANCE_RELATIONSHIP_TRACKING_LOCK]);
+  try {
+    const entitySetting = await findEntitySettingByType(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP);
+    if (!entitySetting) {
+      throw FunctionalError('The entity setting of relationships does not exist');
+    }
+    const tracking = {
+      ...parseProvenanceRelationshipTypes(entitySetting.provenance_relationship_types),
+      ...Object.fromEntries(relationshipTypes.map((type) => [type, args.tracked])),
+    };
+    const input = [{ key: ENTITY_SETTING_PROVENANCE_RELATIONSHIP_TYPES, value: [serializeProvenanceRelationshipTypes(tracking)] }];
+    return await entitySettingEditField(context, user, entitySetting.id, input);
+  } finally {
+    await lock.unlock();
+  }
 };
 // endregion
 

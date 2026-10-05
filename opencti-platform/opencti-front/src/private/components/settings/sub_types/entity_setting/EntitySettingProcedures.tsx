@@ -14,7 +14,7 @@ interface EntitySettingProceduresProps {
  */
 const EntitySettingProcedures = ({ entitySetting, handleSubmitField }: EntitySettingProceduresProps) => {
   const { t_i18n } = useFormatter();
-  const isTracked = entitySetting.provenance_tracking;
+  const isTracked = !entitySetting.provenance_untracked_types.includes('uses');
   return (
     <Stack gap={2} data-testid="entity-setting-procedures">
       <Switch
@@ -26,7 +26,7 @@ const EntitySettingProcedures = ({ entitySetting, handleSubmitField }: EntitySet
       <Text variant="content-caption" as="div">
         {isTracked
           ? t_i18n('Each source keeps its own procedure description instead of overwriting the others, the relationship identity is unchanged.')
-          : t_i18n('Procedures are preserved while the provenance of relationships is tracked.')}
+          : t_i18n('Procedures are preserved while the provenance of uses relationships is tracked.')}
       </Text>
       <Stack gap={0.5} sx={{ maxWidth: 420 }}>
         <Text variant="content-base" as="div">{t_i18n('Description of the relationship')}</Text>

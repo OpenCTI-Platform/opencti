@@ -16,7 +16,7 @@ import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { getAvailableSettings } from './entitySetting-utils';
 import { subscribeToInstanceEvents } from '../../graphql/subscriptionWrapper';
 import { getRequestAccessConfiguration } from '../requestAccess/requestAccess-domain';
-import { isProvenanceTrackingEnabled, listProvenanceUntrackedTypesOfSetting } from '../provenance/provenance-tracking';
+import { isProvenanceTrackingEnabled, listProvenanceRelationshipTracking, listProvenanceUntrackedTypesOfSetting } from '../provenance/provenance-tracking';
 import { getProceduresDescriptionPolicy, isProceduresPreservationEnabled } from '../provenance/provenance-procedures';
 
 const entitySettingResolvers: Resolvers = {
@@ -33,6 +33,7 @@ const entitySettingResolvers: Resolvers = {
     availableSettings: (entitySetting, _, __) => getAvailableSettings(entitySetting.target_type),
     provenance_tracking: (entitySetting, _, __) => isProvenanceTrackingEnabled(entitySetting),
     provenance_untracked_types: (entitySetting, _, context) => listProvenanceUntrackedTypesOfSetting(context, entitySetting),
+    provenance_relationship_tracking: (entitySetting, _, __) => listProvenanceRelationshipTracking(entitySetting),
     procedures_preservation: (entitySetting, _, __) => isProceduresPreservationEnabled(entitySetting),
     procedures_description_policy: (entitySetting, _, __) => getProceduresDescriptionPolicy(entitySetting) as ProceduresDescriptionPolicy,
     overview_layout_customization: (entitySetting, _, __) => getOverviewLayoutCustomization(entitySetting),

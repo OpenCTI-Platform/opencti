@@ -52,6 +52,8 @@ type EntitySetting implements InternalObject & BasicObject {
   provenance_tracking: Boolean! @auth
   # Types governed by this setting (its own type, or the concrete types inheriting an abstract setting) whose provenance is not tracked
   provenance_untracked_types: [String!]! @auth
+  # Relationships: provenance tracking of each relationship type (empty for the other settings)
+  provenance_relationship_tracking: [ProvenanceRelationshipTracking!]! @auth
   # Relationships: distinct procedures preserved on uses relationships to attack patterns
   procedures_preservation: Boolean! @auth
   procedures_description_policy: ProceduresDescriptionPolicy! @auth

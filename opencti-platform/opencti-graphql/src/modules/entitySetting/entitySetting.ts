@@ -2,6 +2,7 @@ import type { JSONSchemaType } from 'ajv';
 import type { AttributeConfiguration, ScaleConfig, StixEntitySetting, StoreEntityEntitySetting } from './entitySetting-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
+import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 import convertEntitySettingToStix from './entitySetting-converter';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { validateEntitySettingCreation, validateEntitySettingUpdate } from './entitySetting-validators';
@@ -69,6 +70,12 @@ const attributeConfiguration: JSONSchemaType<AttributeConfiguration[]> = {
     required: ['name'],
   },
 };
+const provenanceRelationshipTypes = {
+  type: 'object',
+  // The list of relationship types repeats some of them, a JSON schema enum must not
+  propertyNames: { enum: [...new Set(STIX_CORE_RELATIONSHIPS)] },
+  additionalProperties: { type: 'boolean' },
+};
 
 export const ENTITY_SETTING_DEFINITION: ModuleDefinition<StoreEntityEntitySetting, StixEntitySetting> = {
   type: {
@@ -114,6 +121,8 @@ export const ENTITY_SETTING_DEFINITION: ModuleDefinition<StoreEntityEntitySettin
     { name: 'request_access_workflow', label: 'Request access workflow', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     // Unset means the platform default of the type (provenance:default_tracked_types)
     { name: 'provenance_tracking', label: 'Provenance tracking', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    // Relationships: explicit tracking per relationship type ({ "uses": true }), a type absent from it follows provenance_tracking
+    { name: 'provenance_relationship_types', label: 'Provenance tracking per relationship type', type: 'string', format: 'json', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, schemaDef: provenanceRelationshipTypes, isFilterable: false },
     { name: 'procedures_preservation', label: 'Procedures preservation on uses relationships', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'procedures_description_policy', label: 'Procedures description policy', type: 'string', format: 'enum', values: ['longest', 'most_recent'], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],

@@ -10156,6 +10156,7 @@ export type EntitySetting = BasicObject & InternalObject & {
   platform_hidden_type?: Maybe<Scalars['Boolean']['output']>;
   procedures_description_policy: ProceduresDescriptionPolicy;
   procedures_preservation: Scalars['Boolean']['output'];
+  provenance_relationship_tracking: Array<ProvenanceRelationshipTracking>;
   provenance_tracking: Scalars['Boolean']['output'];
   provenance_untracked_types: Array<Scalars['String']['output']>;
   refreshed_at?: Maybe<Scalars['DateTime']['output']>;
@@ -20517,6 +20518,7 @@ export type Mutation = {
   provenanceConflictAdopt?: Maybe<StixObjectOrStixRelationship>;
   provenanceConflictDismiss?: Maybe<StixObjectOrStixRelationship>;
   provenanceProcedureAdopt?: Maybe<StixObjectOrStixRelationship>;
+  provenanceRelationshipTrackingEdit?: Maybe<EntitySetting>;
   publicDashboardAdd?: Maybe<PublicDashboard>;
   publicDashboardDelete?: Maybe<Scalars['ID']['output']>;
   publicDashboardFieldPatch?: Maybe<PublicDashboard>;
@@ -22797,6 +22799,12 @@ export type MutationProvenanceConflictDismissArgs = {
 export type MutationProvenanceProcedureAdoptArgs = {
   id: Scalars['ID']['input'];
   text: Scalars['String']['input'];
+};
+
+
+export type MutationProvenanceRelationshipTrackingEditArgs = {
+  relationship_types: Array<Scalars['String']['input']>;
+  tracked: Scalars['Boolean']['input'];
 };
 
 
@@ -28109,6 +28117,13 @@ export type ProvenanceDistributionEntry = {
   value: Scalars['Int']['output'];
 };
 
+export type ProvenanceRelationshipTracking = {
+  __typename?: 'ProvenanceRelationshipTracking';
+  recommended: Scalars['Boolean']['output'];
+  relationship_type: Scalars['String']['output'];
+  tracked: Scalars['Boolean']['output'];
+};
+
 export type ProvenanceSingleSourcedEntry = {
   __typename?: 'ProvenanceSingleSourcedEntry';
   entity_type: Scalars['String']['output'];
@@ -28129,6 +28144,14 @@ export type ProvenanceStatistics = {
   stale: Scalars['Int']['output'];
   total: Scalars['Int']['output'];
   with_conflicts: Scalars['Int']['output'];
+  with_provenance: Scalars['Int']['output'];
+};
+
+export type ProvenanceTypeStatistics = {
+  __typename?: 'ProvenanceTypeStatistics';
+  corroborated: Scalars['Int']['output'];
+  entity_type: Scalars['String']['output'];
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
   with_provenance: Scalars['Int']['output'];
 };
 
@@ -28559,6 +28582,7 @@ export type Query = {
   provenanceSingleSourcedByType: Array<ProvenanceSingleSourcedEntry>;
   provenanceSourceKindsDistribution: Array<ProvenanceSourceKindCount>;
   provenanceStatistics: ProvenanceStatistics;
+  provenanceTypeStatistics: Array<ProvenanceTypeStatistics>;
   publicBookmarks?: Maybe<StixDomainObjectConnection>;
   publicDashboard?: Maybe<PublicDashboard>;
   publicDashboardByUriKey?: Maybe<PublicDashboard>;
@@ -30791,6 +30815,11 @@ export type QueryProvenanceSourceKindsDistributionArgs = {
 export type QueryProvenanceStatisticsArgs = {
   filters?: InputMaybe<FilterGroup>;
   types?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+
+export type QueryProvenanceTypeStatisticsArgs = {
+  types: Array<Scalars['String']['input']>;
 };
 
 
@@ -46334,9 +46363,11 @@ export type ResolversTypes = ResolversObject<{
   ProvenanceBackfill: ResolverTypeWrapper<ProvenanceBackfill>;
   ProvenanceBackfillStatus: ProvenanceBackfillStatus;
   ProvenanceDistributionEntry: ResolverTypeWrapper<ProvenanceDistributionEntry>;
+  ProvenanceRelationshipTracking: ResolverTypeWrapper<ProvenanceRelationshipTracking>;
   ProvenanceSingleSourcedEntry: ResolverTypeWrapper<ProvenanceSingleSourcedEntry>;
   ProvenanceSourceKindCount: ResolverTypeWrapper<ProvenanceSourceKindCount>;
   ProvenanceStatistics: ResolverTypeWrapper<ProvenanceStatistics>;
+  ProvenanceTypeStatistics: ResolverTypeWrapper<ProvenanceTypeStatistics>;
   Provider: ResolverTypeWrapper<Provider>;
   PublicDashboard: ResolverTypeWrapper<BasicStoreEntityPublicDashboard>;
   PublicDashboardAddInput: PublicDashboardAddInput;
@@ -47620,9 +47651,11 @@ export type ResolversParentTypes = ResolversObject<{
   ProcessAddInput: ProcessAddInput;
   ProvenanceBackfill: ProvenanceBackfill;
   ProvenanceDistributionEntry: ProvenanceDistributionEntry;
+  ProvenanceRelationshipTracking: ProvenanceRelationshipTracking;
   ProvenanceSingleSourcedEntry: ProvenanceSingleSourcedEntry;
   ProvenanceSourceKindCount: ProvenanceSourceKindCount;
   ProvenanceStatistics: ProvenanceStatistics;
+  ProvenanceTypeStatistics: ProvenanceTypeStatistics;
   Provider: Provider;
   PublicDashboard: BasicStoreEntityPublicDashboard;
   PublicDashboardAddInput: PublicDashboardAddInput;
@@ -51887,6 +51920,7 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
   platform_hidden_type?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   procedures_description_policy?: Resolver<ResolversTypes['ProceduresDescriptionPolicy'], ParentType, ContextType>;
   procedures_preservation?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  provenance_relationship_tracking?: Resolver<Array<ResolversTypes['ProvenanceRelationshipTracking']>, ParentType, ContextType>;
   provenance_tracking?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   provenance_untracked_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -56027,6 +56061,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   provenanceConflictAdopt?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationship']>, ParentType, ContextType, RequireFields<MutationProvenanceConflictAdoptArgs, 'field' | 'id' | 'value_hash'>>;
   provenanceConflictDismiss?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationship']>, ParentType, ContextType, RequireFields<MutationProvenanceConflictDismissArgs, 'field' | 'id' | 'value_hash'>>;
   provenanceProcedureAdopt?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationship']>, ParentType, ContextType, RequireFields<MutationProvenanceProcedureAdoptArgs, 'id' | 'text'>>;
+  provenanceRelationshipTrackingEdit?: Resolver<Maybe<ResolversTypes['EntitySetting']>, ParentType, ContextType, RequireFields<MutationProvenanceRelationshipTrackingEditArgs, 'relationship_types' | 'tracked'>>;
   publicDashboardAdd?: Resolver<Maybe<ResolversTypes['PublicDashboard']>, ParentType, ContextType, RequireFields<MutationPublicDashboardAddArgs, 'input'>>;
   publicDashboardDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationPublicDashboardDeleteArgs, 'id'>>;
   publicDashboardFieldPatch?: Resolver<Maybe<ResolversTypes['PublicDashboard']>, ParentType, ContextType, RequireFields<MutationPublicDashboardFieldPatchArgs, 'id' | 'input'>>;
@@ -57670,6 +57705,12 @@ export type ProvenanceDistributionEntryResolvers<ContextType = any, ParentType e
   value?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
+export type ProvenanceRelationshipTrackingResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProvenanceRelationshipTracking'] = ResolversParentTypes['ProvenanceRelationshipTracking']> = ResolversObject<{
+  recommended?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  relationship_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  tracked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
 export type ProvenanceSingleSourcedEntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProvenanceSingleSourcedEntry'] = ResolversParentTypes['ProvenanceSingleSourcedEntry']> = ResolversObject<{
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   single_sourced?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -57687,6 +57728,13 @@ export type ProvenanceStatisticsResolvers<ContextType = any, ParentType extends 
   stale?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   total?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   with_conflicts?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  with_provenance?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type ProvenanceTypeStatisticsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ProvenanceTypeStatistics'] = ResolversParentTypes['ProvenanceTypeStatistics']> = ResolversObject<{
+  corroborated?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   with_provenance?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
@@ -58082,6 +58130,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   provenanceSingleSourcedByType?: Resolver<Array<ResolversTypes['ProvenanceSingleSourcedEntry']>, ParentType, ContextType, Partial<QueryProvenanceSingleSourcedByTypeArgs>>;
   provenanceSourceKindsDistribution?: Resolver<Array<ResolversTypes['ProvenanceSourceKindCount']>, ParentType, ContextType, Partial<QueryProvenanceSourceKindsDistributionArgs>>;
   provenanceStatistics?: Resolver<ResolversTypes['ProvenanceStatistics'], ParentType, ContextType, Partial<QueryProvenanceStatisticsArgs>>;
+  provenanceTypeStatistics?: Resolver<Array<ResolversTypes['ProvenanceTypeStatistics']>, ParentType, ContextType, RequireFields<QueryProvenanceTypeStatisticsArgs, 'types'>>;
   publicBookmarks?: Resolver<Maybe<ResolversTypes['StixDomainObjectConnection']>, ParentType, ContextType, RequireFields<QueryPublicBookmarksArgs, 'uriKey' | 'widgetId'>>;
   publicDashboard?: Resolver<Maybe<ResolversTypes['PublicDashboard']>, ParentType, ContextType, RequireFields<QueryPublicDashboardArgs, 'id'>>;
   publicDashboardByUriKey?: Resolver<Maybe<ResolversTypes['PublicDashboard']>, ParentType, ContextType, RequireFields<QueryPublicDashboardByUriKeyArgs, 'uri_key'>>;
@@ -63299,9 +63348,11 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Process?: ProcessResolvers<ContextType>;
   ProvenanceBackfill?: ProvenanceBackfillResolvers<ContextType>;
   ProvenanceDistributionEntry?: ProvenanceDistributionEntryResolvers<ContextType>;
+  ProvenanceRelationshipTracking?: ProvenanceRelationshipTrackingResolvers<ContextType>;
   ProvenanceSingleSourcedEntry?: ProvenanceSingleSourcedEntryResolvers<ContextType>;
   ProvenanceSourceKindCount?: ProvenanceSourceKindCountResolvers<ContextType>;
   ProvenanceStatistics?: ProvenanceStatisticsResolvers<ContextType>;
+  ProvenanceTypeStatistics?: ProvenanceTypeStatisticsResolvers<ContextType>;
   Provider?: ProviderResolvers<ContextType>;
   PublicDashboard?: PublicDashboardResolvers<ContextType>;
   PublicDashboardConnection?: PublicDashboardConnectionResolvers<ContextType>;

@@ -4,8 +4,12 @@ import { getEntitiesListFromCache } from '../../../../src/database/cache';
 import {
   isProvenanceTrackedForType,
   isProvenanceTrackingEnabled,
+  listProvenanceRelationshipTracking,
   listProvenanceTrackedTypes,
   listProvenanceUntrackedTypesOfSetting,
+  parseProvenanceRelationshipTypes,
+  parseProvenanceRelationshipTypesStrict,
+  PROVENANCE_RECOMMENDED_RELATIONSHIP_TYPES_SETTING,
 } from '../../../../src/modules/provenance/provenance-tracking';
 import { getOverviewLayoutCustomization, insertSourcesWidget, mergeMissingWidgets } from '../../../../src/modules/entitySetting/entitySetting-domain';
 import { creationProceduresBuilder } from '../../../../src/modules/provenance/provenance-upsert';
@@ -17,6 +21,7 @@ vi.mock('../../../../src/modules/provenance/provenance-config', () => ({
   PROVENANCE_ENABLED: true,
   PROVENANCE_REASSERTION_WINDOW_MS: 24 * 60 * 60 * 1000,
   PROVENANCE_DEFAULT_TRACKED_TYPES: ['Indicator', 'Intrusion-Set', 'Threat-Actor-Group', 'Threat-Actor-Individual', 'Malware', 'uses', 'IPv4-Addr'],
+  PROVENANCE_RECOMMENDED_RELATIONSHIP_TYPES: ['uses', 'targets', 'attributed-to'],
 }));
 
 vi.mock('../../../../src/database/cache', async (importOriginal) => ({
@@ -26,6 +31,10 @@ vi.mock('../../../../src/database/cache', async (importOriginal) => ({
 
 const context = { source: 'provenance-tracking-test' } as AuthContext;
 const setting = (targetType: string, provenanceTracking?: boolean) => ({ target_type: targetType, provenance_tracking: provenanceTracking }) as BasicStoreEntityEntitySetting;
+const relationshipSetting = (types: Record<string, boolean>, provenanceTracking?: boolean) => ({
+  ...setting('stix-core-relationship', provenanceTracking),
+  provenance_relationship_types: JSON.stringify(types),
+}) as BasicStoreEntityEntitySetting;
 const keys = (layout: Array<{ key: string }> | undefined) => (layout ?? []).map(({ key }) => key);
 
 describe('Provenance tracking per entity type', () => {
@@ -38,7 +47,41 @@ describe('Provenance tracking per entity type', () => {
     expect(isProvenanceTrackingEnabled(setting('Attack-Pattern'))).toEqual(false);
     expect(isProvenanceTrackingEnabled(setting('Attack-Pattern', true))).toEqual(true);
     expect(isProvenanceTrackingEnabled(setting('Malware', false))).toEqual(false);
-    expect(isProvenanceTrackingEnabled(setting('stix-core-relationship'))).toEqual(false);
+    // The relationships setting is tracked while one relationship type is
+    expect(isProvenanceTrackingEnabled(setting('stix-core-relationship'))).toEqual(true);
+    expect(isProvenanceTrackingEnabled(setting('stix-core-relationship', false))).toEqual(false);
+    expect(isProvenanceTrackingEnabled(relationshipSetting({ targets: true }, false))).toEqual(true);
+  });
+
+  it('should follow the switch of each relationship type before the value of the relationships setting', async () => {
+    vi.mocked(getEntitiesListFromCache).mockResolvedValue([relationshipSetting({ uses: false, targets: true })]);
+    expect(await isProvenanceTrackedForType(context, 'uses')).toEqual(false);
+    expect(await isProvenanceTrackedForType(context, 'targets')).toEqual(true);
+    // Absent from the map: the platform default of the type
+    expect(await isProvenanceTrackedForType(context, 'indicates')).toEqual(false);
+    vi.mocked(getEntitiesListFromCache).mockResolvedValue([relationshipSetting({ uses: false }, true)]);
+    expect(await isProvenanceTrackedForType(context, 'uses')).toEqual(false);
+    expect(await isProvenanceTrackedForType(context, 'indicates')).toEqual(true);
+    const untracked = await listProvenanceUntrackedTypesOfSetting(context, relationshipSetting({ uses: false }, true));
+    expect(untracked).toEqual(['uses']);
+  });
+
+  it('should list the tracking of every relationship type with the recommended ones', () => {
+    const tracking = listProvenanceRelationshipTracking(relationshipSetting({ indicates: true, uses: false }));
+    const byType = new Map(tracking.map((entry) => [entry.relationship_type, entry]));
+    expect(byType.get('uses')).toEqual({ relationship_type: 'uses', tracked: false, recommended: true });
+    expect(byType.get('indicates')).toEqual({ relationship_type: 'indicates', tracked: true, recommended: false });
+    expect(byType.get('targets')).toEqual({ relationship_type: 'targets', tracked: false, recommended: true });
+    expect(tracking.filter((entry) => entry.recommended).map((entry) => entry.relationship_type).sort()).toEqual(['attributed-to', 'targets', 'uses']);
+    expect(listProvenanceRelationshipTracking(setting('Malware'))).toEqual([]);
+  });
+
+  it('should ignore the values of the map that are not relationship type switches', () => {
+    expect(parseProvenanceRelationshipTypes('{"uses":true,"Malware":true,"targets":"yes"}')).toEqual({ uses: true });
+    expect(parseProvenanceRelationshipTypes('not json')).toEqual({});
+    expect(parseProvenanceRelationshipTypes(null)).toEqual({});
+    expect(() => parseProvenanceRelationshipTypesStrict('[]')).toThrow();
+    expect(JSON.parse(PROVENANCE_RECOMMENDED_RELATIONSHIP_TYPES_SETTING)).toEqual({ uses: true, targets: true, 'attributed-to': true });
   });
 
   it('should never track the types on which provenance is not available', () => {

@@ -11,6 +11,7 @@ vi.mock('../../../../src/modules/provenance/provenance-config', () => ({
   PROVENANCE_ENABLED: false,
   PROVENANCE_REASSERTION_WINDOW_MS: 24 * 60 * 60 * 1000,
   PROVENANCE_DEFAULT_TRACKED_TYPES: ['*'],
+  PROVENANCE_RECOMMENDED_RELATIONSHIP_TYPES: ['uses', 'targets', 'attributed-to'],
 }));
 
 vi.mock('../../../../src/database/engine', async (importOriginal) => ({

@@ -43,6 +43,7 @@ export interface BasicStoreEntityEntitySetting extends BasicStoreEntity {
   templates?: Array<FintelTemplate>;
   request_access_workflow?: RequestAccessFlow;
   provenance_tracking?: boolean | null;
+  provenance_relationship_types?: string | null;
   procedures_preservation?: boolean | null;
   procedures_description_policy?: 'longest' | 'most_recent' | null;
 }
@@ -56,6 +57,7 @@ export interface StoreEntityEntitySetting extends StoreEntity {
   workflow_configuration: boolean;
   sync_workflow_status_by_name?: boolean;
   provenance_tracking?: boolean | null;
+  provenance_relationship_types?: string | null;
   availableSettings?: string[];
   overview_layout_customization?: Array<OverviewLayoutCustomization>;
   templates?: Array<FintelTemplate>;

@@ -1110,6 +1110,7 @@
   "Provenance backfill manager": "Менеджер заполнения происхождения",
   "Provenance mode": "Режим происхождения",
   "Provenance tracking": "Отслеживание происхождения",
+  "Provenance tracking per relationship type": "Отслеживание происхождения по типам связей",
   "PROVENANCE_BACKFILL_MANAGER": "Менеджер восстановления происхождения",
   "Provider": "Поставщик",
   "Provider Configuration": "Конфигурация провайдера",

@@ -73,6 +73,22 @@ type ProvenanceSingleSourcedEntry {
   single_sourced: Int!
 }
 
+type ProvenanceRelationshipTracking {
+  relationship_type: String!
+  tracked: Boolean!
+  # Part of the default set, enabled by the "Recommended" action
+  recommended: Boolean!
+}
+
+type ProvenanceTypeStatistics {
+  entity_type: String!
+  # Elements of the type with at least one recorded source
+  with_provenance: Int!
+  # Elements of the type asserted by at least two distinct sources
+  corroborated: Int!
+  last_asserted_at: DateTime
+}
+
 enum ProvenanceBackfillStatus {
   pending
   running
@@ -96,6 +112,8 @@ extend type Query {
   provenanceSourceKindsDistribution(types: [String!], filters: FilterGroup): [ProvenanceSourceKindCount!]! @auth(for: [KNOWLEDGE, EXPLORE])
   provenanceSingleSourcedByType(types: [String!], filters: FilterGroup): [ProvenanceSingleSourcedEntry!]! @auth(for: [KNOWLEDGE, EXPLORE])
   provenanceBackfill: ProvenanceBackfill! @auth(for: [SETTINGS_SETPARAMETERS])
+  # One entry per concrete type of the given types having knowledge with recorded sources
+  provenanceTypeStatistics(types: [String!]!): [ProvenanceTypeStatistics!]! @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
 
 extend type Mutation {
@@ -105,4 +123,6 @@ extend type Mutation {
   # The current user confirms the element is still valid (re-assertion, resets its freshness)
   provenanceAssert(id: ID!): StixObjectOrStixRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   provenanceBackfillRestart: ProvenanceBackfill! @auth(for: [SETTINGS_SETPARAMETERS])
+  # Tracks, or stops tracking, the provenance of the given relationship types; the other types are unchanged
+  provenanceRelationshipTrackingEdit(relationship_types: [String!]!, tracked: Boolean!): EntitySetting @auth(for: [SETTINGS_SETCUSTOMIZATION])
 }
