@@ -73,6 +73,10 @@ The platform helps users with [textual refinement](../usage/refine-content.md) t
 
     Refine textual information help users to quikly fix mistakes or just change the tone of any content within the platform, from description to larger content.
 
+### Adjudication of curation proposals
+
+[Knowledge curation](../usage/knowledge-curation.md#ambiguous-band-and-adjudication-by-the-opencti-curator) can ask an XTM One agent (the OpenCTI Curator, bound to the `cti.curation_adjudicate` intent) to decide on the proposals whose confidence falls in the ambiguous band: merge, alias, distinct or skip, with a rationale. This requires the OpenCTI Enterprise Edition.
+
 ### What's next in this category?
 
 We are working on:

@@ -22,7 +22,7 @@ export const entitiesCounter = {
   Label: 13,
   Malware: 2,
   MalwareAnalysis: 1,
-  ManagerConfiguration: 3, // file index, provenance backfill and source intelligence managers
+  ManagerConfiguration: 4, // file index, provenance backfill, source intelligence and curation managers
   MarkingDefinition: 11,
   Note: 1,
   Notifier: 2,

@@ -63,6 +63,7 @@ import {
   elList,
   elMarkElementsAsDraftDelete,
   elPaginate,
+  elUpdate,
   elUpdateElement,
   elUpdateEntityConnections,
   elUpdateRelationConnections,
@@ -101,7 +102,7 @@ import {
   X_DETECTION,
   X_WORKFLOW_ID,
 } from '../schema/identifier';
-import { notify, redisAddDeletions } from './redis';
+import { notify, redisAddDeletions, redisRemoveDeletions } from './redis';
 import { storeCreateEntityEvent, storeCreateRelationEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './stream/stream-handler';
 import { cleanStixIds } from './stix';
 import {
@@ -223,7 +224,7 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate, validateUpsertInputs } from '../schema/schema-validator';
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
-import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
+import { assertedAuthorityKeys, buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
 import { computeCreationProvenance, recordUpsertProvenance, removeProvenanceInputs } from '../modules/provenance/provenance-write';
 import { creationProceduresBuilder, mergeProvenanceOnEntitiesMerge, prepareUpsertProvenance } from '../modules/provenance/provenance-upsert';
 import { buildChanges, generateCreateMessage, generateRestoreMessage } from './data-changes';
@@ -241,6 +242,7 @@ import {
   shouldCheckConfidenceOnRefRelationship,
 } from '../utils/confidence-level';
 import { buildEntityData, buildInnerRelation, buildRelationData } from './data-builder';
+import { getFieldAuthorityResolver, getMergeRecorder, type MergePlan } from './merge-hooks';
 import { isIndividualAssociatedToUser, verifyCanDeleteIndividual, verifyCanDeleteOrganization } from './data-consistency';
 import { deleteAllObjectFiles, deleteFile, moveAllFilesFromEntityToAnother, storeFileConverter, uploadToStorage } from './file-storage';
 import { getFileContent } from './raw-file-storage';
@@ -1623,9 +1625,9 @@ const mergeEntitiesRaw = async (
   sourceEntities: BasicStoreObject[],
   targetDependencies: MergeEntitiesDependency,
   sourcesDependencies: MergeEntitiesDependency,
-  opts: { chosenFields?: Record<string, any> } = {},
+  opts: { chosenFields?: Record<string, any>; plan?: MergePlan; onMutationStart?: () => Promise<void> } = {},
 ): Promise<void> => {
-  const { chosenFields = {} } = opts;
+  const { chosenFields = {}, plan, onMutationStart } = opts;
   // 01 Check if everything is fully resolved.
   const elements = [targetEntity, ...sourceEntities];
   logApp.info(`[OPENCTI] Merging ${sourceEntities.map((i) => i.internal_id).join(',')} in ${targetEntity.internal_id}`);
@@ -1665,6 +1667,14 @@ const mergeEntitiesRaw = async (
     if (categories.size > 1) {
       throw FunctionalError('Cannot merge vocabularies of different category', { categories });
     }
+  }
+  // Every check passed: the writes start here.
+  if (onMutationStart) {
+    await onMutationStart();
+  }
+  if (targetEntity.entity_type === ENTITY_TYPE_VOCABULARY) {
+    const targetVocabularyEntity = targetEntity as BasicStoreEntityVocabulary;
+    const sourceVocabularyEntities = sourceEntities as BasicStoreEntityVocabulary[];
     const completeCategory = getVocabulariesCategories().find(({ key }) => key === targetVocabularyEntity.category);
     if (completeCategory) {
       await updateElasticVocabularyValue(sourceVocabularyEntities.map((s) => s.name), targetVocabularyEntity.name, completeCategory);
@@ -1688,10 +1698,15 @@ const mergeEntitiesRaw = async (
   // 2. EACH SOURCE (Ignore createdBy)
   // - EVERYTHING I TARGET (->to) ==> We change to relationship FROM -> TARGET ENTITY
   // - EVERYTHING TARGETING ME (-> from) ==> We change to relationship TO -> TARGET ENTITY
+  // When a merge plan is provided (computed once by mergeEntities for the merge record), it is reused as is.
   // region CHANGING FROM
-  const { deletions: fromDeletions, redirects: relationsToRedirectFrom } = await filterTargetByExisting(context, targetEntity, 'from', sourcesDependencies, targetDependencies);
+  const { deletions: fromDeletions, redirects: relationsToRedirectFrom } = plan
+    ? { deletions: plan.fromDeletions, redirects: plan.fromRedirects }
+    : await filterTargetByExisting(context, targetEntity, 'from', sourcesDependencies, targetDependencies);
   // region CHANGING TO
-  const { deletions: toDeletions, redirects: relationsFromRedirectTo } = await filterTargetByExisting(context, targetEntity, 'to', sourcesDependencies, targetDependencies);
+  const { deletions: toDeletions, redirects: relationsFromRedirectTo } = plan
+    ? { deletions: plan.toDeletions, redirects: plan.toRedirects }
+    : await filterTargetByExisting(context, targetEntity, 'to', sourcesDependencies, targetDependencies);
   type UpdateConnection = {
     _index: string;
     id: string;
@@ -1989,7 +2004,7 @@ export const mergeEntities = async (
   user: AuthUser,
   targetEntityId: string,
   sourceEntityIds: string[],
-  opts: { locks?: string[]; chosenFields?: Record<string, any> } & EventOpts = {},
+  opts: { locks?: string[]; chosenFields?: Record<string, any>; mergeRecordMetadata?: Record<string, string> } & EventOpts = {},
 ) => {
   // Pre-checks
   if (sourceEntityIds.includes(targetEntityId)) {
@@ -2040,15 +2055,61 @@ export const mergeEntities = async (
     const sources = R.uniqBy((s) => s.internal_id, sourceEntityIds.map((id) => sourcesByIds.get(id)).filter(isNotEmptyField));
     const sourcesDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, sources.map((s) => s.internal_id));
     const targetDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, [initialInstance.internal_id]);
+    // Reversible merge: the pre-merge state is stored, from the exact plan the merge will execute, before anything
+    // changes. A merge that cannot be recorded does not run.
+    const mergeRecorder = getMergeRecorder();
+    let plan: MergePlan | undefined;
+    let mergeRecordPreparation: unknown;
+    if (mergeRecorder?.isEnabled()) {
+      const fromPlan = await filterTargetByExisting(context, target, 'from', sourcesDependencies, targetDependencies);
+      const toPlan = await filterTargetByExisting(context, target, 'to', sourcesDependencies, targetDependencies);
+      plan = { fromRedirects: fromPlan.redirects, fromDeletions: fromPlan.deletions, toRedirects: toPlan.redirects, toDeletions: toPlan.deletions };
+      try {
+        mergeRecordPreparation = await mergeRecorder.prepare(context, user, { target: initialInstance, sources, sourcesDependencies, plan, metadata: opts.mergeRecordMetadata });
+      } catch (err) {
+        throw DatabaseError('Merge aborted, the merge record that makes it reversible cannot be stored', { cause: err, targetEntityId, sourceEntityIds });
+      }
+    }
     // - TRANSACTION PART
     lock.signal.throwIfAborted();
-    await mergeEntitiesRaw(context, user, target, sources, targetDependencies, sourcesDependencies, opts);
+    // The record is marked right before the first write: a merge that fails before it changed nothing, so its record
+    // is discarded; one that fails after it keeps its record, the only trace of the pre-merge state.
+    let mutationStarted = false;
+    const onMutationStart = async () => {
+      if (mergeRecorder && mergeRecordPreparation) {
+        await mergeRecorder.start(context, mergeRecordPreparation);
+      }
+      mutationStarted = true;
+    };
+    try {
+      await mergeEntitiesRaw(context, user, target, sources, targetDependencies, sourcesDependencies, { ...opts, plan, onMutationStart });
+    } catch (err) {
+      if (mergeRecorder && mergeRecordPreparation) {
+        const settle = mutationStarted ? mergeRecorder.interrupt(context, mergeRecordPreparation) : mergeRecorder.abort(context, mergeRecordPreparation);
+        await settle.catch((settleError) => {
+          logApp.error('[OPENCTI] [MERGE] Merge record of a failed merge cannot be settled, the curation records manager settles it', {
+            cause: settleError,
+            targetEntityId,
+            mutation_started: mutationStarted,
+          });
+        });
+      }
+      throw err;
+    }
     const mergedInstance = await storeLoadByIdWithRefs<StoreObject>(context, user, targetEntityId);
     if (!mergedInstance) {
       throw FunctionalError('Cannot access merged instance', { targetEntityId });
     }
     await mergeProvenanceOnEntitiesMerge(context, user, mergedInstance, sources);
     await storeMergeEvent(context, user, initialInstance, mergedInstance, sources, opts);
+    if (mergeRecorder && mergeRecordPreparation) {
+      try {
+        await mergeRecorder.commit(context, user, mergeRecordPreparation, { mergedInstance, sources });
+      } catch (err) {
+        // The pending record already holds the pre-merge state: the curation manager completes it from the live graph.
+        logApp.error('[OPENCTI] [MERGE] Merge record completion failed, it will be completed by the curation manager', { cause: err, targetEntityId });
+      }
+    }
     // Temporary stored the deleted elements to prevent concurrent problem at creation
     await redisAddDeletions(sources.map((s) => s.internal_id), getDraftContext(context, user));
     // - END TRANSACTION
@@ -2064,6 +2125,253 @@ export const mergeEntities = async (
     if (lock) await lock.unlock();
   }
 };
+
+// region unmerge primitives (revert a recorded merge)
+/**
+ * Recreate an entity removed by a merge, from its merge record snapshot, with its original internal and standard ids.
+ * The deduplication of createEntity is deliberately bypassed: the merge target still shares names or aliases with
+ * the entity being restored, exactly like before the merge. Identifier collisions are still refused.
+ */
+export const restoreEntityFromMergeSnapshot = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: Record<string, any>,
+  type: string,
+  opts: { locks?: string[] } = {},
+): Promise<StoreObject> => {
+  if (!input.internal_id || !input.standard_id) {
+    throw FunctionalError('Cannot restore a merged entity without its identifiers', { type });
+  }
+  const { locks = [] } = opts;
+  const entitySetting = await getEntitySettingFromCache(context, type) as BasicStoreEntityEntitySetting;
+  const resolvedInput = await inputResolveRefs(context, user, input, type, entitySetting);
+  const participantIds = [input.internal_id, input.standard_id];
+  // Identifiers the caller already holds (an unmerge locks them before it frees them on the merged entity).
+  const lockingIds = participantIds.filter((id) => !locks.includes(id));
+  let lock;
+  try {
+    // The merge listed the entity among the recent deletions: the lock tolerates it, and the entry is cleared only once
+    // the identifiers are held, so no creation can take them in between.
+    if (lockingIds.length > 0) {
+      lock = await lockResources(lockingIds, { draftId: getDraftContext(context, user), restoredIds: [input.internal_id] });
+    }
+    await redisRemoveDeletions([input.internal_id], getDraftContext(context, user));
+    const collisions = await internalFindByIds(context, SYSTEM_USER, participantIds) as BasicStoreBase[];
+    if (collisions.length > 0) {
+      throw FunctionalError('Cannot restore the merged entity, its identifiers are used by another element', {
+        internal_id: input.internal_id,
+        standard_id: input.standard_id,
+        colliding_ids: collisions.map((c) => c.internal_id),
+      });
+    }
+    const dataEntity = await buildEntityData(context, user, resolvedInput, type, { restore: true }) as { element: Record<string, any>; relations: Record<string, any>[] };
+    if (isNotEmptyField(input.creator_id)) {
+      dataEntity.element.creator_id = Array.isArray(input.creator_id) ? input.creator_id : [input.creator_id];
+    }
+    lock?.signal.throwIfAborted();
+    await indexCreatedElement(context, user, dataEntity);
+    const createdElement = { ...resolvedInput, ...dataEntity.element };
+    const inputFields = schemaRelationsRefDefinition.getRelationsRef(createdElement.entity_type);
+    inputFields.forEach(({ name, databaseName }) => {
+      createdElement[databaseName] = Array.isArray(createdElement[name]) ? createdElement[name].map(({ id }: { id: string }) => id) : createdElement[name];
+    });
+    await storeCreateEntityEvent(context, user, createdElement as StoreObject, generateRestoreMessage(dataEntity.element), { restore: true });
+    return createdElement as StoreObject;
+  } catch (err: any) {
+    if (err.name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ participantIds });
+    }
+    throw err;
+  } finally {
+    if (lock) await lock.unlock();
+  }
+};
+
+export interface RelationshipRepoint {
+  relationId: string;
+  side: 'from' | 'to';
+  previousEntityId: string;
+  newEntity: { internal_id: string; entity_type: string; name: string; _index: string };
+}
+
+const EL_REMOVE_ENTITY_CONNECTION_SCRIPT = `if (ctx._source[params.key] != null) {
+  for (value in params.values) { int position = ctx._source[params.key].indexOf(value); if (position >= 0) { ctx._source[params.key].remove(position); } }
+}`;
+
+// Denormalized references hold one entry per relationship, except where a merge collapsed them: this gives one
+// reference exactly the number of entries of the relationships it stands for.
+const EL_SET_ENTITY_CONNECTION_COUNT_SCRIPT = `if (ctx._source[params.key] == null) { ctx._source[params.key] = new ArrayList(); }
+if (!(ctx._source[params.key] instanceof List)) { ctx._source[params.key] = [ctx._source[params.key]]; }
+def values = ctx._source[params.key];
+int count = 0;
+for (value in values) { if (value == params.value) { count++; } }
+while (count < params.expected) { values.add(params.value); count++; }
+while (count > params.expected) { values.remove(values.indexOf(params.value)); count--; }`;
+
+/**
+ * Entries `otherId` must have in the denormalized `relationType` references of `entityId`: one per relationship of
+ * that type between the two entities, inferred ones included, for each side whose role is denormalized.
+ */
+const expectedConnectionEntries = async (context: AuthContext, relationType: string, entityId: string, otherId: string) => {
+  const [outgoing, incoming] = await Promise.all([
+    fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, relationType, { fromId: entityId, toId: otherId, withInferences: true }),
+    fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, relationType, { fromId: otherId, toId: entityId, withInferences: true }),
+  ]);
+  return outgoing.filter((relation) => isImpactedTypeAndSide(relationType, relation.fromType, relation.toType, ROLE_FROM)).length
+    + incoming.filter((relation) => isImpactedTypeAndSide(relationType, relation.fromType, relation.toType, ROLE_TO)).length;
+};
+
+const reconcileConnectionEntries = async (context: AuthContext, entity: { internal_id: string; _index: string }, relationType: string, otherId: string) => {
+  const expected = await expectedConnectionEntries(context, relationType, entity.internal_id, otherId);
+  const params = { key: buildRefRelationKey(relationType, ID_INTERNAL), value: otherId, expected };
+  await elUpdate(context, entity._index, entity.internal_id, { script: { source: EL_SET_ENTITY_CONNECTION_COUNT_SCRIPT, lang: 'painless', params } });
+};
+
+// Like the connection rewrite of the merge, a re-point leaves no history entry on the relationship: relationship sides
+// are not attributes, so the history could not describe the change.
+const REPOINT_EVENT_OPTS = { noHistory: true };
+
+/**
+ * Re-point relationships from one entity to another, in place (same relationship ids, edits kept): the exact reverse
+ * of the connection rewrite done by the merge. Denormalized references are maintained on the three impacted
+ * elements and one update event is emitted per relationship so that stream consumers follow.
+ * Relationships no longer pointing to the previous entity are skipped and reported. The ones already pointing to the
+ * new entity (an interrupted operation being resumed) count as re-pointed once their denormalized references are
+ * reconciled with the relationships they stand for and their update event is emitted again, since the interruption may
+ * have happened between the connection rewrite and those steps.
+ */
+export const repointRelationships = async (
+  context: AuthContext,
+  user: AuthUser,
+  moves: RelationshipRepoint[],
+): Promise<{ repointed: string[]; skipped: string[] }> => {
+  const repointed: string[] = [];
+  const skipped: string[] = [];
+  const groups = R.splitEvery(MAX_BULK_OPERATIONS, moves);
+  for (let groupIndex = 0; groupIndex < groups.length; groupIndex += 1) {
+    const group = groups[groupIndex];
+    const before = await storeLoadByIdsWithRefs<StoreRelation>(context, SYSTEM_USER, group.map((m) => m.relationId));
+    const beforeById = new Map(before.map((relation) => [relation.internal_id, relation]));
+    const connectionUpdates: any[] = [];
+    const entityUpdates: any[] = [];
+    const removals = new Map<string, { _index: string; id: string; key: string; values: string[] }>();
+    const applied: Array<{ move: RelationshipRepoint; relation: StoreRelation }> = [];
+    const resumed: Array<{ move: RelationshipRepoint; relation: StoreRelation }> = [];
+    const previousEntriesToReconcile: Array<{ entity: BasicStoreBase; relationType: string; otherId: string }> = [];
+    for (let moveIndex = 0; moveIndex < group.length; moveIndex += 1) {
+      const move = group[moveIndex];
+      const relation = beforeById.get(move.relationId);
+      const currentSideId = move.side === 'from' ? relation?.fromId : relation?.toId;
+      if (relation && currentSideId === move.newEntity.internal_id) {
+        resumed.push({ move, relation });
+        continue;
+      }
+      if (!relation || currentSideId !== move.previousEntityId || isInferredIndex(relation._index)) {
+        skipped.push(move.relationId);
+        continue;
+      }
+      const relationType = relation.entity_type;
+      const otherSide = move.side === 'from' ? relation.to : relation.from;
+      const otherId = move.side === 'from' ? relation.toId : relation.fromId;
+      const previousEntity = move.side === 'from' ? relation.from : relation.to;
+      const otherRole = move.side === 'from' ? ROLE_TO : ROLE_FROM;
+      const movedRole = move.side === 'from' ? ROLE_FROM : ROLE_TO;
+      connectionUpdates.push({
+        _index: relation._index,
+        id: relation.internal_id,
+        standard_id: relation.standard_id,
+        toReplace: move.previousEntityId,
+        entity_type: relationType,
+        side: move.side === 'from' ? 'source_ref' : 'target_ref',
+        data: { internal_id: move.newEntity.internal_id, name: move.newEntity.name },
+      });
+      if (otherSide && isImpactedTypeAndSide(relationType, relation.fromType, relation.toType, otherRole)) {
+        // The other side gains one entry for the new entity; its entries for the previous entity are reconciled once
+        // the group is moved, as other relationships may still link it to the previous entity.
+        entityUpdates.push({
+          _index: (otherSide as BasicStoreBase)._index,
+          id: otherId,
+          toReplace: null,
+          relationType,
+          entity_type: (otherSide as BasicStoreBase).entity_type,
+          data: { internal_id: move.newEntity.internal_id },
+        });
+        previousEntriesToReconcile.push({ entity: otherSide as BasicStoreBase, relationType, otherId: move.previousEntityId });
+      }
+      if (isImpactedTypeAndSide(relationType, relation.fromType, relation.toType, movedRole)) {
+        entityUpdates.push({
+          _index: move.newEntity._index,
+          id: move.newEntity.internal_id,
+          toReplace: null,
+          relationType,
+          entity_type: move.newEntity.entity_type,
+          data: { internal_id: otherId },
+        });
+        if (previousEntity) {
+          const key = buildRefRelationKey(relationType, ID_INTERNAL);
+          const removalKey = `${move.previousEntityId}|${key}`;
+          const removal = removals.get(removalKey) ?? { _index: (previousEntity as BasicStoreBase)._index, id: move.previousEntityId, key, values: [] };
+          removal.values.push(otherId);
+          removals.set(removalKey, removal);
+        }
+      }
+      applied.push({ move, relation });
+    }
+    await elUpdateRelationConnections(context, connectionUpdates);
+    // Several updates of the same document cannot safely share a bulk: they are applied one by one per document.
+    const updatesByEntity = R.groupBy((update: any) => update.id, entityUpdates);
+    await BluePromise.map(Object.values(updatesByEntity), async (updates) => {
+      for (let updateIndex = 0; updateIndex < (updates ?? []).length; updateIndex += 1) {
+        await elUpdateEntityConnections(context, [(updates as any[])[updateIndex]]);
+      }
+    }, { concurrency: ES_MAX_CONCURRENCY });
+    const removalEntries = [...removals.values()];
+    for (let removalIndex = 0; removalIndex < removalEntries.length; removalIndex += 1) {
+      const { _index, id, key, values } = removalEntries[removalIndex];
+      await elUpdate(context, _index, id, { script: { source: EL_REMOVE_ENTITY_CONNECTION_SCRIPT, lang: 'painless', params: { key, values } } });
+    }
+    const reconciled = new Set<string>();
+    const reconcile = async (entity: { internal_id: string; _index: string } | undefined, relationType: string, otherId: string) => {
+      const reconcileKey = `${entity?.internal_id}|${relationType}|${otherId}`;
+      if (!entity || reconciled.has(reconcileKey)) return;
+      reconciled.add(reconcileKey);
+      await reconcileConnectionEntries(context, entity, relationType, otherId);
+    };
+    for (let reconcileIndex = 0; reconcileIndex < previousEntriesToReconcile.length; reconcileIndex += 1) {
+      const { entity, relationType, otherId } = previousEntriesToReconcile[reconcileIndex];
+      await reconcile(entity, relationType, otherId);
+    }
+    const after = await storeLoadByIdsWithRefs<StoreRelation>(context, SYSTEM_USER, applied.map((a) => a.relation.internal_id));
+    const afterById = new Map(after.map((relation) => [relation.internal_id, relation]));
+    for (let appliedIndex = 0; appliedIndex < applied.length; appliedIndex += 1) {
+      const { relation } = applied[appliedIndex];
+      const updated = afterById.get(relation.internal_id);
+      repointed.push(relation.internal_id);
+      if (updated) {
+        await storeUpdateEvent(context, user, relation as StoreObject, updated as StoreObject, [], REPOINT_EVENT_OPTS);
+      }
+    }
+    for (let resumedIndex = 0; resumedIndex < resumed.length; resumedIndex += 1) {
+      const { move, relation } = resumed[resumedIndex];
+      const relationType = relation.entity_type;
+      const otherSide = (move.side === 'from' ? relation.to : relation.from) as BasicStoreBase | undefined;
+      const otherId = move.side === 'from' ? relation.toId : relation.fromId;
+      const previousEntity = await internalLoadById<BasicStoreBase>(context, SYSTEM_USER, move.previousEntityId);
+      await reconcile(otherSide, relationType, move.newEntity.internal_id);
+      await reconcile(otherSide, relationType, move.previousEntityId);
+      await reconcile(move.newEntity, relationType, otherId);
+      await reconcile(previousEntity, relationType, otherId);
+      repointed.push(relation.internal_id);
+      if (previousEntity) {
+        const previousSideKey = move.side === 'from' ? 'from' : 'to';
+        const previousState = { ...relation, [previousSideKey]: previousEntity, [`${previousSideKey}Id`]: previousEntity.internal_id };
+        await storeUpdateEvent(context, user, previousState as StoreObject, relation as StoreObject, [], REPOINT_EVENT_OPTS);
+      }
+    }
+  }
+  return { repointed, skipped };
+};
+// endregion
 
 export const transformPatchToInput = (
   patch: Record<string, any>,
@@ -2131,7 +2439,8 @@ const prepareAttributesForUpdate = async (
     if (input.key === ATTRIBUTE_ALIASES || input.key === ATTRIBUTE_ALIASES_OPENCTI) {
       const filteredValues = input.value.filter((e) => normalizeName(e) !== normalizeName((instance as BasicStoreEntity).name));
       const uniqAliases = R.uniqBy((e) => normalizeName(e), filteredValues);
-      return { key: input.key, value: uniqAliases };
+      // The operation is kept: a removal must not become a replacement by the removed aliases.
+      return { key: input.key, value: uniqAliases, operation: input.operation };
     }
     // For upsert or update, workflow cant be reset or setup on un-existing workflow
     if (input.key === X_WORKFLOW_ID) {
@@ -2251,6 +2560,19 @@ const updateAttributeRaw = async (
     const aliasField = resolveAliasesField(instanceType).name;
     const nameInput = R.find((e) => e.key === NAME_FIELD, preparedElements);
     const aliasesInput = R.find((e) => e.key === aliasField, preparedElements);
+    // An addition or a removal is resolved against the current aliases: the input becomes the resulting aliases, so the
+    // internal alias ids follow the result, and an upsert never cumulates removed aliases back.
+    const isAliasesRemoval = aliasesInput?.operation === UPDATE_OPERATION_REMOVE;
+    if (aliasesInput && (isAliasesRemoval || aliasesInput.operation === EditOperation.Add)) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const currentAliases: string[] = aliasedInstance[aliasField] ?? [];
+      const inputAliases = (aliasesInput.value ?? []).map((a) => normalizeName(a));
+      aliasesInput.value = isAliasesRemoval
+        ? currentAliases.filter((a) => !inputAliases.includes(normalizeName(a)))
+        : R.uniqBy((a: string) => normalizeName(a), [...currentAliases, ...aliasesInput.value]);
+      aliasesInput.operation = EditOperation.Replace;
+    }
     if (nameInput || aliasesInput) {
       const askedModificationName = nameInput ? R.head(nameInput.value) : undefined;
       // Cleanup the alias input.
@@ -2268,10 +2590,10 @@ const updateAttributeRaw = async (
         // If name change, we need to add the old name in aliases
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        const aliases = [...(aliasedInstance[aliasField] ?? [])];
+        const aliases = isAliasesRemoval && aliasesInput ? [...aliasesInput.value] : [...(aliasedInstance[aliasField] ?? [])];
         if (upsert) {
           // For upsert, we concatenate everything to be none destructive
-          pushAll(aliases, (aliasesInput ? aliasesInput.value : []));
+          if (!isAliasesRemoval) pushAll(aliases, (aliasesInput ? aliasesInput.value : []));
           if (!aliases.includes(aliasedInstance.name)) {
             // If name changing is part of an upsert, the previous name must be copied into aliases
             aliases.push(aliasedInstance.name);
@@ -2301,7 +2623,7 @@ const updateAttributeRaw = async (
         preparedElements.push(aliasInput);
       } else if (aliasesInput) {
         // No name change asked but aliases addition
-        if (upsert) {
+        if (upsert && !isAliasesRemoval) {
           // In upsert we cumulate with current aliases
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
@@ -2315,7 +2637,10 @@ const updateAttributeRaw = async (
         const currentStixIds = aliasedInstance[IDS_STIX] ?? [];
         const removedAliasesIds = aliasedInstance[INTERNAL_IDS_ALIASES]?.filter((aid) => !aliasesId.includes(aid));
         const stixIdsInput = R.find((e) => e.key === IDS_STIX, preparedElements);
-        if (stixIdsInput) {
+        if (stixIdsInput && stixIdsInput.operation === UPDATE_OPERATION_REMOVE) {
+          // The input lists the ids to remove: the purged alias ids join them
+          stixIdsInput.value = R.uniq([...stixIdsInput.value, ...currentStixIds.filter((sid) => removedAliasesIds?.includes(sid))]);
+        } else if (stixIdsInput) {
           stixIdsInput.value = stixIdsInput.value.filter((sid) => !removedAliasesIds?.includes(sid));
         } else {
           const newStixIds = currentStixIds.filter((sid) => !removedAliasesIds?.includes(sid));
@@ -3299,7 +3624,7 @@ const buildRelationDeduplicationFilters = (input: Record<string, any>) => {
   return filters;
 };
 
-const upsertElement = async (
+const upsertResolvedElement = async (
   context: AuthContext,
   user: AuthUser,
   element: BasicStoreBase,
@@ -3351,8 +3676,23 @@ const upsertElement = async (
 
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const validEnterpriseEdition = isEnterpriseEditionFromSettings(settings);
+  // Field authority (merge policy): per attribute, a more authoritative source wins and a less authoritative one
+  // loses, before the confidence comparison. Attributes without an authority rule keep the confidence behavior.
+  const fieldAuthorityResolver = getFieldAuthorityResolver();
+  const authorityDecisions = fieldAuthorityResolver
+    ? await fieldAuthorityResolver.resolve(context, user, resolvedElement, type, updatePatch)
+    : undefined;
   // All inputs impacted by modifications (+inner)
-  const resolvedInputs = await generateInputsForUpsert(context, user, resolvedElement, type, updatePatch, confidenceForUpsert, validEnterpriseEdition) as EditInput[];
+  const resolvedInputs = await generateInputsForUpsert(
+    context,
+    user,
+    resolvedElement,
+    type,
+    updatePatch,
+    confidenceForUpsert,
+    validEnterpriseEdition,
+    authorityDecisions,
+  ) as EditInput[];
   // Procedures preservation and conflicts tracking, computed from the resolution outcome
   const preparedProvenance = await prepareUpsertProvenance(context, user, resolvedElement, type, {
     basePatch,
@@ -3365,6 +3705,7 @@ const upsertElement = async (
   if (validateUpsert && inputs.length > 0) {
     await validateUpsertInputs(context, user, type, resolvedElement as Record<string, any>, inputs);
   }
+  const assertedKeys: string[] = assertedAuthorityKeys(authorityDecisions, updatePatch, resolvedElement);
 
   // -- If modifications need to be done, add updated_at and modified
   let upsertResult;
@@ -3372,15 +3713,52 @@ const upsertElement = async (
     // Update the attribute and return the result
     const updateOpts = { ...opts, upsert: context.synchronizedUpsert !== true };
     upsertResult = await updateAttributeMetaResolved(context, user, resolvedElement, inputs, updateOpts);
+    if (fieldAuthorityResolver && authorityDecisions && authorityDecisions.size > 0) {
+      const appliedKeys = R.uniq([...inputs.map((input) => input.key), ...assertedKeys]);
+      await fieldAuthorityResolver.recordApplied(context, user, resolvedElement, type, updatePatch, appliedKeys);
+    }
   } else {
     // -- No modification applied
     upsertResult = { element: resolvedElement, event: null, isCreation: false };
+    if (fieldAuthorityResolver && assertedKeys.length > 0) {
+      await fieldAuthorityResolver.recordApplied(context, user, resolvedElement, type, updatePatch, assertedKeys);
+    }
   }
   // -- Whatever the resolution, the writing source asserted this element
   if (preparedProvenance.record) {
     await recordUpsertProvenance(context, user, resolvedElement, preparedProvenance.record);
   }
   return upsertResult;
+};
+
+const upsertElement = async (
+  context: AuthContext,
+  user: AuthUser,
+  element: BasicStoreBase,
+  type: string,
+  basePatch: Record<string, any>,
+  opts: { elementAlreadyResolved?: boolean; validateUpsert?: boolean } & UpdateAttributeMetaResolvedOpts = {},
+) => {
+  // Field authority compares the writing source with the recorded writer of each field. Callers lock the ids of their
+  // input, which two sources reaching the element through different ids do not share: the element lock is taken here,
+  // and the element read again under it, so the decision always sees the writes committed before it.
+  const authorityResolver = getFieldAuthorityResolver();
+  if (!authorityResolver || !(await authorityResolver.governs(context, type, basePatch))) {
+    return upsertResolvedElement(context, user, element, type, basePatch, opts);
+  }
+  const heldLocks = opts.locks ?? [];
+  const lockIds = (getInstanceIds(element) as string[]).filter((id) => !heldLocks.includes(id));
+  let lock;
+  try {
+    if (lockIds.length > 0) {
+      lock = await lockResources(lockIds, { draftId: getDraftContext(context, user) });
+    }
+    return await upsertResolvedElement(context, user, element, type, basePatch, { ...opts, elementAlreadyResolved: false, locks: [...heldLocks, ...lockIds] });
+  } finally {
+    if (lock) {
+      await lock.unlock();
+    }
+  }
 };
 
 export const getExistingRelations = async (

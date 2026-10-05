@@ -13,6 +13,8 @@ import {
   ChartTree,
   Counter,
   FormatListNumberedRtl,
+  HeartPulse,
+  InboxMultipleOutline,
   Radar,
   ShieldAlertOutline,
   ShieldCheckOutline,
@@ -44,6 +46,36 @@ const widgetVisualizationTypes = [
     name: 'Text',
     dataSelectionLimit: undefined,
     category: 'text',
+    availableParameters: [],
+    isRelationships: false,
+    isEntities: false,
+    isAudits: false,
+  },
+  {
+    key: 'knowledge-health-score',
+    name: 'Knowledge health score',
+    dataSelectionLimit: undefined,
+    category: 'curation',
+    availableParameters: [],
+    isRelationships: false,
+    isEntities: false,
+    isAudits: false,
+  },
+  {
+    key: 'knowledge-health-trend',
+    name: 'Knowledge health trend',
+    dataSelectionLimit: undefined,
+    category: 'curation',
+    availableParameters: [],
+    isRelationships: false,
+    isEntities: false,
+    isAudits: false,
+  },
+  {
+    key: 'curation-open-proposals',
+    name: 'Open curation proposals by kind',
+    dataSelectionLimit: undefined,
+    category: 'curation',
     availableParameters: [],
     isRelationships: false,
     isEntities: false,
@@ -298,7 +330,7 @@ export const workspacesWidgetVisualizationTypes = widgetVisualizationTypes.filte
 export const fintelTemplatesWidgetVisualizationTypes = widgetVisualizationTypes.filter((w) => ['list'].includes(w.key));
 
 // Platform-wide widgets that do not depend on the entity of a custom view
-const GLOBAL_WIDGET_CATEGORIES: string[] = ['defense'];
+const GLOBAL_WIDGET_CATEGORIES: string[] = ['defense', 'curation'];
 
 export const customViewsWidgetVisualizationTypes = [
   customAttributesVisualizationType,
@@ -321,7 +353,7 @@ export const getCurrentCategory = (type: string | null) => {
  * Widgets configured with parameters only: no perspective and no data selection step.
  */
 export const isWidgetWithoutDataSelection = (type: string | null) => {
-  return ['text', 'attribute', 'custom-attributes', 'defense'].includes(getCurrentCategory(type));
+  return ['text', 'attribute', 'custom-attributes', 'defense', 'curation'].includes(getCurrentCategory(type));
 };
 
 export const getCurrentAvailableParameters = (type: string | null): string[] => {
@@ -382,6 +414,12 @@ export const renderWidgetIcon = (key: string, fontSize: 'large' | 'small' | 'med
       return <ChartBubble fontSize={fontSize} color="primary" />;
     case 'line':
       return <ChartLine fontSize={fontSize} color="primary" />;
+    case 'knowledge-health-score':
+      return <HeartPulse fontSize={fontSize} color="primary" />;
+    case 'knowledge-health-trend':
+      return <ChartLine fontSize={fontSize} color="primary" />;
+    case 'curation-open-proposals':
+      return <InboxMultipleOutline fontSize={fontSize} color="primary" />;
     case 'radar':
       return <Radar fontSize={fontSize} color="primary" />;
     case 'polar-area':

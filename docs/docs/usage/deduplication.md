@@ -91,3 +91,13 @@ This logic has been implemented to converge the knowledge base towards the highe
 To understand in details how the deduplication mechanism works in context of the maximum confidence level, you can navigate through this diagram (section deduplication):
 
 <iframe style="border: 1px solid rgba(0, 0, 0, 0.1);" width="800" height="450" src="https://www.figma.com/embed?embed_host=share&url=https%3A%2F%2Fwww.figma.com%2Ffile%2FlVU6O39B76MJmtnzg9DbZZ%2FConfidence-Level---Documentation%3Ftype%3Dwhiteboard%26node-id%3D0%253A1%26t%3DPQWrdBF6iMGEp0bw-1" allowfullscreen></iframe>
+
+!!! note "Field authority and knowledge curation"
+
+    When [field authority](knowledge-curation.md#field-authority) rules are configured, a more authoritative source wins on the attributes it rules, before the confidence comparison. [Knowledge curation](knowledge-curation.md) also finds the duplicates that identifiers cannot reveal, such as entities named differently by different sources.
+
+When knowledge curation finds a possible duplicate, the header of the entity shows a **Possible duplicate** chip that links to the proposal, where the two entities are compared side by side with the evidence behind the confidence.
+
+![Possible duplicate chip in the header of an intrusion set](assets/curation-possible-duplicate-chip.png)
+
+![Side-by-side comparison of a duplicate proposal](assets/curation-proposal-compare.png)

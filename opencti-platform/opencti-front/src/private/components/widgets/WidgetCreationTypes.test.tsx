@@ -5,6 +5,9 @@ const ALL_VISUALIZATION_TYPES = [
   'custom-attributes',
   'attribute',
   'text',
+  'knowledge-health-score',
+  'knowledge-health-trend',
+  'curation-open-proposals',
   'number',
   'list',
   'distribution-list',
@@ -30,6 +33,7 @@ const ALL_VISUALIZATION_TYPES = [
 ];
 
 const DEFENSE_VISUALIZATION_TYPES = ['defense-tactic-coverage', 'defense-top-gaps', 'defense-levels'];
+const CURATION_VISUALIZATION_TYPES = ['knowledge-health-score', 'knowledge-health-trend', 'curation-open-proposals'];
 
 describe('getVisualizationTypes', () => {
   describe('when host is a workspace', () => {
@@ -63,13 +67,13 @@ describe('getVisualizationTypes', () => {
   });
 
   describe('when host is a custom view', () => {
-    it('all visualization types but attribute, bubble and the platform-wide defense ones are available (custom-attributes always included)', () => {
+    it('all visualization types but attribute, bubble and the platform-wide defense and curation ones are available (custom-attributes always included)', () => {
       // The bubble chart only renders the Intelligence sources perspective, which custom views do not offer
       expect(getVisualizationTypes({
         kind: 'custom-view',
         customViewTargetEntityType: 'Malware',
       }).map(({ key }) => key)).toStrictEqual(
-        ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute' && v !== 'bubble' && !DEFENSE_VISUALIZATION_TYPES.includes(v)),
+        ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute' && v !== 'bubble' && !DEFENSE_VISUALIZATION_TYPES.includes(v) && !CURATION_VISUALIZATION_TYPES.includes(v)),
       );
     });
   });

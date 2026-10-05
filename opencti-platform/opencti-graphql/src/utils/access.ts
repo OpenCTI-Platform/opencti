@@ -87,6 +87,7 @@ const PIR_MANAGER_USER_UUID = '1e20b6e5-e0f7-46f2-bacb-c37e4f8707a2';
 const HUB_REGISTRATION_MANAGER_USER_UUID = 'e16d7175-17c7-4dae-bd3c-48c939f47dfb';
 const DATA_SANITY_MANAGER_USER_UUID = '4a25a566-017d-4455-811e-e8e1b3889390';
 const SOURCE_INTELLIGENCE_MANAGER_USER_UUID = '6d0d4a1e-3c2b-4f5e-9a8b-2c1d0e3f4a5b';
+export const CURATION_MANAGER_USER_UUID = 'b5c4f0d2-6a7e-4b8f-9c1d-3e2a5f6b7c8d';
 
 export enum AccessOperation {
   EDIT = 'edit',
@@ -575,6 +576,31 @@ export const SOURCE_INTELLIGENCE_MANAGER_USER: AuthUser = {
   restrict_delete: false,
 };
 
+export const CURATION_MANAGER_USER: AuthUser = {
+  entity_type: 'User',
+  id: CURATION_MANAGER_USER_UUID,
+  internal_id: CURATION_MANAGER_USER_UUID,
+  individual_id: undefined,
+  name: 'CURATION MANAGER',
+  user_email: 'CURATION MANAGER',
+  origin: { user_id: CURATION_MANAGER_USER_UUID, socket: 'internal' },
+  roles: [ADMINISTRATOR_ROLE],
+  groups: [],
+  capabilities: [{ name: BYPASS }],
+  organizations: [],
+  allowed_marking: [],
+  max_shareable_marking: [],
+  default_marking: [],
+  api_tokens: [],
+  account_lock_after_date: undefined,
+  account_status: ACCOUNT_STATUS_ACTIVE,
+  administrated_organizations: [],
+  effective_confidence_level: { max_confidence: 100, overrides: [] },
+  user_confidence_level: { max_confidence: 100, overrides: [] },
+  no_creators: false,
+  restrict_delete: false,
+};
+
 export const WORKFLOW_MANAGER_USER: AuthUser = {
   entity_type: 'User',
   id: WORKFLOW_MANAGER_USER_UUID,
@@ -653,6 +679,7 @@ export const INTERNAL_USERS = {
   [DATA_SANITY_MANAGER_USER.id]: DATA_SANITY_MANAGER_USER,
   [WORKFLOW_MANAGER_USER.id]: WORKFLOW_MANAGER_USER,
   [SOURCE_INTELLIGENCE_MANAGER_USER.id]: SOURCE_INTELLIGENCE_MANAGER_USER,
+  [CURATION_MANAGER_USER.id]: CURATION_MANAGER_USER,
 };
 
 export const INTERNAL_USERS_WITHOUT_REDACTED = {
@@ -668,6 +695,7 @@ export const INTERNAL_USERS_WITHOUT_REDACTED = {
   [DATA_SANITY_MANAGER_USER.id]: DATA_SANITY_MANAGER_USER,
   [WORKFLOW_MANAGER_USER.id]: WORKFLOW_MANAGER_USER,
   [SOURCE_INTELLIGENCE_MANAGER_USER.id]: SOURCE_INTELLIGENCE_MANAGER_USER,
+  [CURATION_MANAGER_USER.id]: CURATION_MANAGER_USER,
 };
 
 export enum OTPValidationStatus {
