@@ -43,7 +43,7 @@ Derived events are computed from the knowledge of the case by a set of derivatio
 | Reports and external references | Publication |
 | Files of the container | Upload |
 | Case | Opening |
-| Tasks | Creation, due date and completion (a completed task labelled `containment` records the containment) |
+| Tasks | Creation, due date and first completion, kept when the task is reopened (a completed task labelled `containment` records the containment) |
 | History of the container | Workflow status transitions, assignees and participants added, objects added, merges |
 | Relationships between objects of the case | Creation |
 

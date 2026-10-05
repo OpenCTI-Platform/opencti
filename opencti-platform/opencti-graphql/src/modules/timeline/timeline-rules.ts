@@ -535,16 +535,19 @@ const isFinalStatus = (input: TimelineDerivationInput, statusId: string | null |
   return !!statusId && input.statuses.get(statusId)?.is_final === true;
 };
 
-/** Find when a task entered its current final status, from its history. */
+/**
+ * Find when a task was first completed, from its history: the completion stays a fact of the case when the task is
+ * reopened later. A task in a final status without such a history entry falls back to its last update.
+ */
 const taskCompletionTime = (input: TimelineDerivationInput, task: TimelineElementData): { time: number; exact: boolean } | null => {
-  if (!isFinalStatus(input, task.workflow_id)) return null;
   const transitions = input.taskHistory
     .filter((entry) => entry.entity_id === task.id)
     .flatMap((entry) => entry.changes
-      .filter((change) => changeField(change) === 'x_opencti_workflow_id' && change.added.some((a) => a.raw === task.workflow_id))
+      .filter((change) => changeField(change) === 'x_opencti_workflow_id' && change.added.some((a) => isFinalStatus(input, a.raw)))
       .map(() => toTimelineTime(entry.timestamp)))
     .filter((t): t is number => t !== null);
-  if (transitions.length > 0) return { time: Math.max(...transitions), exact: true };
+  if (transitions.length > 0) return { time: Math.min(...transitions), exact: true };
+  if (!isFinalStatus(input, task.workflow_id)) return null;
   const fallback = toTimelineTime(task.updated_at);
   return fallback !== null ? { time: fallback, exact: false } : null;
 };

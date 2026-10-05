@@ -263,6 +263,33 @@ describe('Timeline response rules', () => {
     expect(completions[0]).toMatchObject({ rule_id: RULE_TASK_CONTAINMENT, event_time: '2026-03-10T15:00:00.000Z', time_precision: 'exact' });
   });
 
+  it('should keep the first completion of a containment task reopened and completed again', () => {
+    const transition = (id: string, timestamp: string, added: string, removed: string) => ({
+      id,
+      timestamp,
+      event_scope: 'update',
+      entity_id: 'task-1',
+      entity_type: 'Task',
+      entity_name: 'Isolate hosts',
+      message: 'replaces status',
+      markings: [],
+      changes: [{ field: 'Task--x_opencti_workflow_id', added: [{ raw: added }], removed: [{ raw: removed }] }],
+    });
+    const history = [
+      transition('th-1', '2026-03-10T15:00:00.000Z', 'task-done', 'task-open'),
+      transition('th-2', '2026-03-11T08:00:00.000Z', 'task-open', 'task-done'),
+      transition('th-3', '2026-03-12T10:00:00.000Z', 'task-done', 'task-open'),
+    ];
+    const task = (workflowId: string) => element({ id: 'task-1', entity_type: 'Task', name: 'Isolate hosts', created: '2026-03-10T09:00:00.000Z', workflow_id: workflowId, labels: ['containment'] });
+    const firstCompletion = { kind: 'task_completed', rule_id: RULE_TASK_CONTAINMENT, event_time: '2026-03-10T15:00:00.000Z', time_precision: 'exact' };
+    // Reopened: the completion stays a fact of the case
+    const reopened = derive(buildInput({ statuses, tasks: [task('task-open')], taskHistory: history.slice(0, 2) }));
+    expect(reopened.filter((e) => e.kind === 'task_completed')).toEqual([expect.objectContaining(firstCompletion)]);
+    // Completed again: the first completion still dates it
+    const completedAgain = derive(buildInput({ statuses, tasks: [task('task-done')], taskHistory: history }));
+    expect(completedAgain.filter((e) => e.kind === 'task_completed')).toEqual([expect.objectContaining(firstCompletion)]);
+  });
+
   it('should fall back to the task update date when the history has no transition', () => {
     const input = buildInput({
       statuses,

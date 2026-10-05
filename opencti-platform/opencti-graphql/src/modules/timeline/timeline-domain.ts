@@ -290,7 +290,7 @@ interface InaccessibleTimelineReferences {
 }
 
 /** Elements and sources referenced by the events of a container that the user cannot access (or that no longer exist), read from every event. */
-const findInaccessibleReferences = async (context: AuthContext, user: AuthUser, containerId: string): Promise<InaccessibleTimelineReferences> => {
+const computeInaccessibleReferences = async (context: AuthContext, user: AuthUser, containerId: string): Promise<InaccessibleTimelineReferences> => {
   const references = await fullEntitiesList<StoredTimelineEvent>(context, user, [ENTITY_TYPE_TIMELINE_EVENT], {
     filters: buildTimelineFilters(containerId, { includeHidden: true }) as any,
     baseData: true,
@@ -305,6 +305,27 @@ const findInaccessibleReferences = async (context: AuthContext, user: AuthUser, 
     elementIds: elementIds.filter(isInaccessible),
     eventIds: references.filter((event) => timelineEventSourceIds(event).some(isInaccessible)).map((event) => event.internal_id),
   };
+};
+
+// The list, the bounds and the summary of one request share the scan of the events, which is bounded by the cap of the
+// case: the sources of an event are not indexed (they would take mapping fields), so their access is read from the events.
+// The context lives as long as its request, so a change of access is seen by the next request.
+const inaccessibleReferencesByRequest = new WeakMap<AuthContext, Map<string, Promise<InaccessibleTimelineReferences>>>();
+const findInaccessibleReferences = (context: AuthContext, user: AuthUser, containerId: string): Promise<InaccessibleTimelineReferences> => {
+  let requestCache = inaccessibleReferencesByRequest.get(context);
+  if (!requestCache) {
+    requestCache = new Map();
+    inaccessibleReferencesByRequest.set(context, requestCache);
+  }
+  const key = `${user.id}:${containerId}`;
+  let references = requestCache.get(key);
+  if (!references) {
+    references = computeInaccessibleReferences(context, user, containerId);
+    // A failed scan is not kept: a retry in the same request computes it again
+    references.catch(() => requestCache?.delete(key));
+    requestCache.set(key, references);
+  }
+  return references;
 };
 
 // Filters with these exclusions are built by the module alone (users give values, never keys): they are not checked
