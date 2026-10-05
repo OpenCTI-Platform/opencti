@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { buildHuntSigmaRequest, extractJsonObject, huntAgentRefusalErrors, validateHuntPlanSpec, validateHuntSigmaGeneration, validateHuntTriageResult } from '../../../../src/modules/hunt/hunt-agents';
+import {
+  buildHuntSigmaRequest,
+  extractJsonObject,
+  huntAgentRefusalErrors,
+  validateHuntPlanSpec,
+  validateHuntSigmaGeneration,
+  validateHuntTriageResult,
+} from '../../../../src/modules/hunt/hunt-agents';
 
 const SIGMA = 'title: Suspicious rundll32\nlogsource:\n  product: windows\n  category: process_creation\ndetection:\n  selection:\n    Image|endswith: rundll32.exe\n  condition: selection\n';
 
