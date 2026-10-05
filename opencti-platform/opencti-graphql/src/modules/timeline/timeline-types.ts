@@ -175,6 +175,8 @@ export interface TimelinePendingAnnotation {
   ordering_hint?: number | null;
   /** Highest confidence of a timeline event the importer of the annotation could change when importing it. */
   max_confidence?: number | null;
+  /** User who imported the annotation: it applies to the event the derivation produces only when this user can read it. */
+  importer_id?: string | null;
 }
 
 /**

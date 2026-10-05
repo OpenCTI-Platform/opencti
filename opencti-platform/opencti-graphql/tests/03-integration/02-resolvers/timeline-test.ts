@@ -21,13 +21,14 @@ import { timelineUpdateForUser } from '../../../src/modules/timeline/timeline-do
 import { acknowledgeTimelineRegeneration, claimDueTimelineRegenerations, enqueueTimelineRegeneration } from '../../../src/modules/timeline/timeline-queue';
 import { resolveUserById } from '../../../src/modules/user/user-domain';
 import type { AuthUser } from '../../../src/types/user';
-import { MARKING_TLP_AMBER, MARKING_TLP_GREEN } from '../../../src/schema/identifier';
+import { MARKING_TLP_AMBER, MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_TIMELINE } from '../../../src/types/stix-2-1-extensions';
 import {
   buildTimelineEventDoc,
   computeDerivedEventId,
   deleteContainerTimeline,
   loadStoredTimelineEvents,
+  type StoredTimelineEvent,
   timelineEventSignature,
   timelineEventSourceIds,
 } from '../../../src/modules/timeline/timeline-engine';
@@ -1441,6 +1442,74 @@ describe('Incident and case timeline', () => {
       await queryAsAdmin({ query: STIX_CORE_OBJECT_DELETE, variables: { id: caseId } });
       await queryAsAdmin({ query: STIX_CORE_OBJECT_DELETE, variables: { id: confidentMalware.data.malwareAdd.id } });
       await deleteContainerTimeline(caseId);
+    });
+
+    it('should never apply an imported annotation to a derived event the user cannot read through one of its sources', async () => {
+      // The editor updates the case and reads its malware and both techniques, not the TLP:RED relationship dating the first one
+      const sourceMalware = await queryAsAdminWithSuccess({ query: MALWARE_ADD, variables: { input: { name: 'Timeline malware of a restricted source' } } });
+      const sourceMalwareId = sourceMalware.data.malwareAdd.id;
+      const restrictedTechnique = (await queryAsAdminWithSuccess({
+        query: ATTACK_PATTERN_ADD,
+        variables: { input: { name: 'Timeline technique dated by a restricted source', x_mitre_id: 'T9992' } },
+      })).data.attackPatternAdd;
+      const openTechnique = (await queryAsAdminWithSuccess({
+        query: ATTACK_PATTERN_ADD,
+        variables: { input: { name: 'Timeline technique dated by an open source', x_mitre_id: 'T9993' } },
+      })).data.attackPatternAdd;
+      const usesOf = async (techniqueId: string, objectMarking: string[]) => (await queryAsAdminWithSuccess({
+        query: RELATIONSHIP_ADD,
+        variables: { input: { fromId: sourceMalwareId, toId: techniqueId, relationship_type: 'uses', start_time: ADVERSARY_START, stop_time: ADVERSARY_STOP, objectMarking } },
+      })).data.stixCoreRelationshipAdd.id as string;
+      const restrictedUsesId = await usesOf(restrictedTechnique.id, [MARKING_TLP_RED]);
+      const openUsesId = await usesOf(openTechnique.id, []);
+      const created = await queryAsAdminWithSuccess({
+        query: CASE_INCIDENT_ADD,
+        variables: {
+          input: {
+            name: 'Timeline case with a restricted source',
+            created: '2026-02-04T12:00:00.000Z',
+            objects: [sourceMalwareId, restrictedTechnique.id, openTechnique.id, restrictedUsesId, openUsesId],
+          },
+        },
+      });
+      const caseId = created.data.caseIncidentAdd.id;
+      const annotationOf = (technique: { standard_id: string }, annotation: string) => JSON.stringify({
+        events: [],
+        annotations: [{ rule_id: 'technique-kill-chain', kind: 'technique_used', element_ref: technique.standard_id, pinned: true, annotation }],
+      });
+      const importAsEditor = (extension: string) => queryAsUserWithSuccess(USER_EDITOR, { query: TIMELINE_IMPORT, variables: { containerId: caseId, extension } });
+      const importAsAdmin = (extension: string) => queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: caseId, extension } });
+      const techniqueEvent = async (techniqueId: string) => (await loadStoredTimelineEvents(testContext, caseId))
+        .find((event) => event.kind === 'technique_used' && event.element_id === techniqueId);
+      try {
+        // The derived event does not exist yet: the regeneration producing it reads it as the importer, its relationship included
+        expect(await techniqueEvent(restrictedTechnique.id)).toBeUndefined();
+        await importAsEditor(annotationOf(restrictedTechnique, 'Confirmed by the editor'));
+        expect(await techniqueEvent(restrictedTechnique.id)).toMatchObject({ pinned: false, annotation: null });
+        // An importer who reads every source of the event applies the same annotation
+        await importAsAdmin(annotationOf(restrictedTechnique, 'Confirmed by the administrator'));
+        expect(await techniqueEvent(restrictedTechnique.id)).toMatchObject({ pinned: true, annotation: 'Confirmed by the administrator' });
+        // A stored derived event is read as the importer on import, each source it records included: the TLP:RED relationship
+        // stands for a source of the open event the editor cannot read
+        const openEvent = await techniqueEvent(openTechnique.id) as StoredTimelineEvent;
+        expect(timelineEventSourceIds(openEvent)).toEqual([openUsesId]);
+        await elUpdate(testContext, openEvent._index, openEvent.internal_id, {
+          doc: { element_access: { ...openEvent.element_access, sources: [{ id: restrictedUsesId, restricted_members: [], granted: [] }] } },
+        });
+        await importAsEditor(annotationOf(openTechnique, 'Confirmed by the editor'));
+        expect(await techniqueEvent(openTechnique.id)).toMatchObject({ pinned: false, annotation: null });
+        // Recorded with its actual source again by that regeneration, the event is read by the editor and the annotation applies
+        await importAsEditor(annotationOf(openTechnique, 'Confirmed by the editor'));
+        expect(await techniqueEvent(openTechnique.id)).toMatchObject({ pinned: true, annotation: 'Confirmed by the editor' });
+      } finally {
+        await queryAsAdmin({ query: STIX_CORE_OBJECT_DELETE, variables: { id: caseId } });
+        await queryAsAdmin({ query: STIX_CORE_RELATIONSHIP_DELETE, variables: { id: restrictedUsesId } });
+        await queryAsAdmin({ query: STIX_CORE_RELATIONSHIP_DELETE, variables: { id: openUsesId } });
+        await queryAsAdmin({ query: STIX_CORE_OBJECT_DELETE, variables: { id: restrictedTechnique.id } });
+        await queryAsAdmin({ query: STIX_CORE_OBJECT_DELETE, variables: { id: openTechnique.id } });
+        await queryAsAdmin({ query: STIX_CORE_OBJECT_DELETE, variables: { id: sourceMalwareId } });
+        await deleteContainerTimeline(caseId);
+      }
     });
 
     it('should not answer from a container deleted while its first timeline was being built', async () => {

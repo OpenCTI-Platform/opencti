@@ -65,6 +65,7 @@ import { computeTimelineAnchorBounds, computeTimelineAnchors, diffTimelineAnchor
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../securityCoverage/securityCoverage-types';
 import { notifyTimelineAnchorsChanged } from './timeline-notification';
 import { addTimelineDerivedEventCount } from '../../manager/telemetryManager';
+import { resolveUserByIdFromCache } from '../user/user-domain';
 
 export const TIMELINE_MAX_EVENTS: number = conf.get('timeline_manager:max_events') ?? 10000;
 // Analyst milestones per case, added through the API or imported: kept apart from the derived events cap
@@ -162,6 +163,28 @@ export const markingsOf = (element: Record<string, any>): string[] => timelineRe
 /** Elements whose data a stored event carries besides its element, as recorded by the regeneration: each is read like the element. */
 export const timelineEventSourceIds = (event: Pick<StoredTimelineEvent, 'element_access'>): string[] => {
   return (event.element_access?.sources ?? []).map((source) => source.id);
+};
+
+/** Element and sources of an event, the container aside: the user reads the event only when he can access each of them. */
+export const referencedElementIds = (event: Pick<StoredTimelineEvent, 'element_id' | 'element_access'>, containerId: string): string[] => {
+  return [event.element_id, ...timelineEventSourceIds(event)].filter((id): id is string => !!id && id !== containerId);
+};
+
+/** Drop the events pointing to elements, or carrying data of sources, the user cannot see (or that no longer exist). */
+export const filterAccessibleEvents = async <T>(
+  context: AuthContext,
+  user: AuthUser,
+  containerId: string,
+  items: T[],
+  getEvent: (item: T) => Pick<StoredTimelineEvent, 'element_id' | 'element_access'>,
+  opts: { fullElements?: boolean } = {},
+): Promise<{ items: T[]; elements: Record<string, AnyStoreElement> }> => {
+  const elementIds = Array.from(new Set(items.flatMap((item) => referencedElementIds(getEvent(item), containerId))));
+  const elements = elementIds.length > 0
+    ? await internalFindByIds(context, user, elementIds, { toMap: true, baseData: !opts.fullElements }) as unknown as Record<string, AnyStoreElement>
+    : {};
+  const filtered = items.filter((item) => referencedElementIds(getEvent(item), containerId).every((id) => !!elements[id]));
+  return { items: filtered, elements };
 };
 
 /**
@@ -756,6 +779,34 @@ export const isPendingAnnotationApplicable = (annotation: TimelinePendingAnnotat
   return isNotEmptyField(annotation.max_confidence) && cropNumber(confidence ?? 0, 0, 100) <= (annotation.max_confidence as number);
 };
 
+type PendingAnnotationTarget = Pick<StoredTimelineEvent, 'internal_id' | 'element_id' | 'element_access'>;
+
+/**
+ * Ids of the derived events whose imported annotation its importer cannot read, as the regeneration produces them: the
+ * element and each source of the event are read as the importer, like a read of the stored event. An importer who no
+ * longer exists reads nothing.
+ */
+const findAnnotationTargetsUnreadableByImporter = async (
+  context: AuthContext,
+  containerId: string,
+  targets: PendingAnnotationTarget[],
+  pending: Map<string, TimelinePendingAnnotation>,
+): Promise<Set<string>> => {
+  const targetsByImporter = new Map<string, PendingAnnotationTarget[]>();
+  targets.forEach((target) => {
+    const importerId = pending.get(target.internal_id)?.importer_id;
+    if (importerId) targetsByImporter.set(importerId, [...(targetsByImporter.get(importerId) ?? []), target]);
+  });
+  const unreadable = await Promise.all(Array.from(targetsByImporter).map(async ([importerId, importerTargets]) => {
+    const importer = await resolveUserByIdFromCache(context, importerId);
+    if (!importer) return importerTargets.map((target) => target.internal_id);
+    const { items } = await filterAccessibleEvents(context, importer, containerId, importerTargets, (target) => target);
+    const readable = new Set(items.map((target) => target.internal_id));
+    return importerTargets.filter((target) => !readable.has(target.internal_id)).map((target) => target.internal_id);
+  }));
+  return new Set(unreadable.flat());
+};
+
 const applyAnalystFields = (
   base: { pinned: boolean; hidden: boolean; annotation: string | null; ordering_hint: number | null },
   existing: StoredTimelineEvent | undefined,
@@ -846,6 +897,16 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
   };
   // A derived event is never less marked than the elements whose data it carries, whatever its rule merged
   const sourceMarkingsOf = (event: DerivedTimelineEvent): string[] => (event.source_ids ?? []).flatMap((id) => (elements[id] ? markingsOf(elements[id]) : []));
+  // An imported annotation pins, hides or annotates the event like an edit of the event: its importer must read the event
+  // as produced now, its element and each of its sources
+  const annotationTargets = new Map<string, PendingAnnotationTarget>();
+  allDerived.forEach((event) => {
+    const internalId = computeDerivedEventId(containerId, event.rule_id, derivedEventKey(event), event.kind);
+    if (!annotationTargets.has(internalId) && pending.get(internalId)?.importer_id) {
+      annotationTargets.set(internalId, { internal_id: internalId, element_id: event.element_id, element_access: elementAccessOf(event.element_id, event.source_ids) });
+    }
+  });
+  const unreadableAnnotationIds = await findAnnotationTargetsUnreadableByImporter(context, containerId, Array.from(annotationTargets.values()), pending);
   // Build the derived documents, deduplicated on their deterministic id
   const derivedDocsById = new Map<string, ReturnType<typeof buildTimelineEventDoc>>();
   const refusedAnnotationIds: string[] = [];
@@ -854,7 +915,7 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
     if (derivedDocsById.has(internalId)) return;
     const existing = storedById.get(internalId);
     const pendingAnnotation = pending.get(internalId);
-    const applicable = pendingAnnotation && isPendingAnnotationApplicable(pendingAnnotation, event.confidence);
+    const applicable = pendingAnnotation && !unreadableAnnotationIds.has(internalId) && isPendingAnnotationApplicable(pendingAnnotation, event.confidence);
     if (pendingAnnotation && !applicable) refusedAnnotationIds.push(internalId);
     const analyst = applyAnalystFields(
       { pinned: false, hidden: false, annotation: null, ordering_hint: event.ordering_hint ?? null },
@@ -947,7 +1008,7 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
   });
   const refusedAnnotations = refusedAnnotationIds.filter((id) => docsById.has(id)).length;
   if (refusedAnnotations > 0) {
-    logApp.warn('[TIMELINE] Imported annotations of events above the confidence level of their importer were not applied', { containerId, refused: refusedAnnotations });
+    logApp.warn('[TIMELINE] Imported annotations of events their importer cannot read or above his confidence level were not applied', { containerId, refused: refusedAnnotations });
   }
   // Their annotations keep travelling in the STIX exchange while they are out of the cap
   const cappedAnnotatedEvents = capped ? timelineCappedAnnotatedEvents(Array.from(derivedDocsById.values()), new Set(docsById.keys())) : [];

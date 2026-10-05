@@ -63,12 +63,14 @@ import {
   containerAccessFields,
   createConcurrencyLimiter,
   deleteTimelineDocuments,
+  filterAccessibleEvents,
   filterEventsSharedAsContainer,
   getTimelineRules,
   loadStoredTimelineEvents,
   loadTimelineSettings,
   markingsOf,
   publishTimelineUpdate,
+  referencedElementIds,
   refreshTimelineContributions,
   regenerateContainerTimeline,
   type StoredTimelineEvent,
@@ -260,28 +262,6 @@ export const latestTimelineTime = (latestStart: string | null | undefined, lates
   if (!latestStart) return latestEnd ?? null;
   if (!latestEnd) return latestStart;
   return new Date(latestEnd).getTime() > new Date(latestStart).getTime() ? latestEnd : latestStart;
-};
-
-/** Element and sources of an event, the container aside: the user reads the event only when he can access each of them. */
-const referencedElementIds = (event: StoredTimelineEvent, containerId: string): string[] => {
-  return [event.element_id, ...timelineEventSourceIds(event)].filter((id): id is string => !!id && id !== containerId);
-};
-
-/** Drop the events pointing to elements, or carrying data of sources, the user cannot see (or that no longer exist). */
-const filterAccessibleEvents = async <T extends { node: StoredTimelineEvent } | StoredTimelineEvent>(
-  context: AuthContext,
-  user: AuthUser,
-  containerId: string,
-  items: T[],
-  getEvent: (item: T) => StoredTimelineEvent,
-  opts: { fullElements?: boolean } = {},
-): Promise<{ items: T[]; elements: Record<string, AnyStoreElement> }> => {
-  const elementIds = Array.from(new Set(items.flatMap((item) => referencedElementIds(getEvent(item), containerId))));
-  const elements = elementIds.length > 0
-    ? await internalFindByIds(context, user, elementIds, { toMap: true, baseData: !opts.fullElements }) as unknown as Record<string, AnyStoreElement>
-    : {};
-  const filtered = items.filter((item) => referencedElementIds(getEvent(item), containerId).every((id) => !!elements[id]));
-  return { items: filtered, elements };
 };
 
 interface InaccessibleTimelineReferences {
@@ -1206,9 +1186,10 @@ const writeImportedContributions = async (
     createdMilestoneIds = created.filter(({ event }) => (TIMELINE_MILESTONE_KINDS as readonly string[]).includes(event.kind))
       .map(({ internalId }) => internalId);
   }
-  // An imported annotation pins, hides or annotates a derived event like an edit of the event: never one above the confidence
-  // level of the user. A derived event already stored is checked now; the confidence level is kept with the annotation for
-  // the event the derivation has not produced yet, and checked again when the regeneration applies it.
+  // An imported annotation pins, hides or annotates a derived event like an edit of the event: never one the user cannot
+  // read (the event, its element and each of its sources) nor one above his confidence level. A derived event already
+  // stored is checked now; the importer and his confidence level are kept with the annotation for the event the derivation
+  // has not produced yet, and checked again when the regeneration applies it.
   const maxConfidence = timelineEventMaxConfidence(user);
   const storedDerivedById = new Map(storedEvents.filter((e) => e.event_source === 'derived').map((e) => [e.internal_id, e]));
   const importedAnnotations: TimelinePendingAnnotation[] = annotations
@@ -1221,13 +1202,21 @@ const writeImportedContributions = async (
       annotation: a.cleared_fields?.includes('annotation') ? null : a.annotation,
       ordering_hint: a.cleared_fields?.includes('ordering_hint') ? null : a.ordering_hint,
       max_confidence: maxConfidence,
+      importer_id: user.id,
     }));
+  const storedTargetIds = Array.from(new Set(importedAnnotations.map((a) => a.event_id).filter((id) => storedDerivedById.has(id))));
+  const storedTargetsAsUser = storedTargetIds.length > 0
+    ? await internalFindByIds(context, user, storedTargetIds, { type: ENTITY_TYPE_TIMELINE_EVENT }) as unknown as StoredTimelineEvent[]
+    : [];
+  const { items: readableTargets } = await filterAccessibleEvents(context, user, container.internal_id, storedTargetsAsUser, (e) => e);
+  const readableTargetIds = new Set(readableTargets.map((e) => e.internal_id));
   const pending = importedAnnotations.filter((annotation) => {
     const target = storedDerivedById.get(annotation.event_id);
-    return maxConfidence !== null && (!target || controlUserConfidenceAgainstElement(user, target as unknown as BasicStoreEntity, true));
+    if (maxConfidence === null) return false;
+    return !target || (readableTargetIds.has(target.internal_id) && controlUserConfidenceAgainstElement(user, target as unknown as BasicStoreEntity, true));
   });
   if (pending.length < importedAnnotations.length) {
-    logApp.warn('[TIMELINE] Imported annotations of events above the confidence level of the user were skipped', {
+    logApp.warn('[TIMELINE] Imported annotations of events the user cannot read or above his confidence level were skipped', {
       containerId: container.internal_id,
       skipped: importedAnnotations.length - pending.length,
     });
