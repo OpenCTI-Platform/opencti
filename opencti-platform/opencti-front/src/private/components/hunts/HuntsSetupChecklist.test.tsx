@@ -1,9 +1,9 @@
 import React from 'react';
 import { describe, expect, it } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import testRender from '../../../utils/tests/test-render';
 import HuntsSetupChecklist, { type HuntsSetupState } from './HuntsSetupChecklist';
-import { hasIndicatorLookups } from './HuntIndicatorSupportWarning';
+import HuntIndicatorSupportWarning, { hasIndicatorLookups } from './HuntIndicatorSupportWarning';
 
 const state = (overrides: Partial<HuntsSetupState>): HuntsSetupState => ({
   connectorsCount: 1,
@@ -31,6 +31,28 @@ describe('Hunts setup checklist', () => {
   it('leaves the indicator lookups out while no hunt connector answers', () => {
     testRender(<HuntsSetupChecklist state={state({ aliveCount: 0, indicatorsCount: 0 })} />);
     expect(screen.queryByTestId('hunts-setup-indicators')).not.toBeInTheDocument();
+  });
+});
+
+describe('Indicator support warning', () => {
+  const resolveConnectors = async (relayEnv: ReturnType<typeof testRender>['relayEnv'], supportsIndicators: boolean) => {
+    await act(async () => {
+      relayEnv.mock.resolveMostRecentOperation({
+        data: { huntConnectors: [{ id: 'connector-1', supports_indicators: supportsIndicators, securityPlatform: { id: 'secops' } }] },
+      });
+    });
+  };
+
+  it('warns before creation when no hunt connector of the scope looks up indicators', async () => {
+    const { relayEnv } = testRender(<HuntIndicatorSupportWarning scopePlatformIds={[]} />);
+    await resolveConnectors(relayEnv, false);
+    expect(screen.getByTestId('hunt-indicator-support-warning')).toHaveTextContent('No hunt connector of the scope looks up indicators');
+  });
+
+  it('stays silent when a hunt connector of the scope looks up indicators', async () => {
+    const { relayEnv } = testRender(<HuntIndicatorSupportWarning scopePlatformIds={['secops']} />);
+    await resolveConnectors(relayEnv, true);
+    expect(screen.queryByTestId('hunt-indicator-support-warning')).not.toBeInTheDocument();
   });
 });
 

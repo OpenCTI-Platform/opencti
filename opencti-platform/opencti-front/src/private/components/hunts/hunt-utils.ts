@@ -728,6 +728,21 @@ export const buildHuntPrefill = (entities: HuntPrefillEntity[]): HuntPrefill => 
   huntSources: uniqueOptions(entities.filter((entity) => HUNT_SOURCE_TYPES.includes(entity.entity_type)).map(toOption)),
 });
 
+// Containers and incidents a "Hunt this" turns into an indicator hunt over the indicators and observables they hold
+const HUNT_IOC_CONTAINER_PREFILL_TYPES = ['Grouping', 'Case-Incident', 'Incident'];
+
+/** Whether "Hunt this" opens an indicator hunt for the entity: a supported observable, a grouping, a case or an incident. */
+export const isIocHuntEntity = (entityType: string) => (HUNT_IOC_ELEMENT_TYPES.includes(entityType) && entityType !== 'Indicator')
+  || HUNT_IOC_CONTAINER_PREFILL_TYPES.includes(entityType);
+
+/** Indicator hunt a supported observable, a grouping, a case or an incident turns into. */
+export const buildIocHuntPrefill = (entity: HuntPrefillEntity): Partial<HuntFormValues> => {
+  const option = toOption(entity);
+  return HUNT_IOC_CONTAINER_PREFILL_TYPES.includes(entity.entity_type)
+    ? { hunt_type: 'indicators', iocEntities: [option] }
+    : { hunt_type: 'indicators', iocElements: [option] };
+};
+
 /** Default name of a hunt created from an entity page. */
 export const buildHuntPrefillName = (entityName: string) => `Hunt - ${entityName}`.substring(0, 250);
 
@@ -777,10 +792,13 @@ const HUNTABLE_ENTITY_PATHS: RegExp[] = [
   /^\/dashboard\/arsenal\/malwares\/[^/]+/,
   /^\/dashboard\/analyses\/reports\/[^/]+/,
   /^\/dashboard\/observations\/indicators\/[^/]+/,
+  /^\/dashboard\/analyses\/groupings\/[^/]+/,
+  /^\/dashboard\/events\/incidents\/[^/]+/,
+  /^\/dashboard\/cases\/incidents\/[^/]+/,
   /^\/dashboard\/pirs\/[^/]+/,
 ];
 
-/** Entity pages (Attack Pattern, Intrusion Set, Malware, Report, Indicator, PIR) where a hunt can be planned. */
+/** Entity pages (Attack Pattern, Intrusion Set, Malware, Report, Indicator, Grouping, Incident, Case-Incident, PIR) where a hunt can be planned. */
 export const isHuntableEntityPath = (pathname: string) => HUNTABLE_ENTITY_PATHS.some((pattern) => pattern.test(pathname));
 // endregion
 

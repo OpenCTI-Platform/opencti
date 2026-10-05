@@ -16,11 +16,13 @@ import {
   buildHuntPrefill,
   buildHuntPrefillName,
   buildIndicatorHuntPrefill,
+  buildIocHuntPrefill,
   HUNT_REPORT_PREFILL_TYPE_GROUPS,
   HUNT_TARGET_TYPES,
   HuntFormValues,
   HuntIndicatorPrefillEntity,
   HuntPrefillEntity,
+  isIocHuntEntity,
 } from './hunt-utils';
 import { HuntThisMenuContainerObjectsQuery } from './__generated__/HuntThisMenuContainerObjectsQuery.graphql';
 import { HuntThisMenuPirEntitiesQuery } from './__generated__/HuntThisMenuPirEntitiesQuery.graphql';
@@ -76,6 +78,9 @@ const fetchHuntPrefill = async (entity: HuntIndicatorPrefillEntity): Promise<Par
   if (entity.entity_type === 'Indicator') {
     return { name, ...buildIndicatorHuntPrefill(entity) };
   }
+  if (isIocHuntEntity(entity.entity_type)) {
+    return { name, ...buildIocHuntPrefill(entity) };
+  }
   if (entity.entity_type === 'Report') {
     const groups = await Promise.all(HUNT_REPORT_PREFILL_TYPE_GROUPS.map((types) => fetchQuery<HuntThisMenuContainerObjectsQuery>(huntThisMenuContainerObjectsQuery, {
       id: entity.id,
@@ -110,7 +115,7 @@ interface HuntThisMenuProps {
   entity: HuntIndicatorPrefillEntity;
 }
 
-/** "Hunt this" quick action of the threat, technique, report, indicator and PIR pages. */
+/** "Hunt this" quick action of the threat, technique, report, indicator, observable, grouping, case, incident and PIR pages. */
 const HuntThisMenu = ({ entity }: HuntThisMenuProps) => {
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();

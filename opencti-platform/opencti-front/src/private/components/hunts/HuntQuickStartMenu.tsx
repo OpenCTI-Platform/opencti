@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AutoAwesomeOutlined, PolicyOutlined, RuleOutlined } from '@mui/icons-material';
-import { Menu, MenuContent, MenuItem, MenuTrigger } from '@filigran/design-system';
+import { Menu, MenuContent, MenuItem, MenuTrigger, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import { useFormatter } from '../../../components/i18n';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
@@ -38,15 +38,22 @@ const HuntQuickStartMenu = () => {
           <MenuItem startIcon={<RuleOutlined fontSize="small" />} onSelect={() => setGuided('sigma')} data-testid="hunts-quick-start-sigma">
             {t_i18n('Hunt with a Sigma rule')}
           </MenuItem>
-          <MenuItem
-            startIcon={<AutoAwesomeOutlined fontSize="small" />}
-            disabled={planDisabledReason !== null}
-            title={planDisabledReason ?? undefined}
-            onSelect={() => setPlanning(true)}
-            data-testid="hunts-quick-start-plan"
-          >
-            {t_i18n('Plan a hunt with AI')}
-          </MenuItem>
+          {planDisabledReason ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span data-testid="hunts-quick-start-plan-disabled-reason">
+                  <MenuItem startIcon={<AutoAwesomeOutlined fontSize="small" />} disabled aria-description={planDisabledReason} data-testid="hunts-quick-start-plan">
+                    {t_i18n('Plan a hunt with AI')}
+                  </MenuItem>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>{planDisabledReason}</TooltipContent>
+            </Tooltip>
+          ) : (
+            <MenuItem startIcon={<AutoAwesomeOutlined fontSize="small" />} onSelect={() => setPlanning(true)} data-testid="hunts-quick-start-plan">
+              {t_i18n('Plan a hunt with AI')}
+            </MenuItem>
+          )}
         </MenuContent>
       </Menu>
       {guided && <HuntGuidedCreation kind={guided} open onClose={() => setGuided(null)} />}

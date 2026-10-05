@@ -3,6 +3,8 @@ import {
   buildHuntPrefill,
   buildHuntScope,
   buildIndicatorHuntPrefill,
+  buildIocHuntPrefill,
+  isIocHuntEntity,
   canRetryHuntRun,
   canSetHuntRunVerdict,
   emptyHuntFormValues,
@@ -274,8 +276,27 @@ describe('Hunt utils', () => {
     expect(isHuntableEntityPath('/dashboard/threats/intrusion_sets/abc/overview')).toBe(true);
     expect(isHuntableEntityPath('/dashboard/techniques/attack_patterns/abc')).toBe(true);
     expect(isHuntableEntityPath('/dashboard/pirs/abc/analyses')).toBe(true);
+    expect(isHuntableEntityPath('/dashboard/analyses/groupings/abc')).toBe(true);
+    expect(isHuntableEntityPath('/dashboard/events/incidents/abc')).toBe(true);
+    expect(isHuntableEntityPath('/dashboard/cases/incidents/abc')).toBe(true);
     expect(isHuntableEntityPath('/dashboard/threats/intrusion_sets')).toBe(false);
     expect(isHuntableEntityPath('/dashboard/defense/hunts/abc')).toBe(false);
+  });
+
+  it('should open an indicator hunt from the observables, groupings, cases and incidents a hunt accepts', () => {
+    expect(isIocHuntEntity('IPv4-Addr')).toBe(true);
+    expect(isIocHuntEntity('StixFile')).toBe(true);
+    expect(isIocHuntEntity('Grouping')).toBe(true);
+    expect(isIocHuntEntity('Case-Incident')).toBe(true);
+    expect(isIocHuntEntity('Incident')).toBe(true);
+    expect(isIocHuntEntity('Indicator')).toBe(false);
+    expect(isIocHuntEntity('Software')).toBe(false);
+    const observable = buildIocHuntPrefill({ id: 'ip-id', entity_type: 'IPv4-Addr', name: '1.2.3.4' });
+    expect(observable.hunt_type).toEqual('indicators');
+    expect(observable.iocElements?.map(({ value }) => value)).toEqual(['ip-id']);
+    const grouping = buildIocHuntPrefill({ id: 'grouping-id', entity_type: 'Grouping', name: 'Campaign leads' });
+    expect(grouping.hunt_type).toEqual('indicators');
+    expect(grouping.iocEntities?.map(({ value }) => value)).toEqual(['grouping-id']);
   });
 
   it('should keep the critical tone for the true positive verdict and read triggers as states', () => {
