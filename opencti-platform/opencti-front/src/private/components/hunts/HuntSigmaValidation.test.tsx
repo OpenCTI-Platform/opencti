@@ -14,6 +14,7 @@ const validResult: NonNullable<HuntSigmaValidationResult> = {
   logsource_service: null,
   detection_fields: ['Image', 'CommandLine'],
   attack_techniques: ['T1059.001'],
+  unresolved_attack_techniques: [],
 };
 
 describe('HuntSigmaValidationPanel', () => {
@@ -46,6 +47,22 @@ describe('HuntSigmaValidationPanel', () => {
     expect(screen.getByText('windows / process_creation')).toBeInTheDocument();
     expect(screen.getByText('CommandLine')).toBeInTheDocument();
     expect(screen.getByText('T1059.001')).toBeInTheDocument();
+    expect(screen.queryByTestId('hunt-sigma-unresolved-techniques')).not.toBeInTheDocument();
+  });
+
+  it('names the tagged techniques the knowledge base lacks, which the hunt is not linked to', () => {
+    const { unmount } = testRender(<HuntSigmaValidationPanel status="done" result={{ ...validResult, unresolved_attack_techniques: ['T1059.001'] }} />);
+    expect(screen.getByTestId('hunt-sigma-unresolved-techniques'))
+      .toHaveTextContent('1 tagged technique not found in the knowledge base: T1059.001. The hunt is not linked to it.');
+    unmount();
+    testRender(
+      <HuntSigmaValidationPanel
+        status="done"
+        result={{ ...validResult, attack_techniques: ['T1059.001', 'T1027', 'T9999'], unresolved_attack_techniques: ['T1027', 'T9999'] }}
+      />,
+    );
+    expect(screen.getByTestId('hunt-sigma-unresolved-techniques'))
+      .toHaveTextContent('2 tagged techniques not found in the knowledge base: T1027, T9999. The hunt is not linked to them.');
   });
 
   it('keeps the previous result visible while validating again', () => {

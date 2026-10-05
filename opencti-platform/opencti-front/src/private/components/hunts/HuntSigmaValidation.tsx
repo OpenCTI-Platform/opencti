@@ -2,10 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
 import { useTheme } from '@mui/styles';
 import { Chip, Spinner, Text } from '@filigran/design-system';
-import { CheckCircleOutlined, ErrorOutlineOutlined } from '@mui/icons-material';
+import { CheckCircleOutlined, ErrorOutlineOutlined, WarningAmberOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import { fetchQuery } from '../../../relay/environment';
+import { huntUnresolvedTechniquesSentence } from './hunt-utils';
 import { HuntSigmaValidationQuery$data } from './__generated__/HuntSigmaValidationQuery.graphql';
 
 export const huntSigmaValidationQuery = graphql`
@@ -20,6 +21,7 @@ export const huntSigmaValidationQuery = graphql`
       logsource_service
       detection_fields
       attack_techniques
+      unresolved_attack_techniques
     }
   }
 `;
@@ -149,6 +151,12 @@ export const HuntSigmaValidationPanel = ({ status, result }: HuntSigmaValidation
           result.attack_techniques.length > 0
             ? result.attack_techniques.map((technique) => <Chip key={technique} label={technique} entity="techniques" />)
             : <Text variant="content-compact">-</Text>,
+        )}
+        {result.unresolved_attack_techniques.length > 0 && (
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: theme.spacing(1), marginTop: theme.spacing(1) }} data-testid="hunt-sigma-unresolved-techniques">
+            <WarningAmberOutlined fontSize="small" style={{ color: theme.palette.warn.main }} aria-hidden />
+            <Text variant="content-compact">{huntUnresolvedTechniquesSentence(result.unresolved_attack_techniques, t_i18n)}</Text>
+          </div>
         )}
       </>
     );

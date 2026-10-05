@@ -11,7 +11,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { useTheme } from '@mui/styles';
-import { AutoAwesomeOutlined, ExpandLessOutlined, ExpandMoreOutlined, ReplayOutlined } from '@mui/icons-material';
+import { AutoAwesomeOutlined, ExpandLessOutlined, ExpandMoreOutlined, ReplayOutlined, WarningAmberOutlined } from '@mui/icons-material';
 import { Alert, Chip, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Drawer from '@components/common/drawer/Drawer';
@@ -50,6 +50,7 @@ import {
   huntRunFailure,
   huntRunPartialResultsSentence,
   huntRunTriggerLabel,
+  huntRunUnresolvedTechniquesSentence,
   huntVerdictLabel,
   huntVerdictSourceLabel,
   isTerminalHuntRun,
@@ -89,6 +90,7 @@ const huntRunDrawerFragment = graphql`
         value
       }
     }
+    unresolved_techniques
     securityPlatform {
       id
       name
@@ -773,6 +775,12 @@ const RunStatusHeader = ({ run, huntId, canRetry, retrying, onRetry, onSetVerdic
         <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(0.5), color: theme.palette.text.secondary }} data-testid="hunt-run-queue-reason">
           {huntMessageText(run.queue_reason, t_i18n)}
         </Text>
+      )}
+      {isExecution && run.unresolved_techniques.length > 0 && (
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: theme.spacing(1), marginTop: theme.spacing(1) }} data-testid="hunt-run-unresolved-techniques">
+          <WarningAmberOutlined fontSize="small" style={{ color: theme.palette.warn.main }} aria-hidden />
+          <Text variant="content-compact">{huntRunUnresolvedTechniquesSentence(run.unresolved_techniques, t_i18n)}</Text>
+        </div>
       )}
       {failure && (
         <div style={{ marginTop: theme.spacing(1.5) }}>

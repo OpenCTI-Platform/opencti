@@ -31,6 +31,7 @@ import {
   huntRunStatusLabel,
   huntRunStatusSeverity,
   huntRunTriggerLabel,
+  huntRunUnresolvedTechniquesSentence,
   huntStatusTransitions,
   huntTechniqueValidationSeverity,
   huntVerdictSeverity,
@@ -426,6 +427,15 @@ describe('Hunt utils', () => {
     const message = { template: 'Sent to {connector}: waiting for the connector to start it', values: [{ name: 'connector', value: 'Splunk Hunt' }] };
     expect(huntMessageText(message, translate)).toEqual('Envoyée à Splunk Hunt');
     expect(huntMessageText({ template: 'Waiting for the next dispatch of the hunt manager', values: [] }, translate)).toEqual('Waiting for the next dispatch of the hunt manager');
+  });
+
+  it('should name the tagged techniques a run gives no coverage, in the singular and the plural', () => {
+    const t = (message: string, options?: { values: Record<string, string | number> }) => Object.entries(options?.values ?? {})
+      .reduce((text, [key, value]) => text.replace(`{${key}}`, String(value)), message);
+    expect(huntRunUnresolvedTechniquesSentence(['T1027'], t))
+      .toBe('1 tagged technique was not in the knowledge base when the run was created: T1027. The run gives it no coverage.');
+    expect(huntRunUnresolvedTechniquesSentence(['T1027', 'T9999'], t))
+      .toBe('2 tagged techniques were not in the knowledge base when the run was created: T1027, T9999. The run gives them no coverage.');
   });
 
   it('should keep the critical tone for the true positive verdict and read triggers as states', () => {

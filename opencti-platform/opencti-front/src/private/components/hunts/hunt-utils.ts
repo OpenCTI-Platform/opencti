@@ -135,6 +135,22 @@ export const HUNT_DEFAULT_MAX_RESULTS = 1000;
 
 type HuntTranslate = (message: string, options?: { values: Record<string, string | number> }) => string;
 
+/** The ATT&CK techniques a Sigma rule tags that no attack pattern of the knowledge base matches: they link the hunt to nothing. */
+export const huntUnresolvedTechniquesSentence = (techniques: ReadonlyArray<string>, t_i18n: HuntTranslate) => (techniques.length === 1
+  ? t_i18n('1 tagged technique not found in the knowledge base: {techniques}. The hunt is not linked to it.', { values: { techniques: techniques[0] } })
+  : t_i18n('{count} tagged techniques not found in the knowledge base: {techniques}. The hunt is not linked to them.', {
+      values: { count: techniques.length, techniques: techniques.join(', ') },
+    }));
+
+/** The tagged techniques the knowledge base lacked when a run was created: the run gives them no coverage. */
+export const huntRunUnresolvedTechniquesSentence = (techniques: ReadonlyArray<string>, t_i18n: HuntTranslate) => (techniques.length === 1
+  ? t_i18n('1 tagged technique was not in the knowledge base when the run was created: {techniques}. The run gives it no coverage.', {
+      values: { techniques: techniques[0] },
+    })
+  : t_i18n('{count} tagged techniques were not in the knowledge base when the run was created: {techniques}. The run gives them no coverage.', {
+      values: { count: techniques.length, techniques: techniques.join(', ') },
+    }));
+
 /** A sentence of the platform in the language of the user: its English template is the translation key. */
 export const huntMessageText = (
   message: { template: string; values: ReadonlyArray<{ name: string; value: string }> },
