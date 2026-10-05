@@ -44,13 +44,21 @@ const SinceLastVisitChips = ({ entityId, changesPath }: SinceLastVisitChipsProps
   const [breakdownOpen, setBreakdownOpen] = useState(false);
 
   useEffect(() => {
-    // The server debounces the writes, the overview records the visit once per opening
-    const disposable = commit({
+    // The server debounces the writes, the overview records the visit once per opening. The request is never
+    // cancelled, so a brief visit is recorded too: leaving the overview only ignores the answer
+    let active = true;
+    commit({
       variables: { id: entityId },
-      onCompleted: (response) => setData(response.entityVisitRecord ?? null),
-      onError: () => setData(null),
+      onCompleted: (response) => {
+        if (active) setData(response.entityVisitRecord ?? null);
+      },
+      onError: () => {
+        if (active) setData(null);
+      },
     });
-    return () => disposable.dispose();
+    return () => {
+      active = false;
+    };
   }, [entityId]);
 
   if (!data || data.first_visit || !data.reference_date) {
