@@ -18,6 +18,8 @@ import { getEntityValidatorCreation, getEntityValidatorUpdate, type ValidatorFn 
 import { RELATION_DEPLOYED_ON } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-types';
 import type { AuthUser } from '../../../../src/types/user';
 import { EXPIRATION_MANAGER_USER } from '../../../../src/utils/access';
+import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../../../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organization/organization-types';
 import { testContext } from '../../../utils/testQuery';
 
 // Marking definitions come from the platform cache: here every marking is of its own type, so cleaning keeps them all.
@@ -161,6 +163,18 @@ describe('Deployment markings guard', () => {
     const administrator = { id: 'admin', capabilities: [{ name: 'BYPASS' }] } as unknown as AuthUser;
     await expect(validatorCreation(testContext, administrator, { from, to, objectMarking: ['tlp-amber'] })).rejects.toThrow('markings of its indicator');
     await expect(validatorCreation(testContext, administrator, { from, to, objectMarking: ['tlp-amber', 'pap-red'] })).resolves.toEqual(true);
+  });
+
+  it('should refuse an individual author given by the field or by an upsert operation, for administrators too', async () => {
+    const validatorCreation = getEntityValidatorCreation(RELATION_DEPLOYED_ON) as ValidatorFn;
+    const administrator = { id: 'admin', capabilities: [{ name: 'BYPASS' }] } as unknown as AuthUser;
+    const individual = { entity_type: ENTITY_TYPE_IDENTITY_INDIVIDUAL, internal_id: 'individual' };
+    const organization = { entity_type: ENTITY_TYPE_IDENTITY_ORGANIZATION, internal_id: 'organization' };
+    const marked = { from, to, objectMarking: ['tlp-amber', 'pap-red'] };
+    const authorOperation = (author: unknown) => ({ ...marked, upsertOperations: [{ key: 'createdBy', operation: 'replace', value: [author] }] });
+    await expect(validatorCreation(testContext, administrator, { ...marked, createdBy: individual })).rejects.toThrow('not authored by an individual');
+    await expect(validatorCreation(testContext, administrator, authorOperation(individual))).rejects.toThrow('not authored by an individual');
+    await expect(validatorCreation(testContext, administrator, authorOperation(organization))).resolves.toEqual(true);
   });
 });
 

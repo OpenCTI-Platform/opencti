@@ -282,6 +282,14 @@ const addsIndividualAuthor = async (context: AuthContext, editInputs: EditInput[
   return authorEdits.length > 0 && isIndividualAuthor(context, authorEdits.flatMap((input) => input.value));
 };
 
+// Whether a creation or upsert input gives an individual as author, through its field or through an author operation.
+const inputGivesIndividualAuthor = async (context: AuthContext, instance: Record<string, unknown>) => {
+  if (await isIndividualAuthor(context, instance[INPUT_CREATED_BY])) {
+    return true;
+  }
+  return addsIndividualAuthor(context, (instance.upsertOperations ?? []) as EditInput[]);
+};
+
 const refuseIndividualAuthor = (user: AuthUser) => {
   throw ForbiddenAccess('A deployment, like its hits and validation result sightings, is not authored by an individual: the users of an individual read what it authored, whatever its organizations', {
     user_id: user.id,
@@ -340,7 +348,7 @@ const validatorSightingCreation: ValidatorFn = async (context, user, instance) =
     if (!await sightingInputCoversPairMarkings(context, instance)) {
       return refuseMarkings(user);
     }
-    if (await isIndividualAuthor(context, instance[INPUT_CREATED_BY])) {
+    if (await inputGivesIndividualAuthor(context, instance)) {
       return refuseIndividualAuthor(user);
     }
   }
@@ -456,8 +464,8 @@ const validatorCreation: ValidatorFn = async (context, user, instance) => {
       return refuseMarkings(user);
     }
   }
-  // An upsert can fill an empty author, so the author of an upsert input is checked as on a creation
-  if (await isIndividualAuthor(context, instance[INPUT_CREATED_BY])) {
+  // An upsert can fill an empty author or replace it through its operations, so both are checked as on a creation
+  if (await inputGivesIndividualAuthor(context, instance)) {
     return refuseIndividualAuthor(user);
   }
   if (isBypassUser(user)) {

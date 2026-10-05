@@ -75,16 +75,43 @@ export const withoutWindowMatchedGeneratedSightings = async <T extends MatchedSi
   inputIds: string[],
   sightings: T[],
 ): Promise<T[]> => {
-  if (sightings.length === 0 || !sightingPair(input)) {
+  const pair = sightingPair(input);
+  if (sightings.length === 0 || !pair) {
     return sightings;
   }
   const requestedIds = new Set(inputIds);
-  const kept = await Promise.all(sightings.map(async (sighting) => {
-    const stixIds = [sighting.standard_id, ...(sighting.x_opencti_stix_ids ?? [])].filter((id): id is string => typeof id === 'string');
-    if ([sighting.internal_id, ...stixIds].some((id) => !!id && requestedIds.has(id))) {
+  const hitsId = hitsSightingStixId(pair.indicatorId, pair.platformId);
+  const stixIdsOf = (sighting: T) => [sighting.standard_id, ...(sighting.x_opencti_stix_ids ?? [])].filter((id): id is string => typeof id === 'string');
+  const reachedById = (sighting: T) => [sighting.internal_id, ...stixIdsOf(sighting)].some((id) => !!id && requestedIds.has(id));
+  // Window-matched only and not the hits sighting: a result sighting of a validation request of the pair, or ordinary
+  const undecided = sightings.filter((sighting) => !reachedById(sighting) && !stixIdsOf(sighting).includes(hitsId));
+  const resultIds = new Set<string>();
+  if (undecided.length > 0) {
+    // One pass over the validation requests of the pair, whatever the number of candidates
+    const candidateIds = new Set(undecided.flatMap(stixIdsOf));
+    const unresolved = new Set(undecided);
+    await fullEntitiesList<BasicStoreEntity>(context, SYSTEM_USER, [ENTITY_TYPE_IOC_VALIDATION_REQUEST], {
+      filters: { mode: 'and', filters: [{ key: ['indicator_ids'], values: [pair.indicatorId] }, { key: ['platform_ids'], values: [pair.platformId] }], filterGroups: [] },
+      noFiltersChecking: true,
+      baseData: true,
+      first: 500,
+      callback: async (requests: BasicStoreEntity[]) => {
+        requests.forEach((request) => {
+          const resultId = validationResultSightingStixId(request.internal_id, pair.indicatorId, pair.platformId);
+          if (candidateIds.has(resultId)) {
+            resultIds.add(resultId);
+          }
+        });
+        undecided.filter((sighting) => stixIdsOf(sighting).some((id) => resultIds.has(id))).forEach((sighting) => unresolved.delete(sighting));
+        return unresolved.size > 0;
+      },
+    } as never);
+  }
+  return sightings.filter((sighting) => {
+    if (reachedById(sighting)) {
       return true;
     }
-    return (await generatedPairSightingKindOf(context, input, stixIds)) === undefined;
-  }));
-  return sightings.filter((_, index) => kept[index]);
+    const stixIds = stixIdsOf(sighting);
+    return !stixIds.includes(hitsId) && !stixIds.some((id) => resultIds.has(id));
+  });
 };

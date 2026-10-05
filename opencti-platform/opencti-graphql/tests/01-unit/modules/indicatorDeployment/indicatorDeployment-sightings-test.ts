@@ -51,6 +51,16 @@ describe('existing sightings an ordinary sighting creation upserts', () => {
     expect(kept).toEqual([ordinary]);
   });
 
+  it('reads the validation requests of the pair once, whatever the number of candidates', async () => {
+    const other = { ...ordinary, internal_id: 'other', standard_id: 'sighting--3c4d5e6f-7a8b-4c9d-8e0f-2a3b4c5d6e7f' };
+    expect(await withoutWindowMatchedGeneratedSightings(context, pairInput, ['sighting--new'], [ordinary, result, other])).toEqual([ordinary, other]);
+    expect(fullEntitiesList).toHaveBeenCalledTimes(1);
+    // The hits sighting is told by its id alone
+    vi.mocked(fullEntitiesList).mockClear();
+    expect(await withoutWindowMatchedGeneratedSightings(context, pairInput, ['sighting--new'], [hits])).toEqual([]);
+    expect(fullEntitiesList).not.toHaveBeenCalled();
+  });
+
   it('keeps a generated sighting the input reaches by one of its ids', async () => {
     expect(await withoutWindowMatchedGeneratedSightings(context, pairInput, [hits.standard_id], [hits, result, ordinary])).toEqual([hits, ordinary]);
     expect(await withoutWindowMatchedGeneratedSightings(context, pairInput, [result.internal_id], [hits, result, ordinary])).toEqual([result, ordinary]);
