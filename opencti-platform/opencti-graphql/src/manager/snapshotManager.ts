@@ -4,7 +4,7 @@ import conf, { booleanConf, logApp } from '../config/conf';
 import { elRawSearch } from '../database/engine';
 import { fullRelationsList, internalFindByIds } from '../database/middleware-loader';
 import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
-import { READ_INDEX_HISTORY, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED } from '../database/utils';
+import { READ_INDEX_HISTORY, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, wait } from '../database/utils';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../schema/general';
 import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
@@ -18,7 +18,7 @@ import type { BasicStoreEntityRetentionRule } from '../modules/retentionRules/re
 import { listRules } from '../modules/retentionRules/retentionRules-domain';
 import type { AttributeValues, CompactDocument, TimeMachineHistoryEvent } from '../modules/timeMachine/timeMachine-types';
 import { extractAttributeValues, replayBackward } from '../modules/timeMachine/timeMachine-replay';
-import { fetchElementsHistoryEvents, fetchRelationshipsHistoryEvents } from '../modules/timeMachine/timeMachine-history';
+import { fetchElementsHistoryEvents, fetchRelationshipsHistoryEvents, findHistoryWatermark, HISTORY_INDEXING_MARGIN_MS } from '../modules/timeMachine/timeMachine-history';
 import { deleteSnapshotsBefore, indexSnapshots, type SnapshotInput } from '../modules/timeMachine/timeMachine-store';
 import { TIME_MACHINE_RELATIONSHIP_TYPES } from '../modules/timeMachine/timeMachine-relationships';
 import { countRelationshipsByTypeForElements } from '../modules/timeMachine/timeMachine-counters';
@@ -46,8 +46,12 @@ const COMPOSITE_PAGE_SIZE = 1000;
 const MIN_CHANGED_ELEMENTS_BUDGET = 2;
 // Maximum number of entities kept in the state to retry a snapshot that could not be built exactly
 const MAX_RETRY_IDS = 1000;
-// Overlap kept below the history watermark: one indexing batch of the history manager can become searchable in parts
-const HISTORY_INDEXING_MARGIN_MS = 60000;
+// The history manager indexes the stream in buffers of 5 seconds: a watermark that does not move for two buffers
+// means that no event is waiting to be indexed
+const HISTORY_QUIET_MS = 10000;
+const HISTORY_POLL_MS = 1000;
+// Still behind after this wait, the history manager is lagging: the batch is retried at the next window
+const HISTORY_CATCH_UP_MAX_MS = 60000;
 
 export interface SnapshotManagerState {
   // Lower bound of the next snapshot window (history cursor)
@@ -80,20 +84,26 @@ const writeState = async (state: SnapshotManagerState) => {
 };
 
 /**
- * Newest history event searchable at or before `to`. The history manager indexes the stream in order and a history
- * timestamp is the time of its stream event, so every earlier event is searchable too (less one indexing batch).
+ * Wait until the history holds the events of every change made before `readDate`: the watermark reached that date
+ * (the history manager indexes the stream in order), or it did not move for longer than the indexing buffer (no event
+ * was waiting to be indexed). False when the history manager is still behind after the maximum wait.
  */
-export const findHistoryWatermark = async (context: AuthContext, to: string): Promise<string | null> => {
-  const body = {
-    size: 0,
-    query: { bool: { must: [{ terms: { 'entity_type.keyword': [ENTITY_TYPE_HISTORY] } }, { range: { timestamp: { lte: to } } }] } },
-    aggs: { watermark: { max: { field: 'timestamp' } } },
-  };
-  const data = await elRawSearch(context, SYSTEM_USER, ENTITY_TYPE_HISTORY, { index: READ_INDEX_HISTORY, body }).catch((err: unknown) => {
-    throw DatabaseError('Snapshot manager history watermark fail', { cause: err });
-  });
-  const value = data.aggregations?.watermark?.value;
-  return typeof value === 'number' ? new Date(value).toISOString() : null;
+export const waitForHistoryCatchUp = async (context: AuthContext, readDate: string): Promise<boolean> => {
+  const startedAt = Date.now();
+  let watermark = await findHistoryWatermark(context, now());
+  let movedAt = startedAt;
+  while (!watermark || utcDate(watermark).isBefore(utcDate(readDate))) {
+    const checkedAt = Date.now();
+    if (checkedAt - movedAt >= HISTORY_QUIET_MS) return true;
+    if (checkedAt - startedAt >= HISTORY_CATCH_UP_MAX_MS) return false;
+    await wait(HISTORY_POLL_MS);
+    const next = await findHistoryWatermark(context, now());
+    if (next !== watermark) {
+      watermark = next;
+      movedAt = Date.now();
+    }
+  }
+  return true;
 };
 
 /**
@@ -239,21 +249,34 @@ export const findRelationshipsDeletedSince = async (context: AuthContext, ids: s
 };
 
 /**
+ * Whether one of the entities changed after `snapshotDate`, read again after the knowledge reads of the batch. An update
+ * moves `updated_at` and a relationship created or deleted moves `refreshed_at` of both sides (before the relationship
+ * is removed), so their changes since are rewound from the history; a document without `refreshed_at` is assumed changed.
+ */
+const isChangedSince = async (context: AuthContext, ids: string[], snapshotDate: string) => {
+  const current = await internalFindByIds<BasicStoreEntity>(context, SYSTEM_USER, ids, {
+    type: ABSTRACT_STIX_CORE_OBJECT,
+    baseData: true,
+    baseFields: ['updated_at', 'refreshed_at'],
+  }) as BasicStoreEntity[];
+  const date = utcDate(snapshotDate);
+  return current.some((entity) => !entity.refreshed_at || utcDate(entity.refreshed_at).isAfter(date) || utcDate(entity.updated_at).isAfter(date));
+};
+
+/**
  * Compact documents at `snapshotDate`: raw attribute values, relationship ids by type (capped)
  * and exact relationship counts by type. The relationships are the ones
  * created up to that date and still present, plus the ones deleted since that existed at that date.
+ * The history is indexed asynchronously: when an entity changed after that date, its changes are read from the history
+ * once it holds every event older than the knowledge reads, and the batch is retried at the next window otherwise.
  */
 export const buildCompactDocuments = async (context: AuthContext, entities: BasicStoreEntity[], snapshotDate: string): Promise<Map<string, CompactDocument>> => {
   const documents = new Map<string, CompactDocument>();
-  const rewound = await rewindAttributes(context, entities, snapshotDate);
-  rewound.forEach(({ attributes }, id) => {
-    documents.set(id, { attributes, relationships: {}, relationships_count: {} });
-  });
-  if (documents.size === 0) return documents;
-  const ids = [...documents.keys()];
+  if (entities.length === 0) return documents;
+  const entityIds = entities.map((entity) => entity.internal_id);
   // One extra relationship is read to know whether the relationships of the batch were all read
   const relations = await fullRelationsList<BasicStoreRelation>(context, SYSTEM_USER, [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP], {
-    fromOrToId: ids,
+    fromOrToId: entityIds,
     indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
     endDate: snapshotDate,
     dateAttribute: 'created_at',
@@ -262,6 +285,17 @@ export const buildCompactDocuments = async (context: AuthContext, entities: Basi
     baseData: true,
     maxSize: MAX_RELATIONSHIPS_PER_BATCH + 1,
   } as any);
+  const readDate = now();
+  if (await isChangedSince(context, entityIds, snapshotDate) && !(await waitForHistoryCatchUp(context, readDate))) {
+    logApp.warn('[TIME MACHINE] History indexing is behind the knowledge, the batch is snapshotted at the next window', { entities: entityIds.length });
+    return documents;
+  }
+  const rewound = await rewindAttributes(context, entities, snapshotDate);
+  rewound.forEach(({ attributes }, id) => {
+    documents.set(id, { attributes, relationships: {}, relationships_count: {} });
+  });
+  if (documents.size === 0) return documents;
+  const ids = [...documents.keys()];
   const allRead = relations.length <= MAX_RELATIONSHIPS_PER_BATCH;
   // Read after the present relationships: one deleted between the two reads is in both and counted once
   const deletedSince = await findRelationshipsDeletedSince(context, ids, snapshotDate);

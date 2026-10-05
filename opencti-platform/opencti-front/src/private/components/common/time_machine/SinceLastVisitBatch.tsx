@@ -26,6 +26,8 @@ type SinceLastVisitRow = SinceLastVisitBatchQuery$data['entitiesSinceLastVisit']
 // Maximum number of elements checked per request (enforced by the API)
 const BATCH_SIZE = 100;
 const BATCH_DELAY_MS = 150;
+// Requests of a row after a failed batch, before its badge is given up for the lifetime of the list
+const MAX_ATTEMPTS = 3;
 
 interface SinceLastVisitBatchContextValue {
   register: (id: string) => void;
@@ -42,6 +44,7 @@ export const SinceLastVisitBatchProvider = ({ enabled, children }: { enabled: bo
   const [results, setResults] = useState<Map<string, SinceLastVisitRow>>(new Map());
   const pending = useRef<Set<string>>(new Set());
   const requested = useRef<Set<string>>(new Set());
+  const failures = useRef<Map<string, number>>(new Map());
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mounted = useRef(true);
 
@@ -72,7 +75,12 @@ export const SinceLastVisitBatchProvider = ({ enabled, children }: { enabled: bo
         });
       })
       .catch(() => {
-        // The counters are an enhancement of the list, a failure only hides them
+        // The counters are an enhancement of the list: a failure hides them until the row registers again
+        ids.forEach((id) => {
+          const attempts = (failures.current.get(id) ?? 0) + 1;
+          failures.current.set(id, attempts);
+          if (attempts < MAX_ATTEMPTS) requested.current.delete(id);
+        });
       });
     if (pending.current.size > 0) {
       timer.current = setTimeout(flush, 0);

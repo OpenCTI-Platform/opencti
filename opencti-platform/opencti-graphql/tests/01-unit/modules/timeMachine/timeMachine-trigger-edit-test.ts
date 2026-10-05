@@ -39,6 +39,15 @@ describe('Edit of a change digest', () => {
     expect(triggerEditMock).not.toHaveBeenCalled();
   });
 
+  it('should refuse a recipient change, the recipient being authorized and stored at creation', async () => {
+    triggerGetMock.mockResolvedValue(changeDigest);
+    await expect(triggerKnowledgeEdit(context, SYSTEM_USER, 'trigger-1', [{ key: 'recipients', value: ['user-2'] }]))
+      .rejects.toThrow('The recipient of a change digest is set at its creation');
+    await expect(triggerKnowledgeEdit(context, SYSTEM_USER, 'trigger-1', [{ key: 'restricted_members', value: [{ id: 'user-2', access_right: 'admin' }] }]))
+      .rejects.toThrow('The recipient of a change digest is set at its creation');
+    expect(triggerEditMock).not.toHaveBeenCalled();
+  });
+
   it('should accept a notifier change that keeps one notifier', async () => {
     triggerGetMock.mockResolvedValue(changeDigest);
     const input = [{ key: 'notifiers', value: ['notifier-webhook'], operation: EditOperation.Add }];

@@ -46,7 +46,9 @@ import {
   fetchElementsHistoryEvents,
   fetchOldestHistoryDate,
   fetchRelationshipsHistoryEvents,
+  findHistoryWatermark,
   inclusiveEndDate,
+  isChangeInHistory,
 } from './timeMachine-history';
 import { buildVisitElement, findSnapshotAtOrAfter, findSnapshotAtOrBefore, indexVisit, listSnapshotDates, loadUserVisits, deleteUserVisits } from './timeMachine-store';
 import { countSinceReferenceDates } from './timeMachine-counters';
@@ -436,12 +438,22 @@ interface CurrentAnchor {
   anchorDate: string;
   events: TimeMachineHistoryEvent[];
   consistent: boolean;
+  // The history read holds the last change of the document
+  covered: boolean;
 }
+
+// A document changed after `date` is rewound only once the history event of its last change is searchable
+const isLastChangeCovered = async (context: AuthContext, element: BasicStoreEntity, date: string, anchorDate: string, events: TimeMachineHistoryEvent[]) => {
+  if (!element.updated_at || !utcDate(element.updated_at).isAfter(utcDate(date))) return true;
+  if (isChangeInHistory(element.updated_at, events.map((event) => event.timestamp), null)) return true;
+  return isChangeInHistory(element.updated_at, [], await findHistoryWatermark(context, anchorDate));
+};
 
 /**
  * The current document and its history events, read from one point in time. The history is read up to a date taken
  * after the document was loaded, then the document is loaded again: an update written in between would otherwise be
  * rewound on a document that does not contain it. When the document changed, both are read again from the new one.
+ * The history is indexed asynchronously, so the pair is only covered once the history holds the last change.
  */
 export const readCurrentAnchor = async (context: AuthContext, element: BasicStoreEntity, date: string, reads = 1): Promise<CurrentAnchor> => {
   const anchorDate = now();
@@ -453,7 +465,8 @@ export const readCurrentAnchor = async (context: AuthContext, element: BasicStor
   const reloaded = await internalLoadById<BasicStoreEntity>(context, SYSTEM_USER, element.internal_id, { type: ABSTRACT_STIX_CORE_OBJECT });
   const consistent = !reloaded || String(reloaded.updated_at) === String(element.updated_at);
   if (consistent || reads >= MAX_CURRENT_ANCHOR_READS) {
-    return { document: extractAttributeValues(element as any), anchorDate, events, consistent };
+    const covered = await isLastChangeCovered(context, element, date, anchorDate, events);
+    return { document: extractAttributeValues(element as any), anchorDate, events, consistent, covered };
   }
   return readCurrentAnchor(context, reloaded, date, reads + 1);
 };
@@ -504,7 +517,7 @@ export const reconstructAt = async (context: AuthContext, element: BasicStoreEnt
   }
   const current = await readCurrentAnchor(context, element, date);
   const replay = replayBackward(current.document, element.entity_type, current.events, date, MAX_REPLAY_EVENTS);
-  if (!current.consistent) {
+  if (!current.consistent || !current.covered) {
     replay.complete = false;
   }
   flagReplayBeyondWindow(replay, current.anchorDate, date, MAX_REPLAY_DAYS);
@@ -1191,7 +1204,8 @@ export const recordEntityVisit = async (context: AuthContext, user: AuthUser, id
       await indexVisit(document);
       addTimeMachineVisitCount();
     } catch (err) {
-      logApp.error('[TIME MACHINE] Unable to record the visit', { cause: err, entity_id: element.internal_id });
+      // Non-fatal: the counters use the visit in memory and the next view records it again
+      logApp.warn('[TIME MACHINE] Unable to record the visit', { cause: err, entity_id: element.internal_id });
     }
     visit = document as unknown as BasicStoreEntityUserVisit;
   }

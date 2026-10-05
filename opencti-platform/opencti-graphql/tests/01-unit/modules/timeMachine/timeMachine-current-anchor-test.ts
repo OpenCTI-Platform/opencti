@@ -9,9 +9,11 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
   internalLoadById: (...args: unknown[]) => internalLoadByIdMock(...args),
 }));
 const fetchElementHistoryEventsMock = vi.fn();
+const findHistoryWatermarkMock = vi.fn();
 vi.mock('../../../../src/modules/timeMachine/timeMachine-history', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/modules/timeMachine/timeMachine-history')>()),
   fetchElementHistoryEvents: (...args: unknown[]) => fetchElementHistoryEventsMock(...args),
+  findHistoryWatermark: (...args: unknown[]) => findHistoryWatermarkMock(...args),
 }));
 vi.mock('../../../../src/modules/timeMachine/timeMachine-store', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/modules/timeMachine/timeMachine-store')>()),
@@ -65,6 +67,36 @@ describe('Current document anchor of the time machine', () => {
     const anchor = await readCurrentAnchor(context, version('APT-TEST', '2026-02-01T00:00:00.000Z'), DATE);
     expect(anchor.consistent).toBe(true);
     expect(anchor.document.name).toEqual(['APT-TEST']);
+  });
+
+  it('should only cover the document once the history holds its last change', async () => {
+    const updatedAt = '2026-02-01T00:00:00.000Z';
+    internalLoadByIdMock.mockResolvedValue(version('APT-TEST', updatedAt));
+    // The event of the last update is searchable
+    fetchElementHistoryEventsMock.mockResolvedValue([{ id: 'event-1', timestamp: '2026-02-01T00:00:00.020Z', event_scope: 'update', changes: [] }]);
+    const indexed = await readCurrentAnchor(context, version('APT-TEST', updatedAt), DATE);
+    expect(indexed.covered).toBe(true);
+    expect(findHistoryWatermarkMock).not.toHaveBeenCalled();
+    // The event of the last update is still waiting to be indexed: the rewind would keep the new value
+    fetchElementHistoryEventsMock.mockResolvedValue([{ id: 'event-0', timestamp: '2026-01-15T00:00:00.000Z', event_scope: 'update', changes: [] }]);
+    findHistoryWatermarkMock.mockResolvedValue('2026-02-01T00:00:01.000Z');
+    const pending = await readCurrentAnchor(context, version('APT-TEST', updatedAt), DATE);
+    expect(pending.consistent).toBe(true);
+    expect(pending.covered).toBe(false);
+    const { replay } = await reconstructAt(context, version('APT-TEST', updatedAt), DATE);
+    expect(replay.complete).toBe(false);
+    // A change written without history event is covered once the history is past it by the indexing margin
+    findHistoryWatermarkMock.mockResolvedValue('2026-02-01T00:02:00.000Z');
+    const without = await readCurrentAnchor(context, version('APT-TEST', updatedAt), DATE);
+    expect(without.covered).toBe(true);
+  });
+
+  it('should not require any history for a document unchanged since the date', async () => {
+    fetchElementHistoryEventsMock.mockResolvedValue([]);
+    internalLoadByIdMock.mockResolvedValue(version('APT-TEST', '2025-12-01T00:00:00.000Z'));
+    const anchor = await readCurrentAnchor(context, version('APT-TEST', '2025-12-01T00:00:00.000Z'), DATE);
+    expect(anchor.covered).toBe(true);
+    expect(findHistoryWatermarkMock).not.toHaveBeenCalled();
   });
 
   it('should flag the reconstruction as incomplete when the document keeps changing', async () => {

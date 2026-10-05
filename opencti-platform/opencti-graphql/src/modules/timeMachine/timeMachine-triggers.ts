@@ -4,6 +4,7 @@ import type { BasicStoreEntityTrigger } from '../notification/notification-types
 import { EditOperation, type TriggerChangeDigestAddInput, type TriggerDigestAddInput, type TriggerType } from '../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { InternalEditInput } from '../../types/store';
+import { authorizedMembers } from '../../schema/attribute-definition';
 import { resolveLandscapeScope } from './landscapeDiff-domain';
 import { TRIGGER_TYPE_CHANGE_DIGEST } from './timeMachine-changeDigest';
 
@@ -47,14 +48,19 @@ const editedValues = (current: string[], items: InternalEditInput[]) => items.re
 }, current);
 
 /**
- * Edit of a knowledge trigger. A change digest keeps the rules of its creation: at least one notifier, and a filter
- * set validated and stored with its entity types, so an edit cannot leave a digest that fails at each period or
- * that can never be delivered.
+ * Edit of a knowledge trigger. A change digest keeps the rules of its creation: at least one notifier, a filter
+ * set validated and stored with its entity types, and the single recipient authorized at creation (delivery reads it
+ * from the members of the trigger), so an edit cannot leave a digest that fails at each period, that can never be
+ * delivered or that is sent to someone else than the recipient it reports.
  */
 export const triggerKnowledgeEdit = async (context: AuthContext, user: AuthUser, triggerId: string, input: InternalEditInput[]) => {
   const trigger = await triggerGet(context, user, triggerId) as BasicStoreEntityTrigger & { scope_entity_types?: string[] | null };
   if (trigger?.trigger_type !== TRIGGER_TYPE_CHANGE_DIGEST) {
     return triggerEdit(context, user, triggerId, input);
+  }
+  const recipientsItem = input.find((item) => item.key === 'recipients' || item.key === authorizedMembers.name);
+  if (recipientsItem) {
+    throw ValidationError('The recipient of a change digest is set at its creation: create another change digest for another recipient', recipientsItem.key);
   }
   const notifiersItems = input.filter((item) => item.key === 'notifiers');
   if (notifiersItems.length > 0 && editedValues(trigger.notifiers ?? [], notifiersItems).length === 0) {

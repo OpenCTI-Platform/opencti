@@ -3,6 +3,8 @@ import { elConvertHits } from '../../database/engine-data-converter';
 import { READ_INDEX_HISTORY } from '../../database/utils';
 import { ENTITY_TYPE_HISTORY } from '../../schema/internalObject';
 import { DatabaseError } from '../../config/errors';
+import { SYSTEM_USER } from '../../utils/access';
+import { utcDate } from '../../utils/format';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreBase } from '../../types/store';
 import type { HistoryChange, TimeMachineHistoryEvent } from './timeMachine-types';
@@ -200,4 +202,36 @@ export const fetchOldestHistoryDate = async (
 ): Promise<string | null> => {
   const events = await fetchElementHistoryEvents(context, user, elementId, { max: 1, order: 'asc' });
   return events.length > 0 ? events[0].timestamp : null;
+};
+
+// Overlap kept below the history watermark: one indexing batch of the history manager can become searchable in parts
+export const HISTORY_INDEXING_MARGIN_MS = 60000;
+
+/**
+ * Newest history event searchable at or before `to`. The history manager indexes the stream in order and a history
+ * timestamp is the time of its stream event, so every earlier event is searchable too (less one indexing batch).
+ */
+export const findHistoryWatermark = async (context: AuthContext, to: string): Promise<string | null> => {
+  const body = {
+    size: 0,
+    query: { bool: { must: [{ terms: { 'entity_type.keyword': [ENTITY_TYPE_HISTORY] } }, { range: { timestamp: { lte: to } } }] } },
+    aggs: { watermark: { max: { field: 'timestamp' } } },
+  };
+  const data = await elRawSearch(context, SYSTEM_USER, ENTITY_TYPE_HISTORY, { index: READ_INDEX_HISTORY, body }).catch((err: unknown) => {
+    throw DatabaseError('Time machine history watermark fail', { cause: err });
+  });
+  const value = data.aggregations?.watermark?.value;
+  return typeof value === 'number' ? new Date(value).toISOString() : null;
+};
+
+/**
+ * Whether the history holds the change stamped `changedAt` on a document. The history manager indexes the stream
+ * asynchronously and the stream event of a change is written after its document, so the change is searchable once an
+ * event of the element stamped at or after it was read, or once the watermark is past it by the indexing margin (a
+ * change written without any history event never gets one).
+ */
+export const isChangeInHistory = (changedAt: string | Date, eventDates: string[], watermark: string | null) => {
+  const changed = utcDate(changedAt);
+  if (eventDates.some((date) => !utcDate(date).isBefore(changed))) return true;
+  return !!watermark && !utcDate(watermark).subtract(HISTORY_INDEXING_MARGIN_MS, 'milliseconds').isBefore(changed);
 };
