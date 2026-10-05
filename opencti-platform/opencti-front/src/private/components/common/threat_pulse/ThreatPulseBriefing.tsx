@@ -10,6 +10,8 @@ import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import MarkdownDisplay from '../../../../components/markdownDisplay/MarkdownDisplay';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
+import useAuth from '../../../../utils/hooks/useAuth';
+import { APP_BASE_PATH } from '../../../../relay/environment';
 import { useChatbot } from '../../chatbox/ChatbotContext';
 import { type AgentOption, callAgentStream, fetchAgentsForIntent } from '../../../../utils/ai/agentApi';
 import { PULSE_BRIEFING_INTENT, type PulsePeriodValue } from './threatPulseUtils';
@@ -38,6 +40,7 @@ const ThreatPulseBriefing = (props: ThreatPulseBriefingProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
+  const { settings } = useAuth();
   const { xtmOneConfigured } = useChatbot();
   const [agent, setAgent] = useState<AgentOption | undefined>(undefined);
   const [open, setOpen] = useState(false);
@@ -68,7 +71,7 @@ const ThreatPulseBriefing = (props: ThreatPulseBriefingProps) => {
     setContent('');
     const response = await callAgentStream(
       agent.slug,
-      buildPulseBriefingContext(props, window.location.origin),
+      buildPulseBriefingContext(props, settings.platform_url || `${window.location.origin}${APP_BASE_PATH}`),
       (partial) => setContent(partial),
       controller.signal,
       forceRefresh,
