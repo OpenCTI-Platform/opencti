@@ -3,7 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { useTheme } from '@mui/styles';
 import { CheckCircleOutlined, ErrorOutlineOutlined, ManageSearchOutlined, WarningAmberOutlined } from '@mui/icons-material';
-import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogTitle, Spinner, Text } from '@filigran/design-system';
+import { Alert, Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogTitle, Spinner, Text } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Card from '../../../components/common/card/Card';
 import { useFormatter } from '../../../components/i18n';
@@ -19,7 +19,7 @@ import HuntRunStart from './runs/HuntRunStart';
 import HuntTranslationPreview from './HuntTranslationPreview';
 import { useHuntScheduleText } from './HuntSchedulePreview';
 import { HUNT_STATUS_MEANINGS, HUNT_STATUSES, huntDraftWorkspacePath, huntStatusLabel, type HuntStatusValue } from './hunt-utils';
-import { notifyPayloadErrors } from './hunt-mutation-utils';
+import { mutationErrorMessage, notifyPayloadErrors, payloadErrorsMessage } from './hunt-mutation-utils';
 import { HuntStatusHeader_hunt$data, HuntStatusHeader_hunt$key } from './__generated__/HuntStatusHeader_hunt.graphql';
 import { HuntStatusHeaderStatusMutation } from './__generated__/HuntStatusHeaderStatusMutation.graphql';
 
@@ -190,6 +190,7 @@ const HuntStatusHeader = ({ data }: HuntStatusHeaderProps) => {
   const [showStatuses, setShowStatuses] = useState(hunt.hunt_status === 'draft');
   const [showChecklist, setShowChecklist] = useState(!hunt.readiness.ready || hunt.hunt_status !== 'active');
   const [confirmRetire, setConfirmRetire] = useState(false);
+  const [retireError, setRetireError] = useState<string | null>(null);
   const [previewing, setPreviewing] = useState(false);
   const status = hunt.hunt_status as HuntStatusValue;
   const primary = huntPrimaryStatusAction(status);
@@ -207,8 +208,28 @@ const HuntStatusHeader = ({ data }: HuntStatusHeaderProps) => {
         if (to === 'active') {
           MESSAGING$.notifySuccess(t_i18n('The hunt is active'));
         }
+      },
+    });
+  };
+
+  const openRetire = (next: boolean) => {
+    setRetireError(null);
+    setConfirmRetire(next);
+  };
+  // The confirmation is a design-system dialog, whose overlay covers the global snackbar: its errors stay inside it
+  const retire = () => {
+    setRetireError(null);
+    commit({
+      variables: { id: hunt.id, input: [{ key: 'hunt_status', value: ['retired'] }] },
+      onCompleted: (_, errors) => {
+        const errorMessage = payloadErrorsMessage(errors);
+        if (errorMessage) {
+          setRetireError(errorMessage);
+          return;
+        }
         setConfirmRetire(false);
       },
+      onError: (error) => setRetireError(mutationErrorMessage(error, t_i18n('The hunt could not be retired'))),
     });
   };
 
@@ -271,7 +292,7 @@ const HuntStatusHeader = ({ data }: HuntStatusHeaderProps) => {
                 {t_i18n('Preview the query')}
               </Button>
               {status !== 'retired' && (
-                <Button variant="tertiary" size="small" onClick={() => setConfirmRetire(true)} disabled={inFlight} data-testid="hunt-status-to-retired">
+                <Button variant="tertiary" size="small" onClick={() => openRetire(true)} disabled={inFlight} data-testid="hunt-status-to-retired">
                   {t_i18n('Retire')}
                 </Button>
               )}
@@ -293,13 +314,20 @@ const HuntStatusHeader = ({ data }: HuntStatusHeaderProps) => {
           )}
         </div>
       </Card>
-      <Dialog open={confirmRetire} onOpenChange={setConfirmRetire}>
-        <DialogContent size="sm">
+      <Dialog open={confirmRetire} onOpenChange={openRetire}>
+        <DialogContent size="sm" data-testid="hunt-status-retire-dialog">
           <DialogTitle>{t_i18n('Retire this hunt?')}</DialogTitle>
           <DialogDescription>{t_i18n(HUNT_STATUS_MEANINGS.retired)}</DialogDescription>
+          {retireError && (
+            <DialogBody>
+              <div role="alert">
+                <Alert severity="error" title={t_i18n('The hunt could not be retired')} description={retireError} data-testid="hunt-status-retire-error" />
+              </div>
+            </DialogBody>
+          )}
           <DialogFooter>
-            <Button variant="secondary" onClick={() => setConfirmRetire(false)}>{t_i18n('Cancel')}</Button>
-            <Button onClick={() => apply('retired')} disabled={inFlight} data-testid="hunt-status-retire-confirm">{t_i18n('Retire')}</Button>
+            <Button variant="secondary" onClick={() => openRetire(false)}>{t_i18n('Cancel')}</Button>
+            <Button onClick={retire} disabled={inFlight} data-testid="hunt-status-retire-confirm">{t_i18n('Retire')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

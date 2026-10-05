@@ -12,7 +12,7 @@ import { fetchQuery } from '../../../relay/environment';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
-import { notifyPayloadErrors } from './hunt-mutation-utils';
+import { mutationErrorMessage, payloadErrorsMessage } from './hunt-mutation-utils';
 import { prismLanguageOf } from './HuntCodeEditor';
 import { HuntRunStatusChip } from './HuntChips';
 import { huntQueryLanguageLabel, huntRunFailure, isHuntPreviewConnector, isTerminalHuntRun } from './hunt-utils';
@@ -116,7 +116,8 @@ type PreviewState
   = | { status: 'idle' }
     | { status: 'waiting'; run?: PreviewRun }
     | { status: 'done'; run: PreviewRun }
-    | { status: 'timeout' };
+    | { status: 'timeout' }
+    | { status: 'error'; message: string };
 
 const ANY_PLATFORM = 'any';
 
@@ -176,13 +177,15 @@ const HuntTranslationPreview = ({ huntId, huntType, scopePlatformIds, dirty = fa
     commitTest({
       variables: { id: huntId, securityPlatformId: platformId === ANY_PLATFORM ? null : platformId },
       onCompleted: (data, errors) => {
-        if (!notifyPayloadErrors(errors) && data.huntTestQuery) {
-          poll(data.huntTestQuery.id, Date.now());
-        } else {
-          setPreview({ status: 'idle' });
+        const errorMessage = payloadErrorsMessage(errors);
+        if (errorMessage || !data.huntTestQuery) {
+          setPreview({ status: 'error', message: errorMessage ?? t_i18n('The query preview could not be started') });
+          return;
         }
+        poll(data.huntTestQuery.id, Date.now());
       },
-      onError: () => setPreview({ status: 'idle' }),
+      // The preview also renders in a design-system dialog, whose overlay covers the global snackbar
+      onError: (error) => setPreview({ status: 'error', message: mutationErrorMessage(error, t_i18n('The query preview could not be started')) }),
     });
   };
 
@@ -208,6 +211,15 @@ const HuntTranslationPreview = ({ huntId, huntType, scopePlatformIds, dirty = fa
           </Button>
         )}
         data-testid="hunt-preview-timeout"
+      />
+    );
+  } else if (preview.status === 'error') {
+    content = (
+      <Alert
+        severity="error"
+        title={t_i18n('The query preview could not be started')}
+        description={preview.message}
+        data-testid="hunt-preview-error"
       />
     );
   } else if (preview.status === 'done') {
