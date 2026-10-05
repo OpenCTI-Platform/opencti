@@ -495,6 +495,11 @@ export const effectiveLanes = (selected: readonly string[], enabledLanes: readon
 // region compact views (overview card)
 // Opening the Timeline tab with this parameter opens the milestone form once (the overview card links to it)
 export const TIMELINE_ADD_MILESTONE_PARAM = 'add_milestone';
+// Lane and kind of a new milestone in the milestone form
+export const TIMELINE_MILESTONE_DEFAULT_LANE = 'response';
+export const TIMELINE_MILESTONE_DEFAULT_KIND = 'milestone';
+// Opening the Timeline tab with this parameter opens the settings panel once
+export const TIMELINE_OPEN_SETTINGS_PARAM = 'timeline_settings';
 
 /**
  * At most `maxTicks` local midnights inside the domain, evenly stepped by whole days, for a day-precision axis.

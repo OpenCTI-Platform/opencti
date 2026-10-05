@@ -12,6 +12,7 @@
   "A pinned event stands out on the timeline and stays visible when Pinned only is on.": "置顶的事件在时间线上突出显示，并在开启\"仅置顶\"时保持可见。",
   "An analyst note shown in the event details and in the exports to everyone who can read the event. The description says what happened; the annotation, what it means for the case.": "分析师备注，向所有可以读取该事件的人显示在事件详细信息和导出中。描述说明发生了什么；注释说明它对案例意味着什么。",
   "Details of what happened, in Markdown, for example the hosts and the tools involved. Optional.": "发生情况的详细信息（Markdown），例如涉及的主机和工具。可选。",
+  "Every event of the case is in a lane or a kind the timeline settings hide.": "该案例的所有事件都位于时间线设置隐藏的泳道或类型中。",
   "Every event of the case is in a lane or a kind the timeline settings hide. Change the settings from the Timeline tab.": "案例的所有事件都位于时间线设置隐藏的泳道或类型中。请在时间线选项卡中更改设置。",
   "Hidden kinds are left out of the default view of every reader; choosing them in the kinds filter shows them again.": "隐藏的类型不会出现在所有读者的默认视图中；在类型筛选器中选择它们即可再次显示。",
   "How events are grouped when the timeline opens, for every user of this case. Each reader can still change the grouping from the toolbar.": "打开时间线时事件的分组方式，适用于本案例的所有用户。每位读者仍可在工具栏中更改分组。",

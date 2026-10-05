@@ -51,6 +51,7 @@ import {
   parseTimelineViewState,
   serializeTimelineViewState,
   TIMELINE_ADD_MILESTONE_PARAM,
+  TIMELINE_OPEN_SETTINGS_PARAM,
   TIMELINE_ANCHOR_KEYS,
   TIMELINE_LANES,
   type TimelineDomain,
@@ -453,9 +454,9 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
   const urlTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [liveUpdates, setLiveUpdates] = useState(0);
   const [formEvent, setFormEvent] = useState<TimelineEventDetails | null>(null);
-  // Coming from "Add a milestone" on the overview card: the form opens once, for users who may edit
+  // Coming from "Add a milestone" or "Timeline settings" on the overview card: the form or the panel opens once, for users who may edit
   const [formOpen, setFormOpen] = useState(() => searchParams.has(TIMELINE_ADD_MILESTONE_PARAM) && !!summary?.can_edit);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(() => searchParams.has(TIMELINE_OPEN_SETTINGS_PARAM) && !!summary?.can_edit);
   const [regenerating, setRegenerating] = useState(false);
   const [visibleDomain, setVisibleDomain] = useState<TimelineDomain | null>(null);
   // The status names the events of the current view (filters included) once they are loaded
@@ -470,10 +471,11 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
 
   useEffect(() => () => clearTimeout(urlTimer.current), []);
   useEffect(() => {
-    if (!searchParams.has(TIMELINE_ADD_MILESTONE_PARAM)) return;
+    if (!searchParams.has(TIMELINE_ADD_MILESTONE_PARAM) && !searchParams.has(TIMELINE_OPEN_SETTINGS_PARAM)) return;
     setSearchParams((current) => {
       const next = new URLSearchParams(current);
       next.delete(TIMELINE_ADD_MILESTONE_PARAM);
+      next.delete(TIMELINE_OPEN_SETTINGS_PARAM);
       return next;
     }, { replace: true });
   }, []);

@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router';
 import { useIntl } from 'react-intl';
 import { useTheme } from '@mui/material/styles';
 import Skeleton from '@mui/material/Skeleton';
-import { AddOutlined } from '@mui/icons-material';
+import { AddOutlined, SettingsOutlined } from '@mui/icons-material';
 import { Text } from '@filigran/design-system';
 import Button from '@common/button/Button';
 import Card from '../../../../components/common/card/Card';
@@ -26,6 +26,9 @@ import {
   TIMELINE_ADD_MILESTONE_PARAM,
   TIMELINE_ANCHOR_KEYS,
   TIMELINE_LANES,
+  TIMELINE_MILESTONE_DEFAULT_KIND,
+  TIMELINE_MILESTONE_DEFAULT_LANE,
+  TIMELINE_OPEN_SETTINGS_PARAM,
   type TimelineGrouping,
   toTime,
 } from './timelineUtils';
@@ -114,27 +117,43 @@ interface ContainerTimelineStripEmptyProps {
   message: string;
   canEdit: boolean;
   timelinePath: string;
+  // The settings hide every event: the next step is the settings panel, a milestone only when the settings would show it
+  hiddenBySettings?: boolean;
+  milestoneShown?: boolean;
 }
 
 /** What the card shows when it has no event to draw, with the next step. */
-const ContainerTimelineStripEmpty = ({ message, canEdit, timelinePath }: ContainerTimelineStripEmptyProps) => {
+const ContainerTimelineStripEmpty = ({ message, canEdit, timelinePath, hiddenBySettings = false, milestoneShown = true }: ContainerTimelineStripEmptyProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const navigate = useNavigate();
+  const addMilestone = (
+    <Button
+      variant="secondary"
+      size="small"
+      startIcon={<AddOutlined fontSize="small" />}
+      onClick={() => navigate(`${timelinePath}?${TIMELINE_ADD_MILESTONE_PARAM}=true`)}
+      data-testid="timeline-strip-add-milestone"
+    >
+      {t_i18n('Add a milestone')}
+    </Button>
+  );
   return (
     <div role="status" data-testid="timeline-strip-empty" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: theme.spacing(1.5) }}>
       <Text variant="content-base" as="div">{message}</Text>
-      {canEdit && (
-        <Button
-          variant="secondary"
-          size="small"
-          startIcon={<AddOutlined fontSize="small" />}
-          onClick={() => navigate(`${timelinePath}?${TIMELINE_ADD_MILESTONE_PARAM}=true`)}
-          data-testid="timeline-strip-add-milestone"
-        >
-          {t_i18n('Add a milestone')}
-        </Button>
-      )}
+      {canEdit && (hiddenBySettings ? (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: theme.spacing(1) }}>
+          <Button
+            size="small"
+            startIcon={<SettingsOutlined fontSize="small" />}
+            onClick={() => navigate(`${timelinePath}?${TIMELINE_OPEN_SETTINGS_PARAM}=true`)}
+            data-testid="timeline-strip-open-settings"
+          >
+            {t_i18n('Timeline settings')}
+          </Button>
+          {milestoneShown && addMilestone}
+        </div>
+      ) : addMilestone)}
     </div>
   );
 };
@@ -174,9 +193,13 @@ const ContainerTimelineStripEvents = ({ containerId, enabledLanes, hiddenKinds, 
   if (total === 0) {
     return (
       <ContainerTimelineStripEmpty
-        message={t_i18n('Every event of the case is in a lane or a kind the timeline settings hide. Change the settings from the Timeline tab.')}
+        message={canEdit
+          ? t_i18n('Every event of the case is in a lane or a kind the timeline settings hide. Change the settings from the Timeline tab.')
+          : t_i18n('Every event of the case is in a lane or a kind the timeline settings hide.')}
         canEdit={canEdit}
         timelinePath={timelinePath}
+        hiddenBySettings={true}
+        milestoneShown={(enabledLanes.length === 0 || enabledLanes.includes(TIMELINE_MILESTONE_DEFAULT_LANE)) && !hiddenKinds.includes(TIMELINE_MILESTONE_DEFAULT_KIND)}
       />
     );
   }
