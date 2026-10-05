@@ -76,7 +76,7 @@ describe('Hunt this from a threat', () => {
   it('preselects the indicators of the threat and its malware, counts them by type and says what the hunt does', async () => {
     const { relayEnv } = renderForm(derived, buildDerivedHuntPrefill(threat, derived));
     await resolveConnectors(relayEnv);
-    expect(screen.getByText('You are hunting APT28 on 1 security platform: the hunt searches your telemetry for its 4 known indicators over the last 1 day.')).toBeInTheDocument();
+    expect(screen.getByText('You are hunting APT28 on 1 security platform: the hunt searches your telemetry for its 4 known indicators over the last 24 hours.')).toBeInTheDocument();
     expect(screen.getByText('A hit creates a sighting and, from 10 hits, proposes an incident.')).toBeInTheDocument();
     expect(screen.getByText('4 indicators to look up: 2 domains, 1 IPv4 address, 1 file')).toBeInTheDocument();
     expect(screen.getByText('Malware used by APT28, 2 indicators')).toBeInTheDocument();
@@ -86,7 +86,7 @@ describe('Hunt this from a threat', () => {
     });
     expect(values().entities).toEqual(['is-1']);
     expect(screen.getByText('2 indicators to look up: 1 domain, 1 IPv4 address')).toBeInTheDocument();
-    expect(screen.getByText(/for its 2 known indicators over the last 1 day/)).toBeInTheDocument();
+    expect(screen.getByText(/for its 2 known indicators over the last 24 hours/)).toBeInTheDocument();
   });
 
   it('runs a detection rule picked from the techniques of the threat, and goes back to the indicators', async () => {
@@ -98,7 +98,7 @@ describe('Hunt this from a threat', () => {
       fireEvent.click(screen.getByRole('radio', { name: /Splunk obfuscation search/ }));
     });
     expect(values()).toMatchObject({ type: 'telemetry', sigma: '', native: ['splunk'] });
-    expect(screen.getByText('You are hunting APT28 on 2 security platforms: the hunt runs the detection rule "Splunk obfuscation search" on your telemetry over the last 1 day.')).toBeInTheDocument();
+    expect(screen.getByText('You are hunting APT28 on 2 security platforms: the hunt runs the detection rule "Splunk obfuscation search" on your telemetry over the last 24 hours.')).toBeInTheDocument();
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Hunt these indicators' }));
     });

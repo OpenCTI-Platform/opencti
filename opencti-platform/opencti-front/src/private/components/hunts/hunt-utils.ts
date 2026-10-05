@@ -935,8 +935,8 @@ export interface HuntSummaryInput {
   escalationThreshold: number;
 }
 
-/** The time window of a run, in days when it is a whole number of days. */
-export const formatHuntWindow = (hours: number, t_i18n: HuntTranslate) => (hours > 0 && hours % 24 === 0
+/** The time window of a run, in days from two whole days. */
+export const formatHuntWindow = (hours: number, t_i18n: HuntTranslate) => (hours >= 48 && hours % 24 === 0
   ? t_i18n('{count, plural, one {# day} other {# days}}', { values: { count: hours / 24 } })
   : t_i18n('{count, plural, one {# hour} other {# hours}}', { values: { count: hours } }));
 

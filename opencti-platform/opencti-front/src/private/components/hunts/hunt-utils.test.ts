@@ -385,7 +385,8 @@ describe('Hunt utils', () => {
       expect(huntTypeDescription('infrastructure')).toContain('not a Sigma rule or indicators');
       expect(huntTypeDescription('indicators')).toContain('no query language needed');
       expect(huntTypeDescription('telemetry')).toContain('Needs a Sigma rule or a native query');
-      expect(formatHuntWindow(24, t)).toEqual('1 day');
+      expect(formatHuntWindow(24, t)).toEqual('24 hours');
+      expect(formatHuntWindow(48, t)).toEqual('2 days');
       expect(formatHuntWindow(5, t)).toEqual('5 hours');
     });
   });

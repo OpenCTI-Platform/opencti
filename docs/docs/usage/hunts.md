@@ -21,6 +21,8 @@ New to hunting? [Your first hunt](your-first-hunt.md) walks through an indicator
 
 The type is the first choice of the creation form: each type says, in one sentence, what it needs as input and where it runs. Pick it from what you have.
 
+![The hunt type of the creation form: each type with what it needs and where it runs](assets/hunt-this-types.png)
+
 | Type | Needs | Runs on |
 |---|---|---|
 | **Indicators** | Indicators or observables: IP addresses, domains, host names, URLs, email addresses, MAC addresses, file hashes. No query language. | The telemetry of your security platforms, through the hunt connectors that look up indicators. |
@@ -111,6 +113,12 @@ At the top of the form, two blocks explain the hunt before anything is filled in
 
 - **The summary** says in plain language what the hunt does, updated as you change the type, the scope, the time window or the escalation threshold: "You are hunting APT28 on 2 security platforms: the hunt searches your telemetry for its 23 known indicators over the last 7 days. A hit creates a sighting and, from 10 hits, proposes an incident."
 - **What the platform found** lists the indicators to look up with their count and types ("23 indicators to look up: 12 domains, 8 IPv4 addresses, 3 files"), per source: the threat, each malware or tool it uses and each threat attributed to it can be unticked, and the counts follow. Below, the detection rules of its techniques are proposed as a list, each with the techniques it covers: picking one turns the hunt into a detection-rule hunt running it; **Hunt these indicators** turns it back. When the platform holds neither indicators nor detection rules, the block says so in one sentence and offers **Plan the hunt with AI** and **Import a hunt pack**.
+
+![Hunt this on an intrusion set: the summary, then the 23 indicators of the threat, its malware and the campaign attributed to it, and the detection rules of its techniques](assets/hunt-this-threat.png)
+
+![A detection rule picked from the techniques of the threat: the summary now says which rule runs](assets/hunt-this-rule.png)
+
+![Hunt this on a threat the platform knows nothing about: Plan the hunt with AI or Import a hunt pack](assets/hunt-this-empty.png)
 
 An indicator hunt started this way keeps the threat and its sources as what it looks for: the indicators are read again at every run, so the hunt follows the intelligence as it grows.
 

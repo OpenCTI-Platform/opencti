@@ -198,6 +198,8 @@ export const HuntDerivedPanel = ({ derived, style }: { derived: HuntDerived; sty
   const coveredTechniques = new Set(derived.rules.flatMap((rule) => rule.technique_ids));
   const hasElements = derived.elements.length > 0;
   const hasRules = derived.rules.length > 0;
+  const isIndicatorHunt = values.hunt_type === 'indicators';
+  const isInfrastructureHunt = values.hunt_type === 'infrastructure';
 
   const toggleSource = (source: HuntDerivedSource, checked: boolean) => {
     const others = values.iocEntities.filter((option) => option.value !== source.id);
@@ -218,6 +220,11 @@ export const HuntDerivedPanel = ({ derived, style }: { derived: HuntDerived; sty
       <Text variant="title-xs" as="h3" style={{ margin: 0 }}>
         {t_i18n('What the platform found for {name}', { values: { name } })}
       </Text>
+      {isInfrastructureHunt && (
+        <Text variant="content-compact" style={{ display: 'block', marginTop: theme.spacing(1) }} data-testid="hunt-derived-infrastructure">
+          {t_i18n('An internet infrastructure hunt uses neither these indicators nor these rules: write its fingerprint query in the Logic section.')}
+        </Text>
+      )}
       {!hasElements && !hasRules && (
         <div style={{ marginTop: theme.spacing(1) }}>
           <EmptyDerivation derived={derived} />
@@ -226,18 +233,17 @@ export const HuntDerivedPanel = ({ derived, style }: { derived: HuntDerived; sty
       {hasElements && (
         <section style={{ marginTop: theme.spacing(1.5) }} data-testid="hunt-derived-indicators">
           <Text variant="content-compact-medium" style={{ display: 'block' }}>
-            {values.hunt_type === 'indicators'
+            {isIndicatorHunt
               ? t_i18n('{count, plural, =0 {No indicator selected} one {# indicator to look up} other {# indicators to look up}}', { values: { count: selectedElements.length } })
               : t_i18n('{count, plural, one {# indicator found} other {# indicators found}}', { values: { count: derived.elements.length } })}
-            {(values.hunt_type === 'indicators' ? selectedElements : derived.elements).length > 0 && `: ${formatDerivedValueTypes(values.hunt_type === 'indicators' ? selectedElements : derived.elements, t_i18n)}`}
+            {(isIndicatorHunt ? selectedElements : derived.elements).length > 0 && `: ${formatDerivedValueTypes(isIndicatorHunt ? selectedElements : derived.elements, t_i18n)}`}
           </Text>
-          {derived.sources.length > 1 && (
+          {isIndicatorHunt && derived.sources.length > 1 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1), marginTop: theme.spacing(1) }}>
               {derived.sources.map((source) => (
                 <Checkbox
                   key={source.id}
                   checked={values.iocEntities.some((option) => option.value === source.id)}
-                  disabled={values.hunt_type !== 'indicators'}
                   onCheckedChange={(checked) => toggleSource(source, checked === true)}
                   label={source.name}
                   description={<SourceDescription source={source} entityName={name} count={derived.elements.filter((element) => element.source_ids.includes(source.id)).length} />}
@@ -251,7 +257,7 @@ export const HuntDerivedPanel = ({ derived, style }: { derived: HuntDerived; sty
               {t_i18n('More values than a run looks up: the first ones are looked up at each run.')}
             </Text>
           )}
-          {values.hunt_type !== 'indicators' && (
+          {!isIndicatorHunt && (
             <div style={{ marginTop: theme.spacing(1) }}>
               <Button priority="secondary" size="sm" onClick={huntIndicators} data-testid="hunt-derived-use-indicators">
                 {t_i18n('Hunt these indicators')}
@@ -260,7 +266,7 @@ export const HuntDerivedPanel = ({ derived, style }: { derived: HuntDerived; sty
           )}
         </section>
       )}
-      {hasRules && (
+      {hasRules && !isInfrastructureHunt && (
         <section style={{ marginTop: theme.spacing(2) }} data-testid="hunt-derived-rules">
           <Text variant="content-compact-medium" id={rulesLabelId} style={{ display: 'block' }}>
             {derived.techniques.length > 0
@@ -301,11 +307,6 @@ export const HuntDerivedPanel = ({ derived, style }: { derived: HuntDerived; sty
       {derived.unsupported_count > 0 && (
         <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(1), color: theme.palette.text.secondary }}>
           {t_i18n('{count, plural, one {# indicator is} other {# indicators are}} in a pattern language a hunt cannot run (YARA, Snort, Suricata...).', { values: { count: derived.unsupported_count } })}
-        </Text>
-      )}
-      {values.hunt_type === 'infrastructure' && (
-        <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(1.5), color: theme.palette.text.secondary }} data-testid="hunt-derived-infrastructure">
-          {t_i18n('An internet infrastructure hunt uses neither these indicators nor these rules: write its fingerprint query in the Logic section.')}
         </Text>
       )}
     </Paper>
