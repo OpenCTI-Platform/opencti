@@ -720,9 +720,16 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
       x_opencti_stix_ids?: string[];
       attribute_count: number;
     };
-    // An id of the sighting that is not its reserved hits sighting id, which the creation checks
-    const otherId = [before.standard_id, ...(before.x_opencti_stix_ids ?? [])].find((id) => id !== hitsStixId);
-    expect(otherId).toBeDefined();
+    // The reserved id is its standard id; it is given another id here (side channel, no event), which the creation does
+    // not check, to reach it by an upsert
+    expect(before.standard_id).toEqual(hitsStixId);
+    const otherId = 'sighting--2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6f';
+    const setStixIds = async (ids: string[]) => {
+      const stored = await internalLoadById(testContext, ADMIN_USER, before.internal_id) as unknown as { _index: string };
+      const script = { source: "ctx._source['x_opencti_stix_ids'] = params.ids", lang: 'painless', params: { ids } };
+      await elUpdate(testContext, stored._index, before.internal_id, { script });
+    };
+    await setStixIds([...(before.x_opencti_stix_ids ?? []), otherId]);
     const platformOrganizations = await loadOrganizations(platformId);
     const sightingOrganizations = await loadOrganizations(before.internal_id, STIX_SIGHTING_RELATIONSHIP);
     // Side-channel only, so the raw stream counts of the suite are unchanged; the editor reads the pair meanwhile
@@ -740,6 +747,7 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     } finally {
       await setOrganizations(before.internal_id, sightingOrganizations);
       await setOrganizations(platformId, platformOrganizations);
+      await setStixIds(before.x_opencti_stix_ids ?? []);
     }
   });
 

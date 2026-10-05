@@ -841,10 +841,12 @@ export const reportIocValidationResults = async (context: AuthContext, user: Aut
         await notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, element, user);
       }
       if (!sighting) {
+        // The reserved id is the standard id too, so results observed at the same instant never share one
         await createRelation(sightingReportContext(context), user, {
           fromId: indicator.internal_id,
           toId: platform.internal_id,
           relationship_type: STIX_SIGHTING_RELATIONSHIP,
+          standard_id: sightingStixId,
           stix_id: sightingStixId,
           [INPUT_MARKINGS]: pairMarkings(indicator, platform),
           [INPUT_GRANTED_REFS]: pairOrganizations(indicator, platform),

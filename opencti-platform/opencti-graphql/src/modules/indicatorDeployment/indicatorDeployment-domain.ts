@@ -726,10 +726,13 @@ export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, 
       await ensurePairMarkings(context, user, existingSighting, indicator, platform);
     }
     const reportContext = sightingReportContext(context);
+    // The reserved id is the standard id too: a standard id derived from the pair and the seen dates would be the one
+    // of an ordinary sighting of the pair seen at the same instants
     const createHitsSighting = async (count: number, firstSeen: Date, lastSeen: Date) => createRelation(reportContext, user, {
       fromId: indicator.internal_id,
       toId: platform.internal_id,
       relationship_type: STIX_SIGHTING_RELATIONSHIP,
+      standard_id: sightingStixId,
       stix_id: sightingStixId,
       [INPUT_MARKINGS]: pairMarkings(indicator, platform),
       [INPUT_GRANTED_REFS]: await pairSharingForReporter(context, user, indicator, platform),
