@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type React from 'react';
 import { ALL_DEFENSE_LAYERS } from '../../../defense/matrix/defenseMatrix-utils';
-import { defenseKeyboardProps, type DefenseMatrixMode } from './AttackPatternsMatrixDefense';
+import { defenseCoveredPercent, type DefenseMatrixCellData, defenseKeyboardProps, type DefenseMatrixMode, defenseTechniqueLevel } from './AttackPatternsMatrixDefense';
 
 const keyEvent = (key: string, target: object, currentTarget: object) => ({
   key,
@@ -16,6 +16,33 @@ const defenseMode = (onSelect: (id: string) => void): DefenseMatrixMode => ({
   layers: ALL_DEFENSE_LAYERS,
   threatOverlay: false,
   onSelect,
+});
+
+describe('Defense matrix tactic coverage', () => {
+  const cell = (id: string, level: number) => ({
+    attack_pattern_id: id,
+    level,
+    telemetry: false,
+    detection: 'none',
+    validated: 'none',
+    mitigated: false,
+    threats_count: 0,
+  }) as unknown as DefenseMatrixCellData;
+  const defense: DefenseMatrixMode = {
+    ...defenseMode(() => {}),
+    cells: new Map([['parent', cell('parent', 0)], ['sub', cell('sub', 3)], ['other', cell('other', 1)]]),
+  };
+
+  it('should count a technique at the best level of itself and its sub-techniques', () => {
+    expect(defenseTechniqueLevel(defense, ['parent', 'sub'])).toBe(3);
+    expect(defenseTechniqueLevel(defense, ['parent'])).toBe(0);
+    expect(defenseTechniqueLevel(defense, ['unknown'])).toBe(0);
+  });
+  it('should count each displayed technique once in the tactic percentage', () => {
+    expect(defenseCoveredPercent(defense, [['parent', 'sub']])).toBe(100);
+    expect(defenseCoveredPercent(defense, [['parent', 'sub'], ['other']])).toBe(50);
+    expect(defenseCoveredPercent(defense, [])).toBe(0);
+  });
 });
 
 describe('Defense matrix cell keyboard activation', () => {

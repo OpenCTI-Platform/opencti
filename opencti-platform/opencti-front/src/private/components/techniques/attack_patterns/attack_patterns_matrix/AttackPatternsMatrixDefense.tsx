@@ -8,6 +8,7 @@ import { hexToRGB } from '../../../../../utils/Colors';
 import { useFormatter } from '../../../../../components/i18n';
 import {
   computeLayerLevel,
+  DEFENSE_COVERED_LEVEL,
   DEFENSE_LEVEL_NONE,
   type DefenseCellLike,
   defenseFailedColor,
@@ -39,6 +40,18 @@ export interface DefenseMatrixMode {
 export const defenseCellLevel = (defense: DefenseMatrixMode, attackPatternId: string) => {
   const cell = defense.cells.get(attackPatternId);
   return cell ? computeLayerLevel(cell, defense.layers) : DEFENSE_LEVEL_NONE;
+};
+
+// A technique counts once, at the best level of itself and its sub-techniques, as in the coverage by tactic
+export const defenseTechniqueLevel = (defense: DefenseMatrixMode, attackPatternIds: ReadonlyArray<string>) => {
+  return Math.max(DEFENSE_LEVEL_NONE, ...attackPatternIds.map((id) => defenseCellLevel(defense, id)));
+};
+
+// Each entry holds the ids of a displayed technique and of its sub-techniques
+export const defenseCoveredPercent = (defense: DefenseMatrixMode, techniques: ReadonlyArray<ReadonlyArray<string>>) => {
+  if (techniques.length === 0) return 0;
+  const covered = techniques.filter((ids) => defenseTechniqueLevel(defense, ids) >= DEFENSE_COVERED_LEVEL).length;
+  return Math.round((covered / techniques.length) * 100);
 };
 
 export const isUsedByThreats = (defense: DefenseMatrixMode, attackPatternId: string) => {

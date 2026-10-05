@@ -21,7 +21,7 @@ import { hexToRGB } from '../../../../../utils/Colors';
 import type { Theme } from '../../../../../components/Theme';
 import { containerTypes } from '../../../../../utils/hooks/useAttributes';
 import { useFormatter } from '../../../../../components/i18n';
-import { defenseCellLevel, isUsedByThreats } from './AttackPatternsMatrixDefense';
+import { defenseCellLevel, defenseCoveredPercent, isUsedByThreats } from './AttackPatternsMatrixDefense';
 import { DEFENSE_COVERED_LEVEL, DEFENSE_LEVEL_NONE, defenseLevelColor } from '../../../defense/matrix/defenseMatrix-utils';
 
 export type AttackPatternsOfPhase = NonNullable<NonNullable<AttackPatternsMatrixColumns_data$data['attackPatternsMatrix']>['attackPatternsOfPhases']>[number];
@@ -211,10 +211,7 @@ const AttackPatternsMatrixColumns = ({
 
   const defenseColumnCoverage = (col: FilteredData) => {
     if (!defense) return null;
-    const ids = (col.attackPatterns ?? []).flatMap(defenseTechniqueIds);
-    if (ids.length === 0) return 0;
-    const covered = ids.filter((id) => defenseCellLevel(defense, id) >= DEFENSE_COVERED_LEVEL).length;
-    return Math.round((covered / ids.length) * 100);
+    return defenseCoveredPercent(defense, (col.attackPatterns ?? []).map(defenseTechniqueIds));
   };
 
   const getAttackPatternLevel = (ap: AttackPattern): number => {
