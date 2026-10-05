@@ -126,6 +126,20 @@ export function assembleTemplateData(
   };
 }
 
+// A rejection carrying this marker failed to WRITE the notification, rather than failing to
+// reach a remote notifier or to honour the user's configuration. The stream position advances
+// either way, so a write failure loses the notification with no retry — that is the half of
+// these fire-and-forget catches someone has to act on. The marker is set where the write
+// happens, because a rejection can also come from earlier steps on the same UI notifier.
+const NOTIFICATION_WRITE_FAILURE = Symbol('notification_write_failure');
+const markWriteFailure = (error: unknown) => {
+  if (error && typeof error === 'object') {
+    Object.assign(error, { [NOTIFICATION_WRITE_FAILURE]: true });
+  }
+  return error;
+};
+const isWriteFailure = (error: unknown) => !!(error && typeof error === 'object' && (error as Record<symbol, unknown>)[NOTIFICATION_WRITE_FAILURE]);
+
 export async function handleUINotification(
   context: AuthContext,
   notificationName: string,
@@ -149,8 +163,8 @@ export async function handleUINotification(
   try {
     await addNotification(context, SYSTEM_USER, notificationPayload);
   } catch (error) {
-    logApp.error('[OPENCTI-MODULE] Publisher manager add notification error', { cause: error, manager: 'PUBLISHER_MANAGER' });
-    throw error;
+    // Deliberately not logged here: the caller's catch logs it once and picks the level.
+    throw markWriteFailure(error);
   }
 }
 
@@ -431,13 +445,18 @@ export const processNotificationEvent = async (
         }
       })
       .catch((reason) => {
-        logApp.error('[OPENCTI-MODULE] Publisher manager notification processing error', {
+        const meta = {
           cause: reason,
           manager: 'PUBLISHER_MANAGER',
           notifierType: notifier.notifier_connector_id,
           userId: user.user_id,
           notificationId,
-        });
+        };
+        if (isWriteFailure(reason)) {
+          logApp.error('[OPENCTI-MODULE] Publisher manager notification write failed', meta);
+        } else {
+          logApp.warn('[OPENCTI-MODULE] Publisher manager notification processing error', meta);
+        }
       });
   }
 };
@@ -552,16 +571,21 @@ const processBufferedEvents = async (
             triggersInDataToSend as BasicStoreEntityTrigger[],
             usersFromCache,
           ).catch((reason) => {
-            logApp.error('[OPENCTI-MODULE] Publisher manager buffered notification processing error', {
+            const meta = {
               cause: reason,
               manager: 'PUBLISHER_MANAGER',
               notifierType: notifierEntity.notifier_connector_id,
               userId: currentUser.user_id,
               triggerCount: triggersInDataToSend.length,
-            });
+            };
+            if (isWriteFailure(reason)) {
+              logApp.error('[OPENCTI-MODULE] Publisher manager buffered notification write failed', meta);
+            } else {
+              logApp.warn('[OPENCTI-MODULE] Publisher manager buffered notification processing error', meta);
+            }
           });
         } else {
-          logApp.error('[OPENCTI-MODULE] Publisher manager cant find trigger for notification.');
+          logApp.warn('[OPENCTI-MODULE] Publisher manager cant find trigger for notification.');
         }
       }
     }

@@ -5137,6 +5137,7 @@
   "This is a non-exhaustive, open vocabulary that covers common programming languages and is intended to characterize the languages that may have been used to implement a malware instance or family": "Si tratta di un vocabolario aperto e non esaustivo che copre i linguaggi di programmazione più comuni e ha lo scopo di caratterizzare i linguaggi che possono essere stati utilizzati per implementare un'istanza o una famiglia di malware",
   "This is an open vocabulary that covers common capabilities that may be exhibited by a malware instance or family": "Si tratta di un vocabolario aperto che copre le capacità comuni che possono essere esibite da un'istanza o da una famiglia di malware",
   "This is your own account. If your IP is not in the allow list, you will be locked out of the platform after saving.": "Questo è il tuo account. Se il tuo indirizzo IP non è presente nella lista di autorizzazione, dopo il salvataggio non potrai più accedere alla piattaforma.",
+  "This item can't be edited from the graph": "Questo elemento non può essere modificato dal grafico",
   "This item is built-in": "Questo elemento è integrato",
   "This label already exists": "Questa etichetta esiste già",
   "This landscape diff has expired. Compute it again with the scope and period above.": "Questo confronto del panorama è scaduto. Calcolalo di nuovo con il perimetro e il periodo indicati sopra.",

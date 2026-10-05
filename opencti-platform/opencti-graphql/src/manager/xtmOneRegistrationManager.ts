@@ -18,7 +18,7 @@ export const xtmOneRegistrationManager = async () => {
   try {
     await registerWithXtmOne(context, SYSTEM_USER);
   } catch (error: any) {
-    logApp.error('[XTM One] Registration manager error', { error: error.message });
+    logApp.warn('[XTM One] Registration manager error', { error: error.message });
   }
 };
 
