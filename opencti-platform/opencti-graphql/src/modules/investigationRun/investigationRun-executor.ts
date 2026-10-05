@@ -69,7 +69,7 @@ import { INVESTIGATION_MANAGER_USER, isUserHasCapability, KNOWLEDGE_KNENRICHMENT
 import { addDraftWorkspace, deleteDraftWorkspace, findById as findDraftById, validateDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import { addWorkspace, findById as findWorkspaceById, workspaceDelete, workspaceEditField } from '../workspace/workspace-domain';
 import { askElementEnrichmentForConnectors } from '../../domain/stixCoreObject';
-import { loadWorkById } from '../../domain/work';
+import { loadWorkById, worksForConnector } from '../../domain/work';
 import { addNote } from '../../domain/note';
 import { addReport } from '../../domain/report';
 import { addStixCyberObservable } from '../../domain/stixCyberObservable';
@@ -216,6 +216,20 @@ interface WorkState {
 const loadWork = async (context: AuthContext, workId: string): Promise<WorkState | null> => {
   const work = await loadWorkById(context, INVESTIGATION_MANAGER_USER, workId) as WorkState | undefined;
   return work ?? null;
+};
+
+// The work an interrupted dispatch created for a connector in the draft of the
+// run: dispatches run one at a time under the run actions lock, so a work of
+// that connector and draft created since and known to no request is that one.
+const findStartedEnrichmentWork = async (exec: RunExecution, current: BasicStoreEntityInvestigationRun, connectorId: string, since: number) => {
+  if (!current.draft_id) return null;
+  const known = new Set([...current.enrichment_requests.flatMap((item) => (item.work_id ? [item.work_id] : [])), ...(current.pending_work_ids ?? [])]);
+  const works = await worksForConnector(exec.liveContext, INVESTIGATION_MANAGER_USER, connectorId, {
+    first: 10,
+    filters: { mode: 'and', filters: [{ key: 'draft_context', values: [current.draft_id], operator: 'eq', mode: 'or' }], filterGroups: [] },
+  }) as Array<WorkState & { timestamp?: string }>;
+  const created = works.find((work) => !known.has(work.id) && !!work.timestamp && new Date(work.timestamp).getTime() >= since - 1000);
+  return created?.id ?? null;
 };
 
 // Elements by internal or standard id, among the data the user can see.
@@ -788,6 +802,7 @@ const processEnrichments = async (exec: RunExecution): Promise<BasicStoreEntityI
           && current.enrichment_requests.some((item) => item.id === request.id && item.status === InvestigationEnrichmentRequestStatus.Queued);
         if (!stillQueued) return null;
         let requestPatch: Partial<InvestigationEnrichmentRequest>;
+        const dispatchStartedAt = Date.now();
         try {
           const works = await askElementEnrichmentForConnectors(exec.draftContext, runUser, request.entity_id, [request.connector_id]);
           const startedWorkId = works?.[0]?.id ?? null;
@@ -795,7 +810,23 @@ const processEnrichments = async (exec: RunExecution): Promise<BasicStoreEntityI
             ? { status: InvestigationEnrichmentRequestStatus.Dispatched, work_id: startedWorkId, dispatched_at: now.toISOString() }
             : { status: InvestigationEnrichmentRequestStatus.Failed, error: 'The connector did not accept the job', completed_at: now.toISOString() };
         } catch (error) {
-          requestPatch = { status: InvestigationEnrichmentRequestStatus.Failed, error: errorMessage(error), completed_at: now.toISOString() };
+          // The dispatch may have failed once its work was created or its job pushed: that
+          // work is recorded with its budget, as a started job (it completes or times out),
+          // so that no job of the run changes its draft untracked.
+          const startedWorkId = await findStartedEnrichmentWork(exec, current, request.connector_id, dispatchStartedAt)
+            .catch((lookupError: unknown) => {
+              logApp.warn('[CASE AUTOPILOT] Works of a failed enrichment dispatch not read', { runId: run.internal_id, cause: errorMessage(lookupError) });
+              return null;
+            });
+          if (startedWorkId) {
+            requestPatch = { status: InvestigationEnrichmentRequestStatus.Dispatched, work_id: startedWorkId, dispatched_at: now.toISOString() };
+          } else if (isTransientFailure(error)) {
+            // Nothing started: the request stays queued for the next pass.
+            logApp.warn('[CASE AUTOPILOT] Enrichment dispatch interrupted, retried on the next pass', { runId: run.internal_id, requestId: request.id, cause: errorMessage(error) });
+            return null;
+          } else {
+            requestPatch = { status: InvestigationEnrichmentRequestStatus.Failed, error: errorMessage(error), completed_at: now.toISOString() };
+          }
         }
         const workId = requestPatch.work_id;
         await updateInvestigationRun(exec.liveContext, run.internal_id, (fresh) => ({
