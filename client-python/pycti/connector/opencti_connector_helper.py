@@ -1053,8 +1053,11 @@ class PingAlive(threading.Thread):
                 connector_info = self.connector_info.all_details
 
                 if self.connector_info.last_run_result is not None:
-                    self.connector_logger.error("[PING] ERROR during last run", {"last_run_result": self.connector_info.last_run_result})
-                
+                    self.connector_logger.error(
+                        "[PING] ERROR during last run",
+                        {"last_run_result": self.connector_info.last_run_result},
+                    )
+
                 self.connector_logger.debug(
                     "PingAlive ConnectorInfo", {"connector_info": connector_info}
                 )
@@ -1866,7 +1869,9 @@ class ConnectorInfo:
         self._next_run_datetime = next_run_datetime
         self._last_run_datetime = last_run_datetime
 
-        self._last_run_result: str | None = None # Return from the last connector run, None means everything OK
+        self._last_run_result: str | None = (
+            None  # Return from the last connector run, None means everything OK
+        )
 
     @property
     def all_details(self):
@@ -1881,7 +1886,7 @@ class ConnectorInfo:
             "queue_threshold": self._queue_threshold,
             "queue_messages_size": self._queue_messages_size,
             "next_run_datetime": self._next_run_datetime,
-            "last_run_datetime": self._last_run_datetime
+            "last_run_datetime": self._last_run_datetime,
         }
 
     @property
@@ -3165,7 +3170,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             )
 
     def schedule_process(
-        self, message_callback: Callable[[], None | str], duration_period: Union[int, float]
+        self,
+        message_callback: Callable[[], None | str],
+        duration_period: Union[int, float],
     ) -> None:
         """Schedule the execution of a connector process.
 
