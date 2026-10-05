@@ -177,7 +177,9 @@ export const addHunt = async (context: AuthContext, user: AuthUser, input: HuntA
   if (!context.draft_context) {
     await refreshNextRunAt(context, created);
   }
-  if (!context.draft_context && !replicated && created.hunt_status === HUNT_STATUS_ACTIVE && opts.upsertedStatus !== HUNT_STATUS_ACTIVE) {
+  // A hunt created explicitly active is activated: its translation is checked as on any activation
+  const activated = input.hunt_status === HuntStatus.Active && created.hunt_status === HUNT_STATUS_ACTIVE && opts.upsertedStatus !== HUNT_STATUS_ACTIVE;
+  if (!context.draft_context && !replicated && activated) {
     await startHuntTranslationCheck(context, user, created);
   }
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);

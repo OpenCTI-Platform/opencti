@@ -286,6 +286,8 @@ describe('Hunt resolvers', () => {
           sigma_rule: SIGMA_RULE,
           huntTargets: [intrusionSetId],
           escalation_threshold: 2,
+          // Its runs are started by hand: they open an incident draft above the threshold only on opt-in
+          escalate_manual_runs: true,
           native_queries: [{ platform: 'splunk', language: 'spl', query: 'index=edr CommandLine="* -enc *"' }],
         },
       },
