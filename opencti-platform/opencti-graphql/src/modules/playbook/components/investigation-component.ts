@@ -18,8 +18,11 @@ import type { JSONSchemaType } from 'ajv';
 import { playbookBundleElementsToApply, type PlaybookBundleElementsToApply, type PlaybookComponent } from '../playbook-types';
 import { filterBundleElements, isBundleElementInScope } from '../playbook-utils';
 import { logApp } from '../../../config/conf';
-import { executionContext, SYSTEM_USER } from '../../../utils/access';
+import { executionContext, isUserInPlatformOrganization, SYSTEM_USER } from '../../../utils/access';
 import { fullEntitiesList } from '../../../database/middleware-loader';
+import { getEntityFromCache } from '../../../database/cache';
+import { ENTITY_TYPE_SETTINGS } from '../../../schema/internalObject';
+import type { BasicStoreSettings } from '../../../types/settings';
 import { OPENCTI_ADMIN_UUID } from '../../../schema/general';
 import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
 import { InvestigationRunTrigger } from '../../../generated/graphql';
@@ -117,11 +120,15 @@ export const PLAYBOOK_INVESTIGATION_COMPONENT: PlaybookComponent<InvestigationCo
       logApp.warn('[PLAYBOOK CASE AUTOPILOT] The run-as identity cannot be resolved or can no longer use the platform, no investigation started', { playbookId, runAsUserId });
       return { output_port: 'out', bundle };
     }
+    // Launched as an authenticated request of the run identity would be: organization restrictions depend on its membership.
+    const runContext = executionContext('playbook_components', runUser);
+    const settings = await getEntityFromCache<BasicStoreSettings>(runContext, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+    runContext.user_inside_platform_organization = isUserInPlatformOrganization(runUser, settings);
     // One run per subject: addInvestigationRun returns the active run of a subject already investigated.
     const subjectIds = R.uniq(elements.map((element) => element.extensions?.[STIX_EXT_OCTI]?.id ?? element.id));
     for (let index = 0; index < subjectIds.length; index += 1) {
       try {
-        await addInvestigationRun(context, runUser, subjectIds[index], policy_id || null, { trigger: InvestigationRunTrigger.Playbook, runAsUserId: runUser.id });
+        await addInvestigationRun(runContext, runUser, subjectIds[index], policy_id || null, { trigger: InvestigationRunTrigger.Playbook, runAsUserId: runUser.id });
       } catch (error) {
         logApp.warn('[PLAYBOOK CASE AUTOPILOT] Investigation not started', { playbookId, subjectId: subjectIds[index], cause: error });
       }

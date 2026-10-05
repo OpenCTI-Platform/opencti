@@ -1,12 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+type RunUser = { id: string; capabilities: Array<{ name: string }>; organizations: Array<{ internal_id: string }> };
+const runAs = (organizations: string[]): RunUser => ({ id: 'user-run-as', capabilities: [], organizations: organizations.map((id) => ({ internal_id: id })) });
+
 const mocks = vi.hoisted(() => ({
   policies: [] as Array<{ internal_id: string; name: string }>,
-  runUser: { id: 'user-run-as' } as { id: string } | null,
+  runUser: null as RunUser | null,
+  settings: { platform_organization: 'org-platform' },
   addInvestigationRun: vi.fn(),
 }));
 
 vi.mock('../../../../src/database/middleware-loader', () => ({ fullEntitiesList: vi.fn(async () => mocks.policies) }));
+vi.mock('../../../../src/database/cache', () => ({ getEntityFromCache: vi.fn(async () => mocks.settings) }));
 vi.mock('../../../../src/modules/investigationRun/investigationRun-domain', () => ({
   addInvestigationRun: mocks.addInvestigationRun,
   resolveRunIdentity: vi.fn(async () => mocks.runUser),
@@ -45,7 +50,7 @@ const run = (configuration: Record<string, unknown>, objects = bundle.objects) =
 describe('Run Case Autopilot playbook component', () => {
   beforeEach(() => {
     mocks.policies = [];
-    mocks.runUser = { id: 'user-run-as' };
+    mocks.runUser = runAs(['org-platform']);
     mocks.addInvestigationRun.mockReset();
   });
 
@@ -63,6 +68,17 @@ describe('Run Case Autopilot playbook component', () => {
     expect(mocks.addInvestigationRun.mock.calls.map((call) => call[2])).toEqual(['case-1', 'incident-2']);
     expect(mocks.addInvestigationRun.mock.calls[1][3]).toBe('policy-a');
     expect(mocks.addInvestigationRun.mock.calls[1][4]).toEqual({ trigger: 'playbook', runAsUserId: 'user-run-as' });
+  });
+
+  it('launches as an authenticated request of the run identity, with its platform organization membership', async () => {
+    await run({ applyToElements: 'onlyMain', run_as: { label: 'Analyst', value: 'user-run-as' } });
+    const [insideContext] = mocks.addInvestigationRun.mock.calls[0];
+    expect(insideContext.user).toBe(mocks.runUser);
+    expect(insideContext.user_inside_platform_organization).toBe(true);
+    mocks.addInvestigationRun.mockReset();
+    mocks.runUser = runAs(['org-other']);
+    await run({ applyToElements: 'onlyMain', run_as: { label: 'Analyst', value: 'user-run-as' } });
+    expect(mocks.addInvestigationRun.mock.calls[0][0].user_inside_platform_organization).toBe(false);
   });
 
   it('starts nothing without an incident or case, or without a run-as identity that may use the platform', async () => {
