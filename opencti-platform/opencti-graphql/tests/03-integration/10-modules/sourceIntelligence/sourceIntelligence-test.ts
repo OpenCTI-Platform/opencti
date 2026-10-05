@@ -96,7 +96,7 @@ const SOURCE_SCORECARDS_QUERY = gql`
     sourceScorecards(sourceId: $sourceId, period: $period) {
       source_id
       period
-      snapshot_date
+      scorecard_date
       is_live
       value_score
     }
@@ -617,7 +617,7 @@ describe('Source intelligence', () => {
       entity_type: ENTITY_TYPE_SOURCE_SCORECARD,
       source_id: duplicate.internal_id,
       scorecard_period: REFERENCE_SCORECARD_PERIOD,
-      snapshot_date: '2026-01-01',
+      scorecard_date: '2026-01-01',
       computed_at: '2026-01-01T23:59:59.999Z',
       is_live: false,
       volume_total: 3,
@@ -639,7 +639,7 @@ describe('Source intelligence', () => {
     expect(movedPending?.recommendation_status).toBe('dismissed');
     expect(keptPending?.recommendation_status).toBe('proposed');
     const history = await searchScorecards(testContext, { sourceIds: [kept.internal_id], live: false });
-    expect(history.map((scorecard) => scorecard.snapshot_date)).toContain('2026-01-01');
+    expect(history.map((scorecard) => scorecard.scorecard_date)).toContain('2026-01-01');
     const recommendationIds = [created[0], ...pending].map((proposal) => proposal.internal_id);
     for (let i = 0; i < recommendationIds.length; i += 1) {
       await deleteElementById(testContext, ADMIN_USER, recommendationIds[i], ENTITY_TYPE_SOURCE_RECOMMENDATION);

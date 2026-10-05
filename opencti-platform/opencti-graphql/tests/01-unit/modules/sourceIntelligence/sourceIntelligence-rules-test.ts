@@ -37,7 +37,7 @@ const scorecard = (overrides: Partial<StoreSourceScorecard> = {}): StoreSourceSc
   scorecard_period: 'LAST_30_DAYS',
   period_start: '2026-09-03T00:00:00.000Z',
   period_end: '2026-10-03T00:00:00.000Z',
-  snapshot_date: '2026-10-03',
+  scorecard_date: '2026-10-03',
   computed_at: '2026-10-03T02:00:00.000Z',
   created_at: '2026-10-03T02:00:00.000Z',
   updated_at: '2026-10-03T02:00:00.000Z',

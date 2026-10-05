@@ -33,7 +33,7 @@ export interface ScorecardSearchOptions {
   orderMode?: 'asc' | 'desc';
 }
 
-// A snapshot describes the day of its `snapshot_date`, which the history backfill computes days later: a date range
+// A snapshot describes the day of its `scorecard_date`, which the history backfill computes days later: a date range
 // selects the days a chart shows, never the computation dates
 const toSnapshotDayBound = (date: string) => {
   const time = new Date(date).getTime();
@@ -57,7 +57,7 @@ const buildScorecardFilter = (options: Omit<ScorecardSearchOptions, 'first' | 'o
   if (options.startDate || options.endDate) {
     filter.push({
       range: {
-        'snapshot_date.keyword': {
+        'scorecard_date.keyword': {
           ...(options.startDate ? { gte: toSnapshotDayBound(options.startDate) } : {}),
           ...(options.endDate ? { lte: toSnapshotDayBound(options.endDate) } : {}),
         },
@@ -77,7 +77,7 @@ export const searchScorecards = async (context: AuthContext, options: ScorecardS
     body: {
       query: { bool: { filter } },
       // By day first, as the range selects them: a page of the first days never skips one computed later
-      sort: [{ 'snapshot_date.keyword': { order: options.orderMode ?? 'desc' } }, { computed_at: { order: options.orderMode ?? 'desc' } }],
+      sort: [{ 'scorecard_date.keyword': { order: options.orderMode ?? 'desc' } }, { computed_at: { order: options.orderMode ?? 'desc' } }],
     },
   }).catch((err: unknown) => {
     throw DatabaseError('Source scorecards search failed', { cause: err });
@@ -141,11 +141,11 @@ export const moveScorecardSnapshots = async (context: AuthContext, fromSourceId:
     searchAllScorecards(context, { sourceIds: [fromSourceId], live: false }),
     searchAllScorecards(context, { sourceIds: [toSourceId], live: false }),
   ]);
-  const covered = new Set(kept.map((scorecard) => `${scorecard.scorecard_period}|${scorecard.snapshot_date}`));
+  const covered = new Set(kept.map((scorecard) => `${scorecard.scorecard_period}|${scorecard.scorecard_date}`));
   const moved = moving
-    .filter((scorecard) => !covered.has(`${scorecard.scorecard_period}|${scorecard.snapshot_date}`))
+    .filter((scorecard) => !covered.has(`${scorecard.scorecard_period}|${scorecard.scorecard_date}`))
     .map((scorecard) => {
-      const internalId = scorecardDocumentId(toSourceId, scorecard.scorecard_period, scorecard.snapshot_date, false);
+      const internalId = scorecardDocumentId(toSourceId, scorecard.scorecard_period, scorecard.scorecard_date, false);
       return { ...scorecard, id: internalId, internal_id: internalId, standard_id: `source-scorecard--${internalId}`, source_id: toSourceId };
     });
   await writeScorecards(context, moved);
@@ -214,7 +214,7 @@ export const aggregateScorecardSnapshotsByDay = async (
           days: {
             composite: {
               size: MAX_SCORECARDS_PAGE,
-              sources: [{ day: { terms: { field: 'snapshot_date.keyword', order: 'asc' } } }],
+              sources: [{ day: { terms: { field: 'scorecard_date.keyword', order: 'asc' } } }],
               ...(afterKey ? { after: afterKey } : {}),
             },
             aggs: { metric: { [options.aggregation]: { field: options.metric } } },
@@ -278,7 +278,7 @@ export const purgeScorecardSnapshots = async (context: AuthContext, retentionDay
         bool: {
           filter: [
             { term: { is_live: false } },
-            { range: { 'snapshot_date.keyword': { lt: limit } } },
+            { range: { 'scorecard_date.keyword': { lt: limit } } },
           ],
         },
       },

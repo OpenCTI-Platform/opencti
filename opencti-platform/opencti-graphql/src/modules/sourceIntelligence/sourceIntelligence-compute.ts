@@ -1010,7 +1010,7 @@ export const buildScorecardDocuments = (
         scorecard_period: period,
         period_start: new Date(asOf - days * DAY_MS).toISOString(),
         period_end: computedAt,
-        snapshot_date: snapshotDate,
+        scorecard_date: snapshotDate,
         computed_at: computedAt,
         created_at: computedAt,
         updated_at: computedAt,

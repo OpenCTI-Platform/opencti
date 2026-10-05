@@ -194,7 +194,7 @@ const SOURCE_SCORECARD_DEFINITION: ModuleDefinition<any, any> = {
     { name: 'scorecard_period', label: 'Scorecard period', type: 'string', format: 'enum', values: [...SCORECARD_PERIODS], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     date('period_start', 'Period start', true),
     date('period_end', 'Period end', true),
-    shortText('snapshot_date', 'Snapshot date', { isFilterable: true }),
+    shortText('scorecard_date', 'Scorecard date', { isFilterable: true }),
     date('computed_at', 'Computed at', true),
     bool('is_live', 'Live scorecard', true),
     { name: 'provenance_mode', label: 'Provenance mode', type: 'string', format: 'enum', values: ['assertions', 'creators'], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },

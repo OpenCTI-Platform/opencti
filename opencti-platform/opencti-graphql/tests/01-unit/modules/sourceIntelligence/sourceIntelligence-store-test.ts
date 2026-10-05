@@ -32,7 +32,7 @@ describe('Source intelligence scorecard snapshots purge', () => {
     expect(request.max_docs).toBe(SNAPSHOT_PURGE_MAX_DOCS);
     expect(request.body.query.bool.filter).toEqual([
       { term: { is_live: false } },
-      { range: { 'snapshot_date.keyword': { lt: '2026-09-04' } } },
+      { range: { 'scorecard_date.keyword': { lt: '2026-09-04' } } },
     ]);
   });
 });
@@ -54,9 +54,9 @@ describe('Source intelligence scorecard snapshots date range', () => {
     });
 
     const [, , , request] = rawSearch.mock.calls[0];
-    expect(request.body.query.bool.filter).toContainEqual({ range: { 'snapshot_date.keyword': { gte: '2026-09-01', lte: '2026-09-30' } } });
+    expect(request.body.query.bool.filter).toContainEqual({ range: { 'scorecard_date.keyword': { gte: '2026-09-01', lte: '2026-09-30' } } });
     expect(JSON.stringify(request.body.query.bool.filter)).not.toContain('computed_at');
-    expect(request.body.sort).toEqual([{ 'snapshot_date.keyword': { order: 'asc' } }, { computed_at: { order: 'asc' } }]);
+    expect(request.body.sort).toEqual([{ 'scorecard_date.keyword': { order: 'asc' } }, { computed_at: { order: 'asc' } }]);
   });
 
   it('should bound the days of a time-series aggregation the same way', async () => {
@@ -69,7 +69,7 @@ describe('Source intelligence scorecard snapshots date range', () => {
     });
 
     const [, , , request] = rawSearch.mock.calls[0];
-    expect(request.body.query.bool.filter).toContainEqual({ range: { 'snapshot_date.keyword': { gte: '2026-09-15' } } });
+    expect(request.body.query.bool.filter).toContainEqual({ range: { 'scorecard_date.keyword': { gte: '2026-09-15' } } });
   });
 
   it('should refuse a date that is not one', async () => {
