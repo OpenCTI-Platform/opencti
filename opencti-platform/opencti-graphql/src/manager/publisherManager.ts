@@ -3,7 +3,16 @@ import conf, { booleanConf, getBaseUrl, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { createStreamProcessor } from '../database/stream/stream-handler';
-import { redisClaimDigestDelivery, redisConfirmDigestDelivery, redisGetManagerEventState, redisReleaseDigestDelivery, redisSetManagerEventState } from '../database/redis';
+import { v4 as uuidv4 } from 'uuid';
+import {
+  DIGEST_DELIVERY_RENEW_MS,
+  redisClaimDigestDelivery,
+  redisConfirmDigestDelivery,
+  redisGetManagerEventState,
+  redisReleaseDigestDelivery,
+  redisRenewDigestDelivery,
+  redisSetManagerEventState,
+} from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import { sendMail, smtpComputeFrom, smtpIsAlive } from '../database/smtp';
 import type { NotifierTestInput } from '../generated/graphql';
@@ -288,29 +297,41 @@ export const internalProcessNotification = async (
 
 /**
  * Sends a notification through one notifier. With a delivery receipt (a digest carrying a delivery key, one receipt per
- * notifier), the receipt is claimed before sending, kept once the notifier succeeded and released when it failed: a
- * digest stored again is only sent to the notifiers that did not receive it. Returns false when it was not sent again.
+ * notifier), the receipt is claimed under an owner token before sending, renewed while the notifier sends, kept once it
+ * succeeded and released when it failed: a digest stored again is only sent to the notifiers that did not receive it.
+ * Returns false when it was not sent again.
  */
 export const sendToNotifier = async (deliveryReceipt: string | undefined, send: () => Promise<void>): Promise<boolean> => {
-  if (deliveryReceipt && !(await redisClaimDigestDelivery(deliveryReceipt))) {
+  if (!deliveryReceipt) {
+    await send();
+    return true;
+  }
+  const ownerToken = uuidv4();
+  if (!(await redisClaimDigestDelivery(deliveryReceipt, ownerToken))) {
     return false;
   }
+  const keepClaim = async (operation: string, apply: () => Promise<boolean>) => {
+    try {
+      if (!(await apply())) {
+        logApp.warn('[OPENCTI-MODULE] Digest delivery claim lost', { manager: 'PUBLISHER_MANAGER', operation });
+      }
+    } catch (err) {
+      // The claim expires by itself
+      logApp.warn('[OPENCTI-MODULE] Digest delivery claim could not be updated', { cause: err, manager: 'PUBLISHER_MANAGER', operation });
+    }
+  };
+  const renewal = setInterval(() => {
+    void keepClaim('renew', () => redisRenewDigestDelivery(deliveryReceipt, ownerToken));
+  }, DIGEST_DELIVERY_RENEW_MS);
   try {
     await send();
   } catch (err) {
-    if (deliveryReceipt) {
-      await redisReleaseDigestDelivery(deliveryReceipt).catch((releaseError) => {
-        // The claim expires by itself, the digest can then be sent again
-        logApp.warn('[OPENCTI-MODULE] Digest delivery receipt could not be released', { cause: releaseError, manager: 'PUBLISHER_MANAGER' });
-      });
-    }
+    clearInterval(renewal);
+    await keepClaim('release', () => redisReleaseDigestDelivery(deliveryReceipt, ownerToken));
     throw err;
   }
-  if (deliveryReceipt) {
-    await redisConfirmDigestDelivery(deliveryReceipt).catch((confirmError) => {
-      logApp.warn('[OPENCTI-MODULE] Digest delivery receipt could not be recorded', { cause: confirmError, manager: 'PUBLISHER_MANAGER' });
-    });
-  }
+  clearInterval(renewal);
+  await keepClaim('confirm', () => redisConfirmDigestDelivery(deliveryReceipt, ownerToken));
   return true;
 };
 

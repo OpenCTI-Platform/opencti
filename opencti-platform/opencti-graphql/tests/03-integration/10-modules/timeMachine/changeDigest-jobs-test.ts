@@ -11,6 +11,7 @@ import {
   redisIsChangeDigestJobDue,
   redisReleaseDigestDelivery,
   redisRemoveChangeDigestJob,
+  redisRenewDigestDelivery,
   redisRescheduleChangeDigestJob,
 } from '../../../../src/database/redis';
 
@@ -60,20 +61,25 @@ describe('Change digest jobs in Redis', () => {
     await redisRemoveChangeDigestJob(member('failing'));
   });
 
-  it('claims a digest delivery once, releases it after a failure and keeps it after a success', async () => {
+  it('lets only the owner of a digest delivery claim renew, release or confirm it', async () => {
     const receipt = member('delivery|notifier-email');
-    expect(await redisClaimDigestDelivery(receipt)).toBe(true);
-    // Being sent
-    expect(await redisClaimDigestDelivery(receipt)).toBe(false);
-    // The notifier failed: the digest can be sent again
-    await redisReleaseDigestDelivery(receipt);
-    expect(await redisClaimDigestDelivery(receipt)).toBe(true);
-    // The notifier succeeded: never sent again
-    await redisConfirmDigestDelivery(receipt);
-    expect(await redisClaimDigestDelivery(receipt)).toBe(false);
-    expect(await redisClaimDigestDelivery(member('delivery|notifier-ui'))).toBe(true);
-    await redisReleaseDigestDelivery(receipt);
-    await redisReleaseDigestDelivery(member('delivery|notifier-ui'));
+    expect(await redisClaimDigestDelivery(receipt, 'owner-a')).toBe(true);
+    // Being sent by owner-a
+    expect(await redisClaimDigestDelivery(receipt, 'owner-b')).toBe(false);
+    expect(await redisRenewDigestDelivery(receipt, 'owner-a')).toBe(true);
+    expect(await redisRenewDigestDelivery(receipt, 'owner-b')).toBe(false);
+    expect(await redisConfirmDigestDelivery(receipt, 'owner-b')).toBe(false);
+    expect(await redisReleaseDigestDelivery(receipt, 'owner-b')).toBe(false);
+    // The notifier of owner-a failed: the digest can be sent again
+    expect(await redisReleaseDigestDelivery(receipt, 'owner-a')).toBe(true);
+    expect(await redisClaimDigestDelivery(receipt, 'owner-b')).toBe(true);
+    // The notifier of owner-b succeeded: never sent again, and the receipt cannot be released any more
+    expect(await redisConfirmDigestDelivery(receipt, 'owner-b')).toBe(true);
+    expect(await redisReleaseDigestDelivery(receipt, 'owner-b')).toBe(false);
+    expect(await redisClaimDigestDelivery(receipt, 'owner-c')).toBe(false);
+    expect(await redisClaimDigestDelivery(member('delivery|notifier-ui'), 'owner-c')).toBe(true);
+    expect(await redisReleaseDigestDelivery(member('delivery|notifier-ui'), 'owner-c')).toBe(true);
+    await getClientBase().zrem('{digest_deliveries}:receipts', receipt);
   });
 
   it('expires the jobs scheduled strictly before a date', async () => {

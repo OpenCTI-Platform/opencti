@@ -884,29 +884,54 @@ export const redisRemoveChangeDigestJob = async (member: string) => {
 
 // region - digest deliveries
 // Receipts of the digests that carry a delivery key (a change digest: one trigger, recipient and period), one per key
-// and notifier, scored by the end of their validity: claimed for a short time while the notifier sends, then kept long
-// enough to cover every retry of a change digest once the notifier succeeded
-const DIGEST_DELIVERIES_KEY = 'digest_deliveries';
+// and notifier, scored by the end of their validity: claimed by one sender (its owner token) and renewed while the
+// notifier sends, then kept long enough to cover every retry of a change digest once the notifier succeeded. Only the
+// owner of a claim renews, confirms or releases it. Both keys share one hash slot for the scripts.
+const DIGEST_DELIVERY_RECEIPTS_KEY = '{digest_deliveries}:receipts';
+const DIGEST_DELIVERY_OWNERS_KEY = '{digest_deliveries}:owners';
 const DIGEST_DELIVERY_CLAIM_MS = 10 * 60 * 1000;
+export const DIGEST_DELIVERY_RENEW_MS = DIGEST_DELIVERY_CLAIM_MS / 4;
 const DIGEST_DELIVERY_RETENTION_MS = 8 * 24 * 60 * 60 * 1000;
 const CLAIM_DIGEST_DELIVERY_SCRIPT = `
 local validUntil = redis.call('ZSCORE', KEYS[1], ARGV[1])
 if validUntil and tonumber(validUntil) > tonumber(ARGV[2]) then return 0 end
 redis.call('ZADD', KEYS[1], ARGV[3], ARGV[1])
+redis.call('HSET', KEYS[2], ARGV[1], ARGV[4])
 return 1`;
-// False when the digest was already sent to this notifier, or is being sent
-export const redisClaimDigestDelivery = async (receipt: string): Promise<boolean> => {
-  const now = Date.now();
-  const claimed = await getClientBase().eval(CLAIM_DIGEST_DELIVERY_SCRIPT, 1, DIGEST_DELIVERIES_KEY, receipt, now, now + DIGEST_DELIVERY_CLAIM_MS);
-  return claimed === 1;
+const RENEW_DIGEST_DELIVERY_SCRIPT = `
+if redis.call('HGET', KEYS[2], ARGV[1]) ~= ARGV[3] then return 0 end
+redis.call('ZADD', KEYS[1], ARGV[2], ARGV[1])
+return 1`;
+const CONFIRM_DIGEST_DELIVERY_SCRIPT = `
+if redis.call('HGET', KEYS[2], ARGV[1]) ~= ARGV[3] then return 0 end
+redis.call('HDEL', KEYS[2], ARGV[1])
+redis.call('ZREMRANGEBYSCORE', KEYS[1], '-inf', ARGV[4])
+redis.call('ZADD', KEYS[1], ARGV[2], ARGV[1])
+return 1`;
+const RELEASE_DIGEST_DELIVERY_SCRIPT = `
+if redis.call('HGET', KEYS[2], ARGV[1]) ~= ARGV[2] then return 0 end
+redis.call('HDEL', KEYS[2], ARGV[1])
+redis.call('ZREM', KEYS[1], ARGV[1])
+return 1`;
+const evalDigestDelivery = async (script: string, ...args: Array<string | number>): Promise<boolean> => {
+  const result = await getClientBase().eval(script, 2, DIGEST_DELIVERY_RECEIPTS_KEY, DIGEST_DELIVERY_OWNERS_KEY, ...args);
+  return result === 1;
 };
-export const redisConfirmDigestDelivery = async (receipt: string) => {
+// False when the digest was already sent to this notifier, or is being sent by another owner
+export const redisClaimDigestDelivery = async (receipt: string, ownerToken: string): Promise<boolean> => {
   const now = Date.now();
-  await getClientBase().zremrangebyscore(DIGEST_DELIVERIES_KEY, '-inf', now);
-  await getClientBase().zadd(DIGEST_DELIVERIES_KEY, now + DIGEST_DELIVERY_RETENTION_MS, receipt);
+  return evalDigestDelivery(CLAIM_DIGEST_DELIVERY_SCRIPT, receipt, now, now + DIGEST_DELIVERY_CLAIM_MS, ownerToken);
 };
-export const redisReleaseDigestDelivery = async (receipt: string) => {
-  await getClientBase().zrem(DIGEST_DELIVERIES_KEY, receipt);
+// The renewals, the confirmation and the release return false when the claim is not owned by `ownerToken` any more
+export const redisRenewDigestDelivery = async (receipt: string, ownerToken: string): Promise<boolean> => {
+  return evalDigestDelivery(RENEW_DIGEST_DELIVERY_SCRIPT, receipt, Date.now() + DIGEST_DELIVERY_CLAIM_MS, ownerToken);
+};
+export const redisConfirmDigestDelivery = async (receipt: string, ownerToken: string): Promise<boolean> => {
+  const now = Date.now();
+  return evalDigestDelivery(CONFIRM_DIGEST_DELIVERY_SCRIPT, receipt, now + DIGEST_DELIVERY_RETENTION_MS, ownerToken, now);
+};
+export const redisReleaseDigestDelivery = async (receipt: string, ownerToken: string): Promise<boolean> => {
+  return evalDigestDelivery(RELEASE_DIGEST_DELIVERY_SCRIPT, receipt, ownerToken);
 };
 // endregion
 
