@@ -281,6 +281,16 @@ const collectClusterManagers = (errors: string[]): ManagerId[] => {
   });
 };
 
+// HTML collapses surrounding and repeated whitespace, so a padded id renders like the id itself. Comparisons stay
+// case-sensitive once the underscores are replaced: "History manager" names HISTORY_MANAGER, "HISTORY MANAGER" does not.
+const rendersAsRawId = (label: unknown, id: string): boolean => {
+  if (typeof label !== 'string') {
+    return true;
+  }
+  const rendered = label.trim().replace(/\s+/g, ' ');
+  return rendered === '' || rendered.toLowerCase() === id.toLowerCase() || rendered.replace(/[\s-]/g, '_') === id;
+};
+
 const readDictionary = (file: string): Record<string, unknown> => (existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : {});
 
 // The guard needs the monorepo checkout: a missing directory fails the first test instead of skipping the guard.
@@ -314,12 +324,18 @@ describe('Manager labels of the Settings > Parameters page', () => {
     expect(MANAGER_IDS).toEqual(expect.arrayContaining(['RULE_ENGINE', 'HISTORY_MANAGER', 'TELEMETRY_MANAGER', 'RETENTION_MANAGER', 'CATALOG_MANAGER']));
   });
 
+  it('should treat a label that renders like the raw id as missing', () => {
+    expect(['', '   ', 'RULE_ENGINE', 'RULE_ENGINE ', ' rule_engine', 'Rule_Engine', 'RULE ENGINE', 'RULE  ENGINE', 'RULE-ENGINE', 42, undefined]
+      .filter((label) => !rendersAsRawId(label, 'RULE_ENGINE'))).toEqual([]);
+    expect(rendersAsRawId('Rules engine', 'RULE_ENGINE')).toBe(false);
+    expect(rendersAsRawId('History manager', 'HISTORY_MANAGER')).toBe(false);
+    expect(rendersAsRawId('PIR manager', 'PIR_MANAGER')).toBe(false);
+  });
+
   it('should label every manager in every language', () => {
-    const missing = MANAGER_IDS.flatMap((id) => LANGUAGES.flatMap((language) => {
-      const label = DICTIONARIES.get(language)?.[id];
-      const isLabelled = typeof label === 'string' && label.trim() !== '' && label !== id;
-      return isLabelled ? [] : [`${id} (${language})`];
-    }));
+    const missing = MANAGER_IDS.flatMap((id) => LANGUAGES.flatMap((language) => (
+      rendersAsRawId(DICTIONARIES.get(language)?.[id], id) ? [`${id} (${language})`] : []
+    )));
     const hint = 'add "<ID>": "<Feature> manager" to opencti-front/lang/back/<language>.json, or fix the entry of lang/front/<language>.json, which takes precedence';
     expect(missing, `${hint}, for: ${missing.join(', ')}`).toEqual([]);
   });
