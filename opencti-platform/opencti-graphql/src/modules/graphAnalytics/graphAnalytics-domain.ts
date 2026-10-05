@@ -634,13 +634,15 @@ export const graphClustersSizeTimeSeries = async (context: AuthContext, user: Au
   })));
 };
 
+// loads up to max + 1 members: a clustering run can publish members after the count was read, and the caller
+// must see that the cluster outgrew its limit instead of receiving the first max members
 const loadVisibleMemberIds = async (context: AuthContext, user: AuthUser, clusterId: string, max: number) => {
   const members = await elList<BasicStoreEntity>(context, user, GRAPH_METRICS_ENTITY_INDICES, {
     types: [ABSTRACT_STIX_CORE_OBJECT],
     filters: clusterMembersFilter(clusterId),
     baseData: true,
-    first: Math.min(max, 1000),
-    maxSize: max,
+    first: Math.min(max + 1, 1000),
+    maxSize: max + 1,
   });
   return members;
 };
@@ -659,6 +661,9 @@ export const promoteGraphCluster = async (context: AuthContext, user: AuthUser, 
     throw FunctionalError('Graph cluster has too many accessible members to be promoted', { id, members: cluster.members_count, max: PROMOTION_MAX_MEMBERS });
   }
   const members = await loadVisibleMemberIds(context, user, cluster.internal_id, PROMOTION_MAX_MEMBERS);
+  if (members.length > PROMOTION_MAX_MEMBERS) {
+    throw FunctionalError('Graph cluster has too many accessible members to be promoted', { id, members: members.length, max: PROMOTION_MAX_MEMBERS });
+  }
   const featureIds = input.include_features
     ? (await graphClusterFeatures(context, user, cluster)).flatMap((f) => f.entities.map((e) => e.internal_id))
     : [];
@@ -719,6 +724,9 @@ export const addGraphClusterToInvestigation = async (context: AuthContext, user:
     throw FunctionalError('Graph cluster has too many accessible elements to be added to an investigation', { id, elements: cluster.members_count, max: INVESTIGATION_MAX_ELEMENTS });
   }
   const members = await loadVisibleMemberIds(context, user, cluster.internal_id, INVESTIGATION_MAX_ELEMENTS);
+  if (members.length > INVESTIGATION_MAX_ELEMENTS) {
+    throw FunctionalError('Graph cluster has too many accessible elements to be added to an investigation', { id, elements: members.length, max: INVESTIGATION_MAX_ELEMENTS });
+  }
   const features = await graphClusterFeatures(context, user, cluster);
   const ids = Array.from(new Set([...members.map((m) => m.internal_id), ...features.flatMap((f) => f.entities.map((e) => e.internal_id))]));
   if (ids.length > INVESTIGATION_MAX_ELEMENTS) {
