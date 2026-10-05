@@ -2026,6 +2026,28 @@ type ManagerContractExcerpt {
   logo: String!
 }
 
+enum ConnectorCatalogIdentitySource {
+  composer
+  manual
+  reported
+  name
+}
+
+type ConnectorCatalogIdentity {
+  slug: String!
+  title: String!
+  logo: String
+  source: ConnectorCatalogIdentitySource!
+}
+
+type ConnectorCatalogIdentityOption {
+  slug: String!
+  title: String!
+  logo: String
+  connector_type: String
+  short_description: String
+}
+
 enum ConnectorPriorityGroup {
   REALTIME
   DEFAULT
@@ -2137,6 +2159,7 @@ type Connector implements BasicObject & InternalObject {
   xtm_one_intent: String
   version: String
   slug: String
+  catalog_identity: ConnectorCatalogIdentity
   jwks: String!
 }
 
@@ -9101,6 +9124,7 @@ type Query {
   connectorsForAnalysis: [Connector]
   connectorsForNotification: [Connector]
   connectorMigrationAssessment(connectorId: ID!, containerImage: String!, configuration: [ContractConfigInput!]): MigrationAssessment!
+  connectorCatalogIdentityOptions: [ConnectorCatalogIdentityOption!]!
   work(id: ID!): Work
   isWorkAlive(id: ID!): Boolean
   works(first: Int, after: ID, orderBy: WorksOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): WorkConnection
@@ -10016,6 +10040,7 @@ type Mutation {
   updateConnectorLogs(input: LogsConnectorStatusInput!): ID!
   updateConnectorHealth(input: HealthConnectorStatusInput!): ID!
   updateConnectorTrigger(id: ID!, input: [EditInput]!): Connector
+  updateConnectorCatalogIdentity(id: ID!, slug: String): Connector
   connectorMigrateToManaged(input: MigrateConnectorToManagedInput!): ManagedConnector!
   stixEdit(id: ID!): StixEditMutations
   markingDefinitionAdd(input: MarkingDefinitionAddInput!): MarkingDefinition

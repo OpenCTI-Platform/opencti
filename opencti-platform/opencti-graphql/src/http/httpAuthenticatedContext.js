@@ -22,6 +22,7 @@ import { batchIsSubAttackPattern, batchCoursesOfAction, batchSubAttackPatterns }
 import { executionContext, isBypassUser, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
 import { getEnterpriseEditionInfo, IS_LTS_PLATFORM } from '../modules/settings/licensing';
 import { batchContextDataForLog } from '../database/data-changes';
+import { batchConnectorCatalogIdentities } from '../domain/connector-catalog-identity';
 
 export const computeLoaders = (executeContext, user) => {
   // Generic loaders
@@ -46,6 +47,7 @@ export const computeLoaders = (executeContext, user) => {
     isSubAttachPatternBatchLoader: batchLoader(batchIsSubAttackPattern, executeContext, user),
     subAttackPatternsBatchLoader: batchLoader(batchSubAttackPatterns, executeContext, user),
     coursesOfActionBatchLoader: batchLoader(batchCoursesOfAction, executeContext, user),
+    connectorCatalogIdentityBatchLoader: batchLoader(batchConnectorCatalogIdentities, executeContext, user),
   };
 };
 

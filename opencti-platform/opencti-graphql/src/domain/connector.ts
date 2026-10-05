@@ -380,10 +380,13 @@ export const registerConnector = async (
       listen_callback_uri,
       xtm_one_intent,
       version,
-      slug,
       connector_user_id: opts.connector_user_id ?? user.id,
       built_in: opts.built_in ?? false,
     };
+    // An image without the identity stamp reports no slug: keep the one already known.
+    if (!isEmptyField(slug)) {
+      patch.slug = slug;
+    }
     if (opts.active !== undefined) {
       patch.active = opts.active;
     }
