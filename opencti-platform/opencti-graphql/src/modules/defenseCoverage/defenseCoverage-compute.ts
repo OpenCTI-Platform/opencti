@@ -230,6 +230,9 @@ const relationPlatformScores = (relation: BasicStoreRelation) => {
   return groupBy(information, (c) => c.platform_ref);
 };
 
+// OpenAEV scoped the result to platforms: it never counts technique-wide, even when none of them resolves here
+const hasPlatformAttribution = (relation: BasicStoreRelation) => Array.from(relationPlatformScores(relation).keys()).some((platformRef) => !!platformRef);
+
 const resultDate = (result: BasicStoreEntity | undefined, relation: BasicStoreRelation) => {
   const lastResult = (result as unknown as { coverage_last_result?: string } | undefined)?.coverage_last_result;
   return lastResult ?? (relation as unknown as { updated_at?: string }).updated_at ?? undefined;
@@ -324,7 +327,7 @@ export const buildTechniqueCoverage = (attackPatternId: string, graph: Computati
   const accessKey = evidenceAccessKey(graph);
   // The latest result of a partition is the one a reader's level depends on: it comes first and is always kept
   const latestFirst = <T extends DefenseValidationEvidence>(list: T[]) => R.sortWith<T>([R.descend((v) => v.last_result_at ?? '')], list);
-  const attributedRels = new Set(Array.from(vectors.values()).flatMap((vector) => vector.validations.map((v) => v.rel)));
+  const attributedRels = new Set(hasCovered.filter(hasPlatformAttribution).map((h) => h.id));
   const platforms = Array.from(vectors.values()).map((vector) => ({
     ...vector,
     telemetry: capEvidences(R.uniqBy((t) => `${t.id}|${t.rel}|${t.detects}`, vector.telemetry), MAX_EVIDENCES, accessKey, undefined, MAX_EVIDENCE_PARTITIONS),

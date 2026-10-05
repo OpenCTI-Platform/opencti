@@ -96,6 +96,29 @@ describe('Defense coverage vector building', () => {
   });
 });
 
+describe('Defense coverage of platform-scoped OpenAEV results', () => {
+  const coverageWith = (platformsInformation: { platform_ref: string; coverage_name: string; coverage_score: number }[]) => {
+    const graph = buildGraph();
+    graph.hasCoveredByTechnique = new Map([[AP, [relation('covered-1', 'scr-1', AP, {
+      coverage_information: [{ coverage_name: 'DETECTION', coverage_score: 100 }],
+      coverage_platforms_information: platformsInformation,
+    })]]]);
+    return buildTechniqueCoverage(AP, graph, '2026-10-01T00:00:00.000Z');
+  };
+
+  it('should never count a result scoped to unresolved platforms technique-wide', () => {
+    const coverage = coverageWith([{ platform_ref: 'identity--deleted', coverage_name: 'DETECTION', coverage_score: 100 }]);
+    expect(coverage.validations[0]).toMatchObject({ rel: 'covered-1', attributed: true });
+    expect(coverage.platforms.flatMap((p) => p.validations)).toEqual([]);
+    expect(coverage.level).toBeLessThan(4);
+  });
+  it('should count a result without platform attribution technique-wide', () => {
+    const coverage = coverageWith([]);
+    expect(coverage.validations[0]).toMatchObject({ rel: 'covered-1', attributed: false });
+    expect(coverage.level).toEqual(4);
+  });
+});
+
 describe('Defense evidence access signature', () => {
   type Member = { id: string; access_right: string; groups_restriction_ids?: string[] };
   const element = (members?: Member[], authorities?: string[], id = 'e') => ({
