@@ -10107,6 +10107,7 @@ type Query {
   provenanceSourceKindsDistribution(types: [String!], filters: FilterGroup): [ProvenanceSourceKindCount!]!
   provenanceSingleSourcedByType(types: [String!], filters: FilterGroup): [ProvenanceSingleSourcedEntry!]!
   provenanceBackfill: ProvenanceBackfill!
+  provenanceTypeStatistics(types: [String!]!): [ProvenanceTypeStatistics!]!
   fintelDesign(id: String!): FintelDesign
   fintelDesigns(first: Int, after: ID, orderBy: FintelDesignOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): FintelDesignConnection
   securityPlatform(id: String!): SecurityPlatform
@@ -11038,6 +11039,7 @@ type Mutation {
   provenanceProcedureAdopt(id: ID!, text: String!): StixObjectOrStixRelationship
   provenanceAssert(id: ID!): StixObjectOrStixRelationship
   provenanceBackfillRestart: ProvenanceBackfill!
+  provenanceRelationshipTrackingEdit(relationship_types: [String!]!, tracked: Boolean!): EntitySetting
   fintelDesignAdd(input: FintelDesignAddInput!): FintelDesign
   fintelDesignDelete(id: ID!): ID
   fintelDesignFieldPatch(id: ID!, input: [EditInput!], file: Upload): FintelDesign
@@ -11199,6 +11201,7 @@ type EntitySetting implements InternalObject & BasicObject {
   sync_workflow_status_by_name: Boolean
   provenance_tracking: Boolean!
   provenance_untracked_types: [String!]!
+  provenance_relationship_tracking: [ProvenanceRelationshipTracking!]!
   procedures_preservation: Boolean!
   procedures_description_policy: ProceduresDescriptionPolicy!
   attributes_configuration: String
@@ -16738,6 +16741,19 @@ type ProvenanceSingleSourcedEntry {
   entity_type: String!
   total: Int!
   single_sourced: Int!
+}
+
+type ProvenanceRelationshipTracking {
+  relationship_type: String!
+  tracked: Boolean!
+  recommended: Boolean!
+}
+
+type ProvenanceTypeStatistics {
+  entity_type: String!
+  with_provenance: Int!
+  corroborated: Int!
+  last_asserted_at: DateTime
 }
 
 enum ProvenanceBackfillStatus {

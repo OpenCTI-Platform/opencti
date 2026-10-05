@@ -12,6 +12,7 @@ vi.mock('../../../../src/modules/provenance/provenance-config', () => ({
   PROVENANCE_ENABLED: true,
   PROVENANCE_REASSERTION_WINDOW_MS: 24 * 60 * 60 * 1000,
   PROVENANCE_DEFAULT_TRACKED_TYPES: ['Malware'],
+  PROVENANCE_RECOMMENDED_RELATIONSHIP_TYPES: ['uses', 'targets', 'attributed-to'],
 }));
 
 vi.mock('../../../../src/modules/entitySetting/entitySetting-utils', async (importOriginal) => ({

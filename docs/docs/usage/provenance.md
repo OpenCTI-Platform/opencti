@@ -6,11 +6,51 @@ Provenance is available in the Community Edition. It is deterministic: no AI is 
 
 ## Entity types tracked
 
-Provenance is recorded only on the entity types where it is enabled, so that knowledge re-sent over and over by sources (attack patterns, locations, sectors...) does not weigh on ingestion. By default, it is enabled on indicators, intrusion sets, threat actors (groups and individuals) and malware.
+Provenance is recorded only on the entity types where it is enabled, so that knowledge re-sent over and over by sources (attack patterns, locations, sectors...) does not weigh on ingestion. By default, it is enabled on indicators, intrusion sets, threat actors (groups and individuals) and malware, and on the `uses`, `targets` and `attributed-to` relationships (see [Relationship types](#relationship-types)).
 
-To enable or disable it on a type, open "Settings > Customization > Entity types", select the type and use the "Track sources and corroboration" switch of the "Provenance" card. Relationships, sightings and observables are configured on their "Relationship", "Sighting" and observable types. Disabling provenance on a type stops recording it immediately; the provenance already recorded is kept but no longer displayed: neither on the elements of that type nor in the Conflicts and Stale knowledge tabs of the Curation hub, and the knowledge decay rules no longer apply to them. It can no longer be curated either: adopting or dismissing a conflicting value, using a procedure as the description and confirming an element is still valid are refused, on that type and on every type while provenance is disabled on the platform.
+To enable or disable it on a type, open "Settings > Customization > Entity types", select the type and use the "Track sources and corroboration" switch of the "Provenance" card. Next to the switch, the card shows how many elements of the type already have sources, how many of them are corroborated by at least two sources, and when the last assertion was recorded. Sightings and observables are configured on their "Sighting" and observable types; relationships are configured per relationship type. Disabling provenance on a type stops recording it immediately; the provenance already recorded is kept but no longer displayed: neither on the elements of that type nor in the Conflicts and Stale knowledge tabs of the Curation hub, and the knowledge decay rules no longer apply to them. It can no longer be curated either: adopting or dismissing a conflicting value, using a procedure as the description and confirming an element is still valid are refused, on that type and on every type while provenance is disabled on the platform.
+
+![The Provenance card of the Malware entity type: the "Track sources and corroboration" switch, 1 element with sources, 1 corroborated, last asserted minutes ago](assets/provenance-entity-type-tracking.png)
+
+??? example "Light theme"
+
+    ![The Provenance card of the Malware entity type in the light theme](assets/provenance-entity-type-tracking-light.png)
 
 The default set of tracked types can be changed with the `provenance:default_tracked_types` parameter (see [Configuration](#configuration)): it applies to the types whose setting was never changed in the interface.
+
+### Relationship types
+
+Relationships are tracked per relationship type, in the "Provenance" card of "Settings > Customization > Entity types > Relationships". Each row shows a relationship type, the relationships of that type with sources and the corroborated ones, the date of the last assertion, and the tracking switch. The list can be searched by name and filtered on the tracked or the not tracked types.
+
+![The Provenance card of the Relationships entity type: Apply recommended, the search and the tracking filter, 3 of the relationship types tracked, and one row per type with its assertions, its last assertion and its switch](assets/provenance-relationship-types.png)
+
+Three relationship types are tracked out of the box, on new platforms and, by migration, on existing ones:
+
+- `uses`: the techniques, tools and malware of a threat, the knowledge sources disagree on most; the procedures described by each source are kept on these relationships (see [Procedures](#procedures)).
+- `targets`: the victimology of a threat (sectors, countries, organizations), where corroboration tells a confirmed targeting from a single claim.
+- `attributed-to`: the attribution of a campaign or an intrusion set, the most disputed claim of threat intelligence, with few relationships to write.
+
+`indicates` is not tracked by default: indicator feeds re-send this relationship with every indicator, which would double their writes for a corroboration the indicator itself already carries. Every other relationship type is off by default as well.
+
+To turn a type off, or on, use its switch: recording stops or starts immediately, and the other types are unchanged. The "Apply recommended" action switches the three recommended types back on, without changing the others. The same change can be made through the API with the `provenanceRelationshipTrackingEdit` mutation, for example `provenanceRelationshipTrackingEdit(relationship_types: ["uses"], tracked: false)`. A type turned off stays off on upgrades.
+
+??? example "The page, keyboard focus, filtering, search without result, loading and light theme"
+
+    ![Settings > Customization > Entity types > Relationships: the Provenance card next to the Procedures card](assets/provenance-relationship-types-page.png)
+
+    ![The keyboard focus on the switch of a relationship type](assets/provenance-relationship-types-keyboard.png)
+
+    ![The relationship types filtered on the tracked ones: attributed-to, targets and uses](assets/provenance-relationship-types-tracked.png)
+
+    ![A search matching no relationship type: "No relationship type matches this search." and Clear the search](assets/provenance-relationship-types-no-match.png)
+
+    ![The relationship types while their statistics load: the switches are usable, the assertions and the last assertion show placeholders](assets/provenance-relationship-types-loading.png)
+
+    ![The relationship types in the light theme](assets/provenance-relationship-types-light.png)
+
+??? example "Before per relationship type tracking"
+
+    ![The former Provenance card of the Relationships entity type: one switch for every relationship type, off by default](assets/provenance-relationships-before.png)
 
 ## Assertions
 
@@ -129,7 +169,7 @@ When several sources describe how a threat uses a technique, each `uses` relatio
 
 ![The procedures of the uses relationship between APT29 and Spearphishing Attachment: one procedure asserted by CrowdStrike Falcon Intelligence and Recorded Future, the current description, and one asserted by MITRE ATT&CK with Use as description](assets/provenance-procedures.png)
 
-Procedures are recorded with the provenance of relationships: they are only preserved when provenance is tracked on the "Relationship" entity type (disabled by default). Two parameters are available in the "Procedures" card of "Settings > Customization > Entity types > Relationship":
+Procedures are recorded with the provenance of relationships: they are only preserved while provenance is tracked on the `uses` relationship type (tracked by default, see [Relationship types](#relationship-types)). Two parameters are available in the "Procedures" card of "Settings > Customization > Entity types > Relationships":
 
 - **Procedures preservation on uses relationships**: enable or disable the preservation of the procedures (enabled by default).
 - **Procedures description policy**: when a new procedure arrives, keep the longest one or the most recent one as the description (longest by default).
@@ -226,7 +266,7 @@ In the Python client, `OpenCTIApiClient.get_provenance_extension(stix_object)` r
 |:-----------------------------------------|:-------------------------------------------|:--------------|:--------------------------------------------------------------------|
 | provenance:enabled                       | PROVENANCE__ENABLED                        | `true`        | Record assertions on every write                                    |
 | provenance:reassertion_window_hours      | PROVENANCE__REASSERTION_WINDOW_HOURS       | 24            | Window within which a source repeating an assertion is not written again (0 writes every assertion) |
-| provenance:default_tracked_types         | PROVENANCE__DEFAULT_TRACKED_TYPES          | Indicator, Intrusion-Set, Threat-Actor-Group, Threat-Actor-Individual, Malware | Entity types tracked while their setting was never changed (`*` tracks every type) |
+| provenance:default_tracked_types         | PROVENANCE__DEFAULT_TRACKED_TYPES          | Indicator, Intrusion-Set, Threat-Actor-Group, Threat-Actor-Individual, Malware, uses, targets, attributed-to | Entity and relationship types tracked while their setting was never changed (`*` tracks every type) |
 | provenance:max_conflict_values_per_field | PROVENANCE__MAX_CONFLICT_VALUES_PER_FIELD  | 10            | Maximum number of alternative values kept for a conflicting field  |
 | provenance:refresh_on_write              | PROVENANCE__REFRESH_ON_WRITE               | `false`       | Refresh the index after each provenance update, slows down writes   |
 

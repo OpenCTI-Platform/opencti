@@ -905,6 +905,7 @@
   "Protocols": "プロトコル",
   "Provenance backfill manager": "出所バックフィルマネージャー",
   "Provenance tracking": "出所の追跡",
+  "Provenance tracking per relationship type": "リレーションシップの種類ごとの出所追跡",
   "PROVENANCE_BACKFILL_MANAGER": "出所バックフィルマネージャー",
   "Provider": "プロバイダ",
   "Provider Configuration": "プロバイダー設定",

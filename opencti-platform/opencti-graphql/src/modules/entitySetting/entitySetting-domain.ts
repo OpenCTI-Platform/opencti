@@ -2,7 +2,7 @@ import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_D
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, loadEntity, updateAttribute } from '../../database/middleware';
 import type { BasicStoreEntityEntitySetting, OverviewLayoutCustomization, StoreEntityEntitySetting } from './entitySetting-types';
-import { ENTITY_SETTING_PROVENANCE_TRACKING, isProvenanceTrackingEnabled } from '../provenance/provenance-tracking';
+import { ENTITY_SETTING_PROVENANCE_RELATIONSHIP_TYPES, ENTITY_SETTING_PROVENANCE_TRACKING, isProvenanceTrackingEnabled } from '../provenance/provenance-tracking';
 import { PROVENANCE_ENABLED } from '../provenance/provenance-config';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
@@ -79,7 +79,12 @@ export const findEntitySettingPaginated = (context: AuthContext, user: AuthUser,
 };
 
 // Provenance settings belong to "Settings > Customization": the parameters capability alone cannot change them
-const CUSTOMIZATION_ONLY_KEYS = [ENTITY_SETTING_PROVENANCE_TRACKING, 'procedures_preservation', 'procedures_description_policy'];
+const CUSTOMIZATION_ONLY_KEYS = [
+  ENTITY_SETTING_PROVENANCE_TRACKING,
+  ENTITY_SETTING_PROVENANCE_RELATIONSHIP_TYPES,
+  'procedures_preservation',
+  'procedures_description_policy',
+];
 
 export const entitySettingEditField = async (context: AuthContext, user: AuthUser, entitySettingId: string, input: EditInput[]) => {
   const customizationKeys = input.map(({ key }) => key).filter((key) => CUSTOMIZATION_ONLY_KEYS.includes(key));

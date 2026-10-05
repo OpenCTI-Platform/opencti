@@ -905,6 +905,7 @@
   "Protocols": "协议",
   "Provenance backfill manager": "来源回填管理器",
   "Provenance tracking": "来源追踪",
+  "Provenance tracking per relationship type": "按关系类型跟踪来源",
   "PROVENANCE_BACKFILL_MANAGER": "来源回填管理器",
   "Provider": "提供者",
   "Provider Configuration": "提供程序配置",

@@ -30,6 +30,7 @@ export const subTypeQuery = graphql`
         sync_workflow_status_by_name
         ...EntitySettingsOverviewLayoutCustomization_entitySetting
         ...EntitySettingsFragment_entitySetting
+        ...EntitySettingProvenanceRelationships_entitySetting
         ...EntitySettingAttributes_entitySetting
         ...FintelTemplatesManager_templates
         requestAccessConfiguration{
@@ -102,7 +103,7 @@ const SubTypeComponent: React.FC<SubTypeProps> = ({ queryRef }) => {
 
       {
         !isDraftWorkspaceType && (
-          <EntitySettingSettings entitySettingsData={subType.settings} />
+          <EntitySettingSettings entitySettingsData={subType.settings} provenanceRelationshipsData={subType.settings} />
         )
       }
 

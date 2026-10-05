@@ -29,8 +29,11 @@ test('Follow the provenance backfill and the provenance settings of relationship
   await expect(page.getByTestId('provenance-backfill')).toBeVisible();
   await expect(page.getByTestId('provenance-backfill-status')).toBeVisible();
 
+  // Relationships are tracked per relationship type, one row each
   await page.goto('/dashboard/settings/customization/entity_types/stix-core-relationship');
-  await expect(page.getByTestId('entity-setting-provenance')).toBeVisible();
+  const tracking = page.getByTestId('entity-setting-provenance-relationships');
+  await expect(tracking).toBeVisible();
+  await expect(tracking.getByTestId('provenance-tracking-row').first()).toBeVisible();
   await expect(page.getByTestId('entity-setting-procedures')).toBeVisible();
 });
 

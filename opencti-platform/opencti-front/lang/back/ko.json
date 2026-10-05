@@ -905,6 +905,7 @@
   "Protocols": "프로토콜",
   "Provenance backfill manager": "출처 백필 관리자",
   "Provenance tracking": "출처 추적",
+  "Provenance tracking per relationship type": "관계 유형별 출처 추적",
   "PROVENANCE_BACKFILL_MANAGER": "출처 백필 관리자",
   "Provider": "제공자",
   "Provider Configuration": "공급자 구성",

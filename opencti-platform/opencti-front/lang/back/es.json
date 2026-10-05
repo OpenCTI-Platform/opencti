@@ -905,6 +905,7 @@
   "Protocols": "Protocolos",
   "Provenance backfill manager": "Gestor de recuperación de procedencia",
   "Provenance tracking": "Seguimiento de la procedencia",
+  "Provenance tracking per relationship type": "Seguimiento de la procedencia por tipo de relación",
   "PROVENANCE_BACKFILL_MANAGER": "Gestor de reconstrucción de la procedencia",
   "Provider": "Proveedor",
   "Provider Configuration": "Configuración del proveedor",

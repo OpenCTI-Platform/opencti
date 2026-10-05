@@ -22,6 +22,7 @@ import { buildProvenanceScriptParams, PROVENANCE_UPDATE_SCRIPT, writeProvenanceU
 import type { BasicStoreBase } from '../../../../src/types/store';
 import { checkRetentionRule } from '../../../../src/modules/retentionRules/retentionRules-domain';
 import { RetentionRuleScope, RetentionUnit } from '../../../../src/generated/graphql';
+import { up as enableRecommendedRelationshipTypes } from '../../../../src/migrations/1791221292579-provenance-recommended-relationship-types';
 
 const MALWARE_NAME = 'Provenance malware';
 
@@ -121,6 +122,29 @@ const DECAY_RULE_PATCH = gql`
 const DECAY_RULE_DELETE = gql`
   mutation DecayRuleDelete($id: ID!) { decayRuleDelete(id: $id) }
 `;
+
+const RELATIONSHIP_TRACKING = gql`
+  query RelationshipTracking {
+    entitySettingByType(targetType: "stix-core-relationship") {
+      id
+      provenance_untracked_types
+      provenance_relationship_tracking { relationship_type tracked recommended }
+    }
+  }
+`;
+const RELATIONSHIP_TRACKING_EDIT = gql`
+  mutation RelationshipTrackingEdit($types: [String!]!, $tracked: Boolean!) {
+    provenanceRelationshipTrackingEdit(relationship_types: $types, tracked: $tracked) { id }
+  }
+`;
+type RelationshipTracking = { relationship_type: string; tracked: boolean; recommended: boolean };
+const trackingByType = (setting: { provenance_relationship_tracking: RelationshipTracking[] }) => {
+  return new Map(setting.provenance_relationship_tracking.map((entry) => [entry.relationship_type, entry]));
+};
+const setRelationshipTracking = async (types: string[], tracked: boolean) => {
+  await queryAsAdminWithSuccess({ query: RELATIONSHIP_TRACKING_EDIT, variables: { types, tracked } });
+  resetCacheForEntity(ENTITY_TYPE_ENTITY_SETTING);
+};
 
 const loadMalware = async (id: string) => {
   const result = await queryAsAdminWithSuccess({ query: MALWARE_PROVENANCE, variables: { id } });
@@ -507,6 +531,73 @@ describe('Provenance: every fact knows who said it', () => {
     expect(unchanged.data?.entitySettingByType.provenance_tracking).toEqual(true);
   });
 
+  it('should track provenance per relationship type, the recommended types out of the box', async () => {
+    const initial = await queryAsAdminWithSuccess({ query: RELATIONSHIP_TRACKING });
+    const tracking = trackingByType(initial.data?.entitySettingByType);
+    expect(tracking.get('uses')).toEqual({ relationship_type: 'uses', tracked: true, recommended: true });
+    expect(tracking.get('targets')).toEqual({ relationship_type: 'targets', tracked: true, recommended: true });
+    expect(tracking.get('attributed-to')).toEqual({ relationship_type: 'attributed-to', tracked: true, recommended: true });
+    expect(tracking.get('indicates')?.recommended).toEqual(false);
+    const relatedTo = gql`mutation RelationAdd($input: StixCoreRelationshipAddInput) { stixCoreRelationshipAdd(input: $input) { id } }`;
+    await setRelationshipTracking(['related-to'], false);
+    try {
+      const updated = await queryAsAdminWithSuccess({ query: RELATIONSHIP_TRACKING });
+      const afterEdit = trackingByType(updated.data?.entitySettingByType);
+      expect(afterEdit.get('related-to')?.tracked).toEqual(false);
+      expect(afterEdit.get('uses')?.tracked).toEqual(true);
+      expect(updated.data?.entitySettingByType.provenance_untracked_types).toContain('related-to');
+      expect(updated.data?.entitySettingByType.provenance_untracked_types).not.toContain('uses');
+      // The writer consults the switch of the relationship type
+      const created = await queryAsAdminWithSuccess({
+        query: relatedTo,
+        variables: { input: { fromId: malwareId, toId: attackPatternId, relationship_type: 'related-to', confidence: 80 } },
+      });
+      const untracked = await loadRelation(created.data?.stixCoreRelationshipAdd.id);
+      expect(untracked.corroboration_count).toBeNull();
+      const uses = await loadRelation(usesId);
+      expect(uses.corroboration_count).toEqual(2);
+    } finally {
+      await setRelationshipTracking(['related-to'], true);
+    }
+    // Relationship types only, and only with the customization capability, through either mutation
+    await queryAsAdminWithError({ query: RELATIONSHIP_TRACKING_EDIT, variables: { types: ['Malware'], tracked: true } }, 'Provenance tracking is configured on relationship types');
+    await queryAsUserIsExpectedForbidden(USER_PLATFORM_ADMIN, { query: RELATIONSHIP_TRACKING_EDIT, variables: { types: ['uses'], tracked: false } });
+    const PATCH = gql`mutation Patch($ids: [ID!]!, $input: [EditInput!]!) { entitySettingsFieldPatch(ids: $ids, input: $input) { id } }`;
+    await queryAsUserIsExpectedForbidden(USER_PLATFORM_ADMIN, {
+      query: PATCH,
+      variables: { ids: [initial.data?.entitySettingByType.id], input: [{ key: 'provenance_relationship_types', value: ['{"uses":false}'] }] },
+    });
+    await queryAsAdminWithError({
+      query: PATCH,
+      variables: { ids: [initial.data?.entitySettingByType.id], input: [{ key: 'provenance_relationship_types', value: ['{"Malware":true}'] }] },
+    }, 'The JSON schema is not valid');
+    const settled = trackingByType((await queryAsAdminWithSuccess({ query: RELATIONSHIP_TRACKING })).data?.entitySettingByType);
+    expect(settled.get('uses')?.tracked).toEqual(true);
+  });
+
+  it('should enable the recommended relationship types of an existing platform by migration, once', async () => {
+    const settingId = (await queryAsAdminWithSuccess({ query: RELATIONSHIP_TRACKING })).data?.entitySettingByType.id;
+    const storedTypes = () => internalLoadById<BasicStoreBase & { _index: string; provenance_relationship_types?: string }>(testContext, ADMIN_USER, settingId);
+    const runMigration = () => new Promise<void>((resolve, reject) => {
+      enableRecommendedRelationshipTypes((error?: Error) => (error ? reject(error) : resolve())).catch(reject);
+    });
+    // A platform upgraded from a version without per relationship type tracking
+    const before = await storedTypes();
+    await elUpdate(testContext, before._index, before.internal_id, { script: { source: "ctx._source.remove('provenance_relationship_types')", lang: 'painless' } });
+    expect((await storedTypes()).provenance_relationship_types).toBeUndefined();
+    await runMigration();
+    expect(JSON.parse((await storedTypes()).provenance_relationship_types ?? '{}')).toEqual({ uses: true, targets: true, 'attributed-to': true });
+    resetCacheForEntity(ENTITY_TYPE_ENTITY_SETTING);
+    // A type turned off afterwards stays off when the migration is replayed
+    await setRelationshipTracking(['uses'], false);
+    try {
+      await runMigration();
+      expect(JSON.parse((await storedTypes()).provenance_relationship_types ?? '{}').uses).toEqual(false);
+    } finally {
+      await setRelationshipTracking(['uses'], true);
+    }
+  });
+
   it('should restart the backfill only once the batch in progress released its lock', async () => {
     const batchLock = await lockResources([PROVENANCE_BACKFILL_LOCK_KEY], { retryCount: 0 });
     let restartedAt = 0;
@@ -599,5 +690,18 @@ describe('Provenance: every fact knows who said it', () => {
     const byType = await queryAsAdminWithSuccess({ query: gql`query { provenanceSingleSourcedByType(types: ["Malware"]) { entity_type total single_sourced } }` });
     const malwares = byType.data?.provenanceSingleSourcedByType.find((entry: { entity_type: string }) => entry.entity_type === 'Malware');
     expect(malwares.total).toBeGreaterThanOrEqual(malwares.single_sourced);
+  });
+
+  it('should compute the provenance statistics of each type for the customization', async () => {
+    const TYPE_STATISTICS = gql`query TypeStatistics($types: [String!]!) { provenanceTypeStatistics(types: $types) { entity_type with_provenance corroborated last_asserted_at } }`;
+    const relationships = await queryAsAdminWithSuccess({ query: TYPE_STATISTICS, variables: { types: ['stix-core-relationship'] } });
+    const uses = relationships.data?.provenanceTypeStatistics.find((entry: { entity_type: string }) => entry.entity_type === 'uses');
+    expect(uses.with_provenance).toBeGreaterThanOrEqual(1);
+    expect(uses.corroborated).toBeGreaterThanOrEqual(1);
+    expect(new Date(uses.last_asserted_at).getTime()).toBeLessThanOrEqual(Date.now());
+    expect(relationships.data?.provenanceTypeStatistics.map((entry: { entity_type: string }) => entry.entity_type)).not.toContain('Malware');
+    const malwares = await queryAsAdminWithSuccess({ query: TYPE_STATISTICS, variables: { types: ['Malware'] } });
+    expect(malwares.data?.provenanceTypeStatistics.map((entry: { entity_type: string }) => entry.entity_type)).toEqual(['Malware']);
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: TYPE_STATISTICS, variables: { types: ['Malware'] } });
   });
 });

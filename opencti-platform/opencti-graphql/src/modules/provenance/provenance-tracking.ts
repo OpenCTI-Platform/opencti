@@ -4,12 +4,15 @@ import { getAvailableSettings, getEntitySettingFromCache } from '../entitySettin
 import { schemaTypesDefinition } from '../../schema/schema-types';
 import { getParentTypes } from '../../schema/schemaUtils';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
-import { STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
+import { isStixCoreRelationship, STIX_CORE_RELATIONSHIPS } from '../../schema/stixCoreRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
-import { PROVENANCE_DEFAULT_TRACKED_TYPES } from './provenance-config';
+import { PROVENANCE_DEFAULT_TRACKED_TYPES, PROVENANCE_RECOMMENDED_RELATIONSHIP_TYPES } from './provenance-config';
 
 // Entity setting enabling provenance tracking (sources, corroboration, conflicts, freshness) per entity type.
 export const ENTITY_SETTING_PROVENANCE_TRACKING = 'provenance_tracking';
+// Relationship types have no entity setting of their own (one would shadow the attributes, workflow and references
+// configuration they inherit), so their provenance tracking is a map on the relationships setting: { "uses": true }.
+export const ENTITY_SETTING_PROVENANCE_RELATIONSHIP_TYPES = 'provenance_relationship_types';
 
 export const isProvenanceTrackedByDefault = (entityType: string) => {
   return PROVENANCE_DEFAULT_TRACKED_TYPES.includes('*') || PROVENANCE_DEFAULT_TRACKED_TYPES.includes(entityType);
@@ -23,24 +26,91 @@ const isProvenanceTrackingAvailable = (entityType: string) => {
   }
 };
 
-type TrackingSetting = Pick<BasicStoreEntityEntitySetting, 'target_type' | 'provenance_tracking'>;
+export type ProvenanceRelationshipTypes = Record<string, boolean>;
+
+export const serializeProvenanceRelationshipTypes = (types: ProvenanceRelationshipTypes) => JSON.stringify(types);
+
+export const PROVENANCE_RECOMMENDED_RELATIONSHIP_TYPES_SETTING = serializeProvenanceRelationshipTypes(
+  Object.fromEntries(PROVENANCE_RECOMMENDED_RELATIONSHIP_TYPES.map((type) => [type, true])),
+);
 
 /**
- * Provenance tracking of a type under its own setting or under the setting of its abstract type: an explicit value
- * wins; otherwise the platform default of the type itself, or of the abstract type when the defaults list it.
+ * Explicit per relationship type tracking, keeping only relationship types with a boolean value.
+ * Throws on a value that is not a JSON object, so that the validation of an update can reject it.
+ */
+export const parseProvenanceRelationshipTypesStrict = (value: string): ProvenanceRelationshipTypes => {
+  const parsed = JSON.parse(value);
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new TypeError('Provenance relationship types must be a JSON object');
+  }
+  return Object.fromEntries(Object.entries(parsed).filter(([type, tracked]) => isStixCoreRelationship(type) && typeof tracked === 'boolean')) as ProvenanceRelationshipTypes;
+};
+
+// The write path reads it on every assertion: the stored value only changes with the setting, keep its parsing
+let parsedRelationshipTypes: { raw: string; types: ProvenanceRelationshipTypes } | null = null;
+export const parseProvenanceRelationshipTypes = (value: string | null | undefined): ProvenanceRelationshipTypes => {
+  if (!value) {
+    return {};
+  }
+  if (parsedRelationshipTypes?.raw === value) {
+    return parsedRelationshipTypes.types;
+  }
+  let types: ProvenanceRelationshipTypes;
+  try {
+    types = parseProvenanceRelationshipTypesStrict(value);
+  } catch {
+    types = {};
+  }
+  parsedRelationshipTypes = { raw: value, types };
+  return types;
+};
+
+type TrackingSetting = Pick<BasicStoreEntityEntitySetting, 'target_type' | 'provenance_tracking' | 'provenance_relationship_types'>;
+
+const relationshipTypeTracking = (entitySetting: TrackingSetting, entityType: string): boolean | undefined => {
+  if (entitySetting.target_type !== ABSTRACT_STIX_CORE_RELATIONSHIP) {
+    return undefined;
+  }
+  return parseProvenanceRelationshipTypes(entitySetting.provenance_relationship_types)[entityType];
+};
+
+/**
+ * Provenance tracking of a type under its own setting or under the setting of its abstract type: the explicit value
+ * of the relationship type wins, then the explicit value of the setting; otherwise the platform default of the type
+ * itself, or of the abstract type when the defaults list it.
  */
 export const isProvenanceTrackedUnderSetting = (entitySetting: TrackingSetting, entityType: string) => {
   if (!isProvenanceTrackingAvailable(entitySetting.target_type)) {
     return false;
   }
-  return entitySetting.provenance_tracking ?? (isProvenanceTrackedByDefault(entityType) || isProvenanceTrackedByDefault(entitySetting.target_type));
+  return relationshipTypeTracking(entitySetting, entityType)
+    ?? entitySetting.provenance_tracking
+    ?? (isProvenanceTrackedByDefault(entityType) || isProvenanceTrackedByDefault(entitySetting.target_type));
 };
 
 /**
  * Provenance tracking of the entity type of a setting: its explicit value, otherwise the platform default.
+ * The relationships setting is tracked as soon as one relationship type is.
  */
 export const isProvenanceTrackingEnabled = (entitySetting: TrackingSetting) => {
+  if (entitySetting.target_type === ABSTRACT_STIX_CORE_RELATIONSHIP) {
+    return STIX_CORE_RELATIONSHIPS.some((type) => isProvenanceTrackedUnderSetting(entitySetting, type));
+  }
   return isProvenanceTrackedUnderSetting(entitySetting, entitySetting.target_type);
+};
+
+/**
+ * Provenance tracking of every relationship type under the relationships setting, an empty list for another setting.
+ */
+export const listProvenanceRelationshipTracking = (entitySetting: TrackingSetting) => {
+  if (entitySetting.target_type !== ABSTRACT_STIX_CORE_RELATIONSHIP || !isProvenanceTrackingAvailable(entitySetting.target_type)) {
+    return [];
+  }
+  return [...new Set(STIX_CORE_RELATIONSHIPS)].map((type) => ({
+    relationship_type: type,
+    tracked: isProvenanceTrackedUnderSetting(entitySetting, type),
+    recommended: PROVENANCE_RECOMMENDED_RELATIONSHIP_TYPES.includes(type),
+  }));
 };
 
 /**
@@ -54,7 +124,7 @@ export const isProvenanceTrackedForType = async (context: AuthContext, entityTyp
 // Concrete types whose provenance tracking follows the setting of an abstract type when they have no setting of their own
 const typesInheritingSetting = (targetType: string): string[] => {
   if (targetType === ABSTRACT_STIX_CORE_RELATIONSHIP) {
-    return [...STIX_CORE_RELATIONSHIPS];
+    return [...new Set(STIX_CORE_RELATIONSHIPS)];
   }
   if (targetType === ABSTRACT_STIX_CYBER_OBSERVABLE) {
     return [...schemaTypesDefinition.get(ABSTRACT_STIX_CYBER_OBSERVABLE)];
