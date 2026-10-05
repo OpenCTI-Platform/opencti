@@ -1051,9 +1051,15 @@ const writeImportedContributions = async (
     return markings.every(isImportable) ? markings.map(({ internal_id }) => internal_id) : null;
   };
   const storedIds = new Set(storedManual.map((e) => e.internal_id));
+  // Two new events of one extension sharing an external id are one event, as they would be once the first is stored
+  const batchIdByExternalId = new Map<string, string>();
   const identified = events.map((event) => {
     const existing = findKnownEvent(event);
-    return { event, existing, internalId: existing?.internal_id ?? computeManualEventId(container.internal_id, event.id) };
+    const internalId = existing?.internal_id
+      ?? (event.external_id ? batchIdByExternalId.get(event.external_id) : undefined)
+      ?? computeManualEventId(container.internal_id, event.id);
+    if (event.external_id && !batchIdByExternalId.has(event.external_id)) batchIdByExternalId.set(event.external_id, internalId);
+    return { event, existing, internalId };
   });
   // Nor is a stored event the user cannot read ever overwritten by an imported one: every known event the extension names
   // is read as the user, however many events the case holds

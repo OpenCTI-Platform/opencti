@@ -1252,6 +1252,20 @@ describe('Incident and case timeline', () => {
       await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: updated.id } });
     });
 
+    it('should import once two new events of one extension sharing an external id', async () => {
+      const first = { id: 'timeline-event--6c8e0a2b-4d5f-4b7a-8e9c-3f4a5b6c7d8e', external_id: 'soar-case-77', title: 'Playbook started', event_time: '2026-02-06T11:00:00.000Z' };
+      const second = { ...first, id: 'timeline-event--7d9f1b3c-5e6a-4c8b-9fad-4a5b6c7d8e9f', title: 'Playbook started, last version' };
+      const extension = JSON.stringify({ events: [first, second], annotations: [] });
+      await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension } });
+      const matching = (await listTimeline(secondCase.id, { sources: ['manual'] })).filter((e) => e.title.startsWith('Playbook started'));
+      // The last occurrence wins, and a later import of either updates the same event
+      expect(matching.map((e) => e.title)).toEqual(['Playbook started, last version']);
+      await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension: JSON.stringify({ events: [{ ...first, title: 'Playbook started again' }], annotations: [] }) } });
+      const again = (await listTimeline(secondCase.id, { sources: ['manual'] })).filter((e) => e.title.startsWith('Playbook started'));
+      expect(again.map((e) => e.title)).toEqual(['Playbook started again']);
+      await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: again[0].id } });
+    });
+
     it('should import a window ending at its start as a point in time', async () => {
       const event = { id: 'timeline-event--4b6d8f0a-2c3e-4a5b-9c7d-1e2f3a4b5c6d', title: 'Mailbox purged', event_time: '2026-02-06T10:00:00.000Z', event_end_time: '2026-02-06T10:00:00.000Z' };
       await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension: JSON.stringify({ events: [event], annotations: [] }) } });
