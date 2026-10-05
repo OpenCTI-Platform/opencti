@@ -10,6 +10,7 @@ import {
   redisAreDigestDeliveriesConfirmed,
   redisCountChangeDigestJobAttempt,
   redisExpireChangeDigestJobs,
+  redisGetChangeDigestJobAttempts,
   redisGetChangeDigestJobs,
   redisGetManagerEventState,
   redisIsChangeDigestJobDue,
@@ -802,9 +803,11 @@ const parseChangeDigestJobMember = (member: string): ChangeDigestJob | undefined
 const removeChangeDigestJob = async (member: string) => {
   try {
     await redisRemoveChangeDigestJob(member);
+    return true;
   } catch (err) {
     // The job stays scheduled and runs again at a later pass
     logApp.error('[OPENCTI-MODULE] Change digest job could not be removed from the schedule', { cause: err, manager: 'NOTIFICATION_MANAGER' });
+    return false;
   }
 };
 
@@ -833,24 +836,21 @@ const sendChangeDigest = async (task: ChangeDigestTask, lockSignal: AbortSignal)
   // Stored again by a later attempt until every notifier received it: the publisher delivers it once per notifier
   const digestEvent: DigestEvent = { version: EVENT_NOTIFICATION_VERSION, notification_id: trigger.internal_id, type: 'digest', target, data, delivery_key: member };
   await storeNotificationEvent(context, digestEvent);
-  addChangeDigestSentCount();
   return true;
 };
 
-const isChangeDigestDelivered = async ({ digest: { trigger }, member }: ChangeDigestTask) => {
+const changeDigestDelivery = async ({ digest: { trigger }, member }: ChangeDigestTask) => {
   const receipts = (trigger.notifiers ?? []).map((notifierId) => toDigestDeliveryReceipt(member, notifierId));
-  return receipts.length === 0 || redisAreDigestDeliveriesConfirmed(receipts);
+  if (receipts.length === 0) {
+    return 'no_notifier';
+  }
+  return (await redisAreDigestDeliveriesConfirmed(receipts)) ? 'delivered' : 'pending';
 };
 
-// A stored digest stays scheduled until every notifier received it, up to the last attempt
+// A stored digest stays scheduled until every notifier received it: checked again later, after the last attempt too
 const checkChangeDigestDeliveryLater = async (member: string, triggerId: string) => {
   try {
-    const attempts = await redisCountChangeDigestJobAttempt(member);
-    if (attempts >= CHANGE_DIGEST_MAX_ATTEMPTS) {
-      logApp.warn('[OPENCTI-MODULE] Change digest stored for the last attempt, not checked again', { manager: 'NOTIFICATION_MANAGER', trigger_id: triggerId, attempts });
-      await removeChangeDigestJob(member);
-      return;
-    }
+    await redisCountChangeDigestJobAttempt(member);
     await redisRescheduleChangeDigestJob(member, utcDate().valueOf() + CHANGE_DIGEST_DELIVERY_CHECK_MS);
   } catch (err) {
     // The job keeps its place: the next pass finds the digest delivered or stores it again for the notifiers without a receipt
@@ -893,8 +893,22 @@ const runChangeDigestJob = async (task: ChangeDigestTask) => {
     if (!(await redisIsChangeDigestJobDue(member, dueAt))) {
       return;
     }
-    // Stored by an earlier attempt and received through every notifier of the recipient
-    if (await isChangeDigestDelivered(task)) {
+    const delivery = await changeDigestDelivery(task);
+    if (delivery === 'delivered') {
+      // Stored by an earlier attempt and received through every notifier: counted once, as its job leaves the schedule
+      if (await removeChangeDigestJob(member)) {
+        addChangeDigestSentCount();
+      }
+      return;
+    }
+    if (delivery === 'no_notifier') {
+      await removeChangeDigestJob(member);
+      return;
+    }
+    // A failed last attempt removes the job: one still scheduled here was stored by its last attempt
+    const attempts = await redisGetChangeDigestJobAttempts(member);
+    if (attempts >= CHANGE_DIGEST_MAX_ATTEMPTS) {
+      logApp.error('[OPENCTI-MODULE] Change digest not received through every notifier, every attempt made', { manager: 'NOTIFICATION_MANAGER', trigger_id: digest.trigger.internal_id, attempts });
       await removeChangeDigestJob(member);
       return;
     }

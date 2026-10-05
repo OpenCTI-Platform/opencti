@@ -54,6 +54,7 @@ vi.mock('../../../src/database/redis', async (importOriginal) => ({
       .map(([member]) => member);
   },
   redisIsChangeDigestJobDue: async (member: string, dueAt: number) => scheduledJobs.has(member) && (scheduledJobs.get(member) as number) <= dueAt,
+  redisGetChangeDigestJobAttempts: async (member: string) => attempts.get(member) ?? 0,
   redisCountChangeDigestJobAttempt: async (member: string) => {
     attempts.set(member, (attempts.get(member) ?? 0) + 1);
     return attempts.get(member) as number;
@@ -190,22 +191,33 @@ describe('handleChangeDigestNotifications', () => {
     expect(events[0].data).toEqual([digestLine]);
     // Delivered once per trigger, recipient and period, even if a retry stores it again
     expect(events[0].delivery_key).toBe(jobOf(analyst));
-    // Only the stored digest is counted as sent
-    expect(addChangeDigestSentCountMock).toHaveBeenCalledTimes(1);
     // The stored digest waits for its delivery check; the recipient without changes has nothing to receive
     expect([...scheduledJobs.entries()]).toEqual([[jobOf(analyst), checkAt('2026-01-12T09:00:00.000Z')]]);
+    expect(addChangeDigestSentCountMock).not.toHaveBeenCalled();
   });
 
-  it('does not count a digest as sent when it cannot be stored', async () => {
+  it('counts a digest as sent once, when every notifier received it, whatever its attempts', async () => {
     primeCache([changeDigest]);
     buildChangeDigestDataMock.mockResolvedValue([digestLine]);
     vi.mocked(storeNotificationEvent)
       .mockRejectedValueOnce(new Error('stream unavailable'))
-      .mockResolvedValueOnce(undefined as unknown as Awaited<ReturnType<typeof storeNotificationEvent>>);
+      .mockResolvedValue(undefined as unknown as Awaited<ReturnType<typeof storeNotificationEvent>>);
     await handleChangeDigestNotifications({} as AuthContext);
     await changeDigestQueue.idle();
     expect(vi.mocked(storeNotificationEvent)).toHaveBeenCalledTimes(2);
-    expect(addChangeDigestSentCountMock).toHaveBeenCalledTimes(1);
+    // The digest that could not be stored is stored at its retry; neither is counted before it is received
+    vi.setSystemTime(new Date('2026-01-12T09:05:00.000Z'));
+    await handleChangeDigestNotifications({} as AuthContext);
+    await changeDigestQueue.idle();
+    expect(vi.mocked(storeNotificationEvent)).toHaveBeenCalledTimes(3);
+    expect(addChangeDigestSentCountMock).not.toHaveBeenCalled();
+    deliver(jobOf(analyst), ['notifier-ui']);
+    deliver(jobOf(manager), ['notifier-ui']);
+    vi.setSystemTime(new Date(checkAt('2026-01-12T09:05:00.000Z')));
+    await handleChangeDigestNotifications({} as AuthContext);
+    await changeDigestQueue.idle();
+    expect(scheduledJobs.size).toBe(0);
+    expect(addChangeDigestSentCountMock).toHaveBeenCalledTimes(2);
   });
 
   it('ignores the change digests that are not due and the regular digests', async () => {
@@ -227,7 +239,6 @@ describe('handleChangeDigestNotifications', () => {
     const events = storedEvents();
     expect(events).toHaveLength(1);
     expect(events[0].target.user_id).toBe(manager.id);
-    expect(addChangeDigestSentCountMock).toHaveBeenCalledTimes(1);
   });
 
   it('returns to the scheduler before the digests are computed and never queues a digest twice', async () => {
@@ -448,7 +459,7 @@ describe('handleChangeDigestNotifications', () => {
     await changeDigestQueue.idle();
     expect(storedEvents().map((event) => event.delivery_key)).toEqual([analystJob, analystJob]);
     expect(scheduledJobs.get(analystJob)).toBe(firstCheck + CHANGE_DIGEST_DELIVERY_CHECK_MS);
-    // Received through every notifier: the next check removes it without computing it again
+    // Received through every notifier: the next check removes it without computing it again, and counts it once
     deliver(analystJob, ['notifier-email']);
     vi.setSystemTime(new Date(firstCheck + CHANGE_DIGEST_DELIVERY_CHECK_MS));
     await handleChangeDigestNotifications({} as AuthContext);
@@ -456,9 +467,10 @@ describe('handleChangeDigestNotifications', () => {
     expect(buildChangeDigestDataMock).toHaveBeenCalledTimes(2);
     expect(scheduledJobs.size).toBe(0);
     expect(attempts.size).toBe(0);
+    expect(addChangeDigestSentCountMock).toHaveBeenCalledTimes(1);
   });
 
-  it('stores a digest that never reaches its notifier five times at most, one delivery check apart', async () => {
+  it('stores a digest that never reaches its notifier five times at most, one delivery check apart, then drops it', async () => {
     primeCache([changeDigest], [analyst]);
     buildChangeDigestDataMock.mockResolvedValue([digestLine]);
     const analystJob = jobOf(analyst);
@@ -472,9 +484,11 @@ describe('handleChangeDigestNotifications', () => {
       await handleChangeDigestNotifications({} as AuthContext);
       await changeDigestQueue.idle();
     }
-    expect(checks).toEqual([1, 2, 3, 4].map((check) => FROZEN.getTime() + check * CHANGE_DIGEST_DELIVERY_CHECK_MS));
+    // The last stored attempt is checked too, then the job is dropped
+    expect(checks).toEqual([1, 2, 3, 4, 5].map((check) => FROZEN.getTime() + check * CHANGE_DIGEST_DELIVERY_CHECK_MS));
     expect(storedEvents()).toHaveLength(CHANGE_DIGEST_MAX_ATTEMPTS);
     expect(attempts.size).toBe(0);
+    expect(addChangeDigestSentCountMock).not.toHaveBeenCalled();
   });
 
   it('removes without computing them the jobs of a recipient without notifier or of a service account', async () => {

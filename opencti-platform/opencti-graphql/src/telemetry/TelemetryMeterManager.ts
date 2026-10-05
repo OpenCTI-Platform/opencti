@@ -344,7 +344,7 @@ export class TelemetryMeterManager {
   // Number of last visit markers recorded
   timeMachineVisitCount = 0;
 
-  // Number of change digests sent (one per recipient)
+  // Number of change digests sent (one per recipient and period, once every notifier of the recipient received it)
   changeDigestSentCount = 0;
 
   // Number of change digest triggers

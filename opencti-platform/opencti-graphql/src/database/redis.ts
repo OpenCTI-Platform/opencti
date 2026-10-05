@@ -866,6 +866,9 @@ export const redisIsChangeDigestJobDue = async (member: string, dueAt: number): 
   const score = await getClientBase().zscore(CHANGE_DIGEST_JOBS_KEY, member);
   return score !== null && Number(score) <= dueAt;
 };
+export const redisGetChangeDigestJobAttempts = async (member: string): Promise<number> => {
+  return Number((await getClientBase().hget(CHANGE_DIGEST_JOB_ATTEMPTS_KEY, member)) ?? 0);
+};
 // Counts an attempt that did not end the job (it failed, or its digest is not delivered yet) and returns the number of
 // such attempts so far
 export const redisCountChangeDigestJobAttempt = async (member: string): Promise<number> => {

@@ -6,6 +6,7 @@ import {
   redisAreDigestDeliveriesConfirmed,
   redisCountChangeDigestJobAttempt,
   redisExpireChangeDigestJobs,
+  redisGetChangeDigestJobAttempts,
   redisGetChangeDigestJobs,
   redisClaimDigestDelivery,
   redisConfirmDigestDelivery,
@@ -47,8 +48,10 @@ describe('Change digest jobs in Redis', () => {
 
   it('reschedules only a job still scheduled and forgets its attempts with it', async () => {
     await add([{ score: FUTURE + 1000, member: member('failing') }]);
+    expect(await redisGetChangeDigestJobAttempts(member('failing'))).toBe(0);
     expect(await redisCountChangeDigestJobAttempt(member('failing'))).toBe(1);
     expect(await redisCountChangeDigestJobAttempt(member('failing'))).toBe(2);
+    expect(await redisGetChangeDigestJobAttempts(member('failing'))).toBe(2);
     await redisRescheduleChangeDigestJob(member('failing'), FUTURE + 6000);
     expect(await redisIsChangeDigestJobDue(member('failing'), FUTURE + 3000)).toBe(false);
     expect(await redisIsChangeDigestJobDue(member('failing'), FUTURE + 6000)).toBe(true);
