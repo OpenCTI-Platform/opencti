@@ -813,15 +813,26 @@ const publishRunClusters = async (runId: string) => {
 /**
  * Finalize a clustering run: its staged entity metrics become the live ones, clusters not refreshed by the run are
  * deleted (whatever their source, only one source is active at a time) and entity assignments written by older runs
- * are detached. `publishedAt` is the joining date recorded on the entities that changed cluster.
+ * are detached. `publishedAt` is the joining date recorded on the entities that changed cluster. `assertRunLease` is
+ * awaited before each publication step and throws when the run no longer holds the write lease.
  */
-export const finalizeClusteringRun = async (context: AuthContext, user: AuthUser, runId: string): Promise<{ removed: string[]; publishedAt: string }> => {
+export const finalizeClusteringRun = async (
+  context: AuthContext,
+  user: AuthUser,
+  runId: string,
+  assertRunLease: () => Promise<void>,
+): Promise<{ removed: string[]; publishedAt: string }> => {
   const publishedAt = new Date().toISOString();
+  await assertRunLease();
   await reconcileRunClusterIdentities(context, runId);
   // clusters are published before their members point to them, so a cluster never shows another run's metadata
+  await assertRunLease();
   await publishRunClusters(runId);
+  await assertRunLease();
   await promoteRunMetrics(runId, publishedAt);
+  await assertRunLease();
   await dropPendingMetricsNotFromRun(runId);
+  await assertRunLease();
   const stale = await elList<BasicStoreEntityGraphCluster>(context, user, READ_INDEX_INTERNAL_OBJECTS, {
     types: [ENTITY_TYPE_GRAPH_CLUSTER],
     baseData: true,
@@ -837,6 +848,7 @@ export const finalizeClusteringRun = async (context: AuthContext, user: AuthUser
     const body = chunks[i].map((c) => ({ delete: { _index: c._index, _id: c.internal_id } }));
     await elBulk(context, { refresh: true, body });
   }
+  await assertRunLease();
   await clearRunMetricsNotFromRun(runId);
   return { removed: stale.map((s) => s.internal_id), publishedAt };
 };

@@ -48,6 +48,7 @@ import {
   GRAPH_RUN_LEASE_MS,
   isFullPassInProgress,
   loadFeatureProfilesBatched,
+  withRunLeaseHeartbeat,
   writeRunMetrics,
 } from './graphAnalytics-compute';
 import { isSameComparisonGroup, keepAccessibleEndpoints } from './graphAnalytics-features';
@@ -821,33 +822,34 @@ export const upsertGraphAnalyticsMetrics = async (context: AuthContext, user: Au
   if (!(await redisGraphAnalyticsAcquireRunLease(input.run_id, GRAPH_RUN_LEASE_MS))) {
     throw FunctionalError('Another graph analytics run is in progress', { run_id: input.run_id });
   }
-  const { updated, skipped } = await writeRunMetrics(context, user, input.run_id, input.metrics.map((metric) => ({
-    entity_id: metric.entity_id,
-    cluster_id: metric.cluster_id ?? null,
-    cluster_kind: (metric.cluster_kind as GraphClusterKind | null | undefined) ?? null,
-    cluster_size: metric.cluster_size ?? null,
-    betweenness_approx: metric.betweenness_approx ?? null,
-  })));
-  const upserted = await upsertGraphClusters(context, user, clusters.map((cluster) => ({
-    cluster_id: cluster.cluster_id,
-    cluster_kind: cluster.cluster_kind as GraphClusterKind,
-    members_count: cluster.members_count,
-    representative_ids: cluster.representative_ids.slice(0, 20),
-    features: (cluster.features ?? []).map((f) => ({ family: f.family as GraphFeatureFamily, ids: f.ids.slice(0, 50) })),
-  })), 'analytics', input.run_id);
-  let removed: string[] = [];
   const state: Record<string, string> = { [GRAPH_STATE_ANALYTICS_LAST_RUN_ID]: input.run_id };
   if (input.process_version) state[GRAPH_STATE_ANALYTICS_VERSION] = input.process_version;
-  if (input.complete) {
-    const finalized = await finalizeClusteringRun(context, GRAPH_ANALYTICS_MANAGER_USER, input.run_id);
-    removed = finalized.removed;
+  const { updated, skipped, upserted, finalized } = await withRunLeaseHeartbeat(input.run_id, async (assertRunLease) => {
+    const written = await writeRunMetrics(context, user, input.run_id, input.metrics.map((metric) => ({
+      entity_id: metric.entity_id,
+      cluster_id: metric.cluster_id ?? null,
+      cluster_kind: (metric.cluster_kind as GraphClusterKind | null | undefined) ?? null,
+      cluster_size: metric.cluster_size ?? null,
+      betweenness_approx: metric.betweenness_approx ?? null,
+    })));
+    await assertRunLease();
+    const upsertedClusters = await upsertGraphClusters(context, user, clusters.map((cluster) => ({
+      cluster_id: cluster.cluster_id,
+      cluster_kind: cluster.cluster_kind as GraphClusterKind,
+      members_count: cluster.members_count,
+      representative_ids: cluster.representative_ids.slice(0, 20),
+      features: (cluster.features ?? []).map((f) => ({ family: f.family as GraphFeatureFamily, ids: f.ids.slice(0, 50) })),
+    })), 'analytics', input.run_id);
+    const finalizedRun = input.complete ? await finalizeClusteringRun(context, GRAPH_ANALYTICS_MANAGER_USER, input.run_id, assertRunLease) : null;
     // recorded while the lease is held: a platform clustering run taking the lease next sees the process active
-    state[GRAPH_STATE_ANALYTICS_LAST_RUN_AT] = new Date().toISOString();
+    if (finalizedRun) state[GRAPH_STATE_ANALYTICS_LAST_RUN_AT] = new Date().toISOString();
     await redisGraphAnalyticsSetState(state);
+    return { ...written, upserted: upsertedClusters, finalized: finalizedRun };
+  });
+  const removed = finalized?.removed ?? [];
+  if (finalized) {
     await redisGraphAnalyticsReleaseRunLease(input.run_id);
     await notifyClusterMemberships(context, finalized.publishedAt);
-  } else {
-    await redisGraphAnalyticsSetState(state);
   }
   return {
     run_id: input.run_id,

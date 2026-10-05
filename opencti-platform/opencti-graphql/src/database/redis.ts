@@ -910,9 +910,17 @@ return 0`;
 const RELEASE_RUN_LEASE_SCRIPT = `
 if redis.call('GET', KEYS[1]) == ARGV[1] then return redis.call('DEL', KEYS[1]) end
 return 0`;
+// unlike the acquisition, never takes a free lease back: another run may have written and released it meanwhile
+const RENEW_RUN_LEASE_SCRIPT = `
+if redis.call('GET', KEYS[1]) == ARGV[1] then return redis.call('PEXPIRE', KEYS[1], tonumber(ARGV[2])) end
+return 0`;
 export const redisGraphAnalyticsAcquireRunLease = async (runId: string, ttlMs: number): Promise<boolean> => {
   const acquired = await getClientBase().eval(ACQUIRE_RUN_LEASE_SCRIPT, 1, GRAPH_ANALYTICS_RUN_LEASE_KEY, runId, ttlMs);
   return Number(acquired) === 1;
+};
+export const redisGraphAnalyticsRenewRunLease = async (runId: string, ttlMs: number): Promise<boolean> => {
+  const renewed = await getClientBase().eval(RENEW_RUN_LEASE_SCRIPT, 1, GRAPH_ANALYTICS_RUN_LEASE_KEY, runId, ttlMs);
+  return Number(renewed) === 1;
 };
 export const redisGraphAnalyticsReleaseRunLease = async (runId: string) => {
   await getClientBase().eval(RELEASE_RUN_LEASE_SCRIPT, 1, GRAPH_ANALYTICS_RUN_LEASE_KEY, runId);

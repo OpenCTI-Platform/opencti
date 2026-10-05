@@ -12,8 +12,10 @@ import {
   redisGraphAnalyticsGetState,
   redisGraphAnalyticsMarkDirty,
   redisGraphAnalyticsReleaseRunLease,
+  redisGraphAnalyticsRenewRunLease,
   redisGraphAnalyticsSetState,
 } from '../../database/redis';
+import { FunctionalError } from '../../config/errors';
 import {
   candidateQueriesForKind,
   classifyInfrastructureNeighbor,
@@ -91,6 +93,31 @@ const PROFILE_BATCH_SIZE = 25;
 const STALE_SIMILARITY_DAYS = 7;
 // A clustering run holds the write lease while it writes; a run silent for this long gives it up
 export const GRAPH_RUN_LEASE_MS = 30 * 60 * 1000;
+export const GRAPH_RUN_LEASE_HEARTBEAT_MS = GRAPH_RUN_LEASE_MS / 3;
+
+/**
+ * Keeps the lease of a run alive while `work` writes, however long its updates by query take, and hands `work` a
+ * check to await before each write: it throws once the lease went to another run, so a run never writes or
+ * publishes over the staged slots of another one.
+ */
+export const withRunLeaseHeartbeat = async <T>(runId: string, work: (assertRunLease: () => Promise<void>) => Promise<T>): Promise<T> => {
+  let lost = false;
+  const renew = async () => {
+    if (!lost && !(await redisGraphAnalyticsRenewRunLease(runId, GRAPH_RUN_LEASE_MS))) lost = true;
+  };
+  const heartbeat = setInterval(() => {
+    renew().catch((error) => logApp.warn('[OPENCTI-MODULE] Graph analytics run lease renewal failed', { cause: error, runId }));
+  }, GRAPH_RUN_LEASE_HEARTBEAT_MS);
+  const assertRunLease = async () => {
+    await renew();
+    if (lost) throw FunctionalError('Graph analytics run lost its write lease to another run', { run_id: runId });
+  };
+  try {
+    return await work(assertRunLease);
+  } finally {
+    clearInterval(heartbeat);
+  }
+};
 // Families linking infrastructure elements into a cluster (shared certificate, ASN, registrar, nameserver, hosting, report).
 export const INFRASTRUCTURE_CLUSTER_FAMILIES: GraphFeatureFamily[] = ['certificates', 'asn', 'registrar', 'nameservers', 'hosting', 'reports'];
 
@@ -506,11 +533,15 @@ export const runInfrastructureClustering = async (
   })));
   let publishedAt: string;
   try {
-    for (let i = 0; i < assignments.length; i += 1000) {
-      await writeRunMetrics(context, user, runId, assignments.slice(i, i + 1000));
-    }
-    await upsertGraphClusters(context, user, writes, 'platform', runId);
-    ({ publishedAt } = await finalizeClusteringRun(context, user, runId));
+    ({ publishedAt } = await withRunLeaseHeartbeat(runId, async (assertRunLease) => {
+      for (let i = 0; i < assignments.length; i += 1000) {
+        await assertRunLease();
+        await writeRunMetrics(context, user, runId, assignments.slice(i, i + 1000));
+      }
+      await assertRunLease();
+      await upsertGraphClusters(context, user, writes, 'platform', runId);
+      return finalizeClusteringRun(context, user, runId, assertRunLease);
+    }));
   } finally {
     await redisGraphAnalyticsReleaseRunLease(runId);
   }
