@@ -10,20 +10,20 @@ import {
 } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipsLinesPaginationQuery.graphql';
 import { StixCoreRelationshipsLines_data$key } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipsLines_data.graphql';
 import { stixCoreRelationshipsLinesFragment, stixCoreRelationshipsLinesQuery } from '@components/common/stix_core_relationships/StixCoreRelationships';
-import ReportStixCoreRelationshipsLine, { ReportStixCoreRelationshipsLineDummy, ReportRelationshipNode } from './ReportStixCoreRelationshipsLine';
+import ContainerStixCoreRelationshipsLine, { ContainerStixCoreRelationshipsLineDummy, ContainerRelationshipNode } from './ContainerStixCoreRelationshipsLine';
 
-interface ReportStixCoreRelationshipsLinesProps {
+interface ContainerStixCoreRelationshipsLinesProps {
   dataColumns: DataColumns;
   paginationOptions: StixCoreRelationshipsLinesPaginationQuery$variables;
   queryRef: PreloadedQuery<StixCoreRelationshipsLinesPaginationQuery>;
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  selectedElements: Record<string, ReportRelationshipNode>;
-  deSelectedElements: Record<string, ReportRelationshipNode>;
+  selectedElements: Record<string, ContainerRelationshipNode>;
+  deSelectedElements: Record<string, ContainerRelationshipNode>;
   selectAll: boolean;
-  onToggleEntity: (node: ReportRelationshipNode, event: React.SyntheticEvent) => void;
+  onToggleEntity: (node: ContainerRelationshipNode, event: React.SyntheticEvent) => void;
 }
 
-const ReportStixCoreRelationshipsLines: FunctionComponent<ReportStixCoreRelationshipsLinesProps> = ({
+const ContainerStixCoreRelationshipsLines: FunctionComponent<ContainerStixCoreRelationshipsLinesProps> = ({
   dataColumns,
   paginationOptions,
   queryRef,
@@ -52,8 +52,8 @@ const ReportStixCoreRelationshipsLines: FunctionComponent<ReportStixCoreRelation
       isLoading={isLoadingMore}
       dataList={data?.stixCoreRelationships?.edges ?? []}
       globalCount={data?.stixCoreRelationships?.pageInfo?.globalCount ?? 50}
-      LineComponent={ReportStixCoreRelationshipsLine}
-      DummyLineComponent={ReportStixCoreRelationshipsLineDummy}
+      LineComponent={ContainerStixCoreRelationshipsLine}
+      DummyLineComponent={ContainerStixCoreRelationshipsLineDummy}
       dataColumns={dataColumns}
       nbOfRowsToLoad={50}
       paginationOptions={paginationOptions}
@@ -65,4 +65,4 @@ const ReportStixCoreRelationshipsLines: FunctionComponent<ReportStixCoreRelation
   );
 };
 
-export default ReportStixCoreRelationshipsLines;
+export default ContainerStixCoreRelationshipsLines;

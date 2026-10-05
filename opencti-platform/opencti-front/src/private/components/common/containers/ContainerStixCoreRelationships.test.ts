@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { buildReportRelationshipsContextFilters } from './ReportStixCoreRelationships';
+import { buildContainerRelationshipsContextFilters } from './ContainerStixCoreRelationships';
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 
-describe('buildReportRelationshipsContextFilters', () => {
+describe('buildContainerRelationshipsContextFilters', () => {
   it('keeps the relationship type constraint, with no user filters', () => {
-    const result = buildReportRelationshipsContextFilters('report-id', undefined);
+    const result = buildContainerRelationshipsContextFilters('container-id', undefined);
 
     expect(result).toEqual({
       mode: 'and',
       filters: [
-        { key: 'objects', values: ['report-id'], operator: 'eq', mode: 'or' },
+        { key: 'objects', values: ['container-id'], operator: 'eq', mode: 'or' },
         { key: 'entity_type', values: ['stix-core-relationship'], operator: 'eq', mode: 'or' },
       ],
       filterGroups: [],
@@ -23,10 +23,10 @@ describe('buildReportRelationshipsContextFilters', () => {
       filterGroups: [],
     };
 
-    const result = buildReportRelationshipsContextFilters('report-id', userFilters);
+    const result = buildContainerRelationshipsContextFilters('container-id', userFilters);
 
     expect(result.filters).toEqual([
-      { key: 'objects', values: ['report-id'], operator: 'eq', mode: 'or' },
+      { key: 'objects', values: ['container-id'], operator: 'eq', mode: 'or' },
       { key: 'entity_type', values: ['stix-core-relationship'], operator: 'eq', mode: 'or' },
     ]);
     expect(result.filterGroups).toEqual([userFilters]);
@@ -37,7 +37,7 @@ describe('buildReportRelationshipsContextFilters', () => {
   it('drops empty user filter groups instead of nesting them', () => {
     const emptyUserFilters: FilterGroup = { mode: 'and', filters: [], filterGroups: [] };
 
-    const result = buildReportRelationshipsContextFilters('report-id', emptyUserFilters);
+    const result = buildContainerRelationshipsContextFilters('container-id', emptyUserFilters);
 
     expect(result.filterGroups).toEqual([]);
   });

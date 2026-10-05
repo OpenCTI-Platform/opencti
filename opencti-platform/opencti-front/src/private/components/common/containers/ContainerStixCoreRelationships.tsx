@@ -14,36 +14,36 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../../components/i18n';
 import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
-import ReportStixCoreRelationshipsLines from './ReportStixCoreRelationshipsLines';
-import type { ReportRelationshipNode } from './ReportStixCoreRelationshipsLine';
+import ContainerStixCoreRelationshipsLines from './ContainerStixCoreRelationshipsLines';
+import type { ContainerRelationshipNode } from './ContainerStixCoreRelationshipsLine';
 
-interface ReportStixCoreRelationshipsProps {
-  reportId: string;
+interface ContainerStixCoreRelationshipsProps {
+  containerId: string;
 }
 
 /**
  * Builds the filters sent to `stixCoreRelationships`, scoped to relationships
- * that belong to the Report container.
+ * that belong to the container.
  */
-export const buildReportRelationshipsContextFilters = (
-  reportId: string,
+export const buildContainerRelationshipsContextFilters = (
+  containerId: string,
   userFilters: FilterGroup | undefined,
 ): FilterGroup => ({
   mode: 'and',
   filters: [
-    { key: 'objects', values: [reportId], operator: 'eq', mode: 'or' },
+    { key: 'objects', values: [containerId], operator: 'eq', mode: 'or' },
     { key: 'entity_type', values: ['stix-core-relationship'], operator: 'eq', mode: 'or' },
   ],
   filterGroups: userFilters && isFilterGroupNotEmpty(userFilters) ? [userFilters] : [],
 });
 
-const ReportStixCoreRelationships: FunctionComponent<ReportStixCoreRelationshipsProps> = ({ reportId }) => {
+const ContainerStixCoreRelationships: FunctionComponent<ContainerStixCoreRelationshipsProps> = ({ containerId }) => {
   const { t_i18n } = useFormatter();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
-  const LOCAL_STORAGE_KEY = `report-${reportId}-relationships`;
+  const LOCAL_STORAGE_KEY = `container-${containerId}-relationships`;
 
   const dataColumns: DataColumns = {
     fromType: {
@@ -91,9 +91,9 @@ const ReportStixCoreRelationships: FunctionComponent<ReportStixCoreRelationships
   );
   const { filters } = viewStorage;
 
-  // 'objects' (report membership) is mandatory and cannot be widened by user filters.
+  // 'objects' (container membership) is mandatory and cannot be widened by user filters.
   const userFilters = useRemoveIdAndIncorrectKeysFromFilterGroupObject(filters, ['stix-core-relationship']);
-  const contextFilters = buildReportRelationshipsContextFilters(reportId, userFilters);
+  const contextFilters = buildContainerRelationshipsContextFilters(containerId, userFilters);
 
   const queryPaginationOptions = {
     ...paginationOptions,
@@ -112,7 +112,7 @@ const ReportStixCoreRelationships: FunctionComponent<ReportStixCoreRelationships
     handleClearSelectedElements,
     handleToggleSelectAll,
     onToggleEntity,
-  } = useEntityToggle<ReportRelationshipNode>(LOCAL_STORAGE_KEY);
+  } = useEntityToggle<ContainerRelationshipNode>(LOCAL_STORAGE_KEY);
 
   return queryRef ? (
     <>
@@ -137,12 +137,12 @@ const ReportStixCoreRelationships: FunctionComponent<ReportStixCoreRelationships
         numberOfElements={viewStorage.numberOfElements}
         paginationOptions={queryPaginationOptions}
         availableEntityTypes={['stix-core-relationship']}
-        exportContext={{ entity_id: reportId, entity_type: 'stix-core-relationship' }}
+        exportContext={{ entity_id: containerId, entity_type: 'stix-core-relationship' }}
         noPadding={true}
         disableCards={true}
         entityTypes={['stix-core-relationship']}
       >
-        <ReportStixCoreRelationshipsLines
+        <ContainerStixCoreRelationshipsLines
           dataColumns={dataColumns}
           paginationOptions={queryPaginationOptions}
           queryRef={queryRef}
@@ -160,7 +160,7 @@ const ReportStixCoreRelationships: FunctionComponent<ReportStixCoreRelationships
           filters={contextFilters}
           search={viewStorage.searchTerm}
           handleClearSelectedElements={handleClearSelectedElements}
-          container={{ id: reportId }}
+          container={{ id: containerId }}
           warning={true}
           warningMessage={t_i18n('Be careful, you are about to remove the selected relationships from the container')}
           type="stix-core-relationship"
@@ -170,4 +170,4 @@ const ReportStixCoreRelationships: FunctionComponent<ReportStixCoreRelationships
   ) : null;
 };
 
-export default ReportStixCoreRelationships;
+export default ContainerStixCoreRelationships;

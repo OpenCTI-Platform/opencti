@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import ReportStixCoreRelationshipsLine, { ReportRelationshipNode } from './ReportStixCoreRelationshipsLine';
+import ContainerStixCoreRelationshipsLine, { ContainerRelationshipNode } from './ContainerStixCoreRelationshipsLine';
 import type { DataColumns } from '../../../../components/list_lines';
 
 const useFragmentMock = vi.hoisted(() => vi.fn());
@@ -59,7 +59,7 @@ const dataColumns: DataColumns = {
   objectMarking: { label: 'Marking', width: '8%', isSortable: false },
 };
 
-const relationship: ReportRelationshipNode = {
+const relationship: ContainerRelationshipNode = {
   id: 'relationship-id',
   entity_type: 'stix-core-relationship',
   relationship_type: 'targets',
@@ -81,7 +81,7 @@ const relationship: ReportRelationshipNode = {
 const renderLine = (onToggleEntity = vi.fn()) => render(
   <ThemeProvider theme={createTheme()}>
     <BrowserRouter>
-      <ReportStixCoreRelationshipsLine
+      <ContainerStixCoreRelationshipsLine
         dataColumns={dataColumns}
         node={relationship}
         onToggleEntity={onToggleEntity}
@@ -93,7 +93,7 @@ const renderLine = (onToggleEntity = vi.fn()) => render(
   </ThemeProvider>,
 );
 
-describe('ReportStixCoreRelationshipsLine', () => {
+describe('ContainerStixCoreRelationshipsLine', () => {
   beforeEach(() => {
     useFragmentMock.mockReturnValue(relationship);
   });

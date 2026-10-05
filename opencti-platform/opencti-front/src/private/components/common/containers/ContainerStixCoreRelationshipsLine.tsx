@@ -18,7 +18,7 @@ import type { Theme } from '../../../../components/Theme';
 import { useFragment } from 'react-relay';
 import { stixCoreRelationshipsFragment } from '@components/common/stix_core_relationships/StixCoreRelationships';
 
-export type ReportRelationshipNode = {
+export type ContainerRelationshipNode = {
   id: string;
   entity_type: string;
   relationship_type: string;
@@ -44,26 +44,26 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-interface ReportStixCoreRelationshipsLineProps {
+interface ContainerStixCoreRelationshipsLineProps {
   dataColumns: DataColumns;
-  node: ReportRelationshipNode;
-  onToggleEntity: (node: ReportRelationshipNode, event: React.SyntheticEvent) => void;
-  selectedElements: Record<string, ReportRelationshipNode>;
-  deSelectedElements: Record<string, ReportRelationshipNode>;
+  node: ContainerRelationshipNode;
+  onToggleEntity: (node: ContainerRelationshipNode, event: React.SyntheticEvent) => void;
+  selectedElements: Record<string, ContainerRelationshipNode>;
+  deSelectedElements: Record<string, ContainerRelationshipNode>;
   selectAll: boolean;
 }
 
-const ReportStixCoreRelationshipsLine = ({
+const ContainerStixCoreRelationshipsLine = ({
   dataColumns,
   node,
   onToggleEntity,
   selectedElements,
   deSelectedElements,
   selectAll,
-}: ReportStixCoreRelationshipsLineProps) => {
+}: ContainerStixCoreRelationshipsLineProps) => {
   const classes = useStyles();
   const { fsd } = useFormatter();
-  const relationship = useFragment(stixCoreRelationshipsFragment, node as never) as ReportRelationshipNode;
+  const relationship = useFragment(stixCoreRelationshipsFragment, node as never) as ContainerRelationshipNode;
   const from = relationship.from;
   const to = relationship.to;
   const isRestricted = !from || !to;
@@ -134,7 +134,7 @@ const ReportStixCoreRelationshipsLine = ({
   );
 };
 
-export const ReportStixCoreRelationshipsLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => (
+export const ContainerStixCoreRelationshipsLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => (
   <ListItemButton divider={true} disabled>
     <ListItemText
       primary={Object.keys(dataColumns).map((key) => (
@@ -144,4 +144,4 @@ export const ReportStixCoreRelationshipsLineDummy = ({ dataColumns }: { dataColu
   </ListItemButton>
 );
 
-export default ReportStixCoreRelationshipsLine;
+export default ContainerStixCoreRelationshipsLine;
