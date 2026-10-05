@@ -1,7 +1,9 @@
 import { ValidationError } from '../../config/errors';
-import { addTrigger } from '../notification/notification-domain';
-import type { TriggerChangeDigestAddInput, TriggerDigestAddInput, TriggerType } from '../../generated/graphql';
+import { addTrigger, triggerEdit, triggerGet } from '../notification/notification-domain';
+import type { BasicStoreEntityTrigger } from '../notification/notification-types';
+import { EditOperation, type TriggerChangeDigestAddInput, type TriggerDigestAddInput, type TriggerType } from '../../generated/graphql';
 import type { AuthContext, AuthUser } from '../../types/user';
+import type { InternalEditInput } from '../../types/store';
 import { resolveLandscapeScope } from './landscapeDiff-domain';
 import { TRIGGER_TYPE_CHANGE_DIGEST } from './timeMachine-changeDigest';
 
@@ -35,4 +37,43 @@ export const addChangeDigestTrigger = async (context: AuthContext, user: AuthUse
     instance_trigger: false,
   };
   return addTrigger(context, user, triggerInput as unknown as TriggerDigestAddInput, TRIGGER_TYPE_CHANGE_DIGEST as TriggerType);
+};
+
+const editedValues = (current: string[], items: InternalEditInput[]) => items.reduce((values, item) => {
+  const value = (item.value ?? []).filter((entry): entry is string => typeof entry === 'string');
+  if (item.operation === EditOperation.Add) return [...new Set([...values, ...value])];
+  if (item.operation === EditOperation.Remove) return values.filter((entry) => !value.includes(entry));
+  return value;
+}, current);
+
+/**
+ * Edit of a knowledge trigger. A change digest keeps the rules of its creation: at least one notifier, and a filter
+ * set validated and stored with its entity types, so an edit cannot leave a digest that fails at each period or
+ * that can never be delivered.
+ */
+export const triggerKnowledgeEdit = async (context: AuthContext, user: AuthUser, triggerId: string, input: InternalEditInput[]) => {
+  const trigger = await triggerGet(context, user, triggerId) as BasicStoreEntityTrigger & { scope_entity_types?: string[] | null };
+  if (trigger?.trigger_type !== TRIGGER_TYPE_CHANGE_DIGEST) {
+    return triggerEdit(context, user, triggerId, input);
+  }
+  const notifiersItems = input.filter((item) => item.key === 'notifiers');
+  if (notifiersItems.length > 0 && editedValues(trigger.notifiers ?? [], notifiersItems).length === 0) {
+    throw ValidationError('A change digest needs at least one notifier', 'notifiers');
+  }
+  const filtersItems = input.filter((item) => item.key === 'filters');
+  const entityTypesItems = input.filter((item) => item.key === 'scope_entity_types');
+  if (filtersItems.length === 0 && entityTypesItems.length === 0) {
+    return triggerEdit(context, user, triggerId, input);
+  }
+  const editedFilters = filtersItems.length > 0 ? filtersItems[filtersItems.length - 1].value?.[0] ?? null : trigger.filters;
+  const filters = editedFilters && typeof editedFilters !== 'string' ? JSON.stringify(editedFilters) : editedFilters;
+  const entityTypes = entityTypesItems.length > 0 ? editedValues(trigger.scope_entity_types ?? [], entityTypesItems) : trigger.scope_entity_types;
+  const now = new Date().toISOString();
+  const scope = await resolveLandscapeScope(context, user, { filters, entity_types: entityTypes, from: now, to: now });
+  const scopeInput: InternalEditInput[] = [
+    { key: 'filters', value: [scope.filters ? JSON.stringify(scope.filters) : null] },
+    { key: 'scope_entity_types', value: scope.entityTypes ?? [] },
+  ];
+  const otherInput = input.filter((item) => item.key !== 'filters' && item.key !== 'scope_entity_types');
+  return triggerEdit(context, user, triggerId, [...otherInput, ...scopeInput]);
 };
