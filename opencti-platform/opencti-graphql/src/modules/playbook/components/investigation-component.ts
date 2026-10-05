@@ -18,16 +18,13 @@ import type { JSONSchemaType } from 'ajv';
 import { playbookBundleElementsToApply, type PlaybookBundleElementsToApply, type PlaybookComponent } from '../playbook-types';
 import { filterBundleElements, isBundleElementInScope } from '../playbook-utils';
 import { logApp } from '../../../config/conf';
-import { executionContext, isUserInPlatformOrganization, SYSTEM_USER } from '../../../utils/access';
+import { executionContext, SYSTEM_USER } from '../../../utils/access';
 import { fullEntitiesList } from '../../../database/middleware-loader';
-import { getEntityFromCache } from '../../../database/cache';
-import { ENTITY_TYPE_SETTINGS } from '../../../schema/internalObject';
-import type { BasicStoreSettings } from '../../../types/settings';
 import { OPENCTI_ADMIN_UUID } from '../../../schema/general';
 import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
 import { InvestigationRunTrigger } from '../../../generated/graphql';
 import type { StixObject } from '../../../types/stix-2-1-common';
-import { addInvestigationRun, resolveRunIdentity } from '../../investigationRun/investigationRun-domain';
+import { addInvestigationRun, investigationIdentityContext, resolveRunIdentity } from '../../investigationRun/investigationRun-domain';
 import { ENTITY_TYPE_INVESTIGATION_POLICY, type BasicStoreEntityInvestigationPolicy } from '../../investigationRun/investigationRun-types';
 import { resolveRunAsUserId } from './ai-agent-shared';
 
@@ -121,9 +118,7 @@ export const PLAYBOOK_INVESTIGATION_COMPONENT: PlaybookComponent<InvestigationCo
       return { output_port: 'out', bundle };
     }
     // Launched as an authenticated request of the run identity would be: organization restrictions depend on its membership.
-    const runContext = executionContext('playbook_components', runUser);
-    const settings = await getEntityFromCache<BasicStoreSettings>(runContext, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    runContext.user_inside_platform_organization = isUserInPlatformOrganization(runUser, settings);
+    const runContext = await investigationIdentityContext('playbook_components', runUser);
     // One run per subject: addInvestigationRun returns the active run of a subject already investigated.
     const subjectIds = R.uniq(elements.map((element) => element.extensions?.[STIX_EXT_OCTI]?.id ?? element.id));
     for (let index = 0; index < subjectIds.length; index += 1) {

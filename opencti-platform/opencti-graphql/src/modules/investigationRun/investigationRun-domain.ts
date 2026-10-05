@@ -49,7 +49,15 @@ import { lockResources } from '../../lock/master-lock';
 import { READ_DATA_INDICES_WITHOUT_INTERNAL } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
 import { extractEntityRepresentativeName } from '../../database/entity-representative';
-import { INVESTIGATION_MANAGER_USER, isUserHasCapability, KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../utils/access';
+import {
+  executionContext,
+  INVESTIGATION_MANAGER_USER,
+  isUserHasCapability,
+  isUserInPlatformOrganization,
+  KNOWLEDGE_KNENRICHMENT,
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../utils/access';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { buildRefRelationKey } from '../../schema/general';
@@ -136,6 +144,18 @@ export const resolveRunIdentity = async (context: AuthContext, userId: string): 
   if (!user) return null;
   const settings = await getEntityFromCache<BasicStoreSettings>(context, INVESTIGATION_MANAGER_USER, ENTITY_TYPE_SETTINGS);
   return isUserAccountValid(user, settings) ? user : null;
+};
+
+/**
+ * A context of a run identity, read as an authenticated request of that
+ * identity would be: organization restrictions depend on its platform
+ * organization membership, which a bare execution context leaves unset.
+ */
+export const investigationIdentityContext = async (source: string, user: AuthUser, draftId?: string | null): Promise<AuthContext> => {
+  const context = executionContext(source, user, draftId ?? undefined);
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, INVESTIGATION_MANAGER_USER, ENTITY_TYPE_SETTINGS);
+  context.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
+  return context;
 };
 
 export const loadInvestigationRun = (context: AuthContext, id: string) => {

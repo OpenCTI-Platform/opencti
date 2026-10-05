@@ -37,7 +37,7 @@ import {
   processInvestigationRun,
   revalidateAwaitingInvestigationRun,
 } from '../modules/investigationRun/investigationRun-executor';
-import { addInvestigationRun, resolveRunIdentity } from '../modules/investigationRun/investigationRun-domain';
+import { addInvestigationRun, investigationIdentityContext, resolveRunIdentity } from '../modules/investigationRun/investigationRun-domain';
 import { listCaseRfiTriggerPolicies, updateInvestigationPolicyStreamPosition } from '../modules/investigationRun/investigationPolicy-domain';
 import type { BasicStoreEntityInvestigationPolicy } from '../modules/investigationRun/investigationRun-types';
 
@@ -83,6 +83,7 @@ export const caseRfiCreationHandler = (context: AuthContext, policy: BasicStoreE
       && event.data?.extensions?.[STIX_EXT_OCTI]?.type === ENTITY_TYPE_CONTAINER_CASE_RFI;
     const hasRfiCreation = streamEvents.some(isRfiCreation);
     const runUser = hasRfiCreation ? await resolveHookUser(context, policy) : null;
+    const runContext = runUser ? await investigationIdentityContext(INVESTIGATION_MANAGER_CONTEXT, runUser) : null;
     for (let index = 0; index < streamEvents.length && !progress.retry; index += 1) {
       const streamEvent = streamEvents[index];
       if (isRfiCreation(streamEvent) && !runUser) {
@@ -91,10 +92,11 @@ export const caseRfiCreationHandler = (context: AuthContext, policy: BasicStoreE
         progress.retry = true;
         return;
       }
-      if (runUser && isRfiCreation(streamEvent)) {
+      if (runUser && runContext && isRfiCreation(streamEvent)) {
         const rfiId = streamEvent.data.data.extensions[STIX_EXT_OCTI].id;
         try {
-          await addInvestigationRun(context, runUser, rfiId, policy.internal_id, { trigger: InvestigationRunTrigger.CaseRfiCreation, runAsUserId: runUser.id });
+          // Launched as the policy identity: the request is read with its platform organization membership.
+          await addInvestigationRun(runContext, runUser, rfiId, policy.internal_id, { trigger: InvestigationRunTrigger.CaseRfiCreation, runAsUserId: runUser.id });
         } catch (error) {
           if (isRetryableHookError(error)) {
             logApp.warn('[CASE AUTOPILOT] Investigation of a new request for information delayed, retried on the next run', { rfiId, policyId: policy.internal_id, cause: error });

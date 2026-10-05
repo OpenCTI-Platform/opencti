@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { caseRfiCreationHandler, type CaseRfiHookProgress, isRetryableHookError, nextCaseRfiHookPosition, startCaseRfiHook } from '../../../src/manager/investigationRunManager';
-import { addInvestigationRun, resolveRunIdentity } from '../../../src/modules/investigationRun/investigationRun-domain';
+import { addInvestigationRun, investigationIdentityContext, resolveRunIdentity } from '../../../src/modules/investigationRun/investigationRun-domain';
 import { DatabaseError, ForbiddenAccess, FunctionalError, LockTimeoutError, MissingReferenceError } from '../../../src/config/errors';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../../../src/modules/case/case-rfi/case-rfi-types';
@@ -12,6 +12,7 @@ import type { BasicStoreEntityInvestigationPolicy } from '../../../src/modules/i
 vi.mock('../../../src/modules/investigationRun/investigationRun-domain', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../src/modules/investigationRun/investigationRun-domain')>(),
   addInvestigationRun: vi.fn(),
+  investigationIdentityContext: vi.fn(),
   resolveRunIdentity: vi.fn(),
 }));
 
@@ -36,6 +37,8 @@ describe('Case Autopilot manager - request for information hook', () => {
     vi.mocked(addInvestigationRun).mockReset();
     vi.mocked(resolveRunIdentity).mockReset();
     vi.mocked(resolveRunIdentity).mockResolvedValue(runUser);
+    vi.mocked(investigationIdentityContext).mockReset();
+    vi.mocked(investigationIdentityContext).mockImplementation(async (source, user) => ({ source, user, user_inside_platform_organization: true }) as unknown as AuthContext);
   });
 
   it('retries technical failures and skips refusals', () => {
@@ -53,6 +56,10 @@ describe('Case Autopilot manager - request for information hook', () => {
     await caseRfiCreationHandler(context, policy, progress)([rfiCreation('1-0', 'rfi-1'), otherEvent('2-0'), rfiCreation('3-0', 'rfi-2')]);
     expect(vi.mocked(addInvestigationRun).mock.calls.map((call) => call[2])).toEqual(['rfi-1', 'rfi-2']);
     expect(vi.mocked(addInvestigationRun).mock.calls[0][4]).toEqual({ trigger: InvestigationRunTrigger.CaseRfiCreation, runAsUserId: 'user-1' });
+    // Read as the policy identity, with its platform organization membership, not with the bare manager context.
+    expect(vi.mocked(investigationIdentityContext)).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(investigationIdentityContext).mock.calls[0][1]).toBe(runUser);
+    expect(vi.mocked(addInvestigationRun).mock.calls[0][0]).toMatchObject({ user: runUser, user_inside_platform_organization: true });
     expect(progress).toEqual({ handledEventId: '3-0', retry: false });
   });
 

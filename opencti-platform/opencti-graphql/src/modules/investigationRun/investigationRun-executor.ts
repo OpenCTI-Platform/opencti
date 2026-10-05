@@ -65,7 +65,7 @@ import {
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 import { ENTITY_TYPE_PIR } from '../pir/pir-types';
 import { checkStixCoreRelationshipMapping } from '../../database/stix';
-import { executionContext, INVESTIGATION_MANAGER_USER, isUserHasCapability, isUserInPlatformOrganization, KNOWLEDGE_KNENRICHMENT } from '../../utils/access';
+import { INVESTIGATION_MANAGER_USER, isUserHasCapability, KNOWLEDGE_KNENRICHMENT } from '../../utils/access';
 import { addDraftWorkspace, deleteDraftWorkspace, findById as findDraftById, validateDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import { addWorkspace, findById as findWorkspaceById, workspaceDelete, workspaceEditField } from '../workspace/workspace-domain';
 import { askElementEnrichmentForConnectors } from '../../domain/stixCoreObject';
@@ -104,6 +104,7 @@ import {
   type InvestigationRecommendation,
 } from './investigationRun-types';
 import {
+  investigationIdentityContext,
   listPolicyEnrichmentConnectors,
   loadInvestigationRun,
   resolveRunIdentity,
@@ -233,13 +234,7 @@ const draftQuery = (filters?: unknown, first = 500) => ({ indices: [READ_INDEX_D
 
 const STIX_RELATIONSHIP_TYPES = [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP];
 
-const userContext = async (user: AuthUser, draftId?: string | null): Promise<AuthContext> => {
-  const context = executionContext(INVESTIGATION_MANAGER_CONTEXT, user, draftId ?? undefined);
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, INVESTIGATION_MANAGER_USER, ENTITY_TYPE_SETTINGS);
-  // Organization restrictions depend on it: computed like an authenticated request.
-  context.user_inside_platform_organization = isUserInPlatformOrganization(user, settings);
-  return context;
-};
+const userContext = (user: AuthUser, draftId?: string | null): Promise<AuthContext> => investigationIdentityContext(INVESTIGATION_MANAGER_CONTEXT, user, draftId);
 
 const jwtUserOf = (user: AuthUser) => ({ id: user.id, user_email: user.user_email });
 
