@@ -121,7 +121,7 @@ export const useHuntFormValidation = () => {
           hunt_type: values.hunt_type,
           sigma_rule: values.sigma_rule,
           native_queries: normalizeNativeQueries(values.native_queries ?? []),
-          huntSources: [...(values.iocElements ?? []), ...(values.iocEntities ?? [])],
+          huntSources: [...(values.iocElements ?? []), ...(values.iocEntities ?? []), ...(values.huntSources ?? [])],
           hunt_ioc_values: parseIocText(values.ioc_values_text ?? '').values,
         });
         if (hasLogic) return true;
@@ -419,7 +419,8 @@ export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues:
             types={HUNT_TECHNIQUE_TYPES}
             style={fieldSpacingContainerStyle}
           />
-          {values.hunt_type !== 'indicators' && (
+          {/* An indicator hunt also looks for its sources, so prefilled ones stay visible and removable */}
+          {(values.hunt_type !== 'indicators' || values.huntSources.length > 0) && (
             <HuntEntitiesField
               name="huntSources"
               label={t_i18n('Based on (indicators, reports)')}

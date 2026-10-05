@@ -12,7 +12,16 @@ import useDraftContext from '../../../utils/hooks/useDraftContext';
 import { HuntCreationDrawer } from './HuntCreation';
 import HuntPlanDialog from './HuntPlanDialog';
 import useHuntAI from './useHuntAI';
-import { buildHuntPrefill, buildHuntPrefillName, HUNT_REPORT_PREFILL_TYPE_GROUPS, HUNT_TARGET_TYPES, HuntFormValues, HuntPrefillEntity } from './hunt-utils';
+import {
+  buildHuntPrefill,
+  buildHuntPrefillName,
+  buildIndicatorHuntPrefill,
+  HUNT_REPORT_PREFILL_TYPE_GROUPS,
+  HUNT_TARGET_TYPES,
+  HuntFormValues,
+  HuntIndicatorPrefillEntity,
+  HuntPrefillEntity,
+} from './hunt-utils';
 import { HuntThisMenuContainerObjectsQuery } from './__generated__/HuntThisMenuContainerObjectsQuery.graphql';
 import { HuntThisMenuPirEntitiesQuery } from './__generated__/HuntThisMenuPirEntitiesQuery.graphql';
 
@@ -62,8 +71,11 @@ const toPrefillEntities = (nodes: PrefillNode[]): HuntPrefillEntity[] => nodes
   .map((node) => ({ id: node.id, entity_type: node.entity_type, name: node.representative.main }));
 
 /** Targets, techniques and sources a hunt created from the entity starts with. */
-const fetchHuntPrefill = async (entity: HuntPrefillEntity): Promise<Partial<HuntFormValues>> => {
+const fetchHuntPrefill = async (entity: HuntIndicatorPrefillEntity): Promise<Partial<HuntFormValues>> => {
   const name = buildHuntPrefillName(entity.name);
+  if (entity.entity_type === 'Indicator') {
+    return { name, ...buildIndicatorHuntPrefill(entity) };
+  }
   if (entity.entity_type === 'Report') {
     const groups = await Promise.all(HUNT_REPORT_PREFILL_TYPE_GROUPS.map((types) => fetchQuery<HuntThisMenuContainerObjectsQuery>(huntThisMenuContainerObjectsQuery, {
       id: entity.id,
@@ -95,7 +107,7 @@ const fetchHuntPrefill = async (entity: HuntPrefillEntity): Promise<Partial<Hunt
 };
 
 interface HuntThisMenuProps {
-  entity: HuntPrefillEntity;
+  entity: HuntIndicatorPrefillEntity;
 }
 
 /** "Hunt this" quick action of the threat, technique, report, indicator and PIR pages. */

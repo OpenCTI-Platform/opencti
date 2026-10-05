@@ -730,6 +730,44 @@ export const buildHuntPrefill = (entities: HuntPrefillEntity[]): HuntPrefill => 
 
 /** Default name of a hunt created from an entity page. */
 export const buildHuntPrefillName = (entityName: string) => `Hunt - ${entityName}`.substring(0, 250);
+
+// Platform a native query written in the indicator pattern language runs on
+const INDICATOR_PATTERN_PLATFORMS: Record<string, string> = {
+  spl: 'splunk',
+  kql: 'microsoft-sentinel',
+  eql: 'elastic-security',
+};
+
+export interface HuntIndicatorPrefillEntity extends HuntPrefillEntity {
+  pattern_type?: string | null;
+  pattern?: string | null;
+}
+
+/**
+ * Hunt an indicator turns into, from its pattern type: a STIX pattern is looked up as an indicator,
+ * a Sigma pattern becomes the detection rule, a SPL, KQL or EQL pattern a native query. The indicator
+ * stays a source of the hunt in every case.
+ */
+export const buildIndicatorHuntPrefill = (indicator: HuntIndicatorPrefillEntity): Partial<HuntFormValues> => {
+  const option = toOption(indicator);
+  const patternType = (indicator.pattern_type ?? '').toLowerCase();
+  const pattern = indicator.pattern ?? '';
+  if (patternType === 'stix') {
+    return { hunt_type: 'indicators', iocElements: [option] };
+  }
+  if (patternType === 'sigma' && pattern.trim().length > 0) {
+    return { hunt_type: 'telemetry', sigma_rule: pattern, huntSources: [option] };
+  }
+  const platform = INDICATOR_PATTERN_PLATFORMS[patternType];
+  if (platform && pattern.trim().length > 0) {
+    return {
+      hunt_type: 'telemetry',
+      native_queries: [{ platform, language: patternType, query: pattern, pipeline: '' }],
+      huntSources: [option],
+    };
+  }
+  return { huntSources: [option] };
+};
 // endregion
 
 // region entity pages offering hunts

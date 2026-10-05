@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildHuntPrefill,
   buildHuntScope,
+  buildIndicatorHuntPrefill,
   canRetryHuntRun,
   canSetHuntRunVerdict,
   emptyHuntFormValues,
@@ -238,6 +239,30 @@ describe('Hunt utils', () => {
     expect(prefill.huntTargets.map((o) => o.value)).toEqual(['is-1']);
     expect(prefill.huntTechniques.map((o) => o.value)).toEqual(['ap-1']);
     expect(prefill.huntSources.map((o) => o.value)).toEqual(['ind-1']);
+  });
+
+  it('should infer the hunt of an indicator from its pattern type', () => {
+    const indicator = { id: 'ind-1', entity_type: 'Indicator', name: 'Bad IP' };
+    const stix = buildIndicatorHuntPrefill({ ...indicator, pattern_type: 'stix', pattern: "[ipv4-addr:value = '1.2.3.4']" });
+    expect(stix.hunt_type).toBe('indicators');
+    expect(stix.iocElements?.map((o) => o.value)).toEqual(['ind-1']);
+    const sigma = buildIndicatorHuntPrefill({ ...indicator, pattern_type: 'sigma', pattern: 'title: x' });
+    expect(sigma).toMatchObject({ hunt_type: 'telemetry', sigma_rule: 'title: x' });
+    expect(sigma.huntSources?.map((o) => o.value)).toEqual(['ind-1']);
+    const kql = buildIndicatorHuntPrefill({ ...indicator, pattern_type: 'KQL', pattern: 'DeviceEvents | take 1' });
+    expect(kql.native_queries).toEqual([{ platform: 'microsoft-sentinel', language: 'kql', query: 'DeviceEvents | take 1', pipeline: '' }]);
+    expect(buildIndicatorHuntPrefill({ ...indicator, pattern_type: 'spl', pattern: 'index=main' }).native_queries?.[0].platform).toBe('splunk');
+    expect(buildIndicatorHuntPrefill({ ...indicator, pattern_type: 'eql', pattern: 'process where true' }).native_queries?.[0].platform).toBe('elastic-security');
+    const yara = buildIndicatorHuntPrefill({ ...indicator, pattern_type: 'yara', pattern: 'rule x {}' });
+    expect(yara.hunt_type).toBeUndefined();
+    expect(yara.huntSources?.map((o) => o.value)).toEqual(['ind-1']);
+  });
+
+  it('should count the indicator of an indicator hunt prefill as its logic', () => {
+    const values = { ...emptyHuntFormValues(), ...buildIndicatorHuntPrefill({ id: 'ind-1', entity_type: 'Indicator', name: 'Bad IP', pattern_type: 'stix' }) };
+    const input = toHuntAddInput(values, '');
+    expect(input.huntSources).toEqual(['ind-1']);
+    expect(hasHuntLogic({ ...input, huntSources: values.iocElements })).toBe(true);
   });
 
   it('should read the threats, techniques and indicators of a report for its hunt, the indicators apart', () => {
