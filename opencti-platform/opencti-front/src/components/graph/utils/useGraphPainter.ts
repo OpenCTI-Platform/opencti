@@ -46,6 +46,8 @@ const OBSTACLE_CLEARANCE = NODE_RADIUS + 5;
 /** A zoom where every detail shows, for callers that do not hand one. */
 const DEFAULT_SCALE = 3;
 
+const STRAIGHT_LINK = { curvature: 0, rotation: 0 };
+
 const endpointId = (end: GraphLink['source']) => (typeof end === 'object' && end !== null ? end.id : end);
 
 const linkEndsOf = (link: GraphLink): LinkEnds => ({
@@ -90,9 +92,11 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
   };
 
   const linkEnds = useMemo(() => links.map(linkEndsOf), [links]);
-  // The key of each link drawn, computed once per graph rather than at every frame.
+  // The ends and the key of each link drawn, computed once per graph rather than at every frame.
+  const linkEndsByLink = useMemo(() => new Map(links.map((link, index) => [link, linkEnds[index]])), [links, linkEnds]);
   const linkKeys = useMemo(() => new Map(links.map((link, index) => [link, linkEndsKey(linkEnds[index])])), [links, linkEnds]);
-  const keyOf = (link: GraphLink) => linkKeys.get(link) ?? linkEndsKey(linkEndsOf(link));
+  const endsOf = (link: GraphLink) => linkEndsByLink.get(link) ?? linkEndsOf(link);
+  const keyOf = (link: GraphLink) => linkKeys.get(link) ?? linkEndsKey(endsOf(link));
   const curvatures = useMemo(() => computeLinkCurvatures(linkEnds), [linkEnds]);
   const bends = useMemo(
     () => (layoutTargets ? computeObstacleBends(linkEnds, layoutTargets, OBSTACLE_CLEARANCE, curvatures) : null),
@@ -228,11 +232,13 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     return linkBaseColor(link);
   };
 
+  const bentCurvatures = useMemo(
+    () => (bends ? new Map([...bends].map(([key, curvature]) => [key, { curvature, rotation: 0 }])) : null),
+    [bends],
+  );
   const curvatureOf = (link: GraphLink) => {
     const key = keyOf(link);
-    const bend = bends?.get(key);
-    if (bend !== undefined) return { curvature: bend, rotation: 0 };
-    return curvatures.get(key) ?? { curvature: 0, rotation: 0 };
+    return bentCurvatures?.get(key) ?? curvatures.get(key) ?? STRAIGHT_LINK;
   };
   const linkCurvature = (link: GraphLink) => curvatureOf(link).curvature;
 
@@ -261,7 +267,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
       confidence: link.confidence,
       visual: {
         selected,
-        hovered: isHoveredLink(hovered, linkEndsOf(link)),
+        hovered: isHoveredLink(hovered, endsOf(link)),
         faded: focus ? !focus.linkKeys.has(keyOf(link)) : false,
         onPath: pathLinkKeys.has(keyOf(link)),
       },
