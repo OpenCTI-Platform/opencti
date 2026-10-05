@@ -1,5 +1,6 @@
 import React, { ReactNode, useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
+import { Link } from 'react-router';
 import { Field, useFormikContext } from 'formik';
 import { useTheme } from '@mui/styles';
 import { AutoAwesomeOutlined } from '@mui/icons-material';
@@ -9,7 +10,9 @@ import EEChip from '@components/common/entreprise_edition/EEChip';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
+import useGranted, { SETTINGS_SETPARAMETERS } from '../../../utils/hooks/useGranted';
 import { HuntCodeEditorField } from './HuntCodeEditor';
+import { XTM_ONE_SETTINGS_PATH } from './HuntsSetupChecklist';
 import HuntSigmaValidation from './HuntSigmaValidation';
 import { mutationErrorMessage, payloadErrorsMessage } from './hunt-mutation-utils';
 import useHuntAI from './useHuntAI';
@@ -64,6 +67,7 @@ const HuntSigmaRuleField = ({ label, helperText, placeholder, generationInput, n
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { isEnterpriseEdition, xtmOneConfigured } = useHuntAI();
+  const canSetParameters = useGranted([SETTINGS_SETPARAMETERS]);
   const { values, setFieldValue } = useFormikContext<SigmaRuleValues>();
   const [commit, inFlight] = useApiMutation<HuntSigmaRuleFieldGenerateMutation>(huntSigmaRuleFieldGenerateMutation);
   const [applied, setApplied] = useState<GeneratedRule | null>(null);
@@ -110,6 +114,7 @@ const HuntSigmaRuleField = ({ label, helperText, placeholder, generationInput, n
     setApplied(null);
   };
 
+  const xtmOneMissing = isEnterpriseEdition && !xtmOneConfigured;
   const action = (
     <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
       {reason && (
@@ -117,6 +122,13 @@ const HuntSigmaRuleField = ({ label, helperText, placeholder, generationInput, n
           {reason}
         </Text>
       )}
+      {xtmOneMissing && (canSetParameters ? (
+        <Button variant="tertiary" size="small" component={Link} to={XTM_ONE_SETTINGS_PATH} data-testid="hunt-sigma-generate-settings">
+          {t_i18n('Open the settings')}
+        </Button>
+      ) : (
+        <Text variant="content-caption" style={{ color: theme.palette.text.secondary }}>{t_i18n('Ask your administrator')}</Text>
+      ))}
       {inFlight && <Spinner size="sm" label={t_i18n('XTM One is writing the Sigma rule')} />}
       <Button
         variant="tertiary"

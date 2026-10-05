@@ -77,6 +77,8 @@ describe('Sigma rule field of a hunt', () => {
     renderField({ hypothesis: 'If APT-X is active' });
     expect(screen.getByTestId('hunt-sigma-generate')).toBeDisabled();
     expect(screen.getByTestId('hunt-sigma-generate-reason')).toHaveTextContent('XTM One is not configured on this platform');
+    // Where to configure it: the settings for an administrator, the administrator for anyone else
+    expect(screen.queryByTestId('hunt-sigma-generate-settings') ?? screen.queryByText('Ask your administrator')).toBeInTheDocument();
   });
 
   it('disables the action with its reason while the hunt has nothing to generate from', () => {

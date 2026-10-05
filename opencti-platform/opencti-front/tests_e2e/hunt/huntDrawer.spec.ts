@@ -151,6 +151,8 @@ test.describe('Hunt drawers', { tag: ['@hunt', '@mutation'] }, () => {
     await openCreationDrawer(page);
     await expect(page.getByTestId('hunt-sigma-generate')).toBeDisabled();
     await expect(page.getByTestId('hunt-sigma-generate-reason')).toHaveText('XTM One is not configured on this platform');
+    // The administrator running the tests is offered the settings where XTM One is configured
+    await expect(page.getByTestId('hunt-sigma-generate-settings')).toHaveAttribute('href', /\/dashboard\/settings\/experience$/);
     await capture(page, 'hunt-drawer-sigma-unavailable.png', [page.getByTestId('hunt-sigma-editor')]);
   });
 

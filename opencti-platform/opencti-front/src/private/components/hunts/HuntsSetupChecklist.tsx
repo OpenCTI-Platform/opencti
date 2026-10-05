@@ -14,7 +14,7 @@ import { HUNT_DOCS } from './hunt-utils';
 import { HuntsSetupChecklistQuery } from './__generated__/HuntsSetupChecklistQuery.graphql';
 
 export const HUNT_CONNECTOR_CATALOG_PATH = '/dashboard/data/ingestion/catalog';
-const XTM_ONE_SETTINGS_PATH = '/dashboard/settings/experience';
+export const XTM_ONE_SETTINGS_PATH = '/dashboard/settings/experience';
 
 const huntsSetupChecklistQuery = graphql`
   query HuntsSetupChecklistQuery {

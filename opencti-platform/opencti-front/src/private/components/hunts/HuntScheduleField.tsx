@@ -64,7 +64,8 @@ const HuntScheduleField = ({ modeName = 'schedule_mode', cronName = 'schedule_cr
           />
         </div>
       )}
-      <HuntSchedulePreview schedule={schedule} />
+      {/* The helper line already says what a manual hunt does */}
+      {mode !== 'manual' && <HuntSchedulePreview schedule={schedule} />}
     </div>
   );
 };
