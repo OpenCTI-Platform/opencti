@@ -1281,7 +1281,8 @@ describe('Incident and case timeline', () => {
     it('should never lower the confidence of a known event on import', async () => {
       const event = { id: 'timeline-event--3b5d7f9a-1c2e-4a6b-8d0f-2e4a6c8e0b1d', title: 'Backups verified', event_time: '2026-02-06T10:00:00.000Z' };
       const importVersion = async (version: Record<string, unknown>) => {
-        await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension: JSON.stringify({ events: [{ ...event, ...version }], annotations: [] }) } });
+        const extension = JSON.stringify({ events: [{ ...event, ...version }], annotations: [] });
+        await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension } });
         const [stored] = (await listTimeline(secondCase.id, { sources: ['manual'] })).filter((e) => e.title.startsWith('Backups verified'));
         return stored;
       };
