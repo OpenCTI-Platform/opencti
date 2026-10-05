@@ -3274,6 +3274,27 @@ export const elCount = async (
   logApp.debug('[SEARCH] elCount', { query });
   return elRawCount(query);
 };
+
+/**
+ * Raw Elasticsearch aggregations over the elements matching the options (types, filters, access restrictions), for
+ * computations that need aggregation shapes the generic helpers do not offer (nested or combined terms).
+ */
+export const elFilteredAggregations = async (
+  context: AuthContext,
+  user: AuthUser,
+  indexName: string | string[] | undefined,
+  options: QueryBodyBuilderOpts,
+  aggregations: Record<string, unknown>,
+): Promise<Record<string, any>> => {
+  const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
+  body.size = 0;
+  body.aggs = aggregations;
+  const query = { index: getIndicesToQuery(context, user, indexName), track_total_hits: false, body };
+  const data = await elRawSearch(context, user, 'Aggregations (filtered)', query).catch((err) => {
+    throw wrapEngineError('Filtered aggregations computing fail', err, { query: JSON.stringify(query) });
+  });
+  return data.aggregations ?? {};
+};
 export type HistogramCountOpts = QueryBodyBuilderOpts & {
   interval?: string;
   field?: string;

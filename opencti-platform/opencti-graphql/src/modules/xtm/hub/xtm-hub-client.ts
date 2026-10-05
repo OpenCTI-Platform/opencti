@@ -20,8 +20,44 @@ interface ConsumeProvisionedNewsFeedItemsResponse {
   available_news_feed_types: NewsFeedItemType[];
 }
 
+export interface HubIntegrationCoverageInput {
+  objectTypes?: string[];
+  sectors?: string[];
+  regions?: string[];
+  integrationTypes?: string[];
+  searchTerm?: string;
+  first?: number;
+}
+
+export interface HubIntegrationCoverageMatch {
+  id: string;
+  slug: string;
+  name: string;
+  short_description: string | null;
+  integration_type: string;
+  license_type: string | null;
+  verified: boolean | null;
+  manager_supported: boolean | null;
+  object_types: string[];
+  sectors: string[];
+  regions: string[];
+  coverage_inferred: boolean;
+  matched_object_types: string[];
+  matched_sectors: string[];
+  matched_regions: string[];
+  score: number;
+}
+
+export interface HubIntegrationCoverageResult {
+  status: 'ok' | 'unreachable' | 'error';
+  matches: HubIntegrationCoverageMatch[];
+  // More integrations matched than XTM Hub ranks: the matches are its first candidates, not a complete ranking
+  truncated: boolean;
+}
+
 const HUB_BACKEND_URL = conf.get('xtm:xtmhub_api_override_url') ?? conf.get('xtm:xtmhub_url');
 const HUB_OPENCTI_IDENTIFIER = 'opencti';
+const HUB_COVERAGE_SEARCH_TIMEOUT = 15000;
 
 export const xtmHubClient = {
   isBackendReachable: async (): Promise<{ isReachable: boolean }> => {
@@ -161,6 +197,59 @@ export const xtmHubClient = {
     } catch (error) {
       logApp.warn('XTM Hub is unreachable', { reason: error });
       return emptyResponse;
+    }
+  },
+  // Catalog search by coverage facets (object types, sectors, regions), used by the collection gaps of Source Intelligence
+  integrationsByCoverage: async (
+    platform: { platformId: string; platformToken: string } | null,
+    input: HubIntegrationCoverageInput,
+  ): Promise<HubIntegrationCoverageResult> => {
+    const query = `
+      query IntegrationsByCoverage($input: IntegrationCoverageSearchInput!) {
+        integrationsByCoverage(input: $input) {
+          matches {
+            id
+            slug
+            name
+            short_description
+            integration_type
+            license_type
+            verified
+            manager_supported
+            object_types
+            sectors
+            regions
+            coverage_inferred
+            matched_object_types
+            matched_sectors
+            matched_regions
+            score
+          }
+          truncated
+        }
+      }
+    `;
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (platform) {
+      headers['XTM-Hub-Platform-Id'] = platform.platformId;
+      headers['XTM-Hub-Platform-Token'] = platform.platformToken;
+    }
+    const httpClient = getHttpClient({ baseURL: HUB_BACKEND_URL, responseType: 'json', headers });
+    try {
+      const response = await httpClient.post('/graphql-api', { query, variables: { input } }, { timeout: HUB_COVERAGE_SEARCH_TIMEOUT });
+      const { data, errors } = response.data;
+      if ((errors?.length ?? 0) > 0) {
+        logApp.warn('XTM Hub integrationsByCoverage error', { reason: errors?.[0] });
+        return { status: 'error', matches: [], truncated: false };
+      }
+      return {
+        status: 'ok',
+        matches: data?.integrationsByCoverage?.matches ?? [],
+        truncated: data?.integrationsByCoverage?.truncated === true,
+      };
+    } catch (error) {
+      logApp.warn('XTM Hub is unreachable', { reason: error });
+      return { status: 'unreachable', matches: [], truncated: false };
     }
   },
   contactUs: async (platform: { platformId: string; platformToken: string }, message: string): Promise<Success> => {

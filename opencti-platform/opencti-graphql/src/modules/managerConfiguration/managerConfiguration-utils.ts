@@ -1,4 +1,6 @@
 import { DEFAULT_PROVENANCE_BACKFILL_STATE, PROVENANCE_BACKFILL_MANAGER_ID } from '../provenance/provenance-types';
+import { SOURCE_INTELLIGENCE_MANAGER_ID } from '../sourceIntelligence/sourceIntelligence-types';
+import { DEFAULT_SOURCE_INTELLIGENCE_SETTINGS } from '../sourceIntelligence/sourceIntelligence-settings';
 
 export const supportedMimeTypes = [
   'application/pdf',
@@ -27,6 +29,11 @@ const defaultManagerConfigurations = [
     manager_id: PROVENANCE_BACKFILL_MANAGER_ID,
     manager_running: false,
     manager_setting: { ...DEFAULT_PROVENANCE_BACKFILL_STATE },
+  },
+  {
+    manager_id: SOURCE_INTELLIGENCE_MANAGER_ID,
+    manager_running: true,
+    manager_setting: DEFAULT_SOURCE_INTELLIGENCE_SETTINGS,
   },
 ];
 

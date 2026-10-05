@@ -71,3 +71,34 @@ describe('checkDraftInContext service account hint', () => {
     }
   });
 });
+
+describe('checkDraftInContext forwarded work', () => {
+  const draftId = 'draft-under-test';
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockGetEntitiesMapFromCache.mockResolvedValue(new Map([[draftId, { id: draftId, draft_status: 'open' }]]));
+    mockIsUserCanAccessStoreElement.mockResolvedValue(true);
+  });
+
+  it('should refuse work queued for a draft closed with no draft taking over, even while the cache still shows it open', async () => {
+    const executeContext = {
+      user: { id: 'worker-id', draft_context: '' } as AuthUser,
+      draft_context: draftId,
+      draft_forward_closed: true,
+    } as unknown as AuthContext;
+
+    await expect(checkDraftInContext(executeContext)).rejects.toMatchObject({ extensions: { code: 'DRAFT_LOCKED' } });
+    expect(mockUserEditField).not.toHaveBeenCalled();
+  });
+
+  it('should accept work forwarded to an open draft', async () => {
+    const executeContext = {
+      user: { id: 'worker-id', draft_context: '' } as AuthUser,
+      draft_context: draftId,
+      draft_forward_closed: false,
+    } as unknown as AuthContext;
+
+    await expect(checkDraftInContext(executeContext)).resolves.toBeUndefined();
+  });
+});
