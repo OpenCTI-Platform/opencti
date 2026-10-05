@@ -96,7 +96,7 @@
   "A field will be created with appropriate type based on the attribute.": "Es wird ein Feld mit dem entsprechenden Typ auf der Grundlage des Attributs erstellt.",
   "A FINTEL export will contain extra information like markings and creation date": "Ein FINTEL-Export enthält zusätzliche Informationen wie Markierungen und Erstellungsdatum",
   "A guided workflow that streamlines files import, selection of connectors and allows the creation of a workbench or draft for review before final import": "Ein geführter Arbeitsablauf, der den Import von Dateien und die Auswahl von Konnektoren vereinfacht und die Erstellung einer Workbench oder eines Entwurfs zur Überprüfung vor dem endgültigen Import ermöglicht",
-  "A merge happened after this date, the attributes it brought cannot be removed from this view.": "Nach diesem Datum fand eine Zusammenführung statt, die dadurch hinzugefügten Attribute können aus dieser Ansicht nicht entfernt werden.",
+  "A merge happened after this date and cannot be undone, the view stops at the state right after the merge.": "Nach diesem Datum fand eine Zusammenführung statt, die nicht rückgängig gemacht werden kann, die Ansicht endet beim Zustand direkt nach der Zusammenführung.",
   "A new content type is available but cannot be displayed in this notification due to your OpenCTI version, please upgrade": "Ein neuer Inhaltstyp ist verfügbar, kann aber aufgrund Ihrer OpenCTI-Version nicht in dieser Benachrichtigung angezeigt werden. Bitte aktualisieren Sie",
   "A new entity enters a selected PIR": "Eine neue Entität betritt ein ausgewähltes PIR",
   "A non-exhaustive enumeration of infrastructure types": "Eine nicht erschöpfende Aufzählung von Infrastruktur-Typen",

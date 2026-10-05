@@ -419,8 +419,8 @@ interface Reconstruction {
  * Reconstruct the attributes of an element at `date`.
  * The anchor is the closest known state: the snapshot taken at or after `date` (or the current
  * document), rewound with reverse patches, or the snapshot taken before `date` moved forward
- * when it is closer. History is read as the system so the reconstruction is exact; access to
- * the result is checked by the callers.
+ * when it is closer and no merge happened in between. History is read as the system so the
+ * reconstruction is exact; access to the result is checked by the callers.
  */
 export const reconstructAt = async (context: AuthContext, element: BasicStoreEntity, date: string): Promise<Reconstruction> => {
   const currentDate = now();
@@ -435,15 +435,18 @@ export const reconstructAt = async (context: AuthContext, element: BasicStoreEnt
       max: MAX_REPLAY_EVENTS + 1,
       order: 'asc',
     });
-    const beforeDocument = normalizeDocument(element.entity_type, before.snapshot_document.attributes);
-    const replay = replayForward(beforeDocument, element.entity_type, events, before.history_cursor, date, MAX_REPLAY_EVENTS);
-    flagReplayBeyondWindow(replay, before.history_cursor, date, MAX_REPLAY_DAYS);
-    return {
-      replay,
-      anchor: 'snapshot',
-      anchorDate: before.history_cursor,
-      anchorSnapshot: before,
-    };
+    // A merge cannot be replayed forward; the rewind from the newer anchor does not cross a merge made before `date`
+    if (!events.some((event) => event.event_scope === 'merge')) {
+      const beforeDocument = normalizeDocument(element.entity_type, before.snapshot_document.attributes);
+      const replay = replayForward(beforeDocument, element.entity_type, events, before.history_cursor, date, MAX_REPLAY_EVENTS);
+      flagReplayBeyondWindow(replay, before.history_cursor, date, MAX_REPLAY_DAYS);
+      return {
+        replay,
+        anchor: 'snapshot',
+        anchorDate: before.history_cursor,
+        anchorSnapshot: before,
+      };
+    }
   }
   const anchorDocument = after ? normalizeDocument(element.entity_type, after.snapshot_document.attributes) : extractAttributeValues(element as any);
   const events = await fetchElementHistoryEvents(context, SYSTEM_USER, element.internal_id, {

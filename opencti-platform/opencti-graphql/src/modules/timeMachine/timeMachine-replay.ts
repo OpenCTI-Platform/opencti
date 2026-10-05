@@ -307,7 +307,7 @@ const applyOperations = (document: AttributeValues, operations: jsonpatch.Operat
 
 /**
  * Rewind a document to `date` by applying, from the most recent to the oldest,
- * the reverse patch of every history event strictly after `date`.
+ * the reverse patch of every history event strictly after `date`, down to a merge at most.
  * `events` must contain the events of the element between `date` and the anchor of the document.
  */
 export const replayBackward = (
@@ -340,9 +340,13 @@ export const replayBackward = (
       break;
     }
     if (event.event_scope === 'merge') {
+      // What a merge brought is not in the history: older changes reversed on top of it would give a state that never
+      // existed, the rewind stops right after the merge
       complete = false;
-      if (!warnings.includes('MERGE_NOT_REVERSIBLE')) warnings.push('MERGE_NOT_REVERSIBLE');
-    } else if (event.event_scope === 'update') {
+      warnings.push('MERGE_NOT_REVERSIBLE');
+      break;
+    }
+    if (event.event_scope === 'update') {
       // Changes of a single event are reversed in reverse order
       const changes = [...(event.changes ?? [])].reverse();
       for (let changeIndex = 0; changeIndex < changes.length; changeIndex += 1) {
@@ -356,7 +360,7 @@ export const replayBackward = (
 
 /**
  * Move a document forward to `date` by applying the forward patch of every event
- * between the anchor date (exclusive) and `date` (inclusive).
+ * between the anchor date (exclusive) and `date` (inclusive), up to a merge at most.
  */
 export const replayForward = (
   anchorDocument: AttributeValues,
@@ -392,8 +396,11 @@ export const replayForward = (
     } else if (event.event_scope === 'create') {
       exists = true;
     } else if (event.event_scope === 'merge') {
+      // What a merge brought is not in the history: later changes applied to the older document would give a state that
+      // never existed, the replay stops right before the merge
       complete = false;
-      if (!warnings.includes('MERGE_NOT_REVERSIBLE')) warnings.push('MERGE_NOT_REVERSIBLE');
+      warnings.push('MERGE_NOT_REVERSIBLE');
+      break;
     } else if (event.event_scope === 'update') {
       const changes = event.changes ?? [];
       for (let changeIndex = 0; changeIndex < changes.length; changeIndex += 1) {

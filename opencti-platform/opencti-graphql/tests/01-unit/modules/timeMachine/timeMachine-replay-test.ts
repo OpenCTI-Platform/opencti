@@ -195,6 +195,27 @@ describe('Time machine replay', () => {
     expect(bounded.warnings).toContain('REPLAY_WINDOW_EXCEEDED');
   });
 
+  it('should stop a replay at a merge it cannot reverse instead of applying older or later changes across it', () => {
+    const withMerge = [...EVENTS, scopedEvent('2026-03-15T00:00:00.000Z', 'merge')];
+    // Rewound to February: the change of April is reversed, the merge stops the rewind, the change of March stays
+    const rewound = replayBackward(CURRENT, ENTITY_TYPE, withMerge, '2026-02-15T00:00:00.000Z', 100);
+    expect(rewound.complete).toBe(false);
+    expect(rewound.warnings).toEqual(['MERGE_NOT_REVERSIBLE']);
+    expect(rewound.replayedEvents).toBe(2);
+    expect(rewound.document.objectMarking).toEqual([MARKING_GREEN]);
+    expect(rewound.document.objectLabel?.sort()).toEqual([LABEL_A, LABEL_B].sort());
+    expect(rewound.document.confidence).toEqual(['80']);
+    // Moved forward from January: the changes of February and March are applied, the merge stops the replay
+    const atJanuary15 = replayBackward(CURRENT, ENTITY_TYPE, EVENTS, '2026-01-15T00:00:00.000Z', 100);
+    const forward = replayForward(atJanuary15.document, ENTITY_TYPE, withMerge, '2026-01-15T00:00:00.000Z', '2026-06-01T00:00:00.000Z', 100);
+    expect(forward.complete).toBe(false);
+    expect(forward.warnings).toEqual(['MERGE_NOT_REVERSIBLE']);
+    expect(forward.document.description).toEqual(['v2']);
+    expect(forward.document.confidence).toEqual(['80']);
+    expect(forward.document.objectLabel?.sort()).toEqual([LABEL_A, LABEL_B].sort());
+    expect(forward.document.objectMarking).toEqual([MARKING_GREEN]);
+  });
+
   it('should move an older document forward to the current state', () => {
     const atJanuary15 = replayBackward(CURRENT, ENTITY_TYPE, EVENTS, '2026-01-15T00:00:00.000Z', 100);
     const forward = replayForward(atJanuary15.document, ENTITY_TYPE, EVENTS, '2026-01-15T00:00:00.000Z', '2026-06-01T00:00:00.000Z', 100);

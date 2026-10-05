@@ -62,7 +62,7 @@ export const useTimeMachineWarningMessage = () => {
   return (warning: string) => {
     switch (warning) {
       case 'MERGE_NOT_REVERSIBLE':
-        return t_i18n('A merge happened after this date, the attributes it brought cannot be removed from this view.');
+        return t_i18n('A merge happened after this date and cannot be undone, the view stops at the state right after the merge.');
       case 'REPLAY_WINDOW_EXCEEDED':
         return t_i18n('Too many changes happened after this date, the view stops at the oldest change that could be replayed.');
       case 'RELATIONSHIP_HISTORY_TRUNCATED':
