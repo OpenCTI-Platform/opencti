@@ -519,6 +519,14 @@ const executeApply = async (
  */
 export const undoLeavesNothing = (kind: string) => kind !== RECOMMENDATION_ADD_CONNECTOR;
 
+/**
+ * Whether an apply whose outcome could not be recorded gives the recommendation its previous status back, so that it
+ * can be applied again: always when nothing was written (whether the action succeeded or failed before writing), and
+ * after a write only once it was undone without leaving anything behind. Otherwise it stays applying, which no retry
+ * applies again.
+ */
+export const restoresStatusAfterUnrecordedApply = (wrote: boolean, undone: boolean, kind: string) => !wrote || (undone && undoLeavesNothing(kind));
+
 const executeRevert = async (context: AuthContext, user: AuthUser, recommendation: BasicStoreEntitySourceRecommendation, source: BasicStoreEntitySource | null) => {
   const revert = parseJson<Record<string, any>>(recommendation.revert_payload, {});
   switch (recommendation.recommendation_kind) {
@@ -697,22 +705,21 @@ const applyLockedRecommendation = async (
     const namedAuthors = await recordNamedAuthors(context, recommendation, source ? [source] : []);
     ({ element } = await patchAttribute(context, user, id, ENTITY_TYPE_SOURCE_RECOMMENDATION, { ...patch, named_authors: namedAuthors }));
   } catch (persistError) {
-    // The action ran but could not be recorded: it is undone, and the recommendation goes back to its previous status
-    // only once nothing of it is left; otherwise it stays applying, which no retry applies again
-    if (patch.recommendation_status === RECOMMENDATION_STATUS_APPLIED) {
-      // Only what this apply wrote is undone: a connector deployed beforehand and only linked is left running
-      const undone = !progress.writing || await executeRevert(context, user, { ...recommendation, revert_payload: patch.revert_payload as string }, source)
-        .then(() => true)
-        .catch((revertError: unknown) => {
-          logApp.error('[OPENCTI-MODULE] Source intelligence could not undo an unrecorded apply, the recommendation stays applying', { cause: revertError, id });
-          return false;
-        });
-      if (undone && (!progress.writing || undoLeavesNothing(recommendation.recommendation_kind))) {
-        await patchAttribute(context, user, id, ENTITY_TYPE_SOURCE_RECOMMENDATION, { recommendation_status: recommendation.recommendation_status })
-          .catch((restoreError: unknown) => logApp.error('[OPENCTI-MODULE] Source intelligence could not restore an undone recommendation', { cause: restoreError, id }));
-      } else if (undone) {
-        logApp.warn('[OPENCTI-MODULE] Source intelligence stopped the connector of an unrecorded apply, the recommendation stays applying', { id });
-      }
+    // The outcome could not be recorded. An action that wrote and succeeded is undone (only what this apply wrote: a
+    // connector deployed beforehand and only linked is left running); one whose outcome is unknown is left as it is
+    const undone = progress.writing && patch.recommendation_status === RECOMMENDATION_STATUS_APPLIED
+      ? await executeRevert(context, user, { ...recommendation, revert_payload: patch.revert_payload as string }, source)
+          .then(() => true)
+          .catch((revertError: unknown) => {
+            logApp.error('[OPENCTI-MODULE] Source intelligence could not undo an unrecorded apply, the recommendation stays applying', { cause: revertError, id });
+            return false;
+          })
+      : false;
+    if (restoresStatusAfterUnrecordedApply(progress.writing, undone, recommendation.recommendation_kind)) {
+      await patchAttribute(context, user, id, ENTITY_TYPE_SOURCE_RECOMMENDATION, { recommendation_status: recommendation.recommendation_status })
+        .catch((restoreError: unknown) => logApp.error('[OPENCTI-MODULE] Source intelligence could not restore an unrecorded recommendation', { cause: restoreError, id }));
+    } else if (undone) {
+      logApp.warn('[OPENCTI-MODULE] Source intelligence stopped the connector of an unrecorded apply, the recommendation stays applying', { id });
     }
     throw persistError;
   }
