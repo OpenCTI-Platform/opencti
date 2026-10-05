@@ -28,9 +28,16 @@ scrape_configs:
       - source_labels: [__name__]
         regex: "rabbitmq_queue_messages_acked_total"
         action: keep
+  # Connectors expose metrics on 9095 by default: to run several of them locally,
+  # give each one its own CONNECTOR_METRICS_PORT within this range.
   - job_name: "connectors"
     static_configs:
-      - targets: ["host.docker.internal:9095"]
+      - targets:
+          - "host.docker.internal:9095"
+          - "host.docker.internal:9096"
+          - "host.docker.internal:9097"
+          - "host.docker.internal:9098"
+          - "host.docker.internal:9099"
         labels:
           app: "opencti"
 
