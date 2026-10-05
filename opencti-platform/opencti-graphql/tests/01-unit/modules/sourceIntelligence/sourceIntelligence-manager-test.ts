@@ -11,7 +11,14 @@ import {
   planStreamBatch,
   streamBoundaryOf,
 } from '../../../../src/manager/sourceIntelligenceManager';
-import { backfillProgress, buildResolverFromSources, fingerprintOnKeptSource, isKeptOutsideDiscovery } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-domain';
+import {
+  analystExclusions,
+  backfillProgress,
+  buildResolverFromSources,
+  fingerprintOnKeptSource,
+  isKeptOutsideDiscovery,
+} from '../../../../src/modules/sourceIntelligence/sourceIntelligence-domain';
+import { SYSTEM_USER } from '../../../../src/utils/access';
 import { recommendationFingerprint } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-rules';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
 import { RELATION_IN_PIR } from '../../../../src/schema/internalRelationship';
@@ -332,13 +339,13 @@ describe('Source intelligence live signal accounting', () => {
 
   it('should not count again the creation of an object the full computation scanned', async () => {
     const creation = (createdAt: number) => event('create', { id: 'indicator-2', type: 'Indicator', created_at: iso(createdAt) }, { origin: { user_id: 'user-feed' } });
-    const scanTrace = { started_at: AT, pages: [] as Array<[number, string, number]> };
-    const creditedSources = async (createdAt: number) => {
+    const creditedSources = async (createdAt: number, scanTrace = { started_at: AT, pages: [] as Array<[number, string, number]>, truncated: false }) => {
       const { increments } = await computeEventIncrements({} as AuthContext, [creation(createdAt)] as any, resolver, {
         enterprise: false,
         huntRunType: null,
         lookups: { documents },
         scanTrace,
+        now: AT + 2000,
       });
       return Array.from(increments.keys());
     };
@@ -346,6 +353,29 @@ describe('Source intelligence live signal accounting', () => {
     expect(await creditedSources(AT - 1000)).toEqual([]);
     // Created after the scan date: only the stream counts it
     expect(await creditedSources(AT + 1000)).toEqual(['source-feed']);
+    // A truncated scan never read the objects sorted after its last page: the stream counts them
+    expect(await creditedSources(AT - 1000, { started_at: AT, pages: [[AT, 'indicator-1', AT]], truncated: true })).toEqual(['source-feed']);
+    expect(await creditedSources(AT - 1000, { started_at: AT, pages: [[AT, 'indicator-3', AT]], truncated: true })).toEqual([]);
+  });
+
+  it('should count a created object only in the periods whose window still holds it', async () => {
+    const creation = event('create', { id: 'indicator-2', type: 'Indicator', created_at: iso(AT - 10 * DAY) }, { origin: { user_id: 'user-feed' } });
+    const appliedAt = async (now: number) => {
+      const { increments, periodIncrements } = await computeEventIncrements({} as AuthContext, [creation] as any, resolver, {
+        enterprise: false,
+        huntRunType: null,
+        lookups: { documents },
+        now,
+      });
+      expect(increments.get('source-feed')).toEqual({ source_last_asserted_at: AT });
+      return byPeriod(periodIncrements as any);
+    };
+    const volume = { volume_total: 1, new_objects: 1, volume_entities: 1, volume_indicators: 1 };
+    // Applied late, after a pause of the stream: out of the last 7 days and of the last day
+    expect(await appliedAt(AT)).toEqual({ LAST_30_DAYS: { 'source-feed': volume }, LAST_90_DAYS: { 'source-feed': volume } });
+    // Applied on the day it was created: every period, its last day included
+    const fresh = { 'source-feed': { ...volume, volume_last_day: 1 } };
+    expect(await appliedAt(AT - 10 * DAY + HOUR)).toEqual({ LAST_7_DAYS: fresh, LAST_30_DAYS: fresh, LAST_90_DAYS: fresh });
   });
 
   it('should withdraw the detections of a hunt run whose true positive verdict is changed', async () => {
@@ -502,6 +532,17 @@ describe('Source intelligence author and analyst discovery', () => {
   it('should keep a departed source while a change applied to it can still be reverted', () => {
     expect(isKeptOutsideDiscovery(departed, new Set(['source-author-1']))).toBe(true);
     expect(isKeptOutsideDiscovery(departed, new Set(['another-source']))).toBe(false);
+  });
+
+  it('should leave every account that is not an analyst out of the analyst discovery', () => {
+    const users = new Map([
+      ['user-analyst', { user_service_account: false }],
+      ['user-service', { user_service_account: true }],
+      ['user-connector', {}],
+    ]);
+    const excluded = analystExclusions(new Set(['user-connector']), users);
+    expect(excluded).toEqual(expect.arrayContaining(['user-connector', 'user-service', SYSTEM_USER.id]));
+    expect(excluded).not.toContain('user-analyst');
   });
 
   it('should give the recommendations of a merged analyst source the fingerprint of the kept one', () => {

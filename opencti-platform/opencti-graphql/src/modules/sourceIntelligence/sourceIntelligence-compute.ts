@@ -194,6 +194,8 @@ export type ScanTracePage = [number, string, number?];
 export interface ScanTrace {
   started_at: number;
   pages: Array<ScanTracePage>;
+  // The scan stopped at `max_scan_objects`: the objects sorted after its last page were never read (absent in older traces)
+  truncated?: boolean;
 }
 
 /**
@@ -213,10 +215,14 @@ export const countedByLastScan = (trace: ScanTrace | null | undefined, objectId:
 /**
  * Whether the last full computation counted the creation of an object: the scan reads every object created up to its
  * start, the stream adds the later ones. Both read the same creation date, so an object counts once whichever side of
- * the stream position its event fell.
+ * the stream position its event fell. A truncated scan read the objects up to its last page only: the stream counts
+ * the ones sorted after it.
  */
-export const creationCountedByLastScan = (trace: ScanTrace | null | undefined, createdAt: number | null): boolean => {
-  return !!trace && createdAt !== null && createdAt <= trace.started_at;
+export const creationCountedByLastScan = (trace: ScanTrace | null | undefined, objectId: string, createdAt: number | null): boolean => {
+  if (!trace || createdAt === null || createdAt > trace.started_at) {
+    return false;
+  }
+  return trace.truncated !== true || trace.pages.some(([, lastId]) => objectId <= lastId);
 };
 
 /**

@@ -743,7 +743,7 @@ const DISCOVERY_INDICES = [READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER
  * Most frequent values of a field over the knowledge written or asserted during the window. An assertion of an
  * unchanged object is recorded without updating it: with provenance, the window also covers its last assertion.
  */
-const aggregateTopValues = async (context: AuthContext, field: string, sinceDays: number, minCount: number, size: number) => {
+const aggregateTopValues = async (context: AuthContext, field: string, sinceDays: number, minCount: number, size: number, exclude: string[] = []) => {
   if (size <= 0) {
     return [];
   }
@@ -758,7 +758,7 @@ const aggregateTopValues = async (context: AuthContext, field: string, sinceDays
     track_total_hits: false,
     body: {
       query: { bool: { should: windowRanges, minimum_should_match: 1 } },
-      aggs: { top: { terms: { field: `${field}.keyword`, size, min_doc_count: minCount } } },
+      aggs: { top: { terms: { field: `${field}.keyword`, size, min_doc_count: minCount, ...termsExclusion(exclude) } } },
     },
   }).catch((err: unknown) => {
     throw DatabaseError('Source intelligence source discovery failed', { cause: err, field });
@@ -770,7 +770,7 @@ const aggregateTopValues = async (context: AuthContext, field: string, sinceDays
  * Sources of a kind most frequently asserting knowledge during the window, from the assertions themselves: an author
  * or analyst asserting existing knowledge is recorded there only. Each object lists a source once in its assertions.
  */
-const aggregateTopAsserters = async (context: AuthContext, assertionKind: string, sinceDays: number, minCount: number, size: number) => {
+const aggregateTopAsserters = async (context: AuthContext, assertionKind: string, sinceDays: number, minCount: number, size: number, exclude: string[] = []) => {
   if (size <= 0 || !isProvenanceAttributeAvailable()) {
     return [];
   }
@@ -794,7 +794,7 @@ const aggregateTopAsserters = async (context: AuthContext, assertionKind: string
                   ],
                 },
               },
-              aggs: { top: { terms: { field: `${ATTRIBUTE_ASSERTIONS}.source_id.keyword`, size, min_doc_count: minCount } } },
+              aggs: { top: { terms: { field: `${ATTRIBUTE_ASSERTIONS}.source_id.keyword`, size, min_doc_count: minCount, ...termsExclusion(exclude) } } },
             },
           },
         },
@@ -804,6 +804,22 @@ const aggregateTopAsserters = async (context: AuthContext, assertionKind: string
     throw DatabaseError('Source intelligence source discovery failed', { cause: err, assertionKind });
   });
   return (data.aggregations?.assertions?.window?.top?.buckets ?? []) as TopValueBucket[];
+};
+
+const termsExclusion = (exclude: string[]) => (exclude.length > 0 ? { exclude } : {});
+
+/**
+ * Users that are never analysts: the platform internal users, the service accounts and the users of the connectors and
+ * feeds. They are left out of the discovery aggregations, so their volume never takes the place of an analyst.
+ */
+export const analystExclusions = (serviceUserIds: Set<string>, users: Map<string, { user_service_account?: boolean }>) => {
+  const excluded = new Set([...serviceUserIds, ...Object.keys(INTERNAL_USERS)]);
+  users.forEach((user, userId) => {
+    if (user.user_service_account === true) {
+      excluded.add(userId);
+    }
+  });
+  return [...excluded].sort();
 };
 
 // Values of several aggregations over the same documents: each value keeps its largest count
@@ -857,13 +873,13 @@ const collectSourceCandidates = async (context: AuthContext, settings: SourceInt
     });
   }
   // Analysts writing knowledge directly (not through a connector or a feed)
-  const analystSize = settings.max_manual_sources + serviceUserIds.size;
+  const users = await getEntitiesMapFromCache<BasicStoreEntity & { name: string; user_service_account?: boolean }>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const nonAnalystIds = analystExclusions(serviceUserIds, users);
   const analystBuckets = mergeTopValues(
-    await aggregateTopValues(context, 'creator_id', maxDays, settings.min_manual_volume, analystSize),
-    await aggregateTopAsserters(context, ASSERTION_KIND_USER, maxDays, settings.min_manual_volume, analystSize),
+    await aggregateTopValues(context, 'creator_id', maxDays, settings.min_manual_volume, settings.max_manual_sources, nonAnalystIds),
+    await aggregateTopAsserters(context, ASSERTION_KIND_USER, maxDays, settings.min_manual_volume, settings.max_manual_sources, nonAnalystIds),
   );
   if (analystBuckets.length > 0) {
-    const users = await getEntitiesMapFromCache<BasicStoreEntity & { name: string; user_service_account?: boolean }>(context, SYSTEM_USER, ENTITY_TYPE_USER);
     analystBuckets
       .filter((bucket) => !serviceUserIds.has(bucket.key) && !INTERNAL_USERS[bucket.key])
       .map((bucket) => users.get(bucket.key))

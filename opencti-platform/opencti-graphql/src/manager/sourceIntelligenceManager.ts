@@ -144,12 +144,11 @@ const typeVolumePatch = (entityType: string, value: number): LiveIncrement => {
   };
 };
 
-const knowledgeVolumePatch = (entityType: string, time: number): LiveIncrement => ({
+const knowledgeVolumePatch = (entityType: string, lastDay: boolean): LiveIncrement => ({
   volume_total: 1,
   new_objects: 1,
-  volume_last_day: 1,
+  ...(lastDay ? { volume_last_day: 1 } : {}),
   ...typeVolumePatch(entityType, 1),
-  source_last_asserted_at: time,
 });
 
 const latestDate = (...dates: Array<string | null | undefined>): string | undefined => {
@@ -193,6 +192,21 @@ const countedPeriodPatches = (
         result.set(period, periodIncrements);
       });
     });
+  return result;
+};
+
+/**
+ * Creation of an object credited to its sources in the periods whose window still holds it at `at`, as the full
+ * computation counts a first assertion: a stream applied late (after a pause) never counts it in a window it left.
+ */
+export const creationIncrements = (sourceIds: string[], entityType: string, createdAt: number, at: number): PeriodIncrements => {
+  const result: PeriodIncrements = new Map();
+  SCORECARD_PERIODS.forEach((period) => {
+    if (sourceIds.length === 0 || createdAt < at - SCORECARD_PERIOD_DAYS[period] * DAY_MS) return;
+    const patches = new Map<string, LiveIncrement>();
+    addIncrement(patches, sourceIds, knowledgeVolumePatch(entityType, createdAt >= at - DAY_MS));
+    result.set(period, patches);
+  });
   return result;
 };
 
@@ -283,12 +297,14 @@ export const computeEventIncrements = async (
     huntRunType: string | null;
     lookups?: Partial<EventLookups>;
     scanTrace?: ScanTrace | null;
+    now?: number;
   },
 ) => {
   const lookups: EventLookups = { ...defaultEventLookups(context, options.huntRunType), ...options.lookups };
-  // New assertions, applied to the live scorecards of every period
+  const now = options.now ?? Date.now();
+  // Freshness of the sources, applied to the live scorecards of every period
   const increments = new Map<string, LiveIncrement>();
-  // Deleted objects and signals, applied only to the periods that count the object for each source
+  // Created and deleted objects and signals, applied only to the periods that count the object for each source
   const periodIncrements: PeriodIncrements = new Map();
   const deleted: Array<{ entityType: string; time: number; eventDocument: ProvenanceDocument }> = [];
   // A revocation is read by the scan with the object, the other signals with the signals of its page
@@ -306,14 +322,15 @@ export const computeEventIncrements = async (
     const isKnowledge = isStixCoreObject(entityType) || isStixCoreRelationship(entityType) || entityType === STIX_SIGHTING_RELATIONSHIP;
     if (data.type === EVENT_TYPE_CREATE) {
       const createdAt = extension.created_at ? Date.parse(extension.created_at) : NaN;
-      if (isKnowledge && extension.is_inferred !== true && !creationCountedByLastScan(options.scanTrace, Number.isNaN(createdAt) ? null : createdAt)) {
+      if (isKnowledge && extension.is_inferred !== true && !creationCountedByLastScan(options.scanTrace, extension.id, Number.isNaN(createdAt) ? null : createdAt)) {
         const sourceIds = resolveEventSources(resolver, {
           originUserId: data.origin?.user_id,
           creatorIds: extension.creator_ids,
           createdByRefId: extension.created_by_ref_id,
           assertions: extension.x_opencti_assertions ?? null,
         });
-        addIncrement(increments, sourceIds, knowledgeVolumePatch(entityType, time));
+        addIncrement(increments, sourceIds, { source_last_asserted_at: time });
+        mergePeriodIncrements(periodIncrements, creationIncrements(sourceIds, entityType, Number.isNaN(createdAt) ? time : createdAt, now));
       }
       if (entityType === STIX_SIGHTING_RELATIONSHIP && extension.sighting_of_ref) {
         signals.push({ objectId: extension.sighting_of_ref, patch: sightingPatch(extension, 1), time });
@@ -589,7 +606,7 @@ export const runFullComputation = async (context: AuthContext, settings: SourceI
     // is scanned, and its replayed creation is then recognised by its date and not counted again
     const scanAsOf = Math.max(now, Date.now());
     const { tracked, state, documents } = await computeAndStore(context, settings, sources, scanAsOf, { live: true, snapshot: true, enterprise, streamBoundary });
-    const trace: ScanTrace = { started_at: scanAsOf, pages: state.scanPages };
+    const trace: ScanTrace = { started_at: scanAsOf, pages: state.scanPages, truncated: state.truncated };
     await updateSourceIntelligenceState({ last_scan_trace: JSON.stringify(trace), live_rebuild_pending: false });
     // The live scorecards now count everything written before the scan: the stream resumes after its last event then,
     // so the events the scan already counted are never applied again and the later ones are kept
