@@ -4,6 +4,7 @@ import {
   type StixTimelineExtensionAnnotation,
   type StixTimelineExtensionEvent,
   type StoreTimelineExchange,
+  TIMELINE_CLEARABLE_ANALYST_FIELDS,
   TIMELINE_KINDS,
   TIMELINE_LANES,
   TIMELINE_PRECISIONS,
@@ -39,6 +40,7 @@ const GRAPHQL_INT_MAX = 2 ** 31 - 1;
 const LANES = new Set<string>(TIMELINE_LANES);
 const PRECISIONS = new Set<string>(TIMELINE_PRECISIONS);
 const KINDS = new Set<string>(TIMELINE_KINDS);
+const CLEARABLE_FIELDS: readonly unknown[] = TIMELINE_CLEARABLE_ANALYST_FIELDS;
 
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
 const asString = (value: unknown): string | undefined => (typeof value === 'string' && value.trim().length > 0 ? value : undefined);
@@ -148,14 +150,24 @@ export const sanitizeTimelineExtension = (
       dropped += 1;
       return;
     }
+    const annotation = asText(raw.annotation, TEXT_MAX_LENGTH);
+    const orderingHint = asInteger(raw.ordering_hint, GRAPHQL_INT_MIN, GRAPHQL_INT_MAX);
+    const rawCleared = Array.isArray(raw.cleared_fields) ? raw.cleared_fields : [];
+    // A field carried with a value is set, never cleared
+    const cleared = TIMELINE_CLEARABLE_ANALYST_FIELDS.filter((field) => rawCleared.includes(field)
+      && (field === 'annotation' ? annotation === undefined : orderingHint === undefined));
+    if (raw.cleared_fields !== undefined && (!Array.isArray(raw.cleared_fields) || rawCleared.some((field) => !CLEARABLE_FIELDS.includes(field)))) {
+      normalized += 1;
+    }
     annotations.push(cleanObject({
       rule_id: ruleId,
       kind: raw.kind as TimelineKindValue,
       element_ref: elementRef,
       pinned: asBoolean(raw.pinned),
       hidden: asBoolean(raw.hidden),
-      annotation: asText(raw.annotation, TEXT_MAX_LENGTH),
-      ordering_hint: asInteger(raw.ordering_hint, GRAPHQL_INT_MIN, GRAPHQL_INT_MAX),
+      annotation,
+      ordering_hint: orderingHint,
+      cleared_fields: cleared,
     }));
   });
   return { events, annotations, dropped, normalized };

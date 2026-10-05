@@ -136,7 +136,8 @@ export const collectTimelineImpacts = (event: SseEvent<DataEvent>, collector: Im
     collector.containers.add(id);
     return;
   }
-  // Meta objects read by the derivation through other elements: a change reaches the cases through those elements
+  // Meta objects read by the derivation through other elements: a change reaches the cases through those elements, and
+  // through the manual events pointing to them
   if (type === ENTITY_TYPE_LABEL || type === ENTITY_TYPE_KILL_CHAIN_PHASE) {
     // A new label or phase is used by nothing yet
     if (event.data?.type !== 'create') {
@@ -144,7 +145,8 @@ export const collectTimelineImpacts = (event: SseEvent<DataEvent>, collector: Im
     }
     return;
   }
-  // External references are read on the containers themselves: a change reaches the containers citing them
+  // External references are read on the containers themselves: a change reaches the containers citing them, and the
+  // cases of the manual events pointing to them
   if (type === ENTITY_TYPE_EXTERNAL_REFERENCE) {
     if (event.data?.type !== 'create') collector.externalReferences.add(id);
     return;
@@ -250,7 +252,14 @@ const queueContainersCoveredBy = async (context: AuthContext, coverageIds: strin
 const queueImpactedContainers = async (context: AuthContext, collector: ImpactCollector, enqueue: ImpactedContainersSink) => {
   await enqueue(Array.from(collector.containers));
   await queueContainersContaining(context, Array.from(collector.contained), enqueue);
-  await queueContainersOfManualEventsAbout(context, [...collector.contained, ...collector.containers], enqueue);
+  // A manual event may point to any element, labels, kill chain phases and external references included
+  await queueContainersOfManualEventsAbout(context, [
+    ...collector.contained,
+    ...collector.containers,
+    ...collector.labels,
+    ...collector.killChainPhases,
+    ...collector.externalReferences,
+  ], enqueue);
   await queueContainersContaining(context, Array.from(collector.externalReferences), enqueue, RELATION_EXTERNAL_REFERENCE);
   await queueReferencedContainers(context, Array.from(collector.references), enqueue);
   await queueContainersCoveredBy(context, Array.from(collector.coverages), enqueue);

@@ -1163,8 +1163,9 @@ const writeImportedContributions = async (
       event_id: computeDerivedEventId(container.internal_id, a.rule_id, resolved[a.element_ref].internal_id, a.kind),
       pinned: a.pinned,
       hidden: a.hidden,
-      annotation: a.annotation,
-      ordering_hint: a.ordering_hint,
+      // A field cleared by the analyst who exported it is cleared here too, an absent one leaves the event unchanged
+      annotation: a.cleared_fields?.includes('annotation') ? null : a.annotation,
+      ordering_hint: a.cleared_fields?.includes('ordering_hint') ? null : a.ordering_hint,
       max_confidence: maxConfidence,
     }));
   const pending = importedAnnotations.filter((annotation) => {

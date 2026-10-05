@@ -28,12 +28,14 @@ import {
   type StixTimelineExtensionAnnotation,
   type StixTimelineExtensionEvent,
   type StoreTimelineExchange,
+  TIMELINE_CLEARABLE_ANALYST_FIELDS,
   TIMELINE_CONTAINER_TYPES,
   TIMELINE_DEFAULT_SETTINGS,
   type TimelineAnalystField,
   type TimelineAnchorBounds,
   type TimelineAnchorKey,
   type TimelineAnchors,
+  type TimelineCappedAnnotatedEvent,
   type TimelineElementAccess,
   type TimelinePendingAnnotation,
   type TimelineSettingsState,
@@ -177,6 +179,7 @@ const TIMELINE_INITIAL_STATE: TimelineSettingsState = {
   pending_annotations: [],
   derivation_truncated: false,
   capped_anchor_bounds: null,
+  capped_annotated_events: [],
   generated_at: null,
 };
 
@@ -188,6 +191,7 @@ const stateOf = (settings: Partial<TimelineSettingsState> | null | undefined): T
   pending_annotations: settings?.pending_annotations ?? [],
   derivation_truncated: settings?.derivation_truncated ?? false,
   capped_anchor_bounds: settings?.capped_anchor_bounds ?? null,
+  capped_annotated_events: settings?.capped_annotated_events ?? [],
   generated_at: settings?.generated_at ?? null,
 });
 
@@ -528,6 +532,28 @@ export const filterEventsSharedAsContainer = async (context: AuthContext, contai
 };
 
 /**
+ * The annotation a derived event carries in the STIX exchange: only its analyst fields, a cleared annotation or ordering
+ * hint named in `cleared_fields` so that the receiving platform clears it too.
+ */
+export const timelineExchangeAnnotation = (
+  event: Pick<StoredTimelineEvent, 'rule_id' | 'kind' | 'analyst_fields' | 'pinned' | 'hidden' | 'annotation' | 'ordering_hint'>,
+  elementRef: string,
+): StixTimelineExtensionAnnotation => {
+  const fields = event.analyst_fields ?? [];
+  const cleared = TIMELINE_CLEARABLE_ANALYST_FIELDS.filter((field) => fields.includes(field) && !isNotEmptyField(event[field]));
+  return {
+    rule_id: timelineRuleFamily(event.rule_id ?? ''),
+    kind: event.kind,
+    element_ref: elementRef,
+    pinned: fields.includes('pinned') ? event.pinned : undefined,
+    hidden: fields.includes('hidden') ? event.hidden : undefined,
+    annotation: fields.includes('annotation') ? (event.annotation || undefined) : undefined,
+    ordering_hint: fields.includes('ordering_hint') ? (event.ordering_hint ?? undefined) : undefined,
+    cleared_fields: cleared.length > 0 ? cleared : undefined,
+  };
+};
+
+/**
  * The exchange is stored once on the container and served to every user who can read the container, in toStix and
  * in bundles: it only carries contributions exactly as visible as the container. Events marked more strictly than the
  * container are left out, and so are the references to (and annotations of) elements marked more strictly, restricted
@@ -578,18 +604,7 @@ const buildExchange = async (
   }));
   const exchangeAnnotations: StixTimelineExtensionAnnotation[] = annotated
     .filter((event) => !!portableElementRef(event.element_id))
-    .map((event) => {
-      const fields = event.analyst_fields ?? [];
-      return {
-        rule_id: timelineRuleFamily(event.rule_id ?? ''),
-        kind: event.kind,
-        element_ref: portableElementRef(event.element_id) as string,
-        pinned: fields.includes('pinned') ? event.pinned : undefined,
-        hidden: fields.includes('hidden') ? event.hidden : undefined,
-        annotation: fields.includes('annotation') ? (event.annotation ?? undefined) : undefined,
-        ordering_hint: fields.includes('ordering_hint') ? (event.ordering_hint ?? undefined) : undefined,
-      };
-    });
+    .map((event) => timelineExchangeAnnotation(event, portableElementRef(event.element_id) as string));
   return { events: exchangeEvents, annotations: exchangeAnnotations };
 };
 
@@ -599,6 +614,39 @@ export interface TimelineContributionsResult {
   // Anchor values of the anchor events passed beyond the stored ones, null when none were passed
   cappedAnchorBounds: TimelineAnchorBounds | null;
 }
+
+/** The derived events of a regeneration the cap of the case leaves out while they carry analyst fields, as recorded in its state. */
+export const timelineCappedAnnotatedEvents = (
+  derivedDocs: Array<ReturnType<typeof buildTimelineEventDoc>>,
+  storedIds: Set<string>,
+): TimelineCappedAnnotatedEvent[] => {
+  return derivedDocs
+    .filter((doc) => !storedIds.has(doc.internal_id) && doc.analyst_fields.length > 0 && !!doc.rule_id && !!doc.element_id)
+    // Bounded like the pending annotations they come back from
+    .slice(0, TIMELINE_MAX_EVENTS)
+    .map((doc) => {
+      const fields = new Set<TimelineAnalystField>(doc.analyst_fields);
+      return {
+        internal_id: doc.internal_id,
+        rule_id: doc.rule_id as string,
+        kind: doc.kind as TimelineCappedAnnotatedEvent['kind'],
+        element_id: doc.element_id as string,
+        markings: markingsOf(doc),
+        element_access: doc.element_access,
+        analyst_fields: doc.analyst_fields,
+        pinned: doc.pinned,
+        hidden: doc.hidden,
+        annotation: fields.has('annotation') ? doc.annotation : null,
+        ordering_hint: fields.has('ordering_hint') ? doc.ordering_hint : null,
+      };
+    });
+};
+
+/** A recorded derived event beyond the cap, read like a stored event by the exchange and its visibility checks. */
+export const timelineCappedAnnotatedEventAsStored = (event: TimelineCappedAnnotatedEvent): StoredTimelineEvent => {
+  const { markings, ...fields } = event;
+  return { ...fields, event_source: 'derived', [buildRefRelationKey(RELATION_OBJECT_MARKING)]: markings } as unknown as StoredTimelineEvent;
+};
 
 /**
  * Recompute the anchors and the STIX exchange of a container from its stored events and write them
@@ -617,6 +665,8 @@ export const refreshTimelineContributions = async (
     events?: StoredTimelineEvent[];
     anchorEvents?: StoredTimelineEvent[];
     anchorBounds?: TimelineAnchorBounds | null;
+    // The annotated derived events beyond the cap, read from the settings when not given: their annotations travel too
+    cappedAnnotatedEvents?: TimelineCappedAnnotatedEvent[];
     // Elements of the events already read as the system user, base data
     elements?: Record<string, AnyStoreElement>;
     notifyAnchors?: boolean;
@@ -627,23 +677,26 @@ export const refreshTimelineContributions = async (
 ): Promise<TimelineContributionsResult> => {
   const events = opts.events ?? await loadStoredTimelineEvents(context, container.internal_id);
   const anchorEvents = opts.anchorEvents ?? events;
-  const anchorBounds = opts.anchorEvents || opts.anchorBounds !== undefined
-    ? opts.anchorBounds ?? null
-    : (await loadTimelineSettings(context, container.internal_id))?.capped_anchor_bounds ?? null;
+  const isAnchorBoundsGiven = !!opts.anchorEvents || opts.anchorBounds !== undefined;
+  const settings = !isAnchorBoundsGiven || !opts.cappedAnnotatedEvents ? await loadTimelineSettings(context, container.internal_id) : undefined;
+  const anchorBounds = isAnchorBoundsGiven ? opts.anchorBounds ?? null : settings?.capped_anchor_bounds ?? null;
+  const storedIds = new Set(events.map((e) => e.internal_id));
+  const cappedAnnotated = (opts.cappedAnnotatedEvents ?? settings?.capped_annotated_events ?? [])
+    .filter((event) => !storedIds.has(event.internal_id))
+    .map(timelineCappedAnnotatedEventAsStored);
   const isClosed = await isContainerClosed(context, container);
   const previousAnchors = container[ATTRIBUTE_TIMELINE_ANCHORS] as Partial<TimelineAnchors> | undefined;
-  const scope = await resolveContainerVisibilityScope(context, container, anchorEvents, opts.elements);
+  const scope = await resolveContainerVisibilityScope(context, container, [...anchorEvents, ...cappedAnnotated], opts.elements);
   const anchorInput = anchorEvents.filter(scope.isEventAsVisibleAsContainer);
   const toAnchorEvent = (e: StoredTimelineEvent) => ({ lane: e.lane, kind: e.kind, rule_id: e.rule_id, event_time: e.event_time, hidden: e.hidden });
   const computedAt = now();
   const previousGeneratedAt = previousAnchors?.computed_at ? new Date(previousAnchors.computed_at as string).toISOString() : undefined;
   const generatedAt = opts.regenerated ? computedAt : previousGeneratedAt;
   const anchors = computeTimelineAnchors(anchorInput.map(toAnchorEvent), { isClosed, computedAt, generatedAt, previous: previousAnchors, bounds: anchorBounds });
-  const storedIds = new Set(events.map((e) => e.internal_id));
   const cappedAnchorBounds = opts.anchorEvents
     ? computeTimelineAnchorBounds(anchorInput.filter((e) => !storedIds.has(e.internal_id)).map(toAnchorEvent))
     : null;
-  const exchange = await buildExchange(context, container, events, scope);
+  const exchange = await buildExchange(context, container, [...events, ...cappedAnnotated], scope);
   const changedAnchors = diffTimelineAnchors(previousAnchors, anchors);
   await elUpdate(context, container._index, container.internal_id, {
     doc: { [ATTRIBUTE_TIMELINE_ANCHORS]: anchors, [ATTRIBUTE_TIMELINE_EXCHANGE]: exchange },
@@ -887,10 +940,13 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
   if (refusedAnnotations > 0) {
     logApp.warn('[TIMELINE] Imported annotations of events above the confidence level of their importer were not applied', { containerId, refused: refusedAnnotations });
   }
+  // Their annotations keep travelling in the STIX exchange while they are out of the cap
+  const cappedAnnotatedEvents = capped ? timelineCappedAnnotatedEvents(Array.from(derivedDocsById.values()), new Set(docsById.keys())) : [];
   const generatedSettings = await upsertTimelineSettings(context, container, {
     pending_annotations: Array.from(remaining.values()),
     derivation_truncated: truncated,
     generated_at: now(),
+    capped_annotated_events: cappedAnnotatedEvents,
     ...(capped ? {} : { capped_anchor_bounds: null }),
   }, settings ?? null);
   if (createdCount > 0) {
@@ -905,6 +961,7 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
     events: finalEvents,
     anchorEvents,
     anchorBounds: null,
+    cappedAnnotatedEvents,
     elements,
     regenerated: true,
   });

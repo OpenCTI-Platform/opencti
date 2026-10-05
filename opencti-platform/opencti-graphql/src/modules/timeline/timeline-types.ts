@@ -81,6 +81,9 @@ export type TimelineZoomWindowValue = typeof TIMELINE_ZOOM_WINDOWS[number];
 // derived events keeps the value of every field listed in `analyst_fields`.
 export const TIMELINE_ANALYST_FIELDS = ['pinned', 'hidden', 'annotation', 'ordering_hint'] as const;
 export type TimelineAnalystField = typeof TIMELINE_ANALYST_FIELDS[number];
+// The analyst fields of a derived event that can be cleared (pins and hidden flags are booleans, never cleared)
+export const TIMELINE_CLEARABLE_ANALYST_FIELDS = ['annotation', 'ordering_hint'] as const;
+export type TimelineClearableAnalystField = typeof TIMELINE_CLEARABLE_ANALYST_FIELDS[number];
 
 export const TIMELINE_ANCHOR_KEYS = ['first_adversary_activity', 'first_detection', 'first_response', 'containment', 'closure'] as const;
 export type TimelineAnchorKey = typeof TIMELINE_ANCHOR_KEYS[number];
@@ -172,6 +175,24 @@ export interface TimelinePendingAnnotation {
   max_confidence?: number | null;
 }
 
+/**
+ * A derived event the cap of its case leaves out while it carries analyst fields, recorded by the regeneration: its
+ * annotation keeps travelling in the STIX exchange, checked like the stored events, until the event is within the cap again.
+ */
+export interface TimelineCappedAnnotatedEvent {
+  internal_id: string;
+  rule_id: string;
+  kind: TimelineKindValue;
+  element_id: string;
+  markings: string[];
+  element_access?: TimelineElementAccess | null;
+  analyst_fields: TimelineAnalystField[];
+  pinned: boolean;
+  hidden: boolean;
+  annotation?: string | null;
+  ordering_hint?: number | null;
+}
+
 /** Settings and generation state of a container timeline, stored as the non-indexed `timeline_state` object. */
 export interface TimelineSettingsState {
   enabled_lanes: TimelineLaneValue[];
@@ -181,6 +202,7 @@ export interface TimelineSettingsState {
   pending_annotations?: TimelinePendingAnnotation[];
   derivation_truncated?: boolean;
   capped_anchor_bounds?: TimelineAnchorBounds | null;
+  capped_annotated_events?: TimelineCappedAnnotatedEvent[];
   generated_at?: string | null;
 }
 
@@ -249,6 +271,8 @@ export interface StixTimelineExtensionAnnotation {
   hidden?: boolean;
   annotation?: string;
   ordering_hint?: number;
+  // An absent field leaves the receiving event unchanged: the fields an analyst cleared are named, STIX has no null value
+  cleared_fields?: TimelineClearableAnalystField[];
 }
 
 export interface StixTimelineExtension {

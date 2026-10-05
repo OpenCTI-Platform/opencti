@@ -77,6 +77,16 @@ const EXTERNAL_REFERENCE_DELETE = gql`
     externalReferenceEdit(id: $id) { delete }
   }
 `;
+const LABEL_ADD = gql`
+  mutation TimelineLabelAdd($input: LabelAddInput!) {
+    labelAdd(input: $input) { id standard_id }
+  }
+`;
+const LABEL_DELETE = gql`
+  mutation TimelineLabelDelete($id: ID!) {
+    labelEdit(id: $id) { delete }
+  }
+`;
 const TASK_ADD = gql`
   mutation TimelineTaskAdd($input: TaskAddInput!) {
     taskAdd(input: $input) { id standard_id }
@@ -1076,6 +1086,23 @@ describe('Incident and case timeline', () => {
       notified.mockRestore();
     });
 
+    it('should clear on the receiving container an annotation cleared before the export', async () => {
+      await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_EDIT, variables: { id: derivedMalwareEventId, input: { annotation: null } } });
+      const source = await queryAsAdminWithSuccess({ query: CASE_INCIDENT_STIX, variables: { id: caseIncident.id } });
+      const extension = JSON.parse(source.data.caseIncident.toStix).extensions[STIX_EXT_OCTI_TIMELINE];
+      const malwareAnnotation = extension.annotations.find((a: { kind: string; element_ref: string }) => a.kind === 'malware_seen' && a.element_ref === malware.standard_id);
+      expect(malwareAnnotation).toMatchObject({ pinned: true, cleared_fields: ['annotation'] });
+      expect(malwareAnnotation).not.toHaveProperty('annotation');
+      // The container that imported the annotation before it was cleared keeps it until the next import
+      expect((await listTimeline(secondCase.id, { pinnedOnly: true }))[0]).toMatchObject({ element_id: malware.id, annotation: 'Initial dropper' });
+      await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension: JSON.stringify(extension) } });
+      const received = await listTimeline(secondCase.id, { pinnedOnly: true });
+      expect(received).toHaveLength(1);
+      expect(received[0]).toMatchObject({ element_id: malware.id, pinned: true, annotation: null });
+      // Set again for the tests that follow
+      await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_EDIT, variables: { id: derivedMalwareEventId, input: { annotation: 'Initial dropper' } } });
+    });
+
     it('should reject an invalid extension', async () => {
       await queryAsAdminWithError({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension: 'not json' } }, 'Invalid timeline extension');
     });
@@ -1359,6 +1386,40 @@ describe('Incident and case timeline', () => {
       expect(refreshed?.element_access).toEqual({ restricted_members: [], granted: [] });
       await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: milestone.data.timelineEventAdd.id } });
       await queryAsAdminWithSuccess({ query: STIX_CORE_OBJECT_DELETE, variables: { id: outsideId } });
+    });
+
+    it('should queue the case of a manual event about a label or an external reference the case does not use', async () => {
+      const label = await queryAsAdminWithSuccess({ query: LABEL_ADD, variables: { input: { value: 'timeline-regulator-filing', color: '#00bcd4' } } });
+      const reference = await queryAsAdminWithSuccess({
+        query: EXTERNAL_REFERENCE_ADD,
+        variables: { input: { source_name: 'Timeline regulator portal', url: 'https://timeline.example/regulator', external_id: 'TL-REG-1' } },
+      });
+      const metaElements = [
+        { id: label.data.labelAdd.id, stix: { id: label.data.labelAdd.standard_id, type: 'label', extensions: { [STIX_EXT_OCTI]: { id: label.data.labelAdd.id, type: 'Label' } } } },
+        {
+          id: reference.data.externalReferenceAdd.id,
+          stix: { id: reference.data.externalReferenceAdd.standard_id, type: 'external-reference', extensions: { [STIX_EXT_OCTI]: { id: reference.data.externalReferenceAdd.id, type: 'External-Reference' } } },
+        },
+      ];
+      for (let index = 0; index < metaElements.length; index += 1) {
+        const { id, stix } = metaElements[index];
+        const milestone = await queryAsAdminWithSuccess({
+          query: TIMELINE_EVENT_ADD,
+          variables: { input: { container_id: caseIncident.id, event_time: '2026-02-05T23:00:00.000Z', title: `Regulator filing ${index}`, element_id: id } },
+        });
+        // The regenerations scheduled by the addition are handled first: only the change of the element is left to queue the case
+        const { containerIds: pending, lease: pendingLease } = await claimDueTimelineRegenerations(1000);
+        await Promise.all(pending.map((containerId) => acknowledgeTimelineRegeneration(containerId, pendingLease)));
+        await timelineStreamEventsHandler(testContext, [streamEvent(stix)]);
+        const { containerIds: claimed, lease } = await claimDueTimelineRegenerations(1000);
+        expect(claimed).toContain(caseIncident.id);
+        // Every container is handed back to the queue for the tests that follow
+        await Promise.all(claimed.map((containerId) => acknowledgeTimelineRegeneration(containerId, lease)));
+        await enqueueTimelineRegeneration([...pending, ...claimed], 0);
+        await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: milestone.data.timelineEventAdd.id } });
+      }
+      await queryAsAdminWithSuccess({ query: LABEL_DELETE, variables: { id: label.data.labelAdd.id } });
+      await queryAsAdminWithSuccess({ query: EXTERNAL_REFERENCE_DELETE, variables: { id: reference.data.externalReferenceAdd.id } });
     });
 
     it('should queue the case of a manual event whose author changed', async () => {

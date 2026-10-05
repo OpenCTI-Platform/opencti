@@ -10,11 +10,15 @@ import {
   isTimelineEventAccessChanged,
   isTimelineRefreshForEveryReader,
   keptAnalystFields,
+  markingsOf,
+  timelineCappedAnnotatedEventAsStored,
+  timelineCappedAnnotatedEvents,
   timelineEventMarkings,
   timelineEventMaxConfidence,
   timelineEventSignature,
   timelineEventSourceIds,
   timelineEventStandardId,
+  timelineExchangeAnnotation,
   timelineRuleFamily,
 } from '../../../../src/modules/timeline/timeline-engine';
 import type { AuthUser } from '../../../../src/types/user';
@@ -250,6 +254,54 @@ describe('Timeline STIX extension', () => {
     expect(result.normalized).toEqual(2);
   });
 
+  it('should name the cleared analyst fields of a derived event so that the clear travels', () => {
+    const cleared = timelineExchangeAnnotation({
+      rule_id: RULE_TASK_CONTAINMENT,
+      kind: 'containment',
+      analyst_fields: ['pinned', 'annotation', 'ordering_hint'],
+      pinned: false,
+      hidden: true,
+      annotation: null,
+      ordering_hint: null,
+    }, 'x-opencti-task--1');
+    // The fields the analyst never touched are left out: the receiving platform keeps its own values for them
+    expect(buildStixTimelineExtension({ events: [], annotations: [cleared] })?.annotations).toEqual([{
+      rule_id: 'task-lifecycle',
+      kind: 'containment',
+      element_ref: 'x-opencti-task--1',
+      pinned: false,
+      cleared_fields: ['annotation', 'ordering_hint'],
+    }]);
+    const set = timelineExchangeAnnotation({
+      rule_id: 'technique-kill-chain',
+      kind: 'technique_used',
+      analyst_fields: ['annotation', 'ordering_hint'],
+      pinned: false,
+      hidden: false,
+      annotation: 'Initial dropper',
+      ordering_hint: 0,
+    }, 'attack-pattern--1');
+    expect(set).toMatchObject({ annotation: 'Initial dropper', ordering_hint: 0 });
+    expect(set.cleared_fields).toBeUndefined();
+  });
+
+  it('should keep the cleared fields of an imported annotation, never against a value it carries', () => {
+    const result = sanitizeTimelineExtension({
+      annotations: [
+        { rule_id: 'task-lifecycle', kind: 'containment', element_ref: 'x-opencti-task--1', cleared_fields: ['annotation', 'ordering_hint'] },
+        { rule_id: 'technique-kill-chain', kind: 'technique_used', element_ref: 'attack-pattern--1', annotation: 'Kept', cleared_fields: ['annotation', 'pinned'] },
+        { rule_id: 'technique-kill-chain', kind: 'technique_used', element_ref: 'attack-pattern--2', pinned: true, cleared_fields: 'annotation' },
+      ],
+    }, IMPORT_LIMITS);
+    expect(result.annotations).toEqual([
+      { rule_id: 'task-lifecycle', kind: 'containment', element_ref: 'x-opencti-task--1', cleared_fields: ['annotation', 'ordering_hint'] },
+      { rule_id: 'technique-kill-chain', kind: 'technique_used', element_ref: 'attack-pattern--1', annotation: 'Kept' },
+      { rule_id: 'technique-kill-chain', kind: 'technique_used', element_ref: 'attack-pattern--2', pinned: true },
+    ]);
+    // A field that cannot be cleared and a malformed list
+    expect(result.normalized).toEqual(2);
+  });
+
   it('should only read a bounded number of contributions', () => {
     const events = Array.from({ length: 5 }, (_, index) => ({ id: `timeline-event--${index}`, event_time: '2026-03-05T00:00:00.000Z', title: `Event ${index}` }));
     const annotations = Array.from({ length: 4 }, (_, index) => ({ rule_id: 'technique-kill-chain', kind: 'technique_used', element_ref: `attack-pattern--${index}` }));
@@ -376,6 +428,62 @@ describe('Timeline imported annotations and confidence', () => {
     expect(kept).toEqual({ event_id: 'capped', pinned: true, annotation: 'Initial dropper', max_confidence: 100 });
     // They were set by users the confidence check of the event let through: they come back whatever its confidence
     expect(isPendingAnnotationApplicable(kept, 100)).toBe(true);
+  });
+
+  it('should record the annotated derived events left out by the cap, read like stored events by the exchange', () => {
+    const derivedDoc = (internalId: string, fields: Partial<Parameters<typeof buildTimelineEventDoc>[0]>) => buildTimelineEventDoc({
+      internal_id: internalId,
+      container_id: 'case-1',
+      name: 'Malware seen',
+      event_time: '2026-03-01T00:00:00.000Z',
+      time_precision: 'exact',
+      lane: 'evidence',
+      kind: 'malware_seen',
+      event_source: 'derived',
+      rule_id: 'entity-first-last-seen',
+      element_id: 'malware-1',
+      element_type: 'Malware',
+      pinned: false,
+      hidden: false,
+      analyst_fields: [],
+      markings: ['tlp-green'],
+      creator_ids: [],
+      restricted_members: [],
+      element_access: { restricted_members: [], granted: [], sources: [{ id: 'run-1', restricted_members: [], granted: [] }] },
+      ...fields,
+    });
+    const stored = derivedDoc('stored', { analyst_fields: ['pinned'], pinned: true });
+    const capped = derivedDoc('capped', { analyst_fields: ['pinned', 'annotation'], pinned: true, annotation: 'Initial dropper', ordering_hint: 4 });
+    const untouched = derivedDoc('untouched', {});
+    const records = timelineCappedAnnotatedEvents([stored, capped, untouched], new Set(['stored']));
+    // Only the analyst fields are recorded: the ordering hint of the rule is not a contribution
+    expect(records).toEqual([{
+      internal_id: 'capped',
+      rule_id: 'entity-first-last-seen',
+      kind: 'malware_seen',
+      element_id: 'malware-1',
+      markings: ['tlp-green'],
+      element_access: { restricted_members: [], granted: [], sources: [{ id: 'run-1', restricted_members: [], granted: [] }] },
+      analyst_fields: ['pinned', 'annotation'],
+      pinned: true,
+      hidden: false,
+      annotation: 'Initial dropper',
+      ordering_hint: null,
+    }]);
+    const asStored = timelineCappedAnnotatedEventAsStored(records[0]);
+    expect(asStored.event_source).toEqual('derived');
+    expect(markingsOf(asStored)).toEqual(['tlp-green']);
+    expect(timelineEventSourceIds(asStored)).toEqual(['run-1']);
+    expect(timelineExchangeAnnotation(asStored, 'malware--1')).toEqual({
+      rule_id: 'entity-first-last-seen',
+      kind: 'malware_seen',
+      element_ref: 'malware--1',
+      pinned: true,
+      hidden: undefined,
+      annotation: 'Initial dropper',
+      ordering_hint: undefined,
+      cleared_fields: undefined,
+    });
   });
 
   it('should apply an imported annotation only to an event within the confidence level of its importer', () => {
