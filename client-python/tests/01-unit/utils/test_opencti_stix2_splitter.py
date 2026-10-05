@@ -1,6 +1,7 @@
 import json
 import uuid
 
+import pytest
 from stix2 import Report
 
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
@@ -252,6 +253,75 @@ def test_split_timeline_extension_refs_are_dependencies():
     # The extension travels unchanged, a ref missing from the bundle included
     split_case = json.loads(bundles[-1])["objects"][0]
     assert split_case["extensions"][STIX_EXT_OCTI_TIMELINE] == (
+        case["extensions"][STIX_EXT_OCTI_TIMELINE]
+    )
+
+
+@pytest.mark.parametrize("case_first", [True, False])
+@pytest.mark.parametrize("through_report", [False, True])
+def test_split_timeline_extension_keeps_the_reverse_refs_of_its_elements(
+    case_first, through_report
+):
+    # The element of a contribution refers back to the case (a note about the case, directly or
+    # through a report): the case cannot wait for it, and the note keeps its reference to the case
+    case = {
+        "type": "case-incident",
+        "spec_version": "2.1",
+        "id": "case-incident--6b0cbf59-1fd4-4b5a-9c55-1f2f4f5b8d13",
+        "name": "Ransomware on the finance file servers",
+        "extensions": {
+            STIX_EXT_OCTI_TIMELINE: {
+                "events": [
+                    {
+                        "id": "timeline-event--0f3d6a2e-7c51-4f0b-9d7e-2b8c4e1a5f62",
+                        "title": "Analyst note on the scope",
+                        "event_time": "2026-02-05T10:00:00.000Z",
+                        "element_ref": "note--3a1b2c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
+                    }
+                ],
+                "annotations": [],
+            }
+        },
+    }
+    report = {
+        "type": "report",
+        "spec_version": "2.1",
+        "id": "report--7d8e9f0a-1b2c-4d3e-8f4a-5b6c7d8e9f0a",
+        "name": "Weekly incident digest",
+        "published": "2026-02-05T12:00:00.000Z",
+        "object_refs": [case["id"]],
+    }
+    note = {
+        "type": "note",
+        "spec_version": "2.1",
+        "id": "note--3a1b2c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
+        "content": "The file servers of the finance team only",
+        "object_refs": [report["id"] if through_report else case["id"]],
+    }
+    objects = [note, report] if through_report else [note]
+    objects = [case] + objects if case_first else objects + [case]
+    bundle = {
+        "type": "bundle",
+        "id": "bundle--" + str(uuid.uuid4()),
+        "objects": objects,
+    }
+    stix_splitter = OpenCTIStix2Splitter()
+    expectations, _, bundles = stix_splitter.split_bundle_with_expectations(
+        bundle=json.dumps(bundle)
+    )
+    assert expectations == len(objects)
+    split = {
+        json.loads(b)["objects"][0]["id"]: json.loads(b)["objects"][0] for b in bundles
+    }
+    assert split[note["id"]]["object_refs"] == note["object_refs"]
+    if through_report:
+        assert split[report["id"]]["object_refs"] == [case["id"]]
+    sequences = {
+        json.loads(b)["objects"][0]["id"]: json.loads(b)["x_opencti_seq"]
+        for b in bundles
+    }
+    assert sequences[case["id"]] < sequences[note["id"]]
+    assert split[case["id"]]["extensions"][STIX_EXT_OCTI_TIMELINE] == (
         case["extensions"][STIX_EXT_OCTI_TIMELINE]
     )
 

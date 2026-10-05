@@ -110,6 +110,41 @@ class OpenCTIStix2Splitter:
                 refs.append(annotation["element_ref"])
         return list(dict.fromkeys(refs))
 
+    def refers_to(self, start_id, target_id, raw_data):
+        """Tell whether an object of the bundle refers to another one.
+
+        The reference may be direct or go through the objects it refers to, by
+        their refs or by the refs of their timeline extension.
+
+        :param start_id: the ID of the object to start from
+        :type start_id: str
+        :param target_id: the ID of the object to look for
+        :type target_id: str
+        :param raw_data: the raw data dictionary of all items
+        :type raw_data: dict
+        :return: True if target_id is reachable from start_id
+        :rtype: bool
+        """
+        visited = set()
+        to_visit = [start_id]
+        while to_visit:
+            current_id = to_visit.pop()
+            if current_id == target_id:
+                return True
+            if current_id in visited:
+                continue
+            visited.add(current_id)
+            current = raw_data.get(current_id)
+            if not isinstance(current, dict):
+                continue
+            for key, value in current.items():
+                if key.endswith("_ref") and isinstance(value, str):
+                    to_visit.append(value)
+                elif key.endswith("_refs") and isinstance(value, list):
+                    to_visit.extend(ref for ref in value if isinstance(ref, str))
+            to_visit.extend(self.get_timeline_extension_refs(current))
+        return False
+
     def enlist_element(
         self, item_id, raw_data, cleanup_inconsistent_bundle, parent_acc
     ):
@@ -249,6 +284,8 @@ class OpenCTIStix2Splitter:
         # The refs nested in a timeline extension are imported before the container,
         # so that its analyst contributions resolve their elements, authors and markings.
         # The extension itself is kept as is: a ref missing from the bundle is skipped on import.
+        # An element that refers back to the container (a note about the case) is not waited
+        # for: the cycle would be broken by removing that reference from the element.
         for nested_ref in self.get_timeline_extension_refs(item):
             if (
                 raw_data.get(nested_ref) is not None
@@ -257,6 +294,7 @@ class OpenCTIStix2Splitter:
                 and nested_ref not in parent_acc
                 and nested_ref not in self.cache_refs[item_id]
                 and item_id not in (self.cache_refs.get(nested_ref) or [])
+                and not self.refers_to(nested_ref, item_id, raw_data)
             ):
                 self.cache_refs[item_id].append(nested_ref)
                 nb_deps += self.enlist_element(
