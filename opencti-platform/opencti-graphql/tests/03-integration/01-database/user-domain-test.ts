@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import bcrypt from 'bcryptjs';
 import { ADMIN_USER, AMBER_STRICT_GROUP, GREEN_GROUP, PLATFORM_ORGANIZATION, TEST_ORGANIZATION, testContext } from '../../utils/testQuery';
 import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
@@ -19,10 +20,10 @@ import {
 import { addWorkspace, findById as findWorkspaceById, workspaceEditAuthorizedMembers } from '../../../src/modules/workspace/workspace-domain';
 import type { NotificationAddInput } from '../../../src/modules/notification/notification-types';
 import { getFakeAuthUser, getGroupEntity, getOrganizationEntity } from '../../utils/domainQueryHelper';
-import { deleteElementById } from '../../../src/database/middleware';
+import { deleteElementById, patchAttribute } from '../../../src/database/middleware';
 import { unSetOrganization, setOrganization } from '../../utils/testQueryHelper';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
-import { SETTINGS_SET_ACCESSES } from '../../../src/utils/access';
+import { SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../../../src/utils/access';
 import type { Group } from '../../../src/types/group';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { addOrganization } from '../../../src/modules/organization/organization-domain';
@@ -318,6 +319,17 @@ describe('loginFromProvider coverage', () => {
     await expect(async () => {
       await loginFromProvider({ email: '', name: 'No Email Provider User' });
     }).rejects.toThrowError('User email not provided');
+  });
+
+  it('should delete the password history of a local user who logs in through SSO', async () => {
+    const email = 'local.switching.to.sso@opencti.invalid';
+    const user = await addUser(testContext, ADMIN_USER, { name: 'Local switching to SSO', user_email: email, password: 'Local-Before-Sso-1!' });
+    await patchAttribute(testContext, SYSTEM_USER, user.id, ENTITY_TYPE_USER, { password_history: [bcrypt.hashSync('Local-Old-1!', 4)] });
+    await loginFromProvider({ email, name: 'Local switching to SSO' });
+    const stored = await storeLoadById<BasicStoreEntity & { external?: boolean; password_history?: string[] }>(testContext, ADMIN_USER, user.id, ENTITY_TYPE_USER);
+    expect(stored?.external).toBe(true);
+    expect(stored?.password_history ?? []).toEqual([]);
+    await userDelete(testContext, ADMIN_USER, user.id);
   });
 });
 
