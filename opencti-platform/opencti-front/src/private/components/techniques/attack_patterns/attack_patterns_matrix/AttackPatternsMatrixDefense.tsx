@@ -42,6 +42,12 @@ export const defenseCellLevel = (defense: DefenseMatrixMode, attackPatternId: st
   return cell ? computeLayerLevel(cell, defense.layers) : DEFENSE_LEVEL_NONE;
 };
 
+// The counters count the stored levels, whatever layers are shown: their filter matches the same levels
+export const isInDefenseLevelFilter = (defense: DefenseMatrixMode, attackPatternId: string) => {
+  if (!defense.levelFilter) return true;
+  return defense.levelFilter.includes(defense.cells.get(attackPatternId)?.level ?? DEFENSE_LEVEL_NONE);
+};
+
 // A technique counts once, at the best level of itself and its sub-techniques, as in the coverage by tactic
 export const defenseTechniqueLevel = (defense: DefenseMatrixMode, attackPatternIds: ReadonlyArray<string>) => {
   return Math.max(DEFENSE_LEVEL_NONE, ...attackPatternIds.map((id) => defenseCellLevel(defense, id)));

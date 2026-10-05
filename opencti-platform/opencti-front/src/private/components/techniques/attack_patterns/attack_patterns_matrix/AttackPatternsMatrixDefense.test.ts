@@ -1,7 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
 import type React from 'react';
 import { ALL_DEFENSE_LAYERS } from '../../../defense/matrix/defenseMatrix-utils';
-import { defenseCoveredPercent, type DefenseMatrixCellData, defenseKeyboardProps, type DefenseMatrixMode, defenseTechniqueLevel } from './AttackPatternsMatrixDefense';
+import {
+  defenseCellLevel,
+  defenseCoveredPercent,
+  type DefenseMatrixCellData,
+  defenseKeyboardProps,
+  type DefenseMatrixMode,
+  defenseTechniqueLevel,
+  isInDefenseLevelFilter,
+} from './AttackPatternsMatrixDefense';
 
 const keyEvent = (key: string, target: object, currentTarget: object) => ({
   key,
@@ -42,6 +50,19 @@ describe('Defense matrix tactic coverage', () => {
     expect(defenseCoveredPercent(defense, [['parent', 'sub']])).toBe(100);
     expect(defenseCoveredPercent(defense, [['parent', 'sub'], ['other']])).toBe(50);
     expect(defenseCoveredPercent(defense, [])).toBe(0);
+  });
+  it('should filter a counter on the stored levels it counts, whatever layers are shown', () => {
+    const validated = { ...cell('validated', 4), detection: 'deployed', validated: 'validated' } as unknown as DefenseMatrixCellData;
+    const withoutValidation: DefenseMatrixMode = {
+      ...defense,
+      cells: new Map([['validated', validated]]),
+      layers: { ...ALL_DEFENSE_LAYERS, validated: false },
+      levelFilter: [4],
+    };
+    expect(defenseCellLevel(withoutValidation, 'validated')).toBeLessThan(4);
+    expect(isInDefenseLevelFilter(withoutValidation, 'validated')).toBe(true);
+    expect(isInDefenseLevelFilter({ ...withoutValidation, levelFilter: [3] }, 'validated')).toBe(false);
+    expect(isInDefenseLevelFilter({ ...withoutValidation, levelFilter: null }, 'validated')).toBe(true);
   });
 });
 

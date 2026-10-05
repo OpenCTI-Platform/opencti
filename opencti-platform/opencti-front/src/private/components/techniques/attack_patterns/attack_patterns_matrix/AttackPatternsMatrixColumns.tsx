@@ -21,7 +21,7 @@ import { hexToRGB } from '../../../../../utils/Colors';
 import type { Theme } from '../../../../../components/Theme';
 import { containerTypes } from '../../../../../utils/hooks/useAttributes';
 import { useFormatter } from '../../../../../components/i18n';
-import { defenseCellLevel, defenseCoveredPercent, isUsedByThreats } from './AttackPatternsMatrixDefense';
+import { defenseCellLevel, defenseCoveredPercent, isInDefenseLevelFilter, isUsedByThreats } from './AttackPatternsMatrixDefense';
 import { DEFENSE_COVERED_LEVEL, DEFENSE_LEVEL_NONE, defenseLevelColor } from '../../../defense/matrix/defenseMatrix-utils';
 
 export type AttackPatternsOfPhase = NonNullable<NonNullable<AttackPatternsMatrixColumns_data$data['attackPatternsMatrix']>['attackPatternsOfPhases']>[number];
@@ -197,10 +197,10 @@ const AttackPatternsMatrixColumns = ({
 
   const isAttackPatternCovered = (ap: AttackPattern | SubAttackPattern) => {
     if (defense) {
-      const level = defenseCellLevel(defense, ap.attack_pattern_id);
       if (defense.levelFilter) {
-        return defense.levelFilter.includes(level);
+        return isInDefenseLevelFilter(defense, ap.attack_pattern_id);
       }
+      const level = defenseCellLevel(defense, ap.attack_pattern_id);
       // Without threat overlay, the defense mode highlights the techniques with any coverage
       return defense.threatOverlay ? isUsedByThreats(defense, ap.attack_pattern_id) : level > DEFENSE_LEVEL_NONE;
     }
