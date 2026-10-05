@@ -201,6 +201,7 @@ The trigger filters apply to the incident or case, and only users who can access
 ## Access and security
 
 - Timeline events inherit the markings and authorized members of the container, and the markings of the element they come from or point to (a milestone linked to a marked element carries its markings). Users only see the events of the elements they can access, in the timeline, the widget and the exports.
+- Some derived events also carry data of other elements: a technique is dated by its `uses` and `targets` relationships, a hunt run shown on its hunt tells about the run, and a finding of an investigation is dated and named by its run. Such an event carries their markings too, and users only see it when they can access each of these elements as well. The anchors and the timeline exchanged with the container only use events that every reader of the container can see.
 - Reading the timeline requires access to the container. Adding milestones, pinning, hiding, annotating, changing the settings and regenerating require the capability to update knowledge and edit access to the container; milestones can only be edited or deleted by these users, and never inside a draft.
 
 ## Exchange and API
