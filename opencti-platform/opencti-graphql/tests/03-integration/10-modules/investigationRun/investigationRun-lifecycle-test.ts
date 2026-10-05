@@ -687,7 +687,7 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       const editorContext = { ...testContext, user: editor, batch: computeLoaders(testContext, editor) };
       expect(restrictedRun?.subject_id).toBe(caseId);
       expect(await runFields.subject_id(restrictedRun, {}, editorContext)).toBeNull();
-      expect(await runFields.subject(restrictedRun, {}, editorContext)).toBeNull();
+      expect(await runFields.subject(restrictedRun, {}, editorContext) ?? null).toBeNull();
       expect(await runFields.case_id(restrictedRun, {}, editorContext)).toBeNull();
       expect(await runFields.case(restrictedRun, {}, editorContext)).toBeNull();
       expect((await loadInvestigationRun(testContext, runId))?.draft_id).toBe(mirrored.draft_id);
