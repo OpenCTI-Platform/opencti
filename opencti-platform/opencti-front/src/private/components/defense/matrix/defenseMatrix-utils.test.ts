@@ -14,6 +14,7 @@ import {
   defenseLevelTextColor,
   defenseThreatColor,
   isDisplayedValidationFailed,
+  isThreatOverlayActive,
   isValidationFailed,
   parseDefenseScope,
   scopedDefensePlatforms,
@@ -146,6 +147,22 @@ describe('defenseMatrix-utils', () => {
       });
       expect(input.mode).toBe('FILTERED');
       expect((input as { filters: { filters: { key: string[] }[] } }).filters.filters[0].key).toEqual(['entity_type']);
+    });
+  });
+
+  describe('isThreatOverlayActive', () => {
+    it('reads the overlay from the scope, whatever the threats it currently matches', () => {
+      expect(isThreatOverlayActive(DEFAULT_DEFENSE_SCOPE)).toBe(true);
+      expect(isThreatOverlayActive({
+        ...DEFAULT_DEFENSE_SCOPE,
+        threatMode: 'SELECTED',
+        threats: [{ value: 'intrusion-set-id', label: 'APT29', type: 'Intrusion-Set' }],
+      })).toBe(true);
+      expect(isThreatOverlayActive({ ...DEFAULT_DEFENSE_SCOPE, threatMode: 'NONE' })).toBe(false);
+    });
+    it('reads an empty selection or an empty filter as no overlay', () => {
+      expect(isThreatOverlayActive({ ...DEFAULT_DEFENSE_SCOPE, threatMode: 'SELECTED' })).toBe(false);
+      expect(isThreatOverlayActive({ ...DEFAULT_DEFENSE_SCOPE, threatMode: 'FILTERED' })).toBe(false);
     });
   });
 

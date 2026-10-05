@@ -40,6 +40,7 @@ import {
   DEFENSE_THREAT_SCOPE_LABELS,
   type DefenseLayersState,
   type DefenseScopeState,
+  isThreatOverlayActive,
   scopedDefensePlatforms,
   summarizeLevels,
   toThreatScopeInput,
@@ -148,7 +149,8 @@ export const DefenseMatrixContent = ({ queryRef, scope, layers }: DefenseMatrixC
 
   const cells = defenseMatrix?.cells ?? [];
   const cellsById = useMemo(() => new Map(cells.map((cell) => [cell.attack_pattern_id, cell])), [cells]);
-  const threatOverlay = scope.threatMode !== 'NONE' && (defenseMatrix?.threats_count ?? 0) > 0;
+  // A scope matching no threat targets no technique: it never falls back to every technique
+  const threatOverlay = isThreatOverlayActive(scope);
   const killChains = useMemo(
     () => Array.from(new Set((defenseMatrix?.tactics ?? []).map((t) => t.kill_chain_name))).sort((a, b) => a.localeCompare(b)),
     [defenseMatrix?.tactics],

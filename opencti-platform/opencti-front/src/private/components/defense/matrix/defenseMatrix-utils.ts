@@ -248,6 +248,9 @@ export const toThreatScopeInput = (scope: DefenseScopeState) => {
   return { mode: scope.threatMode };
 };
 
+/** Whether the scope overlays threats, including a scope whose threats currently match nothing. */
+export const isThreatOverlayActive = (scope: DefenseScopeState) => toThreatScopeInput(scope).mode !== 'NONE';
+
 const isString = (value: unknown): value is string => typeof value === 'string';
 
 const isFilterGroupShape = (value: unknown): value is FilterGroup => {

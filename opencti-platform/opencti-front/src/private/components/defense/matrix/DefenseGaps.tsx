@@ -43,6 +43,7 @@ import {
   defenseGapsExportFileName,
   defenseLevelLabel,
   downloadCsv,
+  isThreatOverlayActive,
   toThreatScopeInput,
 } from './defenseMatrix-utils';
 
@@ -115,7 +116,8 @@ const DefenseGaps = () => {
   const actionOptions: ActionOption[] = DEFENSE_ACTIONS.map((action) => ({ value: action, label: t_i18n(DEFENSE_ACTION_LABELS[action]) }));
 
   // Without threat overlay no technique is used by threats: the filter would empty the backlog
-  const usedByThreatsFilter = onlyUsedByThreats && scope.threatMode !== 'NONE';
+  const threatOverlay = isThreatOverlayActive(scope);
+  const usedByThreatsFilter = onlyUsedByThreats && threatOverlay;
   const variables: DefenseGapsLinesPaginationQuery$variables = {
     platformIds: scope.platformIds,
     threatScope: toThreatScopeInput(scope),
@@ -228,12 +230,12 @@ const DefenseGaps = () => {
           <Switch
             label={t_i18n('Only techniques used by threats')}
             checked={usedByThreatsFilter}
-            disabled={scope.threatMode === 'NONE'}
+            disabled={!threatOverlay}
             onCheckedChange={(checked) => setOnlyUsedByThreats(checked)}
-            aria-describedby={scope.threatMode === 'NONE' ? 'defense-gaps-only-threats-reason' : undefined}
+            aria-describedby={threatOverlay ? undefined : 'defense-gaps-only-threats-reason'}
             data-testid="defense-gaps-only-threats"
           />
-          {scope.threatMode === 'NONE' && (
+          {!threatOverlay && (
             <Typography id="defense-gaps-only-threats-reason" variant="caption" color="text.secondary" component="p">
               {t_i18n('Choose threats in the scope first')}
             </Typography>
