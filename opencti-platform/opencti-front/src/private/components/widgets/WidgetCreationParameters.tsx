@@ -399,6 +399,7 @@ const WidgetCreationParameters = () => {
       {widgetCategory === 'case-timeline' && (
         <ContainerTimelineWidgetParameters
           parameters={parameters}
+          showContainer={host.kind !== 'custom-view'}
           onChange={(patch) => setConfigWidget({ ...config.widget, parameters: { ...config.widget.parameters, ...patch } })}
         />
       )}

@@ -1265,6 +1265,36 @@ describe('Incident and case timeline', () => {
       await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: updated.id } });
     });
 
+    it('should keep the confidence of a milestone added again without one', async () => {
+      const input = { container_id: secondCase.id, event_time: '2026-02-06T09:30:00.000Z', title: 'Containment confirmed', external_id: 'retry-keeps-confidence' };
+      const added = await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_ADD, variables: { input: { ...input, confidence: 80 } } });
+      const addedId = added.data.timelineEventAdd.id;
+      // A retry naming no confidence updates the milestone, it keeps the confidence that decides who may edit it
+      const retried = await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_ADD, variables: { input: { ...input, title: 'Containment confirmed by the CERT' } } });
+      expect(retried.data.timelineEventAdd).toMatchObject({ id: addedId, title: 'Containment confirmed by the CERT', confidence: 80 });
+      // An explicit null removes it
+      const cleared = await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_ADD, variables: { input: { ...input, confidence: null } } });
+      expect(cleared.data.timelineEventAdd).toMatchObject({ id: addedId, confidence: null });
+      await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: addedId } });
+    });
+
+    it('should never lower the confidence of a known event on import', async () => {
+      const event = { id: 'timeline-event--3b5d7f9a-1c2e-4a6b-8d0f-2e4a6c8e0b1d', title: 'Backups verified', event_time: '2026-02-06T10:00:00.000Z' };
+      const importVersion = async (version: Record<string, unknown>) => {
+        await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension: JSON.stringify({ events: [{ ...event, ...version }], annotations: [] }) } });
+        const [stored] = (await listTimeline(secondCase.id, { sources: ['manual'] })).filter((e) => e.title.startsWith('Backups verified'));
+        return stored;
+      };
+      expect(await importVersion({ confidence: 90 })).toMatchObject({ confidence: 90 });
+      // Imported without a confidence, or with a lower one, the event keeps its own
+      expect(await importVersion({ title: 'Backups verified offline' })).toMatchObject({ title: 'Backups verified offline', confidence: 90 });
+      expect(await importVersion({ confidence: 40 })).toMatchObject({ confidence: 90 });
+      // A higher one applies
+      const raised = await importVersion({ confidence: 95 });
+      expect(raised).toMatchObject({ confidence: 95 });
+      await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: raised.id } });
+    });
+
     it('should import once two new events of one extension sharing an external id', async () => {
       const first = { id: 'timeline-event--6c8e0a2b-4d5f-4b7a-8e9c-3f4a5b6c7d8e', external_id: 'soar-case-77', title: 'Playbook started', event_time: '2026-02-06T11:00:00.000Z' };
       const second = { ...first, id: 'timeline-event--7d9f1b3c-5e6a-4c8b-9fad-4a5b6c7d8e9f', title: 'Playbook started, last version' };

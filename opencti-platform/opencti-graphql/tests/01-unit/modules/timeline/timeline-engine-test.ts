@@ -23,7 +23,7 @@ import {
   timelineRuleFamily,
 } from '../../../../src/modules/timeline/timeline-engine';
 import type { AuthUser } from '../../../../src/types/user';
-import { buildTimelineFilters, latestTimelineTime } from '../../../../src/modules/timeline/timeline-domain';
+import { buildTimelineFilters, latestTimelineTime, strongerTimelineConfidence } from '../../../../src/modules/timeline/timeline-domain';
 import { buildStixTimelineExtension, sanitizeTimelineExtension } from '../../../../src/modules/timeline/timeline-extension';
 import { RULE_TASK_CONTAINMENT, RULE_WORKFLOW_CLOSURE } from '../../../../src/modules/timeline/timeline-rules';
 import { ENTITY_TYPE_TIMELINE_EVENT, TIMELINE_KINDS } from '../../../../src/modules/timeline/timeline-types';
@@ -440,6 +440,15 @@ describe('Timeline imported annotations and confidence', () => {
     expect(timelineEventMaxConfidence(userWith({ max_confidence: 40, overrides: [{ entity_type: ENTITY_TYPE_TIMELINE_EVENT, max_confidence: 70 }] }))).toEqual(70);
     expect(timelineEventMaxConfidence(userWith({ max_confidence: 40, overrides: [{ entity_type: 'Malware', max_confidence: 90 }] }))).toEqual(40);
     expect(timelineEventMaxConfidence(userWith(null as unknown as AuthUser['effective_confidence_level']))).toBeNull();
+  });
+
+  it('should keep the higher of the stored and imported confidence of a known event, none counting as no level', () => {
+    expect(strongerTimelineConfidence(90, 40)).toEqual(90);
+    expect(strongerTimelineConfidence(40, 90)).toEqual(90);
+    expect(strongerTimelineConfidence(90, null)).toEqual(90);
+    expect(strongerTimelineConfidence(null, 40)).toEqual(40);
+    expect(strongerTimelineConfidence(undefined, null)).toBeNull();
+    expect(strongerTimelineConfidence(0, null)).toEqual(0);
   });
 
   it('should keep the analyst fields of a derived event pushed out by the cap, and only those', () => {

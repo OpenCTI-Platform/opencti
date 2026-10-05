@@ -66,10 +66,12 @@ interface ContainerOption {
 interface ContainerTimelineWidgetParametersProps {
   parameters: Parameters;
   onChange: (patch: Partial<Parameters>) => void;
+  // A custom view always shows the timeline of the entity it is opened on
+  showContainer?: boolean;
 }
 
 /** Parameters of the incident and case timeline widget: the container, the lanes and the window. */
-const ContainerTimelineWidgetParameters = ({ parameters, onChange }: ContainerTimelineWidgetParametersProps) => {
+const ContainerTimelineWidgetParameters = ({ parameters, onChange, showContainer = true }: ContainerTimelineWidgetParametersProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const [options, setOptions] = useState<ContainerOption[]>([]);
@@ -90,7 +92,7 @@ const ContainerTimelineWidgetParameters = ({ parameters, onChange }: ContainerTi
   };
 
   useEffect(() => {
-    if (!parameters.container_id) {
+    if (!showContainer || !parameters.container_id) {
       setSelected(null);
       return undefined;
     }
@@ -106,7 +108,7 @@ const ContainerTimelineWidgetParameters = ({ parameters, onChange }: ContainerTi
     return () => {
       current = false;
     };
-  }, [parameters.container_id]);
+  }, [showContainer, parameters.container_id]);
 
   const toggleLane = (lane: string) => {
     const next = lanes.includes(lane) ? lanes.filter((l) => l !== lane) : [...lanes, lane];
@@ -115,35 +117,37 @@ const ContainerTimelineWidgetParameters = ({ parameters, onChange }: ContainerTi
 
   return (
     <div style={{ marginTop: theme.spacing(2), display: 'flex', flexDirection: 'column', gap: theme.spacing(2) }} data-testid="timeline-widget-parameters">
-      <Combobox<ContainerOption>
-        className="w-full"
-        options={options}
-        value={selected}
-        getOptionLabel={(option) => option.label}
-        isOptionEqualToValue={(option, value) => option.value === value.value}
-        onInputChange={(value) => search(typeof value === 'string' ? value : '')}
-        onValueChange={(next) => {
-          const option = next as ContainerOption | null;
-          setSelected(option);
-          onChange({ container_id: option?.value ?? null });
-        }}
-        renderOption={(option) => (
-          <span style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
-            <ItemIcon type={option.type} />
-            <span>{option.label}</span>
-          </span>
-        )}
-      >
-        <ComboboxLabel>{t_i18n('Incident or case')}</ComboboxLabel>
-        <ComboboxField startIcon={selected ? <ItemIcon type={selected.type} /> : undefined}>
-          <ComboboxInput onFocus={() => search('')} />
-          <ComboboxControls>
-            <ComboboxClear />
-            <ComboboxTrigger />
-          </ComboboxControls>
-        </ComboboxField>
-        <ComboboxContent emptyMessage={t_i18n('No available options')} listAriaLabel={t_i18n('Incident or case')} />
-      </Combobox>
+      {showContainer && (
+        <Combobox<ContainerOption>
+          className="w-full"
+          options={options}
+          value={selected}
+          getOptionLabel={(option) => option.label}
+          isOptionEqualToValue={(option, value) => option.value === value.value}
+          onInputChange={(value) => search(typeof value === 'string' ? value : '')}
+          onValueChange={(next) => {
+            const option = next as ContainerOption | null;
+            setSelected(option);
+            onChange({ container_id: option?.value ?? null });
+          }}
+          renderOption={(option) => (
+            <span style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1) }}>
+              <ItemIcon type={option.type} />
+              <span>{option.label}</span>
+            </span>
+          )}
+        >
+          <ComboboxLabel>{t_i18n('Incident or case')}</ComboboxLabel>
+          <ComboboxField startIcon={selected ? <ItemIcon type={selected.type} /> : undefined}>
+            <ComboboxInput onFocus={() => search('')} />
+            <ComboboxControls>
+              <ComboboxClear />
+              <ComboboxTrigger />
+            </ComboboxControls>
+          </ComboboxField>
+          <ComboboxContent emptyMessage={t_i18n('No available options')} listAriaLabel={t_i18n('Incident or case')} />
+        </Combobox>
+      )}
       <div>
         <Text variant="content-caption" as="div" style={{ marginBottom: theme.spacing(1) }}>{t_i18n('Lanes (all when none is selected)')}</Text>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: theme.spacing(1) }}>

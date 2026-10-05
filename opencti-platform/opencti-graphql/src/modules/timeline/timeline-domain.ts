@@ -411,6 +411,12 @@ const cappedTimelineConfidence = (user: AuthUser, confidence: number | null | un
   return controlCreateInputWithUserConfidence(user, { id: '', entity_type: ENTITY_TYPE_TIMELINE_EVENT, confidence }, ENTITY_TYPE_TIMELINE_EVENT).confidenceLevelToApply;
 };
 
+/** The higher of two confidence levels; none counts as no level at all. */
+export const strongerTimelineConfidence = (stored: number | null | undefined, incoming: number | null): number | null => {
+  if (stored === null || stored === undefined) return incoming;
+  return incoming === null ? stored : Math.max(stored, incoming);
+};
+
 export const findTimelineAnchors = async (context: AuthContext, user: AuthUser, containerId: string): Promise<TimelineAnchors | null> => {
   const container = await ensureTimelineGenerated(context, await loadTimelineContainer(context, user, containerId));
   return container?.[ATTRIBUTE_TIMELINE_ANCHORS] ?? null;
@@ -858,7 +864,8 @@ export const addTimelineEvent = async (context: AuthContext, user: AuthUser, inp
       pinned: input.pinned ?? previous?.pinned ?? false,
       hidden: previous?.hidden ?? false,
       annotation: input.annotation ?? previous?.annotation ?? null,
-      confidence: cappedTimelineConfidence(user, input.confidence),
+      // Added again without a confidence, a known event keeps its own: it decides who may edit the event; an explicit null removes it
+      confidence: input.confidence === undefined && previous ? (previous.confidence ?? null) : cappedTimelineConfidence(user, input.confidence),
       ordering_hint: input.ordering_hint ?? null,
       analyst_fields: [],
       external_id: input.external_id ?? null,
@@ -1156,7 +1163,9 @@ const writeImportedContributions = async (
       pinned: event.pinned ?? false,
       hidden: event.hidden ?? false,
       annotation: event.annotation ?? null,
-      confidence: cappedTimelineConfidence(user, event.confidence),
+      // Like its markings, a known event keeps the higher of its stored and imported confidence: an import never lets less
+      // trusted users edit it
+      confidence: strongerTimelineConfidence(stored?.confidence, cappedTimelineConfidence(user, event.confidence)),
       ordering_hint: event.ordering_hint ?? null,
       analyst_fields: [],
       external_id: existing ? (existing.external_id ?? null) : (event.external_id ?? event.id),
