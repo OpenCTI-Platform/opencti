@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import type { AuthContext } from '../../types/user';
 import type { BasicStoreBase, BasicStoreEntity } from '../../types/store';
 import type { BasicStoreSettings } from '../../types/settings';
-import { createEntity, patchAttribute, updateAttribute } from '../../database/middleware';
+import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { fullEntitiesList, internalFindByIds } from '../../database/middleware-loader';
 import { getEntityFromCache } from '../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
@@ -34,7 +34,7 @@ import {
   type ProposalDraft,
 } from './curation-types';
 import { buildPairFingerprint, buildProposalFingerprint, isInAmbiguousBand } from './curation-normalization';
-import { withProposalFingerprintLock } from './curation-locks';
+import { withProposalFingerprintLock, withProposalTransitionLock } from './curation-locks';
 
 const PAIR_KINDS = [PROPOSAL_KIND_MERGE, PROPOSAL_KIND_TYPE_MISMATCH];
 
@@ -304,6 +304,35 @@ export const refreshProposalRestrictions = async (context: AuthContext, subjectI
   return refreshed;
 };
 
+/**
+ * The open alias proposals an alias proposal of the same entity replaces: an alias proposal names every catalogue name
+ * the entity lacks when it is raised, so an older one (other names, other catalogues, or one per catalogue as raised by
+ * earlier versions) describes a state that is gone.
+ */
+export const supersededAliasProposals = (
+  open: Array<Pick<BasicStoreEntityCurationProposal, 'internal_id' | 'proposal_kind' | 'proposal_status' | 'proposal_fingerprint' | 'subject_ids'>>,
+  current: Pick<BasicStoreEntityCurationProposal, 'internal_id' | 'proposal_fingerprint' | 'subject_ids'>,
+) => open.filter((proposal) => proposal.proposal_kind === PROPOSAL_KIND_ALIAS
+  && proposal.proposal_status === PROPOSAL_STATUS_OPEN
+  && proposal.internal_id !== current.internal_id
+  && proposal.proposal_fingerprint !== current.proposal_fingerprint
+  && proposal.subject_ids.length === 1
+  && proposal.subject_ids[0] === current.subject_ids[0]);
+
+// Each is read again under its transition lock: a proposal being decided, or decided since, is never removed.
+const removeSupersededAliasProposals = async (context: AuthContext, current: BasicStoreEntityCurationProposal) => {
+  const open = await findOpenProposalsForSubjects(context, current.subject_ids, [PROPOSAL_KIND_ALIAS]);
+  const superseded = supersededAliasProposals(open, current);
+  for (let index = 0; index < superseded.length; index += 1) {
+    const { internal_id: id } = superseded[index];
+    await withProposalTransitionLock(id, async () => {
+      const [reloaded] = await internalFindByIds(context, SYSTEM_USER, [id]) as BasicStoreEntityCurationProposal[];
+      if (reloaded?.proposal_status !== PROPOSAL_STATUS_OPEN) return;
+      await deleteElementById(context, SYSTEM_USER, id, ENTITY_TYPE_CURATION_PROPOSAL);
+    });
+  }
+};
+
 const persistLockedProposalDraft = async (
   context: AuthContext,
   settings: CurationSettings,
@@ -326,7 +355,9 @@ const persistLockedProposalDraft = async (
   }
   const inBand = isInAmbiguousBand(draft.confidence, settings.ambiguous_band_min, settings.ambiguous_band_max);
   if (existing) {
-    return refreshProposal(context, existing, draft, inBand);
+    const refreshed = await refreshProposal(context, existing, draft, inBand);
+    if (draft.kind === PROPOSAL_KIND_ALIAS) await removeSupersededAliasProposals(context, existing);
+    return refreshed;
   }
   const subjectIds = draft.subjects.map((subject) => subject.id);
   const subjects = await internalFindByIds(context, SYSTEM_USER, subjectIds, { baseData: true }) as BasicStoreBase[];
@@ -367,6 +398,7 @@ const persistLockedProposalDraft = async (
   };
   const created = await createEntity(context, CURATION_MANAGER_USER, input, ENTITY_TYPE_CURATION_PROPOSAL) as unknown as BasicStoreEntityCurationProposal;
   addCurationProposalCreatedCount();
+  if (draft.kind === PROPOSAL_KIND_ALIAS) await removeSupersededAliasProposals(context, created);
   return { proposal: created, created: true, suppressed: false };
 };
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { detectMissingAliases, toCuratedEntity } from '../../../../src/modules/curation/curation-detectors';
+import { supersededAliasProposals } from '../../../../src/modules/curation/curation-proposals';
 
 const intrusionSet = (id: string, name: string, aliases: string[] = []) => toCuratedEntity({
   internal_id: id,
@@ -49,6 +50,27 @@ describe('missing aliases detection', () => {
 
   it('never proposes a catalogue identifier as an alias', () => {
     expect(proposedAliases(detectMissingAliases([apt28]))).not.toContain('G0007');
+  });
+
+  it('replaces the older open alias proposals of the same entity, and only those', () => {
+    const proposal = (id: string, fingerprint: string, subjectIds: string[], overrides: Record<string, string> = {}) => ({
+      internal_id: id,
+      proposal_kind: 'alias',
+      proposal_status: 'open',
+      proposal_fingerprint: fingerprint,
+      subject_ids: subjectIds,
+      ...overrides,
+    }) as never;
+    const current = proposal('new', 'f-new', ['apt28']);
+    const open = [
+      current,
+      proposal('per-catalogue-mitre', 'f-mitre', ['apt28']),
+      proposal('per-catalogue-misp', 'f-misp', ['apt28']),
+      proposal('other-entity', 'f-other', ['apt29']),
+      proposal('decided', 'f-decided', ['apt28'], { proposal_status: 'accepted' }),
+      proposal('merge', 'f-merge', ['apt28'], { proposal_kind: 'merge' }),
+    ];
+    expect(supersededAliasProposals(open, current).map((p) => (p as { internal_id: string }).internal_id)).toEqual(['per-catalogue-mitre', 'per-catalogue-misp']);
   });
 
   it('never proposes a name that a catalogue also gives to another actor', () => {
