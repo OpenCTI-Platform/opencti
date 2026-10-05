@@ -1,14 +1,13 @@
 import React, { ChangeEvent, FunctionComponent, useState } from 'react';
 import { graphql } from 'react-relay';
 import Button from '../../../../components/common/button/Button';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import { CloudUploadOutlined, DeleteOutlined, DownloadOutlined } from '@mui/icons-material';
-import Card from '../../../../components/common/card/Card';
+import SettingsInfoRow from '../settings_platform/SettingsInfoRow';
+import DeleteDialog from '../../../../components/DeleteDialog';
 import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import { SettingsQuery$data } from '../__generated__/SettingsQuery.graphql';
 
@@ -52,6 +51,7 @@ const SettingsMapSource: FunctionComponent<SettingsMapSourceProps> = ({
 
   const [commitUpload] = useApiMutation(uploadMapCustomFileMutation);
   const [commitDelete] = useApiMutation(deleteMapCustomFileMutation);
+  const deletion = useDeletion({});
 
   const customFile = settings.platform_map_custom_file;
 
@@ -67,59 +67,75 @@ const SettingsMapSource: FunctionComponent<SettingsMapSourceProps> = ({
     });
   };
 
-  const handleDelete = () => {
-    commitDelete({ variables: { id: settings.id } });
+  const submitDelete = () => {
+    deletion.setDeleting(true);
+    commitDelete({
+      variables: { id: settings.id },
+      onCompleted: () => {
+        deletion.setDeleting(false);
+        deletion.handleCloseDelete();
+      },
+      onError: () => deletion.setDeleting(false),
+    });
   };
 
+  const caption = customFile
+    ? `${customFile.name} (${formatBytes(customFile.size)})`
+    : t_i18n('No custom map uploaded, using the bundled map');
+
+  // Rendered as the last row of the Appearance card of the Parameters page.
   return (
-    <Card title={t_i18n('Map configuration')}>
-      <List style={{ marginTop: -20 }}>
-        <ListItem divider={true}>
-          <ListItemText primary={t_i18n('Custom map')} />
-          <div>
-            <Typography variant="body2" sx={{ marginBottom: 1 }}>
-              {customFile
-                ? `${customFile.name} (${formatBytes(customFile.size)})`
-                : t_i18n('No custom map uploaded, using the bundled map')}
-            </Typography>
-            <div style={{ display: 'flex', gap: 8 }}>
-              {customFile && (
-                <Button
-                  variant="secondary"
-                  size="small"
-                  startIcon={<DownloadOutlined />}
-                  href={`${APP_BASE_PATH}/maps/world.pmtiles`}
-                  download={customFile.name}
-                >
-                  {t_i18n('Download')}
-                </Button>
-              )}
-              <Button
-                component="label"
-                variant="secondary"
-                size="small"
-                startIcon={<CloudUploadOutlined />}
-                disabled={uploading}
-              >
-                {uploading ? t_i18n('Uploading...') : t_i18n('Upload')}
-                <input type="file" hidden accept=".pmtiles" onChange={handleUpload} />
-              </Button>
-              {customFile && (
-                <Button
-                  variant="secondary"
-                  size="small"
-                  color="error"
-                  startIcon={<DeleteOutlined />}
-                  onClick={handleDelete}
-                >
-                  {t_i18n('Delete')}
-                </Button>
-              )}
-            </div>
-          </div>
-        </ListItem>
-      </List>
-    </Card>
+    <>
+      <SettingsInfoRow divider={false} size="field" label={t_i18n('Custom map')} data-testid="settings-map-source">
+        <Typography
+          variant="body2"
+          color="textSecondary"
+          title={caption}
+          sx={{ minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+        >
+          {caption}
+        </Typography>
+        {customFile && (
+          <Button
+            variant="secondary"
+            size="small"
+            startIcon={<DownloadOutlined />}
+            href={`${APP_BASE_PATH}/maps/world.pmtiles`}
+            download={customFile.name}
+          >
+            {t_i18n('Download')}
+          </Button>
+        )}
+        <Button
+          component="label"
+          variant="secondary"
+          size="small"
+          startIcon={<CloudUploadOutlined />}
+          disabled={uploading}
+        >
+          {uploading ? t_i18n('Uploading...') : t_i18n('Upload')}
+          <input type="file" hidden accept=".pmtiles" onChange={handleUpload} />
+        </Button>
+        {customFile && (
+          // keepMui: the 26 px of the Upload label and the Download link, which cannot render through the library
+          <Button
+            variant="secondary"
+            size="small"
+            color="error"
+            keepMui
+            startIcon={<DeleteOutlined />}
+            onClick={deletion.handleOpenDelete}
+          >
+            {t_i18n('Delete')}
+          </Button>
+        )}
+      </SettingsInfoRow>
+      <DeleteDialog
+        deletion={deletion}
+        submitDelete={submitDelete}
+        message={t_i18n('Do you want to delete the custom map? The bundled map will be used again.')}
+      />
+    </>
   );
 };
 
