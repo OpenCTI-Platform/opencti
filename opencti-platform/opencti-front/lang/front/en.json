@@ -6581,6 +6581,7 @@
   "The overlap appears once two sources have scorecards.": "The overlap appears once two sources have scorecards.",
   "The password has been updated": "The password has been updated",
   "The period of telemetry each run searches, ending when it starts, for example 168 for 7 days": "The period of telemetry each run searches, ending when it starts, for example 168 for 7 days",
+  "The PIR flags {flagged} threats: the {selected} with the highest PIR score are prefilled": "The PIR flags {flagged} threats: the {selected} with the highest PIR score are prefilled",
   "The platform currently uses the SMTP configuration from the app-config file. Enable the option above to use the configuration below instead.": "The platform currently uses the SMTP configuration from the app-config file. Enable the option above to use the configuration below instead.",
   "The platform holds no indicator or detection rule for {name} yet: plan the hunt with AI, import a hunt pack, or write its logic below.": "The platform holds no indicator or detection rule for {name} yet: plan the hunt with AI, import a hunt pack, or write its logic below.",
   "The platform logs of the source intelligence manager give the cause.": "The platform logs of the source intelligence manager give the cause.",

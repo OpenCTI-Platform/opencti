@@ -6581,6 +6581,7 @@
   "The overlap appears once two sources have scorecards.": "Пересечение появится, когда у двух источников будут оценочные карты.",
   "The password has been updated": "Пароль был обновлен",
   "The period of telemetry each run searches, ending when it starts, for example 168 for 7 days": "Период телеметрии, который просматривает каждый запуск, заканчивающийся в момент запуска, например 168 для 7 дней",
+  "The PIR flags {flagged} threats: the {selected} with the highest PIR score are prefilled": "Угроз, отмеченных PIR: {flagged}. Предзаполнены {selected} с наивысшей оценкой PIR",
   "The platform currently uses the SMTP configuration from the app-config file. Enable the option above to use the configuration below instead.": "В настоящее время платформа использует настройки SMTP из файла app-config. Включите опцию выше, чтобы вместо этого использовать приведенные ниже настройки.",
   "The platform holds no indicator or detection rule for {name} yet: plan the hunt with AI, import a hunt pack, or write its logic below.": "На платформе пока нет индикаторов или правил обнаружения для {name}: спланируйте охоту с ИИ, импортируйте пакет охоты или напишите её логику ниже.",
   "The platform logs of the source intelligence manager give the cause.": "Причина указана в журналах платформы менеджера аналитики источников.",

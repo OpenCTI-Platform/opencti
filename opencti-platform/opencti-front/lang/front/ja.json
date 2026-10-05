@@ -6581,6 +6581,7 @@
   "The overlap appears once two sources have scorecards.": "2 つのソースにスコアカードができると重複が表示されます。",
   "The password has been updated": "パスワードを変更しました",
   "The period of telemetry each run searches, ending when it starts, for example 168 for 7 days": "各実行が検索するテレメトリーの期間（実行開始時点まで）。例: 7 日間なら 168",
+  "The PIR flags {flagged} threats: the {selected} with the highest PIR score are prefilled": "この PIR は {flagged} 件の脅威にフラグを立てています。PIR スコアが最も高い {selected} 件が事前入力されています",
   "The platform currently uses the SMTP configuration from the app-config file. Enable the option above to use the configuration below instead.": "プラットフォームは現在、app-config ファイルの SMTP 設定を使用しています。代わりに以下の設定を使用するには、上記のオプションを有効にしてください。",
   "The platform holds no indicator or detection rule for {name} yet: plan the hunt with AI, import a hunt pack, or write its logic below.": "プラットフォームには {name} のインジケーターや検知ルールがまだありません。AI でハントを計画するか、ハントパックをインポートするか、下にロジックを記述してください。",
   "The platform logs of the source intelligence manager give the cause.": "ソースインテリジェンスマネージャーのプラットフォームログで原因を確認できます。",

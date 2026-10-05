@@ -6581,6 +6581,7 @@
   "The overlap appears once two sources have scorecards.": "La sovrapposizione compare quando due fonti hanno una scorecard.",
   "The password has been updated": "La password è stata aggiornata",
   "The period of telemetry each run searches, ending when it starts, for example 168 for 7 days": "Il periodo di telemetria che ogni esecuzione esamina, che termina al suo avvio, ad esempio 168 per 7 giorni",
+  "The PIR flags {flagged} threats: the {selected} with the highest PIR score are prefilled": "Il PIR segnala {flagged} minacce: sono precompilate le {selected} con il punteggio PIR più alto",
   "The platform currently uses the SMTP configuration from the app-config file. Enable the option above to use the configuration below instead.": "La piattaforma utilizza attualmente la configurazione SMTP dal file app-config. Abilita l’opzione sopra per utilizzare invece la configurazione riportata di seguito.",
   "The platform holds no indicator or detection rule for {name} yet: plan the hunt with AI, import a hunt pack, or write its logic below.": "La piattaforma non contiene ancora alcun indicatore né regola di rilevamento per {name}: pianifica la caccia con l’IA, importa un pacchetto di caccia o scrivi la sua logica qui sotto.",
   "The platform logs of the source intelligence manager give the cause.": "I log della piattaforma del gestore della source intelligence ne indicano la causa.",

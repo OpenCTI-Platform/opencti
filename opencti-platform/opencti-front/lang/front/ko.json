@@ -6581,6 +6581,7 @@
   "The overlap appears once two sources have scorecards.": "두 소스에 스코어카드가 생기면 중복이 표시됩니다.",
   "The password has been updated": "비밀번호가 업데이트되었습니다",
   "The period of telemetry each run searches, ending when it starts, for example 168 for 7 days": "각 실행이 검색하는 텔레메트리 기간이며 실행 시작 시점에 끝납니다(예: 7일은 168)",
+  "The PIR flags {flagged} threats: the {selected} with the highest PIR score are prefilled": "이 PIR은 위협 {flagged}개를 표시합니다. PIR 점수가 가장 높은 {selected}개가 미리 입력되었습니다",
   "The platform currently uses the SMTP configuration from the app-config file. Enable the option above to use the configuration below instead.": "플랫폼은 현재 app-config 파일의 SMTP 구성을 사용하고 있습니다. 아래 구성을 대신 사용하려면 위의 옵션을 활성화하십시오.",
   "The platform holds no indicator or detection rule for {name} yet: plan the hunt with AI, import a hunt pack, or write its logic below.": "플랫폼에 아직 {name}의 지표나 탐지 규칙이 없습니다. AI로 헌트를 계획하거나, 헌트 팩을 가져오거나, 아래에 로직을 작성하세요.",
   "The platform logs of the source intelligence manager give the cause.": "소스 인텔리전스 관리자의 플랫폼 로그에서 원인을 확인할 수 있습니다.",

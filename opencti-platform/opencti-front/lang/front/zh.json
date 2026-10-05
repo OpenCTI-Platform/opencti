@@ -6581,6 +6581,7 @@
   "The overlap appears once two sources have scorecards.": "当两个来源都有评分卡时，将显示重叠情况。",
   "The password has been updated": "密码已更新",
   "The period of telemetry each run searches, ending when it starts, for example 168 for 7 days": "每次运行搜索的遥测时间段，截止到运行开始时，例如 168 表示 7 天",
+  "The PIR flags {flagged} threats: the {selected} with the highest PIR score are prefilled": "该 PIR 标记了 {flagged} 个威胁：已预填 PIR 分数最高的 {selected} 个",
   "The platform currently uses the SMTP configuration from the app-config file. Enable the option above to use the configuration below instead.": "平台当前使用 app-config 文件中的 SMTP 配置。启用上方选项可改用下方的配置。",
   "The platform holds no indicator or detection rule for {name} yet: plan the hunt with AI, import a hunt pack, or write its logic below.": "平台尚无 {name} 的指标或检测规则：使用 AI 规划狩猎、导入狩猎包，或在下方编写其逻辑。",
   "The platform logs of the source intelligence manager give the cause.": "来源情报管理器的平台日志中给出了原因。",

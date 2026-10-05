@@ -33,8 +33,11 @@ import { HuntThisMenuPirEntitiesQuery } from './__generated__/HuntThisMenuPirEnt
 const PREFILL_MAX_ENTITIES = 100;
 
 const huntThisMenuPirEntitiesQuery = graphql`
-  query HuntThisMenuPirEntitiesQuery($types: [String], $first: Int, $filters: FilterGroup) {
-    stixDomainObjects(types: $types, first: $first, filters: $filters) {
+  query HuntThisMenuPirEntitiesQuery($types: [String], $first: Int, $pirId: ID, $filters: FilterGroup) {
+    stixDomainObjects(types: $types, first: $first, pirId: $pirId, orderBy: pir_score, orderMode: desc, filters: $filters) {
+      pageInfo {
+        globalCount
+      }
       edges {
         node {
           id
@@ -57,21 +60,25 @@ const toPrefillEntities = (nodes: PrefillNode[]): HuntPrefillEntity[] => nodes
 interface HuntThisPrefill {
   values: Partial<HuntFormValues>;
   derived: HuntDerived | null;
+  /** For a PIR: how many threats it flags, and how many of them are prefilled */
+  pirTargets?: { flagged: number; selected: number };
 }
 
 /** Without derived content (a PIR, or an entity the user cannot read): the entity and, for a PIR, the threats it flags. */
-const fetchEntityPrefill = async (entity: HuntIndicatorPrefillEntity): Promise<Partial<HuntFormValues>> => {
+const fetchEntityPrefill = async (entity: HuntIndicatorPrefillEntity): Promise<Omit<HuntThisPrefill, 'derived'>> => {
   const name = buildHuntPrefillName(entity.name);
   if (entity.entity_type === 'Indicator') {
-    return { name, ...buildIndicatorHuntPrefill(entity) };
+    return { values: { name, ...buildIndicatorHuntPrefill(entity) } };
   }
   if (isIocHuntEntity(entity.entity_type)) {
-    return { name, ...buildIocHuntPrefill(entity) };
+    return { values: { name, ...buildIocHuntPrefill(entity) } };
   }
   if (entity.entity_type === 'Pir') {
+    // The flagged threats with the highest PIR score, as when a hunt is planned from the PIR
     const data = await fetchQuery<HuntThisMenuPirEntitiesQuery>(huntThisMenuPirEntitiesQuery, {
       types: HUNT_TARGET_TYPES,
       first: PREFILL_MAX_ENTITIES,
+      pirId: entity.id,
       filters: {
         mode: 'and',
         filterGroups: [],
@@ -84,13 +91,18 @@ const fetchEntityPrefill = async (entity: HuntIndicatorPrefillEntity): Promise<P
         }],
       },
     }).toPromise();
-    return { name, ...buildHuntPrefill(toPrefillEntities((data?.stixDomainObjects?.edges ?? []).map((edge) => edge?.node))) };
+    const prefill = buildHuntPrefill(toPrefillEntities((data?.stixDomainObjects?.edges ?? []).map((edge) => edge?.node)));
+    const selected = prefill.huntTargets.length;
+    return {
+      values: { name, ...prefill },
+      pirTargets: { flagged: Math.max(data?.stixDomainObjects?.pageInfo.globalCount ?? 0, selected), selected },
+    };
   }
-  return { name, ...buildHuntPrefill([entity]) };
+  return { values: { name, ...buildHuntPrefill([entity]) } };
 };
 
 /** The hunt created from the entity: what the platform derives from it (its indicators, techniques and detection rules). */
-const fetchHuntPrefill = async (entity: HuntIndicatorPrefillEntity): Promise<HuntThisPrefill> => {
+export const fetchHuntPrefill = async (entity: HuntIndicatorPrefillEntity): Promise<HuntThisPrefill> => {
   if (HUNT_DERIVABLE_TYPES.includes(entity.entity_type)) {
     const data = await fetchQuery<HuntFromEntityDerivedQuery>(huntFromEntityDerivedQuery, { entityId: entity.id }).toPromise();
     const derived = data?.huntDerivedContent ?? null;
@@ -98,7 +110,7 @@ const fetchHuntPrefill = async (entity: HuntIndicatorPrefillEntity): Promise<Hun
       return { values: buildDerivedHuntPrefill(entity, derived), derived };
     }
   }
-  return { values: await fetchEntityPrefill(entity), derived: null };
+  return { ...(await fetchEntityPrefill(entity)), derived: null };
 };
 
 interface HuntThisMenuProps {
@@ -130,6 +142,9 @@ const HuntThisMenu = ({ entity }: HuntThisMenuProps) => {
   } else if (!aiAvailable) {
     aiDisabledReason = t_i18n('XTM One is not configured');
   }
+  const targetsHelperText = prefill?.pirTargets && prefill.pirTargets.flagged > prefill.pirTargets.selected
+    ? t_i18n('The PIR flags {flagged} threats: the {selected} with the highest PIR score are prefilled', { values: prefill.pirTargets })
+    : undefined;
 
   return (
     <Security needs={[KNOWLEDGE_KNUPDATE]}>
@@ -176,7 +191,13 @@ const HuntThisMenu = ({ entity }: HuntThisMenuProps) => {
           </MenuContent>
         </Menu>
         {prefill && (
-          <HuntCreationDrawer open onClose={() => setPrefill(null)} initialValues={prefill.values} derived={prefill.derived} />
+          <HuntCreationDrawer
+            open
+            onClose={() => setPrefill(null)}
+            initialValues={prefill.values}
+            derived={prefill.derived}
+            targetsHelperText={targetsHelperText}
+          />
         )}
         <HuntPlanDialog open={planOpen} onClose={() => setPlanOpen(false)} entityIds={[entity.id]} />
       </>

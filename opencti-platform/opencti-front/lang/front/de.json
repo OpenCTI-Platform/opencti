@@ -6581,6 +6581,7 @@
   "The overlap appears once two sources have scorecards.": "Die Überschneidung erscheint, sobald zwei Quellen Scorecards haben.",
   "The password has been updated": "Das Passwort wurde aktualisiert",
   "The period of telemetry each run searches, ending when it starts, for example 168 for 7 days": "Der Telemetriezeitraum, den jeder Lauf durchsucht und der bei seinem Start endet, zum Beispiel 168 für 7 Tage",
+  "The PIR flags {flagged} threats: the {selected} with the highest PIR score are prefilled": "Der PIR markiert {flagged} Bedrohungen: Die {selected} mit dem höchsten PIR-Score sind vorausgefüllt",
   "The platform currently uses the SMTP configuration from the app-config file. Enable the option above to use the configuration below instead.": "Die Plattform verwendet derzeit die SMTP-Konfiguration aus der Datei „app-config“. Aktivieren Sie die obige Option, um stattdessen die untenstehende Konfiguration zu verwenden.",
   "The platform holds no indicator or detection rule for {name} yet: plan the hunt with AI, import a hunt pack, or write its logic below.": "Die Plattform enthält noch keinen Indikator und keine Erkennungsregel für {name}: Planen Sie die Jagd mit KI, importieren Sie ein Hunt-Paket oder schreiben Sie ihre Logik unten.",
   "The platform logs of the source intelligence manager give the cause.": "Die Plattformprotokolle des Source-Intelligence-Managers nennen die Ursache.",

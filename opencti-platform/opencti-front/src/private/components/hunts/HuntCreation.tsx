@@ -169,9 +169,11 @@ interface HuntCreationFormProps {
   initialValues?: Partial<HuntFormValues>;
   /** What "Hunt this" derived from the entity the hunt is created from */
   derived?: HuntDerived | null;
+  /** Why the prefilled targeted threats are a selection, for instance the threats of a PIR with the highest score */
+  targetsHelperText?: string;
 }
 
-export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues: prefill, derived }: HuntCreationFormProps) => {
+export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues: prefill, derived, targetsHelperText }: HuntCreationFormProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -372,6 +374,7 @@ export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues:
               name="huntTargets"
               label={t_i18n('Targeted threats')}
               types={HUNT_TARGET_TYPES}
+              helpertext={targetsHelperText}
               style={fieldSpacingContainerStyle}
             />
             <HuntEntitiesField
@@ -462,6 +465,8 @@ interface HuntCreationDrawerProps {
   initialValues?: Partial<HuntFormValues>;
   /** What "Hunt this" derived from the entity the hunt is created from */
   derived?: HuntDerived | null;
+  /** Why the prefilled targeted threats are a selection, for instance the threats of a PIR with the highest score */
+  targetsHelperText?: string;
   /** Store update of the created hunt (for example, its insertion in the hunts list) */
   updater?: (store: RecordSourceSelectorProxy) => void;
   /** Called with the created hunt instead of opening it */
@@ -469,7 +474,7 @@ interface HuntCreationDrawerProps {
 }
 
 /** Controlled creation drawer, prefilled, opening the created hunt (used by "Hunt this" and the first use of the Hunts area). */
-export const HuntCreationDrawer = ({ open, onClose, initialValues, derived, updater, onCreated }: HuntCreationDrawerProps) => {
+export const HuntCreationDrawer = ({ open, onClose, initialValues, derived, targetsHelperText, updater, onCreated }: HuntCreationDrawerProps) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   return (
@@ -477,6 +482,7 @@ export const HuntCreationDrawer = ({ open, onClose, initialValues, derived, upda
       <HuntCreationForm
         initialValues={initialValues}
         derived={derived}
+        targetsHelperText={targetsHelperText}
         updater={updater}
         onReset={onClose}
         onCompleted={(hunt) => {
