@@ -18,6 +18,7 @@ import {
 } from '../../../../src/modules/investigationRun/investigationRun-domain';
 import { addMalware } from '../../../../src/domain/malware';
 import * as reportDomain from '../../../../src/domain/report';
+import * as stixCoreObjectDomain from '../../../../src/domain/stixCoreObject';
 import { DatabaseError } from '../../../../src/config/errors';
 import { internalLoadById } from '../../../../src/database/middleware-loader';
 import { RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
@@ -1030,6 +1031,53 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
     } finally {
       reportWrite.mockRestore();
       if (runId) await queryAsAdmin({ query: RUN_CANCEL, variables: { id: runId } });
+      await queryAsAdmin({ query: DELETE_CASE, variables: { id: caseId } });
+    }
+  });
+
+  it('records the job of an enrichment dispatch interrupted once its work exists, and retries one that never started', async () => {
+    const created = await queryAsAdminWithSuccess({ query: CREATE_CASE, variables: { input: { name: 'Case Autopilot e2e interrupted dispatch case', objects: [fixture.intrusionSetId, fixture.ipId] } } });
+    const caseId = created.data.caseIncidentAdd.id;
+    const connectorId = uuid();
+    await registerConnector(testContext, ADMIN_USER, {
+      id: connectorId, name: 'Case Autopilot e2e interrupted dispatch', type: ConnectorType.InternalEnrichment, scope: ['IPv4-Addr'], auto: false,
+    });
+    let runId = '';
+    const askEnrichment = stixCoreObjectDomain.askElementEnrichmentForConnectors;
+    const dispatch = vi.spyOn(stixCoreObjectDomain, 'askElementEnrichmentForConnectors');
+    try {
+      engineStage = 'planning';
+      const { data } = await queryAsAdminWithSuccess({ query: RUN_ADD, variables: { subjectId: caseId } });
+      runId = data.investigationRunAdd.id;
+      createdRuns.push({ id: runId });
+      await tickUntil(runId, (current) => current.run_phase === 'investigating');
+      const request = await queryAsAdminWithSuccess({
+        query: RUN_ENRICH,
+        variables: { id: runId, input: { entity_ids: [fixture.ipId], connector_ids: [connectorId], reason: 'Check the address' } },
+      });
+      expect(request.data.investigationRunEnrichmentRequest.accepted).toEqual([{ entity_id: fixture.ipId, connector_id: connectorId, status: 'queued' }]);
+      // A transient failure before the job started: the request stays queued, nothing is charged.
+      dispatch.mockRejectedValueOnce(DatabaseError('Search engine unavailable'));
+      await processInvestigationRun(testContext, runId);
+      const retried = await queryAsAdminWithSuccess({ query: RUN_ENRICHMENT_STATE, variables: { id: runId } });
+      expect(retried.data.investigationRun.enrichment_requests).toEqual([expect.objectContaining({ entity_id: fixture.ipId, status: 'queued', work_id: null })]);
+      expect(retried.data.investigationRun.budget.used_enrichment_jobs).toBe(0);
+      // A failure once the job was pushed: its work is recorded with its budget charge, as a started job.
+      dispatch.mockImplementationOnce(async (context, user, enrichedId, connectorIds) => {
+        await askEnrichment(context, user, enrichedId, connectorIds);
+        throw new Error('Connection closed after the job was pushed');
+      });
+      await processInvestigationRun(testContext, runId);
+      const recorded = await queryAsAdminWithSuccess({ query: RUN_ENRICHMENT_STATE, variables: { id: runId } });
+      const [job] = recorded.data.investigationRun.enrichment_requests;
+      expect(job).toMatchObject({ entity_id: fixture.ipId, status: 'dispatched' });
+      expect(job.work_id).toBeTruthy();
+      expect(recorded.data.investigationRun.budget.used_enrichment_jobs).toBe(1);
+      expect(dispatch).toHaveBeenCalledTimes(2);
+    } finally {
+      dispatch.mockRestore();
+      if (runId) await queryAsAdmin({ query: RUN_CANCEL, variables: { id: runId } });
+      await connectorDelete(testContext, ADMIN_USER, connectorId);
       await queryAsAdmin({ query: DELETE_CASE, variables: { id: caseId } });
     }
   });
