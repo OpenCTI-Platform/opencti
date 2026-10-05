@@ -9,11 +9,13 @@ import {
   redisExpireChangeDigestJobs,
   redisGetChangeDigestJobAttempts,
   redisGetChangeDigestJobs,
+  redisGetChangeDigestWatermarks,
   redisIsChangeDigestJobDue,
   redisReleaseDigestDelivery,
   redisRemoveChangeDigestJob,
   redisRenewDigestDelivery,
   redisRescheduleChangeDigestJob,
+  redisSetChangeDigestWatermarks,
 } from '../../../src/database/redis';
 
 // Scored in 2100: the running notification manager never takes these jobs as due
@@ -100,5 +102,17 @@ describe('Redis digest deliveries', () => {
     expect(await redisClaimDigestDelivery(taken, 'owner-b')).toBe('claimed');
     expect(await redisConfirmDigestDelivery(taken, 'owner-a')).toBe('claim_taken');
     expect(await redisClaimDigestDelivery(taken, 'owner-b')).toBe('delivered');
+  });
+});
+
+describe('Redis change digest watermarks', () => {
+  it('should return the watermarks of the given triggers and forget the others', async () => {
+    const kept = `test-digest-trigger-${uuid()}`;
+    const deleted = `test-digest-trigger-${uuid()}`;
+    await redisSetChangeDigestWatermarks([[kept, '2026-01-05T09:00:00.000Z'], [deleted, '2026-01-06T09:00:00.000Z']]);
+    await redisSetChangeDigestWatermarks([[kept, '2026-01-12T09:00:00.000Z']]);
+    expect([...(await redisGetChangeDigestWatermarks([kept])).entries()]).toEqual([[kept, '2026-01-12T09:00:00.000Z']]);
+    // Reading only the deleted trigger also forgets the kept one: nothing is left behind
+    expect((await redisGetChangeDigestWatermarks([deleted])).size).toBe(0);
   });
 });

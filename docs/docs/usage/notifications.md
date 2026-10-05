@@ -130,7 +130,7 @@ A change digest sends, at each period, what changed on a set of entities during 
 5. Set the period (hour, day, week or month) and the delivery time.
 6. Choose the notifier(s): within the OpenCTI interface, via email, etc.
 
-The digest is computed for each recipient with their own rights, so nobody receives changes on knowledge they cannot access. A digest covers at most 500 entities of the set and lists the 50 most changed ones. When nothing changed during the period, no digest is sent.
+The digest is computed for each recipient with their own rights, so nobody receives changes on knowledge they cannot access. A digest covers at most 500 entities of the set and lists the 50 most changed ones. When nothing changed during the period, no digest is sent. If the platform was stopped at the delivery time, the digest is sent when it starts again, within a week, and covers the changes since the previous digest.
 
 Each recipient receives the digest in the language of their profile. When the profile language follows the browser, the digest is written in the platform language, and in English when the platform language also follows the browser.
 

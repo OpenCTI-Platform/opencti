@@ -885,6 +885,23 @@ export const redisRemoveChangeDigestJob = async (member: string) => {
   await getClientBase().zrem(CHANGE_DIGEST_JOBS_KEY, member);
   await getClientBase().hdel(CHANGE_DIGEST_JOB_ATTEMPTS_KEY, member);
 };
+// End of the last period scheduled per change digest trigger (trigger id -> ISO date)
+const CHANGE_DIGEST_WATERMARKS_KEY = 'change_digest_watermarks';
+// The watermarks of the given triggers; the ones of the other triggers (deleted or no longer change digests) are removed
+export const redisGetChangeDigestWatermarks = async (triggerIds: string[]): Promise<Map<string, string>> => {
+  const stored = await getClientBase().hgetall(CHANGE_DIGEST_WATERMARKS_KEY);
+  const kept = new Set(triggerIds);
+  const stale = Object.keys(stored).filter((triggerId) => !kept.has(triggerId));
+  if (stale.length > 0) {
+    await getClientBase().hdel(CHANGE_DIGEST_WATERMARKS_KEY, ...stale);
+  }
+  return new Map(Object.entries(stored).filter(([triggerId]) => kept.has(triggerId)));
+};
+export const redisSetChangeDigestWatermarks = async (watermarks: Array<[string, string]>) => {
+  if (watermarks.length > 0) {
+    await getClientBase().hset(CHANGE_DIGEST_WATERMARKS_KEY, Object.fromEntries(watermarks));
+  }
+};
 // endregion
 
 // region - digest deliveries

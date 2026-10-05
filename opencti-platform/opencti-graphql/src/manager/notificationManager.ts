@@ -12,10 +12,12 @@ import {
   redisExpireChangeDigestJobs,
   redisGetChangeDigestJobAttempts,
   redisGetChangeDigestJobs,
+  redisGetChangeDigestWatermarks,
   redisGetManagerEventState,
   redisIsChangeDigestJobDue,
   redisRemoveChangeDigestJob,
   redisRescheduleChangeDigestJob,
+  redisSetChangeDigestWatermarks,
   redisSetManagerEventState,
 } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
@@ -284,6 +286,40 @@ export const isTimeTrigger = (digest: ResolvedDigest, baseDate: Moment): boolean
     default:
       return false;
   }
+};
+
+/**
+ * The most recent minute at or before baseDate at which isTimeTrigger accepts the digest, undefined when its trigger
+ * time is malformed or (monthly, on a day missing from the last twelve months) never matches.
+ */
+export const lastDigestDueDate = (digest: ResolvedDigest, baseDate: Moment): Moment | undefined => {
+  const now = baseDate.clone().utc().startOf('minutes');
+  const { trigger } = digest;
+  if (trigger.period === 'hour') {
+    return now.clone().startOf('hours');
+  }
+  // `HH:mm:ss.SSSZ` for a day, `<weekday or day of month>-HH:mm:ss.SSSZ` for a week or a month
+  const time = /^(?:(\d{1,2})-)?(\d{2}):(\d{2})/.exec(trigger.trigger_time ?? '');
+  if (!time || (trigger.period !== 'day' && time[1] === undefined)) {
+    return undefined;
+  }
+  const day = Number(time[1]);
+  const at = (date: Moment) => date.clone().hours(Number(time[2])).minutes(Number(time[3]));
+  let candidate: Moment | undefined;
+  if (trigger.period === 'day') {
+    candidate = at(now);
+    if (candidate.isAfter(now)) candidate.subtract(1, 'days');
+  } else if (trigger.period === 'week') {
+    candidate = at(now.clone().isoWeekday(day));
+    if (candidate.isAfter(now)) candidate.subtract(1, 'weeks');
+  } else if (trigger.period === 'month') {
+    for (let months = 0; months <= 12 && !candidate; months += 1) {
+      const month = now.clone().startOf('months').subtract(months, 'months');
+      const date = day <= month.daysInMonth() ? at(month.date(day)) : undefined;
+      if (date && !date.isAfter(now)) candidate = date;
+    }
+  }
+  return candidate && isTimeTrigger(digest, candidate) ? candidate : undefined;
 };
 
 export const getDigestNotifications = async (context: AuthContext, baseDate: Moment): Promise<Array<ResolvedDigest>> => {
@@ -777,7 +813,7 @@ export const CHANGE_DIGEST_JOB_LOCK_PREFIX = 'change_digest_job_lock_';
 // A change digest computes a landscape diff per recipient: the computations run apart from the scheduler loop, a few at
 // a time, so a long one never makes another digest miss its scheduled minute. Each job stays in the Redis schedule
 // until its digest is delivered: a full queue, a restart or a crash delays a digest, the next pass or lock holder
-// picks it up.
+// picks it up. A due minute that no pass ran is scheduled by the next one (planChangeDigests).
 export const changeDigestQueue = createBoundedJobQueue('Change digest', CHANGE_DIGEST_CONCURRENCY, CHANGE_DIGEST_BATCH_SIZE);
 
 interface ChangeDigestJob {
@@ -937,17 +973,49 @@ const runChangeDigestJob = async (task: ChangeDigestTask) => {
   }
 };
 
-// Records one job per due change digest and recipient, for the period that ends at baseDate
-const scheduleChangeDigests = async (changeDigests: Array<ResolvedDigest>, baseDate: Moment) => {
-  const toDate = baseDate.toISOString();
-  const jobs = changeDigests.flatMap(({ trigger, users }) => {
-    const fromDate = baseDate.clone().subtract(1, trigger.period).toISOString();
-    return users.map((user) => {
+export interface ChangeDigestPlan {
+  jobs: Array<{ score: number; member: string }>;
+  // Trigger id -> end of the period now scheduled
+  watermarks: Array<[string, string]>;
+}
+
+/**
+ * One job per recipient for each change digest whose last due minute is newer than the end of its last scheduled
+ * period (its watermark): the minute of baseDate, or one missed while no notification manager ran it. The period starts
+ * at the watermark, so missed periods are sent together, at most CHANGE_DIGEST_MAX_DELAY_MS before the usual period;
+ * without a watermark it is the usual period. A trigger first seen after its due minute, or a minute missed longer ago
+ * than CHANGE_DIGEST_MAX_DELAY_MS (its job would expire unsent), only moves the watermark.
+ */
+export const planChangeDigests = (changeDigests: Array<ResolvedDigest>, watermarks: Map<string, string>, baseDate: Moment): ChangeDigestPlan => {
+  const now = baseDate.clone().startOf('minutes');
+  const plan: ChangeDigestPlan = { jobs: [], watermarks: [] };
+  changeDigests.forEach((digest) => {
+    const { trigger, users } = digest;
+    const dueDate = lastDigestDueDate(digest, now);
+    const watermark = watermarks.get(trigger.internal_id);
+    if (!dueDate || (watermark && !dueDate.isAfter(utcDate(watermark)))) {
+      return;
+    }
+    const toDate = dueDate.toISOString();
+    plan.watermarks.push([trigger.internal_id, toDate]);
+    const missed = !dueDate.isSame(now);
+    if ((missed && !watermark) || now.diff(dueDate) > CHANGE_DIGEST_MAX_DELAY_MS) {
+      return;
+    }
+    const periodStart = dueDate.clone().subtract(1, trigger.period);
+    const oldestStart = periodStart.clone().subtract(CHANGE_DIGEST_MAX_DELAY_MS, 'milliseconds');
+    let from = periodStart;
+    if (watermark) {
+      const watermarkDate = utcDate(watermark);
+      from = watermarkDate.isBefore(oldestStart) ? oldestStart : watermarkDate;
+    }
+    const fromDate = from.toISOString();
+    users.forEach((user) => {
       const member = toChangeDigestJobMember({ triggerId: trigger.internal_id, userId: user.internal_id, fromDate, toDate });
-      return { score: baseDate.valueOf(), member };
+      plan.jobs.push({ score: dueDate.valueOf(), member });
     });
   });
-  await redisAddChangeDigestJobs(jobs);
+  return plan;
 };
 
 // Hands the oldest scheduled change digests to the queue; a job leaves the schedule once its digest is delivered
@@ -989,10 +1057,12 @@ const runChangeDigestJobs = async (context: AuthContext, notifications: Array<Re
 export const handleChangeDigestNotifications = async (context: AuthContext) => {
   const baseDate = utcDate().startOf('minutes');
   const notifications = await getNotifications(context);
-  const dueChangeDigests = notifications.filter(isChangeDigest).filter((digest) => isTimeTrigger(digest, baseDate));
-  if (dueChangeDigests.length > 0) {
-    await scheduleChangeDigests(dueChangeDigests, baseDate);
-  }
+  const changeDigests = notifications.filter(isChangeDigest);
+  const watermarks = await redisGetChangeDigestWatermarks(changeDigests.map(({ trigger }) => trigger.internal_id));
+  const plan = planChangeDigests(changeDigests, watermarks, baseDate);
+  // The jobs first: a watermark is only moved once its period is scheduled
+  await redisAddChangeDigestJobs(plan.jobs);
+  await redisSetChangeDigestWatermarks(plan.watermarks);
   await runChangeDigestJobs(context, notifications, baseDate);
 };
 

@@ -34,8 +34,13 @@ vi.mock('../../../src/manager/telemetryManager', async (importOriginal) => ({
 const scheduledJobs = vi.hoisted(() => new Map<string, number>());
 const attempts = vi.hoisted(() => new Map<string, number>());
 const deliveredReceipts = vi.hoisted(() => new Set<string>());
+const watermarks = vi.hoisted(() => new Map<string, string>());
 vi.mock('../../../src/database/redis', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../src/database/redis')>()),
+  redisGetChangeDigestWatermarks: async (triggerIds: string[]) => new Map([...watermarks.entries()].filter(([triggerId]) => triggerIds.includes(triggerId))),
+  redisSetChangeDigestWatermarks: async (entries: Array<[string, string]>) => {
+    entries.forEach(([triggerId, date]) => watermarks.set(triggerId, date));
+  },
   redisAddChangeDigestJobs: async (jobs: Array<{ score: number; member: string }>) => {
     jobs.forEach(({ score, member }) => {
       if (!scheduledJobs.has(member)) scheduledJobs.set(member, score);
@@ -93,9 +98,11 @@ import {
   CHANGE_DIGEST_MAX_DELAY_MS,
   changeDigestQueue,
   handleChangeDigestNotifications,
+  lastDigestDueDate,
   toChangeDigestJobMember,
   toDigestDeliveryReceipt,
 } from '../../../src/manager/notificationManager';
+import { utcDate } from '../../../src/utils/format';
 import { getEntitiesListFromCache, getEntityFromCache } from '../../../src/database/cache';
 import { storeNotificationEvent } from '../../../src/database/stream/stream-handler';
 import { ENTITY_TYPE_TRIGGER } from '../../../src/modules/notification/notification-types';
@@ -159,6 +166,7 @@ describe('handleChangeDigestNotifications', () => {
     scheduledJobs.clear();
     attempts.clear();
     deliveredReceipts.clear();
+    watermarks.clear();
     jobLocks.clear();
     vi.useFakeTimers();
     vi.setSystemTime(FROZEN);
@@ -525,5 +533,68 @@ describe('handleChangeDigestNotifications', () => {
     await changeDigestQueue.idle();
     expect(buildChangeDigestDataMock).not.toHaveBeenCalled();
     expect(scheduledJobs.size).toBe(0);
+  });
+
+  it('schedules at the next pass a due minute that no pass ran, from the end of the last period scheduled', async () => {
+    primeCache([changeDigest], [analyst]);
+    buildChangeDigestDataMock.mockResolvedValue([]);
+    // The manager was stopped over Monday 09:00; the digest of the previous Monday was scheduled
+    watermarks.set('change-digest-1', '2026-01-05T09:00:00.000Z');
+    vi.setSystemTime(new Date('2026-01-12T09:42:00.000Z'));
+    await handleChangeDigestNotifications({} as AuthContext);
+    await changeDigestQueue.idle();
+    expect(buildChangeDigestDataMock).toHaveBeenCalledTimes(1);
+    const [, , , from, to] = buildChangeDigestDataMock.mock.calls[0];
+    expect([from, to]).toEqual(['2026-01-05T09:00:00.000Z', '2026-01-12T09:00:00.000Z']);
+    expect(watermarks.get('change-digest-1')).toBe('2026-01-12T09:00:00.000Z');
+    // The next pass finds the period scheduled
+    vi.setSystemTime(new Date('2026-01-12T09:43:00.000Z'));
+    await handleChangeDigestNotifications({} as AuthContext);
+    await changeDigestQueue.idle();
+    expect(buildChangeDigestDataMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('sends the periods missed in a row as one digest, at most a week before the usual period', async () => {
+    primeCache([changeDigest], [analyst]);
+    buildChangeDigestDataMock.mockResolvedValue([]);
+    watermarks.set('change-digest-1', '2025-12-01T09:00:00.000Z');
+    await handleChangeDigestNotifications({} as AuthContext);
+    await changeDigestQueue.idle();
+    const [, , , from, to] = buildChangeDigestDataMock.mock.calls[0];
+    expect([from, to]).toEqual(['2025-12-29T09:00:00.000Z', '2026-01-12T09:00:00.000Z']);
+  });
+
+  it('starts a change digest first seen after its due minute at its next due minute', async () => {
+    primeCache([changeDigest], [analyst]);
+    vi.setSystemTime(new Date('2026-01-12T09:42:00.000Z'));
+    await handleChangeDigestNotifications({} as AuthContext);
+    await changeDigestQueue.idle();
+    expect(buildChangeDigestDataMock).not.toHaveBeenCalled();
+    expect(scheduledJobs.size).toBe(0);
+    expect(watermarks.get('change-digest-1')).toBe('2026-01-12T09:00:00.000Z');
+  });
+});
+
+describe('lastDigestDueDate', () => {
+  const dueDate = (period: string, triggerTime: string, at: string) => {
+    const digest = { trigger: { period, trigger_time: triggerTime }, users: [] } as unknown as Parameters<typeof lastDigestDueDate>[0];
+    return lastDigestDueDate(digest, utcDate(at))?.toISOString();
+  };
+
+  it('returns the last due minute at or before the date for every period', () => {
+    expect(dueDate('hour', '', '2026-01-14T10:42:30.000Z')).toBe('2026-01-14T10:00:00.000Z');
+    expect(dueDate('day', '09:00:00.000Z', '2026-01-14T09:00:00.000Z')).toBe('2026-01-14T09:00:00.000Z');
+    expect(dueDate('day', '09:00:00.000Z', '2026-01-14T08:59:00.000Z')).toBe('2026-01-13T09:00:00.000Z');
+    // Wednesday 14 January 2026: the Monday of the same week, the Friday of the week before
+    expect(dueDate('week', '1-09:00:00.000Z', '2026-01-14T10:00:00.000Z')).toBe('2026-01-12T09:00:00.000Z');
+    expect(dueDate('week', '5-09:00:00.000Z', '2026-01-14T10:00:00.000Z')).toBe('2026-01-09T09:00:00.000Z');
+    expect(dueDate('month', '14-09:00:00.000Z', '2026-01-14T09:30:00.000Z')).toBe('2026-01-14T09:00:00.000Z');
+    expect(dueDate('month', '20-09:00:00.000Z', '2026-01-14T09:30:00.000Z')).toBe('2025-12-20T09:00:00.000Z');
+  });
+
+  it('skips the months without the day of a monthly digest and ignores a malformed trigger time', () => {
+    expect(dueDate('month', '31-09:00:00.000Z', '2026-05-10T00:00:00.000Z')).toBe('2026-03-31T09:00:00.000Z');
+    expect(dueDate('week', '09:00:00.000Z', '2026-01-14T10:00:00.000Z')).toBeUndefined();
+    expect(dueDate('day', 'not-a-time', '2026-01-14T10:00:00.000Z')).toBeUndefined();
   });
 });
