@@ -8,7 +8,7 @@ import { HuntRunsListQuery, HuntRunsListQuery$variables } from './__generated__/
 import HuntRunStart from './HuntRunStart';
 import HuntRunDrawer from './HuntRunDrawer';
 import { HuntRunStatusChip, HuntVerdictChip } from '../HuntChips';
-import { formatHuntRunDuration, HUNT_RUN_ENTITY_TYPE, huntRunPartialResultsSentence, huntRunTriggerLabel } from '../hunt-utils';
+import { formatHuntRunDuration, HUNT_RUN_ENTITY_TYPE, huntMessageText, huntRunPartialResultsSentence, huntRunTriggerLabel } from '../hunt-utils';
 import { PATH_HUNT } from '../../common/routes/paths';
 import { useFormatter } from '../../../../components/i18n';
 import DataTable from '../../../../components/dataGrid/DataTable';
@@ -31,6 +31,13 @@ export const huntRunsLineFragment = graphql`
     hunt_run_trigger
     hunt_run_mode
     connector_name
+    queue_reason {
+      template
+      values {
+        name
+        value
+      }
+    }
     securityPlatform {
       id
       name
@@ -154,7 +161,16 @@ const HuntRuns = ({ hunt }: HuntRunsProps) => {
       label: 'Status',
       percentWidth: 10,
       isSortable: true,
-      render: ({ hunt_run_status }: HuntRuns_RunFragment$data) => <HuntRunStatusChip value={hunt_run_status} />,
+      render: ({ hunt_run_status, queue_reason }: HuntRuns_RunFragment$data) => (queue_reason ? (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span tabIndex={0} aria-label={huntMessageText(queue_reason, t_i18n)} data-testid="hunt-run-queue-reason">
+              <HuntRunStatusChip value={hunt_run_status} />
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>{huntMessageText(queue_reason, t_i18n)}</TooltipContent>
+        </Tooltip>
+      ) : <HuntRunStatusChip value={hunt_run_status} />),
     },
     hunt_run_trigger: {
       id: 'hunt_run_trigger',

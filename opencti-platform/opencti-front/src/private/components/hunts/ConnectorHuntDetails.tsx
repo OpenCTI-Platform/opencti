@@ -14,7 +14,7 @@ import { useHiddenEntities } from '../../../utils/hooks/useEntitySettings';
 import { PATH_HUNT, PATH_HUNTS, PATH_SECURITY_PLATFORM } from '../common/routes/paths';
 import { HuntRunStatusChip, HuntVerdictChip } from './HuntChips';
 import { HuntConnectorRequiredPermissions, HuntConnectorTestConnection } from './HuntConnectorSetup';
-import { HUNT_ENTITY_TYPE, HUNT_RUN_ENTITY_TYPE, huntPlatformLabel, huntQueryLanguageLabel, huntRunTriggerLabel } from './hunt-utils';
+import { HUNT_ENTITY_TYPE, HUNT_RUN_ENTITY_TYPE, huntMessageText, huntPlatformLabel, huntQueryLanguageLabel, huntRunTriggerLabel } from './hunt-utils';
 import type { ConnectorHuntDetails_hunt$key } from './__generated__/ConnectorHuntDetails_hunt.graphql';
 import type { ConnectorHuntDetailsRunsQuery, ConnectorHuntDetailsRunsQuery$variables } from './__generated__/ConnectorHuntDetailsRunsQuery.graphql';
 
@@ -68,13 +68,20 @@ const connectorHuntDetailsRunsQuery = graphql`
           hunt {
             name
           }
+          queue_reason {
+            template
+            values {
+              name
+              value
+            }
+          }
         }
       }
     }
   }
 `;
 
-const ConnectorLatestHuntRuns = ({ connectorId }: { connectorId: string }) => {
+export const ConnectorLatestHuntRuns = ({ connectorId }: { connectorId: string }) => {
   const theme = useTheme<Theme>();
   const { t_i18n, fldt } = useFormatter();
   const filters: ConnectorHuntDetailsRunsQuery$variables['filters'] = {
@@ -106,6 +113,11 @@ const ConnectorLatestHuntRuns = ({ connectorId }: { connectorId: string }) => {
                 <Text variant="content-compact">{run.hunt?.name ?? t_i18n(run.hunt_deleted ? 'Deleted hunt' : 'Restricted hunt')}</Text>
               </span>
               <Text variant="content-caption">{`${fldt(run.created_at)} - ${t_i18n(huntRunTriggerLabel(run.hunt_run_trigger))}`}</Text>
+              {run.queue_reason && (
+                <Text variant="content-caption" style={{ color: theme.palette.text.secondary }} data-testid="connector-hunt-run-queue-reason">
+                  {huntMessageText(run.queue_reason, t_i18n)}
+                </Text>
+              )}
             </span>
             {run.hunt_run_mode === 'preview' ? (
               <Text variant="content-caption">{t_i18n('Translation preview')}</Text>

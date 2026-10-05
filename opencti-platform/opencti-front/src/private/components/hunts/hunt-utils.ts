@@ -135,6 +135,12 @@ export const HUNT_DEFAULT_MAX_RESULTS = 1000;
 
 type HuntTranslate = (message: string, options?: { values: Record<string, string | number> }) => string;
 
+/** A sentence of the platform in the language of the user: its English template is the translation key. */
+export const huntMessageText = (
+  message: { template: string; values: ReadonlyArray<{ name: string; value: string }> },
+  t_i18n: HuntTranslate,
+) => t_i18n(message.template, { values: Object.fromEntries(message.values.map(({ name, value }) => [name, value])) });
+
 /** Why the hit count of a run with partial results is a lower bound: the result limit when the run reached it. */
 export const huntRunPartialResultsSentence = (
   run: { hits_count?: number | null; maxResults?: number | null },

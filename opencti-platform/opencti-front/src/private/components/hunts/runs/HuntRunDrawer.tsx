@@ -45,6 +45,7 @@ import {
   HUNT_DOCS,
   huntDraftWorkspacePath,
   huntIncidentSeverityLabel,
+  huntMessageText,
   huntQueryLanguageLabel,
   huntRunFailure,
   huntRunPartialResultsSentence,
@@ -81,6 +82,13 @@ const huntRunDrawerFragment = graphql`
     hunt_run_status
     hunt_run_trigger
     hunt_run_mode
+    queue_reason {
+      template
+      values {
+        name
+        value
+      }
+    }
     securityPlatform {
       id
       name
@@ -720,6 +728,9 @@ const RunStatusHeader = ({ run, huntId, canRetry, retrying, onRetry, onSetVerdic
     sentence = t_i18n('Running in {platform} for {duration}', { values: { platform, duration: elapsed } });
   } else if (run.hunt_run_status === 'queued') {
     sentence = t_i18n('Queued {when}', { values: { when: rd(run.created_at) } });
+  } else if (run.hunt_run_status === 'cancelled') {
+    // The platform records why it cancelled the run as one of its sentences, the translation key of the reason
+    sentence = run.error_message ? t_i18n(run.error_message) : t_i18n('The run was cancelled');
   }
   let primary: React.ReactNode = null;
   if (isExecution && run.verdict === 'pending' && canSetHuntRunVerdict(run)) {
@@ -756,6 +767,11 @@ const RunStatusHeader = ({ run, huntId, canRetry, retrying, onRetry, onSetVerdic
       {sentence && (
         <Text variant="content-compact" style={{ display: 'block', marginTop: theme.spacing(1) }} data-testid="hunt-run-status-sentence">
           {sentence}
+        </Text>
+      )}
+      {run.queue_reason && (
+        <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(0.5), color: theme.palette.text.secondary }} data-testid="hunt-run-queue-reason">
+          {huntMessageText(run.queue_reason, t_i18n)}
         </Text>
       )}
       {failure && (

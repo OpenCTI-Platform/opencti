@@ -24,6 +24,7 @@ import {
   formatHuntRunDuration,
   hasHuntLogic,
   huntIncidentSeverityLabel,
+  huntMessageText,
   huntPlatformLabel,
   huntQueryLanguageLabel,
   huntRunFailure,
@@ -416,6 +417,15 @@ describe('Hunt utils', () => {
     const grouping = buildIocHuntPrefill({ id: 'grouping-id', entity_type: 'Grouping', name: 'Campaign leads' });
     expect(grouping.hunt_type).toEqual('indicators');
     expect(grouping.iocEntities?.map(({ value }) => value)).toEqual(['grouping-id']);
+  });
+
+  it('should translate a sentence of the platform by its template and fill it with its values', () => {
+    const translations: Record<string, string> = { 'Sent to {connector}: waiting for the connector to start it': 'Envoyée à {connector}' };
+    const translate = (key: string, options?: { values: Record<string, string | number> }) => Object.entries(options?.values ?? {})
+      .reduce((text, [name, value]) => text.replace(`{${name}}`, String(value)), translations[key] ?? key);
+    const message = { template: 'Sent to {connector}: waiting for the connector to start it', values: [{ name: 'connector', value: 'Splunk Hunt' }] };
+    expect(huntMessageText(message, translate)).toEqual('Envoyée à Splunk Hunt');
+    expect(huntMessageText({ template: 'Waiting for the next dispatch of the hunt manager', values: [] }, translate)).toEqual('Waiting for the next dispatch of the hunt manager');
   });
 
   it('should keep the critical tone for the true positive verdict and read triggers as states', () => {
