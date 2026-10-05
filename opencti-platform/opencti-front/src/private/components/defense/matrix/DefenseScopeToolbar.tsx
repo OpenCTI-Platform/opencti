@@ -34,6 +34,7 @@ import {
   type DefenseLayersState,
   type DefenseScopeState,
   type DefenseThreatScopeMode,
+  scopedDefensePlatforms,
 } from './defenseMatrix-utils';
 
 export interface DefensePlatformOption {
@@ -90,6 +91,15 @@ const DefenseScopeToolbar = ({
   const { t_i18n } = useFormatter();
   const platformOptions: PlatformOption[] = platforms.map((p) => ({ value: p.id, label: p.name, type: p.entity_type }));
   const selectedPlatforms = platformOptions.filter((o) => scope.platformIds.includes(o.value));
+  // A saved platform deleted or hidden since would scope every view to nothing while the selector reads "All platforms";
+  // views bound to one platform pass no options
+  React.useEffect(() => {
+    if (hidePlatforms) return;
+    const available = scopedDefensePlatforms(scope.platformIds, platforms).map((p) => p.id);
+    if (available.length !== scope.platformIds.length) {
+      onScopeChange({ ...scope, platformIds: available });
+    }
+  }, [hidePlatforms, platforms, scope.platformIds]);
   // The filter state is local: remount it when the threat filters change from outside (another user's stored scope),
   // never on its own edits
   const incomingFilters = JSON.stringify(scope.threatFilters ?? emptyFilterGroup);
