@@ -6,6 +6,7 @@ import {
   clusterLaneEvents,
   compactDayTicks,
   computeTimelineExtent,
+  endsAfterStart,
   computeVisibleDomain,
   describeTimelineSpan,
   effectiveKinds,
@@ -136,6 +137,16 @@ describe('Timeline time domain', () => {
     expect(timelineExportWindow('lanes', 'fit', panned, shown)).toEqual(panned);
     expect(timelineExportWindow('lanes', 'fit', null, shown)).toBeNull();
     expect(timelineExportWindow('list', 'week', panned, shown)).toBeNull();
+  });
+});
+
+describe('Timeline event window', () => {
+  it('accepts a missing end and an end strictly after the start, never an end at or before it', () => {
+    const start = new Date('2026-02-05T10:00:00.000Z');
+    expect(endsAfterStart(start, null)).toBe(true);
+    expect(endsAfterStart(start, new Date('2026-02-05T10:00:01.000Z'))).toBe(true);
+    expect(endsAfterStart(start, new Date('2026-02-05T10:00:00.000Z'))).toBe(false);
+    expect(endsAfterStart(start, new Date('2026-02-05T09:00:00.000Z'))).toBe(false);
   });
 });
 

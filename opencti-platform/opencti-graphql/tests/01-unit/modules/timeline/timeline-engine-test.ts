@@ -216,6 +216,15 @@ describe('Timeline STIX extension', () => {
     expect(result.normalized).toEqual(9);
   });
 
+  it('should import a window ending at its start as a point in time', () => {
+    const result = sanitizeTimelineExtension({
+      events: [{ id: 'timeline-event--1', event_time: '2026-03-05T00:00:00.000Z', event_end_time: '2026-03-05T00:00:00.000Z', title: 'Zero-length' }],
+      annotations: [],
+    }, IMPORT_LIMITS);
+    expect(result.events[0]).not.toHaveProperty('event_end_time');
+    expect(result.normalized).toEqual(1);
+  });
+
   it('should drop contributions that cannot be identified, placed in time or targeted', () => {
     const result = sanitizeTimelineExtension({
       events: [

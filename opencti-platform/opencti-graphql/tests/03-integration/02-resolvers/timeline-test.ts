@@ -728,6 +728,11 @@ describe('Incident and case timeline', () => {
         { query: TIMELINE_EVENT_EDIT, variables: { id: manualEventId, input: { event_end_time: '2026-01-01T00:00:00.000Z' } } },
         'The end time of an event must be after its start time',
       );
+      // A window ending at its start is no window
+      await queryAsAdminWithError(
+        { query: TIMELINE_EVENT_EDIT, variables: { id: manualEventId, input: { event_end_time: CONTAINMENT_TIME } } },
+        'The end time of an event must be after its start time',
+      );
     });
 
     it('should mark a manual event at least as strictly as the element it points to', async () => {
@@ -1245,6 +1250,14 @@ describe('Incident and case timeline', () => {
       const [updated] = (await listTimeline(secondCase.id, { sources: ['manual'] })).filter((e) => e.title.startsWith('Regulator acknowledged'));
       expect(updated).toMatchObject({ title: 'Regulator acknowledged the filing', createdBy: { id: author.internal_id } });
       await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: updated.id } });
+    });
+
+    it('should import a window ending at its start as a point in time', async () => {
+      const event = { id: 'timeline-event--4b6d8f0a-2c3e-4a5b-9c7d-1e2f3a4b5c6d', title: 'Mailbox purged', event_time: '2026-02-06T10:00:00.000Z', event_end_time: '2026-02-06T10:00:00.000Z' };
+      await queryAsAdminWithSuccess({ query: TIMELINE_IMPORT, variables: { containerId: secondCase.id, extension: JSON.stringify({ events: [event], annotations: [] }) } });
+      const [imported] = (await listTimeline(secondCase.id, { sources: ['manual'] })).filter((e) => e.title === 'Mailbox purged');
+      expect(imported).toMatchObject({ event_time: '2026-02-06T10:00:00.000Z', event_end_time: null });
+      await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: imported.id } });
     });
 
     it('should write, count and notify once an event named twice in one extension', async () => {

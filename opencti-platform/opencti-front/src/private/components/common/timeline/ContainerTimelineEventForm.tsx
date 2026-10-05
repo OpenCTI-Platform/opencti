@@ -31,6 +31,7 @@ import type { TimelineEventDetails } from './ContainerTimelineEventDrawer';
 import { TIMELINE_DOCUMENTATION_URL } from './ContainerTimelineStates';
 import useTimelineColors from './useTimelineColors';
 import {
+  endsAfterStart,
   TIMELINE_KIND_LABELS,
   TIMELINE_LANE_LABELS,
   TIMELINE_LANES,
@@ -85,7 +86,9 @@ const ContainerTimelineEventForm = ({ containerId, open, event, onClose, onSaved
     event_end_time: Yup.date()
       .nullable()
       .typeError(t_i18n('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .min(Yup.ref('event_time'), t_i18n('The end time must be after the start time')),
+      .test('after-start', t_i18n('The end time must be after the start time'), function afterStart(value) {
+        return endsAfterStart(this.parent.event_time, value);
+      }),
     description: Yup.string().nullable().max(10000, t_i18n('The value is too long')),
     annotation: Yup.string().nullable().max(10000, t_i18n('The value is too long')),
   });

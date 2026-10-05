@@ -495,6 +495,10 @@ export const effectiveLanes = (selected: readonly string[], enabledLanes: readon
 // region compact views (overview card)
 // Opening the Timeline tab with this parameter opens the milestone form once (the overview card links to it)
 export const TIMELINE_ADD_MILESTONE_PARAM = 'add_milestone';
+/** An end time is valid when there is none, or when it comes strictly after the start: a window never ends at its start. */
+export const endsAfterStart = (start: Date | null | undefined, end: Date | null | undefined) => (
+  !end || !(start instanceof Date) || end.getTime() > start.getTime()
+);
 // Lane and kind of a new milestone in the milestone form
 export const TIMELINE_MILESTONE_DEFAULT_LANE = 'response';
 export const TIMELINE_MILESTONE_DEFAULT_KIND = 'milestone';

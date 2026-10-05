@@ -104,7 +104,7 @@ export const sanitizeTimelineExtension = (
       return;
     }
     let eventEndTime = asTime(raw.event_end_time);
-    if (eventEndTime && new Date(eventEndTime).getTime() < new Date(eventTime).getTime()) eventEndTime = undefined;
+    if (eventEndTime && new Date(eventEndTime).getTime() <= new Date(eventTime).getTime()) eventEndTime = undefined;
     const lane = pick<TimelineLaneValue>(raw.lane, LANES, 'custom', 'custom');
     const kind = pick<TimelineKindValue>(raw.kind, KINDS, 'milestone', 'milestone');
     const precision = pick<TimelinePrecisionValue>(raw.precision, PRECISIONS, 'exact', 'approximate');

@@ -174,7 +174,7 @@ const validateWindow = (eventTime: string, eventEndTime: string | null | undefin
   if (Number.isNaN(start)) throw FunctionalError('Invalid event time', { event_time: eventTime });
   if (eventEndTime) {
     const end = new Date(eventEndTime).getTime();
-    if (Number.isNaN(end) || end < start) {
+    if (Number.isNaN(end) || end <= start) {
       throw FunctionalError('The end time of an event must be after its start time', { event_time: eventTime, event_end_time: eventEndTime });
     }
   }

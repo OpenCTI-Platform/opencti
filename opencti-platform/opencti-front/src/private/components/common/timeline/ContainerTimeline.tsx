@@ -9,7 +9,7 @@ import Card from '../../../../components/common/card/Card';
 import Alert from '../../../../components/Alert';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { useFormatter } from '../../../../components/i18n';
-import { MESSAGING$ } from '../../../../relay/environment';
+import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { useQueryLoadingWithLoadQuery } from '../../../../utils/hooks/useQueryLoading';
 import ContainerTimelineAnchors from './ContainerTimelineAnchors';
@@ -34,6 +34,7 @@ import {
 import type { ContainerTimelineSummaryQuery } from './__generated__/ContainerTimelineSummaryQuery.graphql';
 import type { ContainerTimelineEventsQuery, ContainerTimelineEventsQuery$variables } from './__generated__/ContainerTimelineEventsQuery.graphql';
 import type { ContainerTimelineEventsRefetchQuery } from './__generated__/ContainerTimelineEventsRefetchQuery.graphql';
+import type { ContainerTimelineLinkedEventQuery } from './__generated__/ContainerTimelineLinkedEventQuery.graphql';
 import type { ContainerTimelineEvents_data$key } from './__generated__/ContainerTimelineEvents_data.graphql';
 import type { ContainerTimelineMutationsUpdatedSubscription } from './__generated__/ContainerTimelineMutationsUpdatedSubscription.graphql';
 import type { ContainerTimelineMutationsPinMutation } from './__generated__/ContainerTimelineMutationsPinMutation.graphql';
@@ -51,9 +52,9 @@ import {
   parseTimelineViewState,
   serializeTimelineViewState,
   TIMELINE_ADD_MILESTONE_PARAM,
-  TIMELINE_OPEN_SETTINGS_PARAM,
   TIMELINE_ANCHOR_KEYS,
   TIMELINE_LANES,
+  TIMELINE_OPEN_SETTINGS_PARAM,
   type TimelineDomain,
   timelineExportWindow,
   type TimelineGrouping,
@@ -122,6 +123,16 @@ export const containerTimelineEventsQuery = graphql`
       count: $count
       cursor: $cursor
     )
+  }
+`;
+
+const containerTimelineLinkedEventQuery = graphql`
+  query ContainerTimelineLinkedEventQuery($id: String!) {
+    timelineEvent(id: $id) {
+      id
+      container_id
+      event_time
+    }
   }
 `;
 
@@ -336,14 +347,39 @@ const ContainerTimelineEventsView = ({
       element_name: node.element?.representative?.main ?? null,
     } as TimelineEventDetails;
   }).reverse(), [data]);
+  // Time of the event of the opening link: undefined while it loads, null when it is no event of this container
+  const [linkedTime, setLinkedTime] = useState<number | null | undefined>(undefined);
+  useEffect(() => {
+    if (!linkedEventId) return undefined;
+    let active = true;
+    fetchQuery<ContainerTimelineLinkedEventQuery>(containerTimelineLinkedEventQuery, { id: linkedEventId })
+      .toPromise()
+      .then((result) => {
+        const linked = result?.timelineEvent;
+        if (active) setLinkedTime(linked && linked.container_id === summary.container_id ? toTime(linked.event_time) : null);
+      })
+      .catch(() => {
+        if (active) setLinkedTime(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [linkedEventId]);
   useEffect(() => {
     if (!linkedEventId) return;
     if (!hasNext || events.some((event) => event.id === linkedEventId)) {
       onLinkedEventResolved();
+      return;
+    }
+    if (linkedTime === undefined) return;
+    // Pages go back in time: once they reach before the event, the filters of the view leave it out
+    const oldestLoaded = toTime(events[0]?.event_time);
+    if (linkedTime === null || (oldestLoaded !== null && oldestLoaded < linkedTime)) {
+      onLinkedEventResolved();
     } else if (!isLoadingNext) {
       loadNext(EVENTS_PAGE_SIZE);
     }
-  }, [linkedEventId, events, hasNext, isLoadingNext]);
+  }, [linkedEventId, linkedTime, events, hasNext, isLoadingNext]);
   const anchors = summary.anchors;
   // The fit spans every matching event, also the earlier ones not loaded yet ("Show earlier events" loads them)
   const firstTime = data.containerTimelineBounds?.first_event_time;
