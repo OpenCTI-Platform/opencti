@@ -8,6 +8,7 @@ import {
   getTimelineRules,
   isPendingAnnotationApplicable,
   isTimelineEventAccessChanged,
+  isTimelineRefreshForEveryReader,
   keptAnalystFields,
   timelineEventMarkings,
   timelineEventMaxConfidence,
@@ -339,6 +340,17 @@ describe('Timeline derived event markings', () => {
       ...withSource,
       element_access: { ...withSource.element_access, sources: [{ id: 'rel-1', restricted_members: [], granted: ['org-1'] }] },
     })).toBe(true);
+  });
+
+  it('should refresh every reader when a changed event cannot be named to all of them', () => {
+    const open = { 'rel_object-marking.internal_id': [], element_access: { restricted_members: [], granted: [] } };
+    const withSource = { ...open, element_access: { restricted_members: [], granted: [], sources: [{ id: 'run-1', restricted_members: [], granted: [] }] } };
+    // Renamed or created events are named to their readers
+    expect(isTimelineRefreshForEveryReader([{ previous: open, next: { ...open, name: 'Renamed' } }, { previous: undefined, next: open }], [open])).toBe(false);
+    // A restricted element: the readers who lost the event cannot be named
+    expect(isTimelineRefreshForEveryReader([{ previous: open, next: { ...open, element_access: null } }], [])).toBe(true);
+    // A removed event about other elements (a hunt run event after its run was deleted) is named to nobody
+    expect(isTimelineRefreshForEveryReader([], [withSource])).toBe(true);
   });
 
   it('should read the sources of an event from the access the regeneration recorded', () => {

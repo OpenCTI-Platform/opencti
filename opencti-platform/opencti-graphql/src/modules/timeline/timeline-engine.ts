@@ -229,6 +229,19 @@ export const isTimelineEventAccessChanged = (previous: Record<string, any>, next
   return ACCESS_FIELDS.some((field) => JSON.stringify(normalizeForSignature(previous[field])) !== JSON.stringify(normalizeForSignature(next[field])));
 };
 
+/**
+ * Whether the update of a regeneration goes, like a truncated one, to every reader of the case so that an open timeline
+ * refreshes: an event whose access changed is no longer named to the readers who lost it, and a removed event carrying
+ * data of other elements is named to nobody once one of them is deleted (a hunt run event after its run).
+ */
+export const isTimelineRefreshForEveryReader = (
+  changed: Array<{ previous: Record<string, any> | undefined; next: Record<string, any> }>,
+  removed: Array<Pick<StoredTimelineEvent, 'element_access'>>,
+): boolean => {
+  return changed.some(({ previous, next }) => !!previous && isTimelineEventAccessChanged(previous, next))
+    || removed.some((event) => timelineEventSourceIds(event).length > 0);
+};
+
 export interface TimelineEventDocInput {
   internal_id: string;
   container_id: string;
@@ -868,18 +881,16 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
     await upsertTimelineSettings(context, container, { capped_anchor_bounds: cappedAnchorBounds }, generatedSettings);
   }
   if (changedDocs.length > 0 || staleEvents.length > 0) {
-    // An event whose access changed (its element restricted or deleted) is no longer named to the readers who lost it:
-    // the update then goes, like a truncated one, to every reader of the case, so that an open timeline refreshes
-    const accessChanged = changedDocs.some((doc) => {
-      const previous = storedById.get(doc.internal_id);
-      return !!previous && isTimelineEventAccessChanged(previous, doc);
-    });
+    const refreshEveryReader = isTimelineRefreshForEveryReader(
+      changedDocs.map((doc) => ({ previous: storedById.get(doc.internal_id), next: doc })),
+      staleEvents,
+    );
     await publishTimelineUpdate({
       container_id: containerId,
       update_type: 'derived',
       changed_event_ids: changedDocs.map((d) => d.internal_id).slice(0, TIMELINE_UPDATE_MAX_EVENTS),
       removed_events: toRemovedTimelineEvents(staleEvents.slice(0, TIMELINE_UPDATE_MAX_EVENTS)),
-      truncated: accessChanged || changedDocs.length > TIMELINE_UPDATE_MAX_EVENTS || staleEvents.length > TIMELINE_UPDATE_MAX_EVENTS,
+      truncated: refreshEveryReader || changedDocs.length > TIMELINE_UPDATE_MAX_EVENTS || staleEvents.length > TIMELINE_UPDATE_MAX_EVENTS,
       anchors,
     });
   }
