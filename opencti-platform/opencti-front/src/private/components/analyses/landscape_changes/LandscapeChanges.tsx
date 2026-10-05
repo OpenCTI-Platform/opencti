@@ -398,7 +398,7 @@ const LandscapeChanges = () => {
               />
             </Suspense>
             {mode === 'filters' && (
-              <Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                 <Filters
                   availableFilterKeys={availableFilterKeys}
                   helpers={helpers}
@@ -432,9 +432,9 @@ const LandscapeChanges = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent aria-label={t_i18n('Group by')}>
-                  <SelectItem value="entity_type">{t_i18n('Entity type')}</SelectItem>
-                  <SelectItem value="relationship_type">{t_i18n('Relationship type')}</SelectItem>
-                  <SelectItem value="tactic">{t_i18n('Tactic')}</SelectItem>
+                  <SelectItem value="entity_type">{t_i18n('Group by entity type')}</SelectItem>
+                  <SelectItem value="relationship_type">{t_i18n('Group by relationship type')}</SelectItem>
+                  <SelectItem value="tactic">{t_i18n('Group by tactic')}</SelectItem>
                 </SelectContent>
               </Select>
             </Box>
@@ -447,6 +447,21 @@ const LandscapeChanges = () => {
           </Box>
         </Card>
       </Box>
+      {!diffId && (
+        <Card>
+          <Box
+            sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, paddingBlock: 3, textAlign: 'center' }}
+            data-testid="landscape-changes-empty"
+          >
+            <Text variant="content-base" as="p">
+              {t_i18n('Landscape changes compares a set of entities between two dates: new entities and relationships, new techniques, malware, tools and victims, revocations, and confidence and score changes.')}
+            </Text>
+            <Button variant="secondary" onClick={handleCompute} disabled={!canCompute || running}>
+              {t_i18n('Compute the landscape changes')}
+            </Button>
+          </Box>
+        </Card>
+      )}
       {diffId && loadingDiff && !readFailed && <Loader variant={LoaderVariant.inElement} />}
       {diff && isRunning && (
         <Box sx={{ marginBottom: 3 }}>

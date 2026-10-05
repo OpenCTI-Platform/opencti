@@ -40,7 +40,7 @@ const ProfileLastVisits: React.FC = () => {
     <>
       <Card title={t_i18n('Last visit markers')} sx={{ marginBottom: 3 }}>
         <Alert severity="info" variant="outlined">
-          {t_i18n('The platform remembers when you last opened each entity to highlight what is new since your last visit. These markers are only visible to you and expire automatically.')}
+          {t_i18n('Highlights what is new since you last opened each entity. Only you see these markers; they expire automatically.')}
         </Alert>
         <div style={{ display: 'flex', justifyContent: 'end', marginTop: 16 }}>
           <Button onClick={() => setDisplayConfirmation(true)} disabled={purging} data-testid="purge-last-visits">
