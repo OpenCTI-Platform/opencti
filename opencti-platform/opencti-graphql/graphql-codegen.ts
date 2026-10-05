@@ -74,6 +74,7 @@ const config: CodegenConfig = {
           CollectionGap: '../modules/sourceIntelligence/sourceIntelligence-types#BasicStoreEntityCollectionGap',
           SourceRecommendation: '../modules/sourceIntelligence/sourceIntelligence-types#BasicStoreEntitySourceRecommendation',
           SecurityPlatform: '../modules/securityPlatform/securityPlatform-types#BasicStoreEntitySecurityPlatform',
+          IocValidationRequest: '../modules/iocValidation/iocValidation-types#BasicStoreEntityIocValidationRequest',
           SecurityCoverage: '../modules/securityCoverage/securityCoverage-types#BasicStoreEntitySecurityCoverage',
           SecurityCoverageResult: '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types#BasicStoreEntitySecurityCoverageResult',
           AttackPatternCoverage: '../modules/securityCoverage/securityCoverage-types#CoveredEntity',
