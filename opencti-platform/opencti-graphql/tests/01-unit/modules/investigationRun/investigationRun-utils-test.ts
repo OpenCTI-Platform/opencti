@@ -3,6 +3,7 @@ import {
   intersectOrganizationIds,
   isCreationSharingWidened,
   isMemberRestricted,
+  isTransientFailure,
   runCitedIds,
   runReceivedIds,
   runSourceIds,
@@ -23,6 +24,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../../../../src/schema/stixMetaO
 import { KNOWLEDGE_ORGANIZATION_RESTRICT } from '../../../../src/utils/access';
 import type { AuthUser } from '../../../../src/types/user';
 import type { BasicStoreSettings } from '../../../../src/types/settings';
+import { DatabaseError, DraftLockedError, ForbiddenAccess, FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../../../../src/config/errors';
 
 const sharedWith = (entityType: string, organizations: string[]) => ({ entity_type: entityType, [RELATION_GRANTED_TO]: organizations });
 const userOf = (organizations: string[], capabilities: string[] = []) => ({
@@ -59,6 +61,26 @@ describe('Case Autopilot restrictive organization sharing', () => {
     expect(isCreationSharingWidened(userOf(['org-a']), withPlatformOrganization, true, [])).toBe(false);
     // Without a platform organization there is no organization segregation.
     expect(isCreationSharingWidened(userOf(['org-a']), withoutPlatformOrganization, false, [])).toBe(false);
+  });
+});
+
+describe('Case Autopilot transient failures', () => {
+  it('retries what a later pass may not meet again', () => {
+    expect(isTransientFailure(DatabaseError('Search engine unavailable'))).toBe(true);
+    expect(isTransientFailure(LockTimeoutError({ participantIds: ['run-1'] }))).toBe(true);
+    expect(isTransientFailure(DraftLockedError())).toBe(true);
+    expect(isTransientFailure(Object.assign(new Error('aborted'), { name: TYPE_LOCK_ERROR }))).toBe(true);
+    expect(isTransientFailure(Object.assign(new Error('socket hang up'), { code: 'ECONNRESET' }))).toBe(true);
+    expect(isTransientFailure(Object.assign(new Error('no living connections'), { name: 'NoLivingConnectionsError' }))).toBe(true);
+    expect(isTransientFailure(new Error('wrapped', { cause: Object.assign(new Error('refused'), { code: 'ECONNREFUSED' }) }))).toBe(true);
+  });
+
+  it('fails at once on what a retry cannot fix', () => {
+    expect(isTransientFailure(FunctionalError('The policy of the run no longer allows creating its case'))).toBe(false);
+    expect(isTransientFailure(ForbiddenAccess())).toBe(false);
+    expect(isTransientFailure(new TypeError('Cannot read properties of undefined'))).toBe(false);
+    expect(isTransientFailure(null)).toBe(false);
+    expect(isTransientFailure('timeout')).toBe(false);
   });
 });
 

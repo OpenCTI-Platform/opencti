@@ -127,6 +127,8 @@ export const INVESTIGATION_LIMITS = {
   detailParamsLength: 2000,
   // Consecutive manager ticks the engine may fail to answer before the run fails.
   engineFailures: 30,
+  // Consecutive manager ticks a transient platform failure (database, lock, network) may interrupt before the run fails.
+  stepFailures: 10,
 };
 
 export interface InvestigationStep {
@@ -369,6 +371,7 @@ interface InvestigationRunAttributes {
   wave_started_at?: string | null;
   validation_work_id?: string | null;
   engine_failures: number;
+  step_failures?: number | null;
   run_as_id: string;
   goal_plan?: Record<string, unknown> | null;
   steps: InvestigationStep[];

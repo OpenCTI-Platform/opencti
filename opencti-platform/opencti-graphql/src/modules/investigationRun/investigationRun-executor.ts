@@ -155,6 +155,7 @@ import {
   isCreationSharingWidened,
   isMemberRestricted,
   isObjectEvidence,
+  isTransientFailure,
   markingIdsOf,
   organizationIdsOf,
   representativeNameOf,
@@ -550,6 +551,12 @@ const initializeRun = async (exec: RunExecution) => {
     }
   }
   const patch: Record<string, unknown> = {};
+  // What initialization creates is recorded at once: a pass interrupted after a
+  // creation is retried with it instead of creating it again.
+  const recordCreated = async (fields: Record<string, unknown>) => {
+    Object.assign(patch, fields);
+    await updateInvestigationRun(liveContext, run.internal_id, () => fields);
+  };
   // Draft: every write of the run lands here, nothing reaches the live graph without approval.
   let draftId = run.draft_id ?? null;
   if (!draftId) {
@@ -559,7 +566,7 @@ const initializeRun = async (exec: RunExecution) => {
       entity_id: subject.internal_id,
     });
     draftId = draft.id;
-    patch.draft_id = draftId;
+    await recordCreated({ draft_id: draftId });
   }
   const draftContext = await userContext(runUser, draftId);
   // Case: the investigated case, the case picked at launch, a new case for an
@@ -576,8 +583,7 @@ const initializeRun = async (exec: RunExecution) => {
         objectMarking: markingIdsOf(subject),
         objectOrganization: organizationIdsOf(subject),
       });
-      patch.case_id = created.internal_id;
-      patch.case_ids = R.uniq([...(run.case_ids ?? []), created.internal_id, created.standard_id]);
+      await recordCreated({ case_id: created.internal_id, case_ids: R.uniq([...(run.case_ids ?? []), created.internal_id, created.standard_id]) });
     } else if (subject.entity_type === ENTITY_TYPE_INCIDENT) {
       const existingCase = await findCaseContainingSubject(exec, subject.internal_id);
       // A case restricted to authorized members is not read into the investigation.
@@ -601,7 +607,7 @@ const initializeRun = async (exec: RunExecution) => {
       description: 'Investigation graph of a Case Autopilot investigation.',
       investigated_entities_ids: R.uniq(liveEntityIds).slice(0, INVESTIGATION_LIMITS.evidence),
     });
-    patch.workspace_id = workspace.id;
+    await recordCreated({ workspace_id: workspace.id });
   }
   patch.run_phase = InvestigationRunPhase.Starting;
   // A run cancelled while it was initialized is not advanced, and keeps the
@@ -665,7 +671,15 @@ const startEngine = async (exec: RunExecution) => {
   }
   const engine = result.value;
   const outcome = { endedMeanwhile: false };
-  await updateInvestigationRun(exec.liveContext, run.internal_id, (current) => {
+  const recordStarted = (mutate: (current: BasicStoreEntityInvestigationRun) => Record<string, unknown> | null) => updateInvestigationRun(exec.liveContext, run.internal_id, mutate)
+    .catch(async (error) => {
+      // An engine run the investigation does not know about would run for nothing: a retried start begins a new one.
+      await cancelInvestigation(jwtUserOf(runUser), engine.id).catch((cancelError) => {
+        logApp.warn('[CASE AUTOPILOT] Unrecorded engine run not stopped', { runId: run.internal_id, investigationId: engine.id, cause: cancelError });
+      });
+      throw error;
+    });
+  await recordStarted((current) => {
     if (TERMINAL_RUN_STATUSES.includes(current.run_status)) {
       // Cancelled while the engine was starting: its run is kept in the history and stopped below.
       outcome.endedMeanwhile = true;
@@ -1607,7 +1621,9 @@ const completeValidation = async (exec: RunExecution) => {
 
 /**
  * Advance one run by one phase. Errors fail the run with their message,
- * never the manager.
+ * never the manager; a transient failure of the platform is retried on the
+ * next passes, within a bound, every phase reusing what an interrupted pass
+ * already recorded.
  */
 export const processInvestigationRun = async (context: AuthContext, runId: string) => {
   const run = await loadInvestigationRun(context, runId);
@@ -1667,7 +1683,20 @@ export const processInvestigationRun = async (context: AuthContext, runId: strin
       default:
         break;
     }
+    if ((run.step_failures ?? 0) > 0) {
+      await updateRunningRun(context, runId, () => ({ step_failures: 0 }));
+    }
   } catch (error) {
+    const failures = (run.step_failures ?? 0) + 1;
+    if (isTransientFailure(error) && failures < INVESTIGATION_LIMITS.stepFailures) {
+      logApp.warn('[CASE AUTOPILOT] Investigation step interrupted, retried on the next pass', { runId, failures, cause: error });
+      try {
+        await updateRunningRun(context, runId, () => ({ step_failures: failures }));
+      } catch (recordError) {
+        logApp.warn('[CASE AUTOPILOT] Interrupted investigation step not recorded', { runId, cause: recordError });
+      }
+      return;
+    }
     logApp.error('[CASE AUTOPILOT] Investigation step error', { runId, cause: error });
     await failRun(context, runId, errorMessage(error));
   }

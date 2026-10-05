@@ -96,6 +96,7 @@ const INVESTIGATION_RUN_DEFINITION: ModuleDefinition<StoreEntityInvestigationRun
     { name: 'wave_started_at', label: 'Validation start', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'validation_work_id', label: 'Draft validation work', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'engine_failures', label: 'Engine failures', type: 'numeric', precision: 'integer', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'step_failures', label: 'Interrupted steps', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'run_as_id', label: 'Run as', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_USER], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'goal_plan', label: 'Goal plan', type: 'object', format: 'raw', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     rawList('steps', 'Steps'),

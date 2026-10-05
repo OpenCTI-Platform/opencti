@@ -33,6 +33,25 @@ import {
   MEMBER_ACCESS_RIGHT_USE,
   MEMBER_ACCESS_RIGHT_VIEW,
 } from '../../utils/access';
+import { DATABASE_ERROR, DRAFT_LOCKED_ERROR, TYPE_LOCK, TYPE_LOCK_ERROR } from '../../config/errors';
+
+// Failures of the platform itself that a later pass may not meet again: the
+// database or the search engine briefly unavailable, a lock held elsewhere, a
+// draft locked while it is validated, a dropped connection.
+const TRANSIENT_ERROR_CODES = [DATABASE_ERROR, TYPE_LOCK, DRAFT_LOCKED_ERROR];
+const TRANSIENT_ERROR_NAMES = [TYPE_LOCK_ERROR, 'ConnectionError', 'TimeoutError', 'NoLivingConnectionsError', 'MaxRetriesPerRequestError'];
+const TRANSIENT_NETWORK_CODES = ['ECONNRESET', 'ECONNREFUSED', 'ETIMEDOUT', 'EPIPE', 'EAI_AGAIN'];
+
+export const isTransientFailure = (error: unknown): boolean => {
+  const chain = [error, (error as { originalError?: unknown } | null)?.originalError, (error as { cause?: unknown } | null)?.cause];
+  return chain.some((item) => {
+    if (!item || typeof item !== 'object') return false;
+    const { name, code, extensions } = item as { name?: unknown; code?: unknown; extensions?: { code?: unknown } };
+    return (typeof extensions?.code === 'string' && TRANSIENT_ERROR_CODES.includes(extensions.code))
+      || (typeof name === 'string' && TRANSIENT_ERROR_NAMES.includes(name))
+      || (typeof code === 'string' && TRANSIENT_NETWORK_CODES.includes(code));
+  });
+};
 
 // Entity types an incident can be attributed to.
 export const ATTRIBUTION_CANDIDATE_TYPES = [
