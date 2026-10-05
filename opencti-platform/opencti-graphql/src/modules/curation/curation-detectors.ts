@@ -276,10 +276,19 @@ export const detectTaxonomyPairs = (entities: CuratedEntity[], pairs: Map<string
   });
 };
 
+const MAX_PROPOSED_ALIASES = 40;
+// Catalogue identifiers listed among the names (MITRE ATT&CK group, software and campaign ids): references, not names.
+const CATALOGUE_IDENTIFIER = /^[GSC]\d{4}$/i;
+
+const taxonomySourceName = (source: string) => (source === 'mitre' ? 'MITRE ATT&CK' : 'the MISP galaxy');
+
 /**
- * Aliases known by the vendor taxonomy and missing on an entity, excluding names already carried by another entity
- * (those become merge or type mismatch proposals instead). Names are owned by any of the given entities; aliases are
- * only suggested for the focused ones when a focus is given.
+ * Aliases the public name catalogues bundled with the platform (MITRE ATT&CK, MISP galaxy) give an entity and that it
+ * does not carry yet, as one proposal per entity whatever the number of catalogues listing them. A name is never
+ * proposed when it is carried by another entity (that becomes a merge or type mismatch proposal instead), when it is a
+ * catalogue identifier, or when a catalogue also gives it to another object (a name shared by two actors identifies
+ * neither). Names are owned by any of the given entities; aliases are only suggested for the focused ones when a focus
+ * is given.
  */
 export const detectMissingAliases = (entities: CuratedEntity[], focusIds?: Set<string>): ProposalDraft[] => {
   const knownCanonicals = new Map<string, string>();
@@ -288,33 +297,56 @@ export const detectMissingAliases = (entities: CuratedEntity[], focusIds?: Set<s
   entities.filter((entity) => !focusIds || focusIds.has(entity.internal_id)).forEach((entity) => {
     const family = getTaxonomyFamily(entity.entity_type);
     if (!family) return;
-    suggestTaxonomyAliases(family, { names: entity.names, canonicals: entity.canonicals.full, entityType: entity.entity_type }).forEach(({ cluster, aliases }) => {
-      const free = aliases.filter((alias) => {
-        const forms = canonicalizeEntityNames([alias], entity.entity_type).full;
-        return ![...forms].some((canonical) => {
-          const owner = knownCanonicals.get(`${family}|${canonical}`);
-          return owner !== undefined && owner !== entity.internal_id;
-        });
-      }).slice(0, 25);
-      if (free.length === 0) return;
-      const reliability = getTaxonomySourceReliability(cluster.source);
-      const item = evidence(
-        EVIDENCE_TAXONOMY,
-        reliability,
-        EVIDENCE_WEIGHTS.taxonomy,
-        `${cluster.source === 'mitre' ? 'MITRE ATT&CK' : 'The MISP galaxy'} (${cluster.ref}) lists ${free.length} name(s) of "${entity.name}" that the entity does not carry yet`,
-        { cluster: cluster.ref, source: cluster.source, aliases: free, entity_name: entity.name },
-      );
-      drafts.push({
-        kind: PROPOSAL_KIND_ALIAS,
-        detector: DETECTOR_NORMALIZATION,
-        subjects: [{ id: entity.internal_id, entity_type: entity.entity_type, name: entity.name }],
-        target_id: entity.internal_id,
-        recommended_action: ACTION_ADD_ALIASES,
-        action_payload: { aliases: free, cluster: cluster.ref },
-        evidence: [item],
-        confidence: combineEvidence([item]),
+    const suggestions = suggestTaxonomyAliases(family, { names: entity.names, canonicals: entity.canonicals.full, entityType: entity.entity_type });
+    const entityClusters = new Set(suggestions.map(({ cluster }) => cluster.ref));
+    const canonicalOf = (alias: string) => [...canonicalizeEntityNames([alias], entity.entity_type).full];
+    const isProposable = (alias: string) => {
+      if (CATALOGUE_IDENTIFIER.test(alias.trim())) return false;
+      const forms = canonicalOf(alias);
+      const ownedElsewhere = forms.some((canonical) => {
+        const owner = knownCanonicals.get(`${family}|${canonical}`);
+        return owner !== undefined && owner !== entity.internal_id;
       });
+      const listedForAnotherObject = findTaxonomyClusters(forms, family).some((cluster) => !entityClusters.has(cluster.ref));
+      return !ownedElsewhere && !listedForAnotherObject;
+    };
+    const catalogues = suggestions
+      .map(({ cluster, aliases }) => ({ cluster, aliases: aliases.filter(isProposable) }))
+      .filter(({ aliases }) => aliases.length > 0)
+      .sort((left, right) => getTaxonomySourceReliability(right.cluster.source) - getTaxonomySourceReliability(left.cluster.source));
+    if (catalogues.length === 0) return;
+    // One spelling per name, the one of the most reliable catalogue.
+    const proposed: string[] = [];
+    const proposedCanonicals = new Set<string>();
+    catalogues.forEach(({ aliases }) => aliases.forEach((alias) => {
+      const forms = canonicalOf(alias);
+      if (proposed.length >= MAX_PROPOSED_ALIASES || forms.some((canonical) => proposedCanonicals.has(canonical))) return;
+      proposed.push(alias);
+      forms.forEach((canonical) => proposedCanonicals.add(canonical));
+    }));
+    const listedBy = catalogues
+      .map(({ cluster }) => ({ cluster, listed: proposed.filter((alias) => canonicalOf(alias).some((canonical) => cluster.canonicals.has(canonical))) }))
+      .filter(({ listed }) => listed.length > 0);
+    const items = listedBy.map(({ cluster, listed }) => {
+      const matchedName = entity.names.find((name) => canonicalOf(name).some((canonical) => cluster.canonicals.has(canonical))) ?? entity.name;
+      const source = taxonomySourceName(cluster.source);
+      return evidence(
+        EVIDENCE_TAXONOMY,
+        getTaxonomySourceReliability(cluster.source),
+        EVIDENCE_WEIGHTS.taxonomy,
+        `${source.charAt(0).toUpperCase()}${source.slice(1)} (${cluster.ref}) lists ${listed.length} name(s) of "${entity.name}" that the entity does not carry yet`,
+        { cluster: cluster.ref, source: cluster.source, aliases: listed, entity_name: entity.name, matched_name: matchedName },
+      );
+    });
+    drafts.push({
+      kind: PROPOSAL_KIND_ALIAS,
+      detector: DETECTOR_NORMALIZATION,
+      subjects: [{ id: entity.internal_id, entity_type: entity.entity_type, name: entity.name }],
+      target_id: entity.internal_id,
+      recommended_action: ACTION_ADD_ALIASES,
+      action_payload: { aliases: proposed, cluster: listedBy[0].cluster.ref, clusters: listedBy.map(({ cluster }) => cluster.ref) },
+      evidence: items,
+      confidence: combineEvidence(items),
     });
   });
   return drafts;

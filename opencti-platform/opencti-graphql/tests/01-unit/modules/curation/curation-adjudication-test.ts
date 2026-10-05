@@ -69,12 +69,16 @@ describe('curation adjudication request', () => {
     const proposal = {
       internal_id: 'proposal-a',
       proposal_kind: 'alias',
+      recommended_action: 'add_aliases',
       subject_ids: ['subject-a'],
       target_id: 'subject-a',
       action_payload: JSON.stringify({ aliases: ['ELECTRUM', 'Telebots'], cluster: 'G0034' }),
     } as never;
     const document = documentOf(buildAdjudicationContent(proposal, [subject]));
     expect(document.proposed_aliases).toEqual(['ELECTRUM', 'Telebots']);
+    // The Curator reads the explanation the analysts read.
+    expect(document.explanation).toMatch(/^Add 2 aliases to /);
+    expect(document.explanation).toContain('Why: ');
     expect(document.allowed_decisions).toEqual(adjudicationDecisionsFor(['subject-a']));
     expect(document.allowed_decisions).not.toContain('merge');
   });

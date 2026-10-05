@@ -29,6 +29,8 @@ import {
 } from './curation-types';
 import { withProposalAdjudicationLock, withProposalTransitionLock } from './curation-locks';
 import { adjudicatedContent, payloadAliases } from './curation-proposals';
+import { buildProposalExplanation } from './curation-explanation';
+import { getTaxonomyMetadata } from './curation-taxonomy';
 
 const MAX_DESCRIPTION_LENGTH = 1500;
 const MAX_RATIONALE_LENGTH = 2000;
@@ -122,6 +124,7 @@ export const buildAdjudicationContent = (proposal: BasicStoreEntityCurationPropo
     subjects: subjects.map(describeSubject),
     ...(proposal.proposal_kind === PROPOSAL_KIND_ALIAS ? { proposed_aliases: payloadAliases(proposal.action_payload) } : {}),
     evidence: (proposal.curation_evidence ?? []).map((item) => ({ type: item.evidence_type, score: item.score, weight: item.weight, description: item.description })),
+    explanation: buildProposalExplanation(proposal, subjects, { catalogueVersion: getTaxonomyMetadata().version }).text,
   };
   return `Adjudicate the following OpenCTI curation proposal. Answer with one JSON object only.\n--- CURATION PROPOSAL ---\n${JSON.stringify(document, null, 2)}`;
 };

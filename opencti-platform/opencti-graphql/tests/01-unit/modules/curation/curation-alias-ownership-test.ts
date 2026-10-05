@@ -51,7 +51,8 @@ describe('alias ownership of a bounded scan', () => {
     expect(proposedAliases(checked)).toContain('Fancy Bear');
     // The evidence describes the aliases the proposal adds, not the ones it dropped.
     checked.forEach((draft) => {
-      expect(JSON.parse(draft.evidence[0].details as unknown as string).aliases).toEqual(draft.action_payload?.aliases);
+      const evidenced = new Set(draft.evidence.flatMap((item) => JSON.parse(item.details as unknown as string).aliases as string[]));
+      expect([...evidenced].sort()).toEqual([...(draft.action_payload?.aliases as string[])].sort());
     });
   });
 

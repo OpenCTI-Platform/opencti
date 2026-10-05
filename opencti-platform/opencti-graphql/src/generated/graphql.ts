@@ -6869,6 +6869,52 @@ export type CurationEvidence = {
   weight: Scalars['Float']['output'];
 };
 
+export type CurationExplanationChange = {
+  __typename?: 'CurationExplanationChange';
+  after: Array<Scalars['String']['output']>;
+  before: Array<Scalars['String']['output']>;
+  field: CurationExplanationMessage;
+};
+
+export type CurationExplanationConfidence = {
+  __typename?: 'CurationExplanationConfidence';
+  /** high, medium or low. */
+  level: Scalars['String']['output'];
+  meaning: CurationExplanationMessage;
+  score: Scalars['Float']['output'];
+};
+
+export type CurationExplanationEntity = {
+  __typename?: 'CurationExplanationEntity';
+  entity_type: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+};
+
+export type CurationExplanationEvidence = {
+  __typename?: 'CurationExplanationEvidence';
+  entities: Array<CurationExplanationEntity>;
+  message: CurationExplanationMessage;
+  sources: Array<CurationExplanationSource>;
+};
+
+/** One sentence of an explanation: the English text, and the template and values a client translates it from. */
+export type CurationExplanationMessage = {
+  __typename?: 'CurationExplanationMessage';
+  /** Translation key, with {placeholders} filled from the values. */
+  template: Scalars['String']['output'];
+  text: Scalars['String']['output'];
+  /** JSON object of the placeholder values. */
+  values: Scalars['String']['output'];
+};
+
+export type CurationExplanationSource = {
+  __typename?: 'CurationExplanationSource';
+  name: Scalars['String']['output'];
+  reference?: Maybe<Scalars['String']['output']>;
+  url?: Maybe<Scalars['String']['output']>;
+};
+
 export type CurationFieldAuthorityRule = {
   __typename?: 'CurationFieldAuthorityRule';
   attribute: Scalars['String']['output'];
@@ -6982,6 +7028,8 @@ export type CurationProposal = BasicObject & InternalObject & {
   detector: Scalars['String']['output'];
   entity_type: Scalars['String']['output'];
   evidence: Array<CurationEvidence>;
+  /** What the proposal changes, the evidence behind it, why, what its confidence means and what each decision does, in plain language. */
+  explanation: CurationProposalExplanation;
   id: Scalars['ID']['output'];
   in_ambiguous_band: Scalars['Boolean']['output'];
   mergeRecord?: Maybe<MergeRecord>;
@@ -7032,6 +7080,22 @@ export type CurationProposalEdge = {
   __typename?: 'CurationProposalEdge';
   cursor: Scalars['String']['output'];
   node: CurationProposal;
+};
+
+export type CurationProposalExplanation = {
+  __typename?: 'CurationProposalExplanation';
+  changes: Array<CurationExplanationChange>;
+  confidence: CurationExplanationConfidence;
+  evidence: Array<CurationExplanationEvidence>;
+  on_accept: CurationExplanationMessage;
+  on_later: CurationExplanationMessage;
+  on_reject: CurationExplanationMessage;
+  /** False when an accepted proposal cannot be reverted from the proposal. */
+  reversible: Scalars['Boolean']['output'];
+  /** The whole explanation as plain text. */
+  text: Scalars['String']['output'];
+  title: CurationExplanationMessage;
+  why: CurationExplanationMessage;
 };
 
 export enum CurationProposalKind {
@@ -45505,6 +45569,12 @@ export type ResolversTypes = ResolversObject<{
   CurationAuthoritySourceType: CurationAuthoritySourceType;
   CurationDecision: CurationDecision;
   CurationEvidence: ResolverTypeWrapper<CurationEvidence>;
+  CurationExplanationChange: ResolverTypeWrapper<CurationExplanationChange>;
+  CurationExplanationConfidence: ResolverTypeWrapper<CurationExplanationConfidence>;
+  CurationExplanationEntity: ResolverTypeWrapper<CurationExplanationEntity>;
+  CurationExplanationEvidence: ResolverTypeWrapper<CurationExplanationEvidence>;
+  CurationExplanationMessage: ResolverTypeWrapper<CurationExplanationMessage>;
+  CurationExplanationSource: ResolverTypeWrapper<CurationExplanationSource>;
   CurationFieldAuthorityRule: ResolverTypeWrapper<CurationFieldAuthorityRule>;
   CurationFieldAuthorityRuleInput: CurationFieldAuthorityRuleInput;
   CurationImpactEntry: ResolverTypeWrapper<CurationImpactEntry>;
@@ -45520,6 +45590,7 @@ export type ResolversTypes = ResolversObject<{
   CurationProposalConnection: ResolverTypeWrapper<Omit<CurationProposalConnection, 'edges'> & { edges: Array<ResolversTypes['CurationProposalEdge']> }>;
   CurationProposalDecideInput: CurationProposalDecideInput;
   CurationProposalEdge: ResolverTypeWrapper<Omit<CurationProposalEdge, 'node'> & { node: ResolversTypes['CurationProposal'] }>;
+  CurationProposalExplanation: ResolverTypeWrapper<CurationProposalExplanation>;
   CurationProposalKind: CurationProposalKind;
   CurationProposalOrdering: CurationProposalOrdering;
   CurationProposalStatus: CurationProposalStatus;
@@ -46905,6 +46976,12 @@ export type ResolversParentTypes = ResolversObject<{
   CurationAuthoritySource: CurationAuthoritySource;
   CurationAuthoritySourceInput: CurationAuthoritySourceInput;
   CurationEvidence: CurationEvidence;
+  CurationExplanationChange: CurationExplanationChange;
+  CurationExplanationConfidence: CurationExplanationConfidence;
+  CurationExplanationEntity: CurationExplanationEntity;
+  CurationExplanationEvidence: CurationExplanationEvidence;
+  CurationExplanationMessage: CurationExplanationMessage;
+  CurationExplanationSource: CurationExplanationSource;
   CurationFieldAuthorityRule: CurationFieldAuthorityRule;
   CurationFieldAuthorityRuleInput: CurationFieldAuthorityRuleInput;
   CurationImpactEntry: CurationImpactEntry;
@@ -46918,6 +46995,7 @@ export type ResolversParentTypes = ResolversObject<{
   CurationProposalConnection: Omit<CurationProposalConnection, 'edges'> & { edges: Array<ResolversParentTypes['CurationProposalEdge']> };
   CurationProposalDecideInput: CurationProposalDecideInput;
   CurationProposalEdge: Omit<CurationProposalEdge, 'node'> & { node: ResolversParentTypes['CurationProposal'] };
+  CurationProposalExplanation: CurationProposalExplanation;
   CurationResolution: Omit<CurationResolution, 'entity'> & { entity?: Maybe<ResolversParentTypes['StixCoreObject']> };
   CurationSettings: Omit<CurationSettings, 'adjudication_run_as' | 'digest_recipients'> & { adjudication_run_as?: Maybe<ResolversParentTypes['Member']>, digest_recipients: Array<ResolversParentTypes['Member']> };
   CurationSettingsInput: CurationSettingsInput;
@@ -50329,6 +50407,42 @@ export type CurationEvidenceResolvers<ContextType = any, ParentType extends Reso
   weight?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
 }>;
 
+export type CurationExplanationChangeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationExplanationChange'] = ResolversParentTypes['CurationExplanationChange']> = ResolversObject<{
+  after?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  before?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  field?: Resolver<ResolversTypes['CurationExplanationMessage'], ParentType, ContextType>;
+}>;
+
+export type CurationExplanationConfidenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationExplanationConfidence'] = ResolversParentTypes['CurationExplanationConfidence']> = ResolversObject<{
+  level?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  meaning?: Resolver<ResolversTypes['CurationExplanationMessage'], ParentType, ContextType>;
+  score?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+}>;
+
+export type CurationExplanationEntityResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationExplanationEntity'] = ResolversParentTypes['CurationExplanationEntity']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type CurationExplanationEvidenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationExplanationEvidence'] = ResolversParentTypes['CurationExplanationEvidence']> = ResolversObject<{
+  entities?: Resolver<Array<ResolversTypes['CurationExplanationEntity']>, ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['CurationExplanationMessage'], ParentType, ContextType>;
+  sources?: Resolver<Array<ResolversTypes['CurationExplanationSource']>, ParentType, ContextType>;
+}>;
+
+export type CurationExplanationMessageResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationExplanationMessage'] = ResolversParentTypes['CurationExplanationMessage']> = ResolversObject<{
+  template?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  text?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  values?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type CurationExplanationSourceResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationExplanationSource'] = ResolversParentTypes['CurationExplanationSource']> = ResolversObject<{
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  reference?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
 export type CurationFieldAuthorityRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationFieldAuthorityRule'] = ResolversParentTypes['CurationFieldAuthorityRule']> = ResolversObject<{
   attribute?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -50401,6 +50515,7 @@ export type CurationProposalResolvers<ContextType = any, ParentType extends Reso
   detector?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   evidence?: Resolver<Array<ResolversTypes['CurationEvidence']>, ParentType, ContextType>;
+  explanation?: Resolver<ResolversTypes['CurationProposalExplanation'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   in_ambiguous_band?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   mergeRecord?: Resolver<Maybe<ResolversTypes['MergeRecord']>, ParentType, ContextType>;
@@ -50434,6 +50549,19 @@ export type CurationProposalConnectionResolvers<ContextType = any, ParentType ex
 export type CurationProposalEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationProposalEdge'] = ResolversParentTypes['CurationProposalEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['CurationProposal'], ParentType, ContextType>;
+}>;
+
+export type CurationProposalExplanationResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationProposalExplanation'] = ResolversParentTypes['CurationProposalExplanation']> = ResolversObject<{
+  changes?: Resolver<Array<ResolversTypes['CurationExplanationChange']>, ParentType, ContextType>;
+  confidence?: Resolver<ResolversTypes['CurationExplanationConfidence'], ParentType, ContextType>;
+  evidence?: Resolver<Array<ResolversTypes['CurationExplanationEvidence']>, ParentType, ContextType>;
+  on_accept?: Resolver<ResolversTypes['CurationExplanationMessage'], ParentType, ContextType>;
+  on_later?: Resolver<ResolversTypes['CurationExplanationMessage'], ParentType, ContextType>;
+  on_reject?: Resolver<ResolversTypes['CurationExplanationMessage'], ParentType, ContextType>;
+  reversible?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  text?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  title?: Resolver<ResolversTypes['CurationExplanationMessage'], ParentType, ContextType>;
+  why?: Resolver<ResolversTypes['CurationExplanationMessage'], ParentType, ContextType>;
 }>;
 
 export type CurationResolutionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationResolution'] = ResolversParentTypes['CurationResolution']> = ResolversObject<{
@@ -62687,6 +62815,12 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   CurationAuthorityAttributes?: CurationAuthorityAttributesResolvers<ContextType>;
   CurationAuthoritySource?: CurationAuthoritySourceResolvers<ContextType>;
   CurationEvidence?: CurationEvidenceResolvers<ContextType>;
+  CurationExplanationChange?: CurationExplanationChangeResolvers<ContextType>;
+  CurationExplanationConfidence?: CurationExplanationConfidenceResolvers<ContextType>;
+  CurationExplanationEntity?: CurationExplanationEntityResolvers<ContextType>;
+  CurationExplanationEvidence?: CurationExplanationEvidenceResolvers<ContextType>;
+  CurationExplanationMessage?: CurationExplanationMessageResolvers<ContextType>;
+  CurationExplanationSource?: CurationExplanationSourceResolvers<ContextType>;
   CurationFieldAuthorityRule?: CurationFieldAuthorityRuleResolvers<ContextType>;
   CurationImpactEntry?: CurationImpactEntryResolvers<ContextType>;
   CurationPolicy?: CurationPolicyResolvers<ContextType>;
@@ -62696,6 +62830,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   CurationProposal?: CurationProposalResolvers<ContextType>;
   CurationProposalConnection?: CurationProposalConnectionResolvers<ContextType>;
   CurationProposalEdge?: CurationProposalEdgeResolvers<ContextType>;
+  CurationProposalExplanation?: CurationProposalExplanationResolvers<ContextType>;
   CurationResolution?: CurationResolutionResolvers<ContextType>;
   CurationSettings?: CurationSettingsResolvers<ContextType>;
   CurationStalenessOverride?: CurationStalenessOverrideResolvers<ContextType>;

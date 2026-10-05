@@ -40,7 +40,9 @@ import {
 import { findHealthSnapshotsPaginated, findLatestHealthSnapshot } from './curation-health';
 import { curationResolve } from './curation-resolve';
 import { curationAdjudicationSetup, isProposalAdjudicable } from './curation-adjudication';
-import { curationAuthorityAttributes } from './curation-settings';
+import { curationAuthorityAttributes, getCurationSettings } from './curation-settings';
+import { buildProposalExplanation, type ExplanationMessage, type ExplanationSubject } from './curation-explanation';
+import { getTaxonomyMetadata } from './curation-taxonomy';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { canUserApplyProposal, canUserRevertProposal, isProposalChoiceRequired } from './curation-access';
 import type {
@@ -133,6 +135,18 @@ const curationResolvers: Resolvers = {
     },
     adjudicable: (proposal) => isProposalAdjudicable(proposal as unknown as BasicStoreEntityCurationProposal),
     choice_required: (proposal) => isProposalChoiceRequired(proposal as unknown as BasicStoreEntityCurationProposal),
+    explanation: async (proposal, _, context) => {
+      const typed = proposal as unknown as BasicStoreEntityCurationProposal;
+      const [subjects, settings] = await Promise.all([loadSubjects(context, typed), getCurationSettings(context)]);
+      return buildProposalExplanation(typed, subjects as unknown as ExplanationSubject[], {
+        mergeRetentionDays: settings.merge_record_retention_days,
+        relationshipConflictMode: settings.relationship_conflict_mode,
+        catalogueVersion: getTaxonomyMetadata().version,
+      }) as any;
+    },
+  },
+  CurationExplanationMessage: {
+    values: (explanationMessage) => JSON.stringify((explanationMessage as unknown as ExplanationMessage).values ?? {}),
   },
   CurationAdjudication: {
     verified: (adjudication) => (adjudication as { verified?: boolean }).verified === true,

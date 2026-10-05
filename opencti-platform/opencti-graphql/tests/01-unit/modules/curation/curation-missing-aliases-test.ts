@@ -30,4 +30,31 @@ describe('missing aliases detection', () => {
     expect(proposedAliases(drafts)).toContain('Sofacy');
     expect(proposedAliases(drafts)).not.toContain('Fancy Bear');
   });
+
+  it('raises one proposal per entity, citing every catalogue that lists the names', () => {
+    const drafts = detectMissingAliases([apt28]);
+    expect(drafts).toHaveLength(1);
+    const [draft] = drafts;
+    const sources = draft.evidence.map((item) => JSON.parse(item.details as string).source);
+    expect(sources).toEqual(['mitre', 'misp-threat-actor']);
+    const aliases = proposedAliases(drafts);
+    // Each name once, in the spelling of the most reliable catalogue.
+    expect(new Set(aliases.map((alias) => alias.toLowerCase())).size).toBe(aliases.length);
+    expect(aliases).toContain('Fancy Bear');
+    expect(aliases).not.toContain('FANCY BEAR');
+    const listedByMitre = JSON.parse(draft.evidence[0].details as string);
+    expect(listedByMitre.matched_name).toBe('APT28');
+    expect(listedByMitre.aliases).toContain('Sofacy');
+  });
+
+  it('never proposes a catalogue identifier as an alias', () => {
+    expect(proposedAliases(detectMissingAliases([apt28]))).not.toContain('G0007');
+  });
+
+  it('never proposes a name that a catalogue also gives to another actor', () => {
+    // The MISP galaxy lists "Grizzly Steppe" for both APT28 and APT29.
+    const aliases = proposedAliases(detectMissingAliases([apt28]));
+    expect(aliases).not.toContain('Grizzly Steppe');
+    expect(aliases).toContain('Forest Blizzard');
+  });
 });

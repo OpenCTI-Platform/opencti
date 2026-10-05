@@ -16,6 +16,7 @@ import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGrant
 import { MESSAGING$ } from '../../../../relay/environment';
 import useCurationLabels, { CURATION_MERGES_PATH, notifyPayloadErrors } from './curationUtils';
 import type { CurationMergePreview } from './CurationProposalCompare';
+import CurationProposalExplanation, { type CurationExplanationData, useExplanationTranslator } from './CurationProposalExplanation';
 import { CurationProposalActionsAcceptMutation } from './__generated__/CurationProposalActionsAcceptMutation.graphql';
 import { CurationProposalActionsRejectMutation } from './__generated__/CurationProposalActionsRejectMutation.graphql';
 import { CurationProposalActionsRevertMutation } from './__generated__/CurationProposalActionsRevertMutation.graphql';
@@ -75,13 +76,15 @@ interface CurationProposalActionsProps {
   survivorName: string | null;
   preview: CurationMergePreview | null;
   adjudicationAvailable: boolean;
+  explanation?: CurationExplanationData | null;
 }
 
 type DialogKind = 'accept' | 'reject' | 'revert' | null;
 
-const CurationProposalActions = ({ proposal, survivorId, survivorName, preview, adjudicationAvailable }: CurationProposalActionsProps) => {
+const CurationProposalActions = ({ proposal, survivorId, survivorName, preview, adjudicationAvailable, explanation = null }: CurationProposalActionsProps) => {
   const { t_i18n } = useFormatter();
   const labels = useCurationLabels();
+  const translate = useExplanationTranslator();
   const navigate = useNavigate();
   const isEnterpriseEdition = useEnterpriseEdition();
   const canDecide = useGranted([KNOWLEDGE_KNUPDATE]);
@@ -153,12 +156,14 @@ const CurationProposalActions = ({ proposal, survivorId, survivorName, preview, 
 
   const acceptTitle = () => {
     if (isMerge) return t_i18n('{count, plural, one {Merge # object into {survivor}} other {Merge # objects into {survivor}}}', { values: { count, survivor } });
+    if (isAttribution) return t_i18n('Keep the attribution to {survivor}', { values: { survivor } });
+    // The platform's title says what the change does; only the survivor of a merge or an attribution is chosen on screen.
+    if (explanation) return translate(explanation.title);
     if (action === ACTION_ADD_ALIASES) {
       // The names the change adds, not the subjects: an alias proposal often has a single subject.
       const names = preview?.aliases.length ?? 0;
       return t_i18n('{count, plural, one {Add # name as an alias of {survivor}} other {Add # names as aliases of {survivor}}}', { values: { count: names, survivor } });
     }
-    if (isAttribution) return t_i18n('Keep the attribution to {survivor}', { values: { survivor } });
     return t_i18n('{action}: {name}', { values: { action: labels.action(action), name: proposal.name } });
   };
   const acceptLabel = () => {
@@ -178,7 +183,7 @@ const CurationProposalActions = ({ proposal, survivorId, survivorName, preview, 
   };
 
   const acceptPreview = (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginBottom: 2 }} data-testid="curation-accept-preview">
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginBottom: explanation ? 0 : 2 }} data-testid={explanation ? 'curation-merge-preview' : 'curation-accept-preview'}>
       {isTargeted && preview && (
         <Box component="ul" sx={{ margin: 0, paddingLeft: 2.5 }}>
           {isMerge && (
@@ -266,8 +271,22 @@ const CurationProposalActions = ({ proposal, survivorId, survivorName, preview, 
             close();
           };
           return (
-            <Dialog open={dialog !== null} onClose={cancel} title={dialog ? dialogTitles[dialog] : ''}>
-              {dialog === 'accept' && acceptPreview}
+            <Dialog
+              open={dialog !== null}
+              onClose={cancel}
+              title={dialog ? dialogTitles[dialog] : ''}
+              size={dialog === 'accept' && explanation ? 'large' : 'medium'}
+            >
+              {dialog === 'accept' && explanation && (
+                <Box sx={{ marginBottom: 2 }} data-testid="curation-accept-preview">
+                  <CurationProposalExplanation
+                    explanation={explanation}
+                    changes={isMerge ? acceptPreview : undefined}
+                    chosen={isAttribution ? survivorName : null}
+                  />
+                </Box>
+              )}
+              {dialog === 'accept' && !explanation && acceptPreview}
               {dialog === 'revert' && (
                 <Typography variant="body2" sx={{ marginBottom: 2 }}>
                   {t_i18n('The change applied by this proposal is undone; merged entities are restored from their snapshots.')}
@@ -275,7 +294,9 @@ const CurationProposalActions = ({ proposal, survivorId, survivorName, preview, 
               )}
               {dialog === 'reject' && (
                 <Typography variant="body2" sx={{ marginBottom: 2 }}>
-                  {t_i18n('The proposal is closed and the same subjects are not proposed again for the same reason. Your reason helps calibrate the next proposals.')}
+                  {explanation
+                    ? `${translate(explanation.on_reject)} ${t_i18n('Your reason helps calibrate the next proposals.')}`
+                    : t_i18n('The proposal is closed and the same subjects are not proposed again for the same reason. Your reason helps calibrate the next proposals.')}
                 </Typography>
               )}
               {dialog !== 'revert' && (
