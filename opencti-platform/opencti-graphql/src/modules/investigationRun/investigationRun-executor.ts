@@ -28,6 +28,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { v4 as uuidv4 } from 'uuid';
 import { Promise as BluePromise } from 'bluebird';
+import { createHash } from 'node:crypto';
 import * as R from 'ramda';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation, StoreEntity } from '../../types/store';
@@ -1183,13 +1184,26 @@ const writeOutputs = async (
   const subjectName = representativeNameOf(subject) ?? subject.internal_id;
   let caseId = run.case_id ?? null;
   let caseIds = run.case_ids ?? [];
+  // A transient failure is left to the retry of the manager, once what was
+  // written so far is recorded: the retried pass reuses it. Any other failure
+  // leaves that output out and is reported on the run.
   const attempt = async (label: string, fn: () => Promise<void>) => {
     try {
       await fn();
     } catch (error) {
+      if (isTransientFailure(error)) {
+        await updateRunningRun(exec.liveContext, run.internal_id, () => ({ outputs, case_id: caseId, case_ids: caseIds }))
+          .catch((checkpointError: unknown) => logApp.warn('[CASE AUTOPILOT] Investigation outputs not recorded before a retry', { runId: run.internal_id, cause: errorMessage(checkpointError) }));
+        throw error;
+      }
       failures.push(`${label} (${errorMessage(error)})`);
       logApp.warn('[CASE AUTOPILOT] Investigation output not written', { runId: run.internal_id, output: label, cause: errorMessage(error) });
     }
+  };
+  // What a failure of one write may leave out, unless the failure is transient.
+  const skipUnlessTransient = (message: string, data: Record<string, unknown>) => (error: unknown) => {
+    if (isTransientFailure(error)) throw error;
+    logApp.debug(message, { ...data, cause: errorMessage(error) });
   };
   // The engine's deterministic knowledge list: observables, their relationships and notes.
   const knowledge = parseEngineKnowledge(engine?.knowledge ?? null);
@@ -1219,14 +1233,17 @@ const writeOutputs = async (
             description: relationship.description ?? undefined,
             objectMarking: markings,
             objectOrganization: organizations,
-          }).catch((error: unknown) => logApp.debug('[CASE AUTOPILOT] Knowledge relationship not written', { cause: errorMessage(error) }));
+          }).catch(skipUnlessTransient('[CASE AUTOPILOT] Knowledge relationship not written', {}));
         }, { concurrency: 5 });
       }
       if (allowedAction(InvestigationAutonomousAction.CreateNote)) {
         await BluePromise.map(knowledge.notes, async (finding) => {
           const observableId = outputs.observable_ids[finding.value];
           if (!observableId) return;
-          await addNote(draftContext, runUser, {
+          // Recorded by value and content, so that a retried pass does not write a finding twice.
+          const key = createHash('sha256').update(`${finding.value}\n${finding.content}`).digest('hex').slice(0, 32);
+          if (outputs.finding_note_ids?.[key]) return;
+          const note = await addNote(draftContext, runUser, {
             attribute_abstract: FINDING_NOTE_ABSTRACT,
             content: finding.content,
             objects: [observableId],
@@ -1234,6 +1251,7 @@ const writeOutputs = async (
             objectOrganization: organizations,
             note_types: ['analysis'],
           });
+          outputs.finding_note_ids = { ...(outputs.finding_note_ids ?? {}), [key]: note.internal_id };
         }, { concurrency: 5 });
       }
     });
@@ -1249,7 +1267,7 @@ const writeOutputs = async (
     const targetCaseId = caseId;
     await attempt('case', async () => {
       const addObject = (toId: string) => stixDomainObjectAddRelation(draftContext, runUser, targetCaseId, { toId, relationship_type: RELATION_OBJECT })
-        .catch((error: unknown) => logApp.debug('[CASE AUTOPILOT] Object not added to the case', { toId, cause: errorMessage(error) }));
+        .catch(skipUnlessTransient('[CASE AUTOPILOT] Object not added to the case', { toId }));
       await BluePromise.map(objectIds.filter((id) => id !== targetCaseId), addObject, { concurrency: 5 });
     });
   } else if (!caseId && subject.entity_type === ENTITY_TYPE_INCIDENT && allowedAction(InvestigationAutonomousAction.CreateCase)) {

@@ -17,6 +17,8 @@ import {
   updateInvestigationRun,
 } from '../../../../src/modules/investigationRun/investigationRun-domain';
 import { addMalware } from '../../../../src/domain/malware';
+import * as reportDomain from '../../../../src/domain/report';
+import { DatabaseError } from '../../../../src/config/errors';
 import { internalLoadById } from '../../../../src/database/middleware-loader';
 import { RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
 import { statusTransition } from '../../../../src/modules/investigationRun/investigationRun-state';
@@ -992,6 +994,41 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       const [served] = await findServedInvestigationRuns(testContext, ADMIN_USER, [citing]);
       expect((served as unknown as Record<string, string[]>)[RELATION_OBJECT_MARKING]).toContain(tlpRed.internal_id);
     } finally {
+      if (runId) await queryAsAdmin({ query: RUN_CANCEL, variables: { id: runId } });
+      await queryAsAdmin({ query: DELETE_CASE, variables: { id: caseId } });
+    }
+  });
+
+  it('retries an ingestion a transient failure interrupts, reusing the outputs it already wrote', async () => {
+    const created = await queryAsAdminWithSuccess({ query: CREATE_CASE, variables: { input: { name: 'Case Autopilot e2e interrupted ingestion case', objects: [fixture.intrusionSetId, fixture.ipId] } } });
+    const caseId = created.data.caseIncidentAdd.id;
+    let runId = '';
+    const reportWrite = vi.spyOn(reportDomain, 'addReport');
+    try {
+      engineStage = 'planning';
+      const { data } = await queryAsAdminWithSuccess({ query: RUN_ADD, variables: { subjectId: caseId } });
+      runId = data.investigationRunAdd.id;
+      createdRuns.push({ id: runId });
+      await tickUntil(runId, (current) => current.run_phase === 'investigating');
+      engineStage = 'completed';
+      // The report of the first ingestion pass meets a transient failure of the platform.
+      reportWrite.mockRejectedValueOnce(DatabaseError('Search engine unavailable'));
+      const interrupted = await tickUntil(runId, () => reportWrite.mock.calls.length > 0, 15);
+      expect(interrupted.run_status).toBe('running');
+      const checkpointed = await loadInvestigationRun(testContext, runId) as BasicStoreEntityInvestigationRun;
+      expect(checkpointed.step_failures).toBe(1);
+      expect(checkpointed.outputs.note_id).toBeTruthy();
+      expect(checkpointed.outputs.report_id ?? null).toBeNull();
+      // The next pass writes the report and edits the note the first one wrote, instead of writing it again.
+      const ingested = await tickUntil(runId, (current) => current.run_status !== 'running', 5);
+      expect(ingested.run_status).toBe('awaiting_approval');
+      const stored = await loadInvestigationRun(testContext, runId) as BasicStoreEntityInvestigationRun;
+      expect(stored.outputs.note_id).toBe(checkpointed.outputs.note_id);
+      expect(stored.outputs.report_id).toBeTruthy();
+      expect(stored.step_failures ?? 0).toBe(0);
+      expect(stored.status_reason ?? '').not.toContain('Not written');
+    } finally {
+      reportWrite.mockRestore();
       if (runId) await queryAsAdmin({ query: RUN_CANCEL, variables: { id: runId } });
       await queryAsAdmin({ query: DELETE_CASE, variables: { id: caseId } });
     }

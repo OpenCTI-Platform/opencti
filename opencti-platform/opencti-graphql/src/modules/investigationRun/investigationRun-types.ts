@@ -312,6 +312,8 @@ export interface InvestigationOutputs {
   attributed_candidate_ids: string[];
   // Observables of the engine's knowledge list, by value.
   observable_ids: Record<string, string>;
+  // Finding notes of the engine's knowledge list, by a digest of their value and content.
+  finding_note_ids?: Record<string, string>;
   // The engine run these outputs were written for, and what could not be written.
   written_for?: string | null;
   write_failures?: string[];
