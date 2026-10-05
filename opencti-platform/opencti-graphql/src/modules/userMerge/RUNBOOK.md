@@ -147,7 +147,7 @@ query userMergeCoverage($disposition: UserMergeDisposition): UserMergeCoverage!
 
 | Argument | Type | Required | Description |
 | :--- | :--- | :---: | :--- |
-| `disposition` | `UserMergeDisposition` | No | Optional filter to view only rows with a specific disposition (`TRANSFER`, `INVALIDATE`, `CONDITIONAL`, `RETAIN`, `OUT_OF_SCOPE`). If omitted, returns all 99 rows. |
+| `disposition` | `UserMergeDisposition` | No | Optional filter to view only rows with a specific disposition (`TRANSFER`, `INVALIDATE`, `CONDITIONAL`, `RETAIN`, `OUT_OF_SCOPE`). If omitted, returns all 100 rows. |
 
 ##### Return Type: `UserMergeCoverage`
 
@@ -450,9 +450,9 @@ Inspect the returned `report.handlers`:
    * `scalar-user-references`: Documents where the source was `creator_id`, `user_id`, etc.
    * `filter-user-references`: Number of saved filters, triggers, or feeds containing the source user UUID.
    * `blob-user-references`: Dashboards, playbooks, and draft update patches rewritten.
-   * `history-attribution` & `history-context-data-payload`: Past events and audit logs being re-attributed.
+   * `history-attribution` & `history-context-data-payload`: Past events and audit logs being re-attributed. The payload handler rewrites the subject ids and the recorded changes of a record, which the platform shows and resolves into names; the raw payload (`input`, `list_params`, `filters`) is retained as recorded (`history.context-data-raw-payload`).
    * `operational-relations`: Assignee/Participant links being re-pointed or deduplicated.
-   * `residual-references`: Runs last. Best-effort sweep across all platform indices detecting unindexed or serialized references still naming the source UUID. Reports findings by `entity_type` in `detail` (e.g. `best-effort sweep, nothing rewritten: Incident (2)`). It writes nothing (`updated: 0`) and never raises blocking alerts. **Operator action**: Do **not** stop or abort if findings are reported here; this is purely informational visibility for post-merge audit and does not block execution or source account deletion.
+   * `residual-references`: Runs last. Claims the register rows no handler acts on, each with the reason, and reads and writes nothing (`updated: 0`). The merge answers for the references the register records: a reference it does not record is not searched for, and calls for a new register row and handler.
 2. **Inspect RBAC Differences & Rights Strategy**:
    * **STRICT (Default & Recommended)**: The target user retains strictly their own groups, roles, and markings. Source memberships are dropped.
    * **UNION**: Source groups, organizations, and capabilities are added to the target. Use only when the target must inherit existing source clearances.
@@ -529,7 +529,7 @@ query UserMergeCheckReadiness($sourceId: ID!, $targetId: ID!) {
 #### Gate Criteria
 
 The deletion gate enforces three mandatory conditions:
-1. `coverage_complete === true`: Every gating register row (transfer and conditional, 62 of the 99) is claimed by a handler — this is `gating_uncovered_count === 0`. `covered_count` is expected to stay below 99 and is not what the gate reads: invalidate, retain, and out-of-scope rows are outside the gate.
+1. `coverage_complete === true`: Every gating register row (transfer and conditional, 62 of the 100) is claimed by a handler — this is `gating_uncovered_count === 0`. `covered_count` is expected to stay below 100 and is not what the gate reads: invalidate, retain, and out-of-scope rows are outside the gate.
 2. `pending_change_count === 0`: A live dry-run on the pair plans no change, so nothing still points to the source user.
 3. `merged_into === <targetId>`: The source carries the mark a real merge into **this** target wrote on it.
 
