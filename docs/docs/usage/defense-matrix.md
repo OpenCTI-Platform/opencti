@@ -127,7 +127,7 @@ Each request listed in the technique drawer tells where OpenAEV stands: **Waitin
 
 ![Validation requests waiting for OpenAEV](assets/defense-matrix-drawer-requests.png)
 
-When OpenAEV sends the results back, they update the validation layer. OpenAEV runs the scenario on endpoints, not on a security platform: every platform watching these endpoints reports through its own collector, and OpenAEV attributes each result to the security platform that produced it. The level of a technique on a platform only counts the results of that platform, so a selected platform that reports nothing keeps its gap open, and the results of a platform you did not select still update the levels of that platform.
+When OpenAEV sends the results back, they update the validation layer. Only results that hold count: a revoked result, a result whose validity period has not started, or an expired one is no validation evidence, and the nightly computation lowers the levels that relied on a result as soon as it expires. OpenAEV runs the scenario on endpoints, not on a security platform: every platform watching these endpoints reports through its own collector, and OpenAEV attributes each result to the security platform that produced it. The level of a technique on a platform only counts the results of that platform, so a selected platform that reports nothing keeps its gap open, and the results of a platform you did not select still update the levels of that platform.
 
 Applications requesting a validation through the API (`defenseGapsValidate` mutation) can pass an `external_reference_url`, an http or https link to what asked for the validation (a risk scenario, a ticket). It is stored as an external reference of the security coverage, named after the host of the link.
 

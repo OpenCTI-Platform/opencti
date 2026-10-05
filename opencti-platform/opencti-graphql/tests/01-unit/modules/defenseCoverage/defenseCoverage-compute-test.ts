@@ -4,6 +4,7 @@ import {
   accessSignature,
   activeMitigations,
   buildTechniqueCoverage,
+  currentCoverageResults,
   type ComputationGraph,
   defenseGapId,
   isProducedGap,
@@ -93,6 +94,22 @@ describe('Defense coverage vector building', () => {
     // telemetry and an available rule, but the latest validation failed
     expect(vectorOf(SIEM)?.level).toEqual(2);
     expect(coverage.level).toEqual(4);
+  });
+});
+
+describe('Defense coverage of the current OpenAEV results', () => {
+  const AT = '2026-10-01T00:00:00.000Z';
+  const result = (id: string, extra: Record<string, unknown> = {}) => ({ internal_id: id, ...extra } as unknown as BasicStoreEntity);
+
+  it('should keep the results valid at the computation date', () => {
+    const results = [
+      result('undated'),
+      result('in-window', { coverage_valid_from: '2026-09-01T00:00:00.000Z', coverage_valid_to: '2026-11-01T00:00:00.000Z' }),
+      result('expired', { coverage_valid_to: '2026-09-30T00:00:00.000Z' }),
+      result('future', { coverage_valid_from: '2026-10-02T00:00:00.000Z' }),
+      result('revoked', { revoked: true }),
+    ];
+    expect(currentCoverageResults(results, AT).map((r) => r.internal_id)).toEqual(['undated', 'in-window']);
   });
 });
 

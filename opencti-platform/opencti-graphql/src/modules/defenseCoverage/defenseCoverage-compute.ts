@@ -611,6 +611,17 @@ export const activeMitigations = (mitigates: BasicStoreRelation[], coursesOfActi
   return mitigates.filter((relation) => activeIds.has(relation.fromId));
 };
 
+/** Keep the OpenAEV results that hold at the given date: not revoked, already valid and not expired. */
+export const currentCoverageResults = <T extends BasicStoreEntity>(results: T[], at: string) => {
+  const time = new Date(at).getTime();
+  return results.filter((result) => {
+    const { coverage_valid_from: validFrom, coverage_valid_to: validTo } = result as unknown as { coverage_valid_from?: string; coverage_valid_to?: string };
+    if (result.revoked) return false;
+    if (validFrom && new Date(validFrom).getTime() > time) return false;
+    return !(validTo && new Date(validTo).getTime() < time);
+  });
+};
+
 /**
  * Compute and store the defense coverage of every technique (full run) or of the given techniques (incremental run).
  * The computation runs with the given user (the manager uses the system user) and stores only ids:
@@ -677,12 +688,15 @@ export const computeDefenseCoverage = async (
     baseFields: ['revoked'],
   });
   const mitigates = activeMitigations(allMitigates, coursesOfAction);
-  const hasCovered = await loadRelationsToTechniques(context, user, RELATION_HAS_COVERED, [ENTITY_TYPE_SECURITY_COVERAGE_RESULT], scopedIds, [
+  const allHasCovered = await loadRelationsToTechniques(context, user, RELATION_HAS_COVERED, [ENTITY_TYPE_SECURITY_COVERAGE_RESULT], scopedIds, [
     'coverage_information',
     'coverage_platforms_information',
     'updated_at',
   ]);
-  const results = await findByIdsChunked<BasicStoreEntity>(context, user, hasCovered.map((h) => h.fromId), { type: ENTITY_TYPE_SECURITY_COVERAGE_RESULT });
+  const allResults = await findByIdsChunked<BasicStoreEntity>(context, user, allHasCovered.map((h) => h.fromId), { type: ENTITY_TYPE_SECURITY_COVERAGE_RESULT });
+  const results = currentCoverageResults(allResults, computedAt);
+  const resultIds = new Set(results.map((r) => r.internal_id));
+  const hasCovered = allHasCovered.filter((h) => resultIds.has(h.fromId));
 
   const graph: ComputationGraph = {
     platforms,
