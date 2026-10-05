@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { accessSignature, buildTechniqueCoverage, type ComputationGraph } from '../../../../src/modules/defenseCoverage/defenseCoverage-compute';
 import { collectDefenseImpact } from '../../../../src/modules/defenseCoverage/defenseCoverage-impact';
 import { builtInRestoreAction, DEFENSE_LOGSOURCE_MAPPING_DEFAULTS } from '../../../../src/modules/defenseCoverage/defenseLogsourceMapping/defenseLogsourceMapping-domain';
-import { buildLogsourceMappingKey } from '../../../../src/modules/defenseCoverage/defenseCoverage-utils';
+import { buildLogsourceMappingKey, capEvidences } from '../../../../src/modules/defenseCoverage/defenseCoverage-utils';
 import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
 import type { BasicStoreEntity, BasicStoreRelation } from '../../../../src/types/store';
 import type { BasicStoreEntityIndicator } from '../../../../src/modules/indicator/indicator-types';
@@ -88,17 +88,43 @@ describe('Defense coverage vector building', () => {
 });
 
 describe('Defense evidence access signature', () => {
+  type Member = { id: string; access_right: string; groups_restriction_ids?: string[] };
+  const element = (members?: Member[], authorities?: string[], id = 'e') => ({
+    internal_id: id,
+    'object-marking': ['m2', 'm1'],
+    restricted_members: members,
+    authorized_authorities: authorities,
+  } as unknown as BasicStoreEntity);
+
   it('should separate evidences by their stored member restrictions', () => {
-    const element = (members?: { id: string; access_right: string }[]) => ({
-      internal_id: 'e',
-      'object-marking': ['m2', 'm1'],
-      restricted_members: members,
-    } as unknown as BasicStoreEntity);
     const open = accessSignature(element());
     const restricted = accessSignature(element([{ id: 'group-1', access_right: 'view' }]));
     expect(restricted).not.toEqual(open);
-    expect(open).toEqual('m1,m2;;');
-    expect(restricted).toEqual('m1,m2;;group-1:view');
+    expect(open).toEqual('m1,m2;;;');
+    expect(restricted).toEqual('m1,m2;;group-1:view:;');
+  });
+  it('should separate evidences by the groups restriction of a member', () => {
+    const member = { id: 'organization-1', access_right: 'view' };
+    const restricted = accessSignature(element([{ ...member, groups_restriction_ids: ['group-2', 'group-1'] }]));
+    expect(restricted).not.toEqual(accessSignature(element([member])));
+    expect(restricted).not.toEqual(accessSignature(element([{ ...member, groups_restriction_ids: ['group-1'] }])));
+    expect(restricted).toEqual('m1,m2;;organization-1:view:group-1+group-2;');
+  });
+  it('should separate evidences by their authorized authorities', () => {
+    const withAuthority = accessSignature(element(undefined, ['KNOWLEDGE_KNUPDATE', 'user-1']));
+    expect(withAuthority).not.toEqual(accessSignature(element()));
+    expect(withAuthority).toEqual('m1,m2;;;KNOWLEDGE_KNUPDATE,user-1');
+  });
+  it('should keep one evidence of every access partition when capping', () => {
+    const member = { id: 'organization-1', access_right: 'view' };
+    const evidences = [
+      element([member], undefined, 'member'),
+      element([member], undefined, 'member-again'),
+      element([{ ...member, groups_restriction_ids: ['group-1'] }], undefined, 'grouped-member'),
+      element([member], ['user-1'], 'member-with-authority'),
+    ];
+    const capped = capEvidences(evidences, 2, (evidence) => accessSignature(evidence));
+    expect(capped.map((evidence) => evidence.internal_id)).toEqual(['member', 'grouped-member', 'member-with-authority']);
   });
 });
 

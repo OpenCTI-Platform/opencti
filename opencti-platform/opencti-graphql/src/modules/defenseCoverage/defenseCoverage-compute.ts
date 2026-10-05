@@ -13,7 +13,8 @@ import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/secu
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT, RELATION_RESULT_OF } from '../securityCoverage/securityCoverageResult/securityCoverageResult-types';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../../schema/stixMetaObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
-import { authorizedMembers } from '../../schema/attribute-definition';
+import { authorizedAuthorities, authorizedMembers } from '../../schema/attribute-definition';
+import type { AuthorizedMember } from '../../utils/access';
 import { doYield } from '../../utils/eventloop-utils';
 import { now } from '../../utils/format';
 import { FilterMode } from '../../generated/graphql';
@@ -44,8 +45,10 @@ const MAX_EVIDENCE_PARTITIONS = conf.get('defense_coverage_manager:max_evidence_
 const BULK_SIZE = 500;
 const IDS_CHUNK_SIZE = 5000;
 
+// Access fields of an evidence element that the base fields do not return, read by its access signature
+const EVIDENCE_ACCESS_FIELDS = [authorizedAuthorities.name];
 const AP_BASE_FIELDS = ['name', 'x_mitre_id', 'revoked', 'x_opencti_defense_coverage'];
-const INDICATOR_BASE_FIELDS = ['name', 'pattern_type', 'revoked', 'x_opencti_rule_logsource', 'x_opencti_rule_status', 'x_opencti_rule_level'];
+const INDICATOR_BASE_FIELDS = ['name', 'pattern_type', 'revoked', 'x_opencti_rule_logsource', 'x_opencti_rule_status', 'x_opencti_rule_level', ...EVIDENCE_ACCESS_FIELDS];
 
 export interface DefensePlatform {
   id: string;
@@ -135,7 +138,7 @@ const loadRelationsToTechniques = async (
   attackPatternIds: string[] | undefined,
   baseFields: string[] = [],
 ) => {
-  const args = { fromTypes, toTypes: [ENTITY_TYPE_ATTACK_PATTERN], baseData: true, baseFields };
+  const args = { fromTypes, toTypes: [ENTITY_TYPE_ATTACK_PATTERN], baseData: true, baseFields: [...baseFields, ...EVIDENCE_ACCESS_FIELDS] };
   if (!attackPatternIds) {
     return fullRelationsList<BasicStoreRelation>(context, user, relationshipType, args);
   }
@@ -159,7 +162,7 @@ const loadDeployments = async (context: AuthContext, user: AuthUser, ruleIds: st
       fromId: chunks[index],
       toTypes: [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM],
       baseData: true,
-      baseFields: ['deployment_status'],
+      baseFields: ['deployment_status', ...EVIDENCE_ACCESS_FIELDS],
     });
     relations.push(...found);
   }
@@ -182,19 +185,23 @@ export interface ComputationGraph {
   dataComponentIdsByName: Map<string, string[]>;
   mappings: LogsourceCondition[];
   // Access signature of every loaded evidence element: markings and granted organizations come with every load
-  // (security doc values), restricted members with the base fields
+  // (security doc values), restricted members with the base fields, authorities with EVIDENCE_ACCESS_FIELDS
   accessKeyById?: Map<string, string>;
 }
 
+const sortedIds = (values: string[] | null | undefined, separator: string) => [...(values ?? [])].sort().join(separator);
+
+// Every dimension the access check reads: two elements share a signature only if every reader has the same access to both
 export const accessSignature = (element: BasicStoreEntity | BasicStoreRelation) => {
-  const data = element as unknown as Record<string, unknown>;
-  const ids = (key: string) => [...((data[key] as string[] | undefined) ?? [])].sort().join(',');
-  // Stored elements hold their member restrictions under restricted_members (authorized_members is the input name)
-  const members = ((data[authorizedMembers.name] as { id: string; access_right: string }[] | undefined) ?? [])
-    .map((member) => `${member.id}:${member.access_right}`)
+  const data = element as unknown as Record<string, string[] | undefined>;
+  // Stored elements hold their member restrictions under restricted_members (authorized_members is the input name);
+  // a member with groups restriction ids only grants its access to users of all these groups
+  const members = ((data[authorizedMembers.name] as unknown as AuthorizedMember[] | undefined) ?? [])
+    .map((member) => `${member.id}:${member.access_right}:${sortedIds(member.groups_restriction_ids, '+')}`)
     .sort()
     .join(',');
-  return `${ids(RELATION_OBJECT_MARKING)};${ids(RELATION_GRANTED_TO)};${members}`;
+  const authorities = sortedIds(data[authorizedAuthorities.name], ',');
+  return `${sortedIds(data[RELATION_OBJECT_MARKING], ',')};${sortedIds(data[RELATION_GRANTED_TO], ',')};${members};${authorities}`;
 };
 
 const buildAccessKeys = (elements: Array<BasicStoreEntity | BasicStoreRelation>) => {
@@ -584,8 +591,15 @@ export const computeDefenseCoverage = async (
 
   // 2. Telemetry layer
   const detects = await loadRelationsToTechniques(context, user, RELATION_DETECTS, [ENTITY_TYPE_DATA_COMPONENT], scopedIds);
-  const provides = await fullRelationsList<BasicStoreRelation>(context, user, RELATION_PROVIDES, { toTypes: [ENTITY_TYPE_DATA_COMPONENT], baseData: true });
-  const dataComponents = await fullEntitiesList<BasicStoreEntity>(context, user, [ENTITY_TYPE_DATA_COMPONENT], { baseData: true, baseFields: ['name'] });
+  const provides = await fullRelationsList<BasicStoreRelation>(context, user, RELATION_PROVIDES, {
+    toTypes: [ENTITY_TYPE_DATA_COMPONENT],
+    baseData: true,
+    baseFields: EVIDENCE_ACCESS_FIELDS,
+  });
+  const dataComponents = await fullEntitiesList<BasicStoreEntity>(context, user, [ENTITY_TYPE_DATA_COMPONENT], {
+    baseData: true,
+    baseFields: ['name', ...EVIDENCE_ACCESS_FIELDS],
+  });
   const dataComponentIdsByName = new Map<string, string[]>();
   dataComponents.forEach((dc) => {
     const key = (dc.name ?? '').trim().toLowerCase();
