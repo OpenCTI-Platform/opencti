@@ -558,6 +558,18 @@ describe('Knowledge time machine', () => {
       variables: { input: { saved_filter_id: 'saved-filter', custom_view_id: 'custom-view', from: createdAt, to: now } },
     });
     expect(ambiguous.errors?.[0]?.message).toContain('either a saved filter or a custom view');
+    // The filters of a saved filter or a custom view are read from it, never combined with ad-hoc filters
+    const filters = JSON.stringify({ mode: 'and', filters: [{ key: ['name'], values: ['APT-TEST'], operator: 'eq', mode: 'or' }], filterGroups: [] });
+    const mixedSavedFilter = await queryAsUser(USER_PARTICIPATE, {
+      query: LANDSCAPE_SUMMARY,
+      variables: { input: { saved_filter_id: 'saved-filter', filters, from: createdAt, to: now } },
+    });
+    expect(mixedSavedFilter.errors?.[0]?.message).toContain('either filters, a saved filter or a custom view');
+    const mixedCustomView = await queryAsUser(USER_PARTICIPATE, {
+      query: LANDSCAPE_RUN,
+      variables: { input: { custom_view_id: 'custom-view', filters, from: createdAt, to: now } },
+    });
+    expect(mixedCustomView.errors?.[0]?.message).toContain('either filters, a saved filter or a custom view');
     const severalRecipients = await queryAsAdmin({
       query: CHANGE_DIGEST_ADD,
       variables: { input: { name: 'Several recipients', period: 'day', trigger_time: '09:00:00.000Z', notifiers: [STATIC_NOTIFIER_UI], recipients: [ADMIN_USER.id, USER_PARTICIPATE.id] } },

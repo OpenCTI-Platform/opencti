@@ -344,16 +344,19 @@ const LandscapeChanges = () => {
     });
   };
 
-  // A failed diff is computed again with its own scope and period, whatever the form shows
+  // A failed diff is computed again with its own scope and period, whatever the form shows. A saved filter or a custom
+  // view is sent alone: the server reads its current filters (and the target type of a custom view)
   const handleRecompute = (failed: LandscapeDiffResult, period: DateRange = { from: failed.from, to: failed.to }) => {
+    const savedFilterId = failed.saved_filter_id ?? null;
+    const customViewId = failed.custom_view_id ?? null;
     runLandscape({
       from: period.from,
       to: period.to,
       group_by: (failed.group_by ?? 'entity_type') as LandscapeGroupBy,
-      filters: failed.filters ?? null,
-      saved_filter_id: failed.saved_filter_id ?? null,
-      custom_view_id: failed.custom_view_id ?? null,
-      entity_types: [...failed.scope_entity_types],
+      filters: savedFilterId || customViewId ? null : (failed.filters ?? null),
+      saved_filter_id: savedFilterId,
+      custom_view_id: customViewId,
+      entity_types: customViewId ? null : [...failed.scope_entity_types],
     });
   };
 

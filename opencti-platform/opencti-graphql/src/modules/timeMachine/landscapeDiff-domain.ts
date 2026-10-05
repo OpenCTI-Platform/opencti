@@ -150,6 +150,11 @@ export const resolveLandscapeScope = async (context: AuthContext, user: AuthUser
   if (input.saved_filter_id && input.custom_view_id) {
     throw ValidationError('A landscape scope is either a saved filter or a custom view, not both', 'saved_filter_id');
   }
+  const customFilters = parseFilters(input.filters);
+  // The filters of a saved filter or a custom view are read from it at each computation, never sent along
+  if (customFilters && (input.saved_filter_id || input.custom_view_id)) {
+    throw ValidationError('A landscape scope is either filters, a saved filter or a custom view, not a combination', 'filters');
+  }
   const filterGroups: FilterGroup[] = [];
   let entityTypes = input.entity_types && input.entity_types.length > 0 ? input.entity_types : null;
   if (input.saved_filter_id) {
@@ -178,7 +183,6 @@ export const resolveLandscapeScope = async (context: AuthContext, user: AuthUser
     }
     entityTypes = [customView.target_entity_type];
   }
-  const customFilters = parseFilters(input.filters);
   if (customFilters) filterGroups.push(customFilters);
   const finalTypes = entityTypes ?? [ABSTRACT_STIX_DOMAIN_OBJECT];
   validateEntityTypes(finalTypes);
