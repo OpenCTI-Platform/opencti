@@ -1461,7 +1461,21 @@ const ingestRun = async (exec: RunExecution) => {
   // Candidates and courses of action the conclusion names: its text may quote them.
   const namedCandidates = [...conclusionCandidateIds(engine?.conclusion), ...conclusionCourseOfActionIds(engine?.conclusion)];
   const outputRestrictions = await collectRunRestrictions({ ...exec, run: finalRun }, subject, finalRun.case_id ?? null, namedCandidates);
-  const { outputs, caseId, caseIds, failures } = await writeOutputs({ ...exec, run: finalRun }, subject, engine, outputRestrictions);
+  // Written once per engine run and recorded at once: a pass interrupted after
+  // the writes is retried with what they wrote instead of writing it again.
+  const engineRunId = run.xtm_investigation_id ?? null;
+  const recorded = engineRunId && run.outputs?.written_for === engineRunId ? run.outputs : null;
+  const written = recorded
+    ? { outputs: recorded, caseId: run.case_id ?? null, caseIds: run.case_ids ?? [], failures: recorded.write_failures ?? [] }
+    : await writeOutputs({ ...exec, run: finalRun }, subject, engine, outputRestrictions);
+  if (!recorded) {
+    await updateRunningRun(exec.liveContext, run.internal_id, () => ({
+      outputs: { ...written.outputs, written_for: engineRunId, write_failures: written.failures },
+      case_id: written.caseId,
+      case_ids: written.caseIds,
+    }));
+  }
+  const { outputs, caseId, caseIds, failures } = written;
   const restrictions = await collectRunRestrictions({ ...exec, run: finalRun }, subject, caseId, namedCandidates);
   const recommendationApprovals: InvestigationApproval[] = recommendations
     .filter((recommendation) => recommendation.status === InvestigationRecommendationStatus.AwaitingApproval

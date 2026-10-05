@@ -312,6 +312,9 @@ export interface InvestigationOutputs {
   attributed_candidate_ids: string[];
   // Observables of the engine's knowledge list, by value.
   observable_ids: Record<string, string>;
+  // The engine run these outputs were written for, and what could not be written.
+  written_for?: string | null;
+  write_failures?: string[];
 }
 
 export const EMPTY_OUTPUTS: InvestigationOutputs = { attributed_candidate_ids: [], observable_ids: {} };
