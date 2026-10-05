@@ -17,7 +17,7 @@ export interface UseEntityToggle<T> {
   setSelectedElements: (selectedElements: Record<string, T>) => void;
 }
 
-type UseEntityToggleType = {
+export type UseEntityToggleType = {
   id: string;
   name?: string | null;
   observable_value?: string | null;

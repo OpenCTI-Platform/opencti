@@ -16,7 +16,6 @@ import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import useDefaultValues from '../../../../../utils/hooks/useDefaultValues';
 import useMarkdownCreationFilesInput from '../../../../../utils/markdown/useMarkdownCreationFilesInput';
 import { insertNode } from '../../../../../utils/store';
-import { serializeFilterGroupForBackend } from '../../../../../utils/filters/filtersUtils';
 import { useNavigate } from 'react-router';
 import { SecurityCoverageCreationMutation } from './__generated__/SecurityCoverageCreationMutation.graphql';
 import ChooseModeStep from './ChooseModeStep';
@@ -255,12 +254,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       confidence: parseInt(String(values.confidence), 10),
-      add_related_entities: entitiesToCover ? {
-        selected_ids: entitiesToCover.selected_ids,
-        filters: entitiesToCover.filters ? serializeFilterGroupForBackend(entitiesToCover.filters) : undefined,
-        excluded_ids: entitiesToCover.excluded_ids,
-        search: entitiesToCover.search,
-      } : null,
+      add_related_entities: entitiesToCover,
     };
 
     commit({

@@ -30858,6 +30858,7 @@ export enum SecurityCoverageResultOrdering {
 export type SecurityCoverageSelectedEntitiesInput = {
   excluded_ids?: InputMaybe<Array<Scalars['String']['input']>>;
   filters?: InputMaybe<Scalars['String']['input']>;
+  relationships_config?: InputMaybe<StixCoreRelationshipAddInput>;
   search?: InputMaybe<Scalars['String']['input']>;
   selected_ids?: InputMaybe<Array<Scalars['String']['input']>>;
 };

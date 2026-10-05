@@ -9,11 +9,12 @@ import SecurityCoverageResultFormDetails, { SecurityCoverageResultFormData } fro
 import SelectEntitiesToCoverStep from '../security_coverage_creation/select_entities_to_cover_step/SelectEntitiesToCoverStep';
 import { SecurityCoverageResultFormDrawerFragment$key } from './__generated__/SecurityCoverageResultFormDrawerFragment.graphql';
 import { SelectedEntities } from '../security_coverage_creation/SecurityCoverageCreation-types';
-import Button from '../../../../../components/common/button/Button';
-import useApiMutation from 'src/utils/hooks/useApiMutation';
 import { SecurityCoverageResultCreationMutation } from './__generated__/SecurityCoverageResultCreationMutation.graphql';
-import { serializeFilterGroupForBackend } from 'src/utils/filters/filtersUtils';
 import StixCoreRelationshipCreationForm from '../../../common/stix_core_relationships/StixCoreRelationshipCreationForm';
+import useApiMutation from '../../../../../utils/hooks/useApiMutation';
+import { UseEntityToggleType } from '../../../../../utils/hooks/useEntityToggle';
+import { StixCoreRelationshipCreationFormInput } from '../../../common/stix_core_relationships/StixCoreRelationshipCreation';
+import { formatDate } from '../../../../../utils/Time';
 
 const fragment = graphql`
   fragment SecurityCoverageResultFormDrawerFragment on SecurityCoverage {
@@ -45,8 +46,11 @@ const SecurityCoverageResultFormDrawer = ({
 
   const [activeStep, setActiveStep] = useState(0);
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // Data of the differents steps.
   const [formDetails, setFormDetails] = useState<SecurityCoverageResultFormData>();
   const [selectedEntities, setSelectedEntities] = useState<SelectedEntities | null>();
+  const [relToEntities, setRelToEntities] = useState<UseEntityToggleType[]>();
 
   const [commitCreation, submitting] = useApiMutation<SecurityCoverageResultCreationMutation>(
     securityCoverageResultMutation,
@@ -55,16 +59,38 @@ const SecurityCoverageResultFormDrawer = ({
   );
 
   const close = () => {
-    setDrawerOpen(false);
     setActiveStep(0);
+    setDrawerOpen(false);
     setFormDetails(undefined);
     setSelectedEntities(undefined);
+    setRelToEntities(undefined);
   };
 
-  const onSubmit = () => {
-    if (!formDetails) {
+  // Using CSS instead of JSX conditions to keep state of selected
+  // entities in step 2.
+  const stepVisibility = (step: number) => {
+    return {
+      display: activeStep === step ? 'block' : 'none',
+    };
+  };
+
+  const submit = (formRelsData?: StixCoreRelationshipCreationFormInput) => {
+    if (!formDetails || submitting) {
       return;
     }
+
+    const relationshipInput = formRelsData ? {
+      ...formRelsData,
+      confidence: parseInt(formRelsData.confidence, 10),
+      fromId: id,
+      toId: id,
+      start_time: formatDate(formRelsData.start_time),
+      stop_time: formatDate(formRelsData.stop_time),
+      killChainPhases: formRelsData.killChainPhases.map((k) => k.value),
+      createdBy: formRelsData.createdBy?.value,
+      objectMarking: formRelsData.objectMarking.map((k) => k.value),
+      externalReferences: formRelsData.externalReferences.map((k) => k.value),
+    } : undefined;
 
     const values = {
       name: formDetails.name,
@@ -77,12 +103,10 @@ const SecurityCoverageResultFormDrawer = ({
       external_uri: formDetails.externalUri,
       coverage_valid_from: formDetails.validFrom,
       coverage_valid_to: formDetails.validTo,
-      add_related_entities: selectedEntities ? {
-        selected_ids: selectedEntities.selected_ids,
-        filters: selectedEntities.filters ? serializeFilterGroupForBackend(selectedEntities.filters) : undefined,
-        excluded_ids: selectedEntities.excluded_ids,
-        search: selectedEntities.search,
-      } : null,
+      add_related_entities: selectedEntities || relationshipInput ? {
+        ...selectedEntities,
+        relationships_config: relationshipInput,
+      } : undefined,
       resultOf: id,
     };
 
@@ -112,9 +136,13 @@ const SecurityCoverageResultFormDrawer = ({
         title={t_i18n('Create Security Coverage Result')}
       >
         <>
-          <SecurityCoverageResultFormSteps activeStep={activeStep} />
+          <SecurityCoverageResultFormSteps
+            activeStep={activeStep}
+            displayRelStep={!!selectedEntities}
+            onStepClick={setActiveStep}
+          />
 
-          {activeStep === 0 && (
+          <div style={{ ...stepVisibility(0) }}>
             <SecurityCoverageResultFormDetails
               onCancel={close}
               onSubmit={(values) => {
@@ -123,27 +151,47 @@ const SecurityCoverageResultFormDrawer = ({
               }}
               initValues={formDetails}
             />
-          )}
+          </div>
 
-          {activeStep === 1 && (
+          <div style={{ ...stepVisibility(1) }}>
             <SelectEntitiesToCoverStep
+              endIfNoSelection
+              onCancel={close}
               coveredEntity={objectCovered}
-              onSelectEntities={(entities) => {
+              onSelectEntities={(entities, elements) => {
                 setSelectedEntities(entities);
-                setActiveStep((a) => a + 1);
+                setRelToEntities(elements);
+                if (!entities) {
+                  submit();
+                } else {
+                  setActiveStep((a) => a + 1);
+                }
               }}
-              onPrevious={() => setActiveStep((a) => a - 1)}
             />
-          )}
+          </div>
 
-          {activeStep === 2 && (
-            <StixCoreRelationshipCreationForm
-              fromEntities={[entity]}
-              toEntities={[selected]}
-              relationshipTypes={[relationshipType]}
-              onSubmit={console.log}
-              handleClose={console.log}
-            />
+          {formDetails && !!selectedEntities && (
+            <div style={{ ...stepVisibility(2) }}>
+              <StixCoreRelationshipCreationForm
+                fromEntities={[{
+                  entity_type: 'Security-Coverage-Result',
+                  name: formDetails.name,
+                }]}
+                isCoverage
+                toEntities={relToEntities}
+                toEntityType="Stix-Core-Object"
+                relationshipTypes={['has-covered']}
+                defaultConfidence={formDetails.confidence}
+                defaultCreatedBy={formDetails.createdBy}
+                defaultMarkingDefinitions={formDetails.objectMarking}
+                onSubmit={submit}
+                handleClose={close}
+                handleReverseRelation={undefined}
+                handleResetSelection={undefined}
+                defaultStartTime={undefined}
+                defaultStopTime={undefined}
+              />
+            </div>
           )}
         </>
       </Drawer>

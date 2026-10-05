@@ -120,7 +120,10 @@ const STIX_CORE_RELATIONSHIP_TYPE = 'stix-core-relationship';
 
 const StixCoreRelationshipCreationForm = ({
   fromEntities,
+  // Can be empty if the targets are resolved later (ex: in backend by filters).
   toEntities,
+  // Type displayed when toEntities is empty.
+  toEntityType = 'Stix-Core-Object',
   relationshipTypes,
   handleReverseRelation,
   handleResetSelection,
@@ -138,9 +141,10 @@ const StixCoreRelationshipCreationForm = ({
   const stixCoreRelationshipValidator = useSchemaCreationValidation(STIX_CORE_RELATIONSHIP_TYPE, stixCoreRelationshipBasicShape(t_i18n, isCoverage));
 
   const fromEntity = fromEntities[0];
-  const toEntity = toEntities[0];
+  const isToUnresolved = !toEntities || toEntities.length === 0;
+  const toEntity = isToUnresolved ? { entity_type: toEntityType } : toEntities[0];
   const isMultipleFrom = fromEntities.length > 1;
-  const isMultipleTo = toEntities.length > 1;
+  const isMultipleTo = isToUnresolved || toEntities.length > 1;
 
   const defaultRelationshipType = R.head(relationshipTypes)
     ? R.head(relationshipTypes)
