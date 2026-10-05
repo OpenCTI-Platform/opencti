@@ -15,6 +15,9 @@ import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import type { AttributeDefinition, RefAttribute } from '../../schema/attribute-definition';
 import { isUserCanAccessStoreElement, isUserHasCapabilities, SYSTEM_USER } from '../../utils/access';
 import { now, utcDate } from '../../utils/format';
+import moment from 'moment';
+import { listRules } from '../retentionRules/retentionRules-domain';
+import type { BasicStoreEntityRetentionRule } from '../retentionRules/retentionRules-types';
 import { DefaultFormating } from '../../utils/humanize';
 import { getDraftContext } from '../../utils/draftContext';
 import type { AuthContext, AuthUser } from '../../types/user';
@@ -64,6 +67,7 @@ const RESTRICTED_VALUE = 'Restricted';
 const DELETED_VALUE = 'Deleted';
 const RELATIONSHIP_HISTORY_TRUNCATED = 'RELATIONSHIP_HISTORY_TRUNCATED';
 const HISTORY_NOT_RETAINED = 'HISTORY_NOT_RETAINED';
+const RELATIONSHIP_HISTORY_NOT_RETAINED = 'RELATIONSHIP_HISTORY_NOT_RETAINED';
 
 // Display order of the most meaningful attributes, other attributes follow alphabetically
 const ATTRIBUTES_ORDER = [
@@ -534,8 +538,23 @@ const relationshipCountsFromSnapshot = async (context: AuthContext, user: AuthUs
     const type = types.get(id);
     if (type) byType.set(type, (byType.get(type) ?? 0) + 1);
   });
-  return { counts: toSortedCounts(byType), complete };
+  return { counts: toSortedCounts(byType), complete, historyFrom: forward ? anchorDate : date };
 };
+
+/**
+ * Oldest date the relationship history is still whole from: the most recent horizon of the active history retention
+ * rules, a filtered rule included as it can purge relationship events. Null without any such rule.
+ * Creating or deleting a relationship does not change its endpoints, so the history of an entity does not tell it.
+ */
+export const relationshipHistoryHorizon = async (context: AuthContext, currentDate: string = now()): Promise<string | null> => {
+  const rules = await listRules(context, SYSTEM_USER) as BasicStoreEntityRetentionRule[];
+  const horizons = rules
+    .filter((rule) => rule.scope === 'history' && rule.active !== false && rule.max_retention > 0)
+    .map((rule) => utcDate(currentDate).subtract(rule.max_retention, (rule.retention_unit ?? 'days') as moment.unitOfTime.DurationConstructor));
+  return horizons.length > 0 ? moment.max(horizons).toISOString() : null;
+};
+
+const isRelationshipHistoryRetainedFrom = (horizon: string | null, historyFrom: string) => !horizon || !utcDate(historyFrom).isBefore(utcDate(horizon));
 
 const relationshipCountsAt = async (context: AuthContext, user: AuthUser, elementId: string, date: string, anchorSnapshot: BasicStoreEntityKnowledgeSnapshot | null) => {
   const fromSnapshot = anchorSnapshot ? await relationshipCountsFromSnapshot(context, user, elementId, date, anchorSnapshot) : null;
@@ -563,7 +582,7 @@ const relationshipCountsAt = async (context: AuthContext, user: AuthUser, elemen
   types.forEach((type) => {
     byType.set(type, (current.get(type) ?? 0) - (createdAfter.get(type) ?? 0) + (deletedExistingAtDate.get(type) ?? 0));
   });
-  return { counts: toSortedCounts(byType), complete };
+  return { counts: toSortedCounts(byType), complete, historyFrom: date };
 };
 
 // Change fields of the contained objects for every container type, so a change recorded under another type is not missed
@@ -678,8 +697,18 @@ export const entityAsOf = async (context: AuthContext, user: AuthUser, id: strin
     ...definitionInfo(element.entity_type, key),
     values: humanize(key, document[key]),
   }));
-  const { counts: relationships, complete: relationshipsComplete } = await relationshipCountsAt(context, user, element.internal_id, date, anchorSnapshot);
-  const warnings = relationshipsComplete ? base.warnings : [...base.warnings, RELATIONSHIP_HISTORY_TRUNCATED];
+  const [relationshipCounts, horizon] = await Promise.all([
+    relationshipCountsAt(context, user, element.internal_id, date, anchorSnapshot),
+    relationshipHistoryHorizon(context),
+  ]);
+  const { counts: relationships, historyFrom } = relationshipCounts;
+  const relationshipsRetained = isRelationshipHistoryRetainedFrom(horizon, historyFrom);
+  const relationshipsComplete = relationshipCounts.complete && relationshipsRetained;
+  const warnings = [
+    ...base.warnings,
+    ...(relationshipCounts.complete ? [] : [RELATIONSHIP_HISTORY_TRUNCATED]),
+    ...(relationshipsRetained ? [] : [RELATIONSHIP_HISTORY_NOT_RETAINED]),
+  ];
   const containerObjectsCount = isStixDomainObjectContainer(element.entity_type) ? await accessibleContainerObjectsCountAt(context, user, element, date) : null;
   const representative = extractEntityRepresentativeName(rebuildElementAt(element, replay.document));
   addTimeMachineAsOfCount();
@@ -954,8 +983,16 @@ export const entityDiff = async (context: AuthContext, user: AuthUser, id: strin
     };
   });
   // Relationships
-  const { changes, allChanges, createdTotal, truncated, eventsTruncated } = await computeRelationshipChanges(context, user, element.internal_id, from, to, userNames);
-  const diffWarnings = eventsTruncated ? [...warnings, RELATIONSHIP_HISTORY_TRUNCATED] : warnings;
+  const [{ changes, allChanges, createdTotal, truncated, eventsTruncated }, horizon] = await Promise.all([
+    computeRelationshipChanges(context, user, element.internal_id, from, to, userNames),
+    relationshipHistoryHorizon(context),
+  ]);
+  const relationshipsRetained = isRelationshipHistoryRetainedFrom(horizon, from);
+  const diffWarnings = [
+    ...warnings,
+    ...(eventsTruncated ? [RELATIONSHIP_HISTORY_TRUNCATED] : []),
+    ...(relationshipsRetained ? [] : [RELATIONSHIP_HISTORY_NOT_RETAINED]),
+  ];
   // Container objects
   let containerObjects: ContainerObjectChange[] = [];
   let containerAdded = 0;
@@ -1011,7 +1048,7 @@ export const entityDiff = async (context: AuthContext, user: AuthUser, id: strin
     existed_at_from: existedAtFrom,
     exists_at_to: true,
     restricted: false,
-    complete: complete && !eventsTruncated,
+    complete: complete && !eventsTruncated && relationshipsRetained,
     warnings: diffWarnings,
     summary,
     attributes,

@@ -5003,6 +5003,7 @@
   "The platform remembers when you last opened each entity to highlight what is new since your last visit. These markers are only visible to you and expire automatically.": "La piattaforma ricorda quando hai aperto per l'ultima volta ogni entità per evidenziare le novità dalla tua ultima visita. Questi indicatori sono visibili solo a te e scadono automaticamente.",
   "The public dashboard is disabled": "La dashboard pubblica è disabilitata",
   "The relations attached to selected entities will be copied to the merged entity.": "La relazione allegata alle entità selezionate verrà copiata nell'entità unita.",
+  "The relationship history is not retained back to this date: the relationships shown may not reflect every change made since then.": "La cronologia delle relazioni non è conservata fino a questa data: le relazioni mostrate potrebbero non riflettere tutte le modifiche apportate da allora.",
   "The relationship type to apply to all created relationships.": "Il tipo di relazione da applicare a tutte le relazioni create.",
   "The reset code you entered is invalid or has expired. You can request a new code after a delay of 30 seconds.": "Il codice di ripristino inserito non è valido o è scaduto. È possibile richiedere un nuovo codice dopo un ritardo di 30 secondi.",
   "The reset code you entered is invalid or has expired. You can request a new code.": "Il codice di ripristino inserito non è valido o è scaduto. È possibile richiedere un nuovo codice.",

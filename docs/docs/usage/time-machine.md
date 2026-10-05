@@ -62,7 +62,8 @@ When a history [retention rule](../administration/retentions.md) deleted the cha
     - a merge happened after the date: a merge cannot be undone, so the view stops at the state right after the merge,
     - too many changes happened after the date: the view stops at the oldest change that could be replayed,
     - the date is older than the replay window between two knowledge snapshots: the reconstruction relies on a long history replay,
-    - too many relationship changes happened after the date (or during the period of a diff): relationship counts and changes only cover the most recent part of the history.
+    - too many relationship changes happened after the date (or during the period of a diff): relationship counts and changes only cover the most recent part of the history,
+    - the date is older than the History retention: the relationship changes made since may have been purged, so the relationship counts and changes may not reflect all of them.
 
 ## Compare two dates
 

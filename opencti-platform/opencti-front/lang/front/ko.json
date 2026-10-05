@@ -5003,6 +5003,7 @@
   "The platform remembers when you last opened each entity to highlight what is new since your last visit. These markers are only visible to you and expire automatically.": "플랫폼은 각 엔터티를 마지막으로 연 시점을 기억하여 마지막 방문 이후의 새 항목을 강조합니다. 이 표시는 본인에게만 보이며 자동으로 만료됩니다.",
   "The public dashboard is disabled": "공용 대시보드가 비활성화되었습니다",
   "The relations attached to selected entities will be copied to the merged entity.": "선택된 엔터티에 연결된 관계가 병합된 엔터티로 복사됩니다.",
+  "The relationship history is not retained back to this date: the relationships shown may not reflect every change made since then.": "관계 기록이 이 날짜까지 보존되지 않습니다. 표시된 관계에 그 이후의 모든 변경 사항이 반영되지 않았을 수 있습니다.",
   "The relationship type to apply to all created relationships.": "생성된 모든 관계에 적용할 관계 유형입니다.",
   "The reset code you entered is invalid or has expired. You can request a new code after a delay of 30 seconds.": "입력한 재설정 코드가 유효하지 않거나 만료되었습니다. 30초 후에 새 코드를 요청할 수 있습니다.",
   "The reset code you entered is invalid or has expired. You can request a new code.": "입력한 재설정 코드가 유효하지 않거나 만료되었습니다. 새 코드를 요청할 수 있습니다.",

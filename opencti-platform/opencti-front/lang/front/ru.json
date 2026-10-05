@@ -5003,6 +5003,7 @@
   "The platform remembers when you last opened each entity to highlight what is new since your last visit. These markers are only visible to you and expire automatically.": "Платформа запоминает, когда вы в последний раз открывали каждую сущность, чтобы выделять новое с момента вашего последнего посещения. Эти отметки видны только вам и автоматически истекают.",
   "The public dashboard is disabled": "Публичнаый дашборд отключена",
   "The relations attached to selected entities will be copied to the merged entity.": "Отношения, привязанные к выбранным сущностям, будут скопированы в объединенную сущность.",
+  "The relationship history is not retained back to this date: the relationships shown may not reflect every change made since then.": "История связей не сохраняется до этой даты: отображаемые связи могут не отражать все изменения, внесённые с тех пор.",
   "The relationship type to apply to all created relationships.": "Тип отношений, который будет применяться ко всем созданным отношениям.",
   "The reset code you entered is invalid or has expired. You can request a new code after a delay of 30 seconds.": "Введенный вами код сброса недействителен или срок его действия истек. Вы можете запросить новый код после задержки в 30 секунд.",
   "The reset code you entered is invalid or has expired. You can request a new code.": "Введенный вами код сброса недействителен или срок его действия истек. Вы можете запросить новый код.",

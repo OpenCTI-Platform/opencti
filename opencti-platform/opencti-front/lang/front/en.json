@@ -5003,6 +5003,7 @@
   "The platform remembers when you last opened each entity to highlight what is new since your last visit. These markers are only visible to you and expire automatically.": "The platform remembers when you last opened each entity to highlight what is new since your last visit. These markers are only visible to you and expire automatically.",
   "The public dashboard is disabled": "The public dashboard is disabled",
   "The relations attached to selected entities will be copied to the merged entity.": "The relations attached to selected entities will be copied to the merged entity.",
+  "The relationship history is not retained back to this date: the relationships shown may not reflect every change made since then.": "The relationship history is not retained back to this date: the relationships shown may not reflect every change made since then.",
   "The relationship type to apply to all created relationships.": "The relationship type to apply to all created relationships.",
   "The reset code you entered is invalid or has expired. You can request a new code after a delay of 30 seconds.": "The reset code you entered is invalid or has expired. You can request a new code after a delay of 30 seconds.",
   "The reset code you entered is invalid or has expired. You can request a new code.": "The reset code you entered is invalid or has expired. You can request a new code.",

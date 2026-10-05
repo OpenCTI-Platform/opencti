@@ -5003,6 +5003,7 @@
   "The platform remembers when you last opened each entity to highlight what is new since your last visit. These markers are only visible to you and expire automatically.": "プラットフォームは各エンティティを最後に開いた日時を記憶し、前回の訪問以降の新着を強調表示します。これらのマーカーはあなただけに表示され、自動的に期限切れになります。",
   "The public dashboard is disabled": "公開ダッシュボードは無効",
   "The relations attached to selected entities will be copied to the merged entity.": "選択されたエンティティに付属するリレーションは、マージされたエンティティにコピーされます。",
+  "The relationship history is not retained back to this date: the relationships shown may not reflect every change made since then.": "リレーションシップの履歴はこの日付まで保持されていません。表示されるリレーションシップには、それ以降のすべての変更が反映されていない可能性があります。",
   "The relationship type to apply to all created relationships.": "作成されたすべての関係に適用する関係タイプ。",
   "The reset code you entered is invalid or has expired. You can request a new code after a delay of 30 seconds.": "入力されたリセットコードが無効であるか、有効期限が切れています。30秒後に新しいコードをリクエストできます。",
   "The reset code you entered is invalid or has expired. You can request a new code.": "入力されたリセットコードが無効であるか、有効期限が切れています。新しいコードをリクエストしてください。",

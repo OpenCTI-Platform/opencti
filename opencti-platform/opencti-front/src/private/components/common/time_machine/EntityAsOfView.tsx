@@ -67,6 +67,8 @@ export const useTimeMachineWarningMessage = () => {
         return t_i18n('Too many changes happened after this date, the view stops at the oldest change that could be replayed.');
       case 'RELATIONSHIP_HISTORY_TRUNCATED':
         return t_i18n('Too many relationship changes to replay, the relationships only reflect the most recent part of the history.');
+      case 'RELATIONSHIP_HISTORY_NOT_RETAINED':
+        return t_i18n('The relationship history is not retained back to this date: the relationships shown may not reflect every change made since then.');
       case 'REPLAY_BEYOND_WINDOW':
         return t_i18n('This date is older than the replay window between two knowledge snapshots, the reconstruction relies on a long history replay.');
       default:

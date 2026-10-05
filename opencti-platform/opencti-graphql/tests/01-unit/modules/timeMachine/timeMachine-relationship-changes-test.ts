@@ -27,7 +27,13 @@ vi.mock('../../../../src/modules/timeMachine/timeMachine-history', async (import
   fetchOldestHistoryDate: async () => '2025-06-01T00:00:00.000Z',
 }));
 
-import { computeRelationshipChanges, entityTimeMachineTimeline, isStateEstablishedAt } from '../../../../src/modules/timeMachine/timeMachine-domain';
+const listRulesMock = vi.fn();
+vi.mock('../../../../src/modules/retentionRules/retentionRules-domain', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/modules/retentionRules/retentionRules-domain')>()),
+  listRules: (...args: unknown[]) => listRulesMock(...args),
+}));
+
+import { computeRelationshipChanges, entityTimeMachineTimeline, isStateEstablishedAt, relationshipHistoryHorizon } from '../../../../src/modules/timeMachine/timeMachine-domain';
 import type { BasicStoreEntity } from '../../../../src/types/store';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 
@@ -112,6 +118,31 @@ describe('Relationship changes of an entity', () => {
     });
     const { allChanges } = await computeRelationshipChanges(context, user, 'element-a', '2026-01-01T00:00:00.000Z', '2026-02-01T00:00:00.000Z', new Map());
     expect(allChanges.map((change) => [change.relationship_id, change.action])).toEqual([['rel-deleted-since', 'confidence_changed']]);
+  });
+});
+
+describe('Horizon of the relationship history', () => {
+  const NOW = '2026-10-05T00:00:00.000Z';
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should have no horizon without an active history retention rule', async () => {
+    listRulesMock.mockResolvedValue([
+      { scope: 'knowledge', active: true, max_retention: 10, retention_unit: 'days' },
+      { scope: 'history', active: false, max_retention: 10, retention_unit: 'days' },
+    ]);
+    expect(await relationshipHistoryHorizon(context, NOW)).toBeNull();
+  });
+
+  it('should take the most recent horizon of the active history rules, a filtered rule included', async () => {
+    listRulesMock.mockResolvedValue([
+      { scope: 'history', active: true, max_retention: 365, retention_unit: 'days' },
+      { scope: 'history', active: true, max_retention: 30, retention_unit: 'days', filters: '{"mode":"and","filters":[],"filterGroups":[]}' },
+      { scope: 'history', max_retention: 2, retention_unit: 'years' },
+    ]);
+    expect(await relationshipHistoryHorizon(context, NOW)).toEqual('2026-09-05T00:00:00.000Z');
   });
 });
 
