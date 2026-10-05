@@ -3584,8 +3584,8 @@ export const createRelationRaw = async (
       } : resolvedInput;
       // What a generated sighting records is changed under its edition rules, whatever id the upsert reached it by
       const validateUpsert = relationshipType === STIX_SIGHTING_RELATIONSHIP && sharedByPair && opts.bypassValidation !== true;
-      // If not upsert the element
-      return upsertElement(context, user, existingRelationship, relationshipType, upsertInput, {
+      // If not upsert the element, awaited: the lock is released only once the upsert settles
+      return await upsertElement(context, user, existingRelationship, relationshipType, upsertInput, {
         ...opts,
         locks: participantIds,
         elementAlreadyResolved: true,
