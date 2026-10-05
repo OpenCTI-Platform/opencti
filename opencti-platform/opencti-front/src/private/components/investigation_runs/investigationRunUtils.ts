@@ -95,6 +95,10 @@ export const stepStatusSeverity = (status: string): ChipSeverity => STEP_STATUS_
 export const MEMBER_RESTRICTED_CODE = 'member_restricted';
 // Served to a reader who can no longer read an entity of the investigation.
 export const SOURCE_INACCESSIBLE_CODE = 'source_inaccessible';
+// The investigation concluded, then the platform did not confirm its approved changes written.
+export const DRAFT_VALIDATION_FAILED_CODE = 'draft_validation_failed';
+export const DRAFT_VALIDATION_UNCONFIRMED_CODE = 'draft_validation_unconfirmed';
+export const isDraftValidationFailure = (code: string | null | undefined) => code === DRAFT_VALIDATION_FAILED_CODE || code === DRAFT_VALIDATION_UNCONFIRMED_CODE;
 
 // Why a run ended without the engine or was stopped by OpenCTI, by end_reason_code.
 export const ENGINE_REASON_LABELS: Record<string, string> = {
@@ -106,11 +110,29 @@ export const ENGINE_REASON_LABELS: Record<string, string> = {
   engine_no_agent: 'No agent of the connected XTM One answers the autonomous investigation intent.',
   engine_unreachable: 'The XTM One investigation engine cannot be reached.',
   'run.time_budget_spent': 'The time budget of the investigation was spent before it completed.',
-  draft_validation_failed: 'Some approved changes could not be written to the case. Open the draft to see what was approved, then check the case before running Case Autopilot again.',
-  draft_validation_unconfirmed: 'The platform did not confirm in time that the approved changes were written to the case. Open the draft to see what was approved, then check the case.',
+  [DRAFT_VALIDATION_FAILED_CODE]: 'Some approved changes could not be written to the case. Open the draft to see what was approved, then check the case before running Case Autopilot again.',
+  [DRAFT_VALIDATION_UNCONFIRMED_CODE]: 'The platform did not confirm in time that the approved changes were written to the case. Open the draft to see what was approved, then check the case.',
 };
 
 export const engineReasonLabel = (code: string | null | undefined) => (code ? ENGINE_REASON_LABELS[code] ?? null : null);
+
+// Gates the end of an investigation closed, by their recorded reason: no one decided them.
+const CLOSED_BY_THE_RUN_LABELS: Record<string, string> = {
+  'Investigation failed': 'Closed when the investigation failed: {subject}',
+  'Investigation stopped': 'Closed when the investigation stopped: {subject}',
+};
+
+export const closedByTheRunLabel = (rejectionReason: string | null | undefined, hasDecider: boolean) => (
+  !hasDecider && rejectionReason ? CLOSED_BY_THE_RUN_LABELS[rejectionReason] ?? null : null
+);
+
+/** What became of an approved draft, as far as the platform confirmed it. */
+export const approvedDraftOutcome = (run: { run_status: string; run_phase: string; end_reason_code?: string | null }) => {
+  if (run.end_reason_code === DRAFT_VALIDATION_FAILED_CODE) return 'some changes could not be written to the case';
+  if (run.end_reason_code === DRAFT_VALIDATION_UNCONFIRMED_CODE) return 'the platform did not confirm the changes were written to the case';
+  if (isRunActive(run.run_status) && run.run_phase === 'validating') return 'the changes are being written to the case';
+  return 'the changes were written to the case';
+};
 
 // Investigations stopped at an access boundary, whose findings are withheld: why their sections are empty.
 const WITHHELD_SECTION_REASONS: Record<string, string> = {

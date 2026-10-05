@@ -34,6 +34,7 @@ import {
   buildGoalPlanView,
   engineReasonLabel,
   investigationGraphPath,
+  isDraftValidationFailure,
   isEngineRunOver,
   isRunActive,
   MEMBER_RESTRICTED_CODE,
@@ -110,7 +111,7 @@ const InvestigationRunHeader = ({ run, handlers, onOpenReport, onGiveFeedback, l
   const { budget } = run;
   const iterationsSpent = budget.max_iterations > 0 && budget.used_iterations >= budget.max_iterations;
   // The error tone is kept for failures: a run that used its budget and concluded did not fail.
-  const budgetFailed = iterationsSpent && run.run_status === 'failed';
+  const budgetFailed = iterationsSpent && run.run_status === 'failed' && !isDraftValidationFailure(run.end_reason_code);
   const usedMinutes = Math.round(budget.used_minutes * 100) / 100;
   const sentence = run.run_status === 'failed' && reasonText ? reasonText : runStatusSentence({
     run_status: run.run_status,

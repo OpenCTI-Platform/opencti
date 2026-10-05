@@ -30,7 +30,14 @@ import { MESSAGING$ } from '../../../relay/environment';
 import useGranted, { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../utils/hooks/useGranted';
 import InvestigationRunDraftPreview from './InvestigationRunDraftPreview';
 import { draftChangeCount, draftChangeSummary } from './investigationRunDraftChanges';
-import { APPROVAL_KIND_LABELS, decideInvestigationApprovals, type InvestigationApprovalDecision, SEVERITY_LABELS } from './investigationRunUtils';
+import {
+  APPROVAL_KIND_LABELS,
+  approvedDraftOutcome,
+  closedByTheRunLabel,
+  decideInvestigationApprovals,
+  type InvestigationApprovalDecision,
+  SEVERITY_LABELS,
+} from './investigationRunUtils';
 import type { InvestigationRunView_run$data } from './__generated__/InvestigationRunView_run.graphql';
 
 type Run = InvestigationRunView_run$data;
@@ -210,17 +217,21 @@ const DecidedLine = ({ run, approval, entityNames }: { run: Run; approval: Appro
   const approved = approval.status === 'approved';
   const who = approval.decider?.name ?? t_i18n('an analyst');
   const subject = approval.kind === 'draft_validation'
-    ? t_i18n(approved ? 'the changes were written to the case' : 'the draft stays open for review')
+    ? t_i18n(approved ? approvedDraftOutcome(run) : 'the draft stays open for review')
     : text.title;
+  const closedByTheRun = approved ? null : closedByTheRunLabel(approval.rejection_reason, !!approval.decider);
+  let line = t_i18n(approved ? 'Approved by {user}: {subject}' : 'Rejected by {user}: {subject}', { values: { user: who, subject } });
+  if (closedByTheRun) {
+    line = t_i18n(closedByTheRun, { values: { subject } });
+  } else if (!approved && approval.rejection_reason) {
+    line = `${line} - ${approval.rejection_reason}`;
+  }
   return (
     <Stack component="li" direction="row" spacing={1} alignItems="center" sx={{ paddingY: 0.25 }} data-testid="investigation-approval-decided">
       {approved
         ? <CheckCircleOutlined fontSize="small" color="success" titleAccess={t_i18n('Approved')} />
         : <HighlightOffOutlined fontSize="small" color="action" titleAccess={t_i18n('Rejected')} />}
-      <Typography variant="body2" sx={{ minWidth: 0, overflowWrap: 'anywhere' }}>
-        {t_i18n(approved ? 'Approved by {user}: {subject}' : 'Rejected by {user}: {subject}', { values: { user: who, subject } })}
-        {!approved && approval.rejection_reason ? ` - ${approval.rejection_reason}` : ''}
-      </Typography>
+      <Typography variant="body2" sx={{ minWidth: 0, overflowWrap: 'anywhere' }}>{line}</Typography>
       {approval.decided_at && <RelativeTime date={approval.decided_at} />}
     </Stack>
   );

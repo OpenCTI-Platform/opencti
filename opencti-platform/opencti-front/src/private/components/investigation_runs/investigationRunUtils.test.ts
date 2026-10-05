@@ -1,10 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   actionStatus,
+  approvedDraftOutcome,
   budgetPercent,
   buildGoalPlanView,
   caseAutopilotPath,
   citationNumbers,
+  closedByTheRunLabel,
   consistencyOf,
   consumeGraphAutoOpen,
   decideInvestigationApprovals,
@@ -17,6 +19,7 @@ import {
   goalObjective,
   isCaseCreationRefused,
   isEarlierEvidence,
+  isDraftValidationFailure,
   isEngineRunOver,
   isRunActive,
   rememberGraphAutoOpen,
@@ -199,6 +202,25 @@ describe('Case Autopilot run helpers', () => {
     expect(engineReasonLabel('draft_validation_unconfirmed')).toContain('did not confirm in time');
     expect(engineReasonLabel('other')).toBeNull();
     expect(engineReasonLabel(null)).toBeNull();
+  });
+
+  it('says what became of an approved draft, as far as the platform confirmed it', () => {
+    expect(approvedDraftOutcome({ run_status: 'completed', run_phase: 'done' })).toBe('the changes were written to the case');
+    expect(approvedDraftOutcome({ run_status: 'running', run_phase: 'validating' })).toBe('the changes are being written to the case');
+    expect(approvedDraftOutcome({ run_status: 'failed', run_phase: 'done', end_reason_code: 'draft_validation_failed' })).toBe('some changes could not be written to the case');
+    expect(approvedDraftOutcome({ run_status: 'failed', run_phase: 'done', end_reason_code: 'draft_validation_unconfirmed' }))
+      .toBe('the platform did not confirm the changes were written to the case');
+    expect(isDraftValidationFailure('draft_validation_failed')).toBe(true);
+    expect(isDraftValidationFailure('member_restricted')).toBe(false);
+    expect(isDraftValidationFailure(null)).toBe(false);
+  });
+
+  it('credits the gates the end of an investigation closed to the investigation, never to an analyst', () => {
+    expect(closedByTheRunLabel('Investigation failed', false)).toBe('Closed when the investigation failed: {subject}');
+    expect(closedByTheRunLabel('Investigation stopped', false)).toBe('Closed when the investigation stopped: {subject}');
+    expect(closedByTheRunLabel('Investigation failed', true)).toBeNull();
+    expect(closedByTheRunLabel('Run cancelled', false)).toBeNull();
+    expect(closedByTheRunLabel(null, false)).toBeNull();
   });
 
   it('says why the sections of an investigation stopped at an access boundary are empty', () => {
