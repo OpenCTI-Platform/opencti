@@ -79,6 +79,24 @@ describe('ContainerTimelineLanes accessibility', () => {
     const cluster = screen.getByRole('button', { name: /^2 events - / });
     expect(cluster).toHaveAttribute('tabindex', '0');
     expect(cluster.querySelector('.timeline-cluster-focus')).not.toBeNull();
-    expect(container.querySelector('svg style')?.textContent).toContain('.timeline-cluster:focus-visible .timeline-cluster-focus { visibility: visible; }');
+    expect(container.querySelector('style')?.textContent).toContain('.timeline-cluster:focus-visible .timeline-cluster-focus { visibility: visible; }');
+  });
+
+  it('outlines the zoomable chart on keyboard focus only, never with an inline style that would hide it', () => {
+    const { container } = testRender(
+      <ContainerTimelineLanes
+        events={[event('derived-1', 'derived')]}
+        lanes={['response']}
+        domain={domain}
+        grouping="day"
+        ariaLabel="Timeline"
+        onDomainChange={() => {}}
+      />,
+    );
+    const chart = screen.getByTestId('timeline-lanes');
+    expect(chart).toHaveAttribute('tabindex', '0');
+    expect(chart).toHaveClass('timeline-lanes');
+    expect(chart.style.outline).toEqual('');
+    expect(container.querySelector('style')?.textContent).toMatch(/\.timeline-lanes:focus-visible \{ outline: 2px solid [^;]+; outline-offset: -2px; \}/);
   });
 });

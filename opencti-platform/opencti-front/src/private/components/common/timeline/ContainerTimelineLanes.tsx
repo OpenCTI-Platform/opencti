@@ -402,13 +402,19 @@ const ContainerTimelineLanes = ({
   return (
     <div
       ref={containerRef}
-      style={{ position: 'relative', width: '100%', outline: 'none' }}
+      className="timeline-lanes"
+      style={{ position: 'relative', width: '100%' }}
       tabIndex={interactive ? 0 : undefined}
       role={interactive ? 'group' : undefined}
       aria-label={interactive ? `${ariaLabel}. ${t_i18n('Use plus and minus to zoom, left and right arrows to pan, 0 to fit')}` : undefined}
       onKeyDown={onChartKeyDown}
       data-testid="timeline-lanes"
     >
+      {/* Keyboard focus only: a ring inside the chart, and around the circle of a cluster (the browser outline would frame its whole group) */}
+      <style>
+        {`.timeline-lanes { outline: none; } .timeline-lanes:focus-visible { outline: 2px solid ${colors.focus}; outline-offset: -2px; } `
+          + '.timeline-cluster-focus { visibility: hidden; } .timeline-cluster:focus-visible .timeline-cluster-focus { visibility: visible; }'}
+      </style>
       <svg
         ref={svgRef}
         width={width}
@@ -425,8 +431,6 @@ const ContainerTimelineLanes = ({
           <clipPath id={clipId}>
             <rect x={plotLeft} y={0} width={plotWidth} height={totalHeight} />
           </clipPath>
-          {/* The browser outline of a focused cluster would frame its group, not its circle: a ring shows the keyboard focus */}
-          <style>{'.timeline-cluster-focus { visibility: hidden; } .timeline-cluster:focus-visible .timeline-cluster-focus { visibility: visible; }'}</style>
         </defs>
         <rect x={0} y={0} width={width} height={totalHeight} fill={colors.background} />
         {laneLayouts.map((layout, index) => (
