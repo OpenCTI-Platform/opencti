@@ -64,6 +64,7 @@ const connectorHuntDetailsRunsQuery = graphql`
           hits_count
           verdict
           created_at
+          hunt_deleted
           hunt {
             name
           }
@@ -95,16 +96,14 @@ const ConnectorLatestHuntRuns = ({ connectorId }: { connectorId: string }) => {
   }
   return (
     <ul style={{ listStyle: 'none', margin: 0, padding: 0 }} data-testid="connector-hunt-runs">
-      {runs.map((run) => (
-        <li key={run.id} style={{ borderBottom: `1px solid ${theme.palette.divider}` }}>
-          <Link
-            to={`${PATH_HUNT(run.hunt_id)}/runs/${run.id}`}
-            style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1.5), padding: theme.spacing(1, 0), color: 'inherit', textDecoration: 'none' }}
-          >
+      {runs.map((run) => {
+        const rowStyle = { display: 'flex', alignItems: 'center', gap: theme.spacing(1.5), padding: theme.spacing(1, 0), color: 'inherit', textDecoration: 'none' };
+        const row = (
+          <>
             <HuntRunStatusChip value={run.hunt_run_status} />
             <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={run.hunt?.name ?? undefined}>
-                <Text variant="content-compact">{run.hunt?.name ?? t_i18n('Restricted hunt')}</Text>
+                <Text variant="content-compact">{run.hunt?.name ?? t_i18n(run.hunt_deleted ? 'Deleted hunt' : 'Restricted hunt')}</Text>
               </span>
               <Text variant="content-caption">{`${fldt(run.created_at)} - ${t_i18n(huntRunTriggerLabel(run.hunt_run_trigger))}`}</Text>
             </span>
@@ -116,9 +115,16 @@ const ConnectorLatestHuntRuns = ({ connectorId }: { connectorId: string }) => {
                 <HuntVerdictChip value={run.verdict} />
               </>
             )}
-          </Link>
-        </li>
-      ))}
+          </>
+        );
+        return (
+          <li key={run.id} style={{ borderBottom: `1px solid ${theme.palette.divider}` }} data-testid="connector-hunt-run">
+            {run.hunt_deleted
+              ? <div style={rowStyle}>{row}</div>
+              : <Link to={`${PATH_HUNT(run.hunt_id)}/runs/${run.id}`} style={rowStyle}>{row}</Link>}
+          </li>
+        );
+      })}
     </ul>
   );
 };

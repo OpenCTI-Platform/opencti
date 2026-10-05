@@ -301,6 +301,7 @@ describe('Hunt utils', () => {
 
   it('should keep the critical tone for the true positive verdict and read triggers as states', () => {
     expect(huntRunStatusLabel('timeout')).toEqual('Timed out');
+    expect(huntRunStatusLabel('cancelled')).toEqual('Cancelled');
     expect(huntRunStatusSeverity('failed')).toEqual('high');
     expect(huntRunStatusSeverity('timeout')).toEqual('high');
     expect(huntTechniqueValidationSeverity('not_detected')).toEqual('high');

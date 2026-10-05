@@ -9,7 +9,7 @@ export const HUNT_RUN_ENTITY_TYPE = 'Hunt-Run';
 export const HUNT_TYPES = ['indicators', 'telemetry', 'infrastructure'] as const;
 export const HUNT_STATUSES = ['draft', 'active', 'paused', 'retired'] as const;
 export const HUNT_SOURCE_KINDS = ['analyst', 'agent', 'hub'] as const;
-export const HUNT_RUN_STATUSES = ['queued', 'running', 'completed', 'failed', 'timeout'] as const;
+export const HUNT_RUN_STATUSES = ['queued', 'running', 'completed', 'failed', 'timeout', 'cancelled'] as const;
 export const HUNT_RUN_TRIGGERS = ['manual', 'schedule', 'standing', 'pir', 'playbook', 'emulation', 'preview', 'retry'] as const;
 export const HUNT_RUN_VERDICTS = ['pending', 'true_positive', 'benign', 'inconclusive'] as const;
 export const HUNT_ANALYST_VERDICTS = ['true_positive', 'benign', 'inconclusive'] as const;
@@ -253,6 +253,7 @@ export const huntRunStatusLabel = (status?: string | null) => {
     case 'completed': return 'Completed';
     case 'failed': return 'Failed';
     case 'timeout': return 'Timed out';
+    case 'cancelled': return 'Cancelled';
     default: return 'Unknown';
   }
 };
