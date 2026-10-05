@@ -59,6 +59,7 @@ import { ConnectorRequestStatus, type EditInput } from '../../generated/graphql'
 import { addSourceRecommendationOutcome } from '../../manager/telemetryManager';
 import { MODULES_MODMANAGE, type SourceIntelligenceSettings } from './sourceIntelligence-settings';
 import {
+  ACTIVE_RECOMMENDATION_STATUSES,
   type BasicStoreEntitySource,
   type BasicStoreEntitySourceRecommendation,
   ENTITY_TYPE_SOURCE,
@@ -111,14 +112,6 @@ export interface RecommendationApplyInput {
 const DAY_MS = 24 * 3600 * 1000;
 type ManagedConnector = BasicStoreEntityConnector & { manager_requested_status?: string | null; title?: string };
 const STOPPED_STATUSES = ['stopping', 'stopped'];
-// A failed recommendation stays the live entry of its fingerprint, to be retried, never proposed again beside it
-const ACTIVE_STATUSES = [
-  RECOMMENDATION_STATUS_PROPOSED,
-  RECOMMENDATION_STATUS_APPLYING,
-  RECOMMENDATION_STATUS_APPLIED,
-  RECOMMENDATION_STATUS_REVERTING,
-  RECOMMENDATION_STATUS_FAILED,
-];
 const FEED_EDIT_FUNCTIONS: Record<string, (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => Promise<unknown>> = {
   [ENTITY_TYPE_INGESTION_RSS]: ingestionRssEditField,
   [ENTITY_TYPE_INGESTION_TAXII]: ingestionTaxiiEditField,
@@ -947,7 +940,7 @@ export const upsertProposals = async (
       payload: JSON.stringify(proposal.payload),
       evidence: JSON.stringify(proposal.evidence),
     };
-    if (current && ACTIVE_STATUSES.includes(current.recommendation_status as typeof ACTIVE_STATUSES[number])) {
+    if (current && ACTIVE_RECOMMENDATION_STATUSES.includes(current.recommendation_status as typeof ACTIVE_RECOMMENDATION_STATUSES[number])) {
       if (current.recommendation_status === RECOMMENDATION_STATUS_PROPOSED) {
         const namedAuthors = await recordNamedAuthors(context, { source_id: current.source_id, payload: fields.payload, named_authors: current.named_authors });
         await patchAttribute(context, SOURCE_INTELLIGENCE_MANAGER_USER, current.internal_id, ENTITY_TYPE_SOURCE_RECOMMENDATION, { ...fields, named_authors: namedAuthors });
@@ -960,7 +953,7 @@ export const upsertProposals = async (
     }
     // A one-click deployment may have created the recommendation of this fingerprint since the list was read
     const recommendation = await withFingerprintLock(proposal.fingerprint, async () => {
-      const live = await findRecommendationsByFingerprint(context, proposal.fingerprint, [...ACTIVE_STATUSES]);
+      const live = await findRecommendationsByFingerprint(context, proposal.fingerprint, [...ACTIVE_RECOMMENDATION_STATUSES]);
       return live.length > 0 ? null : createProposal(context, proposal, nowIso);
     });
     if (recommendation) {

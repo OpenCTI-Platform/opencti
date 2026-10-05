@@ -11,12 +11,18 @@ import {
   planStreamBatch,
   streamBoundaryOf,
 } from '../../../../src/manager/sourceIntelligenceManager';
-import { backfillProgress, buildResolverFromSources, isKeptOutsideDiscovery } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-domain';
+import { backfillProgress, buildResolverFromSources, fingerprintOnKeptSource, isKeptOutsideDiscovery } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-domain';
+import { recommendationFingerprint } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-rules';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
 import { RELATION_IN_PIR } from '../../../../src/schema/internalRelationship';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../../src/modules/securityPlatform/securityPlatform-types';
 import { createComputeState, processDocument } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-compute';
-import { type BasicStoreEntitySource, SCORECARD_PERIODS } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-types';
+import {
+  type BasicStoreEntitySource,
+  RECOMMENDATION_ADD_CONNECTOR,
+  RECOMMENDATION_RETIRE,
+  SCORECARD_PERIODS,
+} from '../../../../src/modules/sourceIntelligence/sourceIntelligence-types';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_PROVENANCE } from '../../../../src/types/stix-2-1-extensions';
 import type { AuthContext } from '../../../../src/types/user';
 import { buildIntelligenceRoiManifest, SCORECARD_METRICS } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-widgets';
@@ -496,6 +502,13 @@ describe('Source intelligence author and analyst discovery', () => {
   it('should keep a departed source while a change applied to it can still be reverted', () => {
     expect(isKeptOutsideDiscovery(departed, new Set(['source-author-1']))).toBe(true);
     expect(isKeptOutsideDiscovery(departed, new Set(['another-source']))).toBe(false);
+  });
+
+  it('should give the recommendations of a merged analyst source the fingerprint of the kept one', () => {
+    expect(fingerprintOnKeptSource(recommendationFingerprint(RECOMMENDATION_RETIRE, 'source-2'), 'source-2', 'source-1'))
+      .toEqual(recommendationFingerprint(RECOMMENDATION_RETIRE, 'source-1'));
+    const gap = recommendationFingerprint(RECOMMENDATION_ADD_CONNECTOR, 'pir-1', 'criterion-source-2', 'connector');
+    expect(fingerprintOnKeptSource(gap, 'source-2', 'source-1')).toEqual(gap);
   });
 });
 

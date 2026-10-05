@@ -13,11 +13,15 @@ import {
   writeScorecards,
 } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-store';
 import { computeCostPerActionable } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-scoring';
+import { type RecommendationProposal, recommendationFingerprint } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-rules';
 import {
   type BasicStoreEntitySource,
+  type BasicStoreEntitySourceRecommendation,
   ENTITY_TYPE_SOURCE,
   ENTITY_TYPE_SOURCE_RECOMMENDATION,
   ENTITY_TYPE_SOURCE_SCORECARD,
+  RECOMMENDATION_LOWER_CONFIDENCE,
+  RECOMMENDATION_RETIRE,
   REFERENCE_SCORECARD_PERIOD,
   SCORECARD_PERIOD_DAYS,
   SCORECARD_PERIODS,
@@ -583,12 +587,24 @@ describe('Source intelligence', () => {
     const { created } = await upsertProposals(testContext, [{
       kind: 'retire',
       source_id: duplicate.internal_id,
-      fingerprint: `${TEST_FINGERPRINT_PREFIX}-merged-analyst`,
+      fingerprint: recommendationFingerprint(RECOMMENDATION_RETIRE, duplicate.internal_id),
       name: 'Retire the duplicate analyst source',
       rationale: 'Integration test',
       payload: { target: 'source' },
       evidence: {},
     }], settings, { kinds: [] });
+    // The same pending recommendation on both sources: the kept one stays the only live entry of its fingerprint
+    const lowerConfidence = (sourceId: string): RecommendationProposal => ({
+      kind: RECOMMENDATION_LOWER_CONFIDENCE,
+      source_id: sourceId,
+      fingerprint: recommendationFingerprint(RECOMMENDATION_LOWER_CONFIDENCE, sourceId),
+      name: 'Lower the confidence of the analyst source',
+      rationale: 'Integration test',
+      payload: { target: 'source' },
+      evidence: {},
+    });
+    const { created: pending } = await upsertProposals(testContext, [lowerConfidence(duplicate.internal_id), lowerConfidence(kept.internal_id)], settings, { kinds: [] });
+    expect(pending.length).toBe(2);
     await patchAttribute(testContext, ADMIN_USER, created[0].internal_id, ENTITY_TYPE_SOURCE_RECOMMENDATION, {
       recommendation_status: 'applied',
       revert_payload: JSON.stringify({ target: 'source', source_id: duplicate.internal_id, previous_enabled: true }),
@@ -613,17 +629,21 @@ describe('Source intelligence', () => {
     expect(await storeLoadById(testContext, ADMIN_USER, duplicate.internal_id, ENTITY_TYPE_SOURCE)).toBeFalsy();
     const merged = await storeLoadById<BasicStoreEntitySource>(testContext, ADMIN_USER, kept.internal_id, ENTITY_TYPE_SOURCE);
     expect(merged?.tags).toEqual(['reviewed']);
-    const recommendation = await storeLoadById<BasicStoreEntity & { source_id: string; revert_payload: string }>(
-      testContext,
-      ADMIN_USER,
-      created[0].internal_id,
-      ENTITY_TYPE_SOURCE_RECOMMENDATION,
-    );
+    const loadRecommendation = (id: string) => storeLoadById<BasicStoreEntitySourceRecommendation>(testContext, ADMIN_USER, id, ENTITY_TYPE_SOURCE_RECOMMENDATION);
+    const recommendation = await loadRecommendation(created[0].internal_id);
     expect(recommendation?.source_id).toBe(kept.internal_id);
+    expect(recommendation?.fingerprint).toBe(recommendationFingerprint(RECOMMENDATION_RETIRE, kept.internal_id));
     expect(JSON.parse(recommendation?.revert_payload ?? '{}').source_id).toBe(kept.internal_id);
+    const [movedPending, keptPending] = await Promise.all(pending.map((proposal) => loadRecommendation(proposal.internal_id)));
+    expect(movedPending?.fingerprint).toBe(recommendationFingerprint(RECOMMENDATION_LOWER_CONFIDENCE, kept.internal_id));
+    expect(movedPending?.recommendation_status).toBe('dismissed');
+    expect(keptPending?.recommendation_status).toBe('proposed');
     const history = await searchScorecards(testContext, { sourceIds: [kept.internal_id], live: false });
     expect(history.map((scorecard) => scorecard.snapshot_date)).toContain('2026-01-01');
-    await deleteElementById(testContext, ADMIN_USER, created[0].internal_id, ENTITY_TYPE_SOURCE_RECOMMENDATION);
+    const recommendationIds = [created[0], ...pending].map((proposal) => proposal.internal_id);
+    for (let i = 0; i < recommendationIds.length; i += 1) {
+      await deleteElementById(testContext, ADMIN_USER, recommendationIds[i], ENTITY_TYPE_SOURCE_RECOMMENDATION);
+    }
     await deleteElementById(testContext, ADMIN_USER, kept.internal_id, ENTITY_TYPE_SOURCE);
     await deleteScorecardsOfSources(testContext, [kept.internal_id]);
   });

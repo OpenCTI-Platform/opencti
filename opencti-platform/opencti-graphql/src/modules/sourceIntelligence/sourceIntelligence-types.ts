@@ -62,6 +62,14 @@ export const RECOMMENDATION_STATUS_FAILED = 'failed';
 export const RECOMMENDATION_STATUS_APPLYING = 'applying';
 // Recorded before the side effect of a revert runs: a revert whose outcome could not be recorded stays in it
 export const RECOMMENDATION_STATUS_REVERTING = 'reverting';
+// A failed recommendation stays the live entry of its fingerprint, to be retried, never proposed again beside it
+export const ACTIVE_RECOMMENDATION_STATUSES = [
+  RECOMMENDATION_STATUS_PROPOSED,
+  RECOMMENDATION_STATUS_APPLYING,
+  RECOMMENDATION_STATUS_APPLIED,
+  RECOMMENDATION_STATUS_REVERTING,
+  RECOMMENDATION_STATUS_FAILED,
+] as const;
 export const RECOMMENDATION_STATUSES = [
   RECOMMENDATION_STATUS_PROPOSED,
   RECOMMENDATION_STATUS_APPLYING,

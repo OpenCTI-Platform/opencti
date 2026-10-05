@@ -43,6 +43,7 @@ import {
   validateSourceIntelligenceSettingsInput,
 } from './sourceIntelligence-settings';
 import {
+  ACTIVE_RECOMMENDATION_STATUSES,
   type BasicStoreEntitySource,
   type BasicStoreEntitySourceRecommendation,
   ENTITY_TYPE_SOURCE,
@@ -50,6 +51,9 @@ import {
   RECOMMENDATION_QUARANTINE,
   RECOMMENDATION_STATUS_APPLIED,
   RECOMMENDATION_STATUS_APPLYING,
+  RECOMMENDATION_STATUS_DISMISSED,
+  RECOMMENDATION_STATUS_FAILED,
+  RECOMMENDATION_STATUS_PROPOSED,
   RECOMMENDATION_STATUS_REVERTING,
   REFERENCE_SCORECARD_PERIOD,
   SCORECARD_PERIOD_DAYS,
@@ -941,23 +945,50 @@ export const isKeptOutsideDiscovery = (source: BasicStoreEntitySource & { descri
 
 type CuratedSource = BasicStoreEntitySource & { description?: string | null };
 
+/** Fingerprint of a recommendation moved from a merged source to the kept one: its source id parts follow the move. */
+export const fingerprintOnKeptSource = (fingerprint: string, duplicateId: string, keptId: string) => {
+  return fingerprint.split(':').map((part) => (part === duplicateId ? keptId : part)).join(':');
+};
+
+const isActiveRecommendation = (recommendation: BasicStoreEntitySourceRecommendation) => {
+  return ACTIVE_RECOMMENDATION_STATUSES.includes(recommendation.recommendation_status as typeof ACTIVE_RECOMMENDATION_STATUSES[number]);
+};
+
+const loadRecommendationsOfSource = (context: AuthContext, sourceId: string) => {
+  return fullEntitiesList<BasicStoreEntitySourceRecommendation>(context, SYSTEM_USER, [ENTITY_TYPE_SOURCE_RECOMMENDATION], {
+    filters: { mode: 'and', filters: [{ key: ['source_id'], values: [sourceId], operator: 'eq', mode: 'or' }], filterGroups: [] },
+  } as any);
+};
+
 /**
  * Two analyst sources reference the same user once their users were merged: the kept one takes over what the other
- * one holds before it is removed. Its recommendations follow it, so a change applied to the other one can still
- * be reverted; what a person curated on the other one is kept where the kept source has nothing of its own (a disabled
- * or quarantined state wins, as the revert of the recommendation that set it now targets the kept source); its daily
- * snapshots fill the days the kept source has no snapshot of.
+ * one holds before it is removed. Its recommendations follow it with the fingerprint of the kept source, so a change
+ * applied to the other one can still be reverted, a reverted one still holds autonomy back and the rules never
+ * propose them again; a pending one (proposed or failed) whose fingerprint the kept source already holds live is
+ * withdrawn, so one fingerprint keeps one live entry. What a person curated on the other one is kept where the kept
+ * source has nothing of its own (a disabled or quarantined state wins, as the revert of the recommendation that set it
+ * now targets the kept source); its daily snapshots fill the days the kept source has no snapshot of.
  */
 export const mergeDuplicateSource = async (context: AuthContext, duplicate: CuratedSource, kept: CuratedSource) => {
-  const recommendations = await fullEntitiesList<BasicStoreEntitySourceRecommendation>(context, SYSTEM_USER, [ENTITY_TYPE_SOURCE_RECOMMENDATION], {
-    filters: { mode: 'and', filters: [{ key: ['source_id'], values: [duplicate.internal_id], operator: 'eq', mode: 'or' }], filterGroups: [] },
-  } as any);
+  const recommendations = await loadRecommendationsOfSource(context, duplicate.internal_id);
+  const keptLive = new Set((await loadRecommendationsOfSource(context, kept.internal_id))
+    .filter(isActiveRecommendation)
+    .map((recommendation) => recommendation.fingerprint));
+  const pendingStatuses: string[] = [RECOMMENDATION_STATUS_PROPOSED, RECOMMENDATION_STATUS_FAILED];
   for (let i = 0; i < recommendations.length; i += 1) {
     const recommendation = recommendations[i];
     const revert = parseJsonRecord(recommendation.revert_payload);
-    const patch: Record<string, unknown> = { source_id: kept.internal_id };
+    const fingerprint = fingerprintOnKeptSource(recommendation.fingerprint, duplicate.internal_id, kept.internal_id);
+    const patch: Record<string, unknown> = { source_id: kept.internal_id, fingerprint };
     if (revert.source_id === duplicate.internal_id) {
       patch.revert_payload = JSON.stringify({ ...revert, source_id: kept.internal_id });
+    }
+    if (keptLive.has(fingerprint) && pendingStatuses.includes(recommendation.recommendation_status)) {
+      patch.recommendation_status = RECOMMENDATION_STATUS_DISMISSED;
+      patch.dismissed_at = new Date().toISOString();
+      patch.dismiss_reason = 'Withdrawn: the merged source already holds this recommendation';
+    } else if (isActiveRecommendation(recommendation)) {
+      keptLive.add(fingerprint);
     }
     await patchAttribute(context, SOURCE_INTELLIGENCE_MANAGER_USER, recommendation.internal_id, ENTITY_TYPE_SOURCE_RECOMMENDATION, patch);
   }
