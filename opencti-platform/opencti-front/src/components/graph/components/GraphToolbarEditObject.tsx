@@ -48,7 +48,9 @@ const GraphToolbarEditObject = ({
 
   const isNotEditableFromGraph = !!objectToEdit
     && (objectToEdit.parent_types.includes('Stix-Meta-Object')
-      || objectToEdit.parent_types.includes('Internal-Object'));
+      || objectToEdit.parent_types.includes('Internal-Object')
+      || objectToEdit.parent_types.includes('stix-ref-relationship')
+      || objectToEdit.parent_types.includes('internal-relationship'));
 
   const openEditionForm = () => {
     if (!objectToEdit || isNotEditableFromGraph) return;
