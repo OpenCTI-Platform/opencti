@@ -175,10 +175,10 @@ const LaunchForm = ({ subjectId, subjectType, onStarted, onCancel }: LaunchFormP
   else if (enrichmentRefused) startBlocker = t_i18n('This policy runs enrichments, which your role does not allow: choose another policy');
   else if (caseCreationRefused) startBlocker = t_i18n('This policy does not create cases: select an existing case or choose another policy');
   else if (caseMissing) startBlocker = t_i18n('Select the case of the investigation');
-  let intro = t_i18n('Case Autopilot investigates this observable with XTM One and writes what it finds to a draft you approve.');
-  if (subjectType === 'Indicator') intro = t_i18n('Case Autopilot investigates this indicator with XTM One and writes what it finds to a draft you approve.');
-  else if (subjectType === 'Incident') intro = t_i18n('Case Autopilot investigates this incident with XTM One and writes what it finds to a draft you approve.');
-  else if (!needsCase) intro = t_i18n('Case Autopilot investigates this case with XTM One and writes what it finds to a draft you approve.');
+  let intro = t_i18n('Investigates this observable with XTM One and drafts the findings for your approval.');
+  if (subjectType === 'Indicator') intro = t_i18n('Investigates this indicator with XTM One and drafts the findings for your approval.');
+  else if (subjectType === 'Incident') intro = t_i18n('Investigates this incident with XTM One and drafts the findings for your approval.');
+  else if (!needsCase) intro = t_i18n('Investigates this case with XTM One and drafts the findings for your approval.');
   const start = () => {
     commit({
       variables: {

@@ -269,7 +269,7 @@ const InvestigationPolicyForm = ({ policy, submitLabel, onSubmit, onCancel }: In
             name="auto_approve_min_confidence"
             type="number"
             label={t_i18n('Minimum confidence for the automatic approval (%)')}
-            helperText={t_i18n('The leading hypothesis must reach this confidence for a low-risk draft to be approved automatically, for example 80 (0 to 100). Ignored while the automatic approval is off.')}
+            helperText={t_i18n('Confidence the leading hypothesis needs for a low-risk draft to be approved automatically, for example 80 (0 to 100).')}
             fullWidth
             style={{ marginTop: 20 }}
           />
@@ -297,7 +297,7 @@ const InvestigationPolicyForm = ({ policy, submitLabel, onSubmit, onCancel }: In
             name="max_enrichment_jobs"
             type="number"
             label={t_i18n('Maximum enrichment jobs')}
-            helperText={t_i18n('Connector runs one investigation may request, for example 20 (0 to 200, 0 turns enrichment off). Once reached, further enrichment requests are refused and the investigation goes on with what it has.')}
+            helperText={t_i18n('Connector runs one investigation may request, for example 20 (0 to 200, 0 turns enrichment off). Further requests are then refused.')}
             fullWidth
             style={{ marginTop: 20 }}
           />
@@ -316,7 +316,7 @@ const InvestigationPolicyForm = ({ policy, submitLabel, onSubmit, onCancel }: In
             type="checkbox"
             name="trigger_on_case_rfi_creation"
             label={t_i18n('Investigate every new request for information')}
-            helpertext={t_i18n('Starts an investigation with this policy whenever a request for information is created. When off, requests for information are investigated only when someone runs Case Autopilot.')}
+            helpertext={t_i18n('Starts an investigation with this policy when a request for information is created; otherwise only on demand.')}
             containerstyle={fieldSpacingContainerStyle}
           />
           <PlaybookFlowFieldRunAs
