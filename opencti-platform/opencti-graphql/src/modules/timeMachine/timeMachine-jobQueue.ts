@@ -32,7 +32,8 @@ export const createBoundedJobQueue = (name: string, concurrency: number, maxPend
       const job = pending.shift() as { key: string; run: () => Promise<void> };
       running += 1;
       job.run()
-        .catch((err) => logApp.error('[OPENCTI-MODULE] Queued job failed', { cause: err, queue: name, key: job.key }))
+        // The caller keeps the jobs it must not lose and runs a failed one again
+        .catch((err) => logApp.warn('[OPENCTI-MODULE] Queued job failed', { cause: err, queue: name, key: job.key }))
         .finally(() => {
           running -= 1;
           keys.delete(job.key);
