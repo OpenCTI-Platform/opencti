@@ -204,6 +204,8 @@ interface RunExecution {
   liveContext: AuthContext;
   draftContext: AuthContext;
   now: Date;
+  // Executed under the run actions lock (ingestion, revalidation): not taken again.
+  holdsActions?: boolean;
 }
 
 // region helpers
@@ -1003,8 +1005,19 @@ const deleteStoppedRunArtifacts = async (context: AuthContext, runId: string, ar
 // what the run can no longer carry: the engine's text, the conclusion OpenCTI
 // scored from it, the references to its outputs, its draft, deleted with what
 // it wrote there, and its investigation graph, which holds what it read. Gates
-// still waiting are rejected, jobs not started skipped.
-const stopRunAtCarryBoundary = async (context: AuthContext, runId: string, boundary: { reason: string; code: string }) => {
+// still waiting are rejected, jobs not started skipped. The stop and its cleanup
+// run under the run actions lock, as approvals and their effects do: an approval
+// either completes before the stop, or finds the run stopped.
+const stopRunAtCarryBoundary = async (
+  context: AuthContext,
+  runId: string,
+  boundary: { reason: string; code: string },
+  opts: { holdsActions?: boolean } = {},
+) => {
+  if (!opts.holdsActions) {
+    await withRunActions(context, runId, () => stopRunAtCarryBoundary(context, runId, boundary, { holdsActions: true }));
+    return;
+  }
   const now = new Date();
   const stop: { done: boolean; engineRunning: boolean; draftId: string | null; workspaceId: string | null } = {
     done: false,
@@ -1038,7 +1051,9 @@ const stopRunAtCarryBoundary = async (context: AuthContext, runId: string, bound
   }
 };
 
-const stopAtCarryBoundary = (exec: RunExecution, boundary: { reason: string; code: string }) => stopRunAtCarryBoundary(exec.liveContext, exec.run.internal_id, boundary);
+const stopAtCarryBoundary = (exec: RunExecution, boundary: { reason: string; code: string }) => {
+  return stopRunAtCarryBoundary(exec.liveContext, exec.run.internal_id, boundary, { holdsActions: exec.holdsActions });
+};
 
 // The OpenCTI objects of a revision the run may cite: those its identity sees,
 // without a member restriction (the run cannot carry one).
@@ -1598,7 +1613,7 @@ const ingestRun = async (exec: RunExecution) => {
 // run actions, as a cancellation or a decision does, against a fresh run.
 const ingest = async (exec: RunExecution) => withRunActions(exec.liveContext, exec.run.internal_id, async (run) => {
   if (run.run_status !== InvestigationRunStatus.Running || run.run_phase !== InvestigationRunPhase.Ingesting) return;
-  await ingestRun({ ...exec, run });
+  await ingestRun({ ...exec, run, holdsActions: true });
 });
 
 // endregion
@@ -1776,7 +1791,7 @@ export const revalidateAwaitingInvestigationRun = async (context: AuthContext, r
       if (run.run_status !== InvestigationRunStatus.AwaitingApproval) return;
       const runUser = await resolveRunIdentity(context, run.run_as_id);
       if (!runUser) {
-        await stopRunAtCarryBoundary(context, runId, IDENTITY_UNAVAILABLE);
+        await stopRunAtCarryBoundary(context, runId, IDENTITY_UNAVAILABLE, { holdsActions: true });
         return;
       }
       const policy = run.policy_id ? await loadInvestigationPolicy(context, run.policy_id) : null;
@@ -1788,6 +1803,7 @@ export const revalidateAwaitingInvestigationRun = async (context: AuthContext, r
         liveContext: await userContext(runUser),
         draftContext: await userContext(runUser, run.draft_id),
         now: new Date(),
+        holdsActions: true,
       };
       const boundary = await findCarryBoundary(exec, runCitedIds(run));
       if (boundary) {
