@@ -9,7 +9,7 @@ import EETooltip from '@components/common/entreprise_edition/EETooltip';
 import { Stack } from '@mui/material';
 import { SettingsQuery$data } from '../__generated__/SettingsQuery.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import { SubscriptionFocus } from '../../../../components/Subscription';
+import { useSubscriptionFocusHelper } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
 import SettingsOverline from '../settings_platform/SettingsOverline';
 
@@ -35,6 +35,7 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
 }) => {
   const { t_i18n } = useFormatter();
   const { editContext } = settings;
+  const focusHelper = useSubscriptionFocusHelper(editContext);
 
   const adornment = (
     <Stack direction="row" alignItems="center" gap={1}>
@@ -84,12 +85,7 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
                   onSubmit={(name: string, value: string | null) => handleSubmitField(name, value ?? '')}
                   disabled={!isEnterpriseEdition}
                   variant="outlined"
-                  helperText={(
-                    <SubscriptionFocus
-                      context={editContext}
-                      fieldName="analytics_google_analytics_v4"
-                    />
-                  )}
+                  helperText={focusHelper('analytics_google_analytics_v4')}
                 />
               </span>
             </EETooltip>

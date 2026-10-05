@@ -18,7 +18,7 @@ import { availableLanguage } from '../../../components/AppIntlProvider';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import ItemBoolean from '../../../components/ItemBoolean';
 import Loader, { LoaderVariant } from '../../../components/Loader';
-import { SubscriptionFocus } from '../../../components/Subscription';
+import { useSubscriptionFocusHelper } from '../../../components/Subscription';
 import TextField from '../../../components/TextField';
 import type { Theme } from '../../../components/Theme';
 import Card from '../../../components/common/card/Card';
@@ -204,6 +204,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
   );
 
   const { id, editContext } = settings;
+  const focusHelper = useSubscriptionFocusHelper(editContext);
 
   const initialValues = {
     platform_title: settings.platform_title,
@@ -486,12 +487,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     fullWidth
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
-                    helperText={(
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_title"
-                      />
-                    )}
+                    helperText={focusHelper('platform_title')}
                   />
                   <Field
                     component={TextField}
@@ -502,12 +498,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     className="mt-5"
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
-                    helperText={(
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_favicon"
-                      />
-                    )}
+                    helperText={focusHelper('platform_favicon')}
                   />
                   <Field
                     component={TextField}
@@ -519,12 +510,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     className="mt-5"
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
-                    helperText={(
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_email"
-                      />
-                    )}
+                    helperText={focusHelper('platform_email')}
                   />
                 </Form>
               )}
@@ -557,12 +543,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     onChange={(name: string, value: string) => {
                       handleSubmitField(name, value);
                     }}
-                    helpertext={(
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_theme"
-                      />
-                    )}
+                    helpertext={focusHelper('platform_theme')}
                   >
                     {themes?.edges?.filter((node) => !!node).map(({ node }) => (
                       <SelectItem
@@ -582,12 +563,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     containerstyle={fieldSpacingContainerStyle}
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onChange={(name: string, value: string) => handleSubmitField(name, value)}
-                    helpertext={(
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_language"
-                      />
-                    )}
+                    helpertext={focusHelper('platform_language')}
                   >
                     <SelectItem value="auto">
                       <em>{t_i18n('Automatic')}</em>
