@@ -21,8 +21,8 @@ interface SettingsAnalyticsProps {
   settings: SettingsQuery$data['settings'] & {
     readonly id: string;
   };
-  handleChangeFocus: (id: string, name: string) => void;
-  handleSubmitField: (id: string, name: string, value: string | null) => void;
+  handleChangeFocus: (name: string) => void;
+  handleSubmitField: (name: string, value: string) => void;
   isEnterpriseEdition: boolean;
 }
 
@@ -34,7 +34,7 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
   isEnterpriseEdition,
 }) => {
   const { t_i18n } = useFormatter();
-  const { id, editContext } = settings;
+  const { editContext } = settings;
 
   const adornment = (
     <Stack direction="row" alignItems="center" gap={1}>
@@ -80,9 +80,8 @@ const SettingsAnalytics: FunctionComponent<SettingsAnalyticsProps> = ({
                   label={t_i18n('Google Analytics (v4)')}
                   placeholder={t_i18n('G-XXXXXXXXXX')}
                   fullWidth
-                  onFocus={(name: string) => handleChangeFocus(id, name)}
-                  onSubmit={(name: string, value: string | null) => handleSubmitField(id, name, value)
-                  }
+                  onFocus={(name: string) => handleChangeFocus(name)}
+                  onSubmit={(name: string, value: string | null) => handleSubmitField(name, value ?? '')}
                   disabled={!isEnterpriseEdition}
                   variant="outlined"
                   helperText={(

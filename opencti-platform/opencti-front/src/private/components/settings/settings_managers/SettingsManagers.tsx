@@ -18,7 +18,7 @@ import { countManagers, filterManagers, groupManagers, ManagerItem, ManagerStatu
 
 interface SettingsManagersProps {
   modules: ReadonlyArray<PlatformModule>;
-  isEnterpriseEditionActivated: boolean;
+  isEnterpriseEditionValid: boolean;
 }
 
 const STATUS_FILTERS: ManagerStatusFilter[] = ['all', 'enabled', 'disabled'];
@@ -29,13 +29,13 @@ const ROW_HEIGHT = 32;
 const GAP = 24;
 const COLUMN_MIN_WIDTH = 340;
 
-const SettingsManagers = ({ modules, isEnterpriseEditionActivated }: SettingsManagersProps) => {
+const SettingsManagers = ({ modules, isEnterpriseEditionValid }: SettingsManagersProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [status, setStatus] = useState<ManagerStatusFilter>('all');
   const [search, setSearch] = useState('');
 
-  const managers = toManagerItems(modules, t_i18n, isEnterpriseEditionActivated);
+  const managers = toManagerItems(modules, t_i18n, isEnterpriseEditionValid);
   const counts = countManagers(managers);
   const groups = groupManagers(filterManagers(managers, status, search), t_i18n);
 

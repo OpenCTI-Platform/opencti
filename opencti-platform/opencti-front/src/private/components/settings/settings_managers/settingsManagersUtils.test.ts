@@ -60,13 +60,19 @@ describe('getManagerLabel', () => {
 });
 
 describe('getManagerStatus', () => {
-  it('tells a manager switched off by configuration from an Enterprise-only one without a license', () => {
+  it('tells a manager switched off by configuration from an Enterprise-only one without a valid license', () => {
     expect(getManagerStatus({ id: 'HUNT_MANAGER', enable: true }, false)).toBe('enabled');
     expect(getManagerStatus({ id: 'HUNT_MANAGER', enable: false }, false)).toBe('disabled');
     expect(getManagerStatus({ id: 'PLAYBOOK_MANAGER', enable: false }, false)).toBe('unlicensed');
     expect(getManagerStatus({ id: 'PIR_MANAGER', enable: false }, false)).toBe('unlicensed');
     expect(getManagerStatus({ id: 'PLAYBOOK_MANAGER', enable: false }, true)).toBe('disabled');
-    expect(getManagerStatus({ id: 'PLAYBOOK_MANAGER', enable: true }, false)).toBe('enabled');
+    expect(getManagerStatus({ id: 'PLAYBOOK_MANAGER', enable: true }, true)).toBe('enabled');
+  });
+
+  it('never shows an Enterprise-only manager as enabled without a valid license', () => {
+    // The activity listener reports ACTIVITY_MANAGER as enabled whatever the license.
+    expect(getManagerStatus({ id: 'ACTIVITY_MANAGER', enable: true }, false)).toBe('unlicensed');
+    expect(getManagerStatus({ id: 'FILE_INDEX_MANAGER', enable: true }, false)).toBe('unlicensed');
   });
 });
 

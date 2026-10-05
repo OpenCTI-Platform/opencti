@@ -330,7 +330,6 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
         <SettingsPlatformSummary
           platformId={settings.id}
           version={version}
-          isEnterpriseEditionActivated={isEnterpriseEditionActivated}
           isEnterpriseEditionValid={isEnterpriseEditionValid}
           instancesNumber={settings.platform_cluster.instances_number}
           modules={modules ?? []}
@@ -643,7 +642,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
 
         <SettingsManagers
           modules={modules ?? []}
-          isEnterpriseEditionActivated={isEnterpriseEditionActivated}
+          isEnterpriseEditionValid={isEnterpriseEditionValid}
         />
       </Box>
     </div>

@@ -20,7 +20,6 @@ export interface PlatformAiStatus {
 interface SettingsPlatformSummaryProps {
   platformId: string;
   version: string;
-  isEnterpriseEditionActivated: boolean;
   isEnterpriseEditionValid: boolean;
   instancesNumber: number;
   modules: ReadonlyArray<PlatformModule>;
@@ -40,7 +39,6 @@ const VALUE_HEIGHT = 24;
 const SettingsPlatformSummary = ({
   platformId,
   version,
-  isEnterpriseEditionActivated,
   isEnterpriseEditionValid,
   instancesNumber,
   modules,
@@ -49,7 +47,7 @@ const SettingsPlatformSummary = ({
 }: SettingsPlatformSummaryProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const managerCounts = countManagers(toManagerItems(modules, t_i18n, isEnterpriseEditionActivated));
+  const managerCounts = countManagers(toManagerItems(modules, t_i18n, isEnterpriseEditionValid));
 
   const valueText = (text: string) => (
     <Typography variant="body1" sx={{ fontWeight: 500, lineHeight: `${VALUE_HEIGHT}px`, whiteSpace: 'nowrap' }}>{text}</Typography>

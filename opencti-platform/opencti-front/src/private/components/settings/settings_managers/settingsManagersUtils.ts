@@ -122,21 +122,22 @@ export const getManagerLabel = (id: string, translate: (key: string) => string):
   return translated && translated !== id ? translated : humanizeManagerId(id);
 };
 
-export const getManagerStatus = (module: PlatformModule, isEnterpriseEdition: boolean): ManagerStatus => {
-  if (module.enable) {
-    return 'enabled';
+/** `isEnterpriseEditionValid` is the validated license: the one the backend gates Enterprise-only managers on. */
+export const getManagerStatus = (module: PlatformModule, isEnterpriseEditionValid: boolean): ManagerStatus => {
+  if (ENTERPRISE_ONLY_MANAGERS.includes(module.id) && !isEnterpriseEditionValid) {
+    return 'unlicensed';
   }
-  return ENTERPRISE_ONLY_MANAGERS.includes(module.id) && !isEnterpriseEdition ? 'unlicensed' : 'disabled';
+  return module.enable ? 'enabled' : 'disabled';
 };
 
 export const toManagerItems = (
   modules: ReadonlyArray<PlatformModule>,
   translate: (key: string) => string,
-  isEnterpriseEdition: boolean,
+  isEnterpriseEditionValid: boolean,
 ): ManagerItem[] => modules.map((module) => ({
   id: module.id,
   label: getManagerLabel(module.id, translate),
-  status: getManagerStatus(module, isEnterpriseEdition),
+  status: getManagerStatus(module, isEnterpriseEditionValid),
 }));
 
 export const countManagers = (managers: ManagerItem[]): ManagerCounts => {
