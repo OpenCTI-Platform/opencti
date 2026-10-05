@@ -187,6 +187,18 @@ describe('ThreatPulseSettings', () => {
     expect(screen.queryByText(/contributions purged from XTM Hub/)).toBeNull();
   });
 
+  it('should read the settings again after a purge, so the page leaves the former contribution state', async () => {
+    const relayEnv = renderSettings({ mode: 'contribute_and_read', access: 'full', enabled: true });
+    fireEvent.click(await screen.findByTestId('threat-pulse-purge-button'));
+    fireEvent.click(await screen.findByTestId('threat-pulse-purge-confirm'));
+    act(() => {
+      relayEnv.mock.resolveMostRecentOperation({ data: { pulsePurge: { success: true, deleted_records: 12 } } });
+    });
+    const operation = relayEnv.mock.getMostRecentOperation();
+    expect(operation.request.node.operation.name).toBe('ThreatPulseSettingsQuery');
+    expect(operation.request.variables).toEqual({ withMarkings: false });
+  });
+
   it.each([
     ['in preview', IN_PREVIEW],
     ['turned off', { mode: 'off', access: 'off', enabled: false }],

@@ -1,5 +1,5 @@
 import React, { Suspense, useState } from 'react';
-import { graphql, useFragment, useLazyLoadQuery } from 'react-relay';
+import { fetchQuery, graphql, useFragment, useLazyLoadQuery, useRelayEnvironment } from 'react-relay';
 import Box from '@mui/material/Box';
 import Alert from '@mui/material/Alert';
 import DialogActions from '@mui/material/DialogActions';
@@ -401,6 +401,7 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
   const theme = useTheme<Theme>();
   const secondary = { color: theme.palette.text.secondary };
   const settings = useFragment(threatPulseSettingsFragment, settingsKey);
+  const environment = useRelayEnvironment();
   const isGranted = useGranted([SETTINGS_SETMANAGEXTMHUB]);
   const [openConsent, setOpenConsent] = useState(false);
   const [openPurge, setOpenPurge] = useState(false);
@@ -429,6 +430,8 @@ const ThreatPulseSettingsComponent = ({ settingsKey, markings }: ThreatPulseSett
         }
         setOpenPurge(false);
         MESSAGING$.notifySuccess(t_i18n('{count, plural, one {# contribution} other {# contributions}} purged from XTM Hub', { values: { count: response.pulsePurge.deleted_records } }));
+        // The purge takes the platform back to the preview and clears its statistics, which the result does not carry.
+        fetchQuery<ThreatPulseSettingsQuery>(environment, threatPulseSettingsQuery, { withMarkings: false }).subscribe({});
       },
     });
   };
