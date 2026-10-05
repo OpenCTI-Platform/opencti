@@ -40,6 +40,8 @@ export const workToExportFile = (work) => {
     metaData: {
       messages: work.messages,
       errors: work.errors,
+      // The work holds the user who asked for the export
+      creator_id: work.user_id,
     },
   };
 };

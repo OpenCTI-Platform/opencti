@@ -135,6 +135,8 @@ describe('Work domain query options', () => {
       expect(mockAddFilter).not.toHaveBeenCalledWith(null, 'user_id', expect.anything());
       expect(mockAddFilter).toHaveBeenNthCalledWith(1, null, 'event_source_id', 'export/Report/report-id');
       expect(progressFiles.map((file: { id: string }) => file.id)).toEqual(['work-1', 'work-2']);
+      // Each progress file shows who requested the export
+      expect(progressFiles.map((file: { metaData: { creator_id: string } }) => file.metaData.creator_id)).toEqual(['user-1', 'user-2']);
     });
   });
 });
