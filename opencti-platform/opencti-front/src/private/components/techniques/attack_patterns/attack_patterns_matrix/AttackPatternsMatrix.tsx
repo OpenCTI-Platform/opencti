@@ -9,6 +9,7 @@ import Loader from '../../../../../components/Loader';
 import AttackPatternsMatrixColumns from './AttackPatternsMatrixColumns';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import { CoverageInformation } from '@components/analyses/security_coverages/SecurityCoverage-types';
+import type { DefenseMatrixMode } from './AttackPatternsMatrixDefense';
 
 export interface AttackPatternsMatrixProps {
   attackPatterns: NonNullable<NonNullable<StixDomainObjectAttackPatternsKillChainContainer_data$data>['attackPatterns']>['edges'][0]['node'][];
@@ -22,6 +23,8 @@ export interface AttackPatternsMatrixProps {
   isCoverage?: boolean;
   coverageMap?: Map<string, ReadonlyArray<CoverageInformation>>;
   entityId?: string;
+  // Threat-informed defense mode: boxes are colored by defense level and open the technique drawer
+  defense?: DefenseMatrixMode;
 }
 
 export const attackPatternsMatrixQuery = graphql`
@@ -42,6 +45,7 @@ const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
   isCoverage = false,
   coverageMap,
   entityId,
+  defense,
 }) => {
   const queryRef = useQueryLoading<AttackPatternsMatrixQuery>(attackPatternsMatrixQuery, {});
 
@@ -68,6 +72,7 @@ const AttackPatternsMatrix: FunctionComponent<AttackPatternsMatrixProps> = ({
             isCoverage={isCoverage}
             coverageMap={coverageMap}
             entityId={entityId}
+            defense={defense}
           />
         </React.Suspense>
       )}

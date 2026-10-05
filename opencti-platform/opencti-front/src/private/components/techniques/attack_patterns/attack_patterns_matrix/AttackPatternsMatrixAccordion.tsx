@@ -21,6 +21,14 @@ import { hexToRGB } from '../../../../../utils/Colors';
 import type { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
 import { CoverageInformation } from '@components/analyses/security_coverages/SecurityCoverage-types';
+import AttackPatternsMatrixDefenseMarkers, {
+  defenseCellLevel,
+  type DefenseMatrixMode,
+  defenseKeyboardProps,
+  getDefenseBoxStyles,
+  useDefenseCellLabel,
+} from './AttackPatternsMatrixDefense';
+import { defenseLevelColor } from '../../../defense/matrix/defenseMatrix-utils';
 
 interface AccordionAttackPatternProps {
   attackPattern: FilteredAttackPattern;
@@ -30,6 +38,7 @@ interface AccordionAttackPatternProps {
   isCoverage?: boolean;
   coverageMap?: Map<string, ReadonlyArray<CoverageInformation>>;
   entityId?: string;
+  defense?: DefenseMatrixMode;
 }
 
 const AccordionAttackPattern = ({
@@ -40,11 +49,13 @@ const AccordionAttackPattern = ({
   isCoverage = false,
   coverageMap,
   entityId,
+  defense,
 }: AccordionAttackPatternProps) => {
   const theme = useTheme<Theme>();
   const [expanded, setExpanded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const { t_i18n } = useFormatter();
+  const defenseCellLabel = useDefenseCellLabel();
 
   // Get coverage information if in coverage mode
   const coverage = isCoverage && coverageMap ? coverageMap.get(attackPattern.attack_pattern_id) : null;
@@ -116,13 +127,38 @@ const AccordionAttackPattern = ({
     };
   };
 
+  const getDefenseColors = (mode: DefenseMatrixMode) => {
+    const attackPatternId = attackPattern.attack_pattern_id;
+    const level = defenseCellLevel(mode, attackPatternId);
+    const subLevels = (attackPattern.subAttackPatterns ?? []).map((sub) => defenseCellLevel(mode, sub.attack_pattern_id));
+    const defenseStyles = getDefenseBoxStyles({ defense: mode, attackPatternId, level, isHovered, theme });
+    return {
+      ...defenseStyles,
+      // The frame shows the best level among the technique and its sub-techniques
+      border: `1px solid ${defenseLevelColor(theme, Math.max(level, ...subLevels))}`,
+    };
+  };
+
   // Get styles based on coverage mode
-  const styles = isCoverage
-    ? getCoverageColors()
-    : getBoxStyles({ attackPattern, isHovered, isSecurityPlatform, theme });
+  let styles: { border: string; backgroundColor: string; outline?: string; outlineOffset?: string };
+  if (defense) {
+    styles = getDefenseColors(defense);
+  } else if (isCoverage) {
+    styles = getCoverageColors();
+  } else {
+    styles = getBoxStyles({ attackPattern, isHovered, isSecurityPlatform, theme });
+  }
   const { border, backgroundColor } = styles;
 
   const a11yProps = () => {
+    if (defense) {
+      return {
+        'aria-label': defenseCellLabel(defense, attackPattern.attack_pattern_id, attackPattern.name),
+        'data-testid': `defense-cell-${attackPattern.attack_pattern_id}`,
+        'data-defense-level': defenseCellLevel(defense, attackPattern.attack_pattern_id),
+        ...defenseKeyboardProps(defense, attackPattern.attack_pattern_id),
+      };
+    }
     const scoreValue = getAvgCoverageScore();
     if (scoreValue) {
       return {
@@ -147,13 +183,15 @@ const AccordionAttackPattern = ({
         width: '100%',
         border,
         backgroundColor: 'transparent',
+        outline: styles.outline ?? 'none',
+        outlineOffset: styles.outlineOffset,
         '&:before': {
           display: 'none',
         },
       }}
     >
       <MuiAccordionSummary
-        onClick={(e) => handleOpen(attackPattern, e)}
+        onClick={(e) => (defense ? defense.onSelect(attackPattern.attack_pattern_id) : handleOpen(attackPattern, e))}
         {...a11yProps()}
         expandIcon={(
           <IconButton
@@ -196,7 +234,11 @@ const AccordionAttackPattern = ({
           </Box>
         )}
 
-        {!isCoverage && attackPatternIdsToOverlap?.length !== undefined
+        {defense && (
+          <AttackPatternsMatrixDefenseMarkers defense={defense} attackPatternId={attackPattern.attack_pattern_id} />
+        )}
+
+        {!defense && !isCoverage && attackPatternIdsToOverlap?.length !== undefined
           && (attackPattern.isCovered || isSubAttackPatternCovered(attackPattern as FilteredAttackPattern))
           && (
             <AttackPatternsMatrixShouldCoverIcon
@@ -221,6 +263,7 @@ const AccordionAttackPattern = ({
               isCoverage={isCoverage}
               coverageMap={coverageMap}
               entityId={entityId}
+              defense={defense}
             />
           );
         })}

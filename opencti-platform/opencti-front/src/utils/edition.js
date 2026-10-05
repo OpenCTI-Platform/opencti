@@ -123,6 +123,12 @@ export const provenanceEventTypesOptions = [
   { value: 'conflict', label: 'Source conflict detected' },
 ];
 
+// Defense matrix events (aggregate defense level of a technique): offered by the trigger forms, never selected by default
+export const defenseEventTypesOptions = [
+  { value: 'defense_level_decreased', label: 'Defense level decreased' },
+  { value: 'defense_level_increased', label: 'Defense level increased' },
+];
+
 export const convertEventTypes = (element) => element?.event_types?.map((event_type) => {
-  return [...filterEventTypesOptions, ...provenanceEventTypesOptions].find((o) => o.value === event_type);
+  return [...filterEventTypesOptions, ...provenanceEventTypesOptions, ...defenseEventTypesOptions].find((o) => o.value === event_type);
 }).filter((option) => option !== undefined);

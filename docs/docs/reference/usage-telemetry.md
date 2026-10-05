@@ -163,6 +163,16 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 
 No source and no knowledge content is ever collected, only counts.
 
+### Defense matrix
+
+- The number of `provides` relationships (telemetry declared by security platforms and systems)
+- The number of techniques with a defense level above none
+- The number of techniques validated by OpenAEV
+- The number of open defense gaps
+- The number of defense validation requests created from gaps
+- The number of defense gaps closed
+- The number of defense gap backlog exports
+
 ### Source intelligence
 
 - The number of intelligence sources with a scorecard

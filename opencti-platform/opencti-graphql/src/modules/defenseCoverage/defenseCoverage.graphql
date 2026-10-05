@@ -1,0 +1,362 @@
+############## Threat-informed defense matrix
+enum DefenseDetectionStatus {
+  none
+  available
+  deployed
+  active
+}
+enum DefenseValidationStatus {
+  none
+  prevented
+  detected
+  failed
+}
+enum DefenseRecommendedAction {
+  add_telemetry
+  import_rule
+  deploy_rule
+  activate_rule
+  validate
+  fix_detection
+  none
+}
+enum DefenseThreatScopeMode {
+  ALL
+  SELECTED
+  FILTERED
+  NONE
+}
+# Live trigger events sent when the aggregate defense level of a technique changes
+extend enum TriggerEventType {
+  defense_level_decreased
+  defense_level_increased
+}
+input DefenseThreatScope {
+  mode: DefenseThreatScopeMode!
+  threatIds: [String!]
+  filters: FilterGroup
+}
+
+type DefensePlatform {
+  id: ID!
+  name: String!
+  entity_type: String!
+  security_platform_type: String
+}
+
+type DefenseCellPlatform {
+  platform_id: String!
+  level: Int!
+  telemetry: Boolean!
+  detection: DefenseDetectionStatus!
+  validated: DefenseValidationStatus!
+  last_result_at: DateTime
+  recommended_action: DefenseRecommendedAction!
+  data_components_count: Int!
+  inferred_data_components_count: Int!
+  rules_count: Int!
+  results_count: Int!
+}
+
+type DefenseMatrixCell {
+  attack_pattern_id: String!
+  x_mitre_id: String
+  name: String!
+  parent_attack_pattern_id: String
+  kill_chain_phase_ids: [String!]!
+  level: Int!
+  telemetry: Boolean!
+  detection: DefenseDetectionStatus!
+  validated: DefenseValidationStatus!
+  last_result_at: DateTime
+  mitigated: Boolean!
+  recommended_action: DefenseRecommendedAction!
+  threat_weight: Float!
+  threats_count: Int!
+  data_components_count: Int!
+  rules_count: Int!
+  mitigations_count: Int!
+  results_count: Int!
+  platforms: [DefenseCellPlatform!]!
+}
+
+# Counts of techniques per level (index 0 to 4)
+type DefenseTacticCoverage {
+  kill_chain_phase_id: String!
+  kill_chain_name: String!
+  phase_name: String!
+  x_opencti_order: Int!
+  techniques_count: Int!
+  levels: [Int!]!
+  threat_techniques_count: Int!
+  threat_levels: [Int!]!
+}
+
+type DefenseMatrix {
+  computed_at: DateTime
+  platforms: [DefensePlatform!]!
+  threats_count: Int!
+  techniques_count: Int!
+  levels: [Int!]!
+  threat_levels: [Int!]!
+  cells: [DefenseMatrixCell!]!
+  tactics: [DefenseTacticCoverage!]!
+}
+
+type DefenseDataComponentEvidence {
+  dataComponent: DataComponent!
+  providedBy: [DefensePlatform!]!
+  inferredBy: [DefensePlatform!]!
+}
+type DefenseRuleDeployment {
+  platform: DefensePlatform!
+  status: String!
+}
+type DefenseRuleEvidence {
+  indicator: Indicator!
+  deployments: [DefenseRuleDeployment!]!
+  required_data_components: [String!]!
+}
+type DefenseValidationPlatformScore {
+  platform: DefensePlatform!
+  status: DefenseValidationStatus!
+  scores: [CoverageResult!]!
+}
+type DefenseValidationEvidenceResult {
+  result: SecurityCoverageResult!
+  securityCoverage: SecurityCoverage
+  status: DefenseValidationStatus!
+  last_result_at: DateTime
+  scores: [CoverageResult!]!
+  platforms: [DefenseValidationPlatformScore!]!
+}
+type DefenseThreatEvidence {
+  threat: StixDomainObject!
+  relationship_id: String!
+  confidence: Int!
+}
+
+type DefenseTechnique {
+  attackPattern: AttackPattern!
+  computed_at: DateTime
+  cell: DefenseMatrixCell!
+  dataComponents: [DefenseDataComponentEvidence!]!
+  rules: [DefenseRuleEvidence!]!
+  validations: [DefenseValidationEvidenceResult!]!
+  mitigations: [CourseOfAction!]!
+  threats: [DefenseThreatEvidence!]!
+  gaps: [DefenseGap!]!
+}
+
+# Where OpenAEV stands on a validation request: no OpenAEV platform has read its security coverage yet, read with no
+# result yet, or results received
+enum DefenseValidationRequestStatus {
+  waiting
+  running
+  results
+}
+type DefenseValidationRequest {
+  security_coverage_id: String!
+  grouping_id: String!
+  threat_id: String
+  requested_at: DateTime!
+  requested_by: String!
+  status: DefenseValidationRequestStatus!
+  securityCoverage: SecurityCoverage
+}
+
+# A gap is a (technique, security platform) pair below full validation, evaluated with the reader's access
+type DefenseGap implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  representative: Representative!
+  metrics: [Metric]
+  name: String!
+  attack_pattern_id: String!
+  attackPattern: AttackPattern
+  x_mitre_id: String
+  attack_pattern_name: String!
+  platform_id: String!
+  platform: DefensePlatform
+  kill_chain_phase_ids: [String!]!
+  level: Int!
+  telemetry: Boolean!
+  detection: DefenseDetectionStatus!
+  validated: DefenseValidationStatus!
+  last_result_at: DateTime
+  recommended_action: DefenseRecommendedAction!
+  threat_weight: Float!
+  threats_count: Int!
+  priority: Int!
+  status: String!
+  opened_at: DateTime
+  requiredDataComponents: [DataComponent!]!
+  ruleCandidates(first: Int): [Indicator!]!
+  validation_requests: [DefenseValidationRequest!]!
+  last_validation_requested_at: DateTime
+}
+type DefenseGapConnection {
+  pageInfo: PageInfo!
+  edges: [DefenseGapEdge!]!
+  # Threats of the threat scope visible to the reader, 0 without threat overlay
+  threats_count: Int!
+}
+type DefenseGapEdge {
+  cursor: String!
+  node: DefenseGap!
+}
+enum DefenseGapsOrdering {
+  priority
+  level
+  threat_weight
+  x_mitre_id
+  name
+  platform
+}
+input DefenseGapsFilter {
+  levels: [Int!]
+  recommended_actions: [DefenseRecommendedAction!]
+  killChainPhaseIds: [String!]
+  onlyUsedByThreats: Boolean
+  search: String
+}
+
+input DefenseGapRefInput {
+  attackPatternId: String!
+  platformId: String!
+}
+input DefenseValidationInput {
+  attackPatternIds: [String!]!
+  # every technique is tracked on every platform of platformIds
+  platformIds: [String!]
+  # exact technique and platform pairs, tracked as selected
+  gaps: [DefenseGapRefInput!]
+  threatId: String
+  name: String @constraint(minLength: 2, maxLength: 250, format: "not-blank")
+  description: String
+  periodicity: String
+  duration: String
+  type_affinity: String
+  platforms_affinity: [String!]
+  # http(s) link back to what asked for the validation, stored as an external reference of the security coverage
+  external_reference_url: String @constraint(maxLength: 2048)
+}
+type DefenseValidationResult {
+  securityCoverage: SecurityCoverage!
+  grouping: Grouping!
+  gaps_count: Int!
+}
+
+input DefenseLogsourceInput {
+  category: String
+  product: String
+  service: String
+}
+type DefenseProvidesResult {
+  "Data components newly declared as provided by the platform"
+  created_count: Int!
+  "Data components of the log sources the platform already provided"
+  existing_count: Int!
+  dataComponents: [DataComponent!]!
+  unmatched_data_components: [String!]!
+}
+
+type DefenseCoverageStatus {
+  computed_at: DateTime
+  last_full_computation: DateTime
+  full_computation_requested: Boolean!
+  "An enrichment connector (OpenAEV) is alive for security coverages: gaps can be validated"
+  validation_available: Boolean!
+}
+
+# Log source -> MITRE data component mapping (Sigma logsource taxonomy)
+type DefenseLogsourceMapping implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  representative: Representative!
+  metrics: [Metric]
+  created_at: DateTime!
+  updated_at: DateTime!
+  name: String!
+  description: String
+  logsource_category: String
+  logsource_product: String
+  logsource_service: String
+  data_components: [String!]!
+  resolvedDataComponents: [DataComponent!]!
+  active: Boolean!
+  built_in: Boolean!
+}
+enum DefenseLogsourceMappingOrdering {
+  name
+  logsource_category
+  logsource_product
+  logsource_service
+  active
+  built_in
+  created_at
+  updated_at
+  _score
+}
+type DefenseLogsourceMappingConnection {
+  pageInfo: PageInfo!
+  edges: [DefenseLogsourceMappingEdge!]!
+}
+type DefenseLogsourceMappingEdge {
+  cursor: String!
+  node: DefenseLogsourceMapping!
+}
+input DefenseLogsourceMappingAddInput {
+  logsource_category: String
+  logsource_product: String
+  logsource_service: String
+  data_components: [String!]!
+  description: String
+  active: Boolean
+}
+
+type Query {
+  defensePlatforms: [DefensePlatform!]! @auth(for: [KNOWLEDGE])
+  defenseMatrix(platformIds: [String!], threatScope: DefenseThreatScope): DefenseMatrix @auth(for: [KNOWLEDGE])
+  defenseTechnique(id: String!, platformIds: [String!], threatScope: DefenseThreatScope): DefenseTechnique @auth(for: [KNOWLEDGE])
+  defenseGaps(
+    platformIds: [String!]
+    threatScope: DefenseThreatScope
+    filter: DefenseGapsFilter
+    first: Int
+    after: ID
+    orderBy: DefenseGapsOrdering
+    orderMode: OrderingMode
+  ): DefenseGapConnection @auth(for: [KNOWLEDGE])
+  defenseGapExport(
+    platformIds: [String!]
+    threatScope: DefenseThreatScope
+    filter: DefenseGapsFilter
+    orderBy: DefenseGapsOrdering
+    orderMode: OrderingMode
+  ): String @auth(for: [KNOWLEDGE])
+  defenseCoverageStatus: DefenseCoverageStatus @auth(for: [KNOWLEDGE])
+  defenseLogsourceMapping(id: String!): DefenseLogsourceMapping @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  defenseLogsourceMappings(
+    first: Int
+    after: ID
+    orderBy: DefenseLogsourceMappingOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): DefenseLogsourceMappingConnection @auth(for: [SETTINGS_SETCUSTOMIZATION])
+}
+
+type Mutation {
+  defenseGapsValidate(input: DefenseValidationInput!): DefenseValidationResult @auth(for: [KNOWLEDGE_KNUPDATE])
+  defenseCoverageRecompute: Boolean @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  defensePlatformProvidesFromLogsources(id: ID!, logsources: [DefenseLogsourceInput!]!): DefenseProvidesResult @auth(for: [KNOWLEDGE_KNUPDATE])
+  defenseLogsourceMappingAdd(input: DefenseLogsourceMappingAddInput!): DefenseLogsourceMapping @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  defenseLogsourceMappingFieldPatch(id: ID!, input: [EditInput!]!): DefenseLogsourceMapping @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  defenseLogsourceMappingDelete(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  defenseLogsourceMappingsReset: Int @auth(for: [SETTINGS_SETCUSTOMIZATION])
+}

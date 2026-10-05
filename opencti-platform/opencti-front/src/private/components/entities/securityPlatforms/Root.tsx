@@ -28,6 +28,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import SecurityPlatformDeletion from './SecurityPlatformDeletion';
 import SecurityPlatformDeployments from './SecurityPlatformDeployments';
+import SecurityPlatformDefenseCoverage from './SecurityPlatformDefenseCoverage';
 import { PATH_SECURITY_PLATFORM, PATH_SECURITY_PLATFORMS } from '@components/common/routes/paths';
 
 const subscription = graphql`
@@ -176,6 +177,9 @@ const RootSecurityPlatform = ({ securityPlatformId, queryRef }: RootSecurityPlat
                       relatedRelationshipTypes={['should-cover']}
                     />
                   </div>
+                ),
+                coverage: (
+                  <SecurityPlatformDefenseCoverage securityPlatformId={securityPlatform.id} />
                 ),
                 content: (
                   <StixCoreObjectContentRoot

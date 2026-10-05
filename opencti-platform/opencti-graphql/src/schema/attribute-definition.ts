@@ -504,6 +504,41 @@ export const coverageInformation: NestedObjectAttribute = {
   ],
 };
 
+// Log source of a detection rule (Sigma logsource), carried by rule Indicators and matched by the telemetry mappings of
+// the defense matrix: both entity types register this same definition so they share its index fields.
+export const ruleLogsource: ObjectAttribute = {
+  name: 'x_opencti_rule_logsource',
+  label: 'Rule log source',
+  type: 'object',
+  format: 'standard',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: false,
+  upsert: true,
+  isFilterable: true,
+  mappings: [
+    { name: 'category', label: 'Log source category', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'product', label: 'Log source product', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    { name: 'service', label: 'Log source service', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+  ],
+};
+
+// Per security platform breakdown of coverage_information, sent by OpenAEV on has-covered relationships:
+// a list of { platform_ref, coverage_name, coverage_score }, platform_ref being the STIX id of the security platform
+// identity present in the same bundle. Only read back from the document, never searched: kept out of the index mapping.
+export const coveragePlatformsInformation: RawObjectAttribute<BasicStoreAttribute> = {
+  name: 'coverage_platforms_information',
+  label: 'Coverage per security platform',
+  type: 'object',
+  format: 'raw',
+  mandatoryType: 'no',
+  editDefault: false,
+  multiple: true,
+  upsert: true,
+  upsert_force_replace: true,
+  isFilterable: false,
+};
+
 export const opinionsMetrics: ObjectAttribute = {
   name: 'opinions_metrics',
   label: 'Opinion metrics',

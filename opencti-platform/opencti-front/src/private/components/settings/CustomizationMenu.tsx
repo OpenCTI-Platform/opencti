@@ -33,6 +33,10 @@ const CustomizationMenu: FunctionComponent = () => {
       label: 'Exclusion lists',
     },
     {
+      path: '/dashboard/settings/customization/telemetry_mappings',
+      label: 'Telemetry mappings',
+    },
+    {
       path: '/dashboard/settings/customization/source_intelligence',
       label: 'Source intelligence',
     },
