@@ -136,6 +136,7 @@ const DEFENSE_GAPS = gql`
     defenseGaps(platformIds: $platformIds, threatScope: $threatScope, filter: $filter, first: 50) {
       edges { node { id attack_pattern_id platform_id level recommended_action threats_count priority last_validation_requested_at requiredDataComponents { id } ruleCandidates(first: 3) { id } } }
       pageInfo { globalCount hasNextPage }
+      threats_count
     }
   }
 `;
@@ -375,6 +376,7 @@ describe('Threat-informed defense matrix', () => {
     const result = await queryAsAdminWithSuccess({ query: DEFENSE_GAPS, variables });
     const gaps = result.data?.defenseGaps.edges.map((e: { node: unknown }) => e.node);
     expect(result.data?.defenseGaps.pageInfo.globalCount).toEqual(1);
+    expect(result.data?.defenseGaps.threats_count).toEqual(1);
     expect(gaps[0]).toEqual(expect.objectContaining({
       attack_pattern_id: created.attackPattern,
       platform_id: created.platform,
@@ -391,6 +393,7 @@ describe('Threat-informed defense matrix', () => {
     expect(duplicated.data?.defenseGaps.pageInfo.globalCount).toEqual(1);
     const usedOnly = await queryAsAdminWithSuccess({ query: DEFENSE_GAPS, variables: { ...variables, threatScope: { mode: 'NONE' }, filter: { search: MITRE_ID, onlyUsedByThreats: true } } });
     expect(usedOnly.data?.defenseGaps.edges).toEqual([]);
+    expect(usedOnly.data?.defenseGaps.threats_count).toEqual(0);
     const csv = await queryAsAdminWithSuccess({ query: DEFENSE_GAP_EXPORT, variables });
     const lines = (csv.data?.defenseGapExport as string).trim().split('\n');
     expect(lines[0]).toContain('technique_id');

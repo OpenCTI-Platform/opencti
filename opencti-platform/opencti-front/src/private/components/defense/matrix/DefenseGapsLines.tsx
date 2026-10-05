@@ -72,6 +72,7 @@ const defenseGapsLinesFragment = graphql`
       orderBy: $orderBy
       orderMode: $orderMode
     ) @connection(key: "Pagination_defenseGaps") {
+      threats_count
       edges {
         node {
           id
@@ -116,10 +117,12 @@ const defenseGapsLinesFragment = graphql`
 interface DefenseGapsLinesProps {
   queryRef: PreloadedQuery<DefenseGapsLinesPaginationQuery>;
   scope: DefenseScopeState;
+  // The backlog only lists the techniques used by the threats of the scope
+  onlyUsedByThreats?: boolean;
   onTotalChange?: (total: number) => void;
 }
 
-const DefenseGapsLines = ({ queryRef, scope, onTotalChange }: DefenseGapsLinesProps) => {
+const DefenseGapsLines = ({ queryRef, scope, onlyUsedByThreats = false, onTotalChange }: DefenseGapsLinesProps) => {
   const { t_i18n, fldt, rd } = useFormatter();
   const theme = useTheme<Theme>();
   const queryData = usePreloadedQuery(defenseGapsLinesQuery, queryRef);
@@ -177,7 +180,9 @@ const DefenseGapsLines = ({ queryRef, scope, onTotalChange }: DefenseGapsLinesPr
     >
       {gaps.length === 0 ? (
         <Typography variant="body2" color="text.secondary" data-testid="defense-gaps-empty">
-          {t_i18n('No defense gap matches the current scope and filters.')}
+          {onlyUsedByThreats && data.defenseGaps?.threats_count === 0
+            ? t_i18n('No threat matches this scope: change the selected threats or the filters.')
+            : t_i18n('No defense gap matches the current scope and filters.')}
         </Typography>
       ) : (
         <TableContainer>

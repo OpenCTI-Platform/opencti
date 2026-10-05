@@ -17785,6 +17785,7 @@ type DefenseGap implements InternalObject & BasicObject {
 type DefenseGapConnection {
   pageInfo: PageInfo!
   edges: [DefenseGapEdge!]!
+  threats_count: Int!
 }
 
 type DefenseGapEdge {

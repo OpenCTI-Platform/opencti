@@ -7733,6 +7733,7 @@ export type DefenseGapConnection = {
   __typename?: 'DefenseGapConnection';
   edges: Array<DefenseGapEdge>;
   pageInfo: PageInfo;
+  threats_count: Scalars['Int']['output'];
 };
 
 export type DefenseGapEdge = {
@@ -47630,6 +47631,7 @@ export type DefenseGapResolvers<ContextType = any, ParentType extends ResolversP
 export type DefenseGapConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefenseGapConnection'] = ResolversParentTypes['DefenseGapConnection']> = ResolversObject<{
   edges?: Resolver<Array<ResolversTypes['DefenseGapEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  threats_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
 export type DefenseGapEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefenseGapEdge'] = ResolversParentTypes['DefenseGapEdge']> = ResolversObject<{

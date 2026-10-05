@@ -200,6 +200,8 @@ type DefenseGap implements InternalObject & BasicObject {
 type DefenseGapConnection {
   pageInfo: PageInfo!
   edges: [DefenseGapEdge!]!
+  # Threats of the threat scope visible to the reader, 0 without threat overlay
+  threats_count: Int!
 }
 type DefenseGapEdge {
   cursor: String!

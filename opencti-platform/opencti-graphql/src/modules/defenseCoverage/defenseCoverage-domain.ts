@@ -705,10 +705,11 @@ const decodeOffset = (cursor: string | null | undefined) => {
 export const findDefenseGaps = async (context: AuthContext, user: AuthUser, args: GapsArgs & { first?: number | null; after?: string | null }) => {
   const first = Math.min(Math.max(args.first ?? DEFAULT_GAPS_PAGE_SIZE, 1), MAX_GAPS_PAGE_SIZE);
   const start = decodeOffset(args.after);
-  const { gaps, total } = await computeGapViews(context, user, args, start + first);
+  const { gaps, total, evaluation } = await computeGapViews(context, user, args, start + first);
   const page = await attachGapRecords(context, user, gaps.slice(start, start + first));
   const edges = page.map((node, index) => ({ cursor: encodeOffset(start + index), node }));
   return {
+    threats_count: evaluation.overlay.threats_count,
     edges,
     pageInfo: {
       startCursor: edges.length > 0 ? edges[0].cursor : '',

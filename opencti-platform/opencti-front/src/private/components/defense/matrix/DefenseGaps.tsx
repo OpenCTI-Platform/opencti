@@ -256,7 +256,7 @@ const DefenseGaps = () => {
       </Box>
       {gapsQueryRef && (
         <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <DefenseGapsLines queryRef={gapsQueryRef} scope={scope} onTotalChange={setTotal} />
+          <DefenseGapsLines queryRef={gapsQueryRef} scope={scope} onlyUsedByThreats={usedByThreatsFilter} onTotalChange={setTotal} />
         </Suspense>
       )}
     </Stack>

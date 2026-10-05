@@ -215,6 +215,16 @@ export const DefenseMatrixContent = ({ queryRef, scope, layers }: DefenseMatrixC
     .sort((a, b) => b.threats_count - a.threats_count || b.level - a.level)
     .slice(0, MAX_VALIDATION_TECHNIQUES)
     .map((cell) => ({ id: cell.attack_pattern_id, name: cell.name, x_mitre_id: cell.x_mitre_id }));
+  let emptyOverlayMessage: string | null = null;
+  if (threatOverlay && threats.total === 0) {
+    emptyOverlayMessage = defenseMatrix.threats_count === 0
+      ? t_i18n('No threat matches this scope: change the selected threats or the filters.')
+      : t_i18n('The threats of this scope use no technique of the matrix: change the selected threats or the filters.');
+  }
+  let validationUnavailableReason: string | null = null;
+  if (validationTargets.length === 0) {
+    validationUnavailableReason = emptyOverlayMessage ?? t_i18n('Every technique of this scope is already validated.');
+  }
 
   return (
     <>
@@ -252,9 +262,28 @@ export const DefenseMatrixContent = ({ queryRef, scope, layers }: DefenseMatrixC
           </Stack>
           {defenseCoverageStatus?.validation_available && (
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <Button disabled={validationTargets.length === 0} onClick={() => setValidating(true)} data-testid="defense-matrix-validate-gaps">
-                {t_i18n('Validate the gaps')}
-              </Button>
+              <Stack spacing={0.5} alignItems="flex-end">
+                <Button
+                  disabled={validationTargets.length === 0}
+                  onClick={() => setValidating(true)}
+                  aria-describedby={validationUnavailableReason ? 'defense-matrix-validate-reason' : undefined}
+                  data-testid="defense-matrix-validate-gaps"
+                >
+                  {t_i18n('Validate the gaps')}
+                </Button>
+                {validationUnavailableReason && (
+                  <Typography
+                    id="defense-matrix-validate-reason"
+                    variant="caption"
+                    color="text.secondary"
+                    component="p"
+                    sx={{ margin: 0, maxWidth: 360, textAlign: 'right' }}
+                    data-testid="defense-matrix-validate-reason"
+                  >
+                    {validationUnavailableReason}
+                  </Typography>
+                )}
+              </Stack>
             </Security>
           )}
         </Stack>
@@ -278,13 +307,21 @@ export const DefenseMatrixContent = ({ queryRef, scope, layers }: DefenseMatrixC
             </Box>
             {threatOverlay && (
               <Box data-testid="defense-threat-coverage">
-                <Typography variant="h2" component="p" sx={{ margin: 0 }}>{`${threats.percent}%`}</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {t_i18n('{covered} of {total} techniques used by {threats} threats', {
-                    values: { covered: threats.covered, total: threats.total, threats: defenseMatrix.threats_count },
-                  })}
-                </Typography>
-                <Box sx={{ marginTop: 1 }}><DefenseLevelsBar levels={defenseMatrix.threat_levels} /></Box>
+                {emptyOverlayMessage ? (
+                  <Typography variant="body2" color="text.secondary" data-testid="defense-threat-coverage-empty">
+                    {emptyOverlayMessage}
+                  </Typography>
+                ) : (
+                  <>
+                    <Typography variant="h2" component="p" sx={{ margin: 0 }}>{`${threats.percent}%`}</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {t_i18n('{covered} of {total} techniques used by {threats} threats', {
+                        values: { covered: threats.covered, total: threats.total, threats: defenseMatrix.threats_count },
+                      })}
+                    </Typography>
+                    <Box sx={{ marginTop: 1 }}><DefenseLevelsBar levels={defenseMatrix.threat_levels} /></Box>
+                  </>
+                )}
               </Box>
             )}
             <DefenseLevelsLegend />

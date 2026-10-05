@@ -79,6 +79,10 @@ A header sums the scope up: the selected security platforms and threats, and the
 
 ![Matrix with the threat overlay](assets/defense-matrix-matrix-grid.png)
 
+When the selected threats or the threat filters match no threat, the threat overlay stays on and says so: the coverage summary reads "No threat matches this scope: change the selected threats or the filters." instead of a figure, and **Validate the gaps** stays disabled. When the threats of the scope match but use no technique of the matrix, the summary says that instead. A selection without any threat, or a threat filter without any filter, means no threat overlay. Whenever **Validate the gaps** is disabled, the reason is written below it: no threat matches the scope, the threats of the scope use no technique, or every technique of the scope is already validated. In the Gaps section, **Only techniques used by threats** gives the same explanation when no threat matches the scope.
+
+![Threat overlay of a scope that matches no threat](assets/defense-matrix-matrix-no-threat.png)
+
 The selected platforms and threats are remembered per user, in the browser, and shared by the Matrix and Gaps sections. Every level and every threat count only uses the knowledge you can access: a change of the `uses` relationships or of the markings and organizations of a threat is reflected at the next refresh. A threat scope defined by filters counts every matching threat. A sub-technique is grouped under its parent only if you can access the parent and the relationship between them.
 
 Click a technique to open its drawer. It starts with the level and one sentence explaining it from its evidences, for example "Detected by 2 rules deployed on Splunk, not validated yet", and the next action of the level:
