@@ -211,13 +211,36 @@ class OpenCTIMetricHandler:
         connector_name: str,
         connector_type: str,
         connector_scope: str,
+        name: str = "identity",
     ) -> None:
+        """Set the labels of an Info metric describing the connector.
+
+        Exposes the connector identity as an Info metric so that other metrics
+        (e.g. RabbitMQ queue metrics) can be joined on the connector id.
+        If metrics are not activated or the metric does not exist,
+        this method does nothing.
+
+        :param connector_id: Id of the connector
+        :type connector_id: str
+        :param connector_name: Name of the connector
+        :type connector_name: str
+        :param connector_type: Type of the connector
+        :type connector_type: str
+        :param connector_scope: Scope of the connector
+        :type connector_scope: str
+        :param name: Name of the Info metric to update (default: "identity")
+        :type name: str
+
+        Example:
+            >>> handler.set_info("my-id", "My connector", "EXTERNAL_IMPORT", "report")
+        """
         if self.activated:
-            self._metrics["identity"].info(
-                {
-                    "id": connector_id,
-                    "name": connector_name,
-                    "type": connector_type,
-                    "scope": connector_scope,
-                }
-            )
+            if self._metric_exists(name, Info):
+                self._metrics[name].info(
+                    {
+                        "id": connector_id,
+                        "name": connector_name,
+                        "type": connector_type,
+                        "scope": connector_scope,
+                    }
+                )
