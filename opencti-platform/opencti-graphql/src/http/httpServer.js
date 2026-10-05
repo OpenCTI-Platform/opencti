@@ -36,6 +36,7 @@ import {
   normalizeUploadError,
 } from './httpUtils';
 import ipWhitelistMiddleware from './ipWhitelistMiddleware';
+import { onSessionPresenceClose, onSessionPresenceConnect } from './sessionPresence';
 
 const MIN_20 = 20 * 60 * 1000;
 const REQ_TIMEOUT = conf.get('app:request_timeout');
@@ -126,7 +127,11 @@ const createHttpServer = async () => {
   wsServer.on('error', (e) => {
     throw e;
   });
-  const serverCleanup = useServer(createSubscriptionServerOptions({ schema, protection, context: extractWsSessionContext }), wsServer);
+  const serverCleanup = useServer({
+    ...createSubscriptionServerOptions({ schema, protection, context: extractWsSessionContext }),
+    onConnect: onSessionPresenceConnect,
+    onClose: onSessionPresenceClose,
+  }, wsServer);
 
   apolloServer.addPlugin(ApolloServerPluginDrainHttpServer({ httpServer }));
   apolloServer.addPlugin({
