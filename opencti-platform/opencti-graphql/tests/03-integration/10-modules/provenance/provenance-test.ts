@@ -22,7 +22,7 @@ import { buildProvenanceScriptParams, PROVENANCE_UPDATE_SCRIPT, writeProvenanceU
 import type { BasicStoreBase } from '../../../../src/types/store';
 import { checkRetentionRule } from '../../../../src/modules/retentionRules/retentionRules-domain';
 import { RetentionRuleScope, RetentionUnit } from '../../../../src/generated/graphql';
-import { up as enableRecommendedRelationshipTypes } from '../../../../src/migrations/1791213771062-provenance-recommended-relationship-types';
+import { up as enableRecommendedRelationshipTypes } from '../../../../src/migrations/1791221292579-provenance-recommended-relationship-types';
 
 const MALWARE_NAME = 'Provenance malware';
 
