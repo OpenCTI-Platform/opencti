@@ -151,7 +151,7 @@ const HuntDetails = ({ data }: HuntDetailsProps) => {
               <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }}>
                 <Text variant="content-compact">{fldt(hunt.last_run_at)}</Text>
                 {hunt.last_run_status && <HuntRunStatusChip value={hunt.last_run_status} />}
-                <Text variant="content-compact">{t_i18n('{count} hits', { values: { count: n(hunt.last_hits_count ?? 0) } })}</Text>
+                <Text variant="content-compact">{t_i18n('{count, plural, =0 {No hit} one {# hit} other {# hits}}', { values: { count: hunt.last_hits_count ?? 0 } })}</Text>
               </div>
             ) : <Text variant="content-compact">-</Text>}
             <Label sx={{ marginTop: 2 }}>{t_i18n('Next run')}</Label>
@@ -159,7 +159,7 @@ const HuntDetails = ({ data }: HuntDetailsProps) => {
             <Label sx={{ marginTop: 2 }}>{t_i18n('Time window')}</Label>
             <Text variant="content-compact">{t_i18n('{count} hours', { values: { count: hunt.time_window_hours } })}</Text>
             <Label sx={{ marginTop: 2 }}>{t_i18n('Escalation threshold')}</Label>
-            <Text variant="content-compact">{t_i18n('{count} hits', { values: { count: n(hunt.escalation_threshold) } })}</Text>
+            <Text variant="content-compact">{t_i18n('{count, plural, =0 {No hit} one {# hit} other {# hits}}', { values: { count: hunt.escalation_threshold } })}</Text>
             <Label sx={{ marginTop: 2 }}>{t_i18n('Maximum results per run')}</Label>
             <Text variant="content-compact">{hunt.hunt_max_results ? n(hunt.hunt_max_results) : t_i18n('Platform default')}</Text>
           </Grid>

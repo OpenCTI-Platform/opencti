@@ -75,7 +75,7 @@ const connectorHuntDetailsRunsQuery = graphql`
 
 const ConnectorLatestHuntRuns = ({ connectorId }: { connectorId: string }) => {
   const theme = useTheme<Theme>();
-  const { t_i18n, fldt, n } = useFormatter();
+  const { t_i18n, fldt } = useFormatter();
   const filters: ConnectorHuntDetailsRunsQuery$variables['filters'] = {
     mode: 'and',
     filters: [
@@ -112,7 +112,7 @@ const ConnectorLatestHuntRuns = ({ connectorId }: { connectorId: string }) => {
               <Text variant="content-caption">{t_i18n('Translation preview')}</Text>
             ) : (
               <>
-                <Text variant="content-compact">{t_i18n('{count} hits', { values: { count: n(run.hits_count ?? 0) } })}</Text>
+                <Text variant="content-compact">{t_i18n('{count, plural, =0 {No hit} one {# hit} other {# hits}}', { values: { count: run.hits_count ?? 0 } })}</Text>
                 <HuntVerdictChip value={run.verdict} />
               </>
             )}

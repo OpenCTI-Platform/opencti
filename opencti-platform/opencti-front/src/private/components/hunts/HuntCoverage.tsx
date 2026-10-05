@@ -152,7 +152,7 @@ const HuntCoverageComponent = ({ hunt }: { hunt: HuntCoverageHunt }) => {
                       <Link to={`${PATH_HUNT(hunt.id)}/runs/${run.id}`}>{fldt(run.completed_at ?? run.created_at)}</Link>
                       <HuntRunStatusChip value={run.hunt_run_status} />
                       <Text variant="content-compact">
-                        {t_i18n('{count} hits', { values: { count: run.hits_count ?? 0 } })}
+                        {t_i18n('{count, plural, =0 {No hit} one {# hit} other {# hits}}', { values: { count: run.hits_count ?? 0 } })}
                       </Text>
                     </div>
                     <Text variant="content-caption">
