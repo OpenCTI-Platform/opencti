@@ -1,5 +1,6 @@
 import { type ManagerDefinition, registerManager } from './managerModule';
 import conf, { booleanConf, logApp } from '../config/conf';
+import { DatabaseError, UnsupportedError } from '../config/errors';
 import { executionContext, SOURCE_INTELLIGENCE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import type { AuthContext } from '../types/user';
 import type { DataEvent, SseEvent, UpdateEvent } from '../types/event';
@@ -83,17 +84,17 @@ export const streamBoundaryOf = (time: number) => `${time}-${STREAM_ID_MAX_SEQUE
 
 /**
  * Last event of the stream, read before a full computation scans: every event up to it was written before the scan
- * started, so the stream resumes right after it and never skips an event the scan could not see. A stream that cannot
- * be read (empty) falls back to the end of the given time.
+ * started, so the stream resumes right after it and never skips an event the scan could not see. Stream ids come from
+ * the clock of the stream itself: without a position read from it, the computation fails and runs again later.
  */
-export const streamHighWaterMark = async (time: number): Promise<string> => {
-  try {
-    const { lastEventId } = await fetchStreamInfo();
-    return lastEventId || streamBoundaryOf(time);
-  } catch (err) {
-    logApp.warn('[OPENCTI-MODULE] Source intelligence could not read the stream position, using the computation time', { cause: err });
-    return streamBoundaryOf(time);
+export const streamHighWaterMark = async (): Promise<string> => {
+  const info = await fetchStreamInfo().catch((err: unknown) => {
+    throw DatabaseError('Source intelligence could not read the stream position before a full computation', { cause: err });
+  });
+  if (!info?.lastEventId) {
+    throw DatabaseError('Source intelligence could not read the stream position before a full computation');
   }
+  return info.lastEventId;
 };
 
 const parseStreamEventId = (id: string): [bigint, bigint] => {
@@ -556,7 +557,10 @@ const computeAndStore = async (
   }
   // The live scorecards count every event up to the computation time: they carry its stream boundary, pending until
   // the stream cursor passes it, so a replay after an interruption skips the events they already count
-  const boundary = options.streamBoundary ?? streamBoundaryOf(asOf);
+  const boundary = options.streamBoundary;
+  if (!boundary) {
+    throw UnsupportedError('A live computation needs the stream position read before its scan');
+  }
   const documents = built.map((doc) => (doc.is_live ? { ...doc, live_stream_event_id: boundary } : doc));
   const cursor = await redisGetManagerEventState(SOURCE_INTELLIGENCE_MANAGER_CONTEXT);
   if (laterStreamEventId(cursor, boundary) === boundary) {
@@ -572,7 +576,7 @@ export const runFullComputation = async (context: AuthContext, settings: SourceI
   try {
     const enterprise = await isEnterpriseEdition(context);
     const sources = await syncSources(context, settings);
-    const streamBoundary = await streamHighWaterMark(now);
+    const streamBoundary = await streamHighWaterMark();
     const { tracked, state, documents } = await computeAndStore(context, settings, sources, now, { live: true, snapshot: true, enterprise, streamBoundary });
     const trace: ScanTrace = { started_at: now, pages: state.scanPages };
     await updateSourceIntelligenceState({ last_scan_trace: JSON.stringify(trace) });

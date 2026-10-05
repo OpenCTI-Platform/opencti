@@ -19,15 +19,17 @@ describe('Source intelligence stream boundary of a full computation', () => {
       lastEventDate: '',
       streamSize: 4,
     });
-    const boundary = await streamHighWaterMark(SCAN_START);
+    const boundary = await streamHighWaterMark();
     expect(boundary).toBe(`${SCAN_START}-3`);
     // An event written during the scan in the same millisecond comes after the boundary: the stream still applies it
     expect(laterStreamEventId(boundary, `${SCAN_START}-4`)).toBe(`${SCAN_START}-4`);
     expect(laterStreamEventId(streamBoundaryOf(SCAN_START), `${SCAN_START}-4`)).toBe(streamBoundaryOf(SCAN_START));
   });
 
-  it('should fall back to the end of the computation time when the stream cannot be read', async () => {
-    vi.mocked(fetchStreamInfo).mockRejectedValue(new Error('empty stream'));
-    expect(await streamHighWaterMark(SCAN_START)).toBe(streamBoundaryOf(SCAN_START));
+  it('should fail the computation rather than guess a position when the stream cannot be read', async () => {
+    vi.mocked(fetchStreamInfo).mockRejectedValue(new Error('stream unavailable'));
+    await expect(streamHighWaterMark()).rejects.toThrow('could not read the stream position');
+    vi.mocked(fetchStreamInfo).mockResolvedValue({ lastEventId: '', firstEventId: '', firstEventDate: '', lastEventDate: '', streamSize: 0 });
+    await expect(streamHighWaterMark()).rejects.toThrow('could not read the stream position');
   });
 });
