@@ -264,7 +264,7 @@ describe('Background task validity check (checkActionValidity)', () => {
       };
       await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
-      }).rejects.toThrowError('A background task of type query should have at least one filter or a search term.');
+      }).rejects.toThrowError('A background task of type query should have at least one filter.');
     });
 
     it('should throw an error if a query task has an empty filter', async () => {
@@ -276,7 +276,7 @@ describe('Background task validity check (checkActionValidity)', () => {
       };
       await expect(async () => {
         await checkActionValidity(testContext, user, input, scope, type);
-      }).rejects.toThrowError('A background task of type query should have at least one filter or a search term.');
+      }).rejects.toThrowError('A background task of type query should have at least one filter.');
     });
   });
 
