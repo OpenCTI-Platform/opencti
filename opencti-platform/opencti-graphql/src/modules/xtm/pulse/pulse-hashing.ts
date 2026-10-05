@@ -15,6 +15,10 @@ const HEX_KEY_REGEX = /^[0-9a-f]{32}$/;
 
 // Observable types whose value is case-insensitive.
 const CASE_INSENSITIVE_OBSERVABLE_TYPES = ['domain-name', 'hostname', 'email-addr', 'mac-addr', 'windows-registry-key'];
+// The outbound contract keys an attack pattern by its MITRE ID (an ATT&CK or ATLAS technique) and a vulnerability by
+// its CVE identifier, nothing else: a custom name or identifier never leaves the platform, the object has no key.
+const MITRE_TECHNIQUE_ID_REGEX = /^(?:AML\.)?T\d{4}(?:\.\d{3})?$/;
+const CVE_IDENTIFIER_REGEX = /^CVE-\d{4}-\d{4,}$/;
 
 // The compressed lower-case form of an IPv6 address or network (2001:0DB8:0:0::1/64 -> 2001:db8::1/64), so that
 // every spelling of one address yields one key. A value that is not an IPv6 address is only lower-cased.
@@ -150,15 +154,12 @@ export const computeCanonicalValues = (entity: PulseHashableEntity): string[] =>
       return value ? [value] : [];
     }
     case ENTITY_TYPE_ATTACK_PATTERN: {
-      if (entity.x_mitre_id && entity.x_mitre_id.trim().length > 0) {
-        return [entity.x_mitre_id.trim().toUpperCase()];
-      }
-      const name = normalizeThreatName(entity.name ?? '');
-      return name ? [`name:${name}`] : [];
+      const mitreId = (entity.x_mitre_id ?? '').trim().toUpperCase();
+      return MITRE_TECHNIQUE_ID_REGEX.test(mitreId) ? [mitreId] : [];
     }
     case ENTITY_TYPE_VULNERABILITY: {
       const name = collapseWhitespace(entity.name ?? '').toUpperCase();
-      return name ? [name] : [];
+      return CVE_IDENTIFIER_REGEX.test(name) ? [name] : [];
     }
     case ENTITY_TYPE_INTRUSION_SET:
     case ENTITY_TYPE_MALWARE:

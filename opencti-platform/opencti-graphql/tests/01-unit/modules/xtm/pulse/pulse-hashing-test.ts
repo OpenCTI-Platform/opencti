@@ -92,8 +92,15 @@ describe('Threat Pulse hashing', () => {
 
   it('should canonicalize attack patterns, vulnerabilities and threats', () => {
     expect(computeCanonicalValues({ entity_type: 'Attack-Pattern', x_mitre_id: ' t1059.001 ', name: 'PowerShell' })).toEqual(['T1059.001']);
-    expect(computeCanonicalValues({ entity_type: 'Attack-Pattern', name: 'Custom Technique' })).toEqual(['name:customtechnique']);
+    expect(computeCanonicalValues({ entity_type: 'Attack-Pattern', x_mitre_id: 'aml.t0051.000', name: 'LLM Prompt Injection' })).toEqual(['AML.T0051.000']);
     expect(computeCanonicalValues({ entity_type: 'Vulnerability', name: ' cve-2024-3400 ' })).toEqual(['CVE-2024-3400']);
+    // Only a MITRE ID and a CVE identifier leave the platform: a custom name or identifier has no key.
+    expect(computeCanonicalValues({ entity_type: 'Attack-Pattern', name: 'Custom Technique' })).toEqual([]);
+    expect(computeCanonicalValues({ entity_type: 'Attack-Pattern', x_mitre_id: 'INTERNAL-42', name: 'Custom Technique' })).toEqual([]);
+    expect(computeCanonicalValues({ entity_type: 'Vulnerability', name: 'Log4Shell' })).toEqual([]);
+    expect(computeCanonicalValues({ entity_type: 'Vulnerability', name: 'CVE-2024-3400 (PAN-OS)' })).toEqual([]);
+    expect(computeStableKeys({ entity_type: 'Attack-Pattern', name: 'Custom Technique' })).toEqual([]);
+    expect(computeStableKeys({ entity_type: 'Vulnerability', name: 'Log4Shell' })).toEqual([]);
     expect(computeCanonicalValues({ entity_type: 'Intrusion-Set', name: 'APT 28', aliases: ['Fancy Bear', 'APT-28', 'apt28'] }))
       .toEqual(['apt28', 'fancybear']);
     expect(normalizeThreatName('Lock_Bit 3.0')).toBe('lockbit30');
