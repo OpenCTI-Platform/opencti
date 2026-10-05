@@ -3,7 +3,7 @@ import { ChipOwnProps } from '@mui/material/Chip/Chip';
 import { Stack } from '@mui/material';
 import { Theme, useTheme } from '@mui/material/styles';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
-import React, { CSSProperties, Fragment, FunctionComponent, PropsWithChildren, Ref, useContext, useState } from 'react';
+import React, { CSSProperties, Fragment, FunctionComponent, PropsWithChildren, Ref, useState } from 'react';
 import {
   convertOperatorToIcon,
   FILTER_LINE_ITEM_HEIGHT,
@@ -18,7 +18,6 @@ import type { WidgetHost } from '../../utils/widget/widget';
 import { Filter, FilterGroup, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 import { FilterIconButtonVariant } from '../FilterIconButtonContainer';
 import FilterIconButtonGlobalMode from '../FilterIconButtonGlobalMode';
-import { PageContainerContext } from '../PageContainer';
 import { useFormatter } from '../i18n';
 import FilterValues from './FilterValues';
 import FilterChip from './FilterChip';
@@ -67,20 +66,19 @@ const getChipStyles = (theme: Theme, variant?: FilterIconButtonVariant) => {
  * inside another layout — e.g. an entity overview — so it claims no margin and no wrapping.
  */
 const getLineStyle = ({
-  variant,
   isReadWriteFilter,
-  inPageContainer,
   hasSavedFilters,
 }: {
-  variant?: FilterIconButtonVariant;
   isReadWriteFilter: boolean;
-  inPageContainer: boolean;
   hasSavedFilters?: boolean;
 }) => {
   if (!isReadWriteFilter) {
     return {
       margin: '0 0 0 0',
       display: 'flex',
+      // Hug the chips (background must not span the whole row), but never exceed the parent.
+      width: 'fit-content',
+      maxWidth: '100%',
       flexWrap: 'nowrap',
       gap: 0,
       overflow: 'hidden',
@@ -88,10 +86,11 @@ const getLineStyle = ({
       borderRadius: '0px',
     };
   }
-  const margin = (inPageContainer || variant === 'small') ? '0 0 0 0' : '0 0 8px 0';
   return {
-    margin,
+    margin: '0 0 0 0',
     display: 'flex',
+    width: 'fit-content',
+    maxWidth: '100%',
     flexWrap: 'wrap',
     gap: 1,
     overflow: 'hidden',
@@ -171,12 +170,11 @@ const FilterChipLine: FunctionComponent<PropsWithChildren<FilterChipLineProps>> 
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
-  const { inPageContainer } = useContext(PageContainerContext);
   const [hoveredFilterId, setHoveredFilterId] = useState<string | undefined>(undefined);
 
   const isReadWriteFilter = !!(helpers || handleRemoveFilter);
   const { filterStyle, operatorStyle } = getChipStyles(theme, variant);
-  const lineStyle = getLineStyle({ variant, isReadWriteFilter, inPageContainer, hasSavedFilters });
+  const lineStyle = getLineStyle({ isReadWriteFilter, hasSavedFilters });
 
   const manageRemoveFilter = (
     currentFilterId: string | undefined,
@@ -267,7 +265,7 @@ const FilterChipLine: FunctionComponent<PropsWithChildren<FilterChipLineProps>> 
         const chipVariant = currentFilter.values.length === 0 && !NO_VALUES_FILTER_OPERATORS.includes(filterOperator ?? 'eq')
           ? 'outlined'
           : 'filled';
-        // darken the bg color when filled (quickfix for 'warning' and 'success' chipColor unreadable with regardingOf filter)
+          // darken the bg color when filled (quickfix for 'warning' and 'success' chipColor unreadable with regardingOf filter)
         const darkenChipBackground = (chipColor === 'warning' || chipColor === 'success') && chipVariant === 'filled';
         const authorizeFilterRemoving = !(filtersRestrictions?.preventRemoveFor?.includes(filterKey))
           && isFilterEditable(filtersRestrictions, filterKey, filterValues);

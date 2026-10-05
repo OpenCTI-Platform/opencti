@@ -6,7 +6,7 @@ import { useFormatter } from '../../i18n';
 import { Filter, FilterEditorInputValue } from '../../../utils/filters/filtersHelpers-types';
 import { FILTER_POPOVER_LAYER, fdsLayerClass, filterPopoverPaperSx } from '../../../utils/fdsLayer';
 import FilterValueInput from './FilterValueInput';
-import { FILTER_VALUE_POPOVER_MIN_WIDTH, filterFieldBoxStyle } from './filterFieldLayout';
+import { FILTER_VALUE_POPOVER_MIN_WIDTH } from './filterFieldLayout';
 
 export interface FilterRowCompositeValueProps {
   filter: Filter;
@@ -41,7 +41,6 @@ const FilterRowCompositeValue: FunctionComponent<FilterRowCompositeValueProps> =
   const theme = useTheme();
   const { t_i18n } = useFormatter();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-  const [isHovered, setIsHovered] = useState(false);
   const dynamicValue = subKey ? filter.values.find((f) => f.key === subKey)?.values?.[0] : filter.values[0];
   const directChildrenCount = (dynamicValue?.filters?.length ?? 0) + (dynamicValue?.filterGroups?.length ?? 0);
   const dynamicValueLabel = directChildrenCount === 0
@@ -55,21 +54,11 @@ const FilterRowCompositeValue: FunctionComponent<FilterRowCompositeValueProps> =
         data-testid={`filter-row-composite-value-${filter.id}`}
         aria-label={t_i18n('Edit dynamic filter')}
         onClick={(event) => setAnchorEl(event.currentTarget)}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
         disabled={!hasRelationshipType}
         variant="default"
-        priority="tertiary"
-        size="sm"
-        className="!rounded-sm !bg-transparent !font-normal !normal-case"
-        style={{
-          ...filterFieldBoxStyle(theme, isHovered && hasRelationshipType),
-          justifyContent: 'flex-start',
-          height: '100%',
-          overflow: 'hidden',
-          padding: `0 ${theme.spacing(1)}`,
-          whiteSpace: 'nowrap',
-        }}
+        priority="secondary"
+        size="md"
+        className="w-full justify-start overflow-hidden"
       >
         {dynamicValueLabel}
       </Button>

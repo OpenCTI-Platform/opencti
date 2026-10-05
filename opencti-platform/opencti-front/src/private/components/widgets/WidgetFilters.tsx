@@ -310,87 +310,95 @@ const WidgetFilters: FunctionComponent<WidgetFiltersProps> = ({ perspective, typ
         )}
       </Box>
 
-      <Box sx={{ paddingTop: 2 }}>
-        {perspective === 'relationships'
-          && (dataSelection.filters_id || isFilterGroupNotEmptyShallow(filters))
-          && (
-            <div style={{ padding: 4 }}>
-              {t_i18n('Relationship filters: these filters apply to the relationships between the result of any dynamic source or dynamic target filters ')}
-            </div>
-          )
-        }
-        {isSavedFiltersMode ? (
-          <WidgetSavedFilterChips
-            filterId={dataSelection.filters_id}
-            entityTypes={searchContext.entityTypes}
-          />
-        ) : (
-          <FilterIconButton
-            filters={filters}
-            helpers={helpers}
-            availableFilterKeys={type === 'bookmark' ? ['entity_type'] : availableFilterKeys}
-            searchContext={searchContext}
-            availableEntityTypes={type === 'bookmark' ? bookmarkAvailableEntityTypes : availableEntityTypes}
-            entityTypes={searchContext.entityTypes}
-            host={host}
-          />
-        )}
+      <Box sx={{ paddingTop: 2, display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <div>
+          {perspective === 'relationships'
+            && (dataSelection.filters_id || isFilterGroupNotEmptyShallow(filters))
+            && (
+              <div style={{ paddingBottom: 4 }}>
+                {t_i18n('Relationship filters: these filters apply to the relationships between the result of any dynamic source or dynamic target filters ')}
+              </div>
+            )
+          }
+          {isSavedFiltersMode ? (
+            <WidgetSavedFilterChips
+              filterId={dataSelection.filters_id}
+              entityTypes={searchContext.entityTypes}
+            />
+          ) : (
+            <FilterIconButton
+              filters={filters}
+              helpers={helpers}
+              availableFilterKeys={type === 'bookmark' ? ['entity_type'] : availableFilterKeys}
+              searchContext={searchContext}
+              availableEntityTypes={type === 'bookmark' ? bookmarkAvailableEntityTypes : availableEntityTypes}
+              entityTypes={searchContext.entityTypes}
+              host={host}
+            />
+          )}
+        </div>
 
         {((isSavedDynamicFromMode && dataSelection.dynamicFrom_id)
           || (!isSavedDynamicFromMode && isFilterGroupNotEmptyShallow(filtersDynamicFrom)))
         && (
-          <div style={{ padding: 4 }}>
-            {t_i18n('Dynamic source filters: These filters apply a pre-query to the source entity of the relationship, max limit is 5000')}
+          <div>
+            <div style={{ paddingBottom: 4 }}>
+              {t_i18n('Dynamic source filters: These filters apply a pre-query to the source entity of the relationship, max limit is 5000')}
+            </div>
+
+            {isSavedDynamicFromMode ? (
+              <WidgetSavedFilterChips
+                filterId={dataSelection.dynamicFrom_id}
+                entityTypes={['Stix-Core-Object']}
+              />
+            ) : (
+              <FilterIconButton
+                filters={filtersDynamicFrom}
+                helpers={helpersDynamicFrom}
+                availableFilterKeys={entitiesFilters}
+                entityTypes={['Stix-Core-Object']}
+                searchContext={searchContext}
+                availableEntityTypes={[
+                  'Stix-Domain-Object',
+                  'Stix-Cyber-Observable',
+                ]}
+                host={host}
+              />
+            )}
           </div>
         )
         }
-        {isSavedDynamicFromMode ? (
-          <WidgetSavedFilterChips
-            filterId={dataSelection.dynamicFrom_id}
-            entityTypes={['Stix-Core-Object']}
-          />
-        ) : (
-          <FilterIconButton
-            filters={filtersDynamicFrom}
-            helpers={helpersDynamicFrom}
-            availableFilterKeys={entitiesFilters}
-            entityTypes={['Stix-Core-Object']}
-            searchContext={searchContext}
-            availableEntityTypes={[
-              'Stix-Domain-Object',
-              'Stix-Cyber-Observable',
-            ]}
-            host={host}
-          />
-        )}
 
         {((isSavedDynamicToMode && dataSelection.dynamicTo_id)
           || (!isSavedDynamicToMode && isFilterGroupNotEmptyShallow(filtersDynamicTo)))
         && (
-          <div style={{ padding: 4 }}>
-            {t_i18n('Dynamic target filters: These filters apply a pre-query to the target entity of the relationship, max limit is 5000')}
+          <div>
+            <div style={{ paddingBottom: 4 }}>
+              {t_i18n('Dynamic target filters: These filters apply a pre-query to the target entity of the relationship, max limit is 5000')}
+            </div>
+
+            {isSavedDynamicToMode ? (
+              <WidgetSavedFilterChips
+                filterId={dataSelection.dynamicTo_id}
+                entityTypes={['Stix-Core-Object']}
+              />
+            ) : (
+              <FilterIconButton
+                filters={filtersDynamicTo}
+                helpers={helpersDynamicTo}
+                availableFilterKeys={entitiesFilters}
+                entityTypes={['Stix-Core-Object']}
+                searchContext={searchContext}
+                availableEntityTypes={[
+                  'Stix-Domain-Object',
+                  'Stix-Cyber-Observable',
+                ]}
+                host={host}
+              />
+            )}
           </div>
         )
         }
-        {isSavedDynamicToMode ? (
-          <WidgetSavedFilterChips
-            filterId={dataSelection.dynamicTo_id}
-            entityTypes={['Stix-Core-Object']}
-          />
-        ) : (
-          <FilterIconButton
-            filters={filtersDynamicTo}
-            helpers={helpersDynamicTo}
-            availableFilterKeys={entitiesFilters}
-            entityTypes={['Stix-Core-Object']}
-            searchContext={searchContext}
-            availableEntityTypes={[
-              'Stix-Domain-Object',
-              'Stix-Cyber-Observable',
-            ]}
-            host={host}
-          />
-        )}
 
       </Box>
     </>
