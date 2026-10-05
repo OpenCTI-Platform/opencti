@@ -35,7 +35,7 @@ Derived events are computed from the knowledge of the case by a set of derivatio
 
 | Source | Events |
 |:-------|:-------|
-| Attack patterns in the case | One event per technique, with the exact window of its `uses` and `targets` relationships when they have start and stop times, otherwise placed in kill chain order with an approximate precision |
+| Attack patterns in the case | One event per technique, with the exact window of its `uses` and `targets` relationships when they have a start time (from the first start to the last stop, open-ended while one of them has no stop time), otherwise placed in kill chain order with an approximate precision |
 | Observed data | Observation window (first and last observed) |
 | Sightings | Sighting window; sightings from a security platform land in the detection lane, the others in the adversary lane |
 | Incidents, infrastructures, malware, tools, intrusion sets, threat actors, campaigns | First seen and last seen |

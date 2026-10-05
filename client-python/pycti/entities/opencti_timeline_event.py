@@ -489,7 +489,9 @@ class TimelineEvent:
         :param container_id: the id of the Incident or Case (required)
         :type container_id: str
         :return: first_adversary_activity, first_detection, first_response, containment, closure,
-            computed_at (last computation) and changed_at (last change of an anchor value)
+            computed_at (last generation of the timeline from the knowledge of the container; a
+            milestone, a pin or an annotation recomputes the anchors without moving it) and
+            changed_at (last change of an anchor value)
         :rtype: dict or None
         """
         container_id = kwargs.get("container_id", None)

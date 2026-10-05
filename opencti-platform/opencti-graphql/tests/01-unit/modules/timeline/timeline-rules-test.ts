@@ -94,6 +94,26 @@ describe('Timeline adversary rules', () => {
     expect(events[0].source_ids).toEqual(['rel-1']);
   });
 
+  it('should keep a technique open-ended while one of its relationships has no end', () => {
+    const technique = element({ id: 'ap-1', entity_type: 'Attack-Pattern', name: 'Phishing' });
+    const relationship = (id: string, start: string, stop: string | null) => element({
+      id, entity_type: 'uses', relationship_type: 'uses', from_id: 'is-1', to_id: 'ap-1', start_time: start, stop_time: stop,
+    });
+    const closed = relationship('rel-closed', '2026-01-10T00:00:00.000Z', '2026-02-10T00:00:00.000Z');
+    const [openEnded] = derive(buildInput({
+      entities: [technique],
+      relationships: [closed, relationship('rel-open', '2026-03-01T00:00:00.000Z', null)],
+    })).filter((e) => e.kind === 'technique_used');
+    expect(openEnded).toMatchObject({ event_time: '2026-01-10T00:00:00.000Z', event_end_time: null });
+    expect(openEnded.source_ids).toEqual(['rel-closed', 'rel-open']);
+    // Every relationship ended: the window ends with the last of them
+    const [ended] = derive(buildInput({
+      entities: [technique],
+      relationships: [closed, relationship('rel-later', '2026-03-01T00:00:00.000Z', '2026-03-15T00:00:00.000Z')],
+    })).filter((e) => e.kind === 'technique_used');
+    expect(ended).toMatchObject({ event_time: '2026-01-10T00:00:00.000Z', event_end_time: '2026-03-15T00:00:00.000Z' });
+  });
+
   it('should place techniques without times in kill chain order over the adversary window, flagged approximate', () => {
     const phases = new Map([
       ['kc-recon', { id: 'kc-recon', phase_name: 'reconnaissance', kill_chain_name: 'mitre-attack', order: 1 }],

@@ -349,9 +349,10 @@ const techniqueRule: TimelineRule = {
       const phases = techniquePhaseNames(input, technique);
       if (related.length > 0) {
         const starts = related.map((r) => toTimelineTime(r.start_time) as number);
-        const stops = related.map((r) => toTimelineTime(r.stop_time)).filter((t): t is number => t !== null);
+        const stops = related.map((r) => toTimelineTime(r.stop_time));
         const from = Math.min(...starts);
-        const to = stops.length > 0 ? Math.max(...stops) : null;
+        // One relationship without an end keeps the technique open-ended: the window never ends before one of them starts
+        const to = stops.every((t): t is number => t !== null) ? Math.max(...stops) : null;
         events.push({
           rule_id: RULE_TECHNIQUE,
           kind: 'technique_used',
