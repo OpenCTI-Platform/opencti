@@ -111,7 +111,7 @@
   "a random password will be generated for your user: you will need to change it to be able to log in via email and password. Simply use the forget password workflow.": "将为用户生成一个随机密码：您需要更改密码才能通过电子邮件和密码登录。只需使用忘记密码工作流程即可。",
   "A security coverage will be created for the selected techniques. OpenAEV generates a scenario restricted to these techniques and sends back its results, which update the validation layer.": "将为所选技术创建安全覆盖。OpenAEV 会生成仅限于这些技术的场景并返回结果,结果将更新验证图层。",
   "A validation request holds at most {max} techniques and {count} are selected: unselect some of them to validate.": "一次验证请求最多包含 {max} 项技术，当前已选择 {count} 项：请取消选择部分技术后再进行验证。",
-  "A validation request holds at most {max} techniques, the ones used by the most threats first. Select the others in the Gaps tab to validate them.": "一次验证请求最多包含 {max} 项技术，优先包含被最多威胁使用的技术。请在“缺口”选项卡中选择其余技术进行验证。",
+  "A validation request holds at most {max} techniques and takes the ones used by the most threats first. Select the others in the Gaps tab to validate them.": "一次验证请求最多包含 {max} 项技术，优先包含被最多威胁使用的技术。请在“缺口”选项卡中选择其余技术进行验证。",
   "A widget has a @me filter enabled...": "部件已启用 @me 过滤器。将此仪表盘作为公共仪表盘共享时，@me 筛选器将被\"{name}\"共享仪表盘的人替换。这可能会影响仪表盘中显示的数据。",
   "About": "关于",
   "About this connector": "关于此连接器",

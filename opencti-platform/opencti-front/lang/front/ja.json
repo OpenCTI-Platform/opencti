@@ -111,7 +111,7 @@
   "a random password will be generated for your user: you will need to change it to be able to log in via email and password. Simply use the forget password workflow.": "ランダムなパスワードが生成されます: メールとパスワードでログインできるようにするには、パスワードを変更する必要があります。パスワードを忘れるワークフローを使用してください。",
   "A security coverage will be created for the selected techniques. OpenAEV generates a scenario restricted to these techniques and sends back its results, which update the validation layer.": "選択したテクニックに対してセキュリティカバレッジが作成されます。OpenAEV はこれらのテクニックに限定したシナリオを生成し、結果を返します。結果は検証レイヤーを更新します。",
   "A validation request holds at most {max} techniques and {count} are selected: unselect some of them to validate.": "検証リクエストに含められるテクニックは最大 {max} 件ですが、{count} 件が選択されています。検証するには一部の選択を解除してください。",
-  "A validation request holds at most {max} techniques, the ones used by the most threats first. Select the others in the Gaps tab to validate them.": "検証リクエストに含められるテクニックは最大 {max} 件で、最も多くの脅威に使用されているものが優先されます。残りを検証するには、ギャップ タブで選択してください。",
+  "A validation request holds at most {max} techniques and takes the ones used by the most threats first. Select the others in the Gaps tab to validate them.": "検証リクエストに含められるテクニックは最大 {max} 件で、最も多くの脅威に使用されているものが優先されます。残りを検証するには、ギャップ タブで選択してください。",
   "A widget has a @me filter enabled...": "ウィジェットで@meフィルタが有効になっています。このダッシュボードをパブリックダッシュボードとして共有する場合、@meフィルターはダッシュボードを共有している人の\"{name}\"に置き換えられます。ダッシュボードに表示されるデータに影響を与える可能性があります。",
   "About": "OpenCTIについて",
   "About this connector": "このコネクタについて",

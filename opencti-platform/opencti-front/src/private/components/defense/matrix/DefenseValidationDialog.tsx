@@ -222,7 +222,7 @@ const DefenseValidationDialog = ({ open, onClose, onValidated, techniques, defer
                       <>
                         {t_i18n('{count, plural, one {# more technique of this scope is not part of this request.} other {# more techniques of this scope are not part of this request.}}', { values: { count: deferredCount } })}
                         {' '}
-                        {t_i18n('A validation request holds at most {max} techniques, the ones used by the most threats first. Select the others in the Gaps tab to validate them.', { values: { max: MAX_VALIDATION_TECHNIQUES } })}
+                        {t_i18n('A validation request holds at most {max} techniques and takes the ones used by the most threats first. Select the others in the Gaps tab to validate them.', { values: { max: MAX_VALIDATION_TECHNIQUES } })}
                         {' '}
                         <Link to={PATH_DEFENSE_GAPS} onClick={onClose}>{t_i18n('Open the Gaps tab')}</Link>
                       </>
