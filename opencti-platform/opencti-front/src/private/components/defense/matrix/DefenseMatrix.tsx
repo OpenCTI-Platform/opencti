@@ -40,6 +40,7 @@ import {
   DEFENSE_THREAT_SCOPE_LABELS,
   type DefenseLayersState,
   type DefenseScopeState,
+  scopedDefensePlatforms,
   summarizeLevels,
   toThreatScopeInput,
 } from './defenseMatrix-utils';
@@ -202,10 +203,7 @@ export const DefenseMatrixContent = ({ queryRef, scope, layers }: DefenseMatrixC
     gaps: t_i18n('{count, plural, one {# gap} other {# gaps}}', { values: { count: counts.gaps } }),
   };
   // A saved platform that was deleted or is no longer visible is left out, as the matrix itself does
-  const scopedPlatforms = scope.platformIds.flatMap((id) => {
-    const platform = defensePlatforms.find((p) => p.id === id);
-    return platform ? [{ id: platform.id, name: platform.name }] : [];
-  });
+  const scopedPlatforms = scopedDefensePlatforms(scope.platformIds, defensePlatforms);
   const threatScopeLabel = scope.threatMode === 'SELECTED'
     ? t_i18n('{count, plural, one {# selected threat} other {# selected threats}}', { values: { count: scope.threats.length } })
     : t_i18n(DEFENSE_THREAT_SCOPE_LABELS[scope.threatMode]);

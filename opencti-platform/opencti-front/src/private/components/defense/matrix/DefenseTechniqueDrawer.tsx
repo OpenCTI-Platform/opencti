@@ -33,6 +33,7 @@ import {
   type DefenseValidation,
   defenseLevelColor,
   defenseLevelLabel,
+  scopedDefensePlatforms,
   toThreatScopeInput,
 } from './defenseMatrix-utils';
 
@@ -214,7 +215,8 @@ const DefenseTechniqueContent = ({ queryRef, scope, allowValidation }: DefenseTe
   }
   const { attackPattern, cell } = defenseTechnique;
   const platformName = (id: string) => (id === 'all' ? t_i18n('All platforms') : defensePlatforms.find((p) => p.id === id)?.name ?? id);
-  const validationPlatforms = scope.platformIds.map((id) => ({ id, name: platformName(id) }));
+  // A saved platform that was deleted or is no longer visible is left out, as the matrix itself does
+  const validationPlatforms = scopedDefensePlatforms(scope.platformIds, defensePlatforms);
 
   // The evidence behind the level, said in one sentence
   const liveDeployments = defenseTechnique.rules.flatMap(({ indicator, deployments }) => deployments

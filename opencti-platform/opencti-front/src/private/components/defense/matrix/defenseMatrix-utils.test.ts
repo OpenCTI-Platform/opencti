@@ -15,6 +15,7 @@ import {
   defenseThreatColor,
   isValidationFailed,
   parseDefenseScope,
+  scopedDefensePlatforms,
   summarizeLevels,
   toThreatScopeInput,
 } from './defenseMatrix-utils';
@@ -29,6 +30,13 @@ const cell = (overrides: Partial<Parameters<typeof computeLayerLevel>[0]> = {}) 
 });
 
 describe('defenseMatrix-utils', () => {
+  describe('scopedDefensePlatforms', () => {
+    it('keeps only the saved platforms that still exist, in the saved order', () => {
+      const platforms = [{ id: 'edr', name: 'EDR' }, { id: 'siem', name: 'SIEM' }];
+      expect(scopedDefensePlatforms(['siem', 'deleted', 'edr'], platforms)).toEqual([{ id: 'siem', name: 'SIEM' }, { id: 'edr', name: 'EDR' }]);
+      expect(scopedDefensePlatforms(['deleted'], platforms)).toEqual([]);
+    });
+  });
   describe('computeLayerLevel', () => {
     it('keeps the platform level when every evidence layer is enabled', () => {
       expect(computeLayerLevel(cell({ level: 3, telemetry: true, detection: 'deployed' }), ALL_DEFENSE_LAYERS)).toBe(3);

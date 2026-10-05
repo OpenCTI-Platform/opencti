@@ -20,6 +20,15 @@ export const DEFENSE_COVERED_LEVEL = DEFENSE_LEVEL_DETECTION_DEPLOYED;
 // The gaps API also returns deployed detections that are not validated yet, so "uncovered" asks for these levels.
 export const DEFENSE_UNCOVERED_LEVELS: number[] = DEFENSE_LEVELS.filter((level) => level < DEFENSE_COVERED_LEVEL);
 
+/** The saved platforms of a scope that still exist and are visible, as the matrix shows them. */
+export const scopedDefensePlatforms = (
+  platformIds: ReadonlyArray<string>,
+  platforms: ReadonlyArray<{ readonly id: string; readonly name: string }>,
+) => platformIds.flatMap((id) => {
+  const platform = platforms.find((p) => p.id === id);
+  return platform ? [{ id: platform.id, name: platform.name }] : [];
+});
+
 export const DEFENSE_LEVEL_LABELS: Record<number, string> = {
   [DEFENSE_LEVEL_NONE]: 'No coverage',
   [DEFENSE_LEVEL_TELEMETRY]: 'Telemetry only',
