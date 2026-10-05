@@ -92,6 +92,15 @@ describe('Hunt status header dialogs', () => {
 
   afterEach(() => vi.clearAllMocks());
 
+  it('counts the readiness points that need attention in the singular and the plural', () => {
+    const warning = (key: string) => item(key, 'warning', 'The hunt connector has not answered recently');
+    const { unmount } = testRender(<HuntStatusHeader data={{ ...hunt, readiness: { ready: true, items: [warning('connector')] } } as never} />);
+    expect(screen.getByTestId('hunt-readiness-summary')).toHaveTextContent('Ready to run, 1 point needs attention');
+    unmount();
+    testRender(<HuntStatusHeader data={{ ...hunt, readiness: { ready: true, items: [warning('connector'), warning('scope')] } } as never} />);
+    expect(screen.getByTestId('hunt-readiness-summary')).toHaveTextContent('Ready to run, 2 points need attention');
+  });
+
   // The global snackbar renders under the overlay of a design-system dialog: an error sent there is never seen
   it('shows why a hunt could not be retired inside the confirmation', async () => {
     const { user, relayEnv } = renderHeader();

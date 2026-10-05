@@ -5155,6 +5155,7 @@
   "Ready": "Listo",
   "Ready to run": "Lista para ejecutarse",
   "Ready to run, {count} points need attention": "Lista para ejecutarse, {count} puntos requieren atención",
+  "Ready to run, 1 point needs attention": "Lista para ejecutarse, 1 punto requiere atención",
   "Reason": "Motivo",
   "Reason (optional)": "Motivo (opcional)",
   "Reason: {reason}": "Motivo: {reason}",

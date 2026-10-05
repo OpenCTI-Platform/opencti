@@ -5155,6 +5155,7 @@
   "Ready": "Ready",
   "Ready to run": "Ready to run",
   "Ready to run, {count} points need attention": "Ready to run, {count} points need attention",
+  "Ready to run, 1 point needs attention": "Ready to run, 1 point needs attention",
   "Reason": "Reason",
   "Reason (optional)": "Reason (optional)",
   "Reason: {reason}": "Reason: {reason}",

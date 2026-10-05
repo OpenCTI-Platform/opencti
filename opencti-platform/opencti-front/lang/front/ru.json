@@ -5155,6 +5155,7 @@
   "Ready": "Готово",
   "Ready to run": "Готова к запуску",
   "Ready to run, {count} points need attention": "Готова к запуску, требуют внимания пунктов: {count}",
+  "Ready to run, 1 point needs attention": "Готова к запуску, 1 пункт требует внимания",
   "Reason": "Причина",
   "Reason (optional)": "Причина (необязательно)",
   "Reason: {reason}": "Причина: {reason}",

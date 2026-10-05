@@ -5155,6 +5155,7 @@
   "Ready": "준비",
   "Ready to run": "실행 준비 완료",
   "Ready to run, {count} points need attention": "실행 준비 완료, 주의가 필요한 항목 {count}개",
+  "Ready to run, 1 point needs attention": "실행 준비 완료, 주의가 필요한 항목 1개",
   "Reason": "사유",
   "Reason (optional)": "사유 (선택 사항)",
   "Reason: {reason}": "사유: {reason}",

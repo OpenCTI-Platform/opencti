@@ -5155,6 +5155,7 @@
   "Ready": "准备",
   "Ready to run": "已准备好运行",
   "Ready to run, {count} points need attention": "已准备好运行，有 {count} 项需要注意",
+  "Ready to run, 1 point needs attention": "已准备好运行，有 1 项需要注意",
   "Reason": "原因",
   "Reason (optional)": "原因（可选）",
   "Reason: {reason}": "原因：{reason}",

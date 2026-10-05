@@ -239,7 +239,9 @@ const HuntStatusHeader = ({ data }: HuntStatusHeaderProps) => {
       ? t_i18n('1 item to complete before the hunt can run')
       : t_i18n('{count} items to complete before the hunt can run', { values: { count: String(unmet.length) } });
   } else if (warnings.length > 0) {
-    readinessSummary = t_i18n('Ready to run, {count} points need attention', { values: { count: String(warnings.length) } });
+    readinessSummary = warnings.length === 1
+      ? t_i18n('Ready to run, 1 point needs attention')
+      : t_i18n('Ready to run, {count} points need attention', { values: { count: String(warnings.length) } });
   } else {
     readinessSummary = t_i18n('Ready to run');
   }

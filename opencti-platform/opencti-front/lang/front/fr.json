@@ -5155,6 +5155,7 @@
   "Ready": "Prêt",
   "Ready to run": "Prête à s'exécuter",
   "Ready to run, {count} points need attention": "Prête à s'exécuter, {count} points demandent votre attention",
+  "Ready to run, 1 point needs attention": "Prête à s'exécuter, 1 point demande votre attention",
   "Reason": "Motif",
   "Reason (optional)": "Motif (facultatif)",
   "Reason: {reason}": "Motif : {reason}",

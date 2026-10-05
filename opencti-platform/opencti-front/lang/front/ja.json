@@ -5155,6 +5155,7 @@
   "Ready": "準備完了",
   "Ready to run": "実行の準備ができています",
   "Ready to run, {count} points need attention": "実行の準備ができています。{count} 件の項目に注意が必要です",
+  "Ready to run, 1 point needs attention": "実行の準備ができています。1 件の項目に注意が必要です",
   "Reason": "理由",
   "Reason (optional)": "理由 (任意)",
   "Reason: {reason}": "理由: {reason}",
