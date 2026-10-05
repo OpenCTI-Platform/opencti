@@ -279,7 +279,7 @@
   "A validation request covers at most 10 security platforms": "1 つの検証リクエストで対象にできるセキュリティプラットフォームは最大 10 件です",
   "A validation request covers at most 200 indicators": "1 つの検証リクエストで対象にできるインジケーターは最大 200 件です",
   "A validation request holds at most {max} techniques and {count} are selected: unselect some of them to validate.": "検証リクエストに含められるテクニックは最大 {max} 件ですが、{count} 件が選択されています。検証するには一部の選択を解除してください。",
-  "A validation request holds at most {max} techniques, the ones used by the most threats first. Select the others in the Gaps tab to validate them.": "検証リクエストに含められるテクニックは最大 {max} 件で、最も多くの脅威に使用されているものが優先されます。残りを検証するには、ギャップ タブで選択してください。",
+  "A validation request holds at most {max} techniques and takes the ones used by the most threats first. Select the others in the Gaps tab to validate them.": "検証リクエストに含められるテクニックは最大 {max} 件で、最も多くの脅威に使用されているものが優先されます。残りを検証するには、ギャップ タブで選択してください。",
   "A widget has a @me filter enabled...": "ウィジェットで@meフィルタが有効になっています。このダッシュボードをパブリックダッシュボードとして共有する場合、@meフィルターはダッシュボードを共有している人の\"{name}\"に置き換えられます。ダッシュボードに表示されるデータに影響を与える可能性があります。",
   "About": "OpenCTIについて",
   "About this connector": "このコネクタについて",

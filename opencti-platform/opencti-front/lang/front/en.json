@@ -279,7 +279,7 @@
   "A validation request covers at most 10 security platforms": "A validation request covers at most 10 security platforms",
   "A validation request covers at most 200 indicators": "A validation request covers at most 200 indicators",
   "A validation request holds at most {max} techniques and {count} are selected: unselect some of them to validate.": "A validation request holds at most {max} techniques and {count} are selected: unselect some of them to validate.",
-  "A validation request holds at most {max} techniques, the ones used by the most threats first. Select the others in the Gaps tab to validate them.": "A validation request holds at most {max} techniques, the ones used by the most threats first. Select the others in the Gaps tab to validate them.",
+  "A validation request holds at most {max} techniques and takes the ones used by the most threats first. Select the others in the Gaps tab to validate them.": "A validation request holds at most {max} techniques and takes the ones used by the most threats first. Select the others in the Gaps tab to validate them.",
   "A widget has a @me filter enabled...": "A widget has a @me filter enabled. When sharing this dashboard as a public dashboard, the @me filter will be replaced by \"{name}\" who is sharing the dashboard. It might impact the data displayed in the dashboard.",
   "About": "About",
   "About this connector": "About this connector",

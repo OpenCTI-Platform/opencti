@@ -279,7 +279,7 @@
   "A validation request covers at most 10 security platforms": "Eine Validierungsanfrage umfasst höchstens 10 Sicherheitsplattformen",
   "A validation request covers at most 200 indicators": "Eine Validierungsanfrage umfasst höchstens 200 Indikatoren",
   "A validation request holds at most {max} techniques and {count} are selected: unselect some of them to validate.": "Eine Validierungsanfrage umfasst höchstens {max} Techniken und {count} sind ausgewählt: Heben Sie die Auswahl einiger davon auf, um zu validieren.",
-  "A validation request holds at most {max} techniques, the ones used by the most threats first. Select the others in the Gaps tab to validate them.": "Eine Validierungsanfrage umfasst höchstens {max} Techniken, zuerst die von den meisten Bedrohungen genutzten. Wählen Sie die übrigen im Tab Lücken aus, um sie zu validieren.",
+  "A validation request holds at most {max} techniques and takes the ones used by the most threats first. Select the others in the Gaps tab to validate them.": "Eine Validierungsanfrage umfasst höchstens {max} Techniken, zuerst die von den meisten Bedrohungen genutzten. Wählen Sie die übrigen im Tab Lücken aus, um sie zu validieren.",
   "A widget has a @me filter enabled...": "Ein Widget hat einen @me-Filter aktiviert. Wenn Sie dieses Dashboard als öffentliches Dashboard teilen, wird der @me-Filter durch \"{name}\" ersetzt, der das Dashboard teilt. Dies kann Auswirkungen auf die im Dashboard angezeigten Daten haben.",
   "About": "Über",
   "About this connector": "Über diesen Konnektor",

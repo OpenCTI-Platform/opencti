@@ -279,7 +279,7 @@
   "A validation request covers at most 10 security platforms": "一个验证请求最多涵盖 10 个安全平台",
   "A validation request covers at most 200 indicators": "一个验证请求最多涵盖 200 个指标",
   "A validation request holds at most {max} techniques and {count} are selected: unselect some of them to validate.": "一次验证请求最多包含 {max} 项技术，当前已选择 {count} 项：请取消选择部分技术后再进行验证。",
-  "A validation request holds at most {max} techniques, the ones used by the most threats first. Select the others in the Gaps tab to validate them.": "一次验证请求最多包含 {max} 项技术，优先包含被最多威胁使用的技术。请在“缺口”选项卡中选择其余技术进行验证。",
+  "A validation request holds at most {max} techniques and takes the ones used by the most threats first. Select the others in the Gaps tab to validate them.": "一次验证请求最多包含 {max} 项技术，优先包含被最多威胁使用的技术。请在“缺口”选项卡中选择其余技术进行验证。",
   "A widget has a @me filter enabled...": "部件已启用 @me 过滤器。将此仪表盘作为公共仪表盘共享时，@me 筛选器将被\"{name}\"共享仪表盘的人替换。这可能会影响仪表盘中显示的数据。",
   "About": "关于",
   "About this connector": "关于此连接器",

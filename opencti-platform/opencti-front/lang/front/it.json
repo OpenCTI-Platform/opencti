@@ -279,7 +279,7 @@
   "A validation request covers at most 10 security platforms": "Una richiesta di convalida copre al massimo 10 piattaforme di sicurezza",
   "A validation request covers at most 200 indicators": "Una richiesta di convalida copre al massimo 200 indicatori",
   "A validation request holds at most {max} techniques and {count} are selected: unselect some of them to validate.": "Una richiesta di convalida contiene al massimo {max} tecniche e ne sono selezionate {count}: deselezionane alcune per convalidare.",
-  "A validation request holds at most {max} techniques, the ones used by the most threats first. Select the others in the Gaps tab to validate them.": "Una richiesta di convalida contiene al massimo {max} tecniche, a partire da quelle usate dal maggior numero di minacce. Seleziona le altre nella scheda Lacune per convalidarle.",
+  "A validation request holds at most {max} techniques and takes the ones used by the most threats first. Select the others in the Gaps tab to validate them.": "Una richiesta di convalida contiene al massimo {max} tecniche, a partire da quelle usate dal maggior numero di minacce. Seleziona le altre nella scheda Lacune per convalidarle.",
   "A widget has a @me filter enabled...": "Un widget ha un filtro @me abilitato. Quando si condivide questo dashboard come dashboard pubblico, il filtro @me sarà sostituito da \"{name}\" che sta condividendo il dashboard. Questo potrebbe avere un impatto sui dati visualizzati nella dashboard.",
   "About": "Informazioni",
   "About this connector": "Informazioni su questo connettore",
