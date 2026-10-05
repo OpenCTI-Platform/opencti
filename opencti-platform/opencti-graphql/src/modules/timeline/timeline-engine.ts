@@ -427,6 +427,12 @@ export const publishTimelineUpdate = async (payload: Omit<TimelineUpdatePayload,
 
 // region contributions (anchors and STIX exchange) refreshed from the stored events
 const grantedOf = (element: Record<string, any>): string[] => timelineRefIds(element, RELATION_GRANTED_TO);
+
+/** Access of an element beyond its markings (which its events carry), recorded on the events that point to it. */
+export const timelineElementAccessOf = (element: Record<string, any>): TimelineElementAccess => ({
+  restricted_members: (element.restricted_members ?? []) as AuthorizedMember[],
+  granted: grantedOf(element),
+});
 const authorOf = (event: StoredTimelineEvent): string | undefined => (event[buildRefRelationKey(RELATION_CREATED_BY)] ?? [])[0];
 
 interface ContainerVisibilityScope {
@@ -769,13 +775,12 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
   const elements = elementIds.length > 0
     ? await internalFindByIds(context, SYSTEM_USER, elementIds, { toMap: true, baseData: true }) as unknown as Record<string, AnyStoreElement>
     : {};
-  const accessOf = (element: AnyStoreElement) => ({ restricted_members: (element.restricted_members ?? []) as AuthorizedMember[], granted: grantedOf(element) });
   const elementAccessOf = (elementId: string | null | undefined, sourceIds: string[] = []): TimelineElementAccess | null => {
     const element = elementId ? elements[elementId] : undefined;
     if (!element) return null;
     // A source no longer found keeps its id: the reads look for it and never find it, until the next regeneration drops it
-    const sources = uniq(sourceIds).map((id) => (elements[id] ? { id, ...accessOf(elements[id]) } : { id, restricted_members: [], granted: [] }));
-    return sources.length > 0 ? { ...accessOf(element), sources } : accessOf(element);
+    const sources = uniq(sourceIds).map((id) => (elements[id] ? { id, ...timelineElementAccessOf(elements[id]) } : { id, restricted_members: [], granted: [] }));
+    return sources.length > 0 ? { ...timelineElementAccessOf(element), sources } : timelineElementAccessOf(element);
   };
   // A derived event is never less marked than the elements whose data it carries, whatever its rule merged
   const sourceMarkingsOf = (event: DerivedTimelineEvent): string[] => (event.source_ids ?? []).flatMap((id) => (elements[id] ? markingsOf(elements[id]) : []));

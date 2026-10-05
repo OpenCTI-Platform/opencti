@@ -616,6 +616,11 @@ describe('Incident and case timeline', () => {
       const [technique] = (await loadStoredTimelineEvents(testContext, caseIncident.id)).filter((event) => event.kind === 'technique_used');
       // The window of the technique comes from its uses relationship: the regeneration records the relationship as a source
       expect(timelineEventSourceIds(technique)).toEqual([usesRelationshipId]);
+      // Pinning and unpinning the event rewrite it: its sources and recorded access stay
+      await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_PIN, variables: { id: technique.internal_id, pinned: true } });
+      await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_PIN, variables: { id: technique.internal_id, pinned: false } });
+      const [repinned] = (await loadStoredTimelineEvents(testContext, caseIncident.id)).filter((event) => event.kind === 'technique_used');
+      expect(repinned.element_access).toEqual(technique.element_access);
       // The relationship becomes unreadable for the participant (shared with fewer organizations, restricted to some members),
       // the technique and the markings of the event staying readable: the TLP:AMBER indicator stands for it
       await elUpdate(testContext, technique._index, technique.internal_id, {

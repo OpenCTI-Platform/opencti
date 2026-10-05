@@ -76,6 +76,7 @@ import {
   TIMELINE_MAX_EVENTS,
   TIMELINE_MAX_MANUAL_EVENTS,
   TIMELINE_MAX_STORED_EVENTS,
+  timelineElementAccessOf,
   timelineEventMaxConfidence,
   timelineEventSourceIds,
   type TimelineRegenerationResult,
@@ -793,6 +794,9 @@ const docFromStored = (event: StoredTimelineEvent, container: AnyStoreElement, p
     created_by_id: (event[buildRefRelationKey(RELATION_CREATED_BY)] ?? [])[0],
     creator_ids: creatorIdsOf(event),
     restricted_members: access.restricted_members,
+    // Kept as recorded: the access of the element and of the sources still decides who reads the event once it is edited
+    source_state: event.source_state ?? null,
+    element_access: event.element_access ?? null,
     ...patch,
   }, event);
 };
@@ -838,6 +842,7 @@ export const addTimelineEvent = async (context: AuthContext, user: AuthUser, inp
     created_by_id: author?.internal_id ?? null,
     creator_ids: previous ? Array.from(new Set([...creatorIdsOf(previous), user.id])) : [user.id],
     restricted_members: access.restricted_members,
+    element_access: element ? timelineElementAccessOf(element) : null,
   }, previous);
   const { stored, existing } = await withTimelineLock(container.internal_id, async () => {
     // Read again under the lock: a change of the access to the container, or of the markings of the element, made while
@@ -914,6 +919,7 @@ const applyTimelineEventEdit = async (context: AuthContext, user: AuthUser, load
     const element = await resolveElement(context, user, input.element_id);
     patch.element_id = element?.internal_id ?? null;
     patch.element_type = element?.entity_type ?? null;
+    patch.element_access = element ? timelineElementAccessOf(element) : null;
     elementMarkings = element ? markingsOf(element) : [];
   }
   if (input.createdBy !== undefined) {
@@ -1128,6 +1134,7 @@ const writeImportedContributions = async (
       created_by_id: importedAuthorId(event.created_by_ref),
       creator_ids: existing ? Array.from(new Set([...creatorIdsOf(existing), user.id])) : [user.id],
       restricted_members: access.restricted_members,
+      element_access: element ? timelineElementAccessOf(elementsWithMarkings[element.internal_id] ?? element) : (stored?.element_access ?? null),
     }, existing);
   });
   let createdMilestoneIds: string[] = [];
