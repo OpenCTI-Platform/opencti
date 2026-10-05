@@ -43,6 +43,7 @@ import {
   type ProvenanceDocument,
   type ResolvedAssertion,
   resolveDocumentAssertions,
+  resolveProvenanceMode,
   type SourceResolver,
 } from './sourceIntelligence-provenance';
 import {
@@ -84,7 +85,7 @@ export const resolveSoftJoinAvailability = (): SoftJoinAvailability => {
   const huntRunType = HUNT_RUN_ENTITY_TYPES.find((type) => schemaTypesDefinition.isTypeIncludedIn(type, ABSTRACT_INTERNAL_OBJECT)) ?? null;
   const huntAvailable = huntRunType !== null && schemaAttributesDefinition.getAttribute(STIX_SIGHTING_RELATIONSHIP, HUNT_RUN_SIGHTING_ATTRIBUTE) !== undefined;
   return {
-    provenance: schemaAttributesDefinition.getAttributeByName(PROVENANCE_ATTRIBUTE) !== undefined ? 'assertions' : 'creators',
+    provenance: resolveProvenanceMode(),
     pulse: schemaAttributesDefinition.getAttributeByName(PULSE_INFORMATION_ATTRIBUTE) !== undefined,
     huntRunType: huntAvailable ? huntRunType : null,
   };
