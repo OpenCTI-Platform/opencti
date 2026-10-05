@@ -1148,6 +1148,20 @@ describe('Incident and case timeline', () => {
       await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: amber.data.timelineEventAdd.id } });
     });
 
+    it('should keep the element of a milestone added again without one', async () => {
+      const input = { container_id: secondCase.id, event_time: '2026-02-05T19:30:00.000Z', title: 'Dropper sample shared', external_id: 'retry-keeps-element' };
+      const added = await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_ADD, variables: { input: { ...input, element_id: malware.id } } });
+      const addedId = added.data.timelineEventAdd.id;
+      const recorded = (await loadStoredTimelineEvents(testContext, secondCase.id)).find((event) => event.internal_id === addedId);
+      expect(recorded?.element_access).toEqual({ restricted_members: [], granted: [] });
+      // A retry naming no element updates the milestone, it keeps the element that decides who reads it
+      const retried = await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_ADD, variables: { input: { ...input, title: 'Dropper sample shared with the CERT' } } });
+      expect(retried.data.timelineEventAdd).toMatchObject({ id: addedId, title: 'Dropper sample shared with the CERT', element_id: malware.id });
+      const kept = (await loadStoredTimelineEvents(testContext, secondCase.id)).find((event) => event.internal_id === addedId);
+      expect(kept?.element_access).toEqual(recorded?.element_access);
+      await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: addedId } });
+    });
+
     it('should match an imported event by its STIX id first, even when its external id changed', async () => {
       const extensionWith = (externalId: string, title: string) => JSON.stringify({
         events: [{ id: 'timeline-event--5c2e8f14-9a3b-4d7e-b1f0-6e4a2c8d9b17', external_id: externalId, title, event_time: '2026-02-05T20:00:00.000Z' }],
@@ -1292,10 +1306,10 @@ describe('Incident and case timeline', () => {
     it('should queue the cases containing a technique whose kill chain phase changed', async () => {
       const stixPhase = { id: 'kill-chain-phase--5d5f0a52-30b1-5d2c-9a8e-0f0c1d2e3f40', type: 'kill-chain-phase', extensions: { [STIX_EXT_OCTI]: { id: killChainPhaseId, type: 'Kill-Chain-Phase' } } };
       await timelineStreamEventsHandler(testContext, [streamEvent(stixPhase)]);
-      const claimed = await claimDueTimelineRegenerations(1000);
+      const { containerIds: claimed, lease } = await claimDueTimelineRegenerations(1000);
       expect(claimed).toContain(caseIncident.id);
       // Handed back to the queue for the tests that follow
-      await Promise.all(claimed.map((id) => acknowledgeTimelineRegeneration(id)));
+      await Promise.all(claimed.map((id) => acknowledgeTimelineRegeneration(id, lease)));
       await enqueueTimelineRegeneration(claimed, 0);
     });
 
@@ -1309,10 +1323,10 @@ describe('Incident and case timeline', () => {
       const citingId = citing.data.caseIncidentAdd.id;
       const stixReference = { id: reference.data.externalReferenceAdd.standard_id, type: 'external-reference', extensions: { [STIX_EXT_OCTI]: { id: referenceId, type: 'External-Reference' } } };
       await timelineStreamEventsHandler(testContext, [streamEvent(stixReference)]);
-      const claimed = await claimDueTimelineRegenerations(1000);
+      const { containerIds: claimed, lease } = await claimDueTimelineRegenerations(1000);
       expect(claimed).toContain(citingId);
       // The other containers are handed back to the queue for the tests that follow
-      await Promise.all(claimed.map((id) => acknowledgeTimelineRegeneration(id)));
+      await Promise.all(claimed.map((id) => acknowledgeTimelineRegeneration(id, lease)));
       await enqueueTimelineRegeneration(claimed.filter((id) => id !== citingId), 0);
       await queryAsAdminWithSuccess({ query: STIX_CORE_OBJECT_DELETE, variables: { id: citingId } });
       await queryAsAdminWithSuccess({ query: EXTERNAL_REFERENCE_DELETE, variables: { id: referenceId } });
@@ -1326,15 +1340,15 @@ describe('Incident and case timeline', () => {
         variables: { input: { container_id: caseIncident.id, event_time: '2026-02-05T22:00:00.000Z', title: 'Related campaign spotted', element_id: outsideId } },
       });
       // The regenerations scheduled by the addition are handled first: only the change of the element is left to queue the case
-      const pending = await claimDueTimelineRegenerations(1000);
-      await Promise.all(pending.map((id) => acknowledgeTimelineRegeneration(id)));
+      const { containerIds: pending, lease: pendingLease } = await claimDueTimelineRegenerations(1000);
+      await Promise.all(pending.map((id) => acknowledgeTimelineRegeneration(id, pendingLease)));
       const others = pending.filter((id) => id !== caseIncident.id);
       const stixMalware = { id: outside.data.malwareAdd.standard_id, type: 'malware', extensions: { [STIX_EXT_OCTI]: { id: outsideId, type: 'Malware' } } };
       await timelineStreamEventsHandler(testContext, [streamEvent(stixMalware)]);
-      const claimed = await claimDueTimelineRegenerations(1000);
+      const { containerIds: claimed, lease } = await claimDueTimelineRegenerations(1000);
       expect(claimed).toContain(caseIncident.id);
       // Every container is handed back to the queue for the tests that follow
-      await Promise.all(claimed.map((id) => acknowledgeTimelineRegeneration(id)));
+      await Promise.all(claimed.map((id) => acknowledgeTimelineRegeneration(id, lease)));
       await enqueueTimelineRegeneration([...others, ...claimed], 0);
       // The regeneration then refreshes the access of the element on the event: its new marking, and its access beyond markings
       const amber = await internalLoadById(testContext, SYSTEM_USER, MARKING_TLP_AMBER);
@@ -1350,34 +1364,37 @@ describe('Incident and case timeline', () => {
     it('should queue the case of a manual event whose author changed', async () => {
       // The milestone "Regulator notified" of the case is authored by this organization, which the case does not contain
       const author = await internalLoadById(testContext, SYSTEM_USER, TEST_ORGANIZATION.id);
-      const pending = await claimDueTimelineRegenerations(1000);
-      await Promise.all(pending.map((id) => acknowledgeTimelineRegeneration(id)));
+      const { containerIds: pending, lease: pendingLease } = await claimDueTimelineRegenerations(1000);
+      await Promise.all(pending.map((id) => acknowledgeTimelineRegeneration(id, pendingLease)));
       const stixAuthor = { id: author.standard_id, type: 'identity', extensions: { [STIX_EXT_OCTI]: { id: author.internal_id, type: 'Organization' } } };
       await timelineStreamEventsHandler(testContext, [streamEvent(stixAuthor)]);
-      const claimed = await claimDueTimelineRegenerations(1000);
+      const { containerIds: claimed, lease } = await claimDueTimelineRegenerations(1000);
       expect(claimed).toContain(caseIncident.id);
       // Every container is handed back to the queue for the tests that follow
-      await Promise.all(claimed.map((id) => acknowledgeTimelineRegeneration(id)));
+      await Promise.all(claimed.map((id) => acknowledgeTimelineRegeneration(id, lease)));
       await enqueueTimelineRegeneration([...pending, ...claimed], 0);
     });
 
     it('should keep a container scheduled again during its regeneration queued until the running claim is acknowledged', async () => {
       const containerId = `timeline-queue-${Date.now()}`;
       // The other due containers are handed back to the queue for the tests that follow
+      // Returns the lease of the claim of the container, null when it was not handed out
       const claimOnly = async () => {
-        const claimed = await claimDueTimelineRegenerations(1000);
+        const { containerIds: claimed, lease } = await claimDueTimelineRegenerations(1000);
         const others = claimed.filter((id) => id !== containerId);
-        await Promise.all(others.map((id) => acknowledgeTimelineRegeneration(id)));
+        await Promise.all(others.map((id) => acknowledgeTimelineRegeneration(id, lease)));
         await enqueueTimelineRegeneration(others, 0);
-        return claimed.includes(containerId);
+        return claimed.includes(containerId) ? lease : null;
       };
       await enqueueTimelineRegeneration([containerId], 0);
-      expect(await claimOnly()).toBe(true);
+      const lease = await claimOnly();
+      expect(lease).not.toBeNull();
       await enqueueTimelineRegeneration([containerId], 0);
-      expect(await claimOnly()).toBe(false);
-      await acknowledgeTimelineRegeneration(containerId);
-      expect(await claimOnly()).toBe(true);
-      await acknowledgeTimelineRegeneration(containerId);
+      expect(await claimOnly()).toBeNull();
+      expect(await acknowledgeTimelineRegeneration(containerId, lease as number)).toBe(true);
+      const nextLease = await claimOnly();
+      expect(nextLease).not.toBeNull();
+      expect(await acknowledgeTimelineRegeneration(containerId, nextLease as number)).toBe(true);
     });
 
     it('should drop the timeline of a deleted container', async () => {

@@ -816,34 +816,39 @@ export const addTimelineEvent = async (context: AuthContext, user: AuthUser, inp
     previous: StoredTimelineEvent | null,
     access: ReturnType<typeof containerAccessFields>,
     element: AnyStoreElement | null,
-  ) => buildTimelineEventDoc({
-    internal_id: internalId,
-    container_id: container.internal_id,
-    name: input.title.trim(),
-    description: input.description,
-    event_time: new Date(input.event_time).toISOString(),
-    event_end_time: input.event_end_time ? new Date(input.event_end_time).toISOString() : null,
-    time_precision: input.precision ?? 'exact',
-    lane: input.lane ?? 'custom',
-    kind,
-    event_source: 'manual',
-    rule_id: null,
-    element_id: element?.internal_id ?? null,
-    element_type: element?.entity_type ?? null,
-    pinned: input.pinned ?? previous?.pinned ?? false,
-    hidden: previous?.hidden ?? false,
-    annotation: input.annotation ?? previous?.annotation ?? null,
-    confidence: cappedTimelineConfidence(user, input.confidence),
-    ordering_hint: input.ordering_hint ?? null,
-    analyst_fields: [],
-    external_id: input.external_id ?? null,
-    // An event is never less marked than the element it points to, nor than its container; adding it again never declassifies it
-    markings: Array.from(new Set([...(previous ? markingsOf(previous) : []), ...markingIds, ...(element ? markingsOf(element) : []), ...access.markings])),
-    created_by_id: author?.internal_id ?? null,
-    creator_ids: previous ? Array.from(new Set([...creatorIdsOf(previous), user.id])) : [user.id],
-    restricted_members: access.restricted_members,
-    element_access: element ? timelineElementAccessOf(element) : null,
-  }, previous);
+  ) => {
+    // Added again without naming an element, a known event keeps its element and the access it records: the element
+    // decides who may read the event, and adding it again never loosens that
+    const kept = input.element_id === undefined ? previous : null;
+    return buildTimelineEventDoc({
+      internal_id: internalId,
+      container_id: container.internal_id,
+      name: input.title.trim(),
+      description: input.description,
+      event_time: new Date(input.event_time).toISOString(),
+      event_end_time: input.event_end_time ? new Date(input.event_end_time).toISOString() : null,
+      time_precision: input.precision ?? 'exact',
+      lane: input.lane ?? 'custom',
+      kind,
+      event_source: 'manual',
+      rule_id: null,
+      element_id: kept ? (kept.element_id ?? null) : (element?.internal_id ?? null),
+      element_type: kept ? (kept.element_type ?? null) : (element?.entity_type ?? null),
+      pinned: input.pinned ?? previous?.pinned ?? false,
+      hidden: previous?.hidden ?? false,
+      annotation: input.annotation ?? previous?.annotation ?? null,
+      confidence: cappedTimelineConfidence(user, input.confidence),
+      ordering_hint: input.ordering_hint ?? null,
+      analyst_fields: [],
+      external_id: input.external_id ?? null,
+      // An event is never less marked than the element it points to, nor than its container; adding it again never declassifies it
+      markings: Array.from(new Set([...(previous ? markingsOf(previous) : []), ...markingIds, ...(element ? markingsOf(element) : []), ...access.markings])),
+      created_by_id: author?.internal_id ?? null,
+      creator_ids: previous ? Array.from(new Set([...creatorIdsOf(previous), user.id])) : [user.id],
+      restricted_members: access.restricted_members,
+      element_access: kept ? (kept.element_access ?? null) : (element ? timelineElementAccessOf(element) : null),
+    }, previous);
+  };
   const { stored, existing } = await withTimelineLock(container.internal_id, async () => {
     // Read again under the lock: a change of the access to the container, or of the markings of the element, made while
     // this write waited applies to it
@@ -1045,18 +1050,19 @@ const writeImportedContributions = async (
       && (isBypassUser(user) || allowedMarkings.has(marking.internal_id));
     return markings.every(isImportable) ? markings.map(({ internal_id }) => internal_id) : null;
   };
-  // Nor is a stored event the user cannot read ever overwritten by an imported one
-  const readableManual = await fullEntitiesList<StoredTimelineEvent>(context, user, [ENTITY_TYPE_TIMELINE_EVENT], {
-    filters: buildTimelineFilters(container.internal_id, { sources: ['manual'], includeHidden: true }) as any,
-    maxSize: TIMELINE_MAX_STORED_EVENTS,
-  } as any);
-  const { items: readable } = await filterAccessibleEvents(context, user, container.internal_id, readableManual, (e) => e);
-  const readableIds = new Set(readable.map((e) => e.internal_id));
   const storedIds = new Set(storedManual.map((e) => e.internal_id));
   const identified = events.map((event) => {
     const existing = findKnownEvent(event);
     return { event, existing, internalId: existing?.internal_id ?? computeManualEventId(container.internal_id, event.id) };
   });
+  // Nor is a stored event the user cannot read ever overwritten by an imported one: every known event the extension names
+  // is read as the user, however many events the case holds
+  const knownIds = Array.from(new Set(identified.map((candidate) => candidate.internalId).filter((id) => storedIds.has(id))));
+  const knownAsUser = knownIds.length > 0
+    ? await internalFindByIds(context, user, knownIds, { type: ENTITY_TYPE_TIMELINE_EVENT }) as unknown as StoredTimelineEvent[]
+    : [];
+  const { items: readable } = await filterAccessibleEvents(context, user, container.internal_id, knownAsUser, (e) => e);
+  const readableIds = new Set(readable.map((e) => e.internal_id));
   // An extension naming the same event twice writes, counts and notifies it once, and takes the cap of the case once:
   // its last occurrence wins
   const candidates = Array.from(new Map(identified.map((candidate) => [candidate.internalId, candidate])).values()).map(({ event, existing, internalId }) => {

@@ -25,8 +25,8 @@ const context = {} as AuthContext;
 describe('Timeline manager regenerations', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    queue.claimDueTimelineRegenerations.mockResolvedValue(['case-1']);
-    queue.acknowledgeTimelineRegeneration.mockResolvedValue(undefined);
+    queue.claimDueTimelineRegenerations.mockResolvedValue({ containerIds: ['case-1'], lease: 42 });
+    queue.acknowledgeTimelineRegeneration.mockResolvedValue(true);
     queue.clearTimelineRegenerationAttempts.mockResolvedValue(undefined);
   });
 
@@ -34,7 +34,8 @@ describe('Timeline manager regenerations', () => {
     engine.regenerateContainerTimeline.mockResolvedValue(null);
     await processDueTimelineRegenerations(context);
     expect(queue.clearTimelineRegenerationAttempts).toHaveBeenCalledWith('case-1');
-    expect(queue.acknowledgeTimelineRegeneration).toHaveBeenCalledWith('case-1');
+    // Released with the lease of its claim: a later claim of the container would keep its own
+    expect(queue.acknowledgeTimelineRegeneration).toHaveBeenCalledWith('case-1', 42);
   });
 
   it('should release the claim of a failed regeneration once its retry is scheduled, or once its retries are exhausted', async () => {

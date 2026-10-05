@@ -334,7 +334,7 @@ const consumeStream = async (context: AuthContext) => {
 };
 
 export const processDueTimelineRegenerations = async (context: AuthContext) => {
-  const due = await claimDueTimelineRegenerations(TIMELINE_MANAGER_REGENERATION_BATCH);
+  const { containerIds: due, lease } = await claimDueTimelineRegenerations(TIMELINE_MANAGER_REGENERATION_BATCH);
   await BluePromise.map(due, async (containerId) => {
     try {
       const result = await regenerateContainerTimeline(context, containerId);
@@ -354,9 +354,13 @@ export const processDueTimelineRegenerations = async (context: AuthContext) => {
       logApp.error('[TIMELINE] Container timeline regeneration failure', { cause: error, containerId, retried });
     }
     // Handled (regenerated, rescheduled or given up): the claim is released; until then its lease protects it
-    await acknowledgeTimelineRegeneration(containerId).catch((error) => {
+    try {
+      if (!(await acknowledgeTimelineRegeneration(containerId, lease))) {
+        logApp.warn('[TIMELINE] Regeneration outlived its claim, the later claim of the container is kept', { containerId });
+      }
+    } catch (error) {
       logApp.warn('[TIMELINE] Claim not released, it is reclaimed when its lease expires', { cause: error, containerId });
-    });
+    }
   }, { concurrency: TIMELINE_MANAGER_MAX_CONCURRENCY });
 };
 

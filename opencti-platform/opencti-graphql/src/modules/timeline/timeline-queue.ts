@@ -51,14 +51,21 @@ end
 return claimed
 `;
 
+/** Containers claimed by one call, all under the same lease: the end of the lease is the token that acknowledges them. */
+export interface TimelineRegenerationClaims {
+  containerIds: string[];
+  lease: number;
+}
+
 /**
  * Claim at most `limit` due containers. A container is claimed by moving it from the queue to the in-flight set
  * under a lease, so two consumers can never process the same container from the same scheduling, and a claim is
  * never lost: until `acknowledgeTimelineRegeneration`, an expired lease makes the container due again.
  */
-export const claimDueTimelineRegenerations = async (limit: number): Promise<string[]> => {
-  if (limit <= 0) return [];
+export const claimDueTimelineRegenerations = async (limit: number): Promise<TimelineRegenerationClaims> => {
   const nowTime = Date.now();
+  const lease = nowTime + TIMELINE_CLAIM_LEASE_MS;
+  if (limit <= 0) return { containerIds: [], lease };
   const claimed = await getClientBase().eval(
     CLAIM_DUE_SCRIPT,
     2,
@@ -66,15 +73,26 @@ export const claimDueTimelineRegenerations = async (limit: number): Promise<stri
     TIMELINE_IN_FLIGHT_KEY,
     nowTime,
     limit,
-    nowTime + TIMELINE_CLAIM_LEASE_MS,
+    lease,
     RECLAIM_BATCH,
   );
-  return Array.isArray(claimed) ? claimed.map((id) => String(id)) : [];
+  return { containerIds: Array.isArray(claimed) ? claimed.map((id) => String(id)) : [], lease };
 };
 
-/** Release the claim of a container once its regeneration succeeded or its retry was scheduled. */
-export const acknowledgeTimelineRegeneration = async (containerId: string) => {
-  await getClientBase().zrem(TIMELINE_IN_FLIGHT_KEY, containerId);
+// Compare and delete in one atomic step: a claim is released only by its own claimant. A worker that outlived its lease
+// finds a later claim of the container (a later lease end) and leaves it in flight
+const ACKNOWLEDGE_SCRIPT = `
+local lease = redis.call('ZSCORE', KEYS[1], ARGV[1])
+if lease and tonumber(lease) == tonumber(ARGV[2]) then
+  return redis.call('ZREM', KEYS[1], ARGV[1])
+end
+return 0
+`;
+
+/** Release the claim of a container once its regeneration succeeded or its retry was scheduled; false when it was claimed again since. */
+export const acknowledgeTimelineRegeneration = async (containerId: string, lease: number): Promise<boolean> => {
+  const released = await getClientBase().eval(ACKNOWLEDGE_SCRIPT, 1, TIMELINE_IN_FLIGHT_KEY, containerId, lease);
+  return Number(released) === 1;
 };
 
 // Failed regenerations are retried with an exponential backoff, then left to the next change or the nightly pass
