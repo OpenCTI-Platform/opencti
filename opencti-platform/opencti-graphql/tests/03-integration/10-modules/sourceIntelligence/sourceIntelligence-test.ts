@@ -33,6 +33,8 @@ import { deleteDraftWorkspace } from '../../../../src/modules/draftWorkspace/dra
 import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE } from '../../../../src/modules/draftWorkspace/draftWorkspace-types';
 import { DRAFT_STATUS_OPEN } from '../../../../src/modules/draftWorkspace/draftStatuses';
 import { resolveDraftForward } from '../../../../src/modules/draftWorkspace/draftWorkspace-closure';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organization/organization-types';
+import { ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
 
 const SOURCES_QUERY = gql`
   query sources($first: Int, $orderBy: SourcesOrdering, $orderMode: OrderingMode) {
@@ -490,6 +492,31 @@ describe('Source intelligence', () => {
     // The discovered sources are untouched
     expect(await storeLoadById(testContext, ADMIN_USER, sourceId, ENTITY_TYPE_SOURCE)).toBeTruthy();
     await deleteElementById(testContext, ADMIN_USER, curated.internal_id, ENTITY_TYPE_SOURCE);
+  });
+
+  it('should discover an author that only asserted existing knowledge during the window', async () => {
+    const author = await createEntity(testContext, ADMIN_USER, { name: 'Source intelligence asserting author' }, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+    const asserted = await createEntity(testContext, ADMIN_USER, { name: 'Source intelligence asserted malware', is_family: false }, ENTITY_TYPE_MALWARE);
+    // Asserted again recently without any change: the object keeps its old update date
+    const now = new Date().toISOString();
+    const stored = await storeLoadById(testContext, ADMIN_USER, asserted.internal_id, ENTITY_TYPE_MALWARE);
+    await elUpdate(testContext, stored?._index as string, asserted.internal_id, {
+      doc: {
+        updated_at: '2020-01-01T00:00:00.000Z',
+        x_opencti_assertions: [{ source_id: author.internal_id, source_kind: 'author', source_name: author.name, first_asserted_at: now, last_asserted_at: now, assert_count: 1 }],
+        assertion_source_ids: [author.internal_id],
+        assertion_source_kinds: ['author'],
+        last_asserted_at: now,
+      },
+    });
+    await syncSources(testContext, { ...settings, min_author_volume: 1, min_manual_volume: 1, max_author_sources: 10000 });
+    const discovered = (await listAllSources(testContext)).find((source) => source.source_kind === 'author' && source.ref_id === author.internal_id);
+    expect(discovered).toBeTruthy();
+    if (discovered) {
+      await deleteElementById(testContext, ADMIN_USER, discovered.internal_id, ENTITY_TYPE_SOURCE);
+    }
+    await deleteElementById(testContext, ADMIN_USER, asserted.internal_id, ENTITY_TYPE_MALWARE);
+    await deleteElementById(testContext, ADMIN_USER, author.internal_id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
   });
 
   it('should hand the recommendations, curation and history of a duplicate analyst source over to the kept one', async () => {

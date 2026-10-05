@@ -74,7 +74,13 @@ import {
   searchScorecards,
 } from './sourceIntelligence-store';
 import { computeCostPerActionable, normalizeCostToDays, toSnapshotDate } from './sourceIntelligence-scoring';
-import { buildSourceResolver, type SourceResolver } from './sourceIntelligence-provenance';
+import { buildSourceResolver, isProvenanceAttributeAvailable, type SourceResolver } from './sourceIntelligence-provenance';
+import {
+  ATTRIBUTE_ASSERTIONS,
+  ATTRIBUTE_LAST_ASSERTED_AT,
+  SOURCE_KIND_AUTHOR as ASSERTION_KIND_AUTHOR,
+  SOURCE_KIND_USER as ASSERTION_KIND_USER,
+} from '../provenance/provenance-types';
 import { resolveSoftJoinAvailability } from './sourceIntelligence-compute';
 
 const DAY_MS = 24 * 3600 * 1000;
@@ -720,23 +726,84 @@ interface SourceCandidate {
   source_user_ids: string[];
 }
 
+type TopValueBucket = { key: string; doc_count: number };
+
+const DISCOVERY_INDICES = [READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS];
+
+/**
+ * Most frequent values of a field over the knowledge written or asserted during the window. An assertion of an
+ * unchanged object is recorded without updating it: with provenance, the window also covers its last assertion.
+ */
 const aggregateTopValues = async (context: AuthContext, field: string, sinceDays: number, minCount: number, size: number) => {
   if (size <= 0) {
     return [];
   }
   const since = new Date(Date.now() - sinceDays * DAY_MS).toISOString();
+  const windowRanges: Array<Record<string, unknown>> = [{ range: { updated_at: { gte: since } } }];
+  if (isProvenanceAttributeAvailable()) {
+    windowRanges.push({ range: { [ATTRIBUTE_LAST_ASSERTED_AT]: { gte: since } } });
+  }
   const data = await elRawSearch(context, SYSTEM_USER, ENTITY_TYPE_SOURCE, {
-    index: [READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS],
+    index: DISCOVERY_INDICES,
     size: 0,
     track_total_hits: false,
     body: {
-      query: { range: { updated_at: { gte: since } } },
+      query: { bool: { should: windowRanges, minimum_should_match: 1 } },
       aggs: { top: { terms: { field: `${field}.keyword`, size, min_doc_count: minCount } } },
     },
   }).catch((err: unknown) => {
     throw DatabaseError('Source intelligence source discovery failed', { cause: err, field });
   });
-  return (data.aggregations?.top?.buckets ?? []) as Array<{ key: string; doc_count: number }>;
+  return (data.aggregations?.top?.buckets ?? []) as TopValueBucket[];
+};
+
+/**
+ * Sources of a kind most frequently asserting knowledge during the window, from the assertions themselves: an author
+ * or analyst asserting existing knowledge is recorded there only. Each object lists a source once in its assertions.
+ */
+const aggregateTopAsserters = async (context: AuthContext, assertionKind: string, sinceDays: number, minCount: number, size: number) => {
+  if (size <= 0 || !isProvenanceAttributeAvailable()) {
+    return [];
+  }
+  const since = new Date(Date.now() - sinceDays * DAY_MS).toISOString();
+  const data = await elRawSearch(context, SYSTEM_USER, ENTITY_TYPE_SOURCE, {
+    index: DISCOVERY_INDICES,
+    size: 0,
+    track_total_hits: false,
+    body: {
+      query: { range: { [ATTRIBUTE_LAST_ASSERTED_AT]: { gte: since } } },
+      aggs: {
+        assertions: {
+          nested: { path: ATTRIBUTE_ASSERTIONS },
+          aggs: {
+            window: {
+              filter: {
+                bool: {
+                  filter: [
+                    { term: { [`${ATTRIBUTE_ASSERTIONS}.source_kind.keyword`]: assertionKind } },
+                    { range: { [`${ATTRIBUTE_ASSERTIONS}.last_asserted_at`]: { gte: since } } },
+                  ],
+                },
+              },
+              aggs: { top: { terms: { field: `${ATTRIBUTE_ASSERTIONS}.source_id.keyword`, size, min_doc_count: minCount } } },
+            },
+          },
+        },
+      },
+    },
+  }).catch((err: unknown) => {
+    throw DatabaseError('Source intelligence source discovery failed', { cause: err, assertionKind });
+  });
+  return (data.aggregations?.assertions?.window?.top?.buckets ?? []) as TopValueBucket[];
+};
+
+// Values of several aggregations over the same documents: each value keeps its largest count
+const mergeTopValues = (...bucketLists: TopValueBucket[][]): TopValueBucket[] => {
+  const counts = new Map<string, number>();
+  bucketLists.flat().forEach(({ key, doc_count }) => counts.set(key, Math.max(counts.get(key) ?? 0, doc_count)));
+  return Array.from(counts.entries())
+    .map(([key, doc_count]) => ({ key, doc_count }))
+    .sort((a, b) => b.doc_count - a.doc_count || a.key.localeCompare(b.key));
 };
 
 const collectSourceCandidates = async (context: AuthContext, settings: SourceIntelligenceSettings): Promise<SourceCandidate[]> => {
@@ -770,7 +837,10 @@ const collectSourceCandidates = async (context: AuthContext, settings: SourceInt
   });
   // Authors with a significant volume over the longest period
   const maxDays = SCORECARD_PERIOD_DAYS[SCORECARD_PERIODS[SCORECARD_PERIODS.length - 1]];
-  const authorBuckets = await aggregateTopValues(context, 'rel_created-by.internal_id', maxDays, settings.min_author_volume, settings.max_author_sources);
+  const authorBuckets = mergeTopValues(
+    await aggregateTopValues(context, 'rel_created-by.internal_id', maxDays, settings.min_author_volume, settings.max_author_sources),
+    await aggregateTopAsserters(context, ASSERTION_KIND_AUTHOR, maxDays, settings.min_author_volume, settings.max_author_sources),
+  ).slice(0, settings.max_author_sources);
   if (authorBuckets.length > 0) {
     const identities = await internalFindByIds(context, SYSTEM_USER, authorBuckets.map((b) => b.key)) as unknown as Array<BasicStoreEntity & { name: string }>;
     identities.forEach((identity) => {
@@ -778,10 +848,14 @@ const collectSourceCandidates = async (context: AuthContext, settings: SourceInt
     });
   }
   // Analysts writing knowledge directly (not through a connector or a feed)
-  const creatorBuckets = await aggregateTopValues(context, 'creator_id', maxDays, settings.min_manual_volume, settings.max_manual_sources + serviceUserIds.size);
-  if (creatorBuckets.length > 0) {
+  const analystSize = settings.max_manual_sources + serviceUserIds.size;
+  const analystBuckets = mergeTopValues(
+    await aggregateTopValues(context, 'creator_id', maxDays, settings.min_manual_volume, analystSize),
+    await aggregateTopAsserters(context, ASSERTION_KIND_USER, maxDays, settings.min_manual_volume, analystSize),
+  );
+  if (analystBuckets.length > 0) {
     const users = await getEntitiesMapFromCache<BasicStoreEntity & { name: string; user_service_account?: boolean }>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-    creatorBuckets
+    analystBuckets
       .filter((bucket) => !serviceUserIds.has(bucket.key) && !INTERNAL_USERS[bucket.key])
       .map((bucket) => users.get(bucket.key))
       .filter((user): user is BasicStoreEntity & { name: string; user_service_account?: boolean } => !!user && user.user_service_account !== true)
