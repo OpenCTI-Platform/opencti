@@ -9,7 +9,7 @@ import { findRegisterRow, registerRowsByDisposition, USER_MERGE_REGISTER, UserMe
  * that recounts the array would agree with any transcription mistake it is supposed to catch.
  */
 const V4_DISTRIBUTION: Record<UserMergeDisposition, number> = {
-  [UserMergeDisposition.Transfer]: 50,
+  [UserMergeDisposition.Transfer]: 51,
   [UserMergeDisposition.Invalidate]: 22,
   [UserMergeDisposition.Conditional]: 21,
   [UserMergeDisposition.Retain]: 10,
@@ -24,7 +24,7 @@ describe('User merge register', () => {
     });
   });
 
-  it('should hold exactly 109 rows, and no row outside the known dispositions', () => {
+  it('should hold exactly 110 rows, and no row outside the known dispositions', () => {
     const total = Object.values(V4_DISTRIBUTION).reduce((acc, count) => acc + count, 0);
     expect(USER_MERGE_REGISTER.length).toBe(total);
   });

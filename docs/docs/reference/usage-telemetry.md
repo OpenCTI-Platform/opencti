@@ -92,6 +92,8 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 - The number of Ask AI queries, broken down by feature (`fix_spelling`, `make_shorter`, `make_longer`, `change_tone`, `summarize`, `explain`, `container_report`, `summarize_files`, `convert_files_to_stix`, `activity`, `forecast`, `history`, `container_summary`)
 - The number of direct XTM One agent calls, broken down by channel (`direct`, `direct_files`)
 - The number of playbook AI agent component runs
+- The number of hunts planned by an XTM One agent
+- The number of hunt runs triaged by an XTM One agent
 - Whether the built-in LLM configuration is enabled, with the provider type as dimension (`mistralai`, `openai`, `azureopenai`, `other`, or `none` when disabled)
 - Whether XTM One is configured (URL and token)
 - Whether the Filigran chatbot AI CGU has been accepted
@@ -107,6 +109,10 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 - The number of security coverages 
 - The number of security coverages results
 - The number of 'has covered' relationships
+- The number of hunts, broken down by status (`draft`, `active`, `paused`, `retired`)
+- The number of live hunt connectors
+- The number of hunt runs started, broken down by trigger (`manual`, `schedule`, `standing`, `playbook`, `emulation`, `preview`, `retry`)
+- The number of hunt run verdicts set, broken down by verdict (`true_positive`, `benign`, `inconclusive`)
 - The number of activated inference rules
 - The number of notification triggers, broken down by type (`live`, `digest`)
 - The number of notifiers, broken down by connector (`email`, `webhook`, `ui`, `other`)

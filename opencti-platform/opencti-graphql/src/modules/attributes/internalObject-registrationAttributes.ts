@@ -353,6 +353,17 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition<any>> 
     { name: 'xtm_one_intent', label: 'XTM One intent', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
     { name: 'version', label: 'Connector version', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
     { name: 'slug', label: 'Connector slug', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+    // region hunt connectors (INTERNAL_HUNT)
+    { name: 'hunt_platform', label: 'Hunt platform', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'hunt_languages', label: 'Hunt query languages', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
+    { name: 'hunt_security_platform_id', label: 'Hunt security platform', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'hunt_supports_preview', label: 'Hunt translation preview', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'hunt_supports_indicators', label: 'Hunt indicator lookups', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    // Declared by the connector: the permissions it needs on its platform and where they are documented
+    { name: 'hunt_setup', label: 'Hunt connector setup', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'hunt_connection_check', label: 'Hunt connection test', type: 'object', format: 'flat', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'hunt_max_concurrent_runs', label: 'Hunt concurrent runs', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    // endregion
     // region composer
     { name: 'catalog_id', label: 'Connector catalog', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'manager_current_status', label: 'Connector manager current status', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },

@@ -9,6 +9,7 @@ import WidgetNotImplemented from './WidgetNotImplemented';
 import WidgetDefenseTacticCoverage from '@components/defense/matrix/widgets/WidgetDefenseTacticCoverage';
 import WidgetDefenseTopGaps from '@components/defense/matrix/widgets/WidgetDefenseTopGaps';
 import WidgetDefenseLevels from '@components/defense/matrix/widgets/WidgetDefenseLevels';
+import WidgetHuntStatistics from '@components/hunts/widgets/WidgetHuntStatistics';
 
 interface DashboardRawVizProps {
   widget: Widget;
@@ -39,6 +40,18 @@ const DashboardRawViz = ({
       return <WidgetDefenseTopGaps title={widget.parameters?.title} popover={popover} />;
     case 'defense-levels':
       return <WidgetDefenseLevels title={widget.parameters?.title} popover={popover} />;
+    case 'hunt-hits-over-time':
+    case 'hunt-runs-per-platform':
+    case 'hunt-verdict-distribution':
+      return (
+        <WidgetHuntStatistics
+          type={widget.type}
+          title={widget.parameters?.title}
+          startDate={startDate}
+          endDate={endDate}
+          popover={popover}
+        />
+      );
     case 'custom-attributes':
       return (
         <StixCoreObjectsCustomAttributes
