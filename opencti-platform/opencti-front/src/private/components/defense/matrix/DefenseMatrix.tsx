@@ -40,6 +40,7 @@ import {
   DEFENSE_THREAT_SCOPE_LABELS,
   type DefenseLayersState,
   type DefenseScopeState,
+  defenseValidationTargets,
   isThreatOverlayActive,
   scopedDefensePlatforms,
   summarizeLevels,
@@ -133,8 +134,6 @@ const COUNTER_LEVELS: Record<DefenseCounter, number[]> = {
   deployed: [DEFENSE_LEVEL_DETECTION_DEPLOYED],
   gaps: [DEFENSE_LEVEL_NONE, DEFENSE_LEVEL_TELEMETRY, DEFENSE_LEVEL_DETECTION_AVAILABLE],
 };
-// Techniques per validation request accepted by the platform
-const MAX_VALIDATION_TECHNIQUES = 200;
 
 export const DefenseMatrixContent = ({ queryRef, scope, layers }: DefenseMatrixContentProps) => {
   const { t_i18n } = useFormatter();
@@ -209,12 +208,8 @@ export const DefenseMatrixContent = ({ queryRef, scope, layers }: DefenseMatrixC
   const threatScopeLabel = scope.threatMode === 'SELECTED'
     ? t_i18n('{count, plural, one {# selected threat} other {# selected threats}}', { values: { count: scope.threats.length } })
     : t_i18n(DEFENSE_THREAT_SCOPE_LABELS[scope.threatMode]);
-  // The techniques the threats use (every technique without overlay) that no validation proved yet
-  const validationTargets = cells
-    .filter((cell) => cell.level < DEFENSE_LEVEL_VALIDATED && (!threatOverlay || cell.threats_count > 0))
-    .sort((a, b) => b.threats_count - a.threats_count || b.level - a.level)
-    .slice(0, MAX_VALIDATION_TECHNIQUES)
-    .map((cell) => ({ id: cell.attack_pattern_id, name: cell.name, x_mitre_id: cell.x_mitre_id }));
+  const { targets, deferred: deferredValidationTargets } = defenseValidationTargets(cells, threatOverlay);
+  const validationTargets = targets.map((cell) => ({ id: cell.attack_pattern_id, name: cell.name, x_mitre_id: cell.x_mitre_id }));
   let emptyOverlayMessage: string | null = null;
   if (threatOverlay && threats.total === 0) {
     emptyOverlayMessage = defenseMatrix.threats_count === 0
@@ -292,6 +287,7 @@ export const DefenseMatrixContent = ({ queryRef, scope, layers }: DefenseMatrixC
         open={validating}
         onClose={() => setValidating(false)}
         techniques={validationTargets}
+        deferredCount={deferredValidationTargets}
         platforms={scopedPlatforms}
         threats={scope.threatMode === 'SELECTED' ? scope.threats : []}
       />

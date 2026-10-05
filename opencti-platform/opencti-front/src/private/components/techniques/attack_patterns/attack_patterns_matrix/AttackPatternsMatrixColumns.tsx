@@ -21,7 +21,7 @@ import { hexToRGB } from '../../../../../utils/Colors';
 import type { Theme } from '../../../../../components/Theme';
 import { containerTypes } from '../../../../../utils/hooks/useAttributes';
 import { useFormatter } from '../../../../../components/i18n';
-import { defenseCellLevel, defenseCoveredPercent, isInDefenseLevelFilter, isUsedByThreats } from './AttackPatternsMatrixDefense';
+import { defenseCellLevel, defenseCoveredPercent, isInDefenseLevelFilter, isTechniqueInDefenseLevelFilter, isUsedByThreats } from './AttackPatternsMatrixDefense';
 import { DEFENSE_COVERED_LEVEL, DEFENSE_LEVEL_NONE, defenseLevelColor } from '../../../defense/matrix/defenseMatrix-utils';
 
 export type AttackPatternsOfPhase = NonNullable<NonNullable<AttackPatternsMatrixColumns_data$data['attackPatternsMatrix']>['attackPatternsOfPhases']>[number];
@@ -246,7 +246,11 @@ const AttackPatternsMatrixColumns = ({
           isOverlapping: attackPatternIdsToOverlap?.includes(ap.attack_pattern_id),
           subAttackPatternsTotal: ap.subAttackPatterns?.length,
         }))
-        .filter((ap) => (isModeOnlyActive ? ap.isCovered || isSubAttackPatternCovered(ap) : true))
+        .filter((ap) => {
+          if (!isModeOnlyActive) return true;
+          if (defense?.levelFilter) return isTechniqueInDefenseLevelFilter(defense, defenseTechniqueIds(ap));
+          return ap.isCovered || isSubAttackPatternCovered(ap);
+        })
         .sort((f, s) => f.name.localeCompare(s.name)),
     })), [attackPatternsMatrix, searchTerm, attackPatterns, attackPatternIdsToOverlap, isModeOnlyActive, defense]);
 

@@ -13,9 +13,11 @@ import {
   defenseLevelColor,
   defenseLevelTextColor,
   defenseThreatColor,
+  defenseValidationTargets,
   isDisplayedValidationFailed,
   isThreatOverlayActive,
   isValidationFailed,
+  MAX_VALIDATION_TECHNIQUES,
   parseDefenseScope,
   scopedDefensePlatforms,
   summarizeLevels,
@@ -183,6 +185,30 @@ describe('defenseMatrix-utils', () => {
   describe('defenseGapsExportFileName', () => {
     it('names the export after the day', () => {
       expect(defenseGapsExportFileName(new Date('2026-10-03T12:00:00Z'))).toBe('defense_gaps_2026-10-03.csv');
+    });
+  });
+
+  describe('defenseValidationTargets', () => {
+    const technique = (id: string, level: number, threats: number) => ({ id, level, threats_count: threats });
+
+    it('keeps the unvalidated techniques, the ones used by the most threats first', () => {
+      const cells = [technique('a', 0, 1), technique('b', 4, 9), technique('c', 2, 5), technique('d', 3, 0)];
+      expect(defenseValidationTargets(cells, false)).toEqual({ targets: [cells[2], cells[0], cells[3]], deferred: 0 });
+      expect(defenseValidationTargets(cells, true)).toEqual({ targets: [cells[2], cells[0]], deferred: 0 });
+    });
+
+    it('counts the techniques a single request cannot hold instead of dropping them silently', () => {
+      const cells = Array.from({ length: MAX_VALIDATION_TECHNIQUES + 57 }, (_, i) => technique(`t${i}`, 0, i));
+      const { targets, deferred } = defenseValidationTargets(cells, false);
+      expect(targets).toHaveLength(MAX_VALIDATION_TECHNIQUES);
+      expect(targets[0].id).toBe(`t${MAX_VALIDATION_TECHNIQUES + 56}`);
+      expect(deferred).toBe(57);
+    });
+
+    it('leaves the scope untouched', () => {
+      const cells = [technique('a', 0, 1), technique('b', 0, 2)];
+      defenseValidationTargets(cells, false);
+      expect(cells.map((c) => c.id)).toEqual(['a', 'b']);
     });
   });
 });

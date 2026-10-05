@@ -48,6 +48,13 @@ export const isInDefenseLevelFilter = (defense: DefenseMatrixMode, attackPattern
   return defense.levelFilter.includes(defense.cells.get(attackPatternId)?.level ?? DEFENSE_LEVEL_NONE);
 };
 
+// A displayed technique matches a counter at the best stored level of itself and its sub-techniques, as counted
+export const isTechniqueInDefenseLevelFilter = (defense: DefenseMatrixMode, attackPatternIds: ReadonlyArray<string>) => {
+  if (!defense.levelFilter) return true;
+  const level = Math.max(DEFENSE_LEVEL_NONE, ...attackPatternIds.map((id) => defense.cells.get(id)?.level ?? DEFENSE_LEVEL_NONE));
+  return defense.levelFilter.includes(level);
+};
+
 // A technique counts once, at the best level of itself and its sub-techniques, as in the coverage by tactic
 export const defenseTechniqueLevel = (defense: DefenseMatrixMode, attackPatternIds: ReadonlyArray<string>) => {
   return Math.max(DEFENSE_LEVEL_NONE, ...attackPatternIds.map((id) => defenseCellLevel(defense, id)));

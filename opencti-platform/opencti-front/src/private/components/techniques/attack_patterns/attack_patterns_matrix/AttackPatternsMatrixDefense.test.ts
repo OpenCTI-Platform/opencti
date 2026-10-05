@@ -9,6 +9,7 @@ import {
   type DefenseMatrixMode,
   defenseTechniqueLevel,
   isInDefenseLevelFilter,
+  isTechniqueInDefenseLevelFilter,
 } from './AttackPatternsMatrixDefense';
 
 const keyEvent = (key: string, target: object, currentTarget: object) => ({
@@ -63,6 +64,16 @@ describe('Defense matrix tactic coverage', () => {
     expect(isInDefenseLevelFilter(withoutValidation, 'validated')).toBe(true);
     expect(isInDefenseLevelFilter({ ...withoutValidation, levelFilter: [3] }, 'validated')).toBe(false);
     expect(isInDefenseLevelFilter({ ...withoutValidation, levelFilter: null }, 'validated')).toBe(true);
+  });
+  it('should filter a displayed technique at the best stored level of itself and its sub-techniques, as the counters count it', () => {
+    const gaps: DefenseMatrixMode = { ...defense, levelFilter: [0, 1, 2] };
+    const deployed: DefenseMatrixMode = { ...defense, levelFilter: [3] };
+    // A gap parent with a deployed sub-technique counts as deployed only
+    expect(isTechniqueInDefenseLevelFilter(gaps, ['parent', 'sub'])).toBe(false);
+    expect(isTechniqueInDefenseLevelFilter(deployed, ['parent', 'sub'])).toBe(true);
+    expect(isTechniqueInDefenseLevelFilter(gaps, ['parent'])).toBe(true);
+    expect(isTechniqueInDefenseLevelFilter(gaps, ['unknown'])).toBe(true);
+    expect(isTechniqueInDefenseLevelFilter({ ...defense, levelFilter: null }, ['parent', 'sub'])).toBe(true);
   });
 });
 
