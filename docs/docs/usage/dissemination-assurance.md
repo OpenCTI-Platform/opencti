@@ -71,7 +71,7 @@ filters, lists and dashboards:
 
 | Counter                    | Description                                                     |
 |:---------------------------|:----------------------------------------------------------------|
-| Deployments count          | The number of platforms where a stream connector recorded the indicator, whatever the status: the evidence that the indicator was disseminated. |
+| Deployments count          | The number of platforms where a stream connector reported the indicator, whatever the status: the evidence that the indicator was disseminated. A deployment recorded by hand stays out of it until its connector reports it. |
 | Deployment platforms count | The number of platforms where the indicator is deployed or active. |
 | Deployment failed count    | The number of platforms where the deployment failed.            |
 | Expired deployments count  | The number of platforms where the deployment was flagged expired because its removal was never confirmed. |

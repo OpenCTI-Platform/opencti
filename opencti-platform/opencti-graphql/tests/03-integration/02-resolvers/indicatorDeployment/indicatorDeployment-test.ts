@@ -478,11 +478,13 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
       query: SIGHTING_FIELD_PATCH,
       variables: { id: before.internal_id, input: [{ key: 'description', value: ['edited outside the report'] }] },
     });
-    // Nor does it lose the identifier the report finds it by
-    await queryAsUserIsExpectedForbidden(USER_CONNECTOR, {
+    // Nor does it lose the identifier the report finds it by: that identifier is its standard id
+    await queryAsUserWithSuccess(USER_CONNECTOR, {
       query: SIGHTING_FIELD_PATCH,
       variables: { id: before.internal_id, input: [{ key: 'x_opencti_stix_ids', value: [], operation: 'replace' }] },
     });
+    const byReservedId = await internalLoadById(testContext, ADMIN_USER, sightingStixId, { type: STIX_SIGHTING_RELATIONSHIP }) as unknown as { internal_id: string };
+    expect(byReservedId.internal_id).toEqual(before.internal_id);
     // Side-channel only, so the raw stream counts of the suite are unchanged; the editor reads the pair meanwhile
     await setOrganizations(platformId, [testOrganizationId]);
     await setOrganizations(before.internal_id, [testOrganizationId]);

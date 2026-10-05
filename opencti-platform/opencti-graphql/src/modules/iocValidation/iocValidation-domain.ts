@@ -640,21 +640,27 @@ const dispatchClaimedIocValidationRequest = async (context: AuthContext, claimed
       stix_objects: JSON.stringify(bundle),
     },
   };
-  await pushToConnector(connector.internal_id, message);
+  // The work is recorded on the request before the publish: a dispatch interrupted after it is never published again
+  // (the request then expires after the timeout), so OpenAEV runs each request at most once.
+  await withRequestLock(request.internal_id, () => patchRequest(context, SYSTEM_USER, request.internal_id, {
+    connector_id: connector.internal_id,
+    work_id: work.id,
+    dispatched_at: new Date(),
+  }));
+  try {
+    await pushToConnector(connector.internal_id, message);
+  } catch (error) {
+    await withRequestLock(request.internal_id, () => patchRequest(context, SYSTEM_USER, request.internal_id, { work_id: null, dispatched_at: null }));
+    throw error;
+  }
   logApp.info('[IOC-VALIDATION] Request dispatched to OpenAEV', { requestId: request.internal_id, connectorId: connector.internal_id, pairs: pairs.length });
   // OpenAEV can report its lifecycle before this write: an advanced status is never set back to sent.
   return withRequestLock(request.internal_id, async () => {
     const current = await findIocValidationRequest(context, SYSTEM_USER, request.internal_id);
-    const patch: Record<string, unknown> = {
-      connector_id: connector.internal_id,
-      work_id: work.id,
-      dispatched_at: new Date(),
-    };
-    if (!current || current.status === REQUEST_STATUS_PENDING) {
-      patch.status = REQUEST_STATUS_SENT;
-      patch.status_message = null;
+    if (current && current.status !== REQUEST_STATUS_PENDING) {
+      return current;
     }
-    return patchRequest(context, SYSTEM_USER, request.internal_id, patch);
+    return patchRequest(context, SYSTEM_USER, request.internal_id, { status: REQUEST_STATUS_SENT, status_message: null });
   });
 };
 // endregion

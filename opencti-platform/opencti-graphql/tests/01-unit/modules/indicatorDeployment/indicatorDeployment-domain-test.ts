@@ -116,14 +116,15 @@ describe('computeDeploymentChange on update', () => {
 });
 
 describe('derived counters', () => {
-  it('should count recorded, live, failed, expired, proven and hit deployments', () => {
+  it('should count reported, live, failed, expired, proven and hit deployments', () => {
+    const syncedAt = '2026-10-01T00:00:00.000Z';
     const counters = computeIndicatorDeploymentCounters([
-      { deployment_status: 'deployed', validation_status: 'detected', hit_count: 0 },
-      { deployment_status: 'active', validation_status: 'missed', hit_count: 3 },
-      { deployment_status: 'failed', validation_status: 'not_requested' },
-      { deployment_status: 'removed', validation_status: 'prevented', hit_count: 1 },
-      { deployment_status: 'expired', validation_status: 'requested' },
-      { deployment_status: 'pending' },
+      { deployment_status: 'deployed', validation_status: 'detected', hit_count: 0, last_sync_at: syncedAt },
+      { deployment_status: 'active', validation_status: 'missed', hit_count: 3, last_sync_at: syncedAt },
+      { deployment_status: 'failed', validation_status: 'not_requested', last_sync_at: syncedAt },
+      { deployment_status: 'removed', validation_status: 'prevented', hit_count: 1, last_sync_at: syncedAt },
+      { deployment_status: 'expired', validation_status: 'requested', last_sync_at: syncedAt },
+      { deployment_status: 'pending', last_sync_at: syncedAt },
     ]);
     expect(counters).toEqual({
       deployments_count: 6,
@@ -143,6 +144,9 @@ describe('derived counters', () => {
       validated_platforms_count: 0,
       hit_platforms_count: 0,
     });
+  });
+  it('should not count as disseminated a pending deployment no connector reported', () => {
+    expect(computeIndicatorDeploymentCounters([{ deployment_status: 'pending' }]).deployments_count).toEqual(0);
   });
   it('should compute the proven share as a percentage with one decimal', () => {
     expect(computeProvenShare(0, 0)).toEqual(0);

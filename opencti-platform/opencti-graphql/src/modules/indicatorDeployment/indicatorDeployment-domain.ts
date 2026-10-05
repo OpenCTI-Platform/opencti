@@ -192,9 +192,13 @@ export const computeDeploymentChange = (
   return { attributes: { ...patch, last_sync_at: syncedAt }, meaningful, stale: false };
 };
 
+// A deployment is disseminated once a connector reported it: only lifecycle writers set last_sync_at, so the pending
+// record an editor creates is not counted until its connector reports it.
+export const isReportedDeployment = (relation: Partial<DeployedOnAttributes>) => isNotEmptyField(relation.last_sync_at);
+
 export const computeIndicatorDeploymentCounters = (relations: Array<Partial<DeployedOnAttributes>>): IndicatorDeploymentCounters => {
   return {
-    [INDICATOR_DEPLOYMENTS_COUNT]: relations.length,
+    [INDICATOR_DEPLOYMENTS_COUNT]: relations.filter(isReportedDeployment).length,
     [INDICATOR_DEPLOYMENT_PLATFORMS_COUNT]: relations.filter((r) => isLive(r.deployment_status)).length,
     [INDICATOR_DEPLOYMENT_FAILED_COUNT]: relations.filter((r) => r.deployment_status === DEPLOYMENT_STATUS_FAILED).length,
     [INDICATOR_DEPLOYMENT_EXPIRED_COUNT]: relations.filter((r) => r.deployment_status === DEPLOYMENT_STATUS_EXPIRED).length,
@@ -964,8 +968,9 @@ export const disseminationAssuranceMetrics = async (context: AuthContext, user: 
   let funnel;
   if (args.platformId) {
     // Expired still deployed: flagged expired (removal never confirmed), or still live while the indicator is revoked or past valid_until.
+    const reportedFilter: FilterContent = { key: ['last_sync_at'], values: [], operator: 'not_nil' as never };
     const [disseminated, deployed, validated, hit, flaggedExpired] = await Promise.all([
-      countDeployments(context, user, baseDeploymentFilters),
+      countDeployments(context, user, [...baseDeploymentFilters, reportedFilter]),
       countDeployments(context, user, [...baseDeploymentFilters, liveFilter]),
       countDeployments(context, user, [...baseDeploymentFilters, provenFilter]),
       countDeployments(context, user, [...baseDeploymentFilters, { key: ['hit_count'], values: [0], operator: 'gt' }]),
