@@ -11,6 +11,8 @@ export interface JournalEntryInput {
   targetId: string;
   handler: string;
   dryRun: boolean;
+  /** The history cut-off the run uses, recorded so that later runs on the pair reuse it. */
+  mergeStartedAt?: Date;
 }
 
 export interface UserMergeJournalRecord {
@@ -22,6 +24,8 @@ export interface UserMergeJournalRecord {
   dry_run: boolean;
   status: UserMergeStatus;
   started_at: string;
+  /** The history cut-off of the run, absent on the entries written before it was recorded. */
+  merge_started_at?: string;
   completed_at?: string;
   message?: string;
   /** JSON-serialized UserMergeHandlerOutcome. */
@@ -45,6 +49,7 @@ export const openJournalEntry = async (input: JournalEntryInput): Promise<string
     dry_run: input.dryRun,
     status: UserMergeStatus.Running,
     started_at: utcDate().toISOString(),
+    ...(input.mergeStartedAt ? { merge_started_at: input.mergeStartedAt.toISOString() } : {}),
   });
   return entryId;
 };
@@ -152,12 +157,17 @@ export const readJournalEntries = async (mergeId?: string, first?: number): Prom
  * Dry-runs are skipped because they write nothing to bound, and so are refused real runs, which
  * `journalRefusal` records as dry for that reason. The journal expires after 30 days, so
  * a pair merged longer ago reads as never merged and the gate refuses — the safe way to be wrong.
+ *
+ * The boundary read back is the cut-off the first real run used, not the instant its first real
+ * entry opened: that one only opens once the dry pass and the recompute are done, so a record
+ * stamped in between would be left alone by the first run and counted as pending by every later
+ * one. Entries written before the cut-off was recorded fall back to their own start.
  */
 export const resolveMergeStartedAt = async (sourceId: string, targetId: string, fallback: Date): Promise<Date> => {
   const entries = await redisUserMergeJournalRead() as UserMergeJournalRecord[];
   const starts = entries
     .filter((entry) => !entry.dry_run && entry.source_user_id === sourceId && entry.target_user_id === targetId)
-    .map((entry) => new Date(entry.started_at).getTime())
+    .map((entry) => new Date(entry.merge_started_at ?? entry.started_at).getTime())
     .filter((time) => !Number.isNaN(time));
   return starts.length > 0 ? new Date(Math.min(...starts)) : fallback;
 };

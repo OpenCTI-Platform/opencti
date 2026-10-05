@@ -104,7 +104,7 @@ const recomputeVerifiedPlans = async (
   handlers: UserMergeHandler[],
   handlerContext: UserMergeHandlerContext,
   dryOutcomes: UserMergeHandlerOutcome[],
-  journalInput: { mergeId: string; sourceId: string; targetId: string },
+  journalInput: { mergeId: string; sourceId: string; targetId: string; mergeStartedAt: Date },
 ): Promise<UserMergeHandlerPlan[]> => {
   const plans: UserMergeHandlerPlan[] = [];
   for (let i = 0; i < handlers.length; i += 1) {
@@ -232,7 +232,8 @@ export const executeUserMerge = async (
       mergeStartedAt: await resolveMergeStartedAt(sourceId, targetId, startedAt),
       ...projection,
     };
-    const journalInput = { mergeId, sourceId, targetId };
+    // Every entry records the history cut-off of the run, so that later runs on the pair reuse it.
+    const journalInput = { mergeId, sourceId, targetId, mergeStartedAt: handlerContext.mergeStartedAt };
 
     const dryOutcomes: UserMergeHandlerOutcome[] = [];
     for (let i = 0; i < handlers.length; i += 1) {

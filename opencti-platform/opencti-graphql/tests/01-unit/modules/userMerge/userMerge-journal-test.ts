@@ -108,6 +108,34 @@ describe('merge start resolution', () => {
     journalEntries = [entry({ started_at: 'not-a-date' })];
     expect(await resolveMergeStartedAt('source-id', 'target-id', FALLBACK)).toEqual(FALLBACK);
   });
+
+  // The first real entry only opens once the dry pass and the recompute are done: reading its own
+  // start would move the boundary of every later run past the one the first run cut on.
+  it('should reuse the cut-off the first real run recorded rather than when its entry opened', async () => {
+    journalEntries = [entry({ merge_started_at: '2025-03-01T08:00:00.000Z', started_at: '2025-03-01T08:20:00.000Z' })];
+    expect((await resolveMergeStartedAt('source-id', 'target-id', FALLBACK)).toISOString())
+      .toEqual('2025-03-01T08:00:00.000Z');
+  });
+
+  it('should fall back to the entry start when no cut-off was recorded', async () => {
+    journalEntries = [entry({ started_at: '2025-03-01T08:20:00.000Z' })];
+    expect((await resolveMergeStartedAt('source-id', 'target-id', FALLBACK)).toISOString())
+      .toEqual('2025-03-01T08:20:00.000Z');
+  });
+});
+
+describe('journal entry opening', () => {
+  beforeEach(() => {
+    upserts.length = 0;
+    upsertCallCount = 0;
+    rejectedUpsertCalls = [];
+  });
+
+  it('should record the cut-off of the run on every entry', async () => {
+    const mergeStartedAt = new Date('2025-03-01T08:00:00.000Z');
+    await withJournalEntry({ ...handlerInput, mergeStartedAt }, async () => handlerOutcome);
+    expect(upserts[0]).toMatchObject({ merge_started_at: '2025-03-01T08:00:00.000Z' });
+  });
 });
 const runInput = { mergeId: 'merge-1', sourceId: 'source-id', targetId: 'target-id', handler: 'scalar-user-references', dryRun: false };
 

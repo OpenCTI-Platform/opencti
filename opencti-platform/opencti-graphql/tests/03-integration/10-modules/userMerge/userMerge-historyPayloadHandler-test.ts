@@ -25,14 +25,15 @@ const MEMBERS_CHANGE_DOCUMENT = 'merge-test-payload-members-change';
 const FILTERS_CHANGE_DOCUMENT = 'merge-test-payload-filters-change';
 const OTHER_CHANGE_DOCUMENT = 'merge-test-payload-other-change';
 const RAW_PAYLOAD_DOCUMENT = 'merge-test-payload-raw';
-const DOCUMENT_IDS = [CHANGES_DOCUMENT, MEMBERS_CHANGE_DOCUMENT, FILTERS_CHANGE_DOCUMENT, OTHER_CHANGE_DOCUMENT, RAW_PAYLOAD_DOCUMENT];
+const IN_RUN_DOCUMENT = 'merge-test-payload-in-run';
+const DOCUMENT_IDS = [CHANGES_DOCUMENT, MEMBERS_CHANGE_DOCUMENT, FILTERS_CHANGE_DOCUMENT, OTHER_CHANGE_DOCUMENT, RAW_PAYLOAD_DOCUMENT, IN_RUN_DOCUMENT];
 
-const document = (internalId: string, entityType: string, contextData: Record<string, unknown>) => ({
+const document = (internalId: string, entityType: string, contextData: Record<string, unknown>, timestamp = PAST) => ({
   internal_id: internalId,
   standard_id: internalId,
   entity_type: entityType,
   parent_types: [],
-  timestamp: PAST,
+  timestamp,
   user_id: OTHER_ID,
   context_data: contextData,
 });
@@ -51,6 +52,7 @@ const readDocument = async (internalId: string) => {
 
 let registeredHandlers: UserMergeHandler[];
 let dryRunResult: Awaited<ReturnType<typeof merge>>;
+let realResult: Awaited<ReturnType<typeof merge>>;
 
 // Values an object or a filter attribute records serialized in `raw`: the selection has to reach
 // the id inside them as well as a plain one.
@@ -107,8 +109,8 @@ describe('userMerge history payload handler', () => {
       filters: filters(SOURCE_ID),
     }));
     dryRunResult = await merge(true);
-    const result = await merge(false);
-    expect(result.status).toEqual(UserMergeStatus.Success);
+    realResult = await merge(false);
+    expect(realResult.status).toEqual(UserMergeStatus.Success);
   });
 
   afterAll(async () => {
@@ -166,6 +168,19 @@ describe('userMerge history payload handler', () => {
   });
 
   it('should be a no-op when replayed', async () => {
+    expect(countOf(await merge(true))).toEqual(0);
+  });
+
+  // The first real run cut on its own start, before its dry pass and recompute. A later run has to
+  // cut on the same instant, not on when the first real journal entry opened: a record stamped in
+  // between is left alone by the first run, and must not read as pending afterwards.
+  it('should reuse the cut-off of the first real run on later runs', async () => {
+    const stampedInRun = new Date(new Date(realResult.started_at).getTime() + 1).toISOString();
+    await elIndex(INDEX_HISTORY, document(IN_RUN_DOCUMENT, 'History', {
+      message: 'Update 1 elements',
+      entity_type: 'Report',
+      history_changes: changeOf('Report--objectAssignee', SOURCE_ID),
+    }, stampedInRun));
     expect(countOf(await merge(true))).toEqual(0);
   });
 });
