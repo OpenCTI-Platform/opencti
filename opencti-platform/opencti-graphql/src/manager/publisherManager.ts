@@ -3,7 +3,7 @@ import conf, { booleanConf, getBaseUrl, logApp } from '../config/conf';
 import { FunctionalError, TYPE_LOCK_ERROR, UnsupportedError } from '../config/errors';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../database/cache';
 import { createStreamProcessor } from '../database/stream/stream-handler';
-import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
+import { redisGetManagerEventState, redisIsDigestDelivered, redisMarkDigestDelivered, redisSetManagerEventState } from '../database/redis';
 import { lockResources } from '../lock/master-lock';
 import { sendMail, smtpComputeFrom, smtpIsAlive } from '../database/smtp';
 import type { NotifierTestInput } from '../generated/graphql';
@@ -366,6 +366,21 @@ export const processLiveNotificationEvent = async (
   }
 };
 
+// A digest stored with a delivery key is delivered once per key, even when a retry stored it a second time. Stream
+// events are processed one at a time, and the key is recorded only once the digest is delivered.
+export const deliverDigestOnce = async (event: DigestEvent, deliver: () => Promise<void>): Promise<boolean> => {
+  const deliveryKey = event.delivery_key;
+  if (deliveryKey && await redisIsDigestDelivered(deliveryKey)) {
+    logApp.info('[OPENCTI-MODULE] Digest already delivered, not delivered again', { manager: 'PUBLISHER_MANAGER', notification_id: event.notification_id });
+    return false;
+  }
+  await deliver();
+  if (deliveryKey) {
+    await redisMarkDigestDelivered(deliveryKey);
+  }
+  return true;
+};
+
 const processDigestNotificationEvent = async (context: AuthContext, notificationMap: Map<string, BasicStoreEntityTrigger>, event: DigestEvent) => {
   const { target: user, data } = event;
   const usersMap = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
@@ -509,7 +524,7 @@ const publisherStreamHandler = async (streamEvents: Array<SseEvent<StreamNotifEv
         if (digestEvent.data.playbook_source) {
           notificationMap.set(notification_id, { name: digestEvent.data.playbook_source, trigger_type: type } as BasicStoreEntityTrigger);
         }
-        await processDigestNotificationEvent(context, notificationMap, digestEvent.data);
+        await deliverDigestOnce(digestEvent.data, () => processDigestNotificationEvent(context, notificationMap, digestEvent.data));
       }
       await redisSetManagerEventState(PUBLISHER_MANAGER_NAME, streamEvent.id);
     }

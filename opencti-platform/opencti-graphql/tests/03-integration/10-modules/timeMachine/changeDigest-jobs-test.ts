@@ -7,6 +7,8 @@ import {
   redisExpireChangeDigestJobs,
   redisGetChangeDigestJobs,
   redisIsChangeDigestJobDue,
+  redisIsDigestDelivered,
+  redisMarkDigestDelivered,
   redisRemoveChangeDigestJob,
   redisRescheduleChangeDigestJob,
 } from '../../../../src/database/redis';
@@ -55,6 +57,15 @@ describe('Change digest jobs in Redis', () => {
     expect(await getClientBase().hget('change_digest_job_attempts', member('failing'))).toBeNull();
     expect(await redisCountChangeDigestJobFailure(member('failing'))).toBe(1);
     await redisRemoveChangeDigestJob(member('failing'));
+  });
+
+  it('records the delivery of a digest under its delivery key', async () => {
+    const deliveryKey = member('delivered');
+    expect(await redisIsDigestDelivered(deliveryKey)).toBe(false);
+    await redisMarkDigestDelivered(deliveryKey);
+    expect(await redisIsDigestDelivered(deliveryKey)).toBe(true);
+    expect(await redisIsDigestDelivered(member('other'))).toBe(false);
+    await getClientBase().zrem('digest_deliveries', deliveryKey);
   });
 
   it('expires the jobs scheduled strictly before a date', async () => {

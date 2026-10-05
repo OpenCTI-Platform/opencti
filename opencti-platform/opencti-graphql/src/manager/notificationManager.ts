@@ -122,6 +122,8 @@ export interface DigestEvent extends StreamNotifEvent {
   type: 'digest';
   target: NotificationUser;
   playbook_source?: string;
+  // Set when the same digest can be stored more than once (a change digest retried after a stop): delivered once per key
+  delivery_key?: string;
   data: Array<{ notification_id: string; instance: StixObject; type: string; message: string; origin?: Partial<UserOrigin>; streamMessage?: string }>;
 }
 
@@ -808,14 +810,16 @@ interface ChangeDigestTask {
 
 // Throws when the digest cannot be built or stored, or when the job lock is lost before it is stored
 const sendChangeDigest = async (task: ChangeDigestTask, lockSignal: AbortSignal) => {
-  const { context, settings, digest: { trigger }, user, job } = task;
+  const { context, settings, digest: { trigger }, user, job, member } = task;
   const userContext = { ...context, user_inside_platform_organization: isUserInPlatformOrganization(user, settings) };
   const locale = resolveChangeDigestLocale(user.language, settings.platform_language);
   const data = await buildChangeDigestData(userContext, user, trigger as unknown as ChangeDigestTrigger, job.fromDate, job.toDate, locale);
   if (data.length > 0) {
     lockSignal.throwIfAborted();
     const target = convertToNotificationUser(user, trigger.notifiers);
-    const digestEvent: DigestEvent = { version: EVENT_NOTIFICATION_VERSION, notification_id: trigger.internal_id, type: 'digest', target, data };
+    // A stop between this store and the removal of the job stores the digest again at the next attempt: the publisher
+    // delivers it once per job
+    const digestEvent: DigestEvent = { version: EVENT_NOTIFICATION_VERSION, notification_id: trigger.internal_id, type: 'digest', target, data, delivery_key: member };
     await storeNotificationEvent(context, digestEvent);
     addChangeDigestSentCount();
   }

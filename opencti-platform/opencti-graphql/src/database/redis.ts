@@ -882,6 +882,22 @@ export const redisRemoveChangeDigestJob = async (member: string) => {
 };
 // endregion
 
+// region - digest deliveries
+// Delivery keys of the digests delivered (a change digest: one trigger, recipient and period), scored by the end of
+// their retention, which covers every retry of a change digest: a digest stored twice is delivered once
+const DIGEST_DELIVERIES_KEY = 'digest_deliveries';
+const DIGEST_DELIVERY_RETENTION_MS = 8 * 24 * 60 * 60 * 1000;
+export const redisIsDigestDelivered = async (deliveryKey: string): Promise<boolean> => {
+  const retainedUntil = await getClientBase().zscore(DIGEST_DELIVERIES_KEY, deliveryKey);
+  return retainedUntil !== null && Number(retainedUntil) > Date.now();
+};
+export const redisMarkDigestDelivered = async (deliveryKey: string) => {
+  const now = Date.now();
+  await getClientBase().zremrangebyscore(DIGEST_DELIVERIES_KEY, '-inf', now);
+  await getClientBase().zadd(DIGEST_DELIVERIES_KEY, now + DIGEST_DELIVERY_RETENTION_MS, deliveryKey);
+};
+// endregion
+
 // region connector logs
 export interface FeedLog {
   timestamp: string;

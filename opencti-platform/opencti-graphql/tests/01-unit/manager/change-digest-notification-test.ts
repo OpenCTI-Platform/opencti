@@ -99,6 +99,7 @@ import { ACCOUNT_STATUS_ACTIVE } from '../../../src/config/conf';
 interface StoredDigestEvent {
   type: string;
   notification_id: string;
+  delivery_key?: string;
   target: { user_id: string; notifiers: string[] };
   data: unknown[];
 }
@@ -178,6 +179,8 @@ describe('handleChangeDigestNotifications', () => {
     expect(events[0].target.user_id).toBe(analyst.id);
     expect(events[0].target.notifiers).toEqual(['notifier-ui']);
     expect(events[0].data).toEqual([digestLine]);
+    // Delivered once per trigger, recipient and period, even if a retry stores it again
+    expect(events[0].delivery_key).toBe(toChangeDigestJobMember({ triggerId: 'change-digest-1', userId: analyst.id, fromDate: '2026-01-05T09:00:00.000Z', toDate: FROZEN.toISOString() }));
     // Only the stored digest is counted as sent
     expect(addChangeDigestSentCountMock).toHaveBeenCalledTimes(1);
   });
