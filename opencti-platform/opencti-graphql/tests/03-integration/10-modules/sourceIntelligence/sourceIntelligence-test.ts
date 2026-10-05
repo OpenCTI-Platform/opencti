@@ -328,8 +328,10 @@ describe('Source intelligence', () => {
   it('should mark the live scorecards with the stream boundary of the full computation', async () => {
     const live = await findLiveScorecards(testContext, REFERENCE_SCORECARD_PERIOD);
     expect(live.length).toBeGreaterThan(0);
-    // Every live scorecard counts the events up to the computation time: a replayed stream batch before it is a no-op
-    live.forEach((scorecard) => expect(scorecard.live_stream_event_id).toMatch(/^\d+-18446744073709551615$/));
+    // Every live scorecard counts the events written before the scan: a replayed stream batch up to it is a no-op
+    const boundary = live[0].live_stream_event_id;
+    expect(boundary).toMatch(/^\d+-\d+$/);
+    live.forEach((scorecard) => expect(scorecard.live_stream_event_id).toEqual(boundary));
   });
 
   it('should materialize and score sources from the platform knowledge', async () => {
