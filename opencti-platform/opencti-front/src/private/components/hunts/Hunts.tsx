@@ -11,6 +11,7 @@ import { HuntsListQuery, HuntsListQuery$variables } from './__generated__/HuntsL
 import HuntCreation from './HuntCreation';
 import HuntStatistics from './HuntStatistics';
 import { HuntPackExportButton, HuntPackImportButton } from './HuntPack';
+import HuntQuickStartMenu from './HuntQuickStartMenu';
 import { HuntSourceKindChip, HuntStatusChip } from './HuntChips';
 import { huntScheduleMode } from './hunt-schedule-utils';
 import { useHuntScheduleText } from './HuntSchedulePreview';
@@ -315,6 +316,9 @@ const Hunts = () => {
                 availableEntityTypes={[HUNT_ENTITY_TYPE]}
                 emptyStateMessage={t_i18n('No hunt matches these filters')}
                 additionalHeaderButtons={[
+                  <Security key="hunt-quick-start" needs={[KNOWLEDGE_KNUPDATE]}>
+                    <HuntQuickStartMenu />
+                  </Security>,
                   <HuntPackExportButton key="hunt-pack-export" selectionOptions={queryPaginationOptions} />,
                   <Security key="hunt-pack-import" needs={[KNOWLEDGE_KNUPDATE]}>
                     <HuntPackImportButton paginationOptions={queryPaginationOptions} />
