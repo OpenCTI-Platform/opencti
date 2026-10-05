@@ -66,7 +66,6 @@ const DAY_MS = 24 * HOUR_MS;
 const SCAN_PAGE_SIZE = 2000;
 // Values per terms clause, below the default index.max_terms_count of the search engine
 const TERMS_CHUNK_SIZE = 10000;
-const MAX_COMBINED_SOURCES_PER_DOCUMENT = 50;
 
 // Soft dependencies on sibling innovations: the joins activate when their attributes exist in the schema
 export const PULSE_INFORMATION_ATTRIBUTE = 'pulse_information'; // innovation 04 (Threat Pulse)
@@ -547,8 +546,9 @@ export const processDocument = (
       if (signals.pulseKnown) acc.community_known_count += 1;
       if (signals.pulseRare) acc.community_rare_count += 1;
     }
-    // Overlap matrix
-    if (inWindow.length >= 2 && inWindow.length <= MAX_COMBINED_SOURCES_PER_DOCUMENT) {
+    // Overlap matrix: every pair counts. The sources of an object are bounded by the assertions kept per element
+    // (MAX_ASSERTIONS_PER_ELEMENT) and its authors, and the lead time above already compares each pair.
+    if (inWindow.length >= 2) {
       const periodPairs = state.pairs.get(period) as Map<string, number>;
       for (let a = 0; a < inWindow.length; a += 1) {
         for (let b = a + 1; b < inWindow.length; b += 1) {

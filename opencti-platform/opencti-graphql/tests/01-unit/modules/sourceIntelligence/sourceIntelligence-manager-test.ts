@@ -23,7 +23,7 @@ import { recommendationFingerprint } from '../../../../src/modules/sourceIntelli
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
 import { RELATION_IN_PIR } from '../../../../src/schema/internalRelationship';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../../src/modules/securityPlatform/securityPlatform-types';
-import { createComputeState, processDocument } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-compute';
+import { buildOverlapShares, createComputeState, processDocument } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-compute';
 import {
   type BasicStoreEntitySource,
   RECOMMENDATION_ADD_CONNECTOR,
@@ -149,6 +149,26 @@ describe('Source intelligence live deletion accounting', () => {
         COUNTERS.forEach((counter) => expect(accumulator[counter] + (removed.get(sourceId)?.[counter] ?? 0)).toBe(0));
       });
     });
+  });
+
+  it('should count every pair of sources of an object asserted by more than 50 sources in the overlap', () => {
+    const ids = Array.from({ length: 60 }, (_, index) => index);
+    const manySources = buildResolverFromSources(ids.map((index) => source(`source-${index}`, 'connector', `connector-${index}`, [`user-${index}`])));
+    const doc = {
+      internal_id: 'indicator-many-sources',
+      entity_type: 'Indicator',
+      created_at: iso(DELETED_AT - 2 * DAY),
+      updated_at: iso(DELETED_AT - DAY),
+      creator_id: ids.map((index) => `user-${index}`),
+    };
+    const state = createComputeState(DELETED_AT);
+    processDocument(state, doc as any, manySources, indicatorSignals, { corroboration_min_other_sources: 1 });
+    const pairs = state.pairs.get('LAST_7_DAYS') as Map<string, number>;
+    expect(pairs.size).toBe((60 * 59) / 2);
+    expect(Array.from(pairs.values()).every((count) => count === 1)).toBe(true);
+    const shares = buildOverlapShares(pairs, 'source-0', 1, 100);
+    expect(shares).toHaveLength(59);
+    expect(shares.every((share) => share.shared_count === 1 && share.share === 1)).toBe(true);
   });
 
   const deleteEvent = {
