@@ -291,3 +291,28 @@ export const validateInputUpdate = async (
     [SEMATTRS_DB_OPERATION]: 'update',
   }, validateInputUpdateFn);
 };
+
+/**
+ * The functional update validator of a type, applied to the edits an upsert writes on a stored element: an upsert
+ * writes them without going through validateInputUpdate, so the edition rules of the type apply here when required.
+ */
+export const validateUpsertInputs = async (
+  context: AuthContext,
+  user: AuthUser,
+  instanceType: string,
+  initial: Record<string, unknown>,
+  editInputs: EditInput[],
+) => {
+  const validator = getEntityValidatorUpdate(instanceType);
+  if (!validator || editInputs.length === 0) {
+    return;
+  }
+  const instanceFromInputs: Record<string, unknown> = {};
+  editInputs.forEach((obj) => {
+    instanceFromInputs[obj.key] = obj.value;
+  });
+  const validate = await validator(context, user, instanceFromInputs, initial, editInputs);
+  if (!validate) {
+    throw UnsupportedError('The input is not valid', { inputs: instanceFromInputs });
+  }
+};

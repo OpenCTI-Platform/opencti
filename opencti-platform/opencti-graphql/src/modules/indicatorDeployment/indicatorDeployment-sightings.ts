@@ -62,3 +62,29 @@ export const suppliedStixIds = (input: Record<string, unknown>) => [input.stix_i
 export const claimedGeneratedPairSighting = (context: AuthContext, input: Record<string, unknown>) => {
   return generatedPairSightingKindOf(context, input, suppliedStixIds(input));
 };
+
+type MatchedSighting = { internal_id?: string; standard_id?: string; x_opencti_stix_ids?: string[] | null };
+
+/**
+ * The existing sightings an ordinary sighting creation of a pair may upsert: a hits or validation result sighting of the
+ * pair is reached by one of its ids only, never because the ordinary sighting shares its endpoints and time window.
+ */
+export const withoutWindowMatchedGeneratedSightings = async <T extends MatchedSighting>(
+  context: AuthContext,
+  input: Record<string, unknown>,
+  inputIds: string[],
+  sightings: T[],
+): Promise<T[]> => {
+  if (sightings.length === 0 || !sightingPair(input)) {
+    return sightings;
+  }
+  const requestedIds = new Set(inputIds);
+  const kept = await Promise.all(sightings.map(async (sighting) => {
+    const stixIds = [sighting.standard_id, ...(sighting.x_opencti_stix_ids ?? [])].filter((id): id is string => typeof id === 'string');
+    if ([sighting.internal_id, ...stixIds].some((id) => !!id && requestedIds.has(id))) {
+      return true;
+    }
+    return (await generatedPairSightingKindOf(context, input, stixIds)) === undefined;
+  }));
+  return sightings.filter((_, index) => kept[index]);
+};

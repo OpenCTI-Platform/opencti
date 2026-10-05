@@ -148,7 +148,12 @@ import {
 } from '../schema/fieldDataAdapter';
 import { isStixCoreRelationship, RELATION_DEPLOYED_ON, RELATION_REVOKED_BY, RELATION_TARGETS, RELATION_USES } from '../schema/stixCoreRelationship';
 import { pairOrganizations } from '../modules/indicatorDeployment/indicatorDeployment-utils';
-import { claimedGeneratedPairSighting, generatedPairSightingKindOf, suppliedStixIds } from '../modules/indicatorDeployment/indicatorDeployment-sightings';
+import {
+  claimedGeneratedPairSighting,
+  generatedPairSightingKindOf,
+  suppliedStixIds,
+  withoutWindowMatchedGeneratedSightings,
+} from '../modules/indicatorDeployment/indicatorDeployment-sightings';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import {
   ATTRIBUTE_ADDITIONAL_NAMES,
@@ -215,7 +220,7 @@ import { getVocabulariesCategories, getVocabularyCategoryForField, isEntityField
 import { depsKeysRegister, isDateAttribute, isMultipleAttribute, isNumericAttribute, isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
 import { fillDefaultValues, getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
-import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
+import { validateInputCreation, validateInputUpdate, validateUpsertInputs } from '../schema/schema-validator';
 import { telemetry } from '../config/tracing';
 import { cleanMarkings, handleMarkingOperations } from '../utils/markingDefinition-utils';
 import { buildUpdatePatchForUpsert, generateInputsForUpsert } from '../utils/upsert-utils';
@@ -3300,8 +3305,9 @@ const upsertElement = async (
   element: BasicStoreBase,
   type: string,
   basePatch: Record<string, any>,
-  opts: { elementAlreadyResolved?: boolean } & UpdateAttributeMetaResolvedOpts = {},
+  upsertOpts: { elementAlreadyResolved?: boolean; validateUpsert?: boolean } & UpdateAttributeMetaResolvedOpts = {},
 ) => {
+  const { validateUpsert, ...opts } = upsertOpts;
   // -- Independent update
   let resolvedElement = element as StoreObject;
   if (!opts.elementAlreadyResolved) {
@@ -3356,6 +3362,9 @@ const upsertElement = async (
     confidence: confidenceForUpsert.confidenceLevelToApply,
   });
   const { inputs } = preparedProvenance;
+  if (validateUpsert && inputs.length > 0) {
+    await validateUpsertInputs(context, user, type, resolvedElement as Record<string, any>, inputs);
+  }
 
   // -- If modifications need to be done, add updated_at and modified
   let upsertResult;
@@ -3378,12 +3387,18 @@ export const getExistingRelations = async (
   context: AuthContext,
   user: AuthUser,
   input: Record<string, any>,
-  opts: { fromRule?: string } = {},
+  opts: { fromRule?: string; idsOnly?: boolean } = {},
 ) => {
   const { from, to, relationship_type: relationshipType } = input;
-  const { fromRule } = opts;
+  const { fromRule, idsOnly } = opts;
   const existingRelationships: StoreProxyRelation[] = [];
-  if (fromRule) {
+  if (idsOnly && !fromRule) {
+    const idsArgs = {
+      indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
+      filters: { mode: FilterMode.And, filters: [{ key: ['ids'], values: getInputIds(relationshipType, input, false) }], filterGroups: [] },
+    };
+    pushAll(existingRelationships, await topRelationsList(context, SYSTEM_USER, relationshipType, idsArgs));
+  } else if (fromRule) {
     // In case inferred rule, try to find the relation with basic filters
     // Only in inferred indices.
     const fromRuleArgs = {
@@ -3516,7 +3531,13 @@ export const createRelationRaw = async (
     // Try to get the lock in redis
     lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
     // region check existing relationship
-    const existingRelationships = await getExistingRelations(context, user, resolvedInput, opts);
+    // A hits or validation result sighting of a pair is identified by its deterministic id only: ordinary sightings
+    // sharing its endpoints and time window never merge into it, nor do two of them merge into each other
+    const claimsGeneratedSighting = relationshipType === STIX_SIGHTING_RELATIONSHIP && !!await claimedGeneratedPairSighting(context, resolvedInput);
+    const matchedRelationships = await getExistingRelations(context, user, resolvedInput, { ...opts, idsOnly: claimsGeneratedSighting });
+    const existingRelationships = relationshipType === STIX_SIGHTING_RELATIONSHIP && !claimsGeneratedSighting && !fromRule
+      ? await withoutWindowMatchedGeneratedSightings(context, resolvedInput, getInputIds(relationshipType, resolvedInput, false), matchedRelationships)
+      : matchedRelationships;
     let existingRelationship = null;
     if (existingRelationships.length > 0) {
       // We need to filter what we found with the user rights
@@ -3561,8 +3582,15 @@ export const createRelationRaw = async (
           upsertOperations: resolvedInput.upsertOperations.filter((operation: { key?: string }) => operation.key !== INPUT_GRANTED_REFS),
         } : {}),
       } : resolvedInput;
+      // What a generated sighting records is changed under its edition rules, whatever id the upsert reached it by
+      const validateUpsert = relationshipType === STIX_SIGHTING_RELATIONSHIP && sharedByPair && opts.bypassValidation !== true;
       // If not upsert the element
-      return upsertElement(context, user, existingRelationship, relationshipType, upsertInput, { ...opts, locks: participantIds, elementAlreadyResolved: true });
+      return upsertElement(context, user, existingRelationship, relationshipType, upsertInput, {
+        ...opts,
+        locks: participantIds,
+        elementAlreadyResolved: true,
+        validateUpsert,
+      });
     }
     // Check cyclic reference consistency for embedded relationships before creation
     if (isStixRefRelationship(relationshipType)) {
@@ -3579,7 +3607,7 @@ export const createRelationRaw = async (
     // organizations of the user or of the input.
     let buildOpts = opts;
     const sharedByPair = relationshipType === RELATION_DEPLOYED_ON
-      || (relationshipType === STIX_SIGHTING_RELATIONSHIP && !opts.grantedRefsFromInput && !!await claimedGeneratedPairSighting(context, resolvedInput));
+      || (!opts.grantedRefsFromInput && claimsGeneratedSighting);
     if (sharedByPair && !opts.grantedRefsFromInput) {
       const organizationIds = pairOrganizations(from, to);
       const organizations = organizationIds.length > 0

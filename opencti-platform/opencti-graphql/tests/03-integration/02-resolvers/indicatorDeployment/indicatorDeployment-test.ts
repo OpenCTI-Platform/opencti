@@ -89,6 +89,11 @@ const SIGHTING_FIELD_PATCH = gql`
     stixSightingRelationshipEdit(id: $id) { fieldPatch(input: $input) { id } }
   }
 `;
+const SIGHTING_ADD = gql`
+  mutation SightingAdd($input: StixSightingRelationshipAddInput!) {
+    stixSightingRelationshipAdd(input: $input) { id }
+  }
+`;
 const DEPLOYMENT_FIELD_PATCH = gql`
   mutation DeploymentFieldPatch($id: ID!, $input: [EditInput]!) {
     stixCoreRelationshipEdit(id: $id) { fieldPatch(input: $input) { id } }
@@ -635,6 +640,92 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
         await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: heldIndicatorId } });
       }
       streamed.forEach((spy) => spy.mockRestore());
+    }
+  });
+
+  it('should keep the hits sighting of a pair apart from the ordinary sightings sharing its time window', async () => {
+    // Neither streamed nor kept: the raw stream counts of the suite are unchanged
+    const streamed = [
+      vi.spyOn(streamHandler, 'storeCreateEntityEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeCreateRelationEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeUpdateEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeDeleteEvent').mockResolvedValue(undefined as never),
+    ];
+    let windowIndicatorId: string | undefined;
+    try {
+      const created = await queryAsAdminWithSuccess({
+        query: INDICATOR_ADD,
+        variables: { input: { name: 'same-window.evil.example', pattern: "[domain-name:value = 'same-window.evil.example']", pattern_type: 'stix', x_opencti_main_observable_type: 'Domain-Name' } },
+      });
+      windowIndicatorId = created.data?.indicatorAdd.id as string;
+      await setOrganizations(windowIndicatorId, [testOrganizationId, platformOrganizationId]);
+      const lastHit = '2026-10-03T10:00:00.000Z';
+      const ordinaryInput = {
+        fromId: windowIndicatorId,
+        toId: platformId,
+        relationship_type: STIX_SIGHTING_RELATIONSHIP,
+        first_seen: lastHit,
+        last_seen: lastHit,
+        x_opencti_negative: false,
+      };
+      // An ordinary sighting of the pair, seen at the time of the hits
+      const ordinary = await createRelation(testContext, ADMIN_USER, { ...ordinaryInput, attribute_count: 7 }) as unknown as { internal_id: string };
+      // The hits report creates the hits sighting of the pair, it never takes the ordinary one over
+      const reported = await queryAsUserWithSuccess(USER_CONNECTOR, {
+        query: REPORT_HITS,
+        variables: { indicatorId: windowIndicatorId, platformId, count: 2, lastHit },
+      });
+      expect(reported.data?.indicatorReportHits.attribute_count).toEqual(2);
+      const hitsStixId = hitsSightingStixId(windowIndicatorId, platformId);
+      const hits = await internalLoadById(testContext, ADMIN_USER, hitsStixId, { type: STIX_SIGHTING_RELATIONSHIP }) as unknown as { internal_id: string };
+      expect(hits.internal_id).not.toEqual(ordinary.internal_id);
+      const untouched = await internalLoadById(testContext, ADMIN_USER, ordinary.internal_id, { type: STIX_SIGHTING_RELATIONSHIP }) as unknown as {
+        attribute_count: number;
+        x_opencti_stix_ids?: string[];
+      };
+      expect(untouched.attribute_count).toEqual(7);
+      expect(untouched.x_opencti_stix_ids ?? []).not.toContain(hitsStixId);
+      // Nor does a later ordinary sighting of the same window merge into the hits sighting
+      const later = await createRelation(testContext, ADMIN_USER, { ...ordinaryInput, attribute_count: 3 }) as unknown as { internal_id: string };
+      expect(later.internal_id).not.toEqual(hits.internal_id);
+      const kept = await internalLoadById(testContext, ADMIN_USER, hits.internal_id, { type: STIX_SIGHTING_RELATIONSHIP }) as unknown as { attribute_count: number };
+      expect(kept.attribute_count).toEqual(2);
+    } finally {
+      if (windowIndicatorId) {
+        await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: windowIndicatorId } });
+      }
+      streamed.forEach((spy) => spy.mockRestore());
+    }
+  });
+
+  it('should apply the edition rules of the hits sighting to an upsert reaching it through another of its ids', async () => {
+    const hitsStixId = hitsSightingStixId(indicatorId, platformId);
+    const before = await internalLoadById(testContext, ADMIN_USER, hitsStixId, { type: STIX_SIGHTING_RELATIONSHIP }) as unknown as {
+      internal_id: string;
+      standard_id: string;
+      x_opencti_stix_ids?: string[];
+      attribute_count: number;
+    };
+    // An id of the sighting that is not its reserved hits sighting id, which the creation checks
+    const otherId = [before.standard_id, ...(before.x_opencti_stix_ids ?? [])].find((id) => id !== hitsStixId);
+    expect(otherId).toBeDefined();
+    const platformOrganizations = await loadOrganizations(platformId);
+    const sightingOrganizations = await loadOrganizations(before.internal_id, STIX_SIGHTING_RELATIONSHIP);
+    // Side-channel only, so the raw stream counts of the suite are unchanged; the editor reads the pair meanwhile
+    await setOrganizations(platformId, [testOrganizationId]);
+    await setOrganizations(before.internal_id, [testOrganizationId]);
+    try {
+      await queryAsUserIsExpectedForbidden(USER_EDITOR, {
+        query: SIGHTING_ADD,
+        variables: {
+          input: { fromId: indicatorId, toId: platformId, stix_id: otherId, attribute_count: before.attribute_count + 10, x_opencti_negative: false, update: true },
+        },
+      });
+      const after = await internalLoadById(testContext, ADMIN_USER, before.internal_id, { type: STIX_SIGHTING_RELATIONSHIP }) as unknown as { attribute_count: number };
+      expect(after.attribute_count).toEqual(before.attribute_count);
+    } finally {
+      await setOrganizations(before.internal_id, sightingOrganizations);
+      await setOrganizations(platformId, platformOrganizations);
     }
   });
 
