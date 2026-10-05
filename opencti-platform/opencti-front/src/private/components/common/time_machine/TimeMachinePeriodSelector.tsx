@@ -3,7 +3,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Box } from '@mui/material';
 import DateTimePicker from '../../../../components/common/input/DateTimePicker';
 import { useFormatter } from '../../../../components/i18n';
-import { DateRange, presetLabel, presetRange, TIME_MACHINE_PRESETS, TimeMachinePreset } from './timeMachineUtils';
+import { DateRange, presetLabel, presetRange, TIME_MACHINE_PRESETS, TimeMachinePreset, toComparableRange } from './timeMachineUtils';
 
 export const CUSTOM_PERIOD = 'custom';
 
@@ -43,9 +43,12 @@ const TimeMachinePeriodSelector = ({
     onChange(extra ? extra.range : presetRange(key as TimeMachinePreset));
   };
   const handleDate = (field: keyof DateRange, date: Date | null) => {
-    if (date && !Number.isNaN(date.getTime())) {
+    if (!date || Number.isNaN(date.getTime())) return;
+    // The pickers accept equal ends; the diff APIs need a start strictly before the end
+    const next = toComparableRange(field === 'from' ? date.toISOString() : value.from, field === 'to' ? date.toISOString() : value.to);
+    if (next) {
       setPresetKey(CUSTOM_PERIOD);
-      onChange({ ...value, [field]: date.toISOString() });
+      onChange(next);
     }
   };
   return (

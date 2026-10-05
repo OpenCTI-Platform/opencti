@@ -34,6 +34,7 @@ import {
   presetRange,
   type TimeMachinePreset,
   TO_SEARCH_PARAM,
+  toComparableRange,
 } from './timeMachineUtils';
 import { EntityDiffTabQuery, EntityDiffTabQuery$data } from './__generated__/EntityDiffTabQuery.graphql';
 import { timeMachineSliderTimelineQuery } from './TimeMachineSlider';
@@ -482,12 +483,10 @@ const EntityDiffTab = ({ entityId }: EntityDiffTabProps) => {
     const from = searchParams.get(FROM_SEARCH_PARAM);
     const to = searchParams.get(TO_SEARCH_PARAM);
     const fallback = presetRange('30d');
-    return {
-      from: isValidDate(from) ? from : fallback.from,
-      to: isValidDate(to) ? to : fallback.to,
-    };
+    // An empty or reversed period (a hand-edited or future-only link) opens the default one
+    return toComparableRange(isValidDate(from) ? from : fallback.from, isValidDate(to) ? to : fallback.to) ?? fallback;
   }, [searchParams]);
-  const hasCompleteRange = isValidDate(searchParams.get(FROM_SEARCH_PARAM)) && isValidDate(searchParams.get(TO_SEARCH_PARAM));
+  const hasCompleteRange = toComparableRange(searchParams.get(FROM_SEARCH_PARAM), searchParams.get(TO_SEARCH_PARAM)) !== null;
   const lastVisit = searchParams.get(LAST_VISIT_SEARCH_PARAM);
   const extraPresets = useMemo(() => (isValidDate(lastVisit)
     ? [{ key: LAST_VISIT_PRESET, label: t_i18n('Since your last visit'), range: { from: lastVisit, to: new Date().toISOString() } }]

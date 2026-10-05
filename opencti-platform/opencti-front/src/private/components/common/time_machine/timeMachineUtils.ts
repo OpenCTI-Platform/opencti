@@ -39,11 +39,12 @@ export const presetRange = (preset: TimeMachinePreset, now: Date = new Date()): 
 };
 
 /**
- * Default period of the landscape widgets (last 30 days), ending on the next minute boundary: both ends stay the same
- * for a whole minute, so the widgets of a dashboard share the summary the platform caches per minute.
+ * Default period of the landscape widgets (last 30 days), ending at the start of the current minute: both ends stay the
+ * same for a whole minute and the end is already past, so the summary the platform computed for the first widget covers
+ * it and the other widgets of the dashboard reuse it (a future end is clamped to the time of each request instead).
  */
 export const widgetDefaultRange = (now: Date = new Date()): DateRange => {
-  return presetRange('30d', new Date(Math.ceil(now.getTime() / 60000) * 60000));
+  return presetRange('30d', new Date(Math.floor(now.getTime() / 60000) * 60000));
 };
 
 export const presetLabel = (preset: TimeMachinePreset): string => {
@@ -67,6 +68,16 @@ export const presetLabel = (preset: TimeMachinePreset): string => {
 
 export const isValidDate = (value: string | null | undefined): value is string => {
   return !!value && !Number.isNaN(new Date(value).getTime());
+};
+
+/**
+ * The period to compare, or null when it is empty: the end moves back to `now` (the time machine never looks into the
+ * future) and the start must be strictly before it, as the diff APIs require.
+ */
+export const toComparableRange = (from: string | null | undefined, to: string | null | undefined, now: Date = new Date()): DateRange | null => {
+  if (!isValidDate(from) || !isValidDate(to)) return null;
+  const end = new Date(to).getTime() > now.getTime() ? now.toISOString() : to;
+  return new Date(from).getTime() < new Date(end).getTime() ? { from, to: end } : null;
 };
 
 // region Changes tab URL: the section, then its own parameters (period of the comparison, date of the as-of view)

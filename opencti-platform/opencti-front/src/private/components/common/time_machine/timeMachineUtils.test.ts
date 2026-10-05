@@ -34,6 +34,7 @@ import {
   sinceLastVisitSearch,
   TIME_MACHINE_PRESETS,
   valuesToText,
+  toComparableRange,
   widgetDefaultRange,
 } from './timeMachineUtils';
 
@@ -360,12 +361,24 @@ describe('Counts and widget periods', () => {
     expect(formatDuration(-5_000, format)).toEqual('0 second');
   });
 
-  it('should keep the default widget period stable for a whole minute', () => {
+  it('should keep a comparable period only, its end moved back to now', () => {
+    const now = new Date('2026-10-05T12:00:00.000Z');
+    expect(toComparableRange('2026-10-01T00:00:00.000Z', '2026-10-02T00:00:00.000Z', now)).toEqual({ from: '2026-10-01T00:00:00.000Z', to: '2026-10-02T00:00:00.000Z' });
+    expect(toComparableRange('2026-10-01T00:00:00.000Z', '2026-11-01T00:00:00.000Z', now)).toEqual({ from: '2026-10-01T00:00:00.000Z', to: '2026-10-05T12:00:00.000Z' });
+    // Equal, reversed, future-only and unreadable periods are empty
+    expect(toComparableRange('2026-10-01T00:00:00.000Z', '2026-10-01T00:00:00.000Z', now)).toBeNull();
+    expect(toComparableRange('2026-10-02T00:00:00.000Z', '2026-10-01T00:00:00.000Z', now)).toBeNull();
+    expect(toComparableRange('2026-10-06T00:00:00.000Z', '2026-10-07T00:00:00.000Z', now)).toBeNull();
+    expect(toComparableRange('not-a-date', '2026-10-02T00:00:00.000Z', now)).toBeNull();
+    expect(toComparableRange('2026-10-01T00:00:00.000Z', null, now)).toBeNull();
+  });
+
+  it('should keep the default widget period stable for a whole minute, ending at its start', () => {
     const early = widgetDefaultRange(new Date('2026-10-03T22:40:05.123Z'));
     const late = widgetDefaultRange(new Date('2026-10-03T22:40:59.999Z'));
     expect(early).toEqual(late);
-    expect(early.to).toEqual('2026-10-03T22:41:00.000Z');
-    expect(early.from).toEqual('2026-09-03T22:41:00.000Z');
+    expect(early.to).toEqual('2026-10-03T22:40:00.000Z');
+    expect(early.from).toEqual('2026-09-03T22:40:00.000Z');
     expect(widgetDefaultRange(new Date('2026-10-03T22:41:00.000Z')).to).toEqual('2026-10-03T22:41:00.000Z');
   });
 });
