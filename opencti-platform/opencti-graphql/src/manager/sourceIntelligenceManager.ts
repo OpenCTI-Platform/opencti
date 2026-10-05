@@ -3,7 +3,7 @@ import conf, { booleanConf, logApp } from '../config/conf';
 import { executionContext, SOURCE_INTELLIGENCE_MANAGER_USER, SYSTEM_USER } from '../utils/access';
 import type { AuthContext } from '../types/user';
 import type { DataEvent, SseEvent, UpdateEvent } from '../types/event';
-import { fetchStreamEventsRangeFromEventId } from '../database/stream/stream-handler';
+import { fetchStreamEventsRangeFromEventId, fetchStreamInfo } from '../database/stream/stream-handler';
 import { publishCacheResetEvent, redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
 import { getEntitiesListFromCache } from '../database/cache';
 import { internalFindByIds } from '../database/middleware-loader';
@@ -80,6 +80,21 @@ const STREAM_ID_MAX_SEQUENCE = '18446744073709551615';
 
 /** Stream position right after every event of the given time and before. */
 export const streamBoundaryOf = (time: number) => `${time}-${STREAM_ID_MAX_SEQUENCE}`;
+
+/**
+ * Last event of the stream, read before a full computation scans: every event up to it was written before the scan
+ * started, so the stream resumes right after it and never skips an event the scan could not see. A stream that cannot
+ * be read (empty) falls back to the end of the given time.
+ */
+export const streamHighWaterMark = async (time: number): Promise<string> => {
+  try {
+    const { lastEventId } = await fetchStreamInfo();
+    return lastEventId || streamBoundaryOf(time);
+  } catch (err) {
+    logApp.warn('[OPENCTI-MODULE] Source intelligence could not read the stream position, using the computation time', { cause: err });
+    return streamBoundaryOf(time);
+  }
+};
 
 const parseStreamEventId = (id: string): [bigint, bigint] => {
   const [time, sequence] = id.split('-');
@@ -517,7 +532,7 @@ const computeAndStore = async (
   settings: SourceIntelligenceSettings,
   sources: BasicStoreEntitySource[],
   asOf: number,
-  options: { live: boolean; snapshot: boolean; enterprise: boolean },
+  options: { live: boolean; snapshot: boolean; enterprise: boolean; streamBoundary?: string },
 ) => {
   // Every source takes part in the attribution, so that disabling a source does not inflate the uniqueness of the others
   const resolver = buildResolverFromSources(sources);
@@ -541,7 +556,7 @@ const computeAndStore = async (
   }
   // The live scorecards count every event up to the computation time: they carry its stream boundary, pending until
   // the stream cursor passes it, so a replay after an interruption skips the events they already count
-  const boundary = streamBoundaryOf(asOf);
+  const boundary = options.streamBoundary ?? streamBoundaryOf(asOf);
   const documents = built.map((doc) => (doc.is_live ? { ...doc, live_stream_event_id: boundary } : doc));
   const cursor = await redisGetManagerEventState(SOURCE_INTELLIGENCE_MANAGER_CONTEXT);
   if (laterStreamEventId(cursor, boundary) === boundary) {
@@ -557,13 +572,14 @@ export const runFullComputation = async (context: AuthContext, settings: SourceI
   try {
     const enterprise = await isEnterpriseEdition(context);
     const sources = await syncSources(context, settings);
-    const { tracked, state, documents } = await computeAndStore(context, settings, sources, now, { live: true, snapshot: true, enterprise });
+    const streamBoundary = await streamHighWaterMark(now);
+    const { tracked, state, documents } = await computeAndStore(context, settings, sources, now, { live: true, snapshot: true, enterprise, streamBoundary });
     const trace: ScanTrace = { started_at: now, pages: state.scanPages };
     await updateSourceIntelligenceState({ last_scan_trace: JSON.stringify(trace) });
-    // The live scorecards now count everything up to the computation time: the stream resumes after it, so the events
-    // the scan already counted are never applied again and the later ones are kept
+    // The live scorecards now count everything written before the scan: the stream resumes after its last event then,
+    // so the events the scan already counted are never applied again and the later ones are kept
     const cursor = await redisGetManagerEventState(SOURCE_INTELLIGENCE_MANAGER_CONTEXT);
-    await redisSetManagerEventState(SOURCE_INTELLIGENCE_MANAGER_CONTEXT, laterStreamEventId(cursor, streamBoundaryOf(now)));
+    await redisSetManagerEventState(SOURCE_INTELLIGENCE_MANAGER_CONTEXT, laterStreamEventId(cursor, streamBoundary));
     await redisSetManagerEventState(SOURCE_INTELLIGENCE_PENDING_BATCH, '');
     const computedAt = new Date(now).toISOString();
     const references = new Map(documents
