@@ -28,6 +28,8 @@ interface ObservableTypesFieldProps {
   style?: Record<string, string | number>;
   disabled?: boolean;
   required?: boolean;
+  /** A secondary action at the end of the label row */
+  labelAction?: ReactNode;
 }
 const ObservableTypesField: FunctionComponent<ObservableTypesFieldProps> = ({
   name,
@@ -39,6 +41,7 @@ const ObservableTypesField: FunctionComponent<ObservableTypesFieldProps> = ({
   style,
   disabled,
   required = false,
+  labelAction,
 }) => {
   const classes = useStyles();
   const { t_i18n } = useFormatter();
@@ -57,6 +60,7 @@ const ObservableTypesField: FunctionComponent<ObservableTypesFieldProps> = ({
       helperText={helperText}
       placeholder={placeholder}
       required={required}
+      labelAction={labelAction}
       options={allObservableTypes}
       getOptionLabel={(option: string) => t_i18n(`entity_${option}`)}
       onChange={typeof onChange === 'function' ? onChange : null}

@@ -11,7 +11,6 @@ import EditEntityControlledDial from '../../../components/EditEntityControlledDi
 import FormButtonContainer from '../../../components/common/form/FormButtonContainer';
 import Loader, { LoaderVariant } from '../../../components/Loader';
 import TextField from '../../../components/TextField';
-import TextareaField from '../../../components/TextareaField';
 import SwitchField from '../../../components/fields/SwitchField';
 import SelectFieldFds, { SelectItem } from '../../../components/fields/SelectFieldFds';
 import MarkdownField from '../../../components/fields/markdownField/MarkdownField';
@@ -58,6 +57,9 @@ import {
 } from './hunt-utils';
 import { HuntHelp } from './HuntLearnMore';
 import HuntEELabel from './HuntEELabel';
+import HuntBenignPatternsField from './HuntBenignPatternsField';
+import { HuntAIAction, HuntAIAssistProvider, HuntPlanWithAIAction } from './HuntAIAssist';
+import type { HuntAIFormValues } from './hunt-ai-utils';
 import { HuntEdition_hunt$data, HuntEdition_hunt$key } from './__generated__/HuntEdition_hunt.graphql';
 import { HuntEditionQuery } from './__generated__/HuntEditionQuery.graphql';
 import { HuntEditionFieldPatchMutation } from './__generated__/HuntEditionFieldPatchMutation.graphql';
@@ -154,6 +156,9 @@ export const huntEditionFocusMutation = graphql`
     }
   }
 `;
+
+// The logic and the indicators of a hunt are edited in its Logic tab: this form holds them empty, they are neither sent nor proposed
+const EDITION_HIDDEN_AI_FIELDS: (keyof HuntAIFormValues)[] = ['sigma_rule', 'native_queries', 'iocElements', 'iocEntities'];
 
 const toFormValues = (hunt: HuntEdition_hunt$data): HuntFormValues => ({
   ...emptyHuntFormValues(),
@@ -255,127 +260,130 @@ const HuntEditionForm = ({ data, onClose }: HuntEditionFormProps) => {
     <Formik<HuntFormValues> initialValues={initialValues} validationSchema={validation} onSubmit={onSubmit}>
       {({ submitForm, isSubmitting, setFieldValue, values }) => (
         <Form data-testid="hunt-edition-form">
-          <Field component={TextField} variant="outlined" name="name" label={t_i18n('Name')} required fullWidth />
-          <Field
-            component={MarkdownField}
-            name="hypothesis"
-            label={t_i18n('Hypothesis')}
-            required={mandatoryAttributes.includes('hypothesis')}
-            fullWidth
-            multiline
-            rows="3"
-            style={fieldSpacingContainerStyle}
-            autoPersistOnBlur={false}
-          />
-          <Field
-            component={MarkdownField}
-            name="description"
-            label={t_i18n('Description')}
-            required={mandatoryAttributes.includes('description')}
-            fullWidth
-            multiline
-            rows="4"
-            style={fieldSpacingContainerStyle}
-            autoPersistOnBlur={false}
-          />
-          <div style={fieldSpacingContainerStyle}>
-            <Field component={SelectFieldFds} name="hunt_type" label={t_i18n('Hunt type')} fullWidth helpertext={<HuntHelp text={t_i18n(huntTypeDescription(values.hunt_type))} href={HUNT_DOCS.types} />}>
-              {HUNT_TYPES.map((huntType) => (
-                <SelectItem key={huntType} value={huntType}>{t_i18n(huntTypeLabel(huntType))}</SelectItem>
-              ))}
-            </Field>
-          </div>
-          {values.hunt_type !== 'infrastructure' && (
-            <HuntEntitiesField
-              name="scopePlatforms"
-              label={t_i18n('Security platforms (empty for all)')}
-              types={HUNT_SCOPE_TYPES}
-              helpertext={t_i18n('Where the hunt runs: its hunt connectors execute it on these platforms. Left empty, every hunt-capable platform.')}
+          <HuntAIAssistProvider huntId={hunt.id} hiddenFields={EDITION_HIDDEN_AI_FIELDS} reasonInHeader>
+            <Field component={TextField} variant="outlined" name="name" label={t_i18n('Name')} required fullWidth />
+            <div style={fieldSpacingContainerStyle}>
+              <Field
+                component={SelectFieldFds}
+                name="hunt_type"
+                label={t_i18n('Hunt type')}
+                fullWidth
+                helpertext={<HuntHelp text={t_i18n(huntTypeDescription(values.hunt_type))} href={HUNT_DOCS.types} />}
+                labelAction={<HuntPlanWithAIAction />}
+              >
+                {HUNT_TYPES.map((huntType) => (
+                  <SelectItem key={huntType} value={huntType}>{t_i18n(huntTypeLabel(huntType))}</SelectItem>
+                ))}
+              </Field>
+            </div>
+            <Field
+              component={MarkdownField}
+              name="hypothesis"
+              label={t_i18n('Hypothesis')}
+              required={mandatoryAttributes.includes('hypothesis')}
+              fullWidth
+              multiline
+              rows="3"
               style={fieldSpacingContainerStyle}
+              autoPersistOnBlur={false}
+              labelAction={<HuntAIAction request={{ kind: 'hypothesis' }} testId="hunt-hypothesis-generate" />}
             />
-          )}
-          <div style={fieldSpacingContainerStyle}>
-            <HuntScheduleField />
-          </div>
-          {values.schedule_mode === 'standing' && <HuntTriggerFiltersField filtersState={triggerFiltersState} />}
-          <div style={fieldSpacingContainerStyle}>
             <Field
-              component={SwitchField}
-              type="checkbox"
-              name="hunt_pir_activation"
-              label={<HuntEELabel label={t_i18n('Activate when a PIR flags one of its targets')} feature={t_i18n('PIR activation')} />}
-              helpertext={<HuntHelp text={t_i18n('The hunt runs when a PIR flags one of its targeted threats. Off, a PIR does not trigger it.')} href={HUNT_DOCS.pir} />}
-              disabled={!isEnterpriseEdition}
+              component={MarkdownField}
+              name="description"
+              label={t_i18n('Description')}
+              required={mandatoryAttributes.includes('description')}
+              fullWidth
+              multiline
+              rows="4"
+              style={fieldSpacingContainerStyle}
+              autoPersistOnBlur={false}
+              labelAction={<HuntAIAction request={{ kind: 'description' }} testId="hunt-description-generate" />}
             />
-          </div>
-          <div style={{ ...fieldSpacingContainerStyle, display: 'flex', gap: theme.spacing(2) }}>
-            <div style={{ flex: 1 }}>
+            {values.hunt_type !== 'infrastructure' && (
+              <HuntEntitiesField
+                name="scopePlatforms"
+                label={t_i18n('Security platforms (empty for all)')}
+                types={HUNT_SCOPE_TYPES}
+                helpertext={t_i18n('Where the hunt runs: its hunt connectors execute it on these platforms. Left empty, every hunt-capable platform.')}
+                style={fieldSpacingContainerStyle}
+              />
+            )}
+            <div style={fieldSpacingContainerStyle}>
+              <HuntScheduleField />
+            </div>
+            {values.schedule_mode === 'standing' && <HuntTriggerFiltersField filtersState={triggerFiltersState} />}
+            <div style={fieldSpacingContainerStyle}>
               <Field
-                component={TextField}
-                variant="outlined"
-                type="number"
-                name="time_window_hours"
-                label={values.hunt_type === 'indicators' ? t_i18n('Look back (hours)') : t_i18n('Time window (hours)')}
-                helperText={<HuntHelp text={t_i18n('The period of telemetry each run searches, ending when it starts, for example 168 for 7 days')} href={HUNT_DOCS.runHunt} />}
-                fullWidth
-                required
+                component={SwitchField}
+                type="checkbox"
+                name="hunt_pir_activation"
+                label={<HuntEELabel label={t_i18n('Activate when a PIR flags one of its targets')} feature={t_i18n('PIR activation')} />}
+                helpertext={<HuntHelp text={t_i18n('The hunt runs when a PIR flags one of its targeted threats. Off, a PIR does not trigger it.')} href={HUNT_DOCS.pir} />}
+                disabled={!isEnterpriseEdition}
               />
             </div>
-            <div style={{ flex: 1 }}>
-              <Field
-                component={TextField}
-                variant="outlined"
-                type="number"
-                name="escalation_threshold"
-                label={t_i18n('Escalation threshold (hits)')}
-                helperText={<HuntHelp text={t_i18n('From this number of hits, a run proposes an incident, for example 10')} href={HUNT_DOCS.runs} />}
-                fullWidth
-                required
-              />
+            <div style={{ ...fieldSpacingContainerStyle, display: 'flex', gap: theme.spacing(2) }}>
+              <div style={{ flex: 1 }}>
+                <Field
+                  component={TextField}
+                  variant="outlined"
+                  type="number"
+                  name="time_window_hours"
+                  label={values.hunt_type === 'indicators' ? t_i18n('Look back (hours)') : t_i18n('Time window (hours)')}
+                  helperText={<HuntHelp text={t_i18n('The period of telemetry each run searches, ending when it starts, for example 168 for 7 days')} href={HUNT_DOCS.runHunt} />}
+                  fullWidth
+                  required
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <Field
+                  component={TextField}
+                  variant="outlined"
+                  type="number"
+                  name="escalation_threshold"
+                  label={t_i18n('Escalation threshold (hits)')}
+                  helperText={<HuntHelp text={t_i18n('From this number of hits, a run proposes an incident, for example 10')} href={HUNT_DOCS.runs} />}
+                  fullWidth
+                  required
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <Field
+                  component={TextField}
+                  variant="outlined"
+                  type="number"
+                  name="hunt_max_results"
+                  label={t_i18n('Maximum results per run')}
+                  helperText={<HuntHelp text={t_i18n('Results a run reads at most. Left empty, {count}.', { values: { count: String(HUNT_DEFAULT_MAX_RESULTS) } })} href={HUNT_DOCS.runs} />}
+                  fullWidth
+                />
+              </div>
             </div>
-            <div style={{ flex: 1 }}>
-              <Field
-                component={TextField}
-                variant="outlined"
-                type="number"
-                name="hunt_max_results"
-                label={t_i18n('Maximum results per run')}
-                helperText={<HuntHelp text={t_i18n('Results a run reads at most. Left empty, {count}.', { values: { count: String(HUNT_DEFAULT_MAX_RESULTS) } })} href={HUNT_DOCS.runs} />}
-                fullWidth
-              />
-            </div>
-          </div>
-          <HuntRunProducesSection huntType={values.hunt_type} />
-          <div style={fieldSpacingContainerStyle}>
-            <Field
-              component={TextareaField}
-              name="benign_patterns"
-              label={t_i18n('Benign patterns (one per line)')}
-              rows={3}
-              helperText={<HuntHelp text={t_i18n('Known legitimate activity the triage must not escalate, for example a backup service account')} href={HUNT_DOCS.runs} />}
-            />
-          </div>
-          <HuntFormSectionTitle>{t_i18n('Knowledge')}</HuntFormSectionTitle>
-          <HuntEntitiesField name="huntTargets" label={t_i18n('Targeted threats')} types={HUNT_TARGET_TYPES} style={fieldSpacingContainerStyle} />
-          <HuntEntitiesField name="huntTechniques" label={t_i18n('Covered techniques')} types={HUNT_TECHNIQUE_TYPES} style={fieldSpacingContainerStyle} />
-          {values.hunt_type !== 'indicators' && initialValues.hunt_type !== 'indicators' && (
-            <HuntEntitiesField name="huntSources" label={t_i18n('Based on (indicators, reports)')} types={HUNT_SOURCE_TYPES} style={fieldSpacingContainerStyle} />
-          )}
-          {(values.hunt_type === 'indicators' || initialValues.hunt_type === 'indicators') && (
-            <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(2), color: theme.palette.text.secondary }}>
-              {t_i18n('What an indicator hunt looks for is edited in its Logic tab.')}
-            </Text>
-          )}
-          <CreatedByField name="createdBy" required={mandatoryAttributes.includes('createdBy')} style={fieldSpacingContainerStyle} setFieldValue={setFieldValue} />
-          <ObjectMarkingField name="objectMarking" required={mandatoryAttributes.includes('objectMarking')} style={fieldSpacingContainerStyle} setFieldValue={setFieldValue} />
-          <FormButtonContainer>
-            <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
-              {t_i18n('Cancel')}
-            </Button>
-            <Button onClick={submitForm} disabled={isSubmitting} data-testid="hunt-edition-submit">
-              {t_i18n('Update')}
-            </Button>
-          </FormButtonContainer>
+            <HuntRunProducesSection huntType={values.hunt_type} />
+            <HuntBenignPatternsField style={fieldSpacingContainerStyle} />
+            <HuntFormSectionTitle>{t_i18n('Knowledge')}</HuntFormSectionTitle>
+            <HuntEntitiesField name="huntTargets" label={t_i18n('Targeted threats')} types={HUNT_TARGET_TYPES} style={fieldSpacingContainerStyle} />
+            <HuntEntitiesField name="huntTechniques" label={t_i18n('Covered techniques')} types={HUNT_TECHNIQUE_TYPES} style={fieldSpacingContainerStyle} />
+            {values.hunt_type !== 'indicators' && initialValues.hunt_type !== 'indicators' && (
+              <HuntEntitiesField name="huntSources" label={t_i18n('Based on (indicators, reports)')} types={HUNT_SOURCE_TYPES} style={fieldSpacingContainerStyle} />
+            )}
+            {(values.hunt_type === 'indicators' || initialValues.hunt_type === 'indicators') && (
+              <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(2), color: theme.palette.text.secondary }}>
+                {t_i18n('What an indicator hunt looks for is edited in its Logic tab.')}
+              </Text>
+            )}
+            <CreatedByField name="createdBy" required={mandatoryAttributes.includes('createdBy')} style={fieldSpacingContainerStyle} setFieldValue={setFieldValue} />
+            <ObjectMarkingField name="objectMarking" required={mandatoryAttributes.includes('objectMarking')} style={fieldSpacingContainerStyle} setFieldValue={setFieldValue} />
+            <FormButtonContainer>
+              <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
+                {t_i18n('Cancel')}
+              </Button>
+              <Button onClick={submitForm} disabled={isSubmitting} data-testid="hunt-edition-submit">
+                {t_i18n('Update')}
+              </Button>
+            </FormButtonContainer>
+          </HuntAIAssistProvider>
         </Form>
       )}
     </Formik>

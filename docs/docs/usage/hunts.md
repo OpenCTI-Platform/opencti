@@ -76,7 +76,7 @@ The checklist **Before your first hunt** shows the live state of each prerequisi
 From **Defense > Hunts**, click the creation button and fill in:
 
 - the name, the description and the **hypothesis**,
-- the **Sigma rule**: it is validated while you type, the platform reports the parsing errors, the detection fields and the ATT&CK techniques found in its tags. Techniques found in the tags are linked to the hunt automatically. **Generate with AI**, next to its label, writes the rule with XTM One (see [AI assistance](#ai-assistance)),
+- the **Sigma rule**: it is validated while you type, the platform reports the parsing errors, the detection fields and the ATT&CK techniques found in its tags. Techniques found in the tags are linked to the hunt automatically. **Generate with AI**, next to its label, proposes the rule with XTM One (see [Generate with AI](#generate-with-ai)),
 - optional **native queries**, one per platform, executed verbatim instead of the translated Sigma rule (**Add a native query**, next to the label),
 - the **targets** (threats) and the **sources** (indicators, reports) of the hunt,
 - the **time window** searched by each run (24 hours by default),
@@ -217,11 +217,7 @@ Analysts set the final verdict from the run, with an optional feedback. Hunt sta
     AI assistance for hunts is available under the **OpenCTI Enterprise Edition** licence and requires XTM One. Please read the [dedicated page](../administration/enterprise.md) for full details.
 
 - **Plan a hunt**: from the **Ask AI** menu of a threat, a report or an indicator, the hunt planner agent of XTM One designs a hunt (hypothesis, Sigma rule, native queries, benign patterns, threshold) from the knowledge about the entity and the security platforms available. The hunt is created in a draft workspace for review, with the status **Draft**: validating the workspace creates it, and it runs only once an analyst activates it. When the hunt is planned from restricted intelligence (markings or organizations), the workspace gets a neutral name and description, so the name and hypothesis of the hunt are only shown to the users who can read it. The hunt carries the markings of the intelligence it references and is shared only with the organizations that intelligence all shares; the workspace is then restricted to those organizations and to the user who asked for the hunt. Planning is refused when the intelligence shares no organization, or when the user cannot restrict access to organizations. Through the API (`huntPlan` with `security_platform_ids`), a hunt can be planned for specific security platforms: the planner writes for those platforms only, the proposed hunt is scoped to them, and planning is refused when one of them cannot be found.
-- **Generate the Sigma rule**: **Generate with AI**, next to the label of the Sigma rule in the creation drawer and in the **Logic** tab, asks XTM One for the rule of the hunt being written, from its name and hypothesis, its targeted threats, its covered techniques and its security platforms (with the languages of their hunt connectors); a rule already in the editor is refined rather than replaced. The rule replaces the content of the editor with an **Undo**, and nothing is saved: the platform validates it as you type, and in the **Logic** tab **Save and preview** saves the logic and asks a hunt connector for the query it would run. The action is disabled, with the reason next to it, when XTM One is not configured or when the hunt has no hypothesis, threat or technique yet. Through the API, `huntSigmaGenerate` returns the rule and its validation; it requires the knowledge update capability and is recorded in the activity of the user.
-
-    ![A Sigma rule written with XTM One in the creation drawer, with its Undo and the live validation](assets/hunt-drawer-sigma-generated.png)
-
-    ![Generate with AI disabled, with its reason, when XTM One is not configured](assets/hunt-drawer-sigma-unavailable.png)
+- **Generate with AI and Plan with AI**: the hunt forms write their fields with the hunt planner of XTM One, see [Generate with AI](#generate-with-ai) below.
 - **Triage**: runs with hits can be sent to the hunt triage agent, with whether the platform returned partial results (the hit count is then a lower bound). Its answer is stored as a **proposed verdict** with a confidence from 0 to 100 (shown as "Confidence not assessed" when the agent cannot weigh the evidence, never replaced by a number) and a rationale; it is never applied automatically, the analyst decides. Accepting the proposal records the verdict as the agent's; any other verdict, whether set from the run, through the API or by an XTM One agent on request, is recorded as the decision of the analyst who sets it.
 
 A hunt proposed by an agent, or imported from XTM Hub, opens with a banner listing what remains before it can run: review the hypothesis and the logic, add the logic it lacks, switch an autonomous schedule to manual without the Enterprise Edition, validate the draft workspace. Once the hunt has its logic and can run outside a draft workspace, the banner offers **Activate the hunt**.
@@ -229,6 +225,37 @@ A hunt proposed by an agent, or imported from XTM Hub, opens with a banner listi
 ![Draft banner of a hunt proposed by an agent: what remains before it runs](assets/hunt-draft-banner.png)
 
 Every answer is checked by XTM One against the hunt contract before it is returned, and again by OpenCTI. When an agent cannot produce an answer that passes its own check, OpenCTI reports the reasons the agent listed instead of an answer.
+
+### Generate with AI
+
+The creation drawer, the edition drawer, the guided Sigma hunt and the **Logic** tab share the same AI help, from the hunt planner of XTM One:
+
+- **Generate with AI on a field**: at the end of the label row of every field the planner can fill - **Hypothesis**, **Description**, **Sigma rule**, each **Native query** once its platform and query language are chosen, **Observables to extract from hits** and **Benign patterns**.
+- **Plan with AI**: in the form header, next to the hunt type, the whole plan at once - the name when the hunt has none, the hypothesis, the description, the Sigma rule or the native queries, the observables to extract, benign patterns and techniques.
+
+**What it uses.** The whole form: the name, the hunt type, the targeted threats, the covered techniques, the indicators and reports the hunt is based on, the security platforms with the query languages of their hunt connectors, and every field already filled (a Sigma rule being edited is refined rather than replaced). In the **Logic** tab, the saved hunt completes what the tab does not show. The planner also looks up in the knowledge of the platform what the name or the hypothesis mentions. A name is enough to start; when the form says nothing yet, the dialog first asks **What do you want to hunt?** and the planner starts from your words.
+
+**What it proposes.** While the planner works, the dialog shows what it is doing and the elapsed time, with **Cancel**. Its answer is a proposal: the field you asked for, which you can edit, the reason the planner gives, and under **Also add** what the same answer implies for the empty fields of the form (for example the hypothesis or the name when you asked for the Sigma rule) and the ATT&CK techniques it named that exist on the platform. In a plan, each part has its box; the parts that would replace what you wrote are unchecked until you check them.
+
+**What you accept.** Nothing changes in the form until you click **Accept**: the field you asked for takes the proposal as you left it, and each **Also add** chip you clicked adds its value (observables, benign patterns and techniques are added to the ones already there). **Regenerate** asks again, **Dismiss** leaves the form as it was. Nothing is saved before you create or update the hunt, or save its logic; in the **Logic** tab, **Save and preview** saves the logic and asks a hunt connector for the query it would run.
+
+![Generate with AI on the Sigma rule: the rule to review, and what the same answer implies for the empty fields under Also add](assets/hunt-drawer-ai-proposal.png)
+
+![Plan with AI from an empty form: the dialog first asks what to hunt](assets/hunt-drawer-ai-prompt.png)
+
+![The plan as one proposal: each part has its box, the techniques are added when checked](assets/hunt-drawer-ai-plan.png)
+
+![The Sigma rule once accepted, with the live validation of the platform](assets/hunt-drawer-sigma-generated.png)
+
+**When it is unavailable or fails.** The actions are disabled only when XTM One is not configured on the platform: the drawer header says so once, with **Open the settings** for an administrator or **Ask your administrator** for anyone else, and each field repeats the reason on hover and focus; the **Logic** tab and the guided hunt say it next to the action. A failure names its cause and the next step, with **Retry**: XTM One cannot be reached or did not answer in time, it refused the credentials of the platform, its AI quota is used up, it could not run the agent (most often because no AI model is configured in XTM One, under Settings > AI Models), no agent is bound to the hunt planner intents, or the answer did not pass the checks of the platform.
+
+![The progress of the planner, with Cancel](assets/hunt-drawer-ai-progress.png)
+
+![A failure names its cause and the next step, with Retry](assets/hunt-drawer-ai-error.png)
+
+![The only disabled state: XTM One is not configured, said once in the form header with Open the settings](assets/hunt-drawer-sigma-unavailable.png)
+
+Through the API, `huntAssist` takes the fields to write (none for the whole plan), an optional description of what to hunt and the hunt as it is being written (or the identifier of a saved hunt), and returns the proposal with the validation of its Sigma rule and the techniques found on the platform. It requires the knowledge update capability, saves nothing, and every call is recorded in the activity of the user. A failed call carries its cause in the `failure` field of the error data (`XTM_ONE_NOT_CONFIGURED`, `XTM_ONE_UNREACHABLE`, `XTM_ONE_TIMEOUT`, `XTM_ONE_REFUSED`, `XTM_ONE_QUOTA`, `XTM_ONE_NO_MODEL`, `XTM_ONE_NO_AGENT`, `XTM_ONE_INVALID_ANSWER`, `XTM_ONE_INCOMPLETE`).
 
 ## Validation with OpenAEV
 

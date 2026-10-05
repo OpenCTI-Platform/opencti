@@ -10,19 +10,24 @@ import { HUNT_DOCS, HUNT_TYPES, huntTypeDescription, huntTypeLabel, type HuntTyp
 interface HuntTypeFieldProps {
   name?: string;
   style?: React.CSSProperties;
+  /** The action of the form header, at the end of the label row (for instance "Plan with AI") */
+  action?: React.ReactNode;
 }
 
 /** The hunt types, each with what it needs as input and where it runs. */
-const HuntTypeField = ({ name = 'hunt_type', style }: HuntTypeFieldProps) => {
+const HuntTypeField = ({ name = 'hunt_type', style, action }: HuntTypeFieldProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const [field, , helpers] = useField<HuntTypeValue>(name);
   const labelId = useId();
   return (
     <div style={style} data-testid="hunt-type-field">
-      <Text variant="content-compact-medium" id={labelId} style={{ display: 'block', marginBottom: theme.spacing(1) }}>
-        {t_i18n('Hunt type')}
-      </Text>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing(1), minHeight: 28, marginBottom: theme.spacing(1) }}>
+        <Text variant="content-compact-medium" id={labelId}>
+          {t_i18n('Hunt type')}
+        </Text>
+        {action}
+      </div>
       <RadioGroup
         aria-labelledby={labelId}
         value={field.value}

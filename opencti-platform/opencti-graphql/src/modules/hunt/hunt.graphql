@@ -547,25 +547,70 @@ input HuntPlanInput {
   benign_patterns: [String!]
 }
 
-input HuntSigmaGenerateInput {
-  # The hunt the rule is written for: its saved fields complete the ones not given
+"A field of a hunt the XTM One hunt planner can write"
+enum HuntAssistField {
+  name
+  hypothesis
+  description
+  sigma_rule
+  native_queries
+  expected_observables
+  benign_patterns
+  techniques
+}
+
+input HuntAssistInput {
+  # The fields to write; none asks for the whole plan
+  fields: [HuntAssistField!]
+  # What the analyst wants to hunt, in their words, when the form says little
+  prompt: String
+  # The native query asked for, when native_queries is one of the fields
+  native_query_platform: String
+  native_query_language: String
+  # The hunt the help is asked for: its saved fields complete the ones not given
   hunt_id: ID
+  # The hunt as it is being written
   name: String
+  hunt_type: HuntType
   hypothesis: String
+  description: String
   # The rule being edited, refined rather than replaced from scratch
   sigma_rule: String
+  native_queries: [HuntNativeQueryInput!]
+  expected_observables: [String!]
+  benign_patterns: [String!]
   target_ids: [ID!]
   technique_ids: [ID!]
+  # Indicators and reports the hunt is based on
+  source_ids: [ID!]
   security_platform_ids: [ID!]
-  benign_patterns: [String!]
   agent_slug: String
 }
 
-type HuntSigmaGeneration {
+"A technique the agent named, found on the platform"
+type HuntAssistTechnique {
+  id: ID!
+  entity_type: String!
+  name: String!
+  x_mitre_id: String
+}
+
+"What XTM One proposes for a hunt being written; nothing is saved"
+type HuntAssistance {
+  # The fields asked; the others are what the same answer implies
+  fields: [HuntAssistField!]!
+  name: String!
+  hypothesis: String!
+  description: String!
   sigma_rule: String!
-  validation: HuntSigmaValidation!
-  rationale: String
-  technique_ids: [String!]!
+  sigma_validation: HuntSigmaValidation
+  native_queries: [HuntNativeQuery!]!
+  expected_observables: [String!]!
+  benign_patterns: [String!]!
+  techniques: [HuntAssistTechnique!]!
+  # ATT&CK ids the agent named that are not on the platform
+  unknown_technique_ids: [String!]!
+  rationale: String!
 }
 
 input HuntValidateFromEmulationInput {
@@ -590,7 +635,7 @@ type Mutation {
   huntRunStart(id: ID!, input: HuntRunStartInput): [HuntRun!]! @auth(for: [KNOWLEDGE_KNUPDATE])
   huntTestQuery(id: ID!, securityPlatformId: ID): HuntRun @auth(for: [KNOWLEDGE_KNUPDATE])
   huntPlan(input: HuntPlanInput!): HuntProposal @auth(for: [KNOWLEDGE_KNUPDATE])
-  huntSigmaGenerate(input: HuntSigmaGenerateInput!): HuntSigmaGeneration! @auth(for: [KNOWLEDGE_KNUPDATE])
+  huntAssist(input: HuntAssistInput!): HuntAssistance! @auth(for: [KNOWLEDGE_KNUPDATE])
   huntValidateFromEmulation(input: HuntValidateFromEmulationInput!): HuntValidation @auth(for: [KNOWLEDGE_KNUPDATE])
   huntPackImport(file: Upload!): HuntPackImportResult @auth(for: [KNOWLEDGE_KNUPDATE])
 }

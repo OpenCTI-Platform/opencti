@@ -88,6 +88,8 @@ interface HuntCodeEditorProps {
   helperText?: string | null;
   /** The secondary action of the field, at the end of its label row */
   labelAction?: ReactNode;
+  /** The label row is left out where a heading already names the field; the label still names the input */
+  hideLabel?: boolean;
   name?: string;
   testId?: string;
 }
@@ -111,6 +113,7 @@ export const HuntCodeEditor = ({
   error,
   helperText,
   labelAction,
+  hideLabel = false,
   name,
   testId,
 }: HuntCodeEditorProps) => {
@@ -173,17 +176,19 @@ export const HuntCodeEditor = ({
 
   return (
     <div data-testid={testId}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing(1), minHeight: 28, marginBottom: theme.spacing(0.5) }}>
-        <Text
-          as="label"
-          htmlFor={inputId}
-          variant="content-compact"
-          style={{ color: error ? theme.palette.error.main : theme.palette.text.secondary }}
-        >
-          {label}{required ? ' *' : ''}
-        </Text>
-        {labelAction}
-      </div>
+      {!hideLabel && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: theme.spacing(1), minHeight: 28, marginBottom: theme.spacing(0.5) }}>
+          <Text
+            as="label"
+            htmlFor={inputId}
+            variant="content-compact"
+            style={{ color: error ? theme.palette.error.main : theme.palette.text.secondary }}
+          >
+            {label}{required ? ' *' : ''}
+          </Text>
+          {labelAction}
+        </div>
+      )}
       <div
         style={{
           display: 'flex',
@@ -248,6 +253,7 @@ export const HuntCodeEditor = ({
           </div>
           <textarea
             id={inputId}
+            aria-label={hideLabel ? label : undefined}
             name={name}
             value={value}
             placeholder={placeholder}

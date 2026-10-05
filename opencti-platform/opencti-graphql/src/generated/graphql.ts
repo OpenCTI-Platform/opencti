@@ -12773,6 +12773,65 @@ export type HuntAddInput = {
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
 };
 
+/** A field of a hunt the XTM One hunt planner can write */
+export enum HuntAssistField {
+  BenignPatterns = 'benign_patterns',
+  Description = 'description',
+  ExpectedObservables = 'expected_observables',
+  Hypothesis = 'hypothesis',
+  Name = 'name',
+  NativeQueries = 'native_queries',
+  SigmaRule = 'sigma_rule',
+  Techniques = 'techniques'
+}
+
+export type HuntAssistInput = {
+  agent_slug?: InputMaybe<Scalars['String']['input']>;
+  benign_patterns?: InputMaybe<Array<Scalars['String']['input']>>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  expected_observables?: InputMaybe<Array<Scalars['String']['input']>>;
+  fields?: InputMaybe<Array<HuntAssistField>>;
+  hunt_id?: InputMaybe<Scalars['ID']['input']>;
+  hunt_type?: InputMaybe<HuntType>;
+  hypothesis?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  native_queries?: InputMaybe<Array<HuntNativeQueryInput>>;
+  native_query_language?: InputMaybe<Scalars['String']['input']>;
+  native_query_platform?: InputMaybe<Scalars['String']['input']>;
+  prompt?: InputMaybe<Scalars['String']['input']>;
+  security_platform_ids?: InputMaybe<Array<Scalars['ID']['input']>>;
+  sigma_rule?: InputMaybe<Scalars['String']['input']>;
+  source_ids?: InputMaybe<Array<Scalars['ID']['input']>>;
+  target_ids?: InputMaybe<Array<Scalars['ID']['input']>>;
+  technique_ids?: InputMaybe<Array<Scalars['ID']['input']>>;
+};
+
+/** A technique the agent named, found on the platform */
+export type HuntAssistTechnique = {
+  __typename?: 'HuntAssistTechnique';
+  entity_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  x_mitre_id?: Maybe<Scalars['String']['output']>;
+};
+
+/** What XTM One proposes for a hunt being written; nothing is saved */
+export type HuntAssistance = {
+  __typename?: 'HuntAssistance';
+  benign_patterns: Array<Scalars['String']['output']>;
+  description: Scalars['String']['output'];
+  expected_observables: Array<Scalars['String']['output']>;
+  fields: Array<HuntAssistField>;
+  hypothesis: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  native_queries: Array<HuntNativeQuery>;
+  rationale: Scalars['String']['output'];
+  sigma_rule: Scalars['String']['output'];
+  sigma_validation?: Maybe<HuntSigmaValidation>;
+  techniques: Array<HuntAssistTechnique>;
+  unknown_technique_ids: Array<Scalars['String']['output']>;
+};
+
 export type HuntConfiguration = {
   __typename?: 'HuntConfiguration';
   /** The observable types a run extracts from its hits when its hunt names none */
@@ -13386,26 +13445,6 @@ export enum HuntRunsOrdering {
   UpdatedAt = 'updated_at',
   Verdict = 'verdict'
 }
-
-export type HuntSigmaGenerateInput = {
-  agent_slug?: InputMaybe<Scalars['String']['input']>;
-  benign_patterns?: InputMaybe<Array<Scalars['String']['input']>>;
-  hunt_id?: InputMaybe<Scalars['ID']['input']>;
-  hypothesis?: InputMaybe<Scalars['String']['input']>;
-  name?: InputMaybe<Scalars['String']['input']>;
-  security_platform_ids?: InputMaybe<Array<Scalars['ID']['input']>>;
-  sigma_rule?: InputMaybe<Scalars['String']['input']>;
-  target_ids?: InputMaybe<Array<Scalars['ID']['input']>>;
-  technique_ids?: InputMaybe<Array<Scalars['ID']['input']>>;
-};
-
-export type HuntSigmaGeneration = {
-  __typename?: 'HuntSigmaGeneration';
-  rationale?: Maybe<Scalars['String']['output']>;
-  sigma_rule: Scalars['String']['output'];
-  technique_ids: Array<Scalars['String']['output']>;
-  validation: HuntSigmaValidation;
-};
 
 export type HuntSigmaValidation = {
   __typename?: 'HuntSigmaValidation';
@@ -20378,6 +20417,7 @@ export type Mutation = {
   groupingRelationAdd?: Maybe<StixRefRelationship>;
   groupingRelationDelete?: Maybe<Grouping>;
   huntAdd?: Maybe<Hunt>;
+  huntAssist: HuntAssistance;
   huntConnectorCheckReport?: Maybe<HuntConnector>;
   huntConnectorRegister?: Maybe<HuntConnector>;
   /** Asks a hunt connector to test its connection and its permissions on its platform */
@@ -20397,7 +20437,6 @@ export type Mutation = {
   huntRunSetVerdict?: Maybe<HuntRun>;
   huntRunStart: Array<HuntRun>;
   huntRunTriage?: Maybe<HuntRun>;
-  huntSigmaGenerate: HuntSigmaGeneration;
   huntTestQuery?: Maybe<HuntRun>;
   huntValidateFromEmulation?: Maybe<HuntValidation>;
   identityAdd?: Maybe<Identity>;
@@ -21854,6 +21893,11 @@ export type MutationHuntAddArgs = {
 };
 
 
+export type MutationHuntAssistArgs = {
+  input: HuntAssistInput;
+};
+
+
 export type MutationHuntConnectorCheckReportArgs = {
   input: HuntConnectorCheckReportInput;
 };
@@ -21953,11 +21997,6 @@ export type MutationHuntRunStartArgs = {
 
 export type MutationHuntRunTriageArgs = {
   id: Scalars['ID']['input'];
-};
-
-
-export type MutationHuntSigmaGenerateArgs = {
-  input: HuntSigmaGenerateInput;
 };
 
 
@@ -45945,6 +45984,10 @@ export type ResolversTypes = ResolversObject<{
   HostnameAddInput: HostnameAddInput;
   Hunt: ResolverTypeWrapper<BasicStoreEntityHunt>;
   HuntAddInput: HuntAddInput;
+  HuntAssistField: HuntAssistField;
+  HuntAssistInput: HuntAssistInput;
+  HuntAssistTechnique: ResolverTypeWrapper<HuntAssistTechnique>;
+  HuntAssistance: ResolverTypeWrapper<Omit<HuntAssistance, 'sigma_validation'> & { sigma_validation?: Maybe<ResolversTypes['HuntSigmaValidation']> }>;
   HuntConfiguration: ResolverTypeWrapper<HuntConfiguration>;
   HuntConnection: ResolverTypeWrapper<Omit<HuntConnection, 'edges'> & { edges: Array<ResolversTypes['HuntEdge']> }>;
   HuntConnectionCheck: ResolverTypeWrapper<HuntConnectionCheck>;
@@ -46001,8 +46044,6 @@ export type ResolversTypes = ResolversObject<{
   HuntRunVerdict: HuntRunVerdict;
   HuntRunVerdictInput: HuntRunVerdictInput;
   HuntRunsOrdering: HuntRunsOrdering;
-  HuntSigmaGenerateInput: HuntSigmaGenerateInput;
-  HuntSigmaGeneration: ResolverTypeWrapper<Omit<HuntSigmaGeneration, 'validation'> & { validation: ResolversTypes['HuntSigmaValidation'] }>;
   HuntSigmaValidation: ResolverTypeWrapper<SigmaValidation>;
   HuntSourceKind: HuntSourceKind;
   HuntStatistics: ResolverTypeWrapper<HuntStatistics>;
@@ -47311,6 +47352,9 @@ export type ResolversParentTypes = ResolversObject<{
   HostnameAddInput: HostnameAddInput;
   Hunt: BasicStoreEntityHunt;
   HuntAddInput: HuntAddInput;
+  HuntAssistInput: HuntAssistInput;
+  HuntAssistTechnique: HuntAssistTechnique;
+  HuntAssistance: Omit<HuntAssistance, 'sigma_validation'> & { sigma_validation?: Maybe<ResolversParentTypes['HuntSigmaValidation']> };
   HuntConfiguration: HuntConfiguration;
   HuntConnection: Omit<HuntConnection, 'edges'> & { edges: Array<ResolversParentTypes['HuntEdge']> };
   HuntConnectionCheck: HuntConnectionCheck;
@@ -47357,8 +47401,6 @@ export type ResolversParentTypes = ResolversObject<{
   HuntRunResultsSummary: HuntRunResultsSummary;
   HuntRunStartInput: HuntRunStartInput;
   HuntRunVerdictInput: HuntRunVerdictInput;
-  HuntSigmaGenerateInput: HuntSigmaGenerateInput;
-  HuntSigmaGeneration: Omit<HuntSigmaGeneration, 'validation'> & { validation: ResolversParentTypes['HuntSigmaValidation'] };
   HuntSigmaValidation: SigmaValidation;
   HuntStatistics: HuntStatistics;
   HuntStatisticsBucket: HuntStatisticsBucket;
@@ -52885,6 +52927,28 @@ export type HuntResolvers<ContextType = any, ParentType extends ResolversParentT
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type HuntAssistTechniqueResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntAssistTechnique'] = ResolversParentTypes['HuntAssistTechnique']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  x_mitre_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type HuntAssistanceResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntAssistance'] = ResolversParentTypes['HuntAssistance']> = ResolversObject<{
+  benign_patterns?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  expected_observables?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  fields?: Resolver<Array<ResolversTypes['HuntAssistField']>, ParentType, ContextType>;
+  hypothesis?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  native_queries?: Resolver<Array<ResolversTypes['HuntNativeQuery']>, ParentType, ContextType>;
+  rationale?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  sigma_rule?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  sigma_validation?: Resolver<Maybe<ResolversTypes['HuntSigmaValidation']>, ParentType, ContextType>;
+  techniques?: Resolver<Array<ResolversTypes['HuntAssistTechnique']>, ParentType, ContextType>;
+  unknown_technique_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
 export type HuntConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntConfiguration'] = ResolversParentTypes['HuntConfiguration']> = ResolversObject<{
   default_expected_observables?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   min_schedule_interval_minutes?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -53183,13 +53247,6 @@ export type HuntRunResultsSummaryResolvers<ContextType = any, ParentType extends
   observed_data?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   others?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   sightings?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-}>;
-
-export type HuntSigmaGenerationResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntSigmaGeneration'] = ResolversParentTypes['HuntSigmaGeneration']> = ResolversObject<{
-  rationale?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  sigma_rule?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  technique_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  validation?: Resolver<ResolversTypes['HuntSigmaValidation'], ParentType, ContextType>;
 }>;
 
 export type HuntSigmaValidationResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntSigmaValidation'] = ResolversParentTypes['HuntSigmaValidation']> = ResolversObject<{
@@ -55952,6 +56009,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   groupingRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationGroupingRelationAddArgs, 'id'>>;
   groupingRelationDelete?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<MutationGroupingRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   huntAdd?: Resolver<Maybe<ResolversTypes['Hunt']>, ParentType, ContextType, RequireFields<MutationHuntAddArgs, 'input'>>;
+  huntAssist?: Resolver<ResolversTypes['HuntAssistance'], ParentType, ContextType, RequireFields<MutationHuntAssistArgs, 'input'>>;
   huntConnectorCheckReport?: Resolver<Maybe<ResolversTypes['HuntConnector']>, ParentType, ContextType, RequireFields<MutationHuntConnectorCheckReportArgs, 'input'>>;
   huntConnectorRegister?: Resolver<Maybe<ResolversTypes['HuntConnector']>, ParentType, ContextType, RequireFields<MutationHuntConnectorRegisterArgs, 'input'>>;
   huntConnectorTestConnection?: Resolver<Maybe<ResolversTypes['HuntConnector']>, ParentType, ContextType, RequireFields<MutationHuntConnectorTestConnectionArgs, 'id'>>;
@@ -55970,7 +56028,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   huntRunSetVerdict?: Resolver<Maybe<ResolversTypes['HuntRun']>, ParentType, ContextType, RequireFields<MutationHuntRunSetVerdictArgs, 'id' | 'input'>>;
   huntRunStart?: Resolver<Array<ResolversTypes['HuntRun']>, ParentType, ContextType, RequireFields<MutationHuntRunStartArgs, 'id'>>;
   huntRunTriage?: Resolver<Maybe<ResolversTypes['HuntRun']>, ParentType, ContextType, RequireFields<MutationHuntRunTriageArgs, 'id'>>;
-  huntSigmaGenerate?: Resolver<ResolversTypes['HuntSigmaGeneration'], ParentType, ContextType, RequireFields<MutationHuntSigmaGenerateArgs, 'input'>>;
   huntTestQuery?: Resolver<Maybe<ResolversTypes['HuntRun']>, ParentType, ContextType, RequireFields<MutationHuntTestQueryArgs, 'id'>>;
   huntValidateFromEmulation?: Resolver<Maybe<ResolversTypes['HuntValidation']>, ParentType, ContextType, RequireFields<MutationHuntValidateFromEmulationArgs, 'input'>>;
   identityAdd?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType, RequireFields<MutationIdentityAddArgs, 'input'>>;
@@ -63131,6 +63188,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   HistoryChange?: HistoryChangeResolvers<ContextType>;
   Hostname?: HostnameResolvers<ContextType>;
   Hunt?: HuntResolvers<ContextType>;
+  HuntAssistTechnique?: HuntAssistTechniqueResolvers<ContextType>;
+  HuntAssistance?: HuntAssistanceResolvers<ContextType>;
   HuntConfiguration?: HuntConfigurationResolvers<ContextType>;
   HuntConnection?: HuntConnectionResolvers<ContextType>;
   HuntConnectionCheck?: HuntConnectionCheckResolvers<ContextType>;
@@ -63162,7 +63221,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   HuntRunConnection?: HuntRunConnectionResolvers<ContextType>;
   HuntRunEdge?: HuntRunEdgeResolvers<ContextType>;
   HuntRunResultsSummary?: HuntRunResultsSummaryResolvers<ContextType>;
-  HuntSigmaGeneration?: HuntSigmaGenerationResolvers<ContextType>;
   HuntSigmaValidation?: HuntSigmaValidationResolvers<ContextType>;
   HuntStatistics?: HuntStatisticsResolvers<ContextType>;
   HuntStatisticsBucket?: HuntStatisticsBucketResolvers<ContextType>;

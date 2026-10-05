@@ -78,6 +78,8 @@ export type ComboboxFieldProps<Value extends PossibleValue = FieldOption>
        */
       closeOnSelect?: boolean;
       keepInputOnBlur?: boolean;
+      /** A secondary action at the end of the label row */
+      labelAction?: ReactNode;
     };
 
 const ComboboxFieldComponent = <Value extends PossibleValue = FieldOption>({
@@ -121,6 +123,7 @@ const ComboboxFieldComponent = <Value extends PossibleValue = FieldOption>({
   openOnFocus,
   closeOnSelect,
   keepInputOnBlur,
+  labelAction,
 }: ComboboxFieldProps<Value>) => {
   const { t_i18n } = useFormatter();
   const [, meta] = useField(name);
@@ -187,7 +190,13 @@ const ComboboxFieldComponent = <Value extends PossibleValue = FieldOption>({
         closeOnSelect={closeOnSelect ?? !!multiple}
         keepInputOnBlur={keepInputOnBlur}
       >
-        {label ? <ComboboxLabel>{label}</ComboboxLabel> : null}
+        {labelAction ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+            {label ? <ComboboxLabel>{label}</ComboboxLabel> : <span />}
+            {labelAction}
+          </div>
+        ) : null}
+        {!labelAction && label ? <ComboboxLabel>{label}</ComboboxLabel> : null}
         <FdsComboboxField
           adornment={(openCreate || adornment) ? (
             <>

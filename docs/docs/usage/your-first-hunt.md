@@ -48,7 +48,7 @@ The **Logic** tab of the hunt lists the values the next run looks for, with wher
 ## Hunt with a Sigma rule
 
 1. Open **Defense > Hunts** and click **Hunt with a detection rule (Sigma)**, or create the hunt from **Create a hunt** to set every option.
-2. Paste a Sigma rule, from [SigmaHQ](https://github.com/SigmaHQ/sigma) or your own. It is validated as you type with the errors of the platform, and its title, level, log source, detection fields and ATT&CK techniques are shown.
+2. Paste a Sigma rule, from [SigmaHQ](https://github.com/SigmaHQ/sigma) or your own, or click **Generate with AI** next to its label (Enterprise Edition, XTM One): say in a few words what to hunt, review the rule XTM One proposes, then **Accept** it. It is validated as you type with the errors of the platform, and its title, level, log source, detection fields and ATT&CK techniques are shown.
 3. Choose where and how far back, then start the hunt as above.
 
 A hunt can also start as a draft, for example a hunt created without its logic, proposed by the AI planner or imported from a hunt pack. Its page explains what it still needs:
@@ -68,6 +68,7 @@ Once active, **Run now** runs the hunt on its platforms, and **Preview the query
 
 ## Plan a hunt with AI or import a hunt pack
 
+- **Generate with AI** (Enterprise Edition, XTM One), in **Create a hunt**: **Plan with AI**, next to the hunt type, proposes the whole hunt from its name - or, on an empty form, from a few words about what to hunt: the hypothesis, the description, the Sigma rule, the observables to extract, benign patterns and techniques. Every field the planner can fill also has its own **Generate with AI**. Each proposal is shown before anything changes: edit it, **Accept** it into the form, or **Dismiss** it. See [Generate with AI](hunts.md#generate-with-ai).
 - **Plan a hunt with AI** (Enterprise Edition, XTM One) writes the hypothesis, the Sigma rule and the observables to extract from hits, based on the threats, techniques, reports or indicators you pick. The proposal lands in a draft workspace you review; validating the draft creates the hunt as a **Draft**, and it runs once you activate it.
 - **Import a hunt pack** creates the hunts of a pack file as drafts; **Browse XTM Hub** opens the hunt packs shared on the XTM Hub.
 

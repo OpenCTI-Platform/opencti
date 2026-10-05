@@ -27,12 +27,28 @@ tags:
 const RATIONALE = 'APT28 delivers Office documents whose macros start an encoded PowerShell command.';
 const HYPOTHESIS = 'If APT28 is active, Office applications start PowerShell with an encoded command on our endpoints';
 
+/** What the hunt planner of XTM One answers in these tests, whatever the field asked. */
+const proposal = (fields: string[]) => ({
+  fields: fields.length > 0 ? fields : ['name', 'hypothesis', 'description', 'sigma_rule', 'native_queries', 'expected_observables', 'benign_patterns', 'techniques'],
+  name: 'APT28 encoded PowerShell from Office',
+  hypothesis: HYPOTHESIS,
+  description: 'Hunts the encoded PowerShell that APT28 starts from Office documents.',
+  sigma_rule: GENERATED_RULE,
+  native_queries: [],
+  expected_observables: ['Process', 'StixFile'],
+  benign_patterns: ['Software deployment agents running encoded PowerShell'],
+  techniques: [],
+  unknown_technique_ids: [],
+  rationale: RATIONALE,
+});
+
 /**
  * The hunt drawers: Learn more in the drawer header, the Enterprise Edition chips right after their label, the actions
- * of the Sigma rule and of the native queries in their label row, and Generate with AI on the Sigma rule. A test
- * platform reaches neither XTM One nor an Enterprise Edition licence: for those states the responses that read them
- * are completed (the licence, the XTM One availability) and the generation answers a sample rule. The screenshots are
- * saved with the test results for the user documentation (`docs/docs/usage/assets/hunt-drawer-*.png`).
+ * of the fields in their label row, and the AI assistance of the form (Generate with AI on each field the hunt planner
+ * fills, Plan with AI in the form header). A test platform reaches neither XTM One nor an Enterprise Edition licence:
+ * for those states the responses that read them are completed (the licence, the XTM One availability) and the planner
+ * answers a sample proposal. The screenshots are saved with the test results for the user documentation
+ * (`docs/docs/usage/assets/hunt-drawer-*.png`).
  */
 test.describe('Hunt drawers', { tag: ['@hunt', '@mutation'] }, () => {
   test.describe.configure({ mode: 'serial' });
@@ -61,8 +77,8 @@ test.describe('Hunt drawers', { tag: ['@hunt', '@mutation'] }, () => {
   const isOperation = (body: { id?: string; query?: string } | null, kind: 'query' | 'mutation', name: string) => body?.id === name
     || (typeof body?.query === 'string' && new RegExp(`\\b${kind} ${name}\\b`).test(body.query));
 
-  /** The licence and the XTM One availability the platform would report with them. */
-  const withPlatform = async (page: Page, { enterpriseEdition, xtmOne }: { enterpriseEdition: boolean; xtmOne: boolean }) => {
+  /** The licence and the XTM One availability the platform would report with them, and the answer of the planner. */
+  const withPlatform = async (page: Page, { enterpriseEdition, xtmOne, failure }: { enterpriseEdition: boolean; xtmOne: boolean; failure?: string }) => {
     await page.route('**/chatbot/config', async (route) => {
       const response = await route.fetch();
       const json = response.ok() ? await response.json() : {};
@@ -77,8 +93,11 @@ test.describe('Hunt drawers', { tag: ['@hunt', '@mutation'] }, () => {
           json.data.settings.platform_enterprise_edition.license_validated = enterpriseEdition;
         }
         await route.fulfill({ response, json });
-      } else if (isOperation(body, 'mutation', 'HuntSigmaRuleFieldGenerateMutation')) {
-        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ data: { huntSigmaGenerate: { sigma_rule: GENERATED_RULE, rationale: RATIONALE } } }) });
+      } else if (isOperation(body, 'mutation', 'HuntAIAssistMutation')) {
+        const answer = failure
+          ? { data: null, errors: [{ message: 'XTM One could not run the agent, most often because no AI model is configured in XTM One', extensions: { code: 'FUNCTIONAL_ERROR', data: { failure } } }] }
+          : { data: { huntAssist: proposal(body.variables?.input?.fields ?? []) } };
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(answer) });
       } else {
         await route.fallback();
       }
@@ -114,17 +133,24 @@ test.describe('Hunt drawers', { tag: ['@hunt', '@mutation'] }, () => {
   const captureGeneration = async (page: Page, suffix: string) => {
     await withPlatform(page, { enterpriseEdition: true, xtmOne: true });
     const form = await openCreationDrawer(page);
+    // Every field the planner fills carries the same action, and the header plans the whole hunt
+    for (const testId of ['hunt-ai-plan', 'hunt-hypothesis-generate', 'hunt-description-generate', 'hunt-sigma-generate', 'hunt-observables-generate', 'hunt-benign-generate']) {
+      await expect(page.getByTestId(testId)).toBeEnabled();
+    }
+    await capture(page, `hunt-drawer-ai-actions${suffix}.png`, [page.getByTestId('hunt-type-field'), page.getByTestId('hunt-hypothesis-generate')]);
+    // A name is enough: the planner proposes the rule and what it implies for the empty fields
     await new TextFieldPageModel(page, 'Name', 'text', form).fill('APT28 encoded PowerShell from Office');
-    // The hypothesis is the first Markdown field of the form, before the description
-    await form.getByTestId('text-area').first().fill(HYPOTHESIS);
-    await expect(page.getByTestId('hunt-sigma-generate')).toBeEnabled();
     await page.getByTestId('hunt-sigma-generate').click();
+    await expect(page.getByTestId('hunt-ai-proposal-sigma_rule').locator('textarea')).toHaveValue(GENERATED_RULE);
+    await expect(page.getByTestId('hunt-ai-rationale')).toContainText(RATIONALE);
+    await page.getByTestId('hunt-ai-secondary-hypothesis').click();
+    await capture(page, `hunt-drawer-ai-proposal${suffix}.png`, [page.getByTestId('hunt-ai-dialog')]);
+    await page.getByTestId('hunt-ai-accept').click();
     await expect(sigmaEditor(page)).toHaveValue(GENERATED_RULE);
-    await expect(page.getByTestId('hunt-sigma-generated')).toContainText(RATIONALE);
+    // The hypothesis is the first Markdown field of the form, before the description
+    await expect(form.getByTestId('text-area').first()).toHaveValue(HYPOTHESIS);
     await expect(page.getByTestId('hunt-sigma-validation')).toContainText('Valid Sigma rule');
-    await capture(page, `hunt-drawer-sigma-generated${suffix}.png`, [page.getByTestId('hunt-sigma-editor'), page.getByTestId('hunt-sigma-generated'), page.getByTestId('hunt-sigma-validation')]);
-    await page.getByTestId('hunt-sigma-generate-undo').click();
-    await expect(sigmaEditor(page)).toHaveValue('');
+    await capture(page, `hunt-drawer-sigma-generated${suffix}.png`, [page.getByTestId('hunt-sigma-editor'), page.getByTestId('hunt-sigma-validation')]);
   };
 
   const withTheme = async (request: APIRequestContext, theme: string, run: () => Promise<void>) => {
@@ -142,18 +168,46 @@ test.describe('Hunt drawers', { tag: ['@hunt', '@mutation'] }, () => {
     await captureDrawer(page, '');
   });
 
-  test('Generate the Sigma rule with XTM One, then undo it', async ({ page }) => {
+  test('Generate the Sigma rule from a name, with the hypothesis it implies', async ({ page }) => {
     await captureGeneration(page, '');
+  });
+
+  test('Plan the whole hunt with AI from an empty form', async ({ page }) => {
+    await withPlatform(page, { enterpriseEdition: true, xtmOne: true });
+    const form = await openCreationDrawer(page);
+    await page.getByTestId('hunt-ai-plan').click();
+    // Nothing in the form says what to hunt: the dialog asks first
+    await page.getByTestId('hunt-ai-prompt').fill('Office documents launching encoded PowerShell');
+    await capture(page, 'hunt-drawer-ai-prompt.png', [page.getByTestId('hunt-ai-dialog')]);
+    await page.getByTestId('hunt-ai-generate').click();
+    await expect(page.getByTestId('hunt-ai-use-hypothesis')).toBeChecked();
+    await capture(page, 'hunt-drawer-ai-plan.png', [page.getByTestId('hunt-ai-dialog')]);
+    await page.getByTestId('hunt-ai-accept').click();
+    await expect(new TextFieldPageModel(page, 'Name', 'text', form).get()).toHaveValue('APT28 encoded PowerShell from Office');
+    await expect(sigmaEditor(page)).toHaveValue(GENERATED_RULE);
+  });
+
+  test('A failure names its cause and offers a retry', async ({ page }) => {
+    await withPlatform(page, { enterpriseEdition: true, xtmOne: true, failure: 'XTM_ONE_NO_MODEL' });
+    const form = await openCreationDrawer(page);
+    await new TextFieldPageModel(page, 'Name', 'text', form).fill('APT28 encoded PowerShell from Office');
+    await page.getByTestId('hunt-hypothesis-generate').click();
+    await expect(page.getByTestId('hunt-ai-error')).toContainText('XTM One could not run the agent');
+    await expect(page.getByTestId('hunt-ai-retry')).toBeVisible();
+    await capture(page, 'hunt-drawer-ai-error.png', [page.getByTestId('hunt-ai-dialog')]);
   });
 
   test('Generate with AI is disabled, with its reason, when XTM One is not configured', async ({ page }) => {
     await withPlatform(page, { enterpriseEdition: true, xtmOne: false });
     await openCreationDrawer(page);
-    await expect(page.getByTestId('hunt-sigma-generate')).toBeDisabled();
-    await expect(page.getByTestId('hunt-sigma-generate-reason')).toHaveText('XTM One is not configured on this platform');
+    await expect(page.getByTestId('hunt-ai-plan')).toBeDisabled();
+    await expect(page.getByTestId('hunt-ai-plan-reason')).toHaveText('XTM One is not configured on this platform');
     // The administrator running the tests is offered the settings where XTM One is configured
-    await expect(page.getByTestId('hunt-sigma-generate-settings')).toHaveAttribute('href', /\/dashboard\/settings\/experience$/);
-    await capture(page, 'hunt-drawer-sigma-unavailable.png', [page.getByTestId('hunt-sigma-editor')]);
+    await expect(page.getByTestId('hunt-ai-plan-settings')).toHaveAttribute('href', /\/dashboard\/settings\/experience$/);
+    // The fields repeat the reason on hover and focus only
+    await expect(page.getByTestId('hunt-sigma-generate')).toBeDisabled();
+    await expect(page.getByTestId('hunt-sigma-generate-unavailable')).toBeVisible();
+    await capture(page, 'hunt-drawer-sigma-unavailable.png', [page.getByTestId('hunt-type-field'), page.getByTestId('hunt-hypothesis-generate')]);
   });
 
   test('Generate the Sigma rule of a saved hunt from its Logic tab', async ({ page, request }) => {
@@ -166,9 +220,10 @@ test.describe('Hunt drawers', { tag: ['@hunt', '@mutation'] }, () => {
       await withPlatform(page, { enterpriseEdition: true, xtmOne: true });
       await page.goto(`/dashboard/defense/hunts/${created.huntAdd.id}/logic`);
       await page.getByTestId('hunt-sigma-generate').click();
+      await page.getByTestId('hunt-ai-accept').click();
       await expect(page.getByTestId('hunt-logic-sigma').locator('textarea')).toHaveValue(GENERATED_RULE);
-      await expect(page.getByTestId('hunt-logic-save-and-preview')).toBeVisible();
-      await capture(page, 'hunt-drawer-logic-tab-generated.png', [page.getByTestId('hunt-logic-sigma'), page.getByTestId('hunt-sigma-generated')]);
+      await expect(page.getByTestId('hunt-logic-save-top-and-preview')).toBeVisible();
+      await capture(page, 'hunt-drawer-logic-tab-generated.png', [page.getByTestId('hunt-logic-save-top'), page.getByTestId('hunt-logic-sigma')]);
     } finally {
       await deleteHunt(request, created.huntAdd.id);
     }

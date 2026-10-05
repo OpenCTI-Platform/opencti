@@ -3,7 +3,8 @@ import { Formik } from 'formik';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, screen, waitFor } from '@testing-library/react';
 import testRender from '../../../utils/tests/test-render';
-import HuntSigmaRuleField, { canGenerateSigmaFrom, type HuntSigmaGenerationInput } from './HuntSigmaRuleField';
+import HuntSigmaRuleField from './HuntSigmaRuleField';
+import { HuntAIAssistProvider } from './HuntAIAssist';
 import useHuntAI from './useHuntAI';
 
 vi.mock('./useHuntAI', () => ({ default: vi.fn() }));
@@ -20,15 +21,11 @@ vi.mock('../../../relay/environment', async (importOriginal) => {
 const DRAFT = 'title: Draft rule';
 const GENERATED = 'title: Encoded PowerShell\nlogsource:\n  product: windows\ndetection:\n  selection:\n    CommandLine|contains: " -enc "\n  condition: selection';
 
-const renderField = (generationInput: HuntSigmaGenerationInput, initial = DRAFT) => testRender(
-  <Formik initialValues={{ sigma_rule: initial }} onSubmit={() => undefined}>
-    <HuntSigmaRuleField
-      label="Sigma rule"
-      helperText="The detection logic in Sigma"
-      placeholder="title: ..."
-      generationInput={generationInput}
-      testId="hunt-sigma"
-    />
+const renderField = (values: Record<string, unknown>, huntId?: string) => testRender(
+  <Formik initialValues={values} onSubmit={() => undefined}>
+    <HuntAIAssistProvider huntId={huntId}>
+      <HuntSigmaRuleField label="Sigma rule" helperText="The detection logic in Sigma" placeholder="title: ..." testId="hunt-sigma" />
+    </HuntAIAssistProvider>
   </Formik>,
 );
 
@@ -42,64 +39,56 @@ describe('Sigma rule field of a hunt', () => {
   beforeEach(() => setAI(true, true));
   afterEach(() => vi.clearAllMocks());
 
-  it('generates the rule with XTM One from the hunt, then undoes it', async () => {
-    const { user, relayEnv } = renderField({ name: 'APT-X', hypothesis: 'If APT-X is active', target_ids: ['threat-1'] });
+  it('proposes the rule from the saved hunt and writes it once accepted, refining the rule being edited', async () => {
+    const { user, relayEnv } = renderField({ sigma_rule: DRAFT }, 'hunt-1');
     await user.click(screen.getByTestId('hunt-sigma-generate'));
     const operation = relayEnv.mock.getMostRecentOperation();
-    expect(operation.request.node.params.name).toBe('HuntSigmaRuleFieldGenerateMutation');
-    // The rule being edited is sent so that it is refined rather than replaced
-    expect(operation.request.variables.input).toEqual({ name: 'APT-X', hypothesis: 'If APT-X is active', target_ids: ['threat-1'], sigma_rule: DRAFT });
+    expect(operation.request.variables.input).toEqual({ fields: ['sigma_rule'], hunt_id: 'hunt-1', sigma_rule: DRAFT });
     await act(async () => {
-      relayEnv.mock.resolve(operation, { data: { huntSigmaGenerate: { sigma_rule: GENERATED, rationale: 'APT-X runs encoded PowerShell.' } } });
+      relayEnv.mock.resolve(operation, {
+        data: {
+          huntAssist: {
+            fields: ['sigma_rule'],
+            name: 'APT-X',
+            hypothesis: 'If APT-X is active',
+            description: '',
+            sigma_rule: GENERATED,
+            native_queries: [],
+            expected_observables: [],
+            benign_patterns: [],
+            techniques: [],
+            unknown_technique_ids: [],
+            rationale: 'APT-X runs encoded PowerShell.',
+          },
+        },
+      });
     });
+    // The Logic tab holds the logic only: nothing else is offered
+    expect(await screen.findByTestId('hunt-ai-proposal')).toBeInTheDocument();
+    expect(screen.queryByTestId('hunt-ai-secondary')).not.toBeInTheDocument();
+    expect(screen.getByText('Replaces what the form holds')).toBeInTheDocument();
+    expect(editorValue()).toBe(DRAFT);
+    await user.click(screen.getByTestId('hunt-ai-accept'));
     await waitFor(() => expect(editorValue()).toBe(GENERATED));
-    expect(screen.getByTestId('hunt-sigma-generated')).toHaveTextContent('APT-X runs encoded PowerShell.');
-    await user.click(screen.getByTestId('hunt-sigma-generate-undo'));
-    expect(editorValue()).toBe(DRAFT);
-    expect(screen.queryByTestId('hunt-sigma-generated')).not.toBeInTheDocument();
   });
 
-  it('shows why XTM One could not write the rule, and keeps the rule being edited', async () => {
-    const { user, relayEnv } = renderField({ hunt_id: 'hunt-1' });
-    await user.click(screen.getByTestId('hunt-sigma-generate'));
-    await act(async () => {
-      relayEnv.mock.resolveMostRecentOperation({
-        data: { huntSigmaGenerate: null },
-        errors: [{ message: 'No XTM One agent is bound to the intent cti.hunt_sigma_generation' }],
-      } as never);
-    });
-    expect(await screen.findByTestId('hunt-sigma-generate-error')).toHaveTextContent('No XTM One agent is bound to the intent cti.hunt_sigma_generation');
-    expect(editorValue()).toBe(DRAFT);
+  it('keeps the action enabled on a form with a name only', () => {
+    renderField({ name: 'Encoded PowerShell', hypothesis: '', sigma_rule: '', huntTargets: [], huntTechniques: [] });
+    expect(screen.getByTestId('hunt-sigma-generate')).toBeEnabled();
   });
 
-  it('disables the action with its reason when XTM One is not configured', () => {
+  it('is disabled when XTM One is not configured, with the reason and where to configure it', () => {
     setAI(true, false);
-    renderField({ hypothesis: 'If APT-X is active' });
+    renderField({ sigma_rule: '' }, 'hunt-1');
     expect(screen.getByTestId('hunt-sigma-generate')).toBeDisabled();
     expect(screen.getByTestId('hunt-sigma-generate-reason')).toHaveTextContent('XTM One is not configured on this platform');
-    // Where to configure it: the settings for an administrator, the administrator for anyone else
     expect(screen.queryByTestId('hunt-sigma-generate-settings') ?? screen.queryByText('Ask your administrator')).toBeInTheDocument();
   });
 
-  it('disables the action with its reason while the hunt has nothing to generate from', () => {
-    renderField({ name: 'Empty hunt', hypothesis: ' ', target_ids: [], technique_ids: [] });
-    expect(screen.getByTestId('hunt-sigma-generate')).toBeDisabled();
-    expect(screen.getByTestId('hunt-sigma-generate-reason')).toHaveTextContent('Write the hypothesis or add a threat or a technique first');
-  });
-
-  it('disables the action in Community Edition', () => {
+  it('is an Enterprise Edition capability', () => {
     setAI(false, true);
-    renderField({ hypothesis: 'If APT-X is active' });
+    renderField({ sigma_rule: '' }, 'hunt-1');
     expect(screen.getByTestId('hunt-sigma-generate')).toBeDisabled();
     expect(screen.getByTestId('hunt-sigma-ee-chip')).toBeInTheDocument();
-    expect(screen.queryByTestId('hunt-sigma-generate-reason')).not.toBeInTheDocument();
-  });
-
-  it('generates from a hypothesis, a threat, a technique or a saved hunt', () => {
-    expect(canGenerateSigmaFrom({ hypothesis: 'If APT-X is active' })).toBe(true);
-    expect(canGenerateSigmaFrom({ target_ids: ['threat-1'] })).toBe(true);
-    expect(canGenerateSigmaFrom({ technique_ids: ['technique-1'] })).toBe(true);
-    expect(canGenerateSigmaFrom({ hunt_id: 'hunt-1' })).toBe(true);
-    expect(canGenerateSigmaFrom({ name: 'Only a name', hypothesis: '  ' })).toBe(false);
   });
 });

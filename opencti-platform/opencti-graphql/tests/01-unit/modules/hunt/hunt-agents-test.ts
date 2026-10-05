@@ -1,10 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import {
-  buildHuntSigmaRequest,
+  buildHuntAssistRequest,
+  classifyXtmCallFailure,
+  draftNativeQueries,
   extractJsonObject,
+  type HuntAssistDraft,
   huntAgentRefusalErrors,
+  huntAssistHasSubject,
+  pickHuntAssistance,
+  resolveHuntAssistTarget,
+  validateHuntAssistDraft,
   validateHuntPlanSpec,
-  validateHuntSigmaGeneration,
   validateHuntTriageResult,
 } from '../../../../src/modules/hunt/hunt-agents';
 
@@ -90,36 +96,129 @@ describe('Hunt planner answers', () => {
   });
 });
 
-describe('Hunt Sigma rule generation', () => {
-  it('should ask for the Sigma rule of the hunt being written, refining its current rule', () => {
-    const request = buildHuntSigmaRequest({ task: 'hunt_hypothesis', threats: [], benign_patterns: ['backup'] }, { name: 'APT-X', hypothesis: 'If APT-X is active', sigma_rule: SIGMA });
-    expect(request).toEqual({
-      task: 'hunt_sigma_generation',
-      threats: [],
-      benign_patterns: ['backup'],
-      hunt_type: 'telemetry',
-      hunt: { name: 'APT-X', hypothesis: 'If APT-X is active', current_sigma_rule: SIGMA },
-    });
-    expect(buildHuntSigmaRequest({}, { name: '', hypothesis: 'h', sigma_rule: '' }).hunt.current_sigma_rule).toBeNull();
+const emptyDraft = (overrides: Partial<HuntAssistDraft> = {}): HuntAssistDraft => ({
+  name: '',
+  hunt_type: 'telemetry',
+  hypothesis: '',
+  description: '',
+  sigma_rule: '',
+  native_queries: [],
+  expected_observables: [],
+  benign_patterns: [],
+  prompt: '',
+  ...overrides,
+});
+
+const failureOf = (run: () => unknown) => {
+  try {
+    run();
+  } catch (error) {
+    return (error as { extensions: { data: { failure?: string } } }).extensions.data.failure;
+  }
+  return undefined;
+};
+
+describe('Hunt assistance requests', () => {
+  const plannerRequest = { task: 'hunt_hypothesis', threats: [], benign_patterns: ['backup'], security_platforms: [{ id: 'p-1', platform: 'splunk', languages: ['spl'] }] };
+
+  it('should ask for the Sigma rule alone as a Sigma generation, refining the rule being edited', () => {
+    const request = buildHuntAssistRequest(plannerRequest, emptyDraft({ name: 'APT-X', hypothesis: 'If APT-X is active', sigma_rule: SIGMA }), resolveHuntAssistTarget(['sigma_rule'], {}));
+    expect(request.task).toBe('hunt_sigma_generation');
+    expect(request.hunt_type).toBe('telemetry');
+    expect(request.hunt).toMatchObject({ name: 'APT-X', hypothesis: 'If APT-X is active', current_sigma_rule: SIGMA, requested_fields: ['sigma_rule'], analyst_request: null });
+    expect(request.security_platforms).toEqual(plannerRequest.security_platforms);
   });
 
-  it('should keep the checked Sigma rule of the answer with what the platform reads from it', () => {
-    const generation = validateHuntSigmaGeneration(planAnswer(), ['allowed-threat']);
-    expect(generation.sigma_rule).toBe(SIGMA.trim());
-    expect(generation.validation.valid).toBe(true);
-    expect(generation.validation.logsource_product).toBe('windows');
-    expect(generation.technique_ids).toEqual(['T1218.011', 'T1218']);
-    expect(generation.rationale).toBe('The report describes rundll32 abuse');
+  it('should plan from nothing but the words of the analyst', () => {
+    const draft = emptyDraft({ prompt: 'Office documents launching encoded PowerShell' });
+    expect(huntAssistHasSubject(draft, 0)).toBe(true);
+    const request = buildHuntAssistRequest(plannerRequest, draft, resolveHuntAssistTarget([], {}));
+    expect(request.task).toBe('hunt_hypothesis');
+    expect(request.hunt).toMatchObject({ analyst_request: 'Office documents launching encoded PowerShell', requested_fields: [], current_sigma_rule: null });
+    // Nothing to start from: the platform asks the analyst instead of calling the agent
+    expect(huntAssistHasSubject(emptyDraft(), 0)).toBe(false);
+    expect(huntAssistHasSubject(emptyDraft(), 1)).toBe(true);
+    expect(huntAssistHasSubject(emptyDraft({ name: 'APT-X' }), 0)).toBe(true);
   });
 
-  it('should refuse an answer without a Sigma rule or with an invalid one', () => {
-    expect(() => validateHuntSigmaGeneration(planAnswer({
+  it('should let the planner write the native query of the platform and language asked for', () => {
+    const target = resolveHuntAssistTarget(['native_queries', 'native_queries'], { platform: 'microsoft-sentinel', language: 'KQL' });
+    expect(target).toEqual({ fields: ['native_queries'], native_query: { platform: 'microsoft-sentinel', language: 'kql' } });
+    const request = buildHuntAssistRequest(plannerRequest, emptyDraft({ name: 'APT-X', hunt_type: 'indicators' }), target);
+    expect(request.security_platforms).toEqual([
+      ...plannerRequest.security_platforms,
+      { id: null, name: 'microsoft-sentinel', security_platform_type: null, platform: 'microsoft-sentinel', languages: ['kql'] },
+    ]);
+    // An indicator hunt is never planned as such: the planner chooses the type of the logic it writes
+    expect(request.hunt_type).toBeUndefined();
+    const onKnownPlatform = buildHuntAssistRequest(plannerRequest, emptyDraft(), resolveHuntAssistTarget(['native_queries'], { platform: 'splunk', language: 'spl2' }));
+    expect(onKnownPlatform.security_platforms).toEqual([{ id: 'p-1', platform: 'splunk', languages: ['spl', 'spl2'] }]);
+    expect(() => resolveHuntAssistTarget(['native_queries'], { platform: 'splunk' })).toThrow('choose them first');
+    expect(() => resolveHuntAssistTarget(['native_queries'], { platform: 'nowhere', language: 'spl' })).toThrow('choose them first');
+    expect(() => resolveHuntAssistTarget(['hypothesis', 'password'], {})).toThrow('Unknown hunt fields: password');
+  });
+
+  it('should bound the draft and keep only the complete native queries of the form', () => {
+    expect(() => validateHuntAssistDraft(emptyDraft({ prompt: 'x'.repeat(2001) }))).toThrow('limited to 2000 characters');
+    expect(() => validateHuntAssistDraft(emptyDraft({ benign_patterns: Array.from({ length: 51 }, (_, index) => `pattern ${index}`) }))).toThrow('limited to 50 items');
+    expect(validateHuntAssistDraft(emptyDraft({ expected_observables: [' StixFile', 'StixFile', ''] })).expected_observables).toEqual(['StixFile']);
+    expect(draftNativeQueries([
+      { platform: 'splunk', language: 'spl', query: 'index=edr' },
+      { platform: 'splunk', language: 'spl', query: 'index=other' },
+      { platform: 'microsoft-sentinel', language: 'kql', query: ' ' },
+      { platform: '', language: '', query: '' },
+    ])).toEqual([{ platform: 'splunk', language: 'spl', query: 'index=edr', pipeline: null }]);
+  });
+});
+
+describe('Hunt assistance answers', () => {
+  it('should propose the asked field with what the same answer implies', () => {
+    const proposal = pickHuntAssistance(validateHuntPlanSpec(planAnswer(), ['allowed-threat']), resolveHuntAssistTarget(['hypothesis'], {}));
+    expect(proposal.fields).toEqual(['hypothesis']);
+    expect(proposal.hypothesis).toBe('If APT-X is active, rundll32 executes a DLL from a user writable path');
+    expect(proposal.sigma_rule).toBe(SIGMA.trim());
+    expect(proposal.sigma_validation?.valid).toBe(true);
+    expect(proposal.technique_ids).toEqual(['T1218.011', 'T1218']);
+    expect(proposal.benign_patterns).toEqual(['Signed vendor DLL']);
+  });
+
+  it('should list every field for a whole plan', () => {
+    const proposal = pickHuntAssistance(validateHuntPlanSpec(planAnswer(), []), resolveHuntAssistTarget([], {}));
+    expect(proposal.fields).toEqual(['name', 'hypothesis', 'description', 'sigma_rule', 'native_queries', 'expected_observables', 'benign_patterns', 'techniques']);
+    expect(proposal.native_queries).toHaveLength(1);
+  });
+
+  it('should keep only the native query asked for', () => {
+    const spec = validateHuntPlanSpec(planAnswer(), []);
+    expect(pickHuntAssistance(spec, resolveHuntAssistTarget(['native_queries'], { platform: 'splunk', language: 'SPL' })).native_queries)
+      .toEqual([{ platform: 'splunk', language: 'spl', query: 'index=edr process=rundll32.exe', pipeline: null }]);
+    const missing = () => pickHuntAssistance(spec, resolveHuntAssistTarget(['native_queries'], { platform: 'microsoft-sentinel', language: 'kql' }));
+    expect(missing).toThrow('answered without: native_queries');
+    expect(failureOf(missing)).toBe('XTM_ONE_INCOMPLETE');
+  });
+
+  it('should refuse an answer without the asked field', () => {
+    const infrastructure = validateHuntPlanSpec(planAnswer({
       hunt_type: 'infrastructure',
       sigma_rule: '',
       native_queries: [{ platform: 'internet', language: 'internet', query: 'services.jarm.fingerprint: abc', pipeline: 'censys' }],
-    }), [])).toThrow('contains no Sigma rule');
-    expect(() => validateHuntSigmaGeneration(planAnswer({ sigma_rule: '' }), [])).toThrow('contains no Sigma rule');
-    expect(() => validateHuntSigmaGeneration(planAnswer({ sigma_rule: 'title: broken' }), [])).toThrow('invalid Sigma rule');
+    }), []);
+    expect(() => pickHuntAssistance(infrastructure, resolveHuntAssistTarget(['sigma_rule'], {}))).toThrow('answered without: sigma_rule');
+    const withoutPatterns = validateHuntPlanSpec(planAnswer({ benign_patterns: [] }), []);
+    expect(() => pickHuntAssistance(withoutPatterns, resolveHuntAssistTarget(['benign_patterns', 'hypothesis'], {}))).toThrow('answered without: benign_patterns');
+    expect(failureOf(() => validateHuntPlanSpec(planAnswer({ sigma_rule: 'title: broken' }), []))).toBe('XTM_ONE_INVALID_ANSWER');
+  });
+});
+
+describe('Hunt agent failures', () => {
+  it('should name the cause of a failed XTM One call', () => {
+    expect(classifyXtmCallFailure({ status: 429, code: 'ERR_BAD_REQUEST', detail: 'Agentic quota exceeded' })).toBe('XTM_ONE_QUOTA');
+    expect(classifyXtmCallFailure({ status: 401, code: null, detail: 'Invalid token' })).toBe('XTM_ONE_REFUSED');
+    expect(classifyXtmCallFailure({ status: 403, code: null, detail: null })).toBe('XTM_ONE_REFUSED');
+    expect(classifyXtmCallFailure({ status: 500, code: null, detail: 'No LLM provider configured. An admin must add an API key in Settings > AI Models.' })).toBe('XTM_ONE_NO_MODEL');
+    expect(classifyXtmCallFailure({ status: null, code: 'ECONNABORTED', detail: 'timeout of 300000ms exceeded' })).toBe('XTM_ONE_TIMEOUT');
+    expect(classifyXtmCallFailure({ status: null, code: 'ECONNREFUSED', detail: 'connect ECONNREFUSED 127.0.0.1:8000' })).toBe('XTM_ONE_UNREACHABLE');
+    expect(classifyXtmCallFailure({ status: 502, code: null, detail: 'Bad gateway' })).toBe('XTM_ONE_UNREACHABLE');
   });
 });
 

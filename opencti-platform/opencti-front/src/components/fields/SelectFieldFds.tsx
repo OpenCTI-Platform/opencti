@@ -22,6 +22,8 @@ export type SelectFieldFdsProps = FieldProps<string> & {
   onFocus?: (name: string) => void;
   /** The field's value is a NUMBER in the form and in the API, not a string. */
   numeric?: boolean;
+  /** A secondary action at the end of the label row */
+  labelAction?: ReactNode;
 };
 
 const SelectFieldFds = ({
@@ -40,6 +42,7 @@ const SelectFieldFds = ({
   onSubmit,
   onFocus,
   numeric,
+  labelAction,
 }: SelectFieldFdsProps) => {
   const [, meta] = useField(name);
   const showError = !isNilField(meta.error) && (meta.touched || submitCount > 0);
@@ -67,7 +70,13 @@ const SelectFieldFds = ({
         error={showError}
         name={name}
       >
-        {label ? <SelectLabel required={required}>{label}</SelectLabel> : null}
+        {labelAction ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+            {label ? <SelectLabel required={required}>{label}</SelectLabel> : <span />}
+            {labelAction}
+          </div>
+        ) : null}
+        {!labelAction && label ? <SelectLabel required={required}>{label}</SelectLabel> : null}
         <SelectTrigger className={fullWidth ? 'w-full' : undefined}>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>

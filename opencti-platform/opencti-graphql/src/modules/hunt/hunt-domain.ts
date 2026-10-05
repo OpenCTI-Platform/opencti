@@ -24,8 +24,9 @@ import {
   type EditInput,
   FilterMode,
   type HuntAddInput,
+  type HuntAssistField,
+  type HuntAssistInput,
   type HuntPlanInput,
-  type HuntSigmaGenerateInput,
   HuntSourceKind,
   HuntStatus,
   HuntType,
@@ -64,7 +65,18 @@ import { computeNextRunAt } from './hunt-schedule';
 import { updateHuntRunInformation } from './hunt-stats';
 import { buildHuntScopeFilter, HUNT_CONFIG, HUNT_DEFAULT_ESCALATION_THRESHOLD, HUNT_DEFAULT_TIME_WINDOW_HOURS, normalizeNativeQueries, sharedOrganizations } from './hunt-utils';
 import { resolveHuntScopePlatforms } from './hunt-dispatch';
-import { buildHuntSigmaRequest, callHuntAgent, HUNT_PLANNER_INTENT, HUNT_SIGMA_GENERATION_INTENT, validateHuntPlanSpec, validateHuntSigmaGeneration } from './hunt-agents';
+import {
+  buildHuntAssistRequest,
+  callHuntAgent,
+  draftNativeQueries,
+  HUNT_PLANNER_INTENT,
+  HUNT_SIGMA_GENERATION_INTENT,
+  huntAssistHasSubject,
+  pickHuntAssistance,
+  resolveHuntAssistTarget,
+  validateHuntAssistDraft,
+  validateHuntPlanSpec,
+} from './hunt-agents';
 import { parseHuntPack, planHuntPackImport, resolveHuntPackLabels } from './hunt-pack';
 import { type HuntValidationState, mergeHuntEdits, validateHuntState } from './hunt-validators';
 import { withHuntLock } from './hunt-lock';
@@ -476,26 +488,58 @@ export const planHunt = async (context: AuthContext, user: AuthUser, input: Hunt
 };
 // endregion
 
-// region Sigma rule generation (XTM One cti.hunt_sigma_generation)
-/** The Sigma rule of a hunt being written, from its hypothesis, threats, techniques and platforms; nothing is saved. */
-export const generateHuntSigmaRule = async (context: AuthContext, user: AuthUser, input: HuntSigmaGenerateInput) => {
+// region assistance of a hunt being written (XTM One cti.hunt_hypothesis and cti.hunt_sigma_generation)
+/** The Attack Patterns of the platform the agent named by their ATT&CK ids, in the order it named them. */
+const resolveAssistTechniques = async (context: AuthContext, user: AuthUser, attackIds: string[]) => {
+  if (attackIds.length === 0) {
+    return { techniques: [], unknown: [] };
+  }
+  const found = await fullEntitiesList<BasicStoreEntity & { x_mitre_id?: string; name: string }>(context, user, [ENTITY_TYPE_ATTACK_PATTERN], {
+    filters: { mode: FilterMode.And, filters: [{ key: ['x_mitre_id'], values: attackIds }], filterGroups: [] },
+  });
+  const byAttackId = new Map(found.map((technique) => [(technique.x_mitre_id ?? '').toUpperCase(), technique]));
+  return {
+    techniques: attackIds.filter((id) => byAttackId.has(id)).map((id) => {
+      const technique = byAttackId.get(id) as BasicStoreEntity & { x_mitre_id?: string; name: string };
+      return { id: technique.internal_id, entity_type: technique.entity_type, name: technique.name, x_mitre_id: technique.x_mitre_id ?? null };
+    }),
+    unknown: attackIds.filter((id) => !byAttackId.has(id)),
+  };
+};
+
+/**
+ * What XTM One proposes for the fields of a hunt being written - or for the whole plan when no field is asked - from
+ * everything the form holds, the saved hunt and the knowledge of the platform. Nothing is saved: the analyst accepts
+ * the proposal field by field.
+ */
+export const assistHunt = async (context: AuthContext, user: AuthUser, input: HuntAssistInput) => {
   await checkEnterpriseEdition(context);
+  const target = resolveHuntAssistTarget(input.fields ?? [], { platform: input.native_query_platform, language: input.native_query_language });
   const hunt = input.hunt_id ? await storeLoadById<BasicStoreEntityHunt>(context, user, input.hunt_id, ENTITY_TYPE_HUNT) : null;
   if (input.hunt_id && !hunt) {
     throw ResourceNotFoundError('The hunt cannot be found', { id: input.hunt_id });
   }
-  const name = (input.name ?? hunt?.name ?? '').trim();
-  const hypothesis = (input.hypothesis ?? hunt?.hypothesis ?? '').trim();
-  const sigmaRule = (input.sigma_rule ?? hunt?.sigma_rule ?? '').trim();
+  const draft = validateHuntAssistDraft({
+    name: (input.name ?? hunt?.name ?? '').trim(),
+    hunt_type: input.hunt_type ?? hunt?.hunt_type ?? HuntType.Telemetry,
+    hypothesis: (input.hypothesis ?? hunt?.hypothesis ?? '').trim(),
+    description: (input.description ?? hunt?.description ?? '').trim(),
+    sigma_rule: (input.sigma_rule ?? hunt?.sigma_rule ?? '').trim(),
+    native_queries: draftNativeQueries(input.native_queries ?? hunt?.native_queries ?? []),
+    expected_observables: input.expected_observables ?? hunt?.expected_observables ?? [],
+    benign_patterns: input.benign_patterns ?? hunt?.benign_patterns ?? [],
+    prompt: (input.prompt ?? '').trim(),
+  });
   const entityIds = Array.from(new Set([
     ...(input.target_ids ?? hunt?.[RELATION_HUNT_TARGETS] ?? []),
     ...(input.technique_ids ?? hunt?.[RELATION_HUNT_TECHNIQUES] ?? []),
+    ...(input.source_ids ?? hunt?.[RELATION_HUNT_SOURCES] ?? []),
   ]));
   if (entityIds.length > PLAN_MAX_ENTITIES) {
-    throw FunctionalError(`A Sigma rule is generated from at most ${PLAN_MAX_ENTITIES} threats and techniques`);
+    throw FunctionalError(`A hunt is written from at most ${PLAN_MAX_ENTITIES} threats, techniques, indicators and reports`);
   }
-  if (hypothesis.length === 0 && entityIds.length === 0) {
-    throw FunctionalError('A Sigma rule is generated from the hypothesis of the hunt or from its threats and techniques');
+  if (!huntAssistHasSubject(draft, entityIds.length)) {
+    throw FunctionalError('Say what to hunt: a name, a few words, a hypothesis, a threat or a technique');
   }
   let scopePlatformIds: string[] = [];
   if (input.security_platform_ids) {
@@ -503,32 +547,34 @@ export const generateHuntSigmaRule = async (context: AuthContext, user: AuthUser
   } else if (hunt?.hunt_scope) {
     scopePlatformIds = (await resolveHuntScopePlatforms(context, user, hunt)).map((platform) => platform.internal_id);
   }
-  const knowledge = entityIds.length > 0 ? await loadHuntPlanEntities(context, user, entityIds) : null;
-  // Only the threats and techniques of the hunt ground the rule
-  const plannerRequest = await buildHuntPlannerRequest(
-    context,
-    user,
-    { reports: [], threats: knowledge?.threats ?? [], techniques: knowledge?.techniques ?? [], indicators: [] },
-    scopePlatformIds,
-    input.benign_patterns ?? hunt?.benign_patterns ?? [],
-  );
-  const payload = buildHuntSigmaRequest(plannerRequest, { name, hypothesis, sigma_rule: sigmaRule });
+  const knowledge = entityIds.length > 0
+    ? await loadHuntPlanEntities(context, user, entityIds)
+    : { reports: [], threats: [], techniques: [], indicators: [] };
+  const plannerRequest = await buildHuntPlannerRequest(context, user, knowledge, scopePlatformIds, draft.benign_patterns);
+  const payload = buildHuntAssistRequest(plannerRequest, draft, target);
+  const sigmaOnly = payload.task === 'hunt_sigma_generation';
   const jwtUser = await resolveAgentJwtUser(user.id);
-  const { slug, answer } = await callHuntAgent(HUNT_SIGMA_GENERATION_INTENT, jwtUser, payload, input.agent_slug);
-  const generation = validateHuntSigmaGeneration(answer, (knowledge?.threats ?? []).map((threat) => threat.internal_id));
+  const { slug, answer } = await callHuntAgent(sigmaOnly ? HUNT_SIGMA_GENERATION_INTENT : HUNT_PLANNER_INTENT, jwtUser, payload, input.agent_slug);
+  const proposal = pickHuntAssistance(validateHuntPlanSpec(answer, knowledge.threats.map((threat) => threat.internal_id)), target);
+  const { techniques, unknown } = await resolveAssistTechniques(context, user, proposal.technique_ids);
+  if (target.fields.length === 0) {
+    addHuntPlanCount();
+  }
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: hunt ? 'update' : 'create',
     event_access: 'extended',
-    message: `generates the Sigma rule of hunt \`${name || 'without a name'}\` with XTM One`,
+    message: target.fields.length === 0
+      ? `plans hunt \`${draft.name || proposal.name}\` with XTM One`
+      : `writes the ${target.fields.join(', ')} of hunt \`${draft.name || proposal.name}\` with XTM One`,
     context_data: {
       id: hunt?.internal_id ?? '',
       entity_type: ENTITY_TYPE_HUNT,
-      input: { agent_slug: slug, target_ids: input.target_ids, technique_ids: input.technique_ids, security_platform_ids: input.security_platform_ids },
+      input: { agent_slug: slug, fields: target.fields, target_ids: input.target_ids, technique_ids: input.technique_ids, security_platform_ids: input.security_platform_ids },
     },
   });
-  return generation;
+  return { ...proposal, fields: proposal.fields as string[] as HuntAssistField[], techniques, unknown_technique_ids: unknown };
 };
 // endregion
 

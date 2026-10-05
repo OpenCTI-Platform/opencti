@@ -9,6 +9,7 @@ import TextField from '../../../components/TextField';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import { HuntCodeEditorField } from './HuntCodeEditor';
+import { HuntAIAction } from './HuntAIAssist';
 import {
   HUNT_DOCS,
   HUNT_PLATFORM_DEFAULT_LANGUAGE,
@@ -132,6 +133,9 @@ const HuntNativeQueriesField = ({ name = 'native_queries', label, disabled = fal
                   minRows={4}
                   maxRows={16}
                   helperText={t_i18n('Run as written within the time window of the run, for example index=edr CommandLine="* -enc *"')}
+                  labelAction={row.platform && row.language ? (
+                    <HuntAIAction request={{ kind: 'native_queries', nativeQueryIndex: index }} disabled={disabled} testId={`hunt-native-query-${index}-generate`} />
+                  ) : undefined}
                   testId={`hunt-native-query-${index}`}
                 />
               </div>

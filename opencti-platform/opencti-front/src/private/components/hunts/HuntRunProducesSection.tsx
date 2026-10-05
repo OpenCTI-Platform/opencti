@@ -10,6 +10,7 @@ import { HuntHelp } from './HuntLearnMore';
 import HuntFormSectionTitle from './HuntFormSectionTitle';
 import { HUNT_DOCS, huntExtractsObservables, huntObservableTypeNames, huntRunProducesDescription } from './hunt-utils';
 import useHuntConfiguration from './useHuntConfiguration';
+import { HuntAIAction } from './HuntAIAssist';
 
 /** The default observable types of the platform by their names, once loaded. */
 export const useHuntDefaultObservableTypeNames = (): string | null => {
@@ -45,6 +46,7 @@ const HuntRunProducesSection = ({ huntType }: { huntType: string }) => {
           placeholder={placeholder}
           multiple
           style={fieldSpacingContainerStyle}
+          labelAction={<HuntAIAction request={{ kind: 'expected_observables' }} testId="hunt-observables-generate" />}
         />
       )}
     </>

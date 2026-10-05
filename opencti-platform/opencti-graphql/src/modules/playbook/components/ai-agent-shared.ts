@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import nconf from 'nconf';
-import xtmOneClient from '../../xtm/one/xtm-one-client';
+import xtmOneClient, { toXtmCallFailure, type XtmCallFailure } from '../../xtm/one/xtm-one-client';
 import { issueXtmJwt } from '../../../domain/xtm-auth';
 import { getHttpClient, getResponseError } from '../../../utils/http-client';
 import { logApp, PLATFORM_VERSION } from '../../../config/conf';
@@ -395,14 +395,17 @@ export const sanitizeDefinitionRunAs = async (
  * no resolvable identity exists at all (``jwtUser`` null), the call is
  * skipped (a JWT minted for an in-memory placeholder user can never be
  * resolved by XTM One anyway).
+ *
+ * ``onFailure`` receives the HTTP status, the network error code and the
+ * detail of a failed call, for callers that explain the failure to a user.
  */
 export const callXtmAgent = async (
   agentSlug: string,
   content: string,
   jwtUser: AgentJwtUser | null,
-  opts: { countAsPlaybookRun?: boolean } = {},
+  opts: { countAsPlaybookRun?: boolean; onFailure?: (failure: XtmCallFailure) => void } = {},
 ): Promise<string | null> => {
-  const { countAsPlaybookRun = true } = opts;
+  const { countAsPlaybookRun = true, onFailure } = opts;
   const xtmOneUrl = nconf.get('xtm:xtm_one_url');
   if (!xtmOneUrl || !xtmOneClient.isConfigured()) {
     logApp.warn('[PLAYBOOK AI AGENT] XTM One is not configured, skipping agent call');
@@ -444,6 +447,7 @@ export const callXtmAgent = async (
       status: httpErr?.status,
       detail,
     });
+    onFailure?.(toXtmCallFailure(e));
     return null;
   }
 };

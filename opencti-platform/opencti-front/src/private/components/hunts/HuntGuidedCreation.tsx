@@ -33,8 +33,9 @@ import HuntEntitiesField from './HuntEntitiesField';
 import { mutationErrorMessage, notifyPayloadErrors, payloadErrorsMessage, useDialogMutation } from './hunt-mutation-utils';
 import HuntIocFields from './HuntIocFields';
 import HuntIndicatorSupportWarning from './HuntIndicatorSupportWarning';
-import { HuntCodeEditorField } from './HuntCodeEditor';
-import HuntSigmaValidation from './HuntSigmaValidation';
+import HuntSigmaRuleField from './HuntSigmaRuleField';
+import { HuntAIAssistProvider } from './HuntAIAssist';
+import type { HuntAIFormValues } from './hunt-ai-utils';
 import { SIGMA_RULE_PLACEHOLDER } from './HuntCreation';
 import { parseIocText } from './hunt-ioc-utils';
 import { emptyHuntFormValues, HUNT_SCOPE_TYPES, HUNT_TIME_WINDOW_PRESETS, type HuntFormValues, toHuntAddInput } from './hunt-utils';
@@ -79,6 +80,9 @@ const huntGuidedCreationRunMutation = graphql`
 `;
 
 const STEPS = 3;
+
+// The guided steps show the rule, the scope and the name: the agent proposes the rule, the hypothesis, the observables and the techniques
+const GUIDED_HIDDEN_AI_FIELDS: (keyof HuntAIFormValues)[] = ['description', 'benign_patterns', 'native_queries'];
 
 /** The live hunt connectors that would run the hunt on its scope, as the readiness of the platform counts them. */
 const ConnectorsForScope = ({ kind, scopePlatformIds, onCount }: { kind: HuntGuidedKind; scopePlatformIds: string[]; onCount: (count: number) => void }) => {
@@ -225,7 +229,11 @@ const HuntGuidedCreation = ({ kind, open, onClose }: HuntGuidedCreationProps) =>
                       <HuntIocFields filtersState={iocFiltersState} withFilters={false} />
                     </>
                   )}
-                  {step === 0 && kind === 'sigma' && <SigmaStep sigmaRule={values.sigma_rule} />}
+                  {step === 0 && kind === 'sigma' && (
+                    <HuntAIAssistProvider hiddenFields={GUIDED_HIDDEN_AI_FIELDS} placeholderName={initialValues.name}>
+                      <SigmaStep />
+                    </HuntAIAssistProvider>
+                  )}
                   {step === 1 && (
                     <div data-testid="hunt-guided-scope">
                       <HuntEntitiesField
@@ -293,24 +301,17 @@ const HuntGuidedCreation = ({ kind, open, onClose }: HuntGuidedCreationProps) =>
   );
 };
 
-const SigmaStep = ({ sigmaRule }: { sigmaRule: string }) => {
-  const theme = useTheme<Theme>();
+const SigmaStep = () => {
   const { t_i18n } = useFormatter();
   return (
     <div data-testid="hunt-guided-sigma">
-      <Field
-        component={HuntCodeEditorField}
-        name="sigma_rule"
+      <HuntSigmaRuleField
         label={t_i18n('Sigma rule (YAML)')}
-        language="yaml"
+        helperText={t_i18n('Paste a rule from SigmaHQ or your own: the hunt connector translates it for your SIEM or EDR.')}
         placeholder={SIGMA_RULE_PLACEHOLDER}
         minRows={12}
         testId="hunt-guided-sigma-editor"
       />
-      <Text variant="content-caption" style={{ display: 'block', color: theme.palette.text.secondary }}>
-        {t_i18n('Paste a rule from SigmaHQ or your own: the hunt connector translates it for your SIEM or EDR.')}
-      </Text>
-      <HuntSigmaValidation sigmaRule={sigmaRule} />
     </div>
   );
 };

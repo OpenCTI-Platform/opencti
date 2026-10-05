@@ -20,6 +20,7 @@ import { notifyPayloadErrors } from './hunt-mutation-utils';
 import { SIGMA_RULE_PLACEHOLDER } from './HuntCreation';
 import HuntNativeQueriesField from './HuntNativeQueriesField';
 import HuntSigmaRuleField from './HuntSigmaRuleField';
+import { HuntAIAssistProvider } from './HuntAIAssist';
 import HuntTranslationPreview from './HuntTranslationPreview';
 import HuntIocFields from './HuntIocFields';
 import { HuntReadinessChecklist, huntStatusHeaderStatusMutation } from './HuntStatusHeader';
@@ -239,6 +240,19 @@ const DetectionRuleLogic = ({ hunt }: { hunt: HuntLogicData }) => {
               <Button variant="secondary" onClick={() => resetForm()} disabled={!dirty || isSubmitting}>
                 {t_i18n('Discard changes')}
               </Button>
+              {dirty && (
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    previewAfterSave.current = true;
+                    submitForm();
+                  }}
+                  disabled={isSubmitting}
+                  data-testid={`${testId}-and-preview`}
+                >
+                  {t_i18n('Save and preview')}
+                </Button>
+              )}
               <Button onClick={submitForm} disabled={!dirty || isSubmitting} data-testid={testId}>
                 {t_i18n('Save the logic')}
               </Button>
@@ -247,62 +261,46 @@ const DetectionRuleLogic = ({ hunt }: { hunt: HuntLogicData }) => {
         );
         return (
           <Form data-testid="hunt-logic-page">
-            <div style={{ marginBottom: theme.spacing(2), display: 'flex', flexDirection: 'column', gap: theme.spacing(1) }}>
-              {saved && !dirty && <ActivateAfterSave hunt={hunt} />}
-              {missing && (
-                <Alert severity="warning" title={t_i18n(missing)} description={t_i18n('A hunt without its logic stays a draft: the platform refuses to activate it.')} data-testid="hunt-logic-missing" />
-              )}
-              {saveBar('hunt-logic-save-top')}
-            </div>
-            <Grid container spacing={3}>
-              {isTelemetry && (
-                <Grid item xs={12} lg={7}>
-                  <Card title={t_i18n('Sigma rule')} action={<HuntLearnMore href={HUNT_DOCS.createHunt} testId="hunt-logic-sigma-learn-more" />}>
-                    <HuntSigmaRuleField
-                      label={t_i18n('Sigma rule (YAML)')}
-                      helperText={t_i18n('The activity to look for, in Sigma YAML that every hunt connector translates, for example a PowerShell process started with -enc. Left empty, the hunt needs a native query to run.')}
-                      placeholder={SIGMA_RULE_PLACEHOLDER}
-                      generationInput={{ hunt_id: hunt.id }}
-                      nextStep={{
-                        sentence: t_i18n('Save the logic to preview the query each connector runs.'),
-                        action: (
-                          <Button
-                            variant="secondary"
-                            size="small"
-                            onClick={() => {
-                              previewAfterSave.current = true;
-                              submitForm();
-                            }}
-                            disabled={isSubmitting}
-                            data-testid="hunt-logic-save-and-preview"
-                          >
-                            {t_i18n('Save and preview')}
-                          </Button>
-                        ),
-                      }}
-                      minRows={14}
-                      maxRows={40}
-                      disabled={!canEdit}
-                      testId="hunt-logic-sigma"
-                    />
+            <HuntAIAssistProvider huntId={hunt.id}>
+              <div style={{ marginBottom: theme.spacing(2), display: 'flex', flexDirection: 'column', gap: theme.spacing(1) }}>
+                {saved && !dirty && <ActivateAfterSave hunt={hunt} />}
+                {missing && (
+                  <Alert severity="warning" title={t_i18n(missing)} description={t_i18n('A hunt without its logic stays a draft: the platform refuses to activate it.')} data-testid="hunt-logic-missing" />
+                )}
+                {saveBar('hunt-logic-save-top')}
+              </div>
+              <Grid container spacing={3}>
+                {isTelemetry && (
+                  <Grid item xs={12} lg={7}>
+                    <Card title={t_i18n('Sigma rule')} action={<HuntLearnMore href={HUNT_DOCS.createHunt} testId="hunt-logic-sigma-learn-more" />}>
+                      <HuntSigmaRuleField
+                        label={t_i18n('Sigma rule (YAML)')}
+                        helperText={t_i18n('The activity to look for, in Sigma YAML that every hunt connector translates, for example a PowerShell process started with -enc. Left empty, the hunt needs a native query to run.')}
+                        placeholder={SIGMA_RULE_PLACEHOLDER}
+                        minRows={14}
+                        maxRows={40}
+                        disabled={!canEdit}
+                        testId="hunt-logic-sigma"
+                      />
+                    </Card>
+                  </Grid>
+                )}
+                <Grid item xs={12} lg={isTelemetry ? 5 : 12}>
+                  <Card title={t_i18n('Query preview')} action={<HuntLearnMore href={HUNT_DOCS.runHunt} />}>
+                    <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+                      <HuntTranslationPreview huntId={hunt.id} huntType={hunt.hunt_type} scopePlatformIds={scopePlatformIdsOf(hunt)} dirty={dirty} startSignal={previewSignal} />
+                    </Suspense>
+                    <LogicReadinessNotes hunt={hunt} />
                   </Card>
                 </Grid>
-              )}
-              <Grid item xs={12} lg={isTelemetry ? 5 : 12}>
-                <Card title={t_i18n('Query preview')} action={<HuntLearnMore href={HUNT_DOCS.runHunt} />}>
-                  <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-                    <HuntTranslationPreview huntId={hunt.id} huntType={hunt.hunt_type} scopePlatformIds={scopePlatformIdsOf(hunt)} dirty={dirty} startSignal={previewSignal} />
-                  </Suspense>
-                  <LogicReadinessNotes hunt={hunt} />
-                </Card>
+                <Grid item xs={12}>
+                  <Card title={t_i18n('Native queries')} action={<HuntLearnMore href={HUNT_DOCS.createHunt} />}>
+                    <HuntNativeQueriesField disabled={!canEdit} />
+                  </Card>
+                </Grid>
               </Grid>
-              <Grid item xs={12}>
-                <Card title={t_i18n('Native queries')} action={<HuntLearnMore href={HUNT_DOCS.createHunt} />}>
-                  <HuntNativeQueriesField disabled={!canEdit} />
-                </Card>
-              </Grid>
-            </Grid>
-            <div style={{ marginTop: theme.spacing(2) }}>{saveBar('hunt-logic-save')}</div>
+              <div style={{ marginTop: theme.spacing(2) }}>{saveBar('hunt-logic-save')}</div>
+            </HuntAIAssistProvider>
           </Form>
         );
       }}

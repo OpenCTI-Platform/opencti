@@ -22,6 +22,8 @@ vi.mock('../../../relay/environment', async (importOriginal) => {
 });
 
 vi.mock('../../../utils/ai/agentApi', () => ({ fetchAgentsForIntent: () => Promise.resolve([]) }));
+// The Generate with AI of the Sigma step carries the Enterprise Edition chip on a Community Edition platform
+vi.mock('@components/common/entreprise_edition/EEChip', () => ({ default: () => <span data-testid="hunt-ee-chip">EE</span> }));
 
 const SIGMA_RULE = 'title: Encoded PowerShell\nlogsource:\n  product: windows\ndetection:\n  selection:\n    CommandLine|contains: " -enc "\n  condition: selection';
 

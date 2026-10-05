@@ -37,6 +37,8 @@ type MarkdownFieldBaseProps = {
   uploadFileMarkings?: string[];
   autoPersistOnBlur?: boolean;
   registerMarkdownImagesController?: (controller: MarkdownImagesController) => void;
+  /** A secondary action at the end of the label row, outside the editor */
+  labelAction?: React.ReactNode;
 };
 
 const TEMP_CLEANUP_DELAY_MS = 300;
@@ -65,6 +67,7 @@ const MarkdownFieldBase = ({
   uploadFileMarkings,
   autoPersistOnBlur,
   registerMarkdownImagesController,
+  labelAction,
 }: MarkdownFieldBaseProps): ReactElement => {
   const { t_i18n } = useFormatter();
   const { enabled, configured } = useAI();
@@ -197,10 +200,10 @@ const MarkdownFieldBase = ({
     handleUploadButtonClick();
   };
 
-  return (
+  const editor = (
     <div
       ref={containerRef}
-      style={{ ...style, position: 'relative' }}
+      style={labelAction ? { position: 'relative' } : { ...style, position: 'relative' }}
       className={showError ? 'error' : 'main'}
       onBlur={internalOnBlur}
       onFocus={internalOnFocus}
@@ -210,9 +213,11 @@ const MarkdownFieldBase = ({
       onDragOver={handleDragOver}
       onPaste={handlePaste}
     >
-      <InputLabel shrink={true} required={required} error={showError}>
-        {label}
-      </InputLabel>
+      {!labelAction && (
+        <InputLabel shrink={true} required={required} error={showError}>
+          {label}
+        </InputLabel>
+      )}
 
       <input
         ref={fileInputRef}
@@ -326,6 +331,23 @@ const MarkdownFieldBase = ({
           disabled={disabled}
         />
       )}
+    </div>
+  );
+
+  if (!labelAction) {
+    return editor;
+  }
+  // The action lives outside the editor container: its focus and blur handlers belong to the editing of the text
+  return (
+    <div style={style}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 4 }}>
+        {/* Scaled from its left centre, the shrunk label stays on the centre line of the action */}
+        <InputLabel shrink={true} required={required} error={showError} sx={{ transformOrigin: 'left center' }}>
+          {label}
+        </InputLabel>
+        {labelAction}
+      </div>
+      {editor}
     </div>
   );
 };
