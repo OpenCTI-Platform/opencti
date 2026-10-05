@@ -5,16 +5,20 @@ import { v4 as uuid } from 'uuid';
 import { ADMIN_USER, getAuthUser, getUserIdByEmail, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { connectorDelete, registerConnector } from '../../../../src/domain/connector';
 import { updateProcessedTime } from '../../../../src/domain/work';
-import { ConnectorType, InvestigationRunPhase, InvestigationRunStatus, InvestigationRunTrigger } from '../../../../src/generated/graphql';
+import { ConnectorType, InvestigationEvidenceKind, InvestigationRunPhase, InvestigationRunStatus, InvestigationRunTrigger } from '../../../../src/generated/graphql';
 import { MARKING_TLP_AMBER, MARKING_TLP_RED } from '../../../../src/schema/identifier';
 import {
   addInvestigationRun,
   cancelInvestigationRun,
   decideInvestigationApprovals,
   findInvestigationRunsWithheldReasons,
+  findServedInvestigationRuns,
   loadInvestigationRun,
   updateInvestigationRun,
 } from '../../../../src/modules/investigationRun/investigationRun-domain';
+import { addMalware } from '../../../../src/domain/malware';
+import { internalLoadById } from '../../../../src/database/middleware-loader';
+import { RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
 import { statusTransition } from '../../../../src/modules/investigationRun/investigationRun-state';
 import { runCitedIds } from '../../../../src/modules/investigationRun/investigationRun-utils';
 import type { BasicStoreEntityInvestigationRun } from '../../../../src/modules/investigationRun/investigationRun-types';
@@ -950,6 +954,44 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       if (marked) {
         await queryAsAdmin({ query: UNMARK_SDO, variables: { id: fixture.intrusionSetId, toId: MARKING_TLP_RED, relationship_type: 'object-marking' } });
       }
+      if (runId) await queryAsAdmin({ query: RUN_CANCEL, variables: { id: runId } });
+      await queryAsAdmin({ query: DELETE_CASE, variables: { id: caseId } });
+    }
+  });
+
+  it('checks what exists only in its draft, such as an enrichment result, against the reader', async () => {
+    const created = await queryAsAdminWithSuccess({ query: CREATE_CASE, variables: { input: { name: 'Case Autopilot e2e draft source case', objects: [fixture.intrusionSetId, fixture.ipId] } } });
+    const caseId = created.data.caseIncidentAdd.id;
+    let runId = '';
+    try {
+      engineStage = 'planning';
+      const { data } = await queryAsAdminWithSuccess({ query: RUN_ADD, variables: { subjectId: caseId } });
+      runId = data.investigationRunAdd.id;
+      createdRuns.push({ id: runId });
+      await tickUntil(runId, (current) => current.run_phase === 'investigating');
+      engineStage = 'completed';
+      await tickUntil(runId, (current) => current.run_status !== 'running', 15);
+      const stored = await loadInvestigationRun(testContext, runId) as BasicStoreEntityInvestigationRun;
+      expect(stored.draft_id).toBeTruthy();
+      // A result an enrichment brought exists only in the run draft, here under a marking the editor does not have.
+      const draftContext = { ...testContext, draft_context: stored.draft_id as string };
+      const result = await addMalware(draftContext, ADMIN_USER, { name: 'Case Autopilot e2e draft-only result', objectMarking: [MARKING_TLP_RED] });
+      const objectEvidence = stored.evidence.find((item) => item.kind === InvestigationEvidenceKind.OpenctiObject) as BasicStoreEntityInvestigationRun['evidence'][number];
+      expect(objectEvidence).toBeDefined();
+      const citing = {
+        ...stored,
+        evidence: [...stored.evidence, { ...objectEvidence, id: result.id, n: stored.evidence.length + 1, opencti_id: result.id, entity_type: 'Malware' }],
+      } as BasicStoreEntityInvestigationRun;
+      expect(runCitedIds(citing)).toContain(result.id);
+      const editor = await getAuthUser(await getUserIdByEmail(USER_EDITOR.email));
+      expect(await findInvestigationRunsWithheldReasons(testContext, editor, [stored])).toEqual([null]);
+      expect(await findInvestigationRunsWithheldReasons(testContext, editor, [citing])).toEqual(['source_inaccessible']);
+      expect(await findInvestigationRunsWithheldReasons(testContext, ADMIN_USER, [citing])).toEqual([null]);
+      // Served with the marking of the draft-only result, so an export ceiling weighs it too.
+      const tlpRed = await internalLoadById(testContext, ADMIN_USER, MARKING_TLP_RED);
+      const [served] = await findServedInvestigationRuns(testContext, ADMIN_USER, [citing]);
+      expect((served as unknown as Record<string, string[]>)[RELATION_OBJECT_MARKING]).toContain(tlpRed.internal_id);
+    } finally {
       if (runId) await queryAsAdmin({ query: RUN_CANCEL, variables: { id: runId } });
       await queryAsAdmin({ query: DELETE_CASE, variables: { id: caseId } });
     }

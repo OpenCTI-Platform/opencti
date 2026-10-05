@@ -52,6 +52,7 @@ import { INVESTIGATION_MANAGER_USER, isUserHasCapability, KNOWLEDGE_KNENRICHMENT
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { buildRefRelationKey } from '../../schema/general';
+import { iAliasedIds, xOpenctiStixIds } from '../../schema/attribute-definition';
 import { stixDomainObjectAddRelation, stixDomainObjectEditField } from '../../domain/stixDomainObject';
 import { taskAdd } from '../task/task-domain';
 import { findById as findDraftById, validateDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
@@ -161,6 +162,12 @@ export const isInvestigationRunWithheld = (run: BasicStoreEntityInvestigationRun
  * ended one. Its markings are served the same way: those it copied, plus those
  * its sources carry now, so an export ceiling or a reader weighs what its
  * findings describe today. The sources of every run are read at once.
+ * What a run's enrichments brought exists only in its draft until the draft
+ * is validated (it is then live under its standard id, which the run also
+ * carries): a source not found live is read in that draft and checked the
+ * same way. A source found in neither is an object deleted since, or a draft
+ * object already validated: its absence alone withholds nothing, the run
+ * carrying the markings of what it read.
  */
 const readRunSources = async (
   context: AuthContext,
@@ -172,22 +179,49 @@ const readRunSources = async (
   if (ids.length === 0) return runs.map(() => ({ reason: null, markingIds: [] }));
   const liveContext = outOfDraft(context);
   const opts = { indices: READ_DATA_INDICES_WITHOUT_INTERNAL, baseData: true };
-  const liveOpts = { ...opts, baseFields: [buildRefRelationKey(RELATION_OBJECT_MARKING)] };
-  const [live, readable] = await Promise.all([
-    elFindByIds<BasicStoreEntity>(liveContext, INVESTIGATION_MANAGER_USER, ids, liveOpts) as Promise<BasicStoreEntity[]>,
-    elFindByIds<BasicStoreEntity>(liveContext, user, ids, opts) as Promise<BasicStoreEntity[]>,
-  ]);
-  const idsOf = (elements: BasicStoreEntity[]) => elements.flatMap((element) => [element.internal_id, element.standard_id]);
-  const readableIds = new Set(readable.map((element) => element.internal_id));
-  const restricted = new Set(idsOf(live.filter((element) => isMemberRestricted(element))));
-  const unreadable = new Set(idsOf(live.filter((element) => !readableIds.has(element.internal_id))));
-  const markingsOf = new Map(live.flatMap((element) => idsOf([element]).map((id) => [id, markingIdsOf(element)] as const)));
+  // Every id an element is found by, so that a source is never missed for being named by another one.
+  const sourceOpts = { ...opts, baseFields: [buildRefRelationKey(RELATION_OBJECT_MARKING), xOpenctiStixIds.name, iAliasedIds.name] };
+  const idsOf = (element: BasicStoreEntity) => [
+    element.internal_id,
+    element.standard_id,
+    ...((element as { x_opencti_stix_ids?: string[] }).x_opencti_stix_ids ?? []),
+    ...((element as { i_aliases_ids?: string[] }).i_aliases_ids ?? []),
+  ];
+  const readSources = async (readContext: AuthContext, sourceIds: string[]) => {
+    const [found, readable] = await Promise.all([
+      elFindByIds<BasicStoreEntity>(readContext, INVESTIGATION_MANAGER_USER, sourceIds, sourceOpts) as Promise<BasicStoreEntity[]>,
+      elFindByIds<BasicStoreEntity>(readContext, user, sourceIds, opts) as Promise<BasicStoreEntity[]>,
+    ]);
+    const readableIds = new Set(readable.map((element) => element.internal_id));
+    return {
+      found: new Set(found.flatMap(idsOf)),
+      restricted: new Set(found.filter((element) => isMemberRestricted(element)).flatMap(idsOf)),
+      unreadable: new Set(found.filter((element) => !readableIds.has(element.internal_id)).flatMap(idsOf)),
+      markingsOf: new Map(found.flatMap((element) => idsOf(element).map((id) => [id, markingIdsOf(element)] as const))),
+    };
+  };
+  const live = await readSources(liveContext, ids);
+  const draftOnlyIds = new Map<string, Set<string>>();
+  runs.forEach((run) => {
+    if (isWithheld(run) || !run.draft_id) return;
+    const missing = runSourceIds(run).filter((id) => !live.found.has(id));
+    if (missing.length === 0) return;
+    const draftIds = draftOnlyIds.get(run.draft_id) ?? new Set<string>();
+    missing.forEach((id) => draftIds.add(id));
+    draftOnlyIds.set(run.draft_id, draftIds);
+  });
+  const drafts = new Map(await Promise.all(Array.from(draftOnlyIds.entries()).map(async ([draftId, draftIds]) => {
+    return [draftId, await readSources({ ...liveContext, draft_context: draftId }, Array.from(draftIds))] as const;
+  })));
   return runs.map((run) => {
     if (isWithheld(run)) return { reason: null, markingIds: [] };
     const sources = runSourceIds(run);
-    const markingIds = Array.from(new Set(sources.flatMap((id) => markingsOf.get(id) ?? [])));
-    if (sources.some((id) => restricted.has(id))) return { reason: MEMBER_RESTRICTED_CODE, markingIds };
-    if (sources.some((id) => unreadable.has(id))) return { reason: SOURCE_INACCESSIBLE_CODE, markingIds };
+    const draft = run.draft_id ? drafts.get(run.draft_id) : undefined;
+    // Live versions are authoritative for what exists live.
+    const readOf = (id: string) => (live.found.has(id) || !draft ? live : draft);
+    const markingIds = Array.from(new Set(sources.flatMap((id) => readOf(id).markingsOf.get(id) ?? [])));
+    if (sources.some((id) => readOf(id).restricted.has(id))) return { reason: MEMBER_RESTRICTED_CODE, markingIds };
+    if (sources.some((id) => readOf(id).unreadable.has(id))) return { reason: SOURCE_INACCESSIBLE_CODE, markingIds };
     return { reason: null, markingIds };
   });
 };
