@@ -1,8 +1,14 @@
 import React from 'react';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, screen, within } from '@testing-library/react';
 import testRender from '../../../utils/tests/test-render';
 import HuntsOfEntity from './HuntsOfEntity';
+
+const hidden = vi.hoisted(() => ({ hunt: false }));
+vi.mock('../../../utils/hooks/useEntitySettings', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../utils/hooks/useEntitySettings')>()),
+  useIsHiddenEntities: () => hidden.hunt,
+}));
 
 const huntNode = (id: string, verdict: string | null) => ({
   id,
@@ -25,6 +31,10 @@ const resolveHunts = async (relayEnv: ReturnType<typeof testRender>['relayEnv'],
 };
 
 describe('Hunts of an entity', () => {
+  beforeEach(() => {
+    hidden.hunt = false;
+  });
+
   it('lists the hunts that use the entity as a source or a target, with the verdict of their latest run', async () => {
     const { relayEnv } = testRender(<HuntsOfEntity entityId="malware-id" />);
     const variables = await resolveHunts(relayEnv, [huntNode('a', 'true_positive'), huntNode('b', null)], 12);
@@ -45,6 +55,13 @@ describe('Hunts of an entity', () => {
   it('shows nothing when no hunt uses the entity', async () => {
     const { relayEnv } = testRender(<HuntsOfEntity entityId="report-id" />);
     await resolveHunts(relayEnv, []);
+    expect(screen.queryByTestId('hunts-of-entity')).not.toBeInTheDocument();
+  });
+
+  it('neither queries nor shows the hunts when the Hunt entity type is hidden', () => {
+    hidden.hunt = true;
+    const { relayEnv } = testRender(<HuntsOfEntity entityId="malware-id" />);
+    expect(relayEnv.mock.getAllOperations()).toHaveLength(0);
     expect(screen.queryByTestId('hunts-of-entity')).not.toBeInTheDocument();
   });
 });

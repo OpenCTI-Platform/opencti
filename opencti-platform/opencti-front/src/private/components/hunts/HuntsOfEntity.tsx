@@ -6,6 +6,7 @@ import { Text } from '@filigran/design-system';
 import Card from '../../../components/common/card/Card';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
+import { useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
 import { PATH_HUNT, PATH_HUNTS } from '../common/routes/paths';
 import { HuntStatusChip, HuntVerdictChip } from './HuntChips';
 import { HuntsOfEntityQuery } from './__generated__/HuntsOfEntityQuery.graphql';
@@ -102,10 +103,16 @@ const HuntsOfEntityCard = ({ entityId }: { entityId: string }) => {
 };
 
 /** On the pages of intel a hunt can use, the hunts that use it with the verdict of their latest run; nothing when none does. */
-const HuntsOfEntity = ({ entityId }: { entityId: string }) => (
-  <Suspense fallback={null}>
-    <HuntsOfEntityCard entityId={entityId} />
-  </Suspense>
-);
+const HuntsOfEntity = ({ entityId }: { entityId: string }) => {
+  const huntHidden = useIsHiddenEntities('Hunt');
+  if (huntHidden) {
+    return null;
+  }
+  return (
+    <Suspense fallback={null}>
+      <HuntsOfEntityCard entityId={entityId} />
+    </Suspense>
+  );
+};
 
 export default HuntsOfEntity;
