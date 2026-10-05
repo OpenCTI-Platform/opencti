@@ -51,7 +51,15 @@ import {
 import { buildVisitElement, findSnapshotAtOrAfter, findSnapshotAtOrBefore, indexVisit, listSnapshotDates, loadUserVisits, deleteUserVisits } from './timeMachine-store';
 import { countSinceReferenceDates } from './timeMachine-counters';
 import { buildRelationshipStates, relationshipStateActions, TIME_MACHINE_RELATIONSHIP_TYPES } from './timeMachine-relationships';
-import type { AttributeValues, BasicStoreEntityKnowledgeSnapshot, BasicStoreEntityUserVisit, ContainerObjectChange, RelationshipChange, ReplayResult } from './timeMachine-types';
+import type {
+  AttributeValues,
+  BasicStoreEntityKnowledgeSnapshot,
+  BasicStoreEntityUserVisit,
+  ContainerObjectChange,
+  RelationshipChange,
+  ReplayResult,
+  TimeMachineHistoryEvent,
+} from './timeMachine-types';
 
 export const MAX_REPLAY_EVENTS: number = conf.get('time_machine:max_replay_events') || 5000;
 export const MAX_REPLAY_DAYS: number = conf.get('time_machine:max_replay_days') || 90;
@@ -420,6 +428,36 @@ interface Reconstruction {
   anchorSnapshot: BasicStoreEntityKnowledgeSnapshot | null;
 }
 
+// Reads of the current document and of its history before the pair is used even if the document keeps changing
+const MAX_CURRENT_ANCHOR_READS = 3;
+
+interface CurrentAnchor {
+  document: AttributeValues;
+  anchorDate: string;
+  events: TimeMachineHistoryEvent[];
+  consistent: boolean;
+}
+
+/**
+ * The current document and its history events, read from one point in time. The history is read up to a date taken
+ * after the document was loaded, then the document is loaded again: an update written in between would otherwise be
+ * rewound on a document that does not contain it. When the document changed, both are read again from the new one.
+ */
+export const readCurrentAnchor = async (context: AuthContext, element: BasicStoreEntity, date: string, reads = 1): Promise<CurrentAnchor> => {
+  const anchorDate = now();
+  const events = await fetchElementHistoryEvents(context, SYSTEM_USER, element.internal_id, {
+    from: date,
+    to: anchorDate,
+    max: MAX_REPLAY_EVENTS + 1,
+  });
+  const reloaded = await internalLoadById<BasicStoreEntity>(context, SYSTEM_USER, element.internal_id, { type: ABSTRACT_STIX_CORE_OBJECT });
+  const consistent = !reloaded || String(reloaded.updated_at) === String(element.updated_at);
+  if (consistent || reads >= MAX_CURRENT_ANCHOR_READS) {
+    return { document: extractAttributeValues(element as any), anchorDate, events, consistent };
+  }
+  return readCurrentAnchor(context, reloaded, date, reads + 1);
+};
+
 /**
  * Reconstruct the attributes of an element at `date`.
  * The anchor is the closest known state: the snapshot taken at or after `date` (or the current
@@ -453,20 +491,24 @@ export const reconstructAt = async (context: AuthContext, element: BasicStoreEnt
       };
     }
   }
-  const anchorDocument = after ? normalizeDocument(element.entity_type, after.snapshot_document.attributes) : extractAttributeValues(element as any);
-  const events = await fetchElementHistoryEvents(context, SYSTEM_USER, element.internal_id, {
-    from: date,
-    to: backwardAnchorDate,
-    max: MAX_REPLAY_EVENTS + 1,
-  });
-  const replay = replayBackward(anchorDocument, element.entity_type, events, date, MAX_REPLAY_EVENTS);
-  flagReplayBeyondWindow(replay, backwardAnchorDate, date, MAX_REPLAY_DAYS);
-  return {
-    replay,
-    anchor: after ? 'snapshot' : 'current',
-    anchorDate: backwardAnchorDate,
-    anchorSnapshot: after ?? null,
-  };
+  if (after) {
+    const anchorDocument = normalizeDocument(element.entity_type, after.snapshot_document.attributes);
+    const events = await fetchElementHistoryEvents(context, SYSTEM_USER, element.internal_id, {
+      from: date,
+      to: after.history_cursor,
+      max: MAX_REPLAY_EVENTS + 1,
+    });
+    const replay = replayBackward(anchorDocument, element.entity_type, events, date, MAX_REPLAY_EVENTS);
+    flagReplayBeyondWindow(replay, after.history_cursor, date, MAX_REPLAY_DAYS);
+    return { replay, anchor: 'snapshot', anchorDate: after.history_cursor, anchorSnapshot: after };
+  }
+  const current = await readCurrentAnchor(context, element, date);
+  const replay = replayBackward(current.document, element.entity_type, current.events, date, MAX_REPLAY_EVENTS);
+  if (!current.consistent) {
+    replay.complete = false;
+  }
+  flagReplayBeyondWindow(replay, current.anchorDate, date, MAX_REPLAY_DAYS);
+  return { replay, anchor: 'current', anchorDate: current.anchorDate, anchorSnapshot: null };
 };
 
 // Relationships of an element by type, optionally restricted to the ones created after `startDate` or up to `endDate`
