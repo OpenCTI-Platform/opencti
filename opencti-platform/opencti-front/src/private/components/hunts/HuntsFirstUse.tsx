@@ -11,14 +11,13 @@ import type { Theme } from '../../../components/Theme';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { UserContext } from '../../../utils/hooks/useAuth';
-import useDraftContext from '../../../utils/hooks/useDraftContext';
 import { isNotEmptyField } from '../../../utils/utils';
 import { HuntCreationDrawer, insertCreatedHunt } from './HuntCreation';
 import HuntGuidedCreation, { type HuntGuidedKind } from './HuntGuidedCreation';
 import HuntPlanDialog from './HuntPlanDialog';
 import { HuntPackImportButton } from './HuntPack';
 import HuntsSetupChecklist, { isHuntsSetupComplete, useHuntsSetupState } from './HuntsSetupChecklist';
-import useHuntAI from './useHuntAI';
+import { useHuntPlanDisabledReason } from './HuntQuickStartMenu';
 import { HUNT_DOCS } from './hunt-utils';
 import { HuntsFirstUseQuery } from './__generated__/HuntsFirstUseQuery.graphql';
 import { HuntsListQuery$variables } from './__generated__/HuntsListQuery.graphql';
@@ -71,23 +70,15 @@ export const HuntsFirstUseHero = ({ paginationOptions, onHuntCreated }: HuntsFir
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { settings, isXTMHubAccessible } = useContext(UserContext);
-  const draftContext = useDraftContext();
-  const { available: aiAvailable, isEnterpriseEdition } = useHuntAI();
+  const planDisabledReason = useHuntPlanDisabledReason();
   const setupState = useHuntsSetupState();
+  const indicatorsUnsupported = setupState.aliveCount > 0 && setupState.indicatorsCount === 0;
   const [creating, setCreating] = useState(false);
   const [planning, setPlanning] = useState(false);
   const [guided, setGuided] = useState<HuntGuidedKind | null>(null);
   const hubUrl = isXTMHubAccessible && isNotEmptyField(settings?.platform_xtmhub_url)
     ? `${settings?.platform_xtmhub_url}/redirect/opencti_hunt_packs?platform_id=${settings?.id}`
     : null;
-  let planDisabledReason: string | null = null;
-  if (draftContext) {
-    planDisabledReason = t_i18n('Not available in a draft');
-  } else if (!isEnterpriseEdition) {
-    planDisabledReason = t_i18n('Planning with AI needs the Enterprise Edition');
-  } else if (!aiAvailable) {
-    planDisabledReason = t_i18n('Planning with AI needs XTM One, not configured on this platform');
-  }
   return (
     <div data-testid="hunts-first-use" style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(2) }}>
       <Hero>
@@ -111,7 +102,24 @@ export const HuntsFirstUseHero = ({ paginationOptions, onHuntCreated }: HuntsFir
             description={t_i18n('Look for IP addresses, domains, URLs or file hashes in your telemetry: paste them, pick indicators, or take those of a report or a threat. No query language.')}
             testId="hunts-first-use-indicators"
           >
-            <Button onClick={() => setGuided('indicators')} data-testid="hunts-first-use-indicators-start">{t_i18n('Hunt for indicators')}</Button>
+            <Button
+              variant={indicatorsUnsupported ? 'secondary' : 'primary'}
+              onClick={() => setGuided('indicators')}
+              aria-describedby={indicatorsUnsupported ? 'hunts-first-use-indicators-reason' : undefined}
+              data-testid="hunts-first-use-indicators-start"
+            >
+              {t_i18n('Hunt for indicators')}
+            </Button>
+            {indicatorsUnsupported && (
+              <Text
+                id="hunts-first-use-indicators-reason"
+                variant="content-caption"
+                style={{ display: 'block', width: '100%', color: theme.palette.warn.main }}
+                data-testid="hunts-first-use-indicators-reason"
+              >
+                {t_i18n('No active hunt connector looks up indicators yet: the hunt would be saved as a draft')}
+              </Text>
+            )}
           </StartingPoint>
           <StartingPoint
             icon={<RuleOutlined fontSize="small" aria-hidden />}
@@ -119,7 +127,7 @@ export const HuntsFirstUseHero = ({ paginationOptions, onHuntCreated }: HuntsFir
             description={t_i18n('Paste a Sigma rule: the hunt connector translates it for your SIEM or EDR and runs it on the period you choose.')}
             testId="hunts-first-use-sigma"
           >
-            <Button variant="secondary" onClick={() => setGuided('sigma')} data-testid="hunts-first-use-sigma-start">{t_i18n('Hunt with a Sigma rule')}</Button>
+            <Button variant="primary" onClick={() => setGuided('sigma')} data-testid="hunts-first-use-sigma-start">{t_i18n('Hunt with a Sigma rule')}</Button>
           </StartingPoint>
           <StartingPoint
             icon={<AutoAwesomeOutlined fontSize="small" aria-hidden />}

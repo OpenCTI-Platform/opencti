@@ -77,7 +77,7 @@ const HuntsSetupChecklist = ({ state }: { state: HuntsSetupState }) => {
   } else if (state.aliveCount === 0) {
     connectorsSentence = t_i18n('Hunt connectors: {count} deployed, none answers. Check that they run.', { values: { count: n(state.connectorsCount) } });
   } else {
-    connectorsSentence = t_i18n('Hunt connectors: {count} active, {indicators} of them look up indicators', { values: { count: n(state.aliveCount), indicators: n(state.indicatorsCount) } });
+    connectorsSentence = t_i18n('Hunt connectors: {count} active', { values: { count: n(state.aliveCount) } });
   }
   return (
     <div data-testid="hunts-setup-checklist">
@@ -97,6 +97,13 @@ const HuntsSetupChecklist = ({ state }: { state: HuntsSetupState }) => {
         >
           {connectorsSentence}
         </Row>
+        {state.aliveCount > 0 && (
+          <Row met={state.indicatorsCount > 0} testId="hunts-setup-indicators">
+            {state.indicatorsCount > 0
+              ? t_i18n('{count, plural, one {Indicator lookups: # active hunt connector supports them} other {Indicator lookups: # active hunt connectors support them}}', { values: { count: state.indicatorsCount } })
+              : t_i18n('Indicator lookups: no active hunt connector supports them, hunt with a Sigma rule or a native query instead')}
+          </Row>
+        )}
         <Row
           met={state.xtmOneConfigured}
           testId="hunts-setup-xtm-one"

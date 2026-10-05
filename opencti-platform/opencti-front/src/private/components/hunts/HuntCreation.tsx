@@ -45,6 +45,7 @@ import { validateHuntSchedule } from './hunt-schedule-utils';
 import useHuntMinScheduleInterval from './useHuntMinScheduleInterval';
 import { MenuBookOutlined } from '@mui/icons-material';
 import HuntIocFields from './HuntIocFields';
+import HuntIndicatorSupportWarning from './HuntIndicatorSupportWarning';
 import { parseIocText } from './hunt-ioc-utils';
 import {
   emptyHuntFormValues,
@@ -313,7 +314,7 @@ export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues:
               </Text>
               <HuntSigmaValidation sigmaRule={values.sigma_rule} />
               <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(1), color: theme.palette.text.secondary }} data-testid="hunt-creation-no-sigma">
-                {t_i18n('No Sigma rule yet? Plan the hunt with AI or import a hunt pack from XTM Hub, from the Hunts page.')}
+                {t_i18n('No Sigma rule yet? Plan the hunt with AI from the Quick start menu of the Hunts list, or import a hunt pack from its toolbar.')}
               </Text>
             </div>
           )}
@@ -332,6 +333,9 @@ export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues:
               helpertext={t_i18n('Where the hunt runs: its hunt connectors execute it on these platforms. Left empty, every hunt-capable platform.')}
               style={fieldSpacingContainerStyle}
             />
+          )}
+          {values.hunt_type === 'indicators' && (
+            <HuntIndicatorSupportWarning scopePlatformIds={values.scopePlatforms.map((platform) => platform.value)} style={fieldSpacingContainerStyle} />
           )}
           <div style={fieldSpacingContainerStyle}>
             <HuntScheduleField />

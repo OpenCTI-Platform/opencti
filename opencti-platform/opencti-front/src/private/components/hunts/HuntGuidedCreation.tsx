@@ -32,6 +32,7 @@ import { PATH_HUNT } from '../common/routes/paths';
 import HuntEntitiesField from './HuntEntitiesField';
 import { mutationErrorMessage, notifyPayloadErrors, payloadErrorsMessage } from './hunt-mutation-utils';
 import HuntIocFields from './HuntIocFields';
+import HuntIndicatorSupportWarning from './HuntIndicatorSupportWarning';
 import { HuntCodeEditorField } from './HuntCodeEditor';
 import HuntSigmaValidation from './HuntSigmaValidation';
 import { SIGMA_RULE_PLACEHOLDER } from './HuntCreation';
@@ -218,7 +219,12 @@ const HuntGuidedCreation = ({ kind, open, onClose }: HuntGuidedCreationProps) =>
                       </li>
                     ))}
                   </ol>
-                  {step === 0 && kind === 'indicators' && <HuntIocFields filtersState={iocFiltersState} withFilters={false} />}
+                  {step === 0 && kind === 'indicators' && (
+                    <>
+                      <HuntIndicatorSupportWarning scopePlatformIds={[]} style={{ marginBottom: theme.spacing(2) }} />
+                      <HuntIocFields filtersState={iocFiltersState} withFilters={false} />
+                    </>
+                  )}
                   {step === 0 && kind === 'sigma' && <SigmaStep sigmaRule={values.sigma_rule} />}
                   {step === 1 && (
                     <div data-testid="hunt-guided-scope">
