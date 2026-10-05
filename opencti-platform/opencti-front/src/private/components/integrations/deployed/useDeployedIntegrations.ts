@@ -4,6 +4,7 @@ import { ConnectorsListQuery } from '@components/data/connectors/__generated__/C
 import { ConnectorsStateQuery } from '@components/data/connectors/__generated__/ConnectorsStateQuery.graphql';
 import { BUILT_IN_INTEGRATIONS, BuiltInIntegrationKind } from '@components/integrations/available/builtInIntegrations';
 import { IngestionFeedsData, IngestionFeedsFormsData } from '@components/integrations/deployed/IngestionFeeds';
+import { ConnectorCatalogIdentitySource } from '@components/data/connectors/utils/connectorCatalogIdentity';
 import { computeConnectorStatus } from '../../../../utils/Connector';
 
 // Mirrors the backend: every built-in feed registers a technical queue
@@ -23,6 +24,8 @@ export interface DeployedIntegrationItem {
   name: string;
   description?: string | null;
   logo?: string;
+  // How the catalog entry behind the logo and the description was found
+  identitySource?: ConnectorCatalogIdentitySource;
   status: DeployedIntegrationStatus;
   statusLabel: string;
   running?: boolean;
@@ -139,14 +142,15 @@ const useDeployedIntegrations = ({
       } else {
         itemStatus = 'inactive';
       }
-      const logoSlug = connector.manager_contract_excerpt?.slug;
+      const identity = connector.catalog_identity;
       items.push({
         id: connector.id,
         kind: 'connector',
         sectionKey: connector.connector_type ?? 'UNKNOWN',
         name: connector.title ?? connector.name,
-        description: connector.manager_contract_excerpt?.title,
-        logo: logoSlug ? logosBySlug.get(logoSlug) : undefined,
+        description: identity?.title,
+        logo: identity?.slug ? logosBySlug.get(identity.slug) : undefined,
+        identitySource: identity?.source,
         status: itemStatus,
         statusLabel: label,
         messagesCount: queueMessagesByConnector.get(connector.id) ?? 0,
@@ -155,7 +159,7 @@ const useDeployedIntegrations = ({
         updatedAt: connector.updated_at,
         isManaged: !!connector.is_managed,
         detailUrl: `/dashboard/integrations/connectors/${connector.id}`,
-        searchText: buildSearchText([connector.title, connector.name, connector.connector_type]),
+        searchText: buildSearchText([connector.title, connector.name, connector.connector_type, identity?.title]),
         connector: merged,
       });
     }

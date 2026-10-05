@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   batchConnectorCatalogIdentities,
   buildCatalogIdentityIndex,
@@ -10,6 +10,7 @@ import {
   identityKeys,
   identityTokens,
   matchCatalogContractsByName,
+  resetCatalogIdentityIndexCache,
   resolveConnectorCatalogIdentity,
 } from '../../../src/domain/connector-catalog-identity';
 import { patchAttribute } from '../../../src/database/middleware';
@@ -191,12 +192,13 @@ describe('Connector catalog identity - resolution order', () => {
     const managed = {
       ...baseConnector,
       catalog_slug_manual: 'misp',
-      manager_contract: { slug: 'mitre-atlas', title: 'MITRE ATLAS', logo_uri: '/logo/atlas.png', connector_type: 'EXTERNAL_IMPORT' } as never,
+      manager_contract: { slug: 'mitre-atlas', title: 'MITRE ATLAS', logo_uri: '/logo/atlas.png', connector_type: 'EXTERNAL_IMPORT', short_description: 'Adversarial AI' } as never,
     };
     expect(resolveConnectorCatalogIdentity(managed, index)).toEqual({
       slug: 'mitre-atlas',
       title: 'MITRE ATLAS',
       logo: '/logo/atlas.png',
+      short_description: 'Adversarial AI',
       source: ConnectorCatalogIdentitySource.Composer,
     });
   });
@@ -221,6 +223,7 @@ describe('Connector catalog identity - resolution order', () => {
       slug: 'mitre',
       title: 'MITRE ATT&CK',
       logo: '/catalog/logo/mitre.png',
+      short_description: 'MITRE ATT&CK connector',
       source: ConnectorCatalogIdentitySource.Name,
     });
   });
@@ -238,6 +241,11 @@ describe('Connector catalog identity - resolution order', () => {
 describe('Connector catalog identity - loading', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetCatalogIdentityIndexCache();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   const storedContract = (slug: string, title: string, contract_version: string, logo_uri: string) => ({
@@ -262,10 +270,33 @@ describe('Connector catalog identity - loading', () => {
     ]);
     expect(fullEntitiesList).toHaveBeenCalledTimes(1);
     expect(identities).toEqual([
-      { slug: 'threatfox', title: 'ThreatFox', logo: '/logo/new.png', source: ConnectorCatalogIdentitySource.Name },
-      { slug: 'urlhaus', title: 'URLhaus', logo: '/logo/urlhaus.png', source: ConnectorCatalogIdentitySource.Name },
+      { slug: 'threatfox', title: 'ThreatFox', logo: '/logo/new.png', short_description: null, source: ConnectorCatalogIdentitySource.Name },
+      { slug: 'urlhaus', title: 'URLhaus', logo: '/logo/urlhaus.png', short_description: null, source: ConnectorCatalogIdentitySource.Name },
       null,
     ]);
+  });
+
+  it('should share one catalog listing between requests for a minute', async () => {
+    vi.useFakeTimers();
+    vi.mocked(fullEntitiesList).mockResolvedValue([storedContract('urlhaus', 'URLhaus', '6.9.0', '/logo/urlhaus.png')] as never);
+    const connector = { ...baseConnector, name: 'Abuse.ch URLhaus' };
+    await batchConnectorCatalogIdentities(testContext, testUser, [connector]);
+    vi.advanceTimersByTime(59 * 1000);
+    await batchConnectorCatalogIdentities(testContext, testUser, [connector]);
+    expect(fullEntitiesList).toHaveBeenCalledTimes(1);
+    vi.advanceTimersByTime(2 * 1000);
+    await batchConnectorCatalogIdentities(testContext, testUser, [connector]);
+    expect(fullEntitiesList).toHaveBeenCalledTimes(2);
+  });
+
+  it('should list the catalog again after a failed listing', async () => {
+    vi.mocked(fullEntitiesList).mockRejectedValueOnce(new Error('search engine unavailable'));
+    const connector = { ...baseConnector, name: 'Abuse.ch URLhaus' };
+    await expect(batchConnectorCatalogIdentities(testContext, testUser, [connector])).rejects.toThrow('search engine unavailable');
+    vi.mocked(fullEntitiesList).mockResolvedValueOnce([storedContract('urlhaus', 'URLhaus', '6.9.0', '/logo/urlhaus.png')] as never);
+    const [identity] = await batchConnectorCatalogIdentities(testContext, testUser, [connector]);
+    expect(identity).toMatchObject({ slug: 'urlhaus', source: ConnectorCatalogIdentitySource.Name });
+    expect(fullEntitiesList).toHaveBeenCalledTimes(2);
   });
 
   it('should not list the catalog when every connector is managed or built-in', async () => {
@@ -290,6 +321,7 @@ describe('Connector catalog identity - manual binding', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    resetCatalogIdentityIndexCache();
     vi.mocked(fullEntitiesList).mockResolvedValue([
       { slug: 'threatfox', title: 'ThreatFox', contract_version: '6.9.0', contract_id: 'threatfox-6.9.0', connector_type: 'EXTERNAL_IMPORT' },
     ] as never);

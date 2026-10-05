@@ -1954,6 +1954,7 @@ type ConnectorCatalogIdentity {
   slug: String!
   title: String!
   logo: String
+  short_description: String
   source: ConnectorCatalogIdentitySource!
 }
 

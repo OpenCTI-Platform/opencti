@@ -12,6 +12,7 @@ const makeConnector = (overrides: Record<string, unknown> = {}) => ({
   updated_at: '2026-01-01T00:00:00.000Z',
   is_managed: false,
   manager_contract_excerpt: null,
+  catalog_identity: null,
   ...overrides,
 });
 
@@ -74,7 +75,11 @@ describe('useDeployedIntegrations', () => {
   describe('registered connectors', () => {
     it('maps a connector with its live state and logo', () => {
       const { result } = renderIntegrations({
-        connectors: [makeConnector({ manager_contract_excerpt: { slug: 'my-connector', title: 'Contract title' } })],
+        connectors: [makeConnector({
+          is_managed: true,
+          manager_contract_excerpt: { slug: 'my-connector', title: 'Contract title' },
+          catalog_identity: { slug: 'my-connector', title: 'Contract title', source: 'composer' },
+        })],
         states: [makeState({ active: true })],
         logosBySlug: new Map([['my-connector', 'data:image/png;base64,logo']]),
       });
@@ -85,10 +90,37 @@ describe('useDeployedIntegrations', () => {
       expect(item.name).toBe('My Connector');
       expect(item.description).toBe('Contract title');
       expect(item.logo).toBe('data:image/png;base64,logo');
+      expect(item.identitySource).toBe('composer');
       expect(item.status).toBe('active');
       expect(item.detailUrl).toBe('/dashboard/integrations/connectors/connector-1');
-      expect(item.searchText).toBe('my connector external_import');
+      expect(item.searchText).toBe('my connector external_import contract title');
       expect(item.connector?.active).toBe(true);
+    });
+
+    it('shows the catalog entry of a self-deployed connector, however it was identified', () => {
+      const { result } = renderIntegrations({
+        connectors: [
+          makeConnector({ id: 'reported-1', name: 'Feed A', catalog_identity: { slug: 'urlhaus', title: 'URLhaus', source: 'reported' } }),
+          makeConnector({ id: 'name-1', name: 'Abuse.ch ThreatFox', catalog_identity: { slug: 'threatfox', title: 'ThreatFox', source: 'name' } }),
+          makeConnector({ id: 'manual-1', name: 'Feed C', catalog_identity: { slug: 'urlhaus', title: 'URLhaus', source: 'manual' } }),
+        ],
+        logosBySlug: new Map([['urlhaus', '/logo/urlhaus.png'], ['threatfox', '/logo/threatfox.png']]),
+      });
+      const byId = new Map(result.current.map((item) => [item.id, item]));
+      expect(byId.get('reported-1')).toMatchObject({ logo: '/logo/urlhaus.png', description: 'URLhaus', identitySource: 'reported' });
+      expect(byId.get('name-1')).toMatchObject({ logo: '/logo/threatfox.png', description: 'ThreatFox', identitySource: 'name' });
+      expect(byId.get('manual-1')).toMatchObject({ logo: '/logo/urlhaus.png', description: 'URLhaus', identitySource: 'manual' });
+      expect(byId.get('name-1')?.searchText).toBe('abuse.ch threatfox external_import threatfox');
+    });
+
+    it('keeps the generic icon of a connector without a catalog entry', () => {
+      const { result } = renderIntegrations({
+        connectors: [makeConnector()],
+        logosBySlug: new Map([['my-connector', 'data:image/png;base64,logo']]),
+      });
+      expect(result.current[0].logo).toBeUndefined();
+      expect(result.current[0].description).toBeUndefined();
+      expect(result.current[0].identitySource).toBeUndefined();
     });
 
     it('prefers the connector title over its technical name', () => {

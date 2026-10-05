@@ -347,8 +347,8 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                   ConnectorIcon = DeveloperBoardOutlined;
                 }
 
-                const connectorLogoSrc = connector.manager_contract_excerpt?.slug
-                  ? logosBySlug.get(connector.manager_contract_excerpt.slug)
+                const connectorLogoSrc = connector.catalog_identity?.slug
+                  ? logosBySlug.get(connector.catalog_identity.slug)
                   : undefined;
 
                 const connectorType = connector.connector_type
@@ -406,7 +406,7 @@ const ConnectorsStatusContent: FunctionComponent<ConnectorsStatusContentProps> =
                       <ListItemIcon>
                         {connectorLogoSrc
                           ? (
-                              <Tooltip title={connector.manager_contract_excerpt?.title || ''} placement="top">
+                              <Tooltip title={connector.catalog_identity?.title || ''} placement="top">
                                 <img
                                   src={connectorLogoSrc}
                                   alt="connector logo"

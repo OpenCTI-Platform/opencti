@@ -24,6 +24,7 @@ export interface ConnectorCatalogIdentity {
   slug: string;
   title: string;
   logo: string | null;
+  short_description: string | null;
   source: ConnectorCatalogIdentitySource;
 }
 
@@ -163,6 +164,7 @@ const toIdentity = (contract: CatalogIdentityContract, source: ConnectorCatalogI
   slug: contract.slug,
   title: contract.title,
   logo: contract.logo_uri || null,
+  short_description: contract.short_description || null,
   source,
 });
 
@@ -189,9 +191,9 @@ export const resolveConnectorCatalogIdentity = (connector: IdentityConnector, in
 
 const IDENTITY_CONTRACT_FIELDS = ['slug', 'title', 'logo_uri', 'connector_type', 'short_description', 'contract_id', 'contract_version', 'support_version', 'min_version', 'max_version'];
 
-// One listing of the catalog for the whole request: the latest compatible version of each entry,
-// read as the system user because the identity only exposes public catalog data (title, logo, slug).
-export const loadCatalogIdentityIndex = async (context: AuthContext) => {
+// The latest compatible version of each catalog entry, read as the system user because the
+// identity only exposes public catalog data (title, logo, slug, short description).
+const listCatalogIdentityIndex = async (context: AuthContext) => {
   const contracts = await fullEntitiesList<BasicStoreEntityCatalogContract>(context, SYSTEM_USER, [ENTITY_TYPE_CATALOG_CONTRACT], {
     indices: [READ_INDEX_INTERNAL_OBJECTS],
     baseData: true,
@@ -200,9 +202,34 @@ export const loadCatalogIdentityIndex = async (context: AuthContext) => {
   return buildCatalogIdentityIndex(selectLatestContractsBySlug(contracts));
 };
 
+// The catalog only changes when the catalog manager synchronises it, while the connector page
+// refreshes its connector every few seconds: one listing serves every request for a minute.
+const CATALOG_IDENTITY_INDEX_TTL = 60 * 1000;
+let catalogIdentityIndexCache: { expiresAt: number; index: Promise<CatalogIdentityIndex> } | null = null;
+
+export const resetCatalogIdentityIndexCache = () => {
+  catalogIdentityIndexCache = null;
+};
+
+export const loadCatalogIdentityIndex = async (context: AuthContext) => {
+  const now = Date.now();
+  if (catalogIdentityIndexCache && catalogIdentityIndexCache.expiresAt > now) {
+    return catalogIdentityIndexCache.index;
+  }
+  const index = listCatalogIdentityIndex(context);
+  catalogIdentityIndexCache = { expiresAt: now + CATALOG_IDENTITY_INDEX_TTL, index };
+  // A failed listing is not kept: the next request lists the catalog again.
+  index.catch(() => {
+    if (catalogIdentityIndexCache?.index === index) {
+      catalogIdentityIndexCache = null;
+    }
+  });
+  return index;
+};
+
 const needsCatalog = (connector: IdentityConnector) => !connector.manager_contract && !connector.built_in;
 
-// Batch function of the per-request loader: the catalog is listed once for every connector of the request.
+// Batch function of the per-request loader: one catalog index for every connector of the request.
 export const batchConnectorCatalogIdentities = async (context: AuthContext, _user: AuthUser, connectors: IdentityConnector[]) => {
   const index = connectors.some(needsCatalog) ? await loadCatalogIdentityIndex(context) : buildCatalogIdentityIndex([]);
   return connectors.map((connector) => resolveConnectorCatalogIdentity(connector, index));

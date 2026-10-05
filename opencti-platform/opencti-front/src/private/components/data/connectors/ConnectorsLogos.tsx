@@ -7,7 +7,7 @@ export const connectorsLogosQuery = graphql`
   query ConnectorsLogosQuery {
     connectors {
       id
-      manager_contract_excerpt {
+      catalog_identity {
         slug
         logo
       }
@@ -27,7 +27,7 @@ const ConnectorsLogos: React.FC<ConnectorsLogosProps> = ({ queryRef, onLoaded, c
   const logosBySlug = useMemo(() => {
     const logosMap = new Map<string, string>();
     for (const connector of data.connectors ?? []) {
-      const { slug, logo } = connector.manager_contract_excerpt ?? {};
+      const { slug, logo } = connector.catalog_identity ?? {};
       if (slug && logo && !logosMap.has(slug)) {
         logosMap.set(slug, logo);
       }

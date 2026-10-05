@@ -4627,6 +4627,7 @@ export type ConnectorWorksArgs = {
 export type ConnectorCatalogIdentity = {
   __typename?: 'ConnectorCatalogIdentity';
   logo?: Maybe<Scalars['String']['output']>;
+  short_description?: Maybe<Scalars['String']['output']>;
   slug: Scalars['String']['output'];
   source: ConnectorCatalogIdentitySource;
   title: Scalars['String']['output'];
@@ -44315,6 +44316,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
 
 export type ConnectorCatalogIdentityResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorCatalogIdentity'] = ResolversParentTypes['ConnectorCatalogIdentity']> = ResolversObject<{
   logo?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  short_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   source?: Resolver<ResolversTypes['ConnectorCatalogIdentitySource'], ParentType, ContextType>;
   title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
