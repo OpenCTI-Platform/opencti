@@ -113,7 +113,8 @@ const SourceCostEditor = ({ sourceId, cost, primary = false, initialOpen = false
                   label={t_i18n('Amount')}
                   helperText={t_i18n('What the source costs over the period, for example 12000. It is required: to stop tracking the cost, use Remove the cost.')}
                   fullWidth
-                  inputProps={{ min: 0, step: 0.01 }}
+                  min={0}
+                  step={0.01}
                 />
                 <Field
                   component={SelectFieldFds}
