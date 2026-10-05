@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { buildTimelineConsistencyFilters, collectTimelineImpacts, isTimelineConsistencyPassDue, newImpactCollector } from '../../../src/manager/timelineManager';
+import {
+  buildTimelineConsistencyFilters,
+  collectTimelineImpacts,
+  computeChangedWorkflowTypes,
+  isTimelineConsistencyPassDue,
+  newImpactCollector,
+} from '../../../src/manager/timelineManager';
 import { STIX_EXT_OCTI } from '../../../src/types/stix-2-1-extensions';
 import type { DataEvent, SseEvent } from '../../../src/types/event';
 
@@ -196,5 +202,23 @@ describe('Timeline consistency pass schedule', () => {
     const taskWorkflow = buildTimelineConsistencyFilters(at('2026-10-02T02:00:05.000Z'), at('2026-10-03T02:00:00.000Z'), 30, ['Task']);
     expect(taskWorkflow.filters[3]).toEqual({ key: ['entity_type'], values: ['Incident', 'Case-Incident', 'Case-Rfi', 'Case-Rft'] });
     expect(buildTimelineConsistencyFilters(at('2026-10-02T02:00:05.000Z'), at('2026-10-03T02:00:00.000Z'), 30, ['Report']).filters).toHaveLength(3);
+  });
+
+  it('should find the types whose statuses, published workflow definition or workflow setting changed since the last pass', () => {
+    const lastRun = at('2026-10-02T02:00:00.000Z');
+    const before = '2026-10-01T00:00:00.000Z';
+    const after = '2026-10-02T10:00:00.000Z';
+    const statuses = [{ type: 'Case-Rfi', updated_at: after }, { type: 'Case-Rft', updated_at: before }];
+    const settings = [
+      // A change of transitions only: the published definition moved, no status did
+      { target_type: 'Case-Incident', workflow_id: 'definition-incident', updated_at: before },
+      { target_type: 'Incident', workflow_id: 'definition-unchanged', updated_at: before },
+      // The type was linked to another workflow
+      { target_type: 'Task', workflow_id: null, updated_at: after },
+      { target_type: 'Case-Rft', workflow_id: null, updated_at: before },
+    ];
+    const definitions = { 'definition-incident': { updated_at: after }, 'definition-unchanged': { updated_at: before } };
+    expect(computeChangedWorkflowTypes(lastRun, statuses, settings, definitions).sort()).toEqual(['Case-Incident', 'Case-Rfi', 'Task']);
+    expect(computeChangedWorkflowTypes(lastRun, [], [{ target_type: 'Incident', workflow_id: 'missing', updated_at: before }], {})).toEqual([]);
   });
 });

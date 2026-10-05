@@ -35,6 +35,8 @@ import { regenerateContainerTimeline } from '../modules/timeline/timeline-engine
 import { timelineRefIds } from '../modules/timeline/timeline-loader';
 import { ATTRIBUTE_COVERED, ENTITY_TYPE_SECURITY_COVERAGE, RELATION_COVERED } from '../modules/securityCoverage/securityCoverage-types';
 import { ATTRIBUTE_RESULT_OF } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
+import { type BasicStoreEntityEntitySetting, ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
+import { ENTITY_TYPE_WORKFLOW_DEFINITION } from '../modules/workflow/types/workflow-types';
 import {
   acknowledgeTimelineRegeneration,
   claimDueTimelineRegenerations,
@@ -397,15 +399,47 @@ export const buildTimelineConsistencyFilters = (lastRun: number | null, nowTime:
   };
 };
 
-/** Entity types whose workflow statuses were created or changed since the previous pass. */
+interface WorkflowChangeSource {
+  updated_at?: Date | string | null;
+  created_at?: Date | string | null;
+}
+
+/**
+ * Entity types whose final statuses may have moved since the previous pass: one of their workflow statuses was created
+ * or changed, the workflow definition published for the type changed (a change of transitions only touches no status),
+ * or the entity setting linking the type to its workflow changed.
+ */
+export const computeChangedWorkflowTypes = (
+  lastRun: number,
+  statuses: Array<WorkflowChangeSource & { type?: string }>,
+  settings: Array<WorkflowChangeSource & { target_type: string; workflow_id?: string | null }>,
+  definitions: Record<string, WorkflowChangeSource>,
+): string[] => {
+  const isChanged = (element: WorkflowChangeSource) => new Date(element.updated_at ?? element.created_at ?? 0).getTime() >= lastRun;
+  const types = new Set(statuses.filter(isChanged).map((status) => status.type).filter((type): type is string => !!type));
+  settings.forEach((setting) => {
+    const definition = setting.workflow_id ? definitions[setting.workflow_id] : undefined;
+    if (isChanged(setting) || (definition && isChanged(definition))) types.add(setting.target_type);
+  });
+  return Array.from(types);
+};
+
 const findChangedWorkflowTypes = async (context: AuthContext, lastRun: number | null): Promise<string[]> => {
   if (lastRun === null) return [];
   const statuses = await getEntitiesListFromCache<BasicStoreEntity & { type?: string }>(context, SYSTEM_USER, ENTITY_TYPE_STATUS);
-  const changedAt = (status: BasicStoreEntity) => new Date(status.updated_at ?? status.created_at ?? 0).getTime();
-  return Array.from(new Set(statuses
-    .filter((status) => changedAt(status) >= lastRun)
-    .map((status) => status.type)
-    .filter((type): type is string => !!type)));
+  const workflowTargetTypes = [...TIMELINE_CONTAINER_TYPES, ENTITY_TYPE_CONTAINER_TASK];
+  const settings = (await getEntitiesListFromCache<BasicStoreEntityEntitySetting>(context, SYSTEM_USER, ENTITY_TYPE_ENTITY_SETTING))
+    .filter((setting) => workflowTargetTypes.includes(setting.target_type));
+  const definitionIds = settings.map((setting) => setting.workflow_id).filter((id): id is string => !!id);
+  const definitions = definitionIds.length > 0
+    ? await internalFindByIds(context, SYSTEM_USER, definitionIds, {
+      type: ENTITY_TYPE_WORKFLOW_DEFINITION,
+      baseData: true,
+      baseFields: ['updated_at', 'created_at'],
+      toMap: true,
+    }) as unknown as Record<string, BasicStoreEntity>
+    : {};
+  return computeChangedWorkflowTypes(lastRun, statuses, settings, definitions);
 };
 
 const runConsistencyPass = async (context: AuthContext) => {
