@@ -10,45 +10,27 @@ import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import { HuntCreationDrawer } from './HuntCreation';
+import { huntFromEntityDerivedQuery } from './HuntFromEntity';
 import HuntPlanDialog from './HuntPlanDialog';
 import useHuntAI from './useHuntAI';
 import {
+  buildDerivedHuntPrefill,
   buildHuntPrefill,
   buildHuntPrefillName,
   buildIndicatorHuntPrefill,
   buildIocHuntPrefill,
-  HUNT_REPORT_PREFILL_TYPE_GROUPS,
+  HUNT_DERIVABLE_TYPES,
   HUNT_TARGET_TYPES,
+  type HuntDerived,
   HuntFormValues,
   HuntIndicatorPrefillEntity,
   HuntPrefillEntity,
   isIocHuntEntity,
 } from './hunt-utils';
-import { HuntThisMenuContainerObjectsQuery } from './__generated__/HuntThisMenuContainerObjectsQuery.graphql';
+import { HuntFromEntityDerivedQuery } from './__generated__/HuntFromEntityDerivedQuery.graphql';
 import { HuntThisMenuPirEntitiesQuery } from './__generated__/HuntThisMenuPirEntitiesQuery.graphql';
 
 const PREFILL_MAX_ENTITIES = 100;
-
-const huntThisMenuContainerObjectsQuery = graphql`
-  query HuntThisMenuContainerObjectsQuery($id: String!, $types: [String], $first: Int) {
-    container(id: $id) {
-      id
-      objects(types: $types, first: $first) {
-        edges {
-          node {
-            ... on StixDomainObject {
-              id
-              entity_type
-              representative {
-                main
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-`;
 
 const huntThisMenuPirEntitiesQuery = graphql`
   query HuntThisMenuPirEntitiesQuery($types: [String], $first: Int, $filters: FilterGroup) {
@@ -72,23 +54,19 @@ const toPrefillEntities = (nodes: PrefillNode[]): HuntPrefillEntity[] => nodes
   .filter((node): node is { id: string; entity_type: string; representative: { main: string } } => !!node?.id && !!node.entity_type && !!node.representative)
   .map((node) => ({ id: node.id, entity_type: node.entity_type, name: node.representative.main }));
 
-/** Targets, techniques and sources a hunt created from the entity starts with. */
-const fetchHuntPrefill = async (entity: HuntIndicatorPrefillEntity): Promise<Partial<HuntFormValues>> => {
+interface HuntThisPrefill {
+  values: Partial<HuntFormValues>;
+  derived: HuntDerived | null;
+}
+
+/** Without derived content (a PIR, or an entity the user cannot read): the entity and, for a PIR, the threats it flags. */
+const fetchEntityPrefill = async (entity: HuntIndicatorPrefillEntity): Promise<Partial<HuntFormValues>> => {
   const name = buildHuntPrefillName(entity.name);
   if (entity.entity_type === 'Indicator') {
     return { name, ...buildIndicatorHuntPrefill(entity) };
   }
   if (isIocHuntEntity(entity.entity_type)) {
     return { name, ...buildIocHuntPrefill(entity) };
-  }
-  if (entity.entity_type === 'Report') {
-    const groups = await Promise.all(HUNT_REPORT_PREFILL_TYPE_GROUPS.map((types) => fetchQuery<HuntThisMenuContainerObjectsQuery>(huntThisMenuContainerObjectsQuery, {
-      id: entity.id,
-      types,
-      first: PREFILL_MAX_ENTITIES,
-    }).toPromise()));
-    const objects = groups.flatMap((data) => toPrefillEntities((data?.container?.objects?.edges ?? []).map((edge) => edge?.node)));
-    return { name, ...buildHuntPrefill([entity, ...objects]) };
   }
   if (entity.entity_type === 'Pir') {
     const data = await fetchQuery<HuntThisMenuPirEntitiesQuery>(huntThisMenuPirEntitiesQuery, {
@@ -111,6 +89,18 @@ const fetchHuntPrefill = async (entity: HuntIndicatorPrefillEntity): Promise<Par
   return { name, ...buildHuntPrefill([entity]) };
 };
 
+/** The hunt created from the entity: what the platform derives from it (its indicators, techniques and detection rules). */
+const fetchHuntPrefill = async (entity: HuntIndicatorPrefillEntity): Promise<HuntThisPrefill> => {
+  if (HUNT_DERIVABLE_TYPES.includes(entity.entity_type)) {
+    const data = await fetchQuery<HuntFromEntityDerivedQuery>(huntFromEntityDerivedQuery, { entityId: entity.id }).toPromise();
+    const derived = data?.huntDerivedContent ?? null;
+    if (derived) {
+      return { values: buildDerivedHuntPrefill(entity, derived), derived };
+    }
+  }
+  return { values: await fetchEntityPrefill(entity), derived: null };
+};
+
 interface HuntThisMenuProps {
   entity: HuntIndicatorPrefillEntity;
 }
@@ -121,7 +111,7 @@ const HuntThisMenu = ({ entity }: HuntThisMenuProps) => {
   const draftContext = useDraftContext();
   const huntHidden = useIsHiddenEntities('Hunt');
   const { available: aiAvailable, isEnterpriseEdition } = useHuntAI();
-  const [prefill, setPrefill] = useState<Partial<HuntFormValues> | null>(null);
+  const [prefill, setPrefill] = useState<HuntThisPrefill | null>(null);
   const [planOpen, setPlanOpen] = useState(false);
 
   if (huntHidden) return null;
@@ -183,7 +173,7 @@ const HuntThisMenu = ({ entity }: HuntThisMenuProps) => {
           </MenuContent>
         </Menu>
         {prefill && (
-          <HuntCreationDrawer open onClose={() => setPrefill(null)} initialValues={prefill} />
+          <HuntCreationDrawer open onClose={() => setPrefill(null)} initialValues={prefill.values} derived={prefill.derived} />
         )}
         <HuntPlanDialog open={planOpen} onClose={() => setPlanOpen(false)} entityIds={[entity.id]} />
       </>

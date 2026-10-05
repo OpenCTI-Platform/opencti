@@ -18,6 +18,7 @@ import {
   planHunt,
 } from './hunt-domain';
 import { computeHuntReadiness } from './hunt-readiness';
+import { deriveHuntContent } from './hunt-derivation';
 import { exportHuntPack } from './hunt-pack';
 import { validateSigmaRule } from './hunt-sigma';
 import { ENTITY_TYPE_HUNT, RELATION_HUNT_SOURCES, RELATION_HUNT_TARGETS, RELATION_HUNT_TECHNIQUES } from './hunt-types';
@@ -32,6 +33,7 @@ const huntResolvers: Resolvers = {
     huntConfiguration: () => ({ min_schedule_interval_minutes: HUNT_CONFIG.minScheduleIntervalMinutes }),
     huntStatistics: (_, args, context) => computeHuntStatistics(context, context.user, args),
     huntPackExport: (_, { ids }, context) => exportHuntPack(context, context.user, ids),
+    huntDerivedContent: (_, { entityId }, context) => deriveHuntContent(context, context.user, entityId),
   },
   Hunt: {
     huntTargets: (hunt, _, context) => loadHuntRefs<any>(context, context.user, hunt, RELATION_HUNT_TARGETS),

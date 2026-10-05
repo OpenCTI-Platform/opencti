@@ -1,5 +1,18 @@
 import { describe, expect, it } from 'vitest';
+import { createIntl } from 'react-intl';
 import {
+  buildDerivedHuntPrefill,
+  buildHuntSummary,
+  countDerivedValueTypes,
+  countHuntPlatforms,
+  derivedRuleValues,
+  formatDerivedValueTypes,
+  formatHuntWindow,
+  type HuntDerived,
+  huntTypeDescription,
+  huntTypeLabel,
+  selectedDerivedElements,
+  selectedDerivedRule,
   buildHuntPrefill,
   buildHuntScope,
   buildIndicatorHuntPrefill,
@@ -10,9 +23,6 @@ import {
   emptyHuntFormValues,
   formatHuntRunDuration,
   hasHuntLogic,
-  HUNT_REPORT_PREFILL_TYPE_GROUPS,
-  HUNT_TARGET_TYPES,
-  HUNT_TECHNIQUE_TYPES,
   huntIncidentSeverityLabel,
   huntPlatformLabel,
   huntQueryLanguageLabel,
@@ -267,9 +277,117 @@ describe('Hunt utils', () => {
     expect(hasHuntLogic({ ...input, huntSources: values.iocElements })).toBe(true);
   });
 
-  it('should read the threats, techniques and indicators of a report for its hunt, the indicators apart', () => {
-    expect(HUNT_REPORT_PREFILL_TYPE_GROUPS.flat().sort()).toEqual([...HUNT_TARGET_TYPES, ...HUNT_TECHNIQUE_TYPES, 'Indicator'].sort());
-    expect(HUNT_REPORT_PREFILL_TYPE_GROUPS.find((types) => types.includes('Indicator'))).toEqual(['Indicator']);
+  describe('derived content ("Hunt this")', () => {
+    const intl = createIntl({ locale: 'en', messages: {}, onError: () => {} });
+    const t = (message: string, options?: { values: Record<string, string | number> }) => intl.formatMessage({ id: message, defaultMessage: message }, options?.values);
+    const derived: HuntDerived = {
+      entity: { id: 'is-1', entity_type: 'Intrusion-Set', name: 'APT28', relation: 'self' },
+      suggested_type: 'indicators',
+      sources: [
+        { id: 'is-1', entity_type: 'Intrusion-Set', name: 'APT28', relation: 'self' },
+        { id: 'mal-1', entity_type: 'Malware', name: 'X-Agent', relation: 'uses' },
+      ],
+      targets: [
+        { id: 'is-1', entity_type: 'Intrusion-Set', name: 'APT28', relation: 'self' },
+        { id: 'mal-1', entity_type: 'Malware', name: 'X-Agent', relation: 'uses' },
+      ],
+      elements: [
+        { id: 'ind-1', entity_type: 'Indicator', name: 'a.example', value_types: ['Domain-Name'], source_ids: ['is-1'] },
+        { id: 'ind-2', entity_type: 'Indicator', name: 'b.example', value_types: ['Domain-Name'], source_ids: ['mal-1'] },
+        { id: 'ind-3', entity_type: 'Indicator', name: '198.51.100.1', value_types: ['IPv4-Addr'], source_ids: ['is-1', 'mal-1'] },
+        { id: 'ind-4', entity_type: 'Indicator', name: 'dropper', value_types: ['StixFile'], source_ids: ['mal-1'] },
+      ],
+      elements_truncated: false,
+      unsupported_count: 0,
+      techniques: [
+        { id: 'ap-1', entity_type: 'Attack-Pattern', name: 'PowerShell', x_mitre_id: 'T1059.001' },
+        { id: 'ap-2', entity_type: 'Attack-Pattern', name: 'Obfuscated Files', x_mitre_id: 'T1027' },
+      ],
+      rules: [
+        { id: 'rule-1', entity_type: 'Indicator', name: 'Encoded PowerShell', pattern_type: 'sigma', pattern: 'title: encoded', technique_ids: ['ap-1'] },
+        { id: 'rule-2', entity_type: 'Indicator', name: 'Splunk obfuscation search', pattern_type: 'spl', pattern: 'index=main', technique_ids: ['ap-2'] },
+      ],
+    };
+    const threat = { id: 'is-1', entity_type: 'Intrusion-Set', name: 'APT28' };
+
+    it('should open an indicator hunt over the threat and its malware when indicators are found', () => {
+      const prefill = buildDerivedHuntPrefill(threat, derived);
+      expect(prefill).toMatchObject({ name: 'Hunt - APT28', hunt_type: 'indicators', huntTechniques: [] });
+      expect(prefill.iocEntities?.map((option) => option.value)).toEqual(['is-1', 'mal-1']);
+      expect(prefill.huntTargets?.map((option) => option.value)).toEqual(['is-1', 'mal-1']);
+    });
+
+    it('should open a detection-rule hunt with the best rule when only rules are found', () => {
+      const prefill = buildDerivedHuntPrefill(threat, { ...derived, suggested_type: 'telemetry', elements: [] });
+      expect(prefill).toMatchObject({ hunt_type: 'telemetry', sigma_rule: 'title: encoded', native_queries: [] });
+      expect(prefill.huntSources?.map((option) => option.value)).toEqual(['rule-1']);
+      expect(prefill.huntTechniques).toEqual([{ value: 'ap-1', label: 'T1059.001 PowerShell', type: 'Attack-Pattern' }]);
+    });
+
+    it('should open a detection-rule hunt without logic when nothing is found', () => {
+      const prefill = buildDerivedHuntPrefill(threat, { ...derived, suggested_type: null, elements: [], rules: [] });
+      expect(prefill).toMatchObject({ hunt_type: 'telemetry' });
+      expect(prefill.sigma_rule).toBeUndefined();
+    });
+
+    it('should turn a native rule into a native query of its platform', () => {
+      expect(derivedRuleValues(derived.rules[1], derived)).toMatchObject({
+        hunt_type: 'telemetry',
+        sigma_rule: '',
+        native_queries: [{ platform: 'splunk', language: 'spl', query: 'index=main', pipeline: '' }],
+      });
+      const picked = { ...emptyHuntFormValues(), ...derivedRuleValues(derived.rules[1], derived) };
+      expect(selectedDerivedRule(derived, picked)?.id).toEqual('rule-2');
+      expect(selectedDerivedRule(derived, { ...picked, hunt_type: 'indicators' })).toBeNull();
+    });
+
+    it('should keep the hunt an indicator calls for and its techniques', () => {
+      const prefill = buildDerivedHuntPrefill({ id: 'rule-1', entity_type: 'Indicator', name: 'Encoded PowerShell', pattern_type: 'sigma', pattern: 'title: encoded' }, derived);
+      expect(prefill).toMatchObject({ hunt_type: 'telemetry', sigma_rule: 'title: encoded' });
+      expect(prefill.huntTechniques?.map((option) => option.value)).toEqual(['ap-1', 'ap-2']);
+    });
+
+    it('should count the indicators of the selected sources by type', () => {
+      const values = { iocEntities: [{ value: 'mal-1', label: 'X-Agent' }], iocElements: [] };
+      expect(selectedDerivedElements(derived, values).map(({ id }) => id)).toEqual(['ind-2', 'ind-3', 'ind-4']);
+      expect(countDerivedValueTypes(derived.elements)).toEqual([{ type: 'Domain-Name', count: 2 }, { type: 'IPv4-Addr', count: 1 }, { type: 'StixFile', count: 1 }]);
+      expect(formatDerivedValueTypes(derived.elements, t)).toEqual('2 domains, 1 IPv4 address, 1 file');
+    });
+
+    it('should count the platforms a hunt of each type can run on', () => {
+      const connectors = [
+        { platform: 'splunk', supports_indicators: true, securityPlatform: { id: 'sp-1' } },
+        { platform: 'elastic-security', supports_indicators: false, securityPlatform: { id: 'sp-2' } },
+        { platform: 'internet', supports_indicators: false, securityPlatform: null },
+      ];
+      expect(countHuntPlatforms(connectors, 'telemetry')).toEqual(2);
+      expect(countHuntPlatforms(connectors, 'indicators')).toEqual(1);
+    });
+
+    it('should say in plain language what the hunt does', () => {
+      const input = { name: 'APT28', huntType: 'indicators', scopePlatforms: [], availablePlatforms: 2, indicatorsCount: 23, ruleName: null, hasLogic: true, timeWindowHours: 168, escalationThreshold: 10 };
+      expect(buildHuntSummary(input, t)).toEqual([
+        'You are hunting APT28 on 2 security platforms: the hunt searches your telemetry for its 23 known indicators over the last 7 days.',
+        'A hit creates a sighting and, from 10 hits, proposes an incident.',
+      ]);
+      expect(buildHuntSummary({ ...input, huntType: 'telemetry', ruleName: 'Encoded PowerShell', scopePlatforms: [{ value: 'sp-1', label: 'Splunk - SOC' }], timeWindowHours: 36 }, t)[0])
+        .toEqual('You are hunting APT28 on Splunk - SOC: the hunt runs the detection rule "Encoded PowerShell" on your telemetry over the last 36 hours.');
+      expect(buildHuntSummary({ ...input, indicatorsCount: 0, availablePlatforms: 0 }, t)[0])
+        .toEqual('You are hunting APT28 on your security platforms (no hunt connector can run it yet): the hunt searches your telemetry for the indicators and observables you add below over the last 7 days.');
+      expect(buildHuntSummary({ ...input, huntType: 'infrastructure', escalationThreshold: 1 }, t)).toEqual([
+        'You are hunting the infrastructure of APT28 on the internet: the hunt runs its fingerprint queries on internet scan data through the infrastructure tracker connector, never on your telemetry.',
+        'From 1 hit, a run proposes an incident.',
+      ]);
+    });
+
+    it('should say what every hunt type needs and where it runs', () => {
+      expect(huntTypeLabel('infrastructure')).toEqual('Internet infrastructure (outside-in)');
+      expect(huntTypeDescription('infrastructure')).toContain('not a Sigma rule or indicators');
+      expect(huntTypeDescription('indicators')).toContain('no query language needed');
+      expect(huntTypeDescription('telemetry')).toContain('Needs a Sigma rule or a native query');
+      expect(formatHuntWindow(24, t)).toEqual('1 day');
+      expect(formatHuntWindow(5, t)).toEqual('5 hours');
+    });
   });
 
   it('should recognize the entity pages offering hunts', () => {

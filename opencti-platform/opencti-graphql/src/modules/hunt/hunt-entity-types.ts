@@ -6,6 +6,7 @@ import {
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR_GROUP,
+  ENTITY_TYPE_TOOL,
 } from '../../schema/stixDomainObject';
 import {
   ENTITY_DOMAIN_NAME,
@@ -44,8 +45,8 @@ export const HUNT_IOC_OBSERVABLE_TYPES = [
 ];
 /** Containers whose indicators and observables an indicator hunt looks for. */
 export const HUNT_IOC_CONTAINER_TYPES = [ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_CONTAINER_GROUPING, ENTITY_TYPE_CONTAINER_CASE_INCIDENT];
-/** Threats and incidents whose indicators and observables an indicator hunt looks for. */
-export const HUNT_IOC_SUBJECT_TYPES = [...HUNT_TARGET_TYPES, ENTITY_TYPE_INCIDENT];
+/** Threats, tools and incidents whose indicators and observables an indicator hunt looks for. */
+export const HUNT_IOC_SUBJECT_TYPES = [...HUNT_TARGET_TYPES, ENTITY_TYPE_TOOL, ENTITY_TYPE_INCIDENT];
 
 // The intelligence a hunt is based on; for an indicator hunt, what it looks for: indicators and observables, and the
 // entities whose indicators and observables it takes

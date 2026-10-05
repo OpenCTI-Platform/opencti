@@ -53,9 +53,7 @@ import {
   HUNT_DEFAULT_MAX_RESULTS,
   HUNT_DOCS,
   HUNT_ENTITY_TYPE,
-  HUNT_TYPES,
-  huntTypeDescription,
-  huntTypeLabel,
+  type HuntDerived,
   HUNT_MAX_ESCALATION_THRESHOLD,
   HUNT_MAX_RESULTS_PER_RUN,
   HUNT_MAX_TIME_WINDOW_HOURS,
@@ -68,6 +66,8 @@ import {
   toHuntAddInput,
 } from './hunt-utils';
 import { HuntHelp } from './HuntLearnMore';
+import HuntTypeField from './HuntTypeField';
+import { HuntDerivedPanel, HuntFromEntitySummary } from './HuntFromEntity';
 import { PATH_HUNT } from '../common/routes/paths';
 import { HuntCreationMutation, HuntCreationMutation$data } from './__generated__/HuntCreationMutation.graphql';
 import { HuntsListQuery$variables } from './__generated__/HuntsListQuery.graphql';
@@ -168,6 +168,8 @@ interface HuntCreationFormProps {
   onCompleted?: (hunt: HuntCreationMutation$data['huntAdd']) => void;
   /** Values prefilled by the caller, for instance the entity a hunt is created from */
   initialValues?: Partial<HuntFormValues>;
+  /** What "Hunt this" derived from the entity the hunt is created from */
+  derived?: HuntDerived | null;
 }
 
 const SectionTitle = ({ children }: { children: React.ReactNode }) => {
@@ -179,7 +181,7 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues: prefill }: HuntCreationFormProps) => {
+export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues: prefill, derived }: HuntCreationFormProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const isEnterpriseEdition = useEnterpriseEdition();
@@ -234,6 +236,12 @@ export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues:
               {t_i18n('Learn more')}
             </Button>
           </div>
+          {derived && (
+            <>
+              <HuntFromEntitySummary derived={derived} style={{ marginBottom: theme.spacing(2) }} />
+              <HuntDerivedPanel derived={derived} style={{ marginBottom: theme.spacing(2) }} />
+            </>
+          )}
           <Field
             component={TextField}
             variant="outlined"
@@ -243,6 +251,7 @@ export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues:
             fullWidth
             detectDuplicate={[HUNT_ENTITY_TYPE]}
           />
+          <HuntTypeField style={fieldSpacingContainerStyle} />
           <Field
             component={MarkdownField}
             name="hypothesis"
@@ -268,25 +277,12 @@ export const HuntCreationForm = ({ updater, onReset, onCompleted, initialValues:
             registerMarkdownImagesController={registerMarkdownImagesController}
             uploadFileMarkings={values.objectMarking.map(({ value }) => value)}
           />
-          <div style={{ ...fieldSpacingContainerStyle, display: 'flex', gap: theme.spacing(2) }}>
-            <Field
-              component={SelectFieldFds}
-              name="hunt_type"
-              label={t_i18n('Hunt type')}
-              fullWidth
-              containerstyle={{ flex: 1 }}
-              helpertext={<HuntHelp text={t_i18n(huntTypeDescription(values.hunt_type))} href={HUNT_DOCS.types} />}
-            >
-              {HUNT_TYPES.map((huntType) => (
-                <SelectItem key={huntType} value={huntType}>{t_i18n(huntTypeLabel(huntType))}</SelectItem>
-              ))}
-            </Field>
+          <div style={fieldSpacingContainerStyle}>
             <Field
               component={SelectFieldFds}
               name="hunt_status"
               label={t_i18n('Status')}
               fullWidth
-              containerstyle={{ flex: 1 }}
               helpertext={values.hunt_status === 'active'
                 ? t_i18n('Active: the hunt runs on its schedule or with Run now as soon as it is created')
                 : t_i18n('Draft: the hunt is saved without running, activate it from its page')}
@@ -502,6 +498,8 @@ interface HuntCreationDrawerProps {
   open: boolean;
   onClose: () => void;
   initialValues?: Partial<HuntFormValues>;
+  /** What "Hunt this" derived from the entity the hunt is created from */
+  derived?: HuntDerived | null;
   /** Store update of the created hunt (for example, its insertion in the hunts list) */
   updater?: (store: RecordSourceSelectorProxy) => void;
   /** Called with the created hunt instead of opening it */
@@ -509,13 +507,14 @@ interface HuntCreationDrawerProps {
 }
 
 /** Controlled creation drawer, prefilled, opening the created hunt (used by "Hunt this" and the first use of the Hunts area). */
-export const HuntCreationDrawer = ({ open, onClose, initialValues, updater, onCreated }: HuntCreationDrawerProps) => {
+export const HuntCreationDrawer = ({ open, onClose, initialValues, derived, updater, onCreated }: HuntCreationDrawerProps) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   return (
-    <Drawer title={t_i18n('Create a hunt')} open={open} onClose={onClose} size="large">
+    <Drawer title={derived ? t_i18n('Hunt {name}', { values: { name: derived.entity.name } }) : t_i18n('Create a hunt')} open={open} onClose={onClose} size="large">
       <HuntCreationForm
         initialValues={initialValues}
+        derived={derived}
         updater={updater}
         onReset={onClose}
         onCompleted={(hunt) => {

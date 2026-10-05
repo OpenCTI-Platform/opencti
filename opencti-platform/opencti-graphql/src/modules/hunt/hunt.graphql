@@ -395,6 +395,63 @@ type HuntPackImportResult {
   "Hunts of the pack that already existed, their definition updated and how they run here kept"
   updated_count: Int!
 }
+enum HuntDerivedSourceRelation {
+  self
+  uses
+  attributed
+}
+"An entity a hunt started from another one takes its indicators and observables from"
+type HuntDerivedSource {
+  id: ID!
+  entity_type: String!
+  name: String!
+  "self: the entity the hunt starts from; uses: a malware or tool it uses; attributed: a threat attributed to it"
+  relation: HuntDerivedSourceRelation!
+}
+"An indicator or an observable an indicator hunt looks up"
+type HuntDerivedElement {
+  id: ID!
+  entity_type: String!
+  name: String!
+  "Observable types of the values a lookup searches"
+  value_types: [String!]!
+  "Ids of the sources it comes from"
+  source_ids: [ID!]!
+}
+type HuntDerivedTechnique {
+  id: ID!
+  entity_type: String!
+  name: String!
+  x_mitre_id: String
+}
+"A detection rule a detection-rule hunt runs: an indicator whose pattern is a Sigma rule or a native query"
+type HuntDerivedRule {
+  id: ID!
+  entity_type: String!
+  name: String!
+  pattern_type: String!
+  pattern: String!
+  "Ids of the techniques of the entity it indicates"
+  technique_ids: [ID!]!
+}
+"What a hunt started from an entity looks for, read with the access of the user"
+type HuntDerivedContent {
+  entity: HuntDerivedSource!
+  "The hunt type the content supports: indicators when indicators or observables are found, telemetry when only detection rules are, null for neither"
+  suggested_type: HuntType
+  "Entities an indicator hunt takes its values from, read again at every run"
+  sources: [HuntDerivedSource!]!
+  "Threats the hunt targets"
+  targets: [HuntDerivedSource!]!
+  elements: [HuntDerivedElement!]!
+  "More indicators and observables than a run looks up"
+  elements_truncated: Boolean!
+  "Indicators of the sources neither a lookup nor a detection-rule hunt can use"
+  unsupported_count: Int!
+  techniques: [HuntDerivedTechnique!]!
+  rules: [HuntDerivedRule!]!
+}
+
 type HuntValidation {
   hunts_count: Int!
   runs: [HuntRun!]!
@@ -416,6 +473,8 @@ type Query {
   huntConfiguration: HuntConfiguration! @auth(for: [KNOWLEDGE])
   huntStatistics(huntId: ID, startDate: DateTime, endDate: DateTime, interval: String): HuntStatistics! @auth(for: [KNOWLEDGE])
   huntPackExport(ids: [ID!]!): String @auth(for: [KNOWLEDGE])
+  "What 'Hunt this' proposes to hunt from the entity: its indicators, techniques and detection rules"
+  huntDerivedContent(entityId: ID!): HuntDerivedContent @auth(for: [KNOWLEDGE])
 }
 
 # Mutations

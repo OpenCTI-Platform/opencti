@@ -12783,6 +12783,73 @@ export type HuntConnectorRegisterInput = {
   supports_preview?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
+/** What a hunt started from an entity looks for, read with the access of the user */
+export type HuntDerivedContent = {
+  __typename?: 'HuntDerivedContent';
+  elements: Array<HuntDerivedElement>;
+  /** More indicators and observables than a run looks up */
+  elements_truncated: Scalars['Boolean']['output'];
+  entity: HuntDerivedSource;
+  rules: Array<HuntDerivedRule>;
+  /** Entities an indicator hunt takes its values from, read again at every run */
+  sources: Array<HuntDerivedSource>;
+  /** The hunt type the content supports: indicators when indicators or observables are found, telemetry when only detection rules are, null for neither */
+  suggested_type?: Maybe<HuntType>;
+  /** Threats the hunt targets */
+  targets: Array<HuntDerivedSource>;
+  techniques: Array<HuntDerivedTechnique>;
+  /** Indicators of the sources neither a lookup nor a detection-rule hunt can use */
+  unsupported_count: Scalars['Int']['output'];
+};
+
+/** An indicator or an observable an indicator hunt looks up */
+export type HuntDerivedElement = {
+  __typename?: 'HuntDerivedElement';
+  entity_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  /** Ids of the sources it comes from */
+  source_ids: Array<Scalars['ID']['output']>;
+  /** Observable types of the values a lookup searches */
+  value_types: Array<Scalars['String']['output']>;
+};
+
+/** A detection rule a detection-rule hunt runs: an indicator whose pattern is a Sigma rule or a native query */
+export type HuntDerivedRule = {
+  __typename?: 'HuntDerivedRule';
+  entity_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  pattern: Scalars['String']['output'];
+  pattern_type: Scalars['String']['output'];
+  /** Ids of the techniques of the entity it indicates */
+  technique_ids: Array<Scalars['ID']['output']>;
+};
+
+/** An entity a hunt started from another one takes its indicators and observables from */
+export type HuntDerivedSource = {
+  __typename?: 'HuntDerivedSource';
+  entity_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  /** self: the entity the hunt starts from; uses: a malware or tool it uses; attributed: a threat attributed to it */
+  relation: HuntDerivedSourceRelation;
+};
+
+export enum HuntDerivedSourceRelation {
+  Attributed = 'attributed',
+  Self = 'self',
+  Uses = 'uses'
+}
+
+export type HuntDerivedTechnique = {
+  __typename?: 'HuntDerivedTechnique';
+  entity_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  x_mitre_id?: Maybe<Scalars['String']['output']>;
+};
+
 export type HuntEdge = {
   __typename?: 'HuntEdge';
   cursor: Scalars['String']['output'];
@@ -28281,6 +28348,8 @@ export type Query = {
   hunt?: Maybe<Hunt>;
   huntConfiguration: HuntConfiguration;
   huntConnectors: Array<HuntConnector>;
+  /** What 'Hunt this' proposes to hunt from the entity: its indicators, techniques and detection rules */
+  huntDerivedContent?: Maybe<HuntDerivedContent>;
   huntPackExport?: Maybe<Scalars['String']['output']>;
   huntRun?: Maybe<HuntRun>;
   huntRuns?: Maybe<HuntRunConnection>;
@@ -29714,6 +29783,11 @@ export type QueryHuntArgs = {
 
 export type QueryHuntConnectorsArgs = {
   onlyAlive?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type QueryHuntDerivedContentArgs = {
+  entityId: Scalars['ID']['input'];
 };
 
 
@@ -45720,6 +45794,12 @@ export type ResolversTypes = ResolversObject<{
   HuntConnector: ResolverTypeWrapper<HuntConnectorView>;
   HuntConnectorCheckReportInput: HuntConnectorCheckReportInput;
   HuntConnectorRegisterInput: HuntConnectorRegisterInput;
+  HuntDerivedContent: ResolverTypeWrapper<HuntDerivedContent>;
+  HuntDerivedElement: ResolverTypeWrapper<HuntDerivedElement>;
+  HuntDerivedRule: ResolverTypeWrapper<HuntDerivedRule>;
+  HuntDerivedSource: ResolverTypeWrapper<HuntDerivedSource>;
+  HuntDerivedSourceRelation: HuntDerivedSourceRelation;
+  HuntDerivedTechnique: ResolverTypeWrapper<HuntDerivedTechnique>;
   HuntEdge: ResolverTypeWrapper<Omit<HuntEdge, 'node'> & { node: ResolversTypes['Hunt'] }>;
   HuntEvidence: ResolverTypeWrapper<HuntEvidence>;
   HuntEvidenceInput: HuntEvidenceInput;
@@ -47067,6 +47147,11 @@ export type ResolversParentTypes = ResolversObject<{
   HuntConnector: HuntConnectorView;
   HuntConnectorCheckReportInput: HuntConnectorCheckReportInput;
   HuntConnectorRegisterInput: HuntConnectorRegisterInput;
+  HuntDerivedContent: HuntDerivedContent;
+  HuntDerivedElement: HuntDerivedElement;
+  HuntDerivedRule: HuntDerivedRule;
+  HuntDerivedSource: HuntDerivedSource;
+  HuntDerivedTechnique: HuntDerivedTechnique;
   HuntEdge: Omit<HuntEdge, 'node'> & { node: ResolversParentTypes['Hunt'] };
   HuntEvidence: HuntEvidence;
   HuntEvidenceInput: HuntEvidenceInput;
@@ -52610,6 +52695,49 @@ export type HuntConnectorResolvers<ContextType = any, ParentType extends Resolve
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
 }>;
 
+export type HuntDerivedContentResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntDerivedContent'] = ResolversParentTypes['HuntDerivedContent']> = ResolversObject<{
+  elements?: Resolver<Array<ResolversTypes['HuntDerivedElement']>, ParentType, ContextType>;
+  elements_truncated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  entity?: Resolver<ResolversTypes['HuntDerivedSource'], ParentType, ContextType>;
+  rules?: Resolver<Array<ResolversTypes['HuntDerivedRule']>, ParentType, ContextType>;
+  sources?: Resolver<Array<ResolversTypes['HuntDerivedSource']>, ParentType, ContextType>;
+  suggested_type?: Resolver<Maybe<ResolversTypes['HuntType']>, ParentType, ContextType>;
+  targets?: Resolver<Array<ResolversTypes['HuntDerivedSource']>, ParentType, ContextType>;
+  techniques?: Resolver<Array<ResolversTypes['HuntDerivedTechnique']>, ParentType, ContextType>;
+  unsupported_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type HuntDerivedElementResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntDerivedElement'] = ResolversParentTypes['HuntDerivedElement']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  source_ids?: Resolver<Array<ResolversTypes['ID']>, ParentType, ContextType>;
+  value_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type HuntDerivedRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntDerivedRule'] = ResolversParentTypes['HuntDerivedRule']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  pattern?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  pattern_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  technique_ids?: Resolver<Array<ResolversTypes['ID']>, ParentType, ContextType>;
+}>;
+
+export type HuntDerivedSourceResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntDerivedSource'] = ResolversParentTypes['HuntDerivedSource']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  relation?: Resolver<ResolversTypes['HuntDerivedSourceRelation'], ParentType, ContextType>;
+}>;
+
+export type HuntDerivedTechniqueResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntDerivedTechnique'] = ResolversParentTypes['HuntDerivedTechnique']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  x_mitre_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
 export type HuntEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntEdge'] = ResolversParentTypes['HuntEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Hunt'], ParentType, ContextType>;
@@ -57677,6 +57805,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   hunt?: Resolver<Maybe<ResolversTypes['Hunt']>, ParentType, ContextType, RequireFields<QueryHuntArgs, 'id'>>;
   huntConfiguration?: Resolver<ResolversTypes['HuntConfiguration'], ParentType, ContextType>;
   huntConnectors?: Resolver<Array<ResolversTypes['HuntConnector']>, ParentType, ContextType, Partial<QueryHuntConnectorsArgs>>;
+  huntDerivedContent?: Resolver<Maybe<ResolversTypes['HuntDerivedContent']>, ParentType, ContextType, RequireFields<QueryHuntDerivedContentArgs, 'entityId'>>;
   huntPackExport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryHuntPackExportArgs, 'ids'>>;
   huntRun?: Resolver<Maybe<ResolversTypes['HuntRun']>, ParentType, ContextType, RequireFields<QueryHuntRunArgs, 'id'>>;
   huntRuns?: Resolver<Maybe<ResolversTypes['HuntRunConnection']>, ParentType, ContextType, Partial<QueryHuntRunsArgs>>;
@@ -62734,6 +62863,11 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   HuntConnectionCheck?: HuntConnectionCheckResolvers<ContextType>;
   HuntConnectionCheckItem?: HuntConnectionCheckItemResolvers<ContextType>;
   HuntConnector?: HuntConnectorResolvers<ContextType>;
+  HuntDerivedContent?: HuntDerivedContentResolvers<ContextType>;
+  HuntDerivedElement?: HuntDerivedElementResolvers<ContextType>;
+  HuntDerivedRule?: HuntDerivedRuleResolvers<ContextType>;
+  HuntDerivedSource?: HuntDerivedSourceResolvers<ContextType>;
+  HuntDerivedTechnique?: HuntDerivedTechniqueResolvers<ContextType>;
   HuntEdge?: HuntEdgeResolvers<ContextType>;
   HuntEvidence?: HuntEvidenceResolvers<ContextType>;
   HuntHit?: HuntHitResolvers<ContextType>;

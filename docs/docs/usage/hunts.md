@@ -19,9 +19,17 @@ New to hunting? [Your first hunt](your-first-hunt.md) walks through an indicator
 
 ### Hunt types
 
-- **Indicators** hunts look for indicators and observables in your telemetry: IP addresses, domains, host names, URLs, email addresses, MAC addresses and file hashes, picked from a list, taken from reports, groupings, incident responses, threats or incidents, matched by a filter, or pasted as text. No query language is involved. See [Indicator hunts](hunt-indicators.md).
-- **Detection rule (Sigma or native query)** hunts search the logs and events of your security platforms with a Sigma rule; hunt connectors translate it into the platform language (SPL, KQL, ES|QL, LogScale, YARA-L, PPL), unless a native query is provided for that platform, in which case the native query is executed verbatim.
-- **Infrastructure (outside-in)** hunts search the Internet for the infrastructure of a threat (servers, certificates, domains) through the infrastructure tracking connector. They do not carry a Sigma rule.
+The type is the first choice of the creation form: each type says, in one sentence, what it needs as input and where it runs. Pick it from what you have.
+
+| Type | Needs | Runs on |
+|---|---|---|
+| **Indicators** | Indicators or observables: IP addresses, domains, host names, URLs, email addresses, MAC addresses, file hashes. No query language. | The telemetry of your security platforms, through the hunt connectors that look up indicators. |
+| **Detection rule (Sigma or native query)** | A Sigma rule, or a native query per platform (SPL, KQL, EQL, ES\|QL...). | The logs and events of your SIEM, EDR or data lake; hunt connectors translate the Sigma rule into the language of their platform, a native query runs verbatim. |
+| **Internet infrastructure (outside-in)** | An internet fingerprint query (certificate, JARM, HTTP title, body hash, `Server` header), not a Sigma rule nor indicators. | Internet scan data (Censys, Silent Push, urlscan.io, Team Cymru Scout), through the infrastructure tracker connector. It never searches your telemetry: it looks for the servers of a threat on the internet. |
+
+- **Indicators** hunts take their values from a list, from reports, groupings, incident responses, threats, tools or incidents, from a filter, or from text pasted in the form. See [Indicator hunts](hunt-indicators.md).
+- **Detection rule** hunts carry one Sigma rule and, optionally, native queries that override its translation on their platform.
+- **Internet infrastructure** hunts carry a native query of the `internet` platform. The infrastructure tracker connector is described in [Hunt connectors](hunt-connectors.md#infrastructure-tracker).
 
 ### Hunt statuses
 
@@ -83,7 +91,28 @@ The **Logic** tab keeps the Sigma rule and the native queries of the hunt, valid
 
 ![Logic tab of a hunt: the Sigma rule validated, with its level, log source and detection fields](assets/hunt-logic-sigma-validation.png)
 
-You can also start a hunt from a threat: the **Hunt this** action of the more actions menu of Attack Patterns, Intrusion Sets, Malware, Reports, Indicators and Priority Intelligence Requirements opens the creation form prefilled with the entity.
+### Hunt this: start a hunt from a threat, a report or an indicator
+
+**Hunt this** is offered on Intrusion Sets, Threat Actors, Campaigns, Malware, Attack Patterns, Reports, Groupings, Incident Responses, Incidents, Indicators, the observables an indicator hunt can look up, and Priority Intelligence Requirements. **Create a hunt** does not open an empty form: the platform first derives what to hunt from the knowledge it holds, with your access (what you cannot see is never derived), and opens the form with it.
+
+| Started from | What the platform derives | The hunt it opens |
+|---|---|---|
+| Intrusion Set, Threat Actor, Campaign | The indicators and observables of the threat, of the malware and tools it uses, and of the intrusion sets and campaigns attributed to it; the detection rules indicating the techniques it uses. | An indicator hunt over the threat and those sources when indicators exist, otherwise a detection-rule hunt running the rule covering the most techniques. |
+| Malware | Its indicators and observables; the detection rules of the techniques it uses. | The same choice. |
+| Attack Pattern | The detection rules indicating it. | A detection-rule hunt running one of them. |
+| Report, Grouping, Incident Response | The indicators, observables, threats and techniques it contains, and the detection rules of those techniques. | An indicator hunt over the container, otherwise a detection-rule hunt. |
+| Incident | The indicators indicating it, the observables related to it, the techniques it uses. | The same choice. |
+| Indicator | Its pattern type picks the hunt: a STIX pattern is looked up as an indicator, a Sigma pattern becomes the detection rule, an SPL, KQL, EQL or ES\|QL pattern a native query of its platform. The indicator stays visible and removable. | The hunt its pattern calls for, with the techniques it indicates. |
+| Observable | The observable itself. | An indicator hunt looking it up. |
+
+A detection rule is an indicator whose pattern is a Sigma rule or a native query (`sigma`, `spl`, `kql`, `eql`, `esql`) and which indicates a technique, as the defense matrix links detection rules to techniques. Indicators in other pattern languages (YARA, Snort, Suricata) are counted but cannot be hunted.
+
+At the top of the form, two blocks explain the hunt before anything is filled in:
+
+- **The summary** says in plain language what the hunt does, updated as you change the type, the scope, the time window or the escalation threshold: "You are hunting APT28 on 2 security platforms: the hunt searches your telemetry for its 23 known indicators over the last 7 days. A hit creates a sighting and, from 10 hits, proposes an incident."
+- **What the platform found** lists the indicators to look up with their count and types ("23 indicators to look up: 12 domains, 8 IPv4 addresses, 3 files"), per source: the threat, each malware or tool it uses and each threat attributed to it can be unticked, and the counts follow. Below, the detection rules of its techniques are proposed as a list, each with the techniques it covers: picking one turns the hunt into a detection-rule hunt running it; **Hunt these indicators** turns it back. When the platform holds neither indicators nor detection rules, the block says so in one sentence and offers **Plan the hunt with AI** and **Import a hunt pack**.
+
+An indicator hunt started this way keeps the threat and its sources as what it looks for: the indicators are read again at every run, so the hunt follows the intelligence as it grows.
 
 ## Run a hunt
 

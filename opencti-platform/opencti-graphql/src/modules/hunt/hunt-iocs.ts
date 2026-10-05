@@ -1,5 +1,5 @@
 import { isIPv4, isIPv6 } from 'node:net';
-import type { AuthContext } from '../../types/user';
+import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity, BasicStoreEntityMarkingDefinition } from '../../types/store';
 import { ValidationError } from '../../config/errors';
 import { getEntitiesMapFromCache } from '../../database/cache';
@@ -158,7 +158,7 @@ export const extractStixPatternValues = (pattern: string): IocValue[] => {
   return values;
 };
 
-type IocElement = BasicStoreEntity & Record<string, any>;
+export type IocElement = BasicStoreEntity & Record<string, any>;
 
 /** The values an indicator or an observable brings to an indicator hunt. */
 export const iocValuesOfElement = (element: IocElement): IocValue[] => {
@@ -239,20 +239,25 @@ export const isDisclosableByHunt = (hunt: AccessRestricted, element: AccessRestr
   return elementOrganizations.length === 0 || (huntOrganizations.length > 0 && huntOrganizations.every((id) => elementOrganizations.includes(id)));
 };
 
-const IOC_ELEMENT_TYPES = [ENTITY_TYPE_INDICATOR, ...HUNT_IOC_OBSERVABLE_TYPES];
+export const IOC_ELEMENT_TYPES = [ENTITY_TYPE_INDICATOR, ...HUNT_IOC_OBSERVABLE_TYPES];
 
-const listContained = async (context: AuthContext, sourceId: string, first: number) => {
-  const connection = await pageRegardingEntitiesConnection<IocElement>(context, SYSTEM_USER, sourceId, RELATION_OBJECT, IOC_ELEMENT_TYPES, false, { first });
+/** Indicators and observables contained in a report, a grouping or an incident response. */
+export const listContainedIocElements = async (context: AuthContext, user: AuthUser, sourceId: string, first: number) => {
+  const connection = await pageRegardingEntitiesConnection<IocElement>(context, user, sourceId, RELATION_OBJECT, IOC_ELEMENT_TYPES, false, { first });
   return connection.edges.map((edge) => edge.node);
 };
 
-const listOfSubject = async (context: AuthContext, subjectId: string, first: number) => {
+/** Indicators indicating a threat or an incident, and observables related to it. */
+export const listSubjectIocElements = async (context: AuthContext, user: AuthUser, subjectId: string, first: number) => {
   const [indicators, observables] = await Promise.all([
-    pageRegardingEntitiesConnection<IocElement>(context, SYSTEM_USER, subjectId, RELATION_INDICATES, [ENTITY_TYPE_INDICATOR], true, { first }),
-    pageRegardingEntitiesConnection<IocElement>(context, SYSTEM_USER, subjectId, RELATION_RELATED_TO, HUNT_IOC_OBSERVABLE_TYPES, true, { first }),
+    pageRegardingEntitiesConnection<IocElement>(context, user, subjectId, RELATION_INDICATES, [ENTITY_TYPE_INDICATOR], true, { first }),
+    pageRegardingEntitiesConnection<IocElement>(context, user, subjectId, RELATION_RELATED_TO, HUNT_IOC_OBSERVABLE_TYPES, true, { first }),
   ]);
   return [...indicators.edges, ...observables.edges].map((edge) => edge.node);
 };
+
+/** The name an indicator or an observable is shown with. */
+export const iocElementName = (element: IocElement) => String(element.name ?? element.value ?? element.observable_value ?? element.standard_id);
 
 /**
  * The values an indicator hunt looks up: its indicators and observables, the indicators and observables contained in
@@ -269,8 +274,8 @@ export const resolveHuntIocSet = async (context: AuthContext, hunt: BasicStoreEn
     const source = expansions[index];
     // Expanded elements of revoked indicators are not hunted, an explicitly chosen one is
     const expanded = HUNT_IOC_CONTAINER_TYPES.includes(source.entity_type)
-      ? await listContained(context, source.internal_id, max + 1)
-      : await listOfSubject(context, source.internal_id, max + 1);
+      ? await listContainedIocElements(context, SYSTEM_USER, source.internal_id, max + 1)
+      : await listSubjectIocElements(context, SYSTEM_USER, source.internal_id, max + 1);
     truncated = truncated || expanded.length > max;
     elements.push(...expanded.filter((element) => element.revoked !== true));
   }
@@ -303,7 +308,7 @@ export const resolveHuntIocSet = async (context: AuthContext, hunt: BasicStoreEn
       id: element.internal_id,
       standard_id: element.standard_id,
       entity_type: element.entity_type,
-      name: String(element.name ?? element.value ?? element.observable_value ?? element.standard_id),
+      name: iocElementName(element),
     };
     values.forEach((value) => {
       const key = iocKey(value);

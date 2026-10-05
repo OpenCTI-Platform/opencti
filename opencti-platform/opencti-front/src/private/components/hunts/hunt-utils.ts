@@ -118,16 +118,11 @@ export const huntQueryLanguageLabel = (language: string | null | undefined, t_i1
 export const HUNT_TARGET_TYPES = ['Intrusion-Set', 'Malware', 'Campaign', 'Threat-Actor-Group', 'Threat-Actor-Individual'];
 export const HUNT_TECHNIQUE_TYPES = ['Attack-Pattern'];
 export const HUNT_SOURCE_TYPES = ['Indicator', 'Report'];
-/**
- * Objects of a report a hunt created from it starts with, one request per group: its indicators are read apart so that
- * a report with many indicators never crowds out its threats and techniques.
- */
-export const HUNT_REPORT_PREFILL_TYPE_GROUPS = [[...HUNT_TARGET_TYPES, ...HUNT_TECHNIQUE_TYPES], HUNT_SOURCE_TYPES.filter((type) => type !== 'Report')];
 export const HUNT_SCOPE_TYPES = ['SecurityPlatform'];
 /** Indicators and observables an indicator hunt looks for (the observable types a lookup can search). */
 export const HUNT_IOC_ELEMENT_TYPES = ['Indicator', 'IPv4-Addr', 'IPv6-Addr', 'Domain-Name', 'Hostname', 'Url', 'Email-Addr', 'StixFile', 'Mac-Addr'];
 /** Entities an indicator hunt takes its indicators and observables from. */
-export const HUNT_IOC_ENTITY_TYPES = ['Report', 'Grouping', 'Case-Incident', 'Incident', ...HUNT_TARGET_TYPES];
+export const HUNT_IOC_ENTITY_TYPES = ['Report', 'Grouping', 'Case-Incident', 'Incident', ...HUNT_TARGET_TYPES, 'Tool'];
 export const HUNT_TIME_WINDOW_PRESETS = [24, 168, 720] as const;
 
 export const HUNT_DEFAULT_TIME_WINDOW_HOURS = 24;
@@ -138,7 +133,7 @@ export const HUNT_MAX_RESULTS_PER_RUN = 10000;
 // Results a run reads when its hunt sets no limit (the platform default)
 export const HUNT_DEFAULT_MAX_RESULTS = 1000;
 
-type HuntTranslate = (message: string, options?: { values: Record<string, string> }) => string;
+type HuntTranslate = (message: string, options?: { values: Record<string, string | number> }) => string;
 
 /** Why the hit count of a run with partial results is a lower bound: the result limit when the run reached it. */
 export const huntRunPartialResultsSentence = (
@@ -216,17 +211,17 @@ export const huntStatusSeverity = (status?: string | null): ChipSeverity => {
 export const huntTypeLabel = (huntType?: string | null) => {
   switch (huntType) {
     case 'indicators': return 'Indicators';
-    case 'infrastructure': return 'Infrastructure (outside-in)';
+    case 'infrastructure': return 'Internet infrastructure (outside-in)';
     default: return 'Detection rule (Sigma or native query)';
   }
 };
 
-/** What a hunt of each type looks for, one line. */
+/** What a hunt of each type needs and where it runs, one sentence. */
 export const huntTypeDescription = (huntType?: string | null) => {
   switch (huntType) {
-    case 'indicators': return 'Looks for indicators and observables in your telemetry, no query language needed';
-    case 'infrastructure': return 'Finds adversary infrastructure on the internet with fingerprint queries';
-    default: return 'Runs a Sigma rule or native queries on your SIEM, EDR or data lake';
+    case 'indicators': return 'Needs indicators or observables (IP addresses, domains, URLs, hashes): looks them up in the telemetry of your security platforms, no query language needed.';
+    case 'infrastructure': return 'Needs an internet fingerprint query (certificate, JARM, HTTP title), not a Sigma rule or indicators: searches internet scan data for the servers of a threat with the infrastructure tracker connector, never your telemetry.';
+    default: return 'Needs a Sigma rule or a native query: runs it on the logs and events of your SIEM, EDR or data lake.';
   }
 };
 
@@ -752,6 +747,7 @@ const INDICATOR_PATTERN_PLATFORMS: Record<string, string> = {
   spl: 'splunk',
   kql: 'microsoft-sentinel',
   eql: 'elastic-security',
+  esql: 'elastic-security',
 };
 
 export interface HuntIndicatorPrefillEntity extends HuntPrefillEntity {
@@ -783,6 +779,205 @@ export const buildIndicatorHuntPrefill = (indicator: HuntIndicatorPrefillEntity)
     };
   }
   return { huntSources: [option] };
+};
+// endregion
+
+// region derived content ("Hunt this" from an entity, Query.huntDerivedContent)
+export interface HuntDerivedEntity {
+  id: string;
+  entity_type: string;
+  name: string;
+}
+export interface HuntDerivedSource extends HuntDerivedEntity {
+  relation: string;
+}
+export interface HuntDerivedElement extends HuntDerivedEntity {
+  value_types: ReadonlyArray<string>;
+  source_ids: ReadonlyArray<string>;
+}
+export interface HuntDerivedTechnique extends HuntDerivedEntity {
+  x_mitre_id?: string | null;
+}
+export interface HuntDerivedRule extends HuntDerivedEntity {
+  pattern_type: string;
+  pattern: string;
+  technique_ids: ReadonlyArray<string>;
+}
+export interface HuntDerived {
+  entity: HuntDerivedSource;
+  suggested_type?: string | null;
+  sources: ReadonlyArray<HuntDerivedSource>;
+  targets: ReadonlyArray<HuntDerivedSource>;
+  elements: ReadonlyArray<HuntDerivedElement>;
+  elements_truncated: boolean;
+  unsupported_count: number;
+  techniques: ReadonlyArray<HuntDerivedTechnique>;
+  rules: ReadonlyArray<HuntDerivedRule>;
+}
+
+/** Entities "Hunt this" derives the content of a hunt from (a PIR prefills its targets only). */
+export const HUNT_DERIVABLE_TYPES = [
+  ...HUNT_TARGET_TYPES,
+  'Tool',
+  ...HUNT_TECHNIQUE_TYPES,
+  'Report',
+  ...HUNT_IOC_CONTAINER_PREFILL_TYPES,
+  ...HUNT_IOC_ELEMENT_TYPES,
+];
+// Techniques of a container prefilled as covered techniques, the others stay in the knowledge of the container
+const DERIVED_TECHNIQUES_PREFILL_MAX = 50;
+
+export const huntTechniqueName = (technique: { name: string; x_mitre_id?: string | null }) => (technique.x_mitre_id ? `${technique.x_mitre_id} ${technique.name}` : technique.name);
+
+const derivedOption = (entity: HuntDerivedEntity): FieldOption => ({ value: entity.id, label: entity.name, type: entity.entity_type });
+
+/** The indicators and observables the form looks up now: those of the selected sources, and those picked one by one. */
+export const selectedDerivedElements = (derived: HuntDerived, values: Pick<HuntFormValues, 'iocEntities' | 'iocElements'>) => {
+  const selected = new Set([...values.iocEntities, ...values.iocElements].map((option) => option.value));
+  return derived.elements.filter((element) => selected.has(element.id) || element.source_ids.some((sourceId) => selected.has(sourceId)));
+};
+
+/** Indicators and observables of the sources, per observable type of their first value, the most frequent first. */
+export const countDerivedValueTypes = (elements: ReadonlyArray<HuntDerivedElement>) => {
+  const counts = new Map<string, number>();
+  elements.forEach((element) => {
+    const type = element.value_types[0];
+    if (type) counts.set(type, (counts.get(type) ?? 0) + 1);
+  });
+  return Array.from(counts.entries())
+    .map(([type, count]) => ({ type, count }))
+    .sort((a, b) => b.count - a.count || a.type.localeCompare(b.type));
+};
+
+const HUNT_VALUE_TYPE_COUNTS: Record<string, string> = {
+  'IPv4-Addr': '{count, plural, one {# IPv4 address} other {# IPv4 addresses}}',
+  'IPv6-Addr': '{count, plural, one {# IPv6 address} other {# IPv6 addresses}}',
+  'Domain-Name': '{count, plural, one {# domain} other {# domains}}',
+  Hostname: '{count, plural, one {# host name} other {# host names}}',
+  Url: '{count, plural, one {# URL} other {# URLs}}',
+  'Email-Addr': '{count, plural, one {# email address} other {# email addresses}}',
+  StixFile: '{count, plural, one {# file} other {# files}}',
+  'Mac-Addr': '{count, plural, one {# MAC address} other {# MAC addresses}}',
+};
+
+/** "12 domains, 8 IPv4 addresses, 3 files" */
+export const formatDerivedValueTypes = (elements: ReadonlyArray<HuntDerivedElement>, t_i18n: HuntTranslate) => countDerivedValueTypes(elements)
+  .map(({ type, count }) => t_i18n(HUNT_VALUE_TYPE_COUNTS[type] ?? '{count, plural, one {# value} other {# values}}', { values: { count } }))
+  .join(', ');
+
+/** The form values a detection rule turns a hunt into: its Sigma rule or its native query, with the techniques it covers. */
+export const derivedRuleValues = (rule: HuntDerivedRule, derived: HuntDerived): Partial<HuntFormValues> => {
+  const huntTechniques = derived.techniques.filter((technique) => rule.technique_ids.includes(technique.id))
+    .map((technique) => ({ value: technique.id, label: huntTechniqueName(technique), type: technique.entity_type }));
+  const base: Partial<HuntFormValues> = { hunt_type: 'telemetry', huntSources: [derivedOption(rule)], huntTechniques };
+  const platform = INDICATOR_PATTERN_PLATFORMS[rule.pattern_type];
+  if (rule.pattern_type !== 'sigma' && platform) {
+    return { ...base, sigma_rule: '', native_queries: [{ platform, language: rule.pattern_type, query: rule.pattern, pipeline: '' }] };
+  }
+  return { ...base, sigma_rule: rule.pattern, native_queries: [] };
+};
+
+/** The detection rule of the derived content the form runs now, if any. */
+export const selectedDerivedRule = (derived: HuntDerived, values: Pick<HuntFormValues, 'hunt_type' | 'huntSources'>) => {
+  if (values.hunt_type !== 'telemetry') return null;
+  const sourceIds = values.huntSources.map((option) => option.value);
+  return derived.rules.find((rule) => sourceIds.includes(rule.id)) ?? null;
+};
+
+/**
+ * The hunt "Hunt this" opens from the derived content of the entity: an indicator hunt over the sources when indicators
+ * were found, otherwise a detection-rule hunt running the rule covering the most techniques; an indicator keeps the hunt
+ * its pattern type calls for, an observable is looked up itself.
+ */
+export const buildDerivedHuntPrefill = (entity: HuntIndicatorPrefillEntity, derived: HuntDerived): Partial<HuntFormValues> => {
+  const name = buildHuntPrefillName(entity.name);
+  const huntTargets = uniqueOptions(derived.targets.map(derivedOption));
+  const techniqueOptions = derived.techniques.map((technique) => ({ value: technique.id, label: huntTechniqueName(technique), type: technique.entity_type }));
+  if (entity.entity_type === 'Indicator') {
+    return { name, huntTargets, huntTechniques: techniqueOptions, ...buildIndicatorHuntPrefill(entity) };
+  }
+  if (isIocHuntEntity(entity.entity_type) && !HUNT_IOC_CONTAINER_PREFILL_TYPES.includes(entity.entity_type)) {
+    return { name, ...buildIocHuntPrefill(entity) };
+  }
+  const isContainer = entity.entity_type === 'Report' || HUNT_IOC_CONTAINER_PREFILL_TYPES.includes(entity.entity_type);
+  const huntTechniques = HUNT_TECHNIQUE_TYPES.includes(entity.entity_type) || isContainer ? techniqueOptions.slice(0, DERIVED_TECHNIQUES_PREFILL_MAX) : [];
+  if (derived.suggested_type === 'indicators') {
+    return { name, huntTargets, huntTechniques, hunt_type: 'indicators', iocEntities: uniqueOptions(derived.sources.map(derivedOption)) };
+  }
+  if (derived.rules.length > 0) {
+    const ruleValues = derivedRuleValues(derived.rules[0], derived);
+    return { name, huntTargets, ...ruleValues, huntTechniques: uniqueOptions([...huntTechniques, ...(ruleValues.huntTechniques ?? [])]) };
+  }
+  return { name, huntTargets, huntTechniques, hunt_type: 'telemetry' };
+};
+
+interface HuntConnectorPlatform {
+  platform?: string | null;
+  supports_indicators?: boolean | null;
+  securityPlatform?: { id: string } | null;
+}
+
+/** Security platforms a live hunt connector can run a hunt of the type on (an indicator hunt needs indicator lookups). */
+export const countHuntPlatforms = (connectors: ReadonlyArray<HuntConnectorPlatform>, huntType: string) => new Set(connectors
+  .filter((connector) => connector.platform !== HUNT_PLATFORM_INTERNET && !!connector.securityPlatform)
+  .filter((connector) => huntType !== 'indicators' || !!connector.supports_indicators)
+  .map((connector) => connector.securityPlatform?.id)).size;
+
+export interface HuntSummaryInput {
+  name: string;
+  huntType: string;
+  scopePlatforms: ReadonlyArray<FieldOption>;
+  availablePlatforms: number;
+  indicatorsCount: number;
+  ruleName: string | null;
+  hasLogic: boolean;
+  timeWindowHours: number;
+  escalationThreshold: number;
+}
+
+/** The time window of a run, in days when it is a whole number of days. */
+export const formatHuntWindow = (hours: number, t_i18n: HuntTranslate) => (hours > 0 && hours % 24 === 0
+  ? t_i18n('{count, plural, one {# day} other {# days}}', { values: { count: hours / 24 } })
+  : t_i18n('{count, plural, one {# hour} other {# hours}}', { values: { count: hours } }));
+
+/**
+ * What a hunt started from an entity does, in plain language, from the current form values: what it hunts, where, over
+ * which period, and what a hit produces.
+ */
+export const buildHuntSummary = (input: HuntSummaryInput, t_i18n: HuntTranslate): string[] => {
+  const name = input.name;
+  if (input.huntType === 'infrastructure') {
+    return [
+      t_i18n('You are hunting the infrastructure of {name} on the internet: the hunt runs its fingerprint queries on internet scan data through the infrastructure tracker connector, never on your telemetry.', { values: { name } }),
+      t_i18n('From {count, plural, one {# hit} other {# hits}}, a run proposes an incident.', { values: { count: input.escalationThreshold } }),
+    ];
+  }
+  let platforms: string;
+  if (input.scopePlatforms.length === 1) {
+    platforms = String(input.scopePlatforms[0].label);
+  } else if (input.scopePlatforms.length > 1 || input.availablePlatforms > 0) {
+    const count = input.scopePlatforms.length > 1 ? input.scopePlatforms.length : input.availablePlatforms;
+    platforms = t_i18n('{count, plural, one {# security platform} other {# security platforms}}', { values: { count } });
+  } else {
+    platforms = t_i18n('your security platforms (no hunt connector can run it yet)');
+  }
+  const window = formatHuntWindow(input.timeWindowHours, t_i18n);
+  let what: string;
+  if (input.huntType === 'indicators') {
+    what = input.indicatorsCount > 0
+      ? t_i18n('You are hunting {name} on {platforms}: the hunt searches your telemetry for its {count, plural, one {# known indicator} other {# known indicators}} over the last {window}.', { values: { name, platforms, window, count: input.indicatorsCount } })
+      : t_i18n('You are hunting {name} on {platforms}: the hunt searches your telemetry for the indicators and observables you add below over the last {window}.', { values: { name, platforms, window } });
+  } else if (input.ruleName) {
+    what = t_i18n('You are hunting {name} on {platforms}: the hunt runs the detection rule "{rule}" on your telemetry over the last {window}.', { values: { name, platforms, window, rule: input.ruleName } });
+  } else if (input.hasLogic) {
+    what = t_i18n('You are hunting {name} on {platforms}: the hunt runs its Sigma rule or native queries on your telemetry over the last {window}.', { values: { name, platforms, window } });
+  } else {
+    what = t_i18n('You are hunting {name} on {platforms}: the hunt runs the Sigma rule or the native queries you write below on your telemetry over the last {window}.', { values: { name, platforms, window } });
+  }
+  return [
+    what,
+    t_i18n('A hit creates a sighting and, from {count, plural, one {# hit} other {# hits}}, proposes an incident.', { values: { count: input.escalationThreshold } }),
+  ];
 };
 // endregion
 

@@ -9,7 +9,7 @@ The values of an indicator hunt add up from four sources, edited in the **What t
 | Source | Description |
 |---|---|
 | Indicators and observables | Picked from a list. An indicator brings the values of the equality comparisons of its STIX pattern (`[ipv4-addr:value = '198.51.100.7']`, `[file:hashes.'SHA-256' = '...']`); an observable brings its value, every hash for a file. |
-| Take them from | Reports, groupings and incident responses bring the indicators and observables they contain; intrusion sets, malware, campaigns, threat actors and incidents bring the indicators that indicate them and the observables related to them. Revoked indicators are left out. |
+| Take them from | Reports, groupings and incident responses bring the indicators and observables they contain; intrusion sets, malware, tools, campaigns, threat actors and incidents bring the indicators that indicate them and the observables related to them. Revoked indicators are left out. |
 | Paste values | Values pasted as text, one per line or separated by commas, semicolons or spaces. The type of each value is detected and checked by the platform; defanged values (`hxxp`, `[.]`, `(.)`, `[@]`) are restored. |
 | Or the ones matching a filter | The indicators and observables matching a filter, for example the indicators labelled `apt28` that are still valid. |
 
