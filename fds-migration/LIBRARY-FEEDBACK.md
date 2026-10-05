@@ -2343,3 +2343,26 @@ Defense `Root.test.tsx` still passes unchanged.
 `HubNoAccess.tsx` renders the design-system `Alert` (title, description, action) and
 `HubFirstUse.tsx` the `Hero` / `HeroHeader` / `HeroBody` composition. The MUI `Alert`
 and the `Card` fallback are gone.
+
+## 63. No skeleton, so a loading surface falls back to MUI `Skeleton`
+
+**Needed.** The program UX charter asks every surface to show its shape while it
+loads, never the platform spinner. The curation surfaces (Inbox, proposal page,
+merge record drawer, Knowledge health page and widgets, the Merges view of the
+Changes tab) load through Relay `Suspense` boundaries and need a placeholder
+with the page's blocks.
+
+**Today.** The library ships `Spinner` and `ProgressBar` but no skeleton
+component or skeleton token.
+
+**Workaround.** FDS-WORKAROUND #63 in `CurationSkeleton.tsx`: one shared
+component renders MUI `Skeleton` blocks (`variant="rounded"`) of the given
+heights; every curation surface goes through it, so MUI `Skeleton` is imported
+in that file only.
+
+**Ask.** A `Skeleton` (block, text line, circle) on the elevation and radius
+tokens, with a reduced-motion variant.
+
+**Removal test.** At a pin that ships it: swap the import in
+`CurationSkeleton.tsx`, delete the marker, and confirm no file under
+`private/components/data/curation` imports `@mui/material/Skeleton`.

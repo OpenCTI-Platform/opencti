@@ -40,6 +40,10 @@ const CustomizationMenu: FunctionComponent = () => {
       path: '/dashboard/settings/customization/source_intelligence',
       label: 'Source intelligence',
     },
+    {
+      path: '/dashboard/settings/customization/curation',
+      label: 'Curation',
+    },
   ];
 
   return <NavToolbarMenu entries={entries} />;

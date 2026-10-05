@@ -670,4 +670,17 @@ describe('middleware upsertElement test', () => {
       expect(legacyInputs.find((i) => i.key === 'max_distinct_count')).toEqual({ key: 'max_distinct_count', value: [60000] });
     });
   });
+
+  describe('middleware generateAttributesInputsForUpsert with field authority', () => {
+    const type = 'Security-Coverage';
+    const element = { id: 'coverage-id', internal_id: 'coverage-id', entity_type: type, coverage_information: [{ coverage_name: 'Detection', coverage_score: 80 }] };
+    const updatePatch = { coverage_information: [{ coverage_name: 'Detection', coverage_score: 20 }] };
+    it('should keep a value replaced in full on upsert when a field authority rule denies the incoming source', () => {
+      const denied = generateAttributesInputsForUpsert(testContext, ADMIN_USER, element, type, updatePatch, { isConfidenceMatch: true }, new Map([['coverage_information', 'deny']]));
+      expect(denied.find((i) => i.key === 'coverage_information')).toBeUndefined();
+      // Without a rule deciding, the attribute is still replaced in full, whatever the confidence.
+      const replaced = generateAttributesInputsForUpsert(testContext, ADMIN_USER, element, type, updatePatch, { isConfidenceMatch: false });
+      expect(replaced.find((i) => i.key === 'coverage_information')).toBeDefined();
+    });
+  });
 });

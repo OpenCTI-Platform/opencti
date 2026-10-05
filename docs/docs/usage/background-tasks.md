@@ -19,6 +19,8 @@ If a rule task is enabled, it leads to the scan of the whole platform data and t
 
 Knowledge tasks are background tasks updating or deleting entities and correspond to mass operations on these data. To create one, select entities via the checkboxes in an entity list, and choose the action to perform via the toolbar.
 
+The bulk accept of the curation inbox and the curation policies also create knowledge tasks (see [Knowledge curation](knowledge-curation.md)).
+
 ### Rights
 
 - To create a knowledge task, the user should have the capability to Update Knowledge (or the capability to delete knowledge if the task action is a deletion).

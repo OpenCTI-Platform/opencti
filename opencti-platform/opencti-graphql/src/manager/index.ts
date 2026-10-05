@@ -1,3 +1,5 @@
+import './curationManager';
+import './curationRecordsManager';
 import './dataSanityManager';
 import './defenseCoverageManager';
 import './exclusionListCacheBuildManager';
