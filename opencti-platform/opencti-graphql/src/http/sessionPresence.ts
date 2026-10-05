@@ -3,7 +3,7 @@ import type { IncomingMessage } from 'node:http';
 import type { Context } from 'graphql-ws';
 import type { Extra } from 'graphql-ws/use/ws';
 import { v4 as uuidv4 } from 'uuid';
-import conf, { logApp } from '../config/conf';
+import conf, { getStoppingState, logApp } from '../config/conf';
 import { findSessionByRawId, getSessionMiddleware, killSessionByRawId } from '../database/session';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -47,7 +47,8 @@ const isSessionPresenceEnabled = async () => {
 
 const logoutAbandonedSession = async (sessionId: string, origin: PresenceOrigin) => {
   pendingLogouts.delete(sessionId);
-  if (sessionConnections.has(sessionId) || !(await isSessionPresenceEnabled())) {
+  // A stopping node no longer knows the sockets that reconnected elsewhere
+  if (getStoppingState() || sessionConnections.has(sessionId) || !(await isSessionPresenceEnabled())) {
     return;
   }
   const session = await findSessionByRawId(sessionId);
@@ -89,6 +90,10 @@ export const unregisterSessionPresence = (sessionId: string, connectionId: strin
     return;
   }
   sessionConnections.delete(sessionId);
+  // Sockets closed by the platform shutdown are not tabs closed by the user
+  if (getStoppingState()) {
+    return;
+  }
   const pendingLogout = setTimeout(() => {
     logoutAbandonedSession(sessionId, origin).catch((cause) => {
       logApp.error('[SESSION PRESENCE] Error logging out an abandoned session', { cause });
