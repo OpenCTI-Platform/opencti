@@ -69,6 +69,8 @@ const ENGINE_REASON_NEXT: Record<string, StepNextAction> = {
   engine_no_agent: 'ask_administrator',
   engine_unreachable: 'run_again',
   'run.time_budget_spent': 'policy_budget',
+  draft_validation_failed: 'open_draft',
+  draft_validation_unconfirmed: 'open_draft',
 };
 
 /** The next action a run's own reason calls for, if any. */
@@ -131,7 +133,7 @@ export const runStatusSentence = (input: StatusSentenceInput, t: Translate) => {
  * shared next-action matrix of the investigation surfaces.
  */
 export type StepNextAction = 'run_again' | 'run_again_later' | 'continue' | 'policy_connectors' | 'policy_budget' | 'policy_pack' | 'open_policies'
-  | 'review_approvals' | 'connectors_status' | 'add_observables' | 'xtm_one' | 'ask_administrator';
+  | 'review_approvals' | 'connectors_status' | 'add_observables' | 'xtm_one' | 'ask_administrator' | 'open_draft';
 
 interface StepOutcomeRule {
   message: string;

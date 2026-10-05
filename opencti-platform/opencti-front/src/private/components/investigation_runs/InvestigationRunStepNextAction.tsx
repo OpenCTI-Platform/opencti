@@ -32,6 +32,8 @@ export interface StepActionHandlers {
   onReviewApprovals: () => void;
   // The observables tab of the case, when the case is live.
   caseObservablesPath?: string | null;
+  // The draft of the investigation, read-only once it was validated.
+  draftPath?: string | null;
 }
 
 const POLICY_LABELS: Partial<Record<StepNextAction, string>> = {
@@ -65,6 +67,10 @@ export const NextAction = ({ next, handlers }: { next: StepNextAction; handlers:
     case 'add_observables':
       return handlers.caseObservablesPath
         ? <Button size="small" variant="secondary" component={Link} to={handlers.caseObservablesPath}>{t_i18n('Add observables to the case')}</Button>
+        : null;
+    case 'open_draft':
+      return handlers.draftPath
+        ? <Button size="small" variant="secondary" component={Link} to={handlers.draftPath} data-testid="investigation-run-open-draft">{t_i18n('Open the draft')}</Button>
         : null;
     case 'connectors_status':
       return canManageConnectors

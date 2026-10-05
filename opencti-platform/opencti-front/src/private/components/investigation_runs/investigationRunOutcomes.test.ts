@@ -132,6 +132,8 @@ describe('Case Autopilot run sentences', () => {
   it('names the fix of a run reason', () => {
     expect(runReasonNext(null, 'engine_not_configured')).toBe('ask_administrator');
     expect(runReasonNext(null, 'engine_unreachable')).toBe('run_again');
+    expect(runReasonNext('The platform reported 2 error(s) writing the approved changes to the case', 'draft_validation_failed')).toBe('open_draft');
+    expect(runReasonNext(null, 'draft_validation_unconfirmed')).toBe('open_draft');
     expect(runReasonNext('The time budget of the investigation is spent', null)).toBe('policy_budget');
     expect(runReasonNext('Something else', 'other')).toBeNull();
   });

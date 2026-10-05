@@ -332,6 +332,7 @@ const InvestigationRunContent = ({ data, currentEntityId, onDeleted, onRunStarte
     onContinue: canLaunch && run.can_continue && !continuing ? continueRun : undefined,
     onReviewApprovals: () => reveal(approvalsRef.current),
     caseObservablesPath,
+    draftPath: run.draft ? `/dashboard/data/import/draft/${run.draft.id}` : null,
   };
   return (
     <Stack spacing={3} data-testid="investigation-run-view">
