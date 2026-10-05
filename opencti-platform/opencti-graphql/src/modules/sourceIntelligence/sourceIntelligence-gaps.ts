@@ -66,7 +66,7 @@ import { buildResolverFromSources } from './sourceIntelligence-domain';
 import { ASSERTION_KIND_TO_SOURCE_KIND, isProvenanceAttributeAvailable, type SourceResolver, sourceRefKey, userSource } from './sourceIntelligence-provenance';
 import { ATTRIBUTE_ASSERTION_SOURCE_IDS } from '../provenance/provenance-types';
 import { round } from './sourceIntelligence-scoring';
-import { recommendationFingerprint, type RecommendationProposal } from './sourceIntelligence-rules';
+import { connectorMatchesCatalogEntry, recommendationFingerprint, type RecommendationProposal } from './sourceIntelligence-rules';
 import { applySourceRecommendation, findOrCreateProposal, findRecommendationsByFingerprint, listAccessiblePirIds, upsertProposals } from './sourceIntelligence-recommendations';
 
 const DAY_MS = 24 * 3600 * 1000;
@@ -423,7 +423,8 @@ export const mergeRecommendedConnectors = (
   hubMatches: HubIntegrationCoverageMatch[],
   localMatches: CollectionGapRecommendedConnector[],
   contracts: BasicStoreEntityCatalogContract[],
-  deployedImages: Set<string>,
+  // Connectors of the platform: one deployed from any version of a recommended catalog entry counts as deployed
+  connectors: ReadonlyArray<Parameters<typeof connectorMatchesCatalogEntry>[0]>,
   max: number,
 ): CollectionGapRecommendedConnector[] => {
   // A Hub recommendation deploys the same contract as a local one; without a compatible contract it is not deployable here
@@ -452,7 +453,7 @@ export const mergeRecommendedConnectors = (
     if (!merged.has(match.slug)) merged.set(match.slug, match);
   });
   return Array.from(merged.values())
-    .map((match) => ({ ...match, deployed: match.contract_image ? deployedImages.has(match.contract_image) : false }))
+    .map((match) => ({ ...match, deployed: connectors.some((connector) => connectorMatchesCatalogEntry(connector, match)) }))
     .sort((a, b) => Number(a.deployed) - Number(b.deployed) || b.score - a.score || a.title.localeCompare(b.title))
     .slice(0, max);
 };
@@ -512,7 +513,6 @@ export const computeCollectionGaps = async (context: AuthContext, sources: Basic
   const existingByKey = new Map(existingGaps.map((gap) => [`${gap.pir_id}|${gap.criterion_key}`, gap]));
   const contracts = await fullEntitiesList<BasicStoreEntityCatalogContract>(context, SYSTEM_USER, [ENTITY_TYPE_CATALOG_CONTRACT]);
   const connectors = await getEntitiesListFromCache<BasicStoreEntityConnector>(context, SYSTEM_USER, ENTITY_TYPE_CONNECTOR);
-  const deployedImages = new Set(connectors.map((connector) => connector.manager_contract_image).filter((image): image is string => !!image));
   const hubPlatform = await hubPlatformOf(context);
   // Once XTM Hub fails or uses up the time budget of the run, the remaining criteria use the local catalog
   let hubFailure: HubCatalogStatus | null = null;
@@ -571,7 +571,7 @@ export const computeCollectionGaps = async (context: AuthContext, sources: Basic
             });
           }
         }
-        recommended = mergeRecommendedConnectors(hubMatches, matchLocalCatalog(resolved, contracts), contracts, deployedImages, settings.gaps.max_recommendations);
+        recommended = mergeRecommendedConnectors(hubMatches, matchLocalCatalog(resolved, contracts), contracts, connectors, settings.gaps.max_recommendations);
         gapsCount += 1;
       }
       const gapFields = {
@@ -685,7 +685,6 @@ export const deployCollectionGapConnector = async (
   if (!connector.manager_supported || !connector.contract_image) {
     throw FunctionalError('This connector cannot be deployed through XTM Composer, deploy it from the catalog page', { id: gapId, slug });
   }
-  const contractImage = connector.contract_image;
   const proposal = buildAddConnectorProposal(gap, pir.name, connector, settings.gaps.recent_days);
   // The gap only knows the deployments of its last computation: repeated requests are checked against the live state
   let lock;
@@ -693,7 +692,7 @@ export const deployCollectionGapConnector = async (
     lock = await lockResources([`collection-gap-deploy:${gap.internal_id}:${slug}`]);
     const connectors = await fullEntitiesList<BasicStoreEntityConnector>(context, SYSTEM_USER, [ENTITY_TYPE_CONNECTOR]);
     const applied = await findRecommendationsByFingerprint(context, proposal.fingerprint, [RECOMMENDATION_STATUS_APPLIED, RECOMMENDATION_STATUS_REVERTING]);
-    if (applied.length > 0 || connectors.some((deployed) => deployed.manager_contract_image === contractImage)) {
+    if (applied.length > 0 || connectors.some((deployed) => connectorMatchesCatalogEntry(deployed, connector))) {
       throw FunctionalError('This connector is already deployed', { id: gapId, slug });
     }
     const recommendation = await findOrCreateProposal(context, proposal);

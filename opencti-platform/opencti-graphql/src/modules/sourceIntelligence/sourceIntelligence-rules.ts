@@ -84,18 +84,31 @@ export interface RecommendationProposal {
 
 export const recommendationFingerprint = (kind: string, ...parts: string[]) => [kind, ...parts].join(':');
 
+/** Image repository without its tag or digest: the versions of one catalog entry differ by their tag only. */
+export const imageRepositoryOf = (image: string | null | undefined): string | null => {
+  if (!image) {
+    return null;
+  }
+  const [withoutDigest] = image.split('@');
+  // A colon before the last slash belongs to the registry port, not to a tag
+  const tagSeparator = withoutDigest.lastIndexOf(':');
+  return tagSeparator > withoutDigest.lastIndexOf('/') ? withoutDigest.slice(0, tagSeparator) : withoutDigest;
+};
+
 /**
- * A connector fulfils an add_connector recommendation only when it is the recommended catalog entry: same catalog
- * identifier, or same contract image (how the collection gaps detect a deployed catalog connector). The recorded
- * connector is the outcome of the recommendation, so an unrelated connector must never be recorded.
+ * A connector is the deployment of a catalog entry, whatever the version it was deployed or upgraded to: same catalog
+ * and contract slug, or same image repository. The catalog identifier alone names a whole catalog, never one entry.
+ * The collection gaps detect deployed connectors with it, and an add_connector recommendation only records such a
+ * connector as its outcome, so an unrelated connector is never recorded.
  */
 export const connectorMatchesCatalogEntry = (
-  connector: { catalog_id?: string | null; manager_contract_image?: string | null },
-  entry: { catalog_id?: string | null; contract_image?: string | null },
+  connector: { catalog_id?: string | null; manager_contract_image?: string | null; manager_contract?: { slug?: string | null } | null },
+  entry: { catalog_id?: string | null; slug?: string | null; contract_image?: string | null },
 ): boolean => {
-  const sameCatalogId = !!entry.catalog_id && connector.catalog_id === entry.catalog_id;
-  const sameContractImage = !!entry.contract_image && connector.manager_contract_image === entry.contract_image;
-  return sameCatalogId || sameContractImage;
+  const sameEntry = !!entry.catalog_id && !!entry.slug && connector.catalog_id === entry.catalog_id && connector.manager_contract?.slug === entry.slug;
+  const repository = imageRepositoryOf(entry.contract_image);
+  const sameRepository = repository !== null && imageRepositoryOf(connector.manager_contract_image) === repository;
+  return sameEntry || sameRepository;
 };
 
 const percent = (value: number | null | undefined) => `${Math.round((value ?? 0) * 100)}%`;

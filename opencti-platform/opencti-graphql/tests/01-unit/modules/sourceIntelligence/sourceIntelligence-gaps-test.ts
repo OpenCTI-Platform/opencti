@@ -83,13 +83,30 @@ describe('Source intelligence collection gaps', () => {
       [hubMatch('alpha', 40), hubMatch('beta', 90)],
       [localMatch('beta', 10), localMatch('gamma', 70)],
       [contract('alpha'), contract('beta')],
-      new Set(['opencti/connector-beta']),
+      [{ manager_contract_image: 'opencti/connector-beta' }],
       3,
     );
     expect(merged.map((connector) => [connector.slug, connector.origin, connector.deployed])).toEqual([
       ['gamma', 'catalog', false],
       ['alpha', 'hub', false],
       ['beta', 'hub', true],
+    ]);
+  });
+
+  it('should count a connector deployed from another version of a recommended entry as deployed, never another entry of its catalog', () => {
+    const versioned = (slug: string, version: string) => ({
+      ...contract(slug), contract_version: version, image: `opencti/connector-${slug}:${version}`,
+    }) as unknown as BasicStoreEntityCatalogContract;
+    const contracts = [versioned('alpha', '6.9.0'), versioned('beta', '6.9.0')];
+    const merged = mergeRecommendedConnectors([hubMatch('alpha', 40), hubMatch('beta', 90)], [], contracts, [
+      // Deployed from an older version of alpha, then never upgraded
+      { catalog_id: 'catalog-1', manager_contract: { slug: 'alpha' }, manager_contract_image: 'opencti/connector-alpha:6.8.0' },
+      // Another entry of the same catalog
+      { catalog_id: 'catalog-1', manager_contract: { slug: 'delta' }, manager_contract_image: 'opencti/connector-delta:6.9.0' },
+    ], 3);
+    expect(merged.map((connector) => [connector.slug, connector.contract_image, connector.deployed])).toEqual([
+      ['beta', 'opencti/connector-beta:6.9.0', false],
+      ['alpha', 'opencti/connector-alpha:6.9.0', true],
     ]);
   });
 
@@ -104,16 +121,16 @@ describe('Source intelligence collection gaps', () => {
       version('6.9.0', 'opencti/connector-alpha:6.9.0'),
       version('6.7.0', 'opencti/connector-alpha:6.7.0'),
     ];
-    const [alpha] = mergeRecommendedConnectors([hubMatch('alpha', 40)], [], contracts, new Set(), 3);
+    const [alpha] = mergeRecommendedConnectors([hubMatch('alpha', 40)], [], contracts, [], 3);
     expect(alpha.contract_image).toEqual('opencti/connector-alpha:6.9.0');
     expect(latestCompatibleContractsBySlug(contracts).get('alpha')?.contract_version).toEqual('6.9.0');
     // Without any compatible contract the recommendation cannot be deployed from this platform
-    const [onlyIncompatible] = mergeRecommendedConnectors([hubMatch('alpha', 40)], [], [contracts[1]], new Set(), 3);
+    const [onlyIncompatible] = mergeRecommendedConnectors([hubMatch('alpha', 40)], [], [contracts[1]], [], 3);
     expect(onlyIncompatible.contract_image).toBeNull();
   });
 
   it('should keep at most the requested number of recommendations', () => {
-    const merged = mergeRecommendedConnectors([hubMatch('alpha', 40)], [localMatch('gamma', 70), localMatch('delta', 20)], [], new Set(), 2);
+    const merged = mergeRecommendedConnectors([hubMatch('alpha', 40)], [localMatch('gamma', 70), localMatch('delta', 20)], [], [], 2);
     expect(merged.map((connector) => connector.slug)).toEqual(['gamma', 'alpha']);
   });
 

@@ -3,6 +3,7 @@ import {
   buildSourceIndicatorFilters,
   connectorMatchesCatalogEntry,
   evaluateSourceRules,
+  imageRepositoryOf,
   parseIsoDurationMs,
   type RuleInput,
   toIsoDuration,
@@ -121,14 +122,26 @@ describe('Source intelligence rules', () => {
     expect(buildSourceIndicatorFilters({ ...connectorSource, source_user_ids: [] } as BasicStoreEntitySource)).toBeNull();
   });
 
-  it('should only accept the recommended catalog connector for a deployment', () => {
-    const entry = { catalog_id: 'catalog-misp', contract_image: 'opencti/connector-misp' };
-    expect(connectorMatchesCatalogEntry({ catalog_id: 'catalog-misp', manager_contract_image: null }, entry)).toBe(true);
-    expect(connectorMatchesCatalogEntry({ catalog_id: null, manager_contract_image: 'opencti/connector-misp' }, entry)).toBe(true);
-    expect(connectorMatchesCatalogEntry({ catalog_id: 'catalog-mitre', manager_contract_image: 'opencti/connector-mitre' }, entry)).toBe(false);
+  it('should only accept the recommended catalog connector for a deployment, whatever its version', () => {
+    const entry = { catalog_id: 'filigran-catalog', slug: 'misp', contract_image: 'opencti/connector-misp:6.9.0' };
+    expect(connectorMatchesCatalogEntry({ catalog_id: 'filigran-catalog', manager_contract: { slug: 'misp' } }, entry)).toBe(true);
+    // An older or newer version of the entry, deployed or upgraded, is the same connector
+    expect(connectorMatchesCatalogEntry({ catalog_id: null, manager_contract_image: 'opencti/connector-misp:6.8.0' }, entry)).toBe(true);
+    expect(connectorMatchesCatalogEntry({ manager_contract_image: 'opencti/connector-misp@sha256:0f1e' }, entry)).toBe(true);
+    // The catalog identifier names the whole catalog: another entry of the same catalog is another connector
+    expect(connectorMatchesCatalogEntry({ catalog_id: 'filigran-catalog', manager_contract: { slug: 'mitre' }, manager_contract_image: 'opencti/connector-mitre:6.9.0' }, entry)).toBe(false);
+    expect(connectorMatchesCatalogEntry({ catalog_id: 'filigran-catalog', manager_contract_image: 'opencti/connector-misp-feed:6.9.0' }, entry)).toBe(false);
     // An externally deployed connector carries neither identifier and cannot fulfil the recommendation
     expect(connectorMatchesCatalogEntry({}, entry)).toBe(false);
-    expect(connectorMatchesCatalogEntry({ catalog_id: null }, { catalog_id: null, contract_image: null })).toBe(false);
+    expect(connectorMatchesCatalogEntry({ catalog_id: null }, { catalog_id: null, slug: null, contract_image: null })).toBe(false);
+  });
+
+  it('should compare image repositories without their tag, digest or registry port confusion', () => {
+    expect(imageRepositoryOf('opencti/connector-misp:6.9.0')).toBe('opencti/connector-misp');
+    expect(imageRepositoryOf('opencti/connector-misp@sha256:0f1e')).toBe('opencti/connector-misp');
+    expect(imageRepositoryOf('registry.local:5000/opencti/connector-misp')).toBe('registry.local:5000/opencti/connector-misp');
+    expect(imageRepositoryOf('registry.local:5000/opencti/connector-misp:6.9.0')).toBe('registry.local:5000/opencti/connector-misp');
+    expect(imageRepositoryOf(null)).toBeNull();
   });
 
   it('should propose nothing for a healthy source', () => {
