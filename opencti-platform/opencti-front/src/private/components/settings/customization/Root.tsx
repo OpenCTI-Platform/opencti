@@ -17,6 +17,7 @@ const ExclusionLists = lazy(() => import('../exclusion_lists/ExclusionLists'));
 const FintelDesigns = lazy(() => import('../fintel_design/FintelDesigns'));
 const FintelDesign = lazy(() => import('../fintel_design/FintelDesign'));
 const DefenseLogsourceMappings = lazy(() => import('../defense_logsource_mappings/DefenseLogsourceMappings'));
+const SourceIntelligenceCustomization = lazy(() => import('../source_intelligence/SourceIntelligenceCustomization'));
 
 const RootCustomization = () => {
   const fallbackUrl = useSettingsFallbackUrl();
@@ -113,6 +114,14 @@ const RootCustomization = () => {
             element={(
               <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
                 <FintelDesign />
+              </Security>
+            )}
+          />
+          <Route
+            path="/source_intelligence"
+            element={(
+              <Security needs={[SETTINGS_SETCUSTOMIZATION]} placeholder={<Navigate to={fallbackUrl} />}>
+                <SourceIntelligenceCustomization />
               </Security>
             )}
           />

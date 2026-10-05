@@ -173,6 +173,19 @@ No source and no knowledge content is ever collected, only counts.
 - The number of defense gaps closed
 - The number of defense gap backlog exports
 
+### Source intelligence
+
+- The number of intelligence sources with a scorecard
+- The number of intelligence sources with a declared cost
+- The number of PIR criteria flagged as collection gaps
+- The number of source recommendations applied by a user
+- The number of source recommendations applied by the autonomy policy
+- The number of source recommendations reverted
+- The number of source recommendations dismissed
+- The number of Intelligence ROI dashboards created from the template
+
+No source name, cost amount, score or recommendation content is ever collected, only counts.
+
 ### Retention and activity
 
 - Whether the history retention rule is active on the platform

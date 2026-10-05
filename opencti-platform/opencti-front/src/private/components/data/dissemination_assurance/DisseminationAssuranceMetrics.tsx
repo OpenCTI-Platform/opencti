@@ -89,9 +89,12 @@ const KpiCounter = ({ id, label, value, caption, badge, actionable, selected, on
     <Card
       padding="medium"
       onClick={() => onSelect(id)}
-      aria-label={selected
-        ? t_i18n('{label}: {value}, filter applied', { values: { label, value } })
-        : t_i18n('{label}: {value}, filter the deployments', { values: { label, value } })}
+      actionAreaProps={{
+        'aria-label': selected
+          ? t_i18n('{label}: {value}, filter applied', { values: { label, value } })
+          : t_i18n('{label}: {value}, filter the deployments', { values: { label, value } }),
+        'aria-pressed': selected,
+      }}
       sx={selected ? { outline: '2px solid var(--border-input-focus)', outlineOffset: '-2px' } : undefined}
     >
       <Stack gap={0.5} data-testid={`kpi-${id}`}>

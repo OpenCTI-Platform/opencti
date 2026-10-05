@@ -36,6 +36,10 @@ const CustomizationMenu: FunctionComponent = () => {
       path: '/dashboard/settings/customization/telemetry_mappings',
       label: 'Telemetry mappings',
     },
+    {
+      path: '/dashboard/settings/customization/source_intelligence',
+      label: 'Source intelligence',
+    },
   ];
 
   return <NavToolbarMenu entries={entries} />;

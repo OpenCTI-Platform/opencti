@@ -1,6 +1,6 @@
 import { PropsWithChildren, ReactNode } from 'react';
 import { useTheme } from '@mui/styles';
-import { Stack, SxProps, Card as CardMui, CardActionArea, StackProps } from '@mui/material';
+import { Stack, SxProps, Card as CardMui, CardActionArea, CardActionAreaProps, StackProps } from '@mui/material';
 import CardTitle from './CardTitle';
 import { Theme } from '../../Theme';
 import { Link } from 'react-router';
@@ -18,6 +18,8 @@ export interface CardProps extends PropsWithChildren {
   variant?: 'elevation' | 'outlined';
   disabled?: boolean;
   'aria-label'?: string;
+  // Accessibility of the clickable area (onClick or to): the button, not the card around it.
+  actionAreaProps?: Pick<CardActionAreaProps, 'aria-label' | 'aria-pressed'>;
 }
 
 const Card = ({
@@ -33,6 +35,7 @@ const Card = ({
   to,
   disabled,
   variant,
+  actionAreaProps,
   ...otherProps
 }: CardProps) => {
   const theme = useTheme<Theme>();
@@ -97,6 +100,7 @@ const Card = ({
         onClick={onClick}
         sx={actionAreaSx}
         {...linkProps}
+        {...actionAreaProps}
       >
         {children}
       </CardActionArea>

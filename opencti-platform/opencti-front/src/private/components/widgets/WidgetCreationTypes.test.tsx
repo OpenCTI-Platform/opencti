@@ -26,6 +26,7 @@ const ALL_VISUALIZATION_TYPES = [
   'defense-tactic-coverage',
   'defense-top-gaps',
   'defense-levels',
+  'bubble',
 ];
 
 const DEFENSE_VISUALIZATION_TYPES = ['defense-tactic-coverage', 'defense-top-gaps', 'defense-levels'];
@@ -62,12 +63,13 @@ describe('getVisualizationTypes', () => {
   });
 
   describe('when host is a custom view', () => {
-    it('all visualization types but attribute and the platform-wide defense ones are available (custom-attributes always included)', () => {
+    it('all visualization types but attribute, bubble and the platform-wide defense ones are available (custom-attributes always included)', () => {
+      // The bubble chart only renders the Intelligence sources perspective, which custom views do not offer
       expect(getVisualizationTypes({
         kind: 'custom-view',
         customViewTargetEntityType: 'Malware',
       }).map(({ key }) => key)).toStrictEqual(
-        ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute' && !DEFENSE_VISUALIZATION_TYPES.includes(v)),
+        ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute' && v !== 'bubble' && !DEFENSE_VISUALIZATION_TYPES.includes(v)),
       );
     });
   });
