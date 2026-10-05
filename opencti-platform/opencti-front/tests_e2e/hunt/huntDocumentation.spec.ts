@@ -4,7 +4,7 @@ import HuntsPage from '../model/hunts.pageModel';
 import HuntDetailsPage from '../model/huntDetails.pageModel';
 import SelectFieldPageModel from '../model/field/SelectField.pageModel';
 import {
-  answerLatestHuntPreview,
+  answerHuntPreview,
   deleteHunt,
   deleteSeededHunt,
   deleteSeededHuntPlatform,
@@ -136,8 +136,12 @@ test.describe('Hunt documentation screenshots', { tag: ['@hunt', '@mutation', '@
     await page.setViewportSize({ width: 1440, height: 900 });
     await huntDetails.tabs.goToLogicTab();
     await capture(page, 'hunt-logic-sigma-validation.png', huntDetails.getLogicPage(), huntDetails.getLogicSigmaValidation().getByText('Valid Sigma rule'));
+    // The hunt was created active, which queued a translation check of its own: answer the run this page starts
+    const previewStarted = page.waitForResponse((response) => response.url().includes('/graphql')
+      && (response.request().postData() ?? '').includes('HuntTranslationPreviewTestQueryMutation'));
     await page.getByTestId('hunt-translation-preview-start').click();
-    await expect.poll(() => answerLatestHuntPreview(request, seeded.huntId, TRANSLATED_QUERY), { timeout: 30000 }).toBe(true);
+    const started = await (await previewStarted).json() as { data: { huntTestQuery: { id: string } } };
+    await answerHuntPreview(request, started.data.huntTestQuery.id, TRANSLATED_QUERY);
     const preview = page.getByTestId('hunt-translation-preview');
     await capture(page, 'hunt-logic-translation-preview.png', preview, preview.getByText('index=edr sourcetype=sysmon'));
   });

@@ -99,28 +99,12 @@ export const setHuntRunVerdict = async (request: APIRequestContext, runId: strin
 };
 
 /**
- * Answers the latest translation preview of a hunt the way its hunt connector would, once the preview exists.
+ * Answers a translation preview run the way its hunt connector would.
  */
-export const answerLatestHuntPreview = async (request: APIRequestContext, huntId: string, translatedQuery: string): Promise<boolean> => {
-  const runs = await graphqlRequest<{ huntRuns: { edges: Array<{ node: { id: string; hunt_run_status: string } }> } }>(request, `
-    query {
-      huntRuns(first: 1, orderBy: created_at, orderMode: desc, filters: {
-        mode: and, filterGroups: [],
-        filters: [
-          { key: ["hunt_id"], values: ["${huntId}"], operator: eq, mode: or },
-          { key: ["hunt_run_mode"], values: ["preview"], operator: eq, mode: or }
-        ]
-      }) { edges { node { id hunt_run_status } } }
-    }
-  `, 'Find the translation preview');
-  const preview = runs.huntRuns.edges[0]?.node;
-  if (!preview || preview.hunt_run_status !== 'queued') {
-    return false;
-  }
+export const answerHuntPreview = async (request: APIRequestContext, runId: string, translatedQuery: string) => {
   await graphqlRequest(request, `
-    mutation { huntRunReport(id: "${preview.id}", input: { status: completed, query_language: "spl", translated_query: ${JSON.stringify(translatedQuery)} }) { id } }
+    mutation { huntRunReport(id: "${runId}", input: { status: completed, query_language: "spl", translated_query: ${JSON.stringify(translatedQuery)} }) { id } }
   `, 'Report the translation preview');
-  return true;
 };
 
 /**
