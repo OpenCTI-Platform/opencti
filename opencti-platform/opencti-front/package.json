@@ -190,6 +190,7 @@
     "json5": "2.2.3",
     "lodash-es": "4.18.1",
     "react": "19.2.4",
+    "seroval": "1.6.3",
     "webpack": "5.105.2"
   },
   "dependenciesMeta": {
