@@ -291,7 +291,7 @@ interface GraphqlUploadOptions {
 
 const parsePositiveSize = (size: string | number): number | null => {
   const parsed = bytes.parse(size);
-  return parsed !== null && parsed > 0 ? parsed : null;
+  return parsed !== null && Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 };
 
 const parsePositiveInteger = (value: string | number): number | null => {
