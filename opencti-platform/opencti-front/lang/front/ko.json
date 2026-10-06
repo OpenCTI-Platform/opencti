@@ -260,6 +260,7 @@
   "Added": "추가됨",
   "added a note on": "에 메모를 추가 {date}",
   "Added to": "에 추가됨",
+  "Added to this container by an inference rule": "추론 규칙에 의해 이 컨테이너에 추가됨",
   "Additional Entities": "추가 엔티티",
   "Additional Entity": "추가 엔티티",
   "Additional Fields": "추가 필드",

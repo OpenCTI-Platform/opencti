@@ -260,6 +260,7 @@
   "Added": "Added",
   "added a note on": "added a note on {date}",
   "Added to": "Added to",
+  "Added to this container by an inference rule": "Added to this container by an inference rule",
   "Additional Entities": "Additional Entities",
   "Additional Entity": "Additional Entity",
   "Additional Fields": "Additional Fields",

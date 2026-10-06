@@ -260,6 +260,7 @@
   "Added": "Добавлено",
   "added a note on": "добавлена заметка о {date}",
   "Added to": "Добавлено в",
+  "Added to this container by an inference rule": "Добавлено в этот контейнер правилом вывода",
   "Additional Entities": "Дополнительные сущности",
   "Additional Entity": "Дополнительная сущность",
   "Additional Fields": "Дополнительные поля",

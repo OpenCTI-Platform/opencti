@@ -47,9 +47,13 @@ export const confidenceBadgeProvider: GraphBadgeProvider = {
 export const inferredBadgeProvider: GraphBadgeProvider = {
   id: 'inferred',
   order: 30,
-  badgesFor: (node, { t_i18n }) => (node.isNestedInferred
-    ? [{ key: 'inferred', icon: AutoFix, tone: 'warning', label: t_i18n('Inferred'), tooltip: t_i18n('Created by an inference rule') }]
-    : []),
+  // The inference flag of the object itself first; an object an inference rule only added to the container is told apart
+  badgesFor: (node, { t_i18n }) => {
+    let tooltip: string | null = null;
+    if (node.raw?.is_inferred) tooltip = t_i18n('Created by an inference rule');
+    else if (node.isNestedInferred) tooltip = t_i18n('Added to this container by an inference rule');
+    return tooltip ? [{ key: 'inferred', icon: AutoFix, tone: 'warning', label: t_i18n('Inferred'), tooltip }] : [];
+  },
 };
 
 export const registerBuiltinGraphBadges = () => {

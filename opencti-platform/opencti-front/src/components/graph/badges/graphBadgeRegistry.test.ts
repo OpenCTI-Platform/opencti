@@ -101,7 +101,14 @@ describe('built-in badges', () => {
   });
 
   it('flags inferred elements', () => {
-    expect(inferredBadgeProvider.badgesFor(graphNode({ isNestedInferred: true }), helpers)).toHaveLength(1);
+    // created by an inference rule: the inference flag of the object itself
+    const created = inferredBadgeProvider.badgesFor(graphNode({ raw: { is_inferred: true } as never }), helpers);
+    expect(created).toHaveLength(1);
+    expect(created[0].tooltip).toBe('t:Created by an inference rule');
+    // only added to the container by an inference rule
+    const added = inferredBadgeProvider.badgesFor(graphNode({ isNestedInferred: true, raw: { is_inferred: false } as never }), helpers);
+    expect(added).toHaveLength(1);
+    expect(added[0].tooltip).toBe('t:Added to this container by an inference rule');
     expect(inferredBadgeProvider.badgesFor(graphNode(), helpers)).toEqual([]);
   });
 });

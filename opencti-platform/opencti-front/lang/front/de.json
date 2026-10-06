@@ -260,6 +260,7 @@
   "Added": "Hinzugefügt",
   "added a note on": "eine Notiz zu {date} hinzugefügt",
   "Added to": "Hinzugefügt zu",
+  "Added to this container by an inference rule": "Durch eine Inferenzregel zu diesem Container hinzugefügt",
   "Additional Entities": "Zusätzliche Entitäten",
   "Additional Entity": "Zusätzliche Entität",
   "Additional Fields": "Zusätzliche Felder",

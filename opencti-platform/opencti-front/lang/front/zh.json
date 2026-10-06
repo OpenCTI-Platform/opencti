@@ -260,6 +260,7 @@
   "Added": "已添加",
   "added a note on": "为 {date} 添加了注释",
   "Added to": "已添加到",
+  "Added to this container by an inference rule": "由推理规则添加到此容器",
   "Additional Entities": "附加实体",
   "Additional Entity": "附加实体",
   "Additional Fields": "附加字段",

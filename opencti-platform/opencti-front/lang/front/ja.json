@@ -260,6 +260,7 @@
   "Added": "追加",
   "added a note on": "{date}について追記",
   "Added to": "追加",
+  "Added to this container by an inference rule": "推論ルールによってこのコンテナーに追加されました",
   "Additional Entities": "追加エンティティ",
   "Additional Entity": "追加エンティティ",
   "Additional Fields": "追加フィールド",
