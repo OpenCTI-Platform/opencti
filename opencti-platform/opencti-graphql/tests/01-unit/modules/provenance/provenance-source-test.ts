@@ -1,9 +1,10 @@
 import { v5 as uuidv5 } from 'uuid';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as cache from '../../../../src/database/cache';
+import * as engine from '../../../../src/database/engine';
 import * as loader from '../../../../src/database/middleware-loader';
-import { connectorIdFromWorkId, isOpenAevCoverageConnector, resolveAssertionSource } from '../../../../src/modules/provenance/provenance-source';
-import { buildCreationProvenance, removeProvenanceInputs } from '../../../../src/modules/provenance/provenance-write';
+import { connectorIdFromWorkId, isOpenAevCoverageConnector, resolveAssertionSource, resolveSourceOfUserAt } from '../../../../src/modules/provenance/provenance-source';
+import { buildCreationProvenance, buildStoreAssertion, removeProvenanceInputs } from '../../../../src/modules/provenance/provenance-write';
 import { OPENCTI_NAMESPACE } from '../../../../src/schema/general';
 import { ENTITY_TYPE_SYNC } from '../../../../src/schema/internalObject';
 import { RULE_MANAGER_USER } from '../../../../src/utils/access';
@@ -11,6 +12,12 @@ import type { AuthContext, AuthUser } from '../../../../src/types/user';
 
 vi.mock('../../../../src/database/cache', () => ({
   getEntitiesListFromCache: vi.fn(),
+  getEntitiesMapFromCache: vi.fn(),
+}));
+
+vi.mock('../../../../src/database/engine', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/database/engine')>()),
+  elRawSearch: vi.fn(),
 }));
 
 vi.mock('../../../../src/database/middleware-loader', () => ({
@@ -233,6 +240,49 @@ describe('Provenance source resolution', () => {
     const source = await resolveAssertionSource(contextFor(), sharedUser, {});
     expect(source.source_kind).toEqual('user');
     expect(source.source_id).toEqual(sharedUser.id);
+  });
+});
+
+describe('Source of a past write of a user shared by several connectors', () => {
+  const SHARED_B_ID = 'a1f3c3b0-0d2c-4bf3-8d3c-1fd1c1d6c004';
+  const at = '2026-10-03T08:00:00.000Z';
+  const runningWorks = (connectorIds: string[]) => ({
+    aggregations: { connectors: { buckets: connectorIds.map((key) => ({ key, work: { hits: { hits: [{ _source: { internal_id: `work-of-${key}` } }] } } })) } },
+  });
+  const assertionOf = (sourceId: string) => buildStoreAssertion({ source_id: sourceId, source_kind: 'connector', source_name: sourceId, work_id: null }, 50, at);
+
+  beforeEach(() => {
+    vi.mocked(cache.getEntitiesListFromCache).mockResolvedValue(connectors as never);
+    vi.mocked(cache.getEntitiesMapFromCache).mockResolvedValue(new Map([[sharedUser.id, sharedUser]]) as never);
+    vi.mocked(loader.fullEntitiesList).mockResolvedValue([{ internal_id: FEED_ID, name: 'Partner collection' }] as never);
+    vi.mocked(engine.elRawSearch).mockReset();
+  });
+
+  it('should resolve the connector whose work was running at the date of the write', async () => {
+    vi.mocked(engine.elRawSearch).mockResolvedValue(runningWorks([SHARED_B_ID]) as never);
+    const source = await resolveSourceOfUserAt(contextFor(), sharedUser.id, at, []);
+    expect(source).toEqual({ source_id: SHARED_B_ID, source_kind: 'connector', source_name: 'Shared B', work_id: `work-of-${SHARED_B_ID}` });
+  });
+
+  it('should fall back to the only connector of the user that asserted the element', async () => {
+    vi.mocked(engine.elRawSearch).mockResolvedValue(runningWorks([SHARED_USER_CONNECTOR_ID, SHARED_B_ID]) as never);
+    const source = await resolveSourceOfUserAt(contextFor(), sharedUser.id, at, [assertionOf(SHARED_USER_CONNECTOR_ID), assertionOf(CONNECTOR_ID)]);
+    expect(source).toMatchObject({ source_id: SHARED_USER_CONNECTOR_ID, source_kind: 'connector', source_name: 'Shared A' });
+  });
+
+  it('should keep the user when neither the works nor the assertions tell, or when the user asserted the element itself', async () => {
+    vi.mocked(engine.elRawSearch).mockResolvedValue(runningWorks([]) as never);
+    const withoutDate = await resolveSourceOfUserAt(contextFor(), sharedUser.id, null, [assertionOf(SHARED_USER_CONNECTOR_ID), assertionOf(SHARED_B_ID)]);
+    expect(withoutDate).toMatchObject({ source_id: sharedUser.id, source_kind: 'user', source_name: 'shared' });
+    expect(engine.elRawSearch).not.toHaveBeenCalled();
+    const alsoHuman = await resolveSourceOfUserAt(contextFor(), sharedUser.id, at, [assertionOf(SHARED_USER_CONNECTOR_ID), assertionOf(sharedUser.id)]);
+    expect(alsoHuman).toMatchObject({ source_id: sharedUser.id, source_kind: 'user' });
+  });
+
+  it('should resolve the user of a single connector to it without reading the works', async () => {
+    const source = await resolveSourceOfUserAt(contextFor(), connectorUser.id, at, []);
+    expect(source).toMatchObject({ source_id: CONNECTOR_ID, source_kind: 'connector', source_name: 'AlienVault' });
+    expect(engine.elRawSearch).not.toHaveBeenCalled();
   });
 });
 

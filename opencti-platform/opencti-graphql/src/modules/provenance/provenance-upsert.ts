@@ -23,7 +23,7 @@ import {
   type ProcedureUpsertArgs,
 } from './provenance-procedures';
 import { PROVENANCE_ENABLED } from './provenance-config';
-import { resolveAssertionSource, resolveSourceOfUser } from './provenance-source';
+import { resolveAssertionSource, resolveSourceOfUserAt } from './provenance-source';
 import {
   type AssertionSource,
   ATTRIBUTE_ASSERTION_SOURCE_IDS,
@@ -51,17 +51,23 @@ import { hasProvenanceTriggers } from './provenance-notification';
 
 type UpsertElement = Record<string, any> & { entity_type: string; internal_id: string };
 
+const toWriteDate = (value: unknown): string | null => {
+  const date = value ? new Date(value as string | Date) : null;
+  return date && !Number.isNaN(date.getTime()) ? date.toISOString() : null;
+};
+
 /**
  * Who asserted what the element currently holds: the last modifier of the attribute,
  * otherwise its oldest source, otherwise its creator.
+ * A modifier or creator shared by several connectors is resolved to the connector that wrote at that date.
  */
 export const resolveCurrentValueOwner = async (context: AuthContext, element: UpsertElement, field?: string): Promise<PreviousValueOwner | null> => {
   const attributeMeta = field ? (element[iAttributes.name] ?? []).find((attribute: { name: string }) => attribute.name === field) : undefined;
+  const assertions: StoreAssertion[] = element[ATTRIBUTE_ASSERTIONS] ?? [];
   if (attributeMeta?.user_id) {
-    const source = await resolveSourceOfUser(context, attributeMeta.user_id);
+    const source = await resolveSourceOfUserAt(context, attributeMeta.user_id, toWriteDate(attributeMeta.updated_at), assertions);
     return { source, confidence: attributeMeta.confidence ?? element.confidence ?? null };
   }
-  const assertions: StoreAssertion[] = element[ATTRIBUTE_ASSERTIONS] ?? [];
   if (assertions.length > 0) {
     const oldest = assertions.reduce((first, assertion) => (assertion.first_asserted_at < first.first_asserted_at ? assertion : first));
     const source: AssertionSource = { source_id: oldest.source_id, source_kind: oldest.source_kind, source_name: oldest.source_name, work_id: oldest.work_id };
@@ -69,7 +75,7 @@ export const resolveCurrentValueOwner = async (context: AuthContext, element: Up
   }
   const creatorId = Array.isArray(element.creator_id) ? element.creator_id[0] : element.creator_id;
   if (creatorId) {
-    const source = await resolveSourceOfUser(context, creatorId);
+    const source = await resolveSourceOfUserAt(context, creatorId, toWriteDate(element.created_at), assertions);
     return { source, confidence: element.confidence ?? null };
   }
   return null;

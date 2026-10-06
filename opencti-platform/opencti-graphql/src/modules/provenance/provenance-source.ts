@@ -3,8 +3,10 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntityConnector } from '../../types/connector';
 import type { BasicStoreEntity } from '../../types/store';
 import { getEntitiesListFromCache, getEntitiesMapFromCache } from '../../database/cache';
+import { elRawSearch } from '../../database/engine';
+import { READ_INDEX_HISTORY } from '../../database/utils';
 import { fullEntitiesList } from '../../database/middleware-loader';
-import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_USER, ENTITY_TYPE_WORK } from '../../schema/internalObject';
 import { OPENCTI_NAMESPACE, RULE_PREFIX } from '../../schema/general';
 import { INTERNAL_USERS, RULE_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
 import { rule_definitions } from '../../rules/rules-definition';
@@ -26,6 +28,7 @@ import {
   SOURCE_KIND_FEED,
   SOURCE_KIND_INFERENCE,
   SOURCE_KIND_USER,
+  type StoreAssertion,
 } from './provenance-types';
 
 const WORK_ID_PREFIX = 'work_';
@@ -239,6 +242,76 @@ export const resolveSourceOfUser = async (context: AuthContext, userId: string):
   }
   const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   return { source_id: userId, source_kind: SOURCE_KIND_USER, source_name: platformUsers.get(userId)?.name ?? userId, work_id: null };
+};
+
+/**
+ * The connector among the given ones whose work was running at the date, when exactly one of them had one running.
+ */
+const findConnectorRunningAt = async (context: AuthContext, connectors: BasicStoreEntityConnector[], at: string) => {
+  const query = {
+    index: READ_INDEX_HISTORY,
+    body: {
+      size: 0,
+      query: {
+        bool: {
+          filter: [
+            { term: { 'entity_type.keyword': ENTITY_TYPE_WORK } },
+            { terms: { 'connector_id.keyword': connectors.map((connector) => connector.internal_id) } },
+            { range: { timestamp: { lte: at } } },
+          ],
+          // A work that never completed ends at its last update
+          should: [
+            { range: { completed_time: { gte: at } } },
+            { bool: { must_not: { exists: { field: 'completed_time' } }, filter: { range: { updated_at: { gte: at } } } } },
+          ],
+          minimum_should_match: 1,
+        },
+      },
+      aggs: {
+        connectors: {
+          terms: { field: 'connector_id.keyword', size: 2 },
+          aggs: { work: { top_hits: { size: 1, _source: ['internal_id'] } } },
+        },
+      },
+    },
+  };
+  const data = await elRawSearch(context, SYSTEM_USER, ENTITY_TYPE_WORK, query);
+  const buckets = data.aggregations?.connectors?.buckets ?? [];
+  if (buckets.length !== 1) {
+    return null;
+  }
+  const connector = connectors.find((candidate) => candidate.internal_id === buckets[0].key);
+  return connector ? { connector, workId: (buckets[0].work?.hits?.hits?.[0]?._source?.internal_id as string | undefined) ?? null } : null;
+};
+
+/**
+ * Source behind a past write of a user at a known date (attribute modifier, creator), on an element with the given
+ * assertions. A user shared by several connectors wrote for the connector whose work was running at that date, as the
+ * backfill resolves it, otherwise for the only one of these connectors that asserted the element, provided the user
+ * never asserted it directly; when neither tells, the write is resolved like resolveSourceOfUser.
+ */
+export const resolveSourceOfUserAt = async (
+  context: AuthContext,
+  userId: string,
+  at: string | null,
+  assertions: StoreAssertion[],
+): Promise<AssertionSource> => {
+  const connectors = await getEntitiesListFromCache<BasicStoreEntityConnector>(context, SYSTEM_USER, ENTITY_TYPE_CONNECTOR);
+  const userConnectors = connectors.filter((connector) => connector.connector_user_id === userId);
+  if (userConnectors.length > 1) {
+    const running = at ? await findConnectorRunningAt(context, userConnectors, at) : null;
+    if (running) {
+      return sourceFromConnector(context, running.connector, running.workId);
+    }
+    if (!assertions.some((assertion) => assertion.source_id === userId)) {
+      const candidates = await Promise.all(userConnectors.map((connector) => sourceFromConnector(context, connector, null)));
+      const asserted = candidates.filter((candidate) => assertions.some((assertion) => assertion.source_id === candidate.source_id));
+      if (asserted.length === 1) {
+        return asserted[0];
+      }
+    }
+  }
+  return resolveSourceOfUser(context, userId);
 };
 
 type ResolvableInput = { createdBy?: { internal_id?: string; name?: string } | null } | null | undefined;
