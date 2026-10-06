@@ -90,12 +90,14 @@ const SourcesOverlapMatrix = ({ queryRef }: SourcesOverlapMatrixProps) => {
       heatmap: {
         enableShades: false,
         colorScale: {
+          // The chart writes every value in white unless its range names a colour: the pale ranges take the text
+          // colours and the saturated ones the card colour, so that the values read in both themes
           ranges: [
-            { from: 0, to: 0, color: theme.palette.background.accent, name: '0 %' },
-            { from: 0.01, to: 25, color: theme.palette.primary.light, name: '< 25 %' },
-            { from: 25.01, to: 50, color: theme.palette.primary.main, name: '25 - 50 %' },
-            { from: 50.01, to: 90, color: theme.palette.warn.main, name: '50 - 90 %' },
-            { from: 90.01, to: 100, color: theme.palette.error.main, name: '> 90 %' },
+            { from: 0, to: 0, color: theme.palette.background.accent, foreColor: theme.palette.text.secondary, name: '0 %' },
+            { from: 0.01, to: 25, color: theme.palette.primary.light, foreColor: theme.palette.text.primary, name: '< 25 %' },
+            { from: 25.01, to: 50, color: theme.palette.primary.main, foreColor: theme.palette.background.paper, name: '25 - 50 %' },
+            { from: 50.01, to: 90, color: theme.palette.warn.main, foreColor: theme.palette.background.paper, name: '50 - 90 %' },
+            { from: 90.01, to: 100, color: theme.palette.error.main, foreColor: theme.palette.background.paper, name: '> 90 %' },
           ],
         },
       },
