@@ -5,6 +5,7 @@ import type { UserMergeHandlerContext, UserMergeHandlerPlan } from '../../../../
 interface StoredSource {
   account_status?: string;
   merged_into?: string;
+  password_history?: string[];
 }
 
 let stored: StoredSource | undefined;
@@ -85,6 +86,23 @@ describe('source disable handler', () => {
     expect(await userMergeSourceDisableHandler.apply(handlerContext, await compute())).toEqual(0);
     expect(edits).toEqual([]);
     expect(patches).toEqual([]);
+  });
+
+  // The history is emptied after the disable, in a second write: a run stopped in between must finish it
+  it('should still plan the write on a disabled source that keeps a password history', async () => {
+    stored = { account_status: ACCOUNT_STATUS_EXPIRED, merged_into: 'target-id', password_history: ['$2a$10$hash'] };
+    expect(countOf(await compute())).toEqual(1);
+  });
+
+  it('should only empty the history of a source already disabled, without disabling it again', async () => {
+    stored = { account_status: ACCOUNT_STATUS_EXPIRED, merged_into: 'target-id', password_history: ['$2a$10$hash'] };
+    expect(await userMergeSourceDisableHandler.apply(handlerContext, await compute())).toEqual(1);
+    expect(edits).toEqual([]);
+    expect(patches).toEqual([{ id: 'source-id', patch: { password_history: [] }, opts: { skipUserIndividualSync: true } }]);
+  });
+
+  it('should declare the password history it reads', () => {
+    expect(userMergeSourceDisableHandler.reads).toContain('User.password_history');
   });
 
   it('should declare every written field, so the disjointness check sees them', () => {
