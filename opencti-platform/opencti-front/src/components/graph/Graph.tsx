@@ -870,10 +870,10 @@ const Graph = ({
             } else selectNodes([node]);
           }}
           onSelectLink={(link, additive) => {
-            const key = graphElementKey({ kind: 'link', link });
+            // By relationship, as on the canvas: the two connectors of a nested relationship share its id
             if (additive) {
-              setSelectedLinks(selectedKeys.has(key)
-                ? selectedLinks.filter((l) => graphElementKey({ kind: 'link', link: l }) !== key)
+              setSelectedLinks(selectedLinks.some((l) => l.id === link.id)
+                ? selectedLinks.filter((l) => l.id !== link.id)
                 : [...selectedLinks, link]);
             } else {
               setSelectedNodes([]);

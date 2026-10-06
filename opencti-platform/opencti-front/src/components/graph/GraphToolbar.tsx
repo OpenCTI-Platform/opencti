@@ -288,6 +288,7 @@ const GraphToolbar = ({
                 padding={0}
                 role={creationFolded ? 'group' : undefined}
                 aria-label={creationFolded ? creationLabel : undefined}
+                aria-hidden={creationFolded && !creationAnchor ? true : undefined}
                 data-graph-creation-tools=""
                 style={creationPanelStyle}
               >

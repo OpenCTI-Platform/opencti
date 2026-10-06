@@ -66,6 +66,8 @@ describe('GraphToolbar on a narrow graph', () => {
     rerender(toolbarOf());
     expect(within(toolbar).getByRole('button', { name: 'Creation and removal' })).toBeInTheDocument();
     expect(addEntity.isConnected).toBe(true);
+    // Closed, the folded tools leave the keyboard path of the toolbar
+    expect(toolbar.querySelector('[data-graph-creation-tools]')).toHaveAttribute('aria-hidden', 'true');
     row.width = 4000;
     rerender(toolbarOf());
     expect(within(toolbar).getByRole('button', { name: 'Add an entity' })).toBe(addEntity);
