@@ -1,5 +1,6 @@
 import type { AuthContext } from '../../types/user';
 import type { StixBundle, StixObject } from '../../types/stix-2-1-common';
+import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import { logApp } from '../../config/conf';
 import { stixLoadByIds } from '../../database/middleware';
 import { fullEntitiesList } from '../../database/middleware-loader';
@@ -103,41 +104,48 @@ export const computeHuntPlaybookOutcome = (runs: BasicStoreEntityHuntRun[]): Hun
  */
 /**
  * Objects recorded by the runs, loaded with the identity of the hunt connector of each run. The playbook processes
- * them with the automation identity: an object the connector cannot read itself is never added to the bundle.
+ * them with the automation identity: an object the connector cannot read itself is never added to the bundle. The cap
+ * and the deduplication apply to the objects loaded, so an id an identity cannot read (deleted, or out of its reach)
+ * takes no place and never keeps another identity that reads it from adding it. Known ids are internal ids (as the
+ * runs record them) or STIX ids (as the bundle holds them).
  */
 export const loadHuntRunResultsForPlaybook = async (context: AuthContext, runs: BasicStoreEntityHuntRun[], knownIds: Set<string>) => {
   const connectorUsers = new Map((await listHuntConnectors(context, false)).map((connector) => [connector.internal_id, connector.connector_user_id]));
   const idsByUser = new Map<string, string[]>();
-  const taken = new Set<string>(knownIds);
-  let count = 0;
   runs.forEach((run) => {
+    const resultIds = run.result_ids ?? [];
     const userId = run.connector_id ? connectorUsers.get(run.connector_id) : undefined;
     if (!userId) {
-      if ((run.result_ids ?? []).length > 0) {
+      if (resultIds.length > 0) {
         logApp.warn('[OPENCTI-MODULE] Hunt run results skipped, the hunt connector of the run has no user', { runId: run.internal_id, connectorId: run.connector_id });
       }
       return;
     }
-    const userIds = idsByUser.get(userId) ?? [];
-    (run.result_ids ?? []).forEach((id) => {
-      if (count < HUNT_PLAYBOOK_MAX_RESULTS && !taken.has(id)) {
-        taken.add(id);
-        count += 1;
-        userIds.push(id);
-      }
-    });
-    if (userIds.length > 0) {
-      idsByUser.set(userId, userIds);
+    if (resultIds.length > 0) {
+      idsByUser.set(userId, [...(idsByUser.get(userId) ?? []), ...resultIds]);
     }
   });
+  const taken = new Set<string>(knownIds);
   const results: StixObject[] = [];
   const groups = Array.from(idsByUser.entries());
-  for (let index = 0; index < groups.length; index += 1) {
+  for (let index = 0; index < groups.length && results.length < HUNT_PLAYBOOK_MAX_RESULTS; index += 1) {
     const [userId, ids] = groups[index];
     const connectorUser = await resolveUserByIdFromCache(context, userId);
     if (connectorUser) {
-      const loaded = await stixLoadByIds(context, connectorUser, ids) as StixObject[];
-      results.push(...loaded.filter((result) => !!result));
+      const pending = Array.from(new Set(ids)).filter((id) => !taken.has(id));
+      for (let start = 0; start < pending.length && results.length < HUNT_PLAYBOOK_MAX_RESULTS; start += HUNT_PLAYBOOK_MAX_RESULTS) {
+        const loaded = await stixLoadByIds(context, connectorUser, pending.slice(start, start + HUNT_PLAYBOOK_MAX_RESULTS)) as StixObject[];
+        loaded.filter((result) => !!result).forEach((result) => {
+          const internalId = result.extensions?.[STIX_EXT_OCTI]?.id;
+          if (results.length < HUNT_PLAYBOOK_MAX_RESULTS && !taken.has(result.id) && !(internalId && taken.has(internalId))) {
+            taken.add(result.id);
+            if (internalId) {
+              taken.add(internalId);
+            }
+            results.push(result);
+          }
+        });
+      }
     } else {
       logApp.warn('[OPENCTI-MODULE] Hunt run results skipped, the user of the hunt connector cannot be found', { userId });
     }
