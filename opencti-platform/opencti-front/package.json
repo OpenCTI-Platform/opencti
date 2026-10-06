@@ -154,7 +154,7 @@
     "@vitest/coverage-v8": "4.0.18",
     "babel-plugin-relay": "20.1.1",
     "chokidar": "5.0.0",
-    "compression": "1.8.1",
+    "compression": "1.8.2",
     "esbuild": "0.27.3",
     "eslint": "10.0.2",
     "eslint-import-resolver-typescript": "4.4.4",
@@ -190,6 +190,7 @@
     "json5": "2.2.3",
     "lodash-es": "4.18.1",
     "react": "19.2.4",
+    "seroval": "1.6.3",
     "webpack": "5.105.2"
   },
   "dependenciesMeta": {
