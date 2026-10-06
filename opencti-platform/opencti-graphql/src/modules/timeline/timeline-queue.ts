@@ -25,12 +25,16 @@ const TIMELINE_IN_FLIGHT_KEY = '{timeline_regeneration}_in_flight';
 // Longer than any bounded regeneration; a claim whose manager stopped before handling it is due again after it
 export const TIMELINE_CLAIM_LEASE_MS = conf.get('timeline_manager:claim_lease_ms') ?? 900000;
 const RECLAIM_BATCH = 1000;
+// The due range is read by chunks, and at most this many members per claim whatever the number in flight
+const CLAIM_SCAN_CHUNK = 100;
+const CLAIM_SCAN_MAX = 2000;
 
 // One atomic step: expired leases go back to the queue (a newer schedule keeps its due time), then the due
 // containers move from the queue to the in-flight set. A schedule added while a claim runs is never absorbed by it:
 // a container still in flight under its lease stays queued until that claim is acknowledged or expires, so it is never
-// regenerated twice at once and no acknowledgement removes the lease of a later claim. The due range is read past the
-// in-flight members it skips, so that a batch still fills up to its limit.
+// regenerated twice at once and no acknowledgement removes the lease of a later claim. The due range is read by
+// chunks past the in-flight members it skips, so that a batch still fills up to its limit; a claimed member leaves the
+// queue, so the next chunk starts after the skipped ones only.
 const CLAIM_DUE_SCRIPT = `
 local expired = redis.call('ZRANGEBYSCORE', KEYS[2], '-inf', ARGV[1], 'LIMIT', 0, tonumber(ARGV[4]))
 for _, id in ipairs(expired) do
@@ -38,15 +42,25 @@ for _, id in ipairs(expired) do
   redis.call('ZADD', KEYS[1], 'NX', ARGV[1], id)
 end
 local limit = tonumber(ARGV[2])
-local due = redis.call('ZRANGEBYSCORE', KEYS[1], '-inf', ARGV[1], 'LIMIT', 0, limit + redis.call('ZCARD', KEYS[2]))
+local chunk = tonumber(ARGV[5])
+local maxScanned = tonumber(ARGV[6])
 local claimed = {}
-for _, id in ipairs(due) do
-  if #claimed >= limit then break end
-  if not redis.call('ZSCORE', KEYS[2], id) then
-    redis.call('ZREM', KEYS[1], id)
-    redis.call('ZADD', KEYS[2], ARGV[3], id)
-    table.insert(claimed, id)
+local skipped = 0
+local scanned = 0
+while #claimed < limit and scanned < maxScanned do
+  local due = redis.call('ZRANGEBYSCORE', KEYS[1], '-inf', ARGV[1], 'LIMIT', skipped, chunk)
+  if #due == 0 then break end
+  for _, id in ipairs(due) do
+    if #claimed >= limit then break end
+    if redis.call('ZSCORE', KEYS[2], id) then
+      skipped = skipped + 1
+    else
+      redis.call('ZREM', KEYS[1], id)
+      redis.call('ZADD', KEYS[2], ARGV[3], id)
+      table.insert(claimed, id)
+    end
   end
+  scanned = scanned + #due
 end
 return claimed
 `;
@@ -75,6 +89,8 @@ export const claimDueTimelineRegenerations = async (limit: number): Promise<Time
     limit,
     lease,
     RECLAIM_BATCH,
+    CLAIM_SCAN_CHUNK,
+    CLAIM_SCAN_MAX,
   );
   return { containerIds: Array.isArray(claimed) ? claimed.map((id) => String(id)) : [], lease };
 };

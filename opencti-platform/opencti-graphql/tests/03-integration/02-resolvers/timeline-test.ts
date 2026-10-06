@@ -1830,6 +1830,40 @@ describe('Incident and case timeline', () => {
       expect(await acknowledgeTimelineRegeneration(containerId, nextLease as number)).toBe(true);
     });
 
+    it('should claim past the containers scheduled again while in flight, reading the queue by bounded chunks', async () => {
+      const prefix = `timeline-queue-chunks-${Date.now()}`;
+      // More containers in flight and scheduled again than one chunk of the claim reads
+      const busy = Array.from({ length: 150 }, (_, index) => `${prefix}-busy-${String(index).padStart(3, '0')}`);
+      const idle = `${prefix}-idle`;
+      const handBack = async (claimed: string[], lease: number, kept: string[]) => {
+        const others = claimed.filter((id) => !kept.includes(id));
+        await Promise.all(others.map((id) => acknowledgeTimelineRegeneration(id, lease)));
+        await enqueueTimelineRegeneration(others, 0);
+      };
+      await enqueueTimelineRegeneration(busy, 0);
+      const first = await claimDueTimelineRegenerations(1000);
+      expect(busy.every((id) => first.containerIds.includes(id))).toBe(true);
+      await handBack(first.containerIds, first.lease, busy);
+      await enqueueTimelineRegeneration(busy, 0);
+      // Scheduled after them: the idle container comes after the busy ones in the queue
+      await new Promise((resolve) => {
+        setTimeout(resolve, 5);
+      });
+      await enqueueTimelineRegeneration([idle], 0);
+      // The busy containers come first in the queue and stay there, the idle one after them is claimed
+      const second = await claimDueTimelineRegenerations(1000);
+      expect(second.containerIds).toContain(idle);
+      expect(second.containerIds.some((id) => busy.includes(id))).toBe(false);
+      await handBack(second.containerIds, second.lease, [idle]);
+      expect(await acknowledgeTimelineRegeneration(idle, second.lease)).toBe(true);
+      // Their claims acknowledged, the busy containers are claimed again and dropped
+      await Promise.all(busy.map((id) => acknowledgeTimelineRegeneration(id, first.lease)));
+      const third = await claimDueTimelineRegenerations(1000);
+      expect(busy.every((id) => third.containerIds.includes(id))).toBe(true);
+      await handBack(third.containerIds, third.lease, busy);
+      await Promise.all(busy.map((id) => acknowledgeTimelineRegeneration(id, third.lease)));
+    });
+
     it('should drop the timeline of a deleted container', async () => {
       await queryAsAdminWithSuccess({ query: STIX_CORE_OBJECT_DELETE, variables: { id: secondCase.id } });
       const stixCase = { id: secondCase.standard_id, type: 'case-incident', extensions: { [STIX_EXT_OCTI]: { id: secondCase.id, type: 'Case-Incident' } } };
