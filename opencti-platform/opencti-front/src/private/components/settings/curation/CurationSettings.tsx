@@ -10,7 +10,6 @@ import { useTheme } from '@mui/styles';
 import Button from '@common/button/Button';
 import IconButton from '@common/button/IconButton';
 import Card from '@common/card/Card';
-import Tag from '@common/tag/Tag';
 import EEChip from '@components/common/entreprise_edition/EEChip';
 import EnterpriseEditionButton from '@components/common/entreprise_edition/EnterpriseEditionButton';
 import ObjectMembersField from '@components/common/form/ObjectMembersField';
@@ -403,9 +402,13 @@ const CurationSettingsForm = ({ settings, setup, authorityAttributes }: Curation
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', marginTop: 2 }}>
-                <Tag label={t_i18n('Vendor taxonomy {version} - {count} clusters', { values: { version: settings.taxonomy_version, count: settings.taxonomy_clusters_count } })} />
-                {settings.graph_similarity_available && <Tag label={t_i18n('Graph similarity available')} />}
+              <Box sx={{ display: 'flex', columnGap: 3, flexWrap: 'wrap', marginTop: 2 }}>
+                <Typography variant="body2" color={theme.palette.text.light}>
+                  {t_i18n('Vendor taxonomy {version} - {count} clusters', { values: { version: settings.taxonomy_version, count: settings.taxonomy_clusters_count } })}
+                </Typography>
+                {settings.graph_similarity_available && (
+                  <Typography variant="body2" color={theme.palette.text.light}>{t_i18n('Graph similarity available')}</Typography>
+                )}
               </Box>
             </Card>
             <Card title={t_i18n('Thresholds')}>
