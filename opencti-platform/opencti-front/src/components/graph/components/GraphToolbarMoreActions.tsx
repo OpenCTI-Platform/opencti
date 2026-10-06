@@ -95,7 +95,8 @@ const GraphToolbarMoreActions = ({ actions }: { actions: readonly GraphToolbarAc
         </TooltipTrigger>
         <TooltipContent side="top">{t_i18n('More actions')}</TooltipContent>
       </Tooltip>
-      <MenuContent align="end" side="top" aria-label={t_i18n('More actions')}>
+      {/* Like the context menu, 8 px inside the window: a list taller than the room above the toolbar scrolls there. */}
+      <MenuContent align="end" side="top" collisionPadding={8} aria-label={t_i18n('More actions')}>
         {groups.map(({ group, items }, index) => (
           <Fragment key={group}>
             {index > 0 && <MenuSeparator />}
