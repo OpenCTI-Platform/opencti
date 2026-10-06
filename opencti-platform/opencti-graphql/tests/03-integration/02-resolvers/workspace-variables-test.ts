@@ -1,7 +1,14 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { getUserIdByEmail, USER_EDITOR } from '../../utils/testQuery';
-import { queryAsAdmin, queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import {
+  createUploadFromTestDataFile,
+  queryAsAdmin,
+  queryAsAdminWithError,
+  queryAsAdminWithSuccess,
+  queryAsUserIsExpectedForbidden,
+  queryAsUserWithSuccess,
+} from '../../utils/testQueryHelper';
 import { fromB64, toB64 } from '../../../src/utils/base64';
 import { ENABLED_FEATURE_FLAGS } from '../../../src/config/conf';
 
@@ -38,6 +45,11 @@ const DELETE_VARIABLE = gql`
       id
       variables { id }
     }
+  }
+`;
+const IMPORT_WIDGET = gql`
+  mutation WorkspaceVariablesTestImportWidget($id: ID!, $input: ImportConfigurationInput!) {
+    workspaceWidgetConfigurationImport(id: $id, input: $input) { id manifest }
   }
 `;
 const PATCH = gql`
@@ -139,5 +151,62 @@ describe('Dashboard variables API', () => {
     } finally {
       ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, ...previous);
     }
+  });
+
+  it('should keep both variables when two upserts run concurrently', async () => {
+    const id = await createWorkspace({ type: 'dashboard', name: 'Variables concurrency' });
+    await Promise.all([
+      upsert(id, { name: 'First', type: 'text', defaultValue: 'a' }),
+      upsert(id, { name: 'Second', type: 'text', defaultValue: 'b' }),
+    ]);
+    expect((await readWorkspace(id)).variables.map((v: { name: string }) => v.name).sort()).toEqual(['First', 'Second']);
+  });
+
+  it('should keep a variable when a stale full manifest is saved', async () => {
+    const id = await createWorkspace({ type: 'dashboard', name: 'Variables stale manifest' });
+    await patchManifest(id, { widgets: {}, config: {} });
+    const stale = fromB64((await readWorkspace(id)).manifest);
+    await upsert(id, { name: 'Created meanwhile', type: 'text', defaultValue: 'a' });
+    await patchManifest(id, { ...stale, widgets: { 'widget-1': widgetUsing('11111111-1111-4111-8111-111111111111') } });
+    const after = await readWorkspace(id);
+    expect(after.variables.map((v: { name: string }) => v.name)).toEqual(['Created meanwhile']);
+    expect(Object.keys(fromB64(after.manifest).widgets)).toEqual(['widget-1']);
+  });
+
+  it('should not lose a layout change saved concurrently with an upsert', async () => {
+    const id = await createWorkspace({ type: 'dashboard', name: 'Variables vs layout' });
+    await patchManifest(id, { widgets: {}, config: {} });
+    await Promise.all([
+      patchManifest(id, { widgets: { 'widget-1': widgetUsing('11111111-1111-4111-8111-111111111111') }, config: {} }),
+      upsert(id, { name: 'Concurrent', type: 'text', defaultValue: 'a' }),
+    ]);
+    const after = await readWorkspace(id);
+    expect(Object.keys(fromB64(after.manifest).widgets)).toEqual(['widget-1']);
+    expect(after.variables.map((v: { name: string }) => v.name)).toEqual(['Concurrent']);
+  });
+
+  it('should ignore variables injected through workspaceFieldPatch', async () => {
+    const id = await createWorkspace({ type: 'dashboard', name: 'Variables injection' });
+    await patchManifest(id, { widgets: {}, config: {}, variables: [{ id: 'injected', name: 'Injected', type: 'text', restriction: { mode: 'none' }, defaultValue: 'x' }] });
+    expect((await readWorkspace(id)).variables).toEqual([]);
+  });
+
+  it('should keep the exact encoding of a legacy manifest', async () => {
+    const id = await createWorkspace({ type: 'dashboard', name: 'Variables legacy encoding' });
+    const encoded = toB64({ widgets: {}, config: { relativeDate: 'days-30' } });
+    await queryAsAdminWithSuccess({ query: PATCH, variables: { id, input: [{ key: 'manifest', value: [encoded] }] } });
+    expect((await readWorkspace(id)).manifest).toEqual(encoded);
+  });
+
+  it('should keep variables when a widget is imported with a manifest lacking them', async () => {
+    const id = await createWorkspace({ type: 'dashboard', name: 'Variables widget import' });
+    await patchManifest(id, { widgets: {}, config: {} });
+    const stale = (await readWorkspace(id)).manifest;
+    await upsert(id, { name: 'Before import', type: 'text', defaultValue: 'a' });
+    const file = await createUploadFromTestDataFile('20231123_octi_widget_list.json', 'valid.json', 'application/json');
+    await queryAsAdminWithSuccess({ query: IMPORT_WIDGET, variables: { id, input: { importType: 'widget', file, dashboardManifest: stale } } });
+    const after = await readWorkspace(id);
+    expect(after.variables.map((v: { name: string }) => v.name)).toEqual(['Before import']);
+    expect(Object.keys(fromB64(after.manifest).widgets)).toHaveLength(1);
   });
 });

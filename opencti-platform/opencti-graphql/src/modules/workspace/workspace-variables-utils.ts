@@ -1,7 +1,8 @@
 import type { DashboardVariable, DashboardVariableRestrictionMode, DashboardVariableType, EditInput, VocabularyCategory } from '../../generated/graphql';
-import { fromB64 } from '../../utils/base64';
+import { fromB64, toB64 } from '../../utils/base64';
+import { FunctionalError } from '../../config/errors';
 import { computeDashboardVariablesUsage } from '../dashboard/dashboard-variables-resolution';
-import type { StoreDashboardManifest, StoreDashboardVariable } from './workspace-variables-types';
+import { DASHBOARD_MANIFEST_SERVER_OWNED_KEYS, type StoreDashboardManifest, type StoreDashboardVariable } from './workspace-variables-types';
 
 export const buildVariableAuditInput = (
   operation: 'upsert' | 'delete',
@@ -32,5 +33,42 @@ export const toGraphqlDashboardVariables = (workspace: { type?: string | null; m
       defaultValue: variable.defaultValue,
       usedInWidgetIds: usage.get(variable.id) ?? [],
     };
+  });
+};
+
+const parseManifestObject = (encoded: string): Record<string, unknown> | null => {
+  try {
+    const parsed = fromB64(encoded);
+    return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * `variables` and `presets` belong to the server: a full manifest sent through workspaceFieldPatch
+ * (built from a possibly stale client copy) can neither add, change nor erase them.
+ * The manifest is only rewritten when one of these keys is involved, so legacy dashboards keep
+ * their exact encoding.
+ */
+export const preserveServerOwnedManifestKeys = (inputs: EditInput[], storedManifest: string | null | undefined): EditInput[] => {
+  const stored = (storedManifest ? parseManifestObject(storedManifest) : null) ?? {};
+  const storedHasServerKeys = DASHBOARD_MANIFEST_SERVER_OWNED_KEYS.some((key) => key in stored);
+  return inputs.map((input) => {
+    const encoded = input.value?.[0];
+    if (input.key !== 'manifest' || typeof encoded !== 'string' || encoded === '') return input;
+    const incoming = parseManifestObject(encoded);
+    if (!incoming) {
+      if (storedHasServerKeys) throw FunctionalError('Invalid dashboard manifest');
+      return input;
+    }
+    const incomingHasServerKeys = DASHBOARD_MANIFEST_SERVER_OWNED_KEYS.some((key) => key in incoming);
+    if (!incomingHasServerKeys && !storedHasServerKeys) return input;
+    const next: Record<string, unknown> = { ...incoming };
+    DASHBOARD_MANIFEST_SERVER_OWNED_KEYS.forEach((key) => {
+      if (key in stored) next[key] = stored[key];
+      else delete next[key];
+    });
+    return { ...input, value: [toB64(next)] };
   });
 };

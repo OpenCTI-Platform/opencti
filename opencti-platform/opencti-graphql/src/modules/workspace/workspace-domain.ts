@@ -32,6 +32,8 @@ import { filterUnwantedEntitiesOut } from '../../domain/container';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD, type PublicDashboardCached } from '../publicDashboard/publicDashboard-types';
 import { createInternalObject, editInternalObject } from '../../domain/internalObject';
 import { checkDashboardConfigurationImport, convertDashboardManifestIds, exportDashboardWidget, importDashboardWidgetConfiguration } from '../dashboard/dashboard-utils';
+import { withWorkspaceManifestLock } from './workspace-variables-domain';
+import { preserveServerOwnedManifestKeys } from './workspace-variables-utils';
 
 export const PLATFORM_DASHBOARD = 'cf093b57-713f-404b-a210-a1c5c8cb3791';
 
@@ -254,8 +256,15 @@ export const workspaceEditField = async (
   inputs: EditInput[],
 ) => {
   await checkInvestigatedEntitiesInputs(context, user, inputs);
-  return editInternalObject<StoreEntityWorkspace>(context, user, workspaceId, ENTITY_TYPE_WORKSPACE, inputs, {
-    auditLogContextSanitizer: sanitizeManifestAuditInput,
+  const opts = { auditLogContextSanitizer: sanitizeManifestAuditInput };
+  if (!inputs.some((input) => input.key === 'manifest')) {
+    return editInternalObject<StoreEntityWorkspace>(context, user, workspaceId, ENTITY_TYPE_WORKSPACE, inputs, opts);
+  }
+  // Same lock as the variables mutations: the stored server-owned keys are read and written atomically.
+  return withWorkspaceManifestLock(workspaceId, async () => {
+    const workspace = await findById(context, user, workspaceId);
+    const safeInputs = preserveServerOwnedManifestKeys(inputs, workspace?.manifest);
+    return editInternalObject<StoreEntityWorkspace>(context, user, workspaceId, ENTITY_TYPE_WORKSPACE, safeInputs, opts);
   });
 };
 
@@ -422,13 +431,13 @@ export const workspaceImportWidgetConfiguration = async (
     input.file,
     input.dashboardManifest,
   );
-  const { element } = await updateAttribute<StoreEntityWorkspace>(
-    context,
-    user,
-    workspaceId,
-    ENTITY_TYPE_WORKSPACE,
-    [{ key: 'manifest', value: [updatedManifest] }],
-  );
+  // The manifest comes from the client: same protection as workspaceFieldPatch.
+  const element = await withWorkspaceManifestLock(workspaceId, async () => {
+    const workspace = await findById(context, user, workspaceId);
+    const safeInputs = preserveServerOwnedManifestKeys([{ key: 'manifest', value: [updatedManifest] }], workspace?.manifest);
+    const { element: updated } = await updateAttribute<StoreEntityWorkspace>(context, user, workspaceId, ENTITY_TYPE_WORKSPACE, safeInputs);
+    return updated;
+  });
 
   await publishUserAction({
     user,
