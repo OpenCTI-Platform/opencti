@@ -635,6 +635,8 @@ const resolveContainerVisibilityScope = async (
   const isMarkingCoveredByContainer = buildContainerMarkingCoverage(markingsOf(container), markingsMap);
   const isElementSharedAsContainer = (element: AnyStoreElement) => {
     if ((element.restricted_members ?? []).length > 0) return false;
+    // A type no organization restricts (a user, an organization, a marking...) is read whatever the sharing
+    if (isOrganizationUnrestricted(element as unknown as BasicStoreCommon)) return true;
     // Organization sharing (platform access rules): an object shared with no organization is readable inside the platform
     // organization only, a shared object inside the platform organization and in each organization it is shared with.
     // An element is therefore readable by every reader of the container when it is shared with at least the

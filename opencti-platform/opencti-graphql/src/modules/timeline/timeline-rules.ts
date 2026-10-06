@@ -648,6 +648,8 @@ const assignmentRule: TimelineRule = {
           name: `${isParticipant ? 'Participant' : 'Assignee'} added: ${names.join(', ')}`,
           markings: mergeMarkings(entry.markings),
           creator_ids: entry.user_id ? [entry.user_id] : [],
+          // The event names them: it is read like each of them, and carries their markings
+          source_ids: change.added.map((a) => a.raw),
         };
       });
   }),

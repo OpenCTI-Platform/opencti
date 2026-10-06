@@ -233,7 +233,8 @@ describe('Timeline response rules', () => {
     const events = derive(input);
     expect(events.find((e) => e.kind === 'case_opened')).toMatchObject({ lane: 'response', event_time: '2026-03-10T08:00:00.000Z' });
     expect(events.find((e) => e.kind === 'status_changed')).toMatchObject({ rule_id: RULE_WORKFLOW_CLOSURE, name: 'Status changed to CLOSED', description: 'From NEW', creator_ids: ['user-1'] });
-    expect(events.find((e) => e.kind === 'assigned')).toMatchObject({ name: 'Assignee added: Jane' });
+    // The identities the event names are its sources: it is read like each of them
+    expect(events.find((e) => e.kind === 'assigned')).toMatchObject({ name: 'Assignee added: Jane', source_ids: ['user-2'] });
   });
 
   it('should derive task creation, due date and completion, containment tasks included', () => {
