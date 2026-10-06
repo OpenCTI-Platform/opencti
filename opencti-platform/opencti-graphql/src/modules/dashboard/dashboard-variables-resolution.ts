@@ -2,7 +2,7 @@
 // This module is mirrored in opencti-front (src/components/dashboard/dashboardVariablesResolution.ts);
 // both sides are locked by tests/data/dashboard-variables/resolution-cases.json.
 
-export const DASHBOARD_VARIABLE_TOKEN_PREFIX = '$var:';
+const DASHBOARD_VARIABLE_TOKEN_PREFIX = '$var:';
 
 const UUID_PATTERN = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
 const TOKEN_REGEXP = new RegExp(`^\\$var:(${UUID_PATTERN})$`);

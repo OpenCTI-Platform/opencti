@@ -14,10 +14,10 @@ export interface DashboardConfig {
 // When used in dashboards widgets must have a layout
 export type DashboardWidget = Widget & { layout: NonNullable<Widget['layout']> };
 
-export type DashboardVariableType = 'vocabulary' | 'killChainPhase' | 'entity' | 'entityType' | 'label' | 'user'
+type DashboardVariableType = 'vocabulary' | 'killChainPhase' | 'entity' | 'entityType' | 'label' | 'user'
   | 'marking' | 'status' | 'group' | 'boolean' | 'numeric' | 'text' | 'date';
 
-export type DashboardVariableRestriction
+type DashboardVariableRestriction
   = | { mode: 'none' }
     | { mode: 'selection'; values: string[] }
     | { mode: 'filters'; filters: FilterGroup };

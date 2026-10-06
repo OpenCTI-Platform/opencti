@@ -1,6 +1,6 @@
 import type { FilterGroup } from '../../generated/graphql';
 
-export const DASHBOARD_VARIABLE_TYPES = [
+const DASHBOARD_VARIABLE_TYPES = [
   'vocabulary', 'killChainPhase', 'entity', 'entityType', 'label', 'user',
   'marking', 'status', 'group', 'boolean', 'numeric', 'text', 'date',
 ] as const;
@@ -25,7 +25,7 @@ export type StoreDashboardVariable = StoreDashboardVariableBase & (
   | { type: Exclude<DashboardVariableTypeName, 'vocabulary' | 'killChainPhase' | 'entity'> }
 );
 
-export interface StoreDashboardManifestSelection {
+interface StoreDashboardManifestSelection {
   filters?: FilterGroup | null;
   dynamicFrom?: FilterGroup | null;
   dynamicTo?: FilterGroup | null;
