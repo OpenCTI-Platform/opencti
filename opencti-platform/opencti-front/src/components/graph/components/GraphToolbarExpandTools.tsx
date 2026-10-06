@@ -84,6 +84,7 @@ const expandRelationshipsQuery = graphql`
               parent_types
             }
             ... on StixCoreObject {
+              is_inferred
               created_at
               updated_at
               numberOfConnectedElement
@@ -104,6 +105,7 @@ const expandRelationshipsQuery = graphql`
             }
             ... on StixDomainObject {
               created
+              confidence
             }
             ... on AttackPattern {
               name
@@ -334,6 +336,7 @@ const expandRelationshipsQuery = graphql`
               parent_types
             }
             ... on StixCoreObject {
+              is_inferred
               created_at
               updated_at
               numberOfConnectedElement
@@ -354,6 +357,7 @@ const expandRelationshipsQuery = graphql`
             }
             ... on StixDomainObject {
               created
+              confidence
             }
             ... on AttackPattern {
               name
