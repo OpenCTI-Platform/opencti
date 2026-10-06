@@ -4,6 +4,7 @@ import { meterManager } from '../config/tracing';
 import { AUTH_FAILURE, AUTH_REQUIRED, FORBIDDEN_ACCESS } from '../config/errors';
 import { isEmptyField } from '../database/utils';
 import { logApp } from '../config/conf';
+import { mayCarryCredential, REDACTED_VALUE, resolveRequestDocument } from '../utils/redaction';
 
 const getRequestError = (context) => {
   const isSuccess = isEmptyField(context.errors) || context.errors.length === 0;
@@ -37,7 +38,10 @@ export default {
         };
 
         if (!sendContext.operationName) {
-          logApp.info('[TELEMETRY] GraphQL operation is unnamed', { query: stripIgnoredCharacters(sendContext.request?.query ?? 'undefined') });
+          // A credential operation, or a request that cannot be classified, keeps its text out of the logs
+          const requestDocument = resolveRequestDocument(sendContext.document, sendContext.request?.query);
+          const query = mayCarryCredential(requestDocument) ? REDACTED_VALUE : stripIgnoredCharacters(sendContext.request?.query ?? 'undefined');
+          logApp.info('[TELEMETRY] GraphQL operation is unnamed', { query });
         }
 
         if (requestError) {
