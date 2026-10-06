@@ -8,6 +8,7 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { EditInput, IngestionRssAddInput } from '../../generated/graphql';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
+import { validateIngestionExecutionIdentity, validateIngestionExecutionIdentityFromEditInputs } from './ingestion-execution-identity';
 
 export const findById = (context: AuthContext, user: AuthUser, ingestionId: string) => {
   return storeLoadById<BasicStoreEntityIngestionRss>(context, user, ingestionId, ENTITY_TYPE_INGESTION_RSS);
@@ -22,6 +23,7 @@ export const findAllRssIngestion = async (context: AuthContext, user: AuthUser, 
 };
 
 export const addIngestion = async (context: AuthContext, user: AuthUser, input: IngestionRssAddInput) => {
+  await validateIngestionExecutionIdentity(context, user, input.user_id);
   const { element, isCreation } = await createEntity(context, user, input, ENTITY_TYPE_INGESTION_RSS, { complete: true });
   if (isCreation) {
     await registerConnectorForIngestion(context, {
@@ -49,6 +51,8 @@ export const patchRssIngestion = async (context: AuthContext, user: AuthUser, id
 };
 
 export const ingestionEditField = async (context: AuthContext, user: AuthUser, ingestionId: string, input: EditInput[]) => {
+  const storedIngestion = await findById(context, user, ingestionId);
+  await validateIngestionExecutionIdentityFromEditInputs(context, user, storedIngestion, input);
   const { element } = await updateAttribute<StoreEntityIngestionRss>(context, user, ingestionId, ENTITY_TYPE_INGESTION_RSS, input);
   await registerConnectorForIngestion(context, {
     id: element.id,

@@ -10,6 +10,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { type EditInput, type IngestionTaxiiCollectionAddInput } from '../../generated/graphql';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
 import { INGESTION_SETINGESTIONS, MEMBER_ACCESS_RIGHT_VIEW } from '../../utils/access';
+import { validateIngestionExecutionIdentity, validateIngestionExecutionIdentityFromEditInputs } from './ingestion-execution-identity';
 
 export const findById = (context: AuthContext, user: AuthUser, ingestionId: string) => {
   return storeLoadById<BasicStoreEntityIngestionTaxiiCollection>(context, user, ingestionId, ENTITY_TYPE_INGESTION_TAXII_COLLECTION);
@@ -21,6 +22,7 @@ export const findTaxiiCollectionPaginated = async (context: AuthContext, user: A
 };
 
 export const addIngestion = async (context: AuthContext, user: AuthUser, input: IngestionTaxiiCollectionAddInput) => {
+  await validateIngestionExecutionIdentity(context, user, input.user_id);
   const data = { authorized_authorities: [INGESTION_SETINGESTIONS], ...input };
   const { element, isCreation } = await createEntity(context, user, data, ENTITY_TYPE_INGESTION_TAXII_COLLECTION, { complete: true });
   if (isCreation) {
@@ -44,6 +46,8 @@ export const addIngestion = async (context: AuthContext, user: AuthUser, input: 
 };
 
 export const ingestionEditField = async (context: AuthContext, user: AuthUser, ingestionId: string, input: EditInput[]) => {
+  const storedIngestion = await findById(context, user, ingestionId);
+  await validateIngestionExecutionIdentityFromEditInputs(context, user, storedIngestion, input);
   const finalInput = input.map(({ key, value }) => {
     const item = { key, value };
     if (key === authorizedMembers.name) {

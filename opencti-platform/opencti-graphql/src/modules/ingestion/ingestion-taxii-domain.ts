@@ -9,7 +9,12 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { type EditInput, type IngestionTaxiiAddAutoUserInput, type IngestionTaxiiAddInput } from '../../generated/graphql';
 import { addAuthenticationCredentials, removeAuthenticationCredentials, verifyIngestionAuthenticationContent } from './ingestion-common';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
-import { createOnTheFlyUser } from '../user/user-domain';
+import {
+  createIngestionAutomaticUser,
+  validateIngestionExecutionIdentity,
+  validateIngestionExecutionIdentityFromEditInputs,
+  validateStoredIngestionExecutionIdentity,
+} from './ingestion-execution-identity';
 import type { FileHandle } from 'fs/promises';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
@@ -34,12 +39,14 @@ export const findAllTaxiiIngestion = async (context: AuthContext, user: AuthUser
 
 export const addIngestion = async (context: AuthContext, user: AuthUser, input: IngestionTaxiiAddInput) => {
   if (input.automatic_user) {
-    const onTheFlyCreatedUser = await createOnTheFlyUser(
+    const onTheFlyCreatedUser = await createIngestionAutomaticUser(
       context,
       user,
       { userName: input.user_id, serviceAccount: true, confidenceLevel: input.confidence_level },
     );
     input = { ...input, user_id: onTheFlyCreatedUser.id };
+  } else {
+    await validateIngestionExecutionIdentity(context, user, input.user_id);
   }
   if (input.authentication_value) {
     verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
@@ -83,6 +90,8 @@ export const patchTaxiiIngestion = async (context: AuthContext, user: AuthUser, 
 };
 
 export const ingestionEditField = async (context: AuthContext, user: AuthUser, ingestionId: string, input: EditInput[]) => {
+  const storedIngestion = await findById(context, user, ingestionId);
+  await validateIngestionExecutionIdentityFromEditInputs(context, user, storedIngestion, input);
   const patchInput = [...input];
 
   if (input.some((editInput) => editInput.key === 'authentication_value')) {
@@ -167,6 +176,9 @@ export const ingestionDelete = async (context: AuthContext, user: AuthUser, inge
 };
 
 export const ingestionTaxiiResetState = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
+  // Resetting the state replays the source under the ingestion identity, which must stay within the editing user rights.
+  const storedIngestion = await findById(context, user, ingestionId);
+  await validateStoredIngestionExecutionIdentity(context, user, storedIngestion);
   await patchTaxiiIngestion(context, user, ingestionId, { current_state_cursor: undefined });
   const ingestionUpdated = await findById(context, user, ingestionId);
 
@@ -182,7 +194,7 @@ export const ingestionTaxiiResetState = async (context: AuthContext, user: AuthU
 };
 
 export const ingestionTaxiiAddAutoUser = async (context: AuthContext, user: AuthUser, ingestionId: string, input: IngestionTaxiiAddAutoUserInput) => {
-  const onTheFlyCreatedUser = await createOnTheFlyUser(context, user,
+  const onTheFlyCreatedUser = await createIngestionAutomaticUser(context, user,
     { userName: input.user_name, confidenceLevel: input.confidence_level, serviceAccount: true });
 
   return ingestionEditField(context, user, ingestionId, [{ key: 'user_id', value: [onTheFlyCreatedUser.id] }]);
