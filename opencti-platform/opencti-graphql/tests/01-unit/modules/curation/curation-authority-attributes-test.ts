@@ -19,4 +19,12 @@ describe('field authority attributes', () => {
     expect(() => validateFieldAuthorityRules(names.map((attribute) => ({ entity_type: ENTITY_TYPE_INTRUSION_SET, attribute, sources })) as never)).not.toThrow();
     expect(() => validateFieldAuthorityRules([{ entity_type: ENTITY_TYPE_INTRUSION_SET, attribute: 'internal_id', sources }] as never)).toThrow();
   });
+
+  it('refuses a rule with a source the settings would drop, rather than saving without the rule', () => {
+    const rule = (source: Record<string, unknown>) => [{ entity_type: ENTITY_TYPE_INTRUSION_SET, attribute: 'description', sources: [source] }] as never;
+    expect(() => validateFieldAuthorityRules(rule({ source_type: 'connector', source_id: '' }))).toThrow('needs a type (author or connector) and an identifier');
+    expect(() => validateFieldAuthorityRules(rule({ source_type: 'connector', source_id: '  ' }))).toThrow('needs a type (author or connector) and an identifier');
+    expect(() => validateFieldAuthorityRules(rule({ source_type: 'feed', source_id: 'connector-id' }))).toThrow('needs a type (author or connector) and an identifier');
+    expect(() => validateFieldAuthorityRules(rule({ source_type: 'connector', source_id: 'connector-id' }))).not.toThrow();
+  });
 });

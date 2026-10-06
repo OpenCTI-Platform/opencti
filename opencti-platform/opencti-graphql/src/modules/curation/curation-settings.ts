@@ -137,6 +137,12 @@ export const validateFieldAuthorityRules = (rules: FieldAuthorityRule[]) => {
     if (rule.sources.length === 0 || rule.sources.length > MAX_FIELD_AUTHORITY_SOURCES) {
       throw FunctionalError('A field authority rule needs between 1 and 20 ordered sources', { entity_type: rule.entity_type, attribute: rule.attribute });
     }
+    // Normalization drops an invalid source, and the rule with it: the save would succeed and lose the rule.
+    const invalid = rule.sources.find((source) => (source?.source_type !== AUTHORITY_SOURCE_AUTHOR && source?.source_type !== AUTHORITY_SOURCE_CONNECTOR)
+      || typeof source.source_id !== 'string' || source.source_id.trim().length === 0);
+    if (invalid) {
+      throw FunctionalError('Every source of a field authority rule needs a type (author or connector) and an identifier', { entity_type: rule.entity_type, attribute: rule.attribute });
+    }
     const key = `${rule.entity_type}|${rule.attribute}`;
     if (seen.has(key)) {
       throw FunctionalError('Only one field authority rule per entity type and attribute', { entity_type: rule.entity_type, attribute: rule.attribute });
