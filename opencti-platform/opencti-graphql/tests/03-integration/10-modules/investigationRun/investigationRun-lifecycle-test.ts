@@ -21,6 +21,7 @@ import * as reportDomain from '../../../../src/domain/report';
 import * as stixCoreObjectDomain from '../../../../src/domain/stixCoreObject';
 import { DatabaseError } from '../../../../src/config/errors';
 import { internalLoadById } from '../../../../src/database/middleware-loader';
+import { INVESTIGATION_MANAGER_USER } from '../../../../src/utils/access';
 import { RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
 import { statusTransition, VALIDATION_TIMEOUT_MS } from '../../../../src/modules/investigationRun/investigationRun-state';
 import * as investigationRunDomain from '../../../../src/modules/investigationRun/investigationRun-domain';
@@ -692,6 +693,8 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       const mirrored = await tickUntil(runId, (current) => (current as unknown as { xtm_revision: number }).xtm_revision >= 1);
       expect(mirrored.evidence).toHaveLength(1);
       expect(mirrored.draft_id).toBeTruthy();
+      const reader = await getAuthUser(await getUserIdByEmail(USER_EDITOR.email));
+      expect(await draftWorkspaceDomain.findById(testContext, reader, mirrored.draft_id as string)).toBeTruthy();
       vi.mocked(investigationXtm.cancelInvestigation).mockClear();
       await queryAsAdminWithSuccess({ query: RESTRICT_CONTAINER, variables: { id: caseId, input: [{ id: ADMIN_USER.id, access_right: 'admin' }] } });
       engineStage = 'completed';
@@ -730,6 +733,10 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       expect(await runFields.case_id(restrictedRun, {}, editorContext)).toBeNull();
       expect(await runFields.case(restrictedRun, {}, editorContext)).toBeNull();
       expect((await loadInvestigationRun(testContext, runId))?.draft_id).toBe(mirrored.draft_id);
+      // While its deletion is retried, the draft is restricted to the manager: a reader who kept its id opens nothing.
+      expect(await draftWorkspaceDomain.findById(testContext, reader, mirrored.draft_id as string) ?? null).toBeNull();
+      const storedDraft = await internalLoadById(testContext, ADMIN_USER, mirrored.draft_id as string) as unknown as { restricted_members?: { id: string }[] };
+      expect(storedDraft.restricted_members?.map((member) => member.id)).toEqual([INVESTIGATION_MANAGER_USER.id]);
       expect(stopped.steps).toEqual([]);
       expect((await listInvestigationRunsToProcess(testContext, 50)).map((run) => run.internal_id)).toContain(runId);
       // Deleting the run deletes its draft first: refused while that fails, the run keeps its reference.

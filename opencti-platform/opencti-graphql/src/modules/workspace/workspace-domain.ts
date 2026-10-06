@@ -71,6 +71,7 @@ export const workspaceEditAuthorizedMembers = async (
   user: AuthUser,
   workspaceId: string,
   input: MemberAccessInput[],
+  options?: { skipAdminValidation?: boolean },
 ) => {
   const args = {
     entityId: workspaceId,
@@ -78,6 +79,7 @@ export const workspaceEditAuthorizedMembers = async (
     requiredCapabilities: ['EXPLORE_EXUPDATE_EXDELETE'],
     entityType: ENTITY_TYPE_WORKSPACE,
     busTopicKey: ENTITY_TYPE_WORKSPACE,
+    skipAdminValidation: options?.skipAdminValidation,
   };
   // @ts-expect-error TODO improve busTopicKey types to avoid this
   return editAuthorizedMembers(context, user, args);

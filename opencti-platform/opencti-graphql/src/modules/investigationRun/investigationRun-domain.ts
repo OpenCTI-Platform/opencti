@@ -57,6 +57,7 @@ import {
   KNOWLEDGE_KNENRICHMENT,
   KNOWLEDGE_KNUPDATE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
+  MEMBER_ACCESS_RIGHT_ADMIN,
 } from '../../utils/access';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
@@ -64,8 +65,8 @@ import { buildRefRelationKey } from '../../schema/general';
 import { iAliasedIds, xOpenctiStixIds } from '../../schema/attribute-definition';
 import { stixDomainObjectAddRelation, stixDomainObjectEditField } from '../../domain/stixDomainObject';
 import { taskAdd } from '../task/task-domain';
-import { deleteDraftWorkspace, findById as findDraftById, validateDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
-import { findById as findWorkspaceById, workspaceDelete } from '../workspace/workspace-domain';
+import { deleteDraftWorkspace, draftWorkspaceEditAuthorizedMembers, findById as findDraftById, validateDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
+import { findById as findWorkspaceById, workspaceDelete, workspaceEditAuthorizedMembers } from '../workspace/workspace-domain';
 import { connectorsForEnrichment } from '../../database/repository';
 import { isUserAccountValid, resolveUserByIdFromCache } from '../user/user-domain';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
@@ -645,39 +646,59 @@ export const stopCancelledEngineRun = async (context: AuthContext, runId: string
   return result;
 };
 
+// Only the manager: an empty list of members would leave the artifact open to everyone.
+const STOPPED_RUN_ARTIFACT_MEMBERS = [{ id: INVESTIGATION_MANAGER_USER.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }];
+
+const restrictStoppedRunArtifact = async (context: AuthContext, runId: string, artifact: { draftId: string } | { workspaceId: string }) => {
+  const options = { skipAdminValidation: true };
+  try {
+    if ('draftId' in artifact) {
+      await draftWorkspaceEditAuthorizedMembers(context, INVESTIGATION_MANAGER_USER, artifact.draftId, STOPPED_RUN_ARTIFACT_MEMBERS, options);
+    } else {
+      await workspaceEditAuthorizedMembers(context, INVESTIGATION_MANAGER_USER, artifact.workspaceId, STOPPED_RUN_ARTIFACT_MEMBERS, options);
+    }
+  } catch (cause) {
+    logApp.error('[CASE AUTOPILOT] Artifact of a stopped investigation not restricted to the manager, retried on the next tick', { runId, ...artifact, cause });
+  }
+};
+
 /**
  * Delete the draft and the investigation graph of a run stopped at an access
- * boundary, with what it wrote and read there. What could not be deleted keeps
- * its reference on the run, so that the manager, or a deletion of the run,
- * tries again.
+ * boundary, with what it wrote and read there. Each is first restricted to the
+ * manager, so that a reader who kept its id reads nothing even while its
+ * deletion fails. What could not be deleted keeps its reference on the run, so
+ * that the manager, or a deletion of the run, tries again.
  */
 export const deleteStoppedRunArtifacts = async (context: AuthContext, runId: string, artifacts: { draftId: string | null; workspaceId: string | null }) => {
   const deleted = { draft: false, workspace: false };
-  if (artifacts.draftId) {
+  const { draftId, workspaceId } = artifacts;
+  if (draftId) {
     try {
-      if (await findDraftById(context, INVESTIGATION_MANAGER_USER, artifacts.draftId)) {
-        await deleteDraftWorkspace(context, INVESTIGATION_MANAGER_USER, artifacts.draftId);
+      if (await findDraftById(context, INVESTIGATION_MANAGER_USER, draftId)) {
+        await restrictStoppedRunArtifact(context, runId, { draftId });
+        await deleteDraftWorkspace(context, INVESTIGATION_MANAGER_USER, draftId);
       }
       deleted.draft = true;
     } catch (cause) {
-      logApp.error('[CASE AUTOPILOT] Draft of a stopped investigation not deleted, retried on the next tick', { runId, draftId: artifacts.draftId, cause });
+      logApp.error('[CASE AUTOPILOT] Draft of a stopped investigation not deleted, retried on the next tick', { runId, draftId, cause });
     }
   }
-  if (artifacts.workspaceId) {
+  if (workspaceId) {
     try {
-      if (await findWorkspaceById(context, INVESTIGATION_MANAGER_USER, artifacts.workspaceId)) {
-        await workspaceDelete(context, INVESTIGATION_MANAGER_USER, artifacts.workspaceId);
+      if (await findWorkspaceById(context, INVESTIGATION_MANAGER_USER, workspaceId)) {
+        await restrictStoppedRunArtifact(context, runId, { workspaceId });
+        await workspaceDelete(context, INVESTIGATION_MANAGER_USER, workspaceId);
       }
       deleted.workspace = true;
     } catch (cause) {
-      logApp.error('[CASE AUTOPILOT] Investigation graph of a stopped investigation not deleted, retried on the next tick', { runId, workspaceId: artifacts.workspaceId, cause });
+      logApp.error('[CASE AUTOPILOT] Investigation graph of a stopped investigation not deleted, retried on the next tick', { runId, workspaceId, cause });
     }
   }
   if (!deleted.draft && !deleted.workspace) return;
   await updateInvestigationRun(context, runId, (current) => {
     const patch: Record<string, null> = {};
-    if (deleted.draft && current.draft_id === artifacts.draftId) patch.draft_id = null;
-    if (deleted.workspace && current.workspace_id === artifacts.workspaceId) patch.workspace_id = null;
+    if (deleted.draft && current.draft_id === draftId) patch.draft_id = null;
+    if (deleted.workspace && current.workspace_id === workspaceId) patch.workspace_id = null;
     return Object.keys(patch).length > 0 ? patch : null;
   });
 };

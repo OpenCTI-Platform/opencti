@@ -1003,8 +1003,9 @@ const findCarryBoundary = async (exec: RunExecution, citedIds: string[]): Promis
 };
 
 // The draft and the investigation graph of a run stopped at an access boundary
-// hold what the run read and derived: the run keeps each reference until its
-// deletion succeeds, and the manager retries a deletion that failed.
+// hold what the run read and derived: from the stop on, only the manager may
+// open them; the run keeps each reference until its deletion succeeds, and the
+// manager retries a deletion that failed.
 // Everything the run derived from what it read is withheld, as it may describe
 // what the run can no longer carry: the engine's text, the conclusion OpenCTI
 // scored from it, the references to its outputs, its draft, deleted with what
