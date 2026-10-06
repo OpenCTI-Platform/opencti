@@ -44,6 +44,7 @@ import { decryptIngestionCredential } from '../modules/ingestion/ingestion-commo
 import { createWorkForIngestion, pushBundleToConnectorQueue, updateBuiltInConnectorInfo } from './ingestionManager/ingestionManagerPushToQueue';
 import { INGESTION_MANAGER_SCHEDULE_TIME } from './ingestionManager/ingestionManagerConfiguration';
 import { buildIngestionErrorMeta, createIngestionLogger } from './ingestionManager/ingestionManagerUtils';
+import { assertIngestionExecutionIdentityAllowed } from '../modules/ingestion/ingestion-execution-identity';
 
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
@@ -561,6 +562,8 @@ export const processCsvLines = async (
     logApp.info(`[OPENCTI-MODULE] INGESTION - Unchanged data for csv ingest: ${ingestion.name}`);
     await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id);
   } else {
+    // The execution identity of an ingestion can never exceed the rights of its creator.
+    await assertIngestionExecutionIdentityAllowed(context, ingestion);
     const ingestionUser = await findUserById(context, context.user ?? SYSTEM_USER, ingestion.user_id!) ?? SYSTEM_USER;
     if (csvMapperParsed.has_header) {
       removeHeaderFromFullFile(csvLines, csvMapperParsed.skipLineChar);
