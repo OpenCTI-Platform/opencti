@@ -101,37 +101,40 @@ const listHunts = (context: AuthContext, filters: FilterGroup['filters'], filter
   });
 };
 
-// Where a bounded scan resumes at the next tick; reset once a scan reached the last hunt, and on a restart of the manager
-const huntScanCursors = new Map<string, string | undefined>();
+// Where a bounded scan resumes at the next tick; reset once a scan reached the last element, and on a restart of the manager
+const scanCursors = new Map<string, string | undefined>();
 
 /**
- * Every hunt matching the filters, page by page. For phases whose filters do not drop the hunts they process (PIR arming,
- * standing hunts), a bounded first page would read the same oldest hunts at every tick and never reach the others.
- * With a scan name, a tick reads at most `automationMaxPagesPerTick` pages and the next tick resumes after the last hunt
- * read, starting over once the last hunt was reached: every hunt is visited within a bounded number of ticks.
+ * Every element of a type matching the filters, page by page. For phases whose filters do not drop the elements they
+ * process (PIR arming, standing hunts, the check of orphan runs), a bounded first page would read the same oldest elements
+ * at every tick and never reach the others. With a scan name, a tick reads at most `automationMaxPagesPerTick` pages and
+ * the next tick resumes after the last element read, starting over once the last one was reached: every element is
+ * visited within a bounded number of ticks.
  */
-const forEachHuntPage = async (
+const forEachPage = async <T extends BasicStoreEntity>(
   context: AuthContext,
-  filters: FilterGroup['filters'],
-  onPage: (hunts: BasicStoreEntityHunt[]) => Promise<void>,
-  scan?: string,
+  entityType: string,
+  filters: FilterGroup,
+  onPage: (elements: T[]) => Promise<void>,
+  opts: { scan?: string; withoutRels?: boolean } = {},
 ) => {
+  const { scan, withoutRels } = opts;
   let pages = 0;
   let resumeAfter: string | undefined;
-  await fullEntitiesList<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT], {
+  await fullEntitiesList<T>(context, HUNT_MANAGER_USER, [entityType], {
     first: HUNT_CONFIG.automationPageSize,
-    after: scan ? huntScanCursors.get(scan) : undefined,
+    after: scan ? scanCursors.get(scan) : undefined,
     orderBy: 'created_at',
     orderMode: OrderingMode.Asc,
-    filters: andFilters(filters),
+    filters,
     noFiltersChecking: true,
-    withoutRels: false,
-    callback: async (hunts: BasicStoreEntityHunt[]) => {
-      await onPage(hunts);
+    withoutRels,
+    callback: async (elements: T[]) => {
+      await onPage(elements);
       pages += 1;
-      const lastSort = hunts[hunts.length - 1]?.sort;
+      const lastSort = elements[elements.length - 1]?.sort;
       // A page shorter than the page size is the last one: the scan starts over at the next tick
-      if (scan && pages >= HUNT_CONFIG.automationMaxPagesPerTick && lastSort && hunts.length >= HUNT_CONFIG.automationPageSize) {
+      if (scan && pages >= HUNT_CONFIG.automationMaxPagesPerTick && lastSort && elements.length >= HUNT_CONFIG.automationPageSize) {
         resumeAfter = offsetToCursor(lastSort);
         return false;
       }
@@ -139,9 +142,16 @@ const forEachHuntPage = async (
     },
   });
   if (scan) {
-    huntScanCursors.set(scan, resumeAfter);
+    scanCursors.set(scan, resumeAfter);
   }
 };
+
+const forEachHuntPage = (
+  context: AuthContext,
+  filters: FilterGroup['filters'],
+  onPage: (hunts: BasicStoreEntityHunt[]) => Promise<void>,
+  scan?: string,
+) => forEachPage<BasicStoreEntityHunt>(context, ENTITY_TYPE_HUNT, andFilters(filters), onPage, { scan, withoutRels: false });
 
 /**
  * The runs one manager tick may dispatch, shared by every phase of the tick (automatic retries, PIR activation, scheduled
@@ -203,26 +213,8 @@ export const requeueUnpublishedHuntRuns = async (context: AuthContext): Promise<
   return requeued;
 };
 
-/**
- * Runs a deleted hunt or hunt connector left behind, whatever deleted it (the trash, a bulk deletion, a synchronization):
- * the runs still waiting, running or planning a retry whose hunt no longer exists, or whose connector no longer exists or
- * was registered again since the run was created (a redeployed connector reusing the id), are cancelled.
- */
-export const cancelOrphanHuntRuns = async (context: AuthContext): Promise<number> => {
-  const runs = await fullEntitiesList<BasicStoreEntityHuntRun>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT_RUN], {
-    filters: andFilters([], [{
-      mode: FilterMode.Or,
-      filters: [
-        { key: ['hunt_run_status'], values: HUNT_RUN_ACTIVE_STATUSES },
-        { key: ['next_retry_at'], values: [], operator: FilterOperator.NotNil },
-      ],
-      filterGroups: [],
-    }]),
-    noFiltersChecking: true,
-  });
-  if (runs.length === 0) {
-    return 0;
-  }
+// The orphan runs of one page of active runs, cancelled: their hunt or their connector no longer exists
+const cancelOrphanRunsOfPage = async (context: AuthContext, runs: BasicStoreEntityHuntRun[]): Promise<number> => {
   const huntIds = Array.from(new Set(runs.map((run) => run.hunt_id)));
   const connectorIds = Array.from(new Set(runs.map((run) => run.connector_id).filter((id): id is string => !!id)));
   const [hunts, connectors] = await Promise.all([
@@ -251,6 +243,29 @@ export const cancelOrphanHuntRuns = async (context: AuthContext): Promise<number
       }
     }
   }
+  return cancelled;
+};
+
+/**
+ * Runs a deleted hunt or hunt connector left behind, whatever deleted it (the trash, a bulk deletion, a synchronization):
+ * the runs still waiting, running or planning a retry whose hunt no longer exists, or whose connector no longer exists or
+ * was registered again since the run was created (a redeployed connector reusing the id), are cancelled. The deletion of
+ * a hunt or a hunt connector through the API cancels its runs at once: this check only catches the other deletions, so it
+ * reads the active runs page by page and at most `automationMaxPagesPerTick` pages per tick, resuming at the next tick.
+ */
+export const cancelOrphanHuntRuns = async (context: AuthContext): Promise<number> => {
+  let cancelled = 0;
+  const filters = andFilters([], [{
+    mode: FilterMode.Or,
+    filters: [
+      { key: ['hunt_run_status'], values: HUNT_RUN_ACTIVE_STATUSES },
+      { key: ['next_retry_at'], values: [], operator: FilterOperator.NotNil },
+    ],
+    filterGroups: [],
+  }]);
+  await forEachPage<BasicStoreEntityHuntRun>(context, ENTITY_TYPE_HUNT_RUN, filters, async (runs) => {
+    cancelled += await cancelOrphanRunsOfPage(context, runs);
+  }, { scan: 'orphan-runs' });
   return cancelled;
 };
 
