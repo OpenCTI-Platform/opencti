@@ -253,6 +253,24 @@ describe('Hits counted once across the runs of a hunt', () => {
     await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'completed', hits_count: 28, hit_keys: KEYS } as never);
     expect(finalState()).toMatchObject({ hits_new_count: 28, hits_recurring_count: 0, hits_identified: false });
   });
+
+  it('should count every hit as new, and escalate on them, when the reported keys do not identify the hits', async () => {
+    vi.mocked(recordHuntHits).mockResolvedValue({ newCount: 0, recurringCount: 28 });
+    const reports = [
+      { hit_keys: [] },
+      { hit_keys: [...KEYS.slice(1), 'not a key'] },
+      { hit_keys: KEYS.slice(1), hits_sample: [{ event_id: 'evt-1', host: 'FIN-WS-0142' }] },
+    ];
+    for (let index = 0; index < reports.length; index += 1) {
+      vi.mocked(patchAttribute).mockReset();
+      vi.mocked(createHuntIncidentWorkspace).mockClear();
+      loading(autonomous);
+      await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'completed', hits_count: 28, ...reports[index] } as never);
+      expect(finalState()).toMatchObject({ hits_new_count: 28, hits_recurring_count: 0, hits_identified: false });
+      expect(createHuntIncidentWorkspace).toHaveBeenCalledTimes(1);
+    }
+    expect(recordHuntHits).not.toHaveBeenCalled();
+  });
 });
 
 describe('Time window of the recurring runs', () => {

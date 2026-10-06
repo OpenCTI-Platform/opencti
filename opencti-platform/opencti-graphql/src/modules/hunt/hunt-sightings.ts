@@ -17,7 +17,10 @@ import { isDisclosableByHunt } from './hunt-iocs';
 import { type BasicStoreEntityHunt, HUNT_TYPE_INDICATORS, RELATION_HUNT_SOURCES, RELATION_HUNT_TECHNIQUES } from './hunt-types';
 import { type BasicStoreEntityHuntRun, HUNT_IOC_VERDICT_SEEN, HUNT_RUN_STATUS_COMPLETED, type HuntIocResult } from './huntRun/huntRun-types';
 import { countHuntHitRecords } from './huntHitRecord/huntHitRecord-domain';
+import { withHuntLock } from './hunt-lock';
 import { truncate } from './hunt-utils';
+
+const HUNT_SIGHTINGS_LOCK = 'hunt_sightings';
 
 // The sighting of the hunt names the hunt it belongs to: one per hunt, sighted object and security platform
 export const ATTRIBUTE_HUNT_ID = 'x_opencti_hunt_id';
@@ -138,20 +141,13 @@ const sightingDescription = (hunt: BasicStoreEntityHunt, platformName: string, c
     + 'its count holds the distinct hits found so far, its first and last seen dates the first and latest hit.', 2000);
 };
 
-/**
- * One sighting per hunt, sighted object and security platform, kept by the platform: a completed run with hits creates it
- * or updates it in place (count, first and last seen, the run that updated it last), never a sighting per run. Runs a
- * second time over the same run give the same sightings. Returns the sightings of the run.
- */
-export const upsertHuntSightings = async (context: AuthContext, hunt: BasicStoreEntityHunt, run: BasicStoreEntityHuntRun): Promise<HuntSightingsOutcome> => {
-  const outcome: HuntSightingsOutcome = { ids: [], created: 0, updated: 0 };
-  if (run.hunt_run_status !== HUNT_RUN_STATUS_COMPLETED || !run.security_platform_id || (run.hits_count ?? 0) <= 0) {
-    return outcome;
-  }
-  const platform = await internalLoadById<BasicStoreEntity>(context, HUNT_MANAGER_USER, run.security_platform_id);
-  if (!platform) {
-    return outcome;
-  }
+const keepHuntSightings = async (
+  context: AuthContext,
+  hunt: BasicStoreEntityHunt,
+  run: BasicStoreEntityHuntRun,
+  platform: BasicStoreEntity,
+  outcome: HuntSightingsOutcome,
+): Promise<HuntSightingsOutcome> => {
   const targets = await resolveHuntSightingTargets(context, hunt, run);
   const identified = run.hits_identified === true;
   for (let index = 0; index < targets.length; index += 1) {
@@ -194,4 +190,22 @@ export const upsertHuntSightings = async (context: AuthContext, hunt: BasicStore
   }
   logApp.debug('[OPENCTI-MODULE] Hunt sightings kept', { huntId: hunt.internal_id, runId: run.internal_id, created: outcome.created, updated: outcome.updated });
   return outcome;
+};
+
+/**
+ * One sighting per hunt, sighted object and security platform, kept by the platform: a completed run with hits creates it
+ * or updates it in place (count, first and last seen, the run that updated it last), never a sighting per run. Runs a
+ * second time over the same run give the same sightings. The runs of a hunt on a platform keep its sightings one at a
+ * time, so two runs finalized together never both create one. Returns the sightings of the run.
+ */
+export const upsertHuntSightings = async (context: AuthContext, hunt: BasicStoreEntityHunt, run: BasicStoreEntityHuntRun): Promise<HuntSightingsOutcome> => {
+  const outcome: HuntSightingsOutcome = { ids: [], created: 0, updated: 0 };
+  if (run.hunt_run_status !== HUNT_RUN_STATUS_COMPLETED || !run.security_platform_id || (run.hits_count ?? 0) <= 0) {
+    return outcome;
+  }
+  const platform = await internalLoadById<BasicStoreEntity>(context, HUNT_MANAGER_USER, run.security_platform_id);
+  if (!platform) {
+    return outcome;
+  }
+  return withHuntLock(`${HUNT_SIGHTINGS_LOCK}_${hunt.internal_id}_${platform.internal_id}`, () => keepHuntSightings(context, hunt, run, platform, outcome));
 };

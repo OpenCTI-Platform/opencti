@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { huntHitKey, sanitizeHitKeys, sanitizeHits } from '../../../../src/modules/hunt/hunt-utils';
+import { huntHitKey, identifyingHitKeys, sanitizeHitKeys, sanitizeHits } from '../../../../src/modules/hunt/hunt-utils';
 import { classifyHuntHits } from '../../../../src/modules/hunt/huntHitRecord/huntHitRecord-domain';
 import { computeHuntRunWindow, huntIocKeysByHit, huntRunNewHits } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
 import { nextHuntSightingCount } from '../../../../src/modules/hunt/hunt-sightings';
@@ -46,6 +46,22 @@ describe('Hit key shared with the connectors SDK', () => {
     expect(sanitizeHitKeys(undefined)).toBeNull();
     expect(sanitizeHitKeys([key, key.toUpperCase(), ` ${key} `, 'not a key', 42, 'b'.repeat(64)], 10)).toEqual([key, 'b'.repeat(64)]);
     expect(sanitizeHitKeys([key, 'b'.repeat(64)], 1)).toEqual([key]);
+  });
+
+  it('should use the reported keys only when they identify the hits of the report', () => {
+    const [first, second, third] = ['a', 'b', 'c'].map((digit) => digit.repeat(64));
+    // Fewer keys than hits: hits of one detection share a key, and the keys stop at the maximum results
+    expect(identifyingHitKeys([first, second, first.toUpperCase()], { hitsCount: 28, sampledKeys: [first] })).toEqual([first, second]);
+    expect(identifyingHitKeys([first, second, third], { hitsCount: 5000 }, 2)).toEqual([first, second]);
+    expect(identifyingHitKeys([], { hitsCount: 0 })).toEqual([]);
+    // No list, no key for a report with hits, an entry that is not a key, a sampled hit missing from the list
+    expect(identifyingHitKeys(undefined, { hitsCount: 3 })).toBeNull();
+    expect(identifyingHitKeys([], { hitsCount: 28 })).toBeNull();
+    expect(identifyingHitKeys([first, 'not a key'], { hitsCount: 2 })).toBeNull();
+    expect(identifyingHitKeys([first, 42], { hitsCount: 2 })).toBeNull();
+    expect(identifyingHitKeys([first], { hitsCount: 2, sampledKeys: [first, second] })).toBeNull();
+    // An indicator hunt reports the keys of each value
+    expect(identifyingHitKeys([], { hitsCount: 2, extraKeys: [first, second], sampledKeys: [second] })).toEqual([first, second]);
   });
 });
 

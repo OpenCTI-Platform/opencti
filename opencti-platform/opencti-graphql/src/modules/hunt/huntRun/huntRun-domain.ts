@@ -65,6 +65,7 @@ import {
   HUNT_DEFAULT_TIME_WINDOW_HOURS,
   huntRunRestrictions,
   huntHitDates,
+  identifyingHitKeys,
   markMatchedEvidence,
   mergeEvidence,
   mergeHits,
@@ -1114,23 +1115,25 @@ export const huntIocKeysByHit = (iocResults: ReadonlyArray<{ key?: string | null
 /**
  * New and recurring hits of a completed run, from the hit keys its connector reports, matched against the hits already
  * known for the hunt on the platform of the run (which then knows them too). A connector that reports no key (an older
- * one, or a lookup that returns counts) makes every hit new, and so does a ledger that cannot be read: the run says so
- * with hits_identified.
+ * one, or a lookup that returns counts) or keys that do not identify the hits of the run makes every hit new, and so
+ * does a ledger that cannot be read: the run says so with hits_identified.
  */
 const recordReportedHits = async (
   context: AuthContext,
   run: BasicStoreEntityHuntRun,
   input: Pick<HuntRunReportInput, 'hit_keys' | 'ioc_results'>,
-  hitsCount: number,
+  hits: { count: number; sampledKeys: ReadonlyArray<string | null | undefined> },
   reportedAt: string,
 ) => {
-  const unidentified = { hits_identified: false, hits_new_count: hitsCount, hits_recurring_count: 0 };
-  const reportedKeys = sanitizeHitKeys(input.hit_keys);
-  if (reportedKeys === null) {
+  const unidentified = { hits_identified: false, hits_new_count: hits.count, hits_recurring_count: 0 };
+  const iocKeysByHit = huntIocKeysByHit(input.ioc_results as never);
+  const keys = identifyingHitKeys(input.hit_keys, { hitsCount: hits.count, sampledKeys: hits.sampledKeys, extraKeys: [...iocKeysByHit.keys()] });
+  if (keys === null) {
+    if (Array.isArray(input.hit_keys)) {
+      logApp.warn('[OPENCTI-MODULE] Hunt hit keys do not identify the hits of the run, every hit counts as new', { runId: run.internal_id, hitsCount: hits.count });
+    }
     return unidentified;
   }
-  const iocKeysByHit = huntIocKeysByHit(input.ioc_results as never);
-  const keys = Array.from(new Set([...reportedKeys, ...iocKeysByHit.keys()])).slice(0, HUNT_CONFIG.maxResultsPerRun);
   try {
     const { newCount, recurringCount } = await recordHuntHits(context, {
       huntId: run.hunt_id,
@@ -1209,7 +1212,8 @@ const applyHuntRunReport = async (context: AuthContext, run: BasicStoreEntityHun
       }
       // Results are complete only when the connector says so: a report that omits it leaves the state unknown
       patch.results_truncated = input.truncated === true || resultIds.length > HUNT_RUN_RESULT_IDS_MAX ? true : (input.truncated ?? null);
-      Object.assign(patch, await recordReportedHits(context, run, input, patch.hits_count as number, reportedAt));
+      const sampledKeys = hitsSample.map((hit) => hit.hit_key);
+      Object.assign(patch, await recordReportedHits(context, run, input, { count: patch.hits_count as number, sampledKeys }, reportedAt));
     }
     if (typeof input.cost_ms === 'number') {
       patch.cost_ms = Math.max(0, Math.round(input.cost_ms));
@@ -1387,10 +1391,10 @@ export const addHuntRunEvidence = async (context: AuthContext, user: AuthUser, r
     const automaticVerdict = outcomeChanges && current.verdict_source === HUNT_VERDICT_SOURCE_AUTO;
     const resultIds = Array.from(new Set([...(current.result_ids ?? []), ...results.map((result) => result.standard_id)]));
     const hitsSample = mergeHits(current.hits_sample ?? [], sanitizeHits(input.hits_sample));
-    // Evidence with hit keys tells its new hits from the known ones; without keys, its hits count as new
+    // Evidence with hit keys tells its new hits from the known ones; without keys identifying them, its hits count as new
     let addedNew = addedHits;
     let addedRecurring = 0;
-    const evidenceKeys = sanitizeHitKeys(input.hit_keys);
+    const evidenceKeys = identifyingHitKeys(input.hit_keys, { hitsCount: addedHits, sampledKeys: sanitizeHits(input.hits_sample).map((hit) => hit.hit_key) });
     if (evidenceKeys && evidenceKeys.length > 0 && current.hunt_run_mode === HUNT_RUN_MODE_EXECUTE) {
       try {
         const matched = await recordHuntHits(context, {

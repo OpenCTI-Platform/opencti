@@ -221,6 +221,36 @@ export const sanitizeHitKeys = (keys: unknown, maxItems = HUNT_CONFIG.maxResults
 };
 
 /**
+ * The hit keys of a report when they identify its hits, null when they cannot: no list, an entry that is not a hit key,
+ * no key for a report with hits, or a sampled hit whose key is not listed. A connector reports one key per hit it read,
+ * distinct and bounded by the maximum results, so fewer keys than hits is expected (hits of one detection, truncated
+ * results); a sampled hit is one of the hits read, so its key is always listed. `extraKeys` are the keys an indicator
+ * hunt reports per value.
+ */
+export const identifyingHitKeys = (
+  keys: unknown,
+  report: { hitsCount: number; sampledKeys?: ReadonlyArray<string | null | undefined>; extraKeys?: ReadonlyArray<string> },
+  maxItems = HUNT_CONFIG.maxResultsPerRun,
+): string[] | null => {
+  if (!Array.isArray(keys)) {
+    return null;
+  }
+  const normalized = keys.map((key) => (typeof key === 'string' ? key.trim().toLowerCase() : ''));
+  if (normalized.some((key) => !HIT_KEY_PATTERN.test(key))) {
+    return null;
+  }
+  const distinct = Array.from(new Set([...normalized, ...(report.extraKeys ?? [])]));
+  if (report.hitsCount > 0 && distinct.length === 0) {
+    return null;
+  }
+  const listed = new Set(distinct);
+  if ((report.sampledKeys ?? []).some((key) => !!key && !listed.has(key))) {
+    return null;
+  }
+  return distinct.slice(0, maxItems);
+};
+
+/**
  * One evidence item per hit, as the platform stores it: when, where, who, the process and the fields the hunt logic
  * matched, so that a single hit can be read next to the per-field aggregation of the evidence sample. Matched values
  * get the treatment of the evidence sample (hashed again, previews masked and truncated); a preview is complete when
