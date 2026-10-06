@@ -74,7 +74,7 @@ Values come from `config.yml` (see `config.yml.sample`), environment variables w
 |---|---|---|---|
 | `opencti.url` | `OPENCTI_URL` | (required) | URL of the OpenCTI platform |
 | `opencti.token` | `OPENCTI_TOKEN` | (required) | API token of the service account |
-| `opencti.ssl_verify` | `OPENCTI_SSL_VERIFY` | `false` | Verify the platform certificate |
+| `opencti.ssl_verify` | `OPENCTI_SSL_VERIFY` | `true` | Verify the platform certificate (set `false` only for a self-signed certificate: the token sent has Bypass privileges) |
 | `opencti.json_logging` | `OPENCTI_JSON_LOGGING` | `true` | Log in JSON |
 | `opencti.requests_timeout` | `OPENCTI_REQUESTS_TIMEOUT` | `300` | API request timeout, in seconds |
 | `opencti.custom_headers` | `OPENCTI_CUSTOM_HEADERS` | | Extra HTTP headers (`name:value;name:value`) |

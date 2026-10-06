@@ -32,7 +32,8 @@ MAX_UPSERT_CLUSTERS = 1000
 class Settings:  # pylint: disable=too-many-instance-attributes
     opencti_url: str = ""
     opencti_token: str = ""
-    opencti_ssl_verify: bool = False
+    # The token sent has Bypass privileges: verified unless the operator opts out
+    opencti_ssl_verify: bool = True
     opencti_json_logging: bool = True
     opencti_requests_timeout: int = 300
     opencti_custom_headers: Optional[str] = None

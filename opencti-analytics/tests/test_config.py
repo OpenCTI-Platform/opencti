@@ -43,6 +43,14 @@ class TestDefaults:
         assert settings.engine == "auto"
         assert settings.telemetry_enabled is False
         assert settings.run_interval_seconds == 86400.0
+        # The token sent has Bypass privileges: the certificate is verified by default
+        assert settings.opencti_ssl_verify is True
+
+    def test_certificate_verification_opt_out(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("OPENCTI_SSL_VERIFY", "false")
+        assert load_settings(base_config()).opencti_ssl_verify is False
 
 
 class TestPrecedence:
