@@ -199,6 +199,13 @@ def test_list_maps_the_filters_and_iterates_pages(local_api_client):
     assert local_api_client.query.call_args_list[1][0][1]["after"] == "cursor-1"
 
 
+def test_default_properties_tell_an_open_window_from_a_point_event(local_api_client):
+    # Neither has an end time: only open_ended tells an active deployment or a running hunt from a point event
+    properties = local_api_client.timeline_event.properties.split()
+    assert "event_end_time" in properties
+    assert "open_ended" in properties
+
+
 def test_list_requires_a_container(local_api_client):
     assert local_api_client.timeline_event.list() is None
     local_api_client.query.assert_not_called()
