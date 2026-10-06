@@ -150,30 +150,36 @@ export const createKnowledgeDecayRule = async (context: AuthContext, user: AuthU
 
 export const fieldPatchDecayRule = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
   const finalInput = [...input];
-  const decayRule = await findById(context, user, id);
-  if (!decayRule) {
+  const storedRule = await findById(context, user, id);
+  if (!storedRule) {
     throw FunctionalError(`Decay rule ${id} cannot be found`);
   }
-  const mustClearFreshnessFlags = checkDecayRulePatch(decayRule, finalInput);
-  if (mustClearFreshnessFlags) {
-    finalInput.push({ key: ATTRIBUTE_FRESHNESS_CONFIGURED_AT, value: [now()] });
-  }
-
-  const decayPointsInput = finalInput.find((editInput) => editInput.key === 'decay_points');
-  if (decayPointsInput) {
-    decayPointsInput.value.sort().reverse();
-
-    // cannot use array.filter on a read-only array.
-    for (let i = decayPointsInput.value.length - 1; i >= 0; i -= 1) {
-      if (decayPointsInput.value[i] < 0) {
-        decayPointsInput.value.splice(i, 1);
-      }
-    }
-  }
-
-  const lock = isKnowledgeDecayRule(decayRule) ? await lockResources([knowledgeDecayRuleLockKey(id)]) : undefined;
+  // The scope of a rule cannot be edited: the rule read before the lock tells whether the edition takes it
+  const lock = isKnowledgeDecayRule(storedRule) ? await lockResources([knowledgeDecayRuleLockKey(id)]) : undefined;
   let element: StoreEntityDecayRule;
   try {
+    // Validated against the rule the update modifies, never against a version a concurrent edition changed
+    const decayRule = lock ? await findById(context, user, id) : storedRule;
+    if (!decayRule) {
+      throw FunctionalError(`Decay rule ${id} cannot be found`);
+    }
+    const mustClearFreshnessFlags = checkDecayRulePatch(decayRule, finalInput);
+    if (mustClearFreshnessFlags) {
+      finalInput.push({ key: ATTRIBUTE_FRESHNESS_CONFIGURED_AT, value: [now()] });
+    }
+
+    const decayPointsInput = finalInput.find((editInput) => editInput.key === 'decay_points');
+    if (decayPointsInput) {
+      decayPointsInput.value.sort().reverse();
+
+      // cannot use array.filter on a read-only array.
+      for (let i = decayPointsInput.value.length - 1; i >= 0; i -= 1) {
+        if (decayPointsInput.value[i] < 0) {
+          decayPointsInput.value.splice(i, 1);
+        }
+      }
+    }
+
     ({ element } = await updateAttribute<StoreEntityDecayRule>(context, user, id, ENTITY_TYPE_DECAY_RULE, finalInput));
     if (mustClearFreshnessFlags) {
       // Knowledge flagged under the previous configuration is evaluated again by the freshness manager

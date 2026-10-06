@@ -21,7 +21,8 @@ import { PROVENANCE_SIDE_CHANNEL_FIELDS, SOURCE_KIND_FEED, type StoreAssertion, 
 import { buildProvenanceScriptParams, PROVENANCE_UPDATE_SCRIPT, writeProvenanceUpdate } from '../../../../src/modules/provenance/provenance-write';
 import type { BasicStoreBase } from '../../../../src/types/store';
 import { checkRetentionRule } from '../../../../src/modules/retentionRules/retentionRules-domain';
-import { RetentionRuleScope, RetentionUnit } from '../../../../src/generated/graphql';
+import { EditOperation, RetentionRuleScope, RetentionUnit } from '../../../../src/generated/graphql';
+import { fieldPatchDecayRule } from '../../../../src/modules/decayRule/decayRule-domain';
 
 const MALWARE_NAME = 'Provenance malware';
 
@@ -552,6 +553,30 @@ describe('Provenance: every fact knows who said it', () => {
       { query: DECAY_RULE_PATCH, variables: { id, input: [{ key: 'stale_after_days', value: ['1'] }] } },
       `Built-in knowledge decay rule ${id} can only be activated or deactivated`,
     );
+  });
+
+  it('should validate concurrent editions of a knowledge decay rule against the rule each one modifies', async () => {
+    const created = await queryAsAdminWithSuccess({
+      query: KNOWLEDGE_RULE_ADD,
+      variables: {
+        input: { name: 'Concurrent editions for tests', order: 10, active: false, target_scope: 'entity', target_types: ['Malware', 'Tool'], freshness_policy: 'flag', stale_after_days: 30 },
+      },
+    });
+    const id = created.data?.knowledgeDecayRuleAdd.id;
+    try {
+      // Each removal leaves a valid rule on its own, both together would leave a rule that targets nothing
+      const removals = await Promise.allSettled(['Malware', 'Tool'].map((type) => fieldPatchDecayRule(testContext, ADMIN_USER, id, [
+        { key: 'target_types', value: [type], operation: EditOperation.Remove },
+      ])));
+      expect(removals.filter((removal) => removal.status === 'fulfilled')).toHaveLength(1);
+      const rejected = removals.filter((removal): removal is PromiseRejectedResult => removal.status === 'rejected');
+      expect(rejected).toHaveLength(1);
+      expect(rejected[0].reason.message).toEqual('An entity knowledge decay rule must target at least one entity type');
+      const stored = await internalLoadById<BasicStoreBase & { target_types: string[] }>(testContext, ADMIN_USER, id);
+      expect(stored.target_types).toHaveLength(1);
+    } finally {
+      await queryAsAdminWithSuccess({ query: DECAY_RULE_DELETE, variables: { id } });
+    }
   });
 
   it('should keep the provenance entity settings to the customization capability', async () => {
