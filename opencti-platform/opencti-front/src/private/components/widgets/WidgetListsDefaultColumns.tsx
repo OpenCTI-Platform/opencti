@@ -45,7 +45,7 @@ const fintelTemplateDefaultWidgetColumns = {
 
 // Pseudo-column of fintel entity lists, rendered as a link to the entity page in the platform.
 export const FINTEL_ENTITY_LINK_ATTRIBUTE = 'entity_link';
-export const fintelEntityLinkColumn: WidgetColumn = { attribute: FINTEL_ENTITY_LINK_ATTRIBUTE, label: 'Link to entity' };
+export const fintelEntityLinkColumn: WidgetColumn = { attribute: FINTEL_ENTITY_LINK_ATTRIBUTE, label: 'OpenCTI entity link' };
 
 const availableWidgetColumns: Record<string, WidgetColumn[]> = {
   relationships: [

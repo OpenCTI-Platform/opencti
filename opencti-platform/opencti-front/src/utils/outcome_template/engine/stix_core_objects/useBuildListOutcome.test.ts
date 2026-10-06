@@ -4,6 +4,7 @@ import { fetchQuery } from 'react-relay';
 import { createMockUserContext, testRenderHook } from '../../../tests/test-render';
 import useBuildListOutcome, { resolvePlatformBaseUrl } from './useBuildListOutcome';
 import * as env from '../../../../relay/environment';
+import { APP_BASE_PATH } from '../../../../relay/environment';
 import * as filterUtils from '../../../filters/filtersUtils';
 
 /**
@@ -121,11 +122,11 @@ describe('Hook: useBuildListOutcome', () => {
     const listOutcome = await buildListOutcome({
       columns: [
         { attribute: 'representative.main', label: 'Name' },
-        { attribute: 'entity_link', label: 'Link to entity' },
+        { attribute: 'entity_link', label: 'OpenCTI entity link' },
       ],
     }, 'entities');
 
-    expect(listOutcome).toContain('<th>Link to entity</th>');
+    expect(listOutcome).toContain('<th>OpenCTI entity link</th>');
     expect(listOutcome).toContain('<tr><td>Vador</td><td><a href="https://opencti.example.com/dashboard/id/sco1">View in OpenCTI</a></td></tr>');
   });
 });
@@ -136,8 +137,8 @@ describe('Function: resolvePlatformBaseUrl', () => {
   });
 
   it('should fall back on the current location if the platform URL is missing or relative', () => {
-    expect(resolvePlatformBaseUrl(undefined)).toEqual(window.location.origin);
-    expect(resolvePlatformBaseUrl('')).toEqual(window.location.origin);
-    expect(resolvePlatformBaseUrl('/base')).toEqual(window.location.origin);
+    expect(resolvePlatformBaseUrl(undefined)).toEqual(`${window.location.origin}${APP_BASE_PATH}`);
+    expect(resolvePlatformBaseUrl('')).toEqual(`${window.location.origin}${APP_BASE_PATH}`);
+    expect(resolvePlatformBaseUrl('/base')).toEqual(`${window.location.origin}${APP_BASE_PATH}`);
   });
 });
