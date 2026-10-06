@@ -23,6 +23,7 @@ import {
   isFilterGroupNotEmpty,
   serializeFilterGroupForBackend,
   stixFilters,
+  useAvailableFilterKeysForEntityTypes,
   useFilterDefinition,
 } from '../../../../utils/filters/filtersUtils';
 import { dayStartDate, formatTimeForToday, parse } from '../../../../utils/Time';
@@ -32,6 +33,7 @@ import { TriggerEditionOverview_trigger$key } from './__generated__/TriggerEditi
 import { TriggerEventType } from './__generated__/TriggerLiveCreationKnowledgeMutation.graphql';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
 import TriggersField from './TriggersField';
+import { CHANGE_DIGEST_ENTITY_TYPES } from './TriggerChangeDigestCreation';
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { hasPayloadErrors } from '../../common/time_machine/timeMachineMutations';
@@ -80,6 +82,9 @@ interface TriggerEditionOverviewProps {
   paginationOptions?: TriggersLinesPaginationQuery$variables;
 }
 
+// The entity types a change digest was created with from a saved filter, kept until one type is picked
+const SCOPE_ENTITY_TYPES_KEPT = 'auto';
+
 interface TriggerEditionFormValues {
   name: string;
   description: string | null;
@@ -93,6 +98,7 @@ interface TriggerEditionFormValues {
   }[];
   trigger_ids: { value: string }[];
   period: string;
+  scope_entity_type: string;
 }
 
 const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = ({ data, handleClose, paginationOptions }) => {
@@ -108,6 +114,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
   const [instanceTriggerFilters, instanceTriggerFiltersHelpers] = useFiltersState(deserializeFilterGroupForFrontend(trigger.filters)
     ?? defaultInstanceTriggerFilters, defaultInstanceTriggerFilters);
   const [instanceTrigger, setInstanceTrigger] = useState<boolean>(trigger.instance_trigger ?? false);
+  const changeDigestFilterKeys = useAvailableFilterKeysForEntityTypes(['Stix-Domain-Object']);
   const eventTypesOptions: { value: TriggerEventType; label: string }[] = [
     { value: 'create', label: t_i18n('Creation') },
     { value: 'update', label: t_i18n('Modification') },
@@ -317,8 +324,25 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
     dayStartDate().toISOString(),
   ];
 
+  // The scope of a change digest is stored with its entity types: one type of the creation form, or the types of
+  // the list of the saved filter it was created from, kept until another type is picked
+  const scopeEntityTypes = trigger.scope_entity_types ?? [];
+  const initialScopeEntityType = scopeEntityTypes.length === 1 && CHANGE_DIGEST_ENTITY_TYPES.includes(scopeEntityTypes[0])
+    ? scopeEntityTypes[0]
+    : SCOPE_ENTITY_TYPES_KEPT;
+  const handleSubmitScopeEntityType = (_: string, value: string) => {
+    if (value === SCOPE_ENTITY_TYPES_KEPT) return;
+    commitFieldPatch({
+      variables: {
+        id: trigger.id,
+        input: { key: 'scope_entity_types', value: [value] },
+      },
+    });
+  };
+
   const initialValues = {
     name: trigger.name,
+    scope_entity_type: initialScopeEntityType,
     instance_trigger: trigger.instance_trigger ?? false,
     description: trigger.description,
     event_types: convertEventTypes(trigger),
@@ -478,14 +502,32 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
           {trigger.trigger_type === 'change_digest' && (
             <Box sx={{ marginTop: '20px' }} data-testid="change-digest-scope">
               <Text variant="title-md" style={{ marginBottom: 8 }}>{t_i18n('Filter set of the change digest')}</Text>
-              <Text variant="content-compact" style={{ marginBottom: 8 }}>
-                {t_i18n('Entity types')}: {(trigger.scope_entity_types ?? ['Stix-Domain-Object']).map((type) => t_i18n(`entity_${type}`)).join(', ')}
-              </Text>
-              {isFilterGroupNotEmpty(filters) ? (
-                <FilterIconButton filters={filters} redirection entityTypes={['Stix-Domain-Object']} />
-              ) : (
-                <Text variant="content-compact" style={{ color: 'var(--text-default-secondary)' }}>{t_i18n('No filters')}</Text>
-              )}
+              <Field
+                component={SelectFieldFds}
+                variant="outlined"
+                name="scope_entity_type"
+                label={t_i18n('Entity types')}
+                helpertext={values.scope_entity_type === SCOPE_ENTITY_TYPES_KEPT
+                  ? t_i18n('With "Entity types of the scope", the digest compares the entity types of the list of the saved filter.')
+                  : t_i18n('Only the entities of this type are compared.')}
+                fullWidth={true}
+                containerstyle={fieldSpacingContainerStyle}
+                onChange={handleSubmitScopeEntityType}
+              >
+                {initialScopeEntityType === SCOPE_ENTITY_TYPES_KEPT && (
+                  <SelectItem value={SCOPE_ENTITY_TYPES_KEPT}>{t_i18n('Entity types of the scope')}</SelectItem>
+                )}
+                {CHANGE_DIGEST_ENTITY_TYPES.map((type) => (
+                  <SelectItem key={type} value={type}>{t_i18n(`entity_${type}`)}</SelectItem>
+                ))}
+              </Field>
+              <Box sx={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: theme.spacing(1), marginBottom: theme.spacing(1) }}>
+                <Filters availableFilterKeys={changeDigestFilterKeys} helpers={helpers} searchContext={{ entityTypes: ['Stix-Domain-Object'] }} />
+                {!isFilterGroupNotEmpty(filters) && (
+                  <Text variant="content-compact" style={{ color: 'var(--text-default-secondary)' }}>{t_i18n('No filters')}</Text>
+                )}
+              </Box>
+              <FilterIconButton filters={filters} helpers={helpers} redirection searchContext={{ entityTypes: ['Stix-Domain-Object'] }} entityTypes={['Stix-Domain-Object']} />
             </Box>
           )}
           {trigger.trigger_type === 'live' && (
