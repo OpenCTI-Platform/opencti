@@ -599,6 +599,8 @@ export const runScheduledHunts = async (context: AuthContext, budget: HuntTickBu
 /**
  * PIR activation: a hunt with PIR activation is armed while one of its targets is flagged by a PIR. Arming runs the hunt
  * once; while armed its schedule and standing triggers apply, disarmed it waits. The hunt status stays the analyst's.
+ * Disarming drops the standing trigger the hunt still holds, as the occurrences of a cron hunt that fall while it is
+ * disarmed are dropped: once armed again, the arming run covers its time window.
  */
 export const reconcilePirActivatedHunts = async (context: AuthContext, budget: HuntTickBudget = newHuntTickBudget()): Promise<number> => {
   let started = 0;
@@ -613,7 +615,8 @@ export const reconcilePirActivatedHunts = async (context: AuthContext, budget: H
       const hunt = hunts[index];
       const armed = (hunt[RELATION_HUNT_TARGETS] ?? []).some((targetId) => flagged.has(targetId));
       if (!armed && hunt.hunt_pir_armed === true) {
-        await updateHuntRunInformation(context, hunt.internal_id, { hunt_pir_armed: false, hunt_pir_armed_at: null });
+        const pendingTrigger = hunt.hunt_schedule === HUNT_SCHEDULE_STANDING ? { next_run_at: null } : {};
+        await updateHuntRunInformation(context, hunt.internal_id, { hunt_pir_armed: false, hunt_pir_armed_at: null, ...pendingTrigger });
         logApp.info('[OPENCTI-MODULE] Hunt disarmed by its PIR targets', { huntId: hunt.internal_id });
       } else if (armed && hunt.hunt_pir_armed !== true && budget.remaining > 0) {
         // Armed once its arming run started: a run the tick budget or a missing connector refused is tried at the next tick

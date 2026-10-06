@@ -201,13 +201,16 @@ describe('Hunt manager', () => {
       // Still flagged: no new run
       await reconcilePirActivatedHunts(testContext);
       expect((await listHuntRuns(huntId)).filter((run) => run.hunt_run_trigger === HUNT_RUN_TRIGGER_PIR)).toHaveLength(1);
+      // A standing trigger still pending when the hunt is disarmed is dropped, not served once the hunt is armed again
+      await patchAttribute(testContext, ADMIN_USER, huntId, ENTITY_TYPE_HUNT, { hunt_schedule: 'standing', next_run_at: hoursAgo(1) });
       await pirUnflagElement(testContext, ADMIN_USER, pir.standard_id, flag);
       await reconcilePirActivatedHunts(testContext);
       const disarmed = await loadHunt(huntId);
       expect(disarmed.hunt_pir_armed).toBe(false);
       expect(disarmed.hunt_status).toEqual('active');
+      expect(disarmed.next_run_at ?? null).toBeNull();
     } finally {
-      await patchAttribute(testContext, ADMIN_USER, huntId, ENTITY_TYPE_HUNT, { hunt_pir_activation: false });
+      await patchAttribute(testContext, ADMIN_USER, huntId, ENTITY_TYPE_HUNT, { hunt_pir_activation: false, hunt_schedule: 'manual', next_run_at: null });
       await deletePir(testContext, ADMIN_USER, pir.id);
     }
   });
