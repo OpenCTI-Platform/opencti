@@ -80,6 +80,7 @@ test('Dissemination assurance', { tag: ['@disseminationAssurance', '@mutation'] 
 // The screenshots of the user documentation (docs/docs/usage/assets/dissemination-assurance-<surface>.png)
 // are the captures of the test below, taken at the documented size and kept with the test results.
 const capture = async (page: Page, testInfo: TestInfo, name: string) => {
+  await expect(page.getByPlaceholder('Search the platform...')).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath(`dissemination-assurance-${name}.png`) });
 };
 
