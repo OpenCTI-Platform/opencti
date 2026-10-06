@@ -16,6 +16,7 @@ import {
   IOC_VALIDATION_MAX_INDICATORS,
   IOC_VALIDATION_MAX_PLATFORMS,
   type IocValidationTestKind,
+  selectedValidationConnectorId,
   TEST_KINDS,
   toggleTestKind,
 } from './disseminationAssuranceUtils';
@@ -93,9 +94,11 @@ const ConnectorSelection = ({ connectorId, onChange }: { connectorId: string | n
   );
   const connectors = iocValidationConnectors ?? [];
   const activeConnectors = connectors.filter((connector) => connector.active);
+  const activeConnectorIds = activeConnectors.map((connector) => connector.id);
   useEffect(() => {
-    if (!connectorId && activeConnectors.length > 0) onChange(activeConnectors[0].id);
-  }, [connectorId, activeConnectors.length]);
+    const selected = selectedValidationConnectorId(connectorId, activeConnectorIds);
+    if (selected !== connectorId) onChange(selected);
+  }, [connectorId, activeConnectorIds.join(',')]);
   if (activeConnectors.length === 0) {
     const settingsPath = connectors.length > 0 ? `/dashboard/integrations/connectors/${connectors[0].id}` : '/dashboard/integrations';
     return (

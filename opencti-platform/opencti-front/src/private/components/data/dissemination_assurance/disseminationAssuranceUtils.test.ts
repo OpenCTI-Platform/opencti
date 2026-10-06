@@ -19,6 +19,7 @@ import {
   periodStartDate,
   REQUEST_STATUS_SEVERITIES,
   SAVED_LISTS,
+  selectedValidationConnectorId,
   selectValidationCandidates,
   sumStatuses,
   TEST_KINDS,
@@ -216,6 +217,23 @@ describe('KPI strip', () => {
     expect(buildKpiFilters('active')?.filters[0].values).toEqual(['active']);
     expect(buildKpiFilters('validated')?.filters).toEqual([{ key: 'validation_status', values: ['detected', 'prevented'], operator: 'eq', mode: 'or' }, reported]);
     expect(buildKpiFilters('missed')?.filters).toEqual([{ key: 'validation_status', values: ['missed'], operator: 'eq', mode: 'or' }, reported]);
+  });
+});
+
+describe('IOC validation connector selection', () => {
+  it('should keep the selected connector while it is active', () => {
+    expect(selectedValidationConnectorId('b', ['a', 'b'])).toEqual('b');
+  });
+
+  it('should move to the first active connector when the selected one stopped, or when none is selected', () => {
+    expect(selectedValidationConnectorId('b', ['a', 'c'])).toEqual('a');
+    expect(selectedValidationConnectorId('b', ['c'])).toEqual('c');
+    expect(selectedValidationConnectorId(null, ['a', 'c'])).toEqual('a');
+  });
+
+  it('should select nothing when no connector is active', () => {
+    expect(selectedValidationConnectorId('b', [])).toBeNull();
+    expect(selectedValidationConnectorId(null, [])).toBeNull();
   });
 });
 

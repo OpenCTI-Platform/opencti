@@ -126,6 +126,18 @@ export const toggleTestKind = (selected: IocValidationTestKind[], kind: IocValid
   return TEST_KINDS.map((definition) => definition.kind).filter((k) => k === kind || selected.includes(k));
 };
 
+/**
+ * The connector a validation request goes to: the selected one while it is active, otherwise the first active one, or
+ * none. A request sent to a stopped connector would stay pending, and with a single active connector the selector is
+ * hidden, so the selection follows every change of the active connectors.
+ */
+export const selectedValidationConnectorId = (selectedId: string | null, activeConnectorIds: string[]) => {
+  if (selectedId && activeConnectorIds.includes(selectedId)) {
+    return selectedId;
+  }
+  return activeConnectorIds[0] ?? null;
+};
+
 /** Links coming from OpenAEV are rendered only when they are plain web links (no javascript: or data: URI). */
 export const isHttpUrl = (value: string | null | undefined) => {
   if (!value) return false;
