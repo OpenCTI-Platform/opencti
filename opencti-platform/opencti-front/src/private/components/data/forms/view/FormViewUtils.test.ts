@@ -429,5 +429,9 @@ describe('computeDraftPolicy', () => {
     expect(computeDraftPolicy({
       authorizedMembers: { enabled: true, isEditable: false, isRequired: true, defaults: [] },
     }, true).authorizedMembers.validationRequired).toBe(false);
+    // Unlike validationRequired, required reflects schema config and does not depend on bypass.
+    expect(computeDraftPolicy({
+      authorizedMembers: { enabled: true, isEditable: false, isRequired: true, defaults: [] },
+    }, true).authorizedMembers.required).toBe(true);
   });
 });

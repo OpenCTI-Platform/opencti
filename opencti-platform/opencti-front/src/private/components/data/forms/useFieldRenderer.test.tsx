@@ -175,6 +175,34 @@ describe('useFieldRenderer', () => {
     expect(screen.getAllByRole('option')).toHaveLength(1);
   });
 
+  it('ignores a spurious empty onValueChange from the Field Type select instead of resetting the type', () => {
+    // Regression test for a real bug: the underlying Select can fire onValueChange('') when its
+    // value and options list change together in the same render (e.g. right after the attribute
+    // select auto-assigns a forced type), which used to silently wipe out the just-set type.
+    const handleFieldChange = vi.fn();
+    const field = createField({
+      type: 'openvocab',
+      attributeMapping: { entity: 'main_entity', attributeName: 'priority' },
+    });
+    renderField(field, createFormData({ fields: [field] }), { handleFieldChange });
+
+    const fieldTypeSelect = screen.getAllByRole('combobox')[1];
+    const fiberKey = Object.keys(fieldTypeSelect).find((key) => key.startsWith('__reactFiber$'));
+    expect(fiberKey).toBeDefined();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let fiber: any = (fieldTypeSelect as any)[fiberKey as string];
+    let onValueChange: ((value: string) => void) | undefined;
+    for (let i = 0; i < 20 && fiber && !onValueChange; i += 1) {
+      onValueChange = fiber.memoizedProps?.onValueChange;
+      fiber = fiber.return;
+    }
+    expect(onValueChange).toBeInstanceOf(Function);
+
+    (onValueChange as (value: string) => void)('');
+
+    expect(handleFieldChange).not.toHaveBeenCalledWith('fields.0.type', '');
+  });
+
   it('disables move controls at the entity boundaries and calls move handlers otherwise', () => {
     const firstField = createField({ id: 'field-1' });
     const secondField = createField({

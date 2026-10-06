@@ -67,4 +67,36 @@ describe('buildDraftPlan', () => {
       { id: 'org-a', access_right: 'edit', groups_restriction_ids: ['group-analyst'] },
     ]);
   });
+
+  it('does not grant the main entity author access to AUTHOR rules when the admin explicitly set author type to none', () => {
+    const schema: any = {
+      draftDefaults: {
+        author: { type: 'none' },
+        authorizedMembers: { enabled: true, defaults: [{ value: 'AUTHOR', accessRight: 'admin' }] },
+      },
+      fields: [{ name: 'createdBy', type: FormFieldType.CreatedBy }],
+    };
+    const values = { createdBy: { value: 'org-a' } };
+
+    const plan = buildDraftPlan('Test Form', schema, values, nonBypassUser, false);
+
+    expect(plan.draftInput.createdBy).toBeUndefined();
+    expect(plan.draftInput.authorized_members).toBeUndefined();
+  });
+
+  it('does not grant the main entity author access to AUTHOR rules when the submitter explicitly opted out of the draft author', () => {
+    const schema: any = {
+      draftDefaults: {
+        author: { isEditable: true, isRequired: false, type: 'static', defaultValue: 'org-1' },
+        authorizedMembers: { enabled: true, defaults: [{ value: 'AUTHOR', accessRight: 'admin' }] },
+      },
+      fields: [{ name: 'createdBy', type: FormFieldType.CreatedBy }],
+    };
+    const values = { draftAuthor: null, createdBy: { value: 'org-a' } };
+
+    const plan = buildDraftPlan('Test Form', schema, values, nonBypassUser, false);
+
+    expect(plan.draftInput.createdBy).toBeUndefined();
+    expect(plan.draftInput.authorized_members).toBeUndefined();
+  });
 });

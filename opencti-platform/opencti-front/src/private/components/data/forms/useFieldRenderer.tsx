@@ -152,13 +152,14 @@ const useFieldRenderer = ({
             const attributesForType = getAttributesUtil(entityType, fieldType.value, entityTypes, t_i18n);
             return attributesForType.some((attr) => attr.value === field.attributeMapping.attributeName);
           });
+      }
 
-        // Keep the field's current type selectable, even if it came from the fallback below.
-        if (field.type && !availableFieldTypes.some((fieldType) => fieldType.value === field.type)) {
-          const currentFieldType = FIELD_TYPES.find((fieldType) => fieldType.value === field.type);
-          if (currentFieldType) {
-            availableFieldTypes = [...availableFieldTypes, currentFieldType];
-          }
+      // Keep the field's current type selectable, even if it predates this attribute's current
+      // rules (e.g. a field saved with a free-form type before it became a forced-type attribute).
+      if (!specialFieldType && field.type && !availableFieldTypes.some((fieldType) => fieldType.value === field.type)) {
+        const currentFieldType = FIELD_TYPES.find((fieldType) => fieldType.value === field.type);
+        if (currentFieldType) {
+          availableFieldTypes = [...availableFieldTypes, currentFieldType];
         }
       }
     }

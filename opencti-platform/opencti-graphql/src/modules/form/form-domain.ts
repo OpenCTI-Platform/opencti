@@ -454,8 +454,10 @@ export const buildDraftPlan = (
   const canOverrideAuthorizedMembers = isBypass || schema.draftDefaults?.authorizedMembers?.isEditable;
   // AUTHOR-type authorized-member rules ("author's org") must resolve even when the
   // "Draft Author" section itself is left unconfigured, so fall back to the main
-  // entity's author instead of silently dropping the rule.
-  const authorForAuthorizedMembers = createdBy ?? resolveMainEntityAuthorFromValues(schema, values);
+  // entity's author in that case only - not when the admin set type 'none' or the
+  // submitter explicitly opted out, which must keep excluding that org.
+  const authorForAuthorizedMembers = createdBy
+    ?? (!schema.draftDefaults?.author ? resolveMainEntityAuthorFromValues(schema, values) : null);
   let authorized_members: MemberAccessInput[] = [];
   if (canOverrideAuthorizedMembers && Array.isArray(values.draftAuthorizedMembers)) {
     authorized_members = resolveAuthorizedMembersForDraft(user, values.draftAuthorizedMembers, authorForAuthorizedMembers);
@@ -477,12 +479,9 @@ export const buildDraftPlan = (
   return { draftInput };
 };
 
-export interface SubmissionPlan {
-  bundle: any;
-  mainEntityStixId: string | undefined;
-  finalIsDraft: boolean;
-  draftPlan: DraftPlan | null;
-}
+export type SubmissionPlan
+  = | { bundle: any; mainEntityStixId: string | undefined; finalIsDraft: true; draftPlan: DraftPlan }
+    | { bundle: any; mainEntityStixId: string | undefined; finalIsDraft: false; draftPlan: null };
 
 // planSubmission is the decision step: it resolves the submitted form values into the concrete
 // STIX bundle and (when applicable) draft-workspace input that commitSubmission will persist.
@@ -543,7 +542,13 @@ export const planSubmission = async (
     }
   }
 
-  return { bundle, mainEntityStixId, finalIsDraft, draftPlan };
+  if (finalIsDraft) {
+    if (!draftPlan) {
+      throw FunctionalError('Failed to process form submission', { cause: new Error('Missing draft plan for a draft submission') });
+    }
+    return { bundle, mainEntityStixId, finalIsDraft: true, draftPlan };
+  }
+  return { bundle, mainEntityStixId, finalIsDraft: false, draftPlan: null };
 };
 
 export interface SubmissionResult {

@@ -69,7 +69,7 @@ export const computeDraftPolicy = (
     authorizedMembers: {
       visible: !!(authorizedMembers?.enabled && (isBypass || authorizedMembers.isEditable)),
       initialized: !!authorizedMembers?.enabled,
-      required: !isBypass && !!(authorizedMembers?.enabled && authorizedMembers?.isRequired),
+      required: !!(authorizedMembers?.enabled && authorizedMembers?.isRequired),
       validationRequired: !isBypass && !!(authorizedMembers?.enabled && authorizedMembers?.isRequired),
     },
   };
