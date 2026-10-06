@@ -213,7 +213,7 @@ error, never a result already recorded.
 
 To build a dashboard of the dissemination assurance metrics, go to **Dashboards > Custom dashboards**, click
 **Create from template** and choose **Dissemination assurance**. The dashboard shows the deployments by status,
-the validations by outcome, the live deployments and missed validations by security platform, the latest failed
+the validations by outcome (each in the week of its last validation), the live deployments and missed validations by security platform, the latest failed
 deployments, and the indicators that are deployed but never validated, disseminated but not deployed, or expired
 but still deployed (revoked while live, or flagged expired). It is a regular custom dashboard: its widgets can be
 edited, moved and shared.

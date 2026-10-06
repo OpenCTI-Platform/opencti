@@ -31,6 +31,13 @@ describe('dashboard templates', () => {
     expect(live.layout).toMatchObject({ i: live.id, w: 2, h: 2 });
   });
 
+  it('places each validation outcome at the time it was observed', () => {
+    const manifest = decodeManifest(buildDashboardTemplateExport(disseminationAssuranceDashboardTemplate, translate).configuration.manifest);
+    const byOutcome = manifest.widgets['0a10d150-0001-4d1a-9a10-000000000008'];
+    expect(byOutcome.dataSelection.map((selection: { date_attribute: string }) => selection.date_attribute))
+      .toEqual(['last_validation_at', 'last_validation_at', 'last_validation_at', 'last_validation_at']);
+  });
+
   it('scopes every relationship widget to deployed-on and every entity widget to indicators', () => {
     disseminationAssuranceDashboardTemplate.widgets.forEach((widget) => {
       widget.dataSelection.forEach((selection) => {
