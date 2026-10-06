@@ -40,7 +40,7 @@ import {
   VALIDATION_STATUS_REQUESTED,
 } from '../indicatorDeployment/indicatorDeployment-types';
 import { ensureCreatedPairAccess, findDeployedOn, pairLockKey, refreshIndicatorDeploymentCounters } from '../indicatorDeployment/indicatorDeployment-domain';
-import { pairMarkings, pairOrganizations, validationResultSightingStixId } from '../indicatorDeployment/indicatorDeployment-utils';
+import { checkEndsWithoutAuthorizedMembers, pairMarkings, pairOrganizations, validationResultSightingStixId } from '../indicatorDeployment/indicatorDeployment-utils';
 import { sightingReportContext } from '../indicatorDeployment/indicatorDeployment-sightings';
 import type {
   IocValidationRequestStatusInput,
@@ -179,7 +179,7 @@ export const findReadableIndicatorIds = async (context: AuthContext, user: AuthU
 // endregion
 
 // region access
-type AccessControlled = { [RELATION_OBJECT_MARKING]?: string[] | null; [RELATION_GRANTED_TO]?: string[] | null };
+type AccessControlled = { [RELATION_OBJECT_MARKING]?: string[] | null; [RELATION_GRANTED_TO]?: string[] | null; restricted_members?: unknown[] | null };
 type AccessControlledRequest = AccessControlled & { internal_id: string; indicator_ids?: string[] | null; platform_ids?: string[] | null };
 const ACCESS_REPAIR_PAGE_SIZE = 100;
 
@@ -190,6 +190,7 @@ const sameIds = (current: string[] | null | undefined, expected: string[]) => {
 
 /** Markings (the highest of each type kept) and organizations a request with these ends carries (see requestAccessOf). */
 const expectedRequestAccess = async (context: AuthContext, ends: AccessControlled[]) => {
+  checkEndsWithoutAuthorizedMembers(ends);
   const { markingIds, organizationIds } = requestAccessOf(ends);
   const cleaned = await cleanMarkings(context, markingIds);
   return {

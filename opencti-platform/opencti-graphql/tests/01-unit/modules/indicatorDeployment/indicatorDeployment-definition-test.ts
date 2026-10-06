@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/index';
 import { schemaAttributesDefinition } from '../../../../src/schema/schema-attributes';
+import { validateUpdatableAttribute } from '../../../../src/schema/schema-validator';
+import { authorizedMembers } from '../../../../src/schema/attribute-definition';
+import { AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES } from '../../../../src/utils/authorizedMembers';
 import { checkStixCoreRelationshipMapping } from '../../../../src/database/stix';
 import { isStixCoreRelationship, RELATION_DEPLOYED_ON } from '../../../../src/schema/stixCoreRelationship';
 import { ENTITY_TYPE_INDICATOR } from '../../../../src/modules/indicator/indicator-types';
@@ -8,6 +11,7 @@ import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../../src/modules/
 import { ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
 import {
   buildDeployedOnCreationData,
+  checkEndsWithoutAuthorizedMembers,
   isDeploymentStatus,
   isReadableWithIndicator,
   isValidationStatus,
@@ -82,6 +86,22 @@ describe('deployed-on relationship definition', () => {
       expect(attribute?.isFilterable).toEqual(true);
       expect(attribute?.update).toEqual(false);
     });
+  });
+});
+
+describe('authorized members of the pair ends', () => {
+  it('should never let an indicator or a security platform be restricted to authorized members', () => {
+    [ENTITY_TYPE_INDICATOR, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM].forEach((type) => {
+      expect(schemaAttributesDefinition.getAttribute(type, authorizedMembers.name)).toBeUndefined();
+      expect(AUTHORIZED_MEMBERS_SUPPORTED_ENTITY_TYPES).not.toContain(type);
+      expect(validateUpdatableAttribute(type, { [authorizedMembers.name]: [{ id: 'user-a', access_right: 'view' }] })).toEqual([authorizedMembers.name]);
+    });
+  });
+
+  it('should refuse a pair relationship or a validation request involving an element restricted to authorized members', () => {
+    expect(() => checkEndsWithoutAuthorizedMembers([{}, { restricted_members: [] }, { restricted_members: null }])).not.toThrow();
+    expect(() => checkEndsWithoutAuthorizedMembers([{}, { restricted_members: [{ id: 'user-a', access_right: 'view' }] }]))
+      .toThrow('cannot involve an element restricted to authorized members');
   });
 });
 

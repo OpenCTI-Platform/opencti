@@ -147,7 +147,7 @@ import {
   noReferenceAttributes,
 } from '../schema/fieldDataAdapter';
 import { isStixCoreRelationship, RELATION_DEPLOYED_ON, RELATION_REVOKED_BY, RELATION_TARGETS, RELATION_USES } from '../schema/stixCoreRelationship';
-import { pairOrganizations } from '../modules/indicatorDeployment/indicatorDeployment-utils';
+import { checkEndsWithoutAuthorizedMembers, pairOrganizations } from '../modules/indicatorDeployment/indicatorDeployment-utils';
 import {
   claimedGeneratedPairSighting,
   generatedPairSightingKindOf,
@@ -3506,6 +3506,9 @@ export const createRelationRaw = async (
     // A hits or validation result sighting of a pair is identified by its deterministic id only: ordinary sightings
     // sharing its endpoints and time window never merge into it, nor do two of them merge into each other
     const claimsGeneratedSighting = relationshipType === STIX_SIGHTING_RELATIONSHIP && !!await claimedGeneratedPairSighting(context, resolvedInput);
+    if (relationshipType === RELATION_DEPLOYED_ON || claimsGeneratedSighting) {
+      checkEndsWithoutAuthorizedMembers([from, to]);
+    }
     const matchedRelationships = await getExistingRelations(context, user, resolvedInput, { ...opts, idsOnly: claimsGeneratedSighting });
     const existingRelationships = relationshipType === STIX_SIGHTING_RELATIONSHIP && !claimsGeneratedSighting && !fromRule
       ? await withoutWindowMatchedGeneratedSightings(context, resolvedInput, getInputIds(relationshipType, resolvedInput, false), matchedRelationships)

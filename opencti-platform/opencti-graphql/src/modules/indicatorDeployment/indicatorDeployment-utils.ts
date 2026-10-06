@@ -8,6 +8,7 @@ import {
   type ValidationStatus,
 } from './indicatorDeployment-types';
 import { v5 as uuidv5 } from 'uuid';
+import { FunctionalError } from '../../config/errors';
 import { OPENCTI_NAMESPACE } from '../../schema/general';
 import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 
@@ -42,6 +43,20 @@ type SharedElement = { [RELATION_GRANTED_TO]?: string[] | null };
 export const pairOrganizations = (indicator: SharedElement, platform: SharedElement): string[] => {
   const platformOrganizations = platform[RELATION_GRANTED_TO] ?? [];
   return [...new Set((indicator[RELATION_GRANTED_TO] ?? []).filter((organization) => platformOrganizations.includes(organization)))];
+};
+
+type MemberRestrictedElement = { restricted_members?: unknown[] | null };
+
+/**
+ * The relationships generated for a pair (deployment, hits and validation result sightings) and the validation requests
+ * carry the markings and organizations of their ends, never authorized members: no single member list stands for the
+ * readers of several ends. Indicators and security platforms do not support authorized members, so an end restricted to
+ * some is refused rather than projected without them.
+ */
+export const checkEndsWithoutAuthorizedMembers = (ends: MemberRestrictedElement[]) => {
+  if (ends.some((end) => (end.restricted_members ?? []).length > 0)) {
+    throw FunctionalError('Deployments, hits, validation results and validation requests cannot involve an element restricted to authorized members');
+  }
 };
 
 /**

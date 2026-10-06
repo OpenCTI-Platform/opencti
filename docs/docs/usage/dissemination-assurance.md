@@ -99,6 +99,9 @@ removal dates), so creating or importing it again updates the existing one. The 
 reader of the indicator: they only count the deployments that carry no marking beyond the indicator's own, are
 shared with every organization the indicator is shared with and have no authorized members, so they never reveal a
 deployment a reader of the indicator cannot read.
+Indicators and security platforms cannot be restricted to authorized members: these relationships and the validation
+requests carry the markings and organizations of their ends only, and one involving an element restricted to authorized
+members is refused.
 On a platform with organization segregation, these relationships are shared with the organizations that both the
 indicator and the security platform are shared with, never with the other organizations of the connector account,
 and they follow every later sharing change of either end. This holds whoever creates the deployment or its hits and
