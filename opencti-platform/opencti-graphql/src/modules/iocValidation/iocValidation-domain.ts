@@ -1145,9 +1145,14 @@ const refreshIocValidationRequest = async (context: AuthContext, requestId: stri
     attributes.pairs = expiredPairs;
     attributes.results_summary = summarizeRequestPairs(expiredPairs, request.skipped?.length ?? 0);
     attributes.status = REQUEST_STATUS_EXPIRED;
-    attributes.status_message = request.status === REQUEST_STATUS_PENDING
-      ? 'The dispatch to OpenAEV was interrupted before it was confirmed: request the validation again'
-      : 'No result received from OpenAEV before the timeout';
+    if (request.status !== REQUEST_STATUS_PENDING) {
+      attributes.status_message = 'No result received from OpenAEV before the timeout';
+    } else if (isEmptyField(request.work_id)) {
+      // Never sent: the reason it waited is kept
+      attributes.status_message = `Not sent to OpenAEV before the timeout: ${request.status_message || 'no active OpenAEV IOC validation connector'}`;
+    } else {
+      attributes.status_message = 'The dispatch to OpenAEV was interrupted before it was confirmed: request the validation again';
+    }
     attributes.completed_at = new Date();
   }
   if (Object.keys(attributes).length === 0) {
@@ -1190,13 +1195,16 @@ export const maintainIocValidationRequests = async (context: AuthContext, pageSi
   await BluePromise.map(requests, async (listed) => {
     try {
       // A pending request with a work was claimed by a dispatch that may not have published it: it is never sent
-      // again, and expires after the timeout like a request OpenAEV never answered.
+      // again, and expires after the timeout like a request OpenAEV never answered. One still waiting for its
+      // connector after this dispatch expires after the timeout too, so its pairs are never held forever.
       if (listed.status === REQUEST_STATUS_PENDING && isEmptyField(listed.work_id)) {
         const current = await findIocValidationRequest(context, SYSTEM_USER, listed.internal_id);
         if (current?.status === REQUEST_STATUS_PENDING && isEmptyField(current.work_id)) {
-          await dispatchIocValidationRequest(context, current as unknown as StoreEntityIocValidationRequest);
-          processed += 1;
-          return;
+          const dispatched = await dispatchIocValidationRequest(context, current as unknown as StoreEntityIocValidationRequest);
+          if (dispatched.status !== REQUEST_STATUS_PENDING || isNotEmptyField(dispatched.work_id)) {
+            processed += 1;
+            return;
+          }
         }
       }
       // An OpenAEV lifecycle update can land between the listing and this point: decide on the current request,

@@ -32,6 +32,7 @@ const UNREADABLE_IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-20202020202
 const OTHER_ACCOUNT_IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202023';
 const NO_READABLE_PAIR_IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202024';
 const UNPUBLISHED_IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202025';
+const NEVER_ACTIVE_IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202026';
 
 const INDICATOR_ADD = gql`
   mutation IndicatorAdd($input: IndicatorAddInput!) {
@@ -822,6 +823,53 @@ describe('IOC validation requests', () => {
     await queryAsAdminWithSuccess({ query: REQUEST_DELETE, variables: { id } });
     const deletedSighting = await storeLoadById(testContext, ADMIN_USER, validationResultSightingStixId(id, liveIndicatorId, platformId), STIX_SIGHTING_RELATIONSHIP);
     expect(deletedSighting).toBeFalsy();
+  });
+
+  it('should expire a request still waiting for its connector after the timeout and release its pairs', async () => {
+    const connectorUserId = await getUserIdByEmail(USER_CONNECTOR.email);
+    await registerConnector(testContext, ADMIN_USER, {
+      id: NEVER_ACTIVE_IOC_VALIDATION_CONNECTOR,
+      name: 'OpenAEV IOC validation (never back)',
+      type: ConnectorType.InternalEnrichment,
+      scope: [IOC_VALIDATION_CONNECTOR_SCOPE],
+      auto: false,
+      auto_update: false,
+    }, { connector_user_id: connectorUserId });
+    // A registered connector is alive while it pings: its last ping is set beyond the liveness window
+    const offline = await storeLoadById<BasicStoreEntity>(testContext, ADMIN_USER, NEVER_ACTIVE_IOC_VALIDATION_CONNECTOR, ENTITY_TYPE_CONNECTOR);
+    await elUpdate(testContext, offline._index, offline.internal_id, { doc: { updated_at: new Date(Date.now() - 10 * 60 * 1000).toISOString() } });
+    resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+    let id: string | undefined;
+    try {
+      const created = await queryAsAdminWithSuccess({
+        query: REQUEST_VALIDATION,
+        variables: { platformIds: [platformId], indicatorIds: [liveIndicatorId], testKinds: ['dns_resolution'], connectorId: NEVER_ACTIVE_IOC_VALIDATION_CONNECTOR, name: 'Never sent' },
+      });
+      id = created.data?.indicatorsRequestValidation.id as string;
+      expect(created.data?.indicatorsRequestValidation.status).toEqual('pending');
+      // Within the timeout the request keeps waiting for its connector
+      await maintainIocValidationRequests(testContext);
+      const waiting = await queryAsAdminWithSuccess({ query: REQUEST_READ, variables: { id } });
+      expect(waiting.data?.iocValidationRequest.status).toEqual('pending');
+      const held = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: liveDeploymentId } });
+      expect(held.data?.stixCoreRelationship.validation_status).toEqual('requested');
+      // Created long ago and never sent: the maintenance expires it with the reason it waited and releases its pair
+      const stored = await internalLoadById(testContext, ADMIN_USER, id) as unknown as { _index: string };
+      await elUpdate(testContext, stored._index, id, { doc: { created_at: '2020-01-01T00:00:00.000Z' } });
+      await maintainIocValidationRequests(testContext);
+      const expired = await queryAsAdminWithSuccess({ query: REQUEST_READ, variables: { id } });
+      expect(expired.data?.iocValidationRequest.status).toEqual('expired');
+      expect(expired.data?.iocValidationRequest.status_message).toEqual('Not sent to OpenAEV before the timeout: Waiting for an active OpenAEV IOC validation connector');
+      expect(expired.data?.iocValidationRequest.work_id).toBeNull();
+      const released = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: liveDeploymentId } });
+      expect(released.data?.stixCoreRelationship.validation_status).toEqual('error');
+    } finally {
+      if (id) {
+        await queryAsAdminWithSuccess({ query: REQUEST_DELETE, variables: { id } });
+      }
+      await connectorDelete(testContext, ADMIN_USER, NEVER_ACTIVE_IOC_VALIDATION_CONNECTOR);
+      resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+    }
   });
 
   it('should refuse a result whose sighting identifier is taken by a sighting that does not record it', async () => {
