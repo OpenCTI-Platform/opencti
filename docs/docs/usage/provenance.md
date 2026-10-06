@@ -185,6 +185,14 @@ The tab bar shows the number of elements waiting on each tab (open conflicts, st
 
 Once the sources panel of a row is closed after a change, the list is refreshed: a row whose conflicts are all resolved, or which is confirmed, leaves the tab. Elements of a type whose provenance tracking is switched off are not listed.
 
+The **Curation** entry appears in the **Data** menu, right after **Relationships**, for users with access to the knowledge while provenance is enabled on the platform. Each tab keeps its own address under "Data > Curation", so a link to a tab can be bookmarked and shared, and the breadcrumb and the tab bar stay on screen while a tab loads. Opening a link to Curation without access to any of its tabs shows a page that says so, with a way back to **Data**.
+
+![The Data menu expanded with its Curation entry and its pending count, and the Conflicts tab open under the breadcrumb Data > Curation > Conflicts](assets/curation-hub-conflicts-open.png)
+
+??? example "The same page in the light theme"
+
+    ![The Data menu expanded on Curation in the light theme, with the Conflicts tab open](assets/curation-hub-conflicts-open-light.png)
+
 ![The Conflicts tab of Data > Curation: the counters 2 entities, 0 relationships, 0 sightings, and IcedID and APT29 with their conflicting fields, corroboration, freshness and last assertion](assets/provenance-conflicts-tab.png)
 
 ![The Stale knowledge tab of Data > Curation: the counters, 1 knowledge decay rule involved, and QakBot and IcedID shown as Stale, last asserted 3 months ago](assets/provenance-stale-knowledge-tab.png)
