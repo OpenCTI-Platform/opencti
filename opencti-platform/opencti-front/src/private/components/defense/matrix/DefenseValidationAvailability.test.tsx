@@ -90,10 +90,13 @@ describe('Defense validation actions', () => {
   it.each([DEFENSE_LEVEL_DETECTION_DEPLOYED, DEFENSE_LEVEL_DETECTION_AVAILABLE])('should offer the validation of a level %i technique while an OpenAEV connector is active', async (level) => {
     await renderDrawer(true, level);
     expect(screen.getByTestId('defense-technique-validate')).toBeInTheDocument();
+    expect(screen.queryByTestId('defense-technique-openaev-not-connected')).not.toBeInTheDocument();
   });
 
   it.each([DEFENSE_LEVEL_DETECTION_DEPLOYED, DEFENSE_LEVEL_DETECTION_AVAILABLE])('should not offer the validation of a level %i technique without an OpenAEV connector', async (level) => {
     await renderDrawer(false, level);
     expect(screen.queryByTestId('defense-technique-validate')).not.toBeInTheDocument();
+    // The drawer says why and links to the setup instead
+    expect(screen.getByTestId('defense-technique-openaev-not-connected')).toBeInTheDocument();
   });
 });

@@ -122,7 +122,7 @@ const MappingsFirstUse = ({ onCreate }: { onCreate: () => void }) => {
       </HeroHeader>
       <HeroBody>
         <Text variant="content-base">
-          {t_i18n('A mapping links a log source (for example Windows process creation events collected by Sysmon) to the MITRE data sources it feeds. The defense matrix uses the mappings to know which techniques a security platform can see, from the log sources of its deployed rules or the ones you declare. Built-in mappings cover the Sigma taxonomy; add yours for the log sources of your organization.')}
+          {t_i18n('A mapping links a log source (for example Windows process creation events collected by Sysmon) to the MITRE data sources it feeds.')}
         </Text>
         <DsButton priority="tertiary" size="sm" asChild>
           <a href={DOCUMENTATION_URL} target="_blank" rel="noreferrer">{t_i18n('Read the documentation')}</a>

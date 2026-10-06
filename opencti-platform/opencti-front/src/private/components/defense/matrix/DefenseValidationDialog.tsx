@@ -29,7 +29,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { MESSAGING$ } from '../../../../relay/environment';
-import { type DefenseThreatOption, MAX_VALIDATION_TECHNIQUES } from './defenseMatrix-utils';
+import { DEFENSE_VALIDATION_DOCUMENTATION_URL, type DefenseThreatOption, MAX_VALIDATION_TECHNIQUES } from './defenseMatrix-utils';
 import { notifyPayloadErrors } from './defenseMutation-utils';
 import { DefenseValidationDialogMutation } from './__generated__/DefenseValidationDialogMutation.graphql';
 
@@ -49,7 +49,6 @@ const defenseValidationDialogMutation = graphql`
 `;
 
 const NO_THREAT = 'none';
-const DEFENSE_VALIDATION_DOCUMENTATION_URL = 'https://docs.opencti.io/latest/usage/defense-matrix/#validate-in-openaev';
 // Techniques listed in the preview before the count of the others
 const PREVIEW_TECHNIQUES = 6;
 

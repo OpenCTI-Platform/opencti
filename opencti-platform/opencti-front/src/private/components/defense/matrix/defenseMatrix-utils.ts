@@ -21,6 +21,7 @@ export const DEFENSE_COVERED_LEVEL = DEFENSE_LEVEL_DETECTION_DEPLOYED;
 export const DEFENSE_UNCOVERED_LEVELS: number[] = DEFENSE_LEVELS.filter((level) => level < DEFENSE_COVERED_LEVEL);
 // Techniques per validation request accepted by the platform
 export const MAX_VALIDATION_TECHNIQUES = 200;
+export const DEFENSE_VALIDATION_DOCUMENTATION_URL = 'https://docs.opencti.io/latest/usage/defense-matrix/#validate-in-openaev';
 
 /**
  * The techniques of the scope that no validation proved yet (only those the threats use under a threat overlay), the

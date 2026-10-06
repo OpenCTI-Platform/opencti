@@ -44,7 +44,7 @@ const Content = ({ queryRef }: { queryRef: PreloadedQuery<WidgetDefenseTopGapsQu
   return (
     <List dense disablePadding data-testid="widget-defense-top-gaps">
       {gaps.map((gap) => (
-        <ListItem key={gap.id} divider disableGutters secondaryAction={<Chip label={`${gap.level}`} color={defenseLevelColor(theme, gap.level)} title={defenseLevelLabel(t_i18n, gap.level)} />}>
+        <ListItem key={gap.id} divider disableGutters sx={{ gap: 1 }}>
           <ListItemText
             primary={(
               <Link to={`/dashboard/techniques/attack_patterns/${gap.attack_pattern_id}`}>
@@ -55,6 +55,9 @@ const Content = ({ queryRef }: { queryRef: PreloadedQuery<WidgetDefenseTopGapsQu
               values: { count: gap.threats_count, action: t_i18n(DEFENSE_ACTION_LABELS[gap.recommended_action as DefenseAction]) },
             })}
           />
+          <Box sx={{ flexShrink: 0 }}>
+            <Chip label={defenseLevelLabel(t_i18n, gap.level)} color={defenseLevelColor(theme, gap.level)} />
+          </Box>
         </ListItem>
       ))}
     </List>

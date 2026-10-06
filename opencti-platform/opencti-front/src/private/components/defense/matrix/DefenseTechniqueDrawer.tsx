@@ -26,6 +26,7 @@ import {
   DEFENSE_LEVEL_NONE,
   DEFENSE_LEVEL_TELEMETRY,
   DEFENSE_LEVEL_VALIDATED,
+  DEFENSE_VALIDATION_DOCUMENTATION_URL,
   DEFENSE_VALIDATION_LABELS,
   type DefenseAction,
   type DefenseDetection,
@@ -412,7 +413,15 @@ const DefenseTechniqueContent = ({ queryRef, scope, allowValidation }: DefenseTe
       </Section>
 
       <Section title={t_i18n('OpenAEV validations')} count={defenseTechnique.validations.length}>
-        {defenseTechnique.validations.length === 0 ? <Empty text={t_i18n('No OpenAEV result covers this technique.')} /> : (
+        {defenseTechnique.validations.length === 0 && validationAvailable && <Empty text={t_i18n('No OpenAEV result covers this technique.')} />}
+        {defenseTechnique.validations.length === 0 && !validationAvailable && (
+          <Typography variant="body2" color="text.secondary" data-testid="defense-technique-openaev-not-connected">
+            {t_i18n('No OpenAEV platform is connected to validate this technique.')}
+            {' '}
+            <a href={DEFENSE_VALIDATION_DOCUMENTATION_URL} target="_blank" rel="noreferrer">{t_i18n('How to connect OpenAEV')}</a>
+          </Typography>
+        )}
+        {defenseTechnique.validations.length > 0 && (
           <List dense disablePadding>
             {defenseTechnique.validations.map((validation) => (
               <ListItem key={validation.result.id} divider disableGutters>
