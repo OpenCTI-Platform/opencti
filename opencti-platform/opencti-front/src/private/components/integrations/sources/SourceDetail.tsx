@@ -78,7 +78,6 @@ const sourceDetailQuery = graphql`
         period_start
         period_end
         computed_at
-        provenance_mode
         volume_total
         volume_entities
         volume_relationships
@@ -103,7 +102,6 @@ const sourceDetailQuery = graphql`
         relevance
         sightings_count
         security_platform_sightings_count
-        hunt_true_positives_count
         incidents_count
         impact_score
         unreferenced_count
@@ -117,8 +115,6 @@ const sourceDetailQuery = graphql`
         actionable_count
         cost_per_actionable_object
         cost_currency
-        community_known_count
-        community_uniqueness
         value_score
         overlap {
           source_id
@@ -440,9 +436,7 @@ const SourceDetailComponent = ({ queryRef, period, onPeriodChange }: SourceDetai
                     <Typography variant="h1" component="div" sx={{ margin: 0 }}>{value(format.score(scorecard.value_score))}</Typography>
                     <ValueScoreBar value={scorecard.value_score} />
                     <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
-                      {scorecard.provenance_mode === 'assertions'
-                        ? t_i18n('Attribution from the sources recorded on every fact')
-                        : t_i18n('Attribution from creators and authors, lead time approximated')}
+                      {t_i18n('Attribution from creators and authors, lead time approximated')}
                     </Typography>
                   </Stack>
                 </Card>
@@ -557,7 +551,6 @@ const SourceDetailComponent = ({ queryRef, period, onPeriodChange }: SourceDetai
                     [t_i18n('Last assertion'), scorecard.last_asserted_at ? <RelativeTime date={scorecard.last_asserted_at} /> : t_i18n('Not recorded')],
                     [t_i18n('Time since last assertion'), value(format.hours(scorecard.freshness_hours))],
                     [t_i18n('Median publication latency'), value(format.hours(scorecard.median_latency_hours))],
-                    [t_i18n('Community uniqueness'), value(format.ratio(scorecard.community_uniqueness), t_i18n('Available when Threat Pulse data is joined to the indicators of this source.'))],
                   ]}
                   />
                 </Card>
@@ -592,7 +585,6 @@ const SourceDetailComponent = ({ queryRef, period, onPeriodChange }: SourceDetai
                   <BreakdownList rows={[
                     [t_i18n('Sightings'), value(format.count(scorecard.sightings_count))],
                     [t_i18n('Security platform sightings'), value(format.count(scorecard.security_platform_sightings_count))],
-                    [t_i18n('Hunt true positives'), value(format.count(scorecard.hunt_true_positives_count))],
                     [t_i18n('Incidents referencing'), value(format.count(scorecard.incidents_count))],
                   ]}
                   />

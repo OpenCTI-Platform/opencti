@@ -79,15 +79,7 @@ import {
   searchScorecards,
 } from './sourceIntelligence-store';
 import { computeCostPerActionable, normalizeCostToDays, toSnapshotDate } from './sourceIntelligence-scoring';
-import { buildSourceResolver, isProvenanceAttributeAvailable, type SourceResolver } from './sourceIntelligence-provenance';
 import { quarantinedConnectorUserId, releaseQuarantine } from './sourceIntelligence-quarantine';
-import {
-  ATTRIBUTE_ASSERTIONS,
-  ATTRIBUTE_LAST_ASSERTED_AT,
-  SOURCE_KIND_AUTHOR as ASSERTION_KIND_AUTHOR,
-  SOURCE_KIND_USER as ASSERTION_KIND_USER,
-} from '../provenance/provenance-types';
-import { resolveSoftJoinAvailability } from './sourceIntelligence-compute';
 
 const DAY_MS = 24 * 3600 * 1000;
 const RESTRICTED_AUTHOR_NAME = 'Restricted';
@@ -427,14 +419,6 @@ export const findSourcesPaginated = async (context: AuthContext, user: AuthUser,
 export const listAllSources = async (context: AuthContext) => {
   return fullEntitiesList<BasicStoreEntitySource>(context, SYSTEM_USER, [ENTITY_TYPE_SOURCE]);
 };
-
-export const buildResolverFromSources = (sources: BasicStoreEntitySource[]): SourceResolver => {
-  // Feeds also run as a technical twin connector: map it on the feed source
-  const aliases = sources
-    .filter((source) => source.source_kind === SOURCE_KIND_INGESTION_FEED)
-    .map((source) => ({ kind: SOURCE_KIND_CONNECTOR as SourceKindValue, refId: connectorIdFromIngestId(source.ref_id), sourceId: source.internal_id }));
-  return buildSourceResolver(sources, aliases);
-};
 // endregion
 
 // region scorecards queries
@@ -740,70 +724,25 @@ type TopValueBucket = { key: string; doc_count: number };
 const DISCOVERY_INDICES = [READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLES, READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS];
 
 /**
- * Most frequent values of a field over the knowledge written or asserted during the window. An assertion of an
- * unchanged object is recorded without updating it: with provenance, the window also covers its last assertion.
+ * Most frequent values of a field over the knowledge written during the window.
  */
 const aggregateTopValues = async (context: AuthContext, field: string, sinceDays: number, minCount: number, size: number, exclude: string[] = []) => {
   if (size <= 0) {
     return [];
   }
   const since = new Date(Date.now() - sinceDays * DAY_MS).toISOString();
-  const windowRanges: Array<Record<string, unknown>> = [{ range: { updated_at: { gte: since } } }];
-  if (isProvenanceAttributeAvailable()) {
-    windowRanges.push({ range: { [ATTRIBUTE_LAST_ASSERTED_AT]: { gte: since } } });
-  }
   const data = await elRawSearch(context, SYSTEM_USER, ENTITY_TYPE_SOURCE, {
     index: DISCOVERY_INDICES,
     size: 0,
     track_total_hits: false,
     body: {
-      query: { bool: { should: windowRanges, minimum_should_match: 1 } },
+      query: { range: { updated_at: { gte: since } } },
       aggs: { top: { terms: { field: `${field}.keyword`, size, min_doc_count: minCount, ...termsExclusion(exclude) } } },
     },
   }).catch((err: unknown) => {
     throw DatabaseError('Source intelligence source discovery failed', { cause: err, field });
   });
   return (data.aggregations?.top?.buckets ?? []) as TopValueBucket[];
-};
-
-/**
- * Sources of a kind most frequently asserting knowledge during the window, from the assertions themselves: an author
- * or analyst asserting existing knowledge is recorded there only. Each object lists a source once in its assertions.
- */
-const aggregateTopAsserters = async (context: AuthContext, assertionKind: string, sinceDays: number, minCount: number, size: number, exclude: string[] = []) => {
-  if (size <= 0 || !isProvenanceAttributeAvailable()) {
-    return [];
-  }
-  const since = new Date(Date.now() - sinceDays * DAY_MS).toISOString();
-  const data = await elRawSearch(context, SYSTEM_USER, ENTITY_TYPE_SOURCE, {
-    index: DISCOVERY_INDICES,
-    size: 0,
-    track_total_hits: false,
-    body: {
-      query: { range: { [ATTRIBUTE_LAST_ASSERTED_AT]: { gte: since } } },
-      aggs: {
-        assertions: {
-          nested: { path: ATTRIBUTE_ASSERTIONS },
-          aggs: {
-            window: {
-              filter: {
-                bool: {
-                  filter: [
-                    { term: { [`${ATTRIBUTE_ASSERTIONS}.source_kind.keyword`]: assertionKind } },
-                    { range: { [`${ATTRIBUTE_ASSERTIONS}.last_asserted_at`]: { gte: since } } },
-                  ],
-                },
-              },
-              aggs: { top: { terms: { field: `${ATTRIBUTE_ASSERTIONS}.source_id.keyword`, size, min_doc_count: minCount, ...termsExclusion(exclude) } } },
-            },
-          },
-        },
-      },
-    },
-  }).catch((err: unknown) => {
-    throw DatabaseError('Source intelligence source discovery failed', { cause: err, assertionKind });
-  });
-  return (data.aggregations?.assertions?.window?.top?.buckets ?? []) as TopValueBucket[];
 };
 
 const termsExclusion = (exclude: string[]) => (exclude.length > 0 ? { exclude } : {});
@@ -820,15 +759,6 @@ export const analystExclusions = (serviceUserIds: Set<string>, users: Map<string
     }
   });
   return [...excluded].sort();
-};
-
-// Values of several aggregations over the same documents: each value keeps its largest count
-const mergeTopValues = (...bucketLists: TopValueBucket[][]): TopValueBucket[] => {
-  const counts = new Map<string, number>();
-  bucketLists.flat().forEach(({ key, doc_count }) => counts.set(key, Math.max(counts.get(key) ?? 0, doc_count)));
-  return Array.from(counts.entries())
-    .map(([key, doc_count]) => ({ key, doc_count }))
-    .sort((a, b) => b.doc_count - a.doc_count || a.key.localeCompare(b.key));
 };
 
 const collectSourceCandidates = async (context: AuthContext, settings: SourceIntelligenceSettings): Promise<SourceCandidate[]> => {
@@ -862,10 +792,7 @@ const collectSourceCandidates = async (context: AuthContext, settings: SourceInt
   });
   // Authors with a significant volume over the longest period
   const maxDays = SCORECARD_PERIOD_DAYS[SCORECARD_PERIODS[SCORECARD_PERIODS.length - 1]];
-  const authorBuckets = mergeTopValues(
-    await aggregateTopValues(context, 'rel_created-by.internal_id', maxDays, settings.min_author_volume, settings.max_author_sources),
-    await aggregateTopAsserters(context, ASSERTION_KIND_AUTHOR, maxDays, settings.min_author_volume, settings.max_author_sources),
-  ).slice(0, settings.max_author_sources);
+  const authorBuckets = await aggregateTopValues(context, 'rel_created-by.internal_id', maxDays, settings.min_author_volume, settings.max_author_sources);
   if (authorBuckets.length > 0) {
     const identities = await internalFindByIds(context, SYSTEM_USER, authorBuckets.map((b) => b.key)) as unknown as Array<BasicStoreEntity & { name: string }>;
     identities.forEach((identity) => {
@@ -875,10 +802,7 @@ const collectSourceCandidates = async (context: AuthContext, settings: SourceInt
   // Analysts writing knowledge directly (not through a connector or a feed)
   const users = await getEntitiesMapFromCache<BasicStoreEntity & { name: string; user_service_account?: boolean }>(context, SYSTEM_USER, ENTITY_TYPE_USER);
   const nonAnalystIds = analystExclusions(serviceUserIds, users);
-  const analystBuckets = mergeTopValues(
-    await aggregateTopValues(context, 'creator_id', maxDays, settings.min_manual_volume, settings.max_manual_sources, nonAnalystIds),
-    await aggregateTopAsserters(context, ASSERTION_KIND_USER, maxDays, settings.min_manual_volume, settings.max_manual_sources, nonAnalystIds),
-  );
+  const analystBuckets = await aggregateTopValues(context, 'creator_id', maxDays, settings.min_manual_volume, settings.max_manual_sources, nonAnalystIds);
   if (analystBuckets.length > 0) {
     analystBuckets
       .filter((bucket) => !serviceUserIds.has(bucket.key) && !INTERNAL_USERS[bucket.key])
@@ -1127,15 +1051,11 @@ export const getSourceIntelligenceStatus = async (context: AuthContext) => {
     isSourceIntelligenceEnabled(),
     isEnterpriseEdition(context),
   ]);
-  const availability = resolveSoftJoinAvailability();
   const backfill = backfillProgress(state);
   return {
     manager_enabled: enabled,
     manager_running: enabled && running,
     enterprise_edition: enterprise,
-    provenance_mode: availability.provenance,
-    pulse_available: availability.pulse,
-    hunt_available: availability.huntRunType !== null,
     sources_count: sources.length,
     scored_sources_count: scoredSources,
     last_full_run_start: state.last_full_run_start ?? null,

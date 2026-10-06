@@ -1,6 +1,5 @@
 import { elRawSearch } from '../../database/engine';
 import {
-  READ_INDEX_INTERNAL_OBJECTS,
   READ_INDEX_INTERNAL_RELATIONSHIPS,
   READ_INDEX_STIX_CORE_RELATIONSHIPS,
   READ_INDEX_STIX_CYBER_OBSERVABLES,
@@ -13,14 +12,12 @@ import type { AuthContext } from '../../types/user';
 import { DatabaseError } from '../../config/errors';
 import { logApp } from '../../config/conf';
 import { doYield } from '../../utils/eventloop-utils';
-import { schemaAttributesDefinition } from '../../schema/schema-attributes';
-import { schemaTypesDefinition } from '../../schema/schema-types';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { ENTITY_TYPE_INCIDENT } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_LABEL } from '../../schema/stixMetaObject';
-import { ABSTRACT_INTERNAL_OBJECT, ENTITY_TYPE_CONTAINER } from '../../schema/general';
+import { ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import { RELATION_IN_PIR } from '../../schema/internalRelationship';
 import { getParentTypes } from '../../schema/schemaUtils';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
@@ -30,22 +27,13 @@ import type { SourceIntelligenceSettings } from './sourceIntelligence-settings';
 import {
   type BasicStoreEntitySource,
   ENTITY_TYPE_SOURCE_SCORECARD,
-  type ProvenanceMode,
   SCORECARD_PERIOD_DAYS,
   SCORECARD_PERIODS,
   type ScorecardPeriodValue,
   type SourceOverlapShare,
   type StoreSourceScorecard,
 } from './sourceIntelligence-types';
-import {
-  PROVENANCE_ATTRIBUTE,
-  PROVENANCE_LAST_ASSERTED_AT,
-  type ProvenanceDocument,
-  type ResolvedAssertion,
-  resolveDocumentAssertions,
-  resolveProvenanceMode,
-  type SourceResolver,
-} from './sourceIntelligence-provenance';
+import { type ProvenanceDocument, type ResolvedAssertion, resolveDocumentAssertions, type SourceResolver } from './sourceIntelligence-provenance';
 import {
   computeCostPerActionable,
   computeFreshnessHours,
@@ -64,31 +52,6 @@ import {
 const HOUR_MS = 3600 * 1000;
 const DAY_MS = 24 * HOUR_MS;
 const SCAN_PAGE_SIZE = 2000;
-// Values per terms clause, below the default index.max_terms_count of the search engine
-const TERMS_CHUNK_SIZE = 10000;
-
-// Soft dependencies on sibling innovations: the joins activate when their attributes exist in the schema
-export const PULSE_INFORMATION_ATTRIBUTE = 'pulse_information'; // innovation 04 (Threat Pulse)
-export const HUNT_RUN_SIGHTING_ATTRIBUTE = 'x_opencti_hunt_run_id'; // innovation 01 (Hunts)
-const HUNT_RUN_ENTITY_TYPES = ['Hunt-Run', 'HuntRun'];
-const HUNT_VERDICT_TRUE_POSITIVE = 'true_positive';
-const PULSE_RARE_BUCKET = 'rare';
-
-export interface SoftJoinAvailability {
-  provenance: ProvenanceMode;
-  pulse: boolean;
-  huntRunType: string | null;
-}
-
-export const resolveSoftJoinAvailability = (): SoftJoinAvailability => {
-  const huntRunType = HUNT_RUN_ENTITY_TYPES.find((type) => schemaTypesDefinition.isTypeIncludedIn(type, ABSTRACT_INTERNAL_OBJECT)) ?? null;
-  const huntAvailable = huntRunType !== null && schemaAttributesDefinition.getAttribute(STIX_SIGHTING_RELATIONSHIP, HUNT_RUN_SIGHTING_ATTRIBUTE) !== undefined;
-  return {
-    provenance: resolveProvenanceMode(),
-    pulse: schemaAttributesDefinition.getAttributeByName(PULSE_INFORMATION_ATTRIBUTE) !== undefined,
-    huntRunType: huntAvailable ? huntRunType : null,
-  };
-};
 
 // region accumulators
 export interface SourceAccumulator {
@@ -114,7 +77,6 @@ export interface SourceAccumulator {
   pir_matched_count: number;
   sightings_count: number;
   security_platform_sightings_count: number;
-  hunt_true_positives_count: number;
   incidents_count: number;
   noise_evaluated: number;
   unreferenced_count: number;
@@ -124,8 +86,6 @@ export interface SourceAccumulator {
   last_asserted_at: number | null;
   latency_sample: ReservoirSample;
   actionable_count: number;
-  community_known_count: number;
-  community_rare_count: number;
 }
 
 const newAccumulator = (): SourceAccumulator => ({
@@ -151,7 +111,6 @@ const newAccumulator = (): SourceAccumulator => ({
   pir_matched_count: 0,
   sightings_count: 0,
   security_platform_sightings_count: 0,
-  hunt_true_positives_count: 0,
   incidents_count: 0,
   noise_evaluated: 0,
   unreferenced_count: 0,
@@ -161,8 +120,6 @@ const newAccumulator = (): SourceAccumulator => ({
   last_asserted_at: null,
   latency_sample: new ReservoirSample(),
   actionable_count: 0,
-  community_known_count: 0,
-  community_rare_count: 0,
 });
 
 export interface ComputeState {
@@ -227,7 +184,7 @@ export const creationCountedByLastScan = (trace: ScanTrace | null | undefined, o
 
 /**
  * Whether the last full computation already counted a signal given to an object at `time` while it scanned (a
- * revocation, read with the object, or a sighting, PIR match or hunt verdict, read with the signals of its page): the
+ * revocation, read with the object, or a sighting or PIR match, read with the signals of its page): the
  * scan read it after the event. The stream applies the signal otherwise, so a change made during the scan counts once.
  */
 export const signalSeenByLastScan = (
@@ -272,7 +229,6 @@ export interface ScanDocument extends ProvenanceDocument {
   decay_exclusion_applied_rule?: { decay_exclusion_id?: string } | null;
   'rel_object-label.internal_id'?: string[] | string;
   pir_information?: Array<{ pir_id: string; pir_score: number; last_pir_score_date?: string | null }> | null;
-  pulse_information?: { prevalence_bucket?: string } | Array<{ prevalence_bucket?: string }> | null;
   connections?: Array<{ internal_id: string; role: string }>;
 }
 
@@ -280,7 +236,6 @@ export interface PageLookups {
   sightings: Map<string, number>;
   negativeSightings: Map<string, number>;
   platformSightings: Map<string, number>;
-  huntTruePositives: Map<string, number>;
   relationshipReferences: Map<string, number>;
   relationshipIncidents: Map<string, number>;
   containerReferences: Map<string, number>;
@@ -293,7 +248,6 @@ export const emptyPageLookups = (): PageLookups => ({
   sightings: new Map(),
   negativeSightings: new Map(),
   platformSightings: new Map(),
-  huntTruePositives: new Map(),
   relationshipReferences: new Map(),
   relationshipIncidents: new Map(),
   containerReferences: new Map(),
@@ -310,8 +264,6 @@ export interface RunLookups {
   falsePositiveLabelIds: Set<string>;
   // PIR relevance is an Enterprise Edition signal, read page by page with the other signals
   pirRelevance: boolean;
-  huntTrueRunIds: string[];
-  availability: SoftJoinAvailability;
 }
 
 const asArray = <T>(value: T[] | T | null | undefined): T[] => {
@@ -332,14 +284,11 @@ export interface DocumentSignals {
   pirMatched: boolean;
   sightings: number;
   platformSightings: number;
-  huntTruePositives: number;
   incidents: number;
   referenced: boolean;
   sighted: boolean;
   expired: boolean;
   noisy: boolean;
-  pulseKnown: boolean;
-  pulseRare: boolean;
   createdTime: number | null;
 }
 
@@ -394,16 +343,12 @@ export const computeDocumentSignals = (doc: ScanDocument, page: PageLookups, run
   }
   const sightings = page.sightings.get(id) ?? 0;
   const platformSightings = page.platformSightings.get(id) ?? 0;
-  const huntTruePositives = page.huntTruePositives.get(id) ?? 0;
   const incidents = (page.relationshipIncidents.get(id) ?? 0) + (page.containerIncidents.get(id) ?? 0);
   const referenced = (page.relationshipReferences.get(id) ?? 0) + (page.containerReferences.get(id) ?? 0) > 0;
   const sighted = sightings > 0 || platformSightings > 0;
   // The end of validity is a date compared with `now`; an expiration by decay revocation is read like the revocation
   const expired = isEntity && isExpired(known ? doc : { ...doc, revoked: false }, now);
   const noisy = isEntity && (expired || (!referenced && !sighted));
-  const pulse = asArray(doc.pulse_information)[0];
-  const pulseKnown = run.availability.pulse && isIndicator && !!pulse;
-  const pulseRare = pulseKnown && pulse?.prevalence_bucket === PULSE_RARE_BUCKET;
   const createdTime = doc.created ? new Date(doc.created).getTime() : null;
   return {
     isEntity,
@@ -418,14 +363,11 @@ export const computeDocumentSignals = (doc: ScanDocument, page: PageLookups, run
     pirMatched,
     sightings,
     platformSightings,
-    huntTruePositives,
     incidents,
     referenced,
     sighted,
     expired,
     noisy,
-    pulseKnown,
-    pulseRare,
     createdTime: createdTime !== null && Number.isFinite(createdTime) ? createdTime : null,
   };
 };
@@ -525,7 +467,6 @@ export const processDocument = (
       // Impact
       acc.sightings_count += signals.sightings;
       acc.security_platform_sightings_count += signals.platformSightings;
-      acc.hunt_true_positives_count += signals.huntTruePositives;
       acc.incidents_count += signals.incidents;
       // Noise (entities only, relationships are context by nature)
       if (signals.isEntity) {
@@ -542,12 +483,9 @@ export const processDocument = (
       }
       // Actionable: accurate and not noise
       if (!signals.noisy && !signals.negative) acc.actionable_count += 1;
-      // Threat Pulse join
-      if (signals.pulseKnown) acc.community_known_count += 1;
-      if (signals.pulseRare) acc.community_rare_count += 1;
     }
-    // Overlap matrix: every pair counts. The sources of an object are bounded by the assertions kept per element
-    // (MAX_ASSERTIONS_PER_ELEMENT) and its authors, and the lead time above already compares each pair.
+    // Overlap matrix: every pair counts. The sources of an object are bounded by its creators and authors, and the
+    // lead time above already compares each pair.
     if (inWindow.length >= 2) {
       const periodPairs = state.pairs.get(period) as Map<string, number>;
       for (let a = 0; a < inWindow.length; a += 1) {
@@ -588,16 +526,6 @@ const bucketsToMap = (aggregation: any, path: string[]): Map<string, number> => 
   return result;
 };
 
-const termsInChunks = (field: string, values: string[]) => {
-  const chunks: string[][] = [];
-  for (let i = 0; i < values.length; i += TERMS_CHUNK_SIZE) {
-    chunks.push(values.slice(i, i + TERMS_CHUNK_SIZE));
-  }
-  return chunks.length === 1
-    ? { terms: { [field]: chunks[0] } }
-    : { bool: { should: chunks.map((chunk) => ({ terms: { [field]: chunk } })), minimum_should_match: 1 } };
-};
-
 const rawSearch = async (context: AuthContext, index: string[], body: Record<string, unknown>, size = 0) => {
   return elRawSearch(context, SYSTEM_USER, ENTITY_TYPE_SOURCE_SCORECARD, { index, size, track_total_hits: false, body })
     .catch((err: unknown) => {
@@ -630,12 +558,6 @@ export const fetchPageLookups = async (context: AuthContext, docs: ScanDocument[
       aggs: connectionCountAggregation(ids, 'from'),
     },
   };
-  if (run.availability.huntRunType && run.huntTrueRunIds.length > 0) {
-    sightingsAggs.hunt = {
-      filter: termsInChunks(`${HUNT_RUN_SIGHTING_ATTRIBUTE}.keyword`, run.huntTrueRunIds),
-      aggs: connectionCountAggregation(ids, 'from'),
-    };
-  }
   // Relationships, containers and PIR links created after the computation time are counted by the streaming increments only
   const createdBeforeRun = { range: { created_at: { lte: new Date(run.asOf).toISOString() } } };
   // A relationship is PIR relevant through the entities it connects: they are looked up with the objects of the page
@@ -695,7 +617,6 @@ export const fetchPageLookups = async (context: AuthContext, docs: ScanDocument[
   lookups.sightings = bucketsToMap(sightingsAggregations, ['positive', 'connections', 'matching', 'ids']);
   lookups.negativeSightings = bucketsToMap(sightingsAggregations, ['negative', 'connections', 'matching', 'ids']);
   lookups.platformSightings = bucketsToMap(sightingsAggregations, ['platform', 'connections', 'matching', 'ids']);
-  lookups.huntTruePositives = bucketsToMap(sightingsAggregations, ['hunt', 'connections', 'matching', 'ids']);
   const relationshipsAggregations = relationshipsData.aggregations ?? {};
   lookups.relationshipReferences = bucketsToMap(relationshipsAggregations, ['all', 'connections', 'matching', 'ids']);
   lookups.relationshipIncidents = bucketsToMap(relationshipsAggregations, ['incidents', 'connections', 'matching', 'ids']);
@@ -717,85 +638,6 @@ const resolveFalsePositiveLabelIds = async (context: AuthContext, labels: string
   return new Set((data.hits?.hits ?? []).map((hit: any) => hit._source.internal_id as string));
 };
 
-/**
- * Every hit of a query, page by page in internal id order, so that no result is dropped past a page size.
- */
-const searchAllHits = async (context: AuthContext, index: string[], query: Record<string, unknown>, source: string[], onHits: (hits: any[]) => boolean | void) => {
-  let searchAfter: unknown[] | undefined;
-  let hasMore = true;
-  while (hasMore) {
-    const data = await rawSearch(context, index, {
-      query,
-      _source: source,
-      sort: [{ 'internal_id.keyword': 'asc' }],
-      ...(searchAfter ? { search_after: searchAfter } : {}),
-    }, SCAN_PAGE_SIZE);
-    const hits = data.hits?.hits ?? [];
-    hasMore = onHits(hits) !== false && hits.length === SCAN_PAGE_SIZE;
-    searchAfter = hits.length > 0 ? hits[hits.length - 1].sort : searchAfter;
-  }
-};
-
-const searchHuntTrueRunIds = async (context: AuthContext, huntRunType: string, filters: Record<string, unknown>[]): Promise<string[]> => {
-  const runIds: string[] = [];
-  const query = {
-    bool: {
-      filter: [
-        { term: { 'entity_type.keyword': huntRunType } },
-        { term: { 'verdict.keyword': HUNT_VERDICT_TRUE_POSITIVE } },
-        ...filters,
-      ],
-    },
-  };
-  await searchAllHits(context, [READ_INDEX_INTERNAL_OBJECTS], query, ['internal_id'], (hits) => {
-    hits.forEach((hit: any) => runIds.push(hit._source.internal_id as string));
-  });
-  return runIds;
-};
-
-/**
- * True positive hunt runs updated in the scorecard range and before the computation time: a verdict given after it
- * is counted by the streaming increments.
- */
-const resolveHuntTrueRunIds = async (context: AuthContext, huntRunType: string | null, since: number, asOf: number): Promise<string[]> => {
-  if (!huntRunType) {
-    return [];
-  }
-  return searchHuntTrueRunIds(context, huntRunType, [{ range: { updated_at: { gte: new Date(since).toISOString(), lte: new Date(asOf).toISOString() } } }]);
-};
-
-/**
- * The hunt runs (innovation 01), among the given ones, whose verdict is a true positive.
- */
-export const findTrueHuntRunIds = async (context: AuthContext, huntRunType: string | null, runIds: string[]): Promise<string[]> => {
-  if (!huntRunType || runIds.length === 0) {
-    return [];
-  }
-  return searchHuntTrueRunIds(context, huntRunType, [termsInChunks('internal_id.keyword', runIds)]);
-};
-
-export interface HuntRunSighting {
-  runId: string;
-  objectId: string;
-}
-
-/**
- * Every sighting that hunt runs (innovation 01) attached to their run id, with the object each one sighted.
- */
-export const findHuntRunSightings = async (context: AuthContext, runIds: string[]): Promise<HuntRunSighting[]> => {
-  if (runIds.length === 0) {
-    return [];
-  }
-  const sightings: HuntRunSighting[] = [];
-  const query = termsInChunks(`${HUNT_RUN_SIGHTING_ATTRIBUTE}.keyword`, runIds);
-  await searchAllHits(context, [READ_INDEX_STIX_SIGHTING_RELATIONSHIPS], query, [HUNT_RUN_SIGHTING_ATTRIBUTE, 'connections.internal_id', 'connections.role'], (hits) => {
-    hits.forEach((hit: any) => (hit._source.connections ?? [])
-      .filter((connection: { role: string }) => connection.role?.endsWith('_from'))
-      .forEach((connection: { internal_id: string }) => sightings.push({ runId: hit._source[HUNT_RUN_SIGHTING_ATTRIBUTE] as string, objectId: connection.internal_id })));
-  });
-  return sightings;
-};
-
 export const prepareRunLookups = async (
   context: AuthContext,
   settings: SourceIntelligenceSettings,
@@ -803,13 +645,8 @@ export const prepareRunLookups = async (
   asOf: number,
   historical: boolean,
 ): Promise<RunLookups> => {
-  const availability = resolveSoftJoinAvailability();
-  const maxDays = Math.max(...SCORECARD_PERIODS.map((period) => SCORECARD_PERIOD_DAYS[period]));
-  const [falsePositiveLabelIds, huntTrueRunIds] = await Promise.all([
-    resolveFalsePositiveLabelIds(context, settings.false_positive_labels),
-    resolveHuntTrueRunIds(context, availability.huntRunType, asOf - maxDays * DAY_MS, asOf),
-  ]);
-  return { asOf, historical, falsePositiveLabelIds, pirRelevance: enterprise, huntTrueRunIds, availability };
+  const falsePositiveLabelIds = await resolveFalsePositiveLabelIds(context, settings.false_positive_labels);
+  return { asOf, historical, falsePositiveLabelIds, pirRelevance: enterprise };
 };
 // endregion
 
@@ -830,19 +667,14 @@ const SCAN_SOURCE_FIELDS = [
   'pir_information',
   'connections.internal_id',
   'connections.role',
-  PROVENANCE_ATTRIBUTE,
-  `${PULSE_INFORMATION_ATTRIBUTE}.prevalence_bucket`,
 ];
 
-export const buildScanQuery = (asOf: number, windowStart: number, mode: ProvenanceMode) => {
+export const buildScanQuery = (asOf: number, windowStart: number) => {
   const startIso = new Date(windowStart).toISOString();
   const should: unknown[] = [
     { range: { updated_at: { gte: startIso } } },
     { range: { created_at: { gte: startIso } } },
   ];
-  if (mode === 'assertions') {
-    should.push({ range: { [PROVENANCE_LAST_ASSERTED_AT]: { gte: startIso } } });
-  }
   return {
     bool: {
       filter: [{ range: { created_at: { lte: new Date(asOf).toISOString() } } }],
@@ -872,7 +704,7 @@ export const scanKnowledge = async (
   run: RunLookups,
 ) => {
   const maxDays = Math.max(...SCORECARD_PERIODS.map((period) => SCORECARD_PERIOD_DAYS[period]));
-  const query = buildScanQuery(state.asOf, state.asOf - maxDays * DAY_MS, run.availability.provenance);
+  const query = buildScanQuery(state.asOf, state.asOf - maxDays * DAY_MS);
   let searchAfter: unknown[] | undefined;
   for (;;) {
     const { remaining, size } = scanPageSize(settings.max_scan_objects, state.scanned);
@@ -940,7 +772,7 @@ export const buildScorecardDocuments = (
   state: ComputeState,
   sources: BasicStoreEntitySource[],
   settings: SourceIntelligenceSettings,
-  options: { enterprise: boolean; availability: SoftJoinAvailability; live: boolean; snapshot: boolean },
+  options: { enterprise: boolean; live: boolean; snapshot: boolean },
 ): StoreSourceScorecard[] => {
   const { asOf } = state;
   const snapshotDate = toSnapshotDate(asOf);
@@ -981,7 +813,6 @@ export const buildScorecardDocuments = (
         relevance,
         sightings_count: acc.sightings_count,
         security_platform_sightings_count: acc.security_platform_sightings_count,
-        hunt_true_positives_count: acc.hunt_true_positives_count,
         incidents_count: acc.incidents_count,
         impact_score: impactScore,
         unreferenced_count: acc.unreferenced_count,
@@ -995,8 +826,6 @@ export const buildScorecardDocuments = (
         actionable_count: acc.actionable_count,
         cost_per_actionable_object: computeCostPerActionable(source.source_cost, days, acc.actionable_count),
         cost_currency: source.source_cost?.currency ?? null,
-        community_known_count: options.availability.pulse ? acc.community_known_count : null,
-        community_uniqueness: options.availability.pulse ? ratio(acc.community_rare_count, acc.community_known_count) : null,
         overlap: buildOverlapShares(periodPairs, source.internal_id, acc.volume_total, settings.overlap_top),
         value_score: 0,
       };
@@ -1015,7 +844,6 @@ export const buildScorecardDocuments = (
         computed_at: computedAt,
         created_at: computedAt,
         updated_at: computedAt,
-        provenance_mode: options.availability.provenance,
         ...metrics,
       };
       const variants = [

@@ -10,7 +10,7 @@ import { getEntitiesListFromCache } from '../database/cache';
 import { internalFindByIds } from '../database/middleware-loader';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE, READ_INDEX_DELETED_OBJECTS } from '../database/utils';
 import { isEnterpriseEdition } from '../enterprise-edition/ee';
-import { STIX_EXT_OCTI, STIX_EXT_OCTI_PROVENANCE } from '../types/stix-2-1-extensions';
+import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { isStixCoreObject } from '../schema/stixCoreObject';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
@@ -29,7 +29,6 @@ import {
   SOURCE_INTELLIGENCE_MANAGER_ID,
 } from '../modules/sourceIntelligence/sourceIntelligence-types';
 import {
-  buildResolverFromSources,
   getSourceIntelligenceSettings,
   getSourceIntelligenceState,
   isSourceIntelligenceRunning,
@@ -43,13 +42,8 @@ import {
 import {
   buildScorecardDocuments,
   createComputeState,
-  findHuntRunSightings,
-  findTrueHuntRunIds,
-  HUNT_RUN_SIGHTING_ATTRIBUTE,
-  type HuntRunSighting,
   periodCounting,
   prepareRunLookups,
-  resolveSoftJoinAvailability,
   scanKnowledge,
   type ScanTrace,
   countedByLastScan,
@@ -58,7 +52,13 @@ import {
   toAssertionActivity,
 } from '../modules/sourceIntelligence/sourceIntelligence-compute';
 import { applyLiveIncrements, type LiveIncrement, purgeScorecardSnapshots, writeScorecards } from '../modules/sourceIntelligence/sourceIntelligence-store';
-import { type ProvenanceDocument, resolveDocumentAssertions, resolveEventSources, type SourceResolver } from '../modules/sourceIntelligence/sourceIntelligence-provenance';
+import {
+  buildSourceResolver,
+  type ProvenanceDocument,
+  resolveDocumentAssertions,
+  resolveEventSources,
+  type SourceResolver,
+} from '../modules/sourceIntelligence/sourceIntelligence-provenance';
 import { toSnapshotDate } from '../modules/sourceIntelligence/sourceIntelligence-scoring';
 import type { SourceIntelligenceSettings } from '../modules/sourceIntelligence/sourceIntelligence-settings';
 import { applyAutonomousRecommendations, generateSourceRecommendations } from '../modules/sourceIntelligence/sourceIntelligence-recommendations';
@@ -74,7 +74,6 @@ const STREAM_BATCH_SIZE = conf.get('source_intelligence_manager:stream_batch_siz
 const MAX_STREAM_BATCHES_PER_RUN = 10;
 const MAX_OBJECTS_LOOKUP = 5000;
 const DAY_MS = 24 * 3600 * 1000;
-const HUNT_VERDICT_TRUE_POSITIVE = 'true_positive';
 
 // region streaming increments
 // Highest sequence of a stream event id: `<time>-<max>` is the last possible event of that millisecond
@@ -151,11 +150,6 @@ const knowledgeVolumePatch = (entityType: string, lastDay: boolean): LiveIncreme
   ...typeVolumePatch(entityType, 1),
 });
 
-const latestDate = (...dates: Array<string | null | undefined>): string | undefined => {
-  const times = dates.map((date) => (date ? new Date(date).getTime() : Number.NaN)).filter((time) => Number.isFinite(time));
-  return times.length > 0 ? new Date(Math.max(...times)).toISOString() : undefined;
-};
-
 type PeriodIncrements = Map<ScorecardPeriodValue, Map<string, LiveIncrement>>;
 
 const mergePeriodIncrements = (target: PeriodIncrements, addition: PeriodIncrements) => {
@@ -223,7 +217,7 @@ export const deletionDecrements = (resolver: SourceResolver, entityType: string,
 };
 
 /**
- * A signal on an object (sighting, revocation, PIR link, hunt detection) credited to its sources, or removed from
+ * A signal on an object (sighting, revocation, PIR link) credited to its sources, or removed from
  * them when it is withdrawn, in the periods where the full computation counts the object for each source.
  */
 export const signalIncrements = (resolver: SourceResolver, doc: ProvenanceDocument, patch: LiveIncrement, at: number) => {
@@ -244,9 +238,7 @@ const reversePatchSetsValue = (event: UpdateEvent, path: string, value: unknown)
 
 type StoredObject = BasicStoreBase & Record<string, any>;
 
-export interface StoredDocument extends ProvenanceDocument {
-  hunt_run_id?: string | null;
-}
+export type StoredDocument = ProvenanceDocument;
 
 const toStoredDocument = (object: StoredObject): StoredDocument => ({
   internal_id: object.internal_id,
@@ -254,14 +246,12 @@ const toStoredDocument = (object: StoredObject): StoredDocument => ({
   updated_at: object.updated_at ? new Date(object.updated_at).toISOString() : undefined,
   creator_id: object.creator_id,
   'rel_created-by.internal_id': object['created-by'] ? [object['created-by']] : [],
-  x_opencti_assertions: object.x_opencti_assertions,
-  hunt_run_id: object[HUNT_RUN_SIGHTING_ATTRIBUTE] ?? null,
 });
 
 export const loadStoredDocuments = async (context: AuthContext, ids: string[], indices?: string[]) => {
   const result = new Map<string, StoredDocument>();
   const uniqueIds = [...new Set(ids)];
-  // Every object, in bounded lookups: a hunt verdict alone expands into every sighting of its run
+  // Every object, in bounded lookups
   for (let start = 0; start < uniqueIds.length; start += MAX_OBJECTS_LOOKUP) {
     const chunk = uniqueIds.slice(start, start + MAX_OBJECTS_LOOKUP);
     const objects = await internalFindByIds(context, SYSTEM_USER, chunk, indices ? { indices } : {}) as unknown as StoredObject[];
@@ -271,21 +261,17 @@ export const loadStoredDocuments = async (context: AuthContext, ids: string[], i
 };
 
 /**
- * Lookups of the live accounting. Deleted objects are read from the trash, which keeps their stored provenance;
+ * Lookups of the live accounting. Deleted objects are read from the trash, which keeps their creators and author;
  * objects deleted permanently (trash disabled, forced or bulk deletion) are not in it.
  */
 export interface EventLookups {
   documents: (ids: string[]) => Promise<Map<string, StoredDocument>>;
   deletedDocuments: (ids: string[]) => Promise<Map<string, StoredDocument>>;
-  huntRunSightings: (runIds: string[]) => Promise<HuntRunSighting[]>;
-  trueHuntRunIds: (runIds: string[]) => Promise<string[]>;
 }
 
-const defaultEventLookups = (context: AuthContext, huntRunType: string | null): EventLookups => ({
+const defaultEventLookups = (context: AuthContext): EventLookups => ({
   documents: (ids) => loadStoredDocuments(context, ids),
   deletedDocuments: (ids) => loadStoredDocuments(context, ids, [READ_INDEX_DELETED_OBJECTS]),
-  huntRunSightings: (runIds) => findHuntRunSightings(context, runIds),
-  trueHuntRunIds: (runIds) => findTrueHuntRunIds(context, huntRunType, runIds),
 });
 
 export const computeEventIncrements = async (
@@ -294,13 +280,12 @@ export const computeEventIncrements = async (
   resolver: SourceResolver,
   options: {
     enterprise: boolean;
-    huntRunType: string | null;
     lookups?: Partial<EventLookups>;
     scanTrace?: ScanTrace | null;
     now?: number;
   },
 ) => {
-  const lookups: EventLookups = { ...defaultEventLookups(context, options.huntRunType), ...options.lookups };
+  const lookups: EventLookups = { ...defaultEventLookups(context), ...options.lookups };
   const now = options.now ?? Date.now();
   // Freshness of the sources, applied to the live scorecards of every period
   const increments = new Map<string, LiveIncrement>();
@@ -309,8 +294,6 @@ export const computeEventIncrements = async (
   const deleted: Array<{ entityType: string; time: number; eventDocument: ProvenanceDocument }> = [];
   // A revocation is read by the scan with the object, the other signals with the signals of its page
   const signals: Array<{ objectId: string; patch: LiveIncrement; time: number; readWith?: 'object' }> = [];
-  const deletedSightings: Array<{ sightingId: string; objectId: string; time: number }> = [];
-  const huntRuns: Array<{ runId: string; sign: number; time: number }> = [];
   for (let i = 0; i < events.length; i += 1) {
     const event = events[i];
     const data = event.data as any;
@@ -327,7 +310,6 @@ export const computeEventIncrements = async (
           originUserId: data.origin?.user_id,
           creatorIds: extension.creator_ids,
           createdByRefId: extension.created_by_ref_id,
-          assertions: extension.x_opencti_assertions ?? null,
         });
         addIncrement(increments, sourceIds, { source_last_asserted_at: time });
         mergePeriodIncrements(periodIncrements, creationIncrements(sourceIds, entityType, Number.isNaN(createdAt) ? time : createdAt, now));
@@ -341,8 +323,7 @@ export const computeEventIncrements = async (
     } else if (data.type === EVENT_TYPE_UPDATE) {
       const updateEvent = data as UpdateEvent;
       if (isKnowledge) {
-        // A source updating an object refreshes its freshness. Assertions recorded without a change of the object
-        // emit no stream event (provenance writes them aside): the daily computation counts them
+        // A source updating an object refreshes its freshness
         const sourceIds = resolveEventSources(resolver, { originUserId: data.origin?.user_id });
         addIncrement(increments, sourceIds, { source_last_asserted_at: time });
         // A revocation set or withdrawn adds or removes the object from the revoked ones
@@ -352,26 +333,17 @@ export const computeEventIncrements = async (
           signals.push({ objectId: extension.id, patch: { revoked_count: revoked ? 1 : -1 }, time, readWith: 'object' });
         }
       }
-      if (options.huntRunType && entityType === options.huntRunType) {
-        // A verdict confirmed or withdrawn adds or removes the detections of the run
-        const confirmed = patchSetsValue(updateEvent, '/verdict', HUNT_VERDICT_TRUE_POSITIVE);
-        const wasConfirmed = reversePatchSetsValue(updateEvent, '/verdict', HUNT_VERDICT_TRUE_POSITIVE);
-        if (confirmed !== wasConfirmed) {
-          huntRuns.push({ runId: extension.id, sign: confirmed ? 1 : -1, time });
-        }
-      }
     } else if (data.type === EVENT_TYPE_DELETE) {
       if (isKnowledge && extension.is_inferred !== true) {
-        // Streams carry no source identifiers, only provenance dates: without the trash copy, the sources are the
-        // creators and the author, active until the last update or assertion
-        const provenance = stix.extensions?.[STIX_EXT_OCTI_PROVENANCE];
+        // Streams carry no source identifiers: without the trash copy, the sources are the creators and the author,
+        // active until the last update
         deleted.push({
           entityType,
           time,
           eventDocument: {
             internal_id: extension.id,
             created_at: extension.created_at,
-            updated_at: latestDate(extension.updated_at, provenance?.last_asserted),
+            updated_at: extension.updated_at,
             creator_id: extension.creator_ids ?? [],
             'rel_created-by.internal_id': extension.created_by_ref_id ? [extension.created_by_ref_id] : [],
           },
@@ -380,21 +352,15 @@ export const computeEventIncrements = async (
       // A deleted sighting or PIR link withdraws the signal it gave to the object
       if (entityType === STIX_SIGHTING_RELATIONSHIP && extension.sighting_of_ref) {
         signals.push({ objectId: extension.sighting_of_ref, patch: sightingPatch(extension, -1), time });
-        if (options.huntRunType) {
-          deletedSightings.push({ sightingId: extension.id, objectId: extension.sighting_of_ref, time });
-        }
       }
       if (options.enterprise && entityType === RELATION_IN_PIR && extension.source_ref) {
         signals.push({ objectId: extension.source_ref, patch: { pir_matched_count: -1 }, time });
       }
-      if (options.huntRunType && entityType === options.huntRunType && stix.verdict === HUNT_VERDICT_TRUE_POSITIVE) {
-        huntRuns.push({ runId: extension.id, sign: -1, time });
-      }
     }
   }
-  // The trash keeps the stored provenance of a deleted object: the same attribution as the full computation. The user
-  // deleting the object is never one of its sources.
-  const deletedIds = [...deleted.map(({ eventDocument }) => eventDocument.internal_id), ...deletedSightings.map(({ sightingId }) => sightingId)];
+  // The trash keeps the stored creators and author of a deleted object: the same attribution as the full computation.
+  // The user deleting the object is never one of its sources.
+  const deletedIds = deleted.map(({ eventDocument }) => eventDocument.internal_id);
   const trashed = deletedIds.length > 0 ? await lookups.deletedDocuments(deletedIds) : new Map<string, StoredDocument>();
   deleted.forEach(({ entityType, time, eventDocument }) => {
     // An object deleted while the last full computation scanned is removed only if the scan counted it
@@ -405,24 +371,6 @@ export const computeEventIncrements = async (
     const document = trashed.get(eventDocument.internal_id) ?? eventDocument;
     mergePeriodIncrements(periodIncrements, deletionDecrements(resolver, entityType, document, time));
   });
-  // Hunt runs (innovation 01) write sightings carrying their run id: each sighting of a confirmed run is a detection
-  const deletedHuntSightings = deletedSightings
-    .map((sighting) => ({ ...sighting, runId: trashed.get(sighting.sightingId)?.hunt_run_id }))
-    .filter((sighting): sighting is typeof sighting & { runId: string } => !!sighting.runId);
-  if (deletedHuntSightings.length > 0) {
-    const trueRunIds = new Set(await lookups.trueHuntRunIds([...new Set(deletedHuntSightings.map(({ runId }) => runId))]));
-    deletedHuntSightings
-      .filter(({ runId }) => trueRunIds.has(runId))
-      .forEach(({ objectId, time }) => signals.push({ objectId, patch: { hunt_true_positives_count: -1 }, time }));
-  }
-  if (huntRuns.length > 0) {
-    const runSightings = await lookups.huntRunSightings([...new Set(huntRuns.map(({ runId }) => runId))]);
-    huntRuns.forEach(({ runId, sign, time }) => {
-      runSightings
-        .filter((sighting) => sighting.runId === runId)
-        .forEach(({ objectId }) => signals.push({ objectId, patch: { hunt_true_positives_count: sign }, time }));
-    });
-  }
   // The object carrying a signal, or its trash copy when it was deleted in the meantime
   const signalObjectIds = [...new Set(signals.map(({ objectId }) => objectId))];
   const documents = signalObjectIds.length > 0 ? await lookups.documents(signalObjectIds) : new Map<string, StoredDocument>();
@@ -518,11 +466,10 @@ const processStreamIncrements = async (context: AuthContext) => {
   if (sources.length === 0) {
     return;
   }
-  const resolver = buildResolverFromSources(sources);
+  const resolver = buildSourceResolver(sources);
   // Every source takes part in the attribution, only the enabled ones are scored
   const disabledSourceIds = new Set(sources.filter((source) => source.enabled === false).map((source) => source.internal_id));
   const enterprise = await isEnterpriseEdition(context);
-  const { huntRunType } = resolveSoftJoinAvailability();
   const scanTrace = parseScanTrace(intelligenceState.last_scan_trace);
   for (let batch = 0; batch < MAX_STREAM_BATCHES_PER_RUN; batch += 1) {
     const events: Array<SseEvent<DataEvent>> = [];
@@ -541,7 +488,7 @@ const processStreamIncrements = async (context: AuthContext) => {
     // The farther of the two ends is kept: a replay of this batch reaches the same end, a pending one stays pending
     await redisSetManagerEventState(SOURCE_INTELLIGENCE_PENDING_BATCH, pendingEnd ?? plan.end);
     if (plan.events.length > 0) {
-      const { increments, periodIncrements } = await computeEventIncrements(context, plan.events, resolver, { enterprise, huntRunType, scanTrace });
+      const { increments, periodIncrements } = await computeEventIncrements(context, plan.events, resolver, { enterprise, scanTrace });
       await applyLiveIncrements(context, mergeBatchIncrements(increments, periodIncrements, disabledSourceIds), plan.end);
     }
     lastEventId = plan.end;
@@ -560,7 +507,7 @@ const computeAndStore = async (
   options: { live: boolean; snapshot: boolean; enterprise: boolean; streamBoundary?: string },
 ) => {
   // Every source takes part in the attribution, so that disabling a source does not inflate the uniqueness of the others
-  const resolver = buildResolverFromSources(sources);
+  const resolver = buildSourceResolver(sources);
   const state = createComputeState(asOf);
   const run = await prepareRunLookups(context, settings, options.enterprise, asOf, !options.live);
   await scanKnowledge(context, state, resolver, settings, run);
@@ -571,7 +518,6 @@ const computeAndStore = async (
     .filter((source): source is BasicStoreEntitySource => !!source && source.enabled !== false);
   const built = buildScorecardDocuments(state, tracked, settings, {
     enterprise: options.enterprise,
-    availability: run.availability,
     live: options.live,
     snapshot: options.snapshot,
   });
@@ -634,7 +580,6 @@ export const runFullComputation = async (context: AuthContext, settings: SourceI
           latest_impact_score: reference.impact_score,
           latest_noise: reference.noise,
           latest_freshness_hours: reference.freshness_hours,
-          latest_community_uniqueness: reference.community_uniqueness,
         });
       }
     }

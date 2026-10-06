@@ -46,9 +46,6 @@ export const sourceIntelligenceStatusQuery = graphql`
       manager_enabled
       manager_running
       enterprise_edition
-      provenance_mode
-      pulse_available
-      hunt_available
       sources_count
       scored_sources_count
       last_full_run_start
@@ -168,12 +165,6 @@ const SourceIntelligenceHeader = ({ queryRef }: SourceIntelligenceHeaderProps) =
     never: t_i18n('Compute now'),
   }[runState as 'failed' | 'never'] ?? t_i18n('Recompute');
   const showRecompute = canManage && ['ok', 'failed', 'never'].includes(runState);
-  const captions = [
-    status.provenance_mode === 'assertions'
-      ? t_i18n('Attribution from the sources recorded on every fact')
-      : t_i18n('Attribution from creators and authors, lead time approximated'),
-    status.pulse_available ? t_i18n('Community uniqueness from Threat Pulse') : null,
-  ].filter((caption): caption is string => !!caption);
   const backfillTotal = status.backfill_days_total ?? 0;
   const backfillLabel = !status.backfill_done && backfillTotal > 0
     ? t_i18n('Backfilling history - {done} of {total, plural, one {# day} other {# days}}', { values: { done: status.backfill_days_done ?? 0, total: backfillTotal } })
@@ -263,7 +254,7 @@ const SourceIntelligenceHeader = ({ queryRef }: SourceIntelligenceHeaderProps) =
         )}
       </Stack>
       <Typography variant="caption" component="p" sx={{ color: theme.palette.text.secondary, marginTop: 0.5, marginBottom: 0 }}>
-        {captions.join(' - ')}
+        {t_i18n('Attribution from creators and authors, lead time approximated')}
       </Typography>
       {backfillLabel && (
         <Stack gap={0.5} sx={{ marginTop: 1.5, maxWidth: 420 }} data-testid="source-intelligence-backfill">

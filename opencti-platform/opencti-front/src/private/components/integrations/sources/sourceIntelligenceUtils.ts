@@ -106,25 +106,6 @@ export const criterionPriority = (weight: number, pirWeights: readonly number[])
   return 'medium';
 };
 
-// Provenance assertion kinds and the source kind scoring them, as the backend joins them (inference and emulation are not sources)
-export const ASSERTION_KIND_TO_SOURCE_KIND: Record<string, string> = {
-  connector: 'connector',
-  feed: 'ingestion_feed',
-  author: 'author',
-  user: 'manual',
-};
-
-/**
- * Scorecard page of a provenance source, through a route that finds the source of the assertion and redirects to it.
- * The source internal id is unknown where assertions are displayed.
- */
-export const sourceScorecardRefLink = (source: { readonly source_kind: string; readonly source_id: string }): string | null => {
-  if (!ASSERTION_KIND_TO_SOURCE_KIND[source.source_kind] || !source.source_id) {
-    return null;
-  }
-  return `/dashboard/integrations/sources/source/ref/${source.source_kind}/${encodeURIComponent(source.source_id)}`;
-};
-
 export const RECOMMENDATION_KIND_LABELS: Record<string, string> = {
   raise_confidence: 'Raise confidence',
   lower_confidence: 'Lower confidence',
@@ -197,7 +178,6 @@ export const SOURCE_WIDGET_METRICS: SourceWidgetMetric[] = [
   { key: 'freshness_hours', label: 'Freshness (hours)', type: 'hours', enterprise: false },
   { key: 'actionable_count', label: 'Actionable objects', type: 'count', enterprise: false },
   { key: 'cost_per_actionable_object', label: 'Cost per actionable object', type: 'cost', enterprise: false },
-  { key: 'community_uniqueness', label: 'Community uniqueness', type: 'ratio', enterprise: false },
 ];
 
 // The parts of a donut and the size of a bubble cannot be negative: they offer no signed metric

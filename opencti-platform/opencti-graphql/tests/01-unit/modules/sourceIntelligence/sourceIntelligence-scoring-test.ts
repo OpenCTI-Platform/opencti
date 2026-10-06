@@ -63,15 +63,15 @@ describe('Source intelligence scoring', () => {
     expect(computeCostPerActionable({ amount: 3652.5, currency: 'EUR', period: 'year' }, 30, 0)).toBeNull();
   });
 
-  it('should weigh confirmed detections more than plain sightings in the impact score', () => {
-    const base = { sightings_count: 0, security_platform_sightings_count: 0, hunt_true_positives_count: 0, incidents_count: 0 };
+  it('should weigh incidents more than plain sightings in the impact score', () => {
+    const base = { sightings_count: 0, security_platform_sightings_count: 0, incidents_count: 0 };
     expect(computeImpactScore(base)).toEqual(0);
     const plain = computeImpactScore({ ...base, sightings_count: 9 });
     const platform = computeImpactScore({ ...base, sightings_count: 9, security_platform_sightings_count: 9 });
-    const hunts = computeImpactScore({ ...base, hunt_true_positives_count: 9 });
+    const incidents = computeImpactScore({ ...base, incidents_count: 9 });
     expect(plain).toEqual(25);
     expect(platform).toBeGreaterThan(plain);
-    expect(hunts).toBeGreaterThan(platform);
+    expect(incidents).toBeGreaterThan(platform);
     expect(computeImpactScore({ ...base, sightings_count: 10 ** 9 })).toEqual(100);
   });
 

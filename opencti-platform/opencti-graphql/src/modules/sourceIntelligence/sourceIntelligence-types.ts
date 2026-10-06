@@ -102,7 +102,6 @@ export interface SourceLatestKpis {
   latest_noise?: number | null;
   latest_freshness_hours?: number | null;
   latest_cost_per_actionable?: number | null;
-  latest_community_uniqueness?: number | null;
 }
 
 interface SourceFields extends SourceLatestKpis {
@@ -110,7 +109,7 @@ interface SourceFields extends SourceLatestKpis {
   source_kind: SourceKindValue;
   ref_id: string;
   ref_type?: string;
-  // Users writing on behalf of the source (connector user, feed user, analyst), used to attribute provenance
+  // Users writing on behalf of the source (connector user, feed user, analyst), used to attribute the knowledge
   source_user_ids?: string[];
   source_cost?: SourceCost | null;
   tags?: string[];
@@ -172,7 +171,6 @@ export interface SourceScorecardMetrics {
   // Impact
   sightings_count: number;
   security_platform_sightings_count: number;
-  hunt_true_positives_count: number;
   incidents_count: number;
   impact_score: number;
   // Noise
@@ -189,9 +187,6 @@ export interface SourceScorecardMetrics {
   actionable_count: number;
   cost_per_actionable_object: number | null;
   cost_currency: string | null;
-  // Threat Pulse join (innovation 04, soft dependency)
-  community_known_count: number | null;
-  community_uniqueness: number | null;
   // Synthesis
   value_score: number;
   overlap: SourceOverlapShare[];
@@ -218,7 +213,6 @@ export interface StoreSourceScorecard extends SourceScorecardMetrics {
   is_live: boolean;
   // Last stream event the live scorecard counts
   live_stream_event_id?: string;
-  provenance_mode: ProvenanceMode;
 }
 // endregion
 
@@ -323,10 +317,4 @@ export interface StixSourceRecommendation extends StixObject {
     [STIX_EXT_OCTI]: StixOpenctiExtensionSDO;
   };
 }
-// endregion
-
-// region Provenance
-// `assertions` when the provenance attribute of innovation 06 (x_opencti_assertions) is available on the stored
-// objects, `creators` when the scorecards fall back to creator_id / createdBy only (no per-source timestamps).
-export type ProvenanceMode = 'assertions' | 'creators';
 // endregion

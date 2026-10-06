@@ -3,7 +3,6 @@ import '../../../../src/modules/index';
 import {
   countCoveringRelationshipsPerSource,
   countRelationshipsByValue,
-  countRelationshipsWithValueListed,
   hubCatalogStatusOf,
   hubQueriesBudget,
   latestCompatibleContractsBySlug,
@@ -150,25 +149,7 @@ describe('Source intelligence collection gaps', () => {
     expect(requests[1].after).toEqual({ id: 'source-999' });
   });
 
-  it('should count the relationships whose author is also one of their asserting sources, page after page', async () => {
-    const requests: Array<Record<string, any>> = [];
-    const aggregate = async (aggregations: Record<string, any>) => {
-      requests.push(aggregations.pairs.composite);
-      const pair = (value: string, listed: string, docCount: number) => ({ key: { value, listed }, doc_count: docCount });
-      return requests.length === 1
-        ? { pairs: { buckets: [pair('author-a', 'author-a', 4), pair('author-a', 'author-b', 2), ...Array.from({ length: 998 }, (_, i) => pair(`x-${i}`, `y-${i}`, 1))], after_key: { value: 'x-997', listed: 'y-997' } } }
-        : { pairs: { buckets: [pair('author-b', 'author-b', 3)], after_key: { value: 'author-b', listed: 'author-b' } } };
-    };
-    const counts = await countRelationshipsWithValueListed(aggregate, 'rel_created-by.internal_id.keyword', 'x_opencti_assertion_source_ids.keyword');
-    expect(Object.fromEntries(counts)).toEqual({ 'author-a': 4, 'author-b': 3 });
-    expect(requests[0].sources).toEqual([
-      { value: { terms: { field: 'rel_created-by.internal_id.keyword' } } },
-      { listed: { terms: { field: 'x_opencti_assertion_source_ids.keyword' } } },
-    ]);
-    expect(requests[1].after).toEqual({ value: 'x-997', listed: 'y-997' });
-  });
-
-  it('should count a relationship once for an author that also asserted it', () => {
+  it('should credit the relationships to their creators and their author', () => {
     const source = (internalId: string, kind: string, refId: string, userIds: string[] = []) => ({
       internal_id: internalId, source_kind: kind, ref_id: refId, source_user_ids: userIds,
     }) as unknown as BasicStoreEntitySource;
@@ -177,13 +158,10 @@ describe('Source intelligence collection gaps', () => {
       source('source-connector', SOURCE_KIND_CONNECTOR, 'connector-1', ['user-1']),
     ]);
     const perSource = countCoveringRelationshipsPerSource(resolver, {
-      // 6 relationships asserted by the author, 5 by the connector
-      assertions: new Map([['identity-1', 6], ['connector-1', 5]]),
-      // 2 relationships without assertions created by the connector user
-      creators: new Map([['user-1', 2]]),
-      // 10 relationships authored by the identity, 6 of them also asserted by it
+      // 7 relationships created by the connector user, 1 by an unknown user
+      creators: new Map([['user-1', 7], ['user-unknown', 1]]),
+      // 10 relationships authored by the identity, 3 by an identity that is not a source
       authors: new Map([['identity-1', 10], ['identity-unknown', 3]]),
-      authorAssertions: new Map([['identity-1', 6]]),
     });
     expect(Object.fromEntries(perSource)).toEqual({ 'source-author': 10, 'source-connector': 7 });
   });
@@ -198,24 +176,9 @@ describe('Source intelligence collection gaps', () => {
       source('source-connector-c', 'connector-c', ['user-c']),
     ]);
     const perSource = countCoveringRelationshipsPerSource(resolver, {
-      assertions: new Map([['connector-a', 3]]),
       creators: new Map([['user-shared', 5], ['user-c', 2]]),
       authors: new Map(),
-      authorAssertions: new Map(),
     });
-    expect(Object.fromEntries(perSource)).toEqual({ 'source-connector-a': 3, 'source-connector-c': 2 });
-  });
-
-  it('should keep the author fallback when the author is not tracked through its assertions', () => {
-    const resolver = buildSourceResolver([
-      { internal_id: 'source-author', source_kind: SOURCE_KIND_AUTHOR, ref_id: 'identity-1', source_user_ids: [] } as unknown as BasicStoreEntitySource,
-    ]);
-    const perSource = countCoveringRelationshipsPerSource(resolver, {
-      assertions: new Map(),
-      creators: new Map(),
-      authors: new Map([['identity-1', 4]]),
-      authorAssertions: new Map(),
-    });
-    expect(perSource.get('source-author')).toBe(4);
+    expect(Object.fromEntries(perSource)).toEqual({ 'source-connector-c': 2 });
   });
 });

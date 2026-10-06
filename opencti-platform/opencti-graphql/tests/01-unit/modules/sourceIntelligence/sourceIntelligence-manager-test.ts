@@ -11,13 +11,7 @@ import {
   planStreamBatch,
   streamBoundaryOf,
 } from '../../../../src/manager/sourceIntelligenceManager';
-import {
-  analystExclusions,
-  backfillProgress,
-  buildResolverFromSources,
-  fingerprintOnKeptSource,
-  isKeptOutsideDiscovery,
-} from '../../../../src/modules/sourceIntelligence/sourceIntelligence-domain';
+import { analystExclusions, backfillProgress, fingerprintOnKeptSource, isKeptOutsideDiscovery } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-domain';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 import { recommendationFingerprint } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-rules';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
@@ -30,7 +24,8 @@ import {
   RECOMMENDATION_RETIRE,
   SCORECARD_PERIODS,
 } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-types';
-import { STIX_EXT_OCTI, STIX_EXT_OCTI_PROVENANCE } from '../../../../src/types/stix-2-1-extensions';
+import { buildSourceResolver } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-provenance';
+import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
 import type { AuthContext } from '../../../../src/types/user';
 import { buildIntelligenceRoiManifest, SCORECARD_METRICS } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-widgets';
 import { SCORECARD_NUMERIC_ATTRIBUTES } from '../../../../src/modules/sourceIntelligence/sourceIntelligence';
@@ -77,7 +72,7 @@ describe('Source intelligence live deletion accounting', () => {
   const source = (internal_id: string, source_kind: string, ref_id: string, users: string[]) => ({
     internal_id, source_kind, ref_id, source_user_ids: users, enabled: true,
   }) as unknown as BasicStoreEntitySource;
-  const resolver = buildResolverFromSources([
+  const resolver = buildSourceResolver([
     source('source-connector', 'connector', 'connector-1', ['user-connector']),
     source('source-feed', 'ingestion_feed', 'feed-1', ['user-feed']),
     source('source-analyst', 'manual', 'user-analyst', ['user-analyst']),
@@ -95,14 +90,11 @@ describe('Source intelligence live deletion accounting', () => {
     pirMatched: false,
     sightings: 0,
     platformSightings: 0,
-    huntTruePositives: 0,
     incidents: 0,
     referenced: false,
     sighted: false,
     expired: false,
     noisy: false,
-    pulseKnown: false,
-    pulseRare: false,
     createdTime: null,
   };
   const COUNTERS = ['volume_total', 'new_objects', 'volume_last_day', 'volume_entities', 'volume_relationships', 'volume_indicators', 'volume_observables'] as const;
@@ -153,7 +145,7 @@ describe('Source intelligence live deletion accounting', () => {
 
   it('should count every pair of sources of an object asserted by more than 50 sources in the overlap', () => {
     const ids = Array.from({ length: 60 }, (_, index) => index);
-    const manySources = buildResolverFromSources(ids.map((index) => source(`source-${index}`, 'connector', `connector-${index}`, [`user-${index}`])));
+    const manySources = buildSourceResolver(ids.map((index) => source(`source-${index}`, 'connector', `connector-${index}`, [`user-${index}`])));
     const doc = {
       internal_id: 'indicator-many-sources',
       entity_type: 'Indicator',
@@ -183,11 +175,10 @@ describe('Source intelligence live deletion accounting', () => {
             id: 'indicator-1',
             type: 'Indicator',
             created_at: iso(DELETED_AT - 10 * DAY),
-            updated_at: iso(DELETED_AT - 10 * DAY),
+            // Written again in the last hours: the object is still in the short periods
+            updated_at: iso(DELETED_AT - 3 * HOUR),
             creator_ids: ['user-connector'],
           },
-          // Streams carry the provenance dates only: the last assertion keeps the object in the short periods
-          [STIX_EXT_OCTI_PROVENANCE]: { last_asserted: iso(DELETED_AT - 3 * HOUR) },
         },
       },
     },
@@ -197,13 +188,9 @@ describe('Source intelligence live deletion accounting', () => {
     const trashCopy = {
       internal_id: 'indicator-1',
       created_at: iso(DELETED_AT - 10 * DAY),
-      updated_at: iso(DELETED_AT - 10 * DAY),
-      creator_id: ['user-connector'],
-      x_opencti_assertions: [
-        { source_kind: 'connector', source_id: 'connector-1', first_asserted_at: iso(DELETED_AT - 10 * DAY), last_asserted_at: iso(DELETED_AT - 10 * DAY) },
-        // A feed asserting the object later, never one of its creators
-        { source_kind: 'feed', source_id: 'feed-1', first_asserted_at: iso(DELETED_AT - 3 * DAY), last_asserted_at: iso(DELETED_AT - 3 * HOUR) },
-      ],
+      updated_at: iso(DELETED_AT - 3 * HOUR),
+      // The feed wrote the object after the connector created it: the trash copy keeps both, the event the first one
+      creator_id: ['user-connector', 'user-feed'],
     };
     const requested: string[][] = [];
     const loadDeletedDocuments = async (ids: string[]) => {
@@ -212,23 +199,21 @@ describe('Source intelligence live deletion accounting', () => {
     };
     const { increments, periodIncrements: deletions } = await computeEventIncrements({} as AuthContext, [deleteEvent] as any, resolver, {
       enterprise: false,
-      huntRunType: null,
       lookups: { deletedDocuments: loadDeletedDocuments },
     });
     expect(requested).toEqual([['indicator-1']]);
     expect(increments.size).toBe(0);
-    expect(Array.from(deletions.get('LAST_7_DAYS')?.keys() ?? []).sort()).toEqual(['source-feed']);
-    expect(deletions.get('LAST_7_DAYS')?.get('source-feed')).toEqual({
-      volume_total: -1, new_objects: -1, volume_last_day: -1, volume_entities: -1, volume_indicators: -1,
-    });
-    expect(Array.from(deletions.get('LAST_30_DAYS')?.keys() ?? []).sort()).toEqual(['source-connector', 'source-feed']);
-    expect(deletions.get('LAST_30_DAYS')?.get('source-connector')).toEqual({ volume_total: -1, new_objects: -1, volume_entities: -1, volume_indicators: -1 });
+    SCORECARD_PERIODS.forEach((period) => expect(Array.from(deletions.get(period)?.keys() ?? []).sort()).toEqual(['source-connector', 'source-feed']));
+    const recent = { volume_total: -1, volume_last_day: -1, volume_entities: -1, volume_indicators: -1 };
+    expect(deletions.get('LAST_7_DAYS')?.get('source-feed')).toEqual(recent);
+    // Only the first creator is dated at creation: the object is among the new objects of that source alone
+    expect(deletions.get('LAST_30_DAYS')?.get('source-connector')).toEqual({ ...recent, new_objects: -1 });
+    expect(deletions.get('LAST_30_DAYS')?.get('source-feed')).toEqual(recent);
   });
 
   it('should debit the creators and the author of a deleted object without trash copy, not the deleting user', async () => {
     const { increments, periodIncrements: deletions } = await computeEventIncrements({} as AuthContext, [deleteEvent] as any, resolver, {
       enterprise: false,
-      huntRunType: null,
       lookups: { deletedDocuments: async () => new Map() },
     });
     expect(increments.size).toBe(0);
@@ -243,25 +228,27 @@ describe('Source intelligence live signal accounting', () => {
   const HOUR = 3600 * 1000;
   const DAY = 24 * HOUR;
   const AT = Date.UTC(2026, 9, 3, 12, 0);
-  const HUNT_RUN_TYPE = 'Hunt-Run';
   const iso = (time: number) => new Date(time).toISOString();
   const source = (internal_id: string, source_kind: string, ref_id: string, users: string[]) => ({
     internal_id, source_kind, ref_id, source_user_ids: users, enabled: true,
   }) as unknown as BasicStoreEntitySource;
-  const resolver = buildResolverFromSources([
+  const resolver = buildSourceResolver([
     source('source-connector', 'connector', 'connector-1', ['user-connector']),
     source('source-feed', 'ingestion_feed', 'feed-1', ['user-feed']),
   ]);
-  // Asserted by the connector 60 days ago only, and by the feed in the last hours
+  // Created by the feed 60 days ago and written again in the last hours: in every period
   const indicator = {
     internal_id: 'indicator-1',
     created_at: iso(AT - 60 * DAY),
     updated_at: iso(AT - 3 * HOUR),
+    creator_id: ['user-feed'],
+  };
+  // Created by the connector 60 days ago and last written 20 days ago: out of the last 7 days
+  const staleIndicator = {
+    internal_id: 'indicator-stale',
+    created_at: iso(AT - 60 * DAY),
+    updated_at: iso(AT - 20 * DAY),
     creator_id: ['user-connector'],
-    x_opencti_assertions: [
-      { source_kind: 'connector', source_id: 'connector-1', first_asserted_at: iso(AT - 60 * DAY), last_asserted_at: iso(AT - 60 * DAY) },
-      { source_kind: 'feed', source_id: 'feed-1', first_asserted_at: iso(AT - 3 * DAY), last_asserted_at: iso(AT - 3 * HOUR) },
-    ],
   };
   const event = (type: string, extension: Record<string, unknown>, extra: Record<string, unknown> = {}) => ({
     id: `${AT}-0`,
@@ -269,62 +256,60 @@ describe('Source intelligence live signal accounting', () => {
     data: { type, origin: { user_id: 'user-analyst' }, ...extra, data: { extensions: { [STIX_EXT_OCTI]: extension } } },
   });
   const sighting = { id: 'sighting-1', type: STIX_SIGHTING_RELATIONSHIP, sighting_of_ref: 'indicator-1', where_sighted_types: [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM] };
-  const documents = async () => new Map([['indicator-1', indicator]]);
+  const staleSighting = { ...sighting, id: 'sighting-2', sighting_of_ref: 'indicator-stale' };
+  const documents = async () => new Map([['indicator-1', indicator], ['indicator-stale', staleIndicator]]);
   const byPeriod = (periodIncrements: Map<string, Map<string, Record<string, number>>>) => Object.fromEntries(
     Array.from(periodIncrements.entries()).map(([period, patches]) => [period, Object.fromEntries(patches.entries())]),
   );
 
-  it('should credit a sighting only to the periods where each source asserted the object', async () => {
-    const { periodIncrements } = await computeEventIncrements({} as AuthContext, [event('create', sighting)] as any, resolver, {
+  it('should credit a sighting only to the periods where the full computation counts the object', async () => {
+    const events = [event('create', sighting), event('create', staleSighting)];
+    const { periodIncrements } = await computeEventIncrements({} as AuthContext, events as any, resolver, {
       enterprise: false,
-      huntRunType: null,
       lookups: { documents },
     });
     const sighted = { sightings_count: 1, security_platform_sightings_count: 1 };
     expect(byPeriod(periodIncrements as any)).toEqual({
       LAST_7_DAYS: { 'source-feed': sighted },
-      LAST_30_DAYS: { 'source-feed': sighted },
+      LAST_30_DAYS: { 'source-connector': sighted, 'source-feed': sighted },
       LAST_90_DAYS: { 'source-connector': sighted, 'source-feed': sighted },
     });
   });
 
   it('should withdraw the signals of deleted sightings and PIR links from the same periods', async () => {
     const events = [
-      event('delete', { ...sighting, negative: true }),
-      event('delete', { id: 'in-pir-1', type: RELATION_IN_PIR, source_ref: 'indicator-1' }),
+      event('delete', { ...staleSighting, negative: true }),
+      event('delete', { id: 'in-pir-1', type: RELATION_IN_PIR, source_ref: 'indicator-stale' }),
     ];
     const { periodIncrements } = await computeEventIncrements({} as AuthContext, events as any, resolver, {
       enterprise: true,
-      huntRunType: null,
       lookups: { documents, deletedDocuments: async () => new Map() },
     });
     const withdrawn = { negative_sightings_count: -1, pir_matched_count: -1 };
     expect(byPeriod(periodIncrements as any)).toEqual({
-      LAST_7_DAYS: { 'source-feed': withdrawn },
-      LAST_30_DAYS: { 'source-feed': withdrawn },
-      LAST_90_DAYS: { 'source-connector': withdrawn, 'source-feed': withdrawn },
+      LAST_30_DAYS: { 'source-connector': withdrawn },
+      LAST_90_DAYS: { 'source-connector': withdrawn },
     });
   });
 
   it.each([
     ['set', true, false, 1],
     ['withdrawn', false, true, -1],
-  ])('should count a revocation %s in the periods where each source asserted the object', async (_label, value, previous, sign) => {
-    const revocation = event('update', { id: 'indicator-1', type: 'Indicator' }, {
+  ])('should count a revocation %s in the periods where the full computation counts the object', async (_label, value, previous, sign) => {
+    const revocation = (id: string) => event('update', { id, type: 'Indicator' }, {
       context: {
         patch: [{ op: 'replace', path: '/revoked', value }],
         reverse_patch: [{ op: 'replace', path: '/revoked', value: previous }],
       },
     });
-    const { periodIncrements } = await computeEventIncrements({} as AuthContext, [revocation] as any, resolver, {
+    const { periodIncrements } = await computeEventIncrements({} as AuthContext, [revocation('indicator-1'), revocation('indicator-stale')] as any, resolver, {
       enterprise: false,
-      huntRunType: null,
       lookups: { documents },
     });
     const counted = { revoked_count: sign };
     expect(byPeriod(periodIncrements as any)).toEqual({
       LAST_7_DAYS: { 'source-feed': counted },
-      LAST_30_DAYS: { 'source-feed': counted },
+      LAST_30_DAYS: { 'source-connector': counted, 'source-feed': counted },
       LAST_90_DAYS: { 'source-connector': counted, 'source-feed': counted },
     });
   });
@@ -341,7 +326,6 @@ describe('Source intelligence live signal accounting', () => {
       const scanTrace = { started_at: AT - 10 * 60 * 1000, pages: [[pageRequestedAt, 'indicator-9', signalsAt]] as Array<[number, string, number]> };
       const { periodIncrements } = await computeEventIncrements({} as AuthContext, events, resolver, {
         enterprise: false,
-        huntRunType: null,
         lookups: { documents },
         scanTrace,
       });
@@ -362,7 +346,6 @@ describe('Source intelligence live signal accounting', () => {
     const creditedSources = async (createdAt: number, scanTrace = { started_at: AT, pages: [] as Array<[number, string, number]>, truncated: false }) => {
       const { increments } = await computeEventIncrements({} as AuthContext, [creation(createdAt)] as any, resolver, {
         enterprise: false,
-        huntRunType: null,
         lookups: { documents },
         scanTrace,
         now: AT + 2000,
@@ -383,7 +366,6 @@ describe('Source intelligence live signal accounting', () => {
     const appliedAt = async (now: number) => {
       const { increments, periodIncrements } = await computeEventIncrements({} as AuthContext, [creation] as any, resolver, {
         enterprise: false,
-        huntRunType: null,
         lookups: { documents },
         now,
       });
@@ -396,45 +378,6 @@ describe('Source intelligence live signal accounting', () => {
     // Applied on the day it was created: every period, its last day included
     const fresh = { 'source-feed': { ...volume, volume_last_day: 1 } };
     expect(await appliedAt(AT - 10 * DAY + HOUR)).toEqual({ LAST_7_DAYS: fresh, LAST_30_DAYS: fresh, LAST_90_DAYS: fresh });
-  });
-
-  it('should withdraw the detections of a hunt run whose true positive verdict is changed', async () => {
-    const verdictChange = event('update', { id: 'run-1', type: HUNT_RUN_TYPE }, {
-      context: {
-        patch: [{ op: 'replace', path: '/verdict', value: 'false_positive' }],
-        reverse_patch: [{ op: 'replace', path: '/verdict', value: 'true_positive' }],
-      },
-    });
-    const { periodIncrements } = await computeEventIncrements({} as AuthContext, [verdictChange] as any, resolver, {
-      enterprise: false,
-      huntRunType: HUNT_RUN_TYPE,
-      lookups: {
-        documents,
-        huntRunSightings: async () => [{ runId: 'run-1', objectId: 'indicator-1' }, { runId: 'run-2', objectId: 'indicator-1' }],
-      },
-    });
-    expect(periodIncrements.get('LAST_7_DAYS')?.get('source-feed')).toEqual({ hunt_true_positives_count: -1 });
-    expect(periodIncrements.get('LAST_90_DAYS')?.get('source-connector')).toEqual({ hunt_true_positives_count: -1 });
-  });
-
-  it('should withdraw the detection of a deleted sighting of a confirmed hunt run', async () => {
-    const requestedRuns: string[][] = [];
-    const { periodIncrements } = await computeEventIncrements({} as AuthContext, [event('delete', sighting)] as any, resolver, {
-      enterprise: false,
-      huntRunType: HUNT_RUN_TYPE,
-      lookups: {
-        documents,
-        deletedDocuments: async () => new Map([['sighting-1', { internal_id: 'sighting-1', creator_id: [], hunt_run_id: 'run-1' }]]),
-        trueHuntRunIds: async (runIds) => {
-          requestedRuns.push(runIds);
-          return ['run-1'];
-        },
-      },
-    });
-    expect(requestedRuns).toEqual([['run-1']]);
-    expect(periodIncrements.get('LAST_7_DAYS')?.get('source-feed')).toEqual({
-      sightings_count: -1, security_platform_sightings_count: -1, hunt_true_positives_count: -1,
-    });
   });
 });
 

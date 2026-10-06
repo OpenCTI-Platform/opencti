@@ -21,8 +21,6 @@ const run: RunLookups = {
   historical: false,
   falsePositiveLabelIds: new Set(['label-false-positive']),
   pirRelevance: false,
-  huntTrueRunIds: [],
-  availability: { provenance: 'assertions', pulse: false, huntRunType: null },
 };
 
 const indicator = (overrides: Partial<ScanDocument> = {}): ScanDocument => ({
@@ -151,7 +149,7 @@ describe('Source intelligence scan trace', () => {
     // A revocation is read with the object: before the page request it is already counted, after it is not
     expect(signalSeenByLastScan(withSignals, 'c', 500, 1190, 'object')).toBe(true);
     expect(signalSeenByLastScan(withSignals, 'c', 500, 1210, 'object')).toBe(false);
-    // A sighting, PIR match or hunt verdict is read with the signals of the page
+    // A sighting or PIR match is read with the signals of the page
     expect(signalSeenByLastScan(withSignals, 'c', 500, 1210, 'signals')).toBe(true);
     expect(signalSeenByLastScan(withSignals, 'c', 500, 1260, 'signals')).toBe(false);
     // A trace without lookup times falls back to the page request time

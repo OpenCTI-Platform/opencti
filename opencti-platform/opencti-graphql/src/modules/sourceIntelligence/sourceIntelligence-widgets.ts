@@ -47,7 +47,6 @@ export const SCORECARD_METRICS: ScorecardMetric[] = [
   { key: 'freshness_hours', label: 'Freshness (hours)', type: 'hours', higher_is_better: false, enterprise: false },
   { key: 'actionable_count', label: 'Actionable objects', type: 'count', higher_is_better: true, enterprise: false },
   { key: 'cost_per_actionable_object', label: 'Cost per actionable object', type: 'cost', higher_is_better: false, enterprise: false },
-  { key: 'community_uniqueness', label: 'Community uniqueness', type: 'ratio', higher_is_better: true, enterprise: false },
 ];
 
 const METRIC_KEYS = new Set(SCORECARD_METRICS.map((metric) => metric.key));

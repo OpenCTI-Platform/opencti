@@ -62,9 +62,7 @@ import {
   RECOMMENDATION_STATUS_APPLIED,
   RECOMMENDATION_STATUS_REVERTING,
 } from './sourceIntelligence-types';
-import { buildResolverFromSources } from './sourceIntelligence-domain';
-import { ASSERTION_KIND_TO_SOURCE_KIND, isProvenanceAttributeAvailable, type SourceResolver, sourceRefKey, userSource } from './sourceIntelligence-provenance';
-import { ATTRIBUTE_ASSERTION_SOURCE_IDS } from '../provenance/provenance-types';
+import { buildSourceResolver, type SourceResolver, userSource } from './sourceIntelligence-provenance';
 import { round } from './sourceIntelligence-scoring';
 import { connectorMatchesCatalogEntry, recommendationFingerprint, type RecommendationProposal } from './sourceIntelligence-rules';
 import { applySourceRecommendation, findOrCreateProposal, findRecommendationsByFingerprint, listAccessiblePirIds, upsertProposals } from './sourceIntelligence-recommendations';
@@ -196,75 +194,24 @@ export const countRelationshipsByValue = async (
   return counts;
 };
 
-type PairBuckets = { buckets?: Array<{ key: { value: string; listed: string }; doc_count: number }>; after_key?: { value: string; listed: string } };
-
-/**
- * Number of matching relationships whose value of `field` is also one of their values of `listField`, per value: a
- * composite aggregation over both fields read page after page, keeping the pairs of equal values.
- */
-export const countRelationshipsWithValueListed = async (
-  aggregate: (aggregations: Record<string, unknown>) => Promise<Record<string, any>>,
-  field: string,
-  listField: string,
-) => {
-  const counts = new Map<string, number>();
-  let after: { value: string; listed: string } | undefined;
-  do {
-    const data = await aggregate({
-      pairs: {
-        composite: {
-          size: COVERAGE_PAGE_SIZE,
-          sources: [{ value: { terms: { field } } }, { listed: { terms: { field: listField } } }],
-          ...(after ? { after } : {}),
-        },
-      },
-    });
-    const page = data.pairs as PairBuckets | undefined;
-    const buckets = page?.buckets ?? [];
-    buckets.forEach((bucket) => {
-      if (bucket.key.value === bucket.key.listed) counts.set(bucket.key.value, bucket.doc_count);
-    });
-    after = buckets.length === COVERAGE_PAGE_SIZE ? page?.after_key : undefined;
-  } while (after);
-  return counts;
-};
-
 export interface CoveringRelationshipCounts {
-  // asserted platform id -> relationships carrying an assertion of it
-  assertions: Map<string, number>;
-  // creator user id -> relationships without assertions it created
+  // creator user id -> relationships it created
   creators: Map<string, number>;
   // author identity id -> relationships it authored
   authors: Map<string, number>;
-  // author identity id -> relationships it authored and asserted
-  authorAssertions: Map<string, number>;
 }
 
 /**
- * Relationships matched per source, each relationship counted once per source, with the attribution of the scorecards:
- * the provenance assertions, the creators of the relationships without assertions, and the authors of the relationships
- * their author did not assert (the assertion already counts the others).
+ * Relationships matched per source, with the attribution of the scorecards: their creators (connector, feed and analyst
+ * users) and their author.
  */
 export const countCoveringRelationshipsPerSource = (resolver: SourceResolver, counts: CoveringRelationshipCounts) => {
-  // Assertion source ids are platform ids (connector, feed, author, user), unique across source kinds
-  const byAssertedId = new Map<string, string>();
-  Object.values(ASSERTION_KIND_TO_SOURCE_KIND).forEach((kind) => {
-    const prefix = sourceRefKey(kind, '');
-    resolver.byRef.forEach((sourceId, key) => {
-      if (key.startsWith(prefix)) byAssertedId.set(key.substring(prefix.length), sourceId);
-    });
-  });
   const perSource = new Map<string, number>();
   const add = (sourceId: string | undefined, count: number) => {
     if (sourceId && count > 0) perSource.set(sourceId, (perSource.get(sourceId) ?? 0) + count);
   };
-  counts.assertions.forEach((count, assertedId) => add(byAssertedId.get(assertedId), count));
   counts.creators.forEach((count, userId) => add(userSource(resolver, userId), count));
-  counts.authors.forEach((count, authorId) => {
-    const sourceId = resolver.byAuthor.get(authorId);
-    const alreadyAsserted = sourceId && byAssertedId.get(authorId) === sourceId ? (counts.authorAssertions.get(authorId) ?? 0) : 0;
-    add(sourceId, count - alreadyAsserted);
-  });
+  counts.authors.forEach((count, authorId) => add(resolver.byAuthor.get(authorId), count));
   return perSource;
 };
 
@@ -280,39 +227,20 @@ const aggregateCoveringSources = async (
   total: number,
 ) => {
   const since = new Date(Date.now() - sinceDays * DAY_MS).toISOString();
-  const withProvenance = isProvenanceAttributeAvailable();
-  const aggregate = (extraFilters: Array<Record<string, unknown>> = []) => (aggregations: Record<string, unknown>) => {
+  const aggregate = (aggregations: Record<string, unknown>) => {
     return elFilteredAggregations(context, SYSTEM_USER, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, {
       types: [ABSTRACT_STIX_CORE_RELATIONSHIP],
       filters: {
         mode: 'and',
-        filters: [{ key: ['updated_at'], values: [since], operator: 'gte', mode: 'or' }, ...extraFilters],
+        filters: [{ key: ['updated_at'], values: [since], operator: 'gte', mode: 'or' }],
         filterGroups: [filters],
       },
     } as any, aggregations);
   };
-  const resolver = buildResolverFromSources(sources);
-  const authorIds = Array.from(resolver.byAuthor.keys());
-  const authorField = 'rel_created-by.internal_id.keyword';
-  // Every asserting source is kept in the flat source ids, also beyond the bounded assertion details
-  const assertionField = `${ATTRIBUTE_ASSERTION_SOURCE_IDS}.keyword`;
-  const assertionCounts = withProvenance ? await countRelationshipsByValue(aggregate(), assertionField) : new Map<string, number>();
-  const withoutAssertions = withProvenance ? [{ key: [ATTRIBUTE_ASSERTION_SOURCE_IDS], values: [], operator: 'nil', mode: 'or' }] : [];
-  const creatorCounts = await countRelationshipsByValue(aggregate(withoutAssertions), 'creator_id.keyword');
-  const authorCounts = await countRelationshipsByValue(aggregate(), authorField);
-  // Only the relationships asserted by an author source can be asserted by their own author
-  const authorAssertionCounts = withProvenance && authorIds.length > 0
-    ? await countRelationshipsWithValueListed(
-        aggregate([{ key: [ATTRIBUTE_ASSERTION_SOURCE_IDS], values: authorIds, operator: 'eq', mode: 'or' }]),
-        authorField,
-        assertionField,
-      )
-    : new Map<string, number>();
+  const resolver = buildSourceResolver(sources);
   const counts = countCoveringRelationshipsPerSource(resolver, {
-    assertions: assertionCounts,
-    creators: creatorCounts,
-    authors: authorCounts,
-    authorAssertions: authorAssertionCounts,
+    creators: await countRelationshipsByValue(aggregate, 'creator_id.keyword'),
+    authors: await countRelationshipsByValue(aggregate, 'rel_created-by.internal_id.keyword'),
   });
   const covering = Array.from(counts.entries())
     .map(([source_id, count]) => {

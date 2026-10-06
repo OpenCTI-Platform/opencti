@@ -41,7 +41,6 @@ const sourceLineFragment = graphql`
     latest_noise
     latest_freshness_hours
     latest_cost_per_actionable
-    latest_community_uniqueness
     cost {
       amount
       currency

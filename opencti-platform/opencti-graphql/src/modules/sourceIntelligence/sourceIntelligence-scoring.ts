@@ -113,19 +113,17 @@ export const computeCostPerActionable = (cost: SourceCost | null | undefined, da
 };
 
 /**
- * Impact on a logarithmic 0-100 scale: confirmed detections (hunt true positives, incidents) weigh more than
- * security platform sightings, which weigh more than any other sighting.
+ * Impact on a logarithmic 0-100 scale: incidents weigh more than security platform sightings, which weigh more than
+ * any other sighting.
  */
 export const computeImpactScore = (input: {
   sightings_count: number;
   security_platform_sightings_count: number;
-  hunt_true_positives_count: number;
   incidents_count: number;
 }): number => {
   const otherSightings = Math.max(0, input.sightings_count - input.security_platform_sightings_count);
   const raw = otherSightings
     + 2 * input.security_platform_sightings_count
-    + 3 * input.hunt_true_positives_count
     + 3 * input.incidents_count;
   if (raw <= 0) {
     return 0;

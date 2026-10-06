@@ -18,7 +18,6 @@ import {
   recommendationActionCapability,
   scoreLevel,
   sourceEditCostLink,
-  sourceScorecardRefLink,
   sourceWidgetMetricsFor,
 } from './sourceIntelligenceUtils';
 
@@ -180,20 +179,6 @@ describe('Source intelligence utils', () => {
       const now = new Date('2026-10-31T00:00:00.000Z').getTime();
       expect(periodStartDate('LAST_30_DAYS', now)).toEqual('2026-10-01T00:00:00.000Z');
       expect(periodStartDate('LAST_7_DAYS', now)).toEqual('2026-10-24T00:00:00.000Z');
-    });
-  });
-
-  describe('sourceScorecardRefLink', () => {
-    it('links the scored provenance kinds to the scorecard resolution route', () => {
-      expect(sourceScorecardRefLink({ source_kind: 'connector', source_id: 'c-1' })).toEqual('/dashboard/integrations/sources/source/ref/connector/c-1');
-      expect(sourceScorecardRefLink({ source_kind: 'feed', source_id: 'f-1' })).toEqual('/dashboard/integrations/sources/source/ref/feed/f-1');
-      expect(sourceScorecardRefLink({ source_kind: 'user', source_id: 'u 1' })).toEqual('/dashboard/integrations/sources/source/ref/user/u%201');
-    });
-
-    it('does not link the kinds that are not intelligence sources', () => {
-      expect(sourceScorecardRefLink({ source_kind: 'inference', source_id: 'rule-1' })).toBeNull();
-      expect(sourceScorecardRefLink({ source_kind: 'emulation', source_id: 'e-1' })).toBeNull();
-      expect(sourceScorecardRefLink({ source_kind: 'connector', source_id: '' })).toBeNull();
     });
   });
 

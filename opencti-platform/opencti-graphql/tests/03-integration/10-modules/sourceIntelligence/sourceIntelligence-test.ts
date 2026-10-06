@@ -131,7 +131,6 @@ const STATUS_QUERY = gql`
       last_run_success
       last_scanned_objects
       last_scan_truncated
-      provenance_mode
     }
   }
 `;
@@ -410,7 +409,6 @@ describe('Source intelligence', () => {
     expect(status.scored_sources_count).toBeGreaterThan(0);
     expect(status.scored_sources_count).toBeLessThanOrEqual(status.sources_count);
     expect(status.last_scanned_objects).toBeGreaterThan(0);
-    expect(['assertions', 'creators']).toContain(status.provenance_mode);
   });
 
   it('should serve the dashboard widgets of the sources perspective', async () => {
@@ -502,28 +500,19 @@ describe('Source intelligence', () => {
     await deleteElementById(testContext, ADMIN_USER, curated.internal_id, ENTITY_TYPE_SOURCE);
   });
 
-  it('should discover an author that only asserted existing knowledge during the window', async () => {
-    const author = await createEntity(testContext, ADMIN_USER, { name: 'Source intelligence asserting author' }, ENTITY_TYPE_IDENTITY_ORGANIZATION);
-    const asserted = await createEntity(testContext, ADMIN_USER, { name: 'Source intelligence asserted malware', is_family: false }, ENTITY_TYPE_MALWARE);
-    // Asserted again recently without any change: the object keeps its old update date
-    const now = new Date().toISOString();
-    const stored = await storeLoadById(testContext, ADMIN_USER, asserted.internal_id, ENTITY_TYPE_MALWARE);
-    await elUpdate(testContext, stored?._index as string, asserted.internal_id, {
-      doc: {
-        updated_at: '2020-01-01T00:00:00.000Z',
-        x_opencti_assertions: [{ source_id: author.internal_id, source_kind: 'author', source_name: author.name, first_asserted_at: now, last_asserted_at: now, assert_count: 1 }],
-        assertion_source_ids: [author.internal_id],
-        assertion_source_kinds: ['author'],
-        last_asserted_at: now,
-      },
-    });
-    await syncSources(testContext, { ...settings, min_author_volume: 1, min_manual_volume: 1, max_author_sources: 10000 });
-    const discovered = (await listAllSources(testContext)).find((source) => source.source_kind === 'author' && source.ref_id === author.internal_id);
-    expect(discovered).toBeTruthy();
-    if (discovered) {
-      await deleteElementById(testContext, ADMIN_USER, discovered.internal_id, ENTITY_TYPE_SOURCE);
-    }
-    await deleteElementById(testContext, ADMIN_USER, asserted.internal_id, ENTITY_TYPE_MALWARE);
+  it('should discover an author of knowledge written during the window, and only then', async () => {
+    const author = await createEntity(testContext, ADMIN_USER, { name: 'Source intelligence writing author' }, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+    const authored = await createEntity(testContext, ADMIN_USER, { name: 'Source intelligence authored malware', is_family: false, createdBy: author.internal_id }, ENTITY_TYPE_MALWARE);
+    const discoveredAuthor = async () => {
+      await syncSources(testContext, { ...settings, min_author_volume: 1, min_manual_volume: 1, max_author_sources: 10000 });
+      return (await listAllSources(testContext)).find((source) => source.source_kind === 'author' && source.ref_id === author.internal_id);
+    };
+    expect(await discoveredAuthor()).toBeTruthy();
+    // Last written before the longest period: the author left the discovery and, not curated, is removed
+    const stored = await storeLoadById(testContext, ADMIN_USER, authored.internal_id, ENTITY_TYPE_MALWARE);
+    await elUpdate(testContext, stored?._index as string, authored.internal_id, { doc: { updated_at: '2020-01-01T00:00:00.000Z' } });
+    expect(await discoveredAuthor()).toBeFalsy();
+    await deleteElementById(testContext, ADMIN_USER, authored.internal_id, ENTITY_TYPE_MALWARE);
     await deleteElementById(testContext, ADMIN_USER, author.internal_id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
   });
 

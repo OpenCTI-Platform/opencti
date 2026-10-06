@@ -17,7 +17,7 @@ A source is created automatically by the source intelligence manager for:
 - each **author** (`created_by`) with a significant volume of knowledge over the last 90 days,
 - each **analyst** writing knowledge directly, outside of any connector or feed.
 
-The volume of an author or an analyst counts the knowledge it wrote or asserted over these 90 days, including existing knowledge it asserted again without changing it.
+The volume of an author or an analyst counts the knowledge it wrote over these 90 days.
 
 The built-in platform connectors (background tasks, playbooks, synchronization, draft validation and file mapping) are not sources: they run work on behalf of analysts, and what they write is attributed to its authors and analysts. The minimum volume and the maximum number of author and analyst sources are configurable. When a connector or a feed is deleted, its source and its scorecards are removed; a quarantined one is released first, so the service account of the connector gets back the draft context it had before the quarantine (the quarantine draft is kept for review). Authors and analysts are the top contributors over the last 90 days: one that is no longer among them is removed with its scorecards at the next computation, unless you curated it (a cost, a description, tags, an owner, disabled or quarantined) or a change a recommendation applied to it can still be reverted; such a source stays and keeps being scored. The number of scored authors and analysts therefore never exceeds the configured maximums plus the sources you curated. What you set on a source (cost, description, tags, owner, enabled) is kept across computations. When two users are merged, their two analyst sources become one: the kept source takes over the recommendations of the other (a change applied to it can still be reverted), what was set on it where the kept source has nothing of its own, and its history for the days the kept source has none.
 
@@ -25,9 +25,7 @@ Connector health (status, queue, errors) is not duplicated here: the scorecard p
 
 ### How facts are attributed to sources
 
-When [provenance tracking](provenance.md) records the sources that asserted every fact (first and last assertion per source), scorecards use these assertions: a fact asserted by three connectors counts for the three of them, and lead time is exact. The status header then reads **Attribution from the sources recorded on every fact**.
-
-Otherwise, the platform falls back to the creators and the author of each object (**Attribution from creators and authors, lead time approximated**).
+Scorecards attribute each object to its creators (the connectors, feeds and analysts whose users wrote it) and to its author: an object written by three connectors counts for the three of them. The first creator is dated at the creation of the object; the platform does not record when the other creators first wrote it, so their lead time is not measured, which the status header recalls (**Attribution from creators and authors, lead time approximated**). A user shared by several connectors or feeds does not tell which of them wrote an object: it credits none of them rather than all of them.
 
 ## Scorecards
 
@@ -41,11 +39,10 @@ Every source has a scorecard over three rolling windows: 7, 30 and 90 days. The 
 | Lead time | For the objects shared with other sources, how many hours earlier (positive) or later (negative) the source reported them, and the share of objects it reported first. |
 | Accuracy | Share of its evaluated objects that were not revoked, not negatively sighted, not labelled as false positives and not excluded by a decay exclusion rule. |
 | Relevance (EE) | Share of its objects matching at least one PIR. Without an Enterprise Edition license, the relevance computed earlier is not shown, and sources and widgets can be neither filtered nor sorted on it. |
-| Impact | Detection impact on a 0-100 logarithmic scale. Hunt true positives and incidents weigh 3, security platform sightings weigh 2, other sightings weigh 1. |
+| Impact | Detection impact on a 0-100 logarithmic scale. Incidents weigh 3, security platform sightings weigh 2, other sightings weigh 1. |
 | Noise | Share of its objects that are never referenced, never sighted or expired. |
 | Freshness | Hours since its last assertion, and median ingestion latency. |
 | Cost per actionable object | When a cost is set, the cost over the window divided by the number of actionable objects (objects that are neither noise nor revoked, negatively sighted or flagged as false positives). |
-| Community uniqueness | When Threat Pulse is available, share of its objects not known by the community. |
 
 The **operational value score** (0-100) is the weighted average of unique contribution, first-reporter share, accuracy, relevance, impact and the inverse of noise. Default weights are 25, 15, 20, 15, 15 and 10 percent. Metrics that cannot be computed for a source (for example lead time when it shares nothing) are left out and the remaining weights are rescaled. The weights are configurable.
 
@@ -89,8 +86,6 @@ The **Leaderboard** tab lists the sources with their value score and their main 
 - a switch to exclude the source from the computation.
 
 ![Scorecard page of a source](assets/source-intelligence-source-detail.png)
-
-The **Sources** card of an entity, an observable or a relationship (see [Provenance and corroboration](provenance.md)) links each connector, feed, author and analyst to its scorecard page. An author without a scorecard (below the minimum volume, or when you cannot access the Sources area) opens the author entity instead.
 
 ### Cost
 
@@ -230,4 +225,4 @@ When the manager is disabled in the platform configuration, the computation swit
 
 ![Computation switch greyed out when the manager is disabled in the platform configuration](assets/source-intelligence-settings-manager-disabled.png)
 
-Scorecards are computed once a day. Between two computations, the counters follow the knowledge as it changes: a created object is added to its sources, and a deleted object is removed from the periods in which it was counted. Sightings, revocations, PIR links and hunt detections are credited to each source in the periods where it asserted the object, and withdrawn when the sighting, the PIR link or the true positive verdict is removed. A source sending again an object that already exists, without changing it, is counted by the daily computation, like ratios, scores and medians, and like the counts that depend on the whole knowledge (noise, unique and corroborated objects, actionable objects, accuracy). The scorecard page says when its value score and ratios were computed. Use **Recompute** in the Sources header to request a computation in the next minutes after a change; it is offered unless a computation is already running or requested.
+Scorecards are computed once a day. Between two computations, the counters follow the knowledge as it changes: a created object is added to its sources, and a deleted object is removed from the periods in which it was counted. Sightings, revocations and PIR links are credited to each source in the periods where it counts the object, and withdrawn when the sighting or the PIR link is removed. Ratios, scores and medians, and the counts that depend on the whole knowledge (noise, unique and corroborated objects, actionable objects, accuracy), are computed by the daily computation. The scorecard page says when its value score and ratios were computed. Use **Recompute** in the Sources header to request a computation in the next minutes after a change; it is offered unless a computation is already running or requested.

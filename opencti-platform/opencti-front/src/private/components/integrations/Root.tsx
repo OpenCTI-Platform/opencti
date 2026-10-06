@@ -11,7 +11,6 @@ const IngestionCatalogConnector = lazy(() => import('./catalog/IngestionCatalogC
 const FeedDetail = lazy(() => import('./feeds/FeedDetail'));
 const SourceIntelligence = lazy(() => import('./sources/SourceIntelligence'));
 const SourceDetail = lazy(() => import('./sources/SourceDetail'));
-const SourceRefRedirect = lazy(() => import('./sources/SourceRefRedirect'));
 
 const sourcesGuard = (element: React.ReactElement) => (
   <Security needs={[MODULES, INGESTION]} placeholder={<Navigate to="/dashboard/integrations" replace={true} />}>
@@ -52,10 +51,6 @@ const Root = () => {
         <Route
           path="/sources"
           element={sourcesGuard(boundaryWrapper(SourceIntelligence))}
-        />
-        <Route
-          path="/sources/source/ref/:kind/:refId"
-          element={boundaryWrapper(SourceRefRedirect)}
         />
         <Route
           path="/sources/source/:sourceId"

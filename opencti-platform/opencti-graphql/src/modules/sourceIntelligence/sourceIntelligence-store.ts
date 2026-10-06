@@ -303,7 +303,6 @@ export interface LiveIncrement {
   negative_sightings_count?: number;
   revoked_count?: number;
   pir_matched_count?: number;
-  hunt_true_positives_count?: number;
   source_last_asserted_at?: number;
 }
 

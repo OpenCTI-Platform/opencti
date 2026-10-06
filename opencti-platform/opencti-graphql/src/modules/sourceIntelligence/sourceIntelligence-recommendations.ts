@@ -95,10 +95,9 @@ import {
   type RuleSourceUser,
   SCHEDULE_CONFIGURATION_KEY,
 } from './sourceIntelligence-rules';
-import { buildResolverFromSources, clearDisabledSourcesLiveData, recordNamedAuthors } from './sourceIntelligence-domain';
-import { isProvenanceAttributeAvailable } from './sourceIntelligence-provenance';
+import { clearDisabledSourcesLiveData, recordNamedAuthors } from './sourceIntelligence-domain';
+import { buildSourceResolver } from './sourceIntelligence-provenance';
 import { releaseQuarantine } from './sourceIntelligence-quarantine';
-import { ATTRIBUTE_ASSERTION_SOURCE_IDS } from '../provenance/provenance-types';
 import type { ContractConfigInput } from '../../generated/graphql';
 import { requiredSettingsOfImage } from './sourceIntelligence-deployment';
 
@@ -262,13 +261,10 @@ const collectFalsePositiveValues = async (context: AuthContext, source: BasicSto
   if (fpLabelIds.length === 0) {
     return new Map<string, Set<string>>();
   }
-  const createdBySource = source.source_kind === 'author'
+  // Same attribution as the scorecard: the author of the false positives, or the users having written them
+  const sourceFilter = source.source_kind === 'author'
     ? { terms: { 'rel_created-by.internal_id.keyword': [source.ref_id] } }
     : { terms: { 'creator_id.keyword': source.source_user_ids ?? [] } };
-  // Same attribution as the scorecard: the false positives the source asserted count even when another source created them
-  const sourceFilter = isProvenanceAttributeAvailable() && source.ref_id
-    ? { bool: { should: [createdBySource, { term: { [`${ATTRIBUTE_ASSERTION_SOURCE_IDS}.keyword`]: source.ref_id } }], minimum_should_match: 1 } }
-    : createdBySource;
   const data = await elRawSearch(context, SYSTEM_USER, ENTITY_TYPE_SOURCE_RECOMMENDATION, {
     index: [READ_INDEX_STIX_CYBER_OBSERVABLES, READ_INDEX_STIX_DOMAIN_OBJECTS],
     size: Math.min(maxValues, 10000),
@@ -1062,7 +1058,7 @@ export const generateSourceRecommendations = async (context: AuthContext, source
   const feeds = await fullEntitiesList<BasicStoreEntity & { scheduling_period?: string; ingestion_running?: boolean }>(context, SYSTEM_USER, feedTypes);
   const feedsById = new Map(feeds.map((feed) => [feed.internal_id, feed]));
   const usersById = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
-  const resolver = buildResolverFromSources(sources);
+  const resolver = buildSourceResolver(sources);
   const usersShared = new Map(Array.from(resolver.byUser.entries()).map(([userId, sourceIds]) => [userId, sourceIds.length]));
   const decayRules = await getEntitiesListFromCache<BasicStoreEntityDecayRule>(context, SYSTEM_USER, ENTITY_TYPE_DECAY_RULE);
   const maxDecayRuleOrder = decayRules.reduce((max, rule) => Math.max(max, rule.order ?? 0), 0);

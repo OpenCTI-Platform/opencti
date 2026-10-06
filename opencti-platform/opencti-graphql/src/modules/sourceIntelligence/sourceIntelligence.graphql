@@ -38,11 +38,6 @@ enum SourceRecommendationStatus {
   failed
 }
 
-enum SourceProvenanceMode {
-  assertions
-  creators
-}
-
 enum SourceScorecardAggregation {
   sum
   avg
@@ -74,7 +69,6 @@ type SourceScorecard {
   scorecard_date: String!
   computed_at: DateTime!
   is_live: Boolean!
-  provenance_mode: SourceProvenanceMode
   # Volume
   volume_total: Int!
   volume_entities: Int!
@@ -105,7 +99,6 @@ type SourceScorecard {
   # Impact
   sightings_count: Int!
   security_platform_sightings_count: Int!
-  hunt_true_positives_count: Int!
   incidents_count: Int!
   impact_score: Float!
   # Noise
@@ -122,9 +115,6 @@ type SourceScorecard {
   actionable_count: Int!
   cost_per_actionable_object: Float
   cost_currency: String
-  # Threat Pulse
-  community_known_count: Int
-  community_uniqueness: Float
   # Synthesis
   value_score: Float!
   overlap: [SourceOverlapShare!]!
@@ -163,7 +153,6 @@ type Source implements InternalObject & BasicObject {
   latest_noise: Float
   latest_freshness_hours: Float
   latest_cost_per_actionable: Float
-  latest_community_uniqueness: Float
   # Connector (or feed technical connector) behind the source, health is owned by Integration Monitoring
   connector: Connector
   scorecard(period: SourceScorecardPeriod): SourceScorecard
@@ -186,7 +175,6 @@ enum SourcesOrdering {
   latest_noise
   latest_freshness_hours
   latest_cost_per_actionable
-  latest_community_uniqueness
   _score
 }
 
@@ -422,9 +410,6 @@ type SourceIntelligenceStatus {
   manager_running: Boolean!
   manager_enabled: Boolean!
   enterprise_edition: Boolean!
-  provenance_mode: SourceProvenanceMode!
-  pulse_available: Boolean!
-  hunt_available: Boolean!
   # Sources tracked, each with its scorecards refreshed at every computation
   sources_count: Int!
   # Sources whose live scorecards count at least one object

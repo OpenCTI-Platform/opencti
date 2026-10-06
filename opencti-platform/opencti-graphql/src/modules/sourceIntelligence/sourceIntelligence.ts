@@ -78,7 +78,6 @@ export const SOURCE_LATEST_KPI_ATTRIBUTES: NumericAttribute[] = [
   numeric('latest_noise', 'Latest noise', 'float', true),
   numeric('latest_freshness_hours', 'Latest freshness (hours)', 'float', true),
   numeric('latest_cost_per_actionable', 'Latest cost per actionable object', 'float', true),
-  numeric('latest_community_uniqueness', 'Latest community uniqueness', 'float', true),
 ];
 
 const SOURCE_DEFINITION: ModuleDefinition<StoreEntitySource, StixSource> = {
@@ -158,7 +157,6 @@ export const SCORECARD_NUMERIC_ATTRIBUTES: NumericAttribute[] = [
   numeric('relevance', 'Relevance', 'float'),
   numeric('sightings_count', 'Sightings', 'long'),
   numeric('security_platform_sightings_count', 'Security platform sightings', 'long'),
-  numeric('hunt_true_positives_count', 'Hunt true positives', 'long'),
   numeric('incidents_count', 'Incidents referencing', 'long'),
   numeric('impact_score', 'Impact score', 'float'),
   numeric('unreferenced_count', 'Never referenced', 'long'),
@@ -170,8 +168,6 @@ export const SCORECARD_NUMERIC_ATTRIBUTES: NumericAttribute[] = [
   numeric('median_latency_hours', 'Median publication latency (hours)', 'float'),
   numeric('actionable_count', 'Actionable objects', 'long'),
   numeric('cost_per_actionable_object', 'Cost per actionable object', 'float'),
-  numeric('community_known_count', 'Objects known by the community', 'long'),
-  numeric('community_uniqueness', 'Community uniqueness', 'float'),
   numeric('value_score', 'Operational value score', 'float'),
 ];
 
@@ -197,7 +193,6 @@ const SOURCE_SCORECARD_DEFINITION: ModuleDefinition<any, any> = {
     shortText('scorecard_date', 'Scorecard date', { isFilterable: true }),
     date('computed_at', 'Computed at', true),
     bool('is_live', 'Live scorecard', true),
-    { name: 'provenance_mode', label: 'Provenance mode', type: 'string', format: 'enum', values: ['assertions', 'creators'], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     date('source_last_asserted_at', 'Last assertion'),
     // Last stream event applied to a live scorecard: replaying a batch never counts it twice
     shortText('live_stream_event_id', 'Last applied stream event'),

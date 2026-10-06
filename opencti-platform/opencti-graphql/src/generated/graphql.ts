@@ -42,6 +42,7 @@ import type { BasicStoreEntityFintelTemplate } from '../modules/fintelTemplate/f
 import type { BasicStoreEntitySavedFilter } from '../modules/savedFilter/savedFilter-types';
 import type { BasicStoreEntityFintelDesign } from '../modules/fintelDesign/fintelDesign-types';
 import type { BasicStoreEntityPir } from '../modules/pir/pir-types';
+import type { BasicStoreEntitySource, StoreSourceScorecard, BasicStoreEntityCollectionGap, BasicStoreEntitySourceRecommendation } from '../modules/sourceIntelligence/sourceIntelligence-types';
 import type { BasicStoreEntitySecurityPlatform } from '../modules/securityPlatform/securityPlatform-types';
 import type { BasicStoreEntitySecurityCoverage, CoveredEntity } from '../modules/securityCoverage/securityCoverage-types';
 import type { BasicStoreEntitySecurityCoverageResult } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
@@ -4529,6 +4530,83 @@ export type Cluster = {
   instances_number: Scalars['Int']['output'];
 };
 
+export type CollectionGap = BasicObject & InternalObject & {
+  __typename?: 'CollectionGap';
+  computed_at?: Maybe<Scalars['DateTime']['output']>;
+  coverage_score: Scalars['Int']['output'];
+  covering_sources: Array<CollectionGapCoveringSource>;
+  created_at: Scalars['DateTime']['output'];
+  criterion_filters: Scalars['String']['output'];
+  criterion_index: Scalars['Int']['output'];
+  criterion_label: Scalars['String']['output'];
+  criterion_weight: Scalars['Int']['output'];
+  distinct_sources: Scalars['Int']['output'];
+  entity_type: Scalars['String']['output'];
+  hub_status?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  is_gap: Scalars['Boolean']['output'];
+  matched_relationships: Scalars['Int']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
+  name: Scalars['String']['output'];
+  object_types: Array<Scalars['String']['output']>;
+  parent_types: Array<Scalars['String']['output']>;
+  pir?: Maybe<Pir>;
+  pir_id: Scalars['ID']['output'];
+  recent_relationships: Scalars['Int']['output'];
+  recommended_connectors: Array<CollectionGapRecommendedConnector>;
+  regions: Array<Scalars['String']['output']>;
+  representative: Representative;
+  sectors: Array<Scalars['String']['output']>;
+  standard_id: Scalars['String']['output'];
+  updated_at: Scalars['DateTime']['output'];
+};
+
+export type CollectionGapConnection = {
+  __typename?: 'CollectionGapConnection';
+  edges: Array<CollectionGapEdge>;
+  pageInfo: PageInfo;
+};
+
+export type CollectionGapCoveringSource = {
+  __typename?: 'CollectionGapCoveringSource';
+  matched_count: Scalars['Int']['output'];
+  share: Scalars['Float']['output'];
+  source?: Maybe<Source>;
+  source_id: Scalars['ID']['output'];
+};
+
+export type CollectionGapEdge = {
+  __typename?: 'CollectionGapEdge';
+  cursor: Scalars['String']['output'];
+  node: CollectionGap;
+};
+
+export type CollectionGapRecommendedConnector = {
+  __typename?: 'CollectionGapRecommendedConnector';
+  catalog_id?: Maybe<Scalars['String']['output']>;
+  contract_image?: Maybe<Scalars['String']['output']>;
+  coverage_inferred?: Maybe<Scalars['Boolean']['output']>;
+  deployed: Scalars['Boolean']['output'];
+  manager_supported: Scalars['Boolean']['output'];
+  matched_object_types: Array<Scalars['String']['output']>;
+  matched_regions: Array<Scalars['String']['output']>;
+  matched_sectors: Array<Scalars['String']['output']>;
+  origin: Scalars['String']['output'];
+  required_settings: Array<ConnectorRequiredSetting>;
+  score: Scalars['Float']['output'];
+  short_description?: Maybe<Scalars['String']['output']>;
+  slug: Scalars['String']['output'];
+  title: Scalars['String']['output'];
+  verified?: Maybe<Scalars['Boolean']['output']>;
+};
+
+export enum CollectionGapsOrdering {
+  Score = '_score',
+  ComputedAt = 'computed_at',
+  GapCoverageScore = 'gap_coverage_score',
+  Name = 'name'
+}
+
 export type ComplexPath = {
   __typename?: 'ComplexPath';
   configuration?: Maybe<AttributeColumnConfiguration>;
@@ -4724,6 +4802,15 @@ export enum ConnectorRequestStatus {
   Starting = 'starting',
   Stopping = 'stopping'
 }
+
+export type ConnectorRequiredSetting = {
+  __typename?: 'ConnectorRequiredSetting';
+  description?: Maybe<Scalars['String']['output']>;
+  key: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+  secret: Scalars['Boolean']['output'];
+  type: Scalars['String']['output'];
+};
 
 export enum ConnectorType {
   ExternalImport = 'EXTERNAL_IMPORT',
@@ -17275,6 +17362,7 @@ export type Mutation = {
   aiSummarizeFiles?: Maybe<Scalars['String']['output']>;
   aiThreatGenerateReport?: Maybe<Scalars['String']['output']>;
   aiVictimGenerateReport?: Maybe<Scalars['String']['output']>;
+  applySourceRecommendation?: Maybe<SourceRecommendation>;
   artifactImport?: Maybe<Artifact>;
   askJobImport?: Maybe<File>;
   askSendOtp?: Maybe<Scalars['String']['output']>;
@@ -17312,6 +17400,7 @@ export type Mutation = {
   cityAdd?: Maybe<City>;
   cityEdit?: Maybe<CityEditMutations>;
   clearWorkflowPendingState: WorkflowInstance;
+  collectionGapDeployConnector?: Maybe<SourceRecommendation>;
   connectorJWT: Scalars['String']['output'];
   connectorMigrateToManaged: ManagedConnector;
   contactUsXtmHub: Success;
@@ -17366,6 +17455,7 @@ export type Mutation = {
   deleteImport?: Maybe<Scalars['ID']['output']>;
   deleteOperationConfirm?: Maybe<Scalars['ID']['output']>;
   deleteOperationRestore?: Maybe<Scalars['ID']['output']>;
+  dismissSourceRecommendation?: Maybe<SourceRecommendation>;
   disseminationListAdd?: Maybe<DisseminationList>;
   disseminationListDelete?: Maybe<Scalars['ID']['output']>;
   disseminationListFieldPatch?: Maybe<DisseminationList>;
@@ -17583,6 +17673,7 @@ export type Mutation = {
   retentionRuleAdd: RetentionRule;
   retentionRuleCheck: Scalars['Int']['output'];
   retentionRuleEdit?: Maybe<RetentionRuleEditMutations>;
+  revertSourceRecommendation?: Maybe<SourceRecommendation>;
   roleAdd?: Maybe<Role>;
   roleEdit?: Maybe<RoleEditMutations>;
   ruleApply?: Maybe<Scalars['Boolean']['output']>;
@@ -17626,6 +17717,11 @@ export type Mutation = {
   smtpConfigurationDelete?: Maybe<Scalars['Boolean']['output']>;
   smtpConfigurationEdit?: Maybe<SmtpConfiguration>;
   smtpConfigurationTest?: Maybe<Scalars['Boolean']['output']>;
+  sourceFieldPatch?: Maybe<Source>;
+  sourceIntelligenceDashboardCreate?: Maybe<Workspace>;
+  sourceIntelligenceRecompute?: Maybe<Scalars['Boolean']['output']>;
+  sourceIntelligenceSettingsEdit?: Maybe<SourceIntelligenceSettings>;
+  sourceSetCost?: Maybe<Source>;
   statusTemplateAdd: StatusTemplate;
   statusTemplateContextClean: StatusTemplate;
   statusTemplateContextPatch: StatusTemplate;
@@ -17898,6 +17994,12 @@ export type MutationAiVictimGenerateReportArgs = {
 };
 
 
+export type MutationApplySourceRecommendationArgs = {
+  id: Scalars['ID']['input'];
+  input?: InputMaybe<SourceRecommendationApplyInput>;
+};
+
+
 export type MutationArtifactImportArgs = {
   createdBy?: InputMaybe<Scalars['String']['input']>;
   file: Scalars['Upload']['input'];
@@ -18101,6 +18203,13 @@ export type MutationCityEditArgs = {
 
 export type MutationClearWorkflowPendingStateArgs = {
   entityId: Scalars['String']['input'];
+};
+
+
+export type MutationCollectionGapDeployConnectorArgs = {
+  configuration?: InputMaybe<Array<ContractConfigInput>>;
+  id: Scalars['ID']['input'];
+  slug: Scalars['String']['input'];
 };
 
 
@@ -18408,6 +18517,12 @@ export type MutationDeleteOperationConfirmArgs = {
 
 export type MutationDeleteOperationRestoreArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationDismissSourceRecommendationArgs = {
+  id: Scalars['ID']['input'];
+  reason?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -19602,6 +19717,11 @@ export type MutationRetentionRuleEditArgs = {
 };
 
 
+export type MutationRevertSourceRecommendationArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
 export type MutationRoleAddArgs = {
   input: RoleAddInput;
 };
@@ -19835,6 +19955,28 @@ export type MutationSmtpConfigurationEditArgs = {
 
 export type MutationSmtpConfigurationTestArgs = {
   email: Scalars['String']['input'];
+};
+
+
+export type MutationSourceFieldPatchArgs = {
+  id: Scalars['ID']['input'];
+  input: Array<EditInput>;
+};
+
+
+export type MutationSourceIntelligenceDashboardCreateArgs = {
+  name?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type MutationSourceIntelligenceSettingsEditArgs = {
+  input: SourceIntelligenceSettingsInput;
+};
+
+
+export type MutationSourceSetCostArgs = {
+  id: Scalars['ID']['input'];
+  input?: InputMaybe<SourceCostInput>;
 };
 
 
@@ -24789,6 +24931,7 @@ export type Query = {
   channels?: Maybe<ChannelConnection>;
   cities?: Maybe<CityConnection>;
   city?: Maybe<City>;
+  collectionGaps?: Maybe<CollectionGapConnection>;
   connector?: Maybe<Connector>;
   connectorManager: ConnectorManager;
   connectorManagers: Array<ConnectorManager>;
@@ -25052,6 +25195,19 @@ export type Query = {
   sessions?: Maybe<Array<Maybe<UserSession>>>;
   settings: Settings;
   smtpConfiguration?: Maybe<SmtpConfiguration>;
+  source?: Maybe<Source>;
+  sourceIntelligenceSettings?: Maybe<SourceIntelligenceSettings>;
+  sourceIntelligenceStatus: SourceIntelligenceStatus;
+  sourceOverlap: SourceOverlapMatrix;
+  sourceRecommendation?: Maybe<SourceRecommendation>;
+  sourceRecommendations?: Maybe<SourceRecommendationConnection>;
+  sourceScorecardMetrics: Array<SourceScorecardMetric>;
+  sourceScorecards: Array<SourceScorecard>;
+  sourceScorecardsDistribution: Array<SourceScorecardDistributionItem>;
+  sourceScorecardsNumber: SourceScorecardNumber;
+  sourceScorecardsScatter: Array<SourceScorecardScatterPoint>;
+  sourceScorecardsTimeSeries: Array<SourceScorecardTimePoint>;
+  sources?: Maybe<SourceConnection>;
   status?: Maybe<Status>;
   statusTemplate?: Maybe<StatusTemplate>;
   statusTemplates?: Maybe<StatusTemplateConnection>;
@@ -25502,6 +25658,16 @@ export type QueryCitiesArgs = {
 
 export type QueryCityArgs = {
   id?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryCollectionGapsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  onlyGaps?: InputMaybe<Scalars['Boolean']['input']>;
+  orderBy?: InputMaybe<CollectionGapsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  pirId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 
@@ -27296,6 +27462,92 @@ export type QuerySecurityPlatformsArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
   toStix?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type QuerySourceArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QuerySourceOverlapArgs = {
+  first?: InputMaybe<Scalars['Int']['input']>;
+  period?: InputMaybe<SourceScorecardPeriod>;
+  sourceIds?: InputMaybe<Array<Scalars['ID']['input']>>;
+};
+
+
+export type QuerySourceRecommendationArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QuerySourceRecommendationsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  kind?: InputMaybe<Array<SourceRecommendationKind>>;
+  orderBy?: InputMaybe<SourceRecommendationsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  sourceId?: InputMaybe<Scalars['ID']['input']>;
+  status?: InputMaybe<Array<SourceRecommendationStatus>>;
+};
+
+
+export type QuerySourceScorecardsArgs = {
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  period?: InputMaybe<SourceScorecardPeriod>;
+  sourceId: Scalars['ID']['input'];
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
+};
+
+
+export type QuerySourceScorecardsDistributionArgs = {
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  metric: Scalars['String']['input'];
+  orderMode?: InputMaybe<OrderingMode>;
+  period?: InputMaybe<SourceScorecardPeriod>;
+};
+
+
+export type QuerySourceScorecardsNumberArgs = {
+  aggregation?: InputMaybe<SourceScorecardAggregation>;
+  filters?: InputMaybe<FilterGroup>;
+  metric: Scalars['String']['input'];
+  period?: InputMaybe<SourceScorecardPeriod>;
+};
+
+
+export type QuerySourceScorecardsScatterArgs = {
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  period?: InputMaybe<SourceScorecardPeriod>;
+  sizeMetric?: InputMaybe<Scalars['String']['input']>;
+  xMetric: Scalars['String']['input'];
+  yMetric: Scalars['String']['input'];
+};
+
+
+export type QuerySourceScorecardsTimeSeriesArgs = {
+  aggregation?: InputMaybe<SourceScorecardAggregation>;
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  metric: Scalars['String']['input'];
+  period?: InputMaybe<SourceScorecardPeriod>;
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
+};
+
+
+export type QuerySourcesArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<SourcesOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -31601,6 +31853,482 @@ export type SoftwareEdge = {
   cursor: Scalars['String']['output'];
   node: Software;
 };
+
+export type Source = BasicObject & InternalObject & {
+  __typename?: 'Source';
+  connector?: Maybe<Connector>;
+  cost?: Maybe<SourceCost>;
+  created_at: Scalars['DateTime']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  enabled: Scalars['Boolean']['output'];
+  entity_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  last_computed_at?: Maybe<Scalars['DateTime']['output']>;
+  latest_accuracy?: Maybe<Scalars['Float']['output']>;
+  latest_corroboration_rate?: Maybe<Scalars['Float']['output']>;
+  latest_cost_per_actionable?: Maybe<Scalars['Float']['output']>;
+  latest_freshness_hours?: Maybe<Scalars['Float']['output']>;
+  latest_impact_score?: Maybe<Scalars['Float']['output']>;
+  latest_lead_time_hours?: Maybe<Scalars['Float']['output']>;
+  latest_noise?: Maybe<Scalars['Float']['output']>;
+  latest_relevance?: Maybe<Scalars['Float']['output']>;
+  latest_unique_contribution?: Maybe<Scalars['Float']['output']>;
+  latest_value_score?: Maybe<Scalars['Float']['output']>;
+  latest_volume?: Maybe<Scalars['Int']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
+  name: Scalars['String']['output'];
+  owner?: Maybe<Creator>;
+  parent_types: Array<Scalars['String']['output']>;
+  quarantine_draft_id?: Maybe<Scalars['String']['output']>;
+  quarantined: Scalars['Boolean']['output'];
+  recommendationsCount: Scalars['Int']['output'];
+  ref_id?: Maybe<Scalars['String']['output']>;
+  ref_type?: Maybe<Scalars['String']['output']>;
+  representative: Representative;
+  scorecard?: Maybe<SourceScorecard>;
+  source_kind: SourceKind;
+  standard_id: Scalars['String']['output'];
+  tags?: Maybe<Array<Scalars['String']['output']>>;
+  updated_at: Scalars['DateTime']['output'];
+};
+
+
+export type SourceRecommendationsCountArgs = {
+  status?: InputMaybe<Array<SourceRecommendationStatus>>;
+};
+
+
+export type SourceScorecardArgs = {
+  period?: InputMaybe<SourceScorecardPeriod>;
+};
+
+export type SourceConnection = {
+  __typename?: 'SourceConnection';
+  edges: Array<SourceEdge>;
+  pageInfo: PageInfo;
+};
+
+export type SourceCost = {
+  __typename?: 'SourceCost';
+  amount: Scalars['Float']['output'];
+  currency: Scalars['String']['output'];
+  period: SourceCostPeriod;
+};
+
+export type SourceCostInput = {
+  amount: Scalars['Float']['input'];
+  currency: Scalars['String']['input'];
+  period: SourceCostPeriod;
+};
+
+export enum SourceCostPeriod {
+  Month = 'month',
+  Quarter = 'quarter',
+  Year = 'year'
+}
+
+export type SourceEdge = {
+  __typename?: 'SourceEdge';
+  cursor: Scalars['String']['output'];
+  node: Source;
+};
+
+export type SourceIntelligenceAutonomy = {
+  __typename?: 'SourceIntelligenceAutonomy';
+  auto_apply_kinds: Array<SourceRecommendationKind>;
+  max_auto_actions_per_run: Scalars['Int']['output'];
+};
+
+export type SourceIntelligenceAutonomyInput = {
+  auto_apply_kinds?: InputMaybe<Array<SourceRecommendationKind>>;
+  max_auto_actions_per_run?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type SourceIntelligenceGapSettings = {
+  __typename?: 'SourceIntelligenceGapSettings';
+  max_recommendations: Scalars['Int']['output'];
+  recent_days: Scalars['Int']['output'];
+  target_relationships: Scalars['Int']['output'];
+  target_sources: Scalars['Int']['output'];
+  window_days: Scalars['Int']['output'];
+};
+
+export type SourceIntelligenceGapSettingsInput = {
+  max_recommendations?: InputMaybe<Scalars['Int']['input']>;
+  recent_days?: InputMaybe<Scalars['Int']['input']>;
+  target_relationships?: InputMaybe<Scalars['Int']['input']>;
+  target_sources?: InputMaybe<Scalars['Int']['input']>;
+  window_days?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type SourceIntelligenceSettings = {
+  __typename?: 'SourceIntelligenceSettings';
+  autonomy: SourceIntelligenceAutonomy;
+  backfill_days: Scalars['Int']['output'];
+  corroboration_min_other_sources: Scalars['Int']['output'];
+  false_positive_labels: Array<Scalars['String']['output']>;
+  gaps: SourceIntelligenceGapSettings;
+  manager_enabled: Scalars['Boolean']['output'];
+  manager_running: Scalars['Boolean']['output'];
+  max_author_sources: Scalars['Int']['output'];
+  max_manual_sources: Scalars['Int']['output'];
+  max_scan_objects: Scalars['Int']['output'];
+  min_author_volume: Scalars['Int']['output'];
+  min_manual_volume: Scalars['Int']['output'];
+  overlap_top: Scalars['Int']['output'];
+  recompute_hour_utc: Scalars['Int']['output'];
+  snapshot_retention_days: Scalars['Int']['output'];
+  thresholds: SourceIntelligenceThresholds;
+  tuning: SourceIntelligenceTuning;
+  value_weights: SourceIntelligenceValueWeights;
+};
+
+export type SourceIntelligenceSettingsInput = {
+  autonomy?: InputMaybe<SourceIntelligenceAutonomyInput>;
+  backfill_days?: InputMaybe<Scalars['Int']['input']>;
+  corroboration_min_other_sources?: InputMaybe<Scalars['Int']['input']>;
+  false_positive_labels?: InputMaybe<Array<Scalars['String']['input']>>;
+  gaps?: InputMaybe<SourceIntelligenceGapSettingsInput>;
+  manager_running?: InputMaybe<Scalars['Boolean']['input']>;
+  max_author_sources?: InputMaybe<Scalars['Int']['input']>;
+  max_manual_sources?: InputMaybe<Scalars['Int']['input']>;
+  max_scan_objects?: InputMaybe<Scalars['Int']['input']>;
+  min_author_volume?: InputMaybe<Scalars['Int']['input']>;
+  min_manual_volume?: InputMaybe<Scalars['Int']['input']>;
+  overlap_top?: InputMaybe<Scalars['Int']['input']>;
+  recompute_hour_utc?: InputMaybe<Scalars['Int']['input']>;
+  snapshot_retention_days?: InputMaybe<Scalars['Int']['input']>;
+  thresholds?: InputMaybe<SourceIntelligenceThresholdsInput>;
+  tuning?: InputMaybe<SourceIntelligenceTuningInput>;
+  value_weights?: InputMaybe<SourceIntelligenceValueWeightsInput>;
+};
+
+export type SourceIntelligenceStatus = {
+  __typename?: 'SourceIntelligenceStatus';
+  backfill_days_done?: Maybe<Scalars['Int']['output']>;
+  backfill_days_total?: Maybe<Scalars['Int']['output']>;
+  backfill_done: Scalars['Boolean']['output'];
+  backfill_next_day?: Maybe<Scalars['String']['output']>;
+  enterprise_edition: Scalars['Boolean']['output'];
+  last_full_run_end?: Maybe<Scalars['DateTime']['output']>;
+  last_full_run_start?: Maybe<Scalars['DateTime']['output']>;
+  last_run_message?: Maybe<Scalars['String']['output']>;
+  last_run_success?: Maybe<Scalars['Boolean']['output']>;
+  last_scan_truncated: Scalars['Boolean']['output'];
+  last_scanned_objects?: Maybe<Scalars['Int']['output']>;
+  manager_enabled: Scalars['Boolean']['output'];
+  manager_running: Scalars['Boolean']['output'];
+  recompute_requested_at?: Maybe<Scalars['DateTime']['output']>;
+  scored_sources_count: Scalars['Int']['output'];
+  sources_count: Scalars['Int']['output'];
+};
+
+export type SourceIntelligenceThresholds = {
+  __typename?: 'SourceIntelligenceThresholds';
+  deny_list_min_false_positives: Scalars['Int']['output'];
+  gap_coverage: Scalars['Int']['output'];
+  high_accuracy: Scalars['Float']['output'];
+  high_noise: Scalars['Float']['output'];
+  low_accuracy: Scalars['Float']['output'];
+  min_volume: Scalars['Int']['output'];
+  quarantine_accuracy: Scalars['Float']['output'];
+  raise_confidence_corroboration: Scalars['Float']['output'];
+  redundant_overlap: Scalars['Float']['output'];
+  retire_max_unique_contribution: Scalars['Float']['output'];
+  stale_feed_hours: Scalars['Int']['output'];
+};
+
+export type SourceIntelligenceThresholdsInput = {
+  deny_list_min_false_positives?: InputMaybe<Scalars['Int']['input']>;
+  gap_coverage?: InputMaybe<Scalars['Int']['input']>;
+  high_accuracy?: InputMaybe<Scalars['Float']['input']>;
+  high_noise?: InputMaybe<Scalars['Float']['input']>;
+  low_accuracy?: InputMaybe<Scalars['Float']['input']>;
+  min_volume?: InputMaybe<Scalars['Int']['input']>;
+  quarantine_accuracy?: InputMaybe<Scalars['Float']['input']>;
+  raise_confidence_corroboration?: InputMaybe<Scalars['Float']['input']>;
+  redundant_overlap?: InputMaybe<Scalars['Float']['input']>;
+  retire_max_unique_contribution?: InputMaybe<Scalars['Float']['input']>;
+  stale_feed_hours?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type SourceIntelligenceTuning = {
+  __typename?: 'SourceIntelligenceTuning';
+  confidence_step: Scalars['Int']['output'];
+  deny_list_max_values: Scalars['Int']['output'];
+  dismiss_cooldown_days: Scalars['Int']['output'];
+  min_confidence: Scalars['Int']['output'];
+  min_schedule_minutes: Scalars['Int']['output'];
+  noisy_decay_lifetime_days: Scalars['Int']['output'];
+};
+
+export type SourceIntelligenceTuningInput = {
+  confidence_step?: InputMaybe<Scalars['Int']['input']>;
+  deny_list_max_values?: InputMaybe<Scalars['Int']['input']>;
+  dismiss_cooldown_days?: InputMaybe<Scalars['Int']['input']>;
+  min_confidence?: InputMaybe<Scalars['Int']['input']>;
+  min_schedule_minutes?: InputMaybe<Scalars['Int']['input']>;
+  noisy_decay_lifetime_days?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type SourceIntelligenceValueWeights = {
+  __typename?: 'SourceIntelligenceValueWeights';
+  accuracy: Scalars['Float']['output'];
+  impact: Scalars['Float']['output'];
+  lead_time: Scalars['Float']['output'];
+  noise: Scalars['Float']['output'];
+  relevance: Scalars['Float']['output'];
+  uniqueness: Scalars['Float']['output'];
+};
+
+export type SourceIntelligenceValueWeightsInput = {
+  accuracy?: InputMaybe<Scalars['Float']['input']>;
+  impact?: InputMaybe<Scalars['Float']['input']>;
+  lead_time?: InputMaybe<Scalars['Float']['input']>;
+  noise?: InputMaybe<Scalars['Float']['input']>;
+  relevance?: InputMaybe<Scalars['Float']['input']>;
+  uniqueness?: InputMaybe<Scalars['Float']['input']>;
+};
+
+export enum SourceKind {
+  Author = 'author',
+  Connector = 'connector',
+  IngestionFeed = 'ingestion_feed',
+  Manual = 'manual'
+}
+
+export type SourceOverlapCell = {
+  __typename?: 'SourceOverlapCell';
+  jaccard: Scalars['Float']['output'];
+  share_a: Scalars['Float']['output'];
+  share_b: Scalars['Float']['output'];
+  shared_count: Scalars['Int']['output'];
+  source_a: Scalars['ID']['output'];
+  source_b: Scalars['ID']['output'];
+};
+
+export type SourceOverlapMatrix = {
+  __typename?: 'SourceOverlapMatrix';
+  cells: Array<SourceOverlapCell>;
+  computed_at?: Maybe<Scalars['DateTime']['output']>;
+  period: SourceScorecardPeriod;
+  sources: Array<Source>;
+};
+
+export type SourceOverlapShare = {
+  __typename?: 'SourceOverlapShare';
+  share: Scalars['Float']['output'];
+  shared_count: Scalars['Int']['output'];
+  source?: Maybe<Source>;
+  source_id: Scalars['ID']['output'];
+};
+
+export type SourceRecommendation = BasicObject & InternalObject & {
+  __typename?: 'SourceRecommendation';
+  applied_at?: Maybe<Scalars['DateTime']['output']>;
+  applied_by?: Maybe<Creator>;
+  apply_result?: Maybe<Scalars['String']['output']>;
+  autonomous: Scalars['Boolean']['output'];
+  collection_gap_id?: Maybe<Scalars['ID']['output']>;
+  created_at: Scalars['DateTime']['output'];
+  dismiss_reason?: Maybe<Scalars['String']['output']>;
+  dismissed_at?: Maybe<Scalars['DateTime']['output']>;
+  dismissed_by?: Maybe<Creator>;
+  entity_type: Scalars['String']['output'];
+  error_message?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  kind: SourceRecommendationKind;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
+  name: Scalars['String']['output'];
+  parent_types: Array<Scalars['String']['output']>;
+  payload: Scalars['String']['output'];
+  pir_id?: Maybe<Scalars['ID']['output']>;
+  proposed_at: Scalars['DateTime']['output'];
+  rationale: Scalars['String']['output'];
+  recommendation_evidence?: Maybe<Scalars['String']['output']>;
+  representative: Representative;
+  required_settings: Array<ConnectorRequiredSetting>;
+  reverted_at?: Maybe<Scalars['DateTime']['output']>;
+  reverted_by?: Maybe<Creator>;
+  source?: Maybe<Source>;
+  source_id?: Maybe<Scalars['ID']['output']>;
+  standard_id: Scalars['String']['output'];
+  status: SourceRecommendationStatus;
+  updated_at: Scalars['DateTime']['output'];
+};
+
+export type SourceRecommendationApplyInput = {
+  configuration?: InputMaybe<Array<ContractConfigInput>>;
+  connector_id?: InputMaybe<Scalars['ID']['input']>;
+};
+
+export type SourceRecommendationConnection = {
+  __typename?: 'SourceRecommendationConnection';
+  edges: Array<SourceRecommendationEdge>;
+  pageInfo: PageInfo;
+};
+
+export type SourceRecommendationEdge = {
+  __typename?: 'SourceRecommendationEdge';
+  cursor: Scalars['String']['output'];
+  node: SourceRecommendation;
+};
+
+export enum SourceRecommendationKind {
+  AddConnector = 'add_connector',
+  AddDecayRule = 'add_decay_rule',
+  AddDenyList = 'add_deny_list',
+  ChangeSchedule = 'change_schedule',
+  LowerConfidence = 'lower_confidence',
+  Quarantine = 'quarantine',
+  RaiseConfidence = 'raise_confidence',
+  Retire = 'retire'
+}
+
+export enum SourceRecommendationStatus {
+  Applied = 'applied',
+  Applying = 'applying',
+  Dismissed = 'dismissed',
+  Failed = 'failed',
+  Proposed = 'proposed',
+  Reverted = 'reverted',
+  Reverting = 'reverting'
+}
+
+export enum SourceRecommendationsOrdering {
+  Score = '_score',
+  AppliedAt = 'applied_at',
+  Name = 'name',
+  ProposedAt = 'proposed_at',
+  RecommendationKind = 'recommendation_kind',
+  RecommendationStatus = 'recommendation_status'
+}
+
+export type SourceScorecard = {
+  __typename?: 'SourceScorecard';
+  accuracy?: Maybe<Scalars['Float']['output']>;
+  actionable_count: Scalars['Int']['output'];
+  computed_at: Scalars['DateTime']['output'];
+  corroborated_count: Scalars['Int']['output'];
+  corroboration_rate: Scalars['Float']['output'];
+  cost_currency?: Maybe<Scalars['String']['output']>;
+  cost_per_actionable_object?: Maybe<Scalars['Float']['output']>;
+  decay_excluded_count: Scalars['Int']['output'];
+  evaluated_count: Scalars['Int']['output'];
+  expired_count: Scalars['Int']['output'];
+  false_positive_count: Scalars['Int']['output'];
+  first_reporter_share?: Maybe<Scalars['Float']['output']>;
+  freshness_hours?: Maybe<Scalars['Float']['output']>;
+  id: Scalars['ID']['output'];
+  impact_score: Scalars['Float']['output'];
+  incidents_count: Scalars['Int']['output'];
+  is_live: Scalars['Boolean']['output'];
+  last_asserted_at?: Maybe<Scalars['DateTime']['output']>;
+  lead_time_hours?: Maybe<Scalars['Float']['output']>;
+  median_latency_hours?: Maybe<Scalars['Float']['output']>;
+  negative_sightings_count: Scalars['Int']['output'];
+  new_objects: Scalars['Int']['output'];
+  noise?: Maybe<Scalars['Float']['output']>;
+  noise_count: Scalars['Int']['output'];
+  overlap: Array<SourceOverlapShare>;
+  period: SourceScorecardPeriod;
+  period_end: Scalars['DateTime']['output'];
+  period_start: Scalars['DateTime']['output'];
+  pir_matched_count?: Maybe<Scalars['Int']['output']>;
+  relevance?: Maybe<Scalars['Float']['output']>;
+  revoked_count: Scalars['Int']['output'];
+  scorecard_date: Scalars['String']['output'];
+  security_platform_sightings_count: Scalars['Int']['output'];
+  shared_count: Scalars['Int']['output'];
+  sightings_count: Scalars['Int']['output'];
+  source_id: Scalars['ID']['output'];
+  source_kind: SourceKind;
+  source_name?: Maybe<Scalars['String']['output']>;
+  unique_contribution: Scalars['Float']['output'];
+  unique_count: Scalars['Int']['output'];
+  unreferenced_count: Scalars['Int']['output'];
+  unsighted_count: Scalars['Int']['output'];
+  value_score: Scalars['Float']['output'];
+  volume_entities: Scalars['Int']['output'];
+  volume_indicators: Scalars['Int']['output'];
+  volume_last_day: Scalars['Int']['output'];
+  volume_observables: Scalars['Int']['output'];
+  volume_relationships: Scalars['Int']['output'];
+  volume_total: Scalars['Int']['output'];
+};
+
+export enum SourceScorecardAggregation {
+  Avg = 'avg',
+  Max = 'max',
+  Min = 'min',
+  Sum = 'sum'
+}
+
+export type SourceScorecardDistributionItem = {
+  __typename?: 'SourceScorecardDistributionItem';
+  currency?: Maybe<Scalars['String']['output']>;
+  entity?: Maybe<Source>;
+  label: Scalars['String']['output'];
+  value?: Maybe<Scalars['Float']['output']>;
+};
+
+export type SourceScorecardMetric = {
+  __typename?: 'SourceScorecardMetric';
+  enterprise: Scalars['Boolean']['output'];
+  higher_is_better: Scalars['Boolean']['output'];
+  key: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+  type: Scalars['String']['output'];
+};
+
+export type SourceScorecardNumber = {
+  __typename?: 'SourceScorecardNumber';
+  currency?: Maybe<Scalars['String']['output']>;
+  sources_count: Scalars['Int']['output'];
+  value?: Maybe<Scalars['Float']['output']>;
+};
+
+export enum SourceScorecardPeriod {
+  Last_7Days = 'LAST_7_DAYS',
+  Last_30Days = 'LAST_30_DAYS',
+  Last_90Days = 'LAST_90_DAYS'
+}
+
+export type SourceScorecardScatterPoint = {
+  __typename?: 'SourceScorecardScatterPoint';
+  currency?: Maybe<Scalars['String']['output']>;
+  entity?: Maybe<Source>;
+  label: Scalars['String']['output'];
+  size?: Maybe<Scalars['Float']['output']>;
+  x?: Maybe<Scalars['Float']['output']>;
+  y?: Maybe<Scalars['Float']['output']>;
+};
+
+export type SourceScorecardTimePoint = {
+  __typename?: 'SourceScorecardTimePoint';
+  currency?: Maybe<Scalars['String']['output']>;
+  date: Scalars['DateTime']['output'];
+  value?: Maybe<Scalars['Float']['output']>;
+};
+
+export enum SourcesOrdering {
+  Score = '_score',
+  Enabled = 'enabled',
+  LastComputedAt = 'last_computed_at',
+  LatestAccuracy = 'latest_accuracy',
+  LatestCorroborationRate = 'latest_corroboration_rate',
+  LatestCostPerActionable = 'latest_cost_per_actionable',
+  LatestFreshnessHours = 'latest_freshness_hours',
+  LatestImpactScore = 'latest_impact_score',
+  LatestLeadTimeHours = 'latest_lead_time_hours',
+  LatestNoise = 'latest_noise',
+  LatestRelevance = 'latest_relevance',
+  LatestUniqueContribution = 'latest_unique_contribution',
+  LatestValueScore = 'latest_value_score',
+  LatestVolume = 'latest_volume',
+  Name = 'name',
+  SourceKind = 'source_kind'
+}
 
 export enum SsvcAutomatable {
   No = 'no',
@@ -38638,7 +39366,8 @@ export type WidgetParameters = {
 export enum WidgetPerspective {
   Audits = 'audits',
   Entities = 'entities',
-  Relationships = 'relationships'
+  Relationships = 'relationships',
+  Sources = 'sources'
 }
 
 export type WindowsRegistryKey = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -40060,6 +40789,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( GraphqlCatalog )
     | ( BasicStoreEntityChannel )
     | ( Omit<City, 'administrativeArea' | 'avatar' | 'cases' | 'connectors' | 'containers' | 'country' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'workflowInstance' | 'x_opencti_inferences'> & { administrativeArea?: Maybe<_RefType['AdministrativeArea']>, avatar?: Maybe<_RefType['OpenCtiFile']>, cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, country?: Maybe<_RefType['Country']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<_RefType['FileConnection']>, fintelTemplates?: Maybe<Array<_RefType['FintelTemplate']>>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, status?: Maybe<_RefType['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, workflowInstance?: Maybe<_RefType['WorkflowInstance']>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
+    | ( BasicStoreEntityCollectionGap )
     | ( Omit<Connector, 'configurations' | 'connector_user' | 'works'> & { configurations?: Maybe<Array<_RefType['ConnectorConfiguration']>>, connector_user?: Maybe<_RefType['User']>, works?: Maybe<Array<Maybe<_RefType['Work']>>> } )
     | ( ConnectorManager )
     | ( Omit<Country, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'region' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'workflowInstance' | 'x_opencti_inferences'> & { avatar?: Maybe<_RefType['OpenCtiFile']>, cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<_RefType['FileConnection']>, fintelTemplates?: Maybe<Array<_RefType['FintelTemplate']>>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, region?: Maybe<_RefType['Region']>, reports?: Maybe<_RefType['ReportConnection']>, status?: Maybe<_RefType['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, workflowInstance?: Maybe<_RefType['WorkflowInstance']>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
@@ -40150,6 +40880,8 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( BasicStoreEntitySecurityPlatform )
     | ( Omit<Settings, 'activity_listeners' | 'editContext' | 'messages_administration' | 'platform_critical_alerts' | 'platform_ip_whitelist_exclusions' | 'platform_messages' | 'platform_organization' | 'platform_theme'> & { activity_listeners?: Maybe<Array<_RefType['Member']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, messages_administration?: Maybe<Array<_RefType['SettingsMessage']>>, platform_critical_alerts: Array<_RefType['PlatformCriticalAlert']>, platform_ip_whitelist_exclusions?: Maybe<Array<_RefType['Member']>>, platform_messages?: Maybe<Array<_RefType['SettingsMessage']>>, platform_organization?: Maybe<_RefType['Organization']>, platform_theme?: Maybe<_RefType['Theme']> } )
     | ( Omit<Software, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'vulnerabilities' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, vulnerabilities?: Maybe<_RefType['VulnerabilityConnection']>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
+    | ( BasicStoreEntitySource )
+    | ( BasicStoreEntitySourceRecommendation )
     | ( Omit<StixFile, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'obsContent' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, obsContent?: Maybe<_RefType['Artifact']>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( BasicStoreEntitySupportPackage )
     | ( Omit<System, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'organizations' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'workflowInstance' | 'x_opencti_inferences'> & { avatar?: Maybe<_RefType['OpenCtiFile']>, cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<_RefType['FileConnection']>, fintelTemplates?: Maybe<Array<_RefType['FintelTemplate']>>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, organizations?: Maybe<_RefType['OrganizationConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, status?: Maybe<_RefType['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, workflowInstance?: Maybe<_RefType['WorkflowInstance']>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
@@ -40215,6 +40947,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( BasicCapabilityEntity )
     | ( BasicStoreEntityCaseTemplate )
     | ( GraphqlCatalog )
+    | ( BasicStoreEntityCollectionGap )
     | ( Omit<Connector, 'configurations' | 'connector_user' | 'works'> & { configurations?: Maybe<Array<_RefType['ConnectorConfiguration']>>, connector_user?: Maybe<_RefType['User']>, works?: Maybe<Array<Maybe<_RefType['Work']>>> } )
     | ( ConnectorManager )
     | ( BasicStoreEntityCsvMapper )
@@ -40250,6 +40983,8 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( BasicStoreEntity )
     | ( BasicStoreEntitySavedFilter )
     | ( Omit<Settings, 'activity_listeners' | 'editContext' | 'messages_administration' | 'platform_critical_alerts' | 'platform_ip_whitelist_exclusions' | 'platform_messages' | 'platform_organization' | 'platform_theme'> & { activity_listeners?: Maybe<Array<_RefType['Member']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, messages_administration?: Maybe<Array<_RefType['SettingsMessage']>>, platform_critical_alerts: Array<_RefType['PlatformCriticalAlert']>, platform_ip_whitelist_exclusions?: Maybe<Array<_RefType['Member']>>, platform_messages?: Maybe<Array<_RefType['SettingsMessage']>>, platform_organization?: Maybe<_RefType['Organization']>, platform_theme?: Maybe<_RefType['Theme']> } )
+    | ( BasicStoreEntitySource )
+    | ( BasicStoreEntitySourceRecommendation )
     | ( BasicStoreEntitySupportPackage )
     | ( TaskTemplate )
     | ( BasicStoreEntityTheme )
@@ -40688,6 +41423,12 @@ export type ResolversTypes = ResolversObject<{
   CityEdge: ResolverTypeWrapper<Omit<CityEdge, 'node'> & { node: ResolversTypes['City'] }>;
   CityEditMutations: ResolverTypeWrapper<Omit<CityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['City']>, contextPatch?: Maybe<ResolversTypes['City']>, fieldPatch?: Maybe<ResolversTypes['City']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['City']> }>;
   Cluster: ResolverTypeWrapper<Cluster>;
+  CollectionGap: ResolverTypeWrapper<BasicStoreEntityCollectionGap>;
+  CollectionGapConnection: ResolverTypeWrapper<Omit<CollectionGapConnection, 'edges'> & { edges: Array<ResolversTypes['CollectionGapEdge']> }>;
+  CollectionGapCoveringSource: ResolverTypeWrapper<Omit<CollectionGapCoveringSource, 'source'> & { source?: Maybe<ResolversTypes['Source']> }>;
+  CollectionGapEdge: ResolverTypeWrapper<Omit<CollectionGapEdge, 'node'> & { node: ResolversTypes['CollectionGap'] }>;
+  CollectionGapRecommendedConnector: ResolverTypeWrapper<CollectionGapRecommendedConnector>;
+  CollectionGapsOrdering: CollectionGapsOrdering;
   ComplexPath: ResolverTypeWrapper<ComplexPath>;
   ComplexVariable: ResolverTypeWrapper<ComplexVariable>;
   ConfidenceLevel: ResolverTypeWrapper<ConfidenceLevel>;
@@ -40708,6 +41449,7 @@ export type ResolversTypes = ResolversObject<{
   ConnectorPriorityGroup: ConnectorPriorityGroup;
   ConnectorQueueDetails: ResolverTypeWrapper<ConnectorQueueDetails>;
   ConnectorRequestStatus: ConnectorRequestStatus;
+  ConnectorRequiredSetting: ResolverTypeWrapper<ConnectorRequiredSetting>;
   ConnectorType: ConnectorType;
   ConnectorWithConfig: ConnectorWithConfig;
   ConstraintNumber: ResolverTypeWrapper<Scalars['ConstraintNumber']['output']>;
@@ -41442,6 +42184,45 @@ export type ResolversTypes = ResolversObject<{
   SoftwareAddInput: SoftwareAddInput;
   SoftwareConnection: ResolverTypeWrapper<Omit<SoftwareConnection, 'edges'> & { edges: Array<ResolversTypes['SoftwareEdge']> }>;
   SoftwareEdge: ResolverTypeWrapper<Omit<SoftwareEdge, 'node'> & { node: ResolversTypes['Software'] }>;
+  Source: ResolverTypeWrapper<BasicStoreEntitySource>;
+  SourceConnection: ResolverTypeWrapper<Omit<SourceConnection, 'edges'> & { edges: Array<ResolversTypes['SourceEdge']> }>;
+  SourceCost: ResolverTypeWrapper<SourceCost>;
+  SourceCostInput: SourceCostInput;
+  SourceCostPeriod: SourceCostPeriod;
+  SourceEdge: ResolverTypeWrapper<Omit<SourceEdge, 'node'> & { node: ResolversTypes['Source'] }>;
+  SourceIntelligenceAutonomy: ResolverTypeWrapper<SourceIntelligenceAutonomy>;
+  SourceIntelligenceAutonomyInput: SourceIntelligenceAutonomyInput;
+  SourceIntelligenceGapSettings: ResolverTypeWrapper<SourceIntelligenceGapSettings>;
+  SourceIntelligenceGapSettingsInput: SourceIntelligenceGapSettingsInput;
+  SourceIntelligenceSettings: ResolverTypeWrapper<SourceIntelligenceSettings>;
+  SourceIntelligenceSettingsInput: SourceIntelligenceSettingsInput;
+  SourceIntelligenceStatus: ResolverTypeWrapper<SourceIntelligenceStatus>;
+  SourceIntelligenceThresholds: ResolverTypeWrapper<SourceIntelligenceThresholds>;
+  SourceIntelligenceThresholdsInput: SourceIntelligenceThresholdsInput;
+  SourceIntelligenceTuning: ResolverTypeWrapper<SourceIntelligenceTuning>;
+  SourceIntelligenceTuningInput: SourceIntelligenceTuningInput;
+  SourceIntelligenceValueWeights: ResolverTypeWrapper<SourceIntelligenceValueWeights>;
+  SourceIntelligenceValueWeightsInput: SourceIntelligenceValueWeightsInput;
+  SourceKind: SourceKind;
+  SourceOverlapCell: ResolverTypeWrapper<SourceOverlapCell>;
+  SourceOverlapMatrix: ResolverTypeWrapper<Omit<SourceOverlapMatrix, 'sources'> & { sources: Array<ResolversTypes['Source']> }>;
+  SourceOverlapShare: ResolverTypeWrapper<Omit<SourceOverlapShare, 'source'> & { source?: Maybe<ResolversTypes['Source']> }>;
+  SourceRecommendation: ResolverTypeWrapper<BasicStoreEntitySourceRecommendation>;
+  SourceRecommendationApplyInput: SourceRecommendationApplyInput;
+  SourceRecommendationConnection: ResolverTypeWrapper<Omit<SourceRecommendationConnection, 'edges'> & { edges: Array<ResolversTypes['SourceRecommendationEdge']> }>;
+  SourceRecommendationEdge: ResolverTypeWrapper<Omit<SourceRecommendationEdge, 'node'> & { node: ResolversTypes['SourceRecommendation'] }>;
+  SourceRecommendationKind: SourceRecommendationKind;
+  SourceRecommendationStatus: SourceRecommendationStatus;
+  SourceRecommendationsOrdering: SourceRecommendationsOrdering;
+  SourceScorecard: ResolverTypeWrapper<StoreSourceScorecard>;
+  SourceScorecardAggregation: SourceScorecardAggregation;
+  SourceScorecardDistributionItem: ResolverTypeWrapper<Omit<SourceScorecardDistributionItem, 'entity'> & { entity?: Maybe<ResolversTypes['Source']> }>;
+  SourceScorecardMetric: ResolverTypeWrapper<SourceScorecardMetric>;
+  SourceScorecardNumber: ResolverTypeWrapper<SourceScorecardNumber>;
+  SourceScorecardPeriod: SourceScorecardPeriod;
+  SourceScorecardScatterPoint: ResolverTypeWrapper<Omit<SourceScorecardScatterPoint, 'entity'> & { entity?: Maybe<ResolversTypes['Source']> }>;
+  SourceScorecardTimePoint: ResolverTypeWrapper<SourceScorecardTimePoint>;
+  SourcesOrdering: SourcesOrdering;
   SsvcAutomatable: SsvcAutomatable;
   SsvcExploitation: SsvcExploitation;
   SsvcTechnicalImpact: SsvcTechnicalImpact;
@@ -41860,6 +42641,11 @@ export type ResolversParentTypes = ResolversObject<{
   CityEdge: Omit<CityEdge, 'node'> & { node: ResolversParentTypes['City'] };
   CityEditMutations: Omit<CityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['City']>, contextPatch?: Maybe<ResolversParentTypes['City']>, fieldPatch?: Maybe<ResolversParentTypes['City']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['City']> };
   Cluster: Cluster;
+  CollectionGap: BasicStoreEntityCollectionGap;
+  CollectionGapConnection: Omit<CollectionGapConnection, 'edges'> & { edges: Array<ResolversParentTypes['CollectionGapEdge']> };
+  CollectionGapCoveringSource: Omit<CollectionGapCoveringSource, 'source'> & { source?: Maybe<ResolversParentTypes['Source']> };
+  CollectionGapEdge: Omit<CollectionGapEdge, 'node'> & { node: ResolversParentTypes['CollectionGap'] };
+  CollectionGapRecommendedConnector: CollectionGapRecommendedConnector;
   ComplexPath: ComplexPath;
   ComplexVariable: ComplexVariable;
   ConfidenceLevel: ConfidenceLevel;
@@ -41877,6 +42663,7 @@ export type ResolversParentTypes = ResolversObject<{
   ConnectorMetadata: ConnectorMetadata;
   ConnectorMigrationAssessmentInput: ConnectorMigrationAssessmentInput;
   ConnectorQueueDetails: ConnectorQueueDetails;
+  ConnectorRequiredSetting: ConnectorRequiredSetting;
   ConnectorWithConfig: ConnectorWithConfig;
   ConstraintNumber: Scalars['ConstraintNumber']['output'];
   ConstraintString: Scalars['ConstraintString']['output'];
@@ -42510,6 +43297,37 @@ export type ResolversParentTypes = ResolversObject<{
   SoftwareAddInput: SoftwareAddInput;
   SoftwareConnection: Omit<SoftwareConnection, 'edges'> & { edges: Array<ResolversParentTypes['SoftwareEdge']> };
   SoftwareEdge: Omit<SoftwareEdge, 'node'> & { node: ResolversParentTypes['Software'] };
+  Source: BasicStoreEntitySource;
+  SourceConnection: Omit<SourceConnection, 'edges'> & { edges: Array<ResolversParentTypes['SourceEdge']> };
+  SourceCost: SourceCost;
+  SourceCostInput: SourceCostInput;
+  SourceEdge: Omit<SourceEdge, 'node'> & { node: ResolversParentTypes['Source'] };
+  SourceIntelligenceAutonomy: SourceIntelligenceAutonomy;
+  SourceIntelligenceAutonomyInput: SourceIntelligenceAutonomyInput;
+  SourceIntelligenceGapSettings: SourceIntelligenceGapSettings;
+  SourceIntelligenceGapSettingsInput: SourceIntelligenceGapSettingsInput;
+  SourceIntelligenceSettings: SourceIntelligenceSettings;
+  SourceIntelligenceSettingsInput: SourceIntelligenceSettingsInput;
+  SourceIntelligenceStatus: SourceIntelligenceStatus;
+  SourceIntelligenceThresholds: SourceIntelligenceThresholds;
+  SourceIntelligenceThresholdsInput: SourceIntelligenceThresholdsInput;
+  SourceIntelligenceTuning: SourceIntelligenceTuning;
+  SourceIntelligenceTuningInput: SourceIntelligenceTuningInput;
+  SourceIntelligenceValueWeights: SourceIntelligenceValueWeights;
+  SourceIntelligenceValueWeightsInput: SourceIntelligenceValueWeightsInput;
+  SourceOverlapCell: SourceOverlapCell;
+  SourceOverlapMatrix: Omit<SourceOverlapMatrix, 'sources'> & { sources: Array<ResolversParentTypes['Source']> };
+  SourceOverlapShare: Omit<SourceOverlapShare, 'source'> & { source?: Maybe<ResolversParentTypes['Source']> };
+  SourceRecommendation: BasicStoreEntitySourceRecommendation;
+  SourceRecommendationApplyInput: SourceRecommendationApplyInput;
+  SourceRecommendationConnection: Omit<SourceRecommendationConnection, 'edges'> & { edges: Array<ResolversParentTypes['SourceRecommendationEdge']> };
+  SourceRecommendationEdge: Omit<SourceRecommendationEdge, 'node'> & { node: ResolversParentTypes['SourceRecommendation'] };
+  SourceScorecard: StoreSourceScorecard;
+  SourceScorecardDistributionItem: Omit<SourceScorecardDistributionItem, 'entity'> & { entity?: Maybe<ResolversParentTypes['Source']> };
+  SourceScorecardMetric: SourceScorecardMetric;
+  SourceScorecardNumber: SourceScorecardNumber;
+  SourceScorecardScatterPoint: Omit<SourceScorecardScatterPoint, 'entity'> & { entity?: Maybe<ResolversParentTypes['Source']> };
+  SourceScorecardTimePoint: SourceScorecardTimePoint;
   Status: Omit<Status, 'template'> & { template?: Maybe<ResolversParentTypes['StatusTemplate']> };
   StatusAddInput: StatusAddInput;
   StatusConnection: Omit<StatusConnection, 'edges'> & { edges: Array<ResolversParentTypes['StatusEdge']> };
@@ -43482,7 +44300,7 @@ export type BankAccountResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type BasicObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['BasicObject'] = ResolversParentTypes['BasicObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AuthenticationProvider' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Capability' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Catalog' | 'Channel' | 'City' | 'Connector' | 'ConnectorManager' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DataComponent' | 'DataSource' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'Directory' | 'DisseminationList' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EmailTemplate' | 'EntitySetting' | 'Event' | 'ExclusionList' | 'ExternalReference' | 'Feedback' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'Grouping' | 'Hostname' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'IntrusionSet' | 'JsonMapper' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagedConnector' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MeUser' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'NewsFeedItem' | 'Note' | 'Notification' | 'Notifier' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Playbook' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'Role' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityCoverageResult' | 'SecurityPlatform' | 'Settings' | 'Software' | 'StixFile' | 'SupportPackage' | 'System' | 'Task' | 'TaskTemplate' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Trigger' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AuthenticationProvider' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Capability' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Catalog' | 'Channel' | 'City' | 'CollectionGap' | 'Connector' | 'ConnectorManager' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DataComponent' | 'DataSource' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'Directory' | 'DisseminationList' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EmailTemplate' | 'EntitySetting' | 'Event' | 'ExclusionList' | 'ExternalReference' | 'Feedback' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'Grouping' | 'Hostname' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'IntrusionSet' | 'JsonMapper' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagedConnector' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MeUser' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'NewsFeedItem' | 'Note' | 'Notification' | 'Notifier' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Playbook' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'Role' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityCoverageResult' | 'SecurityPlatform' | 'Settings' | 'Software' | 'Source' | 'SourceRecommendation' | 'StixFile' | 'SupportPackage' | 'System' | 'Task' | 'TaskTemplate' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Trigger' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
@@ -44199,6 +45017,72 @@ export type ClusterResolvers<ContextType = any, ParentType extends ResolversPare
   instances_number?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;
 
+export type CollectionGapResolvers<ContextType = any, ParentType extends ResolversParentTypes['CollectionGap'] = ResolversParentTypes['CollectionGap']> = ResolversObject<{
+  computed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  coverage_score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  covering_sources?: Resolver<Array<ResolversTypes['CollectionGapCoveringSource']>, ParentType, ContextType>;
+  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  criterion_filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  criterion_index?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  criterion_label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  criterion_weight?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  distinct_sources?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  hub_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  is_gap?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  matched_relationships?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  object_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  pir?: Resolver<Maybe<ResolversTypes['Pir']>, ParentType, ContextType>;
+  pir_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  recent_relationships?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  recommended_connectors?: Resolver<Array<ResolversTypes['CollectionGapRecommendedConnector']>, ParentType, ContextType>;
+  regions?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  sectors?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type CollectionGapConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CollectionGapConnection'] = ResolversParentTypes['CollectionGapConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['CollectionGapEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+}>;
+
+export type CollectionGapCoveringSourceResolvers<ContextType = any, ParentType extends ResolversParentTypes['CollectionGapCoveringSource'] = ResolversParentTypes['CollectionGapCoveringSource']> = ResolversObject<{
+  matched_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  share?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  source?: Resolver<Maybe<ResolversTypes['Source']>, ParentType, ContextType>;
+  source_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+}>;
+
+export type CollectionGapEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CollectionGapEdge'] = ResolversParentTypes['CollectionGapEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['CollectionGap'], ParentType, ContextType>;
+}>;
+
+export type CollectionGapRecommendedConnectorResolvers<ContextType = any, ParentType extends ResolversParentTypes['CollectionGapRecommendedConnector'] = ResolversParentTypes['CollectionGapRecommendedConnector']> = ResolversObject<{
+  catalog_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  contract_image?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  coverage_inferred?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  deployed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  manager_supported?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  matched_object_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  matched_regions?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  matched_sectors?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  origin?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  required_settings?: Resolver<Array<ResolversTypes['ConnectorRequiredSetting']>, ParentType, ContextType>;
+  score?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  short_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  verified?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+}>;
+
 export type ComplexPathResolvers<ContextType = any, ParentType extends ResolversParentTypes['ComplexPath'] = ResolversParentTypes['ComplexPath']> = ResolversObject<{
   configuration?: Resolver<Maybe<ResolversTypes['AttributeColumnConfiguration']>, ParentType, ContextType>;
   formula?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -44337,6 +45221,14 @@ export type ConnectorMetadataResolvers<ContextType = any, ParentType extends Res
 export type ConnectorQueueDetailsResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorQueueDetails'] = ResolversParentTypes['ConnectorQueueDetails']> = ResolversObject<{
   messages_number?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   messages_size?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+}>;
+
+export type ConnectorRequiredSettingResolvers<ContextType = any, ParentType extends ResolversParentTypes['ConnectorRequiredSetting'] = ResolversParentTypes['ConnectorRequiredSetting']> = ResolversObject<{
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  secret?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export interface ConstraintNumberScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['ConstraintNumber'], any> {
@@ -47581,7 +48473,7 @@ export type IngestionTaxiiEdgeResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type InternalObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['InternalObject'] = ResolversParentTypes['InternalObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AuthenticationProvider' | 'Capability' | 'CaseTemplate' | 'Catalog' | 'Connector' | 'ConnectorManager' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'DisseminationList' | 'DraftWorkspace' | 'EmailTemplate' | 'EntitySetting' | 'ExclusionList' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'JsonMapper' | 'ManagedConnector' | 'ManagerConfiguration' | 'MeUser' | 'NewsFeedItem' | 'Notification' | 'Notifier' | 'Pir' | 'Playbook' | 'PublicDashboard' | 'Role' | 'SavedFilter' | 'Settings' | 'SupportPackage' | 'TaskTemplate' | 'Theme' | 'Trigger' | 'User' | 'Workspace', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AuthenticationProvider' | 'Capability' | 'CaseTemplate' | 'Catalog' | 'CollectionGap' | 'Connector' | 'ConnectorManager' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'DisseminationList' | 'DraftWorkspace' | 'EmailTemplate' | 'EntitySetting' | 'ExclusionList' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'JsonMapper' | 'ManagedConnector' | 'ManagerConfiguration' | 'MeUser' | 'NewsFeedItem' | 'Notification' | 'Notifier' | 'Pir' | 'Playbook' | 'PublicDashboard' | 'Role' | 'SavedFilter' | 'Settings' | 'Source' | 'SourceRecommendation' | 'SupportPackage' | 'TaskTemplate' | 'Theme' | 'Trigger' | 'User' | 'Workspace', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -48743,6 +49635,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   aiSummarizeFiles?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiSummarizeFilesArgs, 'elementId' | 'id'>>;
   aiThreatGenerateReport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiThreatGenerateReportArgs, 'id' | 'threatId'>>;
   aiVictimGenerateReport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAiVictimGenerateReportArgs, 'id' | 'victimId'>>;
+  applySourceRecommendation?: Resolver<Maybe<ResolversTypes['SourceRecommendation']>, ParentType, ContextType, RequireFields<MutationApplySourceRecommendationArgs, 'id'>>;
   artifactImport?: Resolver<Maybe<ResolversTypes['Artifact']>, ParentType, ContextType, RequireFields<MutationArtifactImportArgs, 'file'>>;
   askJobImport?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationAskJobImportArgs, 'fileName'>>;
   askSendOtp?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<MutationAskSendOtpArgs, 'input'>>;
@@ -48780,6 +49673,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   cityAdd?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, RequireFields<MutationCityAddArgs, 'input'>>;
   cityEdit?: Resolver<Maybe<ResolversTypes['CityEditMutations']>, ParentType, ContextType, RequireFields<MutationCityEditArgs, 'id'>>;
   clearWorkflowPendingState?: Resolver<ResolversTypes['WorkflowInstance'], ParentType, ContextType, RequireFields<MutationClearWorkflowPendingStateArgs, 'entityId'>>;
+  collectionGapDeployConnector?: Resolver<Maybe<ResolversTypes['SourceRecommendation']>, ParentType, ContextType, RequireFields<MutationCollectionGapDeployConnectorArgs, 'id' | 'slug'>>;
   connectorJWT?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   connectorMigrateToManaged?: Resolver<ResolversTypes['ManagedConnector'], ParentType, ContextType, RequireFields<MutationConnectorMigrateToManagedArgs, 'input'>>;
   contactUsXtmHub?: Resolver<ResolversTypes['Success'], ParentType, ContextType, RequireFields<MutationContactUsXtmHubArgs, 'message'>>;
@@ -48834,6 +49728,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   deleteImport?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, Partial<MutationDeleteImportArgs>>;
   deleteOperationConfirm?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDeleteOperationConfirmArgs, 'id'>>;
   deleteOperationRestore?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDeleteOperationRestoreArgs, 'id'>>;
+  dismissSourceRecommendation?: Resolver<Maybe<ResolversTypes['SourceRecommendation']>, ParentType, ContextType, RequireFields<MutationDismissSourceRecommendationArgs, 'id'>>;
   disseminationListAdd?: Resolver<Maybe<ResolversTypes['DisseminationList']>, ParentType, ContextType, RequireFields<MutationDisseminationListAddArgs, 'input'>>;
   disseminationListDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDisseminationListDeleteArgs, 'id'>>;
   disseminationListFieldPatch?: Resolver<Maybe<ResolversTypes['DisseminationList']>, ParentType, ContextType, RequireFields<MutationDisseminationListFieldPatchArgs, 'id' | 'input'>>;
@@ -49051,6 +49946,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   retentionRuleAdd?: Resolver<ResolversTypes['RetentionRule'], ParentType, ContextType, RequireFields<MutationRetentionRuleAddArgs, 'input'>>;
   retentionRuleCheck?: Resolver<ResolversTypes['Int'], ParentType, ContextType, Partial<MutationRetentionRuleCheckArgs>>;
   retentionRuleEdit?: Resolver<Maybe<ResolversTypes['RetentionRuleEditMutations']>, ParentType, ContextType, RequireFields<MutationRetentionRuleEditArgs, 'id'>>;
+  revertSourceRecommendation?: Resolver<Maybe<ResolversTypes['SourceRecommendation']>, ParentType, ContextType, RequireFields<MutationRevertSourceRecommendationArgs, 'id'>>;
   roleAdd?: Resolver<Maybe<ResolversTypes['Role']>, ParentType, ContextType, RequireFields<MutationRoleAddArgs, 'input'>>;
   roleEdit?: Resolver<Maybe<ResolversTypes['RoleEditMutations']>, ParentType, ContextType, RequireFields<MutationRoleEditArgs, 'id'>>;
   ruleApply?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationRuleApplyArgs, 'elementId' | 'ruleId'>>;
@@ -49094,6 +49990,11 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   smtpConfigurationDelete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   smtpConfigurationEdit?: Resolver<Maybe<ResolversTypes['SmtpConfiguration']>, ParentType, ContextType, RequireFields<MutationSmtpConfigurationEditArgs, 'input'>>;
   smtpConfigurationTest?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationSmtpConfigurationTestArgs, 'email'>>;
+  sourceFieldPatch?: Resolver<Maybe<ResolversTypes['Source']>, ParentType, ContextType, RequireFields<MutationSourceFieldPatchArgs, 'id' | 'input'>>;
+  sourceIntelligenceDashboardCreate?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, Partial<MutationSourceIntelligenceDashboardCreateArgs>>;
+  sourceIntelligenceRecompute?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  sourceIntelligenceSettingsEdit?: Resolver<Maybe<ResolversTypes['SourceIntelligenceSettings']>, ParentType, ContextType, RequireFields<MutationSourceIntelligenceSettingsEditArgs, 'input'>>;
+  sourceSetCost?: Resolver<Maybe<ResolversTypes['Source']>, ParentType, ContextType, RequireFields<MutationSourceSetCostArgs, 'id'>>;
   statusTemplateAdd?: Resolver<ResolversTypes['StatusTemplate'], ParentType, ContextType, RequireFields<MutationStatusTemplateAddArgs, 'input'>>;
   statusTemplateContextClean?: Resolver<ResolversTypes['StatusTemplate'], ParentType, ContextType, RequireFields<MutationStatusTemplateContextCleanArgs, 'id'>>;
   statusTemplateContextPatch?: Resolver<ResolversTypes['StatusTemplate'], ParentType, ContextType, RequireFields<MutationStatusTemplateContextPatchArgs, 'id' | 'input'>>;
@@ -50673,6 +51574,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   channels?: Resolver<Maybe<ResolversTypes['ChannelConnection']>, ParentType, ContextType, Partial<QueryChannelsArgs>>;
   cities?: Resolver<Maybe<ResolversTypes['CityConnection']>, ParentType, ContextType, Partial<QueryCitiesArgs>>;
   city?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, Partial<QueryCityArgs>>;
+  collectionGaps?: Resolver<Maybe<ResolversTypes['CollectionGapConnection']>, ParentType, ContextType, Partial<QueryCollectionGapsArgs>>;
   connector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<QueryConnectorArgs, 'id'>>;
   connectorManager?: Resolver<ResolversTypes['ConnectorManager'], ParentType, ContextType, RequireFields<QueryConnectorManagerArgs, 'managerId'>>;
   connectorManagers?: Resolver<Array<ResolversTypes['ConnectorManager']>, ParentType, ContextType>;
@@ -50935,6 +51837,19 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   sessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['UserSession']>>>, ParentType, ContextType>;
   settings?: Resolver<ResolversTypes['Settings'], ParentType, ContextType>;
   smtpConfiguration?: Resolver<Maybe<ResolversTypes['SmtpConfiguration']>, ParentType, ContextType>;
+  source?: Resolver<Maybe<ResolversTypes['Source']>, ParentType, ContextType, RequireFields<QuerySourceArgs, 'id'>>;
+  sourceIntelligenceSettings?: Resolver<Maybe<ResolversTypes['SourceIntelligenceSettings']>, ParentType, ContextType>;
+  sourceIntelligenceStatus?: Resolver<ResolversTypes['SourceIntelligenceStatus'], ParentType, ContextType>;
+  sourceOverlap?: Resolver<ResolversTypes['SourceOverlapMatrix'], ParentType, ContextType, Partial<QuerySourceOverlapArgs>>;
+  sourceRecommendation?: Resolver<Maybe<ResolversTypes['SourceRecommendation']>, ParentType, ContextType, RequireFields<QuerySourceRecommendationArgs, 'id'>>;
+  sourceRecommendations?: Resolver<Maybe<ResolversTypes['SourceRecommendationConnection']>, ParentType, ContextType, Partial<QuerySourceRecommendationsArgs>>;
+  sourceScorecardMetrics?: Resolver<Array<ResolversTypes['SourceScorecardMetric']>, ParentType, ContextType>;
+  sourceScorecards?: Resolver<Array<ResolversTypes['SourceScorecard']>, ParentType, ContextType, RequireFields<QuerySourceScorecardsArgs, 'sourceId'>>;
+  sourceScorecardsDistribution?: Resolver<Array<ResolversTypes['SourceScorecardDistributionItem']>, ParentType, ContextType, RequireFields<QuerySourceScorecardsDistributionArgs, 'metric'>>;
+  sourceScorecardsNumber?: Resolver<ResolversTypes['SourceScorecardNumber'], ParentType, ContextType, RequireFields<QuerySourceScorecardsNumberArgs, 'metric'>>;
+  sourceScorecardsScatter?: Resolver<Array<ResolversTypes['SourceScorecardScatterPoint']>, ParentType, ContextType, RequireFields<QuerySourceScorecardsScatterArgs, 'xMetric' | 'yMetric'>>;
+  sourceScorecardsTimeSeries?: Resolver<Array<ResolversTypes['SourceScorecardTimePoint']>, ParentType, ContextType, RequireFields<QuerySourceScorecardsTimeSeriesArgs, 'metric'>>;
+  sources?: Resolver<Maybe<ResolversTypes['SourceConnection']>, ParentType, ContextType, Partial<QuerySourcesArgs>>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType, RequireFields<QueryStatusArgs, 'id'>>;
   statusTemplate?: Resolver<Maybe<ResolversTypes['StatusTemplate']>, ParentType, ContextType, RequireFields<QueryStatusTemplateArgs, 'id'>>;
   statusTemplates?: Resolver<Maybe<ResolversTypes['StatusTemplateConnection']>, ParentType, ContextType, Partial<QueryStatusTemplatesArgs>>;
@@ -52161,6 +53076,300 @@ export type SoftwareConnectionResolvers<ContextType = any, ParentType extends Re
 export type SoftwareEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['SoftwareEdge'] = ResolversParentTypes['SoftwareEdge']> = ResolversObject<{
   cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   node?: Resolver<ResolversTypes['Software'], ParentType, ContextType>;
+}>;
+
+export type SourceResolvers<ContextType = any, ParentType extends ResolversParentTypes['Source'] = ResolversParentTypes['Source']> = ResolversObject<{
+  connector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType>;
+  cost?: Resolver<Maybe<ResolversTypes['SourceCost']>, ParentType, ContextType>;
+  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  last_computed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  latest_accuracy?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  latest_corroboration_rate?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  latest_cost_per_actionable?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  latest_freshness_hours?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  latest_impact_score?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  latest_lead_time_hours?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  latest_noise?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  latest_relevance?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  latest_unique_contribution?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  latest_value_score?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  latest_volume?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  owner?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  quarantine_draft_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  quarantined?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  recommendationsCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType, Partial<SourceRecommendationsCountArgs>>;
+  ref_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  ref_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  scorecard?: Resolver<Maybe<ResolversTypes['SourceScorecard']>, ParentType, ContextType, Partial<SourceScorecardArgs>>;
+  source_kind?: Resolver<ResolversTypes['SourceKind'], ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  tags?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type SourceConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceConnection'] = ResolversParentTypes['SourceConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['SourceEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+}>;
+
+export type SourceCostResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceCost'] = ResolversParentTypes['SourceCost']> = ResolversObject<{
+  amount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  currency?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  period?: Resolver<ResolversTypes['SourceCostPeriod'], ParentType, ContextType>;
+}>;
+
+export type SourceEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceEdge'] = ResolversParentTypes['SourceEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['Source'], ParentType, ContextType>;
+}>;
+
+export type SourceIntelligenceAutonomyResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceIntelligenceAutonomy'] = ResolversParentTypes['SourceIntelligenceAutonomy']> = ResolversObject<{
+  auto_apply_kinds?: Resolver<Array<ResolversTypes['SourceRecommendationKind']>, ParentType, ContextType>;
+  max_auto_actions_per_run?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type SourceIntelligenceGapSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceIntelligenceGapSettings'] = ResolversParentTypes['SourceIntelligenceGapSettings']> = ResolversObject<{
+  max_recommendations?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  recent_days?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  target_relationships?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  target_sources?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  window_days?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type SourceIntelligenceSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceIntelligenceSettings'] = ResolversParentTypes['SourceIntelligenceSettings']> = ResolversObject<{
+  autonomy?: Resolver<ResolversTypes['SourceIntelligenceAutonomy'], ParentType, ContextType>;
+  backfill_days?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  corroboration_min_other_sources?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  false_positive_labels?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  gaps?: Resolver<ResolversTypes['SourceIntelligenceGapSettings'], ParentType, ContextType>;
+  manager_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  manager_running?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  max_author_sources?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  max_manual_sources?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  max_scan_objects?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  min_author_volume?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  min_manual_volume?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  overlap_top?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  recompute_hour_utc?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  snapshot_retention_days?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  thresholds?: Resolver<ResolversTypes['SourceIntelligenceThresholds'], ParentType, ContextType>;
+  tuning?: Resolver<ResolversTypes['SourceIntelligenceTuning'], ParentType, ContextType>;
+  value_weights?: Resolver<ResolversTypes['SourceIntelligenceValueWeights'], ParentType, ContextType>;
+}>;
+
+export type SourceIntelligenceStatusResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceIntelligenceStatus'] = ResolversParentTypes['SourceIntelligenceStatus']> = ResolversObject<{
+  backfill_days_done?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  backfill_days_total?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  backfill_done?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  backfill_next_day?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  enterprise_edition?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  last_full_run_end?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  last_full_run_start?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  last_run_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_run_success?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  last_scan_truncated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  last_scanned_objects?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  manager_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  manager_running?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  recompute_requested_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  scored_sources_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  sources_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type SourceIntelligenceThresholdsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceIntelligenceThresholds'] = ResolversParentTypes['SourceIntelligenceThresholds']> = ResolversObject<{
+  deny_list_min_false_positives?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  gap_coverage?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  high_accuracy?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  high_noise?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  low_accuracy?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  min_volume?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  quarantine_accuracy?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  raise_confidence_corroboration?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  redundant_overlap?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  retire_max_unique_contribution?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  stale_feed_hours?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type SourceIntelligenceTuningResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceIntelligenceTuning'] = ResolversParentTypes['SourceIntelligenceTuning']> = ResolversObject<{
+  confidence_step?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  deny_list_max_values?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  dismiss_cooldown_days?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  min_confidence?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  min_schedule_minutes?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  noisy_decay_lifetime_days?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type SourceIntelligenceValueWeightsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceIntelligenceValueWeights'] = ResolversParentTypes['SourceIntelligenceValueWeights']> = ResolversObject<{
+  accuracy?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  impact?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  lead_time?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  noise?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  relevance?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  uniqueness?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+}>;
+
+export type SourceOverlapCellResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceOverlapCell'] = ResolversParentTypes['SourceOverlapCell']> = ResolversObject<{
+  jaccard?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  share_a?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  share_b?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  shared_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  source_a?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  source_b?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+}>;
+
+export type SourceOverlapMatrixResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceOverlapMatrix'] = ResolversParentTypes['SourceOverlapMatrix']> = ResolversObject<{
+  cells?: Resolver<Array<ResolversTypes['SourceOverlapCell']>, ParentType, ContextType>;
+  computed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  period?: Resolver<ResolversTypes['SourceScorecardPeriod'], ParentType, ContextType>;
+  sources?: Resolver<Array<ResolversTypes['Source']>, ParentType, ContextType>;
+}>;
+
+export type SourceOverlapShareResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceOverlapShare'] = ResolversParentTypes['SourceOverlapShare']> = ResolversObject<{
+  share?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  shared_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  source?: Resolver<Maybe<ResolversTypes['Source']>, ParentType, ContextType>;
+  source_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+}>;
+
+export type SourceRecommendationResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceRecommendation'] = ResolversParentTypes['SourceRecommendation']> = ResolversObject<{
+  applied_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  applied_by?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  apply_result?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  autonomous?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  collection_gap_id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  dismiss_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  dismissed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  dismissed_by?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  error_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  kind?: Resolver<ResolversTypes['SourceRecommendationKind'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  payload?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  pir_id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  proposed_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  rationale?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  recommendation_evidence?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  required_settings?: Resolver<Array<ResolversTypes['ConnectorRequiredSetting']>, ParentType, ContextType>;
+  reverted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  reverted_by?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  source?: Resolver<Maybe<ResolversTypes['Source']>, ParentType, ContextType>;
+  source_id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['SourceRecommendationStatus'], ParentType, ContextType>;
+  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type SourceRecommendationConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceRecommendationConnection'] = ResolversParentTypes['SourceRecommendationConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['SourceRecommendationEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+}>;
+
+export type SourceRecommendationEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceRecommendationEdge'] = ResolversParentTypes['SourceRecommendationEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['SourceRecommendation'], ParentType, ContextType>;
+}>;
+
+export type SourceScorecardResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceScorecard'] = ResolversParentTypes['SourceScorecard']> = ResolversObject<{
+  accuracy?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  actionable_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  computed_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  corroborated_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  corroboration_rate?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  cost_currency?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  cost_per_actionable_object?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  decay_excluded_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  evaluated_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  expired_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  false_positive_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  first_reporter_share?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  freshness_hours?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  impact_score?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  incidents_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  is_live?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  last_asserted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  lead_time_hours?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  median_latency_hours?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  negative_sightings_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  new_objects?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  noise?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  noise_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  overlap?: Resolver<Array<ResolversTypes['SourceOverlapShare']>, ParentType, ContextType>;
+  period?: Resolver<ResolversTypes['SourceScorecardPeriod'], ParentType, ContextType>;
+  period_end?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  period_start?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  pir_matched_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  relevance?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  revoked_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  scorecard_date?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  security_platform_sightings_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  shared_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  sightings_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  source_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  source_kind?: Resolver<ResolversTypes['SourceKind'], ParentType, ContextType>;
+  source_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  unique_contribution?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  unique_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  unreferenced_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  unsighted_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  value_score?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  volume_entities?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  volume_indicators?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  volume_last_day?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  volume_observables?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  volume_relationships?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  volume_total?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type SourceScorecardDistributionItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceScorecardDistributionItem'] = ResolversParentTypes['SourceScorecardDistributionItem']> = ResolversObject<{
+  currency?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  entity?: Resolver<Maybe<ResolversTypes['Source']>, ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  value?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+}>;
+
+export type SourceScorecardMetricResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceScorecardMetric'] = ResolversParentTypes['SourceScorecardMetric']> = ResolversObject<{
+  enterprise?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  higher_is_better?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type SourceScorecardNumberResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceScorecardNumber'] = ResolversParentTypes['SourceScorecardNumber']> = ResolversObject<{
+  currency?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sources_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  value?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+}>;
+
+export type SourceScorecardScatterPointResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceScorecardScatterPoint'] = ResolversParentTypes['SourceScorecardScatterPoint']> = ResolversObject<{
+  currency?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  entity?: Resolver<Maybe<ResolversTypes['Source']>, ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  size?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  x?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  y?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+}>;
+
+export type SourceScorecardTimePointResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceScorecardTimePoint'] = ResolversParentTypes['SourceScorecardTimePoint']> = ResolversObject<{
+  currency?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  value?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
 }>;
 
 export type StatusResolvers<ContextType = any, ParentType extends ResolversParentTypes['Status'] = ResolversParentTypes['Status']> = ResolversObject<{
@@ -54965,6 +56174,11 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   CityEdge?: CityEdgeResolvers<ContextType>;
   CityEditMutations?: CityEditMutationsResolvers<ContextType>;
   Cluster?: ClusterResolvers<ContextType>;
+  CollectionGap?: CollectionGapResolvers<ContextType>;
+  CollectionGapConnection?: CollectionGapConnectionResolvers<ContextType>;
+  CollectionGapCoveringSource?: CollectionGapCoveringSourceResolvers<ContextType>;
+  CollectionGapEdge?: CollectionGapEdgeResolvers<ContextType>;
+  CollectionGapRecommendedConnector?: CollectionGapRecommendedConnectorResolvers<ContextType>;
   ComplexPath?: ComplexPathResolvers<ContextType>;
   ComplexVariable?: ComplexVariableResolvers<ContextType>;
   ConfidenceLevel?: ConfidenceLevelResolvers<ContextType>;
@@ -54978,6 +56192,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ConnectorManager?: ConnectorManagerResolvers<ContextType>;
   ConnectorMetadata?: ConnectorMetadataResolvers<ContextType>;
   ConnectorQueueDetails?: ConnectorQueueDetailsResolvers<ContextType>;
+  ConnectorRequiredSetting?: ConnectorRequiredSettingResolvers<ContextType>;
   ConstraintNumber?: GraphQLScalarType;
   ConstraintString?: GraphQLScalarType;
   Container?: ContainerResolvers<ContextType>;
@@ -55444,6 +56659,29 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Software?: SoftwareResolvers<ContextType>;
   SoftwareConnection?: SoftwareConnectionResolvers<ContextType>;
   SoftwareEdge?: SoftwareEdgeResolvers<ContextType>;
+  Source?: SourceResolvers<ContextType>;
+  SourceConnection?: SourceConnectionResolvers<ContextType>;
+  SourceCost?: SourceCostResolvers<ContextType>;
+  SourceEdge?: SourceEdgeResolvers<ContextType>;
+  SourceIntelligenceAutonomy?: SourceIntelligenceAutonomyResolvers<ContextType>;
+  SourceIntelligenceGapSettings?: SourceIntelligenceGapSettingsResolvers<ContextType>;
+  SourceIntelligenceSettings?: SourceIntelligenceSettingsResolvers<ContextType>;
+  SourceIntelligenceStatus?: SourceIntelligenceStatusResolvers<ContextType>;
+  SourceIntelligenceThresholds?: SourceIntelligenceThresholdsResolvers<ContextType>;
+  SourceIntelligenceTuning?: SourceIntelligenceTuningResolvers<ContextType>;
+  SourceIntelligenceValueWeights?: SourceIntelligenceValueWeightsResolvers<ContextType>;
+  SourceOverlapCell?: SourceOverlapCellResolvers<ContextType>;
+  SourceOverlapMatrix?: SourceOverlapMatrixResolvers<ContextType>;
+  SourceOverlapShare?: SourceOverlapShareResolvers<ContextType>;
+  SourceRecommendation?: SourceRecommendationResolvers<ContextType>;
+  SourceRecommendationConnection?: SourceRecommendationConnectionResolvers<ContextType>;
+  SourceRecommendationEdge?: SourceRecommendationEdgeResolvers<ContextType>;
+  SourceScorecard?: SourceScorecardResolvers<ContextType>;
+  SourceScorecardDistributionItem?: SourceScorecardDistributionItemResolvers<ContextType>;
+  SourceScorecardMetric?: SourceScorecardMetricResolvers<ContextType>;
+  SourceScorecardNumber?: SourceScorecardNumberResolvers<ContextType>;
+  SourceScorecardScatterPoint?: SourceScorecardScatterPointResolvers<ContextType>;
+  SourceScorecardTimePoint?: SourceScorecardTimePointResolvers<ContextType>;
   Status?: StatusResolvers<ContextType>;
   StatusConnection?: StatusConnectionResolvers<ContextType>;
   StatusEdge?: StatusEdgeResolvers<ContextType>;
