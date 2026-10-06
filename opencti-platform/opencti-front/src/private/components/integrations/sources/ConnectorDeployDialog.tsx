@@ -1,6 +1,5 @@
 import React from 'react';
 import { Field, Form, Formik } from 'formik';
-import * as Yup from 'yup';
 import { Stack, Typography } from '@mui/material';
 import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
@@ -9,6 +8,7 @@ import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/fields/SwitchField';
 import { useFormatter } from '../../../../components/i18n';
 import { SOURCE_INTELLIGENCE_DOCUMENTATION_URL } from './sourceIntelligenceUtils';
+import { deploySettingsValidation, deploySettingValues } from './connectorDeploySettings';
 
 export interface ConnectorRequiredSetting {
   readonly key: string;
@@ -49,22 +49,14 @@ interface ConnectorDeployDialogProps {
 const ConnectorDeployDialog = ({ open, connectorName, settings, deploying, onClose, onDeploy }: ConnectorDeployDialogProps) => {
   const { t_i18n } = useFormatter();
   const initialValues = Object.fromEntries(settings.map((setting) => [setting.key, setting.type === 'boolean' ? false : '']));
-  const validation = Yup.object().shape(Object.fromEntries(settings
-    .filter((setting) => setting.type !== 'boolean')
-    .map((setting) => {
-      const numeric = setting.type === 'integer' || setting.type === 'number';
-      const base = numeric
-        ? Yup.number().typeError(t_i18n('This field must be a number'))
-        : Yup.string().trim();
-      return [setting.key, base.required(t_i18n('This field is required'))];
-    })));
+  const validation = deploySettingsValidation(settings, t_i18n);
   return (
     <Dialog open={open} onClose={onClose} title={t_i18n('Deploy {name}', { values: { name: connectorName } })} size="small">
       <Formik<Record<string, string | boolean>>
         initialValues={initialValues}
         validationSchema={validation}
         enableReinitialize
-        onSubmit={(values) => onDeploy(settings.map((setting) => ({ key: setting.key, value: String(values[setting.key]).trim() })))}
+        onSubmit={(values) => onDeploy(deploySettingValues(settings, values))}
       >
         {({ submitForm }) => (
           <Form data-testid="connector-deploy-dialog">

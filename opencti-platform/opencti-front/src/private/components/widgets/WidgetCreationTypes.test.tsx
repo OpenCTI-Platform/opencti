@@ -29,8 +29,16 @@ describe('getVisualizationTypes', () => {
     it('all visualization types but attribute or custom-attributes are available', () => {
       expect(getVisualizationTypes({
         kind: 'workspace',
-      }).map(({ key }) => key)).toStrictEqual(
+      }, true).map(({ key }) => key)).toStrictEqual(
         ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute' && v !== 'custom-attributes'),
+      );
+    });
+
+    it('bubble is not offered without the capability of its only perspective, Sources', () => {
+      expect(getVisualizationTypes({
+        kind: 'workspace',
+      }, false).map(({ key }) => key)).toStrictEqual(
+        ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute' && v !== 'custom-attributes' && v !== 'bubble'),
       );
     });
   });
@@ -42,7 +50,7 @@ describe('getVisualizationTypes', () => {
         fintelEntityType: 'Report',
         fintelWidgets: [],
         fintelEditorValue: '',
-      }).map(({ key }) => key)).toStrictEqual(['list']);
+      }, true).map(({ key }) => key)).toStrictEqual(['list']);
     });
   });
 
@@ -52,7 +60,7 @@ describe('getVisualizationTypes', () => {
       expect(getVisualizationTypes({
         kind: 'custom-view',
         customViewTargetEntityType: 'Malware',
-      }).map(({ key }) => key)).toStrictEqual(
+      }, true).map(({ key }) => key)).toStrictEqual(
         ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute' && v !== 'bubble'),
       );
     });

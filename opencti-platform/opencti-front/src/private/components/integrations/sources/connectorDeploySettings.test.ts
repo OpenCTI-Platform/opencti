@@ -1,0 +1,50 @@
+import { describe, expect, it } from 'vitest';
+import { deploySettingsValidation, deploySettingValues } from './connectorDeploySettings';
+
+const t = (message: string) => message;
+
+const settings = [
+  { key: 'API_KEY', type: 'string', secret: true },
+  { key: 'NAME', type: 'string', secret: false },
+  { key: 'INTERVAL', type: 'integer', secret: false },
+  { key: 'RATIO', type: 'number', secret: false },
+  { key: 'ENABLED', type: 'boolean', secret: false },
+];
+
+const valid = { API_KEY: ' valid-password ', NAME: 'feed', INTERVAL: '60', RATIO: '0.5', ENABLED: false };
+
+describe('deploySettingsValidation', () => {
+  const schema = deploySettingsValidation(settings, t);
+
+  it('accepts whole numbers for integer settings and decimals for number settings', async () => {
+    await expect(schema.isValid(valid)).resolves.toBe(true);
+  });
+
+  it('rejects a fractional value for an integer setting', async () => {
+    await expect(schema.validate({ ...valid, INTERVAL: '1.5' })).rejects.toThrow('This field must be an integer');
+  });
+
+  it('rejects a value that is not a number for a numeric setting', async () => {
+    await expect(schema.validate({ ...valid, RATIO: 'half' })).rejects.toThrow('This field must be a number');
+  });
+
+  it('requires a non-secret text setting to hold more than spaces', async () => {
+    await expect(schema.validate({ ...valid, NAME: '   ' })).rejects.toThrow('This field is required');
+  });
+
+  it('requires a secret setting', async () => {
+    await expect(schema.validate({ ...valid, API_KEY: '' })).rejects.toThrow('This field is required');
+  });
+});
+
+describe('deploySettingValues', () => {
+  it('sends a secret exactly as entered and the other values without their surrounding spaces', () => {
+    expect(deploySettingValues(settings, { API_KEY: ' valid-password ', NAME: ' feed ', INTERVAL: ' 60 ', RATIO: '0.5', ENABLED: true })).toEqual([
+      { key: 'API_KEY', value: ' valid-password ' },
+      { key: 'NAME', value: 'feed' },
+      { key: 'INTERVAL', value: '60' },
+      { key: 'RATIO', value: '0.5' },
+      { key: 'ENABLED', value: 'true' },
+    ]);
+  });
+});
