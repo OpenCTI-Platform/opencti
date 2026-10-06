@@ -154,7 +154,7 @@
     "@vitest/coverage-v8": "4.0.18",
     "babel-plugin-relay": "20.1.1",
     "chokidar": "5.0.0",
-    "compression": "1.8.1",
+    "compression": "1.8.2",
     "esbuild": "0.27.3",
     "eslint": "10.0.2",
     "eslint-import-resolver-typescript": "4.4.4",
