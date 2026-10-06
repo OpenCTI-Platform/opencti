@@ -57,6 +57,8 @@ Next to the status, the header always shows the primary action of the status: **
 
 Some items are warnings: they do not block the activation but deserve a look, for example "Splunk hunt has not answered recently: runs wait in the queue until it is back", or the indicators left out because they are more restricted than the hunt. In a draft workspace, the checklist reminds that the hunt runs once the draft is validated.
 
+A user who cannot change the hunt (without the knowledge update capability, or with only view access to the draft workspace that holds it) sees the status and the checklist without these actions and without **Edit the schedule** and **Edit the scope**.
+
 ![The status header of a draft hunt: the statuses explained, Activate with "1 item to complete" and the checklist naming the missing logic](assets/first-hunt-activation-blocked.png)
 
 **Activate** stays visible while an item is missing: it is disabled and says how many items remain next to it ("1 item to complete"). The platform checks the same items when a hunt becomes active and refuses the activation with the same sentence ("This hunt cannot be activated: Add a Sigma rule or a native query"), whatever the way the hunt is activated (the page, the API, an integration).
@@ -126,7 +128,7 @@ At the top of the form, two blocks explain the hunt before anything is filled in
 
 An indicator hunt started this way keeps the threat and its sources as what it looks for: the indicators are read again at every run, so the hunt follows the intelligence as it grows.
 
-The overview of a report, a malware or an indicator then shows a **Hunts** card: the hunts that look for it or use it as a source, each with its status, the verdict of its latest run and the date and hits of that run (the ten most recently run, the others in the hunts list). The card is not shown when no hunt uses the entity.
+The overview of a report, a malware or an indicator then shows a **Hunts** card: the hunts that look for it or use it as a source, each with its status, the verdict of its latest execution (Pending until an analyst gives one, Never run for a hunt not executed yet; query previews do not count) and the date and hits of that execution (the ten most recently run, the others in the hunts list). The card is not shown when no hunt uses the entity.
 
 ## Run a hunt
 
