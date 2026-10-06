@@ -121,7 +121,7 @@ describe('CSV ingestion resolver standard behavior', () => {
       user_id: '[F] Single column inline and auto user',
     };
 
-    const createSingleColumnCsvFeedsIngesterQueryResult = await queryAsUserWithSuccess(USER_DISINFORMATION_ANALYST, {
+    const createSingleColumnCsvFeedsIngesterQueryResult = await queryAsAdminWithSuccess({
       query: gql`
       mutation createSingleColumnCsvFeedsIngester($input: IngestionCsvAddInput!) {
         ingestionCsvAdd(input: $input) {
