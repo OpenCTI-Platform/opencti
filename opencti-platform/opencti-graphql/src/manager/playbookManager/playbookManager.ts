@@ -213,7 +213,7 @@ export const executePlaybookOnEntity = async (context: AuthContext, id: string, 
           });
           return true;
         } catch (e) {
-          logApp.error('[OPENCTI-MODULE] Playbook manager step executor error', { cause: e, id: entityId, manager: 'PLAYBOOK_MANAGER' });
+          logApp.warn('[OPENCTI-MODULE] Playbook manager step executor error', { cause: e, id: entityId, manager: 'PLAYBOOK_MANAGER' });
           return false;
         }
       }
@@ -362,7 +362,7 @@ const initPlaybookManager = () => {
                     bundle,
                   });
                 } catch (e) {
-                  logApp.error('[OPENCTI-MODULE] Playbook manager cron error', { cause: e, id: results[0].id, manager: 'PLAYBOOK_MANAGER' });
+                  logApp.warn('[OPENCTI-MODULE] Playbook manager cron error', { cause: e, id: results[0].id, manager: 'PLAYBOOK_MANAGER' });
                 }
               }
             } else {
@@ -398,7 +398,7 @@ const initPlaybookManager = () => {
                       bundle,
                     });
                   } catch (e) {
-                    logApp.error('[OPENCTI-MODULE] Playbook manager cron error', { cause: e, id: node.id, manager: 'PLAYBOOK_MANAGER' });
+                    logApp.warn('[OPENCTI-MODULE] Playbook manager cron error', { cause: e, id: node.id, manager: 'PLAYBOOK_MANAGER' });
                   }
                 }
               }

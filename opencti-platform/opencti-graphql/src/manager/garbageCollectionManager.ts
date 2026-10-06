@@ -70,7 +70,7 @@ export const garbageCollectionHandler = async () => {
       const deleteOperation = deleteOperationsToManage[i];
       await confirmDelete(context, GARBAGE_COLLECTION_MANAGER_USER, deleteOperation.id);
     } catch (e) {
-      logApp.error('[OPENCTI-MODULE] Garbage collection delete error', { cause: e, manager: 'GARBAGE_MANAGER', id: deleteOperationsToManage[i].id, errorCount });
+      logApp.warn('[OPENCTI-MODULE] Garbage collection delete error', { cause: e, manager: 'GARBAGE_MANAGER', id: deleteOperationsToManage[i].id, errorCount });
       errorCount += 1;
     }
   }

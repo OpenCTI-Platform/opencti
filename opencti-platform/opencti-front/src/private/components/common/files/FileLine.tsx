@@ -34,10 +34,11 @@ import useAuth from '../../../../utils/hooks/useAuth';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
 import Box from '@mui/material/Box';
-import { KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGranted';
+import { isBypassUser, KNOWLEDGE_KNASKIMPORT } from '../../../../utils/hooks/useGranted';
 import { isNotEmptyField } from '../../../../utils/utils';
 import FileWork from './FileWork';
 import { FileLine_file$data } from './__generated__/FileLine_file.graphql';
+import ItemCreators from 'src/components/ItemCreators';
 
 const Transition = React.forwardRef(({ children, ...otherProps }: SlideProps, ref) => (
   <Slide direction="up" ref={ref} {...otherProps}>{children}</Slide>
@@ -283,12 +284,18 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
             gap={0.5}
           >
             {!isProgress && !isFail && !isOutdated && (
-              <Box sx={{ maxWidth: 150 }}>
+              <Box sx={{ width: 100, display: 'flex', justifyContent: 'center' }}>
                 <ItemMarkings
                   markingDefinitions={fileMarkings}
                   limit={1}
                 />
               </Box>
+            )}
+            {isBypassUser(me) && (
+              <ItemCreators
+                creators={file?.metaData?.creator ? [file?.metaData?.creator] : []}
+                maxWidth={60}
+              />
             )}
             {!disableImport && (
               <Tooltip title={t_i18n('Launch an import of this file')}>
@@ -532,6 +539,11 @@ const FileLine = createFragmentContainer(FileLineComponent, {
       lastModified
       lastModifiedSinceMin
       metaData {
+        creator_id
+        creator {
+          id
+          name
+        }
         mimetype
         list_filters
         external_reference_id

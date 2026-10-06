@@ -93,7 +93,7 @@ const buildSyncEventContent = ({
     if (droppedFiles.length === 0) {
       throw encodingError;
     }
-    logger.error('[OPENCTI] Sync: Event payload too large, dropping attached files data and retrying.', {
+    logger.warn('[OPENCTI] Sync: Event payload too large, dropping attached files data and retrying.', {
       id: syncId,
       eventId: lastEventId,
       entityId: syncData?.extensions?.[STIX_EXT_OCTI]?.id,
@@ -242,7 +242,7 @@ export const transformDataWithReverseIdAndFilesData = async (sync, httpClient, d
           const attachmentByteLength = Buffer.isBuffer(response?.data)
             ? response.data.length
             : response?.data?.byteLength;
-          logApp.error('[OPENCTI] Sync: Attached file too large to encode, skipping file data.', {
+          logApp.warn('[OPENCTI] Sync: Attached file too large to encode, skipping file data.', {
             fileUri,
             entityId: markdownEntityContext.entityId,
             entityType: markdownEntityContext.entityType,
@@ -478,7 +478,7 @@ const syncManagerInstance = (syncId) => {
                 await saveCurrentState(context, 'event', lastEventId);
                 processed = true;
               } catch (processingError) {
-                logApp.error('[OPENCTI-MODULE] Sync manager event handling error, retrying...', {
+                logApp.warn('[OPENCTI-MODULE] Sync manager event handling error, retrying...', {
                   cause: processingError, id: syncId, manager: 'SYNC_MANAGER',
                 });
                 await patchSync(context, SYSTEM_USER, syncId, {
