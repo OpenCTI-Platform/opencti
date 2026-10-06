@@ -25,14 +25,15 @@ Each registry collects the default exports of the files of its folder (`import.m
 by `order`. Adding an entry is adding one file: it gives both the menu row and the route, and edits
 no shared navigation or routing file (its strings still go into every `lang/front/*.json` file).
 
-The platform ships both hubs with an empty registry. While nothing is registered, the menu lists the
-hub as a plain link and the hub lands on its own first-use page (`common/hub/HubEmpty.tsx`), which
-names the hub, says what it is for and that its pages are not available yet, and links to its
-documentation. Once an entry is registered, the hub opens its first entry instead, and the menu lists
-the hub only while one of its entries is visible to the reader: a reader whose entries are all hidden
-(entity type hidden, capability missing, platform module disabled) sees no menu entry, and a direct
-link shows the no-access page (`common/hub/HubNoAccess.tsx`) with a way back. Both hubs require
-access to the knowledge, from the menu and from a direct link alike.
+The menu lists a hub only while one of its entries is visible to the reader, so a hub never shows a
+menu entry with nothing behind it. The platform ships both hubs with an empty registry: while nothing
+is registered, neither hub is in the menu, and the hub's address lands on its own first-use page
+(`common/hub/HubEmpty.tsx`), which names the hub, says what it is for and that its pages are not
+available yet, and links to its documentation. Once an entry is registered, the hub opens its first
+entry instead. A reader whose entries are all hidden (entity type hidden, capability missing, platform
+module disabled) sees no menu entry, and a direct link shows the no-access page
+(`common/hub/HubNoAccess.tsx`) with a way back. Both hubs require access to the knowledge, from the
+menu and from a direct link alike.
 
 ## Registering a Defense area
 
@@ -106,9 +107,9 @@ The Data > Curation hub works the same way with one file per tab in
 `src/private/components/data/curation/tabs/`, whose default export is its `CurationTab`
 (`{ order, path, label, description?, needs?, isAvailable?, useBadgeCount?, component }`).
 `isAvailable(modules)` keeps the tab, and its badge query, out of the hub while the platform module it
-belongs to is disabled. The hub renders the breadcrumb (Data / Curation / <tab>) and the tab bar, and
-keeps them on screen while a tab's code loads; the component renders the tab's content only and uses
-`HubFirstUse` for its first-use state. A tab's `useBadgeCount` shows on its tab, and the counts of all
+belongs to is disabled. The hub renders the breadcrumb (Data / Curation / <tab>) and, when the reader
+has more than one tab, the tab bar, and keeps them on screen while a tab's code loads; the component
+renders the tab's content only and uses `HubFirstUse` for its first-use state. A tab's `useBadgeCount` shows on its tab, and the counts of all
 tabs are summed on the Data > Curation menu row.
 
 ## Tests

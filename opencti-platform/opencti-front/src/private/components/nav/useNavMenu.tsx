@@ -65,7 +65,6 @@ import React from 'react';
 import { DEFENSE_AREAS, PATH_DEFENSE, visibleDefenseAreas } from '@components/defense/defenseAreas';
 import { CURATION_TABS, grantedCurationTabs, PATH_CURATION } from '@components/data/curation/curationTabs';
 import HubCountBadge, { HubTotalBadge } from '@components/common/hub/HubCountBadge';
-import { isHubListed } from '@components/common/hub/hubRegistry';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useHiddenEntities, useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
@@ -296,19 +295,19 @@ const useNavMenu = (): NavGroup[] => {
             { type: 'Infrastructure', link: '/dashboard/observations/infrastructures', label: t_i18n('Infrastructures'), icon: <ServerNetwork fontSize="small" /> },
           ],
         },
-        isHubListed(DEFENSE_AREAS, defenseAreas) && {
+        // A hub is listed only while one of its entries is visible to the reader: an empty hub adds no entry.
+        defenseAreas.length > 0 && {
           id: 'defense',
           label: t_i18n('Defense'),
           icon: <ShieldCheckOutline />,
           link: PATH_DEFENSE,
-          // Without a registered area, the entry is a plain link to the hub's landing page.
-          subItems: defenseAreas.length > 0 ? defenseAreas.map((area) => ({
+          subItems: defenseAreas.map((area) => ({
             type: area.entityType,
             link: `${PATH_DEFENSE}/${area.path}`,
             label: t_i18n(area.label),
             icon: area.icon,
             badge: area.useBadgeCount ? <HubCountBadge useCount={area.useBadgeCount} /> : undefined,
-          })) : undefined,
+          })),
         },
       ] : [],
     },
@@ -396,7 +395,7 @@ const useNavMenu = (): NavGroup[] => {
             { granted: isGrantedToKnowledge, link: '/dashboard/data/entities', label: t_i18n('Entities') },
             { granted: isGrantedToKnowledge, link: '/dashboard/data/relationships', label: t_i18n('Relationships') },
             {
-              granted: isHubListed(CURATION_TABS, curationTabs) && isGrantedToKnowledge && !inDraft,
+              granted: curationTabs.length > 0 && isGrantedToKnowledge && !inDraft,
               link: PATH_CURATION,
               label: t_i18n('Curation'),
               badge: curationCounts.length > 0 ? <HubTotalBadge counts={curationCounts} /> : undefined,

@@ -50,16 +50,15 @@ afterEach(() => {
 });
 
 describe('useNavMenu - Defense hub', () => {
-  it('lists Defense right after Observations as a link to its landing page while no area is registered', () => {
-    const groups = menu();
-    expect(knowledgeIds(groups)).toEqual(['analyses', 'cases', 'events', 'observations', 'defense']);
-    expect(defenseEntry(groups)?.link).toEqual('/dashboard/defense');
-    expect(defenseEntry(groups)?.subItems).toBeUndefined();
+  it('adds no Defense entry while no area is registered', () => {
+    expect(knowledgeIds(menu())).toEqual(['analyses', 'cases', 'events', 'observations']);
   });
 
-  it('lists the registered areas under Defense, in registration order', () => {
+  it('lists the registered areas under Defense, right after Observations, in registration order', () => {
     DEFENSE_AREAS.push(area('alpha', 'Alpha', 'Report'), area('beta', 'Beta'));
-    const defense = defenseEntry(menu());
+    const groups = menu();
+    expect(knowledgeIds(groups)).toEqual(['analyses', 'cases', 'events', 'observations', 'defense']);
+    const defense = defenseEntry(groups);
     expect(defense?.link).toEqual('/dashboard/defense');
     expect(defense?.subItems?.map((s) => [s.link, s.label])).toEqual([
       ['/dashboard/defense/alpha', 'Alpha'],
@@ -68,7 +67,6 @@ describe('useNavMenu - Defense hub', () => {
   });
 
   it('removes the entry, not just its rows, when every registered area is hidden', () => {
-    // A parent left with no rows would degrade to a plain link to a hub with nothing for the reader.
     DEFENSE_AREAS.push(area('alpha', 'Alpha', 'Report'));
     hidden.entities = ['Report'];
     expect(knowledgeIds(menu())).not.toContain('defense');
@@ -81,12 +79,11 @@ describe('useNavMenu - Defense hub', () => {
 });
 
 describe('useNavMenu - Curation hub', () => {
-  it('lists Curation right after Relationships, a link to its landing page while no tab is registered', () => {
-    const links = dataLinks(menu()) ?? [];
-    expect(links.slice(0, 3)).toEqual(['/dashboard/data/entities', '/dashboard/data/relationships', '/dashboard/data/curation']);
+  it('adds no Curation row while no tab is registered', () => {
+    expect(dataLinks(menu())).not.toContain('/dashboard/data/curation');
   });
 
-  it('keeps Curation after Relationships once a tab is registered', () => {
+  it('lists Curation right after Relationships once a tab is registered', () => {
     CURATION_TABS.push(tab('alpha', 'Alpha'));
     const links = dataLinks(menu()) ?? [];
     expect(links.slice(0, 3)).toEqual(['/dashboard/data/entities', '/dashboard/data/relationships', '/dashboard/data/curation']);
@@ -100,8 +97,8 @@ describe('useNavMenu - Curation hub', () => {
   it('sums the pending counts of the tabs on the Curation row, and shows none without counting tabs', () => {
     const curationRow = () => menu().find((g) => g.id === 'data')?.items.find((i) => i.id === 'data')
       ?.subItems?.find((s) => s.link === '/dashboard/data/curation');
-    expect(curationRow()?.badge).toBeUndefined();
     CURATION_TABS.push(tab('beta', 'Beta'));
+    expect(curationRow()).toBeDefined();
     expect(curationRow()?.badge).toBeUndefined();
     CURATION_TABS.push({ ...tab('alpha', 'Alpha'), useBadgeCount: () => 2 });
     expect(curationRow()?.badge).toBeTruthy();

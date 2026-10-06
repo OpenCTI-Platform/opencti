@@ -4,7 +4,7 @@
 
 ## Before any tab is available
 
-On a platform where no Curation tab is available yet, **Curation** appears in the **Data** menu, right after **Relationships**, and opens the landing page of the hub. The page names the hub, says what it is for and that its pages appear here as tabs once the platform provides them, and links to this documentation.
+On a platform where no Curation tab is available yet, **Curation** is not listed in the **Data** menu: it appears there, right after **Relationships**, with the first tab the platform provides. Its address, `/dashboard/data/curation`, opens the landing page of the hub. The page names the hub, says what it is for and that its pages appear here as tabs once the platform provides them, and links to this documentation.
 
 ![The Curation landing page under the breadcrumb Data > Curation: the hub name, what it is for, the notice that no page is available yet and a Read the documentation button](assets/curation-hub-first-use.png)
 
@@ -17,7 +17,7 @@ A link to an address below **Data > Curation** that no tab serves opens the same
 ## Once tabs are available
 
 - Clicking **Curation** opens the first tab available to you. Each tab keeps its own address under `Data > Curation`, so a link to a tab can be bookmarked and shared.
-- The breadcrumb `Data > Curation > <tab>` and the tab bar stay on screen while a tab loads, so switching tabs never blanks the page.
+- The breadcrumb `Data > Curation > <tab>` and the tab bar stay on screen while a tab loads, so switching tabs never blanks the page. When a single tab is available to you, the breadcrumb names it and no tab bar is shown.
 - A number next to a tab counts the work waiting for you there, and the **Curation** entry of the menu shows the sum of these numbers. They are never totals, and they disappear when nothing is waiting.
 - A tab that has nothing to show yet says what it does and what feeds it, and offers its first action and a link to its documentation.
 

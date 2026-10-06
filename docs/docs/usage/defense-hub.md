@@ -4,7 +4,7 @@ The **Defense** entry of the left menu, right after **Observations**, is where t
 
 ## Before any area is available
 
-On a platform where no Defense area is available yet, **Defense** is a single menu entry that opens the landing page of the hub. The page names the hub, says what it is for and that its areas appear here and in the menu once the platform provides them, and links to this documentation.
+On a platform where no Defense area is available yet, **Defense** is not listed in the menu: the entry appears with the first area the platform provides. Its address, `/dashboard/defense`, opens the landing page of the hub. The page names the hub, says what it is for and that its areas appear here and in the menu once the platform provides them, and links to this documentation.
 
 ![The Defense landing page under the breadcrumb Defense: the hub name, what it is for, the notice that no area is available yet and a Read the documentation button](assets/defense-hub-first-use.png)
 

@@ -85,9 +85,17 @@ describe('Curation hub', () => {
       },
     };
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    renderCuration([alpha], '/dashboard/data/curation/alpha');
+    renderCuration([alpha, tab('beta', 'Beta')], '/dashboard/data/curation/alpha');
     expect(await screen.findByText('alpha content')).toBeInTheDocument();
     expect(screen.getByTestId('curation-tab-alpha').textContent).toEqual('Alpha');
+  });
+
+  it('draws no tab bar for a reader with a single tab, which the breadcrumb already names', async () => {
+    renderCuration([tab('alpha', 'Alpha'), { ...tab('beta', 'Beta'), isAvailable: () => false }], '/dashboard/data/curation');
+    expect(await screen.findByText('alpha content')).toBeInTheDocument();
+    expect(screen.getByText('Alpha')).toBeInTheDocument();
+    expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('curation-tab-alpha')).not.toBeInTheDocument();
   });
 
   it('lands on the first-use page of the hub while no tab is registered', async () => {
@@ -115,8 +123,9 @@ describe('Curation hub', () => {
 
   it('hides a tab whose platform module is disabled', async () => {
     const alpha: CurationTab = { ...tab('alpha', 'Alpha'), isAvailable: () => false };
-    renderCuration([alpha, tab('beta', 'Beta')], '/dashboard/data/curation');
+    renderCuration([alpha, tab('beta', 'Beta'), tab('gamma', 'Gamma page')], '/dashboard/data/curation');
     expect(await screen.findByText('beta content')).toBeInTheDocument();
+    expect(screen.getByTestId('curation-tab-gamma')).toBeInTheDocument();
     expect(screen.queryByTestId('curation-tab-alpha')).not.toBeInTheDocument();
   });
 

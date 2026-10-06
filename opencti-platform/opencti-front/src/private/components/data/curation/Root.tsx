@@ -40,17 +40,19 @@ const CurationTabPage = ({ tabs }: { tabs: CurationTab[] }) => {
           { label: t_i18n(current.label), current: true },
         ]}
       />
-      <HubTabBar
-        label={t_i18n(CURATION_HUB.label)}
-        value={current.path}
-        tabs={tabs.map((entryTab) => ({
-          path: entryTab.path,
-          label: entryTab.label,
-          link: `${PATH_CURATION}/${entryTab.path}`,
-          useBadgeCount: entryTab.useBadgeCount,
-        }))}
-        testIdPrefix="curation-tab"
-      />
+      {tabs.length > 1 && (
+        <HubTabBar
+          label={t_i18n(CURATION_HUB.label)}
+          value={current.path}
+          tabs={tabs.map((entryTab) => ({
+            path: entryTab.path,
+            label: entryTab.label,
+            link: `${PATH_CURATION}/${entryTab.path}`,
+            useBadgeCount: entryTab.useBadgeCount,
+          }))}
+          testIdPrefix="curation-tab"
+        />
+      )}
       <HubEntryContext.Provider value={entry}>
         <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           {boundaryWrapper(current.component)}
