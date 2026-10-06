@@ -4,15 +4,26 @@ import { expressMiddleware } from '@as-integrations/express5';
 import type { Request, Response } from 'express';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 
-const { mockGetEntitiesMapFromCache, mockIsUserCanAccessStoreElement, mockUserEditField, mockEnterDraft } = vi.hoisted(() => ({
+const {
+  mockGetEntitiesMapFromCache,
+  mockIsUserCanAccessStoreElement,
+  mockUserEditField,
+  mockEnterDraft,
+  mockResolveQueuedFeedQuarantineDraftId,
+} = vi.hoisted(() => ({
   mockGetEntitiesMapFromCache: vi.fn(),
   mockIsUserCanAccessStoreElement: vi.fn(),
   mockUserEditField: vi.fn(),
   mockEnterDraft: vi.fn(),
+  mockResolveQueuedFeedQuarantineDraftId: vi.fn(),
 }));
 
 vi.mock('../../../src/modules/draftWorkspace/draftWorkspace-closure', () => ({
   enterDraft: mockEnterDraft,
+}));
+
+vi.mock('../../../src/modules/sourceIntelligence/sourceIntelligence-quarantine', () => ({
+  resolveQueuedFeedQuarantineDraftId: mockResolveQueuedFeedQuarantineDraftId,
 }));
 
 vi.mock('../../../src/database/cache', () => ({
@@ -148,6 +159,19 @@ describe('enterRequestDraft and releaseRequestDraft', () => {
     await enterRequestDraft(executeContext, {});
 
     await expect(releaseRequestDraft(executeContext)).resolves.toBeUndefined();
+  });
+
+  it('should route a feed bundle queued before the quarantine of its source into the quarantine draft', async () => {
+    const release = vi.fn().mockResolvedValue(undefined);
+    mockResolveQueuedFeedQuarantineDraftId.mockResolvedValueOnce('quarantine-draft');
+    mockEnterDraft.mockResolvedValue({ draftId: 'quarantine-draft', closed: false, writerId: 'writer-1', release });
+    const executeContext = { workId: 'work_feed-connector_2026-10-06T15:41:39.000Z', draft_context: '' } as unknown as AuthContext;
+
+    await enterRequestDraft(executeContext, {});
+
+    expect(mockResolveQueuedFeedQuarantineDraftId).toHaveBeenCalledWith(executeContext);
+    expect(mockEnterDraft).toHaveBeenCalledWith('quarantine-draft');
+    expect(executeContext).toMatchObject({ draft_context: 'quarantine-draft', draft_forward_closed: false, draft_writer_id: 'writer-1' });
   });
 
   it('should flag a request whose draft chain ended, holding no lease', async () => {

@@ -3,6 +3,7 @@ import { DraftLockedError, FunctionalError } from '../config/errors';
 import { logApp } from '../config/conf';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { enterDraft } from '../modules/draftWorkspace/draftWorkspace-closure';
+import { resolveQueuedFeedQuarantineDraftId } from '../modules/sourceIntelligence/sourceIntelligence-quarantine';
 import { userEditField } from '../modules/user/user-domain';
 import { ENTITY_TYPE_DRAFT_WORKSPACE, type BasicStoreEntityDraftWorkspace } from '../modules/draftWorkspace/draftWorkspace-types';
 import { getEntitiesMapFromCache } from '../database/cache';
@@ -12,11 +13,16 @@ import { isUserCanAccessStoreElement, SYSTEM_USER } from '../utils/access';
 const leasedRequests = new WeakMap<object, AuthContext>();
 
 /**
- * Draft of an API request, once its user is known: work queued or routed into a draft closed meanwhile goes to the
- * draft that took over from it, or is refused (see enterDraft). The lease on a draft of a forwarding chain lasts until
- * the request settled (see settleRequestDraft), so a closure of that draft waits for it.
+ * Draft of an API request, once its user is known: a feed bundle queued before its source was quarantined goes to the
+ * quarantine draft (see resolveQueuedFeedQuarantineDraftId), and work queued or routed into a draft closed meanwhile
+ * goes to the draft that took over from it, or is refused (see enterDraft). The lease on a draft of a forwarding chain
+ * lasts until the request settled (see settleRequestDraft), so a closure of that draft waits for it.
  */
 export const enterRequestDraft = async (executeContext: AuthContext, res: object) => {
+  const quarantineDraftId = await resolveQueuedFeedQuarantineDraftId(executeContext);
+  if (quarantineDraftId) {
+    executeContext.draft_context = quarantineDraftId;
+  }
   if (!executeContext.draft_context) {
     return;
   }

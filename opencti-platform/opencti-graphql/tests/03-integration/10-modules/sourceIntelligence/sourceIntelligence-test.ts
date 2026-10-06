@@ -39,9 +39,12 @@ import { createEntity, deleteElementById, patchAttribute } from '../../../../src
 import { elUpdate } from '../../../../src/database/engine';
 import { wait } from '../../../../src/database/utils';
 import { lockResources } from '../../../../src/lock/master-lock';
-import { resolveFeedQuarantineDraftId } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-quarantine';
+import { resolveFeedQuarantineDraftId, resolveQueuedFeedQuarantineDraftId } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-quarantine';
 import { fullEntitiesList, storeLoadById } from '../../../../src/database/middleware-loader';
+import { resetCacheForEntity } from '../../../../src/database/cache';
+import { generateWorkId } from '../../../../src/schema/identifier';
 import type { BasicStoreEntity } from '../../../../src/types/store';
+import type { AuthContext } from '../../../../src/types/user';
 import { addDraftWorkspace, deleteDraftWorkspace } from '../../../../src/modules/draftWorkspace/draftWorkspace-domain';
 import { userEditField } from '../../../../src/modules/user/user-domain';
 import { ENTITY_TYPE_USER } from '../../../../src/schema/internalObject';
@@ -52,7 +55,7 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organ
 import { ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
 import { computeCollectionGaps } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-gaps';
 import { deletePir, pirAdd } from '../../../../src/modules/pir/pir-domain';
-import { connectorDelete, registerConnector } from '../../../../src/domain/connector';
+import { connectorDelete, connectorIdFromIngestId, registerConnector } from '../../../../src/domain/connector';
 import { ENTITY_TYPE_DECAY_RULE } from '../../../../src/modules/decayRule/decayRule-types';
 import { ConnectorType, FilterMode, PirType } from '../../../../src/generated/graphql';
 
@@ -1150,6 +1153,40 @@ describe('Source intelligence', () => {
     await patchAttribute(testContext, ADMIN_USER, feedSource.internal_id, ENTITY_TYPE_SOURCE, { quarantined: false, quarantine_draft_id: null });
     expect(await resolveFeedQuarantineDraftId(testContext, feedId)).toBeUndefined();
     await deleteDraftWorkspace(testContext, ADMIN_USER, renewedDraftId);
+  });
+
+  it('should route a feed bundle queued before the quarantine of its source when the worker processes it', async () => {
+    const feedId = uuidv4();
+    const feedSource = await createEntity(testContext, ADMIN_USER, {
+      source_kind: 'ingestion_feed',
+      ref_id: feedId,
+      ref_type: 'IngestionRss',
+      name: 'Source intelligence test feed (queued bundle)',
+      source_user_ids: [],
+      enabled: true,
+      quarantined: false,
+    }, ENTITY_TYPE_SOURCE);
+    // A request of the worker for a bundle pushed with no draft, before the quarantine
+    const { id: workId } = generateWorkId(connectorIdFromIngestId(feedId));
+    const workerRequest = (draftContext = '') => ({ ...testContext, workId, draft_context: draftContext }) as AuthContext;
+    resetCacheForEntity(ENTITY_TYPE_SOURCE);
+    expect(await resolveQueuedFeedQuarantineDraftId(workerRequest())).toBeUndefined();
+
+    await patchAttribute(testContext, ADMIN_USER, feedSource.internal_id, ENTITY_TYPE_SOURCE, { quarantined: true, quarantine_draft_id: null });
+    // What the change event of the source does on every node
+    resetCacheForEntity(ENTITY_TYPE_SOURCE);
+    const draftId = await resolveQueuedFeedQuarantineDraftId(workerRequest()) as string;
+    expect(draftId).toBeTruthy();
+    expect(await resolveFeedQuarantineDraftId(testContext, feedId)).toBe(draftId);
+    // A request already in a draft, and the requests of the works of other connectors, are left as they are
+    expect(await resolveQueuedFeedQuarantineDraftId(workerRequest('another-draft'))).toBeUndefined();
+    const otherWork = generateWorkId(connectorIdFromIngestId(uuidv4())).id;
+    expect(await resolveQueuedFeedQuarantineDraftId({ ...testContext, workId: otherWork, draft_context: '' } as AuthContext)).toBeUndefined();
+
+    await patchAttribute(testContext, ADMIN_USER, feedSource.internal_id, ENTITY_TYPE_SOURCE, { quarantined: false, quarantine_draft_id: null });
+    resetCacheForEntity(ENTITY_TYPE_SOURCE);
+    expect(await resolveQueuedFeedQuarantineDraftId(workerRequest())).toBeUndefined();
+    await deleteDraftWorkspace(testContext, ADMIN_USER, draftId);
   });
 
   it('should refuse the work queued for a first quarantine draft closed after the quarantine was lifted', async () => {

@@ -25,6 +25,7 @@ import { LockTimeoutError, TYPE_LOCK_ERROR } from '../../config/errors';
 import { lockResources } from '../../lock/master-lock';
 import { SOURCE_INTELLIGENCE_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { connectorIdFromIngestId } from '../../domain/connector';
 import { addDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import { type BasicStoreEntityDraftWorkspace, ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import { DRAFT_STATUS_OPEN } from '../draftWorkspace/draftStatuses';
@@ -159,6 +160,29 @@ export const resolveFeedQuarantineDraftId = async (context: AuthContext, ingesti
     return draft.internal_id;
   }
   return renewQuarantineDraft(context, source.internal_id);
+};
+
+// Works are identified as `work_<connector id>_<timestamp>` (see generateWorkId)
+const WORK_CONNECTOR_ID = /^work_([0-9a-f-]{36})_/;
+
+/**
+ * Draft of an API request of the worker that would write a feed bundle into the live knowledge: the open quarantine
+ * draft when the feed of its work is quarantined. A bundle queued before the quarantine carries no draft, so it is
+ * routed when it is processed, the way the draft context of a quarantined connector user applies. The lookup reads the
+ * cache, refreshed on every change of a source: it runs on every request of a work, unlike resolveFeedQuarantineDraftId.
+ */
+export const resolveQueuedFeedQuarantineDraftId = async (context: AuthContext): Promise<string | undefined> => {
+  if (!context.workId || context.draft_context) {
+    return undefined;
+  }
+  const connectorId = WORK_CONNECTOR_ID.exec(context.workId)?.[1];
+  if (!connectorId) {
+    return undefined;
+  }
+  const sources = await getEntitiesListFromCache<BasicStoreEntitySource>(context, SYSTEM_USER, ENTITY_TYPE_SOURCE);
+  const feed = sources.find((source) => source.quarantined === true && source.source_kind === SOURCE_KIND_INGESTION_FEED
+    && connectorIdFromIngestId(source.ref_id) === connectorId);
+  return feed ? resolveFeedQuarantineDraftId(context, feed.ref_id) : undefined;
 };
 
 /**
