@@ -24,7 +24,7 @@ const SettingsOverline = ({ id, children, count, adornment }: SettingsOverlinePr
   } as const;
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, height: 24 }}>
-      <Typography id={id} component="h3" sx={{ ...textSx, margin: 0 }}>{children}</Typography>
+      <Typography id={id} component="h6" sx={{ ...textSx, margin: 0 }}>{children}</Typography>
       {count !== undefined && (
         <Typography component="span" sx={{ ...textSx, color: theme.palette.text.disabled }}>{count}</Typography>
       )}

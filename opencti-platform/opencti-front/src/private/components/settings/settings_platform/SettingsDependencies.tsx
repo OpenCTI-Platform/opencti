@@ -22,9 +22,14 @@ const toTestId = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '-'
 const XTM_ONE_DEPENDENCY = 'XTM-One';
 const XTM_ONE_NOT_CONNECTED = 'Not connected';
 
+// Product names, untranslated, for the services the platform reports under another name.
+const PRODUCT_NAMES: Record<string, string> = { [XTM_ONE_DEPENDENCY]: 'XTM One' };
+
 /** The services to show: XTM One only once it is registered. */
 export const toDisplayedDependencies = (dependencies: ReadonlyArray<Dependency>): Dependency[] => dependencies
   .filter((dependency) => dependency.name !== XTM_ONE_DEPENDENCY || dependency.version !== XTM_ONE_NOT_CONNECTED);
+
+export const getDependencyLabel = (name: string, translate: (key: string) => string): string => PRODUCT_NAMES[name] ?? translate(name);
 
 const SettingsDependencies = ({ dependencies }: SettingsDependenciesProps) => {
   const theme = useTheme<Theme>();
@@ -47,7 +52,7 @@ const SettingsDependencies = ({ dependencies }: SettingsDependenciesProps) => {
         {displayed.map((dependency) => (
           <Card key={dependency.name} padding="medium" data-testid={`settings-dependency-${toTestId(dependency.name)}`}>
             <Typography variant="body2" sx={{ color: theme.palette.text.light, lineHeight: '19px' }}>
-              {t_i18n(dependency.name)}
+              {getDependencyLabel(dependency.name, t_i18n)}
             </Typography>
             <Typography
               variant="body1"

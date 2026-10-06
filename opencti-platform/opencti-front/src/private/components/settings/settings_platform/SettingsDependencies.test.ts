@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { toDisplayedDependencies } from './SettingsDependencies';
+import { getDependencyLabel, toDisplayedDependencies } from './SettingsDependencies';
 
 const base = [
   { name: 'Search engine', version: 'Elk - 8.19.16' },
@@ -20,5 +20,18 @@ describe('toDisplayedDependencies', () => {
   it('keeps any other service whatever its version', () => {
     const disconnected = { name: 'Redis', version: 'Not connected' };
     expect(toDisplayedDependencies([disconnected])).toEqual([disconnected]);
+  });
+});
+
+describe('getDependencyLabel', () => {
+  const translate = (key: string) => (key === 'Search engine' ? 'Moteur de recherche' : key);
+
+  it('writes XTM One as the product name, untranslated', () => {
+    expect(getDependencyLabel('XTM-One', translate)).toBe('XTM One');
+  });
+
+  it('translates the other service names', () => {
+    expect(getDependencyLabel('Search engine', translate)).toBe('Moteur de recherche');
+    expect(getDependencyLabel('Redis', translate)).toBe('Redis');
   });
 });
