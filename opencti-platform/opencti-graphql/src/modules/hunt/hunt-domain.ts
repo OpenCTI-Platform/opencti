@@ -245,12 +245,13 @@ export const addHuntProposal = async (context: AuthContext, user: AuthUser, inpu
     } : {}),
   });
   const draftContext: AuthContext = { ...context, draft_context: draft.id };
-  // A proposal starts as a draft hunt: validating the workspace creates it, an analyst activates it
+  // A proposal is always a draft hunt, whatever status its input carries: validating the workspace creates it, an
+  // analyst activates it
   const hunt = await addHunt(draftContext, user, {
     ...input,
     objectMarking,
     ...(objectOrganization.length > 0 ? { objectOrganization } : {}),
-    hunt_status: input.hunt_status ?? HuntStatus.Draft,
+    hunt_status: HuntStatus.Draft,
     hunt_source_kind: input.hunt_source_kind ?? HuntSourceKind.Agent,
   });
   return { draft_id: draft.id, hunt };

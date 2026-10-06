@@ -6,7 +6,7 @@ import { addHuntProposal } from '../../../../src/modules/hunt/hunt-domain';
 import { findByIds } from '../../../../src/modules/hunt/hunt-loaders';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
 import type { BasicStoreEntity } from '../../../../src/types/store';
-import { HuntType } from '../../../../src/generated/graphql';
+import { HuntStatus, HuntType } from '../../../../src/generated/graphql';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 
 vi.mock('../../../../src/modules/hunt/hunt-loaders', async (importOriginal) => ({
@@ -75,6 +75,12 @@ describe('Hunt proposals of agents', () => {
   it('should start as a draft hunt, whoever proposes it', async () => {
     vi.mocked(findByIds).mockResolvedValue([]);
     await proposedMarkings({ huntTargets: [], huntSources: [] });
+    expect(vi.mocked(createEntity).mock.calls[0][2].hunt_status).toEqual('draft');
+  });
+
+  it('should start as a draft hunt even when the proposal asks for an active one', async () => {
+    vi.mocked(findByIds).mockResolvedValue([]);
+    await proposedMarkings({ huntTargets: [], huntSources: [], hunt_status: HuntStatus.Active });
     expect(vi.mocked(createEntity).mock.calls[0][2].hunt_status).toEqual('draft');
   });
 
