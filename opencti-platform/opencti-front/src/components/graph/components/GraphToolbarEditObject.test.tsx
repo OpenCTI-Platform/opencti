@@ -42,6 +42,12 @@ describe('GraphToolbarEditObject', () => {
     });
   });
 
+  it('edits nothing while an entity and a relationship are selected together', () => {
+    const { edit } = renderEditOf([actor], [graphLink(actor, malware)]);
+    expect(edit).toHaveAttribute('aria-disabled', 'true');
+    expect(edit).toHaveAccessibleDescription('Select one entity or relationship first');
+  });
+
   it('never edits a directly inferred relationship drawn as a node, the end of a nested relationship', () => {
     const relationship = graphNode({
       id: 'inferred-uses',

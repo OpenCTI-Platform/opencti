@@ -39,10 +39,11 @@ const GraphToolbarEditObject = ({
 
   const [category, setCategory] = useState<EditionCategory>();
 
+  const single = selectedNodes.length + selectedLinks.length === 1;
   let objectToEdit: GraphNode | GraphLink | undefined;
-  if (selectedNodes.length === 1 && !isInferredNode(selectedNodes[0])) {
+  if (single && selectedNodes.length === 1 && !isInferredNode(selectedNodes[0])) {
     [objectToEdit] = selectedNodes;
-  } else if (selectedLinks.length === 1 && !isInferredLink(selectedLinks[0])) {
+  } else if (single && selectedLinks.length === 1 && !isInferredLink(selectedLinks[0])) {
     [objectToEdit] = selectedLinks;
   }
   const isNotEditableFromGraph = !!objectToEdit
@@ -51,7 +52,7 @@ const GraphToolbarEditObject = ({
       || objectToEdit.parent_types.includes('internal-relationship'));
   let editDisabledReason: string | undefined;
   if (!objectToEdit) {
-    editDisabledReason = selectedNodes.length + selectedLinks.length === 1
+    editDisabledReason = single
       ? t_i18n('Inferred knowledge cannot be edited')
       : t_i18n('Select one entity or relationship first');
   } else if (isNotEditableFromGraph) {
