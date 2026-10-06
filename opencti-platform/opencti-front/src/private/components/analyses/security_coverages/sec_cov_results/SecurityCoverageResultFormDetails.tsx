@@ -12,7 +12,6 @@ import CreatedByField from '../../../common/form/CreatedByField';
 import ObjectLabelField from '../../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../../common/form/ObjectMarkingField';
 import MarkdownField from '../../../../../components/SimpleMarkdownField';
-import useMarkdownCreationFilesInput from '../../../../../utils/markdown/useMarkdownCreationFilesInput';
 import ConfidenceField from '../../../common/form/ConfidenceField';
 
 export interface SecurityCoverageResultFormData {
@@ -40,7 +39,6 @@ const SecurityCoverageResultFormDetails = ({
   initValues,
 }: SecurityCoverageResultFormDetailsProps) => {
   const { t_i18n } = useFormatter();
-  const { registerMarkdownImagesController } = useMarkdownCreationFilesInput();
 
   const validation = Yup.object().shape({
     name: Yup.string().trim().required(t_i18n('This field is required')),
@@ -101,7 +99,6 @@ const SecurityCoverageResultFormDetails = ({
             rows={4}
             style={fieldSpacingContainerStyle}
             autoPersistOnBlur={false}
-            registerMarkdownImagesController={registerMarkdownImagesController}
           />
           <ConfidenceField
             containerStyle={fieldSpacingContainerStyle}
