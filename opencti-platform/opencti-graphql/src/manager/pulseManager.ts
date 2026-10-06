@@ -13,7 +13,8 @@ const SCHEDULE_TIME = conf.get('pulse_manager:interval') || 60 * 60 * 1000; // 1
 // failed, and clears it once it succeeds again.
 const pulseStepErrorCode = (step: string) => `${step.toLowerCase().replaceAll(' ', '_')}_failed`;
 
-const runStep = async (step: string, run: () => Promise<unknown>) => {
+/** Runs one step of the cycle; whether it succeeded. */
+const runStep = async (step: string, run: () => Promise<unknown>): Promise<boolean> => {
   const errorCode = pulseStepErrorCode(step);
   try {
     await run();
@@ -21,15 +22,18 @@ const runStep = async (step: string, run: () => Promise<unknown>) => {
     if (lastError === errorCode) {
       await redisSetPulseState({ last_error: undefined });
     }
+    return true;
   } catch (error) {
     logApp.error(`[THREAT PULSE] ${step} failed`, { cause: error, manager: 'PULSE_MANAGER' });
     await redisSetPulseState({ last_error: errorCode });
+    return false;
   }
 };
 
 /**
  * Hourly Threat Pulse cycle of a platform registered on XTM Hub.
- * First, registered or not, it replays a cleanup of the community data that failed (unregistration, purge, lapse).
+ * First, registered or not, it replays a cleanup of the community data that failed (unregistration, purge, lapse):
+ * while it fails, the cycle stops there, as the data the later steps write would be removed by its next success.
  * In preview (the default), it only downloads the daily digest and matches it locally, once a day: nothing leaves.
  * Contributing, it sends the activity of the last window (hashes and counts only), refreshes the network information
  * of the objects in scope once a day, and notifies the triggers listening to objects trending in the platform's sector.
@@ -37,7 +41,7 @@ const runStep = async (step: string, run: () => Promise<unknown>) => {
  */
 export const pulseManager = async () => {
   const context = executionContext('pulse_manager');
-  await runStep('Cleanup', () => runPulsePendingCleanup());
+  if (!(await runStep('Cleanup', () => runPulsePendingCleanup()))) return;
   await runStep('Contribution', () => runPulseContribution(context));
   await runStep('Network refresh', () => runPulseRefresh(context));
   await runStep('Trending notifications', () => runPulseTrendingNotifications(context));

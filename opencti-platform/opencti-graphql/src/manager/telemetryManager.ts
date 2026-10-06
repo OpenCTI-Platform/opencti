@@ -219,22 +219,22 @@ export const addNlqQueryCount = () => {
 export const addThreatPulseRecordsCount = (count: number) => {
   if (count <= 0) return;
   redisSetTelemetryAdd(TELEMETRY_GAUGE_THREAT_PULSE_RECORDS, count)
-    .catch((reason) => logApp.warn('Error adding Threat Pulse records count to telemetry', { reason }));
+    .catch((reason) => logApp.warn('Error adding Threat Pulse records count to telemetry', { cause: reason }));
 };
 export const addThreatPulseLookupsCount = (count: number) => {
   if (count <= 0) return;
   redisSetTelemetryAdd(TELEMETRY_GAUGE_THREAT_PULSE_LOOKUPS, count)
-    .catch((reason) => logApp.warn('Error adding Threat Pulse lookups count to telemetry', { reason }));
+    .catch((reason) => logApp.warn('Error adding Threat Pulse lookups count to telemetry', { cause: reason }));
 };
 export const THREAT_PULSE_TELEMETRY_EVENTS = Object.values(PulseTelemetryEvent);
 export const THREAT_PULSE_TELEMETRY_SURFACES = Object.values(PulseSurface);
 export const addThreatPulsePreviewEventCount = (event: PulseTelemetryEvent, surface: PulseSurface) => {
   redisSetTelemetryAdd(`${TELEMETRY_GAUGE_THREAT_PULSE_PREVIEW_EVENT}:${event}:${surface}`, 1)
-    .catch((reason) => logApp.warn('Error adding Threat Pulse preview event count to telemetry', { reason }));
+    .catch((reason) => logApp.warn('Error adding Threat Pulse preview event count to telemetry', { cause: reason }));
 };
 export const addThreatPulseModeChangeCount = (mode: PulseMode) => {
   redisSetTelemetryAdd(`${TELEMETRY_GAUGE_THREAT_PULSE_MODE_CHANGE}:${mode}`, 1)
-    .catch((reason) => logApp.warn('Error adding Threat Pulse mode change count to telemetry', { reason }));
+    .catch((reason) => logApp.warn('Error adding Threat Pulse mode change count to telemetry', { cause: reason }));
 };
 export const addRequestAccessCreationCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_GAUGE_REQUEST_ACCESS, 1);

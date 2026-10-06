@@ -569,10 +569,11 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
       { key: PULSE_SETTINGS_SECTOR, value: sectorBucket ? [sectorBucket] : [] },
       { key: PULSE_SETTINGS_REGION, value: regionBucket ? [regionBucket] : [] },
     ];
+    const consentDate = new Date();
     if (consentRequired) {
       updates.push(
         { key: PULSE_SETTINGS_CONSENT_VERSION, value: [PULSE_CONSENT_VERSION] },
-        { key: PULSE_SETTINGS_CONSENT_DATE, value: [new Date()] },
+        { key: PULSE_SETTINGS_CONSENT_DATE, value: [consentDate] },
         { key: PULSE_SETTINGS_CONSENT_USER, value: [user.id] },
       );
     }
@@ -600,18 +601,19 @@ export const configurePulse = async (context: AuthContext, user: AuthUser, input
         });
       }
     }
-    // Before the settings change as well: a contribution cycle running under the former configuration records and
-    // sends nothing more, and a failed bump leaves the settings untouched. A bump followed by a failed write is harmless.
-    await redisBumpPulseConfigGeneration();
-    await updateAttribute(context, user, settings.id, ENTITY_TYPE_SETTINGS, updates);
     if (enabling && !wasContributing) {
-    // The contribution starts now: activity recorded before (a node whose settings cache had not seen the opt-out yet)
-    // is never sent, nor the batches built under a former consent version still waiting in the outbox.
-      await redisSetPulseCursor(new Date().toISOString());
+    // Before the settings change too, so that a failure leaves the platform not contributing: the contribution starts
+    // at the consent, activity recorded before (a node whose settings cache had not seen the opt-out yet) is never
+    // sent, nor the batches built under a former consent version still waiting in the outbox.
+      await redisSetPulseCursor(consentDate.toISOString());
       await redisDiscardPulseAdmission();
       await redisDiscardPulseActivity(lastUtcDays(ACTIVITY_DAYS));
       await redisDiscardPulseOutbox();
     }
+    // Before the settings change as well: a contribution cycle running under the former configuration records and
+    // sends nothing more, and a failed bump leaves the settings untouched. A bump followed by a failed write is harmless.
+    await redisBumpPulseConfigGeneration();
+    await updateAttribute(context, user, settings.id, ENTITY_TYPE_SETTINGS, updates);
     if (!enabling) {
     // Nothing collected before the opt-out may leave afterwards.
       await redisDiscardPulseAdmission();
@@ -832,7 +834,9 @@ const contributePulseCycle = async (context: AuthContext, cycle: PulseContributi
     return;
   }
   const cursor = await redisGetPulseCursor();
-  let since = new Date(Math.min(now.getTime(), Date.parse(cursor ?? '') || new Date(values.consentDate ?? now).getTime()));
+  // Never before the consent in force, whatever the cursor left by an earlier contribution says.
+  const consentTime = new Date(values.consentDate ?? now).getTime();
+  let since = new Date(Math.min(now.getTime(), Math.max(Date.parse(cursor ?? '') || consentTime, consentTime)));
   // XTM Hub serves the salts of today and yesterday only: older activity can never be contributed.
   const oldestAccepted = new Date(`${yesterday}T00:00:00.000Z`);
   if (since.getTime() < oldestAccepted.getTime()) {
