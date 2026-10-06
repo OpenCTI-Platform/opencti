@@ -146,7 +146,8 @@ export const investigationRunManagerHandler = async () => {
   try {
     await processCaseRfiHooks(context);
   } catch (error) {
-    logApp.error('[CASE AUTOPILOT] Request for information hook error', { cause: error });
+    // A policy cursor moves only after its events were handled: the next tick retries from it.
+    logApp.warn('[CASE AUTOPILOT] Request for information hook delayed, retried at the next tick', { cause: error });
   }
   const runs = await listInvestigationRunsToProcess(context, INVESTIGATION_RUN_MANAGER_MAX_RUNS_PER_TICK);
   await BluePromise.map(runs, (run) => processInvestigationRun(context, run.internal_id), { concurrency: INVESTIGATION_RUN_MANAGER_MAX_CONCURRENCY });
