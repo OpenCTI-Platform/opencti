@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isPathDrawable, neighbourhood, relationshipCounts, shortestPath } from './graphFocus';
+import { isPathDrawable, neighbourhood, relationshipCounts, shortestPath, shortestPaths } from './graphFocus';
 import { linkEndsKey } from './graphGeometry';
 
 const links = [
@@ -54,6 +54,25 @@ describe('shortestPath', () => {
   it('gives null between disconnected nodes and a trivial path to itself', () => {
     expect(shortestPath(links, 'a', 'e')).toBeNull();
     expect(shortestPath(links, 'a', 'a')).toEqual({ nodeIds: ['a'], linkKeys: [] });
+  });
+});
+
+describe('shortestPaths', () => {
+  it('draws every path of the fewest links and counts them', () => {
+    const paths = shortestPaths(links, 'b', 'd');
+    expect(paths).toMatchObject({ count: 2, hops: 2, nodeIds: ['b', 'a', 'c', 'd'] });
+    expect([...(paths?.linkKeys ?? [])].sort()).toEqual([key('ab', 'a', 'b'), key('ad', 'd', 'a'), key('bc', 'b', 'c'), key('cd', 'c', 'd')].sort());
+  });
+
+  it('counts two links between the same nodes as two paths, and follows a nested relationship', () => {
+    expect(shortestPaths([...links, { id: 'ab2', sourceId: 'b', targetId: 'a' }], 'b', 'd')?.count).toBe(3);
+    expect(shortestPaths(nested, 'z', 'y')).toMatchObject({ count: 1, hops: 3, nodeIds: ['z', 'x', 'r', 'y'] });
+  });
+
+  it('gives null between disconnected nodes and a trivial path to itself, whatever the order of the links', () => {
+    expect(shortestPaths(links, 'a', 'e')).toBeNull();
+    expect(shortestPaths(links, 'a', 'a')).toEqual({ nodeIds: ['a'], linkKeys: [], count: 1, hops: 0 });
+    expect(shortestPaths([...links].reverse(), 'b', 'd')).toEqual(shortestPaths(links, 'b', 'd'));
   });
 });
 

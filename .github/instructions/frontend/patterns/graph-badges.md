@@ -8,7 +8,8 @@ registries instead of editing the graph:
 - `badges/graphBadgeRegistry.ts`: badges drawn above the nodes (in the image export too), listed in
   the hover card, the legend and the accessible list; the legend of the image export lists the
   entity types and line styles only;
-- `badges/graphNodeActionRegistry.ts`: quick actions of the node hover card.
+- `badges/graphNodeActionRegistry.ts`: actions of the context menu of a node (the hover card only
+  previews).
 
 Both are soft checks: a feature whose data is absent from a graph shows nothing there, and nothing
 it registers can break the drawing.
@@ -71,9 +72,12 @@ Rules the graph enforces, so a provider cannot get them wrong:
 
 ## Node actions
 
-`registerGraphNodeAction` adds a button to the node hover card with the same soft-check rule:
-`isAvailable(node, context)` decides where it applies (`context` is the one given to `GraphProvider`:
-`investigation`, `correlation`, `analyses`, or `undefined` for container knowledge graphs), and the
-action is either an in-app `href` or an `onSelect` callback. Use it for actions that belong to a
-feature, such as opening the Changes tab of an entity or planning a hunt from it; generic graph
-actions (open, expand, pin, hide, layouts, paths) are built in.
+`registerGraphNodeAction` adds an item to the context menu of a node (right click, Shift+F10) with
+the same soft-check rule: `isAvailable(node, context)` decides where it applies (`context` is the
+one given to `GraphProvider`: `investigation`, `correlation`, `analyses`, or `undefined` for
+container knowledge graphs), and the action is either an in-app `href` or an `onSelect` callback.
+An action that needs a choice first (the connector of an enrichment, the playbook to enrol in)
+returns its `options(node, t_i18n)`: the menu opens them as a submenu and calls their `onSelect` with
+the key picked. Use it for actions that belong to a feature, such as opening the Changes tab of an
+entity or planning a hunt from it; generic graph actions (open, expand, pin, hide, layouts, paths)
+are built in.

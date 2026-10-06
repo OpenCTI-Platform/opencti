@@ -33,10 +33,16 @@ describe('useGraphContextMenuGesture', () => {
   });
 
   it('keeps the menu of the browser off the canvas, and on the fields', () => {
-    const { getByTestId } = render(<Harness onOpen={vi.fn()} />);
+    const onOpen = vi.fn();
+    const { getByTestId } = render(<Harness onOpen={onOpen} />);
     const onCanvas = createEvent.contextMenu(getByTestId('canvas'), { button: 2 });
     fireEvent(getByTestId('canvas'), onCanvas);
     expect(onCanvas.defaultPrevented).toBe(true);
+    // The right button opens the menu on its release only
+    expect(onOpen).not.toHaveBeenCalled();
+    // A long press on a touch screen, or a macOS Control click, reports the left button
+    fireEvent.contextMenu(getByTestId('canvas'), { button: 0, clientX: 7, clientY: 9 });
+    expect(onOpen).toHaveBeenCalledWith({ clientX: 7, clientY: 9 });
     const onField = createEvent.contextMenu(getByTestId('field'), { button: 0 });
     fireEvent(getByTestId('field'), onField);
     expect(onField.defaultPrevented).toBe(false);

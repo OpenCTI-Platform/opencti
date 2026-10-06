@@ -29,7 +29,7 @@ import useGraphLayoutEngine, { type GraphLayoutRequest } from './utils/useGraphL
 import useGraphKeyboardShortcuts from './utils/useGraphKeyboardShortcuts';
 import useGraphFullscreen from './utils/useGraphFullscreen';
 import { isPathDrawable, relationshipCounts } from './utils/graphFocus';
-import { badgesOfNode, graphNodeActionsFor, useGraphBadgeRegistryVersion } from './badges';
+import { badgesOfNode, graphNodeActionsFor, useGraphBadgeRegistryVersion, useGraphNodeActionRegistryVersion } from './badges';
 import { downloadCanvasAsPng, renderGraphImage } from './utils/graphExport';
 import { APP_BASE_PATH, MESSAGING$ } from '../../relay/environment';
 import useGraphStartInvestigation from './utils/useGraphStartInvestigation';
@@ -54,7 +54,7 @@ import { SelectInverse } from 'mdi-material-ui';
 import GraphContextMenu, { type GraphContextMenuSection } from './components/GraphContextMenu';
 import type { GraphMenuAction } from './components/GraphToolbarMoreActions';
 import useGraphToolbarActions from './components/useGraphToolbarActions';
-import useGraphContextMenuGesture, { isMacContextClick } from './utils/useGraphContextMenuGesture';
+import useGraphContextMenuGesture, { isAdditiveClick, isMacContextClick } from './utils/useGraphContextMenuGesture';
 
 export interface GraphProps {
   parentRef: MutableRefObject<HTMLDivElement | null>;
@@ -456,7 +456,7 @@ const Graph = ({
     }
     let isDoubleClick = false;
     const now = new Date().getTime();
-    if (!e.ctrlKey && !e.shiftKey && !e.altKey) {
+    if (!isAdditiveClick(e) && !e.ctrlKey) {
       if (nodeClicked.current.time && nodeClicked.current.node?.id === node.id) {
         isDoubleClick = now - nodeClicked.current.time < 500;
       }
@@ -534,8 +534,19 @@ const Graph = ({
         },
       },
     ];
+    const path: (GraphCounter & { count: number })[] = drawablePath?.hops ? [{
+      key: 'path',
+      count: drawablePath.count ?? 1,
+      label: t_i18n(
+        '{count, plural, one {# shortest path} other {# shortest paths}} · {hops, plural, one {# hop} other {# hops}}',
+        { values: { count: drawablePath.count ?? 1, hops: drawablePath.hops } },
+      ),
+      action: t_i18n('Fit the highlighted paths'),
+      onSelect: () => zoomToSelection(drawablePath.nodeIds),
+    }] : [];
     const all: (GraphCounter & { count: number })[] = [
       ...totals,
+      ...path,
       {
         key: 'restricted',
         count: restrictedNodes.length,
@@ -554,7 +565,7 @@ const Graph = ({
       },
     ];
     return all.filter(({ key, count }) => key === 'entities' || count > 0);
-  }, [shownNodes, shownLinks, selectedNodes, selectedLinks, attentionIds, filterToken]);
+  }, [shownNodes, shownLinks, selectedNodes, selectedLinks, drawablePath, attentionIds, filterToken]);
   const otherSelected = (node: GraphNode) => (selectedNodes.length === 1 && selectedNodes[0].id !== node.id ? selectedNodes[0] : null);
   const groupMembersOf = (group: GraphNode) => {
     const memberIds = new Set(group.groupOf?.memberIds ?? []);
@@ -711,6 +722,8 @@ const Graph = ({
 
   // --- Context menu: what applies to the entity, group or relationship under the pointer, to the
   // selection it belongs to, or to the graph itself on the empty canvas. The hover card only previews.
+  // An action registered, replaced or removed while the graph is open is in its next menu.
+  useGraphNodeActionRegistryVersion();
   const toolbarActions = useGraphToolbarActions({ onUnfixNodes: () => onPositionsChanged?.({}) });
   const toolbarAction = (id: string) => toolbarActions.find((action) => action.id === id);
   const present = (actions: (GraphMenuAction | false | null | undefined)[]) => actions.filter((action): action is GraphMenuAction => !!action);
@@ -794,6 +807,7 @@ const Graph = ({
           id: `registered-${action.id}`,
           label: action.label(t_i18n),
           icon: <Icon {...MENU_ICON} />,
+          options: action.options?.(node, t_i18n),
           onSelect: () => {
             if (action.href) window.open(`${APP_BASE_PATH}${action.href(node)}`, '_blank', 'noopener,noreferrer');
             else action.onSelect?.(node);

@@ -5,7 +5,7 @@ import { RectangleSelectionProps } from '../components/RectangleSelection';
 import { getMainRepresentative, getSecondaryRepresentative } from '../../../utils/defaultRepresentatives';
 import useGraphParser, { ObjectToParse } from './useGraphParser';
 import { collisionForce } from './collisionForce';
-import { neighbourhood, shortestPath } from './graphFocus';
+import { neighbourhood, shortestPaths } from './graphFocus';
 import { createCollapseCache, isCollapsedMember, isGroupLink, withCollapsedGroups } from './graphCollapse';
 import { frameBox, measureGraphPanels } from './graphFraming';
 import { isAdditiveClick } from './useGraphContextMenuGesture';
@@ -184,13 +184,13 @@ const useGraphInteractions = () => {
   };
 
   /**
-   * Highlights the shortest path between the two selected nodes, whatever the direction of the
+   * Highlights every shortest path between the two selected nodes, whatever the direction of the
    * relationships. Returns `false` when they are not connected by what is drawn.
    */
   const highlightShortestPath = (fromId?: string, toId?: string): boolean => {
     const ends = fromId && toId ? [fromId, toId] : selectedNodes.map((n) => n.id);
     if (ends.length !== 2) return false;
-    const path = shortestPath(shownLinkEnds(), ends[0], ends[1]);
+    const path = shortestPaths(shownLinkEnds(), ends[0], ends[1]);
     setGraphStateProp('highlightedPath', path);
     return path !== null;
   };

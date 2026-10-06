@@ -49,7 +49,9 @@ const useGraphContextMenuGesture = (
     const onContextMenu = (event: MouseEvent) => {
       if (isCanvas(event.target)) {
         event.preventDefault();
-        if (isMacContextClick(event)) latest.current({ clientX: event.clientX, clientY: event.clientY });
+        // The right button is answered on its release, above; a macOS Control click or a long press
+        // on a touch screen reports the left one.
+        if (event.button !== 2) latest.current({ clientX: event.clientX, clientY: event.clientY });
         return;
       }
       // The context-menu key, which the keyboard shortcuts of the graph answer, reports the left

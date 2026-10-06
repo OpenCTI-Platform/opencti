@@ -362,12 +362,11 @@
       "guards": [
         "imported-from-library"
       ],
-      "reason": "graph experience: every graph tool button (toolbar items, the More actions trigger, legend and hover card actions); the pressed state of a toggle is the active prop",
+      "reason": "graph experience: every graph tool button (toolbar items, the More actions trigger and the legend actions); the pressed state of a toggle is the active prop",
       "files": [
         "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarItem.tsx",
         "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarMoreActions.tsx",
-        "opencti-platform/opencti-front/src/components/graph/components/GraphLegend.tsx",
-        "opencti-platform/opencti-front/src/components/graph/components/GraphHoverCard.tsx"
+        "opencti-platform/opencti-front/src/components/graph/components/GraphLegend.tsx"
       ]
     },
     {
@@ -404,10 +403,11 @@
       "guards": [
         "imported-from-library"
       ],
-      "reason": "graph experience: the More actions menu closing the graph toolbar, toggles as checkable items and lists as submenus; the lists of the toolbar (select by type, filters) as menus anchored to their tool, the same items in both",
+      "reason": "graph experience: the More actions menu closing the graph toolbar, toggles as checkable items and lists as submenus; the lists of the toolbar (select by type, filters) as menus anchored to their tool, the same items in both; the context menu of the graphs, opened at the pointer from a hidden trigger (LIBRARY-FEEDBACK #64)",
       "files": [
         "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarMoreActions.tsx",
-        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarItem.tsx"
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarItem.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphContextMenu.tsx"
       ]
     },
     {
@@ -431,7 +431,8 @@
       "reason": "graph experience: the headings of the graph toolbar menus (the groups of More actions, the parts of a toolbar list)",
       "files": [
         "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarOptionsList.tsx",
-        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarMoreActions.tsx"
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarMoreActions.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphContextMenu.tsx"
       ]
     },
     {

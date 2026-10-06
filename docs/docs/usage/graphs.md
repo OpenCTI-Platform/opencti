@@ -192,7 +192,7 @@ The **Layout** group of the toolbar offers several layouts, each a toggle. All o
 Besides clicking (with `Ctrl`, `Shift` or `Alt` to add to the selection), the toolbar selects with a box or a lasso; **More actions** selects all nodes, the nodes of an entity type, or the outgoing or incoming relationships of the selected nodes. The toolbar also:
 
 - **adds the neighbours** of the selected nodes to the selection, which keeps them selected;
-- **highlights the shortest path** between two selected nodes, whatever the direction of the relationships; the path stays highlighted until the selection changes.
+- **highlights the shortest paths** between two selected nodes: every path with the fewest relationships, whatever their direction; the counters tell how many there are and how many hops they take, for example **3 shortest paths · 2 hops**, and a click on that counter fits them. The paths stay highlighted until the selection changes.
 
 The search field of the toolbar selects the matching entities. The graph view of the **Analyses** tab of an entity has no search field in its toolbar: the one of the page, above the graph, filters the containers it draws.
 

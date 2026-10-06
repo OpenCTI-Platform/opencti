@@ -40,6 +40,8 @@ const GraphContextMenu = ({ anchor, label, sections, onClose, onReturnFocus }: G
       <MenuTrigger asChild>
         <span
           aria-hidden
+          // The menu is named after its trigger (aria-labelledby), which takes over its own aria-label.
+          aria-label={label}
           tabIndex={-1}
           style={{ position: 'absolute', left: anchor.x, top: anchor.y, width: 1, height: 1, pointerEvents: 'none' }}
         />
