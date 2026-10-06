@@ -15,12 +15,6 @@ interface DateRangeFilterProps {
   filterKey: string;
   helpers?: handleFilterHelpers;
   filterValues: string[];
-  /**
-   * Compact textual summary that opens a dedicated popover instead of the fields shown inline —
-   * the nested-group row layout, which has no room for the full editor. The root chip popover
-   * (already a popover) shows the fields inline instead, and gets its own shortcuts column from
-   * `FilterChipPopover` directly (top-aligned with the operator select, not just the fields).
-   */
   showRelativeDateShortcuts?: boolean;
 }
 
@@ -56,12 +50,17 @@ const DateRangeFilter: FunctionComponent<DateRangeFilterProps> = ({
   return (
     <>
       <Box
-        component="span"
+        component="button"
+        type="button"
         onClick={(event) => setAnchorEl(event.currentTarget)}
         sx={{
           ...filterFieldBoxStyle(theme, false),
-          height: 40,
+          height: '100%',
           padding: '0 14px',
+          background: 'transparent',
+          color: 'inherit',
+          font: 'inherit',
+          textAlign: 'left',
           '&:hover': filterFieldBoxStyle(theme, true),
         }}
       >

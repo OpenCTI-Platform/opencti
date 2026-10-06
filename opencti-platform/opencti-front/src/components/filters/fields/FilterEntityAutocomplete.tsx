@@ -81,18 +81,11 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
       multiple
       key={searchKey}
       size="small"
-      // Height parity with the design-system Select/Combobox next to it (36px): MUI's small
-      // Autocomplete stacks a 6px root padding on a content-sized input (~37px empty, taller
-      // once chips are in). Zero the vertical padding and give the input row the 36px itself,
-      // so the field is 36px whatever the content (chips are shorter and sit in that line).
+      // Height parity with the design-system Select/Combobox next to it: MUI's small Autocomplete
+      // stacks a 6px root padding on a content-sized input (~37px empty). Zero the vertical padding
+      // so the field rests on the theme's MuiOutlinedInput minHeight (36px) instead of its content.
       sx={{
         '& .MuiOutlinedInput-root.MuiInputBase-sizeSmall': { paddingTop: 0, paddingBottom: 0 },
-        '& .MuiOutlinedInput-root.MuiInputBase-sizeSmall .MuiAutocomplete-input': {
-          boxSizing: 'border-box',
-          height: 36,
-          paddingTop: 0,
-          paddingBottom: 0,
-        },
       }}
       value={selectedOptions}
       inputValue={inputValue}

@@ -459,10 +459,11 @@
       "guards": [
         "imported-from-library"
       ],
-      "reason": "nested filter group support: the 'WITH' separator chip between the two stacked subfilter editors (relationship_type / id or dynamic) of a regardingOf/dynamicRegardingOf composite filter, shared by the root FilterChipPopover and the nested-group FilterRowCompositeValue popover. Also the selected-value tags of the entity autocomplete's renderTags: each holds its own onDelete, and the locked sole value of a disabled composite subfilter renders without one instead of a dead click.",
+      "reason": "nested filter group support: the 'WITH' separator chip between the two stacked subfilter editors (relationship_type / id or dynamic) of a regardingOf/dynamicRegardingOf composite filter, shared by the root FilterChipPopover and the nested-group FilterRowCompositeValue popover. Also the selected-value tags of the entity autocomplete's renderTags: each holds its own onDelete, and the locked sole value of a disabled composite subfilter renders without one instead of a dead click. Also the 'Click to display filters' info chip of FilterGroupSummaryButton, which opens the read-only dialog showing the full filter content.",
       "files": [
         "opencti-platform/opencti-front/src/components/filters/fields/CompositeRegardingOfFilterEditor.tsx",
-        "opencti-platform/opencti-front/src/components/filters/fields/FilterEntityAutocomplete.tsx"
+        "opencti-platform/opencti-front/src/components/filters/fields/FilterEntityAutocomplete.tsx",
+        "opencti-platform/opencti-front/src/components/filters/FilterGroupSummaryButton.tsx"
       ]
     },
     {

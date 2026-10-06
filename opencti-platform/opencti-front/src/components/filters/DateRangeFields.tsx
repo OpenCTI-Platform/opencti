@@ -25,7 +25,7 @@ const DateRangeFields: FunctionComponent<DateRangeFieldsProps> = ({
   const { t_i18n } = useFormatter();
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, padding: '8px 0' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <RelativeDateInput
         filter={filter}
         filterKey={filterKey}
