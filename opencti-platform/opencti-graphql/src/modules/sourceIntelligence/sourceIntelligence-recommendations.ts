@@ -30,7 +30,6 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { ENTITY_TYPE_PIR } from '../pir/pir-types';
 import { INGESTION_SETINGESTIONS, isUserHasCapability, SETTINGS_SET_ACCESSES, SETTINGS_SETCUSTOMIZATION, SOURCE_INTELLIGENCE_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
-import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { managedConnectorAdd, managedConnectorEdit, updateConnectorRequestedStatus } from '../../domain/connector';
@@ -736,7 +735,7 @@ const applyLockedRecommendation = async (
   if (patch.recommendation_status === RECOMMENDATION_STATUS_APPLIED) {
     await addSourceRecommendationOutcome(autonomous ? 'autonomous' : 'applied');
   }
-  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
+  return notify(BUS_TOPICS[ENTITY_TYPE_SOURCE_RECOMMENDATION].EDIT_TOPIC, element, user);
 };
 
 export const applySourceRecommendation = async (
@@ -799,7 +798,7 @@ const revertLockedRecommendation = async (context: AuthContext, user: AuthUser, 
   if (reverted) {
     await addSourceRecommendationOutcome('reverted');
   }
-  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
+  return notify(BUS_TOPICS[ENTITY_TYPE_SOURCE_RECOMMENDATION].EDIT_TOPIC, element, user);
 };
 
 export const revertSourceRecommendation = async (context: AuthContext, user: AuthUser, id: string) => {
@@ -830,7 +829,7 @@ const dismissLockedRecommendation = async (context: AuthContext, user: AuthUser,
     context_data: { id, entity_type: ENTITY_TYPE_SOURCE_RECOMMENDATION, input: recommendationAuditInput(recommendation, patch) },
   });
   await addSourceRecommendationOutcome('dismissed');
-  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
+  return notify(BUS_TOPICS[ENTITY_TYPE_SOURCE_RECOMMENDATION].EDIT_TOPIC, element, user);
 };
 
 export const dismissSourceRecommendation = async (context: AuthContext, user: AuthUser, id: string, reason?: string | null) => {

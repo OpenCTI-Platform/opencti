@@ -1,7 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 import type { BasicStoreEntitySource } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-types';
-import { SOURCE_KIND_AUTHOR, SOURCE_KIND_CONNECTOR } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-types';
+import {
+  ENTITY_TYPE_SOURCE,
+  ENTITY_TYPE_SOURCE_RECOMMENDATION,
+  SOURCE_KIND_AUTHOR,
+  SOURCE_KIND_CONNECTOR,
+} from '../../../../src/modules/sourceIntelligence/sourceIntelligence-types';
+import { BUS_TOPICS, getBusTopicForEntityType } from '../../../../src/config/conf';
+import { ABSTRACT_INTERNAL_OBJECT } from '../../../../src/schema/general';
 
 const { cachedSources, accessibleIdentities } = vi.hoisted(() => ({
   cachedSources: new Map<string, unknown>(),
@@ -90,5 +97,16 @@ describe('Source intelligence activity records', () => {
   it('should name the other sources, whose names are never masked', () => {
     const connector = { internal_id: 'source-3', source_kind: SOURCE_KIND_CONNECTOR, ref_id: 'connector-1', name: 'IP reputation feed' } as BasicStoreEntitySource;
     expect(sourceAuditName('source-3', connector)).toEqual('source `IP reputation feed`');
+  });
+});
+
+describe('Source intelligence edit events', () => {
+  it('should publish the edits of sources and recommendations on their own topics, not on the generic internal object one', () => {
+    const generic = BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC;
+    [ENTITY_TYPE_SOURCE, ENTITY_TYPE_SOURCE_RECOMMENDATION].forEach((type) => {
+      const topic = getBusTopicForEntityType(type)?.EDIT_TOPIC;
+      expect(topic).toBeTruthy();
+      expect(topic).not.toEqual(generic);
+    });
   });
 });

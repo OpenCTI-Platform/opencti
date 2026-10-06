@@ -18,7 +18,6 @@ import { lockResources } from '../../lock/master-lock';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { isEnterpriseEdition } from '../../enterprise-edition/ee';
 import { INTERNAL_USERS, isUserHasCapability, SOURCE_INTELLIGENCE_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
-import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { connectorIdFromIngestId } from '../../domain/connector';
 import { ConnectorType, type EditInput, type FilterGroup } from '../../generated/graphql';
@@ -588,7 +587,7 @@ export const sourceSetCost = async (context: AuthContext, user: AuthUser, id: st
     message: cost ? `sets the cost of ${sourceAuditName(id, source)} to ${cost.amount} ${cost.currency} per ${cost.period}` : `clears the cost of ${sourceAuditName(id, source)}`,
     context_data: { id, entity_type: ENTITY_TYPE_SOURCE, input: { source_cost: cost } },
   });
-  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
+  return notify(BUS_TOPICS[ENTITY_TYPE_SOURCE].EDIT_TOPIC, element, user);
 };
 
 const EDITABLE_SOURCE_KEYS = ['description', 'tags', 'owner_id', 'enabled'];
@@ -639,7 +638,7 @@ export const sourceEditField = async (context: AuthContext, user: AuthUser, id: 
     // The description of an author source is masked like its name
     context_data: { id, entity_type: ENTITY_TYPE_SOURCE, input: source.source_kind === SOURCE_KIND_AUTHOR ? withoutDescription(patch) : patch },
   });
-  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
+  return notify(BUS_TOPICS[ENTITY_TYPE_SOURCE].EDIT_TOPIC, element, user);
 };
 
 /**
