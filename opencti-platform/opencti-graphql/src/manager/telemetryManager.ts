@@ -843,7 +843,7 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
 
     logApp.debug(`[TELEMETRY] Fetching telemetry data successfully in ${new Date().getTime() - startTime} ms`);
   } catch (e) {
-    logApp.error('[TELEMETRY] Error fetching platform information', { cause: e });
+    logApp.warn('[TELEMETRY] Error fetching platform information', { cause: e });
   }
 };
 

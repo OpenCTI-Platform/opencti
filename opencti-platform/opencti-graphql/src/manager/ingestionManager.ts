@@ -298,7 +298,7 @@ export const rssExecutor = async (context: AuthContext, turndownService: Turndow
               }
             }
             ingestionLogger.error('Feed execution failed', buildIngestionErrorMeta(e))
-              .catch((reason) => logApp.error('[OPENCTI-MODULE] INGESTION Rss, error on pushing ingestion error log', { cause: reason }));
+              .catch((reason) => logApp.warn('[OPENCTI-MODULE] INGESTION Rss, error on pushing ingestion error log', { cause: reason }));
             // In case of error we need also to take in account the min_interval_minutes with last_execution_date update.
             patchRssIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now(), last_execution_status: 'error' })
               .catch((reason) => logApp.error('[OPENCTI-MODULE] INGESTION Rss, error on updating ingestion status', { cause: reason }));
@@ -715,7 +715,7 @@ export const jsonExecutor = async (context: AuthContext) => {
         } catch (e) {
           logApp.warn('[OPENCTI-MODULE] INGESTION - Json ingestion execution', { cause: e, name: ingestion.name });
           await ingestionLogger.error('Feed execution failed', buildIngestionErrorMeta(e as Error))
-            .catch((reason) => logApp.error('[OPENCTI-MODULE] INGESTION Json, error on pushing ingestion error log', { cause: reason }));
+            .catch((reason) => logApp.warn('[OPENCTI-MODULE] INGESTION Json, error on pushing ingestion error log', { cause: reason }));
           // In case of error we need also to take in account the min_interval_minutes with last_execution_date update.
           await patchJsonIngestion(context, SYSTEM_USER, ingestion.internal_id, { last_execution_date: now(), last_execution_status: 'error' })
             .catch((reason) => logApp.error('[OPENCTI-MODULE] INGESTION Json, error on updating status', { cause: reason }));

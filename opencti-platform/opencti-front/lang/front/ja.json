@@ -5129,6 +5129,7 @@
   "This is a non-exhaustive, open vocabulary that covers common programming languages and is intended to characterize the languages that may have been used to implement a malware instance or family": "これは一般的なプログラミング言語をカバーする非網羅的でオープンな語彙であり、マルウェアのインスタンスやファミリーを実装するために使用された可能性のある言語を特徴付けることを目的としています。",
   "This is an open vocabulary that covers common capabilities that may be exhibited by a malware instance or family": "これはオープンな語彙で、マルウェアのインスタンスやファミリーが示す可能性のある一般的な機能を網羅しています。",
   "This is your own account. If your IP is not in the allow list, you will be locked out of the platform after saving.": "これはご自身のアカウントです。お使いのIPアドレスが許可リストに含まれていない場合、保存後にプラットフォームへのアクセスが制限されます。",
+  "This item can't be edited from the graph": "この項目はグラフから編集できません",
   "This item is built-in": "このアイテムは内蔵されています",
   "This label already exists": "このラベルはすでに存在します",
   "This list displays all the drafts that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "このリストには、アクセス制限が有効になっている、つまり特定のユーザーしかアクセスできない草稿がすべて表示されます。この画面ではアクセス制限を解除できます。",

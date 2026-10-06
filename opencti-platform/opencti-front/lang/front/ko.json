@@ -5129,6 +5129,7 @@
   "This is a non-exhaustive, open vocabulary that covers common programming languages and is intended to characterize the languages that may have been used to implement a malware instance or family": "이것은 일반적인 프로그래밍 언어를 포괄하는 포괄적이지 않은 개방형 어휘로, 멀웨어 인스턴스 또는 제품군을 구현하는 데 사용되었을 수 있는 언어를 특성화하기 위한 것입니다",
   "This is an open vocabulary that covers common capabilities that may be exhibited by a malware instance or family": "맬웨어 인스턴스 또는 제품군에 의해 나타날 수 있는 일반적인 기능을 다루는 개방형 어휘입니다",
   "This is your own account. If your IP is not in the allow list, you will be locked out of the platform after saving.": "이 계정은 귀하의 계정입니다. 귀하의 IP가 허용 목록에 포함되어 있지 않은 경우, 저장 후 플랫폼에 접속할 수 없게 됩니다.",
+  "This item can't be edited from the graph": "이 항목은 그래프에서 편집할 수 없습니다",
   "This item is built-in": "이 항목은 내장되어 있습니다",
   "This label already exists": "이 레이블은 이미 존재합니다",
   "This list displays all the drafts that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "이 목록에는 일부 액세스 제한이 설정된, 즉 일부 특정 사용자만 액세스할 수 있는 모든 초안이 표시됩니다. 이 화면에서 이 액세스 제한을 제거할 수 있습니다.",

@@ -5129,6 +5129,7 @@
   "This is a non-exhaustive, open vocabulary that covers common programming languages and is intended to characterize the languages that may have been used to implement a malware instance or family": "This is a non-exhaustive, open vocabulary that covers common programming languages and is intended to characterize the languages that may have been used to implement a malware instance or family",
   "This is an open vocabulary that covers common capabilities that may be exhibited by a malware instance or family": "This is an open vocabulary that covers common capabilities that may be exhibited by a malware instance or family",
   "This is your own account. If your IP is not in the allow list, you will be locked out of the platform after saving.": "This is your own account. If your IP is not in the allow list, you will be locked out of the platform after saving.",
+  "This item can't be edited from the graph": "This item can't be edited from the graph",
   "This item is built-in": "This item is built-in",
   "This label already exists": "This label already exists",
   "This list displays all the drafts that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.": "This list displays all the drafts that have some access restriction enabled, meaning that they are only accessible to some specific users. You can remove this access restriction on this screen.",
