@@ -6,7 +6,6 @@ import type { Rule } from 'eslint';
 // resolved node (`open: childNode ? open : false`).
 const REF_ANCHOR_COMPONENTS = new Set([
   'ClickAwayListener',
-  'Collapse',
   'Fade',
   'Grow',
   'Slide',

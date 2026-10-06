@@ -24,6 +24,7 @@ ruleTester.run('no-fragment-ref-anchor', rule, {
     // Not one of the components that anchor a ref on their child.
     { code: '<Drawer><>{v}</></Drawer>;' },
     { code: '<Dialog><>{v}</></Dialog>;' },
+    { code: '<Collapse in><>{v}</></Collapse>;' },
     // Several children is a different mistake, reported by React itself.
     { code: '<Tooltip title="t"><span>a</span><span>b</span></Tooltip>;' },
   ],
