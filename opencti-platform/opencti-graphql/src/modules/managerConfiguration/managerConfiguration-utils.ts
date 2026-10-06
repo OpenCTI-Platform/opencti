@@ -39,3 +39,9 @@ export const getDefaultManagerConfiguration = (managerId: string) => {
 export const getAllDefaultManagerConfigurations = () => {
   return [...defaultManagerConfigurations];
 };
+
+// Configurations edited only through the dedicated mutation of their module, which checks its own capabilities and
+// validates the settings (the Source Intelligence autonomy policy runs actions as the manager)
+const managersWithDedicatedSettings = [SOURCE_INTELLIGENCE_MANAGER_ID];
+
+export const hasDedicatedSettings = (managerId: string) => managersWithDedicatedSettings.includes(managerId);

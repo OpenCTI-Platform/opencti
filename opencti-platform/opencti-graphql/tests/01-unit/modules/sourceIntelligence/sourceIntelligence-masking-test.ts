@@ -20,7 +20,7 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
     .map((id) => ({ internal_id: id }))),
 }));
 
-const { maskRestrictedNames, recordNamedAuthors, restrictedRecommendationNames } = await import('../../../../src/modules/sourceIntelligence/sourceIntelligence-domain');
+const { maskRestrictedNames, recordNamedAuthors, restrictedRecommendationNames, sourceAuditName } = await import('../../../../src/modules/sourceIntelligence/sourceIntelligence-domain');
 
 const user = { id: 'analyst' } as AuthUser;
 const authorSource = (id: string, refId: string, name: string) => ({ internal_id: id, source_kind: SOURCE_KIND_AUTHOR, ref_id: refId, name }) as BasicStoreEntitySource;
@@ -78,5 +78,17 @@ describe('Source intelligence recommendation masking', () => {
 
   it('should record nothing for a recommendation without author source', async () => {
     expect(await recordNamedAuthors(newContext(), { source_id: null, payload: '{"collection_gap_id":"gap-1"}' })).toBe('[]');
+  });
+});
+
+describe('Source intelligence activity records', () => {
+  it('should name an author source by its id only, since activity records are read without the author masking', () => {
+    expect(sourceAuditName('source-1', authorSource('source-1', 'identity-1', 'Restricted CERT'))).toEqual('source `source-1`');
+    expect(sourceAuditName('source-2', undefined)).toEqual('source `source-2`');
+  });
+
+  it('should name the other sources, whose names are never masked', () => {
+    const connector = { internal_id: 'source-3', source_kind: SOURCE_KIND_CONNECTOR, ref_id: 'connector-1', name: 'IP reputation feed' } as BasicStoreEntitySource;
+    expect(sourceAuditName('source-3', connector)).toEqual('source `IP reputation feed`');
   });
 });

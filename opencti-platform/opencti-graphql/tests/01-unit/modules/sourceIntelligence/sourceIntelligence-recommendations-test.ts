@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/index';
-import { assertTargetUnchanged, restoresStatusAfterUnrecordedApply, undoLeavesNothing } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-recommendations';
+import {
+  assertTargetUnchanged,
+  recommendationAuditInput,
+  recommendationAuditName,
+  restoresStatusAfterUnrecordedApply,
+  undoLeavesNothing,
+} from '../../../../src/modules/sourceIntelligence/sourceIntelligence-recommendations';
 import { RECOMMENDATION_ADD_CONNECTOR, RECOMMENDATION_CHANGE_SCHEDULE, RECOMMENDATION_KINDS } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-types';
 
 describe('Source intelligence recommendations', () => {
@@ -31,5 +37,25 @@ describe('Source intelligence recommendations', () => {
     expect(restoresStatusAfterUnrecordedApply(true, true, RECOMMENDATION_CHANGE_SCHEDULE)).toBe(true);
     expect(restoresStatusAfterUnrecordedApply(true, true, RECOMMENDATION_ADD_CONNECTOR)).toBe(false);
     expect(restoresStatusAfterUnrecordedApply(true, false, RECOMMENDATION_CHANGE_SCHEDULE)).toBe(false);
+  });
+});
+
+describe('Source recommendation activity records', () => {
+  const recommendation = { internal_id: 'recommendation-1', recommendation_kind: 'lower_confidence' } as const;
+
+  it('should name a recommendation by its id and kind, never by its name quoting sources', () => {
+    expect(recommendationAuditName(recommendation)).toEqual('`recommendation-1` (lower_confidence)');
+  });
+
+  it('should keep only the fields that quote no name', () => {
+    expect(recommendationAuditInput(recommendation, {
+      recommendation_status: 'applied',
+      applied_at: '2026-10-06T10:00:00.000Z',
+      applied_by_id: 'user-1',
+      apply_result: 'Max confidence of user Restricted CERT set to 40',
+      error_message: 'Restricted CERT could not be updated',
+      dismiss_reason: 'Restricted CERT is trusted',
+      revert_payload: { user_id: 'user-2' },
+    })).toEqual({ kind: 'lower_confidence', recommendation_status: 'applied', applied_at: '2026-10-06T10:00:00.000Z', applied_by_id: 'user-1' });
   });
 });

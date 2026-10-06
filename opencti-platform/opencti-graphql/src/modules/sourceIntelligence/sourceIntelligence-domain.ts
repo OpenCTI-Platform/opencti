@@ -83,6 +83,11 @@ import { quarantinedConnectorUserId, releaseQuarantine } from './sourceIntellige
 
 const DAY_MS = 24 * 3600 * 1000;
 const RESTRICTED_AUTHOR_NAME = 'Restricted';
+
+// Activity records are read without the masking of restricted authors: an author source is named there by its id only
+export const sourceAuditName = (id: string, source: Pick<BasicStoreEntitySource, 'name' | 'source_kind'> | undefined) => {
+  return !source || source.source_kind === SOURCE_KIND_AUTHOR ? `source \`${id}\`` : `source \`${source.name}\``;
+};
 const INGESTION_FEED_TYPES = [
   ENTITY_TYPE_INGESTION_RSS,
   ENTITY_TYPE_INGESTION_TAXII,
@@ -580,13 +585,15 @@ export const sourceSetCost = async (context: AuthContext, user: AuthUser, id: st
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: cost ? `sets the cost of source \`${source?.name}\` to ${cost.amount} ${cost.currency} per ${cost.period}` : `clears the cost of source \`${source?.name}\``,
+    message: cost ? `sets the cost of ${sourceAuditName(id, source)} to ${cost.amount} ${cost.currency} per ${cost.period}` : `clears the cost of ${sourceAuditName(id, source)}`,
     context_data: { id, entity_type: ENTITY_TYPE_SOURCE, input: { source_cost: cost } },
   });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
 };
 
 const EDITABLE_SOURCE_KEYS = ['description', 'tags', 'owner_id', 'enabled'];
+
+const withoutDescription = ({ description: _, ...rest }: Record<string, unknown>) => rest;
 
 export const sourceEditField = async (context: AuthContext, user: AuthUser, id: string, input: EditInput[]) => {
   const source = await storeLoadById<BasicStoreEntitySource>(context, user, id, ENTITY_TYPE_SOURCE);
@@ -628,8 +635,9 @@ export const sourceEditField = async (context: AuthContext, user: AuthUser, id: 
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `updates \`${Object.keys(patch).join(', ')}\` for source \`${source.name}\``,
-    context_data: { id, entity_type: ENTITY_TYPE_SOURCE, input: patch },
+    message: `updates \`${Object.keys(patch).join(', ')}\` for ${sourceAuditName(id, source)}`,
+    // The description of an author source is masked like its name
+    context_data: { id, entity_type: ENTITY_TYPE_SOURCE, input: source.source_kind === SOURCE_KIND_AUTHOR ? withoutDescription(patch) : patch },
   });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
 };

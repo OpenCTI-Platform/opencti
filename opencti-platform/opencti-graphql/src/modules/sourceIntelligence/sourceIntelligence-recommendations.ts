@@ -609,6 +609,17 @@ const executeRevert = async (context: AuthContext, user: AuthUser, recommendatio
 // endregion
 
 // region apply / revert / dismiss
+// Activity records are read without the masking of restricted authors, whose names a recommendation can quote (name,
+// result, error, reason): they name it by id and kind, and keep only the fields that quote no name
+const AUDITED_RECOMMENDATION_FIELDS = ['recommendation_status', 'applied_at', 'applied_by_id', 'reverted_at', 'reverted_by_id', 'dismissed_at', 'dismissed_by_id'];
+export const recommendationAuditName = (recommendation: Pick<BasicStoreEntitySourceRecommendation, 'internal_id' | 'recommendation_kind'>) => {
+  return `\`${recommendation.internal_id}\` (${recommendation.recommendation_kind})`;
+};
+export const recommendationAuditInput = (recommendation: Pick<BasicStoreEntitySourceRecommendation, 'recommendation_kind'>, patch: Record<string, unknown>) => ({
+  kind: recommendation.recommendation_kind,
+  ...Object.fromEntries(Object.entries(patch).filter(([key]) => AUDITED_RECOMMENDATION_FIELDS.includes(key))),
+});
+
 const loadSourceOf = async (context: AuthContext, recommendation: BasicStoreEntitySourceRecommendation) => {
   return recommendation.source_id ? storeLoadById<BasicStoreEntitySource>(context, SYSTEM_USER, recommendation.source_id, ENTITY_TYPE_SOURCE) : null;
 };
@@ -720,9 +731,9 @@ const applyLockedRecommendation = async (
     event_scope: 'update',
     event_access: 'administration',
     message: patch.recommendation_status === RECOMMENDATION_STATUS_APPLIED
-      ? `applies the source recommendation \`${recommendation.name}\`${autonomous ? ' (autonomy policy)' : ''}`
-      : `fails to apply the source recommendation \`${recommendation.name}\``,
-    context_data: { id, entity_type: ENTITY_TYPE_SOURCE_RECOMMENDATION, input: { kind: recommendation.recommendation_kind, ...patch } },
+      ? `applies the source recommendation ${recommendationAuditName(recommendation)}${autonomous ? ' (autonomy policy)' : ''}`
+      : `fails to apply the source recommendation ${recommendationAuditName(recommendation)}`,
+    context_data: { id, entity_type: ENTITY_TYPE_SOURCE_RECOMMENDATION, input: { ...recommendationAuditInput(recommendation, patch), autonomous } },
   });
   if (patch.recommendation_status === RECOMMENDATION_STATUS_APPLIED) {
     await addSourceRecommendationOutcome(autonomous ? 'autonomous' : 'applied');
@@ -783,9 +794,9 @@ const revertLockedRecommendation = async (context: AuthContext, user: AuthUser, 
     event_scope: 'update',
     event_access: 'administration',
     message: reverted
-      ? `reverts the source recommendation \`${recommendation.name}\``
-      : `fails to revert the source recommendation \`${recommendation.name}\``,
-    context_data: { id, entity_type: ENTITY_TYPE_SOURCE_RECOMMENDATION, input: { kind: recommendation.recommendation_kind, ...patch } },
+      ? `reverts the source recommendation ${recommendationAuditName(recommendation)}`
+      : `fails to revert the source recommendation ${recommendationAuditName(recommendation)}`,
+    context_data: { id, entity_type: ENTITY_TYPE_SOURCE_RECOMMENDATION, input: recommendationAuditInput(recommendation, patch) },
   });
   if (reverted) {
     await addSourceRecommendationOutcome('reverted');
@@ -817,8 +828,8 @@ const dismissLockedRecommendation = async (context: AuthContext, user: AuthUser,
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `dismisses the source recommendation \`${recommendation.name}\``,
-    context_data: { id, entity_type: ENTITY_TYPE_SOURCE_RECOMMENDATION, input: { kind: recommendation.recommendation_kind, ...patch } },
+    message: `dismisses the source recommendation ${recommendationAuditName(recommendation)}`,
+    context_data: { id, entity_type: ENTITY_TYPE_SOURCE_RECOMMENDATION, input: recommendationAuditInput(recommendation, patch) },
   });
   await addSourceRecommendationOutcome('dismissed');
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
