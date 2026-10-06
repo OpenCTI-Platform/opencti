@@ -65,7 +65,9 @@ import { extractEntityRepresentativeName } from '../../database/entity-represent
 import { publishUserAction } from '../../listener/UserActionListener';
 import { authorizedMembers } from '../../schema/attribute-definition';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, OPENCTI_ADMIN_UUID } from '../../schema/general';
-import { generateStandardId } from '../../schema/identifier';
+import { generateStandardId, getInstanceIds } from '../../schema/identifier';
+import { lockResources } from '../../lock/master-lock';
+import { getDraftContext } from '../../utils/draftContext';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { getTokensUsage, updateTokenUsage } from '../../database/redis/token_usage';
 import {
@@ -1279,16 +1281,6 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
       inputs.push(input);
     }
   }
-  // Password history, last before saving so that a refused password changes nothing
-  if (clearPassword !== undefined && !skipThisInput && isFeatureEnabled(PASSWORD_HISTORY_FEATURE_FLAG) && isLocalUser(userToUpdate)) {
-    const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    const passwordHistoryCount = readPasswordHistoryCount(settings);
-    if (passwordHistoryCount >= 1) {
-      await consumePasswordChangeAttempt(userToUpdate.id);
-      await checkPasswordNotReused(context, user, userToUpdate, clearPassword, passwordHistoryCount);
-    }
-    inputs.push({ key: 'password_history', value: computeNextPasswordHistory(userToUpdate, passwordHistoryCount) });
-  }
   // Reset the password validity window whenever the password changes.
   if (hasPasswordUpdate) {
     const passwordValidUntil = await computePasswordValidUntilFromPolicy(context);
@@ -1302,7 +1294,32 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
   const isDraftContextEdit = inputs.some((i) => i.key === 'draft_context');
   const editContext = isDraftContextEdit ? { ...context, draft_context: undefined } : context;
   const editUser = isDraftContextEdit ? { ...user, draft_context: undefined } : user;
-  const { element } = await updateAttribute<StoreEntityUser>(editContext, editUser, userId, ENTITY_TYPE_USER, inputs, opts);
+  // Password history, last before saving so that a refused password changes nothing
+  const tracksPasswordHistory = clearPassword !== undefined && !skipThisInput && isFeatureEnabled(PASSWORD_HISTORY_FEATURE_FLAG) && isLocalUser(userToUpdate);
+  let lock;
+  let lockedIds: string[] = [];
+  let element: StoreEntityUser;
+  try {
+    if (tracksPasswordHistory) {
+      // Two changes at the same moment would both check and rebuild the same old history, and the second
+      // save would drop the first password from it. The user is locked from the check to the save, the same
+      // lock the update takes, which it skips through `locks` since this call already holds it.
+      lockedIds = getInstanceIds(userToUpdate);
+      lock = await lockResources(lockedIds, { draftId: getDraftContext(editContext, editUser) });
+      const lockedUser = await storeLoadById<BasicStoreEntityUser>(context, SYSTEM_USER, userId, ENTITY_TYPE_USER);
+      const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+      const passwordHistoryCount = readPasswordHistoryCount(settings);
+      if (passwordHistoryCount >= 1) {
+        await consumePasswordChangeAttempt(userId);
+        await checkPasswordNotReused(context, user, lockedUser, clearPassword!, passwordHistoryCount);
+      }
+      inputs.push({ key: 'password_history', value: computeNextPasswordHistory(lockedUser, passwordHistoryCount) });
+    }
+    const updateOpts = lockedIds.length > 0 ? { ...opts, locks: [...(opts.locks ?? []), ...lockedIds] } : opts;
+    ({ element } = await updateAttribute<StoreEntityUser>(editContext, editUser, userId, ENTITY_TYPE_USER, inputs, updateOpts));
+  } finally {
+    if (lock) await lock.unlock();
+  }
   // The password history is internal bookkeeping of a password change: it never reaches the audit log
   const auditedInputs = inputs.filter((i) => i.key !== 'password_history');
   const input = updatedInputsToData(element, auditedInputs);

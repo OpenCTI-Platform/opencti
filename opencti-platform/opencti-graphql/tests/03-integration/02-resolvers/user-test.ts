@@ -2327,6 +2327,18 @@ describe('Password history', () => {
     expect(throttled.errors?.[0].extensions?.code).toBe('PASSWORD_CHANGE_THROTTLED');
   });
 
+  // Without the lock, both changes would check and rebuild the same old history: with N = 2, A -> B and
+  // A -> C would both save a history holding only A, and once C won, B could be reused at once.
+  it('keeps both passwords of two changes made at the same moment', async () => {
+    const id = await createUser('concurrent', 'Concurrent-Pass-A!');
+    await setHistoryCount(2);
+    const results = await Promise.all([setPassword(id, 'Concurrent-Pass-B!'), setPassword(id, 'Concurrent-Pass-C!')]);
+    results.forEach((result) => expect(result.errors).toBeUndefined());
+    // Whichever was saved last is the current password, and the other one is in the history
+    expect((await setPassword(id, 'Concurrent-Pass-B!')).errors?.[0].extensions?.code).toBe('PASSWORD_REUSED');
+    expect((await setPassword(id, 'Concurrent-Pass-C!')).errors?.[0].extensions?.code).toBe('PASSWORD_REUSED');
+  });
+
   it('stores only bcrypt hashes, N - 1 at most, and trims them when N is lowered', async () => {
     const id = await createUser('trim', 'Trim-Pass-1!');
     await setHistoryCount(4);
