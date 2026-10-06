@@ -135,6 +135,7 @@ type DataTableInternalToolbarProps = Pick<DataTableProps,
   | 'disableBulkEnroll'
   | 'deleteDisable'
   | 'container'
+  | 'knowledgeEntityId'
 > & {
   taskScope?: string;
   globalSearch?: string;
@@ -155,6 +156,7 @@ const DataTableInternalToolbar = ({
   disableBulkEnroll,
   deleteDisable,
   container,
+  knowledgeEntityId,
 }: DataTableInternalToolbarProps) => {
   const theme = useTheme<Theme>();
 
@@ -198,6 +200,7 @@ const DataTableInternalToolbar = ({
         disableBulkEnroll={disableBulkEnroll}
         deleteDisable={deleteDisable}
         container={container}
+        knowledgeEntityId={knowledgeEntityId}
       />
     </div>
   );
@@ -267,6 +270,7 @@ const DataTable = (props: OCTIDataTableProps) => {
     disableBulkEnroll,
     deleteDisable,
     container,
+    knowledgeEntityId,
   } = props;
 
   const settingsMessagesBannerHeight = useSettingsMessagesBannerHeight();
@@ -317,6 +321,7 @@ const DataTable = (props: OCTIDataTableProps) => {
         dataTableToolBarComponent={(
           <DataTableInternalToolbar
             container={container}
+            knowledgeEntityId={knowledgeEntityId}
             entityTypes={entityTypes}
             handleCopy={handleCopy}
             taskScope={taskScope}
