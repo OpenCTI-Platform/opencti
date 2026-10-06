@@ -3,7 +3,13 @@ import gql from 'graphql-tag';
 import { ADMIN_USER, getUserIdByEmail, testContext, USER_CONNECTOR, USER_DISINFORMATION_ANALYST, USER_EDITOR } from '../../../utils/testQuery';
 import { queryAsAdmin, queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
 import { runFullComputation } from '../../../../src/manager/sourceIntelligenceManager';
-import { getSourceIntelligenceSettings, listAllSources, syncSources, writeComputedSourceKpis } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-domain';
+import {
+  getSourceIntelligenceSettings,
+  listAllSources,
+  recommendationTransitionLock,
+  syncSources,
+  writeComputedSourceKpis,
+} from '../../../../src/modules/sourceIntelligence/sourceIntelligence-domain';
 import { findOrCreateProposal, findRecommendationsByFingerprint, upsertProposals } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-recommendations';
 import {
   applyLiveScorecardCost,
@@ -31,6 +37,8 @@ import type { SourceIntelligenceSettings } from '../../../../src/modules/sourceI
 import { v4 as uuidv4 } from 'uuid';
 import { createEntity, deleteElementById, patchAttribute } from '../../../../src/database/middleware';
 import { elUpdate } from '../../../../src/database/engine';
+import { wait } from '../../../../src/database/utils';
+import { lockResources } from '../../../../src/lock/master-lock';
 import { resolveFeedQuarantineDraftId } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-quarantine';
 import { fullEntitiesList, storeLoadById } from '../../../../src/database/middleware-loader';
 import type { BasicStoreEntity } from '../../../../src/types/store';
@@ -1285,6 +1293,37 @@ describe('Source intelligence', () => {
     ]);
     const live = await findRecommendationsByFingerprint(testContext, proposal.fingerprint, ['proposed', 'applying', 'failed', 'applied']);
     expect(live.map((recommendation) => recommendation.internal_id)).toEqual([deployed.internal_id]);
+  });
+
+  it('should not withdraw a proposal applied while the computation that no longer produces it was running', async () => {
+    const proposal = {
+      kind: 'raise_confidence' as const,
+      source_id: sourceId,
+      fingerprint: `${TEST_FINGERPRINT_PREFIX}-withdraw-race`,
+      name: 'Raise the confidence of the test connector (withdrawal race)',
+      rationale: 'Integration test',
+      payload: { user_id: connectorUserId, proposed_max_confidence: 85 },
+      evidence: {},
+    };
+    const { created } = await upsertProposals(testContext, [proposal], settings, { kinds: [] });
+    const recommendationId = created[0].internal_id;
+    // An apply holds the transition lock of the recommendation while the computation reads it as proposed
+    const lock = await lockResources([recommendationTransitionLock(recommendationId)]);
+    let computation: ReturnType<typeof upsertProposals> | undefined;
+    try {
+      computation = upsertProposals(testContext, [], settings, { kinds: ['raise_confidence'] });
+      await wait(1000);
+      const during = await storeLoadById<BasicStoreEntitySourceRecommendation>(testContext, ADMIN_USER, recommendationId, ENTITY_TYPE_SOURCE_RECOMMENDATION);
+      expect(during?.recommendation_status).toBe('proposed');
+      await patchAttribute(testContext, ADMIN_USER, recommendationId, ENTITY_TYPE_SOURCE_RECOMMENDATION, { recommendation_status: 'applied' });
+    } finally {
+      await lock.unlock();
+    }
+    const result = await computation;
+    expect(result?.withdrawn).toBe(0);
+    const after = await storeLoadById<BasicStoreEntitySourceRecommendation>(testContext, ADMIN_USER, recommendationId, ENTITY_TYPE_SOURCE_RECOMMENDATION);
+    expect(after?.recommendation_status).toBe('applied');
+    expect(after?.dismissed_at ?? null).toBeNull();
   });
 
   it('should dismiss a recommendation and not propose it again during the cooldown', async () => {

@@ -95,7 +95,7 @@ import {
   type RuleSourceUser,
   SCHEDULE_CONFIGURATION_KEY,
 } from './sourceIntelligence-rules';
-import { clearDisabledSourcesLiveData, recordNamedAuthors } from './sourceIntelligence-domain';
+import { clearDisabledSourcesLiveData, recommendationTransitionLock, recordNamedAuthors } from './sourceIntelligence-domain';
 import { buildSourceResolver } from './sourceIntelligence-provenance';
 import { releaseQuarantine } from './sourceIntelligence-quarantine';
 import type { ContractConfigInput } from '../../generated/graphql';
@@ -638,7 +638,7 @@ const withRecommendationTransition = async <T>(
   const resolved = await loadRecommendation(context, user, id);
   let lock;
   try {
-    lock = await lockResources([`source-recommendation-transition:${resolved.internal_id}`]);
+    lock = await lockResources([recommendationTransitionLock(resolved.internal_id)]);
     const recommendation = await loadRecommendation(context, user, resolved.internal_id);
     return await transition(recommendation);
   } catch (err: any) {
@@ -920,6 +920,38 @@ export const findOrCreateProposal = async (context: AuthContext, proposal: Recom
 };
 
 /**
+ * Refresh or withdrawal of a proposal by the engine, under the transition lock of the recommendation and only while it
+ * is still proposed once loaded again: an apply, revert or dismiss that started since the list was read wins. A
+ * transition holding the lock past its timeout leaves the recommendation to the next computation.
+ */
+const patchStillProposed = async (
+  context: AuthContext,
+  id: string,
+  buildPatch: (recommendation: BasicStoreEntitySourceRecommendation) => Promise<Record<string, unknown>>,
+) => {
+  let lock;
+  try {
+    lock = await lockResources([recommendationTransitionLock(id)]);
+    const recommendation = await storeLoadById<BasicStoreEntitySourceRecommendation>(context, SYSTEM_USER, id, ENTITY_TYPE_SOURCE_RECOMMENDATION);
+    if (!recommendation || recommendation.recommendation_status !== RECOMMENDATION_STATUS_PROPOSED) {
+      return false;
+    }
+    await patchAttribute(context, SOURCE_INTELLIGENCE_MANAGER_USER, id, ENTITY_TYPE_SOURCE_RECOMMENDATION, await buildPatch(recommendation));
+    return true;
+  } catch (err: any) {
+    if (err?.name === TYPE_LOCK_ERROR) {
+      logApp.info('[OPENCTI-MODULE] Source intelligence left a recommendation in transition to the next computation', { id });
+      return false;
+    }
+    throw err;
+  } finally {
+    if (lock) {
+      await lock.unlock();
+    }
+  }
+};
+
+/**
  * Persist proposals: one live recommendation per fingerprint, dismissed ones are not proposed again before the
  * cooldown, proposals not produced anymore by the rules are withdrawn (dismissed by the system).
  */
@@ -949,8 +981,10 @@ export const upsertProposals = async (
     };
     if (current && ACTIVE_RECOMMENDATION_STATUSES.includes(current.recommendation_status as typeof ACTIVE_RECOMMENDATION_STATUSES[number])) {
       if (current.recommendation_status === RECOMMENDATION_STATUS_PROPOSED) {
-        const namedAuthors = await recordNamedAuthors(context, { source_id: current.source_id, payload: fields.payload, named_authors: current.named_authors });
-        await patchAttribute(context, SOURCE_INTELLIGENCE_MANAGER_USER, current.internal_id, ENTITY_TYPE_SOURCE_RECOMMENDATION, { ...fields, named_authors: namedAuthors });
+        await patchStillProposed(context, current.internal_id, async (recommendation) => ({
+          ...fields,
+          named_authors: await recordNamedAuthors(context, { source_id: recommendation.source_id, payload: fields.payload, named_authors: recommendation.named_authors }),
+        }));
       }
       continue;
     }
@@ -968,17 +1002,21 @@ export const upsertProposals = async (
     }
   }
   // Withdraw the proposals the rules do not produce anymore (the situation improved)
-  const withdrawn = existing.filter((recommendation) => recommendation.recommendation_status === RECOMMENDATION_STATUS_PROPOSED
+  const outdated = existing.filter((recommendation) => recommendation.recommendation_status === RECOMMENDATION_STATUS_PROPOSED
     && scope.kinds.includes(recommendation.recommendation_kind)
     && !proposedFingerprints.has(recommendation.fingerprint));
-  for (let i = 0; i < withdrawn.length; i += 1) {
-    await patchAttribute(context, SOURCE_INTELLIGENCE_MANAGER_USER, withdrawn[i].internal_id, ENTITY_TYPE_SOURCE_RECOMMENDATION, {
+  let withdrawn = 0;
+  for (let i = 0; i < outdated.length; i += 1) {
+    const isWithdrawn = await patchStillProposed(context, outdated[i].internal_id, async () => ({
       recommendation_status: RECOMMENDATION_STATUS_DISMISSED,
       dismissed_at: nowIso,
       dismiss_reason: 'Withdrawn: the condition that triggered this recommendation is no longer met',
-    });
+    }));
+    if (isWithdrawn) {
+      withdrawn += 1;
+    }
   }
-  return { created, withdrawn: withdrawn.length };
+  return { created, withdrawn };
 };
 
 /**

@@ -902,6 +902,9 @@ const isActiveRecommendation = (recommendation: BasicStoreEntitySourceRecommenda
   return ACTIVE_RECOMMENDATION_STATUSES.includes(recommendation.recommendation_status as typeof ACTIVE_RECOMMENDATION_STATUSES[number]);
 };
 
+// Lock held by every status transition of a recommendation (apply, revert, dismiss) and by the engine writes on it
+export const recommendationTransitionLock = (id: string) => `source-recommendation-transition:${id}`;
+
 const loadRecommendationsOfSource = (context: AuthContext, sourceId: string) => {
   return fullEntitiesList<BasicStoreEntitySourceRecommendation>(context, SYSTEM_USER, [ENTITY_TYPE_SOURCE_RECOMMENDATION], {
     filters: { mode: 'and', filters: [{ key: ['source_id'], values: [sourceId], operator: 'eq', mode: 'or' }], filterGroups: [] },
@@ -924,21 +927,39 @@ export const mergeDuplicateSource = async (context: AuthContext, duplicate: Cura
     .map((recommendation) => recommendation.fingerprint));
   const pendingStatuses: string[] = [RECOMMENDATION_STATUS_PROPOSED, RECOMMENDATION_STATUS_FAILED];
   for (let i = 0; i < recommendations.length; i += 1) {
-    const recommendation = recommendations[i];
-    const revert = parseJsonRecord(recommendation.revert_payload);
-    const fingerprint = fingerprintOnKeptSource(recommendation.fingerprint, duplicate.internal_id, kept.internal_id);
-    const patch: Record<string, unknown> = { source_id: kept.internal_id, fingerprint };
-    if (revert.source_id === duplicate.internal_id) {
-      patch.revert_payload = JSON.stringify({ ...revert, source_id: kept.internal_id });
+    const { internal_id: id } = recommendations[i];
+    // Under the transition lock, loaded again: an apply, revert or dismiss in progress settles first and its outcome
+    // (status, revert payload) is the one moved
+    let lock;
+    try {
+      lock = await lockResources([recommendationTransitionLock(id)]);
+      const recommendation = await storeLoadById<BasicStoreEntitySourceRecommendation>(context, SYSTEM_USER, id, ENTITY_TYPE_SOURCE_RECOMMENDATION);
+      if (recommendation) {
+        const revert = parseJsonRecord(recommendation.revert_payload);
+        const fingerprint = fingerprintOnKeptSource(recommendation.fingerprint, duplicate.internal_id, kept.internal_id);
+        const patch: Record<string, unknown> = { source_id: kept.internal_id, fingerprint };
+        if (revert.source_id === duplicate.internal_id) {
+          patch.revert_payload = JSON.stringify({ ...revert, source_id: kept.internal_id });
+        }
+        if (keptLive.has(fingerprint) && pendingStatuses.includes(recommendation.recommendation_status)) {
+          patch.recommendation_status = RECOMMENDATION_STATUS_DISMISSED;
+          patch.dismissed_at = new Date().toISOString();
+          patch.dismiss_reason = 'Withdrawn: the merged source already holds this recommendation';
+        } else if (isActiveRecommendation(recommendation)) {
+          keptLive.add(fingerprint);
+        }
+        await patchAttribute(context, SOURCE_INTELLIGENCE_MANAGER_USER, id, ENTITY_TYPE_SOURCE_RECOMMENDATION, patch);
+      }
+    } catch (err: any) {
+      if (err?.name === TYPE_LOCK_ERROR) {
+        throw LockTimeoutError({ participantIds: [id] });
+      }
+      throw err;
+    } finally {
+      if (lock) {
+        await lock.unlock();
+      }
     }
-    if (keptLive.has(fingerprint) && pendingStatuses.includes(recommendation.recommendation_status)) {
-      patch.recommendation_status = RECOMMENDATION_STATUS_DISMISSED;
-      patch.dismissed_at = new Date().toISOString();
-      patch.dismiss_reason = 'Withdrawn: the merged source already holds this recommendation';
-    } else if (isActiveRecommendation(recommendation)) {
-      keptLive.add(fingerprint);
-    }
-    await patchAttribute(context, SOURCE_INTELLIGENCE_MANAGER_USER, recommendation.internal_id, ENTITY_TYPE_SOURCE_RECOMMENDATION, patch);
   }
   const curated: Record<string, unknown> = {};
   if (!kept.source_cost && duplicate.source_cost) curated.source_cost = duplicate.source_cost;
