@@ -66,9 +66,11 @@ const GraphToolbarItem = ({
       <TooltipTrigger asChild>
         {isDisabled ? (
           // A disabled tool stays in the keyboard path of the toolbar, so that the reason can be read
-          // (WAI-ARIA toolbar pattern); the library button has no focusable disabled state.
+          // (WAI-ARIA toolbar pattern); the library button has no focusable disabled state. Its own tab stop
+          // serves outside the toolbar (the folded creation tools), the roving focus of the toolbar overrides it.
           <span
             role="button"
+            tabIndex={0}
             aria-label={title}
             aria-disabled
             aria-pressed={pressed}
