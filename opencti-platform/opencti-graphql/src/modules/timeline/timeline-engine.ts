@@ -540,6 +540,26 @@ export const timelineElementAccessOf = (element: Record<string, any>): TimelineE
   granted: grantedOf(element),
 });
 
+/**
+ * The access recorded on a derived event: that of its element, and of each source whose data it carries. An event of
+ * the container itself (an assignment naming users) records its sources all the same, and nothing without any.
+ */
+export const timelineEventElementAccess = (
+  container: Record<string, any>,
+  elements: Record<string, Record<string, any>>,
+  elementId: string | null | undefined,
+  sourceIds: string[] = [],
+): TimelineElementAccess | null => {
+  const isContainerEvent = !!elementId && elementId === container.internal_id;
+  const element = isContainerEvent ? container : (elementId ? elements[elementId] : undefined);
+  if (!element || (isContainerEvent && sourceIds.length === 0)) return null;
+  // A source no longer found keeps its id: the reads look for it and never find it, until the next regeneration drops it
+  const sources = uniq(sourceIds).map((id) => (elements[id]
+    ? { id, entity_type: elements[id].entity_type, ...timelineElementAccessOf(elements[id]) }
+    : { id, restricted_members: [], granted: [] }));
+  return sources.length > 0 ? { ...timelineElementAccessOf(element), sources } : timelineElementAccessOf(element);
+};
+
 // Who reads an element beyond its markings, by the platform access rules: its authorized members only when it has some
 // (they bypass organization sharing); otherwise, under a platform organization and for a type restricted by
 // organization, the platform organization and each organization it is shared with; otherwise every user. Null: no bound.
@@ -1005,13 +1025,7 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
     ? await internalFindByIds(context, SYSTEM_USER, elementIds, { toMap: true, baseData: true }) as unknown as Record<string, AnyStoreElement>
     : {};
   const elementAccessOf = (elementId: string | null | undefined, sourceIds: string[] = []): TimelineElementAccess | null => {
-    const element = elementId ? elements[elementId] : undefined;
-    if (!element) return null;
-    // A source no longer found keeps its id: the reads look for it and never find it, until the next regeneration drops it
-    const sources = uniq(sourceIds).map((id) => (elements[id]
-      ? { id, entity_type: elements[id].entity_type, ...timelineElementAccessOf(elements[id]) }
-      : { id, restricted_members: [], granted: [] }));
-    return sources.length > 0 ? { ...timelineElementAccessOf(element), sources } : timelineElementAccessOf(element);
+    return timelineEventElementAccess(container, elements, elementId, sourceIds);
   };
   // A derived event is never less marked than the elements whose data it carries, whatever its rule merged
   const sourceMarkingsOf = (event: DerivedTimelineEvent): string[] => (event.source_ids ?? []).flatMap((id) => (elements[id] ? markingsOf(elements[id]) : []));

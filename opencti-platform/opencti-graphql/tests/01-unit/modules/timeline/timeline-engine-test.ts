@@ -14,10 +14,12 @@ import {
   keptAnalystFields,
   markingsOf,
   recordedTimelineReference,
+  referencedElementIds,
   type StoredTimelineEvent,
   type TimelineReadableEvent,
   timelineCappedAnnotatedEventAsStored,
   timelineCappedAnnotatedEvents,
+  timelineEventElementAccess,
   timelineEventMarkings,
   timelineEventMaxConfidence,
   timelineEventSignature,
@@ -505,6 +507,35 @@ describe('Timeline recorded references', () => {
   it('should read nothing for an element recorded without its type or its access', () => {
     expect(recordedTimelineReference({ ...event, element_type: null }, 'element-1')).toBeNull();
     expect(recordedTimelineReference({ ...event, element_access: null }, 'element-1')).toBeNull();
+  });
+});
+
+describe('Timeline recorded access of derived events', () => {
+  const container = { internal_id: 'case-1', entity_type: 'Case-Incident', restricted_members: [], [buildRefRelationKey(RELATION_GRANTED_TO)]: ['org-1'] };
+  const elements = {
+    'malware-1': { internal_id: 'malware-1', entity_type: 'Malware', restricted_members: [], [buildRefRelationKey(RELATION_GRANTED_TO)]: ['org-2'] },
+    'user-2': { internal_id: 'user-2', entity_type: 'User', restricted_members: [] },
+  };
+
+  it('should record the sources of an event of the container itself, like an assignment naming users', () => {
+    const access = timelineEventElementAccess(container, elements, 'case-1', ['user-2', 'user-3']);
+    expect(access?.sources).toEqual([
+      { id: 'user-2', entity_type: 'User', restricted_members: [], granted: [] },
+      { id: 'user-3', restricted_members: [], granted: [] },
+    ]);
+    expect(timelineEventSourceIds({ element_access: access })).toEqual(['user-2', 'user-3']);
+    expect(referencedElementIds({ element_id: 'case-1', element_access: access }, 'case-1')).toEqual(['user-2', 'user-3']);
+  });
+
+  it('should record nothing for an event of the container without sources', () => {
+    expect(timelineEventElementAccess(container, elements, 'case-1')).toBeNull();
+    expect(timelineEventElementAccess(container, elements, null, ['user-2'])).toBeNull();
+  });
+
+  it('should record the access of the element and of its sources, and nothing for an element not found', () => {
+    expect(timelineEventElementAccess(container, elements, 'malware-1')).toEqual({ restricted_members: [], granted: ['org-2'] });
+    expect(timelineEventElementAccess(container, elements, 'malware-1', ['user-2'])).toMatchObject({ granted: ['org-2'], sources: [{ id: 'user-2', entity_type: 'User' }] });
+    expect(timelineEventElementAccess(container, elements, 'deleted-1', ['user-2'])).toBeNull();
   });
 });
 
