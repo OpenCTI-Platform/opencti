@@ -8,6 +8,12 @@ import type { IngestionHealthFields } from '../ingestionHealth/ingestionHealth-t
 // A running connector pings regularly: a heartbeat older than this means it is down
 export const CONNECTOR_LIVELINESS_GRACE_PERIOD_MS = 5 * 60 * 1000;
 
+export interface ConnectorInfoError {
+  code: string;
+  message: string;
+  criticity: number;
+}
+
 export interface ConnectorInfo {
   run_and_terminate: boolean;
   buffering: boolean;
@@ -15,6 +21,7 @@ export interface ConnectorInfo {
   queue_messages_size: number;
   next_run_datetime?: Date | string | null;
   last_run_datetime?: Date | string | null;
+  errors?: ConnectorInfoError[];
 }
 
 type ConnectorManagerContract = CatalogContractEntityFields;
