@@ -26,6 +26,8 @@ const DOMAIN_FIELD = /domain|dns/i;
 const HASH_FIELD = /hash|md5|sha_?(1|256)/i;
 // The connector joins the values of a multi-valued field before hashing them
 const VALUES_SEPARATOR = ', ';
+// The run counts the observed data as its evidence, like the observed data its connector sends
+const ATTRIBUTE_HUNT_RUN_ID_KEY = 'x_opencti_hunt_run_id';
 
 const usable = (value: string | null | undefined): value is string => {
   return typeof value === 'string' && value.trim().length > 0 && !value.includes(MASKED) && !value.endsWith('...');
@@ -131,6 +133,7 @@ export const createHuntHitObservations = async (context: AuthContext, hunt: Basi
           last_observed: observedAt,
           number_observed: 1,
           objects: Array.from(new Set(objectIds)),
+          [ATTRIBUTE_HUNT_RUN_ID_KEY]: run.internal_id,
           ...access,
         }) as BasicStoreEntity;
         observedDataIds.add(observedData.internal_id);
