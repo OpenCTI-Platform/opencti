@@ -2,7 +2,12 @@ import { ATTR_DB_NAMESPACE, ATTR_DB_OPERATION_NAME, SEMATTRS_DB_NAME, SEMATTRS_D
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, loadEntity, updateAttribute } from '../../database/middleware';
 import type { BasicStoreEntityEntitySetting, OverviewLayoutCustomization, StoreEntityEntitySetting } from './entitySetting-types';
-import { ENTITY_SETTING_PROVENANCE_RELATIONSHIP_TYPES, ENTITY_SETTING_PROVENANCE_TRACKING, isProvenanceTrackingEnabled } from '../provenance/provenance-tracking';
+import {
+  ENTITY_SETTING_PROVENANCE_RELATIONSHIP_TYPES,
+  ENTITY_SETTING_PROVENANCE_TRACKING,
+  isProvenanceTrackingEnabled,
+  listProvenanceTrackedTypesOfSetting,
+} from '../provenance/provenance-tracking';
 import { PROVENANCE_ENABLED } from '../provenance/provenance-config';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
@@ -26,6 +31,7 @@ import { type BasicStoreEntityFintelTemplate, ENTITY_TYPE_FINTEL_TEMPLATE } from
 import { canViewTemplates } from '../fintelTemplate/fintelTemplate-domain';
 import { emptyPaginationResult } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
+import { now } from '../../utils/format';
 
 // -- LOADING --
 
@@ -78,10 +84,11 @@ export const findEntitySettingPaginated = (context: AuthContext, user: AuthUser,
   return pageEntitiesConnection<BasicStoreEntityEntitySetting>(context, user, [ENTITY_TYPE_ENTITY_SETTING], opts);
 };
 
+const PROVENANCE_TRACKING_KEYS = [ENTITY_SETTING_PROVENANCE_TRACKING, ENTITY_SETTING_PROVENANCE_RELATIONSHIP_TYPES];
+
 // Provenance settings belong to "Settings > Customization": the parameters capability alone cannot change them
 const CUSTOMIZATION_ONLY_KEYS = [
-  ENTITY_SETTING_PROVENANCE_TRACKING,
-  ENTITY_SETTING_PROVENANCE_RELATIONSHIP_TYPES,
+  ...PROVENANCE_TRACKING_KEYS,
   'procedures_preservation',
   'procedures_description_policy',
 ];
@@ -106,7 +113,21 @@ export const entitySettingEditField = async (context: AuthContext, user: AuthUse
       throw FunctionalError('It should have at least one member with admin access');
     }
   }
-  const { element } = await updateAttribute<StoreEntityEntitySetting>(context, user, entitySettingId, ENTITY_TYPE_ENTITY_SETTING, input);
+  // A type that becomes tracked gets its tracking start before the live tracking can record anything for it
+  const changesTracking = PROVENANCE_ENABLED && input.some(({ key }) => PROVENANCE_TRACKING_KEYS.includes(key));
+  // Loaded on use: the backfill depends on the middleware, which loads this module, so a static import would be a cycle
+  const backfill = changesTracking ? await import('../provenance/provenance-backfill') : undefined;
+  const backfillLock = await backfill?.lockProvenanceBackfill();
+  const trackingStart = now();
+  let element: StoreEntityEntitySetting;
+  try {
+    ({ element } = await updateAttribute<StoreEntityEntitySetting>(context, user, entitySettingId, ENTITY_TYPE_ENTITY_SETTING, input));
+    if (backfill) {
+      await backfill.recordProvenanceTrackingStarts(context, await listProvenanceTrackedTypesOfSetting(context, element), trackingStart);
+    }
+  } finally {
+    await backfillLock?.unlock();
+  }
   await publishUserAction({
     user,
     event_type: 'mutation',

@@ -16,6 +16,7 @@ import { initDecayRules } from './modules/decayRule/decayRule-domain';
 import { initManagerConfigurations } from './modules/managerConfiguration/managerConfiguration-domain';
 import { initializeData, patchPlatformId } from './database/data-initialization';
 import { initExclusionListCache } from './database/exclusionListCache';
+import { initProvenanceTrackingStarts } from './modules/provenance/provenance-backfill';
 import { initFintelTemplates } from './modules/fintelTemplate/fintelTemplate-domain';
 import { lockResources } from './lock/master-lock';
 import { loadEntityMetricsConfiguration } from './modules/metrics/metrics-utils';
@@ -105,6 +106,7 @@ const platformInit = async (withMarkings = true) => {
       await applyMigration(context);
       await initCreateEntitySettings(context, SYSTEM_USER);
       await initManagerConfigurations(context, SYSTEM_USER);
+      await initProvenanceTrackingStarts(context);
       await initDecayRules(context, SYSTEM_USER);
     }
     await initExclusionListCache();

@@ -7,6 +7,8 @@ import {
   findRunningWorkConnector,
   groupSharedUserWrites,
   readBackfillState,
+  recordProvenanceTrackingStarts,
+  restartProvenanceBackfill,
   runProvenanceBackfillBatch,
 } from '../../../../src/modules/provenance/provenance-backfill';
 import type { AssertionSource, ProvenanceBackfillState } from '../../../../src/modules/provenance/provenance-types';
@@ -40,6 +42,11 @@ vi.mock('../../../../src/modules/provenance/provenance-source', async (importOri
 vi.mock('../../../../src/modules/provenance/provenance-write', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../src/modules/provenance/provenance-write')>(),
   applyProvenanceUpdate: vi.fn(),
+}));
+
+vi.mock('../../../../src/lock/master-lock', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/lock/master-lock')>(),
+  lockResources: vi.fn(async () => ({ unlock: async () => {} })),
 }));
 
 vi.mock('../../../../src/database/middleware', async (importOriginal) => ({
@@ -332,5 +339,56 @@ describe('Provenance backfill', () => {
     });
     expect(await runProvenanceBackfillBatch(context, { batchSize: 500 })).toMatchObject({ status: 'completed', processed: 3, updated: 2, errors: 1 });
     expect(attempts).toEqual(['fails-once', 'succeeds', 'always-fails', 'fails-once', 'always-fails']);
+  });
+
+  it('should read the history of each element before the tracking start of its type, the run start standing for a type without one', async () => {
+    const context = { source: 'provenance-backfill-test' } as AuthContext;
+    const malwareStart = '2026-02-01T00:00:00.000Z';
+    const runStart = '2026-03-01T00:00:00.000Z';
+    const state = { status: 'running', started_at: runStart, expected: 2, tracking_started_at: { Malware: malwareStart } };
+    vi.mocked(findByManagerId).mockResolvedValue({ id: 'backfill-configuration', manager_setting: state } as any);
+    vi.mocked(patchAttribute).mockResolvedValue({} as any);
+    vi.mocked(listProvenanceTrackedTypes).mockResolvedValue(['Malware', 'Tool']);
+    const element = (id: string, entityType: string) => ({ _index: 'stix_domain_objects', internal_id: id, entity_type: entityType, creator_id: ['analyst'], created_at: '2026-01-01T00:00:00.000Z' });
+    vi.mocked(elPaginate).mockResolvedValueOnce({
+      elements: { edges: [{ node: element('malware', 'Malware') }, { node: element('tool', 'Tool') }], pageInfo: { hasNextPage: false } },
+      endCursor: null,
+    } as any);
+    const historyBounds: string[] = [];
+    vi.mocked(elRawSearch).mockImplementation(async (_context, _user, _type, query: any) => {
+      historyBounds.push(query.body.aggs.writers.aggs.before_watermark.filter.range.timestamp.lt);
+      return { aggregations: { writers: { buckets: [] } } };
+    });
+    vi.mocked(getEntitiesListFromCache).mockResolvedValue([]);
+    vi.mocked(resolveSourceOfUser).mockImplementation(async (_context, userId) => userSource(userId));
+    const watermarks = new Map<string, string | undefined>();
+    vi.mocked(applyProvenanceUpdate).mockImplementation(async (_context, target, update) => {
+      watermarks.set(target.internal_id, update.backfillWatermark);
+      return {};
+    });
+    await runProvenanceBackfillBatch(context, { batchSize: 500 });
+    expect(historyBounds).toEqual([malwareStart, runStart]);
+    expect(Object.fromEntries(watermarks)).toEqual({ malware: malwareStart, tool: runStart });
+  });
+
+  it('should record a tracking start only for the types without one, and keep the starts when the backfill restarts', async () => {
+    const context = { source: 'provenance-backfill-test' } as AuthContext;
+    const stored = { status: 'completed', processed: 12, started_at: '2026-03-01T00:00:00.000Z', tracking_started_at: { Malware: '2026-02-01T00:00:00.000Z' } };
+    vi.mocked(findByManagerId).mockResolvedValue({ id: 'backfill-configuration', manager_setting: stored } as any);
+    const saved: ProvenanceBackfillState[] = [];
+    vi.mocked(patchAttribute).mockImplementation(async (...args: any[]) => {
+      saved.push(structuredClone(args[4].manager_setting));
+      return {} as any;
+    });
+    await recordProvenanceTrackingStarts(context, ['Malware', 'Tool'], '2026-04-01T00:00:00.000Z');
+    expect(saved).toEqual([expect.objectContaining({
+      status: 'completed',
+      tracking_started_at: { Malware: '2026-02-01T00:00:00.000Z', Tool: '2026-04-01T00:00:00.000Z' },
+    })]);
+    // Nothing to record: nothing written
+    vi.mocked(findByManagerId).mockResolvedValue({ id: 'backfill-configuration', manager_setting: saved[0] } as any);
+    await recordProvenanceTrackingStarts(context, ['Tool'], '2026-05-01T00:00:00.000Z');
+    expect(saved).toHaveLength(1);
+    expect(await restartProvenanceBackfill(context)).toMatchObject({ status: 'pending', processed: 0, started_at: null, tracking_started_at: saved[0].tracking_started_at });
   });
 });

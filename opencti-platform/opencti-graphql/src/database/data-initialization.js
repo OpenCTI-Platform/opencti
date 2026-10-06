@@ -4,6 +4,7 @@ import { AUTOMATION, BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } fro
 import { findByType as findEntitySettingsByType, initCreateEntitySettings } from '../modules/entitySetting/entitySetting-domain';
 import { initDecayRules } from '../modules/decayRule/decayRule-domain';
 import { initManagerConfigurations } from '../modules/managerConfiguration/managerConfiguration-domain';
+import { initProvenanceTrackingStarts } from '../modules/provenance/provenance-backfill';
 import { createStatus, createStatusTemplate } from '../domain/status';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { StatusScope, VocabularyCategory } from '../generated/graphql';
@@ -526,6 +527,7 @@ export const initializeData = async (context, withMarkings = true) => {
   });
   await initCreateEntitySettings(context, SYSTEM_USER);
   await initManagerConfigurations(context, SYSTEM_USER);
+  await initProvenanceTrackingStarts(context);
   await initDecayRules(context, SYSTEM_USER);
   await createDefaultStatusTemplates(context);
   await createInitialRequestAccessFlow(context);

@@ -129,24 +129,32 @@ const typesInheritingSetting = (targetType: string): string[] => {
 };
 
 /**
- * Types governed by a setting whose provenance is not tracked: the type of the setting, or the concrete types that
+ * Types governed by a setting whose provenance is tracked, or not: the type of the setting, or the concrete types that
  * inherit it (a concrete type with a setting of its own is governed by that one), with the same rule as the write path.
  */
-export const listProvenanceUntrackedTypesOfSetting = async (context: AuthContext, entitySetting: TrackingSetting) => {
+const listTypesOfSettingByTracking = async (context: AuthContext, entitySetting: TrackingSetting, tracked: boolean) => {
   if (!isProvenanceTrackingAvailable(entitySetting.target_type)) {
     return [];
   }
   const governed = typesInheritingSetting(entitySetting.target_type);
-  const untracked: string[] = [];
+  const types: string[] = [];
   for (let index = 0; index < governed.length; index += 1) {
     const type = governed[index];
     const governing = type === entitySetting.target_type ? entitySetting : await getEntitySettingFromCache(context, type);
     const isGovernedHere = !governing || governing.target_type === entitySetting.target_type;
-    if (isGovernedHere && !isProvenanceTrackedUnderSetting(entitySetting, type)) {
-      untracked.push(type);
+    if (isGovernedHere && isProvenanceTrackedUnderSetting(entitySetting, type) === tracked) {
+      types.push(type);
     }
   }
-  return untracked;
+  return types;
+};
+
+export const listProvenanceUntrackedTypesOfSetting = (context: AuthContext, entitySetting: TrackingSetting) => {
+  return listTypesOfSettingByTracking(context, entitySetting, false);
+};
+
+export const listProvenanceTrackedTypesOfSetting = (context: AuthContext, entitySetting: TrackingSetting) => {
+  return listTypesOfSettingByTracking(context, entitySetting, true);
 };
 
 /**

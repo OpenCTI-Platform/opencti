@@ -6,6 +6,7 @@ import {
   isProvenanceTrackingEnabled,
   listProvenanceRelationshipTracking,
   listProvenanceTrackedTypes,
+  listProvenanceTrackedTypesOfSetting,
   listProvenanceUntrackedTypesOfSetting,
   parseProvenanceRelationshipTypes,
   parseProvenanceRelationshipTypesStrict,
@@ -63,6 +64,10 @@ describe('Provenance tracking per entity type', () => {
     expect(await isProvenanceTrackedForType(context, 'indicates')).toEqual(true);
     const untracked = await listProvenanceUntrackedTypesOfSetting(context, relationshipSetting({ uses: false }, true));
     expect(untracked).toEqual(['uses']);
+    // The tracked types of the same setting are the other relationship types, as the write path sees them
+    const tracked = await listProvenanceTrackedTypesOfSetting(context, relationshipSetting({ uses: false }, true));
+    expect(tracked).toContain('indicates');
+    expect(tracked).not.toContain('uses');
   });
 
   it('should list the tracking of every relationship type with the recommended ones', () => {

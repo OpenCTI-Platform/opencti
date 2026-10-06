@@ -3,21 +3,35 @@ import gql from 'graphql-tag';
 import { ADMIN_USER, testContext, USER_EDITOR, USER_PLATFORM_ADMIN } from '../../../utils/testQuery';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
 import { elUpdate } from '../../../../src/database/engine';
-import { createEntity } from '../../../../src/database/middleware';
+import { createEntity, patchAttribute } from '../../../../src/database/middleware';
 import { ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
 import { internalLoadById } from '../../../../src/database/middleware-loader';
 import { resetCacheForEntity } from '../../../../src/database/cache';
-import { DECAY_MANAGER_USER } from '../../../../src/utils/access';
+import { DECAY_MANAGER_USER, SYSTEM_USER } from '../../../../src/utils/access';
 import { STIX_EXT_OCTI_PROVENANCE } from '../../../../src/types/stix-2-1-extensions';
 import { ENTITY_TYPE_DECAY_RULE } from '../../../../src/modules/decayRule/decayRule-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../../../../src/modules/entitySetting/entitySetting-types';
 import { ENTITY_TYPE_TRIGGER } from '../../../../src/modules/notification/notification-types';
 import { applyKnowledgeDecayRules } from '../../../../src/modules/provenance/provenance-freshness';
-import { PROVENANCE_BACKFILL_LOCK_KEY, restartProvenanceBackfill, runProvenanceBackfillBatch } from '../../../../src/modules/provenance/provenance-backfill';
+import {
+  getProvenanceBackfillState,
+  PROVENANCE_BACKFILL_LOCK_KEY,
+  readBackfillState,
+  restartProvenanceBackfill,
+  runProvenanceBackfillBatch,
+} from '../../../../src/modules/provenance/provenance-backfill';
+import { findByManagerId } from '../../../../src/modules/managerConfiguration/managerConfiguration-domain';
+import { ENTITY_TYPE_MANAGER_CONFIGURATION } from '../../../../src/modules/managerConfiguration/managerConfiguration-types';
 import { lockResources } from '../../../../src/lock/master-lock';
 import { wait } from '../../../../src/database/utils';
 import { notifyProvenanceChange } from '../../../../src/modules/provenance/provenance-notification';
-import { PROVENANCE_SIDE_CHANNEL_FIELDS, SOURCE_KIND_FEED, type StoreAssertion, type StoreConflictValue } from '../../../../src/modules/provenance/provenance-types';
+import {
+  PROVENANCE_BACKFILL_MANAGER_ID,
+  PROVENANCE_SIDE_CHANNEL_FIELDS,
+  SOURCE_KIND_FEED,
+  type StoreAssertion,
+  type StoreConflictValue,
+} from '../../../../src/modules/provenance/provenance-types';
 import { buildProvenanceScriptParams, PROVENANCE_UPDATE_SCRIPT, writeProvenanceUpdate } from '../../../../src/modules/provenance/provenance-write';
 import type { BasicStoreBase } from '../../../../src/types/store';
 import { checkRetentionRule } from '../../../../src/modules/retentionRules/retentionRules-domain';
@@ -144,6 +158,14 @@ const trackingByType = (setting: { provenance_relationship_tracking: Relationshi
 const setRelationshipTracking = async (types: string[], tracked: boolean) => {
   await queryAsAdminWithSuccess({ query: RELATIONSHIP_TRACKING_EDIT, variables: { types, tracked } });
   resetCacheForEntity(ENTITY_TYPE_ENTITY_SETTING);
+};
+
+// Test helper: replace the tracking starts of the provenance backfill
+const setTrackingStarts = async (starts: Record<string, string>) => {
+  const configuration = await findByManagerId(testContext, SYSTEM_USER, PROVENANCE_BACKFILL_MANAGER_ID);
+  await patchAttribute(testContext, SYSTEM_USER, configuration.id, ENTITY_TYPE_MANAGER_CONFIGURATION, {
+    manager_setting: { ...readBackfillState(configuration.manager_setting), tracking_started_at: starts },
+  });
 };
 
 const loadMalware = async (id: string) => {
@@ -692,18 +714,47 @@ describe('Provenance: every fact knows who said it', () => {
     expect((await loadMalware(malwareId)).corroboration_count).toBeNull();
     const restarted = await queryAsAdminWithSuccess({ query: gql`mutation { provenanceBackfillRestart { status processed } }` });
     expect(restarted.data?.provenanceBackfillRestart).toMatchObject({ status: 'pending', processed: 0 });
-    let state = await runProvenanceBackfillBatch(testContext, { batchSize: 5000 });
-    for (let iteration = 0; iteration < 20 && state?.status !== 'completed'; iteration += 1) {
-      state = await runProvenanceBackfillBatch(testContext, { batchSize: 5000 });
+    // The malware was created after the tracking of its type started: the tracking is made to start after it
+    const { tracking_started_at: starts } = await getProvenanceBackfillState(testContext);
+    await setTrackingStarts({ ...starts, [ENTITY_TYPE_MALWARE]: new Date().toISOString() });
+    try {
+      let state = await runProvenanceBackfillBatch(testContext, { batchSize: 5000 });
+      for (let iteration = 0; iteration < 20 && state?.status !== 'completed'; iteration += 1) {
+        state = await runProvenanceBackfillBatch(testContext, { batchSize: 5000 });
+      }
+      expect(state?.status).toEqual('completed');
+      expect(state?.errors).toEqual(0);
+    } finally {
+      await setTrackingStarts(starts);
     }
-    expect(state?.status).toEqual('completed');
-    expect(state?.errors).toEqual(0);
     const backfilled = await loadMalware(malwareId);
     expect(backfilled.corroboration_count).toBeGreaterThanOrEqual(1);
     expect(backfilled.x_opencti_assertions.map((assertion: { source_id: string }) => assertion.source_id)).toContain(ADMIN_USER.id);
     const status = await queryAsAdminWithSuccess({ query: gql`query { provenanceBackfill { status processed expected errors } }` });
     expect(status.data?.provenanceBackfill).toMatchObject({ status: 'completed', errors: 0 });
     expect(status.data?.provenanceBackfill.processed).toBeGreaterThan(0);
+  });
+
+  it('should record when the tracking of a type starts, before it records anything, and never move it', async () => {
+    const { tracking_started_at: initial } = await getProvenanceBackfillState(testContext);
+    // The tracked types got their start when the platform started, a restart keeps them
+    expect(initial.uses).toBeDefined();
+    await restartProvenanceBackfill(testContext);
+    expect((await getProvenanceBackfillState(testContext)).tracking_started_at).toEqual(initial);
+    const { 'related-to': _relatedTo, ...withoutRelatedTo } = initial;
+    await setTrackingStarts(withoutRelatedTo);
+    try {
+      const switchedOn = new Date().toISOString();
+      await setRelationshipTracking(['related-to'], true);
+      const recorded = (await getProvenanceBackfillState(testContext)).tracking_started_at['related-to'];
+      expect(recorded >= switchedOn).toEqual(true);
+      await setRelationshipTracking(['related-to'], true);
+      const { tracking_started_at: after } = await getProvenanceBackfillState(testContext);
+      expect(after['related-to']).toEqual(recorded);
+      expect(after.uses).toEqual(initial.uses);
+    } finally {
+      await setTrackingStarts(initial);
+    }
   });
 
   it('should add the history older than the backfill watermark to the live counts once, and keep the larger count otherwise', async () => {

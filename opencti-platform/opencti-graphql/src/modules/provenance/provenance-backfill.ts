@@ -37,6 +37,7 @@ import {
 } from './provenance-types';
 import { applyProvenanceUpdate } from './provenance-write';
 import { listProvenanceTrackedTypes } from './provenance-tracking';
+import { PROVENANCE_ENABLED } from './provenance-config';
 
 // Inferred knowledge is included: its sources are the inference rules
 const BACKFILL_INDICES = [
@@ -492,7 +493,8 @@ const loadBackfillConfiguration = async (context: AuthContext) => {
 };
 
 export const readBackfillState = (setting: unknown): ProvenanceBackfillState => {
-  return { ...DEFAULT_PROVENANCE_BACKFILL_STATE, ...((setting ?? {}) as Partial<ProvenanceBackfillState>) };
+  const stored = (setting ?? {}) as Partial<ProvenanceBackfillState>;
+  return { ...DEFAULT_PROVENANCE_BACKFILL_STATE, ...stored, tracking_started_at: stored.tracking_started_at ?? {} };
 };
 
 const saveBackfillState = async (context: AuthContext, configurationId: string, state: ProvenanceBackfillState, runStart: Date) => {
@@ -510,30 +512,94 @@ export const getProvenanceBackfillState = async (context: AuthContext) => {
 };
 
 /**
- * Restart the backfill from the beginning. Replays are idempotent: the history already counted is never added twice.
- * Taken under the lock of the backfill manager: a batch in progress finishes first, then the restart is saved,
- * and no batch can overwrite it with the state it started from.
+ * The lock every batch of the backfill manager runs under: a change of the backfill state taken under it waits for the
+ * batch in progress, and no batch can overwrite it with the state it started from.
  */
-export const restartProvenanceBackfill = async (context: AuthContext) => {
-  let lock;
+export const lockProvenanceBackfill = async () => {
   try {
-    lock = await lockResources([PROVENANCE_BACKFILL_LOCK_KEY]);
-    const configuration = await loadBackfillConfiguration(context);
-    if (!configuration) {
-      return DEFAULT_PROVENANCE_BACKFILL_STATE;
-    }
-    const state = { ...DEFAULT_PROVENANCE_BACKFILL_STATE };
-    await saveBackfillState(context, configuration.id, state, new Date());
-    return state;
+    return await lockResources([PROVENANCE_BACKFILL_LOCK_KEY]);
   } catch (err: any) {
     if (err.name === TYPE_LOCK_ERROR) {
       throw LockTimeoutError({ participantIds: [PROVENANCE_BACKFILL_MANAGER_ID] }, 'A batch of the provenance backfill is still running, retry in a moment');
     }
     throw err;
+  }
+};
+
+/**
+ * Types among the given ones whose live tracking start is not recorded yet.
+ */
+export const findTypesWithoutTrackingStart = async (context: AuthContext, types: string[]) => {
+  const state = await getProvenanceBackfillState(context);
+  return types.filter((type) => !state.tracking_started_at[type]);
+};
+
+/**
+ * Record the given date as the start of the live tracking of the given types that have none, under the backfill lock
+ * (see lockProvenanceBackfill). The date precedes anything the live tracking records for these types: the history of
+ * an element is read before the start of its type, so every source recorded before it was recorded by the backfill
+ * itself. A start is never moved: what is written while a type is not tracked is not rebuilt.
+ */
+export const recordProvenanceTrackingStarts = async (context: AuthContext, types: string[], at: string) => {
+  const configuration = await loadBackfillConfiguration(context);
+  if (!configuration) {
+    return;
+  }
+  const state = readBackfillState(configuration.manager_setting);
+  const missing = types.filter((type) => !state.tracking_started_at[type]);
+  if (missing.length === 0) {
+    return;
+  }
+  const trackingStartedAt = { ...state.tracking_started_at, ...Object.fromEntries(missing.map((type) => [type, at])) };
+  await patchAttribute(context, SYSTEM_USER, configuration.id, ENTITY_TYPE_MANAGER_CONFIGURATION, {
+    manager_setting: { ...state, tracking_started_at: trackingStartedAt },
+  });
+};
+
+/**
+ * At the initialization of the platform, before the API starts and so before the live tracking records anything:
+ * the tracked types get their start. A batch of another platform node holding the backfill lock longer than the lock
+ * waits never stops the start: the backfill then reads the history of these types before its run.
+ */
+export const initProvenanceTrackingStarts = async (context: AuthContext) => {
+  if (!PROVENANCE_ENABLED) {
+    return;
+  }
+  const trackedTypes = await listProvenanceTrackedTypes(context);
+  if ((await findTypesWithoutTrackingStart(context, trackedTypes)).length === 0) {
+    return;
+  }
+  const at = now();
+  let lock;
+  try {
+    lock = await lockProvenanceBackfill();
+  } catch (err) {
+    logApp.warn('[PROVENANCE] Tracking starts not recorded, the backfill reads the history before its run', { cause: err });
+    return;
+  }
+  try {
+    await recordProvenanceTrackingStarts(context, trackedTypes, at);
   } finally {
-    if (lock) {
-      await lock.unlock();
+    await lock.unlock();
+  }
+};
+
+/**
+ * Restart the backfill from the beginning. Replays are idempotent: the history already counted is never added twice,
+ * the tracking starts being kept. Taken under the backfill lock (see lockProvenanceBackfill).
+ */
+export const restartProvenanceBackfill = async (context: AuthContext) => {
+  const lock = await lockProvenanceBackfill();
+  try {
+    const configuration = await loadBackfillConfiguration(context);
+    if (!configuration) {
+      return DEFAULT_PROVENANCE_BACKFILL_STATE;
     }
+    const state = { ...DEFAULT_PROVENANCE_BACKFILL_STATE, tracking_started_at: readBackfillState(configuration.manager_setting).tracking_started_at };
+    await saveBackfillState(context, configuration.id, state, new Date());
+    return state;
+  } finally {
+    await lock.unlock();
   }
 };
 // endregion
@@ -567,13 +633,13 @@ export const runProvenanceBackfillBatch = async (context: AuthContext, opts: { b
     state.errors = 0;
     state.expected = await elCount(context, SYSTEM_USER, BACKFILL_INDICES, { types: trackedTypes });
   }
-  // The live tracking records every write after the start of the run: the history is only read before it.
-  // A new watermark is saved before the first page: a run stopped before its first batch is saved restarts with the
-  // same watermark, never a later one that would leave the live assertions recorded in between uncounted
-  let watermark = state.started_at;
-  if (!watermark) {
-    watermark = runStart.toISOString();
-    state.started_at = watermark;
+  // The history of an element is read before the tracking start of its type (see recordProvenanceTrackingStarts),
+  // the start of the run standing for it for a type without one. The start of the run is saved before the first page:
+  // a run stopped before its first batch is saved restarts with it, never with a later one
+  let runWatermark = state.started_at;
+  if (!runWatermark) {
+    runWatermark = runStart.toISOString();
+    state.started_at = runWatermark;
     await saveBackfillState(context, configuration.id, state, runStart);
   }
   const page = await elPaginate<BackfillElement>(context, SYSTEM_USER, BACKFILL_INDICES, {
@@ -587,8 +653,6 @@ export const runProvenanceBackfillBatch = async (context: AuthContext, opts: { b
   }) as unknown as { elements: { edges: { node: BackfillElement }[]; pageInfo: { hasNextPage: boolean } }; endCursor: string | null };
   const elements = page.elements.edges.map((edge) => edge.node);
   if (elements.length > 0) {
-    const ids = elements.map((element) => element.internal_id);
-    const writers = await aggregateHistoryActivities(context, ids, watermark);
     const connectors = await getEntitiesListFromCache<BasicStoreEntityConnector>(context, SYSTEM_USER, ENTITY_TYPE_CONNECTOR);
     const connectorsByUser = new Map<string, BasicStoreEntityConnector[]>();
     connectors.forEach((connector) => {
@@ -596,39 +660,50 @@ export const runProvenanceBackfillBatch = async (context: AuthContext, opts: { b
         connectorsByUser.set(connector.connector_user_id, [...(connectorsByUser.get(connector.connector_user_id) ?? []), connector]);
       }
     });
-    const { works, activities } = await splitSharedUsersActivities(context, ids, connectorsByUser, writers, watermark);
-    const resolveSource = createBackfillSourceResolver(context, connectorsByUser, works);
     const authorIds = [...new Set(elements.flatMap((element) => toArray(element[CREATED_BY_FIELD])))];
     const authors = authorIds.length > 0
       ? await internalFindByIds<BasicStoreEntity & { name: string }>(context, SYSTEM_USER, authorIds, { baseData: true, baseFields: ['name'] }) as (BasicStoreEntity & { name: string })[]
       : [];
     const authorNames = new Map(authors.map((author) => [author.internal_id, author.name]));
-    const rebuild = async (element: BackfillElement) => {
-      const assertions = await computeBackfillAssertions(element, activities.get(element.internal_id) ?? [], resolveSource, authorNames, watermark);
-      if (assertions.length > 0) {
-        await applyProvenanceUpdate(context, element, { assertions, countMode: 'backfill', backfillWatermark: watermark });
-        state.updated += 1;
-      }
-    };
+    const elementsByWatermark = new Map<string, BackfillElement[]>();
+    elements.forEach((element) => {
+      const watermark = state.tracking_started_at[element.entity_type] ?? runWatermark;
+      elementsByWatermark.set(watermark, [...(elementsByWatermark.get(watermark) ?? []), element]);
+    });
     // A rebuild is replayed without counting anything twice (backfill count mode): a failed element is tried
     // again at the end of the batch, and only a second failure leaves it to a restart of the backfill
-    const failed: BackfillElement[] = [];
-    for (let index = 0; index < elements.length; index += 1) {
-      const element = elements[index];
-      try {
-        await rebuild(element);
-      } catch (err) {
-        failed.push(element);
-        logApp.warn('[PROVENANCE] Backfill of an element failed, tried again at the end of the batch', { cause: err, id: element.internal_id });
+    const failed: { element: BackfillElement; rebuild: () => Promise<void> }[] = [];
+    const groups = Array.from(elementsByWatermark.entries());
+    for (let groupIndex = 0; groupIndex < groups.length; groupIndex += 1) {
+      const [watermark, groupElements] = groups[groupIndex];
+      const ids = groupElements.map((element) => element.internal_id);
+      const writers = await aggregateHistoryActivities(context, ids, watermark);
+      const { works, activities } = await splitSharedUsersActivities(context, ids, connectorsByUser, writers, watermark);
+      const resolveSource = createBackfillSourceResolver(context, connectorsByUser, works);
+      for (let index = 0; index < groupElements.length; index += 1) {
+        const element = groupElements[index];
+        const rebuild = async () => {
+          const assertions = await computeBackfillAssertions(element, activities.get(element.internal_id) ?? [], resolveSource, authorNames, watermark);
+          if (assertions.length > 0) {
+            await applyProvenanceUpdate(context, element, { assertions, countMode: 'backfill', backfillWatermark: watermark });
+            state.updated += 1;
+          }
+        };
+        try {
+          await rebuild();
+        } catch (err) {
+          failed.push({ element, rebuild });
+          logApp.warn('[PROVENANCE] Backfill of an element failed, tried again at the end of the batch', { cause: err, id: element.internal_id });
+        }
       }
     }
     if (failed.length > 0) {
       await wait(BACKFILL_RETRY_DELAY_MS);
     }
     for (let index = 0; index < failed.length; index += 1) {
-      const element = failed[index];
+      const { element, rebuild } = failed[index];
       try {
-        await rebuild(element);
+        await rebuild();
       } catch (err) {
         state.errors += 1;
         logApp.error('[PROVENANCE] Unable to backfill the provenance of an element', { cause: err, id: element.internal_id });

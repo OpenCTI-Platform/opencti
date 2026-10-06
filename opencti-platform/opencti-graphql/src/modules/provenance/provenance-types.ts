@@ -132,6 +132,8 @@ export interface ProvenanceBackfillState {
   errors: number;
   started_at: string | null;
   completed_at: string | null;
+  // When the live tracking of each tracked type started: recorded before it records anything, never moved
+  tracking_started_at: Record<string, string>;
 }
 
 export const DEFAULT_PROVENANCE_BACKFILL_STATE: ProvenanceBackfillState = {
@@ -143,6 +145,7 @@ export const DEFAULT_PROVENANCE_BACKFILL_STATE: ProvenanceBackfillState = {
   errors: 0,
   started_at: null,
   completed_at: null,
+  tracking_started_at: {},
 };
 
 export interface StoreProvenanceFields {
