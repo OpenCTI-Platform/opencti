@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/index';
-import { FilterMode, FilterOperator } from '../../../../src/generated/graphql';
+import { EditOperation, FilterMode, FilterOperator } from '../../../../src/generated/graphql';
 import {
   BUILT_IN_KNOWLEDGE_DECAY_RULES,
   checkDecayRulePatch,
@@ -118,6 +118,19 @@ describe('Knowledge decay rules', () => {
     const builtIn = storedRule({ built_in: true, active: false });
     expect(checkDecayRulePatch(builtIn, [{ key: 'active', value: ['true'] }])).toEqual(true);
     expect(() => checkDecayRulePatch(builtIn, [{ key: 'stale_after_days', value: ['10'] }])).toThrow();
+  });
+
+  it('should validate the target types an edition leaves, whatever its operation', () => {
+    const entityRule = storedRule({ target_scope: 'entity', target_types: ['Malware'] });
+    // Removing the last entity type would leave a rule that targets nothing
+    expect(() => checkDecayRulePatch(entityRule, [{ key: 'target_types', value: ['Malware'], operation: EditOperation.Remove }])).toThrow();
+    expect(checkDecayRulePatch(entityRule, [{ key: 'target_types', value: ['Tool'], operation: EditOperation.Add }])).toEqual(true);
+    const twoTypes = storedRule({ target_scope: 'entity', target_types: ['Malware', 'Tool'] });
+    expect(checkDecayRulePatch(twoTypes, [{ key: 'target_types', value: ['Tool'], operation: EditOperation.Remove }])).toEqual(true);
+    // An added type is checked against the scope of the rule, like a replaced list
+    expect(() => checkDecayRulePatch(entityRule, [{ key: 'target_types', value: ['uses'], operation: EditOperation.Add }])).toThrow();
+    // A relationship rule left without types targets every relationship
+    expect(checkDecayRulePatch(storedRule(), [{ key: 'target_types', value: ['uses'], operation: EditOperation.Remove }])).toEqual(true);
   });
 
   it('should let a freshness run apply a rule only while the rule keeps the configuration the run loaded', () => {

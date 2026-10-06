@@ -1,6 +1,6 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { EditInput, FilterGroup, KnowledgeDecayRuleAddInput } from '../../generated/graphql';
-import { FilterMode } from '../../generated/graphql';
+import { EditOperation, FilterMode } from '../../generated/graphql';
 import { fullEntitiesList } from '../../database/middleware-loader';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { elAggregationCount, elRawUpdateByQuery } from '../../database/engine';
@@ -191,6 +191,18 @@ export const addKnowledgeDecayRule = async (context: AuthContext, user: AuthUser
   return created;
 };
 
+// The target types an edition leaves, computed as the update of a multiple attribute computes them
+const patchTargetTypes = (current: string[], { operation, value }: EditInput): string[] => {
+  const values = (value ?? []) as string[];
+  if (operation === EditOperation.Add) {
+    return [...new Set([...current, ...values])].filter((type) => !!type);
+  }
+  if (operation === EditOperation.Remove) {
+    return current.filter((type) => !values.includes(type));
+  }
+  return values;
+};
+
 /**
  * Validate an edition of a decay rule against its scope. Returns true when the stale flags set by the rule must be cleared.
  */
@@ -224,7 +236,7 @@ export const checkDecayRulePatch = (decayRule: BasicStoreEntityDecayRule, input:
   input.forEach((editInput) => {
     const raw = editInput.value?.[0];
     if (editInput.key === 'target_types') {
-      patched[editInput.key] = editInput.value ?? [];
+      patched[editInput.key] = patchTargetTypes(patched[editInput.key] ?? [], editInput);
     } else if (NUMERIC_KNOWLEDGE_DECAY_FIELDS.includes(editInput.key)) {
       patched[editInput.key] = raw === null || raw === undefined || raw === '' ? null : Number(raw);
     } else {
