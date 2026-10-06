@@ -9,9 +9,22 @@ import { graphStateToLocalStorage, normalizeGraphStateParams } from './graphUtil
 import { readLegendOpen, writeLegendOpen } from './graphLegendPreference';
 import { readHiddenNodeIds, writeHiddenNodeIds } from './graphHiddenNodes';
 import { graphNodeTitle } from './useGraphParser';
-import { graphNode } from '../../../utils/tests/graphTestData';
+import { graphLink, graphNode } from '../../../utils/tests/graphTestData';
 import { glyphFromMarkup } from './graphIcons';
-import type { GraphState } from '../graph.types';
+import { type GraphState, isInferredLink, isInferredNode } from '../graph.types';
+
+describe('isInferredNode and isInferredLink', () => {
+  it('tell the knowledge an inference rule made, however it is drawn', () => {
+    expect(isInferredNode(graphNode({ isNestedInferred: true }))).toBe(true);
+    // A relationship created by a rule, drawn as a node: its own flag is in the object received only.
+    expect(isInferredNode(graphNode({ isNestedInferred: false, raw: { is_inferred: true } as never }))).toBe(true);
+    expect(isInferredNode(graphNode({ isNestedInferred: false, raw: { is_inferred: false } as never }))).toBe(false);
+    const [from, to] = [graphNode({ id: 'from' }), graphNode({ id: 'to' })];
+    expect(isInferredLink(graphLink(from, to, { inferred: true, isNestedInferred: false }))).toBe(true);
+    expect(isInferredLink(graphLink(from, to, { inferred: false, isNestedInferred: true }))).toBe(true);
+    expect(isInferredLink(graphLink(from, to, { inferred: false, isNestedInferred: false }))).toBe(false);
+  });
+});
 
 describe('collisionForce', () => {
   it('pushes two overlapping nodes apart and leaves distant ones alone', () => {

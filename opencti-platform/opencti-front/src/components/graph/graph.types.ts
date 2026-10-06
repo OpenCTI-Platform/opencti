@@ -63,6 +63,14 @@ export const isGraphLink = (o: GraphNode | GraphLink): o is GraphLink => {
   return (o as GraphLink).source_id !== undefined;
 };
 
+/**
+ * Knowledge an inference rule made, which the graph neither edits nor removes: a member it added to
+ * the container, or a relationship it created, drawn as a link or, as the end of a nested
+ * relationship, as a node (its own flag is then only in the object received).
+ */
+export const isInferredNode = (node: GraphNode) => node.isNestedInferred || !!node.raw?.is_inferred;
+export const isInferredLink = (link: GraphLink) => link.inferred || link.isNestedInferred;
+
 export type LibGraphProps = ForceGraphProps<GraphNode, GraphLink>;
 
 export interface OctiGraphPositions {

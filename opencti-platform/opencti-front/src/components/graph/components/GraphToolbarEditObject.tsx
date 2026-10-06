@@ -9,7 +9,7 @@ import type { GraphQLTaggedNode } from 'relay-runtime';
 import GraphToolbarItem from './GraphToolbarItem';
 import { useFormatter } from '../../i18n';
 import { useGraphContext } from '../GraphContext';
-import type { GraphNode, GraphLink } from '../graph.types';
+import { type GraphNode, type GraphLink, isInferredLink, isInferredNode } from '../graph.types';
 import { isStixNestedRefRelationship } from '../../../utils/Relation';
 import { fetchQuery } from '../../../relay/environment';
 import useGraphInteractions from '../utils/useGraphInteractions';
@@ -40,9 +40,9 @@ const GraphToolbarEditObject = ({
   const [category, setCategory] = useState<EditionCategory>();
 
   let objectToEdit: GraphNode | GraphLink | undefined;
-  if (selectedNodes.length === 1 && !selectedNodes[0].isNestedInferred) {
+  if (selectedNodes.length === 1 && !isInferredNode(selectedNodes[0])) {
     [objectToEdit] = selectedNodes;
-  } else if (selectedLinks.length === 1 && !selectedLinks[0].inferred && !selectedLinks[0].isNestedInferred) {
+  } else if (selectedLinks.length === 1 && !isInferredLink(selectedLinks[0])) {
     [objectToEdit] = selectedLinks;
   }
   const isNotEditableFromGraph = !!objectToEdit

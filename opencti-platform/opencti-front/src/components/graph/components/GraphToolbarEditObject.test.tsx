@@ -4,7 +4,7 @@ import { screen } from '@testing-library/react';
 import { graphql } from 'react-relay';
 import testRender from '../../../utils/tests/test-render';
 import { graphLink, graphNode } from '../../../utils/tests/graphTestData';
-import type { GraphLink } from '../graph.types';
+import type { GraphLink, GraphNode } from '../graph.types';
 import GraphToolbarEditObject from './GraphToolbarEditObject';
 
 const context = vi.hoisted(() => ({ current: {} as unknown }));
@@ -21,11 +21,12 @@ const query = {} as ReturnType<typeof graphql>;
 const actor = graphNode({ id: 'actor', entity_type: 'Intrusion-Set' });
 const malware = graphNode({ id: 'malware' });
 
-const renderEdit = (link: GraphLink) => {
-  context.current = { rawObjects: [], graphState: { selectedNodes: [], selectedLinks: [link] } };
+const renderEditOf = (selectedNodes: GraphNode[], selectedLinks: GraphLink[]) => {
+  context.current = { rawObjects: [], graphState: { selectedNodes, selectedLinks } };
   const { unmount } = testRender(<GraphToolbarEditObject stixCoreObjectRefetchQuery={query} relationshipRefetchQuery={query} />);
   return { edit: screen.getByRole('button', { name: 'Edit the selected item' }), unmount };
 };
+const renderEdit = (link: GraphLink) => renderEditOf([], [link]);
 
 describe('GraphToolbarEditObject', () => {
   it('edits a selected relationship', () => {
@@ -39,5 +40,19 @@ describe('GraphToolbarEditObject', () => {
       expect(edit).toHaveAccessibleDescription('Inferred knowledge cannot be edited');
       unmount();
     });
+  });
+
+  it('never edits a directly inferred relationship drawn as a node, the end of a nested relationship', () => {
+    const relationship = graphNode({
+      id: 'inferred-uses',
+      entity_type: 'uses',
+      relationship_type: 'uses',
+      parent_types: ['basic-relationship', 'stix-relationship', 'stix-core-relationship'],
+      isNestedInferred: false,
+      raw: { is_inferred: true } as never,
+    });
+    const { edit } = renderEditOf([relationship], []);
+    expect(edit).toHaveAttribute('aria-disabled', 'true');
+    expect(edit).toHaveAccessibleDescription('Inferred knowledge cannot be edited');
   });
 });

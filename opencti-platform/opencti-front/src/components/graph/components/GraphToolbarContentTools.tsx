@@ -10,7 +10,7 @@ import GraphToolbarEditObject from './GraphToolbarEditObject';
 import GraphToolbarItem from './GraphToolbarItem';
 import { useFormatter } from '../../i18n';
 import useGraphInteractions from '../utils/useGraphInteractions';
-import { GraphEntity, GraphLink, GraphNode } from '../graph.types';
+import { GraphEntity, GraphLink, GraphNode, isInferredLink, isInferredNode } from '../graph.types';
 import { dateFormat, dayStartDate, minutesBefore, now } from '../../../utils/Time';
 import { convertCreatedBy, convertMarkings } from '../../../utils/edition';
 import { useGraphContext } from '../GraphContext';
@@ -98,8 +98,7 @@ const GraphToolbarContentTools = ({
   const relBetweenNodes = selectedNodes.length >= 2 && selectedLinks.length === 0;
   const relBetweenNodeAndLink = selectedNodes.length === 1 && selectedLinks.length === 1;
 
-  const selectionContainsInferred = selectedNodes.some((n) => n.isNestedInferred)
-    || selectedLinks.some((n) => n.inferred || n.isNestedInferred);
+  const selectionContainsInferred = selectedNodes.some(isInferredNode) || selectedLinks.some(isInferredLink);
   const canDelete = !selectionContainsInferred && (selectedNodes.length > 0 || selectedLinks.length > 0);
 
   const isReversed = relationReversed || sightingReversed || nestedReversed;
