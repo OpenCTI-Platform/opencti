@@ -43,7 +43,12 @@ describe('Relations deduplication with an ISO 8601 duration in past_days / next_
     });
     const sighting = result.data?.stixSightingRelationshipAdd;
     createdIds.add(sighting.id);
-    return sighting;
+    // Dates are returned as Date objects when the query runs in process
+    return {
+      id: sighting.id,
+      first_seen: new Date(sighting.first_seen).toISOString(),
+      last_seen: new Date(sighting.last_seen).toISOString(),
+    };
   };
 
   beforeAll(() => {
