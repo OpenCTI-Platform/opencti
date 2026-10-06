@@ -200,6 +200,19 @@ describe('useGraphParser', () => {
     });
   });
 
+  describe('buildCorrelationData', () => {
+    it('draws the link to a container as certain, whatever the inference or the confidence of the container', () => {
+      const container = constructEntity({ id: 'report-1', entity_type: 'Report', is_inferred: true, confidence: 10 });
+      const other = constructEntity({ id: 'report-2', entity_type: 'Report' });
+      const shared = constructEntity({ id: 'malware-1', linkedContainers: [container, other] });
+      const { nodes, links } = parser.buildCorrelationData([shared], emptyPositions);
+      const toContainer = links.find((link) => link.target_id === 'report-1');
+      expect(toContainer).toMatchObject({ source_id: 'malware-1', inferred: false, isNestedInferred: false, confidence: null });
+      // The container keeps its own.
+      expect(nodes.find((node) => node.id === 'report-1')?.confidence).toBe(10);
+    });
+  });
+
   describe('buildGraphDataAfterRelationshipLinkToNodeConversion', () => {
     it('should return previous graph data when relObj has no relationship_type', () => {
       const previousGraphData = { nodes: [] as GraphNode[], links: [] as GraphLink[] };

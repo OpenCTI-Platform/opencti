@@ -348,6 +348,7 @@ const useGraphParser = () => {
     const links = uniqCorrelatedObjects.flatMap((object) => {
       const objectCorrelatedContainers = R.uniqBy(R.prop('id'), (object.linkedContainers ?? []));
       return objectCorrelatedContainers.map((container) => {
+        // The link only places the object in the container: the inference and the confidence of the container are not the link's.
         return buildLink(container, {
           id: `${object.id}-${container.id}`,
           target: container.id,
@@ -359,6 +360,9 @@ const useGraphParser = () => {
           relationship_type: 'reported-in',
           label: '',
           name: '',
+          inferred: false,
+          isNestedInferred: false,
+          confidence: null,
         });
       });
     });
