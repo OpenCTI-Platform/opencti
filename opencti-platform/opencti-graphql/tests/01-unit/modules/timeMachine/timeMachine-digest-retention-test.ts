@@ -20,12 +20,15 @@ const rule = (input: Partial<BasicStoreEntityRetentionRule>) => ({
 const NOW = '2026-10-01T00:00:00.000Z';
 
 describe('Knowledge snapshot retention', () => {
-  it('should keep snapshots when no global history retention applies', () => {
+  it('should keep snapshots when no active history retention applies', () => {
     expect(computeSnapshotRetentionDate([], NOW, 0)).toBeNull();
     expect(computeSnapshotRetentionDate([rule({ scope: 'knowledge' })], NOW, 0)).toBeNull();
     expect(computeSnapshotRetentionDate([rule({ active: false })], NOW, 0)).toBeNull();
+  });
+
+  it('should follow a filtered history retention, which purges part of the history a reconstruction replays', () => {
     const filtered = JSON.stringify({ mode: 'and', filters: [{ key: ['entity_type'], values: ['Report'] }], filterGroups: [] });
-    expect(computeSnapshotRetentionDate([rule({ filters: filtered })], NOW, 0)).toBeNull();
+    expect(computeSnapshotRetentionDate([rule({ filters: filtered })], NOW, 0)).toEqual('2026-09-01T00:00:00.000Z');
   });
 
   it('should align snapshots with the shortest global history retention', () => {

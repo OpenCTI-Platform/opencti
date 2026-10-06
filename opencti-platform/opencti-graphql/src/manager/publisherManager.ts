@@ -424,7 +424,12 @@ export const processNotificationEvent = async (
 
   for (let i = 0; i < userNotifiers.length; i += 1) {
     const userNotifierId = userNotifiers[i];
-    const notifier = notifierMap.get(userNotifierId) ?? {} as BasicStoreEntityNotifier;
+    const notifier = notifierMap.get(userNotifierId);
+    if (!notifier) {
+      // Nothing can be sent to a deleted notifier: no delivery receipt is stored for it, a change digest stays scheduled
+      logApp.warn('[OPENCTI-MODULE] Notifier not found, the notification is not sent to it', { manager: 'PUBLISHER_MANAGER', notifierId: userNotifierId, notificationId });
+      continue;
+    }
 
     const deliveryReceipt = deliveryKey ? toDigestDeliveryReceipt(deliveryKey, userNotifierId) : undefined;
     // There is no await in purpose; the goal is to send notification and continue without waiting result. A digest

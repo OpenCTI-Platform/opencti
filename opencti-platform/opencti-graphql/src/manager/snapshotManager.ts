@@ -22,8 +22,6 @@ import { fetchElementsHistoryEvents, fetchRelationshipsHistoryEvents, findHistor
 import { deleteSnapshotsBefore, indexSnapshots, type SnapshotInput } from '../modules/timeMachine/timeMachine-store';
 import { TIME_MACHINE_RELATIONSHIP_TYPES } from '../modules/timeMachine/timeMachine-relationships';
 import { countRelationshipsByTypeForElements } from '../modules/timeMachine/timeMachine-counters';
-import { isFilterGroupNotEmpty } from '../utils/filtering/filtering-utils';
-
 const SNAPSHOT_MANAGER_ID = 'SNAPSHOT_MANAGER';
 const SNAPSHOT_MANAGER_CONTEXT = 'snapshot_manager';
 const SNAPSHOT_MANAGER_STATE = 'snapshot_manager';
@@ -354,19 +352,12 @@ export const buildCompactDocuments = async (context: AuthContext, entities: Basi
   return documents;
 };
 
-// Snapshots follow the history retention: the shortest active history retention rule applying to all the history
+// Snapshots follow the history retention: the shortest active history retention rule, a filtered one included as it
+// purges part of the history a reconstruction from an older snapshot would replay
 export const computeSnapshotRetentionDate = (rules: BasicStoreEntityRetentionRule[], currentDate: string, retentionDays: number): string | null => {
   const horizons: moment.Moment[] = [];
   rules
     .filter((rule) => rule.scope === 'history' && rule.active !== false)
-    .filter((rule) => {
-      if (!rule.filters) return true;
-      try {
-        return !isFilterGroupNotEmpty(JSON.parse(rule.filters));
-      } catch {
-        return false;
-      }
-    })
     .forEach((rule) => {
       horizons.push(utcDate(currentDate).subtract(rule.max_retention, (rule.retention_unit ?? 'days') as moment.unitOfTime.DurationConstructor));
     });
