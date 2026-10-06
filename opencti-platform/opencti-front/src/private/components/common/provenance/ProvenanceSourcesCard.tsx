@@ -1,6 +1,5 @@
 import React, { Suspense, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import { Link } from 'react-router';
 import { useTheme } from '@mui/styles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -16,8 +15,8 @@ import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import ProvenanceBadge from './ProvenanceBadge';
 import ProvenanceSourceKindIcon from './ProvenanceSourceKindIcon';
+import ProvenanceSourceName from './ProvenanceSourceName';
 import ProvenanceSourcesPanel from './ProvenanceSourcesPanel';
-import { resolveProvenanceSourceLink } from './provenanceSourceLinks';
 import { buildSourcesCardModel, isAssertedOnce, type ProvenanceData, sourceKindLabel, warningColor } from './provenanceUtils';
 import { ProvenanceSourcesCardQuery } from './__generated__/ProvenanceSourcesCardQuery.graphql';
 
@@ -109,7 +108,6 @@ const ProvenanceSourcesCardContent = ({ id, fetchKey, onOpen, showEmpty }: Prove
         </Stack>
         <List dense disablePadding aria-label={t_i18n('Sources')}>
           {model.sources.map((source) => {
-            const link = resolveProvenanceSourceLink(source);
             const assertedOnce = isAssertedOnce(source);
             const firstAsserted = rd(source.first_asserted_at);
             const lastAsserted = rd(source.last_asserted_at);
@@ -135,7 +133,7 @@ const ProvenanceSourcesCardContent = ({ id, fetchKey, onOpen, showEmpty }: Prove
                   <ProvenanceSourceKindIcon kind={source.source_kind} color="primary" />
                 </ListItemIcon>
                 <ListItemText
-                  primary={link ? <Link to={link}>{source.source_name}</Link> : source.source_name}
+                  primary={<ProvenanceSourceName source={source} />}
                   secondary={(
                     <Tooltip>
                       <TooltipTrigger asChild>

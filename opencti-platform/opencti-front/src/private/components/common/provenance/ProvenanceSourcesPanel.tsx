@@ -23,6 +23,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import type { Theme } from '../../../../components/Theme';
 import ProvenanceBadge from './ProvenanceBadge';
 import ProvenanceSourceKindIcon from './ProvenanceSourceKindIcon';
+import ProvenanceSourceName from './ProvenanceSourceName';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { groupConflictValues, groupProceduresByText, notifyPayloadErrors, type ProvenanceData, sortAssertionsByRecency, sourceKindLabel, warningColor } from './provenanceUtils';
 import { ProvenanceSourcesPanelQuery } from './__generated__/ProvenanceSourcesPanelQuery.graphql';
@@ -215,7 +216,7 @@ const ProvenanceSourcesContent = ({ queryRef, onChange }: ProvenanceSourcesConte
                   <TableCell>
                     <Stack direction="row" alignItems="center" gap={1}>
                       <ProvenanceSourceKindIcon kind={assertion.source_kind} color="primary" />
-                      <span>{assertion.source_name}</span>
+                      <ProvenanceSourceName source={assertion} />
                     </Stack>
                   </TableCell>
                   <TableCell>{t_i18n(sourceKindLabel(assertion.source_kind))}</TableCell>
