@@ -191,7 +191,7 @@ Besides clicking (with `Ctrl`, `Shift` or `Alt` to add to the selection), the to
 - **selects the neighbours** of the selected nodes;
 - **highlights the shortest path** between two selected nodes, whatever the direction of the relationships; the path stays highlighted until the selection changes.
 
-The search field of the toolbar selects the matching entities.
+The search field of the toolbar selects the matching entities. The graph view of the **Analyses** tab of an entity has no search field in its toolbar: the one of the page, above the graph, filters the containers it draws.
 
 ![Focus on a selected entity and its neighbours](assets/graph-focus.png)
 
@@ -212,7 +212,7 @@ Shortcuts apply while the pointer is over the graph or the focus is inside it, n
 | `G` | Show or minimize the legend |
 | `Shift` + `M` | Full screen |
 | `Shift` + `E` | Export the whole graph as a high-resolution image |
-| `/` | Search in the graph |
+| `/` | Search in the graph (where its toolbar has a search field) |
 
 ## Export
 

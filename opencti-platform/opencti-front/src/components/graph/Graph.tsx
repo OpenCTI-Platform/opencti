@@ -882,7 +882,7 @@ const Graph = ({
           }}
           onActiveChange={setHovered}
         />
-        <GraphShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+        <GraphShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} searchable={context !== 'analyses'} />
         <GraphViewContext.Provider value={viewActions}>
           {children}
         </GraphViewContext.Provider>

@@ -420,5 +420,12 @@ describe('GraphShortcutsDialog', () => {
     testRender(<GraphShortcutsDialog open onClose={vi.fn()} />);
     expect(screen.getByText('Fit the selection')).toBeInTheDocument();
     expect(screen.getAllByText('Shift').length).toBeGreaterThan(0);
+    expect(screen.getByText('Search in the graph')).toBeInTheDocument();
+  });
+
+  it('leaves the search shortcut out of a graph without a search field', () => {
+    testRender(<GraphShortcutsDialog open onClose={vi.fn()} searchable={false} />);
+    expect(screen.getByText('Fit the selection')).toBeInTheDocument();
+    expect(screen.queryByText('Search in the graph')).toBeNull();
   });
 });

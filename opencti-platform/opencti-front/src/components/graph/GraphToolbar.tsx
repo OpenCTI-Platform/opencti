@@ -277,15 +277,19 @@ const GraphToolbar = ({
         {group('export')}
         {group('help')}
 
-        <Pinned style={{ width: SEARCH_WIDTH, marginLeft: 'auto' }}>
-          <div style={{ width: '100%' }} data-graph-search>
-            <SearchInput
-              keyword={search ?? ''}
-              onSubmit={selectBySearch}
-            />
-          </div>
-        </Pinned>
-        <Pinned>
+        {/* The analyses graph has the search field of its page above it, which filters the containers drawn:
+            a second field there, selecting in the graph, would look the same and do something else. */}
+        {editable && (
+          <Pinned style={{ width: SEARCH_WIDTH, marginLeft: 'auto' }}>
+            <div style={{ width: '100%' }} data-graph-search>
+              <SearchInput
+                keyword={search ?? ''}
+                onSubmit={selectBySearch}
+              />
+            </div>
+          </Pinned>
+        )}
+        <Pinned style={editable ? undefined : { marginLeft: 'auto' }}>
           <GraphToolbarMoreActions actions={overflowed} />
         </Pinned>
       </div>

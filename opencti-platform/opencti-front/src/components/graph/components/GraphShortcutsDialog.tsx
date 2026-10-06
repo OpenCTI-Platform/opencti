@@ -8,10 +8,11 @@ import type { Theme } from '../../Theme';
 interface GraphShortcutsDialogProps {
   open: boolean;
   onClose: () => void;
+  searchable?: boolean;
 }
 
 /** The keyboard shortcuts of the graphs, as handled by `useGraphKeyboardShortcuts`. */
-const GraphShortcutsDialog = ({ open, onClose }: GraphShortcutsDialogProps) => {
+const GraphShortcutsDialog = ({ open, onClose, searchable = true }: GraphShortcutsDialogProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const shortcuts: { keys: string[]; label: string }[] = [
@@ -29,7 +30,7 @@ const GraphShortcutsDialog = ({ open, onClose }: GraphShortcutsDialogProps) => {
     { keys: ['G'], label: t_i18n('Show or minimize the legend') },
     { keys: ['Shift', 'M'], label: t_i18n('Full screen') },
     { keys: ['Shift', 'E'], label: t_i18n('Export the whole graph as a high-resolution image') },
-    { keys: ['/'], label: t_i18n('Search in the graph') },
+    ...(searchable ? [{ keys: ['/'], label: t_i18n('Search in the graph') }] : []),
     { keys: ['?'], label: t_i18n('Keyboard shortcuts') },
   ];
   const key = {
