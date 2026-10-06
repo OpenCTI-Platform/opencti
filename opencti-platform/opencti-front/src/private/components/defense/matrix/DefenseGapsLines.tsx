@@ -8,8 +8,7 @@ import type { Theme } from '../../../../components/Theme';
 import Button from '@common/button/Button';
 import Card from '../../../../components/common/card/Card';
 import { useFormatter } from '../../../../components/i18n';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { DefenseGapsLinesPaginationQuery } from './__generated__/DefenseGapsLinesPaginationQuery.graphql';
 import { DefenseGapsLines_data$key } from './__generated__/DefenseGapsLines_data.graphql';
 import { DefenseGapsLinesRefetchQuery } from './__generated__/DefenseGapsLinesRefetchQuery.graphql';
@@ -40,6 +39,9 @@ export const defenseGapsLinesQuery = graphql`
     $orderBy: DefenseGapsOrdering
     $orderMode: OrderingMode
   ) {
+    defenseCoverageStatus {
+      validation_available
+    }
     ...DefenseGapsLines_data
     @arguments(
       platformIds: $platformIds
@@ -128,7 +130,10 @@ interface DefenseGapsLinesProps {
 const DefenseGapsLines = ({ queryRef, scope, onlyUsedByThreats = false, onTotalChange, actions }: DefenseGapsLinesProps) => {
   const { t_i18n, fldt, rd } = useFormatter();
   const theme = useTheme<Theme>();
+  const isKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const queryData = usePreloadedQuery(defenseGapsLinesQuery, queryRef);
+  // The selection only feeds a validation request, offered while an OpenAEV connector is active
+  const canValidate = isKnowledgeEditor && !!queryData.defenseCoverageStatus?.validation_available;
   const { data, hasNext, loadNext, isLoadingNext, refetch } = usePaginationFragment<DefenseGapsLinesRefetchQuery, DefenseGapsLines_data$key>(
     defenseGapsLinesFragment,
     queryData,
@@ -172,7 +177,7 @@ const DefenseGapsLines = ({ queryRef, scope, onlyUsedByThreats = false, onTotalC
       action={(
         <Stack direction="row" spacing={1} alignItems="center">
           {actions}
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          {canValidate && (
             <Button
               disabled={selectedTechniques.length === 0 || overValidationLimit}
               onClick={() => setValidating(true)}
@@ -183,11 +188,11 @@ const DefenseGapsLines = ({ queryRef, scope, onlyUsedByThreats = false, onTotalC
                 ? t_i18n('Select gaps to validate')
                 : t_i18n('{count, plural, one {Validate # technique} other {Validate # techniques}}', { values: { count: selectedTechniques.length } })}
             </Button>
-          </Security>
+          )}
         </Stack>
       )}
     >
-      {overValidationLimit && (
+      {canValidate && overValidationLimit && (
         <Typography
           id="defense-gaps-validate-limit"
           variant="body2"
@@ -214,13 +219,15 @@ const DefenseGapsLines = ({ queryRef, scope, onlyUsedByThreats = false, onTotalC
           >
             <TableHead>
               <TableRow>
-                <TableCell padding="checkbox">
-                  <Checkbox
-                    aria-label={t_i18n('Select all')}
-                    checked={allSelected}
-                    onCheckedChange={(checked) => setSelectedIds(checked === true ? new Set(gaps.map((gap) => gap.id)) : new Set())}
-                  />
-                </TableCell>
+                {canValidate && (
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      aria-label={t_i18n('Select all')}
+                      checked={allSelected}
+                      onCheckedChange={(checked) => setSelectedIds(checked === true ? new Set(gaps.map((gap) => gap.id)) : new Set())}
+                    />
+                  </TableCell>
+                )}
                 <TableCell>{t_i18n('Technique')}</TableCell>
                 <TableCell>{t_i18n('Security platform')}</TableCell>
                 <TableCell>{t_i18n('Defense level')}</TableCell>
@@ -238,13 +245,15 @@ const DefenseGapsLines = ({ queryRef, scope, onlyUsedByThreats = false, onTotalC
                 const title = gap.x_mitre_id ? `[${gap.x_mitre_id}] ${gap.attack_pattern_name}` : gap.attack_pattern_name;
                 return (
                   <TableRow key={gap.id} hover selected={selectedIds.has(gap.id)} data-testid={`defense-gap-${gap.attack_pattern_id}-${gap.platform_id}`}>
-                    <TableCell padding="checkbox">
-                      <Checkbox
-                        aria-label={t_i18n('Select {name}', { values: { name: title } })}
-                        checked={selectedIds.has(gap.id)}
-                        onCheckedChange={(checked) => toggle(gap.id, checked === true)}
-                      />
-                    </TableCell>
+                    {canValidate && (
+                      <TableCell padding="checkbox">
+                        <Checkbox
+                          aria-label={t_i18n('Select {name}', { values: { name: title } })}
+                          checked={selectedIds.has(gap.id)}
+                          onCheckedChange={(checked) => toggle(gap.id, checked === true)}
+                        />
+                      </TableCell>
+                    )}
                     <TableCell className="defense-gaps-wrap">
                       <Box
                         component="button"

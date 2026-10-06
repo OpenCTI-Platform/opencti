@@ -45,6 +45,9 @@ export const defenseTechniqueDrawerQuery = graphql`
       name
       entity_type
     }
+    defenseCoverageStatus {
+      validation_available
+    }
     defenseTechnique(id: $id, platformIds: $platformIds, threatScope: $threatScope) {
       computed_at
       attackPattern {
@@ -209,8 +212,10 @@ interface DefenseTechniqueContentProps {
 
 const DefenseTechniqueContent = ({ queryRef, scope, allowValidation }: DefenseTechniqueContentProps) => {
   const { t_i18n, fld, fldt, rd } = useFormatter();
-  const { defenseTechnique, defensePlatforms } = usePreloadedQuery(defenseTechniqueDrawerQuery, queryRef);
+  const { defenseTechnique, defensePlatforms, defenseCoverageStatus } = usePreloadedQuery(defenseTechniqueDrawerQuery, queryRef);
   const [validating, setValidating] = useState(false);
+  // As in the matrix header, validation is offered only while an OpenAEV connector is active
+  const validationAvailable = !!defenseCoverageStatus?.validation_available;
   if (!defenseTechnique) {
     return <Empty text={t_i18n('This technique cannot be found.')} />;
   }
@@ -263,7 +268,7 @@ const DefenseTechniqueContent = ({ queryRef, scope, allowValidation }: DefenseTe
         </Button>
       ) : null;
     }
-    if (cell.level === DEFENSE_LEVEL_DETECTION_DEPLOYED) {
+    if (cell.level === DEFENSE_LEVEL_DETECTION_DEPLOYED && validationAvailable) {
       return (
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <Button onClick={() => setValidating(true)} data-testid="defense-technique-validate">{t_i18n('Validate in OpenAEV')}</Button>
@@ -333,7 +338,7 @@ const DefenseTechniqueContent = ({ queryRef, scope, allowValidation }: DefenseTe
         >
           {t_i18n('Open the attack pattern')}
         </Button>
-        {allowValidation && cell.level !== DEFENSE_LEVEL_DETECTION_DEPLOYED && (
+        {allowValidation && validationAvailable && cell.level !== DEFENSE_LEVEL_DETECTION_DEPLOYED && (
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <Button variant="secondary" onClick={() => setValidating(true)} data-testid="defense-technique-validate">
               {t_i18n('Validate in OpenAEV')}
