@@ -2389,8 +2389,9 @@ question differently.
 
 **Where it bites.** OpenCTI's nested filter groups (#12062) edit a group in a
 panel that behaves like a complex select: it is mounted in a MUI `Popper` and
-dismissed by a MUI `ClickAwayListener`. Each condition row inside it renders two
-`Select`s. Both dismissal systems are then in play, and the outer one cannot see
+dismissed by a MUI `ClickAwayListener`. The panel renders a mode `Select`
+(AND/OR), and each condition row inside it renders a `Combobox` (filter name) and
+a `Select` (operator). Both dismissal systems are then in play, and the outer one cannot see
 the inner one.
 
 The failure is not the one a portal usually causes. `ClickAwayListener` already
@@ -2412,12 +2413,12 @@ is why a first attempt at listing the Radix markers
 worked and was removed rather than extended.
 
 **Workaround.** FDS-WORKAROUND #65, split across two files: in
-`FilterGroupPanelHost.tsx:111` the `ClickAwayListener` runs on
+`FilterGroupPanelHost.tsx:101` the `ClickAwayListener` runs on
 `mouseEvent="onPointerDown"` instead of the default `onClick`, so the decision
 is taken while the target is still the trigger, inside the panel. Clicks
 inside an already open portal keep relying on the library's own React-tree
 rule. The chip that toggles the panel is excluded by ref containment in
-`useFilterPopoverAnchor.ts:92-100` (`handleClickAwayPanel`), since moving to
+`useFilterPopoverAnchor.ts:92-102` (`handleClickAwayPanel`), since moving to
 `pointerdown` would otherwise let the panel close and its own click reopen it.
 
 The cost is a semantic one the product accepts here but would rather not spread:
@@ -2425,24 +2426,20 @@ a gesture started outside the panel and released inside it now dismisses.
 
 It retires the day `SelectContent` accepts `portalled`, at which point the row
 renders `portalled={false}`, the content lives inside the panel, and the host
-needs no dismissal special case at all — exactly how the panel's own MUI
-AND/OR `Select` already behaves with `MenuProps={{ disablePortal: true }}`.
+needs no dismissal special case at all.
 
-**Removal test.** Pass `portalled={false}` on both `Select`s of `FilterRow`,
-then delete all three parts of the compensation: the `mouseEvent="onPointerDown"`
-on the `ClickAwayListener` and the `FDS-WORKAROUND #65` comment above it in
-`FilterGroupPanelHost.tsx:110-111`, and the `chipRefs` containment check in
-`handleClickAwayPanel` in `useFilterPopoverAnchor.ts:92-100`. On a list with a
+**Removal test.** Pass `portalled={false}` on the mode `Select` of
+`FilterGroupPanel` and on the operator `Select` of `FilterRow`, then delete all
+three parts of the compensation: the `mouseEvent="onPointerDown"` on the
+`ClickAwayListener` and the `FDS-WORKAROUND #65` comment above it in
+`FilterGroupPanelHost.tsx:100-101`, and the `chipRefs` containment check in
+`handleClickAwayPanel` in `useFilterPopoverAnchor.ts:92-102`. On a list with a
 filter group holding at
-least one condition, the panel must stay open while opening the filter-name
-select, the condition select, the row's overflow menu and a value autocomplete;
+least one condition, the panel must stay open while opening the mode select, the
+filter-name select, the condition select and a value autocomplete;
 it must close on a click anywhere else on the page; and the `{n} rules` chip
 must still close it in one click, without reopening. The entry closes only when
 that passes against a named pin.
-
-Once it does, the panel's own mode select can drop MUI as well and become an
-FDS `Select` with `portalled={false}`, removing one more entry from the
-migration ledger.
 
 ---
 
@@ -2495,3 +2492,52 @@ condition. If the library ever ships a multi-target chip, the test is that
 toggles as children of one library `Chip` instance, with each keeping its own
 click handler and the accessible name of each staying scoped to its own
 content (not the whole chip's).
+
+---
+
+## 66. `ComboboxChips` has no per-chip slot, so a multi-value field cannot carry a between-chips control or a locked chip
+
+**Needed.** OpenCTI's filter value editor (`FilterEntityAutocomplete.tsx`, the
+default value field of every nested filter-group row and of the filter chip
+popover) is a multi-select whose chip row carries two things the library
+`Combobox` cannot express:
+
+- a clickable AND/OR toggle rendered **between** two consecutive chips, which
+  flips the local mode of the filter (`handleSwitchLocalMode`);
+- a **locked chip**: when the filter must keep one value (the relationship type
+  of a `dynamicRegardingOf` filter that has a dynamic filter), that single chip
+  is `disabled`, has no delete affordance and carries a tooltip explaining why.
+
+**Today.** Measured from `@filigran/design-system` (installed 1.1.0, pinned
+1.2.0 in `package.json`): `ComboboxChips` is `ComponentPropsWithoutRef<"ul"> &
+{ aria-label }`, it builds every chip itself and exposes no `renderChip`, no
+separator slot and no per-chip `disabled`/`tooltip`. `isOptionDisabled` only
+disables a **row** of the panel, not the chip of an already selected value.
+
+**What is no longer a blocker.** The previous reason recorded for keeping MUI
+here, "no search-scope `endAdornment`" (#155), is closed: `ComboboxField`
+declares `adornment`, and `getChipColor`, `groupBy`, `renderOption`,
+controlled `inputValue` / `onInputChange` (server-side search) and
+`closeOnSelect` cover the rest of this field. The two items above are the only
+remaining blockers.
+
+**Workaround.** `FilterEntityAutocomplete.tsx` stays on MUI `Autocomplete` +
+`TextField` (`fds:keep-mui gap #66`), with the FDS `Chip` in `renderTags`. Its
+height matches the 36px of the library `Select` / `Combobox` field: `sx` only
+zeroes the small Autocomplete's 6px vertical root padding, so the field rests on
+the theme's `MuiOutlinedInput` `minHeight: 36` instead of its content (~37px
+empty without it).
+
+**Ask.** Either a `renderChip(option, state)` (or `chipAdornment` / `separator`)
+render prop on `ComboboxChips`, free to return a `Chip` with its own `disabled`
+and a `Tooltip`, plus a slot between chips; or a documented per-chip
+`disabled` + tooltip and a `ComboboxChipsSeparator`.
+
+**Removal test.** Replace the `Autocomplete` by `Combobox` with `multiple`,
+`adornment={<SearchScopeElement …/>}`, `inputValue` / `onInputChange` gated on
+`meta.cause === 'type'` and `renderOption={FilterEntityOption}`. On a list with
+a filter holding two values, the AND/OR toggle must appear between the chips and
+flip the filter mode; on a `dynamicRegardingOf` filter that has a dynamic
+filter, the relationship-type chip must stay, be non-deletable and show its
+tooltip; and the field must be 36px high empty and with chips. Then delete the
+`sx` padding override and the `fds:keep-mui` markers in the file.

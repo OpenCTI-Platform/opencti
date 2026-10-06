@@ -1,9 +1,9 @@
 import { FilterOptionValue } from '@components/common/lists/FilterAutocomplete';
 import SearchScopeElement from '@components/common/lists/SearchScopeElement';
-// fds:keep-mui gap #155 — Combobox has no multi-select entity-search mode with a search-scope endAdornment yet (see FDS-ORNAMENT note below, fds-migration/LIBRARY-FEEDBACK.md)
+// fds:keep-mui gap #66 — ComboboxChips has no per-chip slot: no between-chips AND/OR toggle, no locked chip (fds-migration/LIBRARY-FEEDBACK.md)
 import { Autocomplete, AutocompleteChangeReason, AutocompleteInputChangeReason } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-// fds:keep-mui gap #155 — paired with the Autocomplete above
+// fds:keep-mui gap #66 — paired with the Autocomplete above
 import TextField from '@mui/material/TextField';
 import { Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { Dispatch, Fragment, FunctionComponent, SetStateAction, SyntheticEvent } from 'react';
@@ -30,7 +30,7 @@ export interface FilterEntityAutocompleteProps {
  *
  * Split out of FilterValueInput because it is the one value widget that is not a plain
  * controlled input: it owns the entity search, the search-scope adornment and the whole
- * `fds:keep-mui` debt of the filters area (gap #155). FilterValueInput falls back to it for
+ * `fds:keep-mui` debt of the filters area (gap #66). FilterValueInput falls back to it for
  * every filter type that has no dedicated widget.
  *
  * The search and the option assembly live in `useFilterEntityOptions`, the value semantics
@@ -75,13 +75,25 @@ const FilterEntityAutocomplete: FunctionComponent<FilterEntityAutocompleteProps>
 
   return (
     <Autocomplete
-      // FDS-ORNAMENT: stays on MUI for this round. Its input endAdornment
-      // carries the search-scope selector for STIX object types, which is the
-      // gap #155 closes with `adornment` on ComboboxField. FIFTH ornament site.
-      // See fds-migration/LIBRARY-FEEDBACK.md
+      // FDS-WORKAROUND #66: stays on MUI. The search-scope selector would now fit
+      // `adornment` on ComboboxField (#155), but ComboboxChips cannot render the
+      // AND/OR toggle between chips nor the locked chip. See fds-migration/LIBRARY-FEEDBACK.md
       multiple
       key={searchKey}
       size="small"
+      // Height parity with the design-system Select/Combobox next to it (36px): MUI's small
+      // Autocomplete stacks a 6px root padding on a content-sized input (~37px empty, taller
+      // once chips are in). Zero the vertical padding and give the input row the 36px itself,
+      // so the field is 36px whatever the content (chips are shorter and sit in that line).
+      sx={{
+        '& .MuiOutlinedInput-root.MuiInputBase-sizeSmall': { paddingTop: 0, paddingBottom: 0 },
+        '& .MuiOutlinedInput-root.MuiInputBase-sizeSmall .MuiAutocomplete-input': {
+          boxSizing: 'border-box',
+          height: 36,
+          paddingTop: 0,
+          paddingBottom: 0,
+        },
+      }}
       value={selectedOptions}
       inputValue={inputValue}
       getOptionLabel={(option) => option.label ?? ''}
