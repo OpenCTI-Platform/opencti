@@ -10,11 +10,13 @@ import { acquirePlatformThemeLock, getSettings, getThemeIdByName, patchSettings 
  * in `graphVisual.spec.ts-snapshots/`: a missing or different baseline fails, and the actual
  * rendering is uploaded with the CI artifacts for review.
  */
+// The tests run in order in one worker (no full parallelism). They are not serial: a different rendering of one surface
+// fails its test without skipping the others, so one run reports every surface that changed.
 test.describe('Graph visual regression', { tag: ['@ce'] }, () => {
-  test.describe.configure({ mode: 'serial' });
   let fixture: GraphFixture;
   let releasePlatformTheme: (() => Promise<void>) | undefined;
 
+  // Run again by the worker that takes over after a failed test
   test.beforeAll(async ({ playwright }) => {
     fixture = await withApiRequest(playwright, (request) => createGraphFixture(request, 'visual'));
   });
@@ -34,12 +36,13 @@ test.describe('Graph visual regression', { tag: ['@ce'] }, () => {
     releasePlatformTheme = undefined;
   });
 
+  // Soft: a different rendering fails the test once it ends, after it restored the layout it saved on the container
   const expectGraphScreenshot = async (page: Page, target: Locator, name: string, mask: Locator[] = []) => {
-    await expect(target).toHaveScreenshot(name, { animations: 'disabled', mask, maxDiffPixelRatio: 0.01 });
+    await expect.soft(target).toHaveScreenshot(name, { animations: 'disabled', mask, maxDiffPixelRatio: 0.01 });
     // The toolbar docked under the canvas, neither hovered nor focused: counters, groups, search and More actions.
     await page.mouse.move(5, 5);
     await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
-    await expect(new GraphPage(page).getToolbar()).toHaveScreenshot(`toolbar-${name}`, { animations: 'disabled', mask, maxDiffPixelRatio: 0.01 });
+    await expect.soft(new GraphPage(page).getToolbar()).toHaveScreenshot(`toolbar-${name}`, { animations: 'disabled', mask, maxDiffPixelRatio: 0.01 });
     // The documentation shows the same states on the whole page, details panel included.
     await page.screenshot({ path: test.info().outputPath(`page-${name}`), animations: 'disabled' });
   };
