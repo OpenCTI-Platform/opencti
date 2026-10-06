@@ -156,6 +156,55 @@ describe('Provenance backfill', () => {
     expect(assertions).toEqual([expect.objectContaining({ source_id: 'attribution_targets', source_kind: 'inference', assert_count: 1 })]);
   });
 
+  it('should only rebuild what happened before the watermark, the live tracking having recorded the rest', async () => {
+    const watermark = '2026-03-01T00:00:00.000Z';
+    // The connector user only wrote after the watermark: no assertion, and no creator fallback for it either
+    const assertions = await computeBackfillAssertions({
+      internal_id: 'malware-2',
+      entity_type: 'Malware',
+      _index: 'opencti_stix_domain_objects',
+      creator_id: ['analyst', 'connector-user'],
+      created_at: '2026-01-01T00:00:00.000Z',
+      updated_at: '2026-04-01T00:00:00.000Z',
+    } as any, [
+      { user_id: 'analyst', first: '2026-01-01T00:00:00.000Z', last: '2026-02-01T00:00:00.000Z', count: 2 },
+      { user_id: 'connector-user', first: watermark, last: watermark, count: 0 },
+    ], resolver, new Map(), watermark);
+    expect(assertions).toEqual([expect.objectContaining({ source_id: 'analyst', assert_count: 2, last_asserted_at: '2026-02-01T00:00:00.000Z' })]);
+    // A creator whose history was purged is dated before the watermark, never after
+    const purged = await computeBackfillAssertions({
+      internal_id: 'report-2',
+      entity_type: 'Report',
+      _index: 'opencti_stix_domain_objects',
+      creator_id: ['analyst', 'second-analyst'],
+      created_at: '2026-01-01T00:00:00.000Z',
+      updated_at: '2026-04-01T00:00:00.000Z',
+    } as any, [], resolver, new Map(), watermark);
+    expect(purged.find((a) => a.source_id === 'second-analyst')).toMatchObject({ first_asserted_at: '2026-01-01T00:00:00.000Z', last_asserted_at: '2026-01-01T00:00:00.000Z' });
+    // Created or inferred after the watermark: nothing to rebuild
+    const recent = await computeBackfillAssertions({
+      internal_id: 'inferred-2',
+      entity_type: 'targets',
+      _index: 'opencti_inferred_relationships',
+      creator_id: [RULE_MANAGER_USER.id, 'analyst'],
+      created_at: '2026-03-02T00:00:00.000Z',
+      updated_at: '2026-03-03T00:00:00.000Z',
+      i_rule_attribution_targets: [{ explanation: [], dependencies: [], hash: 'h' }],
+    } as any, [], resolver, new Map(), watermark);
+    expect(recent).toEqual([]);
+    // Inferred before the watermark and updated after: the rule asserted it until the watermark at most
+    const inferred = await computeBackfillAssertions({
+      internal_id: 'inferred-3',
+      entity_type: 'targets',
+      _index: 'opencti_inferred_relationships',
+      creator_id: [RULE_MANAGER_USER.id],
+      created_at: '2026-01-01T00:00:00.000Z',
+      updated_at: '2026-03-03T00:00:00.000Z',
+      i_rule_attribution_targets: [{ explanation: [], dependencies: [], hash: 'h' }],
+    } as any, [], resolver, new Map(), watermark);
+    expect(inferred).toEqual([expect.objectContaining({ source_id: 'attribution_targets', last_asserted_at: '2026-01-01T00:00:00.000Z' })]);
+  });
+
   it('should resolve the connector of a shared user only when exactly one work was running', () => {
     const works = [
       { id: 'work-a', connector_id: 'A', start: '2026-01-01T00:00:00.000Z', end: '2026-01-01T02:00:00.000Z' },

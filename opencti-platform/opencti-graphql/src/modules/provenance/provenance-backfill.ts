@@ -71,7 +71,10 @@ export interface BackfillWriteSegment {
   count: number;
 }
 
-/** Writes of one user on one element, as found in the history (or its creator list when the history was purged). */
+/**
+ * Writes of one user on one element, as found in the history (or its creator list when the history was purged).
+ * A count of 0 is a user whose writes all came after the backfill watermark: the live tracking recorded them.
+ */
 export interface BackfillUserActivity extends BackfillWriteSegment {
   user_id: string;
   /** Writes of a user shared by several connectors, grouped by the connector whose work was running at their date. */
@@ -216,26 +219,31 @@ const buildBackfillAssertion = (source: AssertionSource, first: string, last: st
  * - a writer is resolved like a live write: inference rule, connector / feed / emulation, otherwise the user;
  * - when the first creator is a human user and the element has an author, the author is the source;
  * - an inferred element is asserted by each rule that inferred it.
+ * With a watermark, only what happened before it is rebuilt: the live tracking recorded everything after it.
  */
 export const computeBackfillAssertions = async (
   element: BackfillElement,
   history: BackfillUserActivity[],
   resolveSource: BackfillSourceResolver,
   authorNames: Map<string, string> = new Map(),
+  watermark?: string,
 ): Promise<StoreAssertion[]> => {
   const reference = now();
   const createdAt = toIso(element.created_at, reference);
   const updatedAt = toIso(element.updated_at, createdAt);
+  const isBeforeWatermark = (date: string) => !watermark || date < watermark;
   const confidence = element.confidence ?? null;
   const creators = toArray(element.creator_id);
   const activities = new Map(history.map((activity) => [activity.user_id, { ...activity }]));
-  creators.forEach((creatorId, index) => {
-    if (!activities.has(creatorId)) {
-      // History purged by retention: creation date for the first creator, last update for the others
-      const at = index === 0 ? createdAt : updatedAt;
-      activities.set(creatorId, { user_id: creatorId, first: at, last: at, count: 1 });
-    }
-  });
+  if (isBeforeWatermark(createdAt)) {
+    creators.forEach((creatorId, index) => {
+      if (!activities.has(creatorId)) {
+        // History purged by retention: creation date for the first creator, last update for the others
+        const at = index === 0 || !isBeforeWatermark(updatedAt) ? createdAt : updatedAt;
+        activities.set(creatorId, { user_id: creatorId, first: at, last: at, count: 1 });
+      }
+    });
+  }
   const assertions = new Map<string, StoreAssertion>();
   const authorId: string | undefined = toArray(element[CREATED_BY_FIELD])[0];
   const author: AssertionSource | null = authorId
@@ -250,6 +258,9 @@ export const computeBackfillAssertions = async (
     const segments = activity.segments && activity.segments.length > 0 ? activity.segments : [activity];
     for (let segmentIndex = 0; segmentIndex < segments.length; segmentIndex += 1) {
       const segment = segments[segmentIndex];
+      if (segment.count === 0) {
+        continue;
+      }
       // Resolved at the last write of the segment, so the assertion keeps the latest work of its connector
       const source = await resolveSource(activity.user_id, segment.last);
       const isHumanCreator = source.source_kind === SOURCE_KIND_USER && activity.user_id === creators[0];
@@ -257,26 +268,30 @@ export const computeBackfillAssertions = async (
       mergeAssertion(assertions, buildBackfillAssertion(assertedBy, segment.first, segment.last, segment.count, confidence));
     }
   }
-  const ruleKeys = Object.keys(element).filter((key) => key.startsWith(RULE_PREFIX) && Array.isArray(element[key]) && element[key].length > 0);
+  const ruleKeys = isBeforeWatermark(createdAt)
+    ? Object.keys(element).filter((key) => key.startsWith(RULE_PREFIX) && Array.isArray(element[key]) && element[key].length > 0)
+    : [];
+  const inferredUntil = isBeforeWatermark(updatedAt) ? updatedAt : createdAt;
   ruleKeys.forEach((key) => {
-    mergeAssertion(assertions, buildBackfillAssertion(sourceFromRule(key), createdAt, updatedAt, 1, confidence));
+    mergeAssertion(assertions, buildBackfillAssertion(sourceFromRule(key), createdAt, inferredUntil, 1, confidence));
   });
   return Array.from(assertions.values());
 };
 
 // region data loading
-const historyWritesFilter = (ids: string[], userIds?: string[]) => [
+const historyWritesFilter = (ids: string[], userIds?: string[], before?: string) => [
   { term: { 'entity_type.keyword': ENTITY_TYPE_HISTORY } },
   { terms: { 'context_data.id.keyword': ids } },
   { terms: { 'event_scope.keyword': HISTORY_ASSERTION_SCOPES } },
   ...(userIds ? [{ terms: { 'user_id.keyword': userIds } }] : []),
+  ...(before ? [{ range: { timestamp: { lt: before } } }] : []),
 ];
 
 /**
- * Every writer of every element of the batch, with the dates of its first and last writes and their count.
- * Read page by page with a composite aggregation: no writer is left out, whatever their number.
+ * Every writer of every element of the batch, with the dates of its first and last writes before the watermark and
+ * their count. Read page by page with a composite aggregation: no writer is left out, whatever their number.
  */
-const aggregateHistoryActivities = async (context: AuthContext, ids: string[]) => {
+const aggregateHistoryActivities = async (context: AuthContext, ids: string[], watermark: string) => {
   const activities = new Map<string, BackfillUserActivity[]>();
   let after: Record<string, string> | undefined;
   do {
@@ -295,7 +310,12 @@ const aggregateHistoryActivities = async (context: AuthContext, ids: string[]) =
               ],
               ...(after ? { after } : {}),
             },
-            aggs: { first: { min: { field: 'timestamp' } }, last: { max: { field: 'timestamp' } } },
+            aggs: {
+              before_watermark: {
+                filter: { range: { timestamp: { lt: watermark } } },
+                aggs: { first: { min: { field: 'timestamp' } }, last: { max: { field: 'timestamp' } } },
+              },
+            },
           },
         },
       },
@@ -304,13 +324,14 @@ const aggregateHistoryActivities = async (context: AuthContext, ids: string[]) =
     const buckets = data.aggregations?.writers?.buckets ?? [];
     for (let index = 0; index < buckets.length; index += 1) {
       const bucket = buckets[index];
+      const before = bucket.before_watermark;
       const elementActivities = activities.get(bucket.key.element) ?? [];
-      elementActivities.push({
+      elementActivities.push(before.doc_count > 0 ? {
         user_id: bucket.key.user,
-        first: new Date(bucket.first.value).toISOString(),
-        last: new Date(bucket.last.value).toISOString(),
-        count: bucket.doc_count,
-      });
+        first: new Date(before.first.value).toISOString(),
+        last: new Date(before.last.value).toISOString(),
+        count: before.doc_count,
+      } : { user_id: bucket.key.user, first: watermark, last: watermark, count: 0 });
       activities.set(bucket.key.element, elementActivities);
     }
     after = buckets.length === HISTORY_WRITERS_PER_REQUEST ? data.aggregations?.writers?.after_key : undefined;
@@ -319,9 +340,9 @@ const aggregateHistoryActivities = async (context: AuthContext, ids: string[]) =
 };
 
 /**
- * Every write of the given users on the elements of the batch, in date order, read page by page.
+ * Every write of the given users on the elements of the batch before the watermark, in date order, read page by page.
  */
-const loadSharedUserWrites = async (context: AuthContext, ids: string[], userIds: string[]): Promise<BackfillSharedUserWrite[]> => {
+const loadSharedUserWrites = async (context: AuthContext, ids: string[], userIds: string[], watermark: string): Promise<BackfillSharedUserWrite[]> => {
   const writes: BackfillSharedUserWrite[] = [];
   let searchAfter: unknown[] | undefined;
   do {
@@ -331,7 +352,7 @@ const loadSharedUserWrites = async (context: AuthContext, ids: string[], userIds
         size: HISTORY_WRITES_PER_REQUEST,
         _source: ['context_data.id', 'user_id', 'timestamp'],
         sort: [{ timestamp: 'asc' }, { 'internal_id.keyword': 'asc' }],
-        query: { bool: { filter: historyWritesFilter(ids, userIds) } },
+        query: { bool: { filter: historyWritesFilter(ids, userIds, watermark) } },
         ...(searchAfter ? { search_after: searchAfter } : {}),
       },
     };
@@ -408,11 +429,13 @@ const splitSharedUsersActivities = async (
   ids: string[],
   connectorsByUser: Map<string, BasicStoreEntityConnector[]>,
   activities: Map<string, BackfillUserActivity[]>,
+  watermark: string,
 ): Promise<{ works: BackfillWorkWindow[]; activities: Map<string, BackfillUserActivity[]> }> => {
   const connectorIdsByUser = new Map(Array.from(connectorsByUser.entries())
     .filter(([, userConnectors]) => userConnectors.length > 1)
     .map(([userId, userConnectors]) => [userId, userConnectors.map((connector) => connector.internal_id)]));
-  const sharedActivities = Array.from(activities.values()).flat().filter((activity) => connectorIdsByUser.has(activity.user_id));
+  const sharedActivities = Array.from(activities.values()).flat()
+    .filter((activity) => activity.count > 0 && connectorIdsByUser.has(activity.user_id));
   if (sharedActivities.length === 0) {
     return { works: [], activities };
   }
@@ -421,7 +444,7 @@ const splitSharedUsersActivities = async (
   const from = sharedActivities.reduce((min, activity) => (activity.first < min ? activity.first : min), sharedActivities[0].first);
   const to = sharedActivities.reduce((max, activity) => (activity.last > max ? activity.last : max), sharedActivities[0].last);
   const works = await loadWorkWindows(context, connectorIds, from, to);
-  const writes = await loadSharedUserWrites(context, ids, sharedUserIds);
+  const writes = await loadSharedUserWrites(context, ids, sharedUserIds, watermark);
   const segments = groupSharedUserWrites(writes, works, connectorIdsByUser);
   const split = new Map(Array.from(activities.entries()).map(([elementId, elementActivities]) => [
     elementId,
@@ -483,7 +506,7 @@ export const getProvenanceBackfillState = async (context: AuthContext) => {
 };
 
 /**
- * Restart the backfill from the beginning. Replays are idempotent: counts are merged with a max.
+ * Restart the backfill from the beginning. Replays are idempotent: the history already counted is never added twice.
  * Taken under the lock of the backfill manager: a batch in progress finishes first, then the restart is saved,
  * and no batch can overwrite it with the state it started from.
  */
@@ -540,6 +563,9 @@ export const runProvenanceBackfillBatch = async (context: AuthContext, opts: { b
     state.errors = 0;
     state.expected = await elCount(context, SYSTEM_USER, BACKFILL_INDICES, { types: trackedTypes });
   }
+  // The live tracking records every write after the start of the run: the history is only read before it
+  const watermark = state.started_at ?? runStart.toISOString();
+  state.started_at = watermark;
   const page = await elPaginate<BackfillElement>(context, SYSTEM_USER, BACKFILL_INDICES, {
     types: trackedTypes,
     first: opts.batchSize,
@@ -552,7 +578,7 @@ export const runProvenanceBackfillBatch = async (context: AuthContext, opts: { b
   const elements = page.elements.edges.map((edge) => edge.node);
   if (elements.length > 0) {
     const ids = elements.map((element) => element.internal_id);
-    const writers = await aggregateHistoryActivities(context, ids);
+    const writers = await aggregateHistoryActivities(context, ids, watermark);
     const connectors = await getEntitiesListFromCache<BasicStoreEntityConnector>(context, SYSTEM_USER, ENTITY_TYPE_CONNECTOR);
     const connectorsByUser = new Map<string, BasicStoreEntityConnector[]>();
     connectors.forEach((connector) => {
@@ -560,7 +586,7 @@ export const runProvenanceBackfillBatch = async (context: AuthContext, opts: { b
         connectorsByUser.set(connector.connector_user_id, [...(connectorsByUser.get(connector.connector_user_id) ?? []), connector]);
       }
     });
-    const { works, activities } = await splitSharedUsersActivities(context, ids, connectorsByUser, writers);
+    const { works, activities } = await splitSharedUsersActivities(context, ids, connectorsByUser, writers, watermark);
     const resolveSource = createBackfillSourceResolver(context, connectorsByUser, works);
     const authorIds = [...new Set(elements.flatMap((element) => toArray(element[CREATED_BY_FIELD])))];
     const authors = authorIds.length > 0
@@ -570,9 +596,9 @@ export const runProvenanceBackfillBatch = async (context: AuthContext, opts: { b
     for (let index = 0; index < elements.length; index += 1) {
       const element = elements[index];
       try {
-        const assertions = await computeBackfillAssertions(element, activities.get(element.internal_id) ?? [], resolveSource, authorNames);
+        const assertions = await computeBackfillAssertions(element, activities.get(element.internal_id) ?? [], resolveSource, authorNames, watermark);
         if (assertions.length > 0) {
-          await applyProvenanceUpdate(context, element, { assertions, countMode: 'max' });
+          await applyProvenanceUpdate(context, element, { assertions, countMode: 'backfill', backfillWatermark: watermark });
           state.updated += 1;
         }
       } catch (err) {

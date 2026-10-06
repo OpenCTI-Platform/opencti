@@ -641,6 +641,59 @@ describe('Provenance: every fact knows who said it', () => {
     expect(status.data?.provenanceBackfill.processed).toBeGreaterThan(0);
   });
 
+  it('should add the history older than the backfill watermark to the live counts once, and keep the larger count otherwise', async () => {
+    const element = await internalLoadById<BasicStoreBase & { _index: string; [field: string]: unknown }>(testContext, ADMIN_USER, malwareId);
+    const snapshot = Object.fromEntries(PROVENANCE_SIDE_CHANNEL_FIELDS.map((field) => [field, element[field] ?? null]));
+    const assertion = (sourceId: string, first: string, last: string, count: number): StoreAssertion => ({
+      source_id: sourceId,
+      source_kind: SOURCE_KIND_FEED,
+      source_name: sourceId,
+      first_asserted_at: first,
+      last_asserted_at: last,
+      assert_count: count,
+      confidence: 50,
+      work_id: null,
+    });
+    const storedAssertion = async (sourceId: string) => {
+      const assertions: StoreAssertion[] = (await loadMalware(malwareId)).x_opencti_assertions;
+      return assertions.find((stored) => stored.source_id === sourceId);
+    };
+    try {
+      // Recorded live: the first source only from the watermark on, the second one already before it
+      await writeProvenanceUpdate(testContext, element, {
+        assertions: [
+          assertion('provenance-test-backfill-after', '2026-01-12T00:00:00.000Z', '2026-01-13T00:00:00.000Z', 2),
+          assertion('provenance-test-backfill-before', '2026-01-08T00:00:00.000Z', '2026-01-13T00:00:00.000Z', 4),
+        ],
+      }, { refresh: true });
+      const backfill = {
+        assertions: [
+          assertion('provenance-test-backfill-after', '2026-01-01T00:00:00.000Z', '2026-01-05T00:00:00.000Z', 3),
+          assertion('provenance-test-backfill-before', '2026-01-01T00:00:00.000Z', '2026-01-09T00:00:00.000Z', 3),
+        ],
+        countMode: 'backfill' as const,
+        backfillWatermark: '2026-01-10T00:00:00.000Z',
+      };
+      // A replayed batch adds nothing
+      for (let pass = 0; pass < 2; pass += 1) {
+        await writeProvenanceUpdate(testContext, element, backfill, { refresh: true });
+        expect(await storedAssertion('provenance-test-backfill-after')).toMatchObject({
+          assert_count: 5,
+          first_asserted_at: '2026-01-01T00:00:00.000Z',
+          last_asserted_at: '2026-01-13T00:00:00.000Z',
+        });
+        expect(await storedAssertion('provenance-test-backfill-before')).toMatchObject({ assert_count: 4, first_asserted_at: '2026-01-01T00:00:00.000Z' });
+      }
+    } finally {
+      await elUpdate(testContext, element._index, element.internal_id, {
+        script: {
+          source: 'for (entry in params.fields.entrySet()) { if (entry.getValue() == null) { ctx._source.remove(entry.getKey()); } else { ctx._source[entry.getKey()] = entry.getValue(); } }',
+          params: { fields: snapshot },
+        },
+      });
+    }
+  });
+
   it('should report a conflict value as new only to the write that created it, even from a stale element', async () => {
     const element = await internalLoadById<BasicStoreBase & { _index: string }>(testContext, ADMIN_USER, malwareId);
     const value: StoreConflictValue = {

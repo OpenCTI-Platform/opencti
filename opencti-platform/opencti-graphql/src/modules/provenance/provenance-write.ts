@@ -54,8 +54,11 @@ export interface FreshnessFlag {
 
 export interface ProvenanceUpdate {
   assertions?: StoreAssertion[];
-  // sum: live writes and merges add their counts, max: backfill stays idempotent when replayed
-  countMode?: 'sum' | 'max';
+  // sum: live writes and merges add their counts. backfill: the counts rebuilt from the history older than
+  // backfillWatermark are added to a source the live tracking only recorded from the watermark on; any other stored
+  // source already counted that history (live tracking or an earlier pass) and keeps the larger count, so a replay is idempotent
+  countMode?: 'sum' | 'backfill';
+  backfillWatermark?: string;
   conflictsAdd?: ConflictAddition[];
   conflictsRemove?: ConflictRemoval[];
   // Retention: conflict values not re-asserted since this date are dropped
@@ -90,6 +93,8 @@ export const PROVENANCE_UPDATE_SCRIPT = `
         created.put('work_id', incoming.work_id);
         assertions.add(created);
       } else {
+        boolean addsHistory = params.count_mode == 'backfill' && params.backfill_watermark != null
+          && current.first_asserted_at != null && current.first_asserted_at.compareTo(params.backfill_watermark) >= 0;
         boolean isNewer = current.last_asserted_at == null || incoming.last_asserted_at.compareTo(current.last_asserted_at) >= 0;
         if (current.first_asserted_at == null || incoming.first_asserted_at.compareTo(current.first_asserted_at) < 0) {
           current.first_asserted_at = incoming.first_asserted_at;
@@ -102,7 +107,7 @@ export const PROVENANCE_UPDATE_SCRIPT = `
           if (incoming.work_id != null) { current.work_id = incoming.work_id; }
         }
         def currentCount = current.assert_count == null ? 0 : current.assert_count;
-        if (params.count_mode == 'max') {
+        if (params.count_mode == 'backfill' && !addsHistory) {
           current.assert_count = incoming.assert_count > currentCount ? incoming.assert_count : currentCount;
         } else {
           current.assert_count = currentCount + incoming.assert_count;
@@ -301,6 +306,7 @@ export const buildCreationProvenance = (source: AssertionSource, confidence: num
 export const buildProvenanceScriptParams = (update: ProvenanceUpdate) => ({
   assertions: update.assertions ?? [],
   count_mode: update.countMode ?? 'sum',
+  backfill_watermark: update.backfillWatermark ?? null,
   conflicts_add: update.conflictsAdd ?? [],
   conflicts_remove: update.conflictsRemove ?? [],
   conflicts_purge_before: update.conflictsPurgeBefore ?? null,

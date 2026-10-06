@@ -75,7 +75,7 @@ Assertions are recorded after deduplication, on the stored object. A source asse
 
 !!! note "Data created before provenance tracking"
 
-    The provenance of the knowledge created before the upgrade is rebuilt in the background by the provenance backfill, from the history and the works of the platform, for the tracked entity types only. Its progress is visible in "Data > Processing > Tasks", where an administrator can also restart it, for instance after enabling provenance on a new type. Replays are idempotent: existing assertions are merged, never duplicated.
+    The provenance of the knowledge created before the upgrade is rebuilt in the background by the provenance backfill, from the history and the works of the platform, for the tracked entity types only. Its progress is visible in "Data > Processing > Tasks", where an administrator can also restart it, for instance after enabling provenance on a new type. The backfill reads the history written before it started and adds it to the assertions recorded since, so a source asserting an element while the backfill runs keeps every assertion. Replays are idempotent: existing assertions are merged, never duplicated.
 
     The card shows the state of the backfill (Pending, Running or Completed), a progress bar with the number of elements processed and, once done, how long ago it completed (the exact date is in its tooltip). When an element has no source yet, its sources panel shows the same state with a link to the card.
 
