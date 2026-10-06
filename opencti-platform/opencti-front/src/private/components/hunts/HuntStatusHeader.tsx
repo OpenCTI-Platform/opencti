@@ -93,10 +93,11 @@ export const useReadinessSentence = () => {
 interface ReadinessActionProps {
   item: ReadinessItem;
   huntId: string;
+  canEdit: boolean;
 }
 
 /** Where to fix an unmet or warning item, one link. */
-const ReadinessAction = ({ item, huntId }: ReadinessActionProps) => {
+const ReadinessAction = ({ item, huntId, canEdit }: ReadinessActionProps) => {
   const { t_i18n } = useFormatter();
   const location = useLocation();
   const navigate = useNavigate();
@@ -116,7 +117,7 @@ const ReadinessAction = ({ item, huntId }: ReadinessActionProps) => {
       );
     case 'schedule':
     case 'scope':
-      return (
+      return canEdit ? (
         <Button
           variant="tertiary"
           size="small"
@@ -125,7 +126,7 @@ const ReadinessAction = ({ item, huntId }: ReadinessActionProps) => {
         >
           {item.key === 'schedule' ? t_i18n('Edit the schedule') : t_i18n('Edit the scope')}
         </Button>
-      );
+      ) : null;
     case 'draft':
       return draftContext ? <Button {...linkProps} to={huntDraftWorkspacePath(draftContext.id)}>{t_i18n('Open the draft')}</Button> : null;
     default:
@@ -143,10 +144,11 @@ const ReadinessIcon = ({ status }: { status: string }) => {
 interface HuntReadinessChecklistProps {
   huntId: string;
   items: ReadonlyArray<ReadinessItem>;
+  canEdit?: boolean;
 }
 
 /** What a hunt needs to run, item by item, each unmet one with the place to fix it. */
-export const HuntReadinessChecklist = ({ huntId, items }: HuntReadinessChecklistProps) => {
+export const HuntReadinessChecklist = ({ huntId, items, canEdit = true }: HuntReadinessChecklistProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const sentence = useReadinessSentence();
@@ -167,7 +169,7 @@ export const HuntReadinessChecklist = ({ huntId, items }: HuntReadinessChecklist
           <ReadinessIcon status={item.status} />
           <span className="sr-only" style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>{statusLabel(item.status)}</span>
           <Text variant="content-compact">{sentence(item)}</Text>
-          {item.status !== 'met' && <ReadinessAction item={item} huntId={huntId} />}
+          {item.status !== 'met' && <ReadinessAction item={item} huntId={huntId} canEdit={canEdit} />}
         </li>
       ))}
     </ul>
@@ -176,13 +178,15 @@ export const HuntReadinessChecklist = ({ huntId, items }: HuntReadinessChecklist
 
 interface HuntStatusHeaderProps {
   data: HuntStatusHeader_hunt$key;
+  // Whether the user may change the hunt: its actions are hidden otherwise, as the edit control of the entity header
+  canEdit?: boolean;
 }
 
 /**
  * The status of a hunt on every tab of its page: what the status means, the primary action of that status, Run now,
  * the query preview, and the readiness checklist; an action that cannot be taken says why next to it.
  */
-const HuntStatusHeader = ({ data }: HuntStatusHeaderProps) => {
+const HuntStatusHeader = ({ data, canEdit = true }: HuntStatusHeaderProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const hunt = useFragment(huntStatusHeaderFragment, data);
@@ -269,7 +273,7 @@ const HuntStatusHeader = ({ data }: HuntStatusHeaderProps) => {
               </dl>
             )}
           </div>
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
             <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap', justifyContent: 'flex-end' }}>
               {status !== 'retired' && (
                 <Button variant="secondary" onClick={() => openRetire(true)} disabled={inFlight} data-testid="hunt-status-to-retired">
@@ -311,7 +315,7 @@ const HuntStatusHeader = ({ data }: HuntStatusHeaderProps) => {
           </div>
           {showChecklist && (
             <div style={{ marginTop: theme.spacing(1), marginLeft: theme.spacing(3.5) }}>
-              <HuntReadinessChecklist huntId={hunt.id} items={hunt.readiness.items} />
+              <HuntReadinessChecklist huntId={hunt.id} items={hunt.readiness.items} canEdit={canEdit} />
             </div>
           )}
         </div>

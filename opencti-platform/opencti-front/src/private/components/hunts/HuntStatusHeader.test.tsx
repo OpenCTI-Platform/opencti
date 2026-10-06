@@ -92,6 +92,19 @@ describe('Hunt status header dialogs', () => {
 
   afterEach(() => vi.clearAllMocks());
 
+  it('shows the status and the checklist, without any action, to a user who cannot change the hunt', () => {
+    const unmetScope = item('scope', 'unmet', 'Add a security platform to the scope of the hunt');
+    testRender(<HuntStatusHeader data={{ ...hunt, readiness: { ready: false, items: [unmetScope] } } as never} canEdit={false} />, {
+      userContext: createMockUserContext({ me: { name: 'admin', user_email: 'admin@opencti.io', capabilities: [{ name: BYPASS }] } as never }),
+    });
+    expect(screen.getByTestId('hunt-status-meaning')).toBeInTheDocument();
+    expect(screen.queryByTestId('hunt-status-to-retired')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('hunt-query-preview-open')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('hunt-status-to-paused')).not.toBeInTheDocument();
+    expect(screen.getByTestId('hunt-readiness-scope')).toHaveAttribute('data-status', 'unmet');
+    expect(screen.queryByTestId('hunt-readiness-edit-scope')).not.toBeInTheDocument();
+  });
+
   it('counts the readiness points that need attention in the singular and the plural', () => {
     const warning = (key: string) => item(key, 'warning', 'The hunt connector has not answered recently');
     const { unmount } = testRender(<HuntStatusHeader data={{ ...hunt, readiness: { ready: true, items: [warning('connector')] } } as never} />);

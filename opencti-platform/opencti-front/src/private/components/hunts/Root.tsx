@@ -13,6 +13,8 @@ import Breadcrumbs from '../../../components/Breadcrumbs';
 import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import Security from '../../../utils/Security';
+import { useGetCurrentUserAccessRight } from '../../../utils/authorizedMembers';
+import useDraftContext from '../../../utils/hooks/useDraftContext';
 import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../utils/hooks/useGranted';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { getPaddingRight } from '../../../utils/utils';
@@ -109,6 +111,11 @@ const RootHuntComponent = ({ queryRef, huntId }: RootHuntComponentProps) => {
   const { hunt, connectorsForImport, connectorsForExport } = usePreloadedQuery<RootHuntQuery>(huntQuery, queryRef);
   const subConfig = useMemo(() => ({ subscription, variables: { id: huntId } }), [huntId]);
   useSubscription<RootHuntSubscription>(subConfig);
+  // Same rule as the edit and delete controls of the entity header, in a draft the access to the draft too
+  const draftContext = useDraftContext();
+  const accessRight = useGetCurrentUserAccessRight(hunt?.currentUserAccessRight);
+  const draftAccessRight = useGetCurrentUserAccessRight(draftContext?.currentUserAccessRight);
+  const canEdit = accessRight.canEdit && (!draftContext || draftAccessRight.canEdit);
 
   if (!hunt) {
     return <ErrorNotFound />;
@@ -142,7 +149,7 @@ const RootHuntComponent = ({ queryRef, huntId }: RootHuntComponentProps) => {
         redirectToContent
         noAliases
       />
-      {!isContent && <HuntStatusHeader data={hunt} />}
+      {!isContent && <HuntStatusHeader data={hunt} canEdit={canEdit} />}
       <StixDomainObjectMain
         entity={hunt}
         basePath={basePath}

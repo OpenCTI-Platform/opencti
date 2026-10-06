@@ -103,6 +103,8 @@ const HUNT_RUN_DEFINITION: ModuleDefinition<StoreEntityHuntRun, StixHuntRun> = {
     { name: 'last_evidence_at', label: 'Run last evidence date', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
   relations: [],
+  // A hunt cannot be restricted to members (no authorized members on the Hunt type): the markings and organizations
+  // of its hunt and security platform are the whole access of a run, enforced on every read of the run
   relationsRefs: [
     objectMarking,
     { ...objectOrganization, isFilterable: false },
