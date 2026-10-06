@@ -3554,8 +3554,9 @@ export const createRelationRaw = async (
           upsertOperations: resolvedInput.upsertOperations.filter((operation: { key?: string }) => operation.key !== INPUT_GRANTED_REFS),
         } : {}),
       } : resolvedInput;
-      // What a generated sighting records is changed under its edition rules, whatever id the upsert reached it by
-      const validateUpsert = relationshipType === STIX_SIGHTING_RELATIONSHIP && sharedByPair && opts.bypassValidation !== true;
+      // What a deployment or a generated sighting records is changed under its edition rules, whatever id the upsert
+      // reached it by: the edits of its upsert operations are only known once merged with the stored element
+      const validateUpsert = sharedByPair && opts.bypassValidation !== true;
       // If not upsert the element, awaited: the lock is released only once the upsert settles
       return await upsertElement(context, user, existingRelationship, relationshipType, upsertInput, {
         ...opts,

@@ -794,6 +794,24 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     expect(deployment.validation_status).not.toEqual('invalid-status');
   });
 
+  it('should apply the edition rules of a deployment to the operations of an upsert, administrators included', async () => {
+    const upsertWith = (operation: { key: string; value: string[] }) => ({
+      query: RELATION_ADD,
+      variables: { input: { fromId: indicatorId, toId: platformId, relationship_type: 'deployed-on', update: true, upsertOperations: [{ ...operation, operation: 'replace' }] } },
+    });
+    const before = await internalLoadById(testContext, ADMIN_USER, deploymentId) as unknown as Record<string, unknown>;
+    // Upsert operations are reserved to administrators
+    await queryAsUserIsExpectedError(USER_EDITOR, upsertWith({ key: 'deployment_status', value: ['pending'] }), 'User has insufficient rights to use upsertOperations');
+    // whose operations are checked like any edit of the deployment
+    await queryAsAdminWithError(upsertWith({ key: 'validation_status', value: ['invalid-status'] }), 'Status is not one of the statuses of the field');
+    await queryAsAdminWithError(
+      upsertWith({ key: 'start_time', value: ['2026-01-01T00:00:00.000Z'] }),
+      'A deployment has no start or stop time: one deployment exists per indicator and security platform',
+    );
+    const after = await internalLoadById(testContext, ADMIN_USER, deploymentId) as unknown as Record<string, unknown>;
+    ['deployment_status', 'validation_status', 'start_time'].forEach((field) => expect(after[field]).toEqual(before[field]));
+  });
+
   it('should add the reporting connector to the creators of a deployment someone else created, heartbeats included', async () => {
     const connectorUserId = await getUserIdByEmail(USER_CONNECTOR.email);
     // Neither streamed nor kept: the raw stream counts of the suite are unchanged
