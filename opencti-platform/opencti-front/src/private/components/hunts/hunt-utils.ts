@@ -517,7 +517,7 @@ export const huntDraftWorkspacePath = (draftId: string) => `/dashboard/data/impo
 // endregion
 
 // region runs
-export const HUNT_RUN_TERMINAL_STATUSES: string[] = ['completed', 'failed', 'timeout'];
+export const HUNT_RUN_TERMINAL_STATUSES: string[] = ['completed', 'failed', 'timeout', 'cancelled'];
 
 export const isTerminalHuntRun = (status?: string | null) => HUNT_RUN_TERMINAL_STATUSES.includes(status ?? '');
 
@@ -529,7 +529,9 @@ export interface HuntRunCapabilityInput {
 export const canSetHuntRunVerdict = (run: HuntRunCapabilityInput) => run.hunt_run_mode !== 'preview' && run.hunt_run_status === 'completed';
 // A true positive opens or continues an incident only for a run that has none yet, and the analyst may record it alone
 export const huntVerdictOffersIncident = (verdict: string, run: { incident_id?: string | null }) => verdict === 'true_positive' && !run.incident_id;
-export const canRetryHuntRun = (run: HuntRunCapabilityInput) => run.hunt_run_mode !== 'preview' && isTerminalHuntRun(run.hunt_run_status);
+// The platform never retries a cancelled run: its hunt or its hunt connector was deleted
+export const canRetryHuntRun = (run: HuntRunCapabilityInput) => run.hunt_run_mode !== 'preview' && isTerminalHuntRun(run.hunt_run_status)
+  && run.hunt_run_status !== 'cancelled';
 export const canTriageHuntRun = (run: HuntRunCapabilityInput) => run.hunt_run_mode !== 'preview' && run.hunt_run_status === 'completed';
 
 export const formatHuntRunDuration = (costMs?: number | null): string | null => {

@@ -237,6 +237,11 @@ const HuntTranslationPreview = ({ huntId, huntType, scopePlatformIds, dirty = fa
           <Text variant="content-caption">{[run.connector_name, huntQueryLanguageLabel(run.query_language, t_i18n)].filter(Boolean).join(' - ')}</Text>
         </div>
         <PreviewFailure run={run} />
+        {run.hunt_run_status === 'cancelled' && (
+          <Text variant="content-compact" style={{ display: 'block' }} data-testid="hunt-preview-cancelled">
+            {run.error_message ? t_i18n(run.error_message) : t_i18n('The run was cancelled')}
+          </Text>
+        )}
         {run.translated_query && <CodeBlock code={run.translated_query} language={prismLanguageOf(run.query_language)} customHeight="auto" />}
       </>
     );

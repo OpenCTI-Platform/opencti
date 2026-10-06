@@ -44,6 +44,7 @@ import {
   isHuntableEntityPath,
   isHuntPendingReview,
   isHuntPreviewConnector,
+  isTerminalHuntRun,
   parseBenignPatterns,
   parseHuntScopePlatformIds,
   toHuntAddInput,
@@ -151,6 +152,14 @@ describe('Hunt utils', () => {
       expect(canRetryHuntRun({ hunt_run_status: 'failed', hunt_run_mode: 'execute' })).toBe(true);
       expect(canRetryHuntRun({ hunt_run_status: 'timeout', hunt_run_mode: 'execute' })).toBe(true);
       expect(canRetryHuntRun({ hunt_run_status: 'queued', hunt_run_mode: 'execute' })).toBe(false);
+      expect(canRetryHuntRun({ hunt_run_status: 'cancelled', hunt_run_mode: 'execute' })).toBe(false);
+    });
+
+    it('should stop following a cancelled run like any other terminated run', () => {
+      expect(isTerminalHuntRun('cancelled')).toBe(true);
+      expect(isTerminalHuntRun('completed')).toBe(true);
+      expect(isTerminalHuntRun('running')).toBe(false);
+      expect(isTerminalHuntRun('queued')).toBe(false);
     });
 
     it('should format run durations', () => {
