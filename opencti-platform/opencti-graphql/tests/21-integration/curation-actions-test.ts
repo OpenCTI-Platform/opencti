@@ -137,8 +137,8 @@ const REVERT_MUTATION = gql`
 `;
 
 const APPLY_MUTATION = gql`
-  mutation CurationActionsApply($id: ID!, $policyId: ID) {
-    curationProposalApply(id: $id, policy_id: $policyId) {
+  mutation CurationActionsApply($id: ID!, $policyId: ID, $expectedUpdatedAt: DateTime) {
+    curationProposalApply(id: $id, policy_id: $policyId, expected_updated_at: $expectedUpdatedAt) {
       id
       proposal_status
       policy_id
@@ -848,10 +848,17 @@ describe('Knowledge curation actions', () => {
     await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: BULK_ACCEPT_MUTATION, variables: { ids: [ids[2], hiddenId] } });
     const unknown = await queryAsAdmin({ query: BULK_ACCEPT_MUTATION, variables: { ids: [ids[2], 'a5c2b8f4-5d0e-4a3b-9a57-0b1d2b0c1f10'] } });
     expect(unknown.errors?.[0]?.message).toContain('do not exist or are not accessible');
+    const revisionBeforeQueue = (await storeLoadById(testContext, ADMIN_USER, ids[2], ENTITY_TYPE_CURATION_PROPOSAL) as unknown as { updated_at: string }).updated_at;
     const task = await queryAsAdminWithSuccess({ query: BULK_ACCEPT_MUTATION, variables: { ids: [ids[2]] } });
     expect(task.data?.curationProposalsBulkAccept).toBeTruthy();
-    // The background task applies it through the apply mutation, as the worker does.
-    const applied = await queryAsAdminWithSuccess({ query: APPLY_MUTATION, variables: { id: ids[2] } });
+    // The task keeps the revision of each proposal it was queued on, which the worker sends back with the apply.
+    const queued = await storeLoadById(testContext, ADMIN_USER, task.data?.curationProposalsBulkAccept, ENTITY_TYPE_BACKGROUND_TASK) as unknown as {
+      actions: Array<{ context: { revisions: Record<string, string> } }>;
+    };
+    const queuedRevision = queued.actions[0].context.revisions[ids[2]];
+    expect(new Date(queuedRevision).getTime()).toBe(new Date(revisionBeforeQueue).getTime());
+    // The background task applies it through the apply mutation, as the worker does (the worker may have done it already).
+    const applied = await queryAsAdminWithSuccess({ query: APPLY_MUTATION, variables: { id: ids[2], expectedUpdatedAt: queuedRevision } });
     expect(applied.data?.curationProposalApply.proposal_status).toBe('accepted');
     const replayed = await queryAsAdminWithSuccess({ query: APPLY_MUTATION, variables: { id: ids[2] } });
     expect(replayed.data?.curationProposalApply.proposal_status).toBe('accepted');
@@ -1096,6 +1103,59 @@ describe('Knowledge curation actions', () => {
     expect((await loadProposal(id)).proposal_status).toBe('open');
     expect((await loadIntrusionSet(target.id)).aliases ?? []).toEqual([]);
     const accepted = await queryAsAdminWithSuccess({ query: ACCEPT_MUTATION, variables: { id, input: { expected_updated_at: readAt.toISOString() } } });
+    expect(accepted.data?.curationProposalAccept.proposal_status).toBe('accepted');
+    expect((await loadIntrusionSet(target.id)).aliases).toEqual([proposedName]);
+  });
+
+  it('should refuse the task apply of a proposal refreshed since the bulk accept was queued', async () => {
+    const target = await createIntrusionSet(`${PREFIX} Queued Revision`);
+    const proposedName = `${PREFIX} Queued Revision Alias`;
+    const id = await createProposal({
+      kind: PROPOSAL_KIND_ALIAS,
+      detector: DETECTOR_NORMALIZATION,
+      subjects: [subjectOf(target)],
+      target_id: target.id,
+      recommended_action: ACTION_ADD_ALIASES,
+      action_payload: { aliases: [proposedName] },
+      evidence: evidenceFor('taxonomy', 'The vendor taxonomy lists a name the entity does not carry'),
+      confidence: 0.7,
+    });
+    const queuedAt = new Date((await storeLoadById(testContext, ADMIN_USER, id, ENTITY_TYPE_CURATION_PROPOSAL) as unknown as { updated_at: string }).updated_at);
+    const stale = await queryAsAdmin({ query: APPLY_MUTATION, variables: { id, expectedUpdatedAt: new Date(queuedAt.getTime() - 1000).toISOString() } });
+    expect(stale.errors?.[0]?.message).toContain('changed since it was read');
+    expect((await loadProposal(id)).proposal_status).toBe('open');
+    expect((await loadIntrusionSet(target.id)).aliases ?? []).toEqual([]);
+    const applied = await queryAsAdminWithSuccess({ query: APPLY_MUTATION, variables: { id, expectedUpdatedAt: queuedAt.toISOString() } });
+    expect(applied.data?.curationProposalApply.proposal_status).toBe('accepted');
+    expect((await loadIntrusionSet(target.id)).aliases).toEqual([proposedName]);
+  });
+
+  it('should keep the content of a proposal whose application started, and not refuse its retry for that start', async () => {
+    const target = await createIntrusionSet(`${PREFIX} Started Application`);
+    const proposedName = `${PREFIX} Started Application Alias`;
+    const draft: ProposalDraft = {
+      kind: PROPOSAL_KIND_ALIAS,
+      detector: DETECTOR_NORMALIZATION,
+      subjects: [subjectOf(target)],
+      target_id: target.id,
+      recommended_action: ACTION_ADD_ALIASES,
+      action_payload: { aliases: [proposedName] },
+      evidence: evidenceFor('taxonomy', 'The vendor taxonomy lists a name the entity does not carry'),
+      confidence: 0.7,
+    };
+    const id = await createProposal(draft);
+    const read = await storeLoadById(testContext, ADMIN_USER, id, ENTITY_TYPE_CURATION_PROPOSAL) as unknown as { updated_at: string };
+    // An acceptance marked the application as started, then stopped before the change.
+    await wait(10);
+    await middleware.patchAttribute(testContext, ADMIN_USER, id, ENTITY_TYPE_CURATION_PROPOSAL, { application_started_at: new Date().toISOString() });
+    // A detection finds the same entity with one more name: the proposal being applied keeps its content.
+    const settings = await getCurationSettings(testContext);
+    const { created } = await persistProposalDraft(testContext, settings, { ...draft, action_payload: { aliases: [proposedName, `${proposedName} Two`] } });
+    expect(created).toBe(false);
+    const { action_payload: payload } = await storeLoadById(testContext, ADMIN_USER, id, ENTITY_TYPE_CURATION_PROPOSAL) as unknown as { action_payload: unknown };
+    expect(typeof payload === 'string' ? JSON.parse(payload) : payload).toEqual({ aliases: [proposedName] });
+    // The retry, sent with the revision read before the start, records the application of that content.
+    const accepted = await queryAsAdminWithSuccess({ query: ACCEPT_MUTATION, variables: { id, input: { expected_updated_at: read.updated_at } } });
     expect(accepted.data?.curationProposalAccept.proposal_status).toBe('accepted');
     expect((await loadIntrusionSet(target.id)).aliases).toEqual([proposedName]);
   });

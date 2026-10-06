@@ -408,7 +408,10 @@ const persistLockedProposalDraft = async (
   }
   const inBand = isInAmbiguousBand(draft.confidence, settings.ambiguous_band_min, settings.ambiguous_band_max);
   if (existing) {
-    const refreshed = await refreshProposal(context, existing, draft, inBand);
+    // A proposal being applied keeps the content its application started from, so a retry applies or records that one.
+    const refreshed = existing.application_started_at
+      ? { proposal: existing, created: false, suppressed: false }
+      : await refreshProposal(context, existing, draft, inBand);
     if (draft.kind === PROPOSAL_KIND_ALIAS) await removeSupersededAliasProposals(context, existing);
     return refreshed;
   }

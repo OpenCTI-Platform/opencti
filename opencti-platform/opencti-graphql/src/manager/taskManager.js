@@ -258,10 +258,12 @@ export const baseOperationBuilder = (actionType, operations, element) => {
     const playbookRef = operations[0].context.values[0];
     baseOperationObject.playbook_id = playbookRef?.id ?? playbookRef;
   }
-  // Knowledge curation: apply a curation proposal (optionally on behalf of a curation policy)
+  // Knowledge curation: apply a curation proposal (optionally on behalf of a curation policy), as it was when a bulk
+  // accept was queued
   if (actionType === ACTION_TYPE_CURATION_APPLY) {
     baseOperationObject.opencti_operation = 'curation_apply';
     baseOperationObject.curation_policy_id = operations[0].context?.values?.[0] ?? null;
+    baseOperationObject.curation_expected_updated_at = operations[0].context?.revisions?.[element.internal_id] ?? null;
   }
   return baseOperationObject;
 };

@@ -602,7 +602,7 @@ type Mutation {
   curationProposalAccept(id: ID!, input: CurationProposalAcceptInput): CurationProposal @auth(for: [KNOWLEDGE_KNUPDATE])
   curationProposalReject(id: ID!, rationale: String): CurationProposal @auth(for: [KNOWLEDGE_KNUPDATE])
   curationProposalDecide(id: ID!, input: CurationProposalDecideInput!): CurationProposal @auth(for: [KNOWLEDGE_KNUPDATE])
-  curationProposalApply(id: ID!, policy_id: ID): CurationProposal @auth(for: [KNOWLEDGE_KNUPDATE])
+  curationProposalApply(id: ID!, policy_id: ID, expected_updated_at: DateTime): CurationProposal @auth(for: [KNOWLEDGE_KNUPDATE])
   curationProposalAdjudicate(id: ID!): CurationProposal @auth(for: [KNOWLEDGE_KNUPDATE])
   curationProposalsBulkAccept(ids: [ID!]!): ID @auth(for: [KNOWLEDGE_KNUPDATE])
   curationProposalsBulkReject(ids: [ID!]!, rationale: String): [ID!]! @auth(for: [KNOWLEDGE_KNUPDATE])

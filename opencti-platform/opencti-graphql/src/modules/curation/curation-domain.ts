@@ -163,9 +163,10 @@ const loadOpenProposal = async (context: AuthContext, user: AuthUser, id: string
 
 const withProposalLock = withProposalTransitionLock;
 
-// A decision taken on the proposal as it was read: refused when a detector or a decision changed it since.
+// A decision taken on the proposal as it was read: refused when a detector or a decision changed it since. Once its
+// application started, detections leave a proposal as it is: the start itself is then the only change, never refused.
 const checkProposalRevision = (proposal: BasicStoreEntityCurationProposal, expectedUpdatedAt?: string | Date | null) => {
-  if (!expectedUpdatedAt) return;
+  if (!expectedUpdatedAt || proposal.application_started_at) return;
   if (new Date(proposal.updated_at).getTime() !== new Date(expectedUpdatedAt).getTime()) {
     throw FunctionalError('This curation proposal changed since it was read: read it again before deciding on it', {
       id: proposal.internal_id,
@@ -496,11 +497,19 @@ const incrementPolicyAppliedCount = async (context: AuthContext, policy: BasicSt
 };
 
 /**
- * Apply executed by a background task: a bulk accept (no policy) or a policy auto-apply. A policy apply re-checks the
- * eligibility at apply time (the graph may have changed since the task was created), and for a merge that the detectors
- * still find the pair at the policy threshold, and skips silently otherwise.
+ * Apply executed by a background task, as its initiator (the worker sends the task's applicant): a bulk accept (no
+ * policy) or a policy auto-apply. A bulk accept applies the proposal as it was when the task was queued
+ * (expected_updated_at), and is refused for a proposal refreshed since. A policy apply re-checks the eligibility of the
+ * current proposal at apply time (the graph may have changed since the task was created), and for a merge that the
+ * detectors still find the pair at the policy threshold, and skips silently otherwise.
  */
-export const applyProposalFromTask = async (context: AuthContext, user: AuthUser, id: string, policyId?: string | null) => {
+export const applyProposalFromTask = async (
+  context: AuthContext,
+  user: AuthUser,
+  id: string,
+  policyId?: string | null,
+  expectedUpdatedAt?: string | Date | null,
+) => {
   const proposal = await findProposalById(context, user, id);
   if (!proposal) {
     throw FunctionalError('Curation proposal not found', { id });
@@ -510,7 +519,7 @@ export const applyProposalFromTask = async (context: AuthContext, user: AuthUser
   }
   const settings = await getCurationSettings(context);
   if (!policyId) {
-    return applyAndRecord(context, user, proposal, settings, { status: PROPOSAL_STATUS_ACCEPTED, rationale: 'Bulk accept' });
+    return applyAndRecord(context, user, proposal, settings, { status: PROPOSAL_STATUS_ACCEPTED, rationale: 'Bulk accept', expectedUpdatedAt });
   }
   if (!canUserApplyPolicy(user)) {
     throw ForbiddenAccess('You are not allowed to apply a curation policy');
@@ -575,10 +584,12 @@ export const bulkAcceptProposals = async (context: AuthContext, user: AuthUser, 
   if (forbiddenIds.length > 0) {
     throw ForbiddenAccess('You are not allowed to apply some of the selected curation proposals', { proposal_ids: forbiddenIds });
   }
+  // Each proposal is applied as it is read here: one a detection refreshes before the worker runs is refused.
+  const revisions = Object.fromEntries(proposals.map((proposal) => [proposal.internal_id, proposal.updated_at]));
   const task = await createListTask(context, user, {
     ids: uniqueIds,
     scope: 'KNOWLEDGE',
-    actions: [{ type: ACTION_TYPE_CURATION_APPLY, context: { values: [] } }],
+    actions: [{ type: ACTION_TYPE_CURATION_APPLY, context: { values: [], revisions } }],
     description: `Curation: accept ${uniqueIds.length} proposal(s)`,
   });
   return task.id;

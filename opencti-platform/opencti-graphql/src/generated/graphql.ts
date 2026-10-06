@@ -18816,6 +18816,7 @@ export type MutationCurationProposalAdjudicateArgs = {
 
 
 export type MutationCurationProposalApplyArgs = {
+  expected_updated_at?: InputMaybe<Scalars['DateTime']['input']>;
   id: Scalars['ID']['input'];
   policy_id?: InputMaybe<Scalars['ID']['input']>;
 };

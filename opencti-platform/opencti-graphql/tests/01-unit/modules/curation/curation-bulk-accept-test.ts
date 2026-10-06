@@ -16,7 +16,13 @@ vi.mock('../../../../src/domain/backgroundTask-common', async (importOriginal) =
 }));
 
 const userWith = (capabilities: string[]) => ({ id: 'user-id', capabilities: capabilities.map((name) => ({ name })) }) as unknown as AuthUser;
-const proposal = (id: string, action: string) => ({ internal_id: id, standard_id: id, recommended_action: action, proposal_kind: 'merge' });
+const proposal = (id: string, action: string, updatedAt = '2026-10-06T16:00:00.000Z') => ({
+  internal_id: id,
+  standard_id: id,
+  recommended_action: action,
+  proposal_kind: 'merge',
+  updated_at: updatedAt,
+});
 
 describe('curation bulk accept', () => {
   beforeEach(() => {
@@ -31,5 +37,20 @@ describe('curation bulk accept', () => {
     const merger = userWith(['KNOWLEDGE', 'KNOWLEDGE_KNUPDATE', 'KNOWLEDGE_KNUPDATE_KNMERGE']);
     await expect(bulkAcceptProposals({} as AuthContext, merger, ['merge-1', 'stale-1'])).resolves.toBe('task-id');
     expect(createListTask).toHaveBeenCalledTimes(1);
+  });
+
+  it('queues each proposal with the revision it was accepted on, for the worker to send back', async () => {
+    (internalFindByIds as any).mockResolvedValue([
+      proposal('merge-1', ACTION_MERGE, '2026-10-06T16:00:01.000Z'),
+      proposal('stale-1', ACTION_ACKNOWLEDGE, '2026-10-06T16:00:02.000Z'),
+    ]);
+    const merger = userWith(['KNOWLEDGE', 'KNOWLEDGE_KNUPDATE', 'KNOWLEDGE_KNUPDATE_KNMERGE']);
+    await bulkAcceptProposals({} as AuthContext, merger, ['merge-1', 'stale-1']);
+    expect(vi.mocked(createListTask).mock.calls[0][2]).toEqual(expect.objectContaining({
+      actions: [{
+        type: 'CURATION_APPLY',
+        context: { values: [], revisions: { 'merge-1': '2026-10-06T16:00:01.000Z', 'stale-1': '2026-10-06T16:00:02.000Z' } },
+      }],
+    }));
   });
 });

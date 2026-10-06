@@ -7,6 +7,7 @@ import { updateExpectationsNumber } from '../../../src/domain/work';
 import {
   ACTION_TYPE_ADD_GROUPS,
   ACTION_TYPE_ADD_ORGANIZATIONS,
+  ACTION_TYPE_CURATION_APPLY,
   ACTION_TYPE_ENRICHMENT,
   ACTION_TYPE_ENROLL_PLAYBOOK,
   ACTION_TYPE_MERGE,
@@ -446,6 +447,17 @@ describe('baseOperationBuilder', () => {
 
     expect(result.opencti_operation).toBe('enroll_playbook');
     expect(result.playbook_id).toBe('playbook-id-1');
+  });
+
+  // -- CURATION_APPLY --
+
+  it('should build curation_apply operation with the policy, or the revision a bulk accept was queued on', () => {
+    const proposal = { id: 'proposal-standard-id', internal_id: 'proposal-id', entity_type: 'CurationProposal' };
+    const policyRun = baseOperationBuilder(ACTION_TYPE_CURATION_APPLY, [{ context: { values: ['policy-id'] } }], proposal);
+    expect(policyRun).toEqual({ opencti_operation: 'curation_apply', curation_policy_id: 'policy-id', curation_expected_updated_at: null });
+    const revisions = { 'proposal-id': '2026-10-06T16:00:00.000Z', 'other-id': '2026-10-06T15:00:00.000Z' };
+    const bulkAccept = baseOperationBuilder(ACTION_TYPE_CURATION_APPLY, [{ context: { values: [], revisions } }], proposal);
+    expect(bulkAccept).toEqual({ opencti_operation: 'curation_apply', curation_policy_id: null, curation_expected_updated_at: '2026-10-06T16:00:00.000Z' });
   });
 
   // -- Unknown action type --

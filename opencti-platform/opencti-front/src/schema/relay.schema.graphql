@@ -10462,7 +10462,7 @@ type Mutation {
   curationProposalAccept(id: ID!, input: CurationProposalAcceptInput): CurationProposal
   curationProposalReject(id: ID!, rationale: String): CurationProposal
   curationProposalDecide(id: ID!, input: CurationProposalDecideInput!): CurationProposal
-  curationProposalApply(id: ID!, policy_id: ID): CurationProposal
+  curationProposalApply(id: ID!, policy_id: ID, expected_updated_at: DateTime): CurationProposal
   curationProposalAdjudicate(id: ID!): CurationProposal
   curationProposalsBulkAccept(ids: [ID!]!): ID
   curationProposalsBulkReject(ids: [ID!]!, rationale: String): [ID!]!
