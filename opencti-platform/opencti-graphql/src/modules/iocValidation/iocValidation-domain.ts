@@ -1129,6 +1129,7 @@ export const maintainIocValidationRequests = async (context: AuthContext, pageSi
   await redisSetManagerEventState(MAINTENANCE_CURSOR_STATE, done ? '' : String(page.pageInfo.endCursor));
   const requests = page.edges.map((edge) => edge.node);
   let processed = 0;
+  let failed = 0;
   await BluePromise.map(requests, async (listed) => {
     try {
       // A pending request with a work was claimed by a dispatch that may not have published it: it is never sent
@@ -1148,9 +1149,14 @@ export const maintainIocValidationRequests = async (context: AuthContext, pageSi
         processed += 1;
       }
     } catch (error) {
-      logApp.error('[IOC-VALIDATION] Request maintenance failed', { cause: error, requestId: listed.internal_id });
+      // Still open, so a later scan reaches it again
+      failed += 1;
+      logApp.warn('[IOC-VALIDATION] Request maintenance failed, left to a later scan', { cause: error, requestId: listed.internal_id });
     }
   }, { concurrency: CONCURRENCY });
+  if (failed > 0) {
+    logApp.warn('[IOC-VALIDATION] Requests left to a later maintenance scan', { errors_count: failed, total_count: requests.length });
+  }
   return processed;
 };
 // endregion

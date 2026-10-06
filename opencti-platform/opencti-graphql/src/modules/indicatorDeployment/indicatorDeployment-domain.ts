@@ -1124,6 +1124,7 @@ export const flagExpiredDeployments = async (context: AuthContext, user: AuthUse
   const toFlag = new Map<string, BasicStoreRelationDeployedOn>();
   [...fromExpiredIndicators, ...withdrawn].forEach((relation) => toFlag.set(relation.internal_id, relation));
   let flagged = 0;
+  let failed = 0;
   await BluePromise.map([...toFlag.values()], async (relation) => {
     try {
       // A report can land between the scan and this write: recheck under the pair lock of the report path.
@@ -1146,12 +1147,17 @@ export const flagExpiredDeployments = async (context: AuthContext, user: AuthUse
         await lock.unlock();
       }
     } catch (error) {
-      logApp.error('[DISSEMINATION] Cannot flag deployment as expired', { cause: error, id: relation.internal_id });
+      // Still live, so a later scan flags it
+      failed += 1;
+      logApp.warn('[DISSEMINATION] Cannot flag deployment as expired, left to a later scan', { cause: error, id: relation.internal_id });
     }
   }, { concurrency: BATCH_CONCURRENCY });
   if (flagged > 0) {
     await refreshIndicatorDeploymentCounters(context, [...toFlag.values()].map((r) => r.fromId));
     logApp.info('[DISSEMINATION] Deployments flagged as expired', { flagged });
+  }
+  if (failed > 0) {
+    logApp.warn('[DISSEMINATION] Deployments left to a later expiry scan', { errors_count: failed, total_count: toFlag.size });
   }
   return flagged;
 };
