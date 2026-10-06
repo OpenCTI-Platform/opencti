@@ -532,7 +532,9 @@ const RunVerdict = ({ run, cardRef }: { run: Run; cardRef: React.RefObject<HTMLD
                         type="checkbox"
                         name="create_incident"
                         label={t_i18n('Escalate to an incident')}
-                        helpertext={t_i18n('The hits go to the incident still open, or to a new incident draft')}
+                        helpertext={values.create_incident
+                          ? t_i18n('The hits go to the open incident of this hunt, or to a new incident draft')
+                          : t_i18n('Only the verdict is recorded')}
                       />
                     </div>
                   )}

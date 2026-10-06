@@ -89,7 +89,12 @@ test('Hunt run drawer verdict', { tag: ['@hunt', '@mutation', '@ce'] }, async ({
     await expect(huntDetails.getRunsPage()).toBeVisible();
     await expect(huntDetails.getRunVerdictForm()).toBeVisible();
     // The pending run proposes a true positive, which offers the incident; another verdict does not
-    await expect(huntDetails.getRunVerdictIncidentChoice()).toBeVisible();
+    const incidentChoice = huntDetails.getRunVerdictIncidentChoice();
+    await expect(incidentChoice).toBeVisible();
+    await expect(incidentChoice.getByText('The hits go to the open incident of this hunt, or to a new incident draft')).toBeVisible();
+    // Without escalation, the helper says what is recorded
+    await incidentChoice.getByText('Escalate to an incident', { exact: true }).click();
+    await expect(incidentChoice.getByText('Only the verdict is recorded')).toBeVisible();
     await huntDetails.verdictField.selectOption('Benign');
     await expect(huntDetails.getRunVerdictIncidentChoice()).toBeHidden();
     await huntDetails.saveRunVerdict();
