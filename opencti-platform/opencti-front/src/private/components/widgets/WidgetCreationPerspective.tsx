@@ -83,7 +83,9 @@ const WidgetCreationPerspective = () => {
     const initialColumns = perspective === 'entities' || perspective === 'relationships'
       ? getDefaultWidgetColumns(perspective, host)
       : [];
-    const newDataSelection = dataSelection.map((n) => ({
+    // A source widget reads a single series, as when it is created: the others of a widget switched to it are dropped
+    const selections = perspective === 'sources' ? dataSelection.slice(0, 1) : dataSelection;
+    const newDataSelection = selections.map((n) => ({
       ...n,
       perspective,
       filters: perspective === n.perspective ? n.filters : initialFilters,

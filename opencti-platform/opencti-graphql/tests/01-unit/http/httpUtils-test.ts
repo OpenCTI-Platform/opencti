@@ -11,6 +11,7 @@ import {
   isClientRequestError,
   logMalformedRequest,
   normalizeUploadError,
+  refuseWebSocketOperation,
 } from '../../../src/http/httpUtils';
 import * as httpConfig from '../../../src/http/httpConfig';
 import { getRateProtectionIpSkipList } from '../../../src/http/httpConfig';
@@ -679,5 +680,30 @@ describe('httpUtils: logMalformedRequest', () => {
 
     expect(JSON.stringify(loggedMeta())).not.toContain('hunter2');
     expect(loggedMeta().body).toBeUndefined();
+  });
+});
+
+describe('httpUtils: refuseWebSocketOperation', () => {
+  it('should let subscriptions through', () => {
+    expect(refuseWebSocketOperation({ query: 'subscription { me { id } }' })).toBeUndefined();
+  });
+
+  it('should refuse mutations and queries, which go through the HTTP endpoint', () => {
+    const [mutationError] = refuseWebSocketOperation({ query: 'mutation { logout }' }) ?? [];
+    expect(mutationError.message).toBe('Only subscriptions are served over WebSocket, send queries and mutations over HTTP');
+    expect(mutationError.extensions.data).toMatchObject({ operation: 'mutation' });
+    const [queryError] = refuseWebSocketOperation({ query: '{ me { id } }' }) ?? [];
+    expect(queryError.extensions.data).toMatchObject({ operation: 'query' });
+  });
+
+  it('should judge the operation the payload names in a document holding several', () => {
+    const query = 'subscription Watch { me { id } } mutation Leave { logout }';
+    expect(refuseWebSocketOperation({ query, operationName: 'Watch' })).toBeUndefined();
+    expect(refuseWebSocketOperation({ query, operationName: 'Leave' })).toHaveLength(1);
+  });
+
+  it('should leave a document that does not parse or names no single operation to the WebSocket server', () => {
+    expect(refuseWebSocketOperation({ query: 'mutation {' })).toBeUndefined();
+    expect(refuseWebSocketOperation({ query: 'subscription A { me { id } } mutation B { logout }' })).toBeUndefined();
   });
 });

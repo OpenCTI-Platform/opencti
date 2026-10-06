@@ -1,10 +1,18 @@
 import { describe, it, expect, vi } from 'vitest';
+import { fireEvent, within } from '@testing-library/react';
 import { emptyFilterGroup, SELF_ID } from '../../../utils/filters/filtersUtils';
 import { containerTypes } from '../../../utils/hooks/useAttributes';
 import testRender from '../../../utils/tests/test-render';
 import WidgetCreationPerspective, { buildInitialFilters } from './WidgetCreationPerspective';
 
-const { mockUseGranted } = vi.hoisted(() => ({ mockUseGranted: vi.fn() }));
+const { mockUseGranted, widgetContext } = vi.hoisted(() => ({
+  mockUseGranted: vi.fn(),
+  widgetContext: {
+    widget: { type: 'number', dataSelection: [] as Record<string, unknown>[] },
+    setStep: vi.fn(),
+    setConfigWidget: vi.fn(),
+  },
+}));
 
 vi.mock('../../../utils/hooks/useGranted', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../utils/hooks/useGranted')>()),
@@ -17,9 +25,9 @@ vi.mock('../../../utils/hooks/useAttributes', async (importOriginal) => {
 vi.mock('./WidgetConfigContext', () => ({
   useWidgetConfigContext: () => ({
     host: { kind: 'workspace' },
-    config: { widget: { type: 'number', dataSelection: [] } },
-    setStep: vi.fn(),
-    setConfigWidget: vi.fn(),
+    config: { widget: widgetContext.widget },
+    setStep: widgetContext.setStep,
+    setConfigWidget: widgetContext.setConfigWidget,
   }),
 }));
 
@@ -36,6 +44,23 @@ describe('WidgetCreationPerspective', () => {
     const { getByTestId, queryByTestId } = testRender(<WidgetCreationPerspective />);
     expect(getByTestId('entities-widget-perspective')).toBeTruthy();
     expect(queryByTestId('sources-widget-perspective')).toBeNull();
+  });
+
+  it('keeps a single series when a widget switches to the intelligence sources perspective', () => {
+    mockUseGranted.mockReturnValue(true);
+    widgetContext.widget = {
+      type: 'line',
+      dataSelection: [
+        { label: 'Reports', perspective: 'entities', filters: emptyFilterGroup, columns: [] },
+        { label: 'Indicators', perspective: 'entities', filters: emptyFilterGroup, columns: [] },
+      ],
+    };
+    const { getByTestId } = testRender(<WidgetCreationPerspective />);
+    fireEvent.click(within(getByTestId('sources-widget-perspective')).getByRole('button'));
+    const { perspective, dataSelection } = widgetContext.setConfigWidget.mock.lastCall?.[0] ?? {};
+    expect(perspective).toBe('sources');
+    expect(dataSelection).toHaveLength(1);
+    expect(dataSelection[0]).toMatchObject({ label: 'Reports', perspective: 'sources', attribute: 'value_score', sort_mode: 'avg' });
   });
 });
 

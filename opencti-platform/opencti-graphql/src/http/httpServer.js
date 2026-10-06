@@ -33,6 +33,7 @@ import {
   isClientRequestError,
   logMalformedRequest,
   normalizeUploadError,
+  refuseWebSocketOperation,
 } from './httpUtils';
 import { checkDraftInContext, enterRequestDraft, releaseRequestDraft } from './httpServer-draft';
 import ipWhitelistMiddleware from './ipWhitelistMiddleware';
@@ -129,6 +130,7 @@ const createHttpServer = async () => {
   const serverCleanup = useServer({
     schema,
     context: extractWsSessionContext,
+    onSubscribe: (_ctx, _id, payload) => refuseWebSocketOperation(payload),
   }, wsServer);
 
   apolloServer.addPlugin(ApolloServerPluginDrainHttpServer({ httpServer }));
