@@ -270,15 +270,18 @@ def test_stix_import_of_a_resent_case_waits_for_its_required_elements(
 ):
     stix2 = OpenCTIStix2(local_api_client)
     local_api_client.timeline_event.import_extension = MagicMock()
-    local_api_client.opencti_stix_object_or_stix_relationship.read = MagicMock(
-        return_value=None
+    local_api_client.opencti_stix_object_or_stix_relationship.list = MagicMock(
+        return_value=[]
     )
     extension = {"events": [{"id": "timeline-event--1", "element_ref": NOTE_ID}]}
     with pytest.raises(ValueError, match="MISSING_REFERENCE_ERROR.*" + NOTE_ID):
         stix2.import_timeline_extension(resent_case(extension), {"id": CONTAINER_ID})
-    local_api_client.opencti_stix_object_or_stix_relationship.read.assert_called_once_with(
-        id=NOTE_ID, customAttributes="id"
-    )
+    listing = local_api_client.opencti_stix_object_or_stix_relationship.list
+    listing.assert_called_once()
+    assert listing.call_args.kwargs["filters"]["filters"] == [
+        {"key": "ids", "values": [NOTE_ID]}
+    ]
+    assert listing.call_args.kwargs["getAll"] is True
     local_api_client.timeline_event.import_extension.assert_not_called()
 
 
@@ -287,14 +290,46 @@ def test_stix_import_of_a_resent_case_imports_once_its_elements_exist(
 ):
     stix2 = OpenCTIStix2(local_api_client)
     local_api_client.timeline_event.import_extension = MagicMock()
-    local_api_client.opencti_stix_object_or_stix_relationship.read = MagicMock(
-        return_value={"id": "f3a1"}
+    local_api_client.opencti_stix_object_or_stix_relationship.list = MagicMock(
+        return_value=[{"id": "f3a1", "standard_id": NOTE_ID, "x_opencti_stix_ids": []}]
     )
     extension = {"events": [{"id": "timeline-event--1", "element_ref": NOTE_ID}]}
     stix2.import_timeline_extension(resent_case(extension), {"id": CONTAINER_ID})
     local_api_client.timeline_event.import_extension.assert_called_once_with(
         container_id=CONTAINER_ID, extension=extension
     )
+
+
+def test_stix_import_resolves_the_required_elements_in_bulk(local_api_client):
+    stix2 = OpenCTIStix2(local_api_client)
+    refs = [f"note--{index:08d}-0000-4000-8000-000000000000" for index in range(1200)]
+
+    # Every element exists, the last one under another of its STIX ids (a merged element)
+    def found(**kwargs):
+        values = kwargs["filters"]["filters"][0]["values"]
+        return [
+            (
+                {
+                    "id": "merged",
+                    "standard_id": "note--other",
+                    "x_opencti_stix_ids": [ref],
+                }
+                if ref == refs[-1]
+                else {"id": ref + "-internal", "standard_id": ref}
+            )
+            for ref in values
+        ]
+
+    listing = MagicMock(side_effect=found)
+    local_api_client.opencti_stix_object_or_stix_relationship.list = listing
+    assert stix2.find_missing_timeline_refs(refs + [refs[0]]) == []
+    # One request per batch of 500 ids, each id asked once
+    assert [
+        len(call.kwargs["filters"]["filters"][0]["values"])
+        for call in listing.call_args_list
+    ] == [500, 500, 200]
+    listing.side_effect = lambda **kwargs: []
+    assert stix2.find_missing_timeline_refs(refs[:2]) == refs[:2]
 
 
 def test_stix_import_tolerates_platforms_without_timelines(local_api_client):

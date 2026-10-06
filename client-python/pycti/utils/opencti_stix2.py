@@ -79,6 +79,9 @@ STIX_EXT_OCTI_SCO: str = "extension-definition--f93e2c80-4231-4f9a-af8b-95c9bd56
 #: STIX Types carrying a timeline (Incident, Case-Incident, Case-Rfi, Case-Rft)
 TIMELINE_CONTAINER_STIX_TYPES = ["incident", "case-incident", "case-rfi", "case-rft"]
 
+#: Required timeline elements resolved per request when a container is imported again
+TIMELINE_REQUIRED_IDS_BATCH_SIZE = 500
+
 #: STIX Extension ID for MITRE ATT&CK framework objects
 STIX_EXT_MITRE: str = "extension-definition--322b8f77-262a-4cb8-a915-1e441e00329b"
 PROCESSING_COUNT: int = 4
@@ -1518,14 +1521,9 @@ class OpenCTIStix2:
             len(extension.get("annotations") or []) == 0
         ):
             return
-        missing_refs = [
-            ref
-            for ref in stix_object.get(TIMELINE_REQUIRED_IDS) or []
-            if self.opencti.opencti_stix_object_or_stix_relationship.read(
-                id=ref, customAttributes="id"
-            )
-            is None
-        ]
+        missing_refs = self.find_missing_timeline_refs(
+            stix_object.get(TIMELINE_REQUIRED_IDS) or []
+        )
         if len(missing_refs) > 0:
             raise ValueError(
                 ERROR_TYPE_MISSING_REFERENCE
@@ -1547,6 +1545,44 @@ class OpenCTIStix2:
                 )
                 return
             raise
+
+    def find_missing_timeline_refs(self, refs: List[str]) -> List[str]:
+        """Return the required timeline elements not imported yet.
+
+        The elements are resolved in bulk, by batches of
+        ``TIMELINE_REQUIRED_IDS_BATCH_SIZE`` ids with every page of each batch,
+        instead of one request per element: a timeline can require thousands of
+        them. An element is found by any of its ids (internal id, standard id or
+        one of its other STIX ids).
+
+        :param refs: the STIX ids of the required elements
+        :type refs: List[str]
+        :return: the ids among ``refs`` that no imported element carries, in order
+        :rtype: List[str]
+        """
+        required = list(dict.fromkeys(refs))
+        found = set()
+        for start in range(0, len(required), TIMELINE_REQUIRED_IDS_BATCH_SIZE):
+            batch = required[start : start + TIMELINE_REQUIRED_IDS_BATCH_SIZE]
+            elements = self.opencti.opencti_stix_object_or_stix_relationship.list(
+                filters={
+                    "mode": "and",
+                    "filters": [{"key": "ids", "values": batch}],
+                    "filterGroups": [],
+                },
+                first=len(batch),
+                getAll=True,
+                customAttributes="""
+                    ... on StixObject { id standard_id x_opencti_stix_ids }
+                    ... on StixRelationship { id standard_id x_opencti_stix_ids }
+                """,
+            )
+            for element in elements:
+                found.update(
+                    [element.get("id"), element.get("standard_id")]
+                    + (element.get("x_opencti_stix_ids") or [])
+                )
+        return [ref for ref in required if ref not in found]
 
     def import_observable(
         self, stix_object: Dict, update: bool = False, types: List = None
