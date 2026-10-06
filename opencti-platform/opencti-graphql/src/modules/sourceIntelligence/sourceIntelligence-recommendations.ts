@@ -99,7 +99,7 @@ import { clearDisabledSourcesLiveData, recommendationTransitionLock, recordNamed
 import { buildSourceResolver } from './sourceIntelligence-provenance';
 import { releaseQuarantine } from './sourceIntelligence-quarantine';
 import type { ContractConfigInput } from '../../generated/graphql';
-import { requiredSettingsOfImage } from './sourceIntelligence-deployment';
+import { deploymentConfiguration, requiredSettingsOfImage } from './sourceIntelligence-deployment';
 
 export interface RecommendationApplyInput {
   // Connector deployed from the catalog that an add_connector recommendation links
@@ -492,7 +492,7 @@ const executeApply = async (
         name: payload.title,
         catalog_id: payload.catalog_id,
         manager_contract_image: payload.contract_image,
-        manager_contract_configuration: [...(input.configuration ?? [])],
+        manager_contract_configuration: deploymentConfiguration(input.configuration ?? [], payload.title),
         user_id: `[C] ${payload.title}`,
         automatic_user: true,
         confidence_level: '50',

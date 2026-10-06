@@ -1,4 +1,5 @@
 import type { AuthContext, AuthUser } from '../../types/user';
+import type { ContractConfigInput } from '../../generated/graphql';
 import type { CatalogContract } from '../catalog/catalog-types';
 import { getContractConfigSchemaWithoutExcludedRuntimeVars } from '../catalog/catalog-domain';
 import { findLatestCompatibleCatalogContractByImageName } from '../catalog/catalog-repository';
@@ -12,8 +13,17 @@ export interface ConnectorRequiredSetting {
   secret: boolean;
 }
 
-// Named after the catalog title by the deployment, and not validated (see validateContractConfigurations)
+// The name is set by deploymentConfiguration, the id is not validated (see validateContractConfigurations)
 const DEPLOYMENT_PROVIDED_SETTINGS = ['CONNECTOR_NAME', 'CONNECTOR_ID'];
+
+/**
+ * Configuration of a one-click deployment: the settings given in the dialog, and the connector name, which the contract
+ * may require without a default and the dialog does not ask for. The platform passes the name of the connector at run time.
+ */
+export const deploymentConfiguration = (configuration: ContractConfigInput[], name: string): ContractConfigInput[] => [
+  ...configuration.filter(({ key }) => key !== 'CONNECTOR_NAME'),
+  { key: 'CONNECTOR_NAME', value: name },
+];
 
 /**
  * Settings of a contract that a deployment must provide: required, without a default value and not deprecated, like

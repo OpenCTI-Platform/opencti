@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { requiredSettingsOfContract } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-deployment';
+import { deploymentConfiguration, requiredSettingsOfContract } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-deployment';
+import { computeConnectorTargetContract } from '../../../../src/modules/catalog/catalog-domain';
 import type { CatalogContract } from '../../../../src/modules/catalog/catalog-types';
 
 const schema = (properties: Record<string, unknown>, required: string[]) => ({ type: 'object', properties, required }) as unknown as CatalogContract['config_schema'];
@@ -37,5 +38,30 @@ describe('Source intelligence one-click deployment settings', () => {
   it('should ask for nothing when the contract has no schema', () => {
     expect(requiredSettingsOfContract(null)).toEqual([]);
     expect(requiredSettingsOfContract(undefined)).toEqual([]);
+  });
+
+  it('should name the connector in the deployed configuration, so that a contract requiring the name without a default validates', () => {
+    const contract = {
+      slug: 'misp',
+      title: 'MISP',
+      config_schema: schema({ CONNECTOR_NAME: { type: 'string' }, MISP_URL: { type: 'string' } }, ['CONNECTOR_NAME', 'MISP_URL']),
+    };
+    const settings = [{ key: 'MISP_URL', value: 'https://misp.example' }];
+    expect(requiredSettingsOfContract(contract.config_schema).map(({ key }) => key)).toEqual(['MISP_URL']);
+    expect(() => computeConnectorTargetContract(settings, contract, 'public-key')).toThrow(/Missing required field: "CONNECTOR_NAME"/);
+
+    const configuration = deploymentConfiguration(settings, 'MISP');
+    expect(configuration).toEqual([{ key: 'MISP_URL', value: 'https://misp.example' }, { key: 'CONNECTOR_NAME', value: 'MISP' }]);
+    expect(computeConnectorTargetContract(configuration, contract, 'public-key')).toEqual(expect.arrayContaining([
+      expect.objectContaining({ key: 'CONNECTOR_NAME', value: 'MISP' }),
+      expect.objectContaining({ key: 'MISP_URL', value: 'https://misp.example' }),
+    ]));
+  });
+
+  it('should keep the name of the deployment over a name given with the settings', () => {
+    expect(deploymentConfiguration([{ key: 'CONNECTOR_NAME', value: 'Other' }, { key: 'MISP_KEY', value: 'secret' }], 'MISP')).toEqual([
+      { key: 'MISP_KEY', value: 'secret' },
+      { key: 'CONNECTOR_NAME', value: 'MISP' },
+    ]);
   });
 });
