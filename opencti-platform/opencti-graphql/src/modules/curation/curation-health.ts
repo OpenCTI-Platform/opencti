@@ -117,6 +117,11 @@ export const estimateDuplicates = (pairs: string[][]): number => {
 export const estimateExistingDuplicates = (pairs: string[][], existingIds: Set<string>): number => {
   return estimateDuplicates(pairs.map((ids) => ids.filter((id) => existingIds.has(id))));
 };
+
+/** Distinct subjects that still exist: a subject named by several proposals counts once, a deleted or merged one not at all. */
+export const countExistingSubjects = (subjectIds: string[][], existingIds: Set<string>): number => {
+  return new Set(subjectIds.flat().filter((id) => existingIds.has(id))).size;
+};
 // endregion
 
 // region metrics
@@ -155,15 +160,6 @@ export const computeHealthMetrics = async (context: AuthContext, settings: Curat
     baseFields: ['subject_ids'],
     noFiltersChecking: true,
   });
-  const mergeSubjectIds = R.uniq(openMerges.flatMap((proposal) => proposal.subject_ids));
-  const existingSubjects = await elFindByIds<BasicStoreEntity>(context, SYSTEM_USER, mergeSubjectIds, {
-    indices: READ_INDEX_STIX_DOMAIN_OBJECTS,
-    baseData: true,
-    baseFields: ['internal_id'],
-  }) as BasicStoreEntity[];
-  const existingSubjectIds = new Set(existingSubjects.map((subject) => subject.internal_id));
-  const duplicateEstimate = estimateExistingDuplicates(openMerges.map((proposal) => proposal.subject_ids), existingSubjectIds);
-  // Stale entities, not stale proposals: an entity found stale again while its older proposal is still open counts once.
   const openStale = await fullEntitiesList<BasicStoreEntityCurationProposal>(context, SYSTEM_USER, [ENTITY_TYPE_CURATION_PROPOSAL], {
     filters: {
       mode: FilterMode.And,
@@ -177,7 +173,17 @@ export const computeHealthMetrics = async (context: AuthContext, settings: Curat
     baseFields: ['subject_ids'],
     noFiltersChecking: true,
   });
-  const staleCount = new Set(openStale.flatMap((proposal) => proposal.subject_ids)).size;
+  // Open proposals outlive their subjects: only the subjects still in the knowledge count.
+  const subjectIds = R.uniq([...openMerges, ...openStale].flatMap((proposal) => proposal.subject_ids));
+  const existingSubjects = await elFindByIds<BasicStoreEntity>(context, SYSTEM_USER, subjectIds, {
+    indices: READ_INDEX_STIX_DOMAIN_OBJECTS,
+    baseData: true,
+    baseFields: ['internal_id'],
+  }) as BasicStoreEntity[];
+  const existingSubjectIds = new Set(existingSubjects.map((subject) => subject.internal_id));
+  const duplicateEstimate = estimateExistingDuplicates(openMerges.map((proposal) => proposal.subject_ids), existingSubjectIds);
+  // Stale entities, not stale proposals: an entity found stale again while its older proposal is still open counts once.
+  const staleCount = countExistingSubjects(openStale.map((proposal) => proposal.subject_ids), existingSubjectIds);
   const [contradictionCount, openCount, autoApplied, accepted, rejected, reverted] = await Promise.all([
     countProposals(context, [{ key: ['proposal_kind'], values: [PROPOSAL_KIND_CONTRADICTION] }, { key: ['proposal_status'], values: [PROPOSAL_STATUS_OPEN] }]),
     countProposals(context, [{ key: ['proposal_status'], values: [PROPOSAL_STATUS_OPEN] }]),

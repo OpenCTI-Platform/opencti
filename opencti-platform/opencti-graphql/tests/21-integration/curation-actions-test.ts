@@ -874,6 +874,10 @@ describe('Knowledge curation actions', () => {
       });
     }
     expect((await computeHealthMetrics(testContext, settings, since)).stale_count).toBe(before + 1);
+
+    // Its proposals outlive it: once deleted, the entity no longer counts as stale knowledge.
+    await deleteElementById(testContext, ADMIN_USER, stale.id, ENTITY_TYPE_INTRUSION_SET);
+    expect((await computeHealthMetrics(testContext, settings, since)).stale_count).toBe(before);
   });
 
   it('should request a full scan', async () => {
