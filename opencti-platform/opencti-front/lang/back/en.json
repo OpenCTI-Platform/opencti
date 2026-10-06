@@ -444,6 +444,7 @@
   "Form Schema": "Form Schema",
   "Format": "Format",
   "Freshness (days since last assertion)": "Freshness (days since last assertion)",
+  "Freshness configured at": "Freshness configured at",
   "Freshness date": "Freshness date",
   "Freshness policy": "Freshness policy",
   "From": "From",

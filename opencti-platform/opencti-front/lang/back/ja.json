@@ -444,6 +444,7 @@
   "Form Schema": "フォームスキーマ",
   "Format": "フォーマット",
   "Freshness (days since last assertion)": "鮮度 (最終アサーションからの日数)",
+  "Freshness configured at": "鮮度の設定日時",
   "Freshness date": "鮮度期限",
   "Freshness policy": "鮮度ポリシー",
   "From": "から",

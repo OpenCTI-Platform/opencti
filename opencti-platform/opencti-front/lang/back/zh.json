@@ -444,6 +444,7 @@
   "Form Schema": "表格模式",
   "Format": "格式",
   "Freshness (days since last assertion)": "新鲜度 (自上次断言以来的天数)",
+  "Freshness configured at": "新鲜度配置时间",
   "Freshness date": "保鲜期",
   "Freshness policy": "新鲜度策略",
   "From": "来自",

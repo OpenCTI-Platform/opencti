@@ -444,6 +444,7 @@
   "Form Schema": "Schéma du formulaire",
   "Format": "Format",
   "Freshness (days since last assertion)": "Fraîcheur (jours depuis la dernière assertion)",
+  "Freshness configured at": "Fraîcheur configurée le",
   "Freshness date": "Date de fraîcheur",
   "Freshness policy": "Politique de fraîcheur",
   "From": "De",

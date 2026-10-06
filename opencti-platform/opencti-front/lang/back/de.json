@@ -444,6 +444,7 @@
   "Form Schema": "Formular Schema",
   "Format": "Format",
   "Freshness (days since last assertion)": "Aktualität (Tage seit der letzten Bestätigung)",
+  "Freshness configured at": "Frische konfiguriert am",
   "Freshness date": "Frische-Datum",
   "Freshness policy": "Aktualitätsrichtlinie",
   "From": "Von",

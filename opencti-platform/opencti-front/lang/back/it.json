@@ -444,6 +444,7 @@
   "Form Schema": "Schema del modulo",
   "Format": "Formato",
   "Freshness (days since last assertion)": "Freschezza (giorni dall'ultima asserzione)",
+  "Freshness configured at": "Freschezza configurata il",
   "Freshness date": "Data di scadenza",
   "Freshness policy": "Criterio di freschezza",
   "From": "Da",

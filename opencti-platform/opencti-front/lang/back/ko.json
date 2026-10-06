@@ -444,6 +444,7 @@
   "Form Schema": "양식 스키마",
   "Format": "형식",
   "Freshness (days since last assertion)": "최신성 (마지막 주장 이후 일수)",
+  "Freshness configured at": "최신성 설정 일시",
   "Freshness date": "신선도 날짜",
   "Freshness policy": "최신성 정책",
   "From": "보낸 사람",

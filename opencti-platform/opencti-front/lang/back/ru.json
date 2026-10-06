@@ -444,6 +444,7 @@
   "Form Schema": "Схема формы",
   "Format": "Формат",
   "Freshness (days since last assertion)": "Актуальность (дней с последнего утверждения)",
+  "Freshness configured at": "Дата настройки актуальности",
   "Freshness date": "Дата свежести",
   "Freshness policy": "Политика актуальности",
   "From": "С сайта",
