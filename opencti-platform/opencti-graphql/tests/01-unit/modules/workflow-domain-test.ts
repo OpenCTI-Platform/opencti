@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { booleanConf, isFeatureEnabled } from '../../../src/config/conf';
+import { booleanConf, isFeatureEnabled, logApp } from '../../../src/config/conf';
 import { extractEntityRepresentativeName } from '../../../src/database/entity-representative';
 import { loadAssignees, loadParticipants } from '../../../src/database/members';
 import { createEntity, createRelation, deleteElementById, loadEntity, updateAttribute } from '../../../src/database/middleware';
@@ -8,6 +8,8 @@ import { resolveUserById } from '../../../src/modules/user/user-domain';
 import { createStatus, findByType as findStatusesByType } from '../../../src/domain/status';
 import * as ee from '../../../src/enterprise-edition/ee';
 import { StatusScope } from '../../../src/generated/graphql';
+import { getEntitiesListFromCache } from '../../../src/database/cache';
+import { getDraftContext } from '../../../src/utils/draftContext';
 import { lockResources } from '../../../src/lock/master-lock';
 import * as telemetryManager from '../../../src/manager/telemetryManager';
 import { findByType } from '../../../src/modules/entitySetting/entitySetting-domain';
@@ -32,6 +34,7 @@ import {
   cleanupEntityWorkflow,
   setWorkflowStatus,
   getWorkflowBypassStatuses,
+  syncWorkflowInstanceFromExternalWrite,
 } from '../../../src/modules/workflow/domain/workflow-domain';
 import { projectWorkflowState, resolveMappedStatusId } from '../../../src/modules/workflow/domain/workflow-projection';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
@@ -72,6 +75,10 @@ vi.mock('../../../src/modules/entitySetting/entitySetting-domain', () => ({
 vi.mock('../../../src/utils/draftContext', () => ({
   bypassDraftContext: vi.fn((context) => context),
   getDraftContext: vi.fn(() => undefined),
+}));
+
+vi.mock('../../../src/database/cache', () => ({
+  getEntitiesListFromCache: vi.fn().mockResolvedValue([]),
 }));
 
 vi.mock('../../../src/lock/master-lock', () => ({
@@ -3826,6 +3833,9 @@ describe('getWorkflowInstance — read-repair', () => {
       return Promise.resolve(null);
     });
     (loadEntity as any).mockResolvedValue(instance);
+    (getEntitiesListFromCache as any).mockResolvedValue([
+      { id: 'stale-status-id', internal_id: 'stale-status-id', template_id: 'draft', scope: StatusScope.Global },
+    ]);
   };
 
   it('repairs x_opencti_workflow_id under the WORKFLOW_MANAGER_USER identity when it diverges from currentState', async () => {
@@ -3899,6 +3909,18 @@ describe('getWorkflowInstance — read-repair', () => {
     }
   });
 
+  it('keeps an external write whose Status maps to no state of the published workflow', async () => {
+    setup();
+    (getEntitiesListFromCache as any).mockResolvedValue([
+      { id: 'stale-status-id', internal_id: 'stale-status-id', template_id: 'unrelated-state', scope: StatusScope.Global },
+    ]);
+    (resolveMappedStatusId as any).mockResolvedValue('correct-status-id');
+
+    await getWorkflowInstance(mockContext, mockUser, 'entity-id');
+
+    expect(projectWorkflowState).not.toHaveBeenCalled();
+  });
+
   it('skips repair entirely when the workflow:disable_read_repair kill switch is enabled', async () => {
     setup();
     (booleanConf as any).mockReturnValue(true);
@@ -3908,5 +3930,172 @@ describe('getWorkflowInstance — read-repair', () => {
 
     expect(resolveMappedStatusId).not.toHaveBeenCalled();
     expect(projectWorkflowState).not.toHaveBeenCalled();
+  });
+});
+
+describe('syncWorkflowInstanceFromExternalWrite', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (getEntitiesListFromCache as any).mockResolvedValue([
+      { id: 'status-reviewing-id', internal_id: 'status-reviewing-id', template_id: 'reviewing', scope: StatusScope.Global },
+      { id: 'status-draft-id', internal_id: 'status-draft-id', template_id: 'draft', scope: StatusScope.Global },
+      { id: 'status-orphan-id', internal_id: 'status-orphan-id', template_id: 'unrelated-state', scope: StatusScope.Global },
+      { id: 'status-rfi-reviewing-id', internal_id: 'status-rfi-reviewing-id', template_id: 'reviewing', scope: StatusScope.RequestAccess },
+    ]);
+  });
+
+  const entity = { id: 'entity-1', internal_id: 'entity-1', entity_type: 'Incident' };
+  const definitionContent = JSON.stringify({
+    initialState: 'draft',
+    states: [{ statusId: 'draft' }],
+    transitions: [{ from: 'draft', to: 'reviewing', event: 'review' }],
+  });
+  let storedStatusId: string | null = null;
+  const setupPublishedDefinition = (instance: any) => {
+    (findByType as any).mockResolvedValue({ id: 'setting-id', workflow_id: 'workflow-def-id' });
+    (loadEntity as any).mockResolvedValue(instance);
+    (storeLoadById as any).mockImplementation((_ctx: any, _user: any, id: string) => {
+      if (id === 'entity-1') {
+        return Promise.resolve({ ...entity, x_opencti_workflow_id: storedStatusId });
+      }
+      if (id === 'workflow-def-id') {
+        return Promise.resolve({ id: 'workflow-def-id', name: 'wf', published_version: { id: 'v1', content: definitionContent, validation_errors: [] } });
+      }
+      return Promise.resolve(null);
+    });
+  };
+  const draftInstance = { id: 'instance-1', internal_id: 'instance-1', currentState: 'draft', history: '[]', scope: 'standard' };
+  const lastUpdateInputs = () => (updateAttribute as any).mock.calls.at(-1)[4];
+  const syncWrite = (statusId: string | null) => {
+    storedStatusId = statusId;
+    return syncWorkflowInstanceFromExternalWrite(mockContext, mockUser, entity, statusId);
+  };
+
+  it('does nothing when the entity type has no published workflow', async () => {
+    (findByType as any).mockResolvedValue(undefined);
+
+    await syncWrite('status-reviewing-id');
+
+    expect(loadEntity).not.toHaveBeenCalled();
+    expect(updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('does nothing when the status was cleared', async () => {
+    setupPublishedDefinition(draftInstance);
+
+    await syncWrite(null);
+
+    expect(updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('does nothing for a write made inside a draft', async () => {
+    setupPublishedDefinition(draftInstance);
+    (getDraftContext as any).mockReturnValueOnce('draft-id');
+
+    await syncWrite('status-reviewing-id');
+
+    expect(loadEntity).not.toHaveBeenCalled();
+    expect(updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('does nothing when the entity has no workflow instance yet', async () => {
+    setupPublishedDefinition(null);
+
+    await syncWrite('status-reviewing-id');
+
+    expect(updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('moves the instance to the mapped state and records the writer in an event_external history entry', async () => {
+    setupPublishedDefinition(draftInstance);
+
+    await syncWrite('status-reviewing-id');
+
+    expect(updateAttribute).toHaveBeenCalledWith(
+      expect.objectContaining({ user: WORKFLOW_MANAGER_USER }),
+      WORKFLOW_MANAGER_USER,
+      'instance-1',
+      ENTITY_TYPE_WORKFLOW_INSTANCE,
+      [
+        { key: 'currentState', value: ['reviewing'] },
+        { key: 'history', value: [expect.any(String)] },
+        { key: 'pendingError', value: [null] },
+      ],
+    );
+    expect(JSON.parse(lastUpdateInputs()[1].value[0])).toEqual([
+      expect.objectContaining({ state: 'reviewing', event: 'event_external', user_id: 'user-id' }),
+    ]);
+  });
+
+  it('holds the workflow mutation lock of the entity while syncing', async () => {
+    const unlock = vi.fn();
+    (lockResources as any).mockResolvedValueOnce({ unlock });
+    setupPublishedDefinition(draftInstance);
+
+    await syncWrite('status-reviewing-id');
+
+    expect(lockResources).toHaveBeenCalledWith(['workflow-mutation-entity-1']);
+    expect(unlock).toHaveBeenCalledOnce();
+  });
+
+  it('does nothing when a later write already replaced the status on the entity', async () => {
+    setupPublishedDefinition(draftInstance);
+    storedStatusId = 'status-draft-id';
+
+    await syncWorkflowInstanceFromExternalWrite(mockContext, mockUser, entity, 'status-reviewing-id');
+
+    expect(updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('does nothing when the new status maps to the current state', async () => {
+    setupPublishedDefinition({ ...draftInstance, currentState: 'reviewing' });
+
+    await syncWrite('status-reviewing-id');
+
+    expect(updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('clears a stale pendingError when the new status maps back to the current state', async () => {
+    setupPublishedDefinition({ ...draftInstance, pendingError: 'previous unmapped write' });
+
+    await syncWrite('status-draft-id');
+
+    expect(lastUpdateInputs()).toEqual([{ key: 'pendingError', value: [null] }]);
+  });
+
+  it('keeps the current state and records a pendingError when the new status maps to no state', async () => {
+    setupPublishedDefinition(draftInstance);
+
+    await syncWrite('status-orphan-id');
+
+    expect(lastUpdateInputs()).toEqual([{ key: 'pendingError', value: [expect.stringContaining('status-orphan-id')] }]);
+  });
+
+  it('treats a status of another scope as unmapped', async () => {
+    setupPublishedDefinition(draftInstance);
+
+    await syncWrite('status-rfi-reviewing-id');
+
+    expect(lastUpdateInputs()).toEqual([{ key: 'pendingError', value: [expect.stringContaining('status-rfi-reviewing-id')] }]);
+  });
+
+  it('ignores the write while a transition is pending, recording it in history without touching state or pendingError', async () => {
+    setupPublishedDefinition({ ...draftInstance, pendingStatus: 'pending' });
+
+    await syncWrite('status-reviewing-id');
+
+    const inputs = lastUpdateInputs();
+    expect(inputs.map((input: any) => input.key)).toEqual(['history']);
+    expect(JSON.parse(inputs[0].value[0])).toEqual([
+      expect.objectContaining({ state: 'draft', event: 'event_external_ignored', status_id: 'status-reviewing-id', user_id: 'user-id' }),
+    ]);
+  });
+
+  it('logs instead of failing the write when the sync throws', async () => {
+    (findByType as any).mockRejectedValue(new Error('store unavailable'));
+
+    await expect(syncWrite('status-reviewing-id')).resolves.toBeUndefined();
+
+    expect(logApp.error).toHaveBeenCalledOnce();
   });
 });
