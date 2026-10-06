@@ -38108,6 +38108,7 @@ export type VocabularyConnection = {
 
 export type VocabularyDefinition = {
   __typename?: 'VocabularyDefinition';
+  closed: Scalars['Boolean']['output'];
   description?: Maybe<Scalars['String']['output']>;
   entity_types: Array<Scalars['String']['output']>;
   fields: Array<VocabularyFieldDefinition>;
@@ -54255,6 +54256,7 @@ export type VocabularyConnectionResolvers<ContextType = any, ParentType extends 
 }>;
 
 export type VocabularyDefinitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['VocabularyDefinition'] = ResolversParentTypes['VocabularyDefinition']> = ResolversObject<{
+  closed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   fields?: Resolver<Array<ResolversTypes['VocabularyFieldDefinition']>, ParentType, ContextType>;

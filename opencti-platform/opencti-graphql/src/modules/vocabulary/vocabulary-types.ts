@@ -36,6 +36,8 @@ export const ENTITY_TYPE_VOCABULARY = 'Vocabulary';
 
 export interface VocabularyDefinition {
   description?: string;
+  // A closed vocabulary only accepts its default values (see openVocabularies)
+  closed?: boolean;
   entity_types: string[];
   fields: {
     key: string;
@@ -245,6 +247,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
   // O
   opinion_ov: {
     description: 'This enumeration captures a degree of agreement with the information in a STIX Object. It is an ordered enumeration, with the earlier terms representing disagreement, the middle term neutral, and the later terms representing agreement',
+    closed: true,
     entity_types: [ENTITY_TYPE_CONTAINER_OPINION],
     fields: [{
       key: 'opinion',
