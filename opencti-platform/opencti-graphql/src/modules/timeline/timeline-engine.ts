@@ -302,7 +302,7 @@ export const loadTimelineSettings = async (context: AuthContext, containerId: st
 };
 
 const CONTENT_FIELDS = [
-  'name', 'description', 'event_time', 'event_end_time', 'time_precision', 'lane', 'kind', 'event_source', 'rule_id', 'element_id', 'element_type',
+  'name', 'description', 'event_time', 'event_end_time', 'open_ended', 'time_precision', 'lane', 'kind', 'event_source', 'rule_id', 'element_id', 'element_type',
   'pinned', 'hidden', 'annotation', 'confidence', 'ordering_hint', 'analyst_fields', 'external_id', 'restricted_members', 'creator_id',
   'source_state', 'element_access', buildRefRelationKey(RELATION_OBJECT_MARKING), buildRefRelationKey(RELATION_CREATED_BY),
 ];
@@ -349,6 +349,7 @@ export interface TimelineEventDocInput {
   description?: string | null;
   event_time: string;
   event_end_time?: string | null;
+  open_ended?: boolean | null;
   time_precision: string;
   lane: string;
   kind: string;
@@ -388,6 +389,8 @@ export const buildTimelineEventDoc = (input: TimelineEventDocInput, existing?: S
     description: input.description ?? null,
     event_time: input.event_time,
     event_end_time: input.event_end_time ?? null,
+    // Stored only when true (an undefined field is not written): the events written before it existed keep their signature
+    open_ended: input.open_ended ? true : undefined,
     time_precision: input.time_precision,
     lane: input.lane,
     kind: input.kind,
@@ -1040,6 +1043,7 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
       description: event.description,
       event_time: event.event_time,
       event_end_time: event.event_end_time,
+      open_ended: event.open_ended,
       time_precision: event.time_precision,
       lane: event.lane,
       kind: event.kind,

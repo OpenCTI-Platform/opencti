@@ -107,6 +107,8 @@ type TimelineEvent implements InternalObject & BasicObject {
   container_id: String!
   event_time: DateTime!
   event_end_time: DateTime
+  "Started without a known end (a run still running, a deployment still active): the window stays open"
+  open_ended: Boolean
   precision: TimelinePrecision!
   lane: TimelineLane!
   kind: TimelineEventKind!

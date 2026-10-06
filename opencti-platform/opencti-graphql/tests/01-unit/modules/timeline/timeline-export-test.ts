@@ -96,6 +96,18 @@ describe('Timeline exports', () => {
     expect(html).not.toContain('<case>');
   });
 
+  it('should draw a window without a known end to the right edge and say it is still open', () => {
+    const open = { id: 'e3', lane: 'detection' as const, kind: 'hunt_run', event_time: '2026-03-04T00:00:00.000Z', event_end_time: null, open_ended: true, precision: 'exact', title: 'Hunt run beacons', source: 'derived', pinned: false, hidden: false };
+    const svg = renderTimelineSvg({ ...input, events: [...input.events, open], labels: { still_open: 'Toujours en cours' } });
+    const bar = svg.split('<rect').find((part) => part.includes('Hunt run beacons')) as string;
+    expect(bar).toContain('stroke-dasharray="4 3"');
+    expect(bar).toContain('Hunt run beacons - Toujours en cours');
+    const html = renderTimelineHtml({ ...input, events: [open] });
+    expect(html).toContain('<td>Still open</td>');
+    // A point event without an end stays a point
+    expect(renderTimelineSvg({ ...input, events: [{ ...open, open_ended: false }] })).not.toContain('Still open');
+  });
+
   it('should format dates and escape XML', () => {
     expect(formatExportDate('2026-03-05T07:08:00.000Z')).toEqual('2026-03-05 07:08 UTC');
     expect(formatExportDate(null)).toEqual('');

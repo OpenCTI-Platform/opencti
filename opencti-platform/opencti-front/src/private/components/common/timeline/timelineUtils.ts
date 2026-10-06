@@ -135,6 +135,7 @@ export interface TimelineEventLike {
   id: string;
   event_time: string;
   event_end_time?: string | null;
+  open_ended?: boolean | null;
   lane: string;
   pinned?: boolean;
   source?: string;
@@ -367,7 +368,7 @@ export const clusterLaneEvents = <T extends TimelineEventLike>(events: T[], grou
   events.forEach((event) => {
     const time = toTime(event.event_time);
     if (time === null) return;
-    const isWindow = !!toTime(event.event_end_time);
+    const isWindow = !!toTime(event.event_end_time) || !!event.open_ended;
     if (isWindow || event.pinned || event.source === 'manual') {
       singles.push(event);
       return;
@@ -507,6 +508,16 @@ export const effectiveLanes = (selected: readonly string[], enabledLanes: readon
 export const isTimelineViewFilteredBy = (change: 'pin' | 'annotation', state: Pick<TimelineViewState, 'pinnedOnly' | 'search'>): boolean => (
   change === 'pin' ? state.pinnedOnly : state.search.trim().length > 0
 );
+/** The times of an event in words: a time, a window, or a window started without a known end (still open). */
+export const describeTimelineEventTimes = (
+  event: { event_time: string; event_end_time?: string | null; open_ended?: boolean | null },
+  t_i18n: (message: string, options?: { values?: Record<string, unknown> }) => string,
+  fldt: (date: string) => string,
+): string => {
+  if (event.event_end_time) return t_i18n('From {start} to {end}', { values: { start: fldt(event.event_time), end: fldt(event.event_end_time) } });
+  if (event.open_ended) return t_i18n('Since {start}, still open', { values: { start: fldt(event.event_time) } });
+  return fldt(event.event_time);
+};
 /** Whether the view narrows the events with a filter the user can clear: the timeline settings are not such a filter. */
 export const hasClearableTimelineFilters = (state: Pick<TimelineViewState, 'lanes' | 'kinds' | 'sources' | 'search' | 'pinnedOnly'>): boolean => (
   state.lanes.length > 0 || state.kinds.length > 0 || state.sources.length > 0 || state.search.trim().length > 0 || state.pinnedOnly

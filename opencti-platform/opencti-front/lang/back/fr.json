@@ -1223,6 +1223,7 @@
   "Containment": "Confinement",
   "Deployments of the indicators in scope on security platforms": "Déploiements des indicateurs du périmètre sur les plateformes de sécurité",
   "Event end time": "Heure de fin de l'événement",
+  "Open-ended window": "Fenêtre sans fin connue",
   "Event time": "Heure de l'événement",
   "Files uploaded to the container": "Fichiers téléversés dans le conteneur",
   "First adversary activity": "Première activité de l'adversaire",

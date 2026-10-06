@@ -264,12 +264,14 @@ export const buildTimelineFilters = (containerId: string, args: TimelineFilterAr
   if (args.pinnedOnly) filters.push({ key: ['pinned'], values: ['true'] });
   if (args.to) filters.push({ key: ['event_time'], values: [args.to], operator: FilterOperator.Lte });
   if (args.from) {
-    // Point events after the start of the window, or windows still open at the start of the window
+    // Point events after the start of the window, or windows still open at the start of the window: ending after it, or
+    // without a known end (the `to` bound above keeps those started before the end of the window)
     filterGroups.push({
       mode: FilterMode.Or,
       filters: [
         { key: ['event_time'], values: [args.from], operator: FilterOperator.Gte },
         { key: ['event_end_time'], values: [args.from], operator: FilterOperator.Gte },
+        { key: ['open_ended'], values: ['true'] },
       ],
       filterGroups: [],
     });
@@ -613,6 +615,7 @@ const renderTimelineExport = (snapshot: TimelineExportSnapshot, args: TimelineEx
       kind: event.kind,
       event_time: event.event_time,
       event_end_time: event.event_end_time,
+      open_ended: event.open_ended ?? null,
       precision: event.time_precision,
       title: event.name,
       description: event.description,

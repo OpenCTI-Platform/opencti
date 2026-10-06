@@ -188,6 +188,7 @@ const containerTimelineEventsFragment = graphql`
           id
           event_time
           event_end_time
+          open_ended
           precision
           lane
           kind

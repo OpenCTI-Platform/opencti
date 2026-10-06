@@ -109,6 +109,16 @@ describe('Timeline event documents', () => {
     expect(timelineEventSignature(reordered)).toEqual(timelineEventSignature(doc));
     expect(timelineEventSignature({ ...doc, pinned: true })).not.toEqual(timelineEventSignature(doc));
   });
+
+  it('should only write the open end of a window, so that the events stored before it keep their signature', () => {
+    const doc = buildTimelineEventDoc(input);
+    expect(JSON.parse(JSON.stringify(doc))).not.toHaveProperty('open_ended');
+    const { open_ended: _, ...storedBefore } = doc;
+    expect(timelineEventSignature(storedBefore)).toEqual(timelineEventSignature(doc));
+    const open = buildTimelineEventDoc({ ...input, open_ended: true });
+    expect(open.open_ended).toBe(true);
+    expect(timelineEventSignature(open)).not.toEqual(timelineEventSignature(doc));
+  });
 });
 
 describe('Timeline read filters', () => {
@@ -119,7 +129,9 @@ describe('Timeline read filters', () => {
     expect(filters.filters.find((f: any) => f.key[0] === 'hidden')).toMatchObject({ operator: 'not_eq' });
     expect(filters.filters.find((f: any) => f.key[0] === 'name')).toMatchObject({ values: ['phishing'], operator: 'search' });
     expect(filters.filterGroups).toHaveLength(1);
-    expect(filters.filterGroups[0].filters.map((f: any) => f.key[0])).toEqual(['event_time', 'event_end_time']);
+    // From the start of the window: events starting in it, windows still running at its start, and windows with no known end
+    expect(filters.filterGroups[0].filters.map((f: any) => f.key[0])).toEqual(['event_time', 'event_end_time', 'open_ended']);
+    expect(filters.filterGroups[0].filters[2]).toMatchObject({ values: ['true'] });
   });
 
   it('should include hidden events when requested', () => {

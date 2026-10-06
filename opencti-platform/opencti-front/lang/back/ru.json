@@ -1223,6 +1223,7 @@
   "Containment": "Сдерживание",
   "Deployments of the indicators in scope on security platforms": "Развёртывания индикаторов области охвата на платформах безопасности",
   "Event end time": "Время окончания события",
+  "Open-ended window": "Окно без окончания",
   "Event time": "Время события",
   "Files uploaded to the container": "Файлы, загруженные в контейнер",
   "First adversary activity": "Первая активность противника",

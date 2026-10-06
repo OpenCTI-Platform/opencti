@@ -30,6 +30,7 @@ export const timelineEventEditMutation = graphql`
       description
       event_time
       event_end_time
+      open_ended
       precision
       lane
       kind

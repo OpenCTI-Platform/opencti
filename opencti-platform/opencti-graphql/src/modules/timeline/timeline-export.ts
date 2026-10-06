@@ -6,6 +6,7 @@ export interface TimelineExportEvent {
   kind: string;
   event_time: string;
   event_end_time?: string | null;
+  open_ended?: boolean | null;
   precision: string;
   title: string;
   description?: string | null;
@@ -67,6 +68,7 @@ const DEFAULT_LABELS: Record<string, string> = {
   'column.element': 'Element',
   'column.source': 'Source',
   'column.annotation': 'Annotation',
+  still_open: 'Still open',
 };
 
 const label = (input: TimelineExportInput, key: string, fallback?: string) => input.labels?.[key] ?? DEFAULT_LABELS[key] ?? fallback ?? key;
@@ -201,10 +203,15 @@ export const renderTimelineSvg = (input: TimelineExportInput): string => {
     const startX = x(new Date(event.event_time).getTime());
     const color = LANE_COLORS[event.lane];
     const opacity = event.precision === 'approximate' ? 0.5 : 1;
-    const title = `<title>${escapeXml(`${formatExportDate(event.event_time)} - ${event.title}`)}</title>`;
+    const stillOpen = event.open_ended && !event.event_end_time ? ` - ${label(input, 'still_open')}` : '';
+    const title = `<title>${escapeXml(`${formatExportDate(event.event_time)} - ${event.title}${stillOpen}`)}</title>`;
     if (event.event_end_time) {
       const endX = Math.max(x(new Date(event.event_end_time).getTime()), startX + 2);
       parts.push(`<rect x="${startX.toFixed(1)}" y="${centerY - 5}" width="${(endX - startX).toFixed(1)}" height="10" rx="3" fill="${color}" fill-opacity="${opacity * 0.6}" stroke="${color}">${title}</rect>`);
+    } else if (stillOpen) {
+      // A window without a known end runs to the right edge of the plot, its outline dashed
+      const width = Math.max(plotRight - startX, 2);
+      parts.push(`<rect x="${startX.toFixed(1)}" y="${centerY - 5}" width="${width.toFixed(1)}" height="10" rx="3" fill="${color}" fill-opacity="${opacity * 0.3}" stroke="${color}" stroke-dasharray="4 3">${title}</rect>`);
     } else {
       parts.push(`<circle cx="${startX.toFixed(1)}" cy="${centerY}" r="${event.pinned ? 6 : 4}" fill="${color}" fill-opacity="${opacity}" stroke="#ffffff">${title}</circle>`);
     }
@@ -235,7 +242,7 @@ export const renderTimelineHtml = (input: TimelineExportInput): string => {
   }).join('');
   const eventRows = input.events.map((event) => [
     formatExportDate(event.event_time),
-    formatExportDate(event.event_end_time),
+    event.open_ended && !event.event_end_time ? label(input, 'still_open') : formatExportDate(event.event_end_time),
     label(input, `lane.${event.lane}`),
     label(input, `kind.${event.kind}`, event.kind),
     label(input, `precision.${event.precision}`, event.precision),

@@ -55,6 +55,8 @@ const TIMELINE_EVENT_DEFINITION: ModuleDefinition<StoreEntityTimelineEvent, Stix
     { name: 'description', label: 'Description', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'event_time', label: 'Event time', type: 'date', mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'event_end_time', label: 'Event end time', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    // A window started without a known end (a run still running, a deployment still active): stored only when true
+    { name: 'open_ended', label: 'Open-ended window', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: true },
     { name: 'time_precision', label: 'Time precision', type: 'string', format: 'enum', values: [...TIMELINE_PRECISIONS], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'lane', label: 'Timeline lane', type: 'string', format: 'enum', values: [...TIMELINE_LANES], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'kind', label: 'Timeline event kind', type: 'string', format: 'enum', values: [...TIMELINE_KINDS], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },

@@ -9,6 +9,7 @@ import {
   endsAfterStart,
   computeVisibleDomain,
   currentTimelineDomain,
+  describeTimelineEventTimes,
   describeTimelineSpan,
   effectiveKinds,
   effectiveLanes,
@@ -124,6 +125,24 @@ describe('Timeline time domain', () => {
     expect(zoomed).toEqual([0, 5 * HOUR]);
     expect(panDomain([0, 10], 5)).toEqual([5, 15]);
     expect(centerDomain([0, 10], 100)).toEqual([95, 105]);
+  });
+
+  it('should write the times of an event: one time, a window, or a window still open', () => {
+    const t = (message: string, options?: { values?: Record<string, unknown> }) => Object.entries(options?.values ?? {})
+      .reduce((text, [key, value]) => text.replace(`{${key}}`, String(value)), message);
+    const fldt = (date: string) => date.slice(0, 10);
+    expect(describeTimelineEventTimes({ event_time: '2026-03-01T00:00:00.000Z' }, t, fldt)).toEqual('2026-03-01');
+    expect(describeTimelineEventTimes({ event_time: '2026-03-01T00:00:00.000Z', event_end_time: '2026-03-04T00:00:00.000Z' }, t, fldt))
+      .toEqual('From 2026-03-01 to 2026-03-04');
+    expect(describeTimelineEventTimes({ event_time: '2026-03-01T00:00:00.000Z', open_ended: true }, t, fldt)).toEqual('Since 2026-03-01, still open');
+  });
+
+  it('should never cluster a window still open', () => {
+    const point = (id: string) => ({ id, event_time: '2026-03-01T10:00:00.000Z', lane: 'detection' });
+    const { singles, clusters } = clusterLaneEvents([point('a'), point('b'), { ...point('open'), open_ended: true }], 'day');
+    expect(clusters).toHaveLength(1);
+    expect(clusters[0].events.map((e) => e.id)).toEqual(['a', 'b']);
+    expect(singles.map((e) => e.id)).toEqual(['open']);
   });
 
   it('should tell the filters the user can clear from the timeline settings', () => {

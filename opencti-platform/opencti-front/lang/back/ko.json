@@ -1223,6 +1223,7 @@
   "Containment": "봉쇄",
   "Deployments of the indicators in scope on security platforms": "범위 내 지표의 보안 플랫폼 배포",
   "Event end time": "이벤트 종료 시간",
+  "Open-ended window": "종료되지 않은 기간",
   "Event time": "이벤트 시간",
   "Files uploaded to the container": "컨테이너에 업로드된 파일",
   "First adversary activity": "최초 공격자 활동",

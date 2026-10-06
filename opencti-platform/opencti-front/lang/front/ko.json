@@ -5906,6 +5906,8 @@
   "This timeline has no event yet": "이 타임라인에는 아직 이벤트가 없습니다",
   "This timeline is not available": "이 타임라인을 사용할 수 없습니다",
   "This timeline is too large to export at once: narrow the export with the filters or the time window": "이 타임라인은 한 번에 내보내기에는 너무 큽니다. 필터 또는 기간으로 내보내기 범위를 좁혀 주세요",
+  "Since {start}, still open": "{start}부터 진행 중",
+  "Still open": "진행 중",
   "Threat seen": "위협 관찰됨",
   "Time window": "시간 범위",
   "Timeline anchor changed": "타임라인 앵커 변경됨",

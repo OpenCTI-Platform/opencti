@@ -5906,6 +5906,8 @@
   "This timeline has no event yet": "На этой временной шкале пока нет событий",
   "This timeline is not available": "Эта временная шкала недоступна",
   "This timeline is too large to export at once: narrow the export with the filters or the time window": "Эта временная шкала слишком велика для экспорта за один раз: сузьте экспорт с помощью фильтров или временного окна",
+  "Since {start}, still open": "С {start}, ещё не завершено",
+  "Still open": "Ещё не завершено",
   "Threat seen": "Угроза замечена",
   "Time window": "Временное окно",
   "Timeline anchor changed": "Опорная точка временной шкалы изменена",

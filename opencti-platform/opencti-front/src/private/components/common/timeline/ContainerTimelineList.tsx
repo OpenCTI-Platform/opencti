@@ -142,6 +142,7 @@ const ContainerTimelineList = ({ events, grouping, selectedId, canEdit, onSelect
                     <Text variant="content-caption" as="div" style={{ minWidth: 150, color: colors.textSecondary }}>
                       <div>{fldt(event.event_time)}</div>
                       {event.event_end_time && <div>{`\u2192 ${fldt(event.event_end_time)}`}</div>}
+                      {!event.event_end_time && event.open_ended && <div>{`\u2192 ${t_i18n('Still open')}`}</div>}
                     </Text>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(0.75), flexWrap: 'wrap' }}>

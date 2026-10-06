@@ -102,6 +102,26 @@ describe('ContainerTimelineLanes accessibility', () => {
     expect(onClusterSelect).toHaveBeenCalledWith([new Date('2026-02-05T15:00:00.000Z').getTime(), new Date('2026-02-05T16:00:00.000Z').getTime()]);
   });
 
+  it('keeps drawing a window still open after its start left the visible window, and says it is open', () => {
+    const open = { ...event('run-1', 'derived'), event_time: '2026-02-01T00:00:00.000Z', open_ended: true };
+    const point = { ...event('point-1', 'derived'), event_time: '2026-02-01T00:00:00.000Z' };
+    testRender(
+      <ContainerTimelineLanes
+        events={[open, point]}
+        lanes={['response']}
+        domain={[new Date('2026-02-05T00:00:00.000Z').getTime(), new Date('2026-02-10T00:00:00.000Z').getTime()]}
+        grouping="day"
+        ariaLabel="Timeline"
+        onSelect={() => {}}
+      />,
+    );
+    const marker = screen.getByTestId('timeline-event-run-1');
+    expect(marker).toHaveAttribute('aria-label', expect.stringContaining('Still open'));
+    expect(marker.querySelector('rect[stroke-dasharray="4 3"]')).not.toBeNull();
+    // A point event before the window is not drawn
+    expect(screen.queryByTestId('timeline-event-point-1')).toBeNull();
+  });
+
   it('draws a focus ring around an event that can be opened, shown on keyboard focus only', () => {
     const { container } = testRender(
       <ContainerTimelineLanes

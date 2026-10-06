@@ -9,6 +9,7 @@ import { resolveTimelineSourceState, type TimelineSourceStateValue } from './tim
 import {
   clusterLaneEvents,
   compactDayTicks,
+  describeTimelineEventTimes,
   groupOverflowItems,
   layoutAnchorLabels,
   layoutLaneRows,
@@ -31,6 +32,8 @@ export interface TimelineChartEvent {
   title: string;
   event_time: string;
   event_end_time?: string | null;
+  // Started without a known end (a run still running, a deployment still active): the window stays open
+  open_ended?: boolean | null;
   lane: string;
   kind: string;
   precision: string;
@@ -40,6 +43,8 @@ export interface TimelineChartEvent {
   annotation?: string | null;
   source_state?: TimelineSourceStateValue | null;
 }
+
+const isStillOpen = (event: Pick<TimelineChartEvent, 'open_ended' | 'event_end_time'>): boolean => !!event.open_ended && !event.event_end_time;
 
 export type TimelineChartAnchors = Partial<Record<TimelineAnchorKey, string | null | undefined>> | null | undefined;
 
@@ -140,7 +145,8 @@ const ContainerTimelineLanes = ({
       const laneEvents = events.filter((event) => {
         const start = toTime(event.event_time);
         if (event.lane !== lane || start === null) return false;
-        return (toTime(event.event_end_time) ?? start) >= domain[0] && start <= domain[1];
+        const end = isStillOpen(event) ? Number.POSITIVE_INFINITY : (toTime(event.event_end_time) ?? start);
+        return end >= domain[0] && start <= domain[1];
       });
       const { singles, clusters } = clusterLaneEvents(laneEvents, grouping);
       const items: LaneItem[] = [];
@@ -148,7 +154,9 @@ const ContainerTimelineLanes = ({
         const start = toTime(event.event_time) as number;
         const end = toTime(event.event_end_time);
         const x1 = scale(new Date(start));
-        const x2 = end !== null ? Math.max(scale(new Date(end)), x1 + MARKER_WIDTH) : x1 + MARKER_WIDTH;
+        let x2 = x1 + MARKER_WIDTH;
+        if (end !== null) x2 = Math.max(scale(new Date(end)), x2);
+        else if (isStillOpen(event)) x2 = Math.max(plotRight, x2);
         const labelled = !compact && (event.pinned || event.source === 'manual');
         if (x2 < plotLeft || x1 > plotRight) return;
         items.push({ type: 'event', id: event.id, event, x1: x1 - POINT_RADIUS, x2: labelled ? x2 + 6 * Math.min(event.title.length, LABEL_CHARS) : x2 });
@@ -296,7 +304,8 @@ const ContainerTimelineLanes = ({
   // endregion
 
   const eventLabel = (event: TimelineChartEvent) => {
-    const end = event.event_end_time ? ` - ${fldt(event.event_end_time)}` : '';
+    let end = event.event_end_time ? ` - ${fldt(event.event_end_time)}` : '';
+    if (isStillOpen(event)) end = `, ${t_i18n('Still open')}`;
     return `${event.title}, ${t_i18n(TIMELINE_KIND_LABELS[event.kind] ?? event.kind)}, ${fldt(event.event_time)}${end}`;
   };
 
@@ -315,6 +324,12 @@ const ContainerTimelineLanes = ({
       const x2 = Math.max(scale(new Date(end)), x + 3);
       shape = (
         <rect x={x} y={centerY - 5} width={x2 - x} height={10} rx={3} fill={color} fillOpacity={0.35 * opacity} stroke={color} strokeOpacity={opacity} strokeDasharray={dash} />
+      );
+    } else if (isStillOpen(event)) {
+      // No known end: the window runs to the right edge of the plot, lighter and with a dashed outline
+      const x2 = Math.max(plotRight, x + 3);
+      shape = (
+        <rect x={x} y={centerY - 5} width={x2 - x} height={10} rx={3} fill={color} fillOpacity={0.2 * opacity} stroke={color} strokeOpacity={opacity} strokeDasharray="4 3" />
       );
     } else if (event.source === 'manual') {
       const size = event.pinned ? 7 : 6;
@@ -526,9 +541,7 @@ const ContainerTimelineLanes = ({
         >
           <Text variant="content-compact-bold" as="div">{hover.event.title}</Text>
           <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }}>
-            {hover.event.event_end_time
-              ? t_i18n('From {start} to {end}', { values: { start: fldt(hover.event.event_time), end: fldt(hover.event.event_end_time) } })
-              : fldt(hover.event.event_time)}
+            {describeTimelineEventTimes(hover.event, t_i18n, fldt)}
           </Text>
           {hover.event.precision === 'approximate' && (
             <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }}>{t_i18n('Approximate time')}</Text>

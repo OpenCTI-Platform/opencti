@@ -5906,6 +5906,8 @@
   "This timeline has no event yet": "Diese Zeitleiste enthält noch kein Ereignis",
   "This timeline is not available": "Diese Zeitleiste ist nicht verfügbar",
   "This timeline is too large to export at once: narrow the export with the filters or the time window": "Diese Zeitleiste ist zu groß, um sie auf einmal zu exportieren: Grenzen Sie den Export mit den Filtern oder dem Zeitfenster ein",
+  "Since {start}, still open": "Seit {start}, noch offen",
+  "Still open": "Noch offen",
   "Threat seen": "Bedrohung gesehen",
   "Time window": "Zeitfenster",
   "Timeline anchor changed": "Anker der Zeitleiste geändert",

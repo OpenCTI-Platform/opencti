@@ -29,7 +29,7 @@ import { useComputeLink } from '../../../../utils/hooks/useAppData';
 import useTimelineColors from './useTimelineColors';
 import type { TimelineListEvent } from './ContainerTimelineList';
 import TimelineSourceStateChip from './TimelineSourceStateChip';
-import { TIMELINE_KIND_LABELS, TIMELINE_LANE_LABELS, TIMELINE_PRECISION_LABELS, type TimelineLane, type TimelinePrecision } from './timelineUtils';
+import { describeTimelineEventTimes, TIMELINE_KIND_LABELS, TIMELINE_LANE_LABELS, TIMELINE_PRECISION_LABELS, type TimelineLane, type TimelinePrecision } from './timelineUtils';
 
 interface TimelineElementRef {
   readonly id: string;
@@ -182,9 +182,7 @@ const ContainerTimelineEventDrawer = ({
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: theme.spacing(2, 3) }} data-testid="timeline-event-metadata">
             <MetadataItem label={t_i18n('Time')}>
               <Text variant="content-base" as="div">
-                {event.event_end_time
-                  ? t_i18n('From {start} to {end}', { values: { start: fldt(event.event_time), end: fldt(event.event_end_time) } })
-                  : fldt(event.event_time)}
+                {describeTimelineEventTimes(event, t_i18n, fldt)}
               </Text>
               <Text variant="content-caption" as="div" style={{ color: colors.textSecondary }}>
                 {t_i18n(TIMELINE_PRECISION_LABELS[event.precision as TimelinePrecision] ?? 'Exact')}

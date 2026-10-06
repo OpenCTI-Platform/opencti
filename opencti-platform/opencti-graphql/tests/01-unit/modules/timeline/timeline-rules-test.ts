@@ -104,7 +104,8 @@ describe('Timeline adversary rules', () => {
       entities: [technique],
       relationships: [closed, relationship('rel-open', '2026-03-01T00:00:00.000Z', null)],
     })).filter((e) => e.kind === 'technique_used');
-    expect(openEnded).toMatchObject({ event_time: '2026-01-10T00:00:00.000Z', event_end_time: null });
+    // Stored without an end but flagged open: unlike a point event, the window stays open after its start
+    expect(openEnded).toMatchObject({ event_time: '2026-01-10T00:00:00.000Z', event_end_time: null, open_ended: true });
     expect(openEnded.source_ids).toEqual(['rel-closed', 'rel-open']);
     // Every relationship ended: the window ends with the last of them
     const [ended] = derive(buildInput({
@@ -112,6 +113,7 @@ describe('Timeline adversary rules', () => {
       relationships: [closed, relationship('rel-later', '2026-03-01T00:00:00.000Z', '2026-03-15T00:00:00.000Z')],
     })).filter((e) => e.kind === 'technique_used');
     expect(ended).toMatchObject({ event_time: '2026-01-10T00:00:00.000Z', event_end_time: '2026-03-15T00:00:00.000Z' });
+    expect(ended.open_ended).toBeUndefined();
   });
 
   it('should place techniques without times in kill chain order over the adversary window, flagged approximate', () => {
@@ -352,6 +354,30 @@ describe('Timeline knowledge rules', () => {
   });
 });
 
+describe('Timeline open-ended windows', () => {
+  it('should keep a running hunt run and an indicator valid without an end date open, never a point event', () => {
+    const events = derive(buildInput({
+      entities: [
+        element({ id: 'ind-open', entity_type: 'Indicator', name: 'evil.com', valid_from: '2026-03-01T00:00:00.000Z' }),
+        element({ id: 'ind-closed', entity_type: 'Indicator', name: 'bad.com', valid_from: '2026-03-01T00:00:00.000Z', valid_until: '2026-04-01T00:00:00.000Z' }),
+      ],
+      soft: {
+        coverageResults: [],
+        coverageRelationships: [],
+        huntRuns: [element({ id: 'run-3', entity_type: 'Hunt-Run', name: 'running', extra: { started_at: '2026-03-14T00:00:00.000Z', hunt_run_status: 'running' } })],
+        deployments: [element({ id: 'dep-2', entity_type: 'deployed-on', from_name: 'evil.com', to_name: 'Sentinel', extra: { deployed_at: '2026-03-13T00:00:00.000Z', removed_at: '2026-03-20T00:00:00.000Z', deployment_status: 'removed' } })],
+        investigationRuns: [],
+      },
+    }));
+    expect(events.find((e) => e.kind === 'hunt_run')).toMatchObject({ event_end_time: null, open_ended: true });
+    expect(events.find((e) => e.element_id === 'ind-open')).toMatchObject({ event_end_time: null, open_ended: true });
+    expect(events.find((e) => e.element_id === 'ind-closed')?.open_ended).toBeUndefined();
+    // Removed: the deployment window is closed
+    expect(events.find((e) => e.kind === 'deployment')).toMatchObject({ event_end_time: '2026-03-20T00:00:00.000Z' });
+    expect(events.find((e) => e.kind === 'deployment')?.open_ended).toBeUndefined();
+  });
+});
+
 describe('Timeline soft-check rules', () => {
   it('should derive coverage results, hunt runs, deployments and investigation steps from their sources', () => {
     const input = buildInput({
@@ -403,11 +429,16 @@ describe('Timeline soft-check rules', () => {
     expect(huntRuns[1]).toMatchObject({ element_id: 'run-2', element_type: 'Hunt-Run', name: 'Hunt run manual run (failed)', source_state: { family: 'hunt_run', state: 'failed', verdict: null } });
     expect(huntRuns[1].source_ids).toEqual([]);
     expect(huntRuns[1].description).toBeUndefined();
+    // A finished run without a completion time is not open: completed or failed
+    expect(huntRuns.map((run) => run.open_ended)).toEqual([undefined, undefined]);
+    // Active and not removed: the deployment stays open
     expect(events.find((e) => e.kind === 'deployment')).toMatchObject({
       name: 'evil.com deployed on Sentinel',
       lane: 'detection',
       description: '2 hits',
       source_state: { family: 'deployment', state: 'active', validation: null },
+      event_end_time: null,
+      open_ended: true,
     });
     // Former ledger shape: the tool stands for the action, the step never reached (no time, no findings) is left out
     const investigation = events.filter((e) => e.kind === 'investigation_step');

@@ -112,6 +112,7 @@ export interface BasicStoreEntityTimelineEvent extends BasicStoreEntity {
   container_id: string;
   event_time: string;
   event_end_time?: string | null;
+  open_ended?: boolean | null;
   time_precision: TimelinePrecisionValue;
   lane: TimelineLaneValue;
   kind: TimelineKindValue;

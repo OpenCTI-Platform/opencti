@@ -1223,6 +1223,7 @@
   "Containment": "封じ込め",
   "Deployments of the indicators in scope on security platforms": "対象範囲のインジケータのセキュリティプラットフォームへのデプロイ",
   "Event end time": "イベント終了時刻",
+  "Open-ended window": "終了未定の期間",
   "Event time": "イベント時刻",
   "Files uploaded to the container": "コンテナにアップロードされたファイル",
   "First adversary activity": "最初の攻撃者活動",

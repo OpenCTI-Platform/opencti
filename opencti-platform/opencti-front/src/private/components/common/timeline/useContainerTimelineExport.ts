@@ -140,6 +140,7 @@ export const useTimelineFileRenderer = () => {
     { key: 'column.title', label: t_i18n('Title') },
     { key: 'column.element', label: t_i18n('Element') },
     { key: 'column.annotation', label: t_i18n('Annotation') },
+    { key: 'still_open', label: t_i18n('Still open') },
   ];
 
   const fetchServerExport = async (options: TimelineFileOptions, format: TimelineServerFormat) => {

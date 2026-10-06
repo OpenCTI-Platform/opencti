@@ -36535,6 +36535,8 @@ export type TimelineEvent = BasicObject & InternalObject & {
   lane: TimelineLane;
   metrics?: Maybe<Array<Maybe<Metric>>>;
   objectMarking?: Maybe<Array<MarkingDefinition>>;
+  /** Started without a known end (a run still running, a deployment still active): the window stays open */
+  open_ended?: Maybe<Scalars['Boolean']['output']>;
   ordering_hint?: Maybe<Scalars['Int']['output']>;
   parent_types: Array<Scalars['String']['output']>;
   pinned: Scalars['Boolean']['output'];
@@ -54282,6 +54284,7 @@ export type TimelineEventResolvers<ContextType = any, ParentType extends Resolve
   lane?: Resolver<ResolversTypes['TimelineLane'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
   objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
+  open_ended?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   ordering_hint?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   pinned?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;

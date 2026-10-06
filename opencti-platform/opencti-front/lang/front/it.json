@@ -5906,6 +5906,8 @@
   "This timeline has no event yet": "Questa cronologia non ha ancora eventi",
   "This timeline is not available": "Questa cronologia non è disponibile",
   "This timeline is too large to export at once: narrow the export with the filters or the time window": "Questa cronologia è troppo grande per essere esportata in una volta: restringi l'esportazione con i filtri o la finestra temporale",
+  "Since {start}, still open": "Dal {start}, ancora aperto",
+  "Still open": "Ancora aperto",
   "Threat seen": "Minaccia osservata",
   "Time window": "Finestra temporale",
   "Timeline anchor changed": "Ancora della cronologia modificata",

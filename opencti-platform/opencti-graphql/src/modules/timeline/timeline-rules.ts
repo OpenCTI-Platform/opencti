@@ -139,6 +139,9 @@ export interface DerivedTimelineEvent {
   source_ids?: string[];
   event_time: string;
   event_end_time?: string | null;
+  // Started without a known end (a relationship without a stop time, a run still running, a deployment still active):
+  // unlike a point event, the window stays open after its start
+  open_ended?: boolean;
   time_precision: TimelinePrecisionValue;
   name: string;
   description?: string | null;
@@ -191,6 +194,11 @@ const windowOf = (start: string | null | undefined, end: string | null | undefin
   const to = endTime !== null && endTime > from ? endTime : null;
   return { from, to };
 };
+
+// States after which a run or a deployment without an end time is not open any more (run states of the hunts and of
+// the investigation engine, deployment states)
+const FINISHED_STATES = new Set(['completed', 'succeeded', 'degraded', 'partial', 'error', 'failed', 'timeout', 'skipped', 'cancelled', 'removed', 'expired']);
+const isStillOpen = (end: number | null, state: string | null | undefined): boolean => end === null && !FINISHED_STATES.has((state ?? '').toLowerCase());
 
 const formatCount = (count: number | null | undefined, singular: string, plural: string) => {
   if (count === null || count === undefined) return undefined;
@@ -362,6 +370,7 @@ const techniqueRule: TimelineRule = {
           source_ids: related.map((r) => r.id),
           event_time: iso(from),
           event_end_time: to !== null && to > from ? iso(to) : null,
+          ...(to === null ? { open_ended: true } : {}),
           time_precision: 'exact',
           name: `Technique ${technique.name}`,
           description: phases.length > 0 ? `Kill chain phases: ${phases.join(', ')}` : technique.description,
@@ -426,6 +435,8 @@ const indicatorRule: TimelineRule = {
         element_type: indicator.entity_type,
         event_time: iso(window.from),
         event_end_time: window.to !== null ? iso(window.to) : null,
+        // Valid from a date without an end date: still valid
+        ...(toTimelineTime(indicator.valid_from) !== null && toTimelineTime(indicator.valid_until) === null ? { open_ended: true } : {}),
         time_precision: 'exact',
         name: `Indicator ${indicator.name} valid`,
         description: indicator.description,
@@ -857,6 +868,8 @@ export const huntRunRule: TimelineRule = {
         discriminator: run.id,
         event_time: iso(start),
         event_end_time: end !== null && end > start ? iso(end) : null,
+        // Not completed yet: the run is still running
+        ...(isStillOpen(end, status) ? { open_ended: true } : {}),
         time_precision: 'exact' as const,
         name: `Hunt run ${huntName ?? run.name}`,
         description: formatCount(hits, 'hit', 'hits'),
@@ -886,6 +899,8 @@ export const deploymentRule: TimelineRule = {
       element_type: deployment.entity_type,
       event_time: iso(start),
       event_end_time: end !== null && end > start ? iso(end) : null,
+      // Not removed yet: the indicator is still deployed
+      ...(isStillOpen(end, status) ? { open_ended: true } : {}),
       time_precision: 'exact' as const,
       name: `${deployment.from_name ?? 'Indicator'} deployed on ${deployment.to_name ?? 'Unknown'}`,
       description: formatCount(hits, 'hit', 'hits'),
@@ -1047,6 +1062,7 @@ export const investigationRunRule: TimelineRule = {
           element_type: run.entity_type,
           event_time: iso(start),
           event_end_time: end !== null && end > start ? iso(end) : null,
+          ...(isStillOpen(end, status) ? { open_ended: true } : {}),
           time_precision: 'exact',
           name: INVESTIGATION_RUN_TITLE,
           description: details.join(' - ') || undefined,
@@ -1063,6 +1079,7 @@ export const investigationRunRule: TimelineRule = {
           group.findings > 0 ? formatCount(group.findings, 'finding', 'findings') : null,
           sources.length > 0 ? `Sources: ${sources.join(', ')}` : null,
         ].filter((d) => !!d);
+        const state = aggregateInvestigationStepState(group.states);
         events.push({
           rule_id: RULE_INVESTIGATION_RUN,
           kind: 'investigation_step',
@@ -1072,12 +1089,14 @@ export const investigationRunRule: TimelineRule = {
           element_type: run.entity_type,
           event_time: iso(actionStart),
           event_end_time: group.end !== null && group.end > actionStart ? iso(group.end) : null,
+          // An action still querying its sources is still open
+          ...(group.end === null && state === 'querying' ? { open_ended: true } : {}),
           time_precision: group.start !== null ? 'exact' : 'approximate',
           name: actionLabels.get(group.key) ?? humanizeSlug(group.key),
           description: details.join(' - ') || undefined,
           markings,
           ordering_hint: group.order,
-          source_state: { family: 'investigation_step', state: aggregateInvestigationStepState(group.states), run_id: run.id, step: group.key },
+          source_state: { family: 'investigation_step', state, run_id: run.id, step: group.key },
         });
       });
       // Findings outside the case: when the run saw the element, as the engine dated it
