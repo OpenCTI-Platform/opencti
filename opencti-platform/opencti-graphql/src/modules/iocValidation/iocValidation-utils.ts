@@ -2,6 +2,7 @@ import { extractValidObservablesFromIndicatorPattern, STIX_PATTERN_TYPE } from '
 import { isBypassUser, isUserHasCapability } from '../../utils/access';
 import type { StixId } from '../../types/stix-2-1-common';
 import type { AuthUser } from '../../types/user';
+import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import {
   type IocValidationIoc,
   type IocValidationResultsSummary,
@@ -32,6 +33,21 @@ export const isIocValidationTestKind = (value: unknown): value is IocValidationT
 export const requesterIdOf = (request: { creator_id?: string | string[] | null }) => {
   const creators = Array.isArray(request.creator_id) ? request.creator_id : [request.creator_id];
   return creators.find((id): id is string => typeof id === 'string' && id.length > 0);
+};
+
+type AccessControlledElement = { [RELATION_OBJECT_MARKING]?: string[] | null; [RELATION_GRANTED_TO]?: string[] | null };
+
+/**
+ * Read access of a validation request: its name, description and OpenAEV run describe all its indicators and security
+ * platforms, so it is read only by who reads every one of them. It carries the markings of all of them and is shared
+ * with the organizations all of them are shared with (none when they share none: then only the platform organization
+ * reads it, as for an element shared with no organization).
+ */
+export const requestAccessOf = (ends: AccessControlledElement[]) => {
+  const markingIds = [...new Set(ends.flatMap((end) => end[RELATION_OBJECT_MARKING] ?? []))];
+  const [first, ...others] = ends.map((end) => end[RELATION_GRANTED_TO] ?? []);
+  const organizationIds = [...new Set((first ?? []).filter((organization) => others.every((granted) => granted.includes(organization))))];
+  return { markingIds, organizationIds };
 };
 
 /**

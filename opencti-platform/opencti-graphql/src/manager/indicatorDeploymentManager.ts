@@ -16,7 +16,7 @@ import {
   repairPairMarkings,
   repairRecentDeploymentCounters,
 } from '../modules/indicatorDeployment/indicatorDeployment-domain';
-import { maintainIocValidationRequests } from '../modules/iocValidation/iocValidation-domain';
+import { maintainIocValidationRequests, repairValidationRequestAccess } from '../modules/iocValidation/iocValidation-domain';
 import { redisGetManagerEventState, redisSetManagerEventState } from '../database/redis';
 
 const toPositiveNumber = (value: unknown, fallback: number) => {
@@ -143,7 +143,8 @@ export const indicatorDeploymentStreamHandler = async (events: Array<SseEvent<Da
   if (markingChanges.indicatorIds.length > 0 || markingChanges.platformIds.length > 0) {
     const context = executionContext(CONTEXT_NAME);
     const repaired = await repairPairMarkings(context, EXPIRATION_MANAGER_USER, markingChanges);
-    logApp.info('[OPENCTI-MODULE] Deployment markings and counters repaired after an endpoint access change', { repaired });
+    const requests = await repairValidationRequestAccess(context, EXPIRATION_MANAGER_USER, markingChanges);
+    logApp.info('[OPENCTI-MODULE] Deployment markings and counters repaired after an endpoint access change', { repaired, requests });
   }
   if (hasSecurityPlatformRemoval(events)) {
     const context = executionContext(CONTEXT_NAME);

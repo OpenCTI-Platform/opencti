@@ -2,12 +2,18 @@ import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import * as streamHandler from '../../../../src/database/stream/stream-handler';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
-import { ADMIN_USER, getUserIdByEmail, testContext, USER_CONNECTOR, USER_EDITOR } from '../../../utils/testQuery';
+import { ADMIN_USER, getUserIdByEmail, testContext, USER_CONNECTOR, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
+import { RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
 import { connectorDelete, registerConnector } from '../../../../src/domain/connector';
 import { resetCacheForEntity } from '../../../../src/database/cache';
 import { ENTITY_TYPE_CONNECTOR } from '../../../../src/schema/internalObject';
 import { ConnectorType } from '../../../../src/generated/graphql';
-import { IOC_VALIDATION_INACCESSIBLE_REASON, maintainIocValidationRequests, validationResultSightingStixId } from '../../../../src/modules/iocValidation/iocValidation-domain';
+import {
+  IOC_VALIDATION_INACCESSIBLE_REASON,
+  maintainIocValidationRequests,
+  repairValidationRequestAccess,
+  validationResultSightingStixId,
+} from '../../../../src/modules/iocValidation/iocValidation-domain';
 import { ENTITY_TYPE_IOC_VALIDATION_REQUEST, IOC_VALIDATION_CONNECTOR_SCOPE } from '../../../../src/modules/iocValidation/iocValidation-types';
 import { internalLoadById, storeLoadById } from '../../../../src/database/middleware-loader';
 import { createRelation, patchAttribute } from '../../../../src/database/middleware';
@@ -247,6 +253,45 @@ describe('IOC validation requests', () => {
     expect(read.data?.iocValidationRequest.created_at).toBeTruthy();
     const list = await queryAsAdminWithSuccess({ query: REQUESTS_LIST, variables: {} });
     expect(list.data?.iocValidationRequests.edges.map((e: { node: { id: string } }) => e.node.id)).toContain(requestId);
+  });
+
+  it('should give a request the access of its indicators and security platforms, and follow their changes', async () => {
+    const amber = await internalLoadById(testContext, ADMIN_USER, MARKING_TLP_AMBER) as unknown as { internal_id: string };
+    const platform = await internalLoadById(testContext, ADMIN_USER, platformId) as unknown as { _index: string };
+    const setPlatformMarkings = async (ids: string[]) => {
+      const script = { source: "ctx._source['rel_object-marking.internal_id'] = params.ids", lang: 'painless', params: { ids } };
+      await elUpdate(testContext, platform._index, platformId, { script });
+      await repairValidationRequestAccess(testContext, ADMIN_USER, { indicatorIds: [], platformIds: [platformId] });
+    };
+    const requestMarkings = async () => {
+      const stored = await internalLoadById(testContext, ADMIN_USER, requestId, { type: ENTITY_TYPE_IOC_VALIDATION_REQUEST }) as unknown as Record<string, string[] | undefined>;
+      return stored[RELATION_OBJECT_MARKING] ?? [];
+    };
+    const readAs = async (user: typeof USER_PARTICIPATE) => {
+      const read = await queryAsUserWithSuccess(user, { query: REQUEST_READ, variables: { id: requestId } });
+      const list = await queryAsUserWithSuccess(user, { query: REQUESTS_LIST, variables: {} });
+      const listed = list.data?.iocValidationRequests.edges.some((e: { node: { id: string } }) => e.node.id === requestId);
+      return { read: !!read.data?.iocValidationRequest, listed };
+    };
+    expect(await requestMarkings()).toEqual([]);
+    expect(await readAs(USER_PARTICIPATE)).toEqual({ read: true, listed: true });
+    try {
+      await setPlatformMarkings([amber.internal_id]);
+      expect(await requestMarkings()).toEqual([amber.internal_id]);
+      // Only the readers of every end read the request: its name and OpenAEV run describe all of them
+      expect(await readAs(USER_PARTICIPATE)).toEqual({ read: false, listed: false });
+      expect(await readAs(USER_EDITOR)).toEqual({ read: true, listed: true });
+      // The request connector reports by identity, whatever the access of the request to its account
+      const approval = await queryAsUserWithSuccess(USER_CONNECTOR, {
+        query: STATUS_UPDATE,
+        variables: { id: requestId, input: { status: 'awaiting_approval', message: 'Waiting for the approval of the scenario' } },
+      });
+      expect(approval.data?.iocValidationRequestStatusUpdate.status).toEqual('awaiting_approval');
+    } finally {
+      await setPlatformMarkings([]);
+    }
+    expect(await requestMarkings()).toEqual([]);
+    expect(await readAs(USER_PARTICIPATE)).toEqual({ read: true, listed: true });
   });
 
   it('should only accept lifecycle updates from the request connector', async () => {

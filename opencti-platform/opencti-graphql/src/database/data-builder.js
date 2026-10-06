@@ -130,7 +130,10 @@ export const buildEntityData = async (context, user, input, type, opts = {}) => 
     if (input[inputField] || relType === RELATION_GRANTED_TO) {
       // For organizations management
       if (relType === RELATION_GRANTED_TO && isSegregationEntity) {
-        if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && input[inputField]
+        if (opts.grantedRefsFromInput) {
+          // Sharing computed by the platform, never a user input: exactly the organizations of the input
+          pushAll(relToCreate, buildInnerRelation(data, input[inputField] ?? [], RELATION_GRANTED_TO));
+        } else if (isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT) && input[inputField]
           && (!Array.isArray(input[inputField]) || input[inputField].length > 0)) {
           pushAll(relToCreate, buildInnerRelation(data, input[inputField], RELATION_GRANTED_TO));
         } else if (!context.user_inside_platform_organization || (isServiceAccountUser(user) && isNotEmptyField(user.organizations))) {

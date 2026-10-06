@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
 import { createdAt, creators, updatedAt } from '../../schema/attribute-definition';
+import { objectMarking, objectOrganization } from '../../schema/stixRefRelationship';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
 import convertIocValidationRequestToStix from './iocValidation-converter';
@@ -93,6 +94,11 @@ const IOC_VALIDATION_REQUEST_DEFINITION: ModuleDefinition<StoreEntityIocValidati
     { name: 'completed_at', label: 'Completed at', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
   ],
   relations: [],
+  // Read access of every indicator and security platform of the request, set and repaired by the platform
+  relationsRefs: [
+    { ...objectMarking, isFilterable: false },
+    { ...objectOrganization, isFilterable: false },
+  ],
   representative: (instance: StixIocValidationRequest) => {
     return instance.name;
   },

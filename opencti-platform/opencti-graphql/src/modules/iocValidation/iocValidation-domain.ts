@@ -1,26 +1,29 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Promise as BluePromise } from 'bluebird';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicStoreBase, BasicStoreRelation } from '../../types/store';
+import type { BasicStoreBase, BasicStoreEntity, BasicStoreRelation } from '../../types/store';
 import type { StixId } from '../../types/stix-2-1-common';
 import conf, { BUS_TOPICS, logApp } from '../../config/conf';
 import { ForbiddenAccess, FunctionalError, ValidationError } from '../../config/errors';
 import { buildReplaceScriptParams, EL_REPLACE_SCRIPT_SOURCE, elUpdate } from '../../database/engine';
 import { createRelation, deleteElementById, patchAttribute, stixLoadByIds } from '../../database/middleware';
 import { notify, redisGetManagerEventState, redisSetManagerEventState } from '../../database/redis';
-import { isEmptyField, isNotEmptyField } from '../../database/utils';
+import { isEmptyField, isNotEmptyField, UPDATE_OPERATION_REPLACE } from '../../database/utils';
+import { getEntityFromCache } from '../../database/cache';
+import type { BasicStoreSettings } from '../../types/settings';
+import { isEnterpriseEditionFromSettings } from '../../enterprise-edition/ee';
 import { lockResources } from '../../lock/master-lock';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_GRANTED_REFS, INPUT_MARKINGS } from '../../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { cleanMarkings } from '../../utils/markingDefinition-utils';
-import { fullRelationsList, internalLoadById, pageEntitiesConnection, storeLoadById, storeLoadByIds } from '../../database/middleware-loader';
+import { fullEntitiesList, fullRelationsList, internalFindByIds, internalLoadById, pageEntitiesConnection, storeLoadById, storeLoadByIds } from '../../database/middleware-loader';
 import { connectorsForEnrichment } from '../../database/repository';
 import { pushToConnector } from '../../database/rabbitmq';
 import { createWork } from '../../domain/work';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { CONNECTOR_INTERNAL_ENRICHMENT } from '../../schema/general';
-import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { isBypassUser, isUserHasCapability, SYSTEM_USER } from '../../utils/access';
 import type { BasicStoreEntityConnector } from '../../types/connector';
 import { resolveUserByIdFromCache } from '../user/user-domain';
@@ -77,6 +80,7 @@ import {
   isIocValidationTestKind,
   isSummaryComplete,
   isTrustedDeploymentReporter,
+  requestAccessOf,
   requesterIdOf,
   summarizeValidationResults,
 } from './iocValidation-utils';
@@ -170,6 +174,89 @@ export const findReadableIndicatorIds = async (context: AuthContext, user: AuthU
   if (indicatorIds.length === 0) return new Set<string>();
   const indicators = await storeLoadByIds<BasicStoreEntityIndicator>(context, user, indicatorIds, ENTITY_TYPE_INDICATOR);
   return new Set(indicators.filter((i) => i).map((i) => i.internal_id));
+};
+// endregion
+
+// region access
+type AccessControlled = { [RELATION_OBJECT_MARKING]?: string[] | null; [RELATION_GRANTED_TO]?: string[] | null };
+type AccessControlledRequest = AccessControlled & { internal_id: string; indicator_ids?: string[] | null; platform_ids?: string[] | null };
+const ACCESS_REPAIR_PAGE_SIZE = 100;
+
+const sameIds = (current: string[] | null | undefined, expected: string[]) => {
+  const ids = current ?? [];
+  return ids.length === expected.length && expected.every((id) => ids.includes(id));
+};
+
+/** Markings (the highest of each type kept) and organizations a request with these ends carries (see requestAccessOf). */
+const expectedRequestAccess = async (context: AuthContext, ends: AccessControlled[]) => {
+  const { markingIds, organizationIds } = requestAccessOf(ends);
+  const cleaned = await cleanMarkings(context, markingIds);
+  return {
+    markingIds: [...new Set(cleaned
+      .map((marking: { internal_id?: string } | string) => (typeof marking === 'string' ? marking : marking.internal_id))
+      .filter((id: string | undefined): id is string => !!id))],
+    organizationIds,
+  };
+};
+
+/**
+ * Gives a request the access of its indicators and security platforms as they are now, read as the platform. Sharing is
+ * only repaired with the Enterprise Edition, without which it never changes nor restricts reads.
+ */
+const ensureRequestAccess = async (context: AuthContext, user: AuthUser, request: AccessControlledRequest) => {
+  const loadEnds = async (ids: string[] | null | undefined, type: string) => {
+    if (isEmptyField(ids)) {
+      return [];
+    }
+    return await internalFindByIds<BasicStoreEntity>(context, SYSTEM_USER, ids as string[], { type }) as BasicStoreEntity[];
+  };
+  const [indicators, platforms] = await Promise.all([
+    loadEnds(request.indicator_ids, ENTITY_TYPE_INDICATOR),
+    loadEnds(request.platform_ids, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM),
+  ]);
+  const ends = [...indicators, ...platforms].filter((end) => end) as AccessControlled[];
+  const expected = await expectedRequestAccess(context, ends);
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const patch: Record<string, string[]> = {};
+  if (!sameIds(request[RELATION_OBJECT_MARKING], expected.markingIds)) {
+    patch[INPUT_MARKINGS] = expected.markingIds;
+  }
+  if (isEnterpriseEditionFromSettings(settings) && !sameIds(request[RELATION_GRANTED_TO], expected.organizationIds)) {
+    patch[INPUT_GRANTED_REFS] = expected.organizationIds;
+  }
+  if (Object.keys(patch).length === 0) {
+    return false;
+  }
+  await patchAttribute(context, user, request.internal_id, ENTITY_TYPE_IOC_VALIDATION_REQUEST, patch, {
+    operations: Object.fromEntries(Object.keys(patch).map((key) => [key, UPDATE_OPERATION_REPLACE])),
+  });
+  return true;
+};
+
+/**
+ * After a marking or sharing change of indicators or security platforms, every validation request that includes one of
+ * them takes the access of all its indicators and security platforms again, one page of requests at a time.
+ */
+export const repairValidationRequestAccess = async (context: AuthContext, user: AuthUser, changes: { indicatorIds: string[]; platformIds: string[] }) => {
+  const filters = [
+    ...(changes.indicatorIds.length > 0 ? [{ key: ['indicator_ids'], values: changes.indicatorIds }] : []),
+    ...(changes.platformIds.length > 0 ? [{ key: ['platform_ids'], values: changes.platformIds }] : []),
+  ];
+  if (filters.length === 0) {
+    return 0;
+  }
+  let repaired = 0;
+  await fullEntitiesList<BasicStoreEntityIocValidationRequest>(context, SYSTEM_USER, [ENTITY_TYPE_IOC_VALIDATION_REQUEST], {
+    filters: { mode: 'or', filters, filterGroups: [] },
+    noFiltersChecking: true,
+    first: ACCESS_REPAIR_PAGE_SIZE,
+    callback: async (requests: BasicStoreEntityIocValidationRequest[]) => {
+      const changed = await BluePromise.map(requests, (request) => ensureRequestAccess(context, user, request as AccessControlledRequest), { concurrency: CONCURRENCY });
+      repaired += changed.filter((updated) => updated).length;
+      return true;
+    },
+  } as never);
+  return repaired;
 };
 // endregion
 
@@ -372,6 +459,12 @@ export const requestIndicatorsValidation = async (context: AuthContext, user: Au
     const name = args.name?.trim() || `Validation of ${claimedIndicatorIds.size} indicator(s) on ${resolvedPlatforms.length} security platform(s)`;
     // Module internal objects are not dated by the data builder: the creation date is part of the request.
     const createdAt = new Date();
+    // Created with the markings of its ends (the requester reads all of them) and shared with no organization, so no
+    // reader outside the platform organization sees it before it gets the organizations of its ends.
+    const access = await expectedRequestAccess(contextOutOfDraft, [
+      ...requesterIndicators.filter((indicator) => claimedIndicatorIds.has(indicator.internal_id)),
+      ...resolvedPlatforms,
+    ]);
     request = await createInternalObject<StoreEntityIocValidationRequest>(contextOutOfDraft, user, {
       name,
       created_at: createdAt,
@@ -386,7 +479,15 @@ export const requestIndicatorsValidation = async (context: AuthContext, user: Au
       iocs: iocs.filter((ioc) => claimedIndicatorIds.has(ioc.indicator_id)),
       pairs: claimed,
       skipped,
-    }, ENTITY_TYPE_IOC_VALIDATION_REQUEST);
+      [INPUT_MARKINGS]: access.markingIds,
+      [INPUT_GRANTED_REFS]: [],
+    }, ENTITY_TYPE_IOC_VALIDATION_REQUEST, { grantedRefsFromInput: true });
+    // The organizations, and any change of an end since it was read, are applied once the request exists: a change
+    // event of an end only repairs the requests existing by then
+    const stored = await findIocValidationRequest(contextOutOfDraft, SYSTEM_USER, request.internal_id);
+    if (stored) {
+      await ensureRequestAccess(contextOutOfDraft, SYSTEM_USER, stored as unknown as AccessControlledRequest);
+    }
     await setPairsValidationStatus(contextOutOfDraft, claimedDeployments, {
       validation_status: VALIDATION_STATUS_REQUESTED,
       validation_run_id: request.internal_id,
@@ -697,13 +798,15 @@ export const updateIocValidationRequestStatus = async (context: AuthContext, use
   if (!OPENAEV_REPORTABLE_STATUSES.includes(status)) {
     throw ValidationError('This status cannot be reported by OpenAEV', 'status', { status });
   }
-  const found = await findIocValidationRequest(context, user, id);
+  // The request connector is authorized by identity: the access of the request follows its indicators and security
+  // platforms, which its account may not all read
+  const found = await findIocValidationRequest(context, SYSTEM_USER, id);
   if (!found) {
     throw FunctionalError('IOC validation request not found', { id });
   }
   await assertRequestConnectorUser(context, user, found);
   return withRequestLock(found.internal_id, async () => {
-    const request = await findIocValidationRequest(context, user, found.internal_id) ?? found;
+    const request = await findIocValidationRequest(context, SYSTEM_USER, found.internal_id) ?? found;
     if (!isAllowedTransition(request.status, status)) {
       logApp.info('[IOC-VALIDATION] Ignoring out of order status update', { id, current: request.status, next: status });
       return request;
@@ -731,7 +834,7 @@ export const updateIocValidationRequestStatus = async (context: AuthContext, use
         patch.completed_at = new Date();
       }
     }
-    return patchRequest(context, user, request.internal_id, patch);
+    return patchRequest(context, SYSTEM_USER, request.internal_id, patch);
   });
 };
 
@@ -785,7 +888,9 @@ export const reportIocValidationResults = async (context: AuthContext, user: Aut
       throw ValidationError('Hit count must be a positive integer', 'hitCount', { hitCount: result.hitCount });
     }
   });
-  const request = await findIocValidationRequest(context, user, args.id);
+  // Authorized by identity below (the request connector, or the account recording the deployments of the platform),
+  // whatever the access of the request to its account
+  const request = await findIocValidationRequest(context, SYSTEM_USER, args.id);
   if (!request) {
     throw FunctionalError('IOC validation request not found', { id: args.id });
   }
@@ -880,7 +985,7 @@ export const reportIocValidationResults = async (context: AuthContext, user: Aut
       await setRequestAttributes(context, current, { pairs, results_summary: summarizeRequestPairs(pairs, current.skipped?.length ?? 0) });
     });
   }
-  return findIocValidationRequest(context, user, request.internal_id);
+  return findIocValidationRequest(context, SYSTEM_USER, request.internal_id);
 };
 
 export const deleteIocValidationRequest = async (context: AuthContext, user: AuthUser, id: string) => {

@@ -6,6 +6,7 @@ import {
   isDeploymentReporter,
   isIocValidationTestKind,
   isSummaryComplete,
+  requestAccessOf,
   requesterIdOf,
   resolveTestKind,
   summarizeValidationResults,
@@ -156,6 +157,29 @@ describe('IOC validation requester', () => {
     expect(requesterIdOf({ creator_id: null })).toBeUndefined();
     expect(requesterIdOf({ creator_id: ['', 'user-4'] })).toEqual('user-4');
     expect(requesterIdOf({})).toBeUndefined();
+  });
+});
+
+describe('IOC validation request access', () => {
+  it('should carry the markings of every indicator and security platform', () => {
+    const access = requestAccessOf([
+      { 'object-marking': ['tlp-amber'] },
+      { 'object-marking': ['tlp-amber', 'pap-red'] },
+      { 'object-marking': null },
+    ]);
+    expect(access.markingIds.sort()).toEqual(['pap-red', 'tlp-amber']);
+  });
+
+  it('should be shared with the organizations all its ends are shared with only', () => {
+    expect(requestAccessOf([
+      { granted: ['org-a', 'org-b'] },
+      { granted: ['org-b', 'org-c'] },
+      { granted: ['org-b', 'org-a'] },
+    ]).organizationIds).toEqual(['org-b']);
+    // An end shared with no organization leaves the request to the platform organization
+    expect(requestAccessOf([{ granted: ['org-a'] }, { granted: [] }]).organizationIds).toEqual([]);
+    expect(requestAccessOf([{ granted: ['org-a'] }, {}]).organizationIds).toEqual([]);
+    expect(requestAccessOf([]).organizationIds).toEqual([]);
   });
 });
 

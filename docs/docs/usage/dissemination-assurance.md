@@ -176,6 +176,13 @@ none is readable any more, the request fails with that reason. Deleting a reques
 its deployments that are still waiting for results and deletes the sightings that recorded its results; a request
 being sent is deleted once the sending is recorded.
 
+A request describes all its indicators and security platforms (its name, description, status messages and OpenAEV
+run), so only the users who can read every one of them can see, list or delete it: it carries the markings of all of
+them (the highest of each type) and, on a platform with organization segregation, is shared with the organizations all
+of them are shared with. It follows every later change of their markings or sharing. Within a request, each user only
+sees the indicators, results and deployments they can read. The OpenAEV IOC validation connector keeps reporting on the
+requests sent to it, whatever its account can read.
+
 ![Validate live deployments dialog listing the indicators and the security platform to test](assets/dissemination-assurance-validate-live.png)
 
 OpenAEV never runs anything without an explicit approval by one of its operators, and only runs the benign test
@@ -233,7 +240,7 @@ following parameters:
 
 | Parameter                                           | Environment variable                                 | Default value | Description                                                     |
 |:----------------------------------------------------|:-----------------------------------------------------|:--------------|:----------------------------------------------------------------|
-| indicator_deployment_manager:enabled                | INDICATOR_DEPLOYMENT_MANAGER__ENABLED                | true          | Enable the indicator deployment manager: expiry of deployments, counters, maintenance of validation requests, and the markings and sharing of deployments after a change of markings, sharing, authorized members or author of their indicator or security platform. Keep it enabled. |
+| indicator_deployment_manager:enabled                | INDICATOR_DEPLOYMENT_MANAGER__ENABLED                | true          | Enable the indicator deployment manager: expiry of deployments, counters, maintenance of validation requests, and the markings and sharing of deployments and validation requests after a change of markings, sharing, authorized members or author of their indicator or security platform. Keep it enabled. |
 | indicator_deployment_manager:interval               | INDICATOR_DEPLOYMENT_MANAGER__INTERVAL               | 60000         | Interval between two runs of the manager, in milliseconds.      |
 | indicator_deployment_manager:removal_grace_period   | INDICATOR_DEPLOYMENT_MANAGER__REMOVAL_GRACE_PERIOD   | 86400000      | Time given to a connector to confirm a removal, in milliseconds. |
 | indicator_deployment_manager:reconciliation_max_pages | INDICATOR_DEPLOYMENT_MANAGER__RECONCILIATION_MAX_PAGES | 1000        | Pages of 1,000 indicators whose counters are recomputed right after a security platform is deleted or merged. |
