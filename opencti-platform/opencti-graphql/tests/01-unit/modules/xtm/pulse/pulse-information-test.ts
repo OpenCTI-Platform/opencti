@@ -7,10 +7,13 @@ import {
   combinePulsePreviewSignals,
   PULSE_PREVIEW_CLEARED_DOCUMENT,
   type PulseFieldPolicy,
+  pulseQueryClause,
+  pulseRankSort,
   toPulseInformationOutput,
   visiblePulseInformation,
 } from '../../../../../src/modules/xtm/pulse/pulse-information';
-import { RELATION_OBJECT_MARKING } from '../../../../../src/schema/stixRefRelationship';
+import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../../../../src/schema/stixRefRelationship';
+import { buildRefRelationSearchKey } from '../../../../../src/schema/general';
 import {
   getPulseAccess,
   hasPulseReadAccess,
@@ -200,6 +203,67 @@ describe('Threat Pulse information under the current access', () => {
     expect(visiblePulseInformation(entity(fullDocument, { entity_type: 'Tool' }), full)).toBeNull();
     expect(visiblePulseInformation(entity(previewDocument), { access: PulseAccess.Off, scopes, markingPolicy: null })).toBeNull();
     expect(visiblePulseInformation(entity(fullDocument), { access: PulseAccess.NotConnected, scopes, markingPolicy })).toBeNull();
+  });
+
+  // The query clause of the generic filters, aggregations and date histograms, evaluated on the stored documents.
+  const indexed: Record<string, (doc: Record<string, any>) => unknown> = {
+    'entity_type.keyword': (doc) => doc.entity_type,
+    'restricted_members.id': (doc) => (doc.restricted_members ?? []).map((member: { id: string }) => member.id),
+    [buildRefRelationSearchKey(RELATION_GRANTED_TO)]: (doc) => doc[RELATION_GRANTED_TO],
+    [buildRefRelationSearchKey(RELATION_OBJECT_MARKING)]: (doc) => doc[RELATION_OBJECT_MARKING],
+  };
+  const valuesOf = (doc: Record<string, any>, field: string): unknown[] => {
+    const value = indexed[field] ? indexed[field](doc) : doc[field];
+    if (value === null || value === undefined) return [];
+    return Array.isArray(value) ? value : [value];
+  };
+  const matches = (clause: Record<string, any>, doc: Record<string, any>): boolean => {
+    if (clause.match_none) return false;
+    if (clause.terms) {
+      const [[field, values]] = Object.entries(clause.terms) as [string, unknown[]][];
+      return valuesOf(doc, field).some((value) => values.includes(value));
+    }
+    if (clause.exists) return valuesOf(doc, clause.exists.field).length > 0;
+    if (clause.nested) return matches(clause.nested.query, doc);
+    if (clause.bool) {
+      const { filter = [], must_not: mustNot = [] } = clause.bool;
+      return filter.every((sub: Record<string, any>) => matches(sub, doc)) && !mustNot.some((sub: Record<string, any>) => matches(sub, doc));
+    }
+    throw new Error(`Unexpected clause ${JSON.stringify(clause)}`);
+  };
+
+  it('should let a generic query use the stored values of exactly the objects whose information is shown', () => {
+    const documents = [
+      entity(fullDocument),
+      entity(previewDocument),
+      entity(fullDocument, { [RELATION_OBJECT_MARKING]: ['tlp-green'] }),
+      entity(fullDocument, { [RELATION_OBJECT_MARKING]: ['tlp-green', 'tlp-red'] }),
+      entity(previewDocument, { [RELATION_OBJECT_MARKING]: ['tlp-red'] }),
+      entity(fullDocument, { restricted_members: [{ id: 'user' }] }),
+      entity(fullDocument, { [RELATION_GRANTED_TO]: ['organization'] }),
+      entity(fullDocument, { entity_type: 'Tool' }),
+      entity(previewDocument, { entity_type: 'Tool' }),
+    ];
+    const policies: PulseFieldPolicy[] = [
+      preview,
+      full,
+      { access: PulseAccess.Full, scopes, markingPolicy: null },
+      { access: PulseAccess.Off, scopes, markingPolicy: null },
+      { access: PulseAccess.NotConnected, scopes, markingPolicy },
+    ];
+    policies.forEach((policy) => documents.forEach((doc) => {
+      expect(matches(pulseQueryClause(policy), doc as unknown as Record<string, any>)).toBe(visiblePulseInformation(doc, policy) !== null);
+    }));
+  });
+
+  it('should sort a rank the reader may not see as a missing one, after every shown rank in both orders', () => {
+    const desc = pulseRankSort(full, 'desc')._script;
+    expect(desc).toMatchObject({ type: 'number', order: 'desc' });
+    expect(desc.script.params).toEqual({ access: PulseAccess.Full, scopes, excluded: ['tlp-red'], missing: -1 });
+    expect(pulseRankSort(preview, 'asc')._script.script.params).toEqual({ access: PulseAccess.Preview, scopes, excluded: [], missing: Number.MAX_SAFE_INTEGER });
+    // The full experience without its marking policy shows nothing, as the field does
+    expect(pulseRankSort({ access: PulseAccess.Full, scopes, markingPolicy: null }, 'desc')._script.script.params.access).toBe(PulseAccess.Off);
+    expect(desc.script.source).toContain("params['_source']['restricted_members']");
   });
 });
 

@@ -34,6 +34,7 @@ import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../src/modules/sec
 import { recordPulseSightingIncrease } from '../../../src/modules/xtm/pulse/pulse-sighting-activity';
 import { runPulseTrendingNotifications } from '../../../src/modules/xtm/pulse/pulse-notifications';
 import { computeStableKeys } from '../../../src/modules/xtm/pulse/pulse-hashing';
+import { PULSE_PREVIEW_CLEARED_DOCUMENT, writePulseDocuments } from '../../../src/modules/xtm/pulse/pulse-information';
 import { PULSE_CONSENT_VERSION, PULSE_SETTINGS_REGION, PULSE_SETTINGS_SECTOR, type BasicStorePulseEntity } from '../../../src/modules/xtm/pulse/pulse-types';
 import { PulseHubMock } from '../../utils/pulseHubMock';
 
@@ -126,6 +127,16 @@ const INDICATORS_BY_PREVALENCE = gql`
     indicators(filters: $filters, first: 100) {
       edges { node { id pulse { prevalence platforms_bucket } } }
     }
+  }
+`;
+const PREVALENCE_DISTRIBUTION = gql`
+  query PulsePrevalenceDistribution {
+    stixCoreObjectsDistribution(field: "pulse_prevalence", operation: count, types: ["Indicator"]) { label value }
+  }
+`;
+const INDICATORS_BY_RANK = gql`
+  query PulseIndicatorsByRank {
+    stixCoreObjects(types: ["Indicator"], orderBy: pulse_prevalence_rank, orderMode: desc, first: 500) { edges { node { id } } }
   }
 `;
 const CREATE_INDICATOR = gql`
@@ -659,6 +670,41 @@ describe('Threat Pulse manager and API', () => {
     expect(ids).not.toContain(redIndicatorId);
     const listed = filtered.data?.indicators.edges.find((edge: { node: { id: string } }) => edge.node.id === sharedIndicatorId);
     expect(listed?.node.pulse).toMatchObject({ prevalence: 'widespread', platforms_bucket: '5-9' });
+  });
+
+  it('should filter, count and sort on the network values the field shows only, whatever a cleanup left in the index', async () => {
+    const red = await storeLoadById<BasicStorePulseEntity>(testContext, ADMIN_USER, redIndicatorId, ENTITY_TYPE_INDICATOR);
+    const shared = await storeLoadById<BasicStorePulseEntity>(testContext, ADMIN_USER, sharedIndicatorId, ENTITY_TYPE_INDICATOR);
+    const widespreadCount = async () => {
+      const { data } = await queryAsAdminWithSuccess({ query: PREVALENCE_DISTRIBUTION });
+      return data?.stixCoreObjectsDistribution.find((entry: { label: string }) => entry.label.toLowerCase() === 'widespread')?.value ?? 0;
+    };
+    const counted = await widespreadCount();
+    // The full statistics of an object excluded from the contribution, as a failed cleanup would leave them, above
+    // the rank of the shared indicator
+    await writePulseDocuments(testContext, [
+      { entity: red, doc: { pulse_prevalence: 'widespread', pulse_trend: 'rising', pulse_community_uniqueness: 0, pulse_prevalence_rank: 4, pulse_information: shared.pulse_information } },
+      { entity: shared, doc: { pulse_prevalence_rank: 1 } },
+    ]);
+    try {
+      const filtered = await queryAsAdminWithSuccess({
+        query: INDICATORS_BY_PREVALENCE,
+        variables: { filters: { mode: 'and', filters: [{ key: 'pulse_prevalence', values: ['widespread'] }], filterGroups: [] } },
+      });
+      const ids = filtered.data?.indicators.edges.map((edge: { node: { id: string } }) => edge.node.id);
+      expect(ids).toContain(sharedIndicatorId);
+      expect(ids).not.toContain(redIndicatorId);
+      expect(await widespreadCount()).toBe(counted);
+      const sorted = await queryAsAdminWithSuccess({ query: INDICATORS_BY_RANK });
+      const order = sorted.data?.stixCoreObjects.edges.map((edge: { node: { id: string } }) => edge.node.id);
+      expect(order).toContain(redIndicatorId);
+      expect(order.indexOf(sharedIndicatorId)).toBeLessThan(order.indexOf(redIndicatorId));
+    } finally {
+      await writePulseDocuments(testContext, [
+        { entity: red, doc: PULSE_PREVIEW_CLEARED_DOCUMENT },
+        { entity: shared, doc: { pulse_prevalence_rank: shared.pulse_prevalence_rank } },
+      ]);
+    }
   });
 
   it('should resolve trending items to the local entities only', async () => {

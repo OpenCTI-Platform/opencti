@@ -2,7 +2,7 @@ import type { AuthContext } from '../../../types/user';
 import { BULK_TIMEOUT, elBulk, elRawUpdateByQuery } from '../../../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../../database/utils';
 import { buildRefRelationSearchKey } from '../../../schema/general';
-import { RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
+import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
 import { logApp } from '../../../config/conf';
 import { PulseAccess, PulsePrevalence } from '../../../generated/graphql';
 import { isPulseContributable, type PulseMarkingPolicy } from './pulse-settings';
@@ -196,9 +196,11 @@ export interface PulseClearScope {
 }
 
 // Removes every network statistic from the entities (all of them, or only those of *scope*): the local keys stay.
-// pulse_information is not indexed: the documents are found through the indexed fields written with it.
+// pulse_information is not indexed: the documents are found through the indexed network fields written with it (every
+// network write sets the prevalence rank). The local keys, which stay, are not searched: an entity already cleared
+// is never scanned again.
 export const clearPulseNetworkInformation = async (scope?: PulseClearScope) => {
-  const indexedFields = [PULSE_ATTRIBUTE_KEYS, ...PULSE_NETWORK_ATTRIBUTES.filter((attribute) => attribute !== PULSE_ATTRIBUTE_INFORMATION)];
+  const indexedFields = PULSE_NETWORK_ATTRIBUTES.filter((attribute) => attribute !== PULSE_ATTRIBUTE_INFORMATION);
   const hasPulseData = { bool: { should: indexedFields.map((field) => ({ exists: { field } })), minimum_should_match: 1 } };
   const affected = scope ? [
     ...(scope.entityTypes.length > 0 ? [{ terms: { 'entity_type.keyword': scope.entityTypes } }] : []),
@@ -266,4 +268,79 @@ export const visiblePulseInformation = (entity: BasicStorePulseEntity, policy: P
     return toPulseInformationOutput(entity);
   }
   return null;
+};
+
+// The network attributes generic filters, aggregations, date histograms and sorts read straight from the index.
+export const PULSE_QUERYABLE_ATTRIBUTES = [
+  PULSE_ATTRIBUTE_PREVALENCE,
+  PULSE_ATTRIBUTE_TREND,
+  PULSE_ATTRIBUTE_SECTOR_TREND,
+  PULSE_ATTRIBUTE_FIRST_SEEN,
+  PULSE_ATTRIBUTE_UNIQUENESS,
+  PULSE_ATTRIBUTE_PREVALENCE_RANK,
+];
+
+const GRANTED_TO_FIELD = buildRefRelationSearchKey(RELATION_GRANTED_TO);
+const MARKING_FIELD = buildRefRelationSearchKey(RELATION_OBJECT_MARKING);
+
+// The objects visiblePulseInformation shows, as a query clause, for the queries reading the network attributes from
+// the index. Only full documents carry the community uniqueness, which tells a preview document from a full one.
+// A marking unknown to the platform is not tested here: deleting a marking removes it from every object.
+export const pulseQueryClause = (policy: PulseFieldPolicy): Record<string, unknown> => {
+  const inScope = { terms: { 'entity_type.keyword': policy.scopes } };
+  if (policy.access === PulseAccess.Preview) {
+    return { bool: { filter: [inScope], must_not: [{ exists: { field: PULSE_ATTRIBUTE_UNIQUENESS } }] } };
+  }
+  if (policy.access === PulseAccess.Full && policy.markingPolicy) {
+    const excluded = [...policy.markingPolicy.excludedMarkingIds];
+    return {
+      bool: {
+        filter: [inScope],
+        must_not: [
+          { nested: { path: 'restricted_members', query: { exists: { field: 'restricted_members.id' } }, ignore_unmapped: true } },
+          { exists: { field: GRANTED_TO_FIELD } },
+          ...(excluded.length > 0 ? [{ terms: { [MARKING_FIELD]: excluded } }] : []),
+        ],
+      },
+    };
+  }
+  return { match_none: {} };
+};
+
+// The same rule for a sort on the prevalence rank: a rank the reader may not see sorts as a missing one, last, and
+// the objects stay in the list. The members of an authorized members restriction are nested, read from the source.
+const VISIBLE_RANK_SCRIPT = `
+  if (!doc.containsKey('${PULSE_ATTRIBUTE_PREVALENCE_RANK}') || doc['${PULSE_ATTRIBUTE_PREVALENCE_RANK}'].size() == 0) { return params.missing; }
+  if (!doc.containsKey('entity_type.keyword') || doc['entity_type.keyword'].size() == 0 || !params.scopes.contains(doc['entity_type.keyword'].value)) { return params.missing; }
+  long rank = doc['${PULSE_ATTRIBUTE_PREVALENCE_RANK}'].value;
+  if (params.access == '${PulseAccess.Preview}') {
+    return doc.containsKey('${PULSE_ATTRIBUTE_UNIQUENESS}') && doc['${PULSE_ATTRIBUTE_UNIQUENESS}'].size() > 0 ? params.missing : rank;
+  }
+  if (params.access != '${PulseAccess.Full}') { return params.missing; }
+  if (doc.containsKey('${GRANTED_TO_FIELD}') && doc['${GRANTED_TO_FIELD}'].size() > 0) { return params.missing; }
+  if (doc.containsKey('${MARKING_FIELD}')) {
+    for (def marking : doc['${MARKING_FIELD}']) { if (params.excluded.contains(marking)) { return params.missing; } }
+  }
+  def members = params['_source']['restricted_members'];
+  return members != null && members.size() > 0 ? params.missing : rank;
+`;
+
+export const pulseRankSort = (policy: PulseFieldPolicy, orderMode: 'asc' | 'desc' | null) => {
+  const order = orderMode ?? 'asc';
+  return {
+    _script: {
+      type: 'number',
+      order,
+      script: {
+        lang: 'painless',
+        source: VISIBLE_RANK_SCRIPT,
+        params: {
+          access: policy.markingPolicy || policy.access !== PulseAccess.Full ? policy.access : PulseAccess.Off,
+          scopes: policy.scopes,
+          excluded: [...(policy.markingPolicy?.excludedMarkingIds ?? [])],
+          missing: order === 'desc' ? -1 : Number.MAX_SAFE_INTEGER,
+        },
+      },
+    },
+  };
 };
