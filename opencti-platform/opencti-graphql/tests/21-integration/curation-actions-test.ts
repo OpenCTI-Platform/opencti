@@ -20,7 +20,7 @@ import { RELATION_ATTRIBUTED_TO, RELATION_BASED_ON, RELATION_RELATED_TO, RELATIO
 import { addStixCyberObservable } from '../../src/domain/stixCyberObservable';
 import { ENTITY_IPV4_ADDR } from '../../src/schema/stixCyberObservable';
 import { getCurationSettings } from '../../src/modules/curation/curation-settings';
-import { persistProposalDraft, refreshProposalRestrictions } from '../../src/modules/curation/curation-proposals';
+import { persistProposalDraft, refreshProposalRestrictions, retireProposalsOfDeletedSubjects } from '../../src/modules/curation/curation-proposals';
 import { loadPolicyFacts } from '../../src/modules/curation/curation-policies';
 import { computeHealthMetrics } from '../../src/modules/curation/curation-health';
 import { EditOperation } from '../../src/generated/graphql';
@@ -898,6 +898,28 @@ describe('Knowledge curation actions', () => {
     expect((await computeHealthMetrics(testContext, settings, since)).contradiction_count).toBe(before + 1);
     await deleteElementById(testContext, ADMIN_USER, inverted.id, ENTITY_TYPE_INTRUSION_SET);
     expect((await computeHealthMetrics(testContext, settings, since)).contradiction_count).toBe(before);
+  });
+
+  it('should remove the open proposals about a deleted entity, and keep the ones about entities that exist', async () => {
+    const deleted = await createIntrusionSet(`${PREFIX} Retired Deleted`);
+    const kept = await createIntrusionSet(`${PREFIX} Retired Kept`);
+    const proposalAbout = (element: BasicStoreEntity) => createProposal({
+      kind: PROPOSAL_KIND_STALE,
+      detector: DETECTOR_STALENESS,
+      subjects: [subjectOf(element)],
+      target_id: element.id,
+      recommended_action: ACTION_ACKNOWLEDGE,
+      evidence: evidenceFor('no_recent_activity', 'No update for 24 months'),
+      confidence: 0.5,
+    });
+    const deletedProposalId = await proposalAbout(deleted);
+    const keptProposalId = await proposalAbout(kept);
+    // Named in a deletion event while it still exists (restored since): nothing is removed.
+    expect(await retireProposalsOfDeletedSubjects(testContext, [kept.id])).toBe(0);
+    await deleteElementById(testContext, ADMIN_USER, deleted.id, ENTITY_TYPE_INTRUSION_SET);
+    expect(await retireProposalsOfDeletedSubjects(testContext, [deleted.id, kept.id])).toBe(1);
+    expect(await loadProposal(deletedProposalId)).toBeNull();
+    expect((await loadProposal(keptProposalId))?.proposal_status).toBe('open');
   });
 
   it('should follow the survivor a new detection prefers, and drop the adjudication of the previous recommendation', async () => {

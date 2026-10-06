@@ -5,7 +5,7 @@ import { CURATION_MANAGER_USER, executionContext } from '../utils/access';
 import type { AuthContext } from '../types/user';
 import type { DataEvent, SseEvent, UpdateEvent } from '../types/event';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
-import { EVENT_TYPE_UPDATE } from '../database/utils';
+import { EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../database/utils';
 import {
   redisCurationCompleteRestrictionRefresh,
   redisCurationFailRestrictionRefresh,
@@ -15,12 +15,13 @@ import {
   redisSetManagerEventState,
 } from '../database/redis';
 import { completePendingMergeRecords, expireMergeRecords, refreshMergeRecordRestrictions } from '../modules/curation/curation-merge-record';
-import { refreshProposalRestrictions } from '../modules/curation/curation-proposals';
+import { refreshProposalRestrictions, retireProposalsOfDeletedSubjects } from '../modules/curation/curation-proposals';
 
 /**
  * Keeps what curation stores consistent, whether the curation detectors run or not: completes the merge records an
- * interrupted merge left pending, closes the ones past their retention window, and keeps the restrictions of merge
- * records and open proposals in line with their subjects when a subject is reclassified.
+ * interrupted merge left pending, closes the ones past their retention window, keeps the restrictions of merge
+ * records and open proposals in line with their subjects when a subject is reclassified, and removes the open
+ * proposals about a deleted subject.
  */
 const CURATION_RECORDS_MANAGER_ID = 'CURATION_RECORDS_MANAGER';
 const CURATION_RECORDS_MANAGER_LABEL = 'Curation records manager';
@@ -71,6 +72,13 @@ export const reclassifiedEntityIds = (streamEvents: Array<SseEvent<DataEvent>>):
   return [extension.id, extension.source_ref, extension.target_ref].filter((id): id is string => typeof id === 'string' && id.length > 0);
 }));
 
+export const deletedEntityIds = (streamEvents: Array<SseEvent<DataEvent>>): string[] => R.uniq(streamEvents.flatMap((streamEvent) => {
+  const event = streamEvent.data;
+  if (event.type !== EVENT_TYPE_DELETE) return [];
+  const id = (event.data?.extensions?.[STIX_EXT_OCTI] as { id?: string } | undefined)?.id;
+  return id ? [id] : [];
+}));
+
 const refreshRestrictions = async (context: AuthContext, entityIds: string[]) => {
   await refreshMergeRecordRestrictions(context, entityIds);
   await refreshProposalRestrictions(context, entityIds);
@@ -107,9 +115,14 @@ export const retryQueuedRestrictionRefreshes = async (context: AuthContext) => {
 export const curationRecordsManagerStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>>, lastEventId: string) => {
   const context = executionContext(CURATION_RECORDS_MANAGER_CONTEXT, CURATION_MANAGER_USER);
   const entityIds = reclassifiedEntityIds(streamEvents);
+  const deletedIds = deletedEntityIds(streamEvents);
   const batchKey = streamEvents[0]?.id ?? 'empty';
   try {
     if (entityIds.length > 0) await refreshRestrictions(context, entityIds);
+    if (deletedIds.length > 0) {
+      const retired = await retireProposalsOfDeletedSubjects(context, deletedIds);
+      if (retired > 0) logApp.info('[CURATION] Open proposals about deleted entities removed', { count: retired });
+    }
   } catch (error) {
     failedBatchAttempts = failedBatchKey === batchKey ? failedBatchAttempts + 1 : 1;
     failedBatchKey = batchKey;
@@ -124,6 +137,13 @@ export const curationRecordsManagerStreamHandler = async (streamEvents: Array<Ss
       } catch (entityError) {
         failedIds.push(entityIds[index]);
         logApp.warn('[CURATION] Restrictions of curation records not refreshed for an entity, queued for a retry', { cause: entityError, entity_id: entityIds[index], manager: CURATION_RECORDS_MANAGER_ID });
+      }
+    }
+    for (let index = 0; index < deletedIds.length; index += 1) {
+      try {
+        await retireProposalsOfDeletedSubjects(context, [deletedIds[index]]);
+      } catch (entityError) {
+        logApp.warn('[CURATION] Open proposals about a deleted entity not removed', { cause: entityError, entity_id: deletedIds[index], manager: CURATION_RECORDS_MANAGER_ID });
       }
     }
     // Queued before the stream position moves on: if the queue cannot be written, the batch is processed again.

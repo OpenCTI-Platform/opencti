@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { curationRecordsManagerCronHandler, curationRecordsManagerStreamHandler, reclassifiedEntityIds } from '../../../src/manager/curationRecordsManager';
+import { curationRecordsManagerCronHandler, curationRecordsManagerStreamHandler, deletedEntityIds, reclassifiedEntityIds } from '../../../src/manager/curationRecordsManager';
 import { redisSetManagerEventState } from '../../../src/database/redis';
 import { completePendingMergeRecords, expireMergeRecords, refreshMergeRecordRestrictions } from '../../../src/modules/curation/curation-merge-record';
-import { refreshProposalRestrictions } from '../../../src/modules/curation/curation-proposals';
+import { refreshProposalRestrictions, retireProposalsOfDeletedSubjects } from '../../../src/modules/curation/curation-proposals';
 import type { DataEvent, SseEvent } from '../../../src/types/event';
 
 const retryQueue = new Map<string, number>();
@@ -32,7 +32,7 @@ vi.mock('../../../src/modules/curation/curation-merge-record', () => ({
   refreshMergeRecordRestrictions: vi.fn(),
 }));
 
-vi.mock('../../../src/modules/curation/curation-proposals', () => ({ refreshProposalRestrictions: vi.fn() }));
+vi.mock('../../../src/modules/curation/curation-proposals', () => ({ refreshProposalRestrictions: vi.fn(), retireProposalsOfDeletedSubjects: vi.fn(async () => 0) }));
 
 const OCTI_EXTENSION = 'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba';
 
@@ -75,6 +75,20 @@ describe('Curation records manager', () => {
     expect(refreshMergeRecordRestrictions).toHaveBeenCalledWith(expect.anything(), ['malware-d']);
     expect(refreshProposalRestrictions).toHaveBeenCalledWith(expect.anything(), ['malware-d']);
     expect(redisSetManagerEventState).toHaveBeenCalledWith('curation_records_manager', '6-0');
+  });
+
+  it('removes the open proposals about the deleted entities of a batch', async () => {
+    const deletion = {
+      id: '9-0',
+      event: 'delete',
+      data: { type: 'delete', data: { name: 'malware-g', extensions: { [OCTI_EXTENSION]: { id: 'malware-g', type: 'Malware' } } } },
+    } as unknown as SseEvent<DataEvent>;
+    const batch = [deletion, update('10-0', 'malware-h', '/description')];
+    expect(deletedEntityIds(batch)).toEqual(['malware-g']);
+    await curationRecordsManagerStreamHandler(batch, '10-0');
+    expect(retireProposalsOfDeletedSubjects).toHaveBeenCalledWith(expect.anything(), ['malware-g']);
+    expect(refreshProposalRestrictions).not.toHaveBeenCalled();
+    expect(redisSetManagerEventState).toHaveBeenCalledWith('curation_records_manager', '10-0');
   });
 
   it('processes a failing batch again, then entity by entity, and queues the entity that still fails before moving on', async () => {

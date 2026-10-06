@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isSuppressingDecision } from '../../../../src/modules/curation/curation-proposals';
+import { isSuppressingDecision, proposalsOfMissingSubjects } from '../../../../src/modules/curation/curation-proposals';
 import {
   ACTION_ACKNOWLEDGE,
   ACTION_ADD_ALIASES,
@@ -26,5 +26,16 @@ describe('Curation finding suppression', () => {
     expect(isSuppressingDecision({ proposal_status: PROPOSAL_STATUS_ACCEPTED, recommended_action: ACTION_ADD_ALIASES })).toBe(false);
     expect(isSuppressingDecision({ proposal_status: PROPOSAL_STATUS_AUTO_APPLIED, recommended_action: ACTION_REVOKE })).toBe(false);
     expect(isSuppressingDecision({ proposal_status: PROPOSAL_STATUS_OPEN, recommended_action: ACTION_MERGE })).toBe(false);
+  });
+});
+
+describe('open proposals about deleted entities', () => {
+  it('retires the proposals naming a missing subject, unless an acceptance started to apply them', () => {
+    const open = [
+      { internal_id: 'both-there', subject_ids: ['a', 'b'] },
+      { internal_id: 'one-deleted', subject_ids: ['a', 'deleted'] },
+      { internal_id: 'being-applied', subject_ids: ['deleted'], application_started_at: '2026-10-06T00:00:00.000Z' },
+    ];
+    expect(proposalsOfMissingSubjects(open, new Set(['a', 'b'])).map((proposal) => proposal.internal_id)).toEqual(['one-deleted']);
   });
 });

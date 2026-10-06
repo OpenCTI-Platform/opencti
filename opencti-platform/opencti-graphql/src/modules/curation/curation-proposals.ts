@@ -356,6 +356,36 @@ const removeSupersededAliasProposals = async (context: AuthContext, current: Bas
   }
 };
 
+/** The open proposals to retire: they name a subject that no longer exists, and no acceptance has started writing. */
+export const proposalsOfMissingSubjects = (
+  open: Array<Pick<BasicStoreEntityCurationProposal, 'internal_id' | 'subject_ids' | 'application_started_at'>>,
+  existingIds: Set<string>,
+) => open.filter((proposal) => !proposal.application_started_at && proposal.subject_ids.some((id) => !existingIds.has(id)));
+
+/**
+ * Remove the open proposals about deleted entities, whether curation is enabled or not: they could no longer be applied,
+ * yet they would stay listed and counted. A subject restored since (an unmerge, the trash) keeps its proposals, and one
+ * an acceptance started to apply stays, so that accepting it again records what was done.
+ */
+export const retireProposalsOfDeletedSubjects = async (context: AuthContext, deletedIds: string[]) => {
+  const open = await findOpenProposalsForSubjects(context, deletedIds);
+  if (open.length === 0) return 0;
+  const subjectIds = R.uniq(open.flatMap((proposal) => proposal.subject_ids));
+  const existing = await internalFindByIds(context, SYSTEM_USER, subjectIds, { baseData: true }) as BasicStoreBase[];
+  const retired = proposalsOfMissingSubjects(open, new Set(existing.map((element) => element.internal_id)));
+  let count = 0;
+  for (let index = 0; index < retired.length; index += 1) {
+    const { internal_id: id } = retired[index];
+    await withProposalTransitionLock(id, async () => {
+      const [reloaded] = await internalFindByIds(context, SYSTEM_USER, [id]) as BasicStoreEntityCurationProposal[];
+      if (reloaded?.proposal_status !== PROPOSAL_STATUS_OPEN || reloaded.application_started_at) return;
+      await deleteElementById(context, SYSTEM_USER, id, ENTITY_TYPE_CURATION_PROPOSAL);
+      count += 1;
+    });
+  }
+  return count;
+};
+
 const persistLockedProposalDraft = async (
   context: AuthContext,
   settings: CurationSettings,
