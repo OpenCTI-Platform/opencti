@@ -279,9 +279,10 @@ const DefenseGapsLines = ({ queryRef, scope, onlyUsedByThreats = false, onTotalC
                     <TableCell>{t_i18n(DEFENSE_VALIDATION_LABELS[gap.validated as DefenseValidation])}</TableCell>
                     <TableCell align="right">{gap.threats_count > 0 ? `${gap.threats_count} (${gap.threat_weight})` : '0'}</TableCell>
                     <TableCell align="right">{gap.priority}</TableCell>
-                    <TableCell>
+                    {/* The data components caption is free text: it wraps so that the table keeps within its card */}
+                    <TableCell className="defense-gaps-wrap">
                       <Stack spacing={0.25}>
-                        <span>{t_i18n(DEFENSE_ACTION_LABELS[gap.recommended_action as DefenseAction])}</span>
+                        <span style={{ whiteSpace: 'nowrap' }}>{t_i18n(DEFENSE_ACTION_LABELS[gap.recommended_action as DefenseAction])}</span>
                         {gap.recommended_action === 'add_telemetry' && gap.requiredDataComponents.length > 0 && (
                           <Typography variant="caption" color="text.secondary">
                             {gap.requiredDataComponents.slice(0, 3).map((dc) => dc.name).join(', ')}
