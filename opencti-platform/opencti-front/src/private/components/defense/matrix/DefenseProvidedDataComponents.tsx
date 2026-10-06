@@ -148,60 +148,73 @@ export const LogsourcesDialog = ({ entityId, open, onClose, onDone }: { entityId
   };
 
   return (
-    <Dialog open={open} onClose={close} title={t_i18n('Declare telemetry from log sources')} size="medium">
-      <Typography variant="body2">
-        {t_i18n('Describe the log sources collected by this platform with the Sigma taxonomy. The telemetry mappings turn them into the data components the platform provides.')}
-      </Typography>
-      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: 1, alignItems: 'end', marginTop: 2 }}>
-        <Input label={t_i18n('Category')} value={current.category} onChange={(e) => setCurrent({ ...current, category: e.target.value })} placeholder="process_creation" />
-        <Input label={t_i18n('Product')} value={current.product} onChange={(e) => setCurrent({ ...current, product: e.target.value })} placeholder="windows" />
-        <Input label={t_i18n('Service')} value={current.service} onChange={(e) => setCurrent({ ...current, service: e.target.value })} placeholder="sysmon" />
-        <DisabledReason reason={addReason}>
-          <Button variant="secondary" onClick={addCurrent} disabled={!canAdd} data-testid="defense-logsource-add">{t_i18n('Add')}</Button>
-        </DisabledReason>
-      </Box>
-      <Typography variant="caption" color="text.secondary" component="p" sx={{ marginTop: 0.5 }} data-testid="defense-logsource-help">
-        {t_i18n('A log source names the data a rule reads, with the Sigma fields category, product and service. One of the three is enough.')}
-      </Typography>
-      {logsources.length > 0 && (
-        <List dense aria-label={t_i18n('Log sources')}>
-          {logsources.map((logsource, index) => (
-            <ListItem
-              key={`${logsourceLabel(logsource)}-${index}`}
-              disableGutters
-              secondaryAction={(
-                <IconButton
-                  size="sm"
-                  priority="tertiary"
-                  aria-label={t_i18n('Remove')}
-                  icon={<DeleteOutlined fontSize="small" />}
-                  onClick={() => setLogsources(logsources.filter((_, i) => i !== index))}
-                />
-              )}
-            >
-              <ListItemText primary={logsourceLabel(logsource)} />
-            </ListItem>
-          ))}
-        </List>
-      )}
-      {result && (
-        <Box sx={{ marginTop: 2 }} data-testid="defense-logsource-result">
-          <Typography variant="body2">
-            {t_i18n('{count, plural, =0 {No new data component declared} one {# data component declared} other {# data components declared}}', { values: { count: result.created } })}
-          </Typography>
-          {result.existing > 0 && (
-            <Typography variant="body2" color="text.secondary">
-              {t_i18n('{count, plural, one {# data component was already declared} other {# data components were already declared}}', { values: { count: result.existing } })}
-            </Typography>
-          )}
-          {result.unmatched.length > 0 && (
-            <Typography variant="body2" color="warning.main">
-              {`${t_i18n('Data components not found in the platform')}: ${result.unmatched.join(', ')}`}
-            </Typography>
-          )}
+    <Dialog
+      open={open}
+      onClose={close}
+      title={t_i18n('Declare telemetry from log sources')}
+      size="medium"
+      contentProps={{ style: { display: 'flex', flexDirection: 'column', overflowY: 'hidden' } }}
+    >
+      {/* The body scrolls on its own so the footer stays in view with a long list; the 4px padding given back and
+          taken out again keeps the focus ring the library paints outside the fields. */}
+      <Box
+        data-testid="defense-logsource-body"
+        style={{ flex: '1 1 auto', minHeight: 0, overflowY: 'auto', position: 'relative', padding: 4, margin: -4 }}
+      >
+        <Typography variant="body2">
+          {t_i18n('Describe the log sources collected by this platform with the Sigma taxonomy. The telemetry mappings turn them into the data components the platform provides.')}
+        </Typography>
+        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: 1, alignItems: 'end', marginTop: 2 }}>
+          <Input label={t_i18n('Category')} value={current.category} onChange={(e) => setCurrent({ ...current, category: e.target.value })} placeholder="process_creation" />
+          <Input label={t_i18n('Product')} value={current.product} onChange={(e) => setCurrent({ ...current, product: e.target.value })} placeholder="windows" />
+          <Input label={t_i18n('Service')} value={current.service} onChange={(e) => setCurrent({ ...current, service: e.target.value })} placeholder="sysmon" />
+          <DisabledReason reason={addReason}>
+            <Button variant="secondary" onClick={addCurrent} disabled={!canAdd} data-testid="defense-logsource-add">{t_i18n('Add')}</Button>
+          </DisabledReason>
         </Box>
-      )}
-      <DialogActions sx={{ paddingX: 0, marginTop: 2 }}>
+        <Typography variant="caption" color="text.secondary" component="p" sx={{ marginTop: 0.5 }} data-testid="defense-logsource-help">
+          {t_i18n('A log source names the data a rule reads, with the Sigma fields category, product and service. One of the three is enough.')}
+        </Typography>
+        {logsources.length > 0 && (
+          <List dense aria-label={t_i18n('Log sources')}>
+            {logsources.map((logsource, index) => (
+              <ListItem
+                key={`${logsourceLabel(logsource)}-${index}`}
+                disableGutters
+                secondaryAction={(
+                  <IconButton
+                    size="sm"
+                    priority="tertiary"
+                    aria-label={t_i18n('Remove')}
+                    icon={<DeleteOutlined fontSize="small" />}
+                    onClick={() => setLogsources(logsources.filter((_, i) => i !== index))}
+                  />
+                )}
+              >
+                <ListItemText primary={logsourceLabel(logsource)} />
+              </ListItem>
+            ))}
+          </List>
+        )}
+        {result && (
+          <Box sx={{ marginTop: 2 }} data-testid="defense-logsource-result">
+            <Typography variant="body2">
+              {t_i18n('{count, plural, =0 {No new data component declared} one {# data component declared} other {# data components declared}}', { values: { count: result.created } })}
+            </Typography>
+            {result.existing > 0 && (
+              <Typography variant="body2" color="text.secondary">
+                {t_i18n('{count, plural, one {# data component was already declared} other {# data components were already declared}}', { values: { count: result.existing } })}
+              </Typography>
+            )}
+            {result.unmatched.length > 0 && (
+              <Typography variant="body2" color="warning.main">
+                {`${t_i18n('Data components not found in the platform')}: ${result.unmatched.join(', ')}`}
+              </Typography>
+            )}
+          </Box>
+        )}
+      </Box>
+      <DialogActions sx={{ paddingX: 0, marginTop: 2, flexShrink: 0 }}>
         <Button variant="secondary" onClick={close}>{t_i18n('Close')}</Button>
         <DisabledReason reason={!inFlight && logsources.length === 0 ? t_i18n('Add at least one log source') : undefined}>
           <Button onClick={submit} disabled={inFlight || logsources.length === 0} data-testid="defense-logsource-submit">
