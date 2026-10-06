@@ -4204,6 +4204,10 @@ export const internalDeleteElementById = async <T extends StoreObject>(
       }
       const targetElement = { ...relationElement.to, i_relation: relationElement };
       const previous = await storeLoadByIdWithRefs(context, user, relationElement.fromId) as Record<string, any>;
+      if (!previous) {
+        // The source of the ref has been deleted in the meantime, along with its refs
+        throw AlreadyDeletedError({ id: relationElement.fromId });
+      }
       const instance = structuredClone(previous);
       const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(instance.entity_type, relationElement.entity_type);
       let inputs: EditInput[] = [];
