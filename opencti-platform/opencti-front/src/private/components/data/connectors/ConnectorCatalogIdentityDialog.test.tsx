@@ -86,6 +86,35 @@ describe('ConnectorCatalogIdentityDialog', () => {
     });
   });
 
+  it('should follow the entries of the refresh that follows the opening', async () => {
+    const { relayEnv, rerender } = renderDialog({ slug: 'urlhaus', title: 'URLhaus', logo: '/logo/urlhaus.png', source: 'name' });
+    expect(await screen.findByText('Malicious URLs')).toBeTruthy();
+    const reopen = (options: typeof CATALOG_OPTIONS) => {
+      const connector = {
+        id: 'connector-id',
+        connector_type: 'EXTERNAL_IMPORT',
+        catalog_identity: { slug: 'urlhaus', title: 'URLhaus', logo: '/logo/urlhaus.png', source: 'name' } as never,
+        catalog_slug_manual: null,
+      };
+      rerender(<ConnectorCatalogIdentityDialog open={false} onClose={vi.fn()} connector={connector} />);
+      rerender(<ConnectorCatalogIdentityDialog open onClose={vi.fn()} connector={connector} />);
+      relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
+        Query: () => ({ connectorCatalogIdentityOptions: options }),
+      }));
+    };
+
+    // The entry changed in the catalog: the preview shows its new content.
+    reopen([CATALOG_OPTIONS[0], { ...CATALOG_OPTIONS[1], short_description: 'Malicious URLs, refreshed' }]);
+    expect(await screen.findByText('Malicious URLs, refreshed')).toBeTruthy();
+
+    // The entry left the catalog: nothing is left to save.
+    reopen([CATALOG_OPTIONS[0]]);
+    await waitFor(() => {
+      expect(screen.queryByTestId('catalog-identity-preview')).toBeNull();
+    });
+    expect(screen.getByRole('button', { name: 'Save' }).hasAttribute('disabled')).toBe(true);
+  });
+
   it('should not offer automatic identification for an entry found automatically', async () => {
     renderDialog({ slug: 'urlhaus', title: 'URLhaus', logo: '/logo/urlhaus.png', source: 'name' });
 

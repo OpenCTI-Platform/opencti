@@ -80,8 +80,13 @@ const ConnectorCatalogIdentityForm: FunctionComponent<ConnectorCatalogIdentityFo
     [connectorCatalogIdentityOptions, connector.connector_type],
   );
   const currentSlug = connector.catalog_identity?.slug ?? null;
-  const [selected, setSelected] = useState<CatalogOption | null>(
-    () => options.find((option) => option.slug === currentSlug) ?? null,
+  // The choice is kept by slug and read from the entries on every render: the refresh of the
+  // catalog that follows the opening may update or remove the chosen entry.
+  const [chosenSlug, setChosenSlug] = useState<string | null | undefined>(undefined);
+  const selectedSlug = chosenSlug === undefined ? currentSlug : chosenSlug;
+  const selected = useMemo(
+    () => options.find((option) => option.slug === selectedSlug) ?? null,
+    [options, selectedSlug],
   );
   const isManual = connector.catalog_identity?.source === 'manual';
   // A choice made by hand stays stored when its entry leaves the catalog: it can still be removed.
@@ -105,7 +110,7 @@ const ConnectorCatalogIdentityForm: FunctionComponent<ConnectorCatalogIdentityFo
         <Combobox<CatalogOption>
           options={options}
           value={selected}
-          onValueChange={(next) => setSelected((next as CatalogOption | null) ?? null)}
+          onValueChange={(next) => setChosenSlug((next as CatalogOption | null)?.slug ?? null)}
           getOptionLabel={(option) => option.title}
           isOptionEqualToValue={(a, b) => a.slug === b.slug}
           groupBy={(option) => (isCompatibleCatalogType(connector.connector_type, option.connector_type)
