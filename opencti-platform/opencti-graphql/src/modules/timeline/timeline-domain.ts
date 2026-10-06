@@ -999,7 +999,9 @@ const applyTimelineEventEdit = async (context: AuthContext, user: AuthUser, load
       const current = await internalLoadById<AnyStoreElement>(context, SYSTEM_USER, event.element_id);
       elementMarkings = current ? markingsOf(current) : [];
     }
-    patch.markings = Array.from(new Set([...markingIds, ...(elementMarkings ?? []), ...containerAccessFields(container).markings]));
+    // Like adding it again or importing it, editing an event never declassifies it: the markings of an element it pointed
+    // to, or of a deleted one, live on the event only
+    patch.markings = Array.from(new Set([...markingsOf(event), ...markingIds, ...(elementMarkings ?? []), ...containerAccessFields(container).markings]));
   } else if (elementMarkings !== null) {
     patch.markings = Array.from(new Set([...markingsOf(event), ...elementMarkings]));
   }

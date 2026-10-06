@@ -5908,6 +5908,7 @@
   "This timeline is too large to export at once: narrow the export with the filters or the time window": "このタイムラインは一度にエクスポートするには大きすぎます。フィルターまたは期間でエクスポートを絞り込んでください",
   "Since {start}, still open": "{start} から継続中",
   "Still open": "継続中",
+  "Who may read the event. Markings can be added, never removed: the event keeps the markings it already carries and those of the case.": "このイベントを閲覧できるユーザー。マーキングは追加できますが削除はできません。イベントは既存のマーキングとケースのマーキングを保持します。",
   "Threat seen": "脅威の観測",
   "Time window": "時間範囲",
   "Timeline anchor changed": "タイムラインのアンカーが変更されました",

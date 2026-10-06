@@ -5908,6 +5908,7 @@
   "This timeline is too large to export at once: narrow the export with the filters or the time window": "이 타임라인은 한 번에 내보내기에는 너무 큽니다. 필터 또는 기간으로 내보내기 범위를 좁혀 주세요",
   "Since {start}, still open": "{start}부터 진행 중",
   "Still open": "진행 중",
+  "Who may read the event. Markings can be added, never removed: the event keeps the markings it already carries and those of the case.": "이벤트를 읽을 수 있는 사용자입니다. 마킹은 추가할 수만 있고 제거할 수 없습니다. 이벤트는 기존 마킹과 케이스의 마킹을 유지합니다.",
   "Threat seen": "위협 관찰됨",
   "Time window": "시간 범위",
   "Timeline anchor changed": "타임라인 앵커 변경됨",

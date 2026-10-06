@@ -796,7 +796,7 @@ describe('Incident and case timeline', () => {
       );
     });
 
-    it('should mark a manual event at least as strictly as the element it points to', async () => {
+    it('should mark a manual event at least as strictly as the element it points to, and never declassify it on edit', async () => {
       const added = await queryAsAdminWithSuccess({
         query: TIMELINE_EVENT_ADD,
         variables: { input: { container_id: caseIncident.id, event_time: '2026-02-05T11:00:00.000Z', title: 'Amber indicator blocked', element_id: indicatorId } },
@@ -809,6 +809,14 @@ describe('Incident and case timeline', () => {
       const participate = await queryAsUserWithSuccess(USER_PARTICIPATE, { query: CONTAINER_TIMELINE, variables: { id: caseIncident.id, first: 500, sources: ['manual'] } });
       expect(participate.data.containerTimeline.edges.map((edge: { node: TimelineEventNode }) => edge.node.id)).not.toContain(event.id);
       await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: event.id } });
+      // Nor the markings the event already carries: an edit adds markings, it never removes one
+      const marked = (await queryAsAdminWithSuccess({
+        query: TIMELINE_EVENT_ADD,
+        variables: { input: { container_id: caseIncident.id, event_time: '2026-02-05T11:30:00.000Z', title: 'Amber note', objectMarking: [MARKING_TLP_AMBER] } },
+      })).data.timelineEventAdd as TimelineEventNode;
+      const cleared = await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_EDIT, variables: { id: marked.id, input: { title: 'Amber note edited', objectMarking: [] } } });
+      expect((cleared.data.timelineEventEdit as TimelineEventNode).objectMarking.map((marking) => marking.standard_id)).toContain(MARKING_TLP_AMBER);
+      await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: marked.id } });
     });
 
     it('should pin, hide and annotate a derived event, never change its content', async () => {

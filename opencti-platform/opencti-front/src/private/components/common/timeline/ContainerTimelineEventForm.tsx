@@ -259,7 +259,9 @@ const ContainerTimelineEventForm = ({ containerId, open, event, onClose, onSaved
               name="objectMarking"
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
-              helpertext={t_i18n('Who may read the event. It always carries the markings of the case; leave it empty to keep only those.')}
+              helpertext={isEdition
+                ? t_i18n('Who may read the event. Markings can be added, never removed: the event keeps the markings it already carries and those of the case.')
+                : t_i18n('Who may read the event. It always carries the markings of the case; leave it empty to keep only those.')}
             />
             {!isEdition && (
               <Field

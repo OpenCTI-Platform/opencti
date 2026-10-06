@@ -5908,6 +5908,7 @@
   "This timeline is too large to export at once: narrow the export with the filters or the time window": "Эта временная шкала слишком велика для экспорта за один раз: сузьте экспорт с помощью фильтров или временного окна",
   "Since {start}, still open": "С {start}, ещё не завершено",
   "Still open": "Ещё не завершено",
+  "Who may read the event. Markings can be added, never removed: the event keeps the markings it already carries and those of the case.": "Кто может читать событие. Маркировки можно добавлять, но не удалять: событие сохраняет уже имеющиеся маркировки и маркировки дела.",
   "Threat seen": "Угроза замечена",
   "Time window": "Временное окно",
   "Timeline anchor changed": "Опорная точка временной шкалы изменена",

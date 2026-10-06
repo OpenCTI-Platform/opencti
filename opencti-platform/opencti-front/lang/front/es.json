@@ -5908,6 +5908,7 @@
   "This timeline is too large to export at once: narrow the export with the filters or the time window": "Esta cronología es demasiado grande para exportarla de una vez: acote la exportación con los filtros o la ventana temporal",
   "Since {start}, still open": "Desde {start}, aún abierto",
   "Still open": "Aún abierto",
+  "Who may read the event. Markings can be added, never removed: the event keeps the markings it already carries and those of the case.": "Quién puede leer el evento. Las marcas se pueden añadir, nunca quitar: el evento conserva las marcas que ya tiene y las del caso.",
   "Threat seen": "Amenaza vista",
   "Time window": "Ventana de tiempo",
   "Timeline anchor changed": "Ancla de la cronología modificada",
