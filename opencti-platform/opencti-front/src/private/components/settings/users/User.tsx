@@ -3,10 +3,6 @@ import IconButton from '@common/button/IconButton';
 import UserConfidenceLevel from '@components/settings/users/UserConfidenceLevel';
 import { Add, DeleteForeverOutlined, DeleteOutlined } from '@mui/icons-material';
 import { ListItemButton, Stack } from '@mui/material';
-import DialogTitle from '@mui/material/DialogTitle';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContentText from '@mui/material/DialogContentText';
 import Grid from '@mui/material/Grid';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -20,6 +16,7 @@ import { FunctionComponent, useState } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router';
 import Card from '../../../../components/common/card/Card';
+import DeleteDialog from '../../../../components/DeleteDialog';
 import Label from '../../../../components/common/label/Label';
 import Tag from '../../../../components/common/tag/Tag';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
@@ -32,6 +29,7 @@ import { handleError, QueryRenderer } from '../../../../relay/environment';
 import { areaChartOptions } from '../../../../utils/Charts';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAuth from '../../../../utils/hooks/useAuth';
+import useDeletion from '../../../../utils/hooks/useDeletion';
 import useEnterpriseEdition from '../../../../utils/hooks/useEnterpriseEdition';
 import useGranted, { BYPASS, KNOWLEDGE, SETTINGS_SECURITYACTIVITY, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 
@@ -49,7 +47,6 @@ import { UserSessionKillMutation } from './__generated__/UserSessionKillMutation
 import { UserUserSessionsKillMutation } from './__generated__/UserUserSessionsKillMutation.graphql';
 import UserHistory from './UserHistory';
 import UserTokenList from './UserTokenList';
-import { SURFACE_LAYER, fdsLayerClass, layerInputVars } from '../../../../utils/fdsLayer';
 
 const startDate = yearsAgo(1);
 const endDate = now();
@@ -215,9 +212,8 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
   const { t_i18n, nsdt, fsd, fldt, fd } = useFormatter();
   const { me } = useAuth();
   const theme = useTheme<Theme>();
-  const [displayKillSession, setDisplayKillSession] = useState<boolean>(false);
-  const [displayKillSessions, setDisplayKillSessions] = useState<boolean>(false);
-  const [killing, setKilling] = useState<boolean>(false);
+  const killSessionDeletion = useDeletion({});
+  const killSessionsDeletion = useDeletion({});
   const [sessionToKill, setSessionToKill] = useState<string | null>(null);
   const [openTokenCreationDrawer, setOpenTokenCreationDrawer] = useState(false);
 
@@ -235,51 +231,45 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
   const userCapabilities = (me.capabilities ?? []).map((c) => c.name);
   const userHasSettingsCapability = userCapabilities.includes(SETTINGS_SETACCESSES) || userCapabilities.includes(BYPASS);
   const handleOpenKillSession = (sessionId: string) => {
-    setDisplayKillSession(true);
+    killSessionDeletion.handleOpenDelete();
     setSessionToKill(sessionId);
   };
   const handleCloseKillSession = () => {
-    setDisplayKillSession(false);
+    killSessionDeletion.handleCloseDelete();
     setSessionToKill(null);
   };
   const submitKillSession = () => {
     if (sessionToKill) {
-      setKilling(true);
+      killSessionDeletion.setDeleting(true);
       commitUserSessionKill({
         variables: {
           id: sessionToKill,
         },
         onError: (error: Error) => {
           handleError(error);
-          setKilling(false);
+          killSessionDeletion.setDeleting(false);
         },
         onCompleted: () => {
-          setKilling(false);
+          killSessionDeletion.setDeleting(false);
           handleCloseKillSession();
           refetch();
         },
       });
     }
   };
-  const handleOpenKillSessions = () => {
-    setDisplayKillSessions(true);
-  };
-  const handleCloseKillSessions = () => {
-    setDisplayKillSessions(false);
-  };
   const submitKillSessions = () => {
-    setKilling(true);
+    killSessionsDeletion.setDeleting(true);
     commitUserUserSessionsKill({
       variables: {
         id: user.id,
       },
       onError: (error: Error) => {
         handleError(error);
-        setKilling(false);
+        killSessionsDeletion.setDeleting(false);
       },
       onCompleted: () => {
-        setKilling(false);
-        handleCloseKillSessions();
+        killSessionsDeletion.setDeleting(false);
+        killSessionsDeletion.handleCloseDelete();
         refetch();
       },
     });
@@ -581,7 +571,7 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
                       <IconButton
                         color="primary"
                         aria-label={t_i18n('Delete all')}
-                        onClick={handleOpenKillSessions}
+                        onClick={killSessionsDeletion.handleOpenDelete}
                         size="small"
                       >
                         <DeleteForeverOutlined fontSize="small" />
@@ -747,48 +737,17 @@ const User: FunctionComponent<UserProps> = ({ data, refetch }) => {
           )}
         </Grid>
       </Grid>
-      <Dialog
-        slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
-        open={displayKillSession}
+      <DeleteDialog
+        deletion={killSessionDeletion}
+        submitDelete={submitKillSession}
         onClose={handleCloseKillSession}
-      >
-        <DialogTitle>{t_i18n('Are you sure?')}</DialogTitle>
-        <DialogContentText>
-          {t_i18n('Do you want to kill this session?')}
-        </DialogContentText>
-        <DialogActions>
-          <Button variant="secondary" onClick={handleCloseKillSession} disabled={killing}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            onClick={submitKillSession}
-            disabled={killing}
-          >
-            {t_i18n('Confirm')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog
-        slotProps={{ paper: { className: fdsLayerClass(SURFACE_LAYER), sx: { ...layerInputVars } } }}
-        open={displayKillSessions}
-        onClose={handleCloseKillSessions}
-      >
-        <DialogTitle>{t_i18n('Are you sure?')}</DialogTitle>
-        <DialogContentText>
-          {t_i18n('Do you want to kill all the sessions of this user?')}
-        </DialogContentText>
-        <DialogActions>
-          <Button variant="secondary" onClick={handleCloseKillSessions} disabled={killing}>
-            {t_i18n('Cancel')}
-          </Button>
-          <Button
-            onClick={submitKillSessions}
-            disabled={killing}
-          >
-            {t_i18n('Confirm')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        message={t_i18n('Do you want to kill this session?')}
+      />
+      <DeleteDialog
+        deletion={killSessionsDeletion}
+        submitDelete={submitKillSessions}
+        message={t_i18n('Do you want to kill all the sessions of this user?')}
+      />
     </>
   );
 };
