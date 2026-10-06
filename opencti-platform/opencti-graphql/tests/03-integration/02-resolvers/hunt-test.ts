@@ -608,56 +608,62 @@ describe('Hunt resolvers', () => {
       },
     });
     const knownHuntId = created.data?.huntAdd.id;
-    huntIds.push(knownHuntId);
-    const events = ['evt-a', 'evt-b', 'evt-c', 'evt-d', 'evt-e'];
-    const hit = (eventId: string) => ({
-      event_id: eventId,
-      timestamp: '2026-10-05T10:00:00Z',
-      matched: [{ field: 'process.command_line', value_hash: 'b'.repeat(64), value_preview: 'powershell -enc AAAA' }],
-      host: 'ws-042',
-    });
-    const runOver = async (eventIds: string[]) => {
-      const started = await queryAsAdminWithSuccess({ query: HUNT_RUN_START, variables: { id: knownHuntId } });
-      const runId = started.data?.huntRunStart[0].id;
-      await reportAsConnector({
-        query: HUNT_RUN_REPORT,
-        variables: {
-          id: runId,
-          input: { status: 'completed', hits_count: eventIds.length, hits_sample: eventIds.map(hit), hit_keys: eventIds.map((eventId) => huntHitKey(hit(eventId))) },
-        },
+    try {
+      const events = ['evt-a', 'evt-b', 'evt-c', 'evt-d', 'evt-e'];
+      const hit = (eventId: string) => ({
+        event_id: eventId,
+        timestamp: '2026-10-05T10:00:00Z',
+        matched: [{ field: 'process.command_line', value_hash: 'b'.repeat(64), value_preview: 'powershell -enc AAAA' }],
+        host: 'ws-042',
       });
-      return (await queryAsAdminWithSuccess({ query: HUNT_RUN_KNOWN_HITS, variables: { id: runId } })).data?.huntRun;
-    };
-    const huntSightings = () => fullRelationsList<BasicStoreRelation & { attribute_count: number; x_opencti_hunt_run_id: string }>(
-      testContext,
-      ADMIN_USER,
-      STIX_SIGHTING_RELATIONSHIP,
-      { filters: { mode: 'and', filters: [{ key: ['x_opencti_hunt_id'], values: [knownHuntId] }], filterGroups: [] } } as never,
-    );
-    // A first run: every hit is new, an incident draft opens, the hunt sights its technique once
-    const first = await runOver(events.slice(0, 3));
-    expect(first).toMatchObject({ hits_count: 3, hits_new_count: 3, hits_recurring_count: 0, hits_identified: true, incident_continued: false, sightings_created_count: 1 });
-    expect(first.incident_id).toBeTruthy();
-    draftIds.push(first.draft_id);
-    expect(first.hits_sample.map((sampled: { is_new: boolean }) => sampled.is_new)).toEqual([true, true, true]);
-    const [sighting] = await huntSightings();
-    expect(sighting).toMatchObject({ attribute_count: 3, x_opencti_hunt_run_id: first.id });
-    // A second run over the same events: nothing is new, nothing escalates, the same sighting stays
-    const second = await runOver(events.slice(0, 3));
-    expect(second).toMatchObject({ hits_count: 3, hits_new_count: 0, hits_recurring_count: 3, hits_identified: true, sightings_created_count: 0 });
-    expect(second.incident_id).toBeNull();
-    expect(second.hits_sample.map((sampled: { is_new: boolean; times_seen: number }) => [sampled.is_new, sampled.times_seen])).toEqual([[false, 2], [false, 2], [false, 2]]);
-    const afterSecond = await huntSightings();
-    expect(afterSecond).toHaveLength(1);
-    expect(afterSecond[0]).toMatchObject({ id: sighting.id, attribute_count: 3, x_opencti_hunt_run_id: second.id });
-    // A third run with two new hits: they reach the threshold and go to the incident still open, the sighting counts 5
-    const third = await runOver([events[0], events[3], events[4]]);
-    expect(third).toMatchObject({ hits_new_count: 2, hits_recurring_count: 1, incident_continued: true, incident_id: first.incident_id, draft_id: first.draft_id });
-    const afterThird = await huntSightings();
-    expect(afterThird).toHaveLength(1);
-    expect(afterThird[0]).toMatchObject({ id: sighting.id, attribute_count: 5 });
-    const read = await queryAsAdminWithSuccess({ query: HUNT_KNOWN_HITS, variables: { id: knownHuntId } });
-    expect(read.data?.hunt).toMatchObject({ last_hits_count: 3, last_new_hits_count: 2, knownHits: { distinct_count: 5 } });
+      const runOver = async (eventIds: string[]) => {
+        const started = await queryAsAdminWithSuccess({ query: HUNT_RUN_START, variables: { id: knownHuntId } });
+        const runId = started.data?.huntRunStart[0].id;
+        await reportAsConnector({
+          query: HUNT_RUN_REPORT,
+          variables: {
+            id: runId,
+            input: { status: 'completed', hits_count: eventIds.length, hits_sample: eventIds.map(hit), hit_keys: eventIds.map((eventId) => huntHitKey(hit(eventId))) },
+          },
+        });
+        return (await queryAsAdminWithSuccess({ query: HUNT_RUN_KNOWN_HITS, variables: { id: runId } })).data?.huntRun;
+      };
+      const huntSightings = () => fullRelationsList<BasicStoreRelation & { attribute_count: number; x_opencti_hunt_run_id: string }>(
+        testContext,
+        ADMIN_USER,
+        STIX_SIGHTING_RELATIONSHIP,
+        { filters: { mode: 'and', filters: [{ key: ['x_opencti_hunt_id'], values: [knownHuntId] }], filterGroups: [] } } as never,
+      );
+      // A first run: every hit is new, an incident draft opens, the hunt sights its technique once
+      const first = await runOver(events.slice(0, 3));
+      if (first.draft_id) {
+        draftIds.push(first.draft_id);
+      }
+      expect(first).toMatchObject({ hits_count: 3, hits_new_count: 3, hits_recurring_count: 0, hits_identified: true, incident_continued: false, sightings_created_count: 1 });
+      expect(first.incident_id).toBeTruthy();
+      expect(first.hits_sample.map((sampled: { is_new: boolean }) => sampled.is_new)).toEqual([true, true, true]);
+      const [sighting] = await huntSightings();
+      expect(sighting).toMatchObject({ attribute_count: 3, x_opencti_hunt_run_id: first.id });
+      // A second run over the same events: nothing is new, nothing escalates, the same sighting stays
+      const second = await runOver(events.slice(0, 3));
+      expect(second).toMatchObject({ hits_count: 3, hits_new_count: 0, hits_recurring_count: 3, hits_identified: true, sightings_created_count: 0 });
+      expect(second.incident_id).toBeNull();
+      expect(second.hits_sample.map((sampled: { is_new: boolean; times_seen: number }) => [sampled.is_new, sampled.times_seen])).toEqual([[false, 2], [false, 2], [false, 2]]);
+      const afterSecond = await huntSightings();
+      expect(afterSecond).toHaveLength(1);
+      expect(afterSecond[0]).toMatchObject({ id: sighting.id, attribute_count: 3, x_opencti_hunt_run_id: second.id });
+      // A third run with two new hits: they reach the threshold and go to the incident still open, the sighting counts 5
+      const third = await runOver([events[0], events[3], events[4]]);
+      expect(third).toMatchObject({ hits_new_count: 2, hits_recurring_count: 1, incident_continued: true, incident_id: first.incident_id, draft_id: first.draft_id });
+      const afterThird = await huntSightings();
+      expect(afterThird).toHaveLength(1);
+      expect(afterThird[0]).toMatchObject({ id: sighting.id, attribute_count: 5 });
+      const read = await queryAsAdminWithSuccess({ query: HUNT_KNOWN_HITS, variables: { id: knownHuntId } });
+      expect(read.data?.hunt).toMatchObject({ last_hits_count: 3, last_new_hits_count: 2, knownHits: { distinct_count: 5 } });
+    } finally {
+      // The next tests count the hunts of the technique: this one leaves
+      await queryAsAdmin({ query: HUNT_DELETE, variables: { id: knownHuntId } });
+    }
   });
 
   it('should translate without executing for a preview', async () => {

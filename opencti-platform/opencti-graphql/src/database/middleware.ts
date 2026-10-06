@@ -3910,11 +3910,18 @@ export const createRelationRaw = async (
     lock = await lockResources(participantIds, { draftId: getDraftContext(context, user) });
     // region check existing relationship
     // A hits or validation result sighting of a pair is identified by its deterministic id only: ordinary sightings
-    // sharing its endpoints and time window never merge into it, nor do two of them merge into each other
-    const claimsGeneratedSighting = relationshipType === STIX_SIGHTING_RELATIONSHIP && !!await claimedGeneratedPairSighting(context, resolvedInput);
+    // sharing its endpoints and time window never merge into it, nor do two of them merge into each other. The same
+    // holds for the sighting a hunt keeps of an object on a platform (x_opencti_hunt_id, set by the platform only)
+    const claimsHuntSighting = relationshipType === STIX_SIGHTING_RELATIONSHIP && isNotEmptyField(resolvedInput.x_opencti_hunt_id);
+    const claimsGeneratedSighting = relationshipType === STIX_SIGHTING_RELATIONSHIP
+      && (claimsHuntSighting || !!await claimedGeneratedPairSighting(context, resolvedInput));
     const matchedRelationships = await getExistingRelations(context, user, resolvedInput, { ...opts, idsOnly: claimsGeneratedSighting });
-    const existingRelationships = relationshipType === STIX_SIGHTING_RELATIONSHIP && !claimsGeneratedSighting && !fromRule
-      ? await withoutWindowMatchedGeneratedSightings(context, resolvedInput, getInputIds(relationshipType, resolvedInput, false), matchedRelationships)
+    const windowMatched = relationshipType === STIX_SIGHTING_RELATIONSHIP && !claimsGeneratedSighting && !fromRule;
+    const requestedIds = windowMatched ? new Set(getInputIds(relationshipType, resolvedInput, false)) : new Set<string>();
+    const existingRelationships = windowMatched
+      ? (await withoutWindowMatchedGeneratedSightings(context, resolvedInput, [...requestedIds], matchedRelationships))
+          .filter((relation) => isEmptyField((relation as { x_opencti_hunt_id?: string }).x_opencti_hunt_id)
+            || [relation.internal_id, relation.standard_id, ...(relation.x_opencti_stix_ids ?? [])].some((id) => requestedIds.has(id)))
       : matchedRelationships;
     let existingRelationship = null;
     if (existingRelationships.length > 0) {

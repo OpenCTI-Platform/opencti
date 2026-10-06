@@ -133,6 +133,7 @@ export const recordHuntHits = async (context: AuthContext, input: HuntHitsRecord
       const { element } = await buildEntityData(context, HUNT_MANAGER_USER, R.reject(R.isNil, {
         internal_id: internalId,
         standard_id: standardId,
+        entity_type: ENTITY_TYPE_HUNT_HIT_RECORD,
         hunt_id: input.huntId,
         security_platform_id: input.securityPlatformId ?? null,
         hit_key: key,

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { huntHitKey, identifyingHitKeys, sanitizeHitKeys, sanitizeHits } from '../../../../src/modules/hunt/hunt-utils';
 import { classifyHuntHits } from '../../../../src/modules/hunt/huntHitRecord/huntHitRecord-domain';
 import { computeHuntRunWindow, huntIocKeysByHit, huntRunNewHits } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
-import { nextHuntSightingCount } from '../../../../src/modules/hunt/hunt-sightings';
+import { huntSightingStandardId, nextHuntSightingCount } from '../../../../src/modules/hunt/hunt-sightings';
 
 // The vectors the connectors SDK asserts as well (connectors-sdk tests/test_connectors/test_internal_hunt/test_analysis.py):
 // both sides compute the same key for the same reported hit
@@ -127,6 +127,14 @@ describe('One sighting per hunt, sighted object and platform', () => {
     expect(nextHuntSightingCount({ attribute_count: 12, x_opencti_hunt_run_id: 'run-2' }, 'run-3', { identified: true, knownHits: 15, runHits: 7 })).toEqual(15);
     // Hits forgotten by the retention stay counted
     expect(nextHuntSightingCount({ attribute_count: 40 }, 'run-4', { identified: true, knownHits: 3, runHits: 3 })).toEqual(40);
+  });
+
+  it('should give each hunt its own sighting of an object on a platform, whatever the dates', () => {
+    const id = huntSightingStandardId('hunt-1', 'technique-1', 'platform-1');
+    expect(id).toMatch(/^sighting--[0-9a-f-]{36}$/);
+    expect(huntSightingStandardId('hunt-1', 'technique-1', 'platform-1')).toEqual(id);
+    expect(huntSightingStandardId('hunt-2', 'technique-1', 'platform-1')).not.toEqual(id);
+    expect(huntSightingStandardId('hunt-1', 'technique-1', 'platform-2')).not.toEqual(id);
   });
 
   it('should add the hits of a run that identifies none once', () => {

@@ -1,15 +1,16 @@
+import { v5 as uuidv5 } from 'uuid';
 import type { AuthContext } from '../../types/user';
 import type { BasicStoreEntity, BasicStoreEntityMarkingDefinition, BasicStoreRelation } from '../../types/store';
 import { logApp } from '../../config/conf';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { createRelation, patchAttribute } from '../../database/middleware';
-import { fullRelationsList, internalLoadById } from '../../database/middleware-loader';
+import { internalLoadById } from '../../database/middleware-loader';
+import { OPENCTI_NAMESPACE, STIX_TYPE_SIGHTING } from '../../schema/general';
 import { generateStandardId } from '../../schema/identifier';
 import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
-import { FilterMode, FilterOperator } from '../../generated/graphql';
 import { SYSTEM_USER, HUNT_MANAGER_USER } from '../../utils/access';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { findByIds } from './hunt-loaders';
@@ -126,14 +127,17 @@ export const resolveHuntSightingTargets = async (context: AuthContext, hunt: Bas
     .map((id) => ({ id, firstSeen: runFirst, lastSeen: runLast, runHits: run.hits_count ?? 0 }));
 };
 
-const findHuntSighting = async (context: AuthContext, huntId: string, fromId: string, toId: string) => {
-  const sightings = await fullRelationsList<HuntSighting>(context, HUNT_MANAGER_USER, STIX_SIGHTING_RELATIONSHIP, {
-    fromId,
-    toId,
-    filters: { mode: FilterMode.And, filters: [{ key: [ATTRIBUTE_HUNT_ID], values: [huntId], operator: FilterOperator.Eq, mode: FilterMode.Or }], filterGroups: [] },
-    noFiltersChecking: true,
-  } as never);
-  return sightings[0] ?? null;
+/**
+ * The STIX id of the sighting a hunt keeps of an object on a security platform: derived from the three, not from its
+ * dates like other sightings, so that it never merges with the sighting of another hunt or of a connector that has
+ * the same dates, and stays the same when its dates move.
+ */
+export const huntSightingStandardId = (huntId: string, sightedId: string, securityPlatformId: string) => {
+  return `${STIX_TYPE_SIGHTING}--${uuidv5(`hunt-sighting|${huntId}|${sightedId}|${securityPlatformId}`, OPENCTI_NAMESPACE)}`;
+};
+
+const findHuntSighting = async (context: AuthContext, standardId: string) => {
+  return internalLoadById<HuntSighting>(context, HUNT_MANAGER_USER, standardId, { type: STIX_SIGHTING_RELATIONSHIP });
 };
 
 const sightingDescription = (hunt: BasicStoreEntityHunt, platformName: string, count: number) => {
@@ -152,7 +156,8 @@ const keepHuntSightings = async (
   const identified = run.hits_identified === true;
   for (let index = 0; index < targets.length; index += 1) {
     const target = targets[index];
-    const stored = await findHuntSighting(context, hunt.internal_id, target.id, platform.internal_id);
+    const standardId = huntSightingStandardId(hunt.internal_id, target.id, platform.internal_id);
+    const stored = await findHuntSighting(context, standardId);
     const knownHits = identified ? await countHuntHitRecords(context, hunt.internal_id, [platform.internal_id], target.iocKeys) : 0;
     const count = nextHuntSightingCount(stored, run.internal_id, { identified, knownHits, runHits: target.runHits });
     const firstSeen = earliest([stored?.first_seen, target.firstSeen]) as string;
@@ -161,17 +166,19 @@ const keepHuntSightings = async (
     if (stored) {
       const unchanged = stored.attribute_count === count && stored.first_seen === firstSeen && stored.last_seen === lastSeen
         && stored.x_opencti_hunt_run_id === run.internal_id;
+      // Its id stays the one derived from the hunt, whatever its dates become
       const element = unchanged ? stored : (await patchAttribute(context, HUNT_MANAGER_USER, stored.internal_id, STIX_SIGHTING_RELATIONSHIP, {
         attribute_count: count,
         first_seen: firstSeen,
         last_seen: lastSeen,
         description,
         [ATTRIBUTE_HUNT_RUN_ID_KEY]: run.internal_id,
-      })).element as unknown as HuntSighting;
+      }, { impactStandardId: false })).element as unknown as HuntSighting;
       outcome.ids.push(element.standard_id);
       outcome.updated += 1;
     } else {
       const created = await createRelation(context, HUNT_MANAGER_USER, {
+        standard_id: standardId,
         relationship_type: STIX_SIGHTING_RELATIONSHIP,
         fromId: target.id,
         toId: platform.internal_id,
