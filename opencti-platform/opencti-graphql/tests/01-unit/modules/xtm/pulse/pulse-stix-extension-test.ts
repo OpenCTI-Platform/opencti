@@ -7,7 +7,8 @@ import { schemaAttributesDefinition } from '../../../../../src/schema/schema-att
 import { validateUpdatableAttribute } from '../../../../../src/schema/schema-validator';
 import { PulseAccess, PulsePrevalence, PulseTrend } from '../../../../../src/generated/graphql';
 import { ENTITY_TYPE_INDICATOR } from '../../../../../src/modules/indicator/indicator-types';
-import { type PulseStixPolicy, setPulseStixPolicy } from '../../../../../src/modules/xtm/pulse/pulse-stix-policy';
+import { type PulseStixPolicy, registerPulseStixPolicyRefresher, setPulseStixPolicy } from '../../../../../src/modules/xtm/pulse/pulse-stix-policy';
+import { initializePulseStixPolicy } from '../../../../../src/modules/xtm/pulse/pulse-domain';
 import { isPulseResolvedContributable, type PulseMarkingPolicy } from '../../../../../src/modules/xtm/pulse/pulse-settings';
 import type { StoreObject } from '../../../../../src/types/store';
 import '../../../../../src/modules/index';
@@ -129,6 +130,32 @@ describe('Threat Pulse fields in the OpenCTI STIX extension', () => {
     expect(carried({ objectOrganization: [{ internal_id: 'organization-id' }] })).toBe(false);
     setPulseStixPolicy({ ...FULL, isContributable: null });
     expect(carried({})).toBe(false);
+  });
+
+  it('should carry the data from the first conversion once the policy is read at startup, and nothing when the read fails', async () => {
+    const network = indicator(buildPulseDocument(['00112233445566778899aabbccddeeff'], combinePulseLookups([{
+      hash: 'a',
+      published: true,
+      prevalence_bucket: PulsePrevalence.Common,
+      platforms_bucket: '25-49',
+      first_seen_network: '2026-08-14',
+      last_seen_network: '2026-10-02',
+      trend: PulseTrend.Rising,
+      trend_series: [1, 2, 8],
+      sector_trend: PulseTrend.Rising,
+      sector_platforms_bucket: '5-9',
+    }]), new Date()));
+    const carried = () => Object.keys(buildOCTIExtensions(network)).some((key) => key.startsWith('pulse_'));
+    // A node that has read nothing yet
+    setPulseStixPolicy(null);
+    registerPulseStixPolicyRefresher(async () => FULL);
+    await initializePulseStixPolicy();
+    expect(carried()).toBe(true);
+    registerPulseStixPolicyRefresher(async () => {
+      throw new Error('Settings unavailable');
+    });
+    await initializePulseStixPolicy();
+    expect(carried()).toBe(false);
   });
 });
 

@@ -219,6 +219,10 @@ registerPulseStixPolicyRefresher(async () => {
 // within the refresh interval of the snapshot.
 const refreshPulseStixPolicyNow = () => refreshPulseStixPolicy().catch(() => setPulseStixPolicy(null));
 
+// Read before the API and the managers start: the first conversion of a node carries what the policy allows instead of
+// nothing. A failed read keeps the data hidden until a background refresh succeeds.
+export const initializePulseStixPolicy = () => refreshPulseStixPolicyNow();
+
 // region cleanup
 // The community data of the platform goes whenever it stops being current: unregistration, purge, lapse, the opening
 // of the full experience, a configuration that changes the mode or takes objects out. The cleanup can fail
@@ -1336,6 +1340,48 @@ const answerPulseEntityFromStore = async (
   return { lookup: platform };
 };
 
+interface PulseEntityLookupRequest {
+  context: AuthContext;
+  user: AuthUser;
+  id: string;
+}
+type PulseEntityLookupAnswer = PulseEntityAnswer & { access: PulseAccess; sector_bucket: PulseSectorBucketValue | null };
+
+// The lookups of objects opened at the same time share one pass under the lock of the configuration changes and of the
+// cleanups, against the configuration stored now, like the manager passes: a lookup never sends the hash of an object a
+// newer policy excludes, nor writes its statistics after the cleanup of that policy. Each object is read again for its
+// reader: markings or access changed since the first read are the ones the policy judges. Their keys reach XTM Hub
+// together, one request per object type.
+const entityLookupLoader = new DataLoader<PulseEntityLookupRequest, PulseEntityLookupAnswer>((requests) => withPulsePushLock(async () => {
+  const current = await loadPulseContext(requests[0].context, { fresh: true });
+  const currentBase = { access: current.access, sector_bucket: current.values.sectorBucket ?? null };
+  const day = utcDay();
+  return Promise.all(requests.map(async ({ context, user, id }): Promise<PulseEntityLookupAnswer | Error> => {
+    try {
+      const reloaded = await storeLoadById<BasicStorePulseEntity>(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT);
+      if (!reloaded) {
+        return { ...currentBase, readable: false, unavailable_reason: PulseUnavailableReason.OutOfScope, information: null };
+      }
+      const answer = await answerPulseEntityFromStore(context, reloaded, current);
+      if (!('lookup' in answer)) {
+        return { ...currentBase, ...answer };
+      }
+      const keys = computeStableKeys(reloaded);
+      const salt = await getPulseSalt(answer.lookup, day);
+      const loader = getLookupLoader(answer.lookup, day, salt, PULSE_OBJECT_TYPE_BY_ENTITY_TYPE[reloaded.entity_type]);
+      const results = await Promise.all(keys.map((key) => loader.load(key)));
+      const information = combinePulseLookups(results.filter((result): result is PulseHubLookupResult => !!result));
+      const doc = buildPulseDocument(keys, information, new Date());
+      await writePulseDocuments(context, [{ entity: reloaded, doc }]);
+      await redisSetPulseEntityLookup(reloaded.internal_id, LOOKUP_CACHE_TTL_SECONDS);
+      return { ...currentBase, readable: true, unavailable_reason: null, information: toPulseInformationOutput({ ...reloaded, ...doc } as BasicStorePulseEntity) };
+    } catch (error) {
+      // Fails the lookup of this object only.
+      return error instanceof Error ? error : new Error(String(error));
+    }
+  }));
+}), { cache: false, batchScheduleFn: (callback) => setTimeout(callback, 25) });
+
 export const getPulseEntityInformation = async (context: AuthContext, user: AuthUser, id: string) => {
   const pulse = await loadPulseContext(context);
   const entity = await storeLoadById<BasicStorePulseEntity>(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT);
@@ -1348,32 +1394,7 @@ export const getPulseEntityInformation = async (context: AuthContext, user: Auth
     return { ...base, ...stored };
   }
   try {
-    // Under the lock of the configuration changes and of the cleanups, against the configuration stored now, like the
-    // manager passes: a lookup never sends the hash of an object a newer policy excludes, nor writes its statistics
-    // after the cleanup of that policy. The object is read again too: markings or access changed since the first read
-    // are the ones the policy judges.
-    return await withPulsePushLock(async () => {
-      const current = await loadPulseContext(context, { fresh: true });
-      const currentBase = { ...base, access: current.access, sector_bucket: current.values.sectorBucket ?? null };
-      const reloaded = await storeLoadById<BasicStorePulseEntity>(context, user, id, ABSTRACT_STIX_DOMAIN_OBJECT);
-      if (!reloaded) {
-        return { ...currentBase, readable: false, unavailable_reason: PulseUnavailableReason.OutOfScope, information: null };
-      }
-      const answer = await answerPulseEntityFromStore(context, reloaded, current);
-      if (!('lookup' in answer)) {
-        return { ...currentBase, ...answer };
-      }
-      const keys = computeStableKeys(reloaded);
-      const day = utcDay();
-      const salt = await getPulseSalt(answer.lookup, day);
-      const loader = getLookupLoader(answer.lookup, day, salt, PULSE_OBJECT_TYPE_BY_ENTITY_TYPE[reloaded.entity_type]);
-      const results = await Promise.all(keys.map((key) => loader.load(key)));
-      const information = combinePulseLookups(results.filter((result): result is PulseHubLookupResult => !!result));
-      const doc = buildPulseDocument(keys, information, new Date());
-      await writePulseDocuments(context, [{ entity: reloaded, doc }]);
-      await redisSetPulseEntityLookup(reloaded.internal_id, LOOKUP_CACHE_TTL_SECONDS);
-      return { ...currentBase, readable: true, unavailable_reason: null, information: toPulseInformationOutput({ ...reloaded, ...doc } as BasicStorePulseEntity) };
-    });
+    return { ...base, ...await entityLookupLoader.load({ context, user, id }) };
   } catch (error) {
     logApp.warn('[THREAT PULSE] Entity lookup failed', { cause: error, entityId: entity.internal_id });
     await handlePulseReadError(pulse.values, error);

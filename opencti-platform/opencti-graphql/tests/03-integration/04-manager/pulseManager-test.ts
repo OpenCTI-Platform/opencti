@@ -102,6 +102,7 @@ const FORMER_CONSENT_IP = '198.51.100.221';
 const EXCLUDED_TRENDING_IP = '198.51.100.222';
 const OUT_OF_SCOPE_IP = '198.51.100.223';
 const ADMITTED_IP = '198.51.100.224';
+const OPENED_TOGETHER_IPS = ['198.51.100.225', '198.51.100.226', '198.51.100.227', '198.51.100.228'];
 const FORMER_CONSENT_VERSION = '2025-01-1';
 const PULSE_CONSENT_STATE = gql`
   query PulseConsentState {
@@ -696,6 +697,26 @@ describe('Threat Pulse manager and API', () => {
     const looked = await storeLoadById<BasicStorePulseEntity>(testContext, ADMIN_USER, malwareId, ENTITY_TYPE_MALWARE);
     expect(looked.pulse_keys).toEqual(computeStableKeys(looked));
     await updateAttribute(testContext, ADMIN_USER, malwareId, ENTITY_TYPE_MALWARE, [{ key: 'aliases', value: [] }]);
+  });
+
+  it('should send the lookups of objects opened at the same time to XTM Hub together', async () => {
+    const lookups = () => hub.requests.filter((request) => request.operation === 'pulseLookup').length;
+    const ids: string[] = [];
+    for (let index = 0; index < OPENED_TOGETHER_IPS.length; index += 1) {
+      const value = OPENED_TOGETHER_IPS[index];
+      const created = await queryAsAdminWithSuccess({ query: CREATE_INDICATOR, variables: { input: { name: value, pattern: `[ipv4-addr:value = '${value}']`, pattern_type: 'stix', x_opencti_main_observable_type: 'IPv4-Addr' } } });
+      ids.push(created.data?.indicatorAdd.id);
+    }
+    const before = lookups();
+    const results = await Promise.all(ids.map((id) => queryAsAdminWithSuccess({ query: PULSE_ENTITY, variables: { id } })));
+    results.forEach((result) => expect(result.data?.pulseEntity).toMatchObject({ readable: true, unavailable_reason: null }));
+    // Looked up together, not one after the other under the lock: fewer requests than objects (one when they reach the
+    // same batch, which a slow runner may split)
+    expect(lookups() - before).toBeGreaterThan(0);
+    expect(lookups() - before).toBeLessThan(ids.length);
+    for (let index = 0; index < ids.length; index += 1) {
+      await deleteElementById(testContext, ADMIN_USER, ids[index], ENTITY_TYPE_INDICATOR);
+    }
   });
 
   it('should never send the batches built under a scope the administrator narrowed since', async () => {
