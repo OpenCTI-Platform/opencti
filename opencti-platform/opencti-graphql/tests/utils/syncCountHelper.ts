@@ -13,7 +13,7 @@ import { VOCABULARY_NUMBERS } from '../11-sync/sync-utils';
 
 export const testCreatedCounter: Record<string, number> = {};
 testCreatedCounter.artifact = 4;
-testCreatedCounter['attack-pattern'] = 20;
+testCreatedCounter['attack-pattern'] = 22;
 testCreatedCounter.campaign = 6;
 testCreatedCounter['case-incident'] = 7;
 testCreatedCounter['case-rfi'] = 9;
@@ -30,7 +30,7 @@ testCreatedCounter.feedback = 2;
 testCreatedCounter.file = 10;
 testCreatedCounter.grouping = 2;
 testCreatedCounter.iccid = 4;
-testCreatedCounter.identity = 54;
+testCreatedCounter.identity = 56;
 testCreatedCounter.imei = 3;
 testCreatedCounter.imsi = 1;
 testCreatedCounter.incident = 7;
@@ -45,7 +45,7 @@ testCreatedCounter.language = 1;
 testCreatedCounter.location = 21;
 testCreatedCounter['mac-addr'] = 1;
 // + 1 created by timeMachine-test
-testCreatedCounter.malware = 63;
+testCreatedCounter.malware = 64;
 testCreatedCounter['malware-analysis'] = 3;
 testCreatedCounter['marking-definition'] = 24;
 testCreatedCounter.narrative = 1;
@@ -60,7 +60,7 @@ testCreatedCounter['ssh-key'] = 1;
 // + 2 created by timeMachine-test
 testCreatedCounter.relationship = 148;
 // + 1 created by timeMachine-test
-testCreatedCounter.report = 53;
+testCreatedCounter.report = 56;
 testCreatedCounter.sighting = 4;
 testCreatedCounter.software = 2;
 testCreatedCounter.task = 1;
@@ -69,7 +69,7 @@ testCreatedCounter.tool = 5;
 testCreatedCounter['tracking-number'] = 1;
 testCreatedCounter.vocabulary = VOCABULARY_NUMBERS;
 testCreatedCounter.vulnerability = 11;
-testCreatedCounter['security-coverage'] = 22;
+testCreatedCounter['security-coverage'] = 24;
 testCreatedCounter['security-coverage-result'] = 21;
 
 export const testUpdatedCounter: Record<string, number> = {};
@@ -87,7 +87,7 @@ testUpdatedCounter.location = 14;
 testUpdatedCounter['attack-pattern'] = 3;
 testUpdatedCounter['case-incident'] = 11;
 testUpdatedCounter.feedback = 1;
-testUpdatedCounter.report = 17;
+testUpdatedCounter.report = 18;
 testUpdatedCounter['course-of-action'] = 3;
 testUpdatedCounter['data-source'] = 1;
 testUpdatedCounter['external-reference'] = 1;
@@ -127,7 +127,7 @@ testMergedCounter['attack-pattern'] = 1;
 
 export const testDeletedCounter: Record<string, number> = {};
 testDeletedCounter.artifact = 3;
-testDeletedCounter['attack-pattern'] = 15;
+testDeletedCounter['attack-pattern'] = 17;
 testDeletedCounter.campaign = 2;
 testDeletedCounter['case-incident'] = 7;
 testDeletedCounter['case-rfi'] = 9;
@@ -142,7 +142,7 @@ testDeletedCounter['external-reference'] = 1;
 testDeletedCounter.feedback = 2;
 testDeletedCounter.file = 6;
 testDeletedCounter.grouping = 2;
-testDeletedCounter.identity = 37;
+testDeletedCounter.identity = 39;
 testDeletedCounter.incident = 6;
 testDeletedCounter.indicator = 29;
 testDeletedCounter.infrastructure = 1;
@@ -154,7 +154,7 @@ testDeletedCounter.language = 1;
 testDeletedCounter.location = 16;
 testDeletedCounter['mac-addr'] = 1;
 // + 1 deleted by timeMachine-test
-testDeletedCounter.malware = 36;
+testDeletedCounter.malware = 37;
 testDeletedCounter['malware-analysis'] = 2;
 testDeletedCounter['marking-definition'] = 13;
 testDeletedCounter.narrative = 1;
@@ -167,7 +167,7 @@ testDeletedCounter['phone-number'] = 2;
 // + 1 deleted by timeMachine-test
 testDeletedCounter.relationship = 5;
 // + 1 deleted by timeMachine-test
-testDeletedCounter.report = 44;
+testDeletedCounter.report = 47;
 testDeletedCounter.sighting = 1;
 testDeletedCounter['ssh-key'] = 1;
 testDeletedCounter.task = 1;
@@ -178,7 +178,7 @@ testDeletedCounter.software = 1;
 testDeletedCounter.iccid = 4;
 testDeletedCounter.imei = 3;
 testDeletedCounter.imsi = 1;
-testDeletedCounter['security-coverage'] = 20;
+testDeletedCounter['security-coverage'] = 22;
 testDeletedCounter['security-coverage-result'] = 19;
 
 export const doTotal = (eventCounter: Record<string, number>) => {
