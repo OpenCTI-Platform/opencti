@@ -746,6 +746,14 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       expect(storedDraft.restricted_members?.map((member) => member.id)).toEqual([INVESTIGATION_MANAGER_USER.id]);
       expect(stopped.steps).toEqual([]);
       expect((await listInvestigationRunsToProcess(testContext, 50)).map((run) => run.internal_id)).toContain(runId);
+      // A restriction that fails stops the pass before any deletion: nothing is deleted under the old members.
+      const restriction = vi.spyOn(draftWorkspaceDomain, 'draftWorkspaceEditAuthorizedMembers').mockRejectedValueOnce(new Error('Draft store unavailable'));
+      const deletionAttempts = deletion.mock.calls.length;
+      await processInvestigationRun(testContext, runId);
+      expect(restriction).toHaveBeenCalled();
+      expect(deletion.mock.calls.length).toBe(deletionAttempts);
+      expect((await loadInvestigationRun(testContext, runId))?.draft_id).toBe(mirrored.draft_id);
+      restriction.mockRestore();
       // Deleting the run deletes its draft first: refused while that fails, the run keeps its reference.
       deletion.mockRejectedValueOnce(new Error('Draft store unavailable'));
       const refusedDeletion = await queryAsAdmin({ query: RUN_DELETE, variables: { id: runId } });

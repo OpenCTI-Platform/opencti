@@ -649,16 +649,12 @@ export const stopCancelledEngineRun = async (context: AuthContext, runId: string
 // Only the manager: an empty list of members would leave the artifact open to everyone.
 const STOPPED_RUN_ARTIFACT_MEMBERS = [{ id: INVESTIGATION_MANAGER_USER.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }];
 
-const restrictStoppedRunArtifact = async (context: AuthContext, runId: string, artifact: { draftId: string } | { workspaceId: string }) => {
+const restrictStoppedRunArtifact = async (context: AuthContext, artifact: { draftId: string } | { workspaceId: string }) => {
   const options = { skipAdminValidation: true };
-  try {
-    if ('draftId' in artifact) {
-      await draftWorkspaceEditAuthorizedMembers(context, INVESTIGATION_MANAGER_USER, artifact.draftId, STOPPED_RUN_ARTIFACT_MEMBERS, options);
-    } else {
-      await workspaceEditAuthorizedMembers(context, INVESTIGATION_MANAGER_USER, artifact.workspaceId, STOPPED_RUN_ARTIFACT_MEMBERS, options);
-    }
-  } catch (cause) {
-    logApp.error('[CASE AUTOPILOT] Artifact of a stopped investigation not restricted to the manager, retried on the next tick', { runId, ...artifact, cause });
+  if ('draftId' in artifact) {
+    await draftWorkspaceEditAuthorizedMembers(context, INVESTIGATION_MANAGER_USER, artifact.draftId, STOPPED_RUN_ARTIFACT_MEMBERS, options);
+  } else {
+    await workspaceEditAuthorizedMembers(context, INVESTIGATION_MANAGER_USER, artifact.workspaceId, STOPPED_RUN_ARTIFACT_MEMBERS, options);
   }
 };
 
@@ -666,8 +662,10 @@ const restrictStoppedRunArtifact = async (context: AuthContext, runId: string, a
  * Delete the draft and the investigation graph of a run stopped at an access
  * boundary, with what it wrote and read there. Each is first restricted to the
  * manager, so that a reader who kept its id reads nothing even while its
- * deletion fails. What could not be deleted keeps its reference on the run, so
- * that the manager, or a deletion of the run, tries again.
+ * deletion fails; nothing is deleted before that restriction succeeded, as a
+ * deletion that fails halfway would leave the rest under its old members. What
+ * could not be restricted or deleted keeps its reference on the run, so that
+ * the manager, or a deletion of the run, tries again.
  */
 export const deleteStoppedRunArtifacts = async (context: AuthContext, runId: string, artifacts: { draftId: string | null; workspaceId: string | null }) => {
   const deleted = { draft: false, workspace: false };
@@ -675,7 +673,7 @@ export const deleteStoppedRunArtifacts = async (context: AuthContext, runId: str
   if (draftId) {
     try {
       if (await findDraftById(context, INVESTIGATION_MANAGER_USER, draftId)) {
-        await restrictStoppedRunArtifact(context, runId, { draftId });
+        await restrictStoppedRunArtifact(context, { draftId });
         await deleteDraftWorkspace(context, INVESTIGATION_MANAGER_USER, draftId);
       }
       deleted.draft = true;
@@ -686,7 +684,7 @@ export const deleteStoppedRunArtifacts = async (context: AuthContext, runId: str
   if (workspaceId) {
     try {
       if (await findWorkspaceById(context, INVESTIGATION_MANAGER_USER, workspaceId)) {
-        await restrictStoppedRunArtifact(context, runId, { workspaceId });
+        await restrictStoppedRunArtifact(context, { workspaceId });
         await workspaceDelete(context, INVESTIGATION_MANAGER_USER, workspaceId);
       }
       deleted.workspace = true;
