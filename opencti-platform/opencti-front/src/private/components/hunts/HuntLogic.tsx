@@ -12,7 +12,7 @@ import { useFormatter } from '../../../components/i18n';
 import type { Theme } from '../../../components/Theme';
 import { MESSAGING$ } from '../../../relay/environment';
 import Security from '../../../utils/Security';
-import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useFiltersState from '../../../utils/filters/useFiltersState';
 import { deserializeFilterGroupForFrontend, emptyFilterGroup, serializeFilterGroupForBackend } from '../../../utils/filters/filtersUtils';
@@ -120,7 +120,7 @@ export const huntLogicMissingSentence = (huntType: string, sigmaRule: string, na
 };
 
 /** After the logic of a draft is saved: the next step, activating it, right there. */
-const ActivateAfterSave = ({ hunt }: { hunt: HuntLogicData }) => {
+const ActivateAfterSave = ({ hunt, canEdit }: { hunt: HuntLogicData; canEdit: boolean }) => {
   const { t_i18n } = useFormatter();
   const [commit, inFlight] = useApiMutation<HuntStatusHeaderStatusMutation>(huntStatusHeaderStatusMutation);
   if (hunt.hunt_status !== 'draft') {
@@ -145,12 +145,12 @@ const ActivateAfterSave = ({ hunt }: { hunt: HuntLogicData }) => {
             <span>
               {t_i18n('Complete these items to activate it:')}
               <span style={{ display: 'block', marginTop: 8 }}>
-                <HuntReadinessChecklist huntId={hunt.id} items={unmet} />
+                <HuntReadinessChecklist huntId={hunt.id} items={unmet} canEdit={canEdit} />
               </span>
             </span>
           )}
       action={unmet.length === 0 ? (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
           <Button size="small" onClick={activate} disabled={inFlight} data-testid="hunt-logic-activate">{t_i18n('Activate')}</Button>
         </Security>
       ) : undefined}
@@ -160,7 +160,7 @@ const ActivateAfterSave = ({ hunt }: { hunt: HuntLogicData }) => {
 };
 
 /** The connector and logic items of the readiness that are not met, under the editor. */
-const LogicReadinessNotes = ({ hunt }: { hunt: HuntLogicData }) => {
+const LogicReadinessNotes = ({ hunt, canEdit }: { hunt: HuntLogicData; canEdit: boolean }) => {
   const theme = useTheme<Theme>();
   const items = hunt.readiness.items.filter((item) => (item.key === 'connector' || item.key === 'logic') && item.status !== 'met');
   if (items.length === 0) {
@@ -168,7 +168,7 @@ const LogicReadinessNotes = ({ hunt }: { hunt: HuntLogicData }) => {
   }
   return (
     <div style={{ marginTop: theme.spacing(2) }} data-testid="hunt-logic-readiness">
-      <HuntReadinessChecklist huntId={hunt.id} items={items} />
+      <HuntReadinessChecklist huntId={hunt.id} items={items} canEdit={canEdit} />
     </div>
   );
 };
@@ -178,10 +178,9 @@ interface LogicValues {
   native_queries: HuntNativeQueryFormValue[];
 }
 
-const DetectionRuleLogic = ({ hunt }: { hunt: HuntLogicData }) => {
+const DetectionRuleLogic = ({ hunt, canEdit }: { hunt: HuntLogicData; canEdit: boolean }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const canEdit = useGranted([KNOWLEDGE_KNUPDATE]);
   const [commit] = useApiMutation<HuntLogicFieldPatchMutation>(huntLogicFieldPatchMutation);
   const [saved, setSaved] = useState(false);
   const [previewSignal, setPreviewSignal] = useState(0);
@@ -235,7 +234,7 @@ const DetectionRuleLogic = ({ hunt }: { hunt: HuntLogicData }) => {
       {({ values, dirty, isSubmitting, submitForm, resetForm }) => {
         const missing = huntLogicMissingSentence(hunt.hunt_type, values.sigma_rule, normalizeNativeQueries(values.native_queries));
         const saveBar = (testId: string) => (
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
             <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: theme.spacing(1) }}>
               {dirty && <Text variant="content-caption" style={{ color: theme.palette.text.secondary }}>{t_i18n('Unsaved changes')}</Text>}
               <Button variant="secondary" onClick={() => resetForm()} disabled={!dirty || isSubmitting}>
@@ -264,7 +263,7 @@ const DetectionRuleLogic = ({ hunt }: { hunt: HuntLogicData }) => {
           <Form data-testid="hunt-logic-page">
             <HuntAIAssistProvider huntId={hunt.id}>
               <div style={{ marginBottom: theme.spacing(2), display: 'flex', flexDirection: 'column', gap: theme.spacing(1) }}>
-                {saved && !dirty && <ActivateAfterSave hunt={hunt} />}
+                {saved && !dirty && <ActivateAfterSave hunt={hunt} canEdit={canEdit} />}
                 {missing && (
                   <Alert severity="warning" title={t_i18n(missing)} description={t_i18n('A hunt without its logic stays a draft: the platform refuses to activate it.')} data-testid="hunt-logic-missing" />
                 )}
@@ -289,9 +288,16 @@ const DetectionRuleLogic = ({ hunt }: { hunt: HuntLogicData }) => {
                 <Grid item xs={12} lg={isTelemetry ? 5 : 12}>
                   <Card title={t_i18n('Query preview')} action={<HuntLearnMore href={HUNT_DOCS.runHunt} />}>
                     <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-                      <HuntTranslationPreview huntId={hunt.id} huntType={hunt.hunt_type} scopePlatformIds={scopePlatformIdsOf(hunt)} dirty={dirty} startSignal={previewSignal} />
+                      <HuntTranslationPreview
+                        huntId={hunt.id}
+                        huntType={hunt.hunt_type}
+                        scopePlatformIds={scopePlatformIdsOf(hunt)}
+                        dirty={dirty}
+                        startSignal={previewSignal}
+                        canStart={canEdit}
+                      />
                     </Suspense>
-                    <LogicReadinessNotes hunt={hunt} />
+                    <LogicReadinessNotes hunt={hunt} canEdit={canEdit} />
                   </Card>
                 </Grid>
                 <Grid item xs={12}>
@@ -374,15 +380,14 @@ const IocValuesTable = ({ hunt }: { hunt: HuntLogicData }) => {
 };
 
 // The indicator filters are edited outside Formik: discarding remounts the form so both start again from the hunt
-const IndicatorLogic = ({ hunt }: { hunt: HuntLogicData }) => {
+const IndicatorLogic = ({ hunt, canEdit }: { hunt: HuntLogicData; canEdit: boolean }) => {
   const [revision, setRevision] = useState(0);
-  return <IndicatorLogicForm key={revision} hunt={hunt} onDiscard={() => setRevision((current) => current + 1)} />;
+  return <IndicatorLogicForm key={revision} hunt={hunt} canEdit={canEdit} onDiscard={() => setRevision((current) => current + 1)} />;
 };
 
-const IndicatorLogicForm = ({ hunt, onDiscard }: { hunt: HuntLogicData; onDiscard: () => void }) => {
+const IndicatorLogicForm = ({ hunt, canEdit, onDiscard }: { hunt: HuntLogicData; canEdit: boolean; onDiscard: () => void }) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const canEdit = useGranted([KNOWLEDGE_KNUPDATE]);
   const { maxTimeWindowHours } = useHuntConfiguration();
   const [commit, inFlight] = useApiMutation<HuntLogicFieldPatchMutation>(huntLogicFieldPatchMutation);
   const [saved, setSaved] = useState(false);
@@ -440,7 +445,7 @@ const IndicatorLogicForm = ({ hunt, onDiscard }: { hunt: HuntLogicData; onDiscar
         return (
           <Form data-testid="hunt-logic-page">
             <div style={{ marginBottom: theme.spacing(2), display: 'flex', flexDirection: 'column', gap: theme.spacing(1) }}>
-              {saved && !dirty && <ActivateAfterSave hunt={hunt} />}
+              {saved && !dirty && <ActivateAfterSave hunt={hunt} canEdit={canEdit} />}
               {empty && (
                 <Alert severity="warning" title={t_i18n('Add the indicators or observables to look for')} description={t_i18n('A hunt without its logic stays a draft: the platform refuses to activate it.')} data-testid="hunt-logic-missing" />
               )}
@@ -449,7 +454,7 @@ const IndicatorLogicForm = ({ hunt, onDiscard }: { hunt: HuntLogicData; onDiscar
               <Grid item xs={12} lg={7}>
                 <Card title={t_i18n('What to look for')} action={<HuntLearnMore href={HUNT_DOCS.indicatorSources} testId="hunt-ioc-learn-more" />}>
                   <HuntIocFields filtersState={filtersState} disabled={!canEdit} />
-                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                  <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canEdit}>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: theme.spacing(1), marginTop: theme.spacing(2) }}>
                       {dirty && <Text variant="content-caption" style={{ color: theme.palette.text.secondary }}>{t_i18n('Unsaved changes')}</Text>}
                       <Button variant="secondary" onClick={onDiscard} disabled={!dirty || isSubmitting} data-testid="hunt-logic-discard">
@@ -479,9 +484,9 @@ const IndicatorLogicForm = ({ hunt, onDiscard }: { hunt: HuntLogicData; onDiscar
                 <div style={{ height: theme.spacing(3) }} />
                 <Card title={t_i18n('Query preview')} action={<HuntLearnMore href={HUNT_DOCS.runHunt} />}>
                   <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-                    <HuntTranslationPreview huntId={hunt.id} huntType={hunt.hunt_type} scopePlatformIds={scopePlatformIdsOf(hunt)} dirty={dirty} />
+                    <HuntTranslationPreview huntId={hunt.id} huntType={hunt.hunt_type} scopePlatformIds={scopePlatformIdsOf(hunt)} dirty={dirty} canStart={canEdit} />
                   </Suspense>
-                  <LogicReadinessNotes hunt={hunt} />
+                  <LogicReadinessNotes hunt={hunt} canEdit={canEdit} />
                 </Card>
               </Grid>
               <Grid item xs={12}>
@@ -499,14 +504,17 @@ const IndicatorLogicForm = ({ hunt, onDiscard }: { hunt: HuntLogicData; onDiscar
 
 interface HuntLogicProps {
   data: HuntLogic_hunt$key;
+  // Whether the user may change the hunt, as the hunt page computes it: the update capability, the access to the hunt
+  // and, in a draft, the access to the draft
+  canEdit: boolean;
 }
 
-const HuntLogic = ({ data }: HuntLogicProps) => {
+const HuntLogic = ({ data, canEdit }: HuntLogicProps) => {
   const hunt = useFragment(huntLogicFragment, data);
   if (hunt.hunt_type === 'indicators') {
-    return <IndicatorLogic hunt={hunt} />;
+    return <IndicatorLogic hunt={hunt} canEdit={canEdit} />;
   }
-  return <DetectionRuleLogic hunt={hunt} />;
+  return <DetectionRuleLogic hunt={hunt} canEdit={canEdit} />;
 };
 
 export default HuntLogic;

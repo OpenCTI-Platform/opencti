@@ -130,10 +130,12 @@ interface HuntTranslationPreviewProps {
   autoStart?: boolean;
   /** Starts the preview each time it increases, for instance once a generated rule is saved */
   startSignal?: number;
+  /** Whether the user may change the hunt, which starting a preview needs, as the hunt page computes it */
+  canStart?: boolean;
 }
 
 /** The query a hunt connector would run for the saved logic of a hunt, translated by the connector without executing it. */
-const HuntTranslationPreview = ({ huntId, huntType, scopePlatformIds, dirty = false, autoStart = false, startSignal = 0 }: HuntTranslationPreviewProps) => {
+const HuntTranslationPreview = ({ huntId, huntType, scopePlatformIds, dirty = false, autoStart = false, startSignal = 0, canStart = true }: HuntTranslationPreviewProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { huntConnectors } = useLazyLoadQuery<HuntTranslationPreviewConnectorsQuery>(huntTranslationPreviewConnectorsQuery, {}, { fetchPolicy: 'store-and-network' });
@@ -291,7 +293,7 @@ const HuntTranslationPreview = ({ huntId, huntType, scopePlatformIds, dirty = fa
                 ))}
               </SelectContent>
             </Select>
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <Security needs={[KNOWLEDGE_KNUPDATE]} hasAccess={canStart}>
               <Button variant="secondary" onClick={start} disabled={preview.status === 'waiting'} data-testid="hunt-translation-preview-start">
                 {t_i18n('Preview the query')}
               </Button>
