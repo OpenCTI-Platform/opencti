@@ -397,31 +397,40 @@ export const releaseFlagsTakenOverByRule = async (context: AuthContext, user: Au
 };
 
 /**
- * Every rule first gets an equal share of the run, highest priority first; the rest of the budget then goes, in the
+ * Every rule first gets an equal share of the run, starting at the rule `start`; the rest of the budget then goes, in the
  * same order, to the rules whose scan stopped before their last candidate. A rule with a large backlog therefore never
- * starves the lower priority ones.
+ * starves the others. With more rules than elements in a run, the first pass ends before the last rule: `nextStart` is
+ * the rule after the last one served, where the next run starts, so every rule receives a budget in turn.
  */
 export const runWithFairShares = async (
   ruleCount: number,
   batchSize: number,
   apply: (index: number, budget: number) => Promise<number>,
   hasMoreCandidates: (index: number) => boolean,
-) => {
+  start = 0,
+): Promise<{ budget: number; nextStart: number }> => {
   let budget = batchSize;
   if (ruleCount === 0 || budget <= 0) {
-    return budget;
+    return { budget, nextStart: 0 };
   }
+  const first = Math.max(0, start) % ruleCount;
   const share = Math.max(1, Math.floor(batchSize / ruleCount));
-  for (let index = 0; index < ruleCount && budget > 0; index += 1) {
-    budget -= await apply(index, Math.min(share, budget));
+  let served = 0;
+  while (served < ruleCount && budget > 0) {
+    budget -= await apply((first + served) % ruleCount, Math.min(share, budget));
+    served += 1;
   }
-  for (let index = 0; index < ruleCount && budget > 0; index += 1) {
+  for (let step = 0; step < ruleCount && budget > 0; step += 1) {
+    const index = (first + step) % ruleCount;
     if (hasMoreCandidates(index)) {
       budget -= await apply(index, budget);
     }
   }
-  return budget;
+  return { budget, nextStart: (first + served) % ruleCount };
 };
+
+// First rule of the next run's first pass, so that every active rule is served when they outnumber the batch size
+let nextRuleStart = 0;
 
 /**
  * Apply the active knowledge decay rules to at most batchSize elements, each rule acting on the elements that no
@@ -431,11 +440,13 @@ export const applyKnowledgeDecayRules = async (context: AuthContext, user: AuthU
   const result: KnowledgeFreshnessRunResult = { flagged: 0, lowered: 0, revoked: 0, errors: 0 };
   const rules = prepareRules(await getActiveKnowledgeDecayRules(context), await listProvenanceTrackedTypes(context));
   [...scanCursors.keys()].filter((ruleId) => !rules.some(({ rule }) => rule.id === ruleId)).forEach((ruleId) => scanCursors.delete(ruleId));
-  await runWithFairShares(
+  const { nextStart } = await runWithFairShares(
     rules.length,
     opts.batchSize,
     (index, budget) => applyKnowledgeDecayRule(context, user, rules[index], rules.slice(0, index), budget, result),
     (index) => scanCursors.has(rules[index].rule.id),
+    nextRuleStart,
   );
+  nextRuleStart = nextStart;
   return result;
 };

@@ -214,11 +214,36 @@ describe('Knowledge freshness manager', () => {
       backlogs[index] -= applied;
       return applied;
     };
-    const left = await runWithFairShares(3, 90, apply, (index) => backlogs[index] > 0);
+    const { budget: left, nextStart } = await runWithFairShares(3, 90, apply, (index) => backlogs[index] > 0);
     // 30 each first, then what rules 1 and 2 left goes to rule 0, the only one with candidates left
     expect(calls).toEqual([[0, 30], [1, 30], [2, 30], [0, 48]]);
     expect(backlogs).toEqual([922, 0, 0]);
     expect(left).toEqual(0);
-    expect(await runWithFairShares(0, 90, apply, () => true)).toEqual(90);
+    // Every rule got its share: the next run starts with the highest priority rule again
+    expect(nextStart).toEqual(0);
+    expect(await runWithFairShares(0, 90, apply, () => true)).toEqual({ budget: 90, nextStart: 0 });
+  });
+
+  it('should serve every knowledge decay rule in turn when they outnumber the elements of a run', async () => {
+    // Five rules with a backlog each and two elements per run: each run starts after the last rule the previous one served
+    const served: number[] = [];
+    const apply = async (index: number, budget: number) => {
+      served.push(index);
+      return Math.min(budget, 1);
+    };
+    let start = 0;
+    for (let run = 0; run < 3; run += 1) {
+      ({ nextStart: start } = await runWithFairShares(5, 2, apply, () => true, start));
+    }
+    expect(served).toEqual([0, 1, 2, 3, 4, 0]);
+    expect(start).toEqual(1);
+    // A rule without candidates costs nothing: the run moves on to the next rules
+    served.length = 0;
+    const sparse = await runWithFairShares(5, 2, async (index, budget) => {
+      served.push(index);
+      return index % 2 === 0 ? Math.min(budget, 1) : 0;
+    }, () => false, 1);
+    expect(served).toEqual([1, 2, 3, 4]);
+    expect(sparse).toEqual({ budget: 0, nextStart: 0 });
   });
 });
