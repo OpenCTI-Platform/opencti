@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
-import { loadEntity } from '../../../src/database/middleware';
+import { createEntity, loadEntity } from '../../../src/database/middleware';
 import { findHistory } from '../../../src/domain/log';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../../../src/modules/workflow/types/workflow-types';
 import { FilterMode, LogsOrdering, OrderingMode, StatusScope } from '../../../src/generated/graphql';
@@ -1093,6 +1093,8 @@ describe('Workflow instance sync from external status writes (Report)', () => {
   let reportInternalId: string;
   let openStatusId: string;
   let validatedStatusId: string;
+  const reportName = `Workflow External Write Test Report ${Date.now()}`;
+  const reportPublished = new Date().toISOString();
   const reportWorkflowDefinition = JSON.stringify({
     id: 'report-external-write-workflow',
     name: 'Report External Write Workflow',
@@ -1156,7 +1158,7 @@ describe('Workflow instance sync from external status writes (Report)', () => {
         }
       `,
       variables: {
-        input: { name: `Workflow External Write Test Report ${Date.now()}`, published: new Date().toISOString() },
+        input: { name: reportName, published: reportPublished },
       },
     });
     reportInternalId = reportResult.data.reportAdd.id;
@@ -1209,6 +1211,23 @@ describe('Workflow instance sync from external status writes (Report)', () => {
     const { currentState, history } = await readInstance();
     expect(currentState).toBe('open');
     expect(history.at(-1)).toEqual(expect.objectContaining({ state: 'open', event: 'reopen_event' }));
+  });
+
+  it('should move the WorkflowInstance when an upsert changes the legacy status field', async () => {
+    await createEntity(testContext, ADMIN_USER, { name: reportName, published: reportPublished, x_opencti_workflow_id: validatedStatusId }, ENTITY_TYPE_CONTAINER_REPORT);
+
+    const { currentState, history } = await readInstance();
+    expect(currentState).toBe('validated');
+    expect(history.at(-1)).toEqual(expect.objectContaining({ state: 'validated', event: 'event_external' }));
+  });
+
+  it('should not move the WorkflowInstance when an upsert keeps the legacy status field', async () => {
+    const before = await readInstance();
+
+    await createEntity(testContext, ADMIN_USER, { name: reportName, published: reportPublished, description: 'upserted' }, ENTITY_TYPE_CONTAINER_REPORT);
+
+    const after = await readInstance();
+    expect(after.history).toHaveLength(before.history.length);
     expect(openStatusId).toBeDefined();
   });
 
