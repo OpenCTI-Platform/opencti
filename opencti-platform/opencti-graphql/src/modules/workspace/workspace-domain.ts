@@ -40,6 +40,11 @@ export const sanitizeElementForPublishAction = (element: BasicStoreEntityWorkspa
   return { ...element, manifest: undefined };
 };
 
+export const sanitizeManifestAuditInput = (inputs: EditInput[]) => {
+  // Because manifest can be huge we remove this data from activity logs.
+  return inputs.map((entry) => (entry.key === 'manifest' ? { ...entry, value: ['[sanitized]'] } : entry));
+};
+
 export const findById = (
   context: AuthContext,
   user: AuthUser,
@@ -249,7 +254,9 @@ export const workspaceEditField = async (
   inputs: EditInput[],
 ) => {
   await checkInvestigatedEntitiesInputs(context, user, inputs);
-  return editInternalObject<StoreEntityWorkspace>(context, user, workspaceId, ENTITY_TYPE_WORKSPACE, inputs);
+  return editInternalObject<StoreEntityWorkspace>(context, user, workspaceId, ENTITY_TYPE_WORKSPACE, inputs, {
+    auditLogContextSanitizer: sanitizeManifestAuditInput,
+  });
 };
 
 export const workspaceCleanContext = async (
