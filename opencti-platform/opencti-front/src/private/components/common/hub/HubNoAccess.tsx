@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router';
+import { Box } from '@mui/material';
 import { Alert, Button } from '@filigran/design-system';
 import Breadcrumbs from '../../../../components/Breadcrumbs';
 import PageContainer from '../../../../components/PageContainer';
@@ -22,10 +23,14 @@ const HubNoAccess = ({ hub: hubLabel, parents = [], back }: HubNoAccessProps) =>
   const { t_i18n } = useFormatter();
   const hub = t_i18n(hubLabel);
   return (
-    <PageContainer withRightMenu={false} withGap>
-      <Breadcrumbs
-        elements={[...parents.map((label) => ({ label: t_i18n(label) })), { label: hub, current: true }]}
-      />
+    <PageContainer withRightMenu={false}>
+      {/* The "/" separator sets the line height of a breadcrumb: a single entry has none, so its row keeps the line box
+          of that text size to start the alert where the first block of every other page starts */}
+      <Box sx={{ fontSize: 'var(--text-content-base)', lineHeight: 'var(--leading-content-base)', '& > nav': { minHeight: '1lh' } }}>
+        <Breadcrumbs
+          elements={[...parents.map((label) => ({ label: t_i18n(label) })), { label: hub, current: true }]}
+        />
+      </Box>
       <Alert
         severity="info"
         data-testid="hub-no-access"
