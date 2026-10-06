@@ -10,24 +10,28 @@ vi.mock('../../../utils/hooks/useEntitySettings', async (importOriginal) => ({
   useIsHiddenEntities: () => hidden.hunt,
 }));
 
-const huntNode = (id: string, verdict: string | null) => ({
+// A hunt never run, a hunt whose latest execution is visible (with or without a verdict), or a hunt run by an
+// execution the user cannot see
+const huntNode = (id: string, verdict: string | null, run: 'none' | 'visible' | 'hidden' = verdict ? 'visible' : 'none') => ({
   id,
   name: `Hunt ${id}`,
   hunt_status: 'active',
-  last_run_at: verdict ? '2026-10-05T10:00:00.000Z' : null,
-  last_hits_count: verdict ? 1 : null,
-  runs: { edges: verdict ? [{ node: { id: `${id}-run`, verdict } }] : [] },
+  last_run_at: run === 'none' ? null : '2026-10-05T10:00:00.000Z',
+  last_hits_count: run === 'none' ? null : 1,
+  runs: { edges: run === 'visible' ? [{ node: { id: `${id}-run`, verdict } }] : [] },
 });
 
 const resolveHunts = async (relayEnv: ReturnType<typeof testRender>['relayEnv'], nodes: ReturnType<typeof huntNode>[], globalCount = nodes.length) => {
   let variables: Record<string, unknown> = {};
+  let text = '';
   await act(async () => {
     relayEnv.mock.resolveMostRecentOperation((operation) => {
       variables = operation.request.variables;
+      text = JSON.stringify(operation.request.node);
       return { data: { hunts: { pageInfo: { globalCount }, edges: nodes.map((node) => ({ node })) } } };
     });
   });
-  return variables;
+  return { variables, text };
 };
 
 describe('Hunts of an entity', () => {
@@ -37,7 +41,7 @@ describe('Hunts of an entity', () => {
 
   it('lists the hunts that use the entity as a source or a target, with the verdict of their latest run', async () => {
     const { relayEnv } = testRender(<HuntsOfEntity entityId="malware-id" />);
-    const variables = await resolveHunts(relayEnv, [huntNode('a', 'true_positive'), huntNode('b', null)], 12);
+    const { variables } = await resolveHunts(relayEnv, [huntNode('a', 'true_positive'), huntNode('b', null)], 12);
     expect(variables.filters).toEqual({
       mode: 'or',
       filters: [{ key: ['huntSources'], values: ['malware-id'] }, { key: ['huntTargets'], values: ['malware-id'] }],
@@ -50,6 +54,22 @@ describe('Hunts of an entity', () => {
     expect(within(rows[0]).getByText(/1 hit$/)).toBeInTheDocument();
     expect(within(rows[1]).getByText('Never run')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: '10 more in the hunts list' })).toBeInTheDocument();
+  });
+
+  it('says never run only for a hunt without any execution, and takes the verdict of the latest execution', async () => {
+    const { relayEnv } = testRender(<HuntsOfEntity entityId="malware-id" />);
+    const { text } = await resolveHunts(relayEnv, [huntNode('a', null, 'visible'), huntNode('b', null, 'hidden'), huntNode('c', null)]);
+    expect(text).toMatch(/hunt_run_mode/);
+    const rows = screen.getAllByTestId('hunts-of-entity-row');
+    // A completed execution without a verdict yet
+    expect(within(rows[0]).getByTestId('hunt-verdict-chip')).toHaveTextContent('Unknown');
+    expect(within(rows[0]).queryByText('Never run')).not.toBeInTheDocument();
+    expect(within(rows[0]).getByText(/^Last run /)).toBeInTheDocument();
+    // An execution the user cannot see: its date, no verdict
+    expect(within(rows[1]).queryByTestId('hunt-verdict-chip')).not.toBeInTheDocument();
+    expect(within(rows[1]).queryByText('Never run')).not.toBeInTheDocument();
+    expect(within(rows[1]).getByText(/^Last run /)).toBeInTheDocument();
+    expect(within(rows[2]).getByText('Never run')).toBeInTheDocument();
   });
 
   it('shows nothing when no hunt uses the entity', async () => {

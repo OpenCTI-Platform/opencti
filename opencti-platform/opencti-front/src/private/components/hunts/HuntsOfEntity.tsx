@@ -26,7 +26,12 @@ const huntsOfEntityQuery = graphql`
           hunt_status
           last_run_at
           last_hits_count
-          runs(first: 1, orderBy: created_at, orderMode: desc) {
+          runs(
+            first: 1
+            orderBy: created_at
+            orderMode: desc
+            filters: { mode: and, filters: [{ key: ["hunt_run_mode"], values: ["execute"] }], filterGroups: [] }
+          ) {
             edges {
               node {
                 id
@@ -68,14 +73,16 @@ const HuntsOfEntityCard = ({ entityId }: { entityId: string }) => {
       <Card title={`${t_i18n('Hunts')} (${n(total)})`}>
         <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: theme.spacing(1) }}>
           {edges.map(({ node }) => {
-            const verdict = node.runs?.edges?.[0]?.node?.verdict;
+            // The latest execution, which the last run date describes; a run the user cannot see has no chip
+            const latestRun = node.runs?.edges?.[0]?.node;
             return (
               <li key={node.id} style={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), flexWrap: 'wrap' }} data-testid="hunts-of-entity-row">
                 <Link to={PATH_HUNT(node.id)} style={{ flex: '1 1 240px', minWidth: 0 }}>
                   <Text variant="content-compact">{node.name}</Text>
                 </Link>
                 <HuntStatusChip value={node.hunt_status} />
-                {verdict ? <HuntVerdictChip value={verdict} /> : (
+                {latestRun && <HuntVerdictChip value={latestRun.verdict} />}
+                {!latestRun && !node.last_run_at && (
                   <Text variant="content-caption" style={{ color: theme.palette.text.secondary }}>{t_i18n('Never run')}</Text>
                 )}
                 {node.last_run_at && (
