@@ -48,7 +48,7 @@ import { extractAllStatesFromDefinition, extractCanonicalStateIds, validateWorkf
 import { computeStateOrder } from './workflow-ordering';
 import { isStatusReferencedByEntity } from './workflow-status-usage';
 import { projectWorkflowState, resolveMappedStatusId, resolveProjectionScope } from './workflow-projection';
-import { runWorkflowBypassActions } from './workflow-async-completion';
+import { appendWorkflowHistoryEntry, runWorkflowBypassActions } from './workflow-async-completion';
 
 // EE-only action types – conditions on transitions and onEnter/onExit state actions.
 // 'validateDraft' is a CE feature and must NOT be listed here.
@@ -1469,7 +1469,7 @@ export const triggerWorkflowEvent = async (
       history = [];
     }
 
-    history.push({
+    history = appendWorkflowHistoryEntry(history, {
       state: newState,
       user_id: user.id,
       timestamp: new Date().toISOString(),
@@ -1663,7 +1663,7 @@ const executeWorkflowBypass = async (
     } catch {
       history = [];
     }
-    history.push({ state: targetStatus.template_id, user_id: user.id, timestamp: new Date().toISOString(), event: 'event_bypass', ...(normalizedComment ? { comment: normalizedComment } : {}) });
+    history = appendWorkflowHistoryEntry(history, { state: targetStatus.template_id, user_id: user.id, timestamp: new Date().toISOString(), event: 'event_bypass', ...(normalizedComment ? { comment: normalizedComment } : {}) });
     await updateAttribute(executionContext, executionUser, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, [
       { key: 'currentState', value: [targetStatus.template_id] },
       { key: 'history', value: [JSON.stringify(history)] },
@@ -1751,13 +1751,13 @@ const applyExternalStatusWrite = async (
   const updateInstance = (inputs: EditInput[]) => updateAttribute(context, WORKFLOW_MANAGER_USER, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, inputs);
   // A pending or failed transition wins: its completion or retry projects its own state.
   if (instanceEntity.pendingStatus) {
-    const history = [...parseWorkflowHistory(instanceEntity), {
+    const history = appendWorkflowHistoryEntry(parseWorkflowHistory(instanceEntity), {
       state: instanceEntity.currentState,
       status_id: newStatusId,
       user_id: user.id,
       timestamp: now(),
       event: 'event_external_ignored',
-    }];
+    });
     await updateInstance([{ key: 'history', value: [JSON.stringify(history)] }]);
     return;
   }
@@ -1774,12 +1774,12 @@ const applyExternalStatusWrite = async (
     }
     return;
   }
-  const history = [...parseWorkflowHistory(instanceEntity), {
+  const history = appendWorkflowHistoryEntry(parseWorkflowHistory(instanceEntity), {
     state: stateId,
     user_id: user.id,
     timestamp: now(),
     event: 'event_external',
-  }];
+  });
   await updateInstance([
     { key: 'currentState', value: [stateId] },
     { key: 'history', value: [JSON.stringify(history)] },
@@ -1970,7 +1970,7 @@ export const clearWorkflowPendingState = async (
     } catch {
       historyArr = [];
     }
-    historyArr.push({
+    historyArr = appendWorkflowHistoryEntry(historyArr, {
       state: instanceEntity.currentState,
       user_id: user.id,
       timestamp: new Date().toISOString(),
