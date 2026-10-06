@@ -7,6 +7,7 @@ import type { GraphQLTaggedNode, OperationType } from 'relay-runtime';
 import useAuth from '../../utils/hooks/useAuth';
 import { resolveDataSelection } from './dashboardVizUtils';
 import type { WidgetRenderGuards } from './WidgetRenderContent';
+import { useDashboardVariableValues } from './DashboardVariableValuesContext';
 
 const useDashboardViz = <TQuery extends OperationType>({
   dataSelection,
@@ -40,8 +41,10 @@ const useDashboardViz = <TQuery extends OperationType>({
   const [isMissingHostEntity, setIsMissingHostEntity] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isMissingSavedFilters, setIsMissingSavedFilters] = useState(false);
+  const [hasUnresolvedVariables, setHasUnresolvedVariables] = useState(false);
+  const variableValues = useDashboardVariableValues();
   // A widget that cannot be resolved safely never runs its query.
-  const isBlocked = isMissingHostEntity || isMissingSavedFilters;
+  const isBlocked = isMissingHostEntity || isMissingSavedFilters || hasUnresolvedVariables;
 
   // refreshToken is an integer provided via context by DashboardContent and incremented
   // by CustomDashboard on manual or auto refresh. When it changes, we force-reload
@@ -57,8 +60,9 @@ const useDashboardViz = <TQuery extends OperationType>({
   /**
    * Resolve raw data selection into a query-ready form.
    *
-   * Hydrates saved filters, injects host entity context, and updates edge-case flags
-   * (`isMissingHostEntity`, `isPreviewMode`, `isMissingSavedFilters`).
+   * Hydrates saved filters, substitutes dashboard variables, injects host entity context,
+   * and updates edge-case flags (`isMissingHostEntity`, `isPreviewMode`, `isMissingSavedFilters`,
+   * `hasUnresolvedVariables`).
    *
    * When provided, `onResolved` runs after state updates with the fresh resolution
    * result so callers can avoid stale closure values.
@@ -72,19 +76,21 @@ const useDashboardViz = <TQuery extends OperationType>({
       dataSelection,
       perspective,
       host,
+      variableValues,
     }).then((result) => {
       if (!cancelled) {
         setResolvedDataSelection(result.resolvedDataSelection);
         setIsMissingHostEntity(result.isMissingHostEntity);
         setIsPreviewMode(result.isPreviewMode);
         setIsMissingSavedFilters(result.isMissingSavedFilters);
+        setHasUnresolvedVariables(result.hasUnresolvedVariables);
         onResolved?.(result);
       }
     });
     return () => {
       cancelled = true;
     };
-  }, [filterKeysSchema, dataSelectionSignature, perspective, host]);
+  }, [filterKeysSchema, dataSelectionSignature, perspective, host, variableValues]);
 
   // Re-resolve selection inputs when schema, selection content, perspective, or host changes
   // Because those changes make the result change
@@ -177,7 +183,7 @@ const useDashboardViz = <TQuery extends OperationType>({
      * with the freshly resolved data selection.
      */
     return handleResolveDataSelection((result) => {
-      if (result.isMissingHostEntity || result.isMissingSavedFilters) {
+      if (result.isMissingHostEntity || result.isMissingSavedFilters || result.hasUnresolvedVariables) {
         return;
       }
       forceReloadWithFreshVariables(result.resolvedDataSelection);
@@ -185,8 +191,8 @@ const useDashboardViz = <TQuery extends OperationType>({
   }, [refreshToken, isBlocked, forceReloadWithFreshVariables, handleResolveDataSelection]);
 
   const renderGuards = useMemo<WidgetRenderGuards>(
-    () => ({ isMissingHostEntity, isMissingSavedFilters }),
-    [isMissingHostEntity, isMissingSavedFilters],
+    () => ({ isMissingHostEntity, isMissingSavedFilters, hasUnresolvedVariables }),
+    [isMissingHostEntity, isMissingSavedFilters, hasUnresolvedVariables],
   );
 
   return {

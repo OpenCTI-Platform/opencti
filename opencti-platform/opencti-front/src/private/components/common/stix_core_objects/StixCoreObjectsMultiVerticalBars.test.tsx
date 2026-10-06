@@ -40,7 +40,7 @@ vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
         filters: emptyFilterGroup,
         date_attribute: 'created_at',
       }],
-      renderGuards: { isMissingHostEntity: false, isMissingSavedFilters: false },
+      renderGuards: { isMissingHostEntity: false, isMissingSavedFilters: false, hasUnresolvedVariables: false },
       isPreviewMode: false,
       queryRef: null,
     };
