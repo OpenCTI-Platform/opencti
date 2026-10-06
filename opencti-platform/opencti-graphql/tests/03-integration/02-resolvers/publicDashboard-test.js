@@ -1362,3 +1362,50 @@ describe('PublicDashboard resolver', () => {
     });
   });
 });
+
+describe('Public dashboards and dashboard variables', () => {
+  const READ_PUBLIC_MANIFEST_QUERY = gql`
+    query PublicDashboardManifest($id: String!) {
+      publicDashboard(id: $id) {
+        id
+        public_manifest
+      }
+    }
+  `;
+  const UPSERT_VARIABLE_QUERY = gql`
+    mutation PublicDashboardTestVariableUpsert($id: ID!, $input: DashboardVariableInput!) {
+      workspaceVariableUpsert(id: $id, input: $input) {
+        id
+      }
+    }
+  `;
+  let privateDashboardId;
+  let publicDashboardId;
+
+  afterAll(async () => {
+    if (publicDashboardId) await queryAsAdmin({ query: DELETE_QUERY, variables: { id: publicDashboardId } });
+    if (privateDashboardId) await queryAsAdmin({ query: DELETE_PRIVATE_DASHBOARD_QUERY, variables: { id: privateDashboardId } });
+  });
+
+  it('should never expose dashboard variables in the public manifest', async () => {
+    const created = await queryAsAdmin({ query: CREATE_PRIVATE_DASHBOARD_QUERY, variables: { input: { type: 'dashboard', name: 'Dashboard with variables' } } });
+    privateDashboardId = created.data.workspaceAdd.id;
+    await queryAsAdmin({ query: UPDATE_PRIVATE_DASHBOARD_QUERY, variables: { id: privateDashboardId, input: { key: 'manifest', value: toB64(PRIVATE_DASHBOARD_MANIFEST) } } });
+    const restrictionFilters = JSON.stringify({ mode: 'and', filters: [{ key: ['entity_type'], values: ['Sector'], operator: 'eq', mode: 'or' }], filterGroups: [] });
+    const upsert = await queryAsAdmin({
+      query: UPSERT_VARIABLE_QUERY,
+      variables: { id: privateDashboardId, input: { name: 'Sector', type: 'entity', entityTypes: ['Sector'], defaultValue: 'sector-id', restriction: { mode: 'filters', filters: restrictionFilters } } },
+    });
+    expect(upsert.errors).toBeUndefined();
+    const published = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: { input: { name: 'public-dashboard-variables', uri_key: 'public-dashboard-variables', dashboard_id: privateDashboardId, enabled: true } },
+    });
+    publicDashboardId = published.data.publicDashboardAdd.id;
+    const read = await queryAsAdmin({ query: READ_PUBLIC_MANIFEST_QUERY, variables: { id: publicDashboardId } });
+    const publicManifest = fromB64(read.data.publicDashboard.public_manifest);
+    expect(Object.keys(publicManifest.widgets)).toHaveLength(Object.keys(PRIVATE_DASHBOARD_MANIFEST.widgets).length);
+    expect(publicManifest.variables).toBeUndefined();
+    expect(publicManifest.presets).toBeUndefined();
+  });
+});

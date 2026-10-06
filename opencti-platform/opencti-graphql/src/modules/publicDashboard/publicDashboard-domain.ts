@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import { Promise as BluePromise } from 'bluebird';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { internalLoadById, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
@@ -52,6 +53,7 @@ import { fromB64, toB64 } from '../../utils/base64';
 import { computeLoaders } from '../../http/httpAuthenticatedContext';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import type { BasicStoreSettings } from '../../types/settings';
+import { DASHBOARD_MANIFEST_SERVER_OWNED_KEYS } from '../workspace/workspace-variables-types';
 
 export const findById = (
   context: AuthContext,
@@ -161,7 +163,10 @@ const createPrivateManifest = async (
  * Creates the public manifest by stripping each widget's dataSelection
  * to only keep display-related properties (no filters, no query data).
  */
-const createPublicManifest = (parsedManifest: any) => {
+const createPublicManifest = (manifest: any) => {
+  // Dashboard variables and presets are internal definitions (filters, ids, default values):
+  // the public manifest is served to anonymous visitors and must never carry them.
+  const parsedManifest = manifest ? R.omit([...DASHBOARD_MANIFEST_SERVER_OWNED_KEYS], manifest) : manifest;
   if (parsedManifest && isNotEmptyField(parsedManifest.widgets)) {
     const publicWidgets = Object.fromEntries(
       Object.entries(parsedManifest.widgets).map(([widgetId, widget]: [string, any]) => {
