@@ -155,6 +155,15 @@ const resolveTechniqueIds = async (context: AuthContext, user: AuthUser, values:
   return [...otherIds, ...byAttackId.map((technique) => technique.internal_id)];
 };
 
+/** The techniques a hunt is linked to: the ones given, else those its Sigma rule is tagged with. */
+const huntTechniqueIds = async (context: AuthContext, user: AuthUser, input: HuntAddInput) => {
+  let techniques = input.huntTechniques ?? [];
+  if (techniques.length === 0 && input.sigma_rule) {
+    techniques = validateSigmaRule(input.sigma_rule).attack_techniques;
+  }
+  return techniques.length > 0 ? resolveTechniqueIds(context, user, techniques) : [];
+};
+
 export const normalizeHuntInput = async (context: AuthContext, user: AuthUser, input: HuntAddInput): Promise<HuntAddInput> => {
   const normalized: HuntAddInput = {
     ...input,
@@ -168,13 +177,7 @@ export const normalizeHuntInput = async (context: AuthContext, user: AuthUser, i
     native_queries: normalizeNativeQueries(input.native_queries),
     hunt_ioc_values: normalizeHuntIocValues(input.hunt_ioc_values),
   };
-  let techniques = input.huntTechniques ?? [];
-  // A Sigma rule tagged with ATT&CK techniques links the hunt to them when no technique is given
-  if (techniques.length === 0 && input.sigma_rule) {
-    const sigma = validateSigmaRule(input.sigma_rule);
-    techniques = sigma.attack_techniques;
-  }
-  normalized.huntTechniques = techniques.length > 0 ? await resolveTechniqueIds(context, user, techniques) : [];
+  normalized.huntTechniques = await huntTechniqueIds(context, user, input);
   return normalized;
 };
 
@@ -215,11 +218,13 @@ export const addHunt = async (context: AuthContext, user: AuthUser, input: HuntA
 /**
  * Draft-first creation used by agents: a draft workspace is created and the hunt is created inside it, the
  * existing draft approval workflow validates it into the knowledge graph. Like a planned hunt, the proposal carries the
- * markings of the threats, indicators and reports it references and is shared only with the organizations they all
- * share: a hunt derived from restricted intelligence is never proposed less restricted, whatever the caller asked for.
+ * markings of the threats, techniques, indicators and reports it references and is shared only with the organizations
+ * they all share: a hunt derived from restricted intelligence is never proposed less restricted, whatever the caller
+ * asked for.
  */
 export const addHuntProposal = async (context: AuthContext, user: AuthUser, input: HuntAddInput, draftName?: string | null) => {
-  const referenceIds = [...(input.huntTargets ?? []), ...(input.huntSources ?? [])];
+  const techniqueIds = await huntTechniqueIds(context, user, input);
+  const referenceIds = [...(input.huntTargets ?? []), ...(input.huntSources ?? []), ...techniqueIds];
   const references = referenceIds.length > 0 ? await findByIds<BasicStoreEntity>(context, user, referenceIds) : [];
   const inheritedMarkings = references.flatMap((reference) => (reference[RELATION_OBJECT_MARKING] ?? []) as string[]);
   const objectMarking = Array.from(new Set([...(input.objectMarking ?? []), ...inheritedMarkings]));
@@ -257,6 +262,7 @@ export const addHuntProposal = async (context: AuthContext, user: AuthUser, inpu
   // analyst activates it
   const hunt = await addHunt(draftContext, user, {
     ...input,
+    huntTechniques: techniqueIds,
     objectMarking,
     ...(objectOrganization.length > 0 ? { objectOrganization } : {}),
     hunt_status: HuntStatus.Draft,

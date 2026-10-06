@@ -67,6 +67,15 @@ describe('Hunt proposals of agents', () => {
     expect(vi.mocked(findByIds).mock.calls[0][2]).toEqual(['intrusion-set-1', 'report-1']);
   });
 
+  it('should carry the markings and the organizations of the techniques it references', async () => {
+    vi.mocked(findByIds).mockResolvedValue([reference('intrusion-set-1', []), reference('report-1', []), reference('attack-pattern-1', ['tlp-amber'], ['org-a'])]);
+    expect(await proposedMarkings({ huntTechniques: ['attack-pattern-1'] })).toEqual(['tlp-amber']);
+    expect(vi.mocked(findByIds).mock.calls[0][2]).toEqual(['intrusion-set-1', 'report-1', 'attack-pattern-1']);
+    expect(vi.mocked(createEntity).mock.calls[0][2].objectOrganization).toEqual(['org-a']);
+    const [, , workspace] = vi.mocked(addDraftWorkspace).mock.calls[0];
+    expect(JSON.stringify(workspace)).not.toContain(proposalInput.name);
+  });
+
   it('should keep a proposal without references as requested and read nothing', async () => {
     expect(await proposedMarkings({ huntTargets: [], huntSources: [], objectMarking: ['tlp-green'] })).toEqual(['tlp-green']);
     expect(findByIds).not.toHaveBeenCalled();
