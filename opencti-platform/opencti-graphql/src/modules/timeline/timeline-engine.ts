@@ -2,7 +2,7 @@ import { v5 as uuidv5 } from 'uuid';
 import conf, { BUS_TOPICS, logApp } from '../../config/conf';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreBase, BasicStoreCommon, BasicStoreEntity, StoreMarkingDefinition } from '../../types/store';
-import { isOrganizationUnrestricted, SYSTEM_USER } from '../../utils/access';
+import { isOrganizationUnrestricted, SYSTEM_USER, userFilterStoreElements } from '../../utils/access';
 import { fullEntitiesList, internalFindByIds, internalLoadById } from '../../database/middleware-loader';
 import { elIndexElements, elRawDeleteByQuery, elUpdate } from '../../database/engine';
 import { INDEX_INTERNAL_OBJECTS, isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
@@ -170,20 +170,84 @@ export const referencedElementIds = (event: Pick<StoredTimelineEvent, 'element_i
   return [event.element_id, ...timelineEventSourceIds(event)].filter((id): id is string => !!id && id !== containerId);
 };
 
-/** Drop the events pointing to elements, or carrying data of sources, the user cannot see (or that no longer exist). */
+/** An event as the access checks read it: its element and sources, with its element type and markings for the deleted ones. */
+export type TimelineReadableEvent = Pick<StoredTimelineEvent, 'internal_id' | 'element_id' | 'element_access'> & Partial<StoredTimelineEvent>;
+
+/**
+ * An element or a source of the event deleted since, as the regeneration recorded it on the event: its type and its access
+ * beyond markings, the markings of the event standing for its own. Null without a record (an event never regenerated since
+ * it was added, a source recorded without its type): nobody reads the event any more.
+ */
+export const recordedTimelineReference = (event: TimelineReadableEvent, id: string): BasicStoreCommon | null => {
+  const source = id === event.element_id ? undefined : (event.element_access?.sources ?? []).find((candidate) => candidate.id === id);
+  let recorded: { entity_type: string; access: { restricted_members?: AuthorizedMember[]; granted?: string[] } } | null = null;
+  if (id === event.element_id) {
+    recorded = event.element_type && event.element_access ? { entity_type: event.element_type, access: event.element_access } : null;
+  } else if (source?.entity_type) {
+    recorded = { entity_type: source.entity_type, access: source };
+  }
+  if (!recorded) return null;
+  return {
+    internal_id: id,
+    entity_type: recorded.entity_type,
+    [RELATION_OBJECT_MARKING]: markingsOf(event),
+    restricted_members: recorded.access.restricted_members ?? [],
+    [RELATION_GRANTED_TO]: recorded.access.granted ?? [],
+  } as unknown as BasicStoreCommon;
+};
+
+/**
+ * Of the events referencing an element or a source missing from `readable` (what the user reads), the ids of the ones
+ * he reads anyway: each missing reference was deleted, and the access recorded for it lets him read it. A reference that
+ * still exists is read as it is now: one he cannot read keeps the event hidden.
+ */
+export const findEventsReadableThroughRecords = async (
+  context: AuthContext,
+  user: AuthUser,
+  containerId: string,
+  events: TimelineReadableEvent[],
+  readable: Record<string, unknown>,
+): Promise<Set<string>> => {
+  const missingOf = (event: TimelineReadableEvent) => referencedElementIds(event, containerId).filter((id) => !readable[id]);
+  const missingIds = uniq(events.flatMap(missingOf));
+  if (missingIds.length === 0) return new Set();
+  const existing = await internalFindByIds(context, SYSTEM_USER, missingIds, { toMap: true, baseData: true }) as unknown as Record<string, unknown>;
+  const candidates = events.flatMap((event) => {
+    const missing = missingOf(event);
+    if (missing.length === 0 || missing.some((id) => !!existing[id])) return [];
+    const records = missing.map((id) => recordedTimelineReference(event, id));
+    return records.every((record) => record !== null) ? [{ id: event.internal_id, records: records as BasicStoreCommon[] }] : [];
+  });
+  const records = candidates.flatMap((candidate) => candidate.records);
+  const readableRecords = new Set(records.length > 0 ? await userFilterStoreElements(context, user, records) : []);
+  return new Set(candidates.filter((candidate) => candidate.records.every((record) => readableRecords.has(record))).map((candidate) => candidate.id));
+};
+
+/**
+ * Drop the events pointing to elements, or carrying data of sources, the user cannot see. One deleted since is read from
+ * the access recorded on the event: the users who read the event still do, and can remove it.
+ */
 export const filterAccessibleEvents = async <T>(
   context: AuthContext,
   user: AuthUser,
   containerId: string,
   items: T[],
-  getEvent: (item: T) => Pick<StoredTimelineEvent, 'element_id' | 'element_access'>,
+  getEvent: (item: T) => TimelineReadableEvent,
   opts: { fullElements?: boolean } = {},
 ): Promise<{ items: T[]; elements: Record<string, AnyStoreElement> }> => {
   const elementIds = Array.from(new Set(items.flatMap((item) => referencedElementIds(getEvent(item), containerId))));
   const elements = elementIds.length > 0
     ? await internalFindByIds(context, user, elementIds, { toMap: true, baseData: !opts.fullElements }) as unknown as Record<string, AnyStoreElement>
     : {};
-  const filtered = items.filter((item) => referencedElementIds(getEvent(item), containerId).every((id) => !!elements[id]));
+  const isResolved = (event: TimelineReadableEvent) => referencedElementIds(event, containerId).every((id) => !!elements[id]);
+  const unresolved = items.map(getEvent).filter((event) => !isResolved(event));
+  const readableThroughRecords = unresolved.length > 0
+    ? await findEventsReadableThroughRecords(context, user, containerId, unresolved, elements)
+    : new Set<string>();
+  const filtered = items.filter((item) => {
+    const event = getEvent(item);
+    return isResolved(event) || readableThroughRecords.has(event.internal_id);
+  });
   return { items: filtered, elements };
 };
 
@@ -1026,7 +1090,8 @@ const regenerateLocked = async (context: AuthContext, container: AnyStoreElement
       created_by_id: (event[buildRefRelationKey(RELATION_CREATED_BY)] ?? [])[0],
       creator_ids: Array.isArray(event.creator_id) ? event.creator_id : uniq([event.creator_id as string]),
       restricted_members: access.restricted_members,
-      element_access: elementAccessOf(event.element_id),
+      // Once its element is deleted, the event keeps the access recorded for it: it decides who still reads the event
+      element_access: element ? elementAccessOf(event.element_id) : (event.element_id && event.element_id !== containerId ? (event.element_access ?? null) : null),
     }, event);
     docsById.set(event.internal_id, doc);
   });

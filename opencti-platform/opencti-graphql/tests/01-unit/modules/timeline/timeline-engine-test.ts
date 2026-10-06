@@ -13,6 +13,8 @@ import {
   isTimelineRefreshForEveryReader,
   keptAnalystFields,
   markingsOf,
+  recordedTimelineReference,
+  type TimelineReadableEvent,
   timelineCappedAnnotatedEventAsStored,
   timelineCappedAnnotatedEvents,
   timelineEventMarkings,
@@ -32,6 +34,8 @@ import { schemaAttributesDefinition } from '../../../../src/schema/schema-attrib
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../../../../src/modules/case/case-incident/case-incident-types';
 import { ENTITY_TYPE_INCIDENT } from '../../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organization/organization-types';
+import { buildRefRelationKey } from '../../../../src/schema/general';
+import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
 import { TimelineEventKind } from '../../../../src/generated/graphql';
 import '../../../../src/modules/index';
 
@@ -423,6 +427,45 @@ describe('Timeline element change and readers', () => {
     const sharedContainer = element('case-3', { type: ENTITY_TYPE_CONTAINER_CASE_INCIDENT, granted: ['org-1'] });
     expect(isTimelineElementChangeWidening(sharedContainer, element('a', { granted: ['org-1', 'org-2'] }), null, true)).toBe(false);
     expect(isTimelineElementChangeWidening(sharedContainer, element('a', { granted: ['org-2'] }), null, true)).toBe(true);
+  });
+});
+
+describe('Timeline recorded references', () => {
+  const members = [{ id: 'user-1', access_right: 'admin' }];
+  const event = ({
+    internal_id: 'event-1',
+    element_id: 'element-1',
+    element_type: 'Case-Rfi',
+    [buildRefRelationKey(RELATION_OBJECT_MARKING)]: ['marking-1'],
+    element_access: {
+      restricted_members: members,
+      granted: ['org-1'],
+      sources: [
+        { id: 'source-1', entity_type: 'uses', restricted_members: [], granted: ['org-2'] },
+        { id: 'source-2', restricted_members: [], granted: [] },
+      ],
+    },
+  }) as unknown as TimelineReadableEvent;
+
+  it('should read a deleted element as recorded, with the markings of the event', () => {
+    expect(recordedTimelineReference(event, 'element-1')).toEqual({
+      internal_id: 'element-1',
+      entity_type: 'Case-Rfi',
+      [RELATION_OBJECT_MARKING]: ['marking-1'],
+      restricted_members: members,
+      [RELATION_GRANTED_TO]: ['org-1'],
+    });
+  });
+
+  it('should read a deleted source as recorded, and nothing without its type', () => {
+    expect(recordedTimelineReference(event, 'source-1')).toMatchObject({ internal_id: 'source-1', entity_type: 'uses', [RELATION_GRANTED_TO]: ['org-2'] });
+    expect(recordedTimelineReference(event, 'source-2')).toBeNull();
+    expect(recordedTimelineReference(event, 'unknown')).toBeNull();
+  });
+
+  it('should read nothing for an element recorded without its type or its access', () => {
+    expect(recordedTimelineReference({ ...event, element_type: null }, 'element-1')).toBeNull();
+    expect(recordedTimelineReference({ ...event, element_access: null }, 'element-1')).toBeNull();
   });
 });
 

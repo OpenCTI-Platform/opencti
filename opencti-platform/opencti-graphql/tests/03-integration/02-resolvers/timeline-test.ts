@@ -1349,7 +1349,7 @@ describe('Incident and case timeline', () => {
       await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: updated.id } });
     });
 
-    it('should never point a known event to an element, or to none, that more users read', async () => {
+    it('should never point a known event to an element, or to none, that more users read, even once its element is deleted', async () => {
       // Only their authorized members read these requests for information; every reader of the case reads the malware
       const restrictedOf = (name: string) => createEntity(testContext, SYSTEM_USER, {
         name,
@@ -1360,6 +1360,7 @@ describe('Incident and case timeline', () => {
       const input = { container_id: secondCase.id, event_time: '2026-02-06T07:00:00.000Z', title: 'Source interviewed', external_id: 'restricted-element-kept' };
       const added = await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_ADD, variables: { input: { ...input, element_id: restricted.id } } });
       const addedId = added.data.timelineEventAdd.id;
+      let twinDeleted = false;
       try {
         const refusal = 'This event cannot point to an element, or to none, that users its current element is hidden from can read: add a new event instead';
         await queryAsAdminWithError({ query: TIMELINE_EVENT_EDIT, variables: { id: addedId, input: { element_id: malware.id } } }, refusal);
@@ -1373,10 +1374,23 @@ describe('Incident and case timeline', () => {
         // An element read by the same members takes its place
         const moved = await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_EDIT, variables: { id: addedId, input: { element_id: restrictedTwin.id } } });
         expect(moved.data.timelineEventEdit.element_id).toEqual(restrictedTwin.id);
+        // Its element deleted, the event keeps the access recorded for it: still read (and removable) by the members of the
+        // deleted element, hidden from the other readers of the case, and still never pointed to the malware
+        const recorded = (await loadStoredTimelineEvents(testContext, secondCase.id)).find((event) => event.internal_id === addedId)?.element_access;
+        await deleteElementById(testContext, SYSTEM_USER, restrictedTwin.id, ENTITY_TYPE_CONTAINER_CASE_RFI);
+        twinDeleted = true;
+        await queryAsAdminWithSuccess({ query: TIMELINE_REGENERATE, variables: { containerId: secondCase.id } });
+        const orphan = (await loadStoredTimelineEvents(testContext, secondCase.id)).find((event) => event.internal_id === addedId);
+        expect(orphan).toMatchObject({ element_id: restrictedTwin.id, element_access: recorded });
+        expect(recorded?.restricted_members.map((member) => member.id)).toContain(ADMIN_USER.id);
+        expect((await listTimeline(secondCase.id, { sources: ['manual'] })).map((event) => event.id)).toContain(addedId);
+        const editorListed = await queryAsUserWithSuccess(USER_EDITOR, { query: CONTAINER_TIMELINE, variables: { id: secondCase.id, first: 500, sources: ['manual'] } });
+        expect(editorListed.data.containerTimeline.edges.map((edge: { node: TimelineEventNode }) => edge.node.id)).not.toContain(addedId);
+        await queryAsAdminWithError({ query: TIMELINE_EVENT_EDIT, variables: { id: addedId, input: { element_id: malware.id } } }, refusal);
       } finally {
         await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_DELETE, variables: { id: addedId } });
         await deleteElementById(testContext, SYSTEM_USER, restricted.id, ENTITY_TYPE_CONTAINER_CASE_RFI);
-        await deleteElementById(testContext, SYSTEM_USER, restrictedTwin.id, ENTITY_TYPE_CONTAINER_CASE_RFI);
+        if (!twinDeleted) await deleteElementById(testContext, SYSTEM_USER, restrictedTwin.id, ENTITY_TYPE_CONTAINER_CASE_RFI);
       }
     });
 

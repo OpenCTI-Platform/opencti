@@ -1,16 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicStoreBase, BasicStoreCommon, BasicStoreEntity, StoreMarkingDefinition } from '../../types/store';
-import {
-  AccessOperation,
-  executionContext,
-  isBypassUser,
-  isUserHasCapability,
-  KNOWLEDGE_KNUPDATE,
-  SYSTEM_USER,
-  userFilterStoreElements,
-  validateUserAccessOperation,
-} from '../../utils/access';
+import type { BasicStoreBase, BasicStoreEntity, StoreMarkingDefinition } from '../../types/store';
+import { AccessOperation, executionContext, isBypassUser, isUserHasCapability, KNOWLEDGE_KNUPDATE, SYSTEM_USER, validateUserAccessOperation } from '../../utils/access';
 import { controlCreateInputWithUserConfidence, controlUserConfidenceAgainstElement } from '../../utils/confidence-level';
 import { fullEntitiesList, internalFindByIds, internalLoadById, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import { elAggregationCount, elCount, elIndexElements, elLoadById } from '../../database/engine';
@@ -33,7 +24,7 @@ import type {
   TimelineSummary,
 } from '../../generated/graphql';
 import { buildRefRelationKey } from '../../schema/general';
-import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
+import { RELATION_CREATED_BY, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { getEntitiesListFromCache, getEntitiesMapFromCache, getEntityFromCache } from '../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import type { BasicStoreSettings } from '../../types/settings';
@@ -67,12 +58,14 @@ import {
   deleteTimelineDocuments,
   filterAccessibleEvents,
   filterEventsSharedAsContainer,
+  findEventsReadableThroughRecords,
   getTimelineRules,
   isTimelineElementChangeWidening,
   loadStoredTimelineEvents,
   loadTimelineSettings,
   markingsOf,
   publishTimelineUpdate,
+  recordedTimelineReference,
   referencedElementIds,
   refreshTimelineContributions,
   regenerateContainerTimeline,
@@ -83,7 +76,7 @@ import {
   TIMELINE_MAX_STORED_EVENTS,
   timelineElementAccessOf,
   timelineEventMaxConfidence,
-  timelineEventSourceIds,
+  type TimelineReadableEvent,
   type TimelineRegenerationResult,
   toRemovedTimelineEvents,
   type TimelineRemovedEvent,
@@ -165,11 +158,13 @@ const hasPlatformOrganization = async (context: AuthContext): Promise<boolean> =
 const controlTimelineElementChange = async (
   context: AuthContext,
   container: AnyStoreElement,
-  previousElementId: string | null | undefined,
+  event: StoredTimelineEvent,
   next: AnyStoreElement | null,
 ) => {
+  const previousElementId = event.element_id;
   if (!previousElementId || previousElementId === next?.internal_id) return;
-  const previous = await internalLoadById<AnyStoreElement>(context, SYSTEM_USER, previousElementId);
+  // A deleted element is read from the access recorded on the event
+  const previous = await internalLoadById<AnyStoreElement>(context, SYSTEM_USER, previousElementId) ?? recordedTimelineReference(event, previousElementId);
   if (isTimelineElementChangeWidening(container, previous, next, await hasPlatformOrganization(context))) {
     throw FunctionalError('This event cannot point to an element, or to none, that users its current element is hidden from can read: add a new event instead', { id: previousElementId });
   }
@@ -303,16 +298,23 @@ const computeInaccessibleReferences = async (context: AuthContext, user: AuthUse
   const references = await fullEntitiesList<StoredTimelineEvent>(context, user, [ENTITY_TYPE_TIMELINE_EVENT], {
     filters: buildTimelineFilters(containerId, { includeHidden: true }) as any,
     baseData: true,
-    baseFields: ['element_id', 'element_access'],
+    baseFields: ['element_id', 'element_type', 'element_access', buildRefRelationKey(RELATION_OBJECT_MARKING)],
   } as any);
   const referencedIds = Array.from(new Set(references.flatMap((event) => referencedElementIds(event, containerId))));
   if (referencedIds.length === 0) return { elementIds: [], eventIds: [] };
   const accessible = await internalFindByIds(context, user, referencedIds, { toMap: true, baseData: true }) as unknown as Record<string, AnyStoreElement>;
   const isInaccessible = (id: string) => !accessible[id];
+  // An event about an element or a source deleted since is read from the access recorded on it: it is left out, or
+  // kept, by itself, and so are the other events of a deleted element
+  const unresolved = references.filter((event) => referencedElementIds(event, containerId).some(isInaccessible));
+  const readableThroughRecords = unresolved.length > 0
+    ? await findEventsReadableThroughRecords(context, user, containerId, unresolved, accessible)
+    : new Set<string>();
+  const recordedElementIds = new Set(unresolved.filter((event) => readableThroughRecords.has(event.internal_id)).map((event) => event.element_id));
   const elementIds = Array.from(new Set(references.map((event) => event.element_id).filter((id): id is string => !!id && id !== containerId)));
   return {
-    elementIds: elementIds.filter(isInaccessible),
-    eventIds: references.filter((event) => timelineEventSourceIds(event).some(isInaccessible)).map((event) => event.internal_id),
+    elementIds: elementIds.filter((id) => isInaccessible(id) && !recordedElementIds.has(id)),
+    eventIds: unresolved.filter((event) => !readableThroughRecords.has(event.internal_id)).map((event) => event.internal_id),
   };
 };
 
@@ -558,8 +560,9 @@ const loadExportedTimelineEvents = async (
     maxSize: TIMELINE_MAX_STORED_EVENTS,
   } as any);
   const { items, elements } = await filterAccessibleEvents(context, user, container.internal_id, events, (e) => e, { fullElements: true });
+  // A reference deleted since is marked by the event, which keeps its markings
   const withinCeiling = items.filter((event) => referencedElementIds(event, container.internal_id)
-    .every((id) => markingsOf(elements[id]).every((markingId) => !markingsAboveCeiling.has(markingId))));
+    .every((id) => markingsOf(elements[id] ?? event).every((markingId) => !markingsAboveCeiling.has(markingId))));
   // A file stored in the container reaches every reader of the container whose markings cover it, not only this user
   const exported = opts.storedInContainer ? await filterEventsSharedAsContainer(context, container, withinCeiling) : withinCeiling;
   const anchors = computeTimelineAnchors(exported, { isClosed: await isContainerClosed(context, container), computedAt: now() });
@@ -628,7 +631,7 @@ export const exportContainerTimelineFile = async (context: AuthContext, user: Au
   // The file always names the container: its markings are required even when no event is exported
   const required = [...markingsOf(snapshot.container), ...snapshot.items.flatMap((event) => [
     ...markingsOf(event),
-    ...referencedElementIds(event, snapshot.container.internal_id).flatMap((id) => markingsOf(snapshot.elements[id])),
+    ...referencedElementIds(event, snapshot.container.internal_id).flatMap((id) => markingsOf(snapshot.elements[id] ?? event)),
   ])];
   const fileMarkings = await cleanMarkings(context, Array.from(new Set([...selected, ...required])));
   addTimelineExportCount();
@@ -659,59 +662,18 @@ export const timelineUpdateForUser = async (context: AuthContext, user: AuthUser
     : [];
   const allowedMarkings = new Set(user.allowed_marking.map((marking) => marking.internal_id));
   const readableRemoved = removed.filter((event) => isBypassUser(user) || event.marking_ids.every((id) => allowedMarkings.has(id)));
-  const candidates = [
-    ...changed,
-    ...readableRemoved.map((event) => ({ internal_id: event.id, element_id: event.element_id, element_access: event.element_access }) as unknown as StoredTimelineEvent),
-  ];
+  // A removed event is read like a stored one, from what it recorded: an element or a source deleted since is read as it
+  // was (the markings of the event carry its own), the ones that still exist as they are now
+  const removedAsStored = (event: TimelineRemovedEvent) => ({
+    internal_id: event.id,
+    element_id: event.element_id,
+    element_type: event.element_type,
+    element_access: event.element_access,
+    [buildRefRelationKey(RELATION_OBJECT_MARKING)]: event.marking_ids,
+  }) as unknown as TimelineReadableEvent;
+  const candidates: TimelineReadableEvent[] = [...changed, ...readableRemoved.map(removedAsStored)];
   const { items } = await filterAccessibleEvents(context, user, update.container_id, candidates, (event) => event);
-  const named = new Set(items.map((event) => event.internal_id));
-  // A removed event whose element or one of whose sources was deleted resolves for nobody: each deleted one is read as it
-  // was, from the access the regeneration recorded on the event (its markings carry theirs), and the ones that still exist
-  // are read as they are now. Without that record (an event never regenerated since it was added, or a source recorded
-  // without its type), nobody reads the event once the reference was deleted.
-  const unresolvedRemoved = readableRemoved.filter((event) => !!event.element_id && !named.has(event.id));
-  const sourceIdsOf = (event: TimelineRemovedEvent) => timelineEventSourceIds({ element_access: event.element_access });
-  const referenceIdsOf = (event: TimelineRemovedEvent) => [event.element_id as string, ...sourceIdsOf(event)].filter((id) => id !== update.container_id);
-  const unresolvedIds = Array.from(new Set(unresolvedRemoved.flatMap(referenceIdsOf)));
-  const existing = unresolvedIds.length > 0
-    ? await internalFindByIds(context, SYSTEM_USER, unresolvedIds, { toMap: true, baseData: true }) as unknown as Record<string, AnyStoreElement>
-    : {};
-  const existingIds = unresolvedIds.filter((id) => !!existing[id]);
-  const readableExisting = existingIds.length > 0
-    ? await internalFindByIds(context, user, existingIds, { toMap: true, baseData: true }) as unknown as Record<string, AnyStoreElement>
-    : {};
-  const deletedReferenceOf = (event: TimelineRemovedEvent, id: string): BasicStoreCommon | null => {
-    const recorded = id === event.element_id
-      ? (event.element_type && event.element_access ? { entity_type: event.element_type, access: event.element_access } : null)
-      : (() => {
-          const source = (event.element_access?.sources ?? []).find((candidate) => candidate.id === id);
-          return source?.entity_type ? { entity_type: source.entity_type, access: source } : null;
-        })();
-    if (!recorded) return null;
-    return {
-      internal_id: id,
-      entity_type: recorded.entity_type,
-      [RELATION_OBJECT_MARKING]: event.marking_ids,
-      restricted_members: recorded.access.restricted_members ?? [],
-      [RELATION_GRANTED_TO]: recorded.access.granted ?? [],
-    } as unknown as BasicStoreCommon;
-  };
-  const resolvable = unresolvedRemoved.map((event) => {
-    const ids = referenceIdsOf(event);
-    const deleted = ids.filter((id) => !existing[id]).map((id) => deletedReferenceOf(event, id));
-    const resolved = ids.every((id) => !existing[id] || !!readableExisting[id]) && deleted.every((reference) => reference !== null);
-    return { event, deleted: resolved ? (deleted as BasicStoreCommon[]) : null };
-  }).filter((candidate): candidate is { event: TimelineRemovedEvent; deleted: BasicStoreCommon[] } => candidate.deleted !== null);
-  const deletedReferences = resolvable.flatMap(({ deleted }) => deleted);
-  const readableDeleted = deletedReferences.length > 0
-    ? new Set(await userFilterStoreElements(context, user, deletedReferences))
-    : new Set<BasicStoreCommon>();
-  const changedEventIds = [
-    ...items.map((event) => event.internal_id),
-    ...resolvable
-      .filter(({ deleted }) => deleted.every((reference) => readableDeleted.has(reference)))
-      .map(({ event }) => event.id),
-  ];
+  const changedEventIds = items.map((event) => event.internal_id);
   if (changedEventIds.length > 0) {
     return { ...signal, changed_event_ids: changedEventIds };
   }
@@ -922,7 +884,7 @@ export const addTimelineEvent = async (context: AuthContext, user: AuthUser, inp
     // Nor one above his confidence level, like any edit of the event
     if (current) controlUserConfidenceAgainstElement(user, current as unknown as BasicStoreEntity);
     // Nor does it point a known event to an element, or to none, that more users read
-    if (current && input.element_id !== undefined) await controlTimelineElementChange(context, locked, current.element_id, element);
+    if (current && input.element_id !== undefined) await controlTimelineElementChange(context, locked, current, element);
     if (!current && (await countManualTimelineEvents(context, container.internal_id)) >= TIMELINE_MAX_MANUAL_EVENTS) {
       throw FunctionalError('This timeline already holds the maximum number of milestones', { max: TIMELINE_MAX_MANUAL_EVENTS });
     }
@@ -983,7 +945,7 @@ const applyTimelineEventEdit = async (context: AuthContext, user: AuthUser, load
   let elementMarkings: string[] | null = null;
   if (input.element_id !== undefined) {
     const element = await resolveElement(context, user, input.element_id);
-    await controlTimelineElementChange(context, container, event.element_id, element);
+    await controlTimelineElementChange(context, container, event, element);
     patch.element_id = element?.internal_id ?? null;
     patch.element_type = element?.entity_type ?? null;
     patch.element_access = element ? timelineElementAccessOf(element) : null;
@@ -1174,8 +1136,9 @@ const writeImportedContributions = async (
   const importedElementOf = (event: StixTimelineExtensionEvent, stored: StoredTimelineEvent | null | undefined): AnyStoreElement | null => {
     const element = event.element_ref ? resolved[event.element_ref] : null;
     if (!element || !stored?.element_id) return element ?? null;
+    const previous = elementsWithMarkings[stored.element_id] ?? recordedTimelineReference(stored, stored.element_id);
     const next = elementsWithMarkings[element.internal_id] ?? element;
-    return isTimelineElementChangeWidening(container, elementsWithMarkings[stored.element_id], next, platformOrganization) ? null : element;
+    return isTimelineElementChangeWidening(container, previous, next, platformOrganization) ? null : element;
   };
   const keptElements = importable.filter(({ event, stored }) => !!event.element_ref && !!resolved[event.element_ref] && !importedElementOf(event, stored)).length;
   if (keptElements > 0) {
