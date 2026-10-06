@@ -16,7 +16,7 @@ import { getChipStyles } from './filterChipStyles';
 import FilterKeyLabel from './FilterKeyLabel';
 import { FilterRepresentative } from './FiltersModel';
 import FilterGroupChipButton from './group/FilterGroupChipButton';
-import ImbricatedFilterGroupDisplay from './ImbricatedFilterGroupDisplay';
+import FilterGroupSummaryButton from './FilterGroupSummaryButton';
 import { FilterDefinition } from '../../utils/hooks/useAuth';
 
 /**
@@ -62,7 +62,7 @@ export interface FilterChipLineProps {
   displayedFilterGroups: FilterGroup[];
   globalMode: string;
   /**
-   * On a read-only line, show the "Filters are not fully displayed" action instead of the
+   * On a read-only line, show the "Click to display filters" action instead of the
    * clickable group chip. See `FilterIconButtonSharedProps.showGroupsSummaryButtonOnReadOnly`.
    * No-op on a read-write line (the group chip always stays clickable there).
    */
@@ -188,15 +188,16 @@ const FilterChipLine: FunctionComponent<PropsWithChildren<FilterChipLineProps>> 
           ))
         : displayedFilterGroups.length > 0 && (
           <Box sx={{ padding: '0 4px' }}>
-            <ImbricatedFilterGroupDisplay
-              filterObj={{ mode: globalMode, filters: [], filterGroups: [{ mode: globalMode, filters: displayedFilters, filterGroups: displayedFilterGroups }] }}
-              filterMode={globalMode}
+            <FilterGroupSummaryButton
+              filterObj={{ mode: globalMode, filters: displayedFilters, filterGroups: displayedFilterGroups }}
               filtersRepresentativesMap={filtersRepresentativesMap}
               filterStyle={filterStyle}
+              buttonLabel={t_i18n('Click to display filters')}
+              dialogTitle={t_i18n('Filters')}
             />
           </Box>
         )}
-      {displayedFilters.map((currentFilter, index) => {
+      {!showGroupsSummaryButtonOnReadOnly && displayedFilters.map((currentFilter, index) => {
         const filterKey = currentFilter.key;
         const filterLabel = t_i18n(getFilterDefinitionFromFilterKeysMap(filterKey, filterKeysMap)?.label ?? filterKey);
         const filterOperator = currentFilter.operator ?? 'eq';

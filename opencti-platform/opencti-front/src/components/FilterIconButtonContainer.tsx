@@ -44,7 +44,7 @@ export interface FilterIconButtonSharedProps {
   floating?: boolean;
   /**
    * When true on a read-only filter (no `helpers`/`handleRemoveFilter`), nested filter groups
-   * are shown as the "Filters are not fully displayed" action instead of the clickable group
+   * are shown as the "Click to display filters" action instead of the clickable group
    * chip. No-op on a read-write filter. Only opted into by the Activity table (alerting list),
    * which has no edit affordance for its triggers' filters.
    */

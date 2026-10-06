@@ -25,16 +25,16 @@ export interface FilterGroupDialogProps {
   jsonObject: unknown;
   filtersRepresentativesMap: Map<string, FilterRepresentative>;
   title: string;
-  /** Optional intro paragraph shown above the visual display. */
   description?: string;
+  showOnlyFilterGroups?: boolean;
 }
 
 /**
  * Read-only dialog showing the full content of one or more filter groups: the same
- * `FilterGroupsVisualDisplay` used for the "imbricated filter groups" notice, plus the raw JSON,
- * in a modal. Content only — open/close state, title and description are owned by the caller, so
- * it can be triggered either by `ImbricatedFilterGroupDisplay`'s own chip or by a read-only
- * filter-group chip that has no edit panel to open.
+ * `FilterGroupsVisualDisplay`, plus the raw JSON, in a modal. Content only — open/close state,
+ * title and description are owned by the caller, so it can be triggered either by
+ * `FilterGroupSummaryButton`'s own chip or by a read-only filter-group chip that has no edit
+ * panel to open.
  */
 const FilterGroupDialog: FunctionComponent<FilterGroupDialogProps> = ({
   open,
@@ -45,6 +45,7 @@ const FilterGroupDialog: FunctionComponent<FilterGroupDialogProps> = ({
   filtersRepresentativesMap,
   title,
   description,
+  showOnlyFilterGroups = false,
 }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
@@ -84,7 +85,7 @@ const FilterGroupDialog: FunctionComponent<FilterGroupDialogProps> = ({
             sx={{ textTransform: 'none' }}
             gutterBottom
           >
-            {t_i18n('Full filter group content:')}
+            {showOnlyFilterGroups ? t_i18n('Full filter group content:') : t_i18n('Full filter content:')}
           </Typography>
           <Box sx={{ width: '100%' }}>
             <FilterGroupsVisualDisplay
@@ -95,7 +96,7 @@ const FilterGroupDialog: FunctionComponent<FilterGroupDialogProps> = ({
           </Box>
           <Typography
             variant="h3"
-            sx={{ textTransform: 'none' }}
+            sx={{ textTransform: 'none', paddingTop: 2 }}
             gutterBottom
           >
             {t_i18n('The complete Filter object is as follows:')}

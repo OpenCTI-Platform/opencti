@@ -1,52 +1,57 @@
 import React, { CSSProperties, FunctionComponent, useState } from 'react';
 import { InformationOutline } from 'mdi-material-ui';
 import { Chip } from '@filigran/design-system';
-import { useFormatter } from '../i18n';
 import { FilterRepresentative } from './FiltersModel';
 import type { FilterGroup } from '../../utils/filters/filtersHelpers-types';
 import FilterGroupDialog from './FilterGroupDialog';
 
-interface ImbricatedFilterGroupDisplayProps {
+interface FilterGroupSummaryButtonProps {
   filterObj: FilterGroup;
-  filterMode: string;
+  showOnlyFilterGroups?: boolean;
   filtersRepresentativesMap: Map<string, FilterRepresentative>;
   filterStyle?: CSSProperties;
+  buttonLabel: string;
+  dialogTitle: string;
+  dialogDescription?: string;
 }
 
-const ImbricatedFilterGroupDisplay: FunctionComponent<ImbricatedFilterGroupDisplayProps> = ({
+/**
+ * Compact stand-in for filters that cannot (or should not) be laid out in place, for instance a
+ * read-only line: a single button opening a dialog with the full content of the filters.
+ */
+const FilterGroupSummaryButton: FunctionComponent<FilterGroupSummaryButtonProps> = ({
   filterObj,
-  filterMode,
+  showOnlyFilterGroups = false,
   filtersRepresentativesMap,
   filterStyle,
+  buttonLabel,
+  dialogTitle,
+  dialogDescription,
 }) => {
-  const { filterGroups } = filterObj;
   const [open, setOpen] = useState(false);
-  const { t_i18n } = useFormatter();
-
-  const handleClickOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
 
   return (
     <>
       <Chip
         severity="info"
         startIcon={<InformationOutline fontSize="small" />}
-        label={t_i18n('Filters are not fully displayed')}
-        onClick={handleClickOpen}
+        label={buttonLabel}
+        onClick={() => setOpen(true)}
         style={filterStyle}
       />
       <FilterGroupDialog
         open={open}
-        onClose={handleClose}
-        filterGroups={filterGroups}
-        filterMode={filterMode}
+        onClose={() => setOpen(false)}
+        filterGroups={showOnlyFilterGroups ? filterObj.filterGroups : [filterObj]}
+        filterMode={filterObj.mode}
         jsonObject={filterObj}
         filtersRepresentativesMap={filtersRepresentativesMap}
-        title={t_i18n('Imbricated filter groups')}
-        description={t_i18n('This filter group contains nested filter groups. The full content is displayed below for reference. It can be edited directly from the filters line on the entity page.')}
+        title={dialogTitle}
+        description={dialogDescription}
+        showOnlyFilterGroups={showOnlyFilterGroups}
       />
     </>
   );
 };
 
-export default ImbricatedFilterGroupDisplay;
+export default FilterGroupSummaryButton;
