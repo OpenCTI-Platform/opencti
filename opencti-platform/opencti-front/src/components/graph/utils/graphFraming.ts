@@ -57,6 +57,11 @@ const merge = (insets: FrameInsets, extra: Partial<FrameInsets>): FrameInsets =>
   bottom: Math.max(insets.bottom, extra.bottom ?? 0),
 });
 
+/** False for insets consuming a whole axis, such as clearing the full-width toolbar by its side. */
+const leavesRoom = (insets: FrameInsets, size: { width: number; height: number }) => (
+  size.width - insets.left - insets.right > 0 && size.height - insets.top - insets.bottom > 0
+);
+
 const frameWithin = (box: GraphBox, size: { width: number; height: number }, insets: FrameInsets, padding: number, maxZoom: number): Frame => {
   const width = Math.max(1, size.width - insets.left - insets.right - 2 * padding);
   const height = Math.max(1, size.height - insets.top - insets.bottom - 2 * padding);
@@ -77,7 +82,8 @@ const frameWithin = (box: GraphBox, size: { width: number; height: number }, ins
 /**
  * The zoom and centre that show the whole box clear of every floating panel. Each panel can be
  * cleared on its side or above / below it; the combination giving the largest zoom wins, so a
- * wide graph goes above a low legend and a tall one beside it.
+ * wide graph goes above a low legend and a tall one beside it. A combination leaving no room on
+ * an axis is never a choice, and a panel no combination can clear is left out.
  */
 export const frameBox = (
   box: GraphBox,
@@ -87,7 +93,12 @@ export const frameBox = (
 ): Frame => {
   const visible = panels.filter((p) => p.right > p.left && p.bottom > p.top && p.right > 0 && p.bottom > 0 && p.left < size.width && p.top < size.height);
   const combinations = visible.reduce<FrameInsets[]>(
-    (all, panel) => all.flatMap((insets) => clearancesOf(panel, size).map((clearance) => merge(insets, clearance))),
+    (all, panel) => {
+      const cleared = all
+        .flatMap((insets) => clearancesOf(panel, size).map((clearance) => merge(insets, clearance)))
+        .filter((insets) => leavesRoom(insets, size));
+      return cleared.length > 0 ? cleared : all;
+    },
     [NO_INSETS],
   );
   return combinations

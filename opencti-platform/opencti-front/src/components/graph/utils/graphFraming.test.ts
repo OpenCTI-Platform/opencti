@@ -49,6 +49,32 @@ describe('frameBox', () => {
     const panels = [{ left: 1200, top: 0, right: 1300, bottom: 100 }, { left: 10, top: 10, right: 10, bottom: 10 }];
     expect(frameBox({ x: [-100, 100], y: [-50, 50] }, size, panels, options)).toEqual(frameBox({ x: [-100, 100], y: [-50, 50] }, size, [], options));
   });
+
+  it('frames a single node above the full-width toolbar, never beside it, off the canvas', () => {
+    const toolbar = { left: 0, top: 520, right: 1000, bottom: 600 };
+    const frame = frameBox({ x: [10, 10], y: [5, 5] }, size, [toolbar], { padding: 200, maxZoom: 6 });
+    const node = onScreen(frame, { x: 10, y: 5 });
+    expect(node.x).toBeCloseTo(size.width / 2);
+    expect(node.y).toBeLessThan(toolbar.top);
+  });
+
+  it('keeps a column of nodes beside a full-height details panel and above the full-width toolbar', () => {
+    const details = { left: 760, top: 0, right: 1000, bottom: 600 };
+    const toolbar = { left: 0, top: 520, right: 1000, bottom: 600 };
+    const frame = frameBox({ x: [0, 0], y: [-100, 100] }, size, [details, toolbar], options);
+    [{ x: 0, y: -100 }, { x: 0, y: 100 }].forEach((end) => {
+      const point = onScreen(frame, end);
+      expect(point.x).toBeGreaterThan(0);
+      expect(point.x).toBeLessThan(details.left);
+      expect(point.y).toBeGreaterThan(0);
+      expect(point.y).toBeLessThan(toolbar.top);
+    });
+  });
+
+  it('leaves out a panel that covers the whole canvas', () => {
+    const box = { x: [-100, 100] as [number, number], y: [-50, 50] as [number, number] };
+    expect(frameBox(box, size, [{ left: 0, top: 0, right: 1000, bottom: 600 }], options)).toEqual(frameBox(box, size, [], options));
+  });
 });
 
 describe('measureGraphPanels', () => {
