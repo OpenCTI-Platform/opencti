@@ -124,6 +124,7 @@ const SUFFIX = 'userMergeResolvers';
 // a write of zero the expected outcome.
 let mergeSourceId: string;
 let mergeTargetId: string;
+let mergeSourceStandardId: string;
 
 describe('User merge resolvers', () => {
   beforeAll(async () => {
@@ -137,6 +138,7 @@ describe('User merge resolvers', () => {
     const target = await addUser(testContext, SYSTEM_USER, account('target'));
     mergeSourceId = source.id;
     mergeTargetId = target.id;
+    mergeSourceStandardId = source.standard_id;
     // The engine resolves both users from the platform cache, which the stream only refreshes
     // asynchronously.
     resetCacheForEntity(ENTITY_TYPE_USER);
@@ -169,6 +171,26 @@ describe('User merge resolvers', () => {
         query: USER_MERGE_MUTATION,
         variables: { sourceId: USER_PARTICIPATE.id, targetId: USER_PARTICIPATE.id },
       }, 'Cannot merge a user into itself');
+    });
+
+    // The guard has to compare accounts, not strings: the same account named once by its internal
+    // id and once by its standard id would otherwise be merged into itself, and locked out.
+    it('should refuse to merge a user into itself named by two different ids', async () => {
+      await queryAsAdminWithError({
+        query: USER_MERGE_MUTATION,
+        variables: { sourceId: mergeSourceId, targetId: mergeSourceStandardId },
+      }, 'Cannot merge a user into itself');
+    });
+
+    // Every handler searches the id it is given in fields that only hold internal ids: a standard
+    // id handed down would disable the source and move none of its references.
+    it('should hand the engine the internal id of a user named by its standard id', async () => {
+      const { data } = await queryAsAdminWithSuccess({
+        query: USER_MERGE_MUTATION,
+        variables: { sourceId: mergeSourceStandardId, targetId: mergeTargetId, options: { dryRun: true } },
+      });
+      expect(data.userMerge.source_id).toEqual(mergeSourceId);
+      expect(data.userMerge.target_id).toEqual(mergeTargetId);
     });
 
     it('should refuse an unknown source user', async () => {
