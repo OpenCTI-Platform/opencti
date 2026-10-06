@@ -85,16 +85,18 @@ const writeState = async (state: SnapshotManagerState) => {
 
 /**
  * Wait until the history holds the events of every change made before `readDate`: the watermark reached that date
- * (the history manager indexes the stream in order), or it did not move for longer than the indexing buffer (no event
- * was waiting to be indexed). False when the history manager is still behind after the maximum wait.
+ * (the history manager indexes the stream in order), or it did not move for longer than the indexing buffer while
+ * already past `lastChangeDate`, the latest change stamped on the documents read (an idle history holding every one of
+ * them; a stalled one behind them is not taken for caught up). False when the history is still behind after the
+ * maximum wait.
  */
-export const waitForHistoryCatchUp = async (context: AuthContext, readDate: string): Promise<boolean> => {
+export const waitForHistoryCatchUp = async (context: AuthContext, readDate: string, lastChangeDate: string): Promise<boolean> => {
   const startedAt = Date.now();
   let watermark = await findHistoryWatermark(context, now());
   let movedAt = startedAt;
   while (!watermark || utcDate(watermark).isBefore(utcDate(readDate))) {
     const checkedAt = Date.now();
-    if (checkedAt - movedAt >= HISTORY_QUIET_MS) return true;
+    if (checkedAt - movedAt >= HISTORY_QUIET_MS) return !!watermark && !utcDate(watermark).isBefore(utcDate(lastChangeDate));
     if (checkedAt - startedAt >= HISTORY_CATCH_UP_MAX_MS) return false;
     await wait(HISTORY_POLL_MS);
     const next = await findHistoryWatermark(context, now());
@@ -265,6 +267,11 @@ const isChangedSince = (stamps: Map<string, BasicStoreEntity>, snapshotDate: str
   const date = utcDate(snapshotDate);
   return [...stamps.values()].some((entity) => !entity.refreshed_at || utcDate(entity.refreshed_at).isAfter(date) || utcDate(entity.updated_at).isAfter(date));
 };
+// Latest change stamped on the documents: an update (`updated_at`) or a relationship created or deleted (`refreshed_at`)
+const lastChangeOf = (stamps: Map<string, BasicStoreEntity>, fallback: string) => {
+  const dates = [...stamps.values()].flatMap((entity) => [entity.updated_at, entity.refreshed_at]).filter((date) => !!date).map((date) => utcDate(date));
+  return dates.length > 0 ? moment.max(dates).toISOString() : fallback;
+};
 
 /**
  * Compact documents at `snapshotDate`: raw attribute values, relationship ids by type (capped)
@@ -289,7 +296,8 @@ export const buildCompactDocuments = async (context: AuthContext, entities: Basi
     maxSize: MAX_RELATIONSHIPS_PER_BATCH + 1,
   } as any);
   const readDate = now();
-  if (isChangedSince(await readChangeStamps(context, entityIds), snapshotDate) && !(await waitForHistoryCatchUp(context, readDate))) {
+  const readStamps = await readChangeStamps(context, entityIds);
+  if (isChangedSince(readStamps, snapshotDate) && !(await waitForHistoryCatchUp(context, readDate, lastChangeOf(readStamps, readDate)))) {
     logApp.warn('[TIME MACHINE] History indexing is behind the knowledge, the batch is snapshotted at the next window', { entities: entityIds.length });
     return documents;
   }

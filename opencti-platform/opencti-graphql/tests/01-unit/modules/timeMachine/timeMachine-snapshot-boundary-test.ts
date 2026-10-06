@@ -84,6 +84,19 @@ describe('Snapshot documents at the boundary of their date', () => {
     expect(documents.has('malware-1')).toBe(true);
   });
 
+  it('should not take a stalled history behind the changes of the batch for a caught-up one', async () => {
+    vi.useFakeTimers();
+    fullRelationsListMock.mockResolvedValue([relationship]);
+    internalFindByIdsMock.mockResolvedValue(stored(AFTER_SNAPSHOT, AFTER_SNAPSHOT));
+    // The newest history event is older than the last change of the entity and nothing is indexed any more
+    findHistoryWatermarkMock.mockResolvedValue('2026-09-01T12:00:00.000Z');
+    const building = buildCompactDocuments({} as AuthContext, [loaded(AFTER_SNAPSHOT)], SNAPSHOT_DATE);
+    await vi.advanceTimersByTimeAsync(11000);
+    const documents = await building;
+    expect(documents.size).toBe(0);
+    expect(fetchElementsHistoryEventsMock).not.toHaveBeenCalled();
+  });
+
   it('should leave to the next window an entity updated after its document was loaded', async () => {
     fetchElementsHistoryEventsMock.mockResolvedValue([]);
     fetchRelationshipsHistoryEventsMock.mockResolvedValue([]);
