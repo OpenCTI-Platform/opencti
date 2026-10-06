@@ -99,13 +99,17 @@ export const clearFullComputationRunning = async () => {
 };
 
 /**
- * Whether a full computation is in progress. Bounded in time so a node stopped mid-run never leaves it running forever.
+ * Start date of the full computation in progress, null when none is. Bounded in time so a node stopped mid-run never leaves it running forever.
  */
-export const isFullComputationRunning = async (): Promise<boolean> => {
+export const getFullComputationRunningSince = async (): Promise<string | null> => {
   const since = await redisGetManagerEventState(STATE_FULL_RUNNING_SINCE);
-  if (!since) return false;
+  if (!since) return null;
   const elapsed = Date.now() - new Date(since).getTime();
-  return Number.isFinite(elapsed) && elapsed < FULL_RUNNING_MAX_DURATION;
+  return Number.isFinite(elapsed) && elapsed < FULL_RUNNING_MAX_DURATION ? since : null;
+};
+
+export const isFullComputationRunning = async (): Promise<boolean> => {
+  return (await getFullComputationRunningSince()) !== null;
 };
 
 /**

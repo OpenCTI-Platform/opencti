@@ -16,6 +16,7 @@ import {
   bumpDefenseThreatsVersion,
   clearFullComputationRunning,
   consumeFullComputationRequest,
+  getFullComputationRunningSince,
   getLastFullComputation,
   listPendingLevelChanges,
   markFullComputationRunning,
@@ -23,6 +24,7 @@ import {
   setLastFullComputation,
 } from '../modules/defenseCoverage/defenseCoverage-state';
 import { addDefenseGapClosedCount } from './telemetryManager';
+import { streamEventId } from '../utils/format';
 import type { AuthContext } from '../types/user';
 
 const DEFENSE_COVERAGE_MANAGER_ID = 'DEFENSE_COVERAGE_MANAGER';
@@ -167,7 +169,14 @@ export const defenseCoverageStreamHandler = async (streamEvents: Array<SseEvent<
 };
 
 export const defenseCoverageStreamStartFrom = async () => {
-  return (await redisGetManagerEventState(DEFENSE_COVERAGE_MANAGER_CONTEXT)) ?? 'live';
+  // Taken before the state is read: a full computation that starts later reads the knowledge after this position
+  const nowEventId = streamEventId();
+  const savedEventId = await redisGetManagerEventState(DEFENSE_COVERAGE_MANAGER_CONTEXT);
+  if (savedEventId) return savedEventId;
+  // First subscription: replay from the start of the full computation that may have read the knowledge before it.
+  // The running one is read first because a completed computation records its start before clearing the running mark.
+  const computationStart = (await getFullComputationRunningSince()) ?? (await getLastFullComputation());
+  return computationStart ? `${new Date(computationStart).getTime()}-0` : nowEventId;
 };
 
 const DEFENSE_COVERAGE_MANAGER_DEFINITION: ManagerDefinition = {
