@@ -88,6 +88,7 @@ import {
 import { parseHuntPack, planHuntPackImport, resolveHuntPackLabels } from './hunt-pack';
 import { type HuntValidationState, mergeHuntEdits, validateHuntState } from './hunt-validators';
 import { withHuntLock } from './hunt-lock';
+import { filterEditableHunts } from './hunt-access';
 import { cancelDeletedHuntRuns, createHuntRuns, findHuntConnectors, markHuntRunsOrphaned, startHuntTranslationCheck } from './huntRun/huntRun-domain';
 import { type BasicStoreEntityHuntRun, ENTITY_TYPE_HUNT_RUN, HUNT_RUN_TRIGGER_EMULATION } from './huntRun/huntRun-types';
 
@@ -656,7 +657,7 @@ export const huntValidateFromEmulation = async (context: AuthContext, user: Auth
     securityCoverageId = coverage.internal_id;
   }
   // Every active hunt covering the technique, read page by page in a stable order
-  const hunts = await fullEntitiesList<BasicStoreEntityHunt>(context, user, [ENTITY_TYPE_HUNT], {
+  const coveringHunts = await fullEntitiesList<BasicStoreEntityHunt>(context, user, [ENTITY_TYPE_HUNT], {
     filters: {
       mode: FilterMode.And,
       filters: [
@@ -670,6 +671,8 @@ export const huntValidateFromEmulation = async (context: AuthContext, user: Auth
     // The dispatched runs carry the techniques, targets and sources of the hunts
     withoutRels: false,
   });
+  // Running a hunt changes it: the hunts the caller can only read are left out
+  const hunts = await filterEditableHunts(context, user, coveringHunts);
   // Retries of the same inject and technique on the same platform are serialized, so the runs already created are always seen
   const runs = await withHuntLock(`${VALIDATION_LOCK}_${input.inject_id}_${technique.internal_id}_${platform.internal_id}`, async () => {
     const existingRuns = await fullEntitiesList<BasicStoreEntityHuntRun>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT_RUN], {

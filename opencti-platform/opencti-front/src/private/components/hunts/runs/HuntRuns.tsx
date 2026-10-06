@@ -19,8 +19,6 @@ import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 export const huntRunsLineFragment = graphql`
   fragment HuntRuns_RunFragment on HuntRun {
@@ -129,9 +127,11 @@ interface HuntRunsProps {
     hunt_max_results?: number | null;
     scopePlatforms?: ReadonlyArray<{ id: string; name: string }> | null;
   };
+  // The edit right of the hunt page: running the hunt or acting on its runs changes it
+  canEdit: boolean;
 }
 
-const HuntRuns = ({ hunt }: HuntRunsProps) => {
+const HuntRuns = ({ hunt, canEdit }: HuntRunsProps) => {
   const { t_i18n, n } = useFormatter();
   const [tableElement, setTableElement] = useState<HTMLDivElement | null>(null);
   const storageKey = `hunt-${hunt.id}-runs`;
@@ -261,16 +261,12 @@ const HuntRuns = ({ hunt }: HuntRunsProps) => {
             disableToolBar
             removeSelectAll
             emptyStateMessage={t_i18n('No run yet: click Run now to run the hunt over its time window, or Activate it to run on its schedule.')}
-            createButton={(
-              <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <HuntRunStart hunt={hunt} paginationOptions={queryPaginationOptions} />
-              </Security>
-            )}
+            createButton={canEdit ? <HuntRunStart hunt={hunt} paginationOptions={queryPaginationOptions} /> : undefined}
           />
         )}
       </div>
       <Routes>
-        <Route path=":runId" element={<HuntRunDrawer huntId={hunt.id} paginationOptions={queryPaginationOptions} />} />
+        <Route path=":runId" element={<HuntRunDrawer huntId={hunt.id} canEdit={canEdit} paginationOptions={queryPaginationOptions} />} />
       </Routes>
     </div>
   );

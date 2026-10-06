@@ -300,4 +300,6 @@ Hunts can run on a schedule, react to new knowledge, be armed by Priority Intell
 | Delete hunts | Delete knowledge |
 | Register a hunt connector, report runs | Connector API usage |
 
+Running a hunt, retrying, triaging its runs, attaching evidence to them and setting their verdicts change the hunt: in a draft, like an update of the hunt, they take the edit access to the draft. A user who can only view the draft sees the runs of its hunts without their controls. Hunts and their runs cannot be restricted to members: their access follows their markings and organizations.
+
 A hunt run reveals both its hunt and the security platform it ran on. It therefore carries the markings of both, and it is shared only with the organizations both are shared with; a hunt and a platform restricted to different organizations never run together. The sightings, observed data and incidents of a run carry the same markings and organizations, and a sighting updated by a later run takes those of that run. A run started by a user (a manual run, a translation preview or a retry) only targets the security platforms that user can read, so a platform hidden from the user is never queried on their behalf. Scheduled, standing, PIR armed, playbook and OpenAEV runs target every security platform of the hunt scope.

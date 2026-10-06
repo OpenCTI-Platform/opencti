@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useRef, useState } from 'react';
+import React, { createContext, Suspense, useContext, useEffect, useRef, useState } from 'react';
 import { graphql, useFragment, useLazyLoadQuery } from 'react-relay';
 import { Link, useNavigate, useParams } from 'react-router';
 import { Field, Form, Formik } from 'formik';
@@ -27,8 +27,6 @@ import TextareaField from '../../../../components/TextareaField';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
 import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { notifyPayloadErrors } from '../hunt-mutation-utils';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
@@ -231,6 +229,12 @@ const severityOf = (severity?: string | null) => {
 
 type Run = HuntRunDrawer_run$data;
 
+/** The edit right of the hunt page: the update capability, the edit access to the hunt and, in a draft, to the draft. */
+const HuntEditContext = createContext(false);
+
+/** The controls that change the hunt or its runs, which the platform refuses to a user who can only view the hunt. */
+const HuntEditControls = ({ children }: { children: React.ReactNode }) => (useContext(HuntEditContext) ? <>{children}</> : null);
+
 const runPlatformName = (run: Run, t_i18n: (message: string) => string) => run.securityPlatform?.name ?? run.connector_name ?? t_i18n('Internet');
 
 /** A date shown relative to now, the absolute date in its tooltip. */
@@ -359,11 +363,11 @@ const RunFailureAlert = ({ run, huntId }: { run: Run; huntId: string }) => {
     case 'translation':
       title = t_i18n('The Sigma rule could not be translated for {platform}', { values: { platform } });
       action = (
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <HuntEditControls>
           <Button variant="secondary" size="small" component={Link} to={`${PATH_HUNT(huntId)}/logic`} data-testid="hunt-run-edit-rule">
             {t_i18n('Edit the rule')}
           </Button>
-        </Security>
+        </HuntEditControls>
       );
       break;
     case 'access':
@@ -509,7 +513,7 @@ const RunVerdict = ({ run, cardRef }: { run: Run; cardRef: React.RefObject<HTMLD
           </>
         )}
         {editable && (
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <HuntEditControls>
             <Formik<VerdictValues>
               initialValues={{ verdict: run.verdict === 'pending' ? 'true_positive' : run.verdict, hunt_analyst_feedback: '', create_incident: true }}
               validationSchema={Yup.object().shape({ verdict: Yup.string().oneOf([...HUNT_ANALYST_VERDICTS]).required(t_i18n('This field is required')) })}
@@ -546,7 +550,7 @@ const RunVerdict = ({ run, cardRef }: { run: Run; cardRef: React.RefObject<HTMLD
                 </Form>
               )}
             </Formik>
-          </Security>
+          </HuntEditControls>
         )}
         {(canTriageHuntRun(run) || !!run.verdict_proposal) && <RunTriage run={run} />}
       </Card>
@@ -624,7 +628,7 @@ const RunTriage = ({ run }: { run: Run }) => {
             )}
           </>
         )}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <HuntEditControls>
           <div style={{ display: 'flex', gap: theme.spacing(1), justifyContent: 'flex-end', marginTop: theme.spacing(2) }}>
             {hasProposal && canSetHuntRunVerdict(run) && !proposalApplied && (
               <Button variant="secondary" onClick={accept} disabled={accepting} data-testid="hunt-run-triage-accept">
@@ -647,7 +651,7 @@ const RunTriage = ({ run }: { run: Run }) => {
               {hasProposal ? t_i18n('Triage again') : t_i18n('Triage with AI')}
             </Button>
           </div>
-        </Security>
+        </HuntEditControls>
       </div>
     </section>
   );
@@ -715,7 +719,7 @@ const RunPartialResultsAlert = ({ run, huntId }: { run: Run; huntId: string }) =
       description={t_i18n('Matches may be missing from this run, and a run without hits in partial results proves nothing: narrow the time window or the scope of the hunt so that its runs fit in what the platform returns.')}
       data-testid="hunt-run-partial-results"
       action={(
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <HuntEditControls>
           <Button
             variant="secondary"
             size="small"
@@ -724,7 +728,7 @@ const RunPartialResultsAlert = ({ run, huntId }: { run: Run; huntId: string }) =
           >
             {t_i18n('Narrow the hunt')}
           </Button>
-        </Security>
+        </HuntEditControls>
       )}
     />
   );
@@ -786,18 +790,18 @@ const RunStatusHeader = ({ run, huntId, canRetry, retrying, onRetry, onSetVerdic
   let primary: React.ReactNode = null;
   if (isExecution && run.verdict === 'pending' && canSetHuntRunVerdict(run)) {
     primary = (
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <HuntEditControls>
         <Button onClick={onSetVerdict} data-testid="hunt-run-set-verdict">{t_i18n('Set the verdict')}</Button>
-      </Security>
+      </HuntEditControls>
     );
   } else if (failure && canRetry) {
     // The failure alert below carries the fix of its class (check the connector, edit the rule)
     primary = (
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+      <HuntEditControls>
         <Button startIcon={<ReplayOutlined fontSize="small" />} onClick={onRetry} disabled={retrying} data-testid="hunt-run-retry">
           {t_i18n('Retry')}
         </Button>
-      </Security>
+      </HuntEditControls>
     );
   } else if (run.verdict === 'true_positive' && (run.draft_id || run.incident_id)) {
     const incidentPath = run.draft_id ? huntDraftWorkspacePath(run.draft_id) : PATH_INCIDENT(run.incident_id as string);
@@ -935,10 +939,11 @@ const HuntRunDrawerLoader = ({ runId, huntId, paginationOptions }: { runId: stri
 
 interface HuntRunDrawerProps {
   huntId: string;
+  canEdit: boolean;
   paginationOptions?: Record<string, unknown>;
 }
 
-const HuntRunDrawer = ({ huntId, paginationOptions }: HuntRunDrawerProps) => {
+const HuntRunDrawer = ({ huntId, canEdit, paginationOptions }: HuntRunDrawerProps) => {
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
   const { runId } = useParams() as { runId: string };
@@ -949,9 +954,11 @@ const HuntRunDrawer = ({ huntId, paginationOptions }: HuntRunDrawerProps) => {
       onClose={() => navigate(`${PATH_HUNT(huntId)}/runs`)}
       size="large"
     >
-      <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <HuntRunDrawerLoader runId={runId} huntId={huntId} paginationOptions={paginationOptions} />
-      </Suspense>
+      <HuntEditContext.Provider value={canEdit}>
+        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <HuntRunDrawerLoader runId={runId} huntId={huntId} paginationOptions={paginationOptions} />
+        </Suspense>
+      </HuntEditContext.Provider>
     </Drawer>
   );
 };

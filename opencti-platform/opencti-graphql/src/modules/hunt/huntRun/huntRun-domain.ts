@@ -7,6 +7,7 @@ import type { BasicStoreEntityConnector } from '../../../types/connector';
 import { BUS_TOPICS, logApp } from '../../../config/conf';
 import { ForbiddenAccess, FunctionalError, ResourceNotFoundError } from '../../../config/errors';
 import { withHuntLock } from '../hunt-lock';
+import { checkHuntEditAccess } from '../hunt-access';
 import { createEntity, patchAttribute } from '../../../database/middleware';
 import {
   type EntityOptions,
@@ -272,6 +273,12 @@ const loadHuntForRun = async (context: AuthContext, user: AuthUser, run: BasicSt
   if (!hunt) {
     throw ResourceNotFoundError('Hunt of the run cannot be found', { runId: run.internal_id });
   }
+  return hunt;
+};
+
+const loadHuntForRunEdit = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityHuntRun) => {
+  const hunt = await loadHuntForRun(context, user, run);
+  await checkHuntEditAccess(context, user, hunt);
   return hunt;
 };
 
@@ -566,6 +573,7 @@ export const startHuntRuns = async (
   if (!hunt) {
     throw ResourceNotFoundError('Hunt cannot be found', { huntId });
   }
+  await checkHuntEditAccess(context, user, hunt);
   // A logic its translation preview or a run already failed to translate for good fails again: refused before any
   // connector slot or daily run is spent on it
   const translation = await findHuntTranslation(context, user, hunt, input?.security_platform_ids ?? []);
@@ -599,6 +607,7 @@ export const startHuntPreview = async (context: AuthContext, user: AuthUser, hun
   if (!hunt) {
     throw ResourceNotFoundError('Hunt cannot be found', { huntId });
   }
+  await checkHuntEditAccess(context, user, hunt);
   const runs = await createHuntRuns(context, hunt, {
     trigger: HUNT_RUN_TRIGGER_PREVIEW,
     mode: HUNT_RUN_MODE_PREVIEW,
@@ -1076,7 +1085,7 @@ export const retryHuntRun = async (context: AuthContext, user: AuthUser, runId: 
   if (reachable.hunt_run_status === HUNT_RUN_STATUS_CANCELLED) {
     throw FunctionalError(`A cancelled run is not retried: ${reachable.error_message ?? 'its hunt or its hunt connector was deleted'}`, { runId });
   }
-  const hunt = await loadHuntForRun(context, user, reachable);
+  const hunt = await loadHuntForRunEdit(context, user, reachable);
   const { replacement } = await replaceHuntRun(context, hunt, reachable.internal_id, { automatic: false, triggeredBy: user.id, requester: user });
   if (!replacement) {
     throw FunctionalError('The hunt connector of this run is not alive anymore', { runId, connectorId: reachable.connector_id });
@@ -1370,7 +1379,7 @@ export const addHuntRunEvidence = async (context: AuthContext, user: AuthUser, r
   if (!run) {
     throw ResourceNotFoundError('Hunt run cannot be found', { runId });
   }
-  const hunt = await loadHuntForRun(context, user, run);
+  const hunt = await loadHuntForRunEdit(context, user, run);
   if (run.hunt_run_mode === HUNT_RUN_MODE_PREVIEW) {
     throw FunctionalError('A translation preview holds no evidence', { runId });
   }
@@ -1478,7 +1487,7 @@ export const setHuntRunVerdict = async (context: AuthContext, user: AuthUser, ru
   if (!run) {
     throw ResourceNotFoundError('Hunt run cannot be found', { runId });
   }
-  const hunt = await loadHuntForRun(context, user, run);
+  const hunt = await loadHuntForRunEdit(context, user, run);
   if (run.hunt_run_mode === HUNT_RUN_MODE_PREVIEW) {
     throw FunctionalError('A translation preview has no verdict', { runId });
   }
@@ -1550,7 +1559,7 @@ export const triageHuntRun = async (context: AuthContext, user: AuthUser, runId:
   if (!run) {
     throw ResourceNotFoundError('Hunt run cannot be found', { runId });
   }
-  const hunt = await loadHuntForRun(context, user, run);
+  const hunt = await loadHuntForRunEdit(context, user, run);
   if (run.hunt_run_mode !== HUNT_RUN_MODE_EXECUTE || run.hunt_run_status !== HUNT_RUN_STATUS_COMPLETED) {
     throw FunctionalError('Only a completed hunt run can be triaged', { runId });
   }

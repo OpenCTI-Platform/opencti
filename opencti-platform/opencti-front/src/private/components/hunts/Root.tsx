@@ -158,7 +158,7 @@ const RootHuntComponent = ({ queryRef, huntId }: RootHuntComponentProps) => {
         pages={{
           overview: <Hunt data={hunt} />,
           logic: <HuntLogic data={hunt} canEdit={canEdit} />,
-          runs: <HuntRuns hunt={hunt} />,
+          runs: <HuntRuns hunt={hunt} canEdit={canEdit} />,
           evidence: <HuntEvidence huntId={hunt.id} />,
           coverage: <HuntCoverage data={hunt} />,
           content: <StixCoreObjectContentRoot stixCoreObject={hunt} />,
