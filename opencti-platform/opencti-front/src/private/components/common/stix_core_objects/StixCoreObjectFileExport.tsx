@@ -27,7 +27,7 @@ import { htmlToPdf, htmlToPdfReport } from '../../../../utils/htmlToPdf/htmlToPd
 import useFileFromTemplate from '../../../../utils/outcome_template/engine/useFileFromTemplate';
 import { getMainRepresentative } from '../../../../utils/defaultRepresentatives';
 import useGranted, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
-import { TIMELINE_EXPORT_MIME_TYPE_LIST, timelineFormatOfMimeType, useTimelineFileRenderer } from '../timeline/useContainerTimelineExport';
+import { TIMELINE_EXPORT_MIME_TYPE_LIST, timelineExportErrorMessage, timelineFormatOfMimeType, useTimelineFileRenderer } from '../timeline/useContainerTimelineExport';
 import { TIMELINE_CONTAINER_TYPES } from '../timeline/timelineUtils';
 
 export const BUILT_IN_HTML_TO_PDF = {
@@ -534,9 +534,9 @@ const StixCoreObjectFileExportComponent = ({
         },
         onError: () => setSubmitting(false),
       });
-    } catch {
+    } catch (error) {
       setSubmitting(false);
-      MESSAGING$.notifyError(t_i18n('The timeline export failed'));
+      MESSAGING$.notifyError(timelineExportErrorMessage(error, t_i18n));
     }
   };
 

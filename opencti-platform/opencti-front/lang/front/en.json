@@ -5905,6 +5905,7 @@
   "This case is very large: its timeline is built from a bounded number of objects and history entries, so some events may be missing. Administrators can raise these limits in the timeline manager configuration.": "This case is very large: its timeline is built from a bounded number of objects and history entries, so some events may be missing. Administrators can raise these limits in the timeline manager configuration.",
   "This timeline has no event yet": "This timeline has no event yet",
   "This timeline is not available": "This timeline is not available",
+  "This timeline is too large to export at once: narrow the export with the filters or the time window": "This timeline is too large to export at once: narrow the export with the filters or the time window",
   "Threat seen": "Threat seen",
   "Time window": "Time window",
   "Timeline anchor changed": "Timeline anchor changed",

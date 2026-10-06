@@ -527,6 +527,29 @@ interface TimelineExportSnapshot {
   anchors: TimelineAnchors;
 }
 
+// An export is built in memory and answered at once: the text of its events is bounded (in characters, about 10 MB),
+// a larger one is narrowed by the user with the filters or the window
+const TIMELINE_EXPORT_MAX_TEXT_LENGTH = 10_000_000;
+const TIMELINE_EXPORT_PAGE_SIZE = 500;
+export const TIMELINE_EXPORT_TOO_LARGE = 'TIMELINE_EXPORT_TOO_LARGE';
+
+/** Collects the pages of an export until the text of its events passes the bound, then refuses the next ones. */
+export const collectTimelineExportPages = (maxTextLength = TIMELINE_EXPORT_MAX_TEXT_LENGTH) => {
+  const events: StoredTimelineEvent[] = [];
+  let textLength = 0;
+  const textOf = (event: StoredTimelineEvent): number => (event.name?.length ?? 0) + (event.description?.length ?? 0) + (event.annotation?.length ?? 0);
+  return {
+    events,
+    exceeded: () => textLength > maxTextLength,
+    collect: (page: StoredTimelineEvent[]): boolean => {
+      textLength += page.reduce((length, event) => length + textOf(event), 0);
+      if (textLength > maxTextLength) return false;
+      events.push(...page);
+      return true;
+    },
+  };
+};
+
 /**
  * The events an export contains: the events the user can see, within the content ceiling he selected and his max
  * shareable markings (same rule as every export of the platform). The ceiling also applies to the element and the sources
@@ -553,12 +576,23 @@ const loadExportedTimelineEvents = async (
   const ceilingFilters = (markingFilter.filters as { key: string | string[]; values?: string[] }[])
     .map((filter) => ({ ...filter, key: Array.isArray(filter.key) ? filter.key : [filter.key] }));
   const markingsAboveCeiling = new Set(ceilingFilters.flatMap((filter) => filter.values ?? []));
-  const events = await fullEntitiesList<StoredTimelineEvent>(context, user, [ENTITY_TYPE_TIMELINE_EVENT], {
+  // Read page by page, so that an export over its text bound stops reading before holding all of it
+  const pages = collectTimelineExportPages();
+  await fullEntitiesList<StoredTimelineEvent>(context, user, [ENTITY_TYPE_TIMELINE_EVENT], {
     filters: { ...baseFilters, filters: [...baseFilters.filters, ...ceilingFilters] } as any,
     orderBy: ['event_time', 'ordering_hint'],
     orderMode: OrderingMode.Asc,
+    first: TIMELINE_EXPORT_PAGE_SIZE,
     maxSize: TIMELINE_MAX_STORED_EVENTS,
+    callback: pages.collect,
   } as any);
+  const { events } = pages;
+  if (pages.exceeded()) {
+    throw FunctionalError('This timeline is too large to export at once: narrow the export with the filters or the time window', {
+      doc_code: TIMELINE_EXPORT_TOO_LARGE,
+      max_text_length: TIMELINE_EXPORT_MAX_TEXT_LENGTH,
+    });
+  }
   const { items, elements } = await filterAccessibleEvents(context, user, container.internal_id, events, (e) => e, { fullElements: true });
   // A reference deleted since is marked by the event, which keeps its markings
   const withinCeiling = items.filter((event) => referencedElementIds(event, container.internal_id)

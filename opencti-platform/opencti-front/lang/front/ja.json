@@ -5905,6 +5905,7 @@
   "This case is very large: its timeline is built from a bounded number of objects and history entries, so some events may be missing. Administrators can raise these limits in the timeline manager configuration.": "このケースは非常に大きいため、タイムラインは限られた数のオブジェクトと履歴エントリから作成されており、一部のイベントが欠けている可能性があります。管理者はタイムラインマネージャーの設定でこれらの上限を引き上げられます。",
   "This timeline has no event yet": "このタイムラインにはまだイベントがありません",
   "This timeline is not available": "このタイムラインは利用できません",
+  "This timeline is too large to export at once: narrow the export with the filters or the time window": "このタイムラインは一度にエクスポートするには大きすぎます。フィルターまたは期間でエクスポートを絞り込んでください",
   "Threat seen": "脅威の観測",
   "Time window": "時間範囲",
   "Timeline anchor changed": "タイムラインのアンカーが変更されました",

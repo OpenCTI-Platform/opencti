@@ -5905,6 +5905,7 @@
   "This case is very large: its timeline is built from a bounded number of objects and history entries, so some events may be missing. Administrators can raise these limits in the timeline manager configuration.": "Dieser Fall ist sehr umfangreich: Seine Zeitleiste wird aus einer begrenzten Anzahl von Objekten und Verlaufseinträgen erstellt, daher können einige Ereignisse fehlen. Administratoren können diese Grenzen in der Konfiguration des Zeitleisten-Managers erhöhen.",
   "This timeline has no event yet": "Diese Zeitleiste enthält noch kein Ereignis",
   "This timeline is not available": "Diese Zeitleiste ist nicht verfügbar",
+  "This timeline is too large to export at once: narrow the export with the filters or the time window": "Diese Zeitleiste ist zu groß, um sie auf einmal zu exportieren: Grenzen Sie den Export mit den Filtern oder dem Zeitfenster ein",
   "Threat seen": "Bedrohung gesehen",
   "Time window": "Zeitfenster",
   "Timeline anchor changed": "Anker der Zeitleiste geändert",

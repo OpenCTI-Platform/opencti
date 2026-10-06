@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
+import type { RelayError } from '../../../../relay/relayTypes';
 import { useFormatter } from '../../../../components/i18n';
 import { htmlToPdf } from '../../../../utils/htmlToPdf/htmlToPdf';
 import { MAX_WIDTH_PORTRAIT } from '../../../../utils/htmlToPdf/utils/constants';
@@ -199,6 +200,15 @@ export const useTimelineFileRenderer = () => {
   return { renderTimelineFile, renderStoredTimelineFile };
 };
 
+/** Message of a failed timeline export: one too large to export at once is narrowed with the filters or the window. */
+export const timelineExportErrorMessage = (error: unknown, t_i18n: (message: string) => string): string => {
+  const errors = (error as Partial<RelayError> | null)?.res?.errors ?? [];
+  const tooLarge = errors.some((e) => (e.extensions?.data as { doc_code?: string } | undefined)?.doc_code === 'TIMELINE_EXPORT_TOO_LARGE');
+  return tooLarge
+    ? t_i18n('This timeline is too large to export at once: narrow the export with the filters or the time window')
+    : t_i18n('The timeline export failed');
+};
+
 /** Maps an export format of the container export dialog to the timeline format producing it. */
 export const timelineFormatOfMimeType = (mimeType: string): TimelineExportFormat | null => {
   const entry = Object.entries(TIMELINE_EXPORT_MIME_TYPES).find(([, mime]) => mime === mimeType);
@@ -224,8 +234,8 @@ const useContainerTimelineExport = ({ containerId, containerName, filters }: Tim
     try {
       const blob = await renderTimelineFile({ containerId, format, ...filters });
       downloadBlob(blob, buildTimelineFileName(containerName, format));
-    } catch {
-      MESSAGING$.notifyError(t_i18n('The timeline export failed'));
+    } catch (error) {
+      MESSAGING$.notifyError(timelineExportErrorMessage(error, t_i18n));
     } finally {
       setExporting(false);
     }

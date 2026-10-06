@@ -5905,6 +5905,7 @@
   "This case is very large: its timeline is built from a bounded number of objects and history entries, so some events may be missing. Administrators can raise these limits in the timeline manager configuration.": "此案例非常大：其时间线由有限数量的对象和历史记录构建，因此可能缺少部分事件。管理员可以在时间线管理器配置中提高这些限制。",
   "This timeline has no event yet": "此时间线尚无事件",
   "This timeline is not available": "此时间线不可用",
+  "This timeline is too large to export at once: narrow the export with the filters or the time window": "此时间线过大，无法一次导出：请使用筛选条件或时间窗口缩小导出范围",
   "Threat seen": "观察到威胁",
   "Time window": "时间窗口",
   "Timeline anchor changed": "时间线锚点已更改",

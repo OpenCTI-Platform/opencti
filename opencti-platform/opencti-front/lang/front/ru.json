@@ -5905,6 +5905,7 @@
   "This case is very large: its timeline is built from a bounded number of objects and history entries, so some events may be missing. Administrators can raise these limits in the timeline manager configuration.": "Это дело очень большое: его временная шкала строится из ограниченного числа объектов и записей истории, поэтому некоторые события могут отсутствовать. Администраторы могут повысить эти ограничения в конфигурации менеджера временной шкалы.",
   "This timeline has no event yet": "На этой временной шкале пока нет событий",
   "This timeline is not available": "Эта временная шкала недоступна",
+  "This timeline is too large to export at once: narrow the export with the filters or the time window": "Эта временная шкала слишком велика для экспорта за один раз: сузьте экспорт с помощью фильтров или временного окна",
   "Threat seen": "Угроза замечена",
   "Time window": "Временное окно",
   "Timeline anchor changed": "Опорная точка временной шкалы изменена",

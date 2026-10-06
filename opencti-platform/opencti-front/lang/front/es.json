@@ -5905,6 +5905,7 @@
   "This case is very large: its timeline is built from a bounded number of objects and history entries, so some events may be missing. Administrators can raise these limits in the timeline manager configuration.": "Este caso es muy grande: su cronología se construye a partir de un número limitado de objetos y entradas del historial, por lo que pueden faltar algunos eventos. Los administradores pueden aumentar estos límites en la configuración del gestor de cronologías.",
   "This timeline has no event yet": "Esta cronología aún no tiene eventos",
   "This timeline is not available": "Esta cronología no está disponible",
+  "This timeline is too large to export at once: narrow the export with the filters or the time window": "Esta cronología es demasiado grande para exportarla de una vez: acote la exportación con los filtros o la ventana temporal",
   "Threat seen": "Amenaza vista",
   "Time window": "Ventana de tiempo",
   "Timeline anchor changed": "Ancla de la cronología modificada",

@@ -5905,6 +5905,7 @@
   "This case is very large: its timeline is built from a bounded number of objects and history entries, so some events may be missing. Administrators can raise these limits in the timeline manager configuration.": "이 케이스는 매우 커서 타임라인이 제한된 수의 객체와 기록 항목으로 구성되므로 일부 이벤트가 누락될 수 있습니다. 관리자는 타임라인 관리자 구성에서 이 한도를 늘릴 수 있습니다.",
   "This timeline has no event yet": "이 타임라인에는 아직 이벤트가 없습니다",
   "This timeline is not available": "이 타임라인을 사용할 수 없습니다",
+  "This timeline is too large to export at once: narrow the export with the filters or the time window": "이 타임라인은 한 번에 내보내기에는 너무 큽니다. 필터 또는 기간으로 내보내기 범위를 좁혀 주세요",
   "Threat seen": "위협 관찰됨",
   "Time window": "시간 범위",
   "Timeline anchor changed": "타임라인 앵커 변경됨",

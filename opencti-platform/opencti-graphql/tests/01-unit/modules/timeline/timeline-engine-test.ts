@@ -14,6 +14,7 @@ import {
   keptAnalystFields,
   markingsOf,
   recordedTimelineReference,
+  type StoredTimelineEvent,
   type TimelineReadableEvent,
   timelineCappedAnnotatedEventAsStored,
   timelineCappedAnnotatedEvents,
@@ -26,7 +27,7 @@ import {
   timelineRuleFamily,
 } from '../../../../src/modules/timeline/timeline-engine';
 import type { AuthUser } from '../../../../src/types/user';
-import { buildTimelineFilters, latestTimelineTime, strongerTimelineConfidence } from '../../../../src/modules/timeline/timeline-domain';
+import { buildTimelineFilters, collectTimelineExportPages, latestTimelineTime, strongerTimelineConfidence } from '../../../../src/modules/timeline/timeline-domain';
 import { buildStixTimelineExtension, sanitizeTimelineExtension } from '../../../../src/modules/timeline/timeline-extension';
 import { RULE_TASK_CONTAINMENT, RULE_WORKFLOW_CLOSURE } from '../../../../src/modules/timeline/timeline-rules';
 import { ENTITY_TYPE_TIMELINE_EVENT, TIMELINE_KINDS } from '../../../../src/modules/timeline/timeline-types';
@@ -427,6 +428,26 @@ describe('Timeline element change and readers', () => {
     const sharedContainer = element('case-3', { type: ENTITY_TYPE_CONTAINER_CASE_INCIDENT, granted: ['org-1'] });
     expect(isTimelineElementChangeWidening(sharedContainer, element('a', { granted: ['org-1', 'org-2'] }), null, true)).toBe(false);
     expect(isTimelineElementChangeWidening(sharedContainer, element('a', { granted: ['org-2'] }), null, true)).toBe(true);
+  });
+});
+
+describe('Timeline export bound', () => {
+  const event = (id: string, text: number) => ({ internal_id: id, name: 'x'.repeat(text), description: null, annotation: null }) as unknown as StoredTimelineEvent;
+
+  it('should keep every page while the text of the events stays within the bound', () => {
+    const pages = collectTimelineExportPages(100);
+    expect(pages.collect([event('a', 40), event('b', 40)])).toBe(true);
+    expect(pages.collect([{ ...event('c', 10), description: 'y'.repeat(5), annotation: 'z'.repeat(5) } as StoredTimelineEvent])).toBe(true);
+    expect(pages.exceeded()).toBe(false);
+    expect(pages.events.map((e) => e.internal_id)).toEqual(['a', 'b', 'c']);
+  });
+
+  it('should stop reading at the page that passes the bound, without keeping it', () => {
+    const pages = collectTimelineExportPages(100);
+    expect(pages.collect([event('a', 60)])).toBe(true);
+    expect(pages.collect([event('b', 30), event('c', 30)])).toBe(false);
+    expect(pages.exceeded()).toBe(true);
+    expect(pages.events.map((e) => e.internal_id)).toEqual(['a']);
   });
 });
 
