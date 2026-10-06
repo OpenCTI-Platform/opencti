@@ -182,6 +182,7 @@ import {
   postChatbotMessageSteer,
 } from '../../../src/http/httpChatbotProxy';
 import { checkDraftInContext } from '../../../src/http/httpServer-draft';
+import { logApp } from '../../../src/config/conf';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -1414,6 +1415,20 @@ describe('httpChatbotProxy: postChatbotMessageApprove for Case Autopilot runs', 
     mockDecideInvestigationApprovals.mockRejectedValueOnce({ message: 'Investigation run not found' });
     await postChatbotMessageApprove(buildSessionReq(RUN_BODY), res);
     expect(res.status).toHaveBeenCalledWith(404);
+  });
+
+  it('should log a business refusal as a warning and a platform failure as an error', async () => {
+    mockDecideInvestigationApprovals.mockRejectedValueOnce({ message: 'This investigation has ended', extensions: { code: 'FUNCTIONAL_ERROR' } });
+    await postChatbotMessageApprove(buildSessionReq(RUN_BODY), res);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(logApp.warn).toHaveBeenCalledWith('Investigation approval refused', expect.objectContaining({ runId: RUN_ID }));
+    expect(logApp.error).not.toHaveBeenCalled();
+
+    res = buildRes();
+    mockDecideInvestigationApprovals.mockRejectedValueOnce(new Error('Connection lost'));
+    await postChatbotMessageApprove(buildSessionReq(RUN_BODY), res);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(logApp.error).toHaveBeenCalledWith('Error in investigation approval', expect.objectContaining({ runId: RUN_ID }));
   });
 });
 

@@ -17,7 +17,7 @@ import type { Resolvers } from '../../generated/graphql';
 import { BUS_TOPICS } from '../../config/conf';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { canSubscriberStillAccess } from '../../graphql/subscriptionWrapper';
-import { pubSubAsyncIterator } from '../../database/redis';
+import { pubSubSubscription } from '../../database/redis';
 import { ForbiddenAccess } from '../../config/errors';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
@@ -118,6 +118,53 @@ const SOURCE_EDIT_TOPICS = [
   BUS_TOPICS[ENTITY_TYPE_PIR].EDIT_TOPIC,
 ];
 
+type RunEventPayload = { instance?: { id?: string; standard_id?: string } } | undefined;
+
+/**
+ * The events published on the topics from the moment this resolves, queued
+ * until they are pulled. The redis iterator subscribes on its first pull only:
+ * what is read after this call cannot miss a change published while it is read.
+ */
+const subscribedEvents = async <T>(topics: string[]): Promise<AsyncIterator<T>> => {
+  const pending: T[] = [];
+  const waiting: Array<(result: IteratorResult<T>) => void> = [];
+  let open = true;
+  const push = (event: T) => {
+    if (!open) return;
+    const pull = waiting.shift();
+    if (pull) pull({ value: event, done: false });
+    else pending.push(event);
+  };
+  const settled = await Promise.allSettled(topics.map((topic) => pubSubSubscription(topic, push)));
+  const subscriptions = settled.flatMap((result) => (result.status === 'fulfilled' ? [result.value] : []));
+  const close = async (): Promise<IteratorResult<T>> => {
+    if (open) {
+      open = false;
+      subscriptions.forEach((subscription) => subscription.unsubscribe());
+      waiting.splice(0).forEach((pull) => pull({ value: undefined, done: true }));
+      pending.length = 0;
+    }
+    return { value: undefined, done: true };
+  };
+  const failed = settled.find((result): result is PromiseRejectedResult => result.status === 'rejected');
+  if (failed) {
+    await close();
+    throw failed.reason;
+  }
+  return {
+    next: () => new Promise((resolve) => {
+      if (pending.length > 0) resolve({ value: pending.shift() as T, done: false });
+      else if (!open) resolve({ value: undefined, done: true });
+      else waiting.push(resolve);
+    }),
+    return: close,
+    throw: async (error: Error) => {
+      await close();
+      throw error;
+    },
+  };
+};
+
 /**
  * The events of a run, and of the objects it reads and cites: a change of one
  * of them delivers the run again, so that an open view is served what the
@@ -130,11 +177,18 @@ const subscribeToRunAndSources = async (context: any, id: string): Promise<Async
   const item = await internalLoadById(context, context.user, id, { baseData: true, type: ENTITY_TYPE_INVESTIGATION_RUN });
   if (!item) throw ForbiddenAccess('You are not allowed to listen this.');
   const liveContext = { ...context, draft_context: '' };
-  const stored = await loadInvestigationRun(liveContext, id);
-  let sources = new Set(stored ? runSourceIds(stored) : []);
-  const inner = pubSubAsyncIterator([BUS_TOPICS[ENTITY_TYPE_INVESTIGATION_RUN].EDIT_TOPIC, ...SOURCE_EDIT_TOPICS]);
+  // Subscribed before the sources are read: a source changed while they are read delivers the run all the same.
+  const inner = await subscribedEvents<RunEventPayload>([BUS_TOPICS[ENTITY_TYPE_INVESTIGATION_RUN].EDIT_TOPIC, ...SOURCE_EDIT_TOPICS]);
+  let sources: Set<string>;
+  try {
+    const stored = await loadInvestigationRun(liveContext, id);
+    sources = new Set(stored ? runSourceIds(stored) : []);
+  } catch (error) {
+    await inner.return?.();
+    throw error;
+  }
   // A throw here closes the socket and orphans the redis subscription: every failure skips the event.
-  const runEventOf = async (payload: { instance?: { id?: string; standard_id?: string } } | undefined) => {
+  const runEventOf = async (payload: RunEventPayload) => {
     try {
       const instance = payload?.instance;
       if (!instance?.id) return null;

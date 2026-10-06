@@ -9,7 +9,7 @@ import { CguStatus } from '../generated/graphql';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEnterpriseEditionActivePem, getEnterpriseEditionInfo } from '../modules/settings/licensing';
 import { getChatbotUrl, logApp, PLATFORM_VERSION } from '../config/conf';
-import { FORBIDDEN_ACCESS } from '../config/errors';
+import { FORBIDDEN_ACCESS, FUNCTIONAL_ERRORS } from '../config/errors';
 import type { BasicStoreSettings } from '../types/settings';
 import { isBrowserSessionRequest, setCookieError } from './httpUtils';
 import xtmOneClient from '../modules/xtm/one/xtm-one-client';
@@ -393,7 +393,12 @@ const answerInvestigationApproval = async (context: AuthContext, req: Express.Re
     } else if (error?.message === 'Investigation run not found') {
       res.status(404).json({ status: 'error', error: 'Investigation run not found' });
     } else {
-      logApp.error('Error in investigation approval', { cause: e, runId });
+      // Like the API logs: a business refusal (an ended investigation, an invalid decision) is a warning, a failure an error
+      if (FUNCTIONAL_ERRORS.includes(error?.extensions?.code ?? '')) {
+        logApp.warn('Investigation approval refused', { cause: e, runId });
+      } else {
+        logApp.error('Error in investigation approval', { cause: e, runId });
+      }
       res.status(400).json({ status: 'error', error: error?.message ?? 'Approval failed' });
     }
   }
