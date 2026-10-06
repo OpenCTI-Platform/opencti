@@ -3,6 +3,7 @@ import { XtmHubRegistrationStatus } from '../../../src/generated/graphql';
 
 // Mock dependencies before importing the module under test
 vi.mock('../../../src/domain/xtm-hub', () => ({
+  autoRegisterOpenCTIOnStartup: vi.fn(),
   checkXTMHubConnectivity: vi.fn(),
   loadAndSaveLatestNewsFeed: vi.fn(),
 }));
@@ -15,6 +16,11 @@ vi.mock('../../../src/utils/access', () => ({
 vi.mock('../../../src/config/conf', () => ({
   default: { get: vi.fn().mockReturnValue(undefined) },
   booleanConf: vi.fn().mockReturnValue(true),
+  logApp: {
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+  },
 }));
 
 vi.mock('../../../src/manager/managerModule', () => ({
@@ -25,10 +31,11 @@ vi.mock('../../../src/modules/xtm/hub/news-feed/news-feed-domain', () => ({
   cleanOldNewsFeedItems: vi.fn(),
 }));
 
-import { hubRegistrationManager } from '../../../src/manager/hubRegistrationManager';
-import { checkXTMHubConnectivity, loadAndSaveLatestNewsFeed } from '../../../src/domain/xtm-hub';
+import { autoRegisterOpenCTIOnStartup, checkXTMHubConnectivity, loadAndSaveLatestNewsFeed } from '../../../src/domain/xtm-hub';
+import { autoRegisterOnBoot, hubRegistrationManager } from '../../../src/manager/hubRegistrationManager';
 import { cleanOldNewsFeedItems } from '../../../src/modules/xtm/hub/news-feed/news-feed-domain';
 
+const mockAutoRegisterOpenCTIOnStartup = vi.mocked(autoRegisterOpenCTIOnStartup);
 const mockCleanOldNewsFeedItems = vi.mocked(cleanOldNewsFeedItems);
 const mockCheckXTMHubConnectivity = vi.mocked(checkXTMHubConnectivity);
 const mockLoadAndSaveLatestNewsFeed = vi.mocked(loadAndSaveLatestNewsFeed);
@@ -94,5 +101,24 @@ describe('hubRegistrationManager', () => {
     await hubRegistrationManager();
 
     expect(mockCleanOldNewsFeedItems).toHaveBeenCalledOnce();
+  });
+
+  it('should call startup auto-registration helper when triggered on boot', async () => {
+    mockAutoRegisterOpenCTIOnStartup.mockResolvedValue({ success: true });
+
+    await autoRegisterOnBoot('platform-token');
+
+    expect(mockAutoRegisterOpenCTIOnStartup).toHaveBeenCalledOnce();
+    expect(mockAutoRegisterOpenCTIOnStartup).toHaveBeenCalledWith(
+      {},
+      { id: 'hub-manager-user' },
+      'platform-token',
+    );
+  });
+
+  it('should not throw if startup auto-registration helper fails', async () => {
+    mockAutoRegisterOpenCTIOnStartup.mockRejectedValue(new Error('boot registration failed'));
+
+    await expect(autoRegisterOnBoot('platform-token')).resolves.toBeUndefined();
   });
 });
