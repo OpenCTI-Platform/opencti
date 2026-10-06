@@ -232,14 +232,13 @@ describe('Defense coverage stream impact', () => {
     const impact = collectDefenseImpact([
       event('create', { type: 'relationship', relationship_type: 'detects', extensions: { [STIX_EXT_OCTI]: { id: 'r1', type: 'detects', target_ref: AP, target_type: 'Attack-Pattern' } } }),
       event('delete', { type: 'relationship', relationship_type: 'provides', extensions: { [STIX_EXT_OCTI]: { id: 'r2', type: 'provides', source_ref: SIEM, target_ref: 'dc-1' } } }),
-      event('update', { type: 'relationship', relationship_type: 'deployed-on', extensions: { [STIX_EXT_OCTI]: { id: 'r3', type: 'deployed-on', source_ref: 'rule-1', target_ref: EDR } } }),
       event('create', { type: 'relationship', relationship_type: 'uses', extensions: { [STIX_EXT_OCTI]: { id: 'r4', type: 'uses', target_ref: 'ap-other', target_type: 'Attack-Pattern' } } }),
       event('update', { type: 'indicator', extensions: { [STIX_EXT_OCTI]: { id: 'rule-2', type: 'Indicator' } } }),
     ]);
     expect(impact.full).toEqual(false);
     expect(Array.from(impact.techniqueIds)).toEqual([AP]);
     expect(Array.from(impact.dataComponentIds)).toEqual(['dc-1']);
-    expect(Array.from(impact.ruleIds)).toEqual(['rule-1', 'rule-2']);
+    expect(Array.from(impact.ruleIds)).toEqual(['rule-2']);
   });
   it('should ask for a full computation on platform creation and entity deletion', () => {
     expect(collectDefenseImpact([event('create', { type: 'identity', extensions: { [STIX_EXT_OCTI]: { id: 'p', type: 'SecurityPlatform' } } })]).full).toEqual(true);

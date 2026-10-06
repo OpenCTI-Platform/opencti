@@ -1,9 +1,11 @@
 import {
   DEFENSE_AGGREGATE_PLATFORM,
+  DEFENSE_DEPLOYMENT_STATUS_ACTIVE,
   DEFENSE_DETECTION_ORDER,
   DEFENSE_LEVEL_DETECTION_AVAILABLE,
   DEFENSE_LEVEL_DETECTION_DEPLOYED,
   DEFENSE_LEVEL_NONE,
+  DEFENSE_LIVE_DEPLOYMENT_STATUSES,
   DEFENSE_LEVEL_TELEMETRY,
   DEFENSE_LEVEL_VALIDATED,
   DEFENSE_VALIDATION_ORDER,
@@ -21,7 +23,6 @@ import {
   type DefenseValidationEvidence,
   type DefenseValidationStatus,
 } from './defenseCoverage-types';
-import { DEPLOYMENT_STATUS_ACTIVE, LIVE_DEPLOYMENT_STATUSES } from '../indicatorDeployment/indicatorDeployment-types';
 
 export type AccessPredicate = (id: string | undefined) => boolean;
 
@@ -76,10 +77,10 @@ export const isValidationSuccess = (status: DefenseValidationStatus) => status =
 
 // region detection
 export const computeDetectionStatus = (deployments: DefenseDeploymentEvidence[], hasAvailableRule: boolean): DefenseDetectionStatus => {
-  if (deployments.some((d) => d.status === DEPLOYMENT_STATUS_ACTIVE)) {
+  if (deployments.some((d) => d.status === DEFENSE_DEPLOYMENT_STATUS_ACTIVE)) {
     return 'active';
   }
-  if (deployments.some((d) => (LIVE_DEPLOYMENT_STATUSES as string[]).includes(d.status))) {
+  if (deployments.some((d) => DEFENSE_LIVE_DEPLOYMENT_STATUSES.includes(d.status))) {
     return 'deployed';
   }
   return hasAvailableRule ? 'available' : 'none';

@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it, type MockInstance, vi } from 'vitest';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
-import { ADMIN_USER, getAuthUser, testContext, USER_CONNECTOR, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
+import { ADMIN_USER, getAuthUser, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 import { MARKING_TLP_RED } from '../../../../src/schema/identifier';
 import { computeDefenseCoverage, defenseGapId } from '../../../../src/modules/defenseCoverage/defenseCoverage-compute';
@@ -86,11 +86,6 @@ const INDICATOR_DELETE = gql`
 const RELATIONSHIP_ADD = gql`
   mutation StixCoreRelationshipAdd($input: StixCoreRelationshipAddInput!) {
     stixCoreRelationshipAdd(input: $input) { id }
-  }
-`;
-const REPORT_DEPLOYMENT = gql`
-  mutation IndicatorReportDeployment($indicatorId: StixRef!, $platformId: StixRef!, $status: IndicatorDeploymentStatus!, $externalId: String) {
-    indicatorReportDeployment(indicatorId: $indicatorId, platformId: $platformId, status: $status, externalId: $externalId) { id deployment_status }
   }
 `;
 const DEFENSE_PLATFORMS = gql`
@@ -216,7 +211,6 @@ const STATUS = gql`
 `;
 
 const LEVEL_DETECTION_AVAILABLE = 2;
-const LEVEL_DETECTION_DEPLOYED = 3;
 const MITRE_ID = 'T9901';
 
 describe('Threat-informed defense matrix', () => {
@@ -285,10 +279,6 @@ describe('Threat-informed defense matrix', () => {
     await relate(created.courseOfAction, created.attackPattern, 'mitigates');
     await relate(created.threat, created.attackPattern, 'uses');
     created.restrictedUses = await relate(created.restrictedThreat, created.attackPattern, 'uses');
-    await queryAsUserWithSuccess(USER_CONNECTOR, {
-      query: REPORT_DEPLOYMENT,
-      variables: { indicatorId: created.indicator, platformId: created.platform, status: 'active', externalId: 'defense-test-rule' },
-    });
     await computeDefenseCoverage(testContext, SYSTEM_USER, {});
   });
 
@@ -321,26 +311,27 @@ describe('Threat-informed defense matrix', () => {
     expect(matrix.threats_count).toEqual(1);
     const cell = matrix.cells.find((c: { attack_pattern_id: string }) => c.attack_pattern_id === created.attackPattern);
     expect(cell.x_mitre_id).toEqual(MITRE_ID);
-    expect(cell.level).toEqual(LEVEL_DETECTION_DEPLOYED);
+    // A rule known in OpenCTI and deployed nowhere the platform records: detection available
+    expect(cell.level).toEqual(LEVEL_DETECTION_AVAILABLE);
     expect(cell.telemetry).toBe(true);
-    expect(cell.detection).toEqual('active');
+    expect(cell.detection).toEqual('available');
     expect(cell.validated).toEqual('none');
     expect(cell.mitigated).toBe(true);
-    expect(cell.recommended_action).toEqual('validate');
+    expect(cell.recommended_action).toEqual('deploy_rule');
     expect(cell.threats_count).toEqual(1);
     expect(cell.platforms).toEqual([expect.objectContaining({
       platform_id: created.platform,
-      level: LEVEL_DETECTION_DEPLOYED,
+      level: LEVEL_DETECTION_AVAILABLE,
       telemetry: true,
-      detection: 'active',
-      recommended_action: 'validate',
+      detection: 'available',
+      recommended_action: 'deploy_rule',
       data_components_count: 1,
-      rules_count: 1,
+      rules_count: 0,
     })]);
   });
 
   it('should keep the stored aggregate out of the attack pattern attributes', async () => {
-    const filters = { mode: 'and', filters: [{ key: ['defense_level'], values: [String(LEVEL_DETECTION_DEPLOYED)], operator: 'gte' }], filterGroups: [] };
+    const filters = { mode: 'and', filters: [{ key: ['defense_level'], values: [String(LEVEL_DETECTION_AVAILABLE)], operator: 'gte' }], filterGroups: [] };
     await queryAsAdminWithError(
       { query: ATTACK_PATTERNS_BY_LEVEL, variables: { filters, search: 'Defense matrix test technique' } },
       'Incorrect filter keys not existing in any schema definition',
@@ -353,9 +344,9 @@ describe('Threat-informed defense matrix', () => {
       variables: { id: created.attackPattern, platformIds: [created.platform], threatScope: scope([created.threat]) },
     });
     const technique = result.data?.defenseTechnique;
-    expect(technique.cell.level).toEqual(LEVEL_DETECTION_DEPLOYED);
+    expect(technique.cell.level).toEqual(LEVEL_DETECTION_AVAILABLE);
     expect(technique.dataComponents).toEqual([{ dataComponent: { id: created.dataComponent }, providedBy: [{ id: created.platform }] }]);
-    expect(technique.rules).toEqual([{ indicator: { id: created.indicator }, deployments: [{ platform: { id: created.platform }, status: 'active' }] }]);
+    expect(technique.rules).toEqual([{ indicator: { id: created.indicator }, deployments: [] }]);
     expect(technique.mitigations).toEqual([{ id: created.courseOfAction }]);
     expect(technique.threats).toEqual([{ threat: { id: created.threat }, confidence: 80 }]);
   });
@@ -380,12 +371,12 @@ describe('Threat-informed defense matrix', () => {
     expect(gaps[0]).toEqual(expect.objectContaining({
       attack_pattern_id: created.attackPattern,
       platform_id: created.platform,
-      level: LEVEL_DETECTION_DEPLOYED,
-      recommended_action: 'validate',
+      level: LEVEL_DETECTION_AVAILABLE,
+      recommended_action: 'deploy_rule',
       threats_count: 1,
-      // The platform provides the detecting telemetry and the only rule is deployed on it
+      // The platform provides the detecting telemetry and the only rule is the one to deploy on it
       requiredDataComponents: [],
-      ruleCandidates: [],
+      ruleCandidates: [{ id: created.indicator }],
     }));
     expect(gaps[0].priority).toBeGreaterThan(0);
     // A platform requested twice is one scope entry

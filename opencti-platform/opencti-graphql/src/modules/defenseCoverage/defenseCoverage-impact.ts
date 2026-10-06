@@ -3,7 +3,6 @@ import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from '../../database/utils';
 import { STIX_TYPE_RELATION } from '../../schema/general';
 import {
-  RELATION_DEPLOYED_ON,
   RELATION_DETECTS,
   RELATION_HAS_COVERED,
   RELATION_INDICATES,
@@ -110,8 +109,6 @@ export const collectDefenseImpact = (events: Array<SseEvent<DataEvent>>): Defens
         impact.full = true;
       } else if (relationshipType === RELATION_PROVIDES && extension.target_ref) {
         impact.dataComponentIds.add(extension.target_ref);
-      } else if (relationshipType === RELATION_DEPLOYED_ON && extension.source_ref) {
-        impact.ruleIds.add(extension.source_ref);
       }
       return;
     }

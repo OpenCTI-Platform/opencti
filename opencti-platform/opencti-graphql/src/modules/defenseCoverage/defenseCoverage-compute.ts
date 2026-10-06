@@ -7,7 +7,7 @@ import { elBulk, elRawDeleteByQuery, elUpdate, prepareElementForIndexing } from 
 import { buildEntityData } from '../../database/data-builder';
 import { INDEX_INTERNAL_OBJECTS, READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_META_OBJECTS } from '../../database/utils';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION, ENTITY_TYPE_DATA_COMPONENT, ENTITY_TYPE_IDENTITY_SYSTEM } from '../../schema/stixDomainObject';
-import { RELATION_DEPLOYED_ON, RELATION_DETECTS, RELATION_HAS_COVERED, RELATION_INDICATES, RELATION_MITIGATES, RELATION_PROVIDES } from '../../schema/stixCoreRelationship';
+import { RELATION_DETECTS, RELATION_HAS_COVERED, RELATION_INDICATES, RELATION_MITIGATES, RELATION_PROVIDES } from '../../schema/stixCoreRelationship';
 import { ENTITY_TYPE_INDICATOR, type BasicStoreEntityIndicator } from '../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../securityPlatform/securityPlatform-types';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT, RELATION_RESULT_OF } from '../securityCoverage/securityCoverageResult/securityCoverageResult-types';
@@ -21,6 +21,7 @@ import { FilterMode } from '../../generated/graphql';
 import {
   DEFENSE_AGGREGATE_PLATFORM,
   DEFENSE_LEVEL_VALIDATED,
+  DEFENSE_LIVE_DEPLOYMENT_STATUSES,
   DEFENSE_RULE_PATTERN_TYPES,
   type DefenseCoverage,
   type DefenseDeploymentEvidence,
@@ -35,7 +36,6 @@ import { listAllDefenseLogsourceMappings } from './defenseLogsourceMapping/defen
 import { DEFENSE_GAP_STATUS_CLOSED, DEFENSE_GAP_STATUS_OPEN, ENTITY_TYPE_DEFENSE_GAP, type BasicStoreEntityDefenseGap } from './defenseGap/defenseGap-types';
 import { bumpDefenseCoverageVersion, queuePendingLevelChanges } from './defenseCoverage-state';
 import { collectDefenseCoverageChanges, deliverPendingDefenseLevelChanges } from './defenseCoverage-notification';
-import { type DeploymentStatus, LIVE_DEPLOYMENT_STATUSES } from '../indicatorDeployment/indicatorDeployment-types';
 import { generateStandardId } from '../../schema/identifier';
 
 const VALIDATION_SUCCESS_THRESHOLD = conf.get('defense_coverage_manager:validation_success_threshold') ?? 50;
@@ -150,24 +150,6 @@ const loadRelationsToTechniques = async (
   }
   return relations;
 };
-
-const loadDeployments = async (context: AuthContext, user: AuthUser, ruleIds: string[]) => {
-  if (ruleIds.length === 0) {
-    return [];
-  }
-  const relations: BasicStoreRelation[] = [];
-  const chunks = chunkIds(ruleIds);
-  for (let index = 0; index < chunks.length; index += 1) {
-    const found = await fullRelationsList<BasicStoreRelation>(context, user, RELATION_DEPLOYED_ON, {
-      fromId: chunks[index],
-      toTypes: [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM],
-      baseData: true,
-      baseFields: ['deployment_status', ...EVIDENCE_ACCESS_FIELDS],
-    });
-    relations.push(...found);
-  }
-  return relations;
-};
 // endregion
 
 // region vector building
@@ -178,7 +160,9 @@ export interface ComputationGraph {
   providesByDataComponent: Map<string, BasicStoreRelation[]>;
   indicatesByTechnique: Map<string, BasicStoreRelation[]>;
   rulesById: Map<string, BasicStoreEntityIndicator>;
-  deploymentsByRule: Map<string, BasicStoreRelation[]>;
+  // Relationships from a rule to the security platforms it is deployed on, with their deployment_status. The platform
+  // records none yet: a known rule is a detection available, deployment unknown.
+  deploymentsByRule?: Map<string, BasicStoreRelation[]>;
   mitigatesByTechnique: Map<string, BasicStoreRelation[]>;
   hasCoveredByTechnique: Map<string, BasicStoreRelation[]>;
   resultsById: Map<string, BasicStoreEntity>;
@@ -289,7 +273,7 @@ export const buildTechniqueCoverage = (attackPatternId: string, graph: Computati
   // Deployed rules, and the telemetry they imply through their log source
   indicates.forEach((indicate) => {
     const rule = graph.rulesById.get(indicate.fromId) as BasicStoreEntityIndicator;
-    const deployments = graph.deploymentsByRule.get(indicate.fromId) ?? [];
+    const deployments = graph.deploymentsByRule?.get(indicate.fromId) ?? [];
     const requiredNames = mapLogsourceToDataComponents(rule.x_opencti_rule_logsource, graph.mappings);
     const requiredIds = new Set(requiredNames.flatMap((name) => graph.dataComponentIdsByName.get(name.toLowerCase()) ?? []));
     deployments.filter((d) => platformIds.has(d.toId)).forEach((deployment) => {
@@ -297,7 +281,7 @@ export const buildTechniqueCoverage = (attackPatternId: string, graph: Computati
       const status = (deployment as unknown as { deployment_status?: string }).deployment_status ?? 'deployed';
       vector.deployments.push({ id: indicate.fromId, rel: deployment.id, status, indicates: indicate.id } as DefenseDeploymentEvidence);
       // Only a rule running on the platform proves that the platform collects its log source
-      if (!LIVE_DEPLOYMENT_STATUSES.includes(status as DeploymentStatus)) return;
+      if (!DEFENSE_LIVE_DEPLOYMENT_STATUSES.includes(status)) return;
       requiredIds.forEach((dataComponentId) => {
         (detectsByDataComponent.get(dataComponentId) ?? []).forEach((detect) => {
           vector.telemetry.push({ id: dataComponentId, rel: deployment.id, detects: detect.id, inferred_from: indicate.fromId, indicates: indicate.id });
@@ -669,7 +653,7 @@ export const computeDefenseCoverage = async (
   });
   const mappings = (await listAllDefenseLogsourceMappings(context, user)).filter((m) => m.active);
 
-  // 3. Detection layer: rule indicators and their deployments
+  // 3. Detection layer: rule indicators
   const indicates = await loadRelationsToTechniques(context, user, RELATION_INDICATES, [ENTITY_TYPE_INDICATOR], scopedIds);
   const indicators = await findByIdsChunked<BasicStoreEntityIndicator>(context, user, indicates.map((i) => i.fromId), {
     type: ENTITY_TYPE_INDICATOR,
@@ -678,7 +662,6 @@ export const computeDefenseCoverage = async (
   });
   const rules = indicators.filter((i) => !i.revoked && DEFENSE_RULE_PATTERN_TYPES.includes((i.pattern_type ?? '').toLowerCase()));
   const rulesById = new Map(rules.map((r) => [r.internal_id, r]));
-  const deployments = await loadDeployments(context, user, Array.from(rulesById.keys()));
 
   // 4. Mitigation and validation layers
   const allMitigates = await loadRelationsToTechniques(context, user, RELATION_MITIGATES, [ENTITY_TYPE_COURSE_OF_ACTION], scopedIds);
@@ -705,13 +688,12 @@ export const computeDefenseCoverage = async (
     providesByDataComponent: groupBy(provides, (r) => r.toId),
     indicatesByTechnique: groupBy(indicates, (r) => r.toId),
     rulesById,
-    deploymentsByRule: groupBy(deployments, (r) => r.fromId),
     mitigatesByTechnique: groupBy(mitigates, (r) => r.toId),
     hasCoveredByTechnique: groupBy(hasCovered, (r) => r.toId),
     resultsById: new Map(results.map((r) => [r.internal_id, r])),
     dataComponentIdsByName,
     mappings,
-    accessKeyById: buildAccessKeys([...detects, ...provides, ...dataComponents, ...indicates, ...rules, ...deployments, ...mitigates, ...hasCovered, ...results]),
+    accessKeyById: buildAccessKeys([...detects, ...provides, ...dataComponents, ...indicates, ...rules, ...mitigates, ...hasCovered, ...results]),
   };
 
   // 5. Vectors, written only when they changed

@@ -13,14 +13,7 @@ import MarkdownField from '../../../../components/fields/markdownField/MarkdownF
 import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
 import TextField from '../../../../components/TextField';
 import TimePickerField from '../../../../components/TimePickerField';
-import {
-  convertEventTypes,
-  convertNotifiers,
-  convertTriggers,
-  defenseEventTypesOptions,
-  filterEventTypesOptions,
-  instanceEventTypesOptions,
-} from '../../../../utils/edition';
+import { convertEventTypes, convertNotifiers, convertTriggers, defenseEventTypesOptions, filterEventTypesOptions, instanceEventTypesOptions } from '../../../../utils/edition';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import {
   deserializeFilterGroupForFrontend,

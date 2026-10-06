@@ -57,14 +57,17 @@ import {
   LockPattern,
   ProgressWrench,
   ServerNetwork,
+  ShieldCheckOutline,
   ShieldSearch,
   Timetable,
 } from 'mdi-material-ui';
 import React from 'react';
+import { DEFENSE_AREAS, PATH_DEFENSE, visibleDefenseAreas } from '@components/defense/defenseAreas';
 import { useFormatter } from '../../../components/i18n';
 import useAuth from '../../../utils/hooks/useAuth';
 import { useHiddenEntities, useIsHiddenEntities } from '../../../utils/hooks/useEntitySettings';
 import useGranted, {
+  isGrantedTo,
   AUTOMATION_AUTMANAGE,
   BYPASS,
   CSVMAPPERS,
@@ -129,7 +132,8 @@ export interface RawNavGroup {
 
 const useNavMenu = (): NavGroup[] => {
   const { t_i18n } = useFormatter();
-  const { me: { draftContext } } = useAuth();
+  const { me } = useAuth();
+  const { draftContext } = me;
   const { isFeatureEnable, isTrashEnable } = useHelper();
   const { hasOnlyAccessToImportDraftTab } = useImportAccess();
   const hiddenEntities = useHiddenEntities();
@@ -195,6 +199,7 @@ const useNavMenu = (): NavGroup[] => {
   const hideLocations = useIsHiddenEntities('Region', 'Administrative-Area', 'Country', 'City', 'Position');
 
   const inDraft = !!draftContext;
+  const defenseAreas = visibleDefenseAreas(DEFENSE_AREAS, (needs) => isGrantedTo(me, needs));
 
   const groups: (RawNavGroup | false)[] = [
     {
@@ -281,6 +286,17 @@ const useNavMenu = (): NavGroup[] => {
             { type: 'Indicator', link: '/dashboard/observations/indicators', label: t_i18n('Indicators'), icon: <ShieldSearch fontSize="small" /> },
             { type: 'Infrastructure', link: '/dashboard/observations/infrastructures', label: t_i18n('Infrastructures'), icon: <ServerNetwork fontSize="small" /> },
           ],
+        },
+        defenseAreas.length > 0 && {
+          id: 'defense',
+          label: t_i18n('Defense'),
+          icon: <ShieldCheckOutline />,
+          link: PATH_DEFENSE,
+          subItems: defenseAreas.map((area) => ({
+            link: `${PATH_DEFENSE}/${area.path}`,
+            label: t_i18n(area.label),
+            icon: area.icon,
+          })),
         },
       ] : [],
     },

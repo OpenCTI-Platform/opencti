@@ -18,6 +18,9 @@ export type DefenseValidationStatus = 'none' | 'prevented' | 'detected' | 'faile
 export type DefenseRecommendedAction = 'add_telemetry' | 'import_rule' | 'deploy_rule' | 'activate_rule' | 'validate' | 'fix_detection' | 'none';
 
 export const DEFENSE_DETECTION_ORDER: Record<DefenseDetectionStatus, number> = { none: 0, available: 1, deployed: 2, active: 3 };
+// Deployment statuses of a rule on a security platform that mean the rule runs there
+export const DEFENSE_DEPLOYMENT_STATUS_ACTIVE = 'active';
+export const DEFENSE_LIVE_DEPLOYMENT_STATUSES = ['deployed', DEFENSE_DEPLOYMENT_STATUS_ACTIVE];
 export const DEFENSE_VALIDATION_ORDER: Record<DefenseValidationStatus, number> = { none: 0, failed: 1, detected: 2, prevented: 3 };
 // endregion
 
