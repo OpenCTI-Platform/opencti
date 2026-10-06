@@ -4088,8 +4088,13 @@ export const createEntity = async (
     if (isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
       await initializeEntityWorkflow(context, user, data.element as BasicStoreBase);
     }
-  } else if (data.event !== null && !opts.noEnrichOnUpdate) { // upsert
-    await triggerEntityUpdateAutoEnrichment(context, user, data.element);
+  } else { // upsert
+    if (data.event !== null && !opts.noEnrichOnUpdate) {
+      await triggerEntityUpdateAutoEnrichment(context, user, data.element);
+    }
+    if (data.workflowStatusChanged && isFeatureEnabled(ENTITIES_WORKFLOW_FEATURE_FLAG)) {
+      await syncWorkflowInstanceFromExternalWrite(context, user, data.element, data.element.x_opencti_workflow_id);
+    }
   }
   return isCompleteResult ? data : data.element;
 };
