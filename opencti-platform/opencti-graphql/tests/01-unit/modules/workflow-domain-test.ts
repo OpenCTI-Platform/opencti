@@ -4091,6 +4091,18 @@ describe('syncWorkflowInstanceFromExternalWrite', () => {
     ]);
   });
 
+  it('keeps only the latest history entries', async () => {
+    const fullHistory = Array.from({ length: 200 }, (_, i) => ({ state: `state-${i}`, event: 'event_external' }));
+    setupPublishedDefinition({ ...draftInstance, history: JSON.stringify(fullHistory) });
+
+    await syncWrite('status-reviewing-id');
+
+    const history = JSON.parse(lastUpdateInputs()[1].value[0]);
+    expect(history).toHaveLength(200);
+    expect(history[0]).toEqual(expect.objectContaining({ state: 'state-1' }));
+    expect(history[199]).toEqual(expect.objectContaining({ state: 'reviewing', event: 'event_external' }));
+  });
+
   it('logs instead of failing the write when the sync throws', async () => {
     (findByType as any).mockRejectedValue(new Error('store unavailable'));
 
