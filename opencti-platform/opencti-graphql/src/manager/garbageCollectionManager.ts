@@ -10,6 +10,7 @@ import type { ListObjectsV2CommandOutput } from '@aws-sdk/client-s3';
 import { elDeleteElements, elDeleteInstances, elFindByIds } from '../database/engine';
 import { READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS } from '../database/utils';
 import { lockResources } from '../lock/master-lock';
+import { elUpdateRemovedFiles } from '../database/file-search';
 import type { BasicStoreBase } from '../types/store';
 import type { BasicStoreEntityDeleteOperation } from '../modules/deleteOperation/deleteOperation-types';
 
@@ -64,14 +65,15 @@ const garbageCollectRedisStreamFiles = async (context: AuthContext) => {
 // Main entity also live (interrupted deletion, partial restore): only purge the trash copies, keep the live entity and its files
 export const purgeTrashIfMainEntityLive = async (context: AuthContext, deleteOperation: BasicStoreEntityDeleteOperation) => {
   const { main_entity_id: mainEntityId, deleted_elements: deletedElements } = deleteOperation;
-  const liveHits = await elFindByIds(context, SYSTEM_USER, [mainEntityId], { indices: READ_DATA_INDICES, baseData: true }) as BasicStoreBase[];
-  const mainEntityLive = liveHits.find((el) => el.internal_id === mainEntityId);
-  if (!mainEntityLive) {
-    return false;
-  }
   let lock;
   try {
-    lock = await lockResources([deleteOperation.id]);
+    // Lock the entity too, so a concurrent deletion cannot replace its trash copy between the check and the purge
+    lock = await lockResources([deleteOperation.id, mainEntityId]);
+    const liveHits = await elFindByIds(context, SYSTEM_USER, [mainEntityId], { indices: READ_DATA_INDICES, baseData: true }) as BasicStoreBase[];
+    const mainEntityLive = liveHits.find((el) => el.internal_id === mainEntityId);
+    if (!mainEntityLive) {
+      return false;
+    }
     const trashElements = await elFindByIds(context, SYSTEM_USER, deletedElements.map((el) => el.id), { indices: READ_INDEX_DELETED_OBJECTS }) as BasicStoreBase[];
     logApp.warn('[OPENCTI-MODULE] Garbage collection: main entity is still live, only purging trash copies', {
       manager: 'GARBAGE_MANAGER',
@@ -79,12 +81,14 @@ export const purgeTrashIfMainEntityLive = async (context: AuthContext, deleteOpe
       mainEntityId,
       liveIndex: mainEntityLive._index,
     });
+    // The interrupted deletion may have flagged the entity files as removed: make them searchable again, as restore does
+    await elUpdateRemovedFiles(mainEntityLive, false);
     await elDeleteInstances(context, trashElements);
     await elDeleteElements(context, GARBAGE_COLLECTION_MANAGER_USER, [deleteOperation]);
+    return true;
   } finally {
     if (lock) await lock.unlock();
   }
-  return true;
 };
 
 /**
