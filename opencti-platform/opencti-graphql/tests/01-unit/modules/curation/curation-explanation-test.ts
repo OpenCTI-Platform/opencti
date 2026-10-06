@@ -167,16 +167,16 @@ describe('curation proposal explanations', () => {
     expect(explain({ shared_sources: ['source-1'] })).toBe('The same source maintains both entities separately, which suggests they are distinct');
   });
 
-  it('records the names of the sources that maintain both entities of a pair', () => {
+  it('records the author that maintains both entities of a pair as their shared source', () => {
     const entity = (id: string, name: string) => toCuratedEntity({
       internal_id: id,
       standard_id: `intrusion-set--${id}`,
       entity_type: 'Intrusion-Set',
       name,
       aliases: [],
+      created_by_id: 'source-1',
       marking_ids: [],
       organization_ids: [],
-      x_opencti_assertions: [{ source_id: 'source-1', source_name: 'Mandiant' }, { source_id: `own-${id}`, source_name: `Feed ${id}` }],
     });
     const draft = buildPairDraft({
       left: entity('a', 'APT28'),
@@ -185,8 +185,8 @@ describe('curation proposal explanations', () => {
       detectors: new Set(['taxonomy']),
     }, { minConfidence: 0, behaviorThreshold: 1 });
     const sameSource = draft?.evidence.find((item) => item.evidence_type === 'source_agreement');
-    expect(JSON.parse(sameSource?.details ?? '{}')).toEqual({ shared_sources: ['source-1'], shared_source_names: ['Mandiant'] });
-    expect(sameSource?.description).toBe('The source "Mandiant" maintains both entities separately, which suggests they are distinct');
+    expect(JSON.parse(sameSource?.details ?? '{}')).toEqual({ shared_sources: ['source-1'] });
+    expect(sameSource?.description).toBe('The same source maintains both entities separately, which suggests they are distinct');
   });
 
   it('explains a type mismatch as a review that changes nothing', () => {
@@ -299,14 +299,14 @@ describe('curation proposal explanations', () => {
       subject_names: ['APT28 uses Mimikatz'],
       curation_evidence: [evidenceItem('procedure_conflict', { from_name: 'APT28', to_name: 'Mimikatz' })],
     });
-    const kept = buildProposalExplanation(base, [], { relationshipConflictMode: 'procedures_array' });
-    expect(kept.title.text).toBe('Keep both procedures of "APT28 uses Mimikatz"');
-    expect(kept.changes[0]).toEqual(expect.objectContaining({ before: ['Uses it over HTTP'], after: ['Uses it over SMB', 'Uses it over HTTP'] }));
     const noted = buildProposalExplanation(base, [], { relationshipConflictMode: 'note' });
+    expect(noted.title.text).toBe('Keep both procedures of "APT28 uses Mimikatz"');
+    expect(noted.changes[0]).toEqual(expect.objectContaining({ before: [], after: ['Uses it over SMB'] }));
     expect(noted.changes[0].field.text).toBe('Notes');
     expect(noted.on_accept.text).toContain('note');
+    expect(buildProposalExplanation(base, [], {}).changes[0].field.text).toBe('Notes');
     expect(buildProposalExplanation(base, [], { relationshipConflictMode: 'detect_only' }).changes).toEqual([]);
-    expectPlainLanguage(kept.text);
+    expectPlainLanguage(noted.text);
   });
 
   it('explains a field precedence with the value it restores', () => {

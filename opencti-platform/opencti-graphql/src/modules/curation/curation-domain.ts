@@ -48,15 +48,7 @@ import {
   PROPOSAL_STATUS_REVERTED,
   CURATION_DETECTORS,
 } from './curation-types';
-import {
-  type ApplyResult,
-  executeProposalAction,
-  findLatestMergeRecordForProposal,
-  isProceduresAttributeAvailable,
-  isProvenanceAvailable,
-  reconcilePlannedApplication,
-  revertAppliedPatch,
-} from './curation-apply';
+import { type ApplyResult, executeProposalAction, findLatestMergeRecordForProposal, reconcilePlannedApplication, revertAppliedPatch } from './curation-apply';
 import { findMergeRecordById, settlePendingMergeRecord, unmergeFromRecord } from './curation-merge-record';
 import { getCurationSettings, getCurationSettingsId, saveCurationSettings, validateFieldAuthorityRules } from './curation-settings';
 import { ADJUDICATED_PROPOSAL_KINDS, adjudicateProposal, adjudicationDecisionsFor, isAdjudicationAvailable } from './curation-adjudication';
@@ -214,7 +206,6 @@ const mergePatches = (first: AppliedPatch | null, second: AppliedPatch | null): 
     created_ids: R.uniq([...(first.created_ids ?? []), ...(second.created_ids ?? [])]),
     deleted_ids: R.uniq([...(first.deleted_ids ?? []), ...(second.deleted_ids ?? [])]),
     delete_operation_ids: { ...(first.delete_operation_ids ?? {}), ...(second.delete_operation_ids ?? {}) },
-    ...((second.procedures_added ?? first.procedures_added) ? { procedures_added: second.procedures_added ?? first.procedures_added } : {}),
     applied_at: second.applied_at,
   };
 };
@@ -662,8 +653,6 @@ export const curationSettingsForApi = async (context: AuthContext) => {
     available_detectors: [...CURATION_DETECTORS],
     adjudication_available: adjudicationAvailable,
     graph_similarity_available: graphSimilarityAvailable,
-    provenance_available: isProvenanceAvailable(),
-    procedures_attribute_available: isProceduresAttributeAvailable(),
     taxonomy_version: taxonomy.version,
     taxonomy_clusters_count: taxonomy.clusters,
   };

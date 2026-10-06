@@ -190,8 +190,6 @@ export interface AppliedPatch {
   deleted_ids?: string[];
   // The delete operation each deletion created, by deleted id: the revert restores that one and never a later one.
   delete_operation_ids?: Record<string, string>;
-  // Procedures appended to a relationship through the provenance side channel (its procedures list is not updatable).
-  procedures_added?: { element_id: string; procedures: Array<{ text: string; last_asserted_at: string }> };
   applied_at: string;
 }
 // endregion
@@ -427,10 +425,9 @@ export interface StixKnowledgeHealthSnapshot extends StixObject {
 // endregion
 
 // region settings
-export const RELATIONSHIP_CONFLICT_MODE_PROCEDURES = 'procedures_array';
 export const RELATIONSHIP_CONFLICT_MODE_NOTE = 'note';
 export const RELATIONSHIP_CONFLICT_MODE_DETECT_ONLY = 'detect_only';
-export const RELATIONSHIP_CONFLICT_MODES = [RELATIONSHIP_CONFLICT_MODE_PROCEDURES, RELATIONSHIP_CONFLICT_MODE_NOTE, RELATIONSHIP_CONFLICT_MODE_DETECT_ONLY] as const;
+export const RELATIONSHIP_CONFLICT_MODES = [RELATIONSHIP_CONFLICT_MODE_NOTE, RELATIONSHIP_CONFLICT_MODE_DETECT_ONLY] as const;
 export type RelationshipConflictMode = typeof RELATIONSHIP_CONFLICT_MODES[number];
 
 export const AUTHORITY_SOURCE_AUTHOR = 'author';
@@ -498,7 +495,6 @@ export interface CurationCandidateEntity {
   marking_ids: string[];
   organization_ids: string[];
   updated_at?: string | null;
-  x_opencti_assertions?: Array<{ source_id: string; source_name?: string | null }> | null;
   x_opencti_graph_metrics?: Record<string, unknown> | null;
 }
 

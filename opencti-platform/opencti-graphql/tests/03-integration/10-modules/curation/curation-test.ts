@@ -155,7 +155,6 @@ const SETTINGS_QUERY = gql`
       merge_record_retention_days
       force_scan
       available_detectors
-      provenance_available
       graph_similarity_available
       authority_connector_sources {
         source_id
@@ -321,7 +320,6 @@ describe('Knowledge curation', () => {
     expect(settings.curated_entity_types).toContain(ENTITY_TYPE_INTRUSION_SET);
     expect(settings.available_detectors).toEqual(expect.arrayContaining(['normalization', 'similarity', 'behavior', 'contradiction', 'staleness', 'relationship_conflict']));
     expect(settings.ambiguous_band_min).toBeLessThan(settings.ambiguous_band_max);
-    expect(typeof settings.provenance_available).toBe('boolean');
     expect(typeof settings.graph_similarity_available).toBe('boolean');
     expect(Array.isArray(settings.authority_connector_sources)).toBe(true);
   });

@@ -11,7 +11,7 @@ import { lockResources } from '../../lock/master-lock';
 import { getDraftContext } from '../../utils/draftContext';
 import { isUserHasCapability, KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNUPDATE_KNMERGE, SYSTEM_USER } from '../../utils/access';
 import { controlUserConfidenceAgainstElement } from '../../utils/confidence-level';
-import { resolveAliasesField, ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_INTRUSION_SET } from '../../schema/stixDomainObject';
+import { resolveAliasesField, ENTITY_TYPE_CONTAINER_NOTE } from '../../schema/stixDomainObject';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { FilterMode, FilterOperator, OrderingMode } from '../../generated/graphql';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../deleteOperation/deleteOperation-types';
@@ -39,17 +39,12 @@ import {
   MERGE_STATUS_REVERTED,
   PROPOSAL_KIND_STALE,
   RELATIONSHIP_CONFLICT_MODE_DETECT_ONLY,
-  RELATIONSHIP_CONFLICT_MODE_PROCEDURES,
 } from './curation-types';
 import { unmergeFromRecord } from './curation-merge-record';
 import { isDecayedToRevocation, observablesActiveSinceRevocation } from './curation-detectors';
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 import { effectiveProposalAction } from './curation-access';
-import { type ConflictingProcedure, procedureAdditions, procedureNoteInput, type ProcedureEntry } from './curation-procedures';
-import { ATTRIBUTE_ASSERTIONS, ATTRIBUTE_PROCEDURES, type StoreProcedure } from '../provenance/provenance-types';
-import { applyProvenanceUpdate } from '../provenance/provenance-write';
-import { procedureMatchKey } from '../provenance/provenance-procedures';
-import { elUpdate } from '../../database/engine';
+import { type ConflictingProcedure, procedureNoteInput } from './curation-procedures';
 
 const MIN_REACTIVATION_DAYS = 30;
 const MAX_REACTIVATION_DAYS = 365;
@@ -130,11 +125,6 @@ const replaceInputs = (changes: Record<string, unknown>) => Object.entries(chang
   key,
   value: value === null || value === undefined ? [] : (Array.isArray(value) ? value : [value]),
 }));
-
-export const isProceduresAttributeAvailable = (relationshipType = 'uses') => schemaAttributesDefinition.getAttribute(relationshipType, ATTRIBUTE_PROCEDURES) !== undefined;
-
-// Per-source assertions are owned by the provenance module: their source agreement evidence is used only when registered.
-export const isProvenanceAvailable = () => schemaAttributesDefinition.getAttribute(ENTITY_TYPE_INTRUSION_SET, ATTRIBUTE_ASSERTIONS) !== undefined;
 
 export const findLatestMergeRecordForProposal = async (context: AuthContext, proposalId: string) => {
   const records = await pageEntitiesConnection<BasicStoreEntityMergeRecord>(context, SYSTEM_USER, [ENTITY_TYPE_MERGE_RECORD], {
@@ -421,30 +411,15 @@ const applyPreserveProcedure = async (
   user: AuthUser,
   proposal: BasicStoreEntityCurationProposal,
   settings: CurationSettings,
-  opts: ApplyOptions,
 ): Promise<ApplyResult> => {
   const payload = parsePayload(proposal);
   const relationship = await loadSubject(context, user, payload.relationship_id ?? proposal.target_id) as StoreRelation;
   const previous = payload.previous as ConflictingProcedure;
-  const current = payload.current as ConflictingProcedure;
   if (settings.relationship_conflict_mode === RELATIONSHIP_CONFLICT_MODE_DETECT_ONLY) {
     return { appliedPatch: { operations: [], applied_at: now() }, mergeRecordId: null };
   }
-  if (settings.relationship_conflict_mode === RELATIONSHIP_CONFLICT_MODE_PROCEDURES && isProceduresAttributeAvailable(relationship.entity_type)) {
-    const existing = ((relationship as Record<string, any>)[ATTRIBUTE_PROCEDURES] ?? []) as ProcedureEntry[];
-    const additions = procedureAdditions(existing, [previous, current], now());
-    if (additions.length === 0) {
-      return { appliedPatch: { operations: [], applied_at: now() }, mergeRecordId: null };
-    }
-    // The procedures list belongs to provenance tracking: it is not updatable through the API, and is appended through
-    // the provenance side channel like the procedures recorded on upsert.
-    const added = additions.map(({ text, last_asserted_at }) => ({ text, last_asserted_at }));
-    const patch = await planned(opts, { operations: [], procedures_added: { element_id: relationship.internal_id, procedures: added }, applied_at: now() });
-    await applyProvenanceUpdate(context, relationship, { proceduresAdd: additions as StoreProcedure[] }, { refresh: true });
-    return { appliedPatch: patch, mergeRecordId: null };
-  }
-  // Note mode (also the fallback when the procedures attribute is not available on this platform): the overwritten
-  // procedure is kept as a note attached to the relationship, without touching the relationship identity.
+  // Note mode: the overwritten procedure is kept as a note attached to the relationship, without touching the
+  // relationship identity.
   const author = previous.source_id ? await storeLoadById(context, user, previous.source_id, ENTITY_TYPE_IDENTITY) : undefined;
   const noteInput = procedureNoteInput({
     internal_id: relationship.internal_id,
@@ -534,7 +509,7 @@ export const executeProposalAction = async (
     case ACTION_REVOKE:
       return applyRevoke(context, user, proposal, opts);
     case ACTION_PRESERVE_PROCEDURE:
-      return applyPreserveProcedure(context, user, proposal, settings, opts);
+      return applyPreserveProcedure(context, user, proposal, settings);
     case ACTION_SET_FIELD:
       return applySetField(context, user, proposal, opts);
     case ACTION_ACKNOWLEDGE:
@@ -564,8 +539,8 @@ const isAppliedOperation = async (context: AuthContext, operation: AppliedPatchO
 
 /**
  * What of a change planned by an attempt that stopped before recording it reached the graph, read back from the
- * graph: an attribute that holds the planned value, an element that is gone, appended procedures that are
- * there, a merge record that is reverted. A change that never reached the graph is run again by the next attempt.
+ * graph: an attribute that holds the planned value, an element that is gone, a merge record that is reverted. A
+ * change that never reached the graph is run again by the next attempt.
  */
 export const reconcilePlannedApplication = async (context: AuthContext, plan: ApplyResult): Promise<ReconciledApplication> => {
   if (!plan.appliedPatch) {
@@ -583,45 +558,16 @@ export const reconcilePlannedApplication = async (context: AuthContext, plan: Ap
   const remaining = plannedDeletions.length > 0 ? await internalFindByIds(context, SYSTEM_USER, plannedDeletions, { baseData: true }) as BasicStoreBase[] : [];
   const remainingIds = new Set(remaining.flatMap((element) => [element.internal_id, element.standard_id]));
   const deletedIds = plannedDeletions.filter((id) => !remainingIds.has(id));
-  let proceduresAdded: AppliedPatch['procedures_added'];
-  if (patch.procedures_added) {
-    const relationship = await storeLoadById(context, SYSTEM_USER, patch.procedures_added.element_id, ABSTRACT_STIX_CORE_RELATIONSHIP) as Record<string, any> | undefined;
-    const present = ((relationship?.[ATTRIBUTE_PROCEDURES] ?? []) as ProcedureEntry[]).map((entry) => `${procedureMatchKey(entry.text)}|${entry.last_asserted_at}`);
-    const procedures = patch.procedures_added.procedures.filter((entry) => present.includes(`${procedureMatchKey(entry.text)}|${entry.last_asserted_at}`));
-    if (procedures.length > 0) proceduresAdded = { element_id: patch.procedures_added.element_id, procedures };
-  }
-  const found = operations.length + deletedIds.length + (proceduresAdded?.procedures.length ?? 0);
+  const found = operations.length + deletedIds.length;
   if (found === 0) return { result: null, complete: false };
   const complete = operations.length === patch.operations.length
-    && deletedIds.length === plannedDeletions.length
-    && (proceduresAdded?.procedures.length ?? 0) === (patch.procedures_added?.procedures.length ?? 0);
-  const result: AppliedPatch = { ...R.omit(['procedures_added'], patch), operations, deleted_ids: deletedIds };
+    && deletedIds.length === plannedDeletions.length;
+  const result: AppliedPatch = { ...patch, operations, deleted_ids: deletedIds };
   if (deletedIds.length > 0) result.delete_operation_ids = await deleteOperationsOf(context, deletedIds);
-  if (proceduresAdded) result.procedures_added = proceduresAdded;
   return { result: { appliedPatch: result, mergeRecordId: plan.mergeRecordId }, complete };
 };
 
 // region revert
-// Removes the procedures an apply appended, unless a source asserted them again since (their date moved on).
-const REMOVE_ADDED_PROCEDURES_SCRIPT = `
-  List procedures = ctx._source.${ATTRIBUTE_PROCEDURES};
-  int removed = 0;
-  if (procedures != null) {
-    Iterator iterator = procedures.iterator();
-    while (iterator.hasNext()) {
-      def item = iterator.next();
-      for (def added : params.procedures) {
-        if (item.text != null && item.text.trim().toLowerCase() == added.key && item.last_asserted_at == added.last_asserted_at) {
-          iterator.remove();
-          removed += 1;
-          break;
-        }
-      }
-    }
-  }
-  if (removed == 0) { ctx.op = 'noop'; }
-`;
-
 export interface RevertReport {
   reverted_operations: number;
   skipped_operations: Array<{ element_id: string; key: string; reason: string }>;
@@ -697,21 +643,6 @@ export const revertAppliedPatch = async (context: AuthContext, user: AuthUser, p
       report.reverted_operations += 1;
     } else {
       report.skipped_operations.push({ element_id: deletedIds[index], key: 'relationship', reason: 'not found in the trash anymore' });
-    }
-  }
-  if (patch.procedures_added && patch.procedures_added.procedures.length > 0) {
-    const { element_id: relationshipId, procedures } = patch.procedures_added;
-    const relationship = await storeLoadByIdWithRefs<StoreObject>(context, user, relationshipId);
-    if (!relationship) {
-      report.skipped_operations.push({ element_id: relationshipId, key: ATTRIBUTE_PROCEDURES, reason: 'element not found' });
-    } else {
-      const params = { procedures: procedures.map((procedure) => ({ key: procedureMatchKey(procedure.text), last_asserted_at: procedure.last_asserted_at })) };
-      const response = await elUpdate(context, relationship._index, relationship.internal_id, { script: { source: REMOVE_ADDED_PROCEDURES_SCRIPT, lang: 'painless', params } });
-      if ((response?.result ?? response?.body?.result) === 'noop') {
-        report.skipped_operations.push({ element_id: relationshipId, key: ATTRIBUTE_PROCEDURES, reason: 'procedures asserted again since the apply' });
-      } else {
-        report.reverted_operations += 1;
-      }
     }
   }
   return report;

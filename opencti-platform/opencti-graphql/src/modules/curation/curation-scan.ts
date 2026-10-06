@@ -124,7 +124,6 @@ export const toCandidate = (raw: BasicStoreEntity & Record<string, any>): Curati
     marking_ids: raw[RELATION_OBJECT_MARKING] ?? [],
     organization_ids: raw[RELATION_GRANTED_TO] ?? [],
     updated_at: raw.updated_at ? new Date(raw.updated_at).toISOString() : null,
-    x_opencti_assertions: Array.isArray(raw.x_opencti_assertions) ? raw.x_opencti_assertions : null,
     x_opencti_graph_metrics: raw.x_opencti_graph_metrics ?? null,
   };
 };

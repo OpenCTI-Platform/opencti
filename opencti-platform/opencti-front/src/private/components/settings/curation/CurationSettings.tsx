@@ -43,7 +43,6 @@ export const curationSettingsFragment = graphql`
     description_similarity_enabled
     description_similarity_threshold
     graph_similarity_available
-    provenance_available
     behavior_threshold
     proposal_min_confidence
     ambiguous_band_min
@@ -64,7 +63,6 @@ export const curationSettingsFragment = graphql`
       months
     }
     relationship_conflict_mode
-    procedures_attribute_available
     merge_record_retention_days
     digest_enabled
     digest_day
@@ -408,7 +406,6 @@ const CurationSettingsForm = ({ settings, setup, authorityAttributes }: Curation
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', marginTop: 2 }}>
                 <Tag label={t_i18n('Vendor taxonomy {version} - {count} clusters', { values: { version: settings.taxonomy_version, count: settings.taxonomy_clusters_count } })} />
                 <Tag label={settings.graph_similarity_available ? t_i18n('Graph similarity available') : t_i18n('Graph similarity not available')} />
-                <Tag label={settings.provenance_available ? t_i18n('Source provenance available') : t_i18n('Source provenance not available')} />
               </Box>
             </Card>
             <Card title={t_i18n('Thresholds')}>
@@ -578,17 +575,12 @@ const CurationSettingsForm = ({ settings, setup, authorityAttributes }: Curation
                 component={SelectFieldFds}
                 name="relationship_conflict_mode"
                 label={t_i18n('Procedures of uses relationships')}
-                helpertext={t_i18n('When sources describe the same uses relationship with different procedures: keep one relationship with all of them, keep each one in a note, or only detect the conflict.')}
+                helpertext={t_i18n('When sources describe the same uses relationship with different procedures: keep the replaced one in a note, or only detect the conflict.')}
                 fullWidth={true}
                 containerstyle={fieldSpacingContainerStyle}
               >
                 {CURATION_RELATIONSHIP_CONFLICT_MODES.map((mode) => <SelectItem key={mode} value={mode}>{labels.conflictMode(mode)}</SelectItem>)}
               </Field>
-              {values.relationship_conflict_mode === 'procedures_array' && !settings.procedures_attribute_available && (
-                <Typography variant="caption" color="warning.main">
-                  {t_i18n('This platform has no procedures attribute on uses relationships: the procedure is kept in a note instead.')}
-                </Typography>
-              )}
               <Field
                 component={TextField}
                 variant="standard"

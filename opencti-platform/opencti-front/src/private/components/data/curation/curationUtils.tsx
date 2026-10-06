@@ -7,7 +7,7 @@ import { MESSAGING$ } from '../../../../relay/environment';
 export const CURATION_PROPOSAL_KINDS = ['merge', 'alias', 'split', 'contradiction', 'stale', 'relationship_conflict', 'type_mismatch', 'field_precedence'] as const;
 export const CURATION_PROPOSAL_STATUSES = ['open', 'accepted', 'rejected', 'auto_applied', 'reverted'] as const;
 export const CURATION_SOURCE_CLASSES = ['any', 'connector', 'manual'] as const;
-export const CURATION_RELATIONSHIP_CONFLICT_MODES = ['procedures_array', 'note', 'detect_only'] as const;
+export const CURATION_RELATIONSHIP_CONFLICT_MODES = ['note', 'detect_only'] as const;
 export const CURATION_WEEK_DAYS = [0, 1, 2, 3, 4, 5, 6] as const;
 export const CURATION_PROPOSALS_PATH = '/dashboard/data/curation/inbox';
 export const CURATION_MERGES_PATH = '/dashboard/data/curation/merges';
@@ -145,7 +145,6 @@ const useCurationLabels = () => {
     manual: t_i18n('Manual edits only'),
   };
   const conflictModeLabels: Record<string, string> = {
-    procedures_array: t_i18n('Keep one relationship with all procedures'),
     note: t_i18n('Keep the procedure in a note'),
     detect_only: t_i18n('Detect only'),
   };

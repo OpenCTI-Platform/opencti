@@ -42,6 +42,7 @@ import type { BasicStoreEntityFintelTemplate } from '../modules/fintelTemplate/f
 import type { BasicStoreEntitySavedFilter } from '../modules/savedFilter/savedFilter-types';
 import type { BasicStoreEntityFintelDesign } from '../modules/fintelDesign/fintelDesign-types';
 import type { BasicStoreEntityPir } from '../modules/pir/pir-types';
+import type { BasicStoreEntityCurationProposal, BasicStoreEntityMergeRecord, BasicStoreEntityCurationPolicy, BasicStoreEntityKnowledgeHealthSnapshot } from '../modules/curation/curation-types';
 import type { BasicStoreEntitySecurityPlatform } from '../modules/securityPlatform/securityPlatform-types';
 import type { BasicStoreEntitySecurityCoverage, CoveredEntity } from '../modules/securityCoverage/securityCoverage-types';
 import type { BasicStoreEntitySecurityCoverageResult } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
@@ -1795,6 +1796,7 @@ export enum BackgroundTaskActionType {
   AddOrganizations = 'ADD_ORGANIZATIONS',
   AddRelatedCoveredEntities = 'ADD_RELATED_COVERED_ENTITIES',
   CompleteDelete = 'COMPLETE_DELETE',
+  CurationApply = 'CURATION_APPLY',
   Delete = 'DELETE',
   Enrichment = 'ENRICHMENT',
   EnrollPlaybook = 'ENROLL_PLAYBOOK',
@@ -6472,6 +6474,453 @@ export type CsvMapperTestResult = {
   nbEntities: Scalars['Int']['output'];
   nbRelationships: Scalars['Int']['output'];
   objects: Scalars['String']['output'];
+};
+
+export type CurationAdjudication = {
+  __typename?: 'CurationAdjudication';
+  adjudicated_at: Scalars['DateTime']['output'];
+  agent_slug?: Maybe<Scalars['String']['output']>;
+  applied: Scalars['Boolean']['output'];
+  decision: CurationDecision;
+  model?: Maybe<Scalars['String']['output']>;
+  rationale: Scalars['String']['output'];
+  /** True when OpenCTI itself obtained the adjudication from the agent bound to cti.curation_adjudicate. */
+  verified: Scalars['Boolean']['output'];
+};
+
+export type CurationAdjudicationAgent = {
+  __typename?: 'CurationAdjudicationAgent';
+  agent_name: Scalars['String']['output'];
+  agent_slug: Scalars['String']['output'];
+};
+
+export type CurationAdjudicationSetup = {
+  __typename?: 'CurationAdjudicationSetup';
+  agents: Array<CurationAdjudicationAgent>;
+  enterprise_edition: Scalars['Boolean']['output'];
+  xtm_one_configured: Scalars['Boolean']['output'];
+};
+
+export type CurationAuthorityAttribute = {
+  __typename?: 'CurationAuthorityAttribute';
+  label: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+};
+
+export type CurationAuthorityAttributes = {
+  __typename?: 'CurationAuthorityAttributes';
+  attributes: Array<CurationAuthorityAttribute>;
+  entity_type: Scalars['String']['output'];
+};
+
+export type CurationAuthoritySource = {
+  __typename?: 'CurationAuthoritySource';
+  source_id: Scalars['String']['output'];
+  source_name?: Maybe<Scalars['String']['output']>;
+  source_type: CurationAuthoritySourceType;
+};
+
+export type CurationAuthoritySourceInput = {
+  source_id: Scalars['String']['input'];
+  source_type: CurationAuthoritySourceType;
+};
+
+export enum CurationAuthoritySourceType {
+  Author = 'author',
+  Connector = 'connector'
+}
+
+export enum CurationDecision {
+  Alias = 'alias',
+  Distinct = 'distinct',
+  Merge = 'merge',
+  Skip = 'skip'
+}
+
+export type CurationEvidence = {
+  __typename?: 'CurationEvidence';
+  description: Scalars['String']['output'];
+  details?: Maybe<Scalars['String']['output']>;
+  evidence_type: Scalars['String']['output'];
+  score: Scalars['Float']['output'];
+  weight: Scalars['Float']['output'];
+};
+
+export type CurationExplanationChange = {
+  __typename?: 'CurationExplanationChange';
+  after: Array<Scalars['String']['output']>;
+  before: Array<Scalars['String']['output']>;
+  field: CurationExplanationMessage;
+};
+
+export type CurationExplanationConfidence = {
+  __typename?: 'CurationExplanationConfidence';
+  /** high, medium or low. */
+  level: Scalars['String']['output'];
+  meaning: CurationExplanationMessage;
+  score: Scalars['Float']['output'];
+};
+
+export type CurationExplanationEntity = {
+  __typename?: 'CurationExplanationEntity';
+  entity_type: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+};
+
+export type CurationExplanationEvidence = {
+  __typename?: 'CurationExplanationEvidence';
+  entities: Array<CurationExplanationEntity>;
+  message: CurationExplanationMessage;
+  sources: Array<CurationExplanationSource>;
+};
+
+/** One sentence of an explanation: the English text, and the template and values a client translates it from. */
+export type CurationExplanationMessage = {
+  __typename?: 'CurationExplanationMessage';
+  /** Translation key, with {placeholders} filled from the values. */
+  template: Scalars['String']['output'];
+  text: Scalars['String']['output'];
+  /** JSON object of the placeholder values. */
+  values: Scalars['String']['output'];
+};
+
+export type CurationExplanationSource = {
+  __typename?: 'CurationExplanationSource';
+  name: Scalars['String']['output'];
+  reference?: Maybe<Scalars['String']['output']>;
+  url?: Maybe<Scalars['String']['output']>;
+};
+
+export type CurationFieldAuthorityRule = {
+  __typename?: 'CurationFieldAuthorityRule';
+  attribute: Scalars['String']['output'];
+  entity_type: Scalars['String']['output'];
+  sources: Array<CurationAuthoritySource>;
+};
+
+export type CurationFieldAuthorityRuleInput = {
+  attribute: Scalars['String']['input'];
+  entity_type: Scalars['String']['input'];
+  sources: Array<CurationAuthoritySourceInput>;
+};
+
+export type CurationImpactEntry = {
+  __typename?: 'CurationImpactEntry';
+  count: Scalars['Int']['output'];
+  key: Scalars['String']['output'];
+};
+
+export type CurationPolicy = BasicObject & InternalObject & {
+  __typename?: 'CurationPolicy';
+  applied_count: Scalars['Int']['output'];
+  auto_apply_threshold: Scalars['Float']['output'];
+  created_at: Scalars['DateTime']['output'];
+  description?: Maybe<Scalars['String']['output']>;
+  entity_type: Scalars['String']['output'];
+  forbid_open_contradiction: Scalars['Boolean']['output'];
+  id: Scalars['ID']['output'];
+  last_applied_at?: Maybe<Scalars['DateTime']['output']>;
+  last_dry_run?: Maybe<CurationPolicyDryRun>;
+  max_applies_per_run: Scalars['Int']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
+  name: Scalars['String']['output'];
+  parent_types: Array<Scalars['String']['output']>;
+  policy_enabled: Scalars['Boolean']['output'];
+  policy_entity_types: Array<Scalars['String']['output']>;
+  policy_kinds: Array<CurationProposalKind>;
+  policy_source_class: CurationPolicySourceClass;
+  representative: Representative;
+  require_adjudication: Scalars['Boolean']['output'];
+  standard_id: Scalars['String']['output'];
+  updated_at: Scalars['DateTime']['output'];
+};
+
+export type CurationPolicyAddInput = {
+  auto_apply_threshold: Scalars['Float']['input'];
+  description?: InputMaybe<Scalars['String']['input']>;
+  forbid_open_contradiction?: InputMaybe<Scalars['Boolean']['input']>;
+  max_applies_per_run?: InputMaybe<Scalars['Int']['input']>;
+  name: Scalars['String']['input'];
+  policy_enabled?: InputMaybe<Scalars['Boolean']['input']>;
+  policy_entity_types: Array<Scalars['String']['input']>;
+  policy_kinds: Array<CurationProposalKind>;
+  policy_source_class?: InputMaybe<CurationPolicySourceClass>;
+  require_adjudication?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+export type CurationPolicyConnection = {
+  __typename?: 'CurationPolicyConnection';
+  edges: Array<CurationPolicyEdge>;
+  pageInfo: PageInfo;
+};
+
+export type CurationPolicyDryRun = {
+  __typename?: 'CurationPolicyDryRun';
+  computed_at: Scalars['DateTime']['output'];
+  eligible_count: Scalars['Int']['output'];
+  estimated_impact: Array<CurationImpactEntry>;
+  excluded_count: Scalars['Int']['output'];
+  exclusions: Array<CurationImpactEntry>;
+  sample_proposals: Array<CurationProposal>;
+};
+
+export type CurationPolicyEdge = {
+  __typename?: 'CurationPolicyEdge';
+  cursor: Scalars['String']['output'];
+  node: CurationPolicy;
+};
+
+export enum CurationPolicyOrdering {
+  Score = '_score',
+  AutoApplyThreshold = 'auto_apply_threshold',
+  CreatedAt = 'created_at',
+  Name = 'name',
+  UpdatedAt = 'updated_at'
+}
+
+export enum CurationPolicySourceClass {
+  Any = 'any',
+  Connector = 'connector',
+  Manual = 'manual'
+}
+
+export type CurationProposal = BasicObject & InternalObject & {
+  __typename?: 'CurationProposal';
+  action_payload?: Maybe<Scalars['String']['output']>;
+  adjudicable: Scalars['Boolean']['output'];
+  adjudication?: Maybe<CurationAdjudication>;
+  adjudication_requested_at?: Maybe<Scalars['DateTime']['output']>;
+  applied_patch?: Maybe<Scalars['String']['output']>;
+  can_apply: Scalars['Boolean']['output'];
+  /** True when the proposal was applied, can be reverted, and the user holds the capability of the revert (an unmerge for a recorded merge). */
+  can_revert: Scalars['Boolean']['output'];
+  /** True when accepting takes a choice made on this proposal alone (the attribution to keep): it is accepted one at a time, never in a bulk accept nor by a policy. */
+  choice_required: Scalars['Boolean']['output'];
+  confidence_score: Scalars['Float']['output'];
+  created_at: Scalars['DateTime']['output'];
+  decidedBy?: Maybe<Creator>;
+  decided_at?: Maybe<Scalars['DateTime']['output']>;
+  decision_rationale?: Maybe<Scalars['String']['output']>;
+  detector: Scalars['String']['output'];
+  entity_type: Scalars['String']['output'];
+  evidence: Array<CurationEvidence>;
+  /** What the proposal changes, the evidence behind it, why, what its confidence means and what each decision does, in plain language. */
+  explanation: CurationProposalExplanation;
+  id: Scalars['ID']['output'];
+  in_ambiguous_band: Scalars['Boolean']['output'];
+  mergeRecord?: Maybe<MergeRecord>;
+  merge_record_id?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
+  name: Scalars['String']['output'];
+  objectMarking?: Maybe<Array<MarkingDefinition>>;
+  parent_types: Array<Scalars['String']['output']>;
+  policy?: Maybe<CurationPolicy>;
+  policy_id?: Maybe<Scalars['String']['output']>;
+  proposal_kind: CurationProposalKind;
+  proposal_status: CurationProposalStatus;
+  recommended_action: Scalars['String']['output'];
+  representative: Representative;
+  restricted_subjects_count: Scalars['Int']['output'];
+  standard_id: Scalars['String']['output'];
+  subject_ids: Array<Scalars['String']['output']>;
+  subject_names: Array<Scalars['String']['output']>;
+  subject_types: Array<Scalars['String']['output']>;
+  subjects: Array<StixObjectOrStixRelationship>;
+  target_id?: Maybe<Scalars['String']['output']>;
+  updated_at: Scalars['DateTime']['output'];
+};
+
+export type CurationProposalAcceptInput = {
+  action_payload?: InputMaybe<Scalars['String']['input']>;
+  rationale?: InputMaybe<Scalars['String']['input']>;
+  target_id?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type CurationProposalConnection = {
+  __typename?: 'CurationProposalConnection';
+  edges: Array<CurationProposalEdge>;
+  pageInfo: PageInfo;
+};
+
+export type CurationProposalDecideInput = {
+  agent_slug?: InputMaybe<Scalars['String']['input']>;
+  apply?: InputMaybe<Scalars['Boolean']['input']>;
+  decision: CurationDecision;
+  expected_updated_at?: InputMaybe<Scalars['DateTime']['input']>;
+  model?: InputMaybe<Scalars['String']['input']>;
+  rationale: Scalars['String']['input'];
+  target_id?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type CurationProposalEdge = {
+  __typename?: 'CurationProposalEdge';
+  cursor: Scalars['String']['output'];
+  node: CurationProposal;
+};
+
+export type CurationProposalExplanation = {
+  __typename?: 'CurationProposalExplanation';
+  changes: Array<CurationExplanationChange>;
+  confidence: CurationExplanationConfidence;
+  evidence: Array<CurationExplanationEvidence>;
+  on_accept: CurationExplanationMessage;
+  on_later: CurationExplanationMessage;
+  on_reject: CurationExplanationMessage;
+  /** False when an accepted proposal cannot be reverted from the proposal. */
+  reversible: Scalars['Boolean']['output'];
+  /** The whole explanation as plain text. */
+  text: Scalars['String']['output'];
+  title: CurationExplanationMessage;
+  why: CurationExplanationMessage;
+};
+
+export enum CurationProposalKind {
+  Alias = 'alias',
+  Contradiction = 'contradiction',
+  FieldPrecedence = 'field_precedence',
+  Merge = 'merge',
+  RelationshipConflict = 'relationship_conflict',
+  Split = 'split',
+  Stale = 'stale',
+  TypeMismatch = 'type_mismatch'
+}
+
+export enum CurationProposalOrdering {
+  Score = '_score',
+  ConfidenceScore = 'confidence_score',
+  CreatedAt = 'created_at',
+  DecidedAt = 'decided_at',
+  Name = 'name',
+  ProposalKind = 'proposal_kind',
+  ProposalStatus = 'proposal_status',
+  UpdatedAt = 'updated_at'
+}
+
+export enum CurationProposalStatus {
+  Accepted = 'accepted',
+  AutoApplied = 'auto_applied',
+  Open = 'open',
+  Rejected = 'rejected',
+  Reverted = 'reverted'
+}
+
+export enum CurationRelationshipConflictMode {
+  DetectOnly = 'detect_only',
+  Note = 'note'
+}
+
+export type CurationResolution = {
+  __typename?: 'CurationResolution';
+  entity?: Maybe<StixCoreObject>;
+  entity_id: Scalars['ID']['output'];
+  entity_type: Scalars['String']['output'];
+  match_type: Scalars['String']['output'];
+  matched_value: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  score: Scalars['Float']['output'];
+  standard_id: Scalars['String']['output'];
+};
+
+export type CurationSettings = {
+  __typename?: 'CurationSettings';
+  adjudication_agent_slug?: Maybe<Scalars['String']['output']>;
+  adjudication_available: Scalars['Boolean']['output'];
+  adjudication_daily_limit: Scalars['Int']['output'];
+  adjudication_enabled: Scalars['Boolean']['output'];
+  adjudication_run_as?: Maybe<Member>;
+  adjudication_run_as_id?: Maybe<Scalars['String']['output']>;
+  ambiguous_band_max: Scalars['Float']['output'];
+  ambiguous_band_min: Scalars['Float']['output'];
+  authority_connector_sources: Array<CurationAuthoritySource>;
+  available_detectors: Array<Scalars['String']['output']>;
+  behavior_threshold: Scalars['Float']['output'];
+  curated_entity_types: Array<Scalars['String']['output']>;
+  curation_enabled: Scalars['Boolean']['output'];
+  description_similarity_enabled: Scalars['Boolean']['output'];
+  description_similarity_threshold: Scalars['Float']['output'];
+  digest_day: Scalars['Int']['output'];
+  digest_enabled: Scalars['Boolean']['output'];
+  digest_recipient_ids: Array<Scalars['String']['output']>;
+  digest_recipients: Array<Member>;
+  enabled_detectors: Array<Scalars['String']['output']>;
+  field_authority_enabled: Scalars['Boolean']['output'];
+  field_authority_rules: Array<CurationFieldAuthorityRule>;
+  force_scan: Scalars['Boolean']['output'];
+  graph_similarity_available: Scalars['Boolean']['output'];
+  id: Scalars['ID']['output'];
+  last_digest_date?: Maybe<Scalars['DateTime']['output']>;
+  last_scan_date?: Maybe<Scalars['DateTime']['output']>;
+  last_snapshot_date?: Maybe<Scalars['DateTime']['output']>;
+  merge_record_retention_days: Scalars['Int']['output'];
+  proposal_min_confidence: Scalars['Float']['output'];
+  relationship_conflict_mode: CurationRelationshipConflictMode;
+  scan_max_entities_per_type: Scalars['Int']['output'];
+  similarity_threshold: Scalars['Float']['output'];
+  stale_default_months: Scalars['Int']['output'];
+  stale_overrides: Array<CurationStalenessOverride>;
+  taxonomy_clusters_count: Scalars['Int']['output'];
+  taxonomy_version: Scalars['String']['output'];
+};
+
+export type CurationSettingsInput = {
+  adjudication_agent_slug?: InputMaybe<Scalars['String']['input']>;
+  adjudication_daily_limit?: InputMaybe<Scalars['Int']['input']>;
+  adjudication_enabled?: InputMaybe<Scalars['Boolean']['input']>;
+  adjudication_run_as_id?: InputMaybe<Scalars['String']['input']>;
+  ambiguous_band_max?: InputMaybe<Scalars['Float']['input']>;
+  ambiguous_band_min?: InputMaybe<Scalars['Float']['input']>;
+  behavior_threshold?: InputMaybe<Scalars['Float']['input']>;
+  curated_entity_types?: InputMaybe<Array<Scalars['String']['input']>>;
+  curation_enabled?: InputMaybe<Scalars['Boolean']['input']>;
+  description_similarity_enabled?: InputMaybe<Scalars['Boolean']['input']>;
+  description_similarity_threshold?: InputMaybe<Scalars['Float']['input']>;
+  digest_day?: InputMaybe<Scalars['Int']['input']>;
+  digest_enabled?: InputMaybe<Scalars['Boolean']['input']>;
+  digest_recipient_ids?: InputMaybe<Array<Scalars['String']['input']>>;
+  enabled_detectors?: InputMaybe<Array<Scalars['String']['input']>>;
+  field_authority_enabled?: InputMaybe<Scalars['Boolean']['input']>;
+  field_authority_rules?: InputMaybe<Array<CurationFieldAuthorityRuleInput>>;
+  merge_record_retention_days?: InputMaybe<Scalars['Int']['input']>;
+  proposal_min_confidence?: InputMaybe<Scalars['Float']['input']>;
+  relationship_conflict_mode?: InputMaybe<CurationRelationshipConflictMode>;
+  scan_max_entities_per_type?: InputMaybe<Scalars['Int']['input']>;
+  similarity_threshold?: InputMaybe<Scalars['Float']['input']>;
+  stale_default_months?: InputMaybe<Scalars['Int']['input']>;
+  stale_overrides?: InputMaybe<Array<CurationStalenessOverrideInput>>;
+};
+
+export type CurationStalenessOverride = {
+  __typename?: 'CurationStalenessOverride';
+  entity_type: Scalars['String']['output'];
+  months: Scalars['Int']['output'];
+};
+
+export type CurationStalenessOverrideInput = {
+  entity_type: Scalars['String']['input'];
+  months: Scalars['Int']['input'];
+};
+
+export type CurationStatistics = {
+  __typename?: 'CurationStatistics';
+  active_merge_records_count: Scalars['Int']['output'];
+  ambiguous_count: Scalars['Int']['output'];
+  curation_enabled: Scalars['Boolean']['output'];
+  decided_by_status: Array<CurationStatisticsEntry>;
+  last_scan_date?: Maybe<Scalars['DateTime']['output']>;
+  latest_health_score?: Maybe<Scalars['Int']['output']>;
+  /** When the next scheduled scan is due; null when curation is turned off. */
+  next_scan_date?: Maybe<Scalars['DateTime']['output']>;
+  /** When the next Knowledge health snapshot is due; null when the curation manager is turned off. */
+  next_snapshot_date?: Maybe<Scalars['DateTime']['output']>;
+  open_by_kind: Array<CurationStatisticsEntry>;
+  open_count: Scalars['Int']['output'];
+};
+
+export type CurationStatisticsEntry = {
+  __typename?: 'CurationStatisticsEntry';
+  count: Scalars['Int']['output'];
+  key: Scalars['String']['output'];
 };
 
 export type CurrentConnectorStatusInput = {
@@ -14932,6 +15381,64 @@ export enum KillChainPhasesOrdering {
   XOpenctiOrder = 'x_opencti_order'
 }
 
+export type KnowledgeHealthComponent = {
+  __typename?: 'KnowledgeHealthComponent';
+  component: Scalars['String']['output'];
+  score: Scalars['Float']['output'];
+  value: Scalars['Float']['output'];
+  weight: Scalars['Float']['output'];
+};
+
+export type KnowledgeHealthSnapshot = BasicObject & InternalObject & {
+  __typename?: 'KnowledgeHealthSnapshot';
+  accepted_count: Scalars['Int']['output'];
+  alias_coverage: Scalars['Float']['output'];
+  auto_applied_count: Scalars['Int']['output'];
+  contradiction_count: Scalars['Int']['output'];
+  created_at: Scalars['DateTime']['output'];
+  curated_entities_count: Scalars['Int']['output'];
+  digest_sent_at?: Maybe<Scalars['DateTime']['output']>;
+  duplicate_estimate: Scalars['Int']['output'];
+  duplicate_rate: Scalars['Float']['output'];
+  entity_type: Scalars['String']['output'];
+  health_score: Scalars['Int']['output'];
+  id: Scalars['ID']['output'];
+  merges_count: Scalars['Int']['output'];
+  metrics?: Maybe<Array<Maybe<Metric>>>;
+  open_proposals_count: Scalars['Int']['output'];
+  parent_types: Array<Scalars['String']['output']>;
+  rejected_count: Scalars['Int']['output'];
+  representative: Representative;
+  reverted_count: Scalars['Int']['output'];
+  score_breakdown: Array<KnowledgeHealthComponent>;
+  score_trend?: Maybe<Scalars['Float']['output']>;
+  snapshot_date: Scalars['DateTime']['output'];
+  source_conflict_rate: Scalars['Float']['output'];
+  stale_count: Scalars['Int']['output'];
+  stale_share: Scalars['Float']['output'];
+  standard_id: Scalars['String']['output'];
+  unmerges_count: Scalars['Int']['output'];
+  updated_at: Scalars['DateTime']['output'];
+};
+
+export type KnowledgeHealthSnapshotConnection = {
+  __typename?: 'KnowledgeHealthSnapshotConnection';
+  edges: Array<KnowledgeHealthSnapshotEdge>;
+  pageInfo: PageInfo;
+};
+
+export type KnowledgeHealthSnapshotEdge = {
+  __typename?: 'KnowledgeHealthSnapshotEdge';
+  cursor: Scalars['String']['output'];
+  node: KnowledgeHealthSnapshot;
+};
+
+export enum KnowledgeHealthSnapshotOrdering {
+  CreatedAt = 'created_at',
+  HealthScore = 'health_score',
+  SnapshotDate = 'snapshot_date'
+}
+
 export type Label = BasicObject & StixMetaObject & StixObject & {
   __typename?: 'Label';
   color?: Maybe<Scalars['String']['output']>;
@@ -17162,6 +17669,88 @@ export enum MemberType {
   User = 'User'
 }
 
+export type MergeRecord = BasicObject & InternalObject & {
+  __typename?: 'MergeRecord';
+  alias_provenance: Array<MergeRecordAliasProvenance>;
+  created_at: Scalars['DateTime']['output'];
+  entity_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  irreversible_reason?: Maybe<Scalars['String']['output']>;
+  is_reversible: Scalars['Boolean']['output'];
+  merge_source_ids: Array<Scalars['String']['output']>;
+  merge_source_names: Array<Scalars['String']['output']>;
+  merge_status: MergeRecordStatus;
+  merge_target_id: Scalars['String']['output'];
+  merge_target_name: Scalars['String']['output'];
+  merge_target_type: Scalars['String']['output'];
+  mergedBy?: Maybe<Creator>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
+  name: Scalars['String']['output'];
+  objectMarking?: Maybe<Array<MarkingDefinition>>;
+  parent_types: Array<Scalars['String']['output']>;
+  proposal_id?: Maybe<Scalars['String']['output']>;
+  relationships_recreatable_count: Scalars['Int']['output'];
+  relationships_redirected_count: Scalars['Int']['output'];
+  representative: Representative;
+  reversible_until: Scalars['DateTime']['output'];
+  sources: Array<MergeRecordSource>;
+  standard_id: Scalars['String']['output'];
+  target?: Maybe<StixCoreObject>;
+  unmerge_pending_source_ids?: Maybe<Array<Scalars['String']['output']>>;
+  unmergedBy?: Maybe<Creator>;
+  unmerged_at?: Maybe<Scalars['DateTime']['output']>;
+  updated_at: Scalars['DateTime']['output'];
+};
+
+export type MergeRecordAliasProvenance = {
+  __typename?: 'MergeRecordAliasProvenance';
+  alias: Scalars['String']['output'];
+  relationships_count: Scalars['Int']['output'];
+  source_aliases: Array<Scalars['String']['output']>;
+  source_id: Scalars['String']['output'];
+};
+
+export type MergeRecordConnection = {
+  __typename?: 'MergeRecordConnection';
+  edges: Array<MergeRecordEdge>;
+  pageInfo: PageInfo;
+};
+
+export type MergeRecordEdge = {
+  __typename?: 'MergeRecordEdge';
+  cursor: Scalars['String']['output'];
+  node: MergeRecord;
+};
+
+export enum MergeRecordOrdering {
+  Score = '_score',
+  CreatedAt = 'created_at',
+  MergeStatus = 'merge_status',
+  MergeTargetName = 'merge_target_name',
+  ReversibleUntil = 'reversible_until'
+}
+
+export type MergeRecordSource = {
+  __typename?: 'MergeRecordSource';
+  aliases: Array<Scalars['String']['output']>;
+  contributed_aliases: Array<Scalars['String']['output']>;
+  entity_type: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  recreatable_relationships_count: Scalars['Int']['output'];
+  redirected_relationships_count: Scalars['Int']['output'];
+  reverted_at?: Maybe<Scalars['DateTime']['output']>;
+  standard_id: Scalars['String']['output'];
+};
+
+export enum MergeRecordStatus {
+  Active = 'active',
+  Irreversible = 'irreversible',
+  PartiallyReverted = 'partially_reverted',
+  Pending = 'pending',
+  Reverted = 'reverted'
+}
+
 export type MessagesStats = {
   __typename?: 'MessagesStats';
   ack?: Maybe<Scalars['String']['output']>;
@@ -17325,6 +17914,20 @@ export type Mutation = {
   csvMapperDelete?: Maybe<Scalars['ID']['output']>;
   csvMapperFieldPatch?: Maybe<CsvMapper>;
   csvMapperTest?: Maybe<CsvMapperTestResult>;
+  curationPolicyAdd?: Maybe<CurationPolicy>;
+  curationPolicyApply?: Maybe<Scalars['ID']['output']>;
+  curationPolicyDelete?: Maybe<Scalars['ID']['output']>;
+  curationPolicyFieldPatch?: Maybe<CurationPolicy>;
+  curationProposalAccept?: Maybe<CurationProposal>;
+  curationProposalAdjudicate?: Maybe<CurationProposal>;
+  curationProposalApply?: Maybe<CurationProposal>;
+  curationProposalDecide?: Maybe<CurationProposal>;
+  curationProposalReject?: Maybe<CurationProposal>;
+  curationProposalRevert?: Maybe<CurationProposal>;
+  curationProposalsBulkAccept?: Maybe<Scalars['ID']['output']>;
+  curationProposalsBulkReject: Array<Scalars['ID']['output']>;
+  curationScanRequest?: Maybe<CurationSettings>;
+  curationSettingsEdit?: Maybe<CurationSettings>;
   customFieldDefinitionAdd?: Maybe<CustomFieldDefinition>;
   customFieldDefinitionAddEntityType?: Maybe<CustomFieldDefinition>;
   customFieldDefinitionDelete?: Maybe<Scalars['ID']['output']>;
@@ -17474,6 +18077,7 @@ export type Mutation = {
   jsonMapperTest?: Maybe<JsonMapperTestResult>;
   killChainPhaseAdd?: Maybe<KillChainPhase>;
   killChainPhaseEdit?: Maybe<KillChainPhaseEditMutations>;
+  knowledgeHealthRefresh?: Maybe<KnowledgeHealthSnapshot>;
   labelAdd?: Maybe<Label>;
   labelEdit?: Maybe<LabelEditMutations>;
   languageAdd?: Maybe<Language>;
@@ -17704,6 +18308,7 @@ export type Mutation = {
   triggerKnowledgeFieldPatch?: Maybe<Trigger>;
   triggerKnowledgeLiveAdd?: Maybe<Trigger>;
   triggerWorkflowEvent: WorkflowTriggerResult;
+  unmergeEntity?: Maybe<MergeRecord>;
   updateConnectorCurrentStatus?: Maybe<ManagedConnector>;
   updateConnectorHealth: Scalars['ID']['output'];
   updateConnectorLogs: Scalars['ID']['output'];
@@ -18174,6 +18779,77 @@ export type MutationCsvMapperFieldPatchArgs = {
 export type MutationCsvMapperTestArgs = {
   configuration: Scalars['String']['input'];
   file: Scalars['Upload']['input'];
+};
+
+
+export type MutationCurationPolicyAddArgs = {
+  input: CurationPolicyAddInput;
+};
+
+
+export type MutationCurationPolicyApplyArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationCurationPolicyDeleteArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationCurationPolicyFieldPatchArgs = {
+  id: Scalars['ID']['input'];
+  input: Array<EditInput>;
+};
+
+
+export type MutationCurationProposalAcceptArgs = {
+  id: Scalars['ID']['input'];
+  input?: InputMaybe<CurationProposalAcceptInput>;
+};
+
+
+export type MutationCurationProposalAdjudicateArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationCurationProposalApplyArgs = {
+  id: Scalars['ID']['input'];
+  policy_id?: InputMaybe<Scalars['ID']['input']>;
+};
+
+
+export type MutationCurationProposalDecideArgs = {
+  id: Scalars['ID']['input'];
+  input: CurationProposalDecideInput;
+};
+
+
+export type MutationCurationProposalRejectArgs = {
+  id: Scalars['ID']['input'];
+  rationale?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type MutationCurationProposalRevertArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationCurationProposalsBulkAcceptArgs = {
+  ids: Array<Scalars['ID']['input']>;
+};
+
+
+export type MutationCurationProposalsBulkRejectArgs = {
+  ids: Array<Scalars['ID']['input']>;
+  rationale?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type MutationCurationSettingsEditArgs = {
+  input: CurationSettingsInput;
 };
 
 
@@ -20332,6 +21008,12 @@ export type MutationTriggerWorkflowEventArgs = {
   entityId: Scalars['String']['input'];
   eventName: Scalars['String']['input'];
   runtimeParams?: InputMaybe<Scalars['JSON']['input']>;
+};
+
+
+export type MutationUnmergeEntityArgs = {
+  mergeRecordId: Scalars['ID']['input'];
+  sourceIds?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
 
 
@@ -24819,6 +25501,21 @@ export type Query = {
   /** @deprecated [>=6.4 & <6.7]. Use `csvMapperTest mutation`. */
   csvMapperTest?: Maybe<CsvMapperTestResult>;
   csvMappers?: Maybe<CsvMapperConnection>;
+  /** Whether the OpenCTI Curator can be asked to adjudicate a proposal (adjudication enabled and XTM One reachable). */
+  curationAdjudicationAvailable: Scalars['Boolean']['output'];
+  /** What adjudication by XTM One needs on this platform, and the XTM One agents bound to curation adjudication. */
+  curationAdjudicationSetup: CurationAdjudicationSetup;
+  /** The attributes a field authority rule can target, per curated entity type. */
+  curationAuthorityAttributes: Array<CurationAuthorityAttributes>;
+  curationPolicies?: Maybe<CurationPolicyConnection>;
+  curationPolicy?: Maybe<CurationPolicy>;
+  curationPolicyDryRun?: Maybe<CurationPolicyDryRun>;
+  curationProposal?: Maybe<CurationProposal>;
+  curationProposals?: Maybe<CurationProposalConnection>;
+  curationProposalsForEntity: Array<CurationProposal>;
+  curationResolve?: Maybe<CurationResolution>;
+  curationSettings: CurationSettings;
+  curationStatistics: CurationStatistics;
   customFieldDefinition?: Maybe<CustomFieldDefinition>;
   customFieldDefinitions?: Maybe<CustomFieldDefinitionConnection>;
   customFieldDefinitionsForEntityType?: Maybe<CustomFieldDefinitionConnection>;
@@ -24934,6 +25631,8 @@ export type Query = {
   jsonMappers?: Maybe<JsonMapperConnection>;
   killChainPhase?: Maybe<KillChainPhase>;
   killChainPhases?: Maybe<KillChainPhaseConnection>;
+  knowledgeHealth?: Maybe<KnowledgeHealthSnapshot>;
+  knowledgeHealthSnapshots?: Maybe<KnowledgeHealthSnapshotConnection>;
   label?: Maybe<Label>;
   labels?: Maybe<LabelConnection>;
   language?: Maybe<Language>;
@@ -24952,6 +25651,8 @@ export type Query = {
   markingDefinitions?: Maybe<MarkingDefinitionConnection>;
   me: MeUser;
   members?: Maybe<MemberConnection>;
+  mergeRecord?: Maybe<MergeRecord>;
+  mergeRecords?: Maybe<MergeRecordConnection>;
   myNewsFeeds?: Maybe<NewsFeedItemConnection>;
   myNotifications?: Maybe<NotificationConnection>;
   myOpinion?: Maybe<Opinion>;
@@ -25650,6 +26351,53 @@ export type QueryCsvMappersArgs = {
   orderBy?: InputMaybe<CsvMapperOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryCurationPoliciesArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<CurationPolicyOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryCurationPolicyArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryCurationPolicyDryRunArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryCurationProposalArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryCurationProposalsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<CurationProposalOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryCurationProposalsForEntityArgs = {
+  id: Scalars['ID']['input'];
+  status?: InputMaybe<Array<CurationProposalStatus>>;
+};
+
+
+export type QueryCurationResolveArgs = {
+  name: Scalars['String']['input'];
+  type: Scalars['String']['input'];
 };
 
 
@@ -26478,6 +27226,15 @@ export type QueryKillChainPhasesArgs = {
 };
 
 
+export type QueryKnowledgeHealthSnapshotsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<KnowledgeHealthSnapshotOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+};
+
+
 export type QueryLabelArgs = {
   id: Scalars['String']['input'];
 };
@@ -26602,6 +27359,21 @@ export type QueryMembersArgs = {
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<FilterGroup>;
   first?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryMergeRecordArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryMergeRecordsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<MergeRecordOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -40068,6 +40840,8 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( Omit<CryptocurrencyWallet, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( Omit<CryptographicKey, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( BasicStoreEntityCsvMapper )
+    | ( BasicStoreEntityCurationPolicy )
+    | ( BasicStoreEntityCurationProposal )
     | ( CustomFieldDefinition )
     | ( BasicStoreEntityCustomView )
     | ( BasicStoreEntityDataComponent )
@@ -40111,6 +40885,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( Omit<IntrusionSet, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'locations' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'securityCoverage' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'workflowInstance' | 'x_opencti_inferences'> & { avatar?: Maybe<_RefType['OpenCtiFile']>, cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<_RefType['FileConnection']>, fintelTemplates?: Maybe<Array<_RefType['FintelTemplate']>>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, locations?: Maybe<_RefType['LocationConnection']>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, securityCoverage?: Maybe<_RefType['SecurityCoverage']>, status?: Maybe<_RefType['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, workflowInstance?: Maybe<_RefType['WorkflowInstance']>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( BasicStoreEntityJsonMapper )
     | ( Omit<KillChainPhase, 'creators' | 'editContext' | 'x_opencti_inferences'> & { creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
+    | ( BasicStoreEntityKnowledgeHealthSnapshot )
     | ( Omit<Label, 'creators' | 'editContext' | 'x_opencti_inferences'> & { creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( BasicStoreEntityLanguage )
     | ( Omit<MacAddr, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
@@ -40121,6 +40896,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( Omit<MarkingDefinition, 'creators' | 'editContext' | 'x_opencti_inferences'> & { creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( BasicStoreEntityUser )
     | ( Omit<MediaContent, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
+    | ( BasicStoreEntityMergeRecord )
     | ( Omit<Mutex, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( BasicStoreEntityNarrative )
     | ( Omit<NetworkTraffic, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
@@ -40218,6 +40994,8 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( Omit<Connector, 'configurations' | 'connector_user' | 'works'> & { configurations?: Maybe<Array<_RefType['ConnectorConfiguration']>>, connector_user?: Maybe<_RefType['User']>, works?: Maybe<Array<Maybe<_RefType['Work']>>> } )
     | ( ConnectorManager )
     | ( BasicStoreEntityCsvMapper )
+    | ( BasicStoreEntityCurationPolicy )
+    | ( BasicStoreEntityCurationProposal )
     | ( CustomFieldDefinition )
     | ( BasicStoreEntityCustomView )
     | ( BasicStoreEntityDecayExclusionRule )
@@ -40238,9 +41016,11 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( BasicStoreEntityIngestionTaxii )
     | ( BasicStoreEntityIngestionTaxiiCollection )
     | ( BasicStoreEntityJsonMapper )
+    | ( BasicStoreEntityKnowledgeHealthSnapshot )
     | ( Omit<ManagedConnector, 'connector_user'> & { connector_user?: Maybe<_RefType['User']> } )
     | ( BasicStoreEntityManagerConfiguration )
     | ( BasicStoreEntityUser )
+    | ( BasicStoreEntityMergeRecord )
     | ( NewsFeedItem )
     | ( BasicStoreEntityNotification )
     | ( BasicStoreEntityNotifier )
@@ -40760,6 +41540,49 @@ export type ResolversTypes = ResolversObject<{
   CsvMapperSchemaAttribute: ResolverTypeWrapper<CsvMapperSchemaAttribute>;
   CsvMapperSchemaAttributes: ResolverTypeWrapper<CsvMapperSchemaAttributes>;
   CsvMapperTestResult: ResolverTypeWrapper<CsvMapperTestResult>;
+  CurationAdjudication: ResolverTypeWrapper<CurationAdjudication>;
+  CurationAdjudicationAgent: ResolverTypeWrapper<CurationAdjudicationAgent>;
+  CurationAdjudicationSetup: ResolverTypeWrapper<CurationAdjudicationSetup>;
+  CurationAuthorityAttribute: ResolverTypeWrapper<CurationAuthorityAttribute>;
+  CurationAuthorityAttributes: ResolverTypeWrapper<CurationAuthorityAttributes>;
+  CurationAuthoritySource: ResolverTypeWrapper<CurationAuthoritySource>;
+  CurationAuthoritySourceInput: CurationAuthoritySourceInput;
+  CurationAuthoritySourceType: CurationAuthoritySourceType;
+  CurationDecision: CurationDecision;
+  CurationEvidence: ResolverTypeWrapper<CurationEvidence>;
+  CurationExplanationChange: ResolverTypeWrapper<CurationExplanationChange>;
+  CurationExplanationConfidence: ResolverTypeWrapper<CurationExplanationConfidence>;
+  CurationExplanationEntity: ResolverTypeWrapper<CurationExplanationEntity>;
+  CurationExplanationEvidence: ResolverTypeWrapper<CurationExplanationEvidence>;
+  CurationExplanationMessage: ResolverTypeWrapper<CurationExplanationMessage>;
+  CurationExplanationSource: ResolverTypeWrapper<CurationExplanationSource>;
+  CurationFieldAuthorityRule: ResolverTypeWrapper<CurationFieldAuthorityRule>;
+  CurationFieldAuthorityRuleInput: CurationFieldAuthorityRuleInput;
+  CurationImpactEntry: ResolverTypeWrapper<CurationImpactEntry>;
+  CurationPolicy: ResolverTypeWrapper<BasicStoreEntityCurationPolicy>;
+  CurationPolicyAddInput: CurationPolicyAddInput;
+  CurationPolicyConnection: ResolverTypeWrapper<Omit<CurationPolicyConnection, 'edges'> & { edges: Array<ResolversTypes['CurationPolicyEdge']> }>;
+  CurationPolicyDryRun: ResolverTypeWrapper<Omit<CurationPolicyDryRun, 'estimated_impact' | 'exclusions' | 'sample_proposals'> & { estimated_impact: Array<ResolversTypes['CurationImpactEntry']>, exclusions: Array<ResolversTypes['CurationImpactEntry']>, sample_proposals: Array<ResolversTypes['CurationProposal']> }>;
+  CurationPolicyEdge: ResolverTypeWrapper<Omit<CurationPolicyEdge, 'node'> & { node: ResolversTypes['CurationPolicy'] }>;
+  CurationPolicyOrdering: CurationPolicyOrdering;
+  CurationPolicySourceClass: CurationPolicySourceClass;
+  CurationProposal: ResolverTypeWrapper<BasicStoreEntityCurationProposal>;
+  CurationProposalAcceptInput: CurationProposalAcceptInput;
+  CurationProposalConnection: ResolverTypeWrapper<Omit<CurationProposalConnection, 'edges'> & { edges: Array<ResolversTypes['CurationProposalEdge']> }>;
+  CurationProposalDecideInput: CurationProposalDecideInput;
+  CurationProposalEdge: ResolverTypeWrapper<Omit<CurationProposalEdge, 'node'> & { node: ResolversTypes['CurationProposal'] }>;
+  CurationProposalExplanation: ResolverTypeWrapper<CurationProposalExplanation>;
+  CurationProposalKind: CurationProposalKind;
+  CurationProposalOrdering: CurationProposalOrdering;
+  CurationProposalStatus: CurationProposalStatus;
+  CurationRelationshipConflictMode: CurationRelationshipConflictMode;
+  CurationResolution: ResolverTypeWrapper<Omit<CurationResolution, 'entity'> & { entity?: Maybe<ResolversTypes['StixCoreObject']> }>;
+  CurationSettings: ResolverTypeWrapper<Omit<CurationSettings, 'adjudication_run_as' | 'digest_recipients'> & { adjudication_run_as?: Maybe<ResolversTypes['Member']>, digest_recipients: Array<ResolversTypes['Member']> }>;
+  CurationSettingsInput: CurationSettingsInput;
+  CurationStalenessOverride: ResolverTypeWrapper<CurationStalenessOverride>;
+  CurationStalenessOverrideInput: CurationStalenessOverrideInput;
+  CurationStatistics: ResolverTypeWrapper<CurationStatistics>;
+  CurationStatisticsEntry: ResolverTypeWrapper<CurationStatisticsEntry>;
   CurrentConnectorStatusInput: CurrentConnectorStatusInput;
   CustomFieldDefinition: ResolverTypeWrapper<CustomFieldDefinition>;
   CustomFieldDefinitionAddInput: CustomFieldDefinitionAddInput;
@@ -41101,6 +41924,11 @@ export type ResolversTypes = ResolversObject<{
   KillChainPhaseEdge: ResolverTypeWrapper<Omit<KillChainPhaseEdge, 'node'> & { node: ResolversTypes['KillChainPhase'] }>;
   KillChainPhaseEditMutations: ResolverTypeWrapper<Omit<KillChainPhaseEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['KillChainPhase']>, contextPatch?: Maybe<ResolversTypes['KillChainPhase']>, fieldPatch?: Maybe<ResolversTypes['KillChainPhase']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['KillChainPhase']> }>;
   KillChainPhasesOrdering: KillChainPhasesOrdering;
+  KnowledgeHealthComponent: ResolverTypeWrapper<KnowledgeHealthComponent>;
+  KnowledgeHealthSnapshot: ResolverTypeWrapper<BasicStoreEntityKnowledgeHealthSnapshot>;
+  KnowledgeHealthSnapshotConnection: ResolverTypeWrapper<Omit<KnowledgeHealthSnapshotConnection, 'edges'> & { edges: Array<ResolversTypes['KnowledgeHealthSnapshotEdge']> }>;
+  KnowledgeHealthSnapshotEdge: ResolverTypeWrapper<Omit<KnowledgeHealthSnapshotEdge, 'node'> & { node: ResolversTypes['KnowledgeHealthSnapshot'] }>;
+  KnowledgeHealthSnapshotOrdering: KnowledgeHealthSnapshotOrdering;
   Label: ResolverTypeWrapper<Omit<Label, 'creators' | 'editContext' | 'x_opencti_inferences'> & { creators?: Maybe<Array<ResolversTypes['Creator']>>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   LabelAddInput: LabelAddInput;
   LabelConnection: ResolverTypeWrapper<Omit<LabelConnection, 'edges'> & { edges: Array<ResolversTypes['LabelEdge']> }>;
@@ -41178,6 +42006,13 @@ export type ResolversTypes = ResolversObject<{
   MemberEdge: ResolverTypeWrapper<Omit<MemberEdge, 'node'> & { node: ResolversTypes['Member'] }>;
   MemberGroupRestriction: ResolverTypeWrapper<MemberGroupRestriction>;
   MemberType: MemberType;
+  MergeRecord: ResolverTypeWrapper<BasicStoreEntityMergeRecord>;
+  MergeRecordAliasProvenance: ResolverTypeWrapper<MergeRecordAliasProvenance>;
+  MergeRecordConnection: ResolverTypeWrapper<Omit<MergeRecordConnection, 'edges'> & { edges: Array<ResolversTypes['MergeRecordEdge']> }>;
+  MergeRecordEdge: ResolverTypeWrapper<Omit<MergeRecordEdge, 'node'> & { node: ResolversTypes['MergeRecord'] }>;
+  MergeRecordOrdering: MergeRecordOrdering;
+  MergeRecordSource: ResolverTypeWrapper<MergeRecordSource>;
+  MergeRecordStatus: MergeRecordStatus;
   MessagesStats: ResolverTypeWrapper<MessagesStats>;
   Metric: ResolverTypeWrapper<Metric>;
   MetricAttributes: ResolverTypeWrapper<MetricAttributes>;
@@ -41922,6 +42757,41 @@ export type ResolversParentTypes = ResolversObject<{
   CsvMapperSchemaAttribute: CsvMapperSchemaAttribute;
   CsvMapperSchemaAttributes: CsvMapperSchemaAttributes;
   CsvMapperTestResult: CsvMapperTestResult;
+  CurationAdjudication: CurationAdjudication;
+  CurationAdjudicationAgent: CurationAdjudicationAgent;
+  CurationAdjudicationSetup: CurationAdjudicationSetup;
+  CurationAuthorityAttribute: CurationAuthorityAttribute;
+  CurationAuthorityAttributes: CurationAuthorityAttributes;
+  CurationAuthoritySource: CurationAuthoritySource;
+  CurationAuthoritySourceInput: CurationAuthoritySourceInput;
+  CurationEvidence: CurationEvidence;
+  CurationExplanationChange: CurationExplanationChange;
+  CurationExplanationConfidence: CurationExplanationConfidence;
+  CurationExplanationEntity: CurationExplanationEntity;
+  CurationExplanationEvidence: CurationExplanationEvidence;
+  CurationExplanationMessage: CurationExplanationMessage;
+  CurationExplanationSource: CurationExplanationSource;
+  CurationFieldAuthorityRule: CurationFieldAuthorityRule;
+  CurationFieldAuthorityRuleInput: CurationFieldAuthorityRuleInput;
+  CurationImpactEntry: CurationImpactEntry;
+  CurationPolicy: BasicStoreEntityCurationPolicy;
+  CurationPolicyAddInput: CurationPolicyAddInput;
+  CurationPolicyConnection: Omit<CurationPolicyConnection, 'edges'> & { edges: Array<ResolversParentTypes['CurationPolicyEdge']> };
+  CurationPolicyDryRun: Omit<CurationPolicyDryRun, 'estimated_impact' | 'exclusions' | 'sample_proposals'> & { estimated_impact: Array<ResolversParentTypes['CurationImpactEntry']>, exclusions: Array<ResolversParentTypes['CurationImpactEntry']>, sample_proposals: Array<ResolversParentTypes['CurationProposal']> };
+  CurationPolicyEdge: Omit<CurationPolicyEdge, 'node'> & { node: ResolversParentTypes['CurationPolicy'] };
+  CurationProposal: BasicStoreEntityCurationProposal;
+  CurationProposalAcceptInput: CurationProposalAcceptInput;
+  CurationProposalConnection: Omit<CurationProposalConnection, 'edges'> & { edges: Array<ResolversParentTypes['CurationProposalEdge']> };
+  CurationProposalDecideInput: CurationProposalDecideInput;
+  CurationProposalEdge: Omit<CurationProposalEdge, 'node'> & { node: ResolversParentTypes['CurationProposal'] };
+  CurationProposalExplanation: CurationProposalExplanation;
+  CurationResolution: Omit<CurationResolution, 'entity'> & { entity?: Maybe<ResolversParentTypes['StixCoreObject']> };
+  CurationSettings: Omit<CurationSettings, 'adjudication_run_as' | 'digest_recipients'> & { adjudication_run_as?: Maybe<ResolversParentTypes['Member']>, digest_recipients: Array<ResolversParentTypes['Member']> };
+  CurationSettingsInput: CurationSettingsInput;
+  CurationStalenessOverride: CurationStalenessOverride;
+  CurationStalenessOverrideInput: CurationStalenessOverrideInput;
+  CurationStatistics: CurationStatistics;
+  CurationStatisticsEntry: CurationStatisticsEntry;
   CurrentConnectorStatusInput: CurrentConnectorStatusInput;
   CustomFieldDefinition: CustomFieldDefinition;
   CustomFieldDefinitionAddInput: CustomFieldDefinitionAddInput;
@@ -42211,6 +43081,10 @@ export type ResolversParentTypes = ResolversObject<{
   KillChainPhaseConnection: Omit<KillChainPhaseConnection, 'edges'> & { edges: Array<ResolversParentTypes['KillChainPhaseEdge']> };
   KillChainPhaseEdge: Omit<KillChainPhaseEdge, 'node'> & { node: ResolversParentTypes['KillChainPhase'] };
   KillChainPhaseEditMutations: Omit<KillChainPhaseEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['KillChainPhase']>, contextPatch?: Maybe<ResolversParentTypes['KillChainPhase']>, fieldPatch?: Maybe<ResolversParentTypes['KillChainPhase']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['KillChainPhase']> };
+  KnowledgeHealthComponent: KnowledgeHealthComponent;
+  KnowledgeHealthSnapshot: BasicStoreEntityKnowledgeHealthSnapshot;
+  KnowledgeHealthSnapshotConnection: Omit<KnowledgeHealthSnapshotConnection, 'edges'> & { edges: Array<ResolversParentTypes['KnowledgeHealthSnapshotEdge']> };
+  KnowledgeHealthSnapshotEdge: Omit<KnowledgeHealthSnapshotEdge, 'node'> & { node: ResolversParentTypes['KnowledgeHealthSnapshot'] };
   Label: Omit<Label, 'creators' | 'editContext' | 'x_opencti_inferences'> & { creators?: Maybe<Array<ResolversParentTypes['Creator']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   LabelAddInput: LabelAddInput;
   LabelConnection: Omit<LabelConnection, 'edges'> & { edges: Array<ResolversParentTypes['LabelEdge']> };
@@ -42280,6 +43154,11 @@ export type ResolversParentTypes = ResolversObject<{
   MemberConnection: Omit<MemberConnection, 'edges'> & { edges: Array<ResolversParentTypes['MemberEdge']> };
   MemberEdge: Omit<MemberEdge, 'node'> & { node: ResolversParentTypes['Member'] };
   MemberGroupRestriction: MemberGroupRestriction;
+  MergeRecord: BasicStoreEntityMergeRecord;
+  MergeRecordAliasProvenance: MergeRecordAliasProvenance;
+  MergeRecordConnection: Omit<MergeRecordConnection, 'edges'> & { edges: Array<ResolversParentTypes['MergeRecordEdge']> };
+  MergeRecordEdge: Omit<MergeRecordEdge, 'node'> & { node: ResolversParentTypes['MergeRecord'] };
+  MergeRecordSource: MergeRecordSource;
   MessagesStats: MessagesStats;
   Metric: Metric;
   MetricAttributes: MetricAttributes;
@@ -43482,7 +44361,7 @@ export type BankAccountResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type BasicObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['BasicObject'] = ResolversParentTypes['BasicObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AuthenticationProvider' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Capability' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Catalog' | 'Channel' | 'City' | 'Connector' | 'ConnectorManager' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DataComponent' | 'DataSource' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'Directory' | 'DisseminationList' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EmailTemplate' | 'EntitySetting' | 'Event' | 'ExclusionList' | 'ExternalReference' | 'Feedback' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'Grouping' | 'Hostname' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'IntrusionSet' | 'JsonMapper' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagedConnector' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MeUser' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'NewsFeedItem' | 'Note' | 'Notification' | 'Notifier' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Playbook' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'Role' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityCoverageResult' | 'SecurityPlatform' | 'Settings' | 'Software' | 'StixFile' | 'SupportPackage' | 'System' | 'Task' | 'TaskTemplate' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Trigger' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AuthenticationProvider' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Capability' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Catalog' | 'Channel' | 'City' | 'Connector' | 'ConnectorManager' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CurationPolicy' | 'CurationProposal' | 'CustomFieldDefinition' | 'CustomView' | 'DataComponent' | 'DataSource' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'Directory' | 'DisseminationList' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EmailTemplate' | 'EntitySetting' | 'Event' | 'ExclusionList' | 'ExternalReference' | 'Feedback' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'Grouping' | 'Hostname' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'IntrusionSet' | 'JsonMapper' | 'KillChainPhase' | 'KnowledgeHealthSnapshot' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagedConnector' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MeUser' | 'MediaContent' | 'MergeRecord' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'NewsFeedItem' | 'Note' | 'Notification' | 'Notifier' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Playbook' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'Role' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityCoverageResult' | 'SecurityPlatform' | 'Settings' | 'Software' | 'StixFile' | 'SupportPackage' | 'System' | 'Task' | 'TaskTemplate' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Trigger' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
@@ -44874,6 +45753,282 @@ export type CsvMapperTestResultResolvers<ContextType = any, ParentType extends R
   nbEntities?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   nbRelationships?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   objects?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type CurationAdjudicationResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationAdjudication'] = ResolversParentTypes['CurationAdjudication']> = ResolversObject<{
+  adjudicated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  agent_slug?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  applied?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  decision?: Resolver<ResolversTypes['CurationDecision'], ParentType, ContextType>;
+  model?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  rationale?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  verified?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
+export type CurationAdjudicationAgentResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationAdjudicationAgent'] = ResolversParentTypes['CurationAdjudicationAgent']> = ResolversObject<{
+  agent_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  agent_slug?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type CurationAdjudicationSetupResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationAdjudicationSetup'] = ResolversParentTypes['CurationAdjudicationSetup']> = ResolversObject<{
+  agents?: Resolver<Array<ResolversTypes['CurationAdjudicationAgent']>, ParentType, ContextType>;
+  enterprise_edition?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  xtm_one_configured?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
+export type CurationAuthorityAttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationAuthorityAttribute'] = ResolversParentTypes['CurationAuthorityAttribute']> = ResolversObject<{
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type CurationAuthorityAttributesResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationAuthorityAttributes'] = ResolversParentTypes['CurationAuthorityAttributes']> = ResolversObject<{
+  attributes?: Resolver<Array<ResolversTypes['CurationAuthorityAttribute']>, ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type CurationAuthoritySourceResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationAuthoritySource'] = ResolversParentTypes['CurationAuthoritySource']> = ResolversObject<{
+  source_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  source_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  source_type?: Resolver<ResolversTypes['CurationAuthoritySourceType'], ParentType, ContextType>;
+}>;
+
+export type CurationEvidenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationEvidence'] = ResolversParentTypes['CurationEvidence']> = ResolversObject<{
+  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  details?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  evidence_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  score?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  weight?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+}>;
+
+export type CurationExplanationChangeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationExplanationChange'] = ResolversParentTypes['CurationExplanationChange']> = ResolversObject<{
+  after?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  before?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  field?: Resolver<ResolversTypes['CurationExplanationMessage'], ParentType, ContextType>;
+}>;
+
+export type CurationExplanationConfidenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationExplanationConfidence'] = ResolversParentTypes['CurationExplanationConfidence']> = ResolversObject<{
+  level?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  meaning?: Resolver<ResolversTypes['CurationExplanationMessage'], ParentType, ContextType>;
+  score?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+}>;
+
+export type CurationExplanationEntityResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationExplanationEntity'] = ResolversParentTypes['CurationExplanationEntity']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type CurationExplanationEvidenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationExplanationEvidence'] = ResolversParentTypes['CurationExplanationEvidence']> = ResolversObject<{
+  entities?: Resolver<Array<ResolversTypes['CurationExplanationEntity']>, ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['CurationExplanationMessage'], ParentType, ContextType>;
+  sources?: Resolver<Array<ResolversTypes['CurationExplanationSource']>, ParentType, ContextType>;
+}>;
+
+export type CurationExplanationMessageResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationExplanationMessage'] = ResolversParentTypes['CurationExplanationMessage']> = ResolversObject<{
+  template?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  text?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  values?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type CurationExplanationSourceResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationExplanationSource'] = ResolversParentTypes['CurationExplanationSource']> = ResolversObject<{
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  reference?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type CurationFieldAuthorityRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationFieldAuthorityRule'] = ResolversParentTypes['CurationFieldAuthorityRule']> = ResolversObject<{
+  attribute?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  sources?: Resolver<Array<ResolversTypes['CurationAuthoritySource']>, ParentType, ContextType>;
+}>;
+
+export type CurationImpactEntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationImpactEntry'] = ResolversParentTypes['CurationImpactEntry']> = ResolversObject<{
+  count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type CurationPolicyResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationPolicy'] = ResolversParentTypes['CurationPolicy']> = ResolversObject<{
+  applied_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  auto_apply_threshold?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  forbid_open_contradiction?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  last_applied_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  last_dry_run?: Resolver<Maybe<ResolversTypes['CurationPolicyDryRun']>, ParentType, ContextType>;
+  max_applies_per_run?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  policy_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  policy_entity_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  policy_kinds?: Resolver<Array<ResolversTypes['CurationProposalKind']>, ParentType, ContextType>;
+  policy_source_class?: Resolver<ResolversTypes['CurationPolicySourceClass'], ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  require_adjudication?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type CurationPolicyConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationPolicyConnection'] = ResolversParentTypes['CurationPolicyConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['CurationPolicyEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+}>;
+
+export type CurationPolicyDryRunResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationPolicyDryRun'] = ResolversParentTypes['CurationPolicyDryRun']> = ResolversObject<{
+  computed_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  eligible_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  estimated_impact?: Resolver<Array<ResolversTypes['CurationImpactEntry']>, ParentType, ContextType>;
+  excluded_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  exclusions?: Resolver<Array<ResolversTypes['CurationImpactEntry']>, ParentType, ContextType>;
+  sample_proposals?: Resolver<Array<ResolversTypes['CurationProposal']>, ParentType, ContextType>;
+}>;
+
+export type CurationPolicyEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationPolicyEdge'] = ResolversParentTypes['CurationPolicyEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['CurationPolicy'], ParentType, ContextType>;
+}>;
+
+export type CurationProposalResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationProposal'] = ResolversParentTypes['CurationProposal']> = ResolversObject<{
+  action_payload?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  adjudicable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  adjudication?: Resolver<Maybe<ResolversTypes['CurationAdjudication']>, ParentType, ContextType>;
+  adjudication_requested_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  applied_patch?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  can_apply?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  can_revert?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  choice_required?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  confidence_score?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  decidedBy?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  decided_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  decision_rationale?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  detector?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  evidence?: Resolver<Array<ResolversTypes['CurationEvidence']>, ParentType, ContextType>;
+  explanation?: Resolver<ResolversTypes['CurationProposalExplanation'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  in_ambiguous_band?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  mergeRecord?: Resolver<Maybe<ResolversTypes['MergeRecord']>, ParentType, ContextType>;
+  merge_record_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  policy?: Resolver<Maybe<ResolversTypes['CurationPolicy']>, ParentType, ContextType>;
+  policy_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  proposal_kind?: Resolver<ResolversTypes['CurationProposalKind'], ParentType, ContextType>;
+  proposal_status?: Resolver<ResolversTypes['CurationProposalStatus'], ParentType, ContextType>;
+  recommended_action?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  restricted_subjects_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  subject_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  subject_names?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  subject_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  subjects?: Resolver<Array<ResolversTypes['StixObjectOrStixRelationship']>, ParentType, ContextType>;
+  target_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type CurationProposalConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationProposalConnection'] = ResolversParentTypes['CurationProposalConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['CurationProposalEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+}>;
+
+export type CurationProposalEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationProposalEdge'] = ResolversParentTypes['CurationProposalEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['CurationProposal'], ParentType, ContextType>;
+}>;
+
+export type CurationProposalExplanationResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationProposalExplanation'] = ResolversParentTypes['CurationProposalExplanation']> = ResolversObject<{
+  changes?: Resolver<Array<ResolversTypes['CurationExplanationChange']>, ParentType, ContextType>;
+  confidence?: Resolver<ResolversTypes['CurationExplanationConfidence'], ParentType, ContextType>;
+  evidence?: Resolver<Array<ResolversTypes['CurationExplanationEvidence']>, ParentType, ContextType>;
+  on_accept?: Resolver<ResolversTypes['CurationExplanationMessage'], ParentType, ContextType>;
+  on_later?: Resolver<ResolversTypes['CurationExplanationMessage'], ParentType, ContextType>;
+  on_reject?: Resolver<ResolversTypes['CurationExplanationMessage'], ParentType, ContextType>;
+  reversible?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  text?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  title?: Resolver<ResolversTypes['CurationExplanationMessage'], ParentType, ContextType>;
+  why?: Resolver<ResolversTypes['CurationExplanationMessage'], ParentType, ContextType>;
+}>;
+
+export type CurationResolutionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationResolution'] = ResolversParentTypes['CurationResolution']> = ResolversObject<{
+  entity?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType>;
+  entity_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  match_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  matched_value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  score?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type CurationSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationSettings'] = ResolversParentTypes['CurationSettings']> = ResolversObject<{
+  adjudication_agent_slug?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  adjudication_available?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  adjudication_daily_limit?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  adjudication_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  adjudication_run_as?: Resolver<Maybe<ResolversTypes['Member']>, ParentType, ContextType>;
+  adjudication_run_as_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  ambiguous_band_max?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  ambiguous_band_min?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  authority_connector_sources?: Resolver<Array<ResolversTypes['CurationAuthoritySource']>, ParentType, ContextType>;
+  available_detectors?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  behavior_threshold?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  curated_entity_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  curation_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  description_similarity_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  description_similarity_threshold?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  digest_day?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  digest_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  digest_recipient_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  digest_recipients?: Resolver<Array<ResolversTypes['Member']>, ParentType, ContextType>;
+  enabled_detectors?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  field_authority_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  field_authority_rules?: Resolver<Array<ResolversTypes['CurationFieldAuthorityRule']>, ParentType, ContextType>;
+  force_scan?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  graph_similarity_available?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  last_digest_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  last_scan_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  last_snapshot_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  merge_record_retention_days?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  proposal_min_confidence?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  relationship_conflict_mode?: Resolver<ResolversTypes['CurationRelationshipConflictMode'], ParentType, ContextType>;
+  scan_max_entities_per_type?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  similarity_threshold?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  stale_default_months?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  stale_overrides?: Resolver<Array<ResolversTypes['CurationStalenessOverride']>, ParentType, ContextType>;
+  taxonomy_clusters_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  taxonomy_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type CurationStalenessOverrideResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationStalenessOverride'] = ResolversParentTypes['CurationStalenessOverride']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  months?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type CurationStatisticsResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationStatistics'] = ResolversParentTypes['CurationStatistics']> = ResolversObject<{
+  active_merge_records_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  ambiguous_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  curation_enabled?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  decided_by_status?: Resolver<Array<ResolversTypes['CurationStatisticsEntry']>, ParentType, ContextType>;
+  last_scan_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  latest_health_score?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  next_scan_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  next_snapshot_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  open_by_kind?: Resolver<Array<ResolversTypes['CurationStatisticsEntry']>, ParentType, ContextType>;
+  open_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type CurationStatisticsEntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['CurationStatisticsEntry'] = ResolversParentTypes['CurationStatisticsEntry']> = ResolversObject<{
+  count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type CustomFieldDefinitionResolvers<ContextType = any, ParentType extends ResolversParentTypes['CustomFieldDefinition'] = ResolversParentTypes['CustomFieldDefinition']> = ResolversObject<{
@@ -47581,7 +48736,7 @@ export type IngestionTaxiiEdgeResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type InternalObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['InternalObject'] = ResolversParentTypes['InternalObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AuthenticationProvider' | 'Capability' | 'CaseTemplate' | 'Catalog' | 'Connector' | 'ConnectorManager' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'DisseminationList' | 'DraftWorkspace' | 'EmailTemplate' | 'EntitySetting' | 'ExclusionList' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'JsonMapper' | 'ManagedConnector' | 'ManagerConfiguration' | 'MeUser' | 'NewsFeedItem' | 'Notification' | 'Notifier' | 'Pir' | 'Playbook' | 'PublicDashboard' | 'Role' | 'SavedFilter' | 'Settings' | 'SupportPackage' | 'TaskTemplate' | 'Theme' | 'Trigger' | 'User' | 'Workspace', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AuthenticationProvider' | 'Capability' | 'CaseTemplate' | 'Catalog' | 'Connector' | 'ConnectorManager' | 'CsvMapper' | 'CurationPolicy' | 'CurationProposal' | 'CustomFieldDefinition' | 'CustomView' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'DisseminationList' | 'DraftWorkspace' | 'EmailTemplate' | 'EntitySetting' | 'ExclusionList' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'JsonMapper' | 'KnowledgeHealthSnapshot' | 'ManagedConnector' | 'ManagerConfiguration' | 'MeUser' | 'MergeRecord' | 'NewsFeedItem' | 'Notification' | 'Notifier' | 'Pir' | 'Playbook' | 'PublicDashboard' | 'Role' | 'SavedFilter' | 'Settings' | 'SupportPackage' | 'TaskTemplate' | 'Theme' | 'Trigger' | 'User' | 'Workspace', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -47848,6 +49003,55 @@ export type KillChainPhaseEditMutationsResolvers<ContextType = any, ParentType e
   fieldPatch?: Resolver<Maybe<ResolversTypes['KillChainPhase']>, ParentType, ContextType, RequireFields<KillChainPhaseEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<KillChainPhaseEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['KillChainPhase']>, ParentType, ContextType, RequireFields<KillChainPhaseEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
+}>;
+
+export type KnowledgeHealthComponentResolvers<ContextType = any, ParentType extends ResolversParentTypes['KnowledgeHealthComponent'] = ResolversParentTypes['KnowledgeHealthComponent']> = ResolversObject<{
+  component?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  score?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  value?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  weight?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+}>;
+
+export type KnowledgeHealthSnapshotResolvers<ContextType = any, ParentType extends ResolversParentTypes['KnowledgeHealthSnapshot'] = ResolversParentTypes['KnowledgeHealthSnapshot']> = ResolversObject<{
+  accepted_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  alias_coverage?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  auto_applied_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  contradiction_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  curated_entities_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  digest_sent_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  duplicate_estimate?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  duplicate_rate?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  health_score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  merges_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
+  open_proposals_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  rejected_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  reverted_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  score_breakdown?: Resolver<Array<ResolversTypes['KnowledgeHealthComponent']>, ParentType, ContextType>;
+  score_trend?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  snapshot_date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  source_conflict_rate?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  stale_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  stale_share?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  unmerges_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type KnowledgeHealthSnapshotConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['KnowledgeHealthSnapshotConnection'] = ResolversParentTypes['KnowledgeHealthSnapshotConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['KnowledgeHealthSnapshotEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+}>;
+
+export type KnowledgeHealthSnapshotEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['KnowledgeHealthSnapshotEdge'] = ResolversParentTypes['KnowledgeHealthSnapshotEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['KnowledgeHealthSnapshot'], ParentType, ContextType>;
 }>;
 
 export type LabelResolvers<ContextType = any, ParentType extends ResolversParentTypes['Label'] = ResolversParentTypes['Label']> = ResolversObject<{
@@ -48650,6 +49854,68 @@ export type MemberGroupRestrictionResolvers<ContextType = any, ParentType extend
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
+export type MergeRecordResolvers<ContextType = any, ParentType extends ResolversParentTypes['MergeRecord'] = ResolversParentTypes['MergeRecord']> = ResolversObject<{
+  alias_provenance?: Resolver<Array<ResolversTypes['MergeRecordAliasProvenance']>, ParentType, ContextType>;
+  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  irreversible_reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  is_reversible?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  merge_source_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  merge_source_names?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  merge_status?: Resolver<ResolversTypes['MergeRecordStatus'], ParentType, ContextType>;
+  merge_target_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  merge_target_name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  merge_target_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  mergedBy?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  proposal_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  relationships_recreatable_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  relationships_redirected_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  reversible_until?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  sources?: Resolver<Array<ResolversTypes['MergeRecordSource']>, ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  target?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType>;
+  unmerge_pending_source_ids?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  unmergedBy?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  unmerged_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type MergeRecordAliasProvenanceResolvers<ContextType = any, ParentType extends ResolversParentTypes['MergeRecordAliasProvenance'] = ResolversParentTypes['MergeRecordAliasProvenance']> = ResolversObject<{
+  alias?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  relationships_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  source_aliases?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  source_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type MergeRecordConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['MergeRecordConnection'] = ResolversParentTypes['MergeRecordConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['MergeRecordEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+}>;
+
+export type MergeRecordEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['MergeRecordEdge'] = ResolversParentTypes['MergeRecordEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['MergeRecord'], ParentType, ContextType>;
+}>;
+
+export type MergeRecordSourceResolvers<ContextType = any, ParentType extends ResolversParentTypes['MergeRecordSource'] = ResolversParentTypes['MergeRecordSource']> = ResolversObject<{
+  aliases?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  contributed_aliases?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  recreatable_relationships_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  redirected_relationships_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  reverted_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
 export type MessagesStatsResolvers<ContextType = any, ParentType extends ResolversParentTypes['MessagesStats'] = ResolversParentTypes['MessagesStats']> = ResolversObject<{
   ack?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   ack_details?: Resolver<Maybe<ResolversTypes['AckDetails']>, ParentType, ContextType>;
@@ -48793,6 +50059,20 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   csvMapperDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCsvMapperDeleteArgs, 'id'>>;
   csvMapperFieldPatch?: Resolver<Maybe<ResolversTypes['CsvMapper']>, ParentType, ContextType, RequireFields<MutationCsvMapperFieldPatchArgs, 'id' | 'input'>>;
   csvMapperTest?: Resolver<Maybe<ResolversTypes['CsvMapperTestResult']>, ParentType, ContextType, RequireFields<MutationCsvMapperTestArgs, 'configuration' | 'file'>>;
+  curationPolicyAdd?: Resolver<Maybe<ResolversTypes['CurationPolicy']>, ParentType, ContextType, RequireFields<MutationCurationPolicyAddArgs, 'input'>>;
+  curationPolicyApply?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCurationPolicyApplyArgs, 'id'>>;
+  curationPolicyDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCurationPolicyDeleteArgs, 'id'>>;
+  curationPolicyFieldPatch?: Resolver<Maybe<ResolversTypes['CurationPolicy']>, ParentType, ContextType, RequireFields<MutationCurationPolicyFieldPatchArgs, 'id' | 'input'>>;
+  curationProposalAccept?: Resolver<Maybe<ResolversTypes['CurationProposal']>, ParentType, ContextType, RequireFields<MutationCurationProposalAcceptArgs, 'id'>>;
+  curationProposalAdjudicate?: Resolver<Maybe<ResolversTypes['CurationProposal']>, ParentType, ContextType, RequireFields<MutationCurationProposalAdjudicateArgs, 'id'>>;
+  curationProposalApply?: Resolver<Maybe<ResolversTypes['CurationProposal']>, ParentType, ContextType, RequireFields<MutationCurationProposalApplyArgs, 'id'>>;
+  curationProposalDecide?: Resolver<Maybe<ResolversTypes['CurationProposal']>, ParentType, ContextType, RequireFields<MutationCurationProposalDecideArgs, 'id' | 'input'>>;
+  curationProposalReject?: Resolver<Maybe<ResolversTypes['CurationProposal']>, ParentType, ContextType, RequireFields<MutationCurationProposalRejectArgs, 'id'>>;
+  curationProposalRevert?: Resolver<Maybe<ResolversTypes['CurationProposal']>, ParentType, ContextType, RequireFields<MutationCurationProposalRevertArgs, 'id'>>;
+  curationProposalsBulkAccept?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCurationProposalsBulkAcceptArgs, 'ids'>>;
+  curationProposalsBulkReject?: Resolver<Array<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCurationProposalsBulkRejectArgs, 'ids'>>;
+  curationScanRequest?: Resolver<Maybe<ResolversTypes['CurationSettings']>, ParentType, ContextType>;
+  curationSettingsEdit?: Resolver<Maybe<ResolversTypes['CurationSettings']>, ParentType, ContextType, RequireFields<MutationCurationSettingsEditArgs, 'input'>>;
   customFieldDefinitionAdd?: Resolver<Maybe<ResolversTypes['CustomFieldDefinition']>, ParentType, ContextType, RequireFields<MutationCustomFieldDefinitionAddArgs, 'input'>>;
   customFieldDefinitionAddEntityType?: Resolver<Maybe<ResolversTypes['CustomFieldDefinition']>, ParentType, ContextType, RequireFields<MutationCustomFieldDefinitionAddEntityTypeArgs, 'entityType' | 'id' | 'mandatory'>>;
   customFieldDefinitionDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCustomFieldDefinitionDeleteArgs, 'id'>>;
@@ -48942,6 +50222,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   jsonMapperTest?: Resolver<Maybe<ResolversTypes['JsonMapperTestResult']>, ParentType, ContextType, RequireFields<MutationJsonMapperTestArgs, 'configuration' | 'file'>>;
   killChainPhaseAdd?: Resolver<Maybe<ResolversTypes['KillChainPhase']>, ParentType, ContextType, RequireFields<MutationKillChainPhaseAddArgs, 'input'>>;
   killChainPhaseEdit?: Resolver<Maybe<ResolversTypes['KillChainPhaseEditMutations']>, ParentType, ContextType, RequireFields<MutationKillChainPhaseEditArgs, 'id'>>;
+  knowledgeHealthRefresh?: Resolver<Maybe<ResolversTypes['KnowledgeHealthSnapshot']>, ParentType, ContextType>;
   labelAdd?: Resolver<Maybe<ResolversTypes['Label']>, ParentType, ContextType, RequireFields<MutationLabelAddArgs, 'input'>>;
   labelEdit?: Resolver<Maybe<ResolversTypes['LabelEditMutations']>, ParentType, ContextType, RequireFields<MutationLabelEditArgs, 'id'>>;
   languageAdd?: Resolver<Maybe<ResolversTypes['Language']>, ParentType, ContextType, RequireFields<MutationLanguageAddArgs, 'input'>>;
@@ -49172,6 +50453,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   triggerKnowledgeFieldPatch?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeFieldPatchArgs, 'id' | 'input'>>;
   triggerKnowledgeLiveAdd?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerKnowledgeLiveAddArgs, 'input'>>;
   triggerWorkflowEvent?: Resolver<ResolversTypes['WorkflowTriggerResult'], ParentType, ContextType, RequireFields<MutationTriggerWorkflowEventArgs, 'entityId' | 'eventName'>>;
+  unmergeEntity?: Resolver<Maybe<ResolversTypes['MergeRecord']>, ParentType, ContextType, RequireFields<MutationUnmergeEntityArgs, 'mergeRecordId'>>;
   updateConnectorCurrentStatus?: Resolver<Maybe<ResolversTypes['ManagedConnector']>, ParentType, ContextType, RequireFields<MutationUpdateConnectorCurrentStatusArgs, 'input'>>;
   updateConnectorHealth?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationUpdateConnectorHealthArgs, 'input'>>;
   updateConnectorLogs?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationUpdateConnectorLogsArgs, 'input'>>;
@@ -50702,6 +51984,18 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   csvMapperSchemaAttributes?: Resolver<Array<ResolversTypes['CsvMapperSchemaAttributes']>, ParentType, ContextType>;
   csvMapperTest?: Resolver<Maybe<ResolversTypes['CsvMapperTestResult']>, ParentType, ContextType, RequireFields<QueryCsvMapperTestArgs, 'configuration' | 'content'>>;
   csvMappers?: Resolver<Maybe<ResolversTypes['CsvMapperConnection']>, ParentType, ContextType, Partial<QueryCsvMappersArgs>>;
+  curationAdjudicationAvailable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  curationAdjudicationSetup?: Resolver<ResolversTypes['CurationAdjudicationSetup'], ParentType, ContextType>;
+  curationAuthorityAttributes?: Resolver<Array<ResolversTypes['CurationAuthorityAttributes']>, ParentType, ContextType>;
+  curationPolicies?: Resolver<Maybe<ResolversTypes['CurationPolicyConnection']>, ParentType, ContextType, Partial<QueryCurationPoliciesArgs>>;
+  curationPolicy?: Resolver<Maybe<ResolversTypes['CurationPolicy']>, ParentType, ContextType, RequireFields<QueryCurationPolicyArgs, 'id'>>;
+  curationPolicyDryRun?: Resolver<Maybe<ResolversTypes['CurationPolicyDryRun']>, ParentType, ContextType, RequireFields<QueryCurationPolicyDryRunArgs, 'id'>>;
+  curationProposal?: Resolver<Maybe<ResolversTypes['CurationProposal']>, ParentType, ContextType, RequireFields<QueryCurationProposalArgs, 'id'>>;
+  curationProposals?: Resolver<Maybe<ResolversTypes['CurationProposalConnection']>, ParentType, ContextType, Partial<QueryCurationProposalsArgs>>;
+  curationProposalsForEntity?: Resolver<Array<ResolversTypes['CurationProposal']>, ParentType, ContextType, RequireFields<QueryCurationProposalsForEntityArgs, 'id'>>;
+  curationResolve?: Resolver<Maybe<ResolversTypes['CurationResolution']>, ParentType, ContextType, RequireFields<QueryCurationResolveArgs, 'name' | 'type'>>;
+  curationSettings?: Resolver<ResolversTypes['CurationSettings'], ParentType, ContextType>;
+  curationStatistics?: Resolver<ResolversTypes['CurationStatistics'], ParentType, ContextType>;
   customFieldDefinition?: Resolver<Maybe<ResolversTypes['CustomFieldDefinition']>, ParentType, ContextType, RequireFields<QueryCustomFieldDefinitionArgs, 'id'>>;
   customFieldDefinitions?: Resolver<Maybe<ResolversTypes['CustomFieldDefinitionConnection']>, ParentType, ContextType, Partial<QueryCustomFieldDefinitionsArgs>>;
   customFieldDefinitionsForEntityType?: Resolver<Maybe<ResolversTypes['CustomFieldDefinitionConnection']>, ParentType, ContextType, RequireFields<QueryCustomFieldDefinitionsForEntityTypeArgs, 'entityType'>>;
@@ -50817,6 +52111,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   jsonMappers?: Resolver<Maybe<ResolversTypes['JsonMapperConnection']>, ParentType, ContextType, Partial<QueryJsonMappersArgs>>;
   killChainPhase?: Resolver<Maybe<ResolversTypes['KillChainPhase']>, ParentType, ContextType, RequireFields<QueryKillChainPhaseArgs, 'id'>>;
   killChainPhases?: Resolver<Maybe<ResolversTypes['KillChainPhaseConnection']>, ParentType, ContextType, Partial<QueryKillChainPhasesArgs>>;
+  knowledgeHealth?: Resolver<Maybe<ResolversTypes['KnowledgeHealthSnapshot']>, ParentType, ContextType>;
+  knowledgeHealthSnapshots?: Resolver<Maybe<ResolversTypes['KnowledgeHealthSnapshotConnection']>, ParentType, ContextType, Partial<QueryKnowledgeHealthSnapshotsArgs>>;
   label?: Resolver<Maybe<ResolversTypes['Label']>, ParentType, ContextType, RequireFields<QueryLabelArgs, 'id'>>;
   labels?: Resolver<Maybe<ResolversTypes['LabelConnection']>, ParentType, ContextType, Partial<QueryLabelsArgs>>;
   language?: Resolver<Maybe<ResolversTypes['Language']>, ParentType, ContextType, RequireFields<QueryLanguageArgs, 'id'>>;
@@ -50835,6 +52131,8 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   markingDefinitions?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType, Partial<QueryMarkingDefinitionsArgs>>;
   me?: Resolver<ResolversTypes['MeUser'], ParentType, ContextType>;
   members?: Resolver<Maybe<ResolversTypes['MemberConnection']>, ParentType, ContextType, Partial<QueryMembersArgs>>;
+  mergeRecord?: Resolver<Maybe<ResolversTypes['MergeRecord']>, ParentType, ContextType, RequireFields<QueryMergeRecordArgs, 'id'>>;
+  mergeRecords?: Resolver<Maybe<ResolversTypes['MergeRecordConnection']>, ParentType, ContextType, Partial<QueryMergeRecordsArgs>>;
   myNewsFeeds?: Resolver<Maybe<ResolversTypes['NewsFeedItemConnection']>, ParentType, ContextType, Partial<QueryMyNewsFeedsArgs>>;
   myNotifications?: Resolver<Maybe<ResolversTypes['NotificationConnection']>, ParentType, ContextType, Partial<QueryMyNotificationsArgs>>;
   myOpinion?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<QueryMyOpinionArgs, 'id'>>;
@@ -55011,6 +56309,34 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   CsvMapperSchemaAttribute?: CsvMapperSchemaAttributeResolvers<ContextType>;
   CsvMapperSchemaAttributes?: CsvMapperSchemaAttributesResolvers<ContextType>;
   CsvMapperTestResult?: CsvMapperTestResultResolvers<ContextType>;
+  CurationAdjudication?: CurationAdjudicationResolvers<ContextType>;
+  CurationAdjudicationAgent?: CurationAdjudicationAgentResolvers<ContextType>;
+  CurationAdjudicationSetup?: CurationAdjudicationSetupResolvers<ContextType>;
+  CurationAuthorityAttribute?: CurationAuthorityAttributeResolvers<ContextType>;
+  CurationAuthorityAttributes?: CurationAuthorityAttributesResolvers<ContextType>;
+  CurationAuthoritySource?: CurationAuthoritySourceResolvers<ContextType>;
+  CurationEvidence?: CurationEvidenceResolvers<ContextType>;
+  CurationExplanationChange?: CurationExplanationChangeResolvers<ContextType>;
+  CurationExplanationConfidence?: CurationExplanationConfidenceResolvers<ContextType>;
+  CurationExplanationEntity?: CurationExplanationEntityResolvers<ContextType>;
+  CurationExplanationEvidence?: CurationExplanationEvidenceResolvers<ContextType>;
+  CurationExplanationMessage?: CurationExplanationMessageResolvers<ContextType>;
+  CurationExplanationSource?: CurationExplanationSourceResolvers<ContextType>;
+  CurationFieldAuthorityRule?: CurationFieldAuthorityRuleResolvers<ContextType>;
+  CurationImpactEntry?: CurationImpactEntryResolvers<ContextType>;
+  CurationPolicy?: CurationPolicyResolvers<ContextType>;
+  CurationPolicyConnection?: CurationPolicyConnectionResolvers<ContextType>;
+  CurationPolicyDryRun?: CurationPolicyDryRunResolvers<ContextType>;
+  CurationPolicyEdge?: CurationPolicyEdgeResolvers<ContextType>;
+  CurationProposal?: CurationProposalResolvers<ContextType>;
+  CurationProposalConnection?: CurationProposalConnectionResolvers<ContextType>;
+  CurationProposalEdge?: CurationProposalEdgeResolvers<ContextType>;
+  CurationProposalExplanation?: CurationProposalExplanationResolvers<ContextType>;
+  CurationResolution?: CurationResolutionResolvers<ContextType>;
+  CurationSettings?: CurationSettingsResolvers<ContextType>;
+  CurationStalenessOverride?: CurationStalenessOverrideResolvers<ContextType>;
+  CurationStatistics?: CurationStatisticsResolvers<ContextType>;
+  CurationStatisticsEntry?: CurationStatisticsEntryResolvers<ContextType>;
   CustomFieldDefinition?: CustomFieldDefinitionResolvers<ContextType>;
   CustomFieldDefinitionConnection?: CustomFieldDefinitionConnectionResolvers<ContextType>;
   CustomFieldDefinitionEdge?: CustomFieldDefinitionEdgeResolvers<ContextType>;
@@ -55223,6 +56549,10 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   KillChainPhaseConnection?: KillChainPhaseConnectionResolvers<ContextType>;
   KillChainPhaseEdge?: KillChainPhaseEdgeResolvers<ContextType>;
   KillChainPhaseEditMutations?: KillChainPhaseEditMutationsResolvers<ContextType>;
+  KnowledgeHealthComponent?: KnowledgeHealthComponentResolvers<ContextType>;
+  KnowledgeHealthSnapshot?: KnowledgeHealthSnapshotResolvers<ContextType>;
+  KnowledgeHealthSnapshotConnection?: KnowledgeHealthSnapshotConnectionResolvers<ContextType>;
+  KnowledgeHealthSnapshotEdge?: KnowledgeHealthSnapshotEdgeResolvers<ContextType>;
   Label?: LabelResolvers<ContextType>;
   LabelConnection?: LabelConnectionResolvers<ContextType>;
   LabelEdge?: LabelEdgeResolvers<ContextType>;
@@ -55273,6 +56603,11 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   MemberConnection?: MemberConnectionResolvers<ContextType>;
   MemberEdge?: MemberEdgeResolvers<ContextType>;
   MemberGroupRestriction?: MemberGroupRestrictionResolvers<ContextType>;
+  MergeRecord?: MergeRecordResolvers<ContextType>;
+  MergeRecordAliasProvenance?: MergeRecordAliasProvenanceResolvers<ContextType>;
+  MergeRecordConnection?: MergeRecordConnectionResolvers<ContextType>;
+  MergeRecordEdge?: MergeRecordEdgeResolvers<ContextType>;
+  MergeRecordSource?: MergeRecordSourceResolvers<ContextType>;
   MessagesStats?: MessagesStatsResolvers<ContextType>;
   Metric?: MetricResolvers<ContextType>;
   MetricAttributes?: MetricAttributesResolvers<ContextType>;

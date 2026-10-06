@@ -17165,7 +17165,6 @@ enum CurationPolicySourceClass {
 }
 
 enum CurationRelationshipConflictMode {
-  procedures_array
   note
   detect_only
 }
@@ -17574,7 +17573,6 @@ type CurationSettings {
   description_similarity_enabled: Boolean!
   description_similarity_threshold: Float!
   graph_similarity_available: Boolean!
-  provenance_available: Boolean!
   behavior_threshold: Float!
   proposal_min_confidence: Float!
   ambiguous_band_min: Float!
@@ -17588,7 +17586,6 @@ type CurationSettings {
   stale_default_months: Int!
   stale_overrides: [CurationStalenessOverride!]!
   relationship_conflict_mode: CurationRelationshipConflictMode!
-  procedures_attribute_available: Boolean!
   merge_record_retention_days: Int!
   digest_enabled: Boolean!
   digest_day: Int!

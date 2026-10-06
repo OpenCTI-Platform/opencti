@@ -17,7 +17,6 @@ import {
   EVIDENCE_TAXONOMY,
   EVIDENCE_TRIGRAM,
   RELATIONSHIP_CONFLICT_MODE_DETECT_ONLY,
-  RELATIONSHIP_CONFLICT_MODE_NOTE,
 } from './curation-types';
 
 /**
@@ -581,14 +580,10 @@ const explainPreserveProcedure = (proposal: ExplainedProposal, subjects: Subject
   const details = item ? detailsOf(item) : {};
   const values = { from: String(details.from_name ?? '-'), to: String(details.to_name ?? '-') };
   const previous = formatValue(parseObject(payload.previous).text);
-  const current = formatValue(parseObject(payload.current).text);
   const mode = options.relationshipConflictMode;
-  let changes: ExplanationChange[] = [{ field: message('Procedures'), before: [current], after: [previous, current] }];
-  let onAccept = message('The replaced procedure is kept next to the current one on the relationship. You can undo it later with Revert on this proposal.');
-  if (mode === RELATIONSHIP_CONFLICT_MODE_NOTE) {
-    changes = [{ field: message('Notes'), before: [], after: [previous] }];
-    onAccept = message('The replaced procedure is kept in a note attached to the relationship. You can undo it later with Revert on this proposal: the note is deleted.');
-  } else if (mode === RELATIONSHIP_CONFLICT_MODE_DETECT_ONLY) {
+  let changes: ExplanationChange[] = [{ field: message('Notes'), before: [], after: [previous] }];
+  let onAccept = message('The replaced procedure is kept in a note attached to the relationship. You can undo it later with Revert on this proposal: the note is deleted.');
+  if (mode === RELATIONSHIP_CONFLICT_MODE_DETECT_ONLY) {
     changes = [];
     onAccept = message('Nothing changes in the knowledge: the curation settings only report these conflicts. The proposal is closed as reviewed.');
   }

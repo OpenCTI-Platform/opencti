@@ -1,4 +1,4 @@
-import { CURATION_DETECTORS, type CurationSettings, RELATIONSHIP_CONFLICT_MODE_PROCEDURES } from './curation-types';
+import { CURATION_DETECTORS, type CurationSettings, RELATIONSHIP_CONFLICT_MODE_NOTE } from './curation-types';
 
 export const DEFAULT_CURATED_ENTITY_TYPES = [
   'Intrusion-Set',
@@ -34,7 +34,7 @@ export const DEFAULT_CURATION_SETTINGS: CurationSettings = {
     { entity_type: 'Indicator', months: 12 },
     { entity_type: 'Campaign', months: 36 },
   ],
-  relationship_conflict_mode: RELATIONSHIP_CONFLICT_MODE_PROCEDURES,
+  relationship_conflict_mode: RELATIONSHIP_CONFLICT_MODE_NOTE,
   merge_record_retention_days: 365,
   digest_enabled: false,
   digest_day: 1,
