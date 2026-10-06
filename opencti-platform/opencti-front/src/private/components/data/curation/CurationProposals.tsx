@@ -156,7 +156,7 @@ const CurationProposalsComponent = () => {
     name: {
       id: 'name',
       label: 'Proposal',
-      percentWidth: 26,
+      percentWidth: 23,
       isSortable: true,
       render: ({ name, subject_types }: CurationProposals_proposal$data) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, overflow: 'hidden' }}>
@@ -170,7 +170,7 @@ const CurationProposalsComponent = () => {
       label: 'Kind',
       percentWidth: 13,
       isSortable: true,
-      render: ({ proposal_kind }: CurationProposals_proposal$data) => <Tag label={labels.kind(proposal_kind)} />,
+      render: ({ proposal_kind }: CurationProposals_proposal$data) => <Tag label={labels.kind(proposal_kind)} labelTextTransform="none" />,
     },
     recommended_action: {
       id: 'recommended_action',
@@ -201,12 +201,12 @@ const CurationProposalsComponent = () => {
       percentWidth: 9,
       isSortable: true,
       render: ({ proposal_status }: CurationProposals_proposal$data) => (
-        <Tag label={labels.status(proposal_status)} color={labels.statusColor(proposal_status)} />
+        <Tag label={labels.status(proposal_status)} color={labels.statusColor(proposal_status)} labelTextTransform="none" />
       ),
     },
     created_at: {
       id: 'created_at',
-      percentWidth: 10,
+      percentWidth: 13,
     },
   };
 

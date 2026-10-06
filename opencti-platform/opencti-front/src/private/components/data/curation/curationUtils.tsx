@@ -378,7 +378,8 @@ const useCurationLabels = () => {
   };
 
   return {
-    kind: (key?: string | null) => label(kindLabels, key),
+    // The statistics aggregations return the kind keys with a capital first letter ("Type_mismatch")
+    kind: (key?: string | null) => label(kindLabels, key?.toLowerCase()),
     status: (key?: string | null) => label(statusLabels, key),
     action: (key?: string | null) => label(actionLabels, key),
     detector: (key?: string | null) => label(detectorLabels, key),

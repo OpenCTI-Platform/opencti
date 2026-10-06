@@ -158,6 +158,7 @@ const KnowledgeHealthComponent = () => {
                   <Tag
                     label={t_i18n('{trend} since the previous snapshot', { values: { trend: `${health.score_trend >= 0 ? '+' : ''}${health.score_trend}` } })}
                     color={labels.trendColor(health.score_trend)}
+                    labelTextTransform="none"
                   />
                 ) : (
                   <Typography variant="body2" color={theme.palette.text.light}>{t_i18n('First snapshot')}</Typography>

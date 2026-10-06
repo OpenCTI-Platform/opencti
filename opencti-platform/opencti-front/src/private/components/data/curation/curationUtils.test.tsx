@@ -38,6 +38,7 @@ const LabelsProbe = () => {
     <ul>
       <li>{labels.kind('merge')}</li>
       <li>{labels.kind('unknown_kind')}</li>
+      <li>{labels.kind('Type_mismatch')}</li>
       <li>{labels.status(null)}</li>
       <li>{labels.action('add_aliases')}</li>
       <li>{labels.exclusion('below_threshold')}</li>
@@ -55,6 +56,7 @@ describe('useCurationLabels', () => {
     testRender(<LabelsProbe />);
     expect(screen.getByText('Duplicate')).toBeInTheDocument();
     expect(screen.getByText('unknown_kind')).toBeInTheDocument();
+    expect(screen.getByText('Type mismatch')).toBeInTheDocument();
     expect(screen.getByText('-')).toBeInTheDocument();
     expect(screen.getByText('Add the names as aliases')).toBeInTheDocument();
     expect(screen.getByText('Confidence below the threshold')).toBeInTheDocument();

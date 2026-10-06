@@ -145,9 +145,9 @@ const CurationProposalDetails = ({ data, adjudicationAvailable }: { data: Curati
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }} data-testid="curation-proposal-header">
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, flex: 1, minWidth: 320 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-              <Tag label={labels.status(proposal.proposal_status)} color={labels.statusColor(proposal.proposal_status)} />
-              <Tag label={labels.kind(proposal.proposal_kind)} />
-              {isOpen && proposal.in_ambiguous_band && <Tag label={t_i18n('Needs your decision')} color={theme.palette.warn.main} />}
+              <Tag label={labels.status(proposal.proposal_status)} color={labels.statusColor(proposal.proposal_status)} labelTextTransform="none" />
+              <Tag label={labels.kind(proposal.proposal_kind)} labelTextTransform="none" />
+              {isOpen && proposal.in_ambiguous_band && <Tag label={t_i18n('Needs your decision')} color={theme.palette.warn.main} labelTextTransform="none" />}
             </Box>
             <Typography variant="h1" sx={{ margin: 0 }} data-testid="curation-proposal-title">{translate(proposal.explanation.title)}</Typography>
             <Typography variant="body1" data-testid="curation-proposal-why">{translate(proposal.explanation.why)}</Typography>
