@@ -7,8 +7,9 @@ import {
   combinePulsePreviewSignals,
   PULSE_PREVIEW_CLEARED_DOCUMENT,
   type PulseFieldPolicy,
+  PULSE_SORTABLE_ATTRIBUTES,
   pulseQueryClause,
-  pulseRankSort,
+  pulseVisibleSort,
   toPulseInformationOutput,
   visiblePulseInformation,
 } from '../../../../../src/modules/xtm/pulse/pulse-information';
@@ -256,14 +257,21 @@ describe('Threat Pulse information under the current access', () => {
     }));
   });
 
-  it('should sort a rank the reader may not see as a missing one, after every shown rank in both orders', () => {
-    const desc = pulseRankSort(full, 'desc')._script;
+  it('should sort a value the reader may not see as a missing one, after every shown value in both orders', () => {
+    const desc = pulseVisibleSort(full, 'pulse_prevalence_rank', 'desc')._script;
     expect(desc).toMatchObject({ type: 'number', order: 'desc' });
-    expect(desc.script.params).toEqual({ access: PulseAccess.Full, scopes, excluded: ['tlp-red'], missing: -1 });
-    expect(pulseRankSort(preview, 'asc')._script.script.params).toEqual({ access: PulseAccess.Preview, scopes, excluded: [], missing: Number.MAX_SAFE_INTEGER });
+    expect(desc.script.params).toEqual({ field: 'pulse_prevalence_rank', date: false, access: PulseAccess.Full, scopes, excluded: ['tlp-red'], missing: -1 });
+    expect(pulseVisibleSort(preview, 'pulse_community_uniqueness', 'asc')._script.script.params)
+      .toEqual({ field: 'pulse_community_uniqueness', date: false, access: PulseAccess.Preview, scopes, excluded: [], missing: Number.MAX_SAFE_INTEGER });
+    // A date sorts by its epoch milliseconds, after which the missing values of both orders still come last
+    expect(pulseVisibleSort(full, 'pulse_first_seen_network', 'asc')._script.script.params).toMatchObject({ field: 'pulse_first_seen_network', date: true });
     // The full experience without its marking policy shows nothing, as the field does
-    expect(pulseRankSort({ access: PulseAccess.Full, scopes, markingPolicy: null }, 'desc')._script.script.params.access).toBe(PulseAccess.Off);
+    expect(pulseVisibleSort({ access: PulseAccess.Full, scopes, markingPolicy: null }, 'pulse_prevalence_rank', 'desc')._script.script.params.access).toBe(PulseAccess.Off);
     expect(desc.script.source).toContain("params['_source']['restricted_members']");
+  });
+
+  it('should give every network attribute a generic list can order by a sort that follows the policy', () => {
+    expect([...PULSE_SORTABLE_ATTRIBUTES].sort()).toEqual(['pulse_community_uniqueness', 'pulse_first_seen_network', 'pulse_prevalence_rank']);
   });
 });
 

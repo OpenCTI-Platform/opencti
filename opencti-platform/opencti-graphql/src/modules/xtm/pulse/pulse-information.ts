@@ -307,14 +307,19 @@ export const pulseQueryClause = (policy: PulseFieldPolicy): Record<string, unkno
   return { match_none: {} };
 };
 
-// The same rule for a sort on the prevalence rank: a rank the reader may not see sorts as a missing one, last, and
-// the objects stay in the list. The members of an authorized members restriction are nested, read from the source.
-const VISIBLE_RANK_SCRIPT = `
-  if (!doc.containsKey('${PULSE_ATTRIBUTE_PREVALENCE_RANK}') || doc['${PULSE_ATTRIBUTE_PREVALENCE_RANK}'].size() == 0) { return params.missing; }
+// The network attributes the generic lists can order by.
+export const PULSE_SORTABLE_ATTRIBUTES = [PULSE_ATTRIBUTE_PREVALENCE_RANK, PULSE_ATTRIBUTE_UNIQUENESS, PULSE_ATTRIBUTE_FIRST_SEEN];
+
+// The same rule for a sort on a network attribute: a value the reader may not see sorts as a missing one, last, and
+// the objects stay in the list. The members of an authorized members restriction are nested, read from the source;
+// a date sorts by its epoch milliseconds.
+const VISIBLE_VALUE_SCRIPT = `
+  String field = params.field;
+  if (!doc.containsKey(field) || doc[field].size() == 0) { return params.missing; }
   if (!doc.containsKey('entity_type.keyword') || doc['entity_type.keyword'].size() == 0 || !params.scopes.contains(doc['entity_type.keyword'].value)) { return params.missing; }
-  long rank = doc['${PULSE_ATTRIBUTE_PREVALENCE_RANK}'].value;
+  def value = params.date ? doc[field].value.toInstant().toEpochMilli() : doc[field].value;
   if (params.access == '${PulseAccess.Preview}') {
-    return doc.containsKey('${PULSE_ATTRIBUTE_UNIQUENESS}') && doc['${PULSE_ATTRIBUTE_UNIQUENESS}'].size() > 0 ? params.missing : rank;
+    return doc.containsKey('${PULSE_ATTRIBUTE_UNIQUENESS}') && doc['${PULSE_ATTRIBUTE_UNIQUENESS}'].size() > 0 ? params.missing : value;
   }
   if (params.access != '${PulseAccess.Full}') { return params.missing; }
   if (doc.containsKey('${GRANTED_TO_FIELD}') && doc['${GRANTED_TO_FIELD}'].size() > 0) { return params.missing; }
@@ -322,10 +327,10 @@ const VISIBLE_RANK_SCRIPT = `
     for (def marking : doc['${MARKING_FIELD}']) { if (params.excluded.contains(marking)) { return params.missing; } }
   }
   def members = params['_source']['restricted_members'];
-  return members != null && members.size() > 0 ? params.missing : rank;
+  return members != null && members.size() > 0 ? params.missing : value;
 `;
 
-export const pulseRankSort = (policy: PulseFieldPolicy, orderMode: 'asc' | 'desc' | null) => {
+export const pulseVisibleSort = (policy: PulseFieldPolicy, attribute: string, orderMode: 'asc' | 'desc' | null) => {
   const order = orderMode ?? 'asc';
   return {
     _script: {
@@ -333,8 +338,10 @@ export const pulseRankSort = (policy: PulseFieldPolicy, orderMode: 'asc' | 'desc
       order,
       script: {
         lang: 'painless',
-        source: VISIBLE_RANK_SCRIPT,
+        source: VISIBLE_VALUE_SCRIPT,
         params: {
+          field: attribute,
+          date: attribute === PULSE_ATTRIBUTE_FIRST_SEEN,
           access: policy.markingPolicy || policy.access !== PulseAccess.Full ? policy.access : PulseAccess.Off,
           scopes: policy.scopes,
           excluded: [...(policy.markingPolicy?.excludedMarkingIds ?? [])],

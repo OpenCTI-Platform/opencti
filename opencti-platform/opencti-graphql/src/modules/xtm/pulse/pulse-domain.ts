@@ -65,8 +65,9 @@ import {
   visiblePulseInformation,
   writePulseDocuments,
   PULSE_QUERYABLE_ATTRIBUTES,
+  PULSE_SORTABLE_ATTRIBUTES,
   pulseQueryClause,
-  pulseRankSort,
+  pulseVisibleSort,
 } from './pulse-information';
 import { registerAttributeQueryGate } from '../../../database/engine-attribute-gates';
 import { registerSortingOverride } from '../../../utils/sorting';
@@ -117,7 +118,6 @@ import {
 import { refreshPulseStixPolicy, registerPulseStixPolicyRefresher, setPulseStixPolicy } from './pulse-stix-policy';
 import {
   type BasicStorePulseEntity,
-  PULSE_ATTRIBUTE_PREVALENCE_RANK,
   PULSE_CONSENT_VERSION,
   PULSE_ENTITY_TYPE_BY_OBJECT_TYPE,
   PULSE_MAX_LOOKUP_HASHES,
@@ -984,7 +984,9 @@ export const resolvePulseField = async (context: AuthContext, entity: BasicStore
 // Filters, aggregations, date histograms and sorts read the network attributes straight from the index: they use only
 // the values the field above shows, whatever a cleanup that failed or has not run yet left there.
 registerAttributeQueryGate(PULSE_QUERYABLE_ATTRIBUTES, async (context) => pulseQueryClause(await loadPulseFieldPolicy(context)));
-registerSortingOverride(PULSE_ATTRIBUTE_PREVALENCE_RANK, async (context, _, orderMode) => pulseRankSort(await loadPulseFieldPolicy(context), orderMode));
+PULSE_SORTABLE_ATTRIBUTES.forEach((attribute) => {
+  registerSortingOverride(attribute, async (context, _, orderMode) => pulseVisibleSort(await loadPulseFieldPolicy(context), attribute, orderMode));
+});
 
 const lookupKeys = async (platform: PulseHubPlatform, day: string, salt: string, objectType: PulseObjectType, keys: string[]) => {
   const results = new Map<string, PulseHubLookupResult>();

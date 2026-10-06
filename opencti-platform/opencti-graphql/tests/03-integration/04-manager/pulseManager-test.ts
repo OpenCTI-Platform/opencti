@@ -136,7 +136,7 @@ const PREVALENCE_DISTRIBUTION = gql`
 `;
 const INDICATORS_BY_RANK = gql`
   query PulseIndicatorsByRank {
-    stixCoreObjects(types: ["Indicator"], orderBy: pulse_prevalence_rank, orderMode: desc, first: 500) { edges { node { id } } }
+    stixDomainObjects(types: ["Indicator"], orderBy: pulse_prevalence_rank, orderMode: desc, first: 500) { edges { node { id } } }
   }
 `;
 const CREATE_INDICATOR = gql`
@@ -696,7 +696,7 @@ describe('Threat Pulse manager and API', () => {
       expect(ids).not.toContain(redIndicatorId);
       expect(await widespreadCount()).toBe(counted);
       const sorted = await queryAsAdminWithSuccess({ query: INDICATORS_BY_RANK });
-      const order = sorted.data?.stixCoreObjects.edges.map((edge: { node: { id: string } }) => edge.node.id);
+      const order = sorted.data?.stixDomainObjects.edges.map((edge: { node: { id: string } }) => edge.node.id);
       expect(order).toContain(redIndicatorId);
       expect(order.indexOf(sharedIndicatorId)).toBeLessThan(order.indexOf(redIndicatorId));
     } finally {
