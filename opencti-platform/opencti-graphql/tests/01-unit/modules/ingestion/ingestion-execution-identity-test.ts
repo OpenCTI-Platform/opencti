@@ -15,6 +15,7 @@ vi.mock('../../../../src/modules/user/user-domain', () => ({
 }));
 
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
+import { logApp } from '../../../../src/config/conf';
 import {
   assertIngestionExecutionIdentityAllowed,
   createIngestionAutomaticUser,
@@ -63,6 +64,30 @@ describe('Ingestion execution identity confinement', () => {
     it('should reject an identity holding a capability the creator does not have', () => {
       const creator = buildUser({ capabilities: ['KNOWLEDGE'] });
       const target = buildUser({ capabilities: ['KNOWLEDGE', 'SETTINGS_SETACCESSES'] });
+      expect(isIngestionUserWithinCreatorRights(creator, target)).toBe(false);
+    });
+
+    it('should accept an identity holding a parent of a creator capability', () => {
+      const creator = buildUser({ capabilities: ['KNOWLEDGE_KNUPDATE'] });
+      const target = buildUser({ capabilities: ['KNOWLEDGE'] });
+      expect(isIngestionUserWithinCreatorRights(creator, target)).toBe(true);
+    });
+
+    it('should reject an identity holding a child of a creator capability', () => {
+      const creator = buildUser({ capabilities: ['KNOWLEDGE'] });
+      const target = buildUser({ capabilities: ['KNOWLEDGE_KNUPDATE'] });
+      expect(isIngestionUserWithinCreatorRights(creator, target)).toBe(false);
+    });
+
+    it('should reject an identity holding a sibling of a creator capability', () => {
+      const creator = buildUser({ capabilities: ['KNOWLEDGE_KNUPDATE'] });
+      const target = buildUser({ capabilities: ['KNOWLEDGE_KNUPLOAD'] });
+      expect(isIngestionUserWithinCreatorRights(creator, target)).toBe(false);
+    });
+
+    it('should not consider a capability covered by a creator capability only sharing its prefix', () => {
+      const creator = buildUser({ capabilities: ['KNOWLEDGE_KNUPDATE_KNDELETE'] });
+      const target = buildUser({ capabilities: ['KNOWLEDGE_KNUPDATE_KN'] });
       expect(isIngestionUserWithinCreatorRights(creator, target)).toBe(false);
     });
 
@@ -357,8 +382,12 @@ describe('Ingestion execution identity confinement', () => {
         if (id === 'target') return buildUser({ id: 'target', capabilities: ['KNOWLEDGE'] });
         return undefined;
       });
+      const logErrorSpy = vi.spyOn(logApp, 'error').mockImplementation(() => {});
       await expect(assertIngestionExecutionIdentityAllowed(context, { id: 'feed', name: 'a feed', user_id: 'target', creator_id: 'gone' }))
         .resolves.toBeUndefined();
+      // The unverified execution must surface in monitoring.
+      expect(logErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Unable to resolve the creator'), { id: 'feed', name: 'a feed' });
+      logErrorSpy.mockRestore();
     });
 
     it('should let the execution continue when the feed carries no creator', async () => {

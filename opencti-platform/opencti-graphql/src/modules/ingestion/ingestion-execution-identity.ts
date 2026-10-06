@@ -14,6 +14,12 @@ const capabilityNames = (user: AuthUser): string[] => {
   return (user.capabilities ?? []).map((capability) => capability.name);
 };
 
+// Capabilities are hierarchical: a child capability (KNOWLEDGE_KNUPDATE) also grants its parents (KNOWLEDGE),
+// as in isUserHasCapability, but only exact names or descendants are matched.
+const isCapabilityCoveredBy = (name: string, creatorCapabilities: string[]): boolean => {
+  return creatorCapabilities.some((creatorName) => creatorName === name || creatorName.startsWith(`${name}_`));
+};
+
 const markingIds = (user: AuthUser): string[] => {
   return (user.allowed_marking ?? []).map((marking) => marking.internal_id);
 };
@@ -61,8 +67,8 @@ export const isIngestionUserWithinCreatorRights = (creatorUser: AuthUser, target
   if (isBypassUser(targetUser)) {
     return false;
   }
-  const creatorCapabilities = new Set(capabilityNames(creatorUser));
-  if (!capabilityNames(targetUser).every((name) => creatorCapabilities.has(name))) {
+  const creatorCapabilities = capabilityNames(creatorUser);
+  if (!capabilityNames(targetUser).every((name) => isCapabilityCoveredBy(name, creatorCapabilities))) {
     return false;
   }
   const creatorMarkings = new Set(markingIds(creatorUser));
@@ -177,7 +183,7 @@ export const assertIngestionExecutionIdentityAllowed = async (context: AuthConte
   const creators = (await Promise.all(creatorIds.map((id) => resolveUserByIdFromCache(context, id)))).filter((creator): creator is AuthUser => !!creator);
   if (creators.length === 0) {
     // No creator can be resolved anymore, the rights of the identity cannot be bounded: only trace it.
-    logApp.warn('[INGESTION] Unable to resolve the creator of an ingestion, execution identity could not be verified', { id: ingestion.id, name: ingestion.name });
+    logApp.error('[INGESTION] Unable to resolve the creator of an ingestion, execution identity could not be verified', { id: ingestion.id, name: ingestion.name });
     return;
   }
   if (!creators.some((creator) => isIngestionUserWithinCreatorRights(creator, targetUser))) {
