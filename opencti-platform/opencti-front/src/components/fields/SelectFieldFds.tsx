@@ -71,8 +71,9 @@ const SelectFieldFds = ({
         name={name}
       >
         {labelAction ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-            {label ? <SelectLabel required={required}>{label}</SelectLabel> : <span />}
+          // The row carries the 8 px gap of the label to the field: centred with its own margin, the label would sit above the action
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
+            {label ? <SelectLabel required={required} className="mb-0">{label}</SelectLabel> : <span />}
             {labelAction}
           </div>
         ) : null}
