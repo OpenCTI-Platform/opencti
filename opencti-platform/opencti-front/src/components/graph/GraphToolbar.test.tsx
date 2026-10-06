@@ -20,10 +20,10 @@ const viewActions = (): GraphViewActions => ({
   showShortcuts: vi.fn(),
 });
 
-const renderToolbar = (view = viewActions()) => ({
+const renderToolbar = (view = viewActions(), context: 'correlation' | 'analyses' = 'correlation') => ({
   view,
   ...testRender(
-    <GraphProvider objects={[]} context="correlation">
+    <GraphProvider objects={[]} context={context}>
       <GraphViewContext.Provider value={view}>
         <GraphToolbar />
       </GraphViewContext.Provider>
@@ -55,6 +55,13 @@ describe('GraphToolbar', () => {
     expect(divider).toHaveAttribute('data-toolbar-pinned');
     expect(divider?.children).toHaveLength(1);
     expect(divider?.firstElementChild).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('keeps the search on the read-only analyses graph, without the creation and removal tools', () => {
+    renderToolbar(viewActions(), 'analyses');
+    const toolbar = screen.getByRole('toolbar', { name: 'Graph toolbar' });
+    expect(within(toolbar).getByRole('textbox', { name: 'Search' }).closest('[data-graph-search]')).not.toBeNull();
+    expect(within(toolbar).queryByRole('group', { name: 'Creation and removal' })).toBeNull();
   });
 
   it('sits on the elevated surface of the legend and the details panel', () => {

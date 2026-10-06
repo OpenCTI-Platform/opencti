@@ -277,17 +277,15 @@ const GraphToolbar = ({
         {group('export')}
         {group('help')}
 
-        {editable && (
-          <Pinned style={{ width: SEARCH_WIDTH, marginLeft: 'auto' }}>
-            <div style={{ width: '100%' }} data-graph-search>
-              <SearchInput
-                keyword={search ?? ''}
-                onSubmit={selectBySearch}
-              />
-            </div>
-          </Pinned>
-        )}
-        <Pinned style={editable ? undefined : { marginLeft: 'auto' }}>
+        <Pinned style={{ width: SEARCH_WIDTH, marginLeft: 'auto' }}>
+          <div style={{ width: '100%' }} data-graph-search>
+            <SearchInput
+              keyword={search ?? ''}
+              onSubmit={selectBySearch}
+            />
+          </div>
+        </Pinned>
+        <Pinned>
           <GraphToolbarMoreActions actions={overflowed} />
         </Pinned>
       </div>
