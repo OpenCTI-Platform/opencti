@@ -610,11 +610,12 @@ describe('Hunt resolvers', () => {
     const knownHuntId = created.data?.huntAdd.id;
     try {
       const events = ['evt-a', 'evt-b', 'evt-c', 'evt-d', 'evt-e'];
+      // No host: a sampled hit naming one becomes an observable and an observed data that the next test files count
       const hit = (eventId: string) => ({
         event_id: eventId,
         timestamp: '2026-10-05T10:00:00Z',
         matched: [{ field: 'process.command_line', value_hash: 'b'.repeat(64), value_preview: 'powershell -enc AAAA' }],
-        host: 'ws-042',
+        host: null,
       });
       const runOver = async (eventIds: string[]) => {
         const started = await queryAsAdminWithSuccess({ query: HUNT_RUN_START, variables: { id: knownHuntId } });
