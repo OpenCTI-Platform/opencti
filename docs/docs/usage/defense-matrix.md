@@ -158,4 +158,6 @@ Three widgets are available in custom dashboards: **Defense coverage by tactic**
 
 Click **Create the defense coverage dashboard** next to **Recompute** in the defense matrix to create a custom dashboard from the built-in template: coverage by tactic, uncovered techniques used by threats, techniques by defense level, and detection rules by pattern type with the latest ones. The same template is offered on the custom dashboards page: click **Create from template** and choose **Defense coverage**.
 
+![Defense coverage dashboard created from the template](assets/defense-matrix-dashboard.png)
+
 The defense widgets are not available in public dashboards and in the custom views of entities.
