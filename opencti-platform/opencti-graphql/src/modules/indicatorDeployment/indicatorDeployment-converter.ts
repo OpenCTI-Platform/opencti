@@ -25,6 +25,8 @@ export const convertDeployedOnToStixExtension = (instance: StoreRelation): StixD
     hit_count: deployment.hit_count,
     first_hit_at: toStixDate(deployment.first_hit_at),
     last_hit_at: toStixDate(deployment.last_hit_at),
+    // The reports counted at the last hit: a synchronized platform tells their retries apart as the source does
+    last_hit_report_ids: deployment.last_hit_report_ids?.length ? deployment.last_hit_report_ids : undefined,
     validation_status: deployment.validation_status,
     last_validation_at: toStixDate(deployment.last_validation_at),
     validation_run_id: deployment.validation_run_id ?? undefined,

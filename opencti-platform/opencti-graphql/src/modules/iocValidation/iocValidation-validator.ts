@@ -24,7 +24,7 @@ import {
 import { registerEntityValidator, type ValidatorFn } from '../../schema/validator-register';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { isBypassUser, SYSTEM_USER } from '../../utils/access';
-import { findDeployedOn } from '../indicatorDeployment/indicatorDeployment-domain';
+import { findDeployedOn, HIT_REPORT_ID_MAX_LENGTH, HIT_REPORT_IDS_MAX } from '../indicatorDeployment/indicatorDeployment-domain';
 import {
   DEPLOYMENT_STATUS_EXPIRED,
   DEPLOYMENT_STATUS_PENDING,
@@ -484,6 +484,23 @@ const refuseInvalidStatus = (instance: Record<string, unknown>, field: string) =
   throw ValidationError('Status is not one of the statuses of the field', field, { value: firstValue(instance[field]) });
 };
 
+/** Whether an input gives a deployment more report ids, or longer ones, than a hits report can record. */
+export const exceedsHitReportIds = (instance: Record<string, unknown>) => {
+  const raw = instance.last_hit_report_ids;
+  if (isEmptyField(raw)) {
+    return false;
+  }
+  const ids = Array.isArray(raw) ? raw : [raw];
+  return ids.length > HIT_REPORT_IDS_MAX || ids.some((id) => typeof id !== 'string' || id.length > HIT_REPORT_ID_MAX_LENGTH);
+};
+
+const refuseHitReportIds = () => {
+  throw ValidationError(
+    `A deployment keeps at most ${HIT_REPORT_IDS_MAX} report ids at its last hit, of ${HIT_REPORT_ID_MAX_LENGTH} characters at most`,
+    'last_hit_report_ids',
+  );
+};
+
 // `expired` is the deployment manager's decision when no removal confirmation arrives in time, never a report.
 const setsReservedStatus = (instance: Record<string, unknown>) => firstValue(instance.deployment_status) === DEPLOYMENT_STATUS_EXPIRED;
 
@@ -507,6 +524,9 @@ const validatorCreation: ValidatorFn = async (context, user, instance) => {
   const invalidStatus = invalidStatusField(instance);
   if (invalidStatus) {
     return refuseInvalidStatus(instance, invalidStatus);
+  }
+  if (exceedsHitReportIds(instance)) {
+    return refuseHitReportIds();
   }
   // A new deployment gets the markings of its input; an upsert keeps the stored ones it does not remove.
   const inputCoversMarkings = await coversPairMarkings(context, instance);
@@ -561,6 +581,9 @@ const validatorUpdate: ValidatorFn = async (context, user, instance, initial, ed
   const invalidStatus = invalidStatusField(instance);
   if (invalidStatus) {
     return refuseInvalidStatus(instance, invalidStatus);
+  }
+  if (exceedsHitReportIds(instance)) {
+    return refuseHitReportIds();
   }
   // The pair access rules bind administrators too, as on creation; the bypass only lifts the lifecycle permissions.
   if (!await keepsPairMarkings(context, initial, editInputs)) {

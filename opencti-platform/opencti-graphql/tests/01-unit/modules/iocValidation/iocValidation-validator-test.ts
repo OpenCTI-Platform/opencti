@@ -6,6 +6,7 @@ import {
   carriesValidationProof,
   coversPairMarkings,
   coversUpsertPairMarkings,
+  exceedsHitReportIds,
   setsValidityWindow,
   invalidStatusField,
   isLifecycleWriter,
@@ -16,6 +17,7 @@ import { isTrustedDeploymentReporter } from '../../../../src/modules/iocValidati
 import { missingConnectorCapabilities, summarizeRequestPairs, withPairOutcomes } from '../../../../src/modules/iocValidation/iocValidation-domain';
 import { getEntityValidatorCreation, getEntityValidatorUpdate, type ValidatorFn } from '../../../../src/schema/validator-register';
 import { RELATION_DEPLOYED_ON } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-types';
+import { HIT_REPORT_ID_MAX_LENGTH, HIT_REPORT_IDS_MAX } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-domain';
 import type { AuthUser } from '../../../../src/types/user';
 import { EXPIRATION_MANAGER_USER } from '../../../../src/utils/access';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL } from '../../../../src/schema/stixDomainObject';
@@ -207,6 +209,19 @@ describe('Deployment identity guard', () => {
     const administrator = { id: 'admin', capabilities: [{ name: 'BYPASS' }] } as unknown as AuthUser;
     await expect(validatorCreation(testContext, administrator, { deployment_status: 'invalid-status' })).rejects.toThrow('Status is not one of the statuses');
     await expect(validatorUpdate(testContext, administrator, { validation_status: ['invalid-status'] }, {})).rejects.toThrow('Status is not one of the statuses');
+  });
+
+  it('should refuse more report ids at the last hit, or longer ones, than a hits report records', async () => {
+    expect(exceedsHitReportIds({ hit_count: 2 })).toEqual(false);
+    expect(exceedsHitReportIds({ last_hit_report_ids: ['hits-report-1', 'hits-report-2'] })).toEqual(false);
+    expect(exceedsHitReportIds({ last_hit_report_ids: Array.from({ length: HIT_REPORT_IDS_MAX + 1 }, (_, i) => `report-${i}`) })).toEqual(true);
+    expect(exceedsHitReportIds({ last_hit_report_ids: ['r'.repeat(HIT_REPORT_ID_MAX_LENGTH + 1)] })).toEqual(true);
+    const validatorCreation = getEntityValidatorCreation(RELATION_DEPLOYED_ON) as ValidatorFn;
+    const validatorUpdate = getEntityValidatorUpdate(RELATION_DEPLOYED_ON) as ValidatorFn;
+    const administrator = { id: 'admin', capabilities: [{ name: 'BYPASS' }] } as unknown as AuthUser;
+    const tooLong = { last_hit_report_ids: ['r'.repeat(HIT_REPORT_ID_MAX_LENGTH + 1)] };
+    await expect(validatorCreation(testContext, administrator, tooLong)).rejects.toThrow('A deployment keeps at most');
+    await expect(validatorUpdate(testContext, administrator, tooLong, {})).rejects.toThrow('A deployment keeps at most');
   });
 });
 

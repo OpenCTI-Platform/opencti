@@ -12,6 +12,7 @@ export interface StixDeployedOnExtension {
   hit_count?: number;
   first_hit_at?: StixDate;
   last_hit_at?: StixDate;
+  last_hit_report_ids?: string[];
   validation_status?: string;
   last_validation_at?: StixDate;
   validation_run_id?: string;

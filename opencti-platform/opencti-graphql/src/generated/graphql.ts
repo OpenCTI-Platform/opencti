@@ -32567,6 +32567,7 @@ export type StixCoreRelationshipAddInput = {
   killChainPhases?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   lang?: InputMaybe<Scalars['String']['input']>;
   last_hit_at?: InputMaybe<Scalars['DateTime']['input']>;
+  last_hit_report_ids?: InputMaybe<Array<Scalars['String']['input']>>;
   last_sync_at?: InputMaybe<Scalars['DateTime']['input']>;
   last_validation_at?: InputMaybe<Scalars['DateTime']['input']>;
   modified?: InputMaybe<Scalars['DateTime']['input']>;

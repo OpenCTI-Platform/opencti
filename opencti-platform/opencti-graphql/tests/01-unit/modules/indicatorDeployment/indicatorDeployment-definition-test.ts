@@ -51,6 +51,13 @@ describe('deployed-on relationship definition', () => {
     expect(usesAttributes).not.toContain('hit_count');
   });
 
+  it('should replace the report ids of the last hit on an upsert, as they belong to the instant of the last hit', () => {
+    const reportIds = schemaAttributesDefinition.getAttribute(RELATION_DEPLOYED_ON, 'last_hit_report_ids');
+    expect(reportIds?.multiple).toEqual(true);
+    expect(reportIds?.upsert).toEqual(true);
+    expect(reportIds?.upsert_force_replace).toEqual(true);
+  });
+
   it('should register filterable enum statuses with the exact plan values', () => {
     const deploymentStatus = schemaAttributesDefinition.getAttribute(RELATION_DEPLOYED_ON, 'deployment_status');
     expect(deploymentStatus?.isFilterable).toEqual(true);
@@ -148,6 +155,21 @@ describe('deployed-on STIX extension', () => {
       validation_run_id: undefined,
       error_message: undefined,
     });
+  });
+
+  it('should export the reports counted at the last hit, so a synchronized platform does not count their retries', () => {
+    const extension = convertDeployedOnToStixExtension({
+      relationship_type: RELATION_DEPLOYED_ON,
+      deployment_status: 'active',
+      hit_count: 3,
+      first_hit_at: '2026-10-01T10:00:00.000Z',
+      last_hit_at: '2026-10-02T10:00:00.000Z',
+      last_hit_report_ids: ['hits-report-1', 'hits-report-2'],
+    } as unknown as StoreRelation);
+    expect(extension.first_hit_at).toEqual('2026-10-01T10:00:00.000Z');
+    expect(extension.last_hit_report_ids).toEqual(['hits-report-1', 'hits-report-2']);
+    const none = convertDeployedOnToStixExtension({ relationship_type: RELATION_DEPLOYED_ON, last_hit_report_ids: [] } as unknown as StoreRelation);
+    expect(none.last_hit_report_ids).toBeUndefined();
   });
 
   it('should not add anything to other relationship types', () => {

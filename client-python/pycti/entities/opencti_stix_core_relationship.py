@@ -16,6 +16,7 @@ DEPLOYED_ON_ATTRIBUTES = [
     "hit_count",
     "first_hit_at",
     "last_hit_at",
+    "last_hit_report_ids",
     "validation_status",
     "last_validation_at",
     "validation_run_id",
@@ -743,8 +744,8 @@ class StixCoreRelationship:
         :type coverage_information: list
         :param deployment: (optional) deployment lifecycle attributes of a deployed-on relationship
             (deployment_status, external_id, deployed_at, last_sync_at, removed_at, hit_count,
-            first_hit_at, last_hit_at, validation_status, last_validation_at, validation_run_id,
-            error_message)
+            first_hit_at, last_hit_at, last_hit_report_ids, validation_status, last_validation_at,
+            validation_run_id, error_message)
         :type deployment: dict
         :param update: (optional) whether to update if exists (default: False)
         :type update: bool
