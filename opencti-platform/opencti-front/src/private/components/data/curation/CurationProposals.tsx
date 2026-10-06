@@ -182,7 +182,7 @@ const CurationProposalsComponent = () => {
     confidence_score: {
       id: 'confidence_score',
       label: 'Confidence',
-      percentWidth: 14,
+      percentWidth: 12,
       isSortable: true,
       render: ({ confidence_score, in_ambiguous_band }: CurationProposals_proposal$data) => (
         <CurationConfidence value={confidence_score} ambiguous={in_ambiguous_band} />
@@ -206,7 +206,7 @@ const CurationProposalsComponent = () => {
     },
     created_at: {
       id: 'created_at',
-      percentWidth: 13,
+      percentWidth: 15,
     },
   };
 
