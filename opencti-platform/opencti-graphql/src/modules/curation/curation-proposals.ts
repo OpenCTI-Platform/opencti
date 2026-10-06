@@ -330,13 +330,15 @@ export const refreshProposalRestrictions = async (context: AuthContext, subjectI
 /**
  * The open alias proposals an alias proposal of the same entity replaces: an alias proposal names every catalogue name
  * the entity lacks when it is raised, so an older one (other names, other catalogues, or one per catalogue as raised by
- * earlier versions) describes a state that is gone.
+ * earlier versions) describes a state that is gone. One an acceptance started to apply stays, so that accepting it
+ * again records what was done.
  */
 export const supersededAliasProposals = (
-  open: Array<Pick<BasicStoreEntityCurationProposal, 'internal_id' | 'proposal_kind' | 'proposal_status' | 'proposal_fingerprint' | 'subject_ids'>>,
+  open: Array<Pick<BasicStoreEntityCurationProposal, 'internal_id' | 'proposal_kind' | 'proposal_status' | 'proposal_fingerprint' | 'subject_ids' | 'application_started_at'>>,
   current: Pick<BasicStoreEntityCurationProposal, 'internal_id' | 'proposal_fingerprint' | 'subject_ids'>,
 ) => open.filter((proposal) => proposal.proposal_kind === PROPOSAL_KIND_ALIAS
   && proposal.proposal_status === PROPOSAL_STATUS_OPEN
+  && !proposal.application_started_at
   && proposal.internal_id !== current.internal_id
   && proposal.proposal_fingerprint !== current.proposal_fingerprint
   && proposal.subject_ids.length === 1
@@ -350,7 +352,7 @@ const removeSupersededAliasProposals = async (context: AuthContext, current: Bas
     const { internal_id: id } = superseded[index];
     await withProposalTransitionLock(id, async () => {
       const [reloaded] = await internalFindByIds(context, SYSTEM_USER, [id]) as BasicStoreEntityCurationProposal[];
-      if (reloaded?.proposal_status !== PROPOSAL_STATUS_OPEN) return;
+      if (reloaded?.proposal_status !== PROPOSAL_STATUS_OPEN || reloaded.application_started_at) return;
       await deleteElementById(context, SYSTEM_USER, id, ENTITY_TYPE_CURATION_PROPOSAL);
     });
   }

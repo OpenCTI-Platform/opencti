@@ -68,6 +68,7 @@ describe('missing aliases detection', () => {
       proposal('per-catalogue-misp', 'f-misp', ['apt28']),
       proposal('other-entity', 'f-other', ['apt29']),
       proposal('decided', 'f-decided', ['apt28'], { proposal_status: 'accepted' }),
+      proposal('being-applied', 'f-started', ['apt28'], { application_started_at: '2026-10-06T16:00:00.000Z' }),
       proposal('merge', 'f-merge', ['apt28'], { proposal_kind: 'merge' }),
     ];
     expect(supersededAliasProposals(open, current).map((p) => (p as { internal_id: string }).internal_id)).toEqual(['per-catalogue-mitre', 'per-catalogue-misp']);

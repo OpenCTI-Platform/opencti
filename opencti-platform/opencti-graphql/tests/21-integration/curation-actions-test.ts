@@ -1148,11 +1148,18 @@ describe('Knowledge curation actions', () => {
     // An acceptance marked the application as started, then stopped before the change.
     await wait(10);
     await middleware.patchAttribute(testContext, ADMIN_USER, id, ENTITY_TYPE_CURATION_PROPOSAL, { application_started_at: new Date().toISOString() });
-    // A detection finds the same entity with one more name: the proposal being applied keeps its content.
     const settings = await getCurationSettings(testContext);
-    const { created } = await persistProposalDraft(testContext, settings, { ...draft, action_payload: { aliases: [proposedName, `${proposedName} Two`] } });
-    expect(created).toBe(false);
-    const { action_payload: payload } = await storeLoadById(testContext, ADMIN_USER, id, ENTITY_TYPE_CURATION_PROPOSAL) as unknown as { action_payload: unknown };
+    type StoredProposal = { confidence_score: number; action_payload: unknown };
+    const loadStored = async () => storeLoadById(testContext, ADMIN_USER, id, ENTITY_TYPE_CURATION_PROPOSAL) as unknown as Promise<StoredProposal>;
+    // The same finding detected again: the proposal being applied is not refreshed.
+    const again = await persistProposalDraft(testContext, settings, { ...draft, confidence: 0.9 });
+    expect(again.created).toBe(false);
+    expect((await loadStored()).confidence_score).toBe(0.7);
+    // A detection finds the same entity with one more name: a new proposal, and the one being applied stays as it was.
+    const superseding = await persistProposalDraft(testContext, settings, { ...draft, action_payload: { aliases: [proposedName, `${proposedName} Two`] } });
+    expect(superseding.created).toBe(true);
+    createdProposalIds.push(superseding.proposal?.internal_id as string);
+    const { action_payload: payload } = await loadStored();
     expect(typeof payload === 'string' ? JSON.parse(payload) : payload).toEqual({ aliases: [proposedName] });
     // The retry, sent with the revision read before the start, records the application of that content.
     const accepted = await queryAsAdminWithSuccess({ query: ACCEPT_MUTATION, variables: { id, input: { expected_updated_at: read.updated_at } } });
