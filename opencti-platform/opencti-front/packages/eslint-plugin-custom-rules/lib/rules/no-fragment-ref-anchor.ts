@@ -18,6 +18,7 @@ interface JsxName {
 interface JsxChild {
   type: string;
   value?: string;
+  expression?: { type: string };
   openingElement?: { name: JsxName };
 }
 
@@ -39,7 +40,11 @@ const isFragment = (node: JsxChild): boolean => {
   return elementName(node) === 'Fragment';
 };
 
-const isMeaningfulChild = (child: JsxChild): boolean => !(child.type === 'JSXText' && (child.value ?? '').trim() === '');
+const isMeaningfulChild = (child: JsxChild): boolean => {
+  if (child.type === 'JSXText') return (child.value ?? '').trim() !== '';
+  if (child.type === 'JSXExpressionContainer') return child.expression?.type !== 'JSXEmptyExpression';
+  return true;
+};
 
 const rule: Rule.RuleModule = {
   meta: {

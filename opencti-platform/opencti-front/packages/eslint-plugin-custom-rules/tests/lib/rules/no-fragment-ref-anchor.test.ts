@@ -43,6 +43,10 @@ ruleTester.run('no-fragment-ref-anchor', rule, {
       errors: [{ messageId: 'fragmentAnchor' }],
     },
     {
+      code: '<Tooltip title="t">{/* why */}<>{v}</></Tooltip>;',
+      errors: [{ messageId: 'fragmentAnchor' }],
+    },
+    {
       code: '<Fade in><>{v}</></Fade>;',
       errors: [{ messageId: 'fragmentAnchor', data: { component: 'Fade' } }],
     },
