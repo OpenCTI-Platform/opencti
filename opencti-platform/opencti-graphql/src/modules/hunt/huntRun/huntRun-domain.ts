@@ -504,7 +504,23 @@ export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntit
         playbook_context: null,
       } : {}),
     };
-    const run = await createEntity(context, HUNT_MANAGER_USER, runInput, ENTITY_TYPE_HUNT_RUN) as BasicStoreEntityHuntRun;
+    let run: BasicStoreEntityHuntRun;
+    try {
+      run = await createEntity(context, HUNT_MANAGER_USER, runInput, ENTITY_TYPE_HUNT_RUN) as BasicStoreEntityHuntRun;
+    } catch (error) {
+      // Once runs exist, failing would make an automatic trigger create them again at the next tick: they are kept and
+      // returned. A platform left without a run catches up at its next recurring run, which searches from its last one
+      if (runs.length === 0) {
+        throw error;
+      }
+      logApp.warn('[OPENCTI-MODULE] Hunt run creation interrupted, the runs already created are kept', {
+        cause: error,
+        huntId: hunt.internal_id,
+        created: runs.length,
+        targets: targets.length,
+      });
+      break;
+    }
     runs.push(run);
     addHuntRunCount(request.trigger);
     if (request.dispatch !== false && dispatchBudget > 0) {
@@ -520,8 +536,9 @@ export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntit
     runs[0] = await designateHuntPlaybookLeader(context, runs[0], request.playbook.context);
   }
   if (runs.length > 0 && mode === HUNT_RUN_MODE_EXECUTE) {
-    // Never written over the statistics of a run finalized meanwhile
-    await updateHuntRunInformation(context, hunt.internal_id, { last_run_at: queuedAt, last_run_status: HUNT_RUN_STATUS_QUEUED }, { onlyIfNewer: true });
+    // Never written over the statistics of a run finalized meanwhile; the runs exist, a failure here never fails them
+    await updateHuntRunInformation(context, hunt.internal_id, { last_run_at: queuedAt, last_run_status: HUNT_RUN_STATUS_QUEUED }, { onlyIfNewer: true })
+      .catch((error) => logApp.warn('[OPENCTI-MODULE] Hunt last run information not recorded', { cause: error, huntId: hunt.internal_id }));
   }
   return runs;
 };
