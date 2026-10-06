@@ -323,7 +323,6 @@ const applyAndRecord = async (
         cause: error,
         proposal_id: proposal.internal_id,
         merge_record_id: application.mergeRecordId,
-        applied_patch: application.appliedPatch,
       });
       throw FunctionalError('The change was applied but the proposal could not be updated: accept it again to record it', { id: proposal.internal_id });
     }
