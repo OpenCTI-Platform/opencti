@@ -142,8 +142,17 @@ const HuntTranslationPreview = ({ huntId, huntType, scopePlatformIds, dirty = fa
   const [commitTest] = useDialogMutation<HuntTranslationPreviewTestQueryMutation>(huntTranslationPreviewTestQueryMutation);
   const pollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoStarted = useRef(false);
-  useEffect(() => () => {
-    if (pollTimer.current) clearTimeout(pollTimer.current);
+  // An answer for an unmounted preview, or for a preview a newer one replaced, is ignored: it never updates the state
+  // nor schedules another poll
+  const mounted = useRef(false);
+  const generation = useRef(0);
+  const isCurrent = (token: number) => mounted.current && token === generation.current;
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      if (pollTimer.current) clearTimeout(pollTimer.current);
+    };
   }, []);
 
   const eligibleConnectors = huntConnectors.filter((connector) => isHuntPreviewConnector(connector, huntType, scopePlatformIds));
@@ -155,10 +164,11 @@ const HuntTranslationPreview = ({ huntId, huntType, scopePlatformIds, dirty = fa
   });
   const hasPreviewConnector = eligibleConnectors.length > 0;
 
-  const poll = (runId: string, startedAt: number) => {
+  const poll = (runId: string, startedAt: number, token: number) => {
     fetchQuery<HuntTranslationPreviewRunQuery>(huntTranslationPreviewRunQuery, { id: runId }, { fetchPolicy: 'network-only' })
       .toPromise()
       .then((data) => {
+        if (!isCurrent(token)) return;
         const run = data?.huntRun;
         if (run && isTerminalHuntRun(run.hunt_run_status)) {
           setPreview({ status: 'done', run });
@@ -166,26 +176,33 @@ const HuntTranslationPreview = ({ huntId, huntType, scopePlatformIds, dirty = fa
           setPreview({ status: 'timeout' });
         } else {
           setPreview({ status: 'waiting', run: run ?? undefined });
-          pollTimer.current = setTimeout(() => poll(runId, startedAt), HUNT_PREVIEW_POLL_INTERVAL_MS);
+          pollTimer.current = setTimeout(() => poll(runId, startedAt, token), HUNT_PREVIEW_POLL_INTERVAL_MS);
         }
       })
-      .catch(() => setPreview({ status: 'timeout' }));
+      .catch(() => {
+        if (isCurrent(token)) setPreview({ status: 'timeout' });
+      });
   };
 
   const start = () => {
     if (pollTimer.current) clearTimeout(pollTimer.current);
+    generation.current += 1;
+    const token = generation.current;
     setPreview({ status: 'waiting' });
     commitTest({
       variables: { id: huntId, securityPlatformId: platformId === ANY_PLATFORM ? null : platformId },
       onCompleted: (data, errors) => {
+        if (!isCurrent(token)) return;
         const errorMessage = payloadErrorsMessage(errors);
         if (errorMessage || !data.huntTestQuery) {
           setPreview({ status: 'error', message: errorMessage ?? t_i18n('The query preview could not be started') });
           return;
         }
-        poll(data.huntTestQuery.id, Date.now());
+        poll(data.huntTestQuery.id, Date.now(), token);
       },
-      onError: (error) => setPreview({ status: 'error', message: mutationErrorMessage(error, t_i18n('The query preview could not be started')) }),
+      onError: (error) => {
+        if (isCurrent(token)) setPreview({ status: 'error', message: mutationErrorMessage(error, t_i18n('The query preview could not be started')) });
+      },
     });
   };
 

@@ -175,4 +175,32 @@ describe('Hunt status header dialogs', () => {
     expect(within(dialog).getByTestId('hunt-preview-error')).toHaveTextContent('The query preview could not be started');
     expect(MESSAGING$.notifyRelayError).not.toHaveBeenCalled();
   });
+
+  it('never polls for a preview whose dialog was closed before the connector accepted it', async () => {
+    const { user, relayEnv } = renderHeader();
+    await user.click(screen.getByTestId('hunt-query-preview-open'));
+    await act(async () => {
+      relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
+        Query: () => ({
+          huntConnectors: [{
+            id: 'connector-1',
+            name: 'Splunk Hunt',
+            platform: 'splunk',
+            supports_preview: true,
+            supports_indicators: true,
+            securityPlatform: { id: 'platform-1', name: 'Splunk Production' },
+          }],
+        }),
+      }));
+    });
+    // The preview started on its own; the dialog is closed before its run is created
+    const started = relayEnv.mock.getAllOperations().find((operation) => operation.request.node.params.name === 'HuntTranslationPreviewTestQueryMutation');
+    expect(started).toBeDefined();
+    await user.click(within(screen.getByRole('dialog')).getAllByRole('button', { name: 'Close' })[0]);
+    await act(async () => {
+      if (started) relayEnv.mock.resolve(started, MockPayloadGenerator.generate(started, { HuntRun: () => ({ id: 'run-1' }) }));
+    });
+    const polls = relayEnv.mock.getAllOperations().filter((operation) => operation.request.node.params.name === 'HuntTranslationPreviewRunQuery');
+    expect(polls).toHaveLength(0);
+  });
 });
