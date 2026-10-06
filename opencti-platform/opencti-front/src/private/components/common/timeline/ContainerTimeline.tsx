@@ -47,6 +47,7 @@ import {
   centerDomain,
   computeTimelineExtent,
   computeVisibleDomain,
+  currentTimelineDomain,
   effectiveKinds,
   effectiveLanes,
   isTimelineViewFilteredBy,
@@ -649,7 +650,7 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
       <ContainerTimelineAnchors
         anchors={summary.anchors}
         onAnchorClick={(time) => {
-          const centered = centerDomain(domain ?? computeVisibleDomain(null, state.zoom), time);
+          const centered = centerDomain(currentTimelineDomain(domain, visibleDomain, state.zoom), time);
           clearTimeout(urlTimer.current);
           setDomain(centered);
           updateState({ view: 'lanes', domain: centered });
@@ -683,7 +684,7 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
           onExport={exportTimeline}
           onOpenSettings={() => setSettingsOpen(true)}
           onRegenerate={regenerate}
-          onZoom={(factor) => onDomainChange(zoomDomain(domain ?? computeVisibleDomain(null, state.zoom), factor))}
+          onZoom={(factor) => onDomainChange(zoomDomain(currentTimelineDomain(domain, visibleDomain, state.zoom), factor))}
           onFit={() => onDomainChange(null)}
           visibleDomain={visibleDomain}
         />

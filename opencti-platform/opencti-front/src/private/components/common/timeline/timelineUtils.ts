@@ -263,6 +263,14 @@ export const computeVisibleDomain = (extent: TimelineDomain | null, zoom: Timeli
   return [end - duration + duration * 0.02, end + duration * 0.02];
 };
 
+/**
+ * Domain a change of the view (zoom, centering) starts from: the one the user set, else the one the lanes display (the
+ * fit of the events), else the zoom window when no lanes are displayed.
+ */
+export const currentTimelineDomain = (domain: TimelineDomain | null, displayed: TimelineDomain | null, zoom: TimelineZoomWindow): TimelineDomain => {
+  return domain ?? displayed ?? computeVisibleDomain(null, zoom);
+};
+
 /** Zoom around a focus time: factor < 1 zooms in, factor > 1 zooms out. */
 export const zoomDomain = (domain: TimelineDomain, factor: number, focus?: number): TimelineDomain => {
   const [start, end] = domain;

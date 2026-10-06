@@ -8,6 +8,7 @@ import {
   computeTimelineExtent,
   endsAfterStart,
   computeVisibleDomain,
+  currentTimelineDomain,
   describeTimelineSpan,
   effectiveKinds,
   effectiveLanes,
@@ -122,6 +123,17 @@ describe('Timeline time domain', () => {
     expect(zoomed).toEqual([0, 5 * HOUR]);
     expect(panDomain([0, 10], 5)).toEqual([5, 15]);
     expect(centerDomain([0, 10], 100)).toEqual([95, 105]);
+  });
+
+  it('should start a zoom or a centering from the domain the user set, else the one the lanes display', () => {
+    const displayed: TimelineDomain = [10 * DAY, 40 * DAY];
+    expect(currentTimelineDomain([0, HOUR], displayed, 'fit')).toEqual([0, HOUR]);
+    // An untouched fit keeps its span: centering on an anchor moves the displayed domain, it does not open a week
+    expect(currentTimelineDomain(null, displayed, 'fit')).toEqual(displayed);
+    expect(centerDomain(currentTimelineDomain(null, displayed, 'fit'), 30 * DAY)).toEqual([15 * DAY, 45 * DAY]);
+    // Without lanes on screen (the list view), the zoom window
+    const [start, end] = currentTimelineDomain(null, null, 'week');
+    expect(end - start).toEqual(7 * DAY);
   });
 
   it('should never zoom below one minute', () => {
