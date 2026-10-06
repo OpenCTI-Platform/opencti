@@ -46,7 +46,7 @@ import { convertFiltersToQueryOptions } from '../utils/filtering/filtering-resol
 import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import { fullRelationsList } from '../database/middleware-loader';
-import { RELATION_OBJECT } from '../schema/stixRefRelationship';
+import { isStixRefRelationship, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_STREAM_COLLECTION } from '../modules/dataSharing/streamCollection-types';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -283,6 +283,16 @@ export const resolveMissingReferences = async (context, user, missingRefs, cache
     for (let index = 0; index < missingElements.length; index += 1) {
       await doYield();
       const missingElement = missingElements[index];
+      // A ref relationship (e.g. email-message "to" email-addr, added to a container from its graph)
+      // has no STIX representation: its source already carries it as a *_ref(s) property.
+      // Resolving the source is enough, its refs (so the target) are resolved in turn.
+      if (isStixRefRelationship(missingElement.entity_type)) {
+        extractIdsFromStoreObject(missingElement).forEach((id) => resolvedIds.add(id));
+        if (!cache.has(missingElement.fromId) && !resolvedIds.has(missingElement.fromId)) {
+          newRefsToResolve.add(missingElement.fromId);
+        }
+        continue;
+      }
       const stix = convertStoreToStix_2_1(missingElement);
       const instanceIds = [missingElement.internal_id, missingElement.standard_id, ...(missingElement.x_opencti_stix_ids ?? [])];
       elementsWithStix.push({ message: generateCreateMessage(missingElement), stix, instanceIds });
@@ -297,7 +307,7 @@ export const resolveMissingReferences = async (context, user, missingRefs, cache
       });
     }
     allResolvedElements.unshift(elementsWithStix);
-    refsToResolve = Array.from(newRefsToResolve);
+    refsToResolve = Array.from(newRefsToResolve).filter((refId) => !resolvedIds.has(refId));
   }
   // Return flattened results in reverse order (deepest dependencies first)
   return allResolvedElements.flat();

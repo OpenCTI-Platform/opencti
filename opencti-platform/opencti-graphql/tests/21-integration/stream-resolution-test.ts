@@ -53,6 +53,32 @@ const CREATE_CASE_QUERY = gql`
   }
 `;
 
+const CREATE_OBSERVABLE_QUERY = gql`
+  mutation StixCyberObservableAdd($type: String!, $EmailAddr: EmailAddrAddInput, $EmailMessage: EmailMessageAddInput) {
+    stixCyberObservableAdd(type: $type, EmailAddr: $EmailAddr, EmailMessage: $EmailMessage) {
+      id
+      standard_id
+    }
+  }
+`;
+
+const CREATE_REF_RELATIONSHIP_QUERY = gql`
+  mutation StixRefRelationshipAdd($input: StixRefRelationshipAddInput!) {
+    stixRefRelationshipAdd(input: $input) {
+      id
+      standard_id
+    }
+  }
+`;
+
+const DELETE_OBSERVABLE_QUERY = gql`
+  mutation StixCyberObservableDelete($id: ID!) {
+    stixCyberObservableEdit(id: $id) {
+      delete
+    }
+  }
+`;
+
 const DELETE_DOMAIN_QUERY = gql`
   mutation stixDomainObjectDelete($id: ID!) {
     stixDomainObjectEdit(id: $id) {
@@ -132,5 +158,52 @@ describe('Should stream parent resolutions correctly working', () => {
     await queryAsAdmin({ query: DELETE_DOMAIN_QUERY, variables: { id: case02ResolutionId } });
     await queryAsAdmin({ query: DELETE_DOMAIN_QUERY, variables: { id: case01ResolutionId } });
     await queryAsAdmin({ query: DELETE_DOMAIN_QUERY, variables: { id: report01ResolutionId } });
+  });
+
+  it('should resolve a container holding a nested ref relationship (#13236)', async () => {
+    // REPORT -- ref --> EMAIL-MESSAGE -- to --> EMAIL-ADDR, the "to" ref relationship itself being in the report
+    const emailAddr = await queryAsAdminWithSuccess({
+      query: CREATE_OBSERVABLE_QUERY,
+      variables: { type: 'Email-Addr', EmailAddr: { value: 'stream-resolution-13236@example.com' } },
+    });
+    const emailAddrId = emailAddr.data.stixCyberObservableAdd.id;
+    const emailMessage = await queryAsAdminWithSuccess({
+      query: CREATE_OBSERVABLE_QUERY,
+      variables: { type: 'Email-Message', EmailMessage: { subject: 'Stream-Resolution-13236', body: 'Stream-Resolution-13236' } },
+    });
+    const emailMessageId = emailMessage.data.stixCyberObservableAdd.id;
+    const refRelationship = await queryAsAdminWithSuccess({
+      query: CREATE_REF_RELATIONSHIP_QUERY,
+      variables: { input: { fromId: emailMessageId, toId: emailAddrId, relationship_type: 'to' } },
+    });
+    const refRelationshipId = refRelationship.data.stixRefRelationshipAdd.id;
+    const report = await queryAsAdminWithSuccess({
+      query: CREATE_REPORT_QUERY,
+      variables: {
+        input: {
+          name: 'Report-Nested-Ref-Resolution',
+          published: '2020-02-26T00:51:35.000Z',
+          objects: [refRelationshipId],
+        },
+      },
+    });
+    const reportId = report.data.reportAdd.id;
+    const reportWithRefs = await storeLoadByIdWithRefs(testContext, ADMIN_USER, reportId);
+    const stixReport = convertStoreToStix_2_1(reportWithRefs as StoreObject);
+    const refs = stixRefsExtractor(stixReport);
+    const cache = new LRUCache({ max: 5000, ttl: 1000 * 60 * 60 });
+    const missingInstances: any[] = await resolveMissingReferences(testContext, ADMIN_USER, refs, cache);
+    // The ref relationship is not published as such, its source and target are
+    expect(missingInstances.some((m) => m.instanceIds.includes(refRelationshipId))).toBe(false);
+    const stixIds = missingInstances.map((m) => m.stix.id);
+    expect(stixIds).toContain(emailAddr.data.stixCyberObservableAdd.standard_id);
+    const stixMessage = missingInstances.find((m) => m.stix.id === emailMessage.data.stixCyberObservableAdd.standard_id);
+    expect(stixMessage.stix.to_refs).toEqual([emailAddr.data.stixCyberObservableAdd.standard_id]);
+    // Dependencies first: the address is published before the message referencing it
+    expect(stixIds.indexOf(emailAddr.data.stixCyberObservableAdd.standard_id)).toBeLessThan(stixIds.indexOf(stixMessage.stix.id));
+    // CLEANUP
+    await queryAsAdmin({ query: DELETE_DOMAIN_QUERY, variables: { id: reportId } });
+    await queryAsAdmin({ query: DELETE_OBSERVABLE_QUERY, variables: { id: emailMessageId } });
+    await queryAsAdmin({ query: DELETE_OBSERVABLE_QUERY, variables: { id: emailAddrId } });
   });
 });
