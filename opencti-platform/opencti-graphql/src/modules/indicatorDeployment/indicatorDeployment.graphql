@@ -29,6 +29,7 @@ extend type StixCoreRelationship {
   hit_count: Int
   first_hit_at: DateTime
   last_hit_at: DateTime
+  last_hit_report_ids: [String!]
   validation_status: IndicatorValidationStatus
   last_validation_at: DateTime
   validation_run_id: String

@@ -20,6 +20,7 @@ _DEPLOYMENT_PROPERTIES = """
     hit_count
     first_hit_at
     last_hit_at
+    last_hit_report_ids
     validation_status
     last_validation_at
     validation_run_id

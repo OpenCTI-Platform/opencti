@@ -32446,6 +32446,7 @@ export type StixCoreRelationship = BasicRelationship & StixRelationship & {
   killChainPhases?: Maybe<Array<KillChainPhase>>;
   lang?: Maybe<Scalars['String']['output']>;
   last_hit_at?: Maybe<Scalars['DateTime']['output']>;
+  last_hit_report_ids?: Maybe<Array<Scalars['String']['output']>>;
   last_sync_at?: Maybe<Scalars['DateTime']['output']>;
   last_validation_at?: Maybe<Scalars['DateTime']['output']>;
   metrics?: Maybe<Array<Maybe<Metric>>>;
@@ -52848,6 +52849,7 @@ export type StixCoreRelationshipResolvers<ContextType = any, ParentType extends 
   killChainPhases?: Resolver<Maybe<Array<ResolversTypes['KillChainPhase']>>, ParentType, ContextType>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   last_hit_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  last_hit_report_ids?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   last_sync_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   last_validation_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;

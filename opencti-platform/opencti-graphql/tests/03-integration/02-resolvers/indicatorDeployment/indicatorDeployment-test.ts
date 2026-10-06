@@ -144,6 +144,13 @@ const DEPLOYMENTS_LIST = gql`
     }
   }
 `;
+const DEPLOYMENT_HITS_READ = gql`
+  query DeploymentHits($fromId: [String], $toId: [String]) {
+    stixCoreRelationships(relationship_type: ["deployed-on"], fromId: $fromId, toId: $toId, first: 1) {
+      edges { node { id last_hit_at last_hit_report_ids } }
+    }
+  }
+`;
 const METRICS = gql`
   query Metrics($platformId: String) {
     disseminationAssuranceMetrics(platformId: $platformId) {
@@ -616,6 +623,11 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
       // Another report ending at the same instant is counted
       const other = await queryAsUserWithSuccess(USER_CONNECTOR, { query: REPORT_HITS, variables: { ...report, count: 1, reportId: 'hits-report-2' } });
       expect(other.data?.indicatorReportHits.attribute_count).toEqual(3);
+      // The reports counted at the last hit are read back, so a client reconciling its imports sees them
+      const read = await queryAsAdminWithSuccess({ query: DEPLOYMENT_HITS_READ, variables: { fromId: [hitIndicatorId], toId: [platformId] } });
+      const deployment = read.data?.stixCoreRelationships.edges[0].node;
+      expect(new Date(deployment.last_hit_at).toISOString()).toEqual('2026-10-03T10:00:00.000Z');
+      expect(deployment.last_hit_report_ids).toEqual(['hits-report-1', 'hits-report-2']);
     } finally {
       if (hitIndicatorId) {
         await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: hitIndicatorId } });
