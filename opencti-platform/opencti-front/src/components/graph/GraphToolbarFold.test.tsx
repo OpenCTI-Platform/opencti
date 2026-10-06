@@ -65,12 +65,13 @@ describe('GraphToolbar on a narrow graph', () => {
     row.width = 400;
     rerender(toolbarOf());
     expect(within(toolbar).getByRole('button', { name: 'Creation and removal' })).toBeInTheDocument();
+    // Folded, the tool waits in the closed popover, out of the row and of its keyboard path
     expect(addEntity.isConnected).toBe(true);
-    // Closed, the folded tools leave the keyboard path of the toolbar
-    expect(toolbar.querySelector('[data-graph-creation-tools]')).toHaveAttribute('aria-hidden', 'true');
+    expect(toolbar.contains(addEntity)).toBe(false);
     row.width = 4000;
     rerender(toolbarOf());
     expect(within(toolbar).getByRole('button', { name: 'Add an entity' })).toBe(addEntity);
+    expect(toolbar.contains(addEntity)).toBe(true);
     expect(tool.mounts).toBe(1);
   });
 

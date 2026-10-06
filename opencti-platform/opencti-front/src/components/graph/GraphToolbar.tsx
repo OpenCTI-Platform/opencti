@@ -1,8 +1,10 @@
-import React, { ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { ReactNode, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Paper } from '@filigran/design-system';
 import Divider from '@mui/material/Divider';
 import { useTheme } from '@mui/material/styles';
 import LinearProgress from '@mui/material/LinearProgress';
+import Popover from '@mui/material/Popover';
 import { PencilPlusOutline } from 'mdi-material-ui';
 import useGraphInteractions from './utils/useGraphInteractions';
 import SearchInput from '../SearchInput';
@@ -24,7 +26,7 @@ import useAuth from '../../utils/hooks/useAuth';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
 import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../utils/hooks/useDraftContext';
 import useResizeObserver from '../../utils/hooks/useResizeObserver';
-import { FILTER_POPOVER_LAYER, SURFACE_LAYER, layerInputVars } from '../../utils/fdsLayer';
+import { SURFACE_LAYER, layerInputVars } from '../../utils/fdsLayer';
 import { GRAPH_TOOLBAR_HEIGHT, GRAPH_TOOLBAR_HEIGHT_WITH_TIME_RANGE } from './utils/graphFraming';
 
 export type GraphToolbarProps = GraphToolbarContentToolsProps & GraphToolbarExpandToolsProps & {
@@ -175,44 +177,20 @@ const GraphToolbar = ({
       <GraphToolbarContentTools {...props} />
     </>
   );
-  // The creation and removal tools are one subtree mounted whatever the room: their dialogs (a relationship drawn
-  // with the right button included) live in them, so folding or unfolding the row never closes one. Folded, they
-  // float over the toolbar while their button is pressed and stay mounted, hidden, otherwise.
-  const creationPanelRef = useRef<HTMLDivElement | null>(null);
-  useEffect(() => {
-    if (!creationAnchor) return undefined;
-    const closeOutside = (event: PointerEvent) => {
-      const target = event.target as Node | null;
-      if (target && (creationPanelRef.current?.contains(target) || creationAnchor.contains(target))) return;
-      setCreationAnchor(null);
-    };
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setCreationAnchor(null);
-    };
-    document.addEventListener('pointerdown', closeOutside);
-    document.addEventListener('keydown', closeOnEscape);
-    return () => {
-      document.removeEventListener('pointerdown', closeOutside);
-      document.removeEventListener('keydown', closeOnEscape);
-    };
-  }, [creationAnchor]);
-  let creationPanelStyle: React.CSSProperties = { display: 'contents' };
-  if (creationFolded) {
-    const anchorBox = creationAnchor?.getBoundingClientRect();
-    creationPanelStyle = anchorBox
-      ? {
-          position: 'fixed',
-          left: anchorBox.left + anchorBox.width / 2,
-          bottom: window.innerHeight - anchorBox.top + GAP_PX * 2,
-          transform: 'translateX(-50%)',
-          zIndex: theme.zIndex.modal,
-          display: 'flex',
-          alignItems: 'center',
-          gap: GAP_PX,
-          padding: theme.spacing(1),
-        }
-      : { display: 'none' };
-  }
+  // The creation and removal tools are one subtree mounted whatever the room, rendered into one host element that
+  // moves between the row and the keep-mounted popover of the folded row: their dialogs (a relationship drawn with the
+  // right button included) live in them, so folding or unfolding the row never closes one.
+  const creationHost = useMemo(() => {
+    const host = document.createElement('div');
+    host.setAttribute('data-graph-creation-tools', '');
+    host.style.display = 'flex';
+    host.style.alignItems = 'center';
+    host.style.gap = `${GAP_PX}px`;
+    return host;
+  }, []);
+  const attachCreationHost = useCallback((slot: HTMLDivElement | null) => {
+    if (slot && creationHost.parentElement !== slot) slot.appendChild(creationHost);
+  }, [creationHost]);
 
   return (
     // The surface of the legend and the details panel, docked: square, with only its top edge drawn.
@@ -273,28 +251,22 @@ const GraphToolbar = ({
         {editable && (
           <>
             <Pinned creation><GroupDivider /></Pinned>
-            <Pinned creation label={creationFolded ? undefined : creationLabel}>
-              {creationFolded && (
+            {creationFolded ? (
+              <Pinned creation>
                 <GraphToolbarItem
                   title={creationLabel}
                   Icon={<PencilPlusOutline />}
                   pressed={!!creationAnchor}
-                  onClick={(event) => setCreationAnchor(creationAnchor ? null : event.currentTarget)}
+                  onClick={(event) => setCreationAnchor(event.currentTarget)}
                 />
-              )}
-              <Paper
-                ref={creationPanelRef}
-                elevation={FILTER_POPOVER_LAYER}
-                padding={0}
-                role={creationFolded ? 'group' : undefined}
-                aria-label={creationFolded ? creationLabel : undefined}
-                aria-hidden={creationFolded && !creationAnchor ? true : undefined}
-                data-graph-creation-tools=""
-                style={creationPanelStyle}
-              >
-                {creationTools}
-              </Paper>
-            </Pinned>
+              </Pinned>
+            ) : (
+              <Pinned creation label={creationLabel}>
+                <div ref={attachCreationHost} style={{ display: 'contents' }} />
+              </Pinned>
+            )}
+            {/* In the row, so the keys pressed on an inline tool reach the roving focus of the toolbar. */}
+            {createPortal(creationTools, creationHost)}
           </>
         )}
 
@@ -319,6 +291,20 @@ const GraphToolbar = ({
           <GraphToolbarMoreActions actions={overflowed} />
         </Pinned>
       </div>
+
+      {/* Kept mounted while closed: the host of the creation tools lives in it while the row is folded. */}
+      {editable && creationFolded && (
+        <Popover
+          open={!!creationAnchor}
+          anchorEl={creationAnchor}
+          keepMounted
+          onClose={() => setCreationAnchor(null)}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <div ref={attachCreationHost} role="group" aria-label={creationLabel} style={{ padding: theme.spacing(1) }} />
+        </Popover>
+      )}
 
       {/* Only mounted while shown: the closed toolbar clips it, and its handles would stay reachable from the keyboard. */}
       {showTimeRange && <GraphToolbarTimeRange />}

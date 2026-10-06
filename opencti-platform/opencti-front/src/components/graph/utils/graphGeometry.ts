@@ -92,6 +92,17 @@ export const tangentAt = (path: LinkPath, t: number): Point => {
   );
 };
 
+// One coordinate of the point of the path at `t` (Bernstein form), without building the point: the trim search below
+// evaluates it dozens of times per link at every frame
+const coordinateAt = (path: LinkPath, t: number, axis: 'x' | 'y'): number => {
+  const u = 1 - t;
+  if (path.kind === 'line') return path.start[axis] + (path.end[axis] - path.start[axis]) * t;
+  if (path.kind === 'quadratic') return u * u * path.start[axis] + 2 * u * t * path.control[axis] + t * t * path.end[axis];
+  return u * u * u * path.start[axis] + 3 * u * u * t * path.c1[axis] + 3 * u * t * t * path.c2[axis] + t * t * t * path.end[axis];
+};
+
+const distanceAt = (path: LinkPath, t: number, centre: Point) => Math.hypot(coordinateAt(path, t, 'x') - centre.x, coordinateAt(path, t, 'y') - centre.y);
+
 /**
  * The parameter where the path leaves a circle of `radius` around `centre`, searched from the
  * end given. The path is assumed to start inside the circle and leave it once, which holds for
@@ -100,11 +111,10 @@ export const tangentAt = (path: LinkPath, t: number): Point => {
 const exitParameter = (path: LinkPath, centre: Point, radius: number, fromEnd: boolean): number => {
   let inside = fromEnd ? 1 : 0;
   let outside = fromEnd ? 0 : 1;
-  if (Math.hypot(pointAt(path, outside).x - centre.x, pointAt(path, outside).y - centre.y) <= radius) return outside;
+  if (distanceAt(path, outside, centre) <= radius) return outside;
   for (let iteration = 0; iteration < TRIM_ITERATIONS; iteration += 1) {
     const middle = (inside + outside) / 2;
-    const point = pointAt(path, middle);
-    if (Math.hypot(point.x - centre.x, point.y - centre.y) <= radius) inside = middle;
+    if (distanceAt(path, middle, centre) <= radius) inside = middle;
     else outside = middle;
   }
   return (inside + outside) / 2;

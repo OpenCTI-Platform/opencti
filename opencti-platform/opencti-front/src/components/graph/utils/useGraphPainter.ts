@@ -9,7 +9,17 @@ import { buildGraphPalette } from './graphPalette';
 import { type Box, computeLinkCurvatures, computeObstacleBends, type LinkEnds, linkEndsKey } from './graphGeometry';
 import type { LayoutPositions } from './graphLayouts';
 import { type GraphFocus, type GraphPath, neighbourhood } from './graphFocus';
-import { type LevelOfDetail, levelOfDetail, type LinkLabel, NODE_RADIUS, paintGraphLink, paintGraphNode, paintGraphNodeHitArea, paintLinkLabels } from './graphPainting';
+import {
+  type LevelOfDetail,
+  levelOfDetail,
+  type LinkLabel,
+  type LinkPaintOptions,
+  NODE_RADIUS,
+  paintGraphLink,
+  paintGraphNode,
+  paintGraphNodeHitArea,
+  paintLinkLabels,
+} from './graphPainting';
 import { badgesOfNode, type GraphBadge, useGraphBadgeRegistryVersion } from '../badges';
 
 interface PaintOptions {
@@ -159,7 +169,15 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     return badges;
   };
 
-  const detailOf = (globalScale: number): LevelOfDetail => levelOfDetail(globalScale, nodeCount);
+  // Computed again only when the zoom or the size of the graph changes, not for every element of every frame
+  const detailCache = useRef<{ globalScale: number; nodeCount: number; detail: LevelOfDetail } | null>(null);
+  const detailOf = (globalScale: number): LevelOfDetail => {
+    const cached = detailCache.current;
+    if (cached && cached.globalScale === globalScale && cached.nodeCount === nodeCount) return cached.detail;
+    const detail = levelOfDetail(globalScale, nodeCount);
+    detailCache.current = { globalScale, nodeCount, detail };
+    return detail;
+  };
 
   /**
    * Draws a node in canvas.
@@ -244,6 +262,17 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
 
   /** Labels collected while the links are drawn, painted over the nodes at the end of the frame. */
   const frameLabels = useRef<LinkLabel[]>([]);
+  /** The options of every link of every frame, updated in place: the link painter reads them and keeps none. */
+  const linkPaintOptions = useRef<LinkPaintOptions>({
+    palette,
+    globalScale: DEFAULT_SCALE,
+    detail: levelOfDetail(DEFAULT_SCALE, 0),
+    color: '',
+    curvature: 0,
+    rotation: 0,
+    confidence: null,
+    visual: { selected: false, hovered: false, faded: false, onPath: false },
+  });
   /** What the nodes of the frame cover, which the link labels keep clear of. */
   const frameNodeBoxes = useRef<Box[]>([]);
 
@@ -257,21 +286,20 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
   const linkPaint = (link: GraphLink, ctx: CanvasRenderingContext2D, globalScale = DEFAULT_SCALE) => {
     const { curvature, rotation } = curvatureOf(link);
     const selected = selectedLinkIds.has(link.id);
-    const label = paintGraphLink(ctx, link, {
-      palette,
-      globalScale,
-      detail: detailOf(globalScale),
-      color: link.disabled || (search && !selected) ? palette.textSecondary : linkColorPaint(link),
-      curvature,
-      rotation,
-      confidence: link.confidence,
-      visual: {
-        selected,
-        hovered: isHoveredLink(hovered, endsOf(link)),
-        faded: focus ? !focus.linkKeys.has(keyOf(link)) : false,
-        onPath: pathLinkKeys.has(keyOf(link)),
-      },
-    });
+    const key = keyOf(link);
+    const options = linkPaintOptions.current;
+    options.palette = palette;
+    options.globalScale = globalScale;
+    options.detail = detailOf(globalScale);
+    options.color = link.disabled || (search && !selected) ? palette.textSecondary : linkColorPaint(link);
+    options.curvature = curvature;
+    options.rotation = rotation;
+    options.confidence = link.confidence;
+    options.visual.selected = selected;
+    options.visual.hovered = isHoveredLink(hovered, endsOf(link));
+    options.visual.faded = focus ? !focus.linkKeys.has(key) : false;
+    options.visual.onPath = pathLinkKeys.has(key);
+    const label = paintGraphLink(ctx, link, options);
     if (label) frameLabels.current.push(label);
   };
 
