@@ -79,7 +79,25 @@ describe('ContainerTimelineLanes accessibility', () => {
     const cluster = screen.getByRole('button', { name: /^2 events - / });
     expect(cluster).toHaveAttribute('tabindex', '0');
     expect(cluster.querySelector('.timeline-cluster-focus')).not.toBeNull();
-    expect(container.querySelector('style')?.textContent).toContain('.timeline-cluster:focus-visible .timeline-cluster-focus { visibility: visible; }');
+    expect(container.querySelector('style')?.textContent).toMatch(/\.timeline-cluster:focus-visible \.timeline-cluster-focus[^{]*\{ visibility: visible; \}/);
+  });
+
+  it('draws a focus ring around an event that can be opened, shown on keyboard focus only', () => {
+    const { container } = testRender(
+      <ContainerTimelineLanes
+        events={[event('derived-1', 'derived')]}
+        lanes={['response']}
+        domain={domain}
+        grouping="day"
+        ariaLabel="Timeline"
+        onSelect={() => {}}
+      />,
+    );
+    const marker = screen.getByTestId('timeline-event-derived-1');
+    expect(marker).toHaveAttribute('tabindex', '0');
+    expect(marker).toHaveClass('timeline-event');
+    expect(marker.querySelector('.timeline-event-focus')).not.toBeNull();
+    expect(container.querySelector('style')?.textContent).toMatch(/\.timeline-event:focus-visible \.timeline-event-focus[^{]*\{ visibility: visible; \}/);
   });
 
   it('outlines the zoomable chart on keyboard focus only, never with an inline style that would hide it', () => {

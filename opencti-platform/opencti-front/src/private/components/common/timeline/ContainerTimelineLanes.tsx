@@ -332,6 +332,7 @@ const ContainerTimelineLanes = ({
     return (
       <g
         key={event.id}
+        className="timeline-event"
         role={onSelect ? 'button' : undefined}
         tabIndex={onSelect ? 0 : undefined}
         aria-label={eventLabel(event)}
@@ -346,6 +347,9 @@ const ContainerTimelineLanes = ({
         onBlur={() => setHover(null)}
       >
         {selected && <circle cx={x} cy={centerY} r={POINT_RADIUS + 6} fill="none" stroke={colors.focus} strokeWidth={2} />}
+        {onSelect && !selected && (
+          <circle className="timeline-event-focus" cx={x} cy={centerY} r={POINT_RADIUS + 6} fill="none" stroke={colors.focus} strokeWidth={2} />
+        )}
         {shape}
         {!compact && (event.pinned || event.source === 'manual') && (
           <text x={x + 10} y={centerY + 4} fill={colors.text} fontSize={11} fillOpacity={opacity}>{truncate(event.title, LABEL_CHARS)}</text>
@@ -410,10 +414,11 @@ const ContainerTimelineLanes = ({
       onKeyDown={onChartKeyDown}
       data-testid="timeline-lanes"
     >
-      {/* Keyboard focus only: a ring inside the chart, and around the circle of a cluster (the browser outline would frame its whole group) */}
+      {/* Keyboard focus only: a ring inside the chart, and around the marker of an event or a cluster (the browser outline would frame its whole group) */}
       <style>
         {`.timeline-lanes { outline: none; } .timeline-lanes:focus-visible { outline: 2px solid ${colors.focus}; outline-offset: -2px; } `
-          + '.timeline-cluster-focus { visibility: hidden; } .timeline-cluster:focus-visible .timeline-cluster-focus { visibility: visible; }'}
+          + '.timeline-cluster-focus, .timeline-event-focus { visibility: hidden; } '
+          + '.timeline-cluster:focus-visible .timeline-cluster-focus, .timeline-event:focus-visible .timeline-event-focus { visibility: visible; }'}
       </style>
       <svg
         ref={svgRef}
