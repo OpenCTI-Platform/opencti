@@ -1,6 +1,5 @@
 import React, { Suspense, useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import { Link } from 'react-router';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { useFormatter } from '../../../../components/i18n';
@@ -13,14 +12,13 @@ import useProvenanceTrackedFilters from './useProvenanceTrackedFilters';
 import { STALE_FILTERS } from './provenanceCurationCounts';
 import useGranted, { SETTINGS_SETCUSTOMIZATION } from '../../../../utils/hooks/useGranted';
 import { StaleKnowledgeRulesQuery } from './__generated__/StaleKnowledgeRulesQuery.graphql';
+import KnowledgeDecayRulesLink from '../../settings/decay/KnowledgeDecayRulesLink';
 
 const staleKnowledgeRulesQuery = graphql`
   query StaleKnowledgeRulesQuery {
     knowledgeDecayRulesInvolvedCount
   }
 `;
-
-const DECAY_RULES_LINK = '/dashboard/settings/customization/decay';
 
 // Number of knowledge decay rules that currently flag knowledge, next to the counters by kind
 const StaleKnowledgeRules = () => {
@@ -33,7 +31,7 @@ const StaleKnowledgeRules = () => {
       {canOpenDecayRules && (
         <>
           {' - '}
-          <Link to={DECAY_RULES_LINK}>{t_i18n('Open the decay rules')}</Link>
+          <KnowledgeDecayRulesLink>{t_i18n('Open the decay rules')}</KnowledgeDecayRulesLink>
         </>
       )}
     </Typography>

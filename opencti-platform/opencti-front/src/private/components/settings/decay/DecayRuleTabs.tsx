@@ -9,6 +9,7 @@ import KnowledgeDecayRules from './KnowledgeDecayRules';
 import { useLocation } from 'react-router';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
 import useHelper from '../../../../utils/hooks/useHelper';
+import { KNOWLEDGE_DECAY_RULE_TAB } from './decayRuleTabState';
 
 const DecayRuleTabs = () => {
   const { t_i18n } = useFormatter();
@@ -22,7 +23,7 @@ const DecayRuleTabs = () => {
 
   useEffect(() => {
     if (location.state?.decayTab === 'decayExclusionRule') setCurrentTab('exclusions');
-    if (location.state?.decayTab === 'knowledgeDecayRule' && provenanceEnabled) setCurrentTab('knowledge');
+    if (location.state?.decayTab === KNOWLEDGE_DECAY_RULE_TAB && provenanceEnabled) setCurrentTab('knowledge');
   }, []);
 
   return (

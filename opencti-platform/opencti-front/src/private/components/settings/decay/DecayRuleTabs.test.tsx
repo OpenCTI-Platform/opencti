@@ -1,9 +1,12 @@
 import React from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { screen } from '@testing-library/react';
+import { Route, Routes } from 'react-router';
 import testRender from '../../../../utils/tests/test-render';
 import useHelper from '../../../../utils/hooks/useHelper';
 import DecayRuleTabs from './DecayRuleTabs';
+import KnowledgeDecayRulesLink from './KnowledgeDecayRulesLink';
+import { DECAY_RULES_PATH } from './decayRuleTabState';
 
 vi.mock('../../../../utils/hooks/useHelper', () => ({
   default: vi.fn(),
@@ -24,9 +27,15 @@ const setProvenanceEnabled = (enabled: boolean) => {
   vi.mocked(useHelper).mockReturnValue({ isProvenanceEnabled: () => enabled } as unknown as ReturnType<typeof useHelper>);
 };
 
-// A link to the Knowledge decay rules tab, as the Stale knowledge tab of the Curation hub opens it
-const openFromKnowledgeDecayRuleLink = () => {
-  window.history.pushState({ usr: { decayTab: 'knowledgeDecayRule' }, key: 'decay', idx: 0 }, '', '/dashboard/settings/customization/decay');
+// Follows the link of the Stale knowledge tab of the Curation hub to the decay rules page
+const followKnowledgeDecayRulesLink = async () => {
+  const { user } = testRender((
+    <Routes>
+      <Route path="/stale" element={<KnowledgeDecayRulesLink>Open the decay rules</KnowledgeDecayRulesLink>} />
+      <Route path={DECAY_RULES_PATH} element={<DecayRuleTabs />} />
+    </Routes>
+  ), { route: '/stale' });
+  await user.click(screen.getByRole('link', { name: 'Open the decay rules' }));
 };
 
 describe('Decay rule tabs', () => {
@@ -36,17 +45,15 @@ describe('Decay rule tabs', () => {
 
   it('opens the Knowledge decay rules tab from its link while provenance is enabled', async () => {
     setProvenanceEnabled(true);
-    openFromKnowledgeDecayRuleLink();
-    testRender(<DecayRuleTabs />);
-    expect(screen.getByRole('tab', { name: 'Knowledge decay rules' })).toBeInTheDocument();
+    await followKnowledgeDecayRulesLink();
+    expect(await screen.findByRole('tab', { name: 'Knowledge decay rules' })).toBeInTheDocument();
     expect(await screen.findByTestId('knowledge-decay-rules')).toBeInTheDocument();
   });
 
   it('has no Knowledge decay rules tab and never mounts it while provenance is disabled', async () => {
     setProvenanceEnabled(false);
-    openFromKnowledgeDecayRuleLink();
-    testRender(<DecayRuleTabs />);
-    expect(screen.getByRole('tab', { name: 'Decay rules' })).toBeInTheDocument();
+    await followKnowledgeDecayRulesLink();
+    expect(await screen.findByRole('tab', { name: 'Decay rules' })).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Decay exclusion rules' })).toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: 'Knowledge decay rules' })).not.toBeInTheDocument();
     expect(await screen.findByTestId('decay-rules')).toBeInTheDocument();
