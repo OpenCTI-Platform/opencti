@@ -40,7 +40,7 @@ import { extractContentFrom } from '../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
 import { FunctionalError } from '../../config/errors';
 import { convertRepresentationsIds } from '../internal/mapper-utils';
-import { validateIngestionExecutionIdentity, validateIngestionExecutionIdentityFromEditInputs } from './ingestion-execution-identity';
+import { validateIngestionExecutionIdentity, validateIngestionExecutionIdentityFromEditInputs, validateStoredIngestionExecutionIdentity } from './ingestion-execution-identity';
 
 const MINIMAL_JSON_FEED_COMPATIBLE_VERSION = '7.260722.0';
 
@@ -470,7 +470,7 @@ export const patchJsonIngestion = async (context: AuthContext, user: AuthUser, i
 export const ingestionJsonResetState = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
   // Resetting the state replays the source under the ingestion identity, which must stay within the editing user rights.
   const storedIngestion = await findById(context, user, ingestionId);
-  await validateIngestionExecutionIdentity(context, user, storedIngestion?.user_id);
+  await validateStoredIngestionExecutionIdentity(context, user, storedIngestion);
   await patchJsonIngestion(context, user, ingestionId, { ingestion_json_state: null });
   const ingestion = await findById(context, user, ingestionId);
   const connectorId = connectorIdFromIngestId(ingestion.id);

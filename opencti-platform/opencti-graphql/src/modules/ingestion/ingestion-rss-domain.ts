@@ -8,7 +8,12 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { EditInput, IngestionRssAddAutoUserInput, IngestionRssAddInput } from '../../generated/graphql';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
-import { createIngestionAutomaticUser, validateIngestionExecutionIdentity, validateIngestionExecutionIdentityFromEditInputs } from './ingestion-execution-identity';
+import {
+  createIngestionAutomaticUser,
+  validateIngestionExecutionIdentity,
+  validateIngestionExecutionIdentityFromEditInputs,
+  validateStoredIngestionExecutionIdentity,
+} from './ingestion-execution-identity';
 import type { FileHandle } from 'fs/promises';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
@@ -110,7 +115,7 @@ export const ingestionEditField = async (context: AuthContext, user: AuthUser, i
 export const ingestionRssResetState = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
   // Resetting the state replays the source under the ingestion identity, which must stay within the editing user rights.
   const storedIngestion = await findById(context, user, ingestionId);
-  await validateIngestionExecutionIdentity(context, user, storedIngestion?.user_id);
+  await validateStoredIngestionExecutionIdentity(context, user, storedIngestion);
   await patchRssIngestion(context, user, ingestionId, { current_state_date: undefined });
   const ingestionUpdated = await findById(context, user, ingestionId);
   await publishUserAction({

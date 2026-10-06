@@ -37,7 +37,12 @@ import { convertRepresentationsIds } from '../internal/mapper-utils';
 import { SYSTEM_USER } from '../../utils/access';
 import { regenerateCsvMapperUUID } from './ingestion-converter';
 import { findDefaultIngestionGroups } from '../../domain/group';
-import { createIngestionAutomaticUser, validateIngestionExecutionIdentity, validateIngestionExecutionIdentityFromEditInputs } from './ingestion-execution-identity';
+import {
+  createIngestionAutomaticUser,
+  validateIngestionExecutionIdentity,
+  validateIngestionExecutionIdentityFromEditInputs,
+  validateStoredIngestionExecutionIdentity,
+} from './ingestion-execution-identity';
 
 const MINIMAL_CSV_FEED_COMPATIBLE_VERSION = '6.6.0';
 const DEFAULT_FEED_REQUEST_TIMEOUT = conf.get('ingestion_manager:feed:request_timeout') || 300000;
@@ -217,7 +222,7 @@ export const ingestionCsvAddAutoUser = async (context: AuthContext, user: AuthUs
 export const ingestionCsvResetState = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
   // Resetting the state replays the source under the ingestion identity, which must stay within the editing user rights.
   const storedIngestion = await findById(context, user, ingestionId);
-  await validateIngestionExecutionIdentity(context, user, storedIngestion?.user_id);
+  await validateStoredIngestionExecutionIdentity(context, user, storedIngestion);
   await patchCsvIngestion(context, user, ingestionId, { current_state_hash: '' });
   const ingestionUpdated = await findById(context, user, ingestionId);
   await publishUserAction({

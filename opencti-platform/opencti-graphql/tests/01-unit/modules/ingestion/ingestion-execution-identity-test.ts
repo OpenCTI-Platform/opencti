@@ -21,6 +21,7 @@ import {
   isIngestionUserWithinCreatorRights,
   validateIngestionExecutionIdentity,
   validateIngestionExecutionIdentityFromEditInputs,
+  validateStoredIngestionExecutionIdentity,
 } from '../../../../src/modules/ingestion/ingestion-execution-identity';
 
 interface UserFixture {
@@ -237,6 +238,27 @@ describe('Ingestion execution identity confinement', () => {
       await expect(validateIngestionExecutionIdentityFromEditInputs(context, editor, { user_id: null }, [{ key: 'uri', value: ['http://fakefeed.invalid'] }]))
         .rejects.toThrowError();
       expect(resolveUserByIdMock).not.toHaveBeenCalled();
+    });
+
+    it('should let an editor holding every right repair a feed whose stored identity was deleted', async () => {
+      const editor = buildUser({ capabilities: ['BYPASS'] });
+      resolveUserByIdMock.mockResolvedValue(undefined);
+      await expect(validateIngestionExecutionIdentityFromEditInputs(context, editor, { user_id: 'deleted' }, [{ key: 'uri', value: ['http://fakefeed.invalid'] }]))
+        .resolves.toBeUndefined();
+      await expect(validateStoredIngestionExecutionIdentity(context, editor, { user_id: 'deleted' })).resolves.toBeUndefined();
+    });
+
+    it('should still reject a deleted stored identity for an editor not holding every right', async () => {
+      const editor = buildUser({ capabilities: ['KNOWLEDGE'] });
+      resolveUserByIdMock.mockResolvedValue(undefined);
+      await expect(validateStoredIngestionExecutionIdentity(context, editor, { user_id: 'deleted' })).rejects.toThrowError();
+    });
+
+    it('should still reject a newly chosen identity that does not exist, even for an editor holding every right', async () => {
+      const editor = buildUser({ capabilities: ['BYPASS'] });
+      resolveUserByIdMock.mockResolvedValue(undefined);
+      await expect(validateIngestionExecutionIdentityFromEditInputs(context, editor, { user_id: 'stored' }, [{ key: 'user_id', value: ['unknown'] }]))
+        .rejects.toThrowError();
     });
 
     it('should accept any edition from an editor holding every right', async () => {

@@ -116,6 +116,21 @@ export const createIngestionAutomaticUser = async (
   return createdUser;
 };
 
+/**
+ * Validates the identity already stored on an ingestion. Unlike a newly chosen identity, the stored one may refer
+ * to a user deleted since then: an editor holding every right still covers it and must be able to repair the feed.
+ */
+export const validateStoredIngestionExecutionIdentity = async (
+  context: AuthContext,
+  editorUser: AuthUser,
+  storedIngestion: { user_id?: string | null } | undefined,
+): Promise<void> => {
+  if (isBypassUser(editorUser)) {
+    return;
+  }
+  await validateIngestionExecutionIdentity(context, editorUser, storedIngestion?.user_id);
+};
+
 // Fields that neither change what is ingested nor how, editing them alone does not require the identity rights.
 const EDIT_KEYS_WITHOUT_IDENTITY_CHECK = ['ingestion_running', 'name', 'description'];
 
@@ -134,8 +149,11 @@ export const validateIngestionExecutionIdentityFromEditInputs = async (
     return;
   }
   const userIdInput = inputs.find((editInput) => editInput.key === 'user_id');
-  const effectiveUserId = userIdInput ? userIdInput.value?.[0] : storedIngestion?.user_id;
-  await validateIngestionExecutionIdentity(context, editorUser, effectiveUserId);
+  if (userIdInput) {
+    await validateIngestionExecutionIdentity(context, editorUser, userIdInput.value?.[0]);
+  } else {
+    await validateStoredIngestionExecutionIdentity(context, editorUser, storedIngestion);
+  }
 };
 
 interface IngestionExecutionIdentity {

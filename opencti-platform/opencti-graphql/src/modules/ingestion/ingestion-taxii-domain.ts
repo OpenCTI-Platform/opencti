@@ -10,7 +10,12 @@ import { type EditInput, type IngestionTaxiiAddAutoUserInput, type IngestionTaxi
 import { addAuthenticationCredentials, verifyIngestionAuthenticationContent, verifyIngestionUri } from './ingestion-common';
 import { encryptIngestionCredential, decryptIngestionCredential } from './ingestion-common';
 import { registerConnectorForIngestion, unregisterConnectorForIngestion } from '../../domain/connector';
-import { createIngestionAutomaticUser, validateIngestionExecutionIdentity, validateIngestionExecutionIdentityFromEditInputs } from './ingestion-execution-identity';
+import {
+  createIngestionAutomaticUser,
+  validateIngestionExecutionIdentity,
+  validateIngestionExecutionIdentityFromEditInputs,
+  validateStoredIngestionExecutionIdentity,
+} from './ingestion-execution-identity';
 import type { FileHandle } from 'fs/promises';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { isCompatibleVersionWithMinimal } from '../../utils/version';
@@ -177,7 +182,7 @@ export const ingestionTaxiiDelete = async (context: AuthContext, user: AuthUser,
 export const ingestionTaxiiResetState = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
   // Resetting the state replays the source under the ingestion identity, which must stay within the editing user rights.
   const storedIngestion = await findTaxiiIngestionById(context, user, ingestionId);
-  await validateIngestionExecutionIdentity(context, user, storedIngestion?.user_id);
+  await validateStoredIngestionExecutionIdentity(context, user, storedIngestion);
   await patchTaxiiIngestion(context, user, ingestionId, { current_state_cursor: undefined });
   const ingestionUpdated = await findTaxiiIngestionById(context, user, ingestionId);
 
