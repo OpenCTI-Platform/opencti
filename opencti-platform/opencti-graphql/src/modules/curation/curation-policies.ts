@@ -24,7 +24,6 @@ import {
   type CurationPolicyDryRunResult,
   DECISION_ALIAS,
   DECISION_MERGE,
-  DECISION_DISTINCT,
   DECISION_SKIP,
   ENTITY_TYPE_CURATION_POLICY,
   ENTITY_TYPE_CURATION_PROPOSAL,
@@ -114,11 +113,13 @@ export const evaluatePolicyEligibility = (
   // An alias decision on a merge proposal keeps apart entities whose names cannot become aliases while they exist (an
   // alias names a single entity): merging them or keeping them apart is a human choice.
   if (proposal.proposal_kind === PROPOSAL_KIND_MERGE && adjudication?.decision === DECISION_ALIAS) return EXCLUSION_MANUAL_CHOICE;
+  // A merge decision on an alias proposal asks for a merge, which a policy never runs in place of the aliases it applies.
+  if (proposal.proposal_kind === PROPOSAL_KIND_ALIAS && adjudication?.decision === DECISION_MERGE) return EXCLUSION_MANUAL_CHOICE;
   // Agreement can only be required where the Curator adjudicates: the other kinds are never sent to it.
   if (policy.require_adjudication && ADJUDICATED_PROPOSAL_KINDS.includes(proposal.proposal_kind)) {
     const decision = adjudication?.decision;
     if (!decision || decision === DECISION_SKIP) return EXCLUSION_ADJUDICATION_MISSING;
-    const agrees = proposal.proposal_kind === PROPOSAL_KIND_MERGE ? decision === DECISION_MERGE : decision !== DECISION_DISTINCT;
+    const agrees = decision === (proposal.proposal_kind === PROPOSAL_KIND_MERGE ? DECISION_MERGE : DECISION_ALIAS);
     if (!agrees) return EXCLUSION_ADJUDICATION_DISAGREES;
   }
   return null;

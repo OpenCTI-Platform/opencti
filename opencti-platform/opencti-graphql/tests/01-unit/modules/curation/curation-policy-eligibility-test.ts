@@ -56,6 +56,15 @@ describe('curation policy adjudication agreement', () => {
     expect(evaluatePolicyEligibility({ ...policy, require_adjudication: false } as typeof policy, aliasAnswer, facts, false)).toBe(EXCLUSION_MANUAL_CHOICE);
   });
 
+  it('applies an alias proposal only when the Curator answered alias, and leaves a merge answer to a human', () => {
+    const aliasPolicy = { ...policy, policy_kinds: ['alias'] } as typeof policy;
+    const aliasProposal = (decision: string) => ({ ...proposal('alias', { verified: true, decision: decision as CurationAdjudication['decision'] }), recommended_action: 'add_aliases' }) as ReturnType<typeof proposal>;
+    expect(evaluatePolicyEligibility(aliasPolicy, aliasProposal('alias'), facts, false)).toBeNull();
+    expect(evaluatePolicyEligibility(aliasPolicy, aliasProposal('distinct'), facts, false)).toBe(EXCLUSION_ADJUDICATION_DISAGREES);
+    expect(evaluatePolicyEligibility(aliasPolicy, aliasProposal('merge'), facts, false)).toBe(EXCLUSION_MANUAL_CHOICE);
+    expect(evaluatePolicyEligibility({ ...aliasPolicy, require_adjudication: false } as typeof policy, aliasProposal('merge'), facts, false)).toBe(EXCLUSION_MANUAL_CHOICE);
+  });
+
   it('does not require an agreement for the kinds the Curator never adjudicates', () => {
     expect(evaluatePolicyEligibility(policy, proposal('stale', null), facts, false)).toBeNull();
   });
