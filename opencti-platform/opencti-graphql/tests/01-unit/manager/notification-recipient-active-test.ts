@@ -141,6 +141,29 @@ describe('getNotifications — excludes inactive/expired accounts', () => {
     expect(definedUserIds.has('disabled')).toBe(false);
   });
 
+  it('excludes service accounts from native and defined triggers', async () => {
+    const activeUser = buildUser({ id: 'active', internal_id: 'active', groups: [{ internal_id: 'group-1' }] as any });
+    const serviceAccount = buildUser({ id: 'service', internal_id: 'service', user_service_account: true, groups: [{ internal_id: 'group-1' }] as any });
+    const definedTrigger = {
+      internal_id: 'trigger-1',
+      trigger_type: 'live',
+      trigger_scope: 'knowledge',
+      restricted_members: [{ id: 'group-1' }],
+    };
+
+    getEntitiesListFromCache.mockImplementation((_ctx: any, _user: any, type: string) => {
+      if (type === ENTITY_TYPE_USER) {
+        return Promise.resolve([activeUser, serviceAccount]);
+      }
+      return Promise.resolve([definedTrigger]);
+    });
+
+    const triggers = await getNotifications(context);
+    const ids = collectUserIds(triggers);
+    expect(ids.has('active')).toBe(true);
+    expect(ids.has('service')).toBe(false);
+  });
+
   afterAll(() => {
     vi.restoreAllMocks();
   });

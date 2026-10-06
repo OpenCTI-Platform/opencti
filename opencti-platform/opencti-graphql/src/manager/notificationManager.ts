@@ -194,8 +194,9 @@ const generateRequestAccessAuthorizeTrigger = (user: AuthUser) => {
 export const getNotifications = async (context: AuthContext): Promise<Array<ResolvedTrigger>> => {
   const triggers = await getEntitiesListFromCache<BasicStoreEntityTrigger>(context, SYSTEM_USER, ENTITY_TYPE_TRIGGER);
   // Exclude inactive/expired/disabled accounts: they must no longer receive any notification.
+  // Exclude service accounts: they cannot receive notifications, the publisher would reject each one.
   const platformUsers = (await getEntitiesListFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER))
-    .filter(isNotificationRecipientActive);
+    .filter((user) => !user.user_service_account && isNotificationRecipientActive(user));
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const isAssigneeAutoTriggerEnabled = settings.platform_notifier_auto_trigger_assignee ?? true;
   const notificationTriggers = [];
