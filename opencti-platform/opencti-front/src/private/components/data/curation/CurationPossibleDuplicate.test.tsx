@@ -42,8 +42,8 @@ describe('CurationPossibleDuplicate', () => {
     lookup.mockImplementation((id: string) => (id === 'first'
       ? Promise.resolve(mergeProposalOf('first', 'Fancy Bear'))
       : new Promise((resolve) => {
-        answerSecond = resolve;
-      })));
+          answerSecond = resolve;
+        })));
     const { rerender } = testRender(<CurationPossibleDuplicate entityId="first" />);
     expect(await screen.findByText('Possible duplicate of Fancy Bear')).toBeInTheDocument();
 
