@@ -735,7 +735,7 @@ export const computeDefenseCoverage = async (
   try {
     notified = await deliverPendingDefenseLevelChanges(context);
   } catch (error) {
-    logApp.error('[DEFENSE-COVERAGE] Queued defense level changes could not be delivered', { cause: error });
+    logApp.warn('[DEFENSE-COVERAGE] Queued defense level changes could not be delivered, retried at the next run', { cause: error });
   }
   const result = {
     techniques: activeAttackPatterns.length,

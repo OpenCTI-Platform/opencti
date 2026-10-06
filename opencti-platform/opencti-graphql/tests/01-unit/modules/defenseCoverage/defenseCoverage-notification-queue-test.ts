@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { type DefenseCoverageChange, type DefenseDeliveryProgress, deliverPendingDefenseLevelChanges } from '../../../../src/modules/defenseCoverage/defenseCoverage-notification';
 import { clearPendingLevelChanges, listPendingLevelChanges, queuePendingLevelChanges, savePendingLevelChange } from '../../../../src/modules/defenseCoverage/defenseCoverage-state';
 import { redisGetDefensePendingLevelChanges, redisSetDefensePendingLevelChanges } from '../../../../src/database/redis';
+import { logApp } from '../../../../src/config/conf';
 import type { AuthContext } from '../../../../src/types/user';
 
 vi.mock('../../../../src/database/redis', async (importOriginal) => ({
@@ -45,6 +46,8 @@ describe('Queued defense level changes', () => {
   });
 
   it('should clear the delivered changes and keep what a failed delivery did not handle', async () => {
+    const logAppErrorSpy = vi.spyOn(logApp, 'error');
+    const logAppWarnSpy = vi.spyOn(logApp, 'warn');
     vi.mocked(listPendingLevelChanges).mockResolvedValueOnce({ changes: [change('ap-1'), change('ap-2'), change('ap-3')], unreadable: [] });
     const notify = vi.fn(async (_context: AuthContext, _changes: DefenseCoverageChange[], progress?: DefenseDeliveryProgress) => {
       // ap-1 is fully handled, ap-2 fails after its first trigger stored its notification
@@ -57,14 +60,20 @@ describe('Queued defense level changes', () => {
     expect(await deliverPendingDefenseLevelChanges(context, notify, storedAsQueued)).toEqual(0);
     expect(vi.mocked(clearPendingLevelChanges).mock.calls).toEqual([[['ap-1']]]);
     expect(vi.mocked(savePendingLevelChange)).toHaveBeenCalledWith({ ...change('ap-2'), delivered_trigger_ids: ['trigger-1'] });
+    expect(logAppWarnSpy).toHaveBeenCalledTimes(1);
+    expect(logAppWarnSpy.mock.calls[0][0]).toContain('kept for the next run');
+    expect(logAppErrorSpy, 'A delivery retried at the next run is not an application error.').not.toHaveBeenCalled();
   });
 
   it('should clear every change once delivered and drop the unreadable entries', async () => {
+    const logAppErrorSpy = vi.spyOn(logApp, 'error');
     vi.mocked(listPendingLevelChanges).mockResolvedValueOnce({ changes: [change('ap-1'), change('ap-2')], unreadable: ['ap-9'] });
     const notify = vi.fn(async () => 2);
     expect(await deliverPendingDefenseLevelChanges(context, notify, storedAsQueued)).toEqual(2);
     expect(vi.mocked(clearPendingLevelChanges).mock.calls).toEqual([[['ap-9']], [['ap-1', 'ap-2']]]);
     expect(vi.mocked(savePendingLevelChange)).not.toHaveBeenCalled();
+    // A dropped entry is lost work
+    expect(logAppErrorSpy).toHaveBeenCalledTimes(1);
   });
 
   it('should deliver each change up to the stored coverage and drop the techniques without one', async () => {

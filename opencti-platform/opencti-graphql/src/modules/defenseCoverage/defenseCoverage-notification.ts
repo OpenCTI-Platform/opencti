@@ -250,7 +250,7 @@ export const deliverPendingDefenseLevelChanges = async (context: AuthContext, no
     await clearPendingLevelChanges(changes.slice(0, progress.done).map((change) => change.attack_pattern_id));
     const current = changes[progress.done];
     if (current && progress.triggerIds.length > 0) await savePendingLevelChange({ ...current, delivered_trigger_ids: progress.triggerIds });
-    logApp.error('[DEFENSE-COVERAGE] Defense level changes could not be notified, kept for the next run', { cause: error, pending: changes.length - progress.done });
+    logApp.warn('[DEFENSE-COVERAGE] Defense level changes could not be notified, kept for the next run', { cause: error, pending: changes.length - progress.done });
     return 0;
   }
 };

@@ -64,7 +64,7 @@ const deliverQueuedLevelChanges = async (context: AuthContext) => {
     await deliverPendingDefenseLevelChanges(context);
   } catch (e: any) {
     if (e?.name !== TYPE_LOCK_ERROR) {
-      logApp.error('[OPENCTI-MODULE] Defense coverage queued level changes delivery error', { cause: e });
+      logApp.warn('[OPENCTI-MODULE] Defense coverage queued level changes delivery error, retried at the next run', { cause: e });
     }
   } finally {
     if (lock) await lock.unlock();
@@ -79,7 +79,7 @@ export const defenseCoverageCronHandler = async () => {
   try {
     await trackPendingValidationRequests(context);
   } catch (e) {
-    logApp.error('[OPENCTI-MODULE] Defense coverage queued validation tracking error', { cause: e });
+    logApp.warn('[OPENCTI-MODULE] Defense coverage queued validation tracking error, retried at the next run', { cause: e });
   }
   await deliverQueuedLevelChanges(context);
   const lastFull = await getLastFullComputation();
@@ -142,7 +142,7 @@ const handleDefenseStreamEvents = async (streamEvents: Array<SseEvent<DataEvent>
     // The next full computation will catch up with these changes
     await requestFullDefenseCoverageComputation();
     if (e?.name !== TYPE_LOCK_ERROR) {
-      logApp.error('[OPENCTI-MODULE] Defense coverage incremental computation error', { cause: e, techniques: techniqueIds.size });
+      logApp.warn('[OPENCTI-MODULE] Defense coverage incremental computation error, full computation requested', { cause: e, techniques: techniqueIds.size });
     }
   }
 };
@@ -153,7 +153,7 @@ export const defenseCoverageStreamHandler = async (streamEvents: Array<SseEvent<
   } catch (e) {
     // The next full computation catches up with the changes of this batch
     await requestFullDefenseCoverageComputation();
-    logApp.error('[OPENCTI-MODULE] Defense coverage stream batch error', { cause: e, events: streamEvents.length });
+    logApp.warn('[OPENCTI-MODULE] Defense coverage stream batch error, full computation requested', { cause: e, events: streamEvents.length });
   }
   // Saved once the batch is handled, so a restart replays the events received while the manager was stopped
   if (lastEventId) {
