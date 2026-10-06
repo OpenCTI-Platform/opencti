@@ -1,8 +1,16 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
-import { addStixCyberObservable, generateIndicatorFromObservable, generateKeyValueForIndicator } from '../../../src/domain/stixCyberObservable';
+import { addStixCyberObservable, generateIndicatorFromObservable, generateKeyValueForIndicator, stixCyberObservableEditField } from '../../../src/domain/stixCyberObservable';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../../src/schema/general';
+import { storeLoadById } from '../../../src/database/middleware-loader';
+import { FUNCTIONAL_ERROR } from '../../../src/config/errors';
+
+// Keep the real loader, only stub it in tests that need a missing element
+vi.mock('../../../src/database/middleware-loader', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/database/middleware-loader')>();
+  return { ...actual, storeLoadById: vi.fn(actual.storeLoadById) };
+});
 
 const artifact = {
   id: '617980fd-9f26-4237-a82d-68e4011de635',
@@ -131,6 +139,17 @@ describe('SCO utils', () => {
       const input = { type: ENTITY_TYPE_CONTAINER_REPORT };
       await expect(() => addStixCyberObservable(testContext, ADMIN_USER, input))
         .rejects.toThrowError('Observable type Report is not supported.');
+    });
+  });
+  describe('stixCyberObservableEditField', () => {
+    it('should reject the edit when the observable cannot be found', async () => {
+      vi.mocked(storeLoadById).mockResolvedValueOnce(undefined);
+      const input = [{ key: 'x_opencti_description', value: ['description'] }];
+      await expect(() => stixCyberObservableEditField(testContext, ADMIN_USER, 'unknown-id', input))
+        .rejects.toMatchObject({
+          message: 'Cannot edit the field, Stix-Cyber-Observable cannot be found.',
+          extensions: { code: FUNCTIONAL_ERROR, data: { stixCyberObservableId: 'unknown-id' } },
+        });
     });
   });
 });
