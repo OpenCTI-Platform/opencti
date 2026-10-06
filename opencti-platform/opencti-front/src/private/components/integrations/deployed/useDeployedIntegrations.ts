@@ -50,6 +50,8 @@ interface UseDeployedIntegrationsProps {
   feedsData?: IngestionFeedsData | null;
   formsData?: IngestionFeedsFormsData | null;
   logosBySlug: Map<string, string>;
+  // Connector update detection is part of the decoupled versions (DECOUPLING_VERSIONS feature flag)
+  isConnectorUpdateEnabled: boolean;
 }
 
 const toSafeNumber = (value: unknown): number => {
@@ -80,6 +82,7 @@ const useDeployedIntegrations = ({
   feedsData,
   formsData,
   logosBySlug,
+  isConnectorUpdateEnabled,
 }: UseDeployedIntegrationsProps): DeployedIntegrationItem[] => {
   return useMemo(() => {
     const items: DeployedIntegrationItem[] = [];
@@ -156,9 +159,9 @@ const useDeployedIntegrations = ({
         throughputRate: queueRateByConnector.get(connector.id) ?? null,
         lastRunDate: null,
         updatedAt: connector.updated_at,
-        updateAvailable: !!connector.update_available,
-        latestCompatibleVersion: connector.latest_compatible_version ?? null,
-        hasNewerIncompatibleVersion: !!connector.has_newer_incompatible_version,
+        updateAvailable: isConnectorUpdateEnabled && !!connector.update_available,
+        latestCompatibleVersion: isConnectorUpdateEnabled ? (connector.latest_compatible_version ?? null) : null,
+        hasNewerIncompatibleVersion: isConnectorUpdateEnabled && !!connector.has_newer_incompatible_version,
         isManaged: !!connector.is_managed,
         detailUrl: `/dashboard/integrations/connectors/${connector.id}`,
         searchText: buildSearchText([connector.title, connector.name, connector.connector_type]),
@@ -270,7 +273,7 @@ const useDeployedIntegrations = ({
     }
 
     return items;
-  }, [connectorsListData, connectorsStateData, feedsData, formsData, logosBySlug]);
+  }, [connectorsListData, connectorsStateData, feedsData, formsData, logosBySlug, isConnectorUpdateEnabled]);
 };
 
 export default useDeployedIntegrations;

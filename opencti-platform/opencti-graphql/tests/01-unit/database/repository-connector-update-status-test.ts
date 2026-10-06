@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../../../src/modules/catalog/catalog-repository', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../src/modules/catalog/catalog-repository')>()),
@@ -7,6 +7,7 @@ vi.mock('../../../src/modules/catalog/catalog-repository', async (importOriginal
 
 import { findCatalogContractsBySlugs } from '../../../src/modules/catalog/catalog-repository';
 import { computeConnectorsUpdateStatus } from '../../../src/database/repository';
+import { DECOUPLING_VERSIONS_FEATURE_FLAG, ENABLED_FEATURE_FLAGS } from '../../../src/config/conf';
 
 const NO_UPDATE_STATUS = { update_available: false, latest_compatible_version: null, has_newer_incompatible_version: false };
 
@@ -19,8 +20,25 @@ const contract = (slug: string, contract_version: string, min_version: string) =
 });
 
 describe('computeConnectorsUpdateStatus', () => {
+  const previousEnabledFeatureFlags = [...ENABLED_FEATURE_FLAGS];
+
   beforeEach(() => {
     vi.clearAllMocks();
+    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, DECOUPLING_VERSIONS_FEATURE_FLAG);
+  });
+
+  afterEach(() => {
+    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length, ...previousEnabledFeatureFlags);
+  });
+
+  it('should not query the catalog when connector versions are not decoupled', async () => {
+    ENABLED_FEATURE_FLAGS.splice(0, ENABLED_FEATURE_FLAGS.length);
+    const alpha = { id: 'alpha', manager_contract: { slug: 'alpha', contract_version: '1.0.0' } };
+
+    const statuses = await computeConnectorsUpdateStatus({} as never, {} as never, [alpha]);
+
+    expect(findCatalogContractsBySlugs).not.toHaveBeenCalled();
+    expect(statuses).toEqual([NO_UPDATE_STATUS]);
   });
 
   it('should load the catalog contracts of the whole list in one query', async () => {

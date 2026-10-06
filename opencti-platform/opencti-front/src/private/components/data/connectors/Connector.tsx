@@ -36,6 +36,7 @@ import { deserializeFilterGroupForFrontend, isFilterGroupNotEmpty, serializeFilt
 import useFiltersState from '../../../../utils/filters/useFiltersState';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useGranted, { MODULES_MODMANAGE, SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import useHelper from '../../../../utils/hooks/useHelper';
 import Security from '../../../../utils/Security';
 import { FIVE_SECONDS, formatUptime } from '../../../../utils/Time';
 import Filters from '../../common/lists/Filters';
@@ -298,7 +299,9 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     return connector.connector_info ? connector.connector_info.queue_messages_size > connector.connector_info.queue_threshold : false;
   };
 
-  const compatibleUpdateVersion = connector.update_available ? connector.latest_compatible_version : null;
+  const { isFeatureEnable } = useHelper();
+  const isConnectorUpdateEnabled = isFeatureEnable('DECOUPLING_VERSIONS');
+  const compatibleUpdateVersion = isConnectorUpdateEnabled && connector.update_available ? connector.latest_compatible_version : null;
 
   // Component for Overview content (without ConnectorWorks)
   const connectorOverviewContent = useMemo(() => (

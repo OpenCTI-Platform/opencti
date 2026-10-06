@@ -13,7 +13,7 @@ import { encryptValue, mapContractEntityFieldsToGraphqlCatalogContract } from '.
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { getEntitiesMapFromCache } from './cache';
 import { SYSTEM_USER } from '../utils/access';
-import conf, { booleanConf, logApp, PLATFORM_VERSION } from '../config/conf';
+import conf, { booleanConf, DECOUPLING_VERSIONS_FEATURE_FLAG, isFeatureEnabled, logApp, PLATFORM_VERSION } from '../config/conf';
 import { ConnectorPriorityGroup } from '../generated/graphql';
 import { injectProxyConfiguration } from '../config/proxy-config';
 import { getPlatformCrypto } from '../utils/platformCrypto';
@@ -225,6 +225,10 @@ const NO_UPDATE_STATUS = {
 // Catalog keyword fields are matched case insensitively, so the contracts are grouped the same way.
 // A catalog failure only removes the update hints: the connectors themselves still resolve.
 export const computeConnectorsUpdateStatus = async (context, user, connectorsToCheck) => {
+  // Without decoupled versions, the catalog only changes with the platform: no update to report
+  if (!isFeatureEnabled(DECOUPLING_VERSIONS_FEATURE_FLAG)) {
+    return connectorsToCheck.map(() => NO_UPDATE_STATUS);
+  }
   try {
     const slugs = connectorsToCheck.map((cn) => cn?.manager_contract?.slug?.toLowerCase() ?? null);
     const uniqueSlugs = [...new Set(slugs.filter(isNotEmptyField))];

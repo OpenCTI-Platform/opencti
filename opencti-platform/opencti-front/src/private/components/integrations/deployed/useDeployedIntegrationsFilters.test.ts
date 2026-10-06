@@ -29,13 +29,16 @@ const makeItem = (overrides: Partial<DeployedIntegrationItem> = {}): DeployedInt
 const renderFilters = ({
   items,
   params = '',
+  isConnectorUpdateEnabled = true,
 }: {
   items: DeployedIntegrationItem[];
   params?: string;
+  isConnectorUpdateEnabled?: boolean;
 }) => {
   const props: HookProps = {
     items,
     searchParams: new URLSearchParams(params),
+    isConnectorUpdateEnabled,
   };
   return renderHook((hookProps: HookProps) => useDeployedIntegrationsFilters(hookProps), { initialProps: props });
 };
@@ -93,6 +96,15 @@ describe('useDeployedIntegrationsFilters', () => {
     });
 
     expect(result.current.filters.updateAvailable).toBe(false);
+    expect(window.location.search).toBe('');
+  });
+
+  it('ignores the update-available URL parameter when connector update detection is disabled', () => {
+    const items = [makeItem({ id: 'no-update', updateAvailable: false })];
+    const { result } = renderFilters({ items, params: 'updateAvailable=true', isConnectorUpdateEnabled: false });
+
+    expect(result.current.filters.updateAvailable).toBe(false);
+    expect(result.current.filteredItems.map((item) => item.id)).toEqual(['no-update']);
     expect(window.location.search).toBe('');
   });
 });

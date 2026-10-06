@@ -80,9 +80,11 @@ const matchesFilters = (
 interface UseDeployedIntegrationsFiltersProps {
   items: DeployedIntegrationItem[];
   searchParams: URLSearchParams;
+  // Without connector update detection, a shared link must not restore an update filter nothing can match
+  isConnectorUpdateEnabled: boolean;
 }
 
-const useDeployedIntegrationsFilters = ({ items, searchParams }: UseDeployedIntegrationsFiltersProps) => {
+const useDeployedIntegrationsFilters = ({ items, searchParams, isConnectorUpdateEnabled }: UseDeployedIntegrationsFiltersProps) => {
   // The legacy feed screens redirect to /integrations/deployed?kind=<feed>:
   // the kind is folded into the type facet as an initial selection.
   const legacyKind = searchParams.get('kind');
@@ -98,7 +100,7 @@ const useDeployedIntegrationsFilters = ({ items, searchParams }: UseDeployedInte
       .filter((s): s is DeployedStatusFacet => (DEPLOYED_STATUS_FACETS as string[]).includes(s)),
     kinds: parseListParam(searchParams.get('deployment'))
       .filter((k): k is DeployedKindFacet => (DEPLOYED_KIND_FACETS as string[]).includes(k)),
-    updateAvailable: searchParams.get('updateAvailable') === 'true',
+    updateAvailable: isConnectorUpdateEnabled && searchParams.get('updateAvailable') === 'true',
   });
   const [sort, setSort] = useState<DeployedSortMode>(
     (['name', 'status', 'lastRun', 'messages'] as const).find((mode) => mode === searchParams.get('sort')) ?? 'name',
