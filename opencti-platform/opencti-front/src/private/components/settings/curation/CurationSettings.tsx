@@ -405,7 +405,7 @@ const CurationSettingsForm = ({ settings, setup, authorityAttributes }: Curation
               />
               <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', marginTop: 2 }}>
                 <Tag label={t_i18n('Vendor taxonomy {version} - {count} clusters', { values: { version: settings.taxonomy_version, count: settings.taxonomy_clusters_count } })} />
-                <Tag label={settings.graph_similarity_available ? t_i18n('Graph similarity available') : t_i18n('Graph similarity not available')} />
+                {settings.graph_similarity_available && <Tag label={t_i18n('Graph similarity available')} />}
               </Box>
             </Card>
             <Card title={t_i18n('Thresholds')}>
