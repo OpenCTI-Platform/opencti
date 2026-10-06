@@ -6,12 +6,13 @@ import { queryAsAdminWithSuccess, queryAsUser, queryAsUserIsExpectedForbidden, q
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
 import { MARKING_TLP_AMBER_STRICT, MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
 import { INDEX_DELETED_OBJECTS, wait } from '../../../src/database/utils';
-import { elReindexElements, elUpdate } from '../../../src/database/engine';
-import { internalLoadById } from '../../../src/database/middleware-loader';
+import { elDeleteElements, elReindexElements, elUpdate } from '../../../src/database/engine';
+import { internalLoadById, storeLoadById } from '../../../src/database/middleware-loader';
+import { deleteAllObjectFiles } from '../../../src/database/file-storage';
 import { buildRefRelationKey } from '../../../src/schema/general';
 import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { execChildPython } from '../../../src/python/pythonBridge';
-import type { BasicStoreBase } from '../../../src/types/store';
+import type { BasicStoreBase, BasicStoreObject } from '../../../src/types/store';
 
 const CREATE_REPORT_QUERY = gql`
     mutation ReportAdd($input: ReportAddInput!) {
@@ -317,9 +318,10 @@ describe('Delete operation resolver testing', () => {
     expect(reportAfterConfirm.data?.report.id).toBe(liveReportId);
     expect(reportAfterConfirm.data?.report.importFiles.edges[0].node.name).toBe('poisonivy.json');
 
-    // Cleanup (wait for the recent-deletion window on the report id to expire)
-    await wait(5010);
-    await queryAsAdminWithSuccess({ query: DELETE_REPORT_QUERY, variables: { id: liveReportId } });
+    // Cleanup at engine level: no stream event, as the report came back live without one (keeps the sync tests consistent)
+    const reportToClean = await storeLoadById(testContext, ADMIN_USER, liveReportId, ENTITY_TYPE_CONTAINER_REPORT) as BasicStoreObject;
+    await deleteAllObjectFiles(testContext, ADMIN_USER, reportToClean);
+    await elDeleteElements(testContext, ADMIN_USER, [reportToClean]);
     const reportAfterCleanup = await queryAsAdminWithSuccess({ query: READ_REPORT_QUERY, variables: { id: liveReportId } });
     expect(reportAfterCleanup.data?.report).toBeNull();
   });
@@ -371,9 +373,10 @@ describe('Delete operation resolver testing', () => {
     expect(reportAfterConfirm.data?.report.id).toBe(restrictedReportId);
     expect(reportAfterConfirm.data?.report.importFiles.edges[0].node.name).toBe('poisonivy.json');
 
-    // Cleanup (wait for the recent-deletion window on the report id to expire)
-    await wait(5010);
-    await queryAsAdminWithSuccess({ query: DELETE_REPORT_QUERY, variables: { id: restrictedReportId } });
+    // Cleanup at engine level: no stream event, as the report came back live without one (keeps the sync tests consistent)
+    const reportToClean = await storeLoadById(testContext, ADMIN_USER, restrictedReportId, ENTITY_TYPE_CONTAINER_REPORT) as BasicStoreObject;
+    await deleteAllObjectFiles(testContext, ADMIN_USER, reportToClean);
+    await elDeleteElements(testContext, ADMIN_USER, [reportToClean]);
     const reportAfterCleanup = await queryAsAdminWithSuccess({ query: READ_REPORT_QUERY, variables: { id: restrictedReportId } });
     expect(reportAfterCleanup.data?.report).toBeNull();
   });
