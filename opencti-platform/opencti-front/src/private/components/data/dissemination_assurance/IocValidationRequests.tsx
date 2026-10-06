@@ -218,7 +218,7 @@ const IocValidationRequests = () => {
     name: {
       id: 'name',
       label: t_i18n('Name'),
-      percentWidth: 22,
+      percentWidth: 20,
       isSortable: true,
     },
     status: {
@@ -231,7 +231,7 @@ const IocValidationRequests = () => {
     platforms: {
       id: 'platforms',
       label: t_i18n('Security platforms'),
-      percentWidth: 16,
+      percentWidth: 13,
       isSortable: false,
       render: ({ platforms }: IocValidationRequestsLine_node$data) => defaultRender(platforms.map((p) => p.name)),
     },
@@ -267,7 +267,7 @@ const IocValidationRequests = () => {
     completed_at: {
       id: 'completed_at',
       label: t_i18n('Completed at'),
-      percentWidth: 10,
+      percentWidth: 15,
       isSortable: true,
       render: ({ completed_at }: IocValidationRequestsLine_node$data, { nsdt }: { nsdt: (date: unknown) => string }) => defaultRender(nsdt(completed_at)),
     },

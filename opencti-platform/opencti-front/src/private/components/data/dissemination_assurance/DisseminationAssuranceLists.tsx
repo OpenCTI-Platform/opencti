@@ -143,7 +143,7 @@ const SavedList = ({ listId }: { listId: SavedListId }) => {
 
   const dataColumns: DataTableProps['dataColumns'] = {
     pattern_type: { percentWidth: 9 },
-    name: { percentWidth: 20 },
+    name: { percentWidth: 17 },
     deployment_platforms_count: {
       id: 'deployment_platforms_count',
       label: t_i18n('Live platforms'),
@@ -172,7 +172,7 @@ const SavedList = ({ listId }: { listId: SavedListId }) => {
       isSortable: true,
       render: ({ hit_platforms_count }: DisseminationAssuranceListsLine_node$data) => defaultRender(n(hit_platforms_count ?? 0)),
     },
-    valid_until: { percentWidth: 12 },
+    valid_until: { percentWidth: 15 },
     objectMarking: { percentWidth: 10, isSortable: false },
   };
 
