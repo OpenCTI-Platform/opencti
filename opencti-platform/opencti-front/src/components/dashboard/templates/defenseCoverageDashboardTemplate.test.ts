@@ -12,7 +12,7 @@ interface ExportedWidget {
   perspective: string | null;
   parameters: { title: string };
   dataSelection: { attribute: string; filters: { filters: unknown[] } }[];
-  layout: { i: string };
+  layout: { i: string; x: number; w: number };
 }
 
 describe('defense coverage dashboard template', () => {
@@ -63,6 +63,11 @@ describe('defense coverage dashboard template', () => {
       expect(filters).toContainEqual({ key: ['entity_type'], values: ['Indicator'], operator: 'eq', mode: 'or' });
       expect(filters.flatMap((filter) => filter.key).some((key) => key.includes('defense'))).toBe(false);
     });
+  });
+
+  it('gives the detection rule list the full width of the grid', () => {
+    const list = widgets.find((widget) => widget.type === 'list');
+    expect(list?.layout).toMatchObject({ x: 0, w: 12 });
   });
 
   it('translates every title', () => {

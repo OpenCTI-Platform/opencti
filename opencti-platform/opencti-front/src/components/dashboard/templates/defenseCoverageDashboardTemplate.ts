@@ -63,7 +63,7 @@ export const defenseCoverageDashboardTemplate: DashboardTemplate = {
       perspective: null,
       parameters: { title: 'Techniques by defense level' },
       dataSelection: [],
-      layout: { x: 0, y: 8, w: 4, h: 7 },
+      layout: { x: 0, y: 8, w: 6, h: 7 },
     },
     {
       id: '0a09d3f0-0001-4d09-9a09-000000000006',
@@ -71,7 +71,7 @@ export const defenseCoverageDashboardTemplate: DashboardTemplate = {
       perspective: 'entities',
       parameters: { title: 'Detection rules by pattern type' },
       dataSelection: [rules({ attribute: 'pattern_type', number: 12 })],
-      layout: { x: 4, y: 8, w: 4, h: 7 },
+      layout: { x: 6, y: 8, w: 6, h: 7 },
     },
     {
       id: '0a09d3f0-0001-4d09-9a09-000000000007',
@@ -79,7 +79,8 @@ export const defenseCoverageDashboardTemplate: DashboardTemplate = {
       perspective: 'entities',
       parameters: { title: 'Latest detection rules' },
       dataSelection: [rules({ number: 10, sort_by: 'created_at', sort_mode: 'desc' })],
-      layout: { x: 8, y: 8, w: 4, h: 7 },
+      // The list widget shows every default column: it needs the full width to keep them readable
+      layout: { x: 0, y: 15, w: 12, h: 8 },
     },
   ],
 };

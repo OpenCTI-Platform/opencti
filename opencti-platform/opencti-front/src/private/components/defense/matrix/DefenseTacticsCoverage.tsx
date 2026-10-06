@@ -38,14 +38,19 @@ const DefenseTacticsCoverage = ({ tactics, threatsOnly = false, killChainName }:
     );
   }
   return (
-    <Box component="ul" sx={{ listStyle: 'none', margin: 0, padding: 0 }} data-testid="defense-tactics-coverage">
+    <Box
+      component="ul"
+      // One label column shared by every row: sized to the longest tactic name, so no name is ever cut and the bars stay aligned
+      sx={{ listStyle: 'none', margin: 0, padding: 0, display: 'grid', gridTemplateColumns: 'max-content minmax(0, 1fr) 64px', columnGap: 1.5 }}
+      data-testid="defense-tactics-coverage"
+    >
       {rows.map(({ tactic, levels, summary }) => (
         <Box
           component="li"
           key={tactic.kill_chain_phase_id}
-          sx={{ display: 'grid', gridTemplateColumns: 'minmax(120px, 1fr) 3fr 64px', alignItems: 'center', gap: 1.5, paddingBlock: 0.5 }}
+          sx={{ display: 'grid', gridColumn: '1 / -1', gridTemplateColumns: 'subgrid', alignItems: 'center', paddingBlock: 0.5 }}
         >
-          <Typography variant="body2" noWrap title={tacticDisplayName(tactic.phase_name)}>{tacticDisplayName(tactic.phase_name)}</Typography>
+          <Typography variant="body2" noWrap>{tacticDisplayName(tactic.phase_name)}</Typography>
           <DefenseLevelsBar
             levels={levels}
             label={t_i18n('{name}: {covered} of {total} techniques covered', {

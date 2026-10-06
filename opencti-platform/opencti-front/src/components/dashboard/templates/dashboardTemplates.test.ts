@@ -26,7 +26,7 @@ describe('dashboard templates', () => {
     const byPatternType = manifest.widgets['0a09d3f0-0001-4d09-9a09-000000000006'];
     expect(byPatternType.parameters.title).toBe('[Detection rules by pattern type]');
     expect(byPatternType.dataSelection[0]).toMatchObject({ label: '', attribute: 'pattern_type', date_attribute: 'created_at', isTo: true, number: 12 });
-    expect(byPatternType.layout).toMatchObject({ i: byPatternType.id, w: 4, h: 7 });
+    expect(byPatternType.layout).toMatchObject({ i: byPatternType.id, w: 6, h: 7 });
   });
 
   it('keeps the widgets inside the 12 column grid without overlap', () => {
