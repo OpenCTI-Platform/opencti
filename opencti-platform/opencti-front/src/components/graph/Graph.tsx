@@ -810,7 +810,7 @@ const Graph = ({
     }
     const other = otherSelected(node);
     return present([
-      !node.relationship_type && { id: 'open', label: t_i18n('Open in a new tab'), icon: <OpenInNewOutlined {...MENU_ICON} />, onSelect: () => openInNewTab(node.id) },
+      { id: 'open', label: t_i18n('Open in a new tab'), icon: <OpenInNewOutlined {...MENU_ICON} />, onSelect: () => openInNewTab(node.id) },
       context === 'investigation' && {
         id: 'expand',
         label: t_i18n('Expand this entity'),
