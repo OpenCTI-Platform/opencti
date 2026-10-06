@@ -22,20 +22,29 @@ vi.mock('../../../utils/hooks/useAttributes', () => ({
 import FilterRow from './FilterRow';
 import { FilterEditorProvider } from './FilterEditorContext';
 
-const buildDefinition = (filterKey: string, type: string, label: string): FilterDefinition => ({
+const buildDefinition = (filterKey: string, type: string, label: string, subFilters?: FilterDefinition[]): FilterDefinition => ({
   filterKey,
   type,
   label,
   multiple: false,
   subEntityTypes: ['Stix-Core-Object'],
   elementsForFilterValuesSearch: [],
+  ...(subFilters ? { subFilters } : {}),
 } as FilterDefinition);
 
 const filterKeysSchema = new Map([
   ['Stix-Core-Object', new Map([
     ['name', buildDefinition('name', 'string', 'Name')],
     ['description', buildDefinition('description', 'string', 'Description')],
+    ['dynamicRegardingOf', buildDefinition('dynamicRegardingOf', 'nested', 'In regards of (dynamic)', [
+      buildDefinition('relationship_type', 'id', 'Relationship type'),
+      buildDefinition('dynamic', 'filters', 'Dynamic filter'),
+    ])],
   ])],
+]);
+
+const filtersRepresentativesMap = new Map([
+  ['targets', { value: 'Targets', entity_type: 'Relationship', color: null, representativeId: 'targets' }],
 ]);
 
 const userContext = createMockUserContext({ schema: { filterKeysSchema } });
@@ -63,14 +72,14 @@ const filter: Filter = { id: 'filter-1', key: 'name', values: ['abc'], operator:
 describe('FilterRow', () => {
   let helpers: handleFilterHelpers & Record<string, ReturnType<typeof vi.fn>>;
 
-  const renderRow = () => testRender(
+  const renderRow = (rowFilter: Filter = filter) => testRender(
     <FilterEditorProvider
       helpers={helpers}
-      availableFilterKeys={['name', 'description']}
+      availableFilterKeys={['name', 'description', 'dynamicRegardingOf']}
       entityTypes={['Stix-Core-Object']}
-      filtersRepresentativesMap={new Map()}
+      filtersRepresentativesMap={filtersRepresentativesMap}
     >
-      <FilterRow filter={filter} />
+      <FilterRow filter={rowFilter} />
     </FilterEditorProvider>,
     { userContext },
   );
@@ -106,5 +115,37 @@ describe('FilterRow', () => {
     const { user } = renderRow();
     await user.click(screen.getByTestId('filter-row-remove-button'));
     expect(helpers.handleRemoveFilterById).toHaveBeenCalledWith('filter-1');
+  });
+
+  describe('relationship type of a dynamicRegardingOf filter', () => {
+    const dynamicGroup = { mode: 'and', filters: [{ key: 'name', values: ['abc'] }], filterGroups: [] };
+    const withoutDynamic = {
+      id: 'filter-dyn',
+      key: 'dynamicRegardingOf',
+      operator: 'eq',
+      mode: 'or',
+      values: [{ key: 'relationship_type', values: ['targets'] }],
+    } as unknown as Filter;
+    const withDynamic = {
+      ...withoutDynamic,
+      values: [...withoutDynamic.values, { key: 'dynamic', values: [dynamicGroup] }],
+    } as unknown as Filter;
+
+    it('can be emptied while no dynamic filter is defined', () => {
+      renderRow(withoutDynamic);
+      const relationshipType = screen.getByTestId('filter-row-relationship-type');
+      expect(within(relationshipType).getByRole('button', { name: 'Remove Targets' })).toBeInTheDocument();
+      expect(within(relationshipType).getByLabelText('Clear')).toBeInTheDocument();
+      expect(within(screen.getByTestId('filter-row-operator-select')).getByLabelText('Condition')).not.toBeDisabled();
+    });
+
+    it('cannot be emptied once a dynamic filter is defined', () => {
+      renderRow(withDynamic);
+      const relationshipType = screen.getByTestId('filter-row-relationship-type');
+      expect(within(relationshipType).getByText('Targets')).toBeInTheDocument();
+      expect(within(relationshipType).queryByRole('button', { name: 'Remove Targets' })).toBeNull();
+      expect(within(relationshipType).queryByLabelText('Clear')).toBeNull();
+      expect(within(screen.getByTestId('filter-row-operator-select')).getByLabelText('Condition')).toBeDisabled();
+    });
   });
 });
