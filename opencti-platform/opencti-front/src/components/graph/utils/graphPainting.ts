@@ -392,6 +392,9 @@ const readableAngle = (tangent: { x: number; y: number }) => {
 
 const endOf = (end: GraphLink['source']) => (typeof end === 'object' && end !== null ? end : null);
 
+/** The label drawn on a link: a link drawn towards a group, or a loop on it, says how many relationships it stands for. */
+export const graphLinkLabel = (link: Pick<GraphLink, 'label' | 'represents'>) => ((link.represents ?? 1) > 1 ? `${link.label} (${link.represents})` : link.label);
+
 export const linkDash = (link: Pick<GraphLink, 'inferred' | 'isNestedInferred'>, confidence?: number | null): number[] => {
   if (link.inferred || link.isNestedInferred) return INFERRED_DASH;
   if (typeof confidence === 'number' && confidence < LOW_CONFIDENCE_THRESHOLD) return LOW_CONFIDENCE_DASH;
@@ -491,7 +494,7 @@ export const paintGraphLink = (ctx: CanvasRenderingContext2D, link: GraphLink, o
   if (visual.selected) priority = 3;
   else if (visual.onPath) priority = 2;
   else if (visual.hovered) priority = 1;
-  return { text: link.label, ...middle, priority, emphasised: emphasis && !visual.faded, alternatives };
+  return { text: graphLinkLabel(link), ...middle, priority, emphasised: emphasis && !visual.faded, alternatives };
 };
 
 const rotatedBox = (spot: { x: number; y: number; angle: number }, width: number, height: number): Box => {
@@ -502,6 +505,7 @@ const rotatedBox = (spot: { x: number; y: number; angle: number }, width: number
     y: spot.y,
     halfWidth: (width * cos + height * sin) / 2,
     halfHeight: (width * sin + height * cos) / 2,
+    rotated: { angle: spot.angle, halfLength: width / 2, halfThickness: height / 2 },
   };
 };
 

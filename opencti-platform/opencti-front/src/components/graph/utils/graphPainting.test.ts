@@ -5,7 +5,7 @@ import ThemeDark from '../../ThemeDark';
 import { buildGraphPalette } from './graphPalette';
 import { createRecordingContext } from '../../../utils/tests/recordingCanvasContext';
 import { graphLink, graphNode, installPath2DStub } from '../../../utils/tests/graphTestData';
-import type { Box } from './graphGeometry';
+import { type Box, computeLinkCurvatures, linkEndsKey } from './graphGeometry';
 import {
   createNodeBoxes,
   levelOfDetail,
@@ -277,6 +277,34 @@ describe('paintLinkLabels', () => {
     expect(blocked.texts()).toEqual([]);
     paintLinkLabels(blocked, [{ text: 'uses', x: 0, y: 0, angle: 0, priority: 3, emphasised: true, alternatives }], { palette, globalScale: 4, obstacles: walls });
     expect(blocked.texts()).toEqual(['uses']);
+  });
+
+  it('labels every loop of a group standing for four relationship types, with its count, at the zoom that fits the graph', () => {
+    const group = graphNode({ id: 'group:Malware', name: '4 x Malware', label: '4 x Malware', x: 0, y: 0 });
+    // Drawn in the order of the relationships, the loops are ordered by id, the relationship type: "downloads" first.
+    const types = ['drops', 'variant of', 'related to', 'downloads'];
+    const loops = types.map((type) => graphLink(group, group, {
+      id: `group|${group.id}|${group.id}|${type.replace(' ', '-')}`,
+      label: type,
+      represents: type === 'related to' ? 2 : 1,
+    }));
+    const curvatures = computeLinkCurvatures(loops.map((link) => ({ id: link.id, sourceId: group.id, targetId: group.id })));
+    [5.25, 6].forEach((globalScale) => {
+      const detail = levelOfDetail(globalScale, 7);
+      const obstacles: Box[] = [];
+      paintGraphNode(createRecordingContext(), group, { palette, globalScale, detail, visual: plain }, obstacles);
+      const labels = loops.map((link) => paintGraphLink(createRecordingContext(), link, {
+        palette,
+        globalScale,
+        detail,
+        visual: { selected: false, hovered: false, faded: false, onPath: false },
+        color: palette.link,
+        ...(curvatures.get(linkEndsKey({ id: link.id, sourceId: group.id, targetId: group.id })) ?? { curvature: 0, rotation: 0 }),
+      })).filter((label): label is LinkLabel => !!label);
+      const ctx = createRecordingContext();
+      paintLinkLabels(ctx, labels, { palette, globalScale, obstacles });
+      expect([...ctx.texts()].sort()).toEqual(['downloads', 'drops', 'related to (2)', 'variant of']);
+    });
   });
 
   it('gives every link label two other places along the link, and nodes report what they cover', () => {

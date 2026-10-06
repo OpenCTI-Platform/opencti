@@ -11,6 +11,7 @@ import type { LayoutPositions } from './graphLayouts';
 import { type GraphFocus, type GraphPath, neighbourhood } from './graphFocus';
 import {
   createNodeBoxes,
+  graphLinkLabel,
   type LevelOfDetail,
   levelOfDetail,
   type LinkLabel,
@@ -358,7 +359,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     let angle = Math.atan2(end.y - start.y, end.x - start.x);
     if (angle > Math.PI / 2) angle -= Math.PI;
     if (angle < -Math.PI / 2) angle += Math.PI;
-    paintLinkLabels(ctx, [{ text: link.label, x: middle.x, y: middle.y, angle, priority: 0, emphasised: false }], { palette, globalScale });
+    paintLinkLabels(ctx, [{ text: graphLinkLabel(link), x: middle.x, y: middle.y, angle, priority: 0, emphasised: false }], { palette, globalScale });
   };
 
   /** The sphere of a node in 3D: the selection accent when selected, as in 2D. */
@@ -391,7 +392,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
    * @param link Link to draw.
    */
   const linkThreePaint = (link: GraphLink) => {
-    const sprite = new SpriteText(link.label);
+    const sprite = new SpriteText(graphLinkLabel(link));
     sprite.color = palette.textSecondary;
     sprite.textHeight = 1.5;
     return sprite;

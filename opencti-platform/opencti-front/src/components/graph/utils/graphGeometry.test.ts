@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   boundsOf,
+  type Box,
+  boxesOverlap,
   computeLinkCurvatures,
   computeObstacleBends,
   createBoxIndex,
@@ -266,6 +268,37 @@ describe('createBoxIndex', () => {
     expect(index.overlaps({ x: 125, y: 101, halfWidth: 1, halfHeight: 1 })).toBe(true);
     expect(index.overlaps({ x: 20, y: 0, halfWidth: 5, halfHeight: 5 })).toBe(false);
     expect(index.overlaps({ x: 100, y: 110, halfWidth: 40, halfHeight: 2 })).toBe(false);
+  });
+});
+
+describe('boxesOverlap', () => {
+  // A label 20 long and 4 thick drawn at `angle` around (x, y), as the link labels are measured.
+  const label = (x: number, y: number, angle: number): Box => {
+    const cos = Math.abs(Math.cos(angle));
+    const sin = Math.abs(Math.sin(angle));
+    return { x, y, halfWidth: (20 * cos + 4 * sin) / 2, halfHeight: (20 * sin + 4 * cos) / 2, rotated: { angle, halfLength: 10, halfThickness: 2 } };
+  };
+
+  it('compares rotated boxes by the rectangles they cover, not by their extents', () => {
+    const diagonal = Math.PI / 4;
+    // Side by side along two parallel links, 6 apart across the text: the extents overlap, the labels do not.
+    const first = label(0, 0, diagonal);
+    const second = label(6 / Math.SQRT2, -6 / Math.SQRT2, diagonal);
+    expect(Math.abs(first.x - second.x) < first.halfWidth + second.halfWidth).toBe(true);
+    expect(boxesOverlap(first, second)).toBe(false);
+    // Crossing, or 3 apart across the text (less than their thickness): they overlap.
+    expect(boxesOverlap(first, label(0, 0, -diagonal))).toBe(true);
+    expect(boxesOverlap(first, label(3 / Math.SQRT2, -3 / Math.SQRT2, diagonal))).toBe(true);
+  });
+
+  it('compares a rotated box with an axis-aligned one, in both orders', () => {
+    const node = { x: 0, y: 0, halfWidth: 5, halfHeight: 5 };
+    // The corner of its extent covers the node, the label passes beside it.
+    const beside = label(8, -8, Math.PI / 4);
+    expect(boxesOverlap(node, beside)).toBe(false);
+    expect(boxesOverlap(beside, node)).toBe(false);
+    expect(boxesOverlap(node, label(6, 0, Math.PI / 4))).toBe(true);
+    expect(boxesOverlap(node, { x: 9, y: 0, halfWidth: 5, halfHeight: 5 })).toBe(true);
   });
 });
 

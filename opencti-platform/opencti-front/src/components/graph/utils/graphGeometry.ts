@@ -13,10 +13,15 @@ export type LinkPath
     | { kind: 'quadratic'; start: Point; control: Point; end: Point }
     | { kind: 'cubic'; start: Point; c1: Point; c2: Point; end: Point };
 
-/** A box centred on a point, in the units of the context it is measured in. */
+/**
+ * A box centred on a point, in the units of the context it is measured in. A rotated box (a label
+ * drawn along its link) gives the rectangle it covers in `rotated`; `halfWidth` and `halfHeight`
+ * are then the extents of the axis-aligned box holding it.
+ */
 export interface Box extends Point {
   halfWidth: number;
   halfHeight: number;
+  rotated?: { angle: number; halfLength: number; halfThickness: number };
 }
 
 /** Self-loops have no length to scale a curvature by, so the library sizes them with this factor. */
@@ -436,8 +441,29 @@ export const computeObstacleBends = (
   return bends;
 };
 
-export const boxesOverlap = (first: Box, second: Box): boolean => Math.abs(first.x - second.x) < first.halfWidth + second.halfWidth
-  && Math.abs(first.y - second.y) < first.halfHeight + second.halfHeight;
+const axesOf = (box: Box) => {
+  const angle = box.rotated?.angle ?? 0;
+  return { cos: Math.cos(angle), sin: Math.sin(angle), halfLength: box.rotated?.halfLength ?? box.halfWidth, halfThickness: box.rotated?.halfThickness ?? box.halfHeight };
+};
+
+// Half the extent of a rectangle projected on the unit axis (x, y).
+const projectedRadius = (axes: ReturnType<typeof axesOf>, x: number, y: number) => axes.halfLength * Math.abs(axes.cos * x + axes.sin * y)
+  + axes.halfThickness * Math.abs(-axes.sin * x + axes.cos * y);
+
+/**
+ * Whether two boxes overlap. Rotated boxes are compared by the rectangles they cover (separating
+ * axes), not by their axis-aligned extents: two labels drawn side by side along parallel links do
+ * not overlap although their extents do.
+ */
+export const boxesOverlap = (first: Box, second: Box): boolean => {
+  const dx = second.x - first.x;
+  const dy = second.y - first.y;
+  if (Math.abs(dx) >= first.halfWidth + second.halfWidth || Math.abs(dy) >= first.halfHeight + second.halfHeight) return false;
+  if (!first.rotated && !second.rotated) return true;
+  const a = axesOf(first);
+  const b = axesOf(second);
+  return [a, b].every(({ cos, sin }) => [[cos, sin], [-sin, cos]].every(([x, y]) => Math.abs(dx * x + dy * y) < projectedRadius(a, x, y) + projectedRadius(b, x, y)));
+};
 
 export interface BoxIndex {
   add: (box: Box) => void;
