@@ -39,6 +39,7 @@ import {
   processStandingHunts,
   purgeExpiredHuntRuns,
   reconcilePirActivatedHunts,
+  requeueUnpublishedHuntRuns,
   resumeSettledHuntPlaybooks,
   retryFailedHuntRuns,
   runScheduledHunts,
@@ -379,6 +380,40 @@ describe('Hunt manager', () => {
     } finally {
       HUNT_CONFIG.maxConcurrentRunsPerConnector = maxConcurrentRunsPerConnector;
       push.mockRestore();
+      await expireHuntRun(testContext, await loadRun(run.internal_id), 'Hunt manager test');
+    }
+  });
+
+  it('should publish a run whose publication date was not recorded again under the work of its first publication', async () => {
+    const hunt = await loadHunt(huntId);
+    const [run] = await createHuntRuns(testContext, hunt, { trigger: HUNT_RUN_TRIGGER_MANUAL, dispatch: false });
+    const { maxConcurrentRunsPerConnector } = HUNT_CONFIG;
+    HUNT_CONFIG.maxConcurrentRunsPerConnector = 1000;
+    const sent: string[] = [];
+    const push = vi.spyOn(rabbitmq, 'pushToConnector').mockImplementation(async (_connectorId, message) => {
+      sent.push((message as { internal: { work_id: string } }).internal.work_id);
+      return true as never;
+    });
+    const createWork = vi.spyOn(workDomain, 'createWork');
+    try {
+      await expect(dispatchHuntRun(testContext, run, hunt)).resolves.toBe(true);
+      const first = await loadRun(run.internal_id);
+      // The publication happened but its date was never stored, and the grace of a dispatch in progress is over
+      await patchAttribute(testContext, ADMIN_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { published_at: null, dispatched_at: hoursAgo(2) });
+      expect(await requeueUnpublishedHuntRuns(testContext)).toBeGreaterThanOrEqual(1);
+      const released = await loadRun(run.internal_id);
+      expect(released.dispatched_at).toBeFalsy();
+      expect(released.work_id).toEqual(first.work_id);
+      expect(await workDomain.loadWorkById(testContext, ADMIN_USER, first.work_id as string)).toBeTruthy();
+      await expect(dispatchHuntRun(testContext, released, hunt)).resolves.toBe(true);
+      // Both messages carry the same work: the report of whichever reaches the connector is bound to the run
+      expect(sent).toEqual([first.work_id, first.work_id]);
+      expect(createWork).toHaveBeenCalledTimes(1);
+      expect((await loadRun(run.internal_id)).work_id).toEqual(first.work_id);
+    } finally {
+      HUNT_CONFIG.maxConcurrentRunsPerConnector = maxConcurrentRunsPerConnector;
+      push.mockRestore();
+      createWork.mockRestore();
       await expireHuntRun(testContext, await loadRun(run.internal_id), 'Hunt manager test');
     }
   });

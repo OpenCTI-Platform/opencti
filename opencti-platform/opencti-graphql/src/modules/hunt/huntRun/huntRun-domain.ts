@@ -334,9 +334,10 @@ export interface HuntRunRequest {
 }
 
 /**
- * The time window of a recurring run: from where the previous completed run of the hunt on the same security platform
- * ended, minus the lookback overlap that catches the events indexed late, never longer than the time window of the hunt.
- * Without a previous run, or one older than the time window, the full time window (continued is false).
+ * The time window of a recurring run: from where the previous completed run of the same logic of the hunt on the same
+ * security platform ended, minus the lookback overlap that catches the events indexed late, never longer than the time
+ * window of the hunt. Without such a run (none yet, or the logic changed since), or one older than the time window, the
+ * full time window (continued is false).
  */
 export const computeHuntRunWindow = (end: Date, hours: number, lookbackMinutes: number, previousEnd?: string | Date | null) => {
   const full = new Date(end.getTime() - hours * 3600 * 1000);
@@ -353,8 +354,11 @@ export const computeHuntRunWindow = (end: Date, hours: number, lookbackMinutes: 
   return { start, continued: true };
 };
 
-/** The completed run of a hunt on a security platform (null: on the internet) whose time window ends last. */
-export const findLastCompletedHuntRun = async (context: AuthContext, huntId: string, securityPlatformId: string | null) => {
+/**
+ * The completed run of a hunt on a security platform (null: on the internet) whose time window ends last, among the runs
+ * of the current logic of the hunt: a run of an earlier rule or query never searched for what the current one matches.
+ */
+export const findLastCompletedHuntRun = async (context: AuthContext, huntId: string, securityPlatformId: string | null, logicFingerprint: string) => {
   const [previous] = await topEntitiesList<BasicStoreEntityHuntRun>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT_RUN], {
     first: 1,
     orderBy: 'time_window_end',
@@ -368,6 +372,7 @@ export const findLastCompletedHuntRun = async (context: AuthContext, huntId: str
           : { key: ['security_platform_id'], values: [], operator: FilterOperator.Nil },
         { key: ['hunt_run_status'], values: [HUNT_RUN_STATUS_COMPLETED] },
         { key: ['hunt_run_mode'], values: [HUNT_RUN_MODE_EXECUTE] },
+        { key: ['hunt_logic_fingerprint'], values: [logicFingerprint] },
       ],
       filterGroups: [],
     },
@@ -459,7 +464,7 @@ export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntit
     let continuesRunId: string | null = request.continuesRunId ?? null;
     if (incremental) {
       // A lookup that fails searches the full time window: a run is never lost for it
-      const previous = await findLastCompletedHuntRun(context, hunt.internal_id, securityPlatform?.internal_id ?? null).catch((error) => {
+      const previous = await findLastCompletedHuntRun(context, hunt.internal_id, securityPlatform?.internal_id ?? null, logicFingerprint).catch((error) => {
         logApp.warn('[OPENCTI-MODULE] Hunt run previous window lookup failed, the full time window is searched', { cause: error, huntId: hunt.internal_id });
         return null;
       });
@@ -873,9 +878,10 @@ const withHuntRunTransition = async <T>(
 };
 
 /**
- * Releases the dispatch reservation of a run never published, the platform having stopped between its reservation and
- * the publication of its message. The run is read again under its transition lock, the one connector reports take: a
- * run reported meanwhile, published, reserved again or holding another work is left as it is. True when released.
+ * Releases the dispatch reservation of a run whose publication was never recorded: the platform stopped between its
+ * reservation and the publication of its message, or could not record the date of a publication. The run is read again
+ * under its transition lock, the one connector reports take: a run reported meanwhile, published, reserved again or
+ * holding another work is left as it is. True when released.
  */
 export const releaseUnpublishedHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRun, reservedBefore: string): Promise<boolean> => {
   return withHuntRunTransition(context, run.internal_id, async (current) => {
@@ -887,11 +893,9 @@ export const releaseUnpublishedHuntRun = async (context: AuthContext, run: Basic
     if (!stale) {
       return false;
     }
-    if (current.work_id) {
-      await deleteWork(context, HUNT_MANAGER_USER, current.work_id)
-        .catch((error: unknown) => logApp.error('[OPENCTI-MODULE] Hunt run work cannot be deleted', { cause: error, runId: current.internal_id }));
-    }
-    await patchAttribute(context, HUNT_MANAGER_USER, current.internal_id, ENTITY_TYPE_HUNT_RUN, { dispatched_at: null, work_id: null });
+    // The run keeps its work: a message published before its date could be recorded still reports to that work, and the
+    // run is published again under it (dispatchHuntRun), so a second report finds the run settled
+    await patchAttribute(context, HUNT_MANAGER_USER, current.internal_id, ENTITY_TYPE_HUNT_RUN, { dispatched_at: null });
     return true;
   });
 };

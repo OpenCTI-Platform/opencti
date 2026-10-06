@@ -186,9 +186,10 @@ const startAutomaticRuns = async (context: AuthContext, hunt: BasicStoreEntityHu
 
 // region run lifecycle (Community Edition: manual runs rely on it too)
 /**
- * Runs reserved for their dispatch and never published: the process stopped between the reservation and the publication
- * of the message. Past the grace of a dispatch in progress, the reservation is released (its work, which no connector
- * will ever process, deleted) and the run is dispatched again at this tick, instead of waiting for the run timeout.
+ * Runs reserved for their dispatch whose publication was never recorded: the process stopped between the reservation
+ * and the publication of the message, or could not record the date of a publication. Past the grace of a dispatch in
+ * progress, the reservation is released and the run is dispatched again at this tick under the work it already holds,
+ * instead of waiting for the run timeout: a message that did reach its connector still reports to that work.
  */
 export const requeueUnpublishedHuntRuns = async (context: AuthContext): Promise<number> => {
   const reservedBefore = minutesAgo(HUNT_CONFIG.dispatchRecoveryMinutes);
@@ -204,7 +205,7 @@ export const requeueUnpublishedHuntRuns = async (context: AuthContext): Promise<
       // Read again under the transition lock of the run: the listing may be older than a report of its connector
       if (await releaseUnpublishedHuntRun(context, run, reservedBefore)) {
         requeued += 1;
-        logApp.warn('[OPENCTI-MODULE] Hunt run dispatch interrupted before its publication, run queued again', { runId: run.internal_id });
+        logApp.warn('[OPENCTI-MODULE] Hunt run publication not recorded, run queued again under its work', { runId: run.internal_id, workId: run.work_id ?? null });
       }
     } catch (error) {
       logApp.error('[OPENCTI-MODULE] Hunt run reservation cannot be released', { cause: error, runId: run.internal_id });

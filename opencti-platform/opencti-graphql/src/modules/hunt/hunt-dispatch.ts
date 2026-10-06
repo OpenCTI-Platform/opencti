@@ -342,31 +342,36 @@ export const dispatchHuntRun = async (
     const [current] = await findByIds<BasicStoreEntityHuntRun>(context, SYSTEM_USER, [run.internal_id], { type: ENTITY_TYPE_HUNT_RUN });
     if (!current || current.hunt_run_status !== HUNT_RUN_STATUS_QUEUED || current.dispatched_at) {
       logApp.debug('[OPENCTI-MODULE] Hunt run already dispatched or settled', { runId: run.internal_id });
-      return false;
+      return null;
     }
     const budget = await checkConnectorBudget(context, connector, run.hunt_run_mode === HUNT_RUN_MODE_PREVIEW);
     if (!budget.canDispatch) {
       logApp.debug('[OPENCTI-MODULE] Hunt run deferred by budget', { runId: run.internal_id, reason: budget.reason });
-      return false;
+      return null;
     }
     await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { dispatched_at: now() });
-    return true;
+    return current;
   });
   if (!reserved) {
     return false;
   }
-  let workId: string | undefined;
+  // A run released because its publication was never recorded keeps the work of that publication: it is published
+  // again under it, so the report of a message that did reach the connector is still bound to the run
+  const heldWorkId = reserved.work_id ?? null;
+  let workId: string | undefined = heldWorkId ?? undefined;
   try {
     const securityPlatform = run.security_platform_id
       ? (await findByIds<BasicStoreEntity>(context, SYSTEM_USER, [run.security_platform_id]))[0] ?? null
       : null;
-    const work = await createWork(context, HUNT_MANAGER_USER, connector, `Hunt ${hunt.name} (${run.hunt_run_trigger})`, hunt.standard_id, {
-      fileMarkings: hunt[RELATION_OBJECT_MARKING] ?? [],
-    });
-    if (!work) {
-      throw FunctionalError('The hunt run work cannot be created', { runId: run.internal_id });
+    if (!workId) {
+      const work = await createWork(context, HUNT_MANAGER_USER, connector, `Hunt ${hunt.name} (${run.hunt_run_trigger})`, hunt.standard_id, {
+        fileMarkings: hunt[RELATION_OBJECT_MARKING] ?? [],
+      });
+      if (!work) {
+        throw FunctionalError('The hunt run work cannot be created', { runId: run.internal_id });
+      }
+      workId = work.id;
     }
-    workId = work.id;
     // The values of an indicator hunt are read at the dispatch, so that a run follows the intelligence of the moment;
     // the run keeps them, the report of the connector is matched against them
     const iocs = hunt.hunt_type === HUNT_TYPE_INDICATORS ? (await resolveHuntIocSet(context, hunt)).iocs : null;
@@ -388,18 +393,24 @@ export const dispatchHuntRun = async (
     const message = await buildHuntRunMessage(context, run, hunt, connector, securityPlatform, workId, iocs);
     await pushToConnector(connector.internal_id, message);
   } catch (error) {
-    // Nothing was published: the work no connector will ever process is deleted (every retry creates its own), the
-    // slot and the work link are released and the run stays queued for the next dispatch
-    if (workId) {
-      await deleteWork(context, HUNT_MANAGER_USER, workId)
-        .catch((deleteError: unknown) => logApp.error('[OPENCTI-MODULE] Hunt run work cannot be deleted after a failed dispatch', { cause: deleteError, runId: run.internal_id, workId }));
+    if (heldWorkId) {
+      // An earlier publication under this work may have reached the connector: the work and its link stay, only the
+      // slot is released, and the run stays queued for the next dispatch
+      await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { dispatched_at: null });
+    } else {
+      // Nothing was published: the work no connector will ever process is deleted (every retry creates its own), the
+      // slot and the work link are released and the run stays queued for the next dispatch
+      if (workId) {
+        await deleteWork(context, HUNT_MANAGER_USER, workId)
+          .catch((deleteError: unknown) => logApp.error('[OPENCTI-MODULE] Hunt run work cannot be deleted after a failed dispatch', { cause: deleteError, runId: run.internal_id, workId }));
+      }
+      await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { dispatched_at: null, work_id: null });
     }
-    await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { dispatched_at: null, work_id: null });
     throw error;
   }
-  // Published: the hunt manager never releases this reservation (requeueUnpublishedHuntRuns); outside the try, a failure
-  // to record the date never undoes a publication
+  // Published: the hunt manager never releases this reservation (requeueUnpublishedHuntRuns). Outside the try, a failure
+  // to record the date never undoes a publication: the run is published again under the same work after the grace
   await patchAttribute(context, HUNT_MANAGER_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { published_at: now() })
-    .catch((error: unknown) => logApp.error('[OPENCTI-MODULE] Hunt run publication date cannot be recorded', { cause: error, runId: run.internal_id }));
+    .catch((error: unknown) => logApp.warn('[OPENCTI-MODULE] Hunt run publication date cannot be recorded, the run is published again under its work after the grace', { cause: error, runId: run.internal_id, workId }));
   return true;
 };

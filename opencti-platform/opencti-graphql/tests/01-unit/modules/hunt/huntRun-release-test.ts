@@ -50,8 +50,9 @@ describe('Release of an unpublished hunt run reservation', () => {
   it('should release a run still queued, unpublished and holding the same work, under the transition lock of the run', async () => {
     expect(await release(stale)).toBe(true);
     expect(vi.mocked(withHuntLock).mock.calls[0][0]).toEqual('hunt_run_transition_run-1');
-    expect(vi.mocked(deleteWork).mock.calls[0][2]).toEqual('work-1');
-    expect(vi.mocked(patchAttribute).mock.calls[0][4]).toEqual({ dispatched_at: null, work_id: null });
+    // The work stays: a message published before its date could be recorded still reports to it
+    expect(deleteWork).not.toHaveBeenCalled();
+    expect(vi.mocked(patchAttribute).mock.calls[0][4]).toEqual({ dispatched_at: null });
   });
 
   it.each([

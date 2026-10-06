@@ -6,6 +6,7 @@ import { continueHuntIncident, createHuntIncidentInWorkspace, createHuntIncident
 import { recordHuntHits } from '../../../../src/modules/hunt/huntHitRecord/huntHitRecord-domain';
 import { upsertHuntSightings } from '../../../../src/modules/hunt/hunt-sightings';
 import { updateHuntRunInformation } from '../../../../src/modules/hunt/hunt-stats';
+import { huntLogicFingerprint } from '../../../../src/modules/hunt/hunt-logic';
 import { createHuntRuns, isAutoEscalatedHuntRun, reportHuntRun, setHuntRunVerdict } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
 import type { BasicStoreEntityHunt } from '../../../../src/modules/hunt/hunt-types';
 import type { BasicStoreEntityHuntRun } from '../../../../src/modules/hunt/huntRun/huntRun-types';
@@ -294,6 +295,25 @@ describe('Time window of the recurring runs', () => {
     await createHuntRuns(testContext, hunt, { trigger: 'schedule', dispatch: false });
     expect(createdRun().time_window_start).toEqual(new Date(new Date(previousEnd).getTime() - 15 * 60 * 1000).toISOString());
     expect(createdRun().continues_run_id).toEqual('run-1');
+  });
+
+  it('should continue only a previous run of the current logic of the hunt', async () => {
+    // The search engine returns the previous run to a lookup of the logic it ran
+    const previousEnd = new Date(Date.now() - 6 * 3600 * 1000).toISOString();
+    vi.mocked(topEntitiesList).mockImplementation(async (_context, _user, _types, args) => {
+      const filters = (args as { filters?: { filters: { key: string[]; values: string[] }[] } }).filters?.filters ?? [];
+      const logic = filters.find((filter) => filter.key.includes('hunt_logic_fingerprint'));
+      return (logic?.values[0] === huntLogicFingerprint(hunt) ? [{ internal_id: 'run-1', time_window_end: previousEnd }] : []) as never;
+    });
+    await createHuntRuns(testContext, hunt, { trigger: 'schedule', dispatch: false });
+    expect(createdRun().continues_run_id).toEqual('run-1');
+    expect(createdRun().hunt_logic_fingerprint).toEqual(huntLogicFingerprint(hunt));
+    // A query edited since: no run of the new logic yet, the full time window is searched
+    const edited = { ...hunt, native_queries: [{ platform: 'splunk', language: 'spl', query: 'index=edr powershell -enc -nop' }] } as BasicStoreEntityHunt;
+    await createHuntRuns(testContext, edited, { trigger: 'schedule', dispatch: false });
+    const first = createdRun();
+    expect(first.continues_run_id).toBeNull();
+    expect(new Date(first.time_window_end as string).getTime() - new Date(first.time_window_start as string).getTime()).toEqual(24 * 3600 * 1000);
   });
 
   it('should search the full window for a first run, and keep the window a manual run asks for', async () => {
