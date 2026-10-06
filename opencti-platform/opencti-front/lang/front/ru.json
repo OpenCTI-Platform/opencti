@@ -23,6 +23,7 @@
   "{count, plural, one {# object no other source asserted} other {# objects no other source asserted}}": "{count, plural, one {# объект, не заявленный другими источниками} few {# объекта, не заявленных другими источниками} many {# объектов, не заявленных другими источниками} other {# объекта, не заявленного другими источниками}}",
   "{count, plural, one {# recommendation} other {# recommendations}}": "{count, plural, one {# рекомендация} few {# рекомендации} many {# рекомендаций} other {# рекомендации}}",
   "{count, plural, one {# shared object} other {# shared objects}}": "{count, plural, one {# общий объект} few {# общих объекта} many {# общих объектов} other {# общего объекта}}",
+  "{count, plural, one {# sighting} other {# sightings}}": "{count, plural, one {# обнаружение} few {# обнаружения} many {# обнаружений} other {# обнаружения}}",
   "{count} / {limit} entries detected": "Обнаружено {count} из {limit} записей",
   "{count} days": "{count} дней",
   "{count} deployed": "Развернуто: {count}",

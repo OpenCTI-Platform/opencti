@@ -23,6 +23,7 @@
   "{count, plural, one {# object no other source asserted} other {# objects no other source asserted}}": "{count, plural, one {# object no other source asserted} other {# objects no other source asserted}}",
   "{count, plural, one {# recommendation} other {# recommendations}}": "{count, plural, one {# recommendation} other {# recommendations}}",
   "{count, plural, one {# shared object} other {# shared objects}}": "{count, plural, one {# shared object} other {# shared objects}}",
+  "{count, plural, one {# sighting} other {# sightings}}": "{count, plural, one {# sighting} other {# sightings}}",
   "{count} / {limit} entries detected": "{count} / {limit} entries detected",
   "{count} days": "{count} days",
   "{count} deployed": "{count} deployed",

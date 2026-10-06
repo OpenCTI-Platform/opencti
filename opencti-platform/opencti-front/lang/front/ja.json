@@ -23,6 +23,7 @@
   "{count, plural, one {# object no other source asserted} other {# objects no other source asserted}}": "{count, plural, other {他のソースが報告していないオブジェクト # 件}}",
   "{count, plural, one {# recommendation} other {# recommendations}}": "{count, plural, other {推奨事項 # 件}}",
   "{count, plural, one {# shared object} other {# shared objects}}": "{count, plural, other {共有オブジェクト # 件}}",
+  "{count, plural, one {# sighting} other {# sightings}}": "{count, plural, other {目撃 # 件}}",
   "{count} / {limit} entries detected": "{count} / {limit} 件の項目が検出されました",
   "{count} days": "{count}日",
   "{count} deployed": "{count} 件デプロイ済み",

@@ -23,6 +23,7 @@
   "{count, plural, one {# object no other source asserted} other {# objects no other source asserted}}": "{count, plural, other {다른 소스가 보고하지 않은 개체 #개}}",
   "{count, plural, one {# recommendation} other {# recommendations}}": "{count, plural, other {권장 사항 #개}}",
   "{count, plural, one {# shared object} other {# shared objects}}": "{count, plural, other {공유 개체 #개}}",
+  "{count, plural, one {# sighting} other {# sightings}}": "{count, plural, other {목격 #건}}",
   "{count} / {limit} entries detected": "{count} / {limit}개의 항목이 감지되었습니다",
   "{count} days": "{count} 일",
   "{count} deployed": "{count}개 배포됨",
