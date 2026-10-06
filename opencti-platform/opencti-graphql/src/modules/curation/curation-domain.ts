@@ -546,6 +546,11 @@ export const bulkAcceptProposals = async (context: AuthContext, user: AuthUser, 
   if (choiceRequiredIds.length > 0) {
     throw FunctionalError('Some selected proposals need a choice (the attribution to keep): accept them one by one', { proposal_ids: choiceRequiredIds });
   }
+  // Refused here as by a single acceptance, rather than queued for a worker that would fail them.
+  const forbiddenIds = proposals.filter((proposal) => !canUserApplyProposal(user, proposal)).map((proposal) => proposal.internal_id);
+  if (forbiddenIds.length > 0) {
+    throw ForbiddenAccess('You are not allowed to apply some of the selected curation proposals', { proposal_ids: forbiddenIds });
+  }
   const task = await createListTask(context, user, {
     ids: uniqueIds,
     scope: 'KNOWLEDGE',
