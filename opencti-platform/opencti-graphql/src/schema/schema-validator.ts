@@ -20,8 +20,9 @@ import { isUserHasCapability, KNOWLEDGE_KNUPDATE_KNBYPASSFIELDS, KNOWLEDGE_KNUPD
 
 const ajv = new Ajv();
 
-// Observed data counters are consolidated by accumulation or max on upsert, a negative value would break their semantics
-const NON_NEGATIVE_COUNTER_ATTRIBUTES = ['number_seen', 'max_distinct_count'];
+// Counters consolidated by accumulation or max (observed data number_seen / max_distinct_count, the hit_count of
+// indicator deployments, which each hit report adds to): a negative value would break their semantics
+const NON_NEGATIVE_COUNTER_ATTRIBUTES = ['number_seen', 'max_distinct_count', 'hit_count'];
 
 // -- VALIDATE ATTRIBUTE AVAILABILITY AND FORMAT --
 export const validateAndFormatSchemaAttribute = (
@@ -275,7 +276,7 @@ export const validateInputUpdate = async (
     // Functional validator
     const validator = getEntityValidatorUpdate(instanceType);
     if (validator) {
-      const validate = await validator(context, user, instanceFromInputs, initial);
+      const validate = await validator(context, user, instanceFromInputs, initial, editInputs);
       if (!validate) {
         throw UnsupportedError('The input is not valid', { inputs: instanceFromInputs });
       }
@@ -289,4 +290,29 @@ export const validateInputUpdate = async (
     // Deprecated attribute to be removed when transition done
     [SEMATTRS_DB_OPERATION]: 'update',
   }, validateInputUpdateFn);
+};
+
+/**
+ * The functional update validator of a type, applied to the edits an upsert writes on a stored element: an upsert
+ * writes them without going through validateInputUpdate, so the edition rules of the type apply here when required.
+ */
+export const validateUpsertInputs = async (
+  context: AuthContext,
+  user: AuthUser,
+  instanceType: string,
+  initial: Record<string, unknown>,
+  editInputs: EditInput[],
+) => {
+  const validator = getEntityValidatorUpdate(instanceType);
+  if (!validator || editInputs.length === 0) {
+    return;
+  }
+  const instanceFromInputs: Record<string, unknown> = {};
+  editInputs.forEach((obj) => {
+    instanceFromInputs[obj.key] = obj.value;
+  });
+  const validate = await validator(context, user, instanceFromInputs, initial, editInputs);
+  if (!validate) {
+    throw UnsupportedError('The input is not valid', { inputs: instanceFromInputs });
+  }
 };

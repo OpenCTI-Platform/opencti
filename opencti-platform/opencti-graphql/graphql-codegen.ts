@@ -70,6 +70,7 @@ const config: CodegenConfig = {
           FintelDesign: '../modules/fintelDesign/fintelDesign-types#BasicStoreEntityFintelDesign',
           Pir: '../modules/pir/pir-types#BasicStoreEntityPir',
           SecurityPlatform: '../modules/securityPlatform/securityPlatform-types#BasicStoreEntitySecurityPlatform',
+          IocValidationRequest: '../modules/iocValidation/iocValidation-types#BasicStoreEntityIocValidationRequest',
           SecurityCoverage: '../modules/securityCoverage/securityCoverage-types#BasicStoreEntitySecurityCoverage',
           SecurityCoverageResult: '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types#BasicStoreEntitySecurityCoverageResult',
           AttackPatternCoverage: '../modules/securityCoverage/securityCoverage-types#CoveredEntity',

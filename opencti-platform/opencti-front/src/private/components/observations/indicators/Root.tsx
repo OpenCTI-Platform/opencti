@@ -26,6 +26,7 @@ import { KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../uti
 import IndicatorEdition from './IndicatorEdition';
 import IndicatorDeletion from './IndicatorDeletion';
 import IndicatorKnowledge from './IndicatorKnowledge';
+import IndicatorDeployment from './IndicatorDeployment';
 import { PATH_INDICATOR, PATH_INDICATORS } from '@components/common/routes/paths';
 
 const subscription = graphql`
@@ -34,6 +35,7 @@ const subscription = graphql`
       ... on Indicator {
         ...Indicator_indicator
         ...IndicatorEditionContainer_indicator
+        ...IndicatorDeployment_indicator
       }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
@@ -59,6 +61,7 @@ const indicatorQuery = graphql`
       ...StixCoreRelationshipCreationFromEntityHeader_stixCoreObject
       ...Indicator_indicator
       ...IndicatorDetails_indicator
+      ...IndicatorDeployment_indicator
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
@@ -174,6 +177,9 @@ const RootIndicator = ({ indicatorId, queryRef }: RootIndicatorProps) => {
                     'SecurityPlatform',
                   ]}
                 />
+              ),
+              deployments: (
+                <IndicatorDeployment indicator={indicator} />
               ),
               files: (
                 <FileManager

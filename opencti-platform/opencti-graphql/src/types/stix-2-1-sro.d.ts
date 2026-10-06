@@ -2,9 +2,25 @@ import type { StixId } from './stix';
 import type { StixRelationshipObject, StixOpenctiExtension, StixDate, StixKillChainPhase, StixCoverage } from './stix-2-1-common';
 import { STIX_EXT_OCTI } from './stix-2-1-extensions';
 
+// Deployment lifecycle, only present on deployed-on relationships
+export interface StixDeployedOnExtension {
+  deployment_status?: string;
+  external_id?: string;
+  deployed_at?: StixDate;
+  last_sync_at?: StixDate;
+  removed_at?: StixDate;
+  hit_count?: number;
+  first_hit_at?: StixDate;
+  last_hit_at?: StixDate;
+  validation_status?: string;
+  last_validation_at?: StixDate;
+  validation_run_id?: string;
+  error_message?: string;
+}
+
 // Relationship Specific Properties
 // relationship_type, description, source_ref, target_ref, start_time, stop_time
-export interface RelationExtension extends StixOpenctiExtension {
+export interface RelationExtension extends StixOpenctiExtension, StixDeployedOnExtension {
   extension_type: 'property-extension' | 'new-sro';
   source_value: string;
   source_ref: string;

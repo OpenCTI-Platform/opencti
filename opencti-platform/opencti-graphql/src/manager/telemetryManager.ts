@@ -70,7 +70,8 @@ import { listRules } from '../modules/retentionRules/retentionRules-domain';
 import { fullEntitiesList } from '../database/middleware-loader';
 import { isSavedFilterShared } from '../modules/savedFilter/savedFilter-domain';
 import { ENTITY_TYPE_SECURITY_COVERAGE_RESULT } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
-import { RELATION_HAS_COVERED } from '../schema/stixCoreRelationship';
+import { RELATION_DEPLOYED_ON, RELATION_HAS_COVERED } from '../schema/stixCoreRelationship';
+import { ENTITY_TYPE_IOC_VALIDATION_REQUEST } from '../modules/iocValidation/iocValidation-types';
 
 const TELEMETRY_MANAGER_KEY = conf.get('telemetry_manager:lock_key');
 
@@ -133,6 +134,10 @@ export const TELEMETRY_GAUGE_DISSEMINATION = 'disseminationCount';
 export const TELEMETRY_GAUGE_NLQ = 'nlqQueryCount';
 export const TELEMETRY_GAUGE_REQUEST_ACCESS = 'requestAccessCreationCount';
 export const TELEMETRY_GAUGE_DRAFT_CREATION = 'draftCreationCount';
+export const TELEMETRY_GAUGE_INDICATOR_DEPLOYMENT_REPORT = 'indicatorDeploymentReportCount';
+export const TELEMETRY_GAUGE_INDICATOR_HITS_REPORT = 'indicatorHitsReportCount';
+export const TELEMETRY_GAUGE_IOC_VALIDATION_REQUEST_CREATION = 'iocValidationRequestCreationCount';
+export const TELEMETRY_GAUGE_IOC_VALIDATION_PLATFORM_RESULT = 'iocValidationPlatformResultCount';
 export const TELEMETRY_GAUGE_DRAFT_VALIDATION = 'draftValidationCount';
 export const TELEMETRY_GAUGE_CAPABILITIES_IN_DRAFT_UPDATED = 'capabilitiesInDraftUpdateCount';
 export const TELEMETRY_GAUGE_WORKBENCH_UPLOAD = 'workbenchUploadCount';
@@ -276,6 +281,22 @@ export const addForgotPasswordCount = async () => {
 
 export const addConnectorDeployedCount = async () => {
   await redisSetTelemetryAdd(TELEMETRY_CONNECTOR_DEPLOYED, 1);
+};
+
+export const addIndicatorDeploymentReportCount = async (count = 1) => {
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_INDICATOR_DEPLOYMENT_REPORT, count);
+};
+
+export const addIndicatorHitsReportCount = async (count = 1) => {
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_INDICATOR_HITS_REPORT, count);
+};
+
+export const addIocValidationRequestCreationCount = async () => {
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_IOC_VALIDATION_REQUEST_CREATION, 1);
+};
+
+export const addIocValidationPlatformResultCount = async (count: number) => {
+  await redisSetTelemetryAdd(TELEMETRY_GAUGE_IOC_VALIDATION_PLATFORM_RESULT, count);
 };
 
 export const addUserLoginCount = () => {
@@ -564,6 +585,15 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setRelationshipsHasCoveredCount(relationshipsHasCoveredCount);
     // endregion
 
+    // region Dissemination assurance
+    const [relationshipsDeployedOnCount, iocValidationRequestsCount] = await Promise.all([
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_STIX_CORE_RELATIONSHIPS, { types: [RELATION_DEPLOYED_ON] }),
+      elCount(context, TELEMETRY_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_IOC_VALIDATION_REQUEST] }),
+    ]);
+    manager.setRelationshipsDeployedOnCount(relationshipsDeployedOnCount);
+    manager.setIocValidationRequestsCount(iocValidationRequestsCount);
+    // endregion
+
     // region Shared saved filters
     const savedFilters = await fullEntitiesList<BasicStoreEntitySavedFilter>(
       context,
@@ -730,6 +760,14 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setRequestAccessCreatedCount(requestAccessCountInRedis);
     const draftCreationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DRAFT_CREATION);
     manager.setDraftCreationCount(draftCreationCountInRedis);
+    const indicatorDeploymentReportCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_INDICATOR_DEPLOYMENT_REPORT);
+    manager.setIndicatorDeploymentReportCount(indicatorDeploymentReportCountInRedis);
+    const indicatorHitsReportCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_INDICATOR_HITS_REPORT);
+    manager.setIndicatorHitsReportCount(indicatorHitsReportCountInRedis);
+    const iocValidationRequestCreationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_IOC_VALIDATION_REQUEST_CREATION);
+    manager.setIocValidationRequestCreationCount(iocValidationRequestCreationCountInRedis);
+    const iocValidationPlatformResultCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_IOC_VALIDATION_PLATFORM_RESULT);
+    manager.setIocValidationPlatformResultCount(iocValidationPlatformResultCountInRedis);
     const draftValidationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DRAFT_VALIDATION);
     manager.setDraftValidationCount(draftValidationCountInRedis);
     const capabilitiesInDraftUpdatedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_CAPABILITIES_IN_DRAFT_UPDATED);
