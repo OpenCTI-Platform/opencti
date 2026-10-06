@@ -1,4 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, beforeAll, afterAll } from 'vitest';
+import { ApolloServer } from '@apollo/server';
+import { expressMiddleware } from '@as-integrations/express5';
+import type { Request, Response } from 'express';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 
 const { mockGetEntitiesMapFromCache, mockIsUserCanAccessStoreElement, mockUserEditField, mockEnterDraft } = vi.hoisted(() => ({
@@ -198,5 +201,91 @@ describe('settleRequestDraft', () => {
     const handler = settleRequestDraft(async () => {});
     await expect(handler({}, {})).resolves.toBeUndefined();
     expect(mockEnterDraft).not.toHaveBeenCalled();
+  });
+
+  it('should pass the next function of Express to the handler', async () => {
+    const next = vi.fn();
+    const handler = settleRequestDraft(async (_req: object, _res: object, nextFunction: () => void) => {
+      nextFunction();
+    });
+    await handler({}, {}, next);
+    expect(next).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('settleRequestDraft around the Express 5 integration of Apollo Server', () => {
+  let finishExecution = () => {};
+  let executionStarted = false;
+  const server = new ApolloServer({
+    typeDefs: 'type Query { slow: String }',
+    resolvers: {
+      Query: {
+        slow: () => new Promise<string>((resolve) => {
+          executionStarted = true;
+          finishExecution = () => resolve('done');
+        }),
+      },
+    },
+  });
+
+  beforeAll(async () => {
+    await server.start();
+  });
+  afterAll(async () => {
+    await server.stop();
+  });
+  beforeEach(() => {
+    vi.clearAllMocks();
+    executionStarted = false;
+  });
+
+  const graphqlRequest = (query: string) => ({
+    method: 'POST',
+    url: '/graphql',
+    headers: { 'content-type': 'application/json' },
+    body: { query },
+  }) as unknown as Request;
+  const graphqlResponse = () => {
+    const res = { statusCode: 200, setHeader: vi.fn(), status: vi.fn(), send: vi.fn(), write: vi.fn(), end: vi.fn() };
+    res.status.mockReturnValue(res);
+    return res;
+  };
+  const leasedMiddleware = (release: () => Promise<void>, refuse = false) => {
+    mockEnterDraft.mockResolvedValue({ draftId: 'draft-1', closed: false, writerId: 'writer-1', release });
+    return settleRequestDraft(expressMiddleware(server, {
+      context: async ({ res }) => {
+        await enterRequestDraft({ draft_context: 'draft-1' } as unknown as AuthContext, res);
+        if (refuse) {
+          throw new Error('Work is no longer alive');
+        }
+        return {};
+      },
+    }));
+  };
+
+  it('should release the lease only once the execution of the request settled', async () => {
+    const release = vi.fn().mockResolvedValue(undefined);
+    const res = graphqlResponse();
+    const next = vi.fn();
+    const handling = leasedMiddleware(release)(graphqlRequest('{ slow }'), res as unknown as Response, next);
+    await vi.waitFor(() => expect(executionStarted).toBe(true));
+    await new Promise((resolve) => {
+      setTimeout(resolve, 20);
+    });
+    expect(release).not.toHaveBeenCalled();
+    finishExecution();
+    await handling;
+    expect(release).toHaveBeenCalledTimes(1);
+    expect(res.send).toHaveBeenCalledWith(expect.stringContaining('"slow":"done"'));
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('should release the lease taken by a context that refused the request afterwards', async () => {
+    const release = vi.fn().mockResolvedValue(undefined);
+    const res = graphqlResponse();
+    await leasedMiddleware(release, true)(graphqlRequest('{ slow }'), res as unknown as Response, vi.fn());
+    expect(executionStarted).toBe(false);
+    expect(release).toHaveBeenCalledTimes(1);
+    expect(res.statusCode).toBe(500);
   });
 });

@@ -39,14 +39,16 @@ export const releaseRequestDraft = async (executeContext: AuthContext) => {
 };
 
 /**
- * GraphQL request handler releasing the draft lease of its request once it settled. The handler returns only after the
- * execution of the request and its writes settled, also when the client disconnected meanwhile (the execution is not
- * aborted, whatever the HTTP timeout), or after it refused the context or the body of the request.
+ * GraphQL request handler releasing the draft lease of its request once it settled. The handler must return the promise
+ * of the execution of the request, as the Express 5 integration of Apollo Server does although its declared type (the
+ * Express `RequestHandler`) returns `unknown`: it settles only after the execution and its writes settled, also when the
+ * client disconnected meanwhile (the execution is not aborted, whatever the HTTP timeout), or after it refused the
+ * context or the body of the request.
  */
-export const settleRequestDraft = <Req, Res extends object>(handler: (req: Req, res: Res) => Promise<void>) => {
-  return async (req: Req, res: Res) => {
+export const settleRequestDraft = <Req, Res extends object, Rest extends unknown[]>(handler: (req: Req, res: Res, ...rest: Rest) => unknown) => {
+  return async (req: Req, res: Res, ...rest: Rest) => {
     try {
-      await handler(req, res);
+      await handler(req, res, ...rest);
     } finally {
       const executeContext = leasedRequests.get(res);
       if (executeContext) {
