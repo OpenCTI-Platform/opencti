@@ -4943,6 +4943,7 @@
   "The evaluation of the threat activity cannot be provided (lack of data).": "위협 활동에 대한 평가를 제공할 수 없음(데이터 부족).",
   "The following groups require your attention:": "다음 그룹에 주의가 필요합니다:",
   "The following TTPs are not covered in your OpenBAS catalog : ": "다음 TTP는 OpenBAS 카탈로그에서 다루지 않습니다:",
+  "The graph has a cycle: use this layout in 2D mode": "그래프에 순환이 있습니다. 이 레이아웃은 2D 모드에서 사용하세요",
   "The graph has no entity yet": "그래프에 아직 엔터티가 없습니다",
   "The graph image could not be generated": "그래프 이미지를 생성할 수 없습니다",
   "The graph is currently loading data.": "그래프가 현재 데이터를 로드하는 중입니다.",

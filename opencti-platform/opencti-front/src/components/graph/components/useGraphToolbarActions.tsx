@@ -154,6 +154,11 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
   } = useGraphInteractions();
 
   const in3D = mode3D ? t_i18n('Not available in 3D mode') : undefined;
+  // The 2D tree layouts break cycles; the 3D one cannot place a cycle and leaves such a graph as it is.
+  const treeUnavailable = mode3D && !!view?.drawnHasCycle;
+  let treeDisabledReason: string | undefined;
+  if (!withForces) treeDisabledReason = t_i18n('Turn the forces on to use this layout');
+  else if (treeUnavailable) treeDisabledReason = t_i18n('The graph has a cycle: use this layout in 2D mode');
   const hasSelection = selectedNodes.length > 0;
   const needsSelection = hasSelection ? undefined : t_i18n('Select entities first');
 
@@ -259,8 +264,8 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
       priority: 65,
       label: t_i18n('Vertical tree layout'),
       icon: <FamilyTree {...ICON} />,
-      pressed: modeTree === 'td',
-      disabledReason: withForces ? undefined : t_i18n('Turn the forces on to use this layout'),
+      pressed: modeTree === 'td' && !treeUnavailable,
+      disabledReason: treeDisabledReason,
       onSelect: toggleVerticalTree,
     },
     {
@@ -269,8 +274,8 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
       priority: 65,
       label: t_i18n('Horizontal tree layout'),
       icon: <FamilyTree {...ICON} style={{ transform: 'rotate(-90deg)' }} />,
-      pressed: modeTree === 'lr',
-      disabledReason: withForces ? undefined : t_i18n('Turn the forces on to use this layout'),
+      pressed: modeTree === 'lr' && !treeUnavailable,
+      disabledReason: treeDisabledReason,
       onSelect: toggleHorizontalTree,
     },
     {

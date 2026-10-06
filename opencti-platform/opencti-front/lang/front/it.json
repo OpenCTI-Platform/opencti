@@ -4943,6 +4943,7 @@
   "The evaluation of the threat activity cannot be provided (lack of data).": "La valutazione dell'attività di minaccia non può essere fornita (mancanza di dati).",
   "The following groups require your attention:": "I seguenti gruppi richiedono la tua attenzione:",
   "The following TTPs are not covered in your OpenBAS catalog : ": "I seguenti TTP non sono coperti nel tuo catalogo OpenBAS : ",
+  "The graph has a cycle: use this layout in 2D mode": "Il grafo contiene un ciclo: usa questa disposizione in modalità 2D",
   "The graph has no entity yet": "Il grafo non ha ancora entità",
   "The graph image could not be generated": "Impossibile generare l'immagine del grafo",
   "The graph is currently loading data.": "Il grafico sta caricando i dati.",

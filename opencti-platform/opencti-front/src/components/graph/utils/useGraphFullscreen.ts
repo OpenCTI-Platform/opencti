@@ -10,10 +10,11 @@ const OVERLAY_Z_INDEX = 1250;
 /**
  * Full screen for a graph: its container is laid over the whole window and the browser goes full
  * screen on the document, so the dialogs the graph opens, rendered outside the container, still
- * show. Leaving with Escape or the browser control restores the container as it was.
+ * show. Leaving with Escape or the browser control restores the container as it was. The container
+ * is the parent the graph sizes its canvases from: laid over the window, the canvases follow it.
  */
 const useGraphFullscreen = (
-  containerRef: MutableRefObject<HTMLElement | null>,
+  parentRef: MutableRefObject<HTMLElement | null>,
   isFullscreen: boolean,
   setIsFullscreen: (value: boolean) => void,
   background: string,
@@ -33,15 +34,15 @@ const useGraphFullscreen = (
   }, []);
 
   const restore = useCallback(() => {
-    const container = containerRef.current;
+    const container = parentRef.current;
     if (container && savedStyle.current !== null) {
       container.style.cssText = savedStyle.current;
     }
     savedStyle.current = null;
-  }, [containerRef]);
+  }, [parentRef]);
 
   const enter = useCallback(() => {
-    const container = containerRef.current;
+    const container = parentRef.current;
     if (!container) return;
     savedStyle.current = container.style.cssText;
     Object.assign(container.style, {
@@ -68,7 +69,7 @@ const useGraphFullscreen = (
         ownsDocumentFullscreen.current = false;
       });
     }
-  }, [containerRef, background, setIsFullscreen]);
+  }, [parentRef, background, setIsFullscreen]);
 
   const exit = useCallback(() => {
     restore();

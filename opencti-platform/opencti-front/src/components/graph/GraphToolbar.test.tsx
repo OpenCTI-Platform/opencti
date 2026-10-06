@@ -15,6 +15,7 @@ const viewActions = (): GraphViewActions => ({
   counters: [{ key: 'entities', label: '2 entities', action: 'Select the entities', onSelect: vi.fn() }],
   drawnTypes: { entityTypes: [], relationshipTypes: [] },
   typeFilterCount: 0,
+  drawnHasCycle: false,
   exportImage: vi.fn(),
   toggleFullscreen: vi.fn(),
   showShortcuts: vi.fn(),
@@ -138,6 +139,17 @@ describe('GraphToolbar', () => {
     expect(document.activeElement).toHaveAttribute('tabindex', '0');
     await user.keyboard('{ArrowLeft}');
     expect(document.activeElement).toBe(first);
+  });
+
+  it('disables the tree layouts of a graph with a cycle in 3D, where they cannot apply, saying why', async () => {
+    const { user } = renderToolbar({ ...viewActions(), drawnHasCycle: true });
+    const vertical = () => screen.getByRole('button', { name: 'Vertical tree layout' });
+    expect(vertical()).not.toHaveAttribute('aria-disabled', 'true');
+    await user.click(screen.getByRole('button', { name: '3D mode' }));
+    expect(vertical()).toHaveAttribute('aria-disabled', 'true');
+    expect(vertical()).toHaveAccessibleDescription('The graph has a cycle: use this layout in 2D mode');
+    expect(screen.getByRole('button', { name: 'Horizontal tree layout' })).toHaveAttribute('aria-disabled', 'true');
+    await user.click(screen.getByRole('button', { name: '3D mode' }));
   });
 });
 

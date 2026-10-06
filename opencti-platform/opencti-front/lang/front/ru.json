@@ -4943,6 +4943,7 @@
   "The evaluation of the threat activity cannot be provided (lack of data).": "Оценка активности угрозы не может быть предоставлена (отсутствие данных).",
   "The following groups require your attention:": "Следующие группы требуют вашего внимания:",
   "The following TTPs are not covered in your OpenBAS catalog : ": "Следующие TTP не включены в каталог OpenBAS:",
+  "The graph has a cycle: use this layout in 2D mode": "Граф содержит цикл: используйте эту раскладку в режиме 2D",
   "The graph has no entity yet": "В графе пока нет сущностей",
   "The graph image could not be generated": "Не удалось создать изображение графа",
   "The graph is currently loading data.": "График в настоящее время загружает данные.",

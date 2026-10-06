@@ -11,6 +11,8 @@ export interface GraphViewActions {
   drawnTypes: { entityTypes: readonly string[]; relationshipTypes: readonly string[] };
   /** Entity and relationship types filtered out, as counted by the legend and the type filter. */
   typeFilterCount: number;
+  /** Whether the relationships drawn close a cycle: the 3D view has no tree layout for one. */
+  drawnHasCycle: boolean;
   /** Absent for a user without the capability of the other knowledge exports. */
   exportImage?: () => void;
   toggleFullscreen: () => void;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { breakCycles, entityTier, layeredLayout, mostConnected, radialLayout, tierLayout } from './graphLayouts';
+import { breakCycles, entityTier, hasCycle, layeredLayout, mostConnected, radialLayout, tierLayout } from './graphLayouts';
 
 const nodes = ['a', 'b', 'c', 'd'].map((id) => ({ id }));
 const chain = [
@@ -28,6 +28,16 @@ describe('breakCycles', () => {
       { id: 'rel', sourceId: 'r', targetId: 'y' },
       { id: 'yx', sourceId: 'y', targetId: 'x' },
     ]);
+  });
+});
+
+describe('hasCycle', () => {
+  it('tells a cycle, a link to the node itself included, from a tree', () => {
+    expect(hasCycle(['a', 'b', 'c', 'd'], chain)).toBe(false);
+    expect(hasCycle(['a', 'b', 'c', 'd'], [...chain, { id: 'ca', sourceId: 'c', targetId: 'a' }])).toBe(true);
+    expect(hasCycle(['a', 'b', 'c', 'd'], [...chain, { id: 'dd', sourceId: 'd', targetId: 'd' }])).toBe(true);
+    // Two paths to the same node are no cycle.
+    expect(hasCycle(['a', 'b', 'c', 'd'], [...chain, { id: 'dc', sourceId: 'd', targetId: 'c' }])).toBe(false);
   });
 });
 

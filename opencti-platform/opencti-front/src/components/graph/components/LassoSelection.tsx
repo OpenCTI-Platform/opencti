@@ -86,12 +86,12 @@ const LassoSelection: FunctionComponent<LassoSelectionProps> = ({
       // The path starts where the button is pressed, not at the first move reported after it.
       const origin = graph.current?.screen2GraphCoords(coord.x, coord.y);
       gesture.current.path = origin ? [[origin.x, origin.y]] : [];
-      ctx.moveTo(coord.x, coord.y);
       ctx.lineWidth = 1;
       ctx.setLineDash([1, 3]);
       ctx.lineCap = 'round';
       ctx.strokeStyle = (latest.current.theme.palette.warning as SimplePaletteColorOptions)?.main ?? latest.current.theme.palette.common.white;
       ctx.beginPath();
+      ctx.moveTo(coord.x, coord.y);
     };
 
     // The path is followed over the whole document: the gesture ends wherever the button is released.

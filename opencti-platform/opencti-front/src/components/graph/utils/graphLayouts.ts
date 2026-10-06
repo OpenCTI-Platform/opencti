@@ -96,6 +96,12 @@ export const breakCycles = (nodeIds: readonly string[], links: readonly LinkEnds
     : link));
 };
 
+/** Whether the links close a cycle (a link from a node to itself included). */
+export const hasCycle = (nodeIds: readonly string[], links: readonly LinkEnds[]): boolean => {
+  const acyclic = breakCycles(nodeIds, links);
+  return acyclic.some((link, index) => link !== links[index]);
+};
+
 /** Longest-path layering of an acyclic set of links: every link points to a later layer. */
 const longestPathLayers = (nodeIds: readonly string[], links: readonly LinkEnds[]): Map<string, number> => {
   const incoming = new Map<string, string[]>();

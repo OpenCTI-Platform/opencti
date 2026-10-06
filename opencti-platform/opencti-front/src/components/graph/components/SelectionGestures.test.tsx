@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent } from '@testing-library/react';
 import testRender from '../../../utils/tests/test-render';
 import { graphNode } from '../../../utils/tests/graphTestData';
-import { createRecordingContext } from '../../../utils/tests/recordingCanvasContext';
+import { createRecordingContext, type RecordingContext } from '../../../utils/tests/recordingCanvasContext';
 import LassoSelection from './LassoSelection';
 import RelationSelection from './RelationSelection';
 
@@ -13,8 +13,15 @@ const graph = {
 } as never;
 const at = (clientX: number, clientY: number, button = 0) => ({ clientX, clientY, button });
 
+let context: RecordingContext;
+// The points of the path stroked last: what the user sees of the gesture.
+const strokedPath = () => context.calls
+  .slice(context.calls.map((call) => call.method).lastIndexOf('beginPath') + 1)
+  .filter((call) => call.method === 'moveTo' || call.method === 'lineTo')
+  .map((call) => [call.method, ...call.args]);
+
 beforeEach(() => {
-  const context = createRecordingContext();
+  context = createRecordingContext();
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(context as never);
 });
 
@@ -43,6 +50,14 @@ describe('LassoSelection', () => {
     // The gesture is over: a later release selects nothing more.
     fireEvent.mouseUp(canvas, at(10, 100));
     expect(setSelectedNodes).toHaveBeenCalledTimes(1);
+  });
+
+  it('draws the path from the press point', () => {
+    const { canvas } = renderLasso();
+    fireEvent.mouseDown(canvas, at(10, 10));
+    fireEvent.mouseMove(document, at(100, 10));
+    expect(strokedPath()).toEqual([['moveTo', 10, 10], ['lineTo', 100, 10]]);
+    fireEvent.mouseUp(document.body, at(100, 10));
   });
 
   it('reads the pointer in viewport coordinates, like the canvas box, on a scrolled page', () => {
@@ -100,6 +115,14 @@ describe('RelationSelection', () => {
     fireEvent.mouseUp(document.body, at(150, 10, 2));
     expect(setSelectedNodes).toHaveBeenCalledTimes(1);
     expect([...setSelectedNodes.mock.calls[0][0]]).toEqual([from, to]);
+  });
+
+  it('draws the line from the node under the press', () => {
+    const { canvas } = renderRelation();
+    fireEvent.mouseDown(canvas, at(10, 10, 2));
+    fireEvent.mouseMove(document, at(100, 10, 2));
+    expect(strokedPath()).toEqual([['moveTo', 10, 10], ['lineTo', 100, 10]]);
+    fireEvent.mouseUp(document.body, at(100, 10, 2));
   });
 
   it('leaves every other release of the page untouched', () => {

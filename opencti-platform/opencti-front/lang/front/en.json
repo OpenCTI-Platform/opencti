@@ -4943,6 +4943,7 @@
   "The evaluation of the threat activity cannot be provided (lack of data).": "The evaluation of the threat activity cannot be provided (lack of data).",
   "The following groups require your attention:": "The following groups require your attention:",
   "The following TTPs are not covered in your OpenBAS catalog : ": "The following TTPs are not covered in your OpenBAS catalog : ",
+  "The graph has a cycle: use this layout in 2D mode": "The graph has a cycle: use this layout in 2D mode",
   "The graph has no entity yet": "The graph has no entity yet",
   "The graph image could not be generated": "The graph image could not be generated",
   "The graph is currently loading data.": "The graph is currently loading data.",

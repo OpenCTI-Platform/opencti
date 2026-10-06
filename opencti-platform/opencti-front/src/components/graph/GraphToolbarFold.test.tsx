@@ -26,6 +26,7 @@ const view: GraphViewActions = {
   counters: [{ key: 'entities', label: '2 entities', action: 'Select the entities', onSelect: vi.fn() }],
   drawnTypes: { entityTypes: [], relationshipTypes: [] },
   typeFilterCount: 0,
+  drawnHasCycle: false,
   exportImage: vi.fn(),
   toggleFullscreen: vi.fn(),
   showShortcuts: vi.fn(),

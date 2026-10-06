@@ -102,12 +102,12 @@ const RelationSelection: FunctionComponent<RelationSelectionProps> = ({
       const coord = reposition(event);
       // The node under the press starts the relationship, however far the first move lands.
       pickNodesAt(coord);
-      ctx.moveTo(coord.x, coord.y);
       ctx.lineWidth = 1;
       ctx.setLineDash([1, 3]);
       ctx.lineCap = 'round';
       ctx.strokeStyle = strokeColor();
       ctx.beginPath();
+      ctx.moveTo(coord.x, coord.y);
     };
 
     // Only the release of a right-button drag in progress is this gesture's, wherever it happens;

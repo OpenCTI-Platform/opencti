@@ -24,7 +24,7 @@ import GraphShortcutsDialog from './components/GraphShortcutsDialog';
 import { useFormatter } from '../i18n';
 import { itemFamily } from '../../utils/Colors';
 import { createCollapseCache, drawnTypes, isCollapsedMember, isGroupLink, relationshipTotal, withCollapsedGroups } from './utils/graphCollapse';
-import { entityTier, layeredLayout, radialLayout, tierLayout } from './utils/graphLayouts';
+import { entityTier, hasCycle, layeredLayout, radialLayout, tierLayout } from './utils/graphLayouts';
 import useGraphLayoutEngine, { type GraphLayoutRequest } from './utils/useGraphLayoutEngine';
 import useGraphKeyboardShortcuts from './utils/useGraphKeyboardShortcuts';
 import useGraphFullscreen from './utils/useGraphFullscreen';
@@ -194,6 +194,11 @@ const Graph = ({
   // Only what is drawn is simulated: hidden entities and the members of collapsed groups exert no
   // force, and their positions stay on their objects for when they are drawn again.
   const drawnData = useMemo(() => ({ nodes: shownNodes, links: shownLinks }), [shownNodes, shownLinks]);
+  // The 3D view lays a tree out with the DAG mode of its engine, which cannot place a cycle; the 2D layouts break cycles.
+  const drawnHasCycle = useMemo(() => hasCycle(
+    shownNodes.map((node) => node.id),
+    shownLinks.map((link) => ({ id: link.id, sourceId: endpointId(link.source) ?? link.source_id, targetId: endpointId(link.target) ?? link.target_id })),
+  ), [shownNodes, shownLinks]);
 
   // --- Nothing drawn: no data yet, everything hidden, or everything filtered out. Shown after a
   // short delay so that a graph still receiving its data never flashes it.
@@ -629,12 +634,13 @@ const Graph = ({
     counters,
     drawnTypes: typeInventory,
     typeFilterCount,
+    drawnHasCycle,
     exportImage: canExport ? () => {
       latestViewActions.current.exportImage();
     } : undefined,
     toggleFullscreen: () => latestViewActions.current.toggleFullscreen(),
     showShortcuts: () => setShortcutsOpen(true),
-  }), [counters, typeInventory, typeFilterCount, canExport]);
+  }), [counters, typeInventory, typeFilterCount, drawnHasCycle, canExport]);
 
   const cardTarget: GraphHoverCardTarget | null = useMemo(() => {
     if (!card) return null;
@@ -673,7 +679,7 @@ const Graph = ({
             height={height}
             backgroundColor={theme.palette.background.default}
             graphData={drawnData}
-            dagMode={modeTree ?? undefined}
+            dagMode={modeTree && !drawnHasCycle ? modeTree : undefined}
             // A cycle is laid out as it is, its links not forced along the tree, instead of breaking the graph.
             onDagError={() => {}}
             cooldownTicks={(!withForces || isLoadingData) ? 0 : 100}
