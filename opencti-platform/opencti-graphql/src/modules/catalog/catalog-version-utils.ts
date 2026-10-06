@@ -195,7 +195,8 @@ export const buildCatalogContractCompatibility = (
   };
 };
 
-// Same version comparison as the auto-upgrade (see connector-domain), so both agree on what an update is
+// Same version ordering as the auto-upgrade (see connector-domain). The auto-upgrade also re-applies a contract
+// of the same version whose content changed: that case is not reported as an update.
 export const buildConnectorUpdateStatus = (
   currentVersion: string | null | undefined,
   versions: CatalogContractVersion[],
