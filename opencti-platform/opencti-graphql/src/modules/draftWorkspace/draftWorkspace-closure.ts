@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import type { AuthContext } from '../../types/user';
 import { FunctionalError } from '../../config/errors';
-import { logApp } from '../../config/conf';
+import conf, { logApp } from '../../config/conf';
 import { wait } from '../../database/utils';
 import { redisAddDraftWriter, redisGetDraftForward, redisListDraftWriters, redisRemoveDraftWriter, redisSetDraftForward, redisSetDraftForwardIfAbsent } from '../../database/redis';
 
@@ -15,10 +15,13 @@ export type DraftClosureHandler = (context: AuthContext, draftId: string) => Pro
 // Forward entry of the last draft of a forwarding chain while it is open, then once it closed with no draft taking over
 const DRAFT_FORWARD_OPEN_END = 'open';
 const DRAFT_FORWARD_CLOSED_END = 'closed';
-// Lease of a request writing into a draft of a chain, renewed while the request runs: the lease of a node stopped
-// mid-request expires after this
+// Lease of a request writing into a draft of a chain, renewed while the request runs
 const DRAFT_WRITER_LEASE_MS = 2 * 60 * 1000;
 const DRAFT_WRITER_RENEWAL_MS = 30 * 1000;
+// A lease that ended without its release (a node stopped mid-request, or renewals Redis refused) still holds a closure
+// back for as long as a search engine request lasts: the request writing may have one in flight, and its next writes
+// need Redis to lock what they write
+const DRAFT_WRITER_LAPSED_KEPT_MS = conf.get('elasticsearch:request_timeout') || 3600000;
 // How long closing a draft waits for the requests still writing into it
 const DRAFT_CLOSURE_DRAIN_MS = 30 * 1000;
 const DRAFT_CLOSURE_DRAIN_POLL_MS = 200;
@@ -42,7 +45,7 @@ export const registerDraftClosureHandler = (handler: DraftClosureHandler) => {
 // The request closing the draft never waits for itself.
 const waitForDraftWriters = async (draftId: string, ownWriterId: string | null | undefined) => {
   const deadline = Date.now() + DRAFT_CLOSURE_DRAIN_MS;
-  const writersOf = async () => (await redisListDraftWriters(draftId)).filter((writerId) => writerId !== ownWriterId);
+  const writersOf = async () => (await redisListDraftWriters(draftId, DRAFT_WRITER_LAPSED_KEPT_MS)).filter((writerId) => writerId !== ownWriterId);
   let writers = await writersOf();
   while (writers.length > 0) {
     if (Date.now() >= deadline) {
@@ -117,13 +120,13 @@ export interface DraftEntry extends DraftForward {
 
 const noLease = async () => {};
 
-// Renews the lease until it is released, however long the request runs: its expiry only frees the lease of a node
-// stopped mid-request
+// Renews the lease until it is released, however long the request runs: it only ends unreleased when its node stopped
+// mid-request or Redis refused the renewals, and then still holds a closure back (see DRAFT_WRITER_LAPSED_KEPT_MS)
 const holdLease = (draftId: string, writerId: string) => {
   let renewing: Promise<void> = Promise.resolve();
   const renewal = setInterval(() => {
     renewing = renewing
-      .then(() => redisAddDraftWriter(draftId, writerId, DRAFT_WRITER_LEASE_MS))
+      .then(() => redisAddDraftWriter(draftId, writerId, DRAFT_WRITER_LEASE_MS, DRAFT_WRITER_LAPSED_KEPT_MS))
       .catch((cause) => logApp.warn('[OPENCTI] Draft lease of a request could not be renewed', { cause, draftId }));
   }, DRAFT_WRITER_RENEWAL_MS);
   renewal.unref?.();
@@ -148,12 +151,12 @@ export const enterDraft = async (draftId: string): Promise<DraftEntry> => {
   }
   const writerId = uuidv4();
   let target = draftId;
-  await redisAddDraftWriter(target, writerId, DRAFT_WRITER_LEASE_MS);
+  await redisAddDraftWriter(target, writerId, DRAFT_WRITER_LEASE_MS, DRAFT_WRITER_LAPSED_KEPT_MS);
   let forward = await resolveDraftForward(target);
   for (let hop = 0; !forward.closed && forward.draftId !== target && hop < DRAFT_ENTRY_MAX_HOPS; hop += 1) {
     const previous = target;
     target = forward.draftId;
-    await redisAddDraftWriter(target, writerId, DRAFT_WRITER_LEASE_MS);
+    await redisAddDraftWriter(target, writerId, DRAFT_WRITER_LEASE_MS, DRAFT_WRITER_LAPSED_KEPT_MS);
     await redisRemoveDraftWriter(previous, writerId);
     forward = await resolveDraftForward(target);
   }

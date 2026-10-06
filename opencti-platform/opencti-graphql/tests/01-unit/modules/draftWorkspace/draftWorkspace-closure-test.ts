@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AuthContext } from '../../../../src/types/user';
+import conf from '../../../../src/config/conf';
 
 const forwards = new Map<string, string>();
 // Leases per draft: writer id -> end of the lease
@@ -14,8 +15,8 @@ vi.mock('../../../../src/database/redis', () => ({
   redisRemoveDraftWriter: vi.fn(async (draftId: string, writerId: string) => {
     writers.get(draftId)?.delete(writerId);
   }),
-  redisListDraftWriters: vi.fn(async (draftId: string) => [...(writers.get(draftId)?.entries() ?? [])]
-    .filter(([, end]) => end > Date.now())
+  redisListDraftWriters: vi.fn(async (draftId: string, lapsedKeptMs: number) => [...(writers.get(draftId)?.entries() ?? [])]
+    .filter(([, end]) => end > Date.now() - lapsedKeptMs)
     .map(([writerId]) => writerId)),
   redisSetDraftForward: vi.fn(async (closedDraftId: string, nextDraftId: string) => {
     forwards.set(closedDraftId, nextDraftId);
@@ -226,12 +227,18 @@ describe('Requests writing into a draft of a forwarding chain', () => {
     await outcome;
   });
 
-  it('should not wait for the lease of a request on a stopped node once it expired', async () => {
+  it('should hold a closure back for a lease that ended unreleased while its request may still write, and no longer', async () => {
     vi.useFakeTimers();
     await openDraftForwarding('draft-1');
-    // Left by a node that stopped mid-request: nothing renews it
-    writers.set('draft-1', new Map([['stopped-node-writer', Date.now() + 2 * 60 * 1000]]));
+    // Neither renewed nor released: a node stopped mid-request, or a request whose renewals Redis refused
+    writers.set('draft-1', new Map([['lapsed-writer', Date.now() + 2 * 60 * 1000]]));
     await vi.advanceTimersByTimeAsync(2 * 60 * 1000 + 1);
+    const refused = expect(runDraftClosureHandlers(context, 'draft-1')).rejects
+      .toThrow('The draft still receives work that started before it was closed, retry in a moment');
+    await vi.advanceTimersByTimeAsync(31 * 1000);
+    await refused;
+    // Past the longest search engine request, the request cannot write any more
+    await vi.advanceTimersByTimeAsync(conf.get('elasticsearch:request_timeout') || 3600000);
     await runDraftClosureHandlers(context, 'draft-1');
     expect(await resolveDraftForward('draft-1')).toEqual(closed('draft-1'));
   });

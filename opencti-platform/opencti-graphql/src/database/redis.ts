@@ -740,21 +740,23 @@ export const redisSetDraftForwardIfAbsent = async (draftId: string, value: strin
 export const redisGetDraftForward = async (draftId: string) => {
   return getClientBase().get(draftForwardKey(draftId));
 };
-// Requests writing into a draft of a forwarding chain, scored by the end of their lease
+// Requests writing into a draft of a forwarding chain, scored by the end of their lease. A lease that ended without
+// being released is kept for `lapsedKeptMs` after its end.
 const draftWritersKey = (draftId: string) => `draft_writers_${draftId}`;
-export const redisAddDraftWriter = async (draftId: string, writerId: string, leaseMs: number) => {
+export const redisAddDraftWriter = async (draftId: string, writerId: string, leaseMs: number, lapsedKeptMs: number) => {
   const key = draftWritersKey(draftId);
   await redisTx(getClientBase(), async (tx) => {
     await tx.zadd(key, Date.now() + leaseMs, writerId);
-    await tx.pexpire(key, leaseMs);
+    await tx.pexpire(key, leaseMs + lapsedKeptMs);
   });
 };
 export const redisRemoveDraftWriter = async (draftId: string, writerId: string) => {
   await getClientBase().zrem(draftWritersKey(draftId), writerId);
 };
-export const redisListDraftWriters = async (draftId: string): Promise<string[]> => {
+// Writers holding a lease, and the ones whose lease ended less than `lapsedKeptMs` ago without being released
+export const redisListDraftWriters = async (draftId: string, lapsedKeptMs: number): Promise<string[]> => {
   const key = draftWritersKey(draftId);
-  await getClientBase().zremrangebyscore(key, '-inf', Date.now());
+  await getClientBase().zremrangebyscore(key, '-inf', Date.now() - lapsedKeptMs);
   return getClientBase().zrange(key, 0, -1);
 };
 // endregion - draft forwarding
