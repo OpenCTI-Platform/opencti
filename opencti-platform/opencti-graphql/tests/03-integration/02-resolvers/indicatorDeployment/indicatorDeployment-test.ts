@@ -175,9 +175,13 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     const script = { source: "ctx._source['rel_object-marking.internal_id'] = params.ids", lang: 'painless', params: { ids: markingIds } };
     await elUpdate(testContext, stored._index, id, { script });
   };
-  // The indicator is unmarked before its pair relationships. A repair of the pair landing while the indicator was
-  // marked gives them its marking, which they keep as stricter than their ends: it is removed with their own markings,
-  // and a repair landing afterwards reads the unmarked indicator.
+  // The deployment manager repairs a pair a moment after the events of the previous tests. The pair relationships are
+  // marked before their indicator and unmarked after it, so they are never less strict than the indicator: a repair
+  // landing at any time writes nothing (a marking stricter than the ends is kept), and the raw stream counts are unchanged.
+  const markPairAndIndicator = async (pairIds: string[], markingIds: string[]) => {
+    await Promise.all(pairIds.map((id) => setMarkings(id, markingIds)));
+    await setMarkings(indicatorId, markingIds);
+  };
   const unmarkIndicatorAndPair = async (pairIds: string[]) => {
     await setMarkings(indicatorId, []);
     await Promise.all(pairIds.map((id) => setMarkings(id, [])));
@@ -288,8 +292,7 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
 
   it('should refuse an edit removing from a deployment a marking of its indicator, through every edit path', async () => {
     const amber = await internalLoadById(testContext, ADMIN_USER, MARKING_TLP_AMBER) as unknown as { internal_id: string };
-    await setMarkings(indicatorId, [amber.internal_id]);
-    await setMarkings(deploymentId, [amber.internal_id]);
+    await markPairAndIndicator([deploymentId], [amber.internal_id]);
     try {
       // The marking given by its standard id, as a client may
       await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: DEPLOYMENT_MARKING_DELETE, variables: { id: deploymentId, toId: MARKING_TLP_AMBER } });
@@ -308,8 +311,7 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
 
   it('should accept the upsert of a marked deployment that does not repeat its markings, and keep them', async () => {
     const amber = await internalLoadById(testContext, ADMIN_USER, MARKING_TLP_AMBER) as unknown as { internal_id: string };
-    await setMarkings(indicatorId, [amber.internal_id]);
-    await setMarkings(deploymentId, [amber.internal_id]);
+    await markPairAndIndicator([deploymentId], [amber.internal_id]);
     // Neither streamed nor kept: the raw stream counts of the suite are unchanged
     const streamed = vi.spyOn(streamHandler, 'storeUpdateEvent').mockResolvedValue(undefined as never);
     try {
@@ -463,8 +465,7 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     const sightingStixId = hitsSightingStixId(indicatorId, platformId);
     const sighting = await internalLoadById(testContext, ADMIN_USER, sightingStixId, { type: STIX_SIGHTING_RELATIONSHIP }) as unknown as { internal_id: string };
     // Side-channel only, so the raw stream counts of the suite are unchanged; the editor reads the pair meanwhile
-    await setMarkings(indicatorId, [amber.internal_id]);
-    await setMarkings(sighting.internal_id, [amber.internal_id]);
+    await markPairAndIndicator([sighting.internal_id, deploymentId], [amber.internal_id]);
     await lendPairToEditor(sighting.internal_id);
     try {
       await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: SIGHTING_MARKING_DELETE, variables: { id: sighting.internal_id, toId: MARKING_TLP_AMBER } });
