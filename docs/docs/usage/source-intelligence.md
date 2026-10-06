@@ -153,7 +153,7 @@ The manager turns scorecards and gaps into recommendations. They are listed in t
 | Add a decay rule | More than 60% of its objects are noise and it provides indicators | Creates a shorter decay rule (30 days by default) for its indicators. |
 | Add a deny list | At least 10 of its objects are labelled as false positives | Creates an exclusion list with these values. |
 | Change schedule | No new assertion for 72 hours although the source usually produces data | Runs the feed or managed connector more often. |
-| Retire | At least 90% of its knowledge is also asserted by another source and it brings less than 5% unique objects | Stops the feed or managed connector, or disables the source. |
+| Retire | At least 90% of its knowledge is also asserted by another source, it brings less than 5% unique objects and its lead time shows the other source reports them at least as early (a source whose lead time is not measured is never retired) | Stops the feed or managed connector, or disables the source. |
 | Add a connector | A collection gap is detected | Deploys the recommended catalog connector, after the deployment dialog described in [Collection gaps](#collection-gaps-ee) collected the settings it needs. |
 
 Sources below a minimum volume (50 objects) do not get recommendations. All thresholds are configurable.

@@ -219,6 +219,14 @@ describe('Source intelligence rules', () => {
     }))).toEqual([]);
   });
 
+  it('should keep a redundant source whose lead time is not measured', () => {
+    const peer = scorecard({ source_id: 'source-2', lead_time_hours: 5 });
+    expect(evaluateSourceRules(input({
+      scorecard: scorecard({ unique_contribution: 0.01, lead_time_hours: null, overlap: [{ source_id: 'source-2', shared_count: 950, share: 0.95 }] }),
+      peerScorecards: new Map([['source-2', peer]]),
+    }))).toEqual([]);
+  });
+
   it('should run a stale managed connector more often, never below the minimum schedule', () => {
     const proposals = evaluateSourceRules(input({ longScorecard: scorecard({ scorecard_period: 'LAST_90_DAYS', freshness_hours: 200 }) }));
     expect(kinds(proposals)).toEqual(['change_schedule']);

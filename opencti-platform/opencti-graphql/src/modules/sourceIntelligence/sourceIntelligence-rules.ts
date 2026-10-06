@@ -298,11 +298,15 @@ const retireRule = (input: RuleInput, proposals: RecommendationProposal[]) => {
     return;
   }
   const ownLead = scorecard.lead_time_hours;
+  // Without a measured lead time the source was never shown to report later than its peers
+  if (ownLead === null) {
+    return;
+  }
   const redundantWith = scorecard.overlap.find((overlap) => {
     if (overlap.share < settings.thresholds.redundant_overlap) return false;
     const peer = peerScorecards.get(overlap.source_id);
     // The peer must not be slower: the source being retired comes later on the shared objects
-    return ownLead === null || ownLead < 0 || (peer?.lead_time_hours !== null && peer?.lead_time_hours !== undefined && peer.lead_time_hours >= ownLead);
+    return ownLead < 0 || (peer?.lead_time_hours !== null && peer?.lead_time_hours !== undefined && peer.lead_time_hours >= ownLead);
   });
   if (!redundantWith) {
     return;
@@ -317,7 +321,7 @@ const retireRule = (input: RuleInput, proposals: RecommendationProposal[]) => {
     fingerprint: recommendationFingerprint(RECOMMENDATION_RETIRE, source.internal_id),
     name: `Retire ${source.name}`,
     rationale: `${percent(redundantWith.share)} of its objects are also asserted by ${peerName}, it contributes only ${percent(scorecard.unique_contribution)} unique objects`
-      + `${ownLead !== null ? ` and its median lead time is ${ownLead} hours` : ''}. Stopping it keeps the knowledge already ingested.`,
+      + ` and its median lead time is ${ownLead} hours. Stopping it keeps the knowledge already ingested.`,
     payload: { ...target, peer_source_id: redundantWith.source_id, overlap_share: redundantWith.share },
     evidence: { ...evidenceOf(scorecard), peer_source_id: redundantWith.source_id, overlap_share: redundantWith.share },
   });
