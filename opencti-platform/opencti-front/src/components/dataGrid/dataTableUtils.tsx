@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useContext } from 'react';
 import { Chip } from '@filigran/design-system';
 import StixCoreObjectLabels from '@components/common/stix_core_objects/StixCoreObjectLabels';
 import Tooltip from '@mui/material/Tooltip';
@@ -37,6 +37,9 @@ import TagsOverflow from '../common/tag/TagsOverflow';
 import { VocabularyDefinition } from '../../utils/hooks/useVocabularyCategory';
 import { EMPTY_VALUE } from '../../utils/String';
 import { Box, Stack } from '@mui/material';
+import { isWorkflowUiEnabledForType } from '@components/common/workflow/workflowFeatureFlag';
+import { UserContext } from '../../utils/hooks/useAuth';
+import { isFeatureEnable } from '../../utils/platformModulesHelper';
 
 export const Truncate = ({ children }: { children: ReactNode }) => (
   <div
@@ -117,6 +120,34 @@ export const renderObservableValue = (observable: any, theme: Theme) => {
         observable.draftVersion,
       );
   }
+};
+
+type StatusValue = { template?: { name: string; color: string } | null } | null;
+
+interface StatusCellProps {
+  data: {
+    entity_type?: string;
+    status?: StatusValue;
+    workflowEnabled?: boolean;
+    workflowInstance?: { id?: string; currentStatus?: StatusValue } | null;
+  };
+  onClick?: () => void;
+}
+
+// Shared by the workflowInstance and x_opencti_workflow_id columns: rows whose list selects
+// workflowInstance show its status when the workflow UI is enabled for their type, others keep
+// the legacy status.
+const StatusCell = ({ data, onClick }: StatusCellProps) => {
+  // Read settings directly: public dashboards render without an authenticated user context.
+  const { settings } = useContext(UserContext);
+  const { workflowInstance, status, workflowEnabled, entity_type: entityType } = data;
+  // An 'initial-' id is a synthesized, not yet persisted instance: prefer the legacy status if any.
+  const isNotPersisted = (workflowInstance?.id ?? '').startsWith('initial-');
+  const isWorkflowUiEnabled = isWorkflowUiEnabledForType(entityType ?? '', (id) => !!settings && isFeatureEnable(settings, id));
+  if (workflowInstance && !(isNotPersisted && status) && isWorkflowUiEnabled) {
+    return <ItemStatus status={workflowInstance.currentStatus ?? null} disabled={!workflowInstance.currentStatus} />;
+  }
+  return <ItemStatus status={status} disabled={!workflowEnabled} onClick={onClick} />;
 };
 
 const defaultColumns: DataTableProps['dataColumns'] = {
@@ -369,6 +400,13 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     render: ({ draftVersion }) => (
       <ItemOperations draftOperation={draftVersion?.draft_operation} />
     ),
+  },
+  workflowInstance: {
+    id: 'workflowInstance',
+    label: 'Workflow status',
+    percentWidth: 12,
+    isSortable: false,
+    render: (data) => <StatusCell data={data} />,
   },
   draft_status: {
     id: 'draft_status',
@@ -1563,15 +1601,8 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     label: 'Processing status',
     percentWidth: 8,
     isSortable: true,
-    render: (
-      { status, workflowEnabled },
-      { storageHelpers: { handleAddFilter } },
-    ) => (
-      <ItemStatus
-        status={status}
-        disabled={!workflowEnabled}
-        onClick={handleAddFilter}
-      />
+    render: (data, { storageHelpers: { handleAddFilter } }) => (
+      <StatusCell data={data} onClick={handleAddFilter} />
     ),
   },
   x_opencti_aliases: {
