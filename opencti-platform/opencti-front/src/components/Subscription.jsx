@@ -66,13 +66,14 @@ export const SubscriptionAvatars = withStyles(SubscriptionAvatarsStyles)(
   SubscriptionAvatarsComponent,
 );
 
+const focusedUsersOf = (me, context, fieldName) => pipe(
+  filter((n) => n.name !== me.user_email),
+  filter((n) => n.focusOn === fieldName),
+)(contextUsers(me, context ?? []));
+
 const SubscriptionFocusComponent = ({ t, fieldName, context }) => {
   const { me } = useContext(UserContext);
-  const users = contextUsers(me, context);
-  const focusedUsers = pipe(
-    filter((n) => n.name !== me.user_email),
-    filter((n) => n.focusOn === fieldName),
-  )(users);
+  const focusedUsers = focusedUsersOf(me, context, fieldName);
   if (focusedUsers.length === 0) return <span />;
   return (
     <span>
@@ -98,3 +99,14 @@ export const SubscriptionFocus = compose(
   inject18n,
   withStyles(SubscriptionAvatarsFocusStyles),
 )(SubscriptionFocusComponent);
+
+// The design-system Input keeps a row for any helper, even an empty one: this helper is only set while another
+// user edits the field, so an idle form keeps the spacing of its other fields.
+export const useSubscriptionFocusHelper = (context) => {
+  const { me } = useContext(UserContext);
+  return function subscriptionFocusHelper(fieldName) {
+    return focusedUsersOf(me, context, fieldName).length > 0
+      ? <SubscriptionFocus context={context} fieldName={fieldName} />
+      : undefined;
+  };
+};
