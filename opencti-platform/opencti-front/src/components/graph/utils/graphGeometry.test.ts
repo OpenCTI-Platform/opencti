@@ -1,5 +1,66 @@
 import { describe, expect, it } from 'vitest';
-import { boundsOf, computeLinkCurvatures, computeObstacleBends, createBoxIndex, fitText, linkEndsKey, linkPath, pointAt, subPath, tangentAt, trimToNodes } from './graphGeometry';
+import {
+  boundsOf,
+  computeLinkCurvatures,
+  computeObstacleBends,
+  createBoxIndex,
+  createPathBuffer,
+  fitText,
+  linkEndsKey,
+  linkPath,
+  linkPathInto,
+  type LinkPath,
+  type PathBuffer,
+  pointAt,
+  subPath,
+  tangentAt,
+  tangentInto,
+  trimToNodes,
+  trimToNodesInto,
+} from './graphGeometry';
+
+// The points a path holds, whatever its kind, to compare a path and a buffer
+const pointsOf = (path: LinkPath | PathBuffer) => {
+  if (path.kind === 'line') return [path.start, path.end];
+  if (path.kind === 'quadratic') return [path.start, path.control, path.end];
+  return [path.start, path.c1, path.c2, path.end];
+};
+
+describe('link geometry written in place', () => {
+  const cases: [string, { x: number; y: number }, { x: number; y: number }, number, number][] = [
+    ['a straight link', { x: 0, y: 0 }, { x: 100, y: 40 }, 0, 0],
+    ['a curved link', { x: 10, y: -20 }, { x: -80, y: 60 }, 0.3, 0],
+    ['a self-loop', { x: 5, y: 5 }, { x: 5, y: 5 }, 1, 45],
+  ];
+  it.each(cases)('gives the same path, trimmed path and tangent as the functions it replaces for %s', (_, start, end, curvature, rotation) => {
+    const path = linkPath(start, end, curvature, rotation);
+    const buffer = linkPathInto(createPathBuffer(), start, end, curvature, rotation);
+    expect(buffer.kind).toBe(path.kind);
+    pointsOf(buffer).forEach((point, i) => {
+      expect(point.x).toBeCloseTo(pointsOf(path)[i].x, 9);
+      expect(point.y).toBeCloseTo(pointsOf(path)[i].y, 9);
+    });
+    const trimmed = trimToNodes(path, 8, 8) as LinkPath;
+    const trimmedBuffer = createPathBuffer();
+    expect(trimToNodesInto(trimmedBuffer, buffer, 8, 8)).toBe(true);
+    expect(trimmedBuffer.kind).toBe(trimmed.kind);
+    pointsOf(trimmedBuffer).forEach((point, i) => {
+      expect(point.x).toBeCloseTo(pointsOf(trimmed)[i].x, 6);
+      expect(point.y).toBeCloseTo(pointsOf(trimmed)[i].y, 6);
+    });
+    const tangent = tangentAt(trimmed, 1);
+    const tangentBuffer = tangentInto({ x: 0, y: 0 }, trimmedBuffer, 1);
+    expect(tangentBuffer.x).toBeCloseTo(tangent.x, 6);
+    expect(tangentBuffer.y).toBeCloseTo(tangent.y, 6);
+  });
+
+  it('reports a link hidden by the rings of its nodes like the function it replaces', () => {
+    const start = { x: 0, y: 0 };
+    const end = { x: 10, y: 0 };
+    expect(trimToNodes(linkPath(start, end, 0), 8, 8)).toBeNull();
+    expect(trimToNodesInto(createPathBuffer(), linkPathInto(createPathBuffer(), start, end, 0), 8, 8)).toBe(false);
+  });
+});
 
 const distance = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.hypot(a.x - b.x, a.y - b.y);
 const key = (id: string, sourceId: string, targetId: string) => linkEndsKey({ id, sourceId, targetId });

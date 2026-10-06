@@ -37,6 +37,20 @@ describe('withCollapsedGroups', () => {
     expect(result.nodes).toHaveLength(4);
   });
 
+  it('draws a group link uncertain only when every relationship it stands for is, whatever their order', () => {
+    const asserted = graphLink(actor, m1, { inferred: false, confidence: 80 });
+    const inferred = graphLink(actor, m2, { inferred: true, confidence: 10 });
+    [[asserted, inferred], [inferred, asserted]].forEach((links) => {
+      const group = withCollapsedGroups({ nodes: [actor, m1, m2], links }, ['Malware'], label, createCollapseCache()).links.find(isGroupLink);
+      expect(group?.inferred).toBe(false);
+      expect(group?.confidence).toBe(80);
+    });
+    const allInferred = [graphLink(actor, m1, { inferred: true, confidence: 10 }), graphLink(actor, m2, { inferred: true, confidence: 20 })];
+    const group = withCollapsedGroups({ nodes: [actor, m1, m2], links: allInferred }, ['Malware'], label, createCollapseCache()).links.find(isGroupLink);
+    expect(group?.inferred).toBe(true);
+    expect(group?.confidence).toBe(20);
+  });
+
   it('never takes the restricted outline of its first member, whatever the order of the members', () => {
     const restricted = graphNode({ id: 'm0', entity_type: 'Malware', x: 0, y: 0, isRestricted: true });
     const first = withCollapsedGroups({ nodes: [restricted, m1, m2], links: [] }, ['Malware'], label, createCollapseCache());

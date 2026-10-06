@@ -2,7 +2,20 @@ import type { GraphLink, GraphNode } from '../graph.types';
 import { dataColorOutline, type GraphPalette } from './graphPalette';
 import { drawnBadges, type GraphBadge } from '../badges/graphBadgeRegistry';
 import { entityGlyph, iconGlyph, paintGlyph } from './graphIcons';
-import { type Box, createBoxIndex, fitText, linkPath, type LinkPath, pointAt, tangentAt, trimToNodes } from './graphGeometry';
+import {
+  type Box,
+  createBoxIndex,
+  createPathBuffer,
+  fitText,
+  linkPathInto,
+  type LinkPath,
+  type PathBuffer,
+  type Point,
+  pointAt,
+  tangentAt,
+  tangentInto,
+  trimToNodesInto,
+} from './graphGeometry';
 
 /*
  * Sizes are graph units: the view is fitted to the drawing, so they only fix proportions. Sizes
@@ -351,7 +364,7 @@ export const linkDash = (link: Pick<GraphLink, 'inferred' | 'isNestedInferred'>,
   return [];
 };
 
-const strokePath = (ctx: CanvasRenderingContext2D, path: LinkPath) => {
+const strokePath = (ctx: CanvasRenderingContext2D, path: LinkPath | PathBuffer) => {
   ctx.beginPath();
   ctx.moveTo(path.start.x, path.start.y);
   if (path.kind === 'line') ctx.lineTo(path.end.x, path.end.y);
@@ -377,14 +390,19 @@ const paintArrowHead = (ctx: CanvasRenderingContext2D, tip: { x: number; y: numb
  * Draws one link: the curve between the two rings, its arrowhead, its dash when uncertain.
  * Returns the label to draw once every node is painted, or `null`.
  */
+// The geometry of the link being painted, filled in place for every link of every frame
+const linkPathBuffer = createPathBuffer();
+const trimmedPathBuffer = createPathBuffer();
+const arrowDirection: Point = { x: 0, y: 0 };
+
 export const paintGraphLink = (ctx: CanvasRenderingContext2D, link: GraphLink, options: LinkPaintOptions): LinkLabel | null => {
   const { palette, globalScale, detail, visual, color, curvature, rotation, confidence } = options;
   const source = endOf(link.source);
   const target = endOf(link.target);
   if (!source || !target || !Number.isFinite(source.x) || !Number.isFinite(target.x)) return null;
-  const path = linkPath(source, target, curvature, rotation);
-  const trimmed = trimToNodes(path, nodeRadius(source) + LINK_GAP, nodeRadius(target) + LINK_GAP);
-  if (!trimmed) return null;
+  const path = linkPathInto(linkPathBuffer, source, target, curvature, rotation);
+  const trimmed = trimmedPathBuffer;
+  if (!trimToNodesInto(trimmed, path, nodeRadius(source) + LINK_GAP, nodeRadius(target) + LINK_GAP)) return null;
 
   const emphasis = visual.onPath || visual.selected || visual.hovered;
   let alpha = 0.72;
@@ -407,7 +425,7 @@ export const paintGraphLink = (ctx: CanvasRenderingContext2D, link: GraphLink, o
   ctx.setLineDash([]);
   const isConnector = !link.label;
   if ((detail.arrows || emphasis) && !(isConnector && link.target_id === link.id)) {
-    paintArrowHead(ctx, trimmed.end, tangentAt(trimmed, 1), emphasis ? Math.min(1.5, widthFactor * 0.75) : 1);
+    paintArrowHead(ctx, trimmed.end, tangentInto(arrowDirection, trimmed, 1), emphasis ? Math.min(1.5, widthFactor * 0.75) : 1);
   }
   ctx.restore();
 

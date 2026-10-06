@@ -64,7 +64,7 @@ export const linkPath = (start: Point, end: Point, curvature: number, selfRotati
   };
 };
 
-export const pointAt = (path: LinkPath, t: number): Point => {
+export const pointAt = (path: LinkPath | PathBuffer, t: number): Point => {
   if (path.kind === 'line') return lerp(path.start, path.end, t);
   if (path.kind === 'quadratic') {
     return lerp(lerp(path.start, path.control, t), lerp(path.control, path.end, t), t);
@@ -76,7 +76,7 @@ export const pointAt = (path: LinkPath, t: number): Point => {
 };
 
 /** The unit direction of travel along the path at `t`. */
-export const tangentAt = (path: LinkPath, t: number): Point => {
+export const tangentAt = (path: LinkPath | PathBuffer, t: number): Point => {
   if (path.kind === 'line') return unit(path.end.x - path.start.x, path.end.y - path.start.y);
   if (path.kind === 'quadratic') {
     const u = 1 - t;
@@ -94,21 +94,21 @@ export const tangentAt = (path: LinkPath, t: number): Point => {
 
 // One coordinate of the point of the path at `t` (Bernstein form), without building the point: the trim search below
 // evaluates it dozens of times per link at every frame
-const coordinateAt = (path: LinkPath, t: number, axis: 'x' | 'y'): number => {
+const coordinateAt = (path: LinkPath | PathBuffer, t: number, axis: 'x' | 'y'): number => {
   const u = 1 - t;
   if (path.kind === 'line') return path.start[axis] + (path.end[axis] - path.start[axis]) * t;
   if (path.kind === 'quadratic') return u * u * path.start[axis] + 2 * u * t * path.control[axis] + t * t * path.end[axis];
   return u * u * u * path.start[axis] + 3 * u * u * t * path.c1[axis] + 3 * u * t * t * path.c2[axis] + t * t * t * path.end[axis];
 };
 
-const distanceAt = (path: LinkPath, t: number, centre: Point) => Math.hypot(coordinateAt(path, t, 'x') - centre.x, coordinateAt(path, t, 'y') - centre.y);
+const distanceAt = (path: LinkPath | PathBuffer, t: number, centre: Point) => Math.hypot(coordinateAt(path, t, 'x') - centre.x, coordinateAt(path, t, 'y') - centre.y);
 
 /**
  * The parameter where the path leaves a circle of `radius` around `centre`, searched from the
  * end given. The path is assumed to start inside the circle and leave it once, which holds for
  * a link leaving a node.
  */
-const exitParameter = (path: LinkPath, centre: Point, radius: number, fromEnd: boolean): number => {
+const exitParameter = (path: LinkPath | PathBuffer, centre: Point, radius: number, fromEnd: boolean): number => {
   let inside = fromEnd ? 1 : 0;
   let outside = fromEnd ? 0 : 1;
   if (distanceAt(path, outside, centre) <= radius) return outside;
@@ -170,6 +170,144 @@ export const trimToNodes = (path: LinkPath, startReach: number, endReach: number
   const from = exitParameter(path, path.start, startReach, false);
   const to = exitParameter(path, path.end, endReach, true);
   return to > from ? subPath(path, from, to) : null;
+};
+
+/**
+ * A path whose points are written in place. The link painter fills the same buffers for every link of every frame
+ * with the values `linkPath`, `subPath`, `trimToNodes` and `tangentAt` return, so painting allocates nothing per link.
+ */
+export interface PathBuffer {
+  kind: LinkPath['kind'];
+  start: Point;
+  control: Point;
+  c1: Point;
+  c2: Point;
+  end: Point;
+}
+
+export const createPathBuffer = (): PathBuffer => ({
+  kind: 'line',
+  start: { x: 0, y: 0 },
+  control: { x: 0, y: 0 },
+  c1: { x: 0, y: 0 },
+  c2: { x: 0, y: 0 },
+  end: { x: 0, y: 0 },
+});
+
+const setPoint = (point: Point, x: number, y: number) => {
+  point.x = x;
+  point.y = y;
+};
+
+/** `linkPath`, written into `out`. */
+export const linkPathInto = (out: PathBuffer, start: Point, end: Point, curvature: number, selfRotationDegrees = 0): PathBuffer => {
+  setPoint(out.start, start.x, start.y);
+  setPoint(out.end, end.x, end.y);
+  const length = Math.hypot(end.x - start.x, end.y - start.y);
+  if (length === 0) {
+    const d = (curvature || 1) * SELF_LOOP_SIZE;
+    const angle = (selfRotationDegrees * Math.PI) / 180;
+    const outAngle = angle - Math.PI / 2;
+    out.kind = 'cubic';
+    setPoint(out.c1, end.x + d * Math.cos(outAngle), end.y + d * Math.sin(outAngle));
+    setPoint(out.c2, end.x + d * Math.cos(angle), end.y + d * Math.sin(angle));
+    return out;
+  }
+  if (!curvature) {
+    out.kind = 'line';
+    return out;
+  }
+  const angle = Math.atan2(end.y - start.y, end.x - start.x);
+  const d = length * curvature;
+  out.kind = 'quadratic';
+  setPoint(out.control, (start.x + end.x) / 2 + d * Math.cos(angle - Math.PI / 2), (start.y + end.y) / 2 + d * Math.sin(angle - Math.PI / 2));
+  return out;
+};
+
+// One axis of the de Casteljau split of a cubic at `to`, then of its first part at `s`: the part between them
+const cubicPartAxis = (p0: number, p1: number, p2: number, p3: number, to: number, s: number) => {
+  const a = p0 + (p1 - p0) * to;
+  const b = p1 + (p2 - p1) * to;
+  const c = p2 + (p3 - p2) * to;
+  const d = a + (b - a) * to;
+  const e = b + (c - b) * to;
+  const f = d + (e - d) * to;
+  const a2 = p0 + (a - p0) * s;
+  const b2 = a + (d - a) * s;
+  const c2 = d + (f - d) * s;
+  const d2 = a2 + (b2 - a2) * s;
+  const e2 = b2 + (c2 - b2) * s;
+  return { start: d2 + (e2 - d2) * s, c1: e2, c2, end: f };
+};
+
+/** `subPath`, written into `out` (which may not be `path`). */
+export const subPathInto = (out: PathBuffer, path: PathBuffer, from: number, to: number): PathBuffer => {
+  out.kind = path.kind;
+  if (path.kind === 'line') {
+    setPoint(out.start, coordinateAt(path, from, 'x'), coordinateAt(path, from, 'y'));
+    setPoint(out.end, coordinateAt(path, to, 'x'), coordinateAt(path, to, 'y'));
+    return out;
+  }
+  const s = to === 0 ? 0 : from / to;
+  if (path.kind === 'quadratic') {
+    // Split at `to`, then the first part at `from / to`.
+    const headControlX = path.start.x + (path.control.x - path.start.x) * to;
+    const headControlY = path.start.y + (path.control.y - path.start.y) * to;
+    const headEndX = coordinateAt(path, to, 'x');
+    const headEndY = coordinateAt(path, to, 'y');
+    const u = 1 - s;
+    setPoint(out.start, u * u * path.start.x + 2 * u * s * headControlX + s * s * headEndX, u * u * path.start.y + 2 * u * s * headControlY + s * s * headEndY);
+    setPoint(out.control, headControlX + (headEndX - headControlX) * s, headControlY + (headEndY - headControlY) * s);
+    setPoint(out.end, headEndX, headEndY);
+    return out;
+  }
+  const x = cubicPartAxis(path.start.x, path.c1.x, path.c2.x, path.end.x, to, s);
+  const y = cubicPartAxis(path.start.y, path.c1.y, path.c2.y, path.end.y, to, s);
+  setPoint(out.start, x.start, y.start);
+  setPoint(out.c1, x.c1, y.c1);
+  setPoint(out.c2, x.c2, y.c2);
+  setPoint(out.end, x.end, y.end);
+  return out;
+};
+
+const loopHalf = createPathBuffer();
+
+/** `trimToNodes`, written into `out` (which may not be `path`); `false` instead of `null`. */
+export const trimToNodesInto = (out: PathBuffer, path: PathBuffer, startReach: number, endReach: number): boolean => {
+  if (path.kind === 'cubic' && path.start.x === path.end.x && path.start.y === path.end.y) {
+    const from = exitParameter(subPathInto(loopHalf, path, 0, 0.5), path.start, startReach, false) / 2;
+    const to = 0.5 + exitParameter(subPathInto(loopHalf, path, 0.5, 1), path.end, endReach, true) / 2;
+    subPathInto(out, path, from, to);
+    return true;
+  }
+  const length = Math.hypot(path.end.x - path.start.x, path.end.y - path.start.y);
+  if (length <= startReach + endReach) return false;
+  const from = exitParameter(path, path.start, startReach, false);
+  const to = exitParameter(path, path.end, endReach, true);
+  if (to <= from) return false;
+  subPathInto(out, path, from, to);
+  return true;
+};
+
+/** `tangentAt`, written into `out`. */
+export const tangentInto = (out: Point, path: PathBuffer, t: number): Point => {
+  const u = 1 - t;
+  let x: number;
+  let y: number;
+  if (path.kind === 'line') {
+    x = path.end.x - path.start.x;
+    y = path.end.y - path.start.y;
+  } else if (path.kind === 'quadratic') {
+    x = 2 * u * (path.control.x - path.start.x) + 2 * t * (path.end.x - path.control.x);
+    y = 2 * u * (path.control.y - path.start.y) + 2 * t * (path.end.y - path.control.y);
+  } else {
+    x = 3 * u * u * (path.c1.x - path.start.x) + 6 * u * t * (path.c2.x - path.c1.x) + 3 * t * t * (path.end.x - path.c2.x);
+    y = 3 * u * u * (path.c1.y - path.start.y) + 6 * u * t * (path.c2.y - path.c1.y) + 3 * t * t * (path.end.y - path.c2.y);
+  }
+  const length = Math.hypot(x, y);
+  if (length === 0) setPoint(out, 1, 0);
+  else setPoint(out, x / length, y / length);
+  return out;
 };
 
 export interface LinkEnds {

@@ -96,8 +96,12 @@ export const withCollapsedGroups = (
     const id = `${GROUP_LINK_PREFIX}${source}|${target}|${link.relationship_type || link.entity_type}`;
     const drawn = groupLinks.get(id);
     if (drawn) {
-      // Faded only when every link the group link stands for is faded by the filters.
+      // Faded only when every link the group link stands for is faded by the filters, and drawn uncertain (inferred,
+      // low confidence) only when every one of them is: the style never depends on the order of the links.
       drawn.disabled = Boolean(drawn.disabled && link.disabled);
+      drawn.inferred = Boolean(drawn.inferred && link.inferred);
+      drawn.isNestedInferred = Boolean(drawn.isNestedInferred && link.isNestedInferred);
+      drawn.confidence = typeof drawn.confidence === 'number' && typeof link.confidence === 'number' ? Math.max(drawn.confidence, link.confidence) : null;
       drawn.represents = (drawn.represents ?? 1) + 1;
       return;
     }
