@@ -439,7 +439,7 @@ export const applyKeepAliveTimeout = (server: Server) => {
 /**
  * Errors refusing an operation sent over the WebSocket endpoint, which serves subscriptions only. Queries and mutations
  * go through the HTTP endpoint, whose request context applies the checks a write needs: the work still alive, the
- * draft open, and the lease on a draft of a forwarding chain until the execution settled (see enterRequestDraft).
+ * draft open, and the lease on a draft of a forwarding chain until the execution settled (see settleRequestDraft).
  * A document that does not parse or names no single operation is left to the WebSocket server, which reports it.
  */
 export const refuseWebSocketOperation = (payload: { query: string; operationName?: string | null }): GraphQLError[] | undefined => {

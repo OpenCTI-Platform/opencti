@@ -35,7 +35,7 @@ import {
   normalizeUploadError,
   refuseWebSocketOperation,
 } from './httpUtils';
-import { checkDraftInContext, enterRequestDraft, releaseRequestDraft } from './httpServer-draft';
+import { checkDraftInContext, enterRequestDraft, settleRequestDraft } from './httpServer-draft';
 import ipWhitelistMiddleware from './ipWhitelistMiddleware';
 
 const MIN_20 = 20 * 60 * 1000;
@@ -187,29 +187,23 @@ const createHttpServer = async () => {
     `${basePath}/graphql`,
     cors({ origin: basePath }),
     json(),
-    expressMiddleware(apolloServer, {
+    settleRequestDraft(expressMiddleware(apolloServer, {
       app,
       path: `${basePath}/graphql`,
       context: async ({ req, res }) => {
         const executeContext = await createAuthenticatedContext(req, res, 'api');
-        await enterRequestDraft(executeContext);
-        try {
-          // When context is related to a work, we need to check work status
-          if (executeContext.workId) {
-            const workStillAlive = await isWorkAlive(executeContext, executeContext.user, executeContext.workId);
-            if (!workStillAlive) {
-              throw WorkNotALiveError();
-            }
+        await enterRequestDraft(executeContext, res);
+        // When context is related to a work, we need to check work status
+        if (executeContext.workId) {
+          const workStillAlive = await isWorkAlive(executeContext, executeContext.user, executeContext.workId);
+          if (!workStillAlive) {
+            throw WorkNotALiveError();
           }
-          await checkDraftInContext(executeContext);
-        } catch (error) {
-          // No request execution follows a refused context: nothing else releases its draft lease
-          await releaseRequestDraft(executeContext);
-          throw error;
         }
+        await checkDraftInContext(executeContext);
         return executeContext;
       },
-    }),
+    })),
   );
   const { sseMiddleware } = await createApp(app, schema);
   return { httpServer, sseMiddleware };

@@ -1,6 +1,6 @@
 import type { AuthContext } from '../types/user';
 import { DraftLockedError, FunctionalError } from '../config/errors';
-import conf, { logApp } from '../config/conf';
+import { logApp } from '../config/conf';
 import { DRAFT_STATUS_OPEN } from '../modules/draftWorkspace/draftStatuses';
 import { enterDraft } from '../modules/draftWorkspace/draftWorkspace-closure';
 import { userEditField } from '../modules/user/user-domain';
@@ -8,24 +8,25 @@ import { ENTITY_TYPE_DRAFT_WORKSPACE, type BasicStoreEntityDraftWorkspace } from
 import { getEntitiesMapFromCache } from '../database/cache';
 import { isUserCanAccessStoreElement, SYSTEM_USER } from '../utils/access';
 
-// The HTTP server ends a request after this: a lease renewed longer would outlive it
-const REQUEST_MAX_DURATION_MS = conf.get('app:request_timeout') || 20 * 60 * 1000;
+// Requests holding a lease on their draft, by response, until their handler settled (see settleRequestDraft)
+const leasedRequests = new WeakMap<object, AuthContext>();
 
 /**
  * Draft of an API request, once its user is known: work queued or routed into a draft closed meanwhile goes to the
  * draft that took over from it, or is refused (see enterDraft). The lease on a draft of a forwarding chain lasts until
- * releaseRequestDraft, called once the execution of the request settled, so a closure of that draft waits for it.
+ * the request settled (see settleRequestDraft), so a closure of that draft waits for it.
  */
-export const enterRequestDraft = async (executeContext: AuthContext) => {
+export const enterRequestDraft = async (executeContext: AuthContext, res: object) => {
   if (!executeContext.draft_context) {
     return;
   }
-  const entry = await enterDraft(executeContext.draft_context, REQUEST_MAX_DURATION_MS);
+  const entry = await enterDraft(executeContext.draft_context);
   executeContext.draft_context = entry.draftId;
   executeContext.draft_forward_closed = entry.closed;
   executeContext.draft_writer_id = entry.writerId;
   if (entry.writerId) {
     executeContext.draft_writer_release = entry.release;
+    leasedRequests.set(res, executeContext);
   }
 };
 
@@ -35,6 +36,25 @@ export const releaseRequestDraft = async (executeContext: AuthContext) => {
     executeContext.draft_writer_release = undefined;
     await release().catch((cause) => logApp.error('[OPENCTI] Draft lease of a request could not be released', { cause, draftId: executeContext.draft_context }));
   }
+};
+
+/**
+ * GraphQL request handler releasing the draft lease of its request once it settled. The handler returns only after the
+ * execution of the request and its writes settled, also when the client disconnected meanwhile (the execution is not
+ * aborted, whatever the HTTP timeout), or after it refused the context or the body of the request.
+ */
+export const settleRequestDraft = <Req, Res extends object>(handler: (req: Req, res: Res) => Promise<void>) => {
+  return async (req: Req, res: Res) => {
+    try {
+      await handler(req, res);
+    } finally {
+      const executeContext = leasedRequests.get(res);
+      if (executeContext) {
+        leasedRequests.delete(res);
+        await releaseRequestDraft(executeContext);
+      }
+    }
+  };
 };
 
 export const checkDraftInContext = async (executeContext: AuthContext) => {

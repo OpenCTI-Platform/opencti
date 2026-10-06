@@ -28,7 +28,7 @@ vi.mock('../../../src/modules/user/user-domain', () => ({
   userEditField: mockUserEditField,
 }));
 
-import { checkDraftInContext, enterRequestDraft, releaseRequestDraft } from '../../../src/http/httpServer-draft';
+import { checkDraftInContext, enterRequestDraft, releaseRequestDraft, settleRequestDraft } from '../../../src/http/httpServer-draft';
 
 describe('checkDraftInContext service account hint', () => {
   const draftId = 'draft-under-test';
@@ -116,7 +116,7 @@ describe('enterRequestDraft and releaseRequestDraft', () => {
   it('should leave a request outside any draft untouched', async () => {
     const executeContext = { draft_context: '' } as unknown as AuthContext;
 
-    await enterRequestDraft(executeContext);
+    await enterRequestDraft(executeContext, {});
 
     expect(mockEnterDraft).not.toHaveBeenCalled();
     expect(executeContext.draft_writer_id).toBeUndefined();
@@ -128,9 +128,9 @@ describe('enterRequestDraft and releaseRequestDraft', () => {
     mockEnterDraft.mockResolvedValue({ draftId: 'draft-2', closed: false, writerId: 'writer-1', release });
     const executeContext = { draft_context: 'draft-1' } as unknown as AuthContext;
 
-    await enterRequestDraft(executeContext);
+    await enterRequestDraft(executeContext, {});
 
-    expect(mockEnterDraft).toHaveBeenCalledWith('draft-1', expect.any(Number));
+    expect(mockEnterDraft).toHaveBeenCalledWith('draft-1');
     expect(executeContext).toMatchObject({ draft_context: 'draft-2', draft_forward_closed: false, draft_writer_id: 'writer-1' });
     expect(release).not.toHaveBeenCalled();
     await releaseRequestDraft(executeContext);
@@ -142,7 +142,7 @@ describe('enterRequestDraft and releaseRequestDraft', () => {
     mockEnterDraft.mockResolvedValue({ draftId: 'draft-1', closed: false, writerId: 'writer-1', release: vi.fn().mockRejectedValue(new Error('Redis unavailable')) });
     const executeContext = { draft_context: 'draft-1' } as unknown as AuthContext;
 
-    await enterRequestDraft(executeContext);
+    await enterRequestDraft(executeContext, {});
 
     await expect(releaseRequestDraft(executeContext)).resolves.toBeUndefined();
   });
@@ -151,9 +151,52 @@ describe('enterRequestDraft and releaseRequestDraft', () => {
     mockEnterDraft.mockResolvedValue({ draftId: 'draft-1', closed: true, writerId: null, release: vi.fn() });
     const executeContext = { draft_context: 'draft-1' } as unknown as AuthContext;
 
-    await enterRequestDraft(executeContext);
+    await enterRequestDraft(executeContext, {});
 
     expect(executeContext).toMatchObject({ draft_context: 'draft-1', draft_forward_closed: true, draft_writer_id: null });
     expect(executeContext.draft_writer_release).toBeUndefined();
+  });
+});
+
+describe('settleRequestDraft', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  const leasedHandler = (release: () => Promise<void>, execute: () => Promise<void>) => {
+    mockEnterDraft.mockResolvedValue({ draftId: 'draft-1', closed: false, writerId: 'writer-1', release });
+    return settleRequestDraft(async (_req: object, res: object) => {
+      await enterRequestDraft({ draft_context: 'draft-1' } as unknown as AuthContext, res);
+      await execute();
+    });
+  };
+
+  it('should release the lease of a request only once its handler settled', async () => {
+    const release = vi.fn().mockResolvedValue(undefined);
+    let settle = () => {};
+    const execution = new Promise<void>((resolve) => {
+      settle = resolve;
+    });
+    const handling = leasedHandler(release, () => execution)({}, {});
+    await new Promise((resolve) => {
+      setTimeout(resolve, 20);
+    });
+    expect(release).not.toHaveBeenCalled();
+    settle();
+    await handling;
+    expect(release).toHaveBeenCalledTimes(1);
+  });
+
+  it('should release the lease when the handler fails, and fail the same way', async () => {
+    const release = vi.fn().mockResolvedValue(undefined);
+    const handler = leasedHandler(release, () => Promise.reject(new Error('Context refused')));
+    await expect(handler({}, {})).rejects.toThrow('Context refused');
+    expect(release).toHaveBeenCalledTimes(1);
+  });
+
+  it('should release nothing for a request that took no lease', async () => {
+    const handler = settleRequestDraft(async () => {});
+    await expect(handler({}, {})).resolves.toBeUndefined();
+    expect(mockEnterDraft).not.toHaveBeenCalled();
   });
 });

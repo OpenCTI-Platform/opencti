@@ -117,15 +117,11 @@ export interface DraftEntry extends DraftForward {
 
 const noLease = async () => {};
 
-// Renews the lease until it is released, or until the request can no longer be running (maxDurationMs)
-const holdLease = (draftId: string, writerId: string, maxDurationMs: number) => {
-  const end = Date.now() + maxDurationMs;
+// Renews the lease until it is released, however long the request runs: its expiry only frees the lease of a node
+// stopped mid-request
+const holdLease = (draftId: string, writerId: string) => {
   let renewing: Promise<void> = Promise.resolve();
   const renewal = setInterval(() => {
-    if (Date.now() >= end) {
-      clearInterval(renewal);
-      return;
-    }
     renewing = renewing
       .then(() => redisAddDraftWriter(draftId, writerId, DRAFT_WRITER_LEASE_MS))
       .catch((cause) => logApp.warn('[OPENCTI] Draft lease of a request could not be renewed', { cause, draftId }));
@@ -146,7 +142,7 @@ const holdLease = (draftId: string, writerId: string, maxDurationMs: number) => 
  * first, then waits for the leases, so a request either is waited for or sees the forward and moves to the draft
  * taking over. A draft enters a chain when it is created to receive routed work, so outside a chain no lease is needed.
  */
-export const enterDraft = async (draftId: string, maxDurationMs: number): Promise<DraftEntry> => {
+export const enterDraft = async (draftId: string): Promise<DraftEntry> => {
   if (!(await redisGetDraftForward(draftId))) {
     return { draftId, closed: false, writerId: null, release: noLease };
   }
@@ -165,5 +161,5 @@ export const enterDraft = async (draftId: string, maxDurationMs: number): Promis
     await redisRemoveDraftWriter(target, writerId);
     return { draftId: forward.draftId, closed: true, writerId: null, release: noLease };
   }
-  return { draftId: target, closed: false, writerId, release: holdLease(target, writerId, maxDurationMs) };
+  return { draftId: target, closed: false, writerId, release: holdLease(target, writerId) };
 };

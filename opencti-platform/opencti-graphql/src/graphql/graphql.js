@@ -12,7 +12,6 @@ import telemetryPlugin from './telemetryPlugin';
 import tracingPlugin from './tracingPlugin';
 import httpResponsePlugin from './httpResponsePlugin';
 import { pushAll } from '../utils/arrayUtil';
-import { releaseRequestDraft } from '../http/httpServer-draft';
 
 const createApolloServer = () => {
   const schema = createSchema();
@@ -106,12 +105,6 @@ const createApolloServer = () => {
     unexpectedErrorProcessingRequest: ({ error }) => {
       logApp.warn('[APOLLO] Unexpected error processing request', { cause: error });
     },
-  });
-  apolloPlugins.push({
-    // The execution settled, writes included, even when the client disconnected before the response
-    requestDidStart: async () => ({
-      willSendResponse: async ({ contextValue }) => releaseRequestDraft(contextValue),
-    }),
   });
 
   const apolloServer = new ApolloServer({
