@@ -369,6 +369,7 @@ export const convertIdentityToStix = (instance: StoreEntityIdentity, type: strin
         organization_type: instance.x_opencti_organization_type,
         reliability: instance.x_opencti_reliability,
         score: instance.x_opencti_score,
+        citizenship_document_type: instance.x_opencti_citizenship_document_type,
       }),
     },
   };

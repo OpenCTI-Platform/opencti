@@ -104,6 +104,7 @@ const ENTITY_TYPE_TO_FAMILY: Record<string, keyof typeof COLOR_FAMILIES> = {
   Individual: 'victimology',
   User: 'victimology',
   Group: 'victimology',
+  'Citizenship-Document': 'victimology',
 
   // Locations
   Region: 'locations',

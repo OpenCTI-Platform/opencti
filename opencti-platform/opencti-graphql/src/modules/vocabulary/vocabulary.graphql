@@ -47,6 +47,7 @@ enum VocabularyCategory {
   eye_color_ov
   persona_type_ov
   coverage_ov
+  citizenship_document_type_ov
 }
 
 type VocabularyFieldDefinition {
