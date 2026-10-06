@@ -2,7 +2,7 @@
 
 Hunts turn threat intelligence into searches executed in your own telemetry. A hunt states a hypothesis ("if this intrusion set is active in our environment, encoded PowerShell commands run on our endpoints"), carries the detection logic that tests it, and is executed by hunt connectors against the security platforms (SIEM, EDR, XDR, data lakes) your organization operates. Every execution is a **hunt run**: it records what was searched, where, over which time window, what was found and the resulting **verdict**.
 
-Hunts live in the **Defense** area of the navigation, under **Hunts**. The list opens on the statistics of the hunts over a period (runs, hits, true positives, autonomous and failed runs, hits over time, runs per platform, verdicts).
+Hunts live in the **Defense** area of the navigation, under **Hunts**. The list opens on the statistics of the hunts over a period (runs, hits, true positives, autonomous and failed runs, hits over time, runs per platform, verdicts). They cover the hunts that exist: the runs of a deleted hunt leave them, and come back when the hunt is restored from the trash.
 
 ![Defense > Hunts: the statistics of the hunts above the list of hunts](assets/hunt-list-populated.png)
 

@@ -132,6 +132,8 @@ export interface HuntIocResult {
 
 interface HuntRunAttributes {
   hunt_id: string;
+  // The hunt of the run no longer exists (deleted, in the trash): the statistics leave the run out
+  hunt_orphaned?: boolean | null;
   hunt_run_status: string;
   hunt_run_trigger: string;
   hunt_run_mode: string;

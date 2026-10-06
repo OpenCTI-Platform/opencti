@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fullEntitiesList, internalFindByIds, internalLoadById, storeLoadById } from '../../../../src/database/middleware-loader';
-import { cancelOrphanHuntRuns } from '../../../../src/modules/hunt/hunt-automation';
+import { cancelOrphanHuntRuns, reconcileOrphanedHuntRuns } from '../../../../src/modules/hunt/hunt-automation';
 import { HUNT_CONFIG } from '../../../../src/modules/hunt/hunt-utils';
 import { cursorToOffset } from '../../../../src/database/utils';
 import { patchAttribute } from '../../../../src/database/middleware';
-import { elAggregationCount, elHistogramCount, elHistogramSum } from '../../../../src/database/engine';
+import { elAggregationCount, elHistogramCount, elHistogramSum, elRawUpdateByQuery } from '../../../../src/database/engine';
 import { withHuntLock } from '../../../../src/modules/hunt/hunt-lock';
 import { HUNT_MESSAGES } from '../../../../src/modules/hunt/hunt-messages';
 import { cancelHuntRun, computeHuntStatistics, expireHuntRun, isHuntRunFinalized, isHuntRunHuntDeleted } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
@@ -30,6 +30,7 @@ vi.mock('../../../../src/database/engine', async (importOriginal) => ({
   elAggregationCount: vi.fn(async () => []),
   elHistogramCount: vi.fn(async () => []),
   elHistogramSum: vi.fn(async () => []),
+  elRawUpdateByQuery: vi.fn(async () => ({})),
 }));
 
 vi.mock('../../../../src/database/redis', async (importOriginal) => ({
@@ -167,6 +168,36 @@ describe('Hunt manager sweep of orphan runs', () => {
       ['hunt-gone'], ['hunt-gone'], ['hunt-gone'], ['hunt-gone'],
     ]);
   });
+
+  const flagged = () => vi.mocked(elRawUpdateByQuery).mock.calls.map(([query]) => ({
+    huntIds: query.body.query.bool.filter[1].terms['hunt_id.keyword'],
+    orphaned: query.body.script.params.orphaned,
+  }));
+
+  it('should flag the runs of a hunt deleted otherwise than through the API and clear those of a restored hunt', async () => {
+    vi.mocked(elRawUpdateByQuery).mockClear();
+    servingRuns([
+      { ...queued, internal_id: 'run-deleted', hunt_id: 'hunt-gone' },
+      { ...queued, internal_id: 'run-restored', hunt_id: 'hunt-1', hunt_orphaned: true },
+      { ...queued, internal_id: 'run-alive', hunt_id: 'hunt-1' },
+      { ...queued, internal_id: 'run-already-flagged', hunt_id: 'hunt-gone-before', hunt_orphaned: true },
+    ]);
+    vi.mocked(internalFindByIds).mockResolvedValue([{ internal_id: 'hunt-1' }] as never);
+    expect(await reconcileOrphanedHuntRuns(testContext)).toEqual(2);
+    // One update per direction, for every run of each hunt
+    expect(flagged()).toEqual([{ huntIds: ['hunt-gone'], orphaned: true }, { huntIds: ['hunt-1'], orphaned: false }]);
+  });
+
+  it('should update nothing when the runs agree with their hunts', async () => {
+    vi.mocked(elRawUpdateByQuery).mockClear();
+    servingRuns([
+      { ...queued, internal_id: 'run-alive', hunt_id: 'hunt-1' },
+      { ...queued, internal_id: 'run-flagged', hunt_id: 'hunt-gone', hunt_orphaned: true },
+    ]);
+    vi.mocked(internalFindByIds).mockResolvedValue([{ internal_id: 'hunt-1' }] as never);
+    expect(await reconcileOrphanedHuntRuns(testContext)).toEqual(0);
+    expect(elRawUpdateByQuery).not.toHaveBeenCalled();
+  });
 });
 
 describe('Hunt statistics', () => {
@@ -177,23 +208,28 @@ describe('Hunt statistics', () => {
     vi.mocked(elHistogramSum).mockClear();
   });
 
+  const statusFilters = () => (vi.mocked(elAggregationCount).mock.calls
+    .map((call) => call[3] as { field: string; filters: { filters: unknown[] } })
+    .find((options) => options.field === 'hunt_run_status'))?.filters.filters;
+
   it('should count the runs of the existing hunts only, never a cancelled run, and the verdicts of completed runs only', async () => {
-    vi.mocked(fullEntitiesList).mockResolvedValue([{ internal_id: 'hunt-1' }, { internal_id: 'hunt-2' }] as never);
     await computeHuntStatistics(testContext, ADMIN_USER, {});
-    const calls = vi.mocked(elAggregationCount).mock.calls.map((call) => call[3] as { field: string; filters: { filters: unknown[] } });
-    const verdicts = calls.find((options) => options.field === 'verdict');
-    const statuses = calls.find((options) => options.field === 'hunt_run_status');
-    expect(statuses?.filters.filters).toEqual(expect.arrayContaining([
-      { key: ['hunt_id'], values: ['hunt-1', 'hunt-2'] },
+    const verdicts = vi.mocked(elAggregationCount).mock.calls.map((call) => call[3] as { field: string; filters: { filters: unknown[] } }).find((options) => options.field === 'verdict');
+    expect(statusFilters()).toEqual(expect.arrayContaining([
+      { key: ['hunt_orphaned'], values: ['true'], operator: 'not_eq' },
       { key: ['hunt_run_status'], values: ['cancelled'], operator: 'not_eq' },
     ]));
+    // The runs of deleted hunts are left out with their flag: the hunts are never listed into the queries
+    expect(statusFilters()).not.toContainEqual(expect.objectContaining({ key: ['hunt_id'] }));
+    expect(fullEntitiesList).not.toHaveBeenCalled();
     expect(verdicts?.filters.filters).toContainEqual({ key: ['hunt_run_status'], values: ['completed'] });
   });
 
-  it('should count nothing when no hunt exists, whatever runs deleted hunts left behind', async () => {
-    vi.mocked(fullEntitiesList).mockResolvedValue([] as never);
-    const statistics = await computeHuntStatistics(testContext, ADMIN_USER, {});
-    expect(elAggregationCount).not.toHaveBeenCalled();
-    expect(statistics).toBeDefined();
+  it('should count the runs of one hunt for the page of that hunt', async () => {
+    await computeHuntStatistics(testContext, ADMIN_USER, { huntId: 'hunt-1' });
+    expect(statusFilters()).toEqual(expect.arrayContaining([
+      { key: ['hunt_id'], values: ['hunt-1'] },
+      { key: ['hunt_orphaned'], values: ['true'], operator: 'not_eq' },
+    ]));
   });
 });

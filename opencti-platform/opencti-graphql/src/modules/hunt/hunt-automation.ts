@@ -55,6 +55,7 @@ import {
   createHuntRuns,
   expireHuntRun,
   isHuntRunFinalized,
+  markHuntRunsOrphaned,
   reconcileHuntRunFinalization,
   releaseUnpublishedHuntRun,
   replaceHuntRun,
@@ -269,6 +270,37 @@ export const cancelOrphanHuntRuns = async (context: AuthContext): Promise<number
     cancelled += await cancelOrphanRunsOfPage(context, runs);
   }, { scan: 'orphan-runs' });
   return cancelled;
+};
+
+/**
+ * Keeps the flag the statistics leave the runs of deleted hunts out with, whatever deleted the hunt (the trash, a bulk
+ * deletion, a synchronization) or brought it back (a restore from the trash); the deletion of a hunt through the API
+ * flags its runs at once. Reads every run page by page, at most `automationMaxPagesPerTick` pages per tick, resuming at
+ * the next tick; each page loads the hunts of its own runs, and a hunt whose runs disagree is flagged in one update.
+ * Returns the number of hunts whose runs were flagged or cleared.
+ */
+export const reconcileOrphanedHuntRuns = async (context: AuthContext): Promise<number> => {
+  let reconciled = 0;
+  await forEachPage<BasicStoreEntityHuntRun>(context, ENTITY_TYPE_HUNT_RUN, andFilters([]), async (runs) => {
+    const huntIds = Array.from(new Set(runs.map((run) => run.hunt_id)));
+    const existing = new Set((await findByIds<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, huntIds, { type: ENTITY_TYPE_HUNT })).map((hunt) => hunt.internal_id));
+    const flag = new Set<string>();
+    const clear = new Set<string>();
+    runs.forEach((run) => {
+      const orphaned = !existing.has(run.hunt_id);
+      if (orphaned !== (run.hunt_orphaned === true)) {
+        (orphaned ? flag : clear).add(run.hunt_id);
+      }
+    });
+    try {
+      await markHuntRunsOrphaned(Array.from(flag), true);
+      await markHuntRunsOrphaned(Array.from(clear), false);
+      reconciled += flag.size + clear.size;
+    } catch (error) {
+      logApp.error('[OPENCTI-MODULE] Runs of deleted hunts cannot be flagged', { cause: error, hunts: flag.size + clear.size });
+    }
+  }, { scan: 'orphaned-runs' });
+  return reconciled;
 };
 
 /**
@@ -858,6 +890,7 @@ export const processStandingHunts = async (context: AuthContext, budget: HuntTic
 
 export interface HuntAutomationReport {
   cancelled: number;
+  orphaned: number;
   requeued: number;
   expired: number;
   finalized: number;
@@ -876,10 +909,11 @@ export interface HuntAutomationReport {
  */
 export const runHuntAutomation = async (context: AuthContext, isEnterprise: boolean): Promise<HuntAutomationReport> => {
   const report: HuntAutomationReport = {
-    cancelled: 0, requeued: 0, expired: 0, finalized: 0, retried: 0, dispatched: 0, resumed: 0, purged: 0, scheduled: 0, armed: 0, standing: 0,
+    cancelled: 0, orphaned: 0, requeued: 0, expired: 0, finalized: 0, retried: 0, dispatched: 0, resumed: 0, purged: 0, scheduled: 0, armed: 0, standing: 0,
   };
   // First: the runs of deleted hunts and connectors free their slots before anything is dispatched or expired
   report.cancelled = await cancelOrphanHuntRuns(context);
+  report.orphaned = await reconcileOrphanedHuntRuns(context);
   report.requeued = await requeueUnpublishedHuntRuns(context);
   report.expired = await expireStaleHuntRuns(context);
   report.finalized = await finalizeInterruptedHuntRuns(context);

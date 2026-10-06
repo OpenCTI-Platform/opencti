@@ -35,6 +35,7 @@ const HUNT_RUN_DEFINITION: ModuleDefinition<StoreEntityHuntRun, StixHuntRun> = {
     createdAt,
     updatedAt,
     { name: 'hunt_id', label: 'Run hunt', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_HUNT], mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
+    { name: 'hunt_orphaned', label: 'Run of a deleted hunt', type: 'boolean', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'hunt_run_status', label: 'Hunt run status', type: 'string', format: 'enum', values: HUNT_RUN_STATUSES, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'hunt_run_trigger', label: 'Hunt run trigger', type: 'string', format: 'enum', values: HUNT_RUN_TRIGGERS, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'hunt_run_mode', label: 'Run mode', type: 'string', format: 'enum', values: HUNT_RUN_MODES, mandatoryType: 'internal', editDefault: false, multiple: false, upsert: false, isFilterable: true },

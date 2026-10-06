@@ -88,7 +88,7 @@ import {
 import { parseHuntPack, planHuntPackImport, resolveHuntPackLabels } from './hunt-pack';
 import { type HuntValidationState, mergeHuntEdits, validateHuntState } from './hunt-validators';
 import { withHuntLock } from './hunt-lock';
-import { cancelDeletedHuntRuns, createHuntRuns, findHuntConnectors, startHuntTranslationCheck } from './huntRun/huntRun-domain';
+import { cancelDeletedHuntRuns, createHuntRuns, findHuntConnectors, markHuntRunsOrphaned, startHuntTranslationCheck } from './huntRun/huntRun-domain';
 import { type BasicStoreEntityHuntRun, ENTITY_TYPE_HUNT_RUN, HUNT_RUN_TRIGGER_EMULATION } from './huntRun/huntRun-types';
 
 const ATTACK_TECHNIQUE_ID = /^T\d{4}(?:\.\d{3})?$/i;
@@ -277,10 +277,13 @@ export const huntDelete = async (context: AuthContext, user: AuthUser, huntId: s
     throw ResourceNotFoundError('Hunt cannot be found', { huntId });
   }
   // Runs are kept so that a hunt restored from the trash keeps its history, the run retention purges them; those still
-  // waiting or running are cancelled, so that they free the slots of their connectors
+  // waiting or running are cancelled, so that they free the slots of their connectors, and all leave the statistics.
+  // The hunt manager does the same for a hunt deleted otherwise, and brings back the runs of a restored hunt
   await deleteElementById(context, user, hunt.internal_id, ENTITY_TYPE_HUNT);
   if (!context.draft_context) {
     await cancelDeletedHuntRuns(context, hunt.internal_id);
+    await markHuntRunsOrphaned([hunt.internal_id], true)
+      .catch((error) => logApp.warn('[OPENCTI-MODULE] Runs of a deleted hunt not marked, the hunt manager will', { cause: error, huntId: hunt.internal_id }));
   }
   await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].DELETE_TOPIC, huntId, user);
   return huntId;

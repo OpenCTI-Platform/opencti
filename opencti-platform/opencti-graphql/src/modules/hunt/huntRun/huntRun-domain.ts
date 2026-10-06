@@ -17,7 +17,7 @@ import {
   storeLoadById,
   topEntitiesList,
 } from '../../../database/middleware-loader';
-import { elAggregationCount, elHistogramCount, elHistogramSum } from '../../../database/engine';
+import { elAggregationCount, elHistogramCount, elHistogramSum, elRawUpdateByQuery } from '../../../database/engine';
 import { fillTimeSeries, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
 import { notify } from '../../../database/redis';
 import { pushToConnector } from '../../../database/rabbitmq';
@@ -1824,10 +1824,30 @@ export const computeHuntTechniqueValidations = async (context: AuthContext, user
   return validations;
 };
 
-/** Internal ids of every hunt that exists, whoever can read it: a hunt in the trash or deleted for good is not listed. */
-export const listExistingHuntIds = async (context: AuthContext) => {
-  const hunts = await fullEntitiesList<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT], { baseData: true, baseFields: ['internal_id'] });
-  return hunts.map((hunt) => hunt.internal_id);
+/**
+ * Marks the runs of a hunt as the runs of a deleted hunt, or of a hunt that exists again, in one update: the statistics
+ * leave the runs of deleted hunts out with this flag, never by listing every hunt that exists.
+ */
+export const markHuntRunsOrphaned = async (huntIds: string[], orphaned: boolean) => {
+  if (huntIds.length === 0) {
+    return;
+  }
+  await elRawUpdateByQuery({
+    index: [READ_INDEX_INTERNAL_OBJECTS],
+    refresh: true,
+    conflicts: 'proceed',
+    body: {
+      script: { source: 'ctx._source.hunt_orphaned = params.orphaned;', lang: 'painless', params: { orphaned } },
+      query: {
+        bool: {
+          filter: [
+            { term: { 'entity_type.keyword': ENTITY_TYPE_HUNT_RUN } },
+            { terms: { 'hunt_id.keyword': huntIds } },
+          ],
+        },
+      },
+    },
+  });
 };
 
 export const computeHuntStatistics = async (context: AuthContext, user: AuthUser, args: HuntStatisticsArgs) => {
@@ -1835,13 +1855,13 @@ export const computeHuntStatistics = async (context: AuthContext, user: AuthUser
   const startDate = args.startDate ? new Date(args.startDate) : new Date(endDate.getTime() - HUNT_STATISTICS_DEFAULT_DAYS * 24 * 3600 * 1000);
   const interval = args.interval && HUNT_STATISTICS_INTERVALS.includes(args.interval) ? args.interval : 'day';
   // Runs of a deleted hunt are kept for a hunt restored from the trash, never counted: the figures cover the hunts that
-  // exist (read with the hunt manager identity, the runs with the reader's). Cancelled runs never ran
-  const huntIds = args.huntId ? [args.huntId] : await listExistingHuntIds(context);
+  // exist, through the flag the deletion and the hunt manager keep on the runs. Cancelled runs never ran
   const filters: FilterGroup = {
     mode: FilterMode.And,
     filters: [
       { key: ['hunt_run_mode'], values: [HUNT_RUN_MODE_EXECUTE] },
-      { key: ['hunt_id'], values: huntIds },
+      ...(args.huntId ? [{ key: ['hunt_id'], values: [args.huntId] }] : []),
+      { key: ['hunt_orphaned'], values: ['true'], operator: FilterOperator.NotEq },
       { key: ['hunt_run_status'], values: [HUNT_RUN_STATUS_CANCELLED], operator: FilterOperator.NotEq },
     ],
     filterGroups: [],
@@ -1850,17 +1870,15 @@ export const computeHuntStatistics = async (context: AuthContext, user: AuthUser
   const completedFilters: FilterGroup = { ...filters, filters: [...filters.filters, { key: ['hunt_run_status'], values: [HUNT_RUN_STATUS_COMPLETED] }] };
   const range = { startDate: startDate.toISOString(), endDate: endDate.toISOString() };
   const base = { types: [ENTITY_TYPE_HUNT_RUN], filters, ...range, dateAttribute: 'created_at' };
-  const hasHunts = huntIds.length > 0;
-  const none = Promise.resolve([]);
   type Bucket = { label: string; count: number };
   const [verdicts, statuses, platforms, triggers, hitsOverTime, runsOverTime, lastRuns] = await Promise.all([
-    hasHunts ? elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, filters: completedFilters, field: 'verdict', normalizeLabel: false }) : none,
-    hasHunts ? elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, field: 'hunt_run_status', normalizeLabel: false }) : none,
-    hasHunts ? elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, field: 'security_platform_id', normalizeLabel: false }) : none,
-    hasHunts ? elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, field: 'hunt_run_trigger', normalizeLabel: false }) : none,
-    hasHunts ? elHistogramSum(context, user, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_HUNT_RUN], filters, ...range, field: 'created_at', interval, sumField: 'hits_count' }) : none,
-    hasHunts ? elHistogramCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_HUNT_RUN], filters, ...range, field: 'created_at', interval }) : none,
-    hasHunts ? topEntitiesList<BasicStoreEntityHuntRun>(context, user, [ENTITY_TYPE_HUNT_RUN], { first: 1, orderBy: 'created_at', orderMode: OrderingMode.Desc, filters }) : none,
+    elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, filters: completedFilters, field: 'verdict', normalizeLabel: false }),
+    elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, field: 'hunt_run_status', normalizeLabel: false }),
+    elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, field: 'security_platform_id', normalizeLabel: false }),
+    elAggregationCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { ...base, field: 'hunt_run_trigger', normalizeLabel: false }),
+    elHistogramSum(context, user, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_HUNT_RUN], filters, ...range, field: 'created_at', interval, sumField: 'hits_count' }),
+    elHistogramCount(context, user, READ_INDEX_INTERNAL_OBJECTS, { types: [ENTITY_TYPE_HUNT_RUN], filters, ...range, field: 'created_at', interval }),
+    topEntitiesList<BasicStoreEntityHuntRun>(context, user, [ENTITY_TYPE_HUNT_RUN], { first: 1, orderBy: 'created_at', orderMode: OrderingMode.Desc, filters }),
   ]) as [Bucket[], Bucket[], Bucket[], Bucket[], any[], any[], BasicStoreEntityHuntRun[]];
   const countOf = (buckets: Bucket[], label: string) => buckets.find((bucket) => bucket.label === label)?.count ?? 0;
   const platformIds = platforms.map((bucket) => bucket.label).filter((label) => label !== 'unknown');
