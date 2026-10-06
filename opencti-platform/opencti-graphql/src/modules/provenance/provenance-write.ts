@@ -34,6 +34,7 @@ import {
   PROVENANCE_PROTECTED_INPUT_FIELDS,
   PROVENANCE_SIDE_CHANNEL_FIELDS,
   type StoreAssertion,
+  type StoreConflictValue,
   type StoreProcedure,
   type StoreProvenanceFields,
 } from './provenance-types';
@@ -354,14 +355,17 @@ const isVersionConflictError = (err: any) => {
   return (cause?.meta?.statusCode ?? cause?.statusCode) === 409;
 };
 
-/** Conflict values of the additions that the element does not hold yet. */
+// A conflict value is stored once per value and source: a second source proposing a known value is a new conflict value
+const conflictValueKey = (field: string, value: Pick<StoreConflictValue, 'value_hash' | 'source_id'>) => `${field}:${value.value_hash}:${value.source_id}`;
+
 const conflictValueKeys = (element: Partial<StoreProvenanceFields>) => {
-  return new Set((element[ATTRIBUTE_CONFLICTS] ?? []).flatMap((conflict) => (conflict.values ?? []).map((value) => `${conflict.field}:${value.value_hash}`)));
+  return new Set((element[ATTRIBUTE_CONFLICTS] ?? []).flatMap((conflict) => (conflict.values ?? []).map((value) => conflictValueKey(conflict.field, value))));
 };
 
+/** Conflict values of the additions that the element does not hold yet. */
 export const newConflictAdditions = (element: Partial<StoreProvenanceFields>, conflictsAdd: ConflictAddition[]) => {
   const knownValues = conflictValueKeys(element);
-  return conflictsAdd.filter((addition) => !knownValues.has(`${addition.field}:${addition.value.value_hash}`));
+  return conflictsAdd.filter((addition) => !knownValues.has(conflictValueKey(addition.field, addition.value)));
 };
 
 /**
@@ -377,7 +381,7 @@ export const keptConflictAdditions = (response: any, additions: ConflictAddition
     return additions;
   }
   const storedValues = conflictValueKeys(stored);
-  return additions.filter((addition) => storedValues.has(`${addition.field}:${addition.value.value_hash}`));
+  return additions.filter((addition) => storedValues.has(conflictValueKey(addition.field, addition.value)));
 };
 
 export interface ProvenanceWriteResult {

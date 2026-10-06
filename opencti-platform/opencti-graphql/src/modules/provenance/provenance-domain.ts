@@ -481,9 +481,18 @@ export const assertElement = async (context: AuthContext, user: AuthUser, id: st
 };
 
 export const dismissConflictValue = async (context: AuthContext, user: AuthUser, id: string, field: string, valueHash: string) => {
-  const element = await loadEditableTrackedElement(context, user, id);
-  const proposals = findConflictProposals(element, field, valueHash);
-  await applyProvenanceUpdate(context, element, { conflictsRemove: [{ field, value_hash: valueHash }] }, { refresh: true });
+  const loaded = await loadEditableTrackedElement(context, user, id);
+  // Same lock as the upserts from the read to the removal: the proposals removed are exactly the ones named in the history
+  const lock = await lockResources(R.uniq([loaded.internal_id, loaded.standard_id]), { draftId: getDraftContext(context, user) });
+  let element;
+  let proposals;
+  try {
+    element = await loadEditableTrackedElement(context, user, id);
+    proposals = findConflictProposals(element, field, valueHash);
+    await applyProvenanceUpdate(context, element, { conflictsRemove: [{ field, value_hash: valueHash }] }, { refresh: true });
+  } finally {
+    await lock.unlock();
+  }
   await publishProvenanceAction(user, element, `dismisses the value proposed by ${describeProposalSources(proposals)} for \`${field}\``, { field, value_hash: valueHash });
   return loadTrackedElement(context, user, element.internal_id);
 };

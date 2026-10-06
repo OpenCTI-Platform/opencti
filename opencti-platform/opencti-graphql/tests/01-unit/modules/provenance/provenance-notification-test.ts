@@ -25,13 +25,13 @@ const assertion = (sourceId: string): StoreAssertion => ({
   work_id: null,
 });
 
-const conflictValue = (hash: string) => ({
+const conflictValue = (hash: string, sourceId = 's') => ({
   value_hash: hash,
   display: hash,
   value: JSON.stringify(hash),
-  source_id: 's',
+  source_id: sourceId,
   source_kind: 'connector' as const,
-  source_name: 's',
+  source_name: sourceId,
   confidence: 50,
   last_asserted_at: '2026-01-01T00:00:00.000Z',
 });
@@ -78,6 +78,10 @@ describe('Provenance triggers', () => {
     const conflicts = computeProvenanceChange(element, ['a'], newConflicts);
     expect(conflicts.conflictFields).toEqual(['description', 'name']);
     expect(conflicts.newConflictValues).toEqual(2);
+    // Stored once per value and source: another source proposing the known value is its own new conflict
+    const secondSource = newConflictAdditions(element, [{ field: 'description', value: conflictValue('known', 'other-source') }]);
+    expect(secondSource.map((addition) => addition.value.source_id)).toEqual(['other-source']);
+    expect(computeProvenanceChange(element, ['other-source'], secondSource).conflictFields).toEqual(['description']);
   });
 
   it('should only report the conflict values a write kept, never the ones dropped by the caps', () => {
@@ -96,6 +100,10 @@ describe('Provenance triggers', () => {
     expect(keptConflictAdditions(stored([{ field: 'description', values: [conflictValue('kept')] }]), [additions[1]])).toEqual([]);
     expect(keptConflictAdditions({ result: 'noop' }, additions)).toEqual([]);
     expect(keptConflictAdditions(stored([]), [])).toEqual([]);
+    // The kept value of one source does not stand for the proposal of another source that the caps dropped
+    expect(keptConflictAdditions(stored([{ field: 'description', values: [conflictValue('kept')] }]), [
+      { field: 'description', value: conflictValue('kept', 'dropped-source') },
+    ])).toEqual([]);
   });
 
   it('should count every source, including the ones no longer detailed in the bounded assertions', () => {
