@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { graphql } from 'react-relay';
-import { DialogActions, Stack, Typography } from '@mui/material';
+import { Box, DialogActions, Typography } from '@mui/material';
 import { RemoveCircleOutlineOutlined, ReplayOutlined } from '@mui/icons-material';
 import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Button from '@common/button/Button';
@@ -30,6 +30,9 @@ const deployedOnRemoveMutation = graphql`
     }
   }
 `;
+
+/** Two md icon buttons (36 px) and their 4 px gap, so that a row with both actions shows both. */
+export const DEPLOYMENT_ACTIONS_COLUMN_WIDTH = 76;
 
 interface DeployedOnActionsProps {
   id: string;
@@ -62,54 +65,62 @@ const DeployedOnActions = ({ id, deploymentStatus, revoked, indicatorName, platf
     event.stopPropagation();
   };
 
+  // Each action keeps its own slot, so that "Deploy again" and "Remove" line up on every row of the table.
   return (
-    <Stack direction="row" gap={0.5} onClick={stop}>
+    <Box
+      sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', columnGap: 0.5, width: '100%' }}
+      onClick={stop}
+    >
       {retryable && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <IconButton
-              variant="default"
-              priority="tertiary"
-              size="md"
-              aria-label={t_i18n('Deploy again')}
-              disabled={retrying}
-              onClick={(event: React.MouseEvent) => {
-                stop(event);
-                commitRetry({
-                  variables: { id },
-                  onCompleted: (response, errors) => {
-                    if (succeeded(response.indicatorDeploymentRetry, errors)) {
-                      MESSAGING$.notifySuccess(t_i18n('The connector will deploy the indicator again'));
-                    }
-                  },
-                });
-              }}
-              icon={<ReplayOutlined fontSize="small" />}
-              data-testid="deployment-retry"
-            />
-          </TooltipTrigger>
-          <TooltipContent>{t_i18n('Deploy again')}</TooltipContent>
-        </Tooltip>
+        <Box sx={{ gridColumn: 1 }}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <IconButton
+                variant="default"
+                priority="tertiary"
+                size="md"
+                aria-label={t_i18n('Deploy again')}
+                disabled={retrying}
+                onClick={(event: React.MouseEvent) => {
+                  stop(event);
+                  commitRetry({
+                    variables: { id },
+                    onCompleted: (response, errors) => {
+                      if (succeeded(response.indicatorDeploymentRetry, errors)) {
+                        MESSAGING$.notifySuccess(t_i18n('The connector will deploy the indicator again'));
+                      }
+                    },
+                  });
+                }}
+                icon={<ReplayOutlined fontSize="small" />}
+                data-testid="deployment-retry"
+              />
+            </TooltipTrigger>
+            <TooltipContent>{t_i18n('Deploy again')}</TooltipContent>
+          </Tooltip>
+        </Box>
       )}
       {removable && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <IconButton
-              variant="default"
-              priority="tertiary"
-              size="md"
-              aria-label={t_i18n('Remove from this platform')}
-              disabled={removing}
-              onClick={(event: React.MouseEvent) => {
-                stop(event);
-                setConfirmRemove(true);
-              }}
-              icon={<RemoveCircleOutlineOutlined fontSize="small" />}
-              data-testid="deployment-remove"
-            />
-          </TooltipTrigger>
-          <TooltipContent>{t_i18n('Remove from this platform')}</TooltipContent>
-        </Tooltip>
+        <Box sx={{ gridColumn: 2 }}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <IconButton
+                variant="default"
+                priority="tertiary"
+                size="md"
+                aria-label={t_i18n('Remove from this platform')}
+                disabled={removing}
+                onClick={(event: React.MouseEvent) => {
+                  stop(event);
+                  setConfirmRemove(true);
+                }}
+                icon={<RemoveCircleOutlineOutlined fontSize="small" />}
+                data-testid="deployment-remove"
+              />
+            </TooltipTrigger>
+            <TooltipContent>{t_i18n('Remove from this platform')}</TooltipContent>
+          </Tooltip>
+        </Box>
       )}
       <Dialog
         open={confirmRemove}
@@ -142,7 +153,7 @@ const DeployedOnActions = ({ id, deploymentStatus, revoked, indicatorName, platf
           </Button>
         </DialogActions>
       </Dialog>
-    </Stack>
+    </Box>
   );
 };
 

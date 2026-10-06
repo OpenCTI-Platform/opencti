@@ -14,7 +14,7 @@ import { emptyFilterGroup, isFilterGroupNotEmpty, useBuildEntityTypeBasedFilterC
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
 import { PATH_INDICATOR, PATH_SECURITY_PLATFORM } from '@components/common/routes/paths';
 import { DeploymentStatusChip, ValidationStatusChip } from './DisseminationStatusChips';
-import DeployedOnActions from './DeployedOnActions';
+import DeployedOnActions, { DEPLOYMENT_ACTIONS_COLUMN_WIDTH } from './DeployedOnActions';
 import { RELATION_DEPLOYED_ON } from './disseminationAssuranceUtils';
 import type { DeployedOnRelationships_node$data } from './__generated__/DeployedOnRelationships_node.graphql';
 import type { DeployedOnRelationshipsLines_data$data } from './__generated__/DeployedOnRelationshipsLines_data.graphql';
@@ -310,6 +310,7 @@ const DeployedOnRelationships = ({ side, entityId, kpiFilters, startDate }: Depl
             if (side === 'indicator') return node.to?.id ? PATH_SECURITY_PLATFORM(node.to.id) : undefined;
             return node.from?.id ? PATH_INDICATOR(node.from.id) : undefined;
           }}
+          actionsColumnWidth={canUpdate ? DEPLOYMENT_ACTIONS_COLUMN_WIDTH : undefined}
           actions={canUpdate ? (node: DeployedOnRelationships_node$data) => (
             <DeployedOnActions
               id={node.id}
