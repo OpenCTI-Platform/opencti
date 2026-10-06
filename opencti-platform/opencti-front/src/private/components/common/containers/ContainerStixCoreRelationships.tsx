@@ -1,21 +1,28 @@
 import React, { FunctionComponent } from 'react';
-import { stixCoreRelationshipsLinesQuery } from '@components/common/stix_core_relationships/StixCoreRelationships';
+import { AutoFix } from 'mdi-material-ui';
+import { useTheme } from '@mui/styles';
+import {
+  stixCoreRelationshipsFragment,
+  stixCoreRelationshipsLinesFragment,
+  stixCoreRelationshipsLinesQuery,
+} from '@components/common/stix_core_relationships/StixCoreRelationships';
 import {
   StixCoreRelationshipsLinesPaginationQuery,
   StixCoreRelationshipsLinesPaginationQuery$variables,
 } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipsLinesPaginationQuery.graphql';
-import ListLines from '../../../../components/list_lines/ListLines';
-import { DataColumns } from '../../../../components/list_lines';
-import ToolBar from '../../data/ToolBar';
-import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
+import { StixCoreRelationshipsLines_data$data } from '@components/common/stix_core_relationships/__generated__/StixCoreRelationshipsLines_data.graphql';
+import { getDraftModeColor } from '@components/common/draft/DraftChip';
+import DataTable from '../../../../components/dataGrid/DataTable';
+import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
+import ItemIcon from '../../../../components/ItemIcon';
+import { itemColor } from '../../../../utils/Colors';
+import { UsePreloadedPaginationFragment } from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import useAuth from '../../../../utils/hooks/useAuth';
-import { useFormatter } from '../../../../components/i18n';
 import { emptyFilterGroup, isFilterGroupNotEmpty, useRemoveIdAndIncorrectKeysFromFilterGroupObject } from '../../../../utils/filters/filtersUtils';
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
-import ContainerStixCoreRelationshipsLines from './ContainerStixCoreRelationshipsLines';
-import type { ContainerRelationshipNode } from './ContainerStixCoreRelationshipsLine';
+import type { Theme } from '../../../../components/Theme';
 
 interface ContainerStixCoreRelationshipsProps {
   containerId: string;
@@ -38,42 +45,40 @@ export const buildContainerRelationshipsContextFilters = (
 });
 
 const ContainerStixCoreRelationships: FunctionComponent<ContainerStixCoreRelationshipsProps> = ({ containerId }) => {
-  const { t_i18n } = useFormatter();
+  const theme = useTheme<Theme>();
   const {
     platformModuleHelpers: { isRuntimeFieldEnable },
   } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const LOCAL_STORAGE_KEY = `container-${containerId}-relationships`;
 
-  const dataColumns: DataColumns = {
-    fromType: {
-      label: 'From type',
-      width: '11%',
+  // Same columns as Data > Relationships.
+  const dataColumns: DataTableProps['dataColumns'] = {
+    is_inferred: {
+      id: 'is_inferred',
+      label: ' ',
       isSortable: false,
+      percentWidth: 3,
+      render: ({ is_inferred, entity_type, draftVersion }) => {
+        if (is_inferred) {
+          const inferredColor = draftVersion ? getDraftModeColor(theme) : itemColor(entity_type);
+          return (<AutoFix style={{ color: inferredColor }} />);
+        }
+        if (draftVersion) {
+          return (<ItemIcon type={entity_type} color={getDraftModeColor(theme)} />);
+        }
+        return (<ItemIcon type={entity_type} />);
+      },
     },
-    fromName: {
-      label: 'From name',
-      width: '16%',
-      isSortable: false,
-    },
-    relationship_type: {
-      label: 'Relationship type',
-      width: '12%',
-      isSortable: true,
-    },
-    toType: {
-      label: 'To type',
-      width: '11%',
-      isSortable: false,
-    },
-    toName: {
-      label: 'To name',
-      width: '16%',
-      isSortable: false,
-    },
-    createdBy: { label: 'Author', width: '9%', isSortable: isRuntimeSort },
-    created_at: { label: 'Created', width: '9%', isSortable: true },
-    objectMarking: { label: 'Marking', width: '8%', isSortable: isRuntimeSort },
+    fromType: {},
+    fromName: {},
+    relationship_type: {},
+    toType: {},
+    toName: {},
+    createdBy: { percentWidth: 7, isSortable: isRuntimeSort },
+    creator: { percentWidth: 7, isSortable: isRuntimeSort },
+    created_at: { percentWidth: 12 },
+    objectMarking: { isSortable: isRuntimeSort },
   };
 
   const initialValues = {
@@ -104,70 +109,35 @@ const ContainerStixCoreRelationships: FunctionComponent<ContainerStixCoreRelatio
     stixCoreRelationshipsLinesQuery,
     queryPaginationOptions,
   );
-  const {
-    selectedElements,
-    deSelectedElements,
-    selectAll,
-    numberOfSelectedElements,
-    handleClearSelectedElements,
-    handleToggleSelectAll,
-    onToggleEntity,
-  } = useEntityToggle<ContainerRelationshipNode>(LOCAL_STORAGE_KEY);
 
-  return queryRef ? (
-    <>
-      <ListLines
-        helpers={storageHelpers}
-        sortBy={viewStorage.sortBy}
-        orderAsc={viewStorage.orderAsc}
-        dataColumns={dataColumns}
-        handleSort={storageHelpers.handleSort}
-        handleSearch={storageHelpers.handleSearch}
-        handleAddFilter={storageHelpers.handleAddFilter}
-        handleRemoveFilter={storageHelpers.handleRemoveFilter}
-        handleSwitchGlobalMode={storageHelpers.handleSwitchGlobalMode}
-        handleSwitchLocalMode={storageHelpers.handleSwitchLocalMode}
-        handleToggleSelectAll={handleToggleSelectAll}
-        selectAll={selectAll}
-        keyword={viewStorage.searchTerm}
-        filters={filters}
-        handleToggleExports={storageHelpers.handleToggleExports}
-        openExports={viewStorage.openExports}
-        iconExtension={true}
-        numberOfElements={viewStorage.numberOfElements}
-        paginationOptions={queryPaginationOptions}
-        availableEntityTypes={['stix-core-relationship']}
-        exportContext={{ entity_id: containerId, entity_type: 'stix-core-relationship' }}
-        noPadding={true}
-        disableCards={true}
-        entityTypes={['stix-core-relationship']}
-      >
-        <ContainerStixCoreRelationshipsLines
+  const preloadedPaginationProps = {
+    linesQuery: stixCoreRelationshipsLinesQuery,
+    linesFragment: stixCoreRelationshipsLinesFragment,
+    queryRef,
+    nodePath: ['stixCoreRelationships', 'pageInfo', 'globalCount'],
+    setNumberOfElements: storageHelpers.handleSetNumberOfElements,
+  } as UsePreloadedPaginationFragment<StixCoreRelationshipsLinesPaginationQuery>;
+
+  return (
+    <div data-testid="container-relationships-page">
+      {queryRef && (
+        <DataTable
           dataColumns={dataColumns}
-          paginationOptions={queryPaginationOptions}
-          queryRef={queryRef}
-          setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-          selectedElements={selectedElements}
-          deSelectedElements={deSelectedElements}
-          selectAll={selectAll}
-          onToggleEntity={onToggleEntity}
-        />
-        <ToolBar
-          selectedElements={selectedElements}
-          deSelectedElements={deSelectedElements}
-          numberOfSelectedElements={numberOfSelectedElements}
-          selectAll={selectAll}
-          filters={contextFilters}
-          search={viewStorage.searchTerm}
-          handleClearSelectedElements={handleClearSelectedElements}
+          resolvePath={(data: StixCoreRelationshipsLines_data$data) => data.stixCoreRelationships?.edges?.map((n) => n?.node)}
+          storageKey={LOCAL_STORAGE_KEY}
+          initialValues={initialValues}
+          contextFilters={contextFilters}
+          lineFragment={stixCoreRelationshipsFragment}
+          preloadedPaginationProps={preloadedPaginationProps}
+          exportContext={{ entity_id: containerId, entity_type: 'stix-core-relationship' }}
+          availableEntityTypes={['stix-core-relationship']}
+          // Reaches the toolbar, which needs the type for the relationship-only bulk edits (start and stop times).
+          entityTypes={['stix-core-relationship']}
           container={{ id: containerId }}
-          warning={true}
-          warningMessage={t_i18n('Be careful, you are about to remove the selected relationships from the container')}
-          type="stix-core-relationship"
         />
-      </ListLines>
-    </>
-  ) : null;
+      )}
+    </div>
+  );
 };
 
 export default ContainerStixCoreRelationships;
