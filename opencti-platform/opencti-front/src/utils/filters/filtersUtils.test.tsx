@@ -1512,6 +1512,29 @@ describe('Function normalizeFilterGroupForFrontend', () => {
     expect(nestedFilterGroup.filters[0].id).toBeDefined();
     expect(typeof nestedFilterGroup.filters[0].id).toBe('string');
   });
+
+  it.each(['dynamicFrom', 'dynamicTo'])('should normalize the nested group of a standalone %s filter', (key) => {
+    const input = {
+      mode: 'and',
+      filters: [{
+        key: [key],
+        operator: 'eq',
+        mode: 'or',
+        values: [{
+          mode: 'and',
+          filters: [{ key: ['entity_type'], values: ['Malware'], operator: 'eq', mode: 'or' }],
+          filterGroups: [],
+        }],
+      }],
+      filterGroups: [],
+    } as unknown as GqlFilterGroup;
+    const result = normalizeFilterGroupForFrontend(input);
+    expect(result.filters[0].key).toEqual(key);
+    const nestedGroup = result.filters[0].values[0] as FilterGroup;
+    expect(typeof nestedGroup.id).toBe('string');
+    expect(nestedGroup.filters[0].key).toEqual('entity_type');
+    expect(typeof nestedGroup.filters[0].id).toBe('string');
+  });
 });
 
 describe('isDraftWorkspaceFilterGroup', () => {
@@ -1842,6 +1865,32 @@ describe('canonicalizeFilterGroupForBackend', () => {
   });
 });
 
+describe('canonicalizeFilterGroupForBackend on standalone dynamicFrom/dynamicTo', () => {
+  it.each(['dynamicFrom', 'dynamicTo'])('should strip the frontend ids of the nested group of a %s filter', (key) => {
+    const input = {
+      mode: 'and',
+      filters: [{
+        id: 'f1',
+        key,
+        values: [{
+          id: 'nested-group-id',
+          mode: 'and',
+          filters: [{ id: 'nested-filter-id', key: 'entity_type', values: ['Malware'], operator: 'eq' }],
+          filterGroups: [],
+        }],
+      }],
+      filterGroups: [],
+    } as unknown as FilterGroup;
+    const result = canonicalizeFilterGroupForBackend(input);
+    expectNoFrontendIds(result);
+    expect(result.filters[0].values).toStrictEqual([{
+      mode: 'and',
+      filters: [{ key: 'entity_type', values: ['Malware'], operator: 'eq' }],
+      filterGroups: [],
+    }]);
+  });
+});
+
 describe('pruneEmptyFiltersAndGroups', () => {
   it('should remove empty descendant groups recursively', () => {
     const input: FilterGroup = {
@@ -1917,6 +1966,29 @@ describe('pruneEmptyFiltersAndGroups', () => {
       }],
       filterGroups: [],
     });
+  });
+
+  it.each(['dynamicFrom', 'dynamicTo'])('should descend into the nested group of a standalone %s filter', (key) => {
+    const input: FilterGroup = {
+      mode: 'and',
+      filters: [{
+        key,
+        values: [{
+          mode: 'and',
+          filters: [
+            { key: 'objectLabel', values: [] },
+            { key: 'entity_type', values: ['Malware'] },
+          ],
+          filterGroups: [],
+        }],
+      }],
+      filterGroups: [],
+    };
+    expect(pruneEmptyFiltersAndGroups(input).filters[0].values).toStrictEqual([{
+      mode: 'and',
+      filters: [{ key: 'entity_type', values: ['Malware'] }],
+      filterGroups: [],
+    }]);
   });
 
   it('should not mutate its input and should work on a frozen filter group', () => {

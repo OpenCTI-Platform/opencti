@@ -667,6 +667,12 @@ export function normalizeFilterGroupForBackend(
 }
 
 /**
+ * Standalone 'dynamicFrom'/'dynamicTo' filters hold the nested filter group directly in their
+ * values (unlike 'dynamicRegardingOf', which nests it under a 'dynamic' sub-value).
+ */
+const isStandaloneDynamicKey = (key: string) => key === 'dynamicFrom' || key === 'dynamicTo';
+
+/**
  * Reverse operation of normalizeFilterGroupForBackend:
  * converts a GqlFilterGroup (backend format with array keys) into a FilterGroup (frontend format with single string key).
  * Also assigns a unique `id` to each filter for React rendering purposes.
@@ -693,6 +699,8 @@ export const normalizeFilterGroupForFrontend = (
             return dynamicRegardingOfValue;
           }
         });
+      } else if (isStandaloneDynamicKey(key)) { // the value IS the nested filter group
+        values = f.values.map((nestedGroup: GqlFilterGroup) => normalizeFilterGroupForFrontend(nestedGroup));
       } else {
         values = f.values.map((v) => v || 'todo: delete this');
       }
@@ -1387,9 +1395,15 @@ const canonicalizeDynamicRegardingOfValues = (values: FilterValue[]): FilterValu
  * order `key`, `values`, `operator`, `mode`. Optional properties absent from the input are not
  * emitted, and the frontend-only `id` is dropped by construction.
  */
+const canonicalizeFilterValues = (filter: Filter): FilterValue[] => {
+  if (filter.key === 'dynamicRegardingOf') return canonicalizeDynamicRegardingOfValues(filter.values);
+  if (isStandaloneDynamicKey(filter.key)) return (filter.values ?? []).map((group: FilterGroup) => canonicalizeFilterGroupForBackend(group));
+  return [...(filter.values ?? [])];
+};
+
 const canonicalizeFilter = (filter: Filter): Filter => ({
   key: filter.key,
-  values: filter.key === 'dynamicRegardingOf' ? canonicalizeDynamicRegardingOfValues(filter.values) : [...(filter.values ?? [])],
+  values: canonicalizeFilterValues(filter),
   ...(filter.operator !== undefined ? { operator: filter.operator } : {}),
   ...(filter.mode !== undefined ? { mode: filter.mode } : {}),
 });
@@ -1449,11 +1463,15 @@ const pruneDynamicRegardingOfValues = (values: FilterValue[], dropEmptyGroups = 
  */
 export const pruneEmptyFiltersAndGroups = (filterGroup: FilterGroup, dropEmptyGroups = true): FilterGroup => ({
   mode: filterGroup.mode,
-  filters: removeEmptyFiltersFromList(filterGroup.filters ?? []).map((filter) => (
-    filter.key === 'dynamicRegardingOf'
-      ? { ...filter, values: pruneDynamicRegardingOfValues(filter.values, dropEmptyGroups) }
-      : filter
-  )),
+  filters: removeEmptyFiltersFromList(filterGroup.filters ?? []).map((filter) => {
+    if (filter.key === 'dynamicRegardingOf') {
+      return { ...filter, values: pruneDynamicRegardingOfValues(filter.values, dropEmptyGroups) };
+    }
+    if (isStandaloneDynamicKey(filter.key)) {
+      return { ...filter, values: (filter.values ?? []).map((group: FilterGroup) => pruneEmptyFiltersAndGroups(group, dropEmptyGroups)) };
+    }
+    return filter;
+  }),
   filterGroups: (filterGroup.filterGroups ?? [])
     .map((group) => pruneEmptyFiltersAndGroups(group, dropEmptyGroups))
     // children are already pruned above (post-order), so a shallow check is enough and safe here —
