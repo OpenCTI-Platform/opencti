@@ -697,7 +697,8 @@ export const sourceIntelligenceHandler = async () => {
   try {
     await processStreamIncrements(context);
   } catch (error) {
-    logApp.error('[OPENCTI-MODULE] Source intelligence streaming increments error', { cause: error, manager: SOURCE_INTELLIGENCE_MANAGER_ID });
+    // A failed batch leaves the stream cursor and its pending marker in place: the next run replays it
+    logApp.warn('[OPENCTI-MODULE] Source intelligence streaming increments error, batch replayed on the next run', { cause: error, manager: SOURCE_INTELLIGENCE_MANAGER_ID });
   }
   try {
     await enforceQuarantines(context);
