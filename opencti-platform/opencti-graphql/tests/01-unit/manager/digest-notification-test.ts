@@ -26,6 +26,7 @@ vi.mock('../../../src/database/stix-representative', () => ({
 import { collectDigestContent, DEFAULT_MAX_DIGEST_CONTENT_SIZE, handleDigestNotifications } from '../../../src/manager/notificationManager';
 import { getEntitiesListFromCache, getEntityFromCache } from '../../../src/database/cache';
 import { storeNotificationEvent } from '../../../src/database/stream/stream-handler';
+import { extractStixRepresentativeForUser } from '../../../src/database/stix-representative';
 import { ENTITY_TYPE_TRIGGER } from '../../../src/modules/notification/notification-types';
 import { ACCOUNT_STATUS_ACTIVE } from '../../../src/config/conf';
 
@@ -184,6 +185,20 @@ describe('handleDigestNotifications', () => {
     const digestEvent = vi.mocked(storeNotificationEvent).mock.calls[0][1] as unknown as { notification_id: string; data: unknown[] };
     expect(digestEvent.notification_id).toBe('digest-1');
     expect(digestEvent.data).toHaveLength(2); // only the two trigger-A events
+  });
+
+  it('uses the target message for activity digests, whose events data is not a stix object', async () => {
+    const activityDigestTrigger = { ...digestTrigger, trigger_scope: 'activity' };
+    vi.mocked(getEntitiesListFromCache).mockImplementation(((_ctx: AuthContext, _user: AuthUser, type: string) => {
+      return Promise.resolve(type === ENTITY_TYPE_TRIGGER ? [activityDigestTrigger] : [digestUser]);
+    }) as unknown as typeof getEntitiesListFromCache);
+    const activityEvent = { ...liveEvent('trigger-A', DIGEST_USER_ID), data: { id: 'activity-1' } } as unknown as KnowledgeNotificationEvent;
+    activityEvent.targets[0].message = '`admin` creates Report `r1`';
+    driveBatches([[activityEvent]]);
+    await handleDigestNotifications({} as AuthContext);
+    const digestEvent = vi.mocked(storeNotificationEvent).mock.calls[0][1] as unknown as { data: { message: string }[] };
+    expect(digestEvent.data[0].message).toBe('`admin` creates Report `r1`');
+    expect(vi.mocked(extractStixRepresentativeForUser)).not.toHaveBeenCalled();
   });
 
   it('does not emit a digest event when no collected event matches the digest', async () => {
