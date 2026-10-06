@@ -742,7 +742,8 @@ const dispatchClaimedIocValidationRequest = async (context: AuthContext, claimed
     },
   };
   // The work is recorded on the request before the publish: a dispatch interrupted after it is never published again
-  // (the request then expires after the timeout), so OpenAEV runs each request at most once.
+  // (the request then expires after the timeout). The queue delivers at least once: OpenAEV records a request once, under
+  // its id, so a message delivered twice still makes one validation.
   await withRequestLock(request.internal_id, () => patchRequest(context, SYSTEM_USER, request.internal_id, {
     connector_id: connector.internal_id,
     work_id: work.id,

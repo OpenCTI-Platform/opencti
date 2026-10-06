@@ -198,8 +198,9 @@ When OpenAEV sends the results, the validation status of each deployment is upda
 links to its deployment, and a completed request can be validated again in one action. A request where at least one
 test ends in `error` is shown as partially completed, with the number of tests that could not run. Each request keeps
 the outcome it got: validating the same deployment again updates the deployment, not the results of the earlier requests.
-A request is sent to OpenAEV at most once: a request whose sending was interrupted is never sent again, and it
-expires after the validation timeout with a message asking to request the validation again.
+OpenCTI sends a request to OpenAEV once: a request whose sending was interrupted is never sent again, and it
+expires after the validation timeout with a message asking to request the validation again. The message queue may
+deliver a message twice; OpenAEV records each request once, under its identifier, so it still makes one validation.
 
 A request without results after the timeout (`ioc_validation:timeout_days`) expires, and its deployments still waiting
 get the `error` status. A result that a security platform reports later for the same request replaces that timeout
