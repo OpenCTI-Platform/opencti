@@ -142,8 +142,8 @@ const ProvenanceKnowledgeEntities = ({ storageKey, fixedFilters, withConflicts =
   const refresh = () => loadQuery(queryPaginationOptions, { fetchPolicy: 'network-only' });
 
   const dataColumns: DataTableProps['dataColumns'] = {
-    entity_type: { percentWidth: 11 },
-    name: { percentWidth: withConflicts ? 22 : 36 },
+    entity_type: { percentWidth: 13 },
+    name: { percentWidth: withConflicts ? 20 : 34 },
     ...(withConflicts ? { conflict_fields: { ...conflictingFieldsColumn, percentWidth: 15 } } : {}),
     corroboration_count: { percentWidth: 11 },
     freshness_days: { percentWidth: 9 },

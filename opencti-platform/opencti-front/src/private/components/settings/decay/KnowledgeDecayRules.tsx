@@ -91,7 +91,7 @@ const KnowledgeDecayRules = () => {
     openExports: false,
     filters: emptyFilterGroup,
   };
-  const { viewStorage, paginationOptions } = usePaginationLocalStorage<KnowledgeDecayRulesLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<KnowledgeDecayRulesLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, initialValues);
   const userFilters = useBuildEntityTypeBasedFilterContext('DecayRule', viewStorage.filters);
   const contextFilters: FilterGroup = { mode: 'and', filters: [], filterGroups: [KNOWLEDGE_SCOPE_FILTERS, userFilters as FilterGroup] };
   const queryPaginationOptions = { ...paginationOptions, filters: contextFilters } as unknown as KnowledgeDecayRulesLinesPaginationQuery$variables;
@@ -101,6 +101,7 @@ const KnowledgeDecayRules = () => {
     linesFragment: knowledgeDecayRulesLinesFragment,
     queryRef,
     nodePath: ['decayRules', 'pageInfo', 'globalCount'],
+    setNumberOfElements: helpers.handleSetNumberOfElements,
   } as UsePreloadedPaginationFragment<KnowledgeDecayRulesLinesPaginationQuery>;
 
   const dataColumns: DataTableProps['dataColumns'] = {

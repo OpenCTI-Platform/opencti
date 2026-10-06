@@ -272,6 +272,9 @@ const ProvenanceSourcesContent = ({ queryRef, onChange }: ProvenanceSourcesConte
                     </Stack>
                     <Security needs={[KNOWLEDGE_KNUPDATE]}>
                       <Stack direction="row" gap={1} flexShrink={0}>
+                        <Button size="small" variant="secondary" disabled={inFlight} onClick={() => onDismiss(conflict.field, value.value_hash)}>
+                          {t_i18n('Dismiss')}
+                        </Button>
                         <Button
                           size="small"
                           disabled={inFlight || !value.adoptable}
@@ -279,9 +282,6 @@ const ProvenanceSourcesContent = ({ queryRef, onChange }: ProvenanceSourcesConte
                           title={value.adoptable ? undefined : t_i18n('This value is too large to be adopted, edit the field directly')}
                         >
                           {t_i18n('Adopt this value')}
-                        </Button>
-                        <Button size="small" variant="secondary" disabled={inFlight} onClick={() => onDismiss(conflict.field, value.value_hash)}>
-                          {t_i18n('Dismiss')}
                         </Button>
                       </Stack>
                     </Security>
