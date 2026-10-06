@@ -32,6 +32,21 @@ describe('useGraphContextMenuGesture', () => {
     expect(onOpen).not.toHaveBeenCalled();
   });
 
+  it('opens nothing after a drag released back near where it started', () => {
+    const onOpen = vi.fn();
+    const { getByTestId } = render(<Harness onOpen={onOpen} />);
+    const canvas = getByTestId('canvas');
+    fireEvent.mouseDown(canvas, { button: 2, clientX: 10, clientY: 10 });
+    fireEvent.mouseMove(document, { button: 2, clientX: 60, clientY: 10 });
+    fireEvent.mouseMove(document, { button: 2, clientX: 11, clientY: 10 });
+    fireEvent.mouseUp(canvas, { button: 2, clientX: 11, clientY: 10 });
+    expect(onOpen).not.toHaveBeenCalled();
+    // The next press starts over: released in place, it opens the menu.
+    fireEvent.mouseDown(canvas, { button: 2, clientX: 10, clientY: 10 });
+    fireEvent.mouseUp(canvas, { button: 2, clientX: 10, clientY: 10 });
+    expect(onOpen).toHaveBeenCalledTimes(1);
+  });
+
   it('keeps the menu of the browser off the canvas, and on the fields', () => {
     const onOpen = vi.fn();
     const { getByTestId } = render(<Harness onOpen={onOpen} />);

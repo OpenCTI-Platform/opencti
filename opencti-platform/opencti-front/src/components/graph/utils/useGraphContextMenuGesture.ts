@@ -21,8 +21,9 @@ export const isMacContextClick = (event: Pick<MouseEvent, 'ctrlKey' | 'button'>)
 /**
  * The context-menu gesture of the graph canvases inside `containerRef`: the right button shares its
  * press with the relationship drag, as the left button shares it between a click and a drag. A right
- * press released within `CONTEXT_MENU_MOVE_TOLERANCE` pixels opens the menu where it was released;
- * past that it is the drag, and no menu opens. The browser menu never opens over the canvases.
+ * press that stays within `CONTEXT_MENU_MOVE_TOLERANCE` pixels of where it started opens the menu where
+ * it is released; one that goes further is the drag, and no menu opens. The browser menu never opens
+ * over the canvases.
  */
 const useGraphContextMenuGesture = (
   containerRef: RefObject<HTMLElement | null>,
@@ -35,16 +36,21 @@ const useGraphContextMenuGesture = (
     const container = containerRef.current;
     if (!container || !enabled) return undefined;
     const isCanvas = (target: EventTarget | null) => target instanceof HTMLCanvasElement && container.contains(target);
-    let press: { x: number; y: number } | null = null;
+    let press: { x: number; y: number; dragged: boolean } | null = null;
+    const movedFromPress = (event: MouseEvent) => (press ? Math.hypot(event.clientX - press.x, event.clientY - press.y) : 0);
     const onDown = (event: MouseEvent) => {
-      press = event.button === 2 && isCanvas(event.target) ? { x: event.clientX, y: event.clientY } : null;
+      press = event.button === 2 && isCanvas(event.target) ? { x: event.clientX, y: event.clientY, dragged: false } : null;
+    };
+    // A press that went past the tolerance is a drag, even when it is released back near where it started.
+    const onMove = (event: MouseEvent) => {
+      if (press && !press.dragged && movedFromPress(event) > CONTEXT_MENU_MOVE_TOLERANCE) press.dragged = true;
     };
     // Registered on the document: the release of a press on the canvas may happen anywhere.
     const onUp = (event: MouseEvent) => {
       if (event.button !== 2 || !press) return;
-      const moved = Math.hypot(event.clientX - press.x, event.clientY - press.y);
+      const inPlace = !press.dragged && movedFromPress(event) <= CONTEXT_MENU_MOVE_TOLERANCE;
       press = null;
-      if (moved <= CONTEXT_MENU_MOVE_TOLERANCE) latest.current({ clientX: event.clientX, clientY: event.clientY });
+      if (inPlace) latest.current({ clientX: event.clientX, clientY: event.clientY });
     };
     const onContextMenu = (event: MouseEvent) => {
       if (isCanvas(event.target)) {
@@ -59,10 +65,12 @@ const useGraphContextMenuGesture = (
       if (event.button === 0 && !isMacContextClick(event) && !isEditable(event.target)) event.preventDefault();
     };
     container.addEventListener('mousedown', onDown, true);
+    document.addEventListener('mousemove', onMove, true);
     document.addEventListener('mouseup', onUp, true);
     container.addEventListener('contextmenu', onContextMenu);
     return () => {
       container.removeEventListener('mousedown', onDown, true);
+      document.removeEventListener('mousemove', onMove, true);
       document.removeEventListener('mouseup', onUp, true);
       container.removeEventListener('contextmenu', onContextMenu);
     };
