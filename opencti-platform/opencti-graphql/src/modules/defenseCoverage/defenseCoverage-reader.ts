@@ -7,6 +7,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity, BasicStoreRelation } from '../../types/store';
 import type { BasicStoreSettings } from '../../types/settings';
 import { fullEntitiesList, fullRelationsList, internalFindByIds } from '../../database/middleware-loader';
+import { elCount } from '../../database/engine';
 import { getEntityFromCache } from '../../database/cache';
 import { READ_DATA_INDICES, READ_INDEX_DELETED_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_META_OBJECTS } from '../../database/utils';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
@@ -260,7 +261,10 @@ const computeOverlay = async (context: AuthContext, user: AuthUser, scope: Defen
     return { computed_at: computedAt, threats_count: 0, usages: new Map() };
   }
   const threatIds = await resolveScopeThreatIds(context, user, scope);
-  if (threatIds && threatIds.length === 0) {
+  // The ALL scope holds every threat the reader can access, those that use no technique yet included, as the other
+  // scopes count every threat they match
+  const threatsCount = threatIds ? threatIds.length : await elCount(context, user, READ_INDEX_STIX_DOMAIN_OBJECTS, { types: DEFENSE_THREAT_TYPES });
+  if (threatsCount === 0) {
     return { computed_at: computedAt, threats_count: 0, usages: new Map() };
   }
   const relations = await loadThreatUsages(context, user, threatIds);
@@ -275,7 +279,6 @@ const computeOverlay = async (context: AuthContext, user: AuthUser, scope: Defen
     if (list) list.push(usage);
     else usages.set(relation.toId, [usage]);
   });
-  const threatsCount = threatIds ? threatIds.length : R.uniq(relations.map((r) => r.fromId)).length;
   return { computed_at: computedAt, threats_count: threatsCount, usages };
 };
 

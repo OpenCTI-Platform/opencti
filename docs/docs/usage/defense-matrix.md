@@ -85,7 +85,7 @@ When the selected threats or the threat filters match no threat, the threat over
 
 ![Threat overlay of a scope that matches no threat](assets/defense-matrix-matrix-no-threat.png)
 
-The selected platforms and threats are remembered per user, in the browser, and shared by the Matrix and Gaps sections. Every level and every threat count only uses the knowledge you can access: a change of the `uses` relationships or of the markings and organizations of a threat is reflected at the next refresh. A threat scope defined by filters counts every matching threat. A sub-technique is grouped under its parent only if you can access the parent and the relationship between them.
+The selected platforms and threats are remembered per user, in the browser, and shared by the Matrix and Gaps sections. Every level and every threat count only uses the knowledge you can access: a change of the `uses` relationships or of the markings and organizations of a threat is reflected at the next refresh. All threats counts every threat you can access, and a threat scope defined by filters every matching threat, including the threats that use no technique yet. A sub-technique is grouped under its parent only if you can access the parent and the relationship between them.
 
 Click a technique to open its drawer. It starts with the level and one sentence explaining it from its evidences, for example "Detected by 2 rules deployed on Splunk, not validated yet", and the next action of the level:
 

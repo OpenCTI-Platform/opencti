@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fullEntitiesList, fullRelationsList, internalFindByIds } from '../../../../src/database/middleware-loader';
+import { elCount } from '../../../../src/database/engine';
 import { clearDefenseSnapshotCache, getAccessPredicate, getDefenseSnapshot, getThreatOverlay } from '../../../../src/modules/defenseCoverage/defenseCoverage-reader';
 import { getDefenseThreatsVersion } from '../../../../src/modules/defenseCoverage/defenseCoverage-state';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
@@ -8,6 +9,11 @@ vi.mock('../../../../src/database/middleware-loader', () => ({
   fullEntitiesList: vi.fn(async () => []),
   fullRelationsList: vi.fn(async () => []),
   internalFindByIds: vi.fn(async () => []),
+}));
+
+vi.mock('../../../../src/database/engine', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/database/engine')>()),
+  elCount: vi.fn(async () => 1),
 }));
 
 vi.mock('../../../../src/database/cache', () => ({
@@ -62,6 +68,24 @@ describe('Defense coverage reader caches', () => {
   it('should compute the shared threat overlay on published knowledge for a reader in a draft', async () => {
     await getThreatOverlay(draftContext, reader, { mode: 'ALL' });
     expectPublished(vi.mocked(fullRelationsList).mock.calls);
+    expectPublished(vi.mocked(elCount).mock.calls);
+  });
+
+  it('should count every threat the reader can access in the ALL scope, those without a used technique included', async () => {
+    vi.mocked(elCount).mockResolvedValueOnce(3);
+    vi.mocked(fullRelationsList).mockResolvedValueOnce([
+      { internal_id: 'uses-1', fromId: 'intrusion-set-1', toId: 'attack-pattern-1', confidence: 80 },
+    ] as never);
+    const overlay = await getThreatOverlay(draftContext, reader, { mode: 'ALL' });
+    expect(overlay.threats_count).toEqual(3);
+    expect(overlay.usages.get('attack-pattern-1')).toEqual([{ threat_id: 'intrusion-set-1', relationship_id: 'uses-1', confidence: 80 }]);
+  });
+
+  it('should not load any usage when the reader can access no threat in the ALL scope', async () => {
+    vi.mocked(elCount).mockResolvedValueOnce(0);
+    const overlay = await getThreatOverlay(draftContext, reader, { mode: 'ALL' });
+    expect(overlay.threats_count).toEqual(0);
+    expect(vi.mocked(fullRelationsList)).not.toHaveBeenCalled();
   });
 
   it('should recompute a filtered threat overlay when the threats change and keep the overlay of selected threats', async () => {

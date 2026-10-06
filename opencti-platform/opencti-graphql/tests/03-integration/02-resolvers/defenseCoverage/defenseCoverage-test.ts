@@ -23,6 +23,7 @@ import { addTrigger, triggerDelete } from '../../../../src/modules/notification/
 import { ENTITY_TYPE_TRIGGER } from '../../../../src/modules/notification/notification-types';
 import { resetCacheForEntity } from '../../../../src/database/cache';
 import { TriggerEventType, TriggerType } from '../../../../src/generated/graphql';
+import { DEFENSE_THREAT_TYPES } from '../../../../src/modules/defenseCoverage/defenseCoverage-types';
 import type { DefenseCoverage } from '../../../../src/modules/defenseCoverage/defenseCoverage-types';
 
 const SIGMA_RULE = `title: Defense matrix test rule
@@ -112,6 +113,11 @@ const DEFENSE_MATRIX = gql`
         platforms { platform_id level telemetry detection recommended_action data_components_count rules_count }
       }
     }
+  }
+`;
+const THREATS_COUNT = gql`
+  query DefenseThreatsCount($types: [String]) {
+    stixDomainObjects(types: $types, first: 1) { pageInfo { globalCount } }
   }
 `;
 const DEFENSE_TECHNIQUE = gql`
@@ -328,6 +334,12 @@ describe('Threat-informed defense matrix', () => {
       data_components_count: 1,
       rules_count: 0,
     })]);
+  });
+
+  it('should count every accessible threat in the ALL scope, those using no technique included', async () => {
+    const threats = await queryAsAdminWithSuccess({ query: THREATS_COUNT, variables: { types: DEFENSE_THREAT_TYPES } });
+    const result = await queryAsAdminWithSuccess({ query: DEFENSE_MATRIX, variables: { platformIds: [created.platform], threatScope: { mode: 'ALL' } } });
+    expect(result.data?.defenseMatrix.threats_count).toEqual(threats.data?.stixDomainObjects.pageInfo.globalCount);
   });
 
   it('should keep the stored aggregate out of the attack pattern attributes', async () => {
