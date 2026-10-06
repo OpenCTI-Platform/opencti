@@ -910,14 +910,24 @@ export const reportIocValidationResults = async (context: AuthContext, user: Aut
       });
     }
   }
+  // Results are written concurrently and a pair keeps its first verdict: two results for one indicator, whatever ids
+  // name it, would leave the recorded verdict to the order of the writes, so every indicator is resolved first
+  const resolved = await BluePromise.map(args.results, async (result) => {
+    const indicator = await storeLoadById<BasicStoreEntityIndicator>(context, user, result.indicatorId, ENTITY_TYPE_INDICATOR);
+    return indicator && (request.indicator_ids ?? []).includes(indicator.internal_id) ? { result, indicator } : undefined;
+  }, { concurrency: CONCURRENCY });
+  const reported = resolved.filter((entry) => entry !== undefined);
+  const reportedIndicatorIds = new Set<string>();
+  reported.forEach(({ indicator }) => {
+    if (reportedIndicatorIds.has(indicator.internal_id)) {
+      throw ValidationError('A report gives one result per indicator', 'results', { indicatorId: indicator.internal_id });
+    }
+    reportedIndicatorIds.add(indicator.internal_id);
+  });
   const now = new Date();
   const updatedIndicatorIds: string[] = [];
   const timedOutDeploymentIds = new Set((request.pairs ?? []).filter((pair) => pair.timed_out).map((pair) => pair.deployed_on_id));
-  await BluePromise.map(args.results, async (result) => {
-    const indicator = await storeLoadById<BasicStoreEntityIndicator>(context, user, result.indicatorId, ENTITY_TYPE_INDICATOR);
-    if (!indicator || !(request.indicator_ids ?? []).includes(indicator.internal_id)) {
-      return;
-    }
+  await BluePromise.map(reported, async ({ result, indicator }) => {
     const observedAt = toObservedAt(result.observedAt, now);
     const lock = await lockResources([pairLockKey(indicator.internal_id, platform.internal_id)]);
     try {

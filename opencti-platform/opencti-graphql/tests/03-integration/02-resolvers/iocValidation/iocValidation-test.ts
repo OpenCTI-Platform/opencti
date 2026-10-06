@@ -363,6 +363,18 @@ describe('IOC validation requests', () => {
       query: REPORT_RESULTS,
       variables: { id, platformId: liveIndicatorId, results: [{ indicatorId: liveIndicatorId, status: 'missed' }] },
     });
+    // One result per indicator, whatever ids name it: two verdicts for one pair are refused before any write
+    const liveIndicator = await internalLoadById(testContext, ADMIN_USER, liveIndicatorId) as unknown as { standard_id: string };
+    await queryAsUserIsExpectedError(USER_CONNECTOR, {
+      query: REPORT_RESULTS,
+      variables: {
+        id,
+        platformId,
+        results: [{ indicatorId: liveIndicatorId, status: 'missed' }, { indicatorId: liveIndicator.standard_id, status: 'detected' }],
+      },
+    }, 'A report gives one result per indicator');
+    const stillWaiting = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: liveDeploymentId } });
+    expect(stillWaiting.data?.stixCoreRelationship.validation_status).toEqual('requested');
     // Updating knowledge is not enough: only the account recording the deployments of the platform speaks for it
     await queryAsUserIsExpectedForbidden(USER_EDITOR, {
       query: REPORT_RESULTS,

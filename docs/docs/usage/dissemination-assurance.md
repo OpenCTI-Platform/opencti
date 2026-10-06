@@ -277,7 +277,8 @@ actions of the Deployments tabs (retry, remove) stay available with the "Update 
 A security platform able to prove a validation test from its own data (for example a SIEM that searched for the
 benign test of a request) reports the outcome with `iocValidationReportResults(id, platformId, results)`: each result
 gives an indicator, `detected`, `prevented` or `missed`, and optionally the observation date, a hit count and the
-evidence. Only the pairs of the request on that platform still waiting for an answer, or closed by the timeout of the
+evidence. A report gives one result per indicator: one naming an indicator twice, by any of its identifiers, is refused
+before anything is written. Only the pairs of the request on that platform still waiting for an answer, or closed by the timeout of the
 request, are updated, so a result already received is never overwritten. Each result is recorded as a sighting of the indicator by the platform,
 negative for a miss. The identifier of that sighting is reserved to its request: only the results reported for that
 request (by its IOC validation connector or the account recording the deployment) create it and change what it
