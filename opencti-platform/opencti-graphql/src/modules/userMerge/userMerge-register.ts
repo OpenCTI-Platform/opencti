@@ -47,7 +47,7 @@ const RETAIN = UserMergeDisposition.Retain;
 const OUT_OF_SCOPE = UserMergeDisposition.OutOfScope;
 
 export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
-  // --- transfer (43) ---------------------------------------------------------------------
+  // --- transfer (45) ---------------------------------------------------------------------
   row('activity.user-id', TRANSFER, 'Activity', 'user_id'),
   row('activity-history-pir-history.applicant-id', TRANSFER, 'Activity / History / PirHistory', 'applicant_id'),
   row('background-task-terminal.initiator-id', TRANSFER, 'BackgroundTask (done/failed/cancelled)', 'initiator_id'),
@@ -55,7 +55,9 @@ export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
   row('basic-object.i-attributes-user-id', TRANSFER, 'BasicObject / BasicRelationship', 'i_attributes[].user_id'),
   row('case-rfi-active.request-access-applicant-id', TRANSFER, 'Case-Rfi (active request)', 'x_opencti_request_access[].applicant_id'),
   row('case-rfi-terminal.request-access-applicant-id', TRANSFER, 'Case-Rfi (terminal request)', 'x_opencti_request_access (serialized JSON) -> applicant_id'),
+  row('curation-policy.last-dry-run-computed-by-id', TRANSFER, 'CurationPolicy', 'last_dry_run.computed_by_id'),
   row('curation-proposal.decided-by-id', TRANSFER, 'CurationProposal', 'decided_by_id'),
+  row('curation-settings.user-ids', TRANSFER, 'ManagerConfiguration (curation manager)', 'manager_setting.adjudication_run_as_id / manager_setting.digest_recipient_ids'),
   row('custom-view.manifest', TRANSFER, 'CustomView', 'manifest (Base64)'),
   row('deleted-objects.all-references', TRANSFER, 'Deleted objects', 'creator_id / i_attributes.user_id / restricted_members / connections / serialized fields'),
   row('feed.filters', TRANSFER, 'Feed', 'filters'),

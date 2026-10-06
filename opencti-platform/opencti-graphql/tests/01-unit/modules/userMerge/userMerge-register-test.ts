@@ -2,13 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { findRegisterRow, registerRowsByDisposition, USER_MERGE_REGISTER, UserMergeDisposition } from '../../../../src/modules/userMerge/userMerge-register';
 
 /**
- * The v4 baseline, transcribed from the register page, plus the three knowledge curation
- * attributions (proposal decision, merge and unmerge authors), all transferred. It is asserted
- * here rather than derived from the constant: a test that recounts the array would agree with
- * any transcription mistake it is supposed to catch.
+ * The v4 baseline, transcribed from the register page, plus the five knowledge curation
+ * references (proposal decision, merge and unmerge authors, the users of the curation settings,
+ * the author of a policy dry run), all transferred. It is asserted here rather than derived from
+ * the constant: a test that recounts the array would agree with any transcription mistake it is
+ * supposed to catch.
  */
 const V4_DISTRIBUTION: Record<UserMergeDisposition, number> = {
-  [UserMergeDisposition.Transfer]: 43,
+  [UserMergeDisposition.Transfer]: 45,
   [UserMergeDisposition.Invalidate]: 22,
   [UserMergeDisposition.Conditional]: 21,
   [UserMergeDisposition.Retain]: 10,
@@ -23,7 +24,7 @@ describe('User merge register', () => {
     });
   });
 
-  it('should hold exactly 102 rows, and no row outside the known dispositions', () => {
+  it('should hold exactly 104 rows, and no row outside the known dispositions', () => {
     const total = Object.values(V4_DISTRIBUTION).reduce((acc, count) => acc + count, 0);
     expect(USER_MERGE_REGISTER.length).toBe(total);
   });
