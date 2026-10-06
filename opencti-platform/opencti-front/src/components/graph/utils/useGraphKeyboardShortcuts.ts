@@ -80,7 +80,8 @@ export const shortcutOf = (event: Pick<KeyboardEvent, 'key' | 'shiftKey' | 'ctrl
 
 /**
  * Keyboard shortcuts of a graph, active while the pointer is over it or the focus is inside it,
- * and never while typing in a field or while a dialog, drawer or menu is open.
+ * and never while typing in a field, while a dialog, drawer or menu is open, or for a key another
+ * control already answered.
  */
 const useGraphKeyboardShortcuts = (
   containerRef: MutableRefObject<HTMLElement | null>,
@@ -103,7 +104,8 @@ const useGraphKeyboardShortcuts = (
     const onKeyDown = (event: KeyboardEvent) => {
       const focusedInside = container.contains(document.activeElement);
       if (!hovered.current && !focusedInside) return;
-      if (isEditable(event.target) || isOverlayOpen()) return;
+      // A menu closed by this Escape is gone from the page by now: it marked the key as answered.
+      if (event.defaultPrevented || isEditable(event.target) || isOverlayOpen()) return;
       const shortcut = shortcutOf(event);
       if (!shortcut) return;
       event.preventDefault();

@@ -94,9 +94,9 @@ test.describe('Investigation graph', { tag: ['@ce'] }, () => {
     const graph = new GraphPage(page);
     await page.goto(`/dashboard/workspaces/investigations/${fixture.investigation.id}`);
     await graph.waitForGraph(3);
-    await page.getByRole('button', { name: 'Export to image' }).click();
+    await expect(page.getByRole('button', { name: 'Export to image' })).toHaveCount(0);
     const download = page.waitForEvent('download');
-    await page.getByRole('menuitem', { name: /with background/ }).first().click();
+    await graph.runToolbarAction('Export the whole graph as a high-resolution image');
     expect((await download).suggestedFilename()).toMatch(/\.png$/);
   });
 });

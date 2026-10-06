@@ -1,4 +1,4 @@
-import React, { ReactNode, useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Paper } from '@filigran/design-system';
 import Divider from '@mui/material/Divider';
@@ -23,6 +23,7 @@ import useToolbarRovingFocus from './utils/useToolbarRovingFocus';
 import { FOLDED_CREATION_WIDTH, planToolbarOverflow, shouldFoldCreationTools } from './utils/graphToolbarOverflow';
 import { useFormatter } from '../i18n';
 import useAuth from '../../utils/hooks/useAuth';
+import { MESSAGING$ } from '../../relay/environment';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
 import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../utils/hooks/useDraftContext';
 import useResizeObserver from '../../utils/hooks/useResizeObserver';
@@ -75,7 +76,14 @@ const GraphToolbar = ({
   const { t_i18n } = useFormatter();
   const draftContext = useDraftContext();
   const { bannerSettings: { bannerHeightNumber } } = useAuth();
-  const navOpen = localStorage.getItem('navOpen') === 'true';
+  // Docked to the left of the window, the toolbar follows the navigation as it opens and closes.
+  const [navOpen, setNavOpen] = useState(localStorage.getItem('navOpen') === 'true');
+  useEffect(() => {
+    const sub = MESSAGING$.toggleNav.subscribe({
+      next: () => setNavOpen(localStorage.getItem('navOpen') === 'true'),
+    });
+    return () => sub.unsubscribe();
+  }, []);
   const { selectBySearch } = useGraphInteractions();
   const view = useGraphView();
   const actions = useGraphToolbarActions({ onUnfixNodes });

@@ -31,6 +31,15 @@ describe('planToolbarOverflow', () => {
     expect([...shown].sort()).toEqual(['a', 'c']);
   });
 
+  it('keeps a toggle in effect in the toolbar when the room shrinks, never a rare one', () => {
+    const shortestPath = { id: 'shortest-path', group: 'filters', priority: 50 };
+    const toggles = [...candidates, shortestPath];
+    expect([...planToolbarOverflow(toggles, room(2, 2))].sort()).toEqual(['filter-types', 'fit']);
+    expect([...planToolbarOverflow(toggles.map((c) => (c === shortestPath ? { ...c, pressed: true } : c)), room(2, 2))].sort())
+      .toEqual(['fit', 'shortest-path']);
+    expect(planToolbarOverflow([{ id: 'rare', group: 'view', priority: 0, pressed: true }], room(1, 1)).size).toBe(0);
+  });
+
   it('sends everything to the menu when there is no room', () => {
     expect(planToolbarOverflow(candidates, 0).size).toBe(0);
   });

@@ -1,6 +1,6 @@
 # Work with graphs
 
-OpenCTI draws knowledge as graphs in several places: the **Graph** and **Correlation** views of containers (reports, groupings, incident responses, requests for information and for takedown), **investigations**, the graph view of the **Analyses** tab of an entity, and the explanation of an **inferred relationship**. All of them draw nodes, links and badges the same way. The first four are the interactive graph described on this page; the explanation of an inferred relationship is a fixed, read-only illustration of the rule that produced it, with the focus on hover and the keyboard list of its elements but without controls, legend, layouts or hover card actions.
+OpenCTI draws knowledge as graphs in several places: the **Graph** and **Correlation** views of containers (reports, groupings, incident responses, requests for information and for takedown), **investigations**, the graph view of the **Analyses** tab of an entity, and the explanation of an **inferred relationship**. All of them draw nodes, links and badges the same way. The first four are the interactive graph described on this page; the explanation of an inferred relationship is a fixed, read-only illustration of the rule that produced it, with the focus on hover and the keyboard list of its elements but without controls, legend, layouts or context menu.
 
 ## Why use the graph?
 
@@ -117,7 +117,9 @@ From left to right:
 | Selection | Box and lasso selection, adding the neighbours to the selection, the shortest path between two entities (see [Select](#select)). |
 | Creation and removal | Add entities, edit the selected item, create a relationship, a nested relationship or a sighting, remove the selection; in investigations, expand the selection and roll the last expansion back. |
 | Filters | Filter by type (entity and relationship types, the same filters as the legend), by marking and by author, the time range selector, and **Clear all filters**; in correlation graphs, show every correlated entity or only the observables and indicators. A number on a filter tells how many choices are in use. Each filter opens a menu of its choices, grouped under headings and checked when in use; the menu stays open so that several choices can be made in a row. |
-| Export and help | The high-resolution image export, the legend, the keyboard shortcuts. |
+| Export and help | The high-resolution image export, the keyboard shortcuts. |
+
+The toolbar acts on the drawing: what is shown and how, the selection, the filters of the drawing and its image. The header of the page acts on the knowledge it is about: export as a PDF or a STIX report, add to a container, duplicate, delete, manage the access restriction. The legend opens and closes from itself (see [The legend](#the-legend)).
 
 The search field and the **More actions** menu close the toolbar. **More actions** holds, when the window is too narrow for the whole toolbar, the actions it has no room for, grouped the same way; the rare actions (select all nodes, select by entity type, the relationships of the selection, unfix the nodes) are in the [context menu](#context-menu). On a graph narrower still (a small window, or a side panel open next to it), the creation and removal tools fold into one **Creation and removal** button that opens them.
 
@@ -152,11 +154,11 @@ An action that cannot run says why under its name, for example **Nothing is sele
 The legend on the bottom left counts the entities of each type and the relationships of each type drawn in the graph.
 
 - Click a counter to fade or restore every entity or relationship of that type; these are the filters of **Filter by type** in the toolbar.
-- Use **Group by type**, the button next to an entity type, to group all its entities into a single group node, and **Ungroup** to bring them back; the row of a grouped type reads **Group:** followed by the type. A click on a group node ungroups it too, and its hover card lists its first five members and offers **Pin in place**, so that the group keeps its place while the rest of the layout moves. Relationships towards the members of a group are drawn once towards the group, and relationships between two members as a loop on the group; the legend and the hover cards count every relationship the group stands for, while the counters of the toolbar count only what is drawn one by one. **Select by entity type** offers a grouped type again once it is ungrouped.
+- Use **Group by type**, the button next to an entity type, to group all its entities into a single group node, and **Ungroup** to bring them back; the row of a grouped type reads **Group:** followed by the type. A click on a group node ungroups it too; its hover card lists its first five members, and its context menu offers **Pin in place**, so that the group keeps its place while the rest of the layout moves. Relationships towards the members of a group are drawn once towards the group, and relationships between two members as a loop on the group; the legend and the hover cards count every relationship the group stands for, while the counters of the toolbar count only what is drawn one by one. **Select by entity type** offers a grouped type again once it is ungrouped.
 - When entities are hidden, **Show the hidden entities** brings them back. The hidden entities are remembered for each graph in your browser; they are not part of the page link you share.
 - The **Badges** section lists only the badges present in the graph, with the number of entities carrying each; click one to select those entities.
 
-**Minimise the legend** (the button in its header, or `G`) folds it to a small **Legend** pill in the same corner, which tells how many type filters are in use; click the pill, press `G` again or use **Legend** in the toolbar to open it. The choice is remembered for every graph you open.
+**Minimise the legend** (the button in its header, or `G`) folds it to a small **Legend** pill in the same corner, which tells how many type filters are in use; click the pill or press `G` again to open it. The choice is remembered for every graph you open.
 
 ![The legend minimised to its pill, with two type filters in use](assets/graph-legend-minimized.png)
 
@@ -200,7 +202,7 @@ The search field of the toolbar selects the matching entities. The graph view of
 
 ## Keyboard shortcuts
 
-Shortcuts apply while the pointer is over the graph or the focus is inside it, never while typing in a field or when a dialog is open. In 3D mode, the shortcuts of the actions available in 2D only (zoom, locate, shortest path, legend, image export) do nothing, as their buttons are disabled. Press `?` to list them in the platform.
+Shortcuts apply while the pointer is over the graph or the focus is inside it, never while typing in a field or when a dialog is open. In 3D mode, the shortcuts of the actions available in 2D only (zoom, locate, shortest path, legend, image export) do nothing. The `Esc` that closes a menu only closes it. Press `?` to list them in the platform.
 
 | Keys | Action |
 |---|---|
@@ -220,12 +222,9 @@ Shortcuts apply while the pointer is over the graph or the focus is inside it, n
 
 ## Export
 
-Two exports are available:
+The image of a graph is exported from its toolbar: **Export the whole graph as a high-resolution image** renders the whole graph, not only the visible area, at print resolution, with a title and a legend of the entity types and line styles. The header of the page keeps the exports of the knowledge object: the PDF of the visible area and, for an investigation, the STIX report. On the other views of a container (timeline, matrix), the header also exports the visible area as an image.
 
-- the **image export** of the container or workspace header captures the visible area of the page, in PNG or PDF;
-- **Export the whole graph as a high-resolution image**, in the toolbar, renders the whole graph, not only the visible area, at print resolution, with a title and a legend of the entity types and line styles.
-
-Both need the capability that allows exporting knowledge; without it, the toolbar has no export and `Shift` + `E` does nothing.
+Every export needs the capability that allows exporting knowledge; without it, the toolbar has no export and `Shift` + `E` does nothing.
 
 ## 3D mode
 
@@ -240,7 +239,7 @@ Every entity and relationship drawn is mirrored in a list box that keyboard and 
 Features of the platform add states and actions to the graph without changing it:
 
 - a **badge provider** returns badges for a node from the data the graph received, and returns nothing when its data is absent;
-- a **node action** adds a quick action to the hover card of the nodes it applies to.
+- a **node action** adds an action, or an action offering a choice, to the context menu of the nodes it applies to.
 
 Both are registered in `opencti-platform/opencti-front/src/components/graph/badges/` (see `graphBadgeRegistry.ts` and `graphNodeActionRegistry.ts`); the built-in marking, confidence and inferred badges use the same contract.
 

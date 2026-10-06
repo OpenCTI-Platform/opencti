@@ -246,12 +246,13 @@ test.describe('Container knowledge graph', { tag: ['@ce'] }, () => {
     expect(Math.abs(after.gy - before.gy)).toBeLessThan(2);
   });
 
-  test('exports the graph area as an image', async ({ page }) => {
+  test('exports the graph as an image from its toolbar, the page header keeping the PDF export', async ({ page }) => {
     const graph = new GraphPage(page);
     await openGraph(graph, page);
-    await page.getByRole('button', { name: 'Export to image' }).click();
+    await expect(page.getByRole('button', { name: 'Export to PDF' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Export to image' })).toHaveCount(0);
     const download = page.waitForEvent('download');
-    await page.getByRole('menuitem', { name: /with background/ }).first().click();
+    await graph.runToolbarAction('Export the whole graph as a high-resolution image');
     expect((await download).suggestedFilename()).toMatch(/\.png$/);
   });
 

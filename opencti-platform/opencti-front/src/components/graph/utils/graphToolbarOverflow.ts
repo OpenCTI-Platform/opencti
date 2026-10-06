@@ -5,6 +5,8 @@ export interface ToolbarOverflowCandidate {
   group: string;
   /** Higher stays in the toolbar longer; 0 or less always goes to the "More actions" menu. */
   priority: number;
+  /** A toggle in effect keeps its place before the others: it is turned off where it was turned on. */
+  pressed?: boolean;
 }
 
 export interface ToolbarMetrics {
@@ -22,8 +24,9 @@ export const TOOLBAR_DIVIDER_WIDTH = 21;
 const DEFAULT_METRICS: ToolbarMetrics = { action: TOOLBAR_ACTION_WIDTH, divider: TOOLBAR_DIVIDER_WIDTH };
 
 /**
- * The actions drawn in the toolbar within the room the pinned parts leave, the most important
- * first; the others are listed in the "More actions" menu. Rare actions (priority 0) always are.
+ * The actions drawn in the toolbar within the room the pinned parts leave, the toggles in effect
+ * then the most important first; the others are listed in the "More actions" menu. Rare actions
+ * (priority 0) always are.
  * An unmeasured toolbar (`room` not finite) draws every action that is not rare.
  */
 export const planToolbarOverflow = (
@@ -39,7 +42,9 @@ export const planToolbarOverflow = (
   const openGroups = new Set<string>();
   let used = 0;
   eligible
-    .sort((a, b) => b.candidate.priority - a.candidate.priority || a.index - b.index)
+    .sort((a, b) => Number(!!b.candidate.pressed) - Number(!!a.candidate.pressed)
+      || b.candidate.priority - a.candidate.priority
+      || a.index - b.index)
     .forEach(({ candidate }) => {
       const cost = metrics.action + (openGroups.has(candidate.group) ? 0 : metrics.divider);
       if (used + cost > room) return;

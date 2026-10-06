@@ -139,16 +139,13 @@ describe('GraphToolbar', () => {
     expect(relationships).toHaveTextContent('Select entities first');
   });
 
-  it('runs the actions of the graph view and drives the legend state', async () => {
+  it('runs the actions of the graph view, the legend opening from itself only', async () => {
     const { user, view } = renderToolbar();
     await user.click(screen.getByRole('button', { name: 'Full screen' }));
     expect(view.toggleFullscreen).toHaveBeenCalledTimes(1);
     await user.click(screen.getByRole('button', { name: 'Export the whole graph as a high-resolution image' }));
     expect(view.exportImage).toHaveBeenCalledTimes(1);
-    const legend = screen.getByRole('button', { name: 'Legend' });
-    const opened = legend.getAttribute('aria-pressed');
-    await user.click(legend);
-    expect(screen.getByRole('button', { name: 'Legend' })).not.toHaveAttribute('aria-pressed', opened ?? '');
+    expect(screen.queryByRole('button', { name: 'Legend' })).toBeNull();
   });
 
   it('is one tab stop, the arrow keys moving between its controls', async () => {

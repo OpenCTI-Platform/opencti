@@ -14,7 +14,6 @@ import {
   HubOutlined,
   ImageOutlined,
   KeyboardOutlined,
-  LegendToggleOutlined,
   MyLocationOutlined,
   PolylineOutlined,
   RouteOutlined,
@@ -119,7 +118,6 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
       disabledCreators,
       selectedTimeRangeInterval,
       correlationMode,
-      showLegend = true,
     },
   } = useGraphContext();
   const {
@@ -150,7 +148,6 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
     toggleCreator,
     resetFilters,
     setCorrelationMode,
-    toggleLegend,
   } = useGraphInteractions();
 
   const in3D = mode3D ? t_i18n('Not available in 3D mode') : undefined;
@@ -479,18 +476,8 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
         onSelect: view.exportImage,
       });
     }
+    // The legend opens and closes from itself (its header, its pill and G): no toolbar button.
     actions.push(
-      {
-        id: 'legend',
-        group: 'help',
-        priority: 65,
-        label: t_i18n('Legend'),
-        shortcut: 'G',
-        icon: <LegendToggleOutlined {...ICON} />,
-        pressed: !mode3D && showLegend,
-        disabledReason: in3D,
-        onSelect: toggleLegend,
-      },
       { id: 'shortcuts', group: 'help', priority: 20, label: t_i18n('Keyboard shortcuts'), shortcut: '?', icon: <KeyboardOutlined {...ICON} />, onSelect: view.showShortcuts },
     );
   }

@@ -71,7 +71,7 @@ We can create a relationship between entities directly within our investigation.
 
 Users have the capability to export investigations, providing a way to share, document, or archive their findings.
 
-- PDF and image formats: Users can export investigations in either PDF or image format, offering flexibility in sharing and documentation.
+- PDF and image formats: the header of the investigation exports it as a PDF, and the toolbar of its graph as a high-resolution image (see [Work with graphs](graphs.md#export)).
 - STIX bundle: The platform allows the export of the entire content of an investigation graph as a STIX bundle. In the STIX format, all objects within the investigation graph are automatically aggregated into a Report object.
 
 ![Investigation export](assets/investigation-export.png)

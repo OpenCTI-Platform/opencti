@@ -610,6 +610,8 @@ const ContainerHeader = (props) => {
                   <ExportButtons
                     domElementId="container"
                     name={t_i18n('Report representation')}
+                    // The graph views export the image of their drawing from their toolbar.
+                    exportToImage={currentMode !== 'graph' && currentMode !== 'correlation'}
                     pixelRatio={currentMode === 'graph' ? 1 : 2}
                     adjust={adjust}
                     containerId={container.id}

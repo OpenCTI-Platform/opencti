@@ -51,13 +51,13 @@ test.describe('Graph experience', { tag: ['@ce'] }, () => {
   test('minimizes the legend to a pill counting the filters, the choice kept for the user', async ({ page }) => {
     const graph = await openGraph(page);
     const pill = page.getByRole('button', { name: /^Show the legend/ });
-    await graph.expectToolbarToggle('Legend', true);
+    // The legend opens and closes from itself: the toolbar has no second control for it.
+    await expect(graph.getToolbarButton('Legend')).toHaveCount(0);
     await legend(page).getByRole('button', { name: 'Malware: 1' }).click();
     await legend(page).getByRole('button', { name: 'Minimise the legend' }).click();
     await expect(legend(page)).toBeHidden();
     // The pill sits in the corner of the legend and names the type filters in use.
     await expect(pill).toHaveText(/Legend.*1 filter/);
-    await graph.expectToolbarToggle('Legend', false);
     // The same filter state and count as the type filter of the toolbar.
     if (await graph.isInToolbar('Filter by type')) await expect(graph.getToolbarButton('Filter by type').locator('xpath=..')).toContainText('1');
 
@@ -68,10 +68,9 @@ test.describe('Graph experience', { tag: ['@ce'] }, () => {
     await pill.click();
     await expect(legend(page)).toBeVisible();
     await graph.runToolbarAction('Clear all filters');
-    // The toolbar toggle drives the same state.
-    await graph.runToolbarAction('Legend');
+    await legend(page).getByRole('button', { name: 'Minimise the legend' }).click();
     await expect(pill).toHaveText('Legend');
-    await graph.runToolbarAction('Legend');
+    await pill.click();
     await expect(legend(page)).toBeVisible();
   });
 
