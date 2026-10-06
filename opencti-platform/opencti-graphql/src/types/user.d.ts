@@ -82,6 +82,7 @@ interface AuthContext {
   draft_forward_closed?: boolean;
   // Lease the request holds on its draft of a forwarding chain while it runs (see draftWorkspace-closure)
   draft_writer_id?: string | null;
+  draft_writer_release?: () => Promise<void>;
   workId?: string;
   batch?: Record<string, any>;
   changeDraftContext?: (draftId: string) => void;

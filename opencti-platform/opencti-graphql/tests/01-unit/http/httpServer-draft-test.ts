@@ -1,4 +1,3 @@
-import { EventEmitter } from 'node:events';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { AuthContext, AuthUser } from '../../../src/types/user';
 
@@ -29,7 +28,7 @@ vi.mock('../../../src/modules/user/user-domain', () => ({
   userEditField: mockUserEditField,
 }));
 
-import { checkDraftInContext, enterRequestDraft } from '../../../src/http/httpServer-draft';
+import { checkDraftInContext, enterRequestDraft, releaseRequestDraft } from '../../../src/http/httpServer-draft';
 
 describe('checkDraftInContext service account hint', () => {
   const draftId = 'draft-under-test';
@@ -109,9 +108,7 @@ describe('checkDraftInContext forwarded work', () => {
   });
 });
 
-describe('enterRequestDraft', () => {
-  const response = (ended = false) => Object.assign(new EventEmitter(), { closed: ended, destroyed: false });
-
+describe('enterRequestDraft and releaseRequestDraft', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -119,42 +116,44 @@ describe('enterRequestDraft', () => {
   it('should leave a request outside any draft untouched', async () => {
     const executeContext = { draft_context: '' } as unknown as AuthContext;
 
-    await enterRequestDraft(executeContext, response());
+    await enterRequestDraft(executeContext);
 
     expect(mockEnterDraft).not.toHaveBeenCalled();
     expect(executeContext.draft_writer_id).toBeUndefined();
+    await expect(releaseRequestDraft(executeContext)).resolves.toBeUndefined();
   });
 
-  it('should move the request to the draft taking over and release its lease when the response ends', async () => {
+  it('should move the request to the draft taking over and keep its lease until the execution settled', async () => {
     const release = vi.fn().mockResolvedValue(undefined);
     mockEnterDraft.mockResolvedValue({ draftId: 'draft-2', closed: false, writerId: 'writer-1', release });
     const executeContext = { draft_context: 'draft-1' } as unknown as AuthContext;
-    const res = response();
 
-    await enterRequestDraft(executeContext, res);
+    await enterRequestDraft(executeContext);
 
-    expect(mockEnterDraft).toHaveBeenCalledWith('draft-1');
+    expect(mockEnterDraft).toHaveBeenCalledWith('draft-1', expect.any(Number));
     expect(executeContext).toMatchObject({ draft_context: 'draft-2', draft_forward_closed: false, draft_writer_id: 'writer-1' });
     expect(release).not.toHaveBeenCalled();
-    res.emit('close');
+    await releaseRequestDraft(executeContext);
+    await releaseRequestDraft(executeContext);
     expect(release).toHaveBeenCalledTimes(1);
   });
 
-  it('should release at once the lease of a request whose response already ended', async () => {
-    const release = vi.fn().mockResolvedValue(undefined);
-    mockEnterDraft.mockResolvedValue({ draftId: 'draft-1', closed: false, writerId: 'writer-1', release });
+  it('should log a lease that could not be released without failing the response', async () => {
+    mockEnterDraft.mockResolvedValue({ draftId: 'draft-1', closed: false, writerId: 'writer-1', release: vi.fn().mockRejectedValue(new Error('Redis unavailable')) });
+    const executeContext = { draft_context: 'draft-1' } as unknown as AuthContext;
 
-    await enterRequestDraft({ draft_context: 'draft-1' } as unknown as AuthContext, response(true));
+    await enterRequestDraft(executeContext);
 
-    expect(release).toHaveBeenCalledTimes(1);
+    await expect(releaseRequestDraft(executeContext)).resolves.toBeUndefined();
   });
 
   it('should flag a request whose draft chain ended, holding no lease', async () => {
     mockEnterDraft.mockResolvedValue({ draftId: 'draft-1', closed: true, writerId: null, release: vi.fn() });
     const executeContext = { draft_context: 'draft-1' } as unknown as AuthContext;
 
-    await enterRequestDraft(executeContext, response());
+    await enterRequestDraft(executeContext);
 
     expect(executeContext).toMatchObject({ draft_context: 'draft-1', draft_forward_closed: true, draft_writer_id: null });
+    expect(executeContext.draft_writer_release).toBeUndefined();
   });
 });

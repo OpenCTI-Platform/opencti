@@ -140,7 +140,10 @@ describe('Draft work forwarding', () => {
 });
 
 describe('Requests writing into a draft of a forwarding chain', () => {
-  const leases = (draftId: string) => [...(writers.get(draftId)?.keys() ?? [])];
+  const MAX_REQUEST_MS = 20 * 60 * 1000;
+  const leases = (draftId: string) => [...(writers.get(draftId)?.entries() ?? [])]
+    .filter(([, end]) => end > Date.now())
+    .map(([writerId]) => writerId);
 
   beforeEach(() => {
     forwards.clear();
@@ -153,14 +156,14 @@ describe('Requests writing into a draft of a forwarding chain', () => {
   });
 
   it('should hold no lease in a draft outside any forwarding chain', async () => {
-    const entry = await enterDraft('draft-1');
+    const entry = await enterDraft('draft-1', MAX_REQUEST_MS);
     expect(entry).toMatchObject({ draftId: 'draft-1', closed: false, writerId: null });
     expect(writers.size).toBe(0);
   });
 
   it('should hold a lease on an open draft of a chain until the request ends', async () => {
     await openDraftForwarding('draft-1');
-    const entry = await enterDraft('draft-1');
+    const entry = await enterDraft('draft-1', MAX_REQUEST_MS);
     expect(entry).toMatchObject({ draftId: 'draft-1', closed: false });
     expect(leases('draft-1')).toEqual([entry.writerId]);
     await entry.release();
@@ -170,7 +173,7 @@ describe('Requests writing into a draft of a forwarding chain', () => {
   it('should hold the lease on the draft that took over only', async () => {
     await forwardDraftWork('draft-1', 'draft-2');
     await forwardDraftWork('draft-2', 'draft-3');
-    const entry = await enterDraft('draft-1');
+    const entry = await enterDraft('draft-1', MAX_REQUEST_MS);
     expect(entry).toMatchObject({ draftId: 'draft-3', closed: false });
     expect(leases('draft-1')).toEqual([]);
     expect(leases('draft-2')).toEqual([]);
@@ -180,7 +183,7 @@ describe('Requests writing into a draft of a forwarding chain', () => {
   it('should refuse a request whose chain ended, with no lease', async () => {
     await forwardDraftWork('draft-1', 'draft-2');
     await runDraftClosureHandlers(context, 'draft-2');
-    const entry = await enterDraft('draft-1');
+    const entry = await enterDraft('draft-1', MAX_REQUEST_MS);
     expect(entry).toMatchObject({ draftId: 'draft-2', closed: true, writerId: null });
     expect(leases('draft-1')).toEqual([]);
     expect(leases('draft-2')).toEqual([]);
@@ -189,7 +192,7 @@ describe('Requests writing into a draft of a forwarding chain', () => {
   it('should read or remove the content of a closing draft only once the requests writing into it ended', async () => {
     await openDraftForwarding('draft-1');
     takingOver.set('draft-1', 'draft-2');
-    const writing = await enterDraft('draft-1');
+    const writing = await enterDraft('draft-1', MAX_REQUEST_MS);
     let closureDone = false;
     const closure = runDraftClosureHandlers(context, 'draft-1').then(() => {
       closureDone = true;
@@ -199,7 +202,7 @@ describe('Requests writing into a draft of a forwarding chain', () => {
     });
     expect(closureDone).toBe(false);
     // A request entering now goes to the draft taking over: the closure does not wait for it
-    const late = await enterDraft('draft-1');
+    const late = await enterDraft('draft-1', MAX_REQUEST_MS);
     expect(late.draftId).toBe('draft-2');
     await writing.release();
     await closure;
@@ -209,7 +212,7 @@ describe('Requests writing into a draft of a forwarding chain', () => {
 
   it('should never make the request closing a draft wait for itself', async () => {
     await openDraftForwarding('draft-1');
-    const own = await enterDraft('draft-1');
+    const own = await enterDraft('draft-1', MAX_REQUEST_MS);
     await runDraftClosureHandlers({ draft_writer_id: own.writerId } as AuthContext, 'draft-1');
     expect(await resolveDraftForward('draft-1')).toEqual(closed('draft-1'));
   });
@@ -217,7 +220,7 @@ describe('Requests writing into a draft of a forwarding chain', () => {
   it('should refuse to close a draft still written into once the drain delay is over', async () => {
     vi.useFakeTimers();
     await openDraftForwarding('draft-1');
-    await enterDraft('draft-1');
+    await enterDraft('draft-1', MAX_REQUEST_MS);
     const outcome = expect(runDraftClosureHandlers(context, 'draft-1')).rejects
       .toThrow('The draft still receives work that started before it was closed, retry in a moment');
     await vi.advanceTimersByTimeAsync(31 * 1000);
@@ -227,9 +230,34 @@ describe('Requests writing into a draft of a forwarding chain', () => {
   it('should not wait for the lease of a request on a stopped node once it expired', async () => {
     vi.useFakeTimers();
     await openDraftForwarding('draft-1');
-    await enterDraft('draft-1');
-    await vi.advanceTimersByTimeAsync(5 * 60 * 1000 + 1);
+    // Left by a node that stopped mid-request: nothing renews it
+    writers.set('draft-1', new Map([['stopped-node-writer', Date.now() + 2 * 60 * 1000]]));
+    await vi.advanceTimersByTimeAsync(2 * 60 * 1000 + 1);
     await runDraftClosureHandlers(context, 'draft-1');
     expect(await resolveDraftForward('draft-1')).toEqual(closed('draft-1'));
+  });
+
+  it('should renew the lease of a running request past its expiry, until the request is released', async () => {
+    vi.useFakeTimers();
+    await openDraftForwarding('draft-1');
+    const entry = await enterDraft('draft-1', MAX_REQUEST_MS);
+    await vi.advanceTimersByTimeAsync(10 * 60 * 1000);
+    expect(leases('draft-1')).toEqual([entry.writerId]);
+    await entry.release();
+    await vi.advanceTimersByTimeAsync(60 * 1000);
+    expect(leases('draft-1')).toEqual([]);
+    // Releasing twice is harmless
+    await entry.release();
+    expect(leases('draft-1')).toEqual([]);
+  });
+
+  it('should stop renewing a lease once the request can no longer be running', async () => {
+    vi.useFakeTimers();
+    await openDraftForwarding('draft-1');
+    const entry = await enterDraft('draft-1', 5 * 60 * 1000);
+    await vi.advanceTimersByTimeAsync(4 * 60 * 1000);
+    expect(leases('draft-1')).toEqual([entry.writerId]);
+    await vi.advanceTimersByTimeAsync(4 * 60 * 1000);
+    expect(leases('draft-1')).toEqual([]);
   });
 });

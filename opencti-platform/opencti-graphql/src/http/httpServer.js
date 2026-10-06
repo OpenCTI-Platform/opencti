@@ -34,7 +34,7 @@ import {
   logMalformedRequest,
   normalizeUploadError,
 } from './httpUtils';
-import { checkDraftInContext, enterRequestDraft } from './httpServer-draft';
+import { checkDraftInContext, enterRequestDraft, releaseRequestDraft } from './httpServer-draft';
 import ipWhitelistMiddleware from './ipWhitelistMiddleware';
 
 const MIN_20 = 20 * 60 * 1000;
@@ -190,15 +190,21 @@ const createHttpServer = async () => {
       path: `${basePath}/graphql`,
       context: async ({ req, res }) => {
         const executeContext = await createAuthenticatedContext(req, res, 'api');
-        await enterRequestDraft(executeContext, res);
-        // When context is related to a work, we need to check work status
-        if (executeContext.workId) {
-          const workStillAlive = await isWorkAlive(executeContext, executeContext.user, executeContext.workId);
-          if (!workStillAlive) {
-            throw WorkNotALiveError();
+        await enterRequestDraft(executeContext);
+        try {
+          // When context is related to a work, we need to check work status
+          if (executeContext.workId) {
+            const workStillAlive = await isWorkAlive(executeContext, executeContext.user, executeContext.workId);
+            if (!workStillAlive) {
+              throw WorkNotALiveError();
+            }
           }
+          await checkDraftInContext(executeContext);
+        } catch (error) {
+          // No request execution follows a refused context: nothing else releases its draft lease
+          await releaseRequestDraft(executeContext);
+          throw error;
         }
-        await checkDraftInContext(executeContext);
         return executeContext;
       },
     }),

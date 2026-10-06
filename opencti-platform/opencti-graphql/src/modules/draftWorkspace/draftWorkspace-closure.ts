@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import type { AuthContext } from '../../types/user';
 import { FunctionalError } from '../../config/errors';
+import { logApp } from '../../config/conf';
 import { wait } from '../../database/utils';
 import { redisAddDraftWriter, redisGetDraftForward, redisListDraftWriters, redisRemoveDraftWriter, redisSetDraftForward, redisSetDraftForwardIfAbsent } from '../../database/redis';
 
@@ -14,8 +15,10 @@ export type DraftClosureHandler = (context: AuthContext, draftId: string) => Pro
 // Forward entry of the last draft of a forwarding chain while it is open, then once it closed with no draft taking over
 const DRAFT_FORWARD_OPEN_END = 'open';
 const DRAFT_FORWARD_CLOSED_END = 'closed';
-// Lease of a request writing into a draft of a chain: the lease of a node stopped mid-request expires after this
-const DRAFT_WRITER_LEASE_MS = 5 * 60 * 1000;
+// Lease of a request writing into a draft of a chain, renewed while the request runs: the lease of a node stopped
+// mid-request expires after this
+const DRAFT_WRITER_LEASE_MS = 2 * 60 * 1000;
+const DRAFT_WRITER_RENEWAL_MS = 30 * 1000;
 // How long closing a draft waits for the requests still writing into it
 const DRAFT_CLOSURE_DRAIN_MS = 30 * 1000;
 const DRAFT_CLOSURE_DRAIN_POLL_MS = 200;
@@ -114,13 +117,36 @@ export interface DraftEntry extends DraftForward {
 
 const noLease = async () => {};
 
+// Renews the lease until it is released, or until the request can no longer be running (maxDurationMs)
+const holdLease = (draftId: string, writerId: string, maxDurationMs: number) => {
+  const end = Date.now() + maxDurationMs;
+  let renewing: Promise<void> = Promise.resolve();
+  const renewal = setInterval(() => {
+    if (Date.now() >= end) {
+      clearInterval(renewal);
+      return;
+    }
+    renewing = renewing
+      .then(() => redisAddDraftWriter(draftId, writerId, DRAFT_WRITER_LEASE_MS))
+      .catch((cause) => logApp.warn('[OPENCTI] Draft lease of a request could not be renewed', { cause, draftId }));
+  }, DRAFT_WRITER_RENEWAL_MS);
+  renewal.unref?.();
+  let released: Promise<void> | undefined;
+  return () => {
+    clearInterval(renewal);
+    // A renewal already sent must not record the lease again after its removal
+    released ??= renewing.then(() => redisRemoveDraftWriter(draftId, writerId));
+    return released;
+  };
+};
+
 /**
  * Draft a request works in, resolved like queued work (see resolveDraftForward). In a forwarding chain, the request
- * holds a lease on that draft from before it reads the forward until it ends: a closure forwards the draft first, then
- * waits for the leases, so a request either is waited for or sees the forward and moves to the draft taking over.
- * A draft enters a chain when it is created to receive routed work, so outside a chain no lease is needed.
+ * holds a lease on that draft from before it reads the forward until it is released: a closure forwards the draft
+ * first, then waits for the leases, so a request either is waited for or sees the forward and moves to the draft
+ * taking over. A draft enters a chain when it is created to receive routed work, so outside a chain no lease is needed.
  */
-export const enterDraft = async (draftId: string): Promise<DraftEntry> => {
+export const enterDraft = async (draftId: string, maxDurationMs: number): Promise<DraftEntry> => {
   if (!(await redisGetDraftForward(draftId))) {
     return { draftId, closed: false, writerId: null, release: noLease };
   }
@@ -139,6 +165,5 @@ export const enterDraft = async (draftId: string): Promise<DraftEntry> => {
     await redisRemoveDraftWriter(target, writerId);
     return { draftId: forward.draftId, closed: true, writerId: null, release: noLease };
   }
-  const leasedDraftId = target;
-  return { draftId: leasedDraftId, closed: false, writerId, release: () => redisRemoveDraftWriter(leasedDraftId, writerId) };
+  return { draftId: target, closed: false, writerId, release: holdLease(target, writerId, maxDurationMs) };
 };
