@@ -67,6 +67,7 @@ const containersObjectsFragment = graphql`
             }
           }
           ... on StixDomainObject {
+            is_inferred
             created
             confidence
           }
@@ -224,6 +225,7 @@ const containersObjectsFragment = graphql`
             start_time
             stop_time
             confidence
+            is_inferred
             created
             created_at
             createdBy {

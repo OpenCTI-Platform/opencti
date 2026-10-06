@@ -105,6 +105,7 @@ const investigationGraphObjectsFragment = graphql`
               }
             }
             ... on StixDomainObject {
+              is_inferred
               created
               confidence
               numberOfConnectedElement
@@ -318,6 +319,7 @@ const investigationGraphObjectsFragment = graphql`
               start_time
               stop_time
               confidence
+              is_inferred
               created
               created_at
               createdBy {

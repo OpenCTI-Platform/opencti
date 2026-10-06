@@ -80,6 +80,7 @@ const graphContainerCorrelationObjectsFragment = graphql`
                     name
                     published
                     confidence
+                    is_inferred
                     entity_type
                     parent_types
                     created_at
@@ -107,6 +108,7 @@ const graphContainerCorrelationObjectsFragment = graphql`
                     name
                     context
                     confidence
+                    is_inferred
                     entity_type
                     parent_types
                     created_at
@@ -133,6 +135,7 @@ const graphContainerCorrelationObjectsFragment = graphql`
                     id
                     name
                     confidence
+                    is_inferred
                     entity_type
                     parent_types
                     created_at
@@ -155,6 +158,7 @@ const graphContainerCorrelationObjectsFragment = graphql`
               }
             }
             ... on StixDomainObject {
+              is_inferred
               created
               confidence
             }
@@ -248,6 +252,7 @@ const graphContainerCorrelationObjectsFragment = graphql`
                     name
                     published
                     confidence
+                    is_inferred
                     entity_type
                     parent_types
                     created_at
@@ -275,6 +280,7 @@ const graphContainerCorrelationObjectsFragment = graphql`
                     name
                     context
                     confidence
+                    is_inferred
                     entity_type
                     parent_types
                     created_at
@@ -301,6 +307,7 @@ const graphContainerCorrelationObjectsFragment = graphql`
                     id
                     name
                     confidence
+                    is_inferred
                     entity_type
                     parent_types
                     created_at
