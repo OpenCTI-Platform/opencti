@@ -494,9 +494,23 @@ export const rankGraphClusters = (entries: RankedGraphCluster[], orderBy: string
     || a.id.localeCompare(b.id));
 };
 
+// Entities matching a cluster search that the caller can access, the most relevant first
+const CLUSTER_REPRESENTATIVE_SEARCH_MAX = 1000;
+const searchClusterRepresentativeIds = async (context: AuthContext, user: AuthUser, search: string) => {
+  const entities = await elList<BasicStoreEntity>(context, user, READ_ENTITIES_INDICES, {
+    types: [ABSTRACT_STIX_CORE_OBJECT],
+    search,
+    baseData: true,
+    first: CLUSTER_REPRESENTATIVE_SEARCH_MAX,
+    maxSize: CLUSTER_REPRESENTATIVE_SEARCH_MAX,
+  });
+  return entities.map((entity) => entity.internal_id);
+};
+
 /**
  * Clusters having at least one member visible to the caller; members_count is the visible count. Only the
- * GRAPH_CLUSTERS_LIST_MAX largest are listed, so a page costs one aggregation and one search whatever the platform size.
+ * GRAPH_CLUSTERS_LIST_MAX largest are listed, so a page costs one aggregation and one search whatever the platform size,
+ * plus one search of the representatives when the list is searched.
  */
 export const findGraphClusters = async (context: AuthContext, user: AuthUser, args: GraphClustersArgs) => {
   const { counts: visible, limited } = await largestVisibleClusters(context, user, GRAPH_CLUSTERS_LIST_MAX, args.kinds, args.memberFilters);
@@ -515,22 +529,34 @@ export const findGraphClusters = async (context: AuthContext, user: AuthUser, ar
   const visibleCount = (cluster: BasicStoreEntityGraphCluster) => visible.get(cluster.internal_id.toLowerCase()) ?? visible.get(cluster.internal_id) ?? 0;
   const first = clamp(args.first, 25, 1, 500);
   const orderBy = args.orderBy ?? 'members_count';
+  // Readers see a cluster under its representatives they can access, its stored name only in a tooltip: a search
+  // matches both, the representatives among the entities of the caller that match it.
+  const representativeIds = new Set(args.search ? await searchClusterRepresentativeIds(context, user, args.search) : []);
   // Clusters are ranked here and not by the engine: members_count must be the visible count, and the visible
   // clusters are matched by chunks of identifiers below the terms query limit.
-  const matching: BasicStoreEntityGraphCluster[] = [];
+  const matchingById = new Map<string, BasicStoreEntityGraphCluster>();
   const visibleIds = Array.from(visible.keys());
   for (let index = 0; index < visibleIds.length; index += CLUSTER_IDS_CHUNK) {
-    const chunkMatches = await elList<BasicStoreEntityGraphCluster>(context, user, [READ_INDEX_INTERNAL_OBJECTS], {
+    const chunkIds = visibleIds.slice(index, index + CLUSTER_IDS_CHUNK);
+    const listChunk = (search?: string | null) => elList<BasicStoreEntityGraphCluster>(context, user, [READ_INDEX_INTERNAL_OBJECTS], {
       types: [ENTITY_TYPE_GRAPH_CLUSTER],
-      ids: visibleIds.slice(index, index + CLUSTER_IDS_CHUNK),
-      search: args.search,
+      ids: chunkIds,
+      search,
       filters,
       baseData: true,
-      baseFields: ['name', 'cluster_kind', 'last_computed_at'],
+      baseFields: ['name', 'cluster_kind', 'last_computed_at', 'representative_ids'],
       ...(orderBy === '_score' ? { orderBy: '_score', orderMode: args.orderMode ?? OrderingMode.Desc } : {}),
     });
-    matching.push(...chunkMatches);
+    (await listChunk(args.search)).forEach((cluster) => matchingById.set(cluster.internal_id, cluster));
+    if (representativeIds.size > 0) {
+      (await listChunk()).forEach((cluster) => {
+        if (!matchingById.has(cluster.internal_id) && (cluster.representative_ids ?? []).some((id) => representativeIds.has(id))) {
+          matchingById.set(cluster.internal_id, cluster);
+        }
+      });
+    }
   }
+  const matching = Array.from(matchingById.values());
   const ranked = rankGraphClusters(
     matching.map((cluster) => ({ id: cluster.internal_id, members_count: visibleCount(cluster), cluster })),
     orderBy,

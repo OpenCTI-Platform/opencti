@@ -4,6 +4,7 @@ import { findGraphClusters, GRAPH_CLUSTERS_LIST_MAX, rankGraphClusters } from '.
 import { loadGraphClusters } from '../../../../src/modules/graphAnalytics/graphAnalytics-store';
 import { elAggregationSearch, elList } from '../../../../src/database/engine';
 import { SYSTEM_USER } from '../../../../src/utils/access';
+import { READ_ENTITIES_INDICES } from '../../../../src/database/utils';
 import type { AuthContext } from '../../../../src/types/user';
 
 vi.mock('../../../../src/database/engine', async (importOriginal) => ({
@@ -38,6 +39,22 @@ describe('graph analytics cluster list', () => {
     expect(elList).toHaveBeenCalledTimes(1);
     expect(connection.edges.map(({ node }) => [node.internal_id, node.members_count])).toEqual([['c-big', 9], ['c-small', 3]]);
     expect(connection.pageInfo.globalCount).toBe(2);
+  });
+
+  it('should find a cluster by the name of a representative the reader sees, its stored name being only a tooltip', async () => {
+    vi.mocked(elAggregationSearch).mockResolvedValue({
+      largest: { sum_other_doc_count: 0, buckets: [{ key: 'c-big', doc_count: 9 }, { key: 'c-small', doc_count: 3 }] },
+    } as never);
+    vi.mocked(elList).mockImplementation((async (_context: unknown, _user: unknown, indices: unknown, opts: { search?: string | null }) => {
+      // the entities the reader can access that match the search, then the clusters by stored name, then all of them
+      if (indices === READ_ENTITIES_INDICES) return [{ internal_id: 'apt28' }];
+      if (opts.search) return [];
+      return [{ ...cluster('c-big'), representative_ids: ['apt28'] }, { ...cluster('c-small'), representative_ids: ['other'] }];
+    }) as never);
+    vi.mocked(loadGraphClusters).mockImplementation(async (_c, _u, ids) => ids.map((id) => cluster(id)) as never);
+    const connection = await findGraphClusters(context, SYSTEM_USER, { first: 25, search: 'Fancy Bear' });
+    expect(vi.mocked(elList).mock.calls[0][3]).toMatchObject({ search: 'Fancy Bear' });
+    expect(connection.edges.map(({ node }) => node.internal_id)).toEqual(['c-big']);
   });
 
   it('should never rank by the stored name, which readers do not see', () => {
