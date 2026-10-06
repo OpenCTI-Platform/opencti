@@ -29,12 +29,14 @@ export interface SecurityCoverageResultFormData {
 
 interface SecurityCoverageResultFormDetailsProps {
   onSubmit: (values: SecurityCoverageResultFormData) => void;
+  onNext: (values: SecurityCoverageResultFormData) => void;
   onCancel: () => void;
   initValues?: SecurityCoverageResultFormData;
 }
 
 const SecurityCoverageResultFormDetails = ({
   onSubmit,
+  onNext,
   onCancel,
   initValues,
 }: SecurityCoverageResultFormDetailsProps) => {
@@ -82,7 +84,7 @@ const SecurityCoverageResultFormDetails = ({
       initialValues={initialValues}
       onSubmit={onSubmit}
     >
-      {({ isValid, setFieldValue }) => (
+      {({ isValid, setFieldValue, values }) => (
         <Form>
           <Field
             component={TextField}
@@ -147,14 +149,22 @@ const SecurityCoverageResultFormDetails = ({
           />
 
           <FormButtonContainer>
-            <Button variant="secondary" onClick={onCancel}>
+            <Button variant="tertiary" onClick={onCancel}>
               {t_i18n('Cancel')}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={!isValid}
+              onClick={() => onNext(values)}
+            >
+              {t_i18n('Next')}
             </Button>
             <Button
               type="submit"
               disabled={!isValid}
             >
-              {t_i18n('Next')}
+              {t_i18n('Create')}
             </Button>
           </FormButtonContainer>
         </Form>

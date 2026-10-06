@@ -75,10 +75,11 @@ const SecurityCoverageResultFormDrawer = ({
   };
 
   const submit = (
-    entities?: SelectedEntities,
+    details?: SecurityCoverageResultFormData,
+    entities?: SelectedEntities | null,
     formRelsData?: StixCoreRelationshipCreationFormInput,
   ) => {
-    if (!formDetails || submitting) {
+    if (!details || submitting) {
       return;
     }
 
@@ -103,16 +104,16 @@ const SecurityCoverageResultFormDrawer = ({
     commitCreation({
       variables: {
         input: {
-          name: formDetails.name,
-          description: formDetails.description,
-          createdBy: formDetails.createdBy?.value,
-          objectMarking: formDetails.objectMarking.map((v) => v.value),
-          objectLabel: formDetails.objectLabel.map((v) => v.value),
-          confidence: parseInt(String(formDetails.confidence), 10),
-          coverage_information: formDetails.coverageInformation,
-          external_uri: formDetails.externalUri,
-          coverage_valid_from: formDetails.validFrom,
-          coverage_valid_to: formDetails.validTo,
+          name: details.name,
+          description: details.description,
+          createdBy: details.createdBy?.value,
+          objectMarking: details.objectMarking.map((v) => v.value),
+          objectLabel: details.objectLabel.map((v) => v.value),
+          confidence: parseInt(String(details.confidence), 10),
+          coverage_information: details.coverageInformation,
+          external_uri: details.externalUri,
+          coverage_valid_from: details.validFrom,
+          coverage_valid_to: details.validTo,
           add_related_entities: related_entities,
           resultOf: id,
         },
@@ -141,14 +142,14 @@ const SecurityCoverageResultFormDrawer = ({
         <>
           <SecurityCoverageResultFormSteps
             activeStep={activeStep}
-            displayRelStep={!!selectedEntities}
             onStepClick={setActiveStep}
           />
 
           <div style={{ ...stepVisibility(0) }}>
             <SecurityCoverageResultFormDetails
               onCancel={close}
-              onSubmit={(values) => {
+              onSubmit={(val) => submit(val)}
+              onNext={(values) => {
                 setFormDetails(values);
                 setActiveStep((a) => a + 1);
               }}
@@ -158,22 +159,20 @@ const SecurityCoverageResultFormDrawer = ({
 
           <div style={{ ...stepVisibility(1) }}>
             <SelectEntitiesToCoverStep
-              endIfNoSelection
               onCancel={close}
               coveredEntity={objectCovered}
-              onSelectEntities={(entities, elements) => {
+              onNext={(entities, elements) => {
                 setSelectedEntities(entities);
                 setRelToEntities(elements);
-                if (!entities) {
-                  submit();
-                } else {
-                  setActiveStep((a) => a + 1);
-                }
+                setActiveStep((a) => a + 1);
+              }}
+              onCreate={(entities) => {
+                submit(formDetails, entities);
               }}
             />
           </div>
 
-          {formDetails && !!selectedEntities && (
+          {formDetails && (
             <div style={{ ...stepVisibility(2) }}>
               <StixCoreRelationshipCreationForm
                 fromEntities={[{
@@ -188,7 +187,7 @@ const SecurityCoverageResultFormDrawer = ({
                 defaultCreatedBy={formDetails.createdBy}
                 defaultMarkingDefinitions={formDetails.objectMarking}
                 onSubmit={(relsData: StixCoreRelationshipCreationFormInput) => {
-                  submit(selectedEntities, relsData);
+                  submit(formDetails, selectedEntities, relsData);
                 }}
                 handleClose={close}
                 handleReverseRelation={undefined}
