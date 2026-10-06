@@ -22,7 +22,7 @@ const HubNoAccess = ({ hub: hubLabel, parents = [], back }: HubNoAccessProps) =>
   const { t_i18n } = useFormatter();
   const hub = t_i18n(hubLabel);
   return (
-    <PageContainer withRightMenu={false} withGap>
+    <PageContainer withRightMenu={false}>
       <Breadcrumbs
         elements={[...parents.map((label) => ({ label: t_i18n(label) })), { label: hub, current: true }]}
       />
