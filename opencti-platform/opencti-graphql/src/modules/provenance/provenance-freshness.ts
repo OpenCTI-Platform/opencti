@@ -397,10 +397,11 @@ export const releaseFlagsTakenOverByRule = async (context: AuthContext, user: Au
 };
 
 /**
- * Every rule first gets an equal share of the run, starting at the rule `start`; the rest of the budget then goes, in the
+ * Every rule first gets an equal share of the run, highest priority first; the rest of the budget then goes, in the
  * same order, to the rules whose scan stopped before their last candidate. A rule with a large backlog therefore never
- * starves the others. With more rules than elements in a run, the first pass ends before the last rule: `nextStart` is
- * the rule after the last one served, where the next run starts, so every rule receives a budget in turn.
+ * starves the others. With more rules than elements in a run, the first pass starts at the rule `start` and can end
+ * before the last rule: `nextStart` is the rule after the last one served, where the next run starts, so every rule
+ * receives a budget in turn. Once a first pass serves every rule, the next run starts at the highest priority again.
  */
 export const runWithFairShares = async (
   ruleCount: number,
@@ -413,7 +414,7 @@ export const runWithFairShares = async (
   if (ruleCount === 0 || budget <= 0) {
     return { budget, nextStart: 0 };
   }
-  const first = Math.max(0, start) % ruleCount;
+  const first = ruleCount > batchSize ? Math.max(0, start) % ruleCount : 0;
   const share = Math.max(1, Math.floor(batchSize / ruleCount));
   let served = 0;
   while (served < ruleCount && budget > 0) {
@@ -426,7 +427,7 @@ export const runWithFairShares = async (
       budget -= await apply(index, budget);
     }
   }
-  return { budget, nextStart: (first + served) % ruleCount };
+  return { budget, nextStart: served < ruleCount ? (first + served) % ruleCount : 0 };
 };
 
 // First rule of the next run's first pass, so that every active rule is served when they outnumber the batch size

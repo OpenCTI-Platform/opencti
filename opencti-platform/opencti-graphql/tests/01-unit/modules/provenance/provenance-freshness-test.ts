@@ -245,5 +245,10 @@ describe('Knowledge freshness manager', () => {
     }, () => false, 1);
     expect(served).toEqual([1, 2, 3, 4]);
     expect(sparse).toEqual({ budget: 0, nextStart: 0 });
+    // Once the rules no longer outnumber the elements of a run, a rotated start is dropped: priority order again
+    served.length = 0;
+    const fewer = await runWithFairShares(3, 6, apply, () => false, 2);
+    expect(served).toEqual([0, 1, 2]);
+    expect(fewer).toEqual({ budget: 3, nextStart: 0 });
   });
 });
