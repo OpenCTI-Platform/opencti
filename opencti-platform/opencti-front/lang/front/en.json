@@ -81,7 +81,7 @@
   "A guided workflow that streamlines files import, selection of connectors and allows the creation of a workbench or draft for review before final import": "A guided workflow that streamlines files import, selection of connectors and allows the creation of a workbench or draft for review before final import",
   "A new content type is available but cannot be displayed in this notification due to your OpenCTI version, please upgrade": "A new content type is available but cannot be displayed in this notification due to your OpenCTI version, please upgrade",
   "A new entity enters a selected PIR": "A new entity enters a selected PIR",
-  "A newer version needs a platform upgrade": "A newer version needs a platform upgrade",
+  "A newer version is not compatible with this platform": "A newer version is not compatible with this platform",
   "A non-exhaustive enumeration of infrastructure types": "A non-exhaustive enumeration of infrastructure types",
   "A public dashboard is a snapshot...": "A public dashboard is a snapshot of a private dashboard at a specific time. If you modify the private dashboard, already created public dashboards won't be modified.",
   "a random password will be generated for your user: you will need to change it to be able to log in via email and password. Simply use the forget password workflow.": "a random password will be generated for your user: you will need to change it to be able to log in via email and password. Simply use the forget password workflow.",

@@ -81,7 +81,7 @@
   "A guided workflow that streamlines files import, selection of connectors and allows the creation of a workbench or draft for review before final import": "Un flujo de trabajo guiado que agiliza la importación de archivos, la selección de conectores y permite la creación de un banco de trabajo o borrador para su revisión antes de la importación final",
   "A new content type is available but cannot be displayed in this notification due to your OpenCTI version, please upgrade": "Hay disponible un nuevo tipo de contenido, pero no se puede mostrar en esta notificación debido a tu versión de OpenCTI; actualiza",
   "A new entity enters a selected PIR": "Una nueva entidad entra en un PIR seleccionado",
-  "A newer version needs a platform upgrade": "Una versión más reciente requiere actualizar la plataforma",
+  "A newer version is not compatible with this platform": "Una versión más reciente no es compatible con esta plataforma",
   "A non-exhaustive enumeration of infrastructure types": "Una enumeración no exhaustiva de tipos de infraestructura",
   "A public dashboard is a snapshot...": "Un panel público es una instantánea de un panel privado en un momento determinado. Si modifica el panel privado, los paneles públicos ya creados no se modificarán.",
   "a random password will be generated for your user: you will need to change it to be able to log in via email and password. Simply use the forget password workflow.": "se generará una contraseña aleatoria para su usuario: deberá cambiarla para poder iniciar sesión mediante correo electrónico y contraseña. Simplemente utilice el flujo de trabajo de olvido de contraseña.",

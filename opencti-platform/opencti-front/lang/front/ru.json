@@ -81,7 +81,7 @@
   "A guided workflow that streamlines files import, selection of connectors and allows the creation of a workbench or draft for review before final import": "Управляемый рабочий процесс, который упрощает импорт файлов, выбор коннекторов и позволяет создать рабочий стол или черновик для просмотра перед окончательным импортом",
   "A new content type is available but cannot be displayed in this notification due to your OpenCTI version, please upgrade": "Доступен новый тип контента, но он не может быть отображён в этом уведомлении из-за вашей версии OpenCTI, пожалуйста, обновите",
   "A new entity enters a selected PIR": "Новая сущность входит в выбранный ПИР",
-  "A newer version needs a platform upgrade": "Для более новой версии требуется обновление платформы",
+  "A newer version is not compatible with this platform": "Более новая версия несовместима с этой платформой",
   "A non-exhaustive enumeration of infrastructure types": "Неполное перечисление типов инфраструктуры",
   "A public dashboard is a snapshot...": "Публичный дашборд - это снэпшот...",
   "a random password will be generated for your user: you will need to change it to be able to log in via email and password. Simply use the forget password workflow.": "для вашего пользователя будет сгенерирован случайный пароль: вам нужно будет изменить его, чтобы иметь возможность входить в систему по электронной почте и паролю. Просто используйте процедуру \"Забыть пароль\".",
