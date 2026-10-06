@@ -97,6 +97,7 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
   const location = useLocation();
   const { t_i18n } = useFormatter();
   const canDelete = useGranted([KNOWLEDGE_KNUPDATE_KNDELETE]);
+  const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const theme = useTheme();
 
   useSubscription(subConfig);
@@ -142,10 +143,12 @@ const RootUserComponent = ({ queryRef, userId, refetch }) => {
                   )}
                 </PopoverMenu>
               )}
-              <ConvertUser
-                userId={data.id}
-                userServiceAccount={data.user_service_account}
-              />
+              {hasSetAccess && (
+                <ConvertUser
+                  userId={data.id}
+                  userServiceAccount={data.user_service_account}
+                />
+              )}
               <UserDeletionDialog
                 userId={data.id}
                 isOpen={openDelete}
