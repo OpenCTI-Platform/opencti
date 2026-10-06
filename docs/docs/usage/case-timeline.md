@@ -54,11 +54,13 @@ The following sources are used when they exist on the platform, and are otherwis
 | Security coverage results (OpenAEV) | Coverage results of the container, in the detection lane |
 | Hunt runs | Runs of the hunts linked to the case, in the detection lane |
 | Indicator deployments | Deployments of the indicators of the case on security platforms, in the detection lane |
-| Case Autopilot investigation runs | One **Investigation step** per run (from start to completion) and one per goal plan action that found something, in the response lane; findings about elements outside the case appear in the evidence lane with an approximate precision |
+| Case Autopilot investigation runs | One **Investigation step** per run (from its start to its completion, still open while it runs) and one per goal plan action the run reached or that found something, with its step state (an action with a source still querying stays open), in the response lane; findings about elements outside the case appear in the evidence lane with an approximate precision |
 
 ### Precision
 
 Each event carries a precision: **Exact**, **Hour**, **Day** or **Approximate**. Approximate events (for example techniques without dated relationships) are drawn with a dashed outline and flagged in the list view.
+
+A window that has started without a known end (a technique used by a relationship without a stop time, a hunt or investigation run still running, a deployment still active, an indicator valid without an end date) is drawn up to the right edge of the lanes, lighter and with a dashed outline, and reads **Since <start>, still open**. It is kept in every later time window of the list, the summary and the exports.
 
 ## Anchors
 

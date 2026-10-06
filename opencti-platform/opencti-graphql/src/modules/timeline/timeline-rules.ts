@@ -1080,6 +1080,8 @@ export const investigationRunRule: TimelineRule = {
           sources.length > 0 ? `Sources: ${sources.join(', ')}` : null,
         ].filter((d) => !!d);
         const state = aggregateInvestigationStepState(group.states);
+        // A source still querying keeps the action open, whatever the end of its finished sources
+        const stillRunning = state === 'running';
         events.push({
           rule_id: RULE_INVESTIGATION_RUN,
           kind: 'investigation_step',
@@ -1088,9 +1090,8 @@ export const investigationRunRule: TimelineRule = {
           element_id: run.id,
           element_type: run.entity_type,
           event_time: iso(actionStart),
-          event_end_time: group.end !== null && group.end > actionStart ? iso(group.end) : null,
-          // An action still querying its sources is still open
-          ...(group.end === null && state === 'querying' ? { open_ended: true } : {}),
+          event_end_time: !stillRunning && group.end !== null && group.end > actionStart ? iso(group.end) : null,
+          ...(stillRunning ? { open_ended: true } : {}),
           time_precision: group.start !== null ? 'exact' : 'approximate',
           name: actionLabels.get(group.key) ?? humanizeSlug(group.key),
           description: details.join(' - ') || undefined,

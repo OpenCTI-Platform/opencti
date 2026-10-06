@@ -376,6 +376,34 @@ describe('Timeline open-ended windows', () => {
     expect(events.find((e) => e.kind === 'deployment')).toMatchObject({ event_end_time: '2026-03-20T00:00:00.000Z' });
     expect(events.find((e) => e.kind === 'deployment')?.open_ended).toBeUndefined();
   });
+
+  it('should keep a running investigation and an action with a source still querying open, whatever its finished sources', () => {
+    const events = deriveTimelineEvents(buildInput({
+      soft: {
+        coverageResults: [],
+        coverageRelationships: [],
+        huntRuns: [],
+        deployments: [],
+        investigationRuns: [element({
+          id: 'inv-run',
+          entity_type: 'InvestigationRun',
+          name: 'Autopilot',
+          extra: {
+            started_at: '2026-03-16T00:00:00.000Z',
+            run_status: 'running',
+            steps: [
+              { id: 'step-done', tool: 'enrich', status: 'succeeded', started_at: '2026-03-16T00:10:00.000Z', duration_ms: 60000 },
+              { id: 'step-active', tool: 'enrich', status: 'running', started_at: '2026-03-16T00:20:00.000Z' },
+            ],
+          },
+        })],
+      },
+    }), [investigationRunRule], () => {});
+    const [run, action] = events.filter((e) => e.kind === 'investigation_step');
+    expect(run).toMatchObject({ element_id: 'inv-run', event_end_time: null, open_ended: true });
+    // The finished source would end the action at 00:11: a source still querying keeps it open instead
+    expect(action).toMatchObject({ event_time: '2026-03-16T00:10:00.000Z', event_end_time: null, open_ended: true, source_state: { state: 'running' } });
+  });
 });
 
 describe('Timeline soft-check rules', () => {
