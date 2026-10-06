@@ -10212,6 +10212,8 @@ type Mutation {
   workspaceContextClean(id: ID!): Workspace
   workspaceConfigurationImport(file: Upload!): String!
   workspaceWidgetConfigurationImport(id: ID!, input: ImportConfigurationInput!): Workspace
+  workspaceVariableUpsert(id: ID!, input: DashboardVariableInput!): Workspace
+  workspaceVariableDelete(id: ID!, variableId: ID!): Workspace
   malwareAnalysisAdd(input: MalwareAnalysisAddInput!): MalwareAnalysis
   malwareAnalysisDelete(id: ID!): ID
   malwareAnalysisFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): MalwareAnalysis
@@ -12880,6 +12882,7 @@ type Workspace implements InternalObject & BasicObject {
   toConfigurationExport: String!
   toWidgetExport(widgetId: ID!): String!
   isShared: Boolean
+  variables: [DashboardVariable!]!
 }
 
 enum WorkspacesOrdering {
@@ -12898,6 +12901,63 @@ type WorkspaceConnection {
 type WorkspaceEdge {
   cursor: String!
   node: Workspace!
+}
+
+enum DashboardVariableType {
+  vocabulary
+  killChainPhase
+  entity
+  entityType
+  label
+  user
+  marking
+  status
+  group
+  boolean
+  numeric
+  text
+  date
+}
+
+enum DashboardVariableRestrictionMode {
+  none
+  selection
+  filters
+}
+
+type DashboardVariableRestriction {
+  mode: DashboardVariableRestrictionMode!
+  values: [String!]
+  filters: String
+}
+
+type DashboardVariable {
+  id: ID!
+  name: String!
+  type: DashboardVariableType!
+  vocabularyCategory: VocabularyCategory
+  killChainName: String
+  entityTypes: [String!]
+  restriction: DashboardVariableRestriction!
+  defaultValue: String
+  usedInWidgetIds: [ID!]!
+}
+
+input DashboardVariableRestrictionInput {
+  mode: DashboardVariableRestrictionMode!
+  values: [String!]
+  filters: String
+}
+
+input DashboardVariableInput {
+  id: ID
+  name: String!
+  type: DashboardVariableType!
+  vocabularyCategory: VocabularyCategory
+  killChainName: String
+  entityTypes: [String!]
+  restriction: DashboardVariableRestrictionInput
+  defaultValue: String
 }
 
 input WorkspaceAddInput {

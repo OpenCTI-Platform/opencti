@@ -6637,6 +6637,65 @@ export type CustomViewsSettings = {
   canEntityTypeHaveCustomViews: Scalars['Boolean']['output'];
 };
 
+export type DashboardVariable = {
+  __typename?: 'DashboardVariable';
+  defaultValue?: Maybe<Scalars['String']['output']>;
+  entityTypes?: Maybe<Array<Scalars['String']['output']>>;
+  id: Scalars['ID']['output'];
+  killChainName?: Maybe<Scalars['String']['output']>;
+  name: Scalars['String']['output'];
+  restriction: DashboardVariableRestriction;
+  type: DashboardVariableType;
+  usedInWidgetIds: Array<Scalars['ID']['output']>;
+  vocabularyCategory?: Maybe<VocabularyCategory>;
+};
+
+export type DashboardVariableInput = {
+  defaultValue?: InputMaybe<Scalars['String']['input']>;
+  entityTypes?: InputMaybe<Array<Scalars['String']['input']>>;
+  id?: InputMaybe<Scalars['ID']['input']>;
+  killChainName?: InputMaybe<Scalars['String']['input']>;
+  name: Scalars['String']['input'];
+  restriction?: InputMaybe<DashboardVariableRestrictionInput>;
+  type: DashboardVariableType;
+  vocabularyCategory?: InputMaybe<VocabularyCategory>;
+};
+
+export type DashboardVariableRestriction = {
+  __typename?: 'DashboardVariableRestriction';
+  filters?: Maybe<Scalars['String']['output']>;
+  mode: DashboardVariableRestrictionMode;
+  values?: Maybe<Array<Scalars['String']['output']>>;
+};
+
+export type DashboardVariableRestrictionInput = {
+  filters?: InputMaybe<Scalars['String']['input']>;
+  mode: DashboardVariableRestrictionMode;
+  values?: InputMaybe<Array<Scalars['String']['input']>>;
+};
+
+export enum DashboardVariableRestrictionMode {
+  Filters = 'filters',
+  None = 'none',
+  Selection = 'selection'
+}
+
+export enum DashboardVariableType {
+  Boolean = 'boolean',
+  Date = 'date',
+  Entity = 'entity',
+  EntityType = 'entityType',
+  Group = 'group',
+  KillChainPhase = 'killChainPhase',
+  Label = 'label',
+  Marking = 'marking',
+  Numeric = 'numeric',
+  Status = 'status',
+  Text = 'text',
+  User = 'user',
+  Vocabulary = 'vocabulary'
+}
+
 export type DataComponent = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'DataComponent';
   aliases?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
@@ -17745,6 +17804,8 @@ export type Mutation = {
   workspaceDuplicate?: Maybe<Workspace>;
   workspaceEditAuthorizedMembers?: Maybe<Workspace>;
   workspaceFieldPatch?: Maybe<Workspace>;
+  workspaceVariableDelete?: Maybe<Workspace>;
+  workspaceVariableUpsert?: Maybe<Workspace>;
   workspaceWidgetConfigurationImport?: Maybe<Workspace>;
 };
 
@@ -20560,6 +20621,18 @@ export type MutationWorkspaceEditAuthorizedMembersArgs = {
 export type MutationWorkspaceFieldPatchArgs = {
   id: Scalars['ID']['input'];
   input: Array<EditInput>;
+};
+
+
+export type MutationWorkspaceVariableDeleteArgs = {
+  id: Scalars['ID']['input'];
+  variableId: Scalars['ID']['input'];
+};
+
+
+export type MutationWorkspaceVariableUpsertArgs = {
+  id: Scalars['ID']['input'];
+  input: DashboardVariableInput;
 };
 
 
@@ -39335,6 +39408,7 @@ export type Workspace = BasicObject & InternalObject & {
   toWidgetExport: Scalars['String']['output'];
   type?: Maybe<Scalars['String']['output']>;
   updated_at?: Maybe<Scalars['DateTime']['output']>;
+  variables: Array<DashboardVariable>;
 };
 
 
@@ -40777,6 +40851,12 @@ export type ResolversTypes = ResolversObject<{
   CustomViewsEdge: ResolverTypeWrapper<Omit<CustomViewsEdge, 'node'> & { node: ResolversTypes['CustomView'] }>;
   CustomViewsOrdering: CustomViewsOrdering;
   CustomViewsSettings: ResolverTypeWrapper<CustomViewsSettings>;
+  DashboardVariable: ResolverTypeWrapper<DashboardVariable>;
+  DashboardVariableInput: DashboardVariableInput;
+  DashboardVariableRestriction: ResolverTypeWrapper<DashboardVariableRestriction>;
+  DashboardVariableRestrictionInput: DashboardVariableRestrictionInput;
+  DashboardVariableRestrictionMode: DashboardVariableRestrictionMode;
+  DashboardVariableType: DashboardVariableType;
   DataComponent: ResolverTypeWrapper<BasicStoreEntityDataComponent>;
   DataComponentAddInput: DataComponentAddInput;
   DataComponentConnection: ResolverTypeWrapper<Omit<DataComponentConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['DataComponentEdge']>>> }>;
@@ -41937,6 +42017,10 @@ export type ResolversParentTypes = ResolversObject<{
   CustomViewsConnection: Omit<CustomViewsConnection, 'edges'> & { edges: Array<ResolversParentTypes['CustomViewsEdge']> };
   CustomViewsEdge: Omit<CustomViewsEdge, 'node'> & { node: ResolversParentTypes['CustomView'] };
   CustomViewsSettings: CustomViewsSettings;
+  DashboardVariable: DashboardVariable;
+  DashboardVariableInput: DashboardVariableInput;
+  DashboardVariableRestriction: DashboardVariableRestriction;
+  DashboardVariableRestrictionInput: DashboardVariableRestrictionInput;
   DataComponent: BasicStoreEntityDataComponent;
   DataComponentAddInput: DataComponentAddInput;
   DataComponentConnection: Omit<DataComponentConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['DataComponentEdge']>>> };
@@ -44959,6 +45043,24 @@ export type CustomViewsEdgeResolvers<ContextType = any, ParentType extends Resol
 
 export type CustomViewsSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['CustomViewsSettings'] = ResolversParentTypes['CustomViewsSettings']> = ResolversObject<{
   canEntityTypeHaveCustomViews?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
+export type DashboardVariableResolvers<ContextType = any, ParentType extends ResolversParentTypes['DashboardVariable'] = ResolversParentTypes['DashboardVariable']> = ResolversObject<{
+  defaultValue?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  entityTypes?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  killChainName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  restriction?: Resolver<ResolversTypes['DashboardVariableRestriction'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['DashboardVariableType'], ParentType, ContextType>;
+  usedInWidgetIds?: Resolver<Array<ResolversTypes['ID']>, ParentType, ContextType>;
+  vocabularyCategory?: Resolver<Maybe<ResolversTypes['VocabularyCategory']>, ParentType, ContextType>;
+}>;
+
+export type DashboardVariableRestrictionResolvers<ContextType = any, ParentType extends ResolversParentTypes['DashboardVariableRestriction'] = ResolversParentTypes['DashboardVariableRestriction']> = ResolversObject<{
+  filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  mode?: Resolver<ResolversTypes['DashboardVariableRestrictionMode'], ParentType, ContextType>;
+  values?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
 }>;
 
 export type DataComponentResolvers<ContextType = any, ParentType extends ResolversParentTypes['DataComponent'] = ResolversParentTypes['DataComponent']> = ResolversObject<{
@@ -49213,6 +49315,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   workspaceDuplicate?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceDuplicateArgs, 'input'>>;
   workspaceEditAuthorizedMembers?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceEditAuthorizedMembersArgs, 'id' | 'input'>>;
   workspaceFieldPatch?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceFieldPatchArgs, 'id' | 'input'>>;
+  workspaceVariableDelete?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceVariableDeleteArgs, 'id' | 'variableId'>>;
+  workspaceVariableUpsert?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceVariableUpsertArgs, 'id' | 'input'>>;
   workspaceWidgetConfigurationImport?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<MutationWorkspaceWidgetConfigurationImportArgs, 'id' | 'input'>>;
 }>;
 
@@ -54778,6 +54882,7 @@ export type WorkspaceResolvers<ContextType = any, ParentType extends ResolversPa
   toWidgetExport?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<WorkspaceToWidgetExportArgs, 'widgetId'>>;
   type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  variables?: Resolver<Array<ResolversTypes['DashboardVariable']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -55020,6 +55125,8 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   CustomViewsConnection?: CustomViewsConnectionResolvers<ContextType>;
   CustomViewsEdge?: CustomViewsEdgeResolvers<ContextType>;
   CustomViewsSettings?: CustomViewsSettingsResolvers<ContextType>;
+  DashboardVariable?: DashboardVariableResolvers<ContextType>;
+  DashboardVariableRestriction?: DashboardVariableRestrictionResolvers<ContextType>;
   DataComponent?: DataComponentResolvers<ContextType>;
   DataComponentConnection?: DataComponentConnectionResolvers<ContextType>;
   DataComponentEdge?: DataComponentEdgeResolvers<ContextType>;
