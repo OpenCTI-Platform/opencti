@@ -34,7 +34,7 @@ On each node, we'll notice a bullet with a number inside, serving as a visual in
 ![Investigation workspace](assets/investigation-workspace.png)
 
 ### Expansion
-To incorporate these linked entities into the graph, we just have to expand the nodes. Utilize the button with a 4-arrows logo in the mentioned menu, double-click on the entity directly, or use **Expand this entity** in the card that opens when hovering the entity. This action opens a new window where we can choose the types of entities and relationships we wish to expand.
+To incorporate these linked entities into the graph, we just have to expand the nodes. Utilize the button with a 4-arrows logo in the mentioned menu, double-click on the entity directly, or right-click the entity and choose **Expand this entity** in its context menu. This action opens a new window where we can choose the types of entities and relationships we wish to expand.
 
 The investigation graph shares the layouts, legend, hover cards, keyboard shortcuts and exports of every graph of the platform: see [Work with graphs](graphs.md).
 
