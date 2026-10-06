@@ -190,8 +190,8 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
       showConnectedCount: opts.showNbConnectedElements,
       typeLabel: typeLabel(data),
     });
-    // Link labels are placed clear of the nodes only at zooms where they are all drawn.
-    if (detail.linkLabels) frameNodeBoxes.current.push(...covered);
+    // Link labels are placed clear of the nodes at every zoom: the emphasised ones are drawn at overview zoom too.
+    frameNodeBoxes.current.push(...covered);
   };
 
   /**
