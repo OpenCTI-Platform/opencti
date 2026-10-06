@@ -930,8 +930,10 @@ export const checkUserCanAccessStixElement = (context: AuthContext, user: AuthUs
   }
   // 3. Check organizations
   // Allow unrestricted entities
+  // The type can be unresolvable for raw stix coming from outside the platform (ex: a location
+  // without x_opencti_location_type in a bundle returned by a connector): apply the organization check.
   const entityType = instance.extensions?.[STIX_EXT_OCTI]?.type ?? generateInternalType(instance);
-  if (isOrganizationUnrestrictedForEntityType(entityType)) {
+  if (entityType && isOrganizationUnrestrictedForEntityType(entityType)) {
     return true;
   }
   // Check restricted elements

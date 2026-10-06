@@ -234,6 +234,12 @@ describe('User access entity testing', async () => {
     const hasAccess = checkUserCanAccessStixElement(testContext, user_is_not_allowed as AuthUser, report as StixObject, true);
     expect(hasAccess).toEqual(false);
   });
+  it('should apply organization check on STIX element with unresolvable type', () => {
+    // Raw stix location without x_opencti_location_type nor OpenCTI extension
+    const location = { id: 'location--f3e554eb-60f5-587c-9191-4f25e9ba9f32', spec_version: '2.1', type: 'location' } as StixObject;
+    expect(checkUserCanAccessStixElement(testContext, user_is_allowed as AuthUser, location, false)).toEqual(true);
+    expect(checkUserCanAccessStixElement(testContext, user_is_allowed as AuthUser, location, true)).toEqual(false);
+  });
   it('User in authorized members should access stored element', () => {
     const hasAccess = checkUserFilterStoreElements(testContext, user_is_allowed as AuthUser, element as BasicStoreCommon, [], true);
     expect(hasAccess).toEqual(true);
