@@ -401,7 +401,7 @@ const executeApply = async (
         name: `Source Intelligence - ${source.name} false positives`,
         description: `False positives of the source ${source.name}, created by Source Intelligence (recommendation ${recommendation.internal_id}).`,
         exclusion_list_entity_types: types,
-        file: Promise.resolve({ createReadStream: () => Readable.from([content]), filename: 'source-intelligence-deny-list.txt', mimetype: 'text/plain', encoding: '7bit' }),
+        file: Promise.resolve({ createReadStream: () => Readable.from(Buffer.from(content, 'utf-8')), filename: 'source-intelligence-deny-list.txt', mimetype: 'text/plain', encoding: '7bit' }),
       });
       return { apply_result: `Exclusion list created with ${values.length} values`, revert_payload: { exclusion_list_id: exclusionList.id } };
     }
