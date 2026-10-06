@@ -12,6 +12,7 @@ import {
   getCustomFieldLabel,
   getCustomFieldsInitialValues,
   getCustomFieldSetting,
+  getCustomFieldValueError,
   getCustomFieldValues,
   isCustomFieldValueSet,
   updateCustomFieldValues,
@@ -161,6 +162,16 @@ describe('customFields', () => {
   it('converts integers without truncating them', () => {
     expect(buildCustomFieldValueAddInputEntry(definition('integer'), '1e3')).toEqual({ field_name: 'custom_integer', value: [1000] });
     expect(buildCustomFieldValueAddInputEntry(definition('integer'), '1.9')).toEqual({ field_name: 'custom_integer', value: [1.9] });
+  });
+
+  it('reports integer errors with the same rules as the creation schema', () => {
+    const bounded = definition('integer', { min_value: 0, max_value: 100 });
+    expect(getCustomFieldValueError(bounded, '', translate)).toBeUndefined();
+    expect(getCustomFieldValueError(bounded, '42', translate)).toBeUndefined();
+    expect(getCustomFieldValueError(bounded, '1.9', translate)).toBe('The value must be an integer');
+    expect(getCustomFieldValueError(bounded, 'abc', translate)).toBe('The value must be an integer');
+    expect(getCustomFieldValueError(bounded, '101', translate)).toBe('The value must be between min and max value');
+    expect(getCustomFieldValueError(definition('string'), '1.9', translate)).toBeUndefined();
   });
 
   it('clears an integer value when the input is emptied', () => {

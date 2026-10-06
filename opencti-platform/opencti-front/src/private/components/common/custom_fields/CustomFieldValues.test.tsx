@@ -37,20 +37,24 @@ vi.mock('./CustomFieldsInput', () => ({
     }, [entityType]);
     return null;
   },
-  CustomFieldInput: ({ definition, value, onChange, onSubmit }: {
+  CustomFieldInput: ({ definition, value, error, onChange, onSubmit }: {
     definition: CustomFieldDef;
     value: CustomFieldValue;
+    error?: string;
     onChange?: (value: string) => void;
     onSubmit?: (value: string) => void;
   }) => (
-    <input
-      aria-label={definition.label}
-      value={String(value)}
-      onChange={(event) => {
-        onChange?.(event.target.value);
-        onSubmit?.(event.target.value);
-      }}
-    />
+    <>
+      <input
+        aria-label={definition.label}
+        value={String(value)}
+        onChange={(event) => {
+          onChange?.(event.target.value);
+          onSubmit?.(event.target.value);
+        }}
+      />
+      {error && <span role="alert">{`${definition.label}: ${error}`}</span>}
+    </>
   ),
 }));
 
@@ -209,6 +213,41 @@ describe.each(['Report', 'stix-core-relationship', 'stix-sighting-relationship']
       { field_id: 'first', field_name: 'first', string_value: 'one' },
       { field_id: 'second', field_name: 'second', string_value: 'two' },
     ]);
+  });
+
+  it('does not save an invalid integer and shows its error', async () => {
+    state.definitions[entityType] = [{ ...definition('score', entityType), field_type: 'integer', min_value: 0, max_value: 10 }];
+    const patch = vi.fn();
+    render(<Formik initialValues={{}} onSubmit={vi.fn()}><CustomFieldValuesEdition entityId="id" entityType={entityType} values={stored} fieldPatch={patch} /></Formik>);
+    fireEvent.change(await screen.findByLabelText('score'), { target: { value: '1.9' } });
+    expect(patch).not.toHaveBeenCalled();
+    expect(screen.getByRole('alert')).toHaveTextContent('score: The value must be an integer');
+    fireEvent.change(screen.getByLabelText('score'), { target: { value: '11' } });
+    expect(patch).not.toHaveBeenCalled();
+    expect(screen.getByRole('alert')).toHaveTextContent('score: The value must be between min and max value');
+    fireEvent.change(screen.getByLabelText('score'), { target: { value: '7' } });
+    expect(patch).toHaveBeenCalledTimes(1);
+    expect(patch.mock.calls[0][0].variables.input.value).toEqual([...stored, { field_id: 'score', field_name: 'score', int_value: 7 }]);
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('stages an invalid integer with its error when references are enabled', async () => {
+    state.definitions[entityType] = [{ ...definition('score', entityType), field_type: 'integer' }];
+    const submit = vi.fn();
+    render(
+      <Formik initialValues={{}} onSubmit={submit}>
+        <Form>
+          <CustomFieldValuesEdition entityId="id" entityType={entityType} values={stored} fieldPatch={vi.fn()} enableReferences />
+          <button type="submit">Save</button>
+        </Form>
+      </Formik>,
+    );
+    fireEvent.change(await screen.findByLabelText('score'), { target: { value: '1.9' } });
+    expect(screen.getByRole('alert')).toHaveTextContent('score: The value must be an integer');
+    fireEvent.click(screen.getByText('Save'));
+    await waitFor(() => expect(submit).toHaveBeenCalled());
+    // Not replaced by a stale valid value: the backend rejects it explicitly
+    expect(submit.mock.calls[0][0].custom_field_values).toEqual([...stored, { field_id: 'score', field_name: 'score', int_value: 1.9 }]);
   });
 
   it('hides existing values when the feature is disabled', () => {

@@ -8,8 +8,10 @@ import {
   CustomFieldValue,
   getCustomFieldCurrentValue,
   getCustomFieldSetting,
+  getCustomFieldValueError,
   updateCustomFieldValues,
 } from '../../../../utils/customFields';
+import { useFormatter } from '../../../../components/i18n';
 import type useFormEditor from '../../../../utils/hooks/useFormEditor';
 import useHelper from '../../../../utils/hooks/useHelper';
 import { CustomFieldInput, CustomFieldsLoader } from './CustomFieldsInput';
@@ -41,7 +43,9 @@ interface CustomFieldValuesEditionProps {
 
 const CustomFieldValuesEdition: FunctionComponent<CustomFieldValuesEditionProps> = ({ entityType, entityId, values, fieldPatch, enableReferences = false }) => {
   const { isFeatureEnable } = useHelper();
+  const { t_i18n } = useFormatter();
   const [definitions, setDefinitions] = useState<CustomFieldDef[]>([]);
+  const [errors, setErrors] = useState<Record<string, string | undefined>>({});
   const formik = useFormikContext<{ custom_field_values?: readonly CustomFieldStoredValue[] }>();
   const [pendingValues, setPendingValues] = useState<readonly CustomFieldStoredValue[] | null>(null);
   const acknowledgedValues = useRef(values);
@@ -50,7 +54,17 @@ const CustomFieldValuesEdition: FunctionComponent<CustomFieldValuesEditionProps>
   if (!saving.current && pendingChanges.current.length === 0) acknowledgedValues.current = values;
   const currentValues = enableReferences ? formik.values.custom_field_values ?? values : pendingValues ?? values;
 
+  // Show the error under the field; returns whether the value can be saved.
+  const checkValue = (definition: CustomFieldDef, rawValue: CustomFieldValue) => {
+    const error = getCustomFieldValueError(definition, rawValue, t_i18n);
+    setErrors((previous) => ({ ...previous, [definition.id]: error }));
+    return error === undefined;
+  };
+
+  // With references, the value is still staged: keeping the last valid one would silently commit a value
+  // different from the displayed one; the commit then fails explicitly on the backend.
   const stageValue = (definition: CustomFieldDef, rawValue: CustomFieldValue) => {
+    checkValue(definition, rawValue);
     formik.setValues((previous) => ({
       ...previous,
       custom_field_values: updateCustomFieldValues(definition, rawValue, previous.custom_field_values ?? values),
@@ -86,6 +100,8 @@ const CustomFieldValuesEdition: FunctionComponent<CustomFieldValuesEditionProps>
   };
 
   const handleSubmit = (definition: CustomFieldDef, rawValue: CustomFieldValue) => {
+    // An invalid value is neither truncated nor saved: the field keeps the typed value with its error.
+    if (!checkValue(definition, rawValue)) return;
     setPendingValues((previous) => updateCustomFieldValues(definition, rawValue, previous ?? values));
     pendingChanges.current.push({ definition, rawValue });
     flushChanges();
@@ -109,6 +125,7 @@ const CustomFieldValuesEdition: FunctionComponent<CustomFieldValuesEditionProps>
               definition={definition}
               mandatory={getCustomFieldSetting(definition, entityType)?.mandatory ?? false}
               value={getCustomFieldCurrentValue(definition, currentValues)}
+              error={errors[definition.id]}
               onChange={enableReferences ? (value) => stageValue(definition, value) : undefined}
               onSubmit={enableReferences ? undefined : (value) => handleSubmit(definition, value)}
             />

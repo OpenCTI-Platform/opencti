@@ -41,6 +41,24 @@ export const getCustomFieldsInitialValues = (
   }),
 );
 
+// Same rules as the creation schema below, for the edition which saves field by field without Yup.
+// An empty input is valid: it clears the value.
+export const getCustomFieldValueError = (
+  definition: CustomFieldDef,
+  rawValue: CustomFieldValue,
+  t_i18n: (key: string) => string,
+): string | undefined => {
+  if (definition.field_type !== 'integer') return undefined;
+  const trimmed = String(rawValue).trim();
+  if (trimmed === '') return undefined;
+  const parsed = Number(trimmed);
+  if (!Number.isInteger(parsed)) return t_i18n('The value must be an integer');
+  if ((definition.min_value != null && parsed < definition.min_value) || (definition.max_value != null && parsed > definition.max_value)) {
+    return t_i18n('The value must be between min and max value');
+  }
+  return undefined;
+};
+
 const buildIntegerValidationSchema = (
   definition: CustomFieldDef,
   isMandatory: boolean,
