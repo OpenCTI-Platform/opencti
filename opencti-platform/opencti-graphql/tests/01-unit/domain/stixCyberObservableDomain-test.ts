@@ -4,7 +4,7 @@ import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import { addStixCyberObservable, generateIndicatorFromObservable, generateKeyValueForIndicator, stixCyberObservableEditField } from '../../../src/domain/stixCyberObservable';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../../src/schema/general';
 import { storeLoadById } from '../../../src/database/middleware-loader';
-import { FUNCTIONAL_ERROR } from '../../../src/config/errors';
+import { RESOURCE_NOT_FOUND_ERROR } from '../../../src/config/errors';
 
 // Keep the real loader, only stub it in tests that need a missing element
 vi.mock('../../../src/database/middleware-loader', async (importOriginal) => {
@@ -148,7 +148,7 @@ describe('SCO utils', () => {
       await expect(() => stixCyberObservableEditField(testContext, ADMIN_USER, 'unknown-id', input))
         .rejects.toMatchObject({
           message: 'Cannot edit the field, Stix-Cyber-Observable cannot be found.',
-          extensions: { code: FUNCTIONAL_ERROR, data: { stixCyberObservableId: 'unknown-id' } },
+          extensions: { code: RESOURCE_NOT_FOUND_ERROR, data: { stixCyberObservableId: 'unknown-id' } },
         });
     });
   });

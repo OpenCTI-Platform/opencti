@@ -22,7 +22,7 @@ import { elCount } from '../database/engine';
 import { isEmptyField, isNotEmptyField, READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
 import { workToExportFile } from './work';
 import { addIndicator } from '../modules/indicator/indicator-domain';
-import { DOC_INCORRECT_OBSERVABLE_FORMAT, FunctionalError } from '../config/errors';
+import { DOC_INCORRECT_OBSERVABLE_FORMAT, FunctionalError, ResourceNotFoundError } from '../config/errors';
 import { createStixPattern } from '../python/pythonBridge';
 import { checkObservableSyntax, STIX_PATTERN_TYPE } from '../utils/syntax';
 import {
@@ -274,7 +274,7 @@ export const stixCyberObservableDeleteRelation = async (context, user, stixCyber
 export const stixCyberObservableEditField = async (context, user, stixCyberObservableId, input, opts = {}) => {
   const originalStixCyberObservable = await storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
   if (!originalStixCyberObservable) {
-    throw FunctionalError('Cannot edit the field, Stix-Cyber-Observable cannot be found.', { stixCyberObservableId });
+    throw ResourceNotFoundError('Cannot edit the field, Stix-Cyber-Observable cannot be found.', { stixCyberObservableId });
   }
   const scoreInput = input.find((i) => i.key === 'x_opencti_score');
   const urlInput = input.find((i) => i.key === 'url');
