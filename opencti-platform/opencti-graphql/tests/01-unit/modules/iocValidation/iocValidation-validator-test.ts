@@ -8,6 +8,7 @@ import {
   coversUpsertPairMarkings,
   exceedsHitReportIds,
   hitReportIdsAfterEdits,
+  setsDeploymentReporters,
   setsValidityWindow,
   invalidStatusField,
   isLifecycleWriter,
@@ -129,17 +130,31 @@ describe('Deployment lifecycle fields guard', () => {
     await expect(validatorCreation(testContext, connector, { deployment_status: 'active', hit_count: 9 })).resolves.toEqual(true);
   });
 
-  it('should only let a connector account among the creators write a verdict', async () => {
+  it('should only let a connector account among the reporters write a verdict', async () => {
     const validatorUpdate = getEntityValidatorUpdate(RELATION_DEPLOYED_ON) as ValidatorFn;
-    // An editor joins the creators by upserting the relationship, which does not make it a reporter of the platform
-    const upserted = { creator_id: ['connector-user', 'user-1'] };
-    await expect(validatorUpdate(testContext, editor, { validation_status: ['detected'] }, upserted)).rejects.toThrow('Validation results');
-    await expect(validatorUpdate(testContext, editor, { validation_status: ['not_requested'] }, upserted)).rejects.toThrow('Validation results');
-    await expect(validatorUpdate(testContext, connector, { validation_status: ['detected'] }, upserted)).resolves.toEqual(true);
-    expect(isTrustedDeploymentReporter(upserted, editor)).toEqual(false);
-    expect(isTrustedDeploymentReporter(upserted, connector)).toEqual(true);
-    expect(isTrustedDeploymentReporter({ creator_id: 'connector-user' }, connector)).toEqual(false);
-    expect(isTrustedDeploymentReporter({ creator_id: null }, administrator)).toEqual(false);
+    // An account joins the creators by upserting the relationship, which does not make it a reporter of the platform
+    const upserted = { creator_id: ['connector-user', 'user-1'], deployment_reporter_ids: ['connector-user'] };
+    const reported = { creator_id: ['connector-user'], deployment_reporter_ids: ['connector-user', 'user-1'] };
+    await expect(validatorUpdate(testContext, editor, { validation_status: ['detected'] }, reported)).rejects.toThrow('Validation results');
+    await expect(validatorUpdate(testContext, editor, { validation_status: ['not_requested'] }, reported)).rejects.toThrow('Validation results');
+    await expect(validatorUpdate(testContext, connector, { validation_status: ['detected'] }, reported)).resolves.toEqual(true);
+    expect(isTrustedDeploymentReporter(reported, editor)).toEqual(false);
+    expect(isTrustedDeploymentReporter(reported, connector)).toEqual(true);
+    expect(isTrustedDeploymentReporter(upserted, connector)).toEqual(false);
+    expect(isTrustedDeploymentReporter({ deployment_reporter_ids: 'connector-user' }, connector)).toEqual(false);
+    expect(isTrustedDeploymentReporter({ deployment_reporter_ids: null }, administrator)).toEqual(false);
+  });
+
+  it('should refuse the reporters of a deployment in any creation, upsert or edition input, for administrators too', async () => {
+    const validatorCreation = getEntityValidatorCreation(RELATION_DEPLOYED_ON) as ValidatorFn;
+    const validatorUpdate = getEntityValidatorUpdate(RELATION_DEPLOYED_ON) as ValidatorFn;
+    expect(setsDeploymentReporters({ description: 'manual' })).toEqual(false);
+    expect(setsDeploymentReporters({ deployment_reporter_ids: ['user-1'] })).toEqual(true);
+    expect(setsDeploymentReporters({ deployment_reporter_ids: [] })).toEqual(true);
+    await Promise.all([editor, connector, administrator].flatMap((account) => [
+      expect(validatorCreation(testContext, account, { deployment_reporter_ids: [account.id] })).rejects.toThrow('reporters of a deployment'),
+      expect(validatorUpdate(testContext, account, { deployment_reporter_ids: [account.id] }, {})).rejects.toThrow('reporters of a deployment'),
+    ]));
   });
 });
 

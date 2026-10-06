@@ -40,6 +40,7 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationshi
 import { ENTITY_TYPE_INDICATOR, type BasicStoreEntityIndicator } from '../indicator/indicator-types';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type BasicStoreEntitySecurityPlatform } from '../securityPlatform/securityPlatform-types';
 import { ENTITY_TYPE_IOC_VALIDATION_REQUEST } from '../iocValidation/iocValidation-types';
+import { isDeploymentReporter } from '../iocValidation/iocValidation-utils';
 import { EXPIRATION_MANAGER_USER, INTERNAL_USERS, isUserInPlatformOrganization, SYSTEM_USER } from '../../utils/access';
 import { isEnterpriseEditionFromSettings } from '../../enterprise-edition/ee';
 import { storeUpdateEvent } from '../../database/stream/stream-handler';
@@ -48,6 +49,7 @@ import type { IndicatorDeploymentBatchResult, IndicatorDeploymentMetadataInput, 
 import {
   type BasicStoreRelationDeployedOn,
   type DeployedOnAttributes,
+  DEPLOYMENT_REPORTER_IDS,
   DEPLOYMENT_STATUS_ACTIVE,
   DEPLOYMENT_STATUS_DEPLOYED,
   DEPLOYMENT_STATUS_EXPIRED,
@@ -345,12 +347,29 @@ const touchLastSync = async (context: AuthContext, relation: BasicStoreRelation,
 };
 
 /** Whether an accepted report adds its account to the creators of the deployment (internal and no-creator accounts never are). */
-const isNewDeploymentReporter = (deployment: { creator_id?: string | string[] | null }, user: AuthUser) => {
+const isNewDeploymentCreator = (deployment: { creator_id?: string | string[] | null }, user: AuthUser) => {
   if (INTERNAL_USERS[user.id] || user.no_creators) {
     return false;
   }
   const creators = Array.isArray(deployment.creator_id) ? deployment.creator_id : [deployment.creator_id];
   return !creators.includes(user.id);
+};
+
+const ADD_REPORTER_SCRIPT = `if (ctx._source.${DEPLOYMENT_REPORTER_IDS} == null) { ctx._source.${DEPLOYMENT_REPORTER_IDS} = [params.id]; }`
+  + ` else if (!ctx._source.${DEPLOYMENT_REPORTER_IDS}.contains(params.id)) { ctx._source.${DEPLOYMENT_REPORTER_IDS}.add(params.id); }`
+  + ' else { ctx.op = \'noop\'; }';
+
+/**
+ * Records the account of an accepted report among the reporters of the deployment, the accounts speaking for its
+ * security platform (isTrustedDeploymentReporter): bookkeeping written without stream event, history or change of
+ * updated_at, so no creation, edit or upsert of the relationship ever sets it.
+ */
+const recordDeploymentReporter = async (context: AuthContext, deployment: BasicStoreRelationDeployedOn, user: AuthUser) => {
+  if (INTERNAL_USERS[user.id] || isDeploymentReporter(deployment, user.id)) {
+    return;
+  }
+  const params = { id: user.id };
+  await elUpdate(context, deployment._index, deployment.internal_id, { script: { source: ADD_REPORTER_SCRIPT, lang: 'painless', params } });
 };
 
 const notifyRelationEdit = async (user: AuthUser, element: unknown) => {
@@ -605,23 +624,27 @@ const applyDeploymentReport = async (
         ...change.attributes,
       }, { grantedRefsFromInput: true }) as unknown as BasicStoreRelationDeployedOn;
       await ensureCreatedPairAccess(context, element, indicator.internal_id, platform.internal_id);
+      const stored = await storeLoadById<BasicStoreRelationDeployedOn>(context, SYSTEM_USER, element.internal_id, RELATION_DEPLOYED_ON);
+      if (stored) {
+        await recordDeploymentReporter(context, stored, user);
+      }
       return { element, outcome: 'created' };
     }
     if (change.stale) {
       return { element: existing, outcome: 'unchanged' };
     }
-    // An accepted report makes its account a reporter of the deployment, as an upsert would: its later
-    // validation results are trusted (isTrustedDeploymentReporter reads creator_id)
-    const addsReporter = isNewDeploymentReporter(existing, user);
+    await recordDeploymentReporter(context, existing, user);
+    // An accepted report adds its account to the creators of the deployment, as an upsert would
+    const addsCreator = isNewDeploymentCreator(existing, user);
     // The first report makes the deployment count as disseminated: it takes the regular path, whose
     // event refreshes the indicator counters, and only a deployment already reported gets a heartbeat
-    if (!change.meaningful && !addsReporter && isReportedDeployment(existing)) {
+    if (!change.meaningful && !addsCreator && isReportedDeployment(existing)) {
       await touchLastSync(context, existing, change.attributes.last_sync_at);
       return { element: { ...existing, last_sync_at: change.attributes.last_sync_at as Date }, outcome: 'unchanged' };
     }
-    const patch: Record<string, unknown> = addsReporter ? { ...change.attributes, creator_id: [user.id] } : change.attributes;
+    const patch: Record<string, unknown> = addsCreator ? { ...change.attributes, creator_id: [user.id] } : change.attributes;
     const { element } = await patchAttribute(context, user, existing.internal_id, RELATION_DEPLOYED_ON, patch, {
-      operations: addsReporter ? { creator_id: UPDATE_OPERATION_ADD } : undefined,
+      operations: addsCreator ? { creator_id: UPDATE_OPERATION_ADD } : undefined,
     });
     await notifyRelationEdit(user, element);
     return { element: element as unknown as BasicStoreRelationDeployedOn, outcome: change.meaningful ? 'updated' : 'unchanged' };

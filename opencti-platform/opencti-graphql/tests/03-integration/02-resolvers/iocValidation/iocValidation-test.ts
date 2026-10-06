@@ -33,6 +33,7 @@ const OTHER_ACCOUNT_IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-20202020
 const NO_READABLE_PAIR_IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202024';
 const UNPUBLISHED_IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202025';
 const NEVER_ACTIVE_IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202026';
+const UPSERTED_DEPLOYMENT_IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202027';
 
 const INDICATOR_ADD = gql`
   mutation IndicatorAdd($input: IndicatorAddInput!) {
@@ -1057,6 +1058,94 @@ describe('IOC validation requests', () => {
         await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: restrictedIndicatorId } });
       }
       await connectorDelete(testContext, ADMIN_USER, OTHER_ACCOUNT_IOC_VALIDATION_CONNECTOR);
+      resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+      streamed.forEach((spy) => spy.mockRestore());
+    }
+  });
+
+  it('should not let a connector account that only upserted a deployment speak for its security platform', async () => {
+    // Writes outside the dataset: kept out of the raw stream the synchronization tests count
+    const streamed = [
+      vi.spyOn(streamHandler, 'storeCreateEntityEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeCreateRelationEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeUpdateEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeDeleteEvent').mockResolvedValue(undefined as never),
+    ];
+    // The request goes to the connector of another account: the connector account here is not the request connector
+    await registerConnector(testContext, ADMIN_USER, {
+      id: UPSERTED_DEPLOYMENT_IOC_VALIDATION_CONNECTOR,
+      name: 'OpenAEV IOC validation (upserted deployment)',
+      type: ConnectorType.InternalEnrichment,
+      scope: [IOC_VALIDATION_CONNECTOR_SCOPE],
+      auto: false,
+      auto_update: false,
+    }, { active: true, connector_user_id: ADMIN_USER.id });
+    resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+    const connectorUserId = await getUserIdByEmail(USER_CONNECTOR.email);
+    let indicatorId: string | undefined;
+    let id: string | undefined;
+    try {
+      const indicator = await queryAsAdminWithSuccess({
+        query: INDICATOR_ADD,
+        variables: { input: { name: 'upserted.evil.example', pattern: "[domain-name:value = 'upserted.evil.example']", pattern_type: 'stix', x_opencti_main_observable_type: 'Domain-Name' } },
+      });
+      indicatorId = indicator.data?.indicatorAdd.id as string;
+      // A deployment the connector account never reported, recorded by an administrator through the generic path
+      const recorded = await queryAsAdminWithSuccess({
+        query: RELATION_ADD,
+        variables: { input: { relationship_type: 'deployed-on', fromId: indicatorId, toId: platformId, deployment_status: 'deployed' } },
+      });
+      const deploymentId = recorded.data?.stixCoreRelationshipAdd.id;
+      // A description-only upsert adds the connector account to its creators
+      await queryAsUserWithSuccess(USER_CONNECTOR, {
+        query: RELATION_ADD,
+        variables: { input: { relationship_type: 'deployed-on', fromId: indicatorId, toId: platformId, description: 'Seen in the change log', update: true } },
+      });
+      const upserted = await queryAsAdminWithSuccess({ query: DEPLOYMENT_CREATORS, variables: { id: deploymentId } });
+      expect(upserted.data?.stixCoreRelationship.creators.map((creator: { id: string }) => creator.id)).toContain(connectorUserId);
+      const created = await queryAsAdminWithSuccess({
+        query: REQUEST_VALIDATION,
+        variables: {
+          platformIds: [platformId],
+          indicatorIds: [indicatorId],
+          testKinds: ['dns_resolution'],
+          connectorId: UPSERTED_DEPLOYMENT_IOC_VALIDATION_CONNECTOR,
+          name: 'Upserted by a connector account',
+        },
+      });
+      id = created.data?.indicatorsRequestValidation.id as string;
+      // Being a creator does not make it speak for the platform: neither its results nor an edition of the verdict
+      await queryAsUserIsExpectedForbidden(USER_CONNECTOR, {
+        query: REPORT_RESULTS,
+        variables: { id, platformId, results: [{ indicatorId, status: 'detected' }] },
+      });
+      await queryAsUserIsExpectedForbidden(USER_CONNECTOR, {
+        query: DEPLOYMENT_FIELD_PATCH,
+        variables: { id: deploymentId, input: [{ key: 'validation_status', value: ['detected'] }] },
+      });
+      const waiting = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: deploymentId } });
+      expect(waiting.data?.stixCoreRelationship.validation_status).toEqual('requested');
+      // Its reporters are written by its accepted reports only
+      await queryAsAdminWithError({
+        query: DEPLOYMENT_FIELD_PATCH,
+        variables: { id: deploymentId, input: [{ key: 'deployment_reporter_ids', value: [connectorUserId] }] },
+      });
+      // Once it reports the deployment, its result for the pair is accepted
+      await queryAsUserWithSuccess(USER_CONNECTOR, { query: REPORT_DEPLOYMENT, variables: { indicatorId, platformId, status: 'deployed' } });
+      await queryAsUserWithSuccess(USER_CONNECTOR, {
+        query: REPORT_RESULTS,
+        variables: { id, platformId, results: [{ indicatorId, status: 'detected' }] },
+      });
+      const proven = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: deploymentId } });
+      expect(proven.data?.stixCoreRelationship.validation_status).toEqual('detected');
+    } finally {
+      if (id) {
+        await queryAsAdminWithSuccess({ query: REQUEST_DELETE, variables: { id } });
+      }
+      if (indicatorId) {
+        await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: indicatorId } });
+      }
+      await connectorDelete(testContext, ADMIN_USER, UPSERTED_DEPLOYMENT_IOC_VALIDATION_CONNECTOR);
       resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
       streamed.forEach((spy) => spy.mockRestore());
     }

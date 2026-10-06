@@ -157,7 +157,7 @@ type Mutation {
     description: String
   ): IocValidationRequest @auth(for: [KNOWLEDGE_KNUPDATE])
   iocValidationRequestStatusUpdate(id: ID!, input: IocValidationRequestStatusInput!): IocValidationRequest @auth(for: [CONNECTORAPI])
-  # Accepted from the request connector, or from the account that recorded the deployments of the pairs on that platform
+  # Accepted from the request connector, or from an account whose deployment reports of the pairs on that platform were accepted
   iocValidationReportResults(id: ID!, platformId: StixRef!, results: [IocValidationPairResultInput!]!): IocValidationRequest @auth(for: [KNOWLEDGE_KNUPDATE])
   iocValidationRequestDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
 }

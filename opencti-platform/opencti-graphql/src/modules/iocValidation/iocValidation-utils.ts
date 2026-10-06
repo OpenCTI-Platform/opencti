@@ -58,24 +58,23 @@ export const requestAccessEndsOf = (request: AccessControlledElement, ends: Acce
   return ends.length < referencedCount ? [...ends, request] : ends;
 };
 
+export type DeploymentReporters = { deployment_reporter_ids?: string | string[] | null };
+
 /**
- * The creator_id of a deployed-on relationship lists the accounts that created or upserted it: the integrations
- * that record the lifecycle of this indicator on this security platform, the only ones speaking for the platform.
+ * The deployment_reporter_ids of a deployed-on relationship list the accounts whose write-back reports of its lifecycle
+ * were accepted: the integrations recording this indicator on this security platform, the only ones speaking for it.
+ * Not creator_id, which every account upserting the relationship joins (a description is enough).
  */
-export const isDeploymentReporter = (deployment: { creator_id?: string | string[] | null }, userId: string) => {
-  const creators = Array.isArray(deployment.creator_id) ? deployment.creator_id : [deployment.creator_id];
-  return creators.includes(userId);
+export const isDeploymentReporter = (deployment: DeploymentReporters, userId: string) => {
+  const reporters = Array.isArray(deployment.deployment_reporter_ids) ? deployment.deployment_reporter_ids : [deployment.deployment_reporter_ids];
+  return reporters.includes(userId);
 };
 
 /** Accounts allowed to write the deployment lifecycle outside the write-back mutations: connectors (imports, synchronization) and administrators. */
 export const isLifecycleWriter = (user: AuthUser) => isBypassUser(user) || isUserHasCapability(user, 'CONNECTORAPI');
 
-/**
- * Whether the account speaks for the security platform of a deployment: a connector account among the accounts that
- * recorded it. Being a creator is not enough on its own, since any editor who upserts the relationship (a description,
- * a new deployment in its default state) is added to its creators.
- */
-export const isTrustedDeploymentReporter = (deployment: { creator_id?: string | string[] | null }, user: AuthUser) => {
+/** Whether the account speaks for the security platform of a deployment: a connector account among its reporters. */
+export const isTrustedDeploymentReporter = (deployment: DeploymentReporters, user: AuthUser) => {
   return isLifecycleWriter(user) && isDeploymentReporter(deployment, user.id);
 };
 

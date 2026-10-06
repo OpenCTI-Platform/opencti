@@ -195,16 +195,18 @@ describe('IOC validation request access', () => {
 });
 
 describe('IOC validation result reporter', () => {
-  it('should be one of the accounts that recorded the deployment', () => {
-    expect(isDeploymentReporter({ creator_id: ['splunk-account', 'openaev-account'] }, 'splunk-account')).toEqual(true);
-    expect(isDeploymentReporter({ creator_id: ['splunk-account', 'openaev-account'] }, 'openaev-account')).toEqual(true);
-    expect(isDeploymentReporter({ creator_id: 'splunk-account' }, 'splunk-account')).toEqual(true);
+  it('should be one of the accounts whose reports of the deployment were accepted', () => {
+    expect(isDeploymentReporter({ deployment_reporter_ids: ['splunk-account', 'openaev-account'] }, 'splunk-account')).toEqual(true);
+    expect(isDeploymentReporter({ deployment_reporter_ids: ['splunk-account', 'openaev-account'] }, 'openaev-account')).toEqual(true);
+    expect(isDeploymentReporter({ deployment_reporter_ids: 'splunk-account' }, 'splunk-account')).toEqual(true);
   });
 
-  it('should reject any other account', () => {
-    expect(isDeploymentReporter({ creator_id: ['splunk-account'] }, 'analyst-account')).toEqual(false);
-    expect(isDeploymentReporter({ creator_id: [] }, 'analyst-account')).toEqual(false);
-    expect(isDeploymentReporter({ creator_id: null }, 'analyst-account')).toEqual(false);
+  it('should reject any other account, the creators of the deployment included', () => {
+    expect(isDeploymentReporter({ deployment_reporter_ids: ['splunk-account'] }, 'analyst-account')).toEqual(false);
+    expect(isDeploymentReporter({ deployment_reporter_ids: [] }, 'analyst-account')).toEqual(false);
+    expect(isDeploymentReporter({ deployment_reporter_ids: null }, 'analyst-account')).toEqual(false);
     expect(isDeploymentReporter({}, 'analyst-account')).toEqual(false);
+    const upserted = { creator_id: ['splunk-account', 'analyst-account'], deployment_reporter_ids: ['splunk-account'] };
+    expect(isDeploymentReporter(upserted, 'analyst-account')).toEqual(false);
   });
 });

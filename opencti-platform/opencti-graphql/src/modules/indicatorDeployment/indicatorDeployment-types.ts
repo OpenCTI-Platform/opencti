@@ -41,6 +41,9 @@ export type ValidationStatus = typeof VALIDATION_STATUSES[number];
 // Statuses proving the security platform reacted to the indicator.
 export const PROVEN_VALIDATION_STATUSES: ValidationStatus[] = [VALIDATION_STATUS_DETECTED, VALIDATION_STATUS_PREVENTED];
 
+// Accounts that speak for the security platform of a deployment (deployed-on attribute).
+export const DEPLOYMENT_REPORTER_IDS = 'deployment_reporter_ids';
+
 // Attributes carried by a deployed-on relationship (Indicator -> Security Platform).
 export interface DeployedOnAttributes {
   deployment_status: DeploymentStatus;
@@ -57,6 +60,7 @@ export interface DeployedOnAttributes {
   last_validation_at?: Date | string | null;
   validation_run_id?: string | null;
   error_message?: string | null;
+  deployment_reporter_ids?: string[] | null;
 }
 
 export interface BasicStoreRelationDeployedOn extends BasicStoreRelation, DeployedOnAttributes {}

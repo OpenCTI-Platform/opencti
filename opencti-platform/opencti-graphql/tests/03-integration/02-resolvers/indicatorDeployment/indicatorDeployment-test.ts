@@ -871,7 +871,7 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     ['deployment_status', 'validation_status'].forEach((field) => expect(after[field]).toEqual(before[field]));
   });
 
-  it('should add the reporting connector to the creators of a deployment someone else created, heartbeats included', async () => {
+  it('should add the reporting connector to the creators and the reporters of a deployment someone else created, heartbeats included', async () => {
     const connectorUserId = await getUserIdByEmail(USER_CONNECTOR.email);
     // Neither streamed nor kept: the raw stream counts of the suite are unchanged
     const streamed = [
@@ -894,19 +894,25 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
         variables: { input: { fromId: reportedIndicatorId, toId: platformId, relationship_type: 'deployed-on', deployment_status: 'deployed' } },
       });
       const importedId = imported.data?.stixCoreRelationshipAdd.id;
-      const creatorsOf = async () => (await internalLoadById(testContext, ADMIN_USER, importedId) as unknown as { creator_id: string[] }).creator_id;
-      expect(await creatorsOf()).not.toContain(connectorUserId);
-      // A heartbeat (same status) is accepted: the connector becomes a reporter once, the lifecycle is unchanged
+      type Recorded = { creator_id: string[]; deployment_reporter_ids?: string[] };
+      const recordedOf = async () => await internalLoadById(testContext, ADMIN_USER, importedId) as unknown as Recorded;
+      const beforeReport = await recordedOf();
+      expect(beforeReport.creator_id).not.toContain(connectorUserId);
+      // Created through the generic path: its creator reported nothing, so it is no reporter
+      expect(beforeReport.deployment_reporter_ids ?? []).toEqual([]);
+      // A heartbeat (same status) is accepted: the connector becomes a creator and a reporter once, the lifecycle is unchanged
       const heartbeat = await queryAsUserWithSuccess(USER_CONNECTOR, { query: REPORT_DEPLOYMENT, variables: { indicatorId: reportedIndicatorId, platformId, status: 'deployed' } });
       expect(heartbeat.data?.indicatorReportDeployment.deployment_status).toEqual('deployed');
-      const afterHeartbeat = await creatorsOf();
-      expect(afterHeartbeat).toContain(connectorUserId);
-      expect(afterHeartbeat).toContain(ADMIN_USER.id);
-      // A later report keeps every creator, without duplicates
+      const afterHeartbeat = await recordedOf();
+      expect(afterHeartbeat.creator_id).toContain(connectorUserId);
+      expect(afterHeartbeat.creator_id).toContain(ADMIN_USER.id);
+      expect(afterHeartbeat.deployment_reporter_ids).toEqual([connectorUserId]);
+      // A later report keeps every creator and every reporter, without duplicates
       await queryAsUserWithSuccess(USER_CONNECTOR, { query: REPORT_DEPLOYMENT, variables: { indicatorId: reportedIndicatorId, platformId, status: 'active' } });
-      const afterReport = await creatorsOf();
-      expect(afterReport.filter((id) => id === connectorUserId)).toHaveLength(1);
-      expect(afterReport).toContain(ADMIN_USER.id);
+      const afterReport = await recordedOf();
+      expect(afterReport.creator_id.filter((id) => id === connectorUserId)).toHaveLength(1);
+      expect(afterReport.creator_id).toContain(ADMIN_USER.id);
+      expect(afterReport.deployment_reporter_ids).toEqual([connectorUserId]);
     } finally {
       if (reportedIndicatorId) {
         await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: reportedIndicatorId } });
@@ -932,7 +938,7 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
       });
       reportedIndicatorId = created.data?.indicatorAdd.id as string;
       await setOrganizations(reportedIndicatorId, [testOrganizationId, platformOrganizationId]);
-      // Created by the connector through the generic path: already a reporter, never synchronized
+      // Created by the connector through the generic path: already a creator, never synchronized
       const pending = await queryAsUserWithSuccess(USER_CONNECTOR, {
         query: RELATION_ADD,
         variables: { input: { fromId: reportedIndicatorId, toId: platformId, relationship_type: 'deployed-on', deployment_status: 'pending' } },

@@ -296,17 +296,19 @@ evidence. A report gives one result per indicator: one naming an indicator twice
 before anything is written. Only the pairs of the request on that platform still waiting for an answer, or closed by the timeout of the
 request, are updated, so a result already received is never overwritten. Each result is recorded as a sighting of the indicator by the platform,
 negative for a miss. The identifier of that sighting is reserved to its request: only the results reported for that
-request (by its IOC validation connector or the account recording the deployment) create it and change what it
+request (by its IOC validation connector or the account reporting the deployment) create it and change what it
 records, even after a newer request took the pair over; administrators aside, nothing else does, and the identifier
 cannot be removed from the sighting. No edit gives that identifier, or the one of a hits sighting, to an existing
 sighting, administrators included: those sightings are created with the markings and the sharing of their pair.
 
 A validation result is proof attributed to the platform, so it is accepted only from the connector account that
-recorded the deployments of the pairs on that platform (the integration reporting its deployment statuses), from the
-OpenAEV connector the request was sent to, or from an administrator. Any other account, even with the "Update
-knowledge" capability, is refused, including an account that only edited or re-created a deployment (for example to
-add a description): editing a relationship lists you among its creators, but does not make you speak for the
-platform. The result is written as that account, so it must still read the indicator and the security platform: a
+reported the deployments of the pairs on that platform (the integration whose `indicatorReportDeployment` or
+`indicatorReportDeployments` reports were accepted), from the OpenAEV connector the request was sent to, or from an
+administrator. Any other account, even with the "Update knowledge" capability, is refused, including a connector
+account that only edited or re-created a deployment (for example to add a description): editing a relationship lists
+you among its creators, but only an accepted deployment report makes you speak for the platform. The accounts that
+did are kept on the deployment by the platform itself; no creation, edit or import sets them. The result is written
+as that account, so it must still read the indicator and the security platform: a
 result for an indicator or a security platform it can no longer read (a marking or a sharing changed after the request
 was sent) is not recorded, and the deployment gets the `error` status at the timeout of the request. The same rule
 protects every other way to write the validation fields of a deployment (validation status, last validation,

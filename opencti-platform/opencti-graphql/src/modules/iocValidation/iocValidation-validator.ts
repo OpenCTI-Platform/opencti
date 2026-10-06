@@ -26,6 +26,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { isBypassUser, SYSTEM_USER } from '../../utils/access';
 import { findDeployedOn, HIT_REPORT_ID_MAX_LENGTH, HIT_REPORT_IDS_MAX } from '../indicatorDeployment/indicatorDeployment-domain';
 import {
+  DEPLOYMENT_REPORTER_IDS,
   DEPLOYMENT_STATUS_EXPIRED,
   DEPLOYMENT_STATUS_PENDING,
   DEPLOYMENT_STATUSES,
@@ -36,7 +37,7 @@ import {
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../organization/organization-types';
 import { findIocValidationConnectors } from './iocValidation-domain';
 import { ENTITY_TYPE_IOC_VALIDATION_REQUEST } from './iocValidation-types';
-import { isLifecycleWriter, isTrustedDeploymentReporter } from './iocValidation-utils';
+import { type DeploymentReporters, isLifecycleWriter, isTrustedDeploymentReporter } from './iocValidation-utils';
 
 const VALIDATION_FIELDS = ['validation_status', 'last_validation_at', 'validation_run_id'];
 const LIFECYCLE_FIELDS = ['deployment_status', 'external_id', 'deployed_at', 'last_sync_at', 'removed_at', 'removal_requested_at', 'hit_count', 'first_hit_at', 'last_hit_at', 'last_hit_report_ids', 'error_message'];
@@ -108,7 +109,7 @@ const isConnectorUserOfRequest = async (context: AuthContext, user: AuthUser, re
 const canChangeValidation = async (
   context: AuthContext,
   user: AuthUser,
-  initial: { creator_id?: string | string[] | null; validation_run_id?: string | null } | undefined,
+  initial: DeploymentReporters & { validation_run_id?: string | null } | undefined,
 ) => {
   if (!isLifecycleWriter(user)) {
     return false;
@@ -520,6 +521,13 @@ const refuseHitReportIds = () => {
   );
 };
 
+/** Whether an input sets the reporters of a deployment, which only an accepted write-back report records. */
+export const setsDeploymentReporters = (instance: Record<string, unknown>) => isProvided(instance, DEPLOYMENT_REPORTER_IDS);
+
+const refuseDeploymentReporters = () => {
+  throw ValidationError('The reporters of a deployment are the accounts whose deployment reports were accepted', DEPLOYMENT_REPORTER_IDS);
+};
+
 // `expired` is the deployment manager's decision when no removal confirmation arrives in time, never a report.
 const setsReservedStatus = (instance: Record<string, unknown>) => firstValue(instance.deployment_status) === DEPLOYMENT_STATUS_EXPIRED;
 
@@ -539,6 +547,9 @@ const refuseMarkings = (user: AuthUser) => {
 const validatorCreation: ValidatorFn = async (context, user, instance) => {
   if (setsValidityWindow(instance)) {
     return refuseValidityWindow();
+  }
+  if (setsDeploymentReporters(instance)) {
+    return refuseDeploymentReporters();
   }
   const invalidStatus = invalidStatusField(instance);
   if (invalidStatus) {
@@ -597,6 +608,9 @@ const validatorUpdate: ValidatorFn = async (context, user, instance, initial, ed
   if (setsValidityWindow(instance)) {
     return refuseValidityWindow();
   }
+  if (setsDeploymentReporters(instance)) {
+    return refuseDeploymentReporters();
+  }
   const invalidStatus = invalidStatusField(instance);
   if (invalidStatus) {
     return refuseInvalidStatus(instance, invalidStatus);
@@ -628,7 +642,7 @@ const validatorUpdate: ValidatorFn = async (context, user, instance, initial, ed
   if (touchesLifecycleFields(instance) && !isLifecycleWriter(user)) {
     return refuseLifecycle(user);
   }
-  const deployment = initial as { creator_id?: string | string[] | null; validation_run_id?: string | null } | undefined;
+  const deployment = initial as DeploymentReporters & { validation_run_id?: string | null } | undefined;
   if (touchesValidationFields(instance) && !await canChangeValidation(context, user, deployment)) {
     return refuseValidation(user);
   }

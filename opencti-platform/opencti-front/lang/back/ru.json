@@ -299,6 +299,7 @@
   "Deployed at": "Развернуто",
   "Deployment error": "Ошибка развертывания",
   "Deployment platforms count": "Число платформ развертывания",
+  "Deployment reporters": "Отправители отчетов о развертывании",
   "Deployment status": "Статус развертывания",
   "Deployments count": "Число развертываний",
   "Description": "Описание",

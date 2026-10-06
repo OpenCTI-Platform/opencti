@@ -2,6 +2,7 @@ import type { AttributeDefinition } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import {
+  DEPLOYMENT_REPORTER_IDS,
   DEPLOYMENT_STATUSES,
   INDICATOR_DEPLOYMENT_EXPIRED_COUNT,
   INDICATOR_DEPLOYMENT_FAILED_COUNT,
@@ -54,6 +55,10 @@ export const deployedOnAttributes: Array<AttributeDefinition> = [
   { name: 'last_validation_at', label: 'Last validation', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   { name: 'validation_run_id', label: 'Validation run id', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
   { name: 'error_message', label: 'Deployment error', type: 'string', format: 'text', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
+  // Accounts whose write-back reports were accepted, the only ones speaking for the security platform: kept by the
+  // write-back only (side channel), never set by a creation, an edit or an upsert, unlike creator_id. Plain strings,
+  // so a user merge does not carry them: the merged account is recorded again at its next report.
+  { name: DEPLOYMENT_REPORTER_IDS, label: 'Deployment reporters', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, update: false, isFilterable: false },
 ];
 
 // Derived counters maintained on the Indicator from its deployed-on relationships (side-channel, no stream event).
