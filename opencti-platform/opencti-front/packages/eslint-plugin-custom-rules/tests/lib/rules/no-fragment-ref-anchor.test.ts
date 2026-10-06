@@ -47,6 +47,18 @@ ruleTester.run('no-fragment-ref-anchor', rule, {
       errors: [{ messageId: 'fragmentAnchor', data: { component: 'Fade' } }],
     },
     {
+      code: '<Grow in><>{v}</></Grow>;',
+      errors: [{ messageId: 'fragmentAnchor', data: { component: 'Grow' } }],
+    },
+    {
+      code: '<Slide in><>{v}</></Slide>;',
+      errors: [{ messageId: 'fragmentAnchor', data: { component: 'Slide' } }],
+    },
+    {
+      code: '<Zoom in><>{v}</></Zoom>;',
+      errors: [{ messageId: 'fragmentAnchor', data: { component: 'Zoom' } }],
+    },
+    {
       code: '<ClickAwayListener onClickAway={f}><>{v}</></ClickAwayListener>;',
       errors: [{ messageId: 'fragmentAnchor', data: { component: 'ClickAwayListener' } }],
     },
