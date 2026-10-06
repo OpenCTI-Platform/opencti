@@ -117,6 +117,8 @@ const RelationSelection: FunctionComponent<RelationSelectionProps> = ({
       event.stopPropagation();
       event.preventDefault();
       document.removeEventListener('mousemove', onMove);
+      // The node under the release ends the relationship, however far the last move landed.
+      pickNodesAt(reposition(event));
       gesture.current.freeHand = false;
       const ctx = lineContext();
       if (!ctx) return;

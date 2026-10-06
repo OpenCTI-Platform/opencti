@@ -31,10 +31,10 @@ describe('LassoSelection', () => {
   const inside = graphNode({ id: 'inside', x: 50, y: 50 });
   const outside = graphNode({ id: 'outside', x: 500, y: 500 });
 
-  const renderLasso = () => {
+  const renderLasso = (nodes = [inside, outside]) => {
     const setSelectedNodes = vi.fn();
     const { container } = testRender(
-      <LassoSelection width={800} height={600} activated graphDataNodes={[inside, outside]} graph={graph} setSelectedNodes={setSelectedNodes} />,
+      <LassoSelection width={800} height={600} activated graphDataNodes={nodes} graph={graph} setSelectedNodes={setSelectedNodes} />,
     );
     return { setSelectedNodes, canvas: container.querySelector('#lasso-canvas') as HTMLCanvasElement };
   };
@@ -50,6 +50,16 @@ describe('LassoSelection', () => {
     // The gesture is over: a later release selects nothing more.
     fireEvent.mouseUp(canvas, at(10, 100));
     expect(setSelectedNodes).toHaveBeenCalledTimes(1);
+  });
+
+  it('closes the path at the release point, past the last move reported', () => {
+    // Under the side from the last move to the release, outside the path the moves alone draw.
+    const corner = graphNode({ id: 'corner', x: 30, y: 70 });
+    const { setSelectedNodes, canvas } = renderLasso([corner, outside]);
+    fireEvent.mouseDown(canvas, at(10, 10));
+    [at(100, 10), at(100, 100)].forEach((point) => fireEvent.mouseMove(document, point));
+    fireEvent.mouseUp(document.body, at(10, 100));
+    expect([...setSelectedNodes.mock.calls[0][0]]).toEqual([corner]);
   });
 
   it('draws the path from the press point', () => {
@@ -113,6 +123,15 @@ describe('RelationSelection', () => {
     // The first move already lands on the target: the source is the node under the press.
     fireEvent.mouseMove(document, at(100, 10, 2));
     fireEvent.mouseUp(document.body, at(150, 10, 2));
+    expect(setSelectedNodes).toHaveBeenCalledTimes(1);
+    expect([...setSelectedNodes.mock.calls[0][0]]).toEqual([from, to]);
+  });
+
+  it('ends on the node under the release when no move reached it', () => {
+    const { setSelectedNodes, canvas } = renderRelation();
+    fireEvent.mouseDown(canvas, at(10, 10, 2));
+    fireEvent.mouseMove(document, at(50, 10, 2));
+    fireEvent.mouseUp(canvas, at(100, 10, 2));
     expect(setSelectedNodes).toHaveBeenCalledTimes(1);
     expect([...setSelectedNodes.mock.calls[0][0]]).toEqual([from, to]);
   });

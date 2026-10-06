@@ -94,13 +94,17 @@ const LassoSelection: FunctionComponent<LassoSelectionProps> = ({
       ctx.moveTo(coord.x, coord.y);
     };
 
-    // The path is followed over the whole document: the gesture ends wherever the button is released.
-    const onUp = () => {
+    // The path is followed over the whole document: the gesture ends wherever the button is released,
+    // and closes from the release point, however far the last move reported lies from it.
+    const onUp = (event: MouseEvent) => {
       if (!gesture.current.freeHand) return;
       document.removeEventListener('mousemove', onMove);
       gesture.current.freeHand = false;
       const { path } = gesture.current;
       gesture.current.path = [];
+      const coord = reposition(event);
+      const release = graph.current?.screen2GraphCoords(coord.x, coord.y);
+      if (release) path.push([release.x, release.y]);
       const ctx = lassoContext();
       if (!ctx) return;
       ctx.closePath();
