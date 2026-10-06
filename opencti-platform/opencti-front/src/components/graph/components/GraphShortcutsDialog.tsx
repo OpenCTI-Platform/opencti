@@ -9,10 +9,11 @@ interface GraphShortcutsDialogProps {
   open: boolean;
   onClose: () => void;
   searchable?: boolean;
+  exportable?: boolean;
 }
 
 /** The keyboard shortcuts of the graphs, as handled by `useGraphKeyboardShortcuts`. */
-const GraphShortcutsDialog = ({ open, onClose, searchable = true }: GraphShortcutsDialogProps) => {
+const GraphShortcutsDialog = ({ open, onClose, searchable = true, exportable = true }: GraphShortcutsDialogProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme<Theme>();
   const shortcuts: { keys: string[]; label: string }[] = [
@@ -29,7 +30,7 @@ const GraphShortcutsDialog = ({ open, onClose, searchable = true }: GraphShortcu
     { keys: ['Esc'], label: t_i18n('Clear the selection') },
     { keys: ['G'], label: t_i18n('Show or minimize the legend') },
     { keys: ['Shift', 'M'], label: t_i18n('Full screen') },
-    { keys: ['Shift', 'E'], label: t_i18n('Export the whole graph as a high-resolution image') },
+    ...(exportable ? [{ keys: ['Shift', 'E'], label: t_i18n('Export the whole graph as a high-resolution image') }] : []),
     ...(searchable ? [{ keys: ['/'], label: t_i18n('Search in the graph') }] : []),
     { keys: ['?'], label: t_i18n('Keyboard shortcuts') },
   ];

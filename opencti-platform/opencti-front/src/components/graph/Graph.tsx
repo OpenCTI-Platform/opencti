@@ -35,6 +35,7 @@ import { APP_BASE_PATH, MESSAGING$ } from '../../relay/environment';
 import useGraphStartInvestigation from './utils/useGraphStartInvestigation';
 import { graphNodeTitle } from './utils/useGraphParser';
 import useReaderActed from './utils/useReaderActed';
+import useGranted, { KNOWLEDGE_KNFRONTENDEXPORT } from '../../utils/hooks/useGranted';
 
 export interface GraphProps {
   parentRef: MutableRefObject<HTMLDivElement | null>;
@@ -62,6 +63,7 @@ const Graph = ({
   const nodeClicked = useRef<{ node?: GraphNode; time?: number }>({});
   const pointer = useRef({ x: 0, y: 0 });
   const startInvestigation = useGraphStartInvestigation();
+  const canExport = useGranted([KNOWLEDGE_KNFRONTENDEXPORT]);
 
   const {
     saveZoom,
@@ -602,7 +604,9 @@ const Graph = ({
     },
     toggleLegend: only2D(toggleLegend),
     toggleFullscreen,
-    exportImage: only2D(() => exportImage()),
+    exportImage: only2D(() => {
+      if (canExport) exportImage();
+    }),
     focusSearch: () => {
       parentRef.current?.querySelector<HTMLInputElement>('[data-graph-search] input')?.focus();
     },
@@ -623,12 +627,12 @@ const Graph = ({
     counters,
     drawnTypes: typeInventory,
     typeFilterCount,
-    exportImage: () => {
+    exportImage: canExport ? () => {
       latestViewActions.current.exportImage();
-    },
+    } : undefined,
     toggleFullscreen: () => latestViewActions.current.toggleFullscreen(),
     showShortcuts: () => setShortcutsOpen(true),
-  }), [counters, typeInventory, typeFilterCount]);
+  }), [counters, typeInventory, typeFilterCount, canExport]);
 
   const cardTarget: GraphHoverCardTarget | null = useMemo(() => {
     if (!card) return null;
@@ -879,7 +883,7 @@ const Graph = ({
           }}
           onActiveChange={setHovered}
         />
-        <GraphShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} searchable={context !== 'analyses'} />
+        <GraphShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} searchable={context !== 'analyses'} exportable={canExport} />
         <GraphViewContext.Provider value={viewActions}>
           {children}
         </GraphViewContext.Provider>

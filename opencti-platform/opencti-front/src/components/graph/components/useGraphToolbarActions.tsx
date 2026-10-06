@@ -459,8 +459,8 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
   ];
 
   if (view) {
-    actions.push(
-      {
+    if (view.exportImage) {
+      actions.push({
         id: 'export-image',
         group: 'export',
         priority: 35,
@@ -469,7 +469,9 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
         icon: <ImageOutlined {...ICON} />,
         disabledReason: in3D,
         onSelect: view.exportImage,
-      },
+      });
+    }
+    actions.push(
       {
         id: 'legend',
         group: 'help',

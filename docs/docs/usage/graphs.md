@@ -121,7 +121,7 @@ From left to right:
 
 The search field and the **More actions** menu close the toolbar. **More actions** holds the rare actions (select all nodes, select by entity type, the relationships of the selection, unfix the nodes) and, when the window is too narrow for the whole toolbar, the actions it has no room for, grouped the same way. On a graph narrower still (a small window, or a side panel open next to it), the creation and removal tools fold into one **Creation and removal** button that opens them.
 
-Every tooltip names the action and its keyboard shortcut; a disabled action says why in its tooltip (for example "Select entities first"). The toolbar is one stop of the `Tab` key: the arrow keys, `Home` and `End` move between its controls.
+Every tooltip names the action, and its keyboard shortcut when it has one; a disabled action says why in its tooltip (for example "Select entities first"). The toolbar is one stop of the `Tab` key: the arrow keys, `Home` and `End` move between its controls.
 
 ## Navigate
 
@@ -220,6 +220,8 @@ Two exports are available:
 
 - the **image export** of the container or workspace header captures the visible area of the page, in PNG or PDF;
 - **Export the whole graph as a high-resolution image**, in the toolbar, renders the whole graph, not only the visible area, at print resolution, with a title and a legend of the entity types and line styles.
+
+Both need the capability that allows exporting knowledge; without it, the toolbar has no export and `Shift` + `E` does nothing.
 
 ## 3D mode
 

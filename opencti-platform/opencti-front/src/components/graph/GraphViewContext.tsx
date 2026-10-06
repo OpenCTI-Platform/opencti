@@ -11,7 +11,8 @@ export interface GraphViewActions {
   drawnTypes: { entityTypes: readonly string[]; relationshipTypes: readonly string[] };
   /** Entity and relationship types filtered out, as counted by the legend and the type filter. */
   typeFilterCount: number;
-  exportImage: () => void;
+  /** Absent for a user without the capability of the other knowledge exports. */
+  exportImage?: () => void;
   toggleFullscreen: () => void;
   showShortcuts: () => void;
 }

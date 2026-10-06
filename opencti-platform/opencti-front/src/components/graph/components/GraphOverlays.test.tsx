@@ -430,4 +430,10 @@ describe('GraphShortcutsDialog', () => {
     expect(screen.getByText('Fit the selection')).toBeInTheDocument();
     expect(screen.queryByText('Search in the graph')).toBeNull();
   });
+
+  it('leaves the export shortcut out for a user not allowed to export', () => {
+    testRender(<GraphShortcutsDialog open onClose={vi.fn()} exportable={false} />);
+    expect(screen.getByText('Fit the selection')).toBeInTheDocument();
+    expect(screen.queryByText('Export the whole graph as a high-resolution image')).toBeNull();
+  });
 });

@@ -65,6 +65,12 @@ describe('GraphToolbar', () => {
     expect(within(toolbar).getByRole('button', { name: 'More actions' })).toBeInTheDocument();
   });
 
+  it('offers the high-resolution export only to a user allowed to export', () => {
+    renderToolbar({ ...viewActions(), exportImage: undefined });
+    expect(screen.queryByRole('button', { name: 'Export the whole graph as a high-resolution image' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Keyboard shortcuts' })).toBeInTheDocument();
+  });
+
   it('sits on the elevated surface of the legend and the details panel', () => {
     renderToolbar();
     const surface = screen.getByRole('toolbar', { name: 'Graph toolbar' }).closest('[data-graph-toolbar]');
