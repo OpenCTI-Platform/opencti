@@ -556,16 +556,22 @@ export const runProvenanceBackfillBatch = async (context: AuthContext, opts: { b
   }
   if (state.status === 'pending') {
     state.status = 'running';
-    state.started_at = runStart.toISOString();
+    state.started_at = null;
     state.cursor = null;
     state.processed = 0;
     state.updated = 0;
     state.errors = 0;
     state.expected = await elCount(context, SYSTEM_USER, BACKFILL_INDICES, { types: trackedTypes });
   }
-  // The live tracking records every write after the start of the run: the history is only read before it
-  const watermark = state.started_at ?? runStart.toISOString();
-  state.started_at = watermark;
+  // The live tracking records every write after the start of the run: the history is only read before it.
+  // A new watermark is saved before the first page: a run stopped before its first batch is saved restarts with the
+  // same watermark, never a later one that would leave the live assertions recorded in between uncounted
+  let watermark = state.started_at;
+  if (!watermark) {
+    watermark = runStart.toISOString();
+    state.started_at = watermark;
+    await saveBackfillState(context, configuration.id, state, runStart);
+  }
   const page = await elPaginate<BackfillElement>(context, SYSTEM_USER, BACKFILL_INDICES, {
     types: trackedTypes,
     first: opts.batchSize,

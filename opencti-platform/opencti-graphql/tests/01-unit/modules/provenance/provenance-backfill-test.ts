@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import '../../../../src/modules/index';
 import {
   type BackfillSourceResolver,
@@ -7,9 +7,36 @@ import {
   findRunningWorkConnector,
   groupSharedUserWrites,
   readBackfillState,
+  runProvenanceBackfillBatch,
 } from '../../../../src/modules/provenance/provenance-backfill';
-import type { AssertionSource } from '../../../../src/modules/provenance/provenance-types';
+import type { AssertionSource, ProvenanceBackfillState } from '../../../../src/modules/provenance/provenance-types';
 import { RULE_MANAGER_USER } from '../../../../src/utils/access';
+import { elCount, elPaginate } from '../../../../src/database/engine';
+import { patchAttribute } from '../../../../src/database/middleware';
+import { findByManagerId } from '../../../../src/modules/managerConfiguration/managerConfiguration-domain';
+import { listProvenanceTrackedTypes } from '../../../../src/modules/provenance/provenance-tracking';
+import type { AuthContext } from '../../../../src/types/user';
+
+vi.mock('../../../../src/database/engine', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/database/engine')>(),
+  elCount: vi.fn(),
+  elPaginate: vi.fn(),
+}));
+
+vi.mock('../../../../src/database/middleware', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/database/middleware')>(),
+  patchAttribute: vi.fn(),
+}));
+
+vi.mock('../../../../src/modules/managerConfiguration/managerConfiguration-domain', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/modules/managerConfiguration/managerConfiguration-domain')>(),
+  findByManagerId: vi.fn(),
+}));
+
+vi.mock('../../../../src/modules/provenance/provenance-tracking', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/modules/provenance/provenance-tracking')>(),
+  listProvenanceTrackedTypes: vi.fn(),
+}));
 
 const connectorSource = (id: string): AssertionSource => ({ source_id: id, source_kind: 'connector', source_name: `Connector ${id}`, work_id: null });
 const userSource = (id: string): AssertionSource => ({ source_id: id, source_kind: 'user', source_name: `User ${id}`, work_id: null });
@@ -219,5 +246,31 @@ describe('Provenance backfill', () => {
   it('should read a partial backfill state with defaults', () => {
     expect(readBackfillState(undefined)).toMatchObject({ status: 'pending', processed: 0, cursor: null });
     expect(readBackfillState({ status: 'running', processed: 10 })).toMatchObject({ status: 'running', processed: 10, expected: 0 });
+  });
+
+  it('should save a new watermark before the first page, so that a run stopped in its first batch restarts with it', async () => {
+    const context = { source: 'provenance-backfill-test' } as AuthContext;
+    const saved: ProvenanceBackfillState[] = [];
+    vi.mocked(findByManagerId).mockImplementation(async () => ({ id: 'backfill-configuration', manager_setting: saved.at(-1) }) as any);
+    vi.mocked(patchAttribute).mockImplementation(async (...args: any[]) => {
+      saved.push(structuredClone(args[4].manager_setting));
+      return {} as any;
+    });
+    vi.mocked(listProvenanceTrackedTypes).mockResolvedValue(['Malware']);
+    vi.mocked(elCount).mockResolvedValue(3);
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      vi.setSystemTime(new Date('2026-03-01T00:00:00.000Z'));
+      vi.mocked(elPaginate).mockRejectedValueOnce(new Error('stopped during the first batch'));
+      await expect(runProvenanceBackfillBatch(context, { batchSize: 500 })).rejects.toThrow('stopped during the first batch');
+      expect(saved).toEqual([expect.objectContaining({ status: 'running', started_at: '2026-03-01T00:00:00.000Z', cursor: null, processed: 0, expected: 3 })]);
+      // The next run reads the history before the saved watermark, not before its own start
+      vi.setSystemTime(new Date('2026-03-01T00:05:00.000Z'));
+      vi.mocked(elPaginate).mockResolvedValueOnce({ elements: { edges: [], pageInfo: { hasNextPage: false } }, endCursor: null } as any);
+      expect(await runProvenanceBackfillBatch(context, { batchSize: 500 })).toMatchObject({ status: 'completed', started_at: '2026-03-01T00:00:00.000Z' });
+      expect(saved).toHaveLength(2);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
