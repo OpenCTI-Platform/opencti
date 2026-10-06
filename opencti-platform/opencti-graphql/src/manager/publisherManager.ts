@@ -21,10 +21,12 @@ import {
 } from '../modules/notifier/notifier-statics';
 import { type BasicStoreEntityNotifier, ENTITY_TYPE_NOTIFIER } from '../modules/notifier/notifier-types';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import type { StoreMarkingDefinition } from '../types/store';
 import type { SseEvent, StreamNotifEvent } from '../types/event';
 import type { BasicStoreSettings } from '../types/settings';
 import type { AuthContext, AuthUser, UserOrigin } from '../types/user';
-import { executionContext, SYSTEM_USER } from '../utils/access';
+import { executionContext, isBypassUser, SYSTEM_USER } from '../utils/access';
 import { now } from '../utils/format';
 import type { NotificationData } from '../utils/publisher-mock';
 import {
@@ -91,6 +93,34 @@ export async function processNotificationData(
   }
 
   return generatedContent;
+}
+
+export type NotificationTemplateMarking = Pick<StoreMarkingDefinition, 'id' | 'standard_id' | 'definition_type' | 'definition' | 'x_opencti_color' | 'x_opencti_order'>;
+
+/**
+ * STIX instances only carry marking ids (object_marking_refs).
+ * Resolve them so notifier templates can display marking information.
+**/
+export function resolveNotificationDataMarkings(
+  data: NotificationData[],
+  markingsMap: Map<string, StoreMarkingDefinition>,
+  user: AuthUser | undefined,
+): NotificationData[] {
+  const canSeeAllMarkings = !!user && isBypassUser(user);
+  const userMarkingIds = new Set((user?.allowed_marking ?? []).map((m) => m.internal_id));
+  return data.map((notificationData) => {
+    const { instance } = notificationData;
+    const markingRefs = 'object_marking_refs' in instance ? (instance.object_marking_refs ?? []) : [];
+    const objectMarking: NotificationTemplateMarking[] = [];
+    for (let i = 0; i < markingRefs.length; i += 1) {
+      const marking = markingsMap.get(markingRefs[i]);
+      if (marking && (canSeeAllMarkings || userMarkingIds.has(marking.internal_id))) {
+        const { id, standard_id, definition_type, definition, x_opencti_color, x_opencti_order } = marking;
+        objectMarking.push({ id, standard_id, definition_type, definition, x_opencti_color, x_opencti_order });
+      }
+    }
+    return { ...notificationData, instance: { ...instance, objectMarking } };
+  });
 }
 
 export function assembleTemplateData(
@@ -273,7 +303,9 @@ export const internalProcessNotification = async (
 
   const content = Object.entries(contentEventMapping).map(([title, events]) => ({ title, events }));
 
-  const assembledTemplateData = assembleTemplateData(content, triggerList, storeSettings, notificationUser, notificationData);
+  const markingsMap = await getEntitiesMapFromCache<StoreMarkingDefinition>(authContext, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const templateNotificationData = resolveNotificationDataMarkings(notificationData, markingsMap, usersMap.get(notificationUser.user_id));
+  const assembledTemplateData = assembleTemplateData(content, triggerList, storeSettings, notificationUser, templateNotificationData);
 
   // Telemetry: notifications sent by channel (attempts semantics, counted
   // before the delivery call; simplified email counts as email).
