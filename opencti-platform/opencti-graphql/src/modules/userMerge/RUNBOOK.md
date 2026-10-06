@@ -387,10 +387,15 @@ Verify that the snapshot completed successfully before launching the first merge
 
 ### 3.5 Reverse Proxy & Network Timeout Settings
 
-Merges on accounts holding large volumes of history or entities can take between 10 and 45 seconds.
+The dry-run only counts: it returns in seconds, even for an account named in millions of documents. The real run rewrites every document naming the source, so its duration follows the activity of the account, not the size of the platform. Estimated on a platform of 550M documents:
 
-* Check the **reverse proxy read timeout** (Nginx, AWS ALB, Cloudflare). Default proxy timeouts are often set to 60 seconds. If an account has extensive history, set the proxy timeout to at least **120 seconds** (`proxy_read_timeout 120s;`).
-* Confirm `app:request_timeout` in OpenCTI config (default: 20 minutes) is not constrained.
+| Source account | Documents rewritten | Real run |
+|---|---|---|
+| Ordinary user | up to a few hundred thousand | under a minute |
+| Very active user | about 5M | 5 to 15 minutes |
+
+* The real run is synchronous. A run longer than the **reverse proxy read timeout** (Nginx, AWS ALB, Cloudflare, often 60 seconds) answers a 504 while it keeps running server-side, and so does one longer than `app:request_timeout` (20 minutes by default). Raising the proxy timeout (`proxy_read_timeout`) avoids the error, but do not rely on the HTTP response: follow the run in the journal (section 4.4), and apply [section 6.1](#61-incident-1-http-504--client-disconnection--timeout) on a timeout.
+* The `count` values of the dry-run report give the order of magnitude in advance.
 
 ---
 
@@ -448,6 +453,7 @@ Inspect the returned `report.handlers`:
 1. **Verify Handlers & Counts**:
    * `source-deactivation`: Count is `1` (or `0` if the source was already disabled and carrying `merged_into === targetId`). Note that an account manually expired before the merge will still count as `1` because `merged_into` must be written.
    * `scalar-user-references`: Documents where the source was `creator_id`, `user_id`, etc.
+   * `connector.user-id` (under `scalar-user-references`): connectors registered under the source account. A non-zero count means connectors that authenticate as the source, and stop working once its tokens are revoked: see Step 3 and section 7.
    * `filter-user-references`: Number of saved filters, triggers, or feeds containing the source user UUID.
    * `blob-user-references`: Dashboards, playbooks, and draft update patches rewritten.
    * `history-attribution` & `history-context-data-payload`: Past events and audit logs being re-attributed. The payload handler rewrites the subject ids and the recorded changes of a record, which the platform shows and resolves into names; the raw payload (`input`, `list_params`, `filters`) is retained as recorded (`history.context-data-raw-payload`).
@@ -463,7 +469,7 @@ Inspect the returned `report.handlers`:
 
 ### 4.3 Step 3: Execute Real Merge
 
-Execute the merge with `dryRun: false`. If a public exposure alert was flagged in Step 2, set `acknowledgeExposureChange: true`:
+Execute the merge with `dryRun: false`. Leave `acknowledgeExposureChange: false`: if the dry-run reported a blocking alert, the engine refuses the real run and nothing is written. Set it to `true` only once that alert has been reviewed in Step 2 and the exposure change it describes is accepted.
 
 ```graphql
 mutation UserMergeApply($sourceId: ID!, $targetId: ID!) {
@@ -473,7 +479,7 @@ mutation UserMergeApply($sourceId: ID!, $targetId: ID!) {
     options: {
       dryRun: false
       rightsStrategy: STRICT
-      acknowledgeExposureChange: true
+      acknowledgeExposureChange: false
     }
   ) {
     id
@@ -485,6 +491,8 @@ mutation UserMergeApply($sourceId: ID!, $targetId: ID!) {
   }
 }
 ```
+
+The real run revokes every API token of the source. A connector, feed or script that authenticates with one of them stops working: give it a token of the target, or better of a dedicated service account, before restarting it (see section 7).
 
 ### 4.4 Step 4: Verify Completion via the Journal
 
@@ -647,7 +655,9 @@ Once all accounts in the batch have been processed:
 2. **Restore the platform**: Reverse the steps of [section 3.1](#31-platform-at-rest), in the opposite
    order — re-enable the scheduled platform tasks and restart the platform, start the workers, then
    start the connectors and ingestion feeds last, so nothing is queued before there is a consumer for
-   it. Re-run the verification query of that section: the worker count should be back to its nominal
+   it. Before starting a connector or a feed, check that it does not authenticate with a token of a
+   merged source account: those tokens are revoked, and the `connector.user-id` count of the dry-run
+   named the connectors concerned. Re-run the verification query of that section: the worker count should be back to its nominal
    value.
 3. **Re-open Platform Traffic**: Re-enable user access through the reverse proxy.
 
@@ -679,9 +689,9 @@ mutation DryRun($src: ID!, $dst: ID!) {
   }
 }
 
-# 2. Real Run
+# 2. Real Run — set acknowledgeExposureChange: true only after reviewing a blocking alert of the dry-run
 mutation ApplyMerge($src: ID!, $dst: ID!) {
-  userMerge(sourceId: $src, targetId: $dst, options: { dryRun: false, rightsStrategy: STRICT, acknowledgeExposureChange: true }) {
+  userMerge(sourceId: $src, targetId: $dst, options: { dryRun: false, rightsStrategy: STRICT, acknowledgeExposureChange: false }) {
     id
     status
     report { total_updated }
