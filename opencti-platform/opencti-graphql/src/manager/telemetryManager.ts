@@ -354,7 +354,7 @@ export const addPlaybookExecutionCount = () => {
 // Knowledge curation counters. Fire-and-forget: telemetry never breaks a curation action.
 const addCurationCount = (gauge: string, count = 1) => {
   redisSetTelemetryAdd(gauge, count)
-    .catch((reason) => logApp.warn('Error adding curation count to telemetry', { gauge, reason }));
+    .catch((cause) => logApp.warn('Error adding curation count to telemetry', { gauge, cause }));
 };
 export const addCurationProposalCreatedCount = (count = 1) => addCurationCount(TELEMETRY_GAUGE_CURATION_PROPOSAL_CREATED, count);
 export const addCurationProposalAcceptedCount = () => addCurationCount(TELEMETRY_GAUGE_CURATION_PROPOSAL_ACCEPTED);

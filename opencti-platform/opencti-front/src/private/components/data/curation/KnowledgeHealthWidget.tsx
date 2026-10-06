@@ -75,7 +75,10 @@ const KnowledgeHealthWidget = ({ variant, title, popover }: KnowledgeHealthWidge
       .catch(() => {
         if (active) setState({ loading: false, data: null });
       })
-      .finally(() => setQueryPending(queryId, false));
+      .finally(() => {
+        // A read replaced by a newer one leaves the pending state to it: its cleanup already cleared its own.
+        if (active) setQueryPending(queryId, false);
+      });
     return () => {
       active = false;
       setQueryPending(queryId, false);
