@@ -313,7 +313,8 @@
         "opencti-platform/opencti-front/src/private/components/data/DataTableToolBar.jsx",
         "opencti-platform/opencti-front/src/private/components/data/forms/view/FormFieldRenderer.tsx",
         "opencti-platform/opencti-front/src/private/components/settings/groups/GroupEditionMarkings.tsx",
-        "opencti-platform/opencti-front/src/private/components/widgets/WidgetCreationParameters.tsx"
+        "opencti-platform/opencti-front/src/private/components/widgets/WidgetCreationParameters.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarRemoveConfirm.tsx"
       ]
     },
     {
@@ -338,6 +339,126 @@
       "reason": "night-2 visual pass: the `Add filter` picker. It never HOLDS a value -- picking an option adds a filter and the field empties -- so `value` is a literal null and ONLY a keystroke may write the input: in single mode the library answers a pick with setInputValue(getOptionLabel(option), \"select\"), and accepting that programmatic write left the field reading \"Label\" after the filter was added, so filling the same text a second time fired no input event and never reopened the panel. The name rides on `placeholder` + aria-label under `labelPosition=\"none\"`: the library renders labels ABOVE the control, and this one shares a flex row with an unlabelled search field. Covered by ListFilters.picker.test.tsx, which mirrors filters.pageModel's two-pass sequence.",
       "files": [
         "opencti-platform/opencti-front/src/private/components/common/lists/ListFilters.tsx"
+      ]
+    },
+    {
+      "component": "Paper",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library",
+        "no-hardcoded-padding"
+      ],
+      "reason": "graph experience: the panels floating over the graph canvas (legend and its minimized pill, hover card, empty state) and the toolbar docked under it on the same surface, padding owned by the padding prop",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/GraphToolbar.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphLegend.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphHoverCard.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphEmptyState.tsx"
+      ]
+    },
+    {
+      "component": "IconButton",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "graph experience: every graph tool button (toolbar items, the More actions trigger and the legend actions); the pressed state of a toggle is the active prop",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarItem.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarMoreActions.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphLegend.tsx"
+      ]
+    },
+    {
+      "component": "Button",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "graph experience: the counters opening the graph toolbar, the minimized legend pill and the next action of the empty states",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphCounters.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphLegend.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphEmptyState.tsx"
+      ]
+    },
+    {
+      "component": "Tooltip",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "graph experience: the tooltips of the graph tool buttons (with their shortcut, or why they are disabled), counters, legend entries and hover card badges",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarItem.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarMoreActions.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphCounters.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphLegend.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphHoverCard.tsx"
+      ]
+    },
+    {
+      "component": "Menu",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "graph experience: the More actions menu closing the graph toolbar, toggles as checkable items and lists as submenus; the lists of the toolbar (select by type, filters) as menus anchored to their tool, the same items in both; the context menu of the graphs, opened at the pointer from a hidden trigger (LIBRARY-FEEDBACK #64)",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarMoreActions.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarItem.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphContextMenu.tsx"
+      ]
+    },
+    {
+      "component": "MenuItem",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "graph experience: the items of the graph toolbar menus; the choices of a toolbar list are one shared component, the same in the menu anchored to their tool and in their submenu of More actions",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarOptionsList.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarMoreActions.tsx"
+      ]
+    },
+    {
+      "component": "MenuLabel",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "graph experience: the headings of the graph toolbar menus (the groups of More actions, the parts of a toolbar list)",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarOptionsList.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarMoreActions.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphContextMenu.tsx"
+      ]
+    },
+    {
+      "component": "Badge",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "graph experience: the number of filters in use on the filter buttons of the graph toolbar",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarItem.tsx"
+      ]
+    },
+    {
+      "component": "Text",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "graph experience: the type scale of the graph panels (legend headings and counters, hover card title, empty state title and text, keyboard shortcuts, the reasons and shortcuts of the More actions items)",
+      "files": [
+        "opencti-platform/opencti-front/src/components/graph/components/GraphLegend.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphHoverCard.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphEmptyState.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphShortcutsDialog.tsx",
+        "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarMoreActions.tsx"
       ]
     },
     {

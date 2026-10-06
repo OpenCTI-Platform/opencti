@@ -50,6 +50,7 @@ const containersObjectsFragment = graphql`
             parent_types
           }
           ... on StixCoreObject {
+            is_inferred
             created_at
             createdBy {
               ... on Identity {
@@ -68,6 +69,7 @@ const containersObjectsFragment = graphql`
           }
           ... on StixDomainObject {
             created
+            confidence
           }
           ... on AttackPattern {
             name
@@ -187,6 +189,7 @@ const containersObjectsFragment = graphql`
             from {
               ... on BasicObject {
                 id
+                standard_id
                 entity_type
                 parent_types
               }
@@ -202,6 +205,7 @@ const containersObjectsFragment = graphql`
             to {
               ... on BasicObject {
                 id
+                standard_id
                 entity_type
                 parent_types
               }
@@ -223,6 +227,7 @@ const containersObjectsFragment = graphql`
             start_time
             stop_time
             confidence
+            is_inferred
             created
             created_at
             createdBy {
