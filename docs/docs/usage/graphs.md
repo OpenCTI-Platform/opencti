@@ -191,7 +191,7 @@ The **Layout** group of the toolbar offers several layouts, each a toggle. All o
 
 ## Select
 
-Besides clicking (with `Ctrl`, `Shift` or `Alt` to add to the selection), the toolbar selects with a box or a lasso; **More actions** selects all nodes, the nodes of an entity type, or the outgoing or incoming relationships of the selected nodes. The toolbar also:
+Besides clicking (with `Shift`, `Alt` or `Ctrl` to add to the selection; on macOS `Command`, as `Control`-click opens the context menu there), the toolbar selects with a box or a lasso; **More actions** selects all nodes, the nodes of an entity type, or the outgoing or incoming relationships of the selected nodes. The toolbar also:
 
 - **adds the neighbours** of the selected nodes to the selection, which keeps them selected;
 - **highlights the shortest paths** between two selected nodes: every path with the fewest relationships, whatever their direction; the counters tell how many there are and how many hops they take, for example **3 shortest paths · 2 hops**, and a click on that counter fits them. The paths stay highlighted until the selection changes.
@@ -209,7 +209,7 @@ Shortcuts apply while the pointer is over the graph or the focus is inside it, n
 | `F` / `Shift` + `F` | Fit the whole graph / fit the selection |
 | `L` | Locate the selection |
 | `+` / `-` | Zoom in / zoom out |
-| `Ctrl` + `A` | Select all nodes |
+| `Ctrl` + `A` (`Command` + `A` on macOS) | Select all nodes |
 | `N` | Add neighbours to selection |
 | `P` | Highlight shortest path between the two selected nodes |
 | `H` / `Shift` + `H` | Hide the selection / show the hidden entities |
