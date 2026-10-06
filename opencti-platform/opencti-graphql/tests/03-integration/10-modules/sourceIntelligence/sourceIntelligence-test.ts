@@ -57,6 +57,10 @@ import { computeCollectionGaps } from '../../../../src/modules/sourceIntelligenc
 import { deletePir, pirAdd } from '../../../../src/modules/pir/pir-domain';
 import { connectorDelete, connectorIdFromIngestId, registerConnector } from '../../../../src/domain/connector';
 import { ENTITY_TYPE_DECAY_RULE } from '../../../../src/modules/decayRule/decayRule-types';
+import { addIndicator } from '../../../../src/modules/indicator/indicator-domain';
+import { ENTITY_TYPE_INDICATOR } from '../../../../src/modules/indicator/indicator-types';
+import { ENTITY_TYPE_EXCLUSION_LIST } from '../../../../src/modules/exclusionList/exclusionList-types';
+import { ENTITY_TYPE_LABEL } from '../../../../src/schema/stixMetaObject';
 import { ConnectorType, FilterMode, PirType } from '../../../../src/generated/graphql';
 
 const SOURCES_QUERY = gql`
@@ -1009,6 +1013,56 @@ describe('Source intelligence', () => {
     expect(data.sourceRecommendation.reverted_by.id).toBe(ADMIN_USER.id);
     expect(data.sourceRecommendation.dismissed_by).toBeNull();
     expect(data.sourceRecommendation.required_settings).toEqual([]);
+  });
+
+  it('should apply and revert a deny list recommendation built from the false positives of its source', async () => {
+    const author = await createEntity(testContext, ADMIN_USER, { name: 'Source intelligence false positive author' }, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+    const label = await createEntity(testContext, ADMIN_USER, { value: 'false-positive', color: '#d84315' }, ENTITY_TYPE_LABEL);
+    const indicator = await addIndicator(testContext, ADMIN_USER, {
+      name: '203.0.113.77',
+      pattern: "[ipv4-addr:value = '203.0.113.77']",
+      pattern_type: 'stix',
+      x_opencti_main_observable_type: 'IPv4-Addr',
+      createdBy: author.internal_id,
+      objectLabel: [label.internal_id],
+    });
+    const source = await createEntity(testContext, ADMIN_USER, {
+      source_kind: 'author',
+      ref_id: author.internal_id,
+      ref_type: 'Organization',
+      name: 'Source intelligence false positive author',
+      source_user_ids: [],
+      enabled: true,
+      quarantined: false,
+    }, ENTITY_TYPE_SOURCE);
+    try {
+      const { created } = await upsertProposals(testContext, [{
+        kind: 'add_deny_list',
+        source_id: source.internal_id,
+        fingerprint: `${TEST_FINGERPRINT_PREFIX}-deny-list`,
+        name: 'Add a deny list for the test source',
+        rationale: 'Integration test',
+        payload: {},
+        evidence: {},
+      }], settings, { kinds: [] });
+      expect(created.length).toBe(1);
+      const recommendationId = created[0].internal_id;
+      const applied = await queryAsAdminWithSuccess({ query: APPLY_MUTATION, variables: { id: recommendationId } });
+      expect(applied.data.applySourceRecommendation.status).toBe('applied');
+      expect(applied.data.applySourceRecommendation.apply_result).toBe('Exclusion list created with 1 values');
+      const stored = await storeLoadById<BasicStoreEntitySourceRecommendation>(testContext, ADMIN_USER, recommendationId, ENTITY_TYPE_SOURCE_RECOMMENDATION);
+      const exclusionListId = JSON.parse(stored?.revert_payload ?? '{}').exclusion_list_id;
+      expect(await storeLoadById(testContext, ADMIN_USER, exclusionListId, ENTITY_TYPE_EXCLUSION_LIST)).toBeTruthy();
+
+      const reverted = await queryAsAdminWithSuccess({ query: REVERT_MUTATION, variables: { id: recommendationId } });
+      expect(reverted.data.revertSourceRecommendation.status).toBe('reverted');
+      expect(await storeLoadById(testContext, ADMIN_USER, exclusionListId, ENTITY_TYPE_EXCLUSION_LIST)).toBeFalsy();
+    } finally {
+      await deleteElementById(testContext, ADMIN_USER, source.internal_id, ENTITY_TYPE_SOURCE);
+      await deleteElementById(testContext, ADMIN_USER, indicator.internal_id, ENTITY_TYPE_INDICATOR);
+      await deleteElementById(testContext, ADMIN_USER, label.internal_id, ENTITY_TYPE_LABEL);
+      await deleteElementById(testContext, ADMIN_USER, author.internal_id, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+    }
   });
 
   it('should disable the source of a connector the platform does not manage on retire, and enable it again on revert', async () => {

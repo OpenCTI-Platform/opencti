@@ -32,7 +32,6 @@ import { ENTITY_TYPE_PIR } from '../pir/pir-types';
 import { INGESTION_SETINGESTIONS, isUserHasCapability, SETTINGS_SET_ACCESSES, SETTINGS_SETCUSTOMIZATION, SOURCE_INTELLIGENCE_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../../schema/internalObject';
-import { ENTITY_TYPE_LABEL } from '../../schema/stixMetaObject';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { managedConnectorAdd, managedConnectorEdit, updateConnectorRequestedStatus } from '../../domain/connector';
 import { addDecayRule, deleteDecayRule } from '../decayRule/decayRule-domain';
@@ -97,6 +96,7 @@ import {
 } from './sourceIntelligence-rules';
 import { clearDisabledSourcesLiveData, recommendationTransitionLock, recordNamedAuthors } from './sourceIntelligence-domain';
 import { buildSourceResolver } from './sourceIntelligence-provenance';
+import { resolveFalsePositiveLabelIds } from './sourceIntelligence-compute';
 import { releaseQuarantine } from './sourceIntelligence-quarantine';
 import type { ContractConfigInput } from '../../generated/graphql';
 import { deploymentConfiguration, requiredSettingsOfImage } from './sourceIntelligence-deployment';
@@ -254,10 +254,8 @@ interface ExecutionResult {
 }
 
 const collectFalsePositiveValues = async (context: AuthContext, source: BasicStoreEntitySource, settings: SourceIntelligenceSettings, maxValues: number) => {
-  const labels = await getEntitiesListFromCache<BasicStoreEntity & { value: string }>(context, SYSTEM_USER, ENTITY_TYPE_LABEL).catch(() => []);
-  const fpLabelIds = labels
-    .filter((label) => settings.false_positive_labels.includes((label.value ?? '').toLowerCase()))
-    .map((label) => label.internal_id);
+  // The labels the scorecard counted: the deny list holds the values that made it propose one
+  const fpLabelIds = Array.from(await resolveFalsePositiveLabelIds(context, settings.false_positive_labels));
   if (fpLabelIds.length === 0) {
     return new Map<string, Set<string>>();
   }

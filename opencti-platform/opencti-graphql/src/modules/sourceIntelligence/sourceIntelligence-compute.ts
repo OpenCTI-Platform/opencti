@@ -627,7 +627,7 @@ export const fetchPageLookups = async (context: AuthContext, docs: ScanDocument[
   return lookups;
 };
 
-const resolveFalsePositiveLabelIds = async (context: AuthContext, labels: string[]): Promise<Set<string>> => {
+export const resolveFalsePositiveLabelIds = async (context: AuthContext, labels: string[]): Promise<Set<string>> => {
   if (labels.length === 0) {
     return new Set();
   }
