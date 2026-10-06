@@ -279,7 +279,8 @@ export const processDirtyEntities = async (
       try {
         await computeEntitySimilarity(context, user, { id: carrier.internal_id, entity_type: carrier.entity_type }, config);
       } catch (err) {
-        logApp.error('[OPENCTI-MODULE] Graph analytics similarity computation fail', { cause: err, id: carrier.internal_id });
+        // Recoverable: the entity goes back to the queue and is computed again, the rest of the batch continues
+        logApp.warn('[OPENCTI-MODULE] Graph analytics similarity computation fail', { cause: err, id: carrier.internal_id });
         failed.push(carrier.internal_id);
       }
     }
