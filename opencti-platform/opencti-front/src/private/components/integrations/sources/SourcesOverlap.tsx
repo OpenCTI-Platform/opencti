@@ -8,6 +8,7 @@ import Card from '@common/card/Card';
 import Chart from '@components/common/charts/Chart';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { truncate } from '../../../../utils/String';
 import type { Theme } from '../../../../components/Theme';
 import SourcePeriodSelect from './SourcePeriodSelect';
 import { buildOverlapHeatmapSeries, escapeHtml, REFERENCE_SCORECARD_PERIOD, ScorecardPeriod } from './sourceIntelligenceUtils';
@@ -36,6 +37,8 @@ export const sourcesOverlapQuery = graphql`
 `;
 
 const MAX_OVERLAP_SOURCES = 25;
+// Characters of a source name that fit the 180 px of a rotated column label
+const MAX_COLUMN_LABEL_LENGTH = 34;
 
 interface SourcesOverlapMatrixProps {
   queryRef: PreloadedQuery<SourcesOverlapQuery>;
@@ -67,7 +70,12 @@ const SourcesOverlapMatrix = ({ queryRef }: SourcesOverlapMatrixProps) => {
     dataLabels: { enabled: sources.length <= 12, style: { fontSize: '10px' }, formatter: (value) => (value === null ? '' : `${value}`) },
     stroke: { colors: [theme.palette.background.paper], width: 1 },
     legend: { show: false },
-    xaxis: { labels: { rotate: -45, trim: true, maxHeight: 180 }, tooltip: { enabled: false } },
+    // The chart trims a rotated label to the height of the label area, which always cuts the longest one: only a name
+    // too long for that area is shortened, the tooltip of a cell names both sources in full
+    xaxis: {
+      labels: { rotate: -45, trim: false, maxHeight: 180, formatter: (value: string) => truncate(value, MAX_COLUMN_LABEL_LENGTH) },
+      tooltip: { enabled: false },
+    },
     yaxis: { labels: { maxWidth: 180 } },
     tooltip: {
       theme: theme.palette.mode,
