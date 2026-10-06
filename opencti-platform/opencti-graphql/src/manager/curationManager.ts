@@ -17,7 +17,7 @@ import {
   redisGetManagerEventState,
   redisSetManagerEventState,
 } from '../database/redis';
-import { fullEntitiesList, internalFindByIds } from '../database/middleware-loader';
+import { fullEntitiesList, internalFindByIds, storeLoadById } from '../database/middleware-loader';
 import { getEntitiesListFromCache } from '../database/cache';
 import { isEnterpriseEdition } from '../enterprise-edition/ee';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
@@ -32,7 +32,7 @@ import { ADJUDICATED_PROPOSAL_KINDS, adjudicateProposal, isAdjudicationAvailable
 import { applyCurationPolicy, findEnabledPolicies } from '../modules/curation/curation-policies';
 import { persistProposalDraft } from '../modules/curation/curation-proposals';
 import { buildDateInversionDraft, buildProcedureConflictDraft, isDuplicateDetectionEnabled, isProcedureConflict } from '../modules/curation/curation-detectors';
-import { decideFieldAuthority } from '../modules/curation/curation-field-authority';
+import { decideFieldAuthority, recordedSources } from '../modules/curation/curation-field-authority';
 import { CURATION_MANAGER_ENABLED, CURATION_SCAN_INTERVAL_MS, CURATION_SNAPSHOT_INTERVAL_MS, isOlderThan } from '../modules/curation/curation-schedule';
 import {
   ACTION_SET_FIELD,
@@ -177,17 +177,29 @@ const topLevelReplacements = (event: UpdateEvent) => {
     .filter((change) => !TRACKED_FIELD_EXCLUSIONS.has(change.field) && change.previous !== undefined && change.previous !== null && change.previous !== '');
 };
 
+const connectorsOf = (context: AuthContext) => {
+  return getEntitiesListFromCache<BasicStoreEntity & { connector_user_id?: string }>(context, CURATION_MANAGER_USER, ENTITY_TYPE_CONNECTOR);
+};
+
 const connectorSourcesOfUser = async (context: AuthContext, userId: string): Promise<FieldAuthoritySource[]> => {
-  const connectors = await getEntitiesListFromCache<BasicStoreEntity & { connector_user_id?: string }>(context, CURATION_MANAGER_USER, ENTITY_TYPE_CONNECTOR);
+  const connectors = await connectorsOf(context);
   return connectors
     .filter((connector) => connector.connector_user_id === userId)
     .map((connector) => ({ source_type: AUTHORITY_SOURCE_CONNECTOR, source_id: connector.internal_id }));
 };
 
+/** Sources of the value an update replaced, when no writer of it is remembered: what the field authority recorded. */
+const recordedSourcesOf = async (context: AuthContext, entityId: string, entityType: string, field: string): Promise<FieldAuthoritySource[]> => {
+  const element = await storeLoadById(context, CURATION_MANAGER_USER, entityId, entityType);
+  if (!element) return [];
+  return recordedSources(element, field, await connectorsOf(context));
+};
+
 /**
  * Sources overwriting each other on the same field: counted for the Knowledge Health source conflict rate, and, when a
  * field authority rule says the overwritten value came from a more authoritative source, a field precedence proposal
- * suggests to restore it.
+ * suggests to restore it. Writers are remembered for a limited time; past it (or for a value written before this
+ * version), the source of the overwritten value is the one the field authority recorded for the attribute.
  */
 const trackFieldWriters = async (
   context: AuthContext,
@@ -204,15 +216,18 @@ const trackFieldWriters = async (
   for (let index = 0; index < changes.length; index += 1) {
     const change = changes[index];
     const { previous: previousWriter, replayed } = await redisCurationSwapFieldWriter(entityId, change.field, writer, eventId, FIELD_WRITER_TTL_SECONDS);
-    if (!previousWriter || previousWriter === writer || INTERNAL_USERS[previousWriter]) continue;
-    if (!replayed) {
+    if (previousWriter && (previousWriter === writer || INTERNAL_USERS[previousWriter])) continue;
+    if (previousWriter && !replayed) {
       await redisCurationIncrementCounter(SOURCE_CONFLICTS_COUNTER, today());
     }
     const rule = settings.field_authority_enabled
       ? settings.field_authority_rules.find((r) => r.entity_type === entityType && r.attribute === change.field)
       : undefined;
     if (!rule || !schemaAttributesDefinition.getAttribute(entityType, change.field)) continue;
-    const decision = decideFieldAuthority(rule, await connectorSourcesOfUser(context, previousWriter), await connectorSourcesOfUser(context, writer));
+    const previousSources = previousWriter
+      ? await connectorSourcesOfUser(context, previousWriter)
+      : await recordedSourcesOf(context, entityId, entityType, change.field);
+    const decision = decideFieldAuthority(rule, previousSources, await connectorSourcesOfUser(context, writer));
     if (decision !== 'allow') continue;
     drafts.push({
       kind: PROPOSAL_KIND_FIELD_PRECEDENCE,
@@ -226,7 +241,14 @@ const trackFieldWriters = async (
         score: 1,
         weight: 0.8,
         description: `"${change.field}" was overwritten by a less authoritative source according to the field authority rules`,
-        details: JSON.stringify({ field: change.field, previous: change.previous, current: change.value, previous_writer: previousWriter, writer }),
+        details: JSON.stringify({
+          field: change.field,
+          previous: change.previous,
+          current: change.value,
+          previous_writer: previousWriter,
+          previous_sources: previousSources,
+          writer,
+        }),
       }],
       confidence: 0.8,
     });

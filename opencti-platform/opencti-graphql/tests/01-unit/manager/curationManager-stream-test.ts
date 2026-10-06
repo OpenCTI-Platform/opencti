@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { creatorsBeforeUpdate, curationManagerStreamHandler, isNamePatchPath, replayDeadLetters } from '../../../src/manager/curationManager';
 import {
   redisCurationClaimDeadLetters,
@@ -12,6 +12,9 @@ import type { CurationSettings } from '../../../src/modules/curation/curation-ty
 import { persistProposalDraft } from '../../../src/modules/curation/curation-proposals';
 import { runIncrementalDuplicateDetection } from '../../../src/modules/curation/curation-scan';
 import { getCurationSettings } from '../../../src/modules/curation/curation-settings';
+import { AUTHORITY_SOURCE_CONNECTOR } from '../../../src/modules/curation/curation-types';
+import { storeLoadById } from '../../../src/database/middleware-loader';
+import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import type { DataEvent, SseEvent, UpdateEvent } from '../../../src/types/event';
 
 vi.mock('../../../src/manager/managerModule', () => ({ registerManager: vi.fn() }));
@@ -29,6 +32,13 @@ vi.mock('../../../src/database/redis', async (importOriginal) => ({
 vi.mock('../../../src/database/middleware-loader', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../src/database/middleware-loader')>()),
   internalFindByIds: vi.fn(async () => [{ internal_id: 'uses-1', fromId: 'intrusion-set-1', toId: 'attack-pattern-1', fromName: 'APT-X', toName: 'Phishing' }]),
+  storeLoadById: vi.fn(async () => undefined),
+}));
+
+// The only connector of the platform: the feed whose user writes as that connector.
+vi.mock('../../../src/database/cache', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/database/cache')>()),
+  getEntitiesListFromCache: vi.fn(async () => [{ internal_id: 'connector-feed', connector_user_id: 'feed-user' }]),
 }));
 
 vi.mock('../../../src/modules/curation/curation-settings', () => ({
@@ -190,6 +200,60 @@ describe('Curation manager procedure conflicts', () => {
       reverse_patch: [{ op: 'replace', path: '/description', value: FIRST_PROCEDURE }],
     });
     await curationManagerStreamHandler([ownText], '8-0');
+    expect(persistProposalDraft).not.toHaveBeenCalled();
+  });
+});
+
+const FEED_DESCRIPTION = 'Espionage group tracked by the vendor feed since 2014';
+const EDITED_DESCRIPTION = 'Edited by hand';
+
+const descriptionEdit = (eventId: string, writer: string) => ({
+  id: eventId,
+  event: 'update',
+  data: {
+    type: 'update',
+    origin: { user_id: writer },
+    data: { name: 'APT-X', description: EDITED_DESCRIPTION, extensions: { [EXTENSION]: { id: 'intrusion-set-1', type: 'Intrusion-Set' } } },
+    context: {
+      patch: [{ op: 'replace', path: '/description', value: EDITED_DESCRIPTION }],
+      reverse_patch: [{ op: 'replace', path: '/description', value: FEED_DESCRIPTION }],
+    },
+  },
+}) as unknown as SseEvent<DataEvent>;
+
+describe('Curation manager field precedence', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(getCurationSettings).mockResolvedValue({
+      curation_enabled: true,
+      curated_entity_types: ['Intrusion-Set'],
+      enabled_detectors: [],
+      field_authority_enabled: true,
+      field_authority_rules: [{ entity_type: 'Intrusion-Set', attribute: 'description', sources: [{ source_type: AUTHORITY_SOURCE_CONNECTOR, source_id: 'connector-feed' }] }],
+    } as never);
+    (persistProposalDraft as any).mockResolvedValue({ created: true, suppressed: false });
+    // The feed wrote the description more than 30 days ago: its writer is no longer remembered, its authority is recorded.
+    vi.mocked(storeLoadById).mockResolvedValue({
+      internal_id: 'intrusion-set-1',
+      i_field_authority: [{ attribute: 'description', source_type: AUTHORITY_SOURCE_CONNECTOR, source_id: 'connector-feed', updated_at: '2026-07-01T00:00:00.000Z' }],
+    } as never);
+    vi.spyOn(schemaAttributesDefinition, 'getAttribute').mockReturnValue({ name: 'description' } as never);
+  });
+
+  afterEach(() => {
+    vi.mocked(schemaAttributesDefinition.getAttribute).mockRestore();
+  });
+
+  it('proposes to restore a value of an authoritative source overwritten once its writer is no longer remembered', async () => {
+    await curationManagerStreamHandler([descriptionEdit('20-0', 'analyst-user')], '20-0');
+    expect(storeLoadById).toHaveBeenCalledWith(expect.anything(), expect.anything(), 'intrusion-set-1', 'Intrusion-Set');
+    const draft = (persistProposalDraft as any).mock.calls[0][2];
+    expect(draft.kind).toBe('field_precedence');
+    expect(draft.action_payload).toEqual({ element_id: 'intrusion-set-1', key: 'description', value: FEED_DESCRIPTION, overwritten_value: EDITED_DESCRIPTION });
+  });
+
+  it('proposes nothing when the recorded source writes the field again', async () => {
+    await curationManagerStreamHandler([descriptionEdit('21-0', 'feed-user')], '21-0');
     expect(persistProposalDraft).not.toHaveBeenCalled();
   });
 });

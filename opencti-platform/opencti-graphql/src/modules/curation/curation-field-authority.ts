@@ -1,5 +1,5 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicStoreEntity, StoreObject } from '../../types/store';
+import type { BasicStoreCommon, BasicStoreEntity } from '../../types/store';
 import type { FieldAuthorityDecision, FieldAuthorityResolver } from '../../database/merge-hooks';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { elUpdate } from '../../database/engine';
@@ -87,7 +87,8 @@ export const creationSources = (element: Record<string, any>, connectors: Connec
   return sources;
 };
 
-const currentSources = (element: StoreObject, attribute: string, connectors: ConnectorUser[]): FieldAuthoritySource[] => {
+/** Sources of the current value of an attribute: the source recorded for it, else the sources the entity was created with. */
+export const recordedSources = (element: BasicStoreCommon, attribute: string, connectors: ConnectorUser[]): FieldAuthoritySource[] => {
   const entries = ((element as Record<string, any>)[FIELD_AUTHORITY_ATTRIBUTE] ?? []) as FieldAuthorityEntry[];
   const entry = entries.find((e) => e.attribute === attribute);
   if (entry) {
@@ -128,7 +129,7 @@ export const curationFieldAuthorityResolver: FieldAuthorityResolver = {
     const connectors = await getEntitiesListFromCache<BasicStoreEntity & { connector_user_id?: string }>(context, SYSTEM_USER, ENTITY_TYPE_CONNECTOR);
     const incoming = incomingSources(user, patch, connectors);
     ruled.forEach((rule) => {
-      const decision = decideFieldAuthority(rule, incoming, currentSources(element, rule.attribute, connectors));
+      const decision = decideFieldAuthority(rule, incoming, recordedSources(element, rule.attribute, connectors));
       if (decision) decisions.set(rule.attribute, decision);
     });
     return decisions;
