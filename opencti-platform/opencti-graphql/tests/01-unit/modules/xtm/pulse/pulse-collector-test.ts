@@ -1,4 +1,21 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+// Paged reads replayed from fixtures: a callback answering false stops a query, as the database listing does.
+const LISTS = vi.hoisted(() => {
+  const pages = new Map<string, unknown[][]>();
+  const reads: string[] = [];
+  const replay = async (key: string, callback?: (elements: unknown[]) => Promise<boolean | void>) => {
+    const list = pages.get(key) ?? [];
+    for (let index = 0; index < list.length; index += 1) {
+      reads.push(key);
+      if (callback && (await callback(list[index])) === false) {
+        break;
+      }
+    }
+    return [];
+  };
+  return { pages, reads, replay };
+});
 
 const MARKINGS = vi.hoisted(() => [
   { internal_id: 'marking-clear', standard_id: 'marking-definition--clear', definition_type: 'TLP', definition: 'TLP:CLEAR' },
@@ -14,20 +31,34 @@ vi.mock('../../../../../src/database/cache', () => ({
   getEntityFromCache: vi.fn(),
 }));
 
+vi.mock('../../../../../src/database/middleware-loader', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../../src/database/middleware-loader')>(),
+  fullEntitiesList: vi.fn(async (_context: unknown, _user: unknown, _types: unknown, args: { callback?: (elements: unknown[]) => Promise<boolean | void> }) => {
+    return LISTS.replay('entities', args.callback);
+  }),
+  fullRelationsList: vi.fn(async (_context: unknown, _user: unknown, type: string, args: { fromTypes?: string[]; callback?: (elements: unknown[]) => Promise<boolean | void> }) => {
+    return LISTS.replay(`${type}:${args.fromTypes ? 'from' : 'to'}`, args.callback);
+  }),
+}));
+
 import {
   aggregatePulseActivity,
   assertPulseBatch,
   boundPulseWindow,
   buildPulseBatches,
   buildPulseOutboxItems,
+  collectPulseActivity,
   mergePulseActivity,
   type PulseActivity,
 } from '../../../../../src/modules/xtm/pulse/pulse-collector';
+import type { PulseWindowSighting } from '../../../../../src/modules/xtm/pulse/pulse-cache';
+import { STIX_SIGHTING_RELATIONSHIP } from '../../../../../src/schema/stixSightingRelationship';
+import { RELATION_OBJECT } from '../../../../../src/schema/stixRefRelationship';
 import { buildPulseMarkingPolicy, isPulseContributable } from '../../../../../src/modules/xtm/pulse/pulse-settings';
 import { computeStableKeys } from '../../../../../src/modules/xtm/pulse/pulse-hashing';
 import { PULSE_SCOPE_ENTITY_TYPES, type BasicStorePulseEntity, type PulseBatch, type PulseSettingsValues } from '../../../../../src/modules/xtm/pulse/pulse-types';
 import { PulseMode, PulseRegionBucket, PulseSectorBucket } from '../../../../../src/generated/graphql';
-import { executionContext } from '../../../../../src/utils/access';
+import { executionContext, SYSTEM_USER } from '../../../../../src/utils/access';
 
 const testContext = executionContext('pulse-collector-test');
 
@@ -248,7 +279,7 @@ describe('boundPulseWindow', () => {
 
   it('should keep a window within the bound', async () => {
     const { ends, countUntil } = counter([0, 1000, 2000]);
-    expect(await boundPulseWindow(since, until, 10, countUntil)).toEqual(until);
+    expect(await boundPulseWindow(since, until, 10, countUntil)).toEqual({ end: until, events: 3 });
     expect(ends).toHaveLength(1);
   });
 
@@ -257,14 +288,64 @@ describe('boundPulseWindow', () => {
     const burst = Array.from({ length: 50 }, (_, index) => index * 10);
     const spread = Array.from({ length: 50 }, (_, index) => (index + 1) * 1_700_000);
     const { countUntil } = counter([...burst, ...spread]);
-    const end = await boundPulseWindow(since, until, 20, countUntil);
-    expect(await countUntil(end)).toBeLessThanOrEqual(20);
+    const { end, events } = await boundPulseWindow(since, until, 20, countUntil);
+    expect(await countUntil(end)).toBe(events);
+    expect(events).toBeLessThanOrEqual(20);
     expect(end.getTime()).toBeGreaterThan(since.getTime());
   });
 
-  it('should stop at one millisecond when its events share it', async () => {
+  it('should stop at one millisecond when its events share it, and say how many it holds', async () => {
     const { countUntil } = counter(Array.from({ length: 30 }, () => 0));
-    const end = await boundPulseWindow(since, until, 10, countUntil);
+    const { end, events } = await boundPulseWindow(since, until, 10, countUntil);
     expect(end.getTime() - since.getTime()).toBe(1);
+    expect(events).toBe(30);
+  });
+});
+
+describe('collectPulseActivity', () => {
+  const since = new Date('2026-10-04T00:00:00.000Z');
+  const oneMillisecond = new Date(since.getTime() + 1);
+  const scopes = ['Malware'];
+  const entity = (id: string) => ({ internal_id: id, entity_type: 'Malware' });
+  const sighting = (id: string, fromId: string) => ({ internal_id: id, fromId, fromType: 'Malware', toType: 'Identity', attribute_count: 1 });
+
+  beforeEach(() => {
+    LISTS.pages.clear();
+    LISTS.reads.length = 0;
+  });
+
+  it('should read every event of its window without a budget', async () => {
+    LISTS.pages.set('entities', [[entity('a'), entity('b')], [entity('c')]]);
+    LISTS.pages.set(`${STIX_SIGHTING_RELATIONSHIP}:from`, [[sighting('s1', 'a')]]);
+    const activity = await collectPulseActivity(testContext, SYSTEM_USER, scopes, since, oneMillisecond);
+    expect(Array.from(activity.keys()).sort()).toEqual(['a', 'b', 'c']);
+    expect(activity.get('a')?.get('sighted')).toBe(1);
+  });
+
+  it('should stop reading once its budget is spent, even inside one millisecond', async () => {
+    LISTS.pages.set('entities', [[entity('e1'), entity('e2')], [entity('e3'), entity('e4')], [entity('e5'), entity('e6')]]);
+    LISTS.pages.set(`${STIX_SIGHTING_RELATIONSHIP}:from`, [[sighting('s1', 'e1')]]);
+    const budget = { remaining: 3 };
+    const sightings: PulseWindowSighting[] = [];
+    const activity = await collectPulseActivity(testContext, SYSTEM_USER, scopes, since, oneMillisecond, sightings, budget);
+    expect(Array.from(activity.keys())).toEqual(['e1', 'e2', 'e3']);
+    expect(budget.remaining).toBe(0);
+    // The third page is never fetched and no relationship is queried.
+    expect(LISTS.reads).toEqual(['entities', 'entities']);
+    expect(sightings).toEqual([]);
+  });
+
+  it('should share one budget between the queries of a window', async () => {
+    LISTS.pages.set('entities', [[entity('e1')]]);
+    LISTS.pages.set(`${STIX_SIGHTING_RELATIONSHIP}:from`, [[sighting('s1', 'e1'), sighting('s2', 'e1'), sighting('s3', 'e1')]]);
+    LISTS.pages.set(`${RELATION_OBJECT}:to`, [[{ internal_id: 'r1', toId: 'e1', toType: 'Malware' }]]);
+    const budget = { remaining: 3 };
+    const sightings: PulseWindowSighting[] = [];
+    const activity = await collectPulseActivity(testContext, SYSTEM_USER, scopes, since, oneMillisecond, sightings, budget);
+    expect(sightings.map((read) => read.id)).toEqual(['s1', 's2']);
+    expect(activity.get('e1')?.get('created')).toBe(1);
+    expect(activity.get('e1')?.get('sighted')).toBe(2);
+    expect(activity.get('e1')?.has('referenced')).toBe(false);
+    expect(LISTS.reads).not.toContain(`${RELATION_OBJECT}:to`);
   });
 });

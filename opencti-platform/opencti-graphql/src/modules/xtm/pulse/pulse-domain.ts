@@ -45,6 +45,7 @@ import {
   loadPulseEntities,
   mergePulseActivity,
   type PulseActivity,
+  type PulseCollectBudget,
 } from './pulse-collector';
 import { computeStableKeys, computeTransportHash, decodeTransportHash, isValidPulseHash } from './pulse-hashing';
 import {
@@ -854,14 +855,26 @@ const contributePulseCycle = async (context: AuthContext, cycle: PulseContributi
     externalByDay.set(day, external);
   }
   const databaseBudget = Math.max(1, MAX_EVENTS_PER_RUN - externalEntries);
-  until = await boundPulseWindow(since, until, databaseBudget, (end) => countPulseActivity(context, PULSE_MANAGER_USER, windowValues.scopes, since, end));
+  const bounded = await boundPulseWindow(since, until, databaseBudget, (end) => countPulseActivity(context, PULSE_MANAGER_USER, windowValues.scopes, since, end));
+  until = bounded.end;
+  if (bounded.events > databaseBudget) {
+    // Events of one millisecond cannot be told apart by the cursor: the window is cut at the budget and the cursor
+    // moves past it, so a burst can never load more than one run may hold.
+    logApp.warn('[THREAT PULSE] More events share one millisecond than one contribution reads, the rest of them is not contributed', {
+      at: since.toISOString(),
+      events: bounded.events,
+      contributed: databaseBudget,
+    });
+  }
   // Each record carries the UTC day of its activity and is hashed with the salt of that day.
   const activityByDay = new Map<string, PulseActivity>();
   const windowSightings: PulseWindowSighting[] = [];
+  const collectBudget: PulseCollectBudget = { remaining: databaseBudget };
   const segments = utcDaySegments(since, until);
   for (let index = 0; index < segments.length; index += 1) {
     const segment = segments[index];
-    activityByDay.set(segment.day, await collectPulseActivity(context, PULSE_MANAGER_USER, windowValues.scopes, segment.since, segment.until, windowSightings));
+    const activity = await collectPulseActivity(context, PULSE_MANAGER_USER, windowValues.scopes, segment.since, segment.until, windowSightings, collectBudget);
+    activityByDay.set(segment.day, activity);
   }
   externalByDay.forEach((external, day) => {
     if (external.length > 0) {

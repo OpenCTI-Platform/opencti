@@ -69,7 +69,8 @@ export const countPulseActivity = async (context: AuthContext, user: AuthUser, s
 
 // The end of a window starting at *since* that holds at most *maxEvents* events, counted again each time it narrows:
 // the proportional span when it is shorter, at most half the window, so a burst near its start is bounded too. One
-// millisecond is not narrowed further, as its events cannot be told apart.
+// millisecond is not narrowed further, as its events cannot be told apart: it may hold more, which its collection cuts
+// at the budget (see collectPulseActivity).
 export const boundPulseWindow = async (since: Date, until: Date, maxEvents: number, countUntil: (end: Date) => Promise<number>) => {
   let end = until;
   let events = await countUntil(end);
@@ -79,12 +80,19 @@ export const boundPulseWindow = async (since: Date, until: Date, maxEvents: numb
     end = new Date(since.getTime() + Math.max(1, Math.min(Math.floor(span / 2), proportional)));
     events = await countUntil(end);
   }
-  return end;
+  return { end, events };
 };
+
+// What is left of the events one contribution may read, shared by the queries of its window.
+export interface PulseCollectBudget {
+  remaining: number;
+}
 
 // Local activity on in-scope objects during [since, until): creations, sightings (detections when sighted by a
 // security platform), container references and new relationships. *sightings* receives each sighting read with the
-// count read, for the commit of the window to add what an upsert raised meanwhile.
+// count read, for the commit of the window to add what an upsert raised meanwhile. At most *budget* events are read:
+// each query stops once it is spent and the next ones are not run, so a millisecond holding more events than a run may
+// read never loads them all.
 export const collectPulseActivity = async (
   context: AuthContext,
   user: AuthUser,
@@ -92,60 +100,50 @@ export const collectPulseActivity = async (
   since: Date,
   until: Date,
   sightings: PulseWindowSighting[] = [],
+  budget: PulseCollectBudget = { remaining: Number.POSITIVE_INFINITY },
 ): Promise<PulseActivity> => {
   const activity: PulseActivity = new Map();
   if (scopes.length === 0) {
     return activity;
   }
-  const filters = createdInWindowFilter(since, until);
-  await fullEntitiesList<BasicStorePulseEntity>(context, user, scopes, {
-    filters,
-    baseData: true,
-    callback: async (entities) => {
-      entities.forEach((entity) => addActivity(activity, entity.internal_id, 'created', 1));
-    },
-  });
-  await fullRelationsList<BasicStoreRelation>(context, user, STIX_SIGHTING_RELATIONSHIP, {
-    fromTypes: scopes,
-    filters,
-    indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
-    callback: async (relations) => {
-      relations.forEach((relation) => {
-        const kind = relation.toType === ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM ? 'detected' : 'sighted';
-        const count = Number(relation.attribute_count ?? 1);
-        addActivity(activity, relation.fromId, kind, count);
-        sightings.push({ id: relation.internal_id, count, entityId: relation.fromId, eventKind: kind });
-      });
-    },
-  });
-  await fullRelationsList<BasicStoreRelation>(context, user, RELATION_OBJECT, {
-    toTypes: scopes,
-    filters,
-    indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
-    callback: async (relations) => {
-      relations.forEach((relation) => addActivity(activity, relation.toId, 'referenced', 1));
-    },
-  });
-  const coreRelationshipCallback = (side: 'from' | 'to') => async (relations: BasicStoreRelation[]) => {
-    relations.forEach((relation) => {
-      const targetType = side === 'from' ? relation.fromType : relation.toType;
-      if (scopes.includes(targetType)) {
-        addActivity(activity, side === 'from' ? relation.fromId : relation.toId, 'referenced', 1);
-      }
+  type ReadPage<T> = (callback: (elements: T[]) => Promise<boolean>) => Promise<unknown>;
+  // Each page within what is left of the budget; a page that spends it stops the query.
+  const collect = async <T>(read: ReadPage<T>, onElement: (element: T) => void) => {
+    if (budget.remaining <= 0) {
+      return;
+    }
+    await read(async (elements) => {
+      const taken = elements.length > budget.remaining ? elements.slice(0, budget.remaining) : elements;
+      budget.remaining -= taken.length;
+      taken.forEach(onElement);
+      return budget.remaining > 0;
     });
   };
-  await fullRelationsList<BasicStoreRelation>(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, {
-    fromTypes: scopes,
-    filters,
-    indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
-    callback: coreRelationshipCallback('from'),
+  const filters = createdInWindowFilter(since, until);
+  const entities: ReadPage<BasicStorePulseEntity> = (callback) => fullEntitiesList<BasicStorePulseEntity>(context, user, scopes, { filters, baseData: true, callback });
+  await collect(entities, (entity) => {
+    addActivity(activity, entity.internal_id, 'created', 1);
   });
-  await fullRelationsList<BasicStoreRelation>(context, user, ABSTRACT_STIX_CORE_RELATIONSHIP, {
-    toTypes: scopes,
-    filters,
-    indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
-    callback: coreRelationshipCallback('to'),
+  const relations = (type: string, sides: { fromTypes?: string[]; toTypes?: string[] }): ReadPage<BasicStoreRelation> => (callback) => {
+    return fullRelationsList<BasicStoreRelation>(context, user, type, { ...sides, filters, indices: READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, callback });
+  };
+  await collect(relations(STIX_SIGHTING_RELATIONSHIP, { fromTypes: scopes }), (relation) => {
+    const kind = relation.toType === ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM ? 'detected' : 'sighted';
+    const count = Number(relation.attribute_count ?? 1);
+    addActivity(activity, relation.fromId, kind, count);
+    sightings.push({ id: relation.internal_id, count, entityId: relation.fromId, eventKind: kind });
   });
+  await collect(relations(RELATION_OBJECT, { toTypes: scopes }), (relation) => {
+    addActivity(activity, relation.toId, 'referenced', 1);
+  });
+  const coreRelationship = (side: 'from' | 'to') => (relation: BasicStoreRelation) => {
+    const targetType = side === 'from' ? relation.fromType : relation.toType;
+    if (scopes.includes(targetType)) {
+      addActivity(activity, side === 'from' ? relation.fromId : relation.toId, 'referenced', 1);
+    }
+  };
+  await collect(relations(ABSTRACT_STIX_CORE_RELATIONSHIP, { fromTypes: scopes }), coreRelationship('from'));
+  await collect(relations(ABSTRACT_STIX_CORE_RELATIONSHIP, { toTypes: scopes }), coreRelationship('to'));
   return activity;
 };
 
