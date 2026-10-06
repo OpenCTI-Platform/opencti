@@ -318,8 +318,11 @@ const normalizeForSignature = (value: unknown): unknown => {
   return value;
 };
 
+// The events written before the open end of a window existed carry no such field: they read like closed windows
+const signatureValueOf = (doc: Record<string, any>, field: string): unknown => (field === 'open_ended' ? doc.open_ended === true : doc[field]);
+
 export const timelineEventSignature = (doc: Record<string, any>): string => {
-  return JSON.stringify(CONTENT_FIELDS.map((field) => normalizeForSignature(doc[field])));
+  return JSON.stringify(CONTENT_FIELDS.map((field) => normalizeForSignature(signatureValueOf(doc, field))));
 };
 
 const ACCESS_FIELDS = ['restricted_members', 'element_access', buildRefRelationKey(RELATION_OBJECT_MARKING)];
@@ -389,8 +392,8 @@ export const buildTimelineEventDoc = (input: TimelineEventDocInput, existing?: S
     description: input.description ?? null,
     event_time: input.event_time,
     event_end_time: input.event_end_time ?? null,
-    // Stored only when true (an undefined field is not written): the events written before it existed keep their signature
-    open_ended: input.open_ended ? true : undefined,
+    // Always a boolean: the indexing writes a boolean attribute that is not true, an undefined one included, as false
+    open_ended: input.open_ended === true,
     time_precision: input.time_precision,
     lane: input.lane,
     kind: input.kind,

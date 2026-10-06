@@ -38,6 +38,7 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organ
 import { buildRefRelationKey } from '../../../../src/schema/general';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
 import { TimelineEventKind } from '../../../../src/generated/graphql';
+import { prepareElementForIndexing } from '../../../../src/database/engine';
 import '../../../../src/modules/index';
 
 describe('Timeline event identity', () => {
@@ -110,13 +111,18 @@ describe('Timeline event documents', () => {
     expect(timelineEventSignature({ ...doc, pinned: true })).not.toEqual(timelineEventSignature(doc));
   });
 
-  it('should only write the open end of a window, so that the events stored before it keep their signature', () => {
+  it('should sign a closed window like it is indexed and like the events stored before the open end existed', async () => {
     const doc = buildTimelineEventDoc(input);
-    expect(JSON.parse(JSON.stringify(doc))).not.toHaveProperty('open_ended');
+    expect(doc.open_ended).toBe(false);
+    const indexed = await prepareElementForIndexing(doc);
+    expect(indexed.open_ended).toBe(false);
+    expect(timelineEventSignature(indexed)).toEqual(timelineEventSignature(doc));
+    expect(timelineEventSignature(buildTimelineEventDoc({ ...input, open_ended: null }))).toEqual(timelineEventSignature(doc));
     const { open_ended: _, ...storedBefore } = doc;
     expect(timelineEventSignature(storedBefore)).toEqual(timelineEventSignature(doc));
     const open = buildTimelineEventDoc({ ...input, open_ended: true });
     expect(open.open_ended).toBe(true);
+    expect((await prepareElementForIndexing(open)).open_ended).toBe(true);
     expect(timelineEventSignature(open)).not.toEqual(timelineEventSignature(doc));
   });
 });
