@@ -366,6 +366,8 @@ const Graph = ({
     zoomToFit();
   };
 
+  // An investigation receives its first objects after it opens, outside any loading progress: they are framed too.
+  const hasNodes = (graphData?.nodes.length ?? 0) > 0;
   useEffect(() => {
     let framing: ReturnType<typeof setTimeout> | undefined;
     // A short timeout to be sure graph is ready.
@@ -389,7 +391,7 @@ const Graph = ({
       clearTimeout(framing);
       frameWhenSettled.current = false;
     };
-  }, [mode3D, isLoadingData]);
+  }, [mode3D, isLoadingData, hasNodes]);
 
   const selectedEntities = [...selectedLinks, ...selectedNodes];
   const selectedKeys = useMemo(() => new Set([
