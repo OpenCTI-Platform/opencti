@@ -77,13 +77,13 @@ const GraphAccessibleList = ({ nodes, links, selectedKeys, onSelectNode, onSelec
       const node = nodesById.get(endId(end, id)) ?? endpoint(end);
       return node ? graphNodeTitle(node) : id;
     };
-    // A link drawn towards a group is no relationship of the platform and cannot be selected: its
-    // relationships are counted on its entity and its group.
-    const linkEntries: Entry[] = links.filter((link) => !isGroupLink(link)).map((link) => ({
-      kind: 'link',
-      link,
-      text: `${endName(link.source, link.source_id)} ${link.label || t_i18n(`relationship_${link.relationship_type || link.entity_type}`)} ${endName(link.target, link.target_id)}`,
-    }));
+    const linkEntries: Entry[] = links.map((link) => {
+      const text = `${endName(link.source, link.source_id)} ${link.label || t_i18n(`relationship_${link.relationship_type || link.entity_type}`)} ${endName(link.target, link.target_id)}`;
+      if (!isGroupLink(link)) return { kind: 'link', link, text };
+      // A link drawn towards a group stands for several relationships: its option says how many.
+      const count = t_i18n('{count, plural, one {# relationship} other {# relationships}}', { values: { count: link.represents ?? 1 } });
+      return { kind: 'link', link, text: `${text} (${count})` };
+    });
     return [...nodeEntries, ...linkEntries];
   }, [nodes, links, badgeRegistryVersion]);
 

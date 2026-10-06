@@ -873,6 +873,13 @@ const Graph = ({
             } else selectNodes([node]);
           }}
           onSelectLink={(link, additive) => {
+            // A link drawn towards a group is no relationship to select: choosing it expands its group, as choosing the group does.
+            if (isGroupLink(link)) {
+              const ends = [endpointId(link.source) ?? link.source_id, endpointId(link.target) ?? link.target_id];
+              const group = shownNodes.find((node) => !!node.groupOf && ends.includes(node.id));
+              if (group?.groupOf) toggleCollapsedEntityType(group.groupOf.entityType);
+              return;
+            }
             // By relationship, as on the canvas: the two connectors of a nested relationship share its id
             if (additive) {
               setSelectedLinks(selectedLinks.some((l) => l.id === link.id)

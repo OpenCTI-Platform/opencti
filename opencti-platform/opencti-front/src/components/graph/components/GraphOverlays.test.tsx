@@ -316,8 +316,9 @@ describe('GraphAccessibleList', () => {
     const groupLink = graphLink(actor, group, { id: `${GROUP_LINK_PREFIX}actor|group:Malware|uses`, represents: 2 });
     testRender(<GraphAccessibleList nodes={[actor, group]} links={[groupLink]} selectedKeys={new Set()} onSelectNode={vi.fn()} onSelectLink={vi.fn()} />);
     expect(screen.getByRole('option', { name: /APT-X, 2 relationships$/ })).toBeInTheDocument();
-    // The link itself cannot be selected: it is no option of the list.
-    expect(screen.getAllByRole('option')).toHaveLength(2);
+    // The link drawn towards the group says how many relationships it stands for.
+    expect(screen.getAllByRole('option')).toHaveLength(3);
+    expect(screen.getByRole('option', { name: /^APT-X .+ \(2 relationships\)$/ })).toBeInTheDocument();
   });
 
   it('tells the canvas which element the keyboard is on while the list has focus', async () => {
