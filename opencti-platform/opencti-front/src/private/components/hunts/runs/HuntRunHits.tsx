@@ -103,7 +103,12 @@ const HuntRunHits = ({ hitsCount, newCount, recurringCount, identified, windowCo
                         {recurrence && !recurrence.isNew && hit.known_since && (
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <span tabIndex={0} style={{ display: 'inline-flex' }}>
+                              {/* rounded-sm is the radius of the chip, so the focus ring follows its shape */}
+                              <span
+                                tabIndex={0}
+                                className="inline-flex rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-filigran-brand-primary focus-visible:ring-offset-2 focus-visible:ring-offset-focus"
+                                data-testid="hunt-run-hit-recurrence-trigger"
+                              >
                                 <Chip label={recurrence.label} severity="neutral" data-testid="hunt-run-hit-recurrence" />
                               </span>
                             </TooltipTrigger>

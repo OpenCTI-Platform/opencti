@@ -33,7 +33,11 @@ describe('Hits of a hunt run', () => {
     expect(tags[0]).toHaveTextContent('New');
     // A short date keeps the tag inside its column; the exact date and time are in its tooltip, reachable by keyboard
     expect(tags[1]).toHaveTextContent('Seen 4 times since Oct 1, 2026');
-    expect(tags[1].closest('[tabindex="0"]')).not.toBeNull();
+    const trigger = screen.getByTestId('hunt-run-hit-recurrence-trigger');
+    expect(trigger).toHaveAttribute('tabindex', '0');
+    expect(trigger).toContainElement(tags[1]);
+    // The focus ring of the design system, not the outline of the browser
+    expect(trigger).toHaveClass('focus-visible:outline-none', 'focus-visible:ring-2', 'focus-visible:ring-filigran-brand-primary');
     expect(screen.queryByTestId('hunt-run-hits-unidentified')).not.toBeInTheDocument();
   });
 
