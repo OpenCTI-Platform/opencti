@@ -218,9 +218,17 @@ describe('IOC validation requests', () => {
   });
 
   it('should dispatch the live pairs and skip the others', async () => {
+    // Any id of an element names it, and two ids of one element name it once
+    const liveIndicator = await internalLoadById(testContext, ADMIN_USER, liveIndicatorId) as unknown as { standard_id: string };
+    const platform = await internalLoadById(testContext, ADMIN_USER, platformId) as unknown as { standard_id: string };
     const result = await queryAsAdminWithSuccess({
       query: REQUEST_VALIDATION,
-      variables: { platformIds: [platformId], indicatorIds: [liveIndicatorId, failedIndicatorId], testKinds: ['dns_resolution'], connectorId: IOC_VALIDATION_CONNECTOR },
+      variables: {
+        platformIds: [platform.standard_id, platformId],
+        indicatorIds: [liveIndicatorId, liveIndicator.standard_id, failedIndicatorId],
+        testKinds: ['dns_resolution'],
+        connectorId: IOC_VALIDATION_CONNECTOR,
+      },
     });
     const request = result.data?.indicatorsRequestValidation;
     requestId = request.id;

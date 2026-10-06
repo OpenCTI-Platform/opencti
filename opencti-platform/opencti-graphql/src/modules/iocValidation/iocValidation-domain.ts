@@ -1,14 +1,14 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Promise as BluePromise } from 'bluebird';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicStoreBase, BasicStoreEntity, BasicStoreRelation } from '../../types/store';
+import type { BasicStoreBase, BasicStoreEntity, BasicStoreObject, BasicStoreRelation } from '../../types/store';
 import type { StixId } from '../../types/stix-2-1-common';
 import conf, { BUS_TOPICS, logApp } from '../../config/conf';
 import { ForbiddenAccess, FunctionalError, ValidationError } from '../../config/errors';
 import { buildReplaceScriptParams, EL_REPLACE_SCRIPT_SOURCE, elUpdate } from '../../database/engine';
 import { createRelation, deleteElementById, patchAttribute, stixLoadByIds } from '../../database/middleware';
 import { notify, redisGetManagerEventState, redisSetManagerEventState } from '../../database/redis';
-import { isEmptyField, isNotEmptyField, UPDATE_OPERATION_REPLACE } from '../../database/utils';
+import { isEmptyField, isNotEmptyField, READ_DATA_INDICES, UPDATE_OPERATION_REPLACE } from '../../database/utils';
 import { getEntityFromCache } from '../../database/cache';
 import type { BasicStoreSettings } from '../../types/settings';
 import { isEnterpriseEditionFromSettings } from '../../enterprise-edition/ee';
@@ -17,7 +17,16 @@ import { ABSTRACT_STIX_CORE_RELATIONSHIP, INPUT_GRANTED_REFS, INPUT_MARKINGS } f
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { cleanMarkings } from '../../utils/markingDefinition-utils';
-import { fullEntitiesList, fullRelationsList, internalFindByIds, internalLoadById, pageEntitiesConnection, storeLoadById, storeLoadByIds } from '../../database/middleware-loader';
+import {
+  fullEntitiesList,
+  fullRelationsList,
+  internalFindByIds,
+  internalFindByIdsMapped,
+  internalLoadById,
+  pageEntitiesConnection,
+  storeLoadById,
+  storeLoadByIds,
+} from '../../database/middleware-loader';
 import { connectorsForEnrichment } from '../../database/repository';
 import { pushToConnector } from '../../database/rabbitmq';
 import { createWork, reportExpectation } from '../../domain/work';
@@ -175,6 +184,23 @@ export const findReadableIndicatorIds = async (context: AuthContext, user: AuthU
   if (indicatorIds.length === 0) return new Set<string>();
   const indicators = await storeLoadByIds<BasicStoreEntityIndicator>(context, user, indicatorIds, ENTITY_TYPE_INDICATOR);
   return new Set(indicators.filter((i) => i).map((i) => i.internal_id));
+};
+
+// Elements a caller names by any of their ids (internal, standard or STIX), each once in the order of the ids, and the
+// ids that name nothing the user can read.
+const resolveNamedElements = async <T extends BasicStoreObject>(context: AuthContext, user: AuthUser, ids: string[], type: string) => {
+  const byAnyId = await internalFindByIdsMapped<T>(context, user, ids, { type, mapWithAllIds: true, indices: READ_DATA_INDICES });
+  const elements = new Map<string, T>();
+  const unresolved: string[] = [];
+  ids.forEach((id) => {
+    const element = byAnyId[id];
+    if (element) {
+      elements.set(element.internal_id, element);
+    } else {
+      unresolved.push(id);
+    }
+  });
+  return { elements: [...elements.values()], unresolved };
 };
 // endregion
 
@@ -369,16 +395,16 @@ export const requestIndicatorsValidation = async (context: AuthContext, user: Au
     throw ValidationError(`The description cannot exceed ${DESCRIPTION_MAX_LENGTH} characters`, 'description');
   }
   const contextOutOfDraft = { ...context, draft_context: '' };
-  // 01. Security platforms must all be readable by the requester
-  const platforms = await storeLoadByIds<BasicStoreEntitySecurityPlatform>(contextOutOfDraft, user, platformIds, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM);
-  const resolvedPlatforms = platforms.filter((p) => p);
-  if (resolvedPlatforms.length !== platformIds.length) {
-    throw FunctionalError('Some security platforms cannot be found or are not accessible', { platformIds });
+  // 01. Security platforms must all be readable by the requester; two ids of one platform name it once
+  const platforms = await resolveNamedElements<BasicStoreEntitySecurityPlatform>(contextOutOfDraft, user, platformIds, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM);
+  if (platforms.unresolved.length > 0) {
+    throw FunctionalError('Some security platforms cannot be found or are not accessible', { platformIds: platforms.unresolved });
   }
+  const resolvedPlatforms = platforms.elements;
   // 02. Connector and its service account: OpenAEV only receives what its account may read
   const connector = await resolveConnector(contextOutOfDraft, user, args.connectorId);
   const connectorUser = await resolveConnectorUser(contextOutOfDraft, connector);
-  const requesterIndicators = (await storeLoadByIds<BasicStoreEntityIndicator>(contextOutOfDraft, user, indicatorIds, ENTITY_TYPE_INDICATOR)).filter((i) => i);
+  const requesterIndicators = (await resolveNamedElements<BasicStoreEntityIndicator>(contextOutOfDraft, user, indicatorIds, ENTITY_TYPE_INDICATOR)).elements;
   if (requesterIndicators.length === 0) {
     throw FunctionalError('None of the indicators can be found or accessed');
   }
