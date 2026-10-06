@@ -9,6 +9,7 @@ import { createInternalObject, deleteInternalObject } from '../../domain/interna
 import { getUserAccessRight, isUserHasCapability, KNOWLEDGE_KNSHAREFILTERS, MEMBER_ACCESS_CREATOR, MEMBER_ACCESS_RIGHT_ADMIN } from '../../utils/access';
 import { addSharedSavedFiltersPermissionChangesCount } from '../../manager/telemetryManager';
 import { editAuthorizedMembers } from '../../utils/authorizedMembers';
+import { containsDashboardVariableToken } from '../dashboard/dashboard-variables-resolution';
 
 // saved filters with other members than the creator in restricted_members are considered shared
 export const isSavedFilterShared = (savedFilter: BasicStoreEntitySavedFilter) => {
@@ -40,7 +41,15 @@ const initializeAuthorizedMembers = (
   return initializedAuthorizedMembers;
 };
 
+// A saved filter is shareable and detached from any dashboard: a variable token would lose its context.
+const assertNoDashboardVariable = (filters: unknown) => {
+  if (typeof filters === 'string' && containsDashboardVariableToken(filters)) {
+    throw FunctionalError('Dashboard variables cannot be used in a saved filter');
+  }
+};
+
 export const addSavedFilter = (context: AuthContext, user: AuthUser, input: SavedFilterAddInput) => {
+  assertNoDashboardVariable(input.filters);
   // Force context out of draft to force creation in live index
   const contextOutOfDraft = { ...context, draft_context: '' };
   // construct final creation input
@@ -70,6 +79,7 @@ export const fieldPatchSavedFilter = async (context: AuthContext, user: AuthUser
   const savedFilter = await findSavedFilter(context, user, id);
   if (!savedFilter) throw FunctionalError('Saved filter cannot be found', { id });
   if (!input) throw FunctionalError('No input given for field patch', { input });
+  input.filter((editInput) => editInput.key === 'filters').forEach((editInput) => editInput.value.forEach(assertNoDashboardVariable));
 
   // Only the creator can update a saved filter unless the user has the KNOWLEDGE_KNSHAREFILTERS capability
   if (!isUserHasCapability(user, KNOWLEDGE_KNSHAREFILTERS)) {
