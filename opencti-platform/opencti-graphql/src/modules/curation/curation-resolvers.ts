@@ -6,7 +6,7 @@ import { internalFindByIds } from '../../database/middleware-loader';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { ENTITY_TYPE_CONNECTOR } from '../../schema/internalObject';
 import { isUserHasCapability, SETTINGS_SETCUSTOMIZATION, SYSTEM_USER } from '../../utils/access';
-import { AUTHORITY_SOURCE_CONNECTOR, KNOWLEDGE_HEALTH_METRIC_KEYS } from './curation-types';
+import { AUTHORITY_SOURCE_CONNECTOR, ENTITY_TYPE_MERGE_RECORD, KNOWLEDGE_HEALTH_METRIC_KEYS, MERGE_STATUS_REVERTED } from './curation-types';
 import {
   acceptProposal,
   adjudicateProposalNow,
@@ -129,9 +129,13 @@ const curationResolvers: Resolvers = {
       return merge_record_id ? findMergeRecordById(context, context.user, merge_record_id) as any : null;
     },
     can_apply: (proposal, _, context) => canUserApplyProposal(context.user!, proposal as unknown as BasicStoreEntityCurationProposal),
-    can_revert: (proposal, _, context) => {
+    can_revert: async (proposal, _, context) => {
       const typed = proposal as unknown as BasicStoreEntityCurationProposal;
-      return isProposalRevertible(typed) && canUserRevertProposal(context.user!, typed);
+      if (!isProposalRevertible(typed) || !canUserRevertProposal(context.user!, typed)) return false;
+      if (!typed.merge_record_id) return true;
+      // Applied as a merge: revertible while its merge record can be undone, or once it is (the revert then closes it).
+      const record = await context.batch.idsBatchLoader.load({ id: typed.merge_record_id, type: ENTITY_TYPE_MERGE_RECORD }) as unknown as BasicStoreEntityMergeRecord | undefined;
+      return !!record && (record.merge_status === MERGE_STATUS_REVERTED || isMergeRecordReversible(record));
     },
     adjudicable: (proposal) => isProposalAdjudicable(proposal as unknown as BasicStoreEntityCurationProposal),
     choice_required: (proposal) => isProposalChoiceRequired(proposal as unknown as BasicStoreEntityCurationProposal),

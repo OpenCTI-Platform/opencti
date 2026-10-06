@@ -36,7 +36,9 @@ import {
   ENTITY_TYPE_CURATION_PROPOSAL,
   ENTITY_TYPE_MERGE_RECORD,
   IRREVERSIBLE_MERGE_INTERRUPTED,
+  IRREVERSIBLE_MERGE_RERUN,
   MERGE_STATUS_ACTIVE,
+  MERGE_STATUS_IRREVERSIBLE,
   MERGE_STATUS_PARTIALLY_REVERTED,
   MERGE_STATUS_PENDING,
   MERGE_STATUS_REVERTED,
@@ -48,7 +50,14 @@ import {
   PROPOSAL_STATUS_REVERTED,
   CURATION_DETECTORS,
 } from './curation-types';
-import { type ApplyResult, executeProposalAction, findLatestMergeRecordForProposal, reconcilePlannedApplication, revertAppliedPatch } from './curation-apply';
+import {
+  type ApplyResult,
+  executeProposalAction,
+  findLatestMergeRecordForProposal,
+  hasInterruptedMergeForProposal,
+  reconcilePlannedApplication,
+  revertAppliedPatch,
+} from './curation-apply';
 import { findMergeRecordById, settlePendingMergeRecord, unmergeFromRecord } from './curation-merge-record';
 import { getCurationSettings, getCurationSettingsId, saveCurationSettings, validateFieldAuthorityRules } from './curation-settings';
 import { ADJUDICATED_PROPOSAL_KINDS, adjudicateProposal, adjudicationDecisionsFor, isAdjudicationAvailable } from './curation-adjudication';
@@ -269,6 +278,16 @@ const applyAndRecord = async (
       onBeforeChange: (plan) => redisCurationSetApplicationResult(proposal.internal_id, { ...mergeApplications(recovered, { ...plan, targetId }), planned: true }),
     });
     application = mergeApplications(recovered, { ...result, targetId });
+  }
+  // A merge run again after an interrupted one snapshots the graph the interrupted one already changed: undoing it would
+  // not restore that part, so it is not reversible either. Checked on every retry, so a failed marking is made again;
+  // its own reason keeps a later retry from taking it for an interrupted merge and running it a third time.
+  if (proposal.application_started_at && application.mergeRecordId
+    && await hasInterruptedMergeForProposal(context, proposal.internal_id, application.mergeRecordId)) {
+    await patchAttribute(context, SYSTEM_USER, application.mergeRecordId, ENTITY_TYPE_MERGE_RECORD, {
+      merge_status: MERGE_STATUS_IRREVERSIBLE,
+      irreversible_reason: IRREVERSIBLE_MERGE_RERUN,
+    });
   }
   const patch: Record<string, unknown> = {
     proposal_status: input.status,

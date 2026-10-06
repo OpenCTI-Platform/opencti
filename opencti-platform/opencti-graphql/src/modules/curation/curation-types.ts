@@ -214,6 +214,7 @@ export const IRREVERSIBLE_TOO_MANY_REMOVED_RELATIONSHIPS = 'too_many_removed_rel
 export const IRREVERSIBLE_TOO_MANY_MOVED_RELATIONSHIPS = 'too_many_moved_relationships';
 export const IRREVERSIBLE_FILE_NAME_COLLISION = 'file_name_collision';
 export const IRREVERSIBLE_MERGE_INTERRUPTED = 'merge_interrupted';
+export const IRREVERSIBLE_MERGE_RERUN = 'merge_rerun_after_interruption';
 export const IRREVERSIBLE_MERGED_ENTITY_DELETED = 'merged_entity_deleted';
 export const IRREVERSIBLE_RETENTION_OVER = 'retention_over';
 

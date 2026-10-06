@@ -252,6 +252,7 @@ The reason a merge cannot be undone is exposed by the API in the `irreversible_r
 | `too_many_moved_relationships`   | The merge moved more relationships than a merge record can keep.                                 |
 | `file_name_collision`            | A file of a merged entity had the name of a file of the surviving entity and was not kept.       |
 | `merge_interrupted`              | The merge was interrupted before all the entities were merged.                                   |
+| `merge_rerun_after_interruption` | The merge completed, on a new acceptance, a merge that had been interrupted, whose changes it cannot restore. |
 | `merged_entity_deleted`          | The merged entity was deleted before the merge record was completed.                            |
 | (empty)                          | The merge can be undone, or its retention window is over and the daily closing has not run yet. |
 

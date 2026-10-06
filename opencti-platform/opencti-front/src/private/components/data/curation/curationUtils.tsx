@@ -405,6 +405,8 @@ const useCurationLabels = () => {
           return t_i18n('This merge cannot be undone: a file of a merged entity had the name of a file of the surviving entity and was not kept.');
         case 'merge_interrupted':
           return t_i18n('This merge cannot be undone: it was interrupted before all the entities were merged.');
+        case 'merge_rerun_after_interruption':
+          return t_i18n('This merge cannot be undone: it completed a merge that had been interrupted, whose changes it cannot restore.');
         case 'merged_entity_deleted':
           return t_i18n('This merge can no longer be undone: the merged entity was deleted before the merge record was completed.');
         case 'retention_over':

@@ -67,6 +67,7 @@ const PROPOSAL_FIELDS = `
   decision_rationale
   policy_id
   applied_patch
+  merge_record_id
   can_apply
   can_revert
   adjudicable
@@ -1293,6 +1294,42 @@ describe('Knowledge curation actions', () => {
     expect((await loadProposal(id)).proposal_status).toBe('reverted');
     const closed = await storeLoadById(testContext, ADMIN_USER, recordId, ENTITY_TYPE_MERGE_RECORD) as unknown as Record<string, any>;
     expect(closed.unmerge_pending_source_ids ?? []).toEqual([]);
+  });
+
+  it('should record a merge run again after an interrupted one as not reversible', async () => {
+    const target = await createIntrusionSet(`${PREFIX} Rerun Target`);
+    const source = await createIntrusionSet(`${PREFIX} Rerun Source`);
+    const id = await createProposal({
+      kind: PROPOSAL_KIND_MERGE,
+      detector: DETECTOR_NORMALIZATION,
+      subjects: [subjectOf(target), subjectOf(source)],
+      target_id: target.id,
+      recommended_action: ACTION_MERGE,
+      evidence: evidenceFor('canonical_collision', 'Same canonical name'),
+      confidence: 0.9,
+    });
+    const first = await queryAsAdminWithSuccess({ query: ACCEPT_MUTATION, variables: { id, input: { target_id: target.id } } });
+    const firstRecordId = first.data?.curationProposalAccept.merge_record_id as string;
+    expect(first.data?.curationProposalAccept.can_revert).toBe(true);
+    // Undo it so that both entities exist again, then leave things as an attempt interrupted halfway would.
+    await wait(5010);
+    await queryAsAdminWithSuccess({ query: UNMERGE_MUTATION, variables: { mergeRecordId: firstRecordId } });
+    const setFields = async (element: BasicStoreEntity, fields: Record<string, string | null>) => elUpdate(testContext, element._index, element.internal_id, {
+      script: { source: 'for (def entry : params.fields.entrySet()) { ctx._source[entry.getKey()] = entry.getValue(); }', lang: 'painless', params: { fields } },
+    });
+    const firstRecord = await storeLoadById(testContext, ADMIN_USER, firstRecordId, ENTITY_TYPE_MERGE_RECORD) as unknown as BasicStoreEntity;
+    await setFields(firstRecord, { merge_status: 'irreversible', irreversible_reason: 'merge_interrupted' });
+    const proposal = await storeLoadById(testContext, ADMIN_USER, id, ENTITY_TYPE_CURATION_PROPOSAL) as unknown as BasicStoreEntity;
+    await setFields(proposal, { proposal_status: 'open', application_started_at: new Date().toISOString(), merge_record_id: null, decided_at: null });
+
+    const retried = await queryAsAdminWithSuccess({ query: ACCEPT_MUTATION, variables: { id, input: { target_id: target.id } } });
+    const retriedRecordId = retried.data?.curationProposalAccept.merge_record_id as string;
+    expect(retried.data?.curationProposalAccept.proposal_status).toBe('accepted');
+    expect(retriedRecordId).not.toBe(firstRecordId);
+    const retriedRecord = await storeLoadById(testContext, ADMIN_USER, retriedRecordId, ENTITY_TYPE_MERGE_RECORD) as unknown as Record<string, string>;
+    expect(retriedRecord.merge_status).toBe('irreversible');
+    expect(retriedRecord.irreversible_reason).toBe('merge_rerun_after_interruption');
+    expect(retried.data?.curationProposalAccept.can_revert).toBe(false);
   });
 
   it('should only discard a pending merge record whose merge never started writing', async () => {

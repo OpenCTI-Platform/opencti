@@ -34,6 +34,7 @@ import {
   type BasicStoreEntityMergeRecord,
   type CurationSettings,
   ENTITY_TYPE_MERGE_RECORD,
+  IRREVERSIBLE_MERGE_INTERRUPTED,
   EVIDENCE_DECAYED_INDICATOR,
   EVIDENCE_STALENESS,
   MERGE_STATUS_REVERTED,
@@ -135,6 +136,15 @@ export const findLatestMergeRecordForProposal = async (context: AuthContext, pro
     first: 1,
   });
   return records.edges[0]?.node ?? null;
+};
+
+/** Whether an earlier attempt to apply the proposal left a merge interrupted, other than the given merge record. */
+export const hasInterruptedMergeForProposal = async (context: AuthContext, proposalId: string, exceptRecordId: string) => {
+  const records = await fullEntitiesList<BasicStoreEntityMergeRecord>(context, SYSTEM_USER, [ENTITY_TYPE_MERGE_RECORD], {
+    filters: { mode: FilterMode.And, filters: [{ key: ['proposal_id'], values: [proposalId] }], filterGroups: [] },
+    noFiltersChecking: true,
+  });
+  return records.some((record) => record.internal_id !== exceptRecordId && record.irreversible_reason === IRREVERSIBLE_MERGE_INTERRUPTED);
 };
 
 // region actions
