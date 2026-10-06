@@ -604,6 +604,9 @@ export const MERGE_USERS_FEATURE_FLAG = 'MERGE_USERS';
 // entity types with a published WorkflowDefinition behave as before this change.
 export const ENTITIES_WORKFLOW_FEATURE_FLAG = 'ENTITIES_WORKFLOW';
 
+// Dashboard variables feature flag (the GraphQL API is guarded with @ff(flags: ["DASHBOARD_VARIABLES"]))
+export const DASHBOARD_VARIABLES_FEATURE_FLAG = 'DASHBOARD_VARIABLES';
+
 export const REDIS_PREFIX = nconf.get('redis:namespace') ? `${nconf.get('redis:namespace')}:` : '';
 export const TOPIC_PREFIX = `${REDIS_PREFIX}_OPENCTI_DATA_`;
 export const TOPIC_CONTEXT_PREFIX = `${REDIS_PREFIX}_OPENCTI_CONTEXT_`;
