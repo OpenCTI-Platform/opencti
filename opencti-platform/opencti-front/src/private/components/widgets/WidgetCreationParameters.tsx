@@ -13,7 +13,13 @@ import { InformationOutline } from 'mdi-material-ui';
 import React, { useState } from 'react';
 import { StixCyberObservablesLinesAttributesQuery$data } from '@components/observations/stix_cyber_observables/__generated__/StixCyberObservablesLinesAttributesQuery.graphql';
 import WidgetColumnsCustomizationInput from '@components/widgets/WidgetColumnsCustomizationInput';
-import { getCustomAttributesColumns, getDefaultCustomAttributesColumns, getDefaultWidgetColumns, getWidgetColumns } from '@components/widgets/WidgetListsDefaultColumns';
+import {
+  fintelEntityLinkColumn,
+  getCustomAttributesColumns,
+  getDefaultCustomAttributesColumns,
+  getDefaultWidgetColumns,
+  getWidgetColumns,
+} from '@components/widgets/WidgetListsDefaultColumns';
 import { useWidgetConfigContext } from '@components/widgets/WidgetConfigContext';
 import useWidgetConfigValidateForm from '@components/widgets/useWidgetConfigValidateForm';
 import WidgetAttributesInputContainer, { widgetAttributesInputInstanceQuery } from '@components/widgets/WidgetAttributesInputContainer';
@@ -974,8 +980,8 @@ const WidgetCreationParameters = () => {
           const isFintelEntityList = host.kind === 'fintelTemplate' && perspective === 'entities';
           const defaultWidgetColumnsByType = getDefaultWidgetColumns(perspective, host);
           const selectedColumns = [...(columns ?? defaultWidgetColumnsByType)];
-          const baseAvailableColumns = host.kind === 'fintelTemplate' && perspective === 'entities'
-            ? getCustomAttributesColumns(entityType || undefined)
+          const baseAvailableColumns = isFintelEntityList
+            ? [...getCustomAttributesColumns(entityType || undefined), fintelEntityLinkColumn]
             : getWidgetColumns(perspective, entityType || undefined, metricsDefinition || undefined);
           const availableColumnsRaw = host.kind === 'fintelTemplate'
             ? mergeAvailableAndSelectedColumns(baseAvailableColumns, selectedColumns)
