@@ -5435,6 +5435,7 @@
   "This merge can no longer be undone: {reason}": "이 병합은 더 이상 되돌릴 수 없습니다: {reason}",
   "This merge can no longer be undone: its retention window ended on {date}.": "이 병합은 더 이상 되돌릴 수 없습니다: 보존 기간이 {date}에 종료되었습니다.",
   "This merge can no longer be undone: the merged entity was deleted before the merge record was completed.": "이 병합은 더 이상 되돌릴 수 없습니다: 병합 기록이 완료되기 전에 병합된 엔터티가 삭제되었습니다.",
+  "This merge cannot be undone: a file of a merged entity had the name of a file of the surviving entity and was not kept.": "이 병합은 되돌릴 수 없습니다: 병합된 엔터티의 파일이 유지된 엔터티의 파일과 이름이 같아 보존되지 않았습니다.",
   "This merge cannot be undone: it moved more relationships than a merge record can keep.": "이 병합은 되돌릴 수 없습니다: 병합 기록에 보관할 수 있는 것보다 많은 관계를 이동했습니다.",
   "This merge cannot be undone: it removed more duplicated relationships than a merge record can keep.": "이 병합은 되돌릴 수 없습니다: 병합 기록에 보관할 수 있는 것보다 많은 중복 관계를 제거했습니다.",
   "This merge cannot be undone: it was interrupted before all the entities were merged.": "이 병합은 되돌릴 수 없습니다: 모든 엔터티가 병합되기 전에 중단되었습니다.",

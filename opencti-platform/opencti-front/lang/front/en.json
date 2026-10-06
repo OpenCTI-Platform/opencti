@@ -5435,6 +5435,7 @@
   "This merge can no longer be undone: {reason}": "This merge can no longer be undone: {reason}",
   "This merge can no longer be undone: its retention window ended on {date}.": "This merge can no longer be undone: its retention window ended on {date}.",
   "This merge can no longer be undone: the merged entity was deleted before the merge record was completed.": "This merge can no longer be undone: the merged entity was deleted before the merge record was completed.",
+  "This merge cannot be undone: a file of a merged entity had the name of a file of the surviving entity and was not kept.": "This merge cannot be undone: a file of a merged entity had the name of a file of the surviving entity and was not kept.",
   "This merge cannot be undone: it moved more relationships than a merge record can keep.": "This merge cannot be undone: it moved more relationships than a merge record can keep.",
   "This merge cannot be undone: it removed more duplicated relationships than a merge record can keep.": "This merge cannot be undone: it removed more duplicated relationships than a merge record can keep.",
   "This merge cannot be undone: it was interrupted before all the entities were merged.": "This merge cannot be undone: it was interrupted before all the entities were merged.",

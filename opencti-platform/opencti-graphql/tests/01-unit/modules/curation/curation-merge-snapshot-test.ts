@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/index';
-import { snapshotAttributes, unmergeLockIds } from '../../../../src/modules/curation/curation-merge-record';
+import { hasFileNameCollision, snapshotAttributes, unmergeLockIds } from '../../../../src/modules/curation/curation-merge-record';
 import { generateAliasesId } from '../../../../src/schema/identifier';
 import { computeTargetRevertInputs } from '../../../../src/modules/curation/curation-merge-diff';
 import { FIELD_AUTHORITY_ATTRIBUTE } from '../../../../src/modules/curation/curation-field-authority';
@@ -70,5 +70,17 @@ describe('curation merge snapshots', () => {
     const live = { attributes: { ...target.post_attributes }, refs: {} };
     const inputs = computeTargetRevertInputs(target, live, [source], [], () => ({ multiple: true }), []);
     expect(inputs.find((input) => input.key === FIELD_AUTHORITY_ATTRIBUTE)).toBeUndefined();
+  });
+
+  it('tells a merge that would drop a source file named like a file of the target', () => {
+    const entity = (internalId: string, names: string[]) => ({
+      internal_id: internalId,
+      entity_type: ENTITY_TYPE_INTRUSION_SET,
+      x_opencti_files: names.map((name) => ({ id: `import/${ENTITY_TYPE_INTRUSION_SET}/${internalId}/${name}`, name })),
+    }) as unknown as Parameters<typeof hasFileNameCollision>[0];
+    const target = entity('target-1', ['report.pdf']);
+    expect(hasFileNameCollision(entity('source-1', ['report.pdf', 'other.pdf']), target)).toBe(true);
+    expect(hasFileNameCollision(entity('source-1', ['other.pdf']), target)).toBe(false);
+    expect(hasFileNameCollision(entity('source-1', []), target)).toBe(false);
   });
 });

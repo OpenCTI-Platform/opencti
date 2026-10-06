@@ -212,6 +212,7 @@ export type MergeStatus = typeof MERGE_STATUSES[number];
 // Why a merge cannot be undone, recorded as a stable code that clients translate.
 export const IRREVERSIBLE_TOO_MANY_REMOVED_RELATIONSHIPS = 'too_many_removed_relationships';
 export const IRREVERSIBLE_TOO_MANY_MOVED_RELATIONSHIPS = 'too_many_moved_relationships';
+export const IRREVERSIBLE_FILE_NAME_COLLISION = 'file_name_collision';
 export const IRREVERSIBLE_MERGE_INTERRUPTED = 'merge_interrupted';
 export const IRREVERSIBLE_MERGED_ENTITY_DELETED = 'merged_entity_deleted';
 export const IRREVERSIBLE_RETENTION_OVER = 'retention_over';

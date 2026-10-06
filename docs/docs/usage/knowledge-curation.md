@@ -250,6 +250,7 @@ The reason a merge cannot be undone is exposed by the API in the `irreversible_r
 | `retention_over`                 | The retention window is over; the header gives the date it ended.                               |
 | `too_many_removed_relationships` | The merge removed more duplicated relationships than a merge record can keep.                    |
 | `too_many_moved_relationships`   | The merge moved more relationships than a merge record can keep.                                 |
+| `file_name_collision`            | A file of a merged entity had the name of a file of the surviving entity and was not kept.       |
 | `merge_interrupted`              | The merge was interrupted before all the entities were merged.                                   |
 | `merged_entity_deleted`          | The merged entity was deleted before the merge record was completed.                            |
 | (empty)                          | The merge can be undone, or its retention window is over and the daily closing has not run yet. |
@@ -271,6 +272,7 @@ Each of these changes is published in the stream like any other change, so platf
 
     - **Merges past their retention window.** The retention is 365 days by default (**Merge record retention** in the settings). Once a day, the curation records manager closes the expired records: they become `irreversible`, their snapshot is dropped to free storage, and the participants and alias provenance stay for the history. Changing the retention only applies to the merges recorded afterwards.
     - **Very large merges.** A merge that removes more than 10,000 duplicated relationships, or moves more than 100,000 relationships, is recorded as `irreversible` at merge time (both limits are configurable).
+    - **Files with the same name.** The merge keeps the file of the surviving entity when a merged entity has a file with the same name, and deletes the other one with the merged entity: such a merge is recorded as `irreversible` at merge time.
     - **A merged entity that no longer exists.** If the entity produced by the merge was deleted or merged again, revert its most recent merge first.
     - **Deleted elements.** References to elements deleted since the merge are dropped, and relationships that cannot be moved back or recreated are skipped and reported in the logs.
     - **Inferred relationships** are not part of the snapshot: the rules engine recomputes them.

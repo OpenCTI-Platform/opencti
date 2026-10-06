@@ -401,6 +401,8 @@ const useCurationLabels = () => {
           return t_i18n('This merge cannot be undone: it removed more duplicated relationships than a merge record can keep.');
         case 'too_many_moved_relationships':
           return t_i18n('This merge cannot be undone: it moved more relationships than a merge record can keep.');
+        case 'file_name_collision':
+          return t_i18n('This merge cannot be undone: a file of a merged entity had the name of a file of the surviving entity and was not kept.');
         case 'merge_interrupted':
           return t_i18n('This merge cannot be undone: it was interrupted before all the entities were merged.');
         case 'merged_entity_deleted':

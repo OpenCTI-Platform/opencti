@@ -42,6 +42,7 @@ import {
   type BasicStoreEntityMergeRecord,
   ENTITY_TYPE_CURATION_PROPOSAL,
   ENTITY_TYPE_MERGE_RECORD,
+  IRREVERSIBLE_FILE_NAME_COLLISION,
   IRREVERSIBLE_MERGE_INTERRUPTED,
   IRREVERSIBLE_MERGED_ENTITY_DELETED,
   IRREVERSIBLE_RETENTION_OVER,
@@ -132,6 +133,13 @@ const predictMovedFileIds = (source: BasicStoreObject, target: BasicStoreObject)
     .filter((id) => id.includes(entityFilesPath(target)) && !targetFileIds.has(id));
 };
 
+// A source file named like a file of the target is not moved, and the merge deletes it with the source: no unmerge
+// can bring it back.
+export const hasFileNameCollision = (source: BasicStoreObject, target: BasicStoreObject) => {
+  const targetFileIds = new Set((target.x_opencti_files ?? []).map((file) => file.id));
+  return (source.x_opencti_files ?? []).some((file) => targetFileIds.has(file.id.replace(entityFilesPath(source), entityFilesPath(target))));
+};
+
 const loadRecreatableRelationships = async (context: AuthContext, ids: string[]): Promise<Map<string, MergeRecreatableRelationship>> => {
   const result = new Map<string, MergeRecreatableRelationship>();
   const batches = R.splitEvery(SNAPSHOT_LOAD_BATCH, ids);
@@ -213,7 +221,10 @@ const prepareMergeRecord = async (context: AuthContext, user: AuthUser, input: M
   const totalRedirected = sourceSnapshots.reduce((acc, snapshot) => acc + snapshot.redirected.length, 0);
   // A relationship between two sources is listed by both of them: it is counted, and recreated, once.
   const allRecreatableIds = R.uniq([...recreatableIdsBySource.values()].flat());
-  if (allRecreatableIds.length > MAX_RECREATABLE_RELATIONSHIPS) {
+  if (sources.some((source) => hasFileNameCollision(source, target))) {
+    irreversibleReason = IRREVERSIBLE_FILE_NAME_COLLISION;
+    logApp.info('[CURATION] Merge recorded as not reversible: a merged file has the name of a file of the target', { target_id: target.internal_id });
+  } else if (allRecreatableIds.length > MAX_RECREATABLE_RELATIONSHIPS) {
     irreversibleReason = IRREVERSIBLE_TOO_MANY_REMOVED_RELATIONSHIPS;
     logApp.info('[CURATION] Merge recorded as not reversible: too many duplicated relationships removed', { count: allRecreatableIds.length, limit: MAX_RECREATABLE_RELATIONSHIPS });
   } else if (totalRedirected > MAX_REDIRECTED_RELATIONSHIPS) {
