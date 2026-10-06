@@ -613,7 +613,9 @@ const applyDeploymentReport = async (
     // An accepted report makes its account a reporter of the deployment, as an upsert would: its later
     // validation results are trusted (isTrustedDeploymentReporter reads creator_id)
     const addsReporter = isNewDeploymentReporter(existing, user);
-    if (!change.meaningful && !addsReporter) {
+    // The first report makes the deployment count as disseminated: it takes the regular path, whose
+    // event refreshes the indicator counters, and only a deployment already reported gets a heartbeat
+    if (!change.meaningful && !addsReporter && isReportedDeployment(existing)) {
       await touchLastSync(context, existing, change.attributes.last_sync_at);
       return { element: { ...existing, last_sync_at: change.attributes.last_sync_at as Date }, outcome: 'unchanged' };
     }

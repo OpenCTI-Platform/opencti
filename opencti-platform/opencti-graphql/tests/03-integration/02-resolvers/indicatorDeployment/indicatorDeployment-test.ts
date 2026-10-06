@@ -179,6 +179,15 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     const element = await internalLoadById(testContext, ADMIN_USER, id, type ? { type } : undefined) as unknown as Record<string, string[] | undefined>;
     return [...(element[RELATION_GRANTED_TO] ?? [])].sort();
   };
+  // The deployment manager repairs the sharing of a pair from its ends a moment after the events of the previous tests.
+  // A test letting the editor read the pair therefore adds its organization rather than swapping it in, so a repair
+  // landing meanwhile keeps the deployment readable by the connector account, and shares the pair again from its ends
+  // once they are restored.
+  const lendPairToEditor = async (sightingId: string) => {
+    await setOrganizations(platformId, [platformOrganizationId, testOrganizationId]);
+    await setOrganizations(sightingId, [platformOrganizationId, testOrganizationId]);
+  };
+  const sharePairFromItsEnds = () => repairPairMarkings(testContext, ADMIN_USER, { indicatorIds: [], platformIds: [platformId] });
 
   beforeAll(async () => {
     const indicator = await queryAsAdminWithSuccess({
@@ -451,8 +460,7 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     // Side-channel only, so the raw stream counts of the suite are unchanged; the editor reads the pair meanwhile
     await setMarkings(indicatorId, [amber.internal_id]);
     await setMarkings(sighting.internal_id, [amber.internal_id]);
-    await setOrganizations(platformId, [testOrganizationId]);
-    await setOrganizations(sighting.internal_id, [testOrganizationId]);
+    await lendPairToEditor(sighting.internal_id);
     try {
       await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: SIGHTING_MARKING_DELETE, variables: { id: sighting.internal_id, toId: MARKING_TLP_AMBER } });
       await queryAsAdminWithError({ query: SIGHTING_MARKING_DELETE, variables: { id: sighting.internal_id, toId: MARKING_TLP_AMBER } }, undefined, 'FORBIDDEN_ACCESS');
@@ -463,6 +471,7 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
       await setOrganizations(platformId, [platformOrganizationId]);
       await setMarkings(sighting.internal_id, []);
       await setMarkings(indicatorId, []);
+      await sharePairFromItsEnds();
     }
   });
 
@@ -486,8 +495,7 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     const byReservedId = await internalLoadById(testContext, ADMIN_USER, sightingStixId, { type: STIX_SIGHTING_RELATIONSHIP }) as unknown as { internal_id: string };
     expect(byReservedId.internal_id).toEqual(before.internal_id);
     // Side-channel only, so the raw stream counts of the suite are unchanged; the editor reads the pair meanwhile
-    await setOrganizations(platformId, [testOrganizationId]);
-    await setOrganizations(before.internal_id, [testOrganizationId]);
+    await lendPairToEditor(before.internal_id);
     try {
       await queryAsUserIsExpectedForbidden(USER_EDITOR, {
         query: SIGHTING_FIELD_PATCH,
@@ -502,6 +510,7 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     } finally {
       await setOrganizations(before.internal_id, [platformOrganizationId]);
       await setOrganizations(platformId, [platformOrganizationId]);
+      await sharePairFromItsEnds();
     }
   });
 
@@ -735,8 +744,7 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     const platformOrganizations = await loadOrganizations(platformId);
     const sightingOrganizations = await loadOrganizations(before.internal_id, STIX_SIGHTING_RELATIONSHIP);
     // Side-channel only, so the raw stream counts of the suite are unchanged; the editor reads the pair meanwhile
-    await setOrganizations(platformId, [testOrganizationId]);
-    await setOrganizations(before.internal_id, [testOrganizationId]);
+    await lendPairToEditor(before.internal_id);
     try {
       await queryAsUserIsExpectedForbidden(USER_EDITOR, {
         query: SIGHTING_ADD,
@@ -750,6 +758,7 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
       await setOrganizations(before.internal_id, sightingOrganizations);
       await setOrganizations(platformId, platformOrganizations);
       await setStixIds(before.x_opencti_stix_ids ?? []);
+      await sharePairFromItsEnds();
     }
   });
 
@@ -821,6 +830,46 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
       const afterReport = await creatorsOf();
       expect(afterReport.filter((id) => id === connectorUserId)).toHaveLength(1);
       expect(afterReport).toContain(ADMIN_USER.id);
+    } finally {
+      if (reportedIndicatorId) {
+        await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: reportedIndicatorId } });
+      }
+      streamed.forEach((spy) => spy.mockRestore());
+    }
+  });
+
+  it('should publish the first report of a deployment its connector created, so it counts as disseminated, then heartbeat', async () => {
+    // Neither streamed nor kept: the raw stream counts of the suite are unchanged
+    const streamed = [
+      vi.spyOn(streamHandler, 'storeCreateEntityEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeCreateRelationEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeUpdateEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeDeleteEvent').mockResolvedValue(undefined as never),
+    ];
+    const updates = streamed[2];
+    let reportedIndicatorId: string | undefined;
+    try {
+      const created = await queryAsAdminWithSuccess({
+        query: INDICATOR_ADD,
+        variables: { input: { name: 'first-report.evil.example', pattern: "[domain-name:value = 'first-report.evil.example']", pattern_type: 'stix', x_opencti_main_observable_type: 'Domain-Name' } },
+      });
+      reportedIndicatorId = created.data?.indicatorAdd.id as string;
+      await setOrganizations(reportedIndicatorId, [testOrganizationId, platformOrganizationId]);
+      // Created by the connector through the generic path: already a reporter, never synchronized
+      const pending = await queryAsUserWithSuccess(USER_CONNECTOR, {
+        query: RELATION_ADD,
+        variables: { input: { fromId: reportedIndicatorId, toId: platformId, relationship_type: 'deployed-on', deployment_status: 'pending' } },
+      });
+      expect(pending.data?.stixCoreRelationshipAdd.last_sync_at).toBeNull();
+      // Same status, first report: published, so the counters of the indicator are refreshed
+      const beforeFirst = updates.mock.calls.length;
+      const first = await queryAsUserWithSuccess(USER_CONNECTOR, { query: REPORT_DEPLOYMENT, variables: { indicatorId: reportedIndicatorId, platformId, status: 'pending' } });
+      expect(first.data?.indicatorReportDeployment.last_sync_at).not.toBeNull();
+      expect(updates.mock.calls.length).toBeGreaterThan(beforeFirst);
+      // Same status again: a heartbeat, never published
+      const beforeHeartbeat = updates.mock.calls.length;
+      await queryAsUserWithSuccess(USER_CONNECTOR, { query: REPORT_DEPLOYMENT, variables: { indicatorId: reportedIndicatorId, platformId, status: 'pending' } });
+      expect(updates.mock.calls.length).toEqual(beforeHeartbeat);
     } finally {
       if (reportedIndicatorId) {
         await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: reportedIndicatorId } });
