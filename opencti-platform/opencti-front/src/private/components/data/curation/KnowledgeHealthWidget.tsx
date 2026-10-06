@@ -1,6 +1,7 @@
-import React, { ReactNode, useEffect, useState } from 'react';
+import React, { ReactNode, useEffect, useRef, useState } from 'react';
 import { graphql } from 'react-relay';
 import Box from '@mui/material/Box';
+import { useDashboardRefreshToken, useDashboardSetQueryPending } from '../../../../components/dashboard/DashboardRefreshContext';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiLines from '../../../../components/dashboard/WidgetMultiLines';
@@ -52,14 +53,20 @@ interface KnowledgeHealthWidgetProps {
 /**
  * Dashboard widgets of the Knowledge Health score, read from the curation snapshots. They need no data selection: the
  * score covers every curated entity the platform holds. A failed read (no access, a public dashboard) shows no data.
+ * A manual or automatic dashboard refresh reads them again, the current figures staying on screen until it answers.
  */
 const KnowledgeHealthWidget = ({ variant, title, popover }: KnowledgeHealthWidgetProps) => {
   const { t_i18n } = useFormatter();
   const labels = useCurationLabels();
   const [state, setState] = useState<{ loading: boolean; data: KnowledgeHealthWidgetQuery$data | null }>({ loading: true, data: null });
+  const refreshToken = useDashboardRefreshToken();
+  const setQueryPending = useDashboardSetQueryPending();
+  const queryIdRef = useRef(`knowledge-health-widget-${Math.random().toString(36).slice(2)}`);
 
   useEffect(() => {
     let active = true;
+    const queryId = queryIdRef.current;
+    setQueryPending(queryId, true);
     fetchQuery(knowledgeHealthWidgetQuery, { snapshots: TREND_SNAPSHOTS })
       .toPromise()
       .then((data) => {
@@ -67,11 +74,13 @@ const KnowledgeHealthWidget = ({ variant, title, popover }: KnowledgeHealthWidge
       })
       .catch(() => {
         if (active) setState({ loading: false, data: null });
-      });
+      })
+      .finally(() => setQueryPending(queryId, false));
     return () => {
       active = false;
+      setQueryPending(queryId, false);
     };
-  }, []);
+  }, [refreshToken, setQueryPending]);
 
   const defaultTitles: Record<KnowledgeHealthWidgetType, string> = {
     'knowledge-health-score': t_i18n('Knowledge health score'),
