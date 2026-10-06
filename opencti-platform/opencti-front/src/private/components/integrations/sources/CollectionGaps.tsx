@@ -294,7 +294,12 @@ const CollectionGapsList = ({ queryRef, hasRegisteredManager }: CollectionGapsLi
                   return priority ? (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span tabIndex={0}>
+                        {/* rounded-sm is the radius of the tag, so the focus ring follows its shape */}
+                        <span
+                          tabIndex={0}
+                          className="inline-flex rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-filigran-brand-primary focus-visible:ring-offset-2 focus-visible:ring-offset-focus"
+                          data-testid="collection-gap-priority-trigger"
+                        >
                           <Tag label={t_i18n(CRITERION_PRIORITY_LABELS[priority])} size="small" />
                         </span>
                       </TooltipTrigger>
