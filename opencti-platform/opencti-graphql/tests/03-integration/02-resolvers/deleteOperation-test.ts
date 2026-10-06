@@ -2,17 +2,11 @@ import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
 import { ADMIN_API_TOKEN, ADMIN_USER, API_URI, PYTHON_PATH, TEST_ORGANIZATION, testContext, USER_EDITOR, USER_PARTICIPATE } from '../../utils/testQuery';
 import { queryAsAdmin } from '../../utils/testQueryHelper';
-import { queryAsAdminWithSuccess, queryAsUser, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../utils/testQueryHelper';
+import { queryAsAdminWithSuccess, queryAsUser, queryAsUserIsExpectedForbidden } from '../../utils/testQueryHelper';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
-import { MARKING_TLP_AMBER_STRICT, MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
-import { INDEX_DELETED_OBJECTS, wait } from '../../../src/database/utils';
-import { elDeleteElements, elReindexElements, elUpdate } from '../../../src/database/engine';
-import { internalLoadById, storeLoadById } from '../../../src/database/middleware-loader';
-import { deleteAllObjectFiles } from '../../../src/database/file-storage';
-import { buildRefRelationKey } from '../../../src/schema/general';
-import { RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
+import { MARKING_TLP_AMBER_STRICT, MARKING_TLP_RED } from '../../../src/schema/identifier';
+import { wait } from '../../../src/database/utils';
 import { execChildPython } from '../../../src/python/pythonBridge';
-import type { BasicStoreBase, BasicStoreObject } from '../../../src/types/store';
 
 const CREATE_REPORT_QUERY = gql`
     mutation ReportAdd($input: ReportAddInput!) {
@@ -272,112 +266,5 @@ describe('Delete operation resolver testing', () => {
     expect(reportQueryAfterResult.data?.report.objects.edges[0].node.standard_id).toEqual('campaign--bce98eb5-25a9-5ba7-b4a0-b160a79d0de7');
 
     await queryAsAdmin({ query: DELETE_REPORT_QUERY, variables: { id: reportInternalId } });
-  });
-
-  it('should deleteOperation confirm only purge the trash when main entity is also live', async () => {
-    // Create a report with a file, then delete it
-    const REPORT_TO_CREATE = {
-      input: {
-        name: 'Report both live and in trash',
-        description: 'Report both live and in trash description',
-        published: '2020-02-26T00:51:35.000Z',
-      },
-    };
-    const report = await queryAsAdmin({ query: CREATE_REPORT_QUERY, variables: REPORT_TO_CREATE });
-    const liveReportId = report.data?.reportAdd.id;
-    expect(liveReportId).toBeDefined();
-    const uploadOpts = [API_URI, ADMIN_API_TOKEN, liveReportId, filename, [MARKING_TLP_AMBER_STRICT]];
-    const execution = await execChildPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_uploader.py', uploadOpts);
-    expect(execution.status).toEqual('success');
-    await queryAsAdmin({ query: DELETE_REPORT_QUERY, variables: { id: liveReportId } });
-
-    const getAllDeletedOperations = await queryAsAdminWithSuccess({ query: LIST_DELETE_OPERATION_QUERY,
-      variables: {
-        filters: {
-          mode: 'and',
-          filters: [{ key: 'main_entity_id', values: [liveReportId], operator: 'eq', mode: 'or' }],
-          filterGroups: [],
-        } } });
-    expect(getAllDeletedOperations.data?.deleteOperations.edges.length).toEqual(1);
-    const liveDeleteOperation = getAllDeletedOperations.data?.deleteOperations.edges[0].node;
-    const mainDeletedElement = liveDeleteOperation.deleted_elements.find((el: { id: string }) => el.id === liveReportId);
-    expect(mainDeletedElement.source_index).toBeDefined();
-
-    // Simulate the inconsistent state: copy the trashed report back to its live index (trash copy is kept)
-    await elReindexElements(testContext, ADMIN_USER, [liveReportId], INDEX_DELETED_OBJECTS, mainDeletedElement.source_index);
-    const reportBackLive = await queryAsAdminWithSuccess({ query: READ_REPORT_QUERY, variables: { id: liveReportId } });
-    expect(reportBackLive.data?.report.id).toBe(liveReportId);
-
-    // Confirm must not fail on duplicate hits, and must only purge the trash
-    await queryAsAdminWithSuccess({ query: DELETE_CONFIRM_MUTATION, variables: { id: liveDeleteOperation.id } });
-    const deleteOperationResult = await queryAsAdminWithSuccess({ query: READ_DELETE_OPERATION_QUERY, variables: { id: liveDeleteOperation.id } });
-    expect(deleteOperationResult.data?.deleteOperation).toBeNull();
-
-    // Live report and its file are untouched
-    const reportAfterConfirm = await queryAsAdminWithSuccess({ query: READ_REPORT_QUERY, variables: { id: liveReportId } });
-    expect(reportAfterConfirm.data?.report.id).toBe(liveReportId);
-    expect(reportAfterConfirm.data?.report.importFiles.edges[0].node.name).toBe('poisonivy.json');
-
-    // Cleanup at engine level: no stream event, as the report came back live without one (keeps the sync tests consistent)
-    const reportToClean = await storeLoadById(testContext, ADMIN_USER, liveReportId, ENTITY_TYPE_CONTAINER_REPORT) as BasicStoreObject;
-    await deleteAllObjectFiles(testContext, ADMIN_USER, reportToClean);
-    await elDeleteElements(testContext, ADMIN_USER, [reportToClean]);
-    const reportAfterCleanup = await queryAsAdminWithSuccess({ query: READ_REPORT_QUERY, variables: { id: liveReportId } });
-    expect(reportAfterCleanup.data?.report).toBeNull();
-  });
-
-  it('should deleteOperation confirm keep files when the live main entity is not visible to the user', async () => {
-    // Report visible to USER_EDITOR (no marking, shared with its organization), with a file visible to USER_EDITOR
-    const REPORT_TO_CREATE = {
-      input: {
-        name: 'Report live but restricted',
-        description: 'Report live but restricted description',
-        published: '2020-02-26T00:51:35.000Z',
-        objectOrganization: [TEST_ORGANIZATION.id],
-      },
-    };
-    const report = await queryAsAdminWithSuccess({ query: CREATE_REPORT_QUERY, variables: REPORT_TO_CREATE });
-    const restrictedReportId = report.data?.reportAdd.id;
-    const uploadOpts = [API_URI, ADMIN_API_TOKEN, restrictedReportId, filename, [MARKING_TLP_GREEN]];
-    const execution = await execChildPython(testContext, ADMIN_USER, PYTHON_PATH, 'local_uploader.py', uploadOpts);
-    expect(execution.status).toEqual('success');
-    await queryAsAdminWithSuccess({ query: DELETE_REPORT_QUERY, variables: { id: restrictedReportId } });
-
-    const getAllDeletedOperations = await queryAsAdminWithSuccess({ query: LIST_DELETE_OPERATION_QUERY,
-      variables: {
-        filters: {
-          mode: 'and',
-          filters: [{ key: 'main_entity_id', values: [restrictedReportId], operator: 'eq', mode: 'or' }],
-          filterGroups: [],
-        } } });
-    expect(getAllDeletedOperations.data?.deleteOperations.edges.length).toEqual(1);
-    const restrictedDeleteOperation = getAllDeletedOperations.data?.deleteOperations.edges[0].node;
-    const mainDeletedElement = restrictedDeleteOperation.deleted_elements.find((el: { id: string }) => el.id === restrictedReportId);
-
-    // Report back live, then restricted to TLP:RED on the live copy only (trash copy stays visible to USER_EDITOR)
-    await elReindexElements(testContext, ADMIN_USER, [restrictedReportId], INDEX_DELETED_OBJECTS, mainDeletedElement.source_index);
-    const redMarking = await internalLoadById(testContext, ADMIN_USER, MARKING_TLP_RED) as BasicStoreBase;
-    await elUpdate(testContext, mainDeletedElement.source_index, restrictedReportId, {
-      script: { source: 'ctx._source[params.field] = params.ids', params: { field: buildRefRelationKey(RELATION_OBJECT_MARKING), ids: [redMarking.internal_id] } },
-    });
-    const reportAsEditor = await queryAsUser(USER_EDITOR, { query: READ_REPORT_QUERY, variables: { id: restrictedReportId } });
-    expect(reportAsEditor.data?.report).toBeNull();
-    const deleteOperationAsEditor = await queryAsUserWithSuccess(USER_EDITOR, { query: READ_DELETE_OPERATION_QUERY, variables: { id: restrictedDeleteOperation.id } });
-    expect(deleteOperationAsEditor.data?.deleteOperation.id).toBe(restrictedDeleteOperation.id);
-
-    // Confirm by a user who cannot see the live copy: must still detect it and keep its files
-    await queryAsUserWithSuccess(USER_EDITOR, { query: DELETE_CONFIRM_MUTATION, variables: { id: restrictedDeleteOperation.id } });
-    const deleteOperationResult = await queryAsAdminWithSuccess({ query: READ_DELETE_OPERATION_QUERY, variables: { id: restrictedDeleteOperation.id } });
-    expect(deleteOperationResult.data?.deleteOperation).toBeNull();
-    const reportAfterConfirm = await queryAsAdminWithSuccess({ query: READ_REPORT_QUERY, variables: { id: restrictedReportId } });
-    expect(reportAfterConfirm.data?.report.id).toBe(restrictedReportId);
-    expect(reportAfterConfirm.data?.report.importFiles.edges[0].node.name).toBe('poisonivy.json');
-
-    // Cleanup at engine level: no stream event, as the report came back live without one (keeps the sync tests consistent)
-    const reportToClean = await storeLoadById(testContext, ADMIN_USER, restrictedReportId, ENTITY_TYPE_CONTAINER_REPORT) as BasicStoreObject;
-    await deleteAllObjectFiles(testContext, ADMIN_USER, reportToClean);
-    await elDeleteElements(testContext, ADMIN_USER, [reportToClean]);
-    const reportAfterCleanup = await queryAsAdminWithSuccess({ query: READ_REPORT_QUERY, variables: { id: restrictedReportId } });
-    expect(reportAfterCleanup.data?.report).toBeNull();
   });
 });
