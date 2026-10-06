@@ -47,9 +47,9 @@ export const isConnectorActive = (connector) => {
   }
   if (connector.is_managed || isNotEmptyField(connector.catalog_id)) {
     // return false if managed connector is stopped or stopping
-    const connectorStopped = connector.manager_requested_status !== 'stopping'
-      && connector.manager_requested_status !== 'stopped'
-      && connector.manager_current_status !== 'stopped';
+    const connectorStopped = connector.manager_requested_status === 'stopping'
+      || connector.manager_requested_status === 'stopped'
+      || connector.manager_current_status === 'stopped';
     if (connectorStopped) {
       return false;
     }
