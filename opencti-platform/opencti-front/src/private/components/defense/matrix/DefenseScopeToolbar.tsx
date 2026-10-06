@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Stack } from '@mui/material';
+import { Box } from '@mui/material';
 import {
   Checkbox,
   Combobox,
@@ -70,11 +70,16 @@ const ThreatFilters = ({ scope, onScopeChange }: Pick<DefenseScopeToolbarProps, 
     }
   }, [filters]);
   const searchContext = { entityTypes: DEFENSE_THREAT_TYPES };
+  // The filter control is an item of the toolbar row; its chips take their own line under the row, as on the core lists
   return (
-    <Stack spacing={1} sx={{ minWidth: 260 }}>
-      <Filters availableFilterKeys={availableFilterKeys} helpers={helpers} searchContext={searchContext} />
-      <FilterIconButton filters={filters} helpers={helpers} searchContext={searchContext} redirection />
-    </Stack>
+    <>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Filters availableFilterKeys={availableFilterKeys} helpers={helpers} searchContext={searchContext} />
+      </Box>
+      <Box sx={{ flexBasis: '100%', order: 1, '&:empty': { display: 'none' } }}>
+        <FilterIconButton filters={filters} helpers={helpers} searchContext={searchContext} redirection />
+      </Box>
+    </>
   );
 };
 

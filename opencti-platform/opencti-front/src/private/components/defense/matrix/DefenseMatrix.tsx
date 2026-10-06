@@ -272,7 +272,7 @@ export const DefenseMatrixContent = ({ queryRef, scope, layers }: DefenseMatrixC
                     variant="caption"
                     color="text.secondary"
                     component="p"
-                    sx={{ margin: 0, maxWidth: 360, textAlign: 'right' }}
+                    sx={{ margin: 0, textAlign: 'right' }}
                     data-testid="defense-matrix-validate-reason"
                   >
                     {validationUnavailableReason}
