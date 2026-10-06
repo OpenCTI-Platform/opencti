@@ -172,7 +172,10 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
     if (minutesBetweenDates(selectedEnd ?? new Date(), end) > 20) timeRangeFilters += 1;
   }
   const typeFilterCount = view?.typeFilterCount ?? disabledEntityTypes.length + disabledRelationshipTypes.length;
-  const activeFilterCount = typeFilterCount + disabledMarkings.length + disabledCreators.length + timeRangeFilters;
+  // Clearing follows the stored filters, not the counts shown: a type filtered out that is not drawn any
+  // more, or a time range moved by less than the counted margin, still filters the graph.
+  const hasStoredFilters = disabledEntityTypes.length + disabledRelationshipTypes.length + disabledMarkings.length
+    + disabledCreators.length > 0 || !!selectedTimeRangeInterval;
 
   const relationshipModeLabel = () => {
     if (selectRelationshipMode === 'children') return t_i18n('Select the child relationships of the selected nodes (from)');
@@ -458,7 +461,7 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
       priority: 60,
       label: t_i18n('Clear all filters'),
       icon: <FilterAltOffOutlined {...ICON} />,
-      disabledReason: activeFilterCount === 0 ? t_i18n('No filter is active') : undefined,
+      disabledReason: hasStoredFilters ? undefined : t_i18n('No filter is active'),
       onSelect: resetFilters,
     },
   ];

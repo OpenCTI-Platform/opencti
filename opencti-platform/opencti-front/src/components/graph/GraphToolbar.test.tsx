@@ -89,6 +89,22 @@ describe('GraphToolbar', () => {
     expect(screen.getByRole('button', { name: 'Clear all filters' })).toHaveAccessibleDescription('No filter is active');
   });
 
+  it('offers to clear a stored filter the counts leave out, like a type filtered out that is not drawn', () => {
+    localStorage.setItem('graph-toolbar-test', JSON.stringify({ disabledEntityTypes: ['Malware'] }));
+    try {
+      testRender(
+        <GraphProvider objects={[]} context="correlation" localStorageKey="graph-toolbar-test">
+          <GraphViewContext.Provider value={viewActions()}>
+            <GraphToolbar />
+          </GraphViewContext.Provider>
+        </GraphProvider>,
+      );
+      expect(screen.getByRole('button', { name: 'Clear all filters' })).not.toHaveAttribute('aria-disabled', 'true');
+    } finally {
+      localStorage.removeItem('graph-toolbar-test');
+    }
+  });
+
   it('keeps the disabled actions in the keyboard path of the toolbar, where they do nothing', async () => {
     const { user } = renderToolbar();
     const fitSelection = screen.getByRole('button', { name: 'Fit the selection' });

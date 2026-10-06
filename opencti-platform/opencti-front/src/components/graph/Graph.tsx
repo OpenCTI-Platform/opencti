@@ -269,13 +269,18 @@ const Graph = ({
   };
   // No card opens while a button is held on the canvas: a drag (moving a node, drawing a
   // relationship with the right button) is under way and the card would cover its target.
+  // A gesture taken over by the browser (touch scrolling) ends with pointercancel, without pointerup.
   const pressing = useRef(false);
   useEffect(() => {
     const release = () => {
       pressing.current = false;
     };
     window.addEventListener('pointerup', release, true);
-    return () => window.removeEventListener('pointerup', release, true);
+    window.addEventListener('pointercancel', release, true);
+    return () => {
+      window.removeEventListener('pointerup', release, true);
+      window.removeEventListener('pointercancel', release, true);
+    };
   }, []);
   const onCanvasPointerDown = (event: React.PointerEvent) => {
     if (!(event.target instanceof HTMLCanvasElement)) return;
