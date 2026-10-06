@@ -3339,6 +3339,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         hits_sample: Optional[List[Dict]] = None,
         retryable: Optional[bool] = None,
         hit_keys: Optional[List[str]] = None,
+        first_hit_at: Optional[str] = None,
+        last_hit_at: Optional[str] = None,
     ) -> Dict:
         """Report the outcome of a hunt run to OpenCTI (huntRunReport).
 
@@ -3369,6 +3371,10 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             the platform does not retry it
         :param hit_keys: the stable key of every hit the run read (connectors SDK analysis.hit_key):
             OpenCTI counts the hits it never saw for the hunt and the security platform as new
+        :param first_hit_at: ISO 8601 date of the first matched event of the whole run, when the hits
+            sample is only a sample; without it, OpenCTI dates the sightings and the incident of the
+            run from the sample
+        :param last_hit_at: ISO 8601 date of the last matched event of the whole run, same rule
         :return: the hunt run
         :rtype: Dict
         """
@@ -3389,6 +3395,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             hits_sample=hits_sample,
             retryable=retryable,
             hit_keys=hit_keys,
+            first_hit_at=first_hit_at,
+            last_hit_at=last_hit_at,
         )
 
     def listen_hunt(self, message_callback: Callable[[Dict], str]) -> None:

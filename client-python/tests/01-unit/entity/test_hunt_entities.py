@@ -250,6 +250,24 @@ class TestHuntRun(TestCase):
         HuntRun(opencti).report(id="run-1", status="completed", hits_count=2)
         self.assertNotIn("hit_keys", _variables(opencti)["input"])
 
+    def test_report_sends_the_hit_dates_of_the_whole_run_only_when_known(self):
+        opencti = _opencti(
+            {"huntRunReport": {"id": "run-1", "hunt_run_status": "completed"}}
+        )
+        HuntRun(opencti).report(
+            id="run-1",
+            status="completed",
+            hits_count=40,
+            first_hit_at="2026-10-04T08:00:00Z",
+            last_hit_at="2026-10-04T18:00:00Z",
+        )
+        report_input = _variables(opencti)["input"]
+        self.assertEqual(report_input["first_hit_at"], "2026-10-04T08:00:00Z")
+        self.assertEqual(report_input["last_hit_at"], "2026-10-04T18:00:00Z")
+        HuntRun(opencti).report(id="run-1", status="completed", hits_count=2)
+        self.assertNotIn("first_hit_at", _variables(opencti)["input"])
+        self.assertNotIn("last_hit_at", _variables(opencti)["input"])
+
     def test_report_sends_retryable_only_when_known(self):
         opencti = _opencti(
             {"huntRunReport": {"id": "run-1", "hunt_run_status": "failed"}}

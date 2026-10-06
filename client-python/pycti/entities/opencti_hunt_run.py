@@ -208,6 +208,9 @@ class HuntRun:
         :param hit_keys: (optional) the stable key of every hit the run read, sampled or not (the rule of the
             connectors SDK, analysis.hit_key): OpenCTI counts the hits it never saw for the hunt and the security
             platform as new; without keys, every hit counts as new
+        :param first_hit_at: (optional) ISO 8601 date of the first matched event of the whole run, when hits_sample
+            is only a sample; without it, OpenCTI dates the sightings and the incident of the run from the sample
+        :param last_hit_at: (optional) ISO 8601 date of the last matched event of the whole run, same rule
         :param retryable: (optional) failed runs: False when the run fails again in the same way at every attempt
             (translation error, a query the platform rejects, an invalid run message), so it is not retried
         :return: the hunt run
@@ -252,6 +255,10 @@ class HuntRun:
             report_input["hits_sample"] = kwargs.get("hits_sample")
         if kwargs.get("hit_keys", None) is not None:
             report_input["hit_keys"] = list(kwargs.get("hit_keys"))
+        if kwargs.get("first_hit_at", None) is not None:
+            report_input["first_hit_at"] = kwargs.get("first_hit_at")
+        if kwargs.get("last_hit_at", None) is not None:
+            report_input["last_hit_at"] = kwargs.get("last_hit_at")
         if kwargs.get("retryable", None) is not None:
             report_input["retryable"] = bool(kwargs.get("retryable"))
         result = self.opencti.query(query, {"id": id, "input": report_input})

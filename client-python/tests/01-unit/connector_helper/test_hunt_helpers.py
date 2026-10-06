@@ -148,6 +148,8 @@ class TestHuntHelpers(TestCase):
             hits_sample=None,
             retryable=None,
             hit_keys=None,
+            first_hit_at=None,
+            last_hit_at=None,
         )
 
     def test_report_hunt_run_forwards_the_hit_keys(self):
@@ -155,6 +157,19 @@ class TestHuntHelpers(TestCase):
         keys = ["a" * 64, "b" * 64]
         helper.report_hunt_run("run-1", "completed", hits_count=2, hit_keys=keys)
         self.assertEqual(helper.api.hunt_run.report.call_args.kwargs["hit_keys"], keys)
+
+    def test_report_hunt_run_forwards_the_hit_dates_of_the_whole_run(self):
+        helper = _helper()
+        helper.report_hunt_run(
+            "run-1",
+            "completed",
+            hits_count=40,
+            first_hit_at="2026-10-04T08:00:00Z",
+            last_hit_at="2026-10-04T18:00:00Z",
+        )
+        kwargs = helper.api.hunt_run.report.call_args.kwargs
+        self.assertEqual(kwargs["first_hit_at"], "2026-10-04T08:00:00Z")
+        self.assertEqual(kwargs["last_hit_at"], "2026-10-04T18:00:00Z")
 
     def test_report_hunt_run_forwards_the_results_per_value(self):
         helper = _helper()
