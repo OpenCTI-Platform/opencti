@@ -260,12 +260,13 @@ const Graph = ({
 
   // --- Badges drawn in the graph, for the legend: one entry per badge with the entities carrying it,
   // and the entities whose badges call for attention (a warning or an error), for the counter row.
+  // An entity a filter fades out is still drawn and counted by the other counters: its badges count too.
   const badgeRegistryVersion = useGraphBadgeRegistryVersion();
   const { legendBadges, attentionIds } = useMemo(() => {
     const entries = new Map<string, GraphLegendBadge & { nodeIds: Set<string> }>();
     const attention = new Set<string>();
     shownNodes.forEach((node) => {
-      if (node.groupOf || node.disabled) return;
+      if (node.groupOf) return;
       badgesOfNode(node, { t_i18n }).forEach((badge) => {
         const entry = entries.get(badge.key)
           ?? { key: badge.key, label: badge.legendLabel ?? badge.label, tone: badge.tone, tooltip: badge.tooltip, count: 0, nodeIds: new Set<string>() };
