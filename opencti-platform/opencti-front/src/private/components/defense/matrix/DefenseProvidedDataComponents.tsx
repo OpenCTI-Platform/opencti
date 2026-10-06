@@ -16,6 +16,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { notifyPayloadErrors } from './defenseMutation-utils';
+import { MAX_DECLARED_LOGSOURCES } from './defenseMatrix-utils';
 import { DefenseProvidedDataComponentsQuery } from './__generated__/DefenseProvidedDataComponentsQuery.graphql';
 import { DefenseProvidedDataComponentsRefetchQuery } from './__generated__/DefenseProvidedDataComponentsRefetchQuery.graphql';
 import { DefenseProvidedDataComponents_data$key } from './__generated__/DefenseProvidedDataComponents_data.graphql';
@@ -104,13 +105,21 @@ const logsourceLabel = (logsource: Logsource) => ['category', 'product', 'servic
   .filter(Boolean)
   .join(' ');
 
-const LogsourcesDialog = ({ entityId, open, onClose, onDone }: { entityId: string; open: boolean; onClose: () => void; onDone: () => void }) => {
+export const LogsourcesDialog = ({ entityId, open, onClose, onDone }: { entityId: string; open: boolean; onClose: () => void; onDone: () => void }) => {
   const { t_i18n } = useFormatter();
   const [current, setCurrent] = useState<Logsource>({ category: '', product: '', service: '' });
   const [logsources, setLogsources] = useState<Logsource[]>([]);
   const [result, setResult] = useState<{ created: number; existing: number; unmatched: readonly string[] } | null>(null);
   const [commit, inFlight] = useApiMutation<DefenseProvidedDataComponentsLogsourcesMutation>(defenseProvidedDataComponentsLogsourcesMutation);
-  const canAdd = current.category.trim() || current.product.trim() || current.service.trim();
+  const hasField = current.category.trim() || current.product.trim() || current.service.trim();
+  const full = logsources.length >= MAX_DECLARED_LOGSOURCES;
+  const canAdd = hasField && !full;
+  let addReason: string | undefined;
+  if (full) {
+    addReason = t_i18n('A declaration holds at most {max} log sources: declare them, then add the others.', { values: { max: MAX_DECLARED_LOGSOURCES } });
+  } else if (!hasField) {
+    addReason = t_i18n('Enter a category, a product or a service');
+  }
 
   const addCurrent = () => {
     if (!canAdd) return;
@@ -147,7 +156,7 @@ const LogsourcesDialog = ({ entityId, open, onClose, onDone }: { entityId: strin
         <Input label={t_i18n('Category')} value={current.category} onChange={(e) => setCurrent({ ...current, category: e.target.value })} placeholder="process_creation" />
         <Input label={t_i18n('Product')} value={current.product} onChange={(e) => setCurrent({ ...current, product: e.target.value })} placeholder="windows" />
         <Input label={t_i18n('Service')} value={current.service} onChange={(e) => setCurrent({ ...current, service: e.target.value })} placeholder="sysmon" />
-        <DisabledReason reason={canAdd ? undefined : t_i18n('Enter a category, a product or a service')}>
+        <DisabledReason reason={addReason}>
           <Button variant="secondary" onClick={addCurrent} disabled={!canAdd} data-testid="defense-logsource-add">{t_i18n('Add')}</Button>
         </DisabledReason>
       </Box>

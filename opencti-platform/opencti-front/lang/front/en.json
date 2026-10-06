@@ -98,6 +98,7 @@
   "90 days": "90 days",
   "A comment is required before changing the status.": "A comment is required before changing the status.",
   "A connector with this name already exists. Please choose a different name.": "A connector with this name already exists. Please choose a different name.",
+  "A declaration holds at most {max} log sources: declare them, then add the others.": "A declaration holds at most {max} log sources: declare them, then add the others.",
   "A field will be created with appropriate type based on the attribute.": "A field will be created with appropriate type based on the attribute.",
   "A FINTEL export will contain extra information like markings and creation date": "A FINTEL export will contain extra information like markings and creation date",
   "A guided workflow that streamlines files import, selection of connectors and allows the creation of a workbench or draft for review before final import": "A guided workflow that streamlines files import, selection of connectors and allows the creation of a workbench or draft for review before final import",

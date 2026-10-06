@@ -1105,7 +1105,7 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
   const referenceUrl = parseValidationReferenceUrl(input.external_reference_url);
   // Several ids may designate one technique: the ids only bound the loading, the techniques are counted once resolved
   if (attackPatternIds.length > MAX_VALIDATION_GAPS) {
-    throw FunctionalError(`A validation request cannot contain more than ${MAX_VALIDATION_TECHNIQUES} techniques`, { count: attackPatternIds.length });
+    throw FunctionalError(`A validation request cannot designate its techniques with more than ${MAX_VALIDATION_GAPS} ids`, { count: attackPatternIds.length });
   }
   const found = await findByIdsChunked<BasicStoreEntity>(context, user, attackPatternIds, { type: ENTITY_TYPE_ATTACK_PATTERN });
   const attackPatterns = R.uniqBy((attackPattern) => attackPattern.internal_id, found);

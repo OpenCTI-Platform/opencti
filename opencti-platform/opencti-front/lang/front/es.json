@@ -98,6 +98,7 @@
   "90 days": "90 días",
   "A comment is required before changing the status.": "Se requiere un comentario antes de cambiar el estado.",
   "A connector with this name already exists. Please choose a different name.": "Ya existe un conector con este nombre. Por favor, elija un nombre diferente.",
+  "A declaration holds at most {max} log sources: declare them, then add the others.": "Una declaración contiene como máximo {max} orígenes de registros: declárelos y luego añada los demás.",
   "A field will be created with appropriate type based on the attribute.": "Se creará un campo con el tipo apropiado basado en el atributo.",
   "A FINTEL export will contain extra information like markings and creation date": "Una exportación FINTEL contendrá información extra como marcas y fecha de creación",
   "A guided workflow that streamlines files import, selection of connectors and allows the creation of a workbench or draft for review before final import": "Un flujo de trabajo guiado que agiliza la importación de archivos, la selección de conectores y permite la creación de un banco de trabajo o borrador para su revisión antes de la importación final",
