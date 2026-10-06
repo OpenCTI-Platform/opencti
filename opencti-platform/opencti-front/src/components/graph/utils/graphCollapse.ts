@@ -74,8 +74,9 @@ export const withCollapsedGroups = (
       x: existing?.x ?? centre.x,
       y: existing?.y ?? centre.y,
       z: 0,
-      fx: undefined,
-      fy: undefined,
+      // A pinned group keeps its place, as a pinned entity does
+      fx: existing?.fx ?? undefined,
+      fy: existing?.fy ?? undefined,
       fz: undefined,
     };
     cache.nodes.set(groupId, node);
@@ -126,6 +127,17 @@ export const relationshipTotal = (nodes: readonly GraphNode[], links: readonly G
   .filter((link) => !!link.label)
   .reduce((sum, link) => sum + (link.represents ?? 1), 0)
   + nodes.filter((node) => !!node.relationship_type && !node.groupOf).length;
+
+/**
+ * The entities and relationships drawn one by one among `nodes` and `links`, as the counters of the
+ * toolbar count them: neither a group node nor a link drawn towards a group, a nested relationship
+ * drawn as a node counted with the relationships.
+ */
+export const drawnOneByOne = (nodes: readonly GraphNode[], links: readonly GraphLink[]) => ({
+  entities: nodes.filter((node) => !node.groupOf && !node.relationship_type),
+  relationshipLinks: links.filter((link) => !!link.label && !isGroupLink(link)),
+  relationshipNodes: nodes.filter((node) => !!node.relationship_type && !node.groupOf),
+});
 
 /**
  * The entity and relationship types the drawn elements show, as the legend lists them, in the order

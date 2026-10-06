@@ -21,6 +21,8 @@ export interface Box extends Point {
 
 /** Self-loops have no length to scale a curvature by, so the library sizes them with this factor. */
 const SELF_LOOP_SIZE = 70;
+/** A loop rotated by 0 degrees spans the quadrant above and right of its node, by -90 the one above and left. */
+const SELF_LOOP_ROTATIONS = [0, -90];
 /** Two links between the same nodes fan out by this curvature step, enough for both labels to read. */
 const PARALLEL_CURVATURE_STEP = 0.24;
 const TRIM_ITERATIONS = 18;
@@ -341,8 +343,9 @@ export const computeLinkCurvatures = (links: readonly LinkEnds[]): Map<string, {
     const sorted = [...group].sort((a, b) => a.id.localeCompare(b.id));
     sorted.forEach((link, index) => {
       if (link.sourceId === link.targetId) {
-        // Loops on one node nest, each one wider than the previous.
-        result.set(linkEndsKey(link), { curvature: 0.5 + index * 0.3, rotation: 0 });
+        // Loops on one node take the two quadrants above it in turn, clear of the name drawn under the
+        // node, each pair wider than the previous one: no two labels share a spot.
+        result.set(linkEndsKey(link), { curvature: 0.5 + Math.floor(index / 2) * 0.3, rotation: SELF_LOOP_ROTATIONS[index % 2] });
         return;
       }
       if (sorted.length === 1) {

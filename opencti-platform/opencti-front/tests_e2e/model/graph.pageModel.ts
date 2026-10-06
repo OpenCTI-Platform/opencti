@@ -113,22 +113,55 @@ export default class GraphPage {
   }
 
   /**
-   * Whether an action sits in the toolbar itself; otherwise "More actions" lists it. The toolbar is
-   * waited for first: it renders again when the graph switches between 2D and 3D.
+   * Whether an action sits in the toolbar itself; otherwise "More actions" (what the toolbar has no
+   * room for) or the context menu of the graph (the rare actions) lists it. The toolbar is waited for
+   * first: it renders again when the graph switches between 2D and 3D.
    */
   async isInToolbar(name: string) {
-    await expect(this.getToolbarButton('More actions')).toBeVisible();
     await expect(this.getToolbarButton('Fit the whole graph')).toBeVisible();
     return (await this.getToolbarButton(name).count()) > 0;
   }
 
-  /** Runs an action of the toolbar, from the toolbar or from "More actions", wherever it is. */
+  /** The context menu of the graph, opened by a right click on a node or, without one, on the empty canvas. */
+  async openContextMenu(nodeId?: string) {
+    let spot: [number, number] | null = null;
+    if (nodeId) {
+      const { x, y } = await this.pagePoint(nodeId);
+      await this.page.mouse.move(x - 30, y - 30);
+      spot = [x, y];
+    } else {
+      await expect.poll(async () => {
+        spot = await this.freeSpot();
+        return spot !== null;
+      }, { message: 'No free spot on the canvas to right-click', timeout: 15000 }).toBe(true);
+    }
+    const [x, y] = spot as unknown as [number, number];
+    // The menu is the one of what the pointer is on: the hover settles on the next frame.
+    await this.page.mouse.move(x, y, { steps: 6 });
+    await this.page.waitForTimeout(150);
+    await this.page.mouse.click(x, y, { button: 'right' });
+    const menu = this.page.getByRole('menu', { name: 'Graph actions' });
+    await expect(menu).toBeVisible();
+    return menu;
+  }
+
+  /** The menu listing an action the toolbar has no button for: "More actions" when it lists it, else the context menu. */
+  private async openMenuListing(name: string) {
+    if ((await this.getToolbarButton('More actions').count()) > 0) {
+      const menu = await this.openMoreActions();
+      if ((await GraphPage.menuItem(menu, name).count()) > 0) return menu;
+      await this.closeMoreActions();
+    }
+    return this.openContextMenu();
+  }
+
+  /** Runs an action of the toolbar, from the toolbar, from "More actions" or from the context menu, wherever it is. */
   async runToolbarAction(name: string) {
     if (await this.isInToolbar(name)) {
       await this.getToolbarButton(name).click();
       return;
     }
-    const menu = await this.openMoreActions();
+    const menu = await this.openMenuListing(name);
     await GraphPage.menuItem(menu, name).click();
   }
 
@@ -138,7 +171,7 @@ export default class GraphPage {
       await expect(this.getToolbarButton(name)).toHaveAttribute('aria-pressed', String(on));
       return;
     }
-    const menu = await this.openMoreActions();
+    const menu = await this.openMenuListing(name);
     await expect(GraphPage.menuItem(menu, name)).toHaveAttribute('aria-checked', String(on));
     await this.closeMoreActions();
   }
@@ -151,7 +184,7 @@ export default class GraphPage {
       else await expect(button).toBeDisabled();
       return;
     }
-    const menu = await this.openMoreActions();
+    const menu = await this.openMenuListing(name);
     const item = GraphPage.menuItem(menu, name);
     if (enabled) await expect(item).not.toHaveAttribute('aria-disabled', 'true');
     else await expect(item).toHaveAttribute('aria-disabled', 'true');
@@ -379,11 +412,11 @@ export default class GraphPage {
 
   /**
    * Picks one entry of a toolbar list (select by type, filters), from the toolbar or from its
-   * submenu in "More actions", then closes the list.
+   * submenu in "More actions" or in the context menu, then closes the list.
    */
   async openOptionsAndPick(actionName: string, option: string) {
     if (!(await this.isInToolbar(actionName))) {
-      const menu = await this.openMoreActions();
+      const menu = await this.openMenuListing(actionName);
       await GraphPage.menuItem(menu, actionName).click();
       await expect(this.page.getByRole('menu')).toHaveCount(2);
       // The pointer would travel from the submenu trigger to the item across the parent menu,

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   createCollapseCache,
+  drawnOneByOne,
   drawnTypes,
   GROUP_NODE_PREFIX,
   isCollapsedMember,
@@ -49,6 +50,18 @@ describe('withCollapsedGroups', () => {
     const group = withCollapsedGroups({ nodes: [actor, m1, m2], links: allInferred }, ['Malware'], label, createCollapseCache()).links.find(isGroupLink);
     expect(group?.inferred).toBe(true);
     expect(group?.confidence).toBe(20);
+  });
+
+  it('keeps a pinned group in place from one computation to the next', () => {
+    const cache = createCollapseCache();
+    const group = withCollapsedGroups(data, ['Malware'], label, cache).nodes.find(isGroupNode);
+    if (!group) throw new Error('No group node');
+    group.fx = 100;
+    group.fy = -40;
+    const again = withCollapsedGroups({ ...data }, ['Malware'], label, cache).nodes.find(isGroupNode);
+    expect(again).toMatchObject({ fx: 100, fy: -40 });
+    const unpinned = withCollapsedGroups(data, ['Malware'], label, createCollapseCache()).nodes.find(isGroupNode);
+    expect(unpinned?.fx).toBeUndefined();
   });
 
   it('never takes the restricted outline of its first member, whatever the order of the members', () => {
@@ -165,5 +178,15 @@ describe('withCollapsedGroups', () => {
   it('never offers the type of a nested relationship drawn as a node', () => {
     const nested = graphNode({ id: 'nested', entity_type: 'uses', relationship_type: 'uses' });
     expect(selectableTypes(['Intrusion-Set', 'uses'], [actor, nested], () => true)).toEqual(['Intrusion-Set']);
+  });
+
+  it('counts the entities and relationships drawn one by one, as the counters of the toolbar do', () => {
+    const result = withCollapsedGroups(data, ['Malware'], label, createCollapseCache());
+    const nested = graphNode({ id: 'nested', entity_type: 'uses', relationship_type: 'uses' });
+    const counted = drawnOneByOne([...result.nodes, nested], result.links);
+    // The group node and the links drawn towards it are counted by the legend, not one by one.
+    expect(counted.entities.map((node) => node.id)).toEqual(['actor', 'm1', 'm2']);
+    expect(counted.relationshipLinks).toHaveLength(data.links.length);
+    expect(counted.relationshipNodes.map((node) => node.id)).toEqual(['nested']);
   });
 });

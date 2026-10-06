@@ -47,6 +47,9 @@ const LINK_GAP = 1.2;
 const ARROW_LENGTH = 3.4;
 const ARROW_HALF_WIDTH = 1.45;
 const LINK_LABEL_SIZE = 2.6;
+/** The hover area of a link is as wide as the library's own: link width plus hover precision, plus its pad. */
+const LINK_HIT_PX = 6;
+const LINK_HIT_PAD = 2;
 const LINK_LABEL_MAX_PX = 15;
 const INFERRED_DASH = [2.4, 1.6];
 const LOW_CONFIDENCE_DASH = [0.7, 1.5];
@@ -425,6 +428,28 @@ const paintArrowHead = (ctx: CanvasRenderingContext2D, tip: { x: number; y: numb
 const linkPathBuffer = createPathBuffer();
 const trimmedPathBuffer = createPathBuffer();
 const arrowDirection: Point = { x: 0, y: 0 };
+const hitPathBuffer = createPathBuffer();
+
+/**
+ * Paints the hover area of a link in its pick colour, along the path it is drawn on: a loop rotated
+ * away from the others on its node is hovered and clicked where it is seen.
+ */
+export const paintGraphLinkHitArea = (
+  ctx: CanvasRenderingContext2D,
+  link: GraphLink,
+  color: string,
+  globalScale: number,
+  curve: { curvature: number; rotation: number },
+) => {
+  const source = endOf(link.source);
+  const target = endOf(link.target);
+  if (!source || !target || !Number.isFinite(source.x) || !Number.isFinite(target.x)) return;
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = LINK_HIT_PX / globalScale + LINK_HIT_PAD;
+  strokePath(ctx, linkPathInto(hitPathBuffer, source, target, curve.curvature, curve.rotation));
+  ctx.restore();
+};
 
 export const paintGraphLink = (ctx: CanvasRenderingContext2D, link: GraphLink, options: LinkPaintOptions): LinkLabel | null => {
   const { palette, globalScale, detail, visual, color, curvature, rotation, confidence } = options;

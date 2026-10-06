@@ -15,6 +15,7 @@ import {
   NODE_RADIUS,
   nodeRadius,
   paintGraphLink,
+  paintGraphLinkHitArea,
   paintGraphNode,
   paintGraphNodeHitArea,
   paintLinkLabels,
@@ -167,6 +168,29 @@ describe('paintGraphNodeHitArea', () => {
     const noLabel = createRecordingContext();
     paintGraphNodeHitArea(noLabel, graphNode(), '#010203', false);
     expect(noLabel.callsOf('fillRect')).toHaveLength(0);
+  });
+});
+
+describe('paintGraphLinkHitArea', () => {
+  it('paints the hover area of a loop where the loop is drawn, rotated with it', () => {
+    const node = graphNode({ id: 'a', x: 0, y: 0 });
+    const loop = graphLink(node, node, { id: 'loop' });
+    const controls = (rotation: number) => {
+      const ctx = createRecordingContext();
+      paintGraphLinkHitArea(ctx, loop, '#010203', 4, { curvature: 0.5, rotation });
+      const stroke = ctx.callsOf('stroke')[0];
+      expect(stroke).toMatchObject({ strokeStyle: '#010203', lineWidth: 6 / 4 + 2 });
+      return (ctx.callsOf('bezierCurveTo')[0].args as number[]).slice(0, 4).map((value) => Math.round(value) + 0);
+    };
+    // Above and right of the node, then above and left of it.
+    expect(controls(0)).toEqual([0, -35, 35, 0]);
+    expect(controls(-90)).toEqual([-35, 0, 0, -35]);
+  });
+
+  it('paints nothing for a link whose ends are not placed yet', () => {
+    const ctx = createRecordingContext();
+    paintGraphLinkHitArea(ctx, graphLink(graphNode({ id: 'a', x: undefined }), graphNode({ id: 'b' })), '#010203', 4, { curvature: 0, rotation: 0 });
+    expect(ctx.callsOf('stroke')).toHaveLength(0);
   });
 });
 

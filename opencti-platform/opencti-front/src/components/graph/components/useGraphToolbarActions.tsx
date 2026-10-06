@@ -157,7 +157,7 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
   // The 2D tree layouts break cycles; the 3D one cannot place a cycle and leaves such a graph as it is.
   const treeUnavailable = mode3D && !!view?.drawnHasCycle;
   let treeDisabledReason: string | undefined;
-  if (!withForces) treeDisabledReason = t_i18n('Turn the forces on to use this layout');
+  if (!withForces) treeDisabledReason = t_i18n('Turn on the force-directed layout to use this layout');
   else if (treeUnavailable) treeDisabledReason = t_i18n('The graph has a cycle: use this layout in 2D mode');
   const hasSelection = selectedNodes.length > 0;
   const needsSelection = hasSelection ? undefined : t_i18n('Select entities first');
@@ -178,8 +178,8 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
     + disabledCreators.length > 0 || !!selectedTimeRangeInterval;
 
   const relationshipModeLabel = () => {
-    if (selectRelationshipMode === 'children') return t_i18n('Select the child relationships of the selected nodes (from)');
-    if (selectRelationshipMode === 'parent') return t_i18n('Select the parent relationships of the selected nodes (to)');
+    if (selectRelationshipMode === 'children') return t_i18n('Select outgoing relationships of the selected nodes');
+    if (selectRelationshipMode === 'parent') return t_i18n('Select incoming relationships of the selected nodes');
     if (selectRelationshipMode === 'deselect') return t_i18n('Deselect the relationships of the selected nodes');
     return t_i18n('Select the relationships of the selected nodes');
   };
@@ -222,7 +222,7 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
   const typesToSelect = selectableTypes(stixCoreObjectTypes, graphData?.nodes ?? [], isNodeShown);
   let selectByTypeDisabledReason: string | undefined;
   if (stixCoreObjectTypes.length === 0) selectByTypeDisabledReason = t_i18n('The graph has no entity yet');
-  else if (typesToSelect.length === 0) selectByTypeDisabledReason = t_i18n('Every entity is hidden or collapsed into a group');
+  else if (typesToSelect.length === 0) selectByTypeDisabledReason = t_i18n('Every entity is hidden or grouped');
 
   const actions: GraphToolbarAction[] = [
     // --- View
@@ -265,7 +265,7 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
       id: 'tree-vertical',
       group: 'layout',
       priority: 65,
-      label: t_i18n('Vertical tree layout'),
+      label: t_i18n('Hierarchical layout (top to bottom)'),
       icon: <FamilyTree {...ICON} />,
       pressed: modeTree === 'td' && !treeUnavailable,
       disabledReason: treeDisabledReason,
@@ -275,7 +275,7 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
       id: 'tree-horizontal',
       group: 'layout',
       priority: 65,
-      label: t_i18n('Horizontal tree layout'),
+      label: t_i18n('Hierarchical layout (left to right)'),
       icon: <FamilyTree {...ICON} style={{ transform: 'rotate(-90deg)' }} />,
       pressed: modeTree === 'lr' && !treeUnavailable,
       disabledReason: treeDisabledReason,
@@ -285,7 +285,7 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
       id: 'layout-tiers',
       group: 'layout',
       priority: 55,
-      label: t_i18n('Layout by entity tier'),
+      label: t_i18n('Layered layout (by entity category)'),
       icon: <ViewWeekOutlined {...ICON} />,
       pressed: layoutMode === 'tiers',
       disabledReason: in3D,
@@ -301,14 +301,14 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
       disabledReason: in3D,
       onSelect: () => toggleLayoutMode('radial'),
     },
-    { id: 'forces', group: 'layout', priority: 70, label: t_i18n('Forces'), icon: <ScatterPlotOutlined {...ICON} />, pressed: withForces, onSelect: toggleForces },
+    { id: 'forces', group: 'layout', priority: 70, label: t_i18n('Force-directed layout'), icon: <ScatterPlotOutlined {...ICON} />, pressed: withForces, onSelect: toggleForces },
     {
       id: 'reset-layout',
       group: 'layout',
       priority: 0,
       label: t_i18n('Unfix the nodes and re-apply forces'),
       icon: <AutoFix {...ICON} />,
-      disabledReason: withForces ? undefined : t_i18n('Turn the forces on first'),
+      disabledReason: withForces ? undefined : t_i18n('Turn on the force-directed layout first'),
       onSelect: () => {
         unfixNodes();
         onUnfixNodes?.();
@@ -319,7 +319,7 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
       id: 'select-rectangle',
       group: 'selection',
       priority: 80,
-      label: t_i18n('Rectangle selection'),
+      label: t_i18n('Box selection'),
       icon: <SelectionDrag {...ICON} />,
       pressed: selectFreeRectangle,
       disabledReason: in3D,
@@ -329,7 +329,7 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
       id: 'select-free',
       group: 'selection',
       priority: 75,
-      label: t_i18n('Free-shape selection'),
+      label: t_i18n('Lasso selection'),
       icon: <GestureOutlined {...ICON} />,
       pressed: selectFree,
       disabledReason: in3D,
@@ -339,7 +339,7 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
       id: 'select-neighbours',
       group: 'selection',
       priority: 50,
-      label: t_i18n('Select the neighbours of the selected nodes'),
+      label: t_i18n('Add neighbours to selection'),
       shortcut: 'N',
       icon: <HubOutlined {...ICON} />,
       disabledReason: needsSelection,
@@ -349,7 +349,7 @@ const useGraphToolbarActions = ({ onUnfixNodes }: { onUnfixNodes?: () => void })
       id: 'shortest-path',
       group: 'selection',
       priority: 50,
-      label: t_i18n('Shortest path between the two selected nodes'),
+      label: t_i18n('Highlight shortest path between the two selected nodes'),
       shortcut: 'P',
       icon: <RouteOutlined {...ICON} />,
       pressed: !!highlightedPath,

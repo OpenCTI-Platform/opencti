@@ -51,8 +51,8 @@ test.describe('Container knowledge graph', { tag: ['@ce'] }, () => {
     await expect(page.locator('.force-graph-container')).toHaveCount(0);
     await expect(page.locator('canvas').first()).toBeVisible();
     // 3D disables the 2D-only selection tools.
-    await graph.expectToolbarActionEnabled('Rectangle selection', false);
-    await graph.expectToolbarActionEnabled('Free-shape selection', false);
+    await graph.expectToolbarActionEnabled('Box selection', false);
+    await graph.expectToolbarActionEnabled('Lasso selection', false);
     await page.reload();
     await graph.expectToolbarToggle('3D mode', true);
     await graph.runToolbarAction('3D mode');
@@ -63,25 +63,25 @@ test.describe('Container knowledge graph', { tag: ['@ce'] }, () => {
   test('applies tree layouts, forces, fit and reset of the layout', async ({ page }) => {
     const graph = new GraphPage(page);
     await openGraph(graph, page);
-    await graph.runToolbarAction('Vertical tree layout');
-    await graph.expectToolbarToggle('Vertical tree layout', true);
+    await graph.runToolbarAction('Hierarchical layout (top to bottom)');
+    await graph.expectToolbarToggle('Hierarchical layout (top to bottom)', true);
     await graph.waitForGraph(5);
-    await graph.runToolbarAction('Vertical tree layout');
-    await graph.expectToolbarToggle('Vertical tree layout', false);
+    await graph.runToolbarAction('Hierarchical layout (top to bottom)');
+    await graph.expectToolbarToggle('Hierarchical layout (top to bottom)', false);
 
-    await graph.runToolbarAction('Horizontal tree layout');
-    await graph.expectToolbarToggle('Horizontal tree layout', true);
+    await graph.runToolbarAction('Hierarchical layout (left to right)');
+    await graph.expectToolbarToggle('Hierarchical layout (left to right)', true);
     await graph.waitForGraph(5);
-    await graph.runToolbarAction('Horizontal tree layout');
-    await graph.expectToolbarToggle('Horizontal tree layout', false);
+    await graph.runToolbarAction('Hierarchical layout (left to right)');
+    await graph.expectToolbarToggle('Hierarchical layout (left to right)', false);
 
     // Without forces the tree layouts and the reset are unavailable.
-    await graph.runToolbarAction('Forces');
-    await graph.expectToolbarToggle('Forces', false);
-    await graph.expectToolbarActionEnabled('Vertical tree layout', false);
+    await graph.runToolbarAction('Force-directed layout');
+    await graph.expectToolbarToggle('Force-directed layout', false);
+    await graph.expectToolbarActionEnabled('Hierarchical layout (top to bottom)', false);
     await graph.expectToolbarActionEnabled('Unfix the nodes and re-apply forces', false);
-    await graph.runToolbarAction('Forces');
-    await graph.expectToolbarActionEnabled('Vertical tree layout', true);
+    await graph.runToolbarAction('Force-directed layout');
+    await graph.expectToolbarActionEnabled('Hierarchical layout (top to bottom)', true);
 
     await graph.getToolbarButton('Fit the whole graph').click();
     await graph.runToolbarAction('Unfix the nodes and re-apply forces');
@@ -107,7 +107,7 @@ test.describe('Container knowledge graph', { tag: ['@ce'] }, () => {
     await graph.runToolbarAction('Select the relationships of the selected nodes');
     await expect(graph.getSelectionSummary(9)).toBeVisible();
     // The action moves on to the next mode, named for what it will do.
-    await graph.expectToolbarActionEnabled('Select the child relationships of the selected nodes (from)', true);
+    await graph.expectToolbarActionEnabled('Select outgoing relationships of the selected nodes', true);
     await graph.clickBackground();
 
     await graph.openOptionsAndPick('Select by entity type', 'Malware');
@@ -124,16 +124,16 @@ test.describe('Container knowledge graph', { tag: ['@ce'] }, () => {
     // away under the forces once the others were dragged.
     await graph.getToolbarButton('Fit the whole graph').click();
     await graph.waitForGraph(5);
-    await graph.runToolbarAction('Rectangle selection');
+    await graph.runToolbarAction('Box selection');
     await graph.dragAcrossCanvas();
     await expect(graph.getSelectionSummary(5)).toBeVisible();
-    await graph.runToolbarAction('Rectangle selection');
+    await graph.runToolbarAction('Box selection');
     await graph.clickBackground();
 
-    await graph.runToolbarAction('Free-shape selection');
+    await graph.runToolbarAction('Lasso selection');
     await graph.lassoAcrossCanvas();
     await expect(graph.getSelectionSummary(5)).toBeVisible();
-    await graph.runToolbarAction('Free-shape selection');
+    await graph.runToolbarAction('Lasso selection');
     await graph.clickBackground();
     await expect(graph.getAnySelectionSummary()).toBeHidden();
   });

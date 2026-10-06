@@ -1,46 +1,19 @@
 import React, { CSSProperties, ReactNode, useLayoutEffect, useRef, useState } from 'react';
-import { IconButton, Paper, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
-import {
-  AccountTreeOutlined,
-  HubOutlined,
-  LinkOutlined,
-  ManageSearchOutlined,
-  OpenInNewOutlined,
-  PushPinOutlined,
-  RouteOutlined,
-  TrackChangesOutlined,
-  UnfoldMoreOutlined,
-  VisibilityOffOutlined,
-} from '@mui/icons-material';
+import { Paper, Text, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import { useTheme } from '@mui/material/styles';
 import ItemIcon from '../../ItemIcon';
 import { useFormatter } from '../../i18n';
 import type { Theme } from '../../Theme';
 import type { GraphLink, GraphNode } from '../graph.types';
-import { type GraphBadge, graphNodeActionsFor, useGraphNodeActionRegistryVersion } from '../badges';
+import type { GraphBadge } from '../badges';
 import { graphNodeTitle, NO_AUTHOR_ID, NO_MARKING_ID } from '../utils/useGraphParser';
 import { buildGraphPalette, dataColorOutline } from '../utils/graphPalette';
 import { EXPORT_REMOVE_CLASS } from '../../../utils/Image';
-import { APP_BASE_PATH } from '../../../relay/environment';
 import { isGroupLink } from '../utils/graphCollapse';
 
 export type GraphHoverCardTarget
   = | { kind: 'node'; node: GraphNode }
     | { kind: 'link'; link: GraphLink };
-
-export interface GraphHoverCardActions {
-  onOpen: (id: string) => void;
-  onExpand?: (node: GraphNode) => void;
-  onTogglePin: (node: GraphNode) => void;
-  onHide: (node: GraphNode) => void;
-  onSelectNeighbours: (node: GraphNode) => void;
-  onCentreRadial: (node: GraphNode) => void;
-  onPathFromSelection?: (node: GraphNode) => void;
-  onRelateToSelection?: (node: GraphNode) => void;
-  onStartInvestigation?: (node: GraphNode) => void;
-  onExpandGroup: (entityType: string) => void;
-  onSelectLink: (link: GraphLink) => void;
-}
 
 export interface GraphHoverCardProps {
   target: GraphHoverCardTarget;
@@ -49,29 +22,21 @@ export interface GraphHoverCardProps {
   context?: string;
   badges: GraphBadge[];
   relationshipCounts: { type: string; count: number }[];
-  isPinned: boolean;
-  actions: GraphHoverCardActions;
+  /** For a group node, its members in reading order: the card previews the first ones. */
+  groupMembers?: readonly { id: string; name: string }[];
   onMouseEnter: () => void;
   onMouseLeave: () => void;
 }
 
 const CARD_WIDTH = 300;
 const OFFSET = 16;
+const GROUP_PREVIEW_SIZE = 5;
 /** The height a card is placed for until it is measured. */
 const ESTIMATED_CARD_HEIGHT = 260;
 
-const Action = ({ label, icon, onClick }: { label: string; icon: ReactNode; onClick: () => void }) => (
-  <Tooltip>
-    <TooltipTrigger asChild>
-      <IconButton priority="tertiary" size="sm" aria-label={label} icon={icon} onClick={onClick} />
-    </TooltipTrigger>
-    <TooltipContent>{label}</TooltipContent>
-  </Tooltip>
-);
-
 /**
- * What the pointer is on, in words, with the actions that apply to it: the canvas shows the
- * shape of the graph, the card names its parts.
+ * What the pointer is on, in words: the canvas shows the shape of the graph, the card names its
+ * parts. It only previews; what applies to the element is in the context menu of the graph.
  */
 const GraphHoverCard = ({
   target,
@@ -80,18 +45,15 @@ const GraphHoverCard = ({
   context,
   badges,
   relationshipCounts,
-  isPinned,
-  actions,
+  groupMembers = [],
   onMouseEnter,
   onMouseLeave,
 }: GraphHoverCardProps) => {
   const { t_i18n, fldt, rd } = useFormatter();
   const theme = useTheme<Theme>();
   const palette = buildGraphPalette(theme);
-  useGraphNodeActionRegistryVersion();
 
-  // Placed for its rendered height, and never taller than the graph: its content scrolls, so the
-  // last quick actions stay within reach on a short graph.
+  // Placed for its rendered height, and never taller than the graph: its content scrolls on a short graph.
   const cardRef = useRef<HTMLDivElement>(null);
   const [cardHeight, setCardHeight] = useState(ESTIMATED_CARD_HEIGHT);
   useLayoutEffect(() => {
@@ -142,22 +104,32 @@ const GraphHoverCard = ({
   if (target.kind === 'node' && target.node.groupOf) {
     const { node } = target;
     const { entityType, memberIds } = node.groupOf ?? { entityType: node.entity_type, memberIds: [] };
+    const preview = groupMembers.slice(0, GROUP_PREVIEW_SIZE);
+    const more = memberIds.length - preview.length;
     content = (
       <>
-        {header(entityType, node.label, t_i18n('Collapsed group'), node.color)}
+        {header(entityType, node.label, t_i18n('Group'), node.color)}
         <div style={fact}>
           <span style={factLabel}>{t_i18n('Entities')}</span>
           <span>{memberIds.length}</span>
         </div>
-        <div style={{ display: 'flex', gap: theme.spacing(0.25), marginTop: theme.spacing(1) }}>
-          <Action label={t_i18n('Expand the group')} icon={<UnfoldMoreOutlined fontSize="small" />} onClick={() => actions.onExpandGroup(entityType)} />
-        </div>
+        {preview.length > 0 && (
+          <ul aria-label={t_i18n('Members')} style={{ margin: theme.spacing(0.5, 0, 0), paddingLeft: theme.spacing(2) }}>
+            {preview.map(({ id, name }) => (
+              <li key={id} style={{ overflowWrap: 'anywhere' }}>{name}</li>
+            ))}
+            {more > 0 && (
+              <li style={{ listStyle: 'none', color: theme.palette.text.secondary }}>
+                {t_i18n('{count, plural, one {and # more} other {and # more}}', { values: { count: more } })}
+              </li>
+            )}
+          </ul>
+        )}
       </>
     );
   } else if (target.kind === 'node') {
     const { node } = target;
     const nodeMarkings = markings(node);
-    const extra = graphNodeActionsFor(node, context);
     const typeLabel = node.relationship_type ? t_i18n(`relationship_${node.relationship_type}`) : t_i18n(`entity_${node.entity_type}`);
     content = (
       <>
@@ -253,46 +225,6 @@ const GraphHoverCard = ({
             })}
           </div>
         )}
-        <div role="group" aria-label={t_i18n('Quick actions')} style={{ display: 'flex', flexWrap: 'wrap', gap: theme.spacing(0.25), marginTop: theme.spacing(1) }}>
-          {!node.relationship_type && (
-            <Action label={t_i18n('Open in a new tab')} icon={<OpenInNewOutlined fontSize="small" />} onClick={() => actions.onOpen(node.id)} />
-          )}
-          {actions.onExpand && (
-            <Action label={t_i18n('Expand this entity')} icon={<AccountTreeOutlined fontSize="small" />} onClick={() => actions.onExpand?.(node)} />
-          )}
-          <Action
-            label={isPinned ? t_i18n('Unpin') : t_i18n('Pin at its place')}
-            icon={<PushPinOutlined fontSize="small" />}
-            onClick={() => actions.onTogglePin(node)}
-          />
-          <Action label={t_i18n('Hide from the view')} icon={<VisibilityOffOutlined fontSize="small" />} onClick={() => actions.onHide(node)} />
-          <Action label={t_i18n('Select with its neighbours')} icon={<HubOutlined fontSize="small" />} onClick={() => actions.onSelectNeighbours(node)} />
-          <Action label={t_i18n('Lay out the graph around it')} icon={<TrackChangesOutlined fontSize="small" />} onClick={() => actions.onCentreRadial(node)} />
-          {actions.onPathFromSelection && (
-            <Action label={t_i18n('Shortest path from the selection')} icon={<RouteOutlined fontSize="small" />} onClick={() => actions.onPathFromSelection?.(node)} />
-          )}
-          {actions.onRelateToSelection && (
-            <Action label={t_i18n('Create a relationship from the selection')} icon={<LinkOutlined fontSize="small" />} onClick={() => actions.onRelateToSelection?.(node)} />
-          )}
-          {actions.onStartInvestigation && !node.relationship_type && (
-            <Action label={t_i18n('Start an investigation')} icon={<ManageSearchOutlined fontSize="small" />} onClick={() => actions.onStartInvestigation?.(node)} />
-          )}
-          {extra.map((action) => {
-            const Icon = action.icon;
-            const label = action.label(t_i18n);
-            return (
-              <Action
-                key={action.id}
-                label={label}
-                icon={<Icon fontSize="small" />}
-                onClick={() => {
-                  if (action.href) window.open(`${APP_BASE_PATH}${action.href(node)}`, '_blank', 'noopener,noreferrer');
-                  else action.onSelect?.(node);
-                }}
-              />
-            );
-          })}
-        </div>
       </>
     );
   } else {
@@ -305,7 +237,6 @@ const GraphHoverCard = ({
     const type = link.relationship_type || link.entity_type;
     // A group link stands for several relationships: no fact or action of one of them applies to it.
     const isGroup = isGroupLink(link);
-    const canOpen = !isGroup && link.entity_type !== 'basic-relationship' && !!link.label;
     content = (
       <>
         {header('relationship', t_i18n(`relationship_${type}`), `${sourceLabel} \u2192 ${targetLabel}`, palette.link)}
@@ -333,14 +264,6 @@ const GraphHoverCard = ({
             <span>{linkMarkings.map((marking) => marking.definition).join(', ')}</span>
           </div>
         )}
-        {!isGroup && (
-          <div role="group" aria-label={t_i18n('Quick actions')} style={{ display: 'flex', gap: 2, marginTop: theme.spacing(1) }}>
-            {canOpen && (
-              <Action label={t_i18n('Open in a new tab')} icon={<OpenInNewOutlined fontSize="small" />} onClick={() => actions.onOpen(link.id)} />
-            )}
-            <Action label={t_i18n('Select this relationship')} icon={<LinkOutlined fontSize="small" />} onClick={() => actions.onSelectLink(link)} />
-          </div>
-        )}
       </>
     );
   }
@@ -360,6 +283,11 @@ const GraphHoverCard = ({
       onMouseDown={(event) => event.stopPropagation()}
     >
       <Text variant="content-compact" as="div">{content}</Text>
+      {!(target.kind === 'link' && isGroupLink(target.link)) && (
+        <Text variant="content-caption" as="div" style={{ marginTop: theme.spacing(1), color: theme.palette.text.secondary }}>
+          {t_i18n('Right-click for its actions')}
+        </Text>
+      )}
     </Paper>
   );
 };

@@ -28,7 +28,10 @@ const MenuGlyph = ({ children }: { children: React.ReactNode }) => (
   <Box component="span" sx={{ display: 'inline-flex', '& svg': { fontSize: 18 } }}>{children}</Box>
 );
 
-const ActionLabel = ({ action }: { action: GraphToolbarAction }) => {
+/** What a menu of the graph lists: a toolbar action, or an action of the context menu. */
+export type GraphMenuAction = Pick<GraphToolbarAction, 'id' | 'label' | 'icon' | 'shortcut' | 'pressed' | 'disabledReason' | 'badge' | 'onSelect' | 'options'>;
+
+const ActionLabel = ({ action }: { action: GraphMenuAction }) => {
   const theme = useTheme<Theme>();
   return (
     <span style={{ display: 'flex', flexDirection: 'column' }}>
@@ -40,7 +43,7 @@ const ActionLabel = ({ action }: { action: GraphToolbarAction }) => {
   );
 };
 
-const MoreActionItem = ({ action }: { action: GraphToolbarAction }) => {
+export const GraphMenuActionItem = ({ action }: { action: GraphMenuAction }) => {
   const { options } = action;
   if (options && !action.disabledReason) {
     return (
@@ -97,7 +100,7 @@ const GraphToolbarMoreActions = ({ actions }: { actions: readonly GraphToolbarAc
           <Fragment key={group}>
             {index > 0 && <MenuSeparator />}
             <MenuLabel>{groupLabels[group]}</MenuLabel>
-            {items.map((action) => <MoreActionItem key={action.id} action={action} />)}
+            {items.map((action) => <GraphMenuActionItem key={action.id} action={action} />)}
           </Fragment>
         ))}
       </MenuContent>

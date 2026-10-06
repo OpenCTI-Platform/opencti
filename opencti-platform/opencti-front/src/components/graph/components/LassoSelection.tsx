@@ -30,7 +30,7 @@ interface LassoSelectionProps {
 type LassoContext = CanvasRenderingContext2D & { reset: () => void };
 
 /**
- * Free-shape selection: the left-button path drawn over the canvas selects the nodes it encloses.
+ * Lasso selection: the left-button path drawn over the canvas selects the nodes it encloses.
  * The gesture outlives the renders of the graph (hover, cards, panels): its state and the latest
  * props are kept in references, and the document listeners are registered once while the tool is on.
  */

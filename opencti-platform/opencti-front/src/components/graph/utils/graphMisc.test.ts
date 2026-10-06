@@ -44,6 +44,9 @@ describe('shortcutOf', () => {
     expect(shortcutOf(key('a', { ctrlKey: true }))).toBe('selectAll');
     expect(shortcutOf(key('a', { metaKey: true }))).toBe('selectAll');
     expect(shortcutOf(key('Escape'))).toBe('clearSelection');
+    expect(shortcutOf(key('ContextMenu'))).toBe('openContextMenu');
+    expect(shortcutOf(key('F10', { shiftKey: true }))).toBe('openContextMenu');
+    expect(shortcutOf(key('F10'))).toBeNull();
     expect(shortcutOf(key('?', { shiftKey: true }))).toBe('showShortcuts');
     expect(shortcutOf(key('H', { shiftKey: true }))).toBe('showHidden');
   });

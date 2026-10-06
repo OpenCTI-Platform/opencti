@@ -8,6 +8,7 @@ import { collisionForce } from './collisionForce';
 import { neighbourhood, shortestPath } from './graphFocus';
 import { createCollapseCache, isCollapsedMember, isGroupLink, withCollapsedGroups } from './graphCollapse';
 import { frameBox, measureGraphPanels } from './graphFraming';
+import { isAdditiveClick } from './useGraphContextMenuGesture';
 
 /** Graph units between two linked nodes at rest, room for a label between two rings. */
 const LINK_DISTANCE = 64;
@@ -136,6 +137,10 @@ const useGraphInteractions = () => {
 
   const showHiddenNodes = () => {
     setGraphStateProp('hiddenNodeIds', []);
+  };
+
+  const ungroupAll = () => {
+    setGraphStateProp('collapsedEntityTypes', []);
   };
 
   const toggleCollapsedEntityType = (type: string) => {
@@ -387,7 +392,7 @@ const useGraphInteractions = () => {
    * @param e The event captured.
    */
   const toggleNode: LibGraphProps['onNodeClick'] = (node, e) => {
-    if (e.ctrlKey || e.shiftKey || e.altKey) {
+    if (isAdditiveClick(e)) {
       toggleInSelection('selectedNodes', node);
     } else {
       setSelectedLinks([]);
@@ -403,7 +408,7 @@ const useGraphInteractions = () => {
    */
   const toggleLink: LibGraphProps['onLinkClick'] = (link, e) => {
     if (isGroupLink(link)) return;
-    if (e.ctrlKey || e.shiftKey || e.altKey) {
+    if (isAdditiveClick(e)) {
       toggleInSelection('selectedLinks', link);
     } else {
       setSelectedNodes([]);
@@ -736,6 +741,7 @@ const useGraphInteractions = () => {
     hideNodes,
     showHiddenNodes,
     toggleCollapsedEntityType,
+    ungroupAll,
     toggleRelationshipType,
     highlightShortestPath,
     clearHighlightedPath,

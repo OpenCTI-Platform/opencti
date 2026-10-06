@@ -41,7 +41,7 @@ describe('GraphToolbar', () => {
       expect(within(toolbar).getByRole('group', { name })).toBeInTheDocument();
     });
     expect(screen.getByRole('button', { name: 'Fit the whole graph' })).toHaveAttribute('aria-keyshortcuts', 'F');
-    expect(screen.getByRole('button', { name: 'Forces' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Force-directed layout' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('button', { name: '3D mode' })).toHaveAttribute('aria-pressed', 'false');
     expect(screen.getByRole('button', { name: 'Show only correlated observables and indicators' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('button', { name: 'Zoom in' })).not.toHaveAttribute('aria-pressed');
@@ -63,7 +63,6 @@ describe('GraphToolbar', () => {
     const toolbar = screen.getByRole('toolbar', { name: 'Graph toolbar' });
     expect(within(toolbar).queryByRole('textbox', { name: 'Search' })).toBeNull();
     expect(within(toolbar).queryByRole('group', { name: 'Creation and removal' })).toBeNull();
-    expect(within(toolbar).getByRole('button', { name: 'More actions' })).toBeInTheDocument();
   });
 
   it('offers the high-resolution export only to a user allowed to export', () => {
@@ -116,8 +115,18 @@ describe('GraphToolbar', () => {
     expect(fitSelection).toHaveAttribute('aria-disabled', 'true');
   });
 
-  it('lists the rare actions in "More actions" only, by group', async () => {
-    const { user } = renderToolbar();
+  it('leaves the rare actions of a graph view to its context menu: "More actions" holds only what has no room', () => {
+    renderToolbar();
+    expect(screen.queryByRole('button', { name: 'Select all nodes' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'More actions' })).toBeNull();
+  });
+
+  it('lists the rare actions in "More actions", by group, for a toolbar outside a graph view', async () => {
+    const { user } = testRender(
+      <GraphProvider objects={[]} context="correlation">
+        <GraphToolbar />
+      </GraphProvider>,
+    );
     expect(screen.queryByRole('button', { name: 'Select all nodes' })).toBeNull();
     await user.click(screen.getByRole('button', { name: 'More actions' }));
     const menu = await screen.findByRole('menu', { name: 'More actions' });
@@ -159,12 +168,12 @@ describe('GraphToolbar', () => {
 
   it('disables the tree layouts of a graph with a cycle in 3D, where they cannot apply, saying why', async () => {
     const { user } = renderToolbar({ ...viewActions(), drawnHasCycle: true });
-    const vertical = () => screen.getByRole('button', { name: 'Vertical tree layout' });
+    const vertical = () => screen.getByRole('button', { name: 'Hierarchical layout (top to bottom)' });
     expect(vertical()).not.toHaveAttribute('aria-disabled', 'true');
     await user.click(screen.getByRole('button', { name: '3D mode' }));
     expect(vertical()).toHaveAttribute('aria-disabled', 'true');
     expect(vertical()).toHaveAccessibleDescription('The graph has a cycle: use this layout in 2D mode');
-    expect(screen.getByRole('button', { name: 'Horizontal tree layout' })).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('button', { name: 'Hierarchical layout (left to right)' })).toHaveAttribute('aria-disabled', 'true');
     await user.click(screen.getByRole('button', { name: '3D mode' }));
   });
 });

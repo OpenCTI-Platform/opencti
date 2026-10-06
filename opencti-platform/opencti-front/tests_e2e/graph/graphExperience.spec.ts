@@ -53,7 +53,7 @@ test.describe('Graph experience', { tag: ['@ce'] }, () => {
     const pill = page.getByRole('button', { name: /^Show the legend/ });
     await graph.expectToolbarToggle('Legend', true);
     await legend(page).getByRole('button', { name: 'Malware: 1' }).click();
-    await legend(page).getByRole('button', { name: 'Minimize the legend' }).click();
+    await legend(page).getByRole('button', { name: 'Minimise the legend' }).click();
     await expect(legend(page)).toBeHidden();
     // The pill sits in the corner of the legend and names the type filters in use.
     await expect(pill).toHaveText(/Legend.*1 filter/);
@@ -77,15 +77,15 @@ test.describe('Graph experience', { tag: ['@ce'] }, () => {
 
   test('collapses a type into one group node and expands it back', async ({ page }) => {
     await openGraph(page);
-    await legend(page).getByRole('button', { name: 'Collapse into one node' }).first().click();
+    await legend(page).getByRole('button', { name: 'Group by type' }).first().click();
     // The group node gives its relationship count after its name; the options of the links drawn towards it also name it.
     await expect(elements(page).getByRole('option', { name: /1 \u00d7 [^,]+, \d+ relationships?$/ })).toHaveCount(1);
-    await legend(page).getByRole('button', { name: 'Expand the group' }).click();
+    await legend(page).getByRole('button', { name: 'Ungroup' }).click();
     await expect(elements(page).getByRole('option', { name: /\u00d7/ })).toHaveCount(0);
     await expect(elements(page).getByRole('option')).toHaveCount(9);
   });
 
-  test('opens a hover card with the facts and quick actions of a node', async ({ page }) => {
+  test('previews a node in a hover card and acts on it from its context menu', async ({ page }) => {
     const graph = await openGraph(page);
     await graph.arrangeInMiddle([fixture.intrusionSet.id]);
     await graph.waitForGraph(5);
@@ -95,21 +95,23 @@ test.describe('Graph experience', { tag: ['@ce'] }, () => {
     await expect(card.getByText(fixture.intrusionSet.name)).toBeVisible();
     await expect(card.getByText('TLP:GREEN').first()).toBeVisible();
     await expect(card.getByText(fixture.authorName)).toBeVisible();
+    await expect(card.getByRole('button')).toHaveCount(0);
 
-    await card.getByRole('button', { name: 'Hide from the view' }).click();
+    const menu = await graph.openContextMenu(fixture.intrusionSet.id);
+    await expect(card).toBeHidden();
+    await menu.getByRole('menuitem', { name: 'Hide' }).click();
     await expect(elements(page).getByRole('option', { name: new RegExp(fixture.intrusionSet.name) })).toHaveCount(0);
     await legend(page).getByRole('button', { name: /Show the hidden entities/ }).click();
     // The entity option gives its relationship count after its name, then its badges; the options of its relationships also name it.
     await expect(elements(page).getByRole('option', { name: new RegExp(`${fixture.intrusionSet.name}, \\d+ relationships?(, |$)`) })).toHaveCount(1);
   });
 
-  test('starts an investigation from the hover card of an entity', async ({ page, playwright }) => {
+  test('starts an investigation from the context menu of an entity', async ({ page, playwright }) => {
     const graph = await openGraph(page);
     await graph.arrangeInMiddle([fixture.malware.id]);
     await graph.waitForGraph(5);
-    await graph.hoverNode(fixture.malware.id);
-    const card = page.getByRole('group', { name: 'Details on hover' });
-    await card.getByRole('button', { name: 'Start an investigation' }).click();
+    const menu = await graph.openContextMenu(fixture.malware.id);
+    await menu.getByRole('menuitem', { name: 'Start an investigation' }).click();
     await page.waitForURL(/\/dashboard\/workspaces\/investigations\/[0-9a-f-]{36}$/);
     const investigationId = new URL(page.url()).pathname.split('/').pop() ?? '';
     try {
@@ -122,15 +124,15 @@ test.describe('Graph experience', { tag: ['@ce'] }, () => {
 
   test('arranges the graph by entity tier and around a selected entity', async ({ page }) => {
     const graph = await openGraph(page);
-    await graph.runToolbarAction('Layout by entity tier');
-    await graph.expectToolbarToggle('Layout by entity tier', true);
+    await graph.runToolbarAction('Layered layout (by entity category)');
+    await graph.expectToolbarToggle('Layered layout (by entity category)', true);
     await graph.waitForGraph(5);
     const tiers = await graph.snapshot();
     const gx = (id: string) => tiers.nodes.find((n) => n.id === id)?.gx ?? NaN;
     expect(gx(fixture.intrusionSet.id)).toBeLessThan(gx(fixture.malware.id));
     expect(gx(fixture.malware.id)).toBeLessThan(gx(fixture.attackPattern.id));
     expect(gx(fixture.attackPattern.id)).toBeLessThan(gx(fixture.ipv4.id));
-    await graph.runToolbarAction('Layout by entity tier');
+    await graph.runToolbarAction('Layered layout (by entity category)');
     // The nodes glide back to their place: the drag starts from where the malware stands still.
     await graph.waitForGraph(5);
 
@@ -160,13 +162,13 @@ test.describe('Graph experience', { tag: ['@ce'] }, () => {
     await graph.clickNode(fixture.intrusionSet.id);
     await graph.clickNode(fixture.ipv4.id, ['Shift']);
     await expect(graph.getSelectionSummary(2)).toBeVisible();
-    await graph.runToolbarAction('Shortest path between the two selected nodes');
-    await graph.expectToolbarToggle('Shortest path between the two selected nodes', true);
-    await graph.runToolbarAction('Shortest path between the two selected nodes');
+    await graph.runToolbarAction('Highlight shortest path between the two selected nodes');
+    await graph.expectToolbarToggle('Highlight shortest path between the two selected nodes', true);
+    await graph.runToolbarAction('Highlight shortest path between the two selected nodes');
 
     await graph.clickBackground();
     await graph.clickNode(fixture.attackPattern.id);
-    await graph.runToolbarAction('Select the neighbours of the selected nodes');
+    await graph.runToolbarAction('Add neighbours to selection');
     await expect(graph.getSelectionSummary(3)).toBeVisible();
   });
 

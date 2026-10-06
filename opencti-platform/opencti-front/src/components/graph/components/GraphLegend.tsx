@@ -208,7 +208,7 @@ const GraphLegend = ({
               <IconButton
                 priority="tertiary"
                 size="sm"
-                aria-label={t_i18n('Minimize the legend')}
+                aria-label={t_i18n('Minimise the legend')}
                 aria-expanded
                 aria-controls={bodyId}
                 aria-keyshortcuts="G"
@@ -216,7 +216,7 @@ const GraphLegend = ({
                 onClick={onMinimize}
               />
             </TooltipTrigger>
-            <TooltipContent side="right">{`${t_i18n('Minimize the legend')} (G)`}</TooltipContent>
+            <TooltipContent side="right">{`${t_i18n('Minimise the legend')} (G)`}</TooltipContent>
           </Tooltip>
         )}
       </div>
@@ -232,7 +232,7 @@ const GraphLegend = ({
                 type="button"
                 style={{ ...row, opacity: disabled ? 0.45 : 1 }}
                 aria-pressed={!disabled}
-                aria-label={`${label}: ${total}`}
+                aria-label={`${collapsed ? t_i18n('Group: {type}', { values: { type: label } }) : label}: ${total}`}
                 onClick={() => onToggleEntityType(type)}
               >
                 <span
@@ -252,7 +252,7 @@ const GraphLegend = ({
                   <ItemIcon type={type} size="inherit" style={{ width: 13, height: 13 }} />
                 </span>
                 <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textDecoration: disabled ? 'line-through' : 'none' }}>
-                  {label}
+                  {collapsed ? t_i18n('Group: {type}', { values: { type: label } }) : label}
                 </span>
                 <span style={count}>{total}</span>
               </button>
@@ -261,7 +261,7 @@ const GraphLegend = ({
                   <IconButton
                     priority="tertiary"
                     size="sm"
-                    aria-label={collapsed ? t_i18n('Expand the group') : t_i18n('Collapse into one node')}
+                    aria-label={collapsed ? t_i18n('Ungroup') : t_i18n('Group by type')}
                     aria-pressed={collapsed}
                     active={collapsed}
                     icon={collapsed ? <UnfoldMoreOutlined fontSize="small" /> : <UnfoldLessOutlined fontSize="small" />}
@@ -269,7 +269,7 @@ const GraphLegend = ({
                   />
                 </TooltipTrigger>
                 <TooltipContent side="right">
-                  {collapsed ? t_i18n('Expand the group') : t_i18n('Collapse into one node')}
+                  {collapsed ? t_i18n('Ungroup') : t_i18n('Group by type')}
                 </TooltipContent>
               </Tooltip>
             </div>

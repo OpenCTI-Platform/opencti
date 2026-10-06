@@ -23,19 +23,38 @@ import GraphAccessibleList, { graphElementKey } from './components/GraphAccessib
 import GraphShortcutsDialog from './components/GraphShortcutsDialog';
 import { useFormatter } from '../i18n';
 import { itemFamily } from '../../utils/Colors';
-import { createCollapseCache, drawnTypes, isCollapsedMember, isGroupLink, relationshipTotal, withCollapsedGroups } from './utils/graphCollapse';
+import { createCollapseCache, drawnOneByOne, drawnTypes, isCollapsedMember, isGroupLink, relationshipTotal, withCollapsedGroups } from './utils/graphCollapse';
 import { entityTier, hasCycle, layeredLayout, radialLayout, tierLayout } from './utils/graphLayouts';
 import useGraphLayoutEngine, { type GraphLayoutRequest } from './utils/useGraphLayoutEngine';
 import useGraphKeyboardShortcuts from './utils/useGraphKeyboardShortcuts';
 import useGraphFullscreen from './utils/useGraphFullscreen';
 import { isPathDrawable, relationshipCounts } from './utils/graphFocus';
-import { badgesOfNode, useGraphBadgeRegistryVersion } from './badges';
+import { badgesOfNode, graphNodeActionsFor, useGraphBadgeRegistryVersion } from './badges';
 import { downloadCanvasAsPng, renderGraphImage } from './utils/graphExport';
 import { APP_BASE_PATH, MESSAGING$ } from '../../relay/environment';
 import useGraphStartInvestigation from './utils/useGraphStartInvestigation';
 import { graphNodeTitle } from './utils/useGraphParser';
 import useReaderActed from './utils/useReaderActed';
 import useGranted, { KNOWLEDGE_KNFRONTENDEXPORT } from '../../utils/hooks/useGranted';
+import {
+  AccountTreeOutlined,
+  DeselectOutlined,
+  HubOutlined,
+  LinkOutlined,
+  ManageSearchOutlined,
+  OpenInNewOutlined,
+  PushPinOutlined,
+  RouteOutlined,
+  TrackChangesOutlined,
+  UnfoldMoreOutlined,
+  VisibilityOffOutlined,
+  VisibilityOutlined,
+} from '@mui/icons-material';
+import { SelectInverse } from 'mdi-material-ui';
+import GraphContextMenu, { type GraphContextMenuSection } from './components/GraphContextMenu';
+import type { GraphMenuAction } from './components/GraphToolbarMoreActions';
+import useGraphToolbarActions from './components/useGraphToolbarActions';
+import useGraphContextMenuGesture, { isMacContextClick } from './utils/useGraphContextMenuGesture';
 
 export interface GraphProps {
   parentRef: MutableRefObject<HTMLDivElement | null>;
@@ -49,6 +68,7 @@ const HOVER_OPEN_MS = 280;
 const HOVER_CLOSE_MS = 220;
 /** Nodes laid out by the simulation before the first paint, when nothing is placed yet. */
 const WARMUP_TICKS = 60;
+const MENU_ICON = { fontSize: 'small' } as const;
 
 const endpointId = (end: GraphLink['source']) => (typeof end === 'object' && end !== null ? end.id : end);
 
@@ -89,6 +109,7 @@ const Graph = ({
     showHiddenNodes,
     resetFilters,
     toggleCollapsedEntityType,
+    ungroupAll,
     toggleRelationshipType,
     highlightShortestPath,
     clearHighlightedPath,
@@ -260,6 +281,7 @@ const Graph = ({
   // --- Hover: focus on the canvas at once, card after a short delay.
   const [hovered, setHovered] = useState<GraphHoverTarget | null>(null);
   const [card, setCard] = useState<{ target: GraphHoverTarget; anchor: { x: number; y: number } } | null>(null);
+  const [menu, setMenu] = useState<{ anchor: { x: number; y: number }; target: GraphHoverTarget | null } | null>(null);
   const openTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const cancelClose = () => clearTimeout(closeTimer.current);
@@ -291,7 +313,7 @@ const Graph = ({
   const onHover = (target: GraphHoverTarget | null) => {
     setHovered(target);
     clearTimeout(openTimer.current);
-    if (!target || pressing.current || selectFree || selectFreeRectangle || isExpandOpen || isAddRelationOpen) {
+    if (!target || pressing.current || menu || selectFree || selectFreeRectangle || isExpandOpen || isAddRelationOpen) {
       scheduleClose();
       return;
     }
@@ -344,6 +366,7 @@ const Graph = ({
     linkColorPaint,
     linkBaseColor,
     linkPaint,
+    linkPointerAreaPaint,
     linkCurvature,
     curvatureOf,
     framePrePaint,
@@ -425,6 +448,8 @@ const Graph = ({
   };
 
   const onNodeClick: LibGraphProps['onNodeClick'] = (node, e) => {
+    // The macOS Control click opens the context menu (see the context-menu gesture), it selects nothing.
+    if (isMacContextClick(e)) return;
     if (node.groupOf) {
       toggleCollapsedEntityType(node.groupOf.entityType);
       return;
@@ -469,16 +494,28 @@ const Graph = ({
   // --- Counter row: the entities and the relationships drawn one by one, the restricted entities
   // and those needing attention, each selecting exactly what it counts. Members of collapsed groups
   // and the links drawn towards their group are counted by the legend, where the group is expanded.
+  // While something is selected, the first two read what the selection holds of them and frame it.
   const counters = useMemo<GraphCounter[]>(() => {
-    const entityNodes = shownNodes.filter((node) => !node.groupOf && !node.relationship_type);
+    const { entities: entityNodes, relationshipLinks, relationshipNodes } = drawnOneByOne(shownNodes, shownLinks);
     const entityCount = entityNodes.length;
-    const relationshipLinks = shownLinks.filter((link) => !!link.label && !isGroupLink(link));
-    // A nested relationship is drawn as a node between two unlabelled connector links.
-    const relationshipNodes = shownNodes.filter((node) => !!node.relationship_type && !node.groupOf);
     const relationshipCount = relationshipLinks.length + relationshipNodes.length;
     const restrictedNodes = entityNodes.filter((node) => node.isRestricted);
     const attentionNodes = entityNodes.filter((node) => attentionIds.has(node.id));
-    const all: (GraphCounter & { count: number })[] = [
+    const selection = drawnOneByOne(selectedNodes, selectedLinks);
+    const selectedEntityCount = selection.entities.length;
+    const selectedRelationshipCount = selection.relationshipLinks.length + selection.relationshipNodes.length;
+    const totals: (GraphCounter & { count: number })[] = selectedEntityCount + selectedRelationshipCount > 0 ? [
+      {
+        key: 'selection',
+        count: selectedEntityCount + selectedRelationshipCount,
+        label: t_i18n(
+          '{selectedEntities} of {entities, plural, one {# entity} other {# entities}} · {selectedRelationships} of {relationships, plural, one {# relationship} other {# relationships}} selected',
+          { values: { selectedEntities: selectedEntityCount, entities: entityCount, selectedRelationships: selectedRelationshipCount, relationships: relationshipCount } },
+        ),
+        action: t_i18n('Fit the selection'),
+        onSelect: () => zoomToSelection(),
+      },
+    ] : [
       {
         key: 'entities',
         count: entityCount,
@@ -496,6 +533,9 @@ const Graph = ({
           setSelectedLinks(relationshipLinks);
         },
       },
+    ];
+    const all: (GraphCounter & { count: number })[] = [
+      ...totals,
       {
         key: 'restricted',
         count: restrictedNodes.length,
@@ -514,8 +554,15 @@ const Graph = ({
       },
     ];
     return all.filter(({ key, count }) => key === 'entities' || count > 0);
-  }, [shownNodes, shownLinks, attentionIds, filterToken]);
+  }, [shownNodes, shownLinks, selectedNodes, selectedLinks, attentionIds, filterToken]);
   const otherSelected = (node: GraphNode) => (selectedNodes.length === 1 && selectedNodes[0].id !== node.id ? selectedNodes[0] : null);
+  const groupMembersOf = (group: GraphNode) => {
+    const memberIds = new Set(group.groupOf?.memberIds ?? []);
+    return (graphData?.nodes ?? [])
+      .filter((node) => memberIds.has(node.id))
+      .map((node) => ({ id: node.id, name: graphNodeTitle(node) }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  };
 
   const togglePin = (node: GraphNode) => {
     if (node.fx !== undefined && node.fx !== null) {
@@ -589,6 +636,8 @@ const Graph = ({
   };
 
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  // Set once the context menu is built, further down.
+  const keyboardMenu = useRef<() => void>(() => {});
   // The shortcuts of the actions the toolbar disables in 3D do nothing there either.
   const only2D = (action: () => void) => () => {
     if (!mode3D) action();
@@ -623,6 +672,7 @@ const Graph = ({
       parentRef.current?.querySelector<HTMLInputElement>('[data-graph-search] input')?.focus();
     },
     showShortcuts: () => setShortcutsOpen(true),
+    openContextMenu: only2D(() => keyboardMenu.current()),
   });
 
   // --- What the toolbar rendered inside the graph takes from it. The type filter offers and counts
@@ -658,6 +708,198 @@ const Graph = ({
   }, [card, displayData, shownNodeIds]);
 
   const canRelate = context !== 'analyses' && context !== 'correlation';
+
+  // --- Context menu: what applies to the entity, group or relationship under the pointer, to the
+  // selection it belongs to, or to the graph itself on the empty canvas. The hover card only previews.
+  const toolbarActions = useGraphToolbarActions({ onUnfixNodes: () => onPositionsChanged?.({}) });
+  const toolbarAction = (id: string) => toolbarActions.find((action) => action.id === id);
+  const present = (actions: (GraphMenuAction | false | null | undefined)[]) => actions.filter((action): action is GraphMenuAction => !!action);
+  const menuReturnFocus = useRef<HTMLElement | null>(null);
+  const openMenuAt = (anchor: { x: number; y: number }, target: GraphHoverTarget | null) => {
+    clearTimeout(openTimer.current);
+    setCard(null);
+    menuReturnFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    setMenu({ anchor, target });
+  };
+  useGraphContextMenuGesture(containerRef, !mode3D, ({ clientX, clientY }) => {
+    const box = containerRef.current?.getBoundingClientRect();
+    if (box) openMenuAt({ x: clientX - box.left, y: clientY - box.top }, hovered);
+  });
+  // From the keyboard: the element active in the keyboard list, else the only selected entity, else the graph.
+  const openKeyboardMenu = () => {
+    const single = selectedNodes.length === 1 && selectedLinks.length === 0 ? selectedNodes[0] : null;
+    const target: GraphHoverTarget | null = hovered ?? (single ? { kind: 'node', id: single.id } : null);
+    const node = target?.kind === 'node' ? shownNodes.find((n) => n.id === target.id) : undefined;
+    const at = node && Number.isFinite(node.x) ? graphRef2D.current?.graph2ScreenCoords(node.x, node.y) : undefined;
+    openMenuAt(at ?? { x: width / 2, y: height / 3 }, target);
+  };
+  keyboardMenu.current = openKeyboardMenu;
+  const openInNewTab = (id: string) => window.open(`${APP_BASE_PATH}/dashboard/id/${id}`, '_blank', 'noopener,noreferrer');
+  const selectedEntityNodes = selectedNodes.filter((n) => !n.relationship_type && !n.groupOf);
+  const investigateFrom = (node: GraphNode) => {
+    if (!startInvestigation) return;
+    const seeds = selectedEntityNodes.some((n) => n.id === node.id) ? selectedEntityNodes : [node];
+    startInvestigation(graphNodeTitle(node), seeds.map((n) => n.id));
+  };
+  const nodeMenuActions = (node: GraphNode): GraphMenuAction[] => {
+    const isPinned = node.fx !== undefined && node.fx !== null;
+    const pin: GraphMenuAction = { id: 'pin', label: isPinned ? t_i18n('Unpin') : t_i18n('Pin in place'), icon: <PushPinOutlined {...MENU_ICON} />, onSelect: () => togglePin(node) };
+    if (node.groupOf) {
+      const { entityType } = node.groupOf;
+      return [{ id: 'ungroup', label: t_i18n('Ungroup'), icon: <UnfoldMoreOutlined {...MENU_ICON} />, onSelect: () => toggleCollapsedEntityType(entityType) }, pin];
+    }
+    const other = otherSelected(node);
+    return present([
+      !node.relationship_type && { id: 'open', label: t_i18n('Open in a new tab'), icon: <OpenInNewOutlined {...MENU_ICON} />, onSelect: () => openInNewTab(node.id) },
+      context === 'investigation' && {
+        id: 'expand',
+        label: t_i18n('Expand this entity'),
+        icon: <AccountTreeOutlined {...MENU_ICON} />,
+        onSelect: () => {
+          selectNodes([node]);
+          setIsExpandOpen(true);
+        },
+      },
+      { id: 'select-entity-neighbours', label: t_i18n('Select entity and neighbours'), icon: <HubOutlined {...MENU_ICON} />, onSelect: () => selectNeighbours([node.id]) },
+      pin,
+      { id: 'hide', label: t_i18n('Hide'), icon: <VisibilityOffOutlined {...MENU_ICON} />, onSelect: () => hideNodes([node.id]) },
+      { id: 'radial', label: t_i18n('Lay out the graph around it'), icon: <TrackChangesOutlined {...MENU_ICON} />, onSelect: () => centreRadialLayoutOn(node.id) },
+      other && {
+        id: 'path-from-selection',
+        label: t_i18n('Highlight shortest path from the selection'),
+        icon: <RouteOutlined {...MENU_ICON} />,
+        onSelect: () => {
+          selectNodes([other, node]);
+          if (!highlightShortestPath(other.id, node.id)) MESSAGING$.notifyError(t_i18n('These two nodes are not connected in this graph'));
+        },
+      },
+      canRelate && other && {
+        id: 'relate-to-selection',
+        label: t_i18n('Create a relationship from the selection'),
+        icon: <LinkOutlined {...MENU_ICON} />,
+        onSelect: () => {
+          selectNodes([other, node]);
+          setIsAddRelationOpen(true);
+        },
+      },
+      !!startInvestigation && context !== 'investigation' && !node.relationship_type && {
+        id: 'start-investigation',
+        label: t_i18n('Start an investigation'),
+        icon: <ManageSearchOutlined {...MENU_ICON} />,
+        onSelect: () => investigateFrom(node),
+      },
+      ...graphNodeActionsFor(node, context).map((action): GraphMenuAction => {
+        const Icon = action.icon;
+        return {
+          id: `registered-${action.id}`,
+          label: action.label(t_i18n),
+          icon: <Icon {...MENU_ICON} />,
+          onSelect: () => {
+            if (action.href) window.open(`${APP_BASE_PATH}${action.href(node)}`, '_blank', 'noopener,noreferrer');
+            else action.onSelect?.(node);
+          },
+        };
+      }),
+    ]);
+  };
+  const linkMenuActions = (link: GraphLink): GraphMenuAction[] => present([
+    link.entity_type !== 'basic-relationship' && !!link.label && {
+      id: 'open',
+      label: t_i18n('Open in a new tab'),
+      icon: <OpenInNewOutlined {...MENU_ICON} />,
+      onSelect: () => openInNewTab(link.id),
+    },
+    {
+      id: 'select-link',
+      label: t_i18n('Select this relationship'),
+      icon: <LinkOutlined {...MENU_ICON} />,
+      onSelect: () => {
+        setSelectedNodes([]);
+        setSelectedLinks([link]);
+      },
+    },
+  ]);
+  const selectionMenuActions = (): GraphMenuAction[] => present([
+    toolbarAction('select-neighbours'),
+    toolbarAction('shortest-path'),
+    toolbarAction('select-relationships'),
+    toolbarAction('fit-selection'),
+    selectedNodes.length > 0 && {
+      id: 'hide-selection',
+      label: t_i18n('Hide'),
+      shortcut: 'H',
+      icon: <VisibilityOffOutlined {...MENU_ICON} />,
+      onSelect: () => hideNodes(selectedNodes.map((n) => n.id)),
+    },
+    canRelate && selectedEntityNodes.length === 2 && {
+      id: 'relate-selection',
+      label: t_i18n('Create a relationship'),
+      icon: <LinkOutlined {...MENU_ICON} />,
+      onSelect: () => setIsAddRelationOpen(true),
+    },
+    !!startInvestigation && context !== 'investigation' && selectedEntityNodes.length > 0 && {
+      id: 'start-investigation-selection',
+      label: t_i18n('Start an investigation'),
+      icon: <ManageSearchOutlined {...MENU_ICON} />,
+      onSelect: () => investigateFrom(selectedEntityNodes[0]),
+    },
+  ]);
+  const canvasMenuActions = (): GraphMenuAction[] => {
+    const selectedIds = new Set(selectedNodes.map((n) => n.id));
+    return present([
+      toolbarAction('select-all'),
+      toolbarAction('select-by-type'),
+      {
+        id: 'invert-selection',
+        label: t_i18n('Invert selection'),
+        icon: <SelectInverse {...MENU_ICON} />,
+        onSelect: () => selectNodes(drawnOneByOne(shownNodes, []).entities.filter((n) => !selectedIds.has(n.id))),
+      },
+      {
+        id: 'clear-selection',
+        label: t_i18n('Clear selection'),
+        shortcut: 'Esc',
+        icon: <DeselectOutlined {...MENU_ICON} />,
+        disabledReason: selectedEntities.length === 0 ? t_i18n('Nothing is selected') : undefined,
+        onSelect: clearSelection,
+      },
+      {
+        id: 'show-hidden',
+        label: t_i18n('Show the hidden entities'),
+        shortcut: 'Shift+H',
+        icon: <VisibilityOutlined {...MENU_ICON} />,
+        disabledReason: hiddenCount === 0 ? t_i18n('No entity is hidden') : undefined,
+        onSelect: showHiddenNodes,
+      },
+      {
+        id: 'ungroup-all',
+        label: t_i18n('Ungroup all'),
+        icon: <UnfoldMoreOutlined {...MENU_ICON} />,
+        disabledReason: collapsedEntityTypes.length === 0 ? t_i18n('No entity type is grouped') : undefined,
+        onSelect: ungroupAll,
+      },
+      toolbarAction('reset-layout'),
+    ]);
+  };
+  const menuSections = (target: GraphHoverTarget | null): GraphContextMenuSection[] => {
+    const selection = selectedEntities.length > 0 ? [{ key: 'selection', label: t_i18n('Selection'), actions: selectionMenuActions() }] : [];
+    if (target?.kind === 'node') {
+      const node = shownNodes.find((n) => n.id === target.id);
+      if (node) {
+        const own = { key: 'node', label: node.groupOf ? node.label : graphNodeTitle(node), actions: nodeMenuActions(node) };
+        // On an entity of a larger selection, the selection comes first.
+        const inSelection = selectedNodes.length > 1 && selectedNodes.some((n) => n.id === node.id);
+        return inSelection ? [...selection, own] : [own];
+      }
+    }
+    if (target?.kind === 'link') {
+      const link = shownLinks.find((l) => isHoveredLink(target, linkHoverTarget(l)));
+      if (link && !isGroupLink(link)) {
+        return [{ key: 'link', label: t_i18n(`relationship_${link.relationship_type || link.entity_type}`), actions: linkMenuActions(link) }];
+      }
+    }
+    return [...selection, { key: 'graph', label: t_i18n('Graph'), actions: canvasMenuActions() }];
+  };
 
   return (
     <RectangleSelection
@@ -747,6 +989,7 @@ const Graph = ({
               linkDirectionalArrowLength={0}
               linkCanvasObjectMode={() => 'replace'}
               linkCanvasObject={(link, ctx, globalScale) => linkPaint(link, ctx, globalScale)}
+              linkPointerAreaPaint={(link, color, ctx, globalScale) => linkPointerAreaPaint(link, color, ctx, globalScale)}
               linkColor={linkColorPaint}
               nodePointerAreaPaint={(node, color, ctx, globalScale) => nodePointerAreaPaint(node, color, ctx, globalScale)}
               nodeCanvasObject={(node, ctx, globalScale) => nodePaint(node, ctx, globalScale, context === 'investigation')}
@@ -756,8 +999,12 @@ const Graph = ({
               onNodeHover={(node) => onHover(node ? { kind: 'node', id: node.id } : null)}
               onLinkHover={(link) => onHover(link ? linkHoverTarget(link) : null)}
               onZoomEnd={saveZoom}
-              onLinkClick={toggleLink}
-              onBackgroundClick={onBackgroundClick}
+              onLinkClick={(link, event) => {
+                if (!isMacContextClick(event)) toggleLink(link, event);
+              }}
+              onBackgroundClick={(event) => {
+                if (!isMacContextClick(event)) onBackgroundClick();
+              }}
               onNodeClick={onNodeClick}
               onNodeDrag={(node, translate) => {
                 setCard(null);
@@ -808,66 +1055,18 @@ const Graph = ({
                   represents: link.represents,
                 })), cardTarget.node.id)
               : []}
-            isPinned={cardTarget.kind === 'node' && cardTarget.node.fx !== undefined && cardTarget.node.fx !== null}
+            groupMembers={cardTarget.kind === 'node' && cardTarget.node.groupOf ? groupMembersOf(cardTarget.node) : undefined}
             onMouseEnter={cancelClose}
             onMouseLeave={scheduleClose}
-            actions={{
-              onOpen: (id) => window.open(`${APP_BASE_PATH}/dashboard/id/${id}`, '_blank', 'noopener,noreferrer'),
-              onExpand: context === 'investigation'
-                ? (node) => {
-                    selectNodes([node]);
-                    setIsExpandOpen(true);
-                    setCard(null);
-                  }
-                : undefined,
-              onTogglePin: togglePin,
-              onHide: (node) => {
-                hideNodes([node.id]);
-                setCard(null);
-              },
-              onSelectNeighbours: (node) => selectNeighbours([node.id]),
-              onCentreRadial: (node) => {
-                centreRadialLayoutOn(node.id);
-                setCard(null);
-              },
-              onPathFromSelection: cardTarget.kind === 'node' && otherSelected(cardTarget.node)
-                ? (node) => {
-                    const other = otherSelected(node);
-                    if (!other) return;
-                    selectNodes([other, node]);
-                    if (!highlightShortestPath(other.id, node.id)) {
-                      MESSAGING$.notifyError(t_i18n('These two nodes are not connected in this graph'));
-                    }
-                  }
-                : undefined,
-              onRelateToSelection: canRelate && cardTarget.kind === 'node' && otherSelected(cardTarget.node)
-                ? (node) => {
-                    const other = otherSelected(node);
-                    if (!other) return;
-                    selectNodes([other, node]);
-                    setIsAddRelationOpen(true);
-                    setCard(null);
-                  }
-                : undefined,
-              onStartInvestigation: startInvestigation && context !== 'investigation'
-                ? (node) => {
-                    const selectedEntityNodes = selectedNodes.filter((n) => !n.relationship_type && !n.groupOf);
-                    const seeds = selectedEntityNodes.some((n) => n.id === node.id) ? selectedEntityNodes : [node];
-                    setCard(null);
-                    startInvestigation(graphNodeTitle(node), seeds.map((n) => n.id));
-                  }
-                : undefined,
-              onExpandGroup: (entityType) => {
-                toggleCollapsedEntityType(entityType);
-                setCard(null);
-              },
-              onSelectLink: (link) => {
-                setSelectedNodes([]);
-                setSelectedLinks([link]);
-              },
-            }}
           />
         )}
+        <GraphContextMenu
+          anchor={menu?.anchor ?? null}
+          label={t_i18n('Graph actions')}
+          sections={menu ? menuSections(menu.target) : []}
+          onClose={() => setMenu(null)}
+          onReturnFocus={() => menuReturnFocus.current?.focus()}
+        />
         <GraphAccessibleList
           nodes={shownNodes}
           links={shownLinks}

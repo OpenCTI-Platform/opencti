@@ -6,7 +6,7 @@ import { graphLink, graphNode } from '../../../utils/tests/graphTestData';
 import GraphLegend, { GraphLegendPill } from './GraphLegend';
 import GraphCounters from './GraphCounters';
 import GraphEmptyState from './GraphEmptyState';
-import GraphHoverCard, { GraphHoverCardActions } from './GraphHoverCard';
+import GraphHoverCard from './GraphHoverCard';
 import GraphAccessibleList, { ACCESSIBLE_LIST_WINDOW_RADIUS, graphElementKey } from './GraphAccessibleList';
 import GraphShortcutsDialog from './GraphShortcutsDialog';
 import { GROUP_LINK_PREFIX } from '../utils/graphCollapse';
@@ -56,9 +56,10 @@ describe('GraphLegend', () => {
     expect(screen.getByRole('button', { name: /uses: 2/i })).toBeInTheDocument();
   });
 
-  it('collapses a type and shows the hidden entities', async () => {
+  it('names a grouped type as a group, ungroups it and shows the hidden entities', async () => {
     const { user } = testRender(<GraphLegend {...props} hiddenCount={2} collapsedEntityTypes={['Malware']} />);
-    await user.click(screen.getByRole('button', { name: 'Expand the group' }));
+    expect(screen.getByText(/^Group: /)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Ungroup' }));
     expect(props.onToggleCollapsed).toHaveBeenCalledWith('Malware');
     await user.click(screen.getByRole('button', { name: /Show the hidden entities/ }));
     expect(props.onShowHidden).toHaveBeenCalled();
@@ -95,7 +96,7 @@ describe('GraphLegend', () => {
   it('minimizes from its header, saying what it folds and with which key', async () => {
     const onMinimize = vi.fn();
     const { user } = testRender(<GraphLegend {...props} onMinimize={onMinimize} />);
-    const minimize = screen.getByRole('button', { name: 'Minimize the legend' });
+    const minimize = screen.getByRole('button', { name: 'Minimise the legend' });
     expect(minimize).toHaveAttribute('aria-expanded', 'true');
     expect(minimize).toHaveAttribute('aria-keyshortcuts', 'G');
     expect(document.getElementById(minimize.getAttribute('aria-controls') ?? '')).toHaveTextContent('Entities');
@@ -165,55 +166,32 @@ describe('GraphCounters', () => {
 });
 
 describe('GraphHoverCard', () => {
-  const actions = (): GraphHoverCardActions => ({
-    onOpen: vi.fn(),
-    onExpand: vi.fn(),
-    onTogglePin: vi.fn(),
-    onHide: vi.fn(),
-    onSelectNeighbours: vi.fn(),
-    onCentreRadial: vi.fn(),
-    onPathFromSelection: vi.fn(),
-    onRelateToSelection: vi.fn(),
-    onExpandGroup: vi.fn(),
-    onSelectLink: vi.fn(),
-  });
   const common = {
     anchor: { x: 10, y: 10 },
     bounds: { width: 1000, height: 800 },
-    isPinned: false,
     onMouseEnter: vi.fn(),
     onMouseLeave: vi.fn(),
   };
 
-  it('names the node and offers its quick actions', async () => {
-    const handlers = actions();
+  it('previews the facts of a node, its actions being in the context menu', () => {
     const node = graphNode({ ...actor, confidence: 30, markedBy: [{ id: 'tlp', definition: 'TLP:GREEN', x_opencti_color: '#2e7d32' }] });
-    const { user } = testRender(
+    testRender(
       <GraphHoverCard
         {...common}
         target={{ kind: 'node', node }}
         context="investigation"
         badges={[{ key: 'tlp', tone: 'neutral', label: 'TLP:GREEN' }]}
         relationshipCounts={[{ type: 'uses', count: 2 }]}
-        actions={handlers}
       />,
     );
     expect(screen.getByText('APT-X')).toBeInTheDocument();
     expect(screen.getAllByText('TLP:GREEN').length).toBeGreaterThan(0);
     expect(screen.getByText('30')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Open in a new tab' }));
-    await user.click(screen.getByRole('button', { name: 'Expand this entity' }));
-    await user.click(screen.getByRole('button', { name: 'Pin at its place' }));
-    await user.click(screen.getByRole('button', { name: 'Hide from the view' }));
-    await user.click(screen.getByRole('button', { name: 'Shortest path from the selection' }));
-    expect(handlers.onOpen).toHaveBeenCalledWith('actor');
-    expect(handlers.onExpand).toHaveBeenCalled();
-    expect(handlers.onTogglePin).toHaveBeenCalled();
-    expect(handlers.onHide).toHaveBeenCalled();
-    expect(handlers.onPathFromSelection).toHaveBeenCalled();
+    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.getByText('Right-click for its actions')).toBeInTheDocument();
   });
 
-  it('stays within a short graph and scrolls, so its last quick actions stay reachable', () => {
+  it('stays within a short graph and scrolls', () => {
     testRender(
       <GraphHoverCard
         {...common}
@@ -222,73 +200,55 @@ describe('GraphHoverCard', () => {
         target={{ kind: 'node', node: actor }}
         badges={[]}
         relationshipCounts={[]}
-        actions={actions()}
       />,
     );
     expect(screen.getByRole('group', { name: 'Details on hover' })).toHaveStyle({ top: '0px', maxHeight: '150px', overflowY: 'auto' });
   });
 
-  it('starts an investigation from an entity, never from a relationship node', async () => {
-    const handlers = { ...actions(), onStartInvestigation: vi.fn() };
-    const node = graphNode({ ...actor });
-    const { user, unmount } = testRender(
-      <GraphHoverCard {...common} target={{ kind: 'node', node }} badges={[]} relationshipCounts={[]} actions={handlers} />,
-    );
-    await user.click(screen.getByRole('button', { name: 'Start an investigation' }));
-    expect(handlers.onStartInvestigation).toHaveBeenCalledWith(node);
-    unmount();
-    const relationshipNode = graphNode({ id: 'rel', label: 'Uses', relationship_type: 'uses' });
-    testRender(<GraphHoverCard {...common} target={{ kind: 'node', node: relationshipNode }} badges={[]} relationshipCounts={[]} actions={handlers} />);
-    expect(screen.queryByRole('button', { name: 'Start an investigation' })).toBeNull();
-  });
-
   it('lists every badge with what it means', () => {
     const node = graphNode({ ...actor });
     const badges = ['a', 'b', 'c', 'd'].map((key) => ({ key, tone: 'warning' as const, label: `Badge ${key}`, tooltip: `Meaning ${key}` }));
-    testRender(<GraphHoverCard {...common} target={{ kind: 'node', node }} badges={badges} relationshipCounts={[]} actions={actions()} />);
+    testRender(<GraphHoverCard {...common} target={{ kind: 'node', node }} badges={badges} relationshipCounts={[]} />);
     expect(screen.getAllByRole('listitem')).toHaveLength(4);
   });
 
   it('names a restricted entity "Restricted" and says why', () => {
     const node = graphNode({ id: 'restricted', label: 'Restricted', isRestricted: true });
-    testRender(<GraphHoverCard {...common} target={{ kind: 'node', node }} badges={[]} relationshipCounts={[]} actions={actions()} />);
+    testRender(<GraphHoverCard {...common} target={{ kind: 'node', node }} badges={[]} relationshipCounts={[]} />);
     expect(screen.getByText('Restricted')).toBeInTheDocument();
     expect(screen.getByText('You do not have access to this entity.')).toBeInTheDocument();
     // Its date is a placeholder of the platform, not a fact.
     expect(screen.queryByText('Date')).toBeNull();
   });
 
-  it('describes a relationship and a collapsed group', async () => {
-    const handlers = actions();
-    const { user, unmount } = testRender(
-      <GraphHoverCard {...common} target={{ kind: 'link', link: { ...uses, confidence: 15 } }} badges={[]} relationshipCounts={[]} actions={handlers} />,
-    );
+  it('describes a relationship', () => {
+    testRender(<GraphHoverCard {...common} target={{ kind: 'link', link: { ...uses, confidence: 15 } }} badges={[]} relationshipCounts={[]} />);
     expect(screen.getByText(/APT-X/)).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Select this relationship' }));
-    expect(handlers.onSelectLink).toHaveBeenCalled();
-    unmount();
-    const group = graphNode({ id: 'group:Malware', label: '2 x Malware', groupOf: { entityType: 'Malware', memberIds: ['m1', 'm2'] } });
-    testRender(<GraphHoverCard {...common} target={{ kind: 'node', node: group }} badges={[]} relationshipCounts={[]} actions={handlers} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Expand the group' }));
-    expect(handlers.onExpandGroup).toHaveBeenCalledWith('Malware');
+    expect(screen.getByText('15')).toBeInTheDocument();
+    expect(screen.queryByRole('button')).toBeNull();
   });
 
-  it('offers only the expansion on a collapsed group node, no fact or action of one of its entities', () => {
+  it('previews a group node: its type, its count and its first five members, no fact of one of its entities', () => {
     // The group node carries the fields of its first member under a synthetic id.
-    const group = graphNode({ ...actor, id: 'group:Intrusion-Set', label: '2 x Intrusion set', groupOf: { entityType: 'Intrusion-Set', memberIds: ['actor', 'other-actor'] } });
-    testRender(<GraphHoverCard {...common} target={{ kind: 'node', node: group }} badges={[]} relationshipCounts={[]} actions={actions()} />);
-    expect(screen.getByText('Collapsed group')).toBeInTheDocument();
-    expect(screen.getAllByRole('button').map((button) => button.getAttribute('aria-label'))).toEqual(['Expand the group']);
+    const memberIds = ['m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7'];
+    const group = graphNode({ ...actor, id: 'group:Intrusion-Set', label: '7 x Intrusion set', groupOf: { entityType: 'Intrusion-Set', memberIds } });
+    const members = memberIds.map((id, index) => ({ id, name: `Actor ${index + 1}` }));
+    testRender(<GraphHoverCard {...common} target={{ kind: 'node', node: group }} badges={[]} relationshipCounts={[]} groupMembers={members} />);
+    expect(screen.getByText('Group')).toBeInTheDocument();
+    expect(screen.getByText('7')).toBeInTheDocument();
+    const list = screen.getByRole('list', { name: 'Members' });
+    expect([...list.querySelectorAll('li')].map((item) => item.textContent)).toEqual(['Actor 1', 'Actor 2', 'Actor 3', 'Actor 4', 'Actor 5', 'and 2 more']);
+    expect(screen.queryByRole('button')).toBeNull();
     expect(screen.queryByText('APT-X')).toBeNull();
     expect(screen.queryByText('Date')).toBeNull();
   });
 
-  it('offers no fact or action of a single relationship on a link drawn towards a group', () => {
+  it('offers no fact of a single relationship, and no action, on a link drawn towards a group', () => {
     const groupLink = { ...uses, id: `${GROUP_LINK_PREFIX}actor|group:Malware|uses`, confidence: 15 };
-    testRender(<GraphHoverCard {...common} target={{ kind: 'link', link: groupLink }} badges={[]} relationshipCounts={[]} actions={actions()} />);
+    testRender(<GraphHoverCard {...common} target={{ kind: 'link', link: groupLink }} badges={[]} relationshipCounts={[]} />);
     expect(screen.getByText(/APT-X/)).toBeInTheDocument();
-    expect(screen.queryByRole('group', { name: 'Quick actions' })).toBeNull();
     expect(screen.queryByText('Confidence level')).toBeNull();
+    expect(screen.queryByText('Right-click for its actions')).toBeNull();
   });
 });
 

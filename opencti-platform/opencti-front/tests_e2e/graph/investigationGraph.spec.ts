@@ -82,9 +82,9 @@ test.describe('Investigation graph', { tag: ['@ce'] }, () => {
     await graph.openOptionsAndPick('Filter by type', 'Malware');
     await expect.poll(async () => (await graph.snapshot()).nodes.filter((n) => n.disabled).map((n) => n.id)).toEqual([fixture.malware.id]);
     await graph.runToolbarAction('Clear all filters');
-    await graph.runToolbarAction('Horizontal tree layout');
-    await graph.expectToolbarToggle('Horizontal tree layout', true);
-    await graph.runToolbarAction('Horizontal tree layout');
+    await graph.runToolbarAction('Hierarchical layout (left to right)');
+    await graph.expectToolbarToggle('Hierarchical layout (left to right)', true);
+    await graph.runToolbarAction('Hierarchical layout (left to right)');
     await graph.getToolbar().getByPlaceholder('Search these results...').fill(fixture.malware.name);
     await graph.getToolbar().getByPlaceholder('Search these results...').press('Enter');
     await expect(graph.getSelectionSummary(1)).toBeVisible();

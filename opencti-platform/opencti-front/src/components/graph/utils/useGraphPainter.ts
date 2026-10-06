@@ -19,6 +19,7 @@ import {
   type NodeBoxes,
   type NodePaintOptions,
   paintGraphLink,
+  paintGraphLinkHitArea,
   paintGraphNode,
   paintGraphNodeHitArea,
   paintLinkLabels,
@@ -312,6 +313,10 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     if (label) frameLabels.current.push(label);
   };
 
+  const linkPointerAreaPaint = (link: GraphLink, color: string, ctx: CanvasRenderingContext2D, globalScale = DEFAULT_SCALE) => {
+    paintGraphLinkHitArea(ctx, link, color, globalScale, curvatureOf(link));
+  };
+
   /** To call before a frame: forgets the labels of the previous one, reusing the same buffers. */
   const framePrePaint = () => {
     frameLabels.current.length = 0;
@@ -416,6 +421,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     linkColorPaint,
     linkBaseColor,
     linkPaint,
+    linkPointerAreaPaint,
     linkCurvature,
     curvatureOf,
     framePrePaint,

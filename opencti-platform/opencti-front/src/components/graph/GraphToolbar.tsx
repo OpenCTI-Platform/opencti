@@ -129,7 +129,8 @@ const GraphToolbar = ({
   const room = available - creationRoom;
   const shownIds = useMemo(() => planToolbarOverflow(actions, room), [actions, room]);
   const shown = (group: GraphToolbarGroup) => actions.filter((action) => action.group === group && shownIds.has(action.id));
-  const overflowed = actions.filter((action) => !shownIds.has(action.id));
+  // In a graph view the rare actions (priority 0) are in its context menu: "More actions" holds only what has no room.
+  const overflowed = actions.filter((action) => !shownIds.has(action.id) && !(view && action.priority === 0));
 
   const roving = useToolbarRovingFocus(rowRef);
 

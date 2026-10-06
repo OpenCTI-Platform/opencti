@@ -17,6 +17,7 @@ export interface GraphShortcutHandlers {
   exportImage: () => void;
   focusSearch: () => void;
   showShortcuts: () => void;
+  openContextMenu: () => void;
 }
 
 const isEditable = (target: EventTarget | null) => {
@@ -37,6 +38,7 @@ export const isOverlayOpen = (root: ParentNode = document) => Array.from(root.qu
 /** The shortcut a key event stands for, or `null`; kept apart from the listener so it can be tested. */
 export const shortcutOf = (event: Pick<KeyboardEvent, 'key' | 'shiftKey' | 'ctrlKey' | 'metaKey' | 'altKey'>): keyof GraphShortcutHandlers | null => {
   const modifier = event.ctrlKey || event.metaKey;
+  if (!modifier && !event.altKey && (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10'))) return 'openContextMenu';
   if (modifier && !event.altKey && event.key.toLowerCase() === 'a') return 'selectAll';
   if (modifier || event.altKey) return null;
   switch (event.key) {

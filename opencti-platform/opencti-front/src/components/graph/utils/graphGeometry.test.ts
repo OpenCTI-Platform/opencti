@@ -186,14 +186,26 @@ describe('computeLinkCurvatures', () => {
     expect(sideOf(forward)).not.toBe(sideOf(backward));
   });
 
-  it('nests loops on the same node and is independent of the input order', () => {
-    const links = [
-      { id: 'l2', sourceId: 'a', targetId: 'a' },
-      { id: 'l1', sourceId: 'a', targetId: 'a' },
-    ];
+  it('spreads the loops of a node over the two quadrants above it, then nests them, whatever the input order', () => {
+    const links = ['l3', 'l2', 'l4', 'l1'].map((id) => ({ id, sourceId: 'a', targetId: 'a' }));
     const curvatures = computeLinkCurvatures(links);
-    expect(curvatures.get(key('l1', 'a', 'a'))?.curvature).toBeLessThan(curvatures.get(key('l2', 'a', 'a'))?.curvature ?? 0);
+    const of = (id: string) => curvatures.get(key(id, 'a', 'a'));
+    expect([of('l1'), of('l2'), of('l3'), of('l4')]).toEqual([
+      { curvature: 0.5, rotation: 0 },
+      { curvature: 0.5, rotation: -90 },
+      { curvature: 0.8, rotation: 0 },
+      { curvature: 0.8, rotation: -90 },
+    ]);
     expect(computeLinkCurvatures([...links].reverse())).toEqual(curvatures);
+    // Every loop stays above its node, clear of the name drawn under it.
+    [of('l1'), of('l2')].forEach((curve) => {
+      const loop = linkPath({ x: 0, y: 0 }, { x: 0, y: 0 }, curve?.curvature ?? 0, curve?.rotation ?? 0);
+      expect(pointAt(loop, 0.5).y).toBeLessThan(0);
+    });
+    // The two first loops lean to opposite sides, so their labels, at mid-loop, never meet.
+    const middle = (curve?: { curvature: number; rotation: number }) => pointAt(linkPath({ x: 0, y: 0 }, { x: 0, y: 0 }, curve?.curvature ?? 0, curve?.rotation ?? 0), 0.5);
+    expect(Math.sign(middle(of('l1')).x)).toBe(1);
+    expect(Math.sign(middle(of('l2')).x)).toBe(-1);
   });
 });
 
