@@ -146,11 +146,24 @@ describe('Source intelligence utils', () => {
       const rowA = series.find((serie) => serie.name === 'Source A');
       const rowB = series.find((serie) => serie.name === 'Source B');
       expect(rowA?.data).toEqual([
-        { x: 'Source A', y: null, sharedCount: 0 },
-        { x: 'Source B', y: 50, sharedCount: 50 },
-        { x: 'Source C', y: 0, sharedCount: 0 },
+        { x: 'Source A', y: null, sharedCount: 0, measured: true },
+        { x: 'Source B', y: 50, sharedCount: 50, measured: true },
+        { x: 'Source C', y: 0, sharedCount: 0, measured: true },
       ]);
-      expect(rowB?.data[0]).toEqual({ x: 'Source A', y: 25, sharedCount: 50 });
+      expect(rowB?.data[0]).toEqual({ x: 'Source A', y: 25, sharedCount: 50, measured: true });
+    });
+
+    it('should leave a pair not measured empty instead of reading it as no overlap', () => {
+      const series = buildOverlapHeatmapSeries(sources, [
+        { source_a: 'a', source_b: 'b', shared_count: 50, share_a: 0.5, share_b: 0.25, jaccard: 0.2, measured: true },
+        { source_a: 'b', source_b: 'c', shared_count: 0, share_a: 0, share_b: 0, jaccard: 0, measured: false },
+      ]);
+      const rowB = series.find((serie) => serie.name === 'Source B');
+      const rowC = series.find((serie) => serie.name === 'Source C');
+      expect(rowB?.data[2]).toEqual({ x: 'Source C', y: null, sharedCount: 0, measured: false });
+      expect(rowC?.data[1]).toEqual({ x: 'Source B', y: null, sharedCount: 0, measured: false });
+      // A pair absent from the cells is a measured zero
+      expect(rowC?.data[0]).toEqual({ x: 'Source A', y: 0, sharedCount: 0, measured: true });
     });
   });
 

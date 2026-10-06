@@ -754,9 +754,12 @@ export const scanKnowledge = async (
 };
 
 // region scorecard documents
-export const buildOverlapShares = (pairs: Map<string, number>, sourceId: string, volume: number, top: number): SourceOverlapShare[] => {
+/**
+ * The `top` sources sharing the most objects with a source, and whether they are all the sources it shares objects with.
+ */
+export const buildOverlapShares = (pairs: Map<string, number>, sourceId: string, volume: number, top: number): { shares: SourceOverlapShare[]; complete: boolean } => {
   if (volume <= 0) {
-    return [];
+    return { shares: [], complete: true };
   }
   const shares: SourceOverlapShare[] = [];
   pairs.forEach((count, key) => {
@@ -765,7 +768,8 @@ export const buildOverlapShares = (pairs: Map<string, number>, sourceId: string,
       shares.push({ source_id: a === sourceId ? b : a, shared_count: count, share: round(Math.min(1, count / volume)) });
     }
   });
-  return shares.sort((x, y) => y.shared_count - x.shared_count || x.source_id.localeCompare(y.source_id)).slice(0, top);
+  const sorted = shares.sort((x, y) => y.shared_count - x.shared_count || x.source_id.localeCompare(y.source_id));
+  return { shares: sorted.slice(0, top), complete: sorted.length <= top };
 };
 
 export const buildScorecardDocuments = (
@@ -788,6 +792,7 @@ export const buildScorecardDocuments = (
       const relevance = options.enterprise ? ratio(acc.pir_matched_count, acc.volume_total) : null;
       const noise = ratio(acc.noise_count, acc.noise_evaluated);
       const impactScore = computeImpactScore(acc);
+      const overlap = buildOverlapShares(periodPairs, source.internal_id, acc.volume_total, settings.overlap_top);
       const metrics = {
         volume_total: acc.volume_total,
         volume_entities: acc.volume_entities,
@@ -826,7 +831,8 @@ export const buildScorecardDocuments = (
         actionable_count: acc.actionable_count,
         cost_per_actionable_object: computeCostPerActionable(source.source_cost, days, acc.actionable_count),
         cost_currency: source.source_cost?.currency ?? null,
-        overlap: buildOverlapShares(periodPairs, source.internal_id, acc.volume_total, settings.overlap_top),
+        overlap: overlap.shares,
+        overlap_complete: overlap.complete,
         value_score: 0,
       };
       metrics.value_score = computeValueScore(metrics, settings.value_weights);

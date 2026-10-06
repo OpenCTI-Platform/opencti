@@ -29,6 +29,7 @@ import {
   SOURCE_INTELLIGENCE_MANAGER_ID,
 } from '../modules/sourceIntelligence/sourceIntelligence-types';
 import {
+  backfillHeldDay,
   getSourceIntelligenceSettings,
   getSourceIntelligenceState,
   isSourceIntelligenceRunning,
@@ -522,7 +523,10 @@ const computeAndStore = async (
     snapshot: options.snapshot,
   });
   if (!options.live) {
-    await writeScorecards(context, built);
+    // A historical day scanned in part would chart as a complete day: the backfill holds on it instead
+    if (!state.truncated) {
+      await writeScorecards(context, built);
+    }
     return { tracked, state, documents: built };
   }
   // The live scorecards count every event up to the computation time: they carry its stream boundary, pending until
@@ -662,12 +666,23 @@ const runBackfillStep = async (context: AuthContext, settings: SourceIntelligenc
     await updateSourceIntelligenceState({ backfill_done: true, backfill_next_day: null });
     return false;
   }
+  if (backfillHeldDay(state, settings)) {
+    return false;
+  }
   const dayEnd = new Date(`${state.backfill_next_day}T23:59:59.999Z`).getTime();
   const enterprise = await isEnterpriseEdition(context);
   const sources = await listAllSources(context);
-  await computeAndStore(context, settings, sources, dayEnd, { live: false, snapshot: true, enterprise });
+  const { state: scan } = await computeAndStore(context, settings, sources, dayEnd, { live: false, snapshot: true, enterprise });
+  if (scan.truncated) {
+    await updateSourceIntelligenceState({ backfill_truncated_day: state.backfill_next_day, backfill_truncated_limit: settings.max_scan_objects });
+    logApp.warn('[OPENCTI-MODULE] Source intelligence backfill held, the scan of the day was truncated', {
+      day: state.backfill_next_day,
+      max_scan_objects: settings.max_scan_objects,
+    });
+    return true;
+  }
   const nextDay = toSnapshotDate(dayEnd + 1);
-  await updateSourceIntelligenceState({ backfill_next_day: nextDay, backfill_done: nextDay >= until });
+  await updateSourceIntelligenceState({ backfill_next_day: nextDay, backfill_done: nextDay >= until, backfill_truncated_day: null, backfill_truncated_limit: null });
   logApp.info('[OPENCTI-MODULE] Source intelligence backfill day computed', { day: state.backfill_next_day });
   return true;
 };

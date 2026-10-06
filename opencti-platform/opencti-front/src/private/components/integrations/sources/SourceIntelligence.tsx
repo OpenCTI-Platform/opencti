@@ -58,6 +58,7 @@ export const sourceIntelligenceStatusQuery = graphql`
       backfill_next_day
       backfill_days_done
       backfill_days_total
+      backfill_held_day
       recompute_requested_at
     }
   }
@@ -109,7 +110,7 @@ interface SourceIntelligenceHeaderProps {
 }
 
 const SourceIntelligenceHeader = ({ queryRef }: SourceIntelligenceHeaderProps) => {
-  const { t_i18n, rd, fldt } = useFormatter();
+  const { t_i18n, rd, fd, fldt } = useFormatter();
   const theme = useTheme<Theme>();
   const surfaceTheme = useTheme();
   const navigate = useNavigate();
@@ -169,6 +170,8 @@ const SourceIntelligenceHeader = ({ queryRef }: SourceIntelligenceHeaderProps) =
   const backfillLabel = !status.backfill_done && backfillTotal > 0
     ? t_i18n('Backfilling history - {done} of {total, plural, one {# day} other {# days}}', { values: { done: status.backfill_days_done ?? 0, total: backfillTotal } })
     : null;
+  // A snapshot day is a UTC date: read at noon UTC, the time zone of the user does not move it to another day
+  const heldDay = status.backfill_held_day ? `${status.backfill_held_day}T12:00:00.000Z` : null;
 
   return (
     <Box
@@ -280,6 +283,20 @@ const SourceIntelligenceHeader = ({ queryRef }: SourceIntelligenceHeaderProps) =
               ? t_i18n('The scan reached the maximum number of objects set in the settings. Recommendations are not refreshed until a computation covers every object.')
               : t_i18n('The scan reached the maximum number of objects set in the settings.')}
             action={canCustomize ? (
+              <Button variant="secondary" size="small" component={Link} to={SOURCE_INTELLIGENCE_SETTINGS_PATH}>
+                {t_i18n('Raise the limit')}
+              </Button>
+            ) : undefined}
+          />
+        </Box>
+      )}
+      {heldDay && (
+        <Box sx={{ marginTop: 2 }} data-testid="source-intelligence-backfill-held">
+          <Alert
+            severity="warning"
+            title={t_i18n('The history backfill is paused on {day}.', { values: { day: fd(heldDay) } })}
+            description={t_i18n('The scan of this day reached the maximum number of objects set in the settings, so the day is not charted. The backfill resumes once the limit is raised.')}
+            action={canCustomize && !status.last_scan_truncated ? (
               <Button variant="secondary" size="small" component={Link} to={SOURCE_INTELLIGENCE_SETTINGS_PATH}>
                 {t_i18n('Raise the limit')}
               </Button>

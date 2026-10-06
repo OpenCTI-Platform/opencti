@@ -198,6 +198,7 @@ const SOURCE_SCORECARD_DEFINITION: ModuleDefinition<any, any> = {
     shortText('live_stream_event_id', 'Last applied stream event'),
     shortText('cost_currency', 'Cost currency'),
     ...SCORECARD_NUMERIC_ATTRIBUTES,
+    bool('overlap_complete', 'Complete overlap'),
     {
       name: 'overlap',
       label: 'Overlap',

@@ -11,7 +11,13 @@ import {
   planStreamBatch,
   streamBoundaryOf,
 } from '../../../../src/manager/sourceIntelligenceManager';
-import { analystExclusions, backfillProgress, fingerprintOnKeptSource, isKeptOutsideDiscovery } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-domain';
+import {
+  analystExclusions,
+  backfillHeldDay,
+  backfillProgress,
+  fingerprintOnKeptSource,
+  isKeptOutsideDiscovery,
+} from '../../../../src/modules/sourceIntelligence/sourceIntelligence-domain';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 import { recommendationFingerprint } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-rules';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../../../src/schema/stixSightingRelationship';
@@ -158,9 +164,15 @@ describe('Source intelligence live deletion accounting', () => {
     const pairs = state.pairs.get('LAST_7_DAYS') as Map<string, number>;
     expect(pairs.size).toBe((60 * 59) / 2);
     expect(Array.from(pairs.values()).every((count) => count === 1)).toBe(true);
-    const shares = buildOverlapShares(pairs, 'source-0', 1, 100);
+    const { shares, complete } = buildOverlapShares(pairs, 'source-0', 1, 100);
     expect(shares).toHaveLength(59);
+    expect(complete).toBe(true);
     expect(shares.every((share) => share.shared_count === 1 && share.share === 1)).toBe(true);
+    // Kept to its top entries, the overlap of a source tells it may share objects with sources it does not name
+    const top = buildOverlapShares(pairs, 'source-0', 1, 10);
+    expect(top.shares).toHaveLength(10);
+    expect(top.complete).toBe(false);
+    expect(buildOverlapShares(pairs, 'source-0', 1, 59).complete).toBe(true);
   });
 
   const deleteEvent = {
@@ -464,6 +476,24 @@ describe('Source intelligence history backfill', () => {
     expect(backfillProgress(state)).toEqual({ done: 6, total: 14 });
     expect(backfillProgress({ ...state, backfill_next_day: null, backfill_done: true })).toEqual({ done: 14, total: 14 });
     expect(backfillProgress({})).toBeNull();
+  });
+
+  it('should hold on a day whose scan reached the scan limit until the limit is raised', () => {
+    const state = {
+      backfill_from_day: '2026-09-19',
+      backfill_until_day: '2026-10-03',
+      backfill_next_day: '2026-09-25',
+      backfill_done: false,
+      backfill_truncated_day: '2026-09-25',
+      backfill_truncated_limit: 100000,
+    };
+    expect(backfillHeldDay(state, { max_scan_objects: 100000 })).toBe('2026-09-25');
+    expect(backfillHeldDay(state, { max_scan_objects: 50000 })).toBe('2026-09-25');
+    expect(backfillHeldDay(state, { max_scan_objects: 200000 })).toBeNull();
+    // A range planned again starts from another day, scanned whatever the limit
+    expect(backfillHeldDay({ ...state, backfill_next_day: '2026-07-05' }, { max_scan_objects: 100000 })).toBeNull();
+    expect(backfillHeldDay({ ...state, backfill_done: true, backfill_next_day: null }, { max_scan_objects: 100000 })).toBeNull();
+    expect(backfillHeldDay({ backfill_next_day: '2026-09-25', backfill_done: false }, { max_scan_objects: 100000 })).toBeNull();
   });
 });
 

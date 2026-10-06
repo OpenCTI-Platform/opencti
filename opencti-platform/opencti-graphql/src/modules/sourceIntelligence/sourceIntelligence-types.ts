@@ -190,6 +190,8 @@ export interface SourceScorecardMetrics {
   // Synthesis
   value_score: number;
   overlap: SourceOverlapShare[];
+  // False when `overlap` keeps the top entries only: a source absent from it may still share objects
+  overlap_complete?: boolean;
 }
 
 export interface StoreSourceScorecard extends SourceScorecardMetrics {

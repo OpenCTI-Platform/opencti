@@ -287,6 +287,7 @@ export interface OverlapCell {
   share_a: number;
   share_b: number;
   jaccard: number;
+  measured?: boolean;
 }
 
 export interface OverlapSource {
@@ -298,6 +299,7 @@ export interface OverlapHeatmapPoint {
   x: string;
   y: number | null;
   sharedCount: number;
+  measured: boolean;
 }
 
 export interface OverlapHeatmapSerie {
@@ -308,22 +310,27 @@ export interface OverlapHeatmapSerie {
 /**
  * Heatmap series of the overlap matrix: one row per source, one column per source, the value of the cell (row, column)
  * is the share of the row source objects also asserted by the column source (asymmetric).
- * The diagonal is left empty; rows come out in reverse order because the heatmap draws the first serie at the bottom.
+ * The diagonal and the pairs not measured are left empty; rows come out in reverse order because the heatmap draws the
+ * first serie at the bottom.
  */
 export const buildOverlapHeatmapSeries = (sources: readonly OverlapSource[], cells: readonly OverlapCell[]): OverlapHeatmapSerie[] => {
-  const byPair = new Map<string, { share: number; shared: number }>();
+  const byPair = new Map<string, { share: number; shared: number; measured: boolean }>();
   cells.forEach((cell) => {
-    byPair.set(`${cell.source_a}|${cell.source_b}`, { share: cell.share_a, shared: cell.shared_count });
-    byPair.set(`${cell.source_b}|${cell.source_a}`, { share: cell.share_b, shared: cell.shared_count });
+    const measured = cell.measured !== false;
+    byPair.set(`${cell.source_a}|${cell.source_b}`, { share: cell.share_a, shared: cell.shared_count, measured });
+    byPair.set(`${cell.source_b}|${cell.source_a}`, { share: cell.share_b, shared: cell.shared_count, measured });
   });
   return sources.map((row) => ({
     name: row.name,
     data: sources.map((column) => {
       if (row.id === column.id) {
-        return { x: column.name, y: null, sharedCount: 0 };
+        return { x: column.name, y: null, sharedCount: 0, measured: true };
       }
       const pair = byPair.get(`${row.id}|${column.id}`);
-      return { x: column.name, y: pair ? Math.round(pair.share * 1000) / 10 : 0, sharedCount: pair?.shared ?? 0 };
+      if (pair && !pair.measured) {
+        return { x: column.name, y: null, sharedCount: 0, measured: false };
+      }
+      return { x: column.name, y: pair ? Math.round(pair.share * 1000) / 10 : 0, sharedCount: pair?.shared ?? 0, measured: true };
     }),
   })).reverse();
 };

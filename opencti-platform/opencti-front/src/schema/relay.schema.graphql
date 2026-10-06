@@ -15926,6 +15926,7 @@ type SourceOverlapCell {
   share_a: Float!
   share_b: Float!
   jaccard: Float!
+  measured: Boolean!
 }
 
 type SourceOverlapMatrix {
@@ -16149,6 +16150,7 @@ type SourceIntelligenceStatus {
   backfill_next_day: String
   backfill_days_done: Int
   backfill_days_total: Int
+  backfill_held_day: String
   recompute_requested_at: DateTime
 }
 

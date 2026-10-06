@@ -138,6 +138,7 @@ const SOURCE_OVERLAP_QUERY = gql`
         share_a
         share_b
         jaccard
+        measured
       }
     }
   }
@@ -523,7 +524,12 @@ describe('Source intelligence', () => {
       expect(ids.has(cell.source_a)).toBe(true);
       expect(ids.has(cell.source_b)).toBe(true);
       expect(cell.source_a).not.toBe(cell.source_b);
-      expect(cell.shared_count).toBeGreaterThan(0);
+      // A pair not measured carries no count, a measured one shares objects
+      if (cell.measured) {
+        expect(cell.shared_count).toBeGreaterThan(0);
+      } else {
+        expect(cell.shared_count).toBe(0);
+      }
       [cell.share_a, cell.share_b, cell.jaccard].forEach((ratio: number) => {
         expect(ratio).toBeGreaterThanOrEqual(0);
         expect(ratio).toBeLessThanOrEqual(1);

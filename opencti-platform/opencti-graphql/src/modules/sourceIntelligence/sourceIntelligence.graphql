@@ -195,6 +195,8 @@ type SourceOverlapCell {
   share_a: Float!
   share_b: Float!
   jaccard: Float!
+  # False for a pair cut from the overlap entries kept for both sources: its counts are unknown, not zero
+  measured: Boolean!
 }
 
 type SourceOverlapMatrix {
@@ -425,6 +427,8 @@ type SourceIntelligenceStatus {
   # History backfill progress, in days computed and planned
   backfill_days_done: Int
   backfill_days_total: Int
+  # Day the backfill holds on until max_scan_objects is raised, its scan having reached the limit
+  backfill_held_day: String
   recompute_requested_at: DateTime
 }
 

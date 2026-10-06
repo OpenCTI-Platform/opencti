@@ -31,6 +31,7 @@ export const sourcesOverlapQuery = graphql`
         share_a
         share_b
         jaccard
+        measured
       }
     }
   }
@@ -51,6 +52,7 @@ const SourcesOverlapMatrix = ({ queryRef }: SourcesOverlapMatrixProps) => {
   const { sourceOverlap } = usePreloadedQuery(sourcesOverlapQuery, queryRef);
   const { sources, cells } = sourceOverlap;
   const series = useMemo(() => buildOverlapHeatmapSeries(sources, cells), [sources, cells]);
+  const hasUnmeasured = cells.some((cell) => !cell.measured);
 
   const options: ApexOptions = useMemo(() => ({
     chart: {
@@ -82,6 +84,9 @@ const SourcesOverlapMatrix = ({ queryRef }: SourcesOverlapMatrixProps) => {
       custom: ({ seriesIndex, dataPointIndex, w }) => {
         const serie = w.config.series[seriesIndex];
         const point = serie?.data?.[dataPointIndex];
+        if (point?.measured === false) {
+          return `<div style="padding: 8px 10px"><b>${escapeHtml(serie.name)}</b> / <b>${escapeHtml(point.x)}</b>: ${escapeHtml(t_i18n('Not measured'))}</div>`;
+        }
         if (!point || point.y === null) return '';
         return `<div style="padding: 8px 10px">${escapeHtml(t_i18n('Share of'))} <b>${escapeHtml(serie.name)}</b> ${escapeHtml(t_i18n('also asserted by'))} <b>${escapeHtml(point.x)}</b>: ${escapeHtml(point.y)} %<br/>${escapeHtml(t_i18n('Shared objects'))}: ${escapeHtml(point.sharedCount)}</div>`;
       },
@@ -122,6 +127,11 @@ const SourcesOverlapMatrix = ({ queryRef }: SourcesOverlapMatrixProps) => {
       {sourceOverlap.computed_at && (
         <Typography variant="caption" component="p" sx={{ color: theme.palette.text.secondary, marginTop: 0, marginBottom: 1 }}>
           {t_i18n('Computed {time}', { values: { time: rd(sourceOverlap.computed_at) } })}
+        </Typography>
+      )}
+      {hasUnmeasured && (
+        <Typography variant="caption" component="p" sx={{ color: theme.palette.text.secondary, marginTop: 0, marginBottom: 1 }} data-testid="source-overlap-unmeasured">
+          {t_i18n('An empty cell off the diagonal is not measured: both sources share objects with more sources than the overlapping sources kept per scorecard in the settings.')}
         </Typography>
       )}
       <Box sx={{ height: Math.max(360, 28 * sources.length + 160) }}>

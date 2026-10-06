@@ -117,6 +117,9 @@ export interface SourceIntelligenceState {
   // Planned range of the history backfill: first day, and day before which the days are already covered
   backfill_from_day?: string | null;
   backfill_until_day?: string | null;
+  // Last historical day whose scan reached `max_scan_objects`, and the limit it reached
+  backfill_truncated_day?: string | null;
+  backfill_truncated_limit?: number | null;
   recompute_requested_at?: string | null;
   gaps_last_run_end?: string | null;
   recommendations_last_run_end?: string | null;
@@ -476,12 +479,13 @@ export const findSourceOverlap = async (
     .slice(0, first);
   const selectedIds = new Set(selected.map((scorecard) => scorecard.source_id));
   const byId = new Map(selected.map((scorecard) => [scorecard.source_id, scorecard]));
-  const cells: Array<{ source_a: string; source_b: string; shared_count: number; share_a: number; share_b: number; jaccard: number }> = [];
+  const cells: Array<{ source_a: string; source_b: string; shared_count: number; share_a: number; share_b: number; jaccard: number; measured: boolean }> = [];
+  const pairKey = (a: string, b: string) => (a < b ? `${a}|${b}` : `${b}|${a}`);
   const seen = new Set<string>();
   selected.forEach((scorecard) => {
     scorecard.overlap.forEach((share) => {
       if (!selectedIds.has(share.source_id)) return;
-      const key = scorecard.source_id < share.source_id ? `${scorecard.source_id}|${share.source_id}` : `${share.source_id}|${scorecard.source_id}`;
+      const key = pairKey(scorecard.source_id, share.source_id);
       if (seen.has(key)) return;
       seen.add(key);
       const other = byId.get(share.source_id) as StoreSourceScorecard;
@@ -493,9 +497,20 @@ export const findSourceOverlap = async (
         share_a: scorecard.volume_total > 0 ? Math.min(1, share.shared_count / scorecard.volume_total) : 0,
         share_b: other.volume_total > 0 ? Math.min(1, share.shared_count / other.volume_total) : 0,
         jaccard: union > 0 ? share.shared_count / union : 0,
+        measured: true,
       });
     });
   });
+  // A pair absent from the overlap of both sources shares no object only if one of the two overlaps is complete:
+  // when both keep their top entries only, its counts are unknown
+  for (let i = 0; i < selected.length; i += 1) {
+    for (let j = i + 1; j < selected.length; j += 1) {
+      const [a, b] = [selected[i], selected[j]];
+      if (!seen.has(pairKey(a.source_id, b.source_id)) && a.overlap_complete !== true && b.overlap_complete !== true) {
+        cells.push({ source_a: a.source_id, source_b: b.source_id, shared_count: 0, share_a: 0, share_b: 0, jaccard: 0, measured: false });
+      }
+    }
+  }
   const selectedSources = selected.length > 0
     ? await internalFindByIds(context, user, selected.map((s) => s.source_id), { type: ENTITY_TYPE_SOURCE }) as unknown as BasicStoreEntitySource[]
     : [];
@@ -1070,9 +1085,22 @@ export const backfillProgress = (state: SourceIntelligenceState): { done: number
   return { done: Math.min(total, Math.max(0, snapshotDayNumber(state.backfill_next_day) - from)), total };
 };
 
+/**
+ * The historical day the backfill holds on, or null: a day whose scan reached `max_scan_objects` is neither stored nor
+ * counted as covered, and is scanned again only once the limit is raised.
+ */
+export const backfillHeldDay = (state: SourceIntelligenceState, settings: Pick<SourceIntelligenceSettings, 'max_scan_objects'>) => {
+  const held = !state.backfill_done
+    && !!state.backfill_next_day
+    && state.backfill_truncated_day === state.backfill_next_day
+    && (state.backfill_truncated_limit ?? 0) >= settings.max_scan_objects;
+  return held ? state.backfill_next_day ?? null : null;
+};
+
 export const getSourceIntelligenceStatus = async (context: AuthContext) => {
-  const [state, sources, scoredSources, running, enabled, enterprise] = await Promise.all([
+  const [state, settings, sources, scoredSources, running, enabled, enterprise] = await Promise.all([
     getSourceIntelligenceState(),
+    getSourceIntelligenceSettings(context),
     listAllSources(context),
     countScoredSources(context),
     isSourceIntelligenceRunning(context),
@@ -1096,6 +1124,7 @@ export const getSourceIntelligenceStatus = async (context: AuthContext) => {
     backfill_next_day: state.backfill_next_day ?? null,
     backfill_days_done: backfill?.done ?? null,
     backfill_days_total: backfill?.total ?? null,
+    backfill_held_day: backfillHeldDay(state, settings),
     recompute_requested_at: state.recompute_requested_at ?? null,
   };
 };

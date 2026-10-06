@@ -32008,6 +32008,7 @@ export type SourceIntelligenceStatus = {
   backfill_days_done?: Maybe<Scalars['Int']['output']>;
   backfill_days_total?: Maybe<Scalars['Int']['output']>;
   backfill_done: Scalars['Boolean']['output'];
+  backfill_held_day?: Maybe<Scalars['String']['output']>;
   backfill_next_day?: Maybe<Scalars['String']['output']>;
   enterprise_edition: Scalars['Boolean']['output'];
   last_full_run_end?: Maybe<Scalars['DateTime']['output']>;
@@ -32100,6 +32101,7 @@ export enum SourceKind {
 export type SourceOverlapCell = {
   __typename?: 'SourceOverlapCell';
   jaccard: Scalars['Float']['output'];
+  measured: Scalars['Boolean']['output'];
   share_a: Scalars['Float']['output'];
   share_b: Scalars['Float']['output'];
   shared_count: Scalars['Int']['output'];
@@ -53170,6 +53172,7 @@ export type SourceIntelligenceStatusResolvers<ContextType = any, ParentType exte
   backfill_days_done?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   backfill_days_total?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   backfill_done?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  backfill_held_day?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   backfill_next_day?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   enterprise_edition?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   last_full_run_end?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
@@ -53219,6 +53222,7 @@ export type SourceIntelligenceValueWeightsResolvers<ContextType = any, ParentTyp
 
 export type SourceOverlapCellResolvers<ContextType = any, ParentType extends ResolversParentTypes['SourceOverlapCell'] = ResolversParentTypes['SourceOverlapCell']> = ResolversObject<{
   jaccard?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  measured?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   share_a?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   share_b?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   shared_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
