@@ -80,13 +80,14 @@ describe('Relations deduplication with an ISO 8601 duration in past_days / next_
   });
 
   it('should open a new sighting 30 minutes or more after the first event', async () => {
-    const sighting = await createUnitSighting('10:36');
+    // Exactly 30 minutes after 10:05: bounds are strict, so it must not merge
+    const sighting = await createUnitSighting('10:35');
     expect(createdIds.size).toEqual(2);
-    expect(sighting.first_seen).toEqual(at('10:36'));
+    expect(sighting.first_seen).toEqual(at('10:35'));
   });
 
   it('should keep every sighting shorter than 30 minutes with out-of-order events', async () => {
-    // 10:00 is within 30 minutes of 10:05 but not of 10:34: it cannot join the 10:05 -> 10:34 sighting
+    // 10:00 is within 30 minutes of 10:05 but not of 10:34 nor 10:35: it cannot join any stored sighting
     const sighting = await createUnitSighting('10:00');
     expect(createdIds.size).toEqual(3);
     expect(sighting.first_seen).toEqual(at('10:00'));
