@@ -285,6 +285,12 @@ describe('Defense coverage stream impact', () => {
     expect(impact.full).toEqual(false);
     expect(Array.from(impact.techniqueIds)).toEqual([]);
   });
+  it('should recompute a technique whose kill chain phases change', () => {
+    // Adding or removing a kill chain phase of a technique is streamed as an update of the attack pattern
+    const impact = collectDefenseImpact([event('update', { type: 'attack-pattern', extensions: { [STIX_EXT_OCTI]: { id: AP, type: 'Attack-Pattern' } } })]);
+    expect(Array.from(impact.techniqueIds)).toEqual([AP]);
+    expect(impact.full).toEqual(false);
+  });
   it('should recompute the techniques covered by an updated security coverage result', () => {
     const result = collectDefenseImpact([event('update', { type: 'x-security-coverage-result', extensions: { [STIX_EXT_OCTI]: { id: 'res-1', type: 'Security-Coverage-Result' } } })]);
     expect(Array.from(result.resultIds)).toEqual(['res-1']);
