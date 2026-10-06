@@ -20,7 +20,7 @@ import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../../schema/internalObj
 import { isStixObjectAliased, resolveAliasesField } from '../../schema/stixDomainObject';
 import { type FilterGroup, FilterMode, FilterOperator, OrderingMode } from '../../generated/graphql';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
-import { INTERNAL_USERS, SYSTEM_USER } from '../../utils/access';
+import { INTERNAL_USERS, isUserHasCapability, KNOWLEDGE, SYSTEM_USER } from '../../utils/access';
 import { addNotification } from '../notification/notification-domain';
 import { ENTITY_TYPE_NOTIFICATION } from '../notification/notification-types';
 import type { BasicStoreEntity } from '../../types/store';
@@ -300,7 +300,9 @@ const resolveRecipients = async (context: AuthContext, memberIds: string[]): Pro
   const selected = users.filter((user) => memberIds.includes(user.id)
     || user.groups.some((group) => memberIds.includes(group.internal_id))
     || user.organizations.some((organization) => memberIds.includes(organization.internal_id)));
-  return R.uniqBy((user) => user.id, selected).filter((user) => INTERNAL_USERS[user.id] === undefined);
+  // The digest carries what the API serves only with Access knowledge (the Knowledge health queries).
+  return R.uniqBy((user) => user.id, selected)
+    .filter((user) => INTERNAL_USERS[user.id] === undefined && isUserHasCapability(user, KNOWLEDGE));
 };
 
 const trendLabel = (trend: number | null | undefined) => {
@@ -369,7 +371,7 @@ const findNotifiedRecipients = async (context: AuthContext, snapshot: BasicStore
 
 /**
  * Weekly Knowledge Health digest (Community Edition): an in-platform notification for every recipient (users,
- * groups, organizations) and an email when SMTP is configured. Each delivery is remembered for the snapshot: a digest
+ * groups, organizations) with the Access knowledge capability, and an email when SMTP is configured. Each delivery is remembered for the snapshot: a digest
  * sent again (after a failure, a restart) only reaches the recipients it missed, and a notification is never created
  * twice for a recipient. The email is delivered at least once: SMTP cannot tell whether a message it accepted was
  * remembered, so an email whose delivery mark is lost is sent again with the retry. A recipient whose notification

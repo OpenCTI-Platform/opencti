@@ -24,12 +24,14 @@ vi.mock('../../../../src/database/redis', async (importOriginal) => ({
 }));
 vi.mock('../../../../src/database/cache', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/cache')>()),
-  getEntitiesListFromCache: vi.fn(async () => ['alice', 'bob', 'carol'].map((name) => ({
+  getEntitiesListFromCache: vi.fn(async () => ['alice', 'bob', 'carol', 'dave'].map((name) => ({
     id: `${name}-id`,
     user_email: `${name}@example.com`,
     account_status: 'Active',
-    groups: [],
+    // Dave is a member of the selected group without Access knowledge.
+    groups: name === 'dave' ? [{ internal_id: 'analysts-group-id' }] : [],
     organizations: [],
+    capabilities: name === 'dave' ? [{ name: 'EXPLORE' }] : [{ name: 'KNOWLEDGE' }],
   }))),
   getEntityFromCache: vi.fn(async () => ({ platform_url: 'https://opencti.example.com' })),
 }));
@@ -41,7 +43,7 @@ vi.mock('../../../../src/database/middleware', async (importOriginal) => ({
   patchAttribute: vi.fn(),
 }));
 
-const settings = { digest_enabled: true, digest_recipient_ids: ['alice-id', 'bob-id', 'carol-id'] } as unknown as CurationSettings;
+const settings = { digest_enabled: true, digest_recipient_ids: ['alice-id', 'bob-id', 'carol-id', 'analysts-group-id'] } as unknown as CurationSettings;
 const snapshot = {
   internal_id: 'snapshot-id',
   health_score: 72,
@@ -116,6 +118,13 @@ describe('Knowledge Health weekly digest', () => {
     expect(await sendKnowledgeHealthDigest({} as never, settings, snapshot)).toEqual({ delivered: 3, undelivered: 0, emailPending: false });
     expect(notifiedUsers()).toEqual(['bob-id']);
     expect(sendMail).toHaveBeenCalledTimes(1);
+  });
+
+  it('sends neither the notification nor the email to a selected member without Access knowledge', async () => {
+    failFor([]);
+    expect(await sendKnowledgeHealthDigest({} as never, settings, snapshot)).toEqual({ delivered: 3, undelivered: 0, emailPending: false });
+    expect(notifiedUsers()).not.toContain('dave-id');
+    expect(vi.mocked(sendMail).mock.calls[0][0].bcc).toEqual(['alice@example.com', 'bob@example.com', 'carol@example.com']);
   });
 
   it('never notifies a recipient twice when the delivery mark of its notification was lost', async () => {
