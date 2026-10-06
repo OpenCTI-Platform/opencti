@@ -782,6 +782,27 @@ describe('Incident and case timeline', () => {
       expect(manual.map((event) => event.title)).not.toContain('Ticket opened');
     });
 
+    it('should still generate a timeline on its first read when a milestone was added before', async () => {
+      const created = await queryAsAdminWithSuccess({ query: CASE_INCIDENT_ADD, variables: { input: { name: 'Timeline case contributed before its first generation' } } });
+      const caseId = created.data.caseIncidentAdd.id;
+      try {
+        await queryAsAdminWithSuccess({
+          query: TIMELINE_EVENT_ADD,
+          variables: { input: { container_id: caseId, event_time: '2026-02-06T10:00:00.000Z', title: 'Regulator notified' } },
+        });
+        // The milestone moves the anchors, it never passes for a generation from the knowledge
+        const contributed = await internalLoadById(testContext, SYSTEM_USER, caseId) as unknown as Record<string, any>;
+        expect(contributed.x_opencti_timeline_anchors.computed_at ?? null).toBeNull();
+        const kinds = (await listTimeline(caseId)).map((event) => event.kind);
+        expect(kinds).toEqual(expect.arrayContaining(['milestone', 'case_opened']));
+        const generated = await internalLoadById(testContext, SYSTEM_USER, caseId) as unknown as Record<string, any>;
+        expect(generated.x_opencti_timeline_anchors.computed_at).toBeTruthy();
+      } finally {
+        await queryAsAdmin({ query: STIX_CORE_OBJECT_DELETE, variables: { id: caseId } });
+        await deleteContainerTimeline(caseId);
+      }
+    });
+
     it('should edit a manual event and validate its window', async () => {
       const edited = await queryAsAdminWithSuccess({ query: TIMELINE_EVENT_EDIT, variables: { id: manualEventId, input: { title: 'Hosts isolated by the SOC', annotation: 'Confirmed by the EDR console' } } });
       expect(edited.data.timelineEventEdit).toMatchObject({ title: 'Hosts isolated by the SOC', annotation: 'Confirmed by the EDR console' });

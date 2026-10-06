@@ -835,7 +835,8 @@ export const refreshTimelineContributions = async (
   const toAnchorEvent = (e: StoredTimelineEvent) => ({ lane: e.lane, kind: e.kind, rule_id: e.rule_id, event_time: e.event_time, hidden: e.hidden });
   const computedAt = now();
   const previousGeneratedAt = previousAnchors?.computed_at ? new Date(previousAnchors.computed_at as string).toISOString() : undefined;
-  const generatedAt = opts.regenerated ? computedAt : previousGeneratedAt;
+  // A contribution to a timeline never generated keeps it so: the first read or the consistency pass still generates it
+  const generatedAt = opts.regenerated ? computedAt : (previousGeneratedAt ?? null);
   const anchors = computeTimelineAnchors(anchorInput.map(toAnchorEvent), { isClosed, computedAt, generatedAt, previous: previousAnchors, bounds: anchorBounds });
   const cappedAnchorBounds = opts.anchorEvents
     ? computeTimelineAnchorBounds(anchorInput.filter((e) => !storedIds.has(e.internal_id)).map(toAnchorEvent))

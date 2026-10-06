@@ -14,8 +14,9 @@ export interface AnchorComputationContext {
   // closure only exists while the container sits in a final workflow status
   isClosed: boolean;
   computedAt: string;
-  // last generation of the timeline from the knowledge, when it is not this computation (a milestone or a pin since)
-  generatedAt?: string;
+  // last generation of the timeline from the knowledge, when it is not this computation (a milestone or a pin since);
+  // null when the timeline was never generated, so that a first contribution never passes for a generation
+  generatedAt?: string | null;
   // anchors stored by the previous computation, changed_at is kept when no anchor value moved
   previous?: Partial<TimelineAnchors> | null;
   // anchor values of the derived events a capped timeline does not store: they count like events
@@ -73,7 +74,7 @@ export const computeTimelineAnchors = (events: AnchorEventLike[], context: Ancho
   };
   const previousChangedAt = context.previous?.changed_at;
   const changedAt = previousChangedAt && diffTimelineAnchors(context.previous, values).length === 0 ? previousChangedAt : context.computedAt;
-  return { ...values, computed_at: context.generatedAt ?? context.computedAt, changed_at: changedAt };
+  return { ...values, computed_at: context.generatedAt === undefined ? context.computedAt : context.generatedAt, changed_at: changedAt };
 };
 
 /** Anchor values of events whatever the status of their container (the closure applies only while it is closed). */

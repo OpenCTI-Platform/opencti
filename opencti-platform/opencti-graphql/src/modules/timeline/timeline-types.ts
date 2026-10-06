@@ -97,7 +97,8 @@ export interface TimelineAnchors {
   first_response: string | null;
   containment: string | null;
   closure: string | null;
-  computed_at: string;
+  // Last generation from the knowledge; null until the first one (contributions added before it do not count)
+  computed_at: string | null;
   changed_at: string;
 }
 

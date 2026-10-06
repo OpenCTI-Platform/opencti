@@ -48,6 +48,12 @@ describe('Timeline anchors', () => {
     expect(curated.changed_at).toEqual('2026-04-05T00:00:00.000Z');
   });
 
+  it('should never mark a timeline as generated for a contribution added before its first generation', () => {
+    const contributed = computeTimelineAnchors(events, { isClosed: false, computedAt, generatedAt: null });
+    expect(contributed.computed_at).toBeNull();
+    expect(contributed.changed_at).toEqual(computedAt);
+  });
+
   it('should date the change of anchors stored before the change date existed', () => {
     const legacy = { first_adversary_activity: '2026-03-01T00:00:00.000Z', computed_at: computedAt };
     const anchors = computeTimelineAnchors(events, { isClosed: false, computedAt: '2026-04-02T00:00:00.000Z', previous: legacy });
