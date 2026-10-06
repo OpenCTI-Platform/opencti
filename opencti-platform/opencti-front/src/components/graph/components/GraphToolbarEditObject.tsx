@@ -42,7 +42,7 @@ const GraphToolbarEditObject = ({
   let objectToEdit: GraphNode | GraphLink | undefined;
   if (selectedNodes.length === 1 && !selectedNodes[0].isNestedInferred) {
     [objectToEdit] = selectedNodes;
-  } else if (selectedLinks.length === 1 && (!selectedLinks[0].inferred || !selectedLinks[0].isNestedInferred)) {
+  } else if (selectedLinks.length === 1 && !selectedLinks[0].inferred && !selectedLinks[0].isNestedInferred) {
     [objectToEdit] = selectedLinks;
   }
   const isNotEditableFromGraph = !!objectToEdit
