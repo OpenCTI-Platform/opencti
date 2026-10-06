@@ -4,7 +4,11 @@ from unittest import TestCase
 from unittest.mock import MagicMock
 
 from pycti.entities.opencti_hunt import Hunt
-from pycti.entities.opencti_hunt_run import HuntRun
+from pycti.entities.opencti_hunt_run import (
+    HUNT_RUN_REPORTABLE_STATUSES,
+    HUNT_RUN_STATUSES,
+    HuntRun,
+)
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 
 
@@ -173,9 +177,17 @@ class TestHunt(TestCase):
 
 
 class TestHuntRun(TestCase):
+    def test_statuses_mirror_the_hunt_run_status_of_the_api(self):
+        self.assertEqual(
+            HUNT_RUN_STATUSES,
+            ["queued", "running", "completed", "failed", "timeout", "cancelled"],
+        )
+        self.assertTrue(set(HUNT_RUN_REPORTABLE_STATUSES) < set(HUNT_RUN_STATUSES))
+
     def test_report_refuses_statuses_a_connector_cannot_report(self):
         opencti = _opencti({})
         self.assertIsNone(HuntRun(opencti).report(id="run-1", status="queued"))
+        self.assertIsNone(HuntRun(opencti).report(id="run-1", status="cancelled"))
         opencti.query.assert_not_called()
 
     def test_report_sends_a_deadline_timeout(self):

@@ -2,7 +2,8 @@
 
 import json
 
-HUNT_RUN_STATUSES = ["queued", "running", "completed", "failed", "timeout"]
+HUNT_RUN_STATUSES = ["queued", "running", "completed", "failed", "timeout", "cancelled"]
+# OpenCTI alone sets queued and cancelled (the hunt or its connector was deleted first)
 HUNT_RUN_REPORTABLE_STATUSES = ["running", "completed", "failed", "timeout"]
 HUNT_VERDICTS = ["pending", "true_positive", "benign", "inconclusive"]
 # pending is the state of a run waiting for its verdict: it is never set as one
