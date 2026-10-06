@@ -19,10 +19,10 @@ export const useDashboardVariableValues = () => useContext(DashboardVariableValu
 export const useDashboardDefaultVariableValues = (variables: DashboardVariable[]) => {
   const { isFeatureEnable } = useHelper();
   const isDashboardVariablesEnabled = isFeatureEnable(DASHBOARD_VARIABLES_FEATURE_FLAG);
-  return useMemo(
-    () => (isDashboardVariablesEnabled ? buildDefaultVariableValues(variables) : EMPTY_VALUES),
-    [isDashboardVariablesEnabled, variables],
-  );
+  // Every manifest save (layout, dates...) gives a new variables array: keying the map on its content
+  // keeps the same instance, so widgets do not all re-resolve their data selection for nothing.
+  const signature = isDashboardVariablesEnabled ? JSON.stringify([...buildDefaultVariableValues(variables)]) : '[]';
+  return useMemo<ReadonlyMap<string, string>>(() => new Map(JSON.parse(signature)), [signature]);
 };
 
 export const DashboardVariableValuesProvider = ({ values, children }: PropsWithChildren<{ values: ReadonlyMap<string, string> }>) => (
