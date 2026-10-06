@@ -40,3 +40,4 @@ fds-migration/reports/
 # Env local files
 .env.local
 .env.development.local
+.playwright-mcp/

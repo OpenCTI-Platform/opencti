@@ -19,6 +19,11 @@ const StatusForm = ({ entityType }: { entityType: string }) => {
   const handleToggleUpdateAuthorizedMembers = (field: 'onEnter' | 'onExit', checked: boolean) => {
     const currentActions = values[field] ?? [];
     if (checked) {
+      // Use the dynamic 'CREATORS' key (same as TransitionForm's default) rather than the
+      // singular CREATOR_AUTHORIZED_CONFIG generic-option id: the latter is filtered out of
+      // the AuthorizedMembersField's rendered list by isGenericOption (since showCreatorLine
+      // isn't set here), making it invisible/impossible to edit or remove from the UI, and it
+      // isn't a key resolveDynamicAuthorizedMembers understands server-side (only 'CREATORS' is).
       const newAction = { type: WorkflowActionType.updateAuthorizedMembers, params: { authorized_members: [{ label: 'Creators', type: 'Dynamic options', value: 'CREATORS', accessRight: 'admin' as const, groupsRestriction: [] }] } };
       setFieldValue(field, [...currentActions, newAction]);
     } else {
@@ -35,7 +40,7 @@ const StatusForm = ({ entityType }: { entityType: string }) => {
         helpertext=""
       />
       {AUTHORIZED_MEMBERS_ENTITY_TYPES.includes(entityType) && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
+        <Box data-testid="workflow-status-onenter-actions-container" sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
           <Typography variant="h6">
             {t_i18n('On enter actions')} <EEChip feature={t_i18n(FEATURE_NAME)} />
           </Typography>
@@ -45,6 +50,7 @@ const StatusForm = ({ entityType }: { entityType: string }) => {
                 checked={hasUpdateAuthorizedMembersOnEnter}
                 disabled={!isEnterpriseEdition}
                 onChange={(e) => handleToggleUpdateAuthorizedMembers('onEnter', e.target.checked)}
+                data-testid="workflow-status-onenter-authorized-members-toggle"
               />
             )}
             label={t_i18n('Update authorized members on enter')}
@@ -53,7 +59,7 @@ const StatusForm = ({ entityType }: { entityType: string }) => {
         </Box>
       )}
       {AUTHORIZED_MEMBERS_ENTITY_TYPES.includes(entityType) && (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
+        <Box data-testid="workflow-status-onexit-actions-container" sx={{ display: 'flex', flexDirection: 'column', gap: 1, marginTop: 1 }}>
           <Typography variant="h6">
             {t_i18n('On exit actions')} <EEChip feature={t_i18n(FEATURE_NAME)} />
           </Typography>
@@ -63,6 +69,7 @@ const StatusForm = ({ entityType }: { entityType: string }) => {
                 checked={hasUpdateAuthorizedMembersOnExit}
                 disabled={!isEnterpriseEdition}
                 onChange={(e) => handleToggleUpdateAuthorizedMembers('onExit', e.target.checked)}
+                data-testid="workflow-status-onexit-authorized-members-toggle"
               />
             )}
             label={t_i18n('Update authorized members on exit')}

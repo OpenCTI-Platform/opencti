@@ -41,6 +41,8 @@ export interface AsyncActionSlot {
 export interface WorkflowPendingTransition {
   event: string;
   toState: string;
+  /** Terminal transitions retain the source status in toState for persistence. */
+  completesWorkflow?: boolean;
   triggeredBy: string;
   triggeredAt: string; // ISO 8601
   runtimeParams: Record<string, unknown>;
@@ -81,7 +83,7 @@ export type SideEffect<TContext extends Context = Context> = (
  */
 export interface Transition<TContext extends Context = Context> {
   from: State;
-  to: State;
+  to?: State | null;
   event: Event;
   comment?: string;
   conditions?: ConditionValidator<TContext>[];
@@ -121,6 +123,7 @@ export interface MachineDefinition<TContext extends Context = Context> {
  */
 export interface TriggerResult {
   success: boolean;
+  workflowCompleted?: boolean;
   reason?: string;
   newState?: string;
   status?: any;

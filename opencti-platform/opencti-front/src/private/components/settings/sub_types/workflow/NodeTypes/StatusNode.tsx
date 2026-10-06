@@ -27,6 +27,7 @@ const StatusNode = ({ id, data }: NodeProps) => {
       />
       <Chip
         key={id}
+        data-testid={`workflow-status-node-${id}`}
         // NOT `color`: its wash is merged over the caller's own background.
         style={{
           height: NODE_SIZE.height,
