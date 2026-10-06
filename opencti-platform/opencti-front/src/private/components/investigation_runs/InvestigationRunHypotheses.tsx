@@ -27,6 +27,7 @@ import { alpha, useTheme } from '@mui/material/styles';
 import { Chip, Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Card from '@common/card/Card';
 import { useFormatter } from '../../../components/i18n';
+import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import InvestigationRunFeedback from './InvestigationRunFeedback';
 import {
   citationNumbers,
@@ -111,6 +112,7 @@ const ConsistencyCell = ({ cell }: { cell: EvidenceCell }) => {
  */
 const InvestigationRunHypotheses = ({ run }: InvestigationRunHypothesesProps) => {
   const { t_i18n } = useFormatter();
+  const canGiveFeedback = useGranted([KNOWLEDGE_KNUPDATE]);
   const { hypotheses } = run;
   const numbers = citationNumbers(run.evidence, run.xtm_investigation_id);
   const evidenceById = new Map(run.evidence.map((item) => [item.id, item]));
@@ -194,20 +196,22 @@ const InvestigationRunHypotheses = ({ run }: InvestigationRunHypothesesProps) =>
                     })}
                   </TableRow>
                 ))}
-                <TableRow>
-                  <TableCell>{t_i18n('Your assessment')}</TableCell>
-                  {hypotheses.map((hypothesis) => (
-                    <TableCell key={hypothesis.candidate_id} align="center">
-                      <InvestigationRunFeedback
-                        runId={run.id}
-                        itemType="hypothesis"
-                        itemRef={hypothesis.candidate_id}
-                        itemLabel={hypothesis.candidate_name ?? t_i18n('Unknown actor')}
-                        decision={feedbackDecisionFor(run.analyst_feedback, 'hypothesis', hypothesis.candidate_id)}
-                      />
-                    </TableCell>
-                  ))}
-                </TableRow>
+                {canGiveFeedback && (
+                  <TableRow>
+                    <TableCell>{t_i18n('Your assessment')}</TableCell>
+                    {hypotheses.map((hypothesis) => (
+                      <TableCell key={hypothesis.candidate_id} align="center">
+                        <InvestigationRunFeedback
+                          runId={run.id}
+                          itemType="hypothesis"
+                          itemRef={hypothesis.candidate_id}
+                          itemLabel={hypothesis.candidate_name ?? t_i18n('Unknown actor')}
+                          decision={feedbackDecisionFor(run.analyst_feedback, 'hypothesis', hypothesis.candidate_id)}
+                        />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                )}
               </TableBody>
             </Table>
           </Box>

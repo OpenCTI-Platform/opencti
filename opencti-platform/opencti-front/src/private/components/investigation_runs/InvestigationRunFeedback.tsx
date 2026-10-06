@@ -23,6 +23,7 @@ import Button from '@common/button/Button';
 import Dialog from '@common/dialog/Dialog';
 import { useFormatter } from '../../../components/i18n';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
+import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { reportMutationOutcome } from './investigationRunUtils';
 import { InvestigationRunFeedbackMutation } from './__generated__/InvestigationRunFeedbackMutation.graphql';
 
@@ -46,9 +47,13 @@ interface InvestigationRunFeedbackProps {
   disabled?: boolean;
 }
 
-/** Accept or reject one hypothesis or recommendation: the analyst's calibration signal. */
+/**
+ * Accept or reject one hypothesis or recommendation: the analyst's calibration signal.
+ * Rendered only for readers allowed to update knowledge, as the feedback mutation requires.
+ */
 const InvestigationRunFeedback = ({ runId, itemType, itemRef, itemLabel, decision, disabled = false }: InvestigationRunFeedbackProps) => {
   const { t_i18n } = useFormatter();
+  const canGiveFeedback = useGranted([KNOWLEDGE_KNUPDATE]);
   const [rejecting, setRejecting] = useState(false);
   const [comment, setComment] = useState('');
   const [commit, inFlight] = useApiMutation<InvestigationRunFeedbackMutation>(investigationRunFeedbackMutation);
@@ -63,6 +68,7 @@ const InvestigationRunFeedback = ({ runId, itemType, itemRef, itemLabel, decisio
       },
     });
   };
+  if (!canGiveFeedback) return null;
   const acceptLabel = t_i18n('Accept {item}', { values: { item: itemLabel } });
   const rejectLabel = t_i18n('Reject {item}', { values: { item: itemLabel } });
   return (
