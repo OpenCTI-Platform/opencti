@@ -8,18 +8,14 @@ import pytest
 from pycti import OpenCTIApiClient
 from pycti.entities.opencti_indicator_deployment import IndicatorDeployment
 
-SUPPORTED_FIELDS = {
-    "data": {
-        "__type": {
-            "fields": [
-                {"name": "indicatorReportDeployment"},
-                {"name": "indicatorReportDeployments"},
-                {"name": "indicatorReportHits"},
-            ]
-        }
+SUPPORTED_FIELDS = {"data": {"indicators": {"edges": []}}}
+# What a platform without the write-back answers to the detection query
+UNSUPPORTED_FIELDS = ValueError(
+    {
+        "name": "GRAPHQL_VALIDATION_FAILED",
+        "error_message": 'Cannot query field "deployments_count" on type "Indicator".',
     }
-}
-UNSUPPORTED_FIELDS = {"data": {"__type": {"fields": [{"name": "stixBundlePush"}]}}}
+)
 
 
 @pytest.fixture
@@ -81,8 +77,28 @@ def test_feature_detection_is_cached_and_degrades_gracefully(local_api_client):
         is None
     )
     assert list(deployment.list_for_platform("platform-1")) == []
-    # A single introspection query, no mutation sent
+    # A single detection query, no mutation sent
     assert local_api_client.query.call_count == 1
+
+
+def test_feature_detection_never_uses_introspection(local_api_client):
+    deployment = deployment_with(local_api_client, [SUPPORTED_FIELDS])
+    assert deployment.is_supported("indicatorReportDeployment")
+    assert deployment.is_supported("indicatorReportDeployments")
+    assert deployment.is_supported("indicatorReportHits")
+    query = local_api_client.query.call_args.args[0]
+    assert "__schema" not in query and "__type" not in query
+    assert local_api_client.query.call_count == 1
+
+
+def test_feature_detection_retries_after_a_transient_error(local_api_client):
+    deployment = deployment_with(
+        local_api_client, [ConnectionError("unreachable"), SUPPORTED_FIELDS]
+    )
+    assert not deployment.is_supported()
+    local_api_client.app_logger.warning.assert_called()
+    assert deployment.is_supported()
+    assert local_api_client.query.call_count == 2
 
 
 def test_errors_never_raise(local_api_client):

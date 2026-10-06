@@ -107,15 +107,29 @@ _HITS_MUTATION = """
     }
 """
 
-_MUTATION_FIELDS_QUERY = """
+# Feature detection without introspection, which platforms may disable: a field added with the write-back fails the
+# schema validation of a platform without it, and the query reads nothing else.
+_FEATURE_DETECTION_QUERY = """
     query IndicatorDeploymentFeatureDetection {
-        __type(name: "Mutation") {
-            fields {
-                name
+        indicators(first: 1) {
+            edges {
+                node {
+                    id
+                    deployments_count
+                }
             }
         }
     }
 """
+_WRITE_BACK_MUTATIONS = frozenset(
+    ["indicatorReportDeployment", "indicatorReportDeployments", "indicatorReportHits"]
+)
+
+
+def _is_schema_validation_error(err: Exception) -> bool:
+    message = str(err)
+    return "GRAPHQL_VALIDATION_FAILED" in message or "Cannot query field" in message
+
 
 _SECURITY_PLATFORM_UPSERT = """
     mutation SecurityPlatformUpsert($input: SecurityPlatformAddInput!) {
@@ -208,17 +222,17 @@ class IndicatorDeployment:
             with self._detection_lock:
                 if self._supported_mutations is None:
                     try:
-                        result = self.opencti.query(_MUTATION_FIELDS_QUERY)
-                        fields = ((result.get("data") or {}).get("__type") or {}).get(
-                            "fields"
-                        ) or []
-                        self._supported_mutations = {field["name"] for field in fields}
+                        self.opencti.query(_FEATURE_DETECTION_QUERY)
+                        self._supported_mutations = set(_WRITE_BACK_MUTATIONS)
                     except Exception as err:  # pylint: disable=broad-except
-                        self.opencti.app_logger.warning(
-                            "Cannot detect indicator deployment support",
-                            {"error": str(err)},
-                        )
-                        return set()
+                        if not _is_schema_validation_error(err):
+                            # Not an answer of the schema: detected again on the next call
+                            self.opencti.app_logger.warning(
+                                "Cannot detect indicator deployment support",
+                                {"error": str(err)},
+                            )
+                            return set()
+                        self._supported_mutations = set()
                     if "indicatorReportDeployment" not in self._supported_mutations:
                         self.opencti.app_logger.info(
                             "Indicator deployment write-back is not supported by this platform, reporting is disabled"
