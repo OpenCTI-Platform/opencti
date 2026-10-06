@@ -20,6 +20,7 @@ vi.mock('../../../utils/hooks/useApiMutation', () => ({ default: () => [mocks.co
 vi.mock('../../../utils/hooks/useGranted', () => ({ default: () => mocks.granted, INVESTIGATION_INUPDATE: 'INVESTIGATION_INUPDATE' }));
 vi.mock('../../../utils/hooks/useDraftContext', () => ({ default: () => mocks.draft }));
 vi.mock('../../../relay/environment', () => ({ MESSAGING$: { notifyError: mocks.notifyError } }));
+vi.mock('../../i18n', () => ({ useFormatter: () => ({ t_i18n: (key: string) => (key === 'entity_Investigation' ? 'Investigation' : key) }) }));
 
 describe('useGraphStartInvestigation', () => {
   beforeEach(() => {
@@ -30,11 +31,17 @@ describe('useGraphStartInvestigation', () => {
     mocks.draft = null;
   });
 
-  const start = () => {
+  const start = (name = 'Investigation of Emotet') => {
     const { result } = renderHook(() => useGraphStartInvestigation());
-    result.current?.('Investigation of Emotet', ['malware--1']);
+    result.current?.(name, ['malware--1']);
     return mocks.commit.mock.calls[0][0];
   };
+
+  it('names the investigation after an entity of one character with its type, the platform taking two at least', () => {
+    expect(start('X').variables).toEqual({
+      input: { type: 'investigation', name: 'Investigation X', investigated_entities_ids: ['malware--1'] },
+    });
+  });
 
   it('creates the investigation with the entities and opens it', () => {
     const config = start();

@@ -4,6 +4,7 @@ import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useGranted, { INVESTIGATION_INUPDATE } from '../../../utils/hooks/useGranted';
 import useDraftContext from '../../../utils/hooks/useDraftContext';
 import { MESSAGING$ } from '../../../relay/environment';
+import { useFormatter } from '../../i18n';
 import type { useGraphStartInvestigationMutation } from './__generated__/useGraphStartInvestigationMutation.graphql';
 
 const graphStartInvestigationMutation = graphql`
@@ -20,13 +21,17 @@ const graphStartInvestigationMutation = graphql`
  */
 const useGraphStartInvestigation = (): ((name: string, entityIds: string[]) => void) | null => {
   const navigate = useNavigate();
+  const { t_i18n } = useFormatter();
   const canInvestigate = useGranted([INVESTIGATION_INUPDATE]);
   const draftContext = useDraftContext();
   const [commit] = useApiMutation<useGraphStartInvestigationMutation>(graphStartInvestigationMutation);
   if (!canInvestigate || draftContext) return null;
   return (name, entityIds) => {
+    // The platform takes an investigation name of two characters at least: a shorter one is prefixed with the type.
+    const trimmed = name.trim();
+    const investigationName = trimmed.length >= 2 ? trimmed : `${t_i18n('entity_Investigation')} ${trimmed}`.trim();
     commit({
-      variables: { input: { type: 'investigation', name, investigated_entities_ids: entityIds } },
+      variables: { input: { type: 'investigation', name: investigationName, investigated_entities_ids: entityIds } },
       onCompleted: (response, errors) => {
         if (errors && errors.length > 0) {
           MESSAGING$.notifyError(errors[0].message);
