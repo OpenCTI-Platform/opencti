@@ -1,5 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { curationRecordsManagerCronHandler, curationRecordsManagerStreamHandler, deletedEntityIds, reclassifiedEntityIds } from '../../../src/manager/curationRecordsManager';
+import {
+  curationRecordsManagerCronHandler,
+  curationRecordsManagerStreamHandler,
+  deletedEntityIds,
+  reclassifiedEntityIds,
+  retryQueuedRestrictionRefreshes,
+} from '../../../src/manager/curationRecordsManager';
+import type { AuthContext } from '../../../src/types/user';
 import { redisSetManagerEventState } from '../../../src/database/redis';
 import { completePendingMergeRecords, expireMergeRecords, refreshMergeRecordRestrictions } from '../../../src/modules/curation/curation-merge-record';
 import { refreshProposalRestrictions, retireProposalsOfDeletedSubjects } from '../../../src/modules/curation/curation-proposals';
@@ -51,6 +58,7 @@ describe('Curation records manager', () => {
     vi.clearAllMocks();
     retryQueue.clear();
     (refreshProposalRestrictions as any).mockImplementation(async () => undefined);
+    (retireProposalsOfDeletedSubjects as any).mockResolvedValue(0);
   });
 
   it('only keeps the entities whose markings or organization sharing changed', () => {
@@ -89,6 +97,25 @@ describe('Curation records manager', () => {
     expect(retireProposalsOfDeletedSubjects).toHaveBeenCalledWith(expect.anything(), ['malware-g']);
     expect(refreshProposalRestrictions).not.toHaveBeenCalled();
     expect(redisSetManagerEventState).toHaveBeenCalledWith('curation_records_manager', '10-0');
+  });
+
+  it('queues a deleted entity whose proposals could not be removed, and removes them at a later cycle', async () => {
+    const deletion = {
+      id: '11-0',
+      event: 'delete',
+      data: { type: 'delete', data: { name: 'malware-gone', extensions: { [OCTI_EXTENSION]: { id: 'malware-gone', type: 'Malware' } } } },
+    } as unknown as SseEvent<DataEvent>;
+    (retireProposalsOfDeletedSubjects as any).mockRejectedValue(new Error('cannot remove'));
+    for (let attempt = 1; attempt < 5; attempt += 1) {
+      await expect(curationRecordsManagerStreamHandler([deletion], '11-0')).rejects.toThrow('cannot remove');
+    }
+    await curationRecordsManagerStreamHandler([deletion], '11-0');
+    expect([...retryQueue.keys()]).toEqual(['malware-gone']);
+    expect(redisSetManagerEventState).toHaveBeenCalledWith('curation_records_manager', '11-0');
+    (retireProposalsOfDeletedSubjects as any).mockResolvedValue(1);
+    expect(await retryQueuedRestrictionRefreshes({} as AuthContext)).toBe(1);
+    expect(retireProposalsOfDeletedSubjects).toHaveBeenLastCalledWith(expect.anything(), ['malware-gone']);
+    expect(retryQueue.has('malware-gone')).toBe(false);
   });
 
   it('processes a failing batch again, then entity by entity, and queues the entity that still fails before moving on', async () => {

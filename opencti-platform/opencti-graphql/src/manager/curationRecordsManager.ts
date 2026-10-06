@@ -86,7 +86,8 @@ const refreshRestrictions = async (context: AuthContext, entityIds: string[]) =>
 
 /**
  * The refreshes the stream could not make, retried at every cycle until they succeed: an entity stays queued, and an
- * error is logged at its first failed retry and then once an hour of retries.
+ * error is logged at its first failed retry and then once an hour of retries. A queued entity was reclassified or
+ * deleted: both upkeeps run, each leaving alone what does not concern it.
  */
 export const retryQueuedRestrictionRefreshes = async (context: AuthContext) => {
   const queued = await redisCurationGetQueuedRestrictionRefreshes(RESTRICTION_RETRIES_PER_TICK);
@@ -95,6 +96,7 @@ export const retryQueuedRestrictionRefreshes = async (context: AuthContext) => {
     const { entityId } = queued[index];
     try {
       await refreshRestrictions(context, [entityId]);
+      await retireProposalsOfDeletedSubjects(context, [entityId]);
       await redisCurationCompleteRestrictionRefresh(entityId);
       refreshed += 1;
     } catch (error) {
@@ -143,7 +145,8 @@ export const curationRecordsManagerStreamHandler = async (streamEvents: Array<Ss
       try {
         await retireProposalsOfDeletedSubjects(context, [deletedIds[index]]);
       } catch (entityError) {
-        logApp.warn('[CURATION] Open proposals about a deleted entity not removed', { cause: entityError, entity_id: deletedIds[index], manager: CURATION_RECORDS_MANAGER_ID });
+        failedIds.push(deletedIds[index]);
+        logApp.warn('[CURATION] Open proposals about a deleted entity not removed, queued for a retry', { cause: entityError, entity_id: deletedIds[index], manager: CURATION_RECORDS_MANAGER_ID });
       }
     }
     // Queued before the stream position moves on: if the queue cannot be written, the batch is processed again.
