@@ -38,6 +38,13 @@ The **User Merge** capability reassigns data ownership, entity associations, col
 * **Never Delete the Source Account via Settings → Users**: Merging an account disables it and marks it with `merged_into`. Deleting it through the standard web UI is rejected by the platform to avoid running cascades that destroy transferred dashboards and triggers. Source account deletion must be conducted exclusively through the dedicated, gated `userMergeDeleteSource` mutation.
 * **Strict Idempotency**: All merge handlers are strictly idempotent. If an execution is interrupted, re-running the merge on the same pair is a safe no-op on already applied data.
 
+> [!WARNING]
+> **The platform must be at rest for the whole batch.** A write that changes what the merge plans
+> between its dry pass and its real pass (an ingestion, a worker, a scheduled task, a user action)
+> makes the real pass refuse, with nothing written. A write on a document the real pass is rewriting
+> aborts it half applied, and the merge has to be run again. [Section 3.1](#31-platform-at-rest)
+> lists what to stop and how to check.
+
 ---
 
 ## 2. GraphQL API Reference & Parameter Specification
@@ -99,7 +106,7 @@ mutation userMerge(
     * `detail`: Human-readable explanation of the change.
   * `alerts`: Array of `UserMergeRightsAlert`:
     * `register_row_id`: Register row raising the alert.
-    * `kind`: Alert category (`rights`, `exposure`, `activity`).
+    * `kind`: Alert category (`rights`, `marking`, `organization`, `exposure`).
     * `message`: Detailed explanation of the alert.
     * `blocking`: `true` if this alert aborts the real pass unless `acknowledgeExposureChange: true` is provided.
 
@@ -137,7 +144,7 @@ mutation userMergeDeleteSource(
 
 #### Query `userMergeCoverage`
 
-Inspects the current completeness of the merge engine against the 99-row user reference register.
+Inspects the current completeness of the merge engine against the 100-row user reference register.
 
 ```graphql
 query userMergeCoverage($disposition: UserMergeDisposition): UserMergeCoverage!
@@ -153,7 +160,7 @@ query userMergeCoverage($disposition: UserMergeDisposition): UserMergeCoverage!
 
 | Field | Type | Description |
 | :--- | :--- | :--- |
-| `total` | `Int!` | Total number of rows in the register (99). |
+| `total` | `Int!` | Total number of rows in the register (100). |
 | `covered_count` | `Int!` | Number of rows claimed by registered handlers. |
 | `uncovered_count` | `Int!` | Total number of unclaimed rows (includes non-gating retained rows). |
 | `gating_uncovered_count` | `Int!` | Number of unclaimed rows that gate source deletion (`TRANSFER` and `CONDITIONAL`). Must be `0` to allow source deletion. |
@@ -227,14 +234,14 @@ input UserMergeOptions {
 ```
 
 * `dryRun` (`Boolean`, default: `true`):
-  * `true`: Executes a simulation pass in memory. Calculates all planned changes and alerts without writing to Elasticsearch or Redis. `total_updated` in the report will be `0`.
+  * `true`: Executes a simulation pass. Calculates all planned changes and alerts without modifying platform data; only the merge journal is written, in Redis. `total_updated` in the report will be `0`.
   * `false`: Executes the real merge. Recomputes and verifies the plan against current platform state, then commits all updates across platform indices, Redis, and internal caches.
 * `rightsStrategy` (`UserMergeRightsStrategy`, default: `STRICT`):
   * `STRICT`: The target user's RBAC rights (groups, roles, capabilities, markings) remain strictly unchanged. Source memberships and permissions are discarded.
   * `UNION`: The target user inherits the source user's group memberships, organization affiliations, and capabilities.
 * `acknowledgeExposureChange` (`Boolean`, default: `false`):
   * Must be explicitly passed as `true` in a real pass (`dryRun: false`) if the dry-run reported a blocking alert (`blocking: true`).
-  * Triggers include: widening of public sharing endpoints (Feeds, TAXII collections) caused by new markings gained under `UNION`, or service account attribute changes.
+  * Two situations raise a blocking alert, under either strategy: a public feed, TAXII collection or live stream owned by the source would serve data with the target's access, and the target gains markings, organizations, groups or capabilities the source did not have; or elements list the source as an authorized member and move to a target without the `KNOWLEDGE_KNUPDATE_KNMANAGEAUTHMEMBERS` capability.
 
 #### Enum `UserMergeRightsStrategy`
 * `STRICT`: Target permissions are kept intact; source permissions are dropped.
@@ -303,6 +310,14 @@ them in the configuration, then restart the platform.
 | `FILE_INDEX_MANAGER__ENABLED` | Indexed file content |
 | `NOTIFICATION_MANAGER__ENABLED` | Notifications, which carry user references |
 | `PUBLISHER_MANAGER__ENABLED` | Notification deliveries and digests |
+| `CONNECTOR_MANAGER__ENABLED` | Closes and deletes connector works, which carry the user that ran them |
+| `IMPORT_CSV_BUILT_IN_CONNECTOR__ENABLED` | CSV imports still queued: works, draft workspaces and files for the user who asked |
+| `DATA_SANITY_MANAGER__ENABLED` | Merges of duplicated entities when a sanity operation runs, rewriting their creators |
+| `HUB_REGISTRATION_MANAGER__ENABLED` | The Settings document, hourly on a registered platform, and news feed items per user |
+
+`EXCLUSION_LIST_CACHE_BUILD_MANAGER__ENABLED` and `PLATFORM_USAGE_METRICS_MANAGER__ENABLED` can stay
+on: they only read Elasticsearch and write to Redis. `CATALOG_MANAGER__ENABLED` only writes when a new
+connector catalog ships, then patches managed connectors: disable it too for a strictly frozen window.
 
 > [!IMPORTANT]
 > **Leave `HISTORY_MANAGER__ENABLED` and `ACTIVITY_MANAGER__ENABLED` on.**
@@ -312,9 +327,9 @@ them in the configuration, then restart the platform.
 > merge itself emits (`merges user <source> into user <target>`). Disabling it would run the batch
 > with no record that it happened.
 >
-> Records written during the window are not rewritten either: every handler cuts at the start of the
-> merge, so the traces the merge produces are left as they are instead of being erased by a later
-> pass.
+> Records written during the window are not rewritten either: the history payload handler cuts at the
+> start of the first real merge on the pair, so the traces the merge produces are left as they are
+> instead of being erased by a later pass.
 
 #### Verifying the platform is at rest
 
@@ -463,7 +478,7 @@ Inspect the returned `report.handlers`:
    * **STRICT (Default & Recommended)**: The target user retains strictly their own groups, roles, and markings. Source memberships are dropped.
    * **UNION**: Source groups, organizations, and capabilities are added to the target. Use only when the target must inherit existing source clearances.
 3. **Inspect Alerts (`blocking: true` vs `blocking: false`)**:
-   * **Public Sharing Exposure Alerts**: If the source owned a public feed or taxii collection, or if `UNION` grants new markings widening public sharing, an alert is raised. If `blocking: true`, you must pass `acknowledgeExposureChange: true` during Step 3.
+   * **Public Sharing Exposure Alerts**: If the source owned a public feed, TAXII collection or live stream, an alert is raised. It is blocking when the target's access is wider than the source's, under `STRICT` as well as `UNION`: an organization the target belongs to is enough. If `blocking: true`, you must pass `acknowledgeExposureChange: true` during Step 3.
    * **Restricted Members Alert**: If the source has restricted members on objects but the target lacks authorization management rights, a blocking alert is raised.
    * **Textual Mentions / Corrupt Filters**: Informational alerts indicating that an unparsable filter or a free-text search UUID was found and left untouched.
 
@@ -484,6 +499,7 @@ mutation UserMergeApply($sourceId: ID!, $targetId: ID!) {
   ) {
     id
     status
+    message
     completed_at
     report {
       total_updated
@@ -500,9 +516,10 @@ Verify the outcome recorded in the journal:
 
 ```graphql
 query UserMergeJournalCheck($mergeId: ID!) {
-  userMergeJournal(mergeId: $mergeId, first: 20) {
+  userMergeJournal(mergeId: $mergeId, first: 50) {
     id
     handler
+    dry_run
     status
     message
     started_at
@@ -511,7 +528,7 @@ query UserMergeJournalCheck($mergeId: ID!) {
 }
 ```
 
-Confirm that all handlers completed with status `SUCCESS`. The source account is now `Expired`, its API tokens revoked, sessions terminated, and its data references transferred to the target.
+Confirm that every entry with `dry_run: false` completed with status `SUCCESS`. The entries with `dry_run: true` are the internal dry pass the real run starts with. The source account is now `Expired`, its API tokens revoked, sessions terminated, and its data references transferred to the target.
 
 ---
 
@@ -520,6 +537,12 @@ Confirm that all handlers completed with status `SUCCESS`. The source account is
 Deleting the source account is an irreversible operation and must **only** be executed after the merge has succeeded and all references have been cleared.
 
 ### 5.1 Check Deletion Readiness
+
+> [!IMPORTANT]
+> **Delete the source within 30 days of the merge.** The deletion gate reads the start of the first
+> real merge on the pair from the merge journal, which expires after 30 days. Past that, the merge's
+> own traces count as pending and the gate refuses; the only way out is a new real run, which
+> rewrites those traces.
 
 Query the deletion gate before attempting deletion:
 
@@ -602,23 +625,28 @@ Between steps 2 and 3 the account is deletable by anyone with the rights, and th
 1. Retrieve the latest journal entries without specifying a `mergeId`:
    ```graphql
    query {
-     userMergeJournal(first: 10) {
+     userMergeJournal(first: 50) {
        merge_id
+       source_id
+       target_id
        handler
+       dry_run
        status
        started_at
+       completed_at
+       message
      }
    }
    ```
-2. Identify the active `merge_id` for your pair.
-3. Poll `userMergeJournal(mergeId: "<merge_id>")` until the last handler (`residual-references`) has completed.
+2. Identify the `merge_id` whose `source_id` and `target_id` match your pair.
+3. Poll `userMergeJournal(mergeId: "<merge_id>")` until the `residual-references` entry **with `dry_run: false`** has completed. A real run journals its internal dry pass too, and that pass ends with the same handler before anything is written.
 4. If all handlers succeeded, the merge is complete. Do not re-run.
 
 ### 6.2 Incident 2: Node Crash or Restart Mid-Merge
 
 If the backend server process crashed or was restarted while a merge was writing:
 
-1. **Safety Assessment**: The merge engine uses atomic updates and bulk writes with conflict detection. Handlers are strictly idempotent.
+1. **Safety Assessment**: Writes are not atomic, but every handler is idempotent: re-running completes a partially applied merge.
 2. **Procedure**:
    - Inspect `userMergeJournal` to find the last handler that completed.
    - Re-run the merge with the exact same parameters (`dryRun: false`).
@@ -639,7 +667,7 @@ If the backend server process crashed or was restarted while a merge was writing
 
 **Error Message**: `Merge blocked by unacknowledged alerts, nothing was written`
 
-* **Root Cause**: A handler detected a security posture change (e.g. public feed exposure change under `UNION`).
+* **Root Cause**: A handler detected a change of exposure or of rights management (see [section 2.3](#23-input-options--enumerations)): a public endpoint served with a wider access, or authorized members moving to a target that cannot manage them.
 * **Resolution**: Review the dry-run alerts. If the security change is intended, pass `acknowledgeExposureChange: true` in `options`.
 
 ---
