@@ -49,7 +49,7 @@ interface UseDeployedIntegrationsProps {
   connectorsStateData?: ConnectorsStateQuery['response'] | null;
   feedsData?: IngestionFeedsData | null;
   formsData?: IngestionFeedsFormsData | null;
-  logosBySlug: Map<string, string>;
+  logosByConnectorId: Map<string, string>;
 }
 
 const toSafeNumber = (value: unknown): number => {
@@ -79,7 +79,7 @@ const useDeployedIntegrations = ({
   connectorsStateData,
   feedsData,
   formsData,
-  logosBySlug,
+  logosByConnectorId,
 }: UseDeployedIntegrationsProps): DeployedIntegrationItem[] => {
   return useMemo(() => {
     const items: DeployedIntegrationItem[] = [];
@@ -149,7 +149,7 @@ const useDeployedIntegrations = ({
         sectionKey: connector.connector_type ?? 'UNKNOWN',
         name: connector.title ?? connector.name,
         description: identity?.title,
-        logo: identity?.slug ? logosBySlug.get(identity.slug) : undefined,
+        logo: logosByConnectorId.get(connector.id),
         identitySource: identity?.source,
         status: itemStatus,
         statusLabel: label,
@@ -259,7 +259,7 @@ const useDeployedIntegrations = ({
     }
 
     return items;
-  }, [connectorsListData, connectorsStateData, feedsData, formsData, logosBySlug]);
+  }, [connectorsListData, connectorsStateData, feedsData, formsData, logosByConnectorId]);
 };
 
 export default useDeployedIntegrations;

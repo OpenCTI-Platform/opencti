@@ -39,21 +39,21 @@ const renderIntegrations = ({
   queues = [],
   feeds = {},
   forms = [],
-  logosBySlug = new Map<string, string>(),
+  logosByConnectorId = new Map<string, string>(),
 }: {
   connectors?: unknown[];
   states?: unknown[];
   queues?: { name: string; messages: unknown; message_stats?: { ack_details?: { rate?: unknown } } | null }[];
   feeds?: Record<string, unknown>;
   forms?: unknown[];
-  logosBySlug?: Map<string, string>;
+  logosByConnectorId?: Map<string, string>;
 } = {}) => {
   const props = {
     connectorsListData: { connectors },
     connectorsStateData: { connectors: states, rabbitMQMetrics: { queues } },
     feedsData: { ...emptyFeeds, ...feeds },
     formsData: { forms: { pageInfo: { globalCount: forms.length }, edges: forms.map((node) => ({ node })) } },
-    logosBySlug,
+    logosByConnectorId,
   } as unknown as HookProps;
   return renderHook(() => useDeployedIntegrations(props));
 };
@@ -67,7 +67,7 @@ describe('useDeployedIntegrations', () => {
       connectorsStateData: null,
       feedsData: null,
       formsData: null,
-      logosBySlug: new Map(),
+      logosByConnectorId: new Map(),
     }));
     expect(withNullData.current).toEqual([]);
   });
@@ -81,7 +81,7 @@ describe('useDeployedIntegrations', () => {
           catalog_identity: { slug: 'my-connector', title: 'Contract title', source: 'composer' },
         })],
         states: [makeState({ active: true })],
-        logosBySlug: new Map([['my-connector', 'data:image/png;base64,logo']]),
+        logosByConnectorId: new Map([['connector-1', 'data:image/png;base64,logo']]),
       });
       expect(result.current).toHaveLength(1);
       const item = result.current[0];
@@ -104,19 +104,20 @@ describe('useDeployedIntegrations', () => {
           makeConnector({ id: 'name-1', name: 'Abuse.ch ThreatFox', catalog_identity: { slug: 'threatfox', title: 'ThreatFox', source: 'name' } }),
           makeConnector({ id: 'manual-1', name: 'Feed C', catalog_identity: { slug: 'urlhaus', title: 'URLhaus', source: 'manual' } }),
         ],
-        logosBySlug: new Map([['urlhaus', '/logo/urlhaus.png'], ['threatfox', '/logo/threatfox.png']]),
+        // Logos are per connector: two connectors of one entry can resolve different contract versions.
+        logosByConnectorId: new Map([['reported-1', '/logo/urlhaus.png'], ['name-1', '/logo/threatfox.png'], ['manual-1', '/logo/urlhaus-v2.png']]),
       });
       const byId = new Map(result.current.map((item) => [item.id, item]));
       expect(byId.get('reported-1')).toMatchObject({ logo: '/logo/urlhaus.png', description: 'URLhaus', identitySource: 'reported' });
       expect(byId.get('name-1')).toMatchObject({ logo: '/logo/threatfox.png', description: 'ThreatFox', identitySource: 'name' });
-      expect(byId.get('manual-1')).toMatchObject({ logo: '/logo/urlhaus.png', description: 'URLhaus', identitySource: 'manual' });
+      expect(byId.get('manual-1')).toMatchObject({ logo: '/logo/urlhaus-v2.png', description: 'URLhaus', identitySource: 'manual' });
       expect(byId.get('name-1')?.searchText).toBe('abuse.ch threatfox external_import threatfox');
     });
 
     it('keeps the generic icon of a connector without a catalog entry', () => {
       const { result } = renderIntegrations({
         connectors: [makeConnector()],
-        logosBySlug: new Map([['my-connector', 'data:image/png;base64,logo']]),
+        logosByConnectorId: new Map([['my-connector', 'data:image/png;base64,logo']]),
       });
       expect(result.current[0].logo).toBeUndefined();
       expect(result.current[0].description).toBeUndefined();

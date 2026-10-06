@@ -8,7 +8,6 @@ export const connectorsLogosQuery = graphql`
     connectors {
       id
       catalog_identity {
-        slug
         logo
       }
     }
@@ -17,33 +16,35 @@ export const connectorsLogosQuery = graphql`
 
 interface ConnectorsLogosProps {
   queryRef: PreloadedQuery<ConnectorsLogosQuery>;
-  onLoaded?: (logosBySlug: Map<string, string>) => void;
-  children?: ({ logosBySlug }: { logosBySlug: Map<string, string> }) => React.ReactNode;
+  onLoaded?: (logosByConnectorId: Map<string, string>) => void;
+  children?: ({ logosByConnectorId }: { logosByConnectorId: Map<string, string> }) => React.ReactNode;
 }
 
 const ConnectorsLogos: React.FC<ConnectorsLogosProps> = ({ queryRef, onLoaded, children }) => {
   const data = usePreloadedQuery(connectorsLogosQuery, queryRef);
 
-  const logosBySlug = useMemo(() => {
+  // Per connector: two connectors of the same catalog entry can resolve different contract
+  // versions (embedded contract versus latest catalog contract), each with its own logo.
+  const logosByConnectorId = useMemo(() => {
     const logosMap = new Map<string, string>();
     for (const connector of data.connectors ?? []) {
-      const { slug, logo } = connector.catalog_identity ?? {};
-      if (slug && logo && !logosMap.has(slug)) {
-        logosMap.set(slug, logo);
+      const logo = connector.catalog_identity?.logo;
+      if (logo) {
+        logosMap.set(connector.id, logo);
       }
     }
     return logosMap;
   }, [data]);
 
   useEffect(() => {
-    onLoaded?.(logosBySlug);
-  }, [onLoaded, logosBySlug]);
+    onLoaded?.(logosByConnectorId);
+  }, [onLoaded, logosByConnectorId]);
 
   if (!children) {
     return null;
   }
 
-  return children({ logosBySlug });
+  return children({ logosByConnectorId });
 };
 
 export default ConnectorsLogos;
