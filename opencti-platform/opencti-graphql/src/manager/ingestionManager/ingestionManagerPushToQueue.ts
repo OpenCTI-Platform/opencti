@@ -18,6 +18,7 @@ import { pushBundleToWorker } from '../../database/rabbitmq';
 import { OPENCTI_SYSTEM_UUID } from '../../schema/general';
 import { INGESTION_MANAGER_SCHEDULE_TIME } from './ingestionManagerConfiguration';
 import { resolveFeedQuarantineDraftId } from '../../modules/sourceIntelligence/sourceIntelligence-quarantine';
+import { assertIngestionExecutionIdentityAllowed } from '../../modules/ingestion/ingestion-execution-identity';
 
 /**
  * All utilities for ingestion manager that push bundle to queues
@@ -62,6 +63,8 @@ export const createWorkForIngestion = async (context: AuthContext, ingestion: Ba
 };
 export const pushBundleToConnectorQueue = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii
   | BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv | BasicStoreEntityIngestionTaxiiCollection | BasicStoreEntityIngestionJson, bundle: StixBundle) => {
+  // The execution identity of an ingestion can never exceed the rights of its creator.
+  await assertIngestionExecutionIdentityAllowed(context, ingestion);
   // Push the bundle to absorption queue
   const connectorId = connectorIdFromIngestId(ingestion.id);
   const work: any = await createWorkForIngestion(context, ingestion);
