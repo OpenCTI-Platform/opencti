@@ -631,6 +631,7 @@
   "Latest containers": "Последние контейнеры",
   "Latest created relationships": "Последние созданные отношения",
   "Latest runs": "Последние запуски",
+  "Latest runs that found the hit": "Последние запуски, нашедшие совпадение",
   "Latitude": "Широта",
   "Layers": "Слои",
   "LdapStrategy": "LdapStrategy",

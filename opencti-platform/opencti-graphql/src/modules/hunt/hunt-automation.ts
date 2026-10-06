@@ -178,7 +178,7 @@ const startAutomaticRuns = async (context: AuthContext, hunt: BasicStoreEntityHu
     }
     return Math.min(runs.length, remainingBudget);
   } catch (error) {
-    logApp.error('[OPENCTI-MODULE] Hunt automatic run failed to start', { cause: error, huntId: hunt.internal_id, trigger });
+    logApp.warn('[OPENCTI-MODULE] Hunt automatic run failed to start', { cause: error, huntId: hunt.internal_id, trigger });
     // A refusal of the hunt itself (its status, its logic) is the same at the next tick
     return (error as GraphQLError)?.extensions?.code === FUNCTIONAL_ERROR ? 0 : null;
   }

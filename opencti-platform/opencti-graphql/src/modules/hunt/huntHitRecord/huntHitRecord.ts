@@ -47,6 +47,7 @@ const HUNT_HIT_RECORD_DEFINITION: ModuleDefinition<StoreEntityHuntHitRecord, Sti
     { name: 'times_seen', label: 'Runs that found the hit', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'first_run_id', label: 'First run of the hit', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'last_run_id', label: 'Last run of the hit', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: 'counted_run_ids', label: 'Latest runs that found the hit', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: false },
     { name: 'ioc_keys', label: 'Hit values', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: true, upsert: false, isFilterable: true },
   ],
   relations: [],

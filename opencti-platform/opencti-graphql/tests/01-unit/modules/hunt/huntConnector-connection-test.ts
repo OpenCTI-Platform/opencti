@@ -1,0 +1,116 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { pushToConnector } from '../../../../src/database/rabbitmq';
+import { deleteWork } from '../../../../src/domain/work';
+import { reportHuntConnectorCheck, testHuntConnectorConnection } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
+import { ADMIN_USER, testContext } from '../../../utils/testQuery';
+
+// The stored connector: every read returns what the last write left
+const store = vi.hoisted(() => ({ connector: {} as Record<string, unknown> }));
+
+vi.mock('../../../../src/modules/hunt/hunt-dispatch', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/modules/hunt/hunt-dispatch')>(),
+  listHuntConnectors: vi.fn(async () => [{ ...store.connector }]),
+}));
+
+vi.mock('../../../../src/database/middleware', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/database/middleware')>(),
+  patchAttribute: vi.fn(async (_context, _user, _id, _type, patch) => {
+    Object.assign(store.connector, patch);
+    return { element: { ...store.connector } };
+  }),
+}));
+
+// A platform-wide lock: the actions of a key run one after the other
+vi.mock('../../../../src/modules/hunt/hunt-lock', () => {
+  const chains = new Map<string, Promise<unknown>>();
+  return {
+    withHuntLock: vi.fn(async (key: string, action: () => Promise<unknown>) => {
+      const run = (chains.get(key) ?? Promise.resolve()).then(action);
+      chains.set(key, run.catch(() => undefined));
+      return run;
+    }),
+  };
+});
+
+vi.mock('../../../../src/domain/work', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/domain/work')>(),
+  createWork: vi.fn(async () => ({ id: 'work-1' })),
+  deleteWork: vi.fn(async () => undefined),
+}));
+
+vi.mock('../../../../src/database/rabbitmq', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/database/rabbitmq')>(),
+  pushToConnector: vi.fn(),
+}));
+
+vi.mock('../../../../src/database/redis', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/database/redis')>(),
+  notify: vi.fn(async (_topic, instance) => instance),
+}));
+
+vi.mock('../../../../src/listener/UserActionListener', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/listener/UserActionListener')>(),
+  publishUserAction: vi.fn(),
+}));
+
+const PASSED = { id: 'check-0', status: 'passed', requested_at: '2026-10-06T08:00:00.000Z', checked_at: '2026-10-06T08:00:05.000Z', checks: [] };
+const storedCheck = () => store.connector.hunt_connection_check as { id: string; status: string };
+const wait = (ms: number) => new Promise((resolve) => {
+  setTimeout(resolve, ms);
+});
+
+describe('Connection test of a hunt connector', () => {
+  beforeEach(() => {
+    store.connector = {
+      internal_id: 'connector-1',
+      name: 'Splunk hunt',
+      active: true,
+      connector_user_id: ADMIN_USER.id,
+      hunt_platform: 'splunk',
+      hunt_connection_check: PASSED,
+    };
+    vi.mocked(pushToConnector).mockReset();
+    vi.mocked(deleteWork).mockClear();
+  });
+
+  it('should restore the previous result when the test cannot be sent', async () => {
+    vi.mocked(pushToConnector).mockRejectedValueOnce(new Error('queue unavailable'));
+    await expect(testHuntConnectorConnection(testContext, ADMIN_USER, 'connector-1')).rejects.toThrow('queue unavailable');
+    expect(storedCheck()).toEqual(PASSED);
+    expect(deleteWork).toHaveBeenCalledWith(testContext, expect.anything(), 'work-1');
+  });
+
+  it('should never let a test that cannot be sent overwrite a newer test', async () => {
+    // The first test fails to publish only after a while, the second one is requested meanwhile
+    vi.mocked(pushToConnector)
+      .mockImplementationOnce(async () => {
+        await wait(20);
+        throw new Error('queue unavailable');
+      })
+      .mockResolvedValueOnce(undefined as never);
+    const first = testHuntConnectorConnection(testContext, ADMIN_USER, 'connector-1');
+    const second = testHuntConnectorConnection(testContext, ADMIN_USER, 'connector-1');
+    await expect(first).rejects.toThrow('queue unavailable');
+    const view = await second;
+    expect(storedCheck().status).toEqual('pending');
+    expect(storedCheck().id).toEqual(view.connection_check?.id);
+    expect(storedCheck().id).not.toEqual(PASSED.id);
+  });
+
+  it('should take the answer of the connector after the test being sent, and refuse the answer to the test it replaced', async () => {
+    vi.mocked(pushToConnector).mockImplementationOnce(async () => {
+      await wait(20);
+    });
+    const requested = testHuntConnectorConnection(testContext, ADMIN_USER, 'connector-1');
+    const late = reportHuntConnectorCheck(testContext, ADMIN_USER, { connector_id: 'connector-1', check_id: PASSED.id, checks: [{ name: 'Search', ok: true, message: 'Allowed' }] });
+    await expect(late).rejects.toThrow('This connection test is not the last one requested for the connector');
+    const view = await requested;
+    const answered = await reportHuntConnectorCheck(testContext, ADMIN_USER, {
+      connector_id: 'connector-1',
+      check_id: view.connection_check?.id as string,
+      checks: [{ name: 'Search', ok: false, message: 'The role cannot run searches' }],
+    });
+    expect(answered.connection_check?.status).toEqual('failed');
+    expect(storedCheck().status).toEqual('failed');
+  });
+});

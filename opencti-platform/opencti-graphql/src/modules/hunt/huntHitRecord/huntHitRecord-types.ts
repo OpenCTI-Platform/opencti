@@ -13,6 +13,8 @@ interface HuntHitRecordAttributes {
   times_seen: number;
   first_run_id: string;
   last_run_id: string;
+  // The latest runs that found the hit, so that a run processed again is not counted twice
+  counted_run_ids?: string[];
   // Indicator hunts: the keys of the values the hit holds (huntRun-iocs iocKey)
   ioc_keys?: string[];
 }

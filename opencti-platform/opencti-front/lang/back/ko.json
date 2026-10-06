@@ -631,6 +631,7 @@
   "Latest containers": "최신 컨테이너",
   "Latest created relationships": "최근에 생성된 관계",
   "Latest runs": "최근 실행",
+  "Latest runs that found the hit": "이 히트를 찾은 최근 실행",
   "Latitude": "위도",
   "Layers": "레이어",
   "LdapStrategy": "LDAP 전략",

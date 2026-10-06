@@ -1655,35 +1655,44 @@ const loadHuntConnector = async (context: AuthContext, connectorId: string) => {
   return connector;
 };
 
+const HUNT_CONNECTION_CHECK_LOCK = 'hunt_connection_check';
+const connectionCheckLockKey = (connectorId: string) => `${HUNT_CONNECTION_CHECK_LOCK}_${connectorId}`;
+
 /**
  * Asks a hunt connector to test its connection and its permissions on its platform. The connector answers with one
- * result per check, in plain words, read on the connector until it arrives.
+ * result per check, in plain words, read on the connector until it arrives. The tests of a connector and its answers run
+ * one at a time under its lock, so a test that cannot be sent restores the result it replaced, never a newer test.
  */
 export const testHuntConnectorConnection = async (context: AuthContext, user: AuthUser, connectorId: string) => {
-  const connector = await loadHuntConnector(context, connectorId);
-  if (connector.active !== true) {
+  const listed = await loadHuntConnector(context, connectorId);
+  if (listed.active !== true) {
     throw FunctionalError('The hunt connector has not answered recently: start it, then test the connection again', { connectorId });
   }
-  const check = { id: uuidv4(), status: HUNT_CONNECTION_CHECK_PENDING, requested_at: now(), checked_at: null, checks: [] };
-  const work = await createWork(context, user, connector, 'Connection test', connector.internal_id);
-  if (!work) {
-    throw FunctionalError('The connection test work cannot be created', { connectorId });
-  }
-  const previousCheck = connector.hunt_connection_check ?? null;
-  const { element } = await patchAttribute(context, SYSTEM_USER, connector.internal_id, ENTITY_TYPE_CONNECTOR, { hunt_connection_check: check });
-  try {
-    await pushToConnector(connector.internal_id, {
-      internal: { work_id: work.id, applicant_id: user.id, mode: 'manual', trigger: 'connection_check' },
-      event: { event_type: CONNECTOR_INTERNAL_HUNT, mode: HUNT_CONNECTION_CHECK_MODE, connection_check: { id: check.id } },
-    });
-  } catch (error) {
-    // Nothing was published: the work no connector will ever process is deleted and the previous test result comes
-    // back, so the connector page does not wait for an answer that cannot arrive
-    await deleteWork(context, SYSTEM_USER, work.id)
-      .catch((deleteError: unknown) => logApp.warn('[OPENCTI-MODULE] Hunt connection test work cannot be deleted after a failed dispatch', { cause: deleteError, connectorId, workId: work.id }));
-    await patchAttribute(context, SYSTEM_USER, connector.internal_id, ENTITY_TYPE_CONNECTOR, { hunt_connection_check: previousCheck });
-    throw error;
-  }
+  const { connector, element } = await withHuntLock(connectionCheckLockKey(listed.internal_id), async () => {
+    // Read under the lock: the stored result is the one every earlier test left, dispatched or rolled back
+    const current = await loadHuntConnector(context, connectorId);
+    const check = { id: uuidv4(), status: HUNT_CONNECTION_CHECK_PENDING, requested_at: now(), checked_at: null, checks: [] };
+    const work = await createWork(context, user, current, 'Connection test', current.internal_id);
+    if (!work) {
+      throw FunctionalError('The connection test work cannot be created', { connectorId });
+    }
+    const previousCheck = current.hunt_connection_check ?? null;
+    const patched = await patchAttribute(context, SYSTEM_USER, current.internal_id, ENTITY_TYPE_CONNECTOR, { hunt_connection_check: check });
+    try {
+      await pushToConnector(current.internal_id, {
+        internal: { work_id: work.id, applicant_id: user.id, mode: 'manual', trigger: 'connection_check' },
+        event: { event_type: CONNECTOR_INTERNAL_HUNT, mode: HUNT_CONNECTION_CHECK_MODE, connection_check: { id: check.id } },
+      });
+    } catch (error) {
+      // Nothing was published: the work no connector will ever process is deleted and the previous test result comes
+      // back, so the connector page does not wait for an answer that cannot arrive
+      await deleteWork(context, SYSTEM_USER, work.id)
+        .catch((deleteError: unknown) => logApp.warn('[OPENCTI-MODULE] Hunt connection test work cannot be deleted after a failed dispatch', { cause: deleteError, connectorId, workId: work.id }));
+      await patchAttribute(context, SYSTEM_USER, current.internal_id, ENTITY_TYPE_CONNECTOR, { hunt_connection_check: previousCheck });
+      throw error;
+    }
+    return { connector: current, element: patched.element };
+  });
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
   await publishUserAction({
     user,
@@ -1698,24 +1707,29 @@ export const testHuntConnectorConnection = async (context: AuthContext, user: Au
 
 /** The answer of a hunt connector to its last connection test: one result per check, the test passed when all pass. */
 export const reportHuntConnectorCheck = async (context: AuthContext, user: AuthUser, input: HuntConnectorCheckReportInput) => {
-  const connector = await loadHuntConnector(context, input.connector_id);
-  if (!isBypassUser(user) && connector.connector_user_id !== user.id) {
+  const listed = await loadHuntConnector(context, input.connector_id);
+  if (!isBypassUser(user) && listed.connector_user_id !== user.id) {
     throw ForbiddenAccess('A hunt connector can only report its own connection test', { connectorId: input.connector_id });
-  }
-  if (connector.hunt_connection_check?.id !== input.check_id) {
-    throw FunctionalError('This connection test is not the last one requested for the connector', { connectorId: input.connector_id });
   }
   const checks = input.checks
     .map((item) => ({ name: truncate(item.name.trim(), 256), ok: item.ok === true, message: truncate(item.message.trim(), 2048) }))
     .slice(0, CONNECTION_CHECKS_MAX);
   const passed = checks.length > 0 && checks.every((item) => item.ok);
-  const check = {
-    ...connector.hunt_connection_check,
-    status: passed ? HUNT_CONNECTION_CHECK_PASSED : HUNT_CONNECTION_CHECK_FAILED,
-    checked_at: now(),
-    checks,
-  };
-  const { element } = await patchAttribute(context, SYSTEM_USER, connector.internal_id, ENTITY_TYPE_CONNECTOR, { hunt_connection_check: check });
+  // Under the lock of the tests of the connector: the answer never lands on a test being dispatched or rolled back
+  const { connector, element, check } = await withHuntLock(connectionCheckLockKey(listed.internal_id), async () => {
+    const current = await loadHuntConnector(context, input.connector_id);
+    if (current.hunt_connection_check?.id !== input.check_id) {
+      throw FunctionalError('This connection test is not the last one requested for the connector', { connectorId: input.connector_id });
+    }
+    const result = {
+      ...current.hunt_connection_check,
+      status: passed ? HUNT_CONNECTION_CHECK_PASSED : HUNT_CONNECTION_CHECK_FAILED,
+      checked_at: now(),
+      checks,
+    };
+    const patched = await patchAttribute(context, SYSTEM_USER, current.internal_id, ENTITY_TYPE_CONNECTOR, { hunt_connection_check: result });
+    return { connector: current, element: patched.element, check: result };
+  });
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
   logApp.info('[OPENCTI-MODULE] Hunt connector connection tested', { connectorId: connector.internal_id, status: check.status });
   return toHuntConnectorView({ ...(element as unknown as BasicStoreEntityConnector), active: connector.active });

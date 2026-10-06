@@ -45,4 +45,17 @@ describe('Hunt hit records', () => {
     await recordHuntHits(testContext, { huntId, securityPlatformId, runId: uuid(), keys: [HIT], seenAt: LATER });
     expect(await lastSeen()).toEqual({ timesSeen: 3, lastSeen: LATER });
   });
+
+  it('should count a run processed again after a later run once, keeping the later run as the last one', async () => {
+    const interrupted = uuid();
+    const later = uuid();
+    await recordHuntHits(testContext, { huntId, securityPlatformId, runId: interrupted, keys: [HIT], seenAt: LATER });
+    await recordHuntHits(testContext, { huntId, securityPlatformId, runId: later, keys: [HIT], seenAt: LATER });
+    expect(await recordHuntHits(testContext, { huntId, securityPlatformId, runId: interrupted, keys: [HIT], seenAt: LATER }))
+      .toEqual({ newCount: 0, recurringCount: 1 });
+    const record = (await findHuntHitRecords(testContext, huntId, securityPlatformId, [HIT])).get(HIT);
+    expect(record?.times_seen).toEqual(5);
+    expect(record?.last_run_id).toEqual(later);
+    expect(record?.counted_run_ids?.slice(-2)).toEqual([interrupted, later]);
+  });
 });

@@ -101,6 +101,15 @@ describe('Known hits ledger', () => {
     expect(classifyHuntHits('run-2', ['k1', 'k3'], known)).toEqual({ newCount: 1, recurringCount: 1, toWrite: [] });
   });
 
+  it('should write nothing for a run matched again after later runs found its hits', () => {
+    const known = new Map([
+      ['k1', { first_run_id: 'run-1', last_run_id: 'run-3', counted_run_ids: ['run-1', 'run-2', 'run-3'] }],
+      ['k2', { first_run_id: 'run-2', last_run_id: 'run-3', counted_run_ids: ['run-2', 'run-3'] }],
+    ]);
+    expect(classifyHuntHits('run-2', ['k1', 'k2'], known)).toEqual({ newCount: 1, recurringCount: 1, toWrite: [] });
+    expect(classifyHuntHits('run-4', ['k1', 'k2'], known)).toEqual({ newCount: 0, recurringCount: 2, toWrite: ['k1', 'k2'] });
+  });
+
   it('should count every hit of a run whose connector identifies none as new', () => {
     expect(huntRunNewHits({ hits_count: 28, hits_new_count: null })).toEqual(28);
     expect(huntRunNewHits({ hits_count: 28, hits_new_count: 0 })).toEqual(0);

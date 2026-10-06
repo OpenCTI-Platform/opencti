@@ -631,6 +631,7 @@
   "Latest containers": "最新容器",
   "Latest created relationships": "最近创建的关系",
   "Latest runs": "最近运行",
+  "Latest runs that found the hit": "最近发现该命中的运行",
   "Latitude": "纬度",
   "Layers": "层级",
   "LdapStrategy": "LDAP Strategy",

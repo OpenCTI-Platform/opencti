@@ -631,6 +631,7 @@
   "Latest containers": "Últimos contenedores",
   "Latest created relationships": "Últimas relaciones creadas",
   "Latest runs": "Últimas ejecuciones",
+  "Latest runs that found the hit": "Últimas ejecuciones que encontraron la coincidencia",
   "Latitude": "Latitud",
   "Layers": "Capas",
   "LdapStrategy": "Estrategia LDAP",

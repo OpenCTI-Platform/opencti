@@ -631,6 +631,7 @@
   "Latest containers": "最新コンテナ",
   "Latest created relationships": "最新作成リレーションシップ",
   "Latest runs": "最近の実行",
+  "Latest runs that found the hit": "このヒットを見つけた最近の実行",
   "Latitude": "緯度",
   "Layers": "6 - 真実は判断できない",
   "LdapStrategy": "LDAP戦略",

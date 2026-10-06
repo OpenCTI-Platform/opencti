@@ -19,7 +19,10 @@ import { ENTITY_TYPE_HUNT_HIT_RECORD, type BasicStoreEntityHuntHitRecord } from 
 const BULK_SIZE = 500;
 const IDS_CHUNK_SIZE = 1000;
 const LEDGER_LOCK = 'hunt_hit_ledger';
-const RECORD_FIELDS = ['internal_id', 'hit_key', 'first_run_id', 'last_run_id', 'first_seen', 'times_seen'];
+// A run is processed again when its completion report is sent again after an interruption, while the other runs of
+// its hunt on the platform go on: far fewer of them complete in that time than the runs a record remembers
+const COUNTED_RUNS_MAX = 50;
+const RECORD_FIELDS = ['internal_id', 'hit_key', 'first_run_id', 'last_run_id', 'counted_run_ids', 'first_seen', 'times_seen'];
 
 /** The record of a hit of a hunt on a security platform: its ids derive from the three, a run finds it without a search. */
 export const huntHitRecordId = (huntId: string, securityPlatformId: string | null | undefined, hitKey: string) => {
@@ -31,19 +34,23 @@ export const huntHitRecordId = (huntId: string, securityPlatformId: string | nul
   return { standardId, internalId: standardId.split('--')[1] };
 };
 
-type KnownHit = Pick<BasicStoreEntityHuntHitRecord, 'first_run_id' | 'last_run_id'>;
+type KnownHit = Pick<BasicStoreEntityHuntHitRecord, 'first_run_id' | 'last_run_id' | 'counted_run_ids'>;
+
+/** The latest runs a record counted; a record written before they were kept knows its last run only. */
+const countedRuns = (record: KnownHit) => record.counted_run_ids ?? (record.last_run_id ? [record.last_run_id] : []);
 
 export interface HuntHitClassification {
   newCount: number;
   recurringCount: number;
-  // Keys whose record the run creates or updates; a record the run already wrote is left as it is
+  // Keys whose record the run creates or updates; a record that already counted the run is left as it is
   toWrite: string[];
 }
 
 /**
  * New and recurring hits of a run among its keys, against the records of the hits already known for the hunt on the
- * platform. A hit first recorded by this very run stays new and a record the run already updated is not updated twice,
- * so that classifying the same run again (a finalization resumed after an interruption) gives the same counts.
+ * platform. A hit first recorded by this very run stays new and a record that already counted the run is not updated
+ * again, whatever runs were recorded since, so that processing the same run again (its completion report sent again
+ * after an interruption) gives the same counts and leaves the records as they are.
  */
 export const classifyHuntHits = (runId: string, keys: string[], known: Map<string, KnownHit>): HuntHitClassification => {
   let newCount = 0;
@@ -58,7 +65,7 @@ export const classifyHuntHits = (runId: string, keys: string[], known: Map<strin
       newCount += 1;
     } else {
       recurringCount += 1;
-      if (record.last_run_id !== runId) {
+      if (!countedRuns(record).includes(runId)) {
         toWrite.push(key);
       }
     }
@@ -83,11 +90,17 @@ export const findHuntHitRecords = async (context: AuthContext, huntId: string, s
   return byKey;
 };
 
-// A record found again: one more run, the latest run and date, the values merged. A record the run already updated is
-// left as it is, a hit reported twice by the same run counts once. Late evidence can be older than the last sighting
-// of the hit, so last_seen keeps the later instant (both are ISO-8601 UTC strings of the same format, compared as text)
+// A record found again: one more run, the latest run and date, the values merged. A record that already counted the
+// run is left as it is: a hit reported twice by the same run, or by a run processed again after later runs, counts once.
+// Late evidence can be older than the last sighting of the hit, so last_seen keeps the later instant (both are
+// ISO-8601 UTC strings of the same format, compared as text)
 const RECORD_UPDATE_SCRIPT = `
-  if (ctx._source.last_run_id == params.run_id) { ctx.op = 'noop'; }
+  def runs = new ArrayList();
+  def stored = ctx._source.counted_run_ids;
+  if (stored instanceof List) { runs.addAll(stored); }
+  else if (stored != null) { runs.add(stored); }
+  else if (ctx._source.last_run_id != null) { runs.add(ctx._source.last_run_id); }
+  if (runs.contains(params.run_id)) { ctx.op = 'noop'; }
   else {
     ctx._source.times_seen = (ctx._source.times_seen == null ? 1 : ctx._source.times_seen) + 1;
     if (ctx._source.last_seen == null || ctx._source.last_seen.compareTo(params.seen_at) < 0) {
@@ -95,6 +108,9 @@ const RECORD_UPDATE_SCRIPT = `
       ctx._source.updated_at = params.seen_at;
     }
     ctx._source.last_run_id = params.run_id;
+    runs.add(params.run_id);
+    while (runs.size() > params.counted_runs_max) { runs.remove(0); }
+    ctx._source.counted_run_ids = runs;
     if (params.ioc_keys.size() > 0) {
       def keys = ctx._source.ioc_keys == null ? new ArrayList() : new ArrayList(ctx._source.ioc_keys);
       for (key in params.ioc_keys) { if (!keys.contains(key)) { keys.add(key); } }
@@ -146,6 +162,7 @@ export const recordHuntHits = async (context: AuthContext, input: HuntHitsRecord
         times_seen: 1,
         first_run_id: input.runId,
         last_run_id: input.runId,
+        counted_run_ids: [input.runId],
         ioc_keys: iocKeys,
         created_at: seenAt,
         updated_at: seenAt,
@@ -153,7 +170,7 @@ export const recordHuntHits = async (context: AuthContext, input: HuntHitsRecord
       const { _index: _ignored, ...upsert } = await prepareElementForIndexing(element);
       operations.push(
         { update: { _index: INDEX_INTERNAL_OBJECTS, _id: internalId, retry_on_conflict: 5 } },
-        { script: { source: RECORD_UPDATE_SCRIPT, lang: 'painless', params: { run_id: input.runId, seen_at: seenAt, ioc_keys: iocKeys } }, upsert },
+        { script: { source: RECORD_UPDATE_SCRIPT, lang: 'painless', params: { run_id: input.runId, seen_at: seenAt, ioc_keys: iocKeys, counted_runs_max: COUNTED_RUNS_MAX } }, upsert },
       );
     }
     const groups = R.splitEvery(BULK_SIZE * 2, operations);
