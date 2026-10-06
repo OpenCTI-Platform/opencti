@@ -167,15 +167,15 @@ const ProvenanceKnowledgeSightings = ({ storageKey, fixedFilters, withConflicts 
 
   const dataColumns: DataTableProps['dataColumns'] = {
     fromType: { percentWidth: 8 },
-    fromName: { percentWidth: withConflicts ? 11 : 16 },
+    fromName: { percentWidth: withConflicts ? 13 : 18 },
     toType: { percentWidth: 8 },
-    toName: { percentWidth: withConflicts ? 11 : 15 },
-    ...(withConflicts ? { conflict_fields: { ...conflictingFieldsColumn, percentWidth: 11 } } : {}),
-    attribute_count: { percentWidth: 6 },
+    toName: { percentWidth: withConflicts ? 13 : 18 },
+    ...(withConflicts ? { conflict_fields: { ...conflictingFieldsColumn, percentWidth: 12 } } : {}),
+    attribute_count: { percentWidth: 7 },
     corroboration_count: { percentWidth: 11 },
     freshness_days: { percentWidth: 9 },
     last_asserted_at: { percentWidth: withConflicts ? 10 : 11 },
-    objectMarking: { percentWidth: withConflicts ? 8 : 9, isSortable: false },
+    objectMarking: { percentWidth: withConflicts ? 9 : 10, isSortable: false },
   };
 
   const preloadedPaginationProps = {

@@ -143,12 +143,12 @@ const ProvenanceKnowledgeEntities = ({ storageKey, fixedFilters, withConflicts =
 
   const dataColumns: DataTableProps['dataColumns'] = {
     entity_type: { percentWidth: 11 },
-    name: { percentWidth: withConflicts ? 18 : 31 },
-    ...(withConflicts ? { conflict_fields: { ...conflictingFieldsColumn, percentWidth: 13 } } : {}),
+    name: { percentWidth: withConflicts ? 22 : 36 },
+    ...(withConflicts ? { conflict_fields: { ...conflictingFieldsColumn, percentWidth: 15 } } : {}),
     corroboration_count: { percentWidth: 11 },
     freshness_days: { percentWidth: 9 },
-    last_asserted_at: { percentWidth: 11 },
-    createdBy: { percentWidth: 11, isSortable: false },
+    last_asserted_at: { percentWidth: withConflicts ? 11 : 12 },
+    createdBy: { percentWidth: 12, isSortable: false },
     objectMarking: { percentWidth: 9, isSortable: false },
   };
 
