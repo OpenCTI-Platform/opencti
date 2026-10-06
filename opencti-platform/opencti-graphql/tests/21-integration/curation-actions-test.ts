@@ -900,6 +900,34 @@ describe('Knowledge curation actions', () => {
     expect((await computeHealthMetrics(testContext, settings, since)).contradiction_count).toBe(before);
   });
 
+  it('should follow the survivor a new detection prefers, and drop the adjudication of the previous recommendation', async () => {
+    const first = await createIntrusionSet(`${PREFIX} Survivor First`);
+    const second = await createIntrusionSet(`${PREFIX} Survivor Second`);
+    const draft: ProposalDraft = {
+      kind: PROPOSAL_KIND_MERGE,
+      detector: DETECTOR_NORMALIZATION,
+      subjects: [subjectOf(first), subjectOf(second)],
+      target_id: first.id,
+      recommended_action: ACTION_MERGE,
+      evidence: evidenceFor('canonical_collision', 'Same canonical name'),
+      confidence: 0.9,
+    };
+    const id = await createProposal(draft);
+    const load = async () => storeLoadById(testContext, ADMIN_USER, id, ENTITY_TYPE_CURATION_PROPOSAL) as unknown as Promise<BasicStoreEntityCurationProposal>;
+    const stored = await load();
+    await elUpdate(testContext, stored._index, stored.internal_id, {
+      script: { source: 'ctx._source.curation_adjudication = params.adjudication', lang: 'painless', params: { adjudication: { decision: 'merge', applied: false } } },
+    });
+    const settings = await getCurationSettings(testContext);
+    // The other entity gained the relationships: the duplicate detection now prefers it as the survivor.
+    const { proposal, created } = await persistProposalDraft(testContext, settings, { ...draft, target_id: second.id });
+    expect(created).toBe(false);
+    expect(proposal?.internal_id).toBe(id);
+    const refreshed = await load();
+    expect(refreshed.target_id).toBe(second.id);
+    expect(refreshed.curation_adjudication ?? null).toBeNull();
+  });
+
   it('should request a full scan', async () => {
     await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: SCAN_REQUEST_MUTATION, variables: {} });
     const requested = await queryAsAdminWithSuccess({ query: SCAN_REQUEST_MUTATION, variables: {} });

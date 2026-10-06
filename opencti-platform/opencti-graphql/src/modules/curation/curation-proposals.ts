@@ -198,11 +198,33 @@ export const adjudicatedContent = (
   proposal: Pick<BasicStoreEntityCurationProposal, 'subject_ids' | 'subject_names' | 'confidence_score' | 'curation_evidence' | 'action_payload'>,
 ) => JSON.stringify([proposal.subject_ids, proposal.subject_names, proposal.confidence_score, proposal.curation_evidence, proposal.action_payload ?? null]);
 
+/** A payload as JSON keeps it: key order and undefined members never make two payloads differ. */
+const canonicalPayload = (payload: unknown) => {
+  const parsed = parseActionPayload(payload);
+  return parsed ? JSON.parse(JSON.stringify(parsed)) : null;
+};
+
+/**
+ * What a new detection of an open finding changes: the finding itself (confidence, evidence), or what accepting it
+ * executes (survivor, action, payload), which a duplicate scan recomputes from the current subjects.
+ */
+export const refreshedContentChanges = (
+  existing: Pick<BasicStoreEntityCurationProposal, 'confidence_score' | 'curation_evidence' | 'target_id' | 'recommended_action' | 'action_payload'>,
+  draft: Pick<ProposalDraft, 'confidence' | 'evidence' | 'target_id' | 'recommended_action' | 'action_payload'>,
+) => ({
+  finding: Math.abs(existing.confidence_score - draft.confidence) > 0.001
+    || JSON.stringify(existing.curation_evidence) !== JSON.stringify(draft.evidence),
+  executable: (existing.target_id ?? null) !== (draft.target_id ?? null)
+    || existing.recommended_action !== draft.recommended_action
+    || !R.equals(canonicalPayload(existing.action_payload), canonicalPayload(draft.action_payload)),
+});
+
 /**
  * Refresh of an open proposal found again: its restrictions and subject names follow the current subjects, so a
- * subject that gained a marking or an organization restriction since is never exposed through an older proposal. A
- * refreshed finding drops its adjudication, which judged the previous one: the proposal is adjudicated again before a
- * policy requiring the Curator's agreement can apply it.
+ * subject that gained a marking or an organization restriction since is never exposed through an older proposal, and
+ * what accepting it executes follows the detection, so neither an analyst nor a policy applies an outdated survivor. A
+ * refreshed finding or recommendation drops its adjudication, which judged the previous one: the proposal is
+ * adjudicated again before a policy requiring the Curator's agreement can apply it.
  */
 const refreshProposal = async (
   context: AuthContext,
@@ -223,11 +245,10 @@ const refreshProposal = async (
   const subjectsById = new Map(subjects.map((subject) => [subject.internal_id, subject]));
   const subjectNames = existing.subject_ids.map((id, index) => ((subjectsById.get(id) as { name?: string } | undefined)?.name ?? existing.subject_names[index]));
   const namesChanged = JSON.stringify(subjectNames) !== JSON.stringify(existing.subject_names);
-  const findingChanged = Math.abs(existing.confidence_score - draft.confidence) > 0.001
-    || JSON.stringify(existing.curation_evidence) !== JSON.stringify(draft.evidence);
+  const { finding: findingChanged, executable: executableChanged } = refreshedContentChanges(existing, draft);
   // The band settings may have moved an unchanged finding in or out of the band the Curator and the counters read.
   const bandChanged = (existing.in_ambiguous_band ?? false) !== inBand;
-  if (!restrictionsChanged && !namesChanged && !findingChanged && !bandChanged) {
+  if (!restrictionsChanged && !namesChanged && !findingChanged && !executableChanged && !bandChanged) {
     return { proposal: existing, created: false, suppressed: false };
   }
   if (restrictionsChanged) {
@@ -244,8 +265,10 @@ const refreshProposal = async (
     in_ambiguous_band: inBand,
     curation_evidence: draft.evidence,
     detector: draft.detector,
+    target_id: draft.target_id ?? null,
+    recommended_action: draft.recommended_action,
     action_payload: draft.action_payload ?? null,
-    ...((namesChanged || findingChanged) && (existing.curation_adjudication || existing.adjudication_requested_at)
+    ...((namesChanged || findingChanged || executableChanged) && (existing.curation_adjudication || existing.adjudication_requested_at)
       ? { curation_adjudication: null, adjudication_requested_at: null }
       : {}),
   });
