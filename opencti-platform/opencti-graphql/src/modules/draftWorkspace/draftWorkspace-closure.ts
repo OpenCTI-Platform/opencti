@@ -1,5 +1,8 @@
+import { v4 as uuidv4 } from 'uuid';
 import type { AuthContext } from '../../types/user';
-import { redisGetDraftForward, redisSetDraftForward, redisSetDraftForwardIfAbsent } from '../../database/redis';
+import { FunctionalError } from '../../config/errors';
+import { wait } from '../../database/utils';
+import { redisAddDraftWriter, redisGetDraftForward, redisListDraftWriters, redisRemoveDraftWriter, redisSetDraftForward, redisSetDraftForwardIfAbsent } from '../../database/redis';
 
 /**
  * Called when a draft is about to be validated or deleted, before its content is read or removed and before the users
@@ -11,6 +14,13 @@ export type DraftClosureHandler = (context: AuthContext, draftId: string) => Pro
 // Forward entry of the last draft of a forwarding chain while it is open, then once it closed with no draft taking over
 const DRAFT_FORWARD_OPEN_END = 'open';
 const DRAFT_FORWARD_CLOSED_END = 'closed';
+// Lease of a request writing into a draft of a chain: the lease of a node stopped mid-request expires after this
+const DRAFT_WRITER_LEASE_MS = 5 * 60 * 1000;
+// How long closing a draft waits for the requests still writing into it
+const DRAFT_CLOSURE_DRAIN_MS = 30 * 1000;
+const DRAFT_CLOSURE_DRAIN_POLL_MS = 200;
+// Drafts taking over while a request enters: past this many, the request stays in the last one, which waits for it
+const DRAFT_ENTRY_MAX_HOPS = 10;
 
 export interface DraftForward {
   // Draft the queued work belongs to: the draft itself, or the last of the drafts that successively took over from it
@@ -25,13 +35,32 @@ export const registerDraftClosureHandler = (handler: DraftClosureHandler) => {
   draftClosureHandlers.push(handler);
 };
 
+// A request that entered the draft before its work was forwarded ends before the draft content is read or removed.
+// The request closing the draft never waits for itself.
+const waitForDraftWriters = async (draftId: string, ownWriterId: string | null | undefined) => {
+  const deadline = Date.now() + DRAFT_CLOSURE_DRAIN_MS;
+  const writersOf = async () => (await redisListDraftWriters(draftId)).filter((writerId) => writerId !== ownWriterId);
+  let writers = await writersOf();
+  while (writers.length > 0) {
+    if (Date.now() >= deadline) {
+      throw FunctionalError('The draft still receives work that started before it was closed, retry in a moment', { draftId, writers: writers.length });
+    }
+    await wait(DRAFT_CLOSURE_DRAIN_POLL_MS);
+    writers = await writersOf();
+  }
+};
+
 export const runDraftClosureHandlers = async (context: AuthContext, draftId: string) => {
   for (let i = 0; i < draftClosureHandlers.length; i += 1) {
     await draftClosureHandlers[i](context, draftId);
   }
+  const forward = await redisGetDraftForward(draftId);
   // A draft receiving forwarded work that no handler replaced ends its chain: the work still queued for it is refused
-  if ((await redisGetDraftForward(draftId)) === DRAFT_FORWARD_OPEN_END) {
+  if (forward === DRAFT_FORWARD_OPEN_END) {
     await redisSetDraftForward(draftId, DRAFT_FORWARD_CLOSED_END);
+  }
+  if (forward) {
+    await waitForDraftWriters(draftId, context.draft_writer_id);
   }
 };
 
@@ -75,4 +104,41 @@ export const resolveDraftForward = async (draftId: string): Promise<DraftForward
     await redisSetDraftForward(draftId, current);
   }
   return { draftId: current, closed: next === DRAFT_FORWARD_CLOSED_END };
+};
+
+export interface DraftEntry extends DraftForward {
+  // Lease the request holds on the draft it writes into until release: none outside a forwarding chain or once refused
+  writerId: string | null;
+  release: () => Promise<void>;
+}
+
+const noLease = async () => {};
+
+/**
+ * Draft a request works in, resolved like queued work (see resolveDraftForward). In a forwarding chain, the request
+ * holds a lease on that draft from before it reads the forward until it ends: a closure forwards the draft first, then
+ * waits for the leases, so a request either is waited for or sees the forward and moves to the draft taking over.
+ * A draft enters a chain when it is created to receive routed work, so outside a chain no lease is needed.
+ */
+export const enterDraft = async (draftId: string): Promise<DraftEntry> => {
+  if (!(await redisGetDraftForward(draftId))) {
+    return { draftId, closed: false, writerId: null, release: noLease };
+  }
+  const writerId = uuidv4();
+  let target = draftId;
+  await redisAddDraftWriter(target, writerId, DRAFT_WRITER_LEASE_MS);
+  let forward = await resolveDraftForward(target);
+  for (let hop = 0; !forward.closed && forward.draftId !== target && hop < DRAFT_ENTRY_MAX_HOPS; hop += 1) {
+    const previous = target;
+    target = forward.draftId;
+    await redisAddDraftWriter(target, writerId, DRAFT_WRITER_LEASE_MS);
+    await redisRemoveDraftWriter(previous, writerId);
+    forward = await resolveDraftForward(target);
+  }
+  if (forward.closed) {
+    await redisRemoveDraftWriter(target, writerId);
+    return { draftId: forward.draftId, closed: true, writerId: null, release: noLease };
+  }
+  const leasedDraftId = target;
+  return { draftId: leasedDraftId, closed: false, writerId, release: () => redisRemoveDraftWriter(leasedDraftId, writerId) };
 };

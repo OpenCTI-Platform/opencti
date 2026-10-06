@@ -22,7 +22,6 @@ import { batchIsSubAttackPattern, batchCoursesOfAction, batchSubAttackPatterns }
 import { executionContext, isBypassUser, isUserInPlatformOrganization, SYSTEM_USER } from '../utils/access';
 import { getEnterpriseEditionInfo, IS_LTS_PLATFORM } from '../modules/settings/licensing';
 import { batchContextDataForLog } from '../database/data-changes';
-import { resolveDraftForward } from '../modules/draftWorkspace/draftWorkspace-closure';
 
 export const computeLoaders = (executeContext, user) => {
   // Generic loaders
@@ -81,12 +80,6 @@ export const createAuthenticatedContext = async (req, res, contextName) => {
   executeContext.otp_mandatory = settings?.otp_mandatory ?? false; // Null check fixes 500 error on platform theme selection
   executeContext.workId = req.headers['opencti-work-id']; // Api call comes from a worker processing
   executeContext.draft_context = req.headers['opencti-draft-id']; // Api call is to be made is specific draft context
-  if (executeContext.workId && isNotEmptyField(executeContext.draft_context)) {
-    // A worker can process a message queued for a draft that was closed meanwhile
-    const forward = await resolveDraftForward(executeContext.draft_context);
-    executeContext.draft_context = forward.draftId;
-    executeContext.draft_forward_closed = forward.closed;
-  }
   executeContext.eventId = req.headers['opencti-event-id']; // Api call is due to listening event
   executeContext.previousStandard = req.headers['previous-standard']; // Previous standard id
   // region handle user

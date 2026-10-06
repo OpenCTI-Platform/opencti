@@ -80,6 +80,8 @@ interface AuthContext {
   draft_context?: string | undefined;
   // The work was queued for a draft closed with no draft taking over from it (see draftWorkspace-closure)
   draft_forward_closed?: boolean;
+  // Lease the request holds on its draft of a forwarding chain while it runs (see draftWorkspace-closure)
+  draft_writer_id?: string | null;
   workId?: string;
   batch?: Record<string, any>;
   changeDraftContext?: (draftId: string) => void;

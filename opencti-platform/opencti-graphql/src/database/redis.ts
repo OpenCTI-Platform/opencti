@@ -740,6 +740,23 @@ export const redisSetDraftForwardIfAbsent = async (draftId: string, value: strin
 export const redisGetDraftForward = async (draftId: string) => {
   return getClientBase().get(draftForwardKey(draftId));
 };
+// Requests writing into a draft of a forwarding chain, scored by the end of their lease
+const draftWritersKey = (draftId: string) => `draft_writers_${draftId}`;
+export const redisAddDraftWriter = async (draftId: string, writerId: string, leaseMs: number) => {
+  const key = draftWritersKey(draftId);
+  await redisTx(getClientBase(), async (tx) => {
+    await tx.zadd(key, Date.now() + leaseMs, writerId);
+    await tx.pexpire(key, leaseMs);
+  });
+};
+export const redisRemoveDraftWriter = async (draftId: string, writerId: string) => {
+  await getClientBase().zrem(draftWritersKey(draftId), writerId);
+};
+export const redisListDraftWriters = async (draftId: string): Promise<string[]> => {
+  const key = draftWritersKey(draftId);
+  await getClientBase().zremrangebyscore(key, '-inf', Date.now());
+  return getClientBase().zrange(key, 0, -1);
+};
 // endregion - draft forwarding
 
 // region - forgot password handling
