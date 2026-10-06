@@ -13653,6 +13653,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | SavedFilter
   | Vocabulary
   | DraftWorkspace
+  | CitizenshipDocument
 union StixObjectOrStixRelationship =
   MarkingDefinition
   | Label
@@ -13748,6 +13749,7 @@ union StixObjectOrStixRelationship =
   | ICCID
   | IMSI
   | SavedFilter
+  | CitizenshipDocument
 union StixCoreObjectOrStixCoreRelationship =
 #### Stix Core Objects
 ## Stix Domain Objects
@@ -13834,6 +13836,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | IMEI
   | ICCID
   | IMSI
+  | CitizenshipDocument
 
 enum StixRelationshipsOrdering {
   entity_type

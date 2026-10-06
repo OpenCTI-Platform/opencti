@@ -308,6 +308,11 @@ export const stixCoreRelationshipCreationFromEntityStixCoreObjectsLineFragment =
     ... on Case {
       name
     }
+    ... on CitizenshipDocument{
+      name
+      description
+      x_opencti_citizenship_document_type
+    }
     ... on StixCyberObservable {
       observable_value
     }

@@ -45,6 +45,7 @@ import StixCyberObservable from '../../../static/images/entities/stix-cyber-obse
 import Relationship from '../../../static/images/entities/relationship.svg';
 import SecurityPlatform from '../../../static/images/entities/security-platform.svg';
 import SecurityCoverage from '../../../static/images/entities/security-coverage.svg';
+import CitizenshipDocument from '../../../static/images/entities/citizenship-document.svg'; // TOD Need to create
 
 interface GraphImage {
   img: HTMLImageElement;
@@ -397,6 +398,10 @@ const GRAPH_IMAGES: GraphImages = {
   Unknown: {
     rawImg: Unknown,
     img: generateHtmlImageElement(Unknown),
+  },
+  'Citizenship-Document': {
+    rawImg: CitizenshipDocument,
+    img: generateHtmlImageElement(CitizenshipDocument),
   },
 };
 

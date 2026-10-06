@@ -136,6 +136,9 @@ class Identity:
             ... on SecurityPlatform {
                 security_platform_type
             }
+            ... on CitizenshipDocument {
+                x_opencti_citizenship_document_type
+            }
         """
         self.properties_with_files = """
             id
@@ -261,6 +264,9 @@ class Identity:
             }
             ... on SecurityPlatform {
                 security_platform_type
+            }
+            ... on CitizenshipDocument {
+                x_opencti_citizenship_document_type
             }
             importFiles {
                 edges {
@@ -542,6 +548,9 @@ class Identity:
         no_trigger_import = kwargs.get("noTriggerImport", None)
         embedded = kwargs.get("embedded", None)
         upsert_operations = kwargs.get("upsert_operations", None)
+        x_opencti_citizenship_document_type = kwargs.get(
+            "x_opencti_citizenship_document_type", None
+        )
 
         if type is not None and name is not None:
             self.opencti.app_logger.info("Creating Identity", {"name": name})
@@ -638,6 +647,28 @@ class Identity:
                 input_variables["x_opencti_lastname"] = x_opencti_lastname
                 input_variables["x_opencti_reliability"] = x_opencti_reliability
                 result_data_field = "systemAdd"
+            elif type == IdentityTypes.CITIZENSHIP_DOCUMENT.value:
+                query = """
+                    mutation CitizenshipDocumentAdd($input: SystemAddInput!) {
+                        citizenshipDocumentAdd(input: $input) {
+                            id
+                            standard_id
+                            entity_type
+                            parent_types
+                        }
+                    }
+                """
+                input_variables["objectOrganization"] = granted_refs
+                input_variables["name"] = name
+                input_variables["x_opencti_citizenship_document_type"] = (
+                    x_opencti_citizenship_document_type
+                )
+
+                del input_variables["contact_information"]
+                del input_variables["lang"]
+                del input_variables["roles"]
+                del input_variables["x_opencti_aliases"]
+                result_data_field = "citizenshipDocumentAdd"
             else:
                 query = """
                     mutation IdentityAdd($input: IdentityAddInput!) {
@@ -692,6 +723,8 @@ class Identity:
                     type = "System"
                 elif stix_object["identity_class"] == "securityplatform":
                     type = "SecurityPlatform"
+                elif stix_object["identity_class"] == "citizenshipDocument":
+                    type = "CitizenshipDocument"
 
             # Search in extensions
             if "x_opencti_aliases" not in stix_object:

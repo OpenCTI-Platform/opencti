@@ -1632,6 +1632,15 @@ const defaultColumns: DataTableProps['dataColumns'] = {
     isSortable: true,
     render: ({ x_opencti_score }) => <ItemScore score={x_opencti_score} />,
   },
+  x_opencti_citizenship_document_type: {
+    id: 'x_opencti_citizenship_document_type',
+    label: 'Type',
+    percentWidth: 20,
+    isSortable: true,
+    render: ({ x_opencti_citizenship_document_type }) => {
+      return defaultRender(x_opencti_citizenship_document_type);
+    },
+  },
 };
 
 type MetricConf = {
