@@ -45,6 +45,12 @@ const CONNECTORS = gql`
 const POLICY_READ = gql`
   query PolicyRead($id: ID!) { investigationPolicy(id: $id) { id name is_default } }
 `;
+const POLICIES_TO_START = gql`
+  query PoliciesToStart { investigationPolicies(first: 50) { edges { node { id name description is_default allowed_actions attribution_min_confidence } } } }
+`;
+const POLICY_RUN_AS = gql`
+  query PolicyRunAs($id: ID!) { investigationPolicy(id: $id) { id run_as_id } }
+`;
 
 describe('Case Autopilot investigation policies', () => {
   const created: string[] = [];
@@ -121,6 +127,14 @@ describe('Case Autopilot investigation policies', () => {
     await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: POLICY_ADD, variables: { input: { name: 'Editor policy' } } });
     const { data } = await queryAsUserWithSuccess(USER_EDITOR, { query: POLICIES, variables: {} });
     expect(data.investigationPolicies.edges.length).toBeGreaterThan(0);
+  });
+
+  it('shows who starts a run what a policy may do, its connectors, approvals and identity only to who manages customization', async () => {
+    const { data } = await queryAsUserWithSuccess(USER_EDITOR, { query: POLICIES_TO_START, variables: {} });
+    const policyId = data.investigationPolicies.edges[0].node.id;
+    await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: POLICY_RUN_AS, variables: { id: policyId } });
+    const managed = await queryAsAdminWithSuccess({ query: POLICY_RUN_AS, variables: { id: policyId } });
+    expect(managed.data?.investigationPolicy.id).toBe(policyId);
   });
 
   it('says the pack catalog is not available when XTM One is not connected', async () => {

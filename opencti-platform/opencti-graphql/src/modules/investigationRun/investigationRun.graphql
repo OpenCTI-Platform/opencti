@@ -417,17 +417,19 @@ type InvestigationPolicy implements InternalObject & BasicObject {
   pack_id: String
   pack_options: JSON
   allowed_actions: [InvestigationAutonomousAction!]!
-  enrichment_connector_ids: [String!]!
-  approval_connector_ids: [String!]!
-  auto_approve_low_risk: Boolean!
-  auto_approve_min_confidence: Int!
+  # Who starts a run picks a policy and sees what it may do without asking; its connectors, approvals and identity
+  # are for the users who manage customization
+  enrichment_connector_ids: [String!]! @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  approval_connector_ids: [String!]! @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  auto_approve_low_risk: Boolean! @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  auto_approve_min_confidence: Int! @auth(for: [SETTINGS_SETCUSTOMIZATION])
   attribution_min_confidence: Int!
   max_iterations: Int!
   max_enrichment_jobs: Int!
   max_minutes: Int!
   trigger_on_case_rfi_creation: Boolean!
-  run_as_id: String
-  runAs: Creator
+  run_as_id: String @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  runAs: Creator @auth(for: [SETTINGS_SETCUSTOMIZATION])
   runs_count: Int!
   acceptance: InvestigationAcceptance!
 }
@@ -565,7 +567,7 @@ type Query {
     caseId: String
   ): InvestigationRunConnection @auth(for: [KNOWLEDGE])
   investigationRunEnrichmentWave(id: ID!, waveId: ID!): InvestigationEnrichmentWave @auth(for: [KNOWLEDGE])
-  investigationPolicy(id: ID!): InvestigationPolicy @auth(for: [KNOWLEDGE])
+  investigationPolicy(id: ID!): InvestigationPolicy @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   investigationPolicies(
     first: Int
     after: ID
@@ -573,7 +575,7 @@ type Query {
     orderMode: OrderingMode
     filters: FilterGroup
     search: String
-  ): InvestigationPolicyConnection @auth(for: [KNOWLEDGE])
+  ): InvestigationPolicyConnection @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION])
   investigationEnrichmentConnectors: [InvestigationEnrichmentConnector!]! @auth(for: [SETTINGS_SETCUSTOMIZATION])
   investigationPacks: InvestigationPackCatalog! @auth(for: [KNOWLEDGE])
 }
