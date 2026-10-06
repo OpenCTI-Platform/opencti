@@ -58,7 +58,7 @@ export const hubRegistrationManager = async () => {
       });
     }
   } catch (err) {
-    logApp.error('[XTMH] Failed to clean expired news feed items', { cause: err });
+    logApp.warn('[XTMH] Failed to clean expired news feed items', { cause: err });
   }
 };
 

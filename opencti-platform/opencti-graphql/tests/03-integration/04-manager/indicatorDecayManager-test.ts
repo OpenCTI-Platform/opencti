@@ -35,8 +35,11 @@ describe('Testing indicatorDecayManager', () => {
   });
 
   it('should manage error in findIndicatorsForDecay', async () => {
-    const logAppWarnSpy = vi.spyOn(logApp, 'error');
+    const logAppErrorSpy = vi.spyOn(logApp, 'error');
+    const logAppWarnSpy = vi.spyOn(logApp, 'warn');
     await indicatorDecayHandler();
-    expect(logAppWarnSpy, 'Error should be managed and log as error.').toHaveBeenCalledTimes(2);
+    // One record for the skipped indicator, one for the batch summary.
+    expect(logAppWarnSpy, 'The skipped indicator and the batch summary should both be logged as warn.').toHaveBeenCalledTimes(2);
+    expect(logAppErrorSpy, 'One indicator failing to decay is not an application error.').toHaveBeenCalledTimes(0);
   });
 });
