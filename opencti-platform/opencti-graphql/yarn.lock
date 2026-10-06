@@ -7819,9 +7819,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-upload@npm:18.0.0":
-  version: 18.0.0
-  resolution: "graphql-upload@npm:18.0.0"
+"graphql-upload@npm:18.0.1":
+  version: 18.0.1
+  resolution: "graphql-upload@npm:18.0.1"
   dependencies:
     "@types/busboy": "npm:^1.5.0"
     "@types/node": "npm:*"
@@ -7839,7 +7839,7 @@ __metadata:
       optional: true
     "@types/koa":
       optional: true
-  checksum: 10c0/b2f04ce41689a17c67999487dfe2622615099ba15fe7bad7b6f1b29d588fe5980bcf23271adaa333a58c38f9ef9df9dc7bea82b0bf944665fa762c869e08262e
+  checksum: 10c0/b88bcd4589fa1a9ac8134bb58361edcbb3a87a7b7581525ce96c75cafeb4a7047b7cfedba3655ed6e1358136ebc713a37e99b7eb9e3d6e49401cb1528e77f097
   languageName: node
   linkType: hard
 
@@ -10332,7 +10332,7 @@ __metadata:
     graphql-scalars: "npm:2.0.0"
     graphql-subscriptions: "npm:3.0.0"
     graphql-tag: "npm:2.12.7"
-    graphql-upload: "npm:18.0.0"
+    graphql-upload: "npm:18.0.1"
     graphql-ws: "npm:6.3.0"
     helmet: "npm:8.3.0"
     http-proxy-agent: "npm:9.1.0"

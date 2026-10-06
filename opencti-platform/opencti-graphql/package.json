@@ -129,7 +129,7 @@
     "graphql-redis-subscriptions": "2.7.0",
     "graphql-scalars": "2.0.0",
     "graphql-subscriptions": "3.0.0",
-    "graphql-upload": "18.0.0",
+    "graphql-upload": "18.0.1",
     "graphql-ws": "6.3.0",
     "helmet": "8.3.0",
     "http-proxy-agent": "9.1.0",
