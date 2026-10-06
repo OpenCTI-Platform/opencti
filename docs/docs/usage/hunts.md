@@ -126,6 +126,8 @@ At the top of the form, two blocks explain the hunt before anything is filled in
 
 An indicator hunt started this way keeps the threat and its sources as what it looks for: the indicators are read again at every run, so the hunt follows the intelligence as it grows.
 
+The overview of a report, a malware or an indicator then shows a **Hunts** card: the hunts that look for it or use it as a source, each with its status, the verdict of its latest run and the date and hits of that run (the ten most recently run, the others in the hunts list). The card is not shown when no hunt uses the entity.
+
 ## Run a hunt
 
 - **Run now** executes the hunt on every security platform of its scope, each through the hunt connector registered for it. Each platform gets its own run. When no hunt connector serves the scope, the run dialog says so and links to the hunt connectors. A draft or retired hunt cannot run: the button says "Only active or paused hunts can run: activate the hunt from its status". When the platform refuses the start, for example because the hunt connector stopped after the dialog opened, the dialog stays open and says why, so that you can fix the cause and run again.
