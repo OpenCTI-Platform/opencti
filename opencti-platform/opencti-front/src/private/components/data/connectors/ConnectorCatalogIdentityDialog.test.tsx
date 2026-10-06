@@ -9,12 +9,12 @@ const CATALOG_OPTIONS = [
   { slug: 'urlhaus', title: 'URLhaus', logo: '/logo/urlhaus.png', connector_type: 'EXTERNAL_IMPORT', short_description: 'Malicious URLs' },
 ];
 
-const renderDialog = (catalogIdentity: Record<string, unknown> | null, onClose = vi.fn()) => {
+const renderDialog = (catalogIdentity: Record<string, unknown> | null, onClose = vi.fn(), catalogSlugManual: string | null = null) => {
   const rendered = testRender(
     <ConnectorCatalogIdentityDialog
       open
       onClose={onClose}
-      connector={{ id: 'connector-id', connector_type: 'EXTERNAL_IMPORT', catalog_identity: catalogIdentity as never }}
+      connector={{ id: 'connector-id', connector_type: 'EXTERNAL_IMPORT', catalog_identity: catalogIdentity as never, catalog_slug_manual: catalogSlugManual }}
     />,
   );
   rendered.relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
@@ -60,6 +60,16 @@ describe('ConnectorCatalogIdentityDialog', () => {
     await waitFor(() => {
       expect(onClose).toHaveBeenCalled();
     });
+  });
+
+  it('should let a choice made by hand be removed after its entry left the catalog', async () => {
+    // The stored choice no longer resolves, so the identity comes from the name: the choice is still there.
+    const { relayEnv, user } = renderDialog({ slug: 'urlhaus', title: 'URLhaus', logo: '/logo/urlhaus.png', source: 'name' }, vi.fn(), 'removed-entry');
+
+    await user.click(await screen.findByRole('button', { name: 'Use automatic identification' }));
+
+    const operation = relayEnv.mock.getMostRecentOperation();
+    expect(operation.request.variables).toEqual({ id: 'connector-id', slug: null });
   });
 
   it('should not offer automatic identification for an entry found automatically', async () => {

@@ -4572,6 +4572,7 @@ export type Connector = BasicObject & InternalObject & {
   auto_update?: Maybe<Scalars['Boolean']['output']>;
   built_in?: Maybe<Scalars['Boolean']['output']>;
   catalog_identity?: Maybe<ConnectorCatalogIdentity>;
+  catalog_slug_manual?: Maybe<Scalars['String']['output']>;
   config?: Maybe<ConnectorConfig>;
   configurations?: Maybe<Array<ConnectorConfiguration>>;
   connector_info?: Maybe<ConnectorInfo>;
@@ -44266,6 +44267,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   auto_update?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   built_in?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   catalog_identity?: Resolver<Maybe<ResolversTypes['ConnectorCatalogIdentity']>, ParentType, ContextType>;
+  catalog_slug_manual?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   config?: Resolver<Maybe<ResolversTypes['ConnectorConfig']>, ParentType, ContextType>;
   configurations?: Resolver<Maybe<Array<ResolversTypes['ConnectorConfiguration']>>, ParentType, ContextType>;
   connector_info?: Resolver<Maybe<ResolversTypes['ConnectorInfo']>, ParentType, ContextType>;

@@ -1081,6 +1081,7 @@ const Connector = createRefetchContainer(
           short_description
           source
         }
+        catalog_slug_manual
         manager_contract_definition
         manager_current_status
         manager_requested_status

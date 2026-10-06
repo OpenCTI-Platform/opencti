@@ -40,6 +40,7 @@ const connectorCatalogIdentityMutation = graphql`
         short_description
         source
       }
+      catalog_slug_manual
     }
   }
 `;
@@ -59,7 +60,12 @@ const CatalogLogo: FunctionComponent<{ logo?: string | null; connectorType?: str
 
 interface ConnectorCatalogIdentityFormProps {
   queryRef: PreloadedQuery<ConnectorCatalogIdentityDialogOptionsQuery>;
-  connector: { readonly id: string; readonly connector_type?: string | null; readonly catalog_identity?: ConnectorCatalogIdentityValue | null };
+  connector: {
+    readonly id: string;
+    readonly connector_type?: string | null;
+    readonly catalog_identity?: ConnectorCatalogIdentityValue | null;
+    readonly catalog_slug_manual?: string | null;
+  };
   onClose: () => void;
 }
 
@@ -78,6 +84,8 @@ const ConnectorCatalogIdentityForm: FunctionComponent<ConnectorCatalogIdentityFo
     () => options.find((option) => option.slug === currentSlug) ?? null,
   );
   const isManual = connector.catalog_identity?.source === 'manual';
+  // A choice made by hand stays stored when its entry leaves the catalog: it can still be removed.
+  const hasManualChoice = isManual || Boolean(connector.catalog_slug_manual);
 
   const submit = (slug: string | null) => {
     commit({
@@ -154,7 +162,7 @@ const ConnectorCatalogIdentityForm: FunctionComponent<ConnectorCatalogIdentityFo
         )}
       </Stack>
       <DialogActions>
-        {isManual && (
+        {hasManualChoice && (
           <Box sx={{ marginRight: 'auto' }}>
             <Button variant="secondary" onClick={() => submit(null)} disabled={inFlight}>
               {t_i18n('Use automatic identification')}

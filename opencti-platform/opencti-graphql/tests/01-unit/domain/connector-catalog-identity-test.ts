@@ -323,6 +323,18 @@ describe('Connector catalog identity - loading', () => {
     expect(fullEntitiesList).toHaveBeenCalledTimes(2);
   });
 
+  it('should list the catalog outside the request that asked for it', async () => {
+    // The listing is shared for a minute: the abort signal or the draft of one request must not reach the others.
+    vi.mocked(fullEntitiesList).mockResolvedValue([storedContract('urlhaus', 'URLhaus', '6.9.0', '/logo/urlhaus.png')] as never);
+    const requestContext = { ...testContext, requestAbortSignal: new AbortController().signal, draft_context: 'draft-1' } as unknown as AuthContext;
+    await batchConnectorCatalogIdentities(requestContext, testUser, [{ ...baseConnector, name: 'Abuse.ch URLhaus' }]);
+    const [listContext] = vi.mocked(fullEntitiesList).mock.calls[0] as unknown as [{ source: string; requestAbortSignal?: AbortSignal; draft_context?: string }];
+    expect(listContext).not.toBe(requestContext);
+    expect(listContext.source).toEqual('connector_catalog_identity');
+    expect(listContext.requestAbortSignal).toBeUndefined();
+    expect(listContext.draft_context).toBeUndefined();
+  });
+
   it('should list the catalog again after a failed listing', async () => {
     vi.mocked(fullEntitiesList).mockRejectedValueOnce(new Error('search engine unavailable'));
     const connector = { ...baseConnector, name: 'Abuse.ch URLhaus' };

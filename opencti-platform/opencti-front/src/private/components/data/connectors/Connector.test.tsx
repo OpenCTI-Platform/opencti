@@ -59,6 +59,7 @@ const baseMockConnector = {
   manager_contract_definition: null,
   manager_contract_excerpt: null,
   catalog_identity: null,
+  catalog_slug_manual: null,
   built_in: false,
   connector_info: null,
   connector_user: null,

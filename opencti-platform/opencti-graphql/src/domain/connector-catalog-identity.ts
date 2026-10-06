@@ -13,7 +13,7 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../schema/general';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import type { BasicStoreEntityConnector } from '../types/connector';
 import type { AuthContext, AuthUser } from '../types/user';
-import { SYSTEM_USER } from '../utils/access';
+import { executionContext, SYSTEM_USER } from '../utils/access';
 
 // Identity of a connector in the catalog, resolved for every connector, managed or not.
 // Order of trust: the composer contract, a catalog entry chosen by hand, the slug the
@@ -205,8 +205,11 @@ export const resolveConnectorCatalogIdentity = (connector: IdentityConnector, in
 const IDENTITY_CONTRACT_FIELDS = ['slug', 'title', 'logo_uri', 'connector_type', 'short_description', 'contract_id', 'contract_version', 'support_version', 'min_version', 'max_version'];
 
 // The latest compatible version of each catalog entry, read as the system user because the
-// identity only exposes public catalog data (title, logo, slug, short description).
-const listCatalogIdentityIndex = async (context: AuthContext) => {
+// identity only exposes public catalog data (title, logo, slug, short description). The listing
+// is shared by every request for a minute: it runs in a context of its own, so the abort signal
+// or the draft of the request that started it never reaches the other requests.
+const listCatalogIdentityIndex = async () => {
+  const context = executionContext('connector_catalog_identity', SYSTEM_USER);
   const contracts = await fullEntitiesList<BasicStoreEntityCatalogContract>(context, SYSTEM_USER, [ENTITY_TYPE_CATALOG_CONTRACT], {
     indices: [READ_INDEX_INTERNAL_OBJECTS],
     baseData: true,
@@ -224,12 +227,12 @@ export const resetCatalogIdentityIndexCache = () => {
   catalogIdentityIndexCache = null;
 };
 
-export const loadCatalogIdentityIndex = async (context: AuthContext) => {
+export const loadCatalogIdentityIndex = async () => {
   const now = Date.now();
   if (catalogIdentityIndexCache && catalogIdentityIndexCache.expiresAt > now) {
     return catalogIdentityIndexCache.index;
   }
-  const index = listCatalogIdentityIndex(context);
+  const index = listCatalogIdentityIndex();
   catalogIdentityIndexCache = { expiresAt: now + CATALOG_IDENTITY_INDEX_TTL, index };
   // A failed listing is not kept: the next request lists the catalog again.
   index.catch(() => {
@@ -243,8 +246,8 @@ export const loadCatalogIdentityIndex = async (context: AuthContext) => {
 const needsCatalog = (connector: IdentityConnector) => !isManagedConnector(connector) && !connector.built_in;
 
 // Batch function of the per-request loader: one catalog index for every connector of the request.
-export const batchConnectorCatalogIdentities = async (context: AuthContext, _user: AuthUser, connectors: IdentityConnector[]) => {
-  const index = connectors.some(needsCatalog) ? await loadCatalogIdentityIndex(context) : buildCatalogIdentityIndex([]);
+export const batchConnectorCatalogIdentities = async (_context: AuthContext, _user: AuthUser, connectors: IdentityConnector[]) => {
+  const index = connectors.some(needsCatalog) ? await loadCatalogIdentityIndex() : buildCatalogIdentityIndex([]);
   return connectors.map((connector) => resolveConnectorCatalogIdentity(connector, index));
 };
 
@@ -257,8 +260,8 @@ export const connectorCatalogIdentity = async (context: AuthContext, user: AuthU
   return identity;
 };
 
-export const connectorCatalogIdentityOptions = async (context: AuthContext) => {
-  const index = await loadCatalogIdentityIndex(context);
+export const connectorCatalogIdentityOptions = async (_context: AuthContext) => {
+  const index = await loadCatalogIdentityIndex();
   return [...index.bySlug.values()]
     .map((contract) => ({
       slug: contract.slug,
@@ -283,7 +286,7 @@ export const connectorCatalogIdentityUpdate = async (context: AuthContext, user:
   }
   let catalogSlug: string | null = null;
   if (isNotEmptyField(slug)) {
-    const index = await loadCatalogIdentityIndex(context);
+    const index = await loadCatalogIdentityIndex();
     const contract = findCatalogContractBySlug(index, slug);
     if (!contract) {
       throw FunctionalError('No catalog entry found with this slug', { id, slug });

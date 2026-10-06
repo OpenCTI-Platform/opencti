@@ -20,6 +20,7 @@ interface ConnectorCatalogIdentityCardProps {
     readonly is_managed?: boolean | null;
     readonly built_in?: boolean | null;
     readonly catalog_identity?: (ConnectorCatalogIdentityValue & { readonly short_description?: string | null }) | null;
+    readonly catalog_slug_manual?: string | null;
   };
 }
 

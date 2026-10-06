@@ -2083,6 +2083,8 @@ type Connector implements BasicObject & InternalObject {
   slug: String
   # Catalog entry of the connector (logo, title, slug), however it was deployed
   catalog_identity: ConnectorCatalogIdentity
+  # Slug of the catalog entry chosen by hand, kept when the entry leaves the catalog
+  catalog_slug_manual: String
   jwks: String!
 }
 
