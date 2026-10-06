@@ -5,13 +5,16 @@ import Box from '@mui/material/Box';
 import Button from '@common/button/Button';
 import Stack from '@mui/material/Stack';
 import { IconButton, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { useTheme } from '@mui/material/styles';
 import { Fragment, FunctionComponent } from 'react';
 import type { FilterGroup } from '../../../utils/filters/filtersHelpers-types';
-import { getFirstDefaultConditionFilter, useBuildFilterKeysMapFromEntityType } from '../../../utils/filters/filtersUtils';
+import { FILTER_LINE_ITEM_HEIGHT, getFirstDefaultConditionFilter, useBuildFilterKeysMapFromEntityType } from '../../../utils/filters/filtersUtils';
 import { buildGroupedFilterKeyOptions } from '../../../utils/filters/filterKeyGrouping';
+import FilterIconButtonGlobalMode from '../../FilterIconButtonGlobalMode';
 import { useFormatter } from '../../i18n';
 import { useFilterEditorContext } from '../fields/FilterEditorContext';
 import FilterRow from '../fields/FilterRow';
+import { getChipStyles } from '../FilterChipLine';
 
 export interface FilterGroupPanelProps {
   /** The group to edit. Always a non-root group, so it always has an id (still handled defensively). */
@@ -31,6 +34,21 @@ export interface FilterGroupPanelProps {
  * Layout mirrors the read-only FilterGroupsVisualDisplay (dark surface, 16px padding,
  * sub-groups indented) so both stay visually consistent.
  */
+/** The and/or of a group as in the root filter line, for a panel with nothing to edit. */
+const GroupModeChip: FunctionComponent<{ mode: string }> = ({ mode }) => {
+  const theme = useTheme();
+  const { operatorStyle } = getChipStyles(theme);
+  return (
+    <Box sx={{ display: 'flex' }}>
+      <FilterIconButtonGlobalMode
+        operatorStyle={{ ...operatorStyle, height: FILTER_LINE_ITEM_HEIGHT }}
+        globalMode={mode}
+        isOperatorClickable={false}
+      />
+    </Box>
+  );
+};
+
 const FilterGroupPanel: FunctionComponent<FilterGroupPanelProps> = ({ group }) => {
   const { t_i18n } = useFormatter();
   const { helpers, availableFilterKeys, entityTypes } = useFilterEditorContext();
@@ -59,20 +77,22 @@ const FilterGroupPanel: FunctionComponent<FilterGroupPanelProps> = ({ group }) =
       }}
     >
       <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ gap: 1, marginBottom: 1 }}>
-        <Select value={mode} onValueChange={handleChangeMode} disabled={isReadOnly}>
-          <SelectTrigger
-            id={`filter-group-mode-select-${groupId ?? 'root'}`}
-            data-testid={`filter-group-mode-select-${groupId ?? 'root'}`}
-            aria-label={t_i18n('Mode')}
-            style={{ flexShrink: 0 }}
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent aria-label={t_i18n('Mode')}>
-            <SelectItem value="and">{t_i18n('and').toUpperCase()}</SelectItem>
-            <SelectItem value="or">{t_i18n('or').toUpperCase()}</SelectItem>
-          </SelectContent>
-        </Select>
+        {!isReadOnly && (
+          <Select value={mode} onValueChange={handleChangeMode}>
+            <SelectTrigger
+              id={`filter-group-mode-select-${groupId ?? 'root'}`}
+              data-testid={`filter-group-mode-select-${groupId ?? 'root'}`}
+              aria-label={t_i18n('Mode')}
+              style={{ flexShrink: 0 }}
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent aria-label={t_i18n('Mode')}>
+              <SelectItem value="and">{t_i18n('and').toUpperCase()}</SelectItem>
+              <SelectItem value="or">{t_i18n('or').toUpperCase()}</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
         {!isReadOnly && (
           <Stack direction="row" alignItems="center" sx={{ gap: 1 }}>
             <Button

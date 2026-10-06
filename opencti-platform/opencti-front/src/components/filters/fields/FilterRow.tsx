@@ -6,6 +6,9 @@ import { Filter, FilterEditorInputValue } from '../../../utils/filters/filtersHe
 import { getDefaultFilterObject, getFilterDefinitionFromFilterKeysMap, useBuildFilterKeysMapFromEntityType } from '../../../utils/filters/filtersUtils';
 import { buildGroupedFilterKeyOptions, GroupedFilterKeyOption, isGroupedFilterKeySelection } from '../../../utils/filters/filterKeyGrouping';
 import { useFormatter } from '../../i18n';
+import FilterChip from '../FilterChip';
+import FilterKeyLabel from '../FilterKeyLabel';
+import FilterValues from '../FilterValues';
 import { useFilterEditorContext } from './FilterEditorContext';
 import FilterOperatorSelect from './FilterOperatorSelect';
 import FilterRowCompositeValue from './FilterRowCompositeValue';
@@ -35,6 +38,10 @@ const FilterRowEditor: FunctionComponent<FilterRowProps> = ({ filter }) => {
   const isCompositeRegardingOf = filter.key === 'regardingOf' || filter.key === 'dynamicRegardingOf';
   const isStandaloneDynamicFilter = filter.key === 'dynamicFrom' || filter.key === 'dynamicTo';
 
+  // Same rule as CompositeRegardingOfFilterEditor (root chip popover): once a dynamic filter is
+  // defined, the relationship type it depends on cannot be emptied or changed anymore.
+  const isRelationshipTypeLocked = filter.key === 'dynamicRegardingOf' && filter.values.some((value) => value.key === 'dynamic');
+
   const sharedValueProps = { filter, inputValues, setInputValues };
 
   return (
@@ -45,6 +52,7 @@ const FilterRowEditor: FunctionComponent<FilterRowProps> = ({ filter }) => {
           filterKey={filter.key}
           setInputValues={setInputValues}
           subKey={isCompositeRegardingOf ? 'relationship_type' : undefined}
+          disabled={isRelationshipTypeLocked}
           label={t_i18n('Condition')}
           triggerId={`filter-row-operator-${filter.id}`}
           style={{ width: '100%' }}
@@ -70,7 +78,7 @@ const FilterRowEditor: FunctionComponent<FilterRowProps> = ({ filter }) => {
       {isCompositeRegardingOf && (
         <>
           <Box data-testid="filter-row-relationship-type" sx={{ flex: FILTER_ROW_COLUMN_FLEX.compositeValue, minWidth: 0 }}>
-            <FilterValueInput {...sharedValueProps} filterKey={filter.key} subKey="relationship_type" />
+            <FilterValueInput {...sharedValueProps} filterKey={filter.key} subKey="relationship_type" disabled={isRelationshipTypeLocked} />
           </Box>
           <Box data-testid="filter-row-value" sx={{ flex: FILTER_ROW_COLUMN_FLEX.compositeValue, minWidth: 0 }}>
             {filter.key === 'regardingOf'
@@ -84,10 +92,32 @@ const FilterRowEditor: FunctionComponent<FilterRowProps> = ({ filter }) => {
 };
 
 /**
- * One condition of a (nested) filter group, displayed as a single row:
+ * A condition when there is nothing to edit (no helpers): the same chip as in the root filter line.
+ */
+const FilterRowReadOnly: FunctionComponent<FilterRowProps> = ({ filter }) => {
+  const { filtersRepresentativesMap, entityTypes, host } = useFilterEditorContext();
+  const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
+  return (
+    <Box sx={{ display: 'flex', width: '100%' }}>
+      <FilterChip variant="filled">
+        <FilterValues
+          label={<FilterKeyLabel filter={filter} filterKeysMap={filterKeysMap} />}
+          tooltip={false}
+          currentFilter={filter}
+          filtersRepresentativesMap={filtersRepresentativesMap}
+          entityTypes={entityTypes}
+          host={host}
+        />
+      </FilterChip>
+    </Box>
+  );
+};
+
+/**
+ * An editable condition of a (nested) filter group, displayed as a single row:
  * [filter name] [condition] [value] [✕]
  */
-const FilterRow: FunctionComponent<FilterRowProps> = ({ filter }) => {
+const FilterRowEditable: FunctionComponent<FilterRowProps> = ({ filter }) => {
   const { t_i18n } = useFormatter();
   const { helpers, availableFilterKeys, entityTypes } = useFilterEditorContext();
   const filterKeysMap = useBuildFilterKeysMapFromEntityType(entityTypes);
@@ -142,6 +172,12 @@ const FilterRow: FunctionComponent<FilterRowProps> = ({ filter }) => {
       />
     </Box>
   );
+};
+
+/** Without helpers there is nothing to edit: the row is displayed as a chip, like in the root line. */
+const FilterRow: FunctionComponent<FilterRowProps> = ({ filter }) => {
+  const { helpers } = useFilterEditorContext();
+  return helpers ? <FilterRowEditable filter={filter} /> : <FilterRowReadOnly filter={filter} />;
 };
 
 export default FilterRow;

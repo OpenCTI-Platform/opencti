@@ -4,16 +4,7 @@ import { Stack } from '@mui/material';
 import { Theme, useTheme } from '@mui/material/styles';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import React, { CSSProperties, Fragment, FunctionComponent, PropsWithChildren, Ref, useState } from 'react';
-import {
-  convertOperatorToIcon,
-  FILTER_LINE_ITEM_HEIGHT,
-  filterOperatorsWithIcon,
-  FiltersRestrictions,
-  getFilterDefinitionFromFilterKeysMap,
-  isFilterEditable,
-  NO_VALUES_FILTER_OPERATORS,
-} from '../../utils/filters/filtersUtils';
-import { truncate } from '../../utils/String';
+import { FILTER_LINE_ITEM_HEIGHT, FiltersRestrictions, getFilterDefinitionFromFilterKeysMap, isFilterEditable, NO_VALUES_FILTER_OPERATORS } from '../../utils/filters/filtersUtils';
 import type { WidgetHost } from '../../utils/widget/widget';
 import { Filter, FilterGroup, handleFilterHelpers } from '../../utils/filters/filtersHelpers-types';
 import { FilterIconButtonVariant } from '../FilterIconButtonContainer';
@@ -21,13 +12,14 @@ import FilterIconButtonGlobalMode from '../FilterIconButtonGlobalMode';
 import { useFormatter } from '../i18n';
 import FilterValues from './FilterValues';
 import FilterChip from './FilterChip';
+import FilterKeyLabel from './FilterKeyLabel';
 import { FilterRepresentative } from './FiltersModel';
 import FilterGroupChipButton from './group/FilterGroupChipButton';
 import ImbricatedFilterGroupDisplay from './ImbricatedFilterGroupDisplay';
 import { FilterDefinition } from '../../utils/hooks/useAuth';
 
 /** Geometry of a filter chip and of its operator badge, per display variant. */
-const getChipStyles = (theme: Theme, variant?: FilterIconButtonVariant) => {
+export const getChipStyles = (theme: Theme, variant?: FilterIconButtonVariant) => {
   const operatorStyle: CSSProperties = {
     borderRadius: 4,
     fontFamily: 'Consolas, monaco, monospace',
@@ -243,29 +235,13 @@ const FilterChipLine: FunctionComponent<PropsWithChildren<FilterChipLineProps>> 
         const filterLabel = t_i18n(getFilterDefinitionFromFilterKeysMap(filterKey, filterKeysMap)?.label ?? filterKey);
         const filterOperator = currentFilter.operator ?? 'eq';
         const filterValues = currentFilter.values;
-        const isOperatorDisplayed = filterOperatorsWithIcon.includes(filterOperator ?? 'eq');
-        const keyLabel = (
-          <>
-            {truncate(filterLabel, 20)}
-            {!isOperatorDisplayed && (
-              <Box
-                component="span"
-                sx={{ padding: '0 4px', fontWeight: 'normal' }}
-              >
-                {t_i18n(filterOperator)}
-              </Box>
-            )}
-            {isOperatorDisplayed
-              ? convertOperatorToIcon(filterOperator ?? 'eq')
-              : currentFilter.values.length > 0 && ':'}
-          </>
-        );
+        const keyLabel = <FilterKeyLabel filter={currentFilter} filterKeysMap={filterKeysMap} />;
         const isNotLastFilter = index < displayedFilters.length - 1;
 
         const chipVariant = currentFilter.values.length === 0 && !NO_VALUES_FILTER_OPERATORS.includes(filterOperator ?? 'eq')
           ? 'outlined'
           : 'filled';
-          // darken the bg color when filled (quickfix for 'warning' and 'success' chipColor unreadable with regardingOf filter)
+        // darken the bg color when filled (quickfix for 'warning' and 'success' chipColor unreadable with regardingOf filter)
         const darkenChipBackground = (chipColor === 'warning' || chipColor === 'success') && chipVariant === 'filled';
         const authorizeFilterRemoving = !(filtersRestrictions?.preventRemoveFor?.includes(filterKey))
           && isFilterEditable(filtersRestrictions, filterKey, filterValues);
