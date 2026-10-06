@@ -34,6 +34,7 @@ import jsonMappingExecution from '../../parser/json-mapper';
 import type { StixObject } from '../../types/stix-2-1-common';
 import { getEntitiesMapFromCache } from '../../database/cache';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { validateIngestionExecutionIdentity, validateIngestionExecutionIdentityFromEditInputs, validateStoredIngestionExecutionIdentity } from './ingestion-execution-identity';
 
 interface JsonQueryFetchOpts {
   maxResults?: number;
@@ -214,6 +215,7 @@ export const addIngestionJson = async (context: AuthContext, user: AuthUser, inp
   if (input.authentication_value) {
     verifyIngestionAuthenticationContent(input.authentication_type, input.authentication_value);
   }
+  await validateIngestionExecutionIdentity(context, user, input.user_id);
   const { element, isCreation } = await createEntity(context, user, input, ENTITY_TYPE_INGESTION_JSON, { complete: true });
   if (isCreation) {
     await registerConnectorForIngestion(context, {
@@ -236,6 +238,7 @@ export const addIngestionJson = async (context: AuthContext, user: AuthUser, inp
 };
 
 export const editIngestionJson = async (context: AuthContext, user: AuthUser, id: string, input: IngestionJsonAddInput) => {
+  await validateIngestionExecutionIdentity(context, user, input.user_id);
   let authenticationValue = input.authentication_value;
   if (authenticationValue && input.authentication_type) {
     const { authentication_value } = await findById(context, user, id);
@@ -258,6 +261,9 @@ export const editIngestionJson = async (context: AuthContext, user: AuthUser, id
 };
 
 export const ingestionJsonEditField = async (context: AuthContext, user: AuthUser, ingestionId: string, input: EditInput[]) => {
+  const storedIngestion = await findById(context, user, ingestionId);
+  await validateIngestionExecutionIdentityFromEditInputs(context, user, storedIngestion, input);
+
   const patchInput = [...input];
 
   if (input.some((editInput) => editInput.key === 'authentication_value')) {
@@ -324,6 +330,9 @@ export const patchJsonIngestion = async (context: AuthContext, user: AuthUser, i
 };
 
 export const ingestionJsonResetState = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
+  // Resetting the state replays the source under the ingestion identity, which must stay within the editing user rights.
+  const storedIngestion = await findById(context, user, ingestionId);
+  await validateStoredIngestionExecutionIdentity(context, user, storedIngestion);
   await patchJsonIngestion(context, user, ingestionId, { ingestion_json_state: null });
   const ingestion = await findById(context, user, ingestionId);
   const connectorId = connectorIdFromIngestId(ingestion.id);

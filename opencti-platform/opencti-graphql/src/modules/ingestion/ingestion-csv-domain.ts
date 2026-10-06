@@ -37,7 +37,12 @@ import { convertRepresentationsIds } from '../internal/mapper-utils';
 import { SYSTEM_USER } from '../../utils/access';
 import { findDefaultIngestionGroups } from '../../domain/group';
 import { regenerateCsvMapperUUID } from './ingestion-converter';
-import { createOnTheFlyUser } from '../user/user-domain';
+import {
+  createIngestionAutomaticUser,
+  validateIngestionExecutionIdentity,
+  validateIngestionExecutionIdentityFromEditInputs,
+  validateStoredIngestionExecutionIdentity,
+} from './ingestion-execution-identity';
 
 const MINIMAL_CSV_FEED_COMPATIBLE_VERSION = '6.6.0';
 
@@ -80,12 +85,13 @@ export const addIngestionCsv = async (context: AuthContext, user: AuthUser, inpu
   let onTheFlyCreatedUser;
   let finalInput;
   if (input.automatic_user) {
-    onTheFlyCreatedUser = await createOnTheFlyUser(context, user, { userName: input.user_id, confidenceLevel: input.confidence_level, serviceAccount: true });
+    onTheFlyCreatedUser = await createIngestionAutomaticUser(context, user, { userName: input.user_id, confidenceLevel: input.confidence_level, serviceAccount: true });
     finalInput = {
       ...((({ automatic_user: _, confidence_level: __, ...inputWithoutAutomaticFields }) => inputWithoutAutomaticFields)(input)),
       user_id: onTheFlyCreatedUser.id,
     };
   } else {
+    await validateIngestionExecutionIdentity(context, user, input.user_id);
     finalInput = {
       ...((({ automatic_user: _, confidence_level: __, ...inputWithoutAutomaticFields }) => inputWithoutAutomaticFields)(input)),
     };
@@ -132,6 +138,9 @@ export const patchCsvIngestion = async (context: AuthContext, user: AuthUser, id
 };
 
 export const ingestionCsvEditField = async (context: AuthContext, user: AuthUser, ingestionId: string, input: EditInput[]) => {
+  const storedIngestion = await findById(context, user, ingestionId);
+  await validateIngestionExecutionIdentityFromEditInputs(context, user, storedIngestion, input);
+
   const parsedInput = await Promise.all(input.map(async (editInput) => {
     if (editInput.key === 'csv_mapper') {
       if (!editInput.value) {
@@ -200,13 +209,16 @@ export const ingestionCsvEditField = async (context: AuthContext, user: AuthUser
 
 export const ingestionCsvAddAutoUser = async (context: AuthContext, user: AuthUser, ingestionId: string, input: IngestionCsvAddAutoUserInput) => {
   // Create new user
-  const onTheFlyCreatedUser = await createOnTheFlyUser(context, user, { userName: input.user_name, confidenceLevel: input.confidence_level, serviceAccount: true });
+  const onTheFlyCreatedUser = await createIngestionAutomaticUser(context, user, { userName: input.user_name, confidenceLevel: input.confidence_level, serviceAccount: true });
 
   // Associate this user to the CSVFeed
   return ingestionCsvEditField(context, user, ingestionId, [{ key: 'user_id', value: [onTheFlyCreatedUser.id] }]);
 };
 
 export const ingestionCsvResetState = async (context: AuthContext, user: AuthUser, ingestionId: string) => {
+  // Resetting the state replays the source under the ingestion identity, which must stay within the editing user rights.
+  const storedIngestion = await findById(context, user, ingestionId);
+  await validateStoredIngestionExecutionIdentity(context, user, storedIngestion);
   await patchCsvIngestion(context, user, ingestionId, { current_state_hash: '' });
   const ingestionUpdated = await findById(context, user, ingestionId);
   await publishUserAction({

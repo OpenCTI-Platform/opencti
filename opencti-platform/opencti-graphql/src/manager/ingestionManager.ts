@@ -45,6 +45,7 @@ import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
 import type { StixIndicator } from '../modules/indicator/indicator-types';
 import type { CsvMapperParsed } from '../modules/internal/csvMapper/csvMapper-types';
 import { executeJsonQuery, findAllJsonIngestion, patchJsonIngestion } from '../modules/ingestion/ingestion-json-domain';
+import { assertIngestionExecutionIdentityAllowed } from '../modules/ingestion/ingestion-execution-identity';
 
 // Ingestion manager responsible to cleanup old data
 // Each API will start is ingestion manager.
@@ -120,6 +121,8 @@ const createWorkForIngestion = async (context: AuthContext, ingestion: BasicStor
 
 export const pushBundleToConnectorQueue = async (context: AuthContext, ingestion: BasicStoreEntityIngestionTaxii
   | BasicStoreEntityIngestionRss | BasicStoreEntityIngestionCsv | BasicStoreEntityIngestionTaxiiCollection | BasicStoreEntityIngestionJson, bundle: StixBundle) => {
+  // The execution identity of an ingestion can never exceed the rights of its creator.
+  await assertIngestionExecutionIdentityAllowed(context, ingestion);
   // Push the bundle to absorption queue
   const connectorId = connectorIdFromIngestId(ingestion.id);
   const work: any = await createWorkForIngestion(context, ingestion);
@@ -532,6 +535,8 @@ export const processCsvLines = async (
     logApp.info(`[OPENCTI-MODULE] INGESTION - Unchanged data for csv ingest: ${ingestion.name}`);
     await updateBuiltInConnectorInfo(context, ingestion.user_id, ingestion.id);
   } else {
+    // The execution identity of an ingestion can never exceed the rights of its creator.
+    await assertIngestionExecutionIdentityAllowed(context, ingestion);
     const ingestionUser = await findUserById(context, context.user ?? SYSTEM_USER, ingestion.user_id) ?? SYSTEM_USER;
     if (csvMapperParsed.has_header) {
       removeHeaderFromFullFile(csvLines, csvMapperParsed.skipLineChar);
