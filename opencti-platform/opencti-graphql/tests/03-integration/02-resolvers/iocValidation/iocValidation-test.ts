@@ -1,6 +1,8 @@
 import gql from 'graphql-tag';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import * as streamHandler from '../../../../src/database/stream/stream-handler';
+import * as rabbitmq from '../../../../src/database/rabbitmq';
+import { worksForSource } from '../../../../src/domain/work';
 import { queryAsAdminWithError, queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../../../utils/testQueryHelper';
 import { ADMIN_USER, getUserIdByEmail, testContext, USER_CONNECTOR, USER_EDITOR, USER_PARTICIPATE } from '../../../utils/testQuery';
 import { RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
@@ -29,6 +31,7 @@ const WAITING_IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202021';
 const UNREADABLE_IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202022';
 const OTHER_ACCOUNT_IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202023';
 const NO_READABLE_PAIR_IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202024';
+const UNPUBLISHED_IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202025';
 
 const INDICATOR_ADD = gql`
   mutation IndicatorAdd($input: IndicatorAddInput!) {
@@ -699,6 +702,73 @@ describe('IOC validation requests', () => {
       await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: hiddenId } });
       await connectorDelete(testContext, ADMIN_USER, NO_READABLE_PAIR_IOC_VALIDATION_CONNECTOR);
       resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+    }
+  });
+
+  it('should close the work of a request in error when it cannot be published, before the request is dispatched again', async () => {
+    // Writes outside the dataset: kept out of the raw stream the synchronization tests count
+    const streamed = [
+      vi.spyOn(streamHandler, 'storeCreateEntityEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeCreateRelationEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeUpdateEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeDeleteEvent').mockResolvedValue(undefined as never),
+    ];
+    const connectorUserId = await getUserIdByEmail(USER_CONNECTOR.email);
+    const waitingConnector = {
+      id: UNPUBLISHED_IOC_VALIDATION_CONNECTOR,
+      name: 'OpenAEV IOC validation (queue unavailable)',
+      type: ConnectorType.InternalEnrichment,
+      scope: [IOC_VALIDATION_CONNECTOR_SCOPE],
+      auto: false,
+      auto_update: false,
+    };
+    await registerConnector(testContext, ADMIN_USER, waitingConnector, { connector_user_id: connectorUserId });
+    const offline = await storeLoadById<BasicStoreEntity>(testContext, ADMIN_USER, UNPUBLISHED_IOC_VALIDATION_CONNECTOR, ENTITY_TYPE_CONNECTOR);
+    await elUpdate(testContext, offline._index, offline.internal_id, { doc: { updated_at: new Date(Date.now() - 10 * 60 * 1000).toISOString() } });
+    resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+    const publish = rabbitmq.pushToConnector;
+    let id: string | undefined;
+    try {
+      const created = await queryAsAdminWithSuccess({
+        query: REQUEST_VALIDATION,
+        variables: { platformIds: [platformId], indicatorIds: [liveIndicatorId], testKinds: ['dns_resolution'], connectorId: UNPUBLISHED_IOC_VALIDATION_CONNECTOR, name: 'Queue unavailable' },
+      });
+      id = created.data?.indicatorsRequestValidation.id as string;
+      expect(created.data?.indicatorsRequestValidation.status).toEqual('pending');
+      // The connector is alive again, but its queue refuses the request
+      await registerConnector(testContext, ADMIN_USER, waitingConnector, { connector_user_id: connectorUserId });
+      resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+      const refused = vi.spyOn(rabbitmq, 'pushToConnector').mockImplementation(async (connectorId: string, message: unknown) => {
+        if (connectorId === UNPUBLISHED_IOC_VALIDATION_CONNECTOR) {
+          throw new Error('Queue unavailable');
+        }
+        return publish(connectorId, message as never);
+      });
+      try {
+        await maintainIocValidationRequests(testContext);
+      } finally {
+        refused.mockRestore();
+      }
+      const released = (await queryAsAdminWithSuccess({ query: REQUEST_READ, variables: { id } })).data?.iocValidationRequest;
+      expect(released).toMatchObject({ status: 'pending', work_id: null, dispatched_at: null });
+      const [closed] = await worksForSource(testContext, SYSTEM_USER, id) as unknown as Array<{ id: string; status: string; errors: Array<{ message: string; source: string }> }>;
+      expect(closed.status).toEqual('complete');
+      expect(closed.errors).toEqual([expect.objectContaining({ message: 'The request could not be published to the queue of the connector', source: 'Platform' })]);
+      // The next scan dispatches the request with a new work
+      await maintainIocValidationRequests(testContext);
+      const sent = (await queryAsAdminWithSuccess({ query: REQUEST_READ, variables: { id } })).data?.iocValidationRequest;
+      expect(sent.status).toEqual('sent');
+      expect(sent.work_id).toBeTruthy();
+      expect(sent.work_id).not.toEqual(closed.id);
+      const works = await worksForSource(testContext, SYSTEM_USER, id) as unknown as Array<{ id: string }>;
+      expect(works.map((work) => work.id).sort()).toEqual([closed.id, sent.work_id].sort());
+    } finally {
+      if (id) {
+        await queryAsAdminWithSuccess({ query: REQUEST_DELETE, variables: { id } });
+      }
+      await connectorDelete(testContext, ADMIN_USER, UNPUBLISHED_IOC_VALIDATION_CONNECTOR);
+      resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+      streamed.forEach((spy) => spy.mockRestore());
     }
   });
 

@@ -20,7 +20,7 @@ import { cleanMarkings } from '../../utils/markingDefinition-utils';
 import { fullEntitiesList, fullRelationsList, internalFindByIds, internalLoadById, pageEntitiesConnection, storeLoadById, storeLoadByIds } from '../../database/middleware-loader';
 import { connectorsForEnrichment } from '../../database/repository';
 import { pushToConnector } from '../../database/rabbitmq';
-import { createWork } from '../../domain/work';
+import { createWork, reportExpectation } from '../../domain/work';
 import { createInternalObject, deleteInternalObject } from '../../domain/internalObject';
 import { CONNECTOR_INTERNAL_ENRICHMENT } from '../../schema/general';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
@@ -757,6 +757,12 @@ const dispatchClaimedIocValidationRequest = async (context: AuthContext, claimed
   try {
     await pushToConnector(connector.internal_id, message);
   } catch (error) {
+    // The work never reaches the connector: it is closed in error before the request is released for a new dispatch
+    try {
+      await reportExpectation(context, SYSTEM_USER, work.id, { error: 'The request could not be published to the queue of the connector', source: 'Platform' });
+    } catch (reportError) {
+      logApp.warn('[IOC-VALIDATION] Cannot close the work of a request that could not be published', { requestId: request.internal_id, workId: work.id, cause: reportError });
+    }
     await withRequestLock(request.internal_id, () => patchRequest(context, SYSTEM_USER, request.internal_id, { work_id: null, dispatched_at: null }));
     throw error;
   }
