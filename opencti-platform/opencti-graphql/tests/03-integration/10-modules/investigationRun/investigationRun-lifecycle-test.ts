@@ -701,11 +701,15 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       expect(mirrored.evidence).toHaveLength(1);
       expect(mirrored.draft_id).toBeTruthy();
       const reader = await getAuthUser(await getUserIdByEmail(USER_EDITOR.email));
-      expect(await draftWorkspaceDomain.findById(testContext, reader, mirrored.draft_id as string)).toBeTruthy();
+      // One context per read, as one per request: what is withheld is read once per context.
+      const requestContext = () => ({ ...testContext });
+      expect(await draftWorkspaceDomain.findById(requestContext(), reader, mirrored.draft_id as string)).toBeTruthy();
       vi.mocked(investigationXtm.cancelInvestigation).mockClear();
       await queryAsAdminWithSuccess({ query: RESTRICT_CONTAINER, variables: { id: caseId, input: [{ id: ADMIN_USER.id, access_right: 'admin' }] } });
       engineStage = 'completed';
-      // The first deletion of the draft fails: the run keeps its reference and the manager retries.
+      // At the stop the restriction of the draft fails, then its first deletion fails: the run keeps its reference and
+      // the manager retries both, in that order.
+      const restriction = vi.spyOn(draftWorkspaceDomain, 'draftWorkspaceEditAuthorizedMembers').mockRejectedValueOnce(new Error('Draft store unavailable'));
       const deletion = vi.spyOn(draftWorkspaceDomain, 'deleteDraftWorkspace').mockRejectedValueOnce(new Error('Draft store unavailable'));
       const stopped = await tickUntil(runId, (current) => current.run_status !== 'running');
       expect(stopped).toMatchObject({
@@ -739,21 +743,32 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       expect(await runFields.subject(restrictedRun, {}, editorContext) ?? null).toBeNull();
       expect(await runFields.case_id(restrictedRun, {}, editorContext)).toBeNull();
       expect(await runFields.case(restrictedRun, {}, editorContext)).toBeNull();
-      expect((await loadInvestigationRun(testContext, runId))?.draft_id).toBe(mirrored.draft_id);
-      // While its deletion is retried, the draft is restricted to the manager: a reader who kept its id opens nothing.
-      expect(await draftWorkspaceDomain.findById(testContext, reader, mirrored.draft_id as string) ?? null).toBeNull();
-      const storedDraft = await internalLoadById(testContext, ADMIN_USER, mirrored.draft_id as string) as unknown as { restricted_members?: { id: string }[] };
-      expect(storedDraft.restricted_members?.map((member) => member.id)).toEqual([INVESTIGATION_MANAGER_USER.id]);
+      const draftId = mirrored.draft_id as string;
+      expect((await loadInvestigationRun(testContext, runId))?.draft_id).toBe(draftId);
+      const draftMembers = async () => ((await internalLoadById(testContext, ADMIN_USER, draftId)) as unknown as { restricted_members?: { id: string }[] })
+        .restricted_members?.map((member) => member.id) ?? [];
+      // Nothing is deleted under its old members while its restriction failed...
+      expect(restriction).toHaveBeenCalled();
+      expect(deletion).not.toHaveBeenCalled();
+      expect(await draftMembers()).not.toEqual([INVESTIGATION_MANAGER_USER.id]);
+      // ...and the draft is withheld from the stop on all the same: a reader who kept its id opens nothing, lists nothing,
+      // counts nothing and, still one of its members, cannot give it new members (an edit returns the draft).
+      expect(await draftWorkspaceDomain.findById(requestContext(), reader, draftId) ?? null).toBeNull();
+      const listed = await draftWorkspaceDomain.findDraftWorkspacePaginated(requestContext(), reader, { first: 100 } as never);
+      expect(listed.edges.map((edge: { node: { id: string } }) => edge.node.id)).not.toContain(draftId);
+      const byId = { mode: 'and', filters: [{ key: ['id'], values: [draftId] }], filterGroups: [] };
+      expect((await draftWorkspaceDomain.draftWorkspacesNumber(requestContext(), reader, { filters: byId })).count).toBe(0);
+      restriction.mockRestore();
+      await expect(draftWorkspaceDomain.draftWorkspaceEditAuthorizedMembers(requestContext(), reader, draftId, [{ id: reader.id, access_right: 'admin' }]))
+        .rejects.toThrow('cannot be found');
+      // The next pass restricts it to the manager, then its deletion fails: the run keeps its reference.
+      await processInvestigationRun(testContext, runId);
+      expect(deletion).toHaveBeenCalledTimes(1);
+      expect(await draftMembers()).toEqual([INVESTIGATION_MANAGER_USER.id]);
+      expect(await draftWorkspaceDomain.findById(requestContext(), reader, draftId) ?? null).toBeNull();
+      expect((await loadInvestigationRun(testContext, runId))?.draft_id).toBe(draftId);
       expect(stopped.steps).toEqual([]);
       expect((await listInvestigationRunsToProcess(testContext, 50)).map((run) => run.internal_id)).toContain(runId);
-      // A restriction that fails stops the pass before any deletion: nothing is deleted under the old members.
-      const restriction = vi.spyOn(draftWorkspaceDomain, 'draftWorkspaceEditAuthorizedMembers').mockRejectedValueOnce(new Error('Draft store unavailable'));
-      const deletionAttempts = deletion.mock.calls.length;
-      await processInvestigationRun(testContext, runId);
-      expect(restriction).toHaveBeenCalled();
-      expect(deletion.mock.calls.length).toBe(deletionAttempts);
-      expect((await loadInvestigationRun(testContext, runId))?.draft_id).toBe(mirrored.draft_id);
-      restriction.mockRestore();
       // Deleting the run deletes its draft first: refused while that fails, the run keeps its reference.
       deletion.mockRejectedValueOnce(new Error('Draft store unavailable'));
       const refusedDeletion = await queryAsAdmin({ query: RUN_DELETE, variables: { id: runId } });

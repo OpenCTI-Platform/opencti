@@ -23,7 +23,22 @@ const MARKDOWN_ATTRIBUTES = [
 
 const DATE_ATTRIBUTES = ['latestInvestigationRun.completed_at'];
 
-const buildStringAttribute = (inputValue: unknown, attributeType?: string, inTable = false) => {
+// What a Case Autopilot investigation copied from its engine is text: only its report sections render, as sanitized
+// Markdown (above), and the investigation as a whole, its sections together or any other value of it are escaped.
+const INVESTIGATION_RUN_ATTRIBUTE = 'latestInvestigationRun';
+const ESCAPED_TEXT = 'escaped-text';
+const isInvestigationRunAttribute = (attribute: string) => attribute === INVESTIGATION_RUN_ATTRIBUTE
+  || attribute.startsWith(`${INVESTIGATION_RUN_ATTRIBUTE}.`);
+const escapeHtml = (text: string) => text
+  .replaceAll('&', '&amp;')
+  .replaceAll('<', '&lt;')
+  .replaceAll('>', '&gt;')
+  .replaceAll('"', '&quot;')
+  .replaceAll('\'', '&#39;');
+
+// insertedAsHtml: the attribute outcome inserts the string into the document as is; a table cell or a list item is a
+// React text node, escaped when rendered.
+const buildStringAttribute = (inputValue: unknown, attributeType?: string, inTable = false, insertedAsHtml = !inTable) => {
   let value: string | ReactElement = typeof inputValue === 'string' ? inputValue : JSON.stringify(inputValue);
 
   if (attributeType === 'date') {
@@ -46,8 +61,13 @@ const buildStringAttribute = (inputValue: unknown, attributeType?: string, inTab
     // (markdown, auto-detected like www.example.com, or raw HTML) are unwrapped, their text is kept.
     const stringHtml = DOMPurify.sanitize(mark, inTable ? { FORBID_TAGS: ['a'] } : undefined);
     value = <div dangerouslySetInnerHTML={{ __html: stringHtml }} />;
-  } else if (inTable) {
-    value = stringWithZeroWidthSpace(value);
+  } else {
+    if (inTable) {
+      value = stringWithZeroWidthSpace(value);
+    }
+    if (attributeType === ESCAPED_TEXT && insertedAsHtml && typeof value === 'string') {
+      value = escapeHtml(value);
+    }
   }
   return value;
 };
@@ -60,6 +80,7 @@ const useBuildReadableAttribute = () => {
     let attributeType: string | undefined;
     if (attribute) {
       attributeType = stixCoreObjectsAttributesMap.get(attribute)?.type;
+      if (isInvestigationRunAttribute(attribute)) attributeType = ESCAPED_TEXT;
       if (MARKDOWN_ATTRIBUTES.includes(attribute)) attributeType = 'markdown';
       if (DATE_ATTRIBUTES.includes(attribute)) attributeType = 'date';
     }
@@ -70,7 +91,7 @@ const useBuildReadableAttribute = () => {
         readableAttribute = renderToString(
           <ul>
             {attributeData.map((el) => (
-              <li key={el}>{buildStringAttribute(el, attributeType, inTable)}</li>
+              <li key={el}>{buildStringAttribute(el, attributeType, inTable, false)}</li>
             ))}
           </ul>,
         );

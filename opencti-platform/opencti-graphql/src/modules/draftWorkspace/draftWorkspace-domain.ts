@@ -64,6 +64,7 @@ import {
 import { editAuthorizedMembers, sanitizeAuthorizedMembers } from '../../utils/authorizedMembers';
 import { bypassDraftContext, getDraftContext } from '../../utils/draftContext';
 import { addFilter } from '../../utils/filtering/filtering-utils';
+import { unlessWithheld, withoutWithheldElements } from '../../utils/withheldElements';
 import { WORKFLOW_INSTANCE_STATUS_FILTER } from '../../utils/filtering/filtering-constants';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../workflow/types/workflow-types';
 import { now } from '../../utils/format';
@@ -78,7 +79,7 @@ import { extractEntityRepresentativeName } from '../../database/entity-represent
 // by performing a two-step lookup on WorkflowInstance entities.
 // WorkflowInstance.currentState stores the StatusTemplate internal ID directly
 // (per workflow-schema.ts: statusId refers to StatusTemplate internal ID).
-const resolveWorkflowInstanceStatusFilter = async (context: AuthContext, user: AuthUser, args: any): Promise<any> => {
+const resolveWorkflowInstanceStatusIdFilter = async (context: AuthContext, user: AuthUser, args: any): Promise<any> => {
   const filters = args.filters;
   if (!filters) return args;
 
@@ -114,6 +115,13 @@ const resolveWorkflowInstanceStatusFilter = async (context: AuthContext, user: A
   };
 };
 
+// Every listing, count, time series and distribution of drafts reads its filters here. The drafts withheld from the
+// reader are left out after the status filter is resolved: that resolution reads the top-level filters only.
+const resolveWorkflowInstanceStatusFilter = async (context: AuthContext, user: AuthUser, args: any): Promise<any> => {
+  const resolvedArgs = await resolveWorkflowInstanceStatusIdFilter(context, user, args);
+  return { ...resolvedArgs, filters: await withoutWithheldElements(context, user, ENTITY_TYPE_DRAFT_WORKSPACE, resolvedArgs.filters) };
+};
+
 export const checkAndReturnDraft = async (context: AuthContext, user: AuthUser, draftId: string) => {
   const draft = await findById(context, user, draftId);
   if (!draft) {
@@ -122,8 +130,9 @@ export const checkAndReturnDraft = async (context: AuthContext, user: AuthUser, 
   return draft;
 };
 
-export const findById = (context: AuthContext, user: AuthUser, id: string) => {
-  return storeLoadById<BasicStoreEntityDraftWorkspace>(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
+export const findById = async (context: AuthContext, user: AuthUser, id: string) => {
+  const draft = await storeLoadById<BasicStoreEntityDraftWorkspace>(context, user, id, ENTITY_TYPE_DRAFT_WORKSPACE);
+  return unlessWithheld(context, user, ENTITY_TYPE_DRAFT_WORKSPACE, draft);
 };
 
 // Helper: application-level sort by workflow instance current status name.
@@ -354,8 +363,9 @@ export const draftWorkspacesDistribution = async (context: AuthContext, user: Au
   return distributionEntities(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], resolvedArgs);
 };
 
-export const findDraftWorkspaceRestrictedPaginated = (context: AuthContext, user: AuthUser, args: QueryDraftWorkspacesArgs) => {
-  const filters = addFilter(args.filters, `${authorizedMembers.name}.id`, [], FilterOperator.NotNil);
+export const findDraftWorkspaceRestrictedPaginated = async (context: AuthContext, user: AuthUser, args: QueryDraftWorkspacesArgs) => {
+  const visible = await withoutWithheldElements(context, user, ENTITY_TYPE_DRAFT_WORKSPACE, args.filters);
+  const filters = addFilter(visible, `${authorizedMembers.name}.id`, [], FilterOperator.NotNil);
 
   return pageEntitiesConnection<BasicStoreEntityDraftWorkspace>(context, user, [ENTITY_TYPE_DRAFT_WORKSPACE], {
     ...args,
@@ -629,6 +639,11 @@ export const draftWorkspaceEditAuthorizedMembers = async (
   input: MemberAccessInput[] | undefined | null,
   options?: { skipAdminValidation?: boolean },
 ) => {
+  // A withheld draft is refused as an unknown one; any other draft is left to the access checks of the edit itself.
+  const draft = await storeLoadById<BasicStoreEntityDraftWorkspace>(context, user, workspaceId, ENTITY_TYPE_DRAFT_WORKSPACE);
+  if (draft && !(await unlessWithheld(context, user, ENTITY_TYPE_DRAFT_WORKSPACE, draft))) {
+    throw FunctionalError(`Draft ${workspaceId} cannot be found`);
+  }
   const args = {
     entityId: workspaceId,
     input,

@@ -19,6 +19,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreCommon, BasicStoreEntity, BasicStoreRelation, StoreEntity } from '../../types/store';
 import {
   FilterMode,
+  FilterOperator,
   InvestigationApprovalKind,
   InvestigationApprovalStatus,
   InvestigationAutonomousAction,
@@ -52,6 +53,7 @@ import { extractEntityRepresentativeName } from '../../database/entity-represent
 import {
   executionContext,
   INVESTIGATION_MANAGER_USER,
+  isBypassUser,
   isUserHasCapability,
   isUserInPlatformOrganization,
   KNOWLEDGE_KNENRICHMENT,
@@ -67,6 +69,9 @@ import { stixDomainObjectAddRelation, stixDomainObjectEditField } from '../../do
 import { taskAdd } from '../task/task-domain';
 import { deleteDraftWorkspace, draftWorkspaceEditAuthorizedMembers, findById as findDraftById, validateDraftWorkspace } from '../draftWorkspace/draftWorkspace-domain';
 import { findById as findWorkspaceById, workspaceDelete, workspaceEditAuthorizedMembers } from '../workspace/workspace-domain';
+import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
+import { ENTITY_TYPE_WORKSPACE } from '../workspace/workspace-types';
+import { registerWithheldElements, type WithheldElementsProvider } from '../../utils/withheldElements';
 import { connectorsForEnrichment } from '../../database/repository';
 import { isUserAccountValid, resolveUserByIdFromCache } from '../user/user-domain';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
@@ -700,6 +705,31 @@ export const deleteStoppedRunArtifacts = async (context: AuthContext, runId: str
     return Object.keys(patch).length > 0 ? patch : null;
   });
 };
+
+// From the moment a run stops at an access boundary until its draft and investigation graph are deleted, both are
+// withheld from every reader but the manager and the users who bypass access restrictions, whether or not their
+// restriction succeeded yet: the stopped run, stored first, is what says so.
+const withheldStoppedRunArtifacts = (field: 'draft_id' | 'workspace_id'): WithheldElementsProvider => async (context, user) => {
+  if (user.id === INVESTIGATION_MANAGER_USER.id || isBypassUser(user) || !(await isEnterpriseEdition(context))) {
+    return [];
+  }
+  const runs = await topEntitiesList<BasicStoreEntityInvestigationRun>(outOfDraft(context), INVESTIGATION_MANAGER_USER, [ENTITY_TYPE_INVESTIGATION_RUN], {
+    filters: {
+      mode: FilterMode.And,
+      filters: [
+        { key: ['run_status'], values: [InvestigationRunStatus.Failed] },
+        { key: ['end_reason_code'], values: CARRY_BOUNDARY_CODES },
+        { key: [field], values: [], operator: FilterOperator.NotNil },
+      ],
+      filterGroups: [],
+    },
+    noFiltersChecking: true,
+    first: 500,
+  });
+  return runs.map((run) => run[field]).filter((id): id is string => !!id);
+};
+registerWithheldElements(ENTITY_TYPE_DRAFT_WORKSPACE, withheldStoppedRunArtifacts('draft_id'));
+registerWithheldElements(ENTITY_TYPE_WORKSPACE, withheldStoppedRunArtifacts('workspace_id'));
 
 export const cancelInvestigationRun = async (context: AuthContext, user: AuthUser, id: string) => {
   const run = await findAccessibleRun(context, user, id);
