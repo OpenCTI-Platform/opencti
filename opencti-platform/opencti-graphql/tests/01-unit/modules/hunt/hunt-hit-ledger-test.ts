@@ -60,8 +60,13 @@ describe('Hit key shared with the connectors SDK', () => {
     expect(identifyingHitKeys([first, 'not a key'], { hitsCount: 2 })).toBeNull();
     expect(identifyingHitKeys([first, 42], { hitsCount: 2 })).toBeNull();
     expect(identifyingHitKeys([first], { hitsCount: 2, sampledKeys: [first, second] })).toBeNull();
+    // More distinct keys than hits: one key per hit read, never more, even for a report without hits
+    expect(identifyingHitKeys([first], { hitsCount: 0 })).toBeNull();
+    expect(identifyingHitKeys([first, second, third], { hitsCount: 2 })).toBeNull();
+    expect(identifyingHitKeys([first, second, third], { hitsCount: 2 }, 1)).toBeNull();
     // An indicator hunt reports the keys of each value
     expect(identifyingHitKeys([], { hitsCount: 2, extraKeys: [first, second], sampledKeys: [second] })).toEqual([first, second]);
+    expect(identifyingHitKeys([third], { hitsCount: 2, extraKeys: [first, second] })).toBeNull();
   });
 });
 

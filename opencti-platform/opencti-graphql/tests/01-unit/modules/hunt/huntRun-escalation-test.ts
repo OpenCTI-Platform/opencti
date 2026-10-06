@@ -272,6 +272,19 @@ describe('Hits counted once across the runs of a hunt', () => {
     }
     expect(recordHuntHits).not.toHaveBeenCalled();
   });
+
+  it('should never count more new hits than the run found when it reports more keys than hits', async () => {
+    vi.mocked(recordHuntHits).mockResolvedValue({ newCount: 28, recurringCount: 0 });
+    for (let index = 0; index < 2; index += 1) {
+      const hitsCount = [0, 3][index];
+      vi.mocked(patchAttribute).mockReset();
+      loading(autonomous);
+      await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'completed', hits_count: hitsCount, hit_keys: KEYS } as never);
+      expect(finalState()).toMatchObject({ hits_count: hitsCount, hits_new_count: hitsCount, hits_recurring_count: 0, hits_identified: false });
+    }
+    expect(recordHuntHits).not.toHaveBeenCalled();
+    expect(createHuntIncidentWorkspace).not.toHaveBeenCalled();
+  });
 });
 
 describe('Time window of the recurring runs', () => {

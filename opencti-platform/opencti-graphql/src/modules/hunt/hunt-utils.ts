@@ -222,10 +222,10 @@ export const sanitizeHitKeys = (keys: unknown, maxItems = HUNT_CONFIG.maxResults
 
 /**
  * The hit keys of a report when they identify its hits, null when they cannot: no list, an entry that is not a hit key,
- * no key for a report with hits, or a sampled hit whose key is not listed. A connector reports one key per hit it read,
- * distinct and bounded by the maximum results, so fewer keys than hits is expected (hits of one detection, truncated
- * results); a sampled hit is one of the hits read, so its key is always listed. `extraKeys` are the keys an indicator
- * hunt reports per value.
+ * no key for a report with hits, more distinct keys than hits, or a sampled hit whose key is not listed. A connector
+ * reports one key per hit it read, distinct and bounded by the maximum results, so fewer keys than hits is expected
+ * (hits of one detection, truncated results) and more is not; a sampled hit is one of the hits read, so its key is
+ * always listed. `extraKeys` are the keys an indicator hunt reports per value, hits of the report as well.
  */
 export const identifyingHitKeys = (
   keys: unknown,
@@ -240,7 +240,7 @@ export const identifyingHitKeys = (
     return null;
   }
   const distinct = Array.from(new Set([...normalized, ...(report.extraKeys ?? [])]));
-  if (report.hitsCount > 0 && distinct.length === 0) {
+  if ((report.hitsCount > 0 && distinct.length === 0) || distinct.length > report.hitsCount) {
     return null;
   }
   const listed = new Set(distinct);
