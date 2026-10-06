@@ -40,6 +40,12 @@ const LEVEL_LABELS: Record<number, string> = {
   [DEFENSE_LEVEL_VALIDATED]: 'validated',
 };
 
+// Triggers told an earlier coverage of a technique than the `previous` coverage of its queued change
+export interface DefenseTriggerBaseline {
+  trigger_ids: string[];
+  previous: DefenseCoverage;
+}
+
 // The stored coverage of a technique before and after a computation
 export interface DefenseCoverageChange {
   attack_pattern_id: string;
@@ -47,6 +53,8 @@ export interface DefenseCoverageChange {
   coverage: DefenseCoverage;
   // Triggers already handled for this change by a delivery that failed on a later trigger
   delivered_trigger_ids?: string[];
+  // Triggers handled by a failed delivery before the change was queued again: each is told the change from its own baseline
+  trigger_baselines?: DefenseTriggerBaseline[];
 }
 
 // How far a delivery went: the changes fully handled, and the triggers handled for the next one
@@ -87,6 +95,15 @@ export const readerLevelChange = (change: DefenseCoverageChange, can: AccessPred
   return { attack_pattern_id: change.attack_pattern_id, previous_level: previousLevel, level };
 };
 
+/**
+ * The change as one trigger is told it: from the coverage this trigger was last told when an earlier delivery reached it,
+ * from the `previous` coverage of the change otherwise.
+ */
+export const triggerCoverageChange = (change: DefenseCoverageChange, triggerId: string): DefenseCoverageChange => {
+  const baseline = change.trigger_baselines?.find(({ trigger_ids }) => trigger_ids.includes(triggerId));
+  return baseline ? { ...change, previous: baseline.previous } : change;
+};
+
 export const defenseLevelEventType = (change: DefenseLevelChange) => {
   return change.level < change.previous_level ? DEFENSE_TRIGGER_LEVEL_DECREASED : DEFENSE_TRIGGER_LEVEL_INCREASED;
 };
@@ -118,7 +135,11 @@ export const notifyDefenseLevelChanges = async (context: AuthContext, changes: D
   });
   if (listening.length === 0) return 0;
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const evidenceIds = R.uniq(changes.flatMap((change) => [...collectCoverageIds(change.previous), ...collectCoverageIds(change.coverage)]));
+  const evidenceIds = R.uniq(changes.flatMap((change) => [
+    ...collectCoverageIds(change.previous),
+    ...collectCoverageIds(change.coverage),
+    ...(change.trigger_baselines ?? []).flatMap((baseline) => collectCoverageIds(baseline.previous)),
+  ]));
   // One access evaluation per recipient for the whole computation, whatever the number of triggers they are in
   const predicates = new Map<string, Promise<AccessPredicate>>();
   const predicateOf = (userContext: AuthContext, user: AuthUser) => {
@@ -151,11 +172,12 @@ export const notifyDefenseLevelChanges = async (context: AuthContext, changes: D
       if (!handledTriggerIds.includes(trigger.internal_id)) {
         const eventTypes = trigger.event_types ?? [];
         const filters = trigger.filters ? JSON.parse(trigger.filters) : trigger.raw_filters;
+        const triggerChange = triggerCoverageChange(change, trigger.internal_id);
         const targets: KnowledgeNotificationEvent['targets'] = [];
         for (let userIndex = 0; userIndex < users.length; userIndex += 1) {
           const user: AuthUser = users[userIndex];
           const userContext = { ...context, user_inside_platform_organization: isUserInPlatformOrganization(user, settings) };
-          const levelChange = readerLevelChange(change, await predicateOf(userContext, user));
+          const levelChange = readerLevelChange(triggerChange, await predicateOf(userContext, user));
           const eventType = levelChange ? defenseLevelEventType(levelChange) : undefined;
           if (levelChange && eventType && eventTypes.includes(eventType)) {
             const instance = await loadStix();
@@ -211,8 +233,8 @@ const loadStoredCoverages = async (context: AuthContext, attackPatternIds: strin
 /**
  * The queued changes as they stand against the coverages actually stored. A change is queued before its coverage is
  * stored, so a storage that failed leaves a change the platform does not hold: each change ends at the stored coverage
- * of its technique (back at its previous coverage, it tells nobody anything), and the change of a technique that has
- * no stored coverage any more (deleted or revoked) is dropped.
+ * of its technique (back at the coverage a trigger was last told, it tells this trigger nothing), and the change of a
+ * technique that has no stored coverage any more (deleted or revoked) is dropped.
  */
 export const reconcileQueuedChanges = (queued: DefenseCoverageChange[], stored: ReadonlyMap<string, DefenseCoverage>) => {
   const changes: DefenseCoverageChange[] = [];

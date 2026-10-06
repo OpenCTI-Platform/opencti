@@ -144,28 +144,47 @@ export const clearPendingValidationTracking = async (securityCoverageId: string)
   await redisDeleteDefensePendingValidationTracking(securityCoverageId);
 };
 
+const isReadableBaselines = (baselines: unknown) => baselines === undefined || (Array.isArray(baselines)
+  && baselines.every((baseline) => Array.isArray(baseline?.trigger_ids) && !!baseline.previous));
+
 const parsePendingChange = (value: string | undefined): DefenseCoverageChange | undefined => {
   try {
     const change = value ? JSON.parse(value) : undefined;
-    return change?.attack_pattern_id && change.previous && change.coverage ? change as DefenseCoverageChange : undefined;
+    const readable = change?.attack_pattern_id && change.previous && change.coverage && isReadableBaselines(change.trigger_baselines);
+    return readable ? change as DefenseCoverageChange : undefined;
   } catch {
     return undefined;
   }
 };
 
 /**
+ * A change queued again for a technique whose earlier change is still queued (a computation retried after a failure, or a
+ * new change before the delivery) keeps the first previous coverage and the latest coverage. The triggers a failed delivery
+ * already handled were told the coverage stored at that time: they keep it as their own baseline, so a change that reverts
+ * the earlier one still reaches them, and they are never told twice what they already know.
+ */
+export const mergeQueuedLevelChange = (earlier: DefenseCoverageChange | undefined, change: DefenseCoverageChange): DefenseCoverageChange => {
+  if (!earlier) return { attack_pattern_id: change.attack_pattern_id, previous: change.previous, coverage: change.coverage };
+  const delivered = earlier.delivered_trigger_ids ?? [];
+  const baselines = (earlier.trigger_baselines ?? [])
+    .map((baseline) => ({ ...baseline, trigger_ids: baseline.trigger_ids.filter((id) => !delivered.includes(id)) }))
+    .filter((baseline) => baseline.trigger_ids.length > 0);
+  if (delivered.length > 0) baselines.push({ trigger_ids: delivered, previous: earlier.coverage });
+  const merged: DefenseCoverageChange = { attack_pattern_id: change.attack_pattern_id, previous: earlier.previous, coverage: change.coverage };
+  return baselines.length > 0 ? { ...merged, trigger_baselines: baselines } : merged;
+};
+
+/**
  * Queue level changes for their delivery to the live triggers, before the new coverage is stored: the stored coverage
- * becomes their baseline, so a later computation would never find them again. One entry per technique: a change queued
- * again for a technique (a computation retried after a failure, or a new change before the delivery) keeps the first
- * previous coverage and the latest coverage, and is delivered again to every trigger.
+ * becomes their baseline, so a later computation would never find them again. One entry per technique, merged with the
+ * change already queued for it.
  */
 export const queuePendingLevelChanges = async (changes: DefenseCoverageChange[]) => {
   if (changes.length === 0) return;
   const queued = await redisGetDefensePendingLevelChanges(changes.map((change) => change.attack_pattern_id));
   const entries: Record<string, string> = {};
   changes.forEach((change) => {
-    const earlier = parsePendingChange(queued[change.attack_pattern_id]);
-    const merged: DefenseCoverageChange = { attack_pattern_id: change.attack_pattern_id, previous: earlier?.previous ?? change.previous, coverage: change.coverage };
+    const merged = mergeQueuedLevelChange(parsePendingChange(queued[change.attack_pattern_id]), change);
     entries[change.attack_pattern_id] = JSON.stringify(merged);
   });
   await redisSetDefensePendingLevelChanges(entries);

@@ -8,7 +8,9 @@ import {
   notifyDefenseLevelChanges,
   readerLevelChange,
   reconcileQueuedChanges,
+  triggerCoverageChange,
 } from '../../../../src/modules/defenseCoverage/defenseCoverage-notification';
+import { mergeQueuedLevelChange } from '../../../../src/modules/defenseCoverage/defenseCoverage-state';
 import type { DefenseCoverage } from '../../../../src/modules/defenseCoverage/defenseCoverage-types';
 import type { StixObject } from '../../../../src/types/stix-2-1-common';
 import { STIX_EXT_OCTI } from '../../../../src/types/stix-2-1-extensions';
@@ -62,6 +64,17 @@ describe('Defense level notifications', () => {
     expect(readerLevelChange(changes[0], visible)).toEqual({ attack_pattern_id: 'stored', previous_level: 0, level: 2 });
     // The coverage was never stored: the technique is back at its previous level and nobody is told a change
     expect(readerLevelChange(changes[1], visible)).toBeUndefined();
+  });
+
+  it('should tell the triggers a failed delivery reached the change from the coverage they were told', () => {
+    // trigger-a was told that the rule appeared, the delivery failed before trigger-b, then the rule was removed
+    const earlier = { attack_pattern_id: 'ap', previous: withRules([]), coverage: withRules(['rule']), delivered_trigger_ids: ['trigger-a'] };
+    const queued = mergeQueuedLevelChange(earlier, { attack_pattern_id: 'ap', previous: withRules(['rule']), coverage: withRules([]) });
+    const { changes } = reconcileQueuedChanges([queued], new Map([['ap', withRules([])]]));
+    const visible = only(['rule', 'rule-indicates']);
+    expect(readerLevelChange(triggerCoverageChange(changes[0], 'trigger-a'), visible)).toEqual({ attack_pattern_id: 'ap', previous_level: 2, level: 0 });
+    // trigger-b was never told that the rule appeared: the technique is back where it was for it
+    expect(readerLevelChange(triggerCoverageChange(changes[0], 'trigger-b'), visible)).toBeUndefined();
   });
 
   it('should compute the change with the evidences the recipient can access', () => {

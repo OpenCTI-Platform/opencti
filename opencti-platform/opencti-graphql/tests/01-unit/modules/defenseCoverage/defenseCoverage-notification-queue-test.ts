@@ -1,6 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { type DefenseCoverageChange, type DefenseDeliveryProgress, deliverPendingDefenseLevelChanges } from '../../../../src/modules/defenseCoverage/defenseCoverage-notification';
-import { clearPendingLevelChanges, listPendingLevelChanges, queuePendingLevelChanges, savePendingLevelChange } from '../../../../src/modules/defenseCoverage/defenseCoverage-state';
+import {
+  clearPendingLevelChanges,
+  listPendingLevelChanges,
+  mergeQueuedLevelChange,
+  queuePendingLevelChanges,
+  savePendingLevelChange,
+} from '../../../../src/modules/defenseCoverage/defenseCoverage-state';
 import { redisGetDefensePendingLevelChanges, redisSetDefensePendingLevelChanges } from '../../../../src/database/redis';
 import { logApp } from '../../../../src/config/conf';
 import type { AuthContext } from '../../../../src/types/user';
@@ -36,13 +42,39 @@ describe('Queued defense level changes', () => {
   it('should keep one entry per technique, with the first previous coverage and the latest coverage', async () => {
     vi.mocked(redisGetDefensePendingLevelChanges).mockResolvedValueOnce({
       'ap-1': JSON.stringify({ ...change('ap-1', 3, 2), delivered_trigger_ids: ['trigger-1'] }),
+      'ap-3': JSON.stringify(change('ap-3', 0, 1)),
     });
-    await queuePendingLevelChanges([change('ap-1', 2, 1), change('ap-2', 1, 2)]);
-    expect(vi.mocked(redisGetDefensePendingLevelChanges)).toHaveBeenCalledWith(['ap-1', 'ap-2']);
+    await queuePendingLevelChanges([change('ap-1', 2, 1), change('ap-2', 1, 2), change('ap-3', 1, 2)]);
+    expect(vi.mocked(redisGetDefensePendingLevelChanges)).toHaveBeenCalledWith(['ap-1', 'ap-2', 'ap-3']);
     const written = vi.mocked(redisSetDefensePendingLevelChanges).mock.calls[0][0];
-    // A change queued again is delivered again to every trigger
-    expect(JSON.parse(written['ap-1'])).toEqual(change('ap-1', 3, 1));
+    // trigger-1 was told the coverage stored when its delivery failed: it is told the new change from there
+    expect(JSON.parse(written['ap-1'])).toEqual({ ...change('ap-1', 3, 1), trigger_baselines: [{ trigger_ids: ['trigger-1'], previous: coverage(2) }] });
     expect(JSON.parse(written['ap-2'])).toEqual(change('ap-2', 1, 2));
+    // Nobody was told the earlier change of ap-3: every trigger is told the change from the first previous coverage
+    expect(JSON.parse(written['ap-3'])).toEqual(change('ap-3', 0, 2));
+  });
+
+  it('should keep the baseline of every trigger over several failed deliveries', () => {
+    // A delivery failed after trigger-1 and trigger-2; the next one, from a later coverage, failed after trigger-2 again
+    const earlier: DefenseCoverageChange = {
+      ...change('ap-1', 0, 2),
+      delivered_trigger_ids: ['trigger-2'],
+      trigger_baselines: [{ trigger_ids: ['trigger-1', 'trigger-2'], previous: coverage(1) }],
+    };
+    expect(mergeQueuedLevelChange(earlier, change('ap-1', 2, 3))).toEqual({
+      ...change('ap-1', 0, 3),
+      trigger_baselines: [{ trigger_ids: ['trigger-1'], previous: coverage(1) }, { trigger_ids: ['trigger-2'], previous: coverage(2) }],
+    });
+  });
+
+  it('should drop a queued change whose trigger baselines cannot be read', async () => {
+    vi.mocked(redisGetDefensePendingLevelChanges).mockResolvedValueOnce({
+      'ap-1': JSON.stringify({ ...change('ap-1'), trigger_baselines: [{ previous: coverage(1) }] }),
+      'ap-2': JSON.stringify({ ...change('ap-2'), trigger_baselines: [{ trigger_ids: ['trigger-1'], previous: coverage(1) }] }),
+    });
+    const { changes, unreadable } = await listPendingLevelChanges();
+    expect(unreadable).toEqual(['ap-1']);
+    expect(changes.map((pending) => pending.attack_pattern_id)).toEqual(['ap-2']);
   });
 
   it('should clear the delivered changes and keep what a failed delivery did not handle', async () => {
