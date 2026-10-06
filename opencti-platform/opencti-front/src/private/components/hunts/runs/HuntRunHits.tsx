@@ -40,12 +40,12 @@ export interface HuntRunHitsProps {
 }
 
 /** A value that may be cut by its column, readable whole in its tooltip. */
-const Cut = ({ value }: { value: string }) => (
+const Cut = ({ value, full }: { value: string; full?: string }) => (
   <Tooltip>
     <TooltipTrigger asChild>
       <span tabIndex={0} style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{value}</span>
     </TooltipTrigger>
-    <TooltipContent>{value}</TooltipContent>
+    <TooltipContent>{full ?? value}</TooltipContent>
   </Tooltip>
 );
 
@@ -55,7 +55,7 @@ const Cut = ({ value }: { value: string }) => (
  */
 const HuntRunHits = ({ hitsCount, newCount, recurringCount, identified, windowContinued, platform, hits }: HuntRunHitsProps) => {
   const theme = useTheme<Theme>();
-  const { t_i18n, n, fldt } = useFormatter();
+  const { t_i18n, n, fldt, fsd, mhd } = useFormatter();
   const { scheduleLookbackMinutes } = useHuntConfiguration();
   const [showAll, setShowAll] = useState(false);
   const breakdown = huntRunHitsBreakdown({ hits_count: hitsCount, hits_new_count: newCount, hits_recurring_count: recurringCount, hits_identified: identified }, t_i18n, n);
@@ -82,21 +82,21 @@ const HuntRunHits = ({ hitsCount, newCount, recurringCount, identified, windowCo
             <Table size="small" aria-label={t_i18n('Hits')} data-testid="hunt-run-hits" style={{ tableLayout: 'fixed' }}>
               <TableHead>
                 <TableRow>
-                  <TableCell style={{ width: '22%' }}>{t_i18n('Time')}</TableCell>
-                  <TableCell style={{ width: '24%' }}>{t_i18n('Host and user')}</TableCell>
+                  <TableCell style={{ width: '20%' }}>{t_i18n('Time')}</TableCell>
+                  <TableCell style={{ width: '22%' }}>{t_i18n('Host and user')}</TableCell>
                   <TableCell>{t_i18n('Matched')}</TableCell>
-                  <TableCell style={{ width: '26%' }} align="right">{t_i18n('History')}</TableCell>
+                  <TableCell style={{ width: '30%' }} align="right">{t_i18n('History')}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {shown.map((hit, index) => {
-                  const recurrence = huntHitRecurrence(hit, t_i18n, n, fldt);
+                  const recurrence = huntHitRecurrence(hit, t_i18n, n, fsd);
                   const where = [hit.host, hit.user].filter((value): value is string => !!value).join(' / ');
                   const [first] = hit.matched;
                   const matched = first ? `${first.field}${first.value_preview ? ` = ${first.value_preview}` : ''}` : (hit.process ?? '');
                   return (
                     <TableRow key={`${hit.event_id ?? ''}-${hit.timestamp ?? ''}-${index}`}>
-                      <TableCell>{hit.timestamp ? fldt(hit.timestamp) : t_i18n('Undated')}</TableCell>
+                      <TableCell>{hit.timestamp ? <Cut value={mhd(hit.timestamp)} full={fldt(hit.timestamp)} /> : t_i18n('Undated')}</TableCell>
                       <TableCell>{where ? <Cut value={where} /> : '-'}</TableCell>
                       <TableCell>{matched ? <Cut value={matched} /> : '-'}</TableCell>
                       <TableCell align="right">

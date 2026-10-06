@@ -170,9 +170,14 @@ const HuntDetails = ({ data }: HuntDetailsProps) => {
                 {t_i18n('{count, plural, =0 {No hit known yet} one {# distinct hit} other {# distinct hits}}', { values: { count: hunt.knownHits.distinct_count } })}
               </Text>
               {hunt.knownHits.first_new_at && hunt.knownHits.last_new_at && (
-                <Text variant="content-caption" style={{ display: 'block' }}>
-                  {t_i18n('First found {first}, last new hit {last}', { values: { first: fldt(hunt.knownHits.first_new_at), last: fldt(hunt.knownHits.last_new_at) } })}
-                </Text>
+                <>
+                  <Text variant="content-caption" style={{ display: 'block' }} data-testid="hunt-known-hits-first">
+                    {t_i18n('First found {date}', { values: { date: fldt(hunt.knownHits.first_new_at) } })}
+                  </Text>
+                  <Text variant="content-caption" style={{ display: 'block' }} data-testid="hunt-known-hits-last">
+                    {t_i18n('Last new hit {date}', { values: { date: fldt(hunt.knownHits.last_new_at) } })}
+                  </Text>
+                </>
               )}
             </div>
             <Label sx={{ marginTop: 2 }}>{t_i18n('Next run')}</Label>
@@ -181,7 +186,7 @@ const HuntDetails = ({ data }: HuntDetailsProps) => {
             <Text variant="content-compact">{t_i18n('{count} hours', { values: { count: hunt.time_window_hours } })}</Text>
             {huntRunsRecur(hunt) && (
               <Text variant="content-caption" style={{ display: 'block' }} data-testid="hunt-window-sentence">
-                {t_i18n('Recurring runs search since the previous run, with a {minutes}-minute overlap', { values: { minutes: n(scheduleLookbackMinutes) } })}
+                {t_i18n('Recurring runs: since the previous run, {minutes}-minute overlap', { values: { minutes: n(scheduleLookbackMinutes) } })}
               </Text>
             )}
             <Label sx={{ marginTop: 2 }}>{t_i18n('Escalation threshold')}</Label>

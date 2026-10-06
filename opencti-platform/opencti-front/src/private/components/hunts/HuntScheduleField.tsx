@@ -1,6 +1,7 @@
 import React from 'react';
 import { Field, useFormikContext } from 'formik';
 import { useTheme } from '@mui/styles';
+import { Text } from '@filigran/design-system';
 import SelectFieldFds, { SelectItem } from '../../../components/fields/SelectFieldFds';
 import TextField from '../../../components/TextField';
 import { useFormatter } from '../../../components/i18n';
@@ -69,12 +70,12 @@ const HuntScheduleField = ({ modeName = 'schedule_mode', cronName = 'schedule_cr
       {/* The helper line already says what a manual hunt does */}
       {mode !== 'manual' && <HuntSchedulePreview schedule={schedule} />}
       {mode !== 'manual' && (
-        <div style={{ marginTop: theme.spacing(1) }} data-testid="hunt-schedule-window">
+        <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(0.5), color: theme.palette.text.secondary }} data-testid="hunt-schedule-window">
           <HuntHelp
             text={t_i18n('Each run searches since the previous one, with a {minutes}-minute overlap', { values: { minutes: n(scheduleLookbackMinutes) } })}
             href={HUNT_DOCS.hitCounting}
           />
-        </div>
+        </Text>
       )}
     </div>
   );
