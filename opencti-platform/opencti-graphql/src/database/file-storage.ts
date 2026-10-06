@@ -31,6 +31,7 @@ import { isModuleActivated } from './cluster-module';
 import { getDraftFilePrefix, isDraftFile } from './draft-utils';
 import { deleteFileFromStorage, getFileSize, rawCopyFile, rawListObjects, rawUpload } from './raw-file-storage';
 import { promiseMap } from '../utils/promiseUtils';
+import { toUploadError } from '../utils/fileToContent';
 import { ENTITY_TYPE_SUPPORT_PACKAGE } from '../modules/support/support-types';
 import { pushAll } from '../utils/arrayUtil';
 import { getEntitiesMapFromCache } from './cache';
@@ -632,10 +633,15 @@ export const upload = async (
   }
 
   // Stream the file content while incrementally computing the SHA256 hash to avoid holding the entire file twice in memory.
-  const hashReadStream = createReadStream();
+  // As the first full read of the file, it also rejects a file over the upload size limit before anything is stored.
   const hash = crypto.createHash('sha256');
-  for await (const chunk of hashReadStream) {
-    hash.update(chunk);
+  try {
+    const hashReadStream = createReadStream();
+    for await (const chunk of hashReadStream) {
+      hash.update(chunk);
+    }
+  } catch (error) {
+    throw toUploadError(error);
   }
   const sha256 = hash.digest('hex');
 

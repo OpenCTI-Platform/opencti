@@ -30,6 +30,8 @@ import {
   buildGraphqlUploadOptions,
   buildRateLimiterOptions,
   clientErrorResponse,
+  DEFAULT_MAX_UPLOAD_FILE_SIZE,
+  DEFAULT_MAX_UPLOAD_FILES,
   isClientRequestError,
   logMalformedRequest,
   normalizeUploadError,
@@ -157,7 +159,9 @@ const createHttpServer = async () => {
 
   const requestSizeLimit = nconf.get('app:max_payload_body_size') || '50mb';
   app.use(express.json({ limit: requestSizeLimit }));
-  const graphqlUpload = graphqlUploadExpress(buildGraphqlUploadOptions(requestSizeLimit));
+  const uploadFileSizeLimit = nconf.get('app:max_upload_file_size') || DEFAULT_MAX_UPLOAD_FILE_SIZE;
+  const uploadMaxFiles = nconf.get('app:max_upload_files') || DEFAULT_MAX_UPLOAD_FILES;
+  const graphqlUpload = graphqlUploadExpress(buildGraphqlUploadOptions(requestSizeLimit, uploadFileSizeLimit, uploadMaxFiles));
   // IP whitelist middleware — must be after session middleware to detect session-based auth
   app.use(`${basePath}/graphql`, ipWhitelistMiddleware);
   app.use(`${basePath}/graphql`, graphqlMethodRestriction);
