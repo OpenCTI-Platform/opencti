@@ -63,7 +63,7 @@ interface GraphProviderProps {
   title?: string;
 }
 
-export const GraphProvider = ({
+const GraphStateProvider = ({
   children,
   context,
   localStorageKey,
@@ -265,6 +265,16 @@ export const GraphProvider = ({
       {children}
     </GraphContext.Provider>
   );
+};
+
+/**
+ * Kept mounted from one graph to the next (a route change in place), the provider starts over with
+ * the view parameters and the hidden entities stored for the new graph: those of the previous graph
+ * are neither drawn on it nor stored under its key.
+ */
+export const GraphProvider = (props: GraphProviderProps) => {
+  const { localStorageKey } = props;
+  return <GraphStateProvider key={localStorageKey} {...props} />;
 };
 
 export const useGraphContext = () => {
