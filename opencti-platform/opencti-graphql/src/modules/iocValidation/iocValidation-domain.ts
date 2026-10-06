@@ -939,6 +939,7 @@ export const reportIocValidationResults = async (context: AuthContext, user: Aut
   });
   const now = new Date();
   const updatedIndicatorIds: string[] = [];
+  const retriedIndicatorIds: string[] = [];
   const timedOutDeploymentIds = new Set((request.pairs ?? []).filter((pair) => pair.timed_out).map((pair) => pair.deployed_on_id));
   await BluePromise.map(reported, async ({ result, indicator }) => {
     const observedAt = toObservedAt(result.observedAt, now);
@@ -955,7 +956,8 @@ export const reportIocValidationResults = async (context: AuthContext, user: Aut
       // A late verdict of this request replaces the error the timeout set, never a reported verdict.
       const timedOut = deployment.validation_status === VALIDATION_STATUS_ERROR && timedOutDeploymentIds.has(deployment.internal_id);
       const waiting = deployment.validation_status === VALIDATION_STATUS_REQUESTED || timedOut;
-      // A retry of the recorded verdict only repairs its sighting (the verdict is written first).
+      // A retry of the recorded verdict repairs what the call that wrote it may have left undone after the verdict:
+      // its sighting, the counters of the indicator and the results of the request.
       if (!waiting && deployment.validation_status !== result.status) {
         return;
       }
@@ -994,6 +996,8 @@ export const reportIocValidationResults = async (context: AuthContext, user: Aut
       }
       if (waiting) {
         updatedIndicatorIds.push(indicator.internal_id);
+      } else {
+        retriedIndicatorIds.push(indicator.internal_id);
       }
     } finally {
       await lock.unlock();
@@ -1001,7 +1005,9 @@ export const reportIocValidationResults = async (context: AuthContext, user: Aut
   }, { concurrency: CONCURRENCY });
   if (updatedIndicatorIds.length > 0) {
     await addIocValidationPlatformResultCount(updatedIndicatorIds.length);
-    await refreshIndicatorDeploymentCounters(context, updatedIndicatorIds);
+  }
+  if (updatedIndicatorIds.length > 0 || retriedIndicatorIds.length > 0) {
+    await refreshIndicatorDeploymentCounters(context, [...updatedIndicatorIds, ...retriedIndicatorIds]);
     await withRequestLock(request.internal_id, async () => {
       const current = await findIocValidationRequest(context, SYSTEM_USER, request.internal_id) ?? request;
       const pairs = withPairOutcomes(current.pairs ?? [], await findRequestDeployments(context, request.internal_id));

@@ -421,12 +421,20 @@ describe('IOC validation requests', () => {
     });
     const unchanged = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: liveDeploymentId } });
     expect(unchanged.data?.stixCoreRelationship.validation_status).toEqual('missed');
-    // A sighting write lost after the verdict (removed here without event) is repaired by a retry of the same verdict
+    // The writes lost after the verdict (sighting removed and results of the request reverted here without event) are
+    // repaired by a retry of the same verdict
     await elDeleteElements(testContext, ADMIN_USER, [sighting as never], { forceDelete: true, forceRefresh: true });
-    await queryAsUserWithSuccess(USER_CONNECTOR, {
+    const storedRequest = await internalLoadById(testContext, ADMIN_USER, id) as unknown as { _index: string };
+    await elUpdate(testContext, storedRequest._index, id, {
+      script: { source: 'ctx._source.results_summary.requested = 1', lang: 'painless' },
+    });
+    const retried = await queryAsUserWithSuccess(USER_CONNECTOR, {
       query: REPORT_RESULTS,
       variables: { id, platformId, results: [{ indicatorId: liveIndicatorId, status: 'missed', observedAt }] },
     });
+    expect(retried.data?.iocValidationReportResults.results_summary).toEqual({ total: 1, requested: 0, error: 0, skipped: 0 });
+    const repairedRequest = await internalLoadById(testContext, ADMIN_USER, id) as unknown as { results_summary: { requested: number } };
+    expect(repairedRequest.results_summary.requested).toEqual(0);
     const repaired = await storeLoadById<BasicStoreRelation & { x_opencti_negative?: boolean }>(testContext, ADMIN_USER, sightingId, STIX_SIGHTING_RELATIONSHIP);
     expect(repaired?.x_opencti_negative).toEqual(true);
     provenRequestId = id;
