@@ -201,7 +201,12 @@ const DefenseGapsLines = ({ queryRef, scope, onlyUsedByThreats = false, onTotalC
         </Typography>
       ) : (
         <TableContainer>
-          <Table size="small" aria-label={t_i18n('Defense gaps')} data-testid="defense-gaps-table">
+          <Table
+            size="small"
+            aria-label={t_i18n('Defense gaps')}
+            data-testid="defense-gaps-table"
+            sx={{ '& th, & td': { whiteSpace: 'nowrap', paddingX: 1 }, '& td.defense-gaps-wrap': { whiteSpace: 'normal' } }}
+          >
             <TableHead>
               <TableRow>
                 <TableCell padding="checkbox">
@@ -235,7 +240,7 @@ const DefenseGapsLines = ({ queryRef, scope, onlyUsedByThreats = false, onTotalC
                         onCheckedChange={(checked) => toggle(gap.id, checked === true)}
                       />
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="defense-gaps-wrap">
                       <Box
                         component="button"
                         type="button"
@@ -270,7 +275,7 @@ const DefenseGapsLines = ({ queryRef, scope, onlyUsedByThreats = false, onTotalC
                         )}
                       </Stack>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="defense-gaps-wrap">
                       {gap.ruleCandidates.length === 0 ? <Typography variant="body2" color="text.secondary">{t_i18n('None')}</Typography> : (
                         <Stack spacing={0.25}>
                           {gap.ruleCandidates.map((rule) => (
@@ -281,7 +286,7 @@ const DefenseGapsLines = ({ queryRef, scope, onlyUsedByThreats = false, onTotalC
                         </Stack>
                       )}
                     </TableCell>
-                    <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                    <TableCell>
                       {gap.last_validation_requested_at ? (
                         <Tooltip>
                           <TooltipTrigger asChild>

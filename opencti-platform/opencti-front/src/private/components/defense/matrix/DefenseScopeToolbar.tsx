@@ -9,12 +9,10 @@ import {
   ComboboxControls,
   ComboboxField,
   ComboboxInput,
-  ComboboxLabel,
   ComboboxTrigger,
   Select,
   SelectContent,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from '@filigran/design-system';
@@ -115,12 +113,13 @@ const DefenseScopeToolbar = ({
   return (
     <Box
       data-testid="defense-scope-toolbar"
-      sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: 2 }}
+      sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2 }}
     >
       {!hidePlatforms && (
         <Box sx={{ minWidth: 280, flex: '1 1 280px', maxWidth: 480 }}>
           <Combobox<PlatformOption>
             multiple
+            labelPosition="none"
             className="w-full"
             options={platformOptions}
             value={selectedPlatforms}
@@ -134,10 +133,9 @@ const DefenseScopeToolbar = ({
               </span>
             )}
           >
-            <ComboboxLabel>{t_i18n('Security platforms')}</ComboboxLabel>
             <ComboboxField>
               <ComboboxChips aria-label={t_i18n('Security platforms')} />
-              <ComboboxInput placeholder={t_i18n('All platforms')} data-testid="defense-platforms-input" />
+              <ComboboxInput placeholder={t_i18n('All platforms')} aria-label={t_i18n('Security platforms')} data-testid="defense-platforms-input" />
               <ComboboxControls>
                 <ComboboxClear />
                 <ComboboxTrigger />
@@ -152,8 +150,7 @@ const DefenseScopeToolbar = ({
           value={scope.threatMode}
           onValueChange={(value) => onScopeChange({ ...scope, threatMode: value as DefenseThreatScopeMode })}
         >
-          <SelectLabel>{t_i18n('Threat overlay')}</SelectLabel>
-          <SelectTrigger aria-label={t_i18n('Threat overlay')} data-testid="defense-threat-mode">
+          <SelectTrigger aria-label={t_i18n('Threat overlay')} className="w-full" data-testid="defense-threat-mode">
             <SelectValue />
           </SelectTrigger>
           <SelectContent aria-label={t_i18n('Threat overlay')}>
@@ -170,7 +167,7 @@ const DefenseScopeToolbar = ({
       )}
       {scope.threatMode === 'FILTERED' && <ThreatFilters key={filtersSync.generation} scope={scope} onScopeChange={onThreatFiltersChange} />}
       {layers && onLayersChange && (
-        <Box role="group" aria-label={t_i18n('Layers')} sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, paddingTop: 3 }}>
+        <Box role="group" aria-label={t_i18n('Layers')} sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2 }}>
           {DEFENSE_LAYERS.map((layer) => (
             <Checkbox
               key={layer}

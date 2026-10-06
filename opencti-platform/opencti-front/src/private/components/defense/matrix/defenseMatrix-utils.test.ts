@@ -21,6 +21,7 @@ import {
   parseDefenseScope,
   scopedDefensePlatforms,
   summarizeLevels,
+  tacticDisplayName,
   toThreatScopeInput,
 } from './defenseMatrix-utils';
 
@@ -209,6 +210,20 @@ describe('defenseMatrix-utils', () => {
       const cells = [technique('a', 0, 1), technique('b', 0, 2)];
       defenseValidationTargets(cells, false);
       expect(cells.map((c) => c.id)).toEqual(['a', 'b']);
+    });
+  });
+
+  describe('tacticDisplayName', () => {
+    it('names an ATT&CK tactic from its kill chain phase slug', () => {
+      expect(tacticDisplayName('reconnaissance')).toBe('Reconnaissance');
+      expect(tacticDisplayName('resource-development')).toBe('Resource Development');
+      expect(tacticDisplayName('initial-access')).toBe('Initial Access');
+      expect(tacticDisplayName('command-and-control')).toBe('Command and Control');
+    });
+
+    it('keeps a phase name that is not a slug', () => {
+      expect(tacticDisplayName('Actions on Objectives')).toBe('Actions on Objectives');
+      expect(tacticDisplayName('Delivery')).toBe('Delivery');
     });
   });
 });

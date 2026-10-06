@@ -468,6 +468,8 @@ interface StixCoreRelationshipCreationFromEntityProps {
   connectionKey?: string;
   paddingRight: number;
   variant?: string;
+  /** Size of the `inLine` trigger: `default` next to buttons of the default size */
+  inLineSize?: 'small' | 'default';
   targetEntities?: TargetEntity[];
   onCreate?: () => void;
   openExports?: boolean;
@@ -507,6 +509,7 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     targetStixDomainObjectTypes = [],
     targetStixCyberObservableTypes = [],
     variant = undefined,
+    inLineSize = 'small',
     onCreate = undefined,
     handleReverseRelation = undefined,
     currentView,
@@ -882,9 +885,9 @@ const StixCoreRelationshipCreationFromEntity: FunctionComponent<StixCoreRelation
     <>
       {variant === 'inLine' && (
         <IconButton
-          aria-label="Label"
+          aria-label={t_i18n('Create a relationship')}
           onClick={() => setOpen(true)}
-          size="small"
+          size={inLineSize}
         >
           <Add fontSize="small" />
         </IconButton>

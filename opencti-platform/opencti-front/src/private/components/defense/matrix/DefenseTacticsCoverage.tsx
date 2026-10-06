@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Typography } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import { DefenseLevelsBar } from './DefenseLevelsBar';
-import { summarizeLevels } from './defenseMatrix-utils';
+import { summarizeLevels, tacticDisplayName } from './defenseMatrix-utils';
 
 export interface DefenseTacticCoverageData {
   readonly kill_chain_phase_id: string;
@@ -45,11 +45,11 @@ const DefenseTacticsCoverage = ({ tactics, threatsOnly = false, killChainName }:
           key={tactic.kill_chain_phase_id}
           sx={{ display: 'grid', gridTemplateColumns: 'minmax(120px, 1fr) 3fr 64px', alignItems: 'center', gap: 1.5, paddingBlock: 0.5 }}
         >
-          <Typography variant="body2" noWrap title={tactic.phase_name}>{tactic.phase_name}</Typography>
+          <Typography variant="body2" noWrap title={tacticDisplayName(tactic.phase_name)}>{tacticDisplayName(tactic.phase_name)}</Typography>
           <DefenseLevelsBar
             levels={levels}
             label={t_i18n('{name}: {covered} of {total} techniques covered', {
-              values: { name: tactic.phase_name, covered: summary.covered, total: summary.total },
+              values: { name: tacticDisplayName(tactic.phase_name), covered: summary.covered, total: summary.total },
             })}
           />
           <Typography variant="body2" sx={{ textAlign: 'right', fontWeight: 600 }}>{`${summary.percent}%`}</Typography>

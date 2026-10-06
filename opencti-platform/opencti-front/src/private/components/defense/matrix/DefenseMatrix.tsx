@@ -337,7 +337,6 @@ export const DefenseMatrixContent = ({ queryRef, scope, layers }: DefenseMatrixC
             <Tooltip>
               <TooltipTrigger asChild>
                 <IconButton
-                  size="sm"
                   priority="tertiary"
                   active={onlyFocus}
                   aria-label={focusLabel}
@@ -361,7 +360,7 @@ export const DefenseMatrixContent = ({ queryRef, scope, layers }: DefenseMatrixC
                 </SelectContent>
               </Select>
             )}
-            <SearchInput variant="thin" onSubmit={setSearchTerm} />
+            <SearchInput onSubmit={setSearchTerm} />
           </Stack>
         )}
       >
@@ -447,7 +446,7 @@ const DefenseMatrixStatus = ({ queryRef, scope, onScopeChange, layers, onLayersC
           )}
           {pending && <Chip label={t_i18n('Recomputation requested')} severity="info" data-testid="defense-matrix-recompute-pending" />}
         </Stack>
-        <Stack direction="row" spacing={1}>
+        <Stack direction="row" spacing={1} alignItems="center">
           <DefenseCoverageDashboardButton />
           <Security needs={[SETTINGS_SETCUSTOMIZATION]}>
             <Button

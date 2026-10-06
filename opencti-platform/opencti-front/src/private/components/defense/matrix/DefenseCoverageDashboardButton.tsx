@@ -51,7 +51,6 @@ const DefenseCoverageDashboardButton = () => {
     <Security needs={[EXPLORE_EXUPDATE]}>
       <Button
         variant="secondary"
-        size="small"
         startIcon={<InsertChartOutlinedOutlined fontSize="small" />}
         onClick={create}
         disabled={creating}
