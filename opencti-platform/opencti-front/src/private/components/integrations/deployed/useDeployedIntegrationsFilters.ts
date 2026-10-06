@@ -177,7 +177,7 @@ const useDeployedIntegrationsFilters = ({ items, searchParams }: UseDeployedInte
         const bMessages = b.messagesCount ?? 0;
         if (aMessages !== bMessages) return bMessages - aMessages;
       }
-      return a.name.localeCompare(b.name);
+      return (a.name ?? '').localeCompare(b.name ?? '');
     });
     return availableTypes
       .map((key) => ({

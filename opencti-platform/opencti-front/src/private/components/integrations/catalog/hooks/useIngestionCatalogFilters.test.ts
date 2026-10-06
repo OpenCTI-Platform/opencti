@@ -280,6 +280,17 @@ describe('useIngestionCatalogFilters', () => {
       expect(mocks.notifyError).toHaveBeenCalledTimes(1);
     });
 
+    it('sorts contracts without a title, falling back to their slug', () => {
+      const { result } = renderFilters({
+        contracts: [
+          makeContract({ title: 'Zeta', slug: 'zeta' }),
+          makeContract({ title: undefined, slug: 'alpha' }),
+          makeContract({ title: 'Beta', slug: 'beta' }),
+        ],
+      });
+      expect(result.current.sections.flatMap((section) => section.items.map((item) => item.title))).toEqual(['alpha', 'Beta', 'Zeta']);
+    });
+
     it('does not notify when every contract is valid', () => {
       renderFilters({ contracts: [makeContract()] });
       expect(mocks.notifyError).not.toHaveBeenCalled();

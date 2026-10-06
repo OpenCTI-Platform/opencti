@@ -248,7 +248,8 @@ const useIngestionCatalogFilters = ({
           const connector: IngestionConnector = JSON.parse(contract);
           parsedItems.push({
             key: `${catalog.id}-${connector.slug}`,
-            title: connector.title,
+            // Catalog manifests are external JSON: a contract may come without a title.
+            title: connector.title ?? connector.slug ?? '',
             searchText: [
               connector.title,
               connector.description,
@@ -408,7 +409,7 @@ const useIngestionCatalogFilters = ({
       if (sort === 'verified' && a.verified !== b.verified) {
         return a.verified ? -1 : 1;
       }
-      return a.title.localeCompare(b.title);
+      return (a.title ?? '').localeCompare(b.title ?? '');
     });
     const sectionKeys = [BUILT_IN_SECTION_KEY, ...availableTypes];
     return sectionKeys
