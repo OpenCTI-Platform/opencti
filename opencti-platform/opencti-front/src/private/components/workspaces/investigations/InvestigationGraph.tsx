@@ -87,6 +87,7 @@ const investigationGraphObjectsFragment = graphql`
               parent_types
             }
             ... on StixCoreObject {
+              is_inferred
               created_at
               numberOfConnectedElement
               createdBy {
@@ -105,7 +106,6 @@ const investigationGraphObjectsFragment = graphql`
               }
             }
             ... on StixDomainObject {
-              is_inferred
               created
               confidence
               numberOfConnectedElement

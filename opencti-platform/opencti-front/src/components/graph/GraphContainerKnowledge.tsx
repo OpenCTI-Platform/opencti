@@ -102,6 +102,7 @@ const graphContainerKnowledgeObjectsFragment = graphql`
               parent_types
             }
             ... on StixCoreObject {
+              is_inferred
               created_at
               createdBy {
                 ... on Identity {
@@ -119,7 +120,6 @@ const graphContainerKnowledgeObjectsFragment = graphql`
               }
             }
             ... on StixDomainObject {
-              is_inferred
               created
               confidence
             }
