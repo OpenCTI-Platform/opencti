@@ -72,6 +72,20 @@ describe('ConnectorCatalogIdentityDialog', () => {
     expect(operation.request.variables).toEqual({ id: 'connector-id', slug: null });
   });
 
+  it('should refresh the catalog entries every time the dialog opens', async () => {
+    const { relayEnv, rerender } = renderDialog(null);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Save' })).toBeTruthy();
+    });
+    const connector = { id: 'connector-id', connector_type: 'EXTERNAL_IMPORT', catalog_identity: null, catalog_slug_manual: null };
+    rerender(<ConnectorCatalogIdentityDialog open={false} onClose={vi.fn()} connector={connector} />);
+    rerender(<ConnectorCatalogIdentityDialog open onClose={vi.fn()} connector={connector} />);
+    await waitFor(() => {
+      const operation = relayEnv.mock.getMostRecentOperation();
+      expect(operation.request.node.operation.name).toBe('ConnectorCatalogIdentityDialogOptionsQuery');
+    });
+  });
+
   it('should not offer automatic identification for an entry found automatically', async () => {
     renderDialog({ slug: 'urlhaus', title: 'URLhaus', logo: '/logo/urlhaus.png', source: 'name' });
 

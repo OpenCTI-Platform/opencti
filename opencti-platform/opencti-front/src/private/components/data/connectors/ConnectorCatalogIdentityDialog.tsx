@@ -195,7 +195,9 @@ const ConnectorCatalogIdentityDialog: FunctionComponent<ConnectorCatalogIdentity
 
   useEffect(() => {
     if (open) {
-      loadQuery({}, { fetchPolicy: 'store-or-network' });
+      // The catalog changes when the catalog manager synchronises it: every opening refreshes the
+      // entries, the store shows the last ones meanwhile.
+      loadQuery({}, { fetchPolicy: 'store-and-network' });
     }
   }, [open]);
 
