@@ -56,4 +56,13 @@ describe('computeConnectorsUpdateStatus', () => {
     expect(findCatalogContractsBySlugs).not.toHaveBeenCalled();
     expect(statuses).toEqual([NO_UPDATE_STATUS, NO_UPDATE_STATUS]);
   });
+
+  it('should report no update for every connector when the catalog cannot be read', async () => {
+    vi.mocked(findCatalogContractsBySlugs).mockRejectedValue(new Error('catalog unavailable'));
+    const alpha = { id: 'alpha', manager_contract: { slug: 'alpha', contract_version: '1.0.0' } };
+
+    const statuses = await computeConnectorsUpdateStatus({} as never, {} as never, [alpha, { id: 'manual' }]);
+
+    expect(statuses).toEqual([NO_UPDATE_STATUS, NO_UPDATE_STATUS]);
+  });
 });

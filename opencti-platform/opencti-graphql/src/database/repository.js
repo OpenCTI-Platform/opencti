@@ -13,7 +13,7 @@ import { encryptValue, mapContractEntityFieldsToGraphqlCatalogContract } from '.
 import { ENTITY_TYPE_PIR } from '../modules/pir/pir-types';
 import { getEntitiesMapFromCache } from './cache';
 import { SYSTEM_USER } from '../utils/access';
-import conf, { booleanConf, PLATFORM_VERSION } from '../config/conf';
+import conf, { booleanConf, logApp, PLATFORM_VERSION } from '../config/conf';
 import { ConnectorPriorityGroup } from '../generated/graphql';
 import { injectProxyConfiguration } from '../config/proxy-config';
 import { getPlatformCrypto } from '../utils/platformCrypto';
@@ -223,18 +223,24 @@ const NO_UPDATE_STATUS = {
 
 // Batched for connector lists: the catalog contracts of all the connectors are loaded at once, by slug.
 // Catalog keyword fields are matched case insensitively, so the contracts are grouped the same way.
+// A catalog failure only removes the update hints: the connectors themselves still resolve.
 export const computeConnectorsUpdateStatus = async (context, user, connectorsToCheck) => {
-  const slugs = connectorsToCheck.map((cn) => cn?.manager_contract?.slug?.toLowerCase() ?? null);
-  const uniqueSlugs = [...new Set(slugs.filter(isNotEmptyField))];
-  const contracts = uniqueSlugs.length > 0 ? await findCatalogContractsBySlugs(context, user, uniqueSlugs) : [];
-  const versionsBySlug = groupContractVersionsBySlug(contracts, (contract) => contract.slug.toLowerCase());
-  return connectorsToCheck.map((cn, index) => {
-    const slug = slugs[index];
-    if (!slug) {
-      return NO_UPDATE_STATUS;
-    }
-    return buildConnectorUpdateStatus(cn.manager_contract.contract_version, versionsBySlug.get(slug) ?? [], { platformVersion: PLATFORM_VERSION });
-  });
+  try {
+    const slugs = connectorsToCheck.map((cn) => cn?.manager_contract?.slug?.toLowerCase() ?? null);
+    const uniqueSlugs = [...new Set(slugs.filter(isNotEmptyField))];
+    const contracts = uniqueSlugs.length > 0 ? await findCatalogContractsBySlugs(context, user, uniqueSlugs) : [];
+    const versionsBySlug = groupContractVersionsBySlug(contracts, (contract) => contract.slug.toLowerCase());
+    return connectorsToCheck.map((cn, index) => {
+      const slug = slugs[index];
+      if (!slug) {
+        return NO_UPDATE_STATUS;
+      }
+      return buildConnectorUpdateStatus(cn.manager_contract.contract_version, versionsBySlug.get(slug) ?? [], { platformVersion: PLATFORM_VERSION });
+    });
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE] Failed to compute the connectors update status', { module: 'connector', error });
+    return connectorsToCheck.map(() => NO_UPDATE_STATUS);
+  }
 };
 
 export const connectorsForWorker = async (context, user) => {
