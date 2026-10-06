@@ -20,6 +20,8 @@ Each technique gets one level per security platform, and one aggregated level ov
 
 A failed latest validation caps the level at 2: the detection is deployed, but it was proven ineffective. A technique is considered **covered** from level 3.
 
+Level 3 is read from the deployment records of a rule: the `deployed-on` relationship to a security platform and its deployment status. Without a deployment record, a rule known in OpenCTI counts as **Detection available** (level 2), and its next action is **Deploy the rule**.
+
 Mitigations (courses of action that `mitigate` the technique) are shown as a separate marker: they do not change the level.
 
 !!! note "Access to evidences"
