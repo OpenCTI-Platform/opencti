@@ -4,7 +4,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { useHubEntry } from './HubEntryContext';
 
 interface HubFirstUseProps {
-  /** The one primary action that fills the entry ("Plan a hunt"). */
+  /** The one primary action that fills the entry. */
   action?: ReactNode;
   /** The page of the entry on https://docs.opencti.io. */
   documentationUrl?: string;
