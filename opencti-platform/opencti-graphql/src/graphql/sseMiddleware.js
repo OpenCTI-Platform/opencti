@@ -280,16 +280,20 @@ export const resolveMissingReferences = async (context, user, missingRefs, cache
     }
     const newRefsToResolve = new Set();
     const elementsWithStix = [];
+    const batchIds = new Set(missingElements.map((element) => extractIdsFromStoreObject(element)).flat());
     for (let index = 0; index < missingElements.length; index += 1) {
       await doYield();
       const missingElement = missingElements[index];
       // A ref relationship (e.g. email-message "to" email-addr, added to a container from its graph)
       // has no STIX representation: its source already carries it as a *_ref(s) property.
       // Resolving the source is enough, its refs (so the target) are resolved in turn.
+      // A source already in this batch must not be queued again: reloaded alone in a deeper pass,
+      // it would be published before its own refs.
       if (isStixRefRelationship(missingElement.entity_type)) {
         extractIdsFromStoreObject(missingElement).forEach((id) => resolvedIds.add(id));
-        if (!cache.has(missingElement.fromId) && !resolvedIds.has(missingElement.fromId)) {
-          newRefsToResolve.add(missingElement.fromId);
+        const { fromId } = missingElement;
+        if (!cache.has(fromId) && !resolvedIds.has(fromId) && !batchIds.has(fromId)) {
+          newRefsToResolve.add(fromId);
         }
         continue;
       }
@@ -307,7 +311,7 @@ export const resolveMissingReferences = async (context, user, missingRefs, cache
       });
     }
     allResolvedElements.unshift(elementsWithStix);
-    refsToResolve = Array.from(newRefsToResolve).filter((refId) => !resolvedIds.has(refId));
+    refsToResolve = Array.from(newRefsToResolve);
   }
   // Return flattened results in reverse order (deepest dependencies first)
   return allResolvedElements.flat();
