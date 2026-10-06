@@ -345,7 +345,7 @@ The curation manager takes a snapshot once a day. Click **Refresh now** to take 
 | `alias_coverage`   | Share of the curated entities supporting aliases that have at least one alias (scored 100 at full coverage)                             | 15%    | No alias at all           |
 | `source_conflicts` | Fields overwritten by another source during the last 7 days, divided by the number of curated entities updated during the same period | 15%    | 20% of conflicts          |
 
-The **duplicate estimate** is the number of entities that would disappear if every open merge proposal with a confidence of at least the ambiguous band minimum were accepted. The other counters are the open proposals, the proposals accepted, auto-applied, rejected and reverted since the previous snapshot, the merges and unmerges since the previous snapshot (during the last 24 hours for the first snapshot, which has no trend), the contradictions, the stale entities, the alias coverage and the source conflict rate.
+The **duplicate estimate** is the number of entities that would disappear if every open merge proposal with a confidence of at least the ambiguous band minimum were accepted; a subject deleted or merged elsewhere since its proposal was raised is not counted. The other counters are the open proposals, the proposals accepted, auto-applied, rejected and reverted since the previous snapshot, the merges and unmerges since the previous snapshot (during the last 24 hours for the first snapshot, which has no trend), the contradictions, the stale entities, the alias coverage and the source conflict rate.
 
 #### Weekly digest
 

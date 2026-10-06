@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, patchAttribute } from '../../database/middleware';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById, type EntityOptions } from '../../database/middleware-loader';
-import { elCount } from '../../database/engine';
+import { elCount, elFindByIds } from '../../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
 import { getEntitiesListFromCache, getEntityFromCache } from '../../database/cache';
 import {
@@ -112,6 +112,11 @@ export const estimateDuplicates = (pairs: string[][]): number => {
   const components = new Set([...parent.keys()].map((id) => find(id)));
   return parent.size - components.size;
 };
+
+/** estimateDuplicates over the subjects that still exist: a deleted or merged subject is no longer a duplicate. */
+export const estimateExistingDuplicates = (pairs: string[][], existingIds: Set<string>): number => {
+  return estimateDuplicates(pairs.map((ids) => ids.filter((id) => existingIds.has(id))));
+};
 // endregion
 
 // region metrics
@@ -150,7 +155,14 @@ export const computeHealthMetrics = async (context: AuthContext, settings: Curat
     baseFields: ['subject_ids'],
     noFiltersChecking: true,
   });
-  const duplicateEstimate = estimateDuplicates(openMerges.map((proposal) => proposal.subject_ids));
+  const mergeSubjectIds = R.uniq(openMerges.flatMap((proposal) => proposal.subject_ids));
+  const existingSubjects = await elFindByIds<BasicStoreEntity>(context, SYSTEM_USER, mergeSubjectIds, {
+    indices: READ_INDEX_STIX_DOMAIN_OBJECTS,
+    baseData: true,
+    baseFields: ['internal_id'],
+  }) as BasicStoreEntity[];
+  const existingSubjectIds = new Set(existingSubjects.map((subject) => subject.internal_id));
+  const duplicateEstimate = estimateExistingDuplicates(openMerges.map((proposal) => proposal.subject_ids), existingSubjectIds);
   // Stale entities, not stale proposals: an entity found stale again while its older proposal is still open counts once.
   const openStale = await fullEntitiesList<BasicStoreEntityCurationProposal>(context, SYSTEM_USER, [ENTITY_TYPE_CURATION_PROPOSAL], {
     filters: {
