@@ -22,8 +22,8 @@ import * as stixCoreObjectDomain from '../../../../src/domain/stixCoreObject';
 import { DatabaseError } from '../../../../src/config/errors';
 import { internalLoadById } from '../../../../src/database/middleware-loader';
 import { stixLoadById, stixLoadByIds } from '../../../../src/database/middleware';
-import { INVESTIGATION_MANAGER_USER, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW } from '../../../../src/utils/access';
-import { findWorkspacePaginated, workspaceEditAuthorizedMembers } from '../../../../src/modules/workspace/workspace-domain';
+import { INVESTIGATION_MANAGER_USER, MEMBER_ACCESS_RIGHT_ADMIN } from '../../../../src/utils/access';
+import { findWorkspacePaginated, workspaceDelete, workspaceEditAuthorizedMembers } from '../../../../src/modules/workspace/workspace-domain';
 import type { AuthUser } from '../../../../src/types/user';
 import { RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
 import { statusTransition, VALIDATION_TIMEOUT_MS } from '../../../../src/modules/investigationRun/investigationRun-state';
@@ -1134,10 +1134,10 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       const editor = await getAuthUser(await getUserIdByEmail(USER_EDITOR.email));
       const stored = await loadInvestigationRun(testContext, runId) as BasicStoreEntityInvestigationRun;
       expect(await findInvestigationRunsWithheldReasons(testContext, editor, [stored])).toEqual([null]);
-      // The investigation graph of the run is shared with the editor, who opens it by its id.
+      // The investigation graph of the run is shared with the editor, who manages it and opens it by its id.
       const workspaceId = stored.workspace_id as string;
       expect(workspaceId).toBeTruthy();
-      const graphMembers = [{ id: ADMIN_USER.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }, { id: editor.id, access_right: MEMBER_ACCESS_RIGHT_VIEW }];
+      const graphMembers = [{ id: ADMIN_USER.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }, { id: editor.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }];
       await workspaceEditAuthorizedMembers(testContext, ADMIN_USER, workspaceId, graphMembers, { skipAdminValidation: true });
       expect((await internalLoadById({ ...testContext }, editor, workspaceId))?.internal_id).toBe(workspaceId);
       const listedGraphs = async (reader: AuthUser) => (await findWorkspacePaginated({ ...testContext }, reader, { first: 500 } as never))
@@ -1154,6 +1154,9 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       expect((await internalLoadById({ ...testContext }, ADMIN_USER, workspaceId))?.internal_id).toBe(workspaceId);
       expect(await listedGraphs(editor)).not.toContain(workspaceId);
       expect(await listedGraphs(ADMIN_USER)).toContain(workspaceId);
+      // Nor can the editor, one of its managers, delete it: the deletion reads it as the editor does.
+      await expect(workspaceDelete({ ...testContext }, editor, workspaceId)).rejects.toThrow('Already deleted elements');
+      expect((await internalLoadById({ ...testContext }, ADMIN_USER, workspaceId))?.internal_id).toBe(workspaceId);
       const runFields = investigationRunResolvers.InvestigationRun as unknown as Record<string, (run: unknown, args: unknown, context: unknown) => Promise<unknown>>;
       const editorContext = { ...testContext, user: editor, batch: computeLoaders(testContext, editor) };
       expect(await runFields.evidence(stored, {}, editorContext)).toEqual([]);

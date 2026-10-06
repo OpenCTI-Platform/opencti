@@ -689,7 +689,7 @@ export const deleteStoppedRunArtifacts = async (context: AuthContext, runId: str
       }
       deleted.draft = true;
     } catch (cause) {
-      logApp.error('[CASE AUTOPILOT] Draft of a stopped investigation not deleted, retried on the next tick', { runId, draftId, cause });
+      logApp.warn('[CASE AUTOPILOT] Draft of a stopped investigation not deleted, retried on the next tick', { runId, draftId, cause });
     }
   }
   if (workspaceId) {
@@ -700,7 +700,7 @@ export const deleteStoppedRunArtifacts = async (context: AuthContext, runId: str
       }
       deleted.workspace = true;
     } catch (cause) {
-      logApp.error('[CASE AUTOPILOT] Investigation graph of a stopped investigation not deleted, retried on the next tick', { runId, workspaceId, cause });
+      logApp.warn('[CASE AUTOPILOT] Investigation graph of a stopped investigation not deleted, retried on the next tick', { runId, workspaceId, cause });
     }
   }
   if (!deleted.draft && !deleted.workspace) return;

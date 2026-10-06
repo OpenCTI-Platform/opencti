@@ -107,6 +107,14 @@ export const withoutWithheldHits = async <T extends Pick<BasicStoreBase, 'intern
   return withheld.size === 0 ? elements : elements.filter((element) => !withheld.has(element.internal_id));
 };
 
+/**
+ * Whether the element of the type with this internal id is withheld from the reader, asked without loading it: a load
+ * by id answers for a withheld element as for an unknown one, so a guard that must tell them apart asks here.
+ */
+export const isElementWithheld = async (context: AuthContext, user: AuthUser, entityType: string, internalId: string) => {
+  return (await withoutWithheldHits(context, user, [{ internal_id: internalId, entity_type: entityType }])).length === 0;
+};
+
 /** The element a loader found, or nothing when it is withheld from the reader (as a loader answers for an unknown id). */
 export const unlessWithheld = async <T extends BasicStoreBase>(context: AuthContext, user: AuthUser, entityType: string, element: T): Promise<T> => {
   if (element && (await withoutWithheldHits(context, user, [{ ...element, entity_type: entityType }])).length === 0) {

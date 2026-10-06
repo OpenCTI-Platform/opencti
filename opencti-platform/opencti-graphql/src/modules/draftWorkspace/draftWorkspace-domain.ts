@@ -64,7 +64,7 @@ import {
 import { editAuthorizedMembers, sanitizeAuthorizedMembers } from '../../utils/authorizedMembers';
 import { bypassDraftContext, getDraftContext } from '../../utils/draftContext';
 import { addFilter } from '../../utils/filtering/filtering-utils';
-import { unlessWithheld, withoutWithheldElements } from '../../utils/withheldElements';
+import { isElementWithheld, unlessWithheld, withoutWithheldElements } from '../../utils/withheldElements';
 import { WORKFLOW_INSTANCE_STATUS_FILTER } from '../../utils/filtering/filtering-constants';
 import { ENTITY_TYPE_WORKFLOW_INSTANCE } from '../workflow/types/workflow-types';
 import { now } from '../../utils/format';
@@ -640,8 +640,7 @@ export const draftWorkspaceEditAuthorizedMembers = async (
   options?: { skipAdminValidation?: boolean },
 ) => {
   // A withheld draft is refused as an unknown one; any other draft is left to the access checks of the edit itself.
-  const draft = await storeLoadById<BasicStoreEntityDraftWorkspace>(context, user, workspaceId, ENTITY_TYPE_DRAFT_WORKSPACE);
-  if (draft && !(await unlessWithheld(context, user, ENTITY_TYPE_DRAFT_WORKSPACE, draft))) {
+  if (await isElementWithheld(context, user, ENTITY_TYPE_DRAFT_WORKSPACE, workspaceId)) {
     throw FunctionalError(`Draft ${workspaceId} cannot be found`);
   }
   const args = {

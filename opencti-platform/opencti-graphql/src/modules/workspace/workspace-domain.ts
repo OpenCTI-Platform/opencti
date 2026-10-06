@@ -26,7 +26,7 @@ import { elFindByIds, elRawDeleteByQuery } from '../../database/engine';
 import type { BasicConnection, BasicStoreBase, BasicStoreEntity } from '../../types/store';
 import { buildPagination, isEmptyField, READ_DATA_INDICES_WITHOUT_INTERNAL, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { addFilter } from '../../utils/filtering/filtering-utils';
-import { unlessWithheld, withoutWithheldElements } from '../../utils/withheldElements';
+import { isElementWithheld, unlessWithheld, withoutWithheldElements } from '../../utils/withheldElements';
 import { extractContentFrom } from '../../utils/fileToContent';
 import { getEntitiesListFromCache } from '../../database/cache';
 import { filterUnwantedEntitiesOut } from '../../domain/container';
@@ -54,8 +54,7 @@ const loadWorkspace = (context: AuthContext, user: AuthUser, workspaceId: string
 
 // Any other workspace is left to the access checks of the edit itself.
 const checkWorkspaceNotWithheld = async (context: AuthContext, user: AuthUser, workspaceId: string) => {
-  const workspace = await storeLoadById<BasicStoreEntityWorkspace>(context, user, workspaceId, ENTITY_TYPE_WORKSPACE);
-  if (workspace?.type === 'investigation' && !(await unlessWithheld(context, user, ENTITY_TYPE_WORKSPACE, workspace))) {
+  if (await isElementWithheld(context, user, ENTITY_TYPE_WORKSPACE, workspaceId)) {
     throw FunctionalError(`Workspace ${workspaceId} cannot be found`);
   }
 };
