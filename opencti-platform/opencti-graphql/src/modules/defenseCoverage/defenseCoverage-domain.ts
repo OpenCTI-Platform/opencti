@@ -1103,12 +1103,24 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
     throw FunctionalError('The name of a validation request must contain at least 2 characters other than spaces');
   }
   const referenceUrl = parseValidationReferenceUrl(input.external_reference_url);
-  if (attackPatternIds.length > MAX_VALIDATION_TECHNIQUES) {
+  // Several ids may designate one technique: the ids only bound the loading, the techniques are counted once resolved
+  if (attackPatternIds.length > MAX_VALIDATION_GAPS) {
     throw FunctionalError(`A validation request cannot contain more than ${MAX_VALIDATION_TECHNIQUES} techniques`, { count: attackPatternIds.length });
   }
-  const attackPatterns = await findByIdsChunked<BasicStoreEntity>(context, user, attackPatternIds, { type: ENTITY_TYPE_ATTACK_PATTERN });
-  if (attackPatterns.length !== attackPatternIds.length) {
-    throw FunctionalError('Some techniques of the validation request cannot be found', { expected: attackPatternIds.length, found: attackPatterns.length });
+  const found = await findByIdsChunked<BasicStoreEntity>(context, user, attackPatternIds, { type: ENTITY_TYPE_ATTACK_PATTERN });
+  const attackPatterns = R.uniqBy((attackPattern) => attackPattern.internal_id, found);
+  // The techniques and the gaps of the backlog may designate a technique by any of its ids
+  const internalIdOf = new Map<string, string>();
+  attackPatterns.forEach((attackPattern) => {
+    const stixIds = (attackPattern as unknown as { x_opencti_stix_ids?: string[] }).x_opencti_stix_ids ?? [];
+    [attackPattern.internal_id, attackPattern.standard_id, ...stixIds].forEach((id) => internalIdOf.set(id, attackPattern.internal_id));
+  });
+  const unresolvedIds = attackPatternIds.filter((id) => !internalIdOf.has(id));
+  if (unresolvedIds.length > 0) {
+    throw FunctionalError('Some techniques of the validation request cannot be found', { ids: unresolvedIds });
+  }
+  if (attackPatterns.length > MAX_VALIDATION_TECHNIQUES) {
+    throw FunctionalError(`A validation request cannot contain more than ${MAX_VALIDATION_TECHNIQUES} techniques`, { count: attackPatterns.length });
   }
   let threat: BasicStoreEntity | undefined;
   if (input.threatId) {
@@ -1124,12 +1136,6 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
   if (unknownPlatforms.length > 0) {
     throw FunctionalError('Some security platforms of the validation request cannot be found', { platformIds: unknownPlatforms });
   }
-  // The gaps of the backlog may designate their technique by any of its ids
-  const internalIdOf = new Map<string, string>();
-  attackPatterns.forEach((attackPattern) => {
-    const stixIds = (attackPattern as unknown as { x_opencti_stix_ids?: string[] }).x_opencti_stix_ids ?? [];
-    [attackPattern.internal_id, attackPattern.standard_id, ...stixIds].forEach((id) => internalIdOf.set(id, attackPattern.internal_id));
-  });
   const targets = buildValidationTargets(
     attackPatterns.map((attackPattern) => attackPattern.internal_id),
     requestedPlatforms,

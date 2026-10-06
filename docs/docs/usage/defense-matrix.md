@@ -111,7 +111,7 @@ The coverage is computed in the background by the defense coverage manager: a fu
 
 The **Gaps** section lists every technique and platform pair below level 4, with:
 
-* its level and the **recommended action**: add telemetry, import a rule, deploy a rule, activate a rule, validate, or fix the detection after a failed validation;
+* its level and the **recommended action**: add telemetry, import a rule, deploy a rule, activate a rule, validate, or fix the detection after a failed validation. Unlike the next action of the drawer, which follows the level of the technique, the recommended action follows the evidences of the platform: a platform that does not collect the telemetry of the technique gets **add telemetry** even when a rule is available (level 2), as the rule cannot detect anything there before;
 * its **priority**, based on the threats using the technique (weighted by the confidence of their relationships) and on its level;
 * the **rule candidates**: rules indicating the technique that are not deployed yet, ranked by the compatibility of their log source with the telemetry of the platform.
 

@@ -134,6 +134,11 @@ const DEFENSE_TECHNIQUE = gql`
     }
   }
 `;
+const ATTACK_PATTERN_STANDARD_ID = gql`
+  query DefenseMatrixAttackPatternStandardId($id: String!) {
+    attackPattern(id: $id) { standard_id }
+  }
+`;
 const DEFENSE_GAPS = gql`
   query DefenseGaps($platformIds: [String!], $threatScope: DefenseThreatScope, $filter: DefenseGapsFilter) {
     defenseGaps(platformIds: $platformIds, threatScope: $threatScope, filter: $filter, first: 50) {
@@ -526,6 +531,17 @@ describe('Threat-informed defense matrix', () => {
     await queryAsAdminWithError(
       { query: DEFENSE_VALIDATE, variables: { input: { attackPatternIds: [created.attackPattern], platformIds: ['unknown-platform'] } } },
       'Some security platforms of the validation request cannot be found',
+    );
+    // Two ids of one technique are one technique of the request: the request goes past the techniques, to its platforms
+    const technique = await queryAsAdminWithSuccess({ query: ATTACK_PATTERN_STANDARD_ID, variables: { id: created.attackPattern } });
+    const aliases = [created.attackPattern, technique.data?.attackPattern.standard_id];
+    await queryAsAdminWithError(
+      { query: DEFENSE_VALIDATE, variables: { input: { attackPatternIds: aliases, platformIds: ['unknown-platform'] } } },
+      'Some security platforms of the validation request cannot be found',
+    );
+    await queryAsAdminWithError(
+      { query: DEFENSE_VALIDATE, variables: { input: { attackPatternIds: [...aliases, 'attack-pattern--00000000-0000-4000-8000-000000000000'] } } },
+      'Some techniques of the validation request cannot be found',
     );
     await queryAsAdminWithError(
       { query: DEFENSE_VALIDATE, variables: { input: { attackPatternIds: [created.attackPattern], external_reference_url: 'javascript:alert(1)' } } },

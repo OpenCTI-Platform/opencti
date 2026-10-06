@@ -124,6 +124,8 @@ describe('Defense coverage detection status and levels', () => {
     expect(computeRecommendedAction({ ...base, level: 3, detection: 'deployed' })).toEqual('activate_rule');
     expect(computeRecommendedAction({ ...base, level: 3, detection: 'active' })).toEqual('validate');
     expect(computeRecommendedAction({ ...base, level: 2, detection: 'available' })).toEqual('deploy_rule');
+    // A platform that does not collect the telemetry of the technique cannot run its rule: the telemetry comes first
+    expect(computeRecommendedAction({ ...base, level: 2, detection: 'available', telemetry: false })).toEqual('add_telemetry');
     expect(computeRecommendedAction({ ...base, level: 1 })).toEqual('import_rule');
     expect(computeRecommendedAction({ ...base, level: 0, telemetry: false })).toEqual('add_telemetry');
     expect(computeRecommendedAction({ ...base, level: 0, telemetry: false, hasDetectingDataComponent: false })).toEqual('import_rule');
