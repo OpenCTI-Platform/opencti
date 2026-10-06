@@ -2008,6 +2008,7 @@
   "Equal": "Uguale",
   "Equals": "Uguale",
   "Error": "Errore",
+  "Error feedback from connector on last ping": "Errori segnalati dal connettore all'ultimo ping",
   "Error loading forms": "Errore nel caricamento dei moduli",
   "Error loading stream collection consumers": "Errore nel caricamento dei consumatori della raccolta di flussi",
   "Error trying to download in PDF": "Errore nel tentativo di scaricare in PDF",

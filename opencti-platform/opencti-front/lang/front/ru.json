@@ -2008,6 +2008,7 @@
   "Equal": "Равный",
   "Equals": "Равняется",
   "Error": "Ошибка",
+  "Error feedback from connector on last ping": "Ошибки, сообщённые коннектором при последнем ping",
   "Error loading forms": "Ошибка при загрузке форм",
   "Error loading stream collection consumers": "Ошибка при загрузке потребителей коллекции потоков",
   "Error trying to download in PDF": "Ошибка при попытке загрузки в формате PDF",

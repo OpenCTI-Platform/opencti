@@ -2008,6 +2008,7 @@
   "Equal": "Equal",
   "Equals": "Equals",
   "Error": "Error",
+  "Error feedback from connector on last ping": "Error feedback from connector on last ping",
   "Error loading forms": "Error loading forms",
   "Error loading stream collection consumers": "Error loading stream collection consumers",
   "Error trying to download in PDF": "Error trying to download in PDF",

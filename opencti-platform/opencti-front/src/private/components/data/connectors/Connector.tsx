@@ -551,6 +551,23 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                 </Grid>
               )}
 
+              {(connector.connector_info?.errors?.length ?? 0) > 0 && (
+                <Grid item xs={12}>
+                  <Alert severity="error" style={{ marginBottom: 0 }}>
+                    <strong>{t_i18n('Error feedback from connector on last ping')}</strong>
+                    <ul style={{ margin: 0, paddingLeft: 20 }}>
+                      {[...(connector.connector_info?.errors ?? [])]
+                        .sort((a, b) => b.criticity - a.criticity)
+                        .map((error, index) => (
+                          <li key={`${error.code}-${index}`}>
+                            <code>{error.code}</code> — {error.message}
+                          </li>
+                        ))}
+                    </ul>
+                  </Alert>
+                </Grid>
+              )}
+
               <Grid item={true} xs={12}>
                 <Label>
                   {t_i18n('State')}
@@ -1103,6 +1120,11 @@ const Connector = createRefetchContainer(
           queue_messages_size
           next_run_datetime
           last_run_datetime
+          errors {
+            code
+            message
+            criticity
+          }
         }
         connector_queue_details {
           messages_number

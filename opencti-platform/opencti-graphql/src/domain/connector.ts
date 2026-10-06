@@ -135,6 +135,7 @@ export const updateConnectorWithConnectorInfo = async (
       queue_messages_size: connectorInfo.queue_messages_size,
       next_run_datetime: connectorInfo.next_run_datetime,
       last_run_datetime: connectorInfo.last_run_datetime,
+      errors: (connectorInfo.errors ?? []).map(({ code, message, criticity }) => ({ code, message, criticity })),
     };
 
     connectorPatch = { ...connectorPatch, connector_info: connectorInfoData };
