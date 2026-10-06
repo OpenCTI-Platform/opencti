@@ -9,7 +9,7 @@ import { OPENCTI_NAMESPACE, STIX_TYPE_SIGHTING } from '../../schema/general';
 import { generateStandardId } from '../../schema/identifier';
 import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../../schema/stixMetaObject';
-import { RELATION_CREATED_BY, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
+import { RELATION_CREATED_BY, RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { SYSTEM_USER, HUNT_MANAGER_USER } from '../../utils/access';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
@@ -48,6 +48,7 @@ export interface HuntSightingsOutcome {
 
 const earliest = (dates: (string | null | undefined)[]) => dates.filter((date): date is string => !!date).sort()[0];
 const latest = (dates: (string | null | undefined)[]) => dates.filter((date): date is string => !!date).sort().reverse()[0];
+const sameIds = (left: string[] = [], right: string[] = []) => left.length === right.length && left.every((id) => right.includes(id));
 
 /**
  * The count of a sighting after a run. A run whose hits are identified recounts the distinct hits known for the object,
@@ -154,6 +155,9 @@ const keepHuntSightings = async (
 ): Promise<HuntSightingsOutcome> => {
   const targets = await resolveHuntSightingTargets(context, hunt, run);
   const identified = run.hits_identified === true;
+  // A sighting says what the runs of its hunt found so far: it is restricted like the run that updated it last
+  const objectMarking = run[RELATION_OBJECT_MARKING] ?? [];
+  const objectOrganization = run[RELATION_GRANTED_TO] ?? [];
   for (let index = 0; index < targets.length; index += 1) {
     const target = targets[index];
     const standardId = huntSightingStandardId(hunt.internal_id, target.id, platform.internal_id);
@@ -164,8 +168,10 @@ const keepHuntSightings = async (
     const lastSeen = latest([stored?.last_seen, target.lastSeen, firstSeen]) as string;
     const description = sightingDescription(hunt, platform.name, count);
     if (stored) {
+      const markingsChanged = !sameIds(stored[RELATION_OBJECT_MARKING], objectMarking);
+      const organizationsChanged = !sameIds(stored[RELATION_GRANTED_TO], objectOrganization);
       const unchanged = stored.attribute_count === count && stored.first_seen === firstSeen && stored.last_seen === lastSeen
-        && stored.x_opencti_hunt_run_id === run.internal_id;
+        && stored.x_opencti_hunt_run_id === run.internal_id && !markingsChanged && !organizationsChanged;
       // Its id stays the one derived from the hunt, whatever its dates become
       const element = unchanged ? stored : (await patchAttribute(context, HUNT_MANAGER_USER, stored.internal_id, STIX_SIGHTING_RELATIONSHIP, {
         attribute_count: count,
@@ -173,6 +179,9 @@ const keepHuntSightings = async (
         last_seen: lastSeen,
         description,
         [ATTRIBUTE_HUNT_RUN_ID_KEY]: run.internal_id,
+        ...(markingsChanged ? { objectMarking } : {}),
+        // Organizations can only be written in Enterprise Edition: sent only when they change
+        ...(organizationsChanged ? { objectOrganization } : {}),
       }, { impactStandardId: false })).element as unknown as HuntSighting;
       outcome.ids.push(element.standard_id);
       outcome.updated += 1;
@@ -188,7 +197,8 @@ const keepHuntSightings = async (
         description,
         [ATTRIBUTE_HUNT_ID]: hunt.internal_id,
         [ATTRIBUTE_HUNT_RUN_ID_KEY]: run.internal_id,
-        objectMarking: run[RELATION_OBJECT_MARKING] ?? [],
+        objectMarking,
+        objectOrganization,
         ...(hunt[RELATION_CREATED_BY] ? { createdBy: hunt[RELATION_CREATED_BY] } : {}),
       }) as unknown as HuntSighting;
       outcome.ids.push(created.standard_id);
