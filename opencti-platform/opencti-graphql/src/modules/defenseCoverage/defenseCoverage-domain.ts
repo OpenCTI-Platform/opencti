@@ -52,6 +52,7 @@ import {
   computeGapPriority,
   computeThreatWeight,
   countEffectiveTechniques,
+  defaultValidationName,
   evaluateCoverage,
   gapPlatformEvidence,
   mapLogsourceToDataComponents,
@@ -1139,7 +1140,7 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
     throw FunctionalError('No active OpenAEV connector can validate techniques: connect OpenAEV to this platform first');
   }
   const requestedAt = now();
-  const name = requestedName || `Defense validation - ${threat?.name ?? `${attackPatterns.length} techniques`} - ${requestedAt.substring(0, 10)}`;
+  const name = requestedName || defaultValidationName(attackPatterns.length, threat?.name, requestedAt);
   // An external reference is shared by every element with the same URL: it is resolved first and never removed
   const externalReference = referenceUrl
     ? await addExternalReference(context, user, { source_name: referenceUrl.hostname, url: referenceUrl.toString() })

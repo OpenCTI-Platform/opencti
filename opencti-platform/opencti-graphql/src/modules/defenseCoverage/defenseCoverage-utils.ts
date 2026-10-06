@@ -241,6 +241,15 @@ export const buildValidationTargets = (
 };
 
 /**
+ * Name of a validation request created without one: the threat it emulates, else the number of its techniques,
+ * then the day of the request.
+ */
+export const defaultValidationName = (techniquesCount: number, threatName: string | null | undefined, requestedAt: string) => {
+  const subject = threatName ?? `${techniquesCount} ${techniquesCount === 1 ? 'technique' : 'techniques'}`;
+  return `Defense validation - ${subject} - ${requestedAt.substring(0, 10)}`;
+};
+
+/**
  * Parent technique of a sub-technique as a reader may see it: only when he can access both the parent
  * and the subtechnique-of relationship that links them.
  */

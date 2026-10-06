@@ -167,177 +167,190 @@ const DefenseValidationDialog = ({ open, onClose, onValidated, techniques, defer
   };
 
   return (
-    <Dialog open={open} onClose={onClose} title={t_i18n('Validate in OpenAEV')} size="medium">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      title={t_i18n('Validate in OpenAEV')}
+      size="medium"
+      contentProps={{ style: { display: 'flex', flexDirection: 'column', overflowY: 'hidden' } }}
+    >
       <Formik<DefenseValidationFormValues> initialValues={initialValues} validationSchema={validationSchema} onSubmit={onSubmit} enableReinitialize>
         {({ isSubmitting, setFieldValue, submitForm, values }) => (
-          <Form data-testid="defense-validation-form">
-            <Typography variant="body2">
-              {t_i18n('A security coverage will be created for the selected techniques. OpenAEV generates a scenario restricted to these techniques and sends back its results, which update the validation layer.')}
-            </Typography>
-            <Box sx={{ marginTop: 2 }} data-testid="defense-validation-setup">
-              <Alert
-                severity="info"
-                content={(
-                  <>
-                    {t_i18n('Validation needs an OpenAEV platform that reads the security coverages of this platform through its collector. The OpenCTI account of that collector needs the Connector role.')}
-                    {' '}
-                    <a href={DEFENSE_VALIDATION_DOCUMENTATION_URL} target="_blank" rel="noreferrer">{t_i18n('How to connect OpenAEV')}</a>
-                  </>
-                )}
-              />
-            </Box>
-            <Box
-              component="section"
-              aria-label={t_i18n('What will be validated')}
-              sx={{ marginTop: 2, padding: 1.5, borderRadius: 1, border: 1, borderColor: 'divider' }}
-              data-testid="defense-validation-preview"
+          <>
+            {/* The body scrolls on its own so the footer stays in view on short screens; the 4px padding given back and
+                taken out again keeps the focus ring the library paints outside the fields. */}
+            <Form
+              data-testid="defense-validation-form"
+              style={{ flex: '1 1 auto', minHeight: 0, overflowY: 'auto', position: 'relative', padding: 4, margin: -4 }}
             >
-              <Stack direction="row" spacing={1} alignItems="baseline" sx={{ marginBottom: 1 }}>
-                <Typography variant="h4" sx={{ margin: 0 }}>{t_i18n('What will be validated')}</Typography>
-                <Typography variant="body2" color="text.secondary" data-testid="defense-validation-count">
-                  {t_i18n('{count, plural, one {# technique} other {# techniques}}', { values: { count: techniques.length } })}
-                </Typography>
-              </Stack>
-              <List dense disablePadding data-testid="defense-validation-techniques">
-                {techniques.slice(0, PREVIEW_TECHNIQUES).map((technique) => {
-                  const targets = platformsOf(technique.id);
-                  return (
-                    <ListItem key={technique.id} disableGutters sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                      <Typography variant="body2" sx={{ marginRight: 1 }}>{techniqueTitle(technique)}</Typography>
-                      {targets.length === 0
-                        ? <Chip label={t_i18n('Every security platform')} />
-                        : targets.map((name) => <Chip key={name} label={name} />)}
-                    </ListItem>
-                  );
-                })}
-              </List>
-              {techniques.length > PREVIEW_TECHNIQUES && (
-                <Typography variant="body2" color="text.secondary" data-testid="defense-validation-more">
-                  {t_i18n('{count, plural, one {and # more technique} other {and # more techniques}}', { values: { count: techniques.length - PREVIEW_TECHNIQUES } })}
-                </Typography>
-              )}
-              {deferredCount > 0 && (
-                <Box sx={{ marginTop: 1 }} data-testid="defense-validation-deferred">
-                  <Alert
-                    severity="warning"
-                    content={(
-                      <>
-                        {t_i18n('{count, plural, one {# more technique of this scope is not part of this request.} other {# more techniques of this scope are not part of this request.}}', { values: { count: deferredCount } })}
-                        {' '}
-                        {t_i18n('A validation request holds at most {max} techniques and takes the ones used by the most threats first. Select the others in the Gaps tab to validate them.', { values: { max: MAX_VALIDATION_TECHNIQUES } })}
-                        {' '}
-                        <Link to={PATH_DEFENSE_GAPS} onClick={onClose}>{t_i18n('Open the Gaps tab')}</Link>
-                      </>
-                    )}
-                  />
-                </Box>
-              )}
-              {overGapsLimit && (
-                <Box id="defense-validation-gaps-limit" sx={{ marginTop: 1 }} data-testid="defense-validation-gaps-limit">
-                  <Alert
-                    severity="warning"
-                    content={t_i18n('This request would be tracked on {count} gaps and a validation request is tracked on at most {max}: validate fewer techniques or security platforms.', { values: { count: gapsCount, max: MAX_VALIDATION_GAPS } })}
-                  />
-                </Box>
-              )}
-              <Typography variant="body2" color="text.secondary" sx={{ marginTop: 1 }} data-testid="defense-validation-scenario">
-                {(() => {
-                  const scenarioValues = {
-                    type: t_i18n('Endpoint'),
-                    platforms: values.platforms_affinity.length > 0
-                      ? intl.formatList(values.platforms_affinity.map(scenarioPlatformLabel), { type: 'conjunction' })
-                      : t_i18n('any platform'),
-                    threat: threats.find((threat) => threat.value === values.threatId)?.label ?? '',
-                  };
-                  return values.threatId === NO_THREAT || !scenarioValues.threat
-                    ? t_i18n('Scenario: {type} targets on {platforms}, no threat emulated', { values: scenarioValues })
-                    : t_i18n('Scenario: {type} targets on {platforms}, emulating {threat}', { values: scenarioValues });
-                })()}
+              <Typography variant="body2">
+                {t_i18n('A security coverage will be created for the selected techniques. OpenAEV generates a scenario restricted to these techniques and sends back its results, which update the validation layer.')}
               </Typography>
-            </Box>
-            <Field
-              component={TextField}
-              variant="outlined"
-              name="name"
-              label={t_i18n('Name')}
-              helperText={t_i18n('Leave empty to generate a name')}
-              fullWidth
-              style={fieldSpacingContainerStyle}
-            />
-            {threats.length > 0 && (
+              <Box sx={{ marginTop: 2 }} data-testid="defense-validation-setup">
+                <Alert
+                  severity="info"
+                  content={(
+                    <>
+                      {t_i18n('Validation needs an OpenAEV platform that reads the security coverages of this platform through its collector. The OpenCTI account of that collector needs the Connector role.')}
+                      {' '}
+                      <a href={DEFENSE_VALIDATION_DOCUMENTATION_URL} target="_blank" rel="noreferrer">{t_i18n('How to connect OpenAEV')}</a>
+                    </>
+                  )}
+                />
+              </Box>
+              <Box
+                component="section"
+                aria-label={t_i18n('What will be validated')}
+                sx={{ marginTop: 2, padding: 1.5, borderRadius: 1, border: 1, borderColor: 'divider' }}
+                data-testid="defense-validation-preview"
+              >
+                <Stack direction="row" spacing={1} alignItems="baseline" sx={{ marginBottom: 1 }}>
+                  <Typography variant="h4" sx={{ margin: 0 }}>{t_i18n('What will be validated')}</Typography>
+                  <Typography variant="body2" color="text.secondary" data-testid="defense-validation-count">
+                    {t_i18n('{count, plural, one {# technique} other {# techniques}}', { values: { count: techniques.length } })}
+                  </Typography>
+                </Stack>
+                <List dense disablePadding data-testid="defense-validation-techniques">
+                  {techniques.slice(0, PREVIEW_TECHNIQUES).map((technique) => {
+                    const targets = platformsOf(technique.id);
+                    return (
+                      <ListItem key={technique.id} disableGutters sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        <Typography variant="body2" sx={{ marginRight: 1 }}>{techniqueTitle(technique)}</Typography>
+                        {targets.length === 0
+                          ? <Chip label={t_i18n('Every security platform')} />
+                          : targets.map((name) => <Chip key={name} label={name} />)}
+                      </ListItem>
+                    );
+                  })}
+                </List>
+                {techniques.length > PREVIEW_TECHNIQUES && (
+                  <Typography variant="body2" color="text.secondary" data-testid="defense-validation-more">
+                    {t_i18n('{count, plural, one {and # more technique} other {and # more techniques}}', { values: { count: techniques.length - PREVIEW_TECHNIQUES } })}
+                  </Typography>
+                )}
+                {deferredCount > 0 && (
+                  <Box sx={{ marginTop: 1 }} data-testid="defense-validation-deferred">
+                    <Alert
+                      severity="warning"
+                      content={(
+                        <>
+                          {t_i18n('{count, plural, one {# more technique of this scope is not part of this request.} other {# more techniques of this scope are not part of this request.}}', { values: { count: deferredCount } })}
+                          {' '}
+                          {t_i18n('A validation request holds at most {max} techniques and takes the ones used by the most threats first. Select the others in the Gaps tab to validate them.', { values: { max: MAX_VALIDATION_TECHNIQUES } })}
+                          {' '}
+                          <Link to={PATH_DEFENSE_GAPS} onClick={onClose}>{t_i18n('Open the Gaps tab')}</Link>
+                        </>
+                      )}
+                    />
+                  </Box>
+                )}
+                {overGapsLimit && (
+                  <Box id="defense-validation-gaps-limit" sx={{ marginTop: 1 }} data-testid="defense-validation-gaps-limit">
+                    <Alert
+                      severity="warning"
+                      content={t_i18n('This request would be tracked on {count} gaps and a validation request is tracked on at most {max}: validate fewer techniques or security platforms.', { values: { count: gapsCount, max: MAX_VALIDATION_GAPS } })}
+                    />
+                  </Box>
+                )}
+                <Typography variant="body2" color="text.secondary" sx={{ marginTop: 1 }} data-testid="defense-validation-scenario">
+                  {(() => {
+                    const scenarioValues = {
+                      type: t_i18n('Endpoint'),
+                      platforms: values.platforms_affinity.length > 0
+                        ? intl.formatList(values.platforms_affinity.map(scenarioPlatformLabel), { type: 'conjunction' })
+                        : t_i18n('any platform'),
+                      threat: threats.find((threat) => threat.value === values.threatId)?.label ?? '',
+                    };
+                    return values.threatId === NO_THREAT || !scenarioValues.threat
+                      ? t_i18n('Scenario: {type} targets on {platforms}, no threat emulated', { values: scenarioValues })
+                      : t_i18n('Scenario: {type} targets on {platforms}, emulating {threat}', { values: scenarioValues });
+                  })()}
+                </Typography>
+              </Box>
+              <Field
+                component={TextField}
+                variant="outlined"
+                name="name"
+                label={t_i18n('Name')}
+                helperText={t_i18n('Leave empty to generate a name')}
+                fullWidth
+                style={fieldSpacingContainerStyle}
+              />
+              {threats.length > 0 && (
+                <Field
+                  component={SelectFieldFds}
+                  variant="outlined"
+                  name="threatId"
+                  label={t_i18n('Threat to emulate')}
+                  helpertext={t_i18n('The threat the validation is for, recorded with the security coverage. OpenAEV tests the selected techniques either way.')}
+                  fullWidth
+                  onChange={(name: string, value: string) => setFieldValue(name, value)}
+                  containerstyle={fieldSpacingContainerStyle}
+                >
+                  <SelectItem value={NO_THREAT}>{t_i18n('None')}</SelectItem>
+                  {threats.map((threat) => (
+                    <SelectItem key={threat.value} value={threat.value}>{threat.label}</SelectItem>
+                  ))}
+                </Field>
+              )}
+              <PeriodicityField
+                name="periodicity"
+                label={t_i18n('Coverage validity period')}
+                style={fieldSpacingContainerStyle}
+                setFieldValue={setFieldValue}
+              />
+              <Typography variant="caption" color="text.secondary" component="p" sx={{ marginTop: 0.5 }}>
+                {t_i18n('How often OpenAEV runs the scenario again, each run refreshing the validation results')}
+              </Typography>
+              <PeriodicityField
+                name="duration"
+                label={t_i18n('Duration')}
+                style={fieldSpacingContainerStyle}
+                setFieldValue={setFieldValue}
+              />
+              <Typography variant="caption" color="text.secondary" component="p" sx={{ marginTop: 0.5 }}>
+                {t_i18n('How long each run of the scenario lasts')}
+              </Typography>
               <Field
                 component={SelectFieldFds}
                 variant="outlined"
-                name="threatId"
-                label={t_i18n('Threat to emulate')}
-                helpertext={t_i18n('The threat the validation is for, recorded with the security coverage. OpenAEV tests the selected techniques either way.')}
+                name="type_affinity"
+                label={t_i18n('Type affinity')}
+                helpertext={t_i18n('The kind of targets OpenAEV runs the scenario on, endpoints for now')}
                 fullWidth
                 onChange={(name: string, value: string) => setFieldValue(name, value)}
                 containerstyle={fieldSpacingContainerStyle}
               >
-                <SelectItem value={NO_THREAT}>{t_i18n('None')}</SelectItem>
-                {threats.map((threat) => (
-                  <SelectItem key={threat.value} value={threat.value}>{threat.label}</SelectItem>
-                ))}
+                <SelectItem value="ENDPOINT">{t_i18n('Endpoint')}</SelectItem>
               </Field>
-            )}
-            <PeriodicityField
-              name="periodicity"
-              label={t_i18n('Coverage validity period')}
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-            />
-            <Typography variant="caption" color="text.secondary" component="p" sx={{ marginTop: 0.5 }}>
-              {t_i18n('How often OpenAEV runs the scenario again, each run refreshing the validation results')}
-            </Typography>
-            <PeriodicityField
-              name="duration"
-              label={t_i18n('Duration')}
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-            />
-            <Typography variant="caption" color="text.secondary" component="p" sx={{ marginTop: 0.5 }}>
-              {t_i18n('How long each run of the scenario lasts')}
-            </Typography>
-            <Field
-              component={SelectFieldFds}
-              variant="outlined"
-              name="type_affinity"
-              label={t_i18n('Type affinity')}
-              helpertext={t_i18n('The kind of targets OpenAEV runs the scenario on, endpoints for now')}
-              fullWidth
-              onChange={(name: string, value: string) => setFieldValue(name, value)}
-              containerstyle={fieldSpacingContainerStyle}
-            >
-              <SelectItem value="ENDPOINT">{t_i18n('Endpoint')}</SelectItem>
-            </Field>
-            <Box style={fieldSpacingContainerStyle}>
-              <Combobox<ScenarioPlatformOption>
-                multiple
-                className="w-full"
-                options={SCENARIO_PLATFORMS}
-                value={SCENARIO_PLATFORMS.filter((platform) => values.platforms_affinity.includes(platform.value))}
-                getOptionLabel={(option) => option.label}
-                isOptionEqualToValue={(option, other) => option.value === other.value}
-                onValueChange={(next) => setFieldValue('platforms_affinity', ((next as ScenarioPlatformOption[] | null) ?? []).map((option) => option.value))}
-              >
-                <ComboboxLabel>{t_i18n('Platform affinity')}</ComboboxLabel>
-                <ComboboxField>
-                  <ComboboxChips aria-label={t_i18n('Platform affinity')} />
-                  <ComboboxInput
-                    placeholder={values.platforms_affinity.length === 0 ? t_i18n('any platform') : undefined}
-                    data-testid="defense-validation-platforms"
-                  />
-                  <ComboboxControls>
-                    <ComboboxClear />
-                    <ComboboxTrigger />
-                  </ComboboxControls>
-                </ComboboxField>
-                <ComboboxContent emptyMessage={t_i18n('No results')} listAriaLabel={t_i18n('Platform affinity')} />
-                <ComboboxHelperText>{t_i18n('The operating systems of the endpoints the scenario runs on, any of them when empty')}</ComboboxHelperText>
-              </Combobox>
-            </Box>
-            <DialogActions sx={{ paddingX: 0, marginTop: 2 }}>
+              <Box style={fieldSpacingContainerStyle}>
+                <Combobox<ScenarioPlatformOption>
+                  multiple
+                  className="w-full"
+                  options={SCENARIO_PLATFORMS}
+                  value={SCENARIO_PLATFORMS.filter((platform) => values.platforms_affinity.includes(platform.value))}
+                  getOptionLabel={(option) => option.label}
+                  isOptionEqualToValue={(option, other) => option.value === other.value}
+                  onValueChange={(next) => setFieldValue('platforms_affinity', ((next as ScenarioPlatformOption[] | null) ?? []).map((option) => option.value))}
+                >
+                  <ComboboxLabel>{t_i18n('Platform affinity')}</ComboboxLabel>
+                  <ComboboxField>
+                    <ComboboxChips aria-label={t_i18n('Platform affinity')} />
+                    <ComboboxInput
+                      placeholder={values.platforms_affinity.length === 0 ? t_i18n('any platform') : undefined}
+                      data-testid="defense-validation-platforms"
+                    />
+                    <ComboboxControls>
+                      <ComboboxClear />
+                      <ComboboxTrigger />
+                    </ComboboxControls>
+                  </ComboboxField>
+                  <ComboboxContent emptyMessage={t_i18n('No results')} listAriaLabel={t_i18n('Platform affinity')} />
+                  <ComboboxHelperText>{t_i18n('The operating systems of the endpoints the scenario runs on, any of them when empty')}</ComboboxHelperText>
+                </Combobox>
+              </Box>
+            </Form>
+            <DialogActions sx={{ paddingX: 0, marginTop: 2, flexShrink: 0 }}>
               <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
@@ -350,7 +363,7 @@ const DefenseValidationDialog = ({ open, onClose, onValidated, techniques, defer
                 {t_i18n('{count, plural, one {Validate # technique} other {Validate # techniques}}', { values: { count: techniques.length } })}
               </Button>
             </DialogActions>
-          </Form>
+          </>
         )}
       </Formik>
     </Dialog>
