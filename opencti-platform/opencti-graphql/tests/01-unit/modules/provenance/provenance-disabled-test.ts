@@ -1,9 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
-import { elRawGet, elUpdate } from '../../../../src/database/engine';
+import { elAggregationCount, elCount, elRawGet, elUpdate } from '../../../../src/database/engine';
 import { getEntitiesListFromCache, getEntityFromCache } from '../../../../src/database/cache';
 import { withProvenanceStixExtension } from '../../../../src/modules/provenance/provenance-stix';
 import { computeCreationProvenance, isProvenanceRecordable, recordUpsertProvenance } from '../../../../src/modules/provenance/provenance-write';
 import { creationProceduresBuilder, mergeProvenanceOnEntitiesMerge, prepareUpsertProvenance } from '../../../../src/modules/provenance/provenance-upsert';
+import {
+  provenanceFreshnessDistribution,
+  provenanceSingleSourcedByType,
+  provenanceSourceKindsDistribution,
+  provenanceStatistics,
+} from '../../../../src/modules/provenance/provenance-domain';
 import { STIX_EXT_OCTI_PROVENANCE } from '../../../../src/types/stix-2-1-extensions';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 
@@ -18,6 +24,8 @@ vi.mock('../../../../src/database/engine', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../src/database/engine')>(),
   elUpdate: vi.fn(),
   elRawGet: vi.fn(),
+  elCount: vi.fn(),
+  elAggregationCount: vi.fn(),
 }));
 
 vi.mock('../../../../src/database/cache', async (importOriginal) => ({
@@ -58,6 +66,19 @@ describe('Provenance disabled', () => {
     expect(elUpdate).not.toHaveBeenCalled();
     expect(elRawGet).not.toHaveBeenCalled();
     expect(getEntitiesListFromCache).not.toHaveBeenCalled();
+  });
+
+  it('should answer the statistics empty without reading the settings nor counting', async () => {
+    expect(await provenanceStatistics(context, user, {})).toEqual({ total: 0, with_provenance: 0, single_sourced: 0, corroborated: 0, with_conflicts: 0, stale: 0 });
+    const freshness = await provenanceFreshnessDistribution(context, user, {});
+    expect(freshness.every((bucket) => bucket.value === 0)).toEqual(true);
+    const kinds = await provenanceSourceKindsDistribution(context, user, {});
+    expect(kinds.every((kind) => kind.count === 0)).toEqual(true);
+    expect(await provenanceSingleSourcedByType(context, user, {})).toEqual([]);
+    expect(elCount).not.toHaveBeenCalled();
+    expect(elAggregationCount).not.toHaveBeenCalled();
+    expect(getEntitiesListFromCache).not.toHaveBeenCalled();
+    expect(getEntityFromCache).not.toHaveBeenCalled();
   });
 
   it('should not preserve procedures on uses relationships', async () => {

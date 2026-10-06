@@ -599,6 +599,7 @@ describe('Provenance: every fact knows who said it', () => {
     }
     // Relationship types only, and only with the customization capability, through either mutation
     await queryAsAdminWithError({ query: RELATIONSHIP_TRACKING_EDIT, variables: { types: ['Malware'], tracked: true } }, 'Provenance tracking is configured on relationship types');
+    await queryAsAdminWithError({ query: RELATIONSHIP_TRACKING_EDIT, variables: { types: ['stix-core-relationship'], tracked: true } }, 'Provenance tracking is configured on relationship types');
     await queryAsUserIsExpectedForbidden(USER_PLATFORM_ADMIN, { query: RELATIONSHIP_TRACKING_EDIT, variables: { types: ['uses'], tracked: false } });
     const PATCH = gql`mutation Patch($ids: [ID!]!, $input: [EditInput!]!) { entitySettingsFieldPatch(ids: $ids, input: $input) { id } }`;
     await queryAsUserIsExpectedForbidden(USER_PLATFORM_ADMIN, {

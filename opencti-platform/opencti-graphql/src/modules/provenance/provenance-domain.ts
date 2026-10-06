@@ -163,7 +163,11 @@ export const resolveStatisticsTypes = (types: string[] | null | undefined, track
   return restrictToTrackedTypes(types && types.length > 0 ? types : DEFAULT_STATISTICS_TYPES, trackedTypes);
 };
 
+// Disabled provenance answers every statistic empty, without reading the entity settings nor counting anything
 const statisticsTypes = async (context: AuthContext, types: string[] | null | undefined) => {
+  if (!PROVENANCE_ENABLED) {
+    return [];
+  }
   return resolveStatisticsTypes(types, await listProvenanceTrackedTypes(context));
 };
 
@@ -312,7 +316,8 @@ export const provenanceTypeStatistics = async (context: AuthContext, user: AuthU
  */
 export const provenanceRelationshipTrackingEdit = async (context: AuthContext, user: AuthUser, args: MutationProvenanceRelationshipTrackingEditArgs) => {
   const relationshipTypes = R.uniq(args.relationship_types);
-  const unsupported = relationshipTypes.filter((type) => !isStixCoreRelationship(type));
+  // Tracking is set per concrete type: the abstract type is not a type any relationship has
+  const unsupported = relationshipTypes.filter((type) => type === ABSTRACT_STIX_CORE_RELATIONSHIP || !isStixCoreRelationship(type));
   if (relationshipTypes.length === 0 || unsupported.length > 0) {
     throw FunctionalError('Provenance tracking is configured on relationship types', { types: unsupported });
   }
