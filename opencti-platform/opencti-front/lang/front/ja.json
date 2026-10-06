@@ -6170,6 +6170,7 @@
   "You do not have permission to connect this product. Please contact your product administrator to connect the product on your behalf.": "この製品を接続する権限がありません。製品管理者に連絡し、代わりに接続してもらうよう依頼してください。",
   "You do not have permission to view form intakes.": "あなたには、フォームを閲覧する権限がありません。",
   "You do not have the access rights to approve a draft": "下書きを承認するアクセス権限がありません。",
+  "You do not have the capability to apply it": "これを適用する権限がありません",
   "You do not have the capability to apply this proposal": "この提案を適用する権限がありません",
   "You do not have the right to use API tokens.": "APIトークンを使用する権限がありません。",
   "You exceeded the characters limit. Please input less than 2OOO characters.": "文字数制限を超えました。2OOO文字以内で入力してください。",

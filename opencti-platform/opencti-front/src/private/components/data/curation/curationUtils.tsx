@@ -172,6 +172,7 @@ const useCurationLabels = () => {
     adjudication_disagrees: t_i18n('The adjudication disagrees'),
     manual_choice_required: t_i18n('Needs a human choice'),
     subject_missing: t_i18n('A subject no longer exists'),
+    missing_capability: t_i18n('You do not have the capability to apply it'),
   };
   const weekDayLabels: Record<number, string> = {
     0: t_i18n('Sunday'),

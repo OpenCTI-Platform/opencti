@@ -72,6 +72,7 @@ export const EXCLUSION_ADJUDICATION_MISSING = 'adjudication_missing';
 export const EXCLUSION_ADJUDICATION_DISAGREES = 'adjudication_disagrees';
 export const EXCLUSION_MANUAL_CHOICE = 'manual_choice_required';
 export const EXCLUSION_SUBJECT_MISSING = 'subject_missing';
+export const EXCLUSION_MISSING_CAPABILITY = 'missing_capability';
 
 export interface PolicySubjectFacts {
   markingSets: string[][];
@@ -359,9 +360,10 @@ export const findApplicableProposals = async (
 /**
  * A dry run evaluates every open proposal the requesting user can read, as a manual run of the policy reads them: the
  * covered kinds at any confidence, page by page with only the counts kept, so its totals hold however many proposals
- * there are, and the other kinds, counted as not covered.
+ * there are, and the other kinds, counted as not covered. An eligible proposal whose action needs a capability the user
+ * lacks is excluded, as a manual run leaves it out (a scheduled run, with the rights of the curation manager, applies it).
  */
-const evaluateDryRun = async (context: AuthContext, user: AuthUser, policy: BasicStoreEntityCurationPolicy) => {
+export const evaluateDryRun = async (context: AuthContext, user: AuthUser, policy: BasicStoreEntityCurationPolicy) => {
   let eligibleCount = 0;
   const exclusions: Record<string, number> = {};
   const impact: Record<string, number> = {};
@@ -373,7 +375,8 @@ const evaluateDryRun = async (context: AuthContext, user: AuthUser, policy: Basi
     callback: async (proposals: BasicStoreEntityCurationProposal[]) => {
       const { factsFor, hasOpenContradiction } = await loadPolicyFacts(context, proposals);
       proposals.forEach((proposal) => {
-        const reason = evaluatePolicyEligibility(policy, proposal, factsFor(proposal), hasOpenContradiction(proposal));
+        const reason = evaluatePolicyEligibility(policy, proposal, factsFor(proposal), hasOpenContradiction(proposal))
+          ?? (canUserApplyProposal(user, proposal) ? null : EXCLUSION_MISSING_CAPABILITY);
         if (reason) {
           exclusions[reason] = (exclusions[reason] ?? 0) + 1;
           return;
