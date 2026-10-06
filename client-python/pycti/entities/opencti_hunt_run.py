@@ -267,6 +267,9 @@ class HuntRun:
         :type hunt_analyst_feedback: str
         :param source: (optional) analyst (default) or agent
         :type source: str
+        :param create_incident: (optional) False records a true positive without
+            opening or continuing an incident; omitted, a true positive does
+        :type create_incident: bool
         :return: the hunt run
         :rtype: dict or None
         """
@@ -289,17 +292,14 @@ class HuntRun:
                 }
             }
         """
-        result = self.opencti.query(
-            query,
-            {
-                "id": id,
-                "input": {
-                    "verdict": verdict,
-                    "hunt_analyst_feedback": kwargs.get("hunt_analyst_feedback", None),
-                    "source": kwargs.get("source", None),
-                },
-            },
-        )
+        verdict_input = {
+            "verdict": verdict,
+            "hunt_analyst_feedback": kwargs.get("hunt_analyst_feedback", None),
+            "source": kwargs.get("source", None),
+        }
+        if kwargs.get("create_incident", None) is not None:
+            verdict_input["create_incident"] = bool(kwargs.get("create_incident"))
+        result = self.opencti.query(query, {"id": id, "input": verdict_input})
         return result["data"]["huntRunSetVerdict"]
 
     def add_evidence(self, **kwargs):

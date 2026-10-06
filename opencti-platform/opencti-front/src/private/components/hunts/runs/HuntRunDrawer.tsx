@@ -22,6 +22,7 @@ import Label from '../../../../components/common/label/Label';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import SelectFieldFds, { SelectItem } from '../../../../components/fields/SelectFieldFds';
+import SwitchField from '../../../../components/fields/SwitchField';
 import TextareaField from '../../../../components/TextareaField';
 import { useFormatter } from '../../../../components/i18n';
 import type { Theme } from '../../../../components/Theme';
@@ -53,6 +54,7 @@ import {
   huntRunTriggerLabel,
   huntRunUnresolvedTechniquesSentence,
   huntVerdictLabel,
+  huntVerdictOffersIncident,
   huntVerdictSourceLabel,
   isTerminalHuntRun,
 } from '../hunt-utils';
@@ -456,6 +458,7 @@ const RunEvidence = ({ run, results }: { run: Run; results: HuntRunResults_data$
 interface VerdictValues {
   verdict: string;
   hunt_analyst_feedback: string;
+  create_incident: boolean;
 }
 
 const RunVerdict = ({ run, cardRef }: { run: Run; cardRef: React.RefObject<HTMLDivElement | null> }) => {
@@ -465,7 +468,15 @@ const RunVerdict = ({ run, cardRef }: { run: Run; cardRef: React.RefObject<HTMLD
   const editable = canSetHuntRunVerdict(run);
   const onSubmit = (values: VerdictValues, { setSubmitting }: { setSubmitting: (submitting: boolean) => void }) => {
     commit({
-      variables: { id: run.id, input: { verdict: values.verdict as 'true_positive', hunt_analyst_feedback: values.hunt_analyst_feedback || null, source: 'analyst' } },
+      variables: {
+        id: run.id,
+        input: {
+          verdict: values.verdict as 'true_positive',
+          hunt_analyst_feedback: values.hunt_analyst_feedback || null,
+          source: 'analyst',
+          create_incident: huntVerdictOffersIncident(values.verdict, run) ? values.create_incident : null,
+        },
+      },
       onCompleted: (_, errors) => {
         setSubmitting(false);
         if (!notifyPayloadErrors(errors)) {
@@ -500,11 +511,11 @@ const RunVerdict = ({ run, cardRef }: { run: Run; cardRef: React.RefObject<HTMLD
         {editable && (
           <Security needs={[KNOWLEDGE_KNUPDATE]}>
             <Formik<VerdictValues>
-              initialValues={{ verdict: run.verdict === 'pending' ? 'true_positive' : run.verdict, hunt_analyst_feedback: '' }}
+              initialValues={{ verdict: run.verdict === 'pending' ? 'true_positive' : run.verdict, hunt_analyst_feedback: '', create_incident: true }}
               validationSchema={Yup.object().shape({ verdict: Yup.string().oneOf([...HUNT_ANALYST_VERDICTS]).required(t_i18n('This field is required')) })}
               onSubmit={onSubmit}
             >
-              {({ submitForm, isSubmitting }) => (
+              {({ submitForm, isSubmitting, values }) => (
                 <Form style={{ marginTop: theme.spacing(2) }} data-testid="hunt-run-verdict-form">
                   <Field component={SelectFieldFds} name="verdict" label={t_i18n('Your verdict')} required>
                     {HUNT_ANALYST_VERDICTS.map((verdict) => (
@@ -514,9 +525,17 @@ const RunVerdict = ({ run, cardRef }: { run: Run; cardRef: React.RefObject<HTMLD
                   <div style={{ marginTop: theme.spacing(2) }}>
                     <Field component={TextareaField} name="hunt_analyst_feedback" label={t_i18n('Feedback')} rows={3} />
                   </div>
-                  <Text variant="content-caption" style={{ display: 'block', marginTop: theme.spacing(1) }}>
-                    {t_i18n('A true positive verdict opens an incident in a draft for review')}
-                  </Text>
+                  {huntVerdictOffersIncident(values.verdict, run) && (
+                    <div style={{ marginTop: theme.spacing(2) }} data-testid="hunt-run-verdict-incident">
+                      <Field
+                        component={SwitchField}
+                        type="checkbox"
+                        name="create_incident"
+                        label={t_i18n('Escalate to an incident')}
+                        helpertext={t_i18n('The hits go to the incident still open, or to a new incident draft')}
+                      />
+                    </div>
+                  )}
                   <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: theme.spacing(2) }}>
                     <Button onClick={submitForm} disabled={isSubmitting} data-testid="hunt-run-verdict-submit">
                       {t_i18n('Save the verdict')}

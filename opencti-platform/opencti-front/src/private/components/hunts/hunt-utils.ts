@@ -527,6 +527,8 @@ export interface HuntRunCapabilityInput {
 }
 
 export const canSetHuntRunVerdict = (run: HuntRunCapabilityInput) => run.hunt_run_mode !== 'preview' && run.hunt_run_status === 'completed';
+// A true positive opens or continues an incident only for a run that has none yet, and the analyst may record it alone
+export const huntVerdictOffersIncident = (verdict: string, run: { incident_id?: string | null }) => verdict === 'true_positive' && !run.incident_id;
 export const canRetryHuntRun = (run: HuntRunCapabilityInput) => run.hunt_run_mode !== 'preview' && isTerminalHuntRun(run.hunt_run_status);
 export const canTriageHuntRun = (run: HuntRunCapabilityInput) => run.hunt_run_mode !== 'preview' && run.hunt_run_status === 'completed';
 

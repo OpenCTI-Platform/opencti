@@ -88,7 +88,10 @@ test('Hunt run drawer verdict', { tag: ['@hunt', '@mutation', '@ce'] }, async ({
     await huntDetails.gotoRun(seeded.huntId, seeded.runId);
     await expect(huntDetails.getRunsPage()).toBeVisible();
     await expect(huntDetails.getRunVerdictForm()).toBeVisible();
+    // The pending run proposes a true positive, which offers the incident; another verdict does not
+    await expect(huntDetails.getRunVerdictIncidentChoice()).toBeVisible();
     await huntDetails.verdictField.selectOption('Benign');
+    await expect(huntDetails.getRunVerdictIncidentChoice()).toBeHidden();
     await huntDetails.saveRunVerdict();
     await expect(page.getByText('The verdict has been saved')).toBeVisible();
     await expect(huntDetails.getVerdictChip('Benign')).toBeVisible();

@@ -59,6 +59,10 @@ export default class HuntDetailsPage {
     return this.page.getByTestId('hunt-run-verdict-form');
   }
 
+  getRunVerdictIncidentChoice() {
+    return this.page.getByTestId('hunt-run-verdict-incident');
+  }
+
   getVerdictChip(label: string) {
     return this.page.getByTestId('hunt-verdict-chip').filter({ hasText: label }).first();
   }

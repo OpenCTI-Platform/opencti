@@ -281,6 +281,17 @@ class TestHuntRun(TestCase):
             },
         )
 
+    def test_set_verdict_forwards_the_incident_choice(self):
+        opencti = _opencti(
+            {"huntRunSetVerdict": {"id": "run-1", "verdict": "true_positive"}}
+        )
+        run = HuntRun(opencti)
+        run.set_verdict(id="run-1", verdict="true_positive", create_incident=False)
+        self.assertIs(_variables(opencti)["input"]["create_incident"], False)
+        # Omitted, the platform decides: a true positive opens or continues an incident
+        run.set_verdict(id="run-1", verdict="true_positive")
+        self.assertNotIn("create_incident", _variables(opencti)["input"])
+
     def test_add_evidence_requires_result_objects(self):
         opencti = _opencti({"huntRunEvidenceAdd": {"id": "run-1", "hits_count": 7}})
         run = HuntRun(opencti)

@@ -219,7 +219,7 @@ A run with partial results says why under its status: the platform returned the 
 
 When the new hits of a run reach the escalation threshold, OpenCTI creates an **Incident** in a new draft workspace, never directly in the knowledge graph, unless an incident of a previous run of the hunt on the same platform is still open: the hits then go to that incident (see [How hits are counted](#how-hits-are-counted)). The Incident carries the markings and organizations of the run, the workspace is restricted to the organizations the run is shared with, and its name only identifies the run. The Incident description recommends running Case Autopilot once the draft is validated, to investigate the hits and their attribution. Validating the draft makes the Incident part of the knowledge.
 
-Analysts set the final verdict from the run, with an optional feedback. Hunt statistics (runs, hits, verdict distribution, runs per platform) are displayed on the hunt overview and are available as dashboard widgets.
+Analysts set the final verdict from the run, with an optional feedback. A true positive on a run without an incident offers **Escalate to an incident**, on by default: the hits go to the incident still open from a previous run of the hunt on the platform, or to a new incident draft; turned off, the true positive is recorded alone. Hunt statistics (runs, hits, verdict distribution, runs per platform) are displayed on the hunt overview and are available as dashboard widgets.
 
 ![Overview of a hunt: hypothesis, status and its transitions, schedule, scope and the latest runs](assets/hunt-overview.png)
 

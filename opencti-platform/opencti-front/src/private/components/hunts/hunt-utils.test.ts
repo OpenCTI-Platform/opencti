@@ -27,6 +27,7 @@ import {
   hasHuntLogic,
   huntIncidentSeverityLabel,
   huntMessageText,
+  huntVerdictOffersIncident,
   huntPlatformLabel,
   huntQueryLanguageLabel,
   huntRunFailure,
@@ -137,6 +138,13 @@ describe('Hunt utils', () => {
       expect(canSetHuntRunVerdict({ hunt_run_status: 'completed', hunt_run_mode: 'execute' })).toBe(true);
       expect(canSetHuntRunVerdict({ hunt_run_status: 'completed', hunt_run_mode: 'preview' })).toBe(false);
       expect(canSetHuntRunVerdict({ hunt_run_status: 'running', hunt_run_mode: 'execute' })).toBe(false);
+    });
+
+    it('should offer the incident with a true positive on a run without one', () => {
+      expect(huntVerdictOffersIncident('true_positive', { incident_id: null })).toBe(true);
+      expect(huntVerdictOffersIncident('true_positive', { incident_id: 'incident-1' })).toBe(false);
+      expect(huntVerdictOffersIncident('benign', { incident_id: null })).toBe(false);
+      expect(huntVerdictOffersIncident('inconclusive', {})).toBe(false);
     });
 
     it('should only retry terminated executions', () => {

@@ -1145,7 +1145,7 @@ const recordReportedHits = async (
     });
     return { hits_identified: true, hits_new_count: newCount, hits_recurring_count: recurringCount };
   } catch (error) {
-    logApp.error('[OPENCTI-MODULE] Hunt known hits could not be matched, every hit of the run counts as new', { cause: error, runId: run.internal_id });
+    logApp.warn('[OPENCTI-MODULE] Hunt known hits could not be matched, every hit of the run counts as new', { cause: error, runId: run.internal_id });
     return unidentified;
   }
 };
@@ -1407,7 +1407,7 @@ export const addHuntRunEvidence = async (context: AuthContext, user: AuthUser, r
         addedNew = matched.newCount;
         addedRecurring = matched.recurringCount;
       } catch (error) {
-        logApp.error('[OPENCTI-MODULE] Hunt known hits could not be matched for late evidence, its hits count as new', { cause: error, runId: current.internal_id });
+        logApp.warn('[OPENCTI-MODULE] Hunt known hits could not be matched for late evidence, its hits count as new', { cause: error, runId: current.internal_id });
       }
     }
     const { element: patched } = await patchAttribute(context, HUNT_MANAGER_USER, current.internal_id, ENTITY_TYPE_HUNT_RUN, {
