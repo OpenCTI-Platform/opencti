@@ -59,11 +59,12 @@ describe('withCollapsedGroups', () => {
     expect(last.nodes.find(isGroupNode)?.isRestricted).toBe(false);
   });
 
-  it('redraws the links towards the group once and drops the links inside it', () => {
+  it('redraws the links towards the group once, a link between two members as a loop on the group', () => {
     const result = withCollapsedGroups(data, ['Malware'], label, createCollapseCache());
     const groupLinks = result.links.slice(data.links.length);
-    expect(groupLinks).toHaveLength(1);
-    expect(groupLinks[0]).toMatchObject({ source_id: 'actor', target_id: `${GROUP_NODE_PREFIX}Malware`, relationship_type: 'uses' });
+    expect(groupLinks).toHaveLength(2);
+    expect(groupLinks[0]).toMatchObject({ source_id: 'actor', target_id: `${GROUP_NODE_PREFIX}Malware`, relationship_type: 'uses', represents: 2 });
+    expect(groupLinks[1]).toMatchObject({ source_id: `${GROUP_NODE_PREFIX}Malware`, target_id: `${GROUP_NODE_PREFIX}Malware`, relationship_type: 'variant-of', represents: 1 });
   });
 
   it('counts the relationships a group link stands for, afresh at every computation', () => {
@@ -79,8 +80,9 @@ describe('withCollapsedGroups', () => {
     const drawnLinks = result.links.filter(isGroupLink);
     const nested = graphNode({ id: 'nested', entity_type: 'uses', relationship_type: 'uses' });
     const connector = graphLink(actor, nested, { id: 'nested', label: '' });
-    // Two `uses` drawn as one link towards the group, one nested relationship, its connector not counted.
-    expect(relationshipTotal([...drawnNodes, nested], [...drawnLinks, connector])).toBe(3);
+    // Two `uses` drawn as one link towards the group, the `variant-of` between two members drawn as a loop on it, one
+    // nested relationship, its connector not counted.
+    expect(relationshipTotal([...drawnNodes, nested], [...drawnLinks, connector])).toBe(4);
   });
 
   it('lists the types drawn as the legend does, leaving out a type whose entities are all hidden', () => {
@@ -97,7 +99,7 @@ describe('withCollapsedGroups', () => {
 
   it('tells the links drawn towards a group from the relationships of the platform', () => {
     const result = withCollapsedGroups(data, ['Malware'], label, createCollapseCache());
-    expect(result.links.filter(isGroupLink)).toHaveLength(1);
+    expect(result.links.filter(isGroupLink)).toHaveLength(2);
     expect(data.links.some(isGroupLink)).toBe(false);
   });
 
@@ -109,7 +111,8 @@ describe('withCollapsedGroups', () => {
     const group = result.nodes.find(isGroupNode);
     expect(group?.label).toBe('2 Malware');
     expect(group?.groupOf?.memberIds).toEqual(['m1', 'm2']);
-    expect(result.links.slice(withHidden.links.length).map((link) => link.target_id)).toEqual([`${GROUP_NODE_PREFIX}Malware`]);
+    // The `uses` of the actor and the loop of the `variant-of` between the two members drawn; nothing towards the victim.
+    expect(result.links.slice(withHidden.links.length).map((link) => link.target_id)).toEqual([`${GROUP_NODE_PREFIX}Malware`, `${GROUP_NODE_PREFIX}Malware`]);
     // Every member hidden: no group at all.
     expect(withCollapsedGroups(withHidden, ['Malware'], label, createCollapseCache(), new Set(['m1', 'm2', 'm3'])).nodes.some(isGroupNode)).toBe(false);
   });

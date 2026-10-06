@@ -29,8 +29,9 @@ export const createCollapseCache = (): CollapseCache => ({ nodes: new Map(), lin
 /**
  * The drawing data with every collapsed entity type stood for by one group node: the members stay
  * in the data (hidden, so selection, filters and positions keep working on them) and every link
- * touching a member is redrawn once towards the group. Hidden entities are neither members nor
- * linked through a group, as they are not drawn. Without collapsed types the data is returned as is.
+ * touching a member is redrawn once towards the group, a link between two members of the group as
+ * a loop on it. Hidden entities are neither members nor linked through a group, as they are not
+ * drawn. Without collapsed types the data is returned as is.
  */
 export const withCollapsedGroups = (
   data: GraphData,
@@ -92,7 +93,6 @@ export const withCollapsedGroups = (
     const source = groupOfMember.get(sourceId) ?? sourceId;
     const target = groupOfMember.get(targetId) ?? targetId;
     if (source === sourceId && target === targetId) return;
-    if (source === target) return;
     const id = `${GROUP_LINK_PREFIX}${source}|${target}|${link.relationship_type || link.entity_type}`;
     const drawn = groupLinks.get(id);
     if (drawn) {
