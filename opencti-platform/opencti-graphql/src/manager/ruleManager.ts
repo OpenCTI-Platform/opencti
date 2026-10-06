@@ -258,7 +258,7 @@ export const rulesCleanHandler = async (
         }
       } catch (err: any) {
         if (err.name !== ALREADY_DELETED_ERROR) {
-          logApp.error('[OPENCTI-MODULE] Rule manager clean error', { cause: err, manager: 'RULE_ENGINE' });
+          logApp.error('[OPENCTI-MODULE] Rule manager clean error', { cause: err, manager: 'RULE_ENGINE', ruleId: rule.id, id: instance.internal_id });
         }
       }
     }

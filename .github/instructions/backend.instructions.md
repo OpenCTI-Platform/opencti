@@ -71,6 +71,7 @@ yarn test:ci-integration-sync  # Integration tests
 > - [GraphQL Schema & Resolvers](backend/patterns/schema-resolvers.md)
 > - [Database & Migrations](backend/patterns/database-migrations.md)
 > - [Error Handling](backend/patterns/error-handling.md)
+> - [Logging Levels](backend/patterns/logging-levels.md)
 > - [Performance](backend/patterns/performance.md)
 > - [Testing](backend/patterns/testing.md)
 

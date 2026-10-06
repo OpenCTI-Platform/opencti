@@ -459,6 +459,28 @@
         "opencti-platform/opencti-front/src/components/graph/components/GraphShortcutsDialog.tsx",
         "opencti-platform/opencti-front/src/components/graph/components/GraphToolbarMoreActions.tsx"
       ]
+    },
+    {
+      "component": "SearchField",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "Settings > Parameters redesign: the managers search, size md (36 px) on the centre line of the 36 px status filter and flush with the content edge of the card (measured at 1440 and 1920); the clear control is the library's own, labelled through clearLabel.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/settings/settings_managers/SettingsManagers.tsx"
+      ]
+    },
+    {
+      "component": "Chip",
+      "importFrom": "@filigran/design-system",
+      "guards": [
+        "imported-from-library"
+      ],
+      "reason": "Settings > Parameters redesign: the edition badge of the platform summary (Enterprise in the ee severity, Community in the default tone), 24 px on the value line of the facts grid, replacing the MUI chip of the former platform card.",
+      "files": [
+        "opencti-platform/opencti-front/src/private/components/settings/settings_platform/SettingsPlatformSummary.tsx"
+      ]
     }
   ]
 }

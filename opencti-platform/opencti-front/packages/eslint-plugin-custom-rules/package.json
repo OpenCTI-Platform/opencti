@@ -16,13 +16,13 @@
     "@eslint/js": "10.0.1",
     "@stylistic/eslint-plugin": "5.10.0",
     "@types/estree": "1.0.9",
-    "@typescript-eslint/parser": "8.70.1",
+    "@typescript-eslint/parser": "8.71.0",
     "eslint-plugin-import": "2.32.0",
-    "globals": "17.12.0",
+    "globals": "17.13.0",
     "jiti": "2.7.0",
     "typescript": "6.0.3",
-    "typescript-eslint": "8.70.1",
-    "vitest": "5.0.1"
+    "typescript-eslint": "8.71.0",
+    "vitest": "5.0.3"
   },
   "peerDependencies": {
     "eslint": ">=7"
