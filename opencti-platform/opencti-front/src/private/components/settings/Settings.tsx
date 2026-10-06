@@ -6,12 +6,9 @@ import ThemeManager, { refetchableThemesQuery } from '@components/settings/theme
 import { ThemeManager_themes$key } from '@components/settings/themes/__generated__/ThemeManager_themes.graphql';
 import { Switch } from '@mui/material';
 import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContentText from '@mui/material/DialogContentText';
-import Grid from '@mui/material/Grid2';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
 import { useTheme } from '@mui/styles';
 import { Field, Form, Formik } from 'formik';
 import React, { ChangeEvent, useState } from 'react';
@@ -20,9 +17,8 @@ import * as Yup from 'yup';
 import { availableLanguage } from '../../../components/AppIntlProvider';
 import Breadcrumbs from '../../../components/Breadcrumbs';
 import ItemBoolean from '../../../components/ItemBoolean';
-import ItemCopy from '../../../components/ItemCopy';
 import Loader, { LoaderVariant } from '../../../components/Loader';
-import { SubscriptionFocus } from '../../../components/Subscription';
+import { useSubscriptionFocusHelper } from '../../../components/Subscription';
 import TextField from '../../../components/TextField';
 import type { Theme } from '../../../components/Theme';
 import Card from '../../../components/common/card/Card';
@@ -32,7 +28,8 @@ import { fieldSpacingContainerStyle } from '../../../utils/field';
 import useApiMutation from '../../../utils/hooks/useApiMutation';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import DangerZoneButton from '../common/danger_zone/DangerZoneButton';
+import useSensitiveModifications from '../../../utils/hooks/useSensitiveModifications';
+import DangerZoneChip from '../common/danger_zone/DangerZoneChip';
 import EEChip from '../common/entreprise_edition/EEChip';
 import EnterpriseEditionButton from '../common/entreprise_edition/EnterpriseEditionButton';
 import { SettingsQuery } from './__generated__/SettingsQuery.graphql';
@@ -40,7 +37,14 @@ import HiddenTypesField from './hidden_types/HiddenTypesField';
 import SettingsAnalytics from './settings_analytics/SettingsAnalytics';
 import SettingsMessages from './settings_messages/SettingsMessages';
 import SettingsMapSource from './settings_map_source/SettingsMapSource';
+import SettingsManagers from './settings_managers/SettingsManagers';
+import SettingsDependencies from './settings_platform/SettingsDependencies';
+import SettingsInfoRow from './settings_platform/SettingsInfoRow';
+import SettingsPlatformSummary from './settings_platform/SettingsPlatformSummary';
 import { useChatbot } from '@components/chatbox/ChatbotContext';
+
+const twoColumnsSx = { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 3 };
+const wideNarrowSx = { display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)', gap: 3 };
 
 const AI_TYPE_MAP: Record<string, string> = {
   mistralai: 'MistralAI',
@@ -186,6 +190,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
 
   const [openEEChanges, setOpenEEChanges] = useState(false);
   const { xtmOneConfigured } = useChatbot();
+  const { isSensitive: isEnterpriseToggleSensitive, isAllowed: isEnterpriseToggleAllowed } = useSensitiveModifications('ce_ee_toggle');
 
   const { t_i18n, fldt } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
@@ -199,6 +204,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
   );
 
   const { id, editContext } = settings;
+  const focusHelper = useSubscriptionFocusHelper(editContext);
 
   const initialValues = {
     platform_title: settings.platform_title,
@@ -321,50 +327,112 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
   return (
     <div style={{ height: '100%', scrollbarWidth: 'none' }} data-testid="setting-page">
       <Breadcrumbs elements={[{ label: t_i18n('Settings') }, { label: t_i18n('Parameters'), current: true }]} />
-      {isEnterpriseEditionActivated && (
-        <Grid container={true} spacing={3} style={{ marginBottom: 23 }}>
-          <Grid size={6}>
-            <Card
-              titleSx={{ alignItems: 'end' }}
-              title={t_i18n('Enterprise Edition')}
-              action={!isEnterpriseEditionByConfig && (
-                <DangerZoneButton
-                  sensitiveType="ce_ee_toggle"
-                  onClick={() => setOpenEEChanges(true)}
-                >
-                  {t_i18n('Disable Enterprise Edition')}
-                </DangerZoneButton>
-              )}
-            >
-              <List style={{ marginTop: -20 }}>
-                <ListItem divider={true}>
-                  <ListItemText primary={t_i18n('Organization')} />
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 10 }}>
+        <SettingsPlatformSummary
+          platformId={settings.id}
+          version={version}
+          isEnterpriseEditionValid={isEnterpriseEditionValid}
+          instancesNumber={settings.platform_cluster.instances_number}
+          modules={modules ?? []}
+          ai={xtmOneConfigured ? null : {
+            label: aiPoweredLabel,
+            tooltip: aiPoweredTooltip,
+            status: isEnterpriseEditionValid && settings.platform_ai_enabled && settings.platform_ai_has_token,
+          }}
+          action={!isEnterpriseEditionActivated && (
+            <EnterpriseEditionButton inLine={true} />
+          )}
+        />
+
+        {isEnterpriseEditionActivated && (
+          <>
+            <Box sx={twoColumnsSx}>
+              <Card
+                title={t_i18n('Enterprise Edition')}
+                padding="horizontal"
+                data-testid="settings-enterprise-edition"
+                action={!isEnterpriseEditionByConfig && (
+                // keepMui: the 26 px of the license button on the same row, which renders through MUI
+                  <Button
+                    size="small"
+                    variant="secondary"
+                    intent="destructive"
+                    keepMui
+                    disabled={isEnterpriseToggleSensitive && !isEnterpriseToggleAllowed}
+                    onClick={() => setOpenEEChanges(true)}
+                  >
+                    {t_i18n('Disable Enterprise Edition')}
+                  </Button>
+                )}
+              >
+                <SettingsInfoRow label={t_i18n('Organization')}>
                   <ItemBoolean
                     neutralLabel={settings.platform_enterprise_edition.license_customer}
                     status={null}
                   />
-                </ListItem>
-                <ListItem divider={true}>
-                  <ListItemText primary={t_i18n('Creator')} />
+                </SettingsInfoRow>
+                <SettingsInfoRow label={t_i18n('Creator')}>
                   <ItemBoolean
                     neutralLabel={settings.platform_enterprise_edition.license_creator}
                     status={null}
                     labelTextTransform="none"
                   />
-                </ListItem>
-                <ListItem divider={true}>
-                  <ListItemText primary={t_i18n('Scope')} />
+                </SettingsInfoRow>
+                <SettingsInfoRow label={t_i18n('Scope')} divider={false}>
                   <ItemBoolean
                     neutralLabel={settings.platform_enterprise_edition.license_global ? t_i18n('Global') : t_i18n('Current instance')}
                     status={null}
                   />
-                </ListItem>
-              </List>
-            </Card>
+                </SettingsInfoRow>
+              </Card>
+              <Card
+                title={t_i18n('License')}
+                padding="horizontal"
+                data-testid="settings-license"
+                action={!isEnterpriseEditionByConfig && (
+                  <EnterpriseEditionButton inLine={true} />
+                )}
+              >
+                {!settings.platform_enterprise_edition.license_expired && settings.platform_enterprise_edition.license_expiration_prevention && (
+                  <Alert severity="warning" variant="outlined" sx={{ marginY: 1 }}>
+                    {t_i18n('Your Enterprise Edition license will expire in less than 3 months.')}
+                  </Alert>
+                )}
+                {!settings.platform_enterprise_edition.license_validated && settings.platform_enterprise_edition.license_valid_cert && (
+                  <Alert severity="error" variant="outlined" sx={{ marginY: 1 }}>
+                    {t_i18n('Your Enterprise Edition license is expired. Please contact your Filigran representative.')}
+                  </Alert>
+                )}
+                <SettingsInfoRow label={t_i18n('Start date')}>
+                  <ItemBoolean
+                    label={fldt(settings.platform_enterprise_edition.license_start_date)}
+                    status={!settings.platform_enterprise_edition.license_expired}
+                  />
+                </SettingsInfoRow>
+                <SettingsInfoRow label={t_i18n('Expiration date')}>
+                  <ItemBoolean
+                    label={fldt(settings.platform_enterprise_edition.license_expiration_date)}
+                    status={!settings.platform_enterprise_edition.license_expired}
+                  />
+                </SettingsInfoRow>
+                <SettingsInfoRow label={t_i18n('License type')} divider={false}>
+                  <ItemBoolean
+                    neutralLabel={settings.platform_enterprise_edition.license_type}
+                    status={null}
+                    labelTextTransform="uppercase"
+                  />
+                </SettingsInfoRow>
+              </Card>
+            </Box>
             <Dialog
               open={openEEChanges}
               onClose={() => setOpenEEChanges(false)}
-              title={t_i18n('Disable Enterprise Edition')}
+              title={isEnterpriseToggleSensitive ? (
+                <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+                  {t_i18n('Disable Enterprise Edition')}
+                  <DangerZoneChip />
+                </Box>
+              ) : t_i18n('Disable Enterprise Edition')}
             >
               <DialogContentText component="div">
                 <Alert
@@ -397,61 +465,11 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                 </Button>
               </DialogActions>
             </Dialog>
-          </Grid>
-          <Grid size={6}>
-            <Card
-              titleSx={{ alignItems: 'end' }}
-              title={t_i18n('License')}
-              action={!isEnterpriseEditionByConfig && (
-                <EnterpriseEditionButton inLine={true} />
-              )}
-            >
-              <List style={{ marginTop: -20 }}>
-                {!settings.platform_enterprise_edition.license_expired && settings.platform_enterprise_edition.license_expiration_prevention && (
-                  <ListItem divider={false}>
-                    <Alert severity="warning" variant="outlined" style={{ width: '100%' }}>
-                      {t_i18n('Your Enterprise Edition license will expire in less than 3 months.')}
-                    </Alert>
-                  </ListItem>
-                )}
-                {!settings.platform_enterprise_edition.license_validated && settings.platform_enterprise_edition.license_valid_cert && (
-                  <ListItem divider={false}>
-                    <Alert severity="error" variant="outlined" style={{ width: '100%' }}>
-                      {t_i18n('Your Enterprise Edition license is expired. Please contact your Filigran representative.')}
-                    </Alert>
-                  </ListItem>
-                )}
-                <ListItem divider={true}>
-                  <ListItemText primary={t_i18n('Start date')} />
-                  <ItemBoolean
-                    label={fldt(settings.platform_enterprise_edition.license_start_date)}
-                    status={!settings.platform_enterprise_edition.license_expired}
-                  />
-                </ListItem>
-                <ListItem divider={true}>
-                  <ListItemText primary={t_i18n('Expiration date')} />
-                  <ItemBoolean
-                    label={fldt(settings.platform_enterprise_edition.license_expiration_date)}
-                    status={!settings.platform_enterprise_edition.license_expired}
-                  />
-                </ListItem>
-                <ListItem divider={!settings.platform_enterprise_edition.license_expiration_prevention}>
-                  <ListItemText primary={t_i18n('License type')} />
-                  <ItemBoolean
-                    neutralLabel={settings.platform_enterprise_edition.license_type}
-                    status={null}
-                    labelTextTransform="uppercase"
-                  />
-                </ListItem>
-              </List>
-            </Card>
-          </Grid>
-        </Grid>
-      )}
+          </>
+        )}
 
-      <Grid container={true} spacing={3} sx={{ marginBottom: 10 }}>
-        <Grid size={6}>
-          <Card title={t_i18n('Configuration')}>
+        <Box sx={twoColumnsSx}>
+          <Card title={t_i18n('Configuration')} data-testid="settings-configuration">
             <Formik
               onSubmit={() => {
               }}
@@ -469,12 +487,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     fullWidth
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
-                    helperText={(
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_title"
-                      />
-                    )}
+                    helperText={focusHelper('platform_title')}
                   />
                   <Field
                     component={TextField}
@@ -485,12 +498,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     className="mt-5"
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
-                    helperText={(
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_favicon"
-                      />
-                    )}
+                    helperText={focusHelper('platform_favicon')}
                   />
                   <Field
                     component={TextField}
@@ -502,30 +510,40 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     className="mt-5"
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onSubmit={(name: string, value: string) => handleSubmitField(name, value)}
-                    helperText={(
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_email"
-                      />
-                    )}
+                    helperText={focusHelper('platform_email')}
                   />
+                </Form>
+              )}
+            </Formik>
+            <div style={fieldSpacingContainerStyle}>
+              <SettingsAnalytics
+                settings={settings}
+                handleChangeFocus={handleChangeFocus}
+                handleSubmitField={handleSubmitField}
+                isEnterpriseEdition={isEnterpriseEditionValid}
+              />
+            </div>
+          </Card>
 
+          <Card title={t_i18n('Appearance')} data-testid="settings-appearance">
+            <Formik
+              onSubmit={() => {}}
+              enableReinitialize={true}
+              initialValues={initialValues}
+              validationSchema={settingsValidation()}
+            >
+              {() => (
+                <Form>
                   <Field
                     component={SelectFieldFds}
                     name="platform_theme"
                     label={t_i18n('Default theme')}
                     fullWidth
-                    containerstyle={fieldSpacingContainerStyle}
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onChange={(name: string, value: string) => {
                       handleSubmitField(name, value);
                     }}
-                    helpertext={(
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_theme"
-                      />
-                    )}
+                    helpertext={focusHelper('platform_theme')}
                   >
                     {themes?.edges?.filter((node) => !!node).map(({ node }) => (
                       <SelectItem
@@ -537,7 +555,6 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                       </SelectItem>
                     ))}
                   </Field>
-
                   <Field
                     component={SelectFieldFds}
                     name="platform_language"
@@ -546,12 +563,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     containerstyle={fieldSpacingContainerStyle}
                     onFocus={(name: string) => handleChangeFocus(name)}
                     onChange={(name: string, value: string) => handleSubmitField(name, value)}
-                    helpertext={(
-                      <SubscriptionFocus
-                        context={editContext}
-                        fieldName="platform_language"
-                      />
-                    )}
+                    helpertext={focusHelper('platform_language')}
                   >
                     <SelectItem value="auto">
                       <em>{t_i18n('Automatic')}</em>
@@ -559,99 +571,17 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                     {availableLanguage.map(({ value, label }) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
                   </Field>
                   <HiddenTypesField />
-                </Form>
-              )}
-            </Formik>
-          </Card>
-        </Grid>
-
-        <Grid size={6}>
-          <Card
-            title={t_i18n('OpenCTI platform')}
-            action={!isEnterpriseEditionActivated && (
-              <EnterpriseEditionButton inLine={true} />
-            )}
-          >
-            <Formik
-              onSubmit={() => {}}
-              enableReinitialize={true}
-              initialValues={initialValues}
-              validationSchema={settingsValidation()}
-            >
-              {() => (
-                <Form>
-                  <List style={{ marginTop: -20 }}>
-                    <ListItem divider={true} sx={{ '& > div:last-child': { height: 26, display: 'flex', alignItems: 'center' } }}>
-                      <ListItemText primary={t_i18n('Platform identifier')} />
-                      <ItemCopy content={settings.id} variant="inLine" />
-                    </ListItem>
-                    <ListItem divider={true}>
-                      <ListItemText primary={t_i18n('Version')} />
-                      <ItemBoolean
-                        neutralLabel={version}
-                        status={null}
-                      />
-                    </ListItem>
-                    <ListItem divider={true}>
-                      <ListItemText primary={t_i18n('Edition')} />
-                      <ItemBoolean
-                        neutralLabel={
-                          isEnterpriseEditionValid
-                            ? t_i18n('Enterprise')
-                            : t_i18n('Community')
-                        }
-                        status={null}
-                      />
-                    </ListItem>
-                    <ListItem divider={true}>
-                      <ListItemText
-                        primary={t_i18n('Architecture mode')}
-                      />
-                      <ItemBoolean
-                        neutralLabel={
-                          settings.platform_cluster.instances_number > 1
-                            ? t_i18n('Cluster')
-                            : t_i18n('Standalone')
-                        }
-                        status={null}
-                      />
-                    </ListItem>
-                    <ListItem divider={true}>
-                      <ListItemText
-                        primary={t_i18n('Number of node(s)')}
-                      />
-                      <ItemBoolean
-                        neutralLabel={`${settings.platform_cluster.instances_number}`}
-                        status={null}
-                      />
-                    </ListItem>
-                    {!xtmOneConfigured && (
-                      <ListItem divider={true}>
-                        <ListItemText
-                          primary={(
-                            <>
-                              {t_i18n('AI Powered')}
-                              <EEChip size="sm" />
-                            </>
-                          )}
-                        />
-                        <ItemBoolean
-                          label={aiPoweredLabel}
-                          status={isEnterpriseEditionValid && settings.platform_ai_enabled && settings.platform_ai_has_token}
-                          tooltip={aiPoweredTooltip}
-                          labelTextTransform="none"
-                        />
-                      </ListItem>
-                    )}
-                    <ListItem divider={true}>
-                      <ListItemText
-                        primary={(
-                          <>
-                            {t_i18n('Remove Filigran logos')}
-                            <EEChip size="sm" />
-                          </>
-                        )}
-                      />
+                  <div style={fieldSpacingContainerStyle}>
+                    <SettingsInfoRow
+                      data-testid="settings-whitemark"
+                      size="field"
+                      label={(
+                        <>
+                          {t_i18n('Remove Filigran logos')}
+                          <EEChip size="sm" />
+                        </>
+                      )}
+                    >
                       <Field
                         component={Switch}
                         variant="outlined"
@@ -661,79 +591,36 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                           settings.platform_whitemark
                           && isEnterpriseEditionValid
                         }
+                        inputProps={{ 'aria-label': t_i18n('Remove Filigran logos') }}
                         onChange={(_event: ChangeEvent<HTMLInputElement>, value: boolean) => handleSubmitField(
                           'platform_whitemark',
                           value,
                         )}
                       />
-                    </ListItem>
-                  </List>
+                    </SettingsInfoRow>
+                  </div>
                 </Form>
               )}
             </Formik>
+            <SettingsMapSource settings={settings} />
           </Card>
-        </Grid>
+        </Box>
 
-        <Grid size={8}>
+        <Box sx={wideNarrowSx}>
           <SettingsMessages settings={settings} />
-        </Grid>
-        <Grid size={4}>
-          <SettingsAnalytics
-            settings={settings}
-            handleChangeFocus={handleChangeFocus}
-            handleSubmitField={handleSubmitField}
-            isEnterpriseEdition={isEnterpriseEditionValid}
+          <ThemeManager
+            handleRefetch={handleRefetch}
+            defaultTheme={settings.platform_theme}
           />
-        </Grid>
+        </Box>
 
-        <Grid size={6}>
-          <Grid container={true} spacing={3}>
-            <Grid size={12}>
-              <ThemeManager
-                handleRefetch={handleRefetch}
-                defaultTheme={settings.platform_theme}
-              />
-            </Grid>
-            <Grid size={12}>
-              <SettingsMapSource
-                settings={settings}
-              />
-            </Grid>
-          </Grid>
-        </Grid>
+        <SettingsDependencies dependencies={dependencies} />
 
-        <Grid size={6}>
-          <Card title={t_i18n('Tools')}>
-            <List style={{ marginTop: -20 }}>
-              {modules?.map((module) => {
-                const isEeModule = ['ACTIVITY_MANAGER', 'PLAYBOOK_MANAGER', 'FILE_INDEX_MANAGER'].includes(module.id);
-                let status = module.enable;
-                if (!isEnterpriseEditionActivated && isEeModule) {
-                  status = true;
-                }
-                return (
-                  <ListItem key={module.id} divider={true}>
-                    <ListItemText primary={t_i18n(module.id)} />
-                    <ItemBoolean
-                      label={module.enable ? t_i18n('Enabled') : t_i18n('Disabled')}
-                      status={status}
-                    />
-                  </ListItem>
-                );
-              })}
-              {dependencies.map((dep) => (
-                <ListItem key={dep.name} divider={true}>
-                  <ListItemText primary={t_i18n(dep.name)} />
-                  <ItemBoolean
-                    neutralLabel={dep.version}
-                    status={null}
-                  />
-                </ListItem>
-              ))}
-            </List>
-          </Card>
-        </Grid>
-      </Grid>
+        <SettingsManagers
+          modules={modules ?? []}
+          isEnterpriseEditionValid={isEnterpriseEditionValid}
+        />
+      </Box>
     </div>
   );
 };

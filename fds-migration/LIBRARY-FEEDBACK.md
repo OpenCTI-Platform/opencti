@@ -2321,3 +2321,33 @@ navigating chip renders a real anchor with the interactive chip's states.
 **Removal test.** At a pin where `Chip` can render an anchor: give the creator
 chip the link, delete its `navigationClickHandlers` spread and the marker, and
 confirm the chip is a `link` role whose `href` carries the base path.
+
+## 63. `ButtonGroupItem` is a glyph-only square, so a filter whose segments carry a label and a count stays MUI
+
+**Needed.** The managers card of Settings > Parameters filters its list by
+status with three exclusive segments that read as the summary of the list:
+"All 36", "Enabled 35", "Disabled 1". Each segment is a label plus a count, the
+group is 36 px tall like the search field on the same row, and selection is
+exclusive.
+
+**Today.** Measured on the installed build (`@filigran/design-system` 1.1.0,
+`components/button-group/ButtonGroup.mjs`): every item is a fixed `h-9 w-9`
+square (36 x 36 px) whose only content is a `size-4` (16 x 16 px) glyph slot,
+and `ButtonGroupItemProps` documents `icon` as "the item's only content" with
+a required `aria-label` because "the item renders no text". `Tabs` carries a
+label and a count (`TabsTrigger` `badge`), but its bar is 44 px tall and reads
+as navigation inside a settings card.
+
+**Workaround.** `SettingsManagers.tsx` keeps `ToggleButtonGroup` +
+`ToggleButton` from MUI under two `fds:keep-mui` markers pointing here. The
+theme already draws the group at 36 px (`MuiToggleButtonGroup` override), the
+search beside it is the library `SearchField` at `md`.
+
+**Ask.** A text item for `ButtonGroup` (label, optional count, same 36 px and
+`sm` heights, same selected style and roving focus as the glyph items), or a
+`SegmentedControl` that owns them.
+
+**Removal test.** At a pin where a `ButtonGroup` item can render a label: swap
+the two MUI imports for the library group, delete both markers, and check that
+the three segments still read "All", "Enabled" and "Disabled" with their counts,
+36 px tall on the search field's centre line.
