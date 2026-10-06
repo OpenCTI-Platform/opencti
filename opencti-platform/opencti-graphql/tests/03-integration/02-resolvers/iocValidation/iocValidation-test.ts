@@ -27,6 +27,7 @@ const IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202020';
 const WAITING_IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202021';
 // The platform refuses to recreate an id deleted moments earlier, so each offline connector test registers its own
 const UNREADABLE_IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202022';
+const OTHER_ACCOUNT_IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202023';
 
 const INDICATOR_ADD = gql`
   mutation IndicatorAdd($input: IndicatorAddInput!) {
@@ -793,6 +794,73 @@ describe('IOC validation requests', () => {
           await queryAsAdminWithSuccess({ query: REQUEST_DELETE, variables: { id } });
         }
       }
+      streamed.forEach((spy) => spy.mockRestore());
+    }
+  });
+
+  it('should answer the results of the account recording the deployments with the request as that account reads it', async () => {
+    // Writes outside the dataset: kept out of the raw stream the synchronization tests count
+    const streamed = [
+      vi.spyOn(streamHandler, 'storeCreateEntityEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeCreateRelationEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeUpdateEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeDeleteEvent').mockResolvedValue(undefined as never),
+    ];
+    // Sent to the connector of another account: the connector account here only recorded the deployments
+    await registerConnector(testContext, ADMIN_USER, {
+      id: OTHER_ACCOUNT_IOC_VALIDATION_CONNECTOR,
+      name: 'OpenAEV IOC validation (another account)',
+      type: ConnectorType.InternalEnrichment,
+      scope: [IOC_VALIDATION_CONNECTOR_SCOPE],
+      auto: false,
+      auto_update: false,
+    }, { active: true, connector_user_id: ADMIN_USER.id });
+    resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+    let restrictedIndicatorId: string | undefined;
+    let id: string | undefined;
+    try {
+      const restricted = await queryAsAdminWithSuccess({
+        query: INDICATOR_ADD,
+        variables: { input: { name: 'restricted.evil.example', pattern: "[domain-name:value = 'restricted.evil.example']", pattern_type: 'stix', x_opencti_main_observable_type: 'Domain-Name' } },
+      });
+      restrictedIndicatorId = restricted.data?.indicatorAdd.id as string;
+      await queryAsUserWithSuccess(USER_CONNECTOR, { query: REPORT_DEPLOYMENT, variables: { indicatorId: restrictedIndicatorId, platformId, status: 'deployed' } });
+      // Side-channel marking: the request covers an indicator the connector account does not read
+      const amber = await internalLoadById(testContext, ADMIN_USER, MARKING_TLP_AMBER) as unknown as { internal_id: string };
+      const stored = await internalLoadById(testContext, ADMIN_USER, restrictedIndicatorId) as unknown as { _index: string };
+      const script = { source: "ctx._source['rel_object-marking.internal_id'] = params.ids", lang: 'painless', params: { ids: [amber.internal_id] } };
+      await elUpdate(testContext, stored._index, restrictedIndicatorId, { script });
+      const created = await queryAsAdminWithSuccess({
+        query: REQUEST_VALIDATION,
+        variables: {
+          platformIds: [platformId],
+          indicatorIds: [liveIndicatorId, restrictedIndicatorId],
+          testKinds: ['dns_resolution'],
+          connectorId: OTHER_ACCOUNT_IOC_VALIDATION_CONNECTOR,
+          name: 'Sent to another account',
+        },
+      });
+      id = created.data?.indicatorsRequestValidation.id as string;
+      const read = await queryAsUserWithSuccess(USER_CONNECTOR, { query: REQUEST_READ, variables: { id } });
+      expect(read.data?.iocValidationRequest).toBeNull();
+      // Its result for the pair it recorded is accepted, and the response does not show the request
+      const reported = await queryAsUserWithSuccess(USER_CONNECTOR, {
+        query: REPORT_RESULTS,
+        variables: { id, platformId, results: [{ indicatorId: liveIndicatorId, status: 'detected' }] },
+      });
+      expect(reported.data?.iocValidationReportResults).toBeNull();
+      const deployment = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: liveDeploymentId } });
+      expect(deployment.data?.stixCoreRelationship.validation_status).toEqual('detected');
+      expect(deployment.data?.stixCoreRelationship.validation_run_id).toEqual(id);
+    } finally {
+      if (id) {
+        await queryAsAdminWithSuccess({ query: REQUEST_DELETE, variables: { id } });
+      }
+      if (restrictedIndicatorId) {
+        await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: restrictedIndicatorId } });
+      }
+      await connectorDelete(testContext, ADMIN_USER, OTHER_ACCOUNT_IOC_VALIDATION_CONNECTOR);
+      resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
       streamed.forEach((spy) => spy.mockRestore());
     }
   });

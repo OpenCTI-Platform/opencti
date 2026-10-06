@@ -995,7 +995,9 @@ export const reportIocValidationResults = async (context: AuthContext, user: Aut
       await setRequestAttributes(context, current, { pairs, results_summary: summarizeRequestPairs(pairs, current.skipped?.length ?? 0) });
     });
   }
-  return findIocValidationRequest(context, SYSTEM_USER, request.internal_id);
+  // The request connector was sent the whole request; an account trusted for its own deployments only gets the request
+  // back as it reads it, which may be not at all
+  return findIocValidationRequest(context, trusted ? SYSTEM_USER : user, request.internal_id);
 };
 
 export const deleteIocValidationRequest = async (context: AuthContext, user: AuthUser, id: string) => {
