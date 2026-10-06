@@ -117,6 +117,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
   const [openGlobalExport, setOpenGlobalExport] = useState(false);
   const { isFeatureEnable } = useHelper();
   const featureFlagGlobalExport = isFeatureEnable('GLOBAL_EXPORT_BUNDLE');
+  const userHasBypassAccess = useGranted(['BYPASS']);
   const experienceValidation = () => Yup.object().shape({
     enterprise_license: Yup.string().nullable(),
     filigran_chatbot_ai_cgu_status: Yup.mixed<CGUStatus>().oneOf([CGUStatus.enabled, CGUStatus.disabled, CGUStatus.pending]),
@@ -217,7 +218,7 @@ const ExperienceComponent: FunctionComponent<ExperienceComponentProps> = ({ quer
       <Stack direction="row" gap={1.5} flexWrap="wrap" justifyContent="flex-end">
         {isEnterpriseEditionActivated ? eeActivatedFooter : eeCommunityFooter}
       </Stack>
-      {useGranted(['BYPASS']) && featureFlagGlobalExport && (
+      {userHasBypassAccess && featureFlagGlobalExport && (
         <>
           <Divider sx={{ width: '100%' }} />
           <Button
