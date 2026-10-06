@@ -422,6 +422,20 @@ class OpenCTIStix2Splitter:
                 [container["nb_deps"]]
                 + [self.cache_index[ref]["nb_deps"] for ref in required_refs]
             )
+            # The first copy creates the container without its timeline: the milestones are
+            # imported once, by the copy sent after the elements they point to
+            first_container = {
+                **container,
+                "extensions": {
+                    key: value
+                    for key, value in (container.get("extensions") or {}).items()
+                    if key != STIX_EXT_OCTI_TIMELINE
+                },
+            }
+            self.elements = [
+                first_container if element is container else element
+                for element in self.elements
+            ]
             self.elements.append(resent_container)
 
         self.elements.sort(key=by_dep_size)

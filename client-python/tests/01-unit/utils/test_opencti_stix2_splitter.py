@@ -329,9 +329,16 @@ def test_split_timeline_extension_keeps_the_reverse_refs_of_its_elements(
     ]
     assert first_case["x_opencti_seq"] < note_sequence < resent_case["x_opencti_seq"]
     assert order[-1] == case["id"]
+    # The first copy creates the case without its timeline, the resent one carries it:
+    # the milestones are imported once, with the elements they point to
+    assert STIX_EXT_OCTI_TIMELINE not in first_case["objects"][0]["extensions"]
+    assert resent_case["objects"][0]["extensions"][STIX_EXT_OCTI_TIMELINE] == (
+        case["extensions"][STIX_EXT_OCTI_TIMELINE]
+    )
+    # The other extensions of the case travel with both copies
     for split_case in [first_case, resent_case]:
-        assert split_case["objects"][0]["extensions"][STIX_EXT_OCTI_TIMELINE] == (
-            case["extensions"][STIX_EXT_OCTI_TIMELINE]
+        assert set(split_case["objects"][0]["extensions"]) >= (
+            set(case["extensions"]) - {STIX_EXT_OCTI_TIMELINE}
         )
 
 
