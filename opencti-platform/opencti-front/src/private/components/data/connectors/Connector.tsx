@@ -298,20 +298,6 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
     return connector.connector_info ? connector.connector_info.queue_messages_size > connector.connector_info.queue_threshold : false;
   };
 
-  // Parsed catalog contract, used to surface the marketplace overview
-  // (description, links, use cases) next to the monitoring data.
-  const contractDefinition = useMemo(() => {
-    if (!connector.is_managed || !connector.manager_contract_definition) {
-      return null;
-    }
-    try {
-      return JSON.parse(connector.manager_contract_definition) as IngestionConnector;
-    } catch {
-      return null;
-    }
-  }, [connector.is_managed, connector.manager_contract_definition]);
-
-  const deployedVersion = contractDefinition?.container_version;
   const compatibleUpdateVersion = connector.update_available ? connector.latest_compatible_version : null;
 
   // Component for Overview content (without ConnectorWorks)
@@ -577,6 +563,11 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
                     {connector.version}
                   </Typography>
                 </FieldOrEmpty>
+                {compatibleUpdateVersion && (
+                  <Box sx={{ marginTop: 1 }}>
+                    <ConnectorUpdateChip version={compatibleUpdateVersion} versionInLabel hasNewerIncompatibleVersion={!!connector.has_newer_incompatible_version} />
+                  </Box>
+                )}
               </Grid>
 
               <Grid item={true} xs={12}>
@@ -682,25 +673,10 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
               </Grid>
 
               {connector.is_managed && (
-                <>
-                  <Grid item xs={6}>
-                    <Label>{t_i18n('Instance name')}</Label>
-                    <Typography component="div" variant="body1">{connector.name}</Typography>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Label>{t_i18n('Deployed version')}</Label>
-                    <Typography component="div" variant="body1">{deployedVersion || t_i18n('Not provided')}</Typography>
-                    {compatibleUpdateVersion && (
-                      <Box sx={{ marginTop: 1 }}>
-                        <ConnectorUpdateChip version={compatibleUpdateVersion} versionInLabel hasNewerIncompatibleVersion={!!connector.has_newer_incompatible_version} />
-                      </Box>
-                    )}
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Label>{t_i18n('Slug')}</Label>
-                    <Typography component="div" variant="body1">{connector.manager_contract_excerpt?.slug || t_i18n('Not provided')}</Typography>
-                  </Grid>
-                </>
+                <Grid item xs={6}>
+                  <Label>{t_i18n('Instance name')}</Label>
+                  <Typography component="div" variant="body1">{connector.name}</Typography>
+                </Grid>
               )}
 
               <Grid item xs={6}>
@@ -797,6 +773,19 @@ const ConnectorComponent: FunctionComponent<ConnectorComponentProps> = ({ connec
 
     return `${excerptTitle} - ${connectorTitle}`;
   })();
+
+  // Parsed catalog contract, used to surface the marketplace overview
+  // (description, links, use cases) next to the monitoring data.
+  const contractDefinition = useMemo(() => {
+    if (!connector.is_managed || !connector.manager_contract_definition) {
+      return null;
+    }
+    try {
+      return JSON.parse(connector.manager_contract_definition) as IngestionConnector;
+    } catch {
+      return null;
+    }
+  }, [connector.is_managed, connector.manager_contract_definition]);
 
   const hasDeprecatedConfiguredFields = useMemo(() => {
     if (!connector.is_managed || !connector.manager_contract_definition) {
