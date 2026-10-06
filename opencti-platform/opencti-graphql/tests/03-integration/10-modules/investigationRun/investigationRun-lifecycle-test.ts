@@ -21,6 +21,7 @@ import * as reportDomain from '../../../../src/domain/report';
 import * as stixCoreObjectDomain from '../../../../src/domain/stixCoreObject';
 import { DatabaseError } from '../../../../src/config/errors';
 import { internalLoadById } from '../../../../src/database/middleware-loader';
+import { stixLoadById, stixLoadByIds } from '../../../../src/database/middleware';
 import { INVESTIGATION_MANAGER_USER } from '../../../../src/utils/access';
 import { RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
 import { statusTransition, VALIDATION_TIMEOUT_MS } from '../../../../src/modules/investigationRun/investigationRun-state';
@@ -493,6 +494,10 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
     const rawPolicy = await queryAsAdminWithSuccess({ query: raw, variables: { id: policyId } });
     expect(rawPolicy.data.stix).toContain(policyId);
     expect(rawPolicy.data.stixCoreObjectRaw).toContain(policyId);
+    // The same holds for the STIX loaders every export path shares (workbench refresh, playbooks, TAXII, streams).
+    expect(await stixLoadById(testContext, ADMIN_USER, runId)).toBeNull();
+    expect(JSON.stringify(await stixLoadById(testContext, ADMIN_USER, policyId))).toContain(policyId);
+    expect((await stixLoadByIds(testContext, ADMIN_USER, [runId, policyId])).length).toBe(1);
     const edition = vi.spyOn(entrepriseEdition, 'isEnterpriseEdition').mockResolvedValue(false);
     try {
       const withoutEdition = await queryAsAdminWithSuccess({ query, variables: { id: runId } });
@@ -500,6 +505,8 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       const rawPolicyWithoutEdition = await queryAsAdminWithSuccess({ query: raw, variables: { id: policyId } });
       expect(rawPolicyWithoutEdition.data.stix || null).toBeNull();
       expect(rawPolicyWithoutEdition.data.stixCoreObjectRaw || null).toBeNull();
+      expect(await stixLoadById(testContext, ADMIN_USER, policyId)).toBeNull();
+      expect(await stixLoadByIds(testContext, ADMIN_USER, [runId, policyId])).toEqual([]);
       // The generic listing reads STIX objects and relationships only: never these internal types.
       const listing = gql`
         query GenericRunList($filters: FilterGroup) {

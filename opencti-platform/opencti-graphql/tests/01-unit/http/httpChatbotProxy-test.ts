@@ -1417,17 +1417,20 @@ describe('httpChatbotProxy: postChatbotMessageApprove for Case Autopilot runs', 
     expect(res.status).toHaveBeenCalledWith(404);
   });
 
-  it('should log a business refusal as a warning and a platform failure as an error', async () => {
+  it('should answer a business refusal with 400 and a platform failure with 500, logged as a warning and an error', async () => {
     mockDecideInvestigationApprovals.mockRejectedValueOnce({ message: 'This investigation has ended', extensions: { code: 'FUNCTIONAL_ERROR' } });
     await postChatbotMessageApprove(buildSessionReq(RUN_BODY), res);
     expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ status: 'error', error: 'This investigation has ended' });
     expect(logApp.warn).toHaveBeenCalledWith('Investigation approval refused', expect.objectContaining({ runId: RUN_ID }));
     expect(logApp.error).not.toHaveBeenCalled();
 
     res = buildRes();
     mockDecideInvestigationApprovals.mockRejectedValueOnce(new Error('Connection lost'));
     await postChatbotMessageApprove(buildSessionReq(RUN_BODY), res);
-    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.status).toHaveBeenCalledWith(500);
+    // The cause of a failure is logged, never sent to the client.
+    expect(res.json).toHaveBeenCalledWith({ status: 'error', error: 'Approval failed' });
     expect(logApp.error).toHaveBeenCalledWith('Error in investigation approval', expect.objectContaining({ runId: RUN_ID }));
   });
 });

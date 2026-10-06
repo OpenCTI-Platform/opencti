@@ -392,14 +392,13 @@ const answerInvestigationApproval = async (context: AuthContext, req: Express.Re
       res.status(403).json({ status: 'error', error: error.message });
     } else if (error?.message === 'Investigation run not found') {
       res.status(404).json({ status: 'error', error: 'Investigation run not found' });
-    } else {
+    } else if (FUNCTIONAL_ERRORS.includes(error?.extensions?.code ?? '')) {
       // Like the API logs: a business refusal (an ended investigation, an invalid decision) is a warning, a failure an error
-      if (FUNCTIONAL_ERRORS.includes(error?.extensions?.code ?? '')) {
-        logApp.warn('Investigation approval refused', { cause: e, runId });
-      } else {
-        logApp.error('Error in investigation approval', { cause: e, runId });
-      }
-      res.status(400).json({ status: 'error', error: error?.message ?? 'Approval failed' });
+      logApp.warn('Investigation approval refused', { cause: e, runId });
+      res.status(400).json({ status: 'error', error: error?.message ?? 'Approval refused' });
+    } else {
+      logApp.error('Error in investigation approval', { cause: e, runId });
+      res.status(500).json({ status: 'error', error: 'Approval failed' });
     }
   }
 };
