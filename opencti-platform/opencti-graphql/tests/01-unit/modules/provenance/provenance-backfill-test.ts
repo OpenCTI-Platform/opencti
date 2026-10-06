@@ -217,6 +217,21 @@ describe('Provenance backfill', () => {
       { user_id: 'connector-user', first: watermark, last: watermark, count: 0 },
     ], resolver, new Map(), watermark);
     expect(assertions).toEqual([expect.objectContaining({ source_id: 'analyst', assert_count: 2, last_asserted_at: '2026-02-01T00:00:00.000Z' })]);
+    // The first creator created the element before the watermark: its purged creation is rebuilt even though it wrote after it
+    const recreated = await computeBackfillAssertions({
+      internal_id: 'malware-3',
+      entity_type: 'Malware',
+      _index: 'opencti_stix_domain_objects',
+      creator_id: ['connector-user'],
+      created_at: '2026-01-01T00:00:00.000Z',
+      updated_at: '2026-04-01T00:00:00.000Z',
+    } as any, [{ user_id: 'connector-user', first: watermark, last: watermark, count: 0 }], resolver, new Map(), watermark);
+    expect(recreated).toEqual([expect.objectContaining({
+      source_id: 'A',
+      assert_count: 1,
+      first_asserted_at: '2026-01-01T00:00:00.000Z',
+      last_asserted_at: '2026-01-01T00:00:00.000Z',
+    })]);
     // A creator whose history was purged is dated before the watermark, never after
     const purged = await computeBackfillAssertions({
       internal_id: 'report-2',

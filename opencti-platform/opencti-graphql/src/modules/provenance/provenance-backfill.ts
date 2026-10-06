@@ -239,8 +239,10 @@ export const computeBackfillAssertions = async (
   const activities = new Map(history.map((activity) => [activity.user_id, { ...activity }]));
   if (isBeforeWatermark(createdAt)) {
     creators.forEach((creatorId, index) => {
-      if (!activities.has(creatorId)) {
-        // History purged by retention: creation date for the first creator, last update for the others
+      // History purged by retention: creation date for the first creator, last update for the others. Only the first
+      // creator is known to have written before the watermark: its creation is restored even if it wrote after it
+      const activity = activities.get(creatorId);
+      if (!activity || (index === 0 && activity.count === 0)) {
         const at = index === 0 || !isBeforeWatermark(updatedAt) ? createdAt : updatedAt;
         activities.set(creatorId, { user_id: creatorId, first: at, last: at, count: 1 });
       }
