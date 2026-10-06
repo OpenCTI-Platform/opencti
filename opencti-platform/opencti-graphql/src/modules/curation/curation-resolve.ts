@@ -141,6 +141,8 @@ const fuzzyResolutions = async (context: AuthContext, user: AuthUser, name: stri
  * Resolve a name extracted by an importer to an existing entity of the given type, with the access rights of the
  * caller. Exact name or alias matches first, then canonical forms (case, punctuation, vendor suffixes, digits used as
  * letters), the vendor taxonomy and trigram similarity. Ambiguous matches return null: never bind to a coin flip.
+ * When exact or alias matches exist they decide alone: the fuzzy search is capped and ordered by relevance, so it may
+ * hold only one of the entities that share the name.
  */
 export const curationResolve = async (context: AuthContext, user: AuthUser, name: string, type: string): Promise<CurationResolution | null> => {
   const trimmed = (name ?? '').trim();
@@ -151,9 +153,10 @@ export const curationResolve = async (context: AuthContext, user: AuthUser, name
   if (types.length === 0) {
     throw FunctionalError('Unknown entity type for resolution', { type });
   }
-  const exact = pickUnambiguous(await exactResolutions(context, user, trimmed, types), BINDING_THRESHOLD);
-  if (exact) {
-    addCurationResolveCount(true);
+  const exactCandidates = await exactResolutions(context, user, trimmed, types);
+  if (exactCandidates.length > 0) {
+    const exact = pickUnambiguous(exactCandidates, BINDING_THRESHOLD);
+    addCurationResolveCount(exact !== null);
     return exact;
   }
   const fuzzy = pickUnambiguous(await fuzzyResolutions(context, user, trimmed, types), BINDING_THRESHOLD);

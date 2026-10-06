@@ -413,7 +413,7 @@ The `type` accepts an OpenCTI type (`Intrusion-Set`) or a STIX type (`intrusion-
 | `taxonomy`   | A name the vendor taxonomy lists for the same object                                     | The reliability of the taxonomy source (0.70 to 0.85)                    |
 | `similarity` | A name or an alias with a trigram similarity of at least 92%                             | The similarity multiplied by 0.95                                        |
 
-A result is returned only when its score is at least 0.85 and a single entity has the best score: an ambiguous name returns nothing rather than binding to the wrong entity. In practice, only the names listed by MITRE ATT&CK bind through the taxonomy.
+A result is returned only when its score is at least 0.85 and a single entity has the best score: an ambiguous name returns nothing rather than binding to the wrong entity. When the name matches the name or an alias of at least one entity, the exact and alias matches decide alone: if several entities share it, nothing is returned and the other match types are not tried. In practice, only the names listed by MITRE ATT&CK bind through the taxonomy.
 
 The [ImportDocumentAI connector](https://github.com/OpenCTI-Platform/connectors/tree/master/internal-import-file/import-document-ai) calls `curationResolve` for every named entity it extracts, before sending the bundle, so that extracted names bind to the existing entities. This behavior is controlled by its `IMPORT_DOCUMENT_AI_RESOLVE_EXISTING_ENTITIES` option (enabled by default) and is skipped on platforms that do not expose the query.
 
