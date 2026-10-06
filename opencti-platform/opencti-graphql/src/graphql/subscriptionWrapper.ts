@@ -10,6 +10,7 @@ import { isUserCanAccessStoreElement, isUserHasCapability, isUserInPlatformOrgan
 import { getMessagesFilteredByRecipients } from '../domain/settings';
 import { isUserAccountValid, resolveUserByIdFromCache } from '../modules/user/user-domain';
 import { computeLoaders } from '../http/httpAuthenticatedContext';
+import { withoutWithheldHits } from '../utils/withheldElements';
 import type { BasicStoreSettings, BasicStoreSettingsMessage } from '../types/settings';
 
 /**
@@ -32,6 +33,7 @@ export const canSubscriberStillAccess = async (context: any, instance: any, requ
     const userInsidePlatformOrganization = isUserInPlatformOrganization(subscriber, settings);
     const subscriberContext = { ...context, user, user_inside_platform_organization: userInsidePlatformOrganization };
     if (!await isUserCanAccessStoreElement(subscriberContext, user, instance)) return false;
+    if ((await withoutWithheldHits(subscriberContext, user, [instance])).length === 0) return false;
     Object.assign(context, { user, user_inside_platform_organization: userInsidePlatformOrganization, batch: computeLoaders(context, user) });
     return true;
   } catch {

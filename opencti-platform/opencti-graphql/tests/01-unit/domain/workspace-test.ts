@@ -5,6 +5,7 @@ import * as redis from '../../../src/database/redis';
 import * as access from '../../../src/utils/access';
 import * as userActionListener from '../../../src/listener/UserActionListener';
 import * as engine from '../../../src/database/engine';
+import * as ee from '../../../src/enterprise-edition/ee';
 import { investigationDuplicate } from '../../../src/modules/workspace/workspace-domain';
 
 const context = {} as any;
@@ -27,6 +28,8 @@ describe('workspace duplication', () => {
     vi.spyOn(engine, 'elFindByIds').mockResolvedValue([]);
     vi.spyOn(userActionListener, 'publishUserAction').mockResolvedValue(undefined as any);
     vi.spyOn(redis, 'notify').mockResolvedValue({ id: 'duplicated-id' } as any);
+    // Without Enterprise Edition, Case Autopilot withholds no investigation graph from its readers.
+    vi.spyOn(ee, 'isEnterpriseEdition').mockResolvedValue(false);
   });
 
   it('creates an investigation with the expected attributes', async () => {

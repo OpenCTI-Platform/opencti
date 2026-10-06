@@ -71,7 +71,7 @@ import { deleteDraftWorkspace, draftWorkspaceEditAuthorizedMembers, findById as 
 import { findById as findWorkspaceById, workspaceDelete, workspaceEditAuthorizedMembers } from '../workspace/workspace-domain';
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import { ENTITY_TYPE_WORKSPACE } from '../workspace/workspace-types';
-import { registerWithheldElements, type WithheldElementsProvider } from '../../utils/withheldElements';
+import { registerWithheldElements, registerWithheldElementsCheck, type WithheldElementsCheck, type WithheldElementsProvider } from '../../utils/withheldElements';
 import { connectorsForEnrichment } from '../../database/repository';
 import { isUserAccountValid, resolveUserByIdFromCache } from '../user/user-domain';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
@@ -730,6 +730,26 @@ const withheldStoppedRunArtifacts = (field: 'draft_id' | 'workspace_id'): Withhe
 };
 registerWithheldElements(ENTITY_TYPE_DRAFT_WORKSPACE, withheldStoppedRunArtifacts('draft_id'));
 registerWithheldElements(ENTITY_TYPE_WORKSPACE, withheldStoppedRunArtifacts('workspace_id'));
+
+// The draft and the investigation graph of a run derive from what it read, under the markings it copied then: whichever
+// id a reader opens them by, they are withheld from that reader as long as the run's findings are (a source of the run
+// now beyond their access, or restricted to authorized members). Only the runs of the drafts and graphs loaded are read.
+const withheldRunArtifactsFromReader = (field: 'draft_id' | 'workspace_id'): WithheldElementsCheck => async (context, user, ids) => {
+  if (user.id === INVESTIGATION_MANAGER_USER.id || isBypassUser(user) || !(await isEnterpriseEdition(context))) {
+    return [];
+  }
+  const runs = await topEntitiesList<BasicStoreEntityInvestigationRun>(outOfDraft(context), INVESTIGATION_MANAGER_USER, [ENTITY_TYPE_INVESTIGATION_RUN], {
+    filters: { mode: FilterMode.And, filters: [{ key: [field], values: ids }], filterGroups: [] },
+    noFiltersChecking: true,
+  });
+  if (runs.length === 0) {
+    return [];
+  }
+  const reasons = await findInvestigationRunsWithheldReasons(context, user, runs);
+  return runs.filter((_, index) => reasons[index] !== null).map((run) => run[field]).filter((id): id is string => !!id);
+};
+registerWithheldElementsCheck(ENTITY_TYPE_DRAFT_WORKSPACE, withheldRunArtifactsFromReader('draft_id'));
+registerWithheldElementsCheck(ENTITY_TYPE_WORKSPACE, withheldRunArtifactsFromReader('workspace_id'));
 
 export const cancelInvestigationRun = async (context: AuthContext, user: AuthUser, id: string) => {
   const run = await findAccessibleRun(context, user, id);

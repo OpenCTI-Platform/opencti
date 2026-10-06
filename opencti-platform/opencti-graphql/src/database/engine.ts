@@ -191,6 +191,7 @@ import type {
 } from '../types/store';
 import type { BasicStoreSettings } from '../types/settings';
 import { completeSpecialFilterKeys } from '../utils/filtering/filtering-completeSpecialFilterKeys';
+import { withoutWithheldHits } from '../utils/withheldElements';
 import { IDS_ATTRIBUTES, KEYWORD_TERMS_ATTRIBUTES } from '../domain/attribute-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import type { FiltersWithNested } from './middleware-loader';
@@ -1744,10 +1745,11 @@ export const elFindByIds = async <T extends BasicStoreBase>(
       pushAll(hits, convertedHits);
     }
   }
+  const visibleHits = await withoutWithheldHits(context, user, hits);
   if (toMap) {
-    return elConvertHitsToMap<T>(hits, { mapWithAllIds });
+    return elConvertHitsToMap<T>(visibleHits, { mapWithAllIds });
   }
-  return hits;
+  return visibleHits;
 };
 export const elLoadById = async <T extends BasicStoreBase>(
   context: AuthContext,

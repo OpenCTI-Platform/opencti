@@ -22,7 +22,8 @@ import * as stixCoreObjectDomain from '../../../../src/domain/stixCoreObject';
 import { DatabaseError } from '../../../../src/config/errors';
 import { internalLoadById } from '../../../../src/database/middleware-loader';
 import { stixLoadById, stixLoadByIds } from '../../../../src/database/middleware';
-import { INVESTIGATION_MANAGER_USER } from '../../../../src/utils/access';
+import { INVESTIGATION_MANAGER_USER, MEMBER_ACCESS_RIGHT_ADMIN, MEMBER_ACCESS_RIGHT_VIEW } from '../../../../src/utils/access';
+import { workspaceEditAuthorizedMembers } from '../../../../src/modules/workspace/workspace-domain';
 import { RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
 import { statusTransition, VALIDATION_TIMEOUT_MS } from '../../../../src/modules/investigationRun/investigationRun-state';
 import * as investigationRunDomain from '../../../../src/modules/investigationRun/investigationRun-domain';
@@ -1132,11 +1133,20 @@ describe('Case Autopilot run lifecycle against the XTM One investigation engine'
       const editor = await getAuthUser(await getUserIdByEmail(USER_EDITOR.email));
       const stored = await loadInvestigationRun(testContext, runId) as BasicStoreEntityInvestigationRun;
       expect(await findInvestigationRunsWithheldReasons(testContext, editor, [stored])).toEqual([null]);
+      // The investigation graph of the run is shared with the editor, who opens it by its id.
+      const workspaceId = stored.workspace_id as string;
+      expect(workspaceId).toBeTruthy();
+      const graphMembers = [{ id: ADMIN_USER.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }, { id: editor.id, access_right: MEMBER_ACCESS_RIGHT_VIEW }];
+      await workspaceEditAuthorizedMembers(testContext, ADMIN_USER, workspaceId, graphMembers, { skipAdminValidation: true });
+      expect((await internalLoadById({ ...testContext }, editor, workspaceId))?.internal_id).toBe(workspaceId);
       // The cited intrusion set gets a marking the editor does not have, after the run read it.
       await queryAsAdminWithSuccess({ query: MARK_SDO, variables: { id: fixture.intrusionSetId, input: { toId: MARKING_TLP_RED, relationship_type: 'object-marking' } } });
       marked = true;
       expect(await findInvestigationRunsWithheldReasons(testContext, editor, [stored])).toEqual(['source_inaccessible']);
       expect(await findInvestigationRunsWithheldReasons(testContext, ADMIN_USER, [stored])).toEqual([null]);
+      // The graph derives from what the run read: withheld from the editor as the findings are, whatever its members.
+      expect(await internalLoadById({ ...testContext }, editor, workspaceId)).toBeUndefined();
+      expect((await internalLoadById({ ...testContext }, ADMIN_USER, workspaceId))?.internal_id).toBe(workspaceId);
       const runFields = investigationRunResolvers.InvestigationRun as unknown as Record<string, (run: unknown, args: unknown, context: unknown) => Promise<unknown>>;
       const editorContext = { ...testContext, user: editor, batch: computeLoaders(testContext, editor) };
       expect(await runFields.evidence(stored, {}, editorContext)).toEqual([]);
