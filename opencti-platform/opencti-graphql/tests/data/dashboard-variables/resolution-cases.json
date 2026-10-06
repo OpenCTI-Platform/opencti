@@ -1,0 +1,68 @@
+[
+  {
+    "name": "filter without token is returned unchanged",
+    "values": { "11111111-1111-4111-8111-111111111111": "value-a" },
+    "input": { "mode": "and", "filters": [{ "key": "entity_type", "values": ["Report"], "operator": "eq", "mode": "or" }], "filterGroups": [] },
+    "expected": { "filters": { "mode": "and", "filters": [{ "key": "entity_type", "values": ["Report"], "operator": "eq", "mode": "or" }], "filterGroups": [] }, "unresolved": [] }
+  },
+  {
+    "name": "single token is replaced",
+    "values": { "11111111-1111-4111-8111-111111111111": "org-id-1" },
+    "input": { "mode": "and", "filters": [{ "key": "createdBy", "values": ["$var:11111111-1111-4111-8111-111111111111"], "operator": "eq", "mode": "or" }], "filterGroups": [] },
+    "expected": { "filters": { "mode": "and", "filters": [{ "key": "createdBy", "values": ["org-id-1"], "operator": "eq", "mode": "or" }], "filterGroups": [] }, "unresolved": [] }
+  },
+  {
+    "name": "multiple tokens in one filter, literal kept",
+    "values": { "11111111-1111-4111-8111-111111111111": "value-a", "22222222-2222-4222-8222-222222222222": "value-b" },
+    "input": { "mode": "and", "filters": [{ "key": "objectLabel", "values": ["$var:11111111-1111-4111-8111-111111111111", "literal", "$var:22222222-2222-4222-8222-222222222222"], "operator": "eq", "mode": "or" }], "filterGroups": [] },
+    "expected": { "filters": { "mode": "and", "filters": [{ "key": "objectLabel", "values": ["value-a", "literal", "value-b"], "operator": "eq", "mode": "or" }], "filterGroups": [] }, "unresolved": [] }
+  },
+  {
+    "name": "token in nested filterGroups is replaced",
+    "values": { "11111111-1111-4111-8111-111111111111": "value-a" },
+    "input": { "mode": "and", "filters": [], "filterGroups": [{ "mode": "or", "filters": [], "filterGroups": [{ "mode": "and", "filters": [{ "key": "createdBy", "values": ["$var:11111111-1111-4111-8111-111111111111"], "operator": "eq", "mode": "or" }], "filterGroups": [] }] }] },
+    "expected": { "filters": { "mode": "and", "filters": [], "filterGroups": [{ "mode": "or", "filters": [], "filterGroups": [{ "mode": "and", "filters": [{ "key": "createdBy", "values": ["value-a"], "operator": "eq", "mode": "or" }], "filterGroups": [] }] }] }, "unresolved": [] }
+  },
+  {
+    "name": "token inside regardingOf sub-filter is replaced",
+    "values": { "11111111-1111-4111-8111-111111111111": "sector-id" },
+    "input": { "mode": "and", "filters": [{ "key": "regardingOf", "values": [{ "key": "id", "values": ["$var:11111111-1111-4111-8111-111111111111"] }, { "key": "relationship_type", "values": ["targets"] }], "operator": "eq", "mode": "or" }], "filterGroups": [] },
+    "expected": { "filters": { "mode": "and", "filters": [{ "key": "regardingOf", "values": [{ "key": "id", "values": ["sector-id"] }, { "key": "relationship_type", "values": ["targets"] }], "operator": "eq", "mode": "or" }], "filterGroups": [] }, "unresolved": [] }
+  },
+  {
+    "name": "token inside dynamicRegardingOf nested dynamic FilterGroup is replaced",
+    "values": { "22222222-2222-4222-8222-222222222222": "Intrusion-Set" },
+    "input": { "mode": "and", "filters": [{ "key": "dynamicRegardingOf", "values": [{ "key": "dynamic", "values": [{ "mode": "and", "filters": [{ "key": "entity_type", "values": ["$var:22222222-2222-4222-8222-222222222222"], "operator": "eq", "mode": "or" }], "filterGroups": [] }] }, { "key": "relationship_type", "values": ["targets"] }], "operator": "eq", "mode": "or" }], "filterGroups": [] },
+    "expected": { "filters": { "mode": "and", "filters": [{ "key": "dynamicRegardingOf", "values": [{ "key": "dynamic", "values": [{ "mode": "and", "filters": [{ "key": "entity_type", "values": ["Intrusion-Set"], "operator": "eq", "mode": "or" }], "filterGroups": [] }] }, { "key": "relationship_type", "values": ["targets"] }], "operator": "eq", "mode": "or" }], "filterGroups": [] }, "unresolved": [] }
+  },
+  {
+    "name": "orphan token is kept in place and reported",
+    "values": {},
+    "input": { "mode": "and", "filters": [{ "key": "createdBy", "values": ["$var:33333333-3333-4333-8333-333333333333"], "operator": "eq", "mode": "or" }], "filterGroups": [] },
+    "expected": { "filters": { "mode": "and", "filters": [{ "key": "createdBy", "values": ["$var:33333333-3333-4333-8333-333333333333"], "operator": "eq", "mode": "or" }], "filterGroups": [] }, "unresolved": ["33333333-3333-4333-8333-333333333333"] }
+  },
+  {
+    "name": "empty current value is treated as unresolved",
+    "values": { "11111111-1111-4111-8111-111111111111": "" },
+    "input": { "mode": "and", "filters": [{ "key": "createdBy", "values": ["$var:11111111-1111-4111-8111-111111111111"], "operator": "eq", "mode": "or" }], "filterGroups": [] },
+    "expected": { "filters": { "mode": "and", "filters": [{ "key": "createdBy", "values": ["$var:11111111-1111-4111-8111-111111111111"], "operator": "eq", "mode": "or" }], "filterGroups": [] }, "unresolved": ["11111111-1111-4111-8111-111111111111"] }
+  },
+  {
+    "name": "literals that look like tokens are untouched",
+    "values": { "11111111-1111-4111-8111-111111111111": "value-a" },
+    "input": { "mode": "and", "filters": [{ "key": "name", "values": ["$var:not-a-uuid", "prefix $var:11111111-1111-4111-8111-111111111111", "$var:11111111-1111-4111-8111-111111111111 suffix", "$VAR:11111111-1111-4111-8111-111111111111"], "operator": "eq", "mode": "or" }], "filterGroups": [] },
+    "expected": { "filters": { "mode": "and", "filters": [{ "key": "name", "values": ["$var:not-a-uuid", "prefix $var:11111111-1111-4111-8111-111111111111", "$var:11111111-1111-4111-8111-111111111111 suffix", "$VAR:11111111-1111-4111-8111-111111111111"], "operator": "eq", "mode": "or" }], "filterGroups": [] }, "unresolved": [] }
+  },
+  {
+    "name": "unresolved ids are deduplicated and ordered by first appearance",
+    "values": { "11111111-1111-4111-8111-111111111111": "value-a" },
+    "input": { "mode": "or", "filters": [{ "key": "createdBy", "values": ["$var:33333333-3333-4333-8333-333333333333"], "operator": "eq", "mode": "or" }, { "key": "objectLabel", "values": ["$var:22222222-2222-4222-8222-222222222222", "$var:11111111-1111-4111-8111-111111111111"], "operator": "eq", "mode": "or" }, { "key": "objectMarking", "values": ["$var:33333333-3333-4333-8333-333333333333"], "operator": "eq", "mode": "or" }], "filterGroups": [] },
+    "expected": { "filters": { "mode": "or", "filters": [{ "key": "createdBy", "values": ["$var:33333333-3333-4333-8333-333333333333"], "operator": "eq", "mode": "or" }, { "key": "objectLabel", "values": ["$var:22222222-2222-4222-8222-222222222222", "value-a"], "operator": "eq", "mode": "or" }, { "key": "objectMarking", "values": ["$var:33333333-3333-4333-8333-333333333333"], "operator": "eq", "mode": "or" }], "filterGroups": [] }, "unresolved": ["33333333-3333-4333-8333-333333333333", "22222222-2222-4222-8222-222222222222"] }
+  },
+  {
+    "name": "group without filterGroups key keeps its shape",
+    "values": { "11111111-1111-4111-8111-111111111111": "value-a" },
+    "input": { "mode": "and", "filters": [{ "key": "createdBy", "values": ["$var:11111111-1111-4111-8111-111111111111"] }] },
+    "expected": { "filters": { "mode": "and", "filters": [{ "key": "createdBy", "values": ["value-a"] }] }, "unresolved": [] }
+  }
+]
