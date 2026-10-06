@@ -173,7 +173,7 @@ const ThemeManager: FunctionComponent<ThemeManagerProps> = ({
     <>
       <Card
         title={t_i18n('Themes')}
-        sx={{ flex: '0 auto' }}
+        data-testid="settings-themes"
         action={(
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Tooltip title={t_i18n('Create a custom theme')}>
