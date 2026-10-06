@@ -693,9 +693,15 @@ describe('Provenance: every fact knows who said it', () => {
       confidence: 50,
       work_id: null,
     });
+    // DateTime fields of the GraphQL result are dates: compared as ISO strings
     const storedAssertion = async (sourceId: string) => {
       const assertions: StoreAssertion[] = (await loadMalware(malwareId)).x_opencti_assertions;
-      return assertions.find((stored) => stored.source_id === sourceId);
+      const stored = assertions.find((candidate) => candidate.source_id === sourceId);
+      return stored && {
+        ...stored,
+        first_asserted_at: new Date(stored.first_asserted_at).toISOString(),
+        last_asserted_at: new Date(stored.last_asserted_at).toISOString(),
+      };
     };
     try {
       // Recorded live: the first source only from the watermark on, the second one already before it
