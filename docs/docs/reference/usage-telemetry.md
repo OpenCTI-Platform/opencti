@@ -111,7 +111,7 @@ All AI usage counters are backend-agnostic: the same counter is incremented whet
 - The number of 'has covered' relationships
 - The number of hunts, broken down by status (`draft`, `active`, `paused`, `retired`)
 - The number of live hunt connectors
-- The number of hunt runs started, broken down by trigger (`manual`, `schedule`, `standing`, `playbook`, `emulation`, `preview`, `retry`)
+- The number of hunt runs started, broken down by trigger (`manual`, `schedule`, `standing`, `pir`, `playbook`, `emulation`, `preview`, `retry`)
 - The number of hunt run verdicts set, broken down by verdict (`true_positive`, `benign`, `inconclusive`)
 - The number of activated inference rules
 - The number of notification triggers, broken down by type (`live`, `digest`)
