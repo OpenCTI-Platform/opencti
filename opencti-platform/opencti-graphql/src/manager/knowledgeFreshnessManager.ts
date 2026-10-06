@@ -20,7 +20,7 @@ export const knowledgeFreshnessHandler = async () => {
   const result = await applyKnowledgeDecayRules(context, DECAY_MANAGER_USER, { batchSize: BATCH_SIZE });
   await addKnowledgeStaleFlaggedCount(result.flagged);
   if (result.errors > 0) {
-    logApp.error('[OPENCTI-MODULE] Knowledge freshness manager got errors. Please have a look to previous errors.', { ...result });
+    logApp.warn('[OPENCTI-MODULE] Knowledge freshness manager got errors. Please have a look to previous warnings.', { ...result });
   } else {
     logApp.debug('[OPENCTI-MODULE] Knowledge freshness manager applied', { ...result });
   }

@@ -282,8 +282,9 @@ const scanRuleCandidates = async (
               scan.applied += 1;
             }
           } catch (err) {
+            // The element stays a candidate: a later run applies the policy again
             result.errors += 1;
-            logApp.error('[PROVENANCE] Unable to apply the knowledge freshness policy', { cause: err, id: candidate.internal_id, rule_id: rule.id });
+            logApp.warn('[PROVENANCE] Unable to apply the knowledge freshness policy', { cause: err, id: candidate.internal_id, rule_id: rule.id });
           }
         }
         if (!scan.ruleChanged) {
