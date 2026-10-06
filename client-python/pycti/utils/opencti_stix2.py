@@ -3501,14 +3501,13 @@ class OpenCTIStix2:
             security_coverage_result_id = self.opencti.get_attribute_in_extension(
                 "security_coverage_result_id", item
             )
-            relationships_config = self.opencti.get_attribute_in_extension(
-                "relationships_config", item
-            )
-            raw_coverages = (
-                relationships_config["coverage_information"]
-                if "coverage_information" in relationships_config
-                else []
-            )
+relationships_config = (
+    self.opencti.get_attribute_in_extension(
+        "relationships_config", item
+    )
+    or {}
+)
+raw_coverages = relationships_config.get("coverage_information") or []
             coverage_information = [
                 cov for cov in raw_coverages if "coverage_score" in cov
             ]
