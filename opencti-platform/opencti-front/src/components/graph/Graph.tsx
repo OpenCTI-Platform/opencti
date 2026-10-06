@@ -281,7 +281,7 @@ const Graph = ({
   // --- Hover: focus on the canvas at once, card after a short delay.
   const [hovered, setHovered] = useState<GraphHoverTarget | null>(null);
   const [card, setCard] = useState<{ target: GraphHoverTarget; anchor: { x: number; y: number } } | null>(null);
-  const [menu, setMenu] = useState<{ anchor: { x: number; y: number }; target: GraphHoverTarget | null } | null>(null);
+  const [menu, setMenu] = useState<{ anchor: { x: number; y: number }; target: GraphHoverTarget | null; fromKeyboard: boolean } | null>(null);
   const openTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const cancelClose = () => clearTimeout(closeTimer.current);
@@ -728,11 +728,11 @@ const Graph = ({
   const toolbarAction = (id: string) => toolbarActions.find((action) => action.id === id);
   const present = (actions: (GraphMenuAction | false | null | undefined)[]) => actions.filter((action): action is GraphMenuAction => !!action);
   const menuReturnFocus = useRef<HTMLElement | null>(null);
-  const openMenuAt = (anchor: { x: number; y: number }, target: GraphHoverTarget | null) => {
+  const openMenuAt = (anchor: { x: number; y: number }, target: GraphHoverTarget | null, fromKeyboard = false) => {
     clearTimeout(openTimer.current);
     setCard(null);
     menuReturnFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    setMenu({ anchor, target });
+    setMenu({ anchor, target, fromKeyboard });
   };
   useGraphContextMenuGesture(containerRef, !mode3D, ({ clientX, clientY }) => {
     const box = containerRef.current?.getBoundingClientRect();
@@ -744,7 +744,7 @@ const Graph = ({
     const target: GraphHoverTarget | null = hovered ?? (single ? { kind: 'node', id: single.id } : null);
     const node = target?.kind === 'node' ? shownNodes.find((n) => n.id === target.id) : undefined;
     const at = node && Number.isFinite(node.x) ? graphRef2D.current?.graph2ScreenCoords(node.x, node.y) : undefined;
-    openMenuAt(at ?? { x: width / 2, y: height / 3 }, target);
+    openMenuAt(at ?? { x: width / 2, y: height / 3 }, target, true);
   };
   keyboardMenu.current = openKeyboardMenu;
   const openInNewTab = (id: string) => window.open(`${APP_BASE_PATH}/dashboard/id/${id}`, '_blank', 'noopener,noreferrer');
@@ -1080,6 +1080,7 @@ const Graph = ({
           sections={menu ? menuSections(menu.target) : []}
           onClose={() => setMenu(null)}
           onReturnFocus={() => menuReturnFocus.current?.focus()}
+          focusFirstItem={menu?.fromKeyboard}
         />
         <GraphAccessibleList
           nodes={shownNodes}

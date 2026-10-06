@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useRef } from 'react';
 import { Menu, MenuContent, MenuLabel, MenuSeparator, MenuTrigger } from '@filigran/design-system';
 import { type GraphMenuAction, GraphMenuActionItem } from './GraphToolbarMoreActions';
 
@@ -18,6 +18,8 @@ export interface GraphContextMenuProps {
   onClose: () => void;
   /** Gives the focus back to the graph once the menu is closed. */
   onReturnFocus?: () => void;
+  /** Opened from the keyboard: the focus lands on the first action that can run. */
+  focusFirstItem?: boolean;
 }
 
 /**
@@ -25,7 +27,9 @@ export interface GraphContextMenuProps {
  * entity, a relationship, the selection or the empty canvas: every action that applies to what is
  * under the pointer, grouped, with its shortcut and, when it cannot run now, the reason why.
  */
-const GraphContextMenu = ({ anchor, label, sections, onClose, onReturnFocus }: GraphContextMenuProps) => {
+const GraphContextMenu = ({ anchor, label, sections, onClose, onReturnFocus, focusFirstItem = false }: GraphContextMenuProps) => {
+  // The opening whose focus was moved: the menu takes the focus back from its items as the pointer leaves them.
+  const focusMoved = useRef<GraphContextMenuProps['anchor']>(null);
   const shown = sections.filter((section) => section.actions.length > 0);
   if (!anchor || shown.length === 0) return null;
   return (
@@ -51,6 +55,13 @@ const GraphContextMenu = ({ anchor, label, sections, onClose, onReturnFocus }: G
         side="bottom"
         aria-label={label}
         collisionPadding={8}
+        // Mounted after the key that opened it, the menu cannot tell it was the keyboard: the first time it takes the
+        // focus, the focus moves on to its first action that can run.
+        onFocus={(event) => {
+          if (!focusFirstItem || focusMoved.current === anchor || event.target !== event.currentTarget) return;
+          focusMoved.current = anchor;
+          event.currentTarget.querySelector<HTMLElement>('[role^="menuitem"]:not([data-disabled]):not([aria-disabled="true"])')?.focus();
+        }}
         onCloseAutoFocus={(event) => {
           event.preventDefault();
           onReturnFocus?.();

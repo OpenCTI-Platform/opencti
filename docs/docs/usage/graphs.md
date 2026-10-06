@@ -121,7 +121,7 @@ From left to right:
 
 The toolbar acts on the drawing: what is shown and how, the selection, the filters of the drawing and its image. The header of the page acts on the knowledge it is about: export as a PDF or a STIX report, add to a container, duplicate, delete, manage the access restriction. The legend opens and closes from itself (see [The legend](#the-legend)).
 
-The search field and the **More actions** menu close the toolbar. **More actions** holds, when the window is too narrow for the whole toolbar, the actions it has no room for, grouped the same way; the rare actions (select all nodes, select by entity type, the relationships of the selection, unfix the nodes) are in the [context menu](#context-menu). On a graph narrower still (a small window, or a side panel open next to it), the creation and removal tools fold into one **Creation and removal** button that opens them.
+The search field and the **More actions** menu close the toolbar. **More actions** holds, when the window is too narrow for the whole toolbar, the actions it has no room for, grouped the same way; the rare actions (select all nodes, select by entity type, the relationships of the selection, unfix the nodes) are in the [context menu](#context-menu), and in **More actions** in 3D mode, which has no context menu. On a graph narrower still (a small window, or a side panel open next to it), the creation and removal tools fold into one **Creation and removal** button that opens them.
 
 Every tooltip names the action, and its keyboard shortcut when it has one; a disabled action says why in its tooltip (for example "Select entities first"). The toolbar is one stop of the `Tab` key: the arrow keys, `Home` and `End` move between its controls.
 
@@ -147,7 +147,7 @@ Right-click an entity, a relationship or the empty canvas, or press `Shift` + `F
 - On the **selection** (an entity of a selection of several, or the canvas while something is selected): **Add neighbours to selection**, **Highlight shortest path between the two selected nodes**, the outgoing or incoming relationships of the selection, **Fit the selection**, **Hide**, **Create a relationship** between two selected entities and **Start an investigation** with the selected entities.
 - On the **empty canvas**: **Select all nodes**, **Select by entity type**, **Invert selection**, **Clear selection**, **Show the hidden entities**, **Ungroup all** and **Unfix the nodes and re-apply forces**.
 
-An action that cannot run says why under its name, for example **Nothing is selected**.
+An action that cannot run says why under its name, for example **Nothing is selected**. Opened from the keyboard, the menu puts the focus on its first action that can run; `Esc` closes it and gives the focus back to the graph, the selection kept. In 3D mode, which has no context menu, the actions of the empty canvas are in **More actions**.
 
 ## The legend
 

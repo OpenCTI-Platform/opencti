@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import testRender from '../../../utils/tests/test-render';
 import GraphContextMenu from './GraphContextMenu';
 
@@ -44,6 +44,26 @@ describe('GraphContextMenu', () => {
     );
     const menu = await screen.findByRole('menu', { name: 'Graph actions' });
     expect(within(menu).getByRole('menuitem', { name: /Select by entity type/ })).toHaveAttribute('aria-haspopup', 'menu');
+  });
+
+  it('puts the focus on the first action that can run when opened from the keyboard', async () => {
+    testRender(
+      <GraphContextMenu
+        anchor={{ x: 0, y: 0 }}
+        label="Graph actions"
+        onClose={vi.fn()}
+        focusFirstItem
+        sections={[{
+          key: 'graph',
+          actions: [
+            { id: 'clear', label: 'Clear selection', icon: <span />, disabledReason: 'Nothing is selected' },
+            { id: 'invert', label: 'Invert selection', icon: <span />, onSelect: vi.fn() },
+          ],
+        }]}
+      />,
+    );
+    const menu = await screen.findByRole('menu', { name: 'Graph actions' });
+    await waitFor(() => expect(within(menu).getByRole('menuitem', { name: /Invert selection/ })).toHaveFocus());
   });
 
   it('opens nothing without a place to open or without an action', () => {

@@ -121,6 +121,15 @@ describe('GraphToolbar', () => {
     expect(screen.queryByRole('button', { name: 'More actions' })).toBeNull();
   });
 
+  it('lists the rare actions of a graph view in "More actions" in 3D, where the canvas has no context menu', async () => {
+    const { user } = renderToolbar();
+    await user.click(screen.getByRole('button', { name: '3D mode' }));
+    await user.click(screen.getByRole('button', { name: 'More actions' }));
+    const menu = await screen.findByRole('menu', { name: 'More actions' });
+    expect(within(menu).getByRole('menuitem', { name: /Select all nodes/ })).toBeInTheDocument();
+    expect(within(menu).getByRole('menuitem', { name: /Unfix the nodes and re-apply forces/ })).toBeInTheDocument();
+  });
+
   it('lists the rare actions in "More actions", by group, for a toolbar outside a graph view', async () => {
     const { user } = testRender(
       <GraphProvider objects={[]} context="correlation">
