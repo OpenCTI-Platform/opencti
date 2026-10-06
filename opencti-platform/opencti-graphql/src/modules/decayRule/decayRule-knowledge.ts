@@ -9,6 +9,7 @@ import {
   READ_INDEX_STIX_CYBER_OBSERVABLES,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
+  wait,
 } from '../../database/utils';
 import { createInternalObject } from '../../domain/internalObject';
 import { DatabaseError, FunctionalError } from '../../config/errors';
@@ -228,25 +229,45 @@ export const checkDecayRulePatch = (decayRule: BasicStoreEntityDecayRule, input:
   return keys.some((key) => FRESHNESS_RESET_FIELDS.includes(key));
 };
 
+// Elements written while the flags are cleared (an upsert, a re-assertion) are skipped as version conflicts
+const CLEAR_FRESHNESS_FLAGS_ATTEMPTS = 5;
+const CLEAR_FRESHNESS_FLAGS_RETRY_DELAY_MS = 200;
+
 /**
  * Knowledge flagged as stale by a rule becomes fresh again (side-channel update, no stream event),
  * the freshness manager flags it again if it is still stale under the current rules.
+ * The elements skipped as version conflicts are cleared again, and the operation fails rather than leave a
+ * flag behind: the freshness scans never examine an element that is already flagged.
  */
 const clearFreshnessFlags = async (query: Record<string, unknown>) => {
-  return elRawUpdateByQuery({
-    index: KNOWLEDGE_FRESHNESS_INDICES,
-    refresh: true,
-    conflicts: 'proceed',
-    body: {
-      script: {
-        source: `ctx._source.${ATTRIBUTE_FRESHNESS_STALE} = false; ctx._source.remove('freshness_stale_at'); ctx._source.remove('${ATTRIBUTE_FRESHNESS_RULE_ID}');`,
-        lang: 'painless',
+  let versionConflicts = 0;
+  for (let attempt = 1; attempt <= CLEAR_FRESHNESS_FLAGS_ATTEMPTS; attempt += 1) {
+    const response = await elRawUpdateByQuery({
+      index: KNOWLEDGE_FRESHNESS_INDICES,
+      refresh: true,
+      conflicts: 'proceed',
+      body: {
+        script: {
+          source: `ctx._source.${ATTRIBUTE_FRESHNESS_STALE} = false; ctx._source.remove('freshness_stale_at'); ctx._source.remove('${ATTRIBUTE_FRESHNESS_RULE_ID}');`,
+          lang: 'painless',
+        },
+        query,
       },
-      query,
-    },
-  }).catch((err: unknown) => {
-    throw DatabaseError('Error clearing knowledge freshness flags', { cause: err, query });
-  });
+    }).catch((err: unknown) => {
+      throw DatabaseError('Error clearing knowledge freshness flags', { cause: err, query });
+    });
+    if ((response?.failures ?? []).length > 0) {
+      throw DatabaseError('Error clearing knowledge freshness flags', { failures: response.failures, query });
+    }
+    versionConflicts = response?.version_conflicts ?? 0;
+    if (versionConflicts === 0) {
+      return response;
+    }
+    if (attempt < CLEAR_FRESHNESS_FLAGS_ATTEMPTS) {
+      await wait(CLEAR_FRESHNESS_FLAGS_RETRY_DELAY_MS * attempt);
+    }
+  }
+  throw DatabaseError('Knowledge freshness flags kept changing while they were cleared', { version_conflicts: versionConflicts, query });
 };
 
 export const clearFreshnessFlagsOfRule = async (ruleId: string) => {
