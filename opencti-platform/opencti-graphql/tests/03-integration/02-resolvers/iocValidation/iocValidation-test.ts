@@ -28,6 +28,7 @@ const WAITING_IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202021';
 // The platform refuses to recreate an id deleted moments earlier, so each offline connector test registers its own
 const UNREADABLE_IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202022';
 const OTHER_ACCOUNT_IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202023';
+const NO_READABLE_PAIR_IOC_VALIDATION_CONNECTOR = '20202020-0b20-4b20-8b20-202020202024';
 
 const INDICATOR_ADD = gql`
   mutation IndicatorAdd($input: IndicatorAddInput!) {
@@ -635,6 +636,68 @@ describe('IOC validation requests', () => {
       }
       await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: hiddenId } });
       await connectorDelete(testContext, ADMIN_USER, UNREADABLE_IOC_VALIDATION_CONNECTOR);
+      resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+    }
+  });
+
+  it('should fail a request none of whose pairs the OpenAEV service account can read, with the outcome of each pair', async () => {
+    const connectorUserId = await getUserIdByEmail(USER_CONNECTOR.email);
+    const waitingConnector = {
+      id: NO_READABLE_PAIR_IOC_VALIDATION_CONNECTOR,
+      name: 'OpenAEV IOC validation (offline, nothing readable)',
+      type: ConnectorType.InternalEnrichment,
+      scope: [IOC_VALIDATION_CONNECTOR_SCOPE],
+      auto: false,
+      auto_update: false,
+    };
+    await registerConnector(testContext, ADMIN_USER, waitingConnector, { connector_user_id: connectorUserId });
+    const offline = await storeLoadById<BasicStoreEntity>(testContext, ADMIN_USER, NO_READABLE_PAIR_IOC_VALIDATION_CONNECTOR, ENTITY_TYPE_CONNECTOR);
+    await elUpdate(testContext, offline._index, offline.internal_id, { doc: { updated_at: new Date(Date.now() - 10 * 60 * 1000).toISOString() } });
+    resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+    const hidden = await queryAsAdminWithSuccess({
+      query: INDICATOR_ADD,
+      variables: { input: { name: 'unreadable.evil.example', pattern: "[domain-name:value = 'unreadable.evil.example']", pattern_type: 'stix', x_opencti_main_observable_type: 'Domain-Name' } },
+    });
+    const hiddenId = hidden.data?.indicatorAdd.id;
+    let requestId: string | undefined;
+    try {
+      const deployment = await queryAsUserWithSuccess(USER_CONNECTOR, { query: REPORT_DEPLOYMENT, variables: { indicatorId: hiddenId, platformId, status: 'deployed' } });
+      const hiddenDeploymentId = deployment.data?.indicatorReportDeployment.id;
+      const created = await queryAsAdminWithSuccess({
+        query: REQUEST_VALIDATION,
+        variables: {
+          platformIds: [platformId],
+          indicatorIds: [hiddenId],
+          testKinds: ['dns_resolution'],
+          connectorId: NO_READABLE_PAIR_IOC_VALIDATION_CONNECTOR,
+          name: 'Unreadable by OpenAEV',
+        },
+      });
+      requestId = created.data?.indicatorsRequestValidation.id;
+      expect(created.data?.indicatorsRequestValidation.results_summary).toMatchObject({ total: 1, requested: 1, error: 0 });
+      // While the request waits, its only indicator gets a marking the OpenAEV service account cannot read (no stream event)
+      const amber = await internalLoadById(testContext, ADMIN_USER, MARKING_TLP_AMBER) as unknown as { internal_id: string };
+      const stored = await internalLoadById(testContext, ADMIN_USER, hiddenId) as unknown as { _index: string };
+      const script = { source: "ctx._source['rel_object-marking.internal_id'] = params.ids", lang: 'painless', params: { ids: [amber.internal_id] } };
+      await elUpdate(testContext, stored._index, hiddenId, { script });
+      await registerConnector(testContext, ADMIN_USER, waitingConnector, { connector_user_id: connectorUserId });
+      resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
+      await maintainIocValidationRequests(testContext);
+      const read = await queryAsAdminWithSuccess({ query: REQUEST_READ, variables: { id: requestId } });
+      const failed = read.data?.iocValidationRequest;
+      expect(failed.status).toEqual('failed');
+      expect(failed.completed_at).toBeTruthy();
+      // The failed request records the outcome of its pair, as a request failed by OpenAEV does
+      expect(failed.results_summary).toMatchObject({ total: 1, requested: 0, error: 1 });
+      expect(failed.pair_outcomes).toEqual([{ deployed_on_id: hiddenDeploymentId, validation_status: 'error' }]);
+      const outcome = await queryAsAdminWithSuccess({ query: DEPLOYMENT_READ, variables: { id: hiddenDeploymentId } });
+      expect(outcome.data?.stixCoreRelationship.validation_status).toEqual('error');
+    } finally {
+      if (requestId) {
+        await queryAsAdminWithSuccess({ query: REQUEST_DELETE, variables: { id: requestId } });
+      }
+      await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: hiddenId } });
+      await connectorDelete(testContext, ADMIN_USER, NO_READABLE_PAIR_IOC_VALIDATION_CONNECTOR);
       resetCacheForEntity(ENTITY_TYPE_CONNECTOR);
     }
   });

@@ -693,9 +693,12 @@ const dispatchClaimedIocValidationRequest = async (context: AuthContext, claimed
   const inaccessible = request.pairs.filter((pair) => !isAccessible(pair));
   if (inaccessible.length === request.pairs.length) {
     await resolvePendingPairs(context, request.internal_id, VALIDATION_STATUS_ERROR);
+    const failedPairs = withPairOutcomes(request.pairs, await findRequestDeployments(context, request.internal_id));
     return patchRequest(context, SYSTEM_USER, request.internal_id, {
       status: REQUEST_STATUS_FAILED,
       status_message: 'The indicators or deployments are no longer accessible to the OpenAEV service account',
+      pairs: failedPairs,
+      results_summary: summarizeRequestPairs(failedPairs, request.skipped?.length ?? 0),
       completed_at: new Date(),
     });
   }
