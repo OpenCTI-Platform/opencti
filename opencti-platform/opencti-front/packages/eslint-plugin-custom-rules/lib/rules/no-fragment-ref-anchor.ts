@@ -1,9 +1,5 @@
 import type { Rule } from 'eslint';
 
-// Components that clone their single child and attach a ref to it, so the child
-// has to be able to hold one. A Fragment cannot, and the component then
-// silently does nothing: MUI `Tooltip`, for one, gates its popper on the
-// resolved node (`open: childNode ? open : false`).
 const REF_ANCHOR_COMPONENTS = new Set([
   'ClickAwayListener',
   'Fade',
@@ -29,7 +25,6 @@ interface JsxElementNode extends JsxChild {
   children: JsxChild[];
 }
 
-// `<Foo>` -> 'Foo', `<Name.Space.Foo>` -> 'Foo', `<ns:foo>` -> null.
 const elementName = (node: JsxChild): string | null => {
   const name = node.openingElement?.name;
   if (!name) return null;
@@ -38,7 +33,6 @@ const elementName = (node: JsxChild): string | null => {
   return null;
 };
 
-// `<>`, `<Fragment>` and `<React.Fragment>` are the same hole.
 const isFragment = (node: JsxChild): boolean => {
   if (node.type === 'JSXFragment') return true;
   if (node.type !== 'JSXElement') return false;

@@ -15,17 +15,13 @@ const ruleTester = new RuleTester({
 
 ruleTester.run('no-fragment-ref-anchor', rule, {
   valid: [
-    // An element can hold the ref.
     { code: '<Tooltip title="t"><span>v</span></Tooltip>;' },
     { code: '<Tooltip title="t"><Stack>{v}</Stack></Tooltip>;' },
-    // A Fragment anywhere else is none of this rule's business.
     { code: '<div><>{v}</></div>;' },
     { code: '<><Tooltip title="t"><span>v</span></Tooltip></>;' },
-    // Not one of the components that anchor a ref on their child.
     { code: '<Drawer><>{v}</></Drawer>;' },
     { code: '<Dialog><>{v}</></Dialog>;' },
     { code: '<Collapse in><>{v}</></Collapse>;' },
-    // Several children is a different mistake, reported by React itself.
     { code: '<Tooltip title="t"><span>a</span><span>b</span></Tooltip>;' },
   ],
 
@@ -42,12 +38,10 @@ ruleTester.run('no-fragment-ref-anchor', rule, {
       code: '<Tooltip title="t"><React.Fragment>{v}</React.Fragment></Tooltip>;',
       errors: [{ messageId: 'fragmentAnchor' }],
     },
-    // Surrounding whitespace must not hide the Fragment.
     {
       code: '<Tooltip title="t">\n  <>{v}</>\n</Tooltip>;',
       errors: [{ messageId: 'fragmentAnchor' }],
     },
-    // The transition components clone their child the same way.
     {
       code: '<Fade in><>{v}</></Fade>;',
       errors: [{ messageId: 'fragmentAnchor', data: { component: 'Fade' } }],

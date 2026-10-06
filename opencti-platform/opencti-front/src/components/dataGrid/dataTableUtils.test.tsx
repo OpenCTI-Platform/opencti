@@ -4,14 +4,6 @@ import { screen } from '@testing-library/react';
 import testRender from '../../utils/tests/test-render';
 import { defaultColumnsMap } from './dataTableUtils';
 
-/**
- * MUI `Tooltip` forwards its ref to its single child and gates the popper on
- * having resolved a DOM node from it (`open: childNode ? open : false`). A
- * Fragment cannot hold a ref, so a column rendering `<Tooltip><>…</></Tooltip>`
- * silently never shows its tooltip. These cases guard the anchor, not the
- * markup: they hover the rendered value and require a tooltip to appear.
- */
-
 const renderColumn = (id: string, data: unknown, helpers?: unknown) => {
   const column = defaultColumnsMap.get(id);
   if (!column?.render) throw new Error(`Column "${id}" has no render function`);
