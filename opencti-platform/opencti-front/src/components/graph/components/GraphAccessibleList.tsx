@@ -4,6 +4,7 @@ import type { GraphLink, GraphNode } from '../graph.types';
 import { graphNodeTitle } from '../utils/useGraphParser';
 import { type GraphHoverTarget, linkHoverTarget } from '../utils/useGraphPainter';
 import { badgesOfNode, useGraphBadgeRegistryVersion } from '../badges';
+import { isGroupLink } from '../utils/graphCollapse';
 
 /**
  * Options mounted on each side of the active one. Every element of the graph stays in the list and
@@ -76,7 +77,9 @@ const GraphAccessibleList = ({ nodes, links, selectedKeys, onSelectNode, onSelec
       const node = nodesById.get(endId(end, id)) ?? endpoint(end);
       return node ? graphNodeTitle(node) : id;
     };
-    const linkEntries: Entry[] = links.map((link) => ({
+    // A link drawn towards a group is no relationship of the platform and cannot be selected: its
+    // relationships are counted on its entity and its group.
+    const linkEntries: Entry[] = links.filter((link) => !isGroupLink(link)).map((link) => ({
       kind: 'link',
       link,
       text: `${endName(link.source, link.source_id)} ${link.label || t_i18n(`relationship_${link.relationship_type || link.entity_type}`)} ${endName(link.target, link.target_id)}`,
