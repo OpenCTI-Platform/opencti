@@ -14,7 +14,7 @@ To access investigations, navigate to the top right corner of the toolbar:
 ## Perform investigation
 
 ### Select / search entity 
-When selecting (or searching) an entity, the entities you have selected (or matching your search) and their direct neighbours stay at full strength, while the rest of the graph fades, to emphasise your selection (or search).
+When selecting (or searching) an entity, the entities you have selected (or those matching your search) and their direct neighbours stay at full strength, while the rest of the graph fades, to emphasise your selection (or search).
 Selected entities are circled with a halo and their names are written on a coloured pill; the entity you are currently seeing in the right panel has the strongest halo.
 In addition, the right panel will have now a counter of the amount of selected entities to help you understand the amount of selected (or matching your search). 
 
