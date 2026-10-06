@@ -3271,7 +3271,7 @@
   "MCP endpoint URL": "MCP 엔드포인트 URL",
   "MD5 values can only include A-F and 0-9, 32 characters": "MD5 값은 A-F 및 0-9, 32자만 포함할 수 있습니다",
   "MD5, SHA-1, SHA-256, SHA-512, or name is required": "MD5, SHA-1, SHA-256, SHA-512 또는 이름이 필요합니다",
-  "Measure the operational value of every connector, feed and author: unique contribution, lead time, accuracy, relevance, detection impact, noise and cost.": "모든 커넥터, 피드, 작성자의 운영 가치를 측정합니다: 고유 기여도, 선행 시간, 정확도, 관련성, 탐지 영향, 노이즈, 비용.",
+  "Measure the operational value of every connector, feed and author.": "모든 커넥터, 피드, 작성자의 운영 가치를 측정합니다.",
   "Med": "중간",
   "Median publication latency": "게시 지연 중앙값",
   "MEDIUM": "중간",

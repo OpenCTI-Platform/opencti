@@ -3271,7 +3271,7 @@
   "MCP endpoint URL": "URL dell'endpoint MCP",
   "MD5 values can only include A-F and 0-9, 32 characters": "I valori MD5 possono includere solo A-F e 0-9, 32 caratteri",
   "MD5, SHA-1, SHA-256, SHA-512, or name is required": "MD5, SHA-1, SHA-256, SHA-512 o nome richiesto",
-  "Measure the operational value of every connector, feed and author: unique contribution, lead time, accuracy, relevance, detection impact, noise and cost.": "Misura il valore operativo di ogni connettore, feed e autore: contributo unico, anticipo, accuratezza, rilevanza, impatto sul rilevamento, rumore e costo.",
+  "Measure the operational value of every connector, feed and author.": "Misura il valore operativo di ogni connettore, feed e autore.",
   "Med": "Med",
   "Median publication latency": "Latenza mediana di pubblicazione",
   "MEDIUM": "MEDIO",

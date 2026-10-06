@@ -3271,7 +3271,7 @@
   "MCP endpoint URL": "URL конечной точки MCP",
   "MD5 values can only include A-F and 0-9, 32 characters": "Значения MD5 могут включать только A-F и 0-9, 32 символа",
   "MD5, SHA-1, SHA-256, SHA-512, or name is required": "Требуется MD5, SHA-1, SHA-256, SHA-512 или имя",
-  "Measure the operational value of every connector, feed and author: unique contribution, lead time, accuracy, relevance, detection impact, noise and cost.": "Измеряйте операционную ценность каждого коннектора, фида и автора: уникальный вклад, опережение, точность, релевантность, влияние на обнаружение, шум и стоимость.",
+  "Measure the operational value of every connector, feed and author.": "Измеряйте операционную ценность каждого коннектора, фида и автора.",
   "Med": "Мед",
   "Median publication latency": "Медианная задержка публикации",
   "MEDIUM": "СРЕДНЯЯ",

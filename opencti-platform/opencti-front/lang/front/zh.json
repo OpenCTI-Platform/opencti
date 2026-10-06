@@ -3271,7 +3271,7 @@
   "MCP endpoint URL": "MCP端点URL",
   "MD5 values can only include A-F and 0-9, 32 characters": "MD5 值只能包含 A-F 和 0-9 共 32 个字符",
   "MD5, SHA-1, SHA-256, SHA-512, or name is required": "MD5、SHA-1、SHA-256、SHA-512 或名称为必填项",
-  "Measure the operational value of every connector, feed and author: unique contribution, lead time, accuracy, relevance, detection impact, noise and cost.": "衡量每个连接器、源和作者的运营价值：独特贡献、提前时间、准确性、相关性、检测影响、噪声和成本。",
+  "Measure the operational value of every connector, feed and author.": "衡量每个连接器、源和作者的运营价值。",
   "Med": "中等",
   "Median publication latency": "发布延迟中位数",
   "MEDIUM": "中",

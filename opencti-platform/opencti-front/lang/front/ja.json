@@ -3271,7 +3271,7 @@
   "MCP endpoint URL": "MCPエンドポイントURL",
   "MD5 values can only include A-F and 0-9, 32 characters": "MD5値はA-Fと0-9の32文字のみです。",
   "MD5, SHA-1, SHA-256, SHA-512, or name is required": "MD5、SHA-1、SHA-256、SHA-512、または名前が必要です。",
-  "Measure the operational value of every connector, feed and author: unique contribution, lead time, accuracy, relevance, detection impact, noise and cost.": "すべてのコネクタ、フィード、作成者の運用価値を測定します: 独自貢献、先行時間、正確性、関連性、検知への影響、ノイズ、コスト。",
+  "Measure the operational value of every connector, feed and author.": "すべてのコネクタ、フィード、作成者の運用価値を測定します。",
   "Med": "中くらい",
   "Median publication latency": "公開遅延の中央値",
   "MEDIUM": "中",
