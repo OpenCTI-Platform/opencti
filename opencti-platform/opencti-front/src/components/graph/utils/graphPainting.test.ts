@@ -5,7 +5,9 @@ import ThemeDark from '../../ThemeDark';
 import { buildGraphPalette } from './graphPalette';
 import { createRecordingContext } from '../../../utils/tests/recordingCanvasContext';
 import { graphLink, graphNode, installPath2DStub } from '../../../utils/tests/graphTestData';
+import type { Box } from './graphGeometry';
 import {
+  createNodeBoxes,
   levelOfDetail,
   LinkLabel,
   linkDash,
@@ -140,6 +142,19 @@ describe('paintGraphNode', () => {
     const ctx = createRecordingContext();
     paintGraphNode(ctx, graphNode({ x: NaN }), { palette, globalScale: 4, detail: fullDetail, visual: plain });
     expect(ctx.calls).toHaveLength(0);
+  });
+
+  it('appends the boxes it covers to the buffer it is handed, written in place from frame to frame', () => {
+    const covered: Box[] = [];
+    const boxes = createNodeBoxes();
+    const options = { palette, globalScale: 4, detail: fullDetail, visual: plain };
+    expect(paintGraphNode(createRecordingContext(), graphNode({ x: 0 }), options, covered, boxes)).toBe(covered);
+    expect(covered).toEqual([boxes.disc, boxes.label]);
+    covered.length = 0;
+    paintGraphNode(createRecordingContext(), graphNode({ x: 40 }), options, covered, boxes);
+    expect(covered[0]).toBe(boxes.disc);
+    expect(boxes.disc.x).toBe(40);
+    expect(boxes.label.x).toBe(40);
   });
 });
 

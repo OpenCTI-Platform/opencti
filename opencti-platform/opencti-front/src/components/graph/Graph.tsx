@@ -732,10 +732,7 @@ const Graph = ({
               linkCanvasObject={(link, ctx, globalScale) => linkPaint(link, ctx, globalScale)}
               linkColor={linkColorPaint}
               nodePointerAreaPaint={(node, color, ctx, globalScale) => nodePointerAreaPaint(node, color, ctx, globalScale)}
-              nodeCanvasObject={(node, ctx, globalScale) => nodePaint(node, ctx, {
-                showNbConnectedElements: context === 'investigation',
-                globalScale,
-              })}
+              nodeCanvasObject={(node, ctx, globalScale) => nodePaint(node, ctx, globalScale, context === 'investigation')}
               onRenderFramePre={framePrePaint}
               onRenderFramePost={framePostPaint}
               onEngineStop={onEngineStop}

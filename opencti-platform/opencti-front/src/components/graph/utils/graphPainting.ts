@@ -50,6 +50,7 @@ const LINK_LABEL_SIZE = 2.6;
 const LINK_LABEL_MAX_PX = 15;
 const INFERRED_DASH = [2.4, 1.6];
 const LOW_CONFIDENCE_DASH = [0.7, 1.5];
+const SOLID: number[] = [];
 /** Below this confidence a relationship is drawn dotted: it is asserted with little certainty. */
 export const LOW_CONFIDENCE_THRESHOLD = 50;
 const DEFAULT_FONT = '"IBM Plex Sans", sans-serif';
@@ -106,6 +107,29 @@ export interface NodePaintOptions {
   typeLabel?: string;
 }
 
+/** The boxes one node covers, written in place at every frame by the painter that keeps them. */
+export interface NodeBoxes {
+  disc: Box;
+  badges: Box;
+  label: Box;
+}
+
+export const createNodeBoxes = (): NodeBoxes => ({
+  disc: { x: 0, y: 0, halfWidth: 0, halfHeight: 0 },
+  badges: { x: 0, y: 0, halfWidth: 0, halfHeight: 0 },
+  label: { x: 0, y: 0, halfWidth: 0, halfHeight: 0 },
+});
+
+const setBox = (box: Box, x: number, y: number, halfWidth: number, halfHeight: number): Box => {
+  box.x = x;
+  box.y = y;
+  box.halfWidth = halfWidth;
+  box.halfHeight = halfHeight;
+  return box;
+};
+
+const NO_BADGES: GraphBadge[] = [];
+
 const connectedCountLabel = (count: number | undefined): string | null => {
   if (count === undefined) return '?';
   if (count <= 0) return null;
@@ -125,9 +149,9 @@ const paintHalo = (ctx: CanvasRenderingContext2D, node: GraphNode, radius: numbe
 
 /**
  * Draws the badge row above a node, at most `MAX_DRAWN_BADGES` of them followed by a "+N" marker
- * for the others; returns the box it covers.
+ * for the others; returns the box it covers, written into `box`.
  */
-const paintBadges = (ctx: CanvasRenderingContext2D, node: GraphNode, radius: number, badges: GraphBadge[], options: NodePaintOptions): Box => {
+const paintBadges = (ctx: CanvasRenderingContext2D, node: GraphNode, radius: number, badges: GraphBadge[], options: NodePaintOptions, box: Box): Box => {
   const { palette, globalScale } = options;
   const { drawn, more } = drawnBadges(badges);
   const size = Math.max(BADGE_SIZE, BADGE_MIN_PX / globalScale);
@@ -187,11 +211,11 @@ const paintBadges = (ctx: CanvasRenderingContext2D, node: GraphNode, radius: num
     ctx.textBaseline = 'middle';
     ctx.fillText(moreText, left + moreWidth / 2, centreY + size * 0.04);
   }
-  return { x: node.x, y: centreY, halfWidth: total / 2, halfHeight: size / 2 };
+  return setBox(box, node.x, centreY, total / 2, size / 2);
 };
 
-/** Draws the name (and the type close up) under a node; returns the box the text covers. */
-const paintLabels = (ctx: CanvasRenderingContext2D, node: GraphNode, radius: number, options: NodePaintOptions, emphasised: boolean): Box => {
+/** Draws the name (and the type close up) under a node; returns the box the text covers, written into `box`. */
+const paintLabels = (ctx: CanvasRenderingContext2D, node: GraphNode, radius: number, options: NodePaintOptions, emphasised: boolean, box: Box): Box => {
   const { palette, globalScale, visual, detail, typeLabel } = options;
   const base = emphasised ? Math.max(LABEL_SIZE, EMPHASIS_LABEL_PX / globalScale) : LABEL_SIZE;
   const size = Math.min(base, MAX_LABEL_PX / globalScale);
@@ -222,19 +246,26 @@ const paintLabels = (ctx: CanvasRenderingContext2D, node: GraphNode, radius: num
     halfWidth = Math.max(halfWidth, ctx.measureText(subText).width / 2 + PILL_PADDING);
     height = size * 1.3 + subSize * 1.3;
   }
-  return { x: node.x, y: top + height / 2 - size * 0.2, halfWidth, halfHeight: height / 2 };
+  return setBox(box, node.x, top + height / 2 - size * 0.2, halfWidth, height / 2);
 };
 
 /**
  * Draws one node: a disc tinted with the entity colour, its ring and icon, the selection halo,
- * the badges above and the label below, each according to the level of detail. Returns the boxes
- * the disc and the label cover, which link labels keep clear of.
+ * the badges above and the label below, each according to the level of detail. Appends to `covered`
+ * the boxes the disc, the badges and the label cover, which link labels keep clear of, and returns it;
+ * a painter drawing every frame hands the frame buffer and the `boxes` it keeps for the node.
  */
-export const paintGraphNode = (ctx: CanvasRenderingContext2D, node: GraphNode, options: NodePaintOptions): Box[] => {
-  const { palette, detail, visual, badges = [], showConnectedCount = false } = options;
-  if (!Number.isFinite(node.x) || !Number.isFinite(node.y)) return [];
+export const paintGraphNode = (
+  ctx: CanvasRenderingContext2D,
+  node: GraphNode,
+  options: NodePaintOptions,
+  covered: Box[] = [],
+  boxes: NodeBoxes = createNodeBoxes(),
+): Box[] => {
+  const { palette, detail, visual, badges = NO_BADGES, showConnectedCount = false } = options;
+  if (!Number.isFinite(node.x) || !Number.isFinite(node.y)) return covered;
   const radius = nodeRadius(node);
-  const covered: Box[] = [{ x: node.x, y: node.y, halfWidth: radius + HALO_GAP, halfHeight: radius + HALO_GAP }];
+  covered.push(setBox(boxes.disc, node.x, node.y, radius + HALO_GAP, radius + HALO_GAP));
   const color = node.disabled ? palette.textSecondary : (node.color || palette.textSecondary);
   ctx.save();
   let alpha = 1;
@@ -292,12 +323,12 @@ export const paintGraphNode = (ctx: CanvasRenderingContext2D, node: GraphNode, o
   }
 
   if (badges.length > 0 && detail.badges && !node.disabled) {
-    covered.push(paintBadges(ctx, node, radius, badges, options));
+    covered.push(paintBadges(ctx, node, radius, badges, options, boxes.badges));
   }
 
   const emphasised = visual.selected || visual.preview || visual.hovered || visual.onPath;
   if (detail.labels || emphasised) {
-    covered.push(paintLabels(ctx, node, radius, options, emphasised));
+    covered.push(paintLabels(ctx, node, radius, options, emphasised, boxes.label));
   }
   ctx.restore();
   return covered;
@@ -361,7 +392,7 @@ const endOf = (end: GraphLink['source']) => (typeof end === 'object' && end !== 
 export const linkDash = (link: Pick<GraphLink, 'inferred' | 'isNestedInferred'>, confidence?: number | null): number[] => {
   if (link.inferred || link.isNestedInferred) return INFERRED_DASH;
   if (typeof confidence === 'number' && confidence < LOW_CONFIDENCE_THRESHOLD) return LOW_CONFIDENCE_DASH;
-  return [];
+  return SOLID;
 };
 
 const strokePath = (ctx: CanvasRenderingContext2D, path: LinkPath | PathBuffer) => {

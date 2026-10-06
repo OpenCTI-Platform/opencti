@@ -77,7 +77,7 @@ const SimpleGraph2D = ({
         linkDirectionalParticleSpeed={showParticules ? 0.002 : undefined}
         linkColor={linkColorPaint}
         nodePointerAreaPaint={(node, color, ctx, globalScale) => nodePointerAreaPaint(node, color, ctx, globalScale)}
-        nodeCanvasObject={(node, ctx, globalScale) => nodePaint(node, ctx, { globalScale })}
+        nodeCanvasObject={(node, ctx, globalScale) => nodePaint(node, ctx, globalScale)}
         onRenderFramePre={framePrePaint}
         onRenderFramePost={framePostPaint}
         onNodeHover={(node) => setHovered(node ? { kind: 'node', id: node.id } : null)}

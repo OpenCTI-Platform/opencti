@@ -136,7 +136,7 @@ describe('useGraphPainter', () => {
       const counts: [number | undefined, string][] = [[5, '5+'], [150, '99+'], [undefined, '?']];
       counts.forEach(([numberOfConnectedElement, expected]) => {
         const ctx = createRecordingContext();
-        hook.result.current.nodePaint(node({ numberOfConnectedElement }), ctx, { showNbConnectedElements: true });
+        hook.result.current.nodePaint(node({ numberOfConnectedElement }), ctx, undefined, true);
         expect(ctx.texts()).toContain(expected);
       });
     });
@@ -150,7 +150,7 @@ describe('useGraphPainter', () => {
       try {
         const { hook } = testRenderHook(() => useGraphPainter());
         const ctx = createRecordingContext();
-        hook.result.current.nodePaint(node(), ctx, { globalScale: 4 });
+        hook.result.current.nodePaint(node(), ctx, 4);
         const texts = ctx.texts();
         expect(texts).toEqual(expect.arrayContaining(['v2', 'v0', 'v1', '+1']));
         expect(texts).not.toContain('v3');
@@ -171,7 +171,7 @@ describe('useGraphPainter', () => {
     it('draws no counter when every connected element is already displayed', () => {
       const { hook } = testRenderHook(() => useGraphPainter());
       const ctx = createRecordingContext();
-      hook.result.current.nodePaint(node({ numberOfConnectedElement: 0 }), ctx, { showNbConnectedElements: true });
+      hook.result.current.nodePaint(node({ numberOfConnectedElement: 0 }), ctx, undefined, true);
       expect(ctx.texts()).toContain('Emotet');
       expect(ctx.texts().filter((text) => /\+$/.test(text) || text === '?')).toEqual([]);
     });

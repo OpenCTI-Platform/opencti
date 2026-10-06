@@ -10,23 +10,20 @@ import { type Box, computeLinkCurvatures, computeObstacleBends, type LinkEnds, l
 import type { LayoutPositions } from './graphLayouts';
 import { type GraphFocus, type GraphPath, neighbourhood } from './graphFocus';
 import {
+  createNodeBoxes,
   type LevelOfDetail,
   levelOfDetail,
   type LinkLabel,
   type LinkPaintOptions,
   NODE_RADIUS,
+  type NodeBoxes,
+  type NodePaintOptions,
   paintGraphLink,
   paintGraphNode,
   paintGraphNodeHitArea,
   paintLinkLabels,
 } from './graphPainting';
 import { badgesOfNode, type GraphBadge, useGraphBadgeRegistryVersion } from '../badges';
-
-interface PaintOptions {
-  showNbConnectedElements?: boolean;
-  /** Zoom level handed by the rendering library; fixes the level of detail. */
-  globalScale?: number;
-}
 
 export interface GraphHoverTarget {
   kind: 'node' | 'link';
@@ -179,37 +176,49 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     return detail;
   };
 
+  /** The options of every node of every frame, updated in place as those of the links. */
+  const nodePaintOptions = useRef<NodePaintOptions>({
+    palette,
+    globalScale: DEFAULT_SCALE,
+    detail: levelOfDetail(DEFAULT_SCALE, 0),
+    visual: { selected: false, preview: false, hovered: false, faded: false, onPath: false },
+  });
+  /** The boxes each node covers, written in place at every frame. */
+  const nodeBoxes = useRef(new WeakMap<GraphNode, NodeBoxes>());
+
   /**
    * Draws a node in canvas.
    *
    * @param data Data associated to the node.
    * @param ctx Context of the canvas.
-   * @param opts Options to change drawing.
+   * @param globalScale Zoom level handed by the library.
+   * @param showConnectedCount Investigations show how many relationships are not drawn yet.
    */
   const nodePaint = (
     data: GraphNode,
     ctx: CanvasRenderingContext2D,
-    opts: PaintOptions = {},
+    globalScale = DEFAULT_SCALE,
+    showConnectedCount = false,
   ) => {
-    const globalScale = opts.globalScale ?? DEFAULT_SCALE;
-    const detail = detailOf(globalScale);
-    const covered = paintGraphNode(ctx, data, {
-      palette,
-      globalScale,
-      detail,
-      visual: {
-        selected: selectedNodeIds.has(data.id),
-        preview: detailsPreviewSelected?.id === data.id,
-        hovered: hovered?.kind === 'node' && hovered.id === data.id,
-        faded: focus ? !focus.nodeIds.has(data.id) : false,
-        onPath: pathNodeIds.has(data.id),
-      },
-      badges: badgesOf(data),
-      showConnectedCount: opts.showNbConnectedElements,
-      typeLabel: typeLabel(data),
-    });
+    const options = nodePaintOptions.current;
+    options.palette = palette;
+    options.globalScale = globalScale;
+    options.detail = detailOf(globalScale);
+    options.visual.selected = selectedNodeIds.has(data.id);
+    options.visual.preview = detailsPreviewSelected?.id === data.id;
+    options.visual.hovered = hovered?.kind === 'node' && hovered.id === data.id;
+    options.visual.faded = focus ? !focus.nodeIds.has(data.id) : false;
+    options.visual.onPath = pathNodeIds.has(data.id);
+    options.badges = badgesOf(data);
+    options.showConnectedCount = showConnectedCount;
+    options.typeLabel = typeLabel(data);
+    let boxes = nodeBoxes.current.get(data);
+    if (!boxes) {
+      boxes = createNodeBoxes();
+      nodeBoxes.current.set(data, boxes);
+    }
     // Link labels are placed clear of the nodes at every zoom: the emphasised ones are drawn at overview zoom too.
-    frameNodeBoxes.current.push(...covered);
+    paintGraphNode(ctx, data, options, frameNodeBoxes.current, boxes);
   };
 
   /**
