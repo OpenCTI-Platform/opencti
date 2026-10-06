@@ -5,9 +5,16 @@ import WidgetNoSavedFilters from './WidgetNoSavedFilters';
 import WidgetAccessDenied from './WidgetAccessDenied';
 import type { WidgetHost } from '../../utils/widget/widget';
 
-interface WidgetRenderContentProps {
+/**
+ * Conditions under which a widget cannot run its query safely.
+ * Returned as a whole by useDashboardViz so widgets can forward them with a spread.
+ */
+export interface WidgetRenderGuards {
   isMissingHostEntity: boolean;
   isMissingSavedFilters: boolean;
+}
+
+interface WidgetRenderContentProps extends WidgetRenderGuards {
   queryRef: unknown;
   host?: WidgetHost;
   isGranted?: boolean;

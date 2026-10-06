@@ -189,7 +189,7 @@ const AuditsHorizontalBars: FunctionComponent<AuditsHorizontalBarsProps> = ({
     };
   }, [startDate, endDate]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsHorizontalBarsDistributionQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<AuditsHorizontalBarsDistributionQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -212,8 +212,7 @@ const AuditsHorizontalBars: FunctionComponent<AuditsHorizontalBarsProps> = ({
       showPreviewTag={isPreviewMode}
     >
       <AuditsWidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

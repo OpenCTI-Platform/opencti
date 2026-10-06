@@ -153,7 +153,7 @@ const AuditsWordCloud: FunctionComponent<AuditsWordCloudProps> = ({
     };
   }, [startDate, endDate]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsWordCloudDistributionQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<AuditsWordCloudDistributionQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -174,8 +174,7 @@ const AuditsWordCloud: FunctionComponent<AuditsWordCloudProps> = ({
       showPreviewTag={isPreviewMode}
     >
       <AuditsWidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

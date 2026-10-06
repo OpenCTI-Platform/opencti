@@ -124,7 +124,7 @@ const StixCoreObjectsMultiAreaChart = ({
   host,
 }: StixCoreObjectsMultiAreaChartProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsMultiAreaChartTimeSeriesQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsMultiAreaChartTimeSeriesQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -145,8 +145,7 @@ const StixCoreObjectsMultiAreaChart = ({
       showPreviewTag={isPreviewMode}
     >
       <WidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

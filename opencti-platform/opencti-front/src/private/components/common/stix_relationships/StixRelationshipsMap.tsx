@@ -188,7 +188,7 @@ const StixRelationshipsMap = ({
   refreshRate = null,
 }: StixRelationshipsMapProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMapStixRelationshipsDistributionQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMapStixRelationshipsDistributionQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -208,8 +208,7 @@ const StixRelationshipsMap = ({
       showPreviewTag={isPreviewMode}
     >
       <WidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

@@ -162,7 +162,7 @@ const StixCoreObjectsRadar = ({
   refreshRate = null,
 }: StixCoreObjectsRadarProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsRadarDistributionQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsRadarDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -182,8 +182,7 @@ const StixCoreObjectsRadar = ({
       showPreviewTag={isPreviewMode}
     >
       <WidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

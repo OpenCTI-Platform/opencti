@@ -6,6 +6,7 @@ import { useQueryLoader } from 'react-relay';
 import type { GraphQLTaggedNode, OperationType } from 'relay-runtime';
 import useAuth from '../../utils/hooks/useAuth';
 import { resolveDataSelection } from './dashboardVizUtils';
+import type { WidgetRenderGuards } from './WidgetRenderContent';
 
 const useDashboardViz = <TQuery extends OperationType>({
   dataSelection,
@@ -183,12 +184,16 @@ const useDashboardViz = <TQuery extends OperationType>({
     });
   }, [refreshToken, isBlocked, forceReloadWithFreshVariables, handleResolveDataSelection]);
 
+  const renderGuards = useMemo<WidgetRenderGuards>(
+    () => ({ isMissingHostEntity, isMissingSavedFilters }),
+    [isMissingHostEntity, isMissingSavedFilters],
+  );
+
   return {
     queryRef,
     isPreviewMode,
     resolvedDataSelection,
-    isMissingHostEntity,
-    isMissingSavedFilters,
+    renderGuards,
   };
 };
 

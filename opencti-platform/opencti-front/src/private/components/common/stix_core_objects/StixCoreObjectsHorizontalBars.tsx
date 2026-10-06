@@ -178,7 +178,7 @@ const StixCoreObjectsHorizontalBars = ({
   refreshRate = null,
 }: StixCoreObjectsHorizontalBarsProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsHorizontalBarsDistributionQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsHorizontalBarsDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -198,8 +198,7 @@ const StixCoreObjectsHorizontalBars = ({
       showPreviewTag={isPreviewMode}
     >
       <WidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

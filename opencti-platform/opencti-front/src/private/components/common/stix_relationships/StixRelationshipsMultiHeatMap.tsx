@@ -124,7 +124,7 @@ const StixRelationshipsMultiHeatMap = ({
 }: StixRelationshipsMultiHeatMapProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiHeatMapTimeSeriesQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiHeatMapTimeSeriesQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -146,8 +146,7 @@ const StixRelationshipsMultiHeatMap = ({
       showPreviewTag={isPreviewMode}
     >
       <WidgetRenderContent
-        isMissingHostEntity={isMissingHostEntity}
-        isMissingSavedFilters={isMissingSavedFilters}
+        {...renderGuards}
         queryRef={queryRef}
         host={host}
       >

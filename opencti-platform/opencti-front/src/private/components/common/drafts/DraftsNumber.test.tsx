@@ -29,8 +29,7 @@ vi.mock('../../../../components/Loader', () => ({
 vi.mock('../../../../components/dashboard/useDashboardViz', () => ({
   default: ({ dataSelection }: { dataSelection: unknown[] }) => ({
     resolvedDataSelection: dataSelection,
-    isMissingHostEntity: false,
-    isMissingSavedFilters: false,
+    renderGuards: { isMissingHostEntity: false, isMissingSavedFilters: false },
     isPreviewMode: false,
     queryRef: null,
   }),

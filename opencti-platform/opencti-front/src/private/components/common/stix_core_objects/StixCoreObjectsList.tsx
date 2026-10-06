@@ -561,7 +561,7 @@ const StixCoreObjectsList = ({
 }: StixCoreObjectsListProps) => {
   const { t_i18n } = useFormatter();
   const rootRef = useRef<HTMLDivElement>(null);
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsListQuery>({
+  const { resolvedDataSelection, renderGuards, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsListQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -582,8 +582,7 @@ const StixCoreObjectsList = ({
     >
       <div ref={rootRef} style={{ height: '100%' }}>
         <WidgetRenderContent
-          isMissingHostEntity={isMissingHostEntity}
-          isMissingSavedFilters={isMissingSavedFilters}
+          {...renderGuards}
           queryRef={queryRef}
           host={host}
         >
