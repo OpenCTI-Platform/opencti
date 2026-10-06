@@ -28,10 +28,13 @@ import { FunctionalError } from '../../../src/config/errors';
 const SECRET = 'Clear-text-1!';
 const OTP = '12345678';
 
-const buildRequestContext = (query: string, variables: Record<string, unknown>, errors: unknown[] = []) => ({
+// What Apollo hands to the plugin: the parsed document and the operation that runs.
+// A request that fails parsing or validation comes without them.
+const buildRequestContext = (query: string, variables: Record<string, unknown>, errors: unknown[] = [], { parsed = true } = {}) => ({
   request: { variables, query },
   operationName: 'TestOperation',
-  operation: parse(query).definitions[0] as OperationDefinitionNode,
+  document: parsed ? parse(query) : undefined,
+  operation: parsed ? parse(query).definitions[0] as OperationDefinitionNode : undefined,
   contextValue: { user: { id: 'test-user' } },
   errors,
 });
@@ -83,5 +86,35 @@ describe('loggerPlugin - credentials in logged GraphQL calls', () => {
     await listener.willSendResponse(buildRequestContext(query, { input: { name: 'report' } }, [FunctionalError('Invalid report')]));
 
     expect(loggedMeta(logApp.warn).operation_query).toBeDefined();
+  });
+
+  it('drops the query text when a harmless operation runs next to a credential one in the same request', async () => {
+    const query = `query TestOperation { me { id } }
+      mutation Other { meEdit(input: [{ key: "password", value: ["${SECRET}"] }]) { id } }`;
+    const listener = loggerPlugin.requestDidStart();
+    await listener.willSendResponse(buildRequestContext(query, {}, [FunctionalError('Failed')]));
+
+    const meta = loggedMeta(logApp.warn);
+    expect(meta.operation_query).toBeUndefined();
+    expect(JSON.stringify(meta)).not.toContain(SECRET);
+  });
+
+  it('drops the query text and the variables of a request that failed validation', async () => {
+    const query = `mutation TestOperation($pass: String) { meEdit(password: $pass, unknown: "${SECRET}") { id } }`;
+    const listener = loggerPlugin.requestDidStart();
+    await listener.willSendResponse(buildRequestContext(query, { pass: 'Current-1!' }, [FunctionalError('Unknown argument')], { parsed: false }));
+
+    const meta = loggedMeta(logApp.warn);
+    expect(meta.operation_query).toBeUndefined();
+    expect(JSON.stringify(meta)).not.toContain(SECRET);
+    expect(JSON.stringify(meta)).not.toContain('Current-1!');
+  });
+
+  it('redacts a password sent in a variable the caller named freely', async () => {
+    const query = 'mutation TestOperation($currentPass: String, $input: [EditInput]!) { meEdit(password: $currentPass, input: $input) { id } }';
+    const listener = loggerPlugin.requestDidStart();
+    await listener.willSendResponse(buildRequestContext(query, { currentPass: 'Current-1!', input: [] }, [FunctionalError('Invalid password')]));
+
+    expect(loggedMeta(logApp.warn).variables).toEqual({ currentPass: '** Redacted **', input: [] });
   });
 });
