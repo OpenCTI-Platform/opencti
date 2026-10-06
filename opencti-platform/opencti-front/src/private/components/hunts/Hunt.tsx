@@ -5,6 +5,7 @@ import StixDomainObjectOverview from '../common/stix_domain_objects/StixDomainOb
 import StixCoreObjectExternalReferences from '../analyses/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../analyses/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import ProvenanceSourcesCard from '../common/provenance/ProvenanceSourcesCard';
 import useOverviewLayoutCustomization from '../../../utils/hooks/useOverviewLayoutCustomization';
 import HuntDetails from './HuntDetails';
 import HuntDraftBanner from './HuntDraftBanner';
@@ -112,6 +113,12 @@ const Hunt = ({ data }: HuntProps) => {
               return (
                 <Grid key={key} item xs={width}>
                   <StixCoreObjectLatestHistory stixCoreObjectId={hunt.id} />
+                </Grid>
+              );
+            case 'sources':
+              return (
+                <Grid key={key} item xs={width}>
+                  <ProvenanceSourcesCard id={hunt.id} showEmpty />
                 </Grid>
               );
             case 'notes':

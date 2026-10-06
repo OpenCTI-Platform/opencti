@@ -80,6 +80,20 @@ class TestHunt(TestCase):
         self.assertIn("hunt_ioc_values {", properties)
         self.assertIn("observable_type", properties)
 
+    def test_default_fields_read_the_provenance_summary(self):
+        properties = Hunt(_opencti({})).properties
+        self.assertIn("... on StixCoreObject {", properties)
+        for field in [
+            "corroboration_count",
+            "last_asserted_at",
+            "freshness_days",
+            "has_conflicts",
+            "freshness_stale",
+            "single_sourced",
+            "freshness_stale_at",
+        ]:
+            self.assertIn(field, properties)
+
     def test_create_requires_a_name(self):
         opencti = _opencti({})
         self.assertIsNone(Hunt(opencti).create(hypothesis="h"))
