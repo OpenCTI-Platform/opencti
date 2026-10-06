@@ -4,12 +4,14 @@ import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { stixRelationshipsListQuery } from '../../../../private/components/common/stix_relationships/StixRelationshipsList';
 import { StixRelationshipsListQuery$data } from '@components/common/stix_relationships/__generated__/StixRelationshipsListQuery.graphql';
-import { fetchQuery } from '../../../../relay/environment';
+import { FINTEL_ENTITY_LINK_ATTRIBUTE } from '@components/widgets/WidgetListsDefaultColumns';
+import { APP_BASE_PATH, fetchQuery } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import type { Widget, WidgetPerspective } from '../../../widget/widget';
 import useBuildReadableAttribute from '../../../hooks/useBuildReadableAttribute';
 import { getObjectPropertyWithoutEmptyValues } from '../../../object';
 import { RELATIONSHIP_WIDGETS_TYPES } from '../../../widget/widgetUtils';
+import useAuth from '../../../hooks/useAuth';
 
 type ListItem = object & { id: string };
 type DisplayScalar = string | number | boolean;
@@ -60,9 +62,20 @@ const normalizeObjectForDisplay = (value: DisplayInputValue): NormalizedDisplayV
   return value ?? '';
 };
 
+// Links must be absolute to be usable outside the platform (exported files).
+// Fall back on the current location if the platform URL is missing or relative.
+export const resolvePlatformBaseUrl = (platformUrl?: string | null) => {
+  const baseUrl = platformUrl && /^https?:\/\//i.test(platformUrl)
+    ? platformUrl
+    : `${window.location.origin}${APP_BASE_PATH}`;
+  return baseUrl.replace(/\/+$/, '');
+};
+
 const useBuildListOutcome = () => {
   const { t_i18n } = useFormatter();
   const { buildReadableAttribute } = useBuildReadableAttribute();
+  const { settings } = useAuth();
+  const platformBaseUrl = resolvePlatformBaseUrl(settings.platform_url);
 
   const buildListOutcome = async (
     dataSelection: Pick<Widget['dataSelection'][0], 'filters' | 'number' | 'columns' | 'sort_mode' | 'sort_by'>,
@@ -106,6 +119,13 @@ const useBuildListOutcome = () => {
           {nodes.map((n) => (
             <tr key={n.id}>
               {columns.map((col) => {
+                if (widgetPerspective === 'entities' && col.attribute === FINTEL_ENTITY_LINK_ATTRIBUTE) {
+                  return (
+                    <td key={`${n.id}-${col.attribute}`}>
+                      <a href={`${platformBaseUrl}/dashboard/id/${n.id}`}>{t_i18n('View in OpenCTI')}</a>
+                    </td>
+                  );
+                }
                 let property: DisplayInputValue;
                 const attributePath = resolveWorkflowPath(col.attribute);
                 try {

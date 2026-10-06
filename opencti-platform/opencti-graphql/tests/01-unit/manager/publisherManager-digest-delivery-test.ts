@@ -38,6 +38,12 @@ vi.mock('../../../src/database/redis', async (importOriginal) => ({
   },
 }));
 
+// No platform cache here: the markings a notification resolves for its templates are read from an empty one.
+vi.mock('../../../src/database/cache', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/database/cache')>()),
+  getEntitiesMapFromCache: async () => new Map(),
+}));
+
 const addNotificationMock = vi.hoisted(() => vi.fn());
 vi.mock('../../../src/modules/notification/notification-domain', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../src/modules/notification/notification-domain')>()),
