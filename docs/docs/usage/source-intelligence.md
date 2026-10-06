@@ -64,7 +64,7 @@ The top of the Sources area tells you whether the scorecards are current:
 
 When the scan stops at the maximum number of objects set in the settings, a warning says how many objects the scorecards cover, with **Raise the limit**. The limit is exact: the scorecards never cover more objects than it allows. In Enterprise Edition, such a computation proposes no new recommendation and applies none autonomously: tuning a source from part of the knowledge could quarantine or retire it on incomplete data, so recommendations wait for a computation that covers every object (collection gaps are still computed). While the history is backfilled, a progress bar shows how many days are computed ("Backfilling history - 6 of 14 days"); a larger backfill range set later computes the missing older days only, and a range of 0 days stops a backfill in progress. Below the header, counters show the number of sources, quarantined sources, recommendations to review and collection gaps (the last two in Enterprise Edition). Each counter opens the list it counts.
 
-![Sources area with its status header, counters and leaderboard](assets/source-intelligence-sources-overview.png)
+![Sources area with its status header, counters and leaderboard](assets/source-intelligence-sources-overview.jpg)
 
 ![Sources header when the manager is disabled in the platform configuration](assets/source-intelligence-sources-manager-disabled.png)
 
@@ -99,7 +99,7 @@ Costs are never converted between currencies. A widget showing a cost metric (nu
 
 The **Overlap** tab shows a heatmap of the sources sharing the most knowledge over the selected window. Each cell gives the number of shared objects and the share of the row source's knowledge that the column source also asserted. A source whose knowledge is almost entirely asserted by another one is a candidate for retirement.
 
-![Overlap heatmap of the sources](assets/source-intelligence-overlap.png)
+![Overlap heatmap of the sources](assets/source-intelligence-overlap.jpg)
 
 ## Collection gaps (EE)
 
@@ -135,7 +135,7 @@ Other recommended connectors open in the catalog.
 
 When the criteria of a PIR have different weights, each gap shows its priority (high, medium or low) relative to the other criteria of the PIR; hover it to see the weight. When no integration of the catalog covers a criterion yet, **Browse the XTM Hub catalog** opens the XTM Hub integrations filtered on the object types, sectors and regions of the criterion (**Browse the catalog** when the platform has no XTM Hub address).
 
-![Collection gaps of a PIR with their recommended integrations](assets/source-intelligence-collection-gaps.png)
+![Collection gaps of a PIR with their recommended integrations](assets/source-intelligence-collection-gaps.jpg)
 
 Without an Enterprise Edition license, the Collection gaps and Recommendations tabs explain how to activate it:
 
@@ -160,7 +160,7 @@ Sources below a minimum volume (50 objects) do not get recommendations. All thre
 
 Each recommendation is an approval: it shows its rationale and a preview of the change, setting by setting, with the current value ("Not set" when there is none) and the value after applying. The primary button names the change, for example **Apply - lower the confidence to 40** or **Deploy MISP**.
 
-![Recommendation with the preview of its change](assets/source-intelligence-recommendations-preview.png)
+![Recommendation with the preview of its change](assets/source-intelligence-recommendations-preview.jpg)
 
 For each recommendation you can:
 
