@@ -601,8 +601,17 @@ export const coalesceReassertion = (
     const stored = procedures.find((candidate) => candidate.text && procedureMatchKey(candidate.text) === key && candidate.source_id === procedure.source_id);
     return !isFresh(stored, procedure.source_id);
   });
-  const assertion = (element[ATTRIBUTE_ASSERTIONS] ?? []).find((stored) => stored.source_id === sourceId);
-  const redundant = isFresh(assertion, sourceId)
+  const assertions = element[ATTRIBUTE_ASSERTIONS] ?? [];
+  const assertion = assertions.find((stored) => stored.source_id === sourceId);
+  // A counted source no longer detailed has no date of its own once the details are full: writing it would detail it
+  // again and evict another active source, so it is coalesced on the latest assertion of the element
+  const isCountedBeyondDetails = assertion === undefined
+    && assertions.length >= MAX_ASSERTIONS_PER_ELEMENT
+    && (element[ATTRIBUTE_ASSERTION_SOURCE_IDS] ?? []).includes(sourceId);
+  const isAssertionFresh = isCountedBeyondDetails
+    ? isWithinReassertionWindow(element[ATTRIBUTE_LAST_ASSERTED_AT], at, windowMs)
+    : isFresh(assertion, sourceId);
+  const redundant = isAssertionFresh
     && element[ATTRIBUTE_FRESHNESS_STALE] !== true
     && conflictsAdd.length === 0
     && !removesStoredConflict

@@ -2,7 +2,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { elRawGet, elUpdate } from '../../../../src/database/engine';
 import { hasProvenanceTriggers, notifyProvenanceChange } from '../../../../src/modules/provenance/provenance-notification';
 import { coalesceReassertion, computeAssertedCorroboration, recordUpsertProvenance, writeProvenanceUpdate } from '../../../../src/modules/provenance/provenance-write';
-import { type AssertionSource, PROVENANCE_SIDE_CHANNEL_FIELDS, type StoreAssertion, type StoreConflictValue } from '../../../../src/modules/provenance/provenance-types';
+import {
+  type AssertionSource,
+  MAX_ASSERTIONS_PER_ELEMENT,
+  PROVENANCE_SIDE_CHANNEL_FIELDS,
+  type StoreAssertion,
+  type StoreConflictValue,
+} from '../../../../src/modules/provenance/provenance-types';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 
 const HOUR = 60 * 60 * 1000;
@@ -75,6 +81,23 @@ describe('Provenance re-assertion coalescing', () => {
     expect(coalesceReassertion({ x_opencti_assertions: [stored(SOURCE_ID, hoursBefore(25))] }, SOURCE_ID, AT, {}, WINDOW).redundant).toEqual(false);
     expect(coalesceReassertion(element, SOURCE_ID, AT, {}, 0).redundant).toEqual(false);
     expect(coalesceReassertion({}, SOURCE_ID, AT, {}, WINDOW).redundant).toEqual(false);
+  });
+
+  it('should coalesce a counted source beyond the detailed ones on the latest assertion of the element', () => {
+    const detailed = Array.from({ length: MAX_ASSERTIONS_PER_ELEMENT }, (_, index) => stored(`b0000000-0000-4000-8000-${String(index).padStart(12, '0')}`, hoursBefore(2)));
+    const element = {
+      x_opencti_assertions: detailed,
+      assertion_source_ids: [...detailed.map(({ source_id }) => source_id), SOURCE_ID],
+      last_asserted_at: hoursBefore(2),
+    };
+    expect(coalesceReassertion(element, SOURCE_ID, AT, {}, WINDOW).redundant).toEqual(true);
+    // Written once the latest assertion of the element is older than the window, on stale knowledge or with a new conflict
+    expect(coalesceReassertion({ ...element, last_asserted_at: hoursBefore(25) }, SOURCE_ID, AT, {}, WINDOW).redundant).toEqual(false);
+    expect(coalesceReassertion({ ...element, freshness_stale: true }, SOURCE_ID, AT, {}, WINDOW).redundant).toEqual(false);
+    expect(coalesceReassertion(element, SOURCE_ID, AT, { conflictsAdd: [{ field: 'description', value: conflictValue('h2', SOURCE_ID, AT) }] }, WINDOW).redundant).toEqual(false);
+    // A source never counted is always written, and so is a counted source the details still have room for
+    expect(coalesceReassertion(element, OTHER_SOURCE_ID, AT, {}, WINDOW).redundant).toEqual(false);
+    expect(coalesceReassertion({ ...element, x_opencti_assertions: detailed.slice(1) }, SOURCE_ID, AT, {}, WINDOW).redundant).toEqual(false);
   });
 
   it('should write a re-assertion of stale knowledge to clear its flag', () => {

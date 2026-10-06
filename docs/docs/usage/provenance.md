@@ -69,7 +69,7 @@ For each source, OpenCTI keeps the first and last assertion dates, the number of
 
 To keep ingestion fast, a source repeating an assertion within the re-assertion window (24 hours by default) is not written again, unless it brings a new conflicting value or a new procedure, resolves a stored conflict (the value it sends is now the current value of the field, so it is no longer listed as an alternative), or the knowledge is flagged as stale. The last assertion date of a source is therefore refreshed at most once per window, and its number of assertions counts these refreshes. A new source is always recorded immediately, so corroboration is never delayed.
 
-The details of up to 200 sources are kept per element: the earliest source and the most recently active ones. Every source that ever asserted the element is still counted in its corroboration and can be used in the "Asserted by" filters.
+The details of up to 200 sources are kept per element: the earliest source and the most recently active ones. Every source that ever asserted the element is still counted in its corroboration and can be used in the "Asserted by" filters. Once the 200 details are kept, a counted source without details is compared with the latest assertion of the element instead of its own: besides the cases above, it is written again, and detailed again, only when no source asserted the element within the re-assertion window, so knowledge asserted by many sources is not rewritten on every assertion.
 
 Assertions are recorded after deduplication, on the stored object. A source asserting a duplicate of an existing entity therefore corroborates the existing entity. When entities are merged, their assertions are merged too.
 
