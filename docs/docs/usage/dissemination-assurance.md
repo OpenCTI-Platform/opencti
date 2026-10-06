@@ -132,9 +132,9 @@ From both tabs, an analyst with the *Update knowledge* capability can:
 
 Go to **Defense > Dissemination assurance**.
 
-- **Overview** starts with the key figures: disseminated, deployed, active, validated and missed. They count
-  deployments (one per indicator and security platform) reported by a connector in the selected period, so a pending
-  deployment recorded by hand is not counted until its connector reports it, and each one filters the
+- **Overview** starts with the key figures: disseminated, deployed, active, validated and missed. They count the
+  deployments (one per indicator and security platform) first recorded in the selected period and reported by a
+  connector, so a pending deployment recorded by hand is not counted until its connector reports it, and each one filters the
   list of deployments shown under it, so a figure always equals the number of deployments its list shows. Below,
   the lifecycle funnel follows the indicators created in the period from created to disseminated, deployed,
   validated and hit, with the indicators that expired but are still deployed, next to the deployment and validation

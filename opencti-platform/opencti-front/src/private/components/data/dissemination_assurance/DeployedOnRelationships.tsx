@@ -131,7 +131,7 @@ interface DeployedOnRelationshipsProps {
   entityId?: string;
   /** Applied on top of the user filters, from the selected KPI counter. */
   kpiFilters?: FilterGroup;
-  /** Deployments recorded since this date only. */
+  /** Deployments first recorded since this date only, as the period metrics count them. */
   startDate?: string | null;
 }
 
@@ -173,6 +173,7 @@ const DeployedOnRelationships = ({ side, entityId, kpiFilters, startDate }: Depl
     scopeFilters.push({ key: side === 'indicator' ? 'fromId' : 'toId', values: [entityId] });
   }
   if (startDate) {
+    // Never last_sync_at: every report of a live deployment moves it, so the period would select all of them
     scopeFilters.push({ key: 'created_at', values: [startDate], operator: 'gte' });
   }
   const contextFilters: FilterGroup = {
