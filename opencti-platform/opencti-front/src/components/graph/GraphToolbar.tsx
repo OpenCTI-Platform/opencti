@@ -1,9 +1,8 @@
-import React, { ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { ReactNode, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Paper } from '@filigran/design-system';
 import Divider from '@mui/material/Divider';
 import { useTheme } from '@mui/material/styles';
 import LinearProgress from '@mui/material/LinearProgress';
-import Popover from '@mui/material/Popover';
 import { PencilPlusOutline } from 'mdi-material-ui';
 import useGraphInteractions from './utils/useGraphInteractions';
 import SearchInput from '../SearchInput';
@@ -25,7 +24,7 @@ import useAuth from '../../utils/hooks/useAuth';
 import { OPEN_BAR_WIDTH, SMALL_BAR_WIDTH } from '@components/nav/navBarConstants';
 import useDraftContext, { DRAFT_TOOLBAR_HEIGHT } from '../../utils/hooks/useDraftContext';
 import useResizeObserver from '../../utils/hooks/useResizeObserver';
-import { SURFACE_LAYER, layerInputVars } from '../../utils/fdsLayer';
+import { FILTER_POPOVER_LAYER, SURFACE_LAYER, layerInputVars } from '../../utils/fdsLayer';
 import { GRAPH_TOOLBAR_HEIGHT, GRAPH_TOOLBAR_HEIGHT_WITH_TIME_RANGE } from './utils/graphFraming';
 
 export type GraphToolbarProps = GraphToolbarContentToolsProps & GraphToolbarExpandToolsProps & {
@@ -176,6 +175,44 @@ const GraphToolbar = ({
       <GraphToolbarContentTools {...props} />
     </>
   );
+  // The creation and removal tools are one subtree mounted whatever the room: their dialogs (a relationship drawn
+  // with the right button included) live in them, so folding or unfolding the row never closes one. Folded, they
+  // float over the toolbar while their button is pressed and stay mounted, hidden, otherwise.
+  const creationPanelRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!creationAnchor) return undefined;
+    const closeOutside = (event: PointerEvent) => {
+      const target = event.target as Node | null;
+      if (target && (creationPanelRef.current?.contains(target) || creationAnchor.contains(target))) return;
+      setCreationAnchor(null);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setCreationAnchor(null);
+    };
+    document.addEventListener('pointerdown', closeOutside);
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('pointerdown', closeOutside);
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, [creationAnchor]);
+  let creationPanelStyle: React.CSSProperties = { display: 'contents' };
+  if (creationFolded) {
+    const anchorBox = creationAnchor?.getBoundingClientRect();
+    creationPanelStyle = anchorBox
+      ? {
+          position: 'fixed',
+          left: anchorBox.left + anchorBox.width / 2,
+          bottom: window.innerHeight - anchorBox.top + GAP_PX * 2,
+          transform: 'translateX(-50%)',
+          zIndex: theme.zIndex.modal,
+          display: 'flex',
+          alignItems: 'center',
+          gap: GAP_PX,
+          padding: theme.spacing(1),
+        }
+      : { display: 'none' };
+  }
 
   return (
     // The surface of the legend and the details panel, docked: square, with only its top edge drawn.
@@ -236,18 +273,27 @@ const GraphToolbar = ({
         {editable && (
           <>
             <Pinned creation><GroupDivider /></Pinned>
-            {creationFolded ? (
-              <Pinned creation>
+            <Pinned creation label={creationFolded ? undefined : creationLabel}>
+              {creationFolded && (
                 <GraphToolbarItem
                   title={creationLabel}
                   Icon={<PencilPlusOutline />}
                   pressed={!!creationAnchor}
-                  onClick={(event) => setCreationAnchor(event.currentTarget)}
+                  onClick={(event) => setCreationAnchor(creationAnchor ? null : event.currentTarget)}
                 />
-              </Pinned>
-            ) : (
-              <Pinned creation label={creationLabel}>{creationTools}</Pinned>
-            )}
+              )}
+              <Paper
+                ref={creationPanelRef}
+                elevation={FILTER_POPOVER_LAYER}
+                padding={0}
+                role={creationFolded ? 'group' : undefined}
+                aria-label={creationFolded ? creationLabel : undefined}
+                data-graph-creation-tools=""
+                style={creationPanelStyle}
+              >
+                {creationTools}
+              </Paper>
+            </Pinned>
           </>
         )}
 
@@ -272,22 +318,6 @@ const GraphToolbar = ({
           <GraphToolbarMoreActions actions={overflowed} />
         </Pinned>
       </div>
-
-      {/* Kept mounted while closed: the dialogs of the tools (a relationship drawn with the right button included) live in them. */}
-      {editable && creationFolded && (
-        <Popover
-          open={!!creationAnchor}
-          anchorEl={creationAnchor}
-          keepMounted
-          onClose={() => setCreationAnchor(null)}
-          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-          transformOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        >
-          <div role="group" aria-label={creationLabel} style={{ display: 'flex', alignItems: 'center', gap: GAP_PX, padding: theme.spacing(1) }}>
-            {creationTools}
-          </div>
-        </Popover>
-      )}
 
       {/* Only mounted while shown: the closed toolbar clips it, and its handles would stay reachable from the keyboard. */}
       {showTimeRange && <GraphToolbarTimeRange />}

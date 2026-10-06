@@ -586,8 +586,14 @@ const Graph = ({
     zoomIn: only2D(zoomIn),
     zoomOut: only2D(zoomOut),
     selectAll: selectAllNodes,
-    selectNeighbours: () => selectNeighbours(),
-    shortestPath: only2D(shortestPathOfSelection),
+    // Same rules as the toolbar actions: neighbours of selected entities only, and the path toggles off
+    selectNeighbours: () => {
+      if (selectedNodes.length > 0) selectNeighbours();
+    },
+    shortestPath: only2D(() => {
+      if (highlightedPath) clearHighlightedPath();
+      else shortestPathOfSelection();
+    }),
     hideSelection: () => hideNodes(selectedNodes.map((n) => n.id)),
     showHidden: showHiddenNodes,
     clearSelection: () => {

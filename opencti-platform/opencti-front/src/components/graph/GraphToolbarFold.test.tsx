@@ -9,7 +9,18 @@ import GraphToolbar from './GraphToolbar';
 // The search field of the platform needs the assistant context; a plain field stands for it.
 vi.mock('../SearchInput', () => ({ default: () => <input aria-label="Search" /> }));
 // A narrow graph: the row is 400 px wide and every fixed part of it 120 px.
-vi.mock('../../utils/hooks/useResizeObserver', () => ({ default: () => ({ width: 400, height: 54 }) }));
+const row = vi.hoisted(() => ({ width: 400 }));
+vi.mock('../../utils/hooks/useResizeObserver', () => ({ default: () => ({ width: row.width, height: 54 }) }));
+// A creation tool counting its mounts: the dialogs of the real tools live in their state.
+const tool = vi.hoisted(() => ({ mounts: 0 }));
+vi.mock('./components/GraphToolbarContentTools', () => ({
+  default: () => {
+    React.useEffect(() => {
+      tool.mounts += 1;
+    }, []);
+    return <button type="button">Add an entity</button>;
+  },
+}));
 
 const view: GraphViewActions = {
   counters: [{ key: 'entities', label: '2 entities', action: 'Select the entities', onSelect: vi.fn() }],
@@ -32,6 +43,33 @@ describe('GraphToolbar on a narrow graph', () => {
 
   afterEach(() => {
     delete (HTMLElement.prototype as { offsetWidth?: number }).offsetWidth;
+    row.width = 400;
+  });
+
+  it('keeps the creation and removal tools mounted when the row folds or unfolds them', () => {
+    row.width = 4000;
+    const toolbarOf = () => (
+      <GraphProvider objects={[]} context="correlation">
+        <GraphViewContext.Provider value={view}>
+          <GraphToolbar />
+        </GraphViewContext.Provider>
+      </GraphProvider>
+    );
+    tool.mounts = 0;
+    const { rerender } = testRender(toolbarOf());
+    const toolbar = screen.getByRole('toolbar', { name: 'Graph toolbar' });
+    const inline = within(toolbar).getByRole('group', { name: 'Creation and removal' });
+    const addEntity = within(inline).getByRole('button', { name: 'Add an entity' });
+    expect(tool.mounts).toBe(1);
+    // Folded then unfolded, the tool is the same: an open dialog of it would stay open
+    row.width = 400;
+    rerender(toolbarOf());
+    expect(within(toolbar).getByRole('button', { name: 'Creation and removal' })).toBeInTheDocument();
+    expect(addEntity.isConnected).toBe(true);
+    row.width = 4000;
+    rerender(toolbarOf());
+    expect(within(toolbar).getByRole('button', { name: 'Add an entity' })).toBe(addEntity);
+    expect(tool.mounts).toBe(1);
   });
 
   it('folds the creation and removal tools into one button instead of clipping them', async () => {
