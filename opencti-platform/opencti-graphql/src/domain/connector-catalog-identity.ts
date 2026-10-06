@@ -46,7 +46,12 @@ export interface CatalogIdentityIndex {
   byConnectorType: Map<string, IndexedCatalogContract[]>;
 }
 
-type IdentityConnector = Pick<BasicStoreEntityConnector, 'name' | 'connector_type' | 'slug' | 'catalog_slug_manual' | 'built_in' | 'manager_contract'>;
+type IdentityConnector = Pick<BasicStoreEntityConnector, 'name' | 'connector_type' | 'slug' | 'catalog_slug_manual' | 'built_in' | 'manager_contract' | 'catalog_id'>;
+
+// Same rule as completeConnector (is_managed): a connector deployed by the composer has a catalog_id.
+const isManagedConnector = (connector: Pick<IdentityConnector, 'manager_contract' | 'catalog_id'>) => {
+  return Boolean(connector.manager_contract) || isNotEmptyField(connector.catalog_id);
+};
 
 // Below this length a key or a set of words is part of too many unrelated names ("S3", "MISP", "Spur")
 // to identify a connector by containment; equality still applies to short names.
@@ -179,8 +184,10 @@ export const resolveConnectorCatalogIdentity = (connector: IdentityConnector, in
   if (managerContract) {
     return toIdentity(managerContract, ConnectorCatalogIdentitySource.Composer);
   }
-  // Built-in connectors (platform internals, feed queues) are not catalog connectors.
-  if (connector.built_in) {
+  // A managed connector (catalog_id) takes its identity from its deployment only, even when its
+  // contract could not be embedded. Built-in connectors (platform internals, feed queues) are not
+  // catalog connectors.
+  if (isManagedConnector(connector) || connector.built_in) {
     return null;
   }
   const manual = findCatalogContractBySlug(index, connector.catalog_slug_manual);
@@ -233,7 +240,7 @@ export const loadCatalogIdentityIndex = async (context: AuthContext) => {
   return index;
 };
 
-const needsCatalog = (connector: IdentityConnector) => !connector.manager_contract && !connector.built_in;
+const needsCatalog = (connector: IdentityConnector) => !isManagedConnector(connector) && !connector.built_in;
 
 // Batch function of the per-request loader: one catalog index for every connector of the request.
 export const batchConnectorCatalogIdentities = async (context: AuthContext, _user: AuthUser, connectors: IdentityConnector[]) => {
@@ -268,7 +275,7 @@ export const connectorCatalogIdentityUpdate = async (context: AuthContext, user:
   if (!connector) {
     throw FunctionalError('No connector found with the specified ID', { id });
   }
-  if (connector.manager_contract || isNotEmptyField(connector.catalog_id)) {
+  if (isManagedConnector(connector)) {
     throw FunctionalError('The catalog entry of a managed connector comes from its deployment', { id });
   }
   if (connector.built_in) {

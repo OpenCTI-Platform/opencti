@@ -218,6 +218,12 @@ describe('Connector catalog identity - resolution order', () => {
     });
   });
 
+  it('should keep a managed connector without contract out of the automatic identification', () => {
+    // The embedded contract can be missing (an image no longer in the catalog): catalog_id still makes it managed.
+    const managed = { ...baseConnector, name: 'MITRE ATT&CK', slug: 'urlhaus', catalog_slug_manual: 'threatfox', catalog_id: 'catalog-1' };
+    expect(resolveConnectorCatalogIdentity(managed, index)).toBeNull();
+  });
+
   it('should never identify a built-in connector', () => {
     expect(resolveConnectorCatalogIdentity({ ...baseConnector, name: 'MITRE ATT&CK', built_in: true }, index)).toBeNull();
   });
@@ -328,9 +334,12 @@ describe('Connector catalog identity - loading', () => {
   });
 
   it('should not list the catalog when every connector is managed or built-in', async () => {
-    const identities = await batchConnectorCatalogIdentities(testContext, testUser, [{ ...baseConnector, built_in: true }]);
+    const identities = await batchConnectorCatalogIdentities(testContext, testUser, [
+      { ...baseConnector, built_in: true },
+      { ...baseConnector, name: 'Abuse.ch URLhaus', catalog_id: 'catalog-1' },
+    ]);
     expect(fullEntitiesList).not.toHaveBeenCalled();
-    expect(identities).toEqual([null]);
+    expect(identities).toEqual([null, null]);
   });
 
   it('should resolve a connector through the loader of the request', async () => {
