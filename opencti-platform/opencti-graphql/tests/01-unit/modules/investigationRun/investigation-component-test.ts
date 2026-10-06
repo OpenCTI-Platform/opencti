@@ -1,17 +1,25 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { OPENCTI_ADMIN_UUID } from '../../../../src/schema/general';
 
+type Policy = { internal_id: string; name: string; run_as_id?: string | null };
 const mocks = vi.hoisted(() => ({
-  policies: [] as Array<{ internal_id: string; name: string }>,
+  policies: [] as Policy[],
+  defaultPolicy: { internal_id: 'policy-default', name: 'Default', run_as_id: null } as Policy,
   runUser: { id: 'user-run-as' } as { id: string } | null,
   addInvestigationRun: vi.fn(),
   investigationIdentityContext: vi.fn(async (source: string, user: unknown) => ({ source, user, user_inside_platform_organization: true })),
+  resolveRunIdentity: vi.fn(),
 }));
 
 vi.mock('../../../../src/database/middleware-loader', () => ({ fullEntitiesList: vi.fn(async () => mocks.policies) }));
 vi.mock('../../../../src/modules/investigationRun/investigationRun-domain', () => ({
   addInvestigationRun: mocks.addInvestigationRun,
   investigationIdentityContext: mocks.investigationIdentityContext,
-  resolveRunIdentity: vi.fn(async () => mocks.runUser),
+  resolveRunIdentity: mocks.resolveRunIdentity,
+}));
+vi.mock('../../../../src/modules/investigationRun/investigationPolicy-domain', () => ({
+  loadInvestigationPolicy: vi.fn(async (_: unknown, id: string) => mocks.policies.find((policy) => policy.internal_id === id)),
+  getDefaultInvestigationPolicy: vi.fn(async () => mocks.defaultPolicy),
 }));
 vi.mock('../../../../src/modules/playbook/playbook-utils', () => ({
   isBundleElementInScope: () => true,
@@ -46,10 +54,13 @@ const run = (configuration: Record<string, unknown>, objects = bundle.objects) =
 
 describe('Run Case Autopilot playbook component', () => {
   beforeEach(() => {
-    mocks.policies = [];
+    mocks.policies = [{ internal_id: 'policy-a', name: 'Phishing', run_as_id: null }];
+    mocks.defaultPolicy = { internal_id: 'policy-default', name: 'Default', run_as_id: null };
     mocks.runUser = { id: 'user-run-as' };
     mocks.addInvestigationRun.mockReset();
     mocks.investigationIdentityContext.mockClear();
+    mocks.resolveRunIdentity.mockReset();
+    mocks.resolveRunIdentity.mockImplementation(async () => mocks.runUser);
   });
 
   it('offers the investigation policies by name', async () => {
@@ -80,6 +91,37 @@ describe('Run Case Autopilot playbook component', () => {
     mocks.runUser = null;
     const result = await run({ applyToElements: 'allElements' });
     expect(result.output_port).toBe('out');
+    expect(mocks.addInvestigationRun).not.toHaveBeenCalled();
+  });
+
+  it('acts as the identity of the selected or default policy when no run-as is configured, the administrator only when the policy sets none', async () => {
+    mocks.policies = [{ internal_id: 'policy-a', name: 'Phishing', run_as_id: 'user-policy' }];
+    await run({ applyToElements: 'allElements', policy_id: 'policy-a' });
+    expect(mocks.resolveRunIdentity.mock.calls[0][1]).toBe('user-policy');
+    mocks.defaultPolicy = { internal_id: 'policy-default', name: 'Default', run_as_id: 'user-default-policy' };
+    await run({ applyToElements: 'allElements' });
+    expect(mocks.resolveRunIdentity.mock.calls[1][1]).toBe('user-default-policy');
+    expect(mocks.addInvestigationRun.mock.calls.at(-1)?.[3]).toBe('policy-default');
+    await run({ applyToElements: 'allElements', policy_id: 'policy-a', run_as: { label: 'Service account', value: 'user-run-as' } });
+    expect(mocks.resolveRunIdentity.mock.calls[2][1]).toBe('user-run-as');
+    mocks.defaultPolicy = { internal_id: 'policy-default', name: 'Default', run_as_id: null };
+    await run({ applyToElements: 'allElements' });
+    expect(mocks.resolveRunIdentity.mock.calls[3][1]).toBe(OPENCTI_ADMIN_UUID);
+  });
+
+  it('never elevates to the administrator when the policy identity can no longer use the platform', async () => {
+    mocks.policies = [{ internal_id: 'policy-a', name: 'Phishing', run_as_id: 'user-locked' }];
+    mocks.resolveRunIdentity.mockImplementation(async (_: unknown, id: string) => (id === 'user-locked' ? null : { id }));
+    const result = await run({ applyToElements: 'allElements', policy_id: 'policy-a' });
+    expect(result.output_port).toBe('out');
+    expect(mocks.resolveRunIdentity).toHaveBeenCalledTimes(1);
+    expect(mocks.addInvestigationRun).not.toHaveBeenCalled();
+  });
+
+  it('starts nothing when the selected policy no longer exists', async () => {
+    const result = await run({ applyToElements: 'allElements', policy_id: 'policy-deleted' });
+    expect(result.output_port).toBe('out');
+    expect(mocks.resolveRunIdentity).not.toHaveBeenCalled();
     expect(mocks.addInvestigationRun).not.toHaveBeenCalled();
   });
 });

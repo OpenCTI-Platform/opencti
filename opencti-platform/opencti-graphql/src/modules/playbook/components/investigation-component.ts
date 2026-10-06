@@ -25,6 +25,7 @@ import { STIX_EXT_OCTI } from '../../../types/stix-2-1-extensions';
 import { InvestigationRunTrigger } from '../../../generated/graphql';
 import type { StixObject } from '../../../types/stix-2-1-common';
 import { addInvestigationRun, investigationIdentityContext, resolveRunIdentity } from '../../investigationRun/investigationRun-domain';
+import { getDefaultInvestigationPolicy, loadInvestigationPolicy } from '../../investigationRun/investigationPolicy-domain';
 import { ENTITY_TYPE_INVESTIGATION_POLICY, type BasicStoreEntityInvestigationPolicy } from '../../investigationRun/investigationRun-types';
 import { resolveRunAsUserId } from './ai-agent-shared';
 
@@ -34,6 +35,7 @@ export interface InvestigationComponentConfiguration {
   // Policy applied to the runs (budgets, gates, allowed actions); the default policy when empty.
   policy_id?: string;
   // Identity the runs act as. Same guardrail as the AI agent components: yourself or a service account.
+  // The identity of the policy when empty.
   run_as?: { label: string; value: string };
 }
 
@@ -110,8 +112,16 @@ export const PLAYBOOK_INVESTIGATION_COMPONENT: PlaybookComponent<InvestigationCo
     if (elements.length === 0) {
       return { output_port: 'out', bundle };
     }
-    // Like the AI agent components: the configured identity, or the seeded platform admin.
-    const runAsUserId = resolveRunAsUserId(run_as) ?? OPENCTI_ADMIN_UUID;
+    const policy = policy_id ? await loadInvestigationPolicy(context, policy_id) : await getDefaultInvestigationPolicy(context);
+    if (!policy) {
+      logApp.warn('[PLAYBOOK CASE AUTOPILOT] The investigation policy cannot be found, no investigation started', { playbookId, policyId: policy_id });
+      return { output_port: 'out', bundle };
+    }
+    // Like the request for information hook: the identity configured here, else the
+    // identity of the policy, else the seeded platform admin. A configured identity
+    // that can no longer use the platform starts nothing, it never falls back to the
+    // administrator.
+    const runAsUserId = resolveRunAsUserId(run_as) || policy.run_as_id || OPENCTI_ADMIN_UUID;
     const runUser = await resolveRunIdentity(context, runAsUserId);
     if (!runUser) {
       logApp.warn('[PLAYBOOK CASE AUTOPILOT] The run-as identity cannot be resolved or can no longer use the platform, no investigation started', { playbookId, runAsUserId });
@@ -123,7 +133,7 @@ export const PLAYBOOK_INVESTIGATION_COMPONENT: PlaybookComponent<InvestigationCo
     const subjectIds = R.uniq(elements.map((element) => element.extensions?.[STIX_EXT_OCTI]?.id ?? element.id));
     for (let index = 0; index < subjectIds.length; index += 1) {
       try {
-        await addInvestigationRun(runContext, runUser, subjectIds[index], policy_id || null, { trigger: InvestigationRunTrigger.Playbook, runAsUserId: runUser.id });
+        await addInvestigationRun(runContext, runUser, subjectIds[index], policy.internal_id, { trigger: InvestigationRunTrigger.Playbook, runAsUserId: runUser.id });
       } catch (error) {
         logApp.warn('[PLAYBOOK CASE AUTOPILOT] Investigation not started', { playbookId, subjectId: subjectIds[index], cause: error });
       }
