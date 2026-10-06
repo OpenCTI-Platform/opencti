@@ -21,9 +21,9 @@ import { buildCoveredEntitiesFilters, buildEntitiesSelection, INITIAL_VALUES, LO
 
 interface SelectEntitiesToCoverStepProps {
   coveredEntity: { parent_types: readonly string[]; id: string };
-  onSelectEntities: (selection: SelectedEntities | null, elements: UseEntityToggleType[]) => void;
+  onNext: (selection: SelectedEntities | null, elements: UseEntityToggleType[]) => void;
+  onCreate?: (selection: SelectedEntities | null, elements: UseEntityToggleType[]) => void;
   onCancel?: () => void;
-  endIfNoSelection?: boolean;
 }
 
 export const selectEntitiesToCoverStepLinesQuery = graphql`
@@ -131,9 +131,9 @@ const DATA_COLUMNS = {
 
 const SelectEntitiesToCoverStep = ({
   coveredEntity,
-  onSelectEntities,
+  onNext,
+  onCreate,
   onCancel,
-  endIfNoSelection = false,
 }: SelectEntitiesToCoverStepProps) => {
   const { t_i18n } = useFormatter();
 
@@ -207,13 +207,24 @@ const SelectEntitiesToCoverStep = ({
       )}
       <FormButtonContainer>
         {onCancel && (
-          <Button variant="secondary" onClick={() => onCancel()}>
+          <Button
+            variant="tertiary"
+            onClick={() => onCancel()}
+          >
             {t_i18n('Cancel')}
           </Button>
         )}
-        <Button onClick={() => onSelectEntities(selection, Object.values(selectedElements))}>
-          {(endIfNoSelection && !selection) ? t_i18n('Create') : t_i18n('Next')}
+        <Button
+          variant="secondary"
+          onClick={() => onNext(selection, Object.values(selectedElements))}
+        >
+          {t_i18n('Next')}
         </Button>
+        {onCreate && (
+          <Button onClick={() => onCreate(selection, Object.values(selectedElements))}>
+            {t_i18n('Create')}
+          </Button>
+        )}
       </FormButtonContainer>
     </>
   );

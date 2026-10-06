@@ -348,7 +348,7 @@ const SecurityCoverageCreationFormInner: FunctionComponent<SecurityCoverageFormI
         return (
           <SelectEntitiesToCoverStep
             coveredEntity={selectedEntity}
-            onSelectEntities={handleSelectEntitiesToCover}
+            onNext={handleSelectEntitiesToCover}
           />
         );
 

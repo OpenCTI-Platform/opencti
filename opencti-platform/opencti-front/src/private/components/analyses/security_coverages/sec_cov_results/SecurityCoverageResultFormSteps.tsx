@@ -3,13 +3,11 @@ import { useFormatter } from '../../../../../components/i18n';
 
 interface SecurityCoverageResultFormStepsProps {
   activeStep: number;
-  displayRelStep: boolean;
   onStepClick: (step: number) => void;
 }
 
 const SecurityCoverageResultFormSteps = ({
   activeStep,
-  displayRelStep,
   onStepClick,
 }: SecurityCoverageResultFormStepsProps) => {
   const { t_i18n } = useFormatter();
@@ -30,13 +28,11 @@ const SecurityCoverageResultFormSteps = ({
           {t_i18n('Select entities to test coverage')}
         </StepButton>
       </Step>
-      {displayRelStep && (
-        <Step disabled={stepDisabled(2)}>
-          <StepButton>
-            {t_i18n('Add coverage scores to relationships')}
-          </StepButton>
-        </Step>
-      )}
+      <Step disabled={stepDisabled(2)}>
+        <StepButton>
+          {t_i18n('Add coverage scores to relationships')}
+        </StepButton>
+      </Step>
     </Stepper>
   );
 };
