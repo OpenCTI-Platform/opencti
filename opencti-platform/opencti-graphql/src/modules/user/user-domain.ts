@@ -950,7 +950,13 @@ export const sendEmailToUser = async (context: AuthContext, user: AuthUser, inpu
 
 type AddUserInput = UserAddInput & { external?: boolean; internal_id?: string; api_token?: string };
 
-export const addUser = async (context: AuthContext, user: AuthUser, newUser: AddUserInput) => {
+export const addUser = async (
+  context: AuthContext,
+  user: AuthUser,
+  newUser: AddUserInput,
+  // Called right before the user is written: an error thrown before its call left nothing behind
+  options: { beforeWrite?: () => void } = {},
+) => {
   const userServiceAccount = newUser.user_service_account;
   if (!newUser.user_email && !userServiceAccount) {
     throw FunctionalError('User cannot be created without email');
@@ -1022,6 +1028,7 @@ export const addUser = async (context: AuthContext, user: AuthUser, newUser: Add
     };
   }
 
+  options.beforeWrite?.();
   const { element, isCreation } = await createEntity(context, user, userToCreate, ENTITY_TYPE_USER, { complete: true });
   // Link to organizations
   const userOrganizations = newUser.objectOrganization ?? [];
@@ -2593,8 +2600,7 @@ export const createOnTheFlyUser = async (
     }
     userInput = { ...userInput, user_confidence_level: { max_confidence: userConfidence, overrides: [] } };
   }
-  options.beforeWrite?.();
-  return await addUser(context, user, userInput);
+  return await addUser(context, user, userInput, options);
 };
 
 // -- API Token Logic --

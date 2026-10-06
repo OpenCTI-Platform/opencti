@@ -22,7 +22,7 @@ import { getFakeAuthUser, getGroupEntity, getOrganizationEntity } from '../../ut
 import { deleteElementById } from '../../../src/database/middleware';
 import { unSetOrganization, setOrganization } from '../../utils/testQueryHelper';
 import { type BasicStoreEntityOrganization, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/modules/organization/organization-types';
-import { SETTINGS_SET_ACCESSES } from '../../../src/utils/access';
+import { SETTINGS_SET_ACCESSES, VIRTUAL_ORGANIZATION_ADMIN } from '../../../src/utils/access';
 import type { Group } from '../../../src/types/group';
 import { storeLoadById } from '../../../src/database/middleware-loader';
 import { addOrganization } from '../../../src/modules/organization/organization-domain';
@@ -247,6 +247,24 @@ describe('Service account User coverage', async () => {
     await expect(async () => {
       await addUser(testContext, authUser, USER);
     }).rejects.toThrowError('Invalid password: required');
+  });
+  it('should call beforeWrite only once every check of the creation passed', async () => {
+    const organizationAdmin = getFakeAuthUser('Organization administrator');
+    organizationAdmin.capabilities = [{ name: VIRTUAL_ORGANIZATION_ADMIN }];
+    const refusedServiceAccount = vi.fn();
+    const SERVICE_ACCOUNT: UserAddInput = { name: 'Service account written after its checks', user_service_account: true, groups: [], objectOrganization: [] };
+    await expect(addUser(testContext, organizationAdmin, SERVICE_ACCOUNT, { beforeWrite: refusedServiceAccount })).rejects.toThrowError();
+    expect(refusedServiceAccount).not.toHaveBeenCalled();
+
+    const refusedPassword = vi.fn();
+    const NO_PASSWORD: UserAddInput = { user_email: 'refusedpassword@opencti', name: 'Refused before its write', user_service_account: false, groups: [], objectOrganization: [] };
+    await expect(addUser(testContext, authUser, NO_PASSWORD, { beforeWrite: refusedPassword })).rejects.toThrowError('Invalid password: required');
+    expect(refusedPassword).not.toHaveBeenCalled();
+
+    const beforeWrite = vi.fn();
+    const userAddResult = await addUser(testContext, authUser, SERVICE_ACCOUNT, { beforeWrite });
+    expect(beforeWrite).toHaveBeenCalledTimes(1);
+    await deleteElementById(testContext, authUser, userAddResult.id, ENTITY_TYPE_USER);
   });
 });
 
