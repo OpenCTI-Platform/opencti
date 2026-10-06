@@ -103,7 +103,7 @@ describe('Hunt manager sweep of orphan runs', () => {
   const pagesRead: string[][] = [];
 
   // The active runs, served page by page from the cursor of the scan, the way the engine pages them
-  const servingRuns = (runs: Array<Record<string, unknown>>) => {
+  const servingRuns = (runs: Array<{ internal_id: string; [key: string]: unknown }>) => {
     const sorted = runs.map((run, index) => ({ ...run, sort: [index] }));
     vi.mocked(fullEntitiesList).mockImplementation(async (_context, _user, _types, opts) => {
       const start = opts?.after ? Number(cursorToOffset(opts.after)[0]) + 1 : 0;
@@ -111,7 +111,7 @@ describe('Hunt manager sweep of orphan runs', () => {
       const read: string[] = [];
       for (let offset = start; offset < sorted.length; offset += first) {
         const page = sorted.slice(offset, offset + first);
-        read.push(...page.map((run) => run.internal_id as string));
+        read.push(...page.map((run) => run.internal_id));
         if (await opts?.callback?.(page as never) === false) {
           break;
         }
