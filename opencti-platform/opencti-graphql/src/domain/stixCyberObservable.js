@@ -273,6 +273,9 @@ export const stixCyberObservableDeleteRelation = async (context, user, stixCyber
 
 export const stixCyberObservableEditField = async (context, user, stixCyberObservableId, input, opts = {}) => {
   const originalStixCyberObservable = await storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
+  if (!originalStixCyberObservable) {
+    throw FunctionalError('Cannot edit the field, Stix-Cyber-Observable cannot be found.', { stixCyberObservableId });
+  }
   const scoreInput = input.find((i) => i.key === 'x_opencti_score');
   const urlInput = input.find((i) => i.key === 'url');
   const payloadBinInput = input.find((i) => i.key === 'payload_bin');
