@@ -159,7 +159,6 @@ export const validateWorkflowDefinitionData = async (
   const validationResult = workflowDefinitionSchema.safeParse(parsed);
   if (!validationResult.success) {
     logApp.warn('[WORKFLOW] Workflow definition schema validation failed:', validationResult.error);
-    console.log(JSON.stringify(validationResult, null, 2));
     errors.push({
       type: 'SCHEMA_VALIDATION_FAILED',
       message: 'Workflow definition schema validation failed',

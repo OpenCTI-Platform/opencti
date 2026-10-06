@@ -263,9 +263,11 @@ describe('WorkflowTransitions', () => {
     expect(screen.getByText('Ongoing processes')).toBeVisible();
     const submit = screen.getByRole('button', { name: 'Approve' });
     expect(submit).toBeDisabled();
-    await user.click(screen.getByRole('button', { name: 'Organizations to share with' }));
-    await user.click(screen.getByRole('button', { name: 'Organizations to unshare from' }));
     await user.type(screen.getByLabelText(/Comment/), '  Ready  ');
+    const [shareOrganizations, unshareOrganizations] = screen.getAllByRole('button', { name: 'Organizations' });
+    await user.click(shareOrganizations);
+    await user.click(unshareOrganizations);
+    await waitFor(() => expect(submit).toBeEnabled());
     await user.click(submit);
     await waitFor(() => expect(mockCommit).toHaveBeenCalledOnce());
     expect(mockCommit.mock.calls[0][0].variables).toEqual({

@@ -1,9 +1,8 @@
 import React from 'react';
-import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import WorkflowBypassStatus from './WorkflowBypassStatus';
 import testRender from '../../../../utils/tests/test-render';
-import { COMMENT_MAX_LENGTH } from './WorkflowStatus.graphql';
 import type { WorkflowStatusStixDomainObject_data$key } from './__generated__/WorkflowStatusStixDomainObject_data.graphql';
 
 const { commit, fetchStatuses, notifications, permissions } = vi.hoisted(() => ({
@@ -28,15 +27,6 @@ vi.mock('../../../../relay/environment', async (importOriginal) => ({
   fetchQuery: (...args: unknown[]) => ({ toPromise: () => fetchStatuses(...args) }),
   MESSAGING$: notifications,
 }));
-vi.mock('../form/ObjectOrganizationField', async () => {
-  const { useFormikContext } = await import('formik');
-  return {
-    default: ({ name, label, disabled }: { name: string; label: string; disabled: boolean }) => {
-      const { values, setFieldValue } = useFormikContext<Record<string, { value: string; label: string }[]>>();
-      return <label>{label}<input type="checkbox" disabled={disabled} checked={values[name].length > 0} onChange={(event) => setFieldValue(name, event.target.checked ? [{ value: `${name}-org`, label: 'Organization' }] : [])} /></label>;
-    },
-  };
-});
 
 const statuses = Array.from({ length: 105 }, (_, index) => ({
   status: { id: `status-${index}`, order: index, template: { name: `Status ${index}`, color: '#ff0000' } },
@@ -86,8 +76,8 @@ describe('WorkflowBypassStatus', () => {
   it('previews source and target hooks and cancels without changing status', async () => {
     const { user } = await openDialog();
     await selectStatus(user);
-    expect(screen.getByText('On exit actions: Status 0')).toBeVisible();
-    expect(screen.getByText('On enter actions: Status 104')).toBeVisible();
+    expect(screen.getByText('On exit actions')).toBeVisible();
+    expect(screen.getByText('On enter actions')).toBeVisible();
     expect(screen.getByText('Update authorized members')).toBeVisible();
     expect(screen.getByText('Validate draft')).toBeVisible();
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
@@ -115,39 +105,16 @@ describe('WorkflowBypassStatus', () => {
     await user.keyboard('{Enter}');
     expect(await screen.findByRole('option', { name: /Status 104$/ })).toBeVisible();
   });
-  it.each(['share', 'unshare', 'both'])('requires %s organizations and combines selected runtime inputs', async (mode) => {
+  it.each([true, false])('never sends comment or runtime inputs when actions=%s', async (actions) => {
     fetchStatuses.mockResolvedValue({ workflowBypassStatuses: [{
-      ...statuses[104], requiresShareOrganizationInput: mode !== 'unshare', requiresUnshareOrganizationInput: mode !== 'share',
-    }] });
-    const { user } = await openDialog();
-    expect(screen.queryByLabelText('Organizations to share with')).toBeNull();
-    await selectStatus(user);
-    const apply = screen.getByRole('button', { name: 'Apply actions' });
-    expect(apply).toBeDisabled();
-    fireEvent.submit(apply.closest('form')!);
-    await act(async () => {});
-    expect(commit).not.toHaveBeenCalled();
-    if (mode !== 'unshare') await user.click(screen.getByLabelText('Organizations to share with'));
-    if (mode === 'both') expect(apply).toBeDisabled();
-    if (mode !== 'share') await user.click(screen.getByLabelText('Organizations to unshare from'));
-    await user.click(apply);
-    expect(commit.mock.calls[0][0].variables.runtimeParams).toEqual({
-      ...(mode !== 'unshare' ? { shareOrganizationIds: ['shareOrganizations-org'] } : {}),
-      ...(mode !== 'share' ? { unshareOrganizationIds: ['unshareOrganizations-org'] } : {}),
-    });
-  });
-
-  it('skips hooks and omits runtime inputs when changing status only', async () => {
-    fetchStatuses.mockResolvedValue({ workflowBypassStatuses: [statuses[0], {
       ...statuses[104], requiresShareOrganizationInput: true, requiresUnshareOrganizationInput: true,
     }] });
     const { user } = await openDialog();
     await selectStatus(user);
-    await user.click(screen.getByLabelText('Organizations to share with'));
-    await user.click(screen.getByRole('button', { name: 'Update status only' }));
+    expect(screen.queryByLabelText('Comment')).toBeNull();
+    await user.click(screen.getByRole('button', { name: actions ? 'Apply actions' : 'Update status only' }));
     expect(commit).toHaveBeenCalledOnce();
-    expect(commit.mock.calls[0][0].variables.applyTransitionActions).toBe(false);
-    expect(commit.mock.calls[0][0].variables.runtimeParams).toBeUndefined();
+    expect(commit.mock.calls[0][0].variables).toEqual({ entityId: 'incident-1', targetStatusId: 'status-104', applyTransitionActions: actions });
   });
 
   it.each(['completed', 'pending'])('requests a fresh entity after %s and releases controls when refresh settles', async (executionStatus) => {
@@ -218,14 +185,13 @@ describe('WorkflowBypassStatus', () => {
     expect(commit).not.toHaveBeenCalled();
   });
 
-  it.each([true, false])('submits once with actions=%s and a trimmed comment', async (actions) => {
+  it.each([true, false])('submits once with actions=%s', async (actions) => {
     const { user } = await openDialog();
     await selectStatus(user);
-    await user.type(screen.getByLabelText('Comment'), '  Ready  ');
     const apply = screen.getByRole('button', { name: actions ? 'Apply actions' : 'Update status only' });
     await user.dblClick(apply);
     expect(commit).toHaveBeenCalledOnce();
-    expect(commit.mock.calls[0][0].variables).toEqual({ entityId: 'incident-1', targetStatusId: 'status-104', applyTransitionActions: actions, comment: 'Ready' });
+    expect(commit.mock.calls[0][0].variables).toEqual({ entityId: 'incident-1', targetStatusId: 'status-104', applyTransitionActions: actions });
     expect(apply).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
     act(() => commit.mock.calls[0][0].onCompleted({ setWorkflowStatus: { success: true, executionStatus: 'completed' } }, null));
@@ -233,14 +199,13 @@ describe('WorkflowBypassStatus', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   });
 
-  it('retains inputs and permits retry after a business failure', async () => {
+  it('keeps the dialog open and permits retry after a business failure', async () => {
     const { user } = await openDialog();
     await selectStatus(user);
-    await user.type(screen.getByLabelText('Comment'), 'Keep this');
     await user.click(screen.getByRole('button', { name: 'Apply actions' }));
     act(() => commit.mock.calls[0][0].onCompleted({ setWorkflowStatus: { success: false, reason: 'Status is no longer mapped' } }, null));
     expect(notifications.notifyError).toHaveBeenCalledWith('Status is no longer mapped');
-    expect(screen.getByLabelText('Comment')).toHaveValue('Keep this');
+    expect(screen.getByRole('dialog')).toBeVisible();
     await user.click(screen.getByRole('button', { name: 'Apply actions' }));
     expect(commit).toHaveBeenCalledTimes(2);
   });
@@ -266,15 +231,5 @@ describe('WorkflowBypassStatus', () => {
     rerender(<WorkflowBypassStatus data={entity('pending')} entityType="Incident" />);
     rerender(<WorkflowBypassStatus data={entity()} entityType="Incident" />);
     expect(screen.getByRole('combobox')).toBeEnabled();
-  });
-
-  it('enforces COMMENT_MAX_LENGTH even for bypass users', async () => {
-    const { user } = await openDialog();
-    await selectStatus(user);
-    const comment = screen.getByLabelText('Comment');
-    expect(comment).toHaveAttribute('maxlength', String(COMMENT_MAX_LENGTH));
-    fireEvent.change(comment, { target: { value: 'x'.repeat(COMMENT_MAX_LENGTH + 1) } });
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Apply actions' })).toBeDisabled());
-    expect(commit).not.toHaveBeenCalled();
   });
 });

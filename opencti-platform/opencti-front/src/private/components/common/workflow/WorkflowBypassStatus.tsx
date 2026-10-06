@@ -25,7 +25,7 @@ import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import useAuth from '../../../../utils/hooks/useAuth';
 import { isBypassUser } from '../../../../utils/hooks/useGranted';
 import useHelper from '../../../../utils/hooks/useHelper';
-import { COMMENT_MAX_LENGTH, workflowBypassStatusesQuery, workflowSetStatusMutation, workflowStatusStixDomainObjectFragment } from './WorkflowStatus.graphql';
+import { workflowBypassStatusesQuery, workflowSetStatusMutation, workflowStatusStixDomainObjectFragment } from './WorkflowStatus.graphql';
 import { isWorkflowUiEnabledForType } from './workflowFeatureFlag';
 import type { WorkflowStatusStixDomainObject_data$data, WorkflowStatusStixDomainObject_data$key } from './__generated__/WorkflowStatusStixDomainObject_data.graphql';
 import type { WorkflowStatusBypassStatusesQuery } from './__generated__/WorkflowStatusBypassStatusesQuery.graphql';
@@ -35,9 +35,6 @@ import { Box } from '@mui/material';
 interface BypassValues {
   targetStatusId: string;
   applyTransitionActions: boolean;
-  comment: string;
-  shareOrganizations: Array<{ value: string; label?: string }>;
-  unshareOrganizations: Array<{ value: string; label?: string }>;
 }
 
 type WorkflowStatus = NonNullable<WorkflowStatusStixDomainObject_data$data['workflowInstance']>['currentStatus'];
@@ -122,18 +119,11 @@ export const WorkflowBypassStatus = ({ data, entityType, refreshing = false, onC
     const errors: FormikErrors<BypassValues> = {};
     const selected = statuses.find(({ status }) => status.id === values.targetStatusId);
     if (!selected) errors.targetStatusId = t_i18n('This field is required');
-    if (values.applyTransitionActions && selected?.requiresShareOrganizationInput && values.shareOrganizations.length === 0) {
-      errors.shareOrganizations = t_i18n('This field is required');
-    }
-    if (values.applyTransitionActions && selected?.requiresUnshareOrganizationInput && values.unshareOrganizations.length === 0) {
-      errors.unshareOrganizations = t_i18n('This field is required');
-    }
     return errors;
   };
 
   const handleApply = (values: BypassValues, helpers?: Pick<FormikHelpers<BypassValues>, 'setSubmitting'>) => {
-    if (submitting.current || blocked || loading || loadError || values.comment.length > COMMENT_MAX_LENGTH
-      || Object.keys(validateValues(values)).length > 0) {
+    if (submitting.current || blocked || loading || loadError || Object.keys(validateValues(values)).length > 0) {
       helpers?.setSubmitting(false);
       return;
     }
@@ -205,7 +195,7 @@ export const WorkflowBypassStatus = ({ data, entityType, refreshing = false, onC
         <SelectTrigger aria-label={t_i18n('Status')} className="h-8 w-auto max-w-full border-0 bg-transparent">
           <SelectValue><ItemStatusWorkflow status={currentStatus} /></SelectValue>
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent aria-label={t_i18n('Status')}>
           {loading && <div role="status" className="px-3 py-2">{t_i18n('Loading')}</div>}
           {!loading && !loadError && statuses.length === 0 && <div role="status" className="px-3 py-2">{t_i18n('No available status')}</div>}
           {!loading && !loadError && statuses.map(({ status }) => (
@@ -219,7 +209,7 @@ export const WorkflowBypassStatus = ({ data, entityType, refreshing = false, onC
       {targetStatusId && (
         <Formik<BypassValues>
           key={targetStatusId}
-          initialValues={{ targetStatusId, applyTransitionActions: hasTransitionActions(targetStatusId), comment: '', shareOrganizations: [], unshareOrganizations: [] }}
+          initialValues={{ targetStatusId, applyTransitionActions: hasTransitionActions(targetStatusId) }}
           validate={validateValues}
           validateOnMount
           onSubmit={handleApply}
@@ -238,7 +228,7 @@ export const WorkflowBypassStatus = ({ data, entityType, refreshing = false, onC
               >
                 <DialogContent>
                   <DialogTitle className="flex flex-col gap-6">
-                    <Text variant="title-md">Update status</Text>
+                    <Text variant="title-md">{t_i18n('Update status')}</Text>
 
                     <div className="flex items-center gap-1">
                       <ItemStatusWorkflow status={currentStatus} />
@@ -275,9 +265,9 @@ export const WorkflowBypassStatus = ({ data, entityType, refreshing = false, onC
                     <DialogFooter className="flex-wrap">
                       <Button variant="tertiary" disabled={dismissDisabled} onClick={() => setTargetStatusId(null)}>{t_i18n('Cancel')}</Button>
                       {hasActions && (
-                        <Button variant="secondary" disabled={disabled || values.comment.length > COMMENT_MAX_LENGTH} onClick={() => handleApply({ ...values, applyTransitionActions: false }, { setSubmitting })}>{t_i18n('Update status only')}</Button>
+                        <Button variant="secondary" disabled={disabled} onClick={() => handleApply({ ...values, applyTransitionActions: false }, { setSubmitting })}>{t_i18n('Update status only')}</Button>
                       )}
-                      <Button type="submit" disabled={disabled || loading || loadError || !isValid || values.comment.length > COMMENT_MAX_LENGTH}>{t_i18n(hasActions ? 'Apply actions' : 'Update status')}</Button>
+                      <Button type="submit" disabled={disabled || loading || loadError || !isValid}>{t_i18n(hasActions ? 'Apply actions' : 'Update status')}</Button>
                     </DialogFooter>
                   </Form>
                 </DialogContent>

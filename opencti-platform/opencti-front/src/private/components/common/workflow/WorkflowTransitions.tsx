@@ -109,7 +109,6 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
   if (!workflowInstance || !isWorkflowUiEnabledForType(entityType, isFeatureEnable)) {
     return null;
   }
-  console.log({ workflowInstance, wizard });
 
   if (isPending) {
     const totalExpected = pendingTransition?.asyncActions.reduce((sum, action) => sum + (action.expectedCount ?? 0), 0) ?? 0;
@@ -288,7 +287,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                         {showComment && (
                           <div className="flex flex-col gap-4">
                             <DialogDescription className="flex flex-col gap-2">
-                              <Text variant="title-sm">Add a comment</Text>
+                              <Text variant="title-sm">{t_i18n('Add a comment')}</Text>
                               <Text variant="content-compact">
                                 {wizard.commentMode === CommentMode.required
                                   ? t_i18n('A comment is required before changing the status.')
@@ -298,7 +297,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                             <Field
                               component={TextareaField}
                               name="comment"
-                              label={`${t_i18n('Comment')}${CommentMode.required ? '*' : ''}`}
+                              label={t_i18n('Comment')}
                               required={wizard.commentMode === CommentMode.required && !canBypassMandatoryFields}
                               disabled={disabled}
                               rows={3}
@@ -311,7 +310,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                           <div className="flex flex-col gap-4">
                             <div className="flex items-center gap-2">
                               <Icon name="triangle-alert" size={16} className="text-icon-warning" aria-hidden />
-                              <Text variant="title-sm">Share with organizations</Text>
+                              <Text variant="title-sm">{t_i18n('Share with organizations')}</Text>
                             </div>
                             <ObjectOrganizationField
                               name="shareOrganizations"
@@ -327,7 +326,7 @@ const WorkflowTransitionsView: FunctionComponent<WorkflowTransitionsViewProps> =
                           <div className="flex flex-col gap-4">
                             <div className="flex items-center gap-2">
                               <Icon name="triangle-alert" size={16} className="text-icon-warning" aria-hidden />
-                              <Text variant="title-sm">Unshare from organizations</Text>
+                              <Text variant="title-sm">{t_i18n('Unshare from organizations')}</Text>
                             </div>
                             <ObjectOrganizationField
                               name="unshareOrganizations"

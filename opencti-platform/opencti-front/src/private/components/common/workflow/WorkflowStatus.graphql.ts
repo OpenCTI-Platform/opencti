@@ -48,6 +48,7 @@ export const workflowStatusWorkflowInstanceFragment = graphql`
       requiresUnshareOrganizationInput
       toStatus {
         id
+        order
         template {
           name
           color
