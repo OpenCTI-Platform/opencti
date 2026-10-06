@@ -28,6 +28,7 @@ import { isNotificationRecipientActive } from '../../manager/notificationManager
 import { logApp } from '../../config/conf';
 import { now } from '../../utils/format';
 import type { BasicStoreSettings } from '../../types/settings';
+import { withHealthSnapshotLock } from './curation-locks';
 import {
   type BasicStoreEntityCurationProposal,
   type BasicStoreEntityKnowledgeHealthSnapshot,
@@ -277,19 +278,32 @@ export const findHealthSnapshotsPaginated = async (context: AuthContext, user: A
   });
 };
 
-export const createHealthSnapshot = async (context: AuthContext, settings: CurationSettings): Promise<BasicStoreEntityKnowledgeHealthSnapshot> => {
-  const previous = await findLatestHealthSnapshot(context, SYSTEM_USER);
-  const since = previous?.snapshot_date ?? new Date(Date.now() - 24 * 3600 * 1000).toISOString();
-  const metrics = await computeHealthMetrics(context, settings, since);
-  const { score, breakdown } = computeHealthScore(metrics);
-  const snapshot = {
-    snapshot_date: now(),
-    health_score: score,
-    score_trend: previous ? score - previous.health_score : null,
-    health_metrics: metrics,
-    score_breakdown: breakdown,
-  };
-  return await createEntity(context, SYSTEM_USER, snapshot, ENTITY_TYPE_KNOWLEDGE_HEALTH_SNAPSHOT) as unknown as BasicStoreEntityKnowledgeHealthSnapshot;
+/**
+ * A new snapshot following the latest one, created under the snapshot lock. The latest snapshot is returned instead
+ * when it was taken at or after *reuseFrom* (by default the time of the call, so a snapshot another caller created
+ * while this one waited for the lock answers both).
+ */
+export const createHealthSnapshot = async (
+  context: AuthContext,
+  settings: CurationSettings,
+  opts: { reuseFrom?: string } = {},
+): Promise<BasicStoreEntityKnowledgeHealthSnapshot> => {
+  const reuseFrom = new Date(opts.reuseFrom ?? now()).getTime();
+  return withHealthSnapshotLock(async () => {
+    const previous = await findLatestHealthSnapshot(context, SYSTEM_USER);
+    if (previous && new Date(previous.snapshot_date).getTime() >= reuseFrom) return previous;
+    const since = previous?.snapshot_date ?? new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+    const metrics = await computeHealthMetrics(context, settings, since);
+    const { score, breakdown } = computeHealthScore(metrics);
+    const snapshot = {
+      snapshot_date: now(),
+      health_score: score,
+      score_trend: previous ? score - previous.health_score : null,
+      health_metrics: metrics,
+      score_breakdown: breakdown,
+    };
+    return await createEntity(context, SYSTEM_USER, snapshot, ENTITY_TYPE_KNOWLEDGE_HEALTH_SNAPSHOT) as unknown as BasicStoreEntityKnowledgeHealthSnapshot;
+  });
 };
 // endregion
 

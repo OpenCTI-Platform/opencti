@@ -87,7 +87,7 @@ const runScans = async (context: AuthContext, settings: CurationSettings) => {
 const runSnapshotAndDigest = async (context: AuthContext, settings: CurationSettings) => {
   let latest = await findLatestHealthSnapshot(context, CURATION_MANAGER_USER);
   if (isOlderThan(settings.last_snapshot_date ?? latest?.snapshot_date, CURATION_SNAPSHOT_INTERVAL_MS)) {
-    latest = await createHealthSnapshot(context, settings);
+    latest = await createHealthSnapshot(context, settings, { reuseFrom: new Date(Date.now() - CURATION_SNAPSHOT_INTERVAL_MS).toISOString() });
     await saveCurationSettings(context, CURATION_MANAGER_USER, { last_snapshot_date: latest.snapshot_date }, { auditLog: false });
   }
   const isDigestDay = new Date().getUTCDay() === settings.digest_day;

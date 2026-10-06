@@ -614,5 +614,5 @@ type Mutation {
   curationPolicyApply(id: ID!): ID @auth(for: [SETTINGS_SETCUSTOMIZATION])
   curationSettingsEdit(input: CurationSettingsInput!): CurationSettings @auth(for: [SETTINGS_SETCUSTOMIZATION])
   curationScanRequest: CurationSettings @auth(for: [SETTINGS_SETCUSTOMIZATION])
-  knowledgeHealthRefresh: KnowledgeHealthSnapshot @auth(for: [SETTINGS_SETCUSTOMIZATION])
+  knowledgeHealthRefresh: KnowledgeHealthSnapshot @auth(for: [KNOWLEDGE, SETTINGS_SETCUSTOMIZATION], and: true)
 }

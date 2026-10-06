@@ -28,5 +28,11 @@ export const withProposalFingerprintLock = <T>(fingerprint: string, fn: () => Pr
  */
 export const withPolicySchedulingLock = <T>(fn: () => Promise<T>) => withLock('curation-policy-scheduling', fn);
 
+/**
+ * Creates one Knowledge health snapshot at a time, from the manager or a manual refresh: each reads the snapshot it
+ * follows under the lock, so two snapshots never cover the same activity window.
+ */
+export const withHealthSnapshotLock = <T>(fn: () => Promise<T>) => withLock('curation-health-snapshot', fn);
+
 /** Runs one adjudication request of a proposal at a time, so concurrent requests never call the agent twice. */
 export const withProposalAdjudicationLock = <T>(id: string, fn: () => Promise<T>) => withLock(`curation-proposal-adjudication-${id}`, fn);

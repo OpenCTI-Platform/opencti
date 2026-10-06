@@ -343,7 +343,7 @@ Go to **Data > Curation > Knowledge health**. The page shows the score from 0 to
 
 ![Dashboard created from the Knowledge health template](assets/curation-dashboard-template.png)
 
-The curation manager takes a snapshot once a day. Click **Refresh now** to take one immediately (this requires the `Manage customization` capability). The score is the weighted average of five components, each scored from 100 (healthy) to 0:
+The curation manager takes a snapshot once a day. Click **Refresh now** to take one immediately (this requires the `Manage customization` capability, in addition to `Access knowledge`); a snapshot taken meanwhile by the manager or another refresh is shown instead of taking a second one. The score is the weighted average of five components, each scored from 100 (healthy) to 0:
 
 | Component          | What it measures                                                                                                                       | Weight | Scores 0 when             |
 |:-------------------|:---------------------------------------------------------------------------------------------------------------------------------------|:-------|:--------------------------|
@@ -464,7 +464,8 @@ Platform administrators can tune the manager schedules and the merge record limi
 | Accept or revert a `merge` or `split` proposal, apply a `merge` decision, unmerge from a merge record | `Merge knowledge`                                  |
 | Accept or revert an attribution conflict (deletes, then restores, the attributions not kept)     | `Delete knowledge`                                     |
 | Revert a procedure conflict accepted in note mode (deletes the Note its acceptance created)      | `Delete knowledge`                                     |
-| See and change the settings, run a scan now, refresh the Knowledge health, see and manage policies | `Manage customization`                               |
+| See and change the settings, run a scan now, see and manage policies                             | `Manage customization`                                 |
+| Refresh the Knowledge health                                                                      | `Manage customization` and `Access knowledge`          |
 | Apply a policy now                                                                                | `Manage customization` and `Create / Update knowledge`, plus the capability of each action it applies |
 
 A revert needs the capability of what it undoes: reverting a proposal applied as a merge is an unmerge (`Merge knowledge`), while a `merge` proposal applied as an alias addition only needs `Create / Update knowledge` to revert.
