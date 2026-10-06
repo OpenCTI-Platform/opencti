@@ -11,13 +11,21 @@ export type WithheldElementsProvider = (context: AuthContext, user: AuthUser) =>
 
 /**
  * Elements withheld from a reader for a reason only each element gives, too costly to list for every element of the
- * type: a check gives, among the internal ids of elements of one entity type a load by id found, those withheld from
- * the reader.
+ * type: a check gives, among the internal ids of elements of one entity type a load by id found or a listing may show,
+ * those withheld from the reader.
  */
 export type WithheldElementsCheck = (context: AuthContext, user: AuthUser, ids: string[]) => Promise<string[]>;
 
+/**
+ * The internal ids of the elements a listing of the type may show the reader under its filters, among those a check of
+ * the type may withhold: the check reads them, and the listing leaves the withheld ones out of its query, so that its
+ * pages, counts and distributions stay exact.
+ */
+export type WithheldListingCandidates = (context: AuthContext, user: AuthUser, filters?: FilterGroup | null) => Promise<string[]>;
+
 const WITHHELD_ELEMENTS_PROVIDERS = new Map<string, WithheldElementsProvider[]>();
 const WITHHELD_ELEMENTS_CHECKS = new Map<string, WithheldElementsCheck[]>();
+const WITHHELD_LISTING_CANDIDATES = new Map<string, WithheldListingCandidates[]>();
 // Read once per request, whatever the number of elements it loads or lists.
 const withheldByContext = new WeakMap<AuthContext, Map<string, Promise<string[]>>>();
 const checkedByContext = new WeakMap<AuthContext, Map<string, Promise<boolean>>>();
@@ -25,13 +33,22 @@ const checkedByContext = new WeakMap<AuthContext, Map<string, Promise<boolean>>>
 // checked again, so that a check never runs into itself.
 const IN_WITHHELD_CHECK = Symbol('withheld elements check');
 type CheckedContext = AuthContext & { [IN_WITHHELD_CHECK]?: true };
+const isInCheck = (context: AuthContext | undefined) => !!(context as CheckedContext | undefined)?.[IN_WITHHELD_CHECK];
+// Some loads run before a module received its execution context: they read the elements withheld without a cache.
+const cacheOf = <T>(caches: WeakMap<AuthContext, Map<string, T>>, context: AuthContext | undefined): Map<string, T> => {
+  if (!context) return new Map<string, T>();
+  const known = caches.get(context) ?? new Map<string, T>();
+  caches.set(context, known);
+  return known;
+};
 
 export const registerWithheldElements = (entityType: string, provider: WithheldElementsProvider) => {
   WITHHELD_ELEMENTS_PROVIDERS.set(entityType, [...(WITHHELD_ELEMENTS_PROVIDERS.get(entityType) ?? []), provider]);
 };
 
-export const registerWithheldElementsCheck = (entityType: string, check: WithheldElementsCheck) => {
+export const registerWithheldElementsCheck = (entityType: string, check: WithheldElementsCheck, candidates: WithheldListingCandidates) => {
   WITHHELD_ELEMENTS_CHECKS.set(entityType, [...(WITHHELD_ELEMENTS_CHECKS.get(entityType) ?? []), check]);
+  WITHHELD_LISTING_CANDIDATES.set(entityType, [...(WITHHELD_LISTING_CANDIDATES.get(entityType) ?? []), candidates]);
 };
 
 export const withheldElementIds = (context: AuthContext, user: AuthUser, entityType: string): Promise<string[]> => {
@@ -39,8 +56,7 @@ export const withheldElementIds = (context: AuthContext, user: AuthUser, entityT
   if (providers.length === 0) {
     return Promise.resolve([]);
   }
-  const known = withheldByContext.get(context) ?? new Map<string, Promise<string[]>>();
-  withheldByContext.set(context, known);
+  const known = cacheOf(withheldByContext, context);
   const key = `${user.id}|${entityType}`;
   const cached = known.get(key);
   if (cached) {
@@ -57,8 +73,7 @@ const checkedWithheldIds = async (context: AuthContext, user: AuthUser, entityTy
   if (checks.length === 0 || ids.length === 0) {
     return [];
   }
-  const known = checkedByContext.get(context) ?? new Map<string, Promise<boolean>>();
-  checkedByContext.set(context, known);
+  const known = cacheOf(checkedByContext, context);
   const keyOf = (id: string) => `${user.id}|${entityType}|${id}`;
   const unchecked = ids.filter((id) => !known.has(keyOf(id)));
   if (unchecked.length > 0) {
@@ -79,7 +94,7 @@ export const withoutWithheldHits = async <T extends Pick<BasicStoreBase, 'intern
   user: AuthUser,
   elements: T[],
 ): Promise<T[]> => {
-  if (elements.length === 0 || (context as CheckedContext)[IN_WITHHELD_CHECK]) return elements;
+  if (elements.length === 0 || isInCheck(context)) return elements;
   const isWithholding = (type: string) => WITHHELD_ELEMENTS_PROVIDERS.has(type) || WITHHELD_ELEMENTS_CHECKS.has(type);
   const types = [...new Set(elements.map((element) => element.entity_type))].filter(isWithholding);
   if (types.length === 0) return elements;
@@ -100,8 +115,17 @@ export const unlessWithheld = async <T extends BasicStoreBase>(context: AuthCont
   return element;
 };
 
-/** The filters of a listing of the type, with the elements withheld from the reader left out. */
+/**
+ * The filters of a listing of the type, with the elements withheld from the reader left out: those its providers list,
+ * and those its checks withhold among the candidates of the listing.
+ */
 export const withoutWithheldElements = async (context: AuthContext, user: AuthUser, entityType: string, filters?: FilterGroup | null) => {
-  const ids = await withheldElementIds(context, user, entityType);
-  return ids.length > 0 ? addFilter(filters, 'internal_id', ids, 'not_eq', 'and') : filters;
+  const listed = await withheldElementIds(context, user, entityType);
+  const visible = listed.length > 0 ? addFilter(filters, 'internal_id', listed, 'not_eq', 'and') : filters;
+  const candidatesOf = WITHHELD_LISTING_CANDIDATES.get(entityType) ?? [];
+  if (candidatesOf.length === 0 || isInCheck(context)) return visible;
+  const checkContext: CheckedContext = { ...context, [IN_WITHHELD_CHECK]: true };
+  const candidates = [...new Set((await Promise.all(candidatesOf.map((candidatesFor) => candidatesFor(checkContext, user, visible)))).flat())];
+  const checked = await checkedWithheldIds(context, user, entityType, candidates);
+  return checked.length > 0 ? addFilter(visible, 'internal_id', checked, 'not_eq', 'and') : visible;
 };

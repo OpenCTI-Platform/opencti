@@ -52,15 +52,22 @@ describe('Withheld elements', () => {
     expect(calls).toBe(1);
   });
 
-  it('should check each loaded element once per request, never from within a check, and leave the listings to the providers', async () => {
+  it('should read a load made before a module received its execution context', async () => {
+    const other = { internal_id: 'other-1', entity_type: 'Test-Other-Type' };
+    const withheld = { internal_id: 'withheld-1', entity_type: TYPE };
+    expect(await withoutWithheldHits(undefined as unknown as AuthContext, ADMIN_USER, [other, withheld])).toEqual([other]);
+  });
+
+  it('should check each loaded element once per request, never from within a check', async () => {
     const CHECKED = 'Test-Checked-Element';
     const asked: string[][] = [];
     registerWithheldElementsCheck(CHECKED, async (checkContext, user, ids) => {
       asked.push(ids);
-      // What a check loads to decide is not checked again.
+      // What a check loads or lists to decide is not checked again.
       expect(await withoutWithheldHits(checkContext, user, [{ internal_id: 'checked-2', entity_type: CHECKED }])).toHaveLength(1);
+      expect(await withoutWithheldElements(checkContext, user, CHECKED, null)).toBeNull();
       return ids.filter((id) => id === 'checked-2');
-    });
+    }, async () => []);
     const context = { ...testContext } as AuthContext;
     const visible = { internal_id: 'checked-1', entity_type: CHECKED };
     const withheld = { internal_id: 'checked-2', entity_type: CHECKED };
@@ -68,6 +75,26 @@ describe('Withheld elements', () => {
     expect(await withoutWithheldHits(context, ADMIN_USER, [withheld])).toEqual([]);
     expect(await unlessWithheld(context, ADMIN_USER, CHECKED, { internal_id: 'checked-2' } as BasicStoreBase)).toBeUndefined();
     expect(asked).toEqual([['checked-1', 'checked-2']]);
-    expect(await withoutWithheldElements(context, ADMIN_USER, CHECKED, null)).toBeNull();
+  });
+
+  it('should leave out of a listing the candidates its checks withhold, under the filters of the listing', async () => {
+    const LISTED = 'Test-Listed-Element';
+    const candidateFilters: unknown[] = [];
+    registerWithheldElements(LISTED, async () => ['stopped-1']);
+    registerWithheldElementsCheck(LISTED, async (_, __, ids) => ids.filter((id) => id.startsWith('unreadable')), async (_, __, filters) => {
+      candidateFilters.push(filters);
+      return ['readable-1', 'unreadable-1', 'unreadable-2'];
+    });
+    const context = { ...testContext } as AuthContext;
+    const asked = { mode: 'and', filters: [{ key: ['name'], values: ['graph'] }], filterGroups: [] } as any;
+    const filters = await withoutWithheldElements(context, ADMIN_USER, LISTED, asked);
+    // The candidates are read under the filters of the listing, the provider's elements already out.
+    expect(candidateFilters).toEqual([expect.objectContaining({ filters: [expect.objectContaining({ values: ['stopped-1'], operator: 'not_eq' })] })]);
+    expect(filters?.filters).toEqual([expect.objectContaining({ key: ['internal_id'], values: ['unreadable-1', 'unreadable-2'], operator: 'not_eq', mode: 'and' })]);
+    expect(filters?.filterGroups[0]?.filterGroups).toEqual([asked]);
+    // A check that withholds nothing leaves the filters as the providers make them.
+    const NONE = 'Test-Unlisted-Element';
+    registerWithheldElementsCheck(NONE, async () => [], async () => ['any-1']);
+    expect(await withoutWithheldElements(context, ADMIN_USER, NONE, null)).toBeNull();
   });
 });
