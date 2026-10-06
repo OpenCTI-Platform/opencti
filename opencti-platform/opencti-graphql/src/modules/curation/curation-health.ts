@@ -3,7 +3,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, patchAttribute } from '../../database/middleware';
 import { fullEntitiesList, pageEntitiesConnection, storeLoadById, type EntityOptions } from '../../database/middleware-loader';
 import { elCount, elFindByIds } from '../../database/engine';
-import { READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
+import { READ_DATA_INDICES_WITHOUT_INTERNAL_WITHOUT_INFERRED, READ_INDEX_INTERNAL_OBJECTS, READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
 import { getEntitiesListFromCache, getEntityFromCache } from '../../database/cache';
 import {
   redisCurationAcquireDigestRetry,
@@ -173,10 +173,25 @@ export const computeHealthMetrics = async (context: AuthContext, settings: Curat
     baseFields: ['subject_ids'],
     noFiltersChecking: true,
   });
+  const openContradictions = await fullEntitiesList<BasicStoreEntityCurationProposal>(context, SYSTEM_USER, [ENTITY_TYPE_CURATION_PROPOSAL], {
+    filters: {
+      mode: FilterMode.And,
+      filters: [
+        { key: ['proposal_kind'], values: [PROPOSAL_KIND_CONTRADICTION], operator: FilterOperator.Eq },
+        { key: ['proposal_status'], values: [PROPOSAL_STATUS_OPEN], operator: FilterOperator.Eq },
+      ],
+      filterGroups: [],
+    },
+    baseData: true,
+    baseFields: ['subject_ids', 'target_id'],
+    noFiltersChecking: true,
+  });
+  // A contradiction is about its target: the entity, indicator or relationship whose dates or attributions disagree.
+  const contradictionTargets = openContradictions.map((proposal) => proposal.target_id ?? proposal.subject_ids[0]);
   // Open proposals outlive their subjects: only the subjects still in the knowledge count.
-  const subjectIds = R.uniq([...openMerges, ...openStale].flatMap((proposal) => proposal.subject_ids));
-  const existingSubjects = await elFindByIds<BasicStoreEntity>(context, SYSTEM_USER, subjectIds, {
-    indices: READ_INDEX_STIX_DOMAIN_OBJECTS,
+  const liveIds = R.uniq([...[...openMerges, ...openStale].flatMap((proposal) => proposal.subject_ids), ...contradictionTargets]);
+  const existingSubjects = await elFindByIds<BasicStoreEntity>(context, SYSTEM_USER, liveIds, {
+    indices: READ_DATA_INDICES_WITHOUT_INTERNAL_WITHOUT_INFERRED,
     baseData: true,
     baseFields: ['internal_id'],
   }) as BasicStoreEntity[];
@@ -184,8 +199,8 @@ export const computeHealthMetrics = async (context: AuthContext, settings: Curat
   const duplicateEstimate = estimateExistingDuplicates(openMerges.map((proposal) => proposal.subject_ids), existingSubjectIds);
   // Stale entities, not stale proposals: an entity found stale again while its older proposal is still open counts once.
   const staleCount = countExistingSubjects(openStale.map((proposal) => proposal.subject_ids), existingSubjectIds);
-  const [contradictionCount, openCount, autoApplied, accepted, rejected, reverted] = await Promise.all([
-    countProposals(context, [{ key: ['proposal_kind'], values: [PROPOSAL_KIND_CONTRADICTION] }, { key: ['proposal_status'], values: [PROPOSAL_STATUS_OPEN] }]),
+  const contradictionCount = contradictionTargets.filter((id) => existingSubjectIds.has(id)).length;
+  const [openCount, autoApplied, accepted, rejected, reverted] = await Promise.all([
     countProposals(context, [{ key: ['proposal_status'], values: [PROPOSAL_STATUS_OPEN] }]),
     countProposals(context, [{ key: ['proposal_status'], values: [PROPOSAL_STATUS_AUTO_APPLIED] }, { key: ['decided_at'], values: [since], operator: FilterOperator.Gte }]),
     countProposals(context, [{ key: ['proposal_status'], values: [PROPOSAL_STATUS_ACCEPTED] }, { key: ['decided_at'], values: [since], operator: FilterOperator.Gte }]),

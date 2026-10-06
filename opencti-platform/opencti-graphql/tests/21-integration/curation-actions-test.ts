@@ -31,6 +31,7 @@ import { ENTITY_TYPE_BACKGROUND_TASK } from '../../src/schema/internalObject';
 import {
   ACTION_ACKNOWLEDGE,
   ACTION_ADD_ALIASES,
+  ACTION_FIX_DATES,
   ACTION_MERGE,
   ACTION_PRESERVE_PROCEDURE,
   ACTION_RESOLVE_ATTRIBUTION,
@@ -878,6 +879,25 @@ describe('Knowledge curation actions', () => {
     // Its proposals outlive it: once deleted, the entity no longer counts as stale knowledge.
     await deleteElementById(testContext, ADMIN_USER, stale.id, ENTITY_TYPE_INTRUSION_SET);
     expect((await computeHealthMetrics(testContext, settings, since)).stale_count).toBe(before);
+  });
+
+  it('should count a contradiction in the Knowledge Health only while the entity it is about exists', async () => {
+    const settings = await getCurationSettings(testContext);
+    const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+    const before = (await computeHealthMetrics(testContext, settings, since)).contradiction_count;
+    const inverted = await createIntrusionSet(`${PREFIX} Inverted dates`);
+    await createProposal({
+      kind: PROPOSAL_KIND_CONTRADICTION,
+      detector: DETECTOR_CONTRADICTION,
+      subjects: [subjectOf(inverted)],
+      target_id: inverted.id,
+      recommended_action: ACTION_FIX_DATES,
+      evidence: evidenceFor('date_inversion', 'First seen is after last seen'),
+      confidence: 0.95,
+    });
+    expect((await computeHealthMetrics(testContext, settings, since)).contradiction_count).toBe(before + 1);
+    await deleteElementById(testContext, ADMIN_USER, inverted.id, ENTITY_TYPE_INTRUSION_SET);
+    expect((await computeHealthMetrics(testContext, settings, since)).contradiction_count).toBe(before);
   });
 
   it('should request a full scan', async () => {
