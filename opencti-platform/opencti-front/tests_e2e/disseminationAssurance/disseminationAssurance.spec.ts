@@ -187,6 +187,8 @@ test.describe('Dissemination assurance documentation', () => {
       await expect(page.getByTestId('ioc-validation-request-submit')).toBeEnabled();
       // The summary counts the platforms the request is sent for: the selected ones
       await expect(page.getByTestId('validation-request-summary')).toContainText('on 1 platform');
+      // The footer stays in view at 1440 x 900: only the body of the dialog scrolls
+      await expect(page.getByTestId('ioc-validation-request-submit')).toBeInViewport({ ratio: 1 });
       await capture(page, testInfo, 'validate-live');
       await page.keyboard.press('Escape');
       // endregion

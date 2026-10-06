@@ -222,8 +222,20 @@ const IocValidationRequestDialog = ({ open, onClose, indicators, platforms, defa
   };
 
   return (
-    <Dialog open={open} onClose={onClose} title={t_i18n('Request validation in OpenAEV')} size="medium">
-      <Stack gap={2} data-testid="ioc-validation-request-dialog">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      title={t_i18n('Request validation in OpenAEV')}
+      size="medium"
+      contentProps={{ style: { display: 'flex', flexDirection: 'column', overflowY: 'hidden' } }}
+    >
+      {/* The body scrolls on its own so the footer stays in view on short screens; the 4px padding given back and
+          taken out again keeps the focus ring the library paints outside the fields. */}
+      <Stack
+        gap={2}
+        data-testid="ioc-validation-request-dialog"
+        sx={{ flex: '1 1 auto', minHeight: 0, overflowY: 'auto', position: 'relative', p: 0.5, m: -0.5 }}
+      >
         {summary && <Typography variant="body2" data-testid="validation-request-summary">{summary(selectedPlatforms.length)}</Typography>}
         <Alert
           severity="info"
@@ -292,7 +304,7 @@ const IocValidationRequestDialog = ({ open, onClose, indicators, platforms, defa
           {open && <ConnectorSelection connectorId={connectorId} onChange={setConnectorId} />}
         </Suspense>
       </Stack>
-      <DialogActions>
+      <DialogActions sx={{ flexShrink: 0 }}>
         <Button variant="secondary" onClick={onClose} disabled={submitting}>
           {t_i18n('Cancel')}
         </Button>
