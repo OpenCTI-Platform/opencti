@@ -3,7 +3,13 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { countAllThings, fullEntitiesList, pageEntitiesConnection, storeLoadById } from '../../database/middleware-loader';
 import type { DecayRuleAddInput, EditInput, KnowledgeDecayRuleAddInput, Label, MarkingDefinition, QueryDecayRulesArgs } from '../../generated/graphql';
 import { FilterMode } from '../../generated/graphql';
-import { type BasicStoreEntityDecayRule, DECAY_RULE_SCOPE_INDICATOR, ENTITY_TYPE_DECAY_RULE, type StoreEntityDecayRule } from './decayRule-types';
+import {
+  ATTRIBUTE_FRESHNESS_CONFIGURED_AT,
+  type BasicStoreEntityDecayRule,
+  DECAY_RULE_SCOPE_INDICATOR,
+  ENTITY_TYPE_DECAY_RULE,
+  type StoreEntityDecayRule,
+} from './decayRule-types';
 import {
   addKnowledgeDecayRule,
   checkDecayRulePatch,
@@ -23,7 +29,7 @@ import { SYSTEM_USER } from '../../utils/access';
 import { FunctionalError } from '../../config/errors';
 import { deleteElementById, updateAttribute } from '../../database/middleware';
 import { publishUserAction } from '../../listener/UserActionListener';
-import { BUS_TOPICS } from '../../config/conf';
+import { BUS_TOPICS, logApp } from '../../config/conf';
 import { ABSTRACT_INTERNAL_OBJECT, INPUT_CREATED_BY, INPUT_LABELS, INPUT_MARKINGS } from '../../schema/general';
 import { notify } from '../../database/redis';
 import {
@@ -127,9 +133,18 @@ export const addDecayRule = async (context: AuthContext, user: AuthUser, input: 
   return created;
 };
 
+// A release that fails is completed by the next knowledge freshness run (see releaseOutdatedFreshnessFlags)
+const releaseFreshnessFlags = async (ruleId: string, release: () => Promise<unknown>) => {
+  try {
+    await release();
+  } catch (err) {
+    logApp.warn('[PROVENANCE] Knowledge freshness flags left to the next knowledge freshness run', { cause: err, rule_id: ruleId });
+  }
+};
+
 export const createKnowledgeDecayRule = async (context: AuthContext, user: AuthUser, input: KnowledgeDecayRuleAddInput) => {
   const created = await addKnowledgeDecayRule(context, user, input);
-  await releaseFlagsTakenOverByRule(context, user, created);
+  await releaseFreshnessFlags(created.id, () => releaseFlagsTakenOverByRule(context, created));
   return created;
 };
 
@@ -140,6 +155,9 @@ export const fieldPatchDecayRule = async (context: AuthContext, user: AuthUser, 
     throw FunctionalError(`Decay rule ${id} cannot be found`);
   }
   const mustClearFreshnessFlags = checkDecayRulePatch(decayRule, finalInput);
+  if (mustClearFreshnessFlags) {
+    finalInput.push({ key: ATTRIBUTE_FRESHNESS_CONFIGURED_AT, value: [now()] });
+  }
 
   const decayPointsInput = finalInput.find((editInput) => editInput.key === 'decay_points');
   if (decayPointsInput) {
@@ -159,10 +177,10 @@ export const fieldPatchDecayRule = async (context: AuthContext, user: AuthUser, 
     ({ element } = await updateAttribute<StoreEntityDecayRule>(context, user, id, ENTITY_TYPE_DECAY_RULE, finalInput));
     if (mustClearFreshnessFlags) {
       // Knowledge flagged under the previous configuration is evaluated again by the freshness manager
-      await clearFreshnessFlagsOfRule(id);
+      await releaseFreshnessFlags(id, () => clearFreshnessFlagsOfRule(id));
     }
     if (isKnowledgeDecayRule(element) && finalInput.some((editInput) => KNOWLEDGE_PRIORITY_FIELDS.includes(editInput.key))) {
-      await releaseFlagsTakenOverByRule(context, user, element);
+      await releaseFreshnessFlags(id, () => releaseFlagsTakenOverByRule(context, element));
     }
   } finally {
     await lock?.unlock();
@@ -191,7 +209,7 @@ export const deleteDecayRule = async (context: AuthContext, user: AuthUser, id: 
   try {
     deleted = await deleteElementById<StoreEntityDecayRule>(context, user, id, ENTITY_TYPE_DECAY_RULE);
     if (isKnowledgeDecayRule(decayRule)) {
-      await clearFreshnessFlagsOfRule(id);
+      await releaseFreshnessFlags(id, () => clearFreshnessFlagsOfRule(id));
     }
   } finally {
     await lock?.unlock();

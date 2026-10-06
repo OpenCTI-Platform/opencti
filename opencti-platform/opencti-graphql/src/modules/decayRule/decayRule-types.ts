@@ -20,12 +20,16 @@ export type KnowledgeFreshnessPolicyValue = typeof KNOWLEDGE_FRESHNESS_POLICIES[
 
 export const DEFAULT_FRESHNESS_CONFIDENCE_STEP = 10;
 
+// Last change of the configuration that decides what a knowledge decay rule flags: a flag set before it is released
+export const ATTRIBUTE_FRESHNESS_CONFIGURED_AT = 'freshness_configured_at';
+
 interface KnowledgeDecayRuleFields {
   target_scope?: DecayRuleScope;
   target_types?: string[];
   freshness_policy?: KnowledgeFreshnessPolicyValue;
   stale_after_days?: number;
   freshness_confidence_step?: number;
+  freshness_configured_at?: string | null;
 }
 
 export interface BasicStoreEntityDecayRule extends BasicStoreEntity, KnowledgeDecayRuleFields {

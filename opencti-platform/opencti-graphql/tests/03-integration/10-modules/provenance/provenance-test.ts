@@ -506,6 +506,36 @@ describe('Provenance: every fact knows who said it', () => {
     await queryAsUserWithSuccess(USER_EDITOR, { query: ASSERT, variables: { id: usesId } });
   });
 
+  it('should release on the next run the flags a knowledge decay rule change could not release', async () => {
+    type FlaggedElement = BasicStoreBase & { _index: string; freshness_stale?: boolean; freshness_stale_at?: string; freshness_rule_id?: string };
+    const flagWith = async (flagRuleId: string, at: string) => {
+      const element = await internalLoadById<FlaggedElement>(testContext, ADMIN_USER, usesId);
+      await elUpdate(testContext, element._index, element.internal_id, {
+        script: { source: 'ctx._source.freshness_stale = true; ctx._source.freshness_stale_at = params.at; ctx._source.freshness_rule_id = params.rule_id;', params: { at, rule_id: flagRuleId } },
+      });
+    };
+    const runAndLoadFlag = async () => {
+      resetCacheForEntity(ENTITY_TYPE_DECAY_RULE);
+      await applyKnowledgeDecayRules(testContext, DECAY_MANAGER_USER, { batchSize: 100 });
+      const { freshness_stale, freshness_stale_at, freshness_rule_id } = await internalLoadById<FlaggedElement>(testContext, ADMIN_USER, usesId);
+      return { freshness_stale, freshness_stale_at, freshness_rule_id };
+    };
+    await ageElement(usesId, 60);
+    // Left by a rule that no longer exists: released, then flagged by the rule that applies
+    await flagWith('deleted-knowledge-decay-rule', new Date().toISOString());
+    expect(await runAndLoadFlag()).toMatchObject({ freshness_stale: true, freshness_rule_id: ruleId });
+    // Left by a lower priority rule after a higher priority one took over
+    await flagWith(takeoverRuleId, new Date().toISOString());
+    expect(await runAndLoadFlag()).toMatchObject({ freshness_stale: true, freshness_rule_id: ruleId });
+    // Set before the last configuration change of its rule: evaluated again under the current configuration
+    const beforeChange = '2020-01-01T00:00:00.000Z';
+    await flagWith(ruleId, beforeChange);
+    const reflagged = await runAndLoadFlag();
+    expect(reflagged).toMatchObject({ freshness_stale: true, freshness_rule_id: ruleId });
+    expect(reflagged.freshness_stale_at! > beforeChange).toEqual(true);
+    await queryAsUserWithSuccess(USER_EDITOR, { query: ASSERT, variables: { id: usesId } });
+  });
+
   it('should ship built-in knowledge decay rules disabled and only allow their activation', async () => {
     const rules = await queryAsAdminWithSuccess({
       query: DECAY_RULES,

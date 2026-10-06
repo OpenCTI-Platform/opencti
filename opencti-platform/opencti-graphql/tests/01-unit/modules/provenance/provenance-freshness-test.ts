@@ -102,6 +102,8 @@ describe('Knowledge decay rules', () => {
     const knowledgeRule = storedRule();
     expect(() => checkDecayRulePatch(knowledgeRule, [{ key: 'decay_pound', value: ['1'] }])).toThrow();
     expect(() => checkDecayRulePatch(knowledgeRule, [{ key: 'target_scope', value: ['entity'] }])).toThrow();
+    // The date of the last configuration change decides which flags a run releases: only the platform sets it
+    expect(() => checkDecayRulePatch(knowledgeRule, [{ key: 'freshness_configured_at', value: ['2020-01-01T00:00:00.000Z'] }])).toThrow();
     expect(() => checkDecayRulePatch(knowledgeRule, [{ key: 'stale_after_days', value: ['0'] }])).toThrow();
     expect(checkDecayRulePatch(knowledgeRule, [{ key: 'stale_after_days', value: ['400'] }])).toEqual(true);
     expect(checkDecayRulePatch(knowledgeRule, [{ key: 'name', value: ['Renamed'] }])).toEqual(false);

@@ -1,7 +1,14 @@
 import { v4 as uuidv4 } from 'uuid';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import { type ModuleDefinition, registerDefinition } from '../../schema/module';
-import { DECAY_RULE_SCOPES, ENTITY_TYPE_DECAY_RULE, KNOWLEDGE_FRESHNESS_POLICIES, type StixDecayRule, type StoreEntityDecayRule } from './decayRule-types';
+import {
+  ATTRIBUTE_FRESHNESS_CONFIGURED_AT,
+  DECAY_RULE_SCOPES,
+  ENTITY_TYPE_DECAY_RULE,
+  KNOWLEDGE_FRESHNESS_POLICIES,
+  type StixDecayRule,
+  type StoreEntityDecayRule,
+} from './decayRule-types';
 import convertDecayRuleToStix from './decayRule-converter';
 
 const DECAY_RULE_DEFINITION: ModuleDefinition<StoreEntityDecayRule, StixDecayRule> = {
@@ -33,6 +40,7 @@ const DECAY_RULE_DEFINITION: ModuleDefinition<StoreEntityDecayRule, StixDecayRul
     { name: 'freshness_policy', label: 'Freshness policy', type: 'string', format: 'enum', values: [...KNOWLEDGE_FRESHNESS_POLICIES], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'stale_after_days', label: 'Stale after (days)', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'freshness_confidence_step', label: 'Confidence step', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    { name: ATTRIBUTE_FRESHNESS_CONFIGURED_AT, label: 'Freshness configured at', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
   ],
   relations: [],
   representative: (stix: StixDecayRule) => {

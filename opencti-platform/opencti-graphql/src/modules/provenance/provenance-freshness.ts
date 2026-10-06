@@ -10,6 +10,7 @@ import type { BasicStoreBase } from '../../types/store';
 import { now } from '../../utils/format';
 import {
   clearFreshnessFlagsOfElements,
+  clearOutdatedFreshnessFlags,
   getActiveKnowledgeDecayRules,
   getDecayRuleScope,
   hasSameFreshnessConfiguration,
@@ -358,25 +359,20 @@ const hasLowerPriority = (rule: BasicStoreEntityDecayRule, reference: BasicStore
   return rule.order < reference.order || (rule.order === reference.order && String(rule.created_at).localeCompare(String(reference.created_at)) > 0);
 };
 
-/**
- * A rule that gains priority (activated, reordered or retargeted) takes over the elements already flagged by
- * lower priority rules of the same scope: their flags are released so that the next run applies its policy.
- */
-export const releaseFlagsTakenOverByRule = async (context: AuthContext, user: AuthUser, rule: BasicStoreEntityDecayRule) => {
-  const [current] = rule.active ? prepareRules([rule], await listProvenanceTrackedTypes(context)) : [];
-  if (!current || current.types.length === 0) {
-    return 0;
-  }
+const lowerPriorityRuleIds = (rule: BasicStoreEntityDecayRule, activeRules: BasicStoreEntityDecayRule[]) => {
   const scope = getDecayRuleScope(rule);
-  const activeRules = await getActiveKnowledgeDecayRules(context);
-  const lowerRuleIds = activeRules
+  return activeRules
     .filter((other) => other.id !== rule.id && getDecayRuleScope(other) === scope && hasLowerPriority(other, rule))
     .map((other) => other.id);
-  if (lowerRuleIds.length === 0) {
+};
+
+// Runs as the system user: the knowledge the editor of a rule cannot access is released too
+const releaseFlagsOfLowerRules = async (context: AuthContext, current: PreparedRule, lowerRuleIds: string[]) => {
+  if (current.types.length === 0 || lowerRuleIds.length === 0) {
     return 0;
   }
   let released = 0;
-  await elList<BasicStoreBase>(context, user, KNOWLEDGE_FRESHNESS_INDICES, {
+  await elList<BasicStoreBase>(context, SYSTEM_USER, KNOWLEDGE_FRESHNESS_INDICES, {
     types: current.types,
     filters: {
       mode: FilterMode.And,
@@ -394,6 +390,33 @@ export const releaseFlagsTakenOverByRule = async (context: AuthContext, user: Au
       return true;
     },
   });
+  return released;
+};
+
+/**
+ * A rule that gains priority (activated, reordered or retargeted) takes over the elements already flagged by
+ * lower priority rules of the same scope: their flags are released so that the next run applies its policy.
+ */
+export const releaseFlagsTakenOverByRule = async (context: AuthContext, rule: BasicStoreEntityDecayRule) => {
+  const [current] = rule.active ? prepareRules([rule], await listProvenanceTrackedTypes(context)) : [];
+  if (!current) {
+    return 0;
+  }
+  return releaseFlagsOfLowerRules(context, current, lowerPriorityRuleIds(rule, await getActiveKnowledgeDecayRules(context)));
+};
+
+/**
+ * Before applying the rules, a run releases the flags that no rule keeps under the current rules: those of a rule
+ * no longer active, those set before the last configuration change of their rule, and those of a rule that a higher
+ * priority rule takes over. A rule change releases them itself; a release that failed, or a rule applied by a run
+ * that loaded the rules before the change, is completed here.
+ */
+const releaseOutdatedFreshnessFlags = async (context: AuthContext, activeRules: BasicStoreEntityDecayRule[], rules: PreparedRule[]) => {
+  await clearOutdatedFreshnessFlags(activeRules);
+  let released = 0;
+  for (let index = 0; index < rules.length; index += 1) {
+    released += await releaseFlagsOfLowerRules(context, rules[index], lowerPriorityRuleIds(rules[index].rule, activeRules));
+  }
   return released;
 };
 
@@ -440,7 +463,13 @@ let nextRuleStart = 0;
  */
 export const applyKnowledgeDecayRules = async (context: AuthContext, user: AuthUser, opts: { batchSize: number }): Promise<KnowledgeFreshnessRunResult> => {
   const result: KnowledgeFreshnessRunResult = { flagged: 0, lowered: 0, revoked: 0, errors: 0 };
-  const rules = prepareRules(await getActiveKnowledgeDecayRules(context), await listProvenanceTrackedTypes(context));
+  const activeRules = await getActiveKnowledgeDecayRules(context);
+  const rules = prepareRules(activeRules, await listProvenanceTrackedTypes(context));
+  try {
+    await releaseOutdatedFreshnessFlags(context, activeRules, rules);
+  } catch (err) {
+    logApp.warn('[PROVENANCE] Unable to release the outdated knowledge freshness flags, the next run releases them', { cause: err });
+  }
   [...scanCursors.keys()].filter((ruleId) => !rules.some(({ rule }) => rule.id === ruleId)).forEach((ruleId) => scanCursors.delete(ruleId));
   const { nextStart } = await runWithFairShares(
     rules.length,

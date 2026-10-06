@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { clearFreshnessFlagsOfRule } from '../../../../src/modules/decayRule/decayRule-knowledge';
+import { clearFreshnessFlagsOfRule, clearOutdatedFreshnessFlags } from '../../../../src/modules/decayRule/decayRule-knowledge';
+import type { BasicStoreEntityDecayRule } from '../../../../src/modules/decayRule/decayRule-types';
 
 const mockElRawUpdateByQuery = vi.fn();
 
@@ -39,5 +40,30 @@ describe('Knowledge decay rule - clearing the stale flags of a rule', () => {
     mockElRawUpdateByQuery.mockResolvedValue({ updated: 0, version_conflicts: 0, failures: [{ cause: { type: 'script_exception' } }] });
     await expect(clearFreshnessFlagsOfRule('rule-id')).rejects.toThrow('Error clearing knowledge freshness flags');
     expect(mockElRawUpdateByQuery).toHaveBeenCalledTimes(1);
+  });
+
+  it('should clear the flags of inactive rules and the flags set before the last configuration of their rule', async () => {
+    mockElRawUpdateByQuery.mockResolvedValue({ updated: 1, version_conflicts: 0, failures: [] });
+    const configuredAt = '2026-10-06T10:00:00.000Z';
+    const rule = (fields: Partial<BasicStoreEntityDecayRule>) => fields as BasicStoreEntityDecayRule;
+    await clearOutdatedFreshnessFlags([rule({ id: 'configured-rule', freshness_configured_at: configuredAt }), rule({ id: 'older-rule' })]);
+    const [[{ body }]] = mockElRawUpdateByQuery.mock.calls;
+    expect(body.query).toEqual({
+      bool: {
+        must: [{ term: { freshness_stale: true } }],
+        should: [
+          { bool: { must_not: [{ terms: { 'freshness_rule_id.keyword': ['configured-rule', 'older-rule'] } }] } },
+          { bool: { must: [{ term: { 'freshness_rule_id.keyword': 'configured-rule' } }, { range: { freshness_stale_at: { lt: configuredAt } } }] } },
+        ],
+        minimum_should_match: 1,
+      },
+    });
+  });
+
+  it('should clear every flag when no rule is active', async () => {
+    mockElRawUpdateByQuery.mockResolvedValue({ updated: 0, version_conflicts: 0, failures: [] });
+    await clearOutdatedFreshnessFlags([]);
+    const [[{ body }]] = mockElRawUpdateByQuery.mock.calls;
+    expect(body.query.bool.should).toEqual([{ bool: { must_not: [{ terms: { 'freshness_rule_id.keyword': [] } }] } }]);
   });
 });

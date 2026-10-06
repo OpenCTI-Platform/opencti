@@ -23,9 +23,10 @@ import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { checkFiltersValidity } from '../../utils/filtering/filtering-utils';
 import { addKnowledgeDecayRuleCreationCount } from '../../manager/telemetryManager';
-import { ATTRIBUTE_FRESHNESS_RULE_ID, ATTRIBUTE_FRESHNESS_STALE } from '../provenance/provenance-types';
+import { ATTRIBUTE_FRESHNESS_RULE_ID, ATTRIBUTE_FRESHNESS_STALE, ATTRIBUTE_FRESHNESS_STALE_AT } from '../provenance/provenance-types';
 import { listProvenanceTrackedTypes } from '../provenance/provenance-tracking';
 import {
+  ATTRIBUTE_FRESHNESS_CONFIGURED_AT,
   type BasicStoreEntityDecayRule,
   DECAY_RULE_SCOPE_ENTITY,
   DECAY_RULE_SCOPE_INDICATOR,
@@ -181,7 +182,8 @@ const normalizeKnowledgeDecayRule = (input: KnowledgeDecayRuleAddInput | Knowled
 export const addKnowledgeDecayRule = async (context: AuthContext, user: AuthUser, input: KnowledgeDecayRuleAddInput | KnowledgeDecayRuleDefinition, builtIn = false) => {
   const definition = normalizeKnowledgeDecayRule(input);
   validateKnowledgeDecayRule(definition);
-  const ruleInput = { ...definition, built_in: builtIn, created_at: now(), updated_at: now() };
+  const at = now();
+  const ruleInput = { ...definition, built_in: builtIn, created_at: at, updated_at: at, [ATTRIBUTE_FRESHNESS_CONFIGURED_AT]: at };
   const created = await createInternalObject<StoreEntityDecayRule>(context, user, ruleInput, ENTITY_TYPE_DECAY_RULE);
   if (!builtIn) {
     await addKnowledgeDecayRuleCreationCount();
@@ -196,6 +198,9 @@ export const checkDecayRulePatch = (decayRule: BasicStoreEntityDecayRule, input:
   const keys = input.map((editInput) => editInput.key);
   if (keys.includes('target_scope')) {
     throw FunctionalError('The target scope of a decay rule cannot be changed', { id: decayRule.id });
+  }
+  if (keys.includes(ATTRIBUTE_FRESHNESS_CONFIGURED_AT)) {
+    throw FunctionalError('The freshness configuration date of a decay rule is set by the platform', { id: decayRule.id });
   }
   if (!isKnowledgeDecayRule(decayRule)) {
     if (decayRule.built_in) {
@@ -277,6 +282,26 @@ export const clearFreshnessFlagsOfRule = async (ruleId: string) => {
 
 export const clearFreshnessFlagsOfElements = async (ids: string[]) => {
   return clearFreshnessFlags({ terms: { 'internal_id.keyword': ids } });
+};
+
+/**
+ * Flags that no rule may keep: those of a rule that is no longer active, and those set before the last configuration
+ * change of their rule. A rule change releases them itself; every knowledge freshness run completes a release that failed.
+ */
+export const clearOutdatedFreshnessFlags = async (activeRules: BasicStoreEntityDecayRule[]) => {
+  const ruleIdField = `${ATTRIBUTE_FRESHNESS_RULE_ID}.keyword`;
+  const outdated: Record<string, unknown>[] = [{ bool: { must_not: [{ terms: { [ruleIdField]: activeRules.map((rule) => rule.id) } }] } }];
+  activeRules.filter((rule) => !!rule[ATTRIBUTE_FRESHNESS_CONFIGURED_AT]).forEach((rule) => {
+    outdated.push({
+      bool: {
+        must: [
+          { term: { [ruleIdField]: rule.id } },
+          { range: { [ATTRIBUTE_FRESHNESS_STALE_AT]: { lt: rule[ATTRIBUTE_FRESHNESS_CONFIGURED_AT] } } },
+        ],
+      },
+    });
+  });
+  return clearFreshnessFlags({ bool: { must: [{ term: { [ATTRIBUTE_FRESHNESS_STALE]: true } }], should: outdated, minimum_should_match: 1 } });
 };
 
 /**
