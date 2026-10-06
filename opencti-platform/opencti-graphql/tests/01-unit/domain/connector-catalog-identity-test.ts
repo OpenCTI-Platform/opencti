@@ -109,6 +109,19 @@ describe('Connector catalog identity - normalisation', () => {
     expect(identityKeys('abuse ch - ThreatFox')).toEqual(['abusechthreatfox', 'threatfox']);
   });
 
+  it('should only drop qualifiers at the end of a name', () => {
+    expect(identityKeys('Foo (different) Bar')).toEqual(['foodifferentbar']);
+    expect(identityKeys('Feed (KEV) [composer]')).toEqual(['feed']);
+    // An interior qualifier tells two entries apart instead of making their names equal.
+    const catalog = buildCatalogIdentityIndex([
+      contract('foo-bar', 'Foo Bar', 'EXTERNAL_IMPORT'),
+      contract('foo-different-bar', 'Foo (different) Bar', 'EXTERNAL_IMPORT'),
+    ]);
+    expect(findCatalogContractByName(catalog, 'Foo (different) Bar', 'EXTERNAL_IMPORT')?.slug).toEqual('foo-different-bar');
+    expect(findCatalogContractByName(catalog, 'Foo Bar', 'EXTERNAL_IMPORT')?.slug).toEqual('foo-bar');
+    expect(findCatalogContractByName(catalog, 'Foo Bar (v2)', 'EXTERNAL_IMPORT')?.slug).toEqual('foo-bar');
+  });
+
   it('should only drop a vendor prefix on a word boundary', () => {
     expect(identityKeys('AbuseChecker')).toEqual(['abusechecker']);
   });

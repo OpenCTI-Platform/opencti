@@ -58,8 +58,9 @@ const isManagedConnector = (connector: Pick<IdentityConnector, 'manager_contract
 export const MIN_CONTAINMENT_LENGTH = 5;
 // Publishers that deployers put in front of a connector name while the catalog title omits them.
 const VENDOR_PREFIXES = [/^abuse[\s._-]*ch\b[\s:._|-]*/i];
-// Parenthesised or bracketed suffixes: "(KEV)", "(Deprecated)", "[composer]".
-const PARENTHESISED = /\([^)]*\)|\[[^\]]*\]/g;
+// Parenthesised or bracketed suffixes: "(KEV)", "(Deprecated)", "[composer]". Only at the end of
+// the name: an interior qualifier ("Foo (different) Bar") is part of the identity.
+const TRAILING_QUALIFIERS = /(?:\s*(?:\([^)]*\)|\[[^\]]*\]))+\s*$/;
 const NOISE_WORDS = /\bconnector\b/gi;
 // A name is only compared with the catalog entries of the same connector type; an analysis
 // connector runs the image of an import file connector (import-document in analysis mode).
@@ -67,7 +68,7 @@ const NAME_MATCH_CATALOG_TYPES: Record<string, string[]> = {
   INTERNAL_ANALYSIS: ['INTERNAL_ANALYSIS', 'INTERNAL_IMPORT_FILE'],
 };
 
-const cleanIdentityName = (value: string) => value.replace(PARENTHESISED, ' ').replace(NOISE_WORDS, ' ').trim();
+const cleanIdentityName = (value: string) => value.replace(TRAILING_QUALIFIERS, ' ').replace(NOISE_WORDS, ' ').trim();
 
 const stripVendorPrefix = (value: string) => VENDOR_PREFIXES.reduce((current, prefix) => current.replace(prefix, ''), value);
 
