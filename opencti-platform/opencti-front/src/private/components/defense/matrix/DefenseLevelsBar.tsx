@@ -26,10 +26,12 @@ export const DefenseLevelsBar = ({ levels, height = 12, label }: DefenseLevelsBa
       values: { label: t_i18n(DEFENSE_LEVEL_LABELS[level]), count, share: total === 0 ? 0 : Math.round((count / total) * 100) },
     });
   };
+  // The segments cannot take the focus: a custom summary leads the counts of every level, it never replaces them
+  const levelsSummary = DEFENSE_LEVELS.map(segmentLabel).join(', ');
   return (
     <Box
       role="img"
-      aria-label={label ?? DEFENSE_LEVELS.map(segmentLabel).join(', ')}
+      aria-label={label ? `${label}. ${levelsSummary}` : levelsSummary}
       sx={{ display: 'flex', width: '100%', height, borderRadius: '4px', overflow: 'hidden', backgroundColor: 'action.hover' }}
     >
       {total > 0 && DEFENSE_LEVELS.map((level) => {

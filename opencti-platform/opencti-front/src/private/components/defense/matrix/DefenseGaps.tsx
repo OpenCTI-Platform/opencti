@@ -25,6 +25,8 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import SearchInput from '../../../../components/SearchInput';
 import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { KNOWLEDGE_KNFRONTENDEXPORT } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import { DefenseGapsPlatformsQuery } from './__generated__/DefenseGapsPlatformsQuery.graphql';
 import { DefenseGapsLinesPaginationQuery, DefenseGapsLinesPaginationQuery$variables } from './__generated__/DefenseGapsLinesPaginationQuery.graphql';
@@ -248,15 +250,17 @@ const DefenseGaps = () => {
             onlyUsedByThreats={usedByThreatsFilter}
             onTotalChange={setTotal}
             actions={(
-              <Button
-                variant="secondary"
-                startIcon={<FileDownloadOutlined fontSize="small" />}
-                onClick={handleExport}
-                disabled={exporting}
-                data-testid="defense-gaps-export"
-              >
-                {t_i18n('Export CSV')}
-              </Button>
+              <Security needs={[KNOWLEDGE_KNFRONTENDEXPORT]}>
+                <Button
+                  variant="secondary"
+                  startIcon={<FileDownloadOutlined fontSize="small" />}
+                  onClick={handleExport}
+                  disabled={exporting}
+                  data-testid="defense-gaps-export"
+                >
+                  {t_i18n('Export CSV')}
+                </Button>
+              </Security>
             )}
           />
         </Suspense>

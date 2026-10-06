@@ -674,6 +674,8 @@ describe('Threat-informed defense matrix', () => {
       query: DEFENSE_VALIDATE,
       variables: { input: { attackPatternIds: [created.attackPattern] } },
     });
+    // The CSV export is an export of the web interface: knowledge access alone does not grant it
+    await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, { query: DEFENSE_GAP_EXPORT, variables: {} });
     await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: RECOMPUTE });
     await queryAsUserIsExpectedForbidden(USER_EDITOR, { query: MAPPINGS, variables: {} });
     await queryAsUserIsExpectedForbidden(USER_PARTICIPATE, {

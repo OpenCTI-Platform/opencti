@@ -5,9 +5,10 @@ import type { BasicStoreEntity, BasicStoreRelation } from '../../types/store';
 import { fullEntitiesList, fullRelationsList, internalFindByIds, storeLoadById } from '../../database/middleware-loader';
 import { elBulk } from '../../database/engine';
 import { buildEntityData } from '../../database/data-builder';
-import { FunctionalError } from '../../config/errors';
-import { SYSTEM_USER } from '../../utils/access';
+import { ForbiddenAccess, FunctionalError } from '../../config/errors';
+import { isUserHasCapability, SYSTEM_USER } from '../../utils/access';
 import { now } from '../../utils/format';
+import { KNOWLEDGE_FRONTEND_EXPORT } from '../../schema/general';
 import { getParentTypes } from '../../schema/schemaUtils';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION, ENTITY_TYPE_DATA_COMPONENT, ENTITY_TYPE_IDENTITY_SYSTEM } from '../../schema/stixDomainObject';
 import { RELATION_PROVIDES } from '../../schema/stixCoreRelationship';
@@ -915,6 +916,10 @@ const EXPORT_HEADERS = [
 ];
 
 export const exportDefenseGaps = async (context: AuthContext, user: AuthUser, args: GapsArgs) => {
+  // An export of the web interface: the platform grants it with its own capability, on top of the knowledge access
+  if (!isUserHasCapability(user, KNOWLEDGE_FRONTEND_EXPORT)) {
+    throw ForbiddenAccess();
+  }
   // The first DEFENSE_GAPS_EXPORT_MAX gaps in the requested order are exported, records and rule candidates loaded by
   // bounded batches; the interface tells when the backlog holds more
   const { gaps: exported } = await computeGapViews(context, user, args, DEFENSE_GAPS_EXPORT_MAX);
