@@ -26,6 +26,7 @@ import ProvenanceSourceKindIcon from './ProvenanceSourceKindIcon';
 import ProvenanceSourceName from './ProvenanceSourceName';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { groupConflictValues, groupProceduresByText, notifyPayloadErrors, type ProvenanceData, sortAssertionsByRecency, sourceKindLabel, warningColor } from './provenanceUtils';
+import { refreshProvenanceCounts } from './provenanceCountsRefresh';
 import { ProvenanceSourcesPanelQuery } from './__generated__/ProvenanceSourcesPanelQuery.graphql';
 
 export const provenanceSourcesPanelQuery = graphql`
@@ -139,6 +140,7 @@ const ProvenanceSourcesContent = ({ queryRef, onChange }: ProvenanceSourcesConte
   const completeWith = (successMessage: string) => (_: unknown, errors: readonly PayloadError[] | null) => {
     if (notifyPayloadErrors(errors)) return;
     onChange();
+    refreshProvenanceCounts();
     MESSAGING$.notifySuccess(successMessage);
   };
   const onAdopt = (field: string, valueHash: string) => commitAdopt({ variables: { id: element.id, field, valueHash }, onCompleted: completeWith(t_i18n('The value has been adopted')) });

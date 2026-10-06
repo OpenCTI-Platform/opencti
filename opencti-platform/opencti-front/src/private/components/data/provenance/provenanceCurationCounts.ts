@@ -1,5 +1,6 @@
 import { useLazyLoadQuery } from 'react-relay';
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import useProvenanceCountsFetchKey from '../../common/provenance/provenanceCountsRefresh';
 import { provenanceKpiStripQuery } from './ProvenanceKpiStrip';
 import useProvenanceTrackedFilters from './useProvenanceTrackedFilters';
 import { ProvenanceKpiStripQuery, ProvenanceKpiStripQuery$variables } from './__generated__/ProvenanceKpiStripQuery.graphql';
@@ -16,13 +17,15 @@ export const STALE_FILTERS: FilterGroup = {
   filterGroups: [],
 };
 
-// Same query and variables as the counters of the tab, so that the badge and the counters share one result
+// Same query, variables and fetch key as the counters of the tab, so that the badge and the counters share one result
 const useProvenanceCurationCount = (baseFilters: FilterGroup) => {
   const filters = useProvenanceTrackedFilters(baseFilters);
+  const fetchKey = useProvenanceCountsFetchKey();
+  // store-and-network keeps the badge shown while a new fetch key reads the count again
   const data = useLazyLoadQuery<ProvenanceKpiStripQuery>(
     provenanceKpiStripQuery,
     { filters } as unknown as ProvenanceKpiStripQuery$variables,
-    { fetchPolicy: 'store-or-network' },
+    { fetchPolicy: 'store-and-network', fetchKey },
   );
   return (data.entities?.total ?? 0) + (data.relationships?.total ?? 0) + (data.sightings?.total ?? 0);
 };

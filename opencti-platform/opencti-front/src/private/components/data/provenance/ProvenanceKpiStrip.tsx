@@ -4,6 +4,7 @@ import { Button } from '@filigran/design-system';
 import Stack from '@mui/material/Stack';
 import { useFormatter } from '../../../../components/i18n';
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import useProvenanceCountsFetchKey from '../../common/provenance/provenanceCountsRefresh';
 import { ProvenanceKpiStripQuery, ProvenanceKpiStripQuery$variables } from './__generated__/ProvenanceKpiStripQuery.graphql';
 
 export const provenanceKpiStripQuery = graphql`
@@ -40,7 +41,12 @@ interface ProvenanceKpiStripProps {
  */
 const ProvenanceKpiStrip = ({ filters, value, onChange, label, children }: ProvenanceKpiStripProps) => {
   const { t_i18n } = useFormatter();
-  const data = useLazyLoadQuery<ProvenanceKpiStripQuery>(provenanceKpiStripQuery, { filters } as unknown as ProvenanceKpiStripQuery$variables, { fetchPolicy: 'store-and-network' });
+  const fetchKey = useProvenanceCountsFetchKey();
+  const data = useLazyLoadQuery<ProvenanceKpiStripQuery>(
+    provenanceKpiStripQuery,
+    { filters } as unknown as ProvenanceKpiStripQuery$variables,
+    { fetchPolicy: 'store-and-network', fetchKey },
+  );
   const counts: Record<ProvenanceKind, number> = {
     entities: data.entities?.total ?? 0,
     relationships: data.relationships?.total ?? 0,
