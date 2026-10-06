@@ -171,8 +171,8 @@ When several sources describe how a threat uses a technique, each `uses` relatio
 
 Procedures are recorded with the provenance of relationships: they are only preserved while provenance is tracked on the `uses` relationship type (tracked by default, see [Relationship types](#relationship-types)). Two parameters are available in the "Procedures" card of "Settings > Customization > Entity types > Relationships":
 
-- **Procedures preservation on uses relationships**: enable or disable the preservation of the procedures (enabled by default).
-- **Procedures description policy**: when a new procedure arrives, keep the longest one or the most recent one as the description (longest by default).
+- **Preserve each source's procedure**: on `uses` relationships to attack patterns, keep the procedure of every source instead of overwriting the description (enabled by default). The switch is disabled while the `uses` relationship type is not tracked.
+- **Description of the relationship**: when a new procedure arrives, keep the "Longest procedure" or the "Most recent procedure" as the description (longest by default).
 
 ## Curation tabs
 

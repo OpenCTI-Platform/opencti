@@ -138,7 +138,10 @@ const EntitySettingProvenanceRelationships = ({ entitySettingData }: EntitySetti
     <Tooltip>
       <TooltipTrigger asChild>
         {/* A disabled button receives no pointer event: the wrapper keeps the tooltip reachable */}
-        <span tabIndex={isRecommendedTracked ? 0 : -1}>
+        <span
+          tabIndex={isRecommendedTracked ? 0 : -1}
+          className="inline-flex rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-filigran-brand-primary focus-visible:ring-offset-2 focus-visible:ring-offset-focus"
+        >
           <Button
             priority="secondary"
             size="sm"
