@@ -80,6 +80,7 @@ import {
   isIocValidationTestKind,
   isSummaryComplete,
   isTrustedDeploymentReporter,
+  requestAccessEndsOf,
   requestAccessOf,
   requesterIdOf,
   summarizeValidationResults,
@@ -214,7 +215,8 @@ const ensureRequestAccess = async (context: AuthContext, user: AuthUser, request
     loadEnds(request.indicator_ids, ENTITY_TYPE_INDICATOR),
     loadEnds(request.platform_ids, ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM),
   ]);
-  const ends = [...indicators, ...platforms].filter((end) => end) as AccessControlled[];
+  const referencedCount = new Set(request.indicator_ids ?? []).size + new Set(request.platform_ids ?? []).size;
+  const ends = requestAccessEndsOf(request, [...indicators, ...platforms].filter((end) => end) as AccessControlled[], referencedCount);
   const expected = await expectedRequestAccess(context, ends);
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const patch: Record<string, string[]> = {};

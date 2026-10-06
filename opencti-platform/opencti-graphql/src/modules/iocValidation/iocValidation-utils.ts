@@ -51,6 +51,14 @@ export const requestAccessOf = (ends: AccessControlledElement[]) => {
 };
 
 /**
+ * Ends the access of a request is computed from. The request still describes an indicator or security platform that
+ * can no longer be read (deleted meanwhile), so it then also keeps its own current access: it can only get stricter.
+ */
+export const requestAccessEndsOf = (request: AccessControlledElement, ends: AccessControlledElement[], referencedCount: number) => {
+  return ends.length < referencedCount ? [...ends, request] : ends;
+};
+
+/**
  * The creator_id of a deployed-on relationship lists the accounts that created or upserted it: the integrations
  * that record the lifecycle of this indicator on this security platform, the only ones speaking for the platform.
  */

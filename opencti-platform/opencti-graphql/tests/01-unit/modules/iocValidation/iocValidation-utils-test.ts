@@ -6,6 +6,7 @@ import {
   isDeploymentReporter,
   isIocValidationTestKind,
   isSummaryComplete,
+  requestAccessEndsOf,
   requestAccessOf,
   requesterIdOf,
   resolveTestKind,
@@ -180,6 +181,16 @@ describe('IOC validation request access', () => {
     expect(requestAccessOf([{ granted: ['org-a'] }, { granted: [] }]).organizationIds).toEqual([]);
     expect(requestAccessOf([{ granted: ['org-a'] }, {}]).organizationIds).toEqual([]);
     expect(requestAccessOf([]).organizationIds).toEqual([]);
+  });
+
+  it('should never be loosened by an indicator or security platform that can no longer be read', () => {
+    const request = { 'object-marking': ['tlp-red'], granted: ['org-a'] };
+    const surviving = [{ 'object-marking': ['tlp-green'], granted: ['org-a', 'org-b'] }];
+    const access = requestAccessOf(requestAccessEndsOf(request, surviving, 2));
+    expect(access.markingIds.sort()).toEqual(['tlp-green', 'tlp-red']);
+    expect(access.organizationIds).toEqual(['org-a']);
+    // Every end read: the access follows the ends only
+    expect(requestAccessOf(requestAccessEndsOf(request, surviving, 1))).toEqual({ markingIds: ['tlp-green'], organizationIds: ['org-a', 'org-b'] });
   });
 });
 

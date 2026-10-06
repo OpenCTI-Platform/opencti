@@ -179,7 +179,8 @@ being sent is deleted once the sending is recorded.
 A request describes all its indicators and security platforms (its name, description, status messages and OpenAEV
 run), so only the users who can read every one of them can see, list or delete it: it carries the markings of all of
 them (the highest of each type) and, on a platform with organization segregation, is shared with the organizations all
-of them are shared with. It follows every later change of their markings or sharing. Within a request, each user only
+of them are shared with. It follows every later change of their markings or sharing; once one of them is deleted, a
+change of the others can only make the request stricter, never looser. Within a request, each user only
 sees the indicators, results and deployments they can read. The OpenAEV IOC validation connector keeps reporting on the
 requests sent to it, whatever its account can read.
 
