@@ -20,7 +20,9 @@ Each technique gets one level per security platform, and one aggregated level ov
 
 A failed latest validation caps the level at 2: the detection is deployed, but it was proven ineffective. A technique is considered **covered** from level 3.
 
-Level 3 is read from the deployment records of a rule: the `deployed-on` relationship to a security platform and its deployment status. Without a deployment record, a rule known in OpenCTI counts as **Detection available** (level 2), and its next action is **Deploy the rule**.
+!!! note "Deployment records"
+
+    Level 3 is read from the deployment records of a rule: the `deployed-on` relationship to a security platform and its deployment status. This version of OpenCTI does not record rule deployments, so no technique reaches level 3: a rule known in OpenCTI counts as **Detection available** (level 2) with the next action **Deploy the rule**, and a technique is covered once OpenAEV proves its detection or its prevention (level 4). The telemetry inferred from running rules, the deployment statuses and the deployed figures described below apply to the platforms that record deployments.
 
 Mitigations (courses of action that `mitigate` the technique) are shown as a separate marker: they do not change the level.
 
@@ -42,7 +44,7 @@ A security platform, or a system, declares the MITRE data components it collects
 
 ![Declaring telemetry from log sources](assets/defense-matrix-logsources-dialog.png)
 
-Telemetry is also inferred from the log sources of the rules running on a platform (deployment status deployed or active): a pending, failed, removed or expired deployment does not prove that the platform collects the log source. An inferred telemetry counts for a reader only if this reader can access the rule, its deployment and the `indicates` relationship linking the rule to the technique.
+With deployment records (see **Deployment records** above), telemetry is also inferred from the log sources of the rules running on a platform (deployment status deployed or active): a pending, failed, removed or expired deployment does not prove that the platform collects the log source. An inferred telemetry counts for a reader only if this reader can access the rule, its deployment and the `indicates` relationship linking the rule to the technique.
 
 ### Telemetry mappings
 
@@ -56,7 +58,7 @@ OpenCTI ships built-in mappings covering the Sigma taxonomy, which you can edit 
 
 Detection rules are Indicators whose pattern type is a rule language. The rule metadata is stored on the Indicator and normalized (trimmed, lower case): status, level and log source (category, product, service).
 
-Connectors import public rule repositories (SigmaHQ, Valhalla, ...) and the rules deployed in your SIEM and EDR (Splunk saved searches, Elastic, Microsoft Sentinel, CrowdStrike custom IOA rules, Google SecOps YARA-L rules). Rules deployed on a platform are linked to it with the `deployed-on` relationship and its deployment status.
+Connectors import public rule repositories (SigmaHQ, Valhalla, ...) and the rules deployed in your SIEM and EDR (Splunk saved searches, Elastic, Microsoft Sentinel, CrowdStrike custom IOA rules, Google SecOps YARA-L rules). An imported rule counts as **Detection available**; with deployment records, the rules deployed on a platform are linked to it with the `deployed-on` relationship and its deployment status.
 
 A rule whose detection logic is not its query alone is imported with the whole logic as pattern, so that a change of any part of it is a new rule: Elastic threshold, new terms and indicator match rules (`elastic-rule`), Microsoft Sentinel scheduled rules, whose lookback and trigger are part of their logic (`sentinel-rule`), and Splunk saved searches with a trigger condition (`splunk-rule`) carry the canonical JSON of their query and conditions.
 
@@ -87,7 +89,7 @@ When the selected threats or the threat filters match no threat, the threat over
 
 The selected platforms and threats are remembered per user, in the browser, and shared by the Matrix and Gaps sections. Every level and every threat count only uses the knowledge you can access: a change of the `uses` relationships or of the markings and organizations of a threat is reflected at the next refresh. All threats counts every threat you can access, and a threat scope defined by filters every matching threat, including the threats that use no technique yet. A sub-technique is grouped under its parent only if you can access the parent and the relationship between them.
 
-Click a technique to open its drawer. It starts with the level and one sentence explaining it from its evidences, for example "Detected by 2 rules deployed on Splunk, not validated yet", and the next action of the level:
+Click a technique to open its drawer. It starts with the level and one sentence explaining it from its evidences, for example "2 detection rules are available, deployed on no security platform yet.", and the next action of the level:
 
 | Level | Next action |
 |:------|:------------|
@@ -99,7 +101,7 @@ Click a technique to open its drawer. It starts with the level and one sentence 
 
 Below, the drawer lists the evidences per platform: the data components and the platforms providing them, the detection rules and their deployments, the OpenAEV results behind the displayed level (those of the selected platforms), the mitigations, the threats using the technique and the validation requests already sent.
 
-![Technique drawer of a deployed detection](assets/defense-matrix-drawer-deployed.png)
+![Technique drawer when no OpenAEV platform is connected](assets/defense-matrix-drawer-no-openaev.png)
 
 ![Technique drawer after a failed validation](assets/defense-matrix-drawer-failed.png)
 
@@ -145,10 +147,10 @@ A [live trigger](notifications.md#triggers) can listen to two defense events in 
 
 | Event | Sent when |
 |:------|:----------|
-| **Defense level decreased** | The aggregated defense level of a technique, as the recipient sees it, goes down: for example a rule is removed from a platform, a platform stops providing a data component or the latest OpenAEV validation failed. |
-| **Defense level increased** | The aggregated defense level of a technique, as the recipient sees it, goes up: for example a rule is deployed or a validation succeeds. |
+| **Defense level decreased** | The aggregated defense level of a technique, as the recipient sees it, goes down: for example the last rule indicating it is deleted, a platform stops providing a data component or the latest OpenAEV validation failed. |
+| **Defense level increased** | The aggregated defense level of a technique, as the recipient sees it, goes up: for example a rule indicating it is imported or a validation succeeds. |
 
-The notification names the technique and both levels, for example "defense level decreased from 3 (detection deployed) to 1 (telemetry)". Use the trigger filters to restrict it, for example to attack patterns with a given kill chain phase or label. The level changes of a computation are kept until they are delivered: if the notifications cannot be sent, the defense coverage manager sends them at its next run. A change is only reported up to the level actually stored, so a computation that could not be saved notifies nothing.
+The notification names the technique and both levels, for example "defense level decreased from 4 (validated) to 2 (detection available)". Use the trigger filters to restrict it, for example to attack patterns with a given kill chain phase or label. The level changes of a computation are kept until they are delivered: if the notifications cannot be sent, the defense coverage manager sends them at its next run, and a trigger notified before the failure is told the next change of the technique from the level it was notified of. A change is only reported up to the level actually stored, so a computation that could not be saved notifies nothing.
 
 Each recipient is told about the level they see: both levels are computed from the evidences the recipient can access, so a change caused only by a rule, a relationship or a result they cannot see sends them nothing, and a change they can see is reported even when other evidences keep the overall level unchanged. An evidence deleted since the previous computation counts with the markings and organizations it had, as kept in the [trash](delete-restore.md#trash); once it is no longer in the trash, it no longer counts for anyone but the users who bypass access restrictions. A recipient is only notified about techniques they can access. The first computation of the matrix sets the levels without notifying, and a recomputation that leaves a level unchanged notifies nobody. Digests built on these triggers collect the events like any other live notification.
 
