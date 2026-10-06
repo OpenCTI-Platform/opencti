@@ -63,6 +63,12 @@ describe('graph analytics cluster lineage', () => {
     expect(buildDisplacedGraphClusterId('P', 'run-1')).not.toBe(buildDisplacedGraphClusterId('P', 'run-2'));
   });
 
+  it('should move a cluster whose provisional id is a previous cluster it does not continue', () => {
+    // previous P = {A, B, C, D}; computed {A, E, F} keeps the anchor A, hence the provisional id P, with 1 of 4 members
+    const renames = matchClusterLineage([{ next: 'P', previous: 'P', members: 1 }], new Map([['P', 4]]), displaced);
+    expect(renames).toEqual(new Map([['P', 'P-displaced']]));
+  });
+
   it('should leave clusters keeping their computed id untouched', () => {
     expect(matchClusterLineage([{ next: 'P', previous: 'P', members: 9 }], new Map([['P', 10]]), displaced).size).toBe(0);
   });
