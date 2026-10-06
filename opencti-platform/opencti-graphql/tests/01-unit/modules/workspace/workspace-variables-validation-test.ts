@@ -83,8 +83,16 @@ describe('buildDashboardVariable - update', () => {
     expect(variable.id).toEqual(current.id);
     expect(variable.defaultValue).toEqual('other-id');
   });
-  it('should reject an unknown id', () => {
-    expect(() => build({ id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb' }, [existing()])).toThrow('Dashboard variable not found');
+  it('should recreate a deleted variable with its id so orphan tokens resolve again', () => {
+    const variable = build({ id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb' }, [existing()]);
+    expect(variable.id).toEqual('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb');
+  });
+  it('should reject an unknown id that is not a uuid', () => {
+    expect(() => build({ id: 'not-a-uuid' }, [existing()])).toThrow('Invalid dashboard variable id');
+  });
+  it('should apply the quota when recreating with a given id', () => {
+    const variables = Array.from({ length: 50 }, (_, i) => existing({ id: `id-${i}`, name: `v${i}` }));
+    expect(() => build({ id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', name: 'recreated' }, variables)).toThrow('A dashboard cannot hold more than 50 variables');
   });
   it('should reject a type change', () => {
     const current = existing();

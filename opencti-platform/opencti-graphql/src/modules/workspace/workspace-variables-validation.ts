@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import * as R from 'ramda';
+import validator from 'validator';
 import { FunctionalError } from '../../config/errors';
 import { isBasicObject } from '../../schema/stixCoreObject';
 import { checkFiltersFormat } from '../../utils/filtering/filtering-utils';
@@ -127,7 +128,10 @@ export const buildDashboardVariable = (
   now: Date = new Date(),
 ): StoreDashboardVariable => {
   const current = input.id ? existingVariables.find((variable) => variable.id === input.id) : undefined;
-  if (input.id && !current) throw FunctionalError('Dashboard variable not found', { variableId: input.id });
+  // An unknown id recreates the variable with it: tokens left orphan by a deletion resolve again.
+  if (input.id && !current && !validator.isUUID(input.id)) {
+    throw FunctionalError('Invalid dashboard variable id', { variableId: input.id });
+  }
   if (!current && existingVariables.length >= DASHBOARD_VARIABLES_MAX_COUNT) {
     throw FunctionalError(`A dashboard cannot hold more than ${DASHBOARD_VARIABLES_MAX_COUNT} variables`);
   }
@@ -142,5 +146,5 @@ export const buildDashboardVariable = (
   const typeSpecificFields = buildTypeSpecificFields(type, input);
   const restriction = buildRestriction(type, input);
   const defaultValue = buildDefaultValue(type, input, restriction, now);
-  return { id: current?.id ?? uuidv4(), name, ...typeSpecificFields, restriction, defaultValue } as StoreDashboardVariable;
+  return { id: input.id ?? uuidv4(), name, ...typeSpecificFields, restriction, defaultValue } as StoreDashboardVariable;
 };
