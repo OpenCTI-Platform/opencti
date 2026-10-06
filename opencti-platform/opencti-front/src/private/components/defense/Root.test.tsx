@@ -123,6 +123,7 @@ describe('Defense root', () => {
     expect(screen.getByTestId('hub-empty')).toHaveTextContent('No Defense area is available on this platform yet.');
     expect(screen.getByRole('link', { name: 'Read the documentation' })).toHaveAttribute('href', DEFENSE_DOCUMENTATION_URL);
     expect(screen.queryByTestId('hub-no-access')).not.toBeInTheDocument();
+    expect(screen.getByTestId('hub-breadcrumb-separator')).toHaveAttribute('aria-hidden', 'true');
   });
 
   it('sends any path below an empty hub to its landing page', async () => {
@@ -136,6 +137,7 @@ describe('Defense root', () => {
     renderDefense([area('alpha', 'Report')], '/dashboard/defense');
     expect(await screen.findByText('Nothing in Defense is available to you')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Back to the dashboard' })).toHaveAttribute('href', '/dashboard');
+    expect(screen.getByTestId('hub-breadcrumb-separator')).toHaveAttribute('aria-hidden', 'true');
     expect(screen.queryByTestId('hub-empty')).not.toBeInTheDocument();
     expect(screen.queryByText('home page')).not.toBeInTheDocument();
   });

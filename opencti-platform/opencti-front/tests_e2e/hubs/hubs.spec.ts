@@ -45,7 +45,7 @@ test.describe('Hubs without a registered page', { tag: ['@ce'] }, () => {
 
     const firstUse = page.getByTestId('hub-first-use');
     await expect(firstUse).toBeVisible();
-    await expect(firstUse.getByText('Keep your knowledge base clean and trustworthy, from one place.')).toBeVisible();
+    await expect(firstUse.getByText('Keep your knowledge base clean and trustworthy.')).toBeVisible();
     await expect(firstUse.getByTestId('hub-empty')).toContainText('No Curation page is available on this platform yet.');
     await expect(firstUse.getByRole('link', { name: 'Read the documentation' }))
       .toHaveAttribute('href', 'https://docs.opencti.io/latest/usage/curation-hub/');

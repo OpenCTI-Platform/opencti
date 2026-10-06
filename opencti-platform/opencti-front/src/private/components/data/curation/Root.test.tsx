@@ -103,9 +103,10 @@ describe('Curation hub', () => {
     expect(await screen.findByTestId('hub-first-use')).toBeInTheDocument();
     expect(screen.getByText('Data')).toBeInTheDocument();
     expect(screen.getAllByText('Curation').length).toBeGreaterThanOrEqual(2);
-    expect(screen.getByText('Keep your knowledge base clean and trustworthy, from one place.')).toBeInTheDocument();
+    expect(screen.getByText('Keep your knowledge base clean and trustworthy.')).toBeInTheDocument();
     expect(screen.getByTestId('hub-empty')).toHaveTextContent('No Curation page is available on this platform yet.');
     expect(screen.getByRole('link', { name: 'Read the documentation' })).toHaveAttribute('href', CURATION_DOCUMENTATION_URL);
+    expect(screen.queryByTestId('hub-breadcrumb-separator')).not.toBeInTheDocument();
   });
 
   it('sends any path below an empty hub to its landing page', async () => {

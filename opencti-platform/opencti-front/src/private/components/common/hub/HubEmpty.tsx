@@ -1,8 +1,8 @@
 import React from 'react';
 import { Text } from '@filigran/design-system';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
 import PageContainer from '../../../../components/PageContainer';
 import { useFormatter } from '../../../../components/i18n';
+import HubBreadcrumbs from './HubBreadcrumbs';
 import { type HubEntry, HubEntryContext } from './HubEntryContext';
 import HubFirstUse from './HubFirstUse';
 
@@ -25,9 +25,7 @@ const HubEmpty = ({ hub, parents = [], message, documentationUrl }: HubEmptyProp
   const { t_i18n } = useFormatter();
   return (
     <PageContainer withRightMenu={false}>
-      <Breadcrumbs
-        elements={[...parents.map((label) => ({ label: t_i18n(label) })), { label: t_i18n(hub.label), current: true }]}
-      />
+      <HubBreadcrumbs hub={hub.label} parents={parents} />
       <HubEntryContext.Provider value={hub}>
         <HubFirstUse documentationUrl={documentationUrl}>
           <Text variant="content-base" data-testid="hub-empty">{t_i18n(message)}</Text>

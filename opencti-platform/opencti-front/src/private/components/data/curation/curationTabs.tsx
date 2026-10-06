@@ -12,7 +12,7 @@ export const CURATION_DOCUMENTATION_URL = 'https://docs.opencti.io/latest/usage/
 /** The hub itself, as its landing page names it while no tab is registered. */
 export const CURATION_HUB: HubEntry = {
   label: 'Curation',
-  description: 'Keep your knowledge base clean and trustworthy, from one place.',
+  description: 'Keep your knowledge base clean and trustworthy.',
   icon: <AutoFixHighOutlined />,
 };
 

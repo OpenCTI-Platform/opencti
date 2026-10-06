@@ -33,7 +33,9 @@ available yet, and links to its documentation. Once an entry is registered, the 
 entry instead. A reader whose entries are all hidden (entity type hidden, capability missing, platform
 module disabled) sees no menu entry, and a direct link shows the no-access page
 (`common/hub/HubNoAccess.tsx`) with a way back. Both hubs require access to the knowledge, from the
-menu and from a direct link alike.
+menu and from a direct link alike. Both pages draw their breadcrumb with `common/hub/HubBreadcrumbs.tsx`,
+which keeps a single-entry breadcrumb (Defense) at the height of one with a parent (Data / Curation),
+so the first block of every hub page starts at the offset of the core pages.
 
 ## Registering a Defense area
 
