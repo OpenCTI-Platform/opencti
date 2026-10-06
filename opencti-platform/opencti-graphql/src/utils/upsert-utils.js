@@ -7,7 +7,8 @@ import path from 'path';
 import { computeDateFromEventId, truncate, utcDate } from './format';
 import { isEmptyField, isNotEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REPLACE } from '../database/utils';
 import { hasSameSourceAlreadyUpdateThisScore, INDICATOR_DEFAULT_SCORE } from '../modules/indicator/indicator-utils';
-import { creators as creatorsAttribute, iAttributes, xOpenctiStixIds } from '../schema/attribute-definition';
+import { coverageInformation as coverageInformationAttribute, creators as creatorsAttribute, iAttributes, xOpenctiStixIds } from '../schema/attribute-definition';
+import { preservePlatformCoverage } from '../modules/hunt/hunt-coverage-utils';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_INDICATOR } from '../modules/indicator/indicator-types';
 import { isObjectAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
@@ -485,7 +486,10 @@ export const generateAttributesInputsForUpsert = (context, _user, resolvedElemen
     const attributeKey = attribute.name;
     const isInputAvailable = attributeKey in updatePatch;
     if (isInputAvailable) { // The attribute is explicitly available in the patch
-      const inputData = updatePatch[attributeKey];
+      // Coverage entries computed by the platform (hunt validation) are not owned by integrations
+      const inputData = attributeKey === coverageInformationAttribute.name
+        ? preservePlatformCoverage(resolvedElement[attributeKey], updatePatch[attributeKey])
+        : updatePatch[attributeKey];
       const isOutDatedModification = isOutdatedUpdate(context, resolvedElement, attributeKey);
       const isStructuralUpsert = attributeKey === xOpenctiStixIds.name || attributeKey === creatorsAttribute.name; // Ids and creators consolidation is always granted
       const isFullSync = context.synchronizedUpsert || attribute.upsert_force_replace; // In case of full synchronization or force full upsert, just update the data

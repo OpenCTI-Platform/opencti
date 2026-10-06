@@ -45,6 +45,10 @@ import type { BasicStoreEntityPir } from '../modules/pir/pir-types';
 import type { BasicStoreEntitySecurityPlatform } from '../modules/securityPlatform/securityPlatform-types';
 import type { BasicStoreEntitySecurityCoverage, CoveredEntity } from '../modules/securityCoverage/securityCoverage-types';
 import type { BasicStoreEntitySecurityCoverageResult } from '../modules/securityCoverage/securityCoverageResult/securityCoverageResult-types';
+import type { BasicStoreEntityHunt } from '../modules/hunt/hunt-types';
+import type { BasicStoreEntityHuntRun } from '../modules/hunt/huntRun/huntRun-types';
+import type { HuntConnectorView } from '../modules/hunt/huntRun/huntRun-domain';
+import type { SigmaValidation } from '../modules/hunt/hunt-sigma';
 import type { BasicStoreEntityEmailTemplate } from '../modules/emailTemplate/emailTemplate-types';
 import type { BasicStoreEntityForm } from '../modules/form/form-types';
 import type { BasicStoreEntityAuthenticationProvider } from '../modules/authenticationProvider/authenticationProvider-types';
@@ -4589,6 +4593,8 @@ export type Connector = BasicObject & InternalObject & {
   created_at?: Maybe<Scalars['DateTime']['output']>;
   enrichment_resolution?: Maybe<Scalars['String']['output']>;
   entity_type: Scalars['String']['output'];
+  /** Hunted platform of an INTERNAL_HUNT connector, null for every other connector type */
+  hunt?: Maybe<HuntConnector>;
   id: Scalars['ID']['output'];
   is_managed?: Maybe<Scalars['Boolean']['output']>;
   jwks: Scalars['String']['output'];
@@ -4730,6 +4736,7 @@ export enum ConnectorType {
   InternalAnalysis = 'INTERNAL_ANALYSIS',
   InternalEnrichment = 'INTERNAL_ENRICHMENT',
   InternalExportFile = 'INTERNAL_EXPORT_FILE',
+  InternalHunt = 'INTERNAL_HUNT',
   InternalImportFile = 'INTERNAL_IMPORT_FILE',
   Stream = 'STREAM'
 }
@@ -11137,6 +11144,1177 @@ export type HostnameAddInput = {
   value?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type Hunt = BasicObject & StixCoreObject & StixDomainObject & StixObject & {
+  __typename?: 'Hunt';
+  avatar?: Maybe<OpenCtiFile>;
+  benign_patterns?: Maybe<Array<Scalars['String']['output']>>;
+  cases?: Maybe<CaseConnection>;
+  confidence?: Maybe<Scalars['Int']['output']>;
+  connectors?: Maybe<Array<Maybe<Connector>>>;
+  containers?: Maybe<ContainerConnection>;
+  containersNumber?: Maybe<Number>;
+  created?: Maybe<Scalars['DateTime']['output']>;
+  createdBy?: Maybe<Identity>;
+  created_at: Scalars['DateTime']['output'];
+  creators?: Maybe<Array<Creator>>;
+  currentUserAccessRight?: Maybe<Scalars['String']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  draftVersion?: Maybe<DraftVersion>;
+  editContext?: Maybe<Array<EditUserContext>>;
+  entity_type: Scalars['String']['output'];
+  /** Runs started by hand open an incident draft above the escalation threshold, like scheduled and autonomous runs. Off (the default), the incident is offered when a true positive verdict is set */
+  escalate_manual_runs: Scalars['Boolean']['output'];
+  escalation_threshold: Scalars['Int']['output'];
+  expected_observables?: Maybe<Array<Scalars['String']['output']>>;
+  exportFiles?: Maybe<FileConnection>;
+  externalReferences?: Maybe<ExternalReferenceConnection>;
+  filesFromTemplate?: Maybe<FileConnection>;
+  fintelTemplates?: Maybe<Array<FintelTemplate>>;
+  groupings?: Maybe<GroupingConnection>;
+  huntSources?: Maybe<Array<StixCoreObject>>;
+  huntTargets?: Maybe<Array<StixDomainObject>>;
+  huntTechniques?: Maybe<Array<AttackPattern>>;
+  /** Indicator hunts: the filter over indicators and observables */
+  hunt_ioc_filters?: Maybe<Scalars['String']['output']>;
+  /** Indicator hunts: the values pasted as text */
+  hunt_ioc_values?: Maybe<Array<HuntIocValue>>;
+  hunt_max_results?: Maybe<Scalars['Int']['output']>;
+  hunt_pir_activation?: Maybe<Scalars['Boolean']['output']>;
+  hunt_pir_armed?: Maybe<Scalars['Boolean']['output']>;
+  hunt_pir_armed_at?: Maybe<Scalars['DateTime']['output']>;
+  hunt_schedule: Scalars['String']['output'];
+  hunt_scope?: Maybe<Scalars['String']['output']>;
+  hunt_source_kind: HuntSourceKind;
+  hunt_status: HuntStatus;
+  hunt_type: HuntType;
+  hypothesis?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  importFiles?: Maybe<FileConnection>;
+  /** Indicator hunts: the values the next run looks up */
+  iocSet?: Maybe<HuntIocSet>;
+  is_inferred: Scalars['Boolean']['output'];
+  jobs?: Maybe<Array<Maybe<Work>>>;
+  /** What the hunt knows of its hits on the security platforms the user can read */
+  knownHits: HuntKnownHits;
+  lang?: Maybe<Scalars['String']['output']>;
+  last_hits_count?: Maybe<Scalars['Int']['output']>;
+  /** Hits of the last run never seen before for the hunt on its security platform */
+  last_new_hits_count?: Maybe<Scalars['Int']['output']>;
+  last_run_at?: Maybe<Scalars['DateTime']['output']>;
+  last_run_status?: Maybe<Scalars['String']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
+  modified?: Maybe<Scalars['DateTime']['output']>;
+  name: Scalars['String']['output'];
+  native_queries?: Maybe<Array<HuntNativeQuery>>;
+  next_run_at?: Maybe<Scalars['DateTime']['output']>;
+  notes?: Maybe<NoteConnection>;
+  numberOfConnectedElement: Scalars['Int']['output'];
+  objectAssignee?: Maybe<Array<Assignee>>;
+  objectLabel?: Maybe<Array<Label>>;
+  objectMarking?: Maybe<Array<MarkingDefinition>>;
+  objectOrganization?: Maybe<Array<Organization>>;
+  objectParticipant?: Maybe<Array<Participant>>;
+  observedData?: Maybe<ObservedDataConnection>;
+  opinions?: Maybe<OpinionConnection>;
+  opinions_metrics?: Maybe<OpinionsMetrics>;
+  parent_types: Array<Scalars['String']['output']>;
+  pendingFiles?: Maybe<FileConnection>;
+  pirInformation?: Maybe<PirInformation>;
+  /** What the hunt needs to run, item by item */
+  readiness: HuntReadiness;
+  refreshed_at?: Maybe<Scalars['DateTime']['output']>;
+  reports?: Maybe<ReportConnection>;
+  representative: Representative;
+  revoked: Scalars['Boolean']['output'];
+  runs?: Maybe<HuntRunConnection>;
+  scopePlatforms?: Maybe<Array<SecurityPlatform>>;
+  sigmaValidation?: Maybe<HuntSigmaValidation>;
+  sigma_rule?: Maybe<Scalars['String']['output']>;
+  spec_version: Scalars['String']['output'];
+  standard_id: Scalars['String']['output'];
+  statistics?: Maybe<HuntStatistics>;
+  status?: Maybe<Status>;
+  stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
+  stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
+  stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
+  techniqueValidations: Array<HuntTechniqueValidation>;
+  time_window_hours: Scalars['Int']['output'];
+  toStix?: Maybe<Scalars['String']['output']>;
+  toStixBundle?: Maybe<Scalars['String']['output']>;
+  trigger_filters?: Maybe<Scalars['String']['output']>;
+  updated_at: Scalars['DateTime']['output'];
+  workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
+  workflowInstance?: Maybe<WorkflowInstance>;
+  x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
+  x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
+  x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
+};
+
+
+export type HuntCasesArgs = {
+  first?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type HuntConnectorsArgs = {
+  onlyAlive?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type HuntContainersArgs = {
+  entityTypes?: InputMaybe<Array<Scalars['String']['input']>>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type HuntExportFilesArgs = {
+  first?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type HuntExternalReferencesArgs = {
+  first?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type HuntFilesFromTemplateArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<FileOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type HuntGroupingsArgs = {
+  first?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type HuntImportFilesArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<FileOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  prefixMimeType?: InputMaybe<Scalars['String']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type HuntIocSetArgs = {
+  first?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type HuntJobsArgs = {
+  first?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type HuntNotesArgs = {
+  first?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type HuntObservedDataArgs = {
+  first?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type HuntOpinionsArgs = {
+  first?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type HuntPendingFilesArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<FileOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type HuntPirInformationArgs = {
+  pirId: Scalars['ID']['input'];
+};
+
+
+export type HuntReportsArgs = {
+  first?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type HuntRunsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<HuntRunsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+};
+
+
+export type HuntStatisticsArgs = {
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  interval?: InputMaybe<Scalars['String']['input']>;
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
+};
+
+
+export type HuntStixCoreObjectsDistributionArgs = {
+  dateAttribute?: InputMaybe<Scalars['String']['input']>;
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  field: Scalars['String']['input'];
+  filters?: InputMaybe<FilterGroup>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']['input']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type HuntStixCoreRelationshipsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  firstSeenStart?: InputMaybe<Scalars['DateTime']['input']>;
+  firstSeenStop?: InputMaybe<Scalars['DateTime']['input']>;
+  fromId?: InputMaybe<Scalars['StixRef']['input']>;
+  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  lastSeenStart?: InputMaybe<Scalars['DateTime']['input']>;
+  lastSeenStop?: InputMaybe<Scalars['DateTime']['input']>;
+  orderBy?: InputMaybe<StixCoreRelationshipsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Scalars['String']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  startTimeStart?: InputMaybe<Scalars['DateTime']['input']>;
+  startTimeStop?: InputMaybe<Scalars['DateTime']['input']>;
+  stopTimeStart?: InputMaybe<Scalars['DateTime']['input']>;
+  stopTimeStop?: InputMaybe<Scalars['DateTime']['input']>;
+  toId?: InputMaybe<Scalars['StixRef']['input']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type HuntStixCoreRelationshipsDistributionArgs = {
+  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  dateAttribute?: InputMaybe<Scalars['String']['input']>;
+  elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  field: Scalars['String']['input'];
+  filters?: InputMaybe<FilterGroup>;
+  fromId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  fromRole?: InputMaybe<Scalars['String']['input']>;
+  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  isTo?: InputMaybe<Scalars['Boolean']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  operation: StatsOperation;
+  order?: InputMaybe<Scalars['String']['input']>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
+  toId?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  toRole?: InputMaybe<Scalars['String']['input']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type HuntToStixArgs = {
+  version?: InputMaybe<Version>;
+};
+
+export type HuntAddInput = {
+  benign_patterns?: InputMaybe<Array<Scalars['String']['input']>>;
+  clientMutationId?: InputMaybe<Scalars['String']['input']>;
+  confidence?: InputMaybe<Scalars['Int']['input']>;
+  created?: InputMaybe<Scalars['DateTime']['input']>;
+  createdBy?: InputMaybe<Scalars['String']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  embedded?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
+  escalate_manual_runs?: InputMaybe<Scalars['Boolean']['input']>;
+  escalation_threshold?: InputMaybe<Scalars['Int']['input']>;
+  expected_observables?: InputMaybe<Array<Scalars['String']['input']>>;
+  externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  file?: InputMaybe<Scalars['Upload']['input']>;
+  fileMarkings?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  files?: InputMaybe<Array<InputMaybe<Scalars['Upload']['input']>>>;
+  filesMarkings?: InputMaybe<Array<InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>>>;
+  huntSources?: InputMaybe<Array<Scalars['String']['input']>>;
+  huntTargets?: InputMaybe<Array<Scalars['String']['input']>>;
+  huntTechniques?: InputMaybe<Array<Scalars['String']['input']>>;
+  hunt_ioc_filters?: InputMaybe<Scalars['String']['input']>;
+  hunt_ioc_values?: InputMaybe<Array<HuntIocValueInput>>;
+  hunt_max_results?: InputMaybe<Scalars['Int']['input']>;
+  hunt_pir_activation?: InputMaybe<Scalars['Boolean']['input']>;
+  hunt_schedule?: InputMaybe<Scalars['String']['input']>;
+  hunt_scope?: InputMaybe<Scalars['String']['input']>;
+  hunt_source_kind?: InputMaybe<HuntSourceKind>;
+  hunt_status?: InputMaybe<HuntStatus>;
+  hunt_type?: InputMaybe<HuntType>;
+  hypothesis?: InputMaybe<Scalars['String']['input']>;
+  lang?: InputMaybe<Scalars['String']['input']>;
+  modified?: InputMaybe<Scalars['DateTime']['input']>;
+  name: Scalars['String']['input'];
+  native_queries?: InputMaybe<Array<HuntNativeQueryInput>>;
+  noTriggerImport?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
+  objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  revoked?: InputMaybe<Scalars['Boolean']['input']>;
+  sigma_rule?: InputMaybe<Scalars['String']['input']>;
+  stix_id?: InputMaybe<Scalars['StixId']['input']>;
+  time_window_hours?: InputMaybe<Scalars['Int']['input']>;
+  trigger_filters?: InputMaybe<Scalars['String']['input']>;
+  update?: InputMaybe<Scalars['Boolean']['input']>;
+  upsertOperations?: InputMaybe<Array<EditInput>>;
+  x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
+  x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** A field of a hunt the XTM One hunt planner can write */
+export enum HuntAssistField {
+  BenignPatterns = 'benign_patterns',
+  Description = 'description',
+  ExpectedObservables = 'expected_observables',
+  Hypothesis = 'hypothesis',
+  Name = 'name',
+  NativeQueries = 'native_queries',
+  SigmaRule = 'sigma_rule',
+  Techniques = 'techniques'
+}
+
+export type HuntAssistInput = {
+  agent_slug?: InputMaybe<Scalars['String']['input']>;
+  benign_patterns?: InputMaybe<Array<Scalars['String']['input']>>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  expected_observables?: InputMaybe<Array<Scalars['String']['input']>>;
+  fields?: InputMaybe<Array<HuntAssistField>>;
+  hunt_id?: InputMaybe<Scalars['ID']['input']>;
+  hunt_type?: InputMaybe<HuntType>;
+  hypothesis?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  native_queries?: InputMaybe<Array<HuntNativeQueryInput>>;
+  native_query_language?: InputMaybe<Scalars['String']['input']>;
+  native_query_platform?: InputMaybe<Scalars['String']['input']>;
+  prompt?: InputMaybe<Scalars['String']['input']>;
+  security_platform_ids?: InputMaybe<Array<Scalars['ID']['input']>>;
+  sigma_rule?: InputMaybe<Scalars['String']['input']>;
+  source_ids?: InputMaybe<Array<Scalars['ID']['input']>>;
+  target_ids?: InputMaybe<Array<Scalars['ID']['input']>>;
+  technique_ids?: InputMaybe<Array<Scalars['ID']['input']>>;
+};
+
+/** A technique the agent named, found on the platform */
+export type HuntAssistTechnique = {
+  __typename?: 'HuntAssistTechnique';
+  entity_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  x_mitre_id?: Maybe<Scalars['String']['output']>;
+};
+
+/** What XTM One proposes for a hunt being written; nothing is saved */
+export type HuntAssistance = {
+  __typename?: 'HuntAssistance';
+  benign_patterns: Array<Scalars['String']['output']>;
+  description: Scalars['String']['output'];
+  expected_observables: Array<Scalars['String']['output']>;
+  fields: Array<HuntAssistField>;
+  hypothesis: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  native_queries: Array<HuntNativeQuery>;
+  rationale: Scalars['String']['output'];
+  sigma_rule: Scalars['String']['output'];
+  sigma_validation?: Maybe<HuntSigmaValidation>;
+  techniques: Array<HuntAssistTechnique>;
+  unknown_technique_ids: Array<Scalars['String']['output']>;
+};
+
+export type HuntConfiguration = {
+  __typename?: 'HuntConfiguration';
+  /** The observable types a run extracts from its hits when its hunt names none */
+  default_expected_observables: Array<Scalars['String']['output']>;
+  min_schedule_interval_minutes: Scalars['Int']['output'];
+  /** Recurring runs (schedule, standing hunt, PIR activation) search from where the previous completed run on the same platform ended, minus this overlap in minutes */
+  schedule_lookback_minutes: Scalars['Int']['output'];
+};
+
+export type HuntConnection = {
+  __typename?: 'HuntConnection';
+  edges: Array<HuntEdge>;
+  pageInfo: PageInfo;
+};
+
+/** The last connection test of a hunt connector */
+export type HuntConnectionCheck = {
+  __typename?: 'HuntConnectionCheck';
+  checked_at?: Maybe<Scalars['DateTime']['output']>;
+  checks: Array<HuntConnectionCheckItem>;
+  id: Scalars['String']['output'];
+  requested_at?: Maybe<Scalars['DateTime']['output']>;
+  status: HuntConnectionCheckStatus;
+};
+
+export type HuntConnectionCheckItem = {
+  __typename?: 'HuntConnectionCheckItem';
+  /** What the connector found, in plain words */
+  message: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  ok: Scalars['Boolean']['output'];
+};
+
+export type HuntConnectionCheckItemInput = {
+  message: Scalars['String']['input'];
+  name: Scalars['String']['input'];
+  ok: Scalars['Boolean']['input'];
+};
+
+export enum HuntConnectionCheckStatus {
+  Failed = 'failed',
+  Passed = 'passed',
+  Pending = 'pending'
+}
+
+export type HuntConnector = {
+  __typename?: 'HuntConnector';
+  active: Scalars['Boolean']['output'];
+  connection_check?: Maybe<HuntConnectionCheck>;
+  /** Where the setup of the connector (account, permissions, configuration) is documented */
+  documentation_url?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  languages: Array<Scalars['String']['output']>;
+  max_concurrent_runs?: Maybe<Scalars['Int']['output']>;
+  name: Scalars['String']['output'];
+  platform: Scalars['String']['output'];
+  required_permissions: Array<HuntRequiredPermission>;
+  securityPlatform?: Maybe<SecurityPlatform>;
+  /** Whether the connector looks up the values of indicator hunts */
+  supports_indicators: Scalars['Boolean']['output'];
+  supports_preview: Scalars['Boolean']['output'];
+  updated_at?: Maybe<Scalars['DateTime']['output']>;
+};
+
+export type HuntConnectorCheckReportInput = {
+  check_id: Scalars['String']['input'];
+  checks: Array<HuntConnectionCheckItemInput>;
+  connector_id: Scalars['ID']['input'];
+};
+
+export type HuntConnectorRegisterInput = {
+  connector_id: Scalars['ID']['input'];
+  documentation_url?: InputMaybe<Scalars['String']['input']>;
+  languages: Array<Scalars['String']['input']>;
+  max_concurrent_runs?: InputMaybe<Scalars['Int']['input']>;
+  platform: Scalars['String']['input'];
+  required_permissions?: InputMaybe<Array<HuntRequiredPermissionInput>>;
+  security_platform_name?: InputMaybe<Scalars['String']['input']>;
+  security_platform_type?: InputMaybe<Scalars['String']['input']>;
+  supports_indicators?: InputMaybe<Scalars['Boolean']['input']>;
+  supports_preview?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+/** What a hunt started from an entity looks for, read with the access of the user */
+export type HuntDerivedContent = {
+  __typename?: 'HuntDerivedContent';
+  elements: Array<HuntDerivedElement>;
+  /** More indicators and observables than a run looks up */
+  elements_truncated: Scalars['Boolean']['output'];
+  entity: HuntDerivedSource;
+  rules: Array<HuntDerivedRule>;
+  /** Entities an indicator hunt takes its values from, read again at every run */
+  sources: Array<HuntDerivedSource>;
+  /** The hunt type the content supports: indicators when indicators or observables are found, telemetry when only detection rules are, null for neither */
+  suggested_type?: Maybe<HuntType>;
+  /** Threats the hunt targets */
+  targets: Array<HuntDerivedSource>;
+  techniques: Array<HuntDerivedTechnique>;
+  /** Indicators of the sources neither a lookup nor a detection-rule hunt can use */
+  unsupported_count: Scalars['Int']['output'];
+};
+
+/** An indicator or an observable an indicator hunt looks up */
+export type HuntDerivedElement = {
+  __typename?: 'HuntDerivedElement';
+  entity_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  /** Ids of the sources it comes from */
+  source_ids: Array<Scalars['ID']['output']>;
+  /** Observable types of the values a lookup searches */
+  value_types: Array<Scalars['String']['output']>;
+};
+
+/** A detection rule a detection-rule hunt runs: an indicator whose pattern is a Sigma rule or a native query */
+export type HuntDerivedRule = {
+  __typename?: 'HuntDerivedRule';
+  entity_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  pattern: Scalars['String']['output'];
+  pattern_type: Scalars['String']['output'];
+  /** Ids of the techniques of the entity it indicates */
+  technique_ids: Array<Scalars['ID']['output']>;
+};
+
+/** An entity a hunt started from another one takes its indicators and observables from */
+export type HuntDerivedSource = {
+  __typename?: 'HuntDerivedSource';
+  entity_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  /** self: the entity the hunt starts from; uses: a malware or tool it uses; attributed: a threat attributed to it */
+  relation: HuntDerivedSourceRelation;
+};
+
+export enum HuntDerivedSourceRelation {
+  Attributed = 'attributed',
+  Self = 'self',
+  Uses = 'uses'
+}
+
+export type HuntDerivedTechnique = {
+  __typename?: 'HuntDerivedTechnique';
+  entity_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  x_mitre_id?: Maybe<Scalars['String']['output']>;
+};
+
+export type HuntEdge = {
+  __typename?: 'HuntEdge';
+  cursor: Scalars['String']['output'];
+  node: Hunt;
+};
+
+export type HuntEvidence = {
+  __typename?: 'HuntEvidence';
+  count: Scalars['Int']['output'];
+  entity_type?: Maybe<Scalars['String']['output']>;
+  field: Scalars['String']['output'];
+  href?: Maybe<Scalars['String']['output']>;
+  kind: Scalars['String']['output'];
+  label: Scalars['String']['output'];
+  /** The value is one the hunt logic matched (a field matched in a hit of the run), not context of the event */
+  matched: Scalars['Boolean']['output'];
+  opencti_id?: Maybe<Scalars['String']['output']>;
+  quote?: Maybe<Scalars['String']['output']>;
+  value_hash: Scalars['String']['output'];
+  value_preview?: Maybe<Scalars['String']['output']>;
+};
+
+export type HuntEvidenceInput = {
+  count: Scalars['Int']['input'];
+  field: Scalars['String']['input'];
+  /** True for a value the hunt logic matched (the field of the rule detection), false or omitted for context of the event */
+  matched?: InputMaybe<Scalars['Boolean']['input']>;
+  value_hash: Scalars['String']['input'];
+  value_preview?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** One event a run matched */
+export type HuntHit = {
+  __typename?: 'HuntHit';
+  /** The detection of the platform grouping the event (YARA-L): the events of one detection are one hit */
+  detection?: Maybe<Scalars['String']['output']>;
+  /** Id of the event on the hunted platform */
+  event_id?: Maybe<Scalars['String']['output']>;
+  host?: Maybe<Scalars['String']['output']>;
+  /** The hit was never seen before this run for the hunt on its platform; null when the hit is not identified or no longer known */
+  is_new?: Maybe<Scalars['Boolean']['output']>;
+  /** When a run of the hunt first found the hit on this platform */
+  known_since?: Maybe<Scalars['DateTime']['output']>;
+  matched: Array<HuntHitField>;
+  process?: Maybe<Scalars['String']['output']>;
+  /** Runs of the hunt that found the hit on this platform so far */
+  times_seen?: Maybe<Scalars['Int']['output']>;
+  timestamp?: Maybe<Scalars['DateTime']['output']>;
+  user?: Maybe<Scalars['String']['output']>;
+};
+
+/** A field of a hit that the hunt logic matched: the value is hashed again by the platform, its preview masked and truncated */
+export type HuntHitField = {
+  __typename?: 'HuntHitField';
+  field: Scalars['String']['output'];
+  /** The preview is the whole value, neither truncated nor masked */
+  value_complete: Scalars['Boolean']['output'];
+  value_hash: Scalars['String']['output'];
+  value_preview?: Maybe<Scalars['String']['output']>;
+};
+
+export type HuntHitFieldInput = {
+  /** Field of the event, named as in the query language of the platform (target.process.command_line) */
+  field: Scalars['String']['input'];
+  /** SHA-256 hex of the full value */
+  value_hash: Scalars['String']['input'];
+  /** The value, truncated */
+  value_preview?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** One event a run matched. Every field but matched is optional; the platform hashes matched values again, masks secrets and truncates values */
+export type HuntHitInput = {
+  /** The detection of the platform grouping the event (YARA-L): the events of one detection are one hit */
+  detection?: InputMaybe<Scalars['String']['input']>;
+  /** Id of the event on the hunted platform */
+  event_id?: InputMaybe<Scalars['String']['input']>;
+  host?: InputMaybe<Scalars['String']['input']>;
+  /** The fields of the detection logic present in the event (indicator runs: the field holding the value) */
+  matched: Array<HuntHitFieldInput>;
+  process?: InputMaybe<Scalars['String']['input']>;
+  timestamp?: InputMaybe<Scalars['DateTime']['input']>;
+  user?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** A value an indicator hunt looks up, with the indicators and observables it comes from */
+export type HuntIoc = {
+  __typename?: 'HuntIoc';
+  hash_algorithm?: Maybe<Scalars['String']['output']>;
+  key: Scalars['String']['output'];
+  observable_type: Scalars['String']['output'];
+  sources: Array<HuntIocSource>;
+  value: Scalars['String']['output'];
+};
+
+/** One value an indicator hunt run looked up, and what the hunted platform reported for it */
+export type HuntIocResult = {
+  __typename?: 'HuntIocResult';
+  /** Whether an indicator of the value is deployed on the security platform of the run (dissemination assurance) */
+  deployed: Scalars['Boolean']['output'];
+  first_seen?: Maybe<Scalars['DateTime']['output']>;
+  hash_algorithm?: Maybe<Scalars['String']['output']>;
+  hits_count: Scalars['Int']['output'];
+  hosts: Array<Scalars['String']['output']>;
+  key: Scalars['String']['output'];
+  last_seen?: Maybe<Scalars['DateTime']['output']>;
+  observable_type: Scalars['String']['output'];
+  /** Why the value was not searched */
+  reason?: Maybe<Scalars['String']['output']>;
+  /** The indicators and observables the value comes from, those the user can read (none for a pasted value) */
+  sources: Array<StixCoreObject>;
+  value: Scalars['String']['output'];
+  verdict: HuntIocVerdict;
+};
+
+export type HuntIocResultInput = {
+  first_seen?: InputMaybe<Scalars['DateTime']['input']>;
+  /** Keys of the hits holding the value (same rule as hit_keys of the report) */
+  hit_keys?: InputMaybe<Array<Scalars['String']['input']>>;
+  hits_count?: InputMaybe<Scalars['Int']['input']>;
+  /** Hosts the value was seen on (at most 10 are kept) */
+  hosts?: InputMaybe<Array<Scalars['String']['input']>>;
+  /** Key of the value in the run message */
+  key: Scalars['String']['input'];
+  last_seen?: InputMaybe<Scalars['DateTime']['input']>;
+  /** Why the value was not searched */
+  reason?: InputMaybe<Scalars['String']['input']>;
+  /** False when the platform cannot look this type of value up */
+  searched?: InputMaybe<Scalars['Boolean']['input']>;
+  seen: Scalars['Boolean']['input'];
+};
+
+/** The values an indicator hunt looks up at its next run */
+export type HuntIocSet = {
+  __typename?: 'HuntIocSet';
+  iocs: Array<HuntIoc>;
+  iocs_count: Scalars['Int']['output'];
+  /** Indicators and observables more restricted than the hunt, left out */
+  restricted_count: Scalars['Int']['output'];
+  /** More values than a run looks up */
+  truncated: Scalars['Boolean']['output'];
+  /** Indicators without a value a lookup can search */
+  unsupported_count: Scalars['Int']['output'];
+};
+
+export type HuntIocSource = {
+  __typename?: 'HuntIocSource';
+  entity_type: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  standard_id: Scalars['String']['output'];
+};
+
+/** A value pasted in an indicator hunt */
+export type HuntIocValue = {
+  __typename?: 'HuntIocValue';
+  observable_type: Scalars['String']['output'];
+  value: Scalars['String']['output'];
+};
+
+export type HuntIocValueInput = {
+  observable_type: Scalars['String']['input'];
+  value: Scalars['String']['input'];
+};
+
+export enum HuntIocVerdict {
+  NotSearched = 'not_searched',
+  NotSeen = 'not_seen',
+  Pending = 'pending',
+  Seen = 'seen'
+}
+
+/** What a hunt knows of its hits: each distinct hit once, whatever the number of runs that found it */
+export type HuntKnownHits = {
+  __typename?: 'HuntKnownHits';
+  /** Distinct hits the runs of the hunt found and the platform still remembers (kept as long as the runs) */
+  distinct_count: Scalars['Int']['output'];
+  /** When a run found the earliest hit still known */
+  first_new_at?: Maybe<Scalars['DateTime']['output']>;
+  /** When a run last found a hit never seen before */
+  last_new_at?: Maybe<Scalars['DateTime']['output']>;
+};
+
+/** A sentence of the platform: the English sentence with its {placeholders} is the translation key of the user interface */
+export type HuntMessage = {
+  __typename?: 'HuntMessage';
+  /** The sentence as the platform writes it */
+  message: Scalars['String']['output'];
+  template: Scalars['String']['output'];
+  values: Array<HuntMessageValue>;
+};
+
+export type HuntMessageValue = {
+  __typename?: 'HuntMessageValue';
+  name: Scalars['String']['output'];
+  value: Scalars['String']['output'];
+};
+
+export type HuntNativeQuery = {
+  __typename?: 'HuntNativeQuery';
+  language: Scalars['String']['output'];
+  pipeline?: Maybe<Scalars['String']['output']>;
+  platform: Scalars['String']['output'];
+  query: Scalars['String']['output'];
+};
+
+export type HuntNativeQueryInput = {
+  language: Scalars['String']['input'];
+  pipeline?: InputMaybe<Scalars['String']['input']>;
+  platform: Scalars['String']['input'];
+  query: Scalars['String']['input'];
+};
+
+export type HuntPackImportResult = {
+  __typename?: 'HuntPackImportResult';
+  /** Hunts of the pack created as drafts */
+  created_count: Scalars['Int']['output'];
+  hunts: Array<Hunt>;
+  unresolved_refs: Array<Scalars['String']['output']>;
+  /** Hunts of the pack that already existed, their definition updated and how they run here kept */
+  updated_count: Scalars['Int']['output'];
+};
+
+export type HuntPlanInput = {
+  agent_slug?: InputMaybe<Scalars['String']['input']>;
+  benign_patterns?: InputMaybe<Array<Scalars['String']['input']>>;
+  entity_ids: Array<Scalars['ID']['input']>;
+  security_platform_ids?: InputMaybe<Array<Scalars['ID']['input']>>;
+};
+
+export type HuntProposal = {
+  __typename?: 'HuntProposal';
+  draft_id: Scalars['ID']['output'];
+  hunt?: Maybe<Hunt>;
+};
+
+export type HuntReadiness = {
+  __typename?: 'HuntReadiness';
+  items: Array<HuntReadinessItem>;
+  /** No item is unmet: the hunt can be activated */
+  ready: Scalars['Boolean']['output'];
+};
+
+/** One thing a hunt needs to run */
+export type HuntReadinessItem = {
+  __typename?: 'HuntReadinessItem';
+  key: HuntReadinessKey;
+  /** The sentence as the platform writes it in its errors */
+  message: Scalars['String']['output'];
+  status: HuntReadinessStatus;
+  /** The English sentence with its {placeholders}, the translation key of the user interface */
+  template: Scalars['String']['output'];
+  values: Array<HuntMessageValue>;
+};
+
+export enum HuntReadinessKey {
+  Connector = 'connector',
+  Draft = 'draft',
+  Logic = 'logic',
+  Schedule = 'schedule',
+  Scope = 'scope',
+  /** Whether the current logic translates, as its last translation preview or run found it */
+  Translation = 'translation'
+}
+
+export enum HuntReadinessStatus {
+  Met = 'met',
+  Unmet = 'unmet',
+  Warning = 'warning'
+}
+
+/** A permission a hunt connector needs on its platform, as the connector declares it */
+export type HuntRequiredPermission = {
+  __typename?: 'HuntRequiredPermission';
+  name: Scalars['String']['output'];
+  purpose: Scalars['String']['output'];
+};
+
+export type HuntRequiredPermissionInput = {
+  name: Scalars['String']['input'];
+  purpose: Scalars['String']['input'];
+};
+
+export type HuntRun = BasicObject & InternalObject & {
+  __typename?: 'HuntRun';
+  aev_inject_id?: Maybe<Scalars['String']['output']>;
+  attempt: Scalars['Int']['output'];
+  /** The run opens an incident draft by itself above the escalation threshold: autonomous runs always, runs started by hand when their hunt escalates manual runs. False: the incident is offered at verdict time */
+  auto_escalation: Scalars['Boolean']['output'];
+  completed_at?: Maybe<Scalars['DateTime']['output']>;
+  connector_id?: Maybe<Scalars['String']['output']>;
+  connector_name?: Maybe<Scalars['String']['output']>;
+  cost_ms?: Maybe<Scalars['Int']['output']>;
+  created_at?: Maybe<Scalars['DateTime']['output']>;
+  creators?: Maybe<Array<Creator>>;
+  dispatched_at?: Maybe<Scalars['DateTime']['output']>;
+  distinct_entities?: Maybe<Scalars['Int']['output']>;
+  draft_id?: Maybe<Scalars['String']['output']>;
+  entity_type: Scalars['String']['output'];
+  error_message?: Maybe<Scalars['String']['output']>;
+  evidence_sample?: Maybe<Array<HuntEvidence>>;
+  evidence_sources?: Maybe<Array<Scalars['String']['output']>>;
+  /** Why a run failed for good and what to change, null for any other run */
+  failure_reason?: Maybe<HuntMessage>;
+  /** False for a failure the run meets again in the same way at every attempt (translation, a query the platform rejects): never retried, no verdict; true for another failure; null for a run that did not fail */
+  failure_retryable?: Maybe<Scalars['Boolean']['output']>;
+  /** Dates of the first and last event the run matched, null when the connector dates none */
+  first_hit_at?: Maybe<Scalars['DateTime']['output']>;
+  hits_count?: Maybe<Scalars['Int']['output']>;
+  /** The connector reported a key per hit: false means every hit counts as new */
+  hits_identified?: Maybe<Scalars['Boolean']['output']>;
+  /** Hits never seen before for the hunt on the security platform of the run; every hit when the connector identifies none */
+  hits_new_count?: Maybe<Scalars['Int']['output']>;
+  /** Hits earlier runs of the hunt already found on this platform */
+  hits_recurring_count?: Maybe<Scalars['Int']['output']>;
+  /** One evidence item per hit, in time order (a sample), next to the per-field aggregation of evidence_sample */
+  hits_sample?: Maybe<Array<HuntHit>>;
+  /** The hunt of the run, null when it was deleted (hunt_deleted) or when the user cannot read it */
+  hunt?: Maybe<Hunt>;
+  hunt_analyst_feedback?: Maybe<Scalars['String']['output']>;
+  /** The hunt of the run was deleted (in the trash or for good), as opposed to a hunt the user cannot read */
+  hunt_deleted: Scalars['Boolean']['output'];
+  hunt_id: Scalars['String']['output'];
+  hunt_run_mode: HuntRunMode;
+  hunt_run_status: HuntRunStatus;
+  hunt_run_trigger: HuntRunTrigger;
+  id: Scalars['ID']['output'];
+  /** The run added its hits to the incident still open from a previous run instead of opening a new one */
+  incident_continued?: Maybe<Scalars['Boolean']['output']>;
+  incident_id?: Maybe<Scalars['String']['output']>;
+  incident_proposal?: Maybe<Scalars['String']['output']>;
+  /** Indicator hunts: one result per value looked up */
+  ioc_results?: Maybe<Array<HuntIocResult>>;
+  last_evidence_at?: Maybe<Scalars['DateTime']['output']>;
+  last_hit_at?: Maybe<Scalars['DateTime']['output']>;
+  metrics?: Maybe<Array<Maybe<Metric>>>;
+  next_retry_at?: Maybe<Scalars['DateTime']['output']>;
+  objectMarking?: Maybe<Array<MarkingDefinition>>;
+  parent_types: Array<Scalars['String']['output']>;
+  playbook_execution_id?: Maybe<Scalars['String']['output']>;
+  playbook_id?: Maybe<Scalars['String']['output']>;
+  query_language?: Maybe<Scalars['String']['output']>;
+  /** Why a queued run waits: its connector offline, deleted or busy, or the next dispatch; null when the run is not queued */
+  queue_reason?: Maybe<HuntMessage>;
+  representative: Representative;
+  result_ids?: Maybe<Array<Scalars['String']['output']>>;
+  results?: Maybe<StixObjectOrStixRelationshipConnection>;
+  /** What the run produced: its results counted by kind, over the same objects as results */
+  results_summary: HuntRunResultsSummary;
+  results_truncated?: Maybe<Scalars['Boolean']['output']>;
+  securityPlatform?: Maybe<SecurityPlatform>;
+  security_coverage_id?: Maybe<Scalars['String']['output']>;
+  security_platform_id?: Maybe<Scalars['String']['output']>;
+  /** Sightings of the hunt the run created; the other sightings among its results were updated in place */
+  sightings_created_count?: Maybe<Scalars['Int']['output']>;
+  standard_id: Scalars['String']['output'];
+  started_at?: Maybe<Scalars['DateTime']['output']>;
+  technique?: Maybe<AttackPattern>;
+  technique_id?: Maybe<Scalars['String']['output']>;
+  /** The run searched from where the previous completed run of the hunt on the same platform ended, minus the lookback overlap */
+  time_window_continued: Scalars['Boolean']['output'];
+  time_window_end?: Maybe<Scalars['DateTime']['output']>;
+  time_window_start?: Maybe<Scalars['DateTime']['output']>;
+  translated_query?: Maybe<Scalars['String']['output']>;
+  triggeredBy?: Maybe<Creator>;
+  triggered_by?: Maybe<Scalars['String']['output']>;
+  /** The ATT&CK techniques its Sigma rule tags that matched no attack pattern of the knowledge base when the run was created: they get no coverage from the run */
+  unresolved_techniques: Array<Scalars['String']['output']>;
+  updated_at?: Maybe<Scalars['DateTime']['output']>;
+  verdict: HuntRunVerdict;
+  verdict_proposal?: Maybe<HuntRunVerdict>;
+  verdict_proposal_agent?: Maybe<Scalars['String']['output']>;
+  verdict_proposal_confidence?: Maybe<Scalars['Int']['output']>;
+  verdict_proposal_rationale?: Maybe<Scalars['String']['output']>;
+  verdict_rationale?: Maybe<Scalars['String']['output']>;
+  verdict_source?: Maybe<HuntVerdictSource>;
+  work_id?: Maybe<Scalars['String']['output']>;
+};
+
+
+export type HuntRunResultsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type HuntRunConnection = {
+  __typename?: 'HuntRunConnection';
+  edges: Array<HuntRunEdge>;
+  pageInfo: PageInfo;
+};
+
+export type HuntRunEdge = {
+  __typename?: 'HuntRunEdge';
+  cursor: Scalars['String']['output'];
+  node: HuntRun;
+};
+
+export type HuntRunEvidenceAddInput = {
+  evidence_sample?: InputMaybe<Array<HuntEvidenceInput>>;
+  /** Keys of the hits of the evidence (same rule as the report): without keys, its hits count as new */
+  hit_keys?: InputMaybe<Array<Scalars['String']['input']>>;
+  hits_count?: InputMaybe<Scalars['Int']['input']>;
+  hits_sample?: InputMaybe<Array<HuntHitInput>>;
+  observed_at?: InputMaybe<Scalars['DateTime']['input']>;
+  result_ids: Array<Scalars['String']['input']>;
+  security_platform_id?: InputMaybe<Scalars['StixRef']['input']>;
+  source?: InputMaybe<Scalars['String']['input']>;
+};
+
+export enum HuntRunMode {
+  Execute = 'execute',
+  Preview = 'preview'
+}
+
+export type HuntRunReportInput = {
+  cost_ms?: InputMaybe<Scalars['Int']['input']>;
+  distinct_entities?: InputMaybe<Scalars['Int']['input']>;
+  error?: InputMaybe<Scalars['String']['input']>;
+  evidence_sample?: InputMaybe<Array<HuntEvidenceInput>>;
+  /** Dates of the first and last matched event of the whole run, when hits_sample is only a sample */
+  first_hit_at?: InputMaybe<Scalars['DateTime']['input']>;
+  /** The stable key of every hit the run read, sampled or not (SHA-256 of a v1 JSON array over the detection, else the event id, else the timestamp to the second, host, user, process and matched field hashes): hits never seen for the hunt on the platform count as new */
+  hit_keys?: InputMaybe<Array<Scalars['String']['input']>>;
+  hits_count?: InputMaybe<Scalars['Int']['input']>;
+  /** One evidence item per hit, on top of the per-field aggregation of evidence_sample */
+  hits_sample?: InputMaybe<Array<HuntHitInput>>;
+  /** Indicator hunts: the result of each value of the run message */
+  ioc_results?: InputMaybe<Array<HuntIocResultInput>>;
+  last_hit_at?: InputMaybe<Scalars['DateTime']['input']>;
+  query_language?: InputMaybe<Scalars['String']['input']>;
+  result_ids?: InputMaybe<Array<Scalars['String']['input']>>;
+  /** Failed runs: false when the run fails again in the same way at every attempt (translation error, a query the platform rejects, an invalid run message), so it is not retried */
+  retryable?: InputMaybe<Scalars['Boolean']['input']>;
+  status: HuntRunStatus;
+  translated_query?: InputMaybe<Scalars['String']['input']>;
+  truncated?: InputMaybe<Scalars['Boolean']['input']>;
+  work_id?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** The results of a run the user can read, counted by kind */
+export type HuntRunResultsSummary = {
+  __typename?: 'HuntRunResultsSummary';
+  observables: Scalars['Int']['output'];
+  observed_data: Scalars['Int']['output'];
+  /** Results of any other kind, for example the infrastructure and indicators of an infrastructure hunt */
+  others: Scalars['Int']['output'];
+  sightings: Scalars['Int']['output'];
+};
+
+export type HuntRunStartInput = {
+  security_platform_ids?: InputMaybe<Array<Scalars['ID']['input']>>;
+  time_window_hours?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export enum HuntRunStatus {
+  /** The hunt or the hunt connector of the run was deleted before the run ended, error_message says which */
+  Cancelled = 'cancelled',
+  Completed = 'completed',
+  Failed = 'failed',
+  Queued = 'queued',
+  Running = 'running',
+  Timeout = 'timeout'
+}
+
+export enum HuntRunTrigger {
+  Emulation = 'emulation',
+  Manual = 'manual',
+  Pir = 'pir',
+  Playbook = 'playbook',
+  Preview = 'preview',
+  Retry = 'retry',
+  Schedule = 'schedule',
+  Standing = 'standing'
+}
+
+export enum HuntRunVerdict {
+  Benign = 'benign',
+  Inconclusive = 'inconclusive',
+  Pending = 'pending',
+  TruePositive = 'true_positive'
+}
+
+export type HuntRunVerdictInput = {
+  /** A true positive verdict opens an incident draft from the run unless false; ignored for any other verdict or a run that has one */
+  create_incident?: InputMaybe<Scalars['Boolean']['input']>;
+  hunt_analyst_feedback?: InputMaybe<Scalars['String']['input']>;
+  source?: InputMaybe<HuntVerdictSource>;
+  verdict: HuntRunVerdict;
+};
+
+export enum HuntRunsOrdering {
+  Score = '_score',
+  CompletedAt = 'completed_at',
+  CreatedAt = 'created_at',
+  HitsCount = 'hits_count',
+  HuntRunStatus = 'hunt_run_status',
+  HuntRunTrigger = 'hunt_run_trigger',
+  StartedAt = 'started_at',
+  UpdatedAt = 'updated_at',
+  Verdict = 'verdict'
+}
+
+export type HuntSigmaValidation = {
+  __typename?: 'HuntSigmaValidation';
+  attack_techniques: Array<Scalars['String']['output']>;
+  detection_fields: Array<Scalars['String']['output']>;
+  errors: Array<Scalars['String']['output']>;
+  level?: Maybe<Scalars['String']['output']>;
+  logsource_category?: Maybe<Scalars['String']['output']>;
+  logsource_product?: Maybe<Scalars['String']['output']>;
+  logsource_service?: Maybe<Scalars['String']['output']>;
+  title?: Maybe<Scalars['String']['output']>;
+  /** The tagged techniques that match no attack pattern of the knowledge base the user can read: they link the hunt to nothing */
+  unresolved_attack_techniques: Array<Scalars['String']['output']>;
+  valid: Scalars['Boolean']['output'];
+};
+
+export enum HuntSourceKind {
+  Agent = 'agent',
+  Analyst = 'analyst',
+  Hub = 'hub'
+}
+
+export type HuntStatistics = {
+  __typename?: 'HuntStatistics';
+  autonomous_runs_count: Scalars['Int']['output'];
+  benign_count: Scalars['Int']['output'];
+  completed_runs_count: Scalars['Int']['output'];
+  failed_runs_count: Scalars['Int']['output'];
+  hits_over_time: Array<HuntStatisticsPoint>;
+  hits_total: Scalars['Int']['output'];
+  inconclusive_count: Scalars['Int']['output'];
+  last_run_at?: Maybe<Scalars['DateTime']['output']>;
+  pending_count: Scalars['Int']['output'];
+  runs_count: Scalars['Int']['output'];
+  runs_over_time: Array<HuntStatisticsPoint>;
+  runs_per_platform: Array<HuntStatisticsBucket>;
+  true_positive_count: Scalars['Int']['output'];
+  verdict_distribution: Array<HuntStatisticsBucket>;
+};
+
+export type HuntStatisticsBucket = {
+  __typename?: 'HuntStatisticsBucket';
+  label: Scalars['String']['output'];
+  value: Scalars['Int']['output'];
+};
+
+export type HuntStatisticsPoint = {
+  __typename?: 'HuntStatisticsPoint';
+  date: Scalars['DateTime']['output'];
+  value: Scalars['Int']['output'];
+};
+
+export enum HuntStatus {
+  Active = 'active',
+  Draft = 'draft',
+  Paused = 'paused',
+  Retired = 'retired'
+}
+
+export type HuntTechniqueValidation = {
+  __typename?: 'HuntTechniqueValidation';
+  detected_runs_count: Scalars['Int']['output'];
+  emulation_runs_count: Scalars['Int']['output'];
+  status: HuntTechniqueValidationStatus;
+  technique_id: Scalars['String']['output'];
+};
+
+export enum HuntTechniqueValidationStatus {
+  InProgress = 'in_progress',
+  NotDetected = 'not_detected',
+  NotValidated = 'not_validated',
+  Validated = 'validated'
+}
+
+export enum HuntType {
+  Indicators = 'indicators',
+  Infrastructure = 'infrastructure',
+  Telemetry = 'telemetry'
+}
+
+export type HuntValidateFromEmulationInput = {
+  inject_id: Scalars['String']['input'];
+  security_coverage_id?: InputMaybe<Scalars['String']['input']>;
+  security_platform_id?: InputMaybe<Scalars['String']['input']>;
+  security_platform_name?: InputMaybe<Scalars['String']['input']>;
+  technique_id: Scalars['String']['input'];
+  window_end: Scalars['DateTime']['input'];
+  window_start: Scalars['DateTime']['input'];
+};
+
+export type HuntValidation = {
+  __typename?: 'HuntValidation';
+  hunts_count: Scalars['Int']['output'];
+  runs: Array<HuntRun>;
+};
+
+export enum HuntVerdictSource {
+  Agent = 'agent',
+  Analyst = 'analyst',
+  Auto = 'auto'
+}
+
+export enum HuntsOrdering {
+  Score = '_score',
+  Created = 'created',
+  CreatedAt = 'created_at',
+  Creator = 'creator',
+  EscalationThreshold = 'escalation_threshold',
+  HuntSchedule = 'hunt_schedule',
+  HuntSourceKind = 'hunt_source_kind',
+  HuntStatus = 'hunt_status',
+  HuntType = 'hunt_type',
+  LastHitsCount = 'last_hits_count',
+  LastRunAt = 'last_run_at',
+  LastRunStatus = 'last_run_status',
+  Modified = 'modified',
+  Name = 'name',
+  NextRunAt = 'next_run_at',
+  ObjectLabel = 'objectLabel',
+  ObjectMarking = 'objectMarking',
+  UpdatedAt = 'updated_at',
+  XOpenctiWorkflowId = 'x_opencti_workflow_id'
+}
+
 export type Iccid = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'ICCID';
   cases?: Maybe<CaseConnection>;
@@ -17423,6 +18601,29 @@ export type Mutation = {
   groupingFieldPatch?: Maybe<Grouping>;
   groupingRelationAdd?: Maybe<StixRefRelationship>;
   groupingRelationDelete?: Maybe<Grouping>;
+  huntAdd?: Maybe<Hunt>;
+  huntAssist: HuntAssistance;
+  huntConnectorCheckReport?: Maybe<HuntConnector>;
+  huntConnectorRegister?: Maybe<HuntConnector>;
+  /** Asks a hunt connector to test its connection and its permissions on its platform */
+  huntConnectorTestConnection?: Maybe<HuntConnector>;
+  huntContextClean?: Maybe<Hunt>;
+  huntContextPatch?: Maybe<Hunt>;
+  huntDelete?: Maybe<Scalars['ID']['output']>;
+  huntFieldPatch?: Maybe<Hunt>;
+  huntPackImport?: Maybe<HuntPackImportResult>;
+  huntPlan?: Maybe<HuntProposal>;
+  huntProposalAdd?: Maybe<HuntProposal>;
+  huntRelationAdd?: Maybe<StixRefRelationship>;
+  huntRelationDelete?: Maybe<Hunt>;
+  huntRunEvidenceAdd?: Maybe<HuntRun>;
+  huntRunReport?: Maybe<HuntRun>;
+  huntRunRetry?: Maybe<HuntRun>;
+  huntRunSetVerdict?: Maybe<HuntRun>;
+  huntRunStart: Array<HuntRun>;
+  huntRunTriage?: Maybe<HuntRun>;
+  huntTestQuery?: Maybe<HuntRun>;
+  huntValidateFromEmulation?: Maybe<HuntValidation>;
   identityAdd?: Maybe<Identity>;
   identityEdit?: Maybe<IdentityEditMutations>;
   incidentAdd?: Maybe<Incident>;
@@ -18728,6 +19929,129 @@ export type MutationGroupingRelationDeleteArgs = {
   id: Scalars['ID']['input'];
   relationship_type: Scalars['String']['input'];
   toId: Scalars['StixRef']['input'];
+};
+
+
+export type MutationHuntAddArgs = {
+  input: HuntAddInput;
+};
+
+
+export type MutationHuntAssistArgs = {
+  input: HuntAssistInput;
+};
+
+
+export type MutationHuntConnectorCheckReportArgs = {
+  input: HuntConnectorCheckReportInput;
+};
+
+
+export type MutationHuntConnectorRegisterArgs = {
+  input: HuntConnectorRegisterInput;
+};
+
+
+export type MutationHuntConnectorTestConnectionArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationHuntContextCleanArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationHuntContextPatchArgs = {
+  id: Scalars['ID']['input'];
+  input: EditContext;
+};
+
+
+export type MutationHuntDeleteArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationHuntFieldPatchArgs = {
+  commitMessage?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['ID']['input'];
+  input: Array<InputMaybe<EditInput>>;
+  references?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+};
+
+
+export type MutationHuntPackImportArgs = {
+  file: Scalars['Upload']['input'];
+};
+
+
+export type MutationHuntPlanArgs = {
+  input: HuntPlanInput;
+};
+
+
+export type MutationHuntProposalAddArgs = {
+  draftName?: InputMaybe<Scalars['String']['input']>;
+  input: HuntAddInput;
+};
+
+
+export type MutationHuntRelationAddArgs = {
+  id: Scalars['ID']['input'];
+  input: StixRefRelationshipAddInput;
+};
+
+
+export type MutationHuntRelationDeleteArgs = {
+  id: Scalars['ID']['input'];
+  relationship_type: Scalars['String']['input'];
+  toId: Scalars['StixRef']['input'];
+};
+
+
+export type MutationHuntRunEvidenceAddArgs = {
+  id: Scalars['ID']['input'];
+  input: HuntRunEvidenceAddInput;
+};
+
+
+export type MutationHuntRunReportArgs = {
+  id: Scalars['ID']['input'];
+  input: HuntRunReportInput;
+};
+
+
+export type MutationHuntRunRetryArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationHuntRunSetVerdictArgs = {
+  id: Scalars['ID']['input'];
+  input: HuntRunVerdictInput;
+};
+
+
+export type MutationHuntRunStartArgs = {
+  id: Scalars['ID']['input'];
+  input?: InputMaybe<HuntRunStartInput>;
+};
+
+
+export type MutationHuntRunTriageArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationHuntTestQueryArgs = {
+  id: Scalars['ID']['input'];
+  securityPlatformId?: InputMaybe<Scalars['ID']['input']>;
+};
+
+
+export type MutationHuntValidateFromEmulationArgs = {
+  input: HuntValidateFromEmulationInput;
 };
 
 
@@ -21929,6 +23253,7 @@ export type ObservedData = BasicObject & Container & StixCoreObject & StixDomain
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
   x_opencti_graph_data?: Maybe<Scalars['String']['output']>;
+  x_opencti_hunt_run_id?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
@@ -22146,6 +23471,7 @@ export type ObservedDataAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']['input']>;
   update?: InputMaybe<Scalars['Boolean']['input']>;
   upsertOperations?: InputMaybe<Array<EditInput>>;
+  x_opencti_hunt_run_id?: InputMaybe<Scalars['String']['input']>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
   x_opencti_workflow_id?: InputMaybe<Scalars['String']['input']>;
@@ -24893,6 +26219,17 @@ export type Query = {
   groupingsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
   groups?: Maybe<GroupConnection>;
   guessMimeType?: Maybe<Scalars['String']['output']>;
+  hunt?: Maybe<Hunt>;
+  huntConfiguration: HuntConfiguration;
+  huntConnectors: Array<HuntConnector>;
+  /** What 'Hunt this' proposes to hunt from the entity: its indicators, techniques and detection rules */
+  huntDerivedContent?: Maybe<HuntDerivedContent>;
+  huntPackExport?: Maybe<Scalars['String']['output']>;
+  huntRun?: Maybe<HuntRun>;
+  huntRuns?: Maybe<HuntRunConnection>;
+  huntSigmaValidate: HuntSigmaValidation;
+  huntStatistics: HuntStatistics;
+  hunts?: Maybe<HuntConnection>;
   identities?: Maybe<IdentityConnection>;
   identity?: Maybe<Identity>;
   importFiles?: Maybe<FileConnection>;
@@ -26171,6 +27508,65 @@ export type QueryGroupsArgs = {
 
 export type QueryGuessMimeTypeArgs = {
   fileId: Scalars['String']['input'];
+};
+
+
+export type QueryHuntArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type QueryHuntConnectorsArgs = {
+  onlyAlive?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
+export type QueryHuntDerivedContentArgs = {
+  entityId: Scalars['ID']['input'];
+};
+
+
+export type QueryHuntPackExportArgs = {
+  ids: Array<Scalars['ID']['input']>;
+};
+
+
+export type QueryHuntRunArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type QueryHuntRunsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<HuntRunsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryHuntSigmaValidateArgs = {
+  sigma_rule: Scalars['String']['input'];
+};
+
+
+export type QueryHuntStatisticsArgs = {
+  endDate?: InputMaybe<Scalars['DateTime']['input']>;
+  huntId?: InputMaybe<Scalars['ID']['input']>;
+  interval?: InputMaybe<Scalars['String']['input']>;
+  startDate?: InputMaybe<Scalars['DateTime']['input']>;
+};
+
+
+export type QueryHuntsArgs = {
+  after?: InputMaybe<Scalars['ID']['input']>;
+  filters?: InputMaybe<FilterGroup>;
+  first?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<HuntsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  toStix?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 
@@ -33407,7 +34803,7 @@ export type StixObject = {
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']['output']>>>;
 };
 
-export type StixObjectOrStixRelationship = AiPrompt | AdministrativeArea | Artifact | AttackPattern | AutonomousSystem | BankAccount | Campaign | CaseIncident | CaseRfi | CaseRft | CaseTemplate | Channel | City | Country | CourseOfAction | Credential | CryptocurrencyWallet | CryptographicKey | CsvMapper | CustomView | DataComponent | DataSource | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | EntitySetting | Event | ExternalReference | Feedback | Grouping | Hostname | Iccid | Imei | Imsi | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | KillChainPhase | Label | Language | MacAddr | Malware | MalwareAnalysis | ManagerConfiguration | MarkingDefinition | MediaContent | Mutex | Narrative | NetworkTraffic | Note | ObservedData | Opinion | Organization | PaymentCard | Persona | PhoneNumber | Pir | Position | Process | PublicDashboard | Region | Report | SshKey | SavedFilter | Sector | SecurityCoverage | SecurityCoverageResult | SecurityPlatform | Software | StixCoreRelationship | StixFile | StixRefRelationship | StixSightingRelationship | System | Task | Text | ThreatActorGroup | ThreatActorIndividual | Tool | TrackingNumber | Url | UserAccount | UserAgent | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | Workspace | X509Certificate;
+export type StixObjectOrStixRelationship = AiPrompt | AdministrativeArea | Artifact | AttackPattern | AutonomousSystem | BankAccount | Campaign | CaseIncident | CaseRfi | CaseRft | CaseTemplate | Channel | City | Country | CourseOfAction | Credential | CryptocurrencyWallet | CryptographicKey | CsvMapper | CustomView | DataComponent | DataSource | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | EntitySetting | Event | ExternalReference | Feedback | Grouping | Hostname | Hunt | Iccid | Imei | Imsi | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | KillChainPhase | Label | Language | MacAddr | Malware | MalwareAnalysis | ManagerConfiguration | MarkingDefinition | MediaContent | Mutex | Narrative | NetworkTraffic | Note | ObservedData | Opinion | Organization | PaymentCard | Persona | PhoneNumber | Pir | Position | Process | PublicDashboard | Region | Report | SshKey | SavedFilter | Sector | SecurityCoverage | SecurityCoverageResult | SecurityPlatform | Software | StixCoreRelationship | StixFile | StixRefRelationship | StixSightingRelationship | System | Task | Text | ThreatActorGroup | ThreatActorIndividual | Tool | TrackingNumber | Url | UserAccount | UserAgent | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | Workspace | X509Certificate;
 
 export type StixObjectOrStixRelationshipConnection = {
   __typename?: 'StixObjectOrStixRelationshipConnection';
@@ -33421,7 +34817,7 @@ export type StixObjectOrStixRelationshipEdge = {
   node: StixObjectOrStixRelationship;
 };
 
-export type StixObjectOrStixRelationshipOrCreator = AiPrompt | AdministrativeArea | Artifact | AttackPattern | AutonomousSystem | BankAccount | Campaign | CaseIncident | CaseRfi | CaseRft | CaseTemplate | Channel | City | Country | CourseOfAction | Creator | Credential | CryptocurrencyWallet | CryptographicKey | CsvMapper | CustomView | DataComponent | DataSource | Directory | DomainName | DraftWorkspace | EmailAddr | EmailMessage | EmailMimePartType | EntitySetting | Event | ExternalReference | Feedback | Group | Grouping | Hostname | Iccid | Imei | Imsi | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | KillChainPhase | Label | Language | MacAddr | Malware | MalwareAnalysis | ManagerConfiguration | MarkingDefinition | MediaContent | Mutex | Narrative | NetworkTraffic | Note | ObservedData | Opinion | Organization | PaymentCard | Persona | PhoneNumber | Pir | Position | Process | PublicDashboard | Region | Report | SshKey | SavedFilter | Sector | SecurityCoverage | SecurityCoverageResult | SecurityPlatform | Software | Status | StixCoreRelationship | StixFile | StixRefRelationship | StixSightingRelationship | System | Task | Text | Theme | ThreatActorGroup | ThreatActorIndividual | Tool | TrackingNumber | Url | UserAccount | UserAgent | Vocabulary | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | Workspace | X509Certificate;
+export type StixObjectOrStixRelationshipOrCreator = AiPrompt | AdministrativeArea | Artifact | AttackPattern | AutonomousSystem | BankAccount | Campaign | CaseIncident | CaseRfi | CaseRft | CaseTemplate | Channel | City | Country | CourseOfAction | Creator | Credential | CryptocurrencyWallet | CryptographicKey | CsvMapper | CustomView | DataComponent | DataSource | Directory | DomainName | DraftWorkspace | EmailAddr | EmailMessage | EmailMimePartType | EntitySetting | Event | ExternalReference | Feedback | Group | Grouping | Hostname | Hunt | Iccid | Imei | Imsi | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | KillChainPhase | Label | Language | MacAddr | Malware | MalwareAnalysis | ManagerConfiguration | MarkingDefinition | MediaContent | Mutex | Narrative | NetworkTraffic | Note | ObservedData | Opinion | Organization | PaymentCard | Persona | PhoneNumber | Pir | Position | Process | PublicDashboard | Region | Report | SshKey | SavedFilter | Sector | SecurityCoverage | SecurityCoverageResult | SecurityPlatform | Software | Status | StixCoreRelationship | StixFile | StixRefRelationship | StixSightingRelationship | System | Task | Text | Theme | ThreatActorGroup | ThreatActorIndividual | Tool | TrackingNumber | Url | UserAccount | UserAgent | Vocabulary | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | Workspace | X509Certificate;
 
 export type StixObjectOrStixRelationshipRefConnection = {
   __typename?: 'StixObjectOrStixRelationshipRefConnection';
@@ -33767,6 +35163,9 @@ export type StixSightingRelationship = BasicRelationship & StixRelationship & {
   updated_at: Scalars['DateTime']['output'];
   workflowEnabled?: Maybe<Scalars['Boolean']['output']>;
   workflowInstance?: Maybe<WorkflowInstance>;
+  /** The hunt whose runs keep this sighting up to date (one sighting per hunt, sighted object and security platform) */
+  x_opencti_hunt_id?: Maybe<Scalars['String']['output']>;
+  x_opencti_hunt_run_id?: Maybe<Scalars['String']['output']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_modified_at?: Maybe<Scalars['DateTime']['output']>;
   x_opencti_negative: Scalars['Boolean']['output'];
@@ -33833,6 +35232,7 @@ export type StixSightingRelationshipAddInput = {
   toId: Scalars['StixRef']['input'];
   update?: InputMaybe<Scalars['Boolean']['input']>;
   upsertOperations?: InputMaybe<Array<EditInput>>;
+  x_opencti_hunt_run_id?: InputMaybe<Scalars['String']['input']>;
   x_opencti_modified_at?: InputMaybe<Scalars['DateTime']['input']>;
   x_opencti_negative?: InputMaybe<Scalars['Boolean']['input']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']['input']>>>;
@@ -34078,6 +35478,7 @@ export type Subscription = {
   entitySetting?: Maybe<EntitySetting>;
   externalReference?: Maybe<ExternalReference>;
   group?: Maybe<Group>;
+  hunt?: Maybe<Hunt>;
   /** @deprecated [>=6.3 & <6.6]. Not used in the platform. */
   internalObject?: Maybe<InternalObject>;
   killChainPhase?: Maybe<KillChainPhase>;
@@ -34122,6 +35523,11 @@ export type SubscriptionExternalReferenceArgs = {
 
 
 export type SubscriptionGroupArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type SubscriptionHuntArgs = {
   id: Scalars['ID']['input'];
 };
 
@@ -39869,6 +41275,7 @@ export type ResolversUnionTypes<_RefType extends Record<string, unknown>> = Reso
     | ( BasicStoreEntityFeedback )
     | ( BasicStoreEntityGrouping )
     | ( Omit<Hostname, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
+    | ( BasicStoreEntityHunt )
     | ( Omit<Iccid, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( Omit<Imei, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( Omit<Imsi, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
@@ -39968,6 +41375,7 @@ export type ResolversUnionTypes<_RefType extends Record<string, unknown>> = Reso
     | ( BasicGroupEntity )
     | ( BasicStoreEntityGrouping )
     | ( Omit<Hostname, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
+    | ( BasicStoreEntityHunt )
     | ( Omit<Iccid, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( Omit<Imei, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( Omit<Imsi, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
@@ -40060,7 +41468,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( GraphqlCatalog )
     | ( BasicStoreEntityChannel )
     | ( Omit<City, 'administrativeArea' | 'avatar' | 'cases' | 'connectors' | 'containers' | 'country' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'workflowInstance' | 'x_opencti_inferences'> & { administrativeArea?: Maybe<_RefType['AdministrativeArea']>, avatar?: Maybe<_RefType['OpenCtiFile']>, cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, country?: Maybe<_RefType['Country']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<_RefType['FileConnection']>, fintelTemplates?: Maybe<Array<_RefType['FintelTemplate']>>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, status?: Maybe<_RefType['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, workflowInstance?: Maybe<_RefType['WorkflowInstance']>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
-    | ( Omit<Connector, 'configurations' | 'connector_user' | 'works'> & { configurations?: Maybe<Array<_RefType['ConnectorConfiguration']>>, connector_user?: Maybe<_RefType['User']>, works?: Maybe<Array<Maybe<_RefType['Work']>>> } )
+    | ( Omit<Connector, 'configurations' | 'connector_user' | 'hunt' | 'works'> & { configurations?: Maybe<Array<_RefType['ConnectorConfiguration']>>, connector_user?: Maybe<_RefType['User']>, hunt?: Maybe<_RefType['HuntConnector']>, works?: Maybe<Array<Maybe<_RefType['Work']>>> } )
     | ( ConnectorManager )
     | ( Omit<Country, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'region' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'workflowInstance' | 'x_opencti_inferences'> & { avatar?: Maybe<_RefType['OpenCtiFile']>, cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<_RefType['FileConnection']>, fintelTemplates?: Maybe<Array<_RefType['FintelTemplate']>>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, region?: Maybe<_RefType['Region']>, reports?: Maybe<_RefType['ReportConnection']>, status?: Maybe<_RefType['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, workflowInstance?: Maybe<_RefType['WorkflowInstance']>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( Omit<CourseOfAction, 'attackPatterns' | 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'workflowInstance' | 'x_opencti_inferences'> & { attackPatterns?: Maybe<_RefType['AttackPatternConnection']>, avatar?: Maybe<_RefType['OpenCtiFile']>, cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<_RefType['FileConnection']>, fintelTemplates?: Maybe<Array<_RefType['FintelTemplate']>>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, status?: Maybe<_RefType['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, workflowInstance?: Maybe<_RefType['WorkflowInstance']>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
@@ -40094,6 +41502,8 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( BasicGroupEntity )
     | ( BasicStoreEntityGrouping )
     | ( Omit<Hostname, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
+    | ( BasicStoreEntityHunt )
+    | ( BasicStoreEntityHuntRun )
     | ( Omit<Iccid, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( Omit<Imei, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( Omit<Imsi, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
@@ -40215,7 +41625,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( BasicCapabilityEntity )
     | ( BasicStoreEntityCaseTemplate )
     | ( GraphqlCatalog )
-    | ( Omit<Connector, 'configurations' | 'connector_user' | 'works'> & { configurations?: Maybe<Array<_RefType['ConnectorConfiguration']>>, connector_user?: Maybe<_RefType['User']>, works?: Maybe<Array<Maybe<_RefType['Work']>>> } )
+    | ( Omit<Connector, 'configurations' | 'connector_user' | 'hunt' | 'works'> & { configurations?: Maybe<Array<_RefType['ConnectorConfiguration']>>, connector_user?: Maybe<_RefType['User']>, hunt?: Maybe<_RefType['HuntConnector']>, works?: Maybe<Array<Maybe<_RefType['Work']>>> } )
     | ( ConnectorManager )
     | ( BasicStoreEntityCsvMapper )
     | ( CustomFieldDefinition )
@@ -40232,6 +41642,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( BasicStoreEntityFintelTemplate )
     | ( BasicStoreEntityForm )
     | ( BasicGroupEntity )
+    | ( BasicStoreEntityHuntRun )
     | ( BasicStoreEntityIngestionCsv )
     | ( BasicStoreEntityIngestionJson )
     | ( BasicStoreEntityIngestionRss )
@@ -40298,6 +41709,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( BasicStoreEntityFeedback )
     | ( BasicStoreEntityGrouping )
     | ( Omit<Hostname, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
+    | ( BasicStoreEntityHunt )
     | ( Omit<Iccid, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( Omit<Imei, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( Omit<Imsi, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
@@ -40404,6 +41816,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( BasicStoreEntityEvent )
     | ( BasicStoreEntityFeedback )
     | ( BasicStoreEntityGrouping )
+    | ( BasicStoreEntityHunt )
     | ( Omit<Incident, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'securityCoverage' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'workflowInstance' | 'x_opencti_inferences'> & { avatar?: Maybe<_RefType['OpenCtiFile']>, cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<_RefType['FileConnection']>, fintelTemplates?: Maybe<Array<_RefType['FintelTemplate']>>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, securityCoverage?: Maybe<_RefType['SecurityCoverage']>, status?: Maybe<_RefType['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, workflowInstance?: Maybe<_RefType['WorkflowInstance']>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( BasicStoreEntityIndicator )
     | ( Omit<Individual, 'avatar' | 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'filesFromTemplate' | 'fintelTemplates' | 'groupings' | 'importFiles' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'organizations' | 'pendingFiles' | 'reports' | 'status' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'workflowInstance' | 'x_opencti_inferences'> & { avatar?: Maybe<_RefType['OpenCtiFile']>, cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, filesFromTemplate?: Maybe<_RefType['FileConnection']>, fintelTemplates?: Maybe<Array<_RefType['FintelTemplate']>>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, organizations?: Maybe<_RefType['OrganizationConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, status?: Maybe<_RefType['Status']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, workflowInstance?: Maybe<_RefType['WorkflowInstance']>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
@@ -40468,6 +41881,7 @@ export type ResolversInterfaceTypes<_RefType extends Record<string, unknown>> = 
     | ( BasicStoreEntityFeedback )
     | ( BasicStoreEntityGrouping )
     | ( Omit<Hostname, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
+    | ( BasicStoreEntityHunt )
     | ( Omit<Iccid, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( Omit<Imei, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
     | ( Omit<Imsi, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<_RefType['CaseConnection']>, connectors?: Maybe<Array<Maybe<_RefType['Connector']>>>, containers?: Maybe<_RefType['ContainerConnection']>, createdBy?: Maybe<_RefType['Identity']>, creators?: Maybe<Array<_RefType['Creator']>>, editContext?: Maybe<Array<_RefType['EditUserContext']>>, exportFiles?: Maybe<_RefType['FileConnection']>, externalReferences?: Maybe<_RefType['ExternalReferenceConnection']>, groupings?: Maybe<_RefType['GroupingConnection']>, importFiles?: Maybe<_RefType['FileConnection']>, indicators?: Maybe<_RefType['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<_RefType['Work']>>>, notes?: Maybe<_RefType['NoteConnection']>, objectLabel?: Maybe<Array<_RefType['Label']>>, objectMarking?: Maybe<Array<_RefType['MarkingDefinition']>>, objectOrganization?: Maybe<Array<_RefType['Organization']>>, observedData?: Maybe<_RefType['ObservedDataConnection']>, opinions?: Maybe<_RefType['OpinionConnection']>, pendingFiles?: Maybe<_RefType['FileConnection']>, reports?: Maybe<_RefType['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, stixCoreRelationships?: Maybe<_RefType['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<_RefType['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<_RefType['Inference']>>> } )
@@ -40694,7 +42108,7 @@ export type ResolversTypes = ResolversObject<{
   ConfidenceLevelInput: ConfidenceLevelInput;
   ConfidenceLevelOverride: ResolverTypeWrapper<ConfidenceLevelOverride>;
   ConfidenceLevelOverrideInput: ConfidenceLevelOverrideInput;
-  Connector: ResolverTypeWrapper<Omit<Connector, 'configurations' | 'connector_user' | 'works'> & { configurations?: Maybe<Array<ResolversTypes['ConnectorConfiguration']>>, connector_user?: Maybe<ResolversTypes['User']>, works?: Maybe<Array<Maybe<ResolversTypes['Work']>>> }>;
+  Connector: ResolverTypeWrapper<Omit<Connector, 'configurations' | 'connector_user' | 'hunt' | 'works'> & { configurations?: Maybe<Array<ResolversTypes['ConnectorConfiguration']>>, connector_user?: Maybe<ResolversTypes['User']>, hunt?: Maybe<ResolversTypes['HuntConnector']>, works?: Maybe<Array<Maybe<ResolversTypes['Work']>>> }>;
   ConnectorConfig: ResolverTypeWrapper<ConnectorConfig>;
   ConnectorConfiguration: ResolverTypeWrapper<ConnectorConfiguration>;
   ConnectorContractConfiguration: ResolverTypeWrapper<ConnectorContractConfiguration>;
@@ -40972,6 +42386,82 @@ export type ResolversTypes = ResolversObject<{
   HistoryChange: ResolverTypeWrapper<HistoryChange>;
   Hostname: ResolverTypeWrapper<Omit<Hostname, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, creators?: Maybe<Array<ResolversTypes['Creator']>>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   HostnameAddInput: HostnameAddInput;
+  Hunt: ResolverTypeWrapper<BasicStoreEntityHunt>;
+  HuntAddInput: HuntAddInput;
+  HuntAssistField: HuntAssistField;
+  HuntAssistInput: HuntAssistInput;
+  HuntAssistTechnique: ResolverTypeWrapper<HuntAssistTechnique>;
+  HuntAssistance: ResolverTypeWrapper<Omit<HuntAssistance, 'sigma_validation'> & { sigma_validation?: Maybe<ResolversTypes['HuntSigmaValidation']> }>;
+  HuntConfiguration: ResolverTypeWrapper<HuntConfiguration>;
+  HuntConnection: ResolverTypeWrapper<Omit<HuntConnection, 'edges'> & { edges: Array<ResolversTypes['HuntEdge']> }>;
+  HuntConnectionCheck: ResolverTypeWrapper<HuntConnectionCheck>;
+  HuntConnectionCheckItem: ResolverTypeWrapper<HuntConnectionCheckItem>;
+  HuntConnectionCheckItemInput: HuntConnectionCheckItemInput;
+  HuntConnectionCheckStatus: HuntConnectionCheckStatus;
+  HuntConnector: ResolverTypeWrapper<HuntConnectorView>;
+  HuntConnectorCheckReportInput: HuntConnectorCheckReportInput;
+  HuntConnectorRegisterInput: HuntConnectorRegisterInput;
+  HuntDerivedContent: ResolverTypeWrapper<HuntDerivedContent>;
+  HuntDerivedElement: ResolverTypeWrapper<HuntDerivedElement>;
+  HuntDerivedRule: ResolverTypeWrapper<HuntDerivedRule>;
+  HuntDerivedSource: ResolverTypeWrapper<HuntDerivedSource>;
+  HuntDerivedSourceRelation: HuntDerivedSourceRelation;
+  HuntDerivedTechnique: ResolverTypeWrapper<HuntDerivedTechnique>;
+  HuntEdge: ResolverTypeWrapper<Omit<HuntEdge, 'node'> & { node: ResolversTypes['Hunt'] }>;
+  HuntEvidence: ResolverTypeWrapper<HuntEvidence>;
+  HuntEvidenceInput: HuntEvidenceInput;
+  HuntHit: ResolverTypeWrapper<HuntHit>;
+  HuntHitField: ResolverTypeWrapper<HuntHitField>;
+  HuntHitFieldInput: HuntHitFieldInput;
+  HuntHitInput: HuntHitInput;
+  HuntIoc: ResolverTypeWrapper<HuntIoc>;
+  HuntIocResult: ResolverTypeWrapper<Omit<HuntIocResult, 'sources'> & { sources: Array<ResolversTypes['StixCoreObject']> }>;
+  HuntIocResultInput: HuntIocResultInput;
+  HuntIocSet: ResolverTypeWrapper<HuntIocSet>;
+  HuntIocSource: ResolverTypeWrapper<HuntIocSource>;
+  HuntIocValue: ResolverTypeWrapper<HuntIocValue>;
+  HuntIocValueInput: HuntIocValueInput;
+  HuntIocVerdict: HuntIocVerdict;
+  HuntKnownHits: ResolverTypeWrapper<HuntKnownHits>;
+  HuntMessage: ResolverTypeWrapper<HuntMessage>;
+  HuntMessageValue: ResolverTypeWrapper<HuntMessageValue>;
+  HuntNativeQuery: ResolverTypeWrapper<HuntNativeQuery>;
+  HuntNativeQueryInput: HuntNativeQueryInput;
+  HuntPackImportResult: ResolverTypeWrapper<Omit<HuntPackImportResult, 'hunts'> & { hunts: Array<ResolversTypes['Hunt']> }>;
+  HuntPlanInput: HuntPlanInput;
+  HuntProposal: ResolverTypeWrapper<Omit<HuntProposal, 'hunt'> & { hunt?: Maybe<ResolversTypes['Hunt']> }>;
+  HuntReadiness: ResolverTypeWrapper<HuntReadiness>;
+  HuntReadinessItem: ResolverTypeWrapper<HuntReadinessItem>;
+  HuntReadinessKey: HuntReadinessKey;
+  HuntReadinessStatus: HuntReadinessStatus;
+  HuntRequiredPermission: ResolverTypeWrapper<HuntRequiredPermission>;
+  HuntRequiredPermissionInput: HuntRequiredPermissionInput;
+  HuntRun: ResolverTypeWrapper<BasicStoreEntityHuntRun>;
+  HuntRunConnection: ResolverTypeWrapper<Omit<HuntRunConnection, 'edges'> & { edges: Array<ResolversTypes['HuntRunEdge']> }>;
+  HuntRunEdge: ResolverTypeWrapper<Omit<HuntRunEdge, 'node'> & { node: ResolversTypes['HuntRun'] }>;
+  HuntRunEvidenceAddInput: HuntRunEvidenceAddInput;
+  HuntRunMode: HuntRunMode;
+  HuntRunReportInput: HuntRunReportInput;
+  HuntRunResultsSummary: ResolverTypeWrapper<HuntRunResultsSummary>;
+  HuntRunStartInput: HuntRunStartInput;
+  HuntRunStatus: HuntRunStatus;
+  HuntRunTrigger: HuntRunTrigger;
+  HuntRunVerdict: HuntRunVerdict;
+  HuntRunVerdictInput: HuntRunVerdictInput;
+  HuntRunsOrdering: HuntRunsOrdering;
+  HuntSigmaValidation: ResolverTypeWrapper<SigmaValidation>;
+  HuntSourceKind: HuntSourceKind;
+  HuntStatistics: ResolverTypeWrapper<HuntStatistics>;
+  HuntStatisticsBucket: ResolverTypeWrapper<HuntStatisticsBucket>;
+  HuntStatisticsPoint: ResolverTypeWrapper<HuntStatisticsPoint>;
+  HuntStatus: HuntStatus;
+  HuntTechniqueValidation: ResolverTypeWrapper<HuntTechniqueValidation>;
+  HuntTechniqueValidationStatus: HuntTechniqueValidationStatus;
+  HuntType: HuntType;
+  HuntValidateFromEmulationInput: HuntValidateFromEmulationInput;
+  HuntValidation: ResolverTypeWrapper<Omit<HuntValidation, 'runs'> & { runs: Array<ResolversTypes['HuntRun']> }>;
+  HuntVerdictSource: HuntVerdictSource;
+  HuntsOrdering: HuntsOrdering;
   ICCID: ResolverTypeWrapper<Omit<Iccid, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversTypes['Connector']>>>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, creators?: Maybe<Array<ResolversTypes['Creator']>>, editContext?: Maybe<Array<ResolversTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversTypes['Work']>>>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversTypes['Label']>>, objectMarking?: Maybe<Array<ResolversTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversTypes['Organization']>>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversTypes['Inference']>>> }>;
   ICCIDAddInput: IccidAddInput;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
@@ -41866,7 +43356,7 @@ export type ResolversParentTypes = ResolversObject<{
   ConfidenceLevelInput: ConfidenceLevelInput;
   ConfidenceLevelOverride: ConfidenceLevelOverride;
   ConfidenceLevelOverrideInput: ConfidenceLevelOverrideInput;
-  Connector: Omit<Connector, 'configurations' | 'connector_user' | 'works'> & { configurations?: Maybe<Array<ResolversParentTypes['ConnectorConfiguration']>>, connector_user?: Maybe<ResolversParentTypes['User']>, works?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>> };
+  Connector: Omit<Connector, 'configurations' | 'connector_user' | 'hunt' | 'works'> & { configurations?: Maybe<Array<ResolversParentTypes['ConnectorConfiguration']>>, connector_user?: Maybe<ResolversParentTypes['User']>, hunt?: Maybe<ResolversParentTypes['HuntConnector']>, works?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>> };
   ConnectorConfig: ConnectorConfig;
   ConnectorConfiguration: ConnectorConfiguration;
   ConnectorContractConfiguration: ConnectorContractConfiguration;
@@ -42102,6 +43592,65 @@ export type ResolversParentTypes = ResolversObject<{
   HistoryChange: HistoryChange;
   Hostname: Omit<Hostname, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, creators?: Maybe<Array<ResolversParentTypes['Creator']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   HostnameAddInput: HostnameAddInput;
+  Hunt: BasicStoreEntityHunt;
+  HuntAddInput: HuntAddInput;
+  HuntAssistInput: HuntAssistInput;
+  HuntAssistTechnique: HuntAssistTechnique;
+  HuntAssistance: Omit<HuntAssistance, 'sigma_validation'> & { sigma_validation?: Maybe<ResolversParentTypes['HuntSigmaValidation']> };
+  HuntConfiguration: HuntConfiguration;
+  HuntConnection: Omit<HuntConnection, 'edges'> & { edges: Array<ResolversParentTypes['HuntEdge']> };
+  HuntConnectionCheck: HuntConnectionCheck;
+  HuntConnectionCheckItem: HuntConnectionCheckItem;
+  HuntConnectionCheckItemInput: HuntConnectionCheckItemInput;
+  HuntConnector: HuntConnectorView;
+  HuntConnectorCheckReportInput: HuntConnectorCheckReportInput;
+  HuntConnectorRegisterInput: HuntConnectorRegisterInput;
+  HuntDerivedContent: HuntDerivedContent;
+  HuntDerivedElement: HuntDerivedElement;
+  HuntDerivedRule: HuntDerivedRule;
+  HuntDerivedSource: HuntDerivedSource;
+  HuntDerivedTechnique: HuntDerivedTechnique;
+  HuntEdge: Omit<HuntEdge, 'node'> & { node: ResolversParentTypes['Hunt'] };
+  HuntEvidence: HuntEvidence;
+  HuntEvidenceInput: HuntEvidenceInput;
+  HuntHit: HuntHit;
+  HuntHitField: HuntHitField;
+  HuntHitFieldInput: HuntHitFieldInput;
+  HuntHitInput: HuntHitInput;
+  HuntIoc: HuntIoc;
+  HuntIocResult: Omit<HuntIocResult, 'sources'> & { sources: Array<ResolversParentTypes['StixCoreObject']> };
+  HuntIocResultInput: HuntIocResultInput;
+  HuntIocSet: HuntIocSet;
+  HuntIocSource: HuntIocSource;
+  HuntIocValue: HuntIocValue;
+  HuntIocValueInput: HuntIocValueInput;
+  HuntKnownHits: HuntKnownHits;
+  HuntMessage: HuntMessage;
+  HuntMessageValue: HuntMessageValue;
+  HuntNativeQuery: HuntNativeQuery;
+  HuntNativeQueryInput: HuntNativeQueryInput;
+  HuntPackImportResult: Omit<HuntPackImportResult, 'hunts'> & { hunts: Array<ResolversParentTypes['Hunt']> };
+  HuntPlanInput: HuntPlanInput;
+  HuntProposal: Omit<HuntProposal, 'hunt'> & { hunt?: Maybe<ResolversParentTypes['Hunt']> };
+  HuntReadiness: HuntReadiness;
+  HuntReadinessItem: HuntReadinessItem;
+  HuntRequiredPermission: HuntRequiredPermission;
+  HuntRequiredPermissionInput: HuntRequiredPermissionInput;
+  HuntRun: BasicStoreEntityHuntRun;
+  HuntRunConnection: Omit<HuntRunConnection, 'edges'> & { edges: Array<ResolversParentTypes['HuntRunEdge']> };
+  HuntRunEdge: Omit<HuntRunEdge, 'node'> & { node: ResolversParentTypes['HuntRun'] };
+  HuntRunEvidenceAddInput: HuntRunEvidenceAddInput;
+  HuntRunReportInput: HuntRunReportInput;
+  HuntRunResultsSummary: HuntRunResultsSummary;
+  HuntRunStartInput: HuntRunStartInput;
+  HuntRunVerdictInput: HuntRunVerdictInput;
+  HuntSigmaValidation: SigmaValidation;
+  HuntStatistics: HuntStatistics;
+  HuntStatisticsBucket: HuntStatisticsBucket;
+  HuntStatisticsPoint: HuntStatisticsPoint;
+  HuntTechniqueValidation: HuntTechniqueValidation;
+  HuntValidateFromEmulationInput: HuntValidateFromEmulationInput;
+  HuntValidation: Omit<HuntValidation, 'runs'> & { runs: Array<ResolversParentTypes['HuntRun']> };
   ICCID: Omit<Iccid, 'cases' | 'connectors' | 'containers' | 'createdBy' | 'creators' | 'editContext' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'jobs' | 'notes' | 'objectLabel' | 'objectMarking' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreObjectsDistribution' | 'stixCoreRelationships' | 'stixCoreRelationshipsDistribution' | 'x_opencti_inferences'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, connectors?: Maybe<Array<Maybe<ResolversParentTypes['Connector']>>>, containers?: Maybe<ResolversParentTypes['ContainerConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, creators?: Maybe<Array<ResolversParentTypes['Creator']>>, editContext?: Maybe<Array<ResolversParentTypes['EditUserContext']>>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, jobs?: Maybe<Array<Maybe<ResolversParentTypes['Work']>>>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectLabel?: Maybe<Array<ResolversParentTypes['Label']>>, objectMarking?: Maybe<Array<ResolversParentTypes['MarkingDefinition']>>, objectOrganization?: Maybe<Array<ResolversParentTypes['Organization']>>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreObjectsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<ResolversParentTypes['Distribution']>>>, x_opencti_inferences?: Maybe<Array<Maybe<ResolversParentTypes['Inference']>>> };
   ICCIDAddInput: IccidAddInput;
   ID: Scalars['ID']['output'];
@@ -43482,7 +45031,7 @@ export type BankAccountResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type BasicObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['BasicObject'] = ResolversParentTypes['BasicObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AuthenticationProvider' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Capability' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Catalog' | 'Channel' | 'City' | 'Connector' | 'ConnectorManager' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DataComponent' | 'DataSource' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'Directory' | 'DisseminationList' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EmailTemplate' | 'EntitySetting' | 'Event' | 'ExclusionList' | 'ExternalReference' | 'Feedback' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'Grouping' | 'Hostname' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'IntrusionSet' | 'JsonMapper' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagedConnector' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MeUser' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'NewsFeedItem' | 'Note' | 'Notification' | 'Notifier' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Playbook' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'Role' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityCoverageResult' | 'SecurityPlatform' | 'Settings' | 'Software' | 'StixFile' | 'SupportPackage' | 'System' | 'Task' | 'TaskTemplate' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Trigger' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AuthenticationProvider' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'Capability' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Catalog' | 'Channel' | 'City' | 'Connector' | 'ConnectorManager' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DataComponent' | 'DataSource' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'Directory' | 'DisseminationList' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EmailTemplate' | 'EntitySetting' | 'Event' | 'ExclusionList' | 'ExternalReference' | 'Feedback' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'Grouping' | 'Hostname' | 'Hunt' | 'HuntRun' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'IntrusionSet' | 'JsonMapper' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagedConnector' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MeUser' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'NewsFeedItem' | 'Note' | 'Notification' | 'Notifier' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Playbook' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'Role' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityCoverageResult' | 'SecurityPlatform' | 'Settings' | 'Software' | 'StixFile' | 'SupportPackage' | 'System' | 'Task' | 'TaskTemplate' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Trigger' | 'Url' | 'User' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
@@ -44244,6 +45793,7 @@ export type ConnectorResolvers<ContextType = any, ParentType extends ResolversPa
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   enrichment_resolution?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  hunt?: Resolver<Maybe<ResolversTypes['HuntConnector']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_managed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   jwks?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -46557,6 +48107,496 @@ export type HostnameResolvers<ContextType = any, ParentType extends ResolversPar
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type HuntResolvers<ContextType = any, ParentType extends ResolversParentTypes['Hunt'] = ResolversParentTypes['Hunt']> = ResolversObject<{
+  avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
+  benign_patterns?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<HuntCasesArgs>>;
+  confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<HuntConnectorsArgs>>;
+  containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<HuntContainersArgs>>;
+  containersNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType>;
+  created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
+  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
+  editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  escalate_manual_runs?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  escalation_threshold?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  expected_observables?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<HuntExportFilesArgs>>;
+  externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<HuntExternalReferencesArgs>>;
+  filesFromTemplate?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<HuntFilesFromTemplateArgs>>;
+  fintelTemplates?: Resolver<Maybe<Array<ResolversTypes['FintelTemplate']>>, ParentType, ContextType>;
+  groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<HuntGroupingsArgs>>;
+  huntSources?: Resolver<Maybe<Array<ResolversTypes['StixCoreObject']>>, ParentType, ContextType>;
+  huntTargets?: Resolver<Maybe<Array<ResolversTypes['StixDomainObject']>>, ParentType, ContextType>;
+  huntTechniques?: Resolver<Maybe<Array<ResolversTypes['AttackPattern']>>, ParentType, ContextType>;
+  hunt_ioc_filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  hunt_ioc_values?: Resolver<Maybe<Array<ResolversTypes['HuntIocValue']>>, ParentType, ContextType>;
+  hunt_max_results?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  hunt_pir_activation?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  hunt_pir_armed?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  hunt_pir_armed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  hunt_schedule?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  hunt_scope?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  hunt_source_kind?: Resolver<ResolversTypes['HuntSourceKind'], ParentType, ContextType>;
+  hunt_status?: Resolver<ResolversTypes['HuntStatus'], ParentType, ContextType>;
+  hunt_type?: Resolver<ResolversTypes['HuntType'], ParentType, ContextType>;
+  hypothesis?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<HuntImportFilesArgs>>;
+  iocSet?: Resolver<Maybe<ResolversTypes['HuntIocSet']>, ParentType, ContextType, Partial<HuntIocSetArgs>>;
+  is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<HuntJobsArgs>>;
+  knownHits?: Resolver<ResolversTypes['HuntKnownHits'], ParentType, ContextType>;
+  lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  last_hits_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  last_new_hits_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  last_run_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  last_run_status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
+  modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  native_queries?: Resolver<Maybe<Array<ResolversTypes['HuntNativeQuery']>>, ParentType, ContextType>;
+  next_run_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<HuntNotesArgs>>;
+  numberOfConnectedElement?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  objectAssignee?: Resolver<Maybe<Array<ResolversTypes['Assignee']>>, ParentType, ContextType>;
+  objectLabel?: Resolver<Maybe<Array<ResolversTypes['Label']>>, ParentType, ContextType>;
+  objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
+  objectOrganization?: Resolver<Maybe<Array<ResolversTypes['Organization']>>, ParentType, ContextType>;
+  objectParticipant?: Resolver<Maybe<Array<ResolversTypes['Participant']>>, ParentType, ContextType>;
+  observedData?: Resolver<Maybe<ResolversTypes['ObservedDataConnection']>, ParentType, ContextType, Partial<HuntObservedDataArgs>>;
+  opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<HuntOpinionsArgs>>;
+  opinions_metrics?: Resolver<Maybe<ResolversTypes['OpinionsMetrics']>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<HuntPendingFilesArgs>>;
+  pirInformation?: Resolver<Maybe<ResolversTypes['PirInformation']>, ParentType, ContextType, RequireFields<HuntPirInformationArgs, 'pirId'>>;
+  readiness?: Resolver<ResolversTypes['HuntReadiness'], ParentType, ContextType>;
+  refreshed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<HuntReportsArgs>>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  runs?: Resolver<Maybe<ResolversTypes['HuntRunConnection']>, ParentType, ContextType, Partial<HuntRunsArgs>>;
+  scopePlatforms?: Resolver<Maybe<Array<ResolversTypes['SecurityPlatform']>>, ParentType, ContextType>;
+  sigmaValidation?: Resolver<Maybe<ResolversTypes['HuntSigmaValidation']>, ParentType, ContextType>;
+  sigma_rule?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  statistics?: Resolver<Maybe<ResolversTypes['HuntStatistics']>, ParentType, ContextType, Partial<HuntStatisticsArgs>>;
+  status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
+  stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<HuntStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
+  stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<HuntStixCoreRelationshipsArgs>>;
+  stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<HuntStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
+  techniqueValidations?: Resolver<Array<ResolversTypes['HuntTechniqueValidation']>, ParentType, ContextType>;
+  time_window_hours?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<HuntToStixArgs>>;
+  toStixBundle?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  trigger_filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
+  x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type HuntAssistTechniqueResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntAssistTechnique'] = ResolversParentTypes['HuntAssistTechnique']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  x_mitre_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type HuntAssistanceResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntAssistance'] = ResolversParentTypes['HuntAssistance']> = ResolversObject<{
+  benign_patterns?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  expected_observables?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  fields?: Resolver<Array<ResolversTypes['HuntAssistField']>, ParentType, ContextType>;
+  hypothesis?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  native_queries?: Resolver<Array<ResolversTypes['HuntNativeQuery']>, ParentType, ContextType>;
+  rationale?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  sigma_rule?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  sigma_validation?: Resolver<Maybe<ResolversTypes['HuntSigmaValidation']>, ParentType, ContextType>;
+  techniques?: Resolver<Array<ResolversTypes['HuntAssistTechnique']>, ParentType, ContextType>;
+  unknown_technique_ids?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type HuntConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntConfiguration'] = ResolversParentTypes['HuntConfiguration']> = ResolversObject<{
+  default_expected_observables?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  min_schedule_interval_minutes?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  schedule_lookback_minutes?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type HuntConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntConnection'] = ResolversParentTypes['HuntConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['HuntEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+}>;
+
+export type HuntConnectionCheckResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntConnectionCheck'] = ResolversParentTypes['HuntConnectionCheck']> = ResolversObject<{
+  checked_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  checks?: Resolver<Array<ResolversTypes['HuntConnectionCheckItem']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  requested_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['HuntConnectionCheckStatus'], ParentType, ContextType>;
+}>;
+
+export type HuntConnectionCheckItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntConnectionCheckItem'] = ResolversParentTypes['HuntConnectionCheckItem']> = ResolversObject<{
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  ok?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
+export type HuntConnectorResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntConnector'] = ResolversParentTypes['HuntConnector']> = ResolversObject<{
+  active?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  connection_check?: Resolver<Maybe<ResolversTypes['HuntConnectionCheck']>, ParentType, ContextType>;
+  documentation_url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  languages?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  max_concurrent_runs?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  platform?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  required_permissions?: Resolver<Array<ResolversTypes['HuntRequiredPermission']>, ParentType, ContextType>;
+  securityPlatform?: Resolver<Maybe<ResolversTypes['SecurityPlatform']>, ParentType, ContextType>;
+  supports_indicators?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  supports_preview?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+}>;
+
+export type HuntDerivedContentResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntDerivedContent'] = ResolversParentTypes['HuntDerivedContent']> = ResolversObject<{
+  elements?: Resolver<Array<ResolversTypes['HuntDerivedElement']>, ParentType, ContextType>;
+  elements_truncated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  entity?: Resolver<ResolversTypes['HuntDerivedSource'], ParentType, ContextType>;
+  rules?: Resolver<Array<ResolversTypes['HuntDerivedRule']>, ParentType, ContextType>;
+  sources?: Resolver<Array<ResolversTypes['HuntDerivedSource']>, ParentType, ContextType>;
+  suggested_type?: Resolver<Maybe<ResolversTypes['HuntType']>, ParentType, ContextType>;
+  targets?: Resolver<Array<ResolversTypes['HuntDerivedSource']>, ParentType, ContextType>;
+  techniques?: Resolver<Array<ResolversTypes['HuntDerivedTechnique']>, ParentType, ContextType>;
+  unsupported_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type HuntDerivedElementResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntDerivedElement'] = ResolversParentTypes['HuntDerivedElement']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  source_ids?: Resolver<Array<ResolversTypes['ID']>, ParentType, ContextType>;
+  value_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type HuntDerivedRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntDerivedRule'] = ResolversParentTypes['HuntDerivedRule']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  pattern?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  pattern_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  technique_ids?: Resolver<Array<ResolversTypes['ID']>, ParentType, ContextType>;
+}>;
+
+export type HuntDerivedSourceResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntDerivedSource'] = ResolversParentTypes['HuntDerivedSource']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  relation?: Resolver<ResolversTypes['HuntDerivedSourceRelation'], ParentType, ContextType>;
+}>;
+
+export type HuntDerivedTechniqueResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntDerivedTechnique'] = ResolversParentTypes['HuntDerivedTechnique']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  x_mitre_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type HuntEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntEdge'] = ResolversParentTypes['HuntEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['Hunt'], ParentType, ContextType>;
+}>;
+
+export type HuntEvidenceResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntEvidence'] = ResolversParentTypes['HuntEvidence']> = ResolversObject<{
+  count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  field?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  href?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  kind?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  matched?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  opencti_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  quote?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  value_hash?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  value_preview?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type HuntHitResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntHit'] = ResolversParentTypes['HuntHit']> = ResolversObject<{
+  detection?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  event_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  host?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  is_new?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  known_since?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  matched?: Resolver<Array<ResolversTypes['HuntHitField']>, ParentType, ContextType>;
+  process?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  times_seen?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  timestamp?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  user?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type HuntHitFieldResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntHitField'] = ResolversParentTypes['HuntHitField']> = ResolversObject<{
+  field?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  value_complete?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  value_hash?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  value_preview?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+}>;
+
+export type HuntIocResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntIoc'] = ResolversParentTypes['HuntIoc']> = ResolversObject<{
+  hash_algorithm?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  observable_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  sources?: Resolver<Array<ResolversTypes['HuntIocSource']>, ParentType, ContextType>;
+  value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type HuntIocResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntIocResult'] = ResolversParentTypes['HuntIocResult']> = ResolversObject<{
+  deployed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  first_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  hash_algorithm?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  hits_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  hosts?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  key?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  last_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  observable_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  reason?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sources?: Resolver<Array<ResolversTypes['StixCoreObject']>, ParentType, ContextType>;
+  value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  verdict?: Resolver<ResolversTypes['HuntIocVerdict'], ParentType, ContextType>;
+}>;
+
+export type HuntIocSetResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntIocSet'] = ResolversParentTypes['HuntIocSet']> = ResolversObject<{
+  iocs?: Resolver<Array<ResolversTypes['HuntIoc']>, ParentType, ContextType>;
+  iocs_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  restricted_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  truncated?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  unsupported_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type HuntIocSourceResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntIocSource'] = ResolversParentTypes['HuntIocSource']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type HuntIocValueResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntIocValue'] = ResolversParentTypes['HuntIocValue']> = ResolversObject<{
+  observable_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type HuntKnownHitsResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntKnownHits'] = ResolversParentTypes['HuntKnownHits']> = ResolversObject<{
+  distinct_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  first_new_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  last_new_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+}>;
+
+export type HuntMessageResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntMessage'] = ResolversParentTypes['HuntMessage']> = ResolversObject<{
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  template?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  values?: Resolver<Array<ResolversTypes['HuntMessageValue']>, ParentType, ContextType>;
+}>;
+
+export type HuntMessageValueResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntMessageValue'] = ResolversParentTypes['HuntMessageValue']> = ResolversObject<{
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  value?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type HuntNativeQueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntNativeQuery'] = ResolversParentTypes['HuntNativeQuery']> = ResolversObject<{
+  language?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  pipeline?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  query?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type HuntPackImportResultResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntPackImportResult'] = ResolversParentTypes['HuntPackImportResult']> = ResolversObject<{
+  created_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  hunts?: Resolver<Array<ResolversTypes['Hunt']>, ParentType, ContextType>;
+  unresolved_refs?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type HuntProposalResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntProposal'] = ResolversParentTypes['HuntProposal']> = ResolversObject<{
+  draft_id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  hunt?: Resolver<Maybe<ResolversTypes['Hunt']>, ParentType, ContextType>;
+}>;
+
+export type HuntReadinessResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntReadiness'] = ResolversParentTypes['HuntReadiness']> = ResolversObject<{
+  items?: Resolver<Array<ResolversTypes['HuntReadinessItem']>, ParentType, ContextType>;
+  ready?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
+export type HuntReadinessItemResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntReadinessItem'] = ResolversParentTypes['HuntReadinessItem']> = ResolversObject<{
+  key?: Resolver<ResolversTypes['HuntReadinessKey'], ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['HuntReadinessStatus'], ParentType, ContextType>;
+  template?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  values?: Resolver<Array<ResolversTypes['HuntMessageValue']>, ParentType, ContextType>;
+}>;
+
+export type HuntRequiredPermissionResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntRequiredPermission'] = ResolversParentTypes['HuntRequiredPermission']> = ResolversObject<{
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  purpose?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type HuntRunResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntRun'] = ResolversParentTypes['HuntRun']> = ResolversObject<{
+  aev_inject_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  attempt?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  auto_escalation?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  completed_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  connector_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  connector_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  cost_ms?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  dispatched_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  distinct_entities?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  draft_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  error_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  evidence_sample?: Resolver<Maybe<Array<ResolversTypes['HuntEvidence']>>, ParentType, ContextType>;
+  evidence_sources?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  failure_reason?: Resolver<Maybe<ResolversTypes['HuntMessage']>, ParentType, ContextType>;
+  failure_retryable?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  first_hit_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  hits_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  hits_identified?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  hits_new_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  hits_recurring_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  hits_sample?: Resolver<Maybe<Array<ResolversTypes['HuntHit']>>, ParentType, ContextType>;
+  hunt?: Resolver<Maybe<ResolversTypes['Hunt']>, ParentType, ContextType>;
+  hunt_analyst_feedback?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  hunt_deleted?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  hunt_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  hunt_run_mode?: Resolver<ResolversTypes['HuntRunMode'], ParentType, ContextType>;
+  hunt_run_status?: Resolver<ResolversTypes['HuntRunStatus'], ParentType, ContextType>;
+  hunt_run_trigger?: Resolver<ResolversTypes['HuntRunTrigger'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  incident_continued?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  incident_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  incident_proposal?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  ioc_results?: Resolver<Maybe<Array<ResolversTypes['HuntIocResult']>>, ParentType, ContextType>;
+  last_evidence_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  last_hit_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  metrics?: Resolver<Maybe<Array<Maybe<ResolversTypes['Metric']>>>, ParentType, ContextType>;
+  next_retry_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  objectMarking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
+  parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  playbook_execution_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  playbook_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  query_language?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  queue_reason?: Resolver<Maybe<ResolversTypes['HuntMessage']>, ParentType, ContextType>;
+  representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
+  result_ids?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  results?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationshipConnection']>, ParentType, ContextType, Partial<HuntRunResultsArgs>>;
+  results_summary?: Resolver<ResolversTypes['HuntRunResultsSummary'], ParentType, ContextType>;
+  results_truncated?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  securityPlatform?: Resolver<Maybe<ResolversTypes['SecurityPlatform']>, ParentType, ContextType>;
+  security_coverage_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  security_platform_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sightings_created_count?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  started_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  technique?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType>;
+  technique_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  time_window_continued?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  time_window_end?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  time_window_start?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  translated_query?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  triggeredBy?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
+  triggered_by?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  unresolved_techniques?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  verdict?: Resolver<ResolversTypes['HuntRunVerdict'], ParentType, ContextType>;
+  verdict_proposal?: Resolver<Maybe<ResolversTypes['HuntRunVerdict']>, ParentType, ContextType>;
+  verdict_proposal_agent?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  verdict_proposal_confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  verdict_proposal_rationale?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  verdict_rationale?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  verdict_source?: Resolver<Maybe<ResolversTypes['HuntVerdictSource']>, ParentType, ContextType>;
+  work_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type HuntRunConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntRunConnection'] = ResolversParentTypes['HuntRunConnection']> = ResolversObject<{
+  edges?: Resolver<Array<ResolversTypes['HuntRunEdge']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+}>;
+
+export type HuntRunEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntRunEdge'] = ResolversParentTypes['HuntRunEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['HuntRun'], ParentType, ContextType>;
+}>;
+
+export type HuntRunResultsSummaryResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntRunResultsSummary'] = ResolversParentTypes['HuntRunResultsSummary']> = ResolversObject<{
+  observables?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  observed_data?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  others?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  sightings?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type HuntSigmaValidationResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntSigmaValidation'] = ResolversParentTypes['HuntSigmaValidation']> = ResolversObject<{
+  attack_techniques?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  detection_fields?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  errors?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  level?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  logsource_category?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  logsource_product?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  logsource_service?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  unresolved_attack_techniques?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  valid?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+}>;
+
+export type HuntStatisticsResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntStatistics'] = ResolversParentTypes['HuntStatistics']> = ResolversObject<{
+  autonomous_runs_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  benign_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  completed_runs_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  failed_runs_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  hits_over_time?: Resolver<Array<ResolversTypes['HuntStatisticsPoint']>, ParentType, ContextType>;
+  hits_total?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  inconclusive_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  last_run_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  pending_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  runs_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  runs_over_time?: Resolver<Array<ResolversTypes['HuntStatisticsPoint']>, ParentType, ContextType>;
+  runs_per_platform?: Resolver<Array<ResolversTypes['HuntStatisticsBucket']>, ParentType, ContextType>;
+  true_positive_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  verdict_distribution?: Resolver<Array<ResolversTypes['HuntStatisticsBucket']>, ParentType, ContextType>;
+}>;
+
+export type HuntStatisticsBucketResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntStatisticsBucket'] = ResolversParentTypes['HuntStatisticsBucket']> = ResolversObject<{
+  label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  value?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type HuntStatisticsPointResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntStatisticsPoint'] = ResolversParentTypes['HuntStatisticsPoint']> = ResolversObject<{
+  date?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  value?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+}>;
+
+export type HuntTechniqueValidationResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntTechniqueValidation'] = ResolversParentTypes['HuntTechniqueValidation']> = ResolversObject<{
+  detected_runs_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  emulation_runs_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  status?: Resolver<ResolversTypes['HuntTechniqueValidationStatus'], ParentType, ContextType>;
+  technique_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
+export type HuntValidationResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntValidation'] = ResolversParentTypes['HuntValidation']> = ResolversObject<{
+  hunts_count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  runs?: Resolver<Array<ResolversTypes['HuntRun']>, ParentType, ContextType>;
+}>;
+
 export type IccidResolvers<ContextType = any, ParentType extends ResolversParentTypes['ICCID'] = ResolversParentTypes['ICCID']> = ResolversObject<{
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<IccidCasesArgs>>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<IccidConnectorsArgs>>;
@@ -47581,7 +49621,7 @@ export type IngestionTaxiiEdgeResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type InternalObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['InternalObject'] = ResolversParentTypes['InternalObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AuthenticationProvider' | 'Capability' | 'CaseTemplate' | 'Catalog' | 'Connector' | 'ConnectorManager' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'DisseminationList' | 'DraftWorkspace' | 'EmailTemplate' | 'EntitySetting' | 'ExclusionList' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'JsonMapper' | 'ManagedConnector' | 'ManagerConfiguration' | 'MeUser' | 'NewsFeedItem' | 'Notification' | 'Notifier' | 'Pir' | 'Playbook' | 'PublicDashboard' | 'Role' | 'SavedFilter' | 'Settings' | 'SupportPackage' | 'TaskTemplate' | 'Theme' | 'Trigger' | 'User' | 'Workspace', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AuthenticationProvider' | 'Capability' | 'CaseTemplate' | 'Catalog' | 'Connector' | 'ConnectorManager' | 'CsvMapper' | 'CustomFieldDefinition' | 'CustomView' | 'DecayExclusionRule' | 'DecayRule' | 'DeleteOperation' | 'DisseminationList' | 'DraftWorkspace' | 'EmailTemplate' | 'EntitySetting' | 'ExclusionList' | 'FintelDesign' | 'FintelTemplate' | 'Form' | 'Group' | 'HuntRun' | 'IngestionCsv' | 'IngestionJson' | 'IngestionRss' | 'IngestionTaxii' | 'IngestionTaxiiCollection' | 'JsonMapper' | 'ManagedConnector' | 'ManagerConfiguration' | 'MeUser' | 'NewsFeedItem' | 'Notification' | 'Notifier' | 'Pir' | 'Playbook' | 'PublicDashboard' | 'Role' | 'SavedFilter' | 'Settings' | 'SupportPackage' | 'TaskTemplate' | 'Theme' | 'Trigger' | 'User' | 'Workspace', ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   representative?: Resolver<ResolversTypes['Representative'], ParentType, ContextType>;
@@ -48891,6 +50931,28 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   groupingFieldPatch?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<MutationGroupingFieldPatchArgs, 'id' | 'input'>>;
   groupingRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationGroupingRelationAddArgs, 'id'>>;
   groupingRelationDelete?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<MutationGroupingRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
+  huntAdd?: Resolver<Maybe<ResolversTypes['Hunt']>, ParentType, ContextType, RequireFields<MutationHuntAddArgs, 'input'>>;
+  huntAssist?: Resolver<ResolversTypes['HuntAssistance'], ParentType, ContextType, RequireFields<MutationHuntAssistArgs, 'input'>>;
+  huntConnectorCheckReport?: Resolver<Maybe<ResolversTypes['HuntConnector']>, ParentType, ContextType, RequireFields<MutationHuntConnectorCheckReportArgs, 'input'>>;
+  huntConnectorRegister?: Resolver<Maybe<ResolversTypes['HuntConnector']>, ParentType, ContextType, RequireFields<MutationHuntConnectorRegisterArgs, 'input'>>;
+  huntConnectorTestConnection?: Resolver<Maybe<ResolversTypes['HuntConnector']>, ParentType, ContextType, RequireFields<MutationHuntConnectorTestConnectionArgs, 'id'>>;
+  huntContextClean?: Resolver<Maybe<ResolversTypes['Hunt']>, ParentType, ContextType, RequireFields<MutationHuntContextCleanArgs, 'id'>>;
+  huntContextPatch?: Resolver<Maybe<ResolversTypes['Hunt']>, ParentType, ContextType, RequireFields<MutationHuntContextPatchArgs, 'id' | 'input'>>;
+  huntDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationHuntDeleteArgs, 'id'>>;
+  huntFieldPatch?: Resolver<Maybe<ResolversTypes['Hunt']>, ParentType, ContextType, RequireFields<MutationHuntFieldPatchArgs, 'id' | 'input'>>;
+  huntPackImport?: Resolver<Maybe<ResolversTypes['HuntPackImportResult']>, ParentType, ContextType, RequireFields<MutationHuntPackImportArgs, 'file'>>;
+  huntPlan?: Resolver<Maybe<ResolversTypes['HuntProposal']>, ParentType, ContextType, RequireFields<MutationHuntPlanArgs, 'input'>>;
+  huntProposalAdd?: Resolver<Maybe<ResolversTypes['HuntProposal']>, ParentType, ContextType, RequireFields<MutationHuntProposalAddArgs, 'input'>>;
+  huntRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationHuntRelationAddArgs, 'id' | 'input'>>;
+  huntRelationDelete?: Resolver<Maybe<ResolversTypes['Hunt']>, ParentType, ContextType, RequireFields<MutationHuntRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
+  huntRunEvidenceAdd?: Resolver<Maybe<ResolversTypes['HuntRun']>, ParentType, ContextType, RequireFields<MutationHuntRunEvidenceAddArgs, 'id' | 'input'>>;
+  huntRunReport?: Resolver<Maybe<ResolversTypes['HuntRun']>, ParentType, ContextType, RequireFields<MutationHuntRunReportArgs, 'id' | 'input'>>;
+  huntRunRetry?: Resolver<Maybe<ResolversTypes['HuntRun']>, ParentType, ContextType, RequireFields<MutationHuntRunRetryArgs, 'id'>>;
+  huntRunSetVerdict?: Resolver<Maybe<ResolversTypes['HuntRun']>, ParentType, ContextType, RequireFields<MutationHuntRunSetVerdictArgs, 'id' | 'input'>>;
+  huntRunStart?: Resolver<Array<ResolversTypes['HuntRun']>, ParentType, ContextType, RequireFields<MutationHuntRunStartArgs, 'id'>>;
+  huntRunTriage?: Resolver<Maybe<ResolversTypes['HuntRun']>, ParentType, ContextType, RequireFields<MutationHuntRunTriageArgs, 'id'>>;
+  huntTestQuery?: Resolver<Maybe<ResolversTypes['HuntRun']>, ParentType, ContextType, RequireFields<MutationHuntTestQueryArgs, 'id'>>;
+  huntValidateFromEmulation?: Resolver<Maybe<ResolversTypes['HuntValidation']>, ParentType, ContextType, RequireFields<MutationHuntValidateFromEmulationArgs, 'input'>>;
   identityAdd?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType, RequireFields<MutationIdentityAddArgs, 'input'>>;
   identityEdit?: Resolver<Maybe<ResolversTypes['IdentityEditMutations']>, ParentType, ContextType, RequireFields<MutationIdentityEditArgs, 'id'>>;
   incidentAdd?: Resolver<Maybe<ResolversTypes['Incident']>, ParentType, ContextType, RequireFields<MutationIncidentAddArgs, 'input'>>;
@@ -49709,6 +51771,7 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_hunt_run_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
@@ -50776,6 +52839,16 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   groupingsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryGroupingsTimeSeriesArgs, 'endDate' | 'field' | 'interval' | 'operation' | 'startDate'>>;
   groups?: Resolver<Maybe<ResolversTypes['GroupConnection']>, ParentType, ContextType, Partial<QueryGroupsArgs>>;
   guessMimeType?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryGuessMimeTypeArgs, 'fileId'>>;
+  hunt?: Resolver<Maybe<ResolversTypes['Hunt']>, ParentType, ContextType, RequireFields<QueryHuntArgs, 'id'>>;
+  huntConfiguration?: Resolver<ResolversTypes['HuntConfiguration'], ParentType, ContextType>;
+  huntConnectors?: Resolver<Array<ResolversTypes['HuntConnector']>, ParentType, ContextType, Partial<QueryHuntConnectorsArgs>>;
+  huntDerivedContent?: Resolver<Maybe<ResolversTypes['HuntDerivedContent']>, ParentType, ContextType, RequireFields<QueryHuntDerivedContentArgs, 'entityId'>>;
+  huntPackExport?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, RequireFields<QueryHuntPackExportArgs, 'ids'>>;
+  huntRun?: Resolver<Maybe<ResolversTypes['HuntRun']>, ParentType, ContextType, RequireFields<QueryHuntRunArgs, 'id'>>;
+  huntRuns?: Resolver<Maybe<ResolversTypes['HuntRunConnection']>, ParentType, ContextType, Partial<QueryHuntRunsArgs>>;
+  huntSigmaValidate?: Resolver<ResolversTypes['HuntSigmaValidation'], ParentType, ContextType, RequireFields<QueryHuntSigmaValidateArgs, 'sigma_rule'>>;
+  huntStatistics?: Resolver<ResolversTypes['HuntStatistics'], ParentType, ContextType, Partial<QueryHuntStatisticsArgs>>;
+  hunts?: Resolver<Maybe<ResolversTypes['HuntConnection']>, ParentType, ContextType, Partial<QueryHuntsArgs>>;
   identities?: Resolver<Maybe<ResolversTypes['IdentityConnection']>, ParentType, ContextType, Partial<QueryIdentitiesArgs>>;
   identity?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType, RequireFields<QueryIdentityArgs, 'id'>>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<QueryImportFilesArgs>>;
@@ -52204,7 +54277,7 @@ export type StatusTemplateEdgeResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type StixCoreObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCoreObject'] = ResolversParentTypes['StixCoreObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'Channel' | 'City' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'DataComponent' | 'DataSource' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'Event' | 'Feedback' | 'Grouping' | 'Hostname' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Position' | 'Process' | 'Region' | 'Report' | 'SSHKey' | 'Sector' | 'SecurityCoverage' | 'SecurityCoverageResult' | 'SecurityPlatform' | 'Software' | 'StixFile' | 'System' | 'Task' | 'Text' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Url' | 'UserAccount' | 'UserAgent' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'X509Certificate', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'Channel' | 'City' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'DataComponent' | 'DataSource' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'Event' | 'Feedback' | 'Grouping' | 'Hostname' | 'Hunt' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Position' | 'Process' | 'Region' | 'Report' | 'SSHKey' | 'Sector' | 'SecurityCoverage' | 'SecurityCoverageResult' | 'SecurityPlatform' | 'Software' | 'StixFile' | 'System' | 'Task' | 'Text' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Url' | 'UserAccount' | 'UserAgent' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'X509Certificate', ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<StixCoreObjectCasesArgs>>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<StixCoreObjectConnectorsArgs>>;
   containers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<StixCoreObjectContainersArgs>>;
@@ -52438,7 +54511,7 @@ export type StixCyberObservableEditMutationsResolvers<ContextType = any, ParentT
 }>;
 
 export type StixDomainObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixDomainObject'] = ResolversParentTypes['StixDomainObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AdministrativeArea' | 'AttackPattern' | 'Campaign' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'Channel' | 'City' | 'Country' | 'CourseOfAction' | 'DataComponent' | 'DataSource' | 'Event' | 'Feedback' | 'Grouping' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'Language' | 'Malware' | 'MalwareAnalysis' | 'Narrative' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'Position' | 'Region' | 'Report' | 'Sector' | 'SecurityCoverage' | 'SecurityCoverageResult' | 'SecurityPlatform' | 'System' | 'Task' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'Vulnerability', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AdministrativeArea' | 'AttackPattern' | 'Campaign' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'Channel' | 'City' | 'Country' | 'CourseOfAction' | 'DataComponent' | 'DataSource' | 'Event' | 'Feedback' | 'Grouping' | 'Hunt' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'Language' | 'Malware' | 'MalwareAnalysis' | 'Narrative' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'Position' | 'Region' | 'Report' | 'Sector' | 'SecurityCoverage' | 'SecurityCoverageResult' | 'SecurityPlatform' | 'System' | 'Task' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'Vulnerability', ParentType, ContextType>;
   avatar?: Resolver<Maybe<ResolversTypes['OpenCtiFile']>, ParentType, ContextType>;
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<StixDomainObjectCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -52633,7 +54706,7 @@ export type StixMetaObjectEdgeResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type StixObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObject'] = ResolversParentTypes['StixObject']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'Channel' | 'City' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'DataComponent' | 'DataSource' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'Event' | 'ExternalReference' | 'Feedback' | 'Grouping' | 'Hostname' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'MarkingDefinition' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Position' | 'Process' | 'Region' | 'Report' | 'SSHKey' | 'Sector' | 'SecurityCoverage' | 'SecurityCoverageResult' | 'SecurityPlatform' | 'Software' | 'StixFile' | 'System' | 'Task' | 'Text' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Url' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'X509Certificate', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'Channel' | 'City' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'DataComponent' | 'DataSource' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'Event' | 'ExternalReference' | 'Feedback' | 'Grouping' | 'Hostname' | 'Hunt' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'MarkingDefinition' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Position' | 'Process' | 'Region' | 'Report' | 'SSHKey' | 'Sector' | 'SecurityCoverage' | 'SecurityCoverageResult' | 'SecurityPlatform' | 'Software' | 'StixFile' | 'System' | 'Task' | 'Text' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Url' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'X509Certificate', ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   draftVersion?: Resolver<Maybe<ResolversTypes['DraftVersion']>, ParentType, ContextType>;
@@ -52653,7 +54726,7 @@ export type StixObjectResolvers<ContextType = any, ParentType extends ResolversP
 }>;
 
 export type StixObjectOrStixRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObjectOrStixRelationship'] = ResolversParentTypes['StixObjectOrStixRelationship']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Channel' | 'City' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomView' | 'DataComponent' | 'DataSource' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EntitySetting' | 'Event' | 'ExternalReference' | 'Feedback' | 'Grouping' | 'Hostname' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityCoverageResult' | 'SecurityPlatform' | 'Software' | 'StixCoreRelationship' | 'StixFile' | 'StixRefRelationship' | 'StixSightingRelationship' | 'System' | 'Task' | 'Text' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Url' | 'UserAccount' | 'UserAgent' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Channel' | 'City' | 'Country' | 'CourseOfAction' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomView' | 'DataComponent' | 'DataSource' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EntitySetting' | 'Event' | 'ExternalReference' | 'Feedback' | 'Grouping' | 'Hostname' | 'Hunt' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityCoverageResult' | 'SecurityPlatform' | 'Software' | 'StixCoreRelationship' | 'StixFile' | 'StixRefRelationship' | 'StixSightingRelationship' | 'System' | 'Task' | 'Text' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Url' | 'UserAccount' | 'UserAgent' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
 }>;
 
 export type StixObjectOrStixRelationshipConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObjectOrStixRelationshipConnection'] = ResolversParentTypes['StixObjectOrStixRelationshipConnection']> = ResolversObject<{
@@ -52667,7 +54740,7 @@ export type StixObjectOrStixRelationshipEdgeResolvers<ContextType = any, ParentT
 }>;
 
 export type StixObjectOrStixRelationshipOrCreatorResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObjectOrStixRelationshipOrCreator'] = ResolversParentTypes['StixObjectOrStixRelationshipOrCreator']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Channel' | 'City' | 'Country' | 'CourseOfAction' | 'Creator' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomView' | 'DataComponent' | 'DataSource' | 'Directory' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EntitySetting' | 'Event' | 'ExternalReference' | 'Feedback' | 'Group' | 'Grouping' | 'Hostname' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityCoverageResult' | 'SecurityPlatform' | 'Software' | 'Status' | 'StixCoreRelationship' | 'StixFile' | 'StixRefRelationship' | 'StixSightingRelationship' | 'System' | 'Task' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Url' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AIPrompt' | 'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'CaseIncident' | 'CaseRfi' | 'CaseRft' | 'CaseTemplate' | 'Channel' | 'City' | 'Country' | 'CourseOfAction' | 'Creator' | 'Credential' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'CsvMapper' | 'CustomView' | 'DataComponent' | 'DataSource' | 'Directory' | 'DomainName' | 'DraftWorkspace' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EntitySetting' | 'Event' | 'ExternalReference' | 'Feedback' | 'Group' | 'Grouping' | 'Hostname' | 'Hunt' | 'ICCID' | 'IMEI' | 'IMSI' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MalwareAnalysis' | 'ManagerConfiguration' | 'MarkingDefinition' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'Persona' | 'PhoneNumber' | 'Pir' | 'Position' | 'Process' | 'PublicDashboard' | 'Region' | 'Report' | 'SSHKey' | 'SavedFilter' | 'Sector' | 'SecurityCoverage' | 'SecurityCoverageResult' | 'SecurityPlatform' | 'Software' | 'Status' | 'StixCoreRelationship' | 'StixFile' | 'StixRefRelationship' | 'StixSightingRelationship' | 'System' | 'Task' | 'Text' | 'Theme' | 'ThreatActorGroup' | 'ThreatActorIndividual' | 'Tool' | 'TrackingNumber' | 'Url' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'Workspace' | 'X509Certificate', ParentType, ContextType>;
 }>;
 
 export type StixObjectOrStixRelationshipRefConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObjectOrStixRelationshipRefConnection'] = ResolversParentTypes['StixObjectOrStixRelationshipRefConnection']> = ResolversObject<{
@@ -52848,6 +54921,8 @@ export type StixSightingRelationshipResolvers<ContextType = any, ParentType exte
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   workflowInstance?: Resolver<Maybe<ResolversTypes['WorkflowInstance']>, ParentType, ContextType>;
+  x_opencti_hunt_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  x_opencti_hunt_run_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_modified_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   x_opencti_negative?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -52960,6 +55035,7 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
   entitySetting?: SubscriptionResolver<Maybe<ResolversTypes['EntitySetting']>, "entitySetting", ParentType, ContextType, RequireFields<SubscriptionEntitySettingArgs, 'id'>>;
   externalReference?: SubscriptionResolver<Maybe<ResolversTypes['ExternalReference']>, "externalReference", ParentType, ContextType, RequireFields<SubscriptionExternalReferenceArgs, 'id'>>;
   group?: SubscriptionResolver<Maybe<ResolversTypes['Group']>, "group", ParentType, ContextType, RequireFields<SubscriptionGroupArgs, 'id'>>;
+  hunt?: SubscriptionResolver<Maybe<ResolversTypes['Hunt']>, "hunt", ParentType, ContextType, RequireFields<SubscriptionHuntArgs, 'id'>>;
   internalObject?: SubscriptionResolver<Maybe<ResolversTypes['InternalObject']>, "internalObject", ParentType, ContextType, RequireFields<SubscriptionInternalObjectArgs, 'id'>>;
   killChainPhase?: SubscriptionResolver<Maybe<ResolversTypes['KillChainPhase']>, "killChainPhase", ParentType, ContextType, RequireFields<SubscriptionKillChainPhaseArgs, 'id'>>;
   label?: SubscriptionResolver<Maybe<ResolversTypes['Label']>, "label", ParentType, ContextType, RequireFields<SubscriptionLabelArgs, 'id'>>;
@@ -55141,6 +57217,47 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   HeadersAuthConfig?: HeadersAuthConfigResolvers<ContextType>;
   HistoryChange?: HistoryChangeResolvers<ContextType>;
   Hostname?: HostnameResolvers<ContextType>;
+  Hunt?: HuntResolvers<ContextType>;
+  HuntAssistTechnique?: HuntAssistTechniqueResolvers<ContextType>;
+  HuntAssistance?: HuntAssistanceResolvers<ContextType>;
+  HuntConfiguration?: HuntConfigurationResolvers<ContextType>;
+  HuntConnection?: HuntConnectionResolvers<ContextType>;
+  HuntConnectionCheck?: HuntConnectionCheckResolvers<ContextType>;
+  HuntConnectionCheckItem?: HuntConnectionCheckItemResolvers<ContextType>;
+  HuntConnector?: HuntConnectorResolvers<ContextType>;
+  HuntDerivedContent?: HuntDerivedContentResolvers<ContextType>;
+  HuntDerivedElement?: HuntDerivedElementResolvers<ContextType>;
+  HuntDerivedRule?: HuntDerivedRuleResolvers<ContextType>;
+  HuntDerivedSource?: HuntDerivedSourceResolvers<ContextType>;
+  HuntDerivedTechnique?: HuntDerivedTechniqueResolvers<ContextType>;
+  HuntEdge?: HuntEdgeResolvers<ContextType>;
+  HuntEvidence?: HuntEvidenceResolvers<ContextType>;
+  HuntHit?: HuntHitResolvers<ContextType>;
+  HuntHitField?: HuntHitFieldResolvers<ContextType>;
+  HuntIoc?: HuntIocResolvers<ContextType>;
+  HuntIocResult?: HuntIocResultResolvers<ContextType>;
+  HuntIocSet?: HuntIocSetResolvers<ContextType>;
+  HuntIocSource?: HuntIocSourceResolvers<ContextType>;
+  HuntIocValue?: HuntIocValueResolvers<ContextType>;
+  HuntKnownHits?: HuntKnownHitsResolvers<ContextType>;
+  HuntMessage?: HuntMessageResolvers<ContextType>;
+  HuntMessageValue?: HuntMessageValueResolvers<ContextType>;
+  HuntNativeQuery?: HuntNativeQueryResolvers<ContextType>;
+  HuntPackImportResult?: HuntPackImportResultResolvers<ContextType>;
+  HuntProposal?: HuntProposalResolvers<ContextType>;
+  HuntReadiness?: HuntReadinessResolvers<ContextType>;
+  HuntReadinessItem?: HuntReadinessItemResolvers<ContextType>;
+  HuntRequiredPermission?: HuntRequiredPermissionResolvers<ContextType>;
+  HuntRun?: HuntRunResolvers<ContextType>;
+  HuntRunConnection?: HuntRunConnectionResolvers<ContextType>;
+  HuntRunEdge?: HuntRunEdgeResolvers<ContextType>;
+  HuntRunResultsSummary?: HuntRunResultsSummaryResolvers<ContextType>;
+  HuntSigmaValidation?: HuntSigmaValidationResolvers<ContextType>;
+  HuntStatistics?: HuntStatisticsResolvers<ContextType>;
+  HuntStatisticsBucket?: HuntStatisticsBucketResolvers<ContextType>;
+  HuntStatisticsPoint?: HuntStatisticsPointResolvers<ContextType>;
+  HuntTechniqueValidation?: HuntTechniqueValidationResolvers<ContextType>;
+  HuntValidation?: HuntValidationResolvers<ContextType>;
   ICCID?: IccidResolvers<ContextType>;
   IMEI?: ImeiResolvers<ContextType>;
   IMSI?: ImsiResolvers<ContextType>;

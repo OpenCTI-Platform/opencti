@@ -3302,7 +3302,7 @@ export const elHistogramCount = async (
       dateFormat = 'yyyy-MM-dd';
       break;
     case 'hour':
-      dateFormat = 'yyyy-MM-dd hh:mm:ss';
+      dateFormat = 'yyyy-MM-dd HH:mm:ss';
       break;
     default:
       throw FunctionalError('Unsupported interval, please choose between year, quarter, month, week, day or hour', { interval });
@@ -3344,6 +3344,41 @@ export const elHistogramCount = async (
     const { buckets } = data.aggregations.count_over_time;
     const dataToPairs = R.toPairs(buckets);
     return R.map((b) => ({ date: R.head(b), value: R.last(b)[unique ? 'unique' : 'weight'].value }), dataToPairs);
+  });
+};
+const HISTOGRAM_DATE_FORMATS: Record<string, string> = {
+  year: 'yyyy',
+  quarter: 'yyyy-MM',
+  month: 'yyyy-MM',
+  week: 'yyyy-MM-dd',
+  day: 'yyyy-MM-dd',
+  hour: 'yyyy-MM-dd HH:mm:ss',
+};
+// Date histogram summing a numeric field (missing values count as 0), with the same data restrictions as elHistogramCount
+export const elHistogramSum = async (
+  context: AuthContext,
+  user: AuthUser,
+  indexName: string | string[] | undefined,
+  options: HistogramCountOpts & { sumField: string },
+): Promise<{ date: string; value: number }[]> => {
+  const { interval, field, types = null, sumField } = options;
+  const dateFormat = interval ? HISTOGRAM_DATE_FORMATS[interval] : undefined;
+  if (!dateFormat) {
+    throw FunctionalError('Unsupported interval, please choose between year, quarter, month, week, day or hour', { interval });
+  }
+  const body = await elQueryBodyBuilder(context, user, { ...options, dateAttribute: field, noSize: true, noSort: true, intervalInclude: true });
+  body.size = 0;
+  body.aggs = {
+    sum_over_time: {
+      date_histogram: { field, calendar_interval: interval, format: dateFormat, keyed: true },
+      aggs: { total: { sum: { field: sumField, missing: 0 } } },
+    },
+  };
+  const query = { index: getIndicesToQuery(context, user, indexName), _source_excludes: '*', body };
+  logApp.debug('[SEARCH] histogramSum', { query });
+  return elRawSearch(context, user, types, query).then((data) => {
+    const { buckets } = data.aggregations.sum_over_time;
+    return Object.entries(buckets).map(([date, bucket]) => ({ date, value: (bucket as { total: { value: number } }).total.value }));
   });
 };
 type AggregationCountOpts = QueryBodyBuilderOpts & {

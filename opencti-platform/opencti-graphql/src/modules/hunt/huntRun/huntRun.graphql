@@ -1,0 +1,442 @@
+enum HuntRunStatus {
+  queued
+  running
+  completed
+  failed
+  timeout
+  "The hunt or the hunt connector of the run was deleted before the run ended, error_message says which"
+  cancelled
+}
+enum HuntRunTrigger {
+  manual
+  schedule
+  standing
+  pir
+  playbook
+  emulation
+  preview
+  retry
+}
+enum HuntRunMode {
+  execute
+  preview
+}
+enum HuntRunVerdict {
+  pending
+  true_positive
+  benign
+  inconclusive
+}
+enum HuntVerdictSource {
+  auto
+  analyst
+  agent
+}
+
+# Program-wide evidence shape (kind, label, href, quote, opencti_id, entity_type) on top of the hunt fields:
+# a telemetry hit is a tool_result labelled by its field, quoting its truncated preview
+type HuntEvidence {
+  kind: String!
+  label: String!
+  href: String
+  quote: String
+  opencti_id: String
+  entity_type: String
+  field: String!
+  value_hash: String!
+  value_preview: String
+  count: Int!
+  "The value is one the hunt logic matched (a field matched in a hit of the run), not context of the event"
+  matched: Boolean!
+}
+
+"A field of a hit that the hunt logic matched: the value is hashed again by the platform, its preview masked and truncated"
+type HuntHitField {
+  field: String!
+  value_hash: String!
+  value_preview: String
+  "The preview is the whole value, neither truncated nor masked"
+  value_complete: Boolean!
+}
+
+"One event a run matched"
+type HuntHit {
+  "Id of the event on the hunted platform"
+  event_id: String
+  timestamp: DateTime
+  "The detection of the platform grouping the event (YARA-L): the events of one detection are one hit"
+  detection: String
+  matched: [HuntHitField!]!
+  host: String
+  user: String
+  process: String
+  "The hit was never seen before this run for the hunt on its platform; null when the hit is not identified or no longer known"
+  is_new: Boolean
+  "Runs of the hunt that found the hit on this platform so far"
+  times_seen: Int
+  "When a run of the hunt first found the hit on this platform"
+  known_since: DateTime
+}
+
+enum HuntIocVerdict {
+  pending
+  seen
+  not_seen
+  not_searched
+}
+
+"One value an indicator hunt run looked up, and what the hunted platform reported for it"
+type HuntIocResult {
+  key: String!
+  observable_type: String!
+  hash_algorithm: String
+  value: String!
+  verdict: HuntIocVerdict!
+  hits_count: Int!
+  first_seen: DateTime
+  last_seen: DateTime
+  hosts: [String!]!
+  "Why the value was not searched"
+  reason: String
+  "The indicators and observables the value comes from, those the user can read (none for a pasted value)"
+  sources: [StixCoreObject!]!
+  "Whether an indicator of the value is deployed on the security platform of the run (dissemination assurance)"
+  deployed: Boolean!
+}
+
+"The results of a run the user can read, counted by kind"
+type HuntRunResultsSummary {
+  sightings: Int!
+  observed_data: Int!
+  observables: Int!
+  "Results of any other kind, for example the infrastructure and indicators of an infrastructure hunt"
+  others: Int!
+}
+
+"A sentence of the platform: the English sentence with its {placeholders} is the translation key of the user interface"
+type HuntMessage {
+  template: String!
+  values: [HuntMessageValue!]!
+  "The sentence as the platform writes it"
+  message: String!
+}
+
+type HuntRun implements BasicObject & InternalObject {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  representative: Representative!
+  metrics:[Metric]
+  creators: [Creator!]
+  created_at: DateTime
+  updated_at: DateTime
+  # Hunt run
+  hunt_id: String!
+  "The hunt of the run, null when it was deleted (hunt_deleted) or when the user cannot read it"
+  hunt: Hunt
+  "The hunt of the run was deleted (in the trash or for good), as opposed to a hunt the user cannot read"
+  hunt_deleted: Boolean!
+  "Why a queued run waits: its connector offline, deleted or busy, or the next dispatch; null when the run is not queued"
+  queue_reason: HuntMessage
+  hunt_run_status: HuntRunStatus!
+  hunt_run_trigger: HuntRunTrigger!
+  hunt_run_mode: HuntRunMode!
+  security_platform_id: String
+  securityPlatform: SecurityPlatform
+  connector_id: String
+  connector_name: String
+  work_id: String
+  time_window_start: DateTime
+  time_window_end: DateTime
+  translated_query: String
+  query_language: String
+  hits_count: Int
+  "Hits never seen before for the hunt on the security platform of the run; every hit when the connector identifies none"
+  hits_new_count: Int
+  "Hits earlier runs of the hunt already found on this platform"
+  hits_recurring_count: Int
+  "The connector reported a key per hit: false means every hit counts as new"
+  hits_identified: Boolean
+  "The run searched from where the previous completed run of the hunt on the same platform ended, minus the lookback overlap"
+  time_window_continued: Boolean!
+  "Sightings of the hunt the run created; the other sightings among its results were updated in place"
+  sightings_created_count: Int
+  "The run added its hits to the incident still open from a previous run instead of opening a new one"
+  incident_continued: Boolean
+  # The platform returned partial results: hits_count is a lower bound
+  results_truncated: Boolean
+  distinct_entities: Int
+  evidence_sample: [HuntEvidence!]
+  "One evidence item per hit, in time order (a sample), next to the per-field aggregation of evidence_sample"
+  hits_sample: [HuntHit!]
+  "Dates of the first and last event the run matched, null when the connector dates none"
+  first_hit_at: DateTime
+  last_hit_at: DateTime
+  "Indicator hunts: one result per value looked up"
+  ioc_results: [HuntIocResult!]
+  result_ids: [String!]
+  results(first: Int, after: ID): StixObjectOrStixRelationshipConnection
+  "What the run produced: its results counted by kind, over the same objects as results"
+  results_summary: HuntRunResultsSummary!
+  verdict: HuntRunVerdict!
+  verdict_source: HuntVerdictSource
+  verdict_rationale: String
+  hunt_analyst_feedback: String
+  verdict_proposal: HuntRunVerdict
+  verdict_proposal_confidence: Int
+  verdict_proposal_rationale: String
+  verdict_proposal_agent: String
+  incident_proposal: String
+  "The run opens an incident draft by itself above the escalation threshold: autonomous runs always, runs started by hand when their hunt escalates manual runs. False: the incident is offered at verdict time"
+  auto_escalation: Boolean!
+  incident_id: String
+  draft_id: String
+  aev_inject_id: String
+  security_coverage_id: String
+  technique_id: String
+  technique: AttackPattern
+  triggered_by: String
+  triggeredBy: Creator
+  attempt: Int!
+  next_retry_at: DateTime
+  dispatched_at: DateTime
+  started_at: DateTime
+  completed_at: DateTime
+  cost_ms: Int
+  error_message: String
+  "False for a failure the run meets again in the same way at every attempt (translation, a query the platform rejects): never retried, no verdict; true for another failure; null for a run that did not fail"
+  failure_retryable: Boolean
+  "Why a run failed for good and what to change, null for any other run"
+  failure_reason: HuntMessage
+  "The ATT&CK techniques its Sigma rule tags that matched no attack pattern of the knowledge base when the run was created: they get no coverage from the run"
+  unresolved_techniques: [String!]!
+  playbook_id: String
+  playbook_execution_id: String
+  evidence_sources: [String!]
+  last_evidence_at: DateTime
+  objectMarking: [MarkingDefinition!]
+}
+
+enum HuntRunsOrdering {
+  created_at
+  updated_at
+  completed_at
+  started_at
+  hits_count
+  verdict
+  hunt_run_status
+  hunt_run_trigger
+  _score
+}
+
+type HuntRunConnection {
+  pageInfo: PageInfo!
+  edges: [HuntRunEdge!]!
+}
+type HuntRunEdge {
+  cursor: String!
+  node: HuntRun!
+}
+
+"A permission a hunt connector needs on its platform, as the connector declares it"
+type HuntRequiredPermission {
+  name: String!
+  purpose: String!
+}
+enum HuntConnectionCheckStatus {
+  pending
+  passed
+  failed
+}
+type HuntConnectionCheckItem {
+  name: String!
+  ok: Boolean!
+  "What the connector found, in plain words"
+  message: String!
+}
+"The last connection test of a hunt connector"
+type HuntConnectionCheck {
+  id: String!
+  status: HuntConnectionCheckStatus!
+  requested_at: DateTime
+  checked_at: DateTime
+  checks: [HuntConnectionCheckItem!]!
+}
+
+type HuntConnector {
+  id: ID!
+  name: String!
+  active: Boolean!
+  required_permissions: [HuntRequiredPermission!]!
+  "Where the setup of the connector (account, permissions, configuration) is documented"
+  documentation_url: String
+  connection_check: HuntConnectionCheck
+  platform: String!
+  languages: [String!]!
+  supports_preview: Boolean!
+  "Whether the connector looks up the values of indicator hunts"
+  supports_indicators: Boolean!
+  max_concurrent_runs: Int
+  securityPlatform: SecurityPlatform
+  updated_at: DateTime
+}
+
+extend type Connector {
+  "Hunted platform of an INTERNAL_HUNT connector, null for every other connector type"
+  hunt: HuntConnector
+}
+
+# Queries
+type Query {
+  huntRun(id: String!): HuntRun @auth(for: [KNOWLEDGE])
+  huntRuns(
+    first: Int
+    after: ID
+    orderBy: HuntRunsOrdering
+    orderMode: OrderingMode
+    filters: FilterGroup
+    search: String
+  ): HuntRunConnection @auth(for: [KNOWLEDGE])
+  huntConnectors(onlyAlive: Boolean): [HuntConnector!]! @auth(for: [KNOWLEDGE])
+}
+
+# Mutations
+input HuntRunVerdictInput {
+  verdict: HuntRunVerdict!
+  hunt_analyst_feedback: String
+  source: HuntVerdictSource
+  "A true positive verdict opens an incident draft from the run unless false; ignored for any other verdict or a run that has one"
+  create_incident: Boolean
+}
+
+input HuntEvidenceInput {
+  field: String!
+  value_hash: String!
+  value_preview: String
+  count: Int!
+  "True for a value the hunt logic matched (the field of the rule detection), false or omitted for context of the event"
+  matched: Boolean
+}
+
+input HuntHitFieldInput {
+  "Field of the event, named as in the query language of the platform (target.process.command_line)"
+  field: String!
+  "SHA-256 hex of the full value"
+  value_hash: String!
+  "The value, truncated"
+  value_preview: String
+}
+
+"One event a run matched. Every field but matched is optional; the platform hashes matched values again, masks secrets and truncates values"
+input HuntHitInput {
+  "Id of the event on the hunted platform"
+  event_id: String
+  timestamp: DateTime
+  "The detection of the platform grouping the event (YARA-L): the events of one detection are one hit"
+  detection: String
+  "The fields of the detection logic present in the event (indicator runs: the field holding the value)"
+  matched: [HuntHitFieldInput!]!
+  host: String
+  user: String
+  process: String
+}
+
+input HuntIocResultInput {
+  "Key of the value in the run message"
+  key: String! @constraint(maxLength: 64)
+  "False when the platform cannot look this type of value up"
+  searched: Boolean
+  seen: Boolean!
+  hits_count: Int
+  first_seen: DateTime
+  last_seen: DateTime
+  "Hosts the value was seen on (at most 10 are kept)"
+  hosts: [String!]
+  "Why the value was not searched"
+  reason: String @constraint(maxLength: 512)
+  "Keys of the hits holding the value (same rule as hit_keys of the report)"
+  hit_keys: [String!]
+}
+
+input HuntRunReportInput {
+  status: HuntRunStatus!
+  # The work the run was dispatched with: only the connector that received the run knows it
+  work_id: String @constraint(maxLength: 64)
+  translated_query: String
+  query_language: String
+  hits_count: Int
+  # Partial results (shard failures, a partial API answer, an exhausted result budget): hits_count is a lower bound
+  truncated: Boolean
+  distinct_entities: Int
+  evidence_sample: [HuntEvidenceInput!]
+  "One evidence item per hit, on top of the per-field aggregation of evidence_sample"
+  hits_sample: [HuntHitInput!]
+  "The stable key of every hit the run read, sampled or not (SHA-256 of a v1 JSON array over the detection, else the event id, else the timestamp to the second, host, user, process and matched field hashes): hits never seen for the hunt on the platform count as new"
+  hit_keys: [String!]
+  "Dates of the first and last matched event of the whole run, when hits_sample is only a sample"
+  first_hit_at: DateTime
+  last_hit_at: DateTime
+  "Indicator hunts: the result of each value of the run message"
+  ioc_results: [HuntIocResultInput!]
+  result_ids: [String!]
+  cost_ms: Int
+  error: String
+  "Failed runs: false when the run fails again in the same way at every attempt (translation error, a query the platform rejects, an invalid run message), so it is not retried"
+  retryable: Boolean
+}
+
+# Evidence found outside the run dispatch (a SIEM alert action, a follow-up search), attached to any run status
+input HuntRunEvidenceAddInput {
+  security_platform_id: StixRef
+  result_ids: [String!]!
+  hits_count: Int
+  evidence_sample: [HuntEvidenceInput!]
+  hits_sample: [HuntHitInput!]
+  "Keys of the hits of the evidence (same rule as the report): without keys, its hits count as new"
+  hit_keys: [String!]
+  observed_at: DateTime
+  source: String @constraint(maxLength: 128)
+}
+
+input HuntRequiredPermissionInput {
+  name: String! @constraint(maxLength: 256)
+  purpose: String! @constraint(maxLength: 1024)
+}
+
+input HuntConnectorRegisterInput {
+  connector_id: ID!
+  platform: String!
+  languages: [String!]!
+  security_platform_name: String
+  security_platform_type: String
+  supports_preview: Boolean
+  supports_indicators: Boolean
+  max_concurrent_runs: Int
+  required_permissions: [HuntRequiredPermissionInput!]
+  documentation_url: String @constraint(maxLength: 2048)
+}
+
+input HuntConnectionCheckItemInput {
+  name: String! @constraint(maxLength: 256)
+  ok: Boolean!
+  message: String! @constraint(maxLength: 2048)
+}
+
+input HuntConnectorCheckReportInput {
+  connector_id: ID!
+  check_id: String! @constraint(maxLength: 64)
+  checks: [HuntConnectionCheckItemInput!]!
+}
+
+type Mutation {
+  huntRunRetry(id: ID!): HuntRun @auth(for: [KNOWLEDGE_KNUPDATE])
+  huntRunSetVerdict(id: ID!, input: HuntRunVerdictInput!): HuntRun @auth(for: [KNOWLEDGE_KNUPDATE])
+  huntRunTriage(id: ID!): HuntRun @auth(for: [KNOWLEDGE_KNUPDATE])
+  huntRunReport(id: ID!, input: HuntRunReportInput!): HuntRun @auth(for: [CONNECTORAPI])
+  huntRunEvidenceAdd(id: ID!, input: HuntRunEvidenceAddInput!): HuntRun @auth(for: [KNOWLEDGE_KNUPDATE])
+  huntConnectorRegister(input: HuntConnectorRegisterInput!): HuntConnector @auth(for: [CONNECTORAPI])
+  "Asks a hunt connector to test its connection and its permissions on its platform"
+  huntConnectorTestConnection(id: ID!): HuntConnector @auth(for: [MODULES_MODMANAGE])
+  huntConnectorCheckReport(input: HuntConnectorCheckReportInput!): HuntConnector @auth(for: [CONNECTORAPI])
+}

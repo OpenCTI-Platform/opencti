@@ -1,0 +1,123 @@
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { createEntity } from '../../../../src/database/middleware';
+import { notify } from '../../../../src/database/redis';
+import { addDraftWorkspace } from '../../../../src/modules/draftWorkspace/draftWorkspace-domain';
+import { addHuntProposal } from '../../../../src/modules/hunt/hunt-domain';
+import { findByIds } from '../../../../src/modules/hunt/hunt-loaders';
+import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../../../src/schema/stixRefRelationship';
+import type { BasicStoreEntity } from '../../../../src/types/store';
+import { HuntType } from '../../../../src/generated/graphql';
+import { ADMIN_USER, testContext } from '../../../utils/testQuery';
+
+vi.mock('../../../../src/modules/hunt/hunt-loaders', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/modules/hunt/hunt-loaders')>(),
+  findByIds: vi.fn(),
+}));
+
+vi.mock('../../../../src/modules/draftWorkspace/draftWorkspace-domain', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/modules/draftWorkspace/draftWorkspace-domain')>(),
+  addDraftWorkspace: vi.fn(),
+}));
+
+vi.mock('../../../../src/database/middleware', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/database/middleware')>(),
+  createEntity: vi.fn(),
+}));
+
+vi.mock('../../../../src/database/redis', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/database/redis')>(),
+  notify: vi.fn(),
+}));
+
+const reference = (id: string, markings: string[], organizations: string[] = []) => ({
+  internal_id: id,
+  [RELATION_OBJECT_MARKING]: markings,
+  [RELATION_GRANTED_TO]: organizations,
+} as unknown as BasicStoreEntity);
+
+const proposalInput = {
+  name: 'Encoded PowerShell',
+  hypothesis: 'The intrusion set runs encoded PowerShell on our hosts',
+  hunt_type: HuntType.Telemetry,
+  huntTargets: ['intrusion-set-1'],
+  huntSources: ['report-1'],
+};
+
+describe('Hunt proposals of agents', () => {
+  afterEach(() => {
+    vi.mocked(findByIds).mockReset();
+    vi.mocked(createEntity).mockReset();
+    vi.mocked(addDraftWorkspace).mockReset();
+  });
+
+  const proposedMarkings = async (input: Record<string, unknown>) => {
+    vi.mocked(addDraftWorkspace).mockResolvedValue({ id: 'draft-1' } as Awaited<ReturnType<typeof addDraftWorkspace>>);
+    vi.mocked(createEntity).mockImplementation(async (_context, _user, created) => ({ ...created, internal_id: 'hunt-1' }));
+    vi.mocked(notify).mockImplementation(async (_topic, element) => element);
+    const proposal = await addHuntProposal(testContext, ADMIN_USER, { ...proposalInput, ...input });
+    expect(proposal.draft_id).toEqual('draft-1');
+    const [draftContext, , created] = vi.mocked(createEntity).mock.calls[0];
+    expect(draftContext.draft_context).toEqual('draft-1');
+    return created.objectMarking;
+  };
+
+  it('should carry the markings of the targets and sources it references on top of the requested ones', async () => {
+    vi.mocked(findByIds).mockResolvedValue([reference('intrusion-set-1', ['tlp-amber']), reference('report-1', ['tlp-amber', 'pap-red'])]);
+    expect(await proposedMarkings({ objectMarking: ['tlp-green'] })).toEqual(['tlp-green', 'tlp-amber', 'pap-red']);
+    expect(vi.mocked(findByIds).mock.calls[0][2]).toEqual(['intrusion-set-1', 'report-1']);
+  });
+
+  it('should keep a proposal without references as requested and read nothing', async () => {
+    expect(await proposedMarkings({ huntTargets: [], huntSources: [], objectMarking: ['tlp-green'] })).toEqual(['tlp-green']);
+    expect(findByIds).not.toHaveBeenCalled();
+  });
+
+  it('should start as a draft hunt, whoever proposes it', async () => {
+    vi.mocked(findByIds).mockResolvedValue([]);
+    await proposedMarkings({ huntTargets: [], huntSources: [] });
+    expect(vi.mocked(createEntity).mock.calls[0][2].hunt_status).toEqual('draft');
+  });
+
+  it('should keep the name and hypothesis of a restricted proposal out of its draft workspace', async () => {
+    vi.mocked(findByIds).mockResolvedValue([reference('intrusion-set-1', ['tlp-red']), reference('report-1', [])]);
+    await proposedMarkings({});
+    const [, , workspace] = vi.mocked(addDraftWorkspace).mock.calls[0];
+    expect(workspace.name).toMatch(/^Hunt proposal - /);
+    expect(JSON.stringify(workspace)).not.toContain(proposalInput.name);
+    expect(JSON.stringify(workspace)).not.toContain(proposalInput.hypothesis);
+  });
+
+  it('should name the draft workspace of an unrestricted proposal after the hunt', async () => {
+    vi.mocked(findByIds).mockResolvedValue([reference('intrusion-set-1', []), reference('report-1', [])]);
+    await proposedMarkings({});
+    const [, , workspace] = vi.mocked(addDraftWorkspace).mock.calls[0];
+    expect(workspace.name).toEqual(`Hunt proposal - ${proposalInput.name}`);
+    expect(workspace.description).toContain(proposalInput.hypothesis);
+    expect(workspace.authorized_members).toBeUndefined();
+  });
+
+  it('should share the proposal and its draft workspace only with the organizations its references all share', async () => {
+    vi.mocked(findByIds).mockResolvedValue([reference('intrusion-set-1', [], ['org-a', 'org-b']), reference('report-1', [], ['org-b', 'org-c'])]);
+    await proposedMarkings({});
+    expect(vi.mocked(createEntity).mock.calls[0][2].objectOrganization).toEqual(['org-b']);
+    const [, , workspace] = vi.mocked(addDraftWorkspace).mock.calls[0];
+    expect(workspace.authorized_members).toEqual([{ id: ADMIN_USER.id, access_right: 'admin' }, { id: 'org-b', access_right: 'edit' }]);
+    expect(workspace.name).toMatch(/^Hunt proposal - /);
+    expect(JSON.stringify(workspace)).not.toContain(proposalInput.name);
+  });
+
+  it('should refuse a proposal whose references share no organization, creating nothing', async () => {
+    vi.mocked(findByIds).mockResolvedValue([reference('intrusion-set-1', [], ['org-a']), reference('report-1', [], ['org-b'])]);
+    await expect(addHuntProposal(testContext, ADMIN_USER, proposalInput)).rejects.toThrow(/organizations that have none in common/);
+    expect(addDraftWorkspace).not.toHaveBeenCalled();
+    expect(createEntity).not.toHaveBeenCalled();
+  });
+
+  it('should refuse a proposal restricted to organizations when its caller cannot restrict access to organizations', async () => {
+    vi.mocked(findByIds).mockResolvedValue([reference('intrusion-set-1', [], ['org-a']), reference('report-1', [])]);
+    const caller = { ...ADMIN_USER, capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }] } as typeof ADMIN_USER;
+    await expect(addHuntProposal(testContext, caller, proposalInput)).rejects.toThrow(/only a user who can restrict access to organizations/);
+    expect(addDraftWorkspace).not.toHaveBeenCalled();
+    expect(createEntity).not.toHaveBeenCalled();
+  });
+});

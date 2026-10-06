@@ -240,6 +240,8 @@ interface StoreRawRelation extends StoreProxyRelation {
   // boolean
   revoked: boolean;
   x_opencti_negative: boolean;
+  x_opencti_hunt_run_id?: string; // optional, set on sightings found by a hunt run
+  x_opencti_hunt_id?: string; // optional, set on the sighting a hunt keeps up to date on a security platform
   is_inferred: boolean;
   // number
   confidence: number;
@@ -392,6 +394,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   number_observed: number;
   number_seen?: number; // optional, absent on legacy observed data
   max_distinct_count?: number; // optional, absent until a producer provides it
+  x_opencti_hunt_run_id?: string; // optional, set on observed data found by a hunt run
   confidence: number;
   latitude: string;
   longitude: string;
