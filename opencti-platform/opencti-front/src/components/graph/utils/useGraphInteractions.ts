@@ -6,7 +6,7 @@ import { getMainRepresentative, getSecondaryRepresentative } from '../../../util
 import useGraphParser, { ObjectToParse } from './useGraphParser';
 import { collisionForce } from './collisionForce';
 import { neighbourhood, shortestPath } from './graphFocus';
-import { isCollapsedMember, isGroupLink } from './graphCollapse';
+import { createCollapseCache, isCollapsedMember, isGroupLink, withCollapsedGroups } from './graphCollapse';
 import { frameBox, measureGraphPanels } from './graphFraming';
 
 /** Graph units between two linked nodes at rest, room for a label between two rings. */
@@ -161,10 +161,16 @@ const useGraphInteractions = () => {
     );
   };
 
-  /** Links the reader can see, by their two end ids: neither end hidden, collapsed or faded by a filter. */
+  /**
+   * Links the reader can see, by their two end ids: neither end hidden or faded by a filter, and the links of the members
+   * of a collapsed type drawn towards their group, as the canvas draws them.
+   */
   const shownLinkEnds = () => {
-    const shownIds = new Set((graphData?.nodes ?? []).filter((n) => isNodeShown(n) && !n.disabled).map((n) => n.id));
-    return (graphData?.links ?? []).flatMap((link) => {
+    const drawn = graphData
+      ? withCollapsedGroups(graphData, collapsedEntityTypes, () => '', createCollapseCache(), new Set(hiddenNodeIds))
+      : graphData;
+    const shownIds = new Set((drawn?.nodes ?? []).filter((n) => isNodeShown(n) && !n.disabled).map((n) => n.id));
+    return (drawn?.links ?? []).flatMap((link) => {
       const sourceId = endpointId(link.source) ?? link.source_id;
       const targetId = endpointId(link.target) ?? link.target_id;
       if (link.disabled || !shownIds.has(sourceId) || !shownIds.has(targetId)) return [];

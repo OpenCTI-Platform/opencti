@@ -15,7 +15,7 @@ const uses = graphLink(actor, m1, { id: 'uses' });
 // Not yet given to the force graph: its ends are still identifiers.
 const targets = { ...graphLink(actor, victim, { id: 'targets', relationship_type: 'targets', entity_type: 'targets' }), source: 'actor', target: 'victim' };
 
-const renderInteractions = (initial: Partial<GraphState>) => {
+const renderInteractions = (initial: Partial<GraphState>, graphData: { nodes: unknown[]; links: unknown[] } = { nodes: [actor, m1, victim], links: [uses, targets] }) => {
   let graphState = { selectedNodes: [], selectedLinks: [], hiddenNodeIds: [], collapsedEntityTypes: [], ...initial } as unknown as GraphState;
   const setGraphState = (update: (old: GraphState) => GraphState) => {
     graphState = update(graphState);
@@ -29,7 +29,7 @@ const renderInteractions = (initial: Partial<GraphState>) => {
     setRawPositions: vi.fn(),
     setGraphData: vi.fn(),
   };
-  context.current = { graphData: { nodes: [actor, m1, victim], links: [uses, targets] }, graphState, setGraphState, ...graph };
+  context.current = { graphData, graphState, setGraphState, ...graph };
   const { result } = renderHook(() => useGraphInteractions());
   return { interactions: result.current, state: () => graphState, graph };
 };
@@ -55,6 +55,17 @@ describe('useGraphInteractions', () => {
     const { interactions, state } = renderInteractions({ selectedNodes: [actor], hiddenNodeIds: ['victim'], selectRelationshipMode: null });
     interactions.switchSelectRelationshipMode();
     expect(state().selectedLinks.map((l) => l.id)).toEqual(['uses']);
+  });
+
+  it('finds the shortest path through a collapsed type along the links drawn towards its group', () => {
+    const m2 = graphNode({ id: 'm2', entity_type: 'Malware' });
+    const delivers = graphLink(m2, victim, { id: 'delivers', relationship_type: 'delivers', entity_type: 'delivers' });
+    const data = { nodes: [actor, m1, m2, victim], links: [uses, delivers] };
+    const collapsed = renderInteractions({ collapsedEntityTypes: ['Malware'] }, data);
+    expect(collapsed.interactions.highlightShortestPath('actor', 'victim')).toBe(true);
+    expect(collapsed.state().highlightedPath?.nodeIds).toEqual(['actor', 'group:Malware', 'victim']);
+    // Expanded, the two malware are not linked: neither are the two entities.
+    expect(renderInteractions({}, data).interactions.highlightShortestPath('actor', 'victim')).toBe(false);
   });
 
   it('leaves every arrangement and forgets the saved positions when the nodes are unfixed', () => {
