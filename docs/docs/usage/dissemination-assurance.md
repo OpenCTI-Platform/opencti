@@ -246,10 +246,14 @@ following parameters:
 | indicator_deployment_manager:interval               | INDICATOR_DEPLOYMENT_MANAGER__INTERVAL               | 60000         | Interval between two runs of the manager, in milliseconds.      |
 | indicator_deployment_manager:removal_grace_period   | INDICATOR_DEPLOYMENT_MANAGER__REMOVAL_GRACE_PERIOD   | 86400000      | Time given to a connector to confirm a removal, in milliseconds. |
 | indicator_deployment_manager:reconciliation_max_pages | INDICATOR_DEPLOYMENT_MANAGER__RECONCILIATION_MAX_PAGES | 1000        | Pages of 1,000 indicators whose counters are recomputed right after a security platform is deleted or merged. |
-| indicator_deployment:report_rate_limit              | INDICATOR_DEPLOYMENT__REPORT_RATE_LIMIT              | 200           | Maximum deployment reports per second.                          |
-| indicator_deployment:batch_rate_limit               | INDICATOR_DEPLOYMENT__BATCH_RATE_LIMIT               | 20            | Maximum batch deployment reports per second.                    |
-| indicator_deployment:hits_rate_limit                | INDICATOR_DEPLOYMENT__HITS_RATE_LIMIT                | 200           | Maximum hit reports per second.                                 |
+| indicator_deployment:report_rate_limit              | INDICATOR_DEPLOYMENT__REPORT_RATE_LIMIT              | 200           | Maximum deployment reports per second for one account, on each API node. |
+| indicator_deployment:batch_rate_limit               | INDICATOR_DEPLOYMENT__BATCH_RATE_LIMIT               | 20            | Maximum batch deployment reports per second for one account, on each API node. |
+| indicator_deployment:hits_rate_limit                | INDICATOR_DEPLOYMENT__HITS_RATE_LIMIT                | 200           | Maximum hit reports per second for one account, on each API node. |
 | ioc_validation:timeout_days                         | IOC_VALIDATION__TIMEOUT_DAYS                         | 7             | Days after which an unanswered IOC validation request times out. |
+
+The three rate limits are counted by each API node, as the other rate limits of the platform: they protect the node
+that receives the reports, and a platform whose requests are spread over several API nodes accepts up to the limit on
+each of them. Set them for one node.
 
 ## API
 

@@ -3,7 +3,9 @@ import conf from '../../config/conf';
 import { FunctionalError } from '../../config/errors';
 import type { AuthUser } from '../../types/user';
 
-// Per user and per API node limits protecting the write-back mutations used by stream connectors.
+// Per user limits protecting the API node that runs the write-back mutations of the stream connectors. They are
+// counted in the memory of each node, as the other rate limits of the platform: with several API nodes, an account
+// gets the limit on each node.
 export const DEPLOYMENT_RATE_LIMIT_SINGLE = 'single';
 export const DEPLOYMENT_RATE_LIMIT_BATCH = 'batch';
 export const DEPLOYMENT_RATE_LIMIT_HITS = 'hits';
