@@ -78,12 +78,12 @@ const minutesAgo = (minutes: number) => new Date(Date.now() - minutes * 60000).t
 
 const andFilters = (filters: FilterGroup['filters'], filterGroups: FilterGroup[] = []): FilterGroup => ({ mode: FilterMode.And, filters, filterGroups });
 
-const listRuns = (context: AuthContext, filters: FilterGroup['filters'], orderBy = 'created_at', first = HUNT_CONFIG.maxRunsPerTick) => {
+const listRuns = (context: AuthContext, filters: FilterGroup['filters'], orderBy = 'created_at', first = HUNT_CONFIG.maxRunsPerTick, filterGroups: FilterGroup[] = []) => {
   return topEntitiesList<BasicStoreEntityHuntRun>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT_RUN], {
     first,
     orderBy,
     orderMode: OrderingMode.Asc,
-    filters: andFilters(filters),
+    filters: andFilters(filters, filterGroups),
     noFiltersChecking: true,
   });
 };
@@ -510,20 +510,30 @@ export const purgeExpiredHuntRuns = async (context: AuthContext): Promise<number
   return purged;
 };
 
+// The manager lock keeps ticks sequential across the cluster: a claim still held after this delay belongs to a tick
+// that stopped with the platform before it could record the handover or release the claim
+export const HUNT_PLAYBOOK_RESUME_LEASE_MINUTES = 15;
+
 /**
  * Continuation of the playbooks waiting on hunt steps: once every run of a step is settled, the step resumes.
- * The resume is recorded first so that a step never resumes twice, and released when the resume fails so that the
- * next tick tries again (the manager lock keeps ticks sequential across the cluster).
+ * The resume is claimed first so that a step never resumes twice; the handover ends the leadership of the run, a
+ * failed resume releases the claim for the next tick, and a claim left by a stopped platform expires after its lease.
  */
 export const resumeSettledHuntPlaybooks = async (context: AuthContext): Promise<number> => {
-  const leaders = await listRuns(context, [
-    { key: ['playbook_leader'], values: ['true'] },
-    { key: ['playbook_resumed_at'], values: [], operator: FilterOperator.Nil },
-  ]);
+  const unclaimed: FilterGroup = {
+    mode: FilterMode.Or,
+    filters: [
+      { key: ['playbook_resumed_at'], values: [], operator: FilterOperator.Nil },
+      { key: ['playbook_resumed_at'], values: [minutesAgo(HUNT_PLAYBOOK_RESUME_LEASE_MINUTES)], operator: FilterOperator.Lte },
+    ],
+    filterGroups: [],
+  };
+  const leaders = await listRuns(context, [{ key: ['playbook_leader'], values: ['true'] }], 'created_at', HUNT_CONFIG.maxRunsPerTick, [unclaimed]);
   let resumed = 0;
   for (let index = 0; index < leaders.length; index += 1) {
     const leader = leaders[index];
     let claimed = false;
+    let handedOver = false;
     try {
       const group = leader.playbook_execution_id
         ? await findPlaybookHuntRuns(context, { executionId: leader.playbook_execution_id, instanceId: leader.playbook_instance_id, stepId: leader.playbook_step_id })
@@ -532,11 +542,14 @@ export const resumeSettledHuntPlaybooks = async (context: AuthContext): Promise<
         await patchAttribute(context, HUNT_MANAGER_USER, leader.internal_id, ENTITY_TYPE_HUNT_RUN, { playbook_resumed_at: now() });
         claimed = true;
         await resumeHuntPlaybookStep(context, JSON.parse(leader.playbook_context) as HuntPlaybookContext, group);
+        handedOver = true;
         resumed += 1;
+        await patchAttribute(context, HUNT_MANAGER_USER, leader.internal_id, ENTITY_TYPE_HUNT_RUN, { playbook_leader: false });
       }
     } catch (error) {
-      logApp.error('[OPENCTI-MODULE] Hunt playbook resume failed', { cause: error, runId: leader.internal_id, playbookId: leader.playbook_id });
-      if (claimed) {
+      logApp.error('[OPENCTI-MODULE] Hunt playbook resume failed', { cause: error, runId: leader.internal_id, playbookId: leader.playbook_id, handedOver });
+      // Once handed over, the claim stays: releasing it would resume the step again at the next tick
+      if (claimed && !handedOver) {
         await patchAttribute(context, HUNT_MANAGER_USER, leader.internal_id, ENTITY_TYPE_HUNT_RUN, { playbook_resumed_at: null })
           .catch((releaseError) => logApp.error('[OPENCTI-MODULE] Hunt playbook resume release failed', { cause: releaseError, runId: leader.internal_id }));
       }

@@ -241,7 +241,10 @@ describe('Hunt manager', () => {
     expect(await resumeSettledHuntPlaybooks(testContext)).toBeGreaterThanOrEqual(1);
     expect(resume).toHaveBeenCalledTimes(1);
     expect(resume.mock.calls[0][2]).toMatchObject({ playbook_id: playbookContext.playbook_id, step_id: 'hunt-step', execution_id: executionId });
-    expect((await loadRun(leader.internal_id)).playbook_resumed_at).toBeTruthy();
+    const handedOver = await loadRun(leader.internal_id);
+    expect(handedOver.playbook_resumed_at).toBeTruthy();
+    // The continuation is handed over: the run no longer holds it
+    expect(handedOver.playbook_leader).toBe(false);
     await resumeSettledHuntPlaybooks(testContext);
     expect(resume).toHaveBeenCalledTimes(1);
     resume.mockRestore();
