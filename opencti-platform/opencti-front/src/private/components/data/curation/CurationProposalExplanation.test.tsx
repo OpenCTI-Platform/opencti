@@ -45,6 +45,15 @@ describe('Curation proposal explanation', () => {
     ['Sofacy', 'Fancy Bear', 'Sednit', 'Forest Blizzard'].forEach((name) => expect(within(after).getByText(name)).toBeInTheDocument());
   });
 
+  it('shows the names and aliases spelled as they are stored', () => {
+    const changes = [{ field: explanationMessage('Aliases'), before: ['sofacy'], after: ['sofacy', 'fancy-bear'] }];
+    testRender(<CurationProposalExplanation explanation={{ ...aliasExplanation, changes }} />);
+    const after = screen.getByTestId('curation-explanation-after');
+    ['sofacy', 'fancy-bear'].forEach((name) => {
+      expect(within(after).getByText(name).closest('[style*="text-transform"]')).toHaveStyle({ textTransform: 'none' });
+    });
+  });
+
   it('cites the catalogue entries behind the names, with a link to each', () => {
     testRender(<CurationProposalExplanation explanation={aliasExplanation} />);
     const evidence = screen.getByTestId('curation-explanation-evidence');

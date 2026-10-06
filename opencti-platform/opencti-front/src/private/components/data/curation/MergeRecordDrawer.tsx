@@ -236,7 +236,7 @@ const MergeRecordDetails = ({ recordId, onUnmerged }: { recordId: string; onUnme
                 <TableCell>{source.name}</TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                    {source.aliases.slice(0, 10).map((alias) => <Tag key={alias} label={alias} />)}
+                    {source.aliases.slice(0, 10).map((alias) => <Tag key={alias} label={alias} labelTextTransform="none" />)}
                   </Box>
                 </TableCell>
                 <TableCell>{n(source.redirected_relationships_count + source.recreatable_relationships_count)}</TableCell>

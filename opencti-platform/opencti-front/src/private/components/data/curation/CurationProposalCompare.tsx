@@ -186,7 +186,7 @@ const CurationProposalCompare = ({ data, survivorId, onSelectSurvivor, selectabl
         const aliases = documents[index].aliases ?? documents[index].x_opencti_aliases ?? [];
         return aliases.length === 0 ? '-' : (
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-            {aliases.slice(0, 15).map((alias) => <Tag key={alias} label={alias} />)}
+            {aliases.slice(0, 15).map((alias) => <Tag key={alias} label={alias} labelTextTransform="none" />)}
             {aliases.length > 15 && <span>+{aliases.length - 15}</span>}
           </Box>
         );

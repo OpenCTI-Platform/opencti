@@ -95,7 +95,8 @@ const TagList = ({ values, highlighted = [], empty, testId }: TagListProps) => {
     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }} data-testid={testId}>
       {values.slice(0, MAX_TAGS).map((value) => {
         const isNew = highlighted.some((name) => sameName(name, value));
-        return <Tag key={value} label={['Yes', 'No'].includes(value) ? t_i18n(value) : value} color={isNew ? theme.palette.success.main : undefined} />;
+        // Names and aliases read exactly as stored: their spelling is what the proposal is about.
+        return <Tag key={value} label={['Yes', 'No'].includes(value) ? t_i18n(value) : value} color={isNew ? theme.palette.success.main : undefined} labelTextTransform="none" />;
       })}
       {values.length > MAX_TAGS && <Typography variant="body2">{t_i18n('and {count} more', { values: { count: values.length - MAX_TAGS } })}</Typography>}
     </Box>
