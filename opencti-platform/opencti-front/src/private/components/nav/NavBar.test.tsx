@@ -5,7 +5,6 @@ import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import testRender from '../../../utils/tests/test-render';
 import MadeByFiligran from './MadeByFiligran';
-import NavBadge from './NavBadge';
 import { isRouteSelected, NavBarView, NavBarViewProps } from './NavBar';
 import { NavGroup } from './useNavMenu';
 
@@ -84,86 +83,6 @@ describe('NavBarView', () => {
       'href',
       '/dashboard/threats/campaigns',
     );
-  });
-
-  it('keeps a badge count out of the row text so the tooltip does not read it as part of the label', () => {
-    renderNav({
-      groups: [{
-        id: 'main',
-        items: [{
-          id: 'integrations',
-          label: 'Integrations',
-          icon: null,
-          link: '/dashboard/integrations',
-          badge: <NavBadge badge={{ content: 11, accessibleText: '11 connector update available' }} compact={false} />,
-        }],
-      }],
-    });
-    const link = screen.getByRole('link', { name: 'Integrations' });
-    expect(link).toHaveTextContent('Integrations');
-    expect(link).not.toHaveTextContent('11');
-  });
-
-  it('shows the badge tooltip from the integration count phrase on hover', async () => {
-    const { user } = renderNav({
-      groups: [{
-        id: 'main',
-        items: [{
-          id: 'integrations',
-          label: 'Integrations',
-          icon: null,
-          link: '/dashboard/integrations',
-          badge: <NavBadge badge={{ content: 11, accessibleText: '11 connector update available' }} compact={false} />,
-        }],
-      }],
-    });
-
-    await user.hover(screen.getByText('11'));
-    expect(await screen.findByRole('tooltip')).toHaveTextContent('11 connector update available');
-  });
-
-  it('lets keyboard and screen reader users reach the update count', async () => {
-    const { user } = renderNav({
-      groups: [{
-        id: 'main',
-        items: [{
-          id: 'integrations',
-          label: 'Integrations',
-          icon: null,
-          link: '/dashboard/integrations',
-          badge: <NavBadge badge={{ content: 11, accessibleText: '11 connector update available' }} compact={false} />,
-        }],
-      }],
-    });
-
-    expect(screen.getByText('11 connector update available').closest('[aria-hidden="true"]')).toBeNull();
-    screen.getByRole('link', { name: 'Integrations' }).focus();
-    await user.tab();
-    expect(await screen.findByRole('tooltip')).toHaveTextContent('11 connector update available');
-  });
-
-  it('keeps the badge reachable when the rail is collapsed', async () => {
-    renderNav({
-      collapsed: true,
-      groups: [{
-        id: 'main',
-        items: [{
-          id: 'integrations',
-          label: 'Integrations',
-          icon: null,
-          link: '/dashboard/integrations',
-          badge: <NavBadge badge={{ content: 11, accessibleText: '11 connector update available' }} compact />,
-        }],
-      }],
-    });
-
-    // A dot: the count is not drawn, only announced
-    expect(screen.queryByText('11')).not.toBeInTheDocument();
-    const announcement = screen.getByText('11 connector update available');
-    expect(announcement.closest('[aria-hidden="true"]')).toBeNull();
-    const trigger = announcement.closest('[tabindex="0"]') as HTMLElement;
-    trigger.focus();
-    expect(await screen.findByRole('tooltip')).toHaveTextContent('11 connector update available');
   });
 
   it('leaves a submenu parent non-navigable while the rail is expanded', () => {

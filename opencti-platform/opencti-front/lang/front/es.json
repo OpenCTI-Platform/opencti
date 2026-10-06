@@ -15,7 +15,6 @@
   "[Preview] Ask Ariane": "[Preview] Pregunte a Ariane",
   "{agent} has finished": "{agent} ha finalizado",
   "{count} / {limit} entries detected": "Se han detectado {count} / {limit} entradas",
-  "{count} connector update available": "{count} actualización del conector disponible",
   "{count} days": "{count} días",
   "{count} deployed": "{count} desplegadas",
   "{count} email address(es) extracted from pasted text": "{count} dirección(es) de correo electrónico extraída(s) del texto pegado",

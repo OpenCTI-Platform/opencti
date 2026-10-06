@@ -15,7 +15,6 @@
   "[Preview] Ask Ariane": "[미리 보기] 아리안에게 물어보세요",
   "{agent} has finished": "{agent} 작업이 완료되었습니다",
   "{count} / {limit} entries detected": "{count} / {limit}개의 항목이 감지되었습니다",
-  "{count} connector update available": "커넥터 업데이트 {count}개를 사용할 수 있습니다",
   "{count} days": "{count} 일",
   "{count} deployed": "{count}개 배포됨",
   "{count} email address(es) extracted from pasted text": "붙여넣은 텍스트에서 추출한 {count} 이메일 주소",

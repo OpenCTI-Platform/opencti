@@ -15,7 +15,6 @@
   "[Preview] Ask Ariane": "[Предпросмотр] Спросите Ариану",
   "{agent} has finished": "{agent} завершил работу",
   "{count} / {limit} entries detected": "Обнаружено {count} из {limit} записей",
-  "{count} connector update available": "Доступно обновление {count} коннектора",
   "{count} days": "{count} дней",
   "{count} deployed": "Развернуто: {count}",
   "{count} email address(es) extracted from pasted text": "{count} адреса электронной почты, извлеченные из вставленного текста",

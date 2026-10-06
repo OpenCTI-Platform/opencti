@@ -15,7 +15,6 @@
   "[Preview] Ask Ariane": "[Anteprima] Chiedi ad Ariane",
   "{agent} has finished": "{agent} ha terminato",
   "{count} / {limit} entries detected": "{count} / {limit} voci rilevate",
-  "{count} connector update available": "{count} aggiornamento del connettore disponibile",
   "{count} days": "{count} giorni",
   "{count} deployed": "{count} distribuite",
   "{count} email address(es) extracted from pasted text": "{count} indirizzo/i email estratto/i dal testo incollato",
