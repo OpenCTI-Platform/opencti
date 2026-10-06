@@ -283,7 +283,8 @@ request, are updated, so a result already received is never overwritten. Each re
 negative for a miss. The identifier of that sighting is reserved to its request: only the results reported for that
 request (by its IOC validation connector or the account recording the deployment) create it and change what it
 records, even after a newer request took the pair over; administrators aside, nothing else does, and the identifier
-cannot be removed from the sighting.
+cannot be removed from the sighting. No edit gives that identifier, or the one of a hits sighting, to an existing
+sighting, administrators included: those sightings are created with the markings and the sharing of their pair.
 
 A validation result is proof attributed to the platform, so it is accepted only from the connector account that
 recorded the deployments of the pairs on that platform (the integration reporting its deployment statuses), from the

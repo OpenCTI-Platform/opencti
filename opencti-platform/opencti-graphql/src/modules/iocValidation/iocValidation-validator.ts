@@ -371,6 +371,10 @@ const refuseReservedIdRemoval = (user: AuthUser) => {
   throw ForbiddenAccess('A hits or validation result sighting keeps the identifier the platform gave it', { user_id: user.id });
 };
 
+const refuseReservedIdClaim = (user: AuthUser) => {
+  throw ForbiddenAccess('A sighting gets the identifier of a hits or validation result sighting at its creation only', { user_id: user.id });
+};
+
 // Apart from administrators, a generated sighting is written by its reporting mutation, and only by the accounts
 // reporting it: the generic paths could otherwise take its identifier with a content the report would refuse.
 const canWriteGeneratedSighting = async (
@@ -424,10 +428,10 @@ const validatorSightingUpdate: ValidatorFn = async (context, user, _instance, in
     if (reservedId && ![initial?.standard_id, ...editedIds].includes(reservedId)) {
       return refuseReservedIdRemoval(user);
     }
-    // An edit giving a sighting the identifier of a generated sighting is a claim, authorized as on a creation
-    const claimed = await generatedPairSightingOf(context, initial, editedIds.filter((id) => !currentIds.includes(id)));
-    if (claimed && !isBypassUser(user)) {
-      await canWriteGeneratedSighting(context, user, initial, claimed);
+    // Never by an edit, administrators included: an existing sighting has its own markings, sharing and author, while a
+    // generated one is created with those of its pair, and its report would then find it by that identifier
+    if (await generatedPairSightingOf(context, initial, editedIds.filter((id) => !currentIds.includes(id)))) {
+      return refuseReservedIdClaim(user);
     }
   }
   if (!generated) {

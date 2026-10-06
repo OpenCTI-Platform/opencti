@@ -699,13 +699,18 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
       };
       // An ordinary sighting of the pair, seen at the time of the hits
       const ordinary = await createRelation(testContext, ADMIN_USER, { ...ordinaryInput, attribute_count: 7 }) as unknown as { internal_id: string };
+      // Nor does an edit give it the identifier of the hits sighting, administrators included: it keeps its own access
+      const hitsStixId = hitsSightingStixId(windowIndicatorId, platformId);
+      await queryAsAdminWithError(
+        { query: SIGHTING_FIELD_PATCH, variables: { id: ordinary.internal_id, input: [{ key: 'x_opencti_stix_ids', value: [hitsStixId], operation: 'add' }] } },
+        'A sighting gets the identifier of a hits or validation result sighting at its creation only',
+      );
       // The hits report creates the hits sighting of the pair, it never takes the ordinary one over
       const reported = await queryAsUserWithSuccess(USER_CONNECTOR, {
         query: REPORT_HITS,
         variables: { indicatorId: windowIndicatorId, platformId, count: 2, lastHit },
       });
       expect(reported.data?.indicatorReportHits.attribute_count).toEqual(2);
-      const hitsStixId = hitsSightingStixId(windowIndicatorId, platformId);
       const hits = await internalLoadById(testContext, ADMIN_USER, hitsStixId, { type: STIX_SIGHTING_RELATIONSHIP }) as unknown as { internal_id: string };
       expect(hits.internal_id).not.toEqual(ordinary.internal_id);
       const untouched = await internalLoadById(testContext, ADMIN_USER, ordinary.internal_id, { type: STIX_SIGHTING_RELATIONSHIP }) as unknown as {
