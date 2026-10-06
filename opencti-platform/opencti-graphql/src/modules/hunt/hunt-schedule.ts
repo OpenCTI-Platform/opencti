@@ -12,8 +12,9 @@ const MACROS: Record<string, string> = {
 };
 const MONTH_NAMES = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 const DAY_NAMES = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-// A schedule repeats at least once a year, 5 years of days is a safe search bound (leap years included)
-const MAX_SEARCH_DAYS = 366 * 5;
+// A schedule that fires repeats within 8 years: February 29th skips the century years that are not leap years
+// (2096 to 2104), every other day of the calendar comes back within a year
+const MAX_SEARCH_DAYS = 366 * 8;
 
 interface FieldSpec {
   min: number;

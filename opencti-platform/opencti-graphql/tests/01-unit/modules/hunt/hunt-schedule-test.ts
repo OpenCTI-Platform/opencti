@@ -44,6 +44,8 @@ describe('Hunt schedules', () => {
     // 2026-10-03 is a Saturday: next Monday
     expect(nextCronOccurrence(parseCron('0 8 * * 1'), at('2026-10-03T12:00:00.000Z'))?.toISOString()).toBe('2026-10-05T08:00:00.000Z');
     expect(nextCronOccurrence(parseCron('0 0 29 2 *'), at('2026-10-03T00:00:00.000Z'))?.toISOString()).toBe('2028-02-29T00:00:00.000Z');
+    // 2100 is not a leap year: eight years between two February 29th
+    expect(nextCronOccurrence(parseCron('0 0 29 2 *'), at('2096-02-29T00:00:00.000Z'))?.toISOString()).toBe('2104-02-29T00:00:00.000Z');
   });
 
   it('should use the cron semantics of both day fields', () => {
