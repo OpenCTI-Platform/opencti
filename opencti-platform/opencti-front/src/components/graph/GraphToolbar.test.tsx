@@ -19,6 +19,10 @@ const viewActions = (): GraphViewActions => ({
   exportImage: vi.fn(),
   toggleFullscreen: vi.fn(),
   showShortcuts: vi.fn(),
+  canvasActions: [
+    { id: 'invert-selection', group: 'selection', priority: 0, label: 'Invert selection', icon: <span />, onSelect: vi.fn() },
+    { id: 'ungroup-all', group: 'filters', priority: 0, label: 'Ungroup all', icon: <span />, disabledReason: 'No entity type is grouped' },
+  ],
 });
 
 const renderToolbar = (view = viewActions(), context: 'correlation' | 'analyses' = 'correlation') => ({
@@ -125,12 +129,18 @@ describe('GraphToolbar', () => {
   });
 
   it('lists the rare actions of a graph view in "More actions" in 3D, where the canvas has no context menu', async () => {
-    const { user } = renderToolbar();
+    const { user, view } = renderToolbar();
     await user.click(screen.getByRole('button', { name: '3D mode' }));
     await user.click(screen.getByRole('button', { name: 'More actions' }));
     const menu = await screen.findByRole('menu', { name: 'More actions' });
     expect(within(menu).getByRole('menuitem', { name: /Select all nodes/ })).toBeInTheDocument();
     expect(within(menu).getByRole('menuitem', { name: /Unfix the nodes and re-apply forces/ })).toBeInTheDocument();
+    // The actions of the empty canvas too, under the group they act on, disabled with their reason.
+    const ungroup = within(menu).getByRole('menuitem', { name: /Ungroup all/ });
+    expect(ungroup).toHaveAttribute('aria-disabled', 'true');
+    expect(ungroup).toHaveTextContent('No entity type is grouped');
+    await user.click(within(menu).getByRole('menuitem', { name: /Invert selection/ }));
+    expect(view.canvasActions?.[0].onSelect).toHaveBeenCalledTimes(1);
   });
 
   it('lists the rare actions in "More actions", by group, for a toolbar outside a graph view', async () => {

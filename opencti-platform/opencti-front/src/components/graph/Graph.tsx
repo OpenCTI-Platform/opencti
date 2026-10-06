@@ -694,8 +694,15 @@ const Graph = ({
   );
   const typeFilterCount = disabledEntityTypes.filter((type) => typeInventory.entityTypes.includes(type)).length
     + disabledRelationshipTypes.filter((type) => typeInventory.relationshipTypes.includes(type)).length;
-  const latestViewActions = useRef({ exportImage, toggleFullscreen });
-  latestViewActions.current = { exportImage, toggleFullscreen };
+  const invertSelection = () => {
+    const selectedIds = new Set(selectedNodes.map((n) => n.id));
+    selectNodes(drawnOneByOne(shownNodes, []).entities.filter((n) => !selectedIds.has(n.id)));
+  };
+  const latestViewActions = useRef({ exportImage, toggleFullscreen, invertSelection, clearSelection, showHiddenNodes, ungroupAll });
+  latestViewActions.current = { exportImage, toggleFullscreen, invertSelection, clearSelection, showHiddenNodes, ungroupAll };
+  const nothingSelected = selectedEntities.length === 0;
+  const nothingHidden = hiddenCount === 0;
+  const nothingGrouped = collapsedEntityTypes.length === 0;
   const viewActions = useMemo<GraphViewActions>(() => ({
     counters,
     drawnTypes: typeInventory,
@@ -706,7 +713,46 @@ const Graph = ({
     } : undefined,
     toggleFullscreen: () => latestViewActions.current.toggleFullscreen(),
     showShortcuts: () => setShortcutsOpen(true),
-  }), [counters, typeInventory, typeFilterCount, drawnHasCycle, canExport]);
+    canvasActions: [
+      {
+        id: 'invert-selection',
+        group: 'selection',
+        priority: 0,
+        label: t_i18n('Invert selection'),
+        icon: <SelectInverse {...MENU_ICON} />,
+        onSelect: () => latestViewActions.current.invertSelection(),
+      },
+      {
+        id: 'clear-selection',
+        group: 'selection',
+        priority: 0,
+        label: t_i18n('Clear selection'),
+        shortcut: 'Esc',
+        icon: <DeselectOutlined {...MENU_ICON} />,
+        disabledReason: nothingSelected ? t_i18n('Nothing is selected') : undefined,
+        onSelect: () => latestViewActions.current.clearSelection(),
+      },
+      {
+        id: 'show-hidden',
+        group: 'filters',
+        priority: 0,
+        label: t_i18n('Show the hidden entities'),
+        shortcut: 'Shift+H',
+        icon: <VisibilityOutlined {...MENU_ICON} />,
+        disabledReason: nothingHidden ? t_i18n('No entity is hidden') : undefined,
+        onSelect: () => latestViewActions.current.showHiddenNodes(),
+      },
+      {
+        id: 'ungroup-all',
+        group: 'filters',
+        priority: 0,
+        label: t_i18n('Ungroup all'),
+        icon: <UnfoldMoreOutlined {...MENU_ICON} />,
+        disabledReason: nothingGrouped ? t_i18n('No entity type is grouped') : undefined,
+        onSelect: () => latestViewActions.current.ungroupAll(),
+      },
+    ],
+  }), [counters, typeInventory, typeFilterCount, drawnHasCycle, canExport, nothingSelected, nothingHidden, nothingGrouped, t_i18n]);
 
   const cardTarget: GraphHoverCardTarget | null = useMemo(() => {
     if (!card) return null;
@@ -858,43 +904,12 @@ const Graph = ({
       onSelect: () => investigateFrom(selectedEntityNodes[0]),
     },
   ]);
-  const canvasMenuActions = (): GraphMenuAction[] => {
-    const selectedIds = new Set(selectedNodes.map((n) => n.id));
-    return present([
-      toolbarAction('select-all'),
-      toolbarAction('select-by-type'),
-      {
-        id: 'invert-selection',
-        label: t_i18n('Invert selection'),
-        icon: <SelectInverse {...MENU_ICON} />,
-        onSelect: () => selectNodes(drawnOneByOne(shownNodes, []).entities.filter((n) => !selectedIds.has(n.id))),
-      },
-      {
-        id: 'clear-selection',
-        label: t_i18n('Clear selection'),
-        shortcut: 'Esc',
-        icon: <DeselectOutlined {...MENU_ICON} />,
-        disabledReason: selectedEntities.length === 0 ? t_i18n('Nothing is selected') : undefined,
-        onSelect: clearSelection,
-      },
-      {
-        id: 'show-hidden',
-        label: t_i18n('Show the hidden entities'),
-        shortcut: 'Shift+H',
-        icon: <VisibilityOutlined {...MENU_ICON} />,
-        disabledReason: hiddenCount === 0 ? t_i18n('No entity is hidden') : undefined,
-        onSelect: showHiddenNodes,
-      },
-      {
-        id: 'ungroup-all',
-        label: t_i18n('Ungroup all'),
-        icon: <UnfoldMoreOutlined {...MENU_ICON} />,
-        disabledReason: collapsedEntityTypes.length === 0 ? t_i18n('No entity type is grouped') : undefined,
-        onSelect: ungroupAll,
-      },
-      toolbarAction('reset-layout'),
-    ]);
-  };
+  const canvasMenuActions = (): GraphMenuAction[] => present([
+    toolbarAction('select-all'),
+    toolbarAction('select-by-type'),
+    ...(viewActions.canvasActions ?? []),
+    toolbarAction('reset-layout'),
+  ]);
   const menuSections = (target: GraphHoverTarget | null): GraphContextMenuSection[] => {
     const selection = selectedEntities.length > 0 ? [{ key: 'selection', label: t_i18n('Selection'), actions: selectionMenuActions() }] : [];
     if (target?.kind === 'node') {

@@ -139,9 +139,12 @@ const GraphToolbar = ({
   const shownIds = useMemo(() => planToolbarOverflow(actions, room), [actions, room]);
   const shown = (group: GraphToolbarGroup) => actions.filter((action) => action.group === group && shownIds.has(action.id));
   // In a 2D graph view the rare actions (priority 0) are in its context menu: "More actions" holds only what has no room.
-  // The 3D canvas has no context menu: "More actions" holds them there.
+  // The 3D canvas has no context menu: "More actions" holds them there, with the other actions of its empty canvas.
   const inContextMenu = (action: GraphToolbarAction) => !!view && !mode3D && action.priority === 0;
-  const overflowed = actions.filter((action) => !shownIds.has(action.id) && !inContextMenu(action));
+  const overflowed = [
+    ...actions.filter((action) => !shownIds.has(action.id) && !inContextMenu(action)),
+    ...(mode3D ? view?.canvasActions ?? [] : []),
+  ];
 
   const roving = useToolbarRovingFocus(rowRef);
 
