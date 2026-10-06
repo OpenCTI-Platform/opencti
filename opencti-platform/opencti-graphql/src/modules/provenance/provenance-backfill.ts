@@ -9,6 +9,7 @@ import {
   READ_INDEX_STIX_CYBER_OBSERVABLES,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
+  wait,
 } from '../../database/utils';
 import conf, { logApp } from '../../config/conf';
 import { LockTimeoutError, TYPE_LOCK_ERROR } from '../../config/errors';
@@ -53,6 +54,7 @@ const HISTORY_ASSERTION_SCOPES = ['create', 'update', 'merge'];
 const HISTORY_WRITERS_PER_REQUEST = 1000;
 const HISTORY_WRITES_PER_REQUEST = 1000;
 const WORKS_PER_REQUEST = 1000;
+const BACKFILL_RETRY_DELAY_MS = 1000;
 // Every batch of the backfill manager runs under this lock
 export const PROVENANCE_BACKFILL_LOCK_KEY: string = conf.get('provenance_backfill_manager:lock_key') || 'provenance_backfill_manager_lock';
 
@@ -599,14 +601,32 @@ export const runProvenanceBackfillBatch = async (context: AuthContext, opts: { b
       ? await internalFindByIds<BasicStoreEntity & { name: string }>(context, SYSTEM_USER, authorIds, { baseData: true, baseFields: ['name'] }) as (BasicStoreEntity & { name: string })[]
       : [];
     const authorNames = new Map(authors.map((author) => [author.internal_id, author.name]));
+    const rebuild = async (element: BackfillElement) => {
+      const assertions = await computeBackfillAssertions(element, activities.get(element.internal_id) ?? [], resolveSource, authorNames, watermark);
+      if (assertions.length > 0) {
+        await applyProvenanceUpdate(context, element, { assertions, countMode: 'backfill', backfillWatermark: watermark });
+        state.updated += 1;
+      }
+    };
+    // A rebuild is replayed without counting anything twice (backfill count mode): a failed element is tried
+    // again at the end of the batch, and only a second failure leaves it to a restart of the backfill
+    const failed: BackfillElement[] = [];
     for (let index = 0; index < elements.length; index += 1) {
       const element = elements[index];
       try {
-        const assertions = await computeBackfillAssertions(element, activities.get(element.internal_id) ?? [], resolveSource, authorNames, watermark);
-        if (assertions.length > 0) {
-          await applyProvenanceUpdate(context, element, { assertions, countMode: 'backfill', backfillWatermark: watermark });
-          state.updated += 1;
-        }
+        await rebuild(element);
+      } catch (err) {
+        failed.push(element);
+        logApp.warn('[PROVENANCE] Backfill of an element failed, tried again at the end of the batch', { cause: err, id: element.internal_id });
+      }
+    }
+    if (failed.length > 0) {
+      await wait(BACKFILL_RETRY_DELAY_MS);
+    }
+    for (let index = 0; index < failed.length; index += 1) {
+      const element = failed[index];
+      try {
+        await rebuild(element);
       } catch (err) {
         state.errors += 1;
         logApp.error('[PROVENANCE] Unable to backfill the provenance of an element', { cause: err, id: element.internal_id });

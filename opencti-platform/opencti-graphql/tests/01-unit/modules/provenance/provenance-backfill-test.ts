@@ -11,16 +11,35 @@ import {
 } from '../../../../src/modules/provenance/provenance-backfill';
 import type { AssertionSource, ProvenanceBackfillState } from '../../../../src/modules/provenance/provenance-types';
 import { RULE_MANAGER_USER } from '../../../../src/utils/access';
-import { elCount, elPaginate } from '../../../../src/database/engine';
+import { elCount, elPaginate, elRawSearch } from '../../../../src/database/engine';
+import { getEntitiesListFromCache } from '../../../../src/database/cache';
 import { patchAttribute } from '../../../../src/database/middleware';
 import { findByManagerId } from '../../../../src/modules/managerConfiguration/managerConfiguration-domain';
 import { listProvenanceTrackedTypes } from '../../../../src/modules/provenance/provenance-tracking';
+import { resolveSourceOfUser } from '../../../../src/modules/provenance/provenance-source';
+import { applyProvenanceUpdate } from '../../../../src/modules/provenance/provenance-write';
 import type { AuthContext } from '../../../../src/types/user';
 
 vi.mock('../../../../src/database/engine', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../src/database/engine')>(),
   elCount: vi.fn(),
   elPaginate: vi.fn(),
+  elRawSearch: vi.fn(),
+}));
+
+vi.mock('../../../../src/database/cache', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/database/cache')>(),
+  getEntitiesListFromCache: vi.fn(),
+}));
+
+vi.mock('../../../../src/modules/provenance/provenance-source', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/modules/provenance/provenance-source')>(),
+  resolveSourceOfUser: vi.fn(),
+}));
+
+vi.mock('../../../../src/modules/provenance/provenance-write', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/modules/provenance/provenance-write')>(),
+  applyProvenanceUpdate: vi.fn(),
 }));
 
 vi.mock('../../../../src/database/middleware', async (importOriginal) => ({
@@ -272,5 +291,31 @@ describe('Provenance backfill', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it('should try a failed element again at the end of the batch and only count a second failure as an error', async () => {
+    const context = { source: 'provenance-backfill-test' } as AuthContext;
+    const state = { status: 'running', started_at: '2026-03-01T00:00:00.000Z', expected: 3 };
+    vi.mocked(findByManagerId).mockResolvedValue({ id: 'backfill-configuration', manager_setting: state } as any);
+    vi.mocked(patchAttribute).mockResolvedValue({} as any);
+    vi.mocked(listProvenanceTrackedTypes).mockResolvedValue(['Malware']);
+    const element = (id: string) => ({ _index: 'stix_domain_objects', internal_id: id, creator_id: ['analyst'], created_at: '2026-01-01T00:00:00.000Z' });
+    vi.mocked(elPaginate).mockResolvedValueOnce({
+      elements: { edges: ['fails-once', 'succeeds', 'always-fails'].map((id) => ({ node: element(id) })), pageInfo: { hasNextPage: false } },
+      endCursor: null,
+    } as any);
+    vi.mocked(elRawSearch).mockResolvedValue({ aggregations: { writers: { buckets: [] } } });
+    vi.mocked(getEntitiesListFromCache).mockResolvedValue([]);
+    vi.mocked(resolveSourceOfUser).mockImplementation(async (_context, userId) => userSource(userId));
+    const attempts: string[] = [];
+    vi.mocked(applyProvenanceUpdate).mockImplementation(async (_context, target) => {
+      attempts.push(target.internal_id);
+      if (target.internal_id === 'always-fails' || (target.internal_id === 'fails-once' && attempts.length === 1)) {
+        throw new Error('transient write failure');
+      }
+      return {};
+    });
+    expect(await runProvenanceBackfillBatch(context, { batchSize: 500 })).toMatchObject({ status: 'completed', processed: 3, updated: 2, errors: 1 });
+    expect(attempts).toEqual(['fails-once', 'succeeds', 'always-fails', 'fails-once', 'always-fails']);
   });
 });
