@@ -5,7 +5,9 @@ import { ApexOptions } from 'apexcharts';
 import { radarChartOptions } from '../../utils/Charts';
 import { useFormatter } from '../i18n';
 import type { Theme } from '../Theme';
-import useDistributionGraphData from '../../utils/hooks/useDistributionGraphData';
+import useDistributionGraphData, { buildDistributionBuckets } from '../../utils/hooks/useDistributionGraphData';
+import { useNavigate } from 'react-router';
+import type { WidgetDrilldown } from '../../utils/widget/drilldown/useWidgetDrilldown';
 import { simpleNumberFormat } from '../../utils/Number';
 
 interface WidgetRadarProps {
@@ -14,6 +16,7 @@ interface WidgetRadarProps {
   label: string;
   groupBy: string;
   onMounted?: OpenCTIChartProps['onMounted'];
+  drilldown?: WidgetDrilldown;
 }
 
 const WidgetRadar = ({
@@ -21,10 +24,21 @@ const WidgetRadar = ({
   label,
   groupBy,
   onMounted,
+  drilldown,
 }: WidgetRadarProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { buildWidgetLabelsOption } = useDistributionGraphData();
+
+  const navigate = useNavigate();
+  /**
+   * Memoized alongside the chart options: a fresh descriptor on every render
+   * would rebuild the whole chart config.
+   */
+  const chartDrilldown = useMemo(
+    () => (drilldown ? { ...drilldown, navigate, buckets: buildDistributionBuckets(data) } : undefined),
+    [drilldown, navigate, data],
+  );
 
   const chartData = useMemo(() => [{
     name: label || t_i18n('Number of relationships'),
@@ -40,8 +54,12 @@ const WidgetRadar = ({
       simpleNumberFormat,
       [],
       true,
+      undefined,
+      undefined,
+      undefined,
+      chartDrilldown,
     ) as ApexOptions;
-  }, [data, groupBy, theme]);
+  }, [data, groupBy, theme, chartDrilldown]);
 
   return (
     <Chart

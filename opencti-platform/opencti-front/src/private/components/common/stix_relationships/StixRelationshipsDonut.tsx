@@ -7,6 +7,7 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import type { WidgetDrilldown } from '../../../../utils/widget/drilldown/useWidgetDrilldown';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { StixRelationshipsDonutDistributionQuery } from '@components/common/stix_relationships/__generated__/StixRelationshipsDonutDistributionQuery.graphql';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -109,12 +110,14 @@ interface StixRelationshipsDonutComponentProps {
   queryRef: PreloadedQuery<StixRelationshipsDonutDistributionQuery>;
   dataSelection: WidgetDataSelection[];
   onMounted: (chart: unknown) => void;
+  drilldown: WidgetDrilldown;
 }
 
 const StixRelationshipsDonutComponent = ({
   queryRef,
   dataSelection,
   onMounted,
+  drilldown,
 }: StixRelationshipsDonutComponentProps) => {
   const data = usePreloadedQuery(
     stixRelationshipsDonutsDistributionQuery,
@@ -127,6 +130,7 @@ const StixRelationshipsDonutComponent = ({
   const selection = dataSelection[0];
   return (
     <WidgetDonut
+      drilldown={drilldown}
       data={data.stixRelationshipsDistribution}
       groupBy={selection.attribute ?? 'entity_type'}
       onMounted={onMounted}
@@ -176,7 +180,7 @@ const StixRelationshipsDonut = ({
 }: StixRelationshipsDonutProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsDonutDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef, drilldown } = useDashboardViz<StixRelationshipsDonutDistributionQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -203,6 +207,7 @@ const StixRelationshipsDonut = ({
         host={host}
       >
         <StixRelationshipsDonutComponent
+          drilldown={drilldown}
           queryRef={queryRef!}
           dataSelection={resolvedDataSelection}
           onMounted={(chart) => setChart(chart as ApexCharts)}

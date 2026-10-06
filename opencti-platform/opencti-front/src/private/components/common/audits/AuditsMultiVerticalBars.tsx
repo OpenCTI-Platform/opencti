@@ -23,6 +23,7 @@ import { normalizeFilterGroupForBackend, removeEntityTypeAllFromFilterGroup } fr
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalBars';
+import type { WidgetDrilldown } from '../../../../utils/widget/drilldown/useWidgetDrilldown';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
@@ -59,6 +60,7 @@ interface AuditsMultiVerticalBarsComponentProps {
   isStacked?: boolean;
   hasLegend?: boolean;
   onMounted: (chart: ApexCharts) => void;
+  drilldown: WidgetDrilldown;
 }
 
 const AuditsMultiVerticalBarsComponent: FunctionComponent<AuditsMultiVerticalBarsComponentProps> = ({
@@ -68,6 +70,7 @@ const AuditsMultiVerticalBarsComponent: FunctionComponent<AuditsMultiVerticalBar
   isStacked,
   hasLegend,
   onMounted,
+  drilldown,
 }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery<AuditsMultiVerticalBarsTimeSeriesQuery>(
@@ -83,6 +86,7 @@ const AuditsMultiVerticalBarsComponent: FunctionComponent<AuditsMultiVerticalBar
   if (data.auditsMultiTimeSeries) {
     return (
       <WidgetVerticalBars
+        drilldown={drilldown}
         series={dataSelection.map((selection, i) => ({
           name: selection.label || t_i18n('Number of history entries'),
           data: (data.auditsMultiTimeSeries?.[i]?.data ?? [])
@@ -155,7 +159,7 @@ const AuditsMultiVerticalBars: FunctionComponent<AuditsMultiVerticalBarsProps> =
     };
   }, [startDate, endDate, fallbackDates, parameters.interval]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsMultiVerticalBarsTimeSeriesQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef, drilldown } = useDashboardViz<AuditsMultiVerticalBarsTimeSeriesQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -183,6 +187,7 @@ const AuditsMultiVerticalBars: FunctionComponent<AuditsMultiVerticalBarsProps> =
         host={host}
       >
         <AuditsMultiVerticalBarsComponent
+          drilldown={drilldown}
           queryRef={queryRef!}
           dataSelection={resolvedDataSelection}
           interval={parameters.interval ?? undefined}

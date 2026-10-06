@@ -6,6 +6,9 @@ import { useFormatter } from '../i18n';
 import { treeMapOptions } from '../../utils/Charts';
 import { getMainRepresentative, isFieldForIdentifier } from '../../utils/defaultRepresentatives';
 import { simpleNumberFormat } from '../../utils/Number';
+import { useNavigate } from 'react-router';
+import { buildDistributionBuckets } from '../../utils/hooks/useDistributionGraphData';
+import type { WidgetDrilldown } from '../../utils/widget/drilldown/useWidgetDrilldown';
 
 interface WidgetTreeProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -13,6 +16,7 @@ interface WidgetTreeProps {
   groupBy: string;
   onMounted?: OpenCTIChartProps['onMounted'];
   isDistributed?: boolean;
+  drilldown?: WidgetDrilldown;
 }
 
 const WidgetTree = ({
@@ -20,9 +24,20 @@ const WidgetTree = ({
   groupBy,
   onMounted,
   isDistributed = false,
+  drilldown,
 }: WidgetTreeProps) => {
   const theme = useTheme();
   const { t_i18n } = useFormatter();
+
+  const navigate = useNavigate();
+  /**
+   * Memoized alongside the chart options: a fresh descriptor on every render
+   * would rebuild the whole chart config.
+   */
+  const chartDrilldown = useMemo(
+    () => (drilldown ? { ...drilldown, navigate, buckets: buildDistributionBuckets(data) } : undefined),
+    [drilldown, navigate, data],
+  );
 
   const series = useMemo(() => {
     const chartData = data.map((n) => {
@@ -43,8 +58,9 @@ const WidgetTree = ({
       simpleNumberFormat,
       'bottom',
       isDistributed,
+      chartDrilldown,
     ) as ApexOptions;
-  }, [theme, isDistributed]);
+  }, [theme, isDistributed, chartDrilldown]);
 
   return (
     <Chart

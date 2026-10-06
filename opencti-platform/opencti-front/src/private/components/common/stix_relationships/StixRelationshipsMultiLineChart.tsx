@@ -4,6 +4,7 @@ import { useFormatter } from '../../../../components/i18n';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiLines from '../../../../components/dashboard/WidgetMultiLines';
+import type { WidgetDrilldown } from '../../../../utils/widget/drilldown/useWidgetDrilldown';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { StixRelationshipsMultiLineChartTimeSeriesQuery } from '@components/common/stix_relationships/__generated__/StixRelationshipsMultiLineChartTimeSeriesQuery.graphql';
@@ -40,6 +41,7 @@ interface StixRelationshipsMultiLineChartComponentProps {
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
   onMounted: (chart: unknown) => void;
+  drilldown: WidgetDrilldown;
 }
 
 const StixRelationshipsMultiLineChartComponent = ({
@@ -47,6 +49,7 @@ const StixRelationshipsMultiLineChartComponent = ({
   dataSelection,
   parameters,
   onMounted,
+  drilldown,
 }: StixRelationshipsMultiLineChartComponentProps) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(
@@ -59,6 +62,7 @@ const StixRelationshipsMultiLineChartComponent = ({
   }
   return (
     <WidgetMultiLines
+      drilldown={drilldown}
       series={dataSelection.map((selection, i) => {
         const serie = data.stixRelationshipsMultiTimeSeries?.[i];
 
@@ -115,7 +119,9 @@ const StixRelationshipsMultiLineChart = ({
 }: StixRelationshipsMultiLineChartProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiLineChartTimeSeriesQuery>({
+  const {
+    resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef, drilldown,
+  } = useDashboardViz<StixRelationshipsMultiLineChartTimeSeriesQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -143,6 +149,7 @@ const StixRelationshipsMultiLineChart = ({
         host={host}
       >
         <StixRelationshipsMultiLineChartComponent
+          drilldown={drilldown}
           queryRef={queryRef!}
           dataSelection={resolvedDataSelection}
           parameters={parameters}

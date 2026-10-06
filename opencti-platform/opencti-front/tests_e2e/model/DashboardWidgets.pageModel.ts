@@ -144,6 +144,42 @@ export default class DashboardWidgetsPageModel {
     await this.createWidget();
   }
 
+  /**
+   * A distribution of entities by type, whose per-bucket count is rendered as
+   * plain text -- which is what makes the drill-down invariant observable.
+   *
+   * No entity type filter on purpose: as soon as one is set,
+   * `getCurrentSelectedEntityTypes` is non-empty and the Attribute select
+   * switches to a list queried from the schema of the chosen types
+   * (`WidgetCreationParameters.tsx:747`). Without it, the options are the
+   * hardcoded list starting with `entity_type` -- which is what this widget
+   * aggregates on.
+   *
+   * The option reads `Type`, not `Entity type`: the label goes through
+   * `t_i18n(capitalizeFirstLetter('entity_type'))`, and `Entity_type` is
+   * translated to `Type`.
+   */
+  async createDistributionListOfEntities() {
+    await this.openWidgetModal();
+    await this.selectWidget('List (distribution)');
+    await this.selectPerspective('Entities');
+    await this.filters.addFilter('Label', 'e2e');
+    await this.validateFilters();
+    await this.titleField.fill('Distribution of entities');
+    await this.attributeFieldMain.selectOption('Type');
+    await this.createWidget();
+  }
+
+  /**
+   * Only the rows whose count resolves to a drill-down link. A row that cannot
+   * reproduce its count keeps the same test id but renders a plain `div`
+   * (`WidgetDistributionList.tsx:138-155`), so picking the first count blindly
+   * could land on an inert one.
+   */
+  getWidgetDistributionCountLinks() {
+    return this.page.locator('a[data-testid="widget-distribution-count"]');
+  }
+
   async createHorizontalBreakdownOfMalwares() {
     await this.openWidgetModal();
     await this.selectWidget('Horizontal Bar');

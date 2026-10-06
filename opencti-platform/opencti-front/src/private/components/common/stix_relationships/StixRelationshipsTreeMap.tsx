@@ -5,6 +5,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetTree from '../../../../components/dashboard/WidgetTree';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import type { WidgetDrilldown } from '../../../../utils/widget/drilldown/useWidgetDrilldown';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { StixRelationshipsTreeMapDistributionQuery } from './__generated__/StixRelationshipsTreeMapDistributionQuery.graphql';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
@@ -94,6 +95,7 @@ interface StixRelationshipsTreeMapComponentProps {
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
   onMounted?: OpenCTIChartProps['onMounted'];
+  drilldown: WidgetDrilldown;
 }
 
 const StixRelationshipsTreeMapComponent = ({
@@ -101,6 +103,7 @@ const StixRelationshipsTreeMapComponent = ({
   dataSelection,
   parameters,
   onMounted,
+  drilldown,
 }: StixRelationshipsTreeMapComponentProps) => {
   const data = usePreloadedQuery(
     stixRelationshipsTreeMapsDistributionQuery,
@@ -116,6 +119,7 @@ const StixRelationshipsTreeMapComponent = ({
 
   return (
     <WidgetTree
+      drilldown={drilldown}
       data={distribution}
       groupBy={selection.attribute ?? 'entity_type'}
       isDistributed={parameters?.distributed ?? undefined}
@@ -168,7 +172,7 @@ const StixRelationshipsTreeMap = ({
 }: StixRelationshipsTreeMapProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsTreeMapDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef, drilldown } = useDashboardViz<StixRelationshipsTreeMapDistributionQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -194,6 +198,7 @@ const StixRelationshipsTreeMap = ({
         host={host}
       >
         <StixRelationshipsTreeMapComponent
+          drilldown={drilldown}
           queryRef={queryRef!}
           dataSelection={resolvedDataSelection}
           parameters={parameters}

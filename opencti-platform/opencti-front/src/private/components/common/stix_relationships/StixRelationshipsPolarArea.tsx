@@ -5,6 +5,7 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetPolarArea from '../../../../components/dashboard/WidgetPolarArea';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import type { WidgetDrilldown } from '../../../../utils/widget/drilldown/useWidgetDrilldown';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { StixRelationshipsPolarAreaDistributionQuery } from './__generated__/StixRelationshipsPolarAreaDistributionQuery.graphql';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
@@ -108,12 +109,14 @@ interface StixRelationshipsPolarAreaComponentProps {
   queryRef: PreloadedQuery<StixRelationshipsPolarAreaDistributionQuery>;
   dataSelection: WidgetDataSelection[];
   onMounted: (chart: unknown) => void;
+  drilldown: WidgetDrilldown;
 }
 
 const StixRelationshipsPolarAreaComponent = ({
   queryRef,
   dataSelection,
   onMounted,
+  drilldown,
 }: StixRelationshipsPolarAreaComponentProps) => {
   const data = usePreloadedQuery(
     stixRelationshipsPolarAreasDistributionQuery,
@@ -128,6 +131,7 @@ const StixRelationshipsPolarAreaComponent = ({
 
   return (
     <WidgetPolarArea
+      drilldown={drilldown}
       data={data.stixRelationshipsDistribution}
       groupBy={finalField}
       onMounted={onMounted}
@@ -179,7 +183,7 @@ const StixRelationshipsPolarArea = ({
 }: StixRelationshipsPolarAreaProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsPolarAreaDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef, drilldown } = useDashboardViz<StixRelationshipsPolarAreaDistributionQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -206,6 +210,7 @@ const StixRelationshipsPolarArea = ({
         host={host}
       >
         <StixRelationshipsPolarAreaComponent
+          drilldown={drilldown}
           queryRef={queryRef!}
           dataSelection={resolvedDataSelection}
           onMounted={(chart) => setChart(chart as ApexCharts)}

@@ -5,6 +5,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetRadar from '../../../../components/dashboard/WidgetRadar';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import type { WidgetDrilldown } from '../../../../utils/widget/drilldown/useWidgetDrilldown';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import { StixCoreObjectsRadarDistributionQuery } from './__generated__/StixCoreObjectsRadarDistributionQuery.graphql';
@@ -91,11 +92,13 @@ const stixCoreObjectsRadarDistributionQuery = graphql`
 interface StixCoreObjectsRadarComponentProps {
   queryRef: PreloadedQuery<StixCoreObjectsRadarDistributionQuery>;
   dataSelection: Widget['dataSelection'];
+  drilldown: WidgetDrilldown;
 }
 
 const StixCoreObjectsRadarComponent = ({
   queryRef,
   dataSelection,
+  drilldown,
 }: StixCoreObjectsRadarComponentProps) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(
@@ -110,6 +113,7 @@ const StixCoreObjectsRadarComponent = ({
   }
   return (
     <WidgetRadar
+      drilldown={drilldown}
       data={distribution}
       label={selection.label ?? t_i18n('Number of entities')}
       groupBy={selection.attribute ?? 'entity_type'}
@@ -162,7 +166,7 @@ const StixCoreObjectsRadar = ({
   refreshRate = null,
 }: StixCoreObjectsRadarProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsRadarDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef, drilldown } = useDashboardViz<StixCoreObjectsRadarDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -188,6 +192,7 @@ const StixCoreObjectsRadar = ({
         host={host}
       >
         <StixCoreObjectsRadarComponent
+          drilldown={drilldown}
           queryRef={queryRef!}
           dataSelection={resolvedDataSelection}
         />

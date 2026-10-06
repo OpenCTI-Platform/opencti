@@ -4,6 +4,7 @@ import { useFormatter } from '../../../../components/i18n';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetVerticalBars from '../../../../components/dashboard/WidgetVerticalBars';
+import type { WidgetDrilldown } from '../../../../utils/widget/drilldown/useWidgetDrilldown';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
@@ -40,6 +41,7 @@ interface StixRelationshipsMultiVerticalBarsComponentProps {
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
   onMounted: (chart: unknown) => void;
+  drilldown: WidgetDrilldown;
 }
 
 const StixRelationshipsMultiVerticalBarsComponent = ({
@@ -47,6 +49,7 @@ const StixRelationshipsMultiVerticalBarsComponent = ({
   dataSelection,
   parameters,
   onMounted,
+  drilldown,
 }: StixRelationshipsMultiVerticalBarsComponentProps) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(
@@ -59,6 +62,7 @@ const StixRelationshipsMultiVerticalBarsComponent = ({
   }
   return (
     <WidgetVerticalBars
+      drilldown={drilldown}
       series={dataSelection.map((selection, i) => {
         const serie = data.stixRelationshipsMultiTimeSeries?.[i];
         return {
@@ -116,7 +120,9 @@ const StixRelationshipsMultiVerticalBars = ({
 }: StixRelationshipsMultiVerticalBarsProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiVerticalBarsTimeSeriesQuery>({
+  const {
+    resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef, drilldown,
+  } = useDashboardViz<StixRelationshipsMultiVerticalBarsTimeSeriesQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -144,6 +150,7 @@ const StixRelationshipsMultiVerticalBars = ({
         host={host}
       >
         <StixRelationshipsMultiVerticalBarsComponent
+          drilldown={drilldown}
           queryRef={queryRef!}
           dataSelection={resolvedDataSelection}
           parameters={parameters}

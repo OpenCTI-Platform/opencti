@@ -9,6 +9,7 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { OpenCTIChartProps } from '../charts/Chart';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import type { WidgetDrilldown } from '../../../../utils/widget/drilldown/useWidgetDrilldown';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { computeWidgetFiltersForSelection } from '../../../../components/dashboard/dashboardVizUtils';
@@ -94,12 +95,14 @@ interface StixCoreObjectsPolarAreaComponentProps {
   dataSelection: WidgetDataSelection[];
   queryRef: PreloadedQuery<StixCoreObjectsPolarAreaDistributionQuery>;
   onMounted?: OpenCTIChartProps['onMounted'];
+  drilldown: WidgetDrilldown;
 }
 
 const StixCoreObjectsPolarAreaComponent = ({
   dataSelection,
   queryRef,
   onMounted,
+  drilldown,
 }: StixCoreObjectsPolarAreaComponentProps) => {
   const { stixCoreObjectsDistribution } = usePreloadedQuery(
     stixCoreObjectsPolarAreaDistributionQuery,
@@ -113,6 +116,7 @@ const StixCoreObjectsPolarAreaComponent = ({
   }
   return (
     <WidgetPolarArea
+      drilldown={drilldown}
       data={data}
       groupBy={groupBy}
       onMounted={onMounted}
@@ -164,7 +168,7 @@ const StixCoreObjectsPolarArea = ({
 }: StixCoreObjectsPolarAreaProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsPolarAreaDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef, drilldown } = useDashboardViz<StixCoreObjectsPolarAreaDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -192,6 +196,7 @@ const StixCoreObjectsPolarArea = ({
         host={host}
       >
         <StixCoreObjectsPolarAreaComponent
+          drilldown={drilldown}
           queryRef={queryRef!}
           dataSelection={resolvedDataSelection}
           onMounted={setChart}

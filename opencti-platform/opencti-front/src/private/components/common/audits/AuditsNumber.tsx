@@ -61,6 +61,7 @@ interface AuditsNumberComponentProps {
   label: string;
   isUnique: boolean;
   onShowWarning: (show: boolean) => void;
+  drilldownLink?: string | null;
 }
 
 const AuditsNumberComponent: FunctionComponent<AuditsNumberComponentProps> = ({
@@ -69,6 +70,7 @@ const AuditsNumberComponent: FunctionComponent<AuditsNumberComponentProps> = ({
   label,
   isUnique,
   onShowWarning,
+  drilldownLink,
 }) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery<AuditsNumberNumberSeriesQuery>(
@@ -89,6 +91,7 @@ const AuditsNumberComponent: FunctionComponent<AuditsNumberComponentProps> = ({
         value={total}
         diffLabel={t_i18n('24 hours')}
         diffValue={total - count}
+        drilldownLink={drilldownLink}
       />
     );
   }
@@ -146,7 +149,7 @@ const AuditsNumber: FunctionComponent<AuditsNumberProps> = ({
     };
   }, [startDate, endDate]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsNumberNumberSeriesQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef, drilldown } = useDashboardViz<AuditsNumberNumberSeriesQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -184,6 +187,7 @@ const AuditsNumber: FunctionComponent<AuditsNumberProps> = ({
           label={translatedNumberLabel}
           isUnique={Boolean(selection?.unique)}
           onShowWarning={setShowWarning}
+          drilldownLink={drilldown.getLink(0, { kind: 'total' })}
         />
       </AuditsWidgetRenderContent>
     </WidgetContainer>

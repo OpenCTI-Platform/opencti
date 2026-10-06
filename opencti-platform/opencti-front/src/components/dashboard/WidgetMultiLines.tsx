@@ -6,12 +6,15 @@ import type { Theme } from '../Theme';
 import { useFormatter } from '../i18n';
 import { lineChartOptions } from '../../utils/Charts';
 import { simpleNumberFormat } from '../../utils/Number';
+import { useNavigate } from 'react-router';
+import type { WidgetDrilldown } from '../../utils/widget/drilldown/useWidgetDrilldown';
 
 interface WidgetMultiLinesProps {
   series: ApexAxisChartSeries;
   interval?: string | null;
   hasLegend?: boolean;
   onMounted?: OpenCTIChartProps['onMounted'];
+  drilldown?: WidgetDrilldown;
 }
 
 const WidgetMultiLines = ({
@@ -19,9 +22,20 @@ const WidgetMultiLines = ({
   interval,
   hasLegend = false,
   onMounted,
+  drilldown,
 }: WidgetMultiLinesProps) => {
   const theme = useTheme<Theme>();
   const { fsd, mtdy, yd } = useFormatter();
+
+  /**
+ * The chart options are memoized, so the navigate-carrying descriptor must be
+ * too: a fresh object on every render would rebuild the whole chart config.
+ */
+  const navigate = useNavigate();
+  const chartDrilldown = useMemo(
+    () => (drilldown ? { ...drilldown, navigate } : undefined),
+    [drilldown, navigate],
+  );
 
   const options: ApexOptions = useMemo(() => {
     let formatter = fsd;
@@ -40,8 +54,9 @@ const WidgetMultiLines = ({
       interval && !['day', 'week'].includes(interval) ? 'dataPoints' : undefined,
       false,
       hasLegend,
+      chartDrilldown,
     ) as ApexOptions;
-  }, [theme, interval, hasLegend]);
+  }, [theme, interval, hasLegend, chartDrilldown]);
 
   return (
     <Chart

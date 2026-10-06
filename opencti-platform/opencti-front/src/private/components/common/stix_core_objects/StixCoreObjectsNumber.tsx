@@ -42,12 +42,14 @@ interface StixCoreObjectsNumberComponentProps {
   queryRef: PreloadedQuery<StixCoreObjectsNumberNumberSeriesQuery>;
   entityType?: string;
   label: string;
+  drilldownLink?: string | null;
 }
 
 const StixCoreObjectsNumberComponent = ({
   queryRef,
   entityType,
   label,
+  drilldownLink,
 }: StixCoreObjectsNumberComponentProps) => {
   const data = usePreloadedQuery(stixCoreObjectsNumberNumberQuery, queryRef);
   const result = data?.stixCoreObjectsNumber;
@@ -62,6 +64,7 @@ const StixCoreObjectsNumberComponent = ({
       value={result.total}
       diffLabel="24 hours"
       diffValue={result.total - result.count}
+      drilldownLink={drilldownLink}
     />
   );
 };
@@ -114,7 +117,7 @@ const StixCoreObjectsNumber = ({
 
   const translatedNumberLabel = useGetNumberWidgetTitle(parameters, DEFAULT_TITLE);
 
-  const { isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsNumberNumberSeriesQuery>({
+  const { isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef, drilldown } = useDashboardViz<StixCoreObjectsNumberNumberSeriesQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -144,6 +147,7 @@ const StixCoreObjectsNumber = ({
             queryRef={queryRef!}
             entityType={entityType}
             label={translatedNumberLabel}
+            drilldownLink={drilldown.getLink(0, { kind: 'total' })}
           />
         </WidgetRenderContent>
       </div>

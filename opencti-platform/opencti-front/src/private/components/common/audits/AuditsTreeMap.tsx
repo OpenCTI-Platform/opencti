@@ -22,6 +22,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetTree from '../../../../components/dashboard/WidgetTree';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import type { WidgetDrilldown } from '../../../../utils/widget/drilldown/useWidgetDrilldown';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
@@ -107,9 +108,11 @@ interface AuditsTreeMapComponentProps {
   selection: WidgetDataSelection;
   isDistributed?: boolean;
   onMounted: (chart: ApexCharts) => void;
+  drilldown: WidgetDrilldown;
 }
 
 const AuditsTreeMapComponent: FunctionComponent<AuditsTreeMapComponentProps> = ({
+  drilldown,
   queryRef,
   selection,
   isDistributed,
@@ -123,6 +126,7 @@ const AuditsTreeMapComponent: FunctionComponent<AuditsTreeMapComponentProps> = (
   if (data.auditsDistribution && data.auditsDistribution.length > 0) {
     return (
       <WidgetTree
+        drilldown={drilldown}
         data={data.auditsDistribution}
         groupBy={selection.attribute!}
         isDistributed={isDistributed}
@@ -183,7 +187,7 @@ const AuditsTreeMap: FunctionComponent<AuditsTreeMapProps> = ({
     };
   }, [startDate, endDate]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsTreeMapDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef, drilldown } = useDashboardViz<AuditsTreeMapDistributionQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -212,6 +216,7 @@ const AuditsTreeMap: FunctionComponent<AuditsTreeMapProps> = ({
         host={host}
       >
         <AuditsTreeMapComponent
+          drilldown={drilldown}
           queryRef={queryRef!}
           selection={selection}
           isDistributed={isDistributed}

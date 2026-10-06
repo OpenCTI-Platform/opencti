@@ -4,6 +4,7 @@ import { useFormatter } from '../../../../components/i18n';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiLines from '../../../../components/dashboard/WidgetMultiLines';
+import type { WidgetDrilldown } from '../../../../utils/widget/drilldown/useWidgetDrilldown';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { Widget, WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
@@ -41,12 +42,14 @@ interface StixCoreObjectsMultiLineChartComponentProps {
     interval?: string;
     legend?: boolean;
   };
+  drilldown: WidgetDrilldown;
 }
 
 const StixCoreObjectsMultiLineChartComponent = ({
   queryRef,
   dataSelection,
   parameters,
+  drilldown,
 }: StixCoreObjectsMultiLineChartComponentProps) => {
   const { t_i18n } = useFormatter();
 
@@ -58,6 +61,7 @@ const StixCoreObjectsMultiLineChartComponent = ({
   if (stixCoreObjectsMultiTimeSeries) {
     return (
       <WidgetMultiLines
+        drilldown={drilldown}
         series={stixCoreObjectsMultiTimeSeries.map((serie, i) => ({
           name: dataSelection[i]?.label ?? t_i18n('Number of entities'),
           data: (serie?.data ?? []).map((entry) => ({
@@ -121,7 +125,7 @@ const StixCoreObjectsMultiLineChart = ({
   host,
 }: StixCoreObjectsMultiLineChartProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsMultiLineChartTimeSeriesQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef, drilldown } = useDashboardViz<StixCoreObjectsMultiLineChartTimeSeriesQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -148,6 +152,7 @@ const StixCoreObjectsMultiLineChart = ({
         host={host}
       >
         <StixCoreObjectsMultiLineChartComponent
+          drilldown={drilldown}
           queryRef={queryRef!}
           dataSelection={resolvedDataSelection}
           parameters={parameters}

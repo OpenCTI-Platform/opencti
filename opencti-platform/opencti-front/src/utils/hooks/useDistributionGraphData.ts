@@ -3,6 +3,7 @@ import { useFormatter } from '../../components/i18n';
 import { getMainRepresentative, isFieldForIdentifier } from '../defaultRepresentatives';
 import { itemColor } from '../Colors';
 import type { Widget } from '../widget/widget';
+import type { DrilldownBucket } from '../widget/drilldown/widgetDrilldown-types';
 
 // common type compatible with all distribution queries
 type DistributionNode = {
@@ -25,7 +26,49 @@ type DistributionNode = {
 
 export type DistributionQueryData = ReadonlyArray<DistributionNode | null | undefined>;
 
+export interface DistributionRedirection {
+  id: string;
+  entity_type?: string;
+}
+
+/**
+ * One entry per bucket, `null` where the bucket resolves to no entity.
+ *
+ * Charts report the index of the clicked bar, so this array must stay aligned
+ * with the series built alongside it: dropping the entity-less buckets instead
+ * would shift every following index and send a click to a neighbouring entity.
+ */
+export const buildDistributionRedirectionUtils = (
+  distributionData: DistributionQueryData,
+): (DistributionRedirection | null)[] => {
+  return distributionData.map((n) => {
+    if (!n || !n.entity || !n.entity.id) return null;
+    return {
+      id: n.entity.id,
+      entity_type: n.entity?.entity_type === 'Workspace' ? n.entity.type : n.entity.entity_type,
+    };
+  });
+};
+
 type Selection = Widget['dataSelection'][0];
+
+/**
+ * One drill-down bucket per chart index, `null` where the bucket carries no
+ * reproducible value. Kept aligned with the series for the same reason as
+ * `buildDistributionRedirectionUtils`.
+ *
+ * Only the raw label and the entity id are exposed: the labels produced for
+ * display are translated or replaced by the entity representative, and would
+ * not match anything if used as a filter value.
+ */
+export const buildDistributionBuckets = (
+  distributionData: DistributionQueryData,
+): (DrilldownBucket | null)[] => {
+  return distributionData.map((n) => {
+    if (!n) return null;
+    return { kind: 'distribution' as const, rawValue: n.label, entityId: n.entity?.id ?? null };
+  });
+};
 
 const useDistributionGraphData = () => {
   const { t_i18n } = useFormatter();
@@ -73,16 +116,6 @@ const useDistributionGraphData = () => {
     });
   };
 
-  const buildDistributionRedirectionUtils = (distributionData: DistributionQueryData) => {
-    return distributionData.flatMap((n) => {
-      if (!n || !n.entity || !n.entity.id) return [];
-      return {
-        id: n.entity.id,
-        entity_type: n.entity?.entity_type === 'Workspace' ? n.entity.type : n.entity.entity_type,
-      };
-    });
-  };
-
   /**
    * Conveniently build the series (chart data) and redirectionUtils props for a Widget
    * from the distribution query results and the selection config.
@@ -97,6 +130,7 @@ const useDistributionGraphData = () => {
         data: buildDistributionGraphData(distributionData, selection),
       }],
       redirectionUtils: buildDistributionRedirectionUtils(distributionData),
+      drilldownBuckets: buildDistributionBuckets(distributionData),
     };
   };
 

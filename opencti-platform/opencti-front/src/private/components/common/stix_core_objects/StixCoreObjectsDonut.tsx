@@ -5,6 +5,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetDonut from '../../../../components/dashboard/WidgetDonut';
 import { ReactNode } from 'react';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import type { WidgetDrilldown } from '../../../../utils/widget/drilldown/useWidgetDrilldown';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { StixCoreObjectsDonutDistributionQuery } from './__generated__/StixCoreObjectsDonutDistributionQuery.graphql';
 import { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
@@ -93,11 +94,13 @@ const stixCoreObjectsDonutDistributionQuery = graphql`
 interface StixCoreObjectsDonutComponentProps {
   queryRef: PreloadedQuery<StixCoreObjectsDonutDistributionQuery>;
   dataSelection: Widget['dataSelection'];
+  drilldown: WidgetDrilldown;
 }
 
 const StixCoreObjectsDonutComponent = ({
   queryRef,
   dataSelection,
+  drilldown,
 }: StixCoreObjectsDonutComponentProps) => {
   const { stixCoreObjectsDistribution } = usePreloadedQuery(
     stixCoreObjectsDonutDistributionQuery,
@@ -110,6 +113,7 @@ const StixCoreObjectsDonutComponent = ({
     ? <WidgetNoData />
     : (
         <WidgetDonut
+          drilldown={drilldown}
           data={data}
           groupBy={selection.attribute ?? 'entity_type'}
         />
@@ -163,7 +167,7 @@ const StixCoreObjectsDonut = ({
   host,
 }: StixCoreObjectsDonutProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsDonutDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef, drilldown } = useDashboardViz<StixCoreObjectsDonutDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -191,6 +195,7 @@ const StixCoreObjectsDonut = ({
         host={host}
       >
         <StixCoreObjectsDonutComponent
+          drilldown={drilldown}
           queryRef={queryRef!}
           dataSelection={resolvedDataSelection}
         />

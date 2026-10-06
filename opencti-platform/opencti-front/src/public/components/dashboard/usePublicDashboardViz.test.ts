@@ -68,3 +68,19 @@ describe('usePublicDashboardViz', () => {
     expect(hook.result.current).toBe(stableQueryRef);
   });
 });
+
+/**
+ * Decision D4: public dashboards carry no navigation. The drill-down is
+ * excluded structurally rather than by convention -- the public viz hook
+ * returns a query reference and nothing else, so a public widget has no
+ * descriptor to hand to a chart even by mistake.
+ *
+ * Reading the source is deliberate: the point is that the word never appears,
+ * which no behavioural assertion on the returned value can guarantee.
+ */
+describe('usePublicDashboardViz drill-down exclusion', () => {
+  it('never exposes a drill-down descriptor', async () => {
+    const source = (await import('./usePublicDashboardViz?raw')).default;
+    expect(source.toLowerCase()).not.toContain('drilldown');
+  });
+});

@@ -22,6 +22,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetRadar from '../../../../components/dashboard/WidgetRadar';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import type { WidgetDrilldown } from '../../../../utils/widget/drilldown/useWidgetDrilldown';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
@@ -93,9 +94,11 @@ interface AuditsRadarComponentProps {
   queryRef: PreloadedQuery<AuditsRadarDistributionQuery>;
   selection: WidgetDataSelection;
   onMounted: (chart: ApexCharts) => void;
+  drilldown: WidgetDrilldown;
 }
 
 const AuditsRadarComponent: FunctionComponent<AuditsRadarComponentProps> = ({
+  drilldown,
   queryRef,
   selection,
   onMounted,
@@ -109,6 +112,7 @@ const AuditsRadarComponent: FunctionComponent<AuditsRadarComponentProps> = ({
   if (data.auditsDistribution && data.auditsDistribution.length > 0) {
     return (
       <WidgetRadar
+        drilldown={drilldown}
         data={data.auditsDistribution}
         label={selection.label || t_i18n('Number of history entries')}
         groupBy={selection.attribute!}
@@ -164,7 +168,7 @@ const AuditsRadar: FunctionComponent<AuditsRadarProps> = ({
     };
   }, [startDate, endDate]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsRadarDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef, drilldown } = useDashboardViz<AuditsRadarDistributionQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -193,6 +197,7 @@ const AuditsRadar: FunctionComponent<AuditsRadarProps> = ({
         host={host}
       >
         <AuditsRadarComponent
+          drilldown={drilldown}
           queryRef={queryRef!}
           selection={selection}
           onMounted={setChart}

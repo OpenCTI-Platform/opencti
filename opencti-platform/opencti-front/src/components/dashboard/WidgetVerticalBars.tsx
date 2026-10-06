@@ -4,6 +4,8 @@ import { useTheme } from '@mui/styles';
 import { ApexOptions } from 'apexcharts';
 import { verticalBarsChartOptions } from '../../utils/Charts';
 import { simpleNumberFormat } from '../../utils/Number';
+import { useNavigate } from 'react-router';
+import type { WidgetDrilldown } from '../../utils/widget/drilldown/useWidgetDrilldown';
 import type { Theme } from '../Theme';
 import { useFormatter } from '../i18n';
 
@@ -13,6 +15,7 @@ interface WidgetVerticalBarsProps {
   isStacked?: boolean;
   hasLegend?: boolean;
   onMounted?: OpenCTIChartProps['onMounted'];
+  drilldown?: WidgetDrilldown;
 }
 
 const WidgetVerticalBars = ({
@@ -21,9 +24,20 @@ const WidgetVerticalBars = ({
   isStacked = false,
   hasLegend = false,
   onMounted,
+  drilldown,
 }: WidgetVerticalBarsProps) => {
   const theme = useTheme<Theme>();
   const { fsd, mtdy, yd } = useFormatter();
+
+  /**
+ * The chart options are memoized, so the navigate-carrying descriptor must be
+ * too: a fresh object on every render would rebuild the whole chart config.
+ */
+  const navigate = useNavigate();
+  const chartDrilldown = useMemo(
+    () => (drilldown ? { ...drilldown, navigate } : undefined),
+    [drilldown, navigate],
+  );
 
   const options: ApexOptions = useMemo(() => {
     let formatter = fsd;
@@ -49,8 +63,9 @@ const WidgetVerticalBars = ({
       isStacked,
       hasLegend,
       'dataPoints',
+      chartDrilldown,
     ) as ApexOptions;
-  }, [theme, interval, isStacked, hasLegend]);
+  }, [theme, interval, isStacked, hasLegend, chartDrilldown]);
 
   return (
     <Chart

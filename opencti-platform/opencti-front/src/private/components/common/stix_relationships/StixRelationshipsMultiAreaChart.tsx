@@ -3,6 +3,7 @@ import { useFormatter } from '../../../../components/i18n';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetMultiAreas from '../../../../components/dashboard/WidgetMultiAreas';
+import type { WidgetDrilldown } from '../../../../utils/widget/drilldown/useWidgetDrilldown';
 import { ReactNode, useState } from 'react';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
@@ -41,6 +42,7 @@ interface StixRelationshipsMultiAreaChartComponentProps {
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
   onMounted: (chart: unknown) => void;
+  drilldown: WidgetDrilldown;
 }
 
 const StixRelationshipsMultiAreaChartComponent = ({
@@ -48,6 +50,7 @@ const StixRelationshipsMultiAreaChartComponent = ({
   dataSelection,
   parameters,
   onMounted,
+  drilldown,
 }: StixRelationshipsMultiAreaChartComponentProps) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(
@@ -61,6 +64,7 @@ const StixRelationshipsMultiAreaChartComponent = ({
 
   return (
     <WidgetMultiAreas
+      drilldown={drilldown}
       series={dataSelection.map((selection, i) => {
         const serie = data.stixRelationshipsMultiTimeSeries?.[i];
         return {
@@ -118,7 +122,9 @@ const StixRelationshipsMultiAreaChart = ({
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsMultiAreaChartTimeSeriesQuery>({
+  const {
+    resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef, drilldown,
+  } = useDashboardViz<StixRelationshipsMultiAreaChartTimeSeriesQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -146,6 +152,7 @@ const StixRelationshipsMultiAreaChart = ({
         host={host}
       >
         <StixRelationshipsMultiAreaChartComponent
+          drilldown={drilldown}
           queryRef={queryRef!}
           dataSelection={resolvedDataSelection}
           parameters={parameters}

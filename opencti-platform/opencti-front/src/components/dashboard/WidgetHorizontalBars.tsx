@@ -7,6 +7,8 @@ import { horizontalBarsChartOptions } from '../../utils/Charts';
 import { simpleNumberFormat } from '../../utils/Number';
 import type { Theme } from '../Theme';
 import { dateFormat, timestamp } from '../../utils/Time';
+import type { DrilldownBucket } from '../../utils/widget/drilldown/widgetDrilldown-types';
+import type { WidgetDrilldown } from '../../utils/widget/drilldown/useWidgetDrilldown';
 
 interface WidgetHorizontalBarsProps {
   series: ApexAxisChartSeries;
@@ -15,12 +17,24 @@ interface WidgetHorizontalBarsProps {
   total?: boolean;
   legend?: boolean;
   categories?: string[];
-  redirectionUtils?: {
+  /**
+   * One entry per bucket, `null` where the bucket resolves to no entity.
+   * The gaps are what keeps the array aligned with the bars ApexCharts reports
+   * by index — see `buildDistributionRedirectionUtils`.
+   */
+  redirectionUtils?: ({
     id?: string;
     entity_type?: string;
-  }[];
+  } | null)[];
   stackType?: string;
   onMounted?: OpenCTIChartProps['onMounted'];
+  drilldown?: WidgetDrilldown;
+  /**
+   * The drill-down buckets, aligned with the bars by index. Unlike the other
+   * distribution widgets this one never sees the raw query nodes, so the
+   * container has to hand them over -- `buildWidgetProps` returns them.
+   */
+  drilldownBuckets?: (DrilldownBucket | null)[];
 }
 
 const WidgetHorizontalBars = ({
@@ -33,9 +47,16 @@ const WidgetHorizontalBars = ({
   redirectionUtils,
   stackType,
   onMounted,
+  drilldown,
+  drilldownBuckets,
 }: WidgetHorizontalBarsProps) => {
   const theme = useTheme<Theme>();
   const navigate = useNavigate();
+
+  const chartDrilldown = useMemo(
+    () => (drilldown ? { ...drilldown, navigate, buckets: drilldownBuckets ?? [] } : undefined),
+    [drilldown, navigate, drilldownBuckets],
+  );
 
   const options: ApexOptions = useMemo(() => {
     const getFormattedValue = (value: string | number) => {
@@ -64,6 +85,7 @@ const WidgetHorizontalBars = ({
       categories,
       legend,
       stackType,
+      chartDrilldown,
     ) as ApexOptions;
   }, [
     theme,
@@ -74,6 +96,7 @@ const WidgetHorizontalBars = ({
     stacked,
     stackType,
     total,
+    chartDrilldown,
   ]);
 
   return (

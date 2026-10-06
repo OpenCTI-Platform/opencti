@@ -24,6 +24,7 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import type { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
 import { OpenCTIChartProps } from '../charts/Chart';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import type { WidgetDrilldown } from '../../../../utils/widget/drilldown/useWidgetDrilldown';
 import type { DashboardConfig } from '../../../../components/dashboard/dashboard-types';
 import { normalizeFilterGroupForBackend } from '../../../../utils/filters/filtersUtils';
 import AuditsWidgetRenderContent from '../../../../components/dashboard/AuditsWidgetRenderContent';
@@ -85,12 +86,14 @@ interface AuditsPolarAreaComponentProps {
   dataSelection: WidgetDataSelection[];
   queryRef: PreloadedQuery<AuditsPolarAreaDistributionQuery>;
   onMounted?: OpenCTIChartProps['onMounted'];
+  drilldown: WidgetDrilldown;
 }
 
 const AuditsPolarAreaComponent = ({
   dataSelection,
   queryRef,
   onMounted,
+  drilldown,
 }: AuditsPolarAreaComponentProps) => {
   const { auditsDistribution } = usePreloadedQuery(
     auditsPolarAreaDistributionQuery,
@@ -104,6 +107,7 @@ const AuditsPolarAreaComponent = ({
     const attributeField = dataSelection[0].attribute || 'entity_type';
     return (
       <WidgetPolarArea
+        drilldown={drilldown}
         data={[...auditsDistribution]}
         groupBy={attributeField}
         onMounted={onMounted}
@@ -158,7 +162,7 @@ const AuditsPolarArea = ({
     };
   }, [startDate, endDate]);
 
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<AuditsPolarAreaDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef, drilldown } = useDashboardViz<AuditsPolarAreaDistributionQuery>({
     perspective: 'audits',
     dataSelection,
     host,
@@ -186,6 +190,7 @@ const AuditsPolarArea = ({
         host={host}
       >
         <AuditsPolarAreaComponent
+          drilldown={drilldown}
           queryRef={queryRef!}
           dataSelection={resolvedDataSelection}
           onMounted={setChart}

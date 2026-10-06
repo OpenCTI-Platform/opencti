@@ -92,12 +92,11 @@ const PublicStixCoreObjectsHorizontalBarsComponent = ({
     && publicStixCoreObjectsDistribution.length > 0
   ) {
     const selection = dataSelection[0];
-    const { series, redirectionUtils } = buildWidgetProps(publicStixCoreObjectsDistribution, selection, 'Entities number');
+    const { series } = buildWidgetProps(publicStixCoreObjectsDistribution, selection, 'Entities number');
     return (
       <WidgetHorizontalBars
         series={series}
         distributed={!!parameters?.distributed}
-        redirectionUtils={redirectionUtils}
       />
     );
   }

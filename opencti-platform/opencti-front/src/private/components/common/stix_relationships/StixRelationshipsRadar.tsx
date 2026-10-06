@@ -5,6 +5,7 @@ import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetRadar from '../../../../components/dashboard/WidgetRadar';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import type { WidgetDrilldown } from '../../../../utils/widget/drilldown/useWidgetDrilldown';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { StixRelationshipsRadarDistributionQuery } from '@components/common/stix_relationships/__generated__/StixRelationshipsRadarDistributionQuery.graphql';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
@@ -109,12 +110,14 @@ interface StixRelationshipsRadarComponentProps {
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
   onMounted: (chart: ApexCharts) => void;
+  drilldown: WidgetDrilldown;
 }
 
 const StixRelationshipsRadarComponent = ({
   queryRef,
   dataSelection,
   onMounted,
+  drilldown,
 }: StixRelationshipsRadarComponentProps) => {
   const { t_i18n } = useFormatter();
   const data = usePreloadedQuery(
@@ -131,6 +134,7 @@ const StixRelationshipsRadarComponent = ({
 
   return (
     <WidgetRadar
+      drilldown={drilldown}
       data={data.stixRelationshipsDistribution}
       label={selection.label ?? t_i18n('Number of entities')}
       groupBy={finalField}
@@ -185,7 +189,7 @@ const StixRelationshipsRadar = ({
 }: StixRelationshipsRadarProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsRadarDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef, drilldown } = useDashboardViz<StixRelationshipsRadarDistributionQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -212,6 +216,7 @@ const StixRelationshipsRadar = ({
         host={host}
       >
         <StixRelationshipsRadarComponent
+          drilldown={drilldown}
           queryRef={queryRef!}
           dataSelection={resolvedDataSelection}
           parameters={parameters}

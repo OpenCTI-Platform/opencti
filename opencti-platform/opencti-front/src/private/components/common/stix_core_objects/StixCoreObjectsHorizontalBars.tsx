@@ -6,6 +6,7 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizontalBars';
 import useDistributionGraphData from '../../../../utils/hooks/useDistributionGraphData';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import type { WidgetDrilldown } from '../../../../utils/widget/drilldown/useWidgetDrilldown';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { StixCoreObjectsHorizontalBarsDistributionQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsHorizontalBarsDistributionQuery.graphql';
 import { Widget, WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
@@ -98,12 +99,14 @@ interface StixCoreObjectsHorizontalBarsComponentProps {
   parameters: {
     distributed?: boolean;
   };
+  drilldown: WidgetDrilldown;
 }
 
 const StixCoreObjectsHorizontalBarsComponent = ({
   queryRef,
   dataSelection,
   parameters,
+  drilldown,
 }: StixCoreObjectsHorizontalBarsComponentProps) => {
   const { t_i18n } = useFormatter();
   const { buildWidgetProps } = useDistributionGraphData();
@@ -117,7 +120,7 @@ const StixCoreObjectsHorizontalBarsComponent = ({
   if (distribution.length === 0) {
     return <WidgetNoData />;
   }
-  const { series, redirectionUtils } = buildWidgetProps(
+  const { series, redirectionUtils, drilldownBuckets } = buildWidgetProps(
     distribution,
     selection,
     t_i18n('Number of entities'),
@@ -125,6 +128,8 @@ const StixCoreObjectsHorizontalBarsComponent = ({
 
   return (
     <WidgetHorizontalBars
+      drilldown={drilldown}
+      drilldownBuckets={drilldownBuckets}
       series={series}
       distributed={parameters.distributed}
       redirectionUtils={redirectionUtils}
@@ -178,7 +183,14 @@ const StixCoreObjectsHorizontalBars = ({
   refreshRate = null,
 }: StixCoreObjectsHorizontalBarsProps) => {
   const { t_i18n } = useFormatter();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsHorizontalBarsDistributionQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+    drilldown,
+  } = useDashboardViz<StixCoreObjectsHorizontalBarsDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -204,6 +216,7 @@ const StixCoreObjectsHorizontalBars = ({
         host={host}
       >
         <StixCoreObjectsHorizontalBarsComponent
+          drilldown={drilldown}
           queryRef={queryRef!}
           dataSelection={resolvedDataSelection}
           parameters={parameters}

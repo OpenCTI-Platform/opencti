@@ -97,6 +97,15 @@ const DraftsDistributionListComponent = ({
   });
 
   return (
+    /**
+     * No drill-down here, on purpose. Two independent reasons, either of which
+     * breaks the `displayed number == list count` invariant:
+     *  - the widget declares the `entities` perspective but counts
+     *    `DraftWorkspace` internal objects, so the generic entities list is a
+     *    different population altogether;
+     *  - the drafts list itself restricts to drafts with no attached entity
+     *    (`entity_id` / `nil` in Drafts.tsx), a restriction this count does not have.
+     */
     <WidgetDistributionList
       data={formatted}
       hasSettingAccess={hasSetAccess}

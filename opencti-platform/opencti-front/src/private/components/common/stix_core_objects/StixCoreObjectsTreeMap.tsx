@@ -5,6 +5,7 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetTree from '../../../../components/dashboard/WidgetTree';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import type { WidgetDrilldown } from '../../../../utils/widget/drilldown/useWidgetDrilldown';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { StixCoreObjectsTreeMapDistributionQuery } from '@components/common/stix_core_objects/__generated__/StixCoreObjectsTreeMapDistributionQuery.graphql';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
@@ -78,6 +79,7 @@ interface StixCoreObjectsTreeMapComponentProps {
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
   onMounted?: OpenCTIChartProps['onMounted'];
+  drilldown: WidgetDrilldown;
 }
 
 const StixCoreObjectsTreeMapComponent = ({
@@ -85,6 +87,7 @@ const StixCoreObjectsTreeMapComponent = ({
   dataSelection,
   parameters,
   onMounted,
+  drilldown,
 }: StixCoreObjectsTreeMapComponentProps) => {
   const data = usePreloadedQuery(
     stixCoreObjectsTreeMapDistributionQuery,
@@ -98,6 +101,7 @@ const StixCoreObjectsTreeMapComponent = ({
   }
   return (
     <WidgetTree
+      drilldown={drilldown}
       data={distribution}
       groupBy={selection.attribute ?? 'entity_type'}
       isDistributed={parameters?.distributed ?? undefined}
@@ -150,7 +154,7 @@ const StixCoreObjectsTreeMap = ({
 }: StixCoreObjectsTreeMapProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixCoreObjectsTreeMapDistributionQuery>({
+  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef, drilldown } = useDashboardViz<StixCoreObjectsTreeMapDistributionQuery>({
     perspective: 'entities',
     dataSelection,
     host,
@@ -176,6 +180,7 @@ const StixCoreObjectsTreeMap = ({
         host={host}
       >
         <StixCoreObjectsTreeMapComponent
+          drilldown={drilldown}
           queryRef={queryRef!}
           dataSelection={resolvedDataSelection}
           parameters={parameters}

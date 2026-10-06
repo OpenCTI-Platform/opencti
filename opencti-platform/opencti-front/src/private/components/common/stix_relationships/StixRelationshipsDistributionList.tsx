@@ -7,6 +7,7 @@ import WidgetNoData from '../../../../components/dashboard/WidgetNoData';
 import WidgetContainer from '../../../../components/dashboard/WidgetContainer';
 import WidgetDistributionList from '../../../../components/dashboard/WidgetDistributionList';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import type { WidgetDrilldown } from '../../../../utils/widget/drilldown/useWidgetDrilldown';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { WidgetDataSelection, WidgetHost } from '../../../../utils/widget/widget';
 import { StixRelationshipsDistributionListDistributionQuery } from '@components/common/stix_relationships/__generated__/StixRelationshipsDistributionListDistributionQuery.graphql';
@@ -101,12 +102,14 @@ interface StixRelationshipsDistributionListComponentProps {
   queryRef: PreloadedQuery<StixRelationshipsDistributionListDistributionQuery>;
   dataSelection: WidgetDataSelection[];
   hasSetAccess: boolean;
+  drilldown: WidgetDrilldown;
 }
 
 const StixRelationshipsDistributionListComponent = ({
   queryRef,
   dataSelection,
   hasSetAccess,
+  drilldown,
 }: StixRelationshipsDistributionListComponentProps) => {
   const data = usePreloadedQuery(
     stixRelationshipsDistributionListDistributionQuery,
@@ -138,6 +141,11 @@ const StixRelationshipsDistributionListComponent = ({
     <WidgetDistributionList
       data={formatted}
       hasSettingAccess={hasSetAccess}
+      getDrilldownLink={(index) => drilldown.getLink(0, {
+        kind: 'distribution',
+        rawValue: raw[index]?.label ?? null,
+        entityId: raw[index]?.entity?.id ?? null,
+      })}
     />
   );
 };
@@ -186,7 +194,9 @@ const StixRelationshipsDistributionList = ({
 }: StixRelationshipsDistributionListProps) => {
   const { t_i18n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsDistributionListDistributionQuery>({
+  const {
+    resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef, drilldown,
+  } = useDashboardViz<StixRelationshipsDistributionListDistributionQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -215,6 +225,7 @@ const StixRelationshipsDistributionList = ({
             queryRef={queryRef!}
             dataSelection={resolvedDataSelection}
             hasSetAccess={hasSetAccess}
+            drilldown={drilldown}
           />
         </WidgetRenderContent>
       </div>

@@ -6,6 +6,7 @@ import WidgetHorizontalBars from '../../../../components/dashboard/WidgetHorizon
 import useDistributionGraphData from '../../../../utils/hooks/useDistributionGraphData';
 import { ReactNode, useState } from 'react';
 import useDashboardViz from '../../../../components/dashboard/useDashboardViz';
+import type { WidgetDrilldown } from '../../../../utils/widget/drilldown/useWidgetDrilldown';
 import WidgetRenderContent from '../../../../components/dashboard/WidgetRenderContent';
 import { StixRelationshipsHorizontalBarsDistributionQuery } from './__generated__/StixRelationshipsHorizontalBarsDistributionQuery.graphql';
 import { WidgetDataSelection, WidgetHost, WidgetParameters } from '../../../../utils/widget/widget';
@@ -111,6 +112,7 @@ interface StixRelationshipsHorizontalBarsComponentProps {
   dataSelection: WidgetDataSelection[];
   parameters?: WidgetParameters;
   onMounted: (chart: unknown) => void;
+  drilldown: WidgetDrilldown;
 }
 
 const StixRelationshipsHorizontalBarsComponent = ({
@@ -118,6 +120,7 @@ const StixRelationshipsHorizontalBarsComponent = ({
   dataSelection,
   parameters,
   onMounted,
+  drilldown,
 }: StixRelationshipsHorizontalBarsComponentProps) => {
   const data = usePreloadedQuery(
     stixRelationshipsHorizontalBarsDistributionQuery,
@@ -130,7 +133,7 @@ const StixRelationshipsHorizontalBarsComponent = ({
   }
 
   const selection = dataSelection[0];
-  const { series, redirectionUtils } = buildWidgetProps(
+  const { series, redirectionUtils, drilldownBuckets } = buildWidgetProps(
     data.stixRelationshipsDistribution,
     selection,
     'Number of relationships',
@@ -138,6 +141,8 @@ const StixRelationshipsHorizontalBarsComponent = ({
 
   return (
     <WidgetHorizontalBars
+      drilldown={drilldown}
+      drilldownBuckets={drilldownBuckets}
       series={series}
       distributed={parameters?.distributed ?? undefined}
       onMounted={onMounted}
@@ -190,7 +195,14 @@ const StixRelationshipsHorizontalBars = ({
 }: StixRelationshipsHorizontalBarsProps) => {
   const { t_i18n } = useFormatter();
   const [chart, setChart] = useState<ApexCharts>();
-  const { resolvedDataSelection, isMissingHostEntity, isMissingSavedFilters, isPreviewMode, queryRef } = useDashboardViz<StixRelationshipsHorizontalBarsDistributionQuery>({
+  const {
+    resolvedDataSelection,
+    isMissingHostEntity,
+    isMissingSavedFilters,
+    isPreviewMode,
+    queryRef,
+    drilldown,
+  } = useDashboardViz<StixRelationshipsHorizontalBarsDistributionQuery>({
     perspective: 'relationships',
     dataSelection,
     host,
@@ -217,6 +229,7 @@ const StixRelationshipsHorizontalBars = ({
         host={host}
       >
         <StixRelationshipsHorizontalBarsComponent
+          drilldown={drilldown}
           queryRef={queryRef!}
           dataSelection={resolvedDataSelection}
           parameters={parameters}
