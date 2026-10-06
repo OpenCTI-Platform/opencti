@@ -1175,6 +1175,7 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
   const userToUpdate = await loadUserToUpdateWithAccessCheck(context, user, userId);
   let skipThisInput = false;
   let clearPassword: string | undefined;
+  let passwordInput: { key: string; value: unknown[] } | undefined;
   const hasPasswordUpdate = rawInputs.some((input) => input.key === 'password');
   // A password change sent with other fields could be refused by one of them after the password checks ran,
   // which would tell the caller what the checks decided without changing anything. The one field allowed
@@ -1215,7 +1216,8 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
         const userPassword = R.head(input.value)!.toString();
         await checkPasswordFromPolicy(context, userPassword);
         clearPassword = userPassword;
-        input.value = [bcrypt.hashSync(userPassword)];
+        // Hashed right before the save: a refused attempt costs no hash, and hashing blocks the event loop
+        passwordInput = input;
       } else {
         throw FunctionalError('Cannot update password for Service account', { userId });
       }
@@ -1314,6 +1316,10 @@ export const userEditField = async (context: AuthContext, user: AuthUser, userId
         await checkPasswordNotReused(context, user, lockedUser, clearPassword!, passwordHistoryCount);
       }
       inputs.push({ key: 'password_history', value: computeNextPasswordHistory(lockedUser, passwordHistoryCount) });
+    }
+    // Every check passed: the clear text never goes further than this
+    if (passwordInput && clearPassword !== undefined) {
+      passwordInput.value = [bcrypt.hashSync(clearPassword)];
     }
     const updateOpts = lockedIds.length > 0 ? { ...opts, locks: [...(opts.locks ?? []), ...lockedIds] } : opts;
     ({ element } = await updateAttribute<StoreEntityUser>(editContext, editUser, userId, ENTITY_TYPE_USER, inputs, updateOpts));

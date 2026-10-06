@@ -1,5 +1,6 @@
 import gql from 'graphql-tag';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import bcrypt from 'bcryptjs';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { elLoadById } from '../../../src/database/engine';
 import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
@@ -2321,10 +2322,16 @@ describe('Password history', () => {
     expect((await setPassword(id, 'History-Pass-3!')).errors).toBeUndefined();
     // Window: Pass-3 and Pass-2, so Pass-1 is allowed again
     expect((await setPassword(id, 'History-Pass-1!')).errors).toBeUndefined();
-    // Five counted submissions in the window: the sixth is refused before any check
-    const throttled = await setPassword(id, 'History-Pass-6!');
-    expect(throttled.errors?.[0].message).toBe(PASSWORD_THROTTLED_MESSAGE);
-    expect(throttled.errors?.[0].extensions?.code).toBe('PASSWORD_CHANGE_THROTTLED');
+    // Five counted submissions in the window: the sixth is refused before any check, and before any hash
+    const hashSpy = vi.spyOn(bcrypt, 'hashSync');
+    try {
+      const throttled = await setPassword(id, 'History-Pass-6!');
+      expect(throttled.errors?.[0].message).toBe(PASSWORD_THROTTLED_MESSAGE);
+      expect(throttled.errors?.[0].extensions?.code).toBe('PASSWORD_CHANGE_THROTTLED');
+      expect(hashSpy).not.toHaveBeenCalled();
+    } finally {
+      hashSpy.mockRestore();
+    }
   });
 
   // Without the lock, both changes would check and rebuild the same old history: with N = 2, A -> B and
