@@ -7,16 +7,19 @@ import {
   ALL_DEFENSE_LAYERS,
   computeLayerLevel,
   DEFAULT_DEFENSE_SCOPE,
+  DEFENSE_AGGREGATE_PLATFORM,
   DEFENSE_UNCOVERED_LEVELS,
   defenseFailedColor,
   defenseGapsExportFileName,
   defenseLevelColor,
   defenseLevelTextColor,
   defenseThreatColor,
+  defenseValidationGapsCount,
   defenseValidationTargets,
   isDisplayedValidationFailed,
   isThreatOverlayActive,
   isValidationFailed,
+  MAX_VALIDATION_GAPS,
   MAX_VALIDATION_TECHNIQUES,
   parseDefenseScope,
   scopedDefensePlatforms,
@@ -210,6 +213,27 @@ describe('defenseMatrix-utils', () => {
       const cells = [technique('a', 0, 1), technique('b', 0, 2)];
       defenseValidationTargets(cells, false);
       expect(cells.map((c) => c.id)).toEqual(['a', 'b']);
+    });
+  });
+
+  describe('defenseValidationGapsCount', () => {
+    it('counts every technique on all security platforms and on every requested platform', () => {
+      expect(defenseValidationGapsCount(['ap-a', 'ap-b'], [], [])).toBe(2);
+      expect(defenseValidationGapsCount(['ap-a', 'ap-b'], ['p1', 'p2'], [])).toBe(6);
+    });
+
+    it('counts a selected gap once, and never on the platform of another selected gap', () => {
+      const gaps = [{ attackPatternId: 'ap-a', platformId: 'p1' }, { attackPatternId: 'ap-b', platformId: 'p2' }];
+      expect(defenseValidationGapsCount(['ap-a', 'ap-b'], [], gaps)).toBe(4);
+      expect(defenseValidationGapsCount(['ap-a', 'ap-b'], ['p1'], gaps)).toBe(5);
+      expect(defenseValidationGapsCount(['ap-a'], [], [{ attackPatternId: 'ap-a', platformId: DEFENSE_AGGREGATE_PLATFORM }])).toBe(1);
+    });
+
+    it('goes over the limit of the platform with the largest technique selection on ten platforms', () => {
+      const techniqueIds = Array.from({ length: MAX_VALIDATION_TECHNIQUES }, (_, i) => `t${i}`);
+      const platformIds = Array.from({ length: 10 }, (_, i) => `p${i}`);
+      expect(defenseValidationGapsCount(techniqueIds, platformIds.slice(0, 9), [])).toBe(MAX_VALIDATION_GAPS);
+      expect(defenseValidationGapsCount(techniqueIds, platformIds, [])).toBeGreaterThan(MAX_VALIDATION_GAPS);
     });
   });
 

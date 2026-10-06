@@ -5180,6 +5180,7 @@
   "This report contains too many objects to be displayed as a graph. We are working on a new visualization which will allow large graph to be displayed in the future.": "此报告包含的对象过多，无法显示为图形。我们正在研究一种新的可视化，这将允许展示更大的图形。",
   "This request for sharing has been approved": "此共享请求已获批准",
   "This request for sharing has been declined": "此共享请求已被拒绝",
+  "This request would be tracked on {count} gaps and a validation request is tracked on at most {max}: validate fewer techniques or security platforms.": "此请求将在 {count} 个防御缺口上跟踪，而一次验证请求最多在 {max} 个缺口上跟踪：请减少要验证的技术或安全平台。",
   "This rule has been applied on the existing data": "该规则已应用于现有数据",
   "This saved filter is shared with other members. Are you sure you want to delete it?": "此已保存的筛选条件已与其他成员共享。您确定要删除它吗？",
   "This score is updated with the decay rule applied to this indicator.": "该分数会根据适用于该指标的衰减规则进行更新。",

@@ -5180,6 +5180,7 @@
   "This report contains too many objects to be displayed as a graph. We are working on a new visualization which will allow large graph to be displayed in the future.": "このレポートには、非常に多いオブジェクトが含まれているため、グラフを表示できません。将来的には大きなグラフを表示できるように取り組んでいます。",
   "This request for sharing has been approved": "この共有リクエストは承認されました",
   "This request for sharing has been declined": "この共有リクエストは拒否されました",
+  "This request would be tracked on {count} gaps and a validation request is tracked on at most {max}: validate fewer techniques or security platforms.": "このリクエストは {count} 件の防御ギャップで追跡されますが、検証リクエストで追跡できるのは最大 {max} 件です。検証するテクニックまたはセキュリティプラットフォームを減らしてください。",
   "This rule has been applied on the existing data": "既存のデータにルールを適用しました",
   "This saved filter is shared with other members. Are you sure you want to delete it?": "この保存済みフィルターは他のメンバーと共有されています。本当に削除しますか？",
   "This score is updated with the decay rule applied to this indicator.": "このスコアはこのインジケータに適用される減衰ルールで更新される。",

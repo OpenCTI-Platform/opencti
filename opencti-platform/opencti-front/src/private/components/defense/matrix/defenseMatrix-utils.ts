@@ -21,7 +21,29 @@ export const DEFENSE_COVERED_LEVEL = DEFENSE_LEVEL_DETECTION_DEPLOYED;
 export const DEFENSE_UNCOVERED_LEVELS: number[] = DEFENSE_LEVELS.filter((level) => level < DEFENSE_COVERED_LEVEL);
 // Techniques per validation request accepted by the platform
 export const MAX_VALIDATION_TECHNIQUES = 200;
+// Gaps a validation request is tracked on, accepted by the platform
+export const MAX_VALIDATION_GAPS = 2000;
+// Platform of the gap of a technique on all security platforms
+export const DEFENSE_AGGREGATE_PLATFORM = 'all';
 export const DEFENSE_VALIDATION_DOCUMENTATION_URL = 'https://docs.opencti.io/latest/usage/defense-matrix/#validate-in-openaev';
+
+/**
+ * The gaps a validation request is tracked on, counted as the platform counts them: every technique on all security
+ * platforms and on every requested platform, and the exact technique and platform pairs selected in the gap backlog.
+ */
+export const defenseValidationGapsCount = (
+  techniqueIds: ReadonlyArray<string>,
+  platformIds: ReadonlyArray<string>,
+  gaps: ReadonlyArray<{ readonly attackPatternId: string; readonly platformId: string }>,
+) => {
+  const tracked = new Set<string>();
+  techniqueIds.forEach((techniqueId) => {
+    tracked.add(`${techniqueId}|${DEFENSE_AGGREGATE_PLATFORM}`);
+    platformIds.forEach((platformId) => tracked.add(`${techniqueId}|${platformId}`));
+  });
+  gaps.forEach((gap) => tracked.add(`${gap.attackPatternId}|${gap.platformId}`));
+  return tracked.size;
+};
 
 /**
  * The techniques of the scope that no validation proved yet (only those the threats use under a threat overlay), the

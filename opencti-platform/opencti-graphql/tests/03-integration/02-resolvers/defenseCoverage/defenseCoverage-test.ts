@@ -15,6 +15,7 @@ import * as streamHandler from '../../../../src/database/stream/stream-handler';
 import * as securityCoverageDomain from '../../../../src/modules/securityCoverage/securityCoverage-domain';
 import * as repository from '../../../../src/database/repository';
 import * as telemetryManager from '../../../../src/manager/telemetryManager';
+import * as defenseCoverageUtils from '../../../../src/modules/defenseCoverage/defenseCoverage-utils';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../../../../src/modules/securityCoverage/securityCoverage-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../../src/modules/grouping/grouping-types';
 import { FunctionalError } from '../../../../src/config/errors';
@@ -495,6 +496,23 @@ describe('Threat-informed defense matrix', () => {
       );
     } finally {
       mocks.forEach((mock) => mock.mockRestore());
+    }
+    const groupings = await fullEntitiesList<BasicStoreEntity>(testContext, SYSTEM_USER, [ENTITY_TYPE_CONTAINER_GROUPING]);
+    expect(groupings.filter((grouping) => grouping.name === name)).toEqual([]);
+  });
+
+  it('should refuse a validation request tracked on more gaps than the limit before anything is created', async () => {
+    const name = 'Defense matrix test oversized validation';
+    // Every requested platform multiplies the gaps of a request: reaching the limit for real takes ten platforms and 200 techniques
+    const oversized = Array.from({ length: 2001 }, (_, index) => ({ attackPatternId: created.attackPattern, platformId: `defense-matrix-test-platform-${index}` }));
+    const targets = vi.spyOn(defenseCoverageUtils, 'buildValidationTargets').mockReturnValueOnce(oversized);
+    try {
+      await queryAsAdminWithError(
+        { query: DEFENSE_VALIDATE, variables: { input: { attackPatternIds: [created.attackPattern], name } } },
+        'A validation request cannot be tracked on more than 2000 gaps: validate fewer techniques or security platforms',
+      );
+    } finally {
+      targets.mockRestore();
     }
     const groupings = await fullEntitiesList<BasicStoreEntity>(testContext, SYSTEM_USER, [ENTITY_TYPE_CONTAINER_GROUPING]);
     expect(groupings.filter((grouping) => grouping.name === name)).toEqual([]);

@@ -19,5 +19,18 @@ describe('Defense validation dialog', () => {
     testRender(<DefenseValidationDialog open onClose={vi.fn()} techniques={TECHNIQUES} threats={[]} />);
     expect(screen.getByTestId('defense-validation-count').textContent).toBe('1 technique');
     expect(screen.queryByTestId('defense-validation-deferred')).toBeNull();
+    expect(screen.queryByTestId('defense-validation-gaps-limit')).toBeNull();
+    expect((screen.getByTestId('defense-validation-submit') as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it('refuses a request tracked on more gaps than the platform accepts and says why', () => {
+    const techniques = Array.from({ length: 200 }, (_, i) => ({ id: `ap-${i}`, name: `Technique ${i}` }));
+    const platforms = Array.from({ length: 10 }, (_, i) => ({ id: `platform-${i}`, name: `Platform ${i}` }));
+    testRender(<DefenseValidationDialog open onClose={vi.fn()} techniques={techniques} platforms={platforms} threats={[]} />);
+    const notice = screen.getByTestId('defense-validation-gaps-limit');
+    expect(notice.textContent).toContain('This request would be tracked on 2200 gaps and a validation request is tracked on at most 2000');
+    const submit = screen.getByTestId('defense-validation-submit') as HTMLButtonElement;
+    expect(submit.disabled).toBe(true);
+    expect(submit.getAttribute('aria-describedby')).toBe('defense-validation-gaps-limit');
   });
 });

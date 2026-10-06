@@ -84,6 +84,10 @@ const MAX_GAPS_PAGE_SIZE = 500;
 const EXPORT_BATCH_SIZE = 2000;
 export const DEFENSE_GAPS_EXPORT_MAX = 10000;
 const MAX_VALIDATION_TECHNIQUES = 200;
+// Gaps a validation request is tracked on (its techniques on every platform of the request): the techniques limit
+// alone does not bound them, every requested platform multiplies them
+const MAX_VALIDATION_GAPS = 2000;
+const TRACKING_BULK_SIZE = 500;
 // Attempts to track a created validation request on its gaps, and the delay between them (grows with the attempt)
 const TRACKING_ATTEMPTS = 3;
 const TRACKING_RETRY_DELAY = 500;
@@ -967,17 +971,18 @@ const trackValidationRequest = async (
   request: DefenseGapValidationRequest,
 ) => {
   const attackPatternById = new Map(attackPatterns.map((attackPattern) => [attackPattern.internal_id, attackPattern]));
-  // An existing gap is updated in its own index (the write alias may point to a newer one after a rollover)
-  const gapIds = targets
-    .filter((target) => attackPatternById.has(target.attackPatternId))
-    .map((target) => defenseGapId(target.attackPatternId, target.platformId).internalId);
-  const existingGaps = await findByIdsChunked<BasicStoreEntity>(context, SYSTEM_USER, gapIds, { type: ENTITY_TYPE_DEFENSE_GAP, indices: [READ_INDEX_INTERNAL_OBJECTS] });
-  const gapIndexById = new Map(existingGaps.map((gap) => [gap.internal_id, gap._index]));
-  const operations = [];
-  for (let index = 0; index < targets.length; index += 1) {
-    const { attackPatternId, platformId } = targets[index];
-    const attackPattern = attackPatternById.get(attackPatternId);
-    if (attackPattern) {
+  const trackedTargets = targets.filter((target) => attackPatternById.has(target.attackPatternId));
+  const chunks = R.splitEvery(TRACKING_BULK_SIZE, trackedTargets);
+  for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex += 1) {
+    const chunk = chunks[chunkIndex];
+    // An existing gap is updated in its own index (the write alias may point to a newer one after a rollover)
+    const gapIds = chunk.map((target) => defenseGapId(target.attackPatternId, target.platformId).internalId);
+    const existingGaps = await findByIdsChunked<BasicStoreEntity>(context, SYSTEM_USER, gapIds, { type: ENTITY_TYPE_DEFENSE_GAP, indices: [READ_INDEX_INTERNAL_OBJECTS] });
+    const gapIndexById = new Map(existingGaps.map((gap) => [gap.internal_id, gap._index]));
+    const operations = [];
+    for (let index = 0; index < chunk.length; index += 1) {
+      const { attackPatternId, platformId } = chunk[index];
+      const attackPattern = attackPatternById.get(attackPatternId) as BasicStoreEntity;
       const { standardId, internalId } = defenseGapId(attackPattern.internal_id, platformId);
       const { element } = await buildEntityData(context, SYSTEM_USER, {
         internal_id: internalId,
@@ -1001,11 +1006,9 @@ const trackValidationRequest = async (
         { script: { source: GAP_TRACKING_SCRIPT, lang: 'painless', params: { request } }, upsert: upsertDoc },
       );
     }
-  }
-  if (operations.length > 0) {
     await elBulk(context, { refresh: true, body: operations });
   }
-  return operations.length / 2;
+  return trackedTargets.length;
 };
 
 /**
@@ -1115,6 +1118,20 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
   if (unknownPlatforms.length > 0) {
     throw FunctionalError('Some security platforms of the validation request cannot be found', { platformIds: unknownPlatforms });
   }
+  // The gaps of the backlog may designate their technique by any of its ids
+  const internalIdOf = new Map<string, string>();
+  attackPatterns.forEach((attackPattern) => {
+    const stixIds = (attackPattern as unknown as { x_opencti_stix_ids?: string[] }).x_opencti_stix_ids ?? [];
+    [attackPattern.internal_id, attackPattern.standard_id, ...stixIds].forEach((id) => internalIdOf.set(id, attackPattern.internal_id));
+  });
+  const targets = buildValidationTargets(
+    attackPatterns.map((attackPattern) => attackPattern.internal_id),
+    requestedPlatforms,
+    gapRefs.map((gap) => ({ attackPatternId: internalIdOf.get(gap.attackPatternId) ?? gap.attackPatternId, platformId: gap.platformId })),
+  );
+  if (targets.length > MAX_VALIDATION_GAPS) {
+    throw FunctionalError(`A validation request cannot be tracked on more than ${MAX_VALIDATION_GAPS} gaps: validate fewer techniques or security platforms`, { count: targets.length });
+  }
   // A Security Coverage is only enriched by the OpenAEV connectors active when it is created: without one, the request
   // would wait forever
   const validationConnectors = await connectorsForEnrichment(context, user, ENTITY_TYPE_SECURITY_COVERAGE, true);
@@ -1166,17 +1183,6 @@ export const validateDefenseGaps = async (context: AuthContext, user: AuthUser, 
     requested_at: requestedAt,
     requested_by: user.id,
   };
-  // The gaps of the backlog may designate their technique by any of its ids
-  const internalIdOf = new Map<string, string>();
-  attackPatterns.forEach((attackPattern) => {
-    const stixIds = (attackPattern as unknown as { x_opencti_stix_ids?: string[] }).x_opencti_stix_ids ?? [];
-    [attackPattern.internal_id, attackPattern.standard_id, ...stixIds].forEach((id) => internalIdOf.set(id, attackPattern.internal_id));
-  });
-  const targets = buildValidationTargets(
-    attackPatterns.map((attackPattern) => attackPattern.internal_id),
-    requestedPlatforms,
-    gapRefs.map((gap) => ({ attackPatternId: internalIdOf.get(gap.attackPatternId) ?? gap.attackPatternId, platformId: gap.platformId })),
-  );
   // The validation exists from here: a tracking failure must not report a failed request that a retry would duplicate
   let gapsCount = 0;
   for (let attempt = 1; attempt <= TRACKING_ATTEMPTS; attempt += 1) {

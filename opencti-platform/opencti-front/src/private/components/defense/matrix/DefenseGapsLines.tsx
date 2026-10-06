@@ -16,6 +16,7 @@ import DefenseValidationDialog from './DefenseValidationDialog';
 import DefenseTechniqueDrawer from './DefenseTechniqueDrawer';
 import {
   DEFENSE_ACTION_LABELS,
+  DEFENSE_AGGREGATE_PLATFORM,
   DEFENSE_DETECTION_LABELS,
   DEFENSE_VALIDATION_LABELS,
   type DefenseAction,
@@ -26,8 +27,6 @@ import {
   defenseLevelLabel,
   MAX_VALIDATION_TECHNIQUES,
 } from './defenseMatrix-utils';
-
-const AGGREGATE_PLATFORM = 'all';
 
 export const defenseGapsLinesQuery = graphql`
   query DefenseGapsLinesPaginationQuery(
@@ -153,7 +152,7 @@ const DefenseGapsLines = ({ queryRef, scope, onlyUsedByThreats = false, onTotalC
   }])).values());
   // Each selected gap is validated on its own platform only, never on the platform of another selected gap
   const selectedGapTargets = selectedGaps
-    .filter((gap) => gap.platform_id !== AGGREGATE_PLATFORM)
+    .filter((gap) => gap.platform_id !== DEFENSE_AGGREGATE_PLATFORM)
     .map((gap) => ({ attackPatternId: gap.attack_pattern_id, platformId: gap.platform_id, platformName: gap.platform?.name ?? gap.platform_id }));
   const allSelected = gaps.length > 0 && gaps.every((gap) => selectedIds.has(gap.id));
   // Individual and "Select all" selections alike: the platform refuses a larger request

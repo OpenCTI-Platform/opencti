@@ -5180,6 +5180,7 @@
   "This report contains too many objects to be displayed as a graph. We are working on a new visualization which will allow large graph to be displayed in the future.": "Этот отчет содержит слишком много объектов для отображения в виде графика. Мы работаем над новой визуализацией, которая позволит в будущем отображать большие графики.",
   "This request for sharing has been approved": "Этот запрос на совместное использование был одобрен",
   "This request for sharing has been declined": "Этот запрос на предоставление информации был отклонен",
+  "This request would be tracked on {count} gaps and a validation request is tracked on at most {max}: validate fewer techniques or security platforms.": "Этот запрос отслеживался бы по пробелам в защите в количестве {count}, а запрос на проверку отслеживается не более чем по {max}: проверьте меньше техник или платформ безопасности.",
   "This rule has been applied on the existing data": "Это правило было применено к существующим данным",
   "This saved filter is shared with other members. Are you sure you want to delete it?": "Этот сохраненный фильтр доступен другим участникам. Вы действительно хотите его удалить?",
   "This score is updated with the decay rule applied to this indicator.": "Этот показатель обновляется с учетом правила распада, примененного к этому индикатору.",

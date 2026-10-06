@@ -29,7 +29,7 @@ import { useFormatter } from '../../../../components/i18n';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { MESSAGING$ } from '../../../../relay/environment';
-import { DEFENSE_VALIDATION_DOCUMENTATION_URL, type DefenseThreatOption, MAX_VALIDATION_TECHNIQUES } from './defenseMatrix-utils';
+import { DEFENSE_VALIDATION_DOCUMENTATION_URL, type DefenseThreatOption, defenseValidationGapsCount, MAX_VALIDATION_GAPS, MAX_VALIDATION_TECHNIQUES } from './defenseMatrix-utils';
 import { notifyPayloadErrors } from './defenseMutation-utils';
 import { DefenseValidationDialogMutation } from './__generated__/DefenseValidationDialogMutation.graphql';
 
@@ -113,6 +113,9 @@ const DefenseValidationDialog = ({ open, onClose, onValidated, techniques, defer
     const paired = gaps.filter((gap) => gap.attackPatternId === techniqueId).map((gap) => gap.platformName);
     return Array.from(new Set([...paired, ...platforms.map((platform) => platform.name)]));
   };
+  // Every platform of the request multiplies its gaps: the platform refuses a request tracked on too many of them
+  const gapsCount = defenseValidationGapsCount(techniques.map((technique) => technique.id), platforms.map((platform) => platform.id), gaps);
+  const overGapsLimit = gapsCount > MAX_VALIDATION_GAPS;
   const navigate = useNavigate();
   const [commit] = useApiMutation<DefenseValidationDialogMutation>(defenseValidationDialogMutation);
   const validationSchema = Yup.object().shape({
@@ -229,6 +232,14 @@ const DefenseValidationDialog = ({ open, onClose, onValidated, techniques, defer
                   />
                 </Box>
               )}
+              {overGapsLimit && (
+                <Box id="defense-validation-gaps-limit" sx={{ marginTop: 1 }} data-testid="defense-validation-gaps-limit">
+                  <Alert
+                    severity="warning"
+                    content={t_i18n('This request would be tracked on {count} gaps and a validation request is tracked on at most {max}: validate fewer techniques or security platforms.', { values: { count: gapsCount, max: MAX_VALIDATION_GAPS } })}
+                  />
+                </Box>
+              )}
               <Typography variant="body2" color="text.secondary" sx={{ marginTop: 1 }} data-testid="defense-validation-scenario">
                 {(() => {
                   const scenarioValues = {
@@ -330,7 +341,12 @@ const DefenseValidationDialog = ({ open, onClose, onValidated, techniques, defer
               <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
                 {t_i18n('Cancel')}
               </Button>
-              <Button onClick={submitForm} disabled={isSubmitting || techniques.length === 0} data-testid="defense-validation-submit">
+              <Button
+                onClick={submitForm}
+                disabled={isSubmitting || techniques.length === 0 || overGapsLimit}
+                aria-describedby={overGapsLimit ? 'defense-validation-gaps-limit' : undefined}
+                data-testid="defense-validation-submit"
+              >
                 {t_i18n('{count, plural, one {Validate # technique} other {Validate # techniques}}', { values: { count: techniques.length } })}
               </Button>
             </DialogActions>
