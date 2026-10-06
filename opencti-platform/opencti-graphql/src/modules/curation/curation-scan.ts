@@ -375,8 +375,8 @@ const SEARCH_BATCH = 50;
 
 /**
  * Entities loaded in different slices are never compared with each other: each scan also compares a rotating page
- * of every type with the whole graph, through the full text search candidates of the live detection, so two old
- * duplicates far apart in creation order are found over successive scans.
+ * of every type with the whole graph, through the candidates of the live detection (full text search, taxonomy,
+ * shared techniques), so two old duplicates far apart in creation order are found over successive scans.
  */
 const searchRotatingPage = async (context: AuthContext, settings: CurationSettings, types: string[], stats: ScanStats) => {
   for (let index = 0; index < types.length; index += 1) {
@@ -467,10 +467,53 @@ const findTaxonomySynonymOwners = async (context: AuthContext, entity: CuratedEn
   return owners.filter((owner) => types.includes(owner.entity_type));
 };
 
+const MAX_BEHAVIOR_CANDIDATES = 20;
+const MAX_COMPARED_TECHNIQUES = 500;
+
+/**
+ * The entities of these types that use the most ATT&CK techniques in common with the entity, counted on the
+ * relationships index over the whole graph: a duplicate found by its behavior alone shares no name with the entity,
+ * so neither the full text search nor the taxonomy brings it, and the slices of a bounded scan may never meet.
+ */
+export const findBehaviorCandidateIds = async (context: AuthContext, entityId: string, types: string[]): Promise<string[]> => {
+  const techniqueIds = new Set<string>();
+  await fullRelationsList(context, CURATION_MANAGER_USER, RELATION_USES, {
+    fromId: entityId,
+    toTypes: [ENTITY_TYPE_ATTACK_PATTERN],
+    baseData: true,
+    callback: async (relations: BasicStoreRelation[]) => {
+      relations.forEach((relation) => techniqueIds.add(relation.toId));
+    },
+  });
+  if (techniqueIds.size === 0) return [];
+  const users = {
+    key: ['connections'],
+    values: [],
+    nested: [{ key: 'types', values: types }, { key: 'role', values: ['*_from'], operator: FilterOperator.Wildcard }],
+  };
+  const techniques = {
+    key: ['connections'],
+    values: [],
+    nested: [{ key: 'internal_id', values: [...techniqueIds].slice(0, MAX_COMPARED_TECHNIQUES) }, { key: 'role', values: ['*_to'], operator: FilterOperator.Wildcard }],
+  };
+  const buckets = await elAggregationRelationsCount(context, CURATION_MANAGER_USER, READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED, {
+    types: [RELATION_USES],
+    field: 'internal_id',
+    searchOptions: { types: [RELATION_USES], filters: { mode: FilterMode.And, filters: [techniques, users], filterGroups: [] }, noFiltersChecking: true },
+    aggregationOptions: { filters: { mode: FilterMode.And, filters: [users], filterGroups: [] }, noFiltersChecking: true },
+  } as any);
+  return buckets
+    .filter((bucket) => bucket.label !== entityId)
+    .sort((left, right) => right.value - left.value)
+    .slice(0, MAX_BEHAVIOR_CANDIDATES)
+    .map((bucket) => bucket.label);
+};
+
 /**
  * Incremental duplicate detection for entities that just changed: candidates are the entities of the same family
  * found by full text search on their names, plus the owners of the names the vendor taxonomy lists for them, so the
- * missing-alias check never takes a name another entity holds for an unowned one.
+ * missing-alias check never takes a name another entity holds for an unowned one, plus, for the behavior detector,
+ * the entities that use the most techniques in common with it.
  */
 export const runIncrementalDuplicateDetection = async (context: AuthContext, settings: CurationSettings, entityIds: string[]): Promise<ScanStats> => {
   const stats = emptyStats();
@@ -492,6 +535,16 @@ export const runIncrementalDuplicateDetection = async (context: AuthContext, set
     synonymOwners.forEach((owner) => {
       if (!candidates.has(owner.internal_id)) candidates.set(owner.internal_id, toCuratedEntity(toCandidate(owner)));
     });
+    const behaviorTypes = types.filter((type) => BEHAVIOR_TYPES.includes(type));
+    if (isEnabled(settings, DETECTOR_BEHAVIOR) && BEHAVIOR_TYPES.includes(entity.entity_type) && behaviorTypes.length > 0) {
+      const behaviorIds = (await findBehaviorCandidateIds(context, entity.internal_id, behaviorTypes)).filter((id) => !candidates.has(id));
+      const behaviorCandidates = behaviorIds.length > 0
+        ? await internalFindByIds(context, CURATION_MANAGER_USER, behaviorIds) as Array<BasicStoreEntity & Record<string, any>>
+        : [];
+      behaviorCandidates.filter((candidate) => behaviorTypes.includes(candidate.entity_type)).forEach((candidate) => {
+        candidates.set(candidate.internal_id, toCuratedEntity(toCandidate(candidate)));
+      });
+    }
     stats.scanned += candidates.size;
     const drafts = await detectDuplicateDrafts(context, settings, [...candidates.values()], new Set([entity.internal_id]));
     await persistDrafts(context, settings, drafts, stats);
