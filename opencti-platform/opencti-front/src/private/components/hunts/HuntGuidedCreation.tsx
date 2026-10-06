@@ -85,15 +85,23 @@ const STEPS = 3;
 // The guided steps show the rule, the scope and the name: the agent proposes the rule, the hypothesis, the observables and the techniques
 const GUIDED_HIDDEN_AI_FIELDS: (keyof HuntAIFormValues)[] = ['description', 'benign_patterns', 'native_queries'];
 
+/** A count of connectors holds for the scope it was counted on only: the key of a scope ignores the order of its platforms. */
+const scopeKeyOf = (scopePlatformIds: string[]) => [...scopePlatformIds].sort().join(',');
+
 /** The live hunt connectors that would run the hunt on its scope, as the readiness of the platform counts them. */
-const ConnectorsForScope = ({ kind, scopePlatformIds, onCount }: { kind: HuntGuidedKind; scopePlatformIds: string[]; onCount: (count: number) => void }) => {
+const ConnectorsForScope = ({ kind, scopePlatformIds, onCount }: {
+  kind: HuntGuidedKind;
+  scopePlatformIds: string[];
+  onCount: (scopeKey: string, count: number) => void;
+}) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const { huntConnectors } = useLazyLoadQuery<HuntGuidedCreationConnectorsQuery>(huntGuidedCreationConnectorsQuery, {}, { fetchPolicy: 'store-and-network' });
   const eligible = huntConnectors.filter((connector) => !!connector.securityPlatform
     && (kind !== 'indicators' || connector.supports_indicators)
     && (scopePlatformIds.length === 0 || scopePlatformIds.includes(connector.securityPlatform.id)));
-  React.useEffect(() => onCount(eligible.length), [eligible.length]);
+  const scopeKey = scopeKeyOf(scopePlatformIds);
+  React.useEffect(() => onCount(scopeKey, eligible.length), [scopeKey, eligible.length]);
   if (eligible.length === 0) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(1), alignItems: 'flex-start' }} data-testid="hunt-guided-no-connector">
@@ -131,7 +139,7 @@ const HuntGuidedCreation = ({ kind, open, onClose }: HuntGuidedCreationProps) =>
   const { t_i18n, fd } = useFormatter();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
-  const [connectorsCount, setConnectorsCount] = useState(0);
+  const [connectorsLookup, setConnectorsLookup] = useState<{ scopeKey: string; count: number } | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
   const iocFiltersState = useFiltersState(emptyFilterGroup);
   const [commitAdd] = useDialogMutation<HuntGuidedCreationAddMutation>(huntGuidedCreationAddMutation);
@@ -144,12 +152,23 @@ const HuntGuidedCreation = ({ kind, open, onClose }: HuntGuidedCreationProps) =>
       : t_i18n('Detection rule hunt - {date}', { values: { date: fd(new Date()) } }),
     time_window_hours: kind === 'indicators' ? 168 : 24,
   };
+  // Unknown (null) until the connectors of the current scope are counted: activating or not is decided on that count only
+  const connectorsCountOf = (values: HuntFormValues) => {
+    const scopeKey = scopeKeyOf(values.scopePlatforms.map((platform) => platform.value));
+    return connectorsLookup?.scopeKey === scopeKey ? connectorsLookup.count : null;
+  };
   const close = () => {
     setStep(0);
+    setConnectorsLookup(null);
     setCreateError(null);
     onClose();
   };
   const finish = (values: HuntFormValues, setSubmitting: (submitting: boolean) => void) => {
+    const connectorsCount = connectorsCountOf(values);
+    if (connectorsCount === null) {
+      setSubmitting(false);
+      return;
+    }
     const runNow = connectorsCount > 0;
     const input = {
       ...toHuntAddInput({ ...values, hunt_status: runNow ? 'active' : 'draft' }, '', serializeFilterGroupForBackend(iocFiltersState[0])),
@@ -212,6 +231,7 @@ const HuntGuidedCreation = ({ kind, open, onClose }: HuntGuidedCreationProps) =>
           {({ values, submitForm, isSubmitting }) => {
             const iocCount = parseIocText(values.ioc_values_text).values.length + values.iocElements.length + values.iocEntities.length
               + (iocFiltersState[0].filters ?? []).length;
+            const connectorsCount = connectorsCountOf(values);
             return (
               <Form style={{ display: 'flex', flexDirection: 'column', gap: theme.spacing(3), flex: 1, minHeight: 0 }}>
                 <DialogBody>
@@ -249,7 +269,11 @@ const HuntGuidedCreation = ({ kind, open, onClose }: HuntGuidedCreationProps) =>
                       </div>
                       <div style={fieldSpacingContainerStyle}>
                         <Suspense fallback={<Spinner size="md" label={t_i18n('Loading')} />}>
-                          <ConnectorsForScope kind={kind} scopePlatformIds={values.scopePlatforms.map((platform) => platform.value)} onCount={setConnectorsCount} />
+                          <ConnectorsForScope
+                            kind={kind}
+                            scopePlatformIds={values.scopePlatforms.map((platform) => platform.value)}
+                            onCount={(scopeKey, count) => setConnectorsLookup({ scopeKey, count })}
+                          />
                         </Suspense>
                       </div>
                     </div>
@@ -258,7 +282,7 @@ const HuntGuidedCreation = ({ kind, open, onClose }: HuntGuidedCreationProps) =>
                     <div data-testid="hunt-guided-start">
                       <Field component={TextField} variant="outlined" name="name" label={t_i18n('Name')} fullWidth required />
                       <Text variant="content-compact" style={{ display: 'block', marginTop: theme.spacing(2) }}>
-                        {connectorsCount > 0
+                        {(connectorsCount ?? 0) > 0
                           ? t_i18n('The hunt is created active and its first run starts right away. Its runs record what they found and a verdict.')
                           : t_i18n('No hunt connector can run it yet: the hunt is saved as a draft and its page lists what it still needs.')}
                       </Text>
@@ -277,14 +301,19 @@ const HuntGuidedCreation = ({ kind, open, onClose }: HuntGuidedCreationProps) =>
                   {step < STEPS - 1 ? (
                     <Button
                       onClick={() => setStep(step + 1)}
-                      disabled={step === 0 && (kind === 'indicators' ? iocCount === 0 : values.sigma_rule.trim().length === 0)}
+                      disabled={(step === 0 && (kind === 'indicators' ? iocCount === 0 : values.sigma_rule.trim().length === 0))
+                        || (step === 1 && connectorsCount === null)}
                       data-testid="hunt-guided-next"
                     >
                       {t_i18n('Next')}
                     </Button>
                   ) : (
-                    <Button onClick={submitForm} disabled={isSubmitting || values.name.trim().length < 2} data-testid="hunt-guided-submit">
-                      {connectorsCount > 0 ? t_i18n('Activate and run now') : t_i18n('Save as a draft')}
+                    <Button
+                      onClick={submitForm}
+                      disabled={isSubmitting || connectorsCount === null || values.name.trim().length < 2}
+                      data-testid="hunt-guided-submit"
+                    >
+                      {(connectorsCount ?? 0) > 0 ? t_i18n('Activate and run now') : t_i18n('Save as a draft')}
                     </Button>
                   )}
                   {step === 0 && (kind === 'indicators' ? iocCount === 0 : values.sigma_rule.trim().length === 0) && (

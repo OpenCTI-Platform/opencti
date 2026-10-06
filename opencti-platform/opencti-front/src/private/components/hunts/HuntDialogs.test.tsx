@@ -59,6 +59,23 @@ describe('Hunt dialogs', () => {
     await waitFor(() => expect(within(scope).getByText('Google SecOps - production')).toBeInTheDocument());
   });
 
+  it('decides to activate the guided hunt only once the connectors of its scope are counted', async () => {
+    const { user, relayEnv } = testRender(<HuntGuidedCreation kind="sigma" open onClose={() => undefined} />);
+    const dialog = screen.getByRole('dialog');
+    fireEvent.change(within(dialog).getByTestId('hunt-guided-sigma-editor').querySelector('textarea') as HTMLTextAreaElement, { target: { value: SIGMA_RULE } });
+    await user.click(within(dialog).getByTestId('hunt-guided-next'));
+    // The lookup of the scope step is still pending: its count would be a guess
+    expect(within(dialog).getByTestId('hunt-guided-next')).toBeDisabled();
+    await act(async () => {
+      relayEnv.mock.resolveMostRecentOperation((operation) => MockPayloadGenerator.generate(operation, {
+        Query: () => ({ huntConnectors: [huntConnector(false)] }),
+      }));
+    });
+    await waitFor(() => expect(within(dialog).getByTestId('hunt-guided-next')).toBeEnabled());
+    await user.click(within(dialog).getByTestId('hunt-guided-next'));
+    expect(within(dialog).getByTestId('hunt-guided-submit')).toHaveTextContent('Activate and run now');
+  });
+
   it('picks what to plan from inside the modal plan dialog', async () => {
     const { user } = testRender(<HuntPlanDialog open onClose={() => undefined} entityIds={[]} />);
     const subjects = await screen.findByTestId('hunt-plan-subjects');
