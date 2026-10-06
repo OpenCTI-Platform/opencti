@@ -98,17 +98,31 @@ def test_provenance_properties_cover_objects_and_relationships(
 
 
 def test_default_properties_carry_the_whole_provenance_summary(api_client_no_server):
-    for entity in (
-        api_client_no_server.opencti_stix_object_or_stix_relationship,
-        api_client_no_server.malware,
-        api_client_no_server.stix_core_relationship,
-        api_client_no_server.stix_sighting_relationship,
-    ):
-        properties = entity.properties
+    # Every helper of a STIX object selects spec_version; nested ref relationships carry no provenance
+    helpers = {
+        name: helper
+        for name, helper in vars(api_client_no_server).items()
+        if name != "stix_nested_ref_relationship"
+        and isinstance(getattr(helper, "properties", None), str)
+        and "spec_version" in helper.properties
+    }
+    assert {
+        "opencti_stix_object_or_stix_relationship",
+        "malware",
+        "security_coverage",
+        "security_coverage_result",
+        "stix_core_relationship",
+        "stix_sighting_relationship",
+    } <= set(helpers)
+    for name, helper in helpers.items():
+        properties = helper.properties
         summaries = properties.count("corroboration_count")
-        assert summaries > 0
+        assert summaries > 0, name
         for field in ("single_sourced", "freshness_stale_at", "freshness_stale"):
-            assert properties.count(field) >= summaries
+            assert properties.count(field) >= summaries, (name, field)
         # Each field of the summary is selected once per summary, never twice
         for field in ("single_sourced", "freshness_stale_at", "has_conflicts"):
-            assert len(re.findall(rf"\b{field}\b", properties)) == summaries
+            assert len(re.findall(rf"\b{field}\b", properties)) == summaries, (
+                name,
+                field,
+            )
