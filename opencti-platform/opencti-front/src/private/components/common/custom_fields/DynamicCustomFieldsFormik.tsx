@@ -64,7 +64,7 @@ const DynamicCustomFieldsFormik = <Values extends FormikValues>({
           return { ...errors, customFields: t_i18n('Loading') } as FormikErrors<Values>;
         }
         try {
-          await buildCustomFieldsValidationSchema(loaded.definitions, entityType, t_i18n('This field is required'))
+          await buildCustomFieldsValidationSchema(loaded.definitions, entityType, t_i18n)
             .validate(values.customFields, { abortEarly: false });
           return errors;
         } catch (error) {

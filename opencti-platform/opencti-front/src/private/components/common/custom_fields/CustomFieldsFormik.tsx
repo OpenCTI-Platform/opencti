@@ -39,7 +39,7 @@ const CustomFieldsForm = <Values extends FormikValues>({
 }: Props<Values> & { definitions: readonly CustomFieldDef[] }) => {
   const { t_i18n } = useFormatter();
   const defaults = useMemo(() => getCustomFieldsInitialValues(definitions, entityType), [definitions, entityType]);
-  const customFieldsSchema = buildCustomFieldsValidationSchema(definitions, entityType, t_i18n('This field is required'));
+  const customFieldsSchema = buildCustomFieldsValidationSchema(definitions, entityType, t_i18n);
   const extendSchema = (schema: typeof validationSchema) => (schema ?? Yup.object()).shape({ customFields: customFieldsSchema });
   return (
     <CustomFieldsCreationContext.Provider value={{ entityType, definitions }}>
