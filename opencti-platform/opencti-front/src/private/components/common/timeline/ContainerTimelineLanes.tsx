@@ -136,7 +136,12 @@ const ContainerTimelineLanes = ({
     const maxRows = compact ? COMPACT_MAX_ROWS : MAX_ROWS;
     let y = AXIS_HEIGHT;
     return lanes.map((lane) => {
-      const laneEvents = events.filter((event) => event.lane === lane);
+      // Only the events in the visible window are clustered: a cluster then counts, and is placed by, events on screen
+      const laneEvents = events.filter((event) => {
+        const start = toTime(event.event_time);
+        if (event.lane !== lane || start === null) return false;
+        return (toTime(event.event_end_time) ?? start) >= domain[0] && start <= domain[1];
+      });
       const { singles, clusters } = clusterLaneEvents(laneEvents, grouping);
       const items: LaneItem[] = [];
       singles.forEach((event) => {
@@ -149,9 +154,11 @@ const ContainerTimelineLanes = ({
         items.push({ type: 'event', id: event.id, event, x1: x1 - POINT_RADIUS, x2: labelled ? x2 + 6 * Math.min(event.title.length, LABEL_CHARS) : x2 });
       });
       clusters.forEach((cluster) => {
-        const x = scale(new Date(cluster.start + (cluster.end - cluster.start) / 2));
-        if (x < plotLeft || x > plotRight) return;
-        items.push({ type: 'cluster', id: cluster.id, cluster, x1: x - 11, x2: x + 11 });
+        // Its events, not its bucket, place a cluster and bound the zoom it opens: the middle of a bucket may be off screen
+        const times = cluster.events.map((event) => toTime(event.event_time) as number);
+        const bounds = { start: Math.min(...times), end: Math.max(...times) };
+        const x = scale(new Date(bounds.start + (bounds.end - bounds.start) / 2));
+        items.push({ type: 'cluster', id: cluster.id, cluster: { ...cluster, ...bounds }, x1: x - 11, x2: x + 11 });
       });
       const { rows, rowCount } = layoutLaneRows(items.map(({ id, x1, x2 }) => ({ id, x1, x2 })));
       const visibleRows = Math.min(rowCount, maxRows);
@@ -183,7 +190,7 @@ const ContainerTimelineLanes = ({
       y += height;
       return layout;
     });
-  }, [lanes, events, grouping, scale, compact, plotLeft, plotRight]);
+  }, [lanes, events, grouping, scale, domain, compact, plotLeft, plotRight]);
 
   const lanesBottom = laneLayouts.length > 0 ? laneLayouts[laneLayouts.length - 1].y + laneLayouts[laneLayouts.length - 1].height : AXIS_HEIGHT;
   // A half-width card names at most five days, never overlapping; the full views follow the zoom

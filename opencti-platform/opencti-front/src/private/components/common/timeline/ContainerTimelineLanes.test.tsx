@@ -1,5 +1,5 @@
 import React from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen } from '@testing-library/react';
 import testRender from '../../../../utils/tests/test-render';
 import ContainerTimelineLanes, { type TimelineChartEvent } from './ContainerTimelineLanes';
@@ -80,6 +80,26 @@ describe('ContainerTimelineLanes accessibility', () => {
     expect(cluster).toHaveAttribute('tabindex', '0');
     expect(cluster.querySelector('.timeline-cluster-focus')).not.toBeNull();
     expect(container.querySelector('style')?.textContent).toMatch(/\.timeline-cluster:focus-visible \.timeline-cluster-focus[^{]*\{ visibility: visible; \}/);
+  });
+
+  it('keeps a cluster of the visible events on screen when the middle of its bucket is not, and zooms on its events', () => {
+    // Zoomed on the afternoon of a day: the middle of the day bucket (noon) is off screen, two of its events are on it
+    const at = (id: string, time: string) => ({ ...event(id, 'derived'), event_time: time });
+    const onClusterSelect = vi.fn();
+    testRender(
+      <ContainerTimelineLanes
+        events={[at('morning', '2026-02-05T08:00:00.000Z'), at('afternoon-1', '2026-02-05T15:00:00.000Z'), at('afternoon-2', '2026-02-05T16:00:00.000Z')]}
+        lanes={['response']}
+        domain={[new Date('2026-02-05T14:00:00.000Z').getTime(), new Date('2026-02-05T18:00:00.000Z').getTime()]}
+        grouping="day"
+        ariaLabel="Timeline"
+        onClusterSelect={onClusterSelect}
+      />,
+    );
+    // The event before the window is left out of the count
+    const cluster = screen.getByRole('button', { name: /^2 events - / });
+    fireEvent.click(cluster);
+    expect(onClusterSelect).toHaveBeenCalledWith([new Date('2026-02-05T15:00:00.000Z').getTime(), new Date('2026-02-05T16:00:00.000Z').getTime()]);
   });
 
   it('draws a focus ring around an event that can be opened, shown on keyboard focus only', () => {
