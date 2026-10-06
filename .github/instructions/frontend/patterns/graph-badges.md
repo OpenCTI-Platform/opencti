@@ -5,8 +5,9 @@ view of the Analyses tab) is drawn by the shared component `src/components/graph
 has a state to show on the nodes, or an action to offer from a node, plugs into it through two
 registries instead of editing the graph:
 
-- `badges/graphBadgeRegistry.ts`: badges drawn above the nodes, listed in the hover card, the
-  legend, the accessible list and the image export;
+- `badges/graphBadgeRegistry.ts`: badges drawn above the nodes (in the image export too), listed in
+  the hover card, the legend and the accessible list; the legend of the image export lists the
+  entity types and line styles only;
 - `badges/graphNodeActionRegistry.ts`: quick actions of the node hover card.
 
 Both are soft checks: a feature whose data is absent from a graph shows nothing there, and nothing
@@ -27,7 +28,7 @@ export const threatPulseGraphBadgeProvider: GraphBadgeProvider = {
       key: 'threat-pulse-rising',             // stable: the legend groups the nodes by key
       icon: TrendingUpOutlined,               // an MUI or mdi icon, drawn on the canvas
       tone: 'warning',                        // neutral | info | success | warning | error | accent
-      label: t_i18n('Rising threat'),         // hover card, accessible list, export legend
+      label: t_i18n('Rising threat'),         // hover card, accessible list, legend
       tooltip: t_i18n('Reported by more sources this week than the week before'),
     }];
   },
