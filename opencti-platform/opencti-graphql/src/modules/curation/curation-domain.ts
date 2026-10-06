@@ -562,7 +562,11 @@ export const adjudicateProposalNow = async (context: AuthContext, user: AuthUser
   if (!settings.adjudication_enabled) {
     throw FunctionalError('Curation adjudication is disabled in the curation settings');
   }
-  return adjudicateProposal(context, user, proposal, settings);
+  const adjudicated = await adjudicateProposal(context, user, proposal, settings);
+  if (!adjudicated) {
+    throw FunctionalError('The Run as account of the curation settings cannot read this proposal and all its subjects', { id });
+  }
+  return adjudicated;
 };
 
 export const bulkAcceptProposals = async (context: AuthContext, user: AuthUser, ids: string[]) => {

@@ -3,7 +3,7 @@ import * as jsonpatch from 'fast-json-patch';
 import { type ManagerDefinition, registerManager } from './managerModule';
 import conf, { logApp } from '../config/conf';
 import { CURATION_MANAGER_USER, executionContext, INTERNAL_USERS } from '../utils/access';
-import type { AuthContext } from '../types/user';
+import type { AuthContext, AuthUser } from '../types/user';
 import type { DataEvent, SseEvent, StreamDataEvent, UpdateEvent } from '../types/event';
 import type { BasicStoreEntity, BasicStoreRelation } from '../types/store';
 import { STIX_EXT_OCTI } from '../types/stix-2-1-extensions';
@@ -28,7 +28,7 @@ import { FilterMode, FilterOperator } from '../generated/graphql';
 import { getCurationSettings, saveCurationSettings } from '../modules/curation/curation-settings';
 import { runContradictionScan, runDuplicateScan, runIncrementalDuplicateDetection, runStalenessScan } from '../modules/curation/curation-scan';
 import { createHealthSnapshot, deliverKnowledgeHealthDigest, findLatestHealthSnapshot, SOURCE_CONFLICTS_COUNTER } from '../modules/curation/curation-health';
-import { ADJUDICATED_PROPOSAL_KINDS, adjudicateProposal, isAdjudicationAvailable } from '../modules/curation/curation-adjudication';
+import { ADJUDICATED_PROPOSAL_KINDS, adjudicateProposal, isAdjudicationAvailable, resolveAdjudicationRunAs } from '../modules/curation/curation-adjudication';
 import { applyCurationPolicy, findEnabledPolicies } from '../modules/curation/curation-policies';
 import { persistProposalDraft } from '../modules/curation/curation-proposals';
 import { buildDateInversionDraft, buildProcedureConflictDraft, isDuplicateDetectionEnabled, isProcedureConflict } from '../modules/curation/curation-detectors';
@@ -99,8 +99,16 @@ const runSnapshotAndDigest = async (context: AuthContext, settings: CurationSett
 
 const runAdjudicationQueue = async (context: AuthContext, settings: CurationSettings) => {
   if (!settings.adjudication_enabled || !(await isAdjudicationAvailable(context))) return;
+  let runAs: AuthUser;
+  try {
+    runAs = await resolveAdjudicationRunAs(context, settings);
+  } catch (error) {
+    logApp.warn('[CURATION] Adjudication paused: the Run as account of the curation settings cannot adjudicate', { cause: error });
+    return;
+  }
   const retryBefore = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
-  const pending = await fullEntitiesList<BasicStoreEntityCurationProposal>(context, CURATION_MANAGER_USER, [ENTITY_TYPE_CURATION_PROPOSAL], {
+  // Listed with the rights of the Run as account: a proposal carries the restrictions of its subjects.
+  const pending = await fullEntitiesList<BasicStoreEntityCurationProposal>(context, runAs, [ENTITY_TYPE_CURATION_PROPOSAL], {
     filters: {
       mode: FilterMode.And,
       filters: [
@@ -122,10 +130,12 @@ const runAdjudicationQueue = async (context: AuthContext, settings: CurationSett
     maxSize: CURATION_ADJUDICATIONS_PER_TICK * 4,
     noFiltersChecking: true,
   } as any);
-  const toAdjudicate = pending.filter((proposal) => !proposal.curation_adjudication).slice(0, CURATION_ADJUDICATIONS_PER_TICK);
-  for (let index = 0; index < toAdjudicate.length; index += 1) {
+  const toAdjudicate = pending.filter((proposal) => !proposal.curation_adjudication);
+  let sent = 0;
+  for (let index = 0; index < toAdjudicate.length && sent < CURATION_ADJUDICATIONS_PER_TICK; index += 1) {
     try {
-      await adjudicateProposal(context, CURATION_MANAGER_USER, toAdjudicate[index], settings);
+      // A proposal one of whose subjects the Run as account cannot read is not sent, and does not take a slot.
+      if (await adjudicateProposal(context, CURATION_MANAGER_USER, toAdjudicate[index], settings)) sent += 1;
     } catch (error: any) {
       logApp.warn('[CURATION] Adjudication failed', { cause: error, proposal_id: toAdjudicate[index].internal_id });
       // Budget exhausted or XTM One unavailable: stop for this tick.

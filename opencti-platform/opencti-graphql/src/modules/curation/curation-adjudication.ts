@@ -1,15 +1,18 @@
 import type { AuthContext, AuthUser } from '../../types/user';
 import type { BasicStoreEntity } from '../../types/store';
 import { FunctionalError } from '../../config/errors';
-import { logApp } from '../../config/conf';
+import { ACCOUNT_STATUS_ACTIVE, logApp } from '../../config/conf';
 import { checkEnterpriseEdition, isEnterpriseEdition } from '../../enterprise-edition/ee';
-import { AUTOMATION_MANAGER_USER } from '../../utils/access';
+import { AUTOMATION_MANAGER_USER, isUserHasCapability, KNOWLEDGE, SYSTEM_USER } from '../../utils/access';
 import { storeLoadByIdsWithRefs, patchAttribute } from '../../database/middleware';
 import { storeLoadById } from '../../database/middleware-loader';
+import { getEntitiesMapFromCache } from '../../database/cache';
 import { redisCurationIncrementCounter } from '../../database/redis';
 import { publishUserAction } from '../../listener/UserActionListener';
+import { OPENCTI_ADMIN_UUID } from '../../schema/general';
+import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import xtmOneClient from '../xtm/one/xtm-one-client';
-import { buildPlaybookAutomationContext, callXtmAgent, isXtmOneConfigured, resolveAgentJwtUser, type AgentJwtUser } from '../playbook/components/ai-agent-shared';
+import { buildPlaybookAutomationContext, callXtmAgent, isXtmOneConfigured, type AgentJwtUser } from '../playbook/components/ai-agent-shared';
 import { addCurationAdjudicationCount } from '../../manager/telemetryManager';
 import { resolveAliasesField } from '../../schema/stixDomainObject';
 import { now } from '../../utils/format';
@@ -172,6 +175,24 @@ const selectAgentSlug = async (settings: CurationSettings, jwtUser: AgentJwtUser
   return bound[0]?.agent_slug ?? null;
 };
 
+/**
+ * The account adjudication runs as: XTM One receives its identity, and the proposal and its subjects are read with its
+ * rights. It is the Run as account of the settings, the platform administrator when the setting is empty. A selected
+ * account that no longer exists, is disabled or lacks Access knowledge stops adjudication: it never falls back to the
+ * administrator.
+ */
+export const resolveAdjudicationRunAs = async (context: AuthContext, settings: Pick<CurationSettings, 'adjudication_run_as_id'>): Promise<AuthUser> => {
+  const runAsId = settings.adjudication_run_as_id ?? OPENCTI_ADMIN_UUID;
+  const platformUsers = await getEntitiesMapFromCache<AuthUser>(context, SYSTEM_USER, ENTITY_TYPE_USER);
+  const runAs = platformUsers.get(runAsId);
+  if (!runAs || runAs.account_status !== ACCOUNT_STATUS_ACTIVE || !runAs.user_email || !isUserHasCapability(runAs, KNOWLEDGE)) {
+    throw FunctionalError('The Run as account of the curation settings must exist, be active and have the Access knowledge capability', {
+      run_as_id: runAsId,
+    });
+  }
+  return runAs;
+};
+
 const reserveDailyBudget = async (settings: CurationSettings) => {
   const day = new Date().toISOString().slice(0, 10);
   const used = await redisCurationIncrementCounter('adjudication', day);
@@ -181,14 +202,15 @@ const reserveDailyBudget = async (settings: CurationSettings) => {
 /**
  * Ask the XTM One agent bound to cti.curation_adjudicate for a decision on an ambiguous proposal. The decision is
  * recorded on the proposal (advisory): applying it is the job of an analyst, of the XTM One decide tool, or of a
- * curation policy requiring adjudication agreement.
+ * curation policy requiring adjudication agreement. `user` records the request; the proposal is sent only when the
+ * Run as account can read it and every subject, and null is returned otherwise.
  */
 export const adjudicateProposal = async (
   context: AuthContext,
   user: AuthUser,
   proposal: BasicStoreEntityCurationProposal,
   settings: CurationSettings,
-): Promise<BasicStoreEntityCurationProposal> => {
+): Promise<BasicStoreEntityCurationProposal | null> => {
   await checkEnterpriseEdition(context);
   if (!isProposalAdjudicable(proposal)) {
     throw FunctionalError('Only duplicate proposals (merge or alias) in the ambiguous confidence band can be adjudicated', {
@@ -201,10 +223,8 @@ export const adjudicateProposal = async (
     throw FunctionalError('XTM One is not configured on this platform');
   }
   // Every local prerequisite is resolved first: only a request about to be sent consumes the daily budget.
-  const jwtUser = await resolveAgentJwtUser(settings.adjudication_run_as_id ?? undefined);
-  if (!jwtUser) {
-    throw FunctionalError('No identity can be resolved to call XTM One for adjudication');
-  }
+  const runAs = await resolveAdjudicationRunAs(context, settings);
+  const jwtUser: AgentJwtUser = { id: runAs.id, user_email: runAs.user_email };
   const agentSlug = await selectAgentSlug(settings, jwtUser);
   if (!agentSlug) {
     throw FunctionalError('No XTM One agent is bound to the curation adjudication intent', { intent: CURATION_ADJUDICATE_INTENT });
@@ -225,7 +245,15 @@ export const adjudicateProposal = async (
     if (adjudicatedAt && new Date(adjudicatedAt).getTime() >= requestedAt) {
       return current;
     }
-    const subjects = await storeLoadByIdsWithRefs(context, user, current.subject_ids);
+    const readable = await storeLoadById<BasicStoreEntityCurationProposal>(context, runAs, current.internal_id, ENTITY_TYPE_CURATION_PROPOSAL);
+    const subjects = readable ? await storeLoadByIdsWithRefs(context, runAs, current.subject_ids) : [];
+    if (subjects.length < current.subject_ids.length) {
+      logApp.info('[CURATION] Proposal not sent for adjudication: the Run as account cannot read it and all its subjects', {
+        proposal_id: current.internal_id,
+        run_as_id: runAs.id,
+      });
+      return null;
+    }
     const content = buildAdjudicationContent(current, subjects as unknown as Array<BasicStoreEntity & Record<string, any>>);
     if (!(await reserveDailyBudget(settings))) {
       throw FunctionalError('The daily adjudication budget is exhausted', { limit: settings.adjudication_daily_limit });
