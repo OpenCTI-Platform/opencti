@@ -796,10 +796,10 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     manager.setFormIntakeSubmittedCount(formIntakeSubmittedCountInRedis);
     const decayRuleCreationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_DECAY_RULE_CREATION);
     manager.setDecayRuleCreationCount(decayRuleCreationCountInRedis);
-    const knowledgeDecayRuleCreationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_KNOWLEDGE_DECAY_RULE_CREATION);
-    manager.setKnowledgeDecayRuleCreationCount(knowledgeDecayRuleCreationCountInRedis);
     // Provenance disabled: no read at all, its gauges stay at zero
     if (PROVENANCE_ENABLED) {
+      const knowledgeDecayRuleCreationCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_KNOWLEDGE_DECAY_RULE_CREATION);
+      manager.setKnowledgeDecayRuleCreationCount(knowledgeDecayRuleCreationCountInRedis);
       const knowledgeStaleFlaggedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_KNOWLEDGE_STALE_FLAGGED);
       manager.setKnowledgeStaleFlaggedCount(knowledgeStaleFlaggedCountInRedis);
       const provenanceConflictDetectedCountInRedis = await redisGetTelemetry(TELEMETRY_GAUGE_PROVENANCE_CONFLICT_DETECTED);
