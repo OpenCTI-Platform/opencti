@@ -106,6 +106,18 @@ describe('graph analytics promotion of a cluster that grows while it is promoted
     expect(vi.mocked(deleteElementById).mock.calls.map((call) => call[2])).toEqual(['campaign-2']);
   });
 
+  it('should delete the Grouping it created when the cluster cannot list the promotion, a Grouping being always new', async () => {
+    vi.mocked(elList).mockResolvedValue(members(2) as never);
+    vi.mocked(deleteElementById).mockReset().mockResolvedValue({} as never);
+    vi.mocked(addGrouping).mockResolvedValue({ internal_id: 'grouping-2', entity_type: 'Grouping', created_at: new Date(Date.now() + 1000).toISOString() } as never);
+    vi.mocked(addClusterPromotion).mockRejectedValueOnce(new Error('promotion failure'));
+    const promotion = promoteGraphCluster(context, SYSTEM_USER, 'cluster-1', { target: GraphClusterPromotionTarget.Grouping, name: 'Existing name' });
+    await expect(promotion).rejects.toThrow('promotion failure');
+    // Its identifier holds its creation date, left to the platform: the creation never upserts an existing Grouping
+    expect(vi.mocked(addGrouping).mock.calls[0][2]).not.toHaveProperty('created');
+    expect(vi.mocked(deleteElementById).mock.calls.map((call) => call[2])).toEqual(['grouping-2']);
+  });
+
   it('should refuse the investigation when the member query returns more members than the limit', async () => {
     vi.mocked(elList).mockResolvedValue(members(PROMOTION_MAX_MEMBERS + 1) as never);
     const investigation = addGraphClusterToInvestigation(context, SYSTEM_USER, 'cluster-1');

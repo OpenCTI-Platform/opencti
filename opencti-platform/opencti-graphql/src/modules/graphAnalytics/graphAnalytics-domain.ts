@@ -747,9 +747,10 @@ export const promoteGraphCluster = async (context: AuthContext, user: AuthUser, 
     createdBy: input.createdBy ?? undefined,
     objectMarking: input.objectMarking ?? [],
   };
-  // A Campaign or Grouping of the same name is upserted, not created: it comes back with its own creation date. A failed
-  // promotion deletes only what it created - its new Campaign or Grouping with their relationships, or the relationships
-  // it added to an existing Campaign - and never knowledge that existed before it.
+  // A Campaign of the same name is upserted, not created: it comes back with its own creation date. A Grouping is always
+  // new: its identifier holds its creation date, which the promotion leaves to the platform. A failed promotion deletes
+  // only what it created - its new Campaign or Grouping with their relationships, or the relationships it added to an
+  // existing Campaign - and never knowledge that existed before it.
   const startedAt = Date.now();
   const isCreatedByPromotion = (element: { created_at?: Date | string }) => !element.created_at || new Date(element.created_at).getTime() >= startedAt;
   const addedRelationIds: string[] = [];
