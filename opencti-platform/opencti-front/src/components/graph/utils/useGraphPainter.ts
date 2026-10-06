@@ -373,6 +373,8 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     if (selectedNodeIds.has(node.id)) return colors.selected;
     return node.disabled ? palette.disabled : palette.textSecondary;
   };
+  /** The label of a 3D link, drawn apart from its line: it fades with the line when a filter leaves the link out. */
+  const linkThreeLabelColor = (link: GraphLink) => (link.disabled ? palette.disabled : palette.textSecondary);
 
   /**
    * Draws a node for 3D mode.
@@ -393,7 +395,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
    */
   const linkThreePaint = (link: GraphLink) => {
     const sprite = new SpriteText(graphLinkLabel(link));
-    sprite.color = palette.textSecondary;
+    sprite.color = linkThreeLabelColor(link);
     sprite.textHeight = 1.5;
     return sprite;
   };
@@ -429,6 +431,7 @@ const useGraphPainter = (args?: UseGraphPainterArgs) => {
     framePostPaint,
     nodeThreeColor,
     nodeThreeLabelColor,
+    linkThreeLabelColor,
     nodeThreePaint,
     linkThreePaint,
     linkThreeLabelPosition,

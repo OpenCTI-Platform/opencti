@@ -111,6 +111,13 @@ describe('useGraphPainter', () => {
       expect(painter.nodeThreeColor(faded)).toBe(painter.nodeThreeLabelColor(faded));
     });
 
+    it('fades the 3D label of a link a filter leaves out, like its line', () => {
+      const { hook } = testRenderHook(() => useGraphPainter());
+      const painter = hook.result.current;
+      expect(painter.linkThreeLabelColor(link({ disabled: true }))).toBe(painter.nodeThreeLabelColor(node({ disabled: true })));
+      expect(painter.linkThreeLabelColor(link())).not.toBe(painter.linkThreeLabelColor(link({ disabled: true })));
+    });
+
     it('colours the relationship itself for the image export, whatever is selected or searched', () => {
       const selected = link();
       const { hook } = testRenderHook(() => useGraphPainter({
