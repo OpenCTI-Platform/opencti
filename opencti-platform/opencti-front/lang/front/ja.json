@@ -467,7 +467,7 @@
   "Associated entity": "関連エンティティ",
   "Associated file": "関連ファイル",
   "Associated user": "関連ユーザー",
-  "At each period, the recipients receive what changed on the entities of the filter set: new relationships, removals, revocations, confidence and score changes.": "各期間ごとに、受信者はフィルターセットのエンティティの変更内容（新しいリレーションシップ、削除、失効、信頼度とスコアの変更）を受け取ります。",
+  "At each period, the recipients receive what changed on the entities of the filter set.": "各期間ごとに、受信者はフィルターセットのエンティティの変更内容を受け取ります。",
   "At least 1 location or 1 sector is required": "少なくとも1カ所または1セクターが必要",
   "At least one coverage metric is required": "少なくとも1つのカバレッジ指標が必要です",
   "At least one IP address is required when allow list is enabled": "許可リストを有効にするには、少なくとも1つのIPアドレスが必要です",

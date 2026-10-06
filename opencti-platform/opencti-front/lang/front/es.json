@@ -467,7 +467,7 @@
   "Associated entity": "Entidad asociada",
   "Associated file": "Fichero asociado",
   "Associated user": "Usuario asociado",
-  "At each period, the recipients receive what changed on the entities of the filter set: new relationships, removals, revocations, confidence and score changes.": "En cada periodo, los destinatarios reciben lo que cambió en las entidades del conjunto de filtros: nuevas relaciones, eliminaciones, revocaciones, cambios de confianza y de puntuación.",
+  "At each period, the recipients receive what changed on the entities of the filter set.": "En cada periodo, los destinatarios reciben lo que cambió en las entidades del conjunto de filtros.",
   "At least 1 location or 1 sector is required": "Se requiere al menos 1 localidad o 1 sector",
   "At least one coverage metric is required": "Se requiere al menos una métrica de cobertura",
   "At least one IP address is required when allow list is enabled": "Se requiere al menos una dirección IP cuando la lista de direcciones permitidas está activada",

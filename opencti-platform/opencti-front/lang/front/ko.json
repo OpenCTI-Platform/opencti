@@ -467,7 +467,7 @@
   "Associated entity": "관련 법인",
   "Associated file": "관련 파일",
   "Associated user": "연결된 사용자",
-  "At each period, the recipients receive what changed on the entities of the filter set: new relationships, removals, revocations, confidence and score changes.": "각 기간마다 수신자는 필터 세트 엔터티의 변경 사항(새 관계, 제거, 철회, 신뢰도 및 점수 변경)을 받습니다.",
+  "At each period, the recipients receive what changed on the entities of the filter set.": "각 기간마다 수신자는 필터 세트 엔터티의 변경 사항을 받습니다.",
   "At least 1 location or 1 sector is required": "최소 1개 위치 또는 1개 섹터가 필요합니다",
   "At least one coverage metric is required": "최소 하나의 커버리지 지표가 필요합니다.",
   "At least one IP address is required when allow list is enabled": "허용 목록을 활성화하려면 최소한 하나의 IP 주소가 필요합니다.",

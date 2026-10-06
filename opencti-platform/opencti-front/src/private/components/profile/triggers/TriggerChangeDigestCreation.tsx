@@ -190,7 +190,7 @@ const TriggerChangeDigestCreation: FunctionComponent<TriggerChangeDigestCreation
         {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
           <Form>
             <Text variant="content-compact" style={{ color: 'var(--text-default-secondary)', marginBottom: 8 }}>
-              {t_i18n('At each period, the recipients receive what changed on the entities of the filter set: new relationships, removals, revocations, confidence and score changes.')}
+              {t_i18n('At each period, the recipients receive what changed on the entities of the filter set.')}
               {' '}
               <Link to={CHANGE_DIGEST_DOCUMENTATION_URL} target="_blank" rel="noopener noreferrer">{t_i18n('Learn more')}</Link>
             </Text>

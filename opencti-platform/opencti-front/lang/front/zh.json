@@ -467,7 +467,7 @@
   "Associated entity": "关联实体",
   "Associated file": "关联的文件",
   "Associated user": "关联用户",
-  "At each period, the recipients receive what changed on the entities of the filter set: new relationships, removals, revocations, confidence and score changes.": "在每个周期，接收者都会收到过滤器集合中实体的变化：新关系、删除、撤销、置信度和评分变化。",
+  "At each period, the recipients receive what changed on the entities of the filter set.": "在每个周期，接收者都会收到过滤器集合中实体的变化。",
   "At least 1 location or 1 sector is required": "至少需要 1 个地点或 1 个部门",
   "At least one coverage metric is required": "至少需要一个覆盖度指标",
   "At least one IP address is required when allow list is enabled": "启用允许列表时，至少需要一个 IP 地址",

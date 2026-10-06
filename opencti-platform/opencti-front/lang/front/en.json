@@ -467,7 +467,7 @@
   "Associated entity": "Associated entity",
   "Associated file": "Associated file",
   "Associated user": "Associated user",
-  "At each period, the recipients receive what changed on the entities of the filter set: new relationships, removals, revocations, confidence and score changes.": "At each period, the recipients receive what changed on the entities of the filter set: new relationships, removals, revocations, confidence and score changes.",
+  "At each period, the recipients receive what changed on the entities of the filter set.": "At each period, the recipients receive what changed on the entities of the filter set.",
   "At least 1 location or 1 sector is required": "At least 1 location or 1 sector is required",
   "At least one coverage metric is required": "At least one coverage metric is required",
   "At least one IP address is required when allow list is enabled": "At least one IP address is required when allow list is enabled",

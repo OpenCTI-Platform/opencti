@@ -467,7 +467,7 @@
   "Associated entity": "Ассоциированная сущность",
   "Associated file": "Ассоциированный файл",
   "Associated user": "Ассоциированный пользователь",
-  "At each period, the recipients receive what changed on the entities of the filter set: new relationships, removals, revocations, confidence and score changes.": "В каждый период получатели получают изменения сущностей набора фильтров: новые связи, удаления, отзывы, изменения уровня доверия и оценки.",
+  "At each period, the recipients receive what changed on the entities of the filter set.": "В каждый период получатели получают изменения сущностей набора фильтров.",
   "At least 1 location or 1 sector is required": "Требуется как минимум 1 место или 1 сектор",
   "At least one coverage metric is required": "Требуется указать хотя бы один показатель охвата",
   "At least one IP address is required when allow list is enabled": "При включенном списке разрешенных IP-адресов требуется указать хотя бы один IP-адрес",
