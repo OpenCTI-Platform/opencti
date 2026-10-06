@@ -2552,7 +2552,13 @@ export const userAlreadyExists = async (context: AuthContext, name: string) => {
 };
 
 type OnTheFlyInput = { userName: string; serviceAccount: boolean; confidenceLevel: number | null | undefined };
-export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, input: OnTheFlyInput) => {
+export const createOnTheFlyUser = async (
+  context: AuthContext,
+  user: AuthUser,
+  input: OnTheFlyInput,
+  // Called right before the user is written: an error thrown before its call left nothing behind
+  options: { beforeWrite?: () => void } = {},
+) => {
   const defaultIngestionGroups: BasicGroupEntity[] = await findDefaultIngestionGroups(context, user) as BasicGroupEntity[];
   if (defaultIngestionGroups.length < 1) {
     throw FunctionalError('You have not defined a default group for ingestion users', {});
@@ -2583,6 +2589,7 @@ export const createOnTheFlyUser = async (context: AuthContext, user: AuthUser, i
     }
     userInput = { ...userInput, user_confidence_level: { max_confidence: userConfidence, overrides: [] } };
   }
+  options.beforeWrite?.();
   return await addUser(context, user, userInput);
 };
 

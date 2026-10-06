@@ -160,19 +160,32 @@ describe('connector.ts — managedConnectorAdd write boundary', () => {
     expect(createEntity).not.toHaveBeenCalled();
   });
 
-  it('should announce the write before creating the service account and the connector', async () => {
+  it('should announce the write right before creating the service account and the connector', async () => {
     const order: string[] = [];
     const beforeWrite = vi.fn(() => order.push('beforeWrite'));
-    vi.mocked(createOnTheFlyUser).mockImplementation(async () => {
-      order.push('createOnTheFlyUser');
+    vi.mocked(createOnTheFlyUser).mockImplementation(async (_context, _user, _input, options) => {
+      order.push('createOnTheFlyUser checks');
+      options?.beforeWrite?.();
+      order.push('createOnTheFlyUser write');
       return { id: 'service-account-1' } as never;
+    });
+    vi.mocked(createEntity).mockImplementation(async () => {
+      order.push('createEntity');
+      return { id: 'connector-1', internal_id: 'connector-1', name: 'my-connector' } as never;
     });
 
     const created = await managedConnectorAdd(fakeContext, fakeUser, automaticInput, { beforeWrite });
     expect(created.id).toEqual('connector-1');
-    expect(order[0]).toEqual('beforeWrite');
-    expect(order).toContain('createOnTheFlyUser');
-    expect(createEntity).toHaveBeenCalledTimes(1);
+    expect(order).toEqual(['createOnTheFlyUser checks', 'beforeWrite', 'createOnTheFlyUser write', 'beforeWrite', 'createEntity']);
+  });
+
+  it('should announce nothing when the service account checks refuse before writing', async () => {
+    vi.mocked(createOnTheFlyUser).mockRejectedValue(new Error('You have not defined a default group for ingestion users'));
+    const beforeWrite = vi.fn();
+
+    await expect(managedConnectorAdd(fakeContext, fakeUser, automaticInput, { beforeWrite })).rejects.toThrow('You have not defined a default group for ingestion users');
+    expect(beforeWrite).not.toHaveBeenCalled();
+    expect(createEntity).not.toHaveBeenCalled();
   });
 
   it('should never record the secret settings of the deployment in the activity log', async () => {

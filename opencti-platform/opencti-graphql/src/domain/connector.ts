@@ -303,11 +303,11 @@ export const managedConnectorAdd = async (
   // The checks above only read: a refused deployment leaves neither a service account nor a connector behind
   let finalUserId = input.user_id;
   if (input.automatic_user) {
-    options.beforeWrite?.();
     const onTheFlyCreatedUser = await createOnTheFlyUser(
       context,
       user,
       { userName: input.user_id, serviceAccount: true, confidenceLevel: input.confidence_level ? parseInt(input.confidence_level, 10) : null },
+      { beforeWrite: options.beforeWrite },
     );
     finalUserId = onTheFlyCreatedUser.id;
   }
