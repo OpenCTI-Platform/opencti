@@ -494,6 +494,25 @@ export const exceedsHitReportIds = (instance: Record<string, unknown>) => {
   return ids.length > HIT_REPORT_IDS_MAX || ids.some((id) => typeof id !== 'string' || id.length > HIT_REPORT_ID_MAX_LENGTH);
 };
 
+/**
+ * The report ids a deployment keeps once its edits are applied, as the middleware applies them to a multiple
+ * attribute: an add joins the stored ids (each once), a remove takes ids out, a replace gives the list.
+ */
+export const hitReportIdsAfterEdits = (initial: Record<string, unknown> | undefined, editInputs: EditInput[]) => {
+  const stored = initial?.last_hit_report_ids;
+  const current = (Array.isArray(stored) ? stored : [stored]).filter((id) => !isEmptyField(id));
+  return editInputs.filter((input) => input.key === 'last_hit_report_ids').reduce<unknown[]>((ids, { operation, value }) => {
+    const values = (Array.isArray(value) ? value : [value]).filter((id) => !isEmptyField(id));
+    if (operation === UPDATE_OPERATION_ADD) {
+      return [...new Set([...ids, ...values])];
+    }
+    if (operation === UPDATE_OPERATION_REMOVE) {
+      return ids.filter((id) => !values.includes(id));
+    }
+    return values;
+  }, current);
+};
+
 const refuseHitReportIds = () => {
   throw ValidationError(
     `A deployment keeps at most ${HIT_REPORT_IDS_MAX} report ids at its last hit, of ${HIT_REPORT_ID_MAX_LENGTH} characters at most`,
@@ -583,6 +602,11 @@ const validatorUpdate: ValidatorFn = async (context, user, instance, initial, ed
     return refuseInvalidStatus(instance, invalidStatus);
   }
   if (exceedsHitReportIds(instance)) {
+    return refuseHitReportIds();
+  }
+  // An add joins the stored ids: the list the deployment keeps is checked, not only the ids an edit gives
+  if (editInputs.some((input) => input.key === 'last_hit_report_ids')
+    && exceedsHitReportIds({ last_hit_report_ids: hitReportIdsAfterEdits(initial, editInputs) })) {
     return refuseHitReportIds();
   }
   // The pair access rules bind administrators too, as on creation; the bypass only lifts the lifecycle permissions.

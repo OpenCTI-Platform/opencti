@@ -7,6 +7,7 @@ import {
   coversPairMarkings,
   coversUpsertPairMarkings,
   exceedsHitReportIds,
+  hitReportIdsAfterEdits,
   setsValidityWindow,
   invalidStatusField,
   isLifecycleWriter,
@@ -222,6 +223,21 @@ describe('Deployment identity guard', () => {
     const tooLong = { last_hit_report_ids: ['r'.repeat(HIT_REPORT_ID_MAX_LENGTH + 1)] };
     await expect(validatorCreation(testContext, administrator, tooLong)).rejects.toThrow('A deployment keeps at most');
     await expect(validatorUpdate(testContext, administrator, tooLong, {})).rejects.toThrow('A deployment keeps at most');
+  });
+
+  it('should check the report ids a deployment keeps once an edit joins them to the stored ones', async () => {
+    const stored = { last_hit_report_ids: Array.from({ length: HIT_REPORT_IDS_MAX }, (_, i) => `report-${i}`) };
+    const edit = (operation: EditOperation, value: string[]) => [{ key: 'last_hit_report_ids', value, operation }];
+    expect(hitReportIdsAfterEdits(stored, edit(EditOperation.Add, ['report-0']))).toHaveLength(HIT_REPORT_IDS_MAX);
+    expect(hitReportIdsAfterEdits(stored, edit(EditOperation.Add, ['report-new']))).toHaveLength(HIT_REPORT_IDS_MAX + 1);
+    expect(hitReportIdsAfterEdits(stored, edit(EditOperation.Remove, ['report-0']))).toHaveLength(HIT_REPORT_IDS_MAX - 1);
+    expect(hitReportIdsAfterEdits(stored, edit(EditOperation.Replace, ['report-new']))).toEqual(['report-new']);
+    const validatorUpdate = getEntityValidatorUpdate(RELATION_DEPLOYED_ON) as ValidatorFn;
+    const administrator = { id: 'admin', capabilities: [{ name: 'BYPASS' }] } as unknown as AuthUser;
+    const added = edit(EditOperation.Add, ['report-new']);
+    await expect(validatorUpdate(testContext, administrator, { last_hit_report_ids: ['report-new'] }, stored, added)).rejects.toThrow('A deployment keeps at most');
+    const known = edit(EditOperation.Add, ['report-0']);
+    await expect(validatorUpdate(testContext, administrator, { last_hit_report_ids: ['report-0'] }, stored, known)).resolves.toEqual(true);
   });
 });
 
