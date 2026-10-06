@@ -26,6 +26,7 @@ import SelectFieldFds, { SelectItem } from '../../../../components/fields/Select
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreateEntityControlledDial from '../../../../components/CreateEntityControlledDial';
 import FormButtonContainer from '../../../../components/common/form/FormButtonContainer';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const RetentionCreationMutation = graphql`
     mutation RetentionCreationMutation($input: RetentionRuleAddInput!) {
@@ -65,6 +66,7 @@ interface RetentionFormValues {
 const RetentionCreation = ({ paginationOptions }: { paginationOptions: RetentionLinesPaginationQuery$variables }) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
+  const { isProvenanceEnabled } = useHelper();
 
   const [filters, helpers] = useFiltersState();
   const [verified, setVerified] = useState(false);
@@ -204,7 +206,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                 onChange={() => setVerified(false)}
               >
                 <SelectItem value="knowledge">{t_i18n('Knowledge')}</SelectItem>
-                <SelectItem value="conflicts">{t_i18n('Source conflicts')}</SelectItem>
+                {isProvenanceEnabled() && <SelectItem value="conflicts">{t_i18n('Source conflicts')}</SelectItem>}
               </Field>
               {formValues.scope === 'conflicts' && (
                 <Alert severity="info" style={{ marginTop: 15 }}>

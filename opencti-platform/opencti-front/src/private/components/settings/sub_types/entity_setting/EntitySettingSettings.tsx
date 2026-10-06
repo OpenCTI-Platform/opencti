@@ -12,6 +12,7 @@ import EntitySettingProcedures from './EntitySettingProcedures';
 import { entitySettingsFragment } from './EntitySettingsFragment';
 import EntitySettingVisibility from './EntitySettingVisibility';
 import { useFormatter } from '../../../../../components/i18n';
+import useHelper from '../../../../../utils/hooks/useHelper';
 
 export const entitySettingPatch = graphql`
   mutation EntitySettingSettingsPatchMutation(
@@ -31,6 +32,7 @@ interface EntitySettingSettingsProps {
 
 const EntitySettingSettings = ({ entitySettingsData, provenanceRelationshipsData }: EntitySettingSettingsProps) => {
   const { t_i18n } = useFormatter();
+  const { isProvenanceEnabled } = useHelper();
 
   const entitySetting = useFragment(entitySettingsFragment, entitySettingsData);
   if (!entitySetting) {
@@ -47,8 +49,10 @@ const EntitySettingSettings = ({ entitySettingsData, provenanceRelationshipsData
       },
     });
   };
+  // The available settings of a type do not depend on the platform: provenance disabled hides all its settings
+  const provenanceSettings: readonly string[] = isProvenanceEnabled() ? entitySetting.availableSettings : [];
   // Relationships are tracked per relationship type: the list takes the width the procedures leave
-  const isTrackedPerRelationshipType = entitySetting.availableSettings.includes('provenance_relationship_types');
+  const isTrackedPerRelationshipType = provenanceSettings.includes('provenance_relationship_types');
   return (
     <Grid container={true} spacing={2}>
       <Grid item xs={6}>
@@ -72,7 +76,7 @@ const EntitySettingSettings = ({ entitySettingsData, provenanceRelationshipsData
           <EntitySettingProvenanceRelationships entitySettingData={provenanceRelationshipsData} />
         </Grid>
       )}
-      {!isTrackedPerRelationshipType && entitySetting.availableSettings.includes('provenance_tracking') && (
+      {!isTrackedPerRelationshipType && provenanceSettings.includes('provenance_tracking') && (
         <Grid item xs={6}>
           <Card title={t_i18n('Provenance')}>
             <EntitySettingProvenance
@@ -82,7 +86,7 @@ const EntitySettingSettings = ({ entitySettingsData, provenanceRelationshipsData
           </Card>
         </Grid>
       )}
-      {entitySetting.availableSettings.includes('procedures_preservation') && (
+      {provenanceSettings.includes('procedures_preservation') && (
         <Grid item xs={isTrackedPerRelationshipType ? 4 : 6}>
           <Card title={t_i18n('Procedures')}>
             <EntitySettingProcedures

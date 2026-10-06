@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import { elAggregationCount, elCount, elRawGet, elUpdate } from '../../../../src/database/engine';
+import { elAggregationCount, elCount, elPaginate, elRawGet, elUpdate } from '../../../../src/database/engine';
 import { getEntitiesListFromCache, getEntityFromCache } from '../../../../src/database/cache';
+import { patchAttribute } from '../../../../src/database/middleware';
+import { executeProcessing } from '../../../../src/manager/retentionManager';
+import { checkRetentionRule } from '../../../../src/modules/retentionRules/retentionRules-domain';
+import { type RetentionRule, type RetentionRuleAddInput, RetentionRuleScope, RetentionUnit } from '../../../../src/generated/graphql';
 import { withProvenanceStixExtension } from '../../../../src/modules/provenance/provenance-stix';
 import { computeCreationProvenance, isProvenanceRecordable, recordUpsertProvenance } from '../../../../src/modules/provenance/provenance-write';
 import { creationProceduresBuilder, mergeProvenanceOnEntitiesMerge, prepareUpsertProvenance } from '../../../../src/modules/provenance/provenance-upsert';
@@ -26,6 +30,12 @@ vi.mock('../../../../src/database/engine', async (importOriginal) => ({
   elRawGet: vi.fn(),
   elCount: vi.fn(),
   elAggregationCount: vi.fn(),
+  elPaginate: vi.fn(),
+}));
+
+vi.mock('../../../../src/database/middleware', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/database/middleware')>(),
+  patchAttribute: vi.fn(),
 }));
 
 vi.mock('../../../../src/database/cache', async (importOriginal) => ({
@@ -92,5 +102,22 @@ describe('Provenance disabled', () => {
     const converted = withProvenanceStixExtension({ entity_type: 'Malware', x_opencti_assertions: [assertion] }, stix);
     expect(converted).toBe(stix);
     expect(converted.extensions).not.toHaveProperty(STIX_EXT_OCTI_PROVENANCE);
+  });
+
+  it('should neither preview, scan nor purge anything for a source conflicts retention rule', async () => {
+    const rule = {
+      id: 'f0000000-0000-4000-8000-000000000001',
+      name: 'Outdated source conflicts',
+      scope: RetentionRuleScope.Conflicts,
+      max_retention: 30,
+      retention_unit: RetentionUnit.Days,
+      filters: null,
+      active: true,
+    };
+    await executeProcessing(context, rule as unknown as RetentionRule);
+    expect(await checkRetentionRule(context, rule as unknown as RetentionRuleAddInput)).toEqual(0);
+    expect(elPaginate).not.toHaveBeenCalled();
+    expect(patchAttribute).not.toHaveBeenCalled();
+    expect(elUpdate).not.toHaveBeenCalled();
   });
 });

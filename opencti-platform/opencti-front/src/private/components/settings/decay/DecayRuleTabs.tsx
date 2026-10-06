@@ -8,18 +8,21 @@ import DecayExclusionRules from './DecayExclusionRules';
 import KnowledgeDecayRules from './KnowledgeDecayRules';
 import { useLocation } from 'react-router';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@filigran/design-system';
+import useHelper from '../../../../utils/hooks/useHelper';
 
 const DecayRuleTabs = () => {
   const { t_i18n } = useFormatter();
   const { setTitle } = useConnectedDocumentModifier();
   const location = useLocation();
+  const { isProvenanceEnabled } = useHelper();
+  const provenanceEnabled = isProvenanceEnabled();
   setTitle(t_i18n('Decay Rules | Customization | Settings'));
 
   const [currentTab, setCurrentTab] = useState('rules');
 
   useEffect(() => {
     if (location.state?.decayTab === 'decayExclusionRule') setCurrentTab('exclusions');
-    if (location.state?.decayTab === 'knowledgeDecayRule') setCurrentTab('knowledge');
+    if (location.state?.decayTab === 'knowledgeDecayRule' && provenanceEnabled) setCurrentTab('knowledge');
   }, []);
 
   return (
@@ -38,16 +41,18 @@ const DecayRuleTabs = () => {
             <TabsList className="mb-6">
               <TabsTrigger value="rules">{t_i18n('Decay rules')}</TabsTrigger>
               <TabsTrigger value="exclusions">{t_i18n('Decay exclusion rules')}</TabsTrigger>
-              <TabsTrigger value="knowledge">{t_i18n('Knowledge decay rules')}</TabsTrigger>
+              {provenanceEnabled && <TabsTrigger value="knowledge">{t_i18n('Knowledge decay rules')}</TabsTrigger>}
             </TabsList>
           </div>
 
           <TabsContent value="rules">
             <DecayRules />
           </TabsContent>
-          <TabsContent value="knowledge">
-            {currentTab === 'knowledge' && <KnowledgeDecayRules />}
-          </TabsContent>
+          {provenanceEnabled && (
+            <TabsContent value="knowledge">
+              {currentTab === 'knowledge' && <KnowledgeDecayRules />}
+            </TabsContent>
+          )}
           <TabsContent value="exclusions">
             <DecayExclusionRules />
           </TabsContent>

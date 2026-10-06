@@ -22,6 +22,7 @@ import { ALREADY_DELETED_ERROR } from '../config/errors';
 import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import { publishUserAction } from '../listener/UserActionListener';
 import { buildStaleConflictsFilters, purgeOutdatedConflicts, RETENTION_SCOPE_CONFLICTS } from '../modules/provenance/provenance-retention';
+import { PROVENANCE_ENABLED } from '../modules/provenance/provenance-config';
 
 const RETENTION_MANAGER_ENABLED = booleanConf('retention_manager:enabled', false);
 const RETENTION_MANAGER_START_ENABLED = booleanConf('retention_manager:enabled', true);
@@ -98,6 +99,10 @@ export const executeProcessing = async (context: AuthContext, retentionRule: Ret
   const { id, name, max_retention: maxNumber, retention_unit: unit, filters, scope, active } = retentionRule;
   if (active === false) {
     logApp.info(`[OPENCTI] Retention manager skipping inactive rule "${name}"`);
+    return;
+  }
+  if (scope === RETENTION_SCOPE_CONFLICTS && !PROVENANCE_ENABLED) {
+    logApp.debug(`[OPENCTI] Retention manager skipping rule "${name}" while provenance is disabled`);
     return;
   }
   logApp.debug(`[OPENCTI] Executing retention manager rule ${name}`);
