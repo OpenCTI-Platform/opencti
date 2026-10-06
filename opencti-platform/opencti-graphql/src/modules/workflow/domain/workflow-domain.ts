@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { LRUCache } from 'lru-cache';
 import { booleanConf, logApp, ENTITIES_WORKFLOW_FEATURE_FLAG, isFeatureEnabled } from '../../../config/conf';
 import { FunctionalError } from '../../../config/errors';
+import { getEntitiesListFromCache } from '../../../database/cache';
 import { extractEntityRepresentativeName } from '../../../database/entity-representative';
 import { loadAssignees, loadParticipants } from '../../../database/members';
 import { createEntity, createRelation, deleteElementById, loadEntity, updateAttribute } from '../../../database/middleware';
@@ -318,6 +319,24 @@ const resolveSuppliedStatus = async (
   const canonicalStateIds = extractCanonicalStateIds(definitionData as Parameters<typeof extractCanonicalStateIds>[0]);
   if (!canonicalStateIds.has(status.template_id)) return null;
   return { stateId: status.template_id, scope: status.scope };
+};
+
+/**
+ * Resolves the Status currently set on an entity to a state of the published workflow, or `null`
+ * when it maps to no state for the instance scope. Reads statuses from the cache: this runs on
+ * every external status write.
+ */
+const resolveEntityStatusState = async (
+  context: AuthContext,
+  definitionData: WorkflowDefinitionResponse,
+  instanceScope: string | undefined,
+  statusId: string,
+): Promise<string | null> => {
+  const statuses = await getEntitiesListFromCache<BasicWorkflowStatus>(context, SYSTEM_USER, ENTITY_TYPE_STATUS);
+  const status = statuses.find((s) => s.internal_id === statusId);
+  if (!status || status.scope !== resolveProjectionScope(instanceScope)) return null;
+  const canonicalStateIds = extractCanonicalStateIds(definitionData as Parameters<typeof extractCanonicalStateIds>[0]);
+  return canonicalStateIds.has(status.template_id) ? status.template_id : null;
 };
 
 const initializeWorkflowInstance = async (
@@ -1130,8 +1149,14 @@ export const getWorkflowInstance = async (
       try {
         const scope = resolveProjectionScope(instanceEntity.scope);
         const repairContext = { ...bypassDraftContext(context), user: WORKFLOW_MANAGER_USER };
-        const expectedStatusId = await resolveMappedStatusId(repairContext, WORKFLOW_MANAGER_USER, entity.entity_type, scope, currentState);
-        if (expectedStatusId && (entity as BasicStoreEntity).x_opencti_workflow_id !== expectedStatusId) {
+        const entityStatusId = (entity as BasicStoreEntity).x_opencti_workflow_id;
+        // An external write to a Status mapped to no state is kept, never reverted.
+        const isUnmappedExternalWrite = !!entityStatusId
+          && !(await resolveEntityStatusState(repairContext, definitionData, instanceEntity.scope, entityStatusId));
+        const expectedStatusId = isUnmappedExternalWrite
+          ? null
+          : await resolveMappedStatusId(repairContext, WORKFLOW_MANAGER_USER, entity.entity_type, scope, currentState);
+        if (expectedStatusId && entityStatusId !== expectedStatusId) {
           await projectWorkflowState(repairContext, WORKFLOW_MANAGER_USER, entity as BasicStoreEntity, currentState, scope);
           logApp.info('[OPENCTI-MODULE] Repaired x_opencti_workflow_id divergence from WorkflowInstance.currentState', { entityId: effectiveEntityId, entityType: entity.entity_type, currentState });
         }
@@ -1705,6 +1730,98 @@ export const initializeEntityWorkflow = async (
   const definitionData = await getDefinitionData(executionContext, executionUser, entitySetting);
   if (!definitionData) return;
   await ensureWorkflowInstance(executionContext, executionUser, entity, entitySetting, definitionData);
+};
+
+const parseWorkflowHistory = (instanceEntity: WorkflowInstanceStoreEntity): any[] => {
+  try {
+    return JSON.parse(instanceEntity.history || '[]');
+  } catch {
+    return [];
+  }
+};
+
+const applyExternalStatusWrite = async (
+  context: AuthContext,
+  user: AuthUser,
+  instanceEntity: WorkflowInstanceStoreEntity,
+  definitionData: WorkflowDefinitionResponse,
+  newStatusId: string,
+): Promise<void> => {
+  const instanceId = instanceEntity.internal_id || instanceEntity.id;
+  const updateInstance = (inputs: EditInput[]) => updateAttribute(context, WORKFLOW_MANAGER_USER, instanceId, ENTITY_TYPE_WORKFLOW_INSTANCE, inputs);
+  // A pending or failed transition wins: its completion or retry projects its own state.
+  if (instanceEntity.pendingStatus) {
+    const history = [...parseWorkflowHistory(instanceEntity), {
+      state: instanceEntity.currentState,
+      status_id: newStatusId,
+      user_id: user.id,
+      timestamp: now(),
+      event: 'event_external_ignored',
+    }];
+    await updateInstance([{ key: 'history', value: [JSON.stringify(history)] }]);
+    return;
+  }
+  const stateId = await resolveEntityStatusState(context, definitionData, instanceEntity.scope, newStatusId);
+  if (!stateId) {
+    await updateInstance([
+      { key: 'pendingError', value: [`x_opencti_workflow_id was set to Status "${newStatusId}", which does not map to any state of the published workflow`] },
+    ]);
+    return;
+  }
+  if (stateId === instanceEntity.currentState) {
+    if (instanceEntity.pendingError) {
+      await updateInstance([{ key: 'pendingError', value: [null] }]);
+    }
+    return;
+  }
+  const history = [...parseWorkflowHistory(instanceEntity), {
+    state: stateId,
+    user_id: user.id,
+    timestamp: now(),
+    event: 'event_external',
+  }];
+  await updateInstance([
+    { key: 'currentState', value: [stateId] },
+    { key: 'history', value: [JSON.stringify(history)] },
+    { key: 'pendingError', value: [null] },
+  ]);
+};
+
+/**
+ * Keep the WorkflowInstance aligned when x_opencti_workflow_id is written outside the workflow
+ * engine. The write itself is never rejected: a Status that maps to no state of the published
+ * workflow only records a pendingError on the instance. Never throws, the write is already saved.
+ */
+export const syncWorkflowInstanceFromExternalWrite = async (
+  context: AuthContext,
+  user: AuthUser,
+  entity: any,
+  newStatusId: string | null | undefined,
+): Promise<void> => {
+  // A cleared status cannot be a workflow state: read-repair projects the current one back.
+  if (!newStatusId || getDraftContext(context, user)) return;
+  const entityId = entity.internal_id || entity.id;
+  try {
+    const executionContext = { ...bypassDraftContext(context), user: WORKFLOW_MANAGER_USER };
+    const entitySetting = await getWorkflowConfig(executionContext, WORKFLOW_MANAGER_USER, entity.entity_type);
+    const definitionData = await getDefinitionData(executionContext, WORKFLOW_MANAGER_USER, entitySetting);
+    if (!definitionData) return;
+    const lock = await lockResources([`workflow-mutation-${entityId}`]);
+    try {
+      // A later write may have replaced the status while waiting for the lock: its own sync wins.
+      const storedEntity = await storeLoadById<BasicStoreEntity>(executionContext, WORKFLOW_MANAGER_USER, entityId, entity.entity_type);
+      if (storedEntity?.x_opencti_workflow_id !== newStatusId) return;
+      // No instance yet: the next getWorkflowInstance read backfills it.
+      const instanceEntity = await findWorkflowInstanceEntity(executionContext, WORKFLOW_MANAGER_USER, entityId);
+      if (instanceEntity) {
+        await applyExternalStatusWrite(executionContext, user, instanceEntity, definitionData, newStatusId);
+      }
+    } finally {
+      await lock.unlock();
+    }
+  } catch (error) {
+    logApp.error('[OPENCTI-MODULE] Failed to sync WorkflowInstance from external status write', { cause: error, entityId, newStatusId });
+  }
 };
 
 /**
