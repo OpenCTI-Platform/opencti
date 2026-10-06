@@ -9,7 +9,6 @@ import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP } from '../.
 import { isStixCoreRelationship, RELATION_RELATED_TO, RELATION_USES } from '../../schema/stixCoreRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { RELATION_OBJECT } from '../../schema/stixRefRelationship';
-import { ENTITY_TYPE_CAMPAIGN } from '../../schema/stixDomainObject';
 import { getParentTypes, isInternalId } from '../../schema/schemaUtils';
 import { ForbiddenAccess, FunctionalError } from '../../config/errors';
 import {
@@ -748,6 +747,22 @@ export const promoteGraphCluster = async (context: AuthContext, user: AuthUser, 
     createdBy: input.createdBy ?? undefined,
     objectMarking: input.objectMarking ?? [],
   };
+  // A Campaign or Grouping of the same name is upserted, not created: it comes back with its own creation date. A failed
+  // promotion deletes only what it created - its new Campaign or Grouping with their relationships, or the relationships
+  // it added to an existing Campaign - and never knowledge that existed before it.
+  const startedAt = Date.now();
+  const isCreatedByPromotion = (element: { created_at?: Date | string }) => !element.created_at || new Date(element.created_at).getTime() >= startedAt;
+  const addedRelationIds: string[] = [];
+  const rollback = async (element: BasicStoreEntity) => {
+    const removals = isCreatedByPromotion(element)
+      ? [{ id: element.internal_id, type: element.entity_type }]
+      : addedRelationIds.map((relationId) => ({ id: relationId, type: ABSTRACT_STIX_CORE_RELATIONSHIP }));
+    for (let i = 0; i < removals.length; i += 1) {
+      await deleteElementById(context, SYSTEM_USER, removals[i].id, removals[i].type).catch((rollbackError) => {
+        logApp.error('[OPENCTI-MODULE] Graph analytics promotion rollback failed', { cause: rollbackError, elementId: removals[i].id });
+      });
+    }
+  };
   let created: BasicStoreEntity;
   if (input.target === GraphClusterPromotionTarget.Grouping) {
     const objects = Array.from(new Set([...members.map((m) => m.internal_id), ...featureIds]));
@@ -761,20 +776,19 @@ export const promoteGraphCluster = async (context: AuthContext, user: AuthUser, 
         const target = targets[i];
         const relationshipType = await isRelationConsistent(context, user, RELATION_USES, campaign, target) ? RELATION_USES : RELATION_RELATED_TO;
         if (relationshipType === RELATION_USES || await isRelationConsistent(context, user, relationshipType, campaign, target)) {
-          await createRelation(context, user, {
+          const relation = await createRelation(context, user, {
             fromId: campaign.internal_id,
             toId: target.internal_id,
             relationship_type: relationshipType,
             objectMarking: input.objectMarking ?? [],
             createdBy: input.createdBy ?? undefined,
-          });
+          }) as BasicStoreRelation;
+          if (isCreatedByPromotion(relation)) addedRelationIds.push(relation.internal_id);
         }
       }
     } catch (error) {
-      // a failed promotion must not leave a partially related Campaign: deleting it removes its relationships
-      await deleteElementById(context, SYSTEM_USER, campaign.internal_id, ENTITY_TYPE_CAMPAIGN).catch((rollbackError) => {
-        logApp.error('[OPENCTI-MODULE] Graph analytics campaign promotion rollback failed', { cause: rollbackError, campaignId: campaign.internal_id });
-      });
+      // a failed promotion must not leave a partially related Campaign
+      await rollback(campaign);
       throw error;
     }
     created = campaign;
@@ -782,10 +796,8 @@ export const promoteGraphCluster = async (context: AuthContext, user: AuthUser, 
   try {
     await addClusterPromotion(context, cluster, created.internal_id);
   } catch (error) {
-    // a promotion is only kept when the cluster lists it: the created knowledge is removed with its relationships
-    await deleteElementById(context, SYSTEM_USER, created.internal_id, created.entity_type).catch((rollbackError) => {
-      logApp.error('[OPENCTI-MODULE] Graph analytics promotion rollback failed', { cause: rollbackError, createdId: created.internal_id });
-    });
+    // a promotion is only kept when the cluster lists it
+    await rollback(created);
     throw error;
   }
   addGraphClusterPromotionCount();

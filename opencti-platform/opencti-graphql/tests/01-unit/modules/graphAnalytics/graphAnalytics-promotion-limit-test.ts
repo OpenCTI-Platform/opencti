@@ -9,6 +9,8 @@ import { addWorkspace, workspaceEditField } from '../../../../src/modules/worksp
 import { GraphClusterPromotionTarget } from '../../../../src/generated/graphql';
 import { SYSTEM_USER } from '../../../../src/utils/access';
 import type { AuthContext } from '../../../../src/types/user';
+import { createRelation, deleteElementById } from '../../../../src/database/middleware';
+import { isRelationConsistent } from '../../../../src/utils/modelConsistency';
 
 vi.mock('../../../../src/database/engine', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/engine')>()),
@@ -28,6 +30,15 @@ vi.mock('../../../../src/modules/grouping/grouping-domain', async (importOrigina
 vi.mock('../../../../src/domain/campaign', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/domain/campaign')>()),
   addCampaign: vi.fn(),
+}));
+vi.mock('../../../../src/database/middleware', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/database/middleware')>()),
+  createRelation: vi.fn(),
+  deleteElementById: vi.fn(),
+}));
+vi.mock('../../../../src/utils/modelConsistency', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/utils/modelConsistency')>()),
+  isRelationConsistent: vi.fn(),
 }));
 vi.mock('../../../../src/modules/workspace/workspace-domain', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/modules/workspace/workspace-domain')>()),
@@ -68,6 +79,31 @@ describe('graph analytics promotion of a cluster that grows while it is promoted
     expect(addGrouping).toHaveBeenCalledTimes(1);
     expect(vi.mocked(addGrouping).mock.calls[0][2].objects).toHaveLength(PROMOTION_MAX_MEMBERS);
     expect(addClusterPromotion).toHaveBeenCalledWith(context, expect.objectContaining({ internal_id: 'cluster-1' }), 'grouping-1');
+  });
+
+  it('should never delete an existing Campaign the promotion upserted, only the relationships it added', async () => {
+    vi.mocked(elList).mockResolvedValue(members(2) as never);
+    vi.mocked(isRelationConsistent).mockReset().mockResolvedValue(true as never);
+    vi.mocked(deleteElementById).mockReset().mockResolvedValue({} as never);
+    // a Campaign of the same name existed: the creation upserted it and returned it with its own creation date
+    vi.mocked(addCampaign).mockResolvedValue({ internal_id: 'campaign-1', entity_type: 'Campaign', created_at: '2020-01-01T00:00:00.000Z' } as never);
+    vi.mocked(createRelation).mockReset()
+      .mockResolvedValueOnce({ internal_id: 'relation-1', created_at: new Date(Date.now() + 1000).toISOString() } as never)
+      .mockRejectedValueOnce(new Error('relationship failure'));
+    const promotion = promoteGraphCluster(context, SYSTEM_USER, 'cluster-1', { target: GraphClusterPromotionTarget.Campaign, name: 'Existing' });
+    await expect(promotion).rejects.toThrow('relationship failure');
+    expect(vi.mocked(deleteElementById).mock.calls.map((call) => call[2])).toEqual(['relation-1']);
+  });
+
+  it('should delete the Campaign it created when the promotion fails', async () => {
+    vi.mocked(elList).mockResolvedValue(members(1) as never);
+    vi.mocked(isRelationConsistent).mockReset().mockResolvedValue(true as never);
+    vi.mocked(deleteElementById).mockReset().mockResolvedValue({} as never);
+    vi.mocked(addCampaign).mockResolvedValue({ internal_id: 'campaign-2', entity_type: 'Campaign', created_at: new Date(Date.now() + 1000).toISOString() } as never);
+    vi.mocked(createRelation).mockReset().mockRejectedValueOnce(new Error('relationship failure'));
+    const promotion = promoteGraphCluster(context, SYSTEM_USER, 'cluster-1', { target: GraphClusterPromotionTarget.Campaign, name: 'New' });
+    await expect(promotion).rejects.toThrow('relationship failure');
+    expect(vi.mocked(deleteElementById).mock.calls.map((call) => call[2])).toEqual(['campaign-2']);
   });
 
   it('should refuse the investigation when the member query returns more members than the limit', async () => {
