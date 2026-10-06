@@ -98,6 +98,7 @@ const graphContainerKnowledgeObjectsFragment = graphql`
           node {
             ... on BasicObject {
               id
+              standard_id
               entity_type
               parent_types
             }
@@ -298,6 +299,7 @@ const graphContainerKnowledgeObjectsFragment = graphql`
               from {
                 ... on BasicObject {
                   id
+                  standard_id
                   entity_type
                   parent_types
                 }
@@ -313,6 +315,7 @@ const graphContainerKnowledgeObjectsFragment = graphql`
               to {
                 ... on BasicObject {
                   id
+                  standard_id
                   entity_type
                   parent_types
                 }
@@ -350,6 +353,7 @@ const graphContainerKnowledgeObjectsFragment = graphql`
               from {
                 ... on BasicObject {
                   id
+                  standard_id
                   entity_type
                   parent_types
                 }
@@ -365,6 +369,7 @@ const graphContainerKnowledgeObjectsFragment = graphql`
               to {
                 ... on BasicObject {
                   id
+                  standard_id
                   entity_type
                   parent_types
                 }
@@ -397,6 +402,7 @@ const graphContainerKnowledgeObjectsFragment = graphql`
               from {
                 ... on BasicObject {
                   id
+                  standard_id
                   entity_type
                   parent_types
                 }
@@ -412,6 +418,7 @@ const graphContainerKnowledgeObjectsFragment = graphql`
               to {
                 ... on BasicObject {
                   id
+                  standard_id
                   entity_type
                   parent_types
                 }

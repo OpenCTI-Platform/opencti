@@ -75,6 +75,12 @@ describe('useGraphParser', () => {
       expect(isRestrictedObject(constructEntity({ ...placeholder, created: '2025-01-01T00:00:00.000Z' }))).toBe(false);
     });
 
+    it('decides by the standard id when the query fetched it, whatever else the endpoint carries', () => {
+      const endpoint = { name: 'Restricted', createdBy: undefined, objectMarking: undefined, created: undefined, created_at: undefined } as Partial<ObjectToParse>;
+      expect(isRestrictedObject(constructEntity({ ...endpoint, standard_id: 'Restricted' }))).toBe(true);
+      expect(isRestrictedObject(constructEntity({ ...endpoint, standard_id: 'malware--0d4b4a2c-0a9e-4a37-9d8c-6d1d1c8c2b7e' }))).toBe(false);
+    });
+
     it('never takes a relationship for a restricted entity', () => {
       expect(isRestrictedObject(constructRelationship({ name: 'Restricted' } as Partial<ObjectToParse>))).toBe(false);
     });

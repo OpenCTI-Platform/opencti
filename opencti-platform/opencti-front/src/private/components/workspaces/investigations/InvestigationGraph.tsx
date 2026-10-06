@@ -83,6 +83,7 @@ const investigationGraphObjectsFragment = graphql`
           node {
             ... on BasicObject {
               id
+              standard_id
               entity_type
               parent_types
             }
@@ -281,6 +282,7 @@ const investigationGraphObjectsFragment = graphql`
               from {
                 ... on BasicObject {
                   id
+                  standard_id
                   entity_type
                   parent_types
                 }
@@ -298,6 +300,7 @@ const investigationGraphObjectsFragment = graphql`
               to {
                 ... on BasicObject {
                   id
+                  standard_id
                   entity_type
                   parent_types
                 }
@@ -347,6 +350,7 @@ const investigationGraphObjectsFragment = graphql`
               from {
                 ... on BasicObject {
                   id
+                  standard_id
                   entity_type
                   parent_types
                 }
@@ -362,6 +366,7 @@ const investigationGraphObjectsFragment = graphql`
               to {
                 ... on BasicObject {
                   id
+                  standard_id
                   entity_type
                   parent_types
                 }

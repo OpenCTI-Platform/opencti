@@ -54,6 +54,7 @@ const graphContainerCorrelationObjectsFragment = graphql`
           node {
             ... on BasicObject {
               id
+              standard_id
               entity_type
               parent_types
             }

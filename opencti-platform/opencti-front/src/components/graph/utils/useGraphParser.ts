@@ -9,6 +9,7 @@ import { itemColor } from '../../../utils/Colors';
 
 export interface ObjectToParse {
   id: string;
+  standard_id?: string;
   entity_type: string;
   relationship_type: string;
   parent_types: string[];
@@ -68,12 +69,14 @@ const RESTRICTED_NAME = 'Restricted';
 
 /**
  * Whether the object is the placeholder the platform returns for an entity the reader may not see:
- * named "Restricted", with every other value emptied (no author, no marking, dates at the start of
- * time). A readable entity that happens to be named "Restricted" keeps its author, its markings or
- * its real dates, and is not taken for one.
+ * every text value replaced by "Restricted", its standard id included, which decides when the query
+ * fetched it. Without it: named "Restricted", with every other value emptied (no author, no marking,
+ * dates at the start of time); a readable entity that happens to be named "Restricted" keeps its
+ * author, its markings or its real dates, and is not taken for one.
  */
 export const isRestrictedObject = (data: ObjectToParse) => {
   if (data.parent_types.includes('basic-relationship')) return false;
+  if (data.standard_id) return data.standard_id === RESTRICTED_NAME;
   const { name, representative, created_at: createdAt } = data as ObjectToParse & {
     name?: string | null;
     representative?: { main?: string | null } | null;

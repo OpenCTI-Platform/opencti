@@ -189,6 +189,7 @@ const containersObjectsFragment = graphql`
             from {
               ... on BasicObject {
                 id
+                standard_id
                 entity_type
                 parent_types
               }
@@ -204,6 +205,7 @@ const containersObjectsFragment = graphql`
             to {
               ... on BasicObject {
                 id
+                standard_id
                 entity_type
                 parent_types
               }

@@ -79,6 +79,7 @@ const expandRelationshipsQuery = graphql`
           from {
             ... on BasicObject {
               id
+              standard_id
               entity_type
               parent_types
             }
@@ -279,6 +280,7 @@ const expandRelationshipsQuery = graphql`
               from {
                 ... on BasicObject {
                   id
+                  standard_id
                   entity_type
                   parent_types
                 }
@@ -294,6 +296,7 @@ const expandRelationshipsQuery = graphql`
               to {
                 ... on BasicObject {
                   id
+                  standard_id
                   entity_type
                   parent_types
                 }
@@ -326,6 +329,7 @@ const expandRelationshipsQuery = graphql`
           to {
             ... on BasicObject {
               id
+              standard_id
               entity_type
               parent_types
             }
@@ -494,6 +498,7 @@ const expandRelationshipsQuery = graphql`
               from {
                 ... on BasicObject {
                   id
+                  standard_id
                   entity_type
                   parent_types
                 }
@@ -509,6 +514,7 @@ const expandRelationshipsQuery = graphql`
               to {
                 ... on BasicObject {
                   id
+                  standard_id
                   entity_type
                   parent_types
                 }
