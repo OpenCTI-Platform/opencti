@@ -11,6 +11,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import type { Theme } from '../../../../components/Theme';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
+import { fetchQuery } from '../../../../relay/environment';
 import CurationProposalActions from './CurationProposalActions';
 import CurationProposalCompare, { buildMergePreview, compareFragment } from './CurationProposalCompare';
 import CurationProposalEvidence from './CurationProposalEvidence';
@@ -107,6 +108,9 @@ const CurationProposalDetails = ({ data, adjudicationAvailable }: { data: Curati
   const labels = useCurationLabels();
   const translate = useExplanationTranslator();
   const proposal = useFragment(proposalDetailsFragment, data);
+  const reload = () => {
+    fetchQuery<CurationProposalQuery>(curationProposalQuery, { id: proposal.id }, { fetchPolicy: 'network-only' }).toPromise().catch(() => undefined);
+  };
   const payload = parseJsonObject(proposal.action_payload);
   const isAttribution = proposal.recommended_action === 'resolve_attribution';
   const attributionActorIds = isAttribution && Array.isArray(payload?.relationships)
@@ -160,6 +164,7 @@ const CurationProposalDetails = ({ data, adjudicationAvailable }: { data: Curati
             preview={preview}
             adjudicationAvailable={adjudicationAvailable}
             explanation={proposal.explanation}
+            onRefused={reload}
           />
         </Box>
       </Card>

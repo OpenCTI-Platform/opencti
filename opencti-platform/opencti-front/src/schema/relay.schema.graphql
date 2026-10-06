@@ -17607,6 +17607,7 @@ input CurationProposalAcceptInput {
   target_id: String
   rationale: String
   action_payload: String
+  expected_updated_at: DateTime
 }
 
 input CurationProposalDecideInput {

@@ -6733,6 +6733,7 @@ export type CurationProposal = BasicObject & InternalObject & {
 
 export type CurationProposalAcceptInput = {
   action_payload?: InputMaybe<Scalars['String']['input']>;
+  expected_updated_at?: InputMaybe<Scalars['DateTime']['input']>;
   rationale?: InputMaybe<Scalars['String']['input']>;
   target_id?: InputMaybe<Scalars['String']['input']>;
 };

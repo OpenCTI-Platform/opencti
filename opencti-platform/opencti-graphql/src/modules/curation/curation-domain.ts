@@ -345,19 +345,25 @@ const applyAndRecord = async (
   return element as unknown as BasicStoreEntityCurationProposal;
 });
 
+/**
+ * Acceptance by an analyst. Detectors refresh an open proposal in place (its recommendation, target and payload): with
+ * expected_updated_at, the acceptance only applies the proposal as the analyst read it (checked under the transition lock).
+ */
 export const acceptProposal = async (
   context: AuthContext,
   user: AuthUser,
   id: string,
-  input?: { target_id?: string | null; rationale?: string | null; action_payload?: string | null } | null,
+  input?: { target_id?: string | null; rationale?: string | null; action_payload?: string | null; expected_updated_at?: string | Date | null } | null,
 ) => {
   const proposal = await loadOpenProposal(context, user, id);
+  checkProposalRevision(proposal, input?.expected_updated_at);
   const settings = await getCurationSettings(context);
   return applyAndRecord(context, user, proposal, settings, {
     status: PROPOSAL_STATUS_ACCEPTED,
     rationale: input?.rationale,
     targetId: input?.target_id,
     payload: parseJsonPayload(input?.action_payload),
+    expectedUpdatedAt: input?.expected_updated_at,
   });
 };
 

@@ -71,17 +71,20 @@ interface CurationProposalActionsProps {
     can_apply: boolean;
     can_revert: boolean;
     adjudicable: boolean;
+    updated_at?: string | null;
   };
   survivorId: string | null;
   survivorName: string | null;
   preview: CurationMergePreview | null;
   adjudicationAvailable: boolean;
   explanation?: CurationExplanationData | null;
+  /** Reads the proposal again after a refused acceptance, so that the dialog shows its current content. */
+  onRefused?: () => void;
 }
 
 type DialogKind = 'accept' | 'reject' | 'revert' | null;
 
-const CurationProposalActions = ({ proposal, survivorId, survivorName, preview, adjudicationAvailable, explanation = null }: CurationProposalActionsProps) => {
+const CurationProposalActions = ({ proposal, survivorId, survivorName, preview, adjudicationAvailable, explanation = null, onRefused }: CurationProposalActionsProps) => {
   const { t_i18n } = useFormatter();
   const labels = useCurationLabels();
   const translate = useExplanationTranslator();
@@ -113,17 +116,23 @@ const CurationProposalActions = ({ proposal, survivorId, survivorName, preview, 
       close();
     };
     if (dialog === 'accept') {
+      // The platform refuses the acceptance when a detector refreshed the proposal since this version was shown.
       const input = {
         rationale: trimmed,
         target_id: isTargeted ? survivorId : null,
         action_payload: isAttribution && survivorId ? JSON.stringify({ keep_actor_id: survivorId }) : null,
+        expected_updated_at: proposal.updated_at ?? null,
       };
       commitAccept({
         variables: { id: proposal.id, input },
         onCompleted: (_, errors) => {
-          if (notifyPayloadErrors(errors)) return;
+          if (notifyPayloadErrors(errors)) {
+            onRefused?.();
+            return;
+          }
           done(t_i18n('The curation proposal has been applied'));
         },
+        onError: () => onRefused?.(),
       });
     } else if (dialog === 'reject') {
       commitReject({

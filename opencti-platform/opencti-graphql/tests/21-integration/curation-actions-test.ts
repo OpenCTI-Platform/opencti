@@ -1017,6 +1017,34 @@ describe('Knowledge curation actions', () => {
     expect(decided.data?.curationProposalDecide.proposal_status).toBe('rejected');
   });
 
+  it('should refuse an acceptance of a proposal that changed since it was read', async () => {
+    const target = await createIntrusionSet(`${PREFIX} Accept Revision`);
+    const proposedName = `${PREFIX} Accept Revision Alias`;
+    const id = await createProposal({
+      kind: PROPOSAL_KIND_ALIAS,
+      detector: DETECTOR_NORMALIZATION,
+      subjects: [subjectOf(target)],
+      target_id: target.id,
+      recommended_action: ACTION_ADD_ALIASES,
+      action_payload: { aliases: [proposedName] },
+      evidence: evidenceFor('taxonomy', 'The vendor taxonomy lists a name the entity does not carry'),
+      confidence: 0.7,
+    });
+    const read = await storeLoadById(testContext, ADMIN_USER, id, ENTITY_TYPE_CURATION_PROPOSAL) as unknown as { updated_at: string };
+    const readAt = new Date(read.updated_at);
+    // Read before a later refresh: refused, and the graph is left as it was.
+    const refused = await queryAsAdmin({
+      query: ACCEPT_MUTATION,
+      variables: { id, input: { expected_updated_at: new Date(readAt.getTime() - 1000).toISOString() } },
+    });
+    expect(refused.errors?.[0]?.message).toContain('changed since it was read');
+    expect((await loadProposal(id)).proposal_status).toBe('open');
+    expect((await loadIntrusionSet(target.id)).aliases ?? []).toEqual([]);
+    const accepted = await queryAsAdminWithSuccess({ query: ACCEPT_MUTATION, variables: { id, input: { expected_updated_at: readAt.toISOString() } } });
+    expect(accepted.data?.curationProposalAccept.proposal_status).toBe('accepted');
+    expect((await loadIntrusionSet(target.id)).aliases).toEqual([proposedName]);
+  });
+
   it('should hide a proposal from a user who lost access to a subject before its restrictions are refreshed', async () => {
     const reclassified = await createIntrusionSet(`${PREFIX} Live Check Reclassified`);
     const other = await createIntrusionSet(`${PREFIX} Live Check Other`);

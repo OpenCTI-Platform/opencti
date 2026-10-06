@@ -1,4 +1,4 @@
-import { fireEvent, screen, within } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import React, { type ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import testRender, { createMockUserContext } from '../../../../utils/tests/test-render';
@@ -65,6 +65,30 @@ describe('Curation proposal actions', () => {
     );
     fireEvent.click(screen.getByTestId('curation-proposal-review'));
     expect(screen.getByText('Add 2 names as aliases of Cl0p')).toBeInTheDocument();
+  });
+
+  it('accepts the proposal as it was shown, and reads it again when the platform refuses the acceptance', async () => {
+    const onRefused = vi.fn();
+    const shown = { ...proposal, name: 'Cl0p', recommended_action: 'add_aliases', can_apply: true, updated_at: '2026-10-06T15:00:00.000Z' };
+    const { relayEnv } = testRender(
+      <CurationProposalActions
+        proposal={shown}
+        survivorId="cl0p"
+        survivorName="Cl0p"
+        preview={{ count: 0, relationships: 0, aliases: ['Clop'], externalReferences: 0 }}
+        adjudicationAvailable={false}
+        onRefused={onRefused}
+      />,
+      { userContext: createMockUserContext({ me: { name: 'analyst', capabilities: [{ name: 'KNOWLEDGE' }, { name: 'KNOWLEDGE_KNUPDATE' }] } }) },
+    );
+    fireEvent.click(screen.getByTestId('curation-proposal-review'));
+    fireEvent.click(screen.getByTestId('curation-proposal-confirm'));
+    await waitFor(() => expect(relayEnv.mock.getAllOperations()).toHaveLength(1));
+    expect(relayEnv.mock.getMostRecentOperation().request.variables.input.expected_updated_at).toBe('2026-10-06T15:00:00.000Z');
+    const message = 'This curation proposal changed since it was read: read it again before deciding on it';
+    act(() => relayEnv.mock.rejectMostRecentOperation(Object.assign(new Error(message), { res: { errors: [{ message }] } })));
+    expect(onRefused).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 
   describe('with the explanation of the proposal', () => {
