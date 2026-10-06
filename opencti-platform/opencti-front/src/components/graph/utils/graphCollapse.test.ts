@@ -158,4 +158,9 @@ describe('withCollapsedGroups', () => {
     expect(selectableTypes(inventory, [actor, m1, m2], (node) => !isCollapsedMember(node, ['Malware']))).toEqual(['Intrusion-Set']);
     expect(selectableTypes(inventory, [actor, m1, m2], (node) => node.id === 'm2')).toEqual(['Malware']);
   });
+
+  it('never offers the type of a nested relationship drawn as a node', () => {
+    const nested = graphNode({ id: 'nested', entity_type: 'uses', relationship_type: 'uses' });
+    expect(selectableTypes(['Intrusion-Set', 'uses'], [actor, nested], () => true)).toEqual(['Intrusion-Set']);
+  });
 });

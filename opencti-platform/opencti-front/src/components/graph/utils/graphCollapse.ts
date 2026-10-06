@@ -164,6 +164,7 @@ export const isCollapsedMember = (node: Pick<GraphNode, 'entity_type' | 'relatio
  * all hidden or collapsed into a group leaves nothing for a selection by type.
  */
 export const selectableTypes = (inventory: readonly string[], nodes: readonly GraphNode[], isShown: (node: GraphNode) => boolean) => {
-  const shown = new Set(nodes.filter(isShown).map((node) => node.entity_type));
+  // A nested relationship drawn as a node is no entity to select by type.
+  const shown = new Set(nodes.filter((node) => !node.relationship_type && isShown(node)).map((node) => node.entity_type));
   return inventory.filter((type) => shown.has(type));
 };
