@@ -16,6 +16,7 @@ import {
   fitSvgToWidth,
   groupEventsByBucket,
   groupOverflowItems,
+  hasClearableTimelineFilters,
   isTimelineViewFilteredBy,
   layoutAnchorLabels,
   layoutLaneRows,
@@ -123,6 +124,18 @@ describe('Timeline time domain', () => {
     expect(zoomed).toEqual([0, 5 * HOUR]);
     expect(panDomain([0, 10], 5)).toEqual([5, 15]);
     expect(centerDomain([0, 10], 100)).toEqual([95, 105]);
+  });
+
+  it('should tell the filters the user can clear from the timeline settings', () => {
+    const unfiltered = { lanes: [], kinds: [], sources: [], search: '', pinnedOnly: false };
+    expect(hasClearableTimelineFilters(unfiltered)).toBe(false);
+    // Blank search text filters nothing
+    expect(hasClearableTimelineFilters({ ...unfiltered, search: '  ' })).toBe(false);
+    expect(hasClearableTimelineFilters({ ...unfiltered, lanes: ['response'] })).toBe(true);
+    expect(hasClearableTimelineFilters({ ...unfiltered, kinds: ['milestone'] })).toBe(true);
+    expect(hasClearableTimelineFilters({ ...unfiltered, sources: ['manual'] })).toBe(true);
+    expect(hasClearableTimelineFilters({ ...unfiltered, search: 'ransom' })).toBe(true);
+    expect(hasClearableTimelineFilters({ ...unfiltered, pinnedOnly: true })).toBe(true);
   });
 
   it('should start a zoom or a centering from the domain the user set, else the one the lanes display', () => {

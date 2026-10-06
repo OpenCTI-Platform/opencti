@@ -507,6 +507,10 @@ export const effectiveLanes = (selected: readonly string[], enabledLanes: readon
 export const isTimelineViewFilteredBy = (change: 'pin' | 'annotation', state: Pick<TimelineViewState, 'pinnedOnly' | 'search'>): boolean => (
   change === 'pin' ? state.pinnedOnly : state.search.trim().length > 0
 );
+/** Whether the view narrows the events with a filter the user can clear: the timeline settings are not such a filter. */
+export const hasClearableTimelineFilters = (state: Pick<TimelineViewState, 'lanes' | 'kinds' | 'sources' | 'search' | 'pinnedOnly'>): boolean => (
+  state.lanes.length > 0 || state.kinds.length > 0 || state.sources.length > 0 || state.search.trim().length > 0 || state.pinnedOnly
+);
 // endregion
 
 // region compact views (overview card)

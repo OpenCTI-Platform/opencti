@@ -44,6 +44,21 @@ describe('ContainerTimelineEmptyState', () => {
     testRender(<ContainerTimelineEmptyState filtered={false} canEdit={true} regenerating={true} {...actions()} />);
     expect(screen.getByRole('button', { name: 'Regenerate the timeline' })).toBeDisabled();
   });
+
+  it('points to the timeline settings, not to the filters, when the settings hide every event', () => {
+    const handlers = { ...actions(), onOpenSettings: vi.fn() };
+    testRender(<ContainerTimelineEmptyState filtered={false} hiddenBySettings={true} canEdit={true} regenerating={false} {...handlers} />);
+    expect(screen.getByRole('status')).toHaveTextContent('Every event of the case is in a lane or a kind the timeline settings hide.');
+    fireEvent.click(screen.getByRole('button', { name: 'Timeline settings' }));
+    expect(handlers.onOpenSettings).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('button', { name: 'Clear filters' })).toBeNull();
+  });
+
+  it('only explains the settings to readers who cannot change them', () => {
+    testRender(<ContainerTimelineEmptyState filtered={false} hiddenBySettings={true} canEdit={false} regenerating={false} {...actions()} onOpenSettings={vi.fn()} />);
+    expect(screen.getByRole('status')).toHaveTextContent('Every event of the case is in a lane or a kind the timeline settings hide.');
+    expect(screen.queryByRole('button')).toBeNull();
+  });
 });
 
 describe('ContainerTimelineErrorState', () => {

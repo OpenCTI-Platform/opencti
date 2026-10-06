@@ -50,6 +50,7 @@ import {
   currentTimelineDomain,
   effectiveKinds,
   effectiveLanes,
+  hasClearableTimelineFilters,
   isTimelineViewFilteredBy,
   parseTimelineViewState,
   serializeTimelineViewState,
@@ -305,6 +306,7 @@ interface ContainerTimelineEventsViewProps {
   onAdd: () => void;
   onRegenerate: () => void;
   onClearFilters: () => void;
+  onOpenSettings: () => void;
   onVisibleDomainChange: (domain: TimelineDomain | null) => void;
   // Number of events matching the filters of the view, loaded or not
   onTotalChange: (total: number) => void;
@@ -328,6 +330,7 @@ const ContainerTimelineEventsView = ({
   onAdd,
   onRegenerate,
   onClearFilters,
+  onOpenSettings,
   onVisibleDomainChange,
   onTotalChange,
   onCenter,
@@ -405,12 +408,14 @@ const ContainerTimelineEventsView = ({
     <>
       {events.length === 0 ? (
         <ContainerTimelineEmptyState
-          filtered={summary.total > 0}
+          filtered={summary.total > 0 && hasClearableTimelineFilters(state)}
+          hiddenBySettings={summary.total > 0 && !hasClearableTimelineFilters(state)}
           canEdit={summary.can_edit}
           regenerating={regenerating}
           onAdd={onAdd}
           onRegenerate={onRegenerate}
           onClearFilters={onClearFilters}
+          onOpenSettings={onOpenSettings}
         />
       ) : (
         <>
@@ -711,6 +716,7 @@ const ContainerTimelineContent = ({ containerId, containerName, summaryRef, relo
                 }}
                 onRegenerate={regenerate}
                 onClearFilters={() => updateState({ lanes: [], kinds: [], sources: [], search: '', includeHidden: false, pinnedOnly: false })}
+                onOpenSettings={() => setSettingsOpen(true)}
                 onVisibleDomainChange={setVisibleDomain}
                 onTotalChange={setViewTotal}
                 onCenter={(centered) => {
@@ -750,8 +756,7 @@ interface ContainerTimelineProps {
   containerName: string;
 }
 
-/** Timeline tab of an Incident or a Case (Incident response, Request for information, Request for takedown). */
-const ContainerTimeline = ({ containerId, containerName }: ContainerTimelineProps) => {
+const ContainerTimelineOfContainer = ({ containerId, containerName }: ContainerTimelineProps) => {
   const [summaryRef, loadSummary] = useQueryLoadingWithLoadQuery<ContainerTimelineSummaryQuery>(containerTimelineSummaryQuery, { id: containerId });
   const reloadSummary = useCallback(() => loadSummary({ id: containerId }, { fetchPolicy: 'network-only' }), [loadSummary, containerId]);
   // Usage telemetry: one opening of the tab (the strip and the widget read the same summary without counting)
@@ -766,5 +771,13 @@ const ContainerTimeline = ({ containerId, containerName }: ContainerTimelineProp
     </Suspense>
   );
 };
+
+/**
+ * Timeline tab of an Incident or a Case (Incident response, Request for information, Request for takedown). The route
+ * keeps the component from one container to the next: keyed by the container, each one starts with its own state.
+ */
+const ContainerTimeline = ({ containerId, containerName }: ContainerTimelineProps) => (
+  <ContainerTimelineOfContainer key={containerId} containerId={containerId} containerName={containerName} />
+);
 
 export default ContainerTimeline;

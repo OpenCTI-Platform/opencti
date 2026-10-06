@@ -13,18 +13,46 @@ export const TIMELINE_DOCUMENTATION_URL = 'https://docs.opencti.io/latest/usage/
 interface ContainerTimelineEmptyStateProps {
   // The case has events, but none matches the current filters
   filtered: boolean;
+  // The case has events, but the timeline settings (enabled lanes, hidden kinds) hide every one of them
+  hiddenBySettings?: boolean;
   canEdit: boolean;
   regenerating: boolean;
   onAdd: () => void;
   onRegenerate: () => void;
   onClearFilters: () => void;
+  onOpenSettings?: () => void;
 }
 
-/** First use: what fills the timeline and how to start it. Filtered out: how to get the events back. */
-export const ContainerTimelineEmptyState = ({ filtered, canEdit, regenerating, onAdd, onRegenerate, onClearFilters }: ContainerTimelineEmptyStateProps) => {
+/** First use: what fills the timeline and how to start it. Filtered out or hidden by the settings: how to get the events back. */
+export const ContainerTimelineEmptyState = ({
+  filtered,
+  hiddenBySettings = false,
+  canEdit,
+  regenerating,
+  onAdd,
+  onRegenerate,
+  onClearFilters,
+  onOpenSettings,
+}: ContainerTimelineEmptyStateProps) => {
   const { t_i18n } = useFormatter();
   const theme = useTheme();
   const colors = useTimelineColors();
+  if (hiddenBySettings) {
+    return (
+      <div
+        data-testid="timeline-empty"
+        role="status"
+        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: theme.spacing(1.5), padding: theme.spacing(4, 2) }}
+      >
+        <Text variant="content-base-medium">{t_i18n('Every event of the case is in a lane or a kind the timeline settings hide.')}</Text>
+        {canEdit && onOpenSettings && (
+          <Button variant="secondary" size="small" onClick={onOpenSettings} data-testid="timeline-empty-open-settings">
+            {t_i18n('Timeline settings')}
+          </Button>
+        )}
+      </div>
+    );
+  }
   if (filtered) {
     return (
       <div
