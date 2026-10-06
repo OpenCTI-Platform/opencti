@@ -20,6 +20,30 @@ _RELATIONSHIP_INPUT_FIELDS_QUERY = """
     }
 """
 
+_RELATIONSHIP_OUTPUT_FIELDS_QUERY = """
+    query StixCoreRelationshipOutputFeatureDetection {
+        __type(name: "StixCoreRelationship") {
+            fields {
+                name
+            }
+        }
+    }
+"""
+
+# Schema feature detections of the relationship: the creation input and the relationship type
+_RELATIONSHIP_FIELDS_DETECTIONS = {
+    "input": (_RELATIONSHIP_INPUT_FIELDS_QUERY, "inputFields"),
+    "output": (_RELATIONSHIP_OUTPUT_FIELDS_QUERY, "fields"),
+}
+
+COVERAGE_PLATFORMS_PROPERTIES = """
+            coverage_platforms_information {
+                platform_ref
+                coverage_name
+                coverage_score
+            }
+"""
+
 
 class StixCoreRelationship:
     """Main StixCoreRelationship class for OpenCTI
@@ -39,8 +63,10 @@ class StixCoreRelationship:
         self.opencti = opencti
         self._input_fields: Optional[set] = None
         self._input_fields_retry_at = 0.0
+        self._output_fields: Optional[set] = None
+        self._output_fields_retry_at = 0.0
         self._detection_lock = threading.Lock()
-        self.properties = """
+        self._properties = """
             id
             entity_type
             parent_types
@@ -453,35 +479,62 @@ class StixCoreRelationship:
         :return: True when ``StixCoreRelationshipAddInput`` has the field
         :rtype: bool
         """
-        if self._input_fields is not None and (
-            field in self._input_fields
-            or time.monotonic() < self._input_fields_retry_at
+        return self._supports_schema_field("input", field)
+
+    def supports_output_field(self, field: str) -> bool:
+        """Tell if the relationship type of the platform has a field (schema feature detection, cached).
+
+        Cached and checked again like :py:meth:`supports_input_field`.
+
+        :param field: name of the field
+        :type field: str
+        :return: True when ``StixCoreRelationship`` has the field
+        :rtype: bool
+        """
+        return self._supports_schema_field("output", field)
+
+    def _supports_schema_field(self, kind: str, field: str) -> bool:
+        fields_attribute = f"_{kind}_fields"
+        retry_attribute = f"_{kind}_fields_retry_at"
+        known = getattr(self, fields_attribute)
+        if known is not None and (
+            field in known or time.monotonic() < getattr(self, retry_attribute)
         ):
-            return field in self._input_fields
+            return field in known
         with self._detection_lock:
-            if self._input_fields is None or (
-                field not in self._input_fields
-                and time.monotonic() >= self._input_fields_retry_at
+            known = getattr(self, fields_attribute)
+            if known is None or (
+                field not in known
+                and time.monotonic() >= getattr(self, retry_attribute)
             ):
+                query, fields_key = _RELATIONSHIP_FIELDS_DETECTIONS[kind]
                 try:
-                    result = self.opencti.query(_RELATIONSHIP_INPUT_FIELDS_QUERY)
+                    result = self.opencti.query(query)
                     fields = ((result.get("data") or {}).get("__type") or {}).get(
-                        "inputFields"
+                        fields_key
                     ) or []
-                    self._input_fields = {item["name"] for item in fields}
-                    self._input_fields_retry_at = (
-                        time.monotonic() + FEATURE_DETECTION_RETRY_DELAY
-                    )
+                    setattr(self, fields_attribute, {item["name"] for item in fields})
                 except Exception as err:  # pylint: disable=broad-except
                     self.opencti.app_logger.warning(
-                        "Cannot detect the relationship input fields of the platform",
+                        f"Cannot detect the relationship {kind} fields of the platform",
                         {"error": str(err)},
                     )
-                    self._input_fields = set()
-                    self._input_fields_retry_at = (
-                        time.monotonic() + FEATURE_DETECTION_RETRY_DELAY
-                    )
-        return field in self._input_fields
+                    setattr(self, fields_attribute, set())
+                setattr(
+                    self,
+                    retry_attribute,
+                    time.monotonic() + FEATURE_DETECTION_RETRY_DELAY,
+                )
+        return field in getattr(self, fields_attribute)
+
+    @property
+    def properties(self):
+        """Default selection of a relationship, with the coverage per security platform when the platform knows it."""
+        return self._properties + (
+            COVERAGE_PLATFORMS_PROPERTIES
+            if self.supports_output_field("coverage_platforms_information")
+            else ""
+        )
 
     @staticmethod
     def convert_coverage_platforms(raw_coverage_platforms):

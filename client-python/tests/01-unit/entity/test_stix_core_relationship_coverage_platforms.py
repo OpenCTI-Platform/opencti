@@ -34,6 +34,33 @@ COVERAGE_PLATFORMS = [
         "coverage_score": 75,
     }
 ]
+SUPPORTED_OUTPUT = {
+    "data": {
+        "__type": {
+            "fields": [
+                {"name": "id"},
+                {"name": "coverage_information"},
+                {"name": "coverage_platforms_information"},
+            ]
+        }
+    }
+}
+UNSUPPORTED_OUTPUT = {
+    "data": {"__type": {"fields": [{"name": "id"}, {"name": "coverage_information"}]}}
+}
+HAS_COVERED = {
+    "id": "relationship-1",
+    "relationship_type": "has-covered",
+    "coverage_information": [{"coverage_name": "DETECTION", "coverage_score": 75}],
+    "coverage_platforms_information": COVERAGE_PLATFORMS,
+}
+PAGE_INFO = {
+    "startCursor": None,
+    "endCursor": None,
+    "hasNextPage": False,
+    "hasPreviousPage": False,
+    "globalCount": 1,
+}
 
 
 @pytest.fixture
@@ -65,6 +92,15 @@ def create_has_covered(relationship, **kwargs):
 
 def sent_input(client):
     return client.query.call_args_list[-1].args[1]["input"]
+
+
+def sent_query(client):
+    return client.query.call_args_list[-1].args[0]
+
+
+def listed(nodes):
+    edges = [{"node": node} for node in nodes]
+    return {"data": {"stixCoreRelationships": {"edges": edges, "pageInfo": PAGE_INFO}}}
 
 
 def test_coverage_platforms_are_sent_to_a_platform_that_knows_them(local_api_client):
@@ -140,3 +176,51 @@ def test_a_relationship_without_coverage_platforms_needs_no_detection(
     create_has_covered(relationship)
     assert local_api_client.query.call_count == 1
     assert "coverage_platforms_information" not in sent_input(local_api_client)
+
+
+def test_read_returns_the_coverage_platforms_of_a_platform_that_knows_them(
+    local_api_client,
+):
+    relationship = relationship_with(
+        local_api_client,
+        [SUPPORTED_OUTPUT, {"data": {"stixCoreRelationship": dict(HAS_COVERED)}}],
+    )
+    read = relationship.read(id="relationship-1")
+    assert "coverage_platforms_information {" in sent_query(local_api_client)
+    assert read["coverage_platforms_information"] == COVERAGE_PLATFORMS
+
+
+def test_list_returns_the_coverage_platforms_and_detects_once(local_api_client):
+    relationship = relationship_with(
+        local_api_client,
+        [SUPPORTED_OUTPUT, listed([dict(HAS_COVERED)]), listed([dict(HAS_COVERED)])],
+    )
+    first = relationship.list(relationship_type="has-covered")
+    second = relationship.list(relationship_type="has-covered")
+    assert "coverage_platforms_information {" in sent_query(local_api_client)
+    assert first[0]["coverage_platforms_information"] == COVERAGE_PLATFORMS
+    assert second[0]["coverage_platforms_information"] == COVERAGE_PLATFORMS
+    assert local_api_client.query.call_count == 3
+
+
+def test_an_older_platform_is_read_without_the_coverage_platforms(local_api_client):
+    older = {
+        key: value
+        for key, value in HAS_COVERED.items()
+        if key != "coverage_platforms_information"
+    }
+    relationship = relationship_with(
+        local_api_client,
+        [UNSUPPORTED_OUTPUT, {"data": {"stixCoreRelationship": older}}],
+    )
+    read = relationship.read(id="relationship-1")
+    assert "coverage_platforms_information" not in sent_query(local_api_client)
+    assert read["coverage_information"] == HAS_COVERED["coverage_information"]
+
+
+def test_custom_attributes_need_no_detection(local_api_client):
+    relationship = relationship_with(
+        local_api_client, [{"data": {"stixCoreRelationship": {"id": "relationship-1"}}}]
+    )
+    relationship.read(id="relationship-1", customAttributes="id")
+    assert local_api_client.query.call_count == 1
