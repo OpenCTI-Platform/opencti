@@ -10,6 +10,7 @@ import {
   reconcileAllIndicatorDeploymentCounters,
   reconcileDeployedIndicatorCounters,
   reconcileIndicatorDeploymentCounters,
+  recordIndicatorRevocations,
   refreshIndicatorDeploymentCounters,
   repairPairMarkings,
 } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-domain';
@@ -1005,6 +1006,8 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
   it('should support analyst retry and withdrawal', async () => {
     const removed = await queryAsUserWithSuccess(USER_CONNECTOR, { query: DEPLOYMENT_REMOVE, variables: { id: deploymentId } });
     expect(removed.data?.indicatorDeploymentRemove.revoked).toEqual(true);
+    // The withdrawal starts the removal grace period
+    expect((await findDeployedOn(testContext, ADMIN_USER, indicatorId, platformId))?.removal_requested_at).toBeTruthy();
     // Still active on the platform: nothing to retry
     await queryAsAdminWithError(
       { query: DEPLOYMENT_RETRY, variables: { id: deploymentId } },
@@ -1019,6 +1022,8 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     expect(retried.data?.indicatorDeploymentRetry.revoked).toEqual(false);
     expect(retried.data?.indicatorDeploymentRetry.deployment_status).toEqual('pending');
     expect(retried.data?.indicatorDeploymentRetry.error_message).toBeNull();
+    // Deployed again: the removal is no longer requested
+    expect((await findDeployedOn(testContext, ADMIN_USER, indicatorId, platformId))?.removal_requested_at).toBeFalsy();
   });
 
   it('should flag withdrawn deployments without removal confirmation as expired', async () => {
@@ -1145,5 +1150,36 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     const page = await reconcileIndicatorDeploymentCounters(testContext, 1000);
     expect(page.done).toEqual(true);
     expect(page.checked).toBeGreaterThanOrEqual(1);
+  });
+
+  it('should start the removal grace period of a revoked indicator at its revocation, never at a later edit', async () => {
+    const stored = await internalLoadById(testContext, ADMIN_USER, secondIndicatorId) as unknown as { _index: string; updated_at: string };
+    const pair = () => findDeployedOn(testContext, ADMIN_USER, secondIndicatorId, platformId);
+    // Two runs of the resumable scan with a one hour grace period: every live deployment is seen, whatever the saved cursor
+    const scan = async () => {
+      await flagExpiredDeployments(testContext, ADMIN_USER, 3600 * 1000, 5000);
+      await flagExpiredDeployments(testContext, ADMIN_USER, 3600 * 1000, 5000);
+    };
+    const setIndicator = (revoked: boolean, updatedAt: string) => elUpdate(testContext, stored._index, secondIndicatorId, {
+      script: { source: 'ctx._source.revoked = params.revoked; ctx._source.updated_at = params.updatedAt', lang: 'painless', params: { revoked, updatedAt } },
+    });
+    // Revoked, and last edited long before the grace period: its grace period starts when the revocation is recorded
+    await setIndicator(true, '2026-01-01T00:00:00.000Z');
+    try {
+      const scannedFrom = Date.now();
+      await scan();
+      const recorded = await pair();
+      expect(recorded?.deployment_status).not.toEqual('expired');
+      expect(new Date(recorded?.removal_requested_at as string).getTime()).toBeGreaterThanOrEqual(scannedFrom);
+      // The revocation event gives the time of the revocation itself
+      const revokedAt = new Date(Date.now() - 60 * 1000).toISOString();
+      await recordIndicatorRevocations(testContext, new Map([[secondIndicatorId, revokedAt]]));
+      expect(new Date((await pair())?.removal_requested_at as string).toISOString()).toEqual(revokedAt);
+    } finally {
+      await setIndicator(false, stored.updated_at);
+    }
+    // Reinstated: the removal is no longer requested
+    await scan();
+    expect((await pair())?.removal_requested_at).toBeFalsy();
   });
 });

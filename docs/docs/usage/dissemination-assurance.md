@@ -129,7 +129,9 @@ From both tabs, an analyst with the *Update knowledge* capability can:
   again.
 - **Remove from this platform**: withdraws the indicator from this platform only, after a confirmation naming the
   indicator and the platform. The connector removes it and reports it as removed. If the removal is not confirmed
-  within the grace period, the deployment is flagged as expired.
+  within the grace period, the deployment is flagged as expired. The grace period starts at the withdrawal, at the
+  revocation of the indicator or at the end of its validity; later edits of the indicator or of the deployment never
+  restart it.
 
 ## Dissemination assurance pages
 

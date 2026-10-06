@@ -32,6 +32,8 @@ export const deployedOnAttributes: Array<AttributeDefinition> = [
   { name: 'deployed_at', label: 'Deployed at', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   { name: 'last_sync_at', label: 'Last synchronization', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   { name: 'removed_at', label: 'Removed at', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
+  // Start of the removal grace period, kept by the deployment manager only (side channel): no edit or upsert moves it
+  { name: 'removal_requested_at', label: 'Removal requested at', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, update: false, isFilterable: false },
   { name: 'hit_count', label: 'Hit count', type: 'numeric', precision: 'integer', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },
   { name: 'first_hit_at', label: 'First hit', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: false },
   { name: 'last_hit_at', label: 'Last hit', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: true, isFilterable: true },

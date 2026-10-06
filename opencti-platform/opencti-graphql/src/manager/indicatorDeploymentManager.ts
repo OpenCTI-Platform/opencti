@@ -12,6 +12,7 @@ import {
   flagExpiredDeployments,
   reconcileAllIndicatorDeploymentCounters,
   reconcileIndicatorDeploymentCounters,
+  recordIndicatorRevocations,
   refreshIndicatorDeploymentCounters,
   repairPairMarkings,
   repairRecentDeploymentCounters,
@@ -68,19 +69,26 @@ export const extractStreamedDeploymentLive = (events: Array<SseEvent<DataEvent>>
   return shown;
 };
 
-// Indicators revoked by an update of this batch: the revocation may have been streamed before the counters caught up.
-export const extractRevokedIndicatorIds = (events: Array<SseEvent<DataEvent>>) => {
-  const ids = new Set<string>();
+// Time of a stream event, carried by its id (milliseconds before the dash).
+const eventTime = (event: SseEvent<DataEvent>) => {
+  const milliseconds = Number(String(event.id ?? '').split('-')[0]);
+  return new Date(Number.isFinite(milliseconds) && milliseconds > 0 ? milliseconds : Date.now()).toISOString();
+};
+
+// Indicators revoked by an update of this batch, with the time of their last revocation in it: the revocation may have
+// been streamed before the counters caught up, and it starts the removal grace period of their live deployments.
+export const extractIndicatorRevocations = (events: Array<SseEvent<DataEvent>>) => {
+  const revocations = new Map<string, string>();
   events.forEach((event) => {
     if (event.data?.type !== 'update') return;
     const data = event.data.data as DeploymentEventData | undefined;
     const extension = data?.extensions?.[STIX_EXT_OCTI];
     const patch = (event.data as unknown as { context?: { patch?: Array<{ path?: string }> } }).context?.patch ?? [];
     if (extension?.type === ENTITY_TYPE_INDICATOR && extension.id && data?.revoked === true && patch.some((operation) => operation.path === '/revoked')) {
-      ids.add(extension.id);
+      revocations.set(extension.id, eventTime(event));
     }
   });
-  return [...ids];
+  return revocations;
 };
 
 // Indicators whose deployed-on relationships changed in this batch of events. A merge redirects the
@@ -134,10 +142,14 @@ export const extractAccessChangedEndpoints = (events: Array<SseEvent<DataEvent>>
 };
 
 export const indicatorDeploymentStreamHandler = async (events: Array<SseEvent<DataEvent>>, lastEventId: string) => {
-  const indicatorIds = [...new Set([...extractDeploymentIndicatorIds(events), ...extractRevokedIndicatorIds(events)])];
+  const revocations = extractIndicatorRevocations(events);
+  const indicatorIds = [...new Set([...extractDeploymentIndicatorIds(events), ...revocations.keys()])];
   if (indicatorIds.length > 0) {
     const context = executionContext(CONTEXT_NAME);
     await refreshIndicatorDeploymentCounters(context, indicatorIds, extractStreamedDeploymentLive(events));
+  }
+  if (revocations.size > 0) {
+    await recordIndicatorRevocations(executionContext(CONTEXT_NAME), revocations);
   }
   const markingChanges = extractAccessChangedEndpoints(events);
   if (markingChanges.indicatorIds.length > 0 || markingChanges.platformIds.length > 0) {

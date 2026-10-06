@@ -9,15 +9,16 @@ import {
   HIT_COUNT_MAX,
   HIT_REPORT_IDS_MAX,
   hitReportIdsAfter,
-  isExpiredForRemoval,
   isHitsReplay,
   isHitsSightingUpToDate,
+  isRemovalOverdue,
+  isRemovalRequested,
   resolveEffectiveStatus,
 } from '../../../../src/modules/indicatorDeployment/indicatorDeployment-domain';
 import {
   extractAccessChangedEndpoints,
   extractDeploymentIndicatorIds,
-  extractRevokedIndicatorIds,
+  extractIndicatorRevocations,
   extractStreamedDeploymentLive,
   hasSecurityPlatformRemoval,
 } from '../../../../src/manager/indicatorDeploymentManager';
@@ -300,21 +301,22 @@ describe('deployment manager stream extraction', () => {
     ]);
     expect([...shown.entries()]).toEqual([['indicator-1', false], ['indicator-2', true]]);
   });
-  it('should collect the indicators revoked by an update', () => {
+  it('should collect the indicators revoked by an update, at the time of their last revocation event', () => {
     const ext = 'extension-definition--ea279b3e-5c71-4632-ac08-831c66a786ba';
-    const update = (id: string, revoked: boolean, path: string, type = 'Indicator') => ({
-      id: '1',
+    const update = (eventId: string, id: string, revoked: boolean, path: string, type = 'Indicator') => ({
+      id: eventId,
       event: 'update',
       data: { type: 'update', data: { type: 'indicator', revoked, extensions: { [ext]: { id, type } } }, context: { patch: [{ op: 'replace', path }] } },
     }) as unknown as SseEvent<DataEvent>;
-    expect(extractRevokedIndicatorIds([
-      update('indicator-1', true, '/revoked'),
-      update('indicator-1', true, '/revoked'),
-      update('indicator-2', false, '/revoked'), // reinstated
-      update('indicator-3', true, '/x_opencti_score'), // already revoked, other change
-      update('malware-1', true, '/revoked', 'Malware'),
-    ])).toEqual(['indicator-1']);
-    expect(extractRevokedIndicatorIds([])).toEqual([]);
+    const revocations = extractIndicatorRevocations([
+      update('1790000000000-0', 'indicator-1', true, '/revoked'),
+      update('1790000060000-0', 'indicator-1', true, '/revoked'),
+      update('1790000000000-1', 'indicator-2', false, '/revoked'), // reinstated
+      update('1790000000000-2', 'indicator-3', true, '/x_opencti_score'), // already revoked, other change
+      update('1790000000000-3', 'malware-1', true, '/revoked', 'Malware'),
+    ]);
+    expect([...revocations.entries()]).toEqual([['indicator-1', new Date(1790000060000).toISOString()]]);
+    expect(extractIndicatorRevocations([]).size).toEqual(0);
   });
 });
 
@@ -336,12 +338,28 @@ describe('sharing of the pair relationships', () => {
 
 describe('expiry of live deployments', () => {
   const threshold = '2026-10-03T00:00:00.000Z';
-  it('should select indicators past their validity or revoked before the grace threshold', () => {
-    expect(isExpiredForRemoval({ valid_until: '2026-10-01T00:00:00.000Z' }, threshold)).toEqual(true);
-    expect(isExpiredForRemoval({ valid_until: '2026-10-05T00:00:00.000Z' }, threshold)).toEqual(false);
-    expect(isExpiredForRemoval({ revoked: true, updated_at: '2026-10-02T00:00:00.000Z' }, threshold)).toEqual(true);
-    // Revoked within the grace period: the connector still has time to confirm the removal
-    expect(isExpiredForRemoval({ revoked: true, updated_at: '2026-10-03T12:00:00.000Z' }, threshold)).toEqual(false);
-    expect(isExpiredForRemoval({}, threshold)).toEqual(false);
+  const requestedBefore = { removal_requested_at: '2026-10-02T00:00:00.000Z' };
+  const requestedWithin = { removal_requested_at: '2026-10-03T12:00:00.000Z' };
+  it('should request the removal of a withdrawn deployment or of a deployment of a revoked indicator', () => {
+    expect(isRemovalRequested({ revoked: true })).toEqual(true);
+    expect(isRemovalRequested({}, { revoked: true })).toEqual(true);
+    expect(isRemovalRequested({ revoked: false }, { revoked: false })).toEqual(false);
+    expect(isRemovalRequested({})).toEqual(false);
+  });
+  it('should flag a deployment once its indicator is past its validity, whatever the deployment records', () => {
+    expect(isRemovalOverdue({}, { valid_until: '2026-10-01T00:00:00.000Z' }, threshold)).toEqual(true);
+    expect(isRemovalOverdue({}, { valid_until: '2026-10-05T00:00:00.000Z' }, threshold)).toEqual(false);
+  });
+  it('should count the grace period of a requested removal from the time it was requested, never from a later edit', () => {
+    expect(isRemovalOverdue(requestedBefore, { revoked: true }, threshold)).toEqual(true);
+    expect(isRemovalOverdue({ revoked: true, ...requestedBefore }, { revoked: false }, threshold)).toEqual(true);
+    // Requested within the grace period: the connector still has time to confirm the removal
+    expect(isRemovalOverdue(requestedWithin, { revoked: true }, threshold)).toEqual(false);
+    // A revocation the deployment manager has not recorded yet starts its grace period when it records it
+    const revokedAndEditedLongAgo = { revoked: true, updated_at: '2026-10-01T00:00:00.000Z' };
+    expect(isRemovalOverdue({}, revokedAndEditedLongAgo, threshold)).toEqual(false);
+    // A removal no longer requested (indicator reinstated) is never flagged on the time it was requested
+    expect(isRemovalOverdue(requestedBefore, { revoked: false }, threshold)).toEqual(false);
+    expect(isRemovalOverdue({}, undefined, threshold)).toEqual(false);
   });
 });

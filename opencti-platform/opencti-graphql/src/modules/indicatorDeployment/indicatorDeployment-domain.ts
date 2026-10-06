@@ -867,6 +867,15 @@ export const reportIndicatorHits = async (context: AuthContext, user: AuthUser, 
 };
 
 /**
+ * Records (or clears, with null) the start of the removal grace period of a deployment: bookkeeping of the expiry rules,
+ * written without stream event, history or change of updated_at, so no edit of the deployment ever moves it.
+ */
+const setRemovalRequestedAt = async (context: AuthContext, relation: { _index: string; internal_id: string }, at: Date | null) => {
+  const params = buildReplaceScriptParams({ removal_requested_at: at });
+  await elUpdate(context, relation._index, relation.internal_id, { script: { source: EL_REPLACE_SCRIPT_SOURCE, lang: 'painless', params } });
+};
+
+/**
  * Analyst action: ask the connector to deploy the indicator again.
  * The connector reconciliation re-pushes pending deployments.
  */
@@ -888,6 +897,9 @@ export const retryIndicatorDeployment = async (context: AuthContext, user: AuthU
       error_message: null,
       revoked: false,
     });
+    if (isNotEmptyField(current.removal_requested_at)) {
+      await setRemovalRequestedAt(context, current, null);
+    }
     return await notifyRelationEdit(user, element);
   } finally {
     await lock.unlock();
@@ -909,6 +921,7 @@ export const removeIndicatorDeployment = async (context: AuthContext, user: Auth
       return current;
     }
     const { element } = await patchAttribute(context, user, current.internal_id, RELATION_DEPLOYED_ON, { revoked: true });
+    await setRemovalRequestedAt(context, current, new Date());
     return await notifyRelationEdit(user, element);
   } finally {
     await lock.unlock();
@@ -1094,10 +1107,68 @@ export const disseminationAssuranceMetrics = async (context: AuthContext, user: 
 // region expiry interplay
 const EXPIRY_SCAN_CURSOR_STATE = 'indicator_deployment_expiry_scan';
 
-/** Past its validity, or revoked, before the threshold: the connector had the grace period to confirm the removal. */
-export const isExpiredForRemoval = (indicator: { valid_until?: unknown; revoked?: boolean; updated_at?: unknown }, threshold: string) => {
+type RemovalTracked = { revoked?: boolean | null; removal_requested_at?: unknown };
+type RemovalSource = { valid_until?: unknown; revoked?: boolean | null };
+
+/** Whether the removal of a deployment is requested: withdrawn from its security platform, or its indicator revoked. */
+export const isRemovalRequested = (deployment: RemovalTracked, indicator?: RemovalSource | null) => {
+  return deployment.revoked === true || indicator?.revoked === true;
+};
+
+/**
+ * Whether the connector had the grace period to confirm the removal of a live deployment. The period starts at the end
+ * of validity of the indicator, or when the removal was requested (removal_requested_at): later edits of the indicator
+ * or of the deployment move neither.
+ */
+export const isRemovalOverdue = (deployment: RemovalTracked, indicator: RemovalSource | null | undefined, threshold: string) => {
   const before = (value: unknown) => !!value && new Date(value as string).getTime() < new Date(threshold).getTime();
-  return before(indicator.valid_until) || (indicator.revoked === true && before(indicator.updated_at));
+  return before(indicator?.valid_until) || (isRemovalRequested(deployment, indicator) && before(deployment.removal_requested_at));
+};
+
+// A deployment withdrawn before the revocation of its indicator keeps the start of its own grace period.
+const RECORD_REVOCATION_SCRIPT = 'if (ctx._source.revoked != true || ctx._source.removal_requested_at == null) {'
+  + ' ctx._source.removal_requested_at = params.at; } else { ctx.op = \'noop\'; }';
+
+/**
+ * Starts the removal grace period of the live deployments of revoked indicators at the time of each revocation event,
+ * so a replayed event writes the same value.
+ */
+export const recordIndicatorRevocations = async (context: AuthContext, revocations: Map<string, string>) => {
+  if (revocations.size === 0) {
+    return 0;
+  }
+  const deployments = await fullRelationsList<BasicStoreRelationDeployedOn & { _index: string }>(context, SYSTEM_USER, RELATION_DEPLOYED_ON, {
+    fromId: [...revocations.keys()],
+    filters: { mode: 'and' as never, filters: [{ key: ['deployment_status'], values: LIVE_DEPLOYMENT_STATUSES }], filterGroups: [] },
+    noFiltersChecking: true,
+  } as never);
+  await BluePromise.map(deployments, async (deployment) => {
+    const script = { source: RECORD_REVOCATION_SCRIPT, lang: 'painless', params: { at: revocations.get(deployment.fromId) } };
+    await elUpdate(context, deployment._index, deployment.internal_id, { script });
+  }, { concurrency: BATCH_CONCURRENCY });
+  return deployments.length;
+};
+
+/**
+ * Under the pair and indicator locks, records the start of the removal grace period of a live deployment whose removal
+ * is requested without one (withdrawal or revocation by a regular edit or an import, event missed while the manager was
+ * stopped), or clears it once the removal is no longer requested (indicator reinstated).
+ */
+const syncRemovalRequest = async (context: AuthContext, relation: BasicStoreRelationDeployedOn) => {
+  const lock = await lockResources([pairLockKey(relation.fromId, relation.toId), relation.fromId]);
+  try {
+    const current = await findDeployedOn(context, SYSTEM_USER, relation.fromId, relation.toId);
+    if (!current || !LIVE_DEPLOYMENT_STATUSES.includes(current.deployment_status)) {
+      return;
+    }
+    const indicator = await storeLoadById<BasicStoreEntityIndicator>(context, SYSTEM_USER, relation.fromId, ENTITY_TYPE_INDICATOR);
+    const requested = isRemovalRequested(current, indicator);
+    if (requested !== isNotEmptyField(current.removal_requested_at)) {
+      await setRemovalRequestedAt(context, current, requested ? new Date() : null);
+    }
+  } finally {
+    await lock.unlock();
+  }
 };
 
 /**
@@ -1105,7 +1176,6 @@ export const isExpiredForRemoval = (indicator: { valid_until?: unknown; revoked?
  * (revocation update, or delete event on filtered streams), and so are deployments withdrawn by an analyst (revoked relationship).
  * Live deployments without removal confirmation after the grace period are flagged expired:
  * a regular update, so history, stream and triggers ("expired but still deployed") see it.
- * updated_at is a conservative lower bound of the revocation time, heartbeats never change it.
  */
 export const flagExpiredDeployments = async (context: AuthContext, user: AuthUser, gracePeriodMs: number, batchSize: number) => {
   const threshold = new Date(Date.now() - gracePeriodMs).toISOString();
@@ -1126,21 +1196,30 @@ export const flagExpiredDeployments = async (context: AuthContext, user: AuthUse
   const liveDeployments = livePage.edges.map((edge) => edge.node);
   const sourceIds = [...new Set(liveDeployments.map((deployment) => deployment.fromId))];
   const sources = sourceIds.length === 0 ? [] : await storeLoadByIds<BasicStoreEntityIndicator>(context, SYSTEM_USER, sourceIds, ENTITY_TYPE_INDICATOR);
-  const expiredSourceIds = new Set(sources
-    .filter((indicator) => indicator && isExpiredForRemoval(indicator, threshold))
-    .map((indicator) => indicator.internal_id));
-  const fromExpiredIndicators = liveDeployments.filter((deployment) => expiredSourceIds.has(deployment.fromId));
+  const indicators = new Map(sources.filter((indicator) => indicator).map((indicator) => [indicator.internal_id, indicator]));
+  // A removal request recorded now starts its grace period now: it is never flagged in this run
+  const unsynced = liveDeployments.filter((deployment) => {
+    return isRemovalRequested(deployment, indicators.get(deployment.fromId)) !== isNotEmptyField(deployment.removal_requested_at);
+  });
+  await BluePromise.map(unsynced, async (relation) => {
+    try {
+      await syncRemovalRequest(context, relation);
+    } catch (error) {
+      logApp.warn('[DISSEMINATION] Cannot record the removal request of a deployment, left to a later scan', { cause: error, id: relation.internal_id });
+    }
+  }, { concurrency: BATCH_CONCURRENCY });
+  const overdueOnPage = liveDeployments.filter((deployment) => isRemovalOverdue(deployment, indicators.get(deployment.fromId), threshold));
   const withdrawn = await fullRelationsList<BasicStoreRelationDeployedOn>(context, SYSTEM_USER, RELATION_DEPLOYED_ON, {
     filters: {
       mode: 'and' as never,
-      filters: [liveFilter, { key: ['revoked'], values: [true] }, { key: ['updated_at'], values: [threshold], operator: 'lt' as never }],
+      filters: [liveFilter, { key: ['revoked'], values: [true] }, { key: ['removal_requested_at'], values: [threshold], operator: 'lt' as never }],
       filterGroups: [],
     },
     noFiltersChecking: true,
     maxSize: batchSize,
   } as never);
   const toFlag = new Map<string, BasicStoreRelationDeployedOn>();
-  [...fromExpiredIndicators, ...withdrawn].forEach((relation) => toFlag.set(relation.internal_id, relation));
+  [...overdueOnPage, ...withdrawn].forEach((relation) => toFlag.set(relation.internal_id, relation));
   let flagged = 0;
   let failed = 0;
   await BluePromise.map([...toFlag.values()], async (relation) => {
@@ -1153,9 +1232,7 @@ export const flagExpiredDeployments = async (context: AuthContext, user: AuthUse
         const current = await findDeployedOn(context, SYSTEM_USER, relation.fromId, relation.toId);
         const unchanged = current && String(current.updated_at) === String(relation.updated_at);
         const indicator = await storeLoadById<BasicStoreEntityIndicator>(context, SYSTEM_USER, relation.fromId, ENTITY_TYPE_INDICATOR);
-        const withdrawnBeforeThreshold = (current as { revoked?: boolean } | undefined)?.revoked === true
-          && !!current?.updated_at && new Date(current.updated_at as unknown as string).getTime() < new Date(threshold).getTime();
-        const eligible = withdrawnBeforeThreshold || (!!indicator && isExpiredForRemoval(indicator, threshold));
+        const eligible = !!current && isRemovalOverdue(current, indicator, threshold);
         if (current && unchanged && eligible && LIVE_DEPLOYMENT_STATUSES.includes(current.deployment_status)) {
           const { element } = await patchAttribute(context, user, current.internal_id, RELATION_DEPLOYED_ON, { deployment_status: DEPLOYMENT_STATUS_EXPIRED });
           await notifyRelationEdit(user, element);

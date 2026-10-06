@@ -39,7 +39,7 @@ import { ENTITY_TYPE_IOC_VALIDATION_REQUEST } from './iocValidation-types';
 import { isLifecycleWriter, isTrustedDeploymentReporter } from './iocValidation-utils';
 
 const VALIDATION_FIELDS = ['validation_status', 'last_validation_at', 'validation_run_id'];
-const LIFECYCLE_FIELDS = ['deployment_status', 'external_id', 'deployed_at', 'last_sync_at', 'removed_at', 'hit_count', 'first_hit_at', 'last_hit_at', 'last_hit_report_ids', 'error_message'];
+const LIFECYCLE_FIELDS = ['deployment_status', 'external_id', 'deployed_at', 'last_sync_at', 'removed_at', 'removal_requested_at', 'hit_count', 'first_hit_at', 'last_hit_at', 'last_hit_report_ids', 'error_message'];
 // Values of a deployment that records nothing yet, which any editor may give a new relationship.
 const LIFECYCLE_DEFAULTS: Record<string, unknown> = { deployment_status: DEPLOYMENT_STATUS_PENDING, hit_count: 0 };
 
