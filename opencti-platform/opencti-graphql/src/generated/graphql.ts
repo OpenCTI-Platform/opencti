@@ -11545,6 +11545,10 @@ export type HuntConfiguration = {
   __typename?: 'HuntConfiguration';
   /** The observable types a run extracts from its hits when its hunt names none */
   default_expected_observables: Array<Scalars['String']['output']>;
+  /** The most results a hunt asks of the hunt connector in one run */
+  max_results_per_run: Scalars['Int']['output'];
+  /** The longest time window a hunt or a run searches, in hours */
+  max_time_window_hours: Scalars['Int']['output'];
   min_schedule_interval_minutes: Scalars['Int']['output'];
   /** Recurring runs (schedule, standing hunt, PIR activation) search from where the previous completed run on the same platform ended, minus this overlap in minutes */
   schedule_lookback_minutes: Scalars['Int']['output'];
@@ -48231,6 +48235,8 @@ export type HuntAssistanceResolvers<ContextType = any, ParentType extends Resolv
 
 export type HuntConfigurationResolvers<ContextType = any, ParentType extends ResolversParentTypes['HuntConfiguration'] = ResolversParentTypes['HuntConfiguration']> = ResolversObject<{
   default_expected_observables?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  max_results_per_run?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  max_time_window_hours?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   min_schedule_interval_minutes?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   schedule_lookback_minutes?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
 }>;

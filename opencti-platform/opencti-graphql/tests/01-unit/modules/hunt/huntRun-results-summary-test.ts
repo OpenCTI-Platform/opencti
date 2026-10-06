@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { internalFindByIds } from '../../../../src/database/middleware-loader';
 import huntResolvers from '../../../../src/modules/hunt/hunt-resolvers';
-import { HUNT_DEFAULT_EXPECTED_OBSERVABLES } from '../../../../src/modules/hunt/hunt-utils';
+import { HUNT_CONFIG, HUNT_DEFAULT_EXPECTED_OBSERVABLES } from '../../../../src/modules/hunt/hunt-utils';
 import { findHuntRunResultIds, findHuntRunResultsSummary, summarizeHuntRunResults } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
 import type { BasicStoreEntityHuntRun } from '../../../../src/modules/hunt/huntRun/huntRun-types';
 import type { AuthUser } from '../../../../src/types/user';
@@ -68,5 +68,11 @@ describe('Hunt configuration', () => {
   it('should give the user interface the observable types a run extracts when its hunt names none', () => {
     const resolver = (huntResolvers.Query as Record<string, () => { default_expected_observables: string[] }>).huntConfiguration;
     expect(resolver().default_expected_observables).toEqual(HUNT_DEFAULT_EXPECTED_OBSERVABLES);
+  });
+
+  it('should give the user interface the limits the platform validates a hunt and a run against', () => {
+    const resolver = (huntResolvers.Query as Record<string, () => { max_time_window_hours: number; max_results_per_run: number }>).huntConfiguration;
+    expect(resolver().max_time_window_hours).toBe(HUNT_CONFIG.maxTimeWindowHours);
+    expect(resolver().max_results_per_run).toBe(HUNT_CONFIG.maxResultsPerRun);
   });
 });

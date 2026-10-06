@@ -27,7 +27,8 @@ import type { Theme } from '../../../../components/Theme';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { mutationErrorMessage, payloadErrorsMessage, useDialogMutation } from '../hunt-mutation-utils';
 import useDraftContext from '../../../../utils/hooks/useDraftContext';
-import { canStartHuntRun, HUNT_MAX_TIME_WINDOW_HOURS } from '../hunt-utils';
+import { canStartHuntRun } from '../hunt-utils';
+import useHuntConfiguration from '../useHuntConfiguration';
 
 // The hunt connectors page, as its status header links it
 const HUNT_CONNECTORS_PATH = '/dashboard/data/ingestion/connectors';
@@ -157,12 +158,13 @@ const HuntRunStart = ({ hunt, paginationOptions, secondary = false }: HuntRunSta
   };
   const canRun = canStartHuntRun(hunt.hunt_status, !!draftContext);
   const scopePlatformIds = (hunt.scopePlatforms ?? []).map((platform) => platform.id);
+  const { maxTimeWindowHours } = useHuntConfiguration();
   const validation = Yup.object().shape({
     time_window_hours: Yup.number()
       .typeError(t_i18n('The value must be a number'))
       .integer(t_i18n('The value must be an integer'))
       .min(1, t_i18n('The value must be greater than or equal to {value}', { values: { value: 1 } }))
-      .max(HUNT_MAX_TIME_WINDOW_HOURS, t_i18n('The value must be less than or equal to {value}', { values: { value: HUNT_MAX_TIME_WINDOW_HOURS } }))
+      .max(maxTimeWindowHours, t_i18n('The value must be less than or equal to {value}', { values: { value: maxTimeWindowHours } }))
       .required(t_i18n('This field is required')),
   });
   let disabledReason: string | null = null;

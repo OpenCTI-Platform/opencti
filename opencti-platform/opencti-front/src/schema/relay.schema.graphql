@@ -16416,6 +16416,12 @@ type HuntConfiguration {
   Recurring runs (schedule, standing hunt, PIR activation) search from where the previous completed run on the same platform ended, minus this overlap in minutes
   """
   schedule_lookback_minutes: Int!
+
+  """The longest time window a hunt or a run searches, in hours"""
+  max_time_window_hours: Int!
+
+  """The most results a hunt asks of the hunt connector in one run"""
+  max_results_per_run: Int!
 }
 
 enum HuntTechniqueValidationStatus {

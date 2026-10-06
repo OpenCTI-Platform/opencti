@@ -127,11 +127,18 @@ export const HUNT_TIME_WINDOW_PRESETS = [24, 168, 720] as const;
 
 export const HUNT_DEFAULT_TIME_WINDOW_HOURS = 24;
 export const HUNT_DEFAULT_ESCALATION_THRESHOLD = 10;
-export const HUNT_MAX_TIME_WINDOW_HOURS = 720;
 export const HUNT_MAX_ESCALATION_THRESHOLD = 1000000;
+// The platform defaults of its configured limits, until the hunt configuration is loaded
+export const HUNT_MAX_TIME_WINDOW_HOURS = 720;
 export const HUNT_MAX_RESULTS_PER_RUN = 10000;
 // Results a run reads when its hunt sets no limit (the platform default)
 export const HUNT_DEFAULT_MAX_RESULTS = 1000;
+
+/** The time window presets within the maximum of the platform, the maximum alone when it is under every preset. */
+export const huntTimeWindowPresets = (maxHours: number): number[] => {
+  const presets = HUNT_TIME_WINDOW_PRESETS.filter((hours) => hours <= maxHours);
+  return presets.length > 0 ? presets : [maxHours];
+};
 
 type HuntTranslate = (message: string, options?: { values: Record<string, string | number> }) => string;
 

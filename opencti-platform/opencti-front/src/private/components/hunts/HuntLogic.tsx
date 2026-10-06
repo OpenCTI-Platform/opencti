@@ -25,7 +25,8 @@ import HuntTranslationPreview from './HuntTranslationPreview';
 import HuntIocFields from './HuntIocFields';
 import { HuntReadinessChecklist, huntStatusHeaderStatusMutation } from './HuntStatusHeader';
 import { iocTypeLabel, iocValuesToText, parseIocText } from './hunt-ioc-utils';
-import { HUNT_DOCS, HUNT_IOC_ELEMENT_TYPES, HUNT_PLATFORM_INTERNET, HUNT_TIME_WINDOW_PRESETS, normalizeNativeQueries, type HuntNativeQueryFormValue } from './hunt-utils';
+import { HUNT_DOCS, HUNT_IOC_ELEMENT_TYPES, HUNT_PLATFORM_INTERNET, huntTimeWindowPresets, normalizeNativeQueries, type HuntNativeQueryFormValue } from './hunt-utils';
+import useHuntConfiguration from './useHuntConfiguration';
 import { HuntLearnMore } from './HuntLearnMore';
 import { HuntLogic_hunt$data, HuntLogic_hunt$key } from './__generated__/HuntLogic_hunt.graphql';
 import { HuntLogicFieldPatchMutation } from './__generated__/HuntLogicFieldPatchMutation.graphql';
@@ -382,6 +383,7 @@ const IndicatorLogicForm = ({ hunt, onDiscard }: { hunt: HuntLogicData; onDiscar
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const canEdit = useGranted([KNOWLEDGE_KNUPDATE]);
+  const { maxTimeWindowHours } = useHuntConfiguration();
   const [commit, inFlight] = useApiMutation<HuntLogicFieldPatchMutation>(huntLogicFieldPatchMutation);
   const [saved, setSaved] = useState(false);
   const storedFilters = deserializeFilterGroupForFrontend(hunt.hunt_ioc_filters) ?? emptyFilterGroup;
@@ -421,7 +423,7 @@ const IndicatorLogicForm = ({ hunt, onDiscard }: { hunt: HuntLogicData; onDiscar
       notifyPayloadErrors(errors);
     },
   });
-  const timeWindowOptions = Array.from(new Set<number>([...HUNT_TIME_WINDOW_PRESETS, hunt.time_window_hours]));
+  const timeWindowOptions = Array.from(new Set<number>([...huntTimeWindowPresets(maxTimeWindowHours), hunt.time_window_hours]));
   const timeWindowLabel = (hours: number) => {
     if (hours === 24) return t_i18n('The last 24 hours');
     if (hours % 24 === 0) return t_i18n('The last {count} days', { values: { count: String(hours / 24) } });

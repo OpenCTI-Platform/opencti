@@ -38,7 +38,8 @@ import { HuntAIAssistProvider } from './HuntAIAssist';
 import type { HuntAIFormValues } from './hunt-ai-utils';
 import { SIGMA_RULE_PLACEHOLDER } from './HuntCreation';
 import { parseIocText } from './hunt-ioc-utils';
-import { emptyHuntFormValues, HUNT_SCOPE_TYPES, HUNT_TIME_WINDOW_PRESETS, type HuntFormValues, toHuntAddInput } from './hunt-utils';
+import { emptyHuntFormValues, HUNT_SCOPE_TYPES, huntTimeWindowPresets, type HuntFormValues, toHuntAddInput } from './hunt-utils';
+import useHuntConfiguration from './useHuntConfiguration';
 import { HUNT_CONNECTORS_PATH } from './HuntStatusHeader';
 import { HuntGuidedCreationConnectorsQuery } from './__generated__/HuntGuidedCreationConnectorsQuery.graphql';
 import { HuntGuidedCreationAddMutation, HuntGuidedCreationAddMutation$data } from './__generated__/HuntGuidedCreationAddMutation.graphql';
@@ -318,6 +319,7 @@ const SigmaStep = () => {
 
 const LookBackSelect = ({ value, label }: { value: number; label: (hours: number) => string }) => {
   const { t_i18n } = useFormatter();
+  const { maxTimeWindowHours } = useHuntConfiguration();
   return (
     <Field name="time_window_hours">
       {({ form }: { form: { setFieldValue: (field: string, next: number) => void } }) => (
@@ -326,7 +328,7 @@ const LookBackSelect = ({ value, label }: { value: number; label: (hours: number
             <SelectValue />
           </SelectTrigger>
           <SelectContent aria-label={t_i18n('Look back')}>
-            {HUNT_TIME_WINDOW_PRESETS.map((hours) => <SelectItem key={hours} value={String(hours)}>{label(hours)}</SelectItem>)}
+            {huntTimeWindowPresets(maxTimeWindowHours).map((hours) => <SelectItem key={hours} value={String(hours)}>{label(hours)}</SelectItem>)}
           </SelectContent>
         </Select>
       )}

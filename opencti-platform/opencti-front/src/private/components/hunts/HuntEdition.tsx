@@ -34,7 +34,7 @@ import HuntRunProducesSection from './HuntRunProducesSection';
 import HuntScheduleField from './HuntScheduleField';
 import HuntTriggerFiltersField from './HuntTriggerFiltersField';
 import { validateHuntSchedule } from './hunt-schedule-utils';
-import useHuntMinScheduleInterval from './useHuntMinScheduleInterval';
+import useHuntConfiguration from './useHuntConfiguration';
 import {
   HUNT_DOCS,
   buildHuntEditPatch,
@@ -42,8 +42,6 @@ import {
   HUNT_DEFAULT_MAX_RESULTS,
   HUNT_ENTITY_TYPE,
   HUNT_MAX_ESCALATION_THRESHOLD,
-  HUNT_MAX_RESULTS_PER_RUN,
-  HUNT_MAX_TIME_WINDOW_HOURS,
   HUNT_SCOPE_TYPES,
   HUNT_SOURCE_TYPES,
   HUNT_TARGET_TYPES,
@@ -194,7 +192,7 @@ interface HuntEditionFormProps {
 const HuntEditionForm = ({ data, onClose }: HuntEditionFormProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
-  const minScheduleInterval = useHuntMinScheduleInterval();
+  const { minScheduleIntervalMinutes: minScheduleInterval, maxTimeWindowHours, maxResultsPerRun } = useHuntConfiguration();
   const isEnterpriseEdition = useEnterpriseEdition();
   const { mandatoryAttributes } = useIsMandatoryAttribute(HUNT_ENTITY_TYPE);
   const hunt = useFragment(huntEditionFragment, data);
@@ -219,12 +217,12 @@ const HuntEditionForm = ({ data, onClose }: HuntEditionFormProps) => {
         ),
       otherwise: (schema) => schema.nullable(),
     }),
-    time_window_hours: integerBetween(1, HUNT_MAX_TIME_WINDOW_HOURS).required(t_i18n('This field is required')),
+    time_window_hours: integerBetween(1, maxTimeWindowHours).required(t_i18n('This field is required')),
     escalation_threshold: integerBetween(1, HUNT_MAX_ESCALATION_THRESHOLD).required(t_i18n('This field is required')),
-    hunt_max_results: Yup.mixed().test('max-results', t_i18n('The value must be an integer between 1 and {max}', { values: { max: HUNT_MAX_RESULTS_PER_RUN } }), (value) => {
+    hunt_max_results: Yup.mixed().test('max-results', t_i18n('The value must be an integer between 1 and {max}', { values: { max: maxResultsPerRun } }), (value) => {
       if (value === '' || value === null || value === undefined) return true;
       const numeric = Number(value);
-      return Number.isInteger(numeric) && numeric >= 1 && numeric <= HUNT_MAX_RESULTS_PER_RUN;
+      return Number.isInteger(numeric) && numeric >= 1 && numeric <= maxResultsPerRun;
     }),
   });
 

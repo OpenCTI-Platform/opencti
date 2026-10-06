@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { graphql } from 'react-relay';
 import { fetchQuery } from '../../../relay/environment';
 import { HUNT_DEFAULT_MIN_SCHEDULE_INTERVAL_MINUTES } from './hunt-schedule-utils';
+import { HUNT_MAX_RESULTS_PER_RUN, HUNT_MAX_TIME_WINDOW_HOURS } from './hunt-utils';
 import { useHuntConfigurationQuery } from './__generated__/useHuntConfigurationQuery.graphql';
 
 export const huntConfigurationQuery = graphql`
@@ -10,6 +11,8 @@ export const huntConfigurationQuery = graphql`
       min_schedule_interval_minutes
       default_expected_observables
       schedule_lookback_minutes
+      max_time_window_hours
+      max_results_per_run
     }
   }
 `;
@@ -24,7 +27,13 @@ export interface HuntConfiguration {
   defaultExpectedObservables: ReadonlyArray<string>;
   /** Overlap in minutes between a recurring run and the previous one, which catches the events indexed late */
   scheduleLookbackMinutes: number;
+  /** Longest time window of a hunt or a run in hours, the platform default until it is loaded */
+  maxTimeWindowHours: number;
+  /** Most results a hunt asks of one run, the platform default until it is loaded */
+  maxResultsPerRun: number;
 }
+
+const positiveOr = (value: number | null | undefined, fallback: number) => (typeof value === 'number' && value > 0 ? value : fallback);
 
 /** The hunting configuration of the platform, read once and shared by every hunt form and page. */
 const useHuntConfiguration = (): HuntConfiguration => {
@@ -32,6 +41,8 @@ const useHuntConfiguration = (): HuntConfiguration => {
     minScheduleIntervalMinutes: HUNT_DEFAULT_MIN_SCHEDULE_INTERVAL_MINUTES,
     defaultExpectedObservables: [],
     scheduleLookbackMinutes: HUNT_DEFAULT_SCHEDULE_LOOKBACK_MINUTES,
+    maxTimeWindowHours: HUNT_MAX_TIME_WINDOW_HOURS,
+    maxResultsPerRun: HUNT_MAX_RESULTS_PER_RUN,
   });
   useEffect(() => {
     const subscription = fetchQuery<useHuntConfigurationQuery>(huntConfigurationQuery, {}, { fetchPolicy: 'store-or-network' })
@@ -43,6 +54,8 @@ const useHuntConfiguration = (): HuntConfiguration => {
             minScheduleIntervalMinutes: minutes && minutes > 0 ? minutes : HUNT_DEFAULT_MIN_SCHEDULE_INTERVAL_MINUTES,
             defaultExpectedObservables: data?.huntConfiguration?.default_expected_observables ?? [],
             scheduleLookbackMinutes: typeof lookback === 'number' && lookback >= 0 ? lookback : HUNT_DEFAULT_SCHEDULE_LOOKBACK_MINUTES,
+            maxTimeWindowHours: positiveOr(data?.huntConfiguration?.max_time_window_hours, HUNT_MAX_TIME_WINDOW_HOURS),
+            maxResultsPerRun: positiveOr(data?.huntConfiguration?.max_results_per_run, HUNT_MAX_RESULTS_PER_RUN),
           });
         },
         // On failure the defaults stay: the platform validates the schedule again on save

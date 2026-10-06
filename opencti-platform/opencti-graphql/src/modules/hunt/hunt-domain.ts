@@ -63,7 +63,15 @@ import { HUNT_SOURCE_TYPES, HUNT_TARGET_TYPES } from './hunt-entity-types';
 import { validateSigmaRule } from './hunt-sigma';
 import { computeNextRunAt } from './hunt-schedule';
 import { updateHuntRunInformation } from './hunt-stats';
-import { buildHuntScopeFilter, HUNT_CONFIG, HUNT_DEFAULT_ESCALATION_THRESHOLD, HUNT_DEFAULT_TIME_WINDOW_HOURS, normalizeNativeQueries, sharedOrganizations } from './hunt-utils';
+import {
+  buildHuntScopeFilter,
+  HUNT_CONFIG,
+  HUNT_DEFAULT_ESCALATION_THRESHOLD,
+  HUNT_DEFAULT_TIME_WINDOW_HOURS,
+  HUNT_MAX_ESCALATION_THRESHOLD,
+  normalizeNativeQueries,
+  sharedOrganizations,
+} from './hunt-utils';
 import { resolveHuntScopePlatforms } from './hunt-dispatch';
 import {
   buildHuntAssistRequest,
@@ -433,7 +441,8 @@ const buildHuntPlannerRequest = async (
       };
     }),
     benign_patterns: benignPatterns,
-    constraints: { max_time_window_hours: 720, max_escalation_threshold: 10000 },
+    // The limits the plan is validated against
+    constraints: { max_time_window_hours: HUNT_CONFIG.maxTimeWindowHours, max_escalation_threshold: HUNT_MAX_ESCALATION_THRESHOLD },
   };
 };
 

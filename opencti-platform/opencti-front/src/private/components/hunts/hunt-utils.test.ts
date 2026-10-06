@@ -54,9 +54,19 @@ import {
   huntLastRunHits,
   huntRunHitsBreakdown,
   huntRunsRecur,
+  huntTimeWindowPresets,
 } from './hunt-utils';
 
 describe('Hunt utils', () => {
+  describe('huntTimeWindowPresets()', () => {
+    it('should offer only the presets within the maximum time window of the platform', () => {
+      expect(huntTimeWindowPresets(720)).toEqual([24, 168, 720]);
+      expect(huntTimeWindowPresets(2160)).toEqual([24, 168, 720]);
+      expect(huntTimeWindowPresets(168)).toEqual([24, 168]);
+      expect(huntTimeWindowPresets(12)).toEqual([12]);
+    });
+  });
+
   describe('huntConnectorSetupDocumentation()', () => {
     it('should open the setup section of each hunt connector of the catalog', () => {
       expect(huntConnectorSetupDocumentation('splunk-hunt')).toEqual('https://docs.opencti.io/latest/usage/hunt-connectors/#splunk');

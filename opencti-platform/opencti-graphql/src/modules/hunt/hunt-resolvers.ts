@@ -37,6 +37,8 @@ const huntResolvers: Resolvers = {
       min_schedule_interval_minutes: HUNT_CONFIG.minScheduleIntervalMinutes,
       default_expected_observables: HUNT_DEFAULT_EXPECTED_OBSERVABLES,
       schedule_lookback_minutes: HUNT_CONFIG.scheduleLookbackMinutes,
+      max_time_window_hours: HUNT_CONFIG.maxTimeWindowHours,
+      max_results_per_run: HUNT_CONFIG.maxResultsPerRun,
     }),
     huntStatistics: (_, args, context) => computeHuntStatistics(context, context.user, args),
     huntPackExport: (_, { ids }, context) => exportHuntPack(context, context.user, ids),

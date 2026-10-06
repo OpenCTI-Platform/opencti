@@ -17,6 +17,8 @@ vi.mock('../../../relay/environment', async (importOriginal) => {
       toPromise: () => Promise.resolve(query.params?.name === 'HuntEntitiesFieldSearchQuery'
         ? { stixCoreObjects: { edges: [{ node: PLATFORM }] } }
         : {}),
+      // The hunting configuration keeps its defaults
+      subscribe: () => ({ unsubscribe: () => {} }),
     }),
   };
 });
