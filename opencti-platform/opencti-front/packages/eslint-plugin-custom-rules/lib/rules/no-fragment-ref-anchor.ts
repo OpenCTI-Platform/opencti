@@ -49,7 +49,7 @@ const rule: Rule.RuleModule = {
     },
     schema: [],
     messages: {
-      fragmentAnchor: '`{{ component }}` attaches a ref to its child, and a Fragment cannot hold one, so it will silently do nothing. Wrap the content in an element instead (a `span`, a `div`, or a `Stack`).',
+      fragmentAnchor: '`{{ component }}` attaches a ref to its child and needs a DOM element there. A Fragment does not provide one, so the component either does nothing or throws at runtime. Wrap the content in an element instead (a `span`, a `div`, or a `Stack`).',
     },
   },
   create: (context) => {
