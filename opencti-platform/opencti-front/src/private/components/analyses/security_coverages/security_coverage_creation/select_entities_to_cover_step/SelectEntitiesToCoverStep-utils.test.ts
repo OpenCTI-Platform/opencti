@@ -29,6 +29,18 @@ const customFilters: FilterGroup = {
   }],
 };
 
+// Filters are sent serialized in backend format: array keys, no frontend ids
+const serializedDefaultFilters = JSON.stringify({ mode: 'and', filters: [], filterGroups: [] });
+const serializedCustomFilters = JSON.stringify({
+  mode: 'and',
+  filters: [],
+  filterGroups: [{
+    mode: 'and',
+    filters: [{ key: ['objectLabel'], values: ['label-1'], operator: 'eq', mode: 'or' }],
+    filterGroups: [],
+  }],
+});
+
 describe('SelectEntitiesToCoverStep-utils', () => {
   describe('buildCoveredEntitiesFilters', () => {
     it('should target the contained objects when the covered entity is a container', () => {
@@ -86,7 +98,7 @@ describe('SelectEntitiesToCoverStep-utils', () => {
 
     it('should send the filters alone on an untouched select all', () => {
       const selection = buildEntitiesSelection({ ...baseArgs, selectAll: true });
-      expect(selection).toEqual({ filters: defaultFilters });
+      expect(selection).toEqual({ filters: serializedDefaultFilters });
     });
 
     it('should send the excluded ids when some rows are unchecked under select all', () => {
@@ -95,7 +107,7 @@ describe('SelectEntitiesToCoverStep-utils', () => {
         selectAll: true,
         excludedIds: ['id1'],
       });
-      expect(selection).toEqual({ filters: defaultFilters, excluded_ids: ['id1'] });
+      expect(selection).toEqual({ filters: serializedDefaultFilters, excluded_ids: ['id1'] });
     });
 
     it('should send the search term when select all is combined with a search', () => {
@@ -106,7 +118,7 @@ describe('SelectEntitiesToCoverStep-utils', () => {
         searchTerm: 'toto',
       });
       expect(selection).toEqual({
-        filters: defaultFilters,
+        filters: serializedDefaultFilters,
         excluded_ids: ['id1'],
         search: 'toto',
       });
@@ -118,7 +130,7 @@ describe('SelectEntitiesToCoverStep-utils', () => {
         selectAll: true,
         filters: customFilters,
       });
-      expect(selection?.filters).toEqual(customFilters);
+      expect(selection?.filters).toEqual(serializedCustomFilters);
     });
 
     it('should send the selected ids alone on an explicit selection', () => {
