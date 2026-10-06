@@ -101,6 +101,9 @@ const curationResolvers: Resolvers = {
     curationAdjudicationSetup: (_, __, context) => curationAdjudicationSetup(context),
     curationAuthorityAttributes: () => curationAuthorityAttributes(schemaAttributesDefinition.registeredTypes),
   },
+  CurationResolution: {
+    entity: (resolution, _, context) => context.batch?.idsBatchLoader.load({ id: resolution.entity_id, type: resolution.entity_type }) as any,
+  },
   CurationProposal: {
     objectMarking: (proposal, _, context) => context.batch.markingsBatchLoader.load(proposal),
     evidence: (proposal) => (proposal as unknown as BasicStoreEntityCurationProposal).curation_evidence ?? [],

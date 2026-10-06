@@ -140,6 +140,9 @@ const RESOLVE_QUERY = gql`
       entity_id
       match_type
       score
+      entity {
+        id
+      }
     }
   }
 `;
@@ -372,6 +375,7 @@ describe('Knowledge curation', () => {
     const resolution = result.data?.curationResolve;
     expect(resolution).not.toBeNull();
     expect([entityA.id, entityB.id]).toContain(resolution.entity_id);
+    expect(resolution.entity?.id).toBe(resolution.entity_id);
     expect(resolution.score).toBeGreaterThan(0);
     const unknown = await queryAsAdminWithSuccess({ query: RESOLVE_QUERY, variables: { name: 'Nothing like any curation name', type: ENTITY_TYPE_INTRUSION_SET } });
     expect(unknown.data?.curationResolve).toBeNull();
