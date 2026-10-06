@@ -18,11 +18,13 @@ const streamEvent = (data: Record<string, any>): SseEvent<DataEvent> => ({
 const newCollector = newImpactCollector;
 
 describe('Timeline manager impact collection', () => {
-  it('should directly impact a timeline container', () => {
+  it('should directly impact a timeline container, and the timelines containing it or related to it', () => {
     const collector = newCollector();
-    collectTimelineImpacts(streamEvent({ type: 'case-incident', extensions: { [STIX_EXT_OCTI]: { id: 'case-1', type: 'Case-Incident' } } }), collector);
-    expect(Array.from(collector.containers)).toEqual(['case-1']);
-    expect(collector.contained.size).toEqual(0);
+    collectTimelineImpacts(streamEvent({ type: 'incident', extensions: { [STIX_EXT_OCTI]: { id: 'incident-1', type: 'Incident' } } }), collector);
+    expect(Array.from(collector.containers)).toEqual(['incident-1']);
+    expect(Array.from(collector.contained)).toEqual(['incident-1']);
+    expect(Array.from(collector.related)).toEqual(['incident-1']);
+    expect(collector.references.size).toEqual(0);
   });
 
   it('should follow the object refs of tasks, notes, opinions and reports', () => {

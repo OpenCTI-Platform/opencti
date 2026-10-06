@@ -375,8 +375,10 @@ class TimelineEvent:
             ``clear_event_end_time`` and clears the end time. None is ignored
             (the value is kept) for the required or enumerated fields
             ``event_time``, ``title``, ``precision``, ``lane`` and ``kind``, and
-            for ``objectMarking``: pass ``objectMarking=[]`` to reset the
-            markings to those of the element and of the container
+            for ``objectMarking``. Markings are only ever added: the event
+            keeps the markings it already carries and those of its element and
+            of the container, so ``objectMarking`` adds markings and never
+            removes one (``objectMarking=[]`` removes none)
         :return: the updated timeline event or None
         :rtype: dict or None
         """

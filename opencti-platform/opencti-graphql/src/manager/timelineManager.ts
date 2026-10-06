@@ -135,6 +135,10 @@ export const collectTimelineImpacts = (event: SseEvent<DataEvent>, collector: Im
   if (type === ENTITY_TYPE_TIMELINE_EVENT || type === ENTITY_TYPE_TIMELINE_SETTINGS) return;
   if (isTimelineContainerType(type)) {
     collector.containers.add(id);
+    // A container is also knowledge of other timelines (an incident in a case): the cases containing it and the incidents
+    // related to it read it too
+    collector.contained.add(id);
+    collector.related.add(id);
     return;
   }
   // Meta objects read by the derivation through other elements: a change reaches the cases through those elements, and
