@@ -86,7 +86,7 @@ export const TEST_KINDS: TestKindDefinition[] = [
   {
     kind: 'network_traffic',
     label: 'Network connection (safe mode)',
-    description: 'Opens and immediately closes a TCP connection to IP addresses, or to the sinkhole configured in OpenAEV.',
+    description: 'Opens and closes a TCP connection to IP addresses, or to the sinkhole set in OpenAEV.',
     contactsInfrastructure: true,
   },
   {

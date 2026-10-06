@@ -228,7 +228,7 @@ const IocValidationRequestDialog = ({ open, onClose, indicators, platforms, defa
         <Alert
           severity="info"
           title={t_i18n('Every validation scenario is approved in OpenAEV before it runs')}
-          description={t_i18n('OpenAEV runs benign tests built from each indicator and checks that the security platforms detected or prevented them. Only the test kinds allowed there are executed.')}
+          description={t_i18n('Benign tests of each indicator check that the platforms detected or prevented them.')}
         />
         {indicators.length > 0 && <TestedIndicators indicators={indicators} />}
         <Stack gap={0.5}>
