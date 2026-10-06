@@ -4,7 +4,7 @@ import type { AuthContext } from '../../types/user';
 import type { BasicStoreBase, BasicStoreEntity } from '../../types/store';
 import type { BasicStoreSettings } from '../../types/settings';
 import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
-import { fullEntitiesList, internalFindByIds } from '../../database/middleware-loader';
+import { fullEntitiesList, internalFindByIds, storeLoadById } from '../../database/middleware-loader';
 import { getEntityFromCache } from '../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
@@ -12,7 +12,7 @@ import { CURATION_MANAGER_USER, SYSTEM_USER } from '../../utils/access';
 import { type EditInput, EditOperation, FilterMode, FilterOperator } from '../../generated/graphql';
 import { INPUT_GRANTED_REFS, INPUT_MARKINGS } from '../../schema/general';
 import { isEnterpriseEditionFromSettings } from '../../enterprise-edition/ee';
-import { addCurationProposalCreatedCount } from '../../manager/telemetryManager';
+import { addCurationProposalCreatedCount, addCurationProposalRevertedCount } from '../../manager/telemetryManager';
 import { logApp } from '../../config/conf';
 import {
   ACTION_ACKNOWLEDGE,
@@ -178,6 +178,18 @@ export const isSuppressingDecision = (proposal: Pick<BasicStoreEntityCurationPro
   if (proposal.proposal_status === PROPOSAL_STATUS_REJECTED || proposal.proposal_status === PROPOSAL_STATUS_REVERTED) return true;
   const applied = proposal.proposal_status === PROPOSAL_STATUS_ACCEPTED || proposal.proposal_status === PROPOSAL_STATUS_AUTO_APPLIED;
   return applied && proposal.recommended_action === ACTION_ACKNOWLEDGE;
+};
+
+/**
+ * Close an applied proposal as reverted. Its revert and an unmerge of its merge record both close it: the reversion is
+ * counted once, by whichever closes it first.
+ */
+export const markProposalReverted = async (context: AuthContext, proposalId: string): Promise<BasicStoreEntityCurationProposal | null> => {
+  const current = await storeLoadById<BasicStoreEntityCurationProposal>(context, SYSTEM_USER, proposalId, ENTITY_TYPE_CURATION_PROPOSAL);
+  if (!current || current.proposal_status === PROPOSAL_STATUS_REVERTED) return current ?? null;
+  const { element } = await patchAttribute(context, SYSTEM_USER, proposalId, ENTITY_TYPE_CURATION_PROPOSAL, { proposal_status: PROPOSAL_STATUS_REVERTED });
+  addCurationProposalRevertedCount();
+  return element as unknown as BasicStoreEntityCurationProposal;
 };
 
 export interface PersistResult {

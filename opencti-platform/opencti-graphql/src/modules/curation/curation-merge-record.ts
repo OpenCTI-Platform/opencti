@@ -33,14 +33,13 @@ import { isEnterpriseEditionFromSettings } from '../../enterprise-edition/ee';
 import { getEntityFromCache } from '../../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
 import type { BasicStoreSettings } from '../../types/settings';
-import { computeSubjectRestrictions, intersectGrantedOrganizations } from './curation-proposals';
+import { computeSubjectRestrictions, intersectGrantedOrganizations, markProposalReverted } from './curation-proposals';
 import { copyFile, deleteFile, loadFile, storeFileConverter } from '../../database/file-storage';
 import { addCurationMergeRecordCount, addCurationUnmergeCount } from '../../manager/telemetryManager';
 import { now } from '../../utils/format';
 import {
   type AliasProvenance,
   type BasicStoreEntityMergeRecord,
-  ENTITY_TYPE_CURATION_PROPOSAL,
   ENTITY_TYPE_MERGE_RECORD,
   IRREVERSIBLE_FILE_NAME_COLLISION,
   IRREVERSIBLE_MERGE_INTERRUPTED,
@@ -59,7 +58,6 @@ import {
   type MergeSnapshotRef,
   type MergeSourceSnapshot,
   type MergeTargetSnapshot,
-  PROPOSAL_STATUS_REVERTED,
 } from './curation-types';
 import { computeTargetRevertInputs, isIrrecoverableRecreationError, isSnapshotAttribute } from './curation-merge-diff';
 import { getCurationSettings } from './curation-settings';
@@ -811,7 +809,7 @@ export const unmergeFromRecord = async (context: AuthContext, user: AuthUser, me
     // closed before the record, which keeps its recovery marker until then: if either write fails, the unmerge is
     // resumed from the record and closes both.
     if (record.proposal_id && status === MERGE_STATUS_REVERTED) {
-      await patchAttribute(context, SYSTEM_USER, record.proposal_id, ENTITY_TYPE_CURATION_PROPOSAL, { proposal_status: PROPOSAL_STATUS_REVERTED });
+      await markProposalReverted(context, record.proposal_id);
     }
     const { element: updatedElement } = await patchAttribute(context, SYSTEM_USER, record.internal_id, ENTITY_TYPE_MERGE_RECORD, {
       merge_snapshot: updatedSnapshot,

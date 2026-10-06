@@ -13,12 +13,7 @@ import { publishUserAction } from '../../listener/UserActionListener';
 import { createListTask, ACTION_TYPE_CURATION_APPLY } from '../../domain/backgroundTask-common';
 import { checkEnterpriseEdition } from '../../enterprise-edition/ee';
 import { FilterMode, FilterOperator } from '../../generated/graphql';
-import {
-  addCurationProposalAcceptedCount,
-  addCurationProposalAutoAppliedCount,
-  addCurationProposalRejectedCount,
-  addCurationProposalRevertedCount,
-} from '../../manager/telemetryManager';
+import { addCurationProposalAcceptedCount, addCurationProposalAutoAppliedCount, addCurationProposalRejectedCount } from '../../manager/telemetryManager';
 import { now } from '../../utils/format';
 import {
   ACTION_FIX_DATES,
@@ -47,7 +42,6 @@ import {
   PROPOSAL_STATUS_AUTO_APPLIED,
   PROPOSAL_STATUS_OPEN,
   PROPOSAL_STATUS_REJECTED,
-  PROPOSAL_STATUS_REVERTED,
   CURATION_DETECTORS,
 } from './curation-types';
 import {
@@ -69,7 +63,7 @@ import { getTaxonomyMetadata } from './curation-taxonomy';
 import { CURATION_MANAGER_ENABLED, CURATION_SCAN_INTERVAL_MS, CURATION_SNAPSHOT_INTERVAL_MS, isCurationRunning, nextRunDate } from './curation-schedule';
 import { withProposalTransitionLock } from './curation-locks';
 import { keepWithReadableParticipants, pageWithReadableParticipants } from './curation-readability';
-import { payloadRelationshipIds } from './curation-proposals';
+import { markProposalReverted, payloadRelationshipIds } from './curation-proposals';
 
 const MAX_BULK = 500;
 
@@ -662,7 +656,7 @@ export const revertProposal = async (context: AuthContext, user: AuthUser, id: s
   } else {
     throw FunctionalError('This curation proposal has nothing to revert', { id });
   }
-  const { element } = await patchAttribute(context, SYSTEM_USER, proposal.internal_id, ENTITY_TYPE_CURATION_PROPOSAL, { proposal_status: PROPOSAL_STATUS_REVERTED });
+  const reverted = await markProposalReverted(context, proposal.internal_id);
   await publishUserAction({
     user,
     event_type: 'mutation',
@@ -671,8 +665,7 @@ export const revertProposal = async (context: AuthContext, user: AuthUser, id: s
     message: `reverts curation proposal \`${proposal.name}\``,
     context_data: { id: proposal.internal_id, entity_type: ENTITY_TYPE_CURATION_PROPOSAL, input: report },
   });
-  addCurationProposalRevertedCount();
-  return element as unknown as BasicStoreEntityCurationProposal;
+  return reverted ?? proposal;
 });
 // endregion
 
