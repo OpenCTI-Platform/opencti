@@ -17,6 +17,7 @@ import { type RecommendationProposal, recommendationFingerprint } from '../../..
 import {
   type BasicStoreEntitySource,
   type BasicStoreEntitySourceRecommendation,
+  ENTITY_TYPE_COLLECTION_GAP,
   ENTITY_TYPE_SOURCE,
   ENTITY_TYPE_SOURCE_RECOMMENDATION,
   ENTITY_TYPE_SOURCE_SCORECARD,
@@ -41,6 +42,11 @@ import { DRAFT_STATUS_OPEN } from '../../../../src/modules/draftWorkspace/draftS
 import { resolveDraftForward } from '../../../../src/modules/draftWorkspace/draftWorkspace-closure';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../../src/modules/organization/organization-types';
 import { ENTITY_TYPE_MALWARE } from '../../../../src/schema/stixDomainObject';
+import { computeCollectionGaps } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-gaps';
+import { deletePir, pirAdd } from '../../../../src/modules/pir/pir-domain';
+import { connectorDelete, registerConnector } from '../../../../src/domain/connector';
+import { ENTITY_TYPE_DECAY_RULE } from '../../../../src/modules/decayRule/decayRule-types';
+import { ConnectorType, FilterMode, PirType } from '../../../../src/generated/graphql';
 
 const SOURCES_QUERY = gql`
   query sources($first: Int, $orderBy: SourcesOrdering, $orderMode: OrderingMode) {
@@ -300,6 +306,116 @@ const WORKSPACE_DELETE_MUTATION = gql`
   }
 `;
 
+const RECOMMENDATION_QUERY = gql`
+  query sourceRecommendation($id: ID!) {
+    sourceRecommendation(id: $id) {
+      id
+      name
+      kind
+      status
+      rationale
+      payload
+      recommendation_evidence
+      apply_result
+      error_message
+      dismiss_reason
+      autonomous
+      source {
+        id
+      }
+      applied_by {
+        id
+      }
+      reverted_by {
+        id
+      }
+      dismissed_by {
+        id
+      }
+      required_settings {
+        key
+      }
+    }
+  }
+`;
+
+const SOURCE_DETAIL_QUERY = gql`
+  query sourceDetail($id: ID!) {
+    source(id: $id) {
+      id
+      description
+      tags
+      enabled
+      latest_relevance
+      recommendationsCount
+      owner {
+        id
+      }
+      connector {
+        id
+      }
+      scorecard(period: LAST_30_DAYS) {
+        last_asserted_at
+        pir_matched_count
+        relevance
+        overlap {
+          source_id
+          source {
+            id
+          }
+        }
+      }
+    }
+  }
+`;
+
+const SOURCE_PATCH_MUTATION = gql`
+  mutation sourceFieldPatch($id: ID!, $input: [EditInput!]!) {
+    sourceFieldPatch(id: $id, input: $input) {
+      id
+      description
+      tags
+      owner {
+        id
+      }
+    }
+  }
+`;
+
+const PIR_COLLECTION_GAPS_QUERY = gql`
+  query pirCollectionGaps($pirId: ID, $onlyGaps: Boolean) {
+    collectionGaps(pirId: $pirId, onlyGaps: $onlyGaps, first: 10) {
+      edges {
+        node {
+          id
+          pir_id
+          pir {
+            id
+          }
+          criterion_label
+          coverage_score
+          is_gap
+          covering_sources {
+            source_id
+            matched_count
+            share
+            source {
+              id
+            }
+          }
+          recommended_connectors {
+            slug
+            deployed
+            required_settings {
+              key
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
 const TEST_FINGERPRINT_PREFIX = 'integration-test-source-intelligence';
 
 describe('Source intelligence', () => {
@@ -443,6 +559,95 @@ describe('Source intelligence', () => {
     });
   });
 
+  it('should compute the collection gap of every PIR criterion and guard the one-click deployment of its connectors', async () => {
+    const pir = await pirAdd(testContext, ADMIN_USER, {
+      name: 'Source intelligence collection gaps PIR',
+      pir_type: PirType.ThreatLandscape,
+      pir_rescan_days: 0,
+      pir_filters: { mode: FilterMode.And, filterGroups: [], filters: [] },
+      pir_criteria: [{
+        weight: 2,
+        filters: { mode: FilterMode.And, filterGroups: [], filters: [{ key: ['toId'], values: ['24b6365f-dd85-4ee3-a28d-bb4b37e1619c'] }] },
+      }],
+    });
+    try {
+      // Every criterion is a gap under a coverage threshold above the maximum score
+      const computed = await computeCollectionGaps(testContext, await listAllSources(testContext), {
+        ...settings,
+        thresholds: { ...settings.thresholds, gap_coverage: 101 },
+      });
+      expect(computed.gaps).toBeGreaterThanOrEqual(1);
+      const { data } = await queryAsAdminWithSuccess({ query: PIR_COLLECTION_GAPS_QUERY, variables: { pirId: pir.id, onlyGaps: true } });
+      const gaps = data.collectionGaps.edges.map(({ node }: { node: any }) => node);
+      expect(gaps).toHaveLength(1);
+      const [gap] = gaps;
+      expect(gap.pir_id).toBe(pir.id);
+      expect(gap.pir.id).toBe(pir.id);
+      expect(gap.is_gap).toBe(true);
+      expect(gap.criterion_label).toBeTruthy();
+      gap.covering_sources.forEach((covering: { source_id: string; share: number; source: { id: string } | null }) => {
+        expect(covering.source?.id).toBe(covering.source_id);
+        expect(covering.share).toBeGreaterThanOrEqual(0);
+        expect(covering.share).toBeLessThanOrEqual(1);
+      });
+
+      await queryAsAdminWithError(
+        { query: DEPLOY_MUTATION, variables: { id: gap.id, slug: 'not-recommended-connector' } },
+        'This connector is not recommended for the collection gap',
+      );
+      const recommended = (slug: string, extra: Record<string, unknown>) => ({
+        slug,
+        title: `Source intelligence ${slug}`,
+        origin: 'catalog',
+        score: 0.5,
+        catalog_id: uuidv4(),
+        manager_supported: true,
+        deployed: false,
+        matched_object_types: ['Malware'],
+        matched_sectors: [],
+        matched_regions: [],
+        ...extra,
+      });
+      await patchAttribute(testContext, ADMIN_USER, gap.id, ENTITY_TYPE_COLLECTION_GAP, {
+        recommended_connectors: [
+          recommended('deployed-connector', { contract_image: 'opencti/connector-deployed', deployed: true }),
+          recommended('manual-connector', { contract_image: null, manager_supported: false }),
+          recommended('composer-connector', { contract_image: 'opencti/connector-not-in-local-catalog' }),
+        ],
+      });
+      const patched = await queryAsAdminWithSuccess({ query: PIR_COLLECTION_GAPS_QUERY, variables: { pirId: pir.id } });
+      const connectors = patched.data.collectionGaps.edges[0].node.recommended_connectors;
+      expect(connectors.map((connector: { slug: string }) => connector.slug)).toEqual(['deployed-connector', 'manual-connector', 'composer-connector']);
+      // No local catalog contract for these images: nothing more to provide than the deployment itself
+      connectors.forEach((connector: { required_settings: unknown[] }) => expect(connector.required_settings).toEqual([]));
+      await queryAsAdminWithError({ query: DEPLOY_MUTATION, variables: { id: gap.id, slug: 'deployed-connector' } }, 'This connector is already deployed');
+      await queryAsAdminWithError(
+        { query: DEPLOY_MUTATION, variables: { id: gap.id, slug: 'manual-connector' } },
+        'This connector cannot be deployed through XTM Composer, deploy it from the catalog page',
+      );
+
+      // The deployment runs as the add connector recommendation of the gap: an unknown contract fails before writing
+      const deployed = await queryAsAdminWithSuccess({ query: DEPLOY_MUTATION, variables: { id: gap.id, slug: 'composer-connector' } });
+      expect(deployed.data.collectionGapDeployConnector.status).toBe('failed');
+      const { data: detail } = await queryAsAdminWithSuccess({ query: RECOMMENDATION_QUERY, variables: { id: deployed.data.collectionGapDeployConnector.id } });
+      const recommendation = detail.sourceRecommendation;
+      expect(recommendation.kind).toBe('add_connector');
+      expect(recommendation.source).toBeNull();
+      expect(recommendation.autonomous).toBe(false);
+      expect(recommendation.error_message).toContain('Target contract not found');
+      expect(recommendation.name).toBe('Deploy Source intelligence composer-connector for Source intelligence collection gaps PIR');
+      expect(JSON.parse(recommendation.payload)).toMatchObject({ pir_id: pir.id, collection_gap_id: gap.id, slug: 'composer-connector' });
+      expect(JSON.parse(recommendation.recommendation_evidence).coverage_score).toBeGreaterThanOrEqual(0);
+      expect(recommendation.required_settings).toEqual([]);
+    } finally {
+      await deletePir(testContext, ADMIN_USER, pir.id);
+    }
+    // The gaps of a deleted PIR are removed by the next computation
+    await computeCollectionGaps(testContext, await listAllSources(testContext), settings);
+    const remaining = await fullEntitiesList<BasicStoreEntity & { pir_id: string }>(testContext, ADMIN_USER, [ENTITY_TYPE_COLLECTION_GAP]);
+    expect(remaining.filter((gap) => gap.pir_id === pir.id)).toHaveLength(0);
+  });
+
   it('should set, validate and clear the cost of a source', async () => {
     const set = await queryAsAdminWithSuccess({ query: SET_COST_MUTATION, variables: { id: sourceId, input: { amount: 12000, currency: 'eur', period: 'year' } } });
     expect(set.data.sourceSetCost.cost).toEqual({ amount: 12000, currency: 'EUR', period: 'year' });
@@ -458,6 +663,73 @@ describe('Source intelligence', () => {
     );
     const cleared = await queryAsAdminWithSuccess({ query: SET_COST_MUTATION, variables: { id: sourceId, input: null } });
     expect(cleared.data.sourceSetCost.cost).toBeNull();
+  });
+
+  it('should edit the description, tags and owner of a source, and nothing else', async () => {
+    const curated = await createEntity(testContext, ADMIN_USER, {
+      source_kind: 'author',
+      ref_id: uuidv4(),
+      ref_type: 'Organization',
+      name: 'Source intelligence edited author',
+      source_user_ids: [],
+      enabled: true,
+      quarantined: false,
+    }, ENTITY_TYPE_SOURCE);
+    try {
+      const edited = await queryAsAdminWithSuccess({
+        query: SOURCE_PATCH_MUTATION,
+        variables: {
+          id: curated.internal_id,
+          input: [
+            { key: 'description', value: ['Reviewed every quarter'] },
+            { key: 'tags', value: ['reviewed', ' reviewed ', '', 'paid'] },
+            { key: 'owner_id', value: [ADMIN_USER.id] },
+          ],
+        },
+      });
+      expect(edited.data.sourceFieldPatch.description).toBe('Reviewed every quarter');
+      expect(edited.data.sourceFieldPatch.tags).toEqual(['reviewed', 'paid']);
+      expect(edited.data.sourceFieldPatch.owner.id).toBe(ADMIN_USER.id);
+      const { data } = await queryAsAdminWithSuccess({ query: SOURCE_DETAIL_QUERY, variables: { id: curated.internal_id } });
+      expect(data.source.owner.id).toBe(ADMIN_USER.id);
+      // An author is not backed by a connector, and a source without proposal counts none
+      expect(data.source.connector).toBeNull();
+      expect(data.source.recommendationsCount).toBe(0);
+      await queryAsAdminWithError(
+        { query: SOURCE_PATCH_MUTATION, variables: { id: curated.internal_id, input: [{ key: 'ref_id', value: [uuidv4()] }] } },
+        'Invalid or forbidden source field',
+      );
+      await queryAsAdminWithError(
+        { query: SOURCE_PATCH_MUTATION, variables: { id: curated.internal_id, input: [{ key: 'owner_id', value: [uuidv4()] }] } },
+        'Source owner not found',
+      );
+      await queryAsAdminWithError(
+        { query: SOURCE_PATCH_MUTATION, variables: { id: 'source--00000000-0000-4000-8000-000000000000', input: [{ key: 'description', value: ['none'] }] } },
+        'Source not found',
+      );
+      const reset = await queryAsAdminWithSuccess({
+        query: SOURCE_PATCH_MUTATION,
+        variables: { id: curated.internal_id, input: [{ key: 'description', value: [null] }, { key: 'owner_id', value: [null] }] },
+      });
+      expect(reset.data.sourceFieldPatch.description).toBeNull();
+      expect(reset.data.sourceFieldPatch.owner).toBeNull();
+    } finally {
+      await deleteElementById(testContext, ADMIN_USER, curated.internal_id, ENTITY_TYPE_SOURCE);
+    }
+  });
+
+  it('should expose the connector and the scorecard details of a scored source', async () => {
+    const { data } = await queryAsAdminWithSuccess({ query: SOURCE_DETAIL_QUERY, variables: { id: sourceId } });
+    expect(data.source.id).toBe(sourceId);
+    expect(data.source.enabled).toBe(true);
+    expect(data.source.recommendationsCount).toBeGreaterThanOrEqual(0);
+    const { scorecard } = data.source;
+    expect(scorecard).not.toBeNull();
+    if (scorecard.relevance !== null) {
+      expect(scorecard.relevance).toBeGreaterThanOrEqual(0);
+      expect(scorecard.pir_matched_count).toBeGreaterThanOrEqual(0);
+    }
+    scorecard.overlap.forEach((share: { source_id: string; source: { id: string } | null }) => expect(share.source?.id).toBe(share.source_id));
   });
 
   it('should write the latest KPIs of a source with the cost it has when they are saved', async () => {
@@ -686,6 +958,87 @@ describe('Source intelligence', () => {
     expect(reverted.data.revertSourceRecommendation.status).toBe('reverted');
     const after = await queryAsAdminWithSuccess({ query: USER_CONFIDENCE_QUERY, variables: { id: connectorUserId } });
     expect(after.data.user.user_confidence_level?.max_confidence ?? null).toBe(previousMaxConfidence);
+  });
+
+  it('should apply and revert a decay rule recommendation', async () => {
+    const { created } = await upsertProposals(testContext, [{
+      kind: 'add_decay_rule',
+      source_id: sourceId,
+      fingerprint: `${TEST_FINGERPRINT_PREFIX}-decay-rule`,
+      name: 'Add a decay rule for the test source',
+      rationale: 'Integration test',
+      payload: {
+        name: 'Source Intelligence - integration test',
+        description: 'Created by the source intelligence integration test',
+        decay_lifetime: 30,
+        decay_pound: 0.5,
+        decay_points: [80, 50],
+        decay_revoke_score: 20,
+        decay_filters: JSON.stringify({ mode: 'and', filters: [{ key: ['creator_id'], values: [connectorUserId], operator: 'eq', mode: 'or' }], filterGroups: [] }),
+        order: 100,
+      },
+      evidence: {},
+    }], settings, { kinds: [] });
+    expect(created.length).toBe(1);
+    const recommendationId = created[0].internal_id;
+    const applied = await queryAsAdminWithSuccess({ query: APPLY_MUTATION, variables: { id: recommendationId } });
+    expect(applied.data.applySourceRecommendation.status).toBe('applied');
+    expect(applied.data.applySourceRecommendation.apply_result).toBe('Decay rule Source Intelligence - integration test created');
+    const stored = await storeLoadById<BasicStoreEntitySourceRecommendation>(testContext, ADMIN_USER, recommendationId, ENTITY_TYPE_SOURCE_RECOMMENDATION);
+    const decayRuleId = JSON.parse(stored?.revert_payload ?? '{}').decay_rule_id;
+    expect(await storeLoadById(testContext, ADMIN_USER, decayRuleId, ENTITY_TYPE_DECAY_RULE)).toBeTruthy();
+
+    const reverted = await queryAsAdminWithSuccess({ query: REVERT_MUTATION, variables: { id: recommendationId } });
+    expect(reverted.data.revertSourceRecommendation.status).toBe('reverted');
+    expect(await storeLoadById(testContext, ADMIN_USER, decayRuleId, ENTITY_TYPE_DECAY_RULE)).toBeFalsy();
+    const { data } = await queryAsAdminWithSuccess({ query: RECOMMENDATION_QUERY, variables: { id: recommendationId } });
+    expect(data.sourceRecommendation.kind).toBe('add_decay_rule');
+    expect(data.sourceRecommendation.source.id).toBe(sourceId);
+    expect(data.sourceRecommendation.applied_by.id).toBe(ADMIN_USER.id);
+    expect(data.sourceRecommendation.reverted_by.id).toBe(ADMIN_USER.id);
+    expect(data.sourceRecommendation.dismissed_by).toBeNull();
+    expect(data.sourceRecommendation.required_settings).toEqual([]);
+  });
+
+  it('should disable the source of a connector the platform does not manage on retire, and enable it again on revert', async () => {
+    const connectorId = uuidv4();
+    await registerConnector(testContext, ADMIN_USER, { id: connectorId, name: 'Source intelligence retired connector', type: ConnectorType.ExternalImport });
+    const retired = await createEntity(testContext, ADMIN_USER, {
+      source_kind: 'connector',
+      ref_id: connectorId,
+      ref_type: 'Connector',
+      name: 'Source intelligence retired connector',
+      source_user_ids: [],
+      enabled: true,
+      quarantined: false,
+    }, ENTITY_TYPE_SOURCE);
+    try {
+      const { data } = await queryAsAdminWithSuccess({ query: SOURCE_DETAIL_QUERY, variables: { id: retired.internal_id } });
+      expect(data.source.connector.id).toBe(connectorId);
+      const { created } = await upsertProposals(testContext, [{
+        kind: 'retire',
+        source_id: retired.internal_id,
+        fingerprint: `${TEST_FINGERPRINT_PREFIX}-retire-external`,
+        name: 'Retire the test connector',
+        rationale: 'Integration test',
+        payload: { target: 'connector', connector_id: connectorId },
+        evidence: {},
+      }], settings, { kinds: [] });
+      expect(created.length).toBe(1);
+      const applied = await queryAsAdminWithSuccess({ query: APPLY_MUTATION, variables: { id: created[0].internal_id } });
+      expect(applied.data.applySourceRecommendation.status).toBe('applied');
+      expect(applied.data.applySourceRecommendation.apply_result).toContain('the source is disabled, stop the connector where it is deployed');
+      const disabled = await storeLoadById<BasicStoreEntitySource>(testContext, ADMIN_USER, retired.internal_id, ENTITY_TYPE_SOURCE);
+      expect(disabled?.enabled).toBe(false);
+
+      const reverted = await queryAsAdminWithSuccess({ query: REVERT_MUTATION, variables: { id: created[0].internal_id } });
+      expect(reverted.data.revertSourceRecommendation.status).toBe('reverted');
+      const enabled = await storeLoadById<BasicStoreEntitySource>(testContext, ADMIN_USER, retired.internal_id, ENTITY_TYPE_SOURCE);
+      expect(enabled?.enabled).toBe(true);
+    } finally {
+      await deleteElementById(testContext, ADMIN_USER, retired.internal_id, ENTITY_TYPE_SOURCE);
+      await connectorDelete(testContext, ADMIN_USER, connectorId);
+    }
   });
 
   it('should refuse a confidence recommendation proposed on a confidence the user no longer has', async () => {
@@ -950,6 +1303,10 @@ describe('Source intelligence', () => {
     const dismissed = await queryAsAdminWithSuccess({ query: DISMISS_MUTATION, variables: { id: recommendationId, reason: 'Known trusted feed' } });
     expect(dismissed.data.dismissSourceRecommendation.status).toBe('dismissed');
     expect(dismissed.data.dismissSourceRecommendation.dismiss_reason).toBe('Known trusted feed');
+    const detail = await queryAsAdminWithSuccess({ query: RECOMMENDATION_QUERY, variables: { id: recommendationId } });
+    expect(detail.data.sourceRecommendation.dismissed_by.id).toBe(ADMIN_USER.id);
+    expect(detail.data.sourceRecommendation.rationale).toBe('Integration test');
+    expect(detail.data.sourceRecommendation.applied_by).toBeNull();
     await queryAsAdminWithError({ query: REVERT_MUTATION, variables: { id: recommendationId } }, 'Only applied recommendations can be reverted');
     const again = await upsertProposals(testContext, [proposal], settings, { kinds: [] });
     expect(again.created.length).toBe(0);

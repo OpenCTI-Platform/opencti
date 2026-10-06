@@ -1,22 +1,33 @@
 import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/index';
 import {
+  buildAddConnectorProposal,
+  computeGapCoverageScore,
   countCoveringRelationshipsPerSource,
   countRelationshipsByValue,
+  criterionKey,
+  extractCriterionFacets,
   hubCatalogStatusOf,
   hubQueriesBudget,
   latestCompatibleContractsBySlug,
+  matchLocalCatalog,
   mergeRecommendedConnectors,
+  resolveFacets,
+  scoreCoverageMatch,
 } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-gaps';
 import { buildSourceResolver } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-provenance';
+import { recommendationFingerprint } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-rules';
+import { DEFAULT_SOURCE_INTELLIGENCE_SETTINGS } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-settings';
 import {
   type BasicStoreEntitySource,
   type CollectionGapRecommendedConnector,
+  RECOMMENDATION_ADD_CONNECTOR,
   SOURCE_KIND_AUTHOR,
   SOURCE_KIND_CONNECTOR,
 } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-types';
 import type { BasicStoreEntityCatalogContract } from '../../../../src/modules/catalog/catalog-types';
 import type { HubIntegrationCoverageMatch } from '../../../../src/modules/xtm/hub/xtm-hub-client';
+import { type FilterGroup, PirType } from '../../../../src/generated/graphql';
 
 const hubMatch = (slug: string, score: number): HubIntegrationCoverageMatch => ({
   id: `hub-${slug}`,
@@ -180,5 +191,134 @@ describe('Source intelligence collection gaps', () => {
       authors: new Map(),
     });
     expect(Object.fromEntries(perSource)).toEqual({ 'source-connector-c': 2 });
+  });
+
+  it('should read the targets, relationship types and source types of a criterion in every nested group', () => {
+    const facets = extractCriterionFacets({
+      mode: 'and',
+      filters: [
+        { key: ['toId'], values: ['sector-1', 'sector-1', 'country-1'] },
+        { key: ['relationship_type'], values: ['targets'] },
+      ],
+      filterGroups: [{
+        mode: 'or',
+        // A single key is accepted as well as a list, and only string values are facets
+        filters: [{ key: 'fromTypes', values: ['Malware', 42] }, { key: ['toId'], values: ['country-1'] }],
+        filterGroups: [],
+      }],
+    } as unknown as FilterGroup);
+    expect(facets).toEqual({ targetIds: ['sector-1', 'country-1'], relationshipTypes: ['targets'], fromTypes: ['Malware'] });
+    expect(extractCriterionFacets(null)).toEqual({ targetIds: [], relationshipTypes: [], fromTypes: [] });
+  });
+
+  it('should resolve a criterion into the object types, sectors and regions a catalog entry must cover', () => {
+    const targets = [
+      { entity_type: 'Sector', name: 'Energy' },
+      { entity_type: 'Country', name: 'France' },
+      { entity_type: 'Vulnerability', name: 'CVE-2024-0001' },
+    ];
+    // A threat landscape without source types expects the threats targeting the sector or region
+    expect(resolveFacets(PirType.ThreatLandscape, { targetIds: [], relationshipTypes: [], fromTypes: [] }, targets)).toEqual({
+      objectTypes: ['Intrusion-Set', 'Malware', 'Campaign', 'Threat-Actor-Group', 'Vulnerability', 'Indicator'],
+      sectors: ['Energy'],
+      regions: ['France'],
+      label: 'related to Energy, France, CVE-2024-0001',
+    });
+    // The source types and relationship types of the criterion win over the PIR type
+    expect(resolveFacets(PirType.ThreatOrigin, { targetIds: [], relationshipTypes: ['targets', 'uses'], fromTypes: ['Malware'] }, [])).toEqual({
+      objectTypes: ['Malware', 'Indicator'],
+      sectors: [],
+      regions: [],
+      label: 'targets, uses',
+    });
+    expect(resolveFacets(PirType.ThreatCustom, { targetIds: [], relationshipTypes: [], fromTypes: [] }, []).objectTypes).toEqual(['Indicator']);
+  });
+
+  it('should score the coverage of a criterion from its volume, its sources and its freshness, within 0 and 100', () => {
+    const { gaps } = DEFAULT_SOURCE_INTELLIGENCE_SETTINGS;
+    expect(computeGapCoverageScore({ recent: 0, window: 0, distinctSources: 0 }, gaps)).toBe(0);
+    expect(computeGapCoverageScore({ recent: gaps.target_relationships, window: gaps.target_relationships, distinctSources: gaps.target_sources }, gaps)).toBe(100);
+    // Volume 10/50, one source of 3, a quarter of the window in the recent period
+    expect(computeGapCoverageScore({ recent: 10, window: 40, distinctSources: 1 }, gaps)).toBe(26);
+    expect(computeGapCoverageScore({ recent: 500, window: 100, distinctSources: 30 }, gaps)).toBe(100);
+  });
+
+  it('should score a catalog match on the families the criterion requests only', () => {
+    const facets = { objectTypes: ['Malware', 'Indicator'], sectors: ['Energy'], regions: [], label: 'related to Energy' };
+    expect(scoreCoverageMatch(facets, { objectTypes: ['Malware'], sectors: ['Energy'], regions: [] }, 0.6)).toBe(0.45);
+    expect(scoreCoverageMatch({ objectTypes: [], sectors: [], regions: [], label: 'related to' }, { objectTypes: [], sectors: [], regions: [] }, 0.6)).toBe(0);
+  });
+
+  it('should match the local catalog on the latest compatible contract covering the sector or region of the criterion', () => {
+    const catalogContract = (slug: string, version: string, text: Record<string, unknown>) => ({
+      slug,
+      catalog_id: 'catalog-1',
+      contract_version: version,
+      image: `opencti/connector-${slug}:${version}`,
+      manager_supported: true,
+      verified: true,
+      title: slug,
+      short_description: null,
+      description: null,
+      use_cases: [],
+      solution_categories: [],
+      ...text,
+    }) as unknown as BasicStoreEntityCatalogContract;
+    const contracts = [
+      catalogContract('energy-feed', '1.0.0', { title: 'Energy threat feed', short_description: 'Malware and indicators targeting the energy sector' }),
+      catalogContract('energy-feed', '0.9.0', { title: 'Energy threat feed', short_description: 'Malware and indicators targeting the energy sector' }),
+      catalogContract('energy-reports', '1.0.0', { title: 'Energy reports', min_version: '99.0.0' }),
+      catalogContract('malware-samples', '1.0.0', { title: 'Malware samples', use_cases: ['Sandbox'] }),
+      catalogContract('banking-feed', '1.0.0', { title: 'Banking threat feed', solution_categories: ['Banking indicators'] }),
+    ];
+    const sectorFacets = { objectTypes: ['Malware', 'Indicator'], sectors: ['Energy'], regions: [], label: 'related to Energy' };
+    // A criterion with a sector needs an entry covering it, newer contracts requiring another platform are left out
+    expect(matchLocalCatalog(sectorFacets, contracts)).toEqual([{
+      slug: 'energy-feed',
+      title: 'Energy threat feed',
+      short_description: 'Malware and indicators targeting the energy sector',
+      origin: 'catalog',
+      score: 0.6,
+      catalog_id: 'catalog-1',
+      contract_image: 'opencti/connector-energy-feed:1.0.0',
+      manager_supported: true,
+      verified: true,
+      deployed: false,
+      coverage_inferred: true,
+      matched_object_types: ['Malware', 'Indicator'],
+      matched_sectors: ['Energy'],
+      matched_regions: [],
+    }]);
+    // Without sector or region, any entry covering one of the object types matches, with a score per family covered
+    const typeFacets = { objectTypes: ['Malware'], sectors: [], regions: [], label: 'related to' };
+    const scores = Object.fromEntries(matchLocalCatalog(typeFacets, contracts).map((match) => [match.slug, match.score]));
+    expect(scores).toEqual({ 'energy-feed': 0.6, 'malware-samples': 0.6 });
+  });
+
+  it('should explain an add connector proposal with the coverage of the gap and what the connector covers', () => {
+    const gap = {
+      internal_id: 'gap-1',
+      pir_id: 'pir-1',
+      criterion_key: criterionKey('{"mode":"and","filters":[],"filterGroups":[]}'),
+      criterion_label: 'targets Energy',
+      gap_coverage_score: 12,
+      recent_relationships: 3,
+      matched_relationships: 8,
+      distinct_sources: 1,
+    };
+    expect(gap.criterion_key).toMatch(/^[0-9a-f]{32}$/);
+    const proposal = buildAddConnectorProposal(gap, 'Energy PIR', { ...localMatch('energy-feed', 0.6), matched_sectors: ['Energy'] }, 30);
+    expect(proposal).toMatchObject({
+      kind: RECOMMENDATION_ADD_CONNECTOR,
+      source_id: null,
+      fingerprint: recommendationFingerprint(RECOMMENDATION_ADD_CONNECTOR, 'pir-1', gap.criterion_key, 'energy-feed'),
+      name: 'Deploy Local energy-feed for Energy PIR',
+      payload: { pir_id: 'pir-1', collection_gap_id: 'gap-1', slug: 'energy-feed', contract_image: 'opencti/connector-energy-feed', origin: 'catalog' },
+      evidence: { coverage_score: 12, recent_relationships: 3, matched_relationships: 8, distinct_sources: 1 },
+    });
+    expect(proposal.rationale).toBe('The criterion "targets Energy" of the PIR Energy PIR has a coverage of 12/100 (3 relationships in the last 30 days from 1 sources). '
+      + 'Local energy-feed covers Malware, Energy.');
+    const bare = buildAddConnectorProposal(gap, 'Energy PIR', { ...localMatch('energy-feed', 0.6), matched_object_types: [] }, 30);
+    expect(bare.rationale.endsWith('Local energy-feed covers this criterion.')).toBe(true);
   });
 });
