@@ -172,6 +172,8 @@ When the IOC validation connector is not running, the request waits and is sent 
 The request page then tells what to do: configure OpenCTI in OpenAEV and start its IOC validation connector, or ask an
 administrator when you cannot manage connectors. The request also waits while the OpenCTI account of the connector
 misses the "Update knowledge" or "Connectors API usage" capability of the Connector role, and names the missing one.
+A request still waiting when the validation timeout ends, counted from its creation, expires with the reason it
+waited, and its deployments get the `error` status, so they can be validated again by another request.
 Before it is sent, every deployment is checked again: a deployment that is no longer live, whose removal was
 requested, or that no longer waits for this request is left out, listed with the reason, and can be validated again by
 another request; the indicators and platforms without any deployment left are not sent. A deployment whose indicator,
@@ -304,8 +306,11 @@ recorded the deployments of the pairs on that platform (the integration reportin
 OpenAEV connector the request was sent to, or from an administrator. Any other account, even with the "Update
 knowledge" capability, is refused, including an account that only edited or re-created a deployment (for example to
 add a description): editing a relationship lists you among its creators, but does not make you speak for the
-platform. The same rule protects every other way to write the validation fields of a deployment
-(validation status, last validation, validation run): editing the relationship, or creating it again with these
-fields so that the existing relationship is updated, requires one of these accounts, resets to "not requested"
-included, and creating or importing a deployment that already carries a validation outcome is reserved to an OpenAEV
-IOC validation connector or an administrator.
+platform. The result is written as that account, so it must still read the indicator and the security platform: a
+result for an indicator or a security platform it can no longer read (a marking or a sharing changed after the request
+was sent) is not recorded, and the deployment gets the `error` status at the timeout of the request. The same rule
+protects every other way to write the validation fields of a deployment (validation status, last validation,
+validation run): editing the relationship, or creating it again with these fields so that the existing relationship
+is updated, requires one of these accounts, resets to "not requested" included, and creating or importing a
+deployment that already carries a validation outcome is reserved to an OpenAEV IOC validation connector or an
+administrator.
