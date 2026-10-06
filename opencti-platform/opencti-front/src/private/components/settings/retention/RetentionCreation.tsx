@@ -203,6 +203,7 @@ const RetentionCreation = ({ paginationOptions }: { paginationOptions: Retention
                 label={t_i18n('Scope')}
                 fullWidth={true}
                 containerstyle={fieldSpacingContainerStyle}
+                disabled={!isProvenanceEnabled()}
                 onChange={() => setVerified(false)}
               >
                 <SelectItem value="knowledge">{t_i18n('Knowledge')}</SelectItem>
