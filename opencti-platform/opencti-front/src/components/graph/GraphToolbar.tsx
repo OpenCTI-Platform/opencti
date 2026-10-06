@@ -301,9 +301,12 @@ const GraphToolbar = ({
             </div>
           </Pinned>
         )}
-        <Pinned style={editable ? undefined : { marginLeft: 'auto' }}>
-          <GraphToolbarMoreActions actions={overflowed} />
-        </Pinned>
+        {/* An empty item would still take a gap of the row and stop the last control short of its right edge. */}
+        {overflowed.length > 0 && (
+          <Pinned style={editable ? undefined : { marginLeft: 'auto' }}>
+            <GraphToolbarMoreActions actions={overflowed} />
+          </Pinned>
+        )}
       </div>
 
       {/* Kept mounted while closed: the host of the creation tools lives in it while the row is folded. */}

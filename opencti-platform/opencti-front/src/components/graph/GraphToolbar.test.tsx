@@ -119,6 +119,9 @@ describe('GraphToolbar', () => {
     renderToolbar();
     expect(screen.queryByRole('button', { name: 'Select all nodes' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'More actions' })).toBeNull();
+    // Nothing after the search field: the row ends on it, flush with its padding.
+    const toolbar = screen.getByRole('toolbar', { name: 'Graph toolbar' });
+    expect(toolbar.lastElementChild).toContainElement(screen.getByRole('textbox', { name: 'Search' }));
   });
 
   it('lists the rare actions of a graph view in "More actions" in 3D, where the canvas has no context menu', async () => {
