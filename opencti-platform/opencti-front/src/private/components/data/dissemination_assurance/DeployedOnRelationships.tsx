@@ -215,7 +215,7 @@ const DeployedOnRelationships = ({ side, entityId, kpiFilters, startDate }: Depl
     indicator: {
       id: 'indicator',
       label: t_i18n('Indicator'),
-      percentWidth: side === 'all' ? 18 : 20,
+      percentWidth: side === 'all' ? 17 : 20,
       isSortable: false,
       render: ({ from }: DeployedOnRelationships_node$data) => defaultRender(from?.name ?? t_i18n('Restricted')),
     },
@@ -280,7 +280,7 @@ const DeployedOnRelationships = ({ side, entityId, kpiFilters, startDate }: Depl
     last_validation_at: {
       id: 'last_validation_at',
       label: t_i18n('Last validation'),
-      percentWidth: side === 'all' ? 10 : 18,
+      percentWidth: side === 'all' ? 11 : 18,
       isSortable: true,
       render: ({ last_validation_at }: DeployedOnRelationships_node$data) => <RelativeDate date={last_validation_at} emptyLabel={t_i18n('Never')} />,
     },

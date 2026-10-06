@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react';
 import { Stack, Typography } from '@mui/material';
-import { Select, SelectContent, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@filigran/design-system';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@filigran/design-system';
 import { useFormatter } from '../../../../components/i18n';
 import useConnectedDocumentModifier from '../../../../utils/hooks/useConnectedDocumentModifier';
 import DeployedOnRelationships from './DeployedOnRelationships';
 import DisseminationAssuranceMetrics from './DisseminationAssuranceMetrics';
-import { type Period, periodStartDate } from './disseminationAssuranceUtils';
+import { DISSEMINATION_ASSURANCE_DOCUMENTATION_URL, type Period, periodStartDate } from './disseminationAssuranceUtils';
 
 const DisseminationAssuranceOverview = () => {
   const { t_i18n } = useFormatter();
@@ -15,25 +15,24 @@ const DisseminationAssuranceOverview = () => {
   const startDate = useMemo(() => periodStartDate(period), [period]);
   return (
     <Stack gap={3} data-testid="dissemination-assurance-overview-page">
-      <Stack direction="row" alignItems="flex-end" justifyContent="space-between" gap={2}>
-        <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 820 }}>
-          {t_i18n('Disseminated is not deployed, deployed is not proven. Stream connectors report where each indicator is live, OpenAEV proves that security platforms detect or prevent it.')}
+      <Stack direction="row" alignItems="center" justifyContent="space-between" gap={2}>
+        <Typography variant="body2" color="text.secondary" noWrap>
+          {t_i18n('Disseminated is not deployed, deployed is not proven.')}
+          {' '}
+          <a href={DISSEMINATION_ASSURANCE_DOCUMENTATION_URL} target="_blank" rel="noopener noreferrer">{t_i18n('Learn more')}</a>
         </Typography>
-        <div style={{ minWidth: 200 }}>
-          <Select value={period} onValueChange={(value: string) => setPeriod(value as Period)}>
-            <SelectLabel>{t_i18n('Period')}</SelectLabel>
-            <SelectTrigger aria-label={t_i18n('Period')}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent aria-label={t_i18n('Period')}>
-              <SelectItem value="all">{t_i18n('All time')}</SelectItem>
-              <SelectItem value="7d">{t_i18n('Last 7 days')}</SelectItem>
-              <SelectItem value="30d">{t_i18n('Last 30 days')}</SelectItem>
-              <SelectItem value="90d">{t_i18n('Last 90 days')}</SelectItem>
-              <SelectItem value="1y">{t_i18n('Last year')}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <Select value={period} onValueChange={(value: string) => setPeriod(value as Period)}>
+          <SelectTrigger aria-label={t_i18n('Period')} style={{ width: 180 }}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent aria-label={t_i18n('Period')}>
+            <SelectItem value="all">{t_i18n('All time')}</SelectItem>
+            <SelectItem value="7d">{t_i18n('Last 7 days')}</SelectItem>
+            <SelectItem value="30d">{t_i18n('Last 30 days')}</SelectItem>
+            <SelectItem value="90d">{t_i18n('Last 90 days')}</SelectItem>
+            <SelectItem value="1y">{t_i18n('Last year')}</SelectItem>
+          </SelectContent>
+        </Select>
       </Stack>
       <DisseminationAssuranceMetrics
         startDate={startDate}
