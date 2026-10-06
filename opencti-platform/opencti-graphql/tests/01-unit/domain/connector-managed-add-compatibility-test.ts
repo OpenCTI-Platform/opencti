@@ -203,4 +203,28 @@ describe('connector.ts — managedConnectorAdd write boundary', () => {
     ]);
     expect(JSON.stringify(activity)).not.toContain('clear-secret');
   });
+
+  it('should leave the settings the deployment does not store out of the activity log', async () => {
+    vi.mocked(computeConnectorTargetContract).mockReturnValue([
+      { key: 'API_KEY', value: 'encrypted-value', encrypted: true },
+      { key: 'API_URL', value: 'https://api.example.com' },
+    ]);
+    const configuration = [
+      { key: 'OPENCTI_TOKEN', value: 'clear-platform-token' },
+      { key: 'API_KEY', value: 'clear-secret' },
+      { key: 'UNKNOWN_SETTING', value: 'clear-unknown' },
+      { key: 'API_URL', value: 'https://api.example.com' },
+    ];
+
+    await managedConnectorAdd(fakeContext, fakeUser, { ...automaticInput, manager_contract_configuration: configuration });
+    const activity = vi.mocked(publishUserAction).mock.calls[0][0] as any;
+    expect(activity.context_data.input.manager_contract_configuration).toEqual([
+      { key: 'API_KEY', value: REDACTED_INFORMATION },
+      { key: 'API_URL', value: 'https://api.example.com' },
+    ]);
+    const recorded = JSON.stringify(activity);
+    expect(recorded).not.toContain('clear-platform-token');
+    expect(recorded).not.toContain('clear-secret');
+    expect(recorded).not.toContain('clear-unknown');
+  });
 });

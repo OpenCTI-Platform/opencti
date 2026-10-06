@@ -420,15 +420,19 @@ export const computeConnectorTargetContract = (
 };
 
 /**
- * Contract configuration as entered, with the value of every setting the contract stores encrypted (password
- * settings) redacted: what an activity log or any other record may keep of a deployment.
+ * Contract configuration as entered, limited to the settings the deployment stores, with the value of every setting
+ * the contract stores encrypted (password settings) redacted: what an activity log or any other record may keep of a
+ * deployment. A setting the deployment does not store (the platform token and the other settings the platform provides
+ * at run time, or a setting unknown to the contract) is left out, whatever it holds.
  */
 export const redactContractConfigurationSecrets = (
   configurations: ContractConfigInput[],
   resolved: ConnectorContractConfiguration[],
 ): ContractConfigInput[] => {
-  const encryptedKeys = new Set(resolved.filter((configuration) => configuration.encrypted).map((configuration) => configuration.key));
-  return configurations.map((configuration) => (encryptedKeys.has(configuration.key) ? { ...configuration, value: REDACTED_INFORMATION } : configuration));
+  const resolvedByKey = new Map(resolved.map((configuration) => [configuration.key, configuration]));
+  return configurations
+    .filter((configuration) => resolvedByKey.has(configuration.key))
+    .map((configuration) => (resolvedByKey.get(configuration.key)?.encrypted ? { ...configuration, value: REDACTED_INFORMATION } : configuration));
 };
 
 const mapCatalogToGraphqlCatalog = (
