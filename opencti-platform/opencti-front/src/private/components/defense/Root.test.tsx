@@ -104,6 +104,8 @@ describe('Defense root', () => {
     renderDefense([], '/dashboard/defense');
     expect(await screen.findByText('Nothing in Defense is available to you')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Back to the dashboard' })).toHaveAttribute('href', '/dashboard');
+    // The one-entry breadcrumb keeps the height of a row with a separator, so the alert starts at the offset of core pages
+    expect(screen.getByTestId('hub-breadcrumb-separator')).toHaveAttribute('aria-hidden', 'true');
     expect(screen.queryByText('home page')).not.toBeInTheDocument();
   });
 

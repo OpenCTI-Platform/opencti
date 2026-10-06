@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router';
 import { Alert, Button } from '@filigran/design-system';
-import Breadcrumbs from '../../../../components/Breadcrumbs';
 import PageContainer from '../../../../components/PageContainer';
 import { useFormatter } from '../../../../components/i18n';
+import HubBreadcrumbs from './HubBreadcrumbs';
 
 interface HubNoAccessProps {
   /** The English source label of the hub, the current entry of the breadcrumb. */
@@ -23,9 +23,7 @@ const HubNoAccess = ({ hub: hubLabel, parents = [], back }: HubNoAccessProps) =>
   const hub = t_i18n(hubLabel);
   return (
     <PageContainer withRightMenu={false}>
-      <Breadcrumbs
-        elements={[...parents.map((label) => ({ label: t_i18n(label) })), { label: hub, current: true }]}
-      />
+      <HubBreadcrumbs hub={hubLabel} parents={parents} />
       <Alert
         severity="info"
         data-testid="hub-no-access"
