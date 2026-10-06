@@ -400,3 +400,43 @@ def test_batch_reports_every_rejected_entry(local_api_client):
         ],
     }
     assert local_api_client.query.call_count == 0
+
+
+def test_batch_rejects_a_report_without_indicator_id(local_api_client):
+    batch_result = {
+        "data": {
+            "indicatorReportDeployments": {
+                "processed": 1,
+                "created": 1,
+                "updated": 0,
+                "unchanged": 0,
+                "errors": [],
+            }
+        }
+    }
+    deployment = deployment_with(local_api_client, [SUPPORTED_FIELDS, batch_result])
+    result = deployment.report_batch(
+        "platform-1",
+        [
+            {"status": "active"},
+            {"indicator_id": "", "status": "active"},
+            None,
+            {"indicator_id": "indicator-1", "status": "active"},
+        ],
+    )
+    assert result == {
+        "processed": 1,
+        "created": 1,
+        "updated": 0,
+        "unchanged": 0,
+        "errors": [
+            {"indicatorId": None, "message": "Missing indicator_id"},
+            {"indicatorId": "", "message": "Missing indicator_id"},
+            {
+                "indicatorId": None,
+                "message": "A deployment report must be a dictionary",
+            },
+        ],
+    }
+    sent = local_api_client.query.call_args_list[1].args[1]["reports"]
+    assert sent == [{"indicatorId": "indicator-1", "status": "active"}]

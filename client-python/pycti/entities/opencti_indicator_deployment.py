@@ -167,6 +167,17 @@ def _compact(data: Dict) -> Dict:
     return {key: value for key, value in data.items() if value is not None}
 
 
+def _batch_report_error(report) -> Optional[str]:
+    """Why a batch report cannot be sent, or None when it can."""
+    if not isinstance(report, dict):
+        return "A deployment report must be a dictionary"
+    if not report.get("indicator_id"):
+        return "Missing indicator_id"
+    if report.get("status") not in DEPLOYMENT_STATUSES:
+        return "Unsupported deployment status: {}".format(report.get("status"))
+    return None
+
+
 class IndicatorDeployment:
     """Deployment write-back of indicators on security platforms (dissemination assurance).
 
@@ -291,20 +302,24 @@ class IndicatorDeployment:
         :return: aggregated batch result (processed, created, updated, unchanged, errors) or None
         :rtype: dict or None
         """
-        valid_reports = [
-            report for report in reports if report.get("status") in DEPLOYMENT_STATUSES
-        ]
+        valid_reports = []
         # A rejected entry is reported like a server-side error, so the caller knows which ones were not sent
-        rejected = [
-            {
-                "indicatorId": report.get("indicator_id"),
-                "message": "Unsupported deployment status: {}".format(
-                    report.get("status")
-                ),
-            }
-            for report in reports
-            if report.get("status") not in DEPLOYMENT_STATUSES
-        ]
+        rejected = []
+        for report in reports:
+            error = _batch_report_error(report)
+            if error is None:
+                valid_reports.append(report)
+            else:
+                rejected.append(
+                    {
+                        "indicatorId": (
+                            report.get("indicator_id")
+                            if isinstance(report, dict)
+                            else None
+                        ),
+                        "message": error,
+                    }
+                )
         if len(valid_reports) == 0:
             return {
                 "processed": 0,
