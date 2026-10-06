@@ -1043,6 +1043,7 @@
   "Run mode": "실행 모드",
   "Run new hits": "실행의 새 히트",
   "Run next retry date": "다음 재시도 날짜",
+  "Run of a deleted hunt": "삭제된 헌트의 실행",
   "Run playbook": "실행 플레이북",
   "Run playbook continuation": "실행 플레이북 연속 실행",
   "Run playbook continuation holder": "플레이북 연속 실행 보유자",

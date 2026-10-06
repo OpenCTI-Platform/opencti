@@ -1043,6 +1043,7 @@
   "Run mode": "Mode d'exécution",
   "Run new hits": "Nouvelles correspondances de l'exécution",
   "Run next retry date": "Date de la prochaine tentative",
+  "Run of a deleted hunt": "Exécution d'une chasse supprimée",
   "Run playbook": "Playbook de l'exécution",
   "Run playbook continuation": "Continuation du playbook de l'exécution",
   "Run playbook continuation holder": "Détenteur de la continuation du playbook",

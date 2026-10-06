@@ -1043,6 +1043,7 @@
   "Run mode": "実行モード",
   "Run new hits": "実行の新しいヒット数",
   "Run next retry date": "次回の再試行日",
+  "Run of a deleted hunt": "削除されたハントの実行",
   "Run playbook": "実行のプレイブック",
   "Run playbook continuation": "実行のプレイブック継続",
   "Run playbook continuation holder": "プレイブック継続の保持者",
