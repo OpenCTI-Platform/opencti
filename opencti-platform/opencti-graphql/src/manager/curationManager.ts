@@ -32,7 +32,7 @@ import { ADJUDICATED_PROPOSAL_KINDS, adjudicateProposal, isAdjudicationAvailable
 import { applyCurationPolicy, findEnabledPolicies } from '../modules/curation/curation-policies';
 import { persistProposalDraft } from '../modules/curation/curation-proposals';
 import { buildDateInversionDraft, buildProcedureConflictDraft, isDuplicateDetectionEnabled, isProcedureConflict } from '../modules/curation/curation-detectors';
-import { decideFieldAuthority, recordedSources } from '../modules/curation/curation-field-authority';
+import { decideFieldAuthority, isRankedSource, recordedSources } from '../modules/curation/curation-field-authority';
 import { CURATION_MANAGER_ENABLED, CURATION_SCAN_INTERVAL_MS, CURATION_SNAPSHOT_INTERVAL_MS, isOlderThan } from '../modules/curation/curation-schedule';
 import {
   ACTION_SET_FIELD,
@@ -205,11 +205,41 @@ const recordedSourcesOf = async (context: AuthContext, entityId: string, entityT
   return recordedSources(element, field, await connectorsOf(context));
 };
 
+const parsedPayload = (proposal: BasicStoreEntityCurationProposal): Record<string, any> => {
+  const payload = proposal.action_payload as unknown;
+  if (typeof payload !== 'string') return (payload ?? {}) as Record<string, any>;
+  try {
+    return JSON.parse(payload);
+  } catch {
+    return {};
+  }
+};
+
+/** The authoritative value the open field precedence proposal of a field restores, when the field has one. */
+const openPrecedenceValueOf = async (context: AuthContext, entityId: string, field: string): Promise<{ value: unknown } | null> => {
+  const open = await fullEntitiesList<BasicStoreEntityCurationProposal>(context, CURATION_MANAGER_USER, [ENTITY_TYPE_CURATION_PROPOSAL], {
+    filters: {
+      mode: FilterMode.And,
+      filters: [
+        { key: ['proposal_kind'], values: [PROPOSAL_KIND_FIELD_PRECEDENCE], operator: FilterOperator.Eq },
+        { key: ['proposal_status'], values: [PROPOSAL_STATUS_OPEN], operator: FilterOperator.Eq },
+        { key: ['target_id'], values: [entityId], operator: FilterOperator.Eq },
+      ],
+      filterGroups: [],
+    },
+    noFiltersChecking: true,
+  } as any);
+  const payload = open.map(parsedPayload).find((candidate) => candidate.key === field);
+  return payload ? { value: payload.value } : null;
+};
+
 /**
  * Sources overwriting each other on the same field: counted for the Knowledge Health source conflict rate, and, when a
  * field authority rule says the overwritten value came from a more authoritative source, a field precedence proposal
  * suggests to restore it. Writers are remembered for a limited time; past it (or for a value written before this
- * version), the source of the overwritten value is the one the field authority recorded for the attribute.
+ * version), the source of the overwritten value is the one the field authority recorded for the attribute. A value an
+ * unranked writer (an analyst) put over an authoritative one is not authoritative itself: when it is overwritten in
+ * turn, the open proposal of the field is refreshed with the new overwritten value, so it stays acceptable.
  */
 const trackFieldWriters = async (
   context: AuthContext,
@@ -226,17 +256,27 @@ const trackFieldWriters = async (
   for (let index = 0; index < changes.length; index += 1) {
     const change = changes[index];
     const { previous: previousWriter, replayed } = await redisCurationSwapFieldWriter(entityId, change.field, writer, eventId, FIELD_WRITER_TTL_SECONDS);
-    if (previousWriter && (previousWriter === writer || INTERNAL_USERS[previousWriter])) continue;
-    if (previousWriter && !replayed) {
+    if (previousWriter && INTERNAL_USERS[previousWriter]) continue;
+    const sameWriter = previousWriter === writer;
+    if (previousWriter && !sameWriter && !replayed) {
       await redisCurationIncrementCounter(SOURCE_CONFLICTS_COUNTER, today());
     }
     const rule = settings.field_authority_enabled
       ? settings.field_authority_rules.find((r) => r.entity_type === entityType && r.attribute === change.field)
       : undefined;
     if (!rule || !schemaAttributesDefinition.getAttribute(entityType, change.field)) continue;
-    const previousSources = previousWriter
+    let previousSources = previousWriter
       ? await connectorSourcesOfUser(context, previousWriter)
       : await recordedSourcesOf(context, entityId, entityType, change.field);
+    let restoredValue = change.previous;
+    if (previousWriter && !isRankedSource(rule, previousSources)) {
+      const open = await openPrecedenceValueOf(context, entityId, change.field);
+      if (!open || R.equals(open.value, change.value)) continue;
+      previousSources = await recordedSourcesOf(context, entityId, entityType, change.field);
+      restoredValue = open.value;
+    } else if (sameWriter) {
+      continue;
+    }
     const decision = decideFieldAuthority(rule, previousSources, await connectorSourcesOfUser(context, writer));
     if (decision !== 'allow') continue;
     drafts.push({
@@ -245,7 +285,7 @@ const trackFieldWriters = async (
       subjects: [{ id: entityId, entity_type: entityType, name: (event.data as any).name ?? entityId }],
       target_id: entityId,
       recommended_action: ACTION_SET_FIELD,
-      action_payload: { element_id: entityId, key: change.field, value: change.previous, overwritten_value: change.value },
+      action_payload: { element_id: entityId, key: change.field, value: restoredValue, overwritten_value: change.value },
       evidence: [{
         evidence_type: EVIDENCE_FIELD_CONFLICT,
         score: 1,

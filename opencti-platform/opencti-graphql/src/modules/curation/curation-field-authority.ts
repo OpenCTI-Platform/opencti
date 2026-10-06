@@ -31,6 +31,8 @@ export const rankSource = (rule: FieldAuthorityRule, sources: FieldAuthoritySour
   return best;
 };
 
+export const isRankedSource = (rule: FieldAuthorityRule, sources: FieldAuthoritySource[]) => rankSource(rule, sources) !== UNRANKED;
+
 /**
  * Field authority decision for one attribute: a strictly more authoritative incoming source is allowed whatever its
  * confidence, a strictly less authoritative one is denied whatever its confidence, otherwise (same rank or no ranked

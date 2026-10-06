@@ -374,7 +374,7 @@ When incoming data matches an existing entity, for each attribute that has a rul
 
 The incoming source is the author of the incoming data and the connector that sends it. The source of the current value is recorded each time a listed source writes the attribute; until then, the author of the entity and the connector that created it are considered as its sources. Empty fields are always filled, attributes without a rule keep the confidence behavior, and requests in synchronized upsert mode (used to mirror another platform) bypass field authority.
 
-When a value written by a more authoritative connector is overwritten outside of this resolution (for example by a manual edit), the curation manager raises a `field_precedence` proposal to restore it. Every field overwritten by another source also counts in the source conflict rate of the Knowledge health score.
+When a value written by a more authoritative connector is overwritten outside of this resolution (for example by a manual edit), the curation manager raises a `field_precedence` proposal to restore it. When the field is edited again while that proposal is open (by the same analyst or another one), the proposal is refreshed with the new value it replaces, so it can still be accepted. Every field overwritten by another source also counts in the source conflict rate of the Knowledge health score.
 
 You can define up to 200 rules, one per entity type and attribute, each listing between 1 and 20 sources. Rules only apply to business attributes of knowledge entity types.
 

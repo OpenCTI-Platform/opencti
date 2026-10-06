@@ -13,7 +13,7 @@ import { persistProposalDraft } from '../../../src/modules/curation/curation-pro
 import { runIncrementalDuplicateDetection } from '../../../src/modules/curation/curation-scan';
 import { getCurationSettings } from '../../../src/modules/curation/curation-settings';
 import { AUTHORITY_SOURCE_CONNECTOR } from '../../../src/modules/curation/curation-types';
-import { storeLoadById } from '../../../src/database/middleware-loader';
+import { fullEntitiesList, storeLoadById } from '../../../src/database/middleware-loader';
 import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
 import type { DataEvent, SseEvent, UpdateEvent } from '../../../src/types/event';
 
@@ -25,6 +25,7 @@ vi.mock('../../../src/database/redis', async (importOriginal) => ({
   redisCurationClaimDeadLetters: vi.fn(async () => []),
   redisCurationSettleDeadLetter: vi.fn(),
   redisCurationSwapFieldWriter: vi.fn(async () => ({ previous: null, replayed: false })),
+  redisCurationIncrementCounter: vi.fn(),
   redisGetManagerEventState: vi.fn(),
   redisSetManagerEventState: vi.fn(),
 }));
@@ -33,6 +34,7 @@ vi.mock('../../../src/database/middleware-loader', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../src/database/middleware-loader')>()),
   internalFindByIds: vi.fn(async () => [{ internal_id: 'uses-1', fromId: 'intrusion-set-1', toId: 'attack-pattern-1', fromName: 'APT-X', toName: 'Phishing' }]),
   storeLoadById: vi.fn(async () => undefined),
+  fullEntitiesList: vi.fn(async () => []),
 }));
 
 // The only connector of the platform: the feed whose user writes as that connector.
@@ -254,6 +256,32 @@ describe('Curation manager field precedence', () => {
 
   it('proposes nothing when the recorded source writes the field again', async () => {
     await curationManagerStreamHandler([descriptionEdit('21-0', 'feed-user')], '21-0');
+    expect(persistProposalDraft).not.toHaveBeenCalled();
+  });
+
+  // The analyst's first edit raised a proposal restoring the feed's value; a second edit replaces the value it overwrote.
+  it('refreshes the open proposal of the field when an analyst edits it again', async () => {
+    vi.mocked(redisCurationSwapFieldWriter).mockResolvedValueOnce({ previous: 'analyst-user', replayed: false });
+    vi.mocked(fullEntitiesList).mockResolvedValueOnce([{
+      action_payload: JSON.stringify({ element_id: 'intrusion-set-1', key: 'description', value: FEED_DESCRIPTION, overwritten_value: 'First edit' }),
+    }] as never);
+    await curationManagerStreamHandler([descriptionEdit('22-0', 'second-analyst')], '22-0');
+    const draft = (persistProposalDraft as any).mock.calls[0][2];
+    expect(draft.action_payload).toEqual({ element_id: 'intrusion-set-1', key: 'description', value: FEED_DESCRIPTION, overwritten_value: EDITED_DESCRIPTION });
+  });
+
+  it('refreshes it as well when the same analyst edits the field again', async () => {
+    vi.mocked(redisCurationSwapFieldWriter).mockResolvedValueOnce({ previous: 'analyst-user', replayed: false });
+    vi.mocked(fullEntitiesList).mockResolvedValueOnce([{
+      action_payload: { element_id: 'intrusion-set-1', key: 'description', value: FEED_DESCRIPTION, overwritten_value: 'First edit' },
+    }] as never);
+    await curationManagerStreamHandler([descriptionEdit('23-0', 'analyst-user')], '23-0');
+    expect((persistProposalDraft as any).mock.calls[0][2].action_payload.value).toBe(FEED_DESCRIPTION);
+  });
+
+  it('proposes nothing when an analyst value is overwritten and the field has no open proposal', async () => {
+    vi.mocked(redisCurationSwapFieldWriter).mockResolvedValueOnce({ previous: 'analyst-user', replayed: false });
+    await curationManagerStreamHandler([descriptionEdit('24-0', 'second-analyst')], '24-0');
     expect(persistProposalDraft).not.toHaveBeenCalled();
   });
 });
