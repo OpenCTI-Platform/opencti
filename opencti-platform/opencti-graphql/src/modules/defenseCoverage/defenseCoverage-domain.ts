@@ -371,7 +371,7 @@ export const buildDefenseMatrix = async (
   const threatLevels = emptyLevels();
   effective.forEach((value) => {
     levels[value.level] += 1;
-    if (value.used) threatLevels[value.level] += 1;
+    if (value.used) threatLevels[value.threat_level] += 1;
   });
   const tactics = snapshot.phases.map((phase) => {
     const phaseLevels = emptyLevels();
@@ -385,7 +385,7 @@ export const buildDefenseMatrix = async (
       phaseLevels[value.level] += 1;
       if (value.used) {
         threatCount += 1;
-        phaseThreatLevels[value.level] += 1;
+        phaseThreatLevels[value.threat_level] += 1;
       }
     });
     return {

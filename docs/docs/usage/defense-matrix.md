@@ -77,7 +77,7 @@ A header sums the scope up: the selected security platforms and threats, and the
 * **Security platforms**: select one or several platforms to restrict the levels, or keep all of them.
 * **Threats**: choose the threats to compare with: all threats, selected threats, threats matching a filter, or none. Techniques used by these threats are outlined, with the number of threats using them.
 * **Layers**: show or hide telemetry, detection, validation and mitigations.
-* The coverage summary and the coverage by tactic give the share of techniques at each level, over all techniques and over the techniques used by the selected threats. Each tactic column shows the share of its techniques with a deployed detection (**% covered**). In every one of these figures, a technique counts once, at the best level of the technique and its sub-techniques.
+* The coverage summary and the coverage by tactic give the share of techniques at each level, over all techniques and over the techniques used by the selected threats. Each tactic column shows the share of its techniques with a deployed detection (**% covered**). In every one of these figures, a technique counts once. Over all techniques, it counts at the best level of the technique and its sub-techniques. Over the techniques used by the selected threats, it counts at the best level of the technique itself and of the sub-techniques these threats use: the coverage of a sub-technique they do not use never counts for a sibling they use.
 
 ![Security platform selection](assets/defense-matrix-filters.png)
 

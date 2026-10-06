@@ -440,19 +440,25 @@ export const cellForPlatform = (cell: DefenseCell, platformId: string) => {
  * Techniques as counted by the matrix totals, by id: a parent technique carries the best level and the threat usage
  * of its sub-techniques, and a sub-technique whose parent is not among the cells (revoked, or not accessible to the
  * reader) counts on its own.
+ * Over the techniques used by threats, a technique counts at its threat level: the best level of the technique itself,
+ * whose evidences apply to every sub-technique, and of the sub-techniques the threats use. The coverage of a
+ * sub-technique no threat uses never counts for a sibling they use.
  */
 export const countEffectiveTechniques = (
   cells: ReadonlyArray<{ attack_pattern_id: string; parent_attack_pattern_id?: string; level: number; threats_count: number }>,
-): Map<string, { level: number; used: boolean }> => {
+): Map<string, { level: number; used: boolean; threat_level: number }> => {
   const ids = new Set(cells.map((c) => c.attack_pattern_id));
   const isCountedAlone = (cell: { parent_attack_pattern_id?: string }) => !cell.parent_attack_pattern_id || !ids.has(cell.parent_attack_pattern_id);
-  const effective = new Map<string, { level: number; used: boolean }>();
-  cells.filter(isCountedAlone).forEach((c) => effective.set(c.attack_pattern_id, { level: c.level, used: c.threats_count > 0 }));
+  const effective = new Map<string, { level: number; used: boolean; threat_level: number }>();
+  cells.filter(isCountedAlone).forEach((c) => effective.set(c.attack_pattern_id, { level: c.level, used: c.threats_count > 0, threat_level: c.level }));
   cells.filter((c) => !isCountedAlone(c)).forEach((sub) => {
     const parent = effective.get(sub.parent_attack_pattern_id as string);
     if (parent) {
       parent.level = Math.max(parent.level, sub.level);
-      parent.used = parent.used || sub.threats_count > 0;
+      if (sub.threats_count > 0) {
+        parent.used = true;
+        parent.threat_level = Math.max(parent.threat_level, sub.level);
+      }
     }
   });
   return effective;

@@ -301,12 +301,34 @@ describe('Defense matrix totals', () => {
       { attack_pattern_id: 'sub', parent_attack_pattern_id: 'parent', level: 3, threats_count: 2 },
       { attack_pattern_id: 'other', level: 0, threats_count: 0 },
     ]);
-    expect(Object.fromEntries(effective)).toEqual({ parent: { level: 3, used: true }, other: { level: 0, used: false } });
+    expect(Object.fromEntries(effective)).toEqual({ parent: { level: 3, used: true, threat_level: 3 }, other: { level: 0, used: false, threat_level: 0 } });
+  });
+
+  it('should never count the coverage of an unused sub-technique for a used sibling', () => {
+    const effective = countEffectiveTechniques([
+      { attack_pattern_id: 'parent', level: 0, threats_count: 0 },
+      { attack_pattern_id: 'covered-unused', parent_attack_pattern_id: 'parent', level: 3, threats_count: 0 },
+      { attack_pattern_id: 'uncovered-used', parent_attack_pattern_id: 'parent', level: 1, threats_count: 2 },
+    ]);
+    expect(effective.get('parent')).toEqual({ level: 3, used: true, threat_level: 1 });
+  });
+
+  it('should count the evidences of a parent for the sub-techniques the threats use', () => {
+    const viaSub = countEffectiveTechniques([
+      { attack_pattern_id: 'parent', level: 2, threats_count: 0 },
+      { attack_pattern_id: 'uncovered-used', parent_attack_pattern_id: 'parent', level: 0, threats_count: 1 },
+    ]);
+    expect(viaSub.get('parent')).toEqual({ level: 2, used: true, threat_level: 2 });
+    const direct = countEffectiveTechniques([
+      { attack_pattern_id: 'parent', level: 1, threats_count: 3 },
+      { attack_pattern_id: 'covered-unused', parent_attack_pattern_id: 'parent', level: 4, threats_count: 0 },
+    ]);
+    expect(direct.get('parent')).toEqual({ level: 4, used: true, threat_level: 1 });
   });
 
   it('should count on its own a sub-technique whose parent is not visible', () => {
     const effective = countEffectiveTechniques([{ attack_pattern_id: 'orphan', parent_attack_pattern_id: 'revoked-or-restricted', level: 2, threats_count: 1 }]);
-    expect(Object.fromEntries(effective)).toEqual({ orphan: { level: 2, used: true } });
+    expect(Object.fromEntries(effective)).toEqual({ orphan: { level: 2, used: true, threat_level: 2 } });
   });
 });
 
