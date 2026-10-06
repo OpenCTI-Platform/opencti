@@ -61,6 +61,7 @@ STIX_CORE_OBJECTS = [
     "feedback",
     "x-opencti-feedback",
     "grouping",
+    "hunt",
     "identity",
     "incident",
     "indicator",

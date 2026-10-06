@@ -1307,6 +1307,7 @@ class OpenCTIStix2:
             "x-opencti-task": self.opencti.task,
             "security-coverage": self.opencti.security_coverage,
             "security-coverage-result": self.opencti.security_coverage_result,
+            "hunt": self.opencti.hunt,
             "vocabulary": self.opencti.vocabulary,
             # relationships
             "relationship": self.opencti.stix_core_relationship,
@@ -1872,6 +1873,10 @@ class OpenCTIStix2:
             stix_sighting["x_opencti_negative"] = (
                 self.opencti.get_attribute_in_extension("negative", stix_sighting)
             )
+        if "x_opencti_hunt_run_id" not in stix_sighting:
+            stix_sighting["x_opencti_hunt_run_id"] = (
+                self.opencti.get_attribute_in_extension("hunt_run_id", stix_sighting)
+            )
         if "x_opencti_workflow_id" not in stix_sighting:
             stix_sighting["x_opencti_workflow_id"] = (
                 self.opencti.get_attribute_in_extension("workflow_id", stix_sighting)
@@ -1897,6 +1902,7 @@ class OpenCTIStix2:
                 if "x_opencti_negative" in stix_sighting
                 else False
             ),
+            x_opencti_hunt_run_id=stix_sighting.get("x_opencti_hunt_run_id"),
             created=stix_sighting["created"] if "created" in stix_sighting else None,
             modified=stix_sighting["modified"] if "modified" in stix_sighting else None,
             confidence=(
