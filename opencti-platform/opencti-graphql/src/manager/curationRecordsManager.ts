@@ -92,7 +92,7 @@ export const retryQueuedRestrictionRefreshes = async (context: AuthContext) => {
     } catch (error) {
       const attempts = await redisCurationFailRestrictionRefresh(entityId);
       if (attempts === 1 || attempts % RESTRICTION_RETRY_LOG_EVERY === 0) {
-        logApp.error('[CURATION] Queued restriction refresh of curation records failed again', { cause: error, entity_id: entityId, attempts, manager: CURATION_RECORDS_MANAGER_ID });
+        logApp.warn('[CURATION] Queued restriction refresh of curation records failed again', { cause: error, entity_id: entityId, attempts, manager: CURATION_RECORDS_MANAGER_ID });
       }
     }
   }
@@ -123,7 +123,7 @@ export const curationRecordsManagerStreamHandler = async (streamEvents: Array<Ss
         await refreshRestrictions(context, [entityIds[index]]);
       } catch (entityError) {
         failedIds.push(entityIds[index]);
-        logApp.error('[CURATION] Restrictions of curation records not refreshed for an entity, queued for a retry', { cause: entityError, entity_id: entityIds[index], manager: CURATION_RECORDS_MANAGER_ID });
+        logApp.warn('[CURATION] Restrictions of curation records not refreshed for an entity, queued for a retry', { cause: entityError, entity_id: entityIds[index], manager: CURATION_RECORDS_MANAGER_ID });
       }
     }
     // Queued before the stream position moves on: if the queue cannot be written, the batch is processed again.

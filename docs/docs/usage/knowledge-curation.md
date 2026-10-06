@@ -455,6 +455,7 @@ Platform administrators can tune the manager schedules and the merge record limi
 | Accept, reject or revert a proposal, bulk accept or reject, Ask the Curator                      | `Create / Update knowledge`                            |
 | Accept or revert a `merge` or `split` proposal, apply a `merge` decision, unmerge from a merge record | `Merge knowledge`                                  |
 | Accept or revert an attribution conflict (deletes, then restores, the attributions not kept)     | `Delete knowledge`                                     |
+| Revert a procedure conflict accepted in note mode (deletes the Note its acceptance created)      | `Delete knowledge`                                     |
 | See and change the settings, run a scan now, refresh the Knowledge health, see and manage policies | `Manage customization`                               |
 | Apply a policy now                                                                                | `Manage customization` and `Create / Update knowledge`, plus the capability of each action it applies |
 

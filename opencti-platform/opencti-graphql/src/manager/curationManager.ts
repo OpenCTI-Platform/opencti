@@ -144,7 +144,7 @@ const runPolicies = async (context: AuthContext) => {
       const taskId = await applyCurationPolicy(context, CURATION_MANAGER_USER, policies[index]);
       if (taskId) logApp.info('[CURATION] Curation policy auto-apply scheduled', { policy: policies[index].name, task_id: taskId });
     } catch (error) {
-      logApp.error('[CURATION] Curation policy auto-apply failed', { cause: error, policy_id: policies[index].internal_id });
+      logApp.warn('[CURATION] Curation policy auto-apply failed', { cause: error, policy_id: policies[index].internal_id });
     }
   }
 };
@@ -373,7 +373,7 @@ const processBatchIsolated = async (context: AuthContext, settings: CurationSett
     try {
       await processStreamEvent(context, settings, streamEvents[index], changedEntityIds);
     } catch (error) {
-      logApp.error('[CURATION] Stream event kept for replay', { cause: error, event_id: streamEvents[index].id, manager: CURATION_MANAGER_ID });
+      logApp.warn('[CURATION] Stream event kept for replay', { cause: error, event_id: streamEvents[index].id, manager: CURATION_MANAGER_ID });
       deadLetters.push({ event: streamEvents[index], replays: 0 });
     }
   }
@@ -382,7 +382,7 @@ const processBatchIsolated = async (context: AuthContext, settings: CurationSett
   try {
     await runIncrementalDetection(context, settings, changedEntityIds);
   } catch (error) {
-    logApp.error('[CURATION] Live duplicate detection failed, the scheduled scan covers these entities', { cause: error, manager: CURATION_MANAGER_ID });
+    logApp.warn('[CURATION] Live duplicate detection failed, the scheduled scan covers these entities', { cause: error, manager: CURATION_MANAGER_ID });
   }
 };
 

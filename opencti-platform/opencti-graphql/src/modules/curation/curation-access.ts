@@ -69,6 +69,15 @@ export const revertedProposalAction = (proposal: Pick<BasicStoreEntityCurationPr
   return proposal.recommended_action;
 };
 
-export const canUserRevertProposal = (user: AuthUser, proposal: Pick<BasicStoreEntityCurationProposal, 'recommended_action' | 'merge_record_id'>) => {
-  return canUserApplyProposal(user, { recommended_action: revertedProposalAction(proposal) });
+/**
+ * Whether the user may revert the proposal: the capability of the opposite action (see revertedProposalAction), plus the
+ * delete capability when the revert deletes what the application created (the note keeping an overwritten procedure).
+ */
+export const canUserRevertProposal = (
+  user: AuthUser,
+  proposal: Pick<BasicStoreEntityCurationProposal, 'recommended_action' | 'merge_record_id' | 'applied_patch'>,
+) => {
+  if (!canUserApplyProposal(user, { recommended_action: revertedProposalAction(proposal) })) return false;
+  const deletesCreatedElements = (proposal.applied_patch?.created_ids ?? []).length > 0;
+  return !deletesCreatedElements || isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNDELETE);
 };

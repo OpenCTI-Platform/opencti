@@ -46,6 +46,13 @@ interface HeaderProposals {
   aliases: HeaderProposal | null;
 }
 
+const NO_PROPOSALS: HeaderProposals = { duplicate: null, aliases: null };
+
+/** The proposals of the entity they were loaded for. */
+interface LoadedProposals extends HeaderProposals {
+  entityId: string | null;
+}
+
 type Proposals = CurationPossibleDuplicateQuery$data['curationProposalsForEntity'];
 
 const toHeaderProposal = (proposals: Proposals, entityId: string): HeaderProposal | null => {
@@ -70,7 +77,7 @@ const CurationPossibleDuplicate = ({ entityId }: CurationPossibleDuplicateProps)
   const { t_i18n, fldt, rd } = useFormatter();
   const translate = useExplanationTranslator();
   const draftContext = useDraftContext();
-  const [found, setFound] = useState<HeaderProposals>({ duplicate: null, aliases: null });
+  const [found, setFound] = useState<LoadedProposals>({ entityId: null, ...NO_PROPOSALS });
 
   useEffect(() => {
     if (draftContext) return undefined;
@@ -81,19 +88,21 @@ const CurationPossibleDuplicate = ({ entityId }: CurationPossibleDuplicateProps)
         if (!active) return;
         const proposals = (data as CurationPossibleDuplicateQuery$data | undefined)?.curationProposalsForEntity ?? [];
         setFound({
+          entityId,
           duplicate: toHeaderProposal(proposals.filter((proposal) => proposal.proposal_kind === 'merge'), entityId),
           aliases: toHeaderProposal(proposals.filter((proposal) => proposal.proposal_kind === 'alias'), entityId),
         });
       })
       .catch(() => {
-        if (active) setFound({ duplicate: null, aliases: null });
+        if (active) setFound({ entityId, ...NO_PROPOSALS });
       });
     return () => {
       active = false;
     };
   }, [entityId, draftContext]);
 
-  const { duplicate, aliases } = found;
+  // Proposals loaded for the previous entity never show while those of this one load, nor in a draft.
+  const { duplicate, aliases } = found.entityId === entityId && !draftContext ? found : NO_PROPOSALS;
   const describeDuplicate = (proposal: HeaderProposal, name: string | null) => {
     if (proposal.count > 1) {
       return t_i18n('{count, plural, one {# possible duplicate} other {# possible duplicates}}', { values: { count: proposal.count } });

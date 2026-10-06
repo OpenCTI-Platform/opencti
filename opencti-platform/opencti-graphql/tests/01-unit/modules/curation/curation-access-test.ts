@@ -41,6 +41,17 @@ describe('curation apply access', () => {
     expect(canUserRevertProposal(DELETE, { recommended_action: 'resolve_attribution', merge_record_id: null })).toBe(true);
   });
 
+  it('requires the delete capability to revert an application that created an element', () => {
+    // A procedure conflict applied in note mode created a note: its revert deletes it.
+    const noted = { recommended_action: 'preserve_procedure' as const, merge_record_id: null, applied_patch: { operations: [], created_ids: ['note'], applied_at: '2026-10-06T00:00:00.000Z' } };
+    expect(canUserRevertProposal(UPDATE, noted)).toBe(false);
+    expect(canUserRevertProposal(DELETE, noted)).toBe(true);
+    expect(canUserRevertProposal(BYPASS, noted)).toBe(true);
+    // Applied in detect-only mode, it created nothing: reverting it only needs the update capability.
+    const detectOnly = { ...noted, applied_patch: { operations: [], applied_at: '2026-10-06T00:00:00.000Z' } };
+    expect(canUserRevertProposal(UPDATE, detectOnly)).toBe(true);
+  });
+
   it('runs the action an adjudication decision states on a duplicate proposal', () => {
     expect(effectiveProposalAction({ recommended_action: 'add_aliases' }, 'merge')).toBe('merge');
     expect(effectiveProposalAction({ recommended_action: 'merge' }, 'alias')).toBe('add_aliases');
