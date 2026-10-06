@@ -38,5 +38,44 @@ describe('Cache Manager', () => {
         expect(result).toEqual(expectedResult);
       });
     });
+
+    describe('Recovery on malformed JSON', () => {
+      it('should return an empty array instead of throwing when a playbook definition is not valid JSON', () => {
+        const instanceWithMalformedDefinition = {
+          internal_id: 'playbook-malformed-1',
+          playbook_definition: '{"nodes": [', // truncated, invalid JSON
+          entity_type: 'Playbook',
+        } as unknown as BasicStoreCommon;
+        expect(() => extractResolvedFiltersFromInstance(instanceWithMalformedDefinition)).not.toThrow();
+        expect(extractResolvedFiltersFromInstance(instanceWithMalformedDefinition)).toEqual([]);
+      });
+
+      it('should return an empty array instead of throwing when a playbook node configuration is not valid JSON', () => {
+        const instanceWithMalformedNodeConfiguration = {
+          internal_id: 'playbook-malformed-2',
+          playbook_definition: '{"nodes":[{"id":"id1","component_id":"PLAYBOOK_INTERNAL_DATA_STREAM","configuration":"{not valid json}"}],"links":[]}',
+          entity_type: 'Playbook',
+        } as unknown as BasicStoreCommon;
+        expect(() => extractResolvedFiltersFromInstance(instanceWithMalformedNodeConfiguration)).not.toThrow();
+        expect(extractResolvedFiltersFromInstance(instanceWithMalformedNodeConfiguration)).toEqual([]);
+      });
+
+      it('should return an empty array instead of throwing when a stream filter is not valid JSON', () => {
+        const instanceWithMalformedFilters = {
+          internal_id: 'stream-malformed-1',
+          filters: '{"mode":"and",', // truncated, invalid JSON
+          entity_type: 'StreamCollection',
+        } as unknown as BasicStoreCommon;
+        expect(() => extractResolvedFiltersFromInstance(instanceWithMalformedFilters)).not.toThrow();
+        expect(extractResolvedFiltersFromInstance(instanceWithMalformedFilters)).toEqual([]);
+      });
+    });
+
+    describe('Unsupported entity type', () => {
+      it('should still throw for an entity type that does not support resolved filters', () => {
+        const unsupportedInstance = { internal_id: 'x', entity_type: 'Malware' } as unknown as BasicStoreCommon;
+        expect(() => extractResolvedFiltersFromInstance(unsupportedInstance)).toThrow();
+      });
+    });
   });
 });
