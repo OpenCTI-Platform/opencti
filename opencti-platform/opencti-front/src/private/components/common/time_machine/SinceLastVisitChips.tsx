@@ -47,6 +47,8 @@ const SinceLastVisitChips = ({ entityId, changesPath }: SinceLastVisitChipsProps
     // The server debounces the writes, the overview records the visit once per opening. The request is never
     // cancelled, so a brief visit is recorded too: leaving the overview only ignores the answer
     let active = true;
+    // The overview can be reused for another entity: its chip never shows the counters of the previous one
+    setData(null);
     commit({
       variables: { id: entityId },
       onCompleted: (response) => {
