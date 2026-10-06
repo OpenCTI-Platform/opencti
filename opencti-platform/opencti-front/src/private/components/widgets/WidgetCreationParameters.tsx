@@ -26,7 +26,7 @@ import { useFormatter } from 'src/components/i18n';
 import { findFiltersFromKeys, isDraftWorkspaceFilterGroup, SELF_ID, SELF_ID_VALUE } from 'src/utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
 import type { WidgetColumn, WidgetParameters, WidgetPerspective } from 'src/utils/widget/widget';
-import { getCurrentAvailableParameters, getCurrentCategory, getMaxResultCount, getWidgetInterval } from 'src/utils/widget/widgetUtils';
+import { DEPLOYED_ON_DATE_ATTRIBUTES, getCurrentAvailableParameters, getCurrentCategory, getMaxResultCount, getWidgetInterval } from 'src/utils/widget/widgetUtils';
 import EntitySelectWithTypes from '../../../components/fields/EntitySelectWithTypes';
 import useAuth from '../../../utils/hooks/useAuth';
 import type { WidgetVisualizationTypes } from 'src/utils/widget/widgetUtils';
@@ -627,6 +627,11 @@ const WidgetCreationParameters = () => {
                                 </SelectItem>
                               </>
                             )}
+                            {(perspective === 'relationships' && selectedEntityType === 'deployed-on') && DEPLOYED_ON_DATE_ATTRIBUTES.map((attribute) => (
+                              <SelectItem key={attribute} value={attribute}>
+                                {attribute} ({t_i18n('Functional date')})
+                              </SelectItem>
+                            ))}
                             {(perspective === 'entities' || selectedEntityType === 'stix-sighting-relationship') && (
                               <>
                                 <SelectItem value="first_seen">

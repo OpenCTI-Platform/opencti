@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { fromB64 } from '../../../utils/String';
+import { checkIfDateAttributeValid } from '../../../utils/widget/widgetUtils';
+import { deserializeDashboardManifestForFrontend } from '../dashboard-utils';
 import { buildDashboardTemplateExport, buildDashboardTemplateFile, DASHBOARD_TEMPLATES } from './dashboardTemplates';
 import { disseminationAssuranceDashboardTemplate } from './disseminationAssuranceDashboardTemplate';
 
@@ -36,6 +38,13 @@ describe('dashboard templates', () => {
     const byOutcome = manifest.widgets['0a10d150-0001-4d1a-9a10-000000000008'];
     expect(byOutcome.dataSelection.map((selection: { date_attribute: string }) => selection.date_attribute))
       .toEqual(['last_validation_at', 'last_validation_at', 'last_validation_at', 'last_validation_at']);
+  });
+
+  it('keeps every imported widget valid in the widget editor', () => {
+    const { widgets } = deserializeDashboardManifestForFrontend(buildDashboardTemplateExport(disseminationAssuranceDashboardTemplate, translate).configuration.manifest);
+    Object.values(widgets).forEach((widget) => {
+      expect(checkIfDateAttributeValid(widget.dataSelection)).toBe(true);
+    });
   });
 
   it('scopes every relationship widget to deployed-on and every entity widget to indicators', () => {
