@@ -578,6 +578,18 @@ const loadExportedTimelineEvents = async (
   const ceilingFilters = (markingFilter.filters as { key: string | string[]; values?: string[] }[])
     .map((filter) => ({ ...filter, key: Array.isArray(filter.key) ? filter.key : [filter.key] }));
   const markingsAboveCeiling = new Set(ceilingFilters.flatMap((filter) => filter.values ?? []));
+  // Each page is reduced to the events the export holds before its text counts: the events the user cannot read
+  // through their element or sources, or above the content ceiling, never weigh on the bound
+  const elements: Record<string, AnyStoreElement> = {};
+  const exportedOf = async (page: StoredTimelineEvent[]): Promise<StoredTimelineEvent[]> => {
+    const { items, elements: pageElements } = await filterAccessibleEvents(context, user, container.internal_id, page, (e) => e, { fullElements: true });
+    Object.assign(elements, pageElements);
+    // A reference deleted since is marked by the event, which keeps its markings
+    const withinCeiling = items.filter((event) => referencedElementIds(event, container.internal_id)
+      .every((id) => markingsOf(elements[id] ?? event).every((markingId) => !markingsAboveCeiling.has(markingId))));
+    // A file stored in the container reaches every reader of the container whose markings cover it, not only this user
+    return opts.storedInContainer ? filterEventsSharedAsContainer(context, container, withinCeiling) : withinCeiling;
+  };
   // Read page by page, so that an export over its text bound stops reading before holding all of it
   const pages = collectTimelineExportPages();
   await fullEntitiesList<StoredTimelineEvent>(context, user, [ENTITY_TYPE_TIMELINE_EVENT], {
@@ -586,21 +598,15 @@ const loadExportedTimelineEvents = async (
     orderMode: OrderingMode.Asc,
     first: TIMELINE_EXPORT_PAGE_SIZE,
     maxSize: TIMELINE_MAX_STORED_EVENTS,
-    callback: pages.collect,
+    callback: async (page: StoredTimelineEvent[]) => pages.collect(await exportedOf(page)),
   } as any);
-  const { events } = pages;
   if (pages.exceeded()) {
     throw FunctionalError('This timeline is too large to export at once: narrow the export with the filters or the time window', {
       doc_code: TIMELINE_EXPORT_TOO_LARGE,
       max_text_length: TIMELINE_EXPORT_MAX_TEXT_LENGTH,
     });
   }
-  const { items, elements } = await filterAccessibleEvents(context, user, container.internal_id, events, (e) => e, { fullElements: true });
-  // A reference deleted since is marked by the event, which keeps its markings
-  const withinCeiling = items.filter((event) => referencedElementIds(event, container.internal_id)
-    .every((id) => markingsOf(elements[id] ?? event).every((markingId) => !markingsAboveCeiling.has(markingId))));
-  // A file stored in the container reaches every reader of the container whose markings cover it, not only this user
-  const exported = opts.storedInContainer ? await filterEventsSharedAsContainer(context, container, withinCeiling) : withinCeiling;
+  const exported = pages.events;
   const anchors = computeTimelineAnchors(exported, { isClosed: await isContainerClosed(context, container), computedAt: now() });
   return { container, items: exported, elements, anchors };
 };
