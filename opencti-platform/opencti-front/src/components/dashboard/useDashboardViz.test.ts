@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import useDashboardViz from './useDashboardViz';
-import { WidgetDataSelection } from 'src/utils/widget/widget';
+import { WidgetDataSelection, WidgetHost } from 'src/utils/widget/widget';
 
 const loadMocks: Array<ReturnType<typeof vi.fn>> = [];
 const disposeMocks: Array<ReturnType<typeof vi.fn>> = [];
@@ -292,5 +292,15 @@ describe('useDashboardViz', () => {
     expect(lastLoadVariables).toEqual({ field: 'SELECTION2' });
 
     hook.unmount();
+  });
+  it('disposes the query as soon as one guard blocks the widget', () => {
+    renderHook(() => useDashboardViz({
+      dataSelection: EMPTY_DATA_SELECTION,
+      perspective: 'entities',
+      host: { kind: 'custom-view' } as WidgetHost,
+      query: {} as never,
+    }));
+    // isMissingHostEntity alone (no target entity) must be enough to dispose the query
+    expect(disposeMocks.at(-1)).toHaveBeenCalled();
   });
 });

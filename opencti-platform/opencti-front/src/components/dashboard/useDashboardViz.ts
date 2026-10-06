@@ -39,6 +39,8 @@ const useDashboardViz = <TQuery extends OperationType>({
   const [isMissingHostEntity, setIsMissingHostEntity] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isMissingSavedFilters, setIsMissingSavedFilters] = useState(false);
+  // A widget that cannot be resolved safely never runs its query.
+  const isBlocked = isMissingHostEntity || isMissingSavedFilters;
 
   // refreshToken is an integer provided via context by DashboardContent and incremented
   // by CustomDashboard on manual or auto refresh. When it changes, we force-reload
@@ -109,11 +111,7 @@ const useDashboardViz = <TQuery extends OperationType>({
   }, [load, startTransition]);
 
   const reloadData = useCallback((force = false) => {
-    if (isMissingHostEntity) {
-      return;
-    }
-
-    if (isMissingSavedFilters) {
+    if (isBlocked) {
       return;
     }
 
@@ -126,15 +124,15 @@ const useDashboardViz = <TQuery extends OperationType>({
     }
 
     loadAndTrackSignature(queryVariables, queryVariablesSignature);
-  }, [isMissingHostEntity, isMissingSavedFilters, queryVariables, queryVariablesSignature, loadAndTrackSignature]);
+  }, [isBlocked, queryVariables, queryVariablesSignature, loadAndTrackSignature]);
 
   useEffect(() => {
-    if (!isMissingHostEntity || !isMissingSavedFilters) {
+    if (!isBlocked) {
       return;
     }
     lastLoadedVariablesSignatureRef.current = null;
     disposeQuery();
-  }, [disposeQuery, isMissingHostEntity, isMissingSavedFilters]);
+  }, [disposeQuery, isBlocked]);
 
   useEffect(() => {
     reloadData(false);
@@ -169,7 +167,7 @@ const useDashboardViz = <TQuery extends OperationType>({
     if (prevRefreshTokenRef.current === refreshToken) return undefined;
     prevRefreshTokenRef.current = refreshToken;
 
-    if (isMissingHostEntity || isMissingSavedFilters) {
+    if (isBlocked) {
       return undefined;
     }
 
@@ -183,7 +181,7 @@ const useDashboardViz = <TQuery extends OperationType>({
       }
       forceReloadWithFreshVariables(result.resolvedDataSelection);
     });
-  }, [refreshToken, isMissingHostEntity, isMissingSavedFilters, forceReloadWithFreshVariables, handleResolveDataSelection]);
+  }, [refreshToken, isBlocked, forceReloadWithFreshVariables, handleResolveDataSelection]);
 
   return {
     queryRef,
