@@ -206,6 +206,8 @@
   "Curation confidence": "큐레이션 신뢰도",
   "Curation evidence": "큐레이션 근거",
   "Curation proposal": "큐레이션 제안",
+  "CURATION_MANAGER": "큐레이션 관리자",
+  "CURATION_RECORDS_MANAGER": "큐레이션 기록 관리자",
   "Current draft context": "현재 초안 컨텍스트",
   "Current State": "현재 상태",
   "Current state cursor": "현재 상태 커서",

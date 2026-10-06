@@ -206,6 +206,8 @@
   "Curation confidence": "治理置信度",
   "Curation evidence": "治理依据",
   "Curation proposal": "治理提议",
+  "CURATION_MANAGER": "数据整理管理器",
+  "CURATION_RECORDS_MANAGER": "数据整理记录管理器",
   "Current draft context": "当前草案背景",
   "Current State": "当前状态",
   "Current state cursor": "当前状态游标",

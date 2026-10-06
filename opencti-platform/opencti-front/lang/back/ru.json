@@ -206,6 +206,8 @@
   "Curation confidence": "Уверенность курирования",
   "Curation evidence": "Обоснование курирования",
   "Curation proposal": "Предложение курирования",
+  "CURATION_MANAGER": "Менеджер курирования",
+  "CURATION_RECORDS_MANAGER": "Менеджер записей курирования",
   "Current draft context": "Текущий контекст проекта",
   "Current State": "Текущее состояние",
   "Current state cursor": "Курсор текущего состояния",

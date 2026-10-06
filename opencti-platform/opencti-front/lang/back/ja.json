@@ -206,6 +206,8 @@
   "Curation confidence": "キュレーションの信頼度",
   "Curation evidence": "キュレーションの根拠",
   "Curation proposal": "キュレーション提案",
+  "CURATION_MANAGER": "キュレーションマネージャー",
+  "CURATION_RECORDS_MANAGER": "キュレーションレコードマネージャー",
   "Current draft context": "現在のドラフト状況",
   "Current State": "現在の状態",
   "Current state cursor": "ヘッダー",

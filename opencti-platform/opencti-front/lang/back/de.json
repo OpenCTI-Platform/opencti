@@ -206,6 +206,8 @@
   "Curation confidence": "Kuratierungskonfidenz",
   "Curation evidence": "Kuratierungsnachweise",
   "Curation proposal": "Kuratierungsvorschlag",
+  "CURATION_MANAGER": "Kuratierungsmanager",
+  "CURATION_RECORDS_MANAGER": "Manager für Kuratierungsdatensätze",
   "Current draft context": "Aktueller Entwurfskontext",
   "Current State": "Aktueller Stand",
   "Current state cursor": "Aktueller Status Cursor",
