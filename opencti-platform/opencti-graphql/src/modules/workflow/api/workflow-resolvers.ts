@@ -16,8 +16,7 @@ import {
   setWorkflowStatus,
   getWorkflowBypassStatuses,
 } from '../domain/workflow-domain';
-
-const COMMENT_MAX_LENGTH = 1000; // Keep in sync with COMMENT_MAX_LENGTH in opencti-front/src/private/components/common/workflow/WorkflowStatus.tsx
+import { COMMENT_MAX_LENGTH } from '../types/workflow-types';
 
 const workflowResolvers = {
   Query: {

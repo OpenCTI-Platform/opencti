@@ -32,6 +32,7 @@ import { WorkflowFactory } from '../engine/workflow-factory';
 import type { WorkflowSchema } from '../engine/workflow-schema';
 import {
   type AsyncActionSlot,
+  COMMENT_MAX_LENGTH,
   ENTITY_TYPE_WORKFLOW_DEFINITION,
   ENTITY_TYPE_WORKFLOW_INSTANCE,
   type TriggerResult,
@@ -1549,7 +1550,7 @@ const executeWorkflowBypass = async (
   runtimeParams: Record<string, unknown> = {},
 ): Promise<TriggerResult> => {
   const normalizedComment = comment?.trim() || undefined;
-  if (normalizedComment && normalizedComment.length > 1000) throw FunctionalError('Comment exceeds maximum allowed length of 1000 characters.');
+  if (normalizedComment && normalizedComment.length > COMMENT_MAX_LENGTH) throw FunctionalError(`Comment exceeds maximum allowed length of ${COMMENT_MAX_LENGTH} characters.`);
   const {
     entity, entitySetting, definitionData, instanceEntity: existingInstance, currentState, scope, executionContext, executionUser,
   } = await loadWorkflowBypass(context, user, entityId);

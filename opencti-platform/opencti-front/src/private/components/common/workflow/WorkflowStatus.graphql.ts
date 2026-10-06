@@ -1,6 +1,6 @@
 import { graphql } from 'react-relay';
 
-// Keep in sync with COMMENT_MAX_LENGTH in opencti-graphql/src/modules/workflow/api/workflow-resolvers.ts
+// Keep in sync with COMMENT_MAX_LENGTH in opencti-graphql/src/modules/workflow/types/workflow-types.ts
 export const COMMENT_MAX_LENGTH = 1000;
 
 export const workflowStatusWorkflowInstanceFragment = graphql`

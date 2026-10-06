@@ -132,6 +132,9 @@ export interface TriggerResult {
   asyncActionSlots?: AsyncActionSlot[];
 }
 
+// Keep in sync with COMMENT_MAX_LENGTH in opencti-front/src/private/components/common/workflow/WorkflowStatus.graphql.ts
+export const COMMENT_MAX_LENGTH = 1000;
+
 /**
  * Workflow validation error structure
  */

@@ -50,15 +50,13 @@ const completeWorkflowAsyncActionResult = async (
   workflowActionId: string,
   status: 'success' | 'failed',
   error?: string,
-  loadedInstance?: any,
 ): Promise<void> => {
   const executionContext = bypassDraftContext(context);
   // Use the explicitly-passed `user`, not `context.user`: some callers (e.g. work.js via
   // `executionContext(source)`) build a context with no `.user` and thread the identity separately.
   const executionUser: AuthUser = { ...user, draft_context: undefined };
 
-  const instanceEntity = loadedInstance !== undefined ? loadedInstance
-    : await storeLoadById<any>(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE);
+  const instanceEntity = await storeLoadById<any>(executionContext, executionUser, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE);
   if (!instanceEntity) {
     logApp.warn('[workflow-async-completion] WorkflowInstance not found', { workflowInstanceId });
     return;
@@ -257,8 +255,12 @@ export const reportWorkflowAsyncActionResult = async (
 ): Promise<void> => {
   const instance = await storeLoadById<any>(bypassDraftContext(context), { ...user, draft_context: undefined }, workflowInstanceId, ENTITY_TYPE_WORKFLOW_INSTANCE);
   if (!instance) {
-    return completeWorkflowAsyncActionResult(context, user, workflowInstanceId, workflowActionId, status, error, instance);
+    logApp.warn('[workflow-async-completion] WorkflowInstance not found', { workflowInstanceId });
+    return;
   }
+  // Unbounded retries on purpose: the background task can finish while the initiating mutation still
+  // holds this lock (before its async slots are registered). A bounded window would drop the callback
+  // and leave the instance pending forever. A dead holder's lock still expires after max_ttl.
   const lock = await lockResources([`workflow-mutation-${instance.entity_id}`], { retryCount: -1 });
   try {
     await completeWorkflowAsyncActionResult(context, user, workflowInstanceId, workflowActionId, status, error);
