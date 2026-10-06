@@ -71,6 +71,10 @@ export const useTimeMachineWarningMessage = () => {
         return t_i18n('The relationship history is not retained back to this date: the relationships shown may not reflect every change made since then.');
       case 'REPLAY_BEYOND_WINDOW':
         return t_i18n('This date is older than the replay window between two knowledge snapshots, the reconstruction relies on a long history replay.');
+      case 'HISTORY_NOT_INDEXED_YET':
+        return t_i18n('The latest change of this entity is still being recorded in its history, the view may not reflect it yet: open it again in a few seconds.');
+      case 'DOCUMENT_CHANGED_DURING_READ':
+        return t_i18n('This entity kept changing while the view was built, the view may not reflect its latest state: open it again in a few seconds.');
       default:
         return warning;
     }

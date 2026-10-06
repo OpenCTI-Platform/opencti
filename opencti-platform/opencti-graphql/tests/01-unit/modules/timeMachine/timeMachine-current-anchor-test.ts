@@ -85,6 +85,7 @@ describe('Current document anchor of the time machine', () => {
     expect(pending.covered).toBe(false);
     const { replay } = await reconstructAt(context, version('APT-TEST', updatedAt), DATE);
     expect(replay.complete).toBe(false);
+    expect(replay.warnings).toContain('HISTORY_NOT_INDEXED_YET');
     // A change written without history event is covered once the history is past it by the indexing margin
     findHistoryWatermarkMock.mockResolvedValue('2026-02-01T00:02:00.000Z');
     const without = await readCurrentAnchor(context, version('APT-TEST', updatedAt), DATE);
@@ -109,6 +110,7 @@ describe('Current document anchor of the time machine', () => {
     const { replay, anchor } = await reconstructAt(context, version('APT-0', '2026-02-01T00:00:00.000Z'), DATE);
     expect(anchor).toBe('current');
     expect(replay.complete).toBe(false);
+    expect(replay.warnings).toContain('DOCUMENT_CHANGED_DURING_READ');
     expect(fetchElementHistoryEventsMock).toHaveBeenCalledTimes(3);
   });
 });

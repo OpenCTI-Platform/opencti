@@ -27,7 +27,8 @@ const SNAPSHOT_DATE = '2026-09-01T00:00:00.000Z';
 const BEFORE_SNAPSHOT = '2026-08-31T00:00:00.000Z';
 const AFTER_SNAPSHOT = '2026-09-02T00:00:00.000Z';
 
-const entity = { internal_id: 'malware-1', entity_type: 'Malware', name: 'Malware 1' } as unknown as BasicStoreEntity;
+const loaded = (updatedAt: string) => ({ internal_id: 'malware-1', entity_type: 'Malware', name: 'Malware 1', updated_at: updatedAt } as unknown as BasicStoreEntity);
+const entity = loaded(BEFORE_SNAPSHOT);
 const relationship = { internal_id: 'relationship-at-date', entity_type: 'uses', fromId: 'malware-1', toId: 'attack-pattern-1', created_at: SNAPSHOT_DATE };
 const stored = (updatedAt: string, refreshedAt: string) => [{ internal_id: 'malware-1', entity_type: 'Malware', updated_at: updatedAt, refreshed_at: refreshedAt }];
 
@@ -74,13 +75,24 @@ describe('Snapshot documents at the boundary of their date', () => {
     internalFindByIdsMock.mockResolvedValue(stored(AFTER_SNAPSHOT, AFTER_SNAPSHOT));
     // The newest history event is older than the reads and nothing is indexed any more
     findHistoryWatermarkMock.mockResolvedValue(AFTER_SNAPSHOT);
-    const building = buildCompactDocuments({} as AuthContext, [entity], SNAPSHOT_DATE);
+    const building = buildCompactDocuments({} as AuthContext, [loaded(AFTER_SNAPSHOT)], SNAPSHOT_DATE);
     await vi.advanceTimersByTimeAsync(5000);
     expect(fetchElementsHistoryEventsMock).not.toHaveBeenCalled();
     await vi.advanceTimersByTimeAsync(6000);
     const documents = await building;
     expect(fetchElementsHistoryEventsMock).toHaveBeenCalledTimes(1);
     expect(documents.has('malware-1')).toBe(true);
+  });
+
+  it('should leave to the next window an entity updated after its document was loaded', async () => {
+    fetchElementsHistoryEventsMock.mockResolvedValue([]);
+    fetchRelationshipsHistoryEventsMock.mockResolvedValue([]);
+    fullRelationsListMock.mockResolvedValue([relationship]);
+    // Unchanged since the snapshot date when the relationships are read, updated before the history is read
+    internalFindByIdsMock.mockResolvedValueOnce(stored(BEFORE_SNAPSHOT, SNAPSHOT_DATE)).mockResolvedValueOnce(stored(AFTER_SNAPSHOT, AFTER_SNAPSHOT));
+    const documents = await buildCompactDocuments({} as AuthContext, [entity], SNAPSHOT_DATE);
+    expect(internalFindByIdsMock).toHaveBeenCalledTimes(2);
+    expect(documents.has('malware-1')).toBe(false);
   });
 
   it('should leave the batch to the next window when the history manager stays behind the knowledge reads', async () => {
@@ -93,7 +105,7 @@ describe('Snapshot documents at the boundary of their date', () => {
       indexed += 1;
       return new Date(Date.parse(AFTER_SNAPSHOT) + indexed).toISOString();
     });
-    const building = buildCompactDocuments({} as AuthContext, [entity], SNAPSHOT_DATE);
+    const building = buildCompactDocuments({} as AuthContext, [loaded(AFTER_SNAPSHOT)], SNAPSHOT_DATE);
     await vi.advanceTimersByTimeAsync(61000);
     const documents = await building;
     expect(documents.size).toBe(0);

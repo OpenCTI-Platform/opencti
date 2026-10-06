@@ -76,6 +76,9 @@ const CONTAINER_OBJECTS_COUNT_BATCH_SIZE = 1000;
 const RESTRICTED_VALUE = 'Restricted';
 const DELETED_VALUE = 'Deleted';
 const RELATIONSHIP_HISTORY_TRUNCATED = 'RELATIONSHIP_HISTORY_TRUNCATED';
+// The current document kept changing, or its last change is not searchable in the history yet: reading again later helps
+const DOCUMENT_CHANGED_DURING_READ = 'DOCUMENT_CHANGED_DURING_READ';
+const HISTORY_NOT_INDEXED_YET = 'HISTORY_NOT_INDEXED_YET';
 const HISTORY_NOT_RETAINED = 'HISTORY_NOT_RETAINED';
 const RELATIONSHIP_HISTORY_NOT_RETAINED = 'RELATIONSHIP_HISTORY_NOT_RETAINED';
 
@@ -517,8 +520,13 @@ export const reconstructAt = async (context: AuthContext, element: BasicStoreEnt
   }
   const current = await readCurrentAnchor(context, element, date);
   const replay = replayBackward(current.document, element.entity_type, current.events, date, MAX_REPLAY_EVENTS);
-  if (!current.consistent || !current.covered) {
+  if (!current.consistent) {
     replay.complete = false;
+    replay.warnings.push(DOCUMENT_CHANGED_DURING_READ);
+  }
+  if (!current.covered) {
+    replay.complete = false;
+    replay.warnings.push(HISTORY_NOT_INDEXED_YET);
   }
   flagReplayBeyondWindow(replay, current.anchorDate, date, MAX_REPLAY_DAYS);
   return { replay, anchor: 'current', anchorDate: current.anchorDate, anchorSnapshot: null };

@@ -253,14 +253,17 @@ export const findRelationshipsDeletedSince = async (context: AuthContext, ids: s
  * moves `updated_at` and a relationship created or deleted moves `refreshed_at` of both sides (before the relationship
  * is removed), so their changes since are rewound from the history; a document without `refreshed_at` is assumed changed.
  */
-const isChangedSince = async (context: AuthContext, ids: string[], snapshotDate: string) => {
+const readChangeStamps = async (context: AuthContext, ids: string[]) => {
   const current = await internalFindByIds<BasicStoreEntity>(context, SYSTEM_USER, ids, {
     type: ABSTRACT_STIX_CORE_OBJECT,
     baseData: true,
     baseFields: ['updated_at', 'refreshed_at'],
   }) as BasicStoreEntity[];
+  return new Map(current.map((entity) => [entity.internal_id, entity]));
+};
+const isChangedSince = (stamps: Map<string, BasicStoreEntity>, snapshotDate: string) => {
   const date = utcDate(snapshotDate);
-  return current.some((entity) => !entity.refreshed_at || utcDate(entity.refreshed_at).isAfter(date) || utcDate(entity.updated_at).isAfter(date));
+  return [...stamps.values()].some((entity) => !entity.refreshed_at || utcDate(entity.refreshed_at).isAfter(date) || utcDate(entity.updated_at).isAfter(date));
 };
 
 /**
@@ -286,7 +289,7 @@ export const buildCompactDocuments = async (context: AuthContext, entities: Basi
     maxSize: MAX_RELATIONSHIPS_PER_BATCH + 1,
   } as any);
   const readDate = now();
-  if (await isChangedSince(context, entityIds, snapshotDate) && !(await waitForHistoryCatchUp(context, readDate))) {
+  if (isChangedSince(await readChangeStamps(context, entityIds), snapshotDate) && !(await waitForHistoryCatchUp(context, readDate))) {
     logApp.warn('[TIME MACHINE] History indexing is behind the knowledge, the batch is snapshotted at the next window', { entities: entityIds.length });
     return documents;
   }
@@ -303,6 +306,12 @@ export const buildCompactDocuments = async (context: AuthContext, entities: Basi
     logApp.warn('[TIME MACHINE] Too many relationship changes since the snapshot date, the batch is snapshotted at the next window', { entities: ids.length });
     return new Map();
   }
+  // An entity updated after its document was loaded has history events its document does not hold: it is retried
+  const stamps = await readChangeStamps(context, ids);
+  entities.forEach((entity) => {
+    const stamp = stamps.get(entity.internal_id);
+    if (stamp && String(stamp.updated_at) !== String(entity.updated_at)) documents.delete(entity.internal_id);
+  });
   const listedIds = new Set(relations.slice(0, MAX_RELATIONSHIPS_PER_BATCH).map((relation) => relation.internal_id));
   const register = (entityId: string | undefined, relationshipId: string, type: string, counted: boolean) => {
     const document = entityId ? documents.get(entityId) : undefined;
@@ -322,7 +331,8 @@ export const buildCompactDocuments = async (context: AuthContext, entities: Basi
     // Too many relationships to read them all: the exact counts come from one aggregation for the whole batch
     const countsById = await countRelationshipsByTypeForElements(context, SYSTEM_USER, ids, snapshotDate);
     countsById.forEach((counts, id) => {
-      const document = documents.get(id) as CompactDocument;
+      const document = documents.get(id);
+      if (!document) return;
       counts.forEach((count, type) => {
         document.relationships_count[type] = count;
       });
