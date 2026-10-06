@@ -12,6 +12,8 @@ interface WidgetVerticalBarsProps {
   interval?: string | null;
   isStacked?: boolean;
   hasLegend?: boolean;
+  /** Number of x-axis labels; every bar is labelled by default. */
+  tickAmount?: number;
   onMounted?: OpenCTIChartProps['onMounted'];
 }
 
@@ -20,6 +22,7 @@ const WidgetVerticalBars = ({
   interval,
   isStacked = false,
   hasLegend = false,
+  tickAmount,
   onMounted,
 }: WidgetVerticalBarsProps) => {
   const theme = useTheme<Theme>();
@@ -48,9 +51,9 @@ const WidgetVerticalBars = ({
       false,
       isStacked,
       hasLegend,
-      'dataPoints',
+      tickAmount ?? 'dataPoints',
     ) as ApexOptions;
-  }, [theme, interval, isStacked, hasLegend]);
+  }, [theme, interval, isStacked, hasLegend, tickAmount]);
 
   return (
     <Chart

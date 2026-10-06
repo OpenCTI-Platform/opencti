@@ -7,6 +7,7 @@ import StixCoreObjectContentRoot from '@components/common/stix_core_objects/Stix
 import StixCoreObjectSecurityCoverage from '@components/common/stix_core_objects/StixCoreObjectSecurityCoverage';
 import Security from 'src/utils/Security';
 import AIInsights from '@components/common/ai/AIInsights';
+import HuntThisMenu from '@components/hunts/HuntThisMenu';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -190,6 +191,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }: RootCaseIncidentCompone
         }}
         extraActions={!isKnowledgeOrContent && (
           <>
+            <HuntThisMenu entity={caseData} />
             <AIInsights id={caseData.id} tabs={['containers']} defaultTab="containers" isContainer={true} />
             <StixCoreObjectSecurityCoverage id={caseData.id} coverage={caseData.securityCoverage} />
           </>

@@ -1790,6 +1790,7 @@ enum ConnectorType {
   INTERNAL_ENRICHMENT
   INTERNAL_ANALYSIS
   INTERNAL_EXPORT_FILE
+  INTERNAL_HUNT
   STREAM
 }
 
@@ -2138,6 +2139,11 @@ type Connector implements BasicObject & InternalObject {
   version: String
   slug: String
   jwks: String!
+
+  """
+  Hunted platform of an INTERNAL_HUNT connector, null for every other connector type
+  """
+  hunt: HuntConnector
 }
 
 type ManagedConnector implements BasicObject & InternalObject {
@@ -3411,6 +3417,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   number_observed: Int!
   number_seen: Int
   max_distinct_count: Int
+  x_opencti_hunt_run_id: String
   name: String!
   creators: [Creator!]
   toStix(version: Version): String
@@ -3434,6 +3441,7 @@ input ObservedDataAddInput {
   number_observed: Int!
   number_seen: Int
   max_distinct_count: Int
+  x_opencti_hunt_run_id: String
   revoked: Boolean
   lang: String
   confidence: Int
@@ -8619,9 +8627,9 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | SecurityCoverage | SecurityCoverageResult | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir | Theme | CustomView | IMEI | ICCID | IMSI | SavedFilter | Vocabulary | DraftWorkspace
+union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | SecurityCoverage | SecurityCoverageResult | Hunt | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | ManagerConfiguration | Creator | Group | Workspace | CsvMapper | Status | PublicDashboard | Pir | Theme | CustomView | IMEI | ICCID | IMSI | SavedFilter | Vocabulary | DraftWorkspace
 
-union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | PublicDashboard | Pir | SecurityCoverage | SecurityCoverageResult | CustomView | IMEI | ICCID | IMSI | SavedFilter
+union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | CsvMapper | PublicDashboard | Pir | SecurityCoverage | SecurityCoverageResult | Hunt | CustomView | IMEI | ICCID | IMSI | SavedFilter
 
 union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | SecurityPlatform | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | Narrative | ThreatActorGroup | ThreatActorIndividual | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | SSHKey | AIPrompt | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | Credential | TrackingNumber | PhoneNumber | PaymentCard | MediaContent | Persona | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | ManagerConfiguration | Workspace | PublicDashboard | Theme | CustomView | IMEI | ICCID | IMSI
 
@@ -8893,6 +8901,12 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   last_seen: DateTime
   attribute_count: Int!
   x_opencti_negative: Boolean!
+  x_opencti_hunt_run_id: String
+
+  """
+  The hunt whose runs keep this sighting up to date (one sighting per hunt, sighted object and security platform)
+  """
+  x_opencti_hunt_id: String
   objectLabel: [Label!]
   objectOrganization: [Organization!]
   externalReferences(first: Int): ExternalReferenceConnection
@@ -8926,6 +8940,7 @@ input StixSightingRelationshipAddInput {
   last_seen: DateTime
   attribute_count: Int!
   x_opencti_negative: Boolean
+  x_opencti_hunt_run_id: String
   objectLabel: [String]
   objectOrganization: [String]
   externalReferences: [String]
@@ -9446,6 +9461,20 @@ type Query {
   securityCoverages(first: Int, after: ID, orderBy: SecurityCoverageOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): SecurityCoverageConnection
   securityCoverageResult(id: String!): SecurityCoverageResult
   securityCoverageResults(first: Int, after: ID, orderBy: SecurityCoverageResultOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): SecurityCoverageResultConnection
+  hunt(id: String!): Hunt
+  hunts(first: Int, after: ID, orderBy: HuntsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String, toStix: Boolean): HuntConnection
+  huntSigmaValidate(sigma_rule: String!): HuntSigmaValidation!
+  huntConfiguration: HuntConfiguration!
+  huntStatistics(huntId: ID, startDate: DateTime, endDate: DateTime, interval: String): HuntStatistics!
+  huntPackExport(ids: [ID!]!): String
+
+  """
+  What 'Hunt this' proposes to hunt from the entity: its indicators, techniques and detection rules
+  """
+  huntDerivedContent(entityId: ID!): HuntDerivedContent
+  huntRun(id: String!): HuntRun
+  huntRuns(first: Int, after: ID, orderBy: HuntRunsOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): HuntRunConnection
+  huntConnectors(onlyAlive: Boolean): [HuntConnector!]!
   emailTemplate(id: ID!): EmailTemplate
   emailTemplates(first: Int, after: ID, orderBy: EmailTemplateOrdering, orderMode: OrderingMode, filters: FilterGroup, search: String): EmailTemplateConnection
   form(id: ID!): Form
@@ -9512,6 +9541,7 @@ type Subscription {
   managerConfiguration(id: ID!): ManagerConfiguration
   aiBus(id: ID!): AIBus
   securityCoverage(id: ID!): SecurityCoverage
+  hunt(id: ID!): Hunt
   newsFeedItemAdded: NewsFeedItem
   newsFeedItem: NewsFeedItem
   newsFeedItemDeleted: ID
@@ -10385,6 +10415,32 @@ type Mutation {
   securityCoverageResultDelete(id: ID!): ID
   securityCoverageResultRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   securityCoverageResultRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): SecurityCoverage
+  huntAdd(input: HuntAddInput!): Hunt
+  huntProposalAdd(input: HuntAddInput!, draftName: String): HuntProposal
+  huntDelete(id: ID!): ID
+  huntFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Hunt
+  huntContextPatch(id: ID!, input: EditContext!): Hunt
+  huntContextClean(id: ID!): Hunt
+  huntRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
+  huntRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Hunt
+  huntRunStart(id: ID!, input: HuntRunStartInput): [HuntRun!]!
+  huntTestQuery(id: ID!, securityPlatformId: ID): HuntRun
+  huntPlan(input: HuntPlanInput!): HuntProposal
+  huntAssist(input: HuntAssistInput!): HuntAssistance!
+  huntValidateFromEmulation(input: HuntValidateFromEmulationInput!): HuntValidation
+  huntPackImport(file: Upload!): HuntPackImportResult
+  huntRunRetry(id: ID!): HuntRun
+  huntRunSetVerdict(id: ID!, input: HuntRunVerdictInput!): HuntRun
+  huntRunTriage(id: ID!): HuntRun
+  huntRunReport(id: ID!, input: HuntRunReportInput!): HuntRun
+  huntRunEvidenceAdd(id: ID!, input: HuntRunEvidenceAddInput!): HuntRun
+  huntConnectorRegister(input: HuntConnectorRegisterInput!): HuntConnector
+
+  """
+  Asks a hunt connector to test its connection and its permissions on its platform
+  """
+  huntConnectorTestConnection(id: ID!): HuntConnector
+  huntConnectorCheckReport(input: HuntConnectorCheckReportInput!): HuntConnector
   askSendOtp(input: AskSendOtpInput!): String
   verifyOtp(input: VerifyOtpInput!): VerifyOtp
   verifyMfa(input: VerifyMfaInput!): Boolean
@@ -16181,6 +16237,1155 @@ input SecurityCoverageResultAddInput {
   coverage_valid_to: DateTime
   coverage_information: [SecurityCoverageExpectation!]
   resultOf: String!
+}
+
+enum HuntType {
+  telemetry
+  indicators
+  infrastructure
+}
+
+enum HuntStatus {
+  draft
+  active
+  paused
+  retired
+}
+
+enum HuntSourceKind {
+  analyst
+  agent
+  hub
+}
+
+type HuntNativeQuery {
+  platform: String!
+  language: String!
+  query: String!
+  pipeline: String
+}
+
+input HuntNativeQueryInput {
+  platform: String!
+  language: String!
+  query: String!
+  pipeline: String
+}
+
+"""A value pasted in an indicator hunt"""
+type HuntIocValue {
+  observable_type: String!
+  value: String!
+}
+
+input HuntIocValueInput {
+  observable_type: String!
+  value: String!
+}
+
+type HuntIocSource {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  name: String!
+}
+
+"""
+A value an indicator hunt looks up, with the indicators and observables it comes from
+"""
+type HuntIoc {
+  key: String!
+  observable_type: String!
+  hash_algorithm: String
+  value: String!
+  sources: [HuntIocSource!]!
+}
+
+"""The values an indicator hunt looks up at its next run"""
+type HuntIocSet {
+  iocs_count: Int!
+  iocs: [HuntIoc!]!
+
+  """Indicators and observables more restricted than the hunt, left out"""
+  restricted_count: Int!
+
+  """Indicators without a value a lookup can search"""
+  unsupported_count: Int!
+
+  """More values than a run looks up"""
+  truncated: Boolean!
+}
+
+enum HuntReadinessKey {
+  logic
+  connector
+  schedule
+  scope
+  draft
+
+  """
+  Whether the current logic translates, as its last translation preview or run found it
+  """
+  translation
+}
+
+enum HuntReadinessStatus {
+  met
+  unmet
+  warning
+}
+
+type HuntMessageValue {
+  name: String!
+  value: String!
+}
+
+"""One thing a hunt needs to run"""
+type HuntReadinessItem {
+  key: HuntReadinessKey!
+  status: HuntReadinessStatus!
+
+  """
+  The English sentence with its {placeholders}, the translation key of the user interface
+  """
+  template: String!
+  values: [HuntMessageValue!]!
+
+  """The sentence as the platform writes it in its errors"""
+  message: String!
+}
+
+type HuntReadiness {
+  """No item is unmet: the hunt can be activated"""
+  ready: Boolean!
+  items: [HuntReadinessItem!]!
+}
+
+"""
+What a hunt knows of its hits: each distinct hit once, whatever the number of runs that found it
+"""
+type HuntKnownHits {
+  """
+  Distinct hits the runs of the hunt found and the platform still remembers (kept as long as the runs)
+  """
+  distinct_count: Int!
+
+  """When a run found the earliest hit still known"""
+  first_new_at: DateTime
+
+  """When a run last found a hit never seen before"""
+  last_new_at: DateTime
+}
+
+type HuntStatisticsPoint {
+  date: DateTime!
+  value: Int!
+}
+
+type HuntStatisticsBucket {
+  label: String!
+  value: Int!
+}
+
+type HuntStatistics {
+  runs_count: Int!
+  completed_runs_count: Int!
+  failed_runs_count: Int!
+  autonomous_runs_count: Int!
+  hits_total: Int!
+  true_positive_count: Int!
+  benign_count: Int!
+  inconclusive_count: Int!
+  pending_count: Int!
+  last_run_at: DateTime
+  hits_over_time: [HuntStatisticsPoint!]!
+  runs_over_time: [HuntStatisticsPoint!]!
+  runs_per_platform: [HuntStatisticsBucket!]!
+  verdict_distribution: [HuntStatisticsBucket!]!
+}
+
+type HuntConfiguration {
+  min_schedule_interval_minutes: Int!
+
+  """
+  The observable types a run extracts from its hits when its hunt names none
+  """
+  default_expected_observables: [String!]!
+
+  """
+  Recurring runs (schedule, standing hunt, PIR activation) search from where the previous completed run on the same platform ended, minus this overlap in minutes
+  """
+  schedule_lookback_minutes: Int!
+}
+
+enum HuntTechniqueValidationStatus {
+  validated
+  not_detected
+  in_progress
+  not_validated
+}
+
+type HuntTechniqueValidation {
+  technique_id: String!
+  status: HuntTechniqueValidationStatus!
+  emulation_runs_count: Int!
+  detected_runs_count: Int!
+}
+
+type HuntSigmaValidation {
+  valid: Boolean!
+  errors: [String!]!
+  title: String
+  level: String
+  logsource_product: String
+  logsource_category: String
+  logsource_service: String
+  detection_fields: [String!]!
+  attack_techniques: [String!]!
+
+  """
+  The tagged techniques that match no attack pattern of the knowledge base the user can read: they link the hunt to nothing
+  """
+  unresolved_attack_techniques: [String!]!
+}
+
+type Hunt implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  metrics: [Metric]
+  representative: Representative!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  x_opencti_modified_at: DateTime
+  refreshed_at: DateTime
+  draftVersion: DraftVersion
+  x_opencti_inferences: [Inference]
+  createdBy: Identity
+  currentUserAccessRight: String
+  numberOfConnectedElement: Int!
+  objectMarking: [MarkingDefinition!]
+  objectOrganization: [Organization!]
+  objectLabel: [Label!]
+  externalReferences(first: Int): ExternalReferenceConnection
+  containersNumber: Number
+  containers(first: Int, entityTypes: [String!]): ContainerConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: FilterGroup): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: FilterGroup, search: String): [Distribution]
+  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: FilterGroup): [Distribution]
+  opinions_metrics: OpinionsMetrics
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  objectAssignee: [Assignee!]
+  objectParticipant: [Participant!]
+  avatar: OpenCtiFile
+  fintelTemplates: [FintelTemplate!]
+  filesFromTemplate(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  name: String!
+  description: String
+  hypothesis: String
+  hunt_type: HuntType!
+  hunt_status: HuntStatus!
+  hunt_source_kind: HuntSourceKind!
+  sigma_rule: String
+  sigmaValidation: HuntSigmaValidation
+  native_queries: [HuntNativeQuery!]
+
+  """Indicator hunts: the filter over indicators and observables"""
+  hunt_ioc_filters: String
+
+  """Indicator hunts: the values pasted as text"""
+  hunt_ioc_values: [HuntIocValue!]
+
+  """Indicator hunts: the values the next run looks up"""
+  iocSet(first: Int): HuntIocSet
+
+  """What the hunt needs to run, item by item"""
+  readiness: HuntReadiness!
+  hunt_scope: String
+  scopePlatforms: [SecurityPlatform!]
+  techniqueValidations: [HuntTechniqueValidation!]!
+  hunt_schedule: String!
+  trigger_filters: String
+  hunt_pir_activation: Boolean
+  time_window_hours: Int!
+  expected_observables: [String!]
+  benign_patterns: [String!]
+  escalation_threshold: Int!
+
+  """
+  Runs started by hand open an incident draft above the escalation threshold, like scheduled and autonomous runs. Off (the default), the incident is offered when a true positive verdict is set
+  """
+  escalate_manual_runs: Boolean!
+  hunt_max_results: Int
+  last_run_at: DateTime
+  last_run_status: String
+  last_hits_count: Int
+
+  """
+  Hits of the last run never seen before for the hunt on its security platform
+  """
+  last_new_hits_count: Int
+
+  """
+  What the hunt knows of its hits on the security platforms the user can read
+  """
+  knownHits: HuntKnownHits!
+  next_run_at: DateTime
+  hunt_pir_armed: Boolean
+  hunt_pir_armed_at: DateTime
+  huntTargets: [StixDomainObject!]
+  huntTechniques: [AttackPattern!]
+  huntSources: [StixCoreObject!]
+  runs(first: Int, after: ID, orderBy: HuntRunsOrdering, orderMode: OrderingMode, filters: FilterGroup): HuntRunConnection
+  statistics(startDate: DateTime, endDate: DateTime, interval: String): HuntStatistics
+  toStixBundle: String
+  creators: [Creator!]
+  toStix(version: Version): String
+  importFiles(first: Int, prefixMimeType: String, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  pendingFiles(first: Int, after: ID, orderBy: FileOrdering, orderMode: OrderingMode, search: String, filters: FilterGroup): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+  workflowInstance: WorkflowInstance
+  pirInformation(pirId: ID!): PirInformation
+}
+
+enum HuntsOrdering {
+  name
+  hunt_type
+  hunt_status
+  hunt_source_kind
+  hunt_schedule
+  last_run_at
+  last_run_status
+  last_hits_count
+  next_run_at
+  escalation_threshold
+  created
+  modified
+  created_at
+  updated_at
+  creator
+  objectMarking
+  objectLabel
+  x_opencti_workflow_id
+  _score
+}
+
+type HuntConnection {
+  pageInfo: PageInfo!
+  edges: [HuntEdge!]!
+}
+
+type HuntEdge {
+  cursor: String!
+  node: Hunt!
+}
+
+type HuntProposal {
+  draft_id: ID!
+  hunt: Hunt
+}
+
+type HuntPackImportResult {
+  hunts: [Hunt!]!
+  unresolved_refs: [String!]!
+
+  """Hunts of the pack created as drafts"""
+  created_count: Int!
+
+  """
+  Hunts of the pack that already existed, their definition updated and how they run here kept
+  """
+  updated_count: Int!
+}
+
+enum HuntDerivedSourceRelation {
+  self
+  uses
+  attributed
+}
+
+"""
+An entity a hunt started from another one takes its indicators and observables from
+"""
+type HuntDerivedSource {
+  id: ID!
+  entity_type: String!
+  name: String!
+
+  """
+  self: the entity the hunt starts from; uses: a malware or tool it uses; attributed: a threat attributed to it
+  """
+  relation: HuntDerivedSourceRelation!
+}
+
+"""An indicator or an observable an indicator hunt looks up"""
+type HuntDerivedElement {
+  id: ID!
+  entity_type: String!
+  name: String!
+
+  """Observable types of the values a lookup searches"""
+  value_types: [String!]!
+
+  """Ids of the sources it comes from"""
+  source_ids: [ID!]!
+}
+
+type HuntDerivedTechnique {
+  id: ID!
+  entity_type: String!
+  name: String!
+  x_mitre_id: String
+}
+
+"""
+A detection rule a detection-rule hunt runs: an indicator whose pattern is a Sigma rule or a native query
+"""
+type HuntDerivedRule {
+  id: ID!
+  entity_type: String!
+  name: String!
+  pattern_type: String!
+  pattern: String!
+
+  """Ids of the techniques of the entity it indicates"""
+  technique_ids: [ID!]!
+}
+
+"""
+What a hunt started from an entity looks for, read with the access of the user
+"""
+type HuntDerivedContent {
+  entity: HuntDerivedSource!
+
+  """
+  The hunt type the content supports: indicators when indicators or observables are found, telemetry when only detection rules are, null for neither
+  """
+  suggested_type: HuntType
+
+  """
+  Entities an indicator hunt takes its values from, read again at every run
+  """
+  sources: [HuntDerivedSource!]!
+
+  """Threats the hunt targets"""
+  targets: [HuntDerivedSource!]!
+  elements: [HuntDerivedElement!]!
+
+  """More indicators and observables than a run looks up"""
+  elements_truncated: Boolean!
+
+  """
+  Indicators of the sources neither a lookup nor a detection-rule hunt can use
+  """
+  unsupported_count: Int!
+  techniques: [HuntDerivedTechnique!]!
+  rules: [HuntDerivedRule!]!
+}
+
+type HuntValidation {
+  hunts_count: Int!
+  runs: [HuntRun!]!
+}
+
+input HuntAddInput {
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+
+  "*Constraints:*\n* Minimal length: `2`\n* Must match format: `not-blank`\n"
+  name: String!
+  description: String
+  hypothesis: String
+  hunt_type: HuntType
+  hunt_status: HuntStatus
+  hunt_source_kind: HuntSourceKind
+  sigma_rule: String
+  native_queries: [HuntNativeQueryInput!]
+  hunt_ioc_filters: String
+  hunt_ioc_values: [HuntIocValueInput!]
+  hunt_scope: String
+  hunt_schedule: String
+  trigger_filters: String
+  hunt_pir_activation: Boolean
+  time_window_hours: Int
+  expected_observables: [String!]
+  benign_patterns: [String!]
+  escalation_threshold: Int
+  escalate_manual_runs: Boolean
+  hunt_max_results: Int
+  huntTargets: [String!]
+  huntTechniques: [String!]
+  huntSources: [String!]
+  confidence: Int
+  revoked: Boolean
+  lang: String
+  createdBy: String
+  objectMarking: [String]
+  objectOrganization: [String]
+  objectLabel: [String]
+  externalReferences: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+  update: Boolean
+  file: Upload
+  fileMarkings: [String]
+  files: [Upload]
+  filesMarkings: [[String]]
+  noTriggerImport: [Boolean]
+  embedded: [Boolean]
+  x_opencti_modified_at: DateTime
+  x_opencti_workflow_id: String
+  upsertOperations: [EditInput!]
+}
+
+input HuntRunStartInput {
+  security_platform_ids: [ID!]
+  time_window_hours: Int
+}
+
+input HuntPlanInput {
+  entity_ids: [ID!]!
+  security_platform_ids: [ID!]
+  agent_slug: String
+  benign_patterns: [String!]
+}
+
+"""A field of a hunt the XTM One hunt planner can write"""
+enum HuntAssistField {
+  name
+  hypothesis
+  description
+  sigma_rule
+  native_queries
+  expected_observables
+  benign_patterns
+  techniques
+}
+
+input HuntAssistInput {
+  fields: [HuntAssistField!]
+  prompt: String
+  native_query_platform: String
+  native_query_language: String
+  hunt_id: ID
+  name: String
+  hunt_type: HuntType
+  hypothesis: String
+  description: String
+  sigma_rule: String
+  native_queries: [HuntNativeQueryInput!]
+  expected_observables: [String!]
+  benign_patterns: [String!]
+  target_ids: [ID!]
+  technique_ids: [ID!]
+  source_ids: [ID!]
+  security_platform_ids: [ID!]
+  agent_slug: String
+}
+
+"""A technique the agent named, found on the platform"""
+type HuntAssistTechnique {
+  id: ID!
+  entity_type: String!
+  name: String!
+  x_mitre_id: String
+}
+
+"""What XTM One proposes for a hunt being written; nothing is saved"""
+type HuntAssistance {
+  fields: [HuntAssistField!]!
+  name: String!
+  hypothesis: String!
+  description: String!
+  sigma_rule: String!
+  sigma_validation: HuntSigmaValidation
+  native_queries: [HuntNativeQuery!]!
+  expected_observables: [String!]!
+  benign_patterns: [String!]!
+  techniques: [HuntAssistTechnique!]!
+  unknown_technique_ids: [String!]!
+  rationale: String!
+}
+
+input HuntValidateFromEmulationInput {
+  technique_id: String!
+  security_platform_id: String
+  security_platform_name: String
+  inject_id: String!
+  window_start: DateTime!
+  window_end: DateTime!
+  security_coverage_id: String
+}
+
+enum HuntRunStatus {
+  queued
+  running
+  completed
+  failed
+  timeout
+
+  """
+  The hunt or the hunt connector of the run was deleted before the run ended, error_message says which
+  """
+  cancelled
+}
+
+enum HuntRunTrigger {
+  manual
+  schedule
+  standing
+  pir
+  playbook
+  emulation
+  preview
+  retry
+}
+
+enum HuntRunMode {
+  execute
+  preview
+}
+
+enum HuntRunVerdict {
+  pending
+  true_positive
+  benign
+  inconclusive
+}
+
+enum HuntVerdictSource {
+  auto
+  analyst
+  agent
+}
+
+type HuntEvidence {
+  kind: String!
+  label: String!
+  href: String
+  quote: String
+  opencti_id: String
+  entity_type: String
+  field: String!
+  value_hash: String!
+  value_preview: String
+  count: Int!
+
+  """
+  The value is one the hunt logic matched (a field matched in a hit of the run), not context of the event
+  """
+  matched: Boolean!
+}
+
+"""
+A field of a hit that the hunt logic matched: the value is hashed again by the platform, its preview masked and truncated
+"""
+type HuntHitField {
+  field: String!
+  value_hash: String!
+  value_preview: String
+
+  """The preview is the whole value, neither truncated nor masked"""
+  value_complete: Boolean!
+}
+
+"""One event a run matched"""
+type HuntHit {
+  """Id of the event on the hunted platform"""
+  event_id: String
+  timestamp: DateTime
+
+  """
+  The detection of the platform grouping the event (YARA-L): the events of one detection are one hit
+  """
+  detection: String
+  matched: [HuntHitField!]!
+  host: String
+  user: String
+  process: String
+
+  """
+  The hit was never seen before this run for the hunt on its platform; null when the hit is not identified or no longer known
+  """
+  is_new: Boolean
+
+  """Runs of the hunt that found the hit on this platform so far"""
+  times_seen: Int
+
+  """When a run of the hunt first found the hit on this platform"""
+  known_since: DateTime
+}
+
+enum HuntIocVerdict {
+  pending
+  seen
+  not_seen
+  not_searched
+}
+
+"""
+One value an indicator hunt run looked up, and what the hunted platform reported for it
+"""
+type HuntIocResult {
+  key: String!
+  observable_type: String!
+  hash_algorithm: String
+  value: String!
+  verdict: HuntIocVerdict!
+  hits_count: Int!
+  first_seen: DateTime
+  last_seen: DateTime
+  hosts: [String!]!
+
+  """Why the value was not searched"""
+  reason: String
+
+  """
+  The indicators and observables the value comes from, those the user can read (none for a pasted value)
+  """
+  sources: [StixCoreObject!]!
+
+  """
+  Whether an indicator of the value is deployed on the security platform of the run (dissemination assurance)
+  """
+  deployed: Boolean!
+}
+
+"""The results of a run the user can read, counted by kind"""
+type HuntRunResultsSummary {
+  sightings: Int!
+  observed_data: Int!
+  observables: Int!
+
+  """
+  Results of any other kind, for example the infrastructure and indicators of an infrastructure hunt
+  """
+  others: Int!
+}
+
+"""
+A sentence of the platform: the English sentence with its {placeholders} is the translation key of the user interface
+"""
+type HuntMessage {
+  template: String!
+  values: [HuntMessageValue!]!
+
+  """The sentence as the platform writes it"""
+  message: String!
+}
+
+type HuntRun implements BasicObject & InternalObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String!]!
+  representative: Representative!
+  metrics: [Metric]
+  creators: [Creator!]
+  created_at: DateTime
+  updated_at: DateTime
+  hunt_id: String!
+
+  """
+  The hunt of the run, null when it was deleted (hunt_deleted) or when the user cannot read it
+  """
+  hunt: Hunt
+
+  """
+  The hunt of the run was deleted (in the trash or for good), as opposed to a hunt the user cannot read
+  """
+  hunt_deleted: Boolean!
+
+  """
+  Why a queued run waits: its connector offline, deleted or busy, or the next dispatch; null when the run is not queued
+  """
+  queue_reason: HuntMessage
+  hunt_run_status: HuntRunStatus!
+  hunt_run_trigger: HuntRunTrigger!
+  hunt_run_mode: HuntRunMode!
+  security_platform_id: String
+  securityPlatform: SecurityPlatform
+  connector_id: String
+  connector_name: String
+  work_id: String
+  time_window_start: DateTime
+  time_window_end: DateTime
+  translated_query: String
+  query_language: String
+  hits_count: Int
+
+  """
+  Hits never seen before for the hunt on the security platform of the run; every hit when the connector identifies none
+  """
+  hits_new_count: Int
+
+  """Hits earlier runs of the hunt already found on this platform"""
+  hits_recurring_count: Int
+
+  """
+  The connector reported a key per hit: false means every hit counts as new
+  """
+  hits_identified: Boolean
+
+  """
+  The run searched from where the previous completed run of the hunt on the same platform ended, minus the lookback overlap
+  """
+  time_window_continued: Boolean!
+
+  """
+  Sightings of the hunt the run created; the other sightings among its results were updated in place
+  """
+  sightings_created_count: Int
+
+  """
+  The run added its hits to the incident still open from a previous run instead of opening a new one
+  """
+  incident_continued: Boolean
+  results_truncated: Boolean
+  distinct_entities: Int
+  evidence_sample: [HuntEvidence!]
+
+  """
+  One evidence item per hit, in time order (a sample), next to the per-field aggregation of evidence_sample
+  """
+  hits_sample: [HuntHit!]
+
+  """
+  Dates of the first and last event the run matched, null when the connector dates none
+  """
+  first_hit_at: DateTime
+  last_hit_at: DateTime
+
+  """Indicator hunts: one result per value looked up"""
+  ioc_results: [HuntIocResult!]
+  result_ids: [String!]
+  results(first: Int, after: ID): StixObjectOrStixRelationshipConnection
+
+  """
+  What the run produced: its results counted by kind, over the same objects as results
+  """
+  results_summary: HuntRunResultsSummary!
+  verdict: HuntRunVerdict!
+  verdict_source: HuntVerdictSource
+  verdict_rationale: String
+  hunt_analyst_feedback: String
+  verdict_proposal: HuntRunVerdict
+  verdict_proposal_confidence: Int
+  verdict_proposal_rationale: String
+  verdict_proposal_agent: String
+  incident_proposal: String
+
+  """
+  The run opens an incident draft by itself above the escalation threshold: autonomous runs always, runs started by hand when their hunt escalates manual runs. False: the incident is offered at verdict time
+  """
+  auto_escalation: Boolean!
+  incident_id: String
+  draft_id: String
+  aev_inject_id: String
+  security_coverage_id: String
+  technique_id: String
+  technique: AttackPattern
+  triggered_by: String
+  triggeredBy: Creator
+  attempt: Int!
+  next_retry_at: DateTime
+  dispatched_at: DateTime
+  started_at: DateTime
+  completed_at: DateTime
+  cost_ms: Int
+  error_message: String
+
+  """
+  False for a failure the run meets again in the same way at every attempt (translation, a query the platform rejects): never retried, no verdict; true for another failure; null for a run that did not fail
+  """
+  failure_retryable: Boolean
+
+  """Why a run failed for good and what to change, null for any other run"""
+  failure_reason: HuntMessage
+
+  """
+  The ATT&CK techniques its Sigma rule tags that matched no attack pattern of the knowledge base when the run was created: they get no coverage from the run
+  """
+  unresolved_techniques: [String!]!
+  playbook_id: String
+  playbook_execution_id: String
+  evidence_sources: [String!]
+  last_evidence_at: DateTime
+  objectMarking: [MarkingDefinition!]
+}
+
+enum HuntRunsOrdering {
+  created_at
+  updated_at
+  completed_at
+  started_at
+  hits_count
+  verdict
+  hunt_run_status
+  hunt_run_trigger
+  _score
+}
+
+type HuntRunConnection {
+  pageInfo: PageInfo!
+  edges: [HuntRunEdge!]!
+}
+
+type HuntRunEdge {
+  cursor: String!
+  node: HuntRun!
+}
+
+"""
+A permission a hunt connector needs on its platform, as the connector declares it
+"""
+type HuntRequiredPermission {
+  name: String!
+  purpose: String!
+}
+
+enum HuntConnectionCheckStatus {
+  pending
+  passed
+  failed
+}
+
+type HuntConnectionCheckItem {
+  name: String!
+  ok: Boolean!
+
+  """What the connector found, in plain words"""
+  message: String!
+}
+
+"""The last connection test of a hunt connector"""
+type HuntConnectionCheck {
+  id: String!
+  status: HuntConnectionCheckStatus!
+  requested_at: DateTime
+  checked_at: DateTime
+  checks: [HuntConnectionCheckItem!]!
+}
+
+type HuntConnector {
+  id: ID!
+  name: String!
+  active: Boolean!
+  required_permissions: [HuntRequiredPermission!]!
+
+  """
+  Where the setup of the connector (account, permissions, configuration) is documented
+  """
+  documentation_url: String
+  connection_check: HuntConnectionCheck
+  platform: String!
+  languages: [String!]!
+  supports_preview: Boolean!
+
+  """Whether the connector looks up the values of indicator hunts"""
+  supports_indicators: Boolean!
+  max_concurrent_runs: Int
+  securityPlatform: SecurityPlatform
+  updated_at: DateTime
+}
+
+input HuntRunVerdictInput {
+  verdict: HuntRunVerdict!
+  hunt_analyst_feedback: String
+  source: HuntVerdictSource
+
+  """
+  A true positive verdict opens an incident draft from the run unless false; ignored for any other verdict or a run that has one
+  """
+  create_incident: Boolean
+}
+
+input HuntEvidenceInput {
+  field: String!
+  value_hash: String!
+  value_preview: String
+  count: Int!
+
+  """
+  True for a value the hunt logic matched (the field of the rule detection), false or omitted for context of the event
+  """
+  matched: Boolean
+}
+
+input HuntHitFieldInput {
+  """
+  Field of the event, named as in the query language of the platform (target.process.command_line)
+  """
+  field: String!
+
+  """SHA-256 hex of the full value"""
+  value_hash: String!
+
+  """The value, truncated"""
+  value_preview: String
+}
+
+"""
+One event a run matched. Every field but matched is optional; the platform hashes matched values again, masks secrets and truncates values
+"""
+input HuntHitInput {
+  """Id of the event on the hunted platform"""
+  event_id: String
+  timestamp: DateTime
+
+  """
+  The detection of the platform grouping the event (YARA-L): the events of one detection are one hit
+  """
+  detection: String
+
+  """
+  The fields of the detection logic present in the event (indicator runs: the field holding the value)
+  """
+  matched: [HuntHitFieldInput!]!
+  host: String
+  user: String
+  process: String
+}
+
+input HuntIocResultInput {
+  "Key of the value in the run message\n\n*Constraints:*\n* Maximal length: `64`\n"
+  key: String!
+
+  """False when the platform cannot look this type of value up"""
+  searched: Boolean
+  seen: Boolean!
+  hits_count: Int
+  first_seen: DateTime
+  last_seen: DateTime
+
+  """Hosts the value was seen on (at most 10 are kept)"""
+  hosts: [String!]
+
+  "Why the value was not searched\n\n*Constraints:*\n* Maximal length: `512`\n"
+  reason: String
+
+  """
+  Keys of the hits holding the value (same rule as hit_keys of the report)
+  """
+  hit_keys: [String!]
+}
+
+input HuntRunReportInput {
+  status: HuntRunStatus!
+
+  "*Constraints:*\n* Maximal length: `64`\n"
+  work_id: String
+  translated_query: String
+  query_language: String
+  hits_count: Int
+  truncated: Boolean
+  distinct_entities: Int
+  evidence_sample: [HuntEvidenceInput!]
+
+  """
+  One evidence item per hit, on top of the per-field aggregation of evidence_sample
+  """
+  hits_sample: [HuntHitInput!]
+
+  """
+  The stable key of every hit the run read, sampled or not (SHA-256 of a v1 JSON array over the detection, else the event id, else the timestamp to the second, host, user, process and matched field hashes): hits never seen for the hunt on the platform count as new
+  """
+  hit_keys: [String!]
+
+  """
+  Dates of the first and last matched event of the whole run, when hits_sample is only a sample
+  """
+  first_hit_at: DateTime
+  last_hit_at: DateTime
+
+  """Indicator hunts: the result of each value of the run message"""
+  ioc_results: [HuntIocResultInput!]
+  result_ids: [String!]
+  cost_ms: Int
+  error: String
+
+  """
+  Failed runs: false when the run fails again in the same way at every attempt (translation error, a query the platform rejects, an invalid run message), so it is not retried
+  """
+  retryable: Boolean
+}
+
+input HuntRunEvidenceAddInput {
+  security_platform_id: StixRef
+  result_ids: [String!]!
+  hits_count: Int
+  evidence_sample: [HuntEvidenceInput!]
+  hits_sample: [HuntHitInput!]
+
+  """
+  Keys of the hits of the evidence (same rule as the report): without keys, its hits count as new
+  """
+  hit_keys: [String!]
+  observed_at: DateTime
+
+  "*Constraints:*\n* Maximal length: `128`\n"
+  source: String
+}
+
+input HuntRequiredPermissionInput {
+  "*Constraints:*\n* Maximal length: `256`\n"
+  name: String!
+
+  "*Constraints:*\n* Maximal length: `1024`\n"
+  purpose: String!
+}
+
+input HuntConnectorRegisterInput {
+  connector_id: ID!
+  platform: String!
+  languages: [String!]!
+  security_platform_name: String
+  security_platform_type: String
+  supports_preview: Boolean
+  supports_indicators: Boolean
+  max_concurrent_runs: Int
+  required_permissions: [HuntRequiredPermissionInput!]
+
+  "*Constraints:*\n* Maximal length: `2048`\n"
+  documentation_url: String
+}
+
+input HuntConnectionCheckItemInput {
+  "*Constraints:*\n* Maximal length: `256`\n"
+  name: String!
+  ok: Boolean!
+
+  "*Constraints:*\n* Maximal length: `2048`\n"
+  message: String!
+}
+
+input HuntConnectorCheckReportInput {
+  connector_id: ID!
+
+  "*Constraints:*\n* Maximal length: `64`\n"
+  check_id: String!
+  checks: [HuntConnectionCheckItemInput!]!
 }
 
 input AskSendOtpInput {

@@ -34,6 +34,9 @@ export const stixCoreObjectsFieldSearchQuery = graphql`
           entity_type
           parent_types
           created_at
+          representative {
+            main
+          }
           createdBy {
             ... on Identity {
               id
@@ -101,6 +104,10 @@ export const stixCoreObjectsFieldSearchQuery = graphql`
             description
           }
           ... on System {
+            name
+            description
+          }
+          ... on SecurityPlatform {
             name
             description
           }
@@ -658,42 +665,47 @@ const StixCoreObjectsField: FunctionComponent<StixCoreObjectsFieldProps> = ({
                 <Add fontSize="small" color="primary" />
               </IconButton>
             )}
-            <IconButton onClick={handleOpenSearchScope} aria-haspopup={disabled ? undefined : true} size="small" disabled={disabled} aria-label={t_i18n('Open menu')}>
-              <PaletteOutlined
-                fontSize="small"
-                color={searchScope[name] && searchScope[name].length > 0 ? 'secondary' : 'primary'}
-              />
-            </IconButton>
-            <Popover
-              open={Boolean(anchorElSearchScope)}
-              anchorEl={anchorElSearchScope}
-              onClose={handleCloseSearchScope}
-              anchorOrigin={{
-                vertical: 'center',
-                horizontal: 'right',
-              }}
-              transformOrigin={{
-                vertical: 'center',
-                horizontal: 'left',
-              }}
-              elevation={8}
-            >
-              <MenuList dense={true}>
-                {entitiesTypes.map((entityType) => (
-                  <MenuItem
-                    key={entityType.value}
-                    value={entityType.value}
-                    dense={true}
-                    onClick={() => handleToggleSearchScope(name, entityType.value)}
-                  >
-                    <Checkbox
-                      checked={(searchScope[name] || []).includes(entityType.value)}
-                    />
-                    <ListItemText primary={entityType.label} />
-                  </MenuItem>
-                ))}
-              </MenuList>
-            </Popover>
+            {/* Forced types win over the search scope, so the scope menu has nothing to narrow */}
+            {!types && (
+              <>
+                <IconButton onClick={handleOpenSearchScope} aria-haspopup={disabled ? undefined : true} size="small" disabled={disabled} aria-label={t_i18n('Open menu')}>
+                  <PaletteOutlined
+                    fontSize="small"
+                    color={searchScope[name] && searchScope[name].length > 0 ? 'secondary' : 'primary'}
+                  />
+                </IconButton>
+                <Popover
+                  open={Boolean(anchorElSearchScope)}
+                  anchorEl={anchorElSearchScope}
+                  onClose={handleCloseSearchScope}
+                  anchorOrigin={{
+                    vertical: 'center',
+                    horizontal: 'right',
+                  }}
+                  transformOrigin={{
+                    vertical: 'center',
+                    horizontal: 'left',
+                  }}
+                  elevation={8}
+                >
+                  <MenuList dense={true}>
+                    {entitiesTypes.map((entityType) => (
+                      <MenuItem
+                        key={entityType.value}
+                        value={entityType.value}
+                        dense={true}
+                        onClick={() => handleToggleSearchScope(name, entityType.value)}
+                      >
+                        <Checkbox
+                          checked={(searchScope[name] || []).includes(entityType.value)}
+                        />
+                        <ListItemText primary={entityType.label} />
+                      </MenuItem>
+                    ))}
+                  </MenuList>
+                </Popover>
+              </>
+            )}
           </InputAdornment>
         )}
         groupBy={(option: StixCoreObjectOption) => option.isCreateOption ? '' : option.type}

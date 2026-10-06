@@ -10,7 +10,11 @@ import { CUSTOM_VIEW_TAB_VALUE, DEFAULT_CUSTOM_VIEW_TAB_VALUE } from '@component
 export type StixDomainObjectTabsBoxTab
   = | 'overview'
     | 'result'
+    | 'logic'
+    | 'runs'
+    | 'evidence'
     | 'knowledge'
+    | 'coverage'
     | 'content'
     | 'analyses'
     | 'sightings'
@@ -46,9 +50,25 @@ const TABS_INFO: readonly TabInfo[] = [{
   path: 'result',
   label: 'Result',
 }, {
+  tab: 'logic',
+  path: 'logic',
+  label: 'Logic',
+}, {
+  tab: 'runs',
+  path: 'runs',
+  label: 'Runs',
+}, {
+  tab: 'evidence',
+  path: 'evidence',
+  label: 'Evidence',
+}, {
   tab: 'knowledge',
   path: 'knowledge',
   label: 'Knowledge',
+}, {
+  tab: 'coverage',
+  path: 'coverage',
+  label: 'Coverage',
 }, {
   tab: 'content',
   path: 'content',
