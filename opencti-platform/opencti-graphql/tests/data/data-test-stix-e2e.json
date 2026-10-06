@@ -32,14 +32,17 @@
       "modified": "2020-02-27T08:45:38.165Z",
       "x_opencti_location_type": "Country"
     },
-
     {
       "id": "ipv4-addr--43cea04e-eaf6-40fb-b89a-9ac8e62cf628",
       "type": "ipv4-addr",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da"],
-      "labels": ["e2e"],
+      "object_marking_refs": [
+        "marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da"
+      ],
+      "labels": [
+        "e2e"
+      ],
       "created": "2024-05-20T14:00:00.000Z",
       "modified": "2024-05-20T14:00:00.000Z",
       "value": "1.2.3.4"
@@ -49,8 +52,12 @@
       "type": "ipv4-addr",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"],
-      "labels": ["e2e"],
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "labels": [
+        "e2e"
+      ],
       "created": "2024-05-13T14:00:00.000Z",
       "modified": "2024-05-13T14:00:00.000Z",
       "value": "5.6.7.8"
@@ -60,8 +67,12 @@
       "type": "ipv4-addr",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"],
-      "labels": ["e2e"],
+      "object_marking_refs": [
+        "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+      ],
+      "labels": [
+        "e2e"
+      ],
       "created": "2024-04-18T14:00:00.000Z",
       "modified": "2024-04-18T14:00:00.000Z",
       "value": "9.10.11.12"
@@ -71,8 +82,12 @@
       "type": "ipv4-addr",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"],
-      "labels": ["e2e"],
+      "object_marking_refs": [
+        "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"
+      ],
+      "labels": [
+        "e2e"
+      ],
       "created": "2023-12-18T14:00:00.000Z",
       "modified": "2023-12-18T14:00:00.000Z",
       "value": "13.14.15.16"
@@ -82,61 +97,88 @@
       "type": "malware",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da"],
-      "labels": ["e2e"],
+      "object_marking_refs": [
+        "marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da"
+      ],
+      "labels": [
+        "e2e"
+      ],
       "created": "2024-05-20T14:00:00.000Z",
       "modified": "2024-05-20T14:00:00.000Z",
       "name": "E2E dashboard - Malware - now",
       "description": "Malware for e2e testing purposes (random data).",
-      "malware_types": ["adware"]
+      "malware_types": [
+        "adware"
+      ]
     },
     {
       "id": "malware--d6292a08-8865-493e-a4ee-8540d52cafa2",
       "type": "malware",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"],
-      "labels": ["e2e"],
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "labels": [
+        "e2e"
+      ],
       "created": "2024-05-13T14:00:00.000Z",
       "modified": "2024-05-13T14:00:00.000Z",
       "name": "E2E dashboard - Malware - week ago",
       "description": "Malware for e2e testing purposes (random data).",
-      "malware_types": ["backdoor"]
+      "malware_types": [
+        "backdoor"
+      ]
     },
     {
       "id": "malware--48534a79-a9d7-4c34-a292-f5f102d26dea",
       "type": "malware",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"],
-      "labels": ["e2e"],
+      "object_marking_refs": [
+        "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+      ],
+      "labels": [
+        "e2e"
+      ],
       "created": "2024-04-18T14:00:00.000Z",
       "modified": "2024-04-18T14:00:00.000Z",
       "name": "E2E dashboard - Malware - month ago",
       "description": "Malware for e2e testing purposes (random data).",
-      "malware_types": ["bootkit"]
+      "malware_types": [
+        "bootkit"
+      ]
     },
     {
       "id": "malware--baa06f60-ea33-44ef-9914-cc3136c5ec40",
       "type": "malware",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"],
-      "labels": ["e2e"],
+      "object_marking_refs": [
+        "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"
+      ],
+      "labels": [
+        "e2e"
+      ],
       "created": "2023-12-18T14:00:00.000Z",
       "modified": "2023-12-18T14:00:00.000Z",
       "name": "E2E dashboard - Malware - 6 months ago",
       "description": "Malware for e2e testing purposes (random data).",
-      "malware_types": ["dropper"]
+      "malware_types": [
+        "dropper"
+      ]
     },
-
     {
       "id": "intrusion-set--467d7e00-ed75-415c-a897-38b6540312c6",
       "type": "intrusion-set",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da"],
-      "labels": ["e2e"],
+      "object_marking_refs": [
+        "marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da"
+      ],
+      "labels": [
+        "e2e"
+      ],
       "created": "2024-05-20T14:00:00.000Z",
       "modified": "2024-05-20T14:00:00.000Z",
       "name": "E2E dashboard - Intrusion set - now",
@@ -147,8 +189,12 @@
       "type": "intrusion-set",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"],
-      "labels": ["e2e"],
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "labels": [
+        "e2e"
+      ],
       "created": "2024-05-13T14:00:00.000Z",
       "modified": "2024-05-13T14:00:00.000Z",
       "name": "E2E dashboard - Intrusion set - week ago",
@@ -159,8 +205,12 @@
       "type": "intrusion-set",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"],
-      "labels": ["e2e"],
+      "object_marking_refs": [
+        "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+      ],
+      "labels": [
+        "e2e"
+      ],
       "created": "2024-04-18T14:00:00.000Z",
       "modified": "2024-04-18T14:00:00.000Z",
       "name": "E2E dashboard - Intrusion set - month ago",
@@ -171,26 +221,35 @@
       "type": "intrusion-set",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"],
-      "labels": ["e2e"],
+      "object_marking_refs": [
+        "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"
+      ],
+      "labels": [
+        "e2e"
+      ],
       "created": "2023-12-18T14:00:00.000Z",
       "modified": "2023-12-18T14:00:00.000Z",
       "name": "E2E dashboard - Intrusion set - 6 months ago",
       "description": "Intrusion set for e2e testing purposes (random data)."
     },
-
     {
       "id": "threat-actor--2fff15ac-2fa3-4562-a10e-13a0d0f77146",
       "type": "threat-actor",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da"],
-      "labels": ["e2e"],
+      "object_marking_refs": [
+        "marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da"
+      ],
+      "labels": [
+        "e2e"
+      ],
       "created": "2024-05-20T14:00:00.000Z",
       "modified": "2024-05-20T14:00:00.000Z",
       "name": "E2E dashboard - Threat actor - now",
       "description": "Threat actor for e2e testing purposes (random data).",
-      "threat_actor_types": ["crime-syndicate"],
+      "threat_actor_types": [
+        "crime-syndicate"
+      ],
       "resource_level": "individual"
     },
     {
@@ -198,13 +257,19 @@
       "type": "threat-actor",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"],
-      "labels": ["e2e"],
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "labels": [
+        "e2e"
+      ],
       "created": "2024-05-13T14:00:00.000Z",
       "modified": "2024-05-13T14:00:00.000Z",
       "name": "E2E dashboard - Threat actor - week ago",
       "description": "Threat actor for e2e testing purposes (random data).",
-      "threat_actor_types": ["crime-syndicate"],
+      "threat_actor_types": [
+        "crime-syndicate"
+      ],
       "resource_level": "individual"
     },
     {
@@ -212,13 +277,19 @@
       "type": "threat-actor",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"],
-      "labels": ["e2e"],
+      "object_marking_refs": [
+        "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+      ],
+      "labels": [
+        "e2e"
+      ],
       "created": "2024-04-18T14:00:00.000Z",
       "modified": "2024-04-18T14:00:00.000Z",
       "name": "E2E dashboard - Threat actor - month ago",
       "description": "Threat actor for e2e testing purposes (random data).",
-      "threat_actor_types": ["crime-syndicate"],
+      "threat_actor_types": [
+        "crime-syndicate"
+      ],
       "resource_level": "individual"
     },
     {
@@ -226,23 +297,32 @@
       "type": "threat-actor",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"],
-      "labels": ["e2e"],
+      "object_marking_refs": [
+        "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"
+      ],
+      "labels": [
+        "e2e"
+      ],
       "created": "2023-12-18T14:00:00.000Z",
       "modified": "2023-12-18T14:00:00.000Z",
       "name": "E2E dashboard - Threat actor - 6 months ago",
       "description": "Threat actor for e2e testing purposes (random data).",
-      "threat_actor_types": ["crime-syndicate"],
+      "threat_actor_types": [
+        "crime-syndicate"
+      ],
       "resource_level": "individual"
     },
-
     {
       "id": "indicator--980a5bd2-affc-4cb4-ab5a-ed02e2e0bf48",
       "type": "indicator",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da"],
-      "labels": ["e2e"],
+      "object_marking_refs": [
+        "marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da"
+      ],
+      "labels": [
+        "e2e"
+      ],
       "created": "2024-05-20T14:00:00.000Z",
       "modified": "2024-05-20T14:00:00.000Z",
       "name": "1.2.3.4",
@@ -257,8 +337,12 @@
       "type": "indicator",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"],
-      "labels": ["e2e"],
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "labels": [
+        "e2e"
+      ],
       "created": "2024-05-13T14:00:00.000Z",
       "modified": "2024-05-13T14:00:00.000Z",
       "name": "5.6.7.8",
@@ -273,8 +357,12 @@
       "type": "indicator",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"],
-      "labels": ["e2e"],
+      "object_marking_refs": [
+        "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+      ],
+      "labels": [
+        "e2e"
+      ],
       "created": "2024-04-18T14:00:00.000Z",
       "modified": "2024-04-18T14:00:00.000Z",
       "name": "9.10.11.12",
@@ -289,8 +377,12 @@
       "type": "indicator",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"],
-      "labels": ["e2e"],
+      "object_marking_refs": [
+        "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"
+      ],
+      "labels": [
+        "e2e"
+      ],
       "created": "2023-12-18T14:00:00.000Z",
       "modified": "2023-12-18T14:00:00.000Z",
       "name": "13.14.15.16",
@@ -300,14 +392,17 @@
       "valid_from": "2017-09-28T20:25:13.000Z",
       "valid_until": "2030-09-28T20:25:13.000Z"
     },
-
     {
       "id": "vulnerability--efa26bb3-e08f-4806-b50f-60a8b2860298",
       "type": "vulnerability",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da"],
-      "labels": ["e2e"],
+      "object_marking_refs": [
+        "marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da"
+      ],
+      "labels": [
+        "e2e"
+      ],
       "created": "2024-05-20T14:00:00.000Z",
       "modified": "2024-05-20T14:00:00.000Z",
       "name": "E2E dashboard - Vulnerability - now"
@@ -317,8 +412,12 @@
       "type": "vulnerability",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"],
-      "labels": ["e2e"],
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "labels": [
+        "e2e"
+      ],
       "created": "2024-05-13T14:00:00.000Z",
       "modified": "2024-05-13T14:00:00.000Z",
       "name": "E2E dashboard - Vulnerability - week ago"
@@ -328,8 +427,12 @@
       "type": "vulnerability",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"],
-      "labels": ["e2e"],
+      "object_marking_refs": [
+        "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+      ],
+      "labels": [
+        "e2e"
+      ],
       "created": "2024-04-18T14:00:00.000Z",
       "modified": "2024-04-18T14:00:00.000Z",
       "name": "E2E dashboard - Vulnerability - month ago"
@@ -339,8 +442,12 @@
       "type": "vulnerability",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"],
-      "labels": ["e2e"],
+      "object_marking_refs": [
+        "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"
+      ],
+      "labels": [
+        "e2e"
+      ],
       "created": "2023-12-18T14:00:00.000Z",
       "modified": "2023-12-18T14:00:00.000Z",
       "name": "E2E dashboard - Vulnerability - 6 months ago"
@@ -351,7 +458,9 @@
       "spec_version": "2.1",
       "name": "John Doe",
       "identity_class": "individual",
-      "labels": ["identity"],
+      "labels": [
+        "identity"
+      ],
       "created": "2020-03-27T08:39:45.676Z",
       "modified": "2020-03-27T08:39:45.676Z"
     },
@@ -360,7 +469,9 @@
       "type": "identity",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "labels": ["e2e"],
+      "labels": [
+        "e2e"
+      ],
       "identity_class": "class",
       "created": "2024-05-20T14:00:00.000Z",
       "modified": "2024-05-20T14:00:00.000Z",
@@ -371,7 +482,9 @@
       "type": "identity",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "labels": ["e2e"],
+      "labels": [
+        "e2e"
+      ],
       "identity_class": "class",
       "created": "2024-05-13T14:00:00.000Z",
       "modified": "2024-05-13T14:00:00.000Z",
@@ -382,7 +495,9 @@
       "type": "identity",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "labels": ["e2e"],
+      "labels": [
+        "e2e"
+      ],
       "identity_class": "class",
       "created": "2024-04-18T14:00:00.000Z",
       "modified": "2024-04-18T14:00:00.000Z",
@@ -393,7 +508,9 @@
       "type": "identity",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "labels": ["e2e"],
+      "labels": [
+        "e2e"
+      ],
       "identity_class": "class",
       "created": "2023-12-18T14:00:00.000Z",
       "modified": "2023-12-18T14:00:00.000Z",
@@ -439,7 +556,6 @@
       "source_ref": "intrusion-set--d9e1f317-2b86-54bb-baa5-de8ed52f99c1",
       "target_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f"
     },
-
     {
       "id": "relationship--f4a93994-a1e6-47a8-ac48-d421e07f244c",
       "type": "relationship",
@@ -480,7 +596,6 @@
       "source_ref": "malware--baa06f60-ea33-44ef-9914-cc3136c5ec40",
       "target_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f"
     },
-
     {
       "id": "relationship--1674f3e5-326d-49e1-b03c-5f530f6cf5f6",
       "type": "relationship",
@@ -521,7 +636,6 @@
       "source_ref": "malware--48534a79-a9d7-4c34-a292-f5f102d26dea",
       "target_ref": "location--0a44ffcb-a76b-47d0-aabe-bb485d12e725"
     },
-
     {
       "id": "relationship--3b41fff3-43f4-460e-b3c3-903870b9834b",
       "type": "relationship",
@@ -562,7 +676,6 @@
       "source_ref": "ipv4-addr--344ec8a8-e211-4e1d-b2e2-02e0562726be",
       "target_ref": "location--0a44ffcb-a76b-47d0-aabe-bb485d12e725"
     },
-
     {
       "id": "relationship--b36cb39c-0722-4f7e-ba98-5d67e22dea79",
       "type": "relationship",
@@ -603,7 +716,6 @@
       "source_ref": "threat-actor--aaf90e45-36b8-5ba1-8038-ff420802c5b2",
       "target_ref": "vulnerability--efa26bb3-e08f-4806-b50f-60a8b2860298"
     },
-
     {
       "id": "relationship--024075d4-bb38-4b38-92f5-c4242a6252f1",
       "type": "relationship",
@@ -644,7 +756,6 @@
       "source_ref": "indicator--beb43a71-5d51-5a38-b655-3bd7f54be5da",
       "target_ref": "ipv4-addr--344ec8a8-e211-4e1d-b2e2-02e0562726be"
     },
-
     {
       "id": "relationship--e0107e15-4fe7-4a54-969a-0308acd1a5d3",
       "type": "relationship",
@@ -685,20 +796,25 @@
       "source_ref": "intrusion-set--d9e1f317-2b86-54bb-baa5-de8ed52f99c1",
       "target_ref": "malware--baa06f60-ea33-44ef-9914-cc3136c5ec40"
     },
-
     {
       "id": "report--48122960-2c61-4b52-bfad-cb8741b7e887",
       "type": "report",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da"],
-      "labels": ["e2e"],
+      "object_marking_refs": [
+        "marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da"
+      ],
+      "labels": [
+        "e2e"
+      ],
       "published": "2024-05-20T14:00:00.000Z",
       "created": "2024-05-20T14:00:00.000Z",
       "modified": "2024-05-20T14:00:00.000Z",
       "name": "E2E dashboard - Report - now",
       "description": "Report for e2e testing purposes (random data).",
-      "report_types": ["threat-report"],
+      "report_types": [
+        "threat-report"
+      ],
       "confidence": 4,
       "object_refs": [
         "malware--60252469-6811-46df-9a17-c711dd6962fa",
@@ -732,14 +848,20 @@
       "type": "report",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"],
-      "labels": ["e2e"],
+      "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+      ],
+      "labels": [
+        "e2e"
+      ],
       "published": "2024-05-13T14:00:00.000Z",
       "created": "2024-05-13T14:00:00.000Z",
       "modified": "2024-05-13T14:00:00.000Z",
       "name": "E2E dashboard - Report - week ago",
       "description": "Report for e2e testing purposes (random data).",
-      "report_types": ["threat-report"],
+      "report_types": [
+        "threat-report"
+      ],
       "confidence": 4,
       "object_refs": [
         "malware--60252469-6811-46df-9a17-c711dd6962fa",
@@ -772,15 +894,21 @@
       "id": "report--7ae672ac-313d-416b-8c86-792a68022130",
       "type": "report",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"],
+      "object_marking_refs": [
+        "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82"
+      ],
       "spec_version": "2.1",
-      "labels": ["e2e"],
+      "labels": [
+        "e2e"
+      ],
       "published": "2024-04-18T14:00:00.000Z",
       "created": "2024-04-18T14:00:00.000Z",
       "modified": "2024-04-18T14:00:00.000Z",
       "name": "E2E dashboard - Report - month ago",
       "description": "Report for e2e testing purposes (random data).",
-      "report_types": ["threat-report"],
+      "report_types": [
+        "threat-report"
+      ],
       "confidence": 4,
       "object_refs": [
         "malware--60252469-6811-46df-9a17-c711dd6962fa",
@@ -814,14 +942,20 @@
       "type": "report",
       "spec_version": "2.1",
       "created_by_ref": "identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f",
-      "object_marking_refs": ["marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"],
-      "labels": ["e2e"],
+      "object_marking_refs": [
+        "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"
+      ],
+      "labels": [
+        "e2e"
+      ],
       "published": "2023-12-18T14:00:00.000Z",
       "created": "2023-12-18T14:00:00.000Z",
       "modified": "2023-12-18T14:00:00.000Z",
       "name": "E2E dashboard - Report - 6 months ago",
       "description": "Report for e2e testing purposes (random data).",
-      "report_types": ["threat-report"],
+      "report_types": [
+        "threat-report"
+      ],
       "confidence": 4,
       "object_refs": [
         "malware--60252469-6811-46df-9a17-c711dd6962fa",
@@ -858,7 +992,10 @@
       "created": "2024-07-22T11:36:51.368Z",
       "modified": "2024-07-22T11:36:51.376Z",
       "name": "Incident for background task test - not selected by label or search",
-      "labels": ["background-task-filter-add-label", "background-task-search-add-label"],
+      "labels": [
+        "background-task-filter-add-label",
+        "background-task-search-add-label"
+      ],
       "x_opencti_id": "7c685f09-91c5-4f72-89cc-9b87c3bca7c4",
       "x_opencti_type": "Incident",
       "type": "incident"
@@ -884,7 +1021,9 @@
       "created": "2024-07-22T11:32:38.904Z",
       "modified": "2024-07-22T11:34:57.326Z",
       "name": "Incident for background task test - filter by label 2",
-      "labels": ["background-task"],
+      "labels": [
+        "background-task"
+      ],
       "x_opencti_id": "1cfe56ff-587a-49ff-88b8-fbeb7b13d9e9",
       "x_opencti_type": "Incident",
       "type": "incident"
@@ -898,7 +1037,9 @@
       "modified": "2024-07-22T11:34:44.813Z",
       "name": "Incident for background task test - filter by label 1",
       "incident_type": "compromise",
-      "labels": ["background-task"],
+      "labels": [
+        "background-task"
+      ],
       "x_opencti_id": "057e0f4e-34cf-45c5-bef4-cfc3cf5ae4ec",
       "x_opencti_type": "Incident",
       "type": "incident"
@@ -913,7 +1054,9 @@
       "product": "e2e",
       "result_name": "Test Malware Analysis e2e",
       "result": "malicious",
-      "labels": ["e2e"],
+      "labels": [
+        "e2e"
+      ],
       "x_opencti_id": "d628a562-8e41-4d9a-8d8a-ac056b520724",
       "x_opencti_type": "Malware-Analysis",
       "type": "malware-analysis"
@@ -927,7 +1070,9 @@
       "modified": "2024-07-30T13:15:37.447Z",
       "name": "Navigation test grouping entity",
       "context": "unspecified",
-      "labels": ["e2e"],
+      "labels": [
+        "e2e"
+      ],
       "x_opencti_id": "91bced0e-63dc-4ea6-ab6d-7137706b1d87",
       "x_opencti_type": "Grouping",
       "type": "grouping"
@@ -941,7 +1086,9 @@
       "modified": "2025-06-23T18:34:04.519Z",
       "content": "This is my test note.",
       "likelihood": 50,
-      "labels": ["e2e"],
+      "labels": [
+        "e2e"
+      ],
       "x_opencti_workflow_id": "b37573ee-391c-4ba0-8c17-654ec4ca4972",
       "x_opencti_id": "59a281e4-4943-4081-a328-6121ef48858f",
       "x_opencti_type": "Note",
@@ -956,7 +1103,9 @@
       "modified": "2024-07-30T13:15:37.447Z",
       "name": "Navigation External Ref Test",
       "context": "unspecified",
-      "labels": ["e2e"],
+      "labels": [
+        "e2e"
+      ],
       "x_opencti_id": "91bced0e-63dc-4ea6-ab6d-7137706b1d89",
       "x_opencti_type": "External-References",
       "type": "external-references"
@@ -968,7 +1117,9 @@
       "confidence": 100,
       "created": "2024-07-30T13:15:37.447Z",
       "modified": "2024-07-30T13:15:37.447Z",
-      "labels": ["e2e"],
+      "labels": [
+        "e2e"
+      ],
       "response_types": [
         "Ransomware"
       ],
@@ -982,7 +1133,9 @@
       "spec_version": "2.1",
       "revoked": false,
       "confidence": 100,
-      "labels": ["e2e"],
+      "labels": [
+        "e2e"
+      ],
       "created": "2024-07-30T13:15:37.447Z",
       "modified": "2024-07-30T13:15:37.447Z",
       "name": "Request For Information Name",
@@ -1004,7 +1157,9 @@
       "created": "2024-07-30T13:15:37.447Z",
       "modified": "2024-07-30T13:15:37.447Z",
       "name": "Request for takedown Name",
-      "labels": ["e2e"],
+      "labels": [
+        "e2e"
+      ],
       "x_opencti_id": "1433a1d0-8bb1-4b2f-ae6f-8f92f037a51e",
       "x_opencti_type": "Case-Rft",
       "type": "x-opencti-case-rft"
@@ -1017,7 +1172,9 @@
       "created": "2024-07-30T13:15:37.447Z",
       "modified": "2024-07-30T13:15:37.447Z",
       "name": "Task Name",
-      "labels": ["e2e"],
+      "labels": [
+        "e2e"
+      ],
       "x_opencti_id": "f160d791-5996-4f86-a5b3-9e068df362da",
       "x_opencti_type": "Task",
       "type": "x-opencti-task"
@@ -1048,7 +1205,9 @@
       "modified": "2024-07-22T11:34:44.813Z",
       "name": "Incident Name",
       "incident_type": "compromise",
-      "labels": ["e2e"],
+      "labels": [
+        "e2e"
+      ],
       "x_opencti_id": "057e0f4e-34cf-45c5-bef4-cf03cf5ae4ec",
       "x_opencti_type": "Incident",
       "type": "incident"
@@ -1063,7 +1222,9 @@
       "first_observed": "2025-06-24T04:00:00.000Z",
       "last_observed": "2025-06-25T04:00:00.000Z",
       "number_observed": 1,
-      "labels": ["e2e"],
+      "labels": [
+        "e2e"
+      ],
       "x_opencti_id": "9ca7ddcf-ae70-467e-ae7c-24ac0d48dc17",
       "x_opencti_type": "Observed-Data",
       "type": "observed-data",
@@ -1076,7 +1237,9 @@
       "spec_version": "2.1",
       "x_opencti_description": "Uploaded for e2e",
       "mime_type": "application/vnd.microsoft.portable-executable",
-      "labels": ["e2e"],
+      "labels": [
+        "e2e"
+      ],
       "hashes": {
         "MD5": "79f7781f3ec7af1466be4a0e5c853d14",
         "SHA-1": "64aab1d1a1bfa2a49c132cf6986b1e6defcd66f0",
@@ -1099,7 +1262,9 @@
       "spec_version": "2.1",
       "revoked": false,
       "confidence": 50,
-      "labels": ["e2e"],
+      "labels": [
+        "e2e"
+      ],
       "created": "2025-07-04T11:11:01.195Z",
       "modified": "2025-07-04T11:11:18.411Z",
       "pattern_type": "stix",
@@ -1231,7 +1396,9 @@
       "spec_version": "2.1",
       "revoked": false,
       "confidence": 100,
-      "labels": ["e2e"],
+      "labels": [
+        "e2e"
+      ],
       "created": "2025-04-15T12:07:57.395Z",
       "modified": "2025-04-15T12:07:57.395Z",
       "name": "mynewinfratest",
@@ -1242,7 +1409,6 @@
       "x_opencti_type": "Infrastructure",
       "type": "infrastructure"
     },
-
     {
       "id": "tool--dccdb7e3-a5bf-5f10-8ca2-9413c9b0ba75",
       "spec_version": "2.1",
@@ -1446,6 +1612,24 @@
       "x_opencti_id": "40174351-d2b7-4349-b5e1-f2421a969281",
       "x_opencti_type": "Position",
       "type": "location"
+    },
+    {
+      "id": "identity--e3121c5c-5c0c-4284-85c7-2d64833be2a2",
+      "spec_version": "2.1",
+      "revoked": false,
+      "confidence": 100,
+      "created": "2026-10-09T06:55:47.841Z",
+      "modified": "2025-10-11T00:45:38.554Z",
+      "identity_class": "citizenshipdocument",
+      "name": "E2e Citizenship Document",
+      "description": "a super duper passport",
+      "x_opencti_citizenship_document_type": "passport",
+      "labels": [
+        "e2e"
+      ],
+      "x_opencti_id": "d36ac2b2-e248-4012-990e-2cb2d864f9af",
+      "x_opencti_type": "CitizenshipDocument",
+      "type": "identity"
     }
   ]
 }

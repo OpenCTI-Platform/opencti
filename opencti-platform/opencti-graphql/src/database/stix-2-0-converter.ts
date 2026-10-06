@@ -279,6 +279,7 @@ export const convertIdentityToStix = (instance: StoreEntity, type: string): SDO.
     x_opencti_organization_type: instance.x_opencti_organization_type,
     x_opencti_reliability: instance.x_opencti_reliability,
     x_opencti_score: instance.x_opencti_score,
+    citizenship_document_type: instance.x_opencti_citizenship_document_type,
   };
 };
 

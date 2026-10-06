@@ -122,6 +122,7 @@ export interface StixIdentity extends StixDomainObject {
   x_opencti_organization_type: string;
   x_opencti_reliability: string;
   x_opencti_score: number;
+  x_opencti_citizenship_document_type: string;
 }
 
 export interface StixIncident extends StixDomainObject {

@@ -1,0 +1,59 @@
+import { graphql } from 'react-relay';
+import { useNavigate } from 'react-router';
+import React from 'react';
+import { useFormatter } from '../../../../components/i18n';
+import useApiMutation from '../../../../utils/hooks/useApiMutation';
+import useDeletion from '../../../../utils/hooks/useDeletion';
+import { MESSAGING$ } from '../../../../relay/environment';
+import DeleteDialog from '../../../../components/DeleteDialog';
+
+const citizenshipDocumentDeletionMutation = graphql`
+mutation CitizenshipDocumentDeletionMutation($id: ID!) {
+    citizenshipDocumentDelete(id: $id)
+}
+`;
+
+const CitizenshipDocumentDeletion = ({ id, isOpen, handleClose }: { id: string; isOpen: boolean; handleClose: () => void }) => {
+  const navigate = useNavigate();
+  const { t_i18n } = useFormatter();
+  const deletion = useDeletion({ handleClose });
+  const { setDeleting } = deletion;
+
+  const deleteSuccessMessage = t_i18n('{entity_type} successfully deleted', {
+    values: { entity_type: t_i18n('entity_CitizenshipDocument') },
+  });
+
+  const [commit] = useApiMutation(
+    citizenshipDocumentDeletionMutation,
+    undefined,
+    { successMessage: deleteSuccessMessage },
+  );
+
+  const submitDelete = () => {
+    setDeleting(true);
+    commit({
+      variables: {
+        id,
+      },
+      onCompleted: () => {
+        setDeleting(false);
+        handleClose();
+        navigate('/dashboard/entities/citizenship_documents');
+      },
+      onError: (error) => {
+        MESSAGING$.notifyRelayError(error);
+      },
+    });
+  };
+  return (
+    <DeleteDialog
+      deletion={deletion}
+      submitDelete={submitDelete}
+      isOpen={isOpen}
+      onClose={handleClose}
+      message={t_i18n('Do you want to delete this citizenship document?')}
+    />
+  );
+};
+
+export default CitizenshipDocumentDeletion;
