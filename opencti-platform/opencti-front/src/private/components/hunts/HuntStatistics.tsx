@@ -113,6 +113,8 @@ export const huntVerdictData = (statistics: HuntStatisticsData, t_i18n: Translat
     ...(theme ? { entity: { color: huntVerdictColor(theme, bucket.label) } } : {}),
   }));
 
+// Height of the chart under its title: the inline container stacks the title on the chart, so a height given to the
+// container itself would let the chart overflow the block by the height of the title
 const WIDGET_HEIGHT = 280;
 
 interface HuntStatisticsComponentProps {
@@ -161,21 +163,27 @@ const HuntStatisticsComponent = ({ queryRef, interval, showWidgets }: HuntStatis
       {showWidgets && (
         <Grid container spacing={3} data-testid="hunt-statistics-widgets">
           <Grid item xs={12} md={5}>
-            <WidgetContainer title={t_i18n('Hits over time')} height={WIDGET_HEIGHT} variant="inLine">
-              {hasTimeSeries ? (
-                <WidgetVerticalBars series={hitsSeries} interval={interval} hasLegend tickAmount={huntHitsTickAmount(statistics.hits_over_time.length)} />
-              ) : <WidgetNoData />}
+            <WidgetContainer title={t_i18n('Hits over time')} variant="inLine">
+              <div style={{ height: WIDGET_HEIGHT }}>
+                {hasTimeSeries ? (
+                  <WidgetVerticalBars series={hitsSeries} interval={interval} hasLegend tickAmount={huntHitsTickAmount(statistics.hits_over_time.length)} />
+                ) : <WidgetNoData />}
+              </div>
             </WidgetContainer>
           </Grid>
           <Grid item xs={12} md={3}>
-            <WidgetContainer title={t_i18n('Runs per platform')} height={WIDGET_HEIGHT} variant="inLine">
-              {statistics.runs_per_platform.length > 0 ? <WidgetHorizontalBars series={platformSeries} distributed /> : <WidgetNoData />}
+            <WidgetContainer title={t_i18n('Runs per platform')} variant="inLine">
+              <div style={{ height: WIDGET_HEIGHT }}>
+                {statistics.runs_per_platform.length > 0 ? <WidgetHorizontalBars series={platformSeries} distributed /> : <WidgetNoData />}
+              </div>
             </WidgetContainer>
           </Grid>
           {/* Wide enough for the four verdicts of the legend on one line */}
           <Grid item xs={12} md={4}>
-            <WidgetContainer title={t_i18n('Verdict distribution')} height={WIDGET_HEIGHT} variant="inLine">
-              {verdicts.length > 0 ? <WidgetDonut data={verdicts} groupBy="verdict" /> : <WidgetNoData />}
+            <WidgetContainer title={t_i18n('Verdict distribution')} variant="inLine">
+              <div style={{ height: WIDGET_HEIGHT }}>
+                {verdicts.length > 0 ? <WidgetDonut data={verdicts} groupBy="verdict" /> : <WidgetNoData />}
+              </div>
             </WidgetContainer>
           </Grid>
         </Grid>

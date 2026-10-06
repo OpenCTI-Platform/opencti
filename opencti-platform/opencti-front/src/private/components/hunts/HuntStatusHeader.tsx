@@ -283,7 +283,7 @@ const HuntStatusHeader = ({ data, canEdit = true }: HuntStatusHeaderProps) => {
               <Button variant="secondary" startIcon={<ManageSearchOutlined fontSize="small" />} onClick={() => setPreviewing(true)} data-testid="hunt-query-preview-open">
                 {t_i18n('Preview the query')}
               </Button>
-              <HuntRunStart hunt={hunt} compact />
+              <HuntRunStart hunt={hunt} secondary />
               {primary && (
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: theme.spacing(1) }}>
                   <Button

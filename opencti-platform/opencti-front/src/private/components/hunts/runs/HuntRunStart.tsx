@@ -136,11 +136,11 @@ interface HuntRunStartProps {
     scopePlatforms?: ReadonlyArray<{ id: string; name: string }> | null;
   };
   paginationOptions?: Record<string, unknown>;
-  /** Renders a compact button, for the tab bar of the hunt */
-  compact?: boolean;
+  /** Renders a secondary button, for the status header of the hunt, whose status action is the primary one */
+  secondary?: boolean;
 }
 
-const HuntRunStart = ({ hunt, paginationOptions, compact = false }: HuntRunStartProps) => {
+const HuntRunStart = ({ hunt, paginationOptions, secondary = false }: HuntRunStartProps) => {
   const theme = useTheme<Theme>();
   const { t_i18n } = useFormatter();
   const navigate = useNavigate();
@@ -212,8 +212,7 @@ const HuntRunStart = ({ hunt, paginationOptions, compact = false }: HuntRunStart
 
   const runButton = (
     <Button
-      size={compact ? 'default' : 'small'}
-      variant={compact ? 'secondary' : 'primary'}
+      variant={secondary ? 'secondary' : 'primary'}
       startIcon={<PlayArrowOutlined fontSize="small" />}
       disabled={!canRun}
       onClick={() => openDialog(true)}
