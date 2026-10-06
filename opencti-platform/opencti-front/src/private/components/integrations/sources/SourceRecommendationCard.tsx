@@ -426,14 +426,14 @@ const SourceRecommendationCard = ({ data, hideSource = false, onChange }: Source
                 {t_i18n('Open in catalog')}
               </Button>
             )}
-            {canAct && recommendation.status === 'proposed' && (catalogSlug === null || deployableHere) && (
-              <Button size="small" startIcon={<CheckOutlined />} onClick={startApply} disabled={busy} data-testid="source-recommendation-apply">
-                {applyLabel}
-              </Button>
-            )}
             {canManage && recommendation.status === 'proposed' && (
               <Button variant="secondary" size="small" startIcon={<CloseOutlined />} onClick={() => setDismissOpen(true)} disabled={busy} data-testid="source-recommendation-dismiss">
                 {t_i18n('Reject')}
+              </Button>
+            )}
+            {canAct && recommendation.status === 'proposed' && (catalogSlug === null || deployableHere) && (
+              <Button size="small" startIcon={<CheckOutlined />} onClick={startApply} disabled={busy} data-testid="source-recommendation-apply">
+                {applyLabel}
               </Button>
             )}
             {canAct && recommendation.status === 'applied' && (

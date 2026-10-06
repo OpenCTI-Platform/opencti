@@ -300,7 +300,7 @@ const CollectionGapsList = ({ queryRef, hasRegisteredManager }: CollectionGapsLi
                           className="inline-flex rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-filigran-brand-primary focus-visible:ring-offset-2 focus-visible:ring-offset-focus"
                           data-testid="collection-gap-priority-trigger"
                         >
-                          <Tag label={t_i18n(CRITERION_PRIORITY_LABELS[priority])} size="small" />
+                          <Tag label={t_i18n(CRITERION_PRIORITY_LABELS[priority])} size="small" labelTextTransform="none" />
                         </span>
                       </TooltipTrigger>
                       <TooltipContent>
