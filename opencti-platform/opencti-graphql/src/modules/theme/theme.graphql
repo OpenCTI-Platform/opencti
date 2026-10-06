@@ -54,7 +54,7 @@ type Query {
     filters: FilterGroup
     search: String
     toStix: Boolean
-  ): ThemeConnection
+  ): ThemeConnection @auth
 }
 
 # Input
