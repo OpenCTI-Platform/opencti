@@ -146,7 +146,11 @@ export const verifyOtp = async (input: VerifyOtpInput) => {
 
 export const verifyMfa = async (context: AuthContext, input: VerifyMfaInput) => {
   const { hashedOtp, email, mfa_activated, ttl, userId } = await redisGetForgotPasswordOtp(input.transactionId);
-  const { otp_secret: mfa_secret } = await findById(context, SYSTEM_USER, userId);
+  if (!userId) {
+    throw UnsupportedError('Password reset code expired or not found. Please request a new one.');
+  }
+  const user = await findById(context, SYSTEM_USER, userId);
+  const mfa_secret = user?.otp_secret;
   if (!mfa_activated || !mfa_secret) {
     throw AuthenticationFailure();
   }
