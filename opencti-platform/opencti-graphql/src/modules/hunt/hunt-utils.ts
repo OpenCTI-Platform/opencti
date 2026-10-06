@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import conf, { booleanConf } from '../../config/conf';
 import { ValidationError } from '../../config/errors';
 import { type FilterGroup, FilterMode, FilterOperator, HuntTechniqueValidationStatus } from '../../generated/graphql';
-import { isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
+import { checkFiltersValidity, isFilterGroupNotEmpty } from '../../utils/filtering/filtering-utils';
 import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { HUNT_PLATFORMS, HUNT_SCHEDULE_STANDING, type HuntNativeQuery } from './hunt-types';
 import type { HuntEvidence, HuntHit } from './huntRun/huntRun-types';
@@ -420,8 +420,12 @@ export const normalizeNativeQueries = (nativeQueries: unknown): HuntNativeQuery[
   });
 };
 
+const FILTER_GROUP_SHAPE_ERROR = 'Filters must be a filter group (mode, filters, filterGroups)';
+
 /**
- * Parses a stored filter group, empty / blank values meaning "no filter".
+ * Parses a stored filter group, empty / blank values meaning "no filter". A non-empty group is checked like every
+ * filter group of the platform (format, value syntax, keys of the schema), so that a malformed one is refused when
+ * the hunt is saved instead of failing every later readiness, indicator or manager query.
  */
 export const parseHuntFilterGroup = (filters: string | null | undefined, field: string): FilterGroup | null => {
   if (filters === null || filters === undefined || filters.trim().length === 0) {
@@ -434,9 +438,18 @@ export const parseHuntFilterGroup = (filters: string | null | undefined, field: 
     throw ValidationError('Filters must be a valid JSON filter group', field);
   }
   if (typeof parsed !== 'object' || parsed === null || !Array.isArray(parsed.filters) || !Array.isArray(parsed.filterGroups)) {
-    throw ValidationError('Filters must be a filter group (mode, filters, filterGroups)', field);
+    throw ValidationError(FILTER_GROUP_SHAPE_ERROR, field);
   }
-  return isFilterGroupNotEmpty(parsed) ? parsed : null;
+  if (!isFilterGroupNotEmpty(parsed)) {
+    return null;
+  }
+  try {
+    checkFiltersValidity(parsed);
+  } catch (error) {
+    // A filter or nested group that is not an object fails inside the format check itself
+    throw ValidationError(error instanceof TypeError ? FILTER_GROUP_SHAPE_ERROR : `Invalid filters: ${(error as Error).message}`, field);
+  }
+  return parsed;
 };
 
 /**

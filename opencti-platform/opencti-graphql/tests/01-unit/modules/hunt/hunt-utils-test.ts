@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import '../../../../src/modules/index';
 import {
   buildHuntScopeFilter,
   clampInteger,
@@ -160,6 +161,24 @@ describe('Hunt helpers', () => {
     expect(parseHuntFilterGroup(JSON.stringify(group), 'hunt_scope')).toEqual(group);
     expect(() => parseHuntFilterGroup('{not json', 'hunt_scope')).toThrow('valid JSON filter group');
     expect(() => parseHuntFilterGroup('{"mode":"and"}', 'hunt_scope')).toThrow('must be a filter group');
+  });
+
+  it('should refuse a filter group the platform cannot evaluate instead of storing it', () => {
+    expect(() => parseHuntFilterGroup('{"mode":"and","filters":[null],"filterGroups":[]}', 'hunt_scope')).toThrow('must be a filter group');
+    expect(() => parseHuntFilterGroup('{"mode":"and","filters":[],"filterGroups":[null]}', 'hunt_ioc_filters')).toThrow('must be a filter group');
+    expect(() => parseHuntFilterGroup(JSON.stringify({ mode: 'and', filters: [{ values: ['SIEM'] }], filterGroups: [] }), 'hunt_scope'))
+      .toThrow('Invalid filters: Incorrect filters format');
+    expect(() => parseHuntFilterGroup(JSON.stringify({ mode: 'and', filters: [{ key: ['created'], values: ['now-1d'], operator: 'within' }], filterGroups: [] }), 'trigger_filters'))
+      .toThrow('"within" operator must have 2 values');
+    expect(() => parseHuntFilterGroup(JSON.stringify({ mode: 'and', filters: [{ key: ['not_an_attribute'], values: ['x'] }], filterGroups: [] }), 'hunt_ioc_filters'))
+      .toThrow('Incorrect filter keys not existing in any schema definition');
+    let refused: { extensions?: { data?: { field?: string } } } | undefined;
+    try {
+      parseHuntFilterGroup('{"mode":"and","filters":[null],"filterGroups":[]}', 'hunt_ioc_filters');
+    } catch (error) {
+      refused = error as typeof refused;
+    }
+    expect(refused?.extensions?.data?.field).toBe('hunt_ioc_filters');
   });
 
   it('should scope a hunt to explicit security platforms the way the hunt form reads it back', () => {
