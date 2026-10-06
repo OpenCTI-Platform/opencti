@@ -37,6 +37,14 @@ describe('getVisualizationTypes', () => {
         ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute' && v !== 'custom-attributes'),
       );
     });
+
+    it('the defense visualization types are not available without the knowledge access', () => {
+      expect(getVisualizationTypes({
+        kind: 'workspace',
+      }, false).map(({ key }) => key)).toStrictEqual(
+        ALL_VISUALIZATION_TYPES.filter((v) => v !== 'attribute' && v !== 'custom-attributes' && !DEFENSE_VISUALIZATION_TYPES.includes(v)),
+      );
+    });
   });
 
   describe('when host is a fintel template', () => {

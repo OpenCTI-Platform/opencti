@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { DashboardCustomizeOutlined } from '@mui/icons-material';
 import { IconButton, Menu, MenuContent, MenuItem, MenuTrigger } from '@filigran/design-system';
 import { useFormatter } from '../../i18n';
+import useAuth from '../../../utils/hooks/useAuth';
+import { isGrantedTo } from '../../../utils/hooks/useGranted';
 import { buildDashboardTemplateFile, DASHBOARD_TEMPLATES } from './dashboardTemplates';
 
 interface DashboardTemplateMenuProps {
@@ -11,8 +13,10 @@ interface DashboardTemplateMenuProps {
 /** "Create from template": builds the dashboard of a built-in template and hands it to the dashboard import. */
 const DashboardTemplateMenu = ({ onCreate }: DashboardTemplateMenuProps) => {
   const { t_i18n } = useFormatter();
+  const { me } = useAuth();
   const [open, setOpen] = useState(false);
-  if (DASHBOARD_TEMPLATES.length === 0) {
+  const templates = DASHBOARD_TEMPLATES.filter((template) => !template.needs || isGrantedTo(me, template.needs, true));
+  if (templates.length === 0) {
     return null;
   }
   return (
@@ -26,7 +30,7 @@ const DashboardTemplateMenu = ({ onCreate }: DashboardTemplateMenuProps) => {
         />
       </MenuTrigger>
       <MenuContent align="end">
-        {DASHBOARD_TEMPLATES.map((template) => (
+        {templates.map((template) => (
           <MenuItem
             key={template.id}
             data-testid={`dashboard-template-${template.id}`}

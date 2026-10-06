@@ -1,3 +1,4 @@
+import { KNOWLEDGE } from '../../../utils/hooks/useGranted';
 import type { DashboardTemplate, DashboardTemplateFilter, DashboardTemplateFilterGroup, DashboardTemplateSelection } from './dashboardTemplates';
 
 // The rule pattern types of the detection layer (DEFENSE_RULE_PATTERN_TYPES of the defense coverage module)
@@ -40,6 +41,8 @@ const rules = (extra: Partial<DashboardTemplateSelection> = {}) => entities('Ind
 export const defenseCoverageDashboardTemplate: DashboardTemplate = {
   id: 'defense-coverage',
   label: 'Defense coverage',
+  // The defense widgets read the knowledge of the platform
+  needs: [KNOWLEDGE],
   widgets: [
     {
       id: '0a09d3f0-0001-4d09-9a09-000000000001',

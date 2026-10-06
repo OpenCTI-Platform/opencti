@@ -41,6 +41,8 @@ export interface DashboardTemplate {
   id: string;
   /** English source string, translated by the menu and used as the dashboard name. */
   label: string;
+  /** Capabilities a user needs to load the widgets of the template; the menu hides the template from the others. */
+  needs?: string[];
   /** Widget titles and series labels are English source strings, translated when the dashboard is created. */
   widgets: DashboardTemplateWidget[];
 }

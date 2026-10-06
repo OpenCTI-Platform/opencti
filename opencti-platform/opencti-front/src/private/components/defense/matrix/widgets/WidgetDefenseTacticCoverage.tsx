@@ -1,7 +1,6 @@
 import React, { ReactNode, Suspense } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { Box, Typography } from '@mui/material';
-import WidgetContainer from '../../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../../components/dashboard/WidgetNoData';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import { useFormatter } from '../../../../../components/i18n';
@@ -9,6 +8,7 @@ import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import DefenseTacticsCoverage from '../DefenseTacticsCoverage';
 import { summarizeLevels } from '../defenseMatrix-utils';
 import { WidgetDefenseTacticCoverageQuery } from './__generated__/WidgetDefenseTacticCoverageQuery.graphql';
+import DefenseWidgetContainer from './DefenseWidgetContainer';
 
 const widgetDefenseTacticCoverageQuery = graphql`
   query WidgetDefenseTacticCoverageQuery {
@@ -58,17 +58,21 @@ interface WidgetDefenseTacticCoverageProps {
   popover?: ReactNode;
 }
 
+const Loading = () => {
+  const queryRef = useQueryLoading<WidgetDefenseTacticCoverageQuery>(widgetDefenseTacticCoverageQuery, {});
+  return queryRef ? (
+    <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+      <Content queryRef={queryRef} />
+    </Suspense>
+  ) : <Loader variant={LoaderVariant.inElement} />;
+};
+
 const WidgetDefenseTacticCoverage = ({ title, popover }: WidgetDefenseTacticCoverageProps) => {
   const { t_i18n } = useFormatter();
-  const queryRef = useQueryLoading<WidgetDefenseTacticCoverageQuery>(widgetDefenseTacticCoverageQuery, {});
   return (
-    <WidgetContainer title={title || t_i18n('Defense coverage by tactic')} action={popover}>
-      {queryRef ? (
-        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <Content queryRef={queryRef} />
-        </Suspense>
-      ) : <Loader variant={LoaderVariant.inElement} />}
-    </WidgetContainer>
+    <DefenseWidgetContainer title={title || t_i18n('Defense coverage by tactic')} popover={popover}>
+      <Loading />
+    </DefenseWidgetContainer>
   );
 };
 

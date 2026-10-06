@@ -3,7 +3,6 @@ import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { Box, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import type { Theme } from '../../../../../components/Theme';
-import WidgetContainer from '../../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../../components/dashboard/WidgetNoData';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import { useFormatter } from '../../../../../components/i18n';
@@ -11,6 +10,7 @@ import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import { DefenseLevelsBar } from '../DefenseLevelsBar';
 import { DEFENSE_COVERED_LEVEL, DEFENSE_LEVEL_VALIDATED, DEFENSE_LEVELS, defenseLevelColor, defenseLevelLabel } from '../defenseMatrix-utils';
 import { WidgetDefenseLevelsQuery } from './__generated__/WidgetDefenseLevelsQuery.graphql';
+import DefenseWidgetContainer from './DefenseWidgetContainer';
 
 // Levels computed for the reader, from the evidences they can access
 const widgetDefenseLevelsQuery = graphql`
@@ -64,19 +64,25 @@ interface WidgetDefenseLevelsProps {
   popover?: ReactNode;
 }
 
-const WidgetDefenseLevels = ({ title, popover }: WidgetDefenseLevelsProps) => {
-  const { t_i18n } = useFormatter();
+const Loading = () => {
   const queryRef = useQueryLoading<WidgetDefenseLevelsQuery>(widgetDefenseLevelsQuery, {});
   return (
-    <WidgetContainer title={title || t_i18n('Techniques by defense level')} action={popover}>
-      <Box sx={{ height: '100%', overflow: 'auto' }}>
-        {queryRef ? (
-          <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <Content queryRef={queryRef} />
-          </Suspense>
-        ) : <Loader variant={LoaderVariant.inElement} />}
-      </Box>
-    </WidgetContainer>
+    <Box sx={{ height: '100%', overflow: 'auto' }}>
+      {queryRef ? (
+        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <Content queryRef={queryRef} />
+        </Suspense>
+      ) : <Loader variant={LoaderVariant.inElement} />}
+    </Box>
+  );
+};
+
+const WidgetDefenseLevels = ({ title, popover }: WidgetDefenseLevelsProps) => {
+  const { t_i18n } = useFormatter();
+  return (
+    <DefenseWidgetContainer title={title || t_i18n('Techniques by defense level')} popover={popover}>
+      <Loading />
+    </DefenseWidgetContainer>
   );
 };
 

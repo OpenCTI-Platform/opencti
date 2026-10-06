@@ -14,22 +14,26 @@ import {
 } from '../../../utils/widget/widgetUtils';
 import Card from '../../../components/common/card/Card';
 import type { WidgetHost } from '../../../utils/widget/widget';
+import useGranted, { KNOWLEDGE } from '../../../utils/hooks/useGranted';
 
-export const getVisualizationTypes = (host: WidgetHost) => {
-  return host.kind === 'workspace'
+export const getVisualizationTypes = (host: WidgetHost, canReadKnowledge = true) => {
+  const visualizationTypes = host.kind === 'workspace'
     ? workspacesWidgetVisualizationTypes
     : host.kind === 'fintelTemplate'
       ? fintelTemplatesWidgetVisualizationTypes
       : host.kind === 'custom-view'
         ? customViewsWidgetVisualizationTypes
         : [];
+  // The defense widgets read the knowledge of the platform
+  return canReadKnowledge ? visualizationTypes : visualizationTypes.filter((visualizationType) => visualizationType.category !== 'defense');
 };
 
 const WidgetCreationTypes = () => {
   const { t_i18n } = useFormatter();
   const { host, setStep, setConfigWidget, config } = useWidgetConfigContext();
+  const canReadKnowledge = useGranted([KNOWLEDGE]);
 
-  const visualizationTypes = getVisualizationTypes(host);
+  const visualizationTypes = getVisualizationTypes(host, canReadKnowledge);
 
   const changeType = (type: string) => {
     setConfigWidget({ ...config.widget, type: type as WidgetVisualizationTypes });

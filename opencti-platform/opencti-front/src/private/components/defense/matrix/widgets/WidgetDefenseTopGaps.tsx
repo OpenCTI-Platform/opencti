@@ -5,13 +5,13 @@ import { Box, List, ListItem, ListItemText } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { Chip } from '@filigran/design-system';
 import type { Theme } from '../../../../../components/Theme';
-import WidgetContainer from '../../../../../components/dashboard/WidgetContainer';
 import WidgetNoData from '../../../../../components/dashboard/WidgetNoData';
 import Loader, { LoaderVariant } from '../../../../../components/Loader';
 import { useFormatter } from '../../../../../components/i18n';
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import { DEFENSE_ACTION_LABELS, DEFENSE_UNCOVERED_LEVELS, type DefenseAction, defenseLevelColor, defenseLevelLabel } from '../defenseMatrix-utils';
 import { WidgetDefenseTopGapsQuery } from './__generated__/WidgetDefenseTopGapsQuery.graphql';
+import DefenseWidgetContainer from './DefenseWidgetContainer';
 
 const TOP_GAPS = 10;
 
@@ -69,19 +69,25 @@ interface WidgetDefenseTopGapsProps {
   popover?: ReactNode;
 }
 
-const WidgetDefenseTopGaps = ({ title, popover }: WidgetDefenseTopGapsProps) => {
-  const { t_i18n } = useFormatter();
+const Loading = () => {
   const queryRef = useQueryLoading<WidgetDefenseTopGapsQuery>(widgetDefenseTopGapsQuery, { first: TOP_GAPS, levels: DEFENSE_UNCOVERED_LEVELS });
   return (
-    <WidgetContainer title={title || t_i18n('Top uncovered techniques used by threats')} action={popover}>
-      <Box sx={{ height: '100%', overflow: 'auto' }}>
-        {queryRef ? (
-          <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <Content queryRef={queryRef} />
-          </Suspense>
-        ) : <Loader variant={LoaderVariant.inElement} />}
-      </Box>
-    </WidgetContainer>
+    <Box sx={{ height: '100%', overflow: 'auto' }}>
+      {queryRef ? (
+        <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <Content queryRef={queryRef} />
+        </Suspense>
+      ) : <Loader variant={LoaderVariant.inElement} />}
+    </Box>
+  );
+};
+
+const WidgetDefenseTopGaps = ({ title, popover }: WidgetDefenseTopGapsProps) => {
+  const { t_i18n } = useFormatter();
+  return (
+    <DefenseWidgetContainer title={title || t_i18n('Top uncovered techniques used by threats')} popover={popover}>
+      <Loading />
+    </DefenseWidgetContainer>
   );
 };
 
