@@ -184,6 +184,19 @@ describe('Standing hunt triggers', () => {
     expect(match).toMatchObject({ evaluations: 1, budgetSpent: false, matchedEventId: '1-0' });
   });
 
+  it('should find a hunt from any ref of a large container, past the first thousands', async () => {
+    const objectRefs = Array.from({ length: 2501 }, (_, index) => `indicator--${index}`);
+    const byRef = { hunt: { internal_id: 'hunt-last-ref' } as BasicStoreEntityHunt, filters: null, refIds: new Set(['indicator--2500']), rising: false };
+    const match: StandingMatch = { triggered: new Map(), evaluations: 0, budgetSpent: false, matchedEventId: null };
+    await matchStandingEvents(indexStandingCandidates([byRef]), [streamEvent('1-0', { id: 'report--1', type: 'report', object_refs: objectRefs })], match, {
+      budget: 10,
+      isIgnored: () => false,
+      evaluate: async () => false,
+    });
+    expect(Array.from(match.triggered.keys())).toEqual(['hunt-last-ref']);
+    expect(match.matchedEventId).toEqual('1-0');
+  });
+
   it('should stop matching before the event that would exceed the filter budget, after the first event in any case', async () => {
     const indexed = indexStandingCandidates([filteredCandidate('hunt-a'), filteredCandidate('hunt-b'), filteredCandidate('hunt-c')]);
     const events = ['1-0', '2-0', '3-0'].map((id) => streamEvent(id, { id: `report--${id}`, type: 'report' }));

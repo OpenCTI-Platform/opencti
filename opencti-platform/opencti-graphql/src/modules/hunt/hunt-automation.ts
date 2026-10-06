@@ -72,7 +72,8 @@ export const PULSE_TREND_ATTRIBUTE = 'pulse_trend';
 const PULSE_TREND_RISING = 'rising';
 // Stream refs that, when added, mean that the knowledge around a hunt moved (a report adds a TTP, a sighting of a threat ...)
 const STANDING_REF_FIELDS = ['object_refs', 'source_ref', 'target_ref', 'sighting_of_ref', 'where_sighted_refs'];
-const STANDING_MAX_REFS_PER_EVENT = 2000;
+// A container can carry many thousands of refs: all are matched, the event loop is given back between two slices
+const STANDING_REFS_PER_YIELD = 2000;
 
 const minutesAgo = (minutes: number) => new Date(Date.now() - minutes * 60000).toISOString();
 
@@ -700,7 +701,7 @@ export const eventTouchedRefs = (event: DataEvent): string[] => {
       }
     });
   }
-  return refs.slice(0, STANDING_MAX_REFS_PER_EVENT);
+  return refs;
 };
 
 export const isStandingHuntTriggered = async (context: AuthContext, candidate: StandingCandidate, event: DataEvent) => {
@@ -746,9 +747,13 @@ export const matchStandingEvents = async (
         match.budgetSpent = true;
         return;
       }
-      eventTouchedRefs(event).forEach((ref) => {
-        (indexed.byRef.get(ref) ?? []).forEach((candidate) => match.triggered.set(candidate.hunt.internal_id, candidate));
-      });
+      const refs = eventTouchedRefs(event);
+      for (let refIndex = 0; refIndex < refs.length; refIndex += 1) {
+        (indexed.byRef.get(refs[refIndex]) ?? []).forEach((candidate) => match.triggered.set(candidate.hunt.internal_id, candidate));
+        if ((refIndex + 1) % STANDING_REFS_PER_YIELD === 0) {
+          await doYield();
+        }
+      }
       for (let index = 0; index < toEvaluate.length; index += 1) {
         match.evaluations += 1;
         if (await opts.evaluate(toEvaluate[index], event)) {
