@@ -45,7 +45,12 @@ const runComputation = async (context: AuthContext, attackPatternIds?: string[])
   try {
     lock = await lockResources([DEFENSE_COVERAGE_COMPUTE_KEY], { retryCount: COMPUTE_LOCK_RETRY_COUNT });
     const result = await computeDefenseCoverage(context, SYSTEM_USER, { attackPatternIds });
-    await addDefenseGapClosedCount(result.closed_gaps);
+    // The coverage and the gaps are stored: a usage counter that cannot be written must not request a recomputation
+    try {
+      await addDefenseGapClosedCount(result.closed_gaps);
+    } catch (e) {
+      logApp.warn('[OPENCTI-MODULE] Defense coverage closed gaps not counted in the usage telemetry', { cause: e, closed_gaps: result.closed_gaps });
+    }
     return result;
   } finally {
     if (lock) await lock.unlock();

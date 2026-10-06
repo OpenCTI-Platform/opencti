@@ -934,7 +934,12 @@ export const exportDefenseGaps = async (context: AuthContext, user: AuthUser, ar
       gap.last_validation_requested_at ?? '',
     ]));
   }
-  await addDefenseGapExportCount();
+  // The export is built: a usage counter that cannot be written must not fail it
+  try {
+    await addDefenseGapExportCount();
+  } catch (error) {
+    logApp.warn('[DEFENSE-COVERAGE] Gaps export not counted in the usage telemetry', { cause: error });
+  }
   return buildCsv(EXPORT_HEADERS, lines);
 };
 // endregion

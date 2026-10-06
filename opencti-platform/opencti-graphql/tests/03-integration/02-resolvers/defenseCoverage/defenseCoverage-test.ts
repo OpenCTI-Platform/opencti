@@ -14,6 +14,7 @@ import { fullEntitiesList, internalFindByIds } from '../../../../src/database/mi
 import * as streamHandler from '../../../../src/database/stream/stream-handler';
 import * as securityCoverageDomain from '../../../../src/modules/securityCoverage/securityCoverage-domain';
 import * as repository from '../../../../src/database/repository';
+import * as telemetryManager from '../../../../src/manager/telemetryManager';
 import { ENTITY_TYPE_SECURITY_COVERAGE } from '../../../../src/modules/securityCoverage/securityCoverage-types';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../../../../src/modules/grouping/grouping-types';
 import { FunctionalError } from '../../../../src/config/errors';
@@ -403,6 +404,15 @@ describe('Threat-informed defense matrix', () => {
     expect(lines).toHaveLength(2);
     expect(lines[1]).toContain(MITRE_ID);
     expect(lines[1]).toContain('Defense matrix test EDR');
+    // The export is built: a usage counter that cannot be written does not fail it
+    const counter = vi.spyOn(telemetryManager, 'addDefenseGapExportCount').mockRejectedValueOnce(new Error('telemetry unavailable'));
+    try {
+      const counted = await queryAsAdminWithSuccess({ query: DEFENSE_GAP_EXPORT, variables });
+      expect((counted.data?.defenseGapExport as string).trim().split('\n')).toHaveLength(2);
+      expect(counter).toHaveBeenCalledTimes(1);
+    } finally {
+      counter.mockRestore();
+    }
   });
 
   it('should validate the technique through a security coverage of a grouping', async () => {
