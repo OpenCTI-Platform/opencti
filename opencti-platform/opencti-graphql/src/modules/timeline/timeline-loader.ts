@@ -137,7 +137,7 @@ export const toTimelineElement = (element: AnyStoreElement, opts: { labels?: Map
     published: dateString(element.published),
     due_date: dateString(element.due_date),
     workflow_id: element.x_opencti_workflow_id ?? null,
-    kill_chain_phase_ids: asArray(element[buildRefRelationKey(RELATION_KILL_CHAIN_PHASE)]),
+    kill_chain_phase_ids: timelineRefIds(element, RELATION_KILL_CHAIN_PHASE),
     relationship_type: isRelation ? element.entity_type : undefined,
     from_id: isRelation ? relation.fromId : undefined,
     to_id: isRelation ? relation.toId : undefined,
@@ -436,8 +436,8 @@ export const loadTimelineDerivationInput = async (context: AuthContext, containe
     ? entities.filter((e) => e.entity_type === ENTITY_TYPE_CONTAINER_REPORT)
     : await findContainersReferencing<BasicStoreEntity>(context, bounds, [ENTITY_TYPE_CONTAINER_REPORT], [containerId], TIMELINE_MAX_RELATED) as AnyStoreElement[];
   // Meta: kill chain phases of the techniques, labels of the tasks, external references of the container
-  const killChainPhaseIds = R.uniq(entities.flatMap((e) => asArray(e[buildRefRelationKey(RELATION_KILL_CHAIN_PHASE)])));
-  const labelIds = R.uniq(tasks.flatMap((t) => asArray((t as AnyStoreElement)[buildRefRelationKey(RELATION_OBJECT_LABEL)])));
+  const killChainPhaseIds = R.uniq(entities.flatMap((e) => timelineRefIds(e, RELATION_KILL_CHAIN_PHASE)));
+  const labelIds = R.uniq(tasks.flatMap((t) => timelineRefIds(t, RELATION_OBJECT_LABEL)));
   const externalReferenceIds = capTimelineRead(bounds, asArray(container[buildRefRelationKey(RELATION_EXTERNAL_REFERENCE)]), TIMELINE_MAX_RELATED);
   const [killChainPhases, labels, externalReferences] = await Promise.all([
     killChainPhaseIds.length > 0 ? internalFindByIds(context, SYSTEM_USER, killChainPhaseIds, { type: ENTITY_TYPE_KILL_CHAIN_PHASE }) : [],

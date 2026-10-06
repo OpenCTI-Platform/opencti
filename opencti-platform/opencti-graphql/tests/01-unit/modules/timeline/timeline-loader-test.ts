@@ -36,6 +36,14 @@ describe('Timeline element refs', () => {
     expect(element.markings).toEqual(['amber']);
     expect(element.created_by_id).toEqual('author');
   });
+
+  it('should give a technique the kill chain phases it was read with, with or without its relations', () => {
+    // Read without its relations (the default of the engine), the phases come back as doc values under the relation type
+    const technique = { internal_id: 'ap-1', standard_id: 'attack-pattern--1', entity_type: 'Attack-Pattern', name: 'Spearphishing' };
+    expect(toTimelineElement({ ...technique, 'kill-chain-phase': ['phase-1', 'phase-2'] } as any).kill_chain_phase_ids).toEqual(['phase-1', 'phase-2']);
+    expect(toTimelineElement({ ...technique, 'rel_kill-chain-phase.internal_id': ['phase-1'] } as any).kill_chain_phase_ids).toEqual(['phase-1']);
+    expect(toTimelineElement(technique as any).kill_chain_phase_ids).toEqual([]);
+  });
 });
 
 describe('Timeline derivation input bounds', () => {
