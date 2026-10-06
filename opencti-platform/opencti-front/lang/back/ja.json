@@ -289,6 +289,7 @@
   "Default value": "デフォルト値",
   "Defense coverage": "防御カバレッジ",
   "Defense validation requests": "防御検証リクエスト",
+  "DEFENSE_COVERAGE_MANAGER": "防御カバレッジマネージャー",
   "Definition": "ソース名",
   "Deleted by": "削除者",
   "Deleted elements": "削除された要素",
