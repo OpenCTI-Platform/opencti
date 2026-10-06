@@ -38,7 +38,6 @@ import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types'
 import { ENTITY_TYPE_DRAFT_WORKSPACE } from '../draftWorkspace/draftWorkspace-types';
 import { ENTITY_TYPE_THREAT_ACTOR_INDIVIDUAL } from '../threatActorIndividual/threatActorIndividual-types';
 import { ENTITY_TYPE_VULNERABILITY } from '../vulnerability/vulnerability-types';
-import { PROVENANCE_RECOMMENDED_RELATIONSHIP_TYPES } from '../provenance/provenance-config';
 
 export type typeAvailableSetting = boolean | string;
 
@@ -62,7 +61,6 @@ export const defaultEntitySetting: Record<string, typeAvailableSetting> = {
   attributes_configuration: JSON.stringify([]),
   workflow_configuration: true,
   sync_workflow_status_by_name: false,
-  provenance_relationship_types: JSON.stringify(Object.fromEntries(PROVENANCE_RECOMMENDED_RELATIONSHIP_TYPES.map((type) => [type, true]))),
 };
 
 export const defaultScale = JSON.stringify({

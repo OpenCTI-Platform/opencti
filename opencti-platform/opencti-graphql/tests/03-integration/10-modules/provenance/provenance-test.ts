@@ -22,7 +22,6 @@ import { buildProvenanceScriptParams, PROVENANCE_UPDATE_SCRIPT, writeProvenanceU
 import type { BasicStoreBase } from '../../../../src/types/store';
 import { checkRetentionRule } from '../../../../src/modules/retentionRules/retentionRules-domain';
 import { RetentionRuleScope, RetentionUnit } from '../../../../src/generated/graphql';
-import { up as enableRecommendedRelationshipTypes } from '../../../../src/migrations/1791221292579-provenance-recommended-relationship-types';
 
 const MALWARE_NAME = 'Provenance malware';
 
@@ -575,26 +574,34 @@ describe('Provenance: every fact knows who said it', () => {
     expect(settled.get('uses')?.tracked).toEqual(true);
   });
 
-  it('should enable the recommended relationship types of an existing platform by migration, once', async () => {
+  it('should leave the relationship types never switched in the interface to the configured default tracked types', async () => {
     const settingId = (await queryAsAdminWithSuccess({ query: RELATIONSHIP_TRACKING })).data?.entitySettingByType.id;
     const storedTypes = () => internalLoadById<BasicStoreBase & { _index: string; provenance_relationship_types?: string }>(testContext, ADMIN_USER, settingId);
-    const runMigration = () => new Promise<void>((resolve, reject) => {
-      enableRecommendedRelationshipTypes((error?: Error) => (error ? reject(error) : resolve())).catch(reject);
-    });
-    // A platform upgraded from a version without per relationship type tracking
     const before = await storedTypes();
-    await elUpdate(testContext, before._index, before.internal_id, { script: { source: "ctx._source.remove('provenance_relationship_types')", lang: 'painless' } });
-    expect((await storedTypes()).provenance_relationship_types).toBeUndefined();
-    await runMigration();
-    expect(JSON.parse((await storedTypes()).provenance_relationship_types ?? '{}')).toEqual({ uses: true, targets: true, 'attributed-to': true });
-    resetCacheForEntity(ENTITY_TYPE_ENTITY_SETTING);
-    // A type turned off afterwards stays off when the migration is replayed
-    await setRelationshipTracking(['uses'], false);
+    const setStoredTypes = async (types: string | undefined) => {
+      await elUpdate(testContext, before._index, before.internal_id, {
+        script: {
+          source: "if (params.types == null) { ctx._source.remove('provenance_relationship_types'); } else { ctx._source.provenance_relationship_types = params.types; }",
+          lang: 'painless',
+          params: { types: types ?? null },
+        },
+      });
+      resetCacheForEntity(ENTITY_TYPE_ENTITY_SETTING);
+    };
+    // A platform where no relationship type was ever switched stores nothing: provenance:default_tracked_types applies
+    await setStoredTypes(undefined);
     try {
-      await runMigration();
-      expect(JSON.parse((await storedTypes()).provenance_relationship_types ?? '{}').uses).toEqual(false);
+      const untouched = trackingByType((await queryAsAdminWithSuccess({ query: RELATIONSHIP_TRACKING })).data?.entitySettingByType);
+      expect(untouched.get('uses')).toEqual({ relationship_type: 'uses', tracked: true, recommended: true });
+      expect(untouched.get('related-to')?.tracked).toEqual(true);
+      // Switching one type stores that type only, the others keep following the configuration
+      await setRelationshipTracking(['uses'], false);
+      expect(JSON.parse((await storedTypes()).provenance_relationship_types ?? '{}')).toEqual({ uses: false });
+      const switched = trackingByType((await queryAsAdminWithSuccess({ query: RELATIONSHIP_TRACKING })).data?.entitySettingByType);
+      expect(switched.get('uses')?.tracked).toEqual(false);
+      expect(switched.get('targets')?.tracked).toEqual(true);
     } finally {
-      await setRelationshipTracking(['uses'], true);
+      await setStoredTypes(before.provenance_relationship_types);
     }
   });
 

@@ -9,7 +9,6 @@ import {
   listProvenanceUntrackedTypesOfSetting,
   parseProvenanceRelationshipTypes,
   parseProvenanceRelationshipTypesStrict,
-  PROVENANCE_RECOMMENDED_RELATIONSHIP_TYPES_SETTING,
 } from '../../../../src/modules/provenance/provenance-tracking';
 import { getOverviewLayoutCustomization, insertSourcesWidget, mergeMissingWidgets } from '../../../../src/modules/entitySetting/entitySetting-domain';
 import { creationProceduresBuilder } from '../../../../src/modules/provenance/provenance-upsert';
@@ -81,7 +80,6 @@ describe('Provenance tracking per entity type', () => {
     expect(parseProvenanceRelationshipTypes('not json')).toEqual({});
     expect(parseProvenanceRelationshipTypes(null)).toEqual({});
     expect(() => parseProvenanceRelationshipTypesStrict('[]')).toThrow();
-    expect(JSON.parse(PROVENANCE_RECOMMENDED_RELATIONSHIP_TYPES_SETTING)).toEqual({ uses: true, targets: true, 'attributed-to': true });
   });
 
   it('should never track the types on which provenance is not available', () => {

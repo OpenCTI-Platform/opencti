@@ -30,10 +30,6 @@ export type ProvenanceRelationshipTypes = Record<string, boolean>;
 
 export const serializeProvenanceRelationshipTypes = (types: ProvenanceRelationshipTypes) => JSON.stringify(types);
 
-export const PROVENANCE_RECOMMENDED_RELATIONSHIP_TYPES_SETTING = serializeProvenanceRelationshipTypes(
-  Object.fromEntries(PROVENANCE_RECOMMENDED_RELATIONSHIP_TYPES.map((type) => [type, true])),
-);
-
 /**
  * Explicit per relationship type tracking, keeping only relationship types with a boolean value.
  * Throws on a value that is not a JSON object, so that the validation of an update can reject it.

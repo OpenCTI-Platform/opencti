@@ -12,9 +12,9 @@ export const PROVENANCE_ENABLED = booleanConf('provenance:enabled', true);
 // Freshness is measured in days, so the last assertion date only needs this precision.
 export const PROVENANCE_REASSERTION_WINDOW_MS = Number(conf.get('provenance:reassertion_window_hours') ?? 24) * 60 * 60 * 1000;
 
-// Relationship types tracked out of the box: seeded on the relationships setting of a new platform, enabled on an
-// existing one by migration, and restored by the "Recommended" action. 'indicates' is left out: indicator feeds
-// re-assert it with every indicator, doubling their writes for a corroboration the indicator already carries.
+// Relationship types tracked out of the box (part of the default tracked types below) and switched back on by the
+// "Apply recommended" action. 'indicates' is left out: indicator feeds re-assert it with every indicator, doubling
+// their writes for a corroboration the indicator already carries.
 export const PROVENANCE_RECOMMENDED_RELATIONSHIP_TYPES: string[] = [RELATION_USES, RELATION_TARGETS, RELATION_ATTRIBUTED_TO];
 
 // Types tracked while their entity setting does not say otherwise ('*' tracks every type).

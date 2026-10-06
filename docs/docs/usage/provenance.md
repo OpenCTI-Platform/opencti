@@ -24,7 +24,7 @@ Relationships are tracked per relationship type, in the "Provenance" card of "Se
 
 ![The Provenance card of the Relationships entity type: Apply recommended, the search and the tracking filter, 3 of the relationship types tracked, and one row per type with its assertions, its last assertion and its switch](assets/provenance-relationship-types.png)
 
-Three relationship types are tracked out of the box, on new platforms and, by migration, on existing ones:
+Three relationship types are tracked out of the box, on new and on existing platforms, as part of the default value of `provenance:default_tracked_types`:
 
 - `uses`: the techniques, tools and malware of a threat, the knowledge sources disagree on most; the procedures described by each source are kept on these relationships (see [Procedures](#procedures)).
 - `targets`: the victimology of a threat (sectors, countries, organizations), where corroboration tells a confirmed targeting from a single claim.
