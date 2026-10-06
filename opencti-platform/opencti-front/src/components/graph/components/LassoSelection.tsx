@@ -76,7 +76,7 @@ const LassoSelection: FunctionComponent<LassoSelectionProps> = ({
       if (!isGraphCanvas(event.target) || !ctx) {
         return;
       }
-      if (event.button === 2) {
+      if (event.button !== 0) {
         document.removeEventListener('mousemove', onMove);
         return;
       }

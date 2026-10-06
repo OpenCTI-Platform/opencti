@@ -59,6 +59,16 @@ describe('LassoSelection', () => {
     }
   });
 
+  it('is drawn with the left button only', () => {
+    const { setSelectedNodes, canvas } = renderLasso();
+    [1, 2].forEach((button) => {
+      fireEvent.mouseDown(canvas, at(10, 10, button));
+      [at(100, 10, button), at(100, 100, button), at(10, 100, button)].forEach((point) => fireEvent.mouseMove(document, point));
+      fireEvent.mouseUp(document.body, at(10, 100, button));
+    });
+    expect(setSelectedNodes).not.toHaveBeenCalled();
+  });
+
   it('starts nothing on a canvas outside the graph', () => {
     const { setSelectedNodes } = renderLasso();
     const elsewhere = document.createElement('canvas');
