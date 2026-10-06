@@ -348,7 +348,7 @@ An image built outside the connectors repository is recognised by name only. To 
 { "version": "6.9.0", "slug": "my-connector" }
 ```
 
-The slug is the one of the catalog entry, as shown in the URL of its catalog page. The file is only read when it carries a version.
+Use the slug of the catalog entry, as shown in the URL of its catalog page. The file is only read when it carries a version.
 
 ## Connectors status
 
