@@ -2997,7 +2997,10 @@ const triggerEntityUpdateAutoEnrichment = async (context: AuthContext, user: Aut
   const loaders = generateEnrichmentLoaders(context, user, element);
   await updateEntityAutoEnrichment(context, user, element, element.entity_type, loaders);
 };
-type UpdateAttributeOpts = LoadByIdsWithDependeciesOpts & UpdateAttributeMetaResolvedOpts;
+type UpdateAttributeOpts = LoadByIdsWithDependeciesOpts & UpdateAttributeMetaResolvedOpts & {
+  // Set by the workflow projection so its own write is not synced back as an external write
+  workflowInternalWrite?: boolean;
+};
 export const updateAttribute = async <T extends StoreObject>(
   context: AuthContext,
   user: AuthUser,
