@@ -40,7 +40,7 @@ import { generateStandardId } from '../../schema/identifier';
 
 const VALIDATION_SUCCESS_THRESHOLD = conf.get('defense_coverage_manager:validation_success_threshold') ?? 50;
 const MAX_EVIDENCES = conf.get('defense_coverage_manager:max_evidences') ?? 250;
-// Hard bound of the stored access partitions of an evidence list, whatever their number
+// Hard bound of the stored access partitions of an evidence list beyond MAX_EVIDENCES, whatever their number
 const MAX_EVIDENCE_PARTITIONS = conf.get('defense_coverage_manager:max_evidence_partitions') ?? 1000;
 const BULK_SIZE = 500;
 const IDS_CHUNK_SIZE = 5000;

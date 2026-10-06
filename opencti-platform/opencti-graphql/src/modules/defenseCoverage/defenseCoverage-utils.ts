@@ -165,9 +165,11 @@ export const computeRecommendedAction = (input: {
  * round robin): a reader who can see any evidence of a partition still sees one. The level class splits a partition
  * where the evidence kind matters to the level (the deployment status), so that each class stays represented too.
  * Pass the evidences in preference order: the first one of a partition is the one kept.
- * The partitions themselves are bounded by maxPartitions, a hard limit on the stored size: beyond it, the partitions
- * of the first evidences in preference order are kept, so a reader of a dropped partition may see a lower level,
- * never a higher one.
+ * The partitions themselves are bounded by maxPartitions, a hard limit on how far the stored size may exceed the
+ * evidence bound: beyond it, the partitions of the first evidences in preference order are kept, so a reader of a
+ * dropped partition may see a lower level, never a higher one. A limit below the evidence bound does not lower the
+ * number of partitions kept: up to the evidence bound the stored size is already bounded by `max`, and each partition
+ * kept is one more reader who still sees an evidence.
  */
 export const capEvidences = <T>(
   evidences: T[],
