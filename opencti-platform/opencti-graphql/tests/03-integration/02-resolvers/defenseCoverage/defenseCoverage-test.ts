@@ -451,6 +451,9 @@ describe('Threat-informed defense matrix', () => {
     const recomputedGap = recomputed.data?.defenseTechnique.gaps.find((g: { platform_id: string }) => g.platform_id === created.platform);
     expect(recomputedGap.level).toEqual(platformGap.level);
     expect(recomputedGap.validation_requests).toEqual([{ security_coverage_id: securityCoverageId, grouping_id: groupingId, threat_id: created.threat, status: 'waiting' }]);
+    // The incremental run loads only the data components that detect the technique, and keeps the telemetry they provide
+    const telemetry = recomputed.data?.defenseTechnique.dataComponents.find((d: { dataComponent: { id: string } }) => d.dataComponent.id === created.dataComponent);
+    expect(telemetry.providedBy.map((p: { id: string }) => p.id)).toContain(created.platform);
   });
 
   it('should track a validation request queued after a failed tracking at the next manager run', async () => {

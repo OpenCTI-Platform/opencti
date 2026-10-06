@@ -150,6 +150,28 @@ const loadRelationsToTechniques = async (
   }
   return relations;
 };
+
+const loadDataComponents = async (context: AuthContext, user: AuthUser, dataComponentIds?: string[]) => {
+  const opts = { baseData: true, baseFields: ['name', 'revoked', ...EVIDENCE_ACCESS_FIELDS] };
+  if (dataComponentIds) {
+    return findByIdsChunked<BasicStoreEntity>(context, user, dataComponentIds, { ...opts, type: ENTITY_TYPE_DATA_COMPONENT });
+  }
+  return fullEntitiesList<BasicStoreEntity>(context, user, [ENTITY_TYPE_DATA_COMPONENT], opts);
+};
+
+const loadProvidedTelemetry = async (context: AuthContext, user: AuthUser, dataComponentIds?: string[]) => {
+  const args = { toTypes: [ENTITY_TYPE_DATA_COMPONENT], baseData: true, baseFields: EVIDENCE_ACCESS_FIELDS };
+  if (!dataComponentIds) {
+    return fullRelationsList<BasicStoreRelation>(context, user, RELATION_PROVIDES, args);
+  }
+  const relations: BasicStoreRelation[] = [];
+  const chunks = chunkIds(dataComponentIds);
+  for (let index = 0; index < chunks.length; index += 1) {
+    const found = await fullRelationsList<BasicStoreRelation>(context, user, RELATION_PROVIDES, { ...args, toId: chunks[index] });
+    relations.push(...found);
+  }
+  return relations;
+};
 // endregion
 
 // region vector building
@@ -632,19 +654,14 @@ export const computeDefenseCoverage = async (
   const platformIdByStixId = new Map<string, string>();
   platforms.forEach((p) => p.stix_ids.forEach((stixId) => platformIdByStixId.set(stixId, p.id)));
 
-  // 2. Telemetry layer: a revoked data component, and every relationship to it, is no telemetry evidence
-  const allDataComponents = await fullEntitiesList<BasicStoreEntity>(context, user, [ENTITY_TYPE_DATA_COMPONENT], {
-    baseData: true,
-    baseFields: ['name', 'revoked', ...EVIDENCE_ACCESS_FIELDS],
-  });
+  // 2. Telemetry layer: a revoked data component, and every relationship to it, is no telemetry evidence. A technique
+  // only reaches the data components that detect it, so an incremental run loads those and the telemetry provided on them
+  const scopedDetects = await loadRelationsToTechniques(context, user, RELATION_DETECTS, [ENTITY_TYPE_DATA_COMPONENT], scopedIds);
+  const detectingIds = isFull ? undefined : R.uniq(scopedDetects.map((detect) => detect.fromId));
   const { dataComponents, detects, provides } = withoutRevokedDataComponents(
-    allDataComponents,
-    await loadRelationsToTechniques(context, user, RELATION_DETECTS, [ENTITY_TYPE_DATA_COMPONENT], scopedIds),
-    await fullRelationsList<BasicStoreRelation>(context, user, RELATION_PROVIDES, {
-      toTypes: [ENTITY_TYPE_DATA_COMPONENT],
-      baseData: true,
-      baseFields: EVIDENCE_ACCESS_FIELDS,
-    }),
+    await loadDataComponents(context, user, detectingIds),
+    scopedDetects,
+    await loadProvidedTelemetry(context, user, detectingIds),
   );
   const dataComponentIdsByName = new Map<string, string[]>();
   dataComponents.forEach((dc) => {
