@@ -31,7 +31,9 @@ describe('Hits of a hunt run', () => {
     expect(screen.getByTestId('hunt-run-window-continued')).toHaveTextContent('Searched since the previous run on Splunk prod, with a 15-minute overlap');
     const tags = screen.getAllByTestId('hunt-run-hit-recurrence');
     expect(tags[0]).toHaveTextContent('New');
-    expect(tags[1]).toHaveTextContent(/Seen 4 times since/);
+    // A short date keeps the tag inside its column; the exact date and time are in its tooltip, reachable by keyboard
+    expect(tags[1]).toHaveTextContent('Seen 4 times since Oct 1, 2026');
+    expect(tags[1].closest('[tabindex="0"]')).not.toBeNull();
     expect(screen.queryByTestId('hunt-run-hits-unidentified')).not.toBeInTheDocument();
   });
 

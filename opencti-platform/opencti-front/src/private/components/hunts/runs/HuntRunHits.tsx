@@ -100,9 +100,18 @@ const HuntRunHits = ({ hitsCount, newCount, recurringCount, identified, windowCo
                       <TableCell>{where ? <Cut value={where} /> : '-'}</TableCell>
                       <TableCell>{matched ? <Cut value={matched} /> : '-'}</TableCell>
                       <TableCell align="right">
-                        {recurrence
-                          ? <Chip label={recurrence.label} severity={recurrence.isNew ? 'info' : 'neutral'} data-testid="hunt-run-hit-recurrence" />
-                          : <Text variant="content-caption" as="span">-</Text>}
+                        {recurrence && !recurrence.isNew && hit.known_since && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span tabIndex={0} style={{ display: 'inline-flex' }}>
+                                <Chip label={recurrence.label} severity="neutral" data-testid="hunt-run-hit-recurrence" />
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>{t_i18n('First found {date}', { values: { date: fldt(hit.known_since) } })}</TooltipContent>
+                          </Tooltip>
+                        )}
+                        {recurrence?.isNew && <Chip label={recurrence.label} severity="info" data-testid="hunt-run-hit-recurrence" />}
+                        {!recurrence && <Text variant="content-caption" as="span">-</Text>}
                       </TableCell>
                     </TableRow>
                   );

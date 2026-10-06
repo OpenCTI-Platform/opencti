@@ -608,6 +608,12 @@ describe('Hunt resolvers', () => {
       },
     });
     const knownHuntId = created.data?.huntAdd.id;
+    const huntSightings = () => fullRelationsList<BasicStoreRelation & { attribute_count: number; x_opencti_hunt_run_id: string }>(
+      testContext,
+      ADMIN_USER,
+      STIX_SIGHTING_RELATIONSHIP,
+      { filters: { mode: 'and', filters: [{ key: ['x_opencti_hunt_id'], values: [knownHuntId] }], filterGroups: [] } } as never,
+    );
     try {
       const events = ['evt-a', 'evt-b', 'evt-c', 'evt-d', 'evt-e'];
       // No host: a sampled hit naming one becomes an observable and an observed data that the next test files count
@@ -629,12 +635,6 @@ describe('Hunt resolvers', () => {
         });
         return (await queryAsAdminWithSuccess({ query: HUNT_RUN_KNOWN_HITS, variables: { id: runId } })).data?.huntRun;
       };
-      const huntSightings = () => fullRelationsList<BasicStoreRelation & { attribute_count: number; x_opencti_hunt_run_id: string }>(
-        testContext,
-        ADMIN_USER,
-        STIX_SIGHTING_RELATIONSHIP,
-        { filters: { mode: 'and', filters: [{ key: ['x_opencti_hunt_id'], values: [knownHuntId] }], filterGroups: [] } } as never,
-      );
       // A first run: every hit is new, an incident draft opens, the hunt sights its technique once
       const first = await runOver(events.slice(0, 3));
       if (first.draft_id) {
@@ -662,6 +662,11 @@ describe('Hunt resolvers', () => {
       const read = await queryAsAdminWithSuccess({ query: HUNT_KNOWN_HITS, variables: { id: knownHuntId } });
       expect(read.data?.hunt).toMatchObject({ last_hits_count: 3, last_new_hits_count: 2, knownHits: { distinct_count: 5 } });
     } finally {
+      // The sighting stays in the knowledge when its hunt is deleted, and the next files count sightings
+      const sightings = await huntSightings();
+      for (let index = 0; index < sightings.length; index += 1) {
+        await deleteElementById(testContext, ADMIN_USER, sightings[index].id, STIX_SIGHTING_RELATIONSHIP);
+      }
       // The next tests count the hunts of the technique: this one leaves
       await queryAsAdmin({ query: HUNT_DELETE, variables: { id: knownHuntId } });
     }
