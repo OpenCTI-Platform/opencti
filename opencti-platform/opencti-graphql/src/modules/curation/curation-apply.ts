@@ -13,7 +13,10 @@ import { isUserHasCapability, KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNUPDATE_KN
 import { controlUserConfidenceAgainstElement } from '../../utils/confidence-level';
 import { resolveAliasesField, ENTITY_TYPE_CONTAINER_NOTE } from '../../schema/stixDomainObject';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
-import { FilterMode, FilterOperator, OrderingMode } from '../../generated/graphql';
+import { type EditInput, FilterMode, FilterOperator, OrderingMode } from '../../generated/graphql';
+import { REVOKED, VALID_UNTIL } from '../../schema/identifier';
+import { computeIndicatorEditInput } from '../indicator/indicator-domain';
+import { type BasicStoreEntityIndicator, ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { ENTITY_TYPE_DELETE_OPERATION } from '../deleteOperation/deleteOperation-types';
 import { restoreDelete } from '../deleteOperation/deleteOperation-domain';
 import { now } from '../../utils/format';
@@ -126,6 +129,27 @@ const replaceInputs = (changes: Record<string, unknown>) => Object.entries(chang
   key,
   value: value === null || value === undefined ? [] : (Array.isArray(value) ? value : [value]),
 }));
+
+/**
+ * The fields an edit of an Indicator changes once its lifecycle is computed, as an edit through the Indicator API does:
+ * revoking or reactivating it also sets its score, detection, validity and decay. Every change is recorded in the
+ * applied patch, so a revert restores the Indicator as it was.
+ */
+const indicatorLifecycleChanges = (user: AuthUser, indicator: StoreObject, input: EditInput[]): Record<string, unknown> => {
+  const record = indicator as Record<string, any>;
+  const changes: Record<string, unknown> = {};
+  computeIndicatorEditInput(user, indicator as unknown as BasicStoreEntityIndicator, input).forEach((edit) => {
+    const multiple = schemaAttributesDefinition.getAttribute(indicator.entity_type, edit.key)?.multiple ?? false;
+    const value = multiple ? edit.value : (edit.value?.[0] ?? null);
+    if (!sameValue(record[edit.key], value)) changes[edit.key] = value;
+  });
+  return changes;
+};
+
+const changeOperations = (element: StoreObject, changes: Record<string, unknown>) => {
+  const record = element as Record<string, any>;
+  return Object.entries(changes).map(([key, value]) => patchOperation(element, key, record[key], value));
+};
 
 export const findLatestMergeRecordForProposal = async (context: AuthContext, proposalId: string) => {
   const records = await pageEntitiesConnection<BasicStoreEntityMergeRecord>(context, SYSTEM_USER, [ENTITY_TYPE_MERGE_RECORD], {
@@ -323,15 +347,15 @@ const applyUnrevokeIndicator = async (context: AuthContext, user: AuthUser, prop
     if (observablesActiveSinceRevocation(record, observables as Array<BasicStoreEntity & Record<string, any>>).length === 0) {
       throw FunctionalError('No observable this indicator is based on is active since its revocation any more, so the contradiction is resolved: reject the proposal', { id: indicator.internal_id });
     }
-    // The indicator is reactivated for its original lifetime (bounded), otherwise the expiration manager revokes it again.
+    // Reactivated as an edit of the Indicator does: with a decay rule, the decay restarts from the base score for the decay
+    // lifetime; without one, the default score and validity apply. Under a decay exclusion, the validity is its original
+    // lifetime (bounded), otherwise the expiration manager revokes it again.
     const lifetimeMs = record.valid_from && record.valid_until ? new Date(record.valid_until).getTime() - new Date(record.valid_from).getTime() : 0;
     const lifetimeDays = Math.min(MAX_REACTIVATION_DAYS, Math.max(MIN_REACTIVATION_DAYS, Math.round(lifetimeMs / (24 * 3600 * 1000))));
     const validUntil = new Date(Date.now() + lifetimeDays * 24 * 3600 * 1000).toISOString();
-    const patch = await planned(opts, {
-      operations: [patchOperation(indicator, 'revoked', record.revoked, false), patchOperation(indicator, 'valid_until', record.valid_until, validUntil)],
-      applied_at: now(),
-    });
-    await updateAttribute(context, user, indicator.internal_id, indicator.entity_type, replaceInputs({ revoked: false, valid_until: validUntil }), { locks: lockIds });
+    const changes = indicatorLifecycleChanges(user, indicator, [{ key: REVOKED, value: [false] }, { key: VALID_UNTIL, value: [validUntil] }]);
+    const patch = await planned(opts, { operations: changeOperations(indicator, changes), applied_at: now() });
+    await updateAttribute(context, user, indicator.internal_id, indicator.entity_type, replaceInputs(changes), { locks: lockIds });
     return { appliedPatch: patch, mergeRecordId: null };
   });
 };
@@ -401,11 +425,21 @@ const applyRevoke = async (context: AuthContext, user: AuthUser, proposal: Basic
   }
   return withSubjectLock(context, user, subject, async (element, lockIds) => {
     const period = proposal.proposal_kind === PROPOSAL_KIND_STALE ? await assertStillStale(context, proposal, element) : null;
-    const previous = (element as Record<string, any>).revoked ?? false;
-    const patch = await planned(opts, { operations: [patchOperation(element, 'revoked', previous, true)], applied_at: now() });
-    await updateAttribute(context, user, element.internal_id, element.entity_type, replaceInputs({ revoked: true }), { locks: lockIds });
-    if (period && await hasRelationshipSince(context, element.internal_id, period.cutoff)) {
-      await updateAttribute(context, user, element.internal_id, element.entity_type, replaceInputs({ revoked: previous }), { locks: lockIds });
+    const record = element as Record<string, any>;
+    // An Indicator is revoked as an edit of the Indicator does: revoke score, no detection, validity ending now.
+    const changes = element.entity_type === ENTITY_TYPE_INDICATOR
+      ? indicatorLifecycleChanges(user, element, [{ key: REVOKED, value: [true] }])
+      : { revoked: true };
+    const operations = element.entity_type === ENTITY_TYPE_INDICATOR
+      ? changeOperations(element, changes)
+      : [patchOperation(element, 'revoked', record.revoked ?? false, true)];
+    const patch = await planned(opts, { operations, applied_at: now() });
+    if (operations.length > 0) {
+      await updateAttribute(context, user, element.internal_id, element.entity_type, replaceInputs(changes), { locks: lockIds });
+    }
+    if (period && operations.length > 0 && await hasRelationshipSince(context, element.internal_id, period.cutoff)) {
+      const restored = Object.fromEntries(operations.map((operation) => [operation.key, operation.previous]));
+      await updateAttribute(context, user, element.internal_id, element.entity_type, replaceInputs(restored), { locks: lockIds });
       throw notStaleAnyMore(element.internal_id, period.months);
     }
     return { appliedPatch: patch, mergeRecordId: null };

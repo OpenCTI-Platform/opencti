@@ -532,7 +532,7 @@ const explainUnrevoke = (proposal: ExplainedProposal, subjects: Subject[]): Kind
     changes: [{ field: message('Revoked'), before: ['Yes'], after: ['No'] }],
     evidence: evidenceOf(proposal.curation_evidence ?? [], observables.map(entityOf)),
     why: message('The indicator "{name}" was revoked, but observables it detects were seen active since then (updated with a score of 50 or more). While it stays revoked, it no longer detects them.', values),
-    on_accept: message('The indicator is reactivated for its original lifetime. You can undo it later with Revert on this proposal.'),
+    on_accept: message('The indicator is reactivated as when it is reactivated by hand: its score and validity are set again. You can undo it later with Revert on this proposal.'),
     on_reject: message('Nothing changes. The indicator stays revoked and this case is not proposed again.'),
     reversible: true,
   };

@@ -661,7 +661,15 @@ describe('Knowledge curation actions', () => {
       ENTITY_IPV4_ADDR,
     ) as unknown as BasicStoreEntity;
     await createRelation(testContext, ADMIN_USER, { fromId: indicator.id, toId: observable.id, relationship_type: RELATION_BASED_ON });
-    await updateAttribute(testContext, ADMIN_USER, indicator.id, ENTITY_TYPE_INDICATOR, [{ key: 'revoked', value: [true] }]);
+    const created = await storeLoadById(testContext, ADMIN_USER, indicator.id, ENTITY_TYPE_INDICATOR) as unknown as Record<string, any>;
+    const revokeScore = created.decay_applied_rule?.decay_revoke_score;
+    expect(revokeScore).toBeTypeOf('number');
+    // Revoked as the decay manager leaves it: at its revoke score, with the decay state of its first lifetime.
+    await updateAttribute(testContext, ADMIN_USER, indicator.id, ENTITY_TYPE_INDICATOR, [
+      { key: 'revoked', value: [true] },
+      { key: 'x_opencti_score', value: [revokeScore] },
+    ]);
+    const revoked = await storeLoadById(testContext, ADMIN_USER, indicator.id, ENTITY_TYPE_INDICATOR) as unknown as Record<string, any>;
     // The observable the indicator is based on is seen active after the revocation.
     await wait(10);
     await updateAttribute(testContext, ADMIN_USER, observable.id, ENTITY_IPV4_ADDR, [{ key: 'x_opencti_score', value: [90] }]);
@@ -678,7 +686,54 @@ describe('Knowledge curation actions', () => {
     await queryAsAdminWithSuccess({ query: ACCEPT_MUTATION, variables: { id } });
     const reactivated = await storeLoadById(testContext, ADMIN_USER, indicator.id, ENTITY_TYPE_INDICATOR) as unknown as Record<string, any>;
     expect(reactivated.revoked).toBe(false);
+    // Reactivated as an edit of the Indicator does: its decay restarts from its base score, so the decay manager does not
+    // revoke it again at its next run.
+    expect(reactivated.x_opencti_score).toBe(created.decay_base_score);
+    expect(new Date(reactivated.decay_base_score_date).getTime()).toBeGreaterThan(new Date(revoked.decay_base_score_date).getTime());
     expect(new Date(reactivated.valid_until).getTime()).toBeGreaterThan(Date.now());
+    // The revert puts the Indicator back as it was, decay state included.
+    await queryAsAdminWithSuccess({ query: REVERT_MUTATION, variables: { id } });
+    const restored = await storeLoadById(testContext, ADMIN_USER, indicator.id, ENTITY_TYPE_INDICATOR) as unknown as Record<string, any>;
+    expect(restored.revoked).toBe(true);
+    expect(restored.x_opencti_score).toBe(revokeScore);
+    expect(restored.decay_base_score_date).toBe(revoked.decay_base_score_date);
+    expect(restored.valid_until).toBe(revoked.valid_until);
+  });
+
+  it('should revoke a decayed indicator as an edit of the indicator does, and restore it on revert', async () => {
+    const indicator = track(await addIndicator(testContext, ADMIN_USER, {
+      name: `${PREFIX} decayed indicator`,
+      pattern: "[ipv4-addr:value = '198.51.100.79']",
+      pattern_type: 'stix',
+      x_opencti_main_observable_type: 'IPv4-Addr',
+    } as any), ENTITY_TYPE_INDICATOR) as unknown as BasicStoreEntity;
+    const created = await storeLoadById(testContext, ADMIN_USER, indicator.id, ENTITY_TYPE_INDICATOR) as unknown as Record<string, any>;
+    const revokeScore = created.decay_applied_rule?.decay_revoke_score;
+    expect(revokeScore).toBeTypeOf('number');
+    // Decayed to its revoke score but not revoked yet.
+    await updateAttribute(testContext, ADMIN_USER, indicator.id, ENTITY_TYPE_INDICATOR, [{ key: 'x_opencti_score', value: [revokeScore] }]);
+    const decayed = await storeLoadById(testContext, ADMIN_USER, indicator.id, ENTITY_TYPE_INDICATOR) as unknown as Record<string, any>;
+    const id = await createProposal({
+      kind: PROPOSAL_KIND_STALE,
+      detector: DETECTOR_STALENESS,
+      subjects: [{ id: indicator.id, entity_type: ENTITY_TYPE_INDICATOR, name: indicator.name }],
+      target_id: indicator.id,
+      recommended_action: ACTION_REVOKE,
+      action_payload: { element_id: indicator.id },
+      evidence: evidenceFor('decayed_indicator', 'The decayed score of the indicator fell to its revoke score'),
+      confidence: 0.6,
+    });
+    await queryAsAdminWithSuccess({ query: ACCEPT_MUTATION, variables: { id } });
+    const revoked = await storeLoadById(testContext, ADMIN_USER, indicator.id, ENTITY_TYPE_INDICATOR) as unknown as Record<string, any>;
+    expect(revoked.revoked).toBe(true);
+    expect(revoked.x_opencti_detection).toBe(false);
+    expect(new Date(revoked.valid_until).getTime()).toBeLessThanOrEqual(Date.now());
+    expect(revoked.decay_history.length).toBe((decayed.decay_history ?? []).length + 1);
+    await queryAsAdminWithSuccess({ query: REVERT_MUTATION, variables: { id } });
+    const restored = await storeLoadById(testContext, ADMIN_USER, indicator.id, ENTITY_TYPE_INDICATOR) as unknown as Record<string, any>;
+    expect(restored.revoked).toBe(false);
+    expect(restored.x_opencti_detection).toBe(decayed.x_opencti_detection);
+    expect(restored.valid_until).toBe(decayed.valid_until);
   });
 
   it('should not reactivate an indicator that is not revoked any more', async () => {
