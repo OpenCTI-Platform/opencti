@@ -242,7 +242,7 @@ export const PLAYBOOK_MATCHING_COMPONENT: PlaybookComponent<MatchConfiguration> 
   executor: async ({ playbookNode, dataInstanceId, bundle, event }) => {
     const context = executionContext('playbook_components');
     const { filters, all } = playbookNode.configuration;
-    const jsonFilters = JSON.parse(filters);
+    const jsonFilters = filters ? JSON.parse(filters) : undefined; // no filters: everything matches
     const eventContext = buildPlaybookEventContext(event);
     // Checking on all bundle elements
     if (all) {
@@ -286,7 +286,7 @@ export const PLAYBOOK_REDUCING_COMPONENT: PlaybookComponent<ReduceConfiguration>
     const context = executionContext('playbook_components');
     const baseData = extractBundleBaseElement(dataInstanceId, bundle);
     const { filters } = playbookNode.configuration;
-    const jsonFilters = JSON.parse(filters);
+    const jsonFilters = filters ? JSON.parse(filters) : undefined; // no filters: everything matches
     const eventContext = buildPlaybookEventContext(event);
     const matchedElements = [];
     for (let index = 0; index < bundle.objects.length; index += 1) {
