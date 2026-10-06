@@ -67,7 +67,7 @@ const SourcesOverlapMatrix = ({ queryRef }: SourcesOverlapMatrixProps) => {
     dataLabels: { enabled: sources.length <= 12, style: { fontSize: '10px' }, formatter: (value) => (value === null ? '' : `${value}`) },
     stroke: { colors: [theme.palette.background.paper], width: 1 },
     legend: { show: false },
-    xaxis: { labels: { rotate: -45, trim: true, maxHeight: 120 }, tooltip: { enabled: false } },
+    xaxis: { labels: { rotate: -45, trim: true, maxHeight: 180 }, tooltip: { enabled: false } },
     yaxis: { labels: { maxWidth: 180 } },
     tooltip: {
       theme: theme.palette.mode,
