@@ -158,7 +158,7 @@ Derived events follow the knowledge of the case: they can be pinned, hidden and 
 
 ### Milestones
 
-Use **Add an event** to record a milestone, what the knowledge cannot tell: "containment", "regulator notified", "recovery completed". A milestone has a title, a time, an optional end time, a precision, a lane, a kind (Milestone, Containment, Eradication, Recovery or Notification), a description and markings, and can be pinned at creation. A **Containment** milestone records the containment anchor.
+Use **Add an event** to record a milestone, what the knowledge cannot tell: "containment", "regulator notified", "recovery completed". A milestone has a title, a time, an optional end time, a precision, a lane, a kind, a description and markings, and can be pinned at creation. The kind list starts with the milestone kinds (Milestone, Containment, Eradication, Recovery, Notification), followed by every other event kind of the timeline, so that something the knowledge of the case does not hold yet (a sighting, a technique) can be recorded by hand. A **Containment** milestone records the containment anchor.
 
 Milestones can be edited and deleted by the users who can update the case.
 
