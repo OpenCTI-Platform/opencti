@@ -450,6 +450,15 @@ describe('Provenance: every fact knows who said it', () => {
     // Counted for any user with knowledge access, without the customization capability that lists the rules
     const involved = await queryAsUserWithSuccess(USER_EDITOR, { query: KNOWLEDGE_DECAY_RULES_INVOLVED });
     expect(involved.data?.knowledgeDecayRulesInvolvedCount).toBeGreaterThanOrEqual(1);
+    // A type no longer tracked leaves the Stale knowledge lists: the flags it keeps are not counted either
+    const ruleStaleCount = async () => (await queryAsAdminWithSuccess({ query: DECAY_RULE, variables: { id: ruleId } })).data?.decayRule.staleElementsCount;
+    await setRelationshipTracking(['uses'], false);
+    try {
+      expect(await ruleStaleCount()).toEqual(0);
+    } finally {
+      await setRelationshipTracking(['uses'], true);
+    }
+    expect(await ruleStaleCount()).toEqual(1);
     // A longer delay makes the knowledge fresh again under the new configuration
     await queryAsAdminWithSuccess({ query: DECAY_RULE_PATCH, variables: { id: ruleId, input: [{ key: 'stale_after_days', value: ['90'] }] } });
     expect((await loadRelation(usesId)).freshness_stale).toEqual(false);

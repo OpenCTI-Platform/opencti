@@ -24,6 +24,7 @@ import { ENTITY_TYPE_INDICATOR } from '../indicator/indicator-types';
 import { checkFiltersValidity } from '../../utils/filtering/filtering-utils';
 import { addKnowledgeDecayRuleCreationCount } from '../../manager/telemetryManager';
 import { ATTRIBUTE_FRESHNESS_RULE_ID, ATTRIBUTE_FRESHNESS_STALE } from '../provenance/provenance-types';
+import { listProvenanceTrackedTypes } from '../provenance/provenance-tracking';
 import {
   type BasicStoreEntityDecayRule,
   DECAY_RULE_SCOPE_ENTITY,
@@ -280,6 +281,8 @@ export const clearFreshnessFlagsOfElements = async (ids: string[]) => {
 
 /**
  * Number of elements flagged as stale by each rule, counted in a single aggregation for a page of rules.
+ * Only the types whose provenance is tracked count, as in the Stale knowledge lists: a type no longer tracked keeps
+ * the flags it received, but its elements are left out of the lists.
  */
 // One bucket per rule: the rules are counted by groups that fit in the bucket limit of an aggregation
 const STALE_COUNT_RULES_PER_AGGREGATION = 100;
@@ -287,10 +290,12 @@ const STALE_COUNT_RULES_PER_AGGREGATION = 100;
 export const batchStaleElementsCounts = async (context: AuthContext, user: AuthUser, decayRules: BasicStoreEntityDecayRule[]) => {
   const knowledgeRuleIds = decayRules.filter((rule) => isKnowledgeDecayRule(rule)).map((rule) => rule.id);
   const countsByRule = new Map<string, number>();
-  for (let start = 0; start < knowledgeRuleIds.length; start += STALE_COUNT_RULES_PER_AGGREGATION) {
+  const trackedTypes = knowledgeRuleIds.length > 0 ? await listProvenanceTrackedTypes(context) : [];
+  for (let start = 0; trackedTypes.length > 0 && start < knowledgeRuleIds.length; start += STALE_COUNT_RULES_PER_AGGREGATION) {
     const buckets = await elAggregationCount(context, user, KNOWLEDGE_FRESHNESS_INDICES, {
       field: ATTRIBUTE_FRESHNESS_RULE_ID,
       normalizeLabel: false,
+      types: trackedTypes,
       filters: {
         mode: FilterMode.And,
         filters: [
