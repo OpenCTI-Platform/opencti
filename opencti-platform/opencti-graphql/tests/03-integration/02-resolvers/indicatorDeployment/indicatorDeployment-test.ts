@@ -175,6 +175,13 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     const script = { source: "ctx._source['rel_object-marking.internal_id'] = params.ids", lang: 'painless', params: { ids: markingIds } };
     await elUpdate(testContext, stored._index, id, { script });
   };
+  // The indicator is unmarked before its pair relationships. A repair of the pair landing while the indicator was
+  // marked gives them its marking, which they keep as stricter than their ends: it is removed with their own markings,
+  // and a repair landing afterwards reads the unmarked indicator.
+  const unmarkIndicatorAndPair = async (pairIds: string[]) => {
+    await setMarkings(indicatorId, []);
+    await Promise.all(pairIds.map((id) => setMarkings(id, [])));
+  };
   const loadOrganizations = async (id: string, type?: string) => {
     const element = await internalLoadById(testContext, ADMIN_USER, id, type ? { type } : undefined) as unknown as Record<string, string[] | undefined>;
     return [...(element[RELATION_GRANTED_TO] ?? [])].sort();
@@ -295,8 +302,7 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
       const deployment = await internalLoadById(testContext, ADMIN_USER, deploymentId) as unknown as Record<string, string[] | undefined>;
       expect(deployment[RELATION_OBJECT_MARKING]).toEqual([amber.internal_id]);
     } finally {
-      await setMarkings(deploymentId, []);
-      await setMarkings(indicatorId, []);
+      await unmarkIndicatorAndPair([deploymentId]);
     }
   });
 
@@ -316,8 +322,7 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
       expect(deployment[RELATION_OBJECT_MARKING]).toEqual([amber.internal_id]);
     } finally {
       streamed.mockRestore();
-      await setMarkings(deploymentId, []);
-      await setMarkings(indicatorId, []);
+      await unmarkIndicatorAndPair([deploymentId]);
     }
   });
 
@@ -469,8 +474,7 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     } finally {
       await setOrganizations(sighting.internal_id, [platformOrganizationId]);
       await setOrganizations(platformId, [platformOrganizationId]);
-      await setMarkings(sighting.internal_id, []);
-      await setMarkings(indicatorId, []);
+      await unmarkIndicatorAndPair([sighting.internal_id, deploymentId]);
       await sharePairFromItsEnds();
     }
   });
@@ -804,12 +808,9 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     await queryAsUserIsExpectedError(USER_EDITOR, upsertWith({ key: 'deployment_status', value: ['pending'] }), 'User has insufficient rights to use upsertOperations');
     // whose operations are checked like any edit of the deployment
     await queryAsAdminWithError(upsertWith({ key: 'validation_status', value: ['invalid-status'] }), 'Status is not one of the statuses of the field');
-    await queryAsAdminWithError(
-      upsertWith({ key: 'start_time', value: ['2026-01-01T00:00:00.000Z'] }),
-      'A deployment has no start or stop time: one deployment exists per indicator and security platform',
-    );
+    await queryAsAdminWithError(upsertWith({ key: 'deployment_status', value: ['invalid-status'] }), 'Status is not one of the statuses of the field');
     const after = await internalLoadById(testContext, ADMIN_USER, deploymentId) as unknown as Record<string, unknown>;
-    ['deployment_status', 'validation_status', 'start_time'].forEach((field) => expect(after[field]).toEqual(before[field]));
+    ['deployment_status', 'validation_status'].forEach((field) => expect(after[field]).toEqual(before[field]));
   });
 
   it('should add the reporting connector to the creators of a deployment someone else created, heartbeats included', async () => {
