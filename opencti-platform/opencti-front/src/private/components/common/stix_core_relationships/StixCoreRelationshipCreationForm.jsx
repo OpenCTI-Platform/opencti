@@ -101,7 +101,7 @@ export const stixCoreRelationshipBasicShape = (t, isCoverage = false) => {
   if (isCoverage) {
     return {
       ...baseSchema,
-      coverage: Yup.array().of(
+      coverage_information: Yup.array().of(
         Yup.object().shape({
           coverage_name: Yup.string().required(t('This field is required')),
           coverage_score: Yup.number()

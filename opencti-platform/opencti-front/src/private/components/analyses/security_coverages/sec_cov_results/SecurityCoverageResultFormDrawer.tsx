@@ -74,7 +74,10 @@ const SecurityCoverageResultFormDrawer = ({
     };
   };
 
-  const submit = (formRelsData?: StixCoreRelationshipCreationFormInput) => {
+  const submit = (
+    entities?: SelectedEntities,
+    formRelsData?: StixCoreRelationshipCreationFormInput,
+  ) => {
     if (!formDetails || submitting) {
       return;
     }
@@ -92,27 +95,27 @@ const SecurityCoverageResultFormDrawer = ({
       externalReferences: formRelsData.externalReferences.map((k) => k.value),
     } : undefined;
 
-    const values = {
-      name: formDetails.name,
-      description: formDetails.description,
-      createdBy: formDetails.createdBy?.value,
-      objectMarking: formDetails.objectMarking.map((v) => v.value),
-      objectLabel: formDetails.objectLabel.map((v) => v.value),
-      confidence: parseInt(String(formDetails.confidence), 10),
-      coverage_information: formDetails.coverageInformation,
-      external_uri: formDetails.externalUri,
-      coverage_valid_from: formDetails.validFrom,
-      coverage_valid_to: formDetails.validTo,
-      add_related_entities: selectedEntities || relationshipInput ? {
-        ...selectedEntities,
-        relationships_config: relationshipInput,
-      } : undefined,
-      resultOf: id,
-    };
+    const related_entities = entities || relationshipInput ? {
+      ...(entities ?? {}),
+      relationships_config: relationshipInput,
+    } : undefined;
 
     commitCreation({
       variables: {
-        input: values,
+        input: {
+          name: formDetails.name,
+          description: formDetails.description,
+          createdBy: formDetails.createdBy?.value,
+          objectMarking: formDetails.objectMarking.map((v) => v.value),
+          objectLabel: formDetails.objectLabel.map((v) => v.value),
+          confidence: parseInt(String(formDetails.confidence), 10),
+          coverage_information: formDetails.coverageInformation,
+          external_uri: formDetails.externalUri,
+          coverage_valid_from: formDetails.validFrom,
+          coverage_valid_to: formDetails.validTo,
+          add_related_entities: related_entities,
+          resultOf: id,
+        },
       },
       onCompleted: () => {
         close();
@@ -184,7 +187,9 @@ const SecurityCoverageResultFormDrawer = ({
                 defaultConfidence={formDetails.confidence}
                 defaultCreatedBy={formDetails.createdBy}
                 defaultMarkingDefinitions={formDetails.objectMarking}
-                onSubmit={submit}
+                onSubmit={(relsData: StixCoreRelationshipCreationFormInput) => {
+                  submit(selectedEntities, relsData);
+                }}
                 handleClose={close}
                 handleReverseRelation={undefined}
                 handleResetSelection={undefined}
