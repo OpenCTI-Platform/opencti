@@ -14,6 +14,8 @@ import {
   provenanceSourceKindsDistribution,
   provenanceStatistics,
 } from '../../../../src/modules/provenance/provenance-domain';
+import { batchStaleElementsCounts, countKnowledgeDecayRulesInvolved } from '../../../../src/modules/decayRule/decayRule-knowledge';
+import type { BasicStoreEntityDecayRule } from '../../../../src/modules/decayRule/decayRule-types';
 import { STIX_EXT_OCTI_PROVENANCE } from '../../../../src/types/stix-2-1-extensions';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 
@@ -89,6 +91,14 @@ describe('Provenance disabled', () => {
     expect(elAggregationCount).not.toHaveBeenCalled();
     expect(getEntitiesListFromCache).not.toHaveBeenCalled();
     expect(getEntityFromCache).not.toHaveBeenCalled();
+  });
+
+  it('should count no stale knowledge for the knowledge decay rules without reading the rules nor counting', async () => {
+    const rules = [{ id: 'knowledge-rule', target_scope: 'entity' }, { id: 'indicator-rule', target_scope: 'indicator' }] as unknown as BasicStoreEntityDecayRule[];
+    expect(await batchStaleElementsCounts(context, user, rules)).toEqual([0, 0]);
+    expect(await countKnowledgeDecayRulesInvolved(context, user)).toEqual(0);
+    expect(elAggregationCount).not.toHaveBeenCalled();
+    expect(getEntitiesListFromCache).not.toHaveBeenCalled();
   });
 
   it('should not preserve procedures on uses relationships', async () => {

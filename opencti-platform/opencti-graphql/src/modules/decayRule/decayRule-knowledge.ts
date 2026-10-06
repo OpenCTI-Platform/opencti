@@ -25,6 +25,7 @@ import { checkFiltersValidity } from '../../utils/filtering/filtering-utils';
 import { addKnowledgeDecayRuleCreationCount } from '../../manager/telemetryManager';
 import { ATTRIBUTE_FRESHNESS_RULE_ID, ATTRIBUTE_FRESHNESS_STALE, ATTRIBUTE_FRESHNESS_STALE_AT } from '../provenance/provenance-types';
 import { listProvenanceTrackedTypes } from '../provenance/provenance-tracking';
+import { PROVENANCE_ENABLED } from '../provenance/provenance-config';
 import {
   ATTRIBUTE_FRESHNESS_CONFIGURED_AT,
   type BasicStoreEntityDecayRule,
@@ -320,11 +321,15 @@ export const clearOutdatedFreshnessFlags = async (activeRules: BasicStoreEntityD
  * Number of elements flagged as stale by each rule, counted in a single aggregation for a page of rules.
  * Only the types whose provenance is tracked count, as in the Stale knowledge lists: a type no longer tracked keeps
  * the flags it received, but its elements are left out of the lists.
+ * Disabled provenance counts nothing, like the other provenance statistics, even for the flags set before.
  */
 // One bucket per rule: the rules are counted by groups that fit in the bucket limit of an aggregation
 const STALE_COUNT_RULES_PER_AGGREGATION = 100;
 
 export const batchStaleElementsCounts = async (context: AuthContext, user: AuthUser, decayRules: BasicStoreEntityDecayRule[]) => {
+  if (!PROVENANCE_ENABLED) {
+    return decayRules.map(() => 0);
+  }
   const knowledgeRuleIds = decayRules.filter((rule) => isKnowledgeDecayRule(rule)).map((rule) => rule.id);
   const countsByRule = new Map<string, number>();
   const trackedTypes = knowledgeRuleIds.length > 0 ? await listProvenanceTrackedTypes(context) : [];
@@ -351,6 +356,9 @@ export const batchStaleElementsCounts = async (context: AuthContext, user: AuthU
  * Number of knowledge decay rules, among every rule of the platform, that flag knowledge the user can access.
  */
 export const countKnowledgeDecayRulesInvolved = async (context: AuthContext, user: AuthUser) => {
+  if (!PROVENANCE_ENABLED) {
+    return 0;
+  }
   const rules = await getEntitiesListFromCache<BasicStoreEntityDecayRule>(context, SYSTEM_USER, ENTITY_TYPE_DECAY_RULE);
   const counts = await batchStaleElementsCounts(context, user, rules);
   return counts.filter((count) => count > 0).length;
