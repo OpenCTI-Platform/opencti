@@ -216,6 +216,7 @@ test('Curation proposal from detection to decision', { tag: ['@ce'] }, async ({ 
     await curationPage.gotoHub();
     await expect(curationPage.getInbox()).toBeVisible();
     await expect(page.getByTestId('curation-statistics')).toBeVisible();
+    await expect(curationPage.getInbox().getByText(firstName).first()).toBeVisible();
     await capture(page, testInfo, 'inbox-kpis');
     // The counters of the strip filter the table below.
     await page.getByTestId('curation-stat-needs-decision').click();

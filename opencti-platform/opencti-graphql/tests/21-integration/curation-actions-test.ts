@@ -298,7 +298,8 @@ describe('Knowledge curation actions', () => {
       const existing = await storeLoadById(testContext, ADMIN_USER, id, type);
       if (existing) await deleteElementById(testContext, ADMIN_USER, id, type);
     }
-  });
+    // Every entity and proposal of the suite is deleted one by one: the 10 s hook default is too short on a busy platform.
+  }, 120000);
 
   it('should add the proposed aliases, and remove them again on revert', async () => {
     const target = await createIntrusionSet(`${PREFIX} Alias Target`);
