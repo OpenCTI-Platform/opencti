@@ -416,7 +416,7 @@ export const dispatchQueuedHuntRuns = async (context: AuthContext, budget: HuntT
           if (run.connector_id) {
             deferringConnectors.add(run.connector_id);
           }
-          logApp.error('[OPENCTI-MODULE] Hunt run dispatch failed', { cause: error, runId: run.internal_id, connectorId: run.connector_id });
+          logApp.warn('[OPENCTI-MODULE] Hunt run dispatch failed, its connector is skipped until the next tick', { cause: error, runId: run.internal_id, connectorId: run.connector_id });
         }
         if (!deferred) {
           budget.remaining -= 1;

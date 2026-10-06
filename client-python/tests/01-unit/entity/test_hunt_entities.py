@@ -80,6 +80,11 @@ class TestHunt(TestCase):
         self.assertIn("hunt_ioc_values {", properties)
         self.assertIn("observable_type", properties)
 
+    def test_default_fields_read_the_escalation_of_manual_runs(self):
+        properties = Hunt(_opencti({})).properties
+        self.assertIn("escalation_threshold", properties)
+        self.assertIn("escalate_manual_runs", properties)
+
     def test_create_requires_a_name(self):
         opencti = _opencti({})
         self.assertIsNone(Hunt(opencti).create(hypothesis="h"))
@@ -96,6 +101,7 @@ class TestHunt(TestCase):
                 "hunt_source_kind": "hub",
                 "sigma_rule": "title: t",
                 "escalation_threshold": 5,
+                "escalate_manual_runs": True,
                 "target_refs": ["intrusion-set--1"],
                 "technique_refs": ["attack-pattern--1"],
                 "source_refs": ["indicator--1"],
@@ -107,6 +113,7 @@ class TestHunt(TestCase):
         self.assertEqual(hunt_input["hunt_status"], "draft")
         self.assertEqual(hunt_input["hunt_source_kind"], "hub")
         self.assertEqual(hunt_input["escalation_threshold"], 5)
+        self.assertTrue(hunt_input["escalate_manual_runs"])
         self.assertEqual(hunt_input["huntTargets"], ["intrusion-set--1"])
         self.assertEqual(hunt_input["huntTechniques"], ["attack-pattern--1"])
         self.assertEqual(hunt_input["huntSources"], ["indicator--1"])

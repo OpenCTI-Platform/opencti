@@ -507,7 +507,7 @@ export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntit
       try {
         await dispatchHuntRun(context, run, hunt);
       } catch (error) {
-        logApp.error('[OPENCTI-MODULE] Hunt run dispatch failed, the hunt manager will retry', { cause: error, runId: run.internal_id });
+        logApp.warn('[OPENCTI-MODULE] Hunt run dispatch failed, the hunt manager will retry', { cause: error, runId: run.internal_id });
       }
     }
   }
@@ -1669,11 +1669,21 @@ export const testHuntConnectorConnection = async (context: AuthContext, user: Au
   if (!work) {
     throw FunctionalError('The connection test work cannot be created', { connectorId });
   }
+  const previousCheck = connector.hunt_connection_check ?? null;
   const { element } = await patchAttribute(context, SYSTEM_USER, connector.internal_id, ENTITY_TYPE_CONNECTOR, { hunt_connection_check: check });
-  await pushToConnector(connector.internal_id, {
-    internal: { work_id: work.id, applicant_id: user.id, mode: 'manual', trigger: 'connection_check' },
-    event: { event_type: CONNECTOR_INTERNAL_HUNT, mode: HUNT_CONNECTION_CHECK_MODE, connection_check: { id: check.id } },
-  });
+  try {
+    await pushToConnector(connector.internal_id, {
+      internal: { work_id: work.id, applicant_id: user.id, mode: 'manual', trigger: 'connection_check' },
+      event: { event_type: CONNECTOR_INTERNAL_HUNT, mode: HUNT_CONNECTION_CHECK_MODE, connection_check: { id: check.id } },
+    });
+  } catch (error) {
+    // Nothing was published: the work no connector will ever process is deleted and the previous test result comes
+    // back, so the connector page does not wait for an answer that cannot arrive
+    await deleteWork(context, SYSTEM_USER, work.id)
+      .catch((deleteError: unknown) => logApp.warn('[OPENCTI-MODULE] Hunt connection test work cannot be deleted after a failed dispatch', { cause: deleteError, connectorId, workId: work.id }));
+    await patchAttribute(context, SYSTEM_USER, connector.internal_id, ENTITY_TYPE_CONNECTOR, { hunt_connection_check: previousCheck });
+    throw error;
+  }
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
   await publishUserAction({
     user,

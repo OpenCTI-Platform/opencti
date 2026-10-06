@@ -84,14 +84,17 @@ export const findHuntHitRecords = async (context: AuthContext, huntId: string, s
 };
 
 // A record found again: one more run, the latest run and date, the values merged. A record the run already updated is
-// left as it is, a hit reported twice by the same run counts once
+// left as it is, a hit reported twice by the same run counts once. Late evidence can be older than the last sighting
+// of the hit, so last_seen keeps the later instant (both are ISO-8601 UTC strings of the same format, compared as text)
 const RECORD_UPDATE_SCRIPT = `
   if (ctx._source.last_run_id == params.run_id) { ctx.op = 'noop'; }
   else {
     ctx._source.times_seen = (ctx._source.times_seen == null ? 1 : ctx._source.times_seen) + 1;
-    ctx._source.last_seen = params.seen_at;
+    if (ctx._source.last_seen == null || ctx._source.last_seen.compareTo(params.seen_at) < 0) {
+      ctx._source.last_seen = params.seen_at;
+      ctx._source.updated_at = params.seen_at;
+    }
     ctx._source.last_run_id = params.run_id;
-    ctx._source.updated_at = params.seen_at;
     if (params.ioc_keys.size() > 0) {
       def keys = ctx._source.ioc_keys == null ? new ArrayList() : new ArrayList(ctx._source.ioc_keys);
       for (key in params.ioc_keys) { if (!keys.contains(key)) { keys.add(key); } }
@@ -121,6 +124,7 @@ export const recordHuntHits = async (context: AuthContext, input: HuntHitsRecord
     return { newCount: 0, recurringCount: 0 };
   }
   const lockKey = `${LEDGER_LOCK}_${input.huntId}_${input.securityPlatformId ?? HUNT_PLATFORM_INTERNET}`;
+  const seenAt = new Date(input.seenAt).toISOString();
   return withHuntLock(lockKey, async () => {
     const known = await findHuntHitRecords(context, input.huntId, input.securityPlatformId, keys);
     const { newCount, recurringCount, toWrite } = classifyHuntHits(input.runId, keys, known);
@@ -137,19 +141,19 @@ export const recordHuntHits = async (context: AuthContext, input: HuntHitsRecord
         hunt_id: input.huntId,
         security_platform_id: input.securityPlatformId ?? null,
         hit_key: key,
-        first_seen: input.seenAt,
-        last_seen: input.seenAt,
+        first_seen: seenAt,
+        last_seen: seenAt,
         times_seen: 1,
         first_run_id: input.runId,
         last_run_id: input.runId,
         ioc_keys: iocKeys,
-        created_at: input.seenAt,
-        updated_at: input.seenAt,
+        created_at: seenAt,
+        updated_at: seenAt,
       }), ENTITY_TYPE_HUNT_HIT_RECORD);
       const { _index: _ignored, ...upsert } = await prepareElementForIndexing(element);
       operations.push(
         { update: { _index: INDEX_INTERNAL_OBJECTS, _id: internalId, retry_on_conflict: 5 } },
-        { script: { source: RECORD_UPDATE_SCRIPT, lang: 'painless', params: { run_id: input.runId, seen_at: input.seenAt, ioc_keys: iocKeys } }, upsert },
+        { script: { source: RECORD_UPDATE_SCRIPT, lang: 'painless', params: { run_id: input.runId, seen_at: seenAt, ioc_keys: iocKeys } }, upsert },
       );
     }
     const groups = R.splitEvery(BULK_SIZE * 2, operations);

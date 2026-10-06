@@ -22,6 +22,7 @@ HUNT_FIELDS = [
     "expected_observables",
     "benign_patterns",
     "escalation_threshold",
+    "escalate_manual_runs",
     "hunt_max_results",
 ]
 
@@ -82,6 +83,7 @@ class Hunt:
             expected_observables
             benign_patterns
             escalation_threshold
+            escalate_manual_runs
             hunt_max_results
             last_run_at
             last_run_status
@@ -291,6 +293,8 @@ class Hunt:
         :param expected_observables: (optional) observable types expected in results
         :param benign_patterns: (optional) known benign patterns
         :param escalation_threshold: (optional) hits opening an Incident draft
+        :param escalate_manual_runs: (optional) whether the runs started by hand
+            also open the Incident draft above the threshold (default False)
         :param hunt_max_results: (optional) maximum results per run
         :param huntTargets: (optional) ids of the targeted threats
         :param huntTechniques: (optional) ids or ATT&CK ids of the covered techniques
