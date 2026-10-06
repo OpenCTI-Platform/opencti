@@ -40,6 +40,7 @@ from pycti.utils.opencti_stix2_utils import (
     STIX_CYBER_OBSERVABLE_MAPPING,
     STIX_EXT_OCTI_TIMELINE,
     STIX_META_OBJECTS,
+    SUPPORTED_INTERNAL_OBJECTS,
     TIMELINE_REQUIRED_IDS,
     OpenCTIStix2Utils,
 )
@@ -1553,14 +1554,21 @@ class OpenCTIStix2:
         ``TIMELINE_REQUIRED_IDS_BATCH_SIZE`` ids with every page of each batch,
         instead of one request per element: a timeline can require thousands of
         them. An element is found by any of its ids (internal id, standard id or
-        one of its other STIX ids).
+        one of its other STIX ids). The supported internal objects (users,
+        groups, workspaces...) are not STIX objects and this lookup cannot see
+        them: they are never waited for, the splitter sending them before the
+        container anyway.
 
         :param refs: the STIX ids of the required elements
         :type refs: List[str]
         :return: the ids among ``refs`` that no imported element carries, in order
         :rtype: List[str]
         """
-        required = list(dict.fromkeys(refs))
+        required = [
+            ref
+            for ref in dict.fromkeys(refs)
+            if ref.split("--")[0] not in SUPPORTED_INTERNAL_OBJECTS
+        ]
         found = set()
         for start in range(0, len(required), TIMELINE_REQUIRED_IDS_BATCH_SIZE):
             batch = required[start : start + TIMELINE_REQUIRED_IDS_BATCH_SIZE]

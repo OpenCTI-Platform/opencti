@@ -332,6 +332,21 @@ def test_stix_import_resolves_the_required_elements_in_bulk(local_api_client):
     assert stix2.find_missing_timeline_refs(refs[:2]) == refs[:2]
 
 
+def test_stix_import_never_waits_for_internal_objects(local_api_client):
+    # The lookup only sees STIX objects and relationships: a workspace or a user is never reported missing
+    stix2 = OpenCTIStix2(local_api_client)
+    listing = MagicMock(return_value=[])
+    local_api_client.opencti_stix_object_or_stix_relationship.list = listing
+    internal_refs = [
+        "workspace--3d1c7b52-5a7e-4c1f-9f0e-2b6a8d4c1e90",
+        "user--88ec0c6a-12ce-5e39-b486-354fe4a7084f",
+    ]
+    assert stix2.find_missing_timeline_refs(internal_refs) == []
+    listing.assert_not_called()
+    assert stix2.find_missing_timeline_refs(internal_refs + [NOTE_ID]) == [NOTE_ID]
+    assert listing.call_args.kwargs["filters"]["filters"][0]["values"] == [NOTE_ID]
+
+
 def test_stix_import_tolerates_platforms_without_timelines(local_api_client):
     stix2 = OpenCTIStix2(local_api_client)
     local_api_client.timeline_event.import_extension = MagicMock(
