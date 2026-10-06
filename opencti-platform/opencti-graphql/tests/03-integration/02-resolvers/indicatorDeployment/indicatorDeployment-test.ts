@@ -5,6 +5,7 @@ import { ADMIN_USER, getUserIdByEmail, PLATFORM_ORGANIZATION, TEST_ORGANIZATION,
 import {
   backfillIndicatorDeploymentCounters,
   COUNTER_FIELDS,
+  findDeployedOn,
   flagExpiredDeployments,
   reconcileAllIndicatorDeploymentCounters,
   reconcileDeployedIndicatorCounters,
@@ -392,6 +393,44 @@ describe('Indicator deployment write-back (dissemination assurance)', () => {
     expect(batch.updated).toEqual(1);
     expect(batch.errors.length).toEqual(1);
     expect(batch.errors[0].indicatorId).toEqual('indicator--00000000-0000-4000-8000-000000000000');
+  });
+
+  it('should apply the reports of one indicator in a batch in the batch order, whatever ids name it', async () => {
+    // Neither streamed nor kept: the raw stream counts of the suite are unchanged
+    const streamed = [
+      vi.spyOn(streamHandler, 'storeCreateEntityEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeCreateRelationEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeUpdateEvent').mockResolvedValue(undefined as never),
+      vi.spyOn(streamHandler, 'storeDeleteEvent').mockResolvedValue(undefined as never),
+    ];
+    let orderedId: string | undefined;
+    try {
+      const created = await queryAsAdminWithSuccess({
+        query: INDICATOR_ADD,
+        variables: { input: { name: 'ordered.evil.example', pattern: "[domain-name:value = 'ordered.evil.example']", pattern_type: 'stix', x_opencti_main_observable_type: 'Domain-Name' } },
+      });
+      orderedId = created.data?.indicatorAdd.id as string;
+      const result = await queryAsUserWithSuccess(USER_CONNECTOR, {
+        query: REPORT_DEPLOYMENTS,
+        variables: {
+          platformId,
+          reports: [
+            { indicatorId: orderedId, status: 'deployed', externalId: 'ordered-1' },
+            { indicatorId: created.data?.indicatorAdd.standard_id, status: 'active', externalId: 'ordered-1' },
+            { indicatorId: orderedId, status: 'removed', externalId: 'ordered-1' },
+          ],
+        },
+      });
+      expect(result.data?.indicatorReportDeployments).toMatchObject({ processed: 3, created: 1, updated: 2, errors: [] });
+      const deployment = await findDeployedOn(testContext, ADMIN_USER, orderedId, platformId);
+      expect(deployment?.deployment_status).toEqual('removed');
+      expect(deployment?.removed_at).toBeTruthy();
+    } finally {
+      if (orderedId) {
+        await queryAsAdminWithSuccess({ query: INDICATOR_DELETE, variables: { id: orderedId } });
+      }
+      streamed.forEach((spy) => spy.mockRestore());
+    }
   });
 
   it('should count hits on a stable sighting and ignore replays', async () => {

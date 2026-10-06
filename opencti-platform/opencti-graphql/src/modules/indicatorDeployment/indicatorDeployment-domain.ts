@@ -673,19 +673,37 @@ export const reportIndicatorDeployments = async (
   }
   const platform = await loadSecurityPlatform(context, user, platformId);
   const result: IndicatorDeploymentBatchResult = { processed: 0, created: 0, updated: 0, unchanged: 0, errors: [] };
-  await BluePromise.map(reports, async (input) => {
+  const recordError = (input: IndicatorDeploymentReportInput, error: unknown) => {
+    const message = (error as { message?: string }).message ?? 'Unknown error';
+    result.errors.push({ indicatorId: input.indicatorId, message });
+  };
+  const resolved = await BluePromise.map(reports, async (input) => {
     try {
       const report = toReport(input.status, input.externalId, input.metadata);
       computeDeploymentChange(undefined, report, new Date());
       const indicator = await loadIndicator(context, user, input.indicatorId);
+      return { input, report, indicator };
+    } catch (error) {
+      recordError(input, error);
+      return undefined;
+    }
+  }, { concurrency: BATCH_CONCURRENCY });
+  // The reports of one indicator, whatever ids name it, are applied in the batch order, as separate calls would be
+  const byIndicator = new Map<string, Array<NonNullable<typeof resolved[number]>>>();
+  resolved.forEach((entry) => {
+    if (entry) {
+      byIndicator.set(entry.indicator.internal_id, [...(byIndicator.get(entry.indicator.internal_id) ?? []), entry]);
+    }
+  });
+  await BluePromise.map([...byIndicator.values()], (entries) => BluePromise.mapSeries(entries, async ({ input, report, indicator }) => {
+    try {
       const { outcome } = await applyDeploymentReport(context, user, indicator, platform, report);
       result.processed += 1;
       result[outcome] += 1;
     } catch (error) {
-      const message = (error as { message?: string }).message ?? 'Unknown error';
-      result.errors.push({ indicatorId: input.indicatorId, message });
+      recordError(input, error);
     }
-  }, { concurrency: BATCH_CONCURRENCY });
+  }), { concurrency: BATCH_CONCURRENCY });
   if (result.processed > 0) {
     await addIndicatorDeploymentReportCount(result.processed);
   }

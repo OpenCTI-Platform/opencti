@@ -260,7 +260,8 @@ each of them. Set them for one node.
 Connectors use the following GraphQL mutations, also available in the Python client (`pycti`):
 
 - `indicatorReportDeployment`: reports the deployment status of one indicator on one platform.
-- `indicatorReportDeployments`: reports the deployment status of a batch of indicators on one platform.
+- `indicatorReportDeployments`: reports the deployment status of a batch of indicators on one platform. The reports
+  of one indicator are applied in the order of the batch, so the last one decides.
 - `indicatorReportHits`: reports the hits of one indicator on one platform; `lastHit`, the time of the most recent
   hit, is required and makes a retried report harmless; the optional `reportId` tells apart distinct reports ending
   at the same time. A `lastHit` more than 5 minutes ahead of the platform clock is refused: it would make every
