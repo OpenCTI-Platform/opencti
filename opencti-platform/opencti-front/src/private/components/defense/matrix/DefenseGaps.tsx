@@ -239,21 +239,26 @@ const DefenseGaps = () => {
             </Typography>
           )}
         </Stack>
-        <Stack direction="row" spacing={1} sx={{ marginLeft: 'auto' }}>
-          <Button
-            variant="secondary"
-            startIcon={<FileDownloadOutlined fontSize="small" />}
-            onClick={handleExport}
-            disabled={exporting}
-            data-testid="defense-gaps-export"
-          >
-            {t_i18n('Export CSV')}
-          </Button>
-        </Stack>
       </Box>
       {gapsQueryRef && (
         <Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <DefenseGapsLines queryRef={gapsQueryRef} scope={scope} onlyUsedByThreats={usedByThreatsFilter} onTotalChange={setTotal} />
+          <DefenseGapsLines
+            queryRef={gapsQueryRef}
+            scope={scope}
+            onlyUsedByThreats={usedByThreatsFilter}
+            onTotalChange={setTotal}
+            actions={(
+              <Button
+                variant="secondary"
+                startIcon={<FileDownloadOutlined fontSize="small" />}
+                onClick={handleExport}
+                disabled={exporting}
+                data-testid="defense-gaps-export"
+              >
+                {t_i18n('Export CSV')}
+              </Button>
+            )}
+          />
         </Suspense>
       )}
     </Stack>

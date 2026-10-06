@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { ReactNode, useEffect, useMemo, useState } from 'react';
 import { graphql, PreloadedQuery, usePaginationFragment, usePreloadedQuery } from 'react-relay';
 import { Link } from 'react-router';
 import { Box, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
@@ -121,9 +121,11 @@ interface DefenseGapsLinesProps {
   // The backlog only lists the techniques used by the threats of the scope
   onlyUsedByThreats?: boolean;
   onTotalChange?: (total: number) => void;
+  /** List actions rendered before the validation button, on the row of the count */
+  actions?: ReactNode;
 }
 
-const DefenseGapsLines = ({ queryRef, scope, onlyUsedByThreats = false, onTotalChange }: DefenseGapsLinesProps) => {
+const DefenseGapsLines = ({ queryRef, scope, onlyUsedByThreats = false, onTotalChange, actions }: DefenseGapsLinesProps) => {
   const { t_i18n, fldt, rd } = useFormatter();
   const theme = useTheme<Theme>();
   const queryData = usePreloadedQuery(defenseGapsLinesQuery, queryRef);
@@ -168,18 +170,21 @@ const DefenseGapsLines = ({ queryRef, scope, onlyUsedByThreats = false, onTotalC
         </span>
       )}
       action={(
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <Button
-            disabled={selectedTechniques.length === 0 || overValidationLimit}
-            onClick={() => setValidating(true)}
-            aria-describedby={overValidationLimit ? 'defense-gaps-validate-limit' : undefined}
-            data-testid="defense-gaps-validate"
-          >
-            {selectedTechniques.length === 0
-              ? t_i18n('Select gaps to validate')
-              : t_i18n('{count, plural, one {Validate # technique} other {Validate # techniques}}', { values: { count: selectedTechniques.length } })}
-          </Button>
-        </Security>
+        <Stack direction="row" spacing={1} alignItems="center">
+          {actions}
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <Button
+              disabled={selectedTechniques.length === 0 || overValidationLimit}
+              onClick={() => setValidating(true)}
+              aria-describedby={overValidationLimit ? 'defense-gaps-validate-limit' : undefined}
+              data-testid="defense-gaps-validate"
+            >
+              {selectedTechniques.length === 0
+                ? t_i18n('Select gaps to validate')
+                : t_i18n('{count, plural, one {Validate # technique} other {Validate # techniques}}', { values: { count: selectedTechniques.length } })}
+            </Button>
+          </Security>
+        </Stack>
       )}
     >
       {overValidationLimit && (
