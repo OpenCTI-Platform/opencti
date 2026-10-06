@@ -226,6 +226,13 @@ describe('Connector catalog identity - resolution order', () => {
 
   it('should never identify a built-in connector', () => {
     expect(resolveConnectorCatalogIdentity({ ...baseConnector, name: 'MITRE ATT&CK', built_in: true }, index)).toBeNull();
+    // Not even with a contract left over from an earlier deployment.
+    const withContract = {
+      ...baseConnector,
+      built_in: true,
+      manager_contract: { slug: 'mitre-atlas', title: 'MITRE ATLAS', logo_uri: '/logo/atlas.png', connector_type: 'EXTERNAL_IMPORT', short_description: '' } as never,
+    };
+    expect(resolveConnectorCatalogIdentity(withContract, index)).toBeNull();
   });
 
   it('should prefer the entry chosen by hand to the reported slug and the name', () => {

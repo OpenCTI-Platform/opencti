@@ -180,14 +180,18 @@ const toIdentity = (contract: CatalogIdentityContract, source: ConnectorCatalogI
 });
 
 export const resolveConnectorCatalogIdentity = (connector: IdentityConnector, index: CatalogIdentityIndex): ConnectorCatalogIdentity | null => {
+  // Built-in connectors (platform internals, feed queues) are not catalog connectors, whatever
+  // contract they may carry.
+  if (connector.built_in) {
+    return null;
+  }
   const managerContract = connector.manager_contract;
   if (managerContract) {
     return toIdentity(managerContract, ConnectorCatalogIdentitySource.Composer);
   }
   // A managed connector (catalog_id) takes its identity from its deployment only, even when its
-  // contract could not be embedded. Built-in connectors (platform internals, feed queues) are not
-  // catalog connectors.
-  if (isManagedConnector(connector) || connector.built_in) {
+  // contract could not be embedded.
+  if (isManagedConnector(connector)) {
     return null;
   }
   const manual = findCatalogContractBySlug(index, connector.catalog_slug_manual);
