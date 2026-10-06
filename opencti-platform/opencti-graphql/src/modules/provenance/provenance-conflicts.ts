@@ -2,7 +2,15 @@ import { createHash } from 'node:crypto';
 import type { AttributeDefinition } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import type { EditInput } from '../../generated/graphql';
-import { type AssertionSource, MAX_CONFLICT_DISPLAY_LENGTH, MAX_CONFLICT_RAW_VALUE_LENGTH, PROVENANCE_SIDE_CHANNEL_FIELDS, type StoreConflictValue } from './provenance-types';
+import {
+  type AssertionSource,
+  ATTRIBUTE_CONFLICTS,
+  MAX_CONFLICT_DISPLAY_LENGTH,
+  MAX_CONFLICT_RAW_VALUE_LENGTH,
+  PROVENANCE_SIDE_CHANNEL_FIELDS,
+  type StoreConflict,
+  type StoreConflictValue,
+} from './provenance-types';
 
 export interface ConflictAddition {
   field: string;
@@ -173,6 +181,56 @@ export const computeUpsertConflicts = async (args: UpsertConflictsArgs) => {
       conflictsRemove.push({ field, value_hash: incomingHash });
     } else {
       conflictsAdd.push({ field, value: buildConflictValue(attribute, incoming, incomingSource, incomingConfidence, at) });
+    }
+  }
+  return { conflictsAdd, conflictsRemove };
+};
+
+export interface MergeConflictsArgs<T extends Record<string, any>> {
+  type: string;
+  target: Record<string, any>;
+  sources: T[];
+  at: string;
+  resolveSourceOwner: (source: T, field: string) => Promise<PreviousValueOwner | null>;
+}
+
+/**
+ * Merging entities keeps the alternatives of every merged element: the conflicts they held and their
+ * values that did not survive. A value equal to the one the merged entity holds is not an alternative:
+ * it is never inherited, and the merged entity stops listing it.
+ */
+export const computeMergeConflicts = async <T extends Record<string, any>>(args: MergeConflictsArgs<T>) => {
+  const { type, target, sources, at, resolveSourceOwner } = args;
+  const attributes = Array.from(schemaAttributesDefinition.getAttributes(type).values()).filter(isConflictTrackedAttribute);
+  const finalValueHashes = new Map<string, string>();
+  attributes.forEach((attribute) => {
+    const value = target[attribute.name];
+    if (!isEmptyConflictValue(value)) {
+      finalValueHashes.set(attribute.name, conflictValueHash(attribute.name, normalizeConflictValue(attribute, value)));
+    }
+  });
+  const isFinalValue = (field: string, valueHash: string) => finalValueHashes.get(field) === valueHash;
+  const conflictsRemove: ConflictRemoval[] = ((target[ATTRIBUTE_CONFLICTS] ?? []) as StoreConflict[])
+    .flatMap((conflict) => (conflict.values ?? [])
+      .filter((value) => isFinalValue(conflict.field, value.value_hash))
+      .map((value) => ({ field: conflict.field, value_hash: value.value_hash })));
+  const conflictsAdd: ConflictAddition[] = sources.flatMap((source) => ((source[ATTRIBUTE_CONFLICTS] ?? []) as StoreConflict[])
+    .flatMap((conflict) => (conflict.values ?? [])
+      .filter((value) => !isFinalValue(conflict.field, value.value_hash))
+      .map((value) => ({ field: conflict.field, value }))));
+  for (let sourceIndex = 0; sourceIndex < sources.length; sourceIndex += 1) {
+    const source = sources[sourceIndex];
+    for (let attributeIndex = 0; attributeIndex < attributes.length; attributeIndex += 1) {
+      const attribute = attributes[attributeIndex];
+      const sourceValue = source[attribute.name];
+      const finalHash = finalValueHashes.get(attribute.name);
+      if (finalHash !== undefined && !isEmptyConflictValue(sourceValue)
+        && conflictValueHash(attribute.name, normalizeConflictValue(attribute, sourceValue)) !== finalHash) {
+        const owner = await resolveSourceOwner(source, attribute.name);
+        if (owner) {
+          conflictsAdd.push({ field: attribute.name, value: buildConflictValue(attribute, sourceValue, owner.source, owner.confidence, at) });
+        }
+      }
     }
   }
   return { conflictsAdd, conflictsRemove };

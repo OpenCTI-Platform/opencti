@@ -4,16 +4,7 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { now } from '../../utils/format';
 import { getEntitySettingFromCache } from '../entitySetting/entitySetting-utils';
 import { logApp } from '../../config/conf';
-import { isNotEmptyField } from '../../database/utils';
-import { schemaAttributesDefinition } from '../../schema/schema-attributes';
-import {
-  buildConflictValue,
-  type ConflictAddition,
-  computeUpsertConflicts,
-  isConflictTrackedAttribute,
-  normalizeConflictValue,
-  type PreviousValueOwner,
-} from './provenance-conflicts';
+import { computeMergeConflicts, computeUpsertConflicts, type PreviousValueOwner } from './provenance-conflicts';
 import {
   buildProcedure,
   computeProcedureUpsert,
@@ -29,11 +20,9 @@ import {
   ATTRIBUTE_ASSERTION_SOURCE_IDS,
   ATTRIBUTE_ASSERTION_SOURCE_KINDS,
   ATTRIBUTE_ASSERTIONS,
-  ATTRIBUTE_CONFLICTS,
   ATTRIBUTE_FRESHNESS_STALE,
   ATTRIBUTE_PROCEDURES,
   type StoreAssertion,
-  type StoreConflict,
   type StoreProcedure,
   type StoreProvenanceFields,
 } from './provenance-types';
@@ -167,25 +156,14 @@ export const mergeProvenanceOnEntitiesMerge = async (
     const sourceIdsAdd: string[] = sources.flatMap((source) => source[ATTRIBUTE_ASSERTION_SOURCE_IDS] ?? []);
     const sourceKindsAdd: string[] = sources.flatMap((source) => source[ATTRIBUTE_ASSERTION_SOURCE_KINDS] ?? []);
     const proceduresAdd: StoreProcedure[] = sources.flatMap((source) => source[ATTRIBUTE_PROCEDURES] ?? []);
-    const conflictsAdd: ConflictAddition[] = sources.flatMap((source) => (source[ATTRIBUTE_CONFLICTS] ?? [])
-      .flatMap((conflict: StoreConflict) => (conflict.values ?? []).map((value) => ({ field: conflict.field, value }))));
-    const attributes = Array.from(schemaAttributesDefinition.getAttributes(target.entity_type).values()).filter(isConflictTrackedAttribute);
-    for (let sourceIndex = 0; sourceIndex < sources.length; sourceIndex += 1) {
-      const source = sources[sourceIndex];
-      for (let attributeIndex = 0; attributeIndex < attributes.length; attributeIndex += 1) {
-        const attribute = attributes[attributeIndex];
-        const sourceValue = source[attribute.name];
-        const targetValue = target[attribute.name];
-        if (isNotEmptyField(sourceValue) && isNotEmptyField(targetValue)
-          && normalizeConflictValue(attribute, sourceValue) !== normalizeConflictValue(attribute, targetValue)) {
-          const owner = await resolveCurrentValueOwner(context, source, attribute.name);
-          if (owner) {
-            conflictsAdd.push({ field: attribute.name, value: buildConflictValue(attribute, sourceValue, owner.source, owner.confidence, at) });
-          }
-        }
-      }
-    }
-    if (assertions.length === 0 && sourceIdsAdd.length === 0 && proceduresAdd.length === 0 && conflictsAdd.length === 0) {
+    const { conflictsAdd, conflictsRemove } = await computeMergeConflicts({
+      type: target.entity_type,
+      target,
+      sources,
+      at,
+      resolveSourceOwner: (source, field) => resolveCurrentValueOwner(context, source, field),
+    });
+    if (assertions.length === 0 && sourceIdsAdd.length === 0 && proceduresAdd.length === 0 && conflictsAdd.length === 0 && conflictsRemove.length === 0) {
       return;
     }
     const inheritedLastAssertedAt = assertions.reduce<string | undefined>((last, assertion) => {
@@ -197,7 +175,7 @@ export const mergeProvenanceOnEntitiesMerge = async (
     const { newConflicts, current } = await writeProvenanceUpdate(
       context,
       target,
-      { assertions, countMode: 'sum', conflictsAdd, proceduresAdd, sourceIdsAdd, sourceKindsAdd, resetFreshness },
+      { assertions, countMode: 'sum', conflictsAdd, conflictsRemove, proceduresAdd, sourceIdsAdd, sourceKindsAdd, resetFreshness },
       { withCurrent: await hasProvenanceTriggers(context) },
     );
     const change = computeProvenanceChange(before, [...sourceIdsAdd, ...assertions.map((assertion) => assertion.source_id)], newConflicts);

@@ -341,14 +341,14 @@ const prepareRules = (rules: BasicStoreEntityDecayRule[], trackedTypes: string[]
   for (let index = 0; index < rules.length; index += 1) {
     const rule = rules[index];
     if (!Number.isInteger(rule.stale_after_days) || (rule.stale_after_days as number) < 1) {
-      logApp.error('[PROVENANCE] Knowledge decay rule skipped, invalid number of days', { rule_id: rule.id });
+      logApp.warn('[PROVENANCE] Knowledge decay rule skipped, invalid number of days', { rule_id: rule.id });
       continue;
     }
     try {
       const types = restrictToTrackedTypes(resolveKnowledgeDecayRuleTypes(rule), trackedTypes);
       prepared.push({ rule, types, filters: parseKnowledgeDecayFilters(rule.decay_filters) });
     } catch (err) {
-      logApp.error('[PROVENANCE] Knowledge decay rule skipped, invalid configuration', { cause: err, rule_id: rule.id });
+      logApp.warn('[PROVENANCE] Knowledge decay rule skipped, invalid configuration', { cause: err, rule_id: rule.id });
     }
   }
   return prepared;

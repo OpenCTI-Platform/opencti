@@ -6,6 +6,7 @@ import { RELATION_USES } from '../../../../src/schema/stixCoreRelationship';
 import { EditOperation } from '../../../../src/generated/graphql';
 import {
   buildConflictValue,
+  computeMergeConflicts,
   computeUpsertConflicts,
   conflictValueHash,
   isConflictTrackedAttribute,
@@ -84,6 +85,47 @@ describe('Provenance conflicts', () => {
     const value = buildConflictValue(description, 'x'.repeat(40000), incomingSource, 10, AT);
     expect(value.value).toBeNull();
     expect(value.display.length).toBeLessThan(600);
+  });
+});
+
+describe('Provenance conflicts of merged entities', () => {
+  const description = schemaAttributesDefinition.getAttribute(ENTITY_TYPE_MALWARE, 'description')!;
+  const alternative = (value: string, source: AssertionSource) => buildConflictValue(description, value, source, 50, AT);
+  const runMerge = (target: Record<string, any>, sources: Record<string, any>[]) => computeMergeConflicts({
+    type: ENTITY_TYPE_MALWARE,
+    target,
+    sources,
+    at: AT,
+    resolveSourceOwner: async () => ({ source: previousSource, confidence: 80 }),
+  });
+
+  it('should inherit the alternatives of the merged elements and their values that did not survive', async () => {
+    const source = { description: 'from A', x_opencti_conflicts: [{ field: 'description', values: [alternative('from C', incomingSource)] }] };
+    const { conflictsAdd, conflictsRemove } = await runMerge({ description: 'kept' }, [source]);
+    expect(conflictsAdd.map(({ field, value }) => [field, value.display, value.source_id])).toEqual([
+      ['description', 'from C', 'connector-b'],
+      ['description', 'from A', 'connector-a'],
+    ]);
+    expect(conflictsRemove).toEqual([]);
+  });
+
+  it('should never inherit an alternative equal to the value of the merged entity', async () => {
+    const source = { description: ' kept ', x_opencti_conflicts: [{ field: 'description', values: [alternative('kept', incomingSource)] }] };
+    const { conflictsAdd, conflictsRemove } = await runMerge({ description: 'kept' }, [source]);
+    expect(conflictsAdd).toEqual([]);
+    expect(conflictsRemove).toEqual([]);
+  });
+
+  it('should stop listing an alternative of the merged entity that became its value', async () => {
+    const target = { description: 'from C', x_opencti_conflicts: [{ field: 'description', values: [alternative('from C', incomingSource), alternative('other', previousSource)] }] };
+    const { conflictsAdd, conflictsRemove } = await runMerge(target, [{ description: 'from C' }]);
+    expect(conflictsAdd).toEqual([]);
+    expect(conflictsRemove).toEqual([{ field: 'description', value_hash: conflictValueHash('description', 'from C') }]);
+  });
+
+  it('should not report a conflict when the merged entity holds no value for the field', async () => {
+    const { conflictsAdd } = await runMerge({ description: '' }, [{ description: 'from A' }]);
+    expect(conflictsAdd).toEqual([]);
   });
 });
 
