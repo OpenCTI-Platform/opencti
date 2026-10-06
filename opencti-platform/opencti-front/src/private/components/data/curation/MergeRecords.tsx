@@ -1,6 +1,7 @@
 import { graphql } from 'react-relay';
 import { useSearchParams } from 'react-router';
 import Box from '@mui/material/Box';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@filigran/design-system';
 import Tag from '@common/tag/Tag';
 import DataTable from '../../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../../components/dataGrid/dataTableTypes';
@@ -102,7 +103,7 @@ interface MergeRecordsProps {
 }
 
 const MergeRecords = ({ entityId }: MergeRecordsProps) => {
-  const { t_i18n, fldt, n } = useFormatter();
+  const { t_i18n, fd, fldt, n } = useFormatter();
   const labels = useCurationLabels();
   const { setTitle } = useConnectedDocumentModifier();
   if (!entityId) setTitle(t_i18n('Merges | Curation | Data'));
@@ -149,11 +150,21 @@ const MergeRecords = ({ entityId }: MergeRecordsProps) => {
     setSearchParams(next);
   };
 
+  // A full date and time does not fit these columns at 1440 px: the tooltip and the merge record give it.
+  const shortDate = (date: string | null | undefined) => (date ? (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span>{fd(date)}</span>
+      </TooltipTrigger>
+      <TooltipContent>{fldt(date)}</TooltipContent>
+    </Tooltip>
+  ) : '-');
+
   const dataColumns: DataTableProps['dataColumns'] = {
     merge_target_name: {
       id: 'merge_target_name',
       label: 'Merged entity',
-      percentWidth: 22,
+      percentWidth: 21,
       isSortable: true,
       render: ({ merge_target_name, merge_target_type }: MergeRecords_record$data) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, overflow: 'hidden' }}>
@@ -165,7 +176,7 @@ const MergeRecords = ({ entityId }: MergeRecordsProps) => {
     merge_source_names: {
       id: 'merge_source_names',
       label: 'Merged sources',
-      percentWidth: 24,
+      percentWidth: 21,
       isSortable: false,
       render: ({ merge_source_names }: MergeRecords_record$data) => (
         <span title={merge_source_names.join(', ')}>{merge_source_names.join(', ')}</span>
@@ -183,30 +194,30 @@ const MergeRecords = ({ entityId }: MergeRecordsProps) => {
     merged_by: {
       id: 'merged_by',
       label: 'Merged by',
-      percentWidth: 12,
+      percentWidth: 11,
       isSortable: false,
       render: ({ mergedBy }: MergeRecords_record$data) => mergedBy?.name ?? '-',
     },
     relationships_redirected_count: {
       id: 'relationships_redirected_count',
       label: 'Relationships redirected',
-      percentWidth: 10,
+      percentWidth: 13,
       isSortable: false,
       render: ({ relationships_redirected_count }: MergeRecords_record$data) => n(relationships_redirected_count),
     },
     reversible_until: {
       id: 'reversible_until',
       label: 'Reversible until',
-      percentWidth: 10,
+      percentWidth: 12,
       isSortable: true,
-      render: ({ reversible_until, is_reversible }: MergeRecords_record$data) => (is_reversible ? fldt(reversible_until) : '-'),
+      render: ({ reversible_until, is_reversible }: MergeRecords_record$data) => (is_reversible ? shortDate(reversible_until) : '-'),
     },
     created_at: {
       id: 'created_at',
       label: 'Merge date',
       percentWidth: 10,
       isSortable: true,
-      render: ({ created_at }: MergeRecords_record$data) => fldt(created_at),
+      render: ({ created_at }: MergeRecords_record$data) => shortDate(created_at),
     },
   };
 

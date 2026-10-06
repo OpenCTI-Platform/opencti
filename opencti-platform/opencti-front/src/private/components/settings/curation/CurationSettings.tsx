@@ -231,7 +231,7 @@ const CurationSettingsForm = ({ settings, setup, authorityAttributes }: Curation
   const missingPrerequisite = missingAdjudicationPrerequisite(setup);
   const adjudicationMissing = () => {
     if (missingPrerequisite === 'enterprise_edition') return t_i18n('Adjudication needs the Enterprise Edition.');
-    if (missingPrerequisite === 'xtm_one') return t_i18n('Adjudication needs XTM One: register this platform with XTM One in its configuration.');
+    if (missingPrerequisite === 'xtm_one') return t_i18n('Adjudication needs a platform registered with XTM One.');
     return null;
   };
 
@@ -352,7 +352,7 @@ const CurationSettingsForm = ({ settings, setup, authorityAttributes }: Curation
     <Formik<SettingsValues> initialValues={initialValues} validationSchema={validation} onSubmit={onSubmit} enableReinitialize>
       {({ submitForm, isSubmitting, values, dirty, setFieldValue }) => (
         <Form data-testid="curation-settings-form">
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, marginBottom: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, marginBottom: 2 }}>
             <Typography variant="body2" sx={{ flex: 1 }} color={theme.palette.text.light}>
               {t_i18n('Last scan: {scan} - last Knowledge health snapshot: {snapshot} - last weekly digest: {digest}', {
                 values: { scan: dateOrNever(settings.last_scan_date), snapshot: dateOrNever(settings.last_snapshot_date), digest: dateOrNever(settings.last_digest_date) },
@@ -373,7 +373,7 @@ const CurationSettingsForm = ({ settings, setup, authorityAttributes }: Curation
                 type="checkbox"
                 name="curation_enabled"
                 label={t_i18n('Enable knowledge curation')}
-                helpertext={t_i18n('Runs the detectors on every change and in a daily scan. Off: no new proposal is raised, the open ones stay in the inbox.')}
+                helpertext={t_i18n('Runs the detectors on every change and in a daily scan. On by default.')}
               />
               <Field
                 component={ComboboxField}
@@ -389,7 +389,7 @@ const CurationSettingsForm = ({ settings, setup, authorityAttributes }: Curation
                 name="curated_entity_types"
                 multiple={true}
                 label={t_i18n('Curated entity types')}
-                helperText={t_i18n('The entity types the detectors examine, for example Intrusion Set. Empty: no entity type is examined, except Indicators by the staleness detector.')}
+                helperText={t_i18n('The entity types the detectors examine. Indicators are always checked for staleness.')}
                 options={knowledgeTypes.map(typeOption)}
                 style={fieldSpacingContainerStyle}
               />
@@ -399,7 +399,7 @@ const CurationSettingsForm = ({ settings, setup, authorityAttributes }: Curation
                 type="number"
                 name="scan_max_entities_per_type"
                 label={t_i18n('Maximum entities scanned per type')}
-                helperText={t_i18n('Entities read per type at each daily scan, from 100 to 100,000 (5,000 by default). Higher: a fuller scan that takes longer.')}
+                helperText={t_i18n('Entities read per type at each daily scan, from 100 to 100,000 (5,000 by default).')}
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
@@ -416,7 +416,7 @@ const CurationSettingsForm = ({ settings, setup, authorityAttributes }: Curation
                 type="number"
                 name="similarity_threshold"
                 label={t_i18n('Name similarity threshold (0.5 to 1)')}
-                helperText={t_i18n('How close two names must be to pair two entities (0.8 by default). Higher: fewer, surer proposals.')}
+                helperText={t_i18n('How close two names must be to pair two entities (0.8 by default).')}
                 fullWidth={true}
               />
               <Field
@@ -433,7 +433,7 @@ const CurationSettingsForm = ({ settings, setup, authorityAttributes }: Curation
                 type="number"
                 name="description_similarity_threshold"
                 label={t_i18n('Description similarity threshold (0.5 to 1)')}
-                helperText={t_i18n('How close two descriptions must be (0.92 by default). Higher: fewer, surer proposals.')}
+                helperText={t_i18n('How close two descriptions must be (0.92 by default).')}
                 disabled={!values.description_similarity_enabled}
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
@@ -444,7 +444,7 @@ const CurationSettingsForm = ({ settings, setup, authorityAttributes }: Curation
                 type="number"
                 name="behavior_threshold"
                 label={t_i18n('Behavior overlap threshold (0.1 to 1)')}
-                helperText={t_i18n('Share of ATT&CK techniques two entities must have in common to be paired (0.6 by default). Higher: fewer, surer proposals.')}
+                helperText={t_i18n('Share of ATT&CK techniques two entities must have in common to be paired (0.6 by default).')}
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
@@ -454,12 +454,12 @@ const CurationSettingsForm = ({ settings, setup, authorityAttributes }: Curation
                 type="number"
                 name="proposal_min_confidence"
                 label={t_i18n('Minimum proposal confidence (0 to 1)')}
-                helperText={t_i18n('Duplicate proposals below this confidence are not raised (0.45 by default). Higher: fewer proposals in the inbox.')}
+                helperText={t_i18n('Duplicate proposals below this confidence are not raised (0.45 by default).')}
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
               <Typography variant="body2" color={theme.palette.text.light} sx={{ marginTop: 2 }}>
-                {t_i18n('The ambiguous band holds the proposals that are neither clearly right nor clearly wrong: the OpenCTI Curator judges them, analysts and policies decide the others.')}
+                {t_i18n('Proposals in the ambiguous band are neither clearly right nor clearly wrong.')}
               </Typography>
               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                 <Field
@@ -499,7 +499,7 @@ const CurationSettingsForm = ({ settings, setup, authorityAttributes }: Curation
                 </Box>
               ) : (
                 <Typography variant="body2" color={theme.palette.text.light} sx={{ marginBottom: 1 }}>
-                  {t_i18n('Proposals in the ambiguous band are sent to the XTM One agent in charge of curation adjudication (the OpenCTI Curator by default).')}
+                  {t_i18n('An XTM One agent judges the ambiguous band, the OpenCTI Curator by default.')}
                 </Typography>
               )}
               <Field
@@ -507,14 +507,14 @@ const CurationSettingsForm = ({ settings, setup, authorityAttributes }: Curation
                 type="checkbox"
                 name="adjudication_enabled"
                 label={t_i18n('Enable adjudication')}
-                helpertext={t_i18n('Sends the proposals of the ambiguous band to the agent, up to 5 per manager cycle within the daily limit. Off by default.')}
+                helpertext={t_i18n('Sends up to 5 proposals of the ambiguous band per manager cycle. Off by default.')}
                 disabled={!isEnterpriseEdition || !settings.adjudication_available}
               />
               <Field
                 component={SelectFieldFds}
                 name="adjudication_agent_slug"
                 label={t_i18n('Agent')}
-                helpertext={t_i18n('The XTM One agent that adjudicates. By default, the highest priority agent bound to curation adjudication: the OpenCTI Curator out of the box.')}
+                helpertext={t_i18n('The XTM One agent that adjudicates (the OpenCTI Curator out of the box).')}
                 fullWidth={true}
                 containerstyle={fieldSpacingContainerStyle}
               >
@@ -524,7 +524,7 @@ const CurationSettingsForm = ({ settings, setup, authorityAttributes }: Curation
               <ObjectMembersField
                 name="adjudication_run_as"
                 label={t_i18n('Run as (optional)')}
-                helpertext={t_i18n('The OpenCTI account XTM One acts as, the platform administrator when empty. The OpenCTI Curator only reads with it: it needs the Access knowledge capability and access to the markings of the knowledge to judge.')}
+                helpertext={t_i18n('The OpenCTI account XTM One acts as (the platform administrator when empty).')}
                 multiple={false}
                 entityTypes={['User']}
                 style={fieldSpacingContainerStyle}
@@ -535,7 +535,7 @@ const CurationSettingsForm = ({ settings, setup, authorityAttributes }: Curation
                 type="number"
                 name="adjudication_daily_limit"
                 label={t_i18n('Daily adjudication limit')}
-                helperText={t_i18n('Proposals sent per UTC day, automatic and manual requests together, from 0 to 10,000 (50 by default). 0 stops adjudication.')}
+                helperText={t_i18n('Proposals sent per UTC day, from 0 to 10,000 (50 by default). 0 stops adjudication.')}
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
@@ -548,7 +548,7 @@ const CurationSettingsForm = ({ settings, setup, authorityAttributes }: Curation
                 type="number"
                 name="stale_default_months"
                 label={t_i18n('Stale after (months, default)')}
-                helperText={t_i18n('Months without activity after which an entity is proposed as stale, from 1 to 240 (24 by default). An override sets another delay for one entity type, for example 12 months for Infrastructure.')}
+                helperText={t_i18n('Months without activity before an entity is proposed as stale, from 1 to 240 (24 by default).')}
                 fullWidth={true}
               />
               <FieldArray name="stale_overrides">
@@ -575,7 +575,7 @@ const CurationSettingsForm = ({ settings, setup, authorityAttributes }: Curation
                 component={SelectFieldFds}
                 name="relationship_conflict_mode"
                 label={t_i18n('Procedures of uses relationships')}
-                helpertext={t_i18n('When sources describe the same uses relationship with different procedures: keep the replaced one in a note, or only detect the conflict.')}
+                helpertext={t_i18n('What to do when sources give different procedures for a uses relationship.')}
                 fullWidth={true}
                 containerstyle={fieldSpacingContainerStyle}
               >
@@ -587,7 +587,7 @@ const CurationSettingsForm = ({ settings, setup, authorityAttributes }: Curation
                 type="number"
                 name="merge_record_retention_days"
                 label={t_i18n('Merges stay reversible for (days)')}
-                helperText={t_i18n('How long a merge can be undone from its merge record, from 1 to 3,650 days (365 by default). After that, the merge is final.')}
+                helperText={t_i18n('How long a merge can be undone from its merge record, from 1 to 3,650 days (365 by default).')}
                 fullWidth={true}
                 style={fieldSpacingContainerStyle}
               />
@@ -599,7 +599,7 @@ const CurationSettingsForm = ({ settings, setup, authorityAttributes }: Curation
                 type="checkbox"
                 name="digest_enabled"
                 label={t_i18n('Send the weekly digest')}
-                helpertext={t_i18n('Sends the latest Knowledge health snapshot as a notification, and an email when SMTP is configured. Off by default.')}
+                helpertext={t_i18n('Sends the latest Knowledge health snapshot to the recipients. Off by default.')}
               />
               <Field
                 component={SelectFieldFds}
@@ -622,14 +622,14 @@ const CurationSettingsForm = ({ settings, setup, authorityAttributes }: Curation
             <Card title={t_i18n('Field authority')}>
               <LearnMore anchor="field-authority" />
               <Typography variant="body2" color={theme.palette.text.light} sx={{ marginBottom: 1 }}>
-                {t_i18n('A merge policy for upserts: on a ruled attribute, a more authoritative source wins and a less authoritative one loses, before the confidence comparison.')}
+                {t_i18n('On a ruled attribute, the more authoritative source wins, whatever the confidence.')}
               </Typography>
               <Field
                 component={SwitchField}
                 type="checkbox"
                 name="field_authority_enabled"
                 label={t_i18n('Enable field authority')}
-                helpertext={t_i18n('Applies the rules below when incoming data updates an existing entity. Off: the confidence comparison decides alone.')}
+                helpertext={t_i18n('Applies the rules below when incoming data updates an existing entity. Off by default.')}
               />
               <FieldArray name="field_authority_rules">
                 {({ push, remove }) => (
