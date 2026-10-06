@@ -89,7 +89,7 @@ With environment variables, set `RELATIONS_DEDUPLICATION__TYPES_OVERRIDES__STIX-
 !!! note "How the window applies"
 
     * A relationship type override replaces the global configuration: a value missing from the override resolves to 0.
-    * The window is compared with the dates of the stored relationship. With a ±30 minutes window, a sighting of a single event is merged only if it is less than 30 minutes away from both the `first_seen` and the `last_seen` of the stored sighting, so a stored sighting always spans less than 30 minutes. It is a sliding window, not a fixed clock grid.
+    * The window is compared with the dates of the stored relationship. With a ±30 minutes window, a sighting of a single event (same `first_seen` and `last_seen`) is merged only if it is less than 30 minutes away from both the `first_seen` and the `last_seen` of the stored sighting. When all incoming sightings are single events, a stored sighting therefore always spans less than 30 minutes. A sighting that already covers a longer period is stored as received: the window does not truncate it. It is a sliding window, not a fixed clock grid.
     * A window of 0 does not disable deduplication: relationships with identical dates share the same standard ID and are still merged.
     * Changing the window does not split or merge relationships already stored.
 
