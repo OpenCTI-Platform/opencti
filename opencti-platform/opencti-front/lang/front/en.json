@@ -1254,7 +1254,7 @@
   "Curation confidence": "Curation confidence",
   "Curation is turned off, so nothing is scheduled.": "Curation is turned off, so nothing is scheduled.",
   "Curation policies": "Curation policies",
-  "Curation policies apply eligible proposals automatically through background tasks, never across markings or organizations. Most applied proposals can be reverted: a merge until its merge record expires; a date fix cannot be reverted.": "Curation policies apply eligible proposals automatically through background tasks, never across markings or organizations. Most applied proposals can be reverted: a merge until its merge record expires; a date fix cannot be reverted.",
+  "Curation policies apply eligible proposals automatically, never across markings or organizations.": "Curation policies apply eligible proposals automatically, never across markings or organizations.",
   "Curation proposal": "Curation proposal",
   "Curation proposal | Curation | Data": "Curation proposal | Curation | Data",
   "Current cache version date": "Current cache version date",

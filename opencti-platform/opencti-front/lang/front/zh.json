@@ -1254,7 +1254,7 @@
   "Curation confidence": "治理置信度",
   "Curation is turned off, so nothing is scheduled.": "整理功能已关闭，因此没有任何计划。",
   "Curation policies": "治理策略",
-  "Curation policies apply eligible proposals automatically through background tasks, never across markings or organizations. Most applied proposals can be reverted: a merge until its merge record expires; a date fix cannot be reverted.": "整理策略通过后台任务自动应用符合条件的提案，绝不跨越标记或组织。大多数已应用的提案都可以撤销：合并在其合并记录过期前可以撤销；日期修正无法撤销。",
+  "Curation policies apply eligible proposals automatically, never across markings or organizations.": "整理策略自动应用符合条件的提案，绝不跨越标记或组织。",
   "Curation proposal": "治理提议",
   "Curation proposal | Curation | Data": "治理提议 | 治理 | 数据",
   "Current cache version date": "当前缓存版本日期",

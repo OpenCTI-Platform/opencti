@@ -1254,7 +1254,7 @@
   "Curation confidence": "큐레이션 신뢰도",
   "Curation is turned off, so nothing is scheduled.": "큐레이션이 꺼져 있어 예약된 작업이 없습니다.",
   "Curation policies": "큐레이션 정책",
-  "Curation policies apply eligible proposals automatically through background tasks, never across markings or organizations. Most applied proposals can be reverted: a merge until its merge record expires; a date fix cannot be reverted.": "큐레이션 정책은 적격 제안을 백그라운드 작업으로 자동 적용하며, 마킹이나 조직의 경계를 넘지 않습니다. 적용된 제안은 대부분 되돌릴 수 있습니다. 병합은 병합 기록이 만료될 때까지 되돌릴 수 있지만, 날짜 수정은 되돌릴 수 없습니다.",
+  "Curation policies apply eligible proposals automatically, never across markings or organizations.": "큐레이션 정책은 적격 제안을 자동 적용하며, 마킹이나 조직의 경계를 넘지 않습니다.",
   "Curation proposal": "큐레이션 제안",
   "Curation proposal | Curation | Data": "큐레이션 제안 | 큐레이션 | 데이터",
   "Current cache version date": "현재 캐시 버전 날짜",

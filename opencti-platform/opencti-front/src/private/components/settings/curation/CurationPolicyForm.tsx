@@ -13,11 +13,9 @@ import SelectFieldFds, { SelectItem } from '../../../../components/fields/Select
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { MESSAGING$ } from '../../../../relay/environment';
-import useCurationLabels, { CURATION_PROPOSAL_KINDS, CURATION_SOURCE_CLASSES, notifyPayloadErrors } from '../../data/curation/curationUtils';
+import useCurationLabels, { CURATION_POLICIES_DOCUMENTATION_URL, CURATION_PROPOSAL_KINDS, CURATION_SOURCE_CLASSES, notifyPayloadErrors } from '../../data/curation/curationUtils';
 import { CurationPolicyFormAddMutation } from './__generated__/CurationPolicyFormAddMutation.graphql';
 import { CurationPolicyFormEditMutation } from './__generated__/CurationPolicyFormEditMutation.graphql';
-
-const CURATION_POLICIES_DOCUMENTATION = 'https://docs.opencti.io/latest/usage/knowledge-curation/#curation-policies-and-auto-apply';
 
 const policyAddMutation = graphql`
   mutation CurationPolicyFormAddMutation($input: CurationPolicyAddInput!) {
@@ -172,7 +170,7 @@ const CurationPolicyForm = ({ open, onClose, onSaved, policy, curatedEntityTypes
         {({ submitForm, isSubmitting }) => (
           <Form data-testid="curation-policy-form">
             <div className="flex justify-end mb-2">
-              <Button variant="tertiary" size="small" href={CURATION_POLICIES_DOCUMENTATION} target="_blank" rel="noreferrer">
+              <Button variant="tertiary" size="small" href={CURATION_POLICIES_DOCUMENTATION_URL} target="_blank" rel="noreferrer">
                 {t_i18n('Learn more about curation policies')}
               </Button>
             </div>

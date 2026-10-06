@@ -1254,7 +1254,7 @@
   "Curation confidence": "キュレーションの信頼度",
   "Curation is turned off, so nothing is scheduled.": "キュレーションがオフのため、予定はありません。",
   "Curation policies": "キュレーションポリシー",
-  "Curation policies apply eligible proposals automatically through background tasks, never across markings or organizations. Most applied proposals can be reverted: a merge until its merge record expires; a date fix cannot be reverted.": "キュレーションポリシーは、対象となる提案をバックグラウンドタスクで自動的に適用し、マーキングや組織の境界を越えることはありません。適用された提案の多くは元に戻せます。マージはマージ記録の有効期限まで元に戻せますが、日付の修正は元に戻せません。",
+  "Curation policies apply eligible proposals automatically, never across markings or organizations.": "キュレーションポリシーは、対象となる提案を自動的に適用し、マーキングや組織の境界を越えることはありません。",
   "Curation proposal": "キュレーション提案",
   "Curation proposal | Curation | Data": "キュレーション提案 | キュレーション | データ",
   "Current cache version date": "現在のキャッシュバージョン",

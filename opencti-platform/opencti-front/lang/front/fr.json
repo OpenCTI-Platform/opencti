@@ -1254,7 +1254,7 @@
   "Curation confidence": "Confiance de curation",
   "Curation is turned off, so nothing is scheduled.": "La curation est désactivée : rien n'est planifié.",
   "Curation policies": "Politiques de curation",
-  "Curation policies apply eligible proposals automatically through background tasks, never across markings or organizations. Most applied proposals can be reverted: a merge until its merge record expires; a date fix cannot be reverted.": "Les politiques de curation appliquent automatiquement les propositions éligibles via des tâches en arrière-plan, jamais entre marquages ou organisations différents. La plupart des propositions appliquées peuvent être annulées : une fusion jusqu'à l'expiration de son enregistrement de fusion ; une correction de dates ne peut pas être annulée.",
+  "Curation policies apply eligible proposals automatically, never across markings or organizations.": "Les politiques de curation appliquent automatiquement les propositions éligibles, jamais entre marquages ou organisations différents.",
   "Curation proposal": "Proposition de curation",
   "Curation proposal | Curation | Data": "Proposition de curation | Curation | Données",
   "Current cache version date": "Date de la version actuelle du cache",

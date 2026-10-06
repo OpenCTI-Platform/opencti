@@ -1254,7 +1254,7 @@
   "Curation confidence": "Уверенность курирования",
   "Curation is turned off, so nothing is scheduled.": "Курирование отключено, поэтому ничего не запланировано.",
   "Curation policies": "Политики курирования",
-  "Curation policies apply eligible proposals automatically through background tasks, never across markings or organizations. Most applied proposals can be reverted: a merge until its merge record expires; a date fix cannot be reverted.": "Политики курирования автоматически применяют подходящие предложения с помощью фоновых задач, никогда не выходя за пределы маркировок или организаций. Большинство применённых предложений можно отменить: слияние — до истечения срока его записи о слиянии; исправление дат отменить нельзя.",
+  "Curation policies apply eligible proposals automatically, never across markings or organizations.": "Политики курирования автоматически применяют подходящие предложения, никогда не выходя за пределы маркировок или организаций.",
   "Curation proposal": "Предложение курирования",
   "Curation proposal | Curation | Data": "Предложение курирования | Курирование | Данные",
   "Current cache version date": "Дата текущей версии кэша",

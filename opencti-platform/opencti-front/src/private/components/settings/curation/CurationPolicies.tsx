@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { graphql, useLazyLoadQuery } from 'react-relay';
+import { Link } from 'react-router';
 import Box from '@mui/material/Box';
 import DialogActions from '@mui/material/DialogActions';
 import Typography from '@mui/material/Typography';
@@ -22,7 +23,7 @@ import { useQueryLoadingWithLoadQuery } from '../../../../utils/hooks/useQueryLo
 import { MESSAGING$ } from '../../../../relay/environment';
 import CurationPolicyDryRun from './CurationPolicyDryRun';
 import CurationPolicyForm, { CurationPolicyFormData } from './CurationPolicyForm';
-import useCurationLabels, { formatPercent, notifyPayloadErrors } from '../../data/curation/curationUtils';
+import useCurationLabels, { CURATION_POLICIES_DOCUMENTATION_URL, formatPercent, notifyPayloadErrors } from '../../data/curation/curationUtils';
 import { CurationPoliciesListQuery, CurationPoliciesListQuery$variables } from './__generated__/CurationPoliciesListQuery.graphql';
 import { CurationPolicies_policies$data } from './__generated__/CurationPolicies_policies.graphql';
 import { CurationPolicies_policy$data } from './__generated__/CurationPolicies_policy.graphql';
@@ -236,7 +237,11 @@ const CurationPoliciesComponent = () => {
     <>
       <Box sx={{ display: 'flex', alignItems: 'center', marginBottom: 2 }}>
         <Typography variant="body2" sx={{ flex: 1 }}>
-          {t_i18n('Curation policies apply eligible proposals automatically through background tasks, never across markings or organizations. Most applied proposals can be reverted: a merge until its merge record expires; a date fix cannot be reverted.')}
+          {t_i18n('Curation policies apply eligible proposals automatically, never across markings or organizations.')}
+          {' '}
+          <Link to={CURATION_POLICIES_DOCUMENTATION_URL} target="_blank" rel="noopener noreferrer">
+            {t_i18n('Learn more')}
+          </Link>
         </Typography>
         {isGrantedToSettings && (
           <Button

@@ -14,6 +14,7 @@ export const CURATION_MERGES_PATH = '/dashboard/data/curation/merges';
 export const CURATION_HEALTH_PATH = '/dashboard/data/curation/health';
 export const CURATION_SETTINGS_PATH = '/dashboard/settings/customization/curation/settings';
 export const CURATION_DOCUMENTATION_URL = 'https://docs.opencti.io/latest/usage/knowledge-curation/';
+export const CURATION_POLICIES_DOCUMENTATION_URL = `${CURATION_DOCUMENTATION_URL}#curation-policies-and-auto-apply`;
 
 /** Actions that move data and therefore need the merge capability, mirroring the backend can_apply rule. */
 export const CURATION_MERGE_ACTIONS = ['merge', 'unmerge'];
