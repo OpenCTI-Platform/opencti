@@ -116,6 +116,18 @@ describe('Report of a failed hunt run', () => {
     expect(finalState().next_retry_at).toBeUndefined();
   });
 
+  it('should accept the same terminal report sent again once the run is finalized, and refuse another outcome', async () => {
+    const finalized = { ...running, hunt_run_status: 'completed', hits_count: 4, verdict: 'pending', verdict_source: 'auto', completed_at: '2026-10-07T21:00:00.000Z' };
+    vi.mocked(storeLoadById).mockResolvedValue(finalized as never);
+    vi.mocked(updateHuntRunInformation).mockClear();
+    const again = await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'completed', hits_count: 4 } as never);
+    expect(again).toMatchObject({ hunt_run_status: 'completed', hits_count: 4, verdict_source: 'auto' });
+    expect(patchAttribute).not.toHaveBeenCalled();
+    expect(updateHuntRunInformation).not.toHaveBeenCalled();
+    await expect(reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'failed', error: 'HuntExecutionError: HTTP 503' } as never))
+      .rejects.toThrow('The hunt run is already terminated');
+  });
+
   it('should still retry a transient failure, inconclusive until its retry', async () => {
     await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'failed', error: 'HuntExecutionError: HTTP 503 service unavailable' } as never);
     const state = finalState();

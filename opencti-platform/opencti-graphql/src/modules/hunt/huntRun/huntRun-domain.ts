@@ -1300,6 +1300,11 @@ const applyHuntRunReport = async (context: AuthContext, run: BasicStoreEntityHun
       throw FunctionalError(`The hunt run was cancelled: ${run.error_message ?? 'its hunt or its hunt connector was deleted'}`, { runId: run.internal_id });
     }
     if (isHuntRunFinalized(run)) {
+      // The same outcome sent again (the connector lost the answer to its report) changes nothing: its hits were counted
+      // and its verdict set once. Another outcome is refused
+      if (run.hunt_run_status === status) {
+        return run;
+      }
       throw FunctionalError('The hunt run is already terminated', { runId: run.internal_id, status: run.hunt_run_status });
     }
     // The first report terminated the run but its finalization stopped halfway: complete it, the run stays as first reported
