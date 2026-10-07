@@ -88,6 +88,7 @@ class Hunt:
             last_run_at
             last_run_status
             last_hits_count
+            last_new_hits_count
             next_run_at
             createdBy {
                 ... on Identity {

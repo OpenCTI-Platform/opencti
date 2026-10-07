@@ -91,6 +91,11 @@ class TestHunt(TestCase):
         self.assertIn("escalation_threshold", properties)
         self.assertIn("escalate_manual_runs", properties)
 
+    def test_default_fields_read_the_hits_of_the_last_run(self):
+        properties = Hunt(_opencti({})).properties
+        self.assertIn("last_hits_count", properties)
+        self.assertIn("last_new_hits_count", properties)
+
     def test_default_fields_read_the_organizations_of_the_hunt(self):
         self.assertIn("objectOrganization {", Hunt(_opencti({})).properties)
 
