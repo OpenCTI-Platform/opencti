@@ -3,6 +3,7 @@ import '../../../../src/modules/index';
 import {
   buildHuntScopeFilter,
   clampInteger,
+  huntCountSetting,
   huntRunRestrictions,
   isAutonomousHunt,
   maskEvidencePreview,
@@ -213,6 +214,15 @@ describe('Hunt helpers', () => {
     expect(clampInteger(4.4, 1, 10, 5)).toBe(4);
     expect(truncate('abcdef', 10)).toBe('abcdef');
     expect(truncate('abcdefghijkl', 6)).toBe('abc...');
+  });
+
+  it('should read a count setting as a whole number, falling back to the default below one', () => {
+    expect(huntCountSetting('2.5', 20)).toBe(2);
+    expect(huntCountSetting(1000.9, 20)).toBe(1000);
+    expect(huntCountSetting(0.5, 20)).toBe(20);
+    expect(huntCountSetting(-4, 20)).toBe(20);
+    expect(huntCountSetting('abc', 20)).toBe(20);
+    expect(huntCountSetting(undefined, 20)).toBe(20);
   });
 
   it('should derive the validation of a technique from the counts of all its emulation runs', () => {

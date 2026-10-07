@@ -784,13 +784,15 @@ export const matchStandingEvents = async (
     evaluate: (candidate: StandingCandidate, event: DataEvent) => Promise<boolean>;
   },
 ) => {
+  // The budget bounds the evaluations and indexes the last hunt evaluated: a whole count, at least one
+  const budget = Math.max(1, Math.floor(opts.budget));
   for (let eventIndex = 0; eventIndex < streamEvents.length && !match.budgetSpent; eventIndex += 1) {
     const { id, data: event } = streamEvents[eventIndex];
     if ((event.type === EVENT_TYPE_CREATE || event.type === EVENT_TYPE_UPDATE) && !opts.isIgnored(event)) {
       const after = opts.resume?.eventId === id ? opts.resume.afterHuntId : null;
       const toEvaluate = indexed.filtered.filter((candidate) => !match.triggered.has(candidate.hunt.internal_id)
         && (after === null || compareIds(candidate.hunt.internal_id, after) > 0));
-      const exceeds = match.evaluations + toEvaluate.length > opts.budget;
+      const exceeds = match.evaluations + toEvaluate.length > budget;
       if (exceeds && match.evaluations > 0) {
         match.budgetSpent = true;
         return;
@@ -802,7 +804,7 @@ export const matchStandingEvents = async (
           await doYield();
         }
       }
-      const evaluated = exceeds ? Math.max(1, opts.budget) : toEvaluate.length;
+      const evaluated = exceeds ? budget : toEvaluate.length;
       for (let index = 0; index < evaluated; index += 1) {
         match.evaluations += 1;
         if (await opts.evaluate(toEvaluate[index], event)) {

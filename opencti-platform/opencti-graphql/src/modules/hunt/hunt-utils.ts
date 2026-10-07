@@ -13,32 +13,39 @@ const numberConf = (key: string, fallback: number): number => {
   return Number.isFinite(value) && value > 0 ? value : fallback;
 };
 
+// Counts bound loops, pages, batches and slices: a decimal is floored, a count below one falls back to the default
+export const huntCountSetting = (setting: unknown, fallback: number): number => {
+  const value = Math.floor(Number(setting));
+  return Number.isFinite(value) && value > 0 ? value : fallback;
+};
+const countConf = (key: string, fallback: number): number => huntCountSetting(conf.get(key), fallback);
+
 export const HUNT_CONFIG = {
   enabled: booleanConf('hunt_manager:enabled', true),
   lockKey: conf.get('hunt_manager:lock_key') || 'hunt_manager_lock',
   interval: numberConf('hunt_manager:interval', 30000),
-  streamBatchSize: numberConf('hunt_manager:stream_batch_size', 5000),
-  maxRunsPerTick: numberConf('hunt_manager:max_runs_per_tick', 50),
-  automationPageSize: numberConf('hunt_manager:automation_page_size', 500),
-  automationMaxPagesPerTick: numberConf('hunt_manager:automation_max_pages_per_tick', 4),
-  maxConcurrentRunsPerConnector: numberConf('hunt_manager:max_concurrent_runs_per_connector', 2),
-  dailyRunsPerConnector: numberConf('hunt_manager:daily_runs_per_connector', 200),
+  streamBatchSize: countConf('hunt_manager:stream_batch_size', 5000),
+  maxRunsPerTick: countConf('hunt_manager:max_runs_per_tick', 50),
+  automationPageSize: countConf('hunt_manager:automation_page_size', 500),
+  automationMaxPagesPerTick: countConf('hunt_manager:automation_max_pages_per_tick', 4),
+  maxConcurrentRunsPerConnector: countConf('hunt_manager:max_concurrent_runs_per_connector', 2),
+  dailyRunsPerConnector: countConf('hunt_manager:daily_runs_per_connector', 200),
   runTimeoutMinutes: numberConf('hunt_manager:run_timeout_minutes', 60),
   previewTimeoutMinutes: numberConf('hunt_manager:preview_timeout_minutes', 5),
   maxRetries: Number.isFinite(Number(conf.get('hunt_manager:max_retries'))) ? Number(conf.get('hunt_manager:max_retries')) : 2,
   retryBackoffMinutes: numberConf('hunt_manager:retry_backoff_minutes', 10),
   standingDebounceMinutes: numberConf('hunt_manager:standing_debounce_minutes', 15),
-  standingFilterEvaluationsPerTick: numberConf('hunt_manager:standing_filter_evaluations_per_tick', 20000),
+  standingFilterEvaluationsPerTick: countConf('hunt_manager:standing_filter_evaluations_per_tick', 20000),
   minScheduleIntervalMinutes: numberConf('hunt_manager:min_schedule_interval_minutes', 15),
   maxTimeWindowHours: numberConf('hunt_manager:max_time_window_hours', 720),
-  maxResultsPerRun: numberConf('hunt_manager:max_results_per_run', 10000),
-  maxIocsPerRun: numberConf('hunt_manager:max_iocs_per_run', 1000),
-  iocBatchSize: numberConf('hunt_manager:ioc_batch_size', 50),
-  evidenceMaxItems: numberConf('hunt_manager:evidence_max_items', 20),
-  evidenceMaxValueLength: numberConf('hunt_manager:evidence_max_value_length', 256),
-  hitSampleMaxItems: numberConf('hunt_manager:hit_sample_max_items', 50),
-  hitMaxValueLength: numberConf('hunt_manager:hit_max_value_length', 1024),
-  hitObservedDataMaxItems: numberConf('hunt_manager:hit_observed_data_max_items', 20),
+  maxResultsPerRun: countConf('hunt_manager:max_results_per_run', 10000),
+  maxIocsPerRun: countConf('hunt_manager:max_iocs_per_run', 1000),
+  iocBatchSize: countConf('hunt_manager:ioc_batch_size', 50),
+  evidenceMaxItems: countConf('hunt_manager:evidence_max_items', 20),
+  evidenceMaxValueLength: countConf('hunt_manager:evidence_max_value_length', 256),
+  hitSampleMaxItems: countConf('hunt_manager:hit_sample_max_items', 50),
+  hitMaxValueLength: countConf('hunt_manager:hit_max_value_length', 1024),
+  hitObservedDataMaxItems: countConf('hunt_manager:hit_observed_data_max_items', 20),
   queueExpiryHours: numberConf('hunt_manager:queue_expiry_hours', 24),
   dispatchRecoveryMinutes: numberConf('hunt_manager:dispatch_recovery_minutes', 5),
   runRetentionDays: numberConf('hunt_manager:run_retention_days', 365),

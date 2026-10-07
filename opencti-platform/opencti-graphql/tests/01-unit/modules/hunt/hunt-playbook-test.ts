@@ -269,6 +269,17 @@ describe('Standing hunt triggers', () => {
     expect(third.partial).toBeUndefined();
     expect(evaluated).toEqual(['hunt-a', 'hunt-b', 'hunt-c', 'hunt-d', 'hunt-e'].map((huntId) => `report--1-0:${huntId}`));
   });
+
+  it('should match within the whole part of a decimal budget', async () => {
+    const indexed = indexStandingCandidates(['hunt-a', 'hunt-b', 'hunt-c'].map(filteredCandidate));
+    const match: StandingMatch = { triggered: new Map(), evaluations: 0, budgetSpent: false, matchedEventId: null };
+    await matchStandingEvents(indexed, [streamEvent('1-0', { id: 'report--1', type: 'report' })], match, {
+      budget: 2.5,
+      isIgnored: () => false,
+      evaluate: async () => false,
+    });
+    expect(match).toMatchObject({ evaluations: 2, budgetSpent: true, matchedEventId: null, partial: { eventId: '1-0', afterHuntId: 'hunt-b' } });
+  });
 });
 
 describe('Hunt packs', () => {
