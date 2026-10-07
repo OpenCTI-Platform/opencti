@@ -367,6 +367,18 @@
     "stream_batch_size": 7500,
     "max_concurrency": 5
   },
+  "pulse_manager": {
+    "enabled": true,
+    "lock_key": "pulse_manager_lock",
+    "interval": 3600000,
+    "refresh_interval": 86400000,
+    "refresh_max_entities": 200000,
+    "preview_max_entities": 1000000,
+    "max_window_hours": 24,
+    "max_events_per_run": 100000,
+    "lookup_cache_ttl_seconds": 21600,
+    "response_cache_ttl_seconds": 900
+  },
   "data_sanity_manager": {
     "enabled": true,
     "lock_key": "data_sanity_manager_lock",

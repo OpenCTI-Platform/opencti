@@ -71,6 +71,15 @@ export const INTERNAL_ATTRIBUTES = [
   'connections',
   'i_attributes',
   'pir_information',
+  // Threat Pulse network data (src/modules/xtm/pulse)
+  'pulse_keys',
+  'pulse_prevalence',
+  'pulse_trend',
+  'pulse_sector_trend',
+  'pulse_first_seen_network',
+  'pulse_community_uniqueness',
+  'pulse_prevalence_rank',
+  'pulse_information',
   // X - Mitre
   'x_opencti_graph_data',
   // X - OpenCTI

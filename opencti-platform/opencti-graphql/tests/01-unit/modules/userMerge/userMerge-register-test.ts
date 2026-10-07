@@ -2,12 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { findRegisterRow, registerRowsByDisposition, USER_MERGE_REGISTER, UserMergeDisposition } from '../../../../src/modules/userMerge/userMerge-register';
 
 /**
- * The v4 baseline, transcribed from the register page. It is asserted here rather than
- * derived from the constant: a test that recounts the array would agree with any
- * transcription mistake it is supposed to catch.
+ * The v4 baseline, transcribed from the register page, plus the Threat Pulse consent row
+ * (`settings.pulse-consent-user-id`, transfer). It is asserted here rather than derived from
+ * the constant: a test that recounts the array would agree with any transcription mistake it
+ * is supposed to catch.
  */
 const V4_DISTRIBUTION: Record<UserMergeDisposition, number> = {
-  [UserMergeDisposition.Transfer]: 40,
+  [UserMergeDisposition.Transfer]: 41,
   [UserMergeDisposition.Invalidate]: 22,
   [UserMergeDisposition.Conditional]: 21,
   [UserMergeDisposition.Retain]: 10,
@@ -22,7 +23,7 @@ describe('User merge register', () => {
     });
   });
 
-  it('should hold exactly 99 rows, and no row outside the known dispositions', () => {
+  it('should hold exactly 100 rows, and no row outside the known dispositions', () => {
     const total = Object.values(V4_DISTRIBUTION).reduce((acc, count) => acc + count, 0);
     expect(USER_MERGE_REGISTER.length).toBe(total);
   });

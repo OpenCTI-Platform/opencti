@@ -2730,6 +2730,9 @@ enum StixDomainObjectsOrdering {
   x_opencti_cvss_base_severity
   pir_score
   last_pir_score_date
+  pulse_community_uniqueness
+  pulse_prevalence_rank
+  pulse_first_seen_network
 }
 type StixDomainObjectConnection {
   pageInfo: PageInfo!

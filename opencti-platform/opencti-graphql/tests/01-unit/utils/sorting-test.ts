@@ -1,10 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { buildElasticSortingForAttributeCriteria } from '../../../src/utils/sorting';
+import { buildElasticSortingForAttributeCriteria, registerSortingOverride } from '../../../src/utils/sorting';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { testContext } from '../../utils/testQuery';
 
 describe('Sorting utilities', () => {
   let sorting;
+  it('buildElasticSortingForAttributeCriteria lets a module build the sort of its own criteria', async () => {
+    registerSortingOverride('test_module_rank', async (_, __, orderMode) => ({ _script: { type: 'number', order: orderMode } }));
+    expect(await buildElasticSortingForAttributeCriteria(testContext, SYSTEM_USER, 'test_module_rank', 'desc')).toEqual({ _script: { type: 'number', order: 'desc' } });
+  });
+
   it('buildElasticSortingForAttributeCriteria properly construct elastic sorting options', async () => {
     sorting = await buildElasticSortingForAttributeCriteria(testContext, SYSTEM_USER, 'name', 'asc');
     expect(sorting).toEqual({

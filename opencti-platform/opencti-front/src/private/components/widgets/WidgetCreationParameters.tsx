@@ -32,7 +32,7 @@ import { useFormatter } from 'src/components/i18n';
 import { findFiltersFromKeys, isDraftWorkspaceFilterGroup, SELF_ID, SELF_ID_VALUE } from 'src/utils/filters/filtersUtils';
 import useAttributes from '../../../utils/hooks/useAttributes';
 import type { WidgetColumn, WidgetParameters, WidgetPerspective } from 'src/utils/widget/widget';
-import { getCurrentAvailableParameters, getCurrentCategory, getMaxResultCount, getWidgetInterval } from 'src/utils/widget/widgetUtils';
+import { getCurrentAvailableParameters, getCurrentCategory, getMaxResultCount, getWidgetInterval, PULSE_DATE_ATTRIBUTE } from 'src/utils/widget/widgetUtils';
 import EntitySelectWithTypes from '../../../components/fields/EntitySelectWithTypes';
 import useAuth from '../../../utils/hooks/useAuth';
 import type { WidgetVisualizationTypes } from 'src/utils/widget/widgetUtils';
@@ -585,7 +585,7 @@ const WidgetCreationParameters = () => {
                 )}
 
                 {perspective !== 'audits'
-                  && !['text', 'attribute', 'custom-attributes', 'bookmark'].includes(type)
+                  && !['text', 'attribute', 'custom-attributes', 'bookmark', 'pulse-trending', 'pulse-benchmark'].includes(type)
                   && (
                     <div
                       style={{
@@ -642,6 +642,11 @@ const WidgetCreationParameters = () => {
                                   last_seen ({t_i18n('Functional date')})
                                 </SelectItem>
                               </>
+                            )}
+                            {perspective === 'entities' && (
+                              <SelectItem value={PULSE_DATE_ATTRIBUTE}>
+                                {PULSE_DATE_ATTRIBUTE} ({t_i18n('Threat Pulse')})
+                              </SelectItem>
                             )}
                           </SelectContent>
                         </Select>

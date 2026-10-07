@@ -15,6 +15,7 @@ import { getEnterpriseEditionInfo } from '../modules/settings/licensing';
 import { deleteNewsFeedItemsByExternalId, upsertNewsFeed } from '../modules/xtm/hub/news-feed/news-feed-domain';
 import { pushAll } from '../utils/arrayUtil';
 import { promiseMap } from '../utils/promiseUtils';
+import { unregisterFromPulse } from '../modules/xtm/pulse/pulse-domain';
 
 interface AttributeUpdate {
   key: keyof BasicStoreSettings;
@@ -135,13 +136,15 @@ const resetRegistration = async (context: AuthContext, user: AuthUser, settings:
     },
   ];
 
-  await updateAttribute(
-    context,
-    user,
-    settings.id,
-    ENTITY_TYPE_SETTINGS,
-    attributeUpdates,
-  );
+  await unregisterFromPulse(context, async (pulseUpdates) => {
+    await updateAttribute(
+      context,
+      user,
+      settings.id,
+      ENTITY_TYPE_SETTINGS,
+      [...attributeUpdates, ...pulseUpdates],
+    );
+  });
 
   const updatedSettings = await getSettings(context);
   await notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, HUB_REGISTRATION_MANAGER_USER);

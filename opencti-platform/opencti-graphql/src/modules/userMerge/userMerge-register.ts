@@ -76,6 +76,7 @@ export const USER_MERGE_REGISTER: UserMergeRegisterRow[] = [
   row('playbook.definition-nodes-configuration', TRANSFER, 'Playbook', 'playbook_definition.nodes[].configuration'),
   row('public-dashboard.user-id', TRANSFER, 'PublicDashboard', 'user_id'),
   row('public-dashboard.manifests', TRANSFER, 'PublicDashboard', 'private_manifest / public_manifest (Base64)'),
+  row('settings.pulse-consent-user-id', TRANSFER, 'Settings', 'pulse_consent_user_id'),
   row('settings.xtm-hub-registration-user-id', TRANSFER, 'Settings', 'xtm_hub_registration_user_id'),
   row('stream-collection.filters', TRANSFER, 'StreamCollection', 'filters'),
   row('stream-collection.origin-filters', TRANSFER, 'StreamCollection', 'origin_filters'),

@@ -1,8 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import useAuth from './useAuth';
 import useGranted, { SETTINGS_SETMANAGEXTMHUB } from './useGranted';
-import { readRegisterDismissed, shouldDisplayLicenseBanner, shouldDisplayRegisterBanner, shouldDisplayTrialBanner } from '../bannerUtils';
-import { REGISTER_BANNER_DISMISSED_BUS, SMTP_REFRESH_TOKEN_BANNER_VISIBLE_BUS } from '../bannerConstants';
+import { readRegisterDismissed, readThreatPulsePreviewBannerVisible, shouldDisplayLicenseBanner, shouldDisplayRegisterBanner, shouldDisplayTrialBanner } from '../bannerUtils';
+import {
+  REGISTER_BANNER_DISMISSED_BUS,
+  SMTP_REFRESH_TOKEN_BANNER_VISIBLE_BUS,
+  THREAT_PULSE_PREVIEW_BANNER_DISMISSED_BUS,
+  THREAT_PULSE_PREVIEW_BANNER_VISIBLE_BUS,
+} from '../bannerConstants';
 import useBus from './useBus';
 import { TOP_BANNER_HEIGHT } from '../../components/TopBanner';
 
@@ -11,6 +16,7 @@ export interface TopBannerState {
   showTrialBanner: boolean;
   showRegisterBanner: boolean;
   showSmtpRefreshTokenBanner: boolean;
+  showThreatPulsePreviewBanner: boolean;
   height: number;
 }
 
@@ -25,14 +31,25 @@ const useTopBanner = (): TopBannerState => {
   // through a small pub/sub bus to keep the shared height in sync.
   const [showSmtpRefreshTokenBanner, setShowSmtpRefreshTokenBanner] = useState<boolean>(false);
   useBus(SMTP_REFRESH_TOKEN_BANNER_VISIBLE_BUS, (value: boolean) => setShowSmtpRefreshTokenBanner(value), []);
+  // The Threat Pulse preview banner reports its visibility once: a consumer mounted later starts from the last report,
+  // and reads it again once subscribed, so a report sent between its render and its subscription is not missed.
+  const [showThreatPulsePreviewBanner, setShowThreatPulsePreviewBanner] = useState<boolean>(readThreatPulsePreviewBannerVisible);
+  useBus(THREAT_PULSE_PREVIEW_BANNER_VISIBLE_BUS, (value: boolean) => setShowThreatPulsePreviewBanner(value), []);
+  useEffect(() => {
+    setShowThreatPulsePreviewBanner(readThreatPulsePreviewBannerVisible());
+  }, []);
+  useBus(THREAT_PULSE_PREVIEW_BANNER_DISMISSED_BUS, (dismissed: boolean) => {
+    if (dismissed) setShowThreatPulsePreviewBanner(false);
+  }, []);
 
   const showLicenseBanner = shouldDisplayLicenseBanner(settings?.platform_enterprise_edition);
   const showTrialBanner = shouldDisplayTrialBanner(settings);
   const showRegisterBanner = shouldDisplayRegisterBanner(settings, isXTMHubAccessible, isGrantedToXtmHub, isDismissed);
 
-  const height = (showLicenseBanner || showTrialBanner || showRegisterBanner || showSmtpRefreshTokenBanner) ? TOP_BANNER_HEIGHT : 0;
+  const visible = showLicenseBanner || showTrialBanner || showRegisterBanner || showSmtpRefreshTokenBanner || showThreatPulsePreviewBanner;
+  const height = visible ? TOP_BANNER_HEIGHT : 0;
 
-  return { showLicenseBanner, showTrialBanner, showRegisterBanner, showSmtpRefreshTokenBanner, height };
+  return { showLicenseBanner, showTrialBanner, showRegisterBanner, showSmtpRefreshTokenBanner, showThreatPulsePreviewBanner, height };
 };
 
 export default useTopBanner;

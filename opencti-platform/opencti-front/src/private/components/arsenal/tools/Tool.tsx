@@ -11,6 +11,7 @@ import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../commo
 import { Tool_tool$key } from './__generated__/Tool_tool.graphql';
 import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 import useOverviewLayoutCustomization from '../../../../utils/hooks/useOverviewLayoutCustomization';
+import ThreatPulseCard from '@components/common/threat_pulse/ThreatPulseCard';
 
 const toolFragment = graphql`
   fragment Tool_tool on Tool {
@@ -96,6 +97,12 @@ const Tool: React.FC<ToolProps> = ({
                 return (
                   <Grid key={key} item xs={width}>
                     <StixDomainObjectOverview stixDomainObject={tool} />
+                  </Grid>
+                );
+              case 'threatPulse':
+                return (
+                  <Grid key={key} item xs={width}>
+                    <ThreatPulseCard entityId={tool.id} />
                   </Grid>
                 );
               case 'latestCreatedRelationships':

@@ -55,6 +55,9 @@ const MAX_DIGEST_CONTENT_SIZE = conf.get('notification_manager:max_digest_conten
 const CRON_SCHEDULE_TIME = 60000; // 1 minute
 const STREAM_SCHEDULE_TIME = 10000;
 export const TRIGGER_EVENT_TYPES_VALUES = Object.values(TriggerEventType);
+// The stream operations: the triggers the platform generates for every user listen to these only. Threat Pulse
+// trending notifications reach the triggers a user created with that event type, never the generated ones.
+export const STREAM_TRIGGER_EVENT_TYPES = TRIGGER_EVENT_TYPES_VALUES.filter((type) => type !== TriggerEventType.PulseTrending);
 export const TRIGGER_TYPE_VALUES = Object.values(TriggerType);
 export const DIGEST_PERIOD_VALUES = Object.values(DigestPeriod);
 export const TRIGGER_SCOPE_VALUES = ['knowledge', 'activity'];
@@ -128,7 +131,7 @@ export const isNotificationRecipientActive = (user: AuthUser): boolean => {
   return user.account_status === ACCOUNT_STATUS_ACTIVE;
 };
 
-const generateAssigneeTrigger = (user: AuthUser) => {
+export const generateAssigneeTrigger = (user: AuthUser) => {
   const filters = {
     mode: 'or',
     filters: [
@@ -142,7 +145,7 @@ const generateAssigneeTrigger = (user: AuthUser) => {
     name: 'Default Trigger for Assignee/Participant',
     trigger_type: 'live',
     trigger_scope: 'knowledge',
-    event_types: TRIGGER_EVENT_TYPES_VALUES,
+    event_types: STREAM_TRIGGER_EVENT_TYPES,
     notifiers: user.personal_notifiers,
     filters: JSON.stringify(filters),
     instance_trigger: false,
@@ -151,13 +154,13 @@ const generateAssigneeTrigger = (user: AuthUser) => {
 };
 
 export const platformNotification = (user: { id: string }) => `platform-notification-${user.id}`;
-const generatePlatformNotificationTrigger = (user: AuthUser) => {
+export const generatePlatformNotificationTrigger = (user: AuthUser) => {
   return {
     internal_id: platformNotification(user),
     name: 'Platform',
     trigger_type: 'live',
     trigger_scope: 'internal',
-    event_types: TRIGGER_EVENT_TYPES_VALUES,
+    event_types: STREAM_TRIGGER_EVENT_TYPES,
     notifiers: user.personal_notifiers,
     instance_trigger: false,
     restricted_members: [],

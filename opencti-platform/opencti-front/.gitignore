@@ -28,3 +28,4 @@ __generated__
 /playwright/.cache/
 /.nyc_output/
 /tests_e2e/.setup/
+*.tsbuildinfo

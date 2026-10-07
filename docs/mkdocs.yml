@@ -227,6 +227,7 @@ nav:
       - Native feeds: usage/feeds.md
       - Manual export: usage/export.md
     - XTM Hub news feed: usage/xtm-hub-news-feed.md
+    - Threat Pulse: usage/threat-pulse.md
   - Administration:
     - Introduction: administration/introduction.md
     - Enterprise edition: administration/enterprise.md

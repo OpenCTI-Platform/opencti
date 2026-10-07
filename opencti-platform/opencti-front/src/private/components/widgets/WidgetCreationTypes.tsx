@@ -10,6 +10,7 @@ import {
   workspacesWidgetVisualizationTypes,
   WidgetVisualizationTypes,
   customViewsWidgetVisualizationTypes,
+  isParametersOnlyWidget,
 } from '../../../utils/widget/widgetUtils';
 import Card from '../../../components/common/card/Card';
 import type { WidgetHost } from '../../../utils/widget/widget';
@@ -32,7 +33,7 @@ const WidgetCreationTypes = () => {
 
   const changeType = (type: string) => {
     setConfigWidget({ ...config.widget, type: type as WidgetVisualizationTypes });
-    setStep(type === 'text' || type === 'attribute' || type === 'custom-attributes' ? 3 : 1);
+    setStep(isParametersOnlyWidget(type) ? 3 : 1);
   };
 
   return (

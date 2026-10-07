@@ -191,6 +191,7 @@ import type {
 } from '../types/store';
 import type { BasicStoreSettings } from '../types/settings';
 import { completeSpecialFilterKeys } from '../utils/filtering/filtering-completeSpecialFilterKeys';
+import { attributeGateClauses } from './engine-attribute-gates';
 import { IDS_ATTRIBUTES, KEYWORD_TERMS_ATTRIBUTES } from '../domain/attribute-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import type { FiltersWithNested } from './middleware-loader';
@@ -2831,6 +2832,8 @@ type QueryBodyBuilderOpts = ProcessSearchArgs & BuildDraftFilterOpts & {
   endDate?: any;
   dateAttribute?: string | null;
   includeAuthorities?: boolean | null;
+  /** Attributes the query aggregates on: their gates (engine-attribute-gates.ts) apply as for filtered ones. */
+  readAttributes?: string[];
   /**
    * Trusted, internal-only raw Painless script clauses (ANDed with the rest of the query).
    * MUST NEVER be populated from user/GraphQL/JSON input.
@@ -2859,6 +2862,7 @@ const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options:
     dateAttribute = null,
     includeAuthorities = false,
     noRegardingOfFilterIdsCheck = false,
+    readAttributes = [],
     internalScriptFilters = [],
   } = options;
   const elFindByIdsToMap = async (c: AuthContext, u: AuthUser, i: string[], o: any) => {
@@ -2907,6 +2911,7 @@ const elQueryBodyBuilder = async (context: AuthContext, user: AuthUser, options:
       mustFilters.push(filtersSubQuery);
     }
   }
+  mustFilters.push(...await attributeGateClauses(context, user, { filters: completeFilters, attributes: [dateAttribute, ...readAttributes] }));
   // Handle search
   const orderConfiguration = isEmptyField(orderBy) ? [] : orderBy;
   const orderCriterion = Array.isArray(orderConfiguration) ? orderConfiguration : [orderConfiguration];
@@ -3363,7 +3368,7 @@ export const elAggregationCount = async (
   const queryField = buildFieldForQuery(field);
   // Only keyword fields accept a string missing value; date/numeric/boolean/object-flat fields do not.
   const isKeywordField = queryField.endsWith('.keyword');
-  const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
+  const body = await elQueryBodyBuilder(context, user, { ...options, readAttributes: field ? [field] : [], noSize: true, noSort: true });
   body.size = 0;
   body.aggs = {
     genres: {

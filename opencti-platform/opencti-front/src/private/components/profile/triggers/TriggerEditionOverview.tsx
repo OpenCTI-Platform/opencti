@@ -14,6 +14,7 @@ import SelectFieldFds, { SelectItem } from '../../../../components/fields/Select
 import TextField from '../../../../components/TextField';
 import TimePickerField from '../../../../components/TimePickerField';
 import { convertEventTypes, convertNotifiers, convertTriggers, filterEventTypesOptions, instanceEventTypesOptions } from '../../../../utils/edition';
+import { ThreatPulseTriggerNotice, useThreatPulseAccess } from '../../common/threat_pulse/ThreatPulseUnlock';
 import { FieldOption, fieldSpacingContainerStyle } from '../../../../utils/field';
 import {
   deserializeFilterGroupForFrontend,
@@ -99,6 +100,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
     filters: [getDefaultFilterObject('connectedToId', useFilterDefinition('connectedToId', ['Instance']))],
   };
   const trigger = useFragment(triggerEditionOverviewFragment, data);
+  const pulseAccess = useThreatPulseAccess();
   const [commitFieldPatch] = useApiMutation(triggerMutationFieldPatch);
   const [filters, helpers] = useFiltersState(deserializeFilterGroupForFrontend(trigger.filters) ?? undefined);
   const [instanceTriggerFilters, instanceTriggerFiltersHelpers] = useFiltersState(deserializeFilterGroupForFrontend(trigger.filters)
@@ -363,6 +365,8 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
                   ? instanceEventTypesOptions
                   : filterEventTypesOptions
               }
+              isOptionDisabled={(option: { value: string }) => option.value === 'pulse_trending' && pulseAccess !== 'full'
+                && !(trigger.event_types ?? []).includes('pulse_trending')}
               onChange={asMultiValue<{ value: string; label: string }>((
                 name,
                 value,
@@ -372,6 +376,7 @@ const TriggerEditionOverview: FunctionComponent<TriggerEditionOverviewProps> = (
               ))}
             />
           )}
+          {trigger.trigger_type === 'live' && !trigger.instance_trigger && <ThreatPulseTriggerNotice access={pulseAccess} />}
           {trigger.trigger_type === 'digest' && (
             <TriggersField
               name="trigger_ids"

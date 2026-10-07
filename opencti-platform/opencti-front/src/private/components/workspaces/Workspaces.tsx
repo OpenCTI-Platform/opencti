@@ -15,6 +15,7 @@ import DataTable from '../../../components/dataGrid/DataTable';
 import { DataTableProps } from '../../../components/dataGrid/dataTableTypes';
 import { defaultRender } from '../../../components/dataGrid/dataTableUtils';
 import useConnectedDocumentModifier from '../../../utils/hooks/useConnectedDocumentModifier';
+import { ThreatPulseDashboardTemplateProvider } from '../common/threat_pulse/ThreatPulseDashboardTemplateButton';
 
 const workspaceLineFragment = graphql`
   fragment WorkspacesLine_node on Workspace {
@@ -172,7 +173,7 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
     } : {}),
   };
 
-  return (
+  const workspaces = (
     <>
       <Breadcrumbs
         elements={type === 'dashboard'
@@ -221,6 +222,11 @@ const Workspaces: FunctionComponent<WorkspacesProps> = ({
       )}
     </>
   );
+  // The Threat Pulse template dialog belongs to the page: the creation buttons of the list header mount again as the
+  // list renders, and would close it.
+  return type === 'dashboard'
+    ? <ThreatPulseDashboardTemplateProvider>{workspaces}</ThreatPulseDashboardTemplateProvider>
+    : workspaces;
 };
 
 export default Workspaces;

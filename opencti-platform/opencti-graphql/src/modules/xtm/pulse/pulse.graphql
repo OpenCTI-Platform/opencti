@@ -1,0 +1,311 @@
+enum PulseMode {
+  off
+  preview
+  contribute_and_read
+}
+
+"What the platform reads from Threat Pulse right now"
+enum PulseAccess {
+  "Not registered on XTM Hub"
+  not_connected
+  "Threat Pulse turned off by an administrator"
+  off
+  "The coarse digest only: nothing leaves the platform"
+  preview
+  "Contributing: every Threat Pulse read"
+  full
+}
+
+enum PulseContributionStatus {
+  active
+  grace
+  lapsed
+  none
+}
+
+enum PulseTelemetryEvent {
+  impression
+  cta_click
+}
+
+enum PulseSurface {
+  entity_card
+  trending_widget
+  benchmark_template
+  notifications
+  banner
+}
+
+enum PulseSectorBucket {
+  finance
+  government
+  defense
+  healthcare
+  energy_utilities
+  telecommunications
+  technology
+  manufacturing
+  transportation
+  retail_consumer
+  education_research
+  non_profit
+  other
+  undisclosed
+}
+
+enum PulseRegionBucket {
+  africa
+  asia_pacific
+  europe
+  latin_america
+  middle_east
+  north_america
+  global
+  undisclosed
+}
+
+enum PulsePrevalence {
+  rare
+  uncommon
+  common
+  widespread
+}
+
+enum PulseTrend {
+  rising
+  stable
+  falling
+}
+
+enum PulsePeriod {
+  last_7_days
+  last_30_days
+  last_90_days
+}
+
+enum PulseUnavailableReason {
+  not_enabled
+  not_registered
+  contribution_required
+  hub_unreachable
+  rate_limited
+  enterprise_edition_required
+  out_of_scope
+  excluded
+}
+
+type PulseInformation {
+  published: Boolean!
+  "Coarse data of the preview digest: prevalence and trend only"
+  preview: Boolean!
+  prevalence: PulsePrevalence
+  platforms_bucket: String
+  first_seen_network: DateTime
+  last_seen_network: DateTime
+  trend: PulseTrend
+  trend_series: [Int!]!
+  sector_trend: PulseTrend
+  sector_platforms_bucket: String
+  community_uniqueness: Int
+  updated_at: DateTime
+}
+
+type PulseEntityInformation {
+  id: ID!
+  access: PulseAccess!
+  readable: Boolean!
+  unavailable_reason: PulseUnavailableReason
+  sector_bucket: PulseSectorBucket
+  information: PulseInformation
+}
+
+type PulseStatus {
+  id: ID!
+  enabled: Boolean!
+  mode: PulseMode!
+  access: PulseAccess!
+  readable: Boolean!
+  "Objects of the platform found in the last preview digest"
+  preview_entities: Int!
+  "When the preview first matched objects of the platform"
+  preview_since: DateTime
+  sector_bucket: PulseSectorBucket
+  region_bucket: PulseRegionBucket
+  scopes: [String!]!
+}
+
+type PulseContributionDay {
+  day: String!
+  records: Int!
+  objects: Int!
+}
+
+type PulseContributionType {
+  entity_type: String!
+  records: Int!
+}
+
+type PulseContributionStats {
+  last_push_at: DateTime
+  last_refresh_at: DateTime
+  last_error: String
+  total_records: Int!
+  days: [PulseContributionDay!]!
+  by_type: [PulseContributionType!]!
+}
+
+type PulseNetworkStatus {
+  reachable: Boolean!
+  k_threshold: Int
+  retention_months: Int
+  contributors_bucket: String
+  read_access: Boolean
+  last_contribution_day: String
+  contribution_status: PulseContributionStatus
+  read_access_until: String
+  contribution_window_days: Int
+  contribution_grace_days: Int
+}
+
+type PulsePreviewStats {
+  last_refresh_at: DateTime
+  digest_day: String
+  digest_items: Int!
+  matched_entities: Int!
+}
+
+type PulseSettings {
+  id: ID!
+  mode: PulseMode!
+  access: PulseAccess!
+  enabled: Boolean!
+  readable: Boolean!
+  hub_registered: Boolean!
+  consent_version: String!
+  consent_accepted_version: String
+  consent_date: DateTime
+  consent_user_name: String
+  scopes: [String!]!
+  available_scopes: [String!]!
+  excluded_markings: [MarkingDefinition!]!
+  forced_excluded_markings: [MarkingDefinition!]!
+  sector_bucket: PulseSectorBucket
+  region_bucket: PulseRegionBucket
+  suggested_sector_bucket: PulseSectorBucket!
+  suggested_region_bucket: PulseRegionBucket!
+  contribution: PulseContributionStats!
+  preview: PulsePreviewStats!
+  network: PulseNetworkStatus!
+}
+
+type PulseTrendingEntry {
+  entity: StixCoreObject!
+  object_type: String!
+  "Preview only: the rank of the object in the sector trending"
+  rank: Int
+  "Null in preview"
+  platforms_bucket: String
+  prevalence: PulsePrevalence!
+  trend: PulseTrend!
+  "Null in preview"
+  growth: Float
+  "Null in preview"
+  first_seen_network: DateTime
+}
+
+type PulseTrending {
+  readable: Boolean!
+  unavailable_reason: PulseUnavailableReason
+  day: String
+  period: PulsePeriod!
+  sector_bucket: PulseSectorBucket
+  region_bucket: PulseRegionBucket
+  network_items_count: Int!
+  entries: [PulseTrendingEntry!]!
+  "Preview: the first ranks only, the next ones are counted in locked_count"
+  preview: Boolean!
+  locked_count: Int!
+}
+
+type PulseBenchmarkMetric {
+  object_type: String!
+  event_kind: String!
+  platform_count: Int!
+  sector_median: Float
+  network_median: Float
+  ratio: Float
+}
+
+type PulseBenchmarkEntry {
+  entity: StixCoreObject!
+  object_type: String!
+  platform_count: Int!
+  sector_median: Float!
+  ratio: Float!
+}
+
+type PulseBenchmark {
+  readable: Boolean!
+  unavailable_reason: PulseUnavailableReason
+  period: PulsePeriod!
+  sector_bucket: PulseSectorBucket
+  region_bucket: PulseRegionBucket
+  sector_platforms_bucket: String
+  metrics: [PulseBenchmarkMetric!]!
+  entries: [PulseBenchmarkEntry!]!
+}
+
+type PulsePurgeResult {
+  success: Boolean!
+  deleted_records: Int!
+}
+
+input PulseConfigurationInput {
+  mode: PulseMode!
+  consent_version: String
+  scopes: [String!]
+  excluded_markings: [String!]
+  sector_bucket: PulseSectorBucket
+  region_bucket: PulseRegionBucket
+}
+
+extend type Indicator {
+  pulse: PulseInformation
+}
+extend type AttackPattern {
+  pulse: PulseInformation
+}
+extend type Vulnerability {
+  pulse: PulseInformation
+}
+extend type IntrusionSet {
+  pulse: PulseInformation
+}
+extend type Malware {
+  pulse: PulseInformation
+}
+extend type Tool {
+  pulse: PulseInformation
+}
+
+type Query {
+  pulseStatus: PulseStatus! @auth
+  pulseSettings: PulseSettings! @auth(for: [SETTINGS_SUPPORT, SETTINGS_SETMANAGEXTMHUB])
+  pulseEntity(id: ID!): PulseEntityInformation! @auth(for: [KNOWLEDGE])
+  pulseTrending(
+    period: PulsePeriod!
+    sector_bucket: PulseSectorBucket
+    region_bucket: PulseRegionBucket
+    entity_types: [String!]
+    first: Int
+    "Answer with the preview trending when the platform runs in preview; otherwise contribution_required"
+    include_preview: Boolean
+  ): PulseTrending! @auth(for: [KNOWLEDGE])
+  pulseBenchmark(period: PulsePeriod!): PulseBenchmark! @auth(for: [KNOWLEDGE])
+}
+
+type Mutation {
+  pulseConfigure(input: PulseConfigurationInput!): PulseSettings! @auth(for: [SETTINGS_SETMANAGEXTMHUB])
+  pulsePurge: PulsePurgeResult! @auth(for: [SETTINGS_SETMANAGEXTMHUB])
+  pulseTelemetry(event: PulseTelemetryEvent!, surface: PulseSurface!): Boolean @auth
+}

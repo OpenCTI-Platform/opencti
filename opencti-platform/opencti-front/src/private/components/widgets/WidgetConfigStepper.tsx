@@ -12,7 +12,7 @@ const WidgetConfigStepper = () => {
   const { config, step, setStep, disabledSteps } = useWidgetConfigContext();
   const { type } = config.widget;
 
-  const isText = getCurrentCategory(type) === 'text';
+  const isText = getCurrentCategory(type) === 'text' || getCurrentCategory(type) === 'pulse';
   const isAttribute = getCurrentCategory(type) === 'attribute';
   const isCustomAttributes = getCurrentCategory(type) === 'custom-attributes';
 
