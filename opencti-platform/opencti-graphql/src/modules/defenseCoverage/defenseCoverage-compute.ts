@@ -96,15 +96,21 @@ const groupBy = <T>(items: T[], key: (item: T) => string) => {
 };
 
 // region loading
+/** Keep the relationships that are not revoked: a revoked relationship is no evidence and declares no telemetry. */
+export const withoutRevokedRelations = <T extends Pick<BasicStoreRelation, 'revoked'>>(relations: T[]): T[] => {
+  return relations.filter((relation) => !relation.revoked);
+};
+
 export const loadDefensePlatforms = async (context: AuthContext, user: AuthUser): Promise<DefensePlatform[]> => {
   const securityPlatforms = await fullEntitiesList<BasicStoreEntity>(context, user, [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM], {
     baseData: true,
     baseFields: ['name', 'x_opencti_stix_ids', 'security_platform_type'],
   });
-  const systemProvides = await fullRelationsList<BasicStoreRelation>(context, user, RELATION_PROVIDES, {
+  const systemProvides = withoutRevokedRelations(await fullRelationsList<BasicStoreRelation>(context, user, RELATION_PROVIDES, {
     fromTypes: [ENTITY_TYPE_IDENTITY_SYSTEM],
     baseData: true,
-  });
+    baseFields: ['revoked'],
+  }));
   const systemIds = R.uniq(systemProvides.map((r) => r.fromId));
   const systems = systemIds.length > 0
     ? await findByIdsChunked<BasicStoreEntity>(context, user, systemIds, { type: ENTITY_TYPE_IDENTITY_SYSTEM, baseData: true, baseFields: ['name', 'x_opencti_stix_ids'] })
@@ -138,9 +144,9 @@ const loadRelationsToTechniques = async (
   attackPatternIds: string[] | undefined,
   baseFields: string[] = [],
 ) => {
-  const args = { fromTypes, toTypes: [ENTITY_TYPE_ATTACK_PATTERN], baseData: true, baseFields: [...baseFields, ...EVIDENCE_ACCESS_FIELDS] };
+  const args = { fromTypes, toTypes: [ENTITY_TYPE_ATTACK_PATTERN], baseData: true, baseFields: [...baseFields, 'revoked', ...EVIDENCE_ACCESS_FIELDS] };
   if (!attackPatternIds) {
-    return fullRelationsList<BasicStoreRelation>(context, user, relationshipType, args);
+    return withoutRevokedRelations(await fullRelationsList<BasicStoreRelation>(context, user, relationshipType, args));
   }
   const relations: BasicStoreRelation[] = [];
   const chunks = chunkIds(attackPatternIds);
@@ -148,7 +154,7 @@ const loadRelationsToTechniques = async (
     const found = await fullRelationsList<BasicStoreRelation>(context, user, relationshipType, { ...args, toId: chunks[index] });
     relations.push(...found);
   }
-  return relations;
+  return withoutRevokedRelations(relations);
 };
 
 const loadDataComponents = async (context: AuthContext, user: AuthUser, dataComponentIds?: string[]) => {
@@ -160,9 +166,9 @@ const loadDataComponents = async (context: AuthContext, user: AuthUser, dataComp
 };
 
 const loadProvidedTelemetry = async (context: AuthContext, user: AuthUser, dataComponentIds?: string[]) => {
-  const args = { toTypes: [ENTITY_TYPE_DATA_COMPONENT], baseData: true, baseFields: EVIDENCE_ACCESS_FIELDS };
+  const args = { toTypes: [ENTITY_TYPE_DATA_COMPONENT], baseData: true, baseFields: ['revoked', ...EVIDENCE_ACCESS_FIELDS] };
   if (!dataComponentIds) {
-    return fullRelationsList<BasicStoreRelation>(context, user, RELATION_PROVIDES, args);
+    return withoutRevokedRelations(await fullRelationsList<BasicStoreRelation>(context, user, RELATION_PROVIDES, args));
   }
   const relations: BasicStoreRelation[] = [];
   const chunks = chunkIds(dataComponentIds);
@@ -170,7 +176,7 @@ const loadProvidedTelemetry = async (context: AuthContext, user: AuthUser, dataC
     const found = await fullRelationsList<BasicStoreRelation>(context, user, RELATION_PROVIDES, { ...args, toId: chunks[index] });
     relations.push(...found);
   }
-  return relations;
+  return withoutRevokedRelations(relations);
 };
 // endregion
 

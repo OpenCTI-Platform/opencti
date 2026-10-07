@@ -9,6 +9,7 @@ import {
   defenseGapId,
   isProducedGap,
   withoutRevokedDataComponents,
+  withoutRevokedRelations,
 } from '../../../../src/modules/defenseCoverage/defenseCoverage-compute';
 import { collectDefenseImpact } from '../../../../src/modules/defenseCoverage/defenseCoverage-impact';
 import { builtInRestoreAction, DEFENSE_LOGSOURCE_MAPPING_DEFAULTS } from '../../../../src/modules/defenseCoverage/defenseLogsourceMapping/defenseLogsourceMapping-domain';
@@ -194,6 +195,17 @@ describe('Defense telemetry of revoked data components', () => {
   });
 });
 
+describe('Defense evidence of revoked relationships', () => {
+  it('should keep only the relationships that are not revoked', () => {
+    const relations = [
+      relation('detects-active', 'dc-1', AP, { revoked: false }),
+      relation('detects-revoked', 'dc-1', AP, { revoked: true }),
+      relation('indicates-without-attribute', 'rule-1', AP),
+    ];
+    expect(withoutRevokedRelations(relations).map((r) => r.id)).toEqual(['detects-active', 'indicates-without-attribute']);
+  });
+});
+
 describe('Defense mitigations of revoked courses of action', () => {
   it('should keep only the mitigations of the courses of action that are loaded and not revoked', () => {
     const coursesOfAction = [
@@ -267,9 +279,8 @@ describe('Defense coverage stream impact', () => {
     });
     expect(collectDefenseImpact([systemProvides('create')]).full).toEqual(true);
     expect(collectDefenseImpact([systemProvides('delete')]).full).toEqual(true);
-    const updated = collectDefenseImpact([systemProvides('update')]);
-    expect(updated.full).toEqual(false);
-    expect(Array.from(updated.dataComponentIds)).toEqual(['dc-1']);
+    // Revoking the last provides of a system removes its column of gaps
+    expect(collectDefenseImpact([systemProvides('update')]).full).toEqual(true);
     // A security platform is a defense platform with or without telemetry
     const platformProvides = collectDefenseImpact([event('create', {
       type: 'relationship',

@@ -125,8 +125,10 @@ const loadSystemProvides = async (context: AuthContext, changes: DefenseCoverage
       fromId: chunks[index],
       fromTypes: [ENTITY_TYPE_IDENTITY_SYSTEM],
       baseData: true,
+      baseFields: ['revoked'],
     });
-    relations.forEach((relation) => {
+    // A revoked provides declares no telemetry, as in the computation
+    relations.filter((relation) => !relation.revoked).forEach((relation) => {
       const provides = providesBySystem.get(relation.fromId);
       if (provides) provides.push(relation.id);
       else providesBySystem.set(relation.fromId, [relation.id]);

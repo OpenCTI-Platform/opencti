@@ -103,9 +103,9 @@ export const collectDefenseImpact = (events: Array<SseEvent<DataEvent>>): Defens
       } else if (TECHNIQUE_RELATIONSHIPS.includes(relationshipType)) {
         if (extension.target_type === ENTITY_TYPE_ATTACK_PATTERN && extension.target_ref) impact.techniqueIds.add(extension.target_ref);
         if (relationshipType === RELATION_SUBTECHNIQUE_OF && extension.source_ref) impact.techniqueIds.add(extension.source_ref);
-      } else if (relationshipType === RELATION_PROVIDES && extension.source_type === ENTITY_TYPE_IDENTITY_SYSTEM
-        && (eventType === EVENT_TYPE_CREATE || eventType === EVENT_TYPE_DELETE)) {
-        // A system is a defense platform while it provides telemetry: its first or last provides adds or removes a column of gaps
+      } else if (relationshipType === RELATION_PROVIDES && extension.source_type === ENTITY_TYPE_IDENTITY_SYSTEM) {
+        // A system is a defense platform while it provides telemetry that is not revoked: creating, revoking
+        // or deleting one of its provides can add or remove a column of gaps
         impact.full = true;
       } else if (relationshipType === RELATION_PROVIDES && extension.target_ref) {
         impact.dataComponentIds.add(extension.target_ref);
