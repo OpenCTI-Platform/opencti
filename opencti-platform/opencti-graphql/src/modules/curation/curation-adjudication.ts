@@ -193,6 +193,10 @@ export const resolveAdjudicationRunAs = async (context: AuthContext, settings: P
   return runAs;
 };
 
+const recordedDecision = (proposal: Pick<BasicStoreEntityCurationProposal, 'curation_adjudication' | 'target_id'>) => {
+  return JSON.stringify([proposal.curation_adjudication ?? null, proposal.target_id ?? null]);
+};
+
 const reserveDailyBudget = async (settings: CurationSettings) => {
   const day = new Date().toISOString().slice(0, 10);
   return redisCurationReserveCounter('adjudication', day, settings.adjudication_daily_limit);
@@ -287,6 +291,11 @@ export const adjudicateProposal = async (
       // The answer judges the proposal as it was sent: one refreshed during the call is adjudicated again.
       if (adjudicatedContent(latest) !== adjudicatedContent(current)) {
         logApp.info('[CURATION] Proposal changed during its adjudication, answer discarded', { proposal_id: current.internal_id, agentSlug });
+        return latest;
+      }
+      // A decision recorded without being applied leaves the proposal open: it stands over an answer requested before it.
+      if (recordedDecision(latest) !== recordedDecision(current)) {
+        logApp.info('[CURATION] Decision recorded during its adjudication, answer discarded', { proposal_id: current.internal_id, agentSlug });
         return latest;
       }
       const { element } = await patchAttribute(context, user, current.internal_id, ENTITY_TYPE_CURATION_PROPOSAL, patch);

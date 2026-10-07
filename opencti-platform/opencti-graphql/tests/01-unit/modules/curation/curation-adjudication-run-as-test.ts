@@ -3,7 +3,7 @@ import '../../../../src/modules/index';
 import { adjudicateProposal, resolveAdjudicationRunAs } from '../../../../src/modules/curation/curation-adjudication';
 import { getEntitiesMapFromCache } from '../../../../src/database/cache';
 import { storeLoadById } from '../../../../src/database/middleware-loader';
-import { storeLoadByIdsWithRefs } from '../../../../src/database/middleware';
+import { patchAttribute, storeLoadByIdsWithRefs } from '../../../../src/database/middleware';
 import { redisCurationReserveCounter } from '../../../../src/database/redis';
 import { callXtmAgent } from '../../../../src/modules/playbook/components/ai-agent-shared';
 import { OPENCTI_ADMIN_UUID } from '../../../../src/schema/general';
@@ -40,6 +40,10 @@ vi.mock('../../../../src/modules/playbook/components/ai-agent-shared', async (im
 }));
 vi.mock('../../../../src/modules/xtm/one/xtm-one-client', () => ({
   default: { listAgentsForIntent: vi.fn(async () => [{ agent_slug: 'opencti-curator', agent_name: 'OpenCTI Curator', priority: 10 }]) },
+}));
+vi.mock('../../../../src/listener/UserActionListener', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/listener/UserActionListener')>()),
+  publishUserAction: vi.fn(async () => undefined),
 }));
 vi.mock('../../../../src/modules/curation/curation-locks', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/modules/curation/curation-locks')>()),
@@ -123,5 +127,41 @@ describe('a proposal sent for adjudication', () => {
     await expect(adjudicateProposal(context, CURATION_MANAGER_USER, proposal, settingsWith('analyst-id'))).resolves.toBeNull();
     expect(storeLoadByIdsWithRefs).not.toHaveBeenCalled();
     expect(callXtmAgent).not.toHaveBeenCalled();
+  });
+
+  describe('when the agent answers', () => {
+    const answer = JSON.stringify({ decision: 'merge', rationale: 'Same infrastructure and victims.', target_id: 'set-a' });
+    const recordedPatches = () => vi.mocked(patchAttribute).mock.calls.map(([, , , , patch]) => patch as Record<string, unknown>)
+      .filter((patch) => patch.curation_adjudication !== undefined);
+
+    beforeEach(() => {
+      vi.mocked(storeLoadByIdsWithRefs).mockResolvedValue([
+        { internal_id: 'set-a', entity_type: 'Intrusion-Set', name: 'Shadow Lynx' },
+        { internal_id: 'set-b', entity_type: 'Intrusion-Set', name: 'Shadow Lynx Group' },
+      ] as never);
+      vi.mocked(patchAttribute).mockImplementation(async (_context, _user, _id, _type, patch) => ({ element: { ...proposal, ...patch } }) as never);
+    });
+
+    it('records the answer on a proposal nobody decided during the call', async () => {
+      vi.mocked(callXtmAgent).mockResolvedValue(answer as never);
+      const adjudicated = await adjudicateProposal(context, CURATION_MANAGER_USER, proposal, settingsWith('analyst-id'));
+      expect(recordedPatches()).toEqual([expect.objectContaining({ target_id: 'set-a', curation_adjudication: expect.objectContaining({ decision: 'merge', verified: true }) })]);
+      expect(adjudicated?.curation_adjudication?.decision).toBe('merge');
+    });
+
+    it('discards the answer when a decision was recorded on the open proposal during the call', async () => {
+      const manual = { decision: 'distinct', rationale: 'Two distinct sets.', agent_slug: null, model: null, adjudicated_at: '2026-10-07T12:30:00.000Z', applied: false, verified: false };
+      let decided = false;
+      vi.mocked(storeLoadById).mockImplementation(async () => (decided ? { ...proposal, curation_adjudication: manual, target_id: 'set-b' } : proposal) as never);
+      vi.mocked(callXtmAgent).mockImplementation(async () => {
+        decided = true;
+        return answer as never;
+      });
+      const adjudicated = await adjudicateProposal(context, CURATION_MANAGER_USER, proposal, settingsWith('analyst-id'));
+      expect(callXtmAgent).toHaveBeenCalledTimes(1);
+      expect(recordedPatches()).toEqual([]);
+      expect(adjudicated?.curation_adjudication).toEqual(manual);
+      expect(adjudicated?.target_id).toBe('set-b');
+    });
   });
 });
