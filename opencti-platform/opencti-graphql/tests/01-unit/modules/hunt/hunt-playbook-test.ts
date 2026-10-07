@@ -1,7 +1,7 @@
 import { Readable } from 'node:stream';
 import type { FileHandle } from 'fs/promises';
 import { describe, expect, it } from 'vitest';
-import { computeHuntPlaybookOutcome, isHuntRunGroupSettled } from '../../../../src/modules/hunt/hunt-playbook';
+import { computeHuntPlaybookOutcome, HUNT_PLAYBOOK_MAX_CONTEXT_LENGTH, isHuntRunGroupSettled, isStorableHuntPlaybookContext } from '../../../../src/modules/hunt/hunt-playbook';
 import { huntTriageRunPayload, isHuntRunFinalized } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
 import { isHuntStepNode, matchHuntResultFilter } from '../../../../src/modules/playbook/components/hunt-result-filter-component';
 import {
@@ -115,6 +115,29 @@ describe('Hunt playbook outcome', () => {
     expect(isHuntRunGroupSettled([run({ hunt_run_status: 'completed' }), run({ hunt_run_status: 'timeout' })])).toBe(true);
     expect(isHuntRunGroupSettled([run({ hunt_run_status: 'running' })])).toBe(false);
     expect(isHuntRunGroupSettled([run({ hunt_run_status: 'failed', next_retry_at: '2026-10-03T10:00:00.000Z' })])).toBe(false);
+  });
+
+  it('should let a step wait on its runs only when its whole context fits on its leader run', () => {
+    const bundleOf = (length: number) => JSON.stringify({ id: 'bundle--1', type: 'bundle', objects: [{ id: 'note--1', content: 'x'.repeat(length) }] });
+    const playbookContext = (bundle: string, previousBundle: string) => ({
+      playbook_id: 'playbook-1',
+      step_id: 'step-1',
+      previous_step_id: 'step-0',
+      execution_id: 'execution-1',
+      event_id: 'event-1',
+      data_instance_id: 'malware--1',
+      execution_start: '2026-10-07T03:00:00.000Z',
+      include_results: true,
+      bundle,
+      previous_bundle: previousBundle,
+    });
+    const small = bundleOf(1024);
+    const half = bundleOf(HUNT_PLAYBOOK_MAX_CONTEXT_LENGTH / 2);
+    expect(isStorableHuntPlaybookContext(playbookContext(small, small))).toBe(true);
+    // Each bundle alone is under the limit, the stored context is not
+    expect(half.length).toBeLessThan(HUNT_PLAYBOOK_MAX_CONTEXT_LENGTH);
+    expect(isStorableHuntPlaybookContext(playbookContext(half, half))).toBe(false);
+    expect(isStorableHuntPlaybookContext(playbookContext(small, half))).toBe(true);
   });
 });
 

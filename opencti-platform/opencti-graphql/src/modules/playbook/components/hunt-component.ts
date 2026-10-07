@@ -34,7 +34,7 @@ import { HUNT_CONFIG } from '../../hunt/hunt-utils';
 import { createHuntRuns, designateHuntPlaybookLeader } from '../../hunt/huntRun/huntRun-domain';
 import { withHuntLock } from '../../hunt/hunt-lock';
 import { type BasicStoreEntityHuntRun, ENTITY_TYPE_HUNT_RUN, HUNT_RUN_TRIGGER_PLAYBOOK, type HuntPlaybookContext } from '../../hunt/huntRun/huntRun-types';
-import { findPlaybookHuntRuns, HUNT_PLAYBOOK_MAX_CONTEXT_LENGTH, PLAYBOOK_HUNT_COMPONENT_ID, resumeHuntPlaybookStep } from '../../hunt/hunt-playbook';
+import { findPlaybookHuntRuns, isStorableHuntPlaybookContext, PLAYBOOK_HUNT_COMPONENT_ID, resumeHuntPlaybookStep } from '../../hunt/hunt-playbook';
 
 export const PLAYBOOK_HUNT_MAX_HUNTS = 20;
 const PLAYBOOK_HUNT_SCHEMA_MAX_OPTIONS = 500;
@@ -227,7 +227,7 @@ export const PLAYBOOK_HUNT_COMPONENT: PlaybookComponent<HuntComponentConfigurati
       previous_bundle: JSON.stringify(previousStepBundle ?? bundle),
     };
     const runs: BasicStoreEntityHuntRun[] = [];
-    const waiting = configuration.wait_for_results !== false && serializedBundle.length <= HUNT_PLAYBOOK_MAX_CONTEXT_LENGTH;
+    const waiting = configuration.wait_for_results !== false && isStorableHuntPlaybookContext(playbookContext);
     try {
       const inScope = bundle.objects.filter((object) => isBundleElementInScope(object, configuration.applyToElements, dataInstanceId));
       const elements = await filterBundleElements(context, inScope, configuration.applyWithFilters);

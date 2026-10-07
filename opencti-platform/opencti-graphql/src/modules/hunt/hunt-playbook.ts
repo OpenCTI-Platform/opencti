@@ -21,8 +21,13 @@ import {
 export const PLAYBOOK_HUNT_COMPONENT_ID = 'PLAYBOOK_HUNT_COMPONENT';
 // Objects produced by the runs and appended to the playbook bundle when the step resumes
 export const HUNT_PLAYBOOK_MAX_RESULTS = 500;
-// The continuation keeps the bundle of the step: oversized bundles are resumed immediately instead of waiting
+// The continuation keeps the bundles of the step: a step whose context would be oversized is resumed immediately instead of waiting
 export const HUNT_PLAYBOOK_MAX_CONTEXT_LENGTH = 5 * 1024 * 1024;
+
+/** Whether the continuation of a step can wait on its leader run: its whole context as stored, both bundles included. */
+export const isStorableHuntPlaybookContext = (playbookContext: HuntPlaybookContext) => {
+  return JSON.stringify(playbookContext).length <= HUNT_PLAYBOOK_MAX_CONTEXT_LENGTH;
+};
 
 export interface PlaybookHuntRunsScope {
   executionId: string;
