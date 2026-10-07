@@ -72,15 +72,22 @@ describe('curation merge snapshots', () => {
     expect(inputs.find((input) => input.key === FIELD_AUTHORITY_ATTRIBUTE)).toBeUndefined();
   });
 
+  const entity = (internalId: string, names: string[]) => ({
+    internal_id: internalId,
+    entity_type: ENTITY_TYPE_INTRUSION_SET,
+    x_opencti_files: names.map((name) => ({ id: `import/${ENTITY_TYPE_INTRUSION_SET}/${internalId}/${name}`, name })),
+  }) as unknown as Parameters<typeof hasFileNameCollision>[1];
+
   it('tells a merge that would drop a source file named like a file of the target', () => {
-    const entity = (internalId: string, names: string[]) => ({
-      internal_id: internalId,
-      entity_type: ENTITY_TYPE_INTRUSION_SET,
-      x_opencti_files: names.map((name) => ({ id: `import/${ENTITY_TYPE_INTRUSION_SET}/${internalId}/${name}`, name })),
-    }) as unknown as Parameters<typeof hasFileNameCollision>[0];
     const target = entity('target-1', ['report.pdf']);
-    expect(hasFileNameCollision(entity('source-1', ['report.pdf', 'other.pdf']), target)).toBe(true);
-    expect(hasFileNameCollision(entity('source-1', ['other.pdf']), target)).toBe(false);
-    expect(hasFileNameCollision(entity('source-1', []), target)).toBe(false);
+    expect(hasFileNameCollision([entity('source-1', ['report.pdf', 'other.pdf'])], target)).toBe(true);
+    expect(hasFileNameCollision([entity('source-1', ['other.pdf'])], target)).toBe(false);
+    expect(hasFileNameCollision([entity('source-1', [])], target)).toBe(false);
+  });
+
+  it('tells a merge that would drop a source file named like a file of another source', () => {
+    const target = entity('target-1', ['report.pdf']);
+    expect(hasFileNameCollision([entity('source-1', ['notes.pdf']), entity('source-2', ['notes.pdf'])], target)).toBe(true);
+    expect(hasFileNameCollision([entity('source-1', ['notes.pdf']), entity('source-2', ['other.pdf'])], target)).toBe(false);
   });
 });

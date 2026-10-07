@@ -131,11 +131,16 @@ const predictMovedFileIds = (source: BasicStoreObject, target: BasicStoreObject)
     .filter((id) => id.includes(entityFilesPath(target)) && !targetFileIds.has(id));
 };
 
-// A source file named like a file of the target is not moved, and the merge deletes it with the source: no unmerge
-// can bring it back.
-export const hasFileNameCollision = (source: BasicStoreObject, target: BasicStoreObject) => {
-  const targetFileIds = new Set((target.x_opencti_files ?? []).map((file) => file.id));
-  return (source.x_opencti_files ?? []).some((file) => targetFileIds.has(file.id.replace(entityFilesPath(source), entityFilesPath(target))));
+// The files are moved source after source, and a source file is not moved when the target already has a file with its
+// name, its own or one moved from another source: the merge deletes it with the source, and no unmerge can bring it back.
+export const hasFileNameCollision = (sources: BasicStoreObject[], target: BasicStoreObject) => {
+  const destinations = new Set((target.x_opencti_files ?? []).map((file) => file.id));
+  return sources.some((source) => (source.x_opencti_files ?? []).some((file) => {
+    const destination = file.id.replace(entityFilesPath(source), entityFilesPath(target));
+    if (destinations.has(destination)) return true;
+    destinations.add(destination);
+    return false;
+  }));
 };
 
 const loadRecreatableRelationships = async (context: AuthContext, ids: string[]): Promise<Map<string, MergeRecreatableRelationship>> => {
@@ -219,9 +224,9 @@ const prepareMergeRecord = async (context: AuthContext, user: AuthUser, input: M
   const totalRedirected = sourceSnapshots.reduce((acc, snapshot) => acc + snapshot.redirected.length, 0);
   // A relationship between two sources is listed by both of them: it is counted, and recreated, once.
   const allRecreatableIds = R.uniq([...recreatableIdsBySource.values()].flat());
-  if (sources.some((source) => hasFileNameCollision(source, target))) {
+  if (hasFileNameCollision(sources, target)) {
     irreversibleReason = IRREVERSIBLE_FILE_NAME_COLLISION;
-    logApp.info('[CURATION] Merge recorded as not reversible: a merged file has the name of a file of the target', { target_id: target.internal_id });
+    logApp.info('[CURATION] Merge recorded as not reversible: a merged file has the name of a file of the target or of another source', { target_id: target.internal_id });
   } else if (allRecreatableIds.length > MAX_RECREATABLE_RELATIONSHIPS) {
     irreversibleReason = IRREVERSIBLE_TOO_MANY_REMOVED_RELATIONSHIPS;
     logApp.info('[CURATION] Merge recorded as not reversible: too many duplicated relationships removed', { count: allRecreatableIds.length, limit: MAX_RECREATABLE_RELATIONSHIPS });
