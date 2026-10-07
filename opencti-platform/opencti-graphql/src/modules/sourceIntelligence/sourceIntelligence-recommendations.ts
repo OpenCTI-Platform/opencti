@@ -1036,8 +1036,30 @@ export const selectAutonomousCandidates = (recommendations: BasicStoreEntitySour
 };
 
 /**
+ * Applies the candidates one after the other and counts those applied: an application recorded as failed, or one that
+ * raised, is not counted, and does not stop the next ones.
+ */
+export const applyEachCandidate = async (
+  candidates: Pick<BasicStoreEntitySourceRecommendation, 'internal_id'>[],
+  apply: (id: string) => Promise<{ recommendation_status?: string } | null | undefined>,
+) => {
+  let applied = 0;
+  for (let i = 0; i < candidates.length; i += 1) {
+    try {
+      const outcome = await apply(candidates[i].internal_id);
+      if (outcome?.recommendation_status === RECOMMENDATION_STATUS_APPLIED) {
+        applied += 1;
+      }
+    } catch (err) {
+      logApp.error('[OPENCTI-MODULE] Source intelligence autonomous apply failed', { cause: err, id: candidates[i].internal_id });
+    }
+  }
+  return applied;
+};
+
+/**
  * Autonomy policy (Enterprise Edition), run once per computation after the tuning rules and the collection gaps, so
- * the per-run cap applies once across every kind.
+ * the per-run cap applies once across every kind. Returns the number of recommendations applied.
  */
 export const applyAutonomousRecommendations = async (context: AuthContext, settings: SourceIntelligenceSettings) => {
   if (settings.autonomy.auto_apply_kinds.length === 0 || settings.autonomy.max_auto_actions_per_run <= 0) {
@@ -1058,14 +1080,7 @@ export const applyAutonomousRecommendations = async (context: AuthContext, setti
     }
   }
   const eligible = selectAutonomousCandidates(recommendations.filter((recommendation) => !needsSettings.has(recommendation.internal_id)), settings);
-  for (let i = 0; i < eligible.length; i += 1) {
-    try {
-      await applySourceRecommendation(context, SOURCE_INTELLIGENCE_MANAGER_USER, eligible[i].internal_id, settings, {}, true);
-    } catch (err) {
-      logApp.error('[OPENCTI-MODULE] Source intelligence autonomous apply failed', { cause: err, id: eligible[i].internal_id });
-    }
-  }
-  return eligible.length;
+  return applyEachCandidate(eligible, (id) => applySourceRecommendation(context, SOURCE_INTELLIGENCE_MANAGER_USER, id, settings, {}, true));
 };
 
 const buildSourceUser = (

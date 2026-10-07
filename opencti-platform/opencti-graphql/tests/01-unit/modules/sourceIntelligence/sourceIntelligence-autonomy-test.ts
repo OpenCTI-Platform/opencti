@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import '../../../../src/modules/index';
-import { selectAutonomousCandidates } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-recommendations';
+import { applyEachCandidate, selectAutonomousCandidates } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-recommendations';
 import { DEFAULT_SOURCE_INTELLIGENCE_SETTINGS, type SourceIntelligenceSettings } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-settings';
 import type { BasicStoreEntitySourceRecommendation, RecommendationKindValue } from '../../../../src/modules/sourceIntelligence/sourceIntelligence-types';
 
@@ -57,5 +57,23 @@ describe('Source intelligence autonomy policy', () => {
   it('should apply nothing without allowed kinds or with a zero cap', () => {
     expect(selectAutonomousCandidates(backlog, settingsWith([], 10))).toEqual([]);
     expect(selectAutonomousCandidates(backlog, settingsWith(['add_decay_rule'], 0))).toEqual([]);
+  });
+
+  it('should count only the recommendations applied, going on after a failed or a raising one', async () => {
+    const outcomes: Record<string, () => Promise<{ recommendation_status: string }>> = {
+      'decay-new': async () => ({ recommendation_status: 'failed' }),
+      'connector-old': async () => {
+        throw new Error('Connector manager unreachable');
+      },
+      confidence: async () => ({ recommendation_status: 'applied' }),
+      'decay-old': async () => ({ recommendation_status: 'applying' }),
+    };
+    const attempted: string[] = [];
+    const applied = await applyEachCandidate(backlog, (id) => {
+      attempted.push(id);
+      return outcomes[id]();
+    });
+    expect(applied).toBe(1);
+    expect(attempted).toEqual(ids(backlog));
   });
 });
