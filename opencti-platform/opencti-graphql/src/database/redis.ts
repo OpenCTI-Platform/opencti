@@ -1137,6 +1137,27 @@ export const redisCurationIncrementCounter = async (name: string, day: string, i
   return value;
 };
 
+const CURATION_RESERVE_COUNTER_SCRIPT = `
+local used = tonumber(redis.call('GET', KEYS[1]) or '0')
+if used >= tonumber(ARGV[1]) then
+  return 0
+end
+redis.call('INCR', KEYS[1])
+redis.call('EXPIRE', KEYS[1], ARGV[2])
+return 1
+`;
+
+/**
+ * Take one unit of a daily budget, atomically, only while the counter of the day is below the limit: a refused
+ * reservation never counts, so raising the limit later that day frees the units it adds.
+ */
+export const redisCurationReserveCounter = async (name: string, day: string, limit: number): Promise<boolean> => {
+  if (limit <= 0) return false;
+  const key = `${CURATION_KEY_PREFIX}counter:${name}:${day}`;
+  const reserved = await getClientBase().eval(CURATION_RESERVE_COUNTER_SCRIPT, 1, key, limit, CURATION_COUNTER_TTL_SECONDS);
+  return Number(reserved) === 1;
+};
+
 export const redisCurationGetCounters = async (name: string, days: string[]): Promise<number[]> => {
   if (days.length === 0) return [];
   const values = await Promise.all(days.map((day) => getClientBase().get(`${CURATION_KEY_PREFIX}counter:${name}:${day}`)));

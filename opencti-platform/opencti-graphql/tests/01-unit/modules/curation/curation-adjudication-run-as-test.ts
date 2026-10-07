@@ -4,7 +4,7 @@ import { adjudicateProposal, resolveAdjudicationRunAs } from '../../../../src/mo
 import { getEntitiesMapFromCache } from '../../../../src/database/cache';
 import { storeLoadById } from '../../../../src/database/middleware-loader';
 import { storeLoadByIdsWithRefs } from '../../../../src/database/middleware';
-import { redisCurationIncrementCounter } from '../../../../src/database/redis';
+import { redisCurationReserveCounter } from '../../../../src/database/redis';
 import { callXtmAgent } from '../../../../src/modules/playbook/components/ai-agent-shared';
 import { OPENCTI_ADMIN_UUID } from '../../../../src/schema/general';
 import { CURATION_MANAGER_USER } from '../../../../src/utils/access';
@@ -26,7 +26,7 @@ vi.mock('../../../../src/database/middleware', async (importOriginal) => ({
 }));
 vi.mock('../../../../src/database/redis', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/database/redis')>()),
-  redisCurationIncrementCounter: vi.fn(async () => 1),
+  redisCurationReserveCounter: vi.fn(async () => true),
 }));
 vi.mock('../../../../src/enterprise-edition/ee', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/enterprise-edition/ee')>()),
@@ -103,7 +103,18 @@ describe('a proposal sent for adjudication', () => {
     vi.mocked(storeLoadByIdsWithRefs).mockResolvedValue([{ internal_id: 'set-a', entity_type: 'Intrusion-Set', name: 'Shadow Lynx' }] as never);
     await expect(adjudicateProposal(context, CURATION_MANAGER_USER, proposal, settingsWith('analyst-id'))).resolves.toBeNull();
     expect(storeLoadByIdsWithRefs).toHaveBeenCalledWith(context, analyst, ['set-a', 'set-b']);
-    expect(redisCurationIncrementCounter).not.toHaveBeenCalled();
+    expect(redisCurationReserveCounter).not.toHaveBeenCalled();
+    expect(callXtmAgent).not.toHaveBeenCalled();
+  });
+
+  it('is refused without calling the agent once the daily budget is spent', async () => {
+    vi.mocked(storeLoadByIdsWithRefs).mockResolvedValue([
+      { internal_id: 'set-a', entity_type: 'Intrusion-Set', name: 'Shadow Lynx' },
+      { internal_id: 'set-b', entity_type: 'Intrusion-Set', name: 'Shadow Lynx Group' },
+    ] as never);
+    vi.mocked(redisCurationReserveCounter).mockResolvedValueOnce(false);
+    await expect(adjudicateProposal(context, CURATION_MANAGER_USER, proposal, settingsWith('analyst-id'))).rejects.toThrow('The daily adjudication budget is exhausted');
+    expect(redisCurationReserveCounter).toHaveBeenCalledWith('adjudication', new Date().toISOString().slice(0, 10), 50);
     expect(callXtmAgent).not.toHaveBeenCalled();
   });
 

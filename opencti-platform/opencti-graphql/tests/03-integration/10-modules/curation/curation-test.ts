@@ -28,7 +28,7 @@ import {
   ENTITY_TYPE_MERGE_RECORD,
 } from '../../../../src/modules/curation/curation-types';
 import type { BasicStoreEntity } from '../../../../src/types/store';
-import { redisCurationSwapFieldWriter } from '../../../../src/database/redis';
+import { redisCurationGetCounters, redisCurationReserveCounter, redisCurationSwapFieldWriter } from '../../../../src/database/redis';
 
 const PROPOSALS_FOR_ENTITY_QUERY = gql`
   query CurationProposalsForEntity($id: ID!, $status: [CurationProposalStatus!]) {
@@ -573,6 +573,20 @@ describe('Knowledge curation', () => {
     // An event older than the recorded ones is a replay too, and the next event overwrites the last real writer
     expect(await swap('user-x', '999-0')).toEqual({ previous: null, replayed: true });
     expect(await swap('user-c', '1002-0')).toEqual({ previous: 'user-b', replayed: false });
+  });
+
+  it('counts only the units of a daily budget it reserves', async () => {
+    const day = `curation-test-${Date.now()}`;
+    const reserve = (limit: number) => redisCurationReserveCounter('budget-test', day, limit);
+    expect(await reserve(0)).toBe(false);
+    expect(await reserve(2)).toBe(true);
+    expect(await reserve(2)).toBe(true);
+    expect(await reserve(2)).toBe(false);
+    expect(await redisCurationGetCounters('budget-test', [day])).toEqual([2]);
+    // Raising the limit later that day frees the units it adds, whatever was refused before.
+    expect(await reserve(3)).toBe(true);
+    expect(await reserve(3)).toBe(false);
+    expect(await redisCurationGetCounters('budget-test', [day])).toEqual([3]);
   });
 
   describe('source field authority', () => {

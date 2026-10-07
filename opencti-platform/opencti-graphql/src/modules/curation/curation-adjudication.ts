@@ -7,7 +7,7 @@ import { AUTOMATION_MANAGER_USER, isUserHasCapability, KNOWLEDGE, SYSTEM_USER } 
 import { storeLoadByIdsWithRefs, patchAttribute } from '../../database/middleware';
 import { storeLoadById } from '../../database/middleware-loader';
 import { getEntitiesMapFromCache } from '../../database/cache';
-import { redisCurationIncrementCounter } from '../../database/redis';
+import { redisCurationReserveCounter } from '../../database/redis';
 import { publishUserAction } from '../../listener/UserActionListener';
 import { OPENCTI_ADMIN_UUID } from '../../schema/general';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
@@ -195,8 +195,7 @@ export const resolveAdjudicationRunAs = async (context: AuthContext, settings: P
 
 const reserveDailyBudget = async (settings: CurationSettings) => {
   const day = new Date().toISOString().slice(0, 10);
-  const used = await redisCurationIncrementCounter('adjudication', day);
-  return used <= settings.adjudication_daily_limit;
+  return redisCurationReserveCounter('adjudication', day, settings.adjudication_daily_limit);
 };
 
 /**
