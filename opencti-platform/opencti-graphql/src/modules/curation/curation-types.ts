@@ -351,7 +351,6 @@ export interface BasicStoreEntityCurationPolicy extends BasicStoreEntity {
   max_applies_per_run: number;
   last_applied_at?: string | null;
   last_dry_run?: CurationPolicyDryRunResult | null;
-  applied_count: number;
 }
 
 export interface StoreEntityCurationPolicy extends StoreEntity, Omit<BasicStoreEntityCurationPolicy, keyof BasicStoreEntity> {}

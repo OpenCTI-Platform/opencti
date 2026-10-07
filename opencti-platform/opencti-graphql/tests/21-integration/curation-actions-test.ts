@@ -1857,6 +1857,11 @@ describe('Knowledge curation actions', () => {
       expect((await loadIntrusionSet(target.id)).aliases).toEqual([aliasName]);
       const policy = await queryAsAdminWithSuccess({ query: POLICY_QUERY, variables: { id: policyId } });
       expect(policy.data?.curationPolicy.applied_count).toBe(1);
+      // A task retried after the proposal was applied changes nothing, and the count stays the same.
+      const retried = await queryAsAdminWithSuccess({ query: APPLY_MUTATION, variables: { id, policyId } });
+      expect(retried.data?.curationProposalApply.proposal_status).toBe('auto_applied');
+      const recounted = await queryAsAdminWithSuccess({ query: POLICY_QUERY, variables: { id: policyId } });
+      expect(recounted.data?.curationPolicy.applied_count).toBe(1);
     });
 
     it('should skip a proposal that is not eligible anymore, or whose policy is disabled', async () => {

@@ -35,7 +35,9 @@ import {
   PROPOSAL_KIND_RELATIONSHIP_CONFLICT,
   PROPOSAL_KIND_STALE,
   PROPOSAL_KIND_TYPE_MISMATCH,
+  PROPOSAL_STATUS_AUTO_APPLIED,
   PROPOSAL_STATUS_OPEN,
+  PROPOSAL_STATUS_REVERTED,
   type PolicySourceClass,
   type ProposalKind,
   SOURCE_CLASS_ANY,
@@ -239,7 +241,6 @@ export const addCurationPolicy = async (context: AuthContext, user: AuthUser, in
     forbid_open_contradiction: input.forbid_open_contradiction ?? true,
     require_adjudication: input.require_adjudication ?? false,
     max_applies_per_run: input.max_applies_per_run ?? 100,
-    applied_count: 0,
   };
   validatePolicyInput(finalInput);
   return createInternalObject<any>(context, user, finalInput, ENTITY_TYPE_CURATION_POLICY);
@@ -305,6 +306,24 @@ const candidateFilters = (policy: BasicStoreEntityCurationPolicy, opts: { anyCon
     filters.push({ key: ['confidence_score'], values: [String(policy.auto_apply_threshold)], operator: FilterOperator.Gte });
   }
   return { mode: FilterMode.And, filters, filterGroups: [] };
+};
+
+/**
+ * The proposals a policy applied, counted from the proposals themselves: only a policy application records its policy,
+ * and a revert keeps it, so a task retried after a failure can neither miss an application nor count it twice.
+ */
+export const countPolicyApplications = async (context: AuthContext, policy: BasicStoreEntityCurationPolicy) => {
+  return elCount(context, SYSTEM_USER, READ_INDEX_INTERNAL_OBJECTS, {
+    types: [ENTITY_TYPE_CURATION_PROPOSAL],
+    filters: {
+      mode: FilterMode.And,
+      filters: [
+        { key: ['policy_id'], values: [policy.internal_id], operator: FilterOperator.Eq },
+        { key: ['proposal_status'], values: [PROPOSAL_STATUS_AUTO_APPLIED, PROPOSAL_STATUS_REVERTED], operator: FilterOperator.Eq, mode: FilterMode.Or },
+      ],
+      filterGroups: [],
+    },
+  });
 };
 
 // The open proposals of the kinds a policy does not cover: excluded by their kind, before anything else is checked.

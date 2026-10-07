@@ -5,7 +5,7 @@ import { FunctionalError, ForbiddenAccess } from '../../config/errors';
 import { logApp } from '../../config/conf';
 import { patchAttribute } from '../../database/middleware';
 import { internalFindByIds, storeLoadById, type EntityOptions } from '../../database/middleware-loader';
-import { elAggregationCount, elCount, elUpdate } from '../../database/engine';
+import { elAggregationCount, elCount } from '../../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS, wait } from '../../database/utils';
 import { redisCurationDeleteApplicationResult, redisCurationGetApplicationResult, redisCurationSetApplicationResult } from '../../database/redis';
 import { SYSTEM_USER } from '../../utils/access';
@@ -20,7 +20,6 @@ import {
   ACTION_MERGE,
   ACTION_UNMERGE,
   type AppliedPatch,
-  type BasicStoreEntityCurationPolicy,
   type BasicStoreEntityCurationProposal,
   type BasicStoreEntityMergeRecord,
   type CurationAdjudication,
@@ -527,13 +526,6 @@ export const decideProposal = async (
   });
 };
 
-const POLICY_APPLIED_COUNT_SCRIPT = 'ctx._source.applied_count = (ctx._source.applied_count == null ? 0 : ctx._source.applied_count) + params.increment';
-
-// Policy tasks run in parallel workers: the counter is incremented in the index itself, never read-modify-written.
-const incrementPolicyAppliedCount = async (context: AuthContext, policy: BasicStoreEntityCurationPolicy) => {
-  await elUpdate(context, policy._index, policy.internal_id, { script: { source: POLICY_APPLIED_COUNT_SCRIPT, lang: 'painless', params: { increment: 1 } } });
-};
-
 /**
  * Apply executed by a background task, as its initiator (the worker sends the task's applicant): a bulk accept (no
  * policy) or a policy auto-apply. A bulk accept applies the proposal as it was when the task was queued
@@ -584,14 +576,12 @@ export const applyProposalFromTask = async (
   }
   const adjudication = proposal.curation_adjudication?.verified === true ? proposal.curation_adjudication : null;
   const decision = adjudication?.decision === DECISION_ALIAS ? DECISION_ALIAS : null;
-  const applied = await applyAndRecord(context, user, proposal, settings, {
+  return applyAndRecord(context, user, proposal, settings, {
     status: PROPOSAL_STATUS_AUTO_APPLIED,
     rationale: `Applied by curation policy ${policy.name}`,
     policyId: policy.internal_id,
     decision,
   });
-  await incrementPolicyAppliedCount(context, policy);
-  return applied;
 };
 
 export const adjudicateProposalNow = async (context: AuthContext, user: AuthUser, id: string) => {

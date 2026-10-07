@@ -31,6 +31,7 @@ import { findMergeRecordById, findMergeRecordsPaginated, isMergeRecordReversible
 import {
   addCurationPolicy,
   applyCurationPolicyById,
+  countPolicyApplications,
   deleteCurationPolicy,
   dryRunCurationPolicy,
   editCurationPolicy,
@@ -203,6 +204,7 @@ const curationResolvers: Resolvers = {
       // A dry run counts what its user can read: another user is never shown those counts.
       return (lastDryRun && lastDryRun.computed_by_id === context.user?.id ? lastDryRun : null) as any;
     },
+    applied_count: (policy, _, context) => countPolicyApplications(context, policy as unknown as BasicStoreEntityCurationPolicy),
   },
   CurationSettings: {
     adjudication_run_as: async (settings, _, context) => {
