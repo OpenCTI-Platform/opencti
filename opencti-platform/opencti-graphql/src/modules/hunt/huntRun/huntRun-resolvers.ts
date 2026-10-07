@@ -34,7 +34,7 @@ const huntRunResolvers: Resolvers = {
   Query: {
     huntRun: (_, { id }, context) => findHuntRunById(context, context.user, id),
     huntRuns: (_, args, context) => findHuntRunsPaginated(context, context.user, args),
-    huntConnectors: (_, { onlyAlive }, context) => findHuntConnectors(context, onlyAlive ?? false),
+    huntConnectors: (_, { onlyAlive }, context) => findHuntConnectors(context, context.user, onlyAlive ?? false),
   },
   HuntRun: {
     hunt: (run, _, context) => storeLoadById(context, context.user, run.hunt_id, ENTITY_TYPE_HUNT),

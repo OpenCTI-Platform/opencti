@@ -5370,6 +5370,7 @@
   "The HTML file was saved, but the PDF export failed": "HTML ファイルは保存されましたが、PDF へのエクスポートに失敗しました",
   "The hunt can be saved, but it cannot run until a hunt connector of its scope supports indicator lookups. A Sigma rule or a native query runs on every hunt connector.": "ハントは保存できますが、スコープ内のハント コネクタがインジケーター検索に対応するまで実行できません。Sigma ルールまたはネイティブ クエリはすべてのハント コネクタで実行されます。",
   "The hunt connector could not read the run sent by the platform": "ハントコネクタがプラットフォームから送信された実行を読み取れませんでした",
+  "The hunt connector of this run now executes against another security platform": "この実行のハントコネクターは現在、別のセキュリティプラットフォームに対して実行されています",
   "The hunt connector of this run was deleted": "この実行のハントコネクターは削除されました",
   "The hunt connector of this run was deleted: the run is cancelled at the next pass of the hunt manager": "この実行のハントコネクターは削除されました。ハントマネージャーの次回の処理で実行はキャンセルされます",
   "The hunt connector translates the saved logic of the hunt without running it.": "ハントコネクターは保存済みのハントロジックを実行せずに変換します。",

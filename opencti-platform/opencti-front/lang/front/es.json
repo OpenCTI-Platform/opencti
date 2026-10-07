@@ -5370,6 +5370,7 @@
   "The HTML file was saved, but the PDF export failed": "El archivo HTML se ha guardado, pero la exportación a PDF ha fallado",
   "The hunt can be saved, but it cannot run until a hunt connector of its scope supports indicator lookups. A Sigma rule or a native query runs on every hunt connector.": "La búsqueda se puede guardar, pero no puede ejecutarse hasta que un conector de búsqueda de su ámbito admita la búsqueda de indicadores. Una regla Sigma o una consulta nativa se ejecuta en cualquier conector de búsqueda.",
   "The hunt connector could not read the run sent by the platform": "El conector de caza no pudo leer la ejecución enviada por la plataforma",
+  "The hunt connector of this run now executes against another security platform": "El conector de búsqueda de esta ejecución consulta ahora otra plataforma de seguridad",
   "The hunt connector of this run was deleted": "Se eliminó el conector de búsqueda de esta ejecución",
   "The hunt connector of this run was deleted: the run is cancelled at the next pass of the hunt manager": "Se eliminó el conector de búsqueda de esta ejecución: la ejecución se cancela en la próxima pasada del gestor de búsquedas",
   "The hunt connector translates the saved logic of the hunt without running it.": "El conector de búsqueda traduce la lógica guardada de la búsqueda sin ejecutarla.",

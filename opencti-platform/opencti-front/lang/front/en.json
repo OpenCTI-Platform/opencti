@@ -5370,6 +5370,7 @@
   "The HTML file was saved, but the PDF export failed": "The HTML file was saved, but the PDF export failed",
   "The hunt can be saved, but it cannot run until a hunt connector of its scope supports indicator lookups. A Sigma rule or a native query runs on every hunt connector.": "The hunt can be saved, but it cannot run until a hunt connector of its scope supports indicator lookups. A Sigma rule or a native query runs on every hunt connector.",
   "The hunt connector could not read the run sent by the platform": "The hunt connector could not read the run sent by the platform",
+  "The hunt connector of this run now executes against another security platform": "The hunt connector of this run now executes against another security platform",
   "The hunt connector of this run was deleted": "The hunt connector of this run was deleted",
   "The hunt connector of this run was deleted: the run is cancelled at the next pass of the hunt manager": "The hunt connector of this run was deleted: the run is cancelled at the next pass of the hunt manager",
   "The hunt connector translates the saved logic of the hunt without running it.": "The hunt connector translates the saved logic of the hunt without running it.",

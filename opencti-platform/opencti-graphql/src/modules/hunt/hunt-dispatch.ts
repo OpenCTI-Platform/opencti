@@ -76,6 +76,14 @@ export const huntConnectorPlatform = (connector: BasicStoreEntityConnector): str
 };
 
 /**
+ * Whether a connector still executes against the security platform of a run (none for the internet): a connector
+ * registered again against another platform no longer executes the runs created for the former one.
+ */
+export const isHuntConnectorBoundToRun = (connector: BasicStoreEntityConnector, run: Pick<BasicStoreEntityHuntRun, 'security_platform_id'>) => {
+  return (connector.hunt_security_platform_id ?? null) === (run.security_platform_id ?? null);
+};
+
+/**
  * Security platforms a telemetry hunt runs on: the hunt scope filter over Security Platforms, or all of them.
  */
 export const resolveHuntScopePlatforms = async (
@@ -341,6 +349,11 @@ export const dispatchHuntRun = async (
   const connector = connectors.find((c) => c.internal_id === run.connector_id);
   if (!connector || connector.active !== true) {
     logApp.debug('[OPENCTI-MODULE] Hunt run kept queued, connector is not alive', { runId: run.internal_id, connectorId: run.connector_id });
+    return false;
+  }
+  // Never sent to another platform than its own: the hunt manager cancels the run (cancelOrphanRunsOfPage)
+  if (!isHuntConnectorBoundToRun(connector, run)) {
+    logApp.debug('[OPENCTI-MODULE] Hunt run kept queued, its connector executes against another security platform', { runId: run.internal_id, connectorId: run.connector_id });
     return false;
   }
   const reserved = await withConnectorDispatchLock(connector.internal_id, async () => {

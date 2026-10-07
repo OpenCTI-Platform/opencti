@@ -60,7 +60,7 @@ import {
   releaseUnpublishedHuntRun,
   replaceHuntRun,
 } from './huntRun/huntRun-domain';
-import { dispatchHuntRun, listHuntConnectors } from './hunt-dispatch';
+import { dispatchHuntRun, isHuntConnectorBoundToRun, listHuntConnectors } from './hunt-dispatch';
 import { computeNextRunAt } from './hunt-schedule';
 import { updateHuntRunInformation } from './hunt-stats';
 import { HUNT_CONFIG, parseHuntFilterGroup } from './hunt-utils';
@@ -231,6 +231,8 @@ const cancelOrphanRunsOfPage = async (context: AuthContext, runs: BasicStoreEnti
       reason = HUNT_MESSAGES.runCancelledHuntDeleted;
     } else if (run.connector_id && (!connector || new Date(run.created_at).getTime() < new Date(connector.created_at).getTime())) {
       reason = HUNT_MESSAGES.runCancelledConnectorDeleted;
+    } else if (connector && !isHuntConnectorBoundToRun(connector, run)) {
+      reason = HUNT_MESSAGES.runCancelledConnectorRebound;
     }
     if (reason) {
       try {
@@ -247,10 +249,11 @@ const cancelOrphanRunsOfPage = async (context: AuthContext, runs: BasicStoreEnti
 
 /**
  * Runs a deleted hunt or hunt connector left behind, whatever deleted it (the trash, a bulk deletion, a synchronization):
- * the runs still waiting, running or planning a retry whose hunt no longer exists, or whose connector no longer exists or
- * was registered again since the run was created (a redeployed connector reusing the id), are cancelled. The deletion of
- * a hunt or a hunt connector through the API cancels its runs at once: this check only catches the other deletions, so it
- * reads the active runs page by page and at most `automationMaxPagesPerTick` pages per tick, resuming at the next tick.
+ * the runs still waiting, running or planning a retry whose hunt no longer exists, or whose connector no longer exists,
+ * was registered again since the run was created (a redeployed connector reusing the id) or now executes against another
+ * security platform, are cancelled. The deletion of a hunt or a hunt connector through the API, and the registration of a
+ * connector against another platform, cancel its runs at once: this check only catches what they left, so it reads the
+ * active runs page by page and at most `automationMaxPagesPerTick` pages per tick, resuming at the next tick.
  */
 export const cancelOrphanHuntRuns = async (context: AuthContext): Promise<number> => {
   let cancelled = 0;

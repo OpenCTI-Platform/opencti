@@ -5370,6 +5370,7 @@
   "The HTML file was saved, but the PDF export failed": "HTML 文件已保存，但 PDF 导出失败",
   "The hunt can be saved, but it cannot run until a hunt connector of its scope supports indicator lookups. A Sigma rule or a native query runs on every hunt connector.": "可以保存此狩猎，但在其范围内的狩猎连接器支持指标查找之前无法运行。Sigma 规则或原生查询可在任何狩猎连接器上运行。",
   "The hunt connector could not read the run sent by the platform": "狩猎连接器无法读取平台发送的运行",
+  "The hunt connector of this run now executes against another security platform": "此运行的狩猎连接器现在针对另一个安全平台执行",
   "The hunt connector of this run was deleted": "此运行的狩猎连接器已被删除",
   "The hunt connector of this run was deleted: the run is cancelled at the next pass of the hunt manager": "此运行的狩猎连接器已被删除：狩猎管理器下次处理时将取消该运行",
   "The hunt connector translates the saved logic of the hunt without running it.": "狩猎连接器会转换狩猎已保存的逻辑，但不会运行它。",

@@ -1011,6 +1011,22 @@ export const cancelDeletedHuntConnectorRuns = async (context: AuthContext, conne
 };
 
 /**
+ * Cancels the runs of a hunt connector registered again against another security platform (or the internet): created for
+ * the former one, they would execute on the new one with their hits attributed to the former. Never fails the registration.
+ */
+const cancelReboundHuntConnectorRuns = async (context: AuthContext, connectorId: string, securityPlatformId: string | null) => {
+  const platformFilter = securityPlatformId
+    ? { key: ['security_platform_id'], values: [securityPlatformId], operator: FilterOperator.NotEq }
+    : { key: ['security_platform_id'], values: [], operator: FilterOperator.NotNil };
+  try {
+    return await cancelHuntRuns(context, [{ key: ['connector_id'], values: [connectorId] }, platformFilter], HUNT_MESSAGES.runCancelledConnectorRebound);
+  } catch (error) {
+    logApp.warn('[OPENCTI-MODULE] Runs of a hunt connector bound to another platform cannot be cancelled, the hunt manager cancels them at a later pass', { cause: error, connectorId });
+    return 0;
+  }
+};
+
+/**
  * The next attempt already created for a terminated run: the retry that names it in retry_of. Two runs sharing their
  * hunt, connector, window and attempt (two playbook executions, two emulations) each get their own replacement.
  */
@@ -1653,9 +1669,20 @@ export const toHuntConnectorView = (connector: BasicStoreEntityConnector): HuntC
   updated_at: connector.updated_at,
 });
 
-export const findHuntConnectors = async (context: AuthContext, onlyAlive = false) => {
-  const connectors = await listHuntConnectors(context, onlyAlive);
-  return connectors.filter((connector) => !!connector.hunt_platform).map(toHuntConnectorView);
+/**
+ * The hunt connectors a user sees: those of the internet, and those bound to a security platform the user can read.
+ * The dispatch reads every connector (listHuntConnectors), whoever the hunt belongs to.
+ */
+export const findHuntConnectors = async (context: AuthContext, user: AuthUser, onlyAlive = false) => {
+  const connectors = (await listHuntConnectors(context, onlyAlive)).filter((connector) => !!connector.hunt_platform);
+  const platformIds = Array.from(new Set(connectors.map((connector) => connector.hunt_security_platform_id).filter((id): id is string => !!id)));
+  const readable = platformIds.length > 0
+    ? await findByIds<BasicStoreEntitySecurityPlatform>(context, user, platformIds, { type: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM })
+    : [];
+  const readableIds = new Set(readable.map((platform) => platform.internal_id));
+  return connectors
+    .filter((connector) => !connector.hunt_security_platform_id || readableIds.has(connector.hunt_security_platform_id))
+    .map(toHuntConnectorView);
 };
 
 export const registerHuntConnector = async (context: AuthContext, user: AuthUser, input: HuntConnectorRegisterInput) => {
@@ -1689,6 +1716,16 @@ export const registerHuntConnector = async (context: AuthContext, user: AuthUser
       security_platform_type: input.security_platform_type ?? 'SIEM',
     }) as BasicStoreEntitySecurityPlatform;
     securityPlatformId = securityPlatform.internal_id;
+    // A security platform is one product: connectors of the same kind share it, a connector of another kind never
+    // executes its own query language against it
+    const otherKind = (await listHuntConnectors(context, false)).find((other) => other.internal_id !== connector.internal_id
+      && other.hunt_security_platform_id === securityPlatformId && huntConnectorPlatform(other) !== platform);
+    if (otherKind) {
+      throw FunctionalError(
+        `The security platform ${name} is hunted by the ${huntConnectorPlatform(otherKind)} connector ${otherKind.name}: name another security platform, or delete that connector`,
+        { connectorId: input.connector_id, securityPlatformId, otherConnectorId: otherKind.internal_id },
+      );
+    }
   }
   const maxConcurrent = input.max_concurrent_runs && input.max_concurrent_runs > 0 ? Math.round(input.max_concurrent_runs) : null;
   const { element } = await patchAttribute(context, SYSTEM_USER, connector.internal_id, ENTITY_TYPE_CONNECTOR, {
@@ -1706,6 +1743,9 @@ export const registerHuntConnector = async (context: AuthContext, user: AuthUser
   });
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
+  if ((connector.hunt_security_platform_id ?? null) !== securityPlatformId) {
+    await cancelReboundHuntConnectorRuns(context, connector.internal_id, securityPlatformId);
+  }
   logApp.info('[OPENCTI-MODULE] Hunt connector registered', { connectorId: connector.internal_id, platform, securityPlatformId });
   return toHuntConnectorView({ ...(element as unknown as BasicStoreEntityConnector), active: true });
 };

@@ -5370,6 +5370,7 @@
   "The HTML file was saved, but the PDF export failed": "HTML 파일은 저장되었으나 PDF 내보내기에 실패했습니다",
   "The hunt can be saved, but it cannot run until a hunt connector of its scope supports indicator lookups. A Sigma rule or a native query runs on every hunt connector.": "헌트를 저장할 수 있지만 범위 내 헌트 커넥터가 지표 조회를 지원할 때까지 실행할 수 없습니다. Sigma 규칙 또는 네이티브 쿼리는 모든 헌트 커넥터에서 실행됩니다.",
   "The hunt connector could not read the run sent by the platform": "헌트 커넥터가 플랫폼에서 보낸 실행을 읽을 수 없습니다",
+  "The hunt connector of this run now executes against another security platform": "이 실행의 헌트 커넥터는 이제 다른 보안 플랫폼을 대상으로 실행됩니다",
   "The hunt connector of this run was deleted": "이 실행의 헌트 커넥터가 삭제되었습니다",
   "The hunt connector of this run was deleted: the run is cancelled at the next pass of the hunt manager": "이 실행의 헌트 커넥터가 삭제되었습니다. 헌트 관리자의 다음 처리 때 실행이 취소됩니다",
   "The hunt connector translates the saved logic of the hunt without running it.": "헌트 커넥터가 저장된 헌트 로직을 실행하지 않고 변환합니다.",

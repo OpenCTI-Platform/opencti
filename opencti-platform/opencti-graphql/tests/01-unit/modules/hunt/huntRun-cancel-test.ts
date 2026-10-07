@@ -151,6 +151,20 @@ describe('Hunt manager sweep of orphan runs', () => {
     expect(vi.mocked(patchAttribute).mock.calls[2][4]).toMatchObject({ error_message: HUNT_MESSAGES.runCancelledConnectorDeleted });
   });
 
+  it('should cancel the runs of a connector now executing against another security platform, never those of its own', async () => {
+    servingRuns([
+      { ...queued, internal_id: 'run-former-platform', connector_id: 'connector-1', security_platform_id: 'platform-prod', created_at: '2026-10-05T05:00:00.000Z' },
+      { ...queued, internal_id: 'run-own-platform', connector_id: 'connector-1', security_platform_id: 'platform-dr', created_at: '2026-10-05T05:00:00.000Z' },
+    ]);
+    vi.mocked(internalFindByIds).mockImplementation(async (_context, _user, _ids, options) => (options?.type === 'Hunt'
+      ? [{ internal_id: 'hunt-1' }]
+      : [{ internal_id: 'connector-1', created_at: '2026-10-01T00:00:00.000Z', hunt_security_platform_id: 'platform-dr' }]) as never);
+    vi.mocked(patchAttribute).mockImplementation(async (_context, _user, id, _type, patch) => ({ element: { internal_id: id, ...patch } }) as never);
+    expect(await cancelOrphanHuntRuns(testContext)).toEqual(1);
+    expect(vi.mocked(patchAttribute).mock.calls.map((call) => call[2])).toEqual(['run-former-platform']);
+    expect(vi.mocked(patchAttribute).mock.calls[0][4]).toMatchObject({ error_message: HUNT_MESSAGES.runCancelledConnectorRebound });
+  });
+
   it('should read a bounded number of pages per tick, resume at the next tick and cancel every orphan run in the end', async () => {
     HUNT_CONFIG.automationPageSize = 2;
     HUNT_CONFIG.automationMaxPagesPerTick = 1;

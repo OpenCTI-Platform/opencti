@@ -5370,6 +5370,7 @@
   "The HTML file was saved, but the PDF export failed": "Le fichier HTML a été enregistré, mais l'exportation au format PDF a échoué",
   "The hunt can be saved, but it cannot run until a hunt connector of its scope supports indicator lookups. A Sigma rule or a native query runs on every hunt connector.": "La chasse peut être enregistrée, mais elle ne peut pas s'exécuter tant qu'aucun connecteur de chasse de son périmètre ne prend en charge la recherche d'indicateurs. Une règle Sigma ou une requête native s'exécute sur tous les connecteurs de chasse.",
   "The hunt connector could not read the run sent by the platform": "Le connecteur de chasse n'a pas pu lire l'exécution envoyée par la plateforme",
+  "The hunt connector of this run now executes against another security platform": "Le connecteur de chasse de cette exécution interroge désormais une autre plateforme de sécurité",
   "The hunt connector of this run was deleted": "Le connecteur de chasse de cette exécution a été supprimé",
   "The hunt connector of this run was deleted: the run is cancelled at the next pass of the hunt manager": "Le connecteur de chasse de cette exécution a été supprimé : l'exécution est annulée au prochain passage du gestionnaire de chasses",
   "The hunt connector translates the saved logic of the hunt without running it.": "Le connecteur de chasse traduit la logique enregistrée de la chasse sans l'exécuter.",

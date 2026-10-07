@@ -460,7 +460,7 @@ const buildHuntPlannerRequest = async (
   scopePlatformIds: string[],
   benignPatterns: string[],
 ) => {
-  const connectors = await findHuntConnectors(context, true);
+  const connectors = await findHuntConnectors(context, user, true);
   const requestedPlatforms = new Set(scopePlatformIds);
   const platformIds = connectors
     .map((connector) => connector.security_platform_id)
