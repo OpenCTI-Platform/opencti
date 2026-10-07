@@ -1,11 +1,25 @@
 import * as R from 'ramda';
 import type { AuthContext, AuthUser } from '../../types/user';
-import type { BasicConnection, BasicStoreBase, BasicStoreEntity } from '../../types/store';
+import type { BasicConnection, BasicStoreBase, BasicStoreCommon, BasicStoreEntity } from '../../types/store';
 import { internalFindByIds, pageEntitiesConnection, type EntityOptions } from '../../database/middleware-loader';
 import { ES_DEFAULT_PAGINATION } from '../../database/engine';
-import { isBypassUser, SYSTEM_USER } from '../../utils/access';
+import { getEntityFromCache } from '../../database/cache';
+import { isBypassUser, isOrganizationAllowed, SYSTEM_USER } from '../../utils/access';
+import { ENTITY_TYPE_SETTINGS } from '../../schema/internalObject';
+import type { BasicStoreSettings } from '../../types/settings';
+import { ENTITY_TYPE_MERGE_RECORD } from './curation-types';
 
 const MAX_PAGE_REFILLS = 5;
+
+// The store segregates internal objects by markings only: a merge record, which a split proposal names, is read by the
+// organizations it is shared with (those of every participant), as the participants themselves are.
+const keepOrganizationReadable = async (context: AuthContext, user: AuthUser, readable: BasicStoreBase[]) => {
+  if (!readable.some((element) => element.entity_type === ENTITY_TYPE_MERGE_RECORD)) return readable;
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const hasPlatformOrganization = !!settings?.platform_organization;
+  return readable.filter((element) => element.entity_type !== ENTITY_TYPE_MERGE_RECORD
+    || isOrganizationAllowed(context, element as BasicStoreCommon, user, hasPlatformOrganization));
+};
 
 /**
  * Proposals and merge records carry the restrictions their participants had at their last refresh, and every
@@ -22,7 +36,8 @@ export const keepWithReadableParticipants = async <T extends BasicStoreBase>(
   if (isBypassUser(user)) return elements;
   const ids = R.uniq(elements.flatMap(participantIdsOf));
   if (ids.length === 0) return elements;
-  const readable = await internalFindByIds(context, user, ids, { baseData: true }) as BasicStoreBase[];
+  const found = await internalFindByIds(context, user, ids, { baseData: true }) as BasicStoreBase[];
+  const readable = await keepOrganizationReadable(context, user, found);
   const readableIds = new Set(readable.map((element) => element.internal_id));
   const unreadableIds = ids.filter((id) => !readableIds.has(id));
   if (unreadableIds.length === 0) return elements;

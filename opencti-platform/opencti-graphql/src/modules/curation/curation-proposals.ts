@@ -89,9 +89,9 @@ export const intersectGrantedOrganizations = (grantedSets: string[][], platformO
 };
 
 /**
- * Visibility of a proposal derives from the elements it reveals (its subjects, and the relationships its action
- * names): it carries the union of their markings (a reader needs all of them) and the organizations every restricted
- * element is shared with, so a proposal never reveals a subject or a relationship to a user who cannot read it.
+ * Visibility of a proposal derives from the elements it reveals (its subjects, and the elements its action names):
+ * it carries the union of their markings (a reader needs all of them) and the organizations every restricted element
+ * is shared with, so a proposal never reveals a subject, a relationship or a merged source to a user who cannot read it.
  */
 export const computeSubjectRestrictions = (subjects: BasicStoreBase[], platformOrganizationId?: string | null) => {
   const markingIds = R.uniq(subjects.flatMap((subject) => ((subject as any)[RELATION_OBJECT_MARKING] ?? []) as string[]));
@@ -112,14 +112,16 @@ const parseActionPayload = (payload: unknown): Record<string, unknown> | null =>
 };
 
 /**
- * The relationships an action payload names: the attributions in conflict of an attribution contradiction, the
- * relationship whose procedure is kept. The proposal shows them in its evidence and acts on them.
+ * The elements an action payload names: the attributions in conflict of an attribution contradiction, the
+ * relationship whose procedure is kept, the merge record a split reverts. The proposal shows them in its evidence (a
+ * split names the merged sources) and acts on them.
  */
-export const payloadRelationshipIds = (payload: unknown): string[] => {
+export const payloadElementIds = (payload: unknown): string[] => {
   const record = parseActionPayload(payload);
   if (!record) return [];
   const ids: string[] = [];
   if (typeof record.relationship_id === 'string') ids.push(record.relationship_id);
+  if (typeof record.merge_record_id === 'string') ids.push(record.merge_record_id);
   if (Array.isArray(record.relationships)) {
     record.relationships.forEach((relationship) => {
       const relationshipId = (relationship as { relationship_id?: unknown } | null)?.relationship_id;
@@ -135,11 +137,11 @@ export const payloadAliases = (payload: unknown): string[] => {
   return Array.isArray(aliases) ? aliases.filter((alias): alias is string => typeof alias === 'string' && alias.length > 0) : [];
 };
 
-/** The relationships named by the action of a proposal that are not its subjects; a deleted one restricts nothing. */
-const loadPayloadRelationships = async (context: AuthContext, subjectIds: string[], payload: unknown) => {
-  const relationshipIds = payloadRelationshipIds(payload).filter((id) => !subjectIds.includes(id));
-  if (relationshipIds.length === 0) return [];
-  return internalFindByIds(context, SYSTEM_USER, relationshipIds, { baseData: true }) as Promise<BasicStoreBase[]>;
+/** The elements named by the action of a proposal that are not its subjects; a deleted one restricts nothing. */
+const loadPayloadElements = async (context: AuthContext, subjectIds: string[], payload: unknown) => {
+  const elementIds = payloadElementIds(payload).filter((id) => !subjectIds.includes(id));
+  if (elementIds.length === 0) return [];
+  return internalFindByIds(context, SYSTEM_USER, elementIds, { baseData: true }) as Promise<BasicStoreBase[]>;
 };
 
 const findByFingerprints = async (context: AuthContext, fingerprints: string[]) => {
@@ -249,9 +251,9 @@ const refreshProposal = async (
     logApp.debug('[CURATION] Proposal subjects disappeared before refresh, keeping the proposal', { id: existing.internal_id });
     return { proposal: existing, created: false, suppressed: false };
   }
-  const relationships = await loadPayloadRelationships(context, existing.subject_ids, draft.action_payload);
+  const payloadElements = await loadPayloadElements(context, existing.subject_ids, draft.action_payload);
   const settingsEntity = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const { markingIds, organizationIds } = computeSubjectRestrictions([...subjects, ...relationships], settingsEntity?.platform_organization);
+  const { markingIds, organizationIds } = computeSubjectRestrictions([...subjects, ...payloadElements], settingsEntity?.platform_organization);
   const restrictionsChanged = !sameIds(markingIds, ((existing as any)[RELATION_OBJECT_MARKING] ?? []) as string[])
     || !sameIds(organizationIds, ((existing as any)[RELATION_GRANTED_TO] ?? []) as string[]);
   const subjectsById = new Map(subjects.map((subject) => [subject.internal_id, subject]));
@@ -290,7 +292,8 @@ const refreshProposal = async (
 /**
  * Keep the restrictions of the open proposals about these subjects in line with them when a subject, or a relationship
  * between subjects, is reclassified, whether curation is enabled or not: a proposal never stays readable by a user who
- * lost access to one of its subjects or to a relationship its action names. A proposal whose subjects are not all
+ * lost access to one of its subjects or to an element its action names (a split follows the merge record, refreshed
+ * first from the same participants). A proposal whose subjects are not all
  * there any more is only ever narrowed, since it still names the missing ones.
  */
 export const refreshProposalRestrictions = async (context: AuthContext, subjectIds: string[]) => {
@@ -314,9 +317,9 @@ export const refreshProposalRestrictions = async (context: AuthContext, subjectI
     const currentMarkings = ((proposal as Record<string, any>)[RELATION_OBJECT_MARKING] ?? []) as string[];
     const currentOrganizations = ((proposal as Record<string, any>)[RELATION_GRANTED_TO] ?? []) as string[];
     const subjects = await internalFindByIds(context, SYSTEM_USER, proposal.subject_ids, { baseData: true }) as BasicStoreBase[];
-    const relationships = await loadPayloadRelationships(context, proposal.subject_ids, proposal.action_payload);
+    const payloadElements = await loadPayloadElements(context, proposal.subject_ids, proposal.action_payload);
     const complete = subjects.length === proposal.subject_ids.length;
-    const revealed = [...subjects, ...relationships];
+    const revealed = [...subjects, ...payloadElements];
     const computed = computeSubjectRestrictions(revealed, settings?.platform_organization);
     const markingIds = complete ? computed.markingIds : R.uniq([...currentMarkings, ...computed.markingIds]);
     const subjectOrganizationSets = revealed.map((element) => ((element as Record<string, any>)[RELATION_GRANTED_TO] ?? []) as string[]);
@@ -372,12 +375,12 @@ const removeSupersededAliasProposals = async (context: AuthContext, current: Bas
 
 const proposalElementIds = (proposal: Pick<BasicStoreEntityCurationProposal, 'subject_ids' | 'action_payload'>) => [
   ...proposal.subject_ids,
-  ...payloadRelationshipIds(proposal.action_payload),
+  ...payloadElementIds(proposal.action_payload),
 ];
 
 /**
- * The open proposals to retire: they name a subject, or a relationship their action acts on, that no longer exists,
- * and no acceptance has started writing.
+ * The open proposals to retire: they name a subject, or an element their action acts on, that no longer exists, and
+ * no acceptance has started writing.
  */
 export const proposalsOfMissingSubjects = (
   open: Array<Pick<BasicStoreEntityCurationProposal, 'internal_id' | 'subject_ids' | 'action_payload' | 'application_started_at'>>,
@@ -453,9 +456,9 @@ const persistLockedProposalDraft = async (
     subjectsById.set(subject.standard_id, subject);
   });
   const subjectInternalIds = subjectIds.map((id) => subjectsById.get(id)?.internal_id ?? id);
-  const relationships = await loadPayloadRelationships(context, subjectInternalIds, draft.action_payload);
+  const payloadElements = await loadPayloadElements(context, subjectInternalIds, draft.action_payload);
   const settingsEntity = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-  const { markingIds, organizationIds } = computeSubjectRestrictions([...subjects, ...relationships], settingsEntity?.platform_organization);
+  const { markingIds, organizationIds } = computeSubjectRestrictions([...subjects, ...payloadElements], settingsEntity?.platform_organization);
   const input = {
     name: proposalName(draft),
     proposal_kind: draft.kind,

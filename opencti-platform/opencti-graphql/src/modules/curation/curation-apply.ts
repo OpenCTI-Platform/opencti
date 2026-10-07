@@ -305,42 +305,55 @@ const applyResolveAttribution = async (context: AuthContext, user: AuthUser, pro
   if (!isUserHasCapability(user, KNOWLEDGE_KNUPDATE_KNDELETE)) {
     throw ForbiddenAccess('Removing an attribution requires the delete capability');
   }
-  // The contradiction is only resolved by a user who can read every attribution in conflict: an attribution hidden
-  // from the user is neither removed nor reported as resolved. An attribution deleted since needs no removal.
   const relationshipIds = relationships.map((relation) => relation.relationship_id);
-  const existing = await internalFindByIds(context, SYSTEM_USER, relationshipIds, { baseData: true }) as StoreRelation[];
-  const readable = await internalFindByIds(context, user, relationshipIds, { baseData: true }) as StoreRelation[];
-  const readableById = new Map(readable.flatMap((relation) => [[relation.internal_id, relation], [relation.standard_id, relation]]));
-  if (existing.some((relation) => !readableById.has(relation.internal_id))) {
-    throw ForbiddenAccess('You cannot read every attribution in conflict: this contradiction is resolved by a user who can read them all');
+  const keptIds = R.uniq(relationships.filter((relation) => relation.actor_id === keepActorId).map((relation) => relation.relationship_id));
+  // The attributions to keep stay locked until the other ones are deleted: a deletion takes the lock of the element it
+  // deletes, so a concurrent deletion of a kept attribution waits and the object never loses its last attribution.
+  // Only the kept ones are held, since each deletion below takes the lock of the attribution it removes.
+  const kept = await internalFindByIds(context, SYSTEM_USER, keptIds, { baseData: true }) as StoreRelation[];
+  let lock;
+  try {
+    lock = await lockResources(R.uniq([...keptIds, ...kept.flatMap((relation) => getInstanceIds(relation))]), { draftId: getDraftContext(context, user) });
+    // The contradiction is only resolved by a user who can read every attribution in conflict: an attribution hidden
+    // from the user is neither removed nor reported as resolved. An attribution deleted since needs no removal.
+    const existing = await internalFindByIds(context, SYSTEM_USER, relationshipIds, { baseData: true }) as StoreRelation[];
+    const readable = await internalFindByIds(context, user, relationshipIds, { baseData: true }) as StoreRelation[];
+    const readableById = new Map(readable.flatMap((relation) => [[relation.internal_id, relation], [relation.standard_id, relation]]));
+    if (existing.some((relation) => !readableById.has(relation.internal_id))) {
+      throw ForbiddenAccess('You cannot read every attribution in conflict: this contradiction is resolved by a user who can read them all');
+    }
+    // The attribution to keep must still exist, and so must another one. An attempt that stopped after deleting is
+    // recorded from its plan without running the action again (see reconcilePlannedApplication).
+    const existingIds = new Set(existing.flatMap((relation) => [relation.internal_id, relation.standard_id]));
+    const remaining = relationships.filter((relation) => existingIds.has(relation.relationship_id));
+    if (!remaining.some((relation) => relation.actor_id === keepActorId)) {
+      throw FunctionalError('The attribution to keep was deleted since the proposal was raised: reject the proposal', { proposal_id: proposal.internal_id });
+    }
+    if (!remaining.some((relation) => relation.actor_id !== keepActorId)) {
+      throw FunctionalError('The other attributions were deleted since the proposal was raised, so the contradiction is resolved: reject the proposal', {
+        proposal_id: proposal.internal_id,
+      });
+    }
+    const toDelete = relationships
+      .filter((relation) => relation.actor_id !== keepActorId)
+      .map((relation) => relation.relationship_id)
+      .filter((relationshipId) => readableById.has(relationshipId));
+    if (toDelete.length > 0) {
+      await planned(opts, { operations: [], deleted_ids: toDelete, applied_at: now() });
+    }
+    const deletedIds: string[] = [];
+    for (let index = 0; index < toDelete.length; index += 1) {
+      const relationshipId = toDelete[index];
+      await deleteElementById(context, user, relationshipId, (readableById.get(relationshipId) as StoreRelation).entity_type);
+      deletedIds.push(relationshipId);
+    }
+    const deleteOperationIds = await deleteOperationsOf(context, deletedIds);
+    return { appliedPatch: { operations: [], deleted_ids: deletedIds, delete_operation_ids: deleteOperationIds, applied_at: now() }, mergeRecordId: null };
+  } finally {
+    if (lock) {
+      await lock.unlock();
+    }
   }
-  // The conflict is checked again so that resolving it never removes the last attribution left: the attribution to keep
-  // must still exist, and so must another one, unless the attempt that started this application removed it.
-  const existingIds = new Set(existing.flatMap((relation) => [relation.internal_id, relation.standard_id]));
-  const remaining = relationships.filter((relation) => existingIds.has(relation.relationship_id));
-  if (!remaining.some((relation) => relation.actor_id === keepActorId)) {
-    throw FunctionalError('The attribution to keep was deleted since the proposal was raised: reject the proposal', { proposal_id: proposal.internal_id });
-  }
-  if (!proposal.application_started_at && !remaining.some((relation) => relation.actor_id !== keepActorId)) {
-    throw FunctionalError('The other attributions were deleted since the proposal was raised, so the contradiction is resolved: reject the proposal', {
-      proposal_id: proposal.internal_id,
-    });
-  }
-  const toDelete = relationships
-    .filter((relation) => relation.actor_id !== keepActorId)
-    .map((relation) => relation.relationship_id)
-    .filter((relationshipId) => readableById.has(relationshipId));
-  if (toDelete.length > 0) {
-    await planned(opts, { operations: [], deleted_ids: toDelete, applied_at: now() });
-  }
-  const deletedIds: string[] = [];
-  for (let index = 0; index < toDelete.length; index += 1) {
-    const relationshipId = toDelete[index];
-    await deleteElementById(context, user, relationshipId, (readableById.get(relationshipId) as StoreRelation).entity_type);
-    deletedIds.push(relationshipId);
-  }
-  const deleteOperationIds = await deleteOperationsOf(context, deletedIds);
-  return { appliedPatch: { operations: [], deleted_ids: deletedIds, delete_operation_ids: deleteOperationIds, applied_at: now() }, mergeRecordId: null };
 };
 
 const applyUnrevokeIndicator = async (context: AuthContext, user: AuthUser, proposal: BasicStoreEntityCurationProposal, opts: ApplyOptions): Promise<ApplyResult> => {

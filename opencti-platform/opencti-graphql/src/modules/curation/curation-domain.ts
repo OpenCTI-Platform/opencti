@@ -64,17 +64,18 @@ import { getTaxonomyMetadata } from './curation-taxonomy';
 import { CURATION_MANAGER_ENABLED, CURATION_SCAN_INTERVAL_MS, CURATION_SNAPSHOT_INTERVAL_MS, isCurationRunning, nextRunDate } from './curation-schedule';
 import { withProposalTransitionLock } from './curation-locks';
 import { keepWithReadableParticipants, pageWithReadableParticipants } from './curation-readability';
-import { markProposalReverted, payloadRelationshipIds } from './curation-proposals';
+import { markProposalReverted, payloadElementIds } from './curation-proposals';
 
 const MAX_BULK = 500;
 
 // region queries
-// The proposals follow the restrictions of their subjects and of the relationships their action names (the attributions
-// of an attribution conflict, the relationship whose procedure is kept), so the platform filters and counts them; the
-// participant check guards the moments before a refresh, for reads and for every decision alike.
+// The proposals follow the restrictions of their subjects and of the elements their action names (the attributions of
+// an attribution conflict, the relationship whose procedure is kept, the merge record a split reverts), so the platform
+// filters and counts them; the participant check guards the moments before a refresh, for reads and for every decision
+// alike.
 const proposalSubjectIds = (proposal: BasicStoreEntityCurationProposal) => R.uniq([
   ...(proposal.subject_ids ?? []),
-  ...payloadRelationshipIds(proposal.action_payload),
+  ...payloadElementIds(proposal.action_payload),
 ]);
 
 export const findProposalById = async (context: AuthContext, user: AuthUser, id: string) => {

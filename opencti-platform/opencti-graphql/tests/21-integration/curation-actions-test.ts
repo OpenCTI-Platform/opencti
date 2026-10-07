@@ -22,6 +22,7 @@ import { ENTITY_IPV4_ADDR } from '../../src/schema/stixCyberObservable';
 import { getCurationSettings } from '../../src/modules/curation/curation-settings';
 import { persistProposalDraft, refreshProposalRestrictions, retireProposalsOfDeletedSubjects } from '../../src/modules/curation/curation-proposals';
 import { loadPolicyFacts } from '../../src/modules/curation/curation-policies';
+import { buildSplitDraft } from '../../src/modules/curation/curation-detectors';
 import { computeHealthMetrics } from '../../src/modules/curation/curation-health';
 import { EditOperation } from '../../src/generated/graphql';
 import { INPUT_MARKINGS } from '../../src/schema/general';
@@ -572,10 +573,10 @@ describe('Knowledge curation actions', () => {
     expect(await storeLoadById(testContext, ADMIN_USER, removedRelation.id, RELATION_ATTRIBUTED_TO)).toBeDefined();
   });
 
-  it('should never remove the last attribution left once an attribution in conflict is deleted, and retire the proposal', async () => {
-    const campaign = track(await addCampaign(testContext, ADMIN_USER, { name: `${PREFIX} Resolved Campaign` }), ENTITY_TYPE_CAMPAIGN) as BasicStoreEntity;
-    const deletedActor = await createIntrusionSet(`${PREFIX} Attribution Deleted`);
-    const remainingActor = await createIntrusionSet(`${PREFIX} Attribution Remaining`);
+  const attributionConflictWithOneDeleted = async (name: string) => {
+    const campaign = track(await addCampaign(testContext, ADMIN_USER, { name: `${PREFIX} ${name} Campaign` }), ENTITY_TYPE_CAMPAIGN) as BasicStoreEntity;
+    const deletedActor = await createIntrusionSet(`${PREFIX} ${name} Deleted`);
+    const remainingActor = await createIntrusionSet(`${PREFIX} ${name} Remaining`);
     const deletedRelation = await createRelation(testContext, ADMIN_USER, { fromId: campaign.id, toId: deletedActor.id, relationship_type: RELATION_ATTRIBUTED_TO });
     const remainingRelation = await createRelation(testContext, ADMIN_USER, { fromId: campaign.id, toId: remainingActor.id, relationship_type: RELATION_ATTRIBUTED_TO });
     const id = await createProposal({
@@ -594,17 +595,54 @@ describe('Knowledge curation actions', () => {
       confidence: 0.9,
     });
     await deleteElementById(testContext, ADMIN_USER, deletedRelation.id, RELATION_ATTRIBUTED_TO);
+    return { id, campaign, deletedActor, remainingActor, deletedRelation, remainingRelation };
+  };
 
+  it('should never remove the last attribution left once an attribution in conflict is deleted', async () => {
+    const { id, deletedActor, remainingActor, remainingRelation } = await attributionConflictWithOneDeleted('Resolved');
     const keepDeleted = await queryAsAdmin({ query: ACCEPT_MUTATION, variables: { id, input: { action_payload: JSON.stringify({ keep_actor_id: deletedActor.id }) } } });
     expect(keepDeleted.errors?.[0]?.message).toContain('The attribution to keep was deleted since the proposal was raised');
     const keepRemaining = await queryAsAdmin({ query: ACCEPT_MUTATION, variables: { id, input: { action_payload: JSON.stringify({ keep_actor_id: remainingActor.id }) } } });
     expect(keepRemaining.errors?.[0]?.message).toContain('so the contradiction is resolved');
     expect(await storeLoadById(testContext, ADMIN_USER, remainingRelation.id, RELATION_ATTRIBUTED_TO)).toBeDefined();
     expect((await loadProposal(id)).proposal_status).toBe('open');
+  });
 
+  it('should retire an open attribution conflict once one of its attributions is deleted', async () => {
+    const { id, campaign, deletedActor, deletedRelation } = await attributionConflictWithOneDeleted('Retired');
     // The deletion event names the relationship and its endpoints, through which the proposal is found and retired.
     expect(await retireProposalsOfDeletedSubjects(testContext, [deletedRelation.id, campaign.id, deletedActor.id])).toBe(1);
     expect(await loadProposal(id)).toBeNull();
+  });
+
+  it('should give a split proposal the restrictions of the merge record whose source names it shows', async () => {
+    const target = await createIntrusionSet(`${PREFIX} Split Target`);
+    const source = await createIntrusionSet(`${PREFIX} Split Source`);
+    const mergeId = await createProposal({
+      kind: PROPOSAL_KIND_MERGE,
+      detector: DETECTOR_NORMALIZATION,
+      subjects: [subjectOf(target), subjectOf(source)],
+      target_id: target.id,
+      recommended_action: ACTION_MERGE,
+      evidence: evidenceFor('canonical_collision', 'Same canonical name'),
+      confidence: 0.9,
+    });
+    const merged = await queryAsAdminWithSuccess({ query: ACCEPT_MUTATION, variables: { id: mergeId, input: { target_id: target.id } } });
+    const recordId = merged.data?.curationProposalAccept.merge_record_id as string;
+    // The record is more restricted than the merged entity, as when a source was shared with fewer readers.
+    await updateAttribute(testContext, ADMIN_USER, recordId, ENTITY_TYPE_MERGE_RECORD, [
+      { key: INPUT_MARKINGS, value: [MARKING_TLP_RED], operation: EditOperation.Add },
+    ]);
+    const contradiction = evidenceFor('date_inversion', 'first_seen after last_seen')[0];
+    const draft = buildSplitDraft(subjectOf(target), { id: recordId, source_names: [source.name] }, contradiction as never);
+    const splitId = await createProposal(draft);
+    const stored = await storeLoadById(testContext, ADMIN_USER, splitId, ENTITY_TYPE_CURATION_PROPOSAL) as unknown as Record<string, string[]>;
+    expect(stored[RELATION_OBJECT_MARKING] ?? []).toHaveLength(1);
+    // The editor reads the merged entity, but neither the record nor the split proposal that names its sources.
+    const targetQuery = gql`query CurationActionsSplitTarget($id: String!) { intrusionSet(id: $id) { id } }`;
+    expect((await queryAsUserWithSuccess(USER_EDITOR, { query: targetQuery, variables: { id: target.id } })).data?.intrusionSet).not.toBeNull();
+    expect((await queryAsUserWithSuccess(USER_EDITOR, { query: PROPOSAL_QUERY, variables: { id: splitId } })).data?.curationProposal).toBeNull();
+    expect((await queryAsAdminWithSuccess({ query: PROPOSAL_QUERY, variables: { id: splitId } })).data?.curationProposal).not.toBeNull();
   });
 
   it('should carry the restrictions of the attributions in conflict, and never resolve one the user cannot read', async () => {

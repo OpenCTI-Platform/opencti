@@ -3,6 +3,7 @@ import '../../../../src/modules/index';
 import { executeProposalAction } from '../../../../src/modules/curation/curation-apply';
 import { deleteElementById } from '../../../../src/database/middleware';
 import { internalFindByIds } from '../../../../src/database/middleware-loader';
+import { lockResources } from '../../../../src/lock/master-lock';
 import type { BasicStoreEntityCurationProposal, CurationSettings } from '../../../../src/modules/curation/curation-types';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 
@@ -15,6 +16,7 @@ vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => 
   internalFindByIds: vi.fn(async () => []),
   fullEntitiesList: vi.fn(async () => []),
 }));
+vi.mock('../../../../src/lock/master-lock', () => ({ lockResources: vi.fn(async () => ({ unlock: vi.fn(), signal: { throwIfAborted: vi.fn() } })) }));
 
 const context = {} as AuthContext;
 const user = { id: 'analyst-id', capabilities: [{ name: 'BYPASS' }] } as unknown as AuthUser;
@@ -50,10 +52,24 @@ describe('resolving an attribution conflict checks the conflict again', () => {
     expect(result.appliedPatch?.deleted_ids).toEqual(['rel-other']);
   });
 
+  it('holds the lock of the attribution to keep from the check to the last deletion, and only that one', async () => {
+    vi.mocked(internalFindByIds).mockResolvedValueOnce([relation('rel-keep')] as never).mockResolvedValue([relation('rel-keep'), relation('rel-other')] as never);
+    await executeProposalAction(context, user, conflict(), settings, KEEP);
+    const lockedIds = vi.mocked(lockResources).mock.calls[0][0];
+    expect(lockedIds).toEqual(expect.arrayContaining(['rel-keep', 'relationship--rel-keep']));
+    expect(lockedIds).not.toContain('rel-other');
+    const lock = await vi.mocked(lockResources).mock.results[0].value;
+    const lockedAt = vi.mocked(lockResources).mock.invocationCallOrder[0];
+    // The attributions in conflict are read again under the lock, and deleted before it is released.
+    expect(vi.mocked(internalFindByIds).mock.invocationCallOrder.slice(1).every((order) => order > lockedAt)).toBe(true);
+    expect(vi.mocked(deleteElementById).mock.invocationCallOrder[0]).toBeLessThan(lock.unlock.mock.invocationCallOrder[0]);
+  });
+
   it('refuses when the attribution to keep was deleted, so the last one left is never removed', async () => {
     remainingAttributions('rel-other');
     await expect(executeProposalAction(context, user, conflict(), settings, KEEP)).rejects.toThrow('The attribution to keep was deleted');
     expect(deleteElementById).not.toHaveBeenCalled();
+    expect((await vi.mocked(lockResources).mock.results[0].value).unlock).toHaveBeenCalled();
   });
 
   it('refuses when only the attribution to keep remains: the contradiction is resolved', async () => {
@@ -62,11 +78,10 @@ describe('resolving an attribution conflict checks the conflict again', () => {
     expect(deleteElementById).not.toHaveBeenCalled();
   });
 
-  it('lets a retry complete once the attempt that started it removed the other attribution', async () => {
+  it('refuses again after an attempt that was refused, whose acceptance had started', async () => {
     remainingAttributions('rel-keep');
-    const retry = conflict({ application_started_at: '2026-10-07T03:00:00.000Z' });
-    const result = await executeProposalAction(context, user, retry, settings, KEEP);
+    const again = conflict({ application_started_at: '2026-10-07T03:00:00.000Z' });
+    await expect(executeProposalAction(context, user, again, settings, KEEP)).rejects.toThrow('so the contradiction is resolved');
     expect(deleteElementById).not.toHaveBeenCalled();
-    expect(result.appliedPatch?.deleted_ids).toEqual([]);
   });
 });

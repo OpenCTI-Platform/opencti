@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isSuppressingDecision, proposalsOfMissingSubjects } from '../../../../src/modules/curation/curation-proposals';
+import { isSuppressingDecision, payloadElementIds, proposalsOfMissingSubjects } from '../../../../src/modules/curation/curation-proposals';
 import {
   ACTION_ACKNOWLEDGE,
   ACTION_ADD_ALIASES,
@@ -47,5 +47,14 @@ describe('open proposals about deleted entities', () => {
     ];
     expect(proposalsOfMissingSubjects(open, new Set(['campaign', 'actor-0', 'actor-1', 'rel-0', 'rel-1'])).map((proposal) => proposal.internal_id))
       .toEqual(['one-attribution-deleted']);
+  });
+});
+
+describe('elements named by the action of a proposal', () => {
+  it('names the relationships it acts on and the merge record a split reverts, whose sources it shows', () => {
+    expect(payloadElementIds(JSON.stringify({ relationships: [{ actor_id: 'actor', relationship_id: 'rel-0' }] }))).toEqual(['rel-0']);
+    expect(payloadElementIds({ relationship_id: 'rel-1', previous: {}, current: {} })).toEqual(['rel-1']);
+    expect(payloadElementIds({ merge_record_id: 'record-id' })).toEqual(['record-id']);
+    expect(payloadElementIds('{not json')).toEqual([]);
   });
 });
