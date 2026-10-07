@@ -18,6 +18,7 @@ import type { StixObject, StixOpenctiExtensionSDO, StixBundle } from '../../type
 import { STIX_EXT_OCTI } from '../../types/stix-2-1-extensions';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { StreamDataEvent } from '../../types/event';
+import type { AuthContext } from '../../types/user';
 
 export const ENTITY_TYPE_PLAYBOOK = 'Playbook';
 
@@ -86,7 +87,8 @@ export interface PlaybookComponent<T extends object> {
   is_internal: boolean;
   ports: PortDefinition[];
   configuration_schema: JSONSchemaType<T> | undefined;
-  schema: () => Promise<JSONSchemaType<T>> | Promise<undefined>;
+  // The context of the user configuring the step, for the options that depend on what this user can read
+  schema: (context?: AuthContext) => Promise<JSONSchemaType<T>> | Promise<undefined>;
   executor: (parameters: ExecutorParameters<T>) => Promise<PlaybookExecution>;
   notify?: (parameters: ExecutorParameters<T>) => Promise<void>;
 }

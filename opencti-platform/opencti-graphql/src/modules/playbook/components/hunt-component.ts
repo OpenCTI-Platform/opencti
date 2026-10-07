@@ -15,19 +15,19 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import * as R from 'ramda';
 import type { JSONSchemaType } from 'ajv';
-import type { AuthContext } from '../../../types/user';
+import type { AuthContext, AuthUser } from '../../../types/user';
 import type { BasicStoreEntity } from '../../../types/store';
 import type { StixObject } from '../../../types/stix-2-1-common';
 import { logApp } from '../../../config/conf';
-import { FunctionalError } from '../../../config/errors';
-import { topEntitiesList } from '../../../database/middleware-loader';
+import { ForbiddenAccess, FunctionalError } from '../../../config/errors';
+import { storeLoadById, topEntitiesList } from '../../../database/middleware-loader';
 import { elCount } from '../../../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
 import { FilterMode, FilterOperator, OrderingMode } from '../../../generated/graphql';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../securityPlatform/securityPlatform-types';
-import { executionContext, HUNT_MANAGER_USER } from '../../../utils/access';
+import { executionContext, HUNT_MANAGER_USER, isUserHasCapability, KNOWLEDGE_KNUPDATE } from '../../../utils/access';
 import { now } from '../../../utils/format';
-import { playbookBundleElementsToApply, type PlaybookBundleElementsToApply, type PlaybookComponent } from '../playbook-types';
+import { type ComponentDefinition, playbookBundleElementsToApply, type PlaybookBundleElementsToApply, type PlaybookComponent } from '../playbook-types';
 import { filterBundleElements, isBundleElementInScope } from '../playbook-utils';
 import { findByIds } from '../../hunt/hunt-loaders';
 import { type BasicStoreEntityHunt, ENTITY_TYPE_HUNT, HUNT_STATUS_ACTIVE, INPUT_HUNT_SOURCES, INPUT_HUNT_TARGETS, INPUT_HUNT_TECHNIQUES } from '../../hunt/hunt-types';
@@ -36,6 +36,7 @@ import { createHuntRuns, designateHuntPlaybookLeader } from '../../hunt/huntRun/
 import { withHuntLock } from '../../hunt/hunt-lock';
 import { type BasicStoreEntityHuntRun, ENTITY_TYPE_HUNT_RUN, HUNT_RUN_TRIGGER_PLAYBOOK, type HuntPlaybookContext } from '../../hunt/huntRun/huntRun-types';
 import { findPlaybookHuntRuns, isStorableHuntPlaybookContext, PLAYBOOK_HUNT_COMPONENT_ID, resumeHuntPlaybookStep } from '../../hunt/hunt-playbook';
+import { checkHuntEditAccess } from '../../hunt/hunt-access';
 
 export const PLAYBOOK_HUNT_MAX_HUNTS = 20;
 const PLAYBOOK_HUNT_SCHEMA_MAX_OPTIONS = 500;
@@ -87,6 +88,59 @@ const PLAYBOOK_HUNT_COMPONENT_SCHEMA: JSONSchemaType<HuntComponentConfiguration>
     include_results: { type: 'boolean', default: true, $ref: 'Add the sightings and observables found to the bundle' },
   },
   required: ['applyToElements', 'hunt_ids', 'security_platform_ids', 'time_window_hours', 'max_hunts', 'wait_for_results', 'include_results'],
+};
+
+const configuredHuntIds = (configuration?: string | null): string[] => {
+  if (!configuration) {
+    return [];
+  }
+  try {
+    const { hunt_ids: huntIds } = JSON.parse(configuration) as { hunt_ids?: unknown };
+    return Array.isArray(huntIds) ? huntIds.map(String) : [];
+  } catch {
+    return [];
+  }
+};
+
+/**
+ * The step starts the runs of its hunts with the hunt manager identity: whoever writes it must be allowed to start them,
+ * as starting the runs of a hunt requires (the capability to update the knowledge, and the edit access to each hunt it
+ * names). A hunt that does not exist is left: the step never finds it, so it runs nothing.
+ */
+export const checkPlaybookHuntStepAccess = async (context: AuthContext, user: AuthUser, componentId: string, configuration?: string | null) => {
+  if (componentId !== PLAYBOOK_HUNT_COMPONENT_ID) {
+    return;
+  }
+  if (!isUserHasCapability(user, KNOWLEDGE_KNUPDATE)) {
+    throw ForbiddenAccess('Running hunts in a playbook requires the capability to update the knowledge');
+  }
+  const huntIds = configuredHuntIds(configuration);
+  for (let index = 0; index < huntIds.length; index += 1) {
+    const huntId = huntIds[index];
+    const hunt = await storeLoadById<BasicStoreEntityHunt>(context, user, huntId, ENTITY_TYPE_HUNT);
+    if (hunt) {
+      await checkHuntEditAccess(context, user, hunt);
+    } else if (await storeLoadById(context, HUNT_MANAGER_USER, huntId, ENTITY_TYPE_HUNT)) {
+      throw ForbiddenAccess('You cannot read a hunt of this step', { huntId });
+    }
+  }
+};
+
+// A whole definition written at once (field patch, import, duplicate): every hunt step is checked against its writer
+export const checkPlaybookDefinitionHuntAccess = async (context: AuthContext, user: AuthUser, playbookDefinition?: string | null) => {
+  if (!playbookDefinition) {
+    return;
+  }
+  let definition: ComponentDefinition;
+  try {
+    definition = JSON.parse(playbookDefinition) as ComponentDefinition;
+  } catch {
+    return;
+  }
+  const nodes = definition.nodes ?? [];
+  for (let index = 0; index < nodes.length; index += 1) {
+    await checkPlaybookHuntStepAccess(context, user, nodes[index].component_id, nodes[index].configuration);
+  }
 };
 
 const elementRefs = (element: StixObject): string[] => {
@@ -204,21 +258,22 @@ export const PLAYBOOK_HUNT_COMPONENT: PlaybookComponent<HuntComponentConfigurati
   is_internal: false,
   ports: [{ id: 'out', type: 'out' }, { id: 'no-hunt', type: 'out' }],
   configuration_schema: PLAYBOOK_HUNT_COMPONENT_SCHEMA,
-  schema: async () => {
-    const context = executionContext('playbook_components');
-    const [hunts, platforms] = await Promise.all([
-      topEntitiesList<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT], {
+  // Only what the user configuring the step can read is offered
+  schema: async (context) => {
+    const user = context?.user;
+    const [hunts, platforms] = context && user ? await Promise.all([
+      topEntitiesList<BasicStoreEntityHunt>(context, user, [ENTITY_TYPE_HUNT], {
         first: PLAYBOOK_HUNT_SCHEMA_MAX_OPTIONS,
         orderBy: 'name',
         orderMode: OrderingMode.Asc,
         filters: { mode: FilterMode.And, filters: [{ key: ['hunt_status'], values: [HUNT_STATUS_ACTIVE] }], filterGroups: [] },
       }),
-      topEntitiesList<BasicStoreEntity>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM], {
+      topEntitiesList<BasicStoreEntity>(context, user, [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM], {
         first: PLAYBOOK_HUNT_SCHEMA_MAX_OPTIONS,
         orderBy: 'name',
         orderMode: OrderingMode.Asc,
       }),
-    ]);
+    ]) : [[], []];
     const schemaElement = {
       properties: {
         hunt_ids: { items: { oneOf: hunts.map((hunt) => ({ const: hunt.internal_id, title: hunt.name })) } },

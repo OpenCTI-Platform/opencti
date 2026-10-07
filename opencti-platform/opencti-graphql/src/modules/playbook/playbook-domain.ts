@@ -43,6 +43,7 @@ import { buildPagination } from '../../database/utils';
 import { checkPlaybookFiltersAndBuildConfigWithCorrectFilters, deleteLinksAndAllChildren, updateImportedPlaybookDefinitionScope } from './playbook-utils';
 import { type SharingConfiguration } from './components/sharing-component';
 import { assertDefinitionRunAsAllowed, assertRunAsUserAllowed, sanitizeDefinitionRunAs } from './components/ai-agent-shared';
+import { checkPlaybookDefinitionHuntAccess, checkPlaybookHuntStepAccess } from './components/hunt-component';
 
 const MINIMAL_COMPATIBLE_VERSION = '6.7.14';
 
@@ -201,6 +202,7 @@ export const playbookAddNode = async (context: AuthContext, user: AuthUser, id: 
   await checkEnterpriseEdition(context);
   const configuration = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(context, user, input, user.id);
   await validateNodeRunAs(context, user, configuration);
+  await checkPlaybookHuntStepAccess(context, user, input.component_id, configuration);
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition ?? '{}') as ComponentDefinition;
   const relatedComponent = PLAYBOOK_COMPONENTS[input.component_id];
@@ -257,6 +259,7 @@ export const playbookReplaceNode = async (
   await checkEnterpriseEdition(context);
   const configuration = await checkPlaybookFiltersAndBuildConfigWithCorrectFilters(context, user, input, user.id);
   await validateNodeRunAs(context, user, configuration);
+  await checkPlaybookHuntStepAccess(context, user, input.component_id, configuration);
 
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
@@ -313,6 +316,7 @@ export const playbookInsertNode = async (
 ) => {
   await checkEnterpriseEdition(context);
   await validateNodeRunAs(context, user, input.configuration);
+  await checkPlaybookHuntStepAccess(context, user, input.component_id, input.configuration);
   const playbook = await findById(context, user, id);
   const definition = JSON.parse(playbook.playbook_definition) as ComponentDefinition;
   const relatedComponent = PLAYBOOK_COMPONENTS[input.component_id];
@@ -497,6 +501,7 @@ export const playbookEdit = async (context: AuthContext, user: AuthUser, id: str
   const definitionInput = input.find((editInput) => editInput.key === 'playbook_definition');
   if (definitionInput) {
     await assertDefinitionRunAsAllowed(context, user, definitionInput.value?.[0]);
+    await checkPlaybookDefinitionHuntAccess(context, user, definitionInput.value?.[0]);
   }
   const { element: updatedElem } = await updateAttribute(context, user, id, ENTITY_TYPE_PLAYBOOK, input);
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, updatedElem, user);
@@ -535,6 +540,7 @@ export const playbookImport = async (context: AuthContext, user: AuthUser, file:
   // disallowed AI-agent run_as to the importing user so the import cannot set
   // up an impersonation, without hard-failing on now-unknown foreign ids.
   config.playbook_definition = await sanitizeDefinitionRunAs(context, user, updatedPlaybookDefinition);
+  await checkPlaybookDefinitionHuntAccess(context, user, config.playbook_definition);
 
   const importData = {
     name: config.name,
@@ -567,6 +573,7 @@ export const playbookDuplicate = async (context: AuthContext, user: AuthUser, id
   // disallowed run_as to the user performing the duplication so the copy
   // cannot be used to keep impersonating that user.
   const playbook_definition = (await sanitizeDefinitionRunAs(context, user, playbook.playbook_definition)) ?? undefined;
+  await checkPlaybookDefinitionHuntAccess(context, user, playbook_definition);
   const newPlaybook = {
     name: `${playbook.name} - copy`,
     description: playbook.description,

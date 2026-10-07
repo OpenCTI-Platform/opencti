@@ -63,10 +63,10 @@ const playbookResolvers: Resolvers = {
     toConfigurationExport: (playbook, _, __) => playbookExport(playbook),
   },
   PlaybookComponent: {
-    configuration_schema: async (current) => {
+    configuration_schema: async (current, _, context) => {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      const configurationSchema = await current.schema();
+      const configurationSchema = await current.schema(context);
       return JSON.stringify(configurationSchema ?? '{}');
     },
   },
