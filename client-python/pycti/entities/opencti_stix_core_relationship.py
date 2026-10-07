@@ -45,6 +45,10 @@ COVERAGE_PLATFORMS_PROPERTIES = """
             }
 """
 
+# The coverage score of the GraphQL input is an Int, a signed 32-bit integer
+_GRAPHQL_INT_MIN = -(2**31)
+_GRAPHQL_INT_MAX = 2**31 - 1
+
 
 class StixCoreRelationship:
     """Main StixCoreRelationship class for OpenCTI
@@ -557,12 +561,18 @@ class StixCoreRelationship:
             {
                 "platform_ref": coverage["platform_ref"],
                 "coverage_name": coverage["name"],
-                "coverage_score": math.floor(coverage["score"] + 0.5),
+                "coverage_score": StixCoreRelationship._rounded_score(
+                    coverage["score"]
+                ),
             }
             for coverage in raw_coverage_platforms
             if isinstance(coverage, dict)
             and StixCoreRelationship._is_platform_coverage(coverage)
         ]
+
+    @staticmethod
+    def _rounded_score(score):
+        return math.floor(score + 0.5)
 
     @staticmethod
     def _is_platform_coverage(coverage):
@@ -575,6 +585,9 @@ class StixCoreRelationship:
             and isinstance(score, (int, float))
             and not isinstance(score, bool)
             and math.isfinite(score)
+            and _GRAPHQL_INT_MIN
+            <= StixCoreRelationship._rounded_score(score)
+            <= _GRAPHQL_INT_MAX
         )
 
     def list(self, **kwargs):

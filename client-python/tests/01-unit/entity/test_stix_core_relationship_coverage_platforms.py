@@ -241,6 +241,9 @@ def stix_coverage(**overrides):
         stix_coverage(score=True),
         stix_coverage(score=float("nan")),
         stix_coverage(score=float("inf")),
+        stix_coverage(score=1e20),
+        stix_coverage(score=2**31 - 0.5),
+        stix_coverage(score=-(2**31) - 1),
         {"platform_ref": STIX_PLATFORM_REF, "name": "DETECTION"},
     ],
 )
@@ -256,6 +259,13 @@ def test_a_decimal_coverage_platform_score_is_rounded_half_up():
         [stix_coverage(score=74.5), stix_coverage(score=60.2)]
     )
     assert [c["coverage_score"] for c in converted] == [75, 60]
+
+
+def test_a_coverage_platform_score_at_the_bounds_of_the_input_is_kept():
+    converted = StixCoreRelationship.convert_coverage_platforms(
+        [stix_coverage(score=2**31 - 1), stix_coverage(score=-(2**31))]
+    )
+    assert [c["coverage_score"] for c in converted] == [2**31 - 1, -(2**31)]
 
 
 def test_custom_attributes_need_no_detection(local_api_client):

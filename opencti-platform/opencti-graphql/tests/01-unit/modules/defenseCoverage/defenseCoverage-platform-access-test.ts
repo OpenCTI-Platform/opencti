@@ -43,6 +43,8 @@ describe('Defense coverage per platform of a relationship', () => {
     ['without a score', { platform_ref: 'security-platform--accessible', coverage_name: 'Detection' }],
     ['with a score that is not a number', { platform_ref: 'security-platform--accessible', coverage_name: 'Detection', coverage_score: '100' }],
     ['with a score that is not finite', { platform_ref: 'security-platform--accessible', coverage_name: 'Detection', coverage_score: Number.NaN }],
+    ['with a score above the GraphQL integer range', { platform_ref: 'security-platform--accessible', coverage_name: 'Detection', coverage_score: 1e20 }],
+    ['with a score rounded below the GraphQL integer range', { platform_ref: 'security-platform--accessible', coverage_name: 'Detection', coverage_score: -(2 ** 31) - 0.6 }],
   ])('should skip an entry %s, which the GraphQL type cannot carry', async (_, malformed) => {
     vi.mocked(internalFindByIdsMapped).mockResolvedValueOnce({ 'security-platform--accessible': { internal_id: 'platform-1' } } as never);
     await expect(coveragePlatformsInformationForReader(context, user, [malformed, entry('security-platform--accessible')] as never))
@@ -53,6 +55,12 @@ describe('Defense coverage per platform of a relationship', () => {
     vi.mocked(internalFindByIdsMapped).mockResolvedValueOnce({ 'security-platform--accessible': { internal_id: 'platform-1' } } as never);
     await expect(coveragePlatformsInformationForReader(context, user, [{ ...entry('security-platform--accessible'), coverage_score: 66.6 }]))
       .resolves.toEqual([{ ...entry('security-platform--accessible'), coverage_score: 67 }]);
+  });
+
+  it('should keep a score at the bounds of the GraphQL integer range', async () => {
+    vi.mocked(internalFindByIdsMapped).mockResolvedValueOnce({ 'security-platform--accessible': { internal_id: 'platform-1' } } as never);
+    const bounds = [{ ...entry('security-platform--accessible'), coverage_score: 2 ** 31 - 1 }, { ...entry('security-platform--accessible'), coverage_score: -(2 ** 31) }];
+    await expect(coveragePlatformsInformationForReader(context, user, bounds)).resolves.toEqual(bounds);
   });
 
   it('should keep an absent value as it is', async () => {

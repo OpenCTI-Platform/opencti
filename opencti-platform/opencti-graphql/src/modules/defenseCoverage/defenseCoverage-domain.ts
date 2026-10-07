@@ -1340,6 +1340,9 @@ export const addPlatformProvidesFromLogsources = async (
 // endregion
 
 // region coverage per platform
+// The coverage score of the GraphQL type is an Int, a signed 32-bit integer
+const isGraphQLInt = (value: number) => value >= -(2 ** 31) && value <= 2 ** 31 - 1;
+
 /**
  * The OpenAEV results per security platform of a `has-covered` relationship reference their platform: an entry only
  * reaches a reader who can access that platform, designated by any of its ids as the computation resolves it, and an
@@ -1355,7 +1358,8 @@ export const coveragePlatformsInformationForReader = async <T extends { platform
   const entries = information
     .filter((entry): entry is T => !!entry && typeof entry.platform_ref === 'string' && typeof entry.coverage_name === 'string'
       && typeof entry.coverage_score === 'number' && Number.isFinite(entry.coverage_score))
-    .map((entry) => ({ ...entry, coverage_score: Math.round(entry.coverage_score as number) }));
+    .map((entry) => ({ ...entry, coverage_score: Math.round(entry.coverage_score as number) }))
+    .filter((entry) => isGraphQLInt(entry.coverage_score));
   const refs = uniq(entries.map((entry) => entry.platform_ref as string));
   if (refs.length === 0) return [];
   const accessible = await internalFindByIdsMapped<BasicStoreEntity>(context, user, refs, {
