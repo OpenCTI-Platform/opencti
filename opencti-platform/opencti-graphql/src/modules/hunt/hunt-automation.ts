@@ -666,6 +666,7 @@ export interface StandingCandidate {
   hunt: BasicStoreEntityHunt;
   filters: FilterGroup | null;
   refIds: Set<string>;
+  sourceIds: Set<string>;
   rising: boolean;
 }
 
@@ -682,16 +683,19 @@ export const buildStandingCandidates = async (context: AuthContext, hunts: Basic
   ])));
   const refs = refInternalIds.length > 0 ? await findByIds<BasicStoreEntity & Record<string, unknown>>(context, HUNT_MANAGER_USER, refInternalIds) : [];
   const refsById = new Map(refs.map((ref) => [ref.internal_id, ref]));
+  const standardIds = (internalIds: string[]) => internalIds
+    .map((id) => refsById.get(id))
+    .filter((ref): ref is BasicStoreEntity & Record<string, unknown> => !!ref)
+    .flatMap((ref) => [ref.standard_id, ...((ref.x_opencti_stix_ids as string[] | undefined) ?? [])]);
   const candidates: StandingCandidate[] = [];
   hunts.forEach((hunt) => {
     try {
-      const huntRefs = [...(hunt[RELATION_HUNT_TARGETS] ?? []), ...(hunt[RELATION_HUNT_TECHNIQUES] ?? []), ...(hunt[RELATION_HUNT_SOURCES] ?? [])]
-        .map((id) => refsById.get(id))
-        .filter((ref): ref is BasicStoreEntity & Record<string, unknown> => !!ref);
+      const sourceIds = standardIds(hunt[RELATION_HUNT_SOURCES] ?? []);
       candidates.push({
         hunt,
         filters: parseHuntFilterGroup(hunt.trigger_filters, 'trigger_filters'),
-        refIds: new Set(huntRefs.flatMap((ref) => [ref.standard_id, ...((ref.x_opencti_stix_ids as string[] | undefined) ?? [])])),
+        refIds: new Set([...standardIds([...(hunt[RELATION_HUNT_TARGETS] ?? []), ...(hunt[RELATION_HUNT_TECHNIQUES] ?? [])]), ...sourceIds]),
+        sourceIds: new Set(sourceIds),
         rising: (hunt[RELATION_HUNT_TARGETS] ?? []).some((id) => {
           const target = refsById.get(id);
           return !!target && isPulseRising(target);
@@ -732,26 +736,38 @@ export const eventTouchedRefs = (event: DataEvent): string[] => {
   return refs;
 };
 
+/**
+ * Standard id of the object an event creates or updates. It triggers the hunts that rely on it as a source: an update
+ * of a target or a technique alone (a trend, a description) adds no knowledge around the hunt.
+ */
+export const eventObjectId = (event: DataEvent): string | null => {
+  const id: unknown = event.type === EVENT_TYPE_CREATE || event.type === EVENT_TYPE_UPDATE ? event.data.id : undefined;
+  return typeof id === 'string' ? id : null;
+};
+
 export const isStandingHuntTriggered = async (context: AuthContext, candidate: StandingCandidate, event: DataEvent) => {
   if (candidate.filters) {
     return isStixMatchFilterGroup(context, HUNT_MANAGER_USER, event.data, candidate.filters);
   }
-  return eventTouchedRefs(event).some((ref) => candidate.refIds.has(ref));
+  const objectId = eventObjectId(event);
+  return (!!objectId && candidate.sourceIds.has(objectId)) || eventTouchedRefs(event).some((ref) => candidate.refIds.has(ref));
 };
 
 const compareIds = (a: string, b: string) => (a < b ? -1 : Number(a > b));
 
 /**
- * Standing hunts split for matching: those without trigger filters by the refs that trigger them, the others apart, in
- * the order of their ids that an event matched over several ticks resumes from.
+ * Standing hunts split for matching: those without trigger filters by the refs and the sources that trigger them, the
+ * others apart, in the order of their ids that an event matched over several ticks resumes from.
  */
 export const indexStandingCandidates = (candidates: StandingCandidate[]) => {
   const byRef = new Map<string, StandingCandidate[]>();
+  const bySource = new Map<string, StandingCandidate[]>();
   candidates.filter((candidate) => !candidate.filters).forEach((candidate) => {
     candidate.refIds.forEach((ref) => byRef.set(ref, [...(byRef.get(ref) ?? []), candidate]));
+    candidate.sourceIds.forEach((source) => bySource.set(source, [...(bySource.get(source) ?? []), candidate]));
   });
   const filtered = candidates.filter((candidate) => !!candidate.filters).sort((a, b) => compareIds(a.hunt.internal_id, b.hunt.internal_id));
-  return { byRef, filtered };
+  return { byRef, bySource, filtered };
 };
 
 /** An event whose trigger filters a tick evaluated in part: the next tick evaluates the hunts after the last one. */
@@ -770,7 +786,7 @@ export interface StandingMatch {
 
 /**
  * Matches knowledge events against standing hunts. Hunts without trigger filters are found from the refs an event
- * touches, never by trying every hunt; trigger filters are evaluated within a budget. Matching stops before the event
+ * touches and from the source it updates, never by trying every hunt; trigger filters are evaluated within a budget. Matching stops before the event
  * that would exceed it, `matchedEventId` being the last event fully matched. The first event needing more evaluations
  * than the whole budget is evaluated up to the budget, `partial` naming the last hunt evaluated, and resumed from there
  * by the next tick (`resume`): a tick never exceeds its budget and always moves forward.
@@ -799,6 +815,8 @@ export const matchStandingEvents = async (
         match.budgetSpent = true;
         return;
       }
+      const objectId = eventObjectId(event);
+      (objectId ? indexed.bySource.get(objectId) ?? [] : []).forEach((candidate) => match.triggered.set(candidate.hunt.internal_id, candidate));
       const refs = eventTouchedRefs(event);
       for (let refIndex = 0; refIndex < refs.length; refIndex += 1) {
         (indexed.byRef.get(refs[refIndex]) ?? []).forEach((candidate) => match.triggered.set(candidate.hunt.internal_id, candidate));

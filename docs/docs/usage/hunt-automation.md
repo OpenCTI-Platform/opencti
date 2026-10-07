@@ -20,7 +20,7 @@ Scheduled, standing and PIR armed runs target every hunt connector registered fo
 
 ## Standing hunts
 
-A **standing** hunt runs when the knowledge around it moves: a report adds one of its techniques or targets, a new sighting of one of its targets is created, an indicator it relies on is updated. The **trigger filters** of the hunt narrow down the events that start it (for instance, only reports with a given label).
+A **standing** hunt runs when the knowledge around it moves: a report adds one of its techniques or targets, a new sighting of one of its targets is created, one of its sources (an indicator or a report it relies on) is updated. An update of one of its targets or techniques alone, such as a new description or trend, does not start it. The **trigger filters** of the hunt narrow down the events that start it (for instance, only reports with a given label).
 
 Standing hunts are debounced: a hunt runs at most once per debounce period (15 minutes by default), however many events touch it. When the community trend of a target is rising in Threat Pulse, the debounce of its standing hunts is halved. The knowledge created by hunt runs never triggers standing hunts, so that a hunt never triggers itself.
 

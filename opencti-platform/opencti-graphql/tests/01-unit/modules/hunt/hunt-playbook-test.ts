@@ -5,6 +5,7 @@ import { computeHuntPlaybookOutcome, HUNT_PLAYBOOK_MAX_CONTEXT_LENGTH, isHuntRun
 import { huntTriageRunPayload, isHuntRunFinalized } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
 import { isHuntStepNode, matchHuntResultFilter } from '../../../../src/modules/playbook/components/hunt-result-filter-component';
 import {
+  eventObjectId,
   eventTouchedRefs,
   indexStandingCandidates,
   isStandingHuntTriggered,
@@ -145,7 +146,13 @@ describe('Hunt playbook outcome', () => {
 });
 
 describe('Standing hunt triggers', () => {
-  const candidate = (refIds: string[]) => ({ hunt: { internal_id: 'hunt-1' } as BasicStoreEntityHunt, filters: null, refIds: new Set(refIds), rising: false });
+  const candidate = (refIds: string[], sourceIds: string[] = []): StandingCandidate => ({
+    hunt: { internal_id: 'hunt-1' } as BasicStoreEntityHunt,
+    filters: null,
+    refIds: new Set([...refIds, ...sourceIds]),
+    sourceIds: new Set(sourceIds),
+    rising: false,
+  });
 
   it('should collect the refs of created objects', () => {
     const event = {
@@ -184,16 +191,46 @@ describe('Standing hunt triggers', () => {
     expect(await isStandingHuntTriggered(testContext, candidate(['indicator--1']), sighting)).toBe(true);
   });
 
+  it('should trigger a hunt without filters when one of its sources is updated, not one of its targets', async () => {
+    const update = (id: string) => ({
+      type: 'update',
+      data: { id, type: id.split('--')[0] },
+      context: { patch: [{ op: 'replace', path: '/description', value: 'updated' }], reverse_patch: [], changes: [] },
+    } as unknown as DataEvent);
+    const hunt = candidate(['intrusion-set--1', 'attack-pattern--1'], ['indicator--1']);
+    expect(eventObjectId(update('indicator--1'))).toEqual('indicator--1');
+    expect(await isStandingHuntTriggered(testContext, hunt, update('indicator--1'))).toBe(true);
+    expect(await isStandingHuntTriggered(testContext, hunt, update('intrusion-set--1'))).toBe(false);
+    expect(await isStandingHuntTriggered(testContext, hunt, update('indicator--other'))).toBe(false);
+    const byRef = { ...hunt, hunt: { internal_id: 'hunt-source' } as BasicStoreEntityHunt };
+    const match: StandingMatch = { triggered: new Map(), evaluations: 0, budgetSpent: false, matchedEventId: null };
+    const streamUpdate = (eventId: string, id: string) => ({ id: eventId, event: 'update', data: update(id) });
+    await matchStandingEvents(indexStandingCandidates([byRef]), [streamUpdate('1-0', 'intrusion-set--1'), streamUpdate('2-0', 'indicator--other')], match, {
+      budget: 10,
+      isIgnored: () => false,
+      evaluate: async () => false,
+    });
+    expect(match.triggered.size).toEqual(0);
+    await matchStandingEvents(indexStandingCandidates([byRef]), [streamUpdate('3-0', 'indicator--1')], match, {
+      budget: 10,
+      isIgnored: () => false,
+      evaluate: async () => false,
+    });
+    expect(Array.from(match.triggered.keys())).toEqual(['hunt-source']);
+    expect(match).toMatchObject({ evaluations: 0, matchedEventId: '3-0' });
+  });
+
   const filteredCandidate = (huntId: string): StandingCandidate => ({
     hunt: { internal_id: huntId } as BasicStoreEntityHunt,
     filters: { mode: FilterMode.And, filters: [{ key: ['entity_type'], values: ['Report'] }], filterGroups: [] },
     refIds: new Set(),
+    sourceIds: new Set(),
     rising: false,
   });
   const streamEvent = (id: string, data: Record<string, unknown>) => ({ id, event: 'create', data: { type: 'create', origin: {}, data } as unknown as DataEvent });
 
   it('should find the hunts without filters from the refs of an event, without evaluating them', async () => {
-    const byRef = { hunt: { internal_id: 'hunt-ref' } as BasicStoreEntityHunt, filters: null, refIds: new Set(['indicator--1']), rising: false };
+    const byRef = { ...candidate(['indicator--1']), hunt: { internal_id: 'hunt-ref' } as BasicStoreEntityHunt };
     const indexed = indexStandingCandidates([byRef, filteredCandidate('hunt-filter')]);
     const match: StandingMatch = { triggered: new Map(), evaluations: 0, budgetSpent: false, matchedEventId: null };
     const evaluated: string[] = [];
@@ -212,7 +249,7 @@ describe('Standing hunt triggers', () => {
 
   it('should find a hunt from any ref of a large container, past the first thousands', async () => {
     const objectRefs = Array.from({ length: 2501 }, (_, index) => `indicator--${index}`);
-    const byRef = { hunt: { internal_id: 'hunt-last-ref' } as BasicStoreEntityHunt, filters: null, refIds: new Set(['indicator--2500']), rising: false };
+    const byRef = { ...candidate(['indicator--2500']), hunt: { internal_id: 'hunt-last-ref' } as BasicStoreEntityHunt };
     const match: StandingMatch = { triggered: new Map(), evaluations: 0, budgetSpent: false, matchedEventId: null };
     await matchStandingEvents(indexStandingCandidates([byRef]), [streamEvent('1-0', { id: 'report--1', type: 'report', object_refs: objectRefs })], match, {
       budget: 10,
