@@ -142,7 +142,9 @@ export type ErrorOrigin = 'code' | 'infra' | 'input';
 // Races (ALREADY_DELETED_ERROR) and locks stay here until RFC 0006 open questions 6 and 7 are settled.
 const INPUT_ERROR_CODES: string[] = [...AUTH_ERRORS, ...FUNCTIONAL_ERRORS];
 
-const isInfraError = (e: unknown) => errorCode(e) === INFRA_ERROR;
+// A typed infra error: an `InfraError`, or any error naming the dependency that failed. The latter lets a
+// shared client keep the code its clients know (the engine's DATABASE_ERROR) while being classified.
+const isInfraError = (e: any) => errorCode(e) === INFRA_ERROR || DEPENDENCIES.includes(e?.extensions?.data?.dependency);
 
 // - A typed infra error anywhere in the chain: a dependency failed, whoever wrapped it.
 // - Else a typed input error at the top: the code rejected the input on purpose.

@@ -13,7 +13,7 @@ import {
   withModuleApi,
   withModuleTag,
 } from '../../../src/config/error-origin';
-import { ForbiddenAccess, FunctionalError, InfraError, UnknownError, UnsupportedError, ValidationError } from '../../../src/config/errors';
+import { DatabaseError, ForbiddenAccess, FunctionalError, InfraError, UnknownError, UnsupportedError, ValidationError } from '../../../src/config/errors';
 
 // What Apollo hands to the plugins when a resolver throws.
 const asResolverError = (e: Error) => new GraphQLError(e.message, { originalError: e });
@@ -40,6 +40,13 @@ describe('error origin', () => {
     expect(classifyErrorOrigin(FunctionalError('wrapped', { cause: infra }))).toBe('infra');
     expect(classifyErrorOrigin(new Error('native wrapper', { cause: infra }))).toBe('infra');
     expect(classifyErrorOrigin(asResolverError(infra))).toBe('infra');
+  });
+
+  it('should classify an error naming its failed dependency as infra, whatever its code', () => {
+    const engineDown = DatabaseError('Fail to execute engine pagination', { dependency: 'elasticsearch' });
+    expect(buildErrorScope(engineDown)).toEqual({ origin: 'infra', dependency: 'elasticsearch' });
+    expect(classifyErrorOrigin(DatabaseError('Bulk indexing fail', { dependency: true }))).toBe('code');
+    expect(classifyErrorOrigin(DatabaseError('Bulk indexing fail', { dependency: 'unknown' }))).toBe('code');
   });
 
   it('should classify an input error rethrown as a bug as code', () => {

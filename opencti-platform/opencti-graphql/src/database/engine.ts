@@ -60,6 +60,8 @@ import {
   TYPE_LOCK_ERROR,
   UnsupportedError,
 } from '../config/errors';
+import { errorChain, isNetworkFailure } from '../config/error-origin';
+import { defineDependencyClient } from './dependency-client';
 import {
   isStixRefRelationship,
   isStixRefUnidirectionalRelationship,
@@ -591,15 +593,88 @@ export const isClientAbortError = (err: any): boolean => {
   return err instanceof AbortError || err?.name === 'AbortError' || err?.name === 'RequestAbortedError';
 };
 
-// Use this instead of throwing DatabaseError directly when catching an error
-// from an abort-signal-aware engine call, so a client abort isn't misclassified
-// as a genuine engine failure.
+// region error classification (RFC 0006)
+// The engine is unavailable or failing, once its retries are spent, when:
+// - it cannot be reached: the client's connection errors and timeouts, Node network failures;
+// - it answers 5xx or 429: a service failing, even when the cause is a bug in that service;
+// - it protects itself: circuit breaker, rejected execution (thread pool full), cluster block
+//   (the flood-stage disk watermark makes the indices read-only), unavailable or failed shards.
+// Not when the request itself is at fault, whatever the status: a query, a mapping or a script
+// we built (400, 404, 409, 413 and the request fault types below) is a code fault.
+const ENGINE_CONNECTION_ERRORS = ['ConnectionError', 'NoLivingConnectionsError', 'TimeoutError'];
+const ENGINE_UNAVAILABLE_TYPES = [
+  'circuit_breaking_exception',
+  'es_rejected_execution_exception',
+  'cluster_block_exception',
+  'no_shard_available_action_exception',
+  'unavailable_shards_exception',
+  'node_not_connected_exception',
+  'master_not_discovered_exception',
+];
+const ENGINE_REQUEST_FAULT_TYPES = [
+  'parsing_exception',
+  'illegal_argument_exception',
+  'mapper_parsing_exception',
+  'query_shard_exception',
+  'script_exception',
+  'too_many_buckets_exception',
+  'too_many_nested_clauses',
+];
+
+// The `type` of the engine error and of its root and nested causes.
+const collectEngineErrorTypes = (engineError: any, depth = 0): string[] => {
+  if (!engineError || typeof engineError !== 'object' || depth > 5) {
+    return [];
+  }
+  const nested = [...(engineError.root_cause ?? []), engineError.caused_by, ...(engineError.failed_shards ?? []).map((shard: any) => shard?.reason)];
+  return [
+    ...(typeof engineError.type === 'string' ? [engineError.type] : []),
+    ...nested.flatMap((cause) => collectEngineErrorTypes(cause, depth + 1)),
+  ];
+};
+
+export const isEngineUnavailable = (err: unknown): boolean => {
+  return errorChain(err).some((item: any) => {
+    if (ENGINE_CONNECTION_ERRORS.includes(item?.name) || isNetworkFailure(item)) {
+      return true;
+    }
+    const types = collectEngineErrorTypes(item?.meta?.body?.error ?? item?.body?.error);
+    if (types.some((type) => ENGINE_REQUEST_FAULT_TYPES.includes(type))) {
+      return false;
+    }
+    if (types.some((type) => ENGINE_UNAVAILABLE_TYPES.includes(type))) {
+      return true;
+    }
+    const status = item?.meta?.statusCode ?? item?.statusCode;
+    return typeof status === 'number' && (status >= 500 || status === 429);
+  });
+};
+
+// The engine keeps DATABASE_ERROR, the code its clients know: naming the dependency makes it an infra error.
+const EngineUnavailableError = (reason: string, data: Record<string, unknown> = {}) => {
+  return DatabaseError(reason, { ...data, dependency: 'elasticsearch' });
+};
+
+export const engineDependency = defineDependencyClient({
+  dependency: 'elasticsearch',
+  isUnavailable: isEngineUnavailable,
+  unavailableMessage: 'Search engine is unavailable',
+  errorFactory: EngineUnavailableError,
+});
+
+// Use this instead of throwing DatabaseError directly when catching an error from an engine call:
+// - a client abort isn't misclassified as a genuine engine failure;
+// - an unavailable engine is an infra error (`dependency: 'elasticsearch'`), not a code fault.
 export const wrapEngineError = (reason: string, err: any, data: Record<string, any> = {}): GraphQLError => {
   if (isClientAbortError(err)) {
     return ClientAbortError(reason, { cause: err, ...data });
   }
-  return DatabaseError(reason, { cause: err, ...data });
+  if (isEngineUnavailable(err)) {
+    return engineDependency.classify(err, { reason, ...data }) as GraphQLError;
+  }
+  return DatabaseError(reason, { cause: engineDependency.classify(err), ...data });
 };
+// endregion
 
 export const retryElOperations = async (operation: () => Promise<any>): Promise<any> => {
   for (let attempt = 0; attempt <= BULK_MAX_RETRIES; attempt += 1) {
@@ -631,7 +706,7 @@ export const elRawSearch = (context: AuthContext, user: AuthUser, types: string[
     // We do not support response with shards failure.
     // Result must be always accurate to prevent data duplication and unwanted behaviors
     // If any shard fail during query, engine throw a shard exception with shards information
-      throw EngineShardsError({ shards: parsedSearch._shards });
+      throw EngineShardsError({ shards: parsedSearch._shards, dependency: 'elasticsearch' });
     }
     // Return result of the search if everything goes well
     return parsedSearch;
@@ -750,7 +825,7 @@ const elOperationForMigration = (operation: (query: any) => Promise<any>): (mess
       wait_for_completion: false,
       body,
     }).catch((err) => {
-      throw DatabaseError('Async engine bulk migration fail', { migration: message, cause: err });
+      throw wrapEngineError('Async engine bulk migration fail', err, { migration: message });
     });
     logMigration.info(`${message} > elastic running task ${queryAsync.task}`);
     // Wait 10 seconds for task to initialize
@@ -1090,7 +1165,7 @@ const elCreateLifecyclePolicy = async () => {
         },
       },
     }).catch((e) => {
-      throw DatabaseError('Creating lifecycle policy fail', { cause: e });
+      throw wrapEngineError('Creating lifecycle policy fail', e);
     });
   } else {
     const policyPath = `_plugins/_ism/policies/${ES_INDEX_PREFIX}-ism-policy`;
@@ -1136,7 +1211,7 @@ const elCreateLifecyclePolicy = async () => {
           body: policyBody,
         });
       } catch (e: any) {
-        throw DatabaseError('Creating lifecycle policy fail', { cause: e });
+        throw wrapEngineError('Creating lifecycle policy fail', e);
       }
     }
   }
@@ -1167,11 +1242,11 @@ const updateCoreSettings = async (): Promise<void> => {
   };
   if (engine instanceof ElkClient) {
     await engine.cluster.putComponentTemplate(putComponentTemplateArgs).catch((e) => {
-      throw DatabaseError('Creating component template fail', { cause: e });
+      throw wrapEngineError('Creating component template fail', e);
     });
   } else {
     await engine.cluster.putComponentTemplate(putComponentTemplateArgs).catch((e) => {
-      throw DatabaseError('Creating component template fail', { cause: e });
+      throw wrapEngineError('Creating component template fail', e);
     });
   }
 };
@@ -1244,11 +1319,11 @@ const updateIndexTemplate = async (name: string, mapping_properties: Record<stri
   };
   if (engine instanceof ElkClient) {
     return engine.indices.putIndexTemplate(putIndexTemplateArg).catch((e) => {
-      throw DatabaseError('Creating index template fail', { cause: e });
+      throw wrapEngineError('Creating index template fail', e);
     });
   }
   return engine.indices.putIndexTemplate(putIndexTemplateArg).catch((e) => {
-    throw DatabaseError('Creating index template fail', { cause: e });
+    throw wrapEngineError('Creating index template fail', e);
   });
 };
 
@@ -1299,11 +1374,11 @@ export const elUpdateIndicesMappings = async (): Promise<void> => {
     const putSettingsArgs = { index, body: platformSettings };
     if (engine instanceof ElkClient) {
       await engine.indices.putSettings(putSettingsArgs).catch((e) => {
-        throw DatabaseError('Updating index settings fail', { index, cause: e });
+        throw wrapEngineError('Updating index settings fail', e, { index });
       });
     } else {
       await engine.indices.putSettings(putSettingsArgs).catch((e) => {
-        throw DatabaseError('Updating index settings fail', { index, cause: e });
+        throw wrapEngineError('Updating index settings fail', e, { index });
       });
     }
     // Type collision is not supported, mappingProperties must be forced to exist mapping in this case
@@ -1343,11 +1418,11 @@ export const elUpdateIndicesMappings = async (): Promise<void> => {
       const putMappingArgs = { index, body };
       if (engine instanceof ElkClient) {
         await engine.indices.putMapping(putMappingArgs).catch((e) => {
-          throw DatabaseError('Updating index mapping fail', { index, cause: e });
+          throw wrapEngineError('Updating index mapping fail', e, { index });
         });
       } else {
         await engine.indices.putMapping(putMappingArgs).catch((e) => {
-          throw DatabaseError('Updating index mapping fail', { index, cause: e });
+          throw wrapEngineError('Updating index mapping fail', e, { index });
         });
       }
     }
@@ -3414,7 +3489,7 @@ export const elAggregationCount = async (
       });
     })
     .catch((err) => {
-      throw DatabaseError('Aggregation computation count fail', { cause: err, query });
+      throw wrapEngineError('Aggregation computation count fail', err, { query });
     });
 };
 
@@ -3550,7 +3625,7 @@ export const elAggregationRelationsCount = async (
       });
     })
     .catch((e) => {
-      throw DatabaseError('Processing aggregation relations count fail', { cause: e });
+      throw wrapEngineError('Processing aggregation relations count fail', e);
     });
 };
 type AggregationNestedTermsWithFilterOpts = QueryBodyBuilderOpts & {
@@ -3599,7 +3674,7 @@ export const elAggregationNestedTermsWithFilter = async (
       });
     })
     .catch((err) => {
-      throw DatabaseError('Aggregation computation count fail', { cause: err, query });
+      throw wrapEngineError('Aggregation computation count fail', err, { query });
     });
 };
 type AggregationsListOpts = QueryBodyBuilderOpts & {
@@ -3884,7 +3959,7 @@ export const elBulk = async (context: AuthContext, args: any) => {
     }
     if (attempt === BULK_MAX_RETRIES) {
       // We have exhausted the maximum number of retries, we need to throw an error with the details of the transient errors.
-      throw DatabaseError('Bulk indexing fail', { bulkId, attempts: attempt + 1, errors: transientErrors });
+      throw EngineUnavailableError('Bulk indexing fail', { bulkId, attempts: attempt + 1, errors: transientErrors });
     }
     const delayMs = BULK_INITIAL_DELAY_MS * (2 ** attempt);
     const errorTypes: Record<string, number> = {};
@@ -3925,11 +4000,11 @@ export const elIndex = async (
   }
   if (engine instanceof ElkClient) {
     await engine.index(indexParams).catch((err: any) => {
-      throw DatabaseError('Simple indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
+      throw wrapEngineError('Simple indexing fail', err, { documentId, entityType, ...extendedErrors({ documentBody }) });
     });
   } else {
     await engine.index(indexParams).catch((err: any) => {
-      throw DatabaseError('Simple indexing fail', { cause: err, documentId, entityType, ...extendedErrors({ documentBody }) });
+      throw wrapEngineError('Simple indexing fail', err, { documentId, entityType, ...extendedErrors({ documentBody }) });
     });
   }
 
@@ -4010,7 +4085,7 @@ export const elDelete = (indexName: string, documentId: string) => {
       }
       return await engine.delete(deleteRequest);
     } catch (err: any) {
-      throw DatabaseError('Deleting indexing fail', { cause: err, documentId });
+      throw wrapEngineError('Deleting indexing fail', err, { documentId });
     }
   };
   return retryElOperations(deleteOperation);
@@ -4270,7 +4345,7 @@ export const elReindexElements = async (
       }
       return await engine.reindex(reindexParams);
     } catch (err: any) {
-      throw DatabaseError(`Reindexing fail from ${sourceIndex} to ${destIndex}`, { cause: err, body: reindexParams.body });
+      throw wrapEngineError(`Reindexing fail from ${sourceIndex} to ${destIndex}`, err, { body: reindexParams.body });
     }
   };
   return retryElOperations(reindexOperation);
@@ -4306,7 +4381,7 @@ export const elRemoveDraftIdFromElements = async (
         },
       },
     }).catch((err) => {
-      throw DatabaseError('Revert live entities indexing fail', { cause: err });
+      throw wrapEngineError('Revert live entities indexing fail', err);
     });
   }
 };
@@ -4869,7 +4944,7 @@ const elUpdateConnectionsOfElement = async (documentId: string, documentBody: an
       },
     },
   }).catch((err) => {
-    throw DatabaseError('Error updating connections', { cause: err, documentId, body: documentBody });
+    throw wrapEngineError('Error updating connections', err, { documentId, body: documentBody });
   });
 };
 const createDeleteOperationElement = async (

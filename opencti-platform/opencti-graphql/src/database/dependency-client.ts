@@ -1,3 +1,4 @@
+import type { GraphQLError } from 'graphql';
 import { InfraError } from '../config/errors';
 import { APP_MODULE, type Dependency, tagErrorModule } from '../config/error-origin';
 
@@ -13,6 +14,9 @@ export interface DependencyClientDefinition {
   // Called on a failure the client's own retries could not absorb.
   isUnavailable: (err: unknown) => boolean;
   unavailableMessage: string;
+  // The error thrown when the service is unavailable, `InfraError` by default. A client whose callers already
+  // know another code keeps it: the `dependency` named in the data is what makes the error an infra error.
+  errorFactory?: (reason: string, data: Record<string, unknown>) => GraphQLError;
 }
 
 export interface ClassifyOptions {
@@ -21,13 +25,18 @@ export interface ClassifyOptions {
   [key: string]: unknown;
 }
 
-export const defineDependencyClient = ({ dependency, isUnavailable, unavailableMessage }: DependencyClientDefinition) => {
+export const defineDependencyClient = ({
+  dependency,
+  isUnavailable,
+  unavailableMessage,
+  errorFactory = (reason, data) => InfraError(dependency, reason, data),
+}: DependencyClientDefinition) => {
   // - The service is unavailable or failing: a typed infra error, `origin: infra`, original error as `cause`.
   // - A bug in the client or in the library it wraps: tagged `core`, `origin: code`.
   // - The service rejected our request: untouched, the calling module owns it.
   const classify = (err: unknown, { reason, ...data }: ClassifyOptions = {}) => {
     if (isUnavailable(err)) {
-      return InfraError(dependency, reason ?? unavailableMessage, { ...data, cause: err });
+      return errorFactory(reason ?? unavailableMessage, { ...data, dependency, cause: err });
     }
     if (err instanceof TypeError) {
       return tagErrorModule(err, APP_MODULE.CORE);
