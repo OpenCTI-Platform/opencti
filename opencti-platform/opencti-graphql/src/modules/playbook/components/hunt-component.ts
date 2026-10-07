@@ -38,8 +38,8 @@ import { findPlaybookHuntRuns, isStorableHuntPlaybookContext, PLAYBOOK_HUNT_COMP
 
 export const PLAYBOOK_HUNT_MAX_HUNTS = 20;
 const PLAYBOOK_HUNT_SCHEMA_MAX_OPTIONS = 500;
-// Containers of the bundle bring the threats, techniques and indicators they contain
-const PLAYBOOK_HUNT_MAX_ELEMENT_REFS = 500;
+// A container can hold thousands of refs: the hunts referring to them are searched slice by slice to keep each filter bounded
+const PLAYBOOK_HUNT_IDS_PER_QUERY = 500;
 
 export interface HuntComponentConfiguration {
   applyToElements: PlaybookBundleElementsToApply;
@@ -90,7 +90,15 @@ const PLAYBOOK_HUNT_COMPONENT_SCHEMA: JSONSchemaType<HuntComponentConfiguration>
 
 const elementRefs = (element: StixObject): string[] => {
   const container = element as StixObject & { object_refs?: string[] };
-  return [element.id, ...(container.object_refs ?? []).slice(0, PLAYBOOK_HUNT_MAX_ELEMENT_REFS)];
+  return [element.id, ...(container.object_refs ?? [])];
+};
+
+// Least recently run first, as the search orders them: a hunt never run comes last
+const byLastRunAt = (a: BasicStoreEntityHunt, b: BasicStoreEntityHunt) => {
+  if (!a.last_run_at || !b.last_run_at) {
+    return (a.last_run_at ? 0 : 1) - (b.last_run_at ? 0 : 1);
+  }
+  return new Date(a.last_run_at).getTime() - new Date(b.last_run_at).getTime();
 };
 
 /**
@@ -112,30 +120,33 @@ export const resolvePlaybookHunts = async (context: AuthContext, elements: StixO
     return [];
   }
   const knowledge = await findByIds<BasicStoreEntity>(context, HUNT_MANAGER_USER, stixIds);
-  const ids = knowledge.map((element) => element.internal_id);
-  if (ids.length === 0) {
-    return [];
+  const ids = Array.from(new Set(knowledge.map((element) => element.internal_id)));
+  const hunts = new Map<string, BasicStoreEntityHunt>();
+  for (let start = 0; start < ids.length; start += PLAYBOOK_HUNT_IDS_PER_QUERY) {
+    const slice = ids.slice(start, start + PLAYBOOK_HUNT_IDS_PER_QUERY);
+    const found = await topEntitiesList<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT], {
+      first: maxHunts,
+      orderBy: 'last_run_at',
+      orderMode: OrderingMode.Asc,
+      filters: {
+        mode: FilterMode.And,
+        filters: [activeFilter],
+        filterGroups: [{
+          mode: FilterMode.Or,
+          filters: [
+            { key: [INPUT_HUNT_TECHNIQUES], values: slice },
+            { key: [INPUT_HUNT_TARGETS], values: slice },
+            { key: [INPUT_HUNT_SOURCES], values: slice },
+          ],
+          filterGroups: [],
+        }],
+      },
+      // The dispatched runs carry the techniques, targets and sources of the hunts
+      withoutRels: false,
+    });
+    found.forEach((hunt) => hunts.set(hunt.internal_id, hunt));
   }
-  return topEntitiesList<BasicStoreEntityHunt>(context, HUNT_MANAGER_USER, [ENTITY_TYPE_HUNT], {
-    first: maxHunts,
-    orderBy: 'last_run_at',
-    orderMode: OrderingMode.Asc,
-    filters: {
-      mode: FilterMode.And,
-      filters: [activeFilter],
-      filterGroups: [{
-        mode: FilterMode.Or,
-        filters: [
-          { key: [INPUT_HUNT_TECHNIQUES], values: ids },
-          { key: [INPUT_HUNT_TARGETS], values: ids },
-          { key: [INPUT_HUNT_SOURCES], values: ids },
-        ],
-        filterGroups: [],
-      }],
-    },
-    // The dispatched runs carry the techniques, targets and sources of the hunts
-    withoutRels: false,
-  });
+  return Array.from(hunts.values()).sort(byLastRunAt).slice(0, maxHunts);
 };
 
 const HUNT_PLAYBOOK_DEBOUNCE_LOCK = 'hunt_playbook_debounce';
