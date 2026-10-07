@@ -247,14 +247,20 @@ const relationScores = (relation: BasicStoreRelation): DefenseScore[] => {
   return information.map((c) => ({ name: c.coverage_name, score: c.coverage_score }));
 };
 
-const relationPlatformScores = (relation: BasicStoreRelation) => {
-  const information = coverageEntries<PlatformCoverageEntry>((relation as unknown as { coverage_platforms_information?: unknown }).coverage_platforms_information)
-    .filter((c) => typeof c.platform_ref === 'string');
-  return groupBy(information, (c) => c.platform_ref);
+type RawPlatformCoverageEntry = { platform_ref: string; coverage_name?: unknown; coverage_score?: unknown };
+const relationPlatformEntries = (relation: BasicStoreRelation) => {
+  const raw = (relation as unknown as { coverage_platforms_information?: unknown }).coverage_platforms_information;
+  return coverageEntries<{ platform_ref?: unknown }>(raw).filter((c): c is RawPlatformCoverageEntry => typeof c.platform_ref === 'string');
 };
 
-// OpenAEV scoped the result to platforms: it never counts technique-wide, even when none of them resolves here
-const hasPlatformAttribution = (relation: BasicStoreRelation) => Array.from(relationPlatformScores(relation).keys()).some((platformRef) => !!platformRef);
+// An entry without a text name or a finite score cannot be evaluated: it is skipped, never thrown on nor read as a failure
+const isScoredPlatformEntry = (entry: RawPlatformCoverageEntry): entry is PlatformCoverageEntry => typeof entry.coverage_name === 'string'
+  && typeof entry.coverage_score === 'number' && Number.isFinite(entry.coverage_score);
+
+const relationPlatformScores = (relation: BasicStoreRelation) => groupBy(relationPlatformEntries(relation).filter(isScoredPlatformEntry), (c) => c.platform_ref);
+
+// OpenAEV scoped the result to platforms: it never counts technique-wide, even when none of them resolves here or can be evaluated
+const hasPlatformAttribution = (relation: BasicStoreRelation) => relationPlatformEntries(relation).some((c) => !!c.platform_ref);
 
 const resultDate = (result: BasicStoreEntity | undefined, relation: BasicStoreRelation) => {
   const lastResult = (result as unknown as { coverage_last_result?: string } | undefined)?.coverage_last_result;

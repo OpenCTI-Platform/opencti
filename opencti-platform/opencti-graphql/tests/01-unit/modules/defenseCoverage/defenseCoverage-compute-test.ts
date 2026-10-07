@@ -159,6 +159,23 @@ describe('Defense coverage of platform-scoped OpenAEV results', () => {
     expect(coverage.validations[0]).toMatchObject({ rel: 'covered-1', attributed: true });
     expect(platformValidations(coverage)).toEqual([{ platform: EDR, scores: [{ name: 'DETECTION', score: 90 }] }]);
   });
+  it.each([
+    ['without a name', { platform_ref: 'identity--edr', coverage_score: 10 }],
+    ['with a name that is not a text', { platform_ref: 'identity--edr', coverage_name: 12, coverage_score: 10 }],
+    ['without a score', { platform_ref: 'identity--edr', coverage_name: 'DETECTION' }],
+    ['with a score that is not a number', { platform_ref: 'identity--edr', coverage_name: 'DETECTION', coverage_score: 'none' }],
+    ['with a score that is not finite', { platform_ref: 'identity--edr', coverage_name: 'DETECTION', coverage_score: Number.NaN }],
+  ])('should skip a per-platform entry %s, without failing the validation', (_, malformed) => {
+    const coverage = coverageWith([malformed, { platform_ref: 'identity--edr', coverage_name: 'DETECTION', coverage_score: 90 }]);
+    expect(platformValidations(coverage)).toEqual([{ platform: EDR, scores: [{ name: 'DETECTION', score: 90 }] }]);
+    expect(coverage.platforms.find((p) => p.platform_id === EDR)?.validations[0]).toMatchObject({ status: 'detected' });
+  });
+  it('should keep a result scoped to platforms out of the technique-wide level when no entry can be evaluated', () => {
+    const coverage = coverageWith([{ platform_ref: 'identity--edr', coverage_name: 'DETECTION', coverage_score: 'none' }]);
+    expect(coverage.validations[0]).toMatchObject({ rel: 'covered-1', attributed: true });
+    expect(platformValidations(coverage)).toEqual([]);
+    expect(coverage.level).toBeLessThan(4);
+  });
   it('should skip the entries of the technique-wide results that are not objects', () => {
     const coverage = coverageWith([], [null, 'DETECTION', { coverage_name: 'DETECTION', coverage_score: 100 }]);
     expect(coverage.validations[0]).toMatchObject({ status: 'detected', scores: [{ name: 'DETECTION', score: 100 }] });
