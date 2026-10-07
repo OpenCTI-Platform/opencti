@@ -135,5 +135,6 @@ describe('CurationConfidence', () => {
   it('marks a proposal that needs a decision', () => {
     testRender(<CurationConfidence value={0.6} ambiguous />);
     expect(screen.getByTitle('Needs your decision: the evidence is not conclusive')).toBeInTheDocument();
+    expect(screen.getByRole('progressbar', { name: 'Curation confidence, Needs your decision: the evidence is not conclusive' })).toBeInTheDocument();
   });
 });

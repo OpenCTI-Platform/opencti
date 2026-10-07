@@ -11,16 +11,17 @@ interface CurationConfidenceProps {
 
 const CurationConfidence = ({ value, ambiguous = false, width = '100%' }: CurationConfidenceProps) => {
   const { t_i18n } = useFormatter();
+  const decision = t_i18n('Needs your decision: the evidence is not conclusive');
   return (
     <Box
       sx={{ display: 'flex', alignItems: 'center', gap: 1, width }}
-      title={ambiguous ? t_i18n('Needs your decision: the evidence is not conclusive') : undefined}
+      title={ambiguous ? decision : undefined}
     >
       <Box sx={{ flex: 1 }}>
         <ProgressBar
           value={Math.round(Math.min(1, Math.max(0, value)) * 100)}
           tone={confidenceTone(value)}
-          aria-label={t_i18n('Curation confidence')}
+          aria-label={ambiguous ? `${t_i18n('Curation confidence')}, ${decision}` : t_i18n('Curation confidence')}
         />
       </Box>
       <span style={{ minWidth: 38, textAlign: 'right' }}>{formatPercent(value)}</span>

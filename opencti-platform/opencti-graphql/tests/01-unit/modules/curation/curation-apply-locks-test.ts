@@ -186,17 +186,37 @@ describe('curation actions under the entity lock', () => {
     ]));
   });
 
+  const conflicting = { ...relationship, from: { name: 'APT28' }, to: { name: 'Spearphishing' }, fromId: 'from-id', toId: 'to-id' };
+  const preserve = proposal({
+    proposal_kind: 'relationship_conflict',
+    recommended_action: 'preserve_procedure',
+    action_payload: { relationship_id: 'subject-id', previous: { text: 'Sends a macro document' }, current: { text: 'Sends a link' } } as never,
+  });
+
   it('records for the revert only the note this application created', async () => {
-    const conflicting = { ...relationship, from: { name: 'APT28' }, to: { name: 'Spearphishing' }, fromId: 'from-id', toId: 'to-id' };
     vi.mocked(storeLoadByIdWithRefs).mockResolvedValue(conflicting as never);
-    const preserve = proposal({
-      proposal_kind: 'relationship_conflict',
-      recommended_action: 'preserve_procedure',
-      action_payload: { relationship_id: 'subject-id', previous: { text: 'Sends a macro document' }, current: { text: 'Sends a link' } } as never,
-    });
     const result = await executeProposalAction(context, user, preserve, settings);
     expect(vi.mocked(createEntity).mock.calls[0][2]).toEqual(expect.objectContaining({ stix_id: procedureNoteStixId('proposal-id') }));
     expect(result.appliedPatch?.created_ids).toEqual(['note-id']);
     expect(procedureNoteStixId('proposal-id')).not.toEqual(procedureNoteStixId('other-proposal-id'));
+  });
+
+  const shared = { ...conflicting, objectMarking: [{ internal_id: 'marking-id' }], granted: ['org-id'] };
+
+  it('gives the note of a procedure the markings and the organizations of its relationship', async () => {
+    vi.mocked(storeLoadByIdWithRefs).mockResolvedValue(shared as never);
+    await executeProposalAction(context, user, preserve, settings);
+    expect(vi.mocked(createEntity).mock.calls[0][2]).toEqual(expect.objectContaining({ objectMarking: ['marking-id'], objectOrganization: ['org-id'] }));
+  });
+
+  it('refuses to keep the procedure of a relationship shared with selected organizations to a user who cannot restrict by organization', async () => {
+    vi.mocked(storeLoadByIdWithRefs).mockResolvedValue(shared as never);
+    const analyst = { id: 'analyst-id', capabilities: [{ name: 'KNOWLEDGE_KNUPDATE' }] } as unknown as AuthUser;
+    await expect(executeProposalAction(context, analyst, preserve, settings)).rejects.toThrow('Restrict organization access');
+    expect(createEntity).not.toHaveBeenCalled();
+    // Without organization sharing, the same user keeps the procedure.
+    vi.mocked(storeLoadByIdWithRefs).mockResolvedValue(conflicting as never);
+    await executeProposalAction(context, analyst, preserve, settings);
+    expect(createEntity).toHaveBeenCalledTimes(1);
   });
 });

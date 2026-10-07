@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import gql from 'graphql-tag';
 import * as entrepriseEdition from '../../src/enterprise-edition/ee';
-import { ADMIN_USER, testContext, USER_EDITOR, USER_PARTICIPATE } from '../utils/testQuery';
+import { ADMIN_USER, TEST_ORGANIZATION, testContext, USER_EDITOR, USER_PARTICIPATE } from '../utils/testQuery';
 import { queryAsAdmin, queryAsAdminWithSuccess, queryAsUserIsExpectedError, queryAsUserIsExpectedForbidden, queryAsUserWithSuccess } from '../utils/testQueryHelper';
 import { elUpdate } from '../../src/database/engine';
 import { completePendingMergeRecords, expireMergeRecords } from '../../src/modules/curation/curation-merge-record';
@@ -14,7 +14,7 @@ import * as redis from '../../src/database/redis';
 import { createRelation, deleteElementById, updateAttribute } from '../../src/database/middleware';
 import { fullEntitiesList, storeLoadById } from '../../src/database/middleware-loader';
 import { wait } from '../../src/database/utils';
-import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../src/schema/stixDomainObject';
+import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_CONTAINER_NOTE, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_MALWARE } from '../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_INDICATOR } from '../../src/modules/indicator/indicator-types';
 import { RELATION_ATTRIBUTED_TO, RELATION_BASED_ON, RELATION_RELATED_TO, RELATION_USES } from '../../src/schema/stixCoreRelationship';
 import { addStixCyberObservable } from '../../src/domain/stixCyberObservable';
@@ -27,7 +27,8 @@ import { computeHealthMetrics } from '../../src/modules/curation/curation-health
 import { EditOperation } from '../../src/generated/graphql';
 import { INPUT_MARKINGS } from '../../src/schema/general';
 import { MARKING_TLP_RED } from '../../src/schema/identifier';
-import { RELATION_OBJECT_MARKING } from '../../src/schema/stixRefRelationship';
+import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../../src/schema/stixRefRelationship';
+import { procedureNoteStixId } from '../../src/modules/curation/curation-apply';
 import { ENTITY_TYPE_BACKGROUND_TASK } from '../../src/schema/internalObject';
 import {
   ACTION_ACKNOWLEDGE,
@@ -865,6 +866,49 @@ describe('Knowledge curation actions', () => {
     expect(accepted.data?.curationProposalAccept.applied_patch).toBeTruthy();
     const reverted = await queryAsAdminWithSuccess({ query: REVERT_MUTATION, variables: { id } });
     expect(reverted.data?.curationProposalRevert.proposal_status).toBe('reverted');
+  });
+
+  it('should keep the procedure of a relationship shared with an organization in a note shared with it only', async () => {
+    const actor = await createIntrusionSet(`${PREFIX} Shared Procedure Actor`);
+    const malware = track(await addMalware(testContext, ADMIN_USER, { name: `${PREFIX} shared procedure malware`, is_family: true }), ENTITY_TYPE_MALWARE);
+    const relation = await createRelation(testContext, ADMIN_USER, {
+      fromId: actor.id,
+      toId: malware.id,
+      relationship_type: RELATION_USES,
+      description: 'Loads the malware through a macro',
+      objectOrganization: [TEST_ORGANIZATION.id],
+    });
+    const organizationIds = (await storeLoadById(testContext, ADMIN_USER, relation.id, RELATION_USES) as unknown as Record<string, string[]>)[RELATION_GRANTED_TO];
+    expect(organizationIds).toHaveLength(1);
+    const id = await createProposal({
+      kind: PROPOSAL_KIND_RELATIONSHIP_CONFLICT,
+      detector: DETECTOR_RELATIONSHIP_CONFLICT,
+      subjects: [{ id: relation.id, entity_type: RELATION_USES, name: `${actor.name} uses ${malware.name}` }],
+      target_id: relation.id,
+      recommended_action: ACTION_PRESERVE_PROCEDURE,
+      action_payload: {
+        relationship_id: relation.id,
+        previous: { text: 'Delivers the malware by spear phishing', source_id: null },
+        current: { text: 'Loads the malware through a macro', source_id: null },
+      },
+      evidence: evidenceFor('procedure_conflict', 'Two sources describe different procedures'),
+      confidence: 0.8,
+    });
+    // The editor reads the relationship and the proposal, but cannot set organization sharing: nothing is written.
+    expect((await queryAsUserWithSuccess(USER_EDITOR, { query: PROPOSAL_QUERY, variables: { id } })).data?.curationProposal).not.toBeNull();
+    await queryAsUserIsExpectedError(
+      USER_EDITOR,
+      { query: ACCEPT_MUTATION, variables: { id } },
+      'Keeping the procedure of a relationship shared with selected organizations requires the Restrict organization access capability',
+      'FORBIDDEN_ACCESS',
+    );
+    expect(await storeLoadById(testContext, ADMIN_USER, procedureNoteStixId(id), ENTITY_TYPE_CONTAINER_NOTE)).toBeFalsy();
+    expect((await loadProposal(id)).proposal_status).toBe('open');
+
+    await queryAsAdminWithSuccess({ query: ACCEPT_MUTATION, variables: { id } });
+    const note = await storeLoadById(testContext, ADMIN_USER, procedureNoteStixId(id), ENTITY_TYPE_CONTAINER_NOTE) as unknown as Record<string, string[]>;
+    expect(note[RELATION_GRANTED_TO]).toEqual(organizationIds);
+    await queryAsAdminWithSuccess({ query: REVERT_MUTATION, variables: { id } });
   });
 
   it('should reject proposals in bulk and queue a bulk accept', async () => {

@@ -9,7 +9,7 @@ import { ABSTRACT_STIX_CORE_RELATIONSHIP, ENTITY_TYPE_IDENTITY, OPENCTI_NAMESPAC
 import { generateAliasesId, getInstanceIds } from '../../schema/identifier';
 import { lockResources } from '../../lock/master-lock';
 import { getDraftContext } from '../../utils/draftContext';
-import { isUserHasCapability, KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNUPDATE_KNMERGE, SYSTEM_USER } from '../../utils/access';
+import { isUserHasCapability, KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNUPDATE_KNMERGE, KNOWLEDGE_ORGANIZATION_RESTRICT, SYSTEM_USER } from '../../utils/access';
 import { controlUserConfidenceAgainstElement } from '../../utils/confidence-level';
 import { resolveAliasesField, ENTITY_TYPE_CONTAINER_NOTE } from '../../schema/stixDomainObject';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
@@ -47,6 +47,7 @@ import {
 import { unmergeFromRecord } from './curation-merge-record';
 import { isDecayedToRevocation, observablesActiveSinceRevocation } from './curation-detectors';
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
+import { RELATION_GRANTED_TO } from '../../schema/stixRefRelationship';
 import { effectiveProposalAction } from './curation-access';
 import { type ConflictingProcedure, procedureNoteInput } from './curation-procedures';
 
@@ -489,12 +490,19 @@ const applyPreserveProcedure = async (
   }
   // Note mode: the overwritten procedure is kept as a note attached to the relationship, without touching the
   // relationship identity.
+  const organizationIds = ((relationship as Record<string, any>)[RELATION_GRANTED_TO] ?? []) as string[];
+  // An entity keeps the organization sharing it is created with only for a user allowed to restrict by organization:
+  // for anyone else, the note of a relationship shared with selected organizations would be visible beyond them.
+  if (organizationIds.length > 0 && !isUserHasCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
+    throw ForbiddenAccess('Keeping the procedure of a relationship shared with selected organizations requires the Restrict organization access capability');
+  }
   const author = previous.source_id ? await storeLoadById(context, user, previous.source_id, ENTITY_TYPE_IDENTITY) : undefined;
   const noteInput = procedureNoteInput({
     internal_id: relationship.internal_id,
     fromName: (relationship.from as { name?: string } | undefined)?.name ?? relationship.fromId,
     toName: (relationship.to as { name?: string } | undefined)?.name ?? relationship.toId,
     markingIds: ((relationship as Record<string, any>).objectMarking ?? []).map((marking: BasicStoreBase) => marking.internal_id),
+    organizationIds,
   }, previous.text, author?.internal_id ?? null);
   const note = await createEntity(context, user, { ...noteInput, stix_id: procedureNoteStixId(proposal.internal_id) }, ENTITY_TYPE_CONTAINER_NOTE);
   return { appliedPatch: { operations: [], created_ids: [note.internal_id ?? note.id], applied_at: now() }, mergeRecordId: null };
