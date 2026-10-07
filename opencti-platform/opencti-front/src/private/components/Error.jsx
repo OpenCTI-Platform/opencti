@@ -66,6 +66,8 @@ class ErrorBoundaryComponent extends React.Component {
       logger.error('React component tree crashed', {
         eventName: 'opencti.frontend.component_crashed',
         error,
+        // The innermost boundary catches first: a module boundary attributes the crash to its module.
+        module: this.props.module,
         data: { component: { stack: errorInfo.componentStack } },
       });
     }
@@ -111,13 +113,19 @@ class ErrorBoundaryComponent extends React.Component {
 ErrorBoundaryComponent.propTypes = {
   resNotFoundDisplay: PropTypes.object,
   display: PropTypes.object,
+  // RFC 0006: the module whose components this boundary wraps (APP_MODULE in utils/logs/errorOrigin).
+  module: PropTypes.string,
   children: PropTypes.node,
 };
 export const ErrorBoundary = compose(withRouter)(ErrorBoundaryComponent);
 
-export const boundaryWrapper = (Component) => {
+/**
+ * @param {import('react').ComponentType} Component
+ * @param {import('../../utils/logs/errorOrigin').AppModule} [module] the module whose components the boundary wraps (RFC 0006)
+ */
+export const boundaryWrapper = (Component, module) => {
   return (
-    <ErrorBoundary>
+    <ErrorBoundary module={module}>
       <Component />
     </ErrorBoundary>
   );

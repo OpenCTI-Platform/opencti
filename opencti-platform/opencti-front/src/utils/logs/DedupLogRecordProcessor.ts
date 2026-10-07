@@ -27,6 +27,7 @@ interface DedupWindow {
 }
 
 // No stacktrace, so the same error thrown from different places still groups.
+// The module and origin are part of the key (RFC 0006): the same error in two modules alerts in both.
 const recordKey = (record: ReadWriteLogRecord) => {
   const attributes = record.attributes ?? {};
   return [
@@ -35,6 +36,8 @@ const recordKey = (record: ReadWriteLogRecord) => {
     String(record.body ?? ''),
     String(attributes['exception.type'] ?? ''),
     String(attributes['exception.message'] ?? ''),
+    String(attributes.module ?? ''),
+    String(attributes.origin ?? ''),
   ].join('|');
 };
 

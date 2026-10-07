@@ -1,5 +1,6 @@
 import { logs, SeverityNumber } from '@opentelemetry/api-logs';
 import type { AnyValueMap } from '@opentelemetry/api-logs';
+import { type AppModule, classifyFrontendError, resolveRouteModule } from './errorOrigin';
 
 export const LOGGER_NAME = 'opencti-front';
 
@@ -16,7 +17,24 @@ export interface LogOptions {
   eventName: string;
   data?: Record<string, unknown>;
   error?: unknown;
+  // The module whose code raised the error, e.g. given by a module error boundary (RFC 0006).
+  // Without it, the record goes to the module of the page the user is on.
+  module?: AppModule;
 }
+
+// RFC 0006 fields: `entry_module` and `module` for every record, `origin` and `dependency` for a record
+// carrying an error. The backend derives the level of a classified record from its origin.
+const scopeAttributes = (options: LogOptions) => {
+  const entryModule = typeof window !== 'undefined' ? resolveRouteModule(window.location.pathname) : undefined;
+  const module = options.module ?? entryModule;
+  const classification = options.error !== undefined ? classifyFrontendError(options.error) : undefined;
+  return {
+    ...(module ? { module } : {}),
+    ...(entryModule ? { entry_module: entryModule } : {}),
+    ...(classification ? { origin: classification.origin } : {}),
+    ...(classification?.dependency ? { dependency: classification.dependency } : {}),
+  };
+};
 
 const emit = (level: LogLevel, message: string, options: LogOptions) => {
   try {
@@ -25,7 +43,10 @@ const emit = (level: LogLevel, message: string, options: LogOptions) => {
       severityText: level,
       severityNumber: SEVERITY_NUMBERS[level],
       body: message,
-      attributes: options.data ? { data: options.data as AnyValueMap } : {},
+      attributes: {
+        ...(options.data ? { data: options.data as AnyValueMap } : {}),
+        ...scopeAttributes(options),
+      },
       exception: options.error,
     });
   } catch {
