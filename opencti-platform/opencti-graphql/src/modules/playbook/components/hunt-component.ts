@@ -19,6 +19,7 @@ import type { AuthContext } from '../../../types/user';
 import type { BasicStoreEntity } from '../../../types/store';
 import type { StixObject } from '../../../types/stix-2-1-common';
 import { logApp } from '../../../config/conf';
+import { FunctionalError } from '../../../config/errors';
 import { topEntitiesList } from '../../../database/middleware-loader';
 import { elCount } from '../../../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
@@ -187,8 +188,9 @@ const isRecentlyRunByPlaybook = async (context: AuthContext, hunt: BasicStoreEnt
   return count > 0;
 };
 
-// The failure of a step that started no run, read by its executor while the step continues in this process: the step
-// then fails in the execution instead of continuing through no-hunt, which says the step had no hunt to run
+// The failure of a step to start its runs, read by its executor while the step continues in this process: the step
+// then fails in the execution instead of continuing through out with part of its hunts, or through no-hunt, which says
+// the step had no hunt to run
 const huntStepStartFailures = new Map<string, unknown>();
 const huntStepKey = (executionId: string, instanceId: string, stepId: string) => `${executionId}_${instanceId}_${stepId}`;
 
@@ -284,22 +286,19 @@ export const PLAYBOOK_HUNT_COMPONENT: PlaybookComponent<HuntComponentConfigurati
       }
     } catch (error) {
       logApp.error('[OPENCTI-MODULE] Playbook hunt step failed to start its runs', { cause: error, playbookId, stepId: playbookNode.id });
-      // The runs started before the failure keep the step waiting: the hunt manager resumes it from their leader once
-      // they are settled, so resuming here as well would run the next steps twice
+      // A leader designated before the failure resumes the step once its runs are settled, so resuming here as well
+      // would run the next steps twice. Otherwise the step fails, even when some of its hunts started: waiting on them
+      // would continue as if the others had run
       if (waiting) {
         const started = await findPlaybookHuntRuns(context, { executionId, instanceId: dataInstanceId, stepId: playbookNode.id });
         if (started.some((run) => run.playbook_leader)) {
           return;
         }
-        if (started.length > 0) {
-          await designateHuntPlaybookLeader(context, started[0], playbookContext);
-          return;
-        }
       }
       startFailure = error;
     }
-    // Nothing to wait for: continue right away (the executor routes to no-hunt when no run was started, and fails when
-    // starting them failed)
+    // Nothing to wait for: continue right away (the executor fails when starting the runs failed, and routes to
+    // no-hunt when no run was started)
     const key = huntStepKey(executionId, dataInstanceId, playbookNode.id);
     if (startFailure) {
       huntStepStartFailures.set(key, startFailure);
@@ -313,13 +312,14 @@ export const PLAYBOOK_HUNT_COMPONENT: PlaybookComponent<HuntComponentConfigurati
   executor: async ({ executionId, dataInstanceId, playbookNode, bundle }) => {
     const context = executionContext('playbook_components');
     const runs = await findPlaybookHuntRuns(context, { executionId, instanceId: dataInstanceId, stepId: playbookNode.id });
-    if (runs.length > 0) {
-      return { output_port: 'out', bundle };
-    }
     const startFailure = huntStepStartFailures.get(huntStepKey(executionId, dataInstanceId, playbookNode.id));
+    if (startFailure && runs.length > 0) {
+      const cause = startFailure instanceof Error ? startFailure.message : String(startFailure);
+      throw FunctionalError(`The step started ${runs.length} hunt run(s), then failed to start the other hunts: ${cause}`, { cause: startFailure, runIds: runs.map((run) => run.internal_id) });
+    }
     if (startFailure) {
       throw startFailure;
     }
-    return { output_port: 'no-hunt', bundle };
+    return { output_port: runs.length > 0 ? 'out' : 'no-hunt', bundle };
   },
 };
