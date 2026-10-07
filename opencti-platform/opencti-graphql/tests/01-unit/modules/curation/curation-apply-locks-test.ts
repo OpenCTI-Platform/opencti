@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { GraphQLError } from 'graphql';
 import '../../../../src/modules/index';
+import { SYSTEM_USER } from '../../../../src/utils/access';
 import { executeProposalAction, procedureNoteStixId } from '../../../../src/modules/curation/curation-apply';
 import { createEntity, storeLoadByIdWithRefs, updateAttribute } from '../../../../src/database/middleware';
 import { fullRelationsList, internalFindByIds, pageRelationsConnection } from '../../../../src/database/middleware-loader';
@@ -49,6 +51,27 @@ describe('curation actions under the entity lock', () => {
     await executeProposalAction(context, user, proposal({ proposal_kind: 'alias', recommended_action: 'add_aliases', action_payload: { aliases: ['FIN11'] } as never }), settings);
     expect(vi.mocked(lockResources).mock.invocationCallOrder[0]).toBeLessThan(vi.mocked(storeLoadByIdWithRefs).mock.invocationCallOrder[1]);
     expect(updateAttribute).toHaveBeenCalledWith(context, user, 'subject-id', 'Intrusion-Set', [{ key: 'aliases', value: ['TA505', 'Graceful Spider', 'FIN11'] }], { locks: expect.any(Array) });
+  });
+
+  it('refuses an alias another entity carries now, read under the lock as the system user, without naming that entity', async () => {
+    const subject = { internal_id: 'subject-id', standard_id: 'intrusion-set--subject', entity_type: 'Intrusion-Set', name: 'Cl0p', aliases: [] };
+    vi.mocked(storeLoadByIdWithRefs).mockResolvedValue(subject as never);
+    vi.mocked(internalFindByIds).mockResolvedValueOnce([{ internal_id: 'hidden-owner-id', entity_type: 'Intrusion-Set' }] as never);
+    const error = await executeProposalAction(context, user, proposal({ proposal_kind: 'alias', recommended_action: 'add_aliases', action_payload: { aliases: ['FIN11'] } as never }), settings)
+      .catch((caught: GraphQLError) => caught) as GraphQLError;
+    expect(error.message).toContain('These names now belong to other entities');
+    expect(JSON.stringify(error.extensions)).not.toContain('hidden-owner-id');
+    expect(internalFindByIds).toHaveBeenCalledWith(context, SYSTEM_USER, expect.any(Array), expect.objectContaining({ type: 'Intrusion-Set' }));
+    expect(vi.mocked(lockResources).mock.invocationCallOrder[0]).toBeLessThan(vi.mocked(internalFindByIds).mock.invocationCallOrder[0]);
+    expect(updateAttribute).not.toHaveBeenCalled();
+  });
+
+  it('adds an alias only the target itself carries under another spelling', async () => {
+    const subject = { internal_id: 'subject-id', standard_id: 'intrusion-set--subject', entity_type: 'Intrusion-Set', name: 'Cl0p', aliases: [] };
+    vi.mocked(storeLoadByIdWithRefs).mockResolvedValue(subject as never);
+    vi.mocked(internalFindByIds).mockResolvedValueOnce([{ internal_id: 'subject-id', entity_type: 'Intrusion-Set' }] as never);
+    await executeProposalAction(context, user, proposal({ proposal_kind: 'alias', recommended_action: 'add_aliases', action_payload: { aliases: ['Clop'] } as never }), settings);
+    expect(updateAttribute).toHaveBeenCalledWith(context, user, 'subject-id', 'Intrusion-Set', [{ key: 'aliases', value: ['Clop'] }], { locks: expect.any(Array) });
   });
 
   it('puts a revoked entity back when it gained a relationship during the revocation', async () => {

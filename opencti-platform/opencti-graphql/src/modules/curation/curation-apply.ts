@@ -198,7 +198,15 @@ const applyMerge = async (context: AuthContext, user: AuthUser, proposal: BasicS
   return { appliedPatch: null, mergeRecordId: record?.internal_id ?? null };
 };
 
-// The aliases are read and replaced under the entity lock: an alias added at the same time is never dropped.
+// An alias names a single entity. The owners are read as the system user, so the error never names them: the caller
+// may not be allowed to read them.
+const isOwnedByAnother = async (context: AuthContext, element: StoreObject, names: string[]) => {
+  const owners = await internalFindByIds(context, SYSTEM_USER, generateAliasesId(names, element), { type: element.entity_type, baseData: true }) as BasicStoreBase[];
+  return owners.some((owner) => owner.internal_id !== element.internal_id);
+};
+
+// The aliases are read and replaced under the entity lock: an alias added at the same time is never dropped, and a name
+// another entity took since the proposal was raised is refused before any change.
 const addAliases = async (context: AuthContext, user: AuthUser, subject: StoreObject, aliases: string[], opts: ApplyOptions): Promise<ApplyResult> => {
   return withSubjectLock(context, user, subject, async (element, lockIds) => {
     const aliasField = resolveAliasesField(element.entity_type).name;
@@ -207,6 +215,11 @@ const addAliases = async (context: AuthContext, user: AuthUser, subject: StoreOb
     const toAdd = R.uniq(aliases.filter((alias) => alias && !currentKeys.has(alias.toLowerCase())));
     if (toAdd.length === 0) {
       return { appliedPatch: { operations: [], applied_at: now() }, mergeRecordId: null };
+    }
+    if (await isOwnedByAnother(context, element, toAdd)) {
+      throw FunctionalError('These names now belong to other entities and cannot become aliases: merge the entities, or reject the proposal to keep them apart', {
+        id: element.internal_id,
+      });
     }
     const next = [...current, ...toAdd];
     const patch = await planned(opts, { operations: [patchOperation(element, aliasField, current, next)], applied_at: now() });
@@ -227,10 +240,8 @@ const applyAliasDecision = async (context: AuthContext, user: AuthUser, proposal
   }
   const target = await loadSubject(context, user, targetId);
   const others = proposal.subject_names.filter((_, index) => proposal.subject_ids[index] !== targetId);
-  // An alias names a single entity: the names of subjects that still exist cannot become aliases of another one.
-  // The owners are read as the system user, so the error never names them: the caller may not be allowed to read them.
-  const owners = await internalFindByIds(context, SYSTEM_USER, generateAliasesId(others, target), { type: target.entity_type, baseData: true }) as BasicStoreBase[];
-  if (owners.some((owner) => owner.internal_id !== target.internal_id)) {
+  // The names of subjects that still exist cannot become aliases of another one.
+  if (await isOwnedByAnother(context, target, others)) {
     throw FunctionalError('These names still belong to other entities and cannot become aliases: merge the entities, or reject the proposal to keep them apart', {
       proposal_id: proposal.internal_id,
     });
