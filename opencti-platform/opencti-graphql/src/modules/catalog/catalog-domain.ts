@@ -13,7 +13,7 @@ import {
   type GraphqlCatalogContract,
 } from './catalog-types';
 import { isEmptyField } from '../../database/utils';
-import { UnsupportedError } from '../../config/errors';
+import { FunctionalError } from '../../config/errors';
 import type { ConnectorContractConfiguration, ContractConfigInput } from '../../generated/graphql';
 import type { ValidateFunction } from 'ajv';
 import { findAllCatalogs, findAllCatalogsRevisions, findCatalogByCatalogId, findCatalogContractsByCatalogId, findCatalogContractsBySlug } from './catalog-repository';
@@ -122,13 +122,13 @@ export const processConfigurationValue = (
   switch (propSchema.type) {
     case 'boolean':
       if (rawValue !== 'true' && rawValue !== 'false') {
-        throw UnsupportedError(`Field "${propKey}" must be a boolean value (true or false). Received: "${rawValue}"`);
+        throw FunctionalError(`Field "${propKey}" must be a boolean value (true or false). Received: "${rawValue}"`);
       }
       return rawValue;
     case 'integer': {
       const parsedInt = parseInt(rawValue, 10);
       if (Number.isNaN(parsedInt)) {
-        throw UnsupportedError(`Field "${propKey}" must be a valid integer. Received: "${rawValue}"`);
+        throw FunctionalError(`Field "${propKey}" must be a valid integer. Received: "${rawValue}"`);
       }
       return String(parsedInt);
     }
@@ -331,7 +331,7 @@ export const validateContractConfigurations = (
       errorsCount: validate.errors?.length ?? 0,
     });
     const formattedError = formatValidationErrors(validate.errors, targetContract.title);
-    throw UnsupportedError(formattedError, { errors: validate.errors });
+    throw FunctionalError(formattedError, { errors: validate.errors });
   }
 };
 

@@ -6,7 +6,7 @@ import { logBoundaryError } from '../../config/module-logger';
 import { APP_MODULE } from '../../config/error-origin';
 import { setCookieError } from '../../http/httpUtils';
 import { CATALOG_CONTRACT_LOGOS_DIR, getMimeTypeFromImageExtension } from './catalog-logo-storage';
-import { ResourceNotFoundError, UnsupportedError, UnknownError } from '../../config/errors';
+import { FunctionalError, ResourceNotFoundError, UnknownError } from '../../config/errors';
 
 export const CATALOG_LOGO_VIEW_PATH = '/catalog/logo/*file';
 
@@ -23,7 +23,7 @@ export const handleCatalogLogoViewRequest: RequestHandler = async (req, res) => 
     const file = Array.isArray(fileParam) ? fileParam[0] : fileParam;
     logCatalog.debug('Catalog logo view handler', { file });
     if (typeof file !== 'string' || file.includes('..') || file.includes('/') || file.includes('\\')) {
-      throw UnsupportedError('Invalid URL format');
+      throw FunctionalError('Invalid URL format');
     }
     const s3Key = `${CATALOG_CONTRACT_LOGOS_DIR}/${file}`;
     const stream = await downloadFile(s3Key);

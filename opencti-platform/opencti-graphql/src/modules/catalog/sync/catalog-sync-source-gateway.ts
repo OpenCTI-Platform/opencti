@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { logCatalog } from '../catalog-logger';
 import { isEmptyField } from '../../../database/utils';
-import { UnsupportedError } from '../../../config/errors';
+import { FunctionalError, UnsupportedError } from '../../../config/errors';
 import { getOrCompileValidator } from '../catalog-domain';
 import { getHttpClient } from '../../../utils/http-client';
 import type { CatalogContract, CatalogDefinition, TypedProperty } from '../catalog-types';
@@ -82,6 +82,14 @@ const withAbortTimeout = async <T>(timeoutMs: number, call: (signal: AbortSignal
   }
 };
 
+const parseCatalogManifest = (content: string) => {
+  try {
+    return JSON.parse(content);
+  } catch (err) {
+    throw FunctionalError('Catalog manifest is not valid JSON', { cause: err });
+  }
+};
+
 class EmbeddedCatalogSyncSource implements CatalogSyncSourceAdapter {
   constructor(_sourceConfig: Extract<CatalogSyncSourceConfig, { kind: 'embedded' }>) {}
 
@@ -96,7 +104,7 @@ class LocalCatalogSyncSource implements CatalogSyncSourceAdapter {
 
   async fetch() {
     const catalog = await readFile(this.sourceConfig.filepath, { encoding: 'utf8', flag: 'r' });
-    return JSON.parse(catalog);
+    return parseCatalogManifest(catalog);
   }
 }
 
@@ -110,7 +118,7 @@ class RemoteCatalogSyncSource implements CatalogSyncSourceAdapter {
     const timeout = resolveRemoteCatalogTimeoutMs(this.options);
     const client = getHttpClient({ responseType: 'text', timeout });
     const response = await withAbortTimeout(timeout, (signal) => client.get(this.sourceConfig.uri, { signal }));
-    return JSON.parse(response.data);
+    return parseCatalogManifest(response.data);
   }
 
   async fetchRevisionHint() {
@@ -154,10 +162,10 @@ const validateSyncSource = (syncSource: CatalogSyncSource) => {
         logCatalog.warn('A contract has manager_supported=true but is missing config_schema', { contractTitle: contract.title });
       } else {
         if (isEmptyField(contract.container_image)) {
-          throw UnsupportedError('Contract must define container_image field', { contractTitle: contract.title });
+          throw FunctionalError('Contract must define container_image field', { contractTitle: contract.title });
         }
         if (isEmptyField(contract.container_type)) {
-          throw UnsupportedError('Contract must define container_type field', { contractTitle: contract.title });
+          throw FunctionalError('Contract must define container_type field', { contractTitle: contract.title });
         }
 
         if (contract.config_schema) {
@@ -170,7 +178,7 @@ const validateSyncSource = (syncSource: CatalogSyncSource) => {
           try {
             getOrCompileValidator(`catalog-contract:${syncSource.id}:${contract.slug}`, jsonValidation);
           } catch (err) {
-            throw UnsupportedError('Contract must be a valid json schema definition', { cause: err });
+            throw FunctionalError('Contract must be a valid json schema definition', { cause: err });
           }
         }
       }
@@ -285,12 +293,12 @@ const mapCatalogDtoToCatalogSyncSource = (catalog: unknown): CatalogSyncSource =
     return mapCatalogDtoV0ToCatalogSyncSource(catalog);
   }
   if (!isCatalogDtoWithExplicitSchemaVersion(catalog)) {
-    throw UnsupportedError('Unrecognized catalog format: no manifest_schema_version');
+    throw FunctionalError('Unrecognized catalog format: no manifest_schema_version');
   }
   if (isCatalogDtoV1(catalog)) {
     return mapCatalogDtoV1ToCatalogSyncSource(catalog);
   }
-  throw UnsupportedError('Unsupported catalog schema version', {
+  throw FunctionalError('Unsupported catalog schema version', {
     cause: {
       manifest_schema_version: catalog.manifest_schema_version,
     },

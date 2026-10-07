@@ -3,7 +3,7 @@ import { rawListObjects, rawUpload } from '../../database/raw-file-storage';
 import { parseDataUrl } from '../../utils/data-url';
 import type { CatalogContract } from './catalog-types';
 import { CATALOG_LOGO_VIEW_PATH } from './catalog-http';
-import { FilesystemError, UnknownError, UnsupportedError } from '../../config/errors';
+import { FilesystemError, FunctionalError, UnknownError } from '../../config/errors';
 
 export const CATALOG_CONTRACT_LOGOS_DIR = 'catalog-logos';
 
@@ -117,7 +117,7 @@ export const computeCatalogContractLogoUploadOperation = (
     };
   }
   if (!logo.startsWith('data:')) {
-    const error = UnsupportedError('Unsupported logo data format: not a data URL', {
+    const error = FunctionalError('Unsupported logo data format: not a data URL', {
       contractTitle: contractDto.title,
       contractSlug: contractDto.slug,
     });
@@ -129,7 +129,7 @@ export const computeCatalogContractLogoUploadOperation = (
   }
   const { mimeType, base64Encoded, data } = parseDataUrl(logo);
   if (!isImageMimeType(mimeType)) {
-    const error = UnsupportedError('Unsupported logo mime type', {
+    const error = FunctionalError('Unsupported logo mime type', {
       contractTitle: contractDto.title,
       contractSlug: contractDto.slug,
       mimeType,
@@ -143,7 +143,7 @@ export const computeCatalogContractLogoUploadOperation = (
   let decodedData: Buffer;
   if (base64Encoded) {
     if (!isLikelyBase64(data)) {
-      const error = UnsupportedError('Unsupported logo data format: invalid base64 payload', {
+      const error = FunctionalError('Unsupported logo data format: invalid base64 payload', {
         contractTitle: contractDto.title,
         contractSlug: contractDto.slug,
       });
@@ -158,7 +158,7 @@ export const computeCatalogContractLogoUploadOperation = (
     try {
       decodedData = Buffer.from(decodeURIComponent(data), 'utf8');
     } catch (err: unknown) {
-      const error = UnsupportedError('Unsupported logo data format: invalid URL-encoded payload', {
+      const error = FunctionalError('Unsupported logo data format: invalid URL-encoded payload', {
         contractTitle: contractDto.title,
         contractSlug: contractDto.slug,
         cause: err,
@@ -171,7 +171,7 @@ export const computeCatalogContractLogoUploadOperation = (
     }
   }
   if (decodedData.byteLength === 0) {
-    const error = UnsupportedError('Unexpected zero-length logo data', {
+    const error = FunctionalError('Unexpected zero-length logo data', {
       contractTitle: contractDto.title,
       contractSlug: contractDto.slug,
     });
@@ -182,7 +182,7 @@ export const computeCatalogContractLogoUploadOperation = (
     };
   }
   if (decodedData.byteLength > CATALOG_CONTRACT_LOGO_MAX_SIZE_BYTES) {
-    const error = UnsupportedError('Unsupported logo data format: image exceeds max size', {
+    const error = FunctionalError('Unsupported logo data format: image exceeds max size', {
       contractTitle: contractDto.title,
       contractSlug: contractDto.slug,
       maxSizeBytes: CATALOG_CONTRACT_LOGO_MAX_SIZE_BYTES,
