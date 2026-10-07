@@ -25,6 +25,15 @@ describe('missing aliases detection', () => {
     expect(proposedAliases(forApt28)).not.toContain('Fancy Bear');
   });
 
+  it('never proposes a name owned by several other entities, whatever their order', () => {
+    const otherFancyBear = intrusionSet('other-fancy-bear', 'Fancy Bear');
+    [[apt28, fancyBear, otherFancyBear], [fancyBear, otherFancyBear, apt28], [fancyBear, apt28, otherFancyBear]].forEach((entities) => {
+      const forApt28 = detectMissingAliases(entities, new Set(['apt28']));
+      expect(proposedAliases(forApt28)).toContain('Sofacy');
+      expect(proposedAliases(forApt28)).not.toContain('Fancy Bear');
+    });
+  });
+
   it('keeps the names of every candidate out of the proposals of the focused entities', () => {
     const drafts = detectMissingAliases([apt28, fancyBear], new Set(['apt28']));
     expect(drafts.every((draft) => draft.target_id === 'apt28')).toBe(true);

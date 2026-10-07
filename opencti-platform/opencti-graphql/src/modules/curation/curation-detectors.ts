@@ -291,8 +291,11 @@ const taxonomySourceName = (source: string) => (source === 'mitre' ? 'MITRE ATT&
  * is given.
  */
 export const detectMissingAliases = (entities: CuratedEntity[], focusIds?: Set<string>): ProposalDraft[] => {
-  const knownCanonicals = new Map<string, string>();
-  entities.forEach((entity) => entity.canonicals.full.forEach((canonical) => knownCanonicals.set(`${getTaxonomyFamily(entity.entity_type)}|${canonical}`, entity.internal_id)));
+  const knownCanonicals = new Map<string, Set<string>>();
+  entities.forEach((entity) => entity.canonicals.full.forEach((canonical) => {
+    const key = `${getTaxonomyFamily(entity.entity_type)}|${canonical}`;
+    knownCanonicals.set(key, (knownCanonicals.get(key) ?? new Set<string>()).add(entity.internal_id));
+  }));
   const drafts: ProposalDraft[] = [];
   entities.filter((entity) => !focusIds || focusIds.has(entity.internal_id)).forEach((entity) => {
     const family = getTaxonomyFamily(entity.entity_type);
@@ -304,8 +307,8 @@ export const detectMissingAliases = (entities: CuratedEntity[], focusIds?: Set<s
       if (CATALOGUE_IDENTIFIER.test(alias.trim())) return false;
       const forms = canonicalOf(alias);
       const ownedElsewhere = forms.some((canonical) => {
-        const owner = knownCanonicals.get(`${family}|${canonical}`);
-        return owner !== undefined && owner !== entity.internal_id;
+        const owners = knownCanonicals.get(`${family}|${canonical}`) ?? new Set<string>();
+        return [...owners].some((owner) => owner !== entity.internal_id);
       });
       const listedForAnotherObject = findTaxonomyClusters(forms, family).some((cluster) => !entityClusters.has(cluster.ref));
       return !ownedElsewhere && !listedForAnotherObject;
