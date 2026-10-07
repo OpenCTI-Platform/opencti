@@ -114,10 +114,14 @@ const curationResolvers: Resolvers = {
     action_payload: (proposal) => toJsonString((proposal as unknown as BasicStoreEntityCurationProposal).action_payload),
     applied_patch: (proposal) => toJsonString((proposal as unknown as BasicStoreEntityCurationProposal).applied_patch),
     subjects: (proposal, _, context) => loadSubjects(context, proposal as unknown as BasicStoreEntityCurationProposal) as any,
+    // The subjects that exist outside of the user's access: one merged away or deleted since is not restricted.
     restricted_subjects_count: async (proposal, _, context) => {
       const typed = proposal as unknown as BasicStoreEntityCurationProposal;
-      const subjects = await loadSubjects(context, typed);
-      return typed.subject_ids.length - subjects.length;
+      const readableIds = new Set((await loadSubjects(context, typed)).map((subject) => subject.internal_id));
+      const unreadableIds = typed.subject_ids.filter((id) => !readableIds.has(id));
+      if (unreadableIds.length === 0) return 0;
+      const existing = await internalFindByIds(context, SYSTEM_USER, unreadableIds, { baseData: true }) as BasicStoreBase[];
+      return existing.length;
     },
     // Policies are read under Settings > Customization only, like the curationPolicy query.
     policy: (proposal, _, context) => {

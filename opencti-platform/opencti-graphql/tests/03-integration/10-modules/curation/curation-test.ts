@@ -401,6 +401,8 @@ describe('Knowledge curation', () => {
     expect(mergeRecordId).toBeTruthy();
     const applied = await queryAsAdminWithSuccess({ query: PROPOSAL_QUERY, variables: { id: merge.id } });
     expect(applied.data?.curationProposal.can_revert).toBe(true);
+    // The merged-away subject no longer exists: it is not reported as restricted.
+    expect(applied.data?.curationProposal.restricted_subjects_count).toBe(0);
     expect(await storeLoadById(testContext, ADMIN_USER, entityB.id, ENTITY_TYPE_INTRUSION_SET)).toBeUndefined();
 
     const record = await queryAsAdminWithSuccess({ query: MERGE_RECORD_QUERY, variables: { id: mergeRecordId } });
