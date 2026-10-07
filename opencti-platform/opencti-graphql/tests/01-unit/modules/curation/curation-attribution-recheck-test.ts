@@ -66,9 +66,17 @@ describe('resolving an attribution conflict checks the conflict again', () => {
   });
 
   it('refuses when the attribution to keep was deleted, so the last one left is never removed', async () => {
+    vi.mocked(internalFindByIds).mockResolvedValueOnce([] as never);
     remainingAttributions('rel-other');
     await expect(executeProposalAction(context, user, conflict(), settings, KEEP)).rejects.toThrow('The attribution to keep was deleted');
     expect(deleteElementById).not.toHaveBeenCalled();
+    // A recently deleted element cannot be locked: nothing is locked when no attribution to keep is left.
+    expect(lockResources).not.toHaveBeenCalled();
+  });
+
+  it('releases the lock of the attribution to keep when it refuses', async () => {
+    remainingAttributions('rel-keep');
+    await expect(executeProposalAction(context, user, conflict(), settings, KEEP)).rejects.toThrow('so the contradiction is resolved');
     expect((await vi.mocked(lockResources).mock.results[0].value).unlock).toHaveBeenCalled();
   });
 

@@ -310,11 +310,15 @@ const applyResolveAttribution = async (context: AuthContext, user: AuthUser, pro
   const keptIds = R.uniq(relationships.filter((relation) => relation.actor_id === keepActorId).map((relation) => relation.relationship_id));
   // The attributions to keep stay locked until the other ones are deleted: a deletion takes the lock of the element it
   // deletes, so a concurrent deletion of a kept attribution waits and the object never loses its last attribution.
-  // Only the kept ones are held, since each deletion below takes the lock of the attribution it removes.
+  // Only the kept ones are held, since each deletion below takes the lock of the attribution it removes, and only those
+  // that still exist, since a recently deleted element cannot be locked: without any, the check below refuses.
   const kept = await internalFindByIds(context, SYSTEM_USER, keptIds, { baseData: true }) as StoreRelation[];
+  const lockIds = R.uniq(kept.flatMap((relation) => getInstanceIds(relation)));
   let lock;
   try {
-    lock = await lockResources(R.uniq([...keptIds, ...kept.flatMap((relation) => getInstanceIds(relation))]), { draftId: getDraftContext(context, user) });
+    if (lockIds.length > 0) {
+      lock = await lockResources(lockIds, { draftId: getDraftContext(context, user) });
+    }
     // The contradiction is only resolved by a user who can read every attribution in conflict: an attribution hidden
     // from the user is neither removed nor reported as resolved. An attribution deleted since needs no removal.
     const existing = await internalFindByIds(context, SYSTEM_USER, relationshipIds, { baseData: true }) as StoreRelation[];
