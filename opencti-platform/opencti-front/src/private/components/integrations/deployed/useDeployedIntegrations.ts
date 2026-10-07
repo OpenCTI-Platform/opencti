@@ -32,6 +32,9 @@ export interface DeployedIntegrationItem {
   throughputRate: number | null;
   lastRunDate: string | null;
   updatedAt: string | null;
+  updateAvailable: boolean;
+  latestCompatibleVersion: string | null;
+  hasNewerIncompatibleVersion: boolean;
   isManaged: boolean;
   uri?: string | null;
   userName?: string | null;
@@ -47,6 +50,8 @@ interface UseDeployedIntegrationsProps {
   feedsData?: IngestionFeedsData | null;
   formsData?: IngestionFeedsFormsData | null;
   logosBySlug: Map<string, string>;
+  // Connector update detection is part of the decoupled versions (DECOUPLING_VERSIONS feature flag)
+  isConnectorUpdateEnabled: boolean;
 }
 
 const toSafeNumber = (value: unknown): number => {
@@ -77,6 +82,7 @@ const useDeployedIntegrations = ({
   feedsData,
   formsData,
   logosBySlug,
+  isConnectorUpdateEnabled,
 }: UseDeployedIntegrationsProps): DeployedIntegrationItem[] => {
   return useMemo(() => {
     const items: DeployedIntegrationItem[] = [];
@@ -153,6 +159,9 @@ const useDeployedIntegrations = ({
         throughputRate: queueRateByConnector.get(connector.id) ?? null,
         lastRunDate: null,
         updatedAt: connector.updated_at,
+        updateAvailable: isConnectorUpdateEnabled && !!connector.update_available,
+        latestCompatibleVersion: isConnectorUpdateEnabled ? (connector.latest_compatible_version ?? null) : null,
+        hasNewerIncompatibleVersion: isConnectorUpdateEnabled && !!connector.has_newer_incompatible_version,
         isManaged: !!connector.is_managed,
         detailUrl: `/dashboard/integrations/connectors/${connector.id}`,
         searchText: buildSearchText([connector.title, connector.name, connector.connector_type]),
@@ -176,6 +185,9 @@ const useDeployedIntegrations = ({
         throughputRate: feedQueueRate(node.id),
         lastRunDate: (node.current_state_date as string | null) ?? null,
         updatedAt: null,
+        updateAvailable: false,
+        latestCompatibleVersion: null,
+        hasNewerIncompatibleVersion: false,
         isManaged: false,
         uri: node.uri,
         userName: node.user?.name,
@@ -209,6 +221,9 @@ const useDeployedIntegrations = ({
         throughputRate: feedQueueRate(node.id),
         lastRunDate: (node.last_execution_date as string | null) ?? null,
         updatedAt: (node.updated_at as string | null) ?? null,
+        updateAvailable: false,
+        latestCompatibleVersion: null,
+        hasNewerIncompatibleVersion: false,
         isManaged: false,
         uri: node.uri,
         userName: node.user?.name,
@@ -248,6 +263,9 @@ const useDeployedIntegrations = ({
         throughputRate: feedQueueRate(node.id),
         lastRunDate: null,
         updatedAt: (node.updated_at as string | null) ?? null,
+        updateAvailable: false,
+        latestCompatibleVersion: null,
+        hasNewerIncompatibleVersion: false,
         isManaged: false,
         detailUrl: `/dashboard/integrations/feeds/form/${node.id}`,
         searchText: buildSearchText([node.name, node.description, builtInLabel('form')]),
@@ -255,7 +273,7 @@ const useDeployedIntegrations = ({
     }
 
     return items;
-  }, [connectorsListData, connectorsStateData, feedsData, formsData, logosBySlug]);
+  }, [connectorsListData, connectorsStateData, feedsData, formsData, logosBySlug, isConnectorUpdateEnabled]);
 };
 
 export default useDeployedIntegrations;

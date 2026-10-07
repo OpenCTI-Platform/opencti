@@ -16,7 +16,7 @@ import {
   type UserMergeHandlerPlan,
   type UserMergeRightsProjection,
 } from './userMerge-handler';
-import { journalRefusal, readJournalEntries, withJournalEntry } from './userMerge-journal';
+import { journalRefusal, readJournalEntries, resolveMergeStartedAt, withJournalEntry } from './userMerge-journal';
 import { buildApiUserMergeCoverage, type UserMergeApiCoverage } from './userMerge-coverage';
 import { userMergeHandlers } from './userMerge-registry';
 import { type UserMergeJournalEntry, type UserMergeOptions, type UserMergeResult, UserMergeStatus } from './userMerge-types';
@@ -104,7 +104,7 @@ const recomputeVerifiedPlans = async (
   handlers: UserMergeHandler[],
   handlerContext: UserMergeHandlerContext,
   dryOutcomes: UserMergeHandlerOutcome[],
-  journalInput: { mergeId: string; sourceId: string; targetId: string },
+  journalInput: { mergeId: string; sourceId: string; targetId: string; mergeStartedAt: Date },
 ): Promise<UserMergeHandlerPlan[]> => {
   const plans: UserMergeHandlerPlan[] = [];
   for (let i = 0; i < handlers.length; i += 1) {
@@ -224,8 +224,16 @@ export const executeUserMerge = async (
   try {
     const handlers = userMergeHandlers();
     const projection = await readRightsProjection(context, sourceId, targetId, options);
-    const handlerContext: UserMergeHandlerContext = { context, sourceId, targetId, options, ...projection };
-    const journalInput = { mergeId, sourceId, targetId };
+    const handlerContext: UserMergeHandlerContext = {
+      context,
+      sourceId,
+      targetId,
+      options,
+      mergeStartedAt: await resolveMergeStartedAt(sourceId, targetId, startedAt),
+      ...projection,
+    };
+    // Every entry records the history cut-off of the run, so that later runs on the pair reuse it.
+    const journalInput = { mergeId, sourceId, targetId, mergeStartedAt: handlerContext.mergeStartedAt };
 
     const dryOutcomes: UserMergeHandlerOutcome[] = [];
     for (let i = 0; i < handlers.length; i += 1) {

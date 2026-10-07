@@ -121,6 +121,10 @@ const settingsQuery = graphql`
         name
         size
       }
+      platform_map_countries_custom_file {
+        name
+        size
+      }
     }
     about {
       version
@@ -574,6 +578,7 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                   <div style={fieldSpacingContainerStyle}>
                     <SettingsInfoRow
                       data-testid="settings-whitemark"
+                      divider={false}
                       size="field"
                       label={(
                         <>
@@ -602,12 +607,14 @@ const SettingsComponent = ({ queryRef }: SettingsComponentProps) => {
                 </Form>
               )}
             </Formik>
-            <SettingsMapSource settings={settings} />
           </Card>
         </Box>
 
         <Box sx={wideNarrowSx}>
-          <SettingsMessages settings={settings} />
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <SettingsMessages settings={settings} />
+            <SettingsMapSource settings={settings} />
+          </Box>
           <ThemeManager
             handleRefetch={handleRefetch}
             defaultTheme={settings.platform_theme}

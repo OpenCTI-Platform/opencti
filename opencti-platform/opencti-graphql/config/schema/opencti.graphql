@@ -1428,6 +1428,7 @@ type Settings implements InternalObject & BasicObject & ThemeSettings & IntlSett
   filigran_chatbot_ai_cgu_status: CGUStatus!
   # Map file
   platform_map_custom_file: MapCustomFile
+  platform_map_countries_custom_file: MapCustomFile
 }
 
 type MapCustomFile {
@@ -2044,6 +2045,9 @@ type Connector implements BasicObject & InternalObject {
   manager_contract_image: String
   manager_contract_definition: String # JSON.Stringified GraphqlCatalogContract item
   manager_contract_excerpt: ManagerContractExcerpt
+  update_available: Boolean
+  latest_compatible_version: String
+  has_newer_incompatible_version: Boolean
   manager_contract_configuration: [ManagerContractConfiguration!]
   manager_connector_logs: [String!]
   manager_contract_hash: String
@@ -15550,6 +15554,8 @@ type SettingsEditMutations {
   updateHeaderAuth(input: HeadersAuthConfigInput!): Settings @auth(for: [SETTINGS_SETACCESSES])
   uploadMapCustomFile(file: Upload!): Settings @auth(for: [SETTINGS_SETPARAMETERS])
   deleteMapCustomFile: Settings @auth(for: [SETTINGS_SETPARAMETERS])
+  uploadCountriesCustomFile(file: Upload!): Settings @auth(for: [SETTINGS_SETPARAMETERS])
+  deleteCountriesCustomFile: Settings @auth(for: [SETTINGS_SETPARAMETERS])
 }
 type SubTypeEditMutations {
   statusAdd(input: StatusAddInput!): SubType

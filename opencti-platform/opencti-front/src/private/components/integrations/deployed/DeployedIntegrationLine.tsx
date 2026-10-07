@@ -5,6 +5,7 @@ import Box from '@mui/material/Box';
 import { alpha, useTheme } from '@mui/material/styles';
 import { DeveloperBoardOutlined, ScheduleOutlined } from '@mui/icons-material';
 import { useDeployedTypeMetadata } from '@components/integrations/deployed/DeployedFacetSidebar';
+import ConnectorUpdateChip from '@components/integrations/deployed/ConnectorUpdateChip';
 import DeployedIntegrationPopover from '@components/integrations/deployed/DeployedIntegrationPopover';
 import { DeployedIntegrationItem } from '@components/integrations/deployed/useDeployedIntegrations';
 import { useFormatter } from '../../../../components/i18n';
@@ -290,9 +291,12 @@ const DeployedIntegrationLine = ({ item, onChange }: DeployedIntegrationLineProp
       </Box>
       {/* Status column. */}
       <Box onClick={stopLinkNavigation} onAuxClick={stopLinkNavigation} sx={cellSx('status')}>
-        {item.status === 'processing'
-          ? <ItemBoolean status={undefined} label={statusText} />
-          : <ItemBoolean status={item.status === 'active'} label={statusText} />}
+        <Stack direction="column" alignItems="flex-start" gap={0.5}>
+          {item.updateAvailable && <ConnectorUpdateChip version={item.latestCompatibleVersion} hasNewerIncompatibleVersion={item.hasNewerIncompatibleVersion} />}
+          {item.status === 'processing'
+            ? <ItemBoolean status={undefined} label={statusText} />
+            : <ItemBoolean status={item.status === 'active'} label={statusText} />}
+        </Stack>
       </Box>
       {/* Actions column. */}
       <Box sx={cellSx('actions')}>
