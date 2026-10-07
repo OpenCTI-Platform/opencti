@@ -135,6 +135,19 @@ describe('Defense coverage reader caches', () => {
     expect(vi.mocked(internalFindByIds)).toHaveBeenCalledTimes(1);
   });
 
+  it('should evaluate the access of the reader to the kill chain phases of the snapshot', async () => {
+    vi.mocked(fullEntitiesList)
+      .mockResolvedValueOnce([{ internal_id: 'attack-pattern-1', name: 'Phishing' }] as never)
+      .mockResolvedValueOnce([{ internal_id: 'phase-1', kill_chain_name: 'mitre-attack', phase_name: 'initial-access' }] as never);
+    const snapshot = await getDefenseSnapshot(draftContext);
+    expect(snapshot.evidenceIds).toEqual(expect.arrayContaining(['attack-pattern-1', 'phase-1']));
+    vi.mocked(internalFindByIds).mockResolvedValueOnce([{ internal_id: 'attack-pattern-1' }] as never);
+    const can = await getAccessPredicate(draftContext, reader, snapshot);
+    expect(vi.mocked(internalFindByIds).mock.calls[0][2]).toEqual(expect.arrayContaining(['phase-1']));
+    expect(can('attack-pattern-1')).toEqual(true);
+    expect(can('phase-1')).toEqual(false);
+  });
+
   it.each([
     ['the service account flag', { user: { user_service_account: true } }],
     ['the linked individual', { user: { individual_id: 'individual-1' } }],

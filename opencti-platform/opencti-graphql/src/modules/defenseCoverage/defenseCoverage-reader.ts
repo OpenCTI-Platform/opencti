@@ -96,7 +96,11 @@ const loadSnapshot = async (context: AuthContext, version: string): Promise<Defe
       coverage: record.x_opencti_defense_coverage as DefenseCoverage | undefined,
     };
   });
-  const evidenceIds = R.uniq(techniques.flatMap((t) => [t.id, ...(t.parent_rel_id ? [t.parent_rel_id] : []), ...collectCoverageIds(t.coverage)]));
+  // The kill chain phases are read as the system: they are evidence too, shown to the readers who can access them
+  const evidenceIds = R.uniq([
+    ...techniques.flatMap((t) => [t.id, ...(t.parent_rel_id ? [t.parent_rel_id] : []), ...collectCoverageIds(t.coverage)]),
+    ...phases.map((p) => p.internal_id),
+  ]);
   return {
     version,
     techniques,

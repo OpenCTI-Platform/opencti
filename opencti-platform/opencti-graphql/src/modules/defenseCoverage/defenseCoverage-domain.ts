@@ -346,7 +346,7 @@ const toCellView = (technique: DefenseTechniqueEntry, cell: DefenseCell, overlay
   x_mitre_id: technique.x_mitre_id,
   name: technique.name,
   parent_attack_pattern_id: visibleParentId(technique, can),
-  kill_chain_phase_ids: technique.kill_chain_phase_ids,
+  kill_chain_phase_ids: technique.kill_chain_phase_ids.filter((phaseId) => can(phaseId)),
   level: cell.level,
   telemetry: cell.telemetry,
   detection: cell.detection,
@@ -385,7 +385,7 @@ export const buildDefenseMatrix = async (
     levels[value.level] += 1;
     if (value.used) threatLevels[value.threat_level] += 1;
   });
-  const tactics = snapshot.phases.map((phase) => {
+  const tactics = snapshot.phases.filter((phase) => can(phase.id)).map((phase) => {
     const phaseLevels = emptyLevels();
     const phaseThreatLevels = emptyLevels();
     let count = 0;
@@ -593,7 +593,7 @@ const buildGapView = (
     attack_pattern_name: technique.name,
     platform_id: platformId,
     platform,
-    kill_chain_phase_ids: technique.kill_chain_phase_ids,
+    kill_chain_phase_ids: technique.kill_chain_phase_ids.filter((phaseId) => evaluation.can(phaseId)),
     level: platformCell.level,
     telemetry: platformCell.telemetry,
     detection: platformCell.detection,
@@ -1341,13 +1341,17 @@ export const addPlatformProvidesFromLogsources = async (
  * The OpenAEV results per security platform of a `has-covered` relationship reference their platform: an entry only
  * reaches a reader who can access that platform, designated by any of its ids as the computation resolves it.
  */
-export const coveragePlatformsInformationForReader = async <T extends { platform_ref?: unknown }>(
+export const coveragePlatformsInformationForReader = async <T extends { platform_ref?: unknown; coverage_name?: unknown; coverage_score?: unknown }>(
   context: AuthContext,
   user: AuthUser,
   information: ReadonlyArray<T | null> | null | undefined,
 ): Promise<T[] | null | undefined> => {
   if (!Array.isArray(information)) return information as null | undefined;
-  const entries = information.filter((entry): entry is T => !!entry && typeof entry.platform_ref === 'string');
+  // The stored entries are raw: an entry the GraphQL type cannot carry is skipped, a decimal score is rounded to the integer it holds
+  const entries = information
+    .filter((entry): entry is T => !!entry && typeof entry.platform_ref === 'string' && typeof entry.coverage_name === 'string'
+      && typeof entry.coverage_score === 'number' && Number.isFinite(entry.coverage_score))
+    .map((entry) => ({ ...entry, coverage_score: Math.round(entry.coverage_score as number) }));
   const refs = uniq(entries.map((entry) => entry.platform_ref as string));
   if (refs.length === 0) return [];
   const accessible = await internalFindByIdsMapped<BasicStoreEntity>(context, user, refs, { baseData: true, baseFields: ['x_opencti_stix_ids'], mapWithAllIds: true });
