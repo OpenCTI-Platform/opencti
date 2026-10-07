@@ -52,8 +52,8 @@ export const curationRecordsManagerCronHandler = async () => {
   const retried = await retryQueuedRestrictionRefreshes(context);
   if (retried > 0) logApp.info('[CURATION] Queued restriction refreshes of curation records done', { count: retried });
   if (Date.now() - lastExpiryRun >= EXPIRY_INTERVAL_MS) {
-    lastExpiryRun = Date.now();
     const expired = await expireMergeRecords(context);
+    lastExpiryRun = Date.now();
     if (expired > 0) logApp.info('[CURATION] Merge records past their retention window closed', { count: expired });
   }
 };

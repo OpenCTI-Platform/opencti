@@ -161,6 +161,26 @@ describe('Knowledge Health weekly digest', () => {
     expect(sendMail).toHaveBeenCalledTimes(1);
   });
 
+  it('keeps a digest that reached nobody pending as a whole, without failing the manager cycle', async () => {
+    vi.mocked(addNotification).mockRejectedValue(new Error('cannot notify'));
+    vi.mocked(sendMail).mockRejectedValueOnce(new Error('smtp down'));
+    expect(await deliverKnowledgeHealthDigest({} as never, settings, snapshot, true)).toBe(true);
+    expect(pending.snapshotId).toBe('snapshot-id');
+
+    // A retry that reaches nobody again leaves it pending, still without failing the cycle.
+    vi.mocked(sendMail).mockRejectedValueOnce(new Error('smtp down'));
+    expect(await deliverKnowledgeHealthDigest({} as never, settings, newerSnapshot, false)).toBe(false);
+    expect(pending.snapshotId).toBe('snapshot-id');
+
+    vi.mocked(addNotification).mockReset();
+    failFor([]);
+    expect(await deliverKnowledgeHealthDigest({} as never, settings, newerSnapshot, false)).toBe(false);
+    expect(notifiedUsers()).toEqual(['alice-id', 'bob-id', 'carol-id']);
+    expect(notifiedSnapshots()).toEqual(['snapshot-id', 'snapshot-id', 'snapshot-id']);
+    expect(sendMail).toHaveBeenCalledTimes(3);
+    expect(pending.snapshotId).toBeNull();
+  });
+
   it('keeps a digest that missed a recipient pending on its snapshot, and retries it for that recipient only', async () => {
     failFor(['bob-id']);
     expect(await deliverKnowledgeHealthDigest({} as never, settings, snapshot, true)).toBe(true);

@@ -155,6 +155,20 @@ describe('Curation records manager', () => {
     expect(expireMergeRecords).toHaveBeenCalledTimes(1);
   });
 
+  it('closes expired merge records again at the next cycle when closing them failed', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      vi.setSystemTime(Date.now() + 2 * 24 * 3600 * 1000);
+      (expireMergeRecords as any).mockRejectedValueOnce(new Error('cannot expire'));
+      await expect(curationRecordsManagerCronHandler()).rejects.toThrow('cannot expire');
+      await curationRecordsManagerCronHandler();
+      await curationRecordsManagerCronHandler();
+      expect(expireMergeRecords).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('retries a queued refresh at every cycle until it succeeds', async () => {
     retryQueue.set('malware-poison', 0);
     (refreshProposalRestrictions as any).mockRejectedValueOnce(new Error('still failing'));
