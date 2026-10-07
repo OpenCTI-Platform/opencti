@@ -33,6 +33,8 @@ import { fetchQuery } from '../../../relay/environment';
 import useGranted, { INGESTION, KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNFORMINTAKE, KNOWLEDGE_KNUPDATE, MODULES } from '../../../utils/hooks/useGranted';
 import { paperBg, paperBorder } from './paperSurface';
 import { Tabs, TabsList, TabsTrigger } from '@filigran/design-system';
+import { ErrorBoundary } from '../Error';
+import { APP_MODULE } from '../../../utils/logging/errorOrigin';
 
 export type IntegrationsTab = 'deployed' | 'available';
 
@@ -308,7 +310,10 @@ const IntegrationsComponent = ({ tab, data }: IntegrationsComponentProps) => {
         {tab === 'deployed' ? (
           <IntegrationsDeployed data={data} alertsSlot={alertsSlot} />
         ) : (
-          <IntegrationsAvailable data={data} />
+          // The available integrations are the catalog's: its crashes are attributed to it (RFC 0006).
+          <ErrorBoundary module={APP_MODULE.CATALOG}>
+            <IntegrationsAvailable data={data} />
+          </ErrorBoundary>
         )}
       </PageContainer>
     </div>
