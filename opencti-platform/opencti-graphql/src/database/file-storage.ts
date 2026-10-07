@@ -486,11 +486,14 @@ export const uploadJobImport = async (
   }
   if (connectors.length > 0) {
     // Create job and send ask to broker
-    const createConnectorWork = async (connector: BasicStoreEntityConnector) => {
+    const createConnectorWork = async (connector: BasicStoreEntityConnector): Promise<{ connector: BasicStoreEntityConnector; work: { id: string } }> => {
       const contextOutOfDraft = { ...context, draft_context: '' };
       const messageToUse = draftContext ? `Manual import of ${file.name} in draft ${draftContext}` : `Manual import of ${file.name}`;
       const work = await createWork(contextOutOfDraft, user, connector, messageToUse, file.id, { draftContext });
-      return { connector, work: work as BasicStoreBase };
+      if (!work) {
+        throw FunctionalError('Unable to create connector work', { connectorId: connector.id });
+      }
+      return { connector, work };
     };
     const actionList = await Promise.all(connectors.map((connector: BasicStoreEntityConnector) => createConnectorWork(connector)));
     // Send message to all correct connectors queues
