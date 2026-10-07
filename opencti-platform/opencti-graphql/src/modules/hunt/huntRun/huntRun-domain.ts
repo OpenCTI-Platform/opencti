@@ -1509,15 +1509,35 @@ export const addHuntRunEvidence = async (context: AuthContext, user: AuthUser, r
     const lastEvidenceAt = new Date(Math.max(previousEvidenceAt, observedAt.getTime()));
     const resultIds = Array.from(new Set([...(current.result_ids ?? []), ...results.map((result) => result.standard_id)]));
     const hitsSample = mergeHits(current.hits_sample ?? [], sanitizeHits(input.hits_sample));
+    const patchRun = async (countedHits: number, addedNew: number, addedRecurring: number) => {
+      const outcomeChanges = countedHits > 0 && current.hunt_run_mode === HUNT_RUN_MODE_EXECUTE
+        && current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED && isHuntRunFinalized(current);
+      const automaticVerdict = outcomeChanges && current.verdict_source === HUNT_VERDICT_SOURCE_AUTO;
+      const { element: patched } = await patchAttribute(context, HUNT_MANAGER_USER, current.internal_id, ENTITY_TYPE_HUNT_RUN, {
+        hits_sample: hitsSample,
+        ...huntHitDates(hitsSample, {}, current),
+        result_ids: resultIds.slice(0, HUNT_RUN_RESULT_IDS_MAX),
+        ...(resultIds.length > HUNT_RUN_RESULT_IDS_MAX ? { results_truncated: true } : {}),
+        hits_count: (current.hits_count ?? 0) + countedHits,
+        ...(countedHits > 0 || addedNew > 0 || addedRecurring > 0 ? {
+          hits_new_count: huntRunNewHits(current) + addedNew,
+          hits_recurring_count: (current.hits_recurring_count ?? 0) + addedRecurring,
+        } : {}),
+        evidence_sample: markMatchedEvidence(mergeEvidence(current.evidence_sample ?? [], sanitizeEvidence(input.evidence_sample)), hitsSample),
+        evidence_sources: Array.from(new Set([...(current.evidence_sources ?? []), ...(source ? [source] : [])])).slice(-EVIDENCE_SOURCES_MAX),
+        last_evidence_at: lastEvidenceAt.toISOString(),
+        // Reopens the finalization of the run, finalizeHuntRun records the automatic verdict again
+        ...(automaticVerdict ? { verdict_source: null } : {}),
+      });
+      return { updated: patched as unknown as BasicStoreEntityHuntRun, outcomeChanges, automaticVerdict };
+    };
     // Evidence with hit keys tells its new hits from the known ones and leaves out the hits its run already counted;
     // without keys identifying them, its hits count as new
-    let countedHits = addedHits;
-    let addedNew = addedHits;
-    let addedRecurring = 0;
+    const keyed: { patch?: Awaited<ReturnType<typeof patchRun>>; patchError?: unknown } = {};
     const evidenceKeys = identifyingHitKeys(input.hit_keys, { hitsCount: addedHits, sampledKeys: sanitizeHits(input.hits_sample).map((hit) => hit.hit_key) });
     if (evidenceKeys && evidenceKeys.length > 0 && current.hunt_run_mode === HUNT_RUN_MODE_EXECUTE) {
       try {
-        const matched = await recordHuntHits(context, {
+        const recording = {
           huntId: current.hunt_id,
           securityPlatformId: current.security_platform_id,
           runId: current.internal_id,
@@ -1526,37 +1546,33 @@ export const addHuntRunEvidence = async (context: AuthContext, user: AuthUser, r
           seenAt: observedAt.toISOString(),
           keepKnown: !await isHuntRunRemembered(context, current),
           uncountedOnly: true,
+        };
+        // The run takes its hits before the records count them for it: evidence sent again after a failed patch finds
+        // its hits uncounted and counts them, never leaving them out as counted already
+        await recordHuntHits(context, recording, async (matched) => {
+          // A key can stand for several hits: the hits of the keys left out are left out like the keys
+          const uncountedKeys = matched.newCount + matched.recurringCount;
+          const countedHits = uncountedKeys >= evidenceKeys.length ? addedHits : Math.round((addedHits * uncountedKeys) / evidenceKeys.length);
+          const { newHits, recurringHits } = splitHitsByKeys(countedHits, matched.newCount, matched.recurringCount);
+          try {
+            keyed.patch = await patchRun(countedHits, newHits, recurringHits);
+          } catch (error) {
+            keyed.patchError = error;
+            throw error;
+          }
         });
-        // A key can stand for several hits: the hits of the keys left out are left out like the keys
-        const uncountedKeys = matched.newCount + matched.recurringCount;
-        countedHits = uncountedKeys >= evidenceKeys.length ? addedHits : Math.round((addedHits * uncountedKeys) / evidenceKeys.length);
-        const { newHits, recurringHits } = splitHitsByKeys(countedHits, matched.newCount, matched.recurringCount);
-        addedNew = newHits;
-        addedRecurring = recurringHits;
       } catch (error) {
-        logApp.warn('[OPENCTI-MODULE] Hunt known hits could not be matched for late evidence, its hits count as new', { cause: error, runId: current.internal_id });
+        if (keyed.patchError) {
+          throw keyed.patchError;
+        }
+        if (keyed.patch) {
+          logApp.warn('[OPENCTI-MODULE] Hunt hits of late evidence could not be recorded, later runs count them as new', { cause: error, runId: current.internal_id });
+        } else {
+          logApp.warn('[OPENCTI-MODULE] Hunt known hits could not be matched for late evidence, its hits count as new', { cause: error, runId: current.internal_id });
+        }
       }
     }
-    const outcomeChanges = countedHits > 0 && current.hunt_run_mode === HUNT_RUN_MODE_EXECUTE
-      && current.hunt_run_status === HUNT_RUN_STATUS_COMPLETED && isHuntRunFinalized(current);
-    const automaticVerdict = outcomeChanges && current.verdict_source === HUNT_VERDICT_SOURCE_AUTO;
-    const { element: patched } = await patchAttribute(context, HUNT_MANAGER_USER, current.internal_id, ENTITY_TYPE_HUNT_RUN, {
-      hits_sample: hitsSample,
-      ...huntHitDates(hitsSample, {}, current),
-      result_ids: resultIds.slice(0, HUNT_RUN_RESULT_IDS_MAX),
-      ...(resultIds.length > HUNT_RUN_RESULT_IDS_MAX ? { results_truncated: true } : {}),
-      hits_count: (current.hits_count ?? 0) + countedHits,
-      ...(countedHits > 0 || addedNew > 0 || addedRecurring > 0 ? {
-        hits_new_count: huntRunNewHits(current) + addedNew,
-        hits_recurring_count: (current.hits_recurring_count ?? 0) + addedRecurring,
-      } : {}),
-      evidence_sample: markMatchedEvidence(mergeEvidence(current.evidence_sample ?? [], sanitizeEvidence(input.evidence_sample)), hitsSample),
-      evidence_sources: Array.from(new Set([...(current.evidence_sources ?? []), ...(source ? [source] : [])])).slice(-EVIDENCE_SOURCES_MAX),
-      last_evidence_at: lastEvidenceAt.toISOString(),
-      // Reopens the finalization of the run, finalizeHuntRun records the automatic verdict again
-      ...(automaticVerdict ? { verdict_source: null } : {}),
-    });
-    const updated = patched as unknown as BasicStoreEntityHuntRun;
+    const { updated, outcomeChanges, automaticVerdict } = keyed.patch ?? await patchRun(addedHits, addedHits, 0);
     if (automaticVerdict) {
       const finalized = await finalizeHuntRun(context, updated, hunt);
       if ((current.hits_count ?? 0) === 0) {

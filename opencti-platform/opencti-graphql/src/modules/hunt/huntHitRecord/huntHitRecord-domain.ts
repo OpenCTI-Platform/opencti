@@ -187,10 +187,17 @@ export const isHuntRunRemembered = async (context: AuthContext, run: BasicStoreE
  * Matches the hits of a run against the hits already known for its hunt on its security platform, then records them:
  * new hits get a record, known ones one more run. The records are platform bookkeeping written in bulk, without stream
  * event or history; the runs of a hunt on a platform are matched one at a time. Returns the new and recurring counts.
+ * beforeRecord acts on the counts under the same lock, before any record is written: when it fails, the records are left
+ * as they were.
  */
-export const recordHuntHits = async (context: AuthContext, input: HuntHitsRecordInput): Promise<{ newCount: number; recurringCount: number }> => {
+export const recordHuntHits = async (
+  context: AuthContext,
+  input: HuntHitsRecordInput,
+  beforeRecord?: (counts: { newCount: number; recurringCount: number }) => Promise<void>,
+): Promise<{ newCount: number; recurringCount: number }> => {
   const keys = Array.from(new Set(input.keys));
   if (keys.length === 0) {
+    await beforeRecord?.({ newCount: 0, recurringCount: 0 });
     return { newCount: 0, recurringCount: 0 };
   }
   const lockKey = `${LEDGER_LOCK}_${input.huntId}_${input.securityPlatformId ?? HUNT_PLATFORM_INTERNET}`;
@@ -199,6 +206,9 @@ export const recordHuntHits = async (context: AuthContext, input: HuntHitsRecord
   return withHuntLock(lockKey, async () => {
     const known = await findHuntHitRecords(context, input.huntId, input.securityPlatformId, keys);
     const { newCount, recurringCount, toWrite } = classifyHuntHits(input.runId, keys, known, input.keepKnown, input.uncountedOnly);
+    if (beforeRecord) {
+      await beforeRecord({ newCount, recurringCount });
+    }
     const operations: unknown[] = [];
     for (let index = 0; index < toWrite.length; index += 1) {
       await doYield();

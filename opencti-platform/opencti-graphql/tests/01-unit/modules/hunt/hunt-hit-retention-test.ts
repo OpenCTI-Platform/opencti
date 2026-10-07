@@ -70,6 +70,23 @@ describe('Retention of the known hits', () => {
     expect(source).not.toContain('ctx._source.updated_at = params.seen_at;');
   });
 
+  it('should write no record when what the caller does with the counts fails, and the records once it succeeds', async () => {
+    vi.mocked(internalFindByIds).mockResolvedValue([]);
+    const input = { huntId: 'hunt-1', securityPlatformId: 'platform-1', runId: 'run-1', keys: ['hit-1', 'hit-2'], seenAt: OBSERVED, uncountedOnly: true };
+    const seen: unknown[] = [];
+    await expect(recordHuntHits(testContext, input, async (counts) => {
+      seen.push(counts);
+      throw new Error('engine unavailable');
+    })).rejects.toThrow('engine unavailable');
+    expect(seen).toEqual([{ newCount: 2, recurringCount: 0 }]);
+    expect(elBulk).not.toHaveBeenCalled();
+    expect(await recordHuntHits(testContext, input, async (counts) => {
+      seen.push(counts);
+      expect(elBulk).not.toHaveBeenCalled();
+    })).toEqual({ newCount: 2, recurringCount: 0 });
+    expect(elBulk).toHaveBeenCalledTimes(1);
+  });
+
   it('should forget the hits no run was recorded finding within the retention, never by their observation date', async () => {
     const before = '2025-10-07T10:30:00.000Z';
     await purgeExpiredHuntHitRecords(before);

@@ -228,6 +228,13 @@ describe('Hits counted once across the runs of a hunt', () => {
     vi.mocked(patchAttribute).mockImplementation(async (_context, _user, _id, _type, patch) => ({ element: { ...run, ...finalState(), ...patch } }) as never);
   };
   const autonomous = { ...running, hunt_run_trigger: 'standing', auto_escalation: true, security_platform_id: 'platform-1' } as BasicStoreEntityHuntRun;
+  // The known hits matched, then what the caller does with the counts before the records are written
+  const matching = (counts: { newCount: number; recurringCount: number }) => {
+    vi.mocked(recordHuntHits).mockImplementation(async (_context, _input, beforeRecord) => {
+      await beforeRecord?.(counts);
+      return counts;
+    });
+  };
 
   afterEach(() => {
     vi.mocked(patchAttribute).mockReset();
@@ -291,9 +298,9 @@ describe('Hits counted once across the runs of a hunt', () => {
   it('should record the hits of late evidence when it was observed, even before the last observation of the run', async () => {
     loading({ ...autonomous, last_evidence_at: '2026-10-07T10:00:00.000Z' } as BasicStoreEntityHuntRun);
     vi.mocked(findByIds).mockResolvedValueOnce([{ internal_id: 'result-1', standard_id: 'indicator--result-1', entity_type: 'Indicator' }] as never);
-    vi.mocked(recordHuntHits).mockResolvedValue({ newCount: 2, recurringCount: 0 });
+    matching({ newCount: 2, recurringCount: 0 });
     await addHuntRunEvidence(testContext, ADMIN_USER, 'run-1', { result_ids: ['indicator--result-1'], hits_count: 2, hit_keys: KEYS.slice(0, 2), observed_at: '2026-10-07T08:00:00.000Z' } as never);
-    expect(recordHuntHits).toHaveBeenCalledWith(testContext, expect.objectContaining({ runId: 'run-1', keys: KEYS.slice(0, 2), seenAt: '2026-10-07T08:00:00.000Z' }));
+    expect(recordHuntHits).toHaveBeenCalledWith(testContext, expect.objectContaining({ runId: 'run-1', keys: KEYS.slice(0, 2), seenAt: '2026-10-07T08:00:00.000Z' }), expect.any(Function));
     // The run keeps its most recent observation
     expect(finalState()).toMatchObject({ last_evidence_at: '2026-10-07T10:00:00.000Z', hits_new_count: 2 });
   });
@@ -304,19 +311,53 @@ describe('Hits counted once across the runs of a hunt', () => {
     loading(reported);
     vi.mocked(findByIds).mockResolvedValueOnce(evidence as never).mockResolvedValueOnce(evidence as never);
     // Two hits of the run reported again and one hit never seen
-    vi.mocked(recordHuntHits).mockResolvedValue({ newCount: 1, recurringCount: 0 });
+    matching({ newCount: 1, recurringCount: 0 });
     await addHuntRunEvidence(testContext, ADMIN_USER, 'run-1', { result_ids: ['indicator--result-1'], hits_count: 3, hit_keys: KEYS.slice(0, 3) } as never);
-    expect(recordHuntHits).toHaveBeenCalledWith(testContext, expect.objectContaining({ runId: 'run-1', keys: KEYS.slice(0, 3), uncountedOnly: true }));
+    expect(recordHuntHits).toHaveBeenCalledWith(testContext, expect.objectContaining({ runId: 'run-1', keys: KEYS.slice(0, 3), uncountedOnly: true }), expect.any(Function));
     expect(finalState()).toMatchObject({ hits_count: 29, hits_new_count: 13, hits_recurring_count: 16 });
     // Evidence of hits the run counted already changes nothing
     vi.mocked(patchAttribute).mockReset();
     loading(reported);
-    vi.mocked(recordHuntHits).mockResolvedValue({ newCount: 0, recurringCount: 0 });
+    matching({ newCount: 0, recurringCount: 0 });
     vi.mocked(updateHuntRunInformation).mockClear();
     await addHuntRunEvidence(testContext, ADMIN_USER, 'run-1', { result_ids: ['indicator--result-1'], hits_count: 2, hit_keys: KEYS.slice(0, 2) } as never);
     expect(finalState()).toMatchObject({ hits_count: 28 });
     expect(finalState().hits_new_count).toBeUndefined();
     expect(updateHuntRunInformation).not.toHaveBeenCalled();
+  });
+
+  it('should count the hits of late evidence sent again after its run could not take them, and only once when their records fail', async () => {
+    const reported = { ...autonomous, hunt_run_status: 'completed', hits_count: 28, hits_new_count: 12, hits_recurring_count: 16, verdict_source: 'analyst' } as BasicStoreEntityHuntRun;
+    const evidence = { result_ids: ['indicator--result-1'], hits_count: 3, hit_keys: KEYS.slice(0, 3) } as never;
+    const results = [{ internal_id: 'result-1', standard_id: 'indicator--result-1', entity_type: 'Indicator' }];
+    vi.mocked(findByIds).mockResolvedValueOnce(results as never).mockResolvedValueOnce(results as never).mockResolvedValueOnce(results as never);
+    // The records count a key for the run once written, after what the caller does with the counts
+    const counted = new Set<string>();
+    vi.mocked(recordHuntHits).mockImplementation(async (_context, input, beforeRecord) => {
+      const counts = { newCount: input.keys.filter((key) => !counted.has(key)).length, recurringCount: 0 };
+      await beforeRecord?.(counts);
+      input.keys.forEach((key) => counted.add(key));
+      return counts;
+    });
+    loading(reported);
+    vi.mocked(patchAttribute).mockRejectedValueOnce(new Error('engine unavailable'));
+    await expect(addHuntRunEvidence(testContext, ADMIN_USER, 'run-1', evidence)).rejects.toThrow('engine unavailable');
+    expect(counted.size).toEqual(0);
+    // Sent again, the evidence finds its hits uncounted
+    vi.mocked(patchAttribute).mockClear();
+    await addHuntRunEvidence(testContext, ADMIN_USER, 'run-1', evidence);
+    expect(finalState()).toMatchObject({ hits_count: 31, hits_new_count: 15, hits_recurring_count: 16 });
+    expect(counted.size).toEqual(3);
+    // Records that fail once the run took the hits leave the run as it is, the evidence kept
+    vi.mocked(patchAttribute).mockReset();
+    loading(reported);
+    vi.mocked(recordHuntHits).mockImplementation(async (_context, _input, beforeRecord) => {
+      await beforeRecord?.({ newCount: 3, recurringCount: 0 });
+      throw new Error('engine unavailable');
+    });
+    await addHuntRunEvidence(testContext, ADMIN_USER, 'run-1', evidence);
+    expect(patchAttribute).toHaveBeenCalledTimes(1);
+    expect(finalState()).toMatchObject({ hits_count: 31, hits_new_count: 15 });
   });
 
   it('should find, open and record the incident under the lock of the hunt on its platform, so runs escalated together share one', async () => {
