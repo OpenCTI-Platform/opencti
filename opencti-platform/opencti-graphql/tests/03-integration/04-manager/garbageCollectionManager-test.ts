@@ -10,9 +10,12 @@ import { generateInternalId } from '../../../src/schema/identifier';
 import { type BasicStoreEntityDeleteOperation, ENTITY_TYPE_DELETE_OPERATION } from '../../../src/modules/deleteOperation/deleteOperation-types';
 import type { BasicStoreBase } from '../../../src/types/store';
 
+type BuiltEntity = { element: Record<string, any> };
+
 // Everything is written at engine level: no stream event is generated, stream and sync counters are not impacted
 const createReportInTrash = async (name: string) => {
-  const { element: report } = await buildEntityData(testContext, ADMIN_USER, { entity_type: ENTITY_TYPE_CONTAINER_REPORT, name, published: '2020-02-26T00:51:35.000Z' }, ENTITY_TYPE_CONTAINER_REPORT) as { element: Record<string, any> };
+  const reportInput = { entity_type: ENTITY_TYPE_CONTAINER_REPORT, name, published: '2020-02-26T00:51:35.000Z' };
+  const { element: report } = await buildEntityData(testContext, ADMIN_USER, reportInput, ENTITY_TYPE_CONTAINER_REPORT) as BuiltEntity;
   await elIndexElements(testContext, ADMIN_USER, ENTITY_TYPE_CONTAINER_REPORT, [report]);
   const [liveReport] = await elFindByIds(testContext, ADMIN_USER, [report.internal_id], { indices: READ_DATA_INDICES }) as BasicStoreBase[];
   // Copy to the trash, as the first step of a deletion does
@@ -25,9 +28,10 @@ const createReportInTrash = async (name: string) => {
     deleted_elements: [{ id: liveReport.internal_id, source_index: liveReport._index }],
     confidence: 100,
   };
-  const { element: deleteOperationElement } = await buildEntityData(testContext, ADMIN_USER, deleteOperationInput, ENTITY_TYPE_DELETE_OPERATION) as { element: Record<string, any> };
+  const { element: deleteOperationElement } = await buildEntityData(testContext, ADMIN_USER, deleteOperationInput, ENTITY_TYPE_DELETE_OPERATION) as BuiltEntity;
   await elIndexElements(testContext, ADMIN_USER, ENTITY_TYPE_DELETE_OPERATION, [deleteOperationElement]);
-  const deleteOperation = await storeLoadById(testContext, ADMIN_USER, deleteOperationElement.internal_id, ENTITY_TYPE_DELETE_OPERATION) as unknown as BasicStoreEntityDeleteOperation;
+  const deleteOperationId = deleteOperationElement.internal_id;
+  const deleteOperation = await storeLoadById(testContext, ADMIN_USER, deleteOperationId, ENTITY_TYPE_DELETE_OPERATION) as unknown as BasicStoreEntityDeleteOperation;
   return { liveReport, deleteOperation };
 };
 
@@ -40,7 +44,14 @@ describe('Garbage collection manager', () => {
     const { liveReport, deleteOperation } = await createReportInTrash('GC report still live');
     // Indexed file of the report, flagged as removed by the interrupted deletion
     const fileDocId = generateInternalId();
-    await elIndex(INDEX_FILES, { internal_id: fileDocId, file_id: `import/Report/${liveReport.internal_id}/gc-test.txt`, name: 'gc-test.txt', entity_id: liveReport.internal_id, entity_type: ENTITY_TYPE_CONTAINER_REPORT, removed: true });
+    await elIndex(INDEX_FILES, {
+      internal_id: fileDocId,
+      file_id: `import/Report/${liveReport.internal_id}/gc-test.txt`,
+      name: 'gc-test.txt',
+      entity_id: liveReport.internal_id,
+      entity_type: ENTITY_TYPE_CONTAINER_REPORT,
+      removed: true,
+    });
     expect((await findInTrash(liveReport.internal_id)).length).toBe(1);
     expect((await findLive(liveReport.internal_id)).length).toBe(1);
 
