@@ -82,6 +82,7 @@ vi.mock('../../../../src/enterprise-edition/ee', async (importOriginal) => ({
   checkEnterpriseEdition: vi.fn(async () => {
     throw new Error('No triage in this test');
   }),
+  isEnterpriseEdition: vi.fn(async () => false),
 }));
 
 vi.mock('../../../../src/listener/UserActionListener', async (importOriginal) => ({
@@ -190,6 +191,16 @@ describe('Escalation at the end of a run above the threshold', () => {
     loading({ ...running, auto_escalation: false });
     await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'completed', hits_count: 28, distinct_entities: 0 } as never);
     expect(finalState().distinct_entities).toEqual(0);
+  });
+
+  it('should keep the results partial once the evidence attached while running cut them, whatever the report says', async () => {
+    loading({ ...running, auto_escalation: false, results_truncated: true } as BasicStoreEntityHuntRun);
+    await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'completed', hits_count: 28, truncated: false } as never);
+    expect(finalState().results_truncated).toBe(true);
+    vi.mocked(patchAttribute).mockReset();
+    loading({ ...running, auto_escalation: false });
+    await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'completed', hits_count: 28, truncated: false } as never);
+    expect(finalState().results_truncated).toBe(false);
   });
 
   it('should offer the incident at verdict time: a true positive opens it unless the analyst declines', async () => {

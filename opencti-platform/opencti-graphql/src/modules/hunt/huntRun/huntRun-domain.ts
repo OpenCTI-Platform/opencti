@@ -44,7 +44,7 @@ import {
 import { HUNT_MANAGER_USER, isBypassUser, SYSTEM_USER } from '../../../utils/access';
 import { addFilter } from '../../../utils/filtering/filtering-utils';
 import { now } from '../../../utils/format';
-import { checkEnterpriseEdition } from '../../../enterprise-edition/ee';
+import { checkEnterpriseEdition, isEnterpriseEdition } from '../../../enterprise-edition/ee';
 import { addHuntRunCount, addHuntTriageCount, addHuntVerdictCount } from '../../../manager/telemetryManager';
 import { addSecurityPlatform } from '../../securityPlatform/securityPlatform-domain';
 import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, type BasicStoreEntitySecurityPlatform } from '../../securityPlatform/securityPlatform-types';
@@ -908,21 +908,12 @@ const finalizeHuntRun = async (context: AuthContext, run: BasicStoreEntityHuntRu
   return patchHuntRun(context, current, { verdict: computeAutomaticVerdict(current), verdict_source: HUNT_VERDICT_SOURCE_AUTO });
 };
 
-const isTriageAvailable = async (context: AuthContext) => {
-  try {
-    await checkEnterpriseEdition(context);
-    return true;
-  } catch {
-    return false;
-  }
-};
-
 // Automatic triage of runs with hits never blocks the connector report
 const scheduleAutomaticTriage = (context: AuthContext, run: BasicStoreEntityHuntRun, hunt: BasicStoreEntityHunt) => {
   if (run.hunt_run_mode !== HUNT_RUN_MODE_EXECUTE || run.hunt_run_status !== HUNT_RUN_STATUS_COMPLETED || (run.hits_count ?? 0) === 0) {
     return;
   }
-  isTriageAvailable(context)
+  isEnterpriseEdition(context)
     .then((available) => (available ? triageHuntRunWithAgent(context, HUNT_MANAGER_USER, run, hunt) : null))
     .catch((error) => logApp.warn('[OPENCTI-MODULE] Automatic hunt triage skipped', { cause: error, runId: run.internal_id }));
 };
@@ -1305,8 +1296,10 @@ const applyHuntRunReport = async (context: AuthContext, run: BasicStoreEntityHun
         }
       }
       patch.hits_count = (run.hits_count ?? 0) + reportedHits;
-      // Results are complete only when the connector says so: a report that omits it leaves the state unknown
-      patch.results_truncated = input.truncated === true || resultIds.length > HUNT_RUN_RESULT_IDS_MAX ? true : (input.truncated ?? null);
+      // Results are complete only when the connector says so: a report that omits it leaves the state unknown, and the
+      // evidence attached while running may already have cut the results
+      const truncated = input.truncated === true || run.results_truncated === true || resultIds.length > HUNT_RUN_RESULT_IDS_MAX;
+      patch.results_truncated = truncated ? true : (input.truncated ?? null);
       const sampledKeys = reportedSample.map((hit) => hit.hit_key);
       const reported = await recordReportedHits(context, run, input, { count: reportedHits, sampledKeys }, reportedAt);
       Object.assign(patch, reported, {
