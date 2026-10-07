@@ -140,6 +140,7 @@ interface HuntRunAttributes {
   security_platform_id?: string | null;
   connector_id?: string | null;
   connector_name?: string | null;
+  connector_user_id?: string | null;
   work_id?: string | null;
   time_window_start?: string;
   time_window_end?: string;

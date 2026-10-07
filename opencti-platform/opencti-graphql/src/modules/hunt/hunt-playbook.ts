@@ -7,7 +7,6 @@ import { fullEntitiesList } from '../../database/middleware-loader';
 import { FilterMode, FilterOperator, type MutationPlaybookStepExecutionArgs } from '../../generated/graphql';
 import { AUTOMATION_MANAGER_USER, HUNT_MANAGER_USER } from '../../utils/access';
 import { resolveUserByIdFromCache } from '../user/user-domain';
-import { listHuntConnectors } from './hunt-dispatch';
 import { isTerminalHuntRunFailure } from './hunt-logic';
 import {
   type BasicStoreEntityHuntRun,
@@ -108,21 +107,21 @@ export const computeHuntPlaybookOutcome = (runs: BasicStoreEntityHuntRun[]): Hun
  * bundle of the step, completed with the knowledge produced by the runs when configured.
  */
 /**
- * Objects recorded by the runs, loaded with the identity of the hunt connector of each run. The playbook processes
- * them with the automation identity: an object the connector cannot read itself is never added to the bundle. The cap
- * and the deduplication apply to the objects loaded, so an id an identity cannot read (deleted, or out of its reach)
- * takes no place and never keeps another identity that reads it from adding it. Known ids are internal ids (as the
- * runs record them) or STIX ids (as the bundle holds them).
+ * Objects recorded by the runs, loaded with the identity the hunt connector of each run ran as when the run was
+ * dispatched, the only one that reports the run. The playbook processes them with the automation identity: an object
+ * the connector cannot read itself is never added to the bundle, even once the connector is registered again as
+ * another user. The cap and the deduplication apply to the objects loaded, so an id an identity cannot read (deleted,
+ * or out of its reach) takes no place and never keeps another identity that reads it from adding it. Known ids are
+ * internal ids (as the runs record them) or STIX ids (as the bundle holds them).
  */
 export const loadHuntRunResultsForPlaybook = async (context: AuthContext, runs: BasicStoreEntityHuntRun[], knownIds: Set<string>) => {
-  const connectorUsers = new Map((await listHuntConnectors(context, false)).map((connector) => [connector.internal_id, connector.connector_user_id]));
   const idsByUser = new Map<string, string[]>();
   runs.forEach((run) => {
     const resultIds = run.result_ids ?? [];
-    const userId = run.connector_id ? connectorUsers.get(run.connector_id) : undefined;
+    const userId = run.connector_user_id;
     if (!userId) {
       if (resultIds.length > 0) {
-        logApp.warn('[OPENCTI-MODULE] Hunt run results skipped, the hunt connector of the run has no user', { runId: run.internal_id, connectorId: run.connector_id });
+        logApp.warn('[OPENCTI-MODULE] Hunt run results skipped, the run has no hunt connector user', { runId: run.internal_id, connectorId: run.connector_id });
       }
       return;
     }

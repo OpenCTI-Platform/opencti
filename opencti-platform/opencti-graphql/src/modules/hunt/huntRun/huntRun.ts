@@ -42,6 +42,8 @@ const HUNT_RUN_DEFINITION: ModuleDefinition<StoreEntityHuntRun, StixHuntRun> = {
     { name: 'security_platform_id', label: 'Run security platform', type: 'string', format: 'id', entityTypes: [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM], mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'connector_id', label: 'Run connector', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'connector_name', label: 'Run connector name', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
+    // The user the connector ran as when the run was dispatched: only that identity reports the run and reads its results
+    { name: 'connector_user_id', label: 'Run connector user', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'work_id', label: 'Run work', type: 'string', format: 'short', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: false },
     { name: 'time_window_start', label: 'Run time window start', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },
     { name: 'time_window_end', label: 'Run time window end', type: 'date', mandatoryType: 'no', editDefault: false, multiple: false, upsert: false, isFilterable: true },

@@ -7,7 +7,7 @@ import { findRegisterRow, registerRowsByDisposition, USER_MERGE_REGISTER, UserMe
  * transcription mistake it is supposed to catch.
  */
 const V4_DISTRIBUTION: Record<UserMergeDisposition, number> = {
-  [UserMergeDisposition.Transfer]: 41,
+  [UserMergeDisposition.Transfer]: 42,
   [UserMergeDisposition.Invalidate]: 22,
   [UserMergeDisposition.Conditional]: 21,
   [UserMergeDisposition.Retain]: 10,
@@ -22,7 +22,7 @@ describe('User merge register', () => {
     });
   });
 
-  it('should hold exactly 100 rows, and no row outside the known dispositions', () => {
+  it('should hold exactly 101 rows, and no row outside the known dispositions', () => {
     const total = Object.values(V4_DISTRIBUTION).reduce((acc, count) => acc + count, 0);
     expect(USER_MERGE_REGISTER.length).toBe(total);
   });

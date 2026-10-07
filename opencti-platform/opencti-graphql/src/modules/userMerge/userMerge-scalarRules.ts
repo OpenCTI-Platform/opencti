@@ -1,4 +1,5 @@
 import { ENTITY_TYPE_BACKGROUND_TASK, ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_INTERNAL_FILE, ENTITY_TYPE_WORK } from '../../schema/internalObject';
+import { ENTITY_TYPE_HUNT_RUN } from '../hunt/huntRun/huntRun-types';
 import { ENTITY_TYPE_NOTIFICATION } from '../notification/notification-types';
 import { ENTITY_TYPE_PUBLIC_DASHBOARD } from '../publicDashboard/publicDashboard-types';
 import { ENTITY_TYPE_NEWS_FEED_ITEM } from '../xtm/hub/news-feed/news-feed-types';
@@ -96,6 +97,14 @@ export const USER_MERGE_SCALAR_COMPLEMENTS: UserMergeScalarComplement[] = [
     path: 'connector_user_id',
     shape: 'single',
     missingBecause: "declared with format 'short'",
+  },
+  {
+    id: 'hunt-run-connector-user-id',
+    registerRow: 'hunt-run.connector-user-id',
+    entityTypes: [ENTITY_TYPE_HUNT_RUN],
+    path: 'connector_user_id',
+    shape: 'single',
+    missingBecause: "declared with format 'short', as on the connector it copies",
   },
   {
     id: 'news-feed-item-user-id',

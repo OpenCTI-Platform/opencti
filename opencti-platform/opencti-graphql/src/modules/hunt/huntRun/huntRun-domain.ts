@@ -487,6 +487,7 @@ export const createHuntRuns = async (context: AuthContext, hunt: BasicStoreEntit
       security_platform_id: securityPlatform?.internal_id ?? null,
       connector_id: connector.internal_id,
       connector_name: connector.name,
+      connector_user_id: connector.connector_user_id ?? null,
       time_window_start: windowStart.toISOString(),
       time_window_end: windowEnd.toISOString(),
       continues_run_id: continuesRunId,
@@ -1122,10 +1123,10 @@ export const resolveHuntRunIocResults = async (context: AuthContext, user: AuthU
  * Whether the user acts as the hunt connector the run was dispatched to. Several hunt connectors can run as the same
  * user: the work of the dispatch, which only the connector that received the run knows, binds the call to that
  * connector. The run stores its work before the connector receives it, so a run without work was never handed to any
- * connector.
+ * connector. A connector registered again as another user no longer acts on the runs dispatched to its former user.
  */
 export const isHuntRunConnectorCall = async (context: AuthContext, user: AuthUser, run: BasicStoreEntityHuntRun, workId: string | null | undefined) => {
-  if (!run.work_id || workId !== run.work_id) {
+  if (!run.work_id || workId !== run.work_id || !run.connector_user_id || run.connector_user_id !== user.id) {
     return false;
   }
   const connectors = await listHuntConnectors(context, false);

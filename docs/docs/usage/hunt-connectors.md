@@ -377,7 +377,7 @@ The security platform is not part of the key: OpenCTI keeps the known hits of a 
 
 For a query test, the connector translates the logic and reports the translated query without executing it.
 
-OpenCTI only accepts the report of a run from the connector it was dispatched to, never accepts a second report of a terminated run, and caps the evidence it stores. Raw values are never stored: the connectors SDK hashes each evidence value before sending it, and OpenCTI hashes again any value that does not arrive as a SHA-256 digest and masks the previews before storing them, so only a truncated, masked preview is kept.
+OpenCTI only accepts the report of a run from the connector it was dispatched to, running as the user it ran as at the dispatch (a connector registered again as another user leaves its earlier runs to expire), never accepts a second report of a terminated run, and caps the evidence it stores. Raw values are never stored: the connectors SDK hashes each evidence value before sending it, and OpenCTI hashes again any value that does not arrive as a SHA-256 digest and masks the previews before storing them, so only a truncated, masked preview is kept.
 
 ## Developing a hunt connector
 
