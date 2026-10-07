@@ -1,8 +1,8 @@
-import { screen, within } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import React from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import testRender from '../../../../utils/tests/test-render';
-import HubCountBadge, { HubTotalBadge } from './HubCountBadge';
+import HubCountBadge, { COUNT_RETRY_DELAY_MS, HubTotalBadge, useHubCountRetryKey } from './HubCountBadge';
 
 const failing = () => {
   throw new Error('count unavailable');
@@ -14,7 +14,48 @@ const pending = () => {
 
 describe('Hub count badges', () => {
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
+  });
+
+  it('reads a count that failed again later with a new retry key, waiting twice as long after each new failure', () => {
+    vi.useFakeTimers();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    // Fails on the first read and on the first retry
+    const useRecoveringCount = () => {
+      if (useHubCountRetryKey() < 2) {
+        throw new Error('count unavailable');
+      }
+      return 4;
+    };
+    testRender(
+      <>
+        <span data-testid="tab"><HubCountBadge useCount={useRecoveringCount} /></span>
+        <span data-testid="total"><HubTotalBadge counts={[{ id: 'inbox', useCount: () => 2 }, { id: 'merges', useCount: useRecoveringCount }]} /></span>
+      </>,
+    );
+    expect(screen.getByTestId('tab').textContent).toEqual('');
+    expect(within(screen.getByTestId('total')).getByText('2')).toBeInTheDocument();
+    // First retry, failing again: the next one waits twice as long
+    act(() => {
+      vi.advanceTimersByTime(COUNT_RETRY_DELAY_MS);
+    });
+    act(() => {
+      vi.advanceTimersByTime(COUNT_RETRY_DELAY_MS);
+    });
+    expect(screen.getByTestId('tab').textContent).toEqual('');
+    expect(within(screen.getByTestId('total')).getByText('2')).toBeInTheDocument();
+    act(() => {
+      vi.advanceTimersByTime(COUNT_RETRY_DELAY_MS);
+    });
+    expect(within(screen.getByTestId('tab')).getByText('4')).toBeInTheDocument();
+    expect(within(screen.getByTestId('total')).getByText('6')).toBeInTheDocument();
+  });
+
+  it('reads a count that never failed with the retry key 0', () => {
+    const useKeyAsCount = () => useHubCountRetryKey() + 1;
+    testRender(<span data-testid="tab"><HubCountBadge useCount={useKeyAsCount} /></span>);
+    expect(within(screen.getByTestId('tab')).getByText('1')).toBeInTheDocument();
   });
 
   it('shows a positive count and nothing for zero or no count', () => {

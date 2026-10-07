@@ -1,5 +1,6 @@
 import { useLazyLoadQuery } from 'react-relay';
 import type { FilterGroup } from '../../../../utils/filters/filtersHelpers-types';
+import { useHubCountRetryKey } from '../../common/hub/HubCountBadge';
 import useProvenanceCountsFetchKey from '../../common/provenance/provenanceCountsRefresh';
 import { provenanceKpiStripQuery } from './ProvenanceKpiStrip';
 import useProvenanceTrackedFilters from './useProvenanceTrackedFilters';
@@ -17,10 +18,15 @@ export const STALE_FILTERS: FilterGroup = {
   filterGroups: [],
 };
 
+/** Fetch key of a badge count: the one of the tab counters, extended by the retry after a failure that Relay keeps for it. */
+export const provenanceCurationCountFetchKey = (fetchKey: number, retryKey: number) => {
+  return retryKey > 0 ? `${fetchKey}-retry-${retryKey}` : fetchKey;
+};
+
 // Same query, variables and fetch key as the counters of the tab, so that the badge and the counters share one result
 const useProvenanceCurationCount = (baseFilters: FilterGroup) => {
   const filters = useProvenanceTrackedFilters(baseFilters);
-  const fetchKey = useProvenanceCountsFetchKey();
+  const fetchKey = provenanceCurationCountFetchKey(useProvenanceCountsFetchKey(), useHubCountRetryKey());
   // store-and-network keeps the badge shown while a new fetch key reads the count again
   const data = useLazyLoadQuery<ProvenanceKpiStripQuery>(
     provenanceKpiStripQuery,

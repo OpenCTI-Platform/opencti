@@ -1,4 +1,4 @@
-import React, { Component, type ReactNode, Suspense, useCallback, useLayoutEffect, useState } from 'react';
+import React, { Component, createContext, type ReactNode, Suspense, useCallback, useContext, useLayoutEffect, useState } from 'react';
 import { Badge } from '@filigran/design-system';
 import { useFormatter } from '../../../../components/i18n';
 
@@ -7,18 +7,47 @@ export type HubBadgeCount = () => number | null | undefined;
 
 interface SilentBoundaryState {
   failed: boolean;
+  retries: number;
 }
 
-// A count that cannot be read hides its badge: the menu and the tab bar never break for it.
-class SilentBoundary extends Component<{ children: ReactNode }, SilentBoundaryState> {
-  state: SilentBoundaryState = { failed: false };
+// First retry of a count that failed, doubled at each new failure up to the longest one
+export const COUNT_RETRY_DELAY_MS = 30 * 1000;
+const COUNT_MAX_RETRY_DELAY_MS = 10 * 60 * 1000;
 
-  static getDerivedStateFromError(): SilentBoundaryState {
+const CountRetryContext = createContext(0);
+
+/**
+ * Number of times the count was read again after a failure, 0 before any. A count that caches its result for its
+ * request (a Relay query keeps the error for the same fetch key) adds it to that key, so that a retry asks again.
+ */
+export const useHubCountRetryKey = () => useContext(CountRetryContext);
+
+// A count that cannot be read hides its badge: the menu and the tab bar never break for it. It is read again
+// later, so that a transient failure does not hide the badge until the page is reloaded.
+class SilentBoundary extends Component<{ children: ReactNode }, SilentBoundaryState> {
+  state: SilentBoundaryState = { failed: false, retries: 0 };
+
+  retryTimer: ReturnType<typeof setTimeout> | undefined;
+
+  static getDerivedStateFromError(): Partial<SilentBoundaryState> {
     return { failed: true };
   }
 
+  componentDidCatch() {
+    clearTimeout(this.retryTimer);
+    const delay = Math.min(COUNT_RETRY_DELAY_MS * 2 ** this.state.retries, COUNT_MAX_RETRY_DELAY_MS);
+    this.retryTimer = setTimeout(() => this.setState(({ retries }) => ({ failed: false, retries: retries + 1 })), delay);
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this.retryTimer);
+  }
+
   render() {
-    return this.state.failed ? null : this.props.children;
+    if (this.state.failed) {
+      return null;
+    }
+    return <CountRetryContext.Provider value={this.state.retries}>{this.props.children}</CountRetryContext.Provider>;
   }
 }
 
