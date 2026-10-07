@@ -1,5 +1,5 @@
 import * as Yup from 'yup';
-import { CoverageInformation } from '../SecurityCoverage-types';
+import { CoverageInformationForm } from '../SecurityCoverage-types';
 import { useFormatter } from '../../../../../components/i18n';
 import { Field, Form, Formik } from 'formik';
 import TextField from '../../../../../components/TextField';
@@ -21,7 +21,7 @@ export interface SecurityCoverageResultFormData {
   createdBy?: FieldOption;
   objectMarking: FieldOption[];
   objectLabel: FieldOption[];
-  coverageInformation: CoverageInformation[];
+  coverageInformation: CoverageInformationForm[];
   externalUri: string;
   validFrom: Date | null;
   validTo: Date | null;
@@ -72,7 +72,9 @@ const SecurityCoverageResultFormDetails = ({
     objectMarking: [],
     validFrom: null,
     validTo: null,
-    coverageInformation: [],
+    coverageInformation: [
+      { coverage_name: null, coverage_score: null },
+    ],
     externalUri: '',
   };
 

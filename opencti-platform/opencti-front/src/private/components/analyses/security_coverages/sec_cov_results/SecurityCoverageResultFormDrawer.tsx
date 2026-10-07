@@ -15,6 +15,7 @@ import useApiMutation from '../../../../../utils/hooks/useApiMutation';
 import { UseEntityToggleType } from '../../../../../utils/hooks/useEntityToggle';
 import { StixCoreRelationshipCreationFormInput } from '../../../common/stix_core_relationships/StixCoreRelationshipCreation';
 import { formatDate } from '../../../../../utils/Time';
+import { CoverageInformation } from '../SecurityCoverage-types';
 
 const fragment = graphql`
   fragment SecurityCoverageResultFormDrawerFragment on SecurityCoverage {
@@ -96,10 +97,14 @@ const SecurityCoverageResultFormDrawer = ({
       externalReferences: formRelsData.externalReferences.map((k) => k.value),
     } : undefined;
 
-    const related_entities = entities || relationshipInput ? {
+    const related_entities = entities ? {
       ...(entities ?? {}),
       relationships_config: relationshipInput,
     } : undefined;
+
+    const coverage_information = details.coverageInformation.flatMap((cov) => {
+      return cov.coverage_name && cov.coverage_score ? cov : [];
+    }) as CoverageInformation[];
 
     commitCreation({
       variables: {
@@ -110,7 +115,7 @@ const SecurityCoverageResultFormDrawer = ({
           objectMarking: details.objectMarking.map((v) => v.value),
           objectLabel: details.objectLabel.map((v) => v.value),
           confidence: parseInt(String(details.confidence), 10),
-          coverage_information: details.coverageInformation,
+          coverage_information,
           external_uri: details.externalUri,
           coverage_valid_from: details.validFrom,
           coverage_valid_to: details.validTo,
