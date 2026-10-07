@@ -8,7 +8,8 @@ import { upsertHuntSightings } from '../../../../src/modules/hunt/hunt-sightings
 import { updateHuntRunInformation } from '../../../../src/modules/hunt/hunt-stats';
 import { huntLogicFingerprint } from '../../../../src/modules/hunt/hunt-logic';
 import { huntHitKey } from '../../../../src/modules/hunt/hunt-utils';
-import { createHuntRuns, isAutoEscalatedHuntRun, reportHuntRun, setHuntRunVerdict } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
+import { findByIds } from '../../../../src/modules/hunt/hunt-loaders';
+import { addHuntRunEvidence, createHuntRuns, isAutoEscalatedHuntRun, reportHuntRun, setHuntRunVerdict } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
 import type { BasicStoreEntityHunt } from '../../../../src/modules/hunt/hunt-types';
 import type { BasicStoreEntityHuntRun } from '../../../../src/modules/hunt/huntRun/huntRun-types';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
@@ -54,6 +55,11 @@ vi.mock('../../../../src/modules/hunt/huntHitRecord/huntHitRecord-domain', async
   ...await importOriginal<typeof import('../../../../src/modules/hunt/huntHitRecord/huntHitRecord-domain')>(),
   recordHuntHits: vi.fn(),
 }));
+
+vi.mock('../../../../src/modules/hunt/hunt-loaders', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../../../../src/modules/hunt/hunt-loaders')>();
+  return { ...original, findByIds: vi.fn(original.findByIds) };
+});
 
 vi.mock('../../../../src/modules/hunt/hunt-sightings', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../src/modules/hunt/hunt-sightings')>(),
@@ -258,6 +264,16 @@ describe('Hits counted once across the runs of a hunt', () => {
     await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'completed', hits_count: 280, hit_keys: KEYS } as never);
     expect(finalState()).toMatchObject({ hits_count: 280, hits_new_count: 0, hits_recurring_count: 280, hits_identified: true });
     expect(createHuntIncidentWorkspace).not.toHaveBeenCalled();
+  });
+
+  it('should record the hits of late evidence when it was observed, even before the last observation of the run', async () => {
+    loading({ ...autonomous, last_evidence_at: '2026-10-07T10:00:00.000Z' } as BasicStoreEntityHuntRun);
+    vi.mocked(findByIds).mockResolvedValueOnce([{ internal_id: 'result-1', standard_id: 'indicator--result-1', entity_type: 'Indicator' }] as never);
+    vi.mocked(recordHuntHits).mockResolvedValue({ newCount: 2, recurringCount: 0 });
+    await addHuntRunEvidence(testContext, ADMIN_USER, 'run-1', { result_ids: ['indicator--result-1'], hits_count: 2, hit_keys: KEYS.slice(0, 2), observed_at: '2026-10-07T08:00:00.000Z' } as never);
+    expect(recordHuntHits).toHaveBeenCalledWith(testContext, expect.objectContaining({ runId: 'run-1', keys: KEYS.slice(0, 2), seenAt: '2026-10-07T08:00:00.000Z' }));
+    // The run keeps its most recent observation
+    expect(finalState()).toMatchObject({ last_evidence_at: '2026-10-07T10:00:00.000Z', hits_new_count: 2 });
   });
 
   it('should count every hit as new, and say so, when the connector identifies none or the known hits cannot be read', async () => {

@@ -1449,7 +1449,8 @@ export const addHuntRunEvidence = async (context: AuthContext, user: AuthUser, r
           securityPlatformId: current.security_platform_id,
           runId: current.internal_id,
           keys: evidenceKeys,
-          seenAt: lastEvidenceAt.toISOString(),
+          // The hits of this evidence were seen when it was observed, an earlier observation than the last one included
+          seenAt: observedAt.toISOString(),
           keepKnown: !await isHuntRunRemembered(context, current),
         });
         const { newHits, recurringHits } = splitHitsByKeys(addedHits, matched.newCount, matched.recurringCount);
