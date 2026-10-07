@@ -58,6 +58,18 @@ describe('Source intelligence one-click deployment settings', () => {
     ]));
   });
 
+  it('should store an integer setting sent in decimal notation as sent, up to the largest integer the dialog accepts', () => {
+    const contract = {
+      slug: 'misp',
+      title: 'MISP',
+      config_schema: schema({ CONNECTOR_NAME: { type: 'string' }, MISP_INTERVAL: { type: 'integer' } }, ['CONNECTOR_NAME', 'MISP_INTERVAL']),
+    };
+    [String(Number.MAX_SAFE_INTEGER), String(Number.MIN_SAFE_INTEGER), '1000'].forEach((value) => {
+      const configuration = deploymentConfiguration([{ key: 'MISP_INTERVAL', value }], 'MISP');
+      expect(computeConnectorTargetContract(configuration, contract, 'public-key')).toEqual(expect.arrayContaining([{ key: 'MISP_INTERVAL', value }]));
+    });
+  });
+
   it('should keep the name of the deployment over a name given with the settings', () => {
     expect(deploymentConfiguration([{ key: 'CONNECTOR_NAME', value: 'Other' }, { key: 'MISP_KEY', value: 'secret' }], 'MISP')).toEqual([
       { key: 'MISP_KEY', value: 'secret' },
