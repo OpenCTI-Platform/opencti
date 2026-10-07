@@ -1,5 +1,6 @@
 import React, { FC, useState } from 'react';
 import { graphql, PreloadedQuery, useMutation, usePreloadedQuery } from 'react-relay';
+import { ConnectionHandler } from 'relay-runtime';
 import { createSearchParams, useNavigate } from 'react-router';
 import { FormikHelpers } from 'formik/dist/types';
 import { FileManagerExportMutation } from '@components/common/files/__generated__/FileManagerExportMutation.graphql';
@@ -446,15 +447,25 @@ const StixCoreObjectFileExportComponent = ({
     const { setSubmitting, setErrors, resetForm } = helpers;
     const contentMaxMarkings = values.contentMaxMarkings.map(({ value }) => value);
     const fileMarkings = values.fileMarkings.map(({ value }) => value);
+    const input = {
+      format: values.format,
+      exportType: values.type,
+      contentMaxMarkings,
+      fileMarkings,
+    };
     commitExport({
-      variables: {
-        id: scoId,
-        input: {
-          format: values.format,
-          exportType: values.type,
-          contentMaxMarkings,
-          fileMarkings,
-        },
+      variables: { id: scoId, input },
+      updater: (store) => {
+        // Insert the ongoing exports in the files list, so they are displayed in progress right away
+        const entity = store.get(scoId);
+        const conn = entity ? ConnectionHandler.getConnection(entity, 'Pagination_exportFiles') : null;
+        const payloads = store.getRootField('stixCoreObjectEdit')?.getLinkedRecords('exportAsk', { input }) ?? [];
+        if (conn) {
+          payloads.forEach((payload) => {
+            const newEdge = ConnectionHandler.createEdge(store, conn, payload, 'FileEdge');
+            ConnectionHandler.insertEdgeBefore(conn, newEdge);
+          });
+        }
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
