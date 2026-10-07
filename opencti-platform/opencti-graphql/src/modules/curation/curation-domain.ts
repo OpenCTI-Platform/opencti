@@ -178,9 +178,13 @@ const withProposalLock = withProposalTransitionLock;
 
 // A decision taken on the proposal as it was read: refused when a detector or a decision changed it since. Once its
 // application started, detections leave a proposal as it is: the start itself is then the only change, never refused.
+const isChangedSince = (proposal: BasicStoreEntityCurationProposal, expectedUpdatedAt?: string | Date | null) => {
+  if (!expectedUpdatedAt || proposal.application_started_at) return false;
+  return new Date(proposal.updated_at).getTime() !== new Date(expectedUpdatedAt).getTime();
+};
+
 const checkProposalRevision = (proposal: BasicStoreEntityCurationProposal, expectedUpdatedAt?: string | Date | null) => {
-  if (!expectedUpdatedAt || proposal.application_started_at) return;
-  if (new Date(proposal.updated_at).getTime() !== new Date(expectedUpdatedAt).getTime()) {
+  if (isChangedSince(proposal, expectedUpdatedAt)) {
     throw FunctionalError('This curation proposal changed since it was read: read it again before deciding on it', {
       id: proposal.internal_id,
       updated_at: proposal.updated_at,
@@ -207,6 +211,8 @@ interface ApplyDecisionInput {
   policyId?: string | null;
   adjudication?: CurationAdjudication | null;
   expectedUpdatedAt?: string | Date | null;
+  /** A policy skips a proposal changed since it found it eligible, where an acceptance is refused. */
+  skipWhenChanged?: boolean;
 }
 
 interface ProposalApplication extends ApplyResult {
@@ -295,6 +301,10 @@ const applyAndRecord = async (
   input: ApplyDecisionInput,
 ) => withProposalLock(loadedProposal.internal_id, async () => {
   const proposal = await loadOpenProposal(context, user, loadedProposal.internal_id);
+  if (input.skipWhenChanged && isChangedSince(proposal, input.expectedUpdatedAt)) {
+    logApp.info('[CURATION] Proposal changed since it was found eligible, auto-apply skipped', { proposal_id: proposal.internal_id, policy_id: input.policyId });
+    return proposal;
+  }
   checkProposalRevision(proposal, input.expectedUpdatedAt);
   if (!canUserApplyProposal(user, proposal, input.decision)) {
     throw ForbiddenAccess('You are not allowed to apply this curation proposal');
@@ -593,11 +603,14 @@ export const applyProposalFromTask = async (
   }
   const adjudication = proposal.curation_adjudication?.verified === true ? proposal.curation_adjudication : null;
   const decision = adjudication?.decision === DECISION_ALIAS ? DECISION_ALIAS : null;
+  // Applied only as checked: a proposal a detection refreshed meanwhile is left to the next policy run.
   return applyAndRecord(context, user, proposal, settings, {
     status: PROPOSAL_STATUS_AUTO_APPLIED,
     rationale: `Applied by curation policy ${policy.name}`,
     policyId: policy.internal_id,
     decision,
+    expectedUpdatedAt: proposal.updated_at,
+    skipWhenChanged: true,
   });
 };
 

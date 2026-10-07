@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { acceptProposal, decideProposal } from '../../../../src/modules/curation/curation-domain';
+import { acceptProposal, applyProposalFromTask, decideProposal } from '../../../../src/modules/curation/curation-domain';
 import { internalFindByIds, storeLoadById } from '../../../../src/database/middleware-loader';
 import { executeProposalAction } from '../../../../src/modules/curation/curation-apply';
 import { currentMergeConfidence } from '../../../../src/modules/curation/curation-scan';
@@ -26,6 +26,17 @@ vi.mock('../../../../src/listener/UserActionListener', () => ({ publishUserActio
 vi.mock('../../../../src/manager/telemetryManager', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/manager/telemetryManager')>()),
   addCurationProposalAcceptedCount: vi.fn(),
+  addCurationProposalAutoAppliedCount: vi.fn(),
+}));
+vi.mock('../../../../src/enterprise-edition/ee', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/enterprise-edition/ee')>()),
+  checkEnterpriseEdition: vi.fn(async () => undefined),
+}));
+vi.mock('../../../../src/modules/curation/curation-policies', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../../src/modules/curation/curation-policies')>()),
+  findPolicyById: vi.fn(async () => ({ internal_id: 'policy-id', name: 'Exact duplicates', policy_enabled: true, auto_apply_threshold: 0.9 })),
+  loadPolicyFacts: vi.fn(async () => ({ factsFor: () => ({}), hasOpenContradiction: () => false })),
+  evaluatePolicyEligibility: vi.fn(() => null),
 }));
 vi.mock('../../../../src/modules/curation/curation-apply', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../../src/modules/curation/curation-apply')>()),
@@ -186,5 +197,27 @@ describe('curation start of a proposal application', () => {
     await acceptProposal(context, user, 'proposal-id');
     expect(redisCurationSetApplicationResult).toHaveBeenCalledTimes(1);
     expect(startWrites()).toHaveLength(0);
+  });
+});
+
+describe('curation policy apply of a proposal', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(currentMergeConfidence).mockResolvedValue(0.95);
+  });
+
+  it('applies the proposal it found eligible when nothing changed it since', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue(mergeProposal() as never);
+    await applyProposalFromTask(context, user, 'proposal-id', 'policy-id');
+    expect(executeProposalAction).toHaveBeenCalledTimes(1);
+    expect(patchAttribute).toHaveBeenCalledWith(context, expect.anything(), 'proposal-id', expect.any(String), expect.objectContaining({ policy_id: 'policy-id' }));
+  });
+
+  it('skips a proposal a detection refreshed between the eligibility check and the application', async () => {
+    const refreshed = mergeProposal({ updated_at: AFTER, confidence_score: 0.6 });
+    vi.mocked(storeLoadById).mockResolvedValueOnce(mergeProposal() as never).mockResolvedValue(refreshed as never);
+    await expect(applyProposalFromTask(context, user, 'proposal-id', 'policy-id')).resolves.toEqual(refreshed);
+    expect(executeProposalAction).not.toHaveBeenCalled();
+    expect(patchAttribute).not.toHaveBeenCalled();
   });
 });
