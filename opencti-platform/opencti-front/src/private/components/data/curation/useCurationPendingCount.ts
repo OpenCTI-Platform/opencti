@@ -18,11 +18,11 @@ const OPEN_PROPOSALS = {
 } as const;
 
 /** The proposals waiting for a decision: the badge of the Inbox tab and its share of the Curation menu badge. */
-const useCurationPendingCount = () => {
+const useCurationPendingCount = (retry = 0) => {
   const { curationProposals } = useLazyLoadQuery<useCurationPendingCountQuery>(
     curationPendingCountQuery,
     { filters: OPEN_PROPOSALS },
-    { fetchPolicy: 'store-and-network' },
+    { fetchPolicy: 'store-and-network', fetchKey: retry },
   );
   return curationProposals?.pageInfo.globalCount ?? null;
 };

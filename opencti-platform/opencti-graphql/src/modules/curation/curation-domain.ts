@@ -287,15 +287,22 @@ const applyAndRecord = async (
   const unrecorded = await findUnrecordedApplication(context, proposal);
   let application = unrecorded.complete ? unrecorded.application : null;
   if (!application) {
-    await patchAttribute(context, SYSTEM_USER, proposal.internal_id, ENTITY_TYPE_CURATION_PROPOSAL, { application_started_at: now() });
     const recovered = unrecorded.application;
     const targetId = input.targetId ?? recovered?.targetId ?? null;
+    let started = Boolean(proposal.application_started_at);
     const result = await executeProposalAction(context, user, proposal, settings, {
       targetId,
       payload: input.payload ?? null,
       decision: input.decision ?? null,
       // Kept before the graph changes, so an attempt that stops after the change can still record it and revert it.
-      onBeforeChange: (plan) => redisCurationSetApplicationResult(proposal.internal_id, { ...mergeApplications(recovered, { ...plan, targetId }), planned: true }),
+      // The start is marked only then: an acceptance the action refuses before changing anything leaves the proposal as it was read.
+      onBeforeChange: async (plan) => {
+        await redisCurationSetApplicationResult(proposal.internal_id, { ...mergeApplications(recovered, { ...plan, targetId }), planned: true });
+        if (!started) {
+          await patchAttribute(context, SYSTEM_USER, proposal.internal_id, ENTITY_TYPE_CURATION_PROPOSAL, { application_started_at: now() });
+          started = true;
+        }
+      },
     });
     application = mergeApplications(recovered, { ...result, targetId });
   }

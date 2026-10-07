@@ -1,8 +1,8 @@
-import { screen, within } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import React from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import testRender from '../../../../utils/tests/test-render';
-import HubCountBadge, { HubTotalBadge } from './HubCountBadge';
+import HubCountBadge, { COUNT_RETRY_DELAY_MS, HubTotalBadge } from './HubCountBadge';
 
 const failing = () => {
   throw new Error('count unavailable');
@@ -12,9 +12,38 @@ const pending = () => {
   throw new Promise(() => {});
 };
 
+// A count whose first read fails: read again, with the next retry, it answers.
+const failingOnce = (count: number) => (retry: number) => {
+  if (retry === 0) throw new Error('count unavailable');
+  return count;
+};
+
 describe('Hub count badges', () => {
   afterEach(() => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
+  });
+
+  it('reads a count that failed again a while later, and shows it once it answers', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.useFakeTimers();
+    testRender(<span data-testid="row">Inbox<HubCountBadge useCount={failingOnce(7)} /></span>);
+    expect(screen.getByTestId('row').textContent).toEqual('Inbox');
+    await act(async () => {
+      vi.advanceTimersByTime(COUNT_RETRY_DELAY_MS);
+    });
+    expect(within(screen.getByTestId('row')).getByText('7')).toBeInTheDocument();
+  });
+
+  it('adds a count that failed to the hub total once it answers', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.useFakeTimers();
+    testRender(<span data-testid="total"><HubTotalBadge counts={[{ id: 'inbox', useCount: () => 2 }, { id: 'merges', useCount: failingOnce(3) }]} /></span>);
+    expect(within(screen.getByTestId('total')).getByText('2')).toBeInTheDocument();
+    await act(async () => {
+      vi.advanceTimersByTime(COUNT_RETRY_DELAY_MS);
+    });
+    expect(within(screen.getByTestId('total')).getByText('5')).toBeInTheDocument();
   });
 
   it('shows a positive count and nothing for zero or no count', () => {

@@ -191,6 +191,8 @@ const applyMerge = async (context: AuthContext, user: AuthUser, proposal: BasicS
   if (sourceIds.length === 0) {
     throw FunctionalError('Nothing left to merge: the other subjects do not exist anymore or are not accessible', { proposal_id: proposal.internal_id });
   }
+  // The merge record written when the merge starts says what the merge changed.
+  if (opts.onBeforeChange) await opts.onBeforeChange({ appliedPatch: null, mergeRecordId: null });
   await mergeEntities(context, user, targetId, sourceIds, { mergeRecordMetadata: { proposal_id: proposal.internal_id } });
   const record = await findLatestMergeRecordForProposal(context, proposal.internal_id);
   return { appliedPatch: null, mergeRecordId: record?.internal_id ?? null };
@@ -485,6 +487,7 @@ const applyPreserveProcedure = async (
   user: AuthUser,
   proposal: BasicStoreEntityCurationProposal,
   settings: CurationSettings,
+  opts: ApplyOptions,
 ): Promise<ApplyResult> => {
   const payload = parsePayload(proposal);
   const relationship = await loadSubject(context, user, payload.relationship_id ?? proposal.target_id) as StoreRelation;
@@ -508,6 +511,8 @@ const applyPreserveProcedure = async (
     markingIds: ((relationship as Record<string, any>).objectMarking ?? []).map((marking: BasicStoreBase) => marking.internal_id),
     organizationIds,
   }, previous.text, author?.internal_id ?? null);
+  // The note has a stable identifier: an attempt run again finds it instead of creating another one.
+  if (opts.onBeforeChange) await opts.onBeforeChange({ appliedPatch: null, mergeRecordId: null });
   const note = await createEntity(context, user, { ...noteInput, stix_id: procedureNoteStixId(proposal.internal_id) }, ENTITY_TYPE_CONTAINER_NOTE);
   return { appliedPatch: { operations: [], created_ids: [note.internal_id ?? note.id], applied_at: now() }, mergeRecordId: null };
 };
@@ -590,7 +595,7 @@ export const executeProposalAction = async (
     case ACTION_REVOKE:
       return applyRevoke(context, user, proposal, opts);
     case ACTION_PRESERVE_PROCEDURE:
-      return applyPreserveProcedure(context, user, proposal, settings);
+      return applyPreserveProcedure(context, user, proposal, settings, opts);
     case ACTION_SET_FIELD:
       return applySetField(context, user, proposal, opts);
     case ACTION_ACKNOWLEDGE:

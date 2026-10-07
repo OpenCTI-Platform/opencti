@@ -3,6 +3,8 @@ import { acceptProposal, decideProposal } from '../../../../src/modules/curation
 import { internalFindByIds, storeLoadById } from '../../../../src/database/middleware-loader';
 import { executeProposalAction } from '../../../../src/modules/curation/curation-apply';
 import { currentMergeConfidence } from '../../../../src/modules/curation/curation-scan';
+import { patchAttribute } from '../../../../src/database/middleware';
+import { redisCurationSetApplicationResult } from '../../../../src/database/redis';
 import type { AuthContext, AuthUser } from '../../../../src/types/user';
 
 vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
@@ -133,5 +135,44 @@ describe('curation merge of a finding whose subjects changed', () => {
     await acceptProposal(context, user, 'proposal-id');
     expect(currentMergeConfidence).not.toHaveBeenCalled();
     expect(executeProposalAction).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('curation start of a proposal application', () => {
+  const startWrites = () => vi.mocked(patchAttribute).mock.calls.filter(([, , , , patch]) => 'application_started_at' in (patch as Record<string, unknown>));
+  const planThenApply = async (...args: Parameters<typeof executeProposalAction>) => {
+    await args[4]?.onBeforeChange?.({ appliedPatch: null, mergeRecordId: null });
+    return { appliedPatch: null, mergeRecordId: 'record-id' };
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(internalFindByIds).mockResolvedValue(subjectsUpdated(BEFORE) as never);
+  });
+
+  it('leaves a proposal whose action refused to apply as it was read, not marked as being applied', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue(mergeProposal() as never);
+    vi.mocked(executeProposalAction).mockRejectedValueOnce(new Error('Nothing left to merge'));
+    await expect(acceptProposal(context, user, 'proposal-id')).rejects.toThrow('Nothing left to merge');
+    expect(patchAttribute).not.toHaveBeenCalled();
+    expect(redisCurationSetApplicationResult).not.toHaveBeenCalled();
+  });
+
+  it('marks the start once the action is about to change the graph, after its planned change is kept', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue(mergeProposal() as never);
+    vi.mocked(executeProposalAction).mockImplementationOnce(planThenApply);
+    await acceptProposal(context, user, 'proposal-id');
+    expect(startWrites()).toHaveLength(1);
+    const startCall = vi.mocked(patchAttribute).mock.calls.indexOf(startWrites()[0]);
+    expect(vi.mocked(redisCurationSetApplicationResult).mock.invocationCallOrder[0])
+      .toBeLessThan(vi.mocked(patchAttribute).mock.invocationCallOrder[startCall]);
+  });
+
+  it('does not mark again the start of an application run again', async () => {
+    vi.mocked(storeLoadById).mockResolvedValue(mergeProposal({ application_started_at: AFTER }) as never);
+    vi.mocked(executeProposalAction).mockImplementationOnce(planThenApply);
+    await acceptProposal(context, user, 'proposal-id');
+    expect(redisCurationSetApplicationResult).toHaveBeenCalledTimes(1);
+    expect(startWrites()).toHaveLength(0);
   });
 });

@@ -2,23 +2,41 @@ import React, { Component, type ReactNode, Suspense, useCallback, useLayoutEffec
 import { Badge } from '@filigran/design-system';
 import { useFormatter } from '../../../../components/i18n';
 
-/** Counts the pending work of a hub entry (proposals to review, runs to triage); never a total. */
-export type HubBadgeCount = () => number | null | undefined;
+/**
+ * Counts the pending work of a hub entry (proposals to review, runs to triage); never a total. *retry* grows each time
+ * the count is read again after a failure: a query passes it as its fetch key, so that it is fetched again.
+ */
+export type HubBadgeCount = (retry: number) => number | null | undefined;
+
+export const COUNT_RETRY_DELAY_MS = 60000;
 
 interface SilentBoundaryState {
   failed: boolean;
+  retry: number;
 }
 
-// A count that cannot be read hides its badge: the menu and the tab bar never break for it.
-class SilentBoundary extends Component<{ children: ReactNode }, SilentBoundaryState> {
-  state: SilentBoundaryState = { failed: false };
+// A count that cannot be read hides its badge until it is read again a while later: the menu and the tab bar never
+// break for it, and a transient failure does not hide it until the next page load.
+class SilentBoundary extends Component<{ children: (retry: number) => ReactNode }, SilentBoundaryState> {
+  state: SilentBoundaryState = { failed: false, retry: 0 };
 
-  static getDerivedStateFromError(): SilentBoundaryState {
+  private retryTimer?: ReturnType<typeof setTimeout>;
+
+  static getDerivedStateFromError(): Partial<SilentBoundaryState> {
     return { failed: true };
   }
 
+  componentDidCatch() {
+    clearTimeout(this.retryTimer);
+    this.retryTimer = setTimeout(() => this.setState(({ retry }) => ({ failed: false, retry: retry + 1 })), COUNT_RETRY_DELAY_MS);
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this.retryTimer);
+  }
+
   render() {
-    return this.state.failed ? null : this.props.children;
+    return this.state.failed ? null : this.props.children(this.state.retry);
   }
 }
 
@@ -40,17 +58,19 @@ const PendingBadge = ({ count }: { count: number | null | undefined }) => {
   );
 };
 
-const Count = ({ useCount }: HubCountBadgeProps) => {
-  const count = useCount();
+const Count = ({ useCount, retry }: HubCountBadgeProps & { retry: number }) => {
+  const count = useCount(retry);
   return <PendingBadge count={count} />;
 };
 
 /** The pending count of a hub entry, read without holding up the menu or the tab bar. */
 const HubCountBadge = ({ useCount }: HubCountBadgeProps) => (
   <SilentBoundary>
-    <Suspense fallback={null}>
-      <Count useCount={useCount} />
-    </Suspense>
+    {(retry) => (
+      <Suspense fallback={null}>
+        <Count useCount={useCount} retry={retry} />
+      </Suspense>
+    )}
   </SilentBoundary>
 );
 
@@ -60,10 +80,11 @@ export interface HubCountSource {
   useCount: HubBadgeCount;
 }
 
-const CountReporter = ({ id, useCount, onCount }: HubCountSource & {
+const CountReporter = ({ id, useCount, retry, onCount }: HubCountSource & {
+  retry: number;
   onCount: (id: string, count: number | null) => void;
 }) => {
-  const count = useCount() ?? 0;
+  const count = useCount(retry) ?? 0;
   // A layout effect: its cleanup also runs when Suspense hides a count that suspends again, so an
   // entry that unmounts, fails or suspends takes its contribution out of the total.
   useLayoutEffect(() => {
@@ -92,9 +113,11 @@ export const HubTotalBadge = ({ counts }: { counts: HubCountSource[] }) => {
     <>
       {counts.map(({ id, useCount }) => (
         <SilentBoundary key={id}>
-          <Suspense fallback={null}>
-            <CountReporter id={id} useCount={useCount} onCount={onCount} />
-          </Suspense>
+          {(retry) => (
+            <Suspense fallback={null}>
+              <CountReporter id={id} useCount={useCount} retry={retry} onCount={onCount} />
+            </Suspense>
+          )}
         </SilentBoundary>
       ))}
       <PendingBadge count={total} />

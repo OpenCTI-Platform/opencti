@@ -144,14 +144,17 @@ export const computeHealthMetrics = async (context: AuthContext, settings: Curat
   // The staleness detector always examines Indicators: the stale share is measured over the curated types and Indicators.
   const stalenessTypes = R.uniq([...types, ENTITY_TYPE_INDICATOR]);
   const stalenessScopeCount = stalenessTypes.length === types.length ? curatedCount : await countKnowledge(stalenessTypes);
-  // Open proposals outlive their subjects: only the subjects still in the knowledge count. The proposals are read page
-  // by page, each page checked against the knowledge as it comes, so only the counted subjects are kept in memory.
+  // Open proposals outlive their subjects and the settings: only the subjects still in the knowledge, of a type the rate
+  // is measured over (when given), count. The proposals are read page by page, each page checked against the knowledge
+  // as it comes, so only the counted subjects are kept in memory.
   const forEachOpenProposalPage = async (
     kind: string,
     extraFilters: Array<{ key: string[]; values: string[]; operator: FilterOperator }>,
     idsOf: (proposal: BasicStoreEntityCurationProposal) => string[],
+    scopeTypes: string[] | null,
     onPage: (proposals: BasicStoreEntityCurationProposal[], existingIds: Set<string>) => void,
   ) => {
+    const inScope = (subject: BasicStoreEntity) => !scopeTypes || scopeTypes.includes(subject.entity_type);
     await fullEntitiesList<BasicStoreEntityCurationProposal>(context, SYSTEM_USER, [ENTITY_TYPE_CURATION_PROPOSAL], {
       filters: {
         mode: FilterMode.And,
@@ -169,9 +172,9 @@ export const computeHealthMetrics = async (context: AuthContext, settings: Curat
         const existing = await elFindByIds<BasicStoreEntity>(context, SYSTEM_USER, R.uniq(proposals.flatMap(idsOf)), {
           indices: READ_DATA_INDICES_WITHOUT_INTERNAL_WITHOUT_INFERRED,
           baseData: true,
-          baseFields: ['internal_id'],
+          baseFields: ['internal_id', 'entity_type'],
         }) as BasicStoreEntity[];
-        onPage(proposals, new Set(existing.map((subject) => subject.internal_id)));
+        onPage(proposals, new Set(existing.filter(inScope).map((subject) => subject.internal_id)));
         return true;
       },
     });
@@ -179,20 +182,21 @@ export const computeHealthMetrics = async (context: AuthContext, settings: Curat
   const subjectsOf = (proposal: BasicStoreEntityCurationProposal) => proposal.subject_ids;
   const duplicates = createDuplicateEstimator();
   const mergeThreshold = [{ key: ['confidence_score'], values: [String(settings.ambiguous_band_min)], operator: FilterOperator.Gte }];
-  await forEachOpenProposalPage(PROPOSAL_KIND_MERGE, mergeThreshold, subjectsOf, (proposals, existingIds) => {
+  await forEachOpenProposalPage(PROPOSAL_KIND_MERGE, mergeThreshold, subjectsOf, types, (proposals, existingIds) => {
     proposals.forEach((proposal) => duplicates.add(proposal.subject_ids.filter((id) => existingIds.has(id))));
   });
   const duplicateEstimate = duplicates.estimate();
   // Stale entities, not stale proposals: an entity found stale again while its older proposal is still open counts once.
   const staleSubjectIds = new Set<string>();
-  await forEachOpenProposalPage(PROPOSAL_KIND_STALE, [], subjectsOf, (proposals, existingIds) => {
+  await forEachOpenProposalPage(PROPOSAL_KIND_STALE, [], subjectsOf, stalenessTypes, (proposals, existingIds) => {
     proposals.flatMap(subjectsOf).filter((id) => existingIds.has(id)).forEach((id) => staleSubjectIds.add(id));
   });
   const staleCount = staleSubjectIds.size;
   // A contradiction is about its target: the entity, indicator or relationship whose dates or attributions disagree.
+  // The contradiction detectors do not depend on the curated types: a change of the selection takes none out of scope.
   const contradictionTargetOf = (proposal: BasicStoreEntityCurationProposal) => [proposal.target_id ?? proposal.subject_ids[0]];
   let contradictionCount = 0;
-  await forEachOpenProposalPage(PROPOSAL_KIND_CONTRADICTION, [], contradictionTargetOf, (proposals, existingIds) => {
+  await forEachOpenProposalPage(PROPOSAL_KIND_CONTRADICTION, [], contradictionTargetOf, null, (proposals, existingIds) => {
     contradictionCount += proposals.filter((proposal) => existingIds.has(contradictionTargetOf(proposal)[0])).length;
   });
   const [openCount, autoApplied, accepted, rejected, reverted] = await Promise.all([
