@@ -604,7 +604,7 @@ export const fetchTelemetryData = async (manager: TelemetryMeterManager) => {
     // Revoked techniques are not part of the snapshot
     const defenseLevels = defenseSnapshot.techniques.map((technique) => technique.coverage?.level ?? DEFENSE_LEVEL_NONE);
     manager.setRelationshipsProvidesCount(relationshipsProvidesCount);
-    // Techniques with any defense evidence, not the covered techniques of the matrix (from a deployed detection)
+    // Techniques with any defense evidence, not the covered techniques of the matrix (level 3 and above)
     manager.setDefenseTechniquesWithLevelCount(defenseLevels.filter((level) => level >= DEFENSE_LEVEL_TELEMETRY).length);
     manager.setDefenseValidatedTechniquesCount(defenseLevels.filter((level) => level >= DEFENSE_LEVEL_VALIDATED).length);
     manager.setDefenseOpenGapsCount(defenseOpenGapsCount);
