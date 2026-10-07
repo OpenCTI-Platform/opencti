@@ -8,6 +8,7 @@ import {
   getWorkflowDefinition,
   getWorkflowInstance,
   getWorkflowPublishedVersionId,
+  getWorkflowTransitionEvents,
   hasPublishedWorkflowDefinition,
   publishWorkflowDefinition,
   restorePublishedWorkflowDefinition,
@@ -25,6 +26,9 @@ const workflowResolvers = {
     },
     workflowDefinitionPublished: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
       return hasPublishedWorkflowDefinition(context, context.user!, entityType);
+    },
+    workflowTransitionEvents: (_: any, { entityType }: { entityType: string }, context: AuthContext) => {
+      return getWorkflowTransitionEvents(context, context.user!, entityType);
     },
     workflowInstance: (_: any, { entityId }: { entityId: string }, context: AuthContext) => {
       return getWorkflowInstance(context, context.user!, entityId);
