@@ -44,7 +44,8 @@ describe('Dissemination assurance telemetry counters', () => {
   });
 
   it('should never fail the operation they count when the telemetry write fails, only log it', async () => {
-    vi.mocked(redisSetTelemetryAdd).mockRejectedValue(new Error('Redis unavailable'));
+    const failure = new Error('Redis unavailable');
+    vi.mocked(redisSetTelemetryAdd).mockRejectedValue(failure);
     const logAppWarnSpy = vi.spyOn(logApp, 'warn');
     expect(() => {
       addIndicatorDeploymentReportCount(3);
@@ -53,5 +54,6 @@ describe('Dissemination assurance telemetry counters', () => {
       addIocValidationPlatformResultCount(4);
     }).not.toThrow();
     await vi.waitFor(() => expect(logAppWarnSpy).toHaveBeenCalledTimes(4));
+    expect(logAppWarnSpy.mock.calls.map(([, meta]) => meta)).toEqual(Array(4).fill({ cause: failure }));
   });
 });
