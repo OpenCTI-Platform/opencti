@@ -117,7 +117,7 @@ import { objectMarkingFieldAllowedMarkingsQuery } from '../common/form/ObjectMar
 import { objectParticipantFieldMembersSearchQuery } from '../common/form/ObjectParticipantField';
 import { vocabularyQuery } from '../common/form/OpenVocabField';
 import { statusFieldStatusesSearchQuery } from '../common/form/StatusField';
-import { isWorkflowUiEnabledForType } from '../common/workflow/workflowFeatureFlag';
+import { ENTITIES_WORKFLOW_FEATURE_FLAG } from '../common/workflow/workflowFeatureFlag';
 import { buildWorkflowTransitionAction, WORKFLOW_TRANSITION_FIELD, withWorkflowBypassOptions } from '../common/workflow/workflowMassActions';
 import { identitySearchIdentitiesSearchQuery } from '../common/identities/IdentitySearch';
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
@@ -2395,8 +2395,9 @@ class DataTableToolBar extends Component {
           const typesAreDifferent = elementsTypes.filter((type) => !['Stix-Core-Object', 'Stix-Domain-Object', 'stix-core-relationship', 'Stix-Cyber-Observable'].includes(type)).length > 1;
           const preventMerge = selectedTypes.at(0) === 'Vocabulary'
             && Object.values(selectedElements).some(({ builtIn }) => Boolean(builtIn));
+          // Mass workflow operations are refused by the backend in drafts and without the feature flag
           const workflowEntityType = selectedTypes.length === 1 && !typesWithoutStatus.includes(selectedTypes[0])
-            && isWorkflowUiEnabledForType(selectedTypes[0], (id) => isFeatureEnable(settings, id)) ? selectedTypes[0] : null;
+            && !me.draftContext && isFeatureEnable(settings, ENTITIES_WORKFLOW_FEATURE_FLAG) ? selectedTypes[0] : null;
           // region update
           const typesAreNotUpdatable = notUpdatableTypes.includes(selectedTypes[0])
             || (entityTypeFilterValues.length === 1
