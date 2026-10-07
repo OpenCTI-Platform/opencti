@@ -600,10 +600,14 @@ describe('Threat-informed defense matrix', () => {
     expect(again.data?.defensePlatformProvidesFromLogsources.existing_count).toEqual(1);
     expect(again.data?.defensePlatformProvidesFromLogsources.dataComponents).toEqual([{ id: created.mappedComponent }]);
     await queryAsAdminWithError({ query: PROVIDES_FROM_LOGSOURCES, variables: { id: created.platform, logsources: [] } }, 'Provide between 1 and 200 log sources');
+    // A log source value holds at most 256 characters, as on the rules and the telemetry mappings
+    await queryAsAdminWithError({ query: PROVIDES_FROM_LOGSOURCES, variables: { id: created.platform, logsources: [{ product: 'p'.repeat(257) }] } });
   });
 
   it('should refuse a full computation while no node runs the defense coverage manager', async () => {
     // The defense coverage manager is disabled on the test platform (config/test.json)
+    // A telemetry mapping change requests a full computation: drop the requests of the earlier tests
+    await consumeFullComputationRequest();
     await queryAsAdminWithError({ query: RECOMPUTE }, 'The defense coverage manager is disabled: the defense coverage cannot be recomputed');
     expect(await consumeFullComputationRequest()).toBe(false);
     // A request left from before the manager was disabled is never reported as pending

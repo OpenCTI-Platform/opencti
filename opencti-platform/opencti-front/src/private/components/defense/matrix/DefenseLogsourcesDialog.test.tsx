@@ -26,4 +26,11 @@ describe('Defense log sources dialog', () => {
     expect(screen.getByLabelText('A declaration holds at most 3 log sources: declare them, then add the others.')).toBeTruthy();
     expect((screen.getByTestId('defense-logsource-submit') as HTMLButtonElement).disabled).toBe(false);
   });
+
+  it('holds every log source field to the length the API accepts', () => {
+    const { container } = testRender(<LogsourcesDialog entityId="platform-1" open onClose={vi.fn()} onDone={vi.fn()} />);
+    const fields = Array.from(container.ownerDocument.querySelectorAll('input')).slice(0, 3);
+    expect(fields).toHaveLength(3);
+    fields.forEach((field) => expect(field.getAttribute('maxlength')).toBe('256'));
+  });
 });

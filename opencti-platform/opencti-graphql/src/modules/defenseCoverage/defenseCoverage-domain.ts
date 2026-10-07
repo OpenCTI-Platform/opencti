@@ -97,6 +97,8 @@ const TRACKING_ATTEMPTS = 3;
 const TRACKING_RETRY_DELAY = 500;
 const MAX_PENDING_TRACKINGS_PER_RUN = 100;
 const MAX_LOGSOURCES = 200;
+// Same bound as the log source values of the rules and of the telemetry mappings
+const MAX_LOGSOURCE_VALUE_LENGTH = 256;
 const DEFAULT_RULE_CANDIDATES = 5;
 const IDS_CHUNK_SIZE = 5000;
 
@@ -1232,6 +1234,11 @@ export const addPlatformProvidesFromLogsources = async (
 ): Promise<DefenseProvidesResultView> => {
   if (logsources.length === 0 || logsources.length > MAX_LOGSOURCES) {
     throw FunctionalError(`Provide between 1 and ${MAX_LOGSOURCES} log sources`, { count: logsources.length });
+  }
+  const tooLong = logsources.flatMap((logsource) => [logsource.category, logsource.product, logsource.service])
+    .find((value) => (value?.trim().length ?? 0) > MAX_LOGSOURCE_VALUE_LENGTH);
+  if (tooLong) {
+    throw FunctionalError(`A log source value cannot be longer than ${MAX_LOGSOURCE_VALUE_LENGTH} characters`, { length: tooLong.trim().length });
   }
   const platform = await storeLoadById<BasicStoreEntity>(context, user, platformId, [ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM, ENTITY_TYPE_IDENTITY_SYSTEM]);
   if (!platform) {

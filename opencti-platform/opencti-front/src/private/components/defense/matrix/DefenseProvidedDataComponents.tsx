@@ -16,7 +16,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import useApiMutation from '../../../../utils/hooks/useApiMutation';
 import { notifyPayloadErrors } from './defenseMutation-utils';
-import { MAX_DECLARED_LOGSOURCES } from './defenseMatrix-utils';
+import { MAX_DECLARED_LOGSOURCES, MAX_LOGSOURCE_VALUE_LENGTH } from './defenseMatrix-utils';
 import DefenseDisabledReason from './DefenseDisabledReason';
 import { DefenseProvidedDataComponentsQuery } from './__generated__/DefenseProvidedDataComponentsQuery.graphql';
 import { DefenseProvidedDataComponentsRefetchQuery } from './__generated__/DefenseProvidedDataComponentsRefetchQuery.graphql';
@@ -156,9 +156,9 @@ export const LogsourcesDialog = ({ entityId, open, onClose, onDone }: { entityId
           {t_i18n('Describe the log sources collected by this platform with the Sigma taxonomy. The telemetry mappings turn them into the data components the platform provides.')}
         </Typography>
         <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: 1, alignItems: 'end', marginTop: 2 }}>
-          <Input label={t_i18n('Category')} value={current.category} onChange={(e) => setCurrent({ ...current, category: e.target.value })} placeholder="process_creation" />
-          <Input label={t_i18n('Product')} value={current.product} onChange={(e) => setCurrent({ ...current, product: e.target.value })} placeholder="windows" />
-          <Input label={t_i18n('Service')} value={current.service} onChange={(e) => setCurrent({ ...current, service: e.target.value })} placeholder="sysmon" />
+          <Input label={t_i18n('Category')} value={current.category} maxLength={MAX_LOGSOURCE_VALUE_LENGTH} onChange={(e) => setCurrent({ ...current, category: e.target.value })} placeholder="process_creation" />
+          <Input label={t_i18n('Product')} value={current.product} maxLength={MAX_LOGSOURCE_VALUE_LENGTH} onChange={(e) => setCurrent({ ...current, product: e.target.value })} placeholder="windows" />
+          <Input label={t_i18n('Service')} value={current.service} maxLength={MAX_LOGSOURCE_VALUE_LENGTH} onChange={(e) => setCurrent({ ...current, service: e.target.value })} placeholder="sysmon" />
           <DefenseDisabledReason reason={addReason}>
             <Button variant="secondary" onClick={addCurrent} disabled={!canAdd} data-testid="defense-logsource-add">{t_i18n('Add')}</Button>
           </DefenseDisabledReason>

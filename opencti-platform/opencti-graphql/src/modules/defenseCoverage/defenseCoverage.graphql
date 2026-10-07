@@ -250,9 +250,9 @@ type DefenseValidationResult {
 }
 
 input DefenseLogsourceInput {
-  category: String
-  product: String
-  service: String
+  category: String @constraint(maxLength: 256)
+  product: String @constraint(maxLength: 256)
+  service: String @constraint(maxLength: 256)
 }
 type DefenseProvidesResult {
   "Data components newly declared as provided by the platform"

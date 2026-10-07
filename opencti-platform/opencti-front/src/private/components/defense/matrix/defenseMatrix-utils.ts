@@ -25,6 +25,8 @@ export const MAX_VALIDATION_TECHNIQUES = 200;
 export const MAX_VALIDATION_GAPS = 2000;
 // Log sources per declaration of telemetry accepted by the platform
 export const MAX_DECLARED_LOGSOURCES = 200;
+// Longest value of a log source field, the bound the API applies
+export const MAX_LOGSOURCE_VALUE_LENGTH = 256;
 // Platform of the gap of a technique on all security platforms
 export const DEFENSE_AGGREGATE_PLATFORM = 'all';
 export const DEFENSE_VALIDATION_DOCUMENTATION_URL = 'https://docs.opencti.io/latest/usage/defense-matrix/#validate-in-openaev';
