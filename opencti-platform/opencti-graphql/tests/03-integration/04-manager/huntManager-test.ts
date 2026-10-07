@@ -526,8 +526,8 @@ describe('Hunt manager', () => {
       expect(load.mock.calls[0][1].user_email).toEqual(USER_CONNECTOR.email);
       expect(load.mock.calls[0][2]).toEqual([intrusionSetId]);
       expect(results.map((result) => result.extensions[STIX_EXT_OCTI].id)).toEqual([intrusionSetId]);
-      // A run without a hunt connector gives the playbook nothing
-      await patchAttribute(testContext, ADMIN_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { connector_id: null });
+      // A run without the user its hunt connector ran as gives the playbook nothing
+      await patchAttribute(testContext, ADMIN_USER, run.internal_id, ENTITY_TYPE_HUNT_RUN, { connector_user_id: null });
       expect(await loadHuntRunResultsForPlaybook(testContext, [await loadRun(run.internal_id)], new Set())).toEqual([]);
       expect(load).toHaveBeenCalledTimes(1);
     } finally {
