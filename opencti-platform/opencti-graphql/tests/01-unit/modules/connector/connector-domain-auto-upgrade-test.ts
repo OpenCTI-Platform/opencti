@@ -29,18 +29,11 @@ vi.mock('../../../../src/modules/connector/connector-repository', async (importO
   };
 });
 
-vi.mock('../../../../src/modules/catalog/catalog-repository', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../../src/modules/catalog/catalog-repository')>();
+vi.mock('../../../../src/modules/catalog/catalog-api', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../../src/modules/catalog/catalog-api')>();
   return {
     ...actual,
     findLatestCompatibleCatalogContractBySlug: mockFindLatestCompatibleCatalogContractBySlug,
-  };
-});
-
-vi.mock('../../../../src/modules/catalog/catalog-domain', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../../src/modules/catalog/catalog-domain')>();
-  return {
-    ...actual,
     mapContractEntityFieldsToEmbeddedConnectorManagerContract: mockMapContractEntityFieldsToEmbeddedConnectorManagerContract,
   };
 });
