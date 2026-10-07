@@ -398,7 +398,7 @@ const findRunUnresolvedTechniques = async (context: AuthContext, hunt: BasicStor
   try {
     const unresolved = await findUnresolvedHuntTechniques(context, HUNT_MANAGER_USER, hunt.sigma_rule);
     if (unresolved.length > 0) {
-      logApp.info('[OPENCTI-MODULE] Hunt run tagged techniques not found in the knowledge base', { huntId: hunt.internal_id, attackIds: unresolved });
+      logApp.info('[OPENCTI-MODULE] Hunt run tagged techniques not found in the knowledge base', { huntId: hunt.internal_id, count: unresolved.length });
     }
     return unresolved;
   } catch (error) {
