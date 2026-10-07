@@ -48,7 +48,6 @@ class HuntRun:
             }
             connector_id
             connector_name
-            work_id
             time_window_start
             time_window_end
             translated_query

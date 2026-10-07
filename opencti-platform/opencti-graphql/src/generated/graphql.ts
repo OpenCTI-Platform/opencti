@@ -12073,7 +12073,6 @@ export type HuntRun = BasicObject & InternalObject & {
   verdict_proposal_rationale?: Maybe<Scalars['String']['output']>;
   verdict_rationale?: Maybe<Scalars['String']['output']>;
   verdict_source?: Maybe<HuntVerdictSource>;
-  work_id?: Maybe<Scalars['String']['output']>;
 };
 
 
@@ -48552,7 +48551,6 @@ export type HuntRunResolvers<ContextType = any, ParentType extends ResolversPare
   verdict_proposal_rationale?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   verdict_rationale?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   verdict_source?: Resolver<Maybe<ResolversTypes['HuntVerdictSource']>, ParentType, ContextType>;
-  work_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

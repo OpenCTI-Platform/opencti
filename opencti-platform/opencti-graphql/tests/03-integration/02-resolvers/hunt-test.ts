@@ -69,7 +69,7 @@ const RUN_FIELDS = `
   hunt_run_mode
   connector_id
   security_platform_id
-  work_id
+  dispatched_at
   hits_count
   results_truncated
   translated_query

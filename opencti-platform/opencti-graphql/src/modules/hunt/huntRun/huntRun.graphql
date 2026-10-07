@@ -146,7 +146,6 @@ type HuntRun implements BasicObject & InternalObject {
   securityPlatform: SecurityPlatform
   connector_id: String
   connector_name: String
-  work_id: String
   time_window_start: DateTime
   time_window_end: DateTime
   translated_query: String

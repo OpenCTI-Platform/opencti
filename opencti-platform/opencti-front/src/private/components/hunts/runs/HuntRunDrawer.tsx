@@ -100,7 +100,6 @@ const huntRunDrawerFragment = graphql`
     }
     connector_id
     connector_name
-    work_id
     time_window_start
     time_window_end
     translated_query
@@ -670,7 +669,7 @@ const RunLinks = ({ run }: { run: Run }) => {
     links.push({ key: 'incident', to: PATH_INCIDENT(run.incident_id), label: t_i18n('Open the incident') });
   }
   if (run.connector_id) {
-    links.push({ key: 'work', to: `/dashboard/data/ingestion/connectors/${run.connector_id}`, label: run.work_id ? t_i18n('Open the connector work') : t_i18n('Open the connector') });
+    links.push({ key: 'work', to: `/dashboard/data/ingestion/connectors/${run.connector_id}`, label: run.dispatched_at ? t_i18n('Open the connector work') : t_i18n('Open the connector') });
   }
   if (run.playbook_id) {
     links.push({ key: 'playbook', to: `/dashboard/data/processing/automation/${run.playbook_id}`, label: t_i18n('Open the playbook') });
