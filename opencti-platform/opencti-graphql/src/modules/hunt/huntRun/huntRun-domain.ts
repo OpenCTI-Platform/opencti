@@ -18,7 +18,7 @@ import {
   storeLoadById,
   topEntitiesList,
 } from '../../../database/middleware-loader';
-import { elAggregationCount, elHistogramCount, elHistogramSum, elRawUpdateByQuery } from '../../../database/engine';
+import { elAggregationCount, elCount, elHistogramCount, elHistogramSum, elRawUpdateByQuery } from '../../../database/engine';
 import { fillTimeSeries, READ_INDEX_INTERNAL_OBJECTS } from '../../../database/utils';
 import { notify } from '../../../database/redis';
 import { pushToConnector } from '../../../database/rabbitmq';
@@ -92,7 +92,7 @@ import {
 } from '../hunt-logic';
 import { isReadableByReadersOf, resolveHuntIocSet } from '../hunt-iocs';
 import { countIocHits, hasUnsearchedIoc, linkIocDeployments, mergeHuntIocResults } from './huntRun-iocs';
-import { type HuntRunInformationPatch, updateHuntRunInformation } from '../hunt-stats';
+import { type HuntRunInformationPatch, updateHuntLastRunStatusIfStill, updateHuntRunInformation } from '../hunt-stats';
 import { writeHuntCoverageResult } from '../hunt-coverage';
 import {
   continueHuntIncident,
@@ -1004,17 +1004,50 @@ export const releaseUnpublishedHuntRun = async (context: AuthContext, run: Basic
 };
 
 /**
+ * The hunt of a cancelled run no longer shows its last run queued once no other run of the hunt waits or runs: its last
+ * run status becomes cancelled, unless a later run recorded its own. Its date and hits stay those recorded before.
+ */
+const settleCancelledHuntRunSummary = async (context: AuthContext, run: BasicStoreEntityHuntRun) => {
+  try {
+    const active = await elCount(context, HUNT_MANAGER_USER, READ_INDEX_INTERNAL_OBJECTS, {
+      types: [ENTITY_TYPE_HUNT_RUN],
+      filters: {
+        mode: FilterMode.And,
+        filters: [
+          { key: ['hunt_id'], values: [run.hunt_id] },
+          { key: ['id'], values: [run.internal_id], operator: FilterOperator.NotEq },
+          { key: ['hunt_run_status'], values: HUNT_RUN_ACTIVE_STATUSES },
+        ],
+        filterGroups: [],
+      },
+      noFiltersChecking: true,
+    });
+    if (active === 0) {
+      const before = new Date(run.created_at).toISOString();
+      await updateHuntLastRunStatusIfStill(context, run.hunt_id, { from: HUNT_RUN_STATUS_QUEUED, to: HUNT_RUN_STATUS_CANCELLED, before });
+    }
+  } catch (error) {
+    logApp.warn('[OPENCTI-MODULE] Hunt last run status not updated after a run was cancelled', { cause: error, runId: run.internal_id });
+  }
+};
+
+/**
  * Cancels a run whose hunt or hunt connector was deleted, under its transition lock: a queued or running run ends
  * cancelled, which frees its connector slot, and the automatic retry planned on a terminated run is dropped. A cancelled
  * run gets no verdict, never counts in the statistics and is never retried. Returns the run when it changed.
  */
 export const cancelHuntRun = async (context: AuthContext, runId: string, reason: string): Promise<BasicStoreEntityHuntRun | null> => {
+  let cancelled = false;
   const updated = await withHuntRunTransition(context, runId, async (current) => {
     if (HUNT_RUN_ACTIVE_STATUSES.includes(current.hunt_run_status)) {
+      cancelled = true;
       return patchHuntRun(context, current, { hunt_run_status: HUNT_RUN_STATUS_CANCELLED, completed_at: now(), error_message: reason, next_retry_at: null });
     }
     return current.next_retry_at ? patchHuntRun(context, current, { next_retry_at: null }) : null;
   });
+  if (updated && cancelled && updated.hunt_run_mode === HUNT_RUN_MODE_EXECUTE) {
+    await settleCancelledHuntRunSummary(context, updated);
+  }
   return updated ? notify(BUS_TOPICS[ENTITY_TYPE_HUNT_RUN].EDIT_TOPIC, updated, HUNT_MANAGER_USER) : null;
 };
 

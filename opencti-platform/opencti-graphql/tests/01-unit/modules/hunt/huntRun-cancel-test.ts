@@ -4,8 +4,9 @@ import { cancelOrphanHuntRuns, reconcileOrphanedHuntRuns } from '../../../../src
 import { HUNT_CONFIG } from '../../../../src/modules/hunt/hunt-utils';
 import { cursorToOffset } from '../../../../src/database/utils';
 import { patchAttribute } from '../../../../src/database/middleware';
-import { elAggregationCount, elHistogramCount, elHistogramSum, elRawUpdateByQuery } from '../../../../src/database/engine';
+import { elAggregationCount, elCount, elHistogramCount, elHistogramSum, elRawUpdateByQuery } from '../../../../src/database/engine';
 import { withHuntLock } from '../../../../src/modules/hunt/hunt-lock';
+import { updateHuntLastRunStatusIfStill } from '../../../../src/modules/hunt/hunt-stats';
 import { HUNT_MESSAGES } from '../../../../src/modules/hunt/hunt-messages';
 import { cancelHuntRun, computeHuntStatistics, expireHuntRun, isHuntRunFinalized, isHuntRunHuntDeleted } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
 import type { BasicStoreEntityHuntRun } from '../../../../src/modules/hunt/huntRun/huntRun-types';
@@ -28,9 +29,15 @@ vi.mock('../../../../src/database/middleware', async (importOriginal) => ({
 vi.mock('../../../../src/database/engine', async (importOriginal) => ({
   ...await importOriginal<typeof import('../../../../src/database/engine')>(),
   elAggregationCount: vi.fn(async () => []),
+  elCount: vi.fn(async () => 0),
   elHistogramCount: vi.fn(async () => []),
   elHistogramSum: vi.fn(async () => []),
   elRawUpdateByQuery: vi.fn(async () => ({})),
+}));
+
+vi.mock('../../../../src/modules/hunt/hunt-stats', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../../../src/modules/hunt/hunt-stats')>(),
+  updateHuntLastRunStatusIfStill: vi.fn(),
 }));
 
 vi.mock('../../../../src/database/redis', async (importOriginal) => ({
@@ -65,6 +72,24 @@ describe('Cancellation of the runs of a deleted hunt or hunt connector', () => {
     expect(vi.mocked(withHuntLock).mock.calls.at(-1)?.[0]).toEqual('hunt_run_transition_run-1');
     expect(patched()[0]).toMatchObject({ hunt_run_status: 'cancelled', error_message: HUNT_MESSAGES.runCancelledHuntDeleted, next_retry_at: null });
     expect(run?.hunt_run_status).toEqual('cancelled');
+  });
+
+  it('should show the last run of its hunt cancelled once no other run of the hunt waits or runs, never over a later run', async () => {
+    loading({ ...queued, created_at: '2026-10-05T04:45:00.000Z' });
+    vi.mocked(updateHuntLastRunStatusIfStill).mockClear();
+    vi.mocked(elCount).mockResolvedValueOnce(0);
+    await cancelHuntRun(testContext, 'run-1', HUNT_MESSAGES.runCancelledConnectorDeleted);
+    expect(updateHuntLastRunStatusIfStill).toHaveBeenCalledWith(testContext, 'hunt-1', { from: 'queued', to: 'cancelled', before: '2026-10-05T04:45:00.000Z' });
+    const counted = vi.mocked(elCount).mock.calls.at(-1)?.[3] as { filters: { filters: unknown[] } };
+    expect(counted.filters.filters).toEqual(expect.arrayContaining([
+      { key: ['hunt_id'], values: ['hunt-1'] },
+      { key: ['id'], values: ['run-1'], operator: 'not_eq' },
+    ]));
+    // Another run of the hunt still waits: its own outcome replaces the last run of the hunt
+    vi.mocked(updateHuntLastRunStatusIfStill).mockClear();
+    vi.mocked(elCount).mockResolvedValueOnce(1);
+    await cancelHuntRun(testContext, 'run-1', HUNT_MESSAGES.runCancelledConnectorDeleted);
+    expect(updateHuntLastRunStatusIfStill).not.toHaveBeenCalled();
   });
 
   it('should only clear the planned retry of a terminated run, and leave any other terminated run as it is', async () => {

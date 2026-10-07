@@ -42,3 +42,22 @@ export const updateHuntRunInformation = async (
   const params = conditional ? { patch, at: new Date(patch.last_run_at as string).getTime() } : { patch };
   await elUpdate(context, hunt._index, hunt.internal_id, { script: { source, lang: 'painless', params } });
 };
+
+// Compared and written in one script: a last run a later run recorded is never replaced
+const ASSIGN_STATUS_IF_STILL = 'def current = ctx._source.last_run_at; '
+  + 'if (ctx._source.last_run_status == params.from && current != null '
+  + '&& ZonedDateTime.parse(current.toString()).toInstant().toEpochMilli() <= params.before) { ctx._source.last_run_status = params.to; } '
+  + 'else { ctx.op = \'noop\'; }';
+
+/**
+ * Replaces the last run status of a hunt while it is still `from`, recorded by a run queued no later than `before`: the
+ * last run status of a run that ended without being finalized (a cancelled run). Its date and hits are kept.
+ */
+export const updateHuntLastRunStatusIfStill = async (context: AuthContext, huntId: string, change: { from: string; to: string; before: string }) => {
+  const hunt = await internalLoadById<BasicStoreEntity>(context, SYSTEM_USER, huntId, { type: ENTITY_TYPE_HUNT });
+  if (!hunt) {
+    return;
+  }
+  const params = { from: change.from, to: change.to, before: new Date(change.before).getTime() };
+  await elUpdate(context, hunt._index, hunt.internal_id, { script: { source: ASSIGN_STATUS_IF_STILL, lang: 'painless', params } });
+};
