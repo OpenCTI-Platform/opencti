@@ -15,7 +15,7 @@ const UNSAFE_PATH_KEYS = ['__proto__', 'constructor', 'prototype'];
 const unflatten = (data) => {
   const result = {};
 
-  for (const i in data) {
+  for (const i of Object.keys(data)) {
     const keys = i.split('.');
     if (keys.some((key) => UNSAFE_PATH_KEYS.includes(key))) {
       continue;
