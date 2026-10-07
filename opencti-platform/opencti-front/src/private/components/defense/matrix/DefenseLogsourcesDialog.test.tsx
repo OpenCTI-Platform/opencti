@@ -20,6 +20,7 @@ describe('Defense log sources dialog', () => {
       expect(add().disabled).toBe(false);
       fireEvent.click(add());
     }
+    expect(screen.getByTestId('defense-logsource-count').textContent).toBe('3 log sources');
     fireEvent.change(product(), { target: { value: 'one more' } });
     expect(add().disabled).toBe(true);
     expect(screen.getByLabelText('A declaration holds at most 3 log sources: declare them, then add the others.')).toBeTruthy();

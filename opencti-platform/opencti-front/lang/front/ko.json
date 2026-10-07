@@ -20,6 +20,7 @@
   "{count, plural, one {# deployed} other {# deployed}}": "{count, plural, other {배포됨 #}}",
   "{count, plural, one {# detection rule is available} other {# detection rules are available}}, deployed on no security platform yet.": "{count, plural, other {탐지 규칙 #개를 사용할 수 있지만}} 아직 어떤 보안 플랫폼에도 배포되지 않았습니다.",
   "{count, plural, one {# gap} other {# gaps}}": "{count, plural, other {공백 #}}",
+  "{count, plural, one {# log source} other {# log sources}}": "{count, plural, other {로그 소스 #개}}",
   "{count, plural, one {# more technique of this scope is not part of this request.} other {# more techniques of this scope are not part of this request.}}": "{count, plural, other {이 범위의 기법 #개가 이 요청에 포함되지 않았습니다.}}",
   "{count, plural, one {# selected threat} other {# selected threats}}": "{count, plural, other {선택한 위협 #개}}",
   "{count, plural, one {# technique} other {# techniques}}": "{count, plural, other {기법 #개}}",

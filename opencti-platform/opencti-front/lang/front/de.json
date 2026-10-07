@@ -20,6 +20,7 @@
   "{count, plural, one {# deployed} other {# deployed}}": "{count, plural, one {# bereitgestellt} other {# bereitgestellt}}",
   "{count, plural, one {# detection rule is available} other {# detection rules are available}}, deployed on no security platform yet.": "{count, plural, one {# Erkennungsregel ist verfügbar} other {# Erkennungsregeln sind verfügbar}}, aber noch auf keiner Sicherheitsplattform bereitgestellt.",
   "{count, plural, one {# gap} other {# gaps}}": "{count, plural, one {# Lücke} other {# Lücken}}",
+  "{count, plural, one {# log source} other {# log sources}}": "{count, plural, one {# Protokollquelle} other {# Protokollquellen}}",
   "{count, plural, one {# more technique of this scope is not part of this request.} other {# more techniques of this scope are not part of this request.}}": "{count, plural, one {# weitere Technik dieses Bereichs ist nicht Teil dieser Anfrage.} other {# weitere Techniken dieses Bereichs sind nicht Teil dieser Anfrage.}}",
   "{count, plural, one {# selected threat} other {# selected threats}}": "{count, plural, one {# ausgewählte Bedrohung} other {# ausgewählte Bedrohungen}}",
   "{count, plural, one {# technique} other {# techniques}}": "{count, plural, one {# Technik} other {# Techniken}}",

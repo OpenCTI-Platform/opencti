@@ -20,6 +20,7 @@
   "{count, plural, one {# deployed} other {# deployed}}": "{count, plural, other {デプロイ済み #}}",
   "{count, plural, one {# detection rule is available} other {# detection rules are available}}, deployed on no security platform yet.": "{count, plural, other {# 件の検知ルールがあります}}が、まだどのセキュリティプラットフォームにもデプロイされていません。",
   "{count, plural, one {# gap} other {# gaps}}": "{count, plural, other {ギャップ #}}",
+  "{count, plural, one {# log source} other {# log sources}}": "{count, plural, other {# 件のログソース}}",
   "{count, plural, one {# more technique of this scope is not part of this request.} other {# more techniques of this scope are not part of this request.}}": "{count, plural, other {この範囲のさらに # 件のテクニックはこのリクエストに含まれていません。}}",
   "{count, plural, one {# selected threat} other {# selected threats}}": "{count, plural, other {選択した脅威 #}}",
   "{count, plural, one {# technique} other {# techniques}}": "{count, plural, other {# 件のテクニック}}",

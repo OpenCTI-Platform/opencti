@@ -30,7 +30,13 @@ const PROVIDED_PAGE_SIZE = 100;
 const DisabledReason = ({ reason, children }: { reason?: string; children: React.ReactElement }) => (reason ? (
   <Tooltip>
     <TooltipTrigger asChild>
-      <span tabIndex={0} aria-label={reason} style={{ display: 'inline-flex' }}>{children}</span>
+      <span
+        tabIndex={0}
+        aria-label={reason}
+        className="inline-flex rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-filigran-brand-primary focus-visible:ring-offset-2 focus-visible:ring-offset-focus"
+      >
+        {children}
+      </span>
     </TooltipTrigger>
     <TooltipContent>{reason}</TooltipContent>
   </Tooltip>
@@ -175,6 +181,11 @@ export const LogsourcesDialog = ({ entityId, open, onClose, onDone }: { entityId
         <Typography variant="caption" color="text.secondary" component="p" sx={{ marginTop: 0.5 }} data-testid="defense-logsource-help">
           {t_i18n('A log source names the data a rule reads, with the Sigma fields category, product and service. One of the three is enough.')}
         </Typography>
+        {logsources.length > 0 && (
+          <Typography variant="body2" color="text.secondary" sx={{ marginTop: 2 }} data-testid="defense-logsource-count">
+            {t_i18n('{count, plural, one {# log source} other {# log sources}}', { values: { count: logsources.length } })}
+          </Typography>
+        )}
         {logsources.length > 0 && (
           <List dense aria-label={t_i18n('Log sources')}>
             {logsources.map((logsource, index) => (

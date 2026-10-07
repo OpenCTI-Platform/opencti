@@ -20,6 +20,7 @@
   "{count, plural, one {# deployed} other {# deployed}}": "{count, plural, other {已部署 #}}",
   "{count, plural, one {# detection rule is available} other {# detection rules are available}}, deployed on no security platform yet.": "{count, plural, other {有 # 条检测规则可用}}，但尚未部署到任何安全平台。",
   "{count, plural, one {# gap} other {# gaps}}": "{count, plural, other {缺口 #}}",
+  "{count, plural, one {# log source} other {# log sources}}": "{count, plural, other {# 个日志源}}",
   "{count, plural, one {# more technique of this scope is not part of this request.} other {# more techniques of this scope are not part of this request.}}": "{count, plural, other {此范围内另有 # 项技术未包含在本次请求中。}}",
   "{count, plural, one {# selected threat} other {# selected threats}}": "{count, plural, other {已选 # 个威胁}}",
   "{count, plural, one {# technique} other {# techniques}}": "{count, plural, other {# 项技术}}",
