@@ -6,13 +6,13 @@ import { getInternalBackgroundTaskQueues, getInternalPlaybookQueues, getInternal
 import type { InternalConnector } from './connector-types';
 import { pushAll } from '../../utils/arrayUtil';
 
-// TODO Move each built-in connector to the module that owns it.
+// TODO Move each built-in connector to the module that owns it: https://github.com/OpenCTI-Platform/opencti/issues/18840
 //  Import CSV, draft validation, background tasks, playbooks, syncs, PIRs and notifiers are clients of the connector
 //  infrastructure, but the connector module currently lists them itself (here, in connector-rabbitmq.ts and in
 //  connector-domain.ts), so it depends on its client modules. Moving that code to the client modules today would
 //  create a circular module dependency.
-//  Planned follow-up: a built-in connector registry (registerBuiltInConnector, like registerDefinition and
-//  registerManager) through which each client module declares its connectors, worker queues and queues to ensure.
+//  Planned follow-up: a built-in connector registry (registerBuiltInConnector) through which each client module
+//  declares its connectors, worker queues and queues to ensure, registered explicitly from platformInit.
 //  The connector module would then no longer import any client module.
 
 const builtInInternalConnectors = async (context: AuthContext, user: AuthUser) => {
