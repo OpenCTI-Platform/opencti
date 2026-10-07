@@ -764,6 +764,14 @@ export const isHuntRunFinalized = (run: Pick<BasicStoreEntityHuntRun, 'hunt_run_
   return run.hunt_run_mode !== HUNT_RUN_MODE_EXECUTE || !HUNT_RUN_FINALIZABLE_STATUSES.includes(run.hunt_run_status) || !!run.verdict_source;
 };
 
+const HUNT_INCIDENT_LOCK = 'hunt_incident';
+
+// Each run escalates under its own transition lock: the runs of a hunt on a platform find or open their incident, and
+// record it, one at a time, so that runs escalated together continue the incident the first one opens
+const withHuntIncidentLock = <T>(run: BasicStoreEntityHuntRun, action: () => Promise<T>): Promise<T> => {
+  return withHuntLock(`${HUNT_INCIDENT_LOCK}_${run.hunt_id}_${run.security_platform_id ?? HUNT_PLATFORM_INTERNET}`, action);
+};
+
 /**
  * The incident of a run: the hits go to the incident still open from a previous run of the hunt on the same platform
  * (in its draft when not validated yet), else a new incident draft is opened. A draft recorded by an interrupted
@@ -774,7 +782,7 @@ const escalateHuntRun = async (
   hunt: BasicStoreEntityHunt,
   run: BasicStoreEntityHuntRun,
   proposal: ReturnType<typeof parseIncidentProposal>,
-): Promise<BasicStoreEntityHuntRun> => {
+): Promise<BasicStoreEntityHuntRun> => withHuntIncidentLock(run, async () => {
   const open: OpenHuntIncident | null = run.draft_id ? null : await findOpenHuntIncident(context, run);
   if (open) {
     await continueHuntIncident(context, hunt, run, open);
@@ -787,7 +795,7 @@ const escalateHuntRun = async (
   }
   const incidentId = await createHuntIncidentInWorkspace(context, hunt, current, proposal, current.draft_id as string);
   return patchHuntRun(context, current, { incident_id: incidentId, incident_continued: false });
-};
+});
 
 /**
  * Post-completion of a run: the sightings of the hunt, the incident above the escalation threshold of new hits (a new
@@ -1543,23 +1551,27 @@ export const setHuntRunVerdict = async (context: AuthContext, user: AuthUser, ru
     };
     // The incident is offered with a true positive verdict: the analyst may record the verdict alone. The hits go to the
     // incident still open from a previous run of the hunt on the platform, if any
-    if (verdict === HUNT_VERDICT_TRUE_POSITIVE && !current.incident_id && input.create_incident !== false) {
-      const open = current.draft_id ? null : await findOpenHuntIncident(context, current);
-      if (open) {
-        await continueHuntIncident(context, hunt, current, open);
-        patch.draft_id = open.draftId;
-        patch.incident_id = open.incidentId;
-        patch.incident_continued = true;
-      } else {
-        // A draft recorded by an interrupted finalization is reused rather than doubled
-        const draftId = current.draft_id ?? await createHuntIncidentWorkspace(context, current);
-        patch.draft_id = draftId;
-        patch.incident_id = await createHuntIncidentInWorkspace(context, hunt, current, parseIncidentProposal(current.incident_proposal), draftId);
-        patch.incident_continued = false;
+    const escalates = verdict === HUNT_VERDICT_TRUE_POSITIVE && !current.incident_id && input.create_incident !== false;
+    const record = async () => {
+      if (escalates) {
+        const open = current.draft_id ? null : await findOpenHuntIncident(context, current);
+        if (open) {
+          await continueHuntIncident(context, hunt, current, open);
+          patch.draft_id = open.draftId;
+          patch.incident_id = open.incidentId;
+          patch.incident_continued = true;
+        } else {
+          // A draft recorded by an interrupted finalization is reused rather than doubled
+          const draftId = current.draft_id ?? await createHuntIncidentWorkspace(context, current);
+          patch.draft_id = draftId;
+          patch.incident_id = await createHuntIncidentInWorkspace(context, hunt, current, parseIncidentProposal(current.incident_proposal), draftId);
+          patch.incident_continued = false;
+        }
       }
-    }
-    const { element: patched } = await patchAttribute(context, user, current.internal_id, ENTITY_TYPE_HUNT_RUN, patch);
-    return patched;
+      const { element: patched } = await patchAttribute(context, user, current.internal_id, ENTITY_TYPE_HUNT_RUN, patch);
+      return patched;
+    };
+    return escalates ? withHuntIncidentLock(current, record) : record();
   });
   addHuntVerdictCount(verdict);
   await publishUserAction({

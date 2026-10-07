@@ -9,6 +9,7 @@ import { updateHuntRunInformation } from '../../../../src/modules/hunt/hunt-stat
 import { huntLogicFingerprint } from '../../../../src/modules/hunt/hunt-logic';
 import { huntHitKey } from '../../../../src/modules/hunt/hunt-utils';
 import { findByIds } from '../../../../src/modules/hunt/hunt-loaders';
+import { withHuntLock } from '../../../../src/modules/hunt/hunt-lock';
 import { addHuntRunEvidence, createHuntRuns, isAutoEscalatedHuntRun, reportHuntRun, setHuntRunVerdict } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
 import type { BasicStoreEntityHunt } from '../../../../src/modules/hunt/hunt-types';
 import type { BasicStoreEntityHuntRun } from '../../../../src/modules/hunt/huntRun/huntRun-types';
@@ -274,6 +275,54 @@ describe('Hits counted once across the runs of a hunt', () => {
     expect(recordHuntHits).toHaveBeenCalledWith(testContext, expect.objectContaining({ runId: 'run-1', keys: KEYS.slice(0, 2), seenAt: '2026-10-07T08:00:00.000Z' }));
     // The run keeps its most recent observation
     expect(finalState()).toMatchObject({ last_evidence_at: '2026-10-07T10:00:00.000Z', hits_new_count: 2 });
+  });
+
+  it('should find, open and record the incident under the lock of the hunt on its platform, so runs escalated together share one', async () => {
+    const lock = 'hunt_incident_hunt-1_platform-1';
+    const held: string[] = [];
+    const heldWhen: Record<string, boolean> = {};
+    vi.mocked(withHuntLock).mockImplementation(async (key, action) => {
+      held.push(key);
+      try {
+        return await action();
+      } finally {
+        held.splice(held.indexOf(key), 1);
+      }
+    });
+    vi.mocked(findOpenHuntIncident).mockImplementation(async () => {
+      heldWhen.find = held.includes(lock);
+      return null;
+    });
+    vi.mocked(createHuntIncidentInWorkspace).mockImplementation(async () => {
+      heldWhen.open = held.includes(lock);
+      return 'incident-1';
+    });
+    const recordingIncident = () => {
+      const patchRun = vi.mocked(patchAttribute).getMockImplementation();
+      vi.mocked(patchAttribute).mockImplementation(async (...args) => {
+        if ((args[4] as Record<string, unknown>).incident_id) {
+          heldWhen.record = held.includes(lock);
+        }
+        return patchRun?.(...args) as never;
+      });
+    };
+    try {
+      loading(autonomous);
+      recordingIncident();
+      vi.mocked(recordHuntHits).mockResolvedValue({ newCount: 12, recurringCount: 16 });
+      await reportHuntRun(testContext, ADMIN_USER, 'run-1', { status: 'completed', hits_count: 28, hit_keys: KEYS } as never);
+      expect(heldWhen).toEqual({ find: true, open: true, record: true });
+      // A true positive verdict opening the incident takes the same lock
+      vi.mocked(patchAttribute).mockReset();
+      Object.keys(heldWhen).forEach((key) => delete heldWhen[key]);
+      loading({ ...autonomous, hunt_run_status: 'completed', hits_count: 28, verdict_source: 'auto', auto_escalation: false } as BasicStoreEntityHuntRun);
+      recordingIncident();
+      await setHuntRunVerdict(testContext, ADMIN_USER, 'run-1', { verdict: 'true_positive' } as never);
+      expect(heldWhen).toEqual({ find: true, open: true, record: true });
+    } finally {
+      vi.mocked(withHuntLock).mockImplementation(async (_key, action) => action());
+      vi.mocked(createHuntIncidentInWorkspace).mockImplementation(async () => 'incident-1');
+    }
   });
 
   it('should count every hit as new, and say so, when the connector identifies none or the known hits cannot be read', async () => {
