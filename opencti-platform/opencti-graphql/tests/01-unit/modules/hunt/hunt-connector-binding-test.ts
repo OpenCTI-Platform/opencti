@@ -10,6 +10,7 @@ import { findHuntConnectors, huntConnectorPlatformLockKey, registerHuntConnector
 import type { BasicStoreEntityHunt } from '../../../../src/modules/hunt/hunt-types';
 import type { BasicStoreEntityHuntRun } from '../../../../src/modules/hunt/huntRun/huntRun-types';
 import type { BasicStoreEntityConnector } from '../../../../src/types/connector';
+import type { AuthUser } from '../../../../src/types/user';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 
 vi.mock('../../../../src/database/middleware-loader', async (importOriginal) => ({
@@ -168,6 +169,18 @@ describe('Hunt connectors and their security platforms', () => {
     });
     expect(await dispatchHuntRun(testContext, run as BasicStoreEntityHuntRun, { internal_id: 'hunt-1' } as BasicStoreEntityHunt)).toBe(false);
     expect(elCount).not.toHaveBeenCalled();
+    expect(patchAttribute).not.toHaveBeenCalled();
+  });
+
+  it('should refuse a registration whose connector got another user while the binding waited for its lock', async () => {
+    const connectorUser = { ...ADMIN_USER, id: 'connector-user-1', capabilities: [{ name: 'CONNECTORAPI' }] } as AuthUser;
+    serving([SPLUNK_PROD]);
+    vi.mocked(storeLoadById)
+      .mockResolvedValueOnce({ ...SPLUNK_PROD, connector_user_id: connectorUser.id } as never)
+      .mockResolvedValueOnce({ ...SPLUNK_PROD, connector_user_id: 'connector-user-2' } as never);
+    vi.mocked(addSecurityPlatform).mockResolvedValue({ internal_id: 'platform-prod' } as never);
+    await expect(registerHuntConnector(testContext, connectorUser, { connector_id: SPLUNK_PROD.internal_id, platform: 'splunk', languages: ['spl'], security_platform_name: 'Prod' } as never))
+      .rejects.toThrow('A hunt connector can only register itself');
     expect(patchAttribute).not.toHaveBeenCalled();
   });
 

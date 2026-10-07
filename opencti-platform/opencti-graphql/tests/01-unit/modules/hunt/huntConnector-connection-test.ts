@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { pushToConnector } from '../../../../src/database/rabbitmq';
 import { deleteWork } from '../../../../src/domain/work';
+import { withHuntLock } from '../../../../src/modules/hunt/hunt-lock';
 import { reportHuntConnectorCheck, testHuntConnectorConnection } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
+import type { AuthUser } from '../../../../src/types/user';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
 
 // The stored connector: every read returns what the last write left
@@ -112,5 +114,22 @@ describe('Connection test of a hunt connector', () => {
     });
     expect(answered.connection_check?.status).toEqual('failed');
     expect(storedCheck().status).toEqual('failed');
+  });
+
+  it('should refuse the answer of the former user of a connector registered again with another user while the answer waited for the lock', async () => {
+    const connectorUser = { ...ADMIN_USER, id: 'connector-user-1', capabilities: [{ name: 'CONNECTORAPI' }] } as AuthUser;
+    const pending = { ...PASSED, id: 'check-1', status: 'pending', checked_at: null };
+    store.connector.connector_user_id = connectorUser.id;
+    store.connector.hunt_connection_check = pending;
+    const answer = { connector_id: 'connector-1', check_id: pending.id, checks: [{ name: 'Search', ok: true, message: 'Allowed' }] };
+    vi.mocked(withHuntLock).mockImplementationOnce(async (_key, action) => {
+      store.connector.connector_user_id = 'connector-user-2';
+      return action();
+    });
+    await expect(reportHuntConnectorCheck(testContext, connectorUser, answer)).rejects.toThrow('A hunt connector can only report its own connection test');
+    expect(storedCheck().status).toEqual('pending');
+    // The user of the connector answers its test
+    store.connector.connector_user_id = connectorUser.id;
+    expect((await reportHuntConnectorCheck(testContext, connectorUser, answer)).connection_check?.status).toEqual('passed');
   });
 });

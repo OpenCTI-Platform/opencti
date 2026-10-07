@@ -1742,6 +1742,10 @@ export const findHuntConnectors = async (context: AuthContext, user: AuthUser, o
 const HUNT_CONNECTOR_PLATFORM_LOCK = 'hunt_connector_platform';
 export const huntConnectorPlatformLockKey = (securityPlatformId: string) => `${HUNT_CONNECTOR_PLATFORM_LOCK}_${securityPlatformId}`;
 
+// A connector acts only as its own user: checked before its locks to fail fast, and again on the connector read under
+// them, as the connector may have registered again with another user meanwhile
+const isHuntConnectorOwner = (user: AuthUser, connector: BasicStoreEntityConnector) => isBypassUser(user) || connector.connector_user_id === user.id;
+
 export const registerHuntConnector = async (context: AuthContext, user: AuthUser, input: HuntConnectorRegisterInput) => {
   const connector = await storeLoadById<BasicStoreEntityConnector>(context, SYSTEM_USER, input.connector_id, ENTITY_TYPE_CONNECTOR);
   if (!connector) {
@@ -1750,7 +1754,7 @@ export const registerHuntConnector = async (context: AuthContext, user: AuthUser
   if (connector.connector_type !== CONNECTOR_INTERNAL_HUNT) {
     throw FunctionalError('Only INTERNAL_HUNT connectors can register a hunt platform', { connectorId: input.connector_id });
   }
-  if (!isBypassUser(user) && connector.connector_user_id !== user.id) {
+  if (!isHuntConnectorOwner(user, connector)) {
     throw ForbiddenAccess('A hunt connector can only register itself', { connectorId: input.connector_id });
   }
   const platform = input.platform.trim().toLowerCase();
@@ -1788,19 +1792,25 @@ export const registerHuntConnector = async (context: AuthContext, user: AuthUser
     }
     // Bound under the dispatch lock of the connector: a run being published completes first, and a run dispatched after
     // reads the new binding
-    return withConnectorDispatchLock(connector.internal_id, () => patchAttribute(context, SYSTEM_USER, connector.internal_id, ENTITY_TYPE_CONNECTOR, {
-      hunt_platform: platform,
-      hunt_languages: languages,
-      hunt_security_platform_id: securityPlatformId,
-      hunt_supports_preview: input.supports_preview !== false,
-      // Indicator lookups are a capability the connector declares, an older connector does not run indicator hunts
-      hunt_supports_indicators: input.supports_indicators === true && platform !== HUNT_PLATFORM_INTERNET,
-      hunt_max_concurrent_runs: maxConcurrent,
-      hunt_setup: {
-        documentation_url: sanitizeDocumentationUrl(input.documentation_url),
-        required_permissions: sanitizeRequiredPermissions(input.required_permissions),
-      },
-    }));
+    return withConnectorDispatchLock(connector.internal_id, async () => {
+      const current = await storeLoadById<BasicStoreEntityConnector>(context, SYSTEM_USER, connector.internal_id, ENTITY_TYPE_CONNECTOR);
+      if (!current || !isHuntConnectorOwner(user, current)) {
+        throw ForbiddenAccess('A hunt connector can only register itself', { connectorId: input.connector_id });
+      }
+      return patchAttribute(context, SYSTEM_USER, connector.internal_id, ENTITY_TYPE_CONNECTOR, {
+        hunt_platform: platform,
+        hunt_languages: languages,
+        hunt_security_platform_id: securityPlatformId,
+        hunt_supports_preview: input.supports_preview !== false,
+        // Indicator lookups are a capability the connector declares, an older connector does not run indicator hunts
+        hunt_supports_indicators: input.supports_indicators === true && platform !== HUNT_PLATFORM_INTERNET,
+        hunt_max_concurrent_runs: maxConcurrent,
+        hunt_setup: {
+          documentation_url: sanitizeDocumentationUrl(input.documentation_url),
+          required_permissions: sanitizeRequiredPermissions(input.required_permissions),
+        },
+      });
+    });
   };
   // Checked and bound under a lock per security platform: two connectors of different kinds registering at once never
   // both bind to it
@@ -1876,7 +1886,7 @@ export const testHuntConnectorConnection = async (context: AuthContext, user: Au
 /** The answer of a hunt connector to its last connection test: one result per check, the test passed when all pass. */
 export const reportHuntConnectorCheck = async (context: AuthContext, user: AuthUser, input: HuntConnectorCheckReportInput) => {
   const listed = await loadHuntConnector(context, input.connector_id);
-  if (!isBypassUser(user) && listed.connector_user_id !== user.id) {
+  if (!isHuntConnectorOwner(user, listed)) {
     throw ForbiddenAccess('A hunt connector can only report its own connection test', { connectorId: input.connector_id });
   }
   const checks = input.checks
@@ -1886,6 +1896,9 @@ export const reportHuntConnectorCheck = async (context: AuthContext, user: AuthU
   // Under the lock of the tests of the connector: the answer never lands on a test being dispatched or rolled back
   const { connector, element, check } = await withHuntLock(connectionCheckLockKey(listed.internal_id), async () => {
     const current = await loadHuntConnector(context, input.connector_id);
+    if (!isHuntConnectorOwner(user, current)) {
+      throw ForbiddenAccess('A hunt connector can only report its own connection test', { connectorId: input.connector_id });
+    }
     if (current.hunt_connection_check?.id !== input.check_id) {
       throw FunctionalError('This connection test is not the last one requested for the connector', { connectorId: input.connector_id });
     }
