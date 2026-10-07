@@ -99,6 +99,11 @@ export const validateHuntState = async (context: AuthContext, state: HuntValidat
   if (state.hunt_ioc_values !== undefined) {
     normalizeHuntIocValues(state.hunt_ioc_values);
   }
+  // Every run of a hunt reads its sources: a hunt has no more of them than a run looks up values
+  const sources = state[INPUT_HUNT_SOURCES] ?? state[RELATION_HUNT_SOURCES];
+  if (Array.isArray(sources) && sources.length > HUNT_CONFIG.maxIocsPerRun) {
+    throw ValidationError(`A hunt has at most ${HUNT_CONFIG.maxIocsPerRun} sources`, INPUT_HUNT_SOURCES);
+  }
   parseHuntFilterGroup(state.hunt_ioc_filters, 'hunt_ioc_filters');
   if (state.hunt_status === HUNT_STATUS_ACTIVE) {
     const logicError = huntLogicError(state);

@@ -3,8 +3,9 @@ import { getEntitiesMapFromCache } from '../../../../src/database/cache';
 import { pageRegardingEntitiesConnection } from '../../../../src/database/middleware-loader';
 import { resolveHuntIocSet } from '../../../../src/modules/hunt/hunt-iocs';
 import { findByIds } from '../../../../src/modules/hunt/hunt-loaders';
-import { type BasicStoreEntityHunt, RELATION_HUNT_SOURCES } from '../../../../src/modules/hunt/hunt-types';
+import { type BasicStoreEntityHunt, INPUT_HUNT_SOURCES, RELATION_HUNT_SOURCES } from '../../../../src/modules/hunt/hunt-types';
 import { HUNT_CONFIG } from '../../../../src/modules/hunt/hunt-utils';
+import { validateHuntState } from '../../../../src/modules/hunt/hunt-validators';
 import { testContext } from '../../../utils/testQuery';
 
 vi.mock('../../../../src/database/cache', async (importOriginal) => ({
@@ -81,5 +82,42 @@ describe('Values an indicator hunt looks up', () => {
     const set = await resolveHuntIocSet(testContext, hunt(50));
     expect(set.iocs).toHaveLength(0);
     expect(pageRegardingEntitiesConnection).toHaveBeenCalledTimes(4);
+  });
+
+  it('should count the indicators and observables chosen as sources against the same budget', async () => {
+    HUNT_CONFIG.maxIocsPerRun = 3;
+    const direct = Array.from({ length: 10 }, (_, index) => address('report-9', index));
+    vi.mocked(findByIds).mockImplementation(async (_context, _user, ids) => direct.filter((element) => ids.includes(element.internal_id)) as never);
+    const set = await resolveHuntIocSet(testContext, { internal_id: 'hunt-1', hunt_type: 'indicators', [RELATION_HUNT_SOURCES]: direct.map((element) => element.internal_id) } as unknown as BasicStoreEntityHunt);
+    // One more source than a run looks up is read, the others are left unread
+    expect(vi.mocked(findByIds).mock.calls.at(-1)?.[2]).toHaveLength(4);
+    expect(set.iocs).toHaveLength(3);
+    expect(set.truncated).toBe(true);
+    // Three addresses and a report: the addresses leave one element to read from the report
+    vi.mocked(pageRegardingEntitiesConnection).mockReset();
+    vi.mocked(pageRegardingEntitiesConnection).mockImplementation(async (_context, _user, sourceId, _relation, _types, _reverse, opts) => ({
+      edges: Array.from({ length: Math.min(5, opts?.first ?? 5) }, (_, index) => ({ node: address(String(sourceId), index) })),
+    }) as never);
+    vi.mocked(findByIds).mockResolvedValue([...direct.slice(0, 3), report(1)] as never);
+    const mixed = await resolveHuntIocSet(testContext, { internal_id: 'hunt-1', hunt_type: 'indicators', [RELATION_HUNT_SOURCES]: ['report-9-ip-0', 'report-9-ip-1', 'report-9-ip-2', 'report-1'] } as unknown as BasicStoreEntityHunt);
+    expect(vi.mocked(pageRegardingEntitiesConnection).mock.calls.map((call) => call[6]?.first)).toEqual([1]);
+    expect(mixed.truncated).toBe(true);
+  });
+});
+
+describe('Sources of a hunt', () => {
+  const { maxIocsPerRun } = HUNT_CONFIG;
+
+  afterEach(() => {
+    HUNT_CONFIG.maxIocsPerRun = maxIocsPerRun;
+  });
+
+  it('should refuse a hunt with more sources than a run looks up values', async () => {
+    HUNT_CONFIG.maxIocsPerRun = 3;
+    const ids = (count: number) => Array.from({ length: count }, (_, index) => `report-${index}`);
+    await expect(validateHuntState(testContext, { hunt_type: 'indicators', [INPUT_HUNT_SOURCES]: ids(4) })).rejects.toThrow('A hunt has at most 3 sources');
+    // A source added to a stored hunt
+    await expect(validateHuntState(testContext, { hunt_type: 'indicators', [RELATION_HUNT_SOURCES]: ids(4) })).rejects.toThrow('A hunt has at most 3 sources');
+    await expect(validateHuntState(testContext, { hunt_type: 'indicators', [INPUT_HUNT_SOURCES]: ids(3) })).resolves.toBeUndefined();
   });
 });
