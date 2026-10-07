@@ -3,7 +3,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import conf, { DECOUPLING_VERSIONS_FEATURE_FLAG, isFeatureEnabled, PLATFORM_VERSION } from '../../../config/conf';
 import { logCatalog } from '../catalog-logger';
 import { logBoundaryError } from '../../../config/module-logger';
-import { APP_MODULE, classifyErrorOrigin } from '../../../config/error-origin';
+import { APP_MODULE, classifyErrorOrigin, runWithErrorContext } from '../../../config/error-origin';
 import { SYSTEM_USER } from '../../../utils/access';
 import type { AuthContext, AuthUser } from '../../../types/user';
 import { generateStandardId, idGenFromData } from '../../../schema/identifier';
@@ -327,8 +327,13 @@ const synchronizeCatalog = async (
       contractsUpdatesCount: catalogSyncDiff.contractsUpdates.length,
       contractsDeletionsCount: catalogSyncDiff.contractsDeletions.length,
     });
-    await uploadCatalogContractLogos(logoSyncOps.uploadOperations);
-    await insertCatalogContracts(context, user, catalogSyncDiff.contractsCreations);
+    // These writes are not atomic and the boundary below only knows the source: a failure says which
+    // catalog, revision and step it stopped at, to tell a partially persisted catalog from an untouched one.
+    const persistStep = (step: string, count: number, write: () => Promise<unknown>) => {
+      return runWithErrorContext({ catalogId: sourceCatalog.id, revision, step, count }, write);
+    };
+    await persistStep('upload_logos', logoSyncOps.uploadOperations.length, () => uploadCatalogContractLogos(logoSyncOps.uploadOperations));
+    await persistStep('insert_contracts', catalogSyncDiff.contractsCreations.length, () => insertCatalogContracts(context, user, catalogSyncDiff.contractsCreations));
     if (catalogSyncDiff.contractsUpdates.length > 0) {
       // Usually there would be no updates of catalog contracts given a change
       // would be treated in a new version. This could be the result of a previous
@@ -338,10 +343,10 @@ const synchronizeCatalog = async (
         catalogId: sourceCatalog.id,
         count: catalogSyncDiff.contractsUpdates.length,
       });
-      await updateCatalogContracts(context, user, catalogSyncDiff.contractsUpdates);
+      await persistStep('update_contracts', catalogSyncDiff.contractsUpdates.length, () => updateCatalogContracts(context, user, catalogSyncDiff.contractsUpdates));
     }
-    await deleteCatalogContracts(context, user, catalogSyncDiff.contractsDeletions);
-    await upsertCatalog(context, user, catalogSyncDiff.catalogUpsert);
+    await persistStep('delete_contracts', catalogSyncDiff.contractsDeletions.length, () => deleteCatalogContracts(context, user, catalogSyncDiff.contractsDeletions));
+    await persistStep('upsert_catalog', 1, () => upsertCatalog(context, user, catalogSyncDiff.catalogUpsert));
     const isNotNil = (str: string | null | undefined): str is string => Boolean(str);
     let usedLogos = catalogSyncDiff.contractsCreations.map(({ logo_uri }) => logo_uri).filter(isNotNil);
     usedLogos = usedLogos.concat(catalogSyncDiff.contractsUpdates.map(({ logo_uri }) => logo_uri).filter(isNotNil));
