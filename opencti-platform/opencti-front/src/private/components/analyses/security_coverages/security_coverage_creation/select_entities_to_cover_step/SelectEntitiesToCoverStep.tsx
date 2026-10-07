@@ -214,17 +214,20 @@ const SelectEntitiesToCoverStep = ({
             {t_i18n('Cancel')}
           </Button>
         )}
+        {onCreate && (
+          <Button
+            variant="secondary"
+            onClick={() => onCreate(selection, Object.values(selectedElements))}
+          >
+            {t_i18n('Create')}
+          </Button>
+        )}
         <Button
-          variant="secondary"
+          variant={onCreate ? 'primary' : 'secondary'}
           onClick={() => onNext(selection, Object.values(selectedElements))}
         >
           {t_i18n('Next')}
         </Button>
-        {onCreate && (
-          <Button onClick={() => onCreate(selection, Object.values(selectedElements))}>
-            {t_i18n('Create')}
-          </Button>
-        )}
       </FormButtonContainer>
     </>
   );
