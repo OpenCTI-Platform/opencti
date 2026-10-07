@@ -1,7 +1,8 @@
 import { readFile } from 'node:fs/promises';
 import { logCatalog } from '../catalog-logger';
 import { isEmptyField } from '../../../database/utils';
-import { FunctionalError, UnsupportedError } from '../../../config/errors';
+import { FunctionalError, InfraError, UnsupportedError } from '../../../config/errors';
+import { isNetworkFailure } from '../../../config/error-origin';
 import { getOrCompileValidator } from '../catalog-domain';
 import { getHttpClient } from '../../../utils/http-client';
 import type { CatalogContract, CatalogDefinition, TypedProperty } from '../catalog-types';
@@ -108,6 +109,25 @@ class LocalCatalogSyncSource implements CatalogSyncSourceAdapter {
   }
 }
 
+// A remote catalog source is a service outside the process: unreachable, timed out (including our own
+// abort timeout) or failing, it is `infra` (RFC 0006). A request it rejects (4xx) is left as is.
+// No retry here: the catalog manager runs again on its next interval.
+const classifyRemoteCatalogError = (err: any) => {
+  const status = err?.response?.status;
+  const isUnavailable = isNetworkFailure(err)
+    || err?.code === 'ERR_CANCELED'
+    || (typeof status === 'number' && (status >= 500 || status === 429));
+  return isUnavailable ? InfraError('remote_http', 'Catalog source is unavailable', { status, cause: err }) : err;
+};
+
+const remoteCatalogCall = async <T>(call: () => Promise<T>): Promise<T> => {
+  try {
+    return await call();
+  } catch (err) {
+    throw classifyRemoteCatalogError(err);
+  }
+};
+
 class RemoteCatalogSyncSource implements CatalogSyncSourceAdapter {
   constructor(
     private sourceConfig: Extract<CatalogSyncSourceConfig, { kind: 'remote' }>,
@@ -117,14 +137,14 @@ class RemoteCatalogSyncSource implements CatalogSyncSourceAdapter {
   async fetch() {
     const timeout = resolveRemoteCatalogTimeoutMs(this.options);
     const client = getHttpClient({ responseType: 'text', timeout });
-    const response = await withAbortTimeout(timeout, (signal) => client.get(this.sourceConfig.uri, { signal }));
+    const response = await remoteCatalogCall(() => withAbortTimeout(timeout, (signal) => client.get(this.sourceConfig.uri, { signal })));
     return parseCatalogManifest(response.data);
   }
 
   async fetchRevisionHint() {
     const timeout = resolveRemoteCatalogTimeoutMs(this.options);
     const client = getHttpClient({ responseType: 'text', timeout });
-    const response = await withAbortTimeout(timeout, (signal) => client.head(this.sourceConfig.uri, { signal }));
+    const response = await remoteCatalogCall(() => withAbortTimeout(timeout, (signal) => client.head(this.sourceConfig.uri, { signal })));
     const etagHeader = response.headers?.etag;
     const etag = Array.isArray(etagHeader) ? etagHeader[0] : etagHeader;
     if (!etag || typeof etag !== 'string') {
