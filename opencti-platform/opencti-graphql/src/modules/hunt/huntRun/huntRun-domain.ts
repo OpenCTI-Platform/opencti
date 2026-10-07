@@ -1490,7 +1490,8 @@ export const addHuntRunEvidence = async (context: AuthContext, user: AuthUser, r
     if (!platform) {
       throw ResourceNotFoundError('The security platform of the evidence cannot be found', { securityPlatformId: input.security_platform_id });
     }
-    if (run.security_platform_id && run.security_platform_id !== platform.internal_id) {
+    // Evidence of a security platform never goes to a run of the internet, whose hits are known for the internet only
+    if ((run.security_platform_id ?? null) !== platform.internal_id) {
       throw FunctionalError('The evidence was observed on another security platform than the one of the run', { runId });
     }
   }

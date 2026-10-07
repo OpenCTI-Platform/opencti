@@ -11,6 +11,7 @@ import { huntHitKey } from '../../../../src/modules/hunt/hunt-utils';
 import { findByIds } from '../../../../src/modules/hunt/hunt-loaders';
 import { withHuntLock } from '../../../../src/modules/hunt/hunt-lock';
 import { addHuntRunEvidence, createHuntRuns, isAutoEscalatedHuntRun, reportHuntRun, setHuntRunVerdict } from '../../../../src/modules/hunt/huntRun/huntRun-domain';
+import { ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM } from '../../../../src/modules/securityPlatform/securityPlatform-types';
 import type { BasicStoreEntityHunt } from '../../../../src/modules/hunt/hunt-types';
 import type { BasicStoreEntityHuntRun } from '../../../../src/modules/hunt/huntRun/huntRun-types';
 import { ADMIN_USER, testContext } from '../../../utils/testQuery';
@@ -303,6 +304,19 @@ describe('Hits counted once across the runs of a hunt', () => {
     expect(recordHuntHits).toHaveBeenCalledWith(testContext, expect.objectContaining({ runId: 'run-1', keys: KEYS.slice(0, 2), seenAt: '2026-10-07T08:00:00.000Z' }), expect.any(Function));
     // The run keeps its most recent observation
     expect(finalState()).toMatchObject({ last_evidence_at: '2026-10-07T10:00:00.000Z', hits_new_count: 2 });
+  });
+
+  it('should refuse late evidence observed on a security platform for a run of the internet', async () => {
+    loading({ ...autonomous, security_platform_id: null } as BasicStoreEntityHuntRun);
+    const loadRunOrHunt = vi.mocked(storeLoadById).getMockImplementation();
+    vi.mocked(storeLoadById).mockImplementation(async (context, user, id, type) => (type === ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM
+      ? { internal_id: 'platform-1', entity_type: ENTITY_TYPE_IDENTITY_SECURITY_PLATFORM }
+      : loadRunOrHunt?.(context, user, id, type)) as never);
+    vi.mocked(findByIds).mockResolvedValueOnce([{ internal_id: 'result-1', standard_id: 'indicator--result-1', entity_type: 'Indicator' }] as never);
+    await expect(addHuntRunEvidence(testContext, ADMIN_USER, 'run-1', { result_ids: ['indicator--result-1'], hits_count: 2, hit_keys: KEYS.slice(0, 2), security_platform_id: 'platform-1' } as never))
+      .rejects.toThrow('The evidence was observed on another security platform than the one of the run');
+    expect(recordHuntHits).not.toHaveBeenCalled();
+    expect(patchAttribute).not.toHaveBeenCalled();
   });
 
   it('should never count again the hits of a run its late evidence reports again', async () => {
