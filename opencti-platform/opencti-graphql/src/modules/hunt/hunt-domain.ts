@@ -284,7 +284,7 @@ export const huntDelete = async (context: AuthContext, user: AuthUser, huntId: s
   if (!context.draft_context) {
     await cancelDeletedHuntRuns(context, hunt.internal_id);
     await markHuntRunsOrphaned([hunt.internal_id], true)
-      .catch((error) => logApp.warn('[OPENCTI-MODULE] Runs of a deleted hunt not marked, the hunt manager will', { cause: error, huntId: hunt.internal_id }));
+      .catch((error) => logApp.warn('[OPENCTI-MODULE] Runs of a deleted hunt not marked, the hunt manager marks them at its next pass', { cause: error, huntId: hunt.internal_id }));
   }
   await notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].DELETE_TOPIC, huntId, user);
   return huntId;
